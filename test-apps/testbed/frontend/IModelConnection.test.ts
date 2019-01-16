@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
@@ -13,13 +13,13 @@ import {
 } from "@bentley/imodeljs-frontend";
 import { TestbedConfig } from "../common/TestbedConfig";
 import { CONSTANTS } from "../common/Testbed";
-import { MaybeRenderApp } from "./WebGLTestContext";
+import { MockRender } from "./MockRender";
 
 describe("IModelConnection (#integration)", () => {
   let iModel: IModelConnection;
 
   before(async () => {
-    MaybeRenderApp.startup();
+    MockRender.App.startup();
 
     Logger.initializeToConsole();
     Logger.setLevel("imodeljs-frontend.IModelConnection", LogLevel.Error); // Change to trace to debug
@@ -31,7 +31,7 @@ describe("IModelConnection (#integration)", () => {
   after(async () => {
     if (iModel)
       await iModel.close(TestData.accessToken);
-    MaybeRenderApp.shutdown();
+    MockRender.App.shutdown();
   });
 
   it("should be able to get elements and models from an IModelConnection", async () => {

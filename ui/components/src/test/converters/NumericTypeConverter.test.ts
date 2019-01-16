@@ -1,9 +1,9 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { IntTypeConverter, FloatTypeConverter } from "../..//index";
+import { IntTypeConverter, FloatTypeConverter } from "../../ui-components";
 import TestUtils from "../TestUtils";
 
 describe("IntTypeConverter", () => {
@@ -19,18 +19,18 @@ describe("IntTypeConverter", () => {
   });
 
   describe("convertToString", () => {
-    it("returns correct strings", async () => {
-      expect(await converter.convertToString(100)).to.equal("100");
-      expect(await converter.convertToString("-")).to.equal("0");
+    it("returns correct strings", () => {
+      expect(converter.convertToString(100)).to.equal("100");
+      expect(converter.convertToString("-")).to.equal("0");
     });
 
-    it("returns empty string when value is undefined", async () => {
-      expect(await converter.convertToString(undefined)).to.be.eq("");
+    it("returns empty string when value is undefined", () => {
+      expect(converter.convertToString(undefined)).to.be.eq("");
     });
   });
 
-  it("convertFromString", async () => {
-    expect(await converter.convertFromString("100")).to.equal(100);
+  it("convertFromString", () => {
+    expect(converter.convertFromString("100")).to.equal(100);
   });
 
   it("sortCompare", () => {
@@ -85,19 +85,19 @@ describe("FloatTypeConverter", () => {
   });
 
   describe("convertToString", () => {
-    it("returns correct strings", async () => {
-      expect(await converter.convertToString(100.0)).to.equal("100.0");
-      expect(await converter.convertToString("-")).to.equal("0.0");
-      expect(await converter.convertToString(0)).to.equal("0.0");
+    it("returns correct strings", () => {
+      expect(converter.convertToString(100.0)).to.equal("100.0");
+      expect(converter.convertToString("-")).to.equal("0.0");
+      expect(converter.convertToString(0)).to.equal("0.0");
     });
 
-    it("returns empty string when value is undefined", async () => {
-      expect(await converter.convertToString(undefined)).to.be.eq("");
+    it("returns empty string when value is undefined", () => {
+      expect(converter.convertToString(undefined)).to.be.eq("");
     });
   });
 
-  it("convertFromString", async () => {
-    expect(await converter.convertFromString("100.0")).to.equal(100.0);
+  it("convertFromString", () => {
+    expect(converter.convertFromString("100.0")).to.equal(100.0);
   });
 
   it("sortCompare", () => {

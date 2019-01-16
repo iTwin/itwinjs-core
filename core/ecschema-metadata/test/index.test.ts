@@ -1,11 +1,11 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from 'chai';
 
-import * as Index from '../src/index';
+import * as Index from '../src/ecschema-metadata';
 
 import * as ECObjects from '../src/ECObjects';
 import * as ECStringConstants from '../src/Constants';
@@ -87,10 +87,16 @@ describe("Index", () => {
   it("should successfully import Index module", () => {
     expect(index).to.not.be.undefined;
   });
+
   it(`should match the explicit module imports`, () => {
-    for (var name in index)
-      expect(moduleImports.hasOwnProperty(name), `The type '${name}' is missing from the index.ts barrel module.`).true;
+    for (var name in moduleImports) {
+      if (name.startsWith("Mutable"))
+        continue;
+
+      expect(index.hasOwnProperty(name), `The type '${name}' is missing from the index.ts barrel module.`).true;
+    }
   });
+
   it("Ensure no Mutable classes are exported", () => {
     for (const name in index)
       expect(!name.startsWith("Mutable"), `The class '${name}' should not be exported from the index.ts file.`).true;

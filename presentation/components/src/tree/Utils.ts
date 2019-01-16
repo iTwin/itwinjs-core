@@ -1,15 +1,13 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Tree */
 
-import StyleHelper from "../common/StyleHelper";
-import { CheckBoxState } from "@bentley/ui-core/lib/enums/CheckBoxState";
-import { Node } from "@bentley/presentation-common";
-import { DelayLoadedTreeNodeItem } from "@bentley/ui-components/lib/tree/TreeDataProvider";
-import { PageOptions as PresentationPageOptions } from "@bentley/presentation-common";
-import { PageOptions as UiPageOptions } from "@bentley/ui-components/lib/common/PageOptions";
+import { StyleHelper } from "../common/StyleHelper";
+import { CheckBoxState } from "@bentley/ui-core";
+import { Node, PageOptions as PresentationPageOptions } from "@bentley/presentation-common";
+import { DelayLoadedTreeNodeItem, PageOptions as UiPageOptions } from "@bentley/ui-components";
 
 /** @hidden */
 export const createTreeNodeItems = (nodes: ReadonlyArray<Readonly<Node>>, parentId?: string): DelayLoadedTreeNodeItem[] => {
@@ -24,18 +22,31 @@ export const createTreeNodeItem = (node: Readonly<Node>, parentId?: string): Del
   const item: DelayLoadedTreeNodeItem = {
     id: [...node.key.pathFromRoot].reverse().join("/"),
     label: node.label,
-    description: node.description || "",
-    hasChildren: node.hasChildren || false,
-    labelForeColor: StyleHelper.getForeColor(node),
-    labelBackColor: StyleHelper.getBackColor(node),
-    labelBold: StyleHelper.isBold(node),
-    labelItalic: StyleHelper.isItalic(node),
-    displayCheckBox: node.isCheckboxVisible || false,
-    checkBoxState: node.isChecked ? CheckBoxState.On : CheckBoxState.Off,
-    isCheckBoxEnabled: node.isCheckboxEnabled || false,
-    parentId,
     extendedData: { key: node.key },
   };
+  if (parentId)
+    item.parentId = parentId;
+  if (node.description)
+    item.description = node.description;
+  if (node.hasChildren)
+    item.hasChildren = true;
+  if (StyleHelper.isBold(node))
+    item.labelBold = true;
+  if (StyleHelper.isItalic(node))
+    item.labelItalic = true;
+  const foreColor = StyleHelper.getForeColor(node);
+  if (foreColor)
+    item.labelForeColor = foreColor;
+  const backColor = StyleHelper.getBackColor(node);
+  if (backColor)
+    item.labelBackColor = backColor;
+  if (node.isCheckboxVisible) {
+    item.isCheckboxVisible = true;
+    if (node.isChecked)
+      item.checkBoxState = CheckBoxState.On;
+    if (!node.isCheckboxEnabled)
+      item.isCheckboxDisabled = true;
+  }
   return item;
 };
 

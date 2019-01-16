@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
@@ -20,7 +20,7 @@ import { StrokeOptions } from "../curve/StrokeOptions";
 import { Geometry, PlaneAltitudeEvaluator } from "../Geometry";
 import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
 import { GeometryHandler, IStrokeHandler } from "../geometry3d/GeometryHandler";
-import { KnotVector } from "./KnotVector";
+import { KnotVector, BSplineWrapMode } from "./KnotVector";
 import { LineString3d } from "../curve/LineString3d";
 import { Point3dArray } from "../geometry3d/PointHelpers";
 import { BezierCurveBase } from "./BezierCurveBase";
@@ -94,7 +94,7 @@ export abstract class BSplineCurve3dBase extends CurvePrimitive {
   /**
  * Set the flag indicating the bspline might be suitable for having wrapped "closed" interpretation.
  */
-  public setWrappable(value: boolean) {
+  public setWrappable(value: BSplineWrapMode) {
     this._bcurve.knots.wrappable = value;
   }
 
@@ -495,18 +495,19 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
   }
 
   /**
-   * return true if the spline is (a) unclamped with (degree-1) matching knot intervals,
-   * (b) (degree-1) wrapped points,
-   * (c) marked wrappable from construction time.
+   * Test knots, control points, and wrappable flag to see if all agree for a possible wrapping.
+   * @returns the manner of closing.   Se BSplineWrapMode for particulars of each mode.
+   *
    */
-  public get isClosable(): boolean {
-    if (!this._bcurve.knots.wrappable)
-      return false;
-    if (!this._bcurve.knots.testClosable())
-      return false;
-    if (!this._bcurve.testCloseablePolygon())
-      return false;
-    return true;
+  public get isClosable(): BSplineWrapMode {
+    const mode = this._bcurve.knots.wrappable;
+    if (mode === BSplineWrapMode.None)
+      return BSplineWrapMode.None;
+    if (!this._bcurve.knots.testClosable(mode))
+      return BSplineWrapMode.None;
+    if (!this._bcurve.testCloseablePolygon(mode))
+      return BSplineWrapMode.None;
+    return mode;
   }
   /**
    * Return a BezierCurveBase for this curve.  The concrete return type may be BezierCuve3d or BezierCurve3dH according to this type.
@@ -557,7 +558,7 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
   /**
    * Set the flag indicating the bspline might be suitable for having wrapped "closed" interpretation.
    */
-  public setWrappable(value: boolean) {
+  public setWrappable(value: BSplineWrapMode) {
     this._bcurve.knots.wrappable = value;
   }
 

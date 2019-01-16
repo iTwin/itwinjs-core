@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module RPC */
@@ -9,8 +9,11 @@ import { IModelToken, RpcManager } from "@bentley/imodeljs-common";
 import KeySet from "./KeySet";
 import { PresentationStatus } from "./Error";
 import { InstanceKey } from "./EC";
-import { NodeKey, Node, NodePathElement } from "./hierarchy";
-import { SelectionInfo, Descriptor, Content } from "./content";
+import { NodeKey } from "./hierarchy/Key";
+import { default as Node } from "./hierarchy/Node";
+import { default as NodePathElement } from "./hierarchy/NodePathElement";
+import { SelectionInfo, default as Descriptor } from "./content/Descriptor";
+import { default as Content } from "./content/Content";
 import { HierarchyRequestOptions, ContentRequestOptions, Paged } from "./PresentationManagerOptions";
 import PresentationRpcInterface, { RpcRequestOptions } from "./PresentationRpcInterface";
 

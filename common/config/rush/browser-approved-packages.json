@@ -4,7 +4,7 @@
   "packages": [
     {
       "name": "@bentley/bentleyjs-core",
-      "allowedCategories": [ "backend", "common", "frontend", "internal" ]
+      "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
     },
     {
       "name": "@bentley/build-tools",
@@ -20,7 +20,11 @@
     },
     {
       "name": "@bentley/dev-cors-proxy-server",
-      "allowedCategories": [ "internal", "tools" ]
+      "allowedCategories": [ "common" ]
+    },
+    {
+      "name": "@bentley/electron-manager",
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "@bentley/geometry-core",
@@ -32,7 +36,7 @@
     },
     {
       "name": "@bentley/imodeljs-backend",
-      "allowedCategories": [ "backend", "internal" ]
+      "allowedCategories": [ "backend", "internal", "tools" ]
     },
     {
       "name": "@bentley/imodeljs-clients",
@@ -40,22 +44,22 @@
     },
     {
       "name": "@bentley/imodeljs-clients-backend",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [ "backend", "frontend", "internal" ]
     },
     {
       "name": "@bentley/imodeljs-common",
-      "allowedCategories": [ "backend", "common", "frontend", "internal" ]
+      "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
     },
     {
       "name": "@bentley/imodeljs-frontend",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [ "frontend", "internal", "tools" ]
     },
     {
       "name": "@bentley/imodeljs-i18n",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [ "common", "frontend", "internal" ]
     },
     {
-      "name": "@bentley/imodeljs-native-platform-api",
+      "name": "@bentley/imodeljs-native",
       "allowedCategories": [ "backend" ]
     },
     {
@@ -63,24 +67,32 @@
       "allowedCategories": [ "frontend", "internal" ]
     },
     {
-      "name": "@bentley/presentation-backend",
+      "name": "@bentley/imodeljs-webserver",
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "@bentley/presentation-backend",
+      "allowedCategories": [ "internal", "tools" ]
+    },
+    {
       "name": "@bentley/presentation-common",
-      "allowedCategories": [ "backend", "frontend", "internal" ]
+      "allowedCategories": [ "backend", "frontend", "internal", "tools" ]
     },
     {
       "name": "@bentley/presentation-components",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [ "frontend", "internal", "tools" ]
     },
     {
       "name": "@bentley/presentation-frontend",
+      "allowedCategories": [ "frontend", "internal", "tools" ]
+    },
+    {
+      "name": "@bentley/presentation-testing",
       "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "@bentley/ui-components",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [ "frontend", "internal", "tools" ]
     },
     {
       "name": "@bentley/ui-core",
@@ -96,7 +108,7 @@
     },
     {
       "name": "@bentley/webpack-tools",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "common", "frontend", "internal" ]
     },
     {
       "name": "@openid/appauth",
@@ -112,7 +124,7 @@
     },
     {
       "name": "autoprefixer",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [ "internal", "tools" ]
     },
     {
       "name": "body-parser",
@@ -120,7 +132,11 @@
     },
     {
       "name": "bunyan",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "common", "internal" ]
+    },
+    {
+      "name": "bunyan-seq",
+      "allowedCategories": [ "common" ]
     },
     {
       "name": "cache-require-paths",
@@ -148,7 +164,7 @@
     },
     {
       "name": "chai-spies",
-      "allowedCategories": [ "backend", "common", "frontend", "internal" ]
+      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "chai-string",
@@ -195,10 +211,6 @@
       "allowedCategories": [ "internal" ]
     },
     {
-      "name": "coveralls",
-      "allowedCategories": [ "tools" ]
-    },
-    {
       "name": "cpx",
       "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
     },
@@ -211,12 +223,8 @@
       "allowedCategories": [ "tools" ]
     },
     {
-      "name": "css-element-queries",
-      "allowedCategories": [ "frontend" ]
-    },
-    {
       "name": "css-loader",
-      "allowedCategories": [ "frontend", "tools" ]
+      "allowedCategories": [ "frontend", "internal", "tools" ]
     },
     {
       "name": "csstype",
@@ -247,20 +255,12 @@
       "allowedCategories": [ "backend", "internal" ]
     },
     {
-      "name": "electron-builder",
-      "allowedCategories": [ "internal" ]
-    },
-    {
       "name": "electron-chromedriver",
       "allowedCategories": [ "internal", "tools" ]
     },
     {
-      "name": "electron-devtools-installer",
-      "allowedCategories": [ "internal" ]
-    },
-    {
       "name": "enzyme",
-      "allowedCategories": [ "frontend", "internal", "tools" ]
+      "allowedCategories": [ "frontend", "tools" ]
     },
     {
       "name": "enzyme-adapter-react-16",
@@ -275,16 +275,8 @@
       "allowedCategories": [ "tools" ]
     },
     {
-      "name": "eslint",
-      "allowedCategories": [ "tools" ]
-    },
-    {
       "name": "eventemitter2",
       "allowedCategories": [ "frontend" ]
-    },
-    {
-      "name": "exceljs",
-      "allowedCategories": [ "internal" ]
     },
     {
       "name": "exports-loader",
@@ -292,7 +284,7 @@
     },
     {
       "name": "express",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "common", "internal" ]
     },
     {
       "name": "express-session",
@@ -304,7 +296,7 @@
     },
     {
       "name": "file-loader",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [ "internal", "tools" ]
     },
     {
       "name": "find-root",
@@ -328,19 +320,15 @@
     },
     {
       "name": "glob",
-      "allowedCategories": [ "backend", "common", "tools" ]
+      "allowedCategories": [ "backend", "common", "internal", "tools" ]
     },
     {
       "name": "html-webpack-plugin",
       "allowedCategories": [ "frontend", "tools" ]
     },
     {
-      "name": "http-proxy",
-      "allowedCategories": [ "tools" ]
-    },
-    {
       "name": "https-proxy-agent",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [ "common" ]
     },
     {
       "name": "i18next",
@@ -351,12 +339,16 @@
       "allowedCategories": [ "frontend", "internal" ]
     },
     {
+      "name": "i18next-node-fs-backend",
+      "allowedCategories": [ "common" ]
+    },
+    {
       "name": "i18next-xhr-backend",
       "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "ignore-styles",
-      "allowedCategories": [ "frontend", "tools" ]
+      "allowedCategories": [ "frontend", "internal", "tools" ]
     },
     {
       "name": "immutable",
@@ -368,11 +360,7 @@
     },
     {
       "name": "inspire-tree",
-      "allowedCategories": [ "frontend" ]
-    },
-    {
-      "name": "istanbul",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "istanbul-instrumenter-loader",
@@ -392,11 +380,11 @@
     },
     {
       "name": "jsdom",
-      "allowedCategories": [ "frontend", "tools" ]
+      "allowedCategories": [ "frontend", "internal", "tools" ]
     },
     {
       "name": "jsdom-global",
-      "allowedCategories": [ "frontend", "tools" ]
+      "allowedCategories": [ "frontend", "internal", "tools" ]
     },
     {
       "name": "json-schema-faker",
@@ -404,7 +392,7 @@
     },
     {
       "name": "json5",
-      "allowedCategories": [ "backend", "tools" ]
+      "allowedCategories": [ "tools" ]
     },
     {
       "name": "license-webpack-plugin",
@@ -412,11 +400,19 @@
     },
     {
       "name": "lodash",
-      "allowedCategories": [ "frontend", "tools" ]
+      "allowedCategories": [ "frontend", "internal", "tools" ]
     },
     {
       "name": "lolex",
-      "allowedCategories": [ "backend", "tools" ]
+      "allowedCategories": [ "backend" ]
+    },
+    {
+      "name": "make-dir",
+      "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "make-dir-cli",
+      "allowedCategories": [ "common", "frontend" ]
     },
     {
       "name": "merge-json",
@@ -428,6 +424,14 @@
     },
     {
       "name": "minimist",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "mobx",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "mobx-react",
       "allowedCategories": [ "internal" ]
     },
     {
@@ -448,7 +452,7 @@
     },
     {
       "name": "nock",
-      "allowedCategories": [ "common", "tools" ]
+      "allowedCategories": [ "common" ]
     },
     {
       "name": "node-glob",
@@ -464,7 +468,7 @@
     },
     {
       "name": "nodemon",
-      "allowedCategories": [ "internal", "tools" ]
+      "allowedCategories": [ "tools" ]
     },
     {
       "name": "npm-run-all",
@@ -488,7 +492,7 @@
     },
     {
       "name": "oidc-client",
-      "allowedCategories": [ "common", "frontend", "internal" ]
+      "allowedCategories": [ "common", "frontend" ]
     },
     {
       "name": "openid-client",
@@ -508,19 +512,19 @@
     },
     {
       "name": "postcss-flexbugs-fixes",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [ "internal", "tools" ]
     },
     {
       "name": "postcss-loader",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [ "internal", "tools" ]
     },
     {
       "name": "promise",
       "allowedCategories": [ "tools" ]
     },
     {
-      "name": "proxy-from-env",
-      "allowedCategories": [ "tools" ]
+      "name": "proxy-agent",
+      "allowedCategories": [ "common" ]
     },
     {
       "name": "qs",
@@ -528,6 +532,10 @@
     },
     {
       "name": "raf",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "raf-schd",
       "allowedCategories": [ "frontend" ]
     },
     {
@@ -548,11 +556,11 @@
     },
     {
       "name": "react-dnd",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "react-dnd-html5-backend",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "react-dnd-test-backend",
@@ -561,6 +569,10 @@
     {
       "name": "react-dom",
       "allowedCategories": [ "frontend", "internal", "tools" ]
+    },
+    {
+      "name": "react-error-overlay",
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "react-highlight-words",
@@ -611,8 +623,12 @@
       "allowedCategories": [ "frontend", "internal" ]
     },
     {
-      "name": "redux-oidc",
-      "allowedCategories": [ "frontend", "internal" ]
+      "name": "request",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "request-promise-native",
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "resize-observer-polyfill",
@@ -628,7 +644,7 @@
     },
     {
       "name": "sass-loader",
-      "allowedCategories": [ "frontend", "tools" ]
+      "allowedCategories": [ "frontend", "internal", "tools" ]
     },
     {
       "name": "save",
@@ -648,7 +664,7 @@
     },
     {
       "name": "source-map-loader",
-      "allowedCategories": [ "internal", "tools" ]
+      "allowedCategories": [ "common", "frontend", "internal", "tools" ]
     },
     {
       "name": "source-map-support",
@@ -656,15 +672,11 @@
     },
     {
       "name": "style-loader",
-      "allowedCategories": [ "frontend", "tools" ]
+      "allowedCategories": [ "frontend", "internal", "tools" ]
     },
     {
       "name": "superagent",
       "allowedCategories": [ "common" ]
-    },
-    {
-      "name": "supertest",
-      "allowedCategories": [ "tools" ]
     },
     {
       "name": "svg-react-loader",
@@ -684,7 +696,7 @@
     },
     {
       "name": "tree-kill",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [ "common", "tools" ]
     },
     {
       "name": "ts-key-enum",
@@ -703,6 +715,10 @@
       "allowedCategories": [ "frontend", "internal", "tools" ]
     },
     {
+      "name": "tslib",
+      "allowedCategories": [ "tools" ]
+    },
+    {
       "name": "tslint",
       "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
     },
@@ -715,6 +731,10 @@
       "allowedCategories": [ "frontend", "tools" ]
     },
     {
+      "name": "tsutils",
+      "allowedCategories": [ "tools" ]
+    },
+    {
       "name": "typedoc",
       "allowedCategories": [ "backend", "common", "frontend", "tools" ]
     },
@@ -724,7 +744,7 @@
     },
     {
       "name": "typemoq",
-      "allowedCategories": [ "backend", "common", "frontend", "internal" ]
+      "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
     },
     {
       "name": "typescript",
@@ -736,11 +756,11 @@
     },
     {
       "name": "uglifyjs-webpack-plugin",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [ "internal", "tools" ]
     },
     {
       "name": "url-loader",
-      "allowedCategories": [ "frontend", "tools" ]
+      "allowedCategories": [ "frontend", "internal", "tools" ]
     },
     {
       "name": "url-search-params",
@@ -780,7 +800,7 @@
     },
     {
       "name": "webpack-cli",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "common", "frontend" ]
     },
     {
       "name": "webpack-dev-server",
@@ -797,6 +817,10 @@
     {
       "name": "webpack-node-externals",
       "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "webpack-sources",
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "whatwg-fetch",

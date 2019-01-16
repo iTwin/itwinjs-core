@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
@@ -7,9 +7,9 @@ import { mount } from "enzyme";
 import * as React from "react";
 import { Orientation } from "@bentley/ui-core";
 import TestUtils from "../../TestUtils";
-import { NonPrimitivePropertyRenderer } from "../../../properties/renderers/NonPrimitivePropertyRenderer";
-import { NonPrimitivePropertyLabelRenderer, PrimitivePropertyLabelRenderer } from "../../../properties/renderers/label";
-import { PropertyRenderer } from "../../../properties/renderers/PropertyRenderer";
+import { NonPrimitivePropertyRenderer } from "../../../ui-components/properties/renderers/NonPrimitivePropertyRenderer";
+import { NonPrimitivePropertyLabelRenderer, PrimitivePropertyLabelRenderer } from "../../../ui-components";
+import { PropertyRenderer } from "../../../ui-components/properties/renderers/PropertyRenderer";
 
 describe("NonPrimitivePropertyRenderer", () => {
   before(async () => {
@@ -22,7 +22,7 @@ describe("NonPrimitivePropertyRenderer", () => {
         orientation={Orientation.Horizontal}
         propertyRecord={TestUtils.createArrayProperty("Pipes", [TestUtils.createPrimitiveStringProperty("pipe_1", "Water pipe")])}
         valueElement={"string[1]"}
-        isCollapsable={true}
+        isCollapsible={true}
       />);
 
     await TestUtils.flushAsyncOperations();
@@ -31,11 +31,10 @@ describe("NonPrimitivePropertyRenderer", () => {
     expect(labelRenderer.exists()).to.be.true;
     expect(labelRenderer.html().indexOf("Pipes")).to.be.greaterThan(-1);
 
-    expect(rendererMount.html().indexOf("string[1]")).to.be.greaterThan(-1);
     expect(rendererMount.find(PropertyRenderer).exists()).to.be.false;
   });
 
-  it("renders as expanded if isCollapsable is not set", () => {
+  it("renders as expanded if isCollapsible is not set", () => {
     const rendererMount = mount(
       <NonPrimitivePropertyRenderer
         orientation={Orientation.Horizontal}
@@ -60,7 +59,7 @@ describe("NonPrimitivePropertyRenderer", () => {
               building: TestUtils.createPrimitiveStringProperty("Building", "Residential"),
               street: TestUtils.createPrimitiveStringProperty("Street", "Glass st."),
             })}
-        isCollapsable={true}
+        isCollapsible={true}
       />);
 
     expect(rendererMount.find(PropertyRenderer).length).to.be.be.eq(0);

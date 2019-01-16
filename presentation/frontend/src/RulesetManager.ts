@@ -1,12 +1,11 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Core */
 
 import { BeEvent, Guid } from "@bentley/bentleyjs-core";
-import { RulesetManagerState, Ruleset, RegisteredRuleset } from "@bentley/presentation-common";
-import { IClientStateHolder } from "@bentley/presentation-common/lib/RpcRequestsHandler";
+import { RulesetManagerState, Ruleset, RegisteredRuleset, IClientStateHolder } from "@bentley/presentation-common";
 
 /** @hidden */
 export default class RulesetManager implements IClientStateHolder<RulesetManagerState> {
@@ -37,7 +36,7 @@ export default class RulesetManager implements IClientStateHolder<RulesetManager
    * Register the supplied ruleset
    */
   public async add(ruleset: Ruleset): Promise<RegisteredRuleset> {
-    const registered = new RegisteredRuleset(ruleset, Guid.createValue(), (ruleset: RegisteredRuleset) => this.remove(ruleset));
+    const registered = new RegisteredRuleset(ruleset, Guid.createValue(), (r: RegisteredRuleset) => this.remove(r));
     if (!this._clientRulesets.has(ruleset.id))
       this._clientRulesets.set(ruleset.id, []);
     this._clientRulesets.get(ruleset.id)!.push(registered);

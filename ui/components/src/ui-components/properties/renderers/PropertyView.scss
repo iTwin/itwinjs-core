@@ -1,0 +1,60 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+@import "@bentley/bwc/lib/mixins";
+
+$text-font-size: $bwc-font-size;
+$text-font-color: $bwc-text-color;
+
+.components-property-record--horizontal {
+  min-height: 24px;
+  display: grid;
+
+  .components-property-record-label {
+    font-size: $text-font-size;
+    color: $text-font-color;
+  }
+
+  .components-property-record-value {
+    min-height: 20px;
+    font-size: $text-font-size;
+    color: $text-font-color;
+  }
+}
+
+.components-property-record--vertical {
+  .components-property-record-label {
+    font-weight: bold;
+    font-size: $text-font-size;
+    color: $text-font-color;
+    margin-top: 0px;
+    margin-bottom: 0px;
+    padding-top: 6px;
+    padding-bottom: 0px;
+  }
+
+  .components-property-record-value {
+    min-height: 20px;
+    font-size: $text-font-size;
+    color: $text-font-color;
+    margin-top: 0px;
+    margin-bottom: 0px;
+
+    padding-top: 0px;
+    padding-bottom: 4px;
+  }
+}
+
+@mixin record-cell {
+  display: flex;
+  align-items: center;
+}
+
+.components-property-record-label {
+  @include record-cell;
+}
+
+.components-property-record-value {
+  @include record-cell;
+}

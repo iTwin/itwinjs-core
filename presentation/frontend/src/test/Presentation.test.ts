@@ -1,7 +1,9 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+/* tslint:disable:no-direct-imports */
+
 import { expect } from "chai";
 import * as sinon from "sinon";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
@@ -9,8 +11,7 @@ import "./_helpers/MockFrontendEnvironment";
 import { I18N } from "@bentley/imodeljs-i18n";
 import { IModelApp, NoRenderApp } from "@bentley/imodeljs-frontend";
 import { PresentationError } from "@bentley/presentation-common";
-import { Presentation } from "../index";
-import { SelectionManager } from "../selection";
+import { Presentation, SelectionManager } from "../presentation-frontend";
 import PresentationManager from "../PresentationManager";
 
 describe("Presentation", () => {

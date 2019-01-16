@@ -1,9 +1,9 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import { BentleyError } from "@bentley/bentleyjs-core/lib/BentleyError";
+import { BentleyError } from "@bentley/bentleyjs-core";
 
 /**
  * Status codes used during Quantity parsing and formatting processing.

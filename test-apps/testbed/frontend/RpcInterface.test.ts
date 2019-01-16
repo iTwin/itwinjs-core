@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import {
@@ -15,7 +15,7 @@ import {
   RpcResponseCacheControl,
 } from "@bentley/imodeljs-common";
 import { WipRpcInterface } from "@bentley/imodeljs-common/lib/rpc/WipRpcInterface"; // not part of the "barrel"
-import { OpenMode } from "@bentley/bentleyjs-core";
+import { BentleyError, Id64, OpenMode } from "@bentley/bentleyjs-core";
 import {
   TestRpcInterface,
   TestOp1Params,
@@ -32,7 +32,6 @@ import {
 } from "../common/TestRpcInterface";
 
 import { assert } from "chai";
-import { BentleyError, Id64 } from "@bentley/bentleyjs-core";
 import { TestbedConfig } from "../common/TestbedConfig";
 import { CONSTANTS } from "../common/Testbed";
 import * as semver from "semver";
@@ -43,7 +42,7 @@ describe("RpcInterface", () => {
   class LocalInterface extends RpcInterface {
     public static version = "0.0.0";
     public static types = () => [];
-    public async op(): Promise<void> { return this.forward.apply(this, arguments); }
+    public async op(): Promise<void> { return this.forward(arguments); }
   }
 
   const initializeLocalInterface = () => {
@@ -537,5 +536,15 @@ describe("RpcInterface", () => {
   it("should successfully call WipRpcInterface.placeholder", async () => {
     const s: string = await WipRpcInterface.getClient().placeholder(new IModelToken());
     assert.equal(s, "placeholder");
+  });
+
+  it("should send app version to backend", async () => {
+    RpcConfiguration.applicationVersionValue = "testbed1";
+    try {
+      await TestRpcInterface.getClient().op15();
+      assert(true);
+    } catch (err) {
+      assert(false);
+    }
   });
 });

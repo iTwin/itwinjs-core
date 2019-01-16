@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
@@ -31,6 +31,11 @@ export class Phenomenon extends SchemaItem {
   public async accept(visitor: SchemaItemVisitor) {
     if (visitor.visitPhenomenon)
       await visitor.visitPhenomenon(this);
+  }
+
+  public acceptSync(visitor: SchemaItemVisitor) {
+    if (visitor.visitPhenomenonSync)
+      visitor.visitPhenomenonSync(this);
   }
 
   public deserializeSync(phenomenonProps: PhenomenonProps) {

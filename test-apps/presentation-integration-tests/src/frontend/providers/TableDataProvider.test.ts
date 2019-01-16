@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
@@ -8,8 +8,8 @@ import { OpenMode, Id64 } from "@bentley/bentleyjs-core";
 import { ModelProps } from "@bentley/imodeljs-common";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { KeySet, instanceKeyFromJSON } from "@bentley/presentation-common";
-import PresentationTableDataProvider from "@bentley/presentation-components/lib/table/DataProvider";
-import { SortDirection } from "@bentley/ui-core/lib/enums/SortDirection";
+import { PresentationTableDataProvider } from "@bentley/presentation-components";
+import { SortDirection } from "@bentley/ui-core";
 
 interface MeaningfulInstances {
   repositoryModel: ModelProps;

@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module iModelHub */
@@ -10,8 +10,7 @@ import { WsgInstance } from "../ECJsonTypeMap";
 import { IModelHubError } from "./Errors";
 import { AuthorizationToken, AccessToken } from "../Token";
 import { ImsDelegationSecureTokenClient } from "../ImsClients";
-import * as https from "https";
-import { FileHandler } from "..";
+import { FileHandler } from "../imodeljs-clients";
 import { CustomRequestOptions } from "./CustomRequestOptions";
 import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { Config } from "../Config";
@@ -19,7 +18,7 @@ import { Config } from "../Config";
  * Provides default options for iModelHub requests.
  */
 class DefaultIModelHubRequestOptionsProvider extends DefaultWsgRequestOptionsProvider {
-  public constructor(agent: https.Agent) {
+  public constructor(agent: any) {
     super();
     this._defaultOptions.errorCallback = IModelHubError.parse;
     this._defaultOptions.retryCallback = IModelHubError.shouldRetry;
@@ -36,7 +35,7 @@ export class IModelBaseHandler extends WsgClient {
   private _defaultIModelHubOptionsProvider: DefaultIModelHubRequestOptionsProvider;
   public static readonly searchKey: string = "iModelHubApi";
   public static readonly configRelyingPartyUri = "imjs_imodelhub_relying_party_uri";
-  protected _agent: https.Agent;
+  protected _agent: any;
   protected _fileHandler: FileHandler | undefined;
   private _customRequestOptions: CustomRequestOptions = new CustomRequestOptions();
 
@@ -47,8 +46,11 @@ export class IModelBaseHandler extends WsgClient {
   public constructor(keepAliveDuration = 30000, fileHandler?: FileHandler) {
     super("sv1.1");
     this._fileHandler = fileHandler;
-    if (!(typeof window === "undefined"))
-      this._agent = new https.Agent({ keepAlive: keepAliveDuration > 0, keepAliveMsecs: keepAliveDuration, secureProtocol: "TLSv1_2_method" });
+    const isMobile = typeof (self) !== "undefined" && (self as any).imodeljsMobile;
+    if (!(typeof window === "undefined") && !isMobile) {
+      // tslint:disable-next-line:no-var-requires
+      this._agent = require("https").Agent({ keepAlive: keepAliveDuration > 0, keepAliveMsecs: keepAliveDuration, secureProtocol: "TLSv1_2_method" });
+    }
   }
 
   public formatProjectIdForUrl(projectId: string) { return projectId; }
@@ -95,7 +97,7 @@ export class IModelBaseHandler extends WsgClient {
    * Get the agent used for imodelhub connection pooling.
    * @returns The agent used for imodelhub connection pooling.
    */
-  public getAgent(): https.Agent {
+  public getAgent(): any {
     return this._agent;
   }
 

@@ -1,14 +1,13 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
-import * as url from "url";
 
-import { ElectronRpcManager } from "@bentley/imodeljs-common/lib/common";
+import { ElectronRpcManager } from "@bentley/imodeljs-common";
 import { initializeBackend, getRpcInterfaces } from "./backend";
 import { Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { IModelJsElectronAppManager } from "@bentley/imodeljs-backend";
+import { IModelJsElectronManager } from "@bentley/electron-manager";
 
 import * as electron from "electron";
 
@@ -25,24 +24,15 @@ Logger.setLevelDefault(logLevel);
 
 // --------------------------------------------------------------------------------------
 // ---------------- This part copied from protogist ElectronMain.ts ---------------------
-const isDevBuild = (process.env.NODE_ENV === "development");
 const autoOpenDevTools = (undefined === process.env.SVT_NO_DEV_TOOLS);
 const maximizeWindow = (undefined !== process.env.SVT_MAXIMIZE_WINDOW);
 
 (async () => { // tslint:disable-line:no-floating-promises
-  const manager = new IModelJsElectronAppManager(electron);
-  if (!isDevBuild)
-    manager.frontendURL = url.format({
-      pathname: path.join(__dirname, "public/index.html"),
-      protocol: "file:",
-      slashes: true,
-    });
-
+  const manager = new IModelJsElectronManager(path.join(__dirname, "..", "webresources"));
   await manager.initialize({
     width: 1280,
     height: 800,
     webPreferences: {
-      webSecurity: !isDevBuild, // Workaround for CORS issue in dev build
       experimentalFeatures: true, // Needed for CSS Grid support
     },
     autoHideMenuBar: true,
@@ -62,7 +52,8 @@ const maximizeWindow = (undefined !== process.env.SVT_MAXIMIZE_WINDOW);
   }
 
   // tslint:disable-next-line:no-var-requires
-  const configuration = require(path.join(__dirname, "public", "configuration.json"));
+  const configPathname = path.normalize(path.join(__dirname, "../webresources", "config.json"));
+  const configuration = require(configPathname);
   if (configuration.useIModelBank) {
     electron.app.on("certificate-error", (event, _webContents, _url, _error, _certificate, callback) => {
       // (needed temporarily to use self-signed cert to communicate with iModelBank via https)

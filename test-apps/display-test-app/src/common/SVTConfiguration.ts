@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** Parameters for starting display-test-app with a specified initial configuration */
@@ -11,6 +11,7 @@ export interface SVTConfiguration {
   iModelName?: string;
   filename?: string;
   standalonePath?: string;    // Used when run in the browser - a common base path for all standalone imodels
+  signInForStandalone?: boolean; // If true, and standalone is true, then sign in. Required when opening local files containing reality models.
 }
 
 export interface ConnectProjectConfiguration {

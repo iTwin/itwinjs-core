@@ -1,12 +1,12 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module iModelHub */
 
 import { RequestQueryOptions } from "./../Request";
 import { ArgumentCheck } from "./Errors";
-import { GuidString } from "@bentley/bentleyjs-core/lib/Id";
+import { GuidString } from "@bentley/bentleyjs-core";
 
 /** Base class for iModelHub Query objects. Query objects are used to modify the results when getting instances from iModelHub. */
 export class Query {

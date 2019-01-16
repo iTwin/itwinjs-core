@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Tree */
@@ -8,38 +8,37 @@ import * as _ from "lodash";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { NodeKey, NodePathElement, HierarchyRequestOptions } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
-import { DelayLoadedTreeNodeItem, TreeNodeItem } from "@bentley/ui-components/lib/tree/TreeDataProvider";
-import { PageOptions } from "@bentley/ui-components/lib/common/PageOptions";
+import { DelayLoadedTreeNodeItem, TreeNodeItem, PageOptions } from "@bentley/ui-components";
 import { createTreeNodeItems, pageOptionsUiToPresentation } from "./Utils";
-import IPresentationTreeDataProvider from "./IPresentationTreeDataProvider";
+import { IPresentationTreeDataProvider } from "./IPresentationTreeDataProvider";
 
 /**
  * Presentation Rules-driven tree data provider.
  */
-export default class PresentationTreeDataProvider implements IPresentationTreeDataProvider {
+export class PresentationTreeDataProvider implements IPresentationTreeDataProvider {
   private _rulesetId: string;
-  private _connection: IModelConnection;
+  private _imodel: IModelConnection;
 
   /**
    * Constructor.
-   * @param connection Connection to an imodel to pull data from.
+   * @param imodel Connection to an imodel to pull data from.
    * @param rulesetId Id of the ruleset used by this data provider.
    */
-  public constructor(connection: IModelConnection, rulesetId: string) {
+  public constructor(imodel: IModelConnection, rulesetId: string) {
     this._rulesetId = rulesetId;
-    this._connection = connection;
+    this._imodel = imodel;
   }
 
   /** Id of the ruleset used by this data provider */
   public get rulesetId(): string { return this._rulesetId; }
 
   /** [[IModelConnection]] used by this data provider */
-  public get connection(): IModelConnection { return this._connection; }
+  public get imodel(): IModelConnection { return this._imodel; }
 
   /** Called to get extended options for node requests */
   private createRequestOptions(): HierarchyRequestOptions<IModelConnection> {
     return {
-      imodel: this._connection,
+      imodel: this._imodel,
       rulesetId: this._rulesetId,
     };
   }
@@ -74,10 +73,9 @@ export default class PresentationTreeDataProvider implements IPresentationTreeDa
   public getNodesCount = _.memoize(async (parentNode?: TreeNodeItem): Promise<number> => {
     if (parentNode) {
       const parentKey = this.getNodeKey(parentNode);
-      return await Presentation.presentation.getChildrenCount(this.createRequestOptions(), parentKey);
-    } else {
-      return await Presentation.presentation.getRootNodesCount(this.createRequestOptions());
+      return Presentation.presentation.getChildrenCount(this.createRequestOptions(), parentKey);
     }
+    return Presentation.presentation.getRootNodesCount(this.createRequestOptions());
   }, MemoizationHelpers.getNodesCountKeyResolver);
 
   /**

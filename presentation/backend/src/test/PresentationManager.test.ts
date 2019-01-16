@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
@@ -17,18 +17,18 @@ import {
 import "@bentley/presentation-common/lib/test/_helpers/Promises";
 import "./IModelHostSetup";
 import { using, ActivityLoggingContext } from "@bentley/bentleyjs-core";
-import { NativePlatformRegistry, IModelHost, IModelDb } from "@bentley/imodeljs-backend";
+import { IModelHost, IModelDb } from "@bentley/imodeljs-backend";
 import { PageOptions, SelectionInfo, KeySet, PresentationError, PropertyInfoJSON, HierarchyRequestOptions, Paged, ContentRequestOptions } from "@bentley/presentation-common";
-import { instanceKeyFromJSON } from "@bentley/presentation-common/lib/EC";
-import { NodeJSON } from "@bentley/presentation-common/lib/hierarchy/Node";
-import { ECInstanceNodeKeyJSON, NodeKeyJSON, fromJSON as nodeKeyFromJSON } from "@bentley/presentation-common/lib/hierarchy/Key";
-import { ContentJSON } from "@bentley/presentation-common/lib/content/Content";
-import { DescriptorJSON, SelectClassInfoJSON } from "@bentley/presentation-common/lib/content/Descriptor";
+import { instanceKeyFromJSON } from "@bentley/presentation-common";
+import { NodeJSON } from "@bentley/presentation-common";
+import { ECInstanceNodeKeyJSON, NodeKeyJSON, nodeKeyFromJSON } from "@bentley/presentation-common";
+import { ContentJSON } from "@bentley/presentation-common";
+import { DescriptorJSON, SelectClassInfoJSON } from "@bentley/presentation-common";
 import { PrimitiveTypeDescription, ArrayTypeDescription, StructTypeDescription } from "@bentley/presentation-common";
-import { PropertiesFieldJSON, NestedContentFieldJSON, FieldJSON } from "@bentley/presentation-common/lib/content/Fields";
+import { PropertiesFieldJSON, NestedContentFieldJSON, FieldJSON } from "@bentley/presentation-common";
 import { KindOfQuantityInfo } from "@bentley/presentation-common";
-import { PropertyJSON } from "@bentley/presentation-common/lib/content/Property";
-import { ItemJSON } from "@bentley/presentation-common/lib/content/Item";
+import { PropertyJSON } from "@bentley/presentation-common";
+import { ItemJSON } from "@bentley/presentation-common";
 import { NativePlatformDefinition, NativePlatformRequestTypes } from "../NativePlatform";
 import PresentationManager from "../PresentationManager";
 import RulesetManager from "../RulesetManager";
@@ -43,7 +43,7 @@ describe("PresentationManager", () => {
     } catch (e) {
       let isLoaded = false;
       try {
-        NativePlatformRegistry.getNativePlatform();
+        IModelHost.platform;
         isLoaded = true;
       } catch (_e) { }
       if (!isLoaded)
@@ -55,7 +55,7 @@ describe("PresentationManager", () => {
 
     it("uses default native library implementation if not overridden", () => {
       using(new PresentationManager(), (manager) => {
-        expect((manager.getNativePlatform() as any)._nativeAddon).instanceOf(NativePlatformRegistry.getNativePlatform().NativeECPresentationManager);
+        expect((manager.getNativePlatform() as any)._nativeAddon).instanceOf(IModelHost.platform.ECPresentationManager);
       });
     });
 
@@ -269,7 +269,7 @@ describe("PresentationManager", () => {
         backColor: "backColor1",
         fontStyle: "fontStyle1",
         hasChildren: true,
-        isSelectable: true,
+        isSelectionDisabled: true,
         isEditable: true,
         isChecked: true,
         isCheckboxVisible: true,
@@ -288,7 +288,7 @@ describe("PresentationManager", () => {
         backColor: "",
         fontStyle: "",
         hasChildren: false,
-        isSelectable: false,
+        isSelectionDisabled: false,
         isEditable: false,
         isChecked: false,
         isCheckboxVisible: false,

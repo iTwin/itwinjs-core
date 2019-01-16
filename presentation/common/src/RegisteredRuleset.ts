@@ -1,12 +1,14 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Core */
 
 import { IDisposable } from "@bentley/bentleyjs-core";
-import { Ruleset, Rule, VariablesGroup, SupplementationInfo, SchemasSpecification } from "./rules";
-
+import { Ruleset, SupplementationInfo } from "./rules/Ruleset";
+import { Rule } from "./rules/Rule";
+import { VariablesGroup } from "./rules/Variables";
+import { SchemasSpecification } from "./rules/SchemasSpecification";
 /**
  * A ruleset that is registered in a ruleset manager.
  */

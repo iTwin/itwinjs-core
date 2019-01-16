@@ -1,36 +1,20 @@
 
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { OpenMode } from "@bentley/bentleyjs-core";
-import { Config } from "@bentley/imodeljs-clients";
+import { OpenMode, StopWatch } from "@bentley/bentleyjs-core";
+import { Config, AccessToken, HubIModel, Project } from "@bentley/imodeljs-clients";
 import {
   BentleyCloudRpcManager, ElectronRpcConfiguration, ElectronRpcManager, IModelReadRpcInterface,
   IModelTileRpcInterface, IModelToken, RpcConfiguration,
   RpcOperation, StandaloneIModelRpcInterface,
+  ViewDefinitionProps, ViewFlag, RenderMode, DisplayStyleProps,
 } from "@bentley/imodeljs-common";
 import { MobileRpcConfiguration, MobileRpcManager } from "@bentley/imodeljs-common/lib/rpc/mobile/MobileRpcManager";
-// import {
-//   AccuDraw, AccuDrawHintBuilder, AccuDrawShortcuts, AccuSnap, BeButtonEvent, Cluster, CoordinateLockOverrides, DecorateContext,
-//   DynamicsContext, EditManipulator, EventHandled, HitDetail, imageElementFromUrl, IModelApp, IModelConnection, Marker, MarkerSet, MessageBoxIconType,
-//   MessageBoxType, MessageBoxValue, NotificationManager, NotifyMessageDetails, PrimitiveTool, RotationMode, ScreenViewport, SnapMode,
-//   SpatialModelState, SpatialViewState, StandardViewId, ToolTipOptions, Viewport, ViewState, ViewState3d, MarkerImage, BeButton, SnapStatus,
-// } from "@bentley/imodeljs-frontend";
-// import { FeatureSymbology, GraphicType } from "@bentley/imodeljs-frontend/lib/rendering";
-// import { PerformanceMetrics, Target } from "@bentley/imodeljs-frontend/lib/webgl";
-// import ToolTip from "tooltip.js";
-// import { IModelApi } from "./IModelApi";
-// import { SimpleViewState } from "./SimpleViewState";
-// import { showError, showStatus } from "./Utils";
-// import { initializeCustomCloudEnv } from "./CustomCloudEnv";
-// import { initializeIModelHub } from "./ConnectEnv";
 import { SVTConfiguration } from "../common/SVTConfiguration";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
-import { DisplayStyleState, DisplayStyle3dState, IModelApp, IModelConnection, SceneContext, TileRequests, Viewport, ViewState, ScreenViewport } from "@bentley/imodeljs-frontend";
-import { ViewDefinitionProps, ViewFlag, RenderMode, DisplayStyleProps } from "@bentley/imodeljs-common";
-import { AccessToken, HubIModel, Project } from "@bentley/imodeljs-clients";
-import { StopWatch } from "@bentley/bentleyjs-core";
+import { DisplayStyleState, DisplayStyle3dState, IModelApp, IModelConnection, Viewport, ViewState, ScreenViewport } from "@bentley/imodeljs-frontend";
 import { PerformanceMetrics, /*System,*/ Target } from "@bentley/imodeljs-frontend/lib/webgl";
 import { IModelApi } from "./IModelApi";
 import { ProjectApi } from "./ProjectApi";
@@ -206,13 +190,12 @@ async function waitForTilesToLoad(modelLocation?: string) {
     theViewport!.sync.invalidateScene();
     theViewport!.renderFrame();
 
-    const requests = new TileRequests();
-    const sceneContext = new SceneContext(theViewport!, requests);
+    const sceneContext = theViewport!.createSceneContext();
     activeViewState.viewState!.createScene(sceneContext);
-    requests.requestMissing();
+    sceneContext.requestMissingTiles();
 
     // The scene is ready when (1) all required TileTree roots have been created and (2) all required tiles have finished loading
-    haveNewTiles = !(activeViewState.viewState!.areAllTileTreesLoaded) || requests.hasMissingTiles;
+    haveNewTiles = !(activeViewState.viewState!.areAllTileTreesLoaded) || sceneContext.hasMissingTiles;
     // debugPrint(haveNewTiles ? "Awaiting tile loads..." : "...All tiles loaded.");
 
     await resolveAfterXMilSeconds(100);

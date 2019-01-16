@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { IModelHubClientError } from "../imodelhub";
+import { IModelHubClientError } from "../imodelhub/Errors";
 import { ContextManagerClient } from "../IModelCloudEnvironment";
 import { ActivityLoggingContext, IModelHubStatus, Logger, WSStatus } from "@bentley/bentleyjs-core";
 import { AccessToken } from "../Token";

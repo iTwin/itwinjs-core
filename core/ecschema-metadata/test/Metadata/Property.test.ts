@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
@@ -10,7 +10,7 @@ import { EntityClass } from "../../src/Metadata/EntityClass";
 import { ECObjectsError } from "../../src/Exception";
 import {
   Property, PrimitiveProperty, PrimitiveArrayProperty, EnumerationProperty, StructProperty,
-  StructArrayProperty, EnumerationArrayProperty, NavigationProperty,
+  StructArrayProperty, EnumerationArrayProperty, NavigationProperty, MutableProperty,
 } from "../../src/Metadata/Property";
 import { PropertyType } from "../../src/PropertyTypes";
 import { Enumeration } from "../../src/Metadata/Enumeration";
@@ -20,6 +20,7 @@ import { KindOfQuantity } from "../../src/Metadata/KindOfQuantity";
 import { RelationshipClass } from "../../src/Metadata/RelationshipClass";
 import { DelayedPromiseWithProps } from "../../src/DelayedPromise";
 import { PrimitiveType } from "../../src/ECObjects";
+import { CustomAttribute } from "../../src/Metadata/CustomAttribute";
 
 describe("Property", () => {
   let testClass: EntityClass;
@@ -29,9 +30,13 @@ describe("Property", () => {
   let testStruct: StructClass;
   let testRelationship: RelationshipClass;
 
-  class MockProperty extends Property {
+  class MockProperty extends Property implements MutableProperty {
     constructor(name: string, type: PropertyType = PropertyType.String) {
       super(testClass, name, type);
+    }
+
+    public addCustomAttribute(customAttribute: CustomAttribute) {
+      super.addCustomAttribute(customAttribute);
     }
   }
 
@@ -139,88 +144,6 @@ describe("Property", () => {
       expect(await testProp.category).to.eql(testCategory);
       expect(await testProp.kindOfQuantity).to.eql(testKindOfQuantity);
     });
-    const oneCustomAttributeJson = {
-      name: "TestProp",
-      type: "PrimitiveProperty",
-      customAttributes: [
-        {
-          className: "CoreCustomAttributes.HiddenSchema",
-          ExampleAttribute: 1234,
-        },
-      ],
-    };
-    it("async - Deserialize One Custom Attribute", async () => {
-
-      const testProp = new MockProperty("TestProp");
-      expect(testProp).to.exist;
-      await testProp.deserialize(oneCustomAttributeJson);
-      expect(testProp.name).to.eql("TestProp");
-      expect(testProp.customAttributes!["CoreCustomAttributes.HiddenSchema"]).to.exist;
-      assert(testProp.customAttributes!["CoreCustomAttributes.HiddenSchema"].ExampleAttribute === 1234);
-    });
-    it("sync - Deserialize One Custom Attribute", () => {
-      const testProp = new MockProperty("TestProp");
-      expect(testProp).to.exist;
-      testProp.deserializeSync(oneCustomAttributeJson);
-      expect(testProp.name).to.eql("TestProp");
-      expect(testProp.customAttributes!["CoreCustomAttributes.HiddenSchema"]).to.exist;
-      assert(testProp.customAttributes!["CoreCustomAttributes.HiddenSchema"].ExampleAttribute === 1234);
-    });
-    const twoCustomAttributesJson = {
-      name: "TestProp",
-      type: "PrimitiveProperty",
-      customAttributes: [
-        {
-          className: "CoreCustomAttributes.HiddenSchema",
-        },
-        {
-          className: "ExampleCustomAttributes.ExampleSchema",
-        },
-      ],
-    };
-    it("async - Deserialize Two Custom Attributes", async () => {
-
-      const testProp = new MockProperty("TestProp");
-      expect(testProp).to.exist;
-      await testProp.deserialize(twoCustomAttributesJson);
-      expect(testProp.name).to.eql("TestProp");
-      expect(testProp.customAttributes!["CoreCustomAttributes.HiddenSchema"]).to.exist;
-      expect(testProp.customAttributes!["ExampleCustomAttributes.ExampleSchema"]).to.exist;
-    });
-    it("sync - Deserialize Two Custom Attributes", () => {
-      const testProp = new MockProperty("TestProp");
-      expect(testProp).to.exist;
-      testProp.deserializeSync(twoCustomAttributesJson);
-      expect(testProp.name).to.eql("TestProp");
-      expect(testProp.customAttributes!["CoreCustomAttributes.HiddenSchema"]).to.exist;
-      expect(testProp.customAttributes!["ExampleCustomAttributes.ExampleSchema"]).to.exist;
-    });
-    it("sync - Deserialize Multiple Custom Attributes with additional properties", () => {
-      const propertyJson = {
-        name: "Prop",
-        type: "PrimitiveProperty",
-        customAttributes: [
-          {
-            className: "CoreCustomAttributes.HiddenSchema",
-            ShowClasses: 1.2,
-          },
-          {
-            className: "ExampleCustomAttributes.ExampleSchema",
-            ExampleAttribute: true,
-          },
-          {
-            className: "AnotherCustomAttributes.ExampleSchema1",
-            Example2Attribute: "example",
-          },
-        ],
-      };
-      const testProp = new MockProperty("Prop");
-      expect(testProp).to.exist;
-      testProp.deserializeSync(propertyJson);
-      assert(testProp.customAttributes!["CoreCustomAttributes.HiddenSchema"].ShowClasses === 1.2);
-      assert(testProp.customAttributes!["ExampleCustomAttributes.ExampleSchema"].ExampleAttribute === true);
-      assert(testProp.customAttributes!["AnotherCustomAttributes.ExampleSchema1"].Example2Attribute === "example");
-    });
 
     it("should throw for non-existent category", async () => {
       const testProp = new MockProperty("BadProp");
@@ -273,15 +196,13 @@ describe("Property", () => {
         $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/schemaitem",
         name: "ValidProp",
         type: "PrimitiveProperty",
-        customAttributes: [
-          {
-            className: "CoreCustomAttributes.HiddenSchema",
-          },
-        ],
       };
       const testProp = new MockProperty("ValidProp");
       expect(testProp).to.exist;
       await testProp.deserialize(propertyJson);
+      testProp.addCustomAttribute({
+        className: "CoreCustomAttributes.HiddenSchema",
+      });
       const serialized = testProp.toJson();
       assert(serialized.customAttributes[0].className === "CoreCustomAttributes.HiddenSchema");
     });
@@ -290,16 +211,14 @@ describe("Property", () => {
         $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/schemaitem",
         name: "ValidProp",
         type: "PrimitiveProperty",
-        customAttributes: [
-          {
-            className: "CoreCustomAttributes.HiddenSchema",
-            ShowClasses: true,
-          },
-        ],
       };
       const testProp = new MockProperty("ValidProp");
       expect(testProp).to.exist;
       testProp.deserializeSync(propertyJson);
+      testProp.addCustomAttribute({
+        className: "CoreCustomAttributes.HiddenSchema",
+        ShowClasses: true,
+      });
       const serialized = testProp.toJson();
       assert(serialized.customAttributes[0].className === "CoreCustomAttributes.HiddenSchema");
       assert(serialized.customAttributes[0].ShowClasses === true);
@@ -309,21 +228,13 @@ describe("Property", () => {
         $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/schemaitem",
         name: "ValidProp",
         type: "PrimitiveProperty",
-        customAttributes: [
-          {
-            className: "CoreCustomAttributes.HiddenSchema",
-          },
-          {
-            className: "CoreAttributes.HiddenSchema",
-          },
-          {
-            className: "CoreCustom.HiddenSchema",
-          },
-        ],
       };
       const testProp = new MockProperty("ValidProp");
       expect(testProp).to.exist;
       await testProp.deserialize(propertyJson);
+      testProp.addCustomAttribute({ className: "CoreCustomAttributes.HiddenSchema" });
+      testProp.addCustomAttribute({ className: "CoreAttributes.HiddenSchema" });
+      testProp.addCustomAttribute({ className: "CoreCustom.HiddenSchema" });
       const serialized = testProp.toJson();
       assert(serialized.customAttributes[0].className === "CoreCustomAttributes.HiddenSchema");
       assert(serialized.customAttributes[1].className === "CoreAttributes.HiddenSchema");
@@ -334,24 +245,22 @@ describe("Property", () => {
         $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/schemaitem",
         name: "ValidProp",
         type: "PrimitiveProperty",
-        customAttributes: [
-          {
-            className: "CoreCustomAttributes.HiddenSchema",
-            ShowClasses: true,
-          },
-          {
-            className: "CoreAttributes.HiddenSchema",
-            FloatValue: 1.2,
-          },
-          {
-            className: "CoreCustom.HiddenSchema",
-            IntegerValue: 5,
-          },
-        ],
       };
       const testProp = new MockProperty("ValidProp");
       expect(testProp).to.exist;
       await testProp.deserialize(propertyJson);
+      testProp.addCustomAttribute({
+        className: "CoreCustomAttributes.HiddenSchema",
+        ShowClasses: true,
+      });
+      testProp.addCustomAttribute({
+        className: "CoreAttributes.HiddenSchema",
+        FloatValue: 1.2,
+      });
+      testProp.addCustomAttribute({
+        className: "CoreCustom.HiddenSchema",
+        IntegerValue: 5,
+      });
       const serialized = testProp.toJson();
       assert(serialized.customAttributes[0].ShowClasses === true);
       assert(serialized.customAttributes[1].FloatValue === 1.2);

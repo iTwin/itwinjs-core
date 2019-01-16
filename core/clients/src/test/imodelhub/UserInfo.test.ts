@@ -1,16 +1,15 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
 
-import { TestConfig } from "../TestConfig";
+import { TestUsers, TestConfig } from "../TestConfig";
 
 import { AccessToken } from "../../Token";
 import { ResponseBuilder, ScopeType, RequestType } from "../ResponseBuilder";
 import * as utils from "./TestUtils";
-import { TestUsers } from "../TestConfig";
-import { UserInfoQuery, HubUserInfo, UserInfo, IModelHubClientError, IModelClient } from "../..";
+import { UserInfoQuery, HubUserInfo, UserInfo, IModelHubClientError, IModelClient } from "../../imodeljs-clients";
 import { IModelHubStatus, ActivityLoggingContext, GuidString } from "@bentley/bentleyjs-core";
 
 function mockGetUserInfo(imodelId: GuidString, userInfo: HubUserInfo[], query?: string) {

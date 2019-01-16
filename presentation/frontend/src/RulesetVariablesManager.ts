@@ -1,13 +1,11 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Core */
 
 import { Id64, Id64String, BeEvent } from "@bentley/bentleyjs-core";
-import { RulesetVariablesState } from "@bentley/presentation-common";
-import { VariableValueTypes, VariableValue } from "@bentley/presentation-common/lib/RulesetVariables";
-import { IClientStateHolder } from "@bentley/presentation-common/lib/RpcRequestsHandler";
+import { RulesetVariablesState, VariableValueTypes, VariableValue, IClientStateHolder } from "@bentley/presentation-common";
 
 /** @hidden */
 export default class RulesetVariablesManager implements IClientStateHolder<RulesetVariablesState> {

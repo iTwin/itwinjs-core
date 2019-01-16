@@ -1,16 +1,16 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
 import * as React from "react";
 import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
-import { PresentationTableDataProvider, withUnifiedSelection } from "@bentley/presentation-components/lib/table";
+import { PresentationTableDataProvider, tableWithUnifiedSelection } from "@bentley/presentation-components";
 import { Table } from "@bentley/ui-components";
 import "./GridWidget.css";
 
 // tslint:disable-next-line:variable-name naming-convention
-const SampleTable = withUnifiedSelection(Table);
+const SampleTable = tableWithUnifiedSelection(Table);
 
 export interface Props {
   imodel: IModelConnection;

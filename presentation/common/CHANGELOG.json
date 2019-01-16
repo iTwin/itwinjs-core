@@ -2,6 +2,141 @@
   "name": "@bentley/presentation-common",
   "entries": [
     {
+      "version": "0.187.0",
+      "tag": "@bentley/presentation-common_v0.187.0",
+      "date": "Tue, 15 Jan 2019 15:18:59 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.186.0",
+      "tag": "@bentley/presentation-common_v0.186.0",
+      "date": "Mon, 14 Jan 2019 23:09:10 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.185.0",
+      "tag": "@bentley/presentation-common_v0.185.0",
+      "date": "Fri, 11 Jan 2019 18:29:00 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Introduce `groupedInstancesCount` property for grouping node keys"
+          },
+          {
+            "comment": "Add `KeySet.instanceKeysCount` and `KeySet.nodeKeysCount` which are faster versions of `KeySet.instanceKeys.size` and `KeySet.nodeKeys.size`"
+          },
+          {
+            "comment": "Add helper functions to identify type of node key"
+          },
+          {
+            "comment": "Add `getInstancesCount` function to calculate total number of instances included in a `KeySet`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.184.0",
+      "tag": "@bentley/presentation-common_v0.184.0",
+      "date": "Thu, 10 Jan 2019 22:46:17 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.183.0",
+      "tag": "@bentley/presentation-common_v0.183.0",
+      "date": "Mon, 07 Jan 2019 21:49:21 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.182.0",
+      "tag": "@bentley/presentation-common_v0.182.0",
+      "date": "Mon, 07 Jan 2019 13:31:34 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.181.0",
+      "tag": "@bentley/presentation-common_v0.181.0",
+      "date": "Fri, 04 Jan 2019 13:02:40 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.180.0",
+      "tag": "@bentley/presentation-common_v0.180.0",
+      "date": "Wed, 02 Jan 2019 15:18:23 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.179.0",
+      "tag": "@bentley/presentation-common_v0.179.0",
+      "date": "Wed, 19 Dec 2018 18:26:14 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Invert `isSelectable` property to `isSelectionDisabled` so in the most common case (selectable = true) we don't have to send the value"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.178.0",
+      "tag": "@bentley/presentation-common_v0.178.0",
+      "date": "Thu, 13 Dec 2018 22:06:10 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.177.0",
+      "tag": "@bentley/presentation-common_v0.177.0",
+      "date": "Wed, 12 Dec 2018 17:21:31 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.176.0",
+      "tag": "@bentley/presentation-common_v0.176.0",
+      "date": "Mon, 10 Dec 2018 21:19:45 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "React to signature change for RpcInterface.forward"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.175.0",
+      "tag": "@bentley/presentation-common_v0.175.0",
+      "date": "Mon, 10 Dec 2018 17:08:55 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.174.0",
+      "tag": "@bentley/presentation-common_v0.174.0",
+      "date": "Mon, 10 Dec 2018 13:24:09 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Remove unused dependencies, add `build:watch` script"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.173.0",
+      "tag": "@bentley/presentation-common_v0.173.0",
+      "date": "Thu, 06 Dec 2018 22:03:29 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.172.0",
+      "tag": "@bentley/presentation-common_v0.172.0",
+      "date": "Tue, 04 Dec 2018 17:24:39 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Changed index file name to match package name, eliminate subdirectory index files, decrease usage of default exports, change imports to use other packages' index file."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.171.0",
       "tag": "@bentley/presentation-common_v0.171.0",
       "date": "Mon, 03 Dec 2018 18:52:58 GMT",

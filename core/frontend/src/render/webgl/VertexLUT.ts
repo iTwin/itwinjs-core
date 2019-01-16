@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
@@ -23,6 +23,8 @@ export class VertexLUT implements IDisposable {
   public readonly auxDisplacements?: Map<string, AuxDisplacement>;  // Auxilliary displacements.
   public readonly auxNormals?: Map<string, AuxNormal>;  // Auxilliary displacements.
   public readonly auxParams?: Map<string, AuxParam>;  // Auxilliary displacements.
+
+  public get bytesUsed(): number { return this.texture.bytesUsed; }
 
   public static createFromVertexTable(vt: VertexTable): VertexLUT | undefined {
     const texture = TextureHandle.createForData(vt.width, vt.height, vt.data);

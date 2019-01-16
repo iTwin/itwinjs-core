@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
@@ -18,16 +18,16 @@ import {
   FrontstageProps,
   ContentGroup,
   ContentLayoutDef,
+  ActionItemButton,
 } from "@bentley/ui-framework";
 
 import { AppStatusBarWidgetControl } from "../statusbars/AppStatusBar";
 import { NavigationTreeWidgetControl } from "../widgets/NavigationTreeWidget";
 import { VerticalPropertyGridWidgetControl, HorizontalPropertyGridWidgetControl, HorizontalPropertyGridContentControl } from "../widgets/PropertyGridDemoWidget";
 import { TreeExampleContentControl } from "../contentviews/TreeExampleContent";
+import { MobxDemoWidgetControl } from "../widgets/MobxDemoWidget/MobxDemoWidgetControl";
 
-import Toolbar from "@bentley/ui-ninezone/lib/toolbar/Toolbar";
-import Direction from "@bentley/ui-ninezone/lib/utilities/Direction";
-import { AppUi } from "../AppUi";
+import { Direction, Toolbar } from "@bentley/ui-ninezone";
 import { AppTools } from "../../tools/ToolSpecifications";
 
 export class Frontstage2 extends FrontstageProvider {
@@ -101,6 +101,13 @@ export class Frontstage2 extends FrontstageProvider {
             ]}
           />
         }
+        bottomLeft={
+          <Zone
+            widgets={[
+              <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.MobxDemoWidget" control={MobxDemoWidgetControl} fillZone={true} />,
+            ]}
+          />
+        }
         bottomCenter={
           <Zone defaultState={ZoneState.Open}
             widgets={[
@@ -111,8 +118,8 @@ export class Frontstage2 extends FrontstageProvider {
         bottomRight={
           <Zone allowsMerging={true} defaultState={ZoneState.Minimized}
             widgets={[
-              <Widget id="VerticalPropertyGrid" defaultState={WidgetState.Off} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.VerticalPropertyGrid" control={VerticalPropertyGridWidgetControl} />,
-              <Widget defaultState={WidgetState.Off} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.HorizontalPropertyGrid" control={HorizontalPropertyGridWidgetControl} />,
+              <Widget id="VerticalPropertyGrid" defaultState={WidgetState.Hidden} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.VerticalPropertyGrid" control={VerticalPropertyGridWidgetControl} />,
+              <Widget defaultState={WidgetState.Hidden} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.HorizontalPropertyGrid" control={HorizontalPropertyGridWidgetControl} />,
             ]}
           />
         }
@@ -129,8 +136,8 @@ class FrontstageToolWidget extends React.Component {
       expandsTo={Direction.Bottom}
       items={
         <>
-          <ToolButton toolId="tool1" iconSpec="icon-placeholder" labelKey="SampleApp:buttons.tool1" execute={AppUi.tool1} />
-          <ToolButton toolId="tool2" iconSpec="icon-placeholder" labelKey="SampleApp:buttons.tool2" execute={AppUi.tool2} />
+          <ActionItemButton actionItem={AppTools.item1} />
+          <ActionItemButton actionItem={AppTools.item2} />
           <GroupButton
             labelKey="SampleApp:buttons.toolGroup"
             iconSpec="icon-placeholder"

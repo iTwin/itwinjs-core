@@ -1,22 +1,22 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import Item from "../../../../..//toolbar/item/expandable/history/Item";
+import { HistoryItem } from "../../../../../ui-ninezone";
 
-describe("<Item />", () => {
+describe("<HistoryItem />", () => {
   it("should render", () => {
-    mount(<Item />);
+    mount(<HistoryItem />);
   });
 
   it("renders correctly", () => {
-    shallow(<Item />).should.matchSnapshot();
+    shallow(<HistoryItem />).should.matchSnapshot();
   });
 
   it("renders active", () => {
-    shallow(<Item isActive />).should.matchSnapshot();
+    shallow(<HistoryItem isActive />).should.matchSnapshot();
   });
 });

@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
@@ -10,7 +10,7 @@ import {
   VariableType,
   VertexShaderComponent,
 } from "../ShaderBuilder";
-import { addModelViewMatrix, addProjectionMatrix, addAnimation, GLSLVertex } from "./Vertex";
+import { addModelViewMatrix, addProjectionMatrix, addAnimation, GLSLVertex, addNormalMatrix } from "./Vertex";
 import { addViewport, addModelToWindowCoordinates } from "./Viewport";
 import { GL } from "../GL";
 import { addColor } from "./Color";
@@ -18,7 +18,6 @@ import { addWhiteOnWhiteReversal } from "./Fragment";
 import { addShaderFlags } from "./Common";
 import { addLineCode, adjustWidth } from "./Polyline";
 import { EdgeGeometry, SilhouetteEdgeGeometry } from "../Mesh";
-import { addNormalMatrix } from "./Vertex";
 import { octDecodeNormal } from "./Surface";
 
 const decodeEndPointAndQuadIndices = `

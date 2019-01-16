@@ -1,7 +1,6 @@
 {
   "$schema": "https://dev.office.com/json-schemas/rush/command-line.schema.json",
-  "commands": [
-    {
+  "commands": [{
       "name": "audit",
       "commandKind": "global",
       "summary": "Runs npm audit for the entire monorepo",
@@ -47,6 +46,30 @@
       "description": "Iterates through each package in the monorepo and runs the 'test' script",
       "enableParallelism": true,
       "ignoreMissingScript": false
+    },
+    {
+      "name": "test-integration",
+      "commandKind": "bulk",
+      "summary": "Run test:integration script for each package",
+      "description": "Iterates through each package in the monorepo and runs the 'test:integration' script",
+      "enableParallelism": true,
+      "ignoreMissingScript": true
+    },
+    {
+      "name": "webpacklib-dev",
+      "commandKind": "bulk",
+      "summary": "Create the module for every iModelJs library package",
+      "description": "Iterates through each package in the monorepo and runs the 'webpacklib:dev' script",
+      "enableParallelism": true,
+      "ignoreMissingScript": true
+    },
+    {
+      "name": "webpacklib-prod",
+      "commandKind": "bulk",
+      "summary": "Create the module for every iModelJs library package",
+      "description": "Iterates through each package in the monorepo and runs the 'webpacklib:dev' script",
+      "enableParallelism": true,
+      "ignoreMissingScript": true
     }
   ]
 }

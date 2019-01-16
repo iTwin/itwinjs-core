@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Core */
@@ -156,7 +156,7 @@ const colors: ColorMap = {
 };
 
 /** @hidden */
-export default class StyleHelper {
+export class StyleHelper {
   public static get availableColors(): ColorMap { return colors; }
 
   private static getColor(name: string): number {

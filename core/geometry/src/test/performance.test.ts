@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { Matrix3d } from "../geometry3d/Matrix3d";
@@ -411,14 +411,14 @@ class TimingTests {
     }
   }
   public static RunTestC(numTest: number) {
-    console.log("==================");
+    // console.log("==================");
     inverseCalculationLoop(numTest, true, true);
     inverseCalculationLoop(numTest, false, true);
     inverseCalculationLoop(numTest, true, false);
     inverseCalculationLoop(numTest, false, false);
   }
   public static RunTestD(numTest: number) {
-    console.log("==================");
+    // console.log("==================");
     hypotenuseCalculationLoop(numTest, 1);
     hypotenuseCalculationLoop(numTest, 3);
     hypotenuseCalculationLoop(numTest, 5);
@@ -437,13 +437,13 @@ class TimingTests {
     hypotenuseCalculationLoop(numTest, 9);
   }
   public static RunTestE(numTest: number) {
-    console.log("==================");
+    // console.log("==================");
     hypotenuseSquaredCalculationLoop(numTest, 0);
     hypotenuseSquaredCalculationLoop(numTest, 1);
     hypotenuseSquaredCalculationLoop(numTest, 2);
   }
   public static RunTestG(numTest: number) {
-    console.log("==================");
+    // console.log("==================");
     // arrayCheck(numTest, 1);
     // arrayCheck(numTest, 2);
     arrayCheck(numTest, 3);

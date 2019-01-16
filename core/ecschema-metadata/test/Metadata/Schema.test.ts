@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
@@ -108,86 +108,6 @@ describe("Schema", () => {
         await testSchema.deserialize(propertyJson);
         assertValidSchema(testSchema);
       });
-      const oneCustomAttributeJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
-        name: "ValidSchema",
-        version: "1.2.3",
-        alias: "vs",
-        customAttributes: [
-          {
-            className: "CoreCustomAttributes.HiddenSchema",
-            ShowClasses: true,
-          },
-        ],
-      };
-      it("async - Deserialize One Custom Attribute", async () => {
-        const testSchema = new Schema("ValidSchema", 1, 2, 3);
-        expect(testSchema).to.exist;
-        await testSchema.deserialize(oneCustomAttributeJson);
-        expect(testSchema.customAttributes!["CoreCustomAttributes.HiddenSchema"]).to.exist;
-        assert(testSchema.customAttributes!["CoreCustomAttributes.HiddenSchema"].ShowClasses === true);
-      });
-      it("sync - Deserialize One Custom Attribute", () => {
-        const testSchema = new Schema("ValidSchema", 1, 2, 3);
-        expect(testSchema).to.exist;
-        testSchema.deserializeSync(oneCustomAttributeJson);
-        expect(testSchema.customAttributes!["CoreCustomAttributes.HiddenSchema"]).to.exist;
-        assert(testSchema.customAttributes!["CoreCustomAttributes.HiddenSchema"].ShowClasses === true);
-      });
-      const twoCustomAttributeJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
-        name: "ValidSchema",
-        version: "1.2.3",
-        alias: "vs",
-        customAttributes: [
-          {
-            className: "CoreCustomAttributes.HiddenSchema",
-          },
-          {
-            className: "ExampleCustomAttributes.ExampleSchema",
-          },
-        ],
-      };
-      it("async - Deserialize Two Custom Attributes", async () => {
-        const testSchema = new Schema("ValidSchema", 1, 2, 3);
-        expect(testSchema).to.exist;
-        await testSchema.deserialize(twoCustomAttributeJson);
-        expect(testSchema.customAttributes!["CoreCustomAttributes.HiddenSchema"]).to.exist;
-        expect(testSchema.customAttributes!["ExampleCustomAttributes.ExampleSchema"]).to.exist;
-      });
-      it("sync - Deserialize Two Custom Attributes", () => {
-        const testSchema = new Schema("ValidSchema", 1, 2, 3);
-        expect(testSchema).to.exist;
-        testSchema.deserializeSync(twoCustomAttributeJson);
-        expect(testSchema.customAttributes!["CoreCustomAttributes.HiddenSchema"]).to.exist;
-        expect(testSchema.customAttributes!["ExampleCustomAttributes.ExampleSchema"]).to.exist;
-      });
-      it("sync - Deserialize Two Custom Attributes with additional properties", () => {
-        const propertyJson = {
-          $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
-          name: "ValidSchema",
-          version: "1.2.3",
-          alias: "vs",
-          label: "SomeDisplayLabel",
-          description: "A really long description...",
-          customAttributes: [
-            {
-              className: "CoreCustomAttributes.HiddenSchema",
-              ShowClasses: false,
-            },
-            {
-              className: "ExampleCustomAttributes.ExampleSchema",
-              ShowClasses: true,
-            },
-          ],
-        };
-        const testSchema = new Schema("ValidSchema", 1, 2, 3);
-        expect(testSchema).to.exist;
-        testSchema.deserializeSync(propertyJson);
-        assertValidSchema(testSchema);
-        assert(testSchema.customAttributes!["CoreCustomAttributes.HiddenSchema"].ShowClasses === false);
-        assert(testSchema.customAttributes!["ExampleCustomAttributes.ExampleSchema"].ShowClasses === true);
-      });
 
       it("should throw for invalid $schema", async () => {
         const schemaJson = {
@@ -253,15 +173,11 @@ describe("Schema", () => {
           alias: "vs",
           label: "SomeDisplayLabel",
           description: "A really long description...",
-          customAttributes: [
-            {
-              className: "CoreCustomAttributes.HiddenSchema",
-            },
-          ],
         };
         const testSchema = new Schema("ValidSchema", 1, 2, 3);
         expect(testSchema).to.exist;
         await testSchema.deserialize(propertyJson);
+        (testSchema as MutableSchema).addCustomAttribute({ className: "CoreCustomAttributes.HiddenSchema" });
         const serialized = testSchema.toJson();
         assert(serialized.customAttributes[0].className === "CoreCustomAttributes.HiddenSchema");
       });
@@ -273,16 +189,11 @@ describe("Schema", () => {
           alias: "vs",
           label: "SomeDisplayLabel",
           description: "A really long description...",
-          customAttributes: [
-            {
-              className: "CoreCustomAttributes.HiddenSchema",
-              ShowClasses: true,
-            },
-          ],
         };
         const testSchema = new Schema("ValidSchema", 1, 2, 3);
         expect(testSchema).to.exist;
         testSchema.deserializeSync(propertyJson);
+        (testSchema as MutableSchema).addCustomAttribute({ className: "CoreCustomAttributes.HiddenSchema", ShowClasses: true });
         const serialized = testSchema.toJson();
         assert(serialized.customAttributes[0].className === "CoreCustomAttributes.HiddenSchema");
         assert(serialized.customAttributes[0].ShowClasses === true);
@@ -295,21 +206,13 @@ describe("Schema", () => {
           alias: "vs",
           label: "SomeDisplayLabel",
           description: "A really long description...",
-          customAttributes: [
-            {
-              className: "CoreCustomAttributes.HiddenSchema",
-            },
-            {
-              className: "CoreAttributes.HiddenSchema",
-            },
-            {
-              className: "CoreCustom.HiddenSchema",
-            },
-          ],
         };
         const testSchema = new Schema("ValidSchema", 1, 2, 3);
         expect(testSchema).to.exist;
         await testSchema.deserialize(propertyJson);
+        (testSchema as MutableSchema).addCustomAttribute({ className: "CoreCustomAttributes.HiddenSchema" });
+        (testSchema as MutableSchema).addCustomAttribute({ className: "CoreAttributes.HiddenSchema" });
+        (testSchema as MutableSchema).addCustomAttribute({ className: "CoreCustom.HiddenSchema" });
         const serialized = testSchema.toJson();
         assert(serialized.customAttributes[0].className === "CoreCustomAttributes.HiddenSchema");
         assert(serialized.customAttributes[1].className === "CoreAttributes.HiddenSchema");
@@ -323,24 +226,13 @@ describe("Schema", () => {
           alias: "vs",
           label: "SomeDisplayLabel",
           description: "A really long description...",
-          customAttributes: [
-            {
-              className: "CoreCustomAttributes.HiddenSchema",
-              ShowClasses: true,
-            },
-            {
-              className: "CoreAttributes.HiddenSchema",
-              FloatValue: 1.2,
-            },
-            {
-              className: "CoreCustom.HiddenSchema",
-              IntegerValue: 5,
-            },
-          ],
         };
         const testSchema = new Schema("ValidSchema", 1, 2, 3);
         expect(testSchema).to.exist;
         await testSchema.deserialize(propertyJson);
+        (testSchema as MutableSchema).addCustomAttribute({ className: "CoreCustomAttributes.HiddenSchema", ShowClasses: true });
+        (testSchema as MutableSchema).addCustomAttribute({ className: "CoreAttributes.HiddenSchema", FloatValue: 1.2 });
+        (testSchema as MutableSchema).addCustomAttribute({ className: "CoreCustom.HiddenSchema", IntegerValue: 5 });
         const serialized = testSchema.toJson();
         assert(serialized.customAttributes[0].ShowClasses === true);
         assert(serialized.customAttributes[1].FloatValue === 1.2);

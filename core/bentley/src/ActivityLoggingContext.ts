@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Logging */
@@ -11,14 +11,18 @@
 export class ActivityLoggingContext {
   /** The current activity context. */
   public static get current() { return ActivityLoggingContext._current; }
-  protected static _current = new ActivityLoggingContext("");
+  protected static _current = new ActivityLoggingContext("", "");
 
   /** The unique id of the frontend's request -- this id is associated with many backend operations, even across multiple servers. */
   public readonly activityId: string;
 
+  /** The version id of the frontend application. */
+  public readonly versionId: string;
+
   /** Construct a logging context, based on a given activityId. This should be called by RpcInvocation. */
-  public constructor(activityId: string) {
+  public constructor(activityId: string, versionId: string = "") {
     this.activityId = activityId;
+    this.versionId = versionId;
   }
 
   /**

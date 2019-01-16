@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
@@ -69,5 +69,16 @@ export class Mixin extends ECClass {
 
   public async deserialize(mixinProps: MixinProps) {
     this.deserializeSync(mixinProps);
+  }
+
+  public async applicableTo(entityClass: EntityClass) {
+    if (!this.appliesTo)
+      throw new ECObjectsError(ECObjectsStatus.InvalidType, `appliesTo is undefined in the class ${this.fullName}.`);
+
+    const appliesTo = await this.appliesTo;
+    if (appliesTo === undefined)
+      throw new ECObjectsError(ECObjectsStatus.InvalidType, `Unable to locate the appliesTo ${this.appliesTo.fullName}.`);
+
+    return appliesTo.is(entityClass);
   }
 }

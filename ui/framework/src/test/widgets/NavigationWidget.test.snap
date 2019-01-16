@@ -1,0 +1,75 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`NavigationWidget NavigationWidget should render correctly 1`] = `
+<NavigationWidgetWithDef
+  horizontalToolbar={
+    <Toolbar
+      expandsTo={3}
+      items={
+        <UNDEFINED>
+          <ToolButton
+            iconSpec="icon-placeholder"
+            labelKey="SampleApp:buttons.tool1"
+            toolId="tool1"
+          />
+          <ToolButton
+            iconSpec="icon-placeholder"
+            labelKey="SampleApp:buttons.tool2"
+            toolId="tool2"
+          />
+        </UNDEFINED>
+      }
+      panelAlignment={0}
+    />
+  }
+  navigationWidgetDef={
+    NavigationWidgetDef {
+      "_handleSyncUiEvent": [Function],
+      "_label": "",
+      "_navigationAidId": "",
+      "_tooltip": "",
+      "classId": undefined,
+      "featureId": "",
+      "fillZone": false,
+      "horizontalDirection": 3,
+      "horizontalItems": undefined,
+      "id": "navigationWidget",
+      "isFloating": false,
+      "isFloatingStateSupported": false,
+      "isFloatingStateWindowResizable": true,
+      "isFreeform": false,
+      "isStatusBar": false,
+      "isToolSettings": false,
+      "priority": 0,
+      "renderHorizontalToolbar": [Function],
+      "renderVerticalToolbar": [Function],
+      "state": 1,
+      "stateChanged": false,
+      "syncEventIds": Array [],
+      "verticalDirection": 2,
+      "verticalItems": undefined,
+      "widgetType": 1,
+    }
+  }
+  verticalToolbar={
+    <Toolbar
+      expandsTo={0}
+      items={
+        <UNDEFINED>
+          <ToolButton
+            iconSpec="icon-placeholder"
+            labelKey="SampleApp:buttons.tool1"
+            toolId="tool1"
+          />
+          <ToolButton
+            iconSpec="icon-placeholder"
+            labelKey="SampleApp:buttons.tool2"
+            toolId="tool2"
+          />
+        </UNDEFINED>
+      }
+      panelAlignment={0}
+    />
+  }
+/>
+`;

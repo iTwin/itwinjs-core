@@ -1,14 +1,17 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Core */
 
 import * as _ from "lodash";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { KeySet, PageOptions, SelectionInfo, ContentRequestOptions } from "@bentley/presentation-common";
+import {
+  KeySet, PageOptions, SelectionInfo,
+  ContentRequestOptions, Content, Descriptor, Field,
+} from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
-import * as content from "@bentley/presentation-common";
+import { IPresentationDataProvider } from "./IPresentationDataProvider";
 
 /**
  * Properties for invalidating content cache.
@@ -17,7 +20,7 @@ export interface CacheInvalidationProps {
   /**
    * Invalidate content descriptor. Should be set when invalidating
    * after changing anything that affects how the descriptor is built:
-   * `keys`, `selectionInfo`, `connection`, `rulesetId`.
+   * `keys`, `selectionInfo`, `imodel`, `rulesetId`.
    */
   descriptor?: boolean;
 
@@ -53,10 +56,22 @@ namespace CacheInvalidationProps {
 }
 
 /**
+ * Interface for all presentation-driven content providers.
+ */
+export interface IContentDataProvider extends IPresentationDataProvider {
+  /** Display type used to format content */
+  readonly displayType: string;
+  /** Keys defining what to request content for */
+  keys: Readonly<KeySet>;
+  /** Information about selection event that results in content change */
+  selectionInfo: Readonly<SelectionInfo> | undefined;
+}
+
+/**
  * Base class for all presentation-driven content providers.
  */
-export default abstract class ContentDataProvider {
-  private _connection: IModelConnection;
+export abstract class ContentDataProvider implements IContentDataProvider {
+  private _imodel: IModelConnection;
   private _rulesetId: string;
   private _displayType: string;
   private _keys: Readonly<KeySet>;
@@ -64,15 +79,15 @@ export default abstract class ContentDataProvider {
 
   /**
    * Constructor.
-   * @param connection IModel to pull data from.
+   * @param imodel IModel to pull data from.
    * @param rulesetId Id of the ruleset to use when requesting content.
    * @param displayType The content display type which this provider is going to
    * load data for.
    */
-  constructor(connection: IModelConnection, rulesetId: string, displayType: string) {
+  constructor(imodel: IModelConnection, rulesetId: string, displayType: string) {
     this._rulesetId = rulesetId;
     this._displayType = displayType;
-    this._connection = connection;
+    this._imodel = imodel;
     this._keys = new KeySet();
     this.invalidateCache(CacheInvalidationProps.full());
   }
@@ -81,11 +96,11 @@ export default abstract class ContentDataProvider {
   public get displayType(): string { return this._displayType; }
 
   /** IModel to pull data from */
-  public get connection(): IModelConnection { return this._connection; }
-  public set connection(connection: IModelConnection) {
-    if (this._connection === connection)
+  public get imodel(): IModelConnection { return this._imodel; }
+  public set imodel(imodel: IModelConnection) {
+    if (this._imodel === imodel)
       return;
-    this._connection = connection;
+    this._imodel = imodel;
     this.invalidateCache(CacheInvalidationProps.full());
   }
 
@@ -130,7 +145,7 @@ export default abstract class ContentDataProvider {
 
   private createRequestOptions(): ContentRequestOptions<IModelConnection> {
     return {
-      imodel: this._connection,
+      imodel: this._imodel,
       rulesetId: this._rulesetId,
     };
   }
@@ -142,7 +157,7 @@ export default abstract class ContentDataProvider {
    * The default method implementation takes care of hiding properties. Subclasses
    * should call the base class method to not lose this functionality.
    */
-  protected configureContentDescriptor(descriptor: Readonly<content.Descriptor>): content.Descriptor {
+  protected configureContentDescriptor(descriptor: Readonly<Descriptor>): Descriptor {
     const fields = descriptor.fields.slice();
     const fieldsCount = fields.length;
     for (let i = fieldsCount - 1; i >= 0; --i) {
@@ -150,28 +165,28 @@ export default abstract class ContentDataProvider {
       if (this.shouldExcludeFromDescriptor(field))
         fields.splice(i, 1);
     }
-    const customDescriptor = Object.create(content.Descriptor.prototype);
-    return Object.assign(customDescriptor, descriptor, content.Descriptor, {
+    const customDescriptor = Object.create(Descriptor.prototype);
+    return Object.assign(customDescriptor, descriptor, Descriptor, {
       fields,
     });
   }
 
   /** Called to check whether the field should be excluded from the descriptor. */
-  protected shouldExcludeFromDescriptor(field: content.Field): boolean { return this.isFieldHidden(field); }
+  protected shouldExcludeFromDescriptor(field: Field): boolean { return this.isFieldHidden(field); }
 
   /** Called to check whether the field should be hidden. */
-  protected isFieldHidden(_field: content.Field): boolean { return false; }
+  protected isFieldHidden(_field: Field): boolean { return false; }
 
   // tslint:disable-next-line:naming-convention
-  private getDefaultContentDescriptor = _.memoize(async (): Promise<Readonly<content.Descriptor> | undefined> => {
-    return await Presentation.presentation.getContentDescriptor(this.createRequestOptions(),
+  private getDefaultContentDescriptor = _.memoize(async (): Promise<Readonly<Descriptor> | undefined> => {
+    return Presentation.presentation.getContentDescriptor(this.createRequestOptions(),
       this._displayType, this.keys, this.selectionInfo);
   });
 
   /**
    * Get the content descriptor.
    */
-  protected getContentDescriptor = _.memoize(async (): Promise<Readonly<content.Descriptor> | undefined> => {
+  protected getContentDescriptor = _.memoize(async (): Promise<Readonly<Descriptor> | undefined> => {
     const descriptor = await this.getDefaultContentDescriptor();
     if (!descriptor)
       return undefined;
@@ -185,20 +200,18 @@ export default abstract class ContentDataProvider {
     const descriptor = await this.getContentDescriptor();
     if (!descriptor)
       return 0;
-    return await Presentation.presentation.getContentSetSize(this.createRequestOptions(),
-      descriptor, this.keys);
+    return Presentation.presentation.getContentSetSize(this.createRequestOptions(), descriptor, this.keys);
   });
 
   /**
    * Get the content.
    * @param pageOptions Paging options.
    */
-  protected getContent = _.memoize(async (pageOptions?: PageOptions): Promise<Readonly<content.Content> | undefined> => {
+  protected getContent = _.memoize(async (pageOptions?: PageOptions): Promise<Readonly<Content> | undefined> => {
     const descriptor = await this.getContentDescriptor();
     if (!descriptor)
       return undefined;
-    return await Presentation.presentation.getContent({ ...this.createRequestOptions(), paging: pageOptions },
-      descriptor, this.keys);
+    return Presentation.presentation.getContent({ ...this.createRequestOptions(), paging: pageOptions }, descriptor, this.keys);
   }, createKeyForPageOptions);
 }
 

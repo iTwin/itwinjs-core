@@ -2,6 +2,129 @@
   "name": "@bentley/imodeljs-clients-backend",
   "entries": [
     {
+      "version": "0.187.0",
+      "tag": "@bentley/imodeljs-clients-backend_v0.187.0",
+      "date": "Tue, 15 Jan 2019 15:18:59 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fixed https-proxy-agent dependency. "
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.186.0",
+      "tag": "@bentley/imodeljs-clients-backend_v0.186.0",
+      "date": "Mon, 14 Jan 2019 23:09:10 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "More logging of HTTP requests, and enabled use of fiddler for backend diagnostics. "
+          },
+          {
+            "comment": "Renamed RequestProxy->RequestHost. Allowed applications to configure proxy server with HTTPS_PROXY env. "
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.185.0",
+      "tag": "@bentley/imodeljs-clients-backend_v0.185.0",
+      "date": "Fri, 11 Jan 2019 18:29:00 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.184.0",
+      "tag": "@bentley/imodeljs-clients-backend_v0.184.0",
+      "date": "Thu, 10 Jan 2019 22:46:17 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Removed default OIDC scopes. All applications must now explicitly pass the required scopes."
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.183.0",
+      "tag": "@bentley/imodeljs-clients-backend_v0.183.0",
+      "date": "Mon, 07 Jan 2019 21:49:21 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.182.0",
+      "tag": "@bentley/imodeljs-clients-backend_v0.182.0",
+      "date": "Mon, 07 Jan 2019 13:31:34 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.181.0",
+      "tag": "@bentley/imodeljs-clients-backend_v0.181.0",
+      "date": "Fri, 04 Jan 2019 13:02:40 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.180.0",
+      "tag": "@bentley/imodeljs-clients-backend_v0.180.0",
+      "date": "Wed, 02 Jan 2019 15:18:23 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.179.0",
+      "tag": "@bentley/imodeljs-clients-backend_v0.179.0",
+      "date": "Wed, 19 Dec 2018 18:26:14 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.178.0",
+      "tag": "@bentley/imodeljs-clients-backend_v0.178.0",
+      "date": "Thu, 13 Dec 2018 22:06:10 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.177.0",
+      "tag": "@bentley/imodeljs-clients-backend_v0.177.0",
+      "date": "Wed, 12 Dec 2018 17:21:31 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.176.0",
+      "tag": "@bentley/imodeljs-clients-backend_v0.176.0",
+      "date": "Mon, 10 Dec 2018 21:19:45 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.175.0",
+      "tag": "@bentley/imodeljs-clients-backend_v0.175.0",
+      "date": "Mon, 10 Dec 2018 17:08:55 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.174.0",
+      "tag": "@bentley/imodeljs-clients-backend_v0.174.0",
+      "date": "Mon, 10 Dec 2018 13:24:09 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.173.0",
+      "tag": "@bentley/imodeljs-clients-backend_v0.173.0",
+      "date": "Thu, 06 Dec 2018 22:03:29 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Custom imodelJs noDirectImport lint rule implemented, noDuplicateImport lint rule turned on."
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.172.0",
+      "tag": "@bentley/imodeljs-clients-backend_v0.172.0",
+      "date": "Tue, 04 Dec 2018 17:24:39 GMT",
+      "comments": {}
+    },
+    {
       "version": "0.171.0",
       "tag": "@bentley/imodeljs-clients-backend_v0.171.0",
       "date": "Mon, 03 Dec 2018 18:52:58 GMT",

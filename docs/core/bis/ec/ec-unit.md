@@ -22,7 +22,7 @@ Defines a Unit of Measure in terms of other Units allowing generation of a conve
 
 **offset** The offset applied when converting between units.
 
-# InvertedUnit
+# Inverted Unit
 
 Defines a Unit that is the inverse of another Unit.  Only valid for Units whose dimensional derivation is Unit-less (e.g., slope).
 

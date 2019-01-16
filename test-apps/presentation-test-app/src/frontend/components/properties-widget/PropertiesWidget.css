@@ -1,13 +1,19 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
 .PropertiesWidget {
+  display: flex;
+  flex-direction: column;
   padding: 5px;
-  overflow: auto;
 }
 
-.PropertiesWidget h3 {
+.PropertiesWidget > h3 {
   margin: 0;
+}
+
+.PropertiesWidget > .ContentContainer {
+  flex: 1 0;
+  min-height: 0;
 }

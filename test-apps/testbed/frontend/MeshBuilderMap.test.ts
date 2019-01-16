@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { expect, assert } from "chai";
@@ -22,8 +22,8 @@ import {
 import { System } from "@bentley/imodeljs-frontend/lib/webgl";
 import { FakeDisplayParams } from "./DisplayParams.test";
 import { CONSTANTS } from "../common/Testbed";
-import { WebGLTestContext } from "./WebGLTestContext";
-import { ColorDef, GraphicParams } from "@bentley/imodeljs-common/lib/common";
+import { MockRender } from "./MockRender";
+import { ColorDef, GraphicParams } from "@bentley/imodeljs-common";
 
 const iModelLocation = path.join(CONSTANTS.IMODELJS_CORE_DIRNAME, "core/backend/lib/test/assets/test.bim");
 
@@ -44,11 +44,11 @@ describe("MeshBuilderMap Tests", () => {
     imodel = await IModelConnection.openStandalone(iModelLocation);
     spatialView = await imodel.views.load("0x34") as SpatialViewState;
     spatialView.setStandardRotation(StandardViewId.RightIso);
-    WebGLTestContext.startup();
+    MockRender.App.startup();
   });
 
   after(async () => {
-    WebGLTestContext.shutdown();
+    MockRender.App.shutdown();
     if (imodel) await imodel.closeStandalone();
   });
 
@@ -66,10 +66,6 @@ describe("MeshBuilderMap Tests", () => {
   });
 
   it("createFromGeometries", () => {
-    if (!WebGLTestContext.isInitialized) {
-      return;
-    }
-
     const viewport = ScreenViewport.create(viewDiv, spatialView);
     const primBuilder = new PrimitiveBuilder(System.instance, GraphicType.Scene, viewport);
 
@@ -121,10 +117,6 @@ describe("MeshBuilderMap Tests", () => {
   });
 
   it("toMeshes", () => {
-    if (!WebGLTestContext.isInitialized) {
-      return;
-    }
-
     const viewport = ScreenViewport.create(viewDiv, spatialView);
     const primBuilder = new PrimitiveBuilder(System.instance, GraphicType.Scene, viewport);
 
@@ -179,10 +171,6 @@ describe("MeshBuilderMap Tests", () => {
   });
 
   it("loadGeometry", () => {
-    if (!WebGLTestContext.isInitialized) {
-      return;
-    }
-
     const viewport = ScreenViewport.create(viewDiv, spatialView);
     const primBuilder = new PrimitiveBuilder(System.instance, GraphicType.Scene, viewport);
 
@@ -336,10 +324,6 @@ describe("MeshBuilderMap Tests", () => {
   });
 
   it("loadStrokePrimitiveList", () => {
-    if (!WebGLTestContext.isInitialized) {
-      return;
-    }
-
     const viewport = ScreenViewport.create(viewDiv, spatialView);
     const primBuilder = new PrimitiveBuilder(System.instance, GraphicType.Scene, viewport);
 
@@ -382,10 +366,6 @@ describe("MeshBuilderMap Tests", () => {
   });
 
   it("loadStrokesPrimitive", () => {
-    if (!WebGLTestContext.isInitialized) {
-      return;
-    }
-
     const viewport = ScreenViewport.create(viewDiv, spatialView);
     const primBuilder = new PrimitiveBuilder(System.instance, GraphicType.Scene, viewport);
 

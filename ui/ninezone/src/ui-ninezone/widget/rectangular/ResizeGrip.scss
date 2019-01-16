@@ -1,0 +1,31 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+@import "../_variables";
+
+.nz-widget-rectangular-resizeGrip {
+  pointer-events: auto;
+
+  &.nz-direction-ew {
+    cursor: ew-resize;
+    width: $resize-grip-size;
+  }
+
+  &.nz-direction-ns {
+    cursor: ns-resize;
+    height: $resize-grip-size;
+  }
+
+  &.nz-direction-ne-sw {
+    cursor: nesw-resize;
+    width: $resize-grip-size;
+    height: $resize-grip-size;
+  }
+
+  &.nz-direction-nw-se {
+    cursor: nwse-resize;
+    width: $resize-grip-size;
+    height: $resize-grip-size;
+  }
+}

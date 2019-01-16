@@ -1,7 +1,9 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+/* tslint:disable:no-direct-imports */
+
 import "@bentley/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment";
 import { expect } from "chai";
 import * as sinon from "sinon";
@@ -11,11 +13,13 @@ import { createRandomDescriptor, createRandomECInstanceKey } from "@bentley/pres
 import { PromiseContainer } from "@bentley/presentation-common/lib/test/_helpers/Promises";
 import { SortDirection } from "@bentley/ui-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { PresentationError, ValuesDictionary } from "@bentley/presentation-common";
-import * as content from "@bentley/presentation-common/lib/content";
-import { Presentation } from "@bentley/presentation-frontend";
-import PresentationManager from "@bentley/presentation-frontend/lib/PresentationManager";
-import PresentationTableDataProvider from "../../table/DataProvider";
+import {
+  PresentationError, ValuesDictionary, Content,
+  DefaultContentDisplayTypes, Descriptor, Item,
+  SortDirection as ContentSortDirection,
+} from "@bentley/presentation-common";
+import { Presentation, PresentationManager } from "@bentley/presentation-frontend";
+import { PresentationTableDataProvider } from "../../table/DataProvider";
 import { CacheInvalidationProps } from "../../common/ContentDataProvider";
 
 /**
@@ -24,7 +28,7 @@ import { CacheInvalidationProps } from "../../common/ContentDataProvider";
  */
 class Provider extends PresentationTableDataProvider {
   public invalidateCache(props: CacheInvalidationProps) { super.invalidateCache(props); }
-  public configureContentDescriptor(descriptor: content.Descriptor) { return super.configureContentDescriptor(descriptor); }
+  public configureContentDescriptor(descriptor: Descriptor) { return super.configureContentDescriptor(descriptor); }
 }
 
 interface MemoizedCacheSpies {
@@ -55,13 +59,13 @@ describe("TableDataProvider", () => {
     };
   };
 
-  const createEmptyContentItem = (): content.Item => {
-    return new content.Item([createRandomECInstanceKey()], faker.random.words(),
+  const createEmptyContentItem = (): Item => {
+    return new Item([createRandomECInstanceKey()], faker.random.words(),
       "", undefined, {}, {}, []);
   };
-  const createContent = (recordsCount: number, itemsGenerator: () => content.Item = createEmptyContentItem): content.Content => {
+  const createContent = (recordsCount: number, itemsGenerator: () => Item = createEmptyContentItem): Content => {
     const descriptor = createRandomDescriptor();
-    const records = new Array<content.Item>();
+    const records = new Array<Item>();
     while (recordsCount--) {
       records.push(itemsGenerator());
     }
@@ -70,12 +74,12 @@ describe("TableDataProvider", () => {
       contentSet: records,
     };
   };
-  const createSingleRecordContent = (itemsGenerator?: () => content.Item) => createContent(1, itemsGenerator);
+  const createSingleRecordContent = (itemsGenerator?: () => Item) => createContent(1, itemsGenerator);
 
   describe("constructor", () => {
 
     it("sets display type to GRID", () => {
-      expect(provider.displayType).to.eq(content.DefaultContentDisplayTypes.GRID);
+      expect(provider.displayType).to.eq(DefaultContentDisplayTypes.GRID);
     });
 
     it("sets default sorting properties", () => {
@@ -158,14 +162,14 @@ describe("TableDataProvider", () => {
       expect(source.sortingField).to.be.undefined;
       expect(source.sortDirection).to.be.undefined;
       expect(result.sortingField!.name).to.eq((await provider.getColumns())[0].key);
-      expect(result.sortDirection).to.eq(content.SortDirection.Descending);
+      expect(result.sortDirection).to.eq(ContentSortDirection.Descending);
 
       await provider.sort(0, SortDirection.Ascending);
       result = provider.configureContentDescriptor(source);
       expect(source.sortingField).to.be.undefined;
       expect(source.sortDirection).to.be.undefined;
       expect(result.sortingField!.name).to.eq((await provider.getColumns())[0].key);
-      expect(result.sortDirection).to.eq(content.SortDirection.Ascending);
+      expect(result.sortDirection).to.eq(ContentSortDirection.Ascending);
 
       await provider.sort(0, SortDirection.NoSort);
       result = provider.configureContentDescriptor(source);
@@ -286,7 +290,7 @@ describe("TableDataProvider", () => {
 
     it("memoizes result", async () => {
       const descriptor = createRandomDescriptor();
-      const resultPromiseContainer = new PromiseContainer<content.Descriptor>();
+      const resultPromiseContainer = new PromiseContainer<Descriptor>();
       const getContentDescriptorMock = moq.Mock.ofInstance(() => (provider as any).getContentDescriptor);
       getContentDescriptorMock.setup((x) => x()).returns(() => resultPromiseContainer.promise).verifiable(moq.Times.once());
       getContentDescriptorMock.setup((x) => x()).verifiable(moq.Times.never());
@@ -329,7 +333,7 @@ describe("TableDataProvider", () => {
     it("throws when content record is invalid - contains invalid number of primary keys", async () => {
       const record = createEmptyContentItem();
       record.primaryKeys = [];
-      (provider as any).getContent = async (): Promise<content.Content> => ({
+      (provider as any).getContent = async (): Promise<Content> => ({
         descriptor: createRandomDescriptor(),
         contentSet: [record],
       });
@@ -338,7 +342,7 @@ describe("TableDataProvider", () => {
 
     it("requests content in pages", async () => {
       provider = new Provider(imodelMock.object, rulesetId, 2, 10);
-      const contentResolver = [0, 1].map(() => new PromiseContainer<content.Content>());
+      const contentResolver = [0, 1].map(() => new PromiseContainer<Content>());
 
       const getContentMock = moq.Mock.ofInstance((provider as any).getContent);
       (provider as any).getContent = getContentMock.object;
@@ -367,9 +371,9 @@ describe("TableDataProvider", () => {
         values[field.name] = faker.random.word();
         displayValues[field.name] = faker.random.words();
       });
-      const record = new content.Item([createRandomECInstanceKey()],
+      const record = new Item([createRandomECInstanceKey()],
         faker.random.words(), faker.random.word(), undefined, values, displayValues, []);
-      const c: content.Content = {
+      const c: Content = {
         descriptor,
         contentSet: [record],
       };

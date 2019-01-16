@@ -2,7 +2,60 @@
 
 exports[`InputFieldMessage should render correctly 1`] = `
 <Portal
-  containerInfo={<body />}
+  containerInfo={
+    <body>
+      <div
+        id="context-menu-root"
+      >
+        <div
+          id="context-menu-keyboard-shortcut-menu"
+        >
+          <div
+            class="context-menu-global"
+            style="left: 0px; top: 0px;"
+          >
+            <div
+              class="context-menu"
+              data-testid="context-menu-root"
+            >
+              <div>
+                <div>
+                  <div
+                    class="context-menu-container opened floating bottom right"
+                    data-testid="context-menu-container"
+                    tabindex="0"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div
+          id="context-menu-keyboard-shortcut-menu"
+        >
+          <div
+            class="context-menu-global"
+            style="left: 0px; top: 0px;"
+          >
+            <div
+              class="context-menu"
+              data-testid="context-menu-root"
+            >
+              <div>
+                <div>
+                  <div
+                    class="context-menu-container opened floating bottom right"
+                    data-testid="context-menu-container"
+                    tabindex="0"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </body>
+  }
 >
   <WithOnOutsideClick
     className="nz-popup-message-inputField"
@@ -16,7 +69,7 @@ exports[`InputFieldMessage should render correctly 1`] = `
       }
       status={2}
     >
-      <Component
+      <MessageLayout
         buttons={
           <WithTheme
             onClick={[Function]}

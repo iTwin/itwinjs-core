@@ -1,11 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module SelectionSet */
-import { Id64String, Id64, Id64Arg, Id64Set } from "@bentley/bentleyjs-core";
+import { BeEvent, Id64String, Id64, Id64Arg, Id64Set } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "./IModelConnection";
-import { BeEvent } from "@bentley/bentleyjs-core";
 import { IModelApp } from "./IModelApp";
 
 /** event types for SelectionSet.onChanged  */

@@ -1,16 +1,16 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`<Dialog /> renders correctly 1`] = `
-<Component
+exports[`<ToolAssistanceDialog /> renders correctly 1`] = `
+<TrianglePopover
   className="nz-footer-toolAssistance-dialog"
   content={
     <WithContainInViewport
       content={<ToolAssistanceContent />}
       noVerticalContainment={true}
       titleBar={
-        <Unknown
+        <TitleBar
           title={
-            <Unknown
+            <DialogTitle
               text={undefined}
             />
           }

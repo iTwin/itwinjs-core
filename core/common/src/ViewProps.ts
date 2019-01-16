@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Views */
@@ -9,12 +9,12 @@ import { EntityQueryParams } from "./EntityProps";
 import { AngleProps, XYZProps, XYProps, YawPitchRollProps } from "@bentley/geometry-core";
 import { ElementProps, DefinitionElementProps, SheetProps } from "./ElementProps";
 import { ColorDef, ColorDefProps } from "./ColorDef";
-import { ViewFlags, AnalysisStyleProps, AnalysisStyle, HiddenLine } from "./Render";
+import { ViewFlags, AnalysisStyleProps, HiddenLine, AmbientOcclusion } from "./Render";
 import { SubCategoryAppearance, SubCategoryOverride } from "./SubCategoryAppearance";
 import { RenderSchedule } from "./RenderSchedule";
 
 /** Returned from [IModelDb.Views.getViewStateData]($backend) */
-export interface ViewStateData {
+export interface ViewStateProps {
   viewDefinitionProps: ViewDefinitionProps;
   categorySelectorProps: CategorySelectorProps;
   displayStyleProps: DisplayStyleProps;
@@ -94,6 +94,8 @@ export interface ViewFlagProps {
   renderMode?: number;
   /** Display background map. */
   backgroundMap?: boolean;
+  /** If true, show ambient occlusion. */
+  ambientOcclusion?: boolean;
 }
 
 /** Describes the [[SubCategoryOverride]]s applied to a [[SubCategory]] by a [[DisplayStyle]].
@@ -200,6 +202,7 @@ export interface EnvironmentProps {
 export interface ContextRealityModelProps {
   tilesetUrl: string;
   name?: string;
+  description?: string;
 }
 
 /** JSON representation of the settings associated with a [[DisplayStyleProps]].
@@ -233,6 +236,8 @@ export interface DisplayStyle3dSettingsProps extends DisplayStyleSettingsProps {
   environment?: EnvironmentProps;
   /** Settings controlling display of visible and hidden edges. */
   hline?: HiddenLine.SettingsProps;
+  /** Settings controlling display of ambient occlusion, stored in Props. */
+  ao?: AmbientOcclusion.Props;
 }
 
 /** JSON representation of a [[DisplayStyle]] or [[DisplayStyleState]]. */
@@ -318,8 +323,6 @@ export class DisplayStyleSettings {
   private readonly _viewFlags: ViewFlags;
   private readonly _background: ColorDef;
   private readonly _monochrome: ColorDef;
-  private _analysisStyle?: AnalysisStyle;
-  private _scheduleScript?: RenderSchedule.Script;
   private readonly _subCategoryOverrides: Map<string, SubCategoryOverride> = new Map<string, SubCategoryOverride>();
 
   /** Construct a new DisplayStyleSettings from an [[ElementProps.jsonProperties]].
@@ -331,18 +334,10 @@ export class DisplayStyleSettings {
   public constructor(jsonProperties: { styles?: DisplayStyleSettingsProps }) {
     if (undefined === jsonProperties.styles)
       jsonProperties.styles = {};
-
     this._json = jsonProperties.styles;
-
     this._viewFlags = ViewFlags.fromJSON(this._json.viewflags);
     this._background = ColorDef.fromJSON(this._json.backgroundColor);
     this._monochrome = undefined !== this._json.monochromeColor ? ColorDef.fromJSON(this._json.monochromeColor) : ColorDef.white.clone();
-
-    if (undefined !== this._json.analysisStyle)
-      this._analysisStyle = AnalysisStyle.fromJSON(this._json.analysisStyle);
-
-    if (undefined !== this._json.scheduleScript && Array.isArray(this._json.scheduleScript))
-      this._scheduleScript = RenderSchedule.Script.fromJSON(this._json.scheduleScript);
 
     const ovrsArray = JsonUtils.asArray(this._json.subCategoryOvr);
     if (undefined !== ovrsArray) {
@@ -394,24 +389,6 @@ export class DisplayStyleSettings {
   }
   /** @hidden */
   public set backgroundMap(map: BackgroundMapProps | undefined) { this._json.backgroundMap = map; }
-
-  /** Settings controlling display of analytical models.
-   * @note Do not modify the style in place. Clone it and pass the clone to the setter.
-   */
-  public get analysisStyle(): AnalysisStyle | undefined { return this._analysisStyle; }
-  public set analysisStyle(style: AnalysisStyle | undefined) {
-    if (undefined === style) {
-      this._analysisStyle = undefined;
-    } else {
-      if (undefined === this._analysisStyle)
-        this._analysisStyle = AnalysisStyle.fromJSON(style);
-      else
-        this._analysisStyle.copyFrom(style);
-    }
-
-    this._json.analysisStyle = this._analysisStyle;
-  }
-  public get scheduleScript(): RenderSchedule.Script | undefined { return this._scheduleScript; }
 
   /** Customize the way geometry belonging to a [[SubCategory]] is drawn by this display style.
    * @param id The ID of the SubCategory whose appearance is to be overridden.
@@ -486,11 +463,13 @@ export class DisplayStyleSettings {
  */
 export class DisplayStyle3dSettings extends DisplayStyleSettings {
   private _hline: HiddenLine.Settings;
+  private _ao: AmbientOcclusion.Settings;
   private get _json3d(): DisplayStyle3dSettingsProps { return this._json as DisplayStyle3dSettingsProps; }
 
   public constructor(jsonProperties: { styles?: DisplayStyle3dSettingsProps }) {
     super(jsonProperties);
     this._hline = HiddenLine.Settings.fromJSON(this._json3d.hline);
+    this._ao = AmbientOcclusion.Settings.fromJSON(this._json3d.ao);
   }
 
   public toJSON(): DisplayStyle3dSettingsProps { return this._json3d; }
@@ -502,6 +481,15 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
   public set hiddenLineSettings(hline: HiddenLine.Settings) {
     this._hline = hline;
     this._json3d.hline = hline.toJSON();
+  }
+
+  /** The settings that control how ambient occlusion is displayed.
+   * @note Do not modify the settings in place. Clone them and pass the clone to the setter.
+   */
+  public get ambientOcclusionSettings(): AmbientOcclusion.Settings { return this._ao; }
+  public set ambientOcclusionSettings(ao: AmbientOcclusion.Settings) {
+    this._ao = ao;
+    this._json3d.ao = ao.toJSON();
   }
 
   /** @hidden */

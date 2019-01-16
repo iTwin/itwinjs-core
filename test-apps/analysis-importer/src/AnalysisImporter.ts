@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { CategorySelector, DefinitionModel, DisplayStyle3d, IModelDb, ModelSelector, OrthographicViewDefinition, PhysicalModel, SpatialCategory } from "@bentley/imodeljs-backend";
@@ -68,15 +68,15 @@ export class AnalysisImporter {
         /** generate DisplayStyles to view the PolyfaceAuxData.  The display styles contain channel selection and gradient specification for the [[PolyfaceAuxData]]
          */
         const analysisStyleProps = this.getPolyfaceAnalysisStyleProps(polyface, displacementScale);
-        const viewFlags = new ViewFlags();
-        const backgroundColor = ColorDef.white;             // White background...
-        viewFlags.renderMode = RenderMode.SolidFill;        // SolidFill rendering ... no lighting etc.
+        const vf = new ViewFlags();
+        const bgColor = ColorDef.white;             // White background...
+        vf.renderMode = RenderMode.SolidFill;        // SolidFill rendering ... no lighting etc.
 
         /** The [[GeometricElement3dProps]]  */
         const props: GeometricElement3dProps = {
             model: modelId,
             code: Code.createEmpty(),
-            classFullName: "Generic: PhysicalObject",
+            classFullName: "Generic:PhysicalObject",
             category: categoryId,
             geom: geometry,
         };
@@ -89,7 +89,7 @@ export class AnalysisImporter {
                 const exaggeration = (analysisStyleProp.displacementScale === 1.0) ? "" : (" X " + analysisStyleProp.displacementScale);
                 name = modelName + ": " + name + " and " + analysisStyleProp.displacementChannelName + exaggeration;
             }
-            const displayStyleId = DisplayStyle3d.insert(this.iModelDb, this.definitionModelId, name, viewFlags, backgroundColor, analysisStyleProp);
+            const displayStyleId = DisplayStyle3d.insert(this.iModelDb, this.definitionModelId, name, { viewFlags: vf, backgroundColor: bgColor, analysisStyle: analysisStyleProp });
             const modelSelectorId = ModelSelector.insert(this.iModelDb, this.definitionModelId, name, [modelId]);
             const categorySelectorId = CategorySelector.insert(this.iModelDb, this.definitionModelId, name, [categoryId]);
 

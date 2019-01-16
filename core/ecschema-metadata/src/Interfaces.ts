@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
@@ -22,9 +22,9 @@ import { UnitSystem } from "./Metadata/UnitSystem";
 import { Format } from "./Metadata/Format";
 import { SchemaKey, SchemaItemKey } from "./SchemaKey";
 
-export type LazyLoadedSchema = Readonly<SchemaKey> & DelayedPromise<Schema>;
+export type LazyLoadedSchema = Readonly<SchemaKey> & DelayedPromise<Schema> & Promise<Schema>;
 
-export type LazyLoadedSchemaItem<T extends SchemaItem> = Readonly<SchemaItemKey> & DelayedPromise<T>;
+export type LazyLoadedSchemaItem<T extends SchemaItem> = Readonly<SchemaItemKey> & DelayedPromise<T> & Promise<T>;
 export type LazyLoadedECClass = LazyLoadedSchemaItem<ECClass>;
 export type LazyLoadedEntityClass = LazyLoadedSchemaItem<EntityClass>;
 export type LazyLoadedMixin = LazyLoadedSchemaItem<Mixin>;
@@ -56,6 +56,17 @@ export interface SchemaItemVisitor {
   /* async */ visitKindOfQuantity?: (koq: KindOfQuantity) => Promise<void>;
   /* async */ visitPropertyCategory?: (category: PropertyCategory) => Promise<void>;
   /* async */ visitClass?: (ecClass: AnyClass) => Promise<void>;
+
+  visitFormatSync?: (format: Format) => void;
+  visitUnitSystemSync?: (unitSystem: UnitSystem) => void;
+  visitPhenomenonSync?: (phenomenon: Phenomenon) => void;
+  visitConstantSync?: (constant: Constant) => void;
+  visitInvertedUnitSync?: (invertedUnit: InvertedUnit) => void;
+  visitEnumerationSync?: (enumeration: Enumeration) => void;
+  visitUnitSync?: (unit: Unit) => void;
+  visitKindOfQuantitySync?: (koq: KindOfQuantity) => void;
+  visitPropertyCategorySync?: (category: PropertyCategory) => void;
+  visitClassSync?: (ecClass: AnyClass) => void;
 }
 
 export interface SchemaDeserializationVisitor extends SchemaItemVisitor {
@@ -132,4 +143,6 @@ export interface SchemaDeserializationVisitor extends SchemaItemVisitor {
    */
   /* async */ visitFormat?: (format: Format) => Promise<void>;
 
+  visitEmptySchemaSync?: (schema: Schema) => void;
+  visitFullSchemaSync?: (schema: Schema) => void;
 }

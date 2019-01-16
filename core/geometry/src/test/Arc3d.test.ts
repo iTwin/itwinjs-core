@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
@@ -15,6 +15,9 @@ import { prettyPrint } from "./testFunctions";
 import { Checker } from "./Checker";
 import { expect } from "chai";
 import { Sample } from "../serialization/GeometrySamples";
+import { LineString3d } from "../curve/LineString3d";
+import { CoordinateXYZ } from "../curve/CoordinateXYZ";
+import { Geometry } from "../Geometry";
 /* tslint:disable:no-console */
 
 function exerciseArcSet(ck: Checker, arcA: Arc3d) {
@@ -87,7 +90,24 @@ describe("Arc3d", () => {
         Point3d.create(1, 2, 5),
         Vector3d.create(1, 0, 0),
         Vector3d.create(0, 2, 0), AngleSweep.createStartEndDegrees(0, 90))!);
+
+    ck.testTrue(Arc3d.createCircularStartMiddleEnd(Point3d.create(0, 0, 0), Point3d.create(1, 0, 0), Point3d.create(4, 0, 0)) instanceof LineString3d);
+
     ck.checkpoint("Arc3d.HelloWorld");
+    const arcB = Arc3d.createUnitCircle();
+    arcB.setFromJSON(undefined);
+    ck.testFalse(arcA.isAlmostEqual(CoordinateXYZ.create(Point3d.create(1, 2, 3))));
+    // high eccentricty arc .. make sure the length is bounded by rectangle and diagonal of quadrant ...
+    const a = 1000.0;
+    const b = a / 1.e6;
+    const arcC = Arc3d.createXYEllipse(Point3d.create(0, 0, 0), a, b);
+    const lengthC = arcC.curveLengthBetweenFractions(0, 1);
+    ck.testLE(lengthC, 4.0 * (a + b));
+    ck.testLE(4.0 * Geometry.hypotenuseXY(a, b), lengthC);
+    // in-place construction -- easy arc length
+    const sweepRadians = 0.3423423;
+    Arc3d.create(Point3d.create(0, 0, 0), Vector3d.unitX(), Vector3d.unitY(), AngleSweep.createStartSweepRadians(0.2, sweepRadians), arcC);
+    ck.testCoordinate(arcC.curveLength(), sweepRadians);
     expect(ck.getNumErrors()).equals(0);
   });
   it("QuickLength", () => {
@@ -138,7 +158,9 @@ describe("Arc3d", () => {
       }
       // console.log(prettyPrint(sweep) + prettyPrint(factorRange1));
     }
-    console.log("Arc3d QuickLength FactorRange" + prettyPrint(factorRange));
+    // console.log("Arc3d QuickLength FactorRange" + prettyPrint(factorRange));
+    ck.testLT(0.95, factorRange.low, "QuickLength FactorRange Low");
+    ck.testLT(factorRange.high, 1.05, "QuickLength FactorRange Low");
 
     ck.checkpoint("Arc3d.QuickLength");
     expect(ck.getNumErrors()).equals(0);
@@ -189,7 +211,8 @@ describe("Arc3d", () => {
         }
         maxFactor = Math.max(factor, maxFactor);
       }
-      console.log("Eccentric ellipse integration  (numGauss " + numGauss + ")   (maxFactor  " + maxFactor + ")");
+      if (noisy)
+        console.log("Eccentric ellipse integration  (numGauss " + numGauss + ")   (maxFactor  " + maxFactor + ")");
       if (numGauss === 5)
         ck.testLE(maxFactor, 20.0, "Eccentric Ellipse integraton factor");
     }

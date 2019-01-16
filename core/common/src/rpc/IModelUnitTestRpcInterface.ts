@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module RpcInterface */
@@ -22,5 +22,5 @@ export abstract class IModelUnitTestRpcInterface extends RpcInterface {
   /** Returns the IModelUnitTestRpcInterface client instance for the frontend. */
   public static getClient(): IModelUnitTestRpcInterface { return RpcManager.getClientForInterface(IModelUnitTestRpcInterface); }
 
-  public async executeTest(_iModelToken: IModelToken, _testName: string, _params: any): Promise<any> { return this.forward.apply(this, arguments); }
+  public async executeTest(_iModelToken: IModelToken, _testName: string, _params: any): Promise<any> { return this.forward(arguments); }
 }

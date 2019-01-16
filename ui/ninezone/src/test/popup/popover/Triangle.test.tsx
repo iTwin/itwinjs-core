@@ -1,23 +1,22 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import Triangle from "../../..//popup/popover/Triangle";
-import { Direction } from "../../..//utilities/Direction";
+import { Direction, TrianglePopover } from "../../../ui-ninezone";
 
-describe("<Triangle />", () => {
+describe("<TrianglePopover />", () => {
   it("should render", () => {
-    mount(<Triangle direction={Direction.Left} />);
+    mount(<TrianglePopover direction={Direction.Left} />);
   });
 
   it("renders correctly", () => {
-    shallow(<Triangle direction={Direction.Left} />).should.matchSnapshot();
+    shallow(<TrianglePopover direction={Direction.Left} />).should.matchSnapshot();
   });
 
   it("should set direction class", () => {
-    shallow(<Triangle direction={Direction.Bottom} />).should.matchSnapshot();
+    shallow(<TrianglePopover direction={Direction.Bottom} />).should.matchSnapshot();
   });
 });

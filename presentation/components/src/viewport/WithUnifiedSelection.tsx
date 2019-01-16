@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module UnifiedSelection */
@@ -11,8 +11,8 @@ import { SelectionInfo, DefaultContentDisplayTypes, KeySet } from "@bentley/pres
 import { SelectionHandler, Presentation, SelectionChangeEventArgs, ISelectionProvider } from "@bentley/presentation-frontend";
 import { ViewportProps } from "@bentley/ui-components";
 import { getDisplayName } from "../common/Utils";
-import IUnifiedSelectionComponent from "../common/IUnifiedSelectionComponent";
-import ContentDataProvider from "../common/ContentDataProvider";
+import { IUnifiedSelectionComponent } from "../common/IUnifiedSelectionComponent";
+import { ContentDataProvider } from "../common/ContentDataProvider";
 
 /**
  * Props that are injected to the HOC component.
@@ -30,7 +30,7 @@ export interface Props {
  * viewport component.
  */
 // tslint:disable-next-line: variable-name naming-convention
-export default function withUnifiedSelection<P extends ViewportProps>(ViewportComponent: React.ComponentType<P>): React.ComponentType<P & Props> {
+export function viewWithUnifiedSelection<P extends ViewportProps>(ViewportComponent: React.ComponentType<P>): React.ComponentType<P & Props> {
 
   type CombinedProps = P & Props;
 
@@ -100,6 +100,8 @@ export class ViewportSelectionHandler implements IDisposable {
   private _selectionHandler: SelectionHandler;
   private _imodelSelectionListenerDisposeFunc: () => void;
   private _selectedElementsProvider: SelectedElementsProvider;
+  private _lastPendingSelectionChange?: { info: SelectionInfo, selection: Readonly<KeySet> };
+  private _isInSelectedElementsRequest = false;
   private _isApplyingUnifiedSelection = false;
   private _asyncsInProgress = new Set<GuidString>();
 
@@ -129,7 +131,7 @@ export class ViewportSelectionHandler implements IDisposable {
   public set imodel(value: IModelConnection) {
     this._imodel = value;
     this._selectionHandler.imodel = value;
-    this._selectedElementsProvider.connection = value;
+    this._selectedElementsProvider.imodel = value;
     this._imodelSelectionListenerDisposeFunc();
     this._imodelSelectionListenerDisposeFunc = this._imodel.selectionSet.onChanged.addListener(this.onViewportSelectionChanged);
   }
@@ -141,7 +143,34 @@ export class ViewportSelectionHandler implements IDisposable {
     this._selectedElementsProvider.rulesetId = value;
   }
 
-  public get hasPendingAsyncs() { return this._asyncsInProgress.size !== 0; }
+  /** note: used only it tests */
+  public get pendingAsyncs() { return this._asyncsInProgress; }
+
+  private async applyUnifiedSelection(imodel: IModelConnection, selectionInfo: SelectionInfo, selection: Readonly<KeySet>) {
+    if (this._isInSelectedElementsRequest) {
+      this._lastPendingSelectionChange = { info: selectionInfo, selection };
+      return;
+    }
+
+    const asyncId = Guid.createValue();
+    this._asyncsInProgress.add(asyncId);
+    this._isInSelectedElementsRequest = true;
+    const ids = await this._selectedElementsProvider.getElementIds(selection, selectionInfo);
+    try {
+      this._isApplyingUnifiedSelection = true;
+      imodel.selectionSet.replace(ids);
+    } finally {
+      this._isApplyingUnifiedSelection = false;
+      this._isInSelectedElementsRequest = false;
+      this._asyncsInProgress.delete(asyncId);
+    }
+
+    if (this._lastPendingSelectionChange) {
+      const change = this._lastPendingSelectionChange;
+      this._lastPendingSelectionChange = undefined;
+      await this.applyUnifiedSelection(imodel, change.info, change.selection);
+    }
+  }
 
   // tslint:disable-next-line:naming-convention
   private onUnifiedSelectionChanged = async (args: SelectionChangeEventArgs, provider: ISelectionProvider): Promise<void> => {
@@ -154,22 +183,12 @@ export class ViewportSelectionHandler implements IDisposable {
     if (0 !== args.level)
       return;
 
-    const asyncId = Guid.createValue();
-    this._asyncsInProgress.add(asyncId);
-
     const selection = provider.getSelection(args.imodel, 0);
     const info: SelectionInfo = {
       providerName: args.source,
       level: args.level,
     };
-    const ids = await this._selectedElementsProvider.getElementIds(selection, info);
-    try {
-      this._isApplyingUnifiedSelection = true;
-      args.imodel.selectionSet.replace(ids);
-    } finally {
-      this._isApplyingUnifiedSelection = false;
-      this._asyncsInProgress.delete(asyncId);
-    }
+    await this.applyUnifiedSelection(args.imodel, info, selection);
   }
 
   // tslint:disable-next-line:naming-convention

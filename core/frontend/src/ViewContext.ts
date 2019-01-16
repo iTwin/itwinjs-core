@@ -1,19 +1,19 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Rendering */
 
 import { Id64String } from "@bentley/bentleyjs-core";
-import { ConvexClipPlaneSet, CurveLocationDetail, Geometry, LineSegment3d, Matrix3d, Point2d, Point3d, Transform, Vector2d, Vector3d, XAndY } from "@bentley/geometry-core";
-import { Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core";
+import { ConvexClipPlaneSet, CurveLocationDetail, Geometry, LineSegment3d, Matrix3d, Point2d, Point3d, Transform, Vector2d, Vector3d, XAndY, Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core";
 import { ColorDef, Frustum, FrustumPlanes, LinePixels, Npc, ViewFlags } from "@bentley/imodeljs-common";
 import { GraphicBuilder, GraphicType } from "./render/GraphicBuilder";
 import { CanvasDecoration, Decorations, GraphicBranch, GraphicList, RenderClipVolume, RenderGraphic, RenderTarget } from "./render/System";
-import { TileRequests } from "./tile/TileTree";
 import { BackgroundMapState } from "./tile/WebMercatorTileTree";
 import { ScreenViewport, Viewport } from "./Viewport";
 import { ViewState3d } from "./ViewState";
+import { Tile } from "./tile/TileTree";
+import { IModelApp } from "./IModelApp";
 
 const gridConstants = { maxPoints: 50, maxRefs: 25, maxDotsInRow: 250, maxHorizon: 500, dotTransparency: 100, lineTransparency: 200, planeTransparency: 225 };
 
@@ -41,14 +41,14 @@ export class RenderContext {
   /** @hidden */
   public get target(): RenderTarget { return this.viewport.target; }
 
-  /** Create a builder for creating a [[RenderGraphic]] of the specified type appropriate for rendering within this context's [[Viewport]].
-   * @param type The type of builder to create.
+  /** @hidden */
+  protected _createGraphicBuilder(type: GraphicType, transform?: Transform, id?: Id64String): GraphicBuilder { return this.target.createGraphicBuilder(type, this.viewport, transform, id); }
+
+  /** Create a builder for creating a [[GraphicType.Scene]] [[RenderGraphic]] for rendering within this context's [[Viewport]].
    * @param transform the local-to-world transform in which the builder's geometry is to be defined.
-   * @param id If the decoration is to be pickable, a unique identifier to associate with the resultant [[RenderGraphic]].
-   * @returns A builder for creating a [[RenderGraphic]] of the specified type appropriate for rendering within this context's [[Viewport]].
-   * @see [[IModelConnection.transientIds]] for obtaining an ID for a pickable decoration.
+   * @returns A builder for creating a [[GraphicType.Scene]] [[RenderGraphic]] for rendering within this context's [[Viewport]].
    */
-  public createGraphicBuilder(type: GraphicType, transform?: Transform, id?: Id64String): GraphicBuilder { return this.target.createGraphicBuilder(type, this.viewport, transform, id); }
+  public createSceneGraphicBuilder(transform?: Transform): GraphicBuilder { return this._createGraphicBuilder(GraphicType.Scene, transform); }
 
   /** Create a [[RenderGraphic]] which groups a set of graphics into a node in a scene graph, applying to each a transform and optional clip volume and symbology overrides.
    * @param branch Contains the group of graphics and the symbology overrides.
@@ -165,6 +165,15 @@ export class DecorateContext extends RenderContext {
 
     return intersections.map((cld: CurveLocationDetail) => cld.point.clone());
   }
+
+  /** Create a builder for creating a [[RenderGraphic]] of the specified type appropriate for rendering within this context's [[Viewport]].
+   * @param type The type of builder to create.
+   * @param transform the local-to-world transform in which the builder's geometry is to be defined.
+   * @param id If the decoration is to be pickable, a unique identifier to associate with the resultant [[RenderGraphic]].
+   * @returns A builder for creating a [[RenderGraphic]] of the specified type appropriate for rendering within this context's [[Viewport]].
+   * @see [[IModelConnection.transientIds]] for obtaining an ID for a pickable decoration.
+   */
+  public createGraphicBuilder(type: GraphicType, transform?: Transform, id?: Id64String): GraphicBuilder { return this._createGraphicBuilder(type, transform, id); }
 
   /** Calls [[GraphicBuilder.finish]] on the supplied builder to obtain a [[RenderGraphic]], then adds the graphic to the appropriate list of
    * [[Decorations]].
@@ -496,13 +505,27 @@ export class DecorateContext extends RenderContext {
 export class SceneContext extends RenderContext {
   public readonly graphics: RenderGraphic[] = [];
   public readonly backgroundGraphics: RenderGraphic[] = [];
-  public readonly requests: TileRequests;
+  public readonly missingTiles = new Set<Tile>();
+  public hasMissingTiles = false; // ###TODO for asynchronous loading of child nodes...turn those into requests too.
   public backgroundMap?: BackgroundMapState;
 
-  public constructor(vp: Viewport, requests: TileRequests) {
+  public constructor(vp: Viewport) {
     super(vp);
-    this.requests = requests;
   }
 
   public outputGraphic(graphic: RenderGraphic): void { this.backgroundMap ? this.backgroundGraphics.push(graphic) : this.graphics.push(graphic); }
+
+  public insertMissingTile(tile: Tile): void {
+    switch (tile.loadStatus) {
+      case Tile.LoadStatus.NotLoaded:
+      case Tile.LoadStatus.Queued:
+      case Tile.LoadStatus.Loading:
+        this.missingTiles.add(tile);
+        break;
+    }
+  }
+
+  public requestMissingTiles(): void {
+    IModelApp.tileAdmin.requestTiles(this.viewport, this.missingTiles);
+  }
 }

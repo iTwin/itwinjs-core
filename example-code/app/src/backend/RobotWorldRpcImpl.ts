@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 // __PUBLISH_EXTRACT_START__ RpcInterface.implementation
@@ -31,6 +31,7 @@ export class RobotWorldReadRpcImpl extends RpcInterface implements RobotWorldRea
 }
 // __PUBLISH_EXTRACT_END__
 
+// tslint:disable:no-duplicate-imports - Disable this because it is intentionally separated.
 import { Point3d, Angle } from "@bentley/geometry-core";
 import { RobotWorldWriteRpcInterface } from "../common/RobotWorldRpcInterface";
 

@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
@@ -8,7 +8,7 @@ import { AccessToken } from "@bentley/imodeljs-clients";
 import { TestData } from "./TestData";
 import { TestRpcInterface } from "../common/TestRpcInterface";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { MaybeRenderApp } from "./WebGLTestContext";
+import { MockRender } from "./MockRender";
 
 describe("ChangeSummary (#integration)", () => {
   let iModel: IModelConnection;
@@ -17,7 +17,7 @@ describe("ChangeSummary (#integration)", () => {
   let testIModelId: string;
 
   before(async () => {
-    MaybeRenderApp.startup();
+    MockRender.App.startup();
 
     Logger.initializeToConsole();
     Logger.setLevel("imodeljs-frontend.IModelConnection", LogLevel.Error); // Change to trace to debug
@@ -32,7 +32,7 @@ describe("ChangeSummary (#integration)", () => {
   after(async () => {
     if (iModel)
       await iModel.close(accessToken);
-    MaybeRenderApp.shutdown();
+    MockRender.App.shutdown();
   });
 
   it("Change cache file generation when attaching change cache", async () => {

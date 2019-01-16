@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
@@ -7,7 +7,7 @@ import { expect } from "chai";
 import * as sinon from "sinon";
 import { waitForUpdate } from "../test-helpers/misc";
 import { render, cleanup, fireEvent, RenderResult, waitForElement } from "react-testing-library";
-import { Breadcrumb, BreadcrumbMode, BreadcrumbPath } from "../../index";
+import { Breadcrumb, BreadcrumbMode, BreadcrumbPath } from "../../ui-components";
 import { mockRawTreeDataProvider, mockInterfaceTreeDataProvider, mockMutableInterfaceTreeDataProvider, mockRawTreeDataProvider2 } from "./mockTreeDataProvider";
 import TestUtils from "../TestUtils";
 

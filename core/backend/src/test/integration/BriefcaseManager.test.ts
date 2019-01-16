@@ -1,20 +1,20 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
 import { IModelJsFs } from "../../IModelJsFs";
 import { OpenMode, ActivityLoggingContext, GuidString } from "@bentley/bentleyjs-core";
-import { IModelVersion, IModelError, IModelStatus } from "@bentley/imodeljs-common";
+import { IModelVersion } from "@bentley/imodeljs-common";
 import { IModelTestUtils, TestUsers, TestIModelInfo } from "../IModelTestUtils";
-import { KeepBriefcase, IModelDb, OpenParams, AccessMode, ExclusiveAccessOption, Element, IModelHost, IModelHostConfiguration, BriefcaseManager, BriefcaseEntry } from "../../backend";
+import { KeepBriefcase, IModelDb, OpenParams, AccessMode, ExclusiveAccessOption, Element, IModelHost, IModelHostConfiguration, BriefcaseManager, BriefcaseEntry } from "../../imodeljs-backend";
 import { AccessToken, BriefcaseQuery, Briefcase as HubBriefcase } from "@bentley/imodeljs-clients";
 import { HubUtility } from "./HubUtility";
-// import { Logger, LogLevel } from "@bentley/bentleyjs-core";
 
 describe("BriefcaseManager (#integration)", () => {
   let accessToken: AccessToken;
+  let managerAccessToken: AccessToken;
   let testProjectId: string;
 
   let readOnlyTestIModel: TestIModelInfo;
@@ -33,12 +33,15 @@ describe("BriefcaseManager (#integration)", () => {
   };
 
   const validateBriefcaseCache = () => {
+    const paths = new Array<string>();
     (BriefcaseManager as any)._cache._briefcases.forEach((briefcase: BriefcaseEntry, key: string) => {
       assert.isTrue(IModelJsFs.existsSync(briefcase.pathname), `File corresponding to briefcase cache entry not found: ${briefcase.pathname}`);
       assert.strictEqual<string>(briefcase.getKey(), key, `Cached key ${key} doesn't match the current generated key ${briefcase.getKey()}`);
       if (briefcase.isOpen) {
         assert.strictEqual<string>(briefcase.nativeDb.getParentChangeSetId(), briefcase.changeSetId, `Parent change set id of Db doesn't match what's cached in memory`);
       }
+      assert.isFalse(paths.includes(briefcase.pathname), `Briefcase with path: ${briefcase.pathname} (key: ${key}) has a duplicate in the cache`);
+      paths.push(briefcase.pathname);
     });
   };
 
@@ -51,15 +54,11 @@ describe("BriefcaseManager (#integration)", () => {
     readWriteTestIModel = await IModelTestUtils.getTestModelInfo(accessToken, testProjectId, "ReadWriteTest");
 
     // Purge briefcases that are close to reaching the acquire limit
-    const managerAccessToken: AccessToken = await HubUtility.login(TestUsers.manager);
+    managerAccessToken = await HubUtility.login(TestUsers.manager);
     await HubUtility.purgeAcquiredBriefcases(managerAccessToken, "iModelJsIntegrationTest", "ReadOnlyTest");
     await HubUtility.purgeAcquiredBriefcases(managerAccessToken, "iModelJsIntegrationTest", "NoVersionsTest");
     await HubUtility.purgeAcquiredBriefcases(managerAccessToken, "iModelJsIntegrationTest", "ReadWriteTest");
     await HubUtility.purgeAcquiredBriefcases(managerAccessToken, "iModelJsIntegrationTest", "ConnectionReadTest");
-
-    // Logger.initializeToConsole();
-    // Logger.setLevelDefault(LogLevel.Warning);
-    // Logger.setLevel("Performance", LogLevel.Info);
   });
 
   afterEach(() => {
@@ -411,19 +410,6 @@ describe("BriefcaseManager (#integration)", () => {
     IModelTestUtils.startBackend();
   });
 
-  // The test fails matching access tokens - needs investigation.
-  it.skip("Should track the AccessTokens that are used to open IModels (#integration)", async () => {
-    await IModelDb.open(actx, accessToken, testProjectId, readOnlyTestIModel.id, OpenParams.fixedVersion(AccessMode.Exclusive));
-    assert.deepEqual(IModelDb.getAccessToken(readOnlyTestIModel.id), accessToken);
-
-    try {
-      IModelDb.getAccessToken("--invalidid--");
-      assert.fail("Asking for an AccessToken on an iModel that is not open should fail");
-    } catch (err) {
-      assert.equal((err as IModelError).errorNumber, IModelStatus.NotFound);
-    }
-  });
-
   it("should be able to reverse and reinstate changes (#integration)", async () => {
     const iModel: IModelDb = await IModelDb.open(actx, accessToken, testProjectId, readOnlyTestIModel.id, OpenParams.pullOnly(), IModelVersion.latest());
 
@@ -466,7 +452,7 @@ describe("BriefcaseManager (#integration)", () => {
     exists = await briefcaseExistsOnHub(readOnlyTestIModel.id, briefcaseId3);
     assert.isTrue(exists);
 
-    await BriefcaseManager.purgeCache(actx, accessToken);
+    await BriefcaseManager.purgeCache(actx, managerAccessToken);
 
     exists = await briefcaseExistsOnHub(readOnlyTestIModel.id, briefcaseId2);
     assert.isFalse(exists);

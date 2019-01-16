@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
@@ -17,6 +17,7 @@ import { Target } from "./Target";
 import { ColorInfo } from "./ColorInfo";
 import { ShaderProgramParams } from "./DrawCommand";
 import { Material } from "./Material";
+import { RenderMemory } from "../System";
 
 function wantMaterials(vf: ViewFlags) { return vf.materials && RenderMode.SmoothShade === vf.renderMode; }
 function wantLighting(vf: ViewFlags) {
@@ -33,6 +34,10 @@ export class SurfaceGeometry extends MeshGeometry {
 
   public dispose() {
     dispose(this._indices);
+  }
+
+  public collectStatistics(stats: RenderMemory.Statistics): void {
+    stats.addSurface(this._indices.bytesUsed);
   }
 
   public get isLit() { return SurfaceType.Lit === this.surfaceType || SurfaceType.TexturedLit === this.surfaceType; }
@@ -81,9 +86,13 @@ export class SurfaceGeometry extends MeshGeometry {
   public getRenderPass(target: Target): RenderPass {
     if (this.isClassifier)
       return RenderPass.Classification;
+
     const mat = this.isLit ? this._mesh.material : undefined;
     const opaquePass = this.isPlanar ? RenderPass.OpaquePlanar : RenderPass.OpaqueGeneral;
     const fillFlags = this.fillFlags;
+
+    if (this.isGlyph && target.isReadPixelsInProgress)
+      return opaquePass;
 
     const vf = target.currentViewFlags;
     if (RenderMode.Wireframe === vf.renderMode) {
@@ -92,7 +101,6 @@ export class SurfaceGeometry extends MeshGeometry {
         return RenderPass.None;
       }
     }
-
     if (!this.isGlyph) {
       if (!vf.transparency || RenderMode.SolidFill === vf.renderMode || RenderMode.HiddenLine === vf.renderMode) {
         return opaquePass;

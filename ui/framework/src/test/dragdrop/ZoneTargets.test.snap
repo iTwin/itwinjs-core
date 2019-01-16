@@ -1,0 +1,18 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ZoneTargets DropTarget.Back renders correctly 1`] = `
+<Container>
+  <Back
+    onTargetChanged={[Function]}
+    zoneIndex={1}
+  />
+</Container>
+`;
+
+exports[`ZoneTargets DropTarget.Merge renders correctly 1`] = `
+<Container>
+  <Merge
+    onTargetChanged={[Function]}
+  />
+</Container>
+`;

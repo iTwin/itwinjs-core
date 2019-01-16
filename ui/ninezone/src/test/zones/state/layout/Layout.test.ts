@@ -1,13 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as sinon from "sinon";
 import * as TypeMoq from "typemoq";
-import Rectangle, { RectangleProps } from "../../../..//utilities/Rectangle";
-import Layout from "../../../..//zones/state/layout/Layout";
-import Root from "../../../..//zones/state/layout/Root";
-import Size from "../../../..//utilities/Size";
+import { Rectangle, RectangleProps, Layout, Root, Size } from "../../../../ui-ninezone";
 
 class LayoutMock extends Layout {
   private _topLayouts: LayoutMock[] = [];

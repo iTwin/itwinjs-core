@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { Geometry } from "../Geometry";
@@ -898,6 +898,17 @@ export class Vector3d extends XYZ {
   public crossProduct(vectorB: Vector3d, result?: Vector3d): Vector3d {
     return Vector3d.createCrossProduct(this.x, this.y, this.z, vectorB.x, vectorB.y, vectorB.z, result);
   }
+  /**
+   * return cross product of `this` with the vector `(x,y,z)`
+   * @param x x component of second vector
+   * @param y y component of second vector
+   * @param z z component of second vector
+   * @param result computed cross product (new Vector3d).
+   */
+  public crossProductXYZ(x: number, y: number, z: number, result?: Vector3d): Vector3d {
+    return Vector3d.createCrossProduct(this.x, this.y, this.z, x, y, z, result);
+  }
+
   // angles
   public angleTo(vectorB: Vector3d): Angle {
     return Angle.createAtan2(this.crossProductMagnitude(vectorB), this.dotProduct(vectorB));

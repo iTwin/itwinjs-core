@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 export * from "./Assert";
@@ -18,6 +18,7 @@ export * from "./LRUMap";
 export * from "./SortedArray";
 export * from "./StringUtils";
 export * from "./Time";
+export * from "./PriorityQueue";
 
 /** @module Utils */
 
@@ -43,6 +44,10 @@ export * from "./Time";
 /**
  * @docs-group-description Logging
  * Classes for configuring and logging diagnostic messages - see [Learning about Logging]($docs/learning/common/Logging.md)
+ */
+/**
+ * @docs-group-description Collections
+ * Specialized, customizable collection classes like priority queues.
  */
 /**
  * @docs-group-description Utils

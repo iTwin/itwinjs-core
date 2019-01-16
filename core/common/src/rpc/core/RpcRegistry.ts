@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module RpcInterface */
@@ -10,7 +10,7 @@ import { RpcOperation, RpcOperationPolicy } from "./RpcOperation";
 import { RpcControlChannel } from "./RpcControl";
 import { IModelError, ServerError } from "../../IModelError";
 import { BentleyError, BentleyStatus } from "@bentley/bentleyjs-core";
-import { RpcConfiguration, RpcPendingQueue, initializeRpcRequest } from "../../common";
+import { RpcConfiguration, RpcPendingQueue, initializeRpcRequest } from "../../imodeljs-common";
 
 // tslint:disable:ban-types
 

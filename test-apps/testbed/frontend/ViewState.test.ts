@@ -1,35 +1,39 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
-import { Point3d, Vector3d, YawPitchRollAngles, Range3d, Angle, Matrix3d } from "@bentley/geometry-core";
-import { SpatialViewDefinitionProps, ViewDefinitionProps } from "@bentley/imodeljs-common";
+import { assert, expect } from "chai";
+import { Point3d, Vector3d, YawPitchRollAngles, Range3d, Angle, Matrix3d, DeepCompare } from "@bentley/geometry-core";
+import { AmbientOcclusion, BackgroundMapType, ColorDef, HiddenLine, RenderMode, SpatialViewDefinitionProps, ViewDefinitionProps } from "@bentley/imodeljs-common";
 import * as path from "path";
-import { DeepCompare } from "@bentley/geometry-core/lib/serialization/DeepCompare";
 import {
-  SpatialViewState, ViewStatus, StandardView, StandardViewId, MarginPercent, AuxCoordSystemSpatialState, CategorySelectorState,
-  ModelSelectorState, IModelConnection, DisplayStyle3dState,
+  SpatialViewState, ViewStatus, ViewState3d, StandardView, StandardViewId, MarginPercent, AuxCoordSystemSpatialState, CategorySelectorState,
+  ModelSelectorState, IModelConnection, DisplayStyle3dState, SheetModelState, SpatialModelState, DrawingModelState,
 } from "@bentley/imodeljs-frontend";
 import { CONSTANTS } from "../common/Testbed";
-import { MaybeRenderApp } from "./WebGLTestContext";
+import { MockRender } from "./MockRender";
 
 const iModelLocation = path.join(CONSTANTS.IMODELJS_CORE_DIRNAME, "core/backend/lib/test/assets/test.bim");
+const iModelLocation2 = path.join(CONSTANTS.IMODELJS_CORE_DIRNAME, "core/backend/lib/test/assets/CompatibilityTestSeed.bim");
 
 describe("ViewState", () => {
   let imodel: IModelConnection;
+  let imodel2: IModelConnection;
   let viewState: SpatialViewState;
 
   before(async () => {
-    MaybeRenderApp.startup();
+    MockRender.App.startup();
     imodel = await IModelConnection.openStandalone(iModelLocation);
     const viewRows: ViewDefinitionProps[] = await imodel.views.queryProps({ from: SpatialViewState.sqlName });
     assert.exists(viewRows, "Should find some views");
     viewState = await imodel.views.load(viewRows[0].id!) as SpatialViewState;
+
+    imodel2 = await IModelConnection.openStandalone(iModelLocation2);
   });
 
   after(async () => {
     if (imodel) await imodel.closeStandalone();
+    if (imodel2) await imodel2.closeStandalone();
   });
 
   const compareView = (v1: SpatialViewState, v2: SpatialViewDefinitionProps, str: string) => {
@@ -79,6 +83,144 @@ describe("ViewState", () => {
     assert.isTrue(acs.getOrigin().isExactEqual({ x: 1, y: 1, z: 0 }));
     acs.setRotation(StandardView.iso);
     assert.isTrue(acs.getRotation().isExactEqual(StandardView.iso));
+  });
+
+  it("should be able to propagate viewFlags and displayStyle changes when cloning ViewState", async () => {
+    const vs0 = viewState.clone<SpatialViewState>();
+
+    assert.isTrue(vs0.is3d(), "viewState should be 3d");
+
+    // query and change various viewFlags and displayStyle settings and ensure the changes propagate when cloning the state
+
+    const vf = vs0.viewFlags.clone();
+    vf.acsTriad = !vf.acsTriad;
+    vf.ambientOcclusion = !vf.ambientOcclusion;
+    vf.backgroundMap = !vf.backgroundMap;
+    vf.cameraLights = !vf.cameraLights;
+    vf.clipVolume = !vf.clipVolume;
+    vf.constructions = !vf.constructions;
+    vf.continuousRendering = !vf.continuousRendering;
+    vf.dimensions = !vf.dimensions;
+    vf.edgeMask = vf.edgeMask === 0 ? 1 : 0;
+    vf.fill = !vf.fill;
+    vf.grid = !vf.grid;
+    vf.hLineMaterialColors = !vf.hLineMaterialColors;
+    vf.hiddenEdges = !vf.hiddenEdges;
+    vf.materials = !vf.materials;
+    vf.monochrome = !vf.monochrome;
+    vf.noGeometryMap = !vf.noGeometryMap;
+    vf.patterns = !vf.patterns;
+    vf.renderMode = vf.renderMode === RenderMode.HiddenLine ? RenderMode.SmoothShade : RenderMode.HiddenLine;
+    vf.shadows = !vf.shadows;
+    vf.solarLight = !vf.solarLight;
+    vf.sourceLights = !vf.sourceLights;
+    vf.styles = !vf.styles;
+    vf.textures = !vf.textures;
+    vf.transparency = !vf.transparency;
+    vf.visibleEdges = !vf.visibleEdges;
+    vf.weights = !vf.weights;
+    vs0.viewFlags = vf;
+
+    const vs0DisplayStyle3d = (vs0 as ViewState3d).getDisplayStyle3d();
+
+    const oldAOSettings = vs0DisplayStyle3d.settings.ambientOcclusionSettings;
+    const vs0AOSettings = AmbientOcclusion.Settings.fromJSON({
+      bias: oldAOSettings.bias! / 2.0,
+      zLengthCap: oldAOSettings.zLengthCap! / 2.0,
+      intensity: oldAOSettings.intensity! / 2.0,
+      texelStepSize: oldAOSettings.texelStepSize! / 2.0,
+      blurDelta: oldAOSettings.blurDelta! / 2.0,
+      blurSigma: oldAOSettings.blurSigma! / 2.0,
+      blurTexelStepSize: oldAOSettings.blurTexelStepSize! / 2.0,
+    });
+    vs0DisplayStyle3d.settings.ambientOcclusionSettings = vs0AOSettings;
+
+    const vs0BackgroundColor = ColorDef.from(32, 1, 99);
+    vs0DisplayStyle3d.backgroundColor = vs0BackgroundColor;
+
+    const oldBackgroundMap = vs0DisplayStyle3d.settings.backgroundMap;
+    if (undefined !== oldBackgroundMap) {
+      let mt = BackgroundMapType.Aerial;
+      if (oldBackgroundMap.providerData !== undefined)
+        mt = oldBackgroundMap.providerData.mapType === BackgroundMapType.Aerial ? BackgroundMapType.Hybrid : BackgroundMapType.Aerial;
+      vs0DisplayStyle3d.setBackgroundMap({
+        providerName: oldBackgroundMap.providerName === "BingProvider" ? "MapProvider" : "BingProvider",
+        providerData: { mapType: mt },
+      });
+    } else {
+      vs0DisplayStyle3d.setBackgroundMap({
+        providerName: "BingProvider",
+        providerData: {
+          mapType: BackgroundMapType.Aerial,
+        },
+      });
+    }
+    const vs0BackgroundMap = vs0DisplayStyle3d.settings.backgroundMap;
+
+    const oldHLSettings = vs0DisplayStyle3d.settings.hiddenLineSettings.toJSON();
+    vs0DisplayStyle3d.settings.hiddenLineSettings = HiddenLine.Settings.fromJSON({
+      transThreshold: oldHLSettings.transThreshold !== undefined && oldHLSettings.transThreshold! > 0.0 ? 0.0 : 0.2,
+    });
+    const vs0HLSettings = vs0DisplayStyle3d.settings.hiddenLineSettings;
+
+    const vs0MonochromeColor = ColorDef.from(32, 1, 99);
+    vs0DisplayStyle3d.settings.monochromeColor = vs0MonochromeColor;
+
+    // clone the state and check if the changes persisted
+
+    const vs1 = vs0.clone<SpatialViewState>();
+    const vs1DisplayStyle3d = (vs1 as ViewState3d).getDisplayStyle3d();
+
+    const vs1AOSettings = vs1DisplayStyle3d.settings.ambientOcclusionSettings;
+    const vs1BackgroundColor = vs1DisplayStyle3d.settings.backgroundColor;
+    const vs1BackgroundMap = vs1DisplayStyle3d.settings.backgroundMap;
+    const vs1HLSettings = vs1DisplayStyle3d.settings.hiddenLineSettings;
+    const vs1MonochromeColor = vs1DisplayStyle3d.settings.monochromeColor;
+
+    assert.equal(vs0.viewFlags.acsTriad, vs1.viewFlags.acsTriad, "clone should copy viewFlags.acsTriad");
+    assert.equal(vs0.viewFlags.ambientOcclusion, vs1.viewFlags.ambientOcclusion, "clone should copy viewFlags.ambientOcclusion");
+    assert.equal(vs0.viewFlags.backgroundMap, vs1.viewFlags.backgroundMap, "clone should copy viewFlags.backgroundMap");
+    assert.equal(vs0.viewFlags.cameraLights, vs1.viewFlags.cameraLights, "clone should copy viewFlags.cameraLights");
+    assert.equal(vs0.viewFlags.clipVolume, vs1.viewFlags.clipVolume, "clone should copy viewFlags.clipVolume");
+    assert.equal(vs0.viewFlags.constructions, vs1.viewFlags.constructions, "clone should copy viewFlags.constructions");
+    // This flag is hidden - assert.equal(vs0.viewFlags.continuousRendering, vs1.viewFlags.continuousRendering, "clone should copy viewFlags.continuousRendering");
+    assert.equal(vs0.viewFlags.dimensions, vs1.viewFlags.dimensions, "clone should copy viewFlags.dimensions");
+    // This flag is hidden - assert.equal(vs0.viewFlags.edgeMask, vs1.viewFlags.edgeMask, "clone should copy viewFlags.edgeMask"); //
+    assert.equal(vs0.viewFlags.fill, vs1.viewFlags.fill, "clone should copy viewFlags.fill");
+    assert.equal(vs0.viewFlags.grid, vs1.viewFlags.grid, "clone should copy viewFlags.grid");
+    assert.equal(vs0.viewFlags.hLineMaterialColors, vs1.viewFlags.hLineMaterialColors, "clone should copy viewFlags.hLineMaterialColors");
+    assert.equal(vs0.viewFlags.hiddenEdges, vs1.viewFlags.hiddenEdges, "clone should copy viewFlags.hiddenEdges");
+    assert.equal(vs0.viewFlags.materials, vs1.viewFlags.materials, "clone should copy viewFlags.materials");
+    assert.equal(vs0.viewFlags.monochrome, vs1.viewFlags.monochrome, "clone should copy viewFlags.monochrome");
+    // This flag test will fail because the backend doesn't do anything with it - assert.equal(vs0.viewFlags.noGeometryMap, vs1.viewFlags.noGeometryMap, "clone should copy viewFlags.noGeometryMap");
+    assert.equal(vs0.viewFlags.patterns, vs1.viewFlags.patterns, "clone should copy viewFlags.patterns");
+    assert.equal(vs0.viewFlags.renderMode, vs1.viewFlags.renderMode, "clone should copy viewFlags.renderMode");
+    assert.equal(vs0.viewFlags.shadows, vs1.viewFlags.shadows, "clone should copy viewFlags.shadows");
+    assert.equal(vs0.viewFlags.solarLight, vs1.viewFlags.solarLight, "clone should copy viewFlags.solarLight");
+    assert.equal(vs0.viewFlags.sourceLights, vs1.viewFlags.sourceLights, "clone should copy viewFlags.sourceLights");
+    assert.equal(vs0.viewFlags.styles, vs1.viewFlags.styles, "clone should copy viewFlags.styles");
+    assert.equal(vs0.viewFlags.textures, vs1.viewFlags.textures, "clone should copy viewFlags.textures");
+    assert.equal(vs0.viewFlags.transparency, vs1.viewFlags.transparency, "clone should copy viewFlags.transparency");
+    assert.equal(vs0.viewFlags.visibleEdges, vs1.viewFlags.visibleEdges, "clone should copy viewFlags.visibleEdges");
+    assert.equal(vs0.viewFlags.weights, vs1.viewFlags.weights, "clone should copy viewFlags.weights");
+    assert.equal(vs0AOSettings.bias, vs1AOSettings.bias, "clone should copy displayStyle.ambientOcclusionSettings.bias");
+    assert.equal(vs0AOSettings.zLengthCap, vs1AOSettings.zLengthCap, "clone should copy displayStyle.ambientOcclusionSettings.zLengthCap");
+    assert.equal(vs0AOSettings.intensity, vs1AOSettings.intensity, "clone should copy displayStyle.ambientOcclusionSettings.intensity");
+    assert.equal(vs0AOSettings.texelStepSize, vs1AOSettings.texelStepSize, "clone should copy displayStyle.ambientOcclusionSettings.texelStepSize");
+    assert.equal(vs0AOSettings.blurDelta, vs1AOSettings.blurDelta, "clone should copy displayStyle.ambientOcclusionSettings.blurDelta");
+    assert.equal(vs0AOSettings.blurSigma, vs1AOSettings.blurSigma, "clone should copy displayStyle.ambientOcclusionSettings.blurSigma");
+    assert.equal(vs0AOSettings.blurTexelStepSize, vs1AOSettings.blurTexelStepSize, "clone should copy displayStyle.ambientOcclusionSettings.blurTexelStepSize");
+    assert.isTrue(vs0BackgroundColor.equals(vs1BackgroundColor), "clone should copy displayStyle.backgroundColor");
+    assert.isDefined(vs0BackgroundMap);
+    assert.isDefined(vs0BackgroundMap!.providerData);
+    assert.isDefined(vs1BackgroundMap);
+    assert.isDefined(vs1BackgroundMap!.providerData);
+    assert.equal(vs0BackgroundMap!.providerData!.mapType, vs1BackgroundMap!.providerData!.mapType, "clone should copy displayStyle.backgroundMap.providerData.mapType");
+    assert.isDefined(vs0BackgroundMap!.providerName);
+    assert.isDefined(vs1BackgroundMap!.providerName);
+    assert.equal(vs0BackgroundMap!.providerName, vs1BackgroundMap!.providerName, "clone should copy displayStyle.backgroundMap.providerName");
+    assert.equal(vs0HLSettings.transparencyThreshold, vs1HLSettings.transparencyThreshold, "clone should copy displayStyle.hiddenLineSettings.transparencyThreshold");
+    assert.isTrue(vs0MonochromeColor.equals(vs1MonochromeColor), "clone should copy displayStyle.monochromeColor");
   });
 
   it("view volume adjustments", async () => {
@@ -181,5 +323,29 @@ describe("ViewState", () => {
     const cppView: SpatialViewDefinitionProps = await imodel.executeTest("lookAtUsingLensAngle", testParams);
     viewState.lookAtUsingLensAngle(testParams.eye, testParams.target, testParams.up, testParams.lens, testParams.front, testParams.back);
     compareView(viewState, cppView, "lookAtUsingLensAngle");
+  });
+
+  it("should ignore 2d models in model selector", async () => {
+    const view = await imodel2.views.load("0x46") as SpatialViewState;
+    expect(view).not.to.be.undefined;
+    assert.instanceOf(view, SpatialViewState);
+
+    const numSpatialModels = view.modelSelector.models.size;
+    expect(numSpatialModels).to.be.greaterThan(0);
+
+    // Add 2d models to selector
+    view.modelSelector.addModels(["0x24", "0x28"]);
+    await imodel2.models.load(view.modelSelector.models);
+    assert.instanceOf(imodel2.models.loaded.get("0x24"), DrawingModelState);
+    assert.instanceOf(imodel2.models.loaded.get("0x28"), SheetModelState);
+    expect(view.modelSelector.models.size).to.equal(numSpatialModels + 2);
+
+    let numModelsVisited = 0;
+    view.forEachModel((model) => {
+      assert.instanceOf(model, SpatialModelState);
+      ++numModelsVisited;
+    });
+
+    expect(numModelsVisited).to.equal(numSpatialModels);
   });
 });

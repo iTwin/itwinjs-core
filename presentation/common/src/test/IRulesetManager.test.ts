@@ -1,12 +1,12 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as faker from "faker";
 import * as moq from "./_helpers/Mocks";
 import { RegisteredRuleset } from "../RegisteredRuleset";
-import { Ruleset, RuleTypes } from "../rules";
+import { Ruleset, RuleTypes } from "../presentation-common";
 
 describe("RegisteredRuleset", () => {
 

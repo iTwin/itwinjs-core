@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Core */
@@ -24,7 +24,7 @@ export interface Page<TItem> {
 /**
  * @hidden
  */
-export default class PageContainer<TItem, TPage extends Page<TItem> = Page<TItem>> {
+export class PageContainer<TItem, TPage extends Page<TItem> = Page<TItem>> {
   private _pageSize: number;
   private _maxPages: number;
   private _pages: TPage[] = [];

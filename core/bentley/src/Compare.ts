@@ -1,11 +1,32 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Utils */
 
 /**
- * Basic comparison routine for numbers which treats two numbers as equal if the absolute value of their difference is less than the specified tolerance.
+ * A function that returns a numerical value indicating how two objects are ordered in relation to one another.
+ * Such functions are used by various collection classes in the iModel.js library.
+ * Given values `lhs` and `rhs`, the function returns:
+ *  - Zero if lhs == rhs
+ *  - A negative number if lhs < rhs
+ *  - A positive number if lhs > rhs
+ *
+ * An OrderedComparator `must` implement [strict weak ordering](https://en.wikipedia.org/wiki/Weak_ordering#Strict_weak_orderings), which can be summarized by the following rules:
+ *  - `compare(x, x)` returns zero.
+ *  - If `compare(x, y)` returns zero, then so does `compare(y, x)` (i.e., `x == y` implies `y == x`).
+ *  - If `compare(x, y)` returns non-zero, then `compare(y, x)` returns a value with an opposite sign (i.e., `x < y` implies `y > x`).
+ *  - If `compare(x, y)` and `compare(y, z)` return non-zero values with the same sign, then `compare(x, z)` returns a value with the same sign (i.e., `x < y < z` implies `x < z`).
+ *
+ * @see SortedArray
+ * @see Dictionary
+ * @see IndexMap
+ * @see PriorityQueue
+ */
+export type OrderedComparator<T, U = T> = (lhs: T, rhs: U) => number;
+
+/**
+ * An [[OrderedComparator]] for numbers that treats two numbers as equal if the absolute value of their difference is less than a specified tolerance.
  * @hidden
  */
 export function compareWithTolerance(a: number, b: number, tolerance = 0.1): number {
@@ -25,28 +46,6 @@ export function compareBooleans(a: boolean, b: boolean): number { return a !== b
 
 /** @hidden */
 export function compareStrings(a: string, b: string): number { return a === b ? 0 : (a < b ? -1 : 1); }
-
-/** Interface adopted by a type T which supports ordered comparison. */
-export interface Comparable<T> {
-  /** Determine whether this object is considered equivalent to another object.
-   * @param rhs The object to which to compare
-   * @returns true if the objects are considered equivalent.
-   */
-  equals(rhs: T): boolean;
-
-  /** Determine ordering of this object relative to another object.
-   * Ordering is specified as a numerical value for which only the sign is meaningful.
-   * A negative result indicates this object is ordered before the other object.
-   * A positive result indicates this object is ordered after the other object.
-   * A result of zero indicates the two objects are considered equivalent.
-   * @param rhs The object to which to compare
-   * @returns A numeric value for which the sign indicates the ordering of this object relative to the other object.
-   */
-  compare(rhs: T): number;
-}
-
-/** @hidden */
-export function compare<T extends Comparable<T>>(lhs: T, rhs: T): number { return lhs.compare(rhs); }
 
 /** @hidden */
 export function comparePossiblyUndefined<T>(compareDefined: (lhs: T, rhs: T) => number, lhs?: T, rhs?: T): number {

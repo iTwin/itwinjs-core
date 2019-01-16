@@ -1,18 +1,13 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-import Scrollable, { ScrollableState } from "../..//toolbar/Scrollable";
-import { Direction } from "../..//utilities/Direction";
-import Chevron from "../..//toolbar/scroll/Chevron";
-import { ToolbarPanelAlignment } from "../..//toolbar/Toolbar";
+import { Direction, Chevron, ToolbarPanelAlignment, Scrollable, ScrollableState, PanelsProvider } from "../../ui-ninezone";
 
 // tslint:disable-next-line:variable-name
-const Item: React.StatelessComponent = () => {
-  return <div />;
-};
+const ToolbarItem = () => <div />;
 
 describe("<Scrollable />", () => {
   it("should render", () => {
@@ -24,15 +19,36 @@ describe("<Scrollable />", () => {
   });
 
   it("renders with visible item threshold", () => {
-    shallow(<Scrollable visibleItemThreshold={2} />).should.matchSnapshot();
+    const sut = shallow(
+      <Scrollable
+        visibleItemThreshold={2}
+      />,
+    );
+    const renderProp = sut.find(PanelsProvider).prop("children");
+    const rendered = shallow(renderProp!(undefined) as React.ReactElement<{}>);
+    rendered.should.matchSnapshot();
   });
 
   it("renders with expandsTo", () => {
-    shallow(<Scrollable expandsTo={Direction.Left} />).should.matchSnapshot();
+    const sut = shallow(
+      <Scrollable
+        expandsTo={Direction.Left}
+      />,
+    );
+    const renderProp = sut.find(PanelsProvider).prop("children");
+    const rendered = shallow(renderProp!(undefined) as React.ReactElement<{}>);
+    rendered.should.matchSnapshot();
   });
 
   it("renders with panelAlignment", () => {
-    shallow(<Scrollable panelAlignment={ToolbarPanelAlignment.End} />).should.matchSnapshot();
+    const sut = shallow(
+      <Scrollable
+        panelAlignment={ToolbarPanelAlignment.End}
+      />,
+    );
+    const renderProp = sut.find(PanelsProvider).prop("children");
+    const rendered = shallow(renderProp!(undefined) as React.ReactElement<{}>);
+    rendered.should.matchSnapshot();
   });
 
   it("renders vertical with overflow scrolled left correctly", () => {
@@ -41,10 +57,7 @@ describe("<Scrollable />", () => {
         visibleItemThreshold={3}
         items={
           <>
-            <Item />
-            <Item />
-            <Item />
-            <Item />
+
           </>
         }
       />,
@@ -52,7 +65,9 @@ describe("<Scrollable />", () => {
     sut.setState({
       scrollOffset: 1,
     });
-    sut.should.matchSnapshot();
+    const renderProp = sut.find(PanelsProvider).prop("children");
+    const rendered = shallow(renderProp!(undefined) as React.ReactElement<{}>);
+    rendered.should.matchSnapshot();
   });
 
   it("renders vertical with overflow scrolled right most correctly", () => {
@@ -61,10 +76,10 @@ describe("<Scrollable />", () => {
         visibleItemThreshold={2}
         items={
           <>
-            <Item />
-            <Item />
-            <Item />
-            <Item />
+            <ToolbarItem />
+            <ToolbarItem />
+            <ToolbarItem />
+            <ToolbarItem />
           </>
         }
       />,
@@ -72,7 +87,9 @@ describe("<Scrollable />", () => {
     sut.setState({
       scrollOffset: 2,
     });
-    sut.should.matchSnapshot();
+    const renderProp = sut.find(PanelsProvider).prop("children");
+    const rendered = shallow(renderProp!(undefined) as React.ReactElement<{}>);
+    rendered.should.matchSnapshot();
   });
 
   it("initial scroll offset should be 0", () => {
@@ -85,6 +102,7 @@ describe("<Scrollable />", () => {
     sut.setState({
       scrollOffset: 2,
     });
+
     const scroll = sut.findWhere((node) => node.name() === "div" && node.hasClass("nz-left"));
     scroll.exists().should.true;
 
@@ -101,11 +119,11 @@ describe("<Scrollable />", () => {
         visibleItemThreshold={2}
         items={
           <>
-            <Item />
-            <Item />
-            <Item />
-            <Item />
-            <Item />
+            <ToolbarItem />
+            <ToolbarItem />
+            <ToolbarItem />
+            <ToolbarItem />
+            <ToolbarItem />
           </>
         }
       />,

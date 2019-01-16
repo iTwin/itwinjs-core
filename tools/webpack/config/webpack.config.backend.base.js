@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 "use strict";
@@ -31,14 +31,8 @@ module.exports = (publicPath) => {
     // The "externals" configuration option provides a way of excluding dependencies from the output bundles.
     externals: {
       // We need the following work around to keep the native addon loader out of the bundle:
-      "@bentley/imodeljs-electronaddon": "@bentley/imodeljs-electronaddon",
-      "@bentley/imodeljs-nodeaddon": "@bentley/imodeljs-nodeaddon",
-      "@bentley/imodeljs-nodeaddon/NodeAddonLoader": "@bentley/imodeljs-nodeaddon/NodeAddonLoader",
-      "@bentley/imodeljs-nodeaddonapi/package.json": "@bentley/imodeljs-nodeaddonapi/package.json",
-      "@bentley/imodeljs-native-platform-electron": "@bentley/imodeljs-native-platform-electron",
-      "@bentley/imodeljs-native-platform-node": "@bentley/imodeljs-native-platform-node",
-      "@bentley/imodeljs-native-platform-node/NodeAddonLoader": "@bentley/imodeljs-native-platform-node/NodeAddonLoader",
-      "@bentley/imodeljs-native-platform-api/package.json": "@bentley/imodeljs-native-platform-api/package.json",
+      "@bentley/imodeljs-native/package.json": "@bentley/imodeljs-native/package.json",
+      "@bentley/imodeljs-native/loadNativePlatform.js": "@bentley/imodeljs-native/loadNativePlatform.js",
     },
     // These are the "entry points" to our application.
     // This means they will be the "root" imports that are included in JS bundle.

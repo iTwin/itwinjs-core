@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 "use strict";
@@ -29,6 +29,9 @@ const packageRoot = (argv.packageRoot !== undefined) ? argv.packageRoot : proces
 const testDir = (argv.testDir !== undefined) ? argv.testDir : paths.appLibTests;
 const timeout = (argv.timeout !== undefined) ? argv.timeout : "999999";
 
+// use the --defineWindow argument if your test needs jsdom-global/register to define a window for compilation purposes.
+const defineWindow = (argv.defineWindow !== undefined);
+
 const inMonoRepo = fs.existsSync(path.join(__dirname, "../../../common/scripts/mocha-reporter-tweaks.js"));
 const rushTweaks = (inMonoRepo) ? ["--require", require.resolve("../../../common/scripts/mocha-reporter-tweaks")] : [];
 
@@ -41,6 +44,10 @@ const options = [
   "--timeout", timeout,
   "--colors"
 ];
+
+if (defineWindow) {
+  options.push("--require", "jsdom-global/register");
+}
 
 const offlineOptions = [];
 if (argv.offline === "mock") {

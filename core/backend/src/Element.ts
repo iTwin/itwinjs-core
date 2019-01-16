@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Elements */
@@ -348,6 +348,25 @@ export class Subject extends InformationReferenceElement implements SubjectProps
     return new Code({ spec: codeSpec.id, scope: parentSubjectId, value: codeValue });
   }
   /**
+   * Create a Subject
+   * @param iModelDb The IModelDb
+   * @param parentSubjectId The new Subject will be a child of this Subject
+   * @param name The name (codeValue) of the Subject
+   * @param description The optional description of the Subject
+   * @returns The newly constructed Subject
+   * @throws [[IModelError]] if there is a problem creating the Subject
+   */
+  public static create(iModelDb: IModelDb, parentSubjectId: Id64String, name: string, description?: string): Subject {
+    const subjectProps: SubjectProps = {
+      classFullName: this.classFullName,
+      model: IModel.repositoryModelId,
+      parent: new SubjectOwnsSubjects(parentSubjectId),
+      code: this.createCode(iModelDb, parentSubjectId, name),
+      description,
+    };
+    return new Subject(subjectProps, iModelDb);
+  }
+  /**
    * Insert a Subject
    * @param iModelDb Insert into this IModelDb
    * @param parentSubjectId The new Subject will be inserted as a child of this Subject
@@ -357,14 +376,8 @@ export class Subject extends InformationReferenceElement implements SubjectProps
    * @throws [[IModelError]] if there is a problem inserting the Subject
    */
   public static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string, description?: string): Id64String {
-    const subjectProps: SubjectProps = {
-      classFullName: this.classFullName,
-      model: IModel.repositoryModelId,
-      parent: new SubjectOwnsSubjects(parentSubjectId),
-      code: this.createCode(iModelDb, parentSubjectId, name),
-      description,
-    };
-    return iModelDb.elements.insertElement(subjectProps);
+    const subject = this.create(iModelDb, parentSubjectId, name, description);
+    return iModelDb.elements.insertElement(subject);
   }
 }
 

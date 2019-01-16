@@ -1,15 +1,14 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Tree */
 
 import * as React from "react";
-import { TreeProps } from "@bentley/ui-components/lib/tree/component/Tree";
-import { ActiveMatchInfo, HighlightableTreeProps } from "@bentley/ui-components/lib/tree/HighlightingEngine";
+import { TreeProps, ActiveMatchInfo, HighlightableTreeProps } from "@bentley/ui-components";
 import { getDisplayName } from "../common/Utils";
-import IPresentationTreeDataProvider from "./IPresentationTreeDataProvider";
-import FilteredPresentationTreeDataProvider from "./FilteredDataProvider";
+import { IPresentationTreeDataProvider } from "./IPresentationTreeDataProvider";
+import { FilteredPresentationTreeDataProvider } from "./FilteredDataProvider";
 import "./WithFilteringSupport.scss";
 
 /**
@@ -42,7 +41,7 @@ const defaultState: State = {
  * **Note:** it is required for the tree to use [[IPresentationTreeDataProvider]]
  */
 // tslint:disable-next-line: variable-name naming-convention
-export default function withFilteringSupport<P extends TreeProps>(TreeComponent: React.ComponentType<P>): React.ComponentType<P & Props> {
+export function treeWithFilteringSupport<P extends TreeProps>(TreeComponent: React.ComponentType<P>): React.ComponentType<P & Props> {
 
   type CombinedProps = P & Props;
 
@@ -111,7 +110,7 @@ export default function withFilteringSupport<P extends TreeProps>(TreeComponent:
       if (prop1.filter !== prop2.filter)
         return false;
 
-      if (prop1.dataProvider.rulesetId !== prop2.dataProvider.rulesetId || prop1.dataProvider.connection !== prop2.dataProvider.connection)
+      if (prop1.dataProvider.rulesetId !== prop2.dataProvider.rulesetId || prop1.dataProvider.imodel !== prop2.dataProvider.imodel)
         return false;
 
       return true;

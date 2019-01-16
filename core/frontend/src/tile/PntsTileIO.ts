@@ -1,13 +1,12 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Tile */
 import { TileIO } from "./TileIO";
 import { ElementAlignedBox3d, QParams3d, Quantization, Feature, FeatureTable, BatchType } from "@bentley/imodeljs-common";
-import { Id64String, assert } from "@bentley/bentleyjs-core";
+import { Id64String, assert, utf8ToString } from "@bentley/bentleyjs-core";
 import { RenderSystem, RenderGraphic, GraphicBranch, PackedFeatureTable } from "../render/System";
-import { utf8ToString } from "@bentley/bentleyjs-core";
 import { PointCloudArgs } from "../render/primitives/PointCloudPrimitive";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 import { Transform, Point3d, Matrix3d, Angle, Vector3d } from "@bentley/geometry-core";

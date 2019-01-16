@@ -1,12 +1,12 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module iModelHub */
 
 import { AccessToken, AuthorizationToken } from "../Token";
 import { IModelClient } from "../IModelClient";
-import { FileHandler } from "../";
+import { FileHandler } from "../imodeljs-clients";
 import { IModelBaseHandler } from "./BaseHandler";
 import { ArgumentCheck } from "./Errors";
 import { ActivityLoggingContext } from "@bentley/bentleyjs-core";

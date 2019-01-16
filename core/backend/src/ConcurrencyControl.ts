@@ -1,19 +1,19 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module iModels */
 
 import { Id64String, Id64, DbOpcode, RepositoryStatus, assert, ActivityLoggingContext, Logger } from "@bentley/bentleyjs-core";
 import { AccessToken, HubCode, CodeState, CodeQuery, Lock, LockLevel, LockType } from "@bentley/imodeljs-clients";
-import { NativeBriefcaseManagerResourcesRequest } from "./imodeljs-native-platform-api";
+import { IModelJsNative } from "./IModelJsNative";
 import { Code, IModelError, IModelStatus } from "@bentley/imodeljs-common";
 import { Element } from "./Element";
 import { Model } from "./Model";
 import { BriefcaseEntry, BriefcaseManager } from "./BriefcaseManager";
 import { Relationship } from "./Relationship";
-import { NativePlatformRegistry } from "./NativePlatformRegistry";
 import { IModelDb } from "./IModelDb";
+import { IModelHost } from "./IModelHost";
 
 /** @hidden */
 const loggingCategory = "imodeljs-backend.ConcurrencyControl";
@@ -56,16 +56,16 @@ export class ConcurrencyControl {
   }
 
   /** Create an empty Request */
-  public static createRequest(): ConcurrencyControl.Request { return new (NativePlatformRegistry.getNativePlatform()).NativeBriefcaseManagerResourcesRequest(); }
+  public static createRequest(): ConcurrencyControl.Request { return new IModelHost.platform.BriefcaseManagerResourcesRequest(); }
 
   /** Convert the request to any */
-  public static convertRequestToAny(req: ConcurrencyControl.Request): any { return JSON.parse((req as NativeBriefcaseManagerResourcesRequest).toJSON()); }
+  public static convertRequestToAny(req: ConcurrencyControl.Request): any { return JSON.parse((req as IModelJsNative.BriefcaseManagerResourcesRequest).toJSON()); }
 
   /** @hidden [[Model.buildConcurrencyControlRequest]] */
   public buildRequestForModel(model: Model, opcode: DbOpcode): void {
     if (!this._iModel.briefcase)
       throw new IModelError(IModelStatus.BadRequest, "Invalid briefcase", Logger.logError, loggingCategory);
-    const rc: RepositoryStatus = this._iModel.briefcase.nativeDb.buildBriefcaseManagerResourcesRequestForModel(this._pendingRequest as NativeBriefcaseManagerResourcesRequest, JSON.stringify(model.id), opcode);
+    const rc: RepositoryStatus = this._iModel.briefcase.nativeDb.buildBriefcaseManagerResourcesRequestForModel(this._pendingRequest as IModelJsNative.BriefcaseManagerResourcesRequest, JSON.stringify(model.id), opcode);
     if (rc !== RepositoryStatus.Success)
       throw new IModelError(rc, "Error building request for Model", Logger.logError, loggingCategory);
   }
@@ -76,9 +76,9 @@ export class ConcurrencyControl {
       throw new IModelError(IModelStatus.BadRequest, "Invalid briefcase", Logger.logError, loggingCategory);
     let rc: RepositoryStatus;
     if (element.id === undefined || opcode === DbOpcode.Insert)
-      rc = this._iModel.briefcase.nativeDb.buildBriefcaseManagerResourcesRequestForElement(this._pendingRequest as NativeBriefcaseManagerResourcesRequest, JSON.stringify({ modelid: element.model, code: element.code }), opcode);
+      rc = this._iModel.briefcase.nativeDb.buildBriefcaseManagerResourcesRequestForElement(this._pendingRequest as IModelJsNative.BriefcaseManagerResourcesRequest, JSON.stringify({ modelid: element.model, code: element.code }), opcode);
     else
-      rc = this._iModel.briefcase.nativeDb.buildBriefcaseManagerResourcesRequestForElement(this._pendingRequest as NativeBriefcaseManagerResourcesRequest, JSON.stringify(element.id), opcode);
+      rc = this._iModel.briefcase.nativeDb.buildBriefcaseManagerResourcesRequestForElement(this._pendingRequest as IModelJsNative.BriefcaseManagerResourcesRequest, JSON.stringify(element.id), opcode);
     if (rc !== RepositoryStatus.Success)
       throw new IModelError(rc, "Error building request for Element", Logger.logError, loggingCategory);
   }
@@ -87,14 +87,14 @@ export class ConcurrencyControl {
   public buildRequestForRelationship(instance: Relationship, opcode: DbOpcode): void {
     if (!this._iModel.briefcase)
       throw new IModelError(IModelStatus.BadRequest, "Invalid briefcase", Logger.logError, loggingCategory);
-    const rc: RepositoryStatus = this._iModel.briefcase.nativeDb.buildBriefcaseManagerResourcesRequestForLinkTableRelationship(this._pendingRequest as NativeBriefcaseManagerResourcesRequest, JSON.stringify(instance), opcode);
+    const rc: RepositoryStatus = this._iModel.briefcase.nativeDb.buildBriefcaseManagerResourcesRequestForLinkTableRelationship(this._pendingRequest as IModelJsNative.BriefcaseManagerResourcesRequest, JSON.stringify(instance), opcode);
     if (rc !== RepositoryStatus.Success)
       throw new IModelError(rc, "Error building request for LinkTableRelationship", Logger.logError, loggingCategory);
   }
 
   private captureBulkOpRequest() {
     if (this._iModel.briefcase)
-      this._iModel.briefcase.nativeDb.extractBulkResourcesRequest(this._pendingRequest as NativeBriefcaseManagerResourcesRequest, true, true);
+      this._iModel.briefcase.nativeDb.extractBulkResourcesRequest(this._pendingRequest as IModelJsNative.BriefcaseManagerResourcesRequest, true, true);
   }
 
   /** @hidden */
@@ -125,7 +125,7 @@ export class ConcurrencyControl {
     const extractCodes: boolean = !locksOnly;
 
     const req: ConcurrencyControl.Request = ConcurrencyControl.createRequest();
-    this._iModel.briefcase.nativeDb.extractBriefcaseManagerResourcesRequest(req as NativeBriefcaseManagerResourcesRequest, this.pendingRequest as NativeBriefcaseManagerResourcesRequest, extractLocks, extractCodes);
+    this._iModel.briefcase.nativeDb.extractBriefcaseManagerResourcesRequest(req as IModelJsNative.BriefcaseManagerResourcesRequest, this.pendingRequest as IModelJsNative.BriefcaseManagerResourcesRequest, extractLocks, extractCodes);
     return req;
   }
 
@@ -513,8 +513,8 @@ export namespace ConcurrencyControl {
       actx.enter();
 
       const req: ConcurrencyControl.Request = this._iModel.concurrencyControl.extractPendingRequest(false, true);
-      this._iModel.briefcase.nativeDb.extractBulkResourcesRequest(req as NativeBriefcaseManagerResourcesRequest, false, true);
-      this._iModel.briefcase.nativeDb.extractBriefcaseManagerResourcesRequest(req as NativeBriefcaseManagerResourcesRequest, req as NativeBriefcaseManagerResourcesRequest, false, true);
+      this._iModel.briefcase.nativeDb.extractBulkResourcesRequest(req as IModelJsNative.BriefcaseManagerResourcesRequest, false, true);
+      this._iModel.briefcase.nativeDb.extractBriefcaseManagerResourcesRequest(req as IModelJsNative.BriefcaseManagerResourcesRequest, req as IModelJsNative.BriefcaseManagerResourcesRequest, false, true);
       return this._iModel.concurrencyControl.request(actx, accessToken, req);
     }
 

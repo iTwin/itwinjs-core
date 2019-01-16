@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`<Indicator /> renders correctly 1`] = `
+exports[`<MessageCenterIndicator /> renders correctly 1`] = `
 <div
   className="nz-footer-messageCenter-indicator"
 >
@@ -15,7 +15,6 @@ exports[`<Indicator /> renders correctly 1`] = `
     />
     <div
       className="nz-balloon"
-      onClick={[Function]}
     >
       <div
         className="nz-arrow"

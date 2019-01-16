@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { UnitProps, Format, Formatter, UnitsProvider, FormatterSpec, UnitConversion, BadUnit } from "@bentley/imodeljs-quantity";
@@ -86,7 +86,7 @@ const unitData: UnitDefinition[] = [
 ];
 
 /** Defines standard format types for tools that need to display measurements to user. */
-export enum QuantityType { Length = 1, Angle = 2, Area = 3, Volume = 4 }
+export enum QuantityType { Length = 1, Angle = 2, Area = 3, Volume = 4, LatLong = 5, Coordinate = 6  }
 
 // The following provide default formats for different the QuantityTypes. It is important to note that these default should reference
 // units that are available in schemas within the active iModel.
@@ -103,7 +103,7 @@ const defaultsFormats = {
           },
         ],
       },
-      formatTraits: ["keepSingleZero", "keepDecimalPoint", "showUnitLabel"],
+      formatTraits: ["keepSingleZero", "showUnitLabel"],
       precision: 4,
       type: "Decimal",
     },
@@ -119,7 +119,7 @@ const defaultsFormats = {
           },
         ],
       },
-      formatTraits: ["keepSingleZero", "keepDecimalPoint", "showUnitLabel"],
+      formatTraits: ["keepSingleZero", "showUnitLabel"],
       precision: 2,
       type: "Decimal",
       uomSeparator: "",
@@ -136,7 +136,7 @@ const defaultsFormats = {
           },
         ],
       },
-      formatTraits: ["keepSingleZero", "keepDecimalPoint", "showUnitLabel"],
+      formatTraits: ["keepSingleZero", "showUnitLabel"],
       precision: 4,
       type: "Decimal",
     },
@@ -152,8 +152,41 @@ const defaultsFormats = {
           },
         ],
       },
-      formatTraits: ["keepSingleZero", "keepDecimalPoint", "showUnitLabel"],
+      formatTraits: ["keepSingleZero", "showUnitLabel"],
       precision: 4,
+      type: "Decimal",
+    },
+  }, {
+    type: 5/*LatLong*/, format: {
+      composite: {
+        includeZero: true,
+        spacer: "",
+        units: [
+          {
+            label: "°",
+            name: "Units.ARC_DEG",
+          },
+        ],
+      },
+      formatTraits: ["keepSingleZero", "showUnitLabel"],
+      precision: 6,
+      type: "Decimal",
+      uomSeparator: "",
+    },
+  }, {
+    type: 6/*Coordinate*/, format: {
+      composite: {
+        includeZero: true,
+        spacer: " ",
+        units: [
+          {
+            label: "m",
+            name: "Units.M",
+          },
+        ],
+      },
+      formatTraits: ["keepSingleZero", "showUnitLabel"],
+      precision: 2,
       type: "Decimal",
     },
   },
@@ -190,7 +223,7 @@ const defaultsFormats = {
           },
         ],
       },
-      formatTraits: ["keepSingleZero", "keepDecimalPoint", "showUnitLabel"],
+      formatTraits: ["keepSingleZero", "showUnitLabel"],
       precision: 2,
       type: "Decimal",
       uomSeparator: "",
@@ -207,7 +240,7 @@ const defaultsFormats = {
           },
         ],
       },
-      formatTraits: ["keepSingleZero", "keepDecimalPoint", "showUnitLabel"],
+      formatTraits: ["keepSingleZero", "showUnitLabel"],
       precision: 4,
       type: "Decimal",
     },
@@ -223,8 +256,49 @@ const defaultsFormats = {
           },
         ],
       },
-      formatTraits: ["keepSingleZero", "keepDecimalPoint", "showUnitLabel"],
+      formatTraits: ["keepSingleZero", "showUnitLabel"],
       precision: 4,
+      type: "Decimal",
+    },
+  },  {
+    type: 5/*LatLong*/, format: {
+      composite: {
+        includeZero: true,
+        spacer: "",
+        units: [
+          {
+            label: "°",
+            name: "Units.ARC_DEG",
+          },
+          {
+            label: "'",
+            name: "Units.ARC_MINUTE",
+          },
+          {
+            label: "\"",
+            name: "Units.ARC_SECOND",
+          },
+        ],
+      },
+      formatTraits: ["keepSingleZero", "showUnitLabel"],
+      precision: 0,
+      type: "Decimal",
+      uomSeparator: "",
+    },
+  }, {
+    type: 6/*Coordinate*/, format: {
+      composite: {
+        includeZero: true,
+        spacer: " ",
+        units: [
+          {
+            label: "ft",
+            name: "Units.FT",
+          },
+        ],
+      },
+      formatTraits: ["keepSingleZero", "showUnitLabel"],
+      precision: 2,
       type: "Decimal",
     },
   },
@@ -323,7 +397,7 @@ export class QuantityFormatter implements UnitsProvider {
   }
 
   /** Async method to return the 'active' FormatSpec for the specified KOQ */
-  protected async getKoqFormatterSpecAsync(koq: string, useImperial: boolean): Promise<FormatterSpec | undefined> {
+  protected async getKoqFormatterSpec(koq: string, useImperial: boolean): Promise<FormatterSpec | undefined> {
     if (koq.length === 0 && useImperial)
       return Promise.reject(new Error("bad koq specification"));
 
@@ -337,22 +411,11 @@ export class QuantityFormatter implements UnitsProvider {
   }
 
   /** Method used to get cached FormatterSpec or undefined if FormatterSpec is unavailable */
-  protected getKoqFormatterSpec(koq: string, useImperial: boolean): FormatterSpec | undefined {
+  protected findKoqFormatterSpec(koq: string, useImperial: boolean): FormatterSpec | undefined {
     if (koq.length === 0 && useImperial)
       return undefined;
 
     throw new Error("not yet implemented");
-  }
-
-  /** Async call to generate a formatted string for a specific KOQ given its magnitude. This method is
-   * used during async processing that extract formatted values from DgnElements.
-   */
-  protected async formatKindOfQuantityAsync(magnitude: number, koq: string): Promise<string> {
-    const formatSpec = await this.getKoqFormatterSpecAsync(koq, this._activeSystemIsImperial);
-    if (formatSpec === undefined)
-      return Promise.resolve("");
-
-    return Promise.resolve(Formatter.formatQuantity(magnitude, formatSpec));
   }
 
   protected async loadStdFormat(type: QuantityType, imperial: boolean): Promise<Format> {
@@ -390,34 +453,22 @@ export class QuantityFormatter implements UnitsProvider {
   protected async getUnitByQuantityType(type: QuantityType): Promise<UnitProps> {
     switch (type) {
       case QuantityType.Angle:
+      case QuantityType.LatLong:
         return this.findUnitByName("Units.RAD");
       case QuantityType.Area:
         return this.findUnitByName("Units.SQ_M");
       case QuantityType.Volume:
         return this.findUnitByName("Units.M");
+      case QuantityType.Coordinate:
       case QuantityType.Length:
       default:
         return this.findUnitByName("Units.M");
     }
   }
 
-  /** Call to get a FormatterSpec of a QuantityType. If the FormatterSpec is not yet cached an undefined object is returned. The
-   * cache is populated by the async call loadFormatSpecsForQuantityTypes.
-   */
-  protected getFormatterSpecByQuantityType(type: QuantityType, imperial: boolean): FormatterSpec | undefined {
-    const activeMap = imperial ? this._imperialFormatSpecsByType : this._metricFormatSpecsByType;
-    if (activeMap.size === 0) {
-      // trigger a load so it will become available
-      this.loadFormatSpecsForQuantityTypes(imperial); // tslint:disable-line:no-floating-promises
-      return undefined;
-    }
-
-    return activeMap.get(type);
-  }
-
-  /** Async call to loadFormatSpecsForQuantityTypes */
-  public async loadFormatSpecsForQuantityTypes(useImperial: boolean): Promise<void> {
-    const typeArray: QuantityType[] = [QuantityType.Length, QuantityType.Angle, QuantityType.Area, QuantityType.Volume];
+  /** Asynchronous call to loadFormatSpecsForQuantityTypes. This method caches all the FormatSpec so they can be quickly accessed. */
+  protected async loadFormatSpecsForQuantityTypes(useImperial: boolean): Promise<void> {
+    const typeArray: QuantityType[] = [QuantityType.Length, QuantityType.Angle, QuantityType.Area, QuantityType.Volume, QuantityType.LatLong, QuantityType.Coordinate];
     const activeMap = useImperial ? this._imperialFormatSpecsByType : this._metricFormatSpecsByType;
     activeMap.clear();
 
@@ -431,29 +482,49 @@ export class QuantityFormatter implements UnitsProvider {
     return Promise.resolve();
   }
 
-  /** Generates a formatted string for a specific KOQ given its magnitude.
-   * @param magnitude       The magnitude of the quantity.
-   * @param koq            Unique name of KOQ.
-   * @return the formatted string or undefined if no FormatterSpec has been registered for this KOQ.
+  /** Synchronous call to get a FormatterSpec of a QuantityType. If the FormatterSpec is not yet cached an undefined object is returned. The
+   * cache is populated by the async call loadFormatSpecsForQuantityTypes.
    */
-  public formatKindOfQuantity(magnitude: number, koq: string): string | undefined {
-    const formatSpec = this.getKoqFormatterSpec(koq, this._activeSystemIsImperial);
-    if (formatSpec === undefined)
+  public findFormatterSpecByQuantityType(type: QuantityType, imperial?: boolean): FormatterSpec | undefined {
+    const useImperial = undefined !== imperial ? imperial : this._activeSystemIsImperial;
+    const activeMap = useImperial ? this._imperialFormatSpecsByType : this._metricFormatSpecsByType;
+    if (activeMap.size === 0) {
+      // trigger a load so it will become available
+      this.loadFormatSpecsForQuantityTypes(useImperial); // tslint:disable-line:no-floating-promises
       return undefined;
+    }
 
-    return Formatter.formatQuantity(magnitude, formatSpec);
+    return activeMap.get(type);
   }
 
-  /** Generates a formatted string for a quantity given its magnitude and quantity type..
-   * @param magnitude       The magnitude of the quantity.
-   * @param type            One of the standard QuantityTypes.
-   * @return the formatted string or undefined if no FormatterSpec has been registered for the QuantityType.
+  /** Asynchronous Call to get a FormatterSpec of a QuantityType.
+   * @param type        One of the built-in quantity types supported.
+   * @param imperial    Optional parameter to determine if the imperial or metric format should be returned. If undefined then the setting is taken from the formatter.
+   * @return A promise to return a FormatterSpec.
    */
-  public formatQuantity(magnitude: number, type: QuantityType): string | undefined {
-    const formatSpec = this.getFormatterSpecByQuantityType(type, this._activeSystemIsImperial);
-    if (formatSpec === undefined)
-      return undefined;
+  public async getFormatterSpecByQuantityType(type: QuantityType, imperial?: boolean): Promise<FormatterSpec> {
+    const useImperial = undefined !== imperial ? imperial : this._activeSystemIsImperial;
+    const activeMap = useImperial ? this._imperialFormatSpecsByType : this._metricFormatSpecsByType;
+    if (activeMap.size > 0)
+      return Promise.resolve(activeMap.get(type) as FormatterSpec);
 
+    return this.loadFormatSpecsForQuantityTypes(useImperial)
+      .then(async () => {
+        if (activeMap.size > 0) {
+          const spec = activeMap.get(type);
+          if (spec)
+            return Promise.resolve(spec as FormatterSpec);
+        }
+        return Promise.reject(new Error("Unable to load FormatSpecs"));
+      });
+  }
+
+  /** Generates a formatted string for a quantity given its format spec.
+   * @param magnitude       The magnitude of the quantity.
+   * @param formatSpec      The format specification. See methods getFormatterSpecByQuantityType and findFormatterSpecByQuantityType.
+   * @return the formatted string.
+   */
+  public formatQuantity(magnitude: number, formatSpec: FormatterSpec): string {
     return Formatter.formatQuantity(magnitude, formatSpec);
   }
 

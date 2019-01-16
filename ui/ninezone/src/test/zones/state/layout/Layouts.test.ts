@@ -1,15 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as Moq from "typemoq";
-import { WidgetZoneLayout, NineZoneRoot, WidgetZoneLayoutProps } from "../../../..//zones/state/layout/Layouts";
-import { WidgetZone } from "../../../..//zones/state/Zone";
-import Widget from "../../../..//zones/state/Widget";
+import { Widget, WidgetZone, WidgetZoneLayout, NineZoneRoot, WidgetZoneLayoutProps, Rectangle, NineZone, Cell } from "../../../../ui-ninezone";
 import { expect } from "chai";
-import Rectangle from "../../../..//utilities/Rectangle";
-import NineZone from "../../../..//zones/state/NineZone";
-import Cell from "../../../..//utilities/Cell";
 
 describe("WidgetZoneLayout", () => {
   const rootMock = Moq.Mock.ofType<NineZoneRoot>();

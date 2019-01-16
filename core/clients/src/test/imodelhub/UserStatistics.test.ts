@@ -1,17 +1,16 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
 
-import { TestConfig } from "../TestConfig";
+import { TestConfig, TestUsers } from "../TestConfig";
 
-import { IModelHubClientError, IModelClient } from "../..";
+import { IModelHubClientError, IModelClient } from "../../imodeljs-clients";
 import { AccessToken } from "../../Token";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
 import * as utils from "./TestUtils";
-import { UserStatisticsQuery, UserStatistics } from "../../imodelhub";
-import { TestUsers } from "../TestConfig";
+import { UserStatisticsQuery, UserStatistics } from "../../imodelhub/Users";
 import { IModelHubStatus, ActivityLoggingContext, GuidString } from "@bentley/bentleyjs-core";
 
 chai.should();

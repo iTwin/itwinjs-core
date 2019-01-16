@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
@@ -7,7 +7,7 @@ import { Id64String, ActivityLoggingContext, GuidString } from "@bentley/bentley
 import { Point3d, Range3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { IModelVersion, CodeScopeSpec, Code, ColorDef, IModel, GeometricElement3dProps, AxisAlignedBox3d } from "@bentley/imodeljs-common";
-import { IModelDb, OpenParams, BriefcaseManager, CategorySelector, DisplayStyle3d, ModelSelector, OrthographicViewDefinition, PhysicalModel, SpatialCategory } from "../../backend";
+import { IModelDb, OpenParams, BriefcaseManager, CategorySelector, DisplayStyle3d, ModelSelector, OrthographicViewDefinition, PhysicalModel, SpatialCategory } from "../../imodeljs-backend";
 import * as path from "path";
 import * as fs from "fs";
 import { IModelWriter } from "./IModelWriter";

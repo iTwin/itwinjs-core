@@ -1,9 +1,9 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import { processCustomAttributes, CustomAttributeContainerProps, CustomAttributeSet, serializeCustomAttributes } from "./CustomAttribute";
+import { CustomAttributeContainerProps, CustomAttributeSet, serializeCustomAttributes, CustomAttribute } from "./CustomAttribute";
 import { EntityClass } from "./EntityClass";
 import { Enumeration } from "./Enumeration";
 import {
@@ -15,7 +15,7 @@ import { SchemaItem } from "./SchemaItem";
 import { DelayedPromiseWithProps } from "./../DelayedPromise";
 import { ClassProps } from "./../Deserialization/JsonProps";
 import {
-  classModifierToString, CustomAttributeContainerType, ECClassModifier,
+  classModifierToString, ECClassModifier,
   parseClassModifier, parsePrimitiveType, PrimitiveType, SchemaItemType,
 } from "./../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "./../Exception";
@@ -29,7 +29,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
   protected _modifier: ECClassModifier;
   protected _baseClass?: LazyLoadedECClass;
   protected _properties?: Property[];
-  protected _customAttributes?: CustomAttributeSet;
+  private _customAttributes?: Map<string, CustomAttribute>;
   private _mergedPropertyCache?: Property[];
 
   get modifier() { return this._modifier; }
@@ -366,15 +366,26 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
           return baseClass;
         });
     }
-    this._customAttributes = processCustomAttributes(classProps.customAttributes, this.name, CustomAttributeContainerType.AnyClass);
   }
   public async deserialize(classProps: ClassProps): Promise<void> {
     this.deserializeSync(classProps);
   }
 
+  protected addCustomAttribute(customAttribute: CustomAttribute) {
+    if (!this._customAttributes)
+      this._customAttributes = new Map<string, CustomAttribute>();
+
+    this._customAttributes.set(customAttribute.className, customAttribute);
+  }
+
   public async accept(visitor: SchemaItemVisitor) {
     if (visitor.visitClass)
       await visitor.visitClass(this as AnyClass);
+  }
+
+  public acceptSync(visitor: SchemaItemVisitor) {
+    if (visitor.visitClassSync)
+      visitor.visitClassSync(this as AnyClass);
   }
 
   /**
@@ -497,6 +508,62 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
 
     return this._mergedPropertyCache;
   }
+
+  /**
+   * Asynchronously traverses through the inheritance tree, using depth-first traversal, calling the given callback
+   * function for each base class encountered.
+   * @param callback The function to call for each base class in the hierarchy.
+   * @param arg An argument that will be passed as the second parameter to the callback function.
+   */
+  public async traverseBaseClasses(callback: (ecClass: ECClass, arg?: any) => boolean, arg?: any): Promise<boolean> {
+    for await (const baseClass of this.getAllBaseClasses()) {
+      if (callback(baseClass, arg))
+        return true;
+    }
+
+    return false;
+  }
+
+  /**
+   * Synchronously traverses through the inheritance tree, using depth-first traversal, calling the given callback
+   * function for each base class encountered.
+   * @param callback The function to call for each base class in the hierarchy.
+   * @param arg An argument that will be passed as the second parameter to the callback function.
+   */
+  public traverseBaseClassesSync(callback: (ecClass: ECClass, arg?: any) => boolean, arg?: any): boolean {
+    const baseClasses = this.getAllBaseClassesSync();
+    if (!baseClasses)
+      return false;
+
+    for (const baseClass of baseClasses) {
+      if (callback(baseClass, arg))
+        return true;
+    }
+
+    return false;
+  }
+
+  /**
+   * Indicates if the targetClass is of this type.
+   * @param targetClass The class to check.
+   */
+  public async is(targetClass: ECClass): Promise<boolean> {
+    if (SchemaItem.equalByKey(this, targetClass))
+      return true;
+
+    return this.traverseBaseClasses(SchemaItem.equalByKey, targetClass);
+  }
+
+  /**
+   * A synchronous version of the [[ECClass.is]], indicating if the targetClass is of this type.
+   * @param targetClass The class to check.
+   */
+  public isSync(targetClass: ECClass): boolean {
+    if (SchemaItem.equalByKey(this, targetClass))
+      return true;
+
+    return this.traverseBaseClassesSync(SchemaItem.equalByKey, targetClass);
+  }
 }
 
 /**
@@ -515,6 +582,8 @@ export class StructClass extends ECClass {
  * Hackish approach that works like a "friend class" so we can access protected members without making them public.
  */
 export abstract class MutableClass extends ECClass {
+  public abstract addCustomAttribute(customAttribute: CustomAttribute): void;
+
   public abstract async createPrimitiveProperty(name: string, primitiveType: PrimitiveType): Promise<PrimitiveProperty>;
   public abstract async createPrimitiveProperty(name: string, primitiveType: Enumeration): Promise<EnumerationProperty>;
   public abstract async createPrimitiveProperty(name: string, primitiveType?: string | PrimitiveType | Enumeration): Promise<Property>;

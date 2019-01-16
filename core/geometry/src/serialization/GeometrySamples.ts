@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
@@ -52,7 +52,7 @@ import { BSplineCurve3dH } from "../bspline/BSplineCurve3dH";
 import { BezierCurve3d } from "../bspline/BezierCurve3d";
 import { BezierCurve3dH } from "../bspline/BezierCurve3dH";
 import { CurveChainWithDistanceIndex } from "../curve/CurveChainWithDistanceIndex";
-import { KnotVector } from "../bspline/KnotVector";
+import { KnotVector, BSplineWrapMode } from "../bspline/KnotVector";
 
 /* tslint:disable:no-console */
 
@@ -259,6 +259,30 @@ export class Sample {
         result.push(curve);
       }
     }
+    return result;
+  }
+
+  /** Create weighted bsplines for circular arcs.
+   */
+  public static createBspline3dHArcs(): BSplineCurve3dH[] {
+    const result: BSplineCurve3dH[] = [];
+    const halfRadians = Angle.degreesToRadians(60.0);
+    const c = Math.cos(halfRadians);
+    const s = Math.sin(halfRadians);
+    // const sec = 1.0 / c;
+    // const t = s / c;
+    const points = [
+      Point4d.create(1, 0, 0, 1),
+      Point4d.create(c, s, 0, c),
+      Point4d.create(-c, s, 0, 1),
+      Point4d.create(-1, 0, 0, c),
+      Point4d.create(-c, -s, 0, 1),
+      Point4d.create(c, -s, 0, c),
+      Point4d.create(1, 0, 0, 1)];
+    const knots = [0, 0, 1, 1, 2, 2, 3, 3];
+
+    const curve = BSplineCurve3dH.create(points, knots, 3) as BSplineCurve3dH;
+    result.push(curve);
     return result;
   }
 
@@ -786,7 +810,7 @@ export class Sample {
     let thisColorIndex = 0;
     for (let j = 0; j + 1 < numYVertices; j++) {
       for (let i = 0; i + 1 < numXVertices; i++) {
-        const vertex00 = numYVertices * j + i;
+        const vertex00 = numXVertices * j + i;
         const vertex10 = vertex00 + 1;
         const vertex01 = vertex00 + numXVertices;
         const vertex11 = vertex01 + 1;
@@ -885,8 +909,8 @@ export class Sample {
     }
     const result = BSplineSurface3d.create(points, numUPole, orderU, uKnots.knots, numVPole, orderV, vKnots.knots);
     if (result) {
-      result.setWrappable(0, true);
-      result.setWrappable(1, true);
+      result.setWrappable(0, BSplineWrapMode.OpenByAddingControlPoints);
+      result.setWrappable(1, BSplineWrapMode.OpenByAddingControlPoints);
     }
     return result;
   }
@@ -941,10 +965,13 @@ export class Sample {
     xyPoints.push(Point2d.create(e, e));
     result.push(LinearSweep.createZSweep(xyPoints, 1, 3, false)!);
     result.push(LinearSweep.createZSweep(xyPoints, 1, 3, true)!);
+    // make it a better closure
     xyPoints.pop();
     xyPoints.push(xyPoints[0]);
     result.push(LinearSweep.createZSweep(xyPoints, 1, 3, false)!);
     result.push(LinearSweep.createZSweep(xyPoints, 1, 3, true)!);
+    // negative sweep ...
+    result.push(LinearSweep.createZSweep(xyPoints, 1, -3, true)!);
     return result;
   }
   /**
@@ -973,13 +1000,18 @@ export class Sample {
     // rectangle in xy plane
     const base = Loop.create(LineString3d.createRectangleXY(Point3d.create(1, 0, 0), 2, 3));
     // rotate around the y axis
-    const axis = Ray3d.createXYZUVW(0, 0, 0, 0, 1, 0);
-    result.push(RotationalSweep.create(base, axis, Angle.createDegrees(120.0), false) as RotationalSweep);
-    result.push(RotationalSweep.create(base, axis, Angle.createDegrees(150.0), true) as RotationalSweep);
+    for (const axis of [
+      Ray3d.createXYZUVW(0, 0, 0, 0, 1, 0),
+      Ray3d.createXYZUVW(5, 0, 0, 0, 1, 0),
+      Ray3d.createXYZUVW(-1, 0, 0, -1, 1, 0)]) {
+      result.push(RotationalSweep.create(base, axis, Angle.createDegrees(120.0), false) as RotationalSweep);
+      result.push(RotationalSweep.create(base, axis, Angle.createDegrees(150.0), true) as RotationalSweep);
+    }
+
     return result;
   }
 
-  public static createSpheres(): Sphere[] {
+  public static createSpheres(includeEllipsoidal: boolean = false): Sphere[] {
     const result: Sphere[] = [];
     result.push(Sphere.createCenterRadius(Point3d.create(0, 0, 0), 1.0));
     result.push(Sphere.createCenterRadius(Point3d.create(1, 2, 3), 3.0));
@@ -997,6 +1029,11 @@ export class Sample {
       4, 4, 4,
       AngleSweep.createStartEndDegrees(-45, 45), true)!;
     result.push(s2);
+    if (includeEllipsoidal)
+      result.push(Sphere.createDgnSphere(
+        Point3d.create(1, 2, 3),
+        Vector3d.unitX(),
+        Vector3d.unitZ(), 3, 2, AngleSweep.createFullLatitude(), false)!);
     return result;
   }
   // These are promised to be non-spherical than DGN sphere accepts . . .
@@ -1083,7 +1120,7 @@ export class Sample {
       points.push(Point3d.create(x0, y0, z));
     return points;
   }
-  public static createRuledSweeps(): RuledSweep[] {
+  public static createRuledSweeps(includeParityRegion: boolean = false, includeBagOfCurves: boolean = false): RuledSweep[] {
     const allSweeps = [];
     const contour0 = Loop.create(LineString3d.create(this.createRectangleXY(0, 0, 3, 2, 0)));
     const contour1 = Loop.create(LineString3d.create(this.createRectangleXY(0, 0, 3, 2.5, 2)));
@@ -1105,6 +1142,20 @@ export class Sample {
         allSweeps.push(RuledSweep.create([Path.create(c), Path.create(c1)], false)!);
       }
     }
+    if (includeParityRegion) {
+      const outer = Loop.create(LineString3d.create(this.createRectangleXY(0, 0, 5, 6, 0)));
+      const inner = Loop.create(LineString3d.create(this.createRectangleXY(1, 1, 2, 3, 0)));
+      const contourA = ParityRegion.create(outer, inner);
+      const contourB = contourA.clone();
+      contourB.tryTranslateInPlace(0, 0, 2);
+      allSweeps.push(RuledSweep.create([contourA, contourB], false)!);
+    }
+    if (includeBagOfCurves) {
+      const contourA = BagOfCurves.create(LineSegment3d.createXYZXYZ(1, 1, 0, 3, 1, 0));
+      const contourB = BagOfCurves.create(LineSegment3d.createXYZXYZ(1, 1, 1, 3, 1, 1));
+      allSweeps.push(RuledSweep.create([contourA, contourB], false)!);
+    }
+
     return allSweeps;
   }
   /**
@@ -1434,6 +1485,59 @@ export class Sample {
     return result;
   }
   /**
+   * Create a square wave path.
+   * @param numTooth number of teeth.
+   * @param dxA x size of "A" part
+   * @param dxB x size of "B" part
+   * @param yA y for A part
+   * @param yB y for B part
+   * @param structure 1 for line segments, 2 for one linestring per tooth, 0 for single linestring
+   */
+  public static createSquareWavePath(numTooth: number, dxA: number, dxB: number, yA: number, yB: number, structure: number): Path {
+    const dxAB = dxA + dxB;
+    const path = Path.create();
+    // build the whole linestring ...
+    const allPoints = new GrowableXYZArray(4 * numTooth);
+    let x2 = 0.0;
+    for (let i = 0; i < numTooth; i++) {
+      const x0 = i * dxAB;
+      const x1 = x0 + dxA;
+      x2 = (i + 1) * dxAB;
+      allPoints.pushXYZ(x0, yA, 0);
+      allPoints.pushXYZ(x1, yA, 0.0);
+      allPoints.pushXYZ(x1, yB, 0.0);
+      allPoints.pushXYZ(x2, yB, 0.0);
+    }
+    allPoints.pushXYZ(x2, yA, 0.0);
+
+    const numPoints = allPoints.length;
+
+    if (structure === 1) {
+      const pointA = Point3d.create();
+      const pointB = Point3d.create();
+      allPoints.getPoint3dAt(0, pointA);
+      for (let i1 = 0; i1 + 1 < numPoints; i1++) {
+        allPoints.getPoint3dAt(i1, pointB);
+        path.tryAddChild(LineSegment3d.create(pointA, pointB));
+        pointA.setFromPoint3d(pointB);
+      }
+    } else if (structure === 2) {
+      for (let i0 = 0; i0 + 4 < numPoints; i0 += 4) {
+        const ls = LineString3d.create();
+        ls.addSteppedPoints(allPoints, i0, 1, 5);
+        path.tryAddChild(ls);
+      }
+
+    } else {
+      const ls = LineString3d.create();
+      ls.addSteppedPoints(allPoints, 0, 1, numPoints);
+      path.tryAddChild(ls);
+
+    }
+    return path;
+  }
+
+  /**
    * Create various elliptic arcs
    * * circle with vector0, vector90 aligned with x,y
    * * circle with axes rotated
@@ -1476,4 +1580,23 @@ export class Sample {
     return result;
   }
 
+  /**
+   * Create edges of a range box.
+   * * Linestrings on low and high z
+   * * single lines on each low z to high z edge.
+   * * @param range (possibly null) range
+   */
+  public static createRangeEdges(range: Range3d): BagOfCurves | undefined {
+    if (range.isNull)
+      return undefined;
+    const corners = range.corners();
+
+    return BagOfCurves.create(
+      LineString3d.create(corners[0], corners[1], corners[3], corners[2], corners[0]),
+      LineString3d.create(corners[4], corners[5], corners[7], corners[6], corners[4]),
+      LineSegment3d.create(corners[0], corners[4]),
+      LineSegment3d.create(corners[1], corners[5]),
+      LineSegment3d.create(corners[2], corners[6]),
+      LineSegment3d.create(corners[3], corners[7]));
+  }
 }

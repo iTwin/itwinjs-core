@@ -1,30 +1,34 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Views */
 
+import { assert, BeDuration, BeEvent, BeTimePoint, dispose, Id64, Id64Arg, IDisposable, StopWatch } from "@bentley/bentleyjs-core";
 import {
-  Vector3d, XYZ, Point3d, Point2d, XAndY, LowAndHighXY, LowAndHighXYZ, Arc3d, Range3d, AxisOrder, Angle, AngleSweep,
-  Matrix3d, Transform, Map4d, Point4d, Constant, XYAndZ, Plane3dByOriginAndUnitNormal, Ray3d,
+  Angle, AngleSweep, Arc3d, AxisOrder, Constant, LowAndHighXY, LowAndHighXYZ, Map4d, Matrix3d,
+  Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point4d, Range3d, Ray3d, Transform, Vector3d, XAndY,
+  XYAndZ, XYZ, Geometry,
 } from "@bentley/geometry-core";
-import { ViewState, ViewStatus, MarginPercent, GridOrientationType } from "./ViewState";
-import { StandardView, StandardViewId } from "./StandardView";
-import { BeEvent, BeDuration, BeTimePoint, StopWatch, assert, Id64Arg, IDisposable, dispose, Id64 } from "@bentley/bentleyjs-core";
-import { EventController } from "./tools/EventController";
+import {
+  AnalysisStyle, AntiAliasPref, Camera, ColorDef, ElementProps, Frustum, Hilite, ImageBuffer, Npc,
+  NpcCenter, NpcCorners, Placement2d, Placement2dProps, Placement3d, PlacementProps, ViewFlags,
+} from "@bentley/imodeljs-common";
 import { AuxCoordSystemState } from "./AuxCoordSys";
-import { IModelConnection } from "./IModelConnection";
-import { HitDetail, SnapDetail } from "./HitDetail";
-import { DecorateContext, SceneContext } from "./ViewContext";
-import { TileRequests } from "./tile/TileTree";
-import { ViewFlags, Hilite, Camera, ColorDef, Frustum, Npc, NpcCorners, NpcCenter, Placement2dProps, Placement2d, Placement3d, AntiAliasPref, ImageBuffer, ElementProps, PlacementProps, AnalysisStyle } from "@bentley/imodeljs-common";
-import { IModelApp } from "./IModelApp";
-import { Decorations, RenderTarget, RenderPlan, Pixel, GraphicList } from "./render/System";
-import { FeatureSymbology } from "./render/FeatureSymbology";
 import { ElementPicker, LocateOptions } from "./ElementLocateManager";
-import { ToolSettings } from "./tools/ToolAdmin";
-import { GraphicType } from "./render/GraphicBuilder";
+import { HitDetail, SnapDetail } from "./HitDetail";
+import { IModelApp } from "./IModelApp";
+import { IModelConnection } from "./IModelConnection";
 import { ToolTipOptions } from "./NotificationManager";
+import { FeatureSymbology } from "./render/FeatureSymbology";
+import { GraphicType } from "./render/GraphicBuilder";
+import { Decorations, GraphicList, Pixel, RenderPlan, RenderTarget } from "./render/System";
+import { StandardView, StandardViewId } from "./StandardView";
+import { EventController } from "./tools/EventController";
+import { ToolSettings } from "./tools/ToolAdmin";
+import { DecorateContext, SceneContext } from "./ViewContext";
+import { GridOrientationType, MarginPercent, ViewState, ViewStatus } from "./ViewState";
+import { Tile } from "./tile/TileTree";
 
 /** A function which customizes the appearance of Features within a Viewport.
  * @see [[Viewport.addFeatureOverrides]]
@@ -436,7 +440,8 @@ export class ViewFrustum {
   /** Get the rectangle of this Viewport in ViewCoordinates. */
   private get _viewRect(): ViewRect { this._viewRange.init(0, 0, this._clientWidth, this._clientHeight); return this._viewRange; }
 
-  private static _copyOutput = (from: XYZ, to?: XYZ) => { let pt = from; if (to) { to.setFrom(from); pt = to; } return pt; };
+  private static _copyOutput(from: XYZ, to?: XYZ) { let pt = from; if (to) { to.setFrom(from); pt = to; } return pt; }
+
   /** @hidden */
   public toView(from: XYZ, to?: XYZ) { this.rotation.multiplyVectorInPlace(ViewFrustum._copyOutput(from, to)); }
   /** @hidden */
@@ -868,7 +873,8 @@ export abstract class Viewport implements IDisposable {
   /** Event called whenever this viewport is synchronized with its ViewState. */
   public readonly onViewChanged = new BeEvent<(vp: Viewport) => void>();
 
-  private _animationFraction: number = 0.0;
+  private readonly _viewportId: number;
+  private _animationFraction = 0.0;
   private _doContinuousRendering = false;
   private _animator?: Animator;
   /** Time the current flash started.
@@ -892,10 +898,33 @@ export abstract class Viewport implements IDisposable {
    * @hidden
    */
   public static nearScale24 = 0.0003;
+
+  /** The number of tiles selected for display in the view as of the most recently-drawn frame.
+   * The tiles selected may not meet the desired level-of-detail for the view, instead being temporarily drawn while
+   * tiles of more appropriate level-of-detail are loaded asynchronously.
+   * @note This member should be treated as read-only - it should only be modified internally.
+   * @see Viewport.numRequestedTiles
+   * @see Viewport.numReadyTiles
+   */
+  public numSelectedTiles = 0;
+
+  /** The number of tiles which were ready and met the desired level-of-detail for display in the view as of the most recently-drawn frame.
+   * These tiles may *not* have been selected because some other (probably sibling) tiles were *not* ready for display.
+   * This is a useful metric for determining how "complete" the view is - e.g., one indicator of progress toward view completion can be expressed as:
+   * `  (numReadyTiles) / (numReadyTiles + numRequestedTiles)`
+   * @note This member should be treated as read-only - it should only be modified internally.
+   * @see Viewport.numSelectedTiles
+   * @see Viewport.numRequestedTiles
+   */
+  public numReadyTiles = 0;
+
   /** Don't allow entries in the view undo buffer unless they're separated by more than this amount of time. */
   public static undoDelay = BeDuration.fromSeconds(.5);
+  private static _nextViewportId = 1;
+
   private _addFeatureOverrides?: AddFeatureOverrides;
-  private _wantTileBoundingBoxes: boolean = false;
+  private _debugBoundingBoxes: Tile.DebugBoundingBoxes = Tile.DebugBoundingBoxes.None;
+  private _freezeScene = false;
   private _viewFrustum!: ViewFrustum;
   private _target?: RenderTarget;
 
@@ -946,15 +975,29 @@ export abstract class Viewport implements IDisposable {
   public get wantAntiAliasLines(): AntiAliasPref { return AntiAliasPref.Off; }
   /** @hidden */
   public get wantAntiAliasText(): AntiAliasPref { return AntiAliasPref.Detect; }
-  /** @hidden */
-  public get wantTileBoundingBoxes(): boolean { return this._wantTileBoundingBoxes; }
-  /** @hidden */
-  public set wantTileBoundingBoxes(want: boolean) {
-    if (want !== this.wantTileBoundingBoxes) {
-      this._wantTileBoundingBoxes = want;
+
+  /**
+   * Determines what type (if any) of debug graphics will be displayed to visualize [[Tile]] volumes.
+   * @see [[Tile.DebugBoundingBoxes]]
+   */
+  public get debugBoundingBoxes(): Tile.DebugBoundingBoxes { return this._debugBoundingBoxes; }
+  public set debugBoundingBoxes(boxes: Tile.DebugBoundingBoxes) {
+    if (boxes !== this.debugBoundingBoxes) {
+      this._debugBoundingBoxes = boxes;
       this.invalidateScene();
     }
   }
+  /** When true, the scene will never be recreated. Chiefly for debugging purposes.
+   * @hidden
+   */
+  public set freezeScene(freeze: boolean) {
+    if (freeze !== this._freezeScene) {
+      this._freezeScene = freeze;
+      if (!freeze)
+        this.invalidateScene();
+    }
+  }
+
   /** @hidden */
   public get AnalysisStyle(): AnalysisStyle | undefined { return this.view.AnalysisStyle; }
   /** The iModel of this Viewport */
@@ -966,24 +1009,26 @@ export abstract class Viewport implements IDisposable {
   /** @hidden */
   public get isContextRotationRequired(): boolean { return IModelApp.toolAdmin.acsContextLock; }
 
-  /** Construct a new Viewport
-   * @param htmlElement The HTMLDivElement for the Viewport. This constructor will create a canvas to draw the graphics.
-   * @param view a fully loaded (see discussion at [[ViewState.load]]) ViewState
-   * @hidden
-   */
+  /** @hidden */
   protected constructor(target: RenderTarget) {
     this._target = target;
+    this._viewportId = Viewport._nextViewportId++;
   }
 
   public dispose(): void {
     assert(undefined !== this._target, "Double disposal of Viewport");
     this._target = dispose(this._target);
+    IModelApp.tileAdmin.forgetViewport(this);
   }
 
   /** @hidden */
   public get continuousRendering(): boolean { return this._doContinuousRendering; }
   /** @hidden */
   public set continuousRendering(contRend: boolean) { this._doContinuousRendering = contRend; }
+  /** This gives each Viewport a unique ID, which can be used for comparing and sorting Viewport objects inside collections.
+   * @hidden
+   */
+  public get viewportId(): number { return this._viewportId; }
 
   /** The ViewState for this Viewport */
   public get view(): ViewState { return this._viewFrustum.view; }
@@ -1010,6 +1055,8 @@ export abstract class Viewport implements IDisposable {
   /** @hidden */
   public invalidateDecorations() { this.sync.invalidateDecorations(); }
   /** @hidden */
+  public invalidateRenderPlan() { this.sync.invalidateRenderPlan(); }
+  /** @hidden */
   public changeDynamics(dynamics: GraphicList | undefined): void {
     this.target.changeDynamics(dynamics);
     this.invalidateDecorations();
@@ -1032,6 +1079,11 @@ export abstract class Viewport implements IDisposable {
   public getAuxCoordRotation(result?: Matrix3d) { return this.auxCoordSystem.getRotation(result); }
   public getAuxCoordOrigin(result?: Point3d) { return this.auxCoordSystem.getOrigin(result); }
 
+  /** The number of outstanding requests for tiles to be displayed in this viewport.
+   * @see Viewport.numSelectedTiles
+   */
+  public get numRequestedTiles(): number { return IModelApp.tileAdmin.getNumRequestsForViewport(this); }
+
   /** @hidden */
   public toView(from: XYZ, to?: XYZ) { this._viewFrustum.toView(from, to); }
   /** @hidden */
@@ -1048,7 +1100,8 @@ export abstract class Viewport implements IDisposable {
     this.target.reset();
   }
 
-  private invalidateScene(): void { this.sync.invalidateScene(); }
+  /** @hidden */
+  public invalidateScene(): void { this.sync.invalidateScene(); }
 
   /**
    * Computes the range of npc depth values for a region of the screen
@@ -1077,14 +1130,18 @@ export abstract class Viewport implements IDisposable {
 
       let maximum = 0;
       let minimum = 1;
-      const npc = Point3d.create();
-      const testPoint = Point2d.create();
-      for (testPoint.x = readRect.left; testPoint.x < readRect.right; ++testPoint.x) {
-        for (testPoint.y = readRect.top; testPoint.y < readRect.bottom; ++testPoint.y) {
-          if (this.getPixelDataNpcPoint(pixels, testPoint.x, testPoint.y, npc) !== undefined) {
-            minimum = Math.min(minimum, npc.z);
-            maximum = Math.max(maximum, npc.z);
-          }
+      const frac = this._viewFrustum.frustFraction;
+      for (let x = readRect.left; x < readRect.right; ++x) {
+        for (let y = readRect.top; y < readRect.bottom; ++y) {
+          let npcZ = pixels.getPixel(x, y).distanceFraction;
+          if (npcZ <= 0.0)
+            continue;
+
+          if (frac < 1.0)
+            npcZ *= frac / (1.0 + npcZ * (frac - 1.0));
+
+          minimum = Math.min(minimum, npcZ);
+          maximum = Math.max(maximum, npcZ);
         }
       }
 
@@ -1331,9 +1388,7 @@ export abstract class Viewport implements IDisposable {
       delta.y *= factor;
 
       // first check to see whether the zoom operation results in an invalid view. If so, make sure we don't change anything
-      const validSize = view.validateViewDelta(delta, true);
-      if (ViewStatus.Success !== validSize)
-        return;
+      view.validateViewDelta(delta, true);
 
       const center = newCenter ? newCenter.clone() : view.getCenter().clone();
 
@@ -1612,6 +1667,15 @@ export abstract class Viewport implements IDisposable {
   }
 
   /** @hidden */
+  public createSceneContext(): SceneContext { return new SceneContext(this); }
+
+  /**
+   * Called when the visible contents of the viewport are redrawn.
+   * @note Due to the frequency of this event, avoid performing expensive work inside event listeners.
+   */
+  public readonly onRender = new BeEvent<(vp: Viewport) => void>();
+
+  /** @hidden */
   public renderFrame(): boolean {
     const sync = this.sync;
     const view = this.view;
@@ -1662,15 +1726,19 @@ export abstract class Viewport implements IDisposable {
       this.setupFromView();
 
     if (!sync.isValidScene) {
-      const context = new SceneContext(this, new TileRequests());
-      view.createScene(context);
-      view.createClassification(context);
-      view.createTerrain(context);
-      context.requests.requestMissing();
-      target.changeScene(context.graphics);
-      target.changeTerrain(context.backgroundGraphics);
+      if (!this._freezeScene) {
+        this.numSelectedTiles = this.numReadyTiles = 0;
+        const context = this.createSceneContext();
+        view.createScene(context);
+        view.createClassification(context);
+        view.createTerrain(context);
+        context.requestMissingTiles();
+        target.changeScene(context.graphics);
+        target.changeTerrain(context.backgroundGraphics);
 
-      isRedrawNeeded = true;
+        isRedrawNeeded = true;
+      }
+
       sync.setValidScene();
     }
 
@@ -1691,9 +1759,11 @@ export abstract class Viewport implements IDisposable {
       target.animationFraction = this.animationFraction;
       isRedrawNeeded = true;
       sync.setValidAnimationFraction();
-      const scheduleScript = view.displayStyle.settings.scheduleScript;
-      if (scheduleScript)
+      const scheduleScript = view.displayStyle.scheduleScript;
+      if (scheduleScript) {
         view.scheduleTime = scheduleScript.duration.fractionToPoint(target.animationFraction);
+        target.animationBranches = scheduleScript.getAnimationBranches(view.scheduleTime);
+      }
     }
 
     if (this.processFlash()) {
@@ -1704,6 +1774,7 @@ export abstract class Viewport implements IDisposable {
     timer.stop();
     if (isRedrawNeeded) {
       target.drawFrame(timer.elapsed.milliseconds);
+      this.onRender.raiseEvent(this);
     }
 
     return true;
@@ -1820,7 +1891,7 @@ export class ScreenViewport extends Viewport {
    * "overlay-tooltip" for ToolTips. All the new child HTMLElements are the same size as the parentDiv.
    * @param parentDiv The HTMLDivElement to contain the ScreenViewport.
    * @param view The ViewState for the ScreenViewport.
-   * @note After creating a new ScreenViewport, you must call [[ViewManager.addViewport]] for it to be "live". You must also ensure your dispose of it properly.
+   * @note After creating a new ScreenViewport, you must call [[ViewManager.addViewport]] for it to become "live". You must also ensure you dispose of it properly.
    */
   public static create(parentDiv: HTMLDivElement, view: ViewState): ScreenViewport {
     const canvas = document.createElement("canvas");
@@ -1902,12 +1973,30 @@ export class ScreenViewport extends Viewport {
    */
   public pickNearestVisibleGeometry(pickPoint: Point3d, radius: number, out?: Point3d): Point3d | undefined {
     const picker = new ElementPicker();
-    if (0 === picker.doPick(this, pickPoint, radius, new LocateOptions()))
+    if (0 !== picker.doPick(this, pickPoint, radius, new LocateOptions())) {
+      const result = undefined !== out ? out : new Point3d();
+      result.setFrom(picker.getHit(0)!.getPoint());
+      return result;
+    }
+    if (undefined === this.backgroundMapPlane)
       return undefined;
 
-    const result = undefined !== out ? out : new Point3d();
-    result.setFrom(picker.getHit(0)!.getPoint());
-    return result;
+    const eyePoint = this.worldToViewMap.transform1.columnZ();
+    const direction = Vector3d.createFrom(eyePoint);
+    const aa = Geometry.conditionalDivideFraction(1, eyePoint.w);
+    if (aa !== undefined) {
+      const xyzEye = direction.scale(aa);
+      direction.setFrom(pickPoint.vectorTo(xyzEye));
+    }
+    direction.scaleToLength(-1.0, direction);
+    const rayToEye = Ray3d.create(pickPoint, direction);
+    const projectedPt = Point3d.createZero();
+    if (undefined === rayToEye.intersectionWithPlane(this.backgroundMapPlane, projectedPt))
+      return undefined;
+
+    const mapResult = undefined !== out ? out : new Point3d();
+    mapResult.setFrom(projectedPt);
+    return mapResult;
   }
 
   /** @hidden */
@@ -2082,7 +2171,6 @@ export class ScreenViewport extends Viewport {
         ctx.arc(0, 0, radius, 0, 2 * Math.PI);
         ctx.fill();
         ctx.stroke();
-
         ctx.beginPath();
         ctx.strokeStyle = "rgba(0,0,0,.8)";
         ctx.lineWidth = 1;
@@ -2094,10 +2182,44 @@ export class ScreenViewport extends Viewport {
   }
 }
 
+/**
+ * Forms a 2-way connection between 2 Viewports of the same iModel, such that any change of the parameters in one will be reflected in the other.
+ * For example, Navigator uses this class to synchronize two views for revision comparison.
+ * @note It is possible to synchronize two Viewports from two different [[IModelConnection]]s of the same iModel.
+ */
+export class TwoWayViewportSync {
+  private _removals: VoidFunction[] = [];
+  private _isEcho = false;
+  private syncView(source: Viewport, target: Viewport) {
+    if (this._isEcho) return;
+    this._isEcho = true; // so we don't react to the echo of this sync
+    target.applyViewState(source.view);
+    this._isEcho = false;
+  }
+
+  /** Establish the connection between two Viewports. When this method is called, view2 is initialized with the state of view1. */
+  public connect(view1: Viewport, view2: Viewport) {
+    this.disconnect();
+
+    view2.applyViewState(view1.view); // use view1 as the starting point
+
+    // listen to the onViewChanged events from both views
+    this._removals.push(view1.onViewChanged.addListener(() => this.syncView(view1, view2)));
+    this._removals.push(view2.onViewChanged.addListener(() => this.syncView(view2, view1)));
+  }
+
+  /** Remove the connection between the two views. */
+  public disconnect() { this._removals.forEach((removal) => removal()); }
+}
+
 /** @hidden */
 export class OffScreenViewport extends Viewport {
-  public static create(view: ViewState) {
-    const vp = new this(IModelApp.renderSystem.createOffscreenTarget(new ViewRect(0, 0, 1, 1)));
+  public static create(view: ViewState, viewRect?: ViewRect) {
+    const rect = new ViewRect(0, 0, 1, 1);
+    if (undefined !== viewRect)
+      rect.setFrom(viewRect);
+
+    const vp = new this(IModelApp.renderSystem.createOffscreenTarget(rect));
     vp.changeView(view);
     vp.sync.setValidDecorations();  // decorations are not used offscreen
     return vp;

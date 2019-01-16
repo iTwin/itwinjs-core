@@ -1,10 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
 import { AccessToken, IncludePrefix } from "@bentley/imodeljs-clients";
-import { GrantParams, TokenSet } from "openid-client";
+import { GrantParams, TokenSet, UserInfo as OpenIdUserInfo } from "openid-client";
 import { ActivityLoggingContext, BentleyStatus, BentleyError } from "@bentley/bentleyjs-core";
 import { OidcBackendClientConfiguration, OidcBackendClient } from "./OidcBackendClient";
 
@@ -18,40 +18,45 @@ export class OidcDelegationClient extends OidcBackendClient {
     super(configuration);
   }
 
-  /** Get a JWT for the specified scope from a SAML token */
-  public async getJwtFromSaml(actx: ActivityLoggingContext, accessToken: AccessToken, scope: string): Promise<AccessToken> {
+  private async exchangeToJwtToken(actx: ActivityLoggingContext, accessToken: AccessToken, grantType: string): Promise<AccessToken> {
     actx.enter();
 
-    const grantType = "urn:ietf:params:oauth:grant-type:saml-token";
-    const params: GrantParams = {
+    const scope = this._configuration.scope;
+    if (!scope.includes("openid") || !scope.includes("email") || !scope.includes("profile") || !scope.includes("organization"))
+      throw new BentleyError(BentleyStatus.ERROR, "Scopes when fetching a JWT token must include 'openid email profile organization'");
+
+    const grantParams: GrantParams = {
       grant_type: grantType,
       scope,
       assertion: accessToken.toTokenString(IncludePrefix.No),
     };
-    return this.exchangeToken(actx, params);
+
+    const client = await this.getClient(actx);
+    const tokenSet: TokenSet = await client.grant(grantParams);
+    const userInfo: OpenIdUserInfo = await client.userinfo(tokenSet.access_token);
+    return this.createToken(tokenSet, userInfo);
+  }
+
+  /** Get a JWT for the specified scope from a SAML token */
+  public async getJwtFromSaml(actx: ActivityLoggingContext, accessToken: AccessToken): Promise<AccessToken> {
+    actx.enter();
+    return this.exchangeToJwtToken(actx, accessToken, "urn:ietf:params:oauth:grant-type:saml-token");
   }
 
   /** Get a delegation JWT for a new scope from another JWT */
-  public async getJwtFromJwt(actx: ActivityLoggingContext, jwt: AccessToken, scope: string): Promise<AccessToken> {
+  public async getJwtFromJwt(actx: ActivityLoggingContext, accessToken: AccessToken): Promise<AccessToken> {
     actx.enter();
-
-    const grantType = "urn:ietf:params:oauth:grant-type:jwt-bearer";
-    const params: GrantParams = {
-      grant_type: grantType,
-      scope,
-      assertion: jwt.toTokenString(IncludePrefix.No),
-    };
-    return this.exchangeToken(actx, params);
+    return this.exchangeToJwtToken(actx, accessToken, "urn:ietf:params:oauth:grant-type:jwt-bearer");
   }
 
   /** Get a SAML token for the specified scope from a JWT token */
-  public async getSamlFromJwt(actx: ActivityLoggingContext, jwt: AccessToken, scope: string): Promise<AccessToken> {
+  public async getSamlFromJwt(actx: ActivityLoggingContext, jwt: AccessToken): Promise<AccessToken> {
     actx.enter();
 
     const grantType = "urn:ietf:params:oauth:grant-type:jwt-bearer";
     const params: GrantParams = {
       grant_type: grantType,
-      scope,
+      scope: this._configuration.scope,
       assertion: jwt.toTokenString(IncludePrefix.No),
     };
 

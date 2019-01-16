@@ -1,13 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { CSSProperties } from "react";
 
-import { ConfigurableCreateInfo } from "@bentley/ui-framework";
-import { ConfigurableUiManager } from "@bentley/ui-framework";
-import { NavigationAidControl } from "@bentley/ui-framework";
+import { ConfigurableCreateInfo, ConfigurableUiManager, NavigationAidControl } from "@bentley/ui-framework";
 
 // -----------------------------------------------------------------------------
 // Example Cube Navigation Aid Control
@@ -34,7 +31,7 @@ class CubeExampleNavigationAid extends React.Component {
   }
 
   public render(): React.ReactNode {
-    const canvasStyle: CSSProperties = {
+    const canvasStyle: React.CSSProperties = {
       width: "100%",
       height: "100%",
     };

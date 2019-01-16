@@ -1,12 +1,12 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 
-import Popover from "@src/popup/popover/Popover";
-import TrianglePopover from "@src/popup/popover/Triangle";
-import Direction from "@src/utilities/Direction";
+import { Popover } from "@src/popup/popover/Popover";
+import { TrianglePopover } from "@src/popup/popover/Triangle";
+import { Direction } from "@src/utilities/Direction";
 
 const root: React.CSSProperties = {
   alignItems: "center",
@@ -25,9 +25,10 @@ const container: React.CSSProperties = {
   width: "30px",
 };
 
-const containerRow2 = Object.assign({}, container, {
+const containerRow2: React.CSSProperties = {
+  ...container,
   gridRow: "2",
-} as React.CSSProperties);
+};
 
 const contentCss: React.CSSProperties = {
   backgroundColor: "red",
@@ -39,7 +40,7 @@ export interface Props {
   isPopoverOpen?: boolean;
 }
 
-export default class PopoversExample extends React.Component<Props> {
+export default class PopoversExample extends React.PureComponent<Props> {
   public render() {
     return (
       <div style={root}>

@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module iModelHub */
@@ -224,6 +224,46 @@ export class ChangeSetQuery extends StringIdQuery {
 }
 
 /**
+ * Queue for limiting number of promises executed in parallel.
+ * @hidden
+ */
+class ParallelQueue {
+  private _queue: Array<() => Promise<void>> = [];
+  private _parallelDownloads = 10;
+
+  /** Add a promise to the queue. */
+  public push(downloadFunc: () => Promise<void>) {
+    this._queue.push(downloadFunc);
+  }
+
+  /** Wait for all promises in the queue to finish. */
+  public async waitAll() {
+    let i = 0;
+    const promises = new Array<Promise<number>>();
+    const indexes = new Array<number>();
+    const completed = new Array<number>();
+
+    while (this._queue.length > 0 || promises.length > 0) {
+      while (this._queue.length > 0 && promises.length < this._parallelDownloads) {
+        const currentIndex = i++;
+        promises.push(this._queue[0]().then(() => completed.push(currentIndex)));
+        indexes.push(currentIndex);
+        this._queue.shift();
+      }
+      await Promise.race(promises);
+      while (completed.length > 0) {
+        const completedIndex = completed.shift()!;
+        const index = indexes.findIndex((value) => value === completedIndex);
+        if (index !== undefined) {
+          promises.splice(index, 1);
+          indexes.splice(index, 1);
+        }
+      }
+    }
+  }
+}
+
+/**
  * Handler for managing [[ChangeSet]]s. Use [[IModelClient.ChangeSets]] to get an instance of this class. In most cases, you should use [IModelDb]($backend) or [BriefcaseManager]($backend) methods instead.
  */
 export class ChangeSetHandler {
@@ -302,24 +342,27 @@ export class ChangeSetHandler {
         throw IModelHubClientError.missingDownloadUrl("changeSets");
     });
 
-    const promises = new Array<Promise<void>>();
     let totalSize = 0;
     let downloadedSize = 0;
     changeSets.forEach((value) => totalSize += parseInt(value.fileSize!, 10));
-    for (const changeSet of changeSets) {
-      const downloadUrl: string = changeSet.downloadUrl!;
-      const downloadToPathname: string = this._fileHandler.join(downloadToPath, changeSet.fileName!);
 
-      let previouslyDownloaded = 0;
-      const callback = (progress: ProgressInfo) => {
-        downloadedSize += (progress.loaded - previouslyDownloaded);
-        previouslyDownloaded = progress.loaded;
-        progressCallback!({ loaded: downloadedSize, total: totalSize, percent: downloadedSize / totalSize });
-      };
-      promises.push(this._fileHandler.downloadFile(alctx, downloadUrl, downloadToPathname, parseInt(changeSet.fileSize!, 10), progressCallback ? callback : undefined));
-    }
+    const queue = new ParallelQueue();
+    const fileHandler = this._fileHandler;
+    changeSets.forEach((changeSet) =>
+      queue.push(async () => {
+        const downloadUrl: string = changeSet.downloadUrl!;
+        const downloadToPathname: string = fileHandler.join(downloadToPath, changeSet.fileName!);
 
-    await Promise.all(promises);
+        let previouslyDownloaded = 0;
+        const callback = (progress: ProgressInfo) => {
+          downloadedSize += (progress.loaded - previouslyDownloaded);
+          previouslyDownloaded = progress.loaded;
+          progressCallback!({ loaded: downloadedSize, total: totalSize, percent: downloadedSize / totalSize });
+        };
+        return fileHandler.downloadFile(alctx, downloadUrl, downloadToPathname, parseInt(changeSet.fileSize!, 10), progressCallback ? callback : undefined);
+      }));
+
+    await queue.waitAll();
     alctx.enter();
     Logger.logTrace(loggingCategory, `Downloaded ${changeSets.length} changesets`);
   }

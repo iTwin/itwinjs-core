@@ -1,24 +1,24 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Tools */
 
 import { BeDuration, BeEvent } from "@bentley/bentleyjs-core";
 import { Angle, Constant, Matrix3d, Point2d, Point3d, Transform, Vector3d, XAndY } from "@bentley/geometry-core";
-import { NpcCenter, GeometryStreamProps } from "@bentley/imodeljs-common";
+import { GeometryStreamProps, NpcCenter } from "@bentley/imodeljs-common";
 import { AccuSnap, TentativeOrAccuSnap } from "../AccuSnap";
 import { HitDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
+import { CanvasDecoration } from "../render/System";
 import { IconSprites } from "../Sprites";
 import { DecorateContext, DynamicsContext } from "../ViewContext";
-import { ScreenViewport, Viewport, linePlaneIntersect } from "../Viewport";
+import { linePlaneIntersect, ScreenViewport, Viewport } from "../Viewport";
 import { ViewState3d, ViewStatus } from "../ViewState";
 import { IdleTool } from "./IdleTool";
 import { PrimitiveTool } from "./PrimitiveTool";
 import { BeButton, BeButtonEvent, BeButtonState, BeModifierKeys, BeTouchEvent, BeWheelEvent, CoordSource, EventHandled, InputCollector, InputSource, InteractiveTool, Tool } from "./Tool";
 import { ViewTool } from "./ViewTool";
-import { CanvasDecoration } from "../render/System";
 
 export const enum CoordinateLockOverrides {
   None = 0,
@@ -301,7 +301,6 @@ export class ToolAdmin {
   private _canvasDecoration?: CanvasDecoration;
   private _suspendedByViewTool?: SuspendedToolState;
   private _suspendedByInputCollector?: SuspendedToolState;
-  public cursorView?: ScreenViewport;
   private _viewTool?: ViewTool;
   private _primitiveTool?: PrimitiveTool;
   private _idleTool?: IdleTool;
@@ -382,6 +381,9 @@ export class ToolAdmin {
     ToolAdmin._removals.length = 0;
   }
 
+  /** Get the ScreenViewport where the cursor is currently, if any. */
+  public get cursorView(): ScreenViewport | undefined { return this.currentInputState.viewport; }
+
   /** A first-in-first-out queue of ToolEvents. */
   private readonly _toolEvents: ToolEvent[] = [];
   private tryReplace(event: ToolEvent): boolean {
@@ -418,7 +420,7 @@ export class ToolAdmin {
     }
   }
 
-  private onMouseButton(event: ToolEvent, isDown: boolean): Promise<any> {
+  private async onMouseButton(event: ToolEvent, isDown: boolean): Promise<any> {
     const ev = event.ev as MouseEvent;
     const vp = event.vp!;
     const pos = this.getMousePosition(event);
@@ -448,9 +450,6 @@ export class ToolAdmin {
         delta = -ev.deltaY;
         break;
     }
-
-    if (this.cursorView === undefined)
-      return EventHandled.No;
 
     const vp = event.vp!;
     const pt2d = this.getMousePosition(event);
@@ -496,12 +495,14 @@ export class ToolAdmin {
     switch (touchEv.type) {
       case "touchstart": {
         current.lastTouchStart = ev;
+        IModelApp.accuSnap.onTouchStart(ev);
         if (undefined !== tool)
           tool.onTouchStart(ev); // tslint:disable-line:no-floating-promises
         return;
       }
 
       case "touchend": {
+        IModelApp.accuSnap.onTouchEnd(ev);
         if (undefined !== tool) {
           await tool.onTouchEnd(ev);
           if (0 === ev.touchCount)
@@ -543,13 +544,14 @@ export class ToolAdmin {
 
       case "touchcancel": {
         current.lastTouchStart = undefined;
+        IModelApp.accuSnap.onTouchCancel(ev);
         if (undefined !== tool)
           tool.onTouchCancel(ev); // tslint:disable-line:no-floating-promises
         return;
       }
 
       case "touchmove": {
-        if (undefined !== tool)
+        if (!IModelApp.accuSnap.onTouchMove(ev) && undefined !== tool)
           tool.onTouchMove(ev); // tslint:disable-line:no-floating-promises
 
         if (undefined === current.lastTouchStart)
@@ -574,6 +576,9 @@ export class ToolAdmin {
 
           const touchStart = current.lastTouchStart;
           current.lastTouchStart = undefined;
+
+          if (IModelApp.accuSnap.onTouchMoveStart(ev, touchStart))
+            return;
 
           if (undefined === tool || EventHandled.Yes !== await tool.onTouchMoveStart(ev, touchStart))
             this.idleTool.onTouchMoveStart(ev, touchStart); // tslint:disable-line:no-floating-promises
@@ -631,7 +636,10 @@ export class ToolAdmin {
       return;
 
     IModelApp.toolAdmin.processEvent(); // tslint:disable-line:no-floating-promises
+
     IModelApp.viewManager.renderLoop();
+    IModelApp.tileAdmin.process();
+
     requestAnimationFrame(ToolAdmin.eventLoop);
   }
 
@@ -677,18 +685,12 @@ export class ToolAdmin {
    */
   public readonly manipulatorToolEvent = new BeEvent<(tool: Tool, event: ManipulatorToolEvent) => void>();
 
-  /** Called when a viewport is closed */
-  public onViewportClosed(vp: Viewport): void {
+  private async onMouseEnter(vp: ScreenViewport): Promise<void> { this.currentInputState.viewport = vp; }
+
+  /** @hidden */
+  public async onMouseLeave(vp: ScreenViewport): Promise<void> {
     IModelApp.accuSnap.clear();
     this.currentInputState.clearViewport(vp);
-    if (this.cursorView === vp)
-      this.cursorView = undefined;
-  }
-
-  private async onMouseEnter(vp: ScreenViewport) { this.cursorView = vp; }
-  private async onMouseLeave(vp: ScreenViewport) {
-    IModelApp.notifications.clearToolTip();
-    this.cursorView = undefined;
     this.setCanvasDecoration(vp);
     vp.invalidateDecorations(); // stop drawing locate circle...
   }
@@ -736,6 +738,8 @@ export class ToolAdmin {
 
         if (undefined !== touchEv && numTouches > 0 && numTaps > 0) {
           touchEv.tapCount = numTaps;
+          if (await IModelApp.accuSnap.onTouchTap(touchEv))
+            return;
           if ((undefined !== tool && EventHandled.Yes === await tool.onTouchTap(touchEv)) || EventHandled.Yes === await this.idleTool.onTouchTap(touchEv))
             return;
         }
@@ -750,7 +754,7 @@ export class ToolAdmin {
       if (tool)
         await tool.onMouseNoMotion(ev);
 
-      if (InputSource.Mouse === current.inputSource && this.cursorView) {
+      if (InputSource.Mouse === current.inputSource && this.currentInputState.viewport) {
         await IModelApp.accuSnap.onNoMotion(ev);
       }
     }
@@ -958,6 +962,8 @@ export class ToolAdmin {
     const overlayHit = this.pickCanvasDecoration(ev);
     if (undefined !== overlayHit && undefined !== overlayHit.onMouseButton && overlayHit.onMouseButton(ev))
       return;
+    if (IModelApp.accuSnap.onPreButtonEvent(ev))
+      return;
 
     const activeTool = this.activeTool;
     let tool = activeTool;
@@ -1103,7 +1109,26 @@ export class ToolAdmin {
     this.currentInputState.setKeyQualifiers(keyEvent);
 
     const modifierKey = ToolAdmin.getModifierKey(keyEvent);
-    return (BeModifierKeys.None !== modifierKey) ? this.onModifierKeyTransition(wentDown, modifierKey, keyEvent) : activeTool.onKeyTransition(wentDown, keyEvent);
+
+    if (BeModifierKeys.None !== modifierKey)
+      return this.onModifierKeyTransition(wentDown, modifierKey, keyEvent);
+
+    if (wentDown && keyEvent.ctrlKey && "z" === keyEvent.key.toLowerCase())
+      return this.doUndoOperation();
+
+    return activeTool.onKeyTransition(wentDown, keyEvent);
+  }
+
+  /** Called to undo previous data button for primitive tools or undo last write operation. */
+  public async doUndoOperation(): Promise<boolean> {
+    const activeTool = this.activeTool;
+    if (activeTool instanceof PrimitiveTool) {
+      // ### TODO Add method so UI can be showing string to inform user that undo of last data point is available...
+      if (await activeTool.undoPreviousStep())
+        return true;
+    }
+    // ### TODO Request TxnManager undo and restart this.primitiveTool...
+    return false;
   }
 
   private onUnsuspendTool() {
@@ -1145,6 +1170,7 @@ export class ToolAdmin {
 
   /** @hidden */
   public startInputCollector(newTool: InputCollector): void {
+    IModelApp.notifications.outputPrompt("");
     IModelApp.accuDraw.onInputCollectorInstall();
 
     if (undefined !== this._inputCollector) {
@@ -1194,6 +1220,7 @@ export class ToolAdmin {
 
   /** @hidden */
   public startViewTool(newTool: ViewTool) {
+    IModelApp.notifications.outputPrompt("");
     IModelApp.accuDraw.onViewToolInstall();
 
     if (undefined !== this._viewTool) {
@@ -1229,6 +1256,7 @@ export class ToolAdmin {
 
   /** @hidden */
   public startPrimitiveTool(newTool?: PrimitiveTool) {
+    IModelApp.notifications.outputPrompt("");
     this.exitViewTool();
 
     if (undefined !== this._primitiveTool)
@@ -1240,6 +1268,7 @@ export class ToolAdmin {
     IModelApp.viewManager.endDynamicsMode();
     this.activeToolChanged.raiseEvent(undefined !== newTool ? newTool : this.idleTool, StartOrResume.Start);
     this.setIncompatibleViewportCursor(true); // Don't restore this
+    IModelApp.viewManager.invalidateDecorationsAllViews();
 
     this.toolState.coordLockOvr = CoordinateLockOverrides.None;
     this.toolState.locateCircleOn = false;
@@ -1273,10 +1302,10 @@ export class ToolAdmin {
   }
 
   /** @hidden */
-  public testDecorationHit?(id: string): boolean { return this.currentTool.testDecorationHit(id); }
+  public testDecorationHit(id: string): boolean { return this.currentTool.testDecorationHit(id); }
 
   /** @hidden */
-  public getDecorationGeometry?(hit: HitDetail): GeometryStreamProps | undefined { return this.currentTool.getDecorationGeometry(hit); }
+  public getDecorationGeometry(hit: HitDetail): GeometryStreamProps | undefined { return this.currentTool.getDecorationGeometry(hit); }
 
   /** @hidden */
   public decorate(context: DecorateContext): void {
@@ -1291,13 +1320,13 @@ export class ToolAdmin {
         this._primitiveTool.decorateSuspended(context);
     }
 
-    if (this.cursorView !== context.viewport)
+    const viewport = this.currentInputState.viewport;
+    if (viewport !== context.viewport)
       return;
 
     const ev = new BeButtonEvent();
     this.fillEventFromCursorLocation(ev);
 
-    const viewport = this.cursorView;
     const hit = IModelApp.accuDraw.isActive ? undefined : IModelApp.accuSnap.currHit; // NOTE: Show surface normal until AccuDraw becomes active
     viewport.drawLocateCursor(context, ev.point, viewport.pixelsFromInches(IModelApp.locateManager.apertureInches), this.isLocateCircleOn, hit);
   }
@@ -1308,14 +1337,14 @@ export class ToolAdmin {
   public beginDynamics(): void {
     IModelApp.accuDraw.onBeginDynamics();
     IModelApp.viewManager.beginDynamicsMode();
-    this.setLocateCursor(false);
+    this.setCursor(IModelApp.viewManager.dynamicsCursor);
   }
 
   /** @hidden */
   public endDynamics(): void {
     IModelApp.accuDraw.onEndDynamics();
     IModelApp.viewManager.endDynamicsMode();
-    this.setLocateCursor(true);
+    this.setCursor(IModelApp.viewManager.crossHairCursor);
   }
 
   /** @hidden */
@@ -1433,7 +1462,7 @@ export class ToolAdmin {
  * @hidden
  */
 export class WheelEventProcessor {
-  public static async process(ev: BeWheelEvent, doUpdate: boolean) {
+  public static async process(ev: BeWheelEvent, doUpdate: boolean): Promise<void> {
     const vp = ev.viewport;
     if (undefined === vp)
       return;

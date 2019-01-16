@@ -1,14 +1,15 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
 /** @module Curve */
 
-import { Geometry, BeJSONFunctions, PlaneAltitudeEvaluator } from "../Geometry";
+import { Geometry, AxisOrder, BeJSONFunctions, PlaneAltitudeEvaluator } from "../Geometry";
 import { Angle } from "../geometry3d/Angle";
 import { XAndY } from "../geometry3d/XYZProps";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
+import { Point2d } from "../geometry3d/Point2dVector2d";
 import { Range3d } from "../geometry3d/Range";
 import { Transform } from "../geometry3d/Transform";
 import { Matrix3d } from "../geometry3d/Matrix3d";
@@ -17,13 +18,12 @@ import { Ray3d } from "../geometry3d/Ray3d";
 import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
 import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
+import { GrowableXYArray } from "../geometry3d/GrowableXYArray";
 import { GeometryHandler, IStrokeHandler } from "../geometry3d/GeometryHandler";
 import { StrokeOptions } from "./StrokeOptions";
 import { CurvePrimitive, AnnounceNumberNumberCurvePrimitive } from "./CurvePrimitive";
 import { GeometryQuery } from "./GeometryQuery";
-import { CurveLocationDetail, CurveSearchStatus } from "./CurveLocationDetail";
-import { CurveIntervalRole } from "./CurveLocationDetail";
-import { AxisOrder } from "../Geometry";
+import { CurveLocationDetail, CurveSearchStatus, CurveIntervalRole } from "./CurveLocationDetail";
 import { Clipper } from "../clipping/ClipUtils";
 import { LineSegment3d } from "./LineSegment3d";
 /* tslint:disable:variable-name no-empty*/
@@ -151,7 +151,7 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
   private static _workPointA = Point3d.create();
   private static _workPointB = Point3d.create();
   private static _workPointC = Point3d.create();
-
+  private static _workRay = Ray3d.createXAxis();
   public isSameGeometryClass(other: GeometryQuery): boolean { return other instanceof LineString3d; }
   /**
    * A LineString3d extends along its first and final segments.
@@ -159,10 +159,17 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
   public get isExtensibleFractionSpace(): boolean { return true; }
 
   private _points: GrowableXYZArray;
+  private _fractions?: GrowableFloat64Array;
+  private _uvParams?: GrowableXYArray;
+  private _derivatives?: GrowableXYZArray;
   /** return the points array (cloned). */
   public get points(): Point3d[] { return this._points.getPoint3dArray(); }
   /** Return (reference to) point data in packed GrowableXYZArray. */
   public get packedPoints(): GrowableXYZArray { return this._points; }
+  /** Return array of fraction parameters. */
+  public get fractions(): GrowableFloat64Array | undefined { return this._fractions; }
+  public get packedDerivatives(): GrowableXYZArray | undefined { return this._derivatives; }
+  public get packedUVParams(): GrowableXYArray | undefined { return this._uvParams; }
   private constructor() {
     super();
     this._points = new GrowableXYZArray();
@@ -211,6 +218,10 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
         this._points.push(p);
     }
   }
+  public addSteppedPoints(source: GrowableXYZArray, pointIndex0: number, step: number, numAdd: number) {
+    this._points.addSteppedPoints(source, pointIndex0, step, numAdd);
+  }
+
   /**
    * Add a point to the linestring.
    * @param point
@@ -224,6 +235,35 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
    */
   public addPointXYZ(x: number, y: number, z: number = 0) {
     this._points.pushXYZ(x, y, z);
+  }
+  /**
+   * Append a fraction to the fractions array.
+   * @param fraction
+   */
+  public addFraction(fraction: number) {
+    if (!this._fractions)
+      this._fractions = new GrowableFloat64Array();
+    this._fractions.push(fraction);
+  }
+
+  /**
+   * Append a fraction to the fractions array.
+   * @param uv
+   */
+  public addUVParam(uvParam: Point2d) {
+    if (!this._uvParams)
+      this._uvParams = new GrowableXYArray();
+    this._uvParams.pushXY(uvParam.x, uvParam.y);
+  }
+
+  /**
+   * Append a fraction to the fractions array.
+   * @param fraction
+   */
+  public addDerivative(vector: Vector3d) {
+    if (!this._derivatives)
+      this._derivatives = new GrowableXYZArray();
+    this._derivatives.push(vector);
   }
 
   /**
@@ -471,6 +511,12 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
   public vectorBetween(i: number, j: number, result?: Vector3d): Vector3d | undefined {
     return this._points.vectorIndexIndex(i, j, result);
   }
+  /** If i is a valid index, return that stored derivative vector. */
+  public derivativeAt(i: number, result?: Vector3d): Vector3d | undefined {
+    if (this._derivatives && this._derivatives.isIndexValid(i))
+      return this._points.atVector3dIndex(i, result);
+    return undefined;
+  }
 
   public numPoints(): number { return this._points.length; }
 
@@ -495,7 +541,7 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     }
   }
   public tryTransformInPlace(transform: Transform): boolean {
-    this._points.transformInPlace(transform);
+    this._points.multiplyTransformInPlace(transform);
     return true;
   }
 
@@ -576,6 +622,23 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
   }
 
   public quickLength(): number { return this.curveLength(); }
+  /**
+   * compute and normalize cross product among 3 points on the linestring.
+   * * "any" 3 points are acceptable -- no test for positive overall sense.
+   * * This is appropriate for polygon known to be convex.
+   * * use points spread at index step n/3, hopefully avoiding colinear points.
+   * * If that fails, try points 012
+   * @param result computed normal.
+   */
+  public quickUnitNormal(result?: Vector3d): Vector3d | undefined {
+    let step = Math.floor(this._points.length / 3);
+    if (step < 1)
+      step = 1;
+    result = this._points.crossProductIndexIndexIndex(0, step, step + step);
+    if (result && result.normalizeInPlace())
+      return result;
+    return undefined;
+  }
 
   public closestPoint(spacePoint: Point3d, extend: boolean, result?: CurveLocationDetail): CurveLocationDetail {
     result = CurveLocationDetail.create(this, result);
@@ -681,7 +744,68 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     if (n === 0 || !point.isAlmostEqual(this._points.getPoint3dAt(n - 1)))
       this._points.push(point);
   }
-  public clear() { this._points.clear(); }
+
+  /** Append a suitable evaluation of a curve ..
+   * * always append the curve point
+   * * if fraction array is present, append the fraction
+   * * if derivative array is present, append the derivative
+   * BUT ... skip if duplicates the tail of prior points.
+   */
+  public appendFractionToPoint(curve: CurvePrimitive, fraction: number) {
+    const n = this._points.length;
+    if (this._derivatives) {
+      const ray = curve.fractionToPointAndDerivative(fraction, LineString3d._workRay);
+      if (n === 0 || !ray.origin.isAlmostEqual(this._points.getPoint3dAt(n - 1))) {
+        if (this._fractions)
+          this._fractions.push(fraction);
+        this._points.push(ray.origin);
+        if (this._derivatives)
+          this._derivatives.push(ray.direction);
+
+      }
+    } else {
+      const point = curve.fractionToPoint(fraction, LineString3d._workPointA);
+      if (n === 0 || !point.isAlmostEqual(this._points.getPoint3dAt(n - 1))) {
+        if (this._fractions)
+          this._fractions.push(fraction);
+        this._points.push(point);
+      }
+    }
+  }
+  /**
+   * clear all array data:
+   * * points
+   * * optional fractions.
+   * * optional derivatives.
+   */
+  public clear() {
+    this._points.clear();
+    if (this._fractions)
+      this._fractions.clear();
+    if (this._derivatives)
+      this._derivatives.clear();
+  }
+  /**
+   * * options.needParams triggers creation of fraction array and uvParams array.
+   * * options.needNormals triggers creation of derivatives array
+   * @param capacity if positive, initial capacity of arrays
+   * @param options  optional, to indicate if fraction and derivative arrays are required.
+   */
+  public static createForStrokes(capacity: number = 0, options: StrokeOptions | undefined): LineString3d {
+    const ls = LineString3d.create();
+    if (capacity > 0)
+      ls._points.ensureCapacity(capacity);
+    if (options) {
+      if (options.needParams) {
+        ls._fractions = new GrowableFloat64Array(capacity);
+        ls._uvParams = new GrowableXYArray(capacity);
+      }
+      if (options.needNormals)
+        ls._derivatives = new GrowableXYZArray(capacity);
+    }
+    return ls;
+  }
+
   /** Evaluate a curve at uniform fractions.  Append the evaluations to this linestring.
    * @param curve primitive to evaluate.
    * @param numStrokes number of strokes (edges).
@@ -689,16 +813,23 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
    * @param fraction1 end fraction coordinate
    * @param include01 if false, points at fraction0 and fraction1 are omitted.
    */
-  public appendFractionalStrokePoints(curve: CurvePrimitive, numStrokes: number, fraction0: number = 0, fraction1: number = 1, include01: boolean): void {
-    if (include01)
-      this.appendStrokePoint(curve.fractionToPoint(fraction0));
-    if (numStrokes > 1) {
-      const df = (fraction1 - fraction0) / numStrokes;
-      for (let i = 1; i < numStrokes; i++)
-        this.appendStrokePoint(curve.fractionToPoint(fraction0 + i * df));
+  public appendFractionalStrokePoints(
+    curve: CurvePrimitive,
+    numStrokes: number,
+    fraction0: number = 0,
+    fraction1: number = 1,
+    include01: boolean = true): void {
+    let i0 = 1;
+    let i1 = numStrokes - 1;
+    if (include01) {
+      i0 = 0;
+      i1 = numStrokes;
     }
-    if (include01)
-      this.appendStrokePoint(curve.fractionToPoint(fraction1));
+    if (numStrokes >= 1) {
+      const df = (fraction1 - fraction0) / numStrokes;
+      for (let i = i0; i <= i1; i++)
+        this.appendFractionToPoint(curve, fraction0 + i * df);
+    }
   }
 
   public appendInterpolatedStrokePoints(numStrokes: number, point0: Point3d, point1: Point3d, include01: boolean): void {
@@ -821,6 +952,7 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     dest.push(LineString3d._indexPoint);
   }
   /** Return (if possible) a LineString which is a portion of this curve.
+   * * This implementation does NOT extrapolate the linestring -- fractions are capped at 0 and 1.
    * @param fractionA [in] start fraction
    * @param fractionB [in] end fraction
    */

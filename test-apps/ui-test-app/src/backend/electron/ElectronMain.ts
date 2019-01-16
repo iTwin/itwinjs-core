@@ -1,10 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import * as electron from "electron";
+import * as path from "path";
 import { RpcInterfaceDefinition, ElectronRpcManager } from "@bentley/imodeljs-common";
-import { IModelJsElectronAppManager } from "@bentley/imodeljs-backend";
+import { IModelJsElectronManager } from "@bentley/electron-manager";
 
 /**
  * Initializes Electron backend
@@ -13,6 +13,6 @@ export default async function initialize(rpcs: RpcInterfaceDefinition[]) {
   // tell ElectronRpcManager which RPC interfaces to handle
   ElectronRpcManager.initializeImpl({}, rpcs);
 
-  const app = new IModelJsElectronAppManager(electron);
+  const app = new IModelJsElectronManager(path.join(__dirname, "..", "..", "webresources"));
   return app.initialize();
 }

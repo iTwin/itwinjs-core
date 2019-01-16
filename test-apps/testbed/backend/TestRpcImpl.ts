@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { TestRpcInterface, ZeroMajorRpcInterface, TestOp1Params, TestRpcInterface2, TestRpcInterface3, TestNotFoundResponse, TestNotFoundResponseCode } from "../common/TestRpcInterface";
@@ -149,6 +149,14 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
 
   public async op14(x: number, y: number): Promise<number> {
     return Promise.resolve(x + y);
+  }
+
+  public async op15(): Promise<void> {
+    if (ActivityLoggingContext.current.versionId !== "testbed1") {
+      throw new Error("Wrong app version code.");
+    }
+
+    return;
   }
 }
 

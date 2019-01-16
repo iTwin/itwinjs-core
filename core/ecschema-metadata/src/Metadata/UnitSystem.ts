@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
@@ -19,5 +19,10 @@ export class UnitSystem extends SchemaItem {
   public async accept(visitor: SchemaItemVisitor) {
     if (visitor.visitUnitSystem)
       await visitor.visitUnitSystem(this);
+  }
+
+  public acceptSync(visitor: SchemaItemVisitor) {
+    if (visitor.visitUnitSystemSync)
+      visitor.visitUnitSystemSync(this);
   }
 }

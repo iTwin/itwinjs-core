@@ -1,12 +1,12 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import * as path from "path";
 import { ECDbTestHelper } from "./ECDbTestHelper";
 import { KnownTestLocations } from "../KnownTestLocations";
-import { ECDb, ECDbOpenMode, SqliteStatement, SqliteValue, SqliteValueType } from "../../backend";
+import { ECDb, ECDbOpenMode, SqliteStatement, SqliteValue, SqliteValueType } from "../../imodeljs-backend";
 import { DbResult, using } from "@bentley/bentleyjs-core";
 import { Range3d } from "@bentley/geometry-core";
 

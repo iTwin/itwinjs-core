@@ -1,12 +1,11 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`<Indicator /> renders correctly 1`] = `
+exports[`<ToolAssistanceIndicator /> renders correctly 1`] = `
 <div
   className="nz-footer-toolAssistance-indicator"
 >
   <div
     className="nz-indicator"
-    onClick={[Function]}
   >
     <div
       className="nz-icons"

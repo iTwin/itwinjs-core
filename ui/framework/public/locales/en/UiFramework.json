@@ -36,7 +36,8 @@
     "prompt": "No messages."
   },
   "activityCenter": {
-    "percentComplete": "% complete"
+    "percentComplete": "% complete",
+    "moreDetails": "Click or tap for more details."
   },
   "snapModeField": {
     "snapMode": "Snap Mode",
@@ -68,7 +69,8 @@
   },
   "categoriesModels": {
     "categories": "Categories",
-    "models": "Models"
+    "models": "Models",
+    "loadingMessage": "Loading..."
   },
   "savedViews": {
     "views": "Views",
@@ -88,6 +90,9 @@
   },
   "navigationAid": {
     "sheetsModalFrontstage": "Sheet Views"
+  },
+  "commands": {
+    "backToPreviousFrontstage": "Back to previous Frontstage"
   },
   "tools": {
     "View": {

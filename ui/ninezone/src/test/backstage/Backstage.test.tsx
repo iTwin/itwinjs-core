@@ -1,11 +1,11 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import Backstage from "../..//backstage/Backstage";
+import { Backstage } from "../../ui-ninezone";
 
 describe("<Backstage />", () => {
   it("should render", () => {
@@ -42,12 +42,12 @@ describe("<Backstage />", () => {
 
     handler.should.not.have.been.called;
 
-    document.dispatchEvent(new KeyboardEvent("keydown", {key: "Escape"}));
+    document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
 
     // component.simulate("keyDown", { keyCode: "Escape" });
     // document.dispatchEvent(new KeyboardEvent("keydown", { keyCode: 27 }));
 
     // handler.should.not.have.been.called;
-   // handler.calledOnce.should.true;
+    // handler.calledOnce.should.true;
   });
 });

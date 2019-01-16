@@ -34,10 +34,10 @@ exports[`Grid renders correctly 1`] = `
     onRowClick={[Function]}
     overScan={
       Object {
-        "colsEnd": 5,
-        "colsStart": 5,
-        "rowsEnd": 5,
-        "rowsStart": 5,
+        "colsEnd": 2,
+        "colsStart": 2,
+        "rowsEnd": 2,
+        "rowsStart": 2,
       }
     }
     rowGetter={[Function]}
@@ -57,7 +57,6 @@ exports[`Grid renders correctly 1`] = `
     }
     rowsCount={200}
     scrollToRowIndex={0}
-    tabIndex={-1}
   />
 </div>
 `;

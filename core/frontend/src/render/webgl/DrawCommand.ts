@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
@@ -147,6 +147,18 @@ class BranchCommand extends DrawCommand {
     this._pushOrPop = pushOrPop;
   }
 
+  public preExecute(_exec: ShaderProgramExecutor): void {
+    if (this._branch.branch.animationId && _exec.target.animationBranches) {
+      const animationBranch = _exec.target.animationBranches.get(this._branch.branch.animationId);
+      if (animationBranch) {
+        if (animationBranch.transform)
+          this._branch.localToWorldTransform = animationBranch.transform;
+        if (animationBranch.clip)
+          this._branch.clips = animationBranch.clip;
+      }
+    }
+  }
+
   public execute(exec: ShaderProgramExecutor): void {
     if (PushOrPop.Push === this._pushOrPop) {
       exec.pushBranch(this._branch);
@@ -236,8 +248,8 @@ export class RenderCommands {
     if (this.hasCommands(RenderPass.Hilite) || this.hasCommands(RenderPass.HiliteClassification))
       flags |= CompositeFlags.Hilite;
 
-    assert(5 === RenderPass.Translucent);
-    assert(7 === RenderPass.Hilite);
+    if (this.target.wantAmbientOcclusion)
+      flags |= CompositeFlags.AmbientOcclusion;
 
     return flags;
   }
@@ -621,8 +633,10 @@ export class RenderCommands {
     }
 
     this._batchState.push(batch, true);
-    this._opaqueOverrides = overrides.anyOpaque;
-    this._translucentOverrides = overrides.anyTranslucent;
+    if (this.currentViewFlags.transparency) {
+      this._opaqueOverrides = overrides.anyOpaque;
+      this._translucentOverrides = overrides.anyTranslucent;
+    }
 
     (batch.graphic as Graphic).addCommands(this);
 

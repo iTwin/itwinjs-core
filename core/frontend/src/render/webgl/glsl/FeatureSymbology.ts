@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
@@ -15,7 +15,7 @@ import {
   FragmentShaderComponent,
 } from "../ShaderBuilder";
 import { Hilite } from "@bentley/imodeljs-common";
-import { TextureUnit } from "../RenderFlags";
+import { TextureUnit, OvrFlags } from "../RenderFlags";
 import { FloatRgba } from "../FloatRGBA";
 import { FeatureMode } from "../TechniqueFlags";
 import { GLSLVertex, addAlpha } from "./Vertex";
@@ -66,15 +66,9 @@ float getFeatureIndex() {
 `;
 
 // Returns 1.0 if the specified flag is not globally overridden and is set in flags
-const extractNthLinearFeatureBit = `
+const extractNthFeatureBit = `
 float extractNthFeatureBit(float flags, float n) {
   return (1.0 - extractNthBit(u_globalOvrFlags, n)) * extractNthBit(flags, n);
-}
-`;
-
-const extractNthSurfaceFeatureBit = `
-float extractNthFeatureBit(float flags, float n) {
-  return extractNthBit(flags, n);
 }
 `;
 
@@ -161,8 +155,8 @@ function addCommon(builder: ProgramBuilder, mode: FeatureMode, opts: FeatureSymb
   vert.addGlobal("linear_feature_overrides", VariableType.Vec4, "vec4(0.0)");
   vert.addGlobal("feature_ignore_material", VariableType.Boolean, "false");
 
+  vert.addFunction(extractNthFeatureBit);
   if (wantWeight || wantLineCode) {
-    vert.addFunction(extractNthLinearFeatureBit);
     if (wantLineCode)
       vert.replaceFunction(GLSLVertex.computeLineCode, computeLineCode);
 
@@ -182,7 +176,14 @@ function addCommon(builder: ProgramBuilder, mode: FeatureMode, opts: FeatureSymb
       });
     }
   } else {
-    vert.addFunction(extractNthSurfaceFeatureBit);
+    vert.addUniform("u_globalOvrFlags", VariableType.Float, (prog) => {
+      prog.addGraphicUniform("u_globalOvrFlags", (uniform, params) => {
+        // If transparency view flag is off, do not allow features to override transparency.
+        // This is particularly important for Target.readPixels(), which draws everything opaque - otherwise we cannot locate elements with transparent overrides.
+        const flags = params.target.currentViewFlags.transparency ? 0.0 : OvrFlags.Alpha;
+        uniform.setUniform1f(flags);
+      });
+    });
   }
 
   addLookupTable(vert, "feature", "2.0");
@@ -309,7 +310,7 @@ function addSamplers(frag: FragmentShaderBuilder, testFeatureId: boolean) {
   }, VariablePrecision.High);
 }
 
-const readDepthAndOrder = `
+export const readDepthAndOrder = `
 vec2 readDepthAndOrder(vec2 tc) {
   vec4 pdo = TEXTURE(u_pickDepthAndOrder, tc);
   float order = floor(pdo.x * 16.0 + 0.5);

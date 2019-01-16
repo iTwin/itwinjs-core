@@ -1,0 +1,50 @@
+{
+  "name": "@bentley/electron-manager",
+  "version": "0.187.0",
+  "description": "iModel.js electron utilities",
+  "main": "lib/ElectronManager.js",
+  "typings": "lib/ElectronManager",
+  "license": "MIT",
+  "engines": {
+    "node": ">=8.9.0 <9.0"
+  },
+  "scripts": {
+    "build": "tsc 1>&2",
+    "clean": "rimraf lib package-deps.json",
+    "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/core/electron-manager/file.json --tsIndexFile=./ElectronManager.ts --onlyJson %TYPEDOC_THEME%",
+    "lint": "tslint --project . 1>&2",
+    "test": "",
+    "cover": ""
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/imodeljs/imodeljs"
+  },
+  "keywords": [
+    "Bentley",
+    "BIM",
+    "iModel"
+  ],
+  "author": {
+    "name": "Bentley Systems, Inc.",
+    "url": "http://www.bentley.com"
+  },
+  "peerDependencies": {
+    "electron": "^4.0.1"
+  },
+  "//devDependencies": [
+    "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
+    "NOTE: All tools used by scripts in this package must be listed as devDependencies"
+  ],
+  "devDependencies": {
+    "@bentley/build-tools": "0.187.0",
+    "@types/node": "10.10.3",
+    "electron": "^4.0.1",
+    "rimraf": "^2.6.2",
+    "tslint": "^5.11.0",
+    "typedoc": "^0.11.1",
+    "typedoc-plugin-external-module-name": "^1.1.1",
+    "typescript": "~3.1.0"
+  },
+  "dependencies": {}
+}

@@ -1,7 +1,9 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+/* tslint:disable:no-direct-imports */
+
 import { expect } from "chai";
 import * as moq from "typemoq";
 import { createRandomECInstanceNodeKey, createRandomId } from "@bentley/presentation-common/lib/test/_helpers/random";
@@ -9,7 +11,7 @@ import { Id64 } from "@bentley/bentleyjs-core";
 import { RelatedElementProps, ModelProps, ElementProps, Code } from "@bentley/imodeljs-common";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { KeySet, PersistentKeysContainer, InstanceKey } from "@bentley/presentation-common";
-import { PersistenceHelper } from "../index";
+import { PersistenceHelper } from "../presentation-frontend";
 
 describe("PersistenceHelper", () => {
 

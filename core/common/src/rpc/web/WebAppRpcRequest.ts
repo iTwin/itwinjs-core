@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module RpcInterface */
@@ -48,6 +48,7 @@ export class WebAppRpcRequest extends RpcRequest {
     const request = {
       id: req.header(protocol.requestIdHeaderName) || "",
       authorization: req.header(protocol.authorizationHeaderName) || "",
+      version: req.header(protocol.versionHeaderName) || "",
       operation: {
         interfaceDefinition: operation.interfaceDefinition,
         operationName: operation.operationName,

@@ -1,79 +1,348 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`<Scrollable /> renders correctly 1`] = `
-<Toolbar
-  className="nz-toolbar-scrollable"
-  renderHistoryItems={[Function]}
-  renderItems={[Function]}
-  renderPanelItems={[Function]}
-  visibleItemThreshold={5}
-/>
+<PanelsProvider
+  histories={
+    Object {
+      "current": null,
+    }
+  }
+  panels={
+    Object {
+      "current": null,
+    }
+  }
+>
+  <Component />
+</PanelsProvider>
 `;
 
 exports[`<Scrollable /> renders vertical with overflow scrolled left correctly 1`] = `
-<Toolbar
-  className="nz-toolbar-scrollable nz-scroll-indicator-left-only"
-  items={
-    <UNDEFINED>
-      <Item />
-      <Item />
-      <Item />
-      <Item />
-    </UNDEFINED>
-  }
-  renderHistoryItems={[Function]}
-  renderItems={[Function]}
-  renderPanelItems={[Function]}
-  visibleItemThreshold={3}
-/>
+<div
+  className="nz-toolbar-scrollable nz-direction-bottom nz-horizontal nz-panel-alignment-start nz-scroll-indicator-left-only"
+>
+  <div
+    className="nz-expanded nz-histories"
+  >
+    <div
+      className="nz-viewport"
+      style={
+        Object {
+          "left": 41,
+          "width": -41,
+        }
+      }
+    >
+      <div
+        className="nz-container"
+        style={
+          Object {
+            "left": -41,
+            "marginLeft": -41,
+          }
+        }
+      />
+    </div>
+  </div>
+  <div
+    className="nz-expanded nz-panels"
+    style={
+      Object {
+        "marginLeft": -41,
+      }
+    }
+  />
+  <div
+    className="nz-items-viewport"
+    style={
+      Object {
+        "width": 0,
+      }
+    }
+  >
+    <Items
+      className="nz-items"
+      direction={1}
+      style={
+        Object {
+          "marginLeft": -41,
+        }
+      }
+    />
+    <Indicator
+      className="nz-left nz-is-visible"
+      direction={0}
+      onClick={[Function]}
+    />
+    <Indicator
+      className="nz-right"
+      direction={2}
+      onClick={[Function]}
+    />
+  </div>
+</div>
 `;
 
 exports[`<Scrollable /> renders vertical with overflow scrolled right most correctly 1`] = `
-<Toolbar
-  className="nz-toolbar-scrollable nz-scroll-indicator-left-only"
-  items={
-    <UNDEFINED>
-      <Item />
-      <Item />
-      <Item />
-      <Item />
-    </UNDEFINED>
-  }
-  renderHistoryItems={[Function]}
-  renderItems={[Function]}
-  renderPanelItems={[Function]}
-  visibleItemThreshold={2}
-/>
+<div
+  className="nz-toolbar-scrollable nz-direction-bottom nz-horizontal nz-panel-alignment-start nz-scroll-indicator-left-only"
+>
+  <div
+    className="nz-expanded nz-histories"
+  >
+    <div
+      className="nz-viewport"
+      style={
+        Object {
+          "left": 40,
+          "width": 41,
+        }
+      }
+    >
+      <div
+        className="nz-container"
+        style={
+          Object {
+            "left": -40,
+            "marginLeft": -83,
+          }
+        }
+      />
+    </div>
+  </div>
+  <div
+    className="nz-expanded nz-panels"
+    style={
+      Object {
+        "marginLeft": -83,
+      }
+    }
+  />
+  <div
+    className="nz-items-viewport"
+    style={
+      Object {
+        "width": 82,
+      }
+    }
+  >
+    <Items
+      className="nz-items"
+      direction={1}
+      style={
+        Object {
+          "marginLeft": -83,
+        }
+      }
+    />
+    <Indicator
+      className="nz-left nz-is-visible"
+      direction={0}
+      onClick={[Function]}
+    />
+    <Indicator
+      className="nz-right"
+      direction={2}
+      onClick={[Function]}
+    />
+  </div>
+</div>
 `;
 
 exports[`<Scrollable /> renders with expandsTo 1`] = `
-<Toolbar
-  className="nz-toolbar-scrollable"
-  expandsTo={0}
-  renderHistoryItems={[Function]}
-  renderItems={[Function]}
-  renderPanelItems={[Function]}
-  visibleItemThreshold={5}
-/>
+<div
+  className="nz-toolbar-scrollable nz-direction-left nz-vertical nz-panel-alignment-start"
+>
+  <div
+    className="nz-expanded nz-histories"
+  >
+    <div
+      className="nz-viewport"
+      style={
+        Object {
+          "height": 0,
+          "top": 0,
+        }
+      }
+    >
+      <div
+        className="nz-container"
+        style={
+          Object {
+            "marginTop": -0,
+            "top": -0,
+          }
+        }
+      />
+    </div>
+  </div>
+  <div
+    className="nz-expanded nz-panels"
+    style={
+      Object {
+        "marginTop": -0,
+      }
+    }
+  />
+  <div
+    className="nz-items-viewport"
+    style={
+      Object {
+        "height": 2,
+      }
+    }
+  >
+    <Items
+      className="nz-items"
+      direction={0}
+      style={
+        Object {
+          "marginTop": -0,
+        }
+      }
+    />
+    <Indicator
+      className="nz-left"
+      direction={1}
+      onClick={[Function]}
+    />
+    <Indicator
+      className="nz-right"
+      direction={3}
+      onClick={[Function]}
+    />
+  </div>
+</div>
 `;
 
 exports[`<Scrollable /> renders with panelAlignment 1`] = `
-<Toolbar
-  className="nz-toolbar-scrollable"
-  panelAlignment={1}
-  renderHistoryItems={[Function]}
-  renderItems={[Function]}
-  renderPanelItems={[Function]}
-  visibleItemThreshold={5}
-/>
+<div
+  className="nz-toolbar-scrollable nz-direction-bottom nz-horizontal nz-panel-alignment-end"
+>
+  <div
+    className="nz-expanded nz-histories"
+  >
+    <div
+      className="nz-viewport"
+      style={
+        Object {
+          "left": 0,
+          "width": 0,
+        }
+      }
+    >
+      <div
+        className="nz-container"
+        style={
+          Object {
+            "left": -0,
+            "marginLeft": -0,
+          }
+        }
+      />
+    </div>
+  </div>
+  <div
+    className="nz-expanded nz-panels"
+    style={
+      Object {
+        "marginLeft": -0,
+      }
+    }
+  />
+  <div
+    className="nz-items-viewport"
+    style={
+      Object {
+        "width": 2,
+      }
+    }
+  >
+    <Items
+      className="nz-items"
+      direction={1}
+      style={
+        Object {
+          "marginLeft": -0,
+        }
+      }
+    />
+    <Indicator
+      className="nz-left"
+      direction={0}
+      onClick={[Function]}
+    />
+    <Indicator
+      className="nz-right"
+      direction={2}
+      onClick={[Function]}
+    />
+  </div>
+</div>
 `;
 
 exports[`<Scrollable /> renders with visible item threshold 1`] = `
-<Toolbar
-  className="nz-toolbar-scrollable"
-  renderHistoryItems={[Function]}
-  renderItems={[Function]}
-  renderPanelItems={[Function]}
-  visibleItemThreshold={2}
-/>
+<div
+  className="nz-toolbar-scrollable nz-direction-bottom nz-horizontal nz-panel-alignment-start"
+>
+  <div
+    className="nz-expanded nz-histories"
+  >
+    <div
+      className="nz-viewport"
+      style={
+        Object {
+          "left": 0,
+          "width": 0,
+        }
+      }
+    >
+      <div
+        className="nz-container"
+        style={
+          Object {
+            "left": -0,
+            "marginLeft": -0,
+          }
+        }
+      />
+    </div>
+  </div>
+  <div
+    className="nz-expanded nz-panels"
+    style={
+      Object {
+        "marginLeft": -0,
+      }
+    }
+  />
+  <div
+    className="nz-items-viewport"
+    style={
+      Object {
+        "width": 2,
+      }
+    }
+  >
+    <Items
+      className="nz-items"
+      direction={1}
+      style={
+        Object {
+          "marginLeft": -0,
+        }
+      }
+    />
+    <Indicator
+      className="nz-left"
+      direction={0}
+      onClick={[Function]}
+    />
+    <Indicator
+      className="nz-right"
+      direction={2}
+      onClick={[Function]}
+    />
+  </div>
+</div>
 `;

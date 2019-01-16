@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
@@ -10,9 +10,7 @@ import { Point2d, Vector2d } from "./Point2dVector2d";
 import { Point3d, Vector3d } from "./Point3dVector3d";
 import { Transform } from "./Transform";
 import { Matrix3d } from "./Matrix3d";
-import { Range1dProps, Range2dProps, Range3dProps } from "./XYZProps";
-import { LowAndHighXYZ, LowAndHighXY } from "./XYZProps";
-import { XAndY, XYAndZ } from "./XYZProps";
+import { Range1dProps, Range2dProps, Range3dProps, LowAndHighXYZ, LowAndHighXY, XAndY, XYAndZ } from "./XYZProps";
 import { GrowableXYZArray } from "./GrowableXYZArray";
 
 export abstract class RangeBase {
@@ -1179,16 +1177,21 @@ export class Range2d extends RangeBase implements LowAndHighXY {
       Range2d._EXTREME_POSITIVE);
   }
 
-  /** Expand this range by distances a (possibly signed) in all directions */
+  /** Expand this range to include a point given by x,y */
   public extendXY(x: number, y: number): void {
     if (x < this.low.x) this.low.x = x;
     if (x > this.high.x) this.high.x = x;
 
     if (y < this.low.y) this.low.y = y;
     if (y > this.high.y) this.high.y = y;
-
   }
 
+  /** Expand this range to include a point given by x,y */
+  public extendTransformedXY(transform: Transform, x: number, y: number): void {
+    const x1 = transform.multiplyComponentXYZ(0, x, y, 0);
+    const y1 = transform.multiplyComponentXYZ(1, x, y, 0);
+    this.extendXY(x1, y1);
+  }
   /** Expand this range to include a point. */
   public extendPoint(point: XAndY): void { this.extendXY(point.x, point.y); }
 

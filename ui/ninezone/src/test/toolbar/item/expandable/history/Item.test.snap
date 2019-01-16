@@ -1,13 +1,13 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`<Item /> renders active 1`] = `
+exports[`<HistoryItem /> renders active 1`] = `
 <div
   className="nz-toolbar-item-expandable-history-item nz-is-active"
   onClick={[Function]}
 />
 `;
 
-exports[`<Item /> renders correctly 1`] = `
+exports[`<HistoryItem /> renders correctly 1`] = `
 <div
   className="nz-toolbar-item-expandable-history-item"
   onClick={[Function]}

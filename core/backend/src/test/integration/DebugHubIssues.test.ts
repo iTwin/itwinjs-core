@@ -1,18 +1,18 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
 import { assert } from "chai";
 import { OpenMode, ActivityLoggingContext, GuidString, PerfLogger } from "@bentley/bentleyjs-core";
 import { AccessToken, Config } from "@bentley/imodeljs-clients";
+import { RequestHost } from "@bentley/imodeljs-clients-backend";
 import { IModel, IModelVersion } from "@bentley/imodeljs-common";
-import { IModelDb, OpenParams, IModelHost, IModelHostConfiguration, PhysicalModel } from "../../backend";
+import { IModelDb, OpenParams, IModelHost, IModelHostConfiguration, PhysicalModel } from "../../imodeljs-backend";
 import { IModelTestUtils, TestUsers } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
 import { IModelJsFs } from "../../IModelJsFs";
 import { BriefcaseManager } from "../../BriefcaseManager";
-import { Logger, LogLevel } from "@bentley/bentleyjs-core";
 
 // Useful utilities to download/upload test cases from/to the iModel Hub
 describe.skip("DebugHubIssues (#integration)", () => {
@@ -21,16 +21,18 @@ describe.skip("DebugHubIssues (#integration)", () => {
   const actx = new ActivityLoggingContext("");
 
   before(async () => {
+    IModelTestUtils.setupLogging();
+    await RequestHost.initialize();
+    IModelTestUtils.setupDebugLogLevels();
     accessToken = await HubUtility.login(TestUsers.manager);
+  });
 
-    Logger.initializeToConsole();
-    Logger.setLevelDefault(LogLevel.Warning);
-    // Logger.setLevel("Performance", LogLevel.Info);
-    // Logger.setLevel("imodeljs-backend.BriefcaseManager", LogLevel.Trace);
-    // Logger.setLevel("imodeljs-backend.OpenIModelDb", LogLevel.Trace);
-    // Logger.setLevel("imodeljs-clients.Clients", LogLevel.Trace);
-    // Logger.setLevel("imodeljs-clients.imodelhub", LogLevel.Trace);
-    // Logger.setLevel("imodeljs-clients.Url", LogLevel.Trace);
+  it.skip("should be able to upload required test files to the Hub", async () => {
+    const projectName = "iModelJsTest";
+    const iModelName = "ReadOnlyTest";
+
+    const iModelDir = path.join(iModelRootDir, iModelName);
+    await HubUtility.pushIModelAndChangeSets(accessToken, projectName, iModelDir);
   });
 
   it.skip("should be able to upload required test files to the Hub", async () => {
@@ -74,7 +76,7 @@ describe.skip("DebugHubIssues (#integration)", () => {
   });
 
   it.skip("should be able to open ReadOnlyTest model", async () => {
-    const projectName = "iModelJsTest";
+    const projectName = "iModelJsIntegrationTest";
     const iModelName = "ReadOnlyTest";
 
     const myProjectId = await HubUtility.queryProjectIdByName(accessToken, projectName);
@@ -88,7 +90,7 @@ describe.skip("DebugHubIssues (#integration)", () => {
   });
 
   it.skip("should be able to validate change set operations", async () => {
-    const projectName = "iModelJsTest";
+    const projectName = "iModelJsIntegrationTest";
     const iModelName = "ReadOnlyTest";
     const myProjectId = await HubUtility.queryProjectIdByName(accessToken, projectName);
     const myIModelId = await HubUtility.queryIModelIdByName(accessToken, myProjectId, iModelName);

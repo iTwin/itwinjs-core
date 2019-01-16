@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`<Icon /> renders correctly 1`] = `
+exports[`<HistoryIcon /> renders correctly 1`] = `
 <HistoryItem
   className="nz-toolbar-item-expandable-history-icon"
 />

@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Settings */
@@ -8,9 +8,8 @@ import { request, RequestOptions, Response } from "./Request";
 import { Client } from "./Client";
 import { AuthorizationToken, AccessToken } from "./Token";
 import { SettingsAdmin, SettingsStatus, SettingsResult } from "./SettingsAdmin";
-import { BentleyError, BentleyStatus } from "@bentley/bentleyjs-core/lib/BentleyError";
+import { BentleyError, BentleyStatus, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { ImsDelegationSecureTokenClient } from "./ImsClients";
-import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
 
 /** Client API for the CONNECT ProductSettingsService - implements the SettingsAdmin interface when settings are stored by CONNECT. */
 export class ConnectSettingsClient extends Client implements SettingsAdmin {

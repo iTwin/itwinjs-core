@@ -1,11 +1,11 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
 import { ECClass, StructClass } from "./Class";
 import { Constant } from "./Constant";
-import { processCustomAttributes, CustomAttributeContainerProps, CustomAttributeSet, serializeCustomAttributes } from "./CustomAttribute";
+import { CustomAttributeContainerProps, CustomAttributeSet, serializeCustomAttributes, CustomAttribute } from "./CustomAttribute";
 import { CustomAttributeClass } from "./CustomAttributeClass";
 import { EntityClass } from "./EntityClass";
 import { Enumeration } from "./Enumeration";
@@ -23,7 +23,7 @@ import { SchemaContext } from "./../Context";
 import { SchemaReadHelper } from "./../Deserialization/Helper";
 import { JsonParser } from "../Deserialization/JsonParser";
 import { SchemaProps } from "./../Deserialization/JsonProps";
-import { CustomAttributeContainerType, ECClassModifier, PrimitiveType } from "./../ECObjects";
+import { ECClassModifier, PrimitiveType } from "./../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "./../Exception";
 import { AnyClass, AnySchemaItem } from "./../Interfaces";
 import { SchemaKey, ECVersion, SchemaItemKey } from "./../SchemaKey";
@@ -39,9 +39,9 @@ export class Schema implements CustomAttributeContainerProps {
   protected _alias?: string;
   protected _label?: string;
   protected _description?: string;
-  protected _customAttributes?: CustomAttributeSet;
   public readonly references: Schema[];
   private readonly _items: SchemaItem[];
+  private _customAttributes?: Map<string, CustomAttribute>;
   /**
    * Constructs an empty Schema with the given name and version, (optionally) in a given context.
    * @param name The schema's name
@@ -466,12 +466,17 @@ export class Schema implements CustomAttributeContainerProps {
 
     if (undefined !== schemaProps.description)
       this._description = schemaProps.description;
-
-    this._customAttributes = processCustomAttributes(schemaProps.customAttributes, this.name, CustomAttributeContainerType.Schema);
   }
 
   public async deserialize(schemaProps: SchemaProps) {
     this.deserializeSync(schemaProps);
+  }
+
+  protected addCustomAttribute(customAttribute: CustomAttribute) {
+    if (!this._customAttributes)
+      this._customAttributes = new Map<string, CustomAttribute>();
+
+    this._customAttributes.set(customAttribute.className, customAttribute);
   }
 
   public static async fromJson(jsonObj: object | string, context?: SchemaContext): Promise<Schema> {
@@ -502,6 +507,7 @@ export class Schema implements CustomAttributeContainerProps {
  * would prevent this class from extending Schema.
  */
 export abstract class MutableSchema extends Schema {
+  public abstract addCustomAttribute(customAttribute: CustomAttribute): void;
   public abstract async createEntityClass(name: string, modifier?: ECClassModifier): Promise<EntityClass>;
   public abstract createEntityClassSync(name: string, modifier?: ECClassModifier): EntityClass;
   public abstract async createMixinClass(name: string): Promise<Mixin>;

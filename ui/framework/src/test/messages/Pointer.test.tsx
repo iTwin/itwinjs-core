@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
@@ -7,8 +7,7 @@ import { expect } from "chai";
 import * as enzyme from "enzyme";
 import * as sinon from "sinon";
 import TestUtils from "../TestUtils";
-import { PointerMessage } from "../../index";
-import { AppNotificationManager } from "../../index";
+import { PointerMessage, AppNotificationManager } from "../../ui-framework";
 import { NotifyMessageDetails, OutputMessagePriority, OutputMessageType, RelativePosition } from "@bentley/imodeljs-frontend";
 
 describe("PointerMessage", () => {

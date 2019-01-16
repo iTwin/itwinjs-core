@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
@@ -8,7 +8,7 @@
 import { Range3d } from "../geometry3d/Range";
 import { Transform } from "../geometry3d/Transform";
 
-import { CurveCollection } from "../curve/CurveCollection";
+import { CurveCollection, CurveChain } from "../curve/CurveCollection";
 import { GeometryQuery } from "../curve/GeometryQuery";
 import { CurvePrimitive } from "../curve/CurvePrimitive";
 import { Geometry } from "../Geometry";
@@ -16,8 +16,11 @@ import { GeometryHandler } from "../geometry3d/GeometryHandler";
 import { SolidPrimitive } from "./SolidPrimitive";
 import { SweepContour } from "./SweepContour";
 import { ConstructCurveBetweenCurves } from "../curve/ConstructCurveBetweenCurves";
-import { CurveChain } from "../curve/CurveCollection";
 
+/**
+ * type for a function argument taking 2 curves and returning another curve or failing with undefined.
+ */
+export type CurvePrimitiveMutator = (primitiveA: CurvePrimitive, primitiveB: CurvePrimitive) => CurvePrimitive | undefined;
 export class RuledSweep extends SolidPrimitive {
   private _contours: SweepContour[];
   private constructor(contours: SweepContour[], capped: boolean) {
@@ -56,6 +59,8 @@ export class RuledSweep extends SolidPrimitive {
     return new RuledSweep(this.cloneSweepContours(), this.capped);
   }
   public tryTransformInPlace(transform: Transform): boolean {
+    if (transform.matrix.isSingular())
+      return false;
     for (const contour of this._contours) {
       contour.tryTransformInPlace(transform);
     }
@@ -127,7 +132,7 @@ export class RuledSweep extends SolidPrimitive {
   /** Construct a CurveCollection with the same structure as collectionA and collectionB, with primitives constructed by the caller-supplied primitiveMutator function.
    * @returns Returns undefined if there is any type mismatch between the two collections.
    */
-  public static mutatePartners(collectionA: CurveCollection, collectionB: CurveCollection, primitiveMutator: (primitiveA: CurvePrimitive, primitiveB: CurvePrimitive) => CurvePrimitive | undefined): CurveCollection | undefined {
+  public static mutatePartners(collectionA: CurveCollection, collectionB: CurveCollection, primitiveMutator: CurvePrimitiveMutator): CurveCollection | undefined {
     if (!collectionA.isSameGeometryClass(collectionB))
       return undefined;
     if (collectionA instanceof CurveChain && collectionB instanceof CurveChain) {
@@ -136,7 +141,7 @@ export class RuledSweep extends SolidPrimitive {
       const chainC = chainA.cloneEmptyPeer() as CurveChain;
       const childrenA = chainA.children;
       const childrenB = chainB.children;
-      if (childrenA.length !== childrenA.length)
+      if (childrenA.length !== childrenB.length)
         return undefined;
       for (let i = 0; i < childrenA.length; i++) {
         const newChild = primitiveMutator(childrenA[i], childrenB[i]);
@@ -150,7 +155,7 @@ export class RuledSweep extends SolidPrimitive {
       const childrenA = collectionA.children;
       const childrenB = collectionB.children;
       const childrenC = collectionC.children;
-      if (!childrenA || !childrenB || !childrenC)
+      if (childrenA === undefined || childrenB === undefined || childrenC === undefined || childrenA.length !== childrenB.length)
         return undefined;
       for (let i = 0; i < childrenA.length; i++) {
         const childA = childrenA[i];

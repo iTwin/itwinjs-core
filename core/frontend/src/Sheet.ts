@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Views */
@@ -9,7 +9,7 @@ import { Angle, ClipVector, Constant, IndexedPolyface, IndexedPolyfaceVisitor, M
 import {
   ColorDef, ElementAlignedBox2d, ElementAlignedBox3d, Feature, FeatureTable, Gradient, GraphicParams, ImageBuffer,
   Placement2d, RenderMode, RenderTexture, SheetProps, TileProps, ViewAttachmentProps, ViewDefinition2dProps, ViewFlag,
-  ViewFlags, ViewStateData,
+  ViewFlags, ViewStateProps,
 } from "@bentley/imodeljs-common";
 import { CategorySelectorState } from "./CategorySelectorState";
 import { DisplayStyle2dState } from "./DisplayStyleState";
@@ -17,7 +17,8 @@ import { IModelConnection } from "./IModelConnection";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 import { GraphicBuilder, GraphicType } from "./render/GraphicBuilder";
 import { GraphicList, PackedFeatureTable, RenderGraphic, RenderPlan, RenderTarget } from "./render/System";
-import { Tile, TileLoader, TileRequests, TileTree } from "./tile/TileTree";
+import { Tile, TileLoader, TileTree } from "./tile/TileTree";
+import { TileRequest } from "./tile/TileRequest";
 import { DecorateContext, SceneContext } from "./ViewContext";
 import { CoordSystem, OffScreenViewport, Viewport, ViewRect } from "./Viewport";
 import { SpatialViewState, ViewState, ViewState2d, ViewState3d } from "./ViewState";
@@ -135,13 +136,13 @@ export namespace Attachments {
         this.setupFromView();
 
       this._scene = [];
-      const sceneContext = new SceneContext(this, new TileRequests());
+      const sceneContext = this.createSceneContext();
       view.createScene(sceneContext);
 
-      sceneContext.requests.requestMissing();
+      sceneContext.requestMissingTiles();
 
       // The scene is ready when (1) all required TileTree roots have been created and (2) all required tiles have finished loading
-      if (!view.areAllTileTreesLoaded || sceneContext.requests.hasMissingTiles)
+      if (!view.areAllTileTreesLoaded || sceneContext.hasMissingTiles)
         return State.Loading;
 
       return State.Ready;
@@ -178,7 +179,7 @@ export namespace Attachments {
 
         // Discard any tiles/graphics used for previous level-of-detail - we'll generate them at the new LOD
         this.sync.invalidateScene();
-        this.view.cancelAllTileLoads();
+        // ###TODO this.view.cancelAllTileLoads();
 
         this._sceneDepth = depth;
         let dim = QUERY_SHEET_TILE_PIXELS;
@@ -220,10 +221,11 @@ export namespace Attachments {
   abstract class AttachmentTileLoader extends TileLoader {
     public abstract get is3dAttachment(): boolean;
     public tileRequiresLoading(_params: Tile.Params): boolean { return true; }
+    public get priority(): Tile.LoadPriority { return Tile.LoadPriority.Primary; }
     public async getChildrenProps(_parent: Tile): Promise<TileProps[]> { assert(false); return Promise.resolve([]); }
-    public async loadTileContents(_missing: Tile[]): Promise<void> {
-      // ###TODO: This doesn't appear to be needed, yet it gets invoked?
-      return Promise.resolve();
+    public async requestTileContent(_tile: Tile): Promise<TileRequest.Response> {
+      // ###TODO?
+      return Promise.resolve(undefined);
     }
   }
 
@@ -546,14 +548,14 @@ export namespace Attachments {
       const fillColor = ColorDef.green.clone();
       fillColor.setAlpha(0x88);
       lineColor.setAlpha(0xff);
-      const builder = args.context.createGraphicBuilder(GraphicType.Scene);
+      const builder = args.context.createSceneGraphicBuilder();
       builder.setSymbology(lineColor, fillColor, 2);
       for (const poly of polys) {
         const polyVisitor = IndexedPolyfaceVisitor.create(poly, 0);
         while (polyVisitor.moveToNextFacet()) {
           const lineString: Point3d[] = [];
           for (let i = 0; i < 3; i++)
-            lineString.push(polyVisitor.getPoint(i));
+            lineString.push(polyVisitor.getPoint(i)!);
           if (lineString.length > 0)
             lineString.push(lineString[0].clone()); // close the loop
           builder.addLineString(lineString);
@@ -915,7 +917,7 @@ export namespace Attachments {
         Point2d.create(origin.x, origin.y + bbox.high.y),
         Point2d.create(origin.x, origin.y)];
 
-      const builder = context.createGraphicBuilder(GraphicType.WorldDecoration);
+      const builder = context.createSceneGraphicBuilder();
       builder.setSymbology(Attachment.DEBUG_BOUNDING_BOX_COLOR, Attachment.DEBUG_BOUNDING_BOX_COLOR, 2);
       builder.addLineString2d(rect, 0);
       const attachmentBorder = builder.finish();
@@ -1032,7 +1034,8 @@ export namespace Attachments {
 
 /** A view of a SheetModel */
 export class SheetViewState extends ViewState2d {
-  public static createFromStateData(viewStateData: ViewStateData, cat: CategorySelectorState, iModel: IModelConnection): ViewState | undefined {
+  public static createFromProps(viewStateData: ViewStateProps, iModel: IModelConnection): ViewState | undefined {
+    const cat = new CategorySelectorState(viewStateData.categorySelectorProps, iModel);
     const displayStyleState = new DisplayStyle2dState(viewStateData.displayStyleProps, iModel);
     // use "new this" so subclasses are correct
     return new this(viewStateData.viewDefinitionProps as ViewDefinition2dProps, iModel, cat, displayStyleState, viewStateData.sheetProps!, viewStateData.sheetAttachments!);

@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
@@ -7,8 +7,8 @@ import * as moq from "typemoq";
 import {
   SelectionHandler, SingleSelectionHandler, MultiSelectionHandler,
   OnItemsDeselectedCallback, OnItemsSelectedCallback, OnSelectionChanged, DragAction,
-} from "../../..//common/selection/SelectionHandler";
-import { SelectionMode } from "../../..//common";
+} from "../../../ui-components/common/selection/SelectionHandler";
+import { SelectionMode } from "../../../ui-components";
 
 describe("SelectionHandler", () => {
   let handler: SelectionHandler<string>;

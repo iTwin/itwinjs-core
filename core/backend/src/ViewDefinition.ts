@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module ViewDefinitions */
@@ -13,6 +13,7 @@ import {
   CodeScopeProps,
   CodeSpec,
   ColorDef,
+  ContextRealityModelProps,
   ViewDefinitionProps,
   ViewDefinition3dProps,
   ViewDefinition2dProps,
@@ -66,16 +67,15 @@ export class DisplayStyle2d extends DisplayStyle {
     super(props, iModel);
     this._settings = new DisplayStyleSettings(this.jsonProperties);
   }
-
   /**
-   * Insert a DisplayStyle2d for use by a ViewDefinition.
-   * @param iModelDb Insert into this iModel
-   * @param definitionModelId Insert the new DisplayStyle2d into this DefinitionModel
-   * @param name The name of the DisplayStyle2d
-   * @returns The Id of the newly inserted DisplayStyle2d element.
-   * @throws [[IModelError]] if unable to insert the element.
+   * Create a DisplayStyle2d for use by a ViewDefinition.
+   * @param iModelDb The iModel
+   * @param definitionModelId The [[DefinitionModel]]
+   * @param name The name/CodeValue of the DisplayStyle2d
+   * @returns The newly constructed DisplayStyle2d element.
+   * @throws [[IModelError]] if unable to create the element.
    */
-  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string): Id64String {
+  public static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string): DisplayStyle2d {
     const displayStyleProps: DisplayStyleProps = {
       classFullName: this.classFullName,
       code: this.createCode(iModelDb, definitionModelId, name),
@@ -85,10 +85,31 @@ export class DisplayStyle2d extends DisplayStyle {
       monochromeColor: ColorDef.white,
       viewFlags: ViewFlags.createFrom(),
     };
-    return iModelDb.elements.insertElement(displayStyleProps);
+    return new DisplayStyle2d(displayStyleProps, iModelDb);
+  }
+  /**
+   * Insert a DisplayStyle2d for use by a ViewDefinition.
+   * @param iModelDb Insert into this iModel
+   * @param definitionModelId Insert the new DisplayStyle2d into this DefinitionModel
+   * @param name The name of the DisplayStyle2d
+   * @returns The Id of the newly inserted DisplayStyle2d element.
+   * @throws [[IModelError]] if unable to insert the element.
+   */
+  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string): Id64String {
+    const displayStyle = this.create(iModelDb, definitionModelId, name);
+    return iModelDb.elements.insertElement(displayStyle);
   }
 }
 
+/** Creation options for display styles */
+export interface DisplayStyleCreationOptions {
+  viewFlags?: ViewFlags;
+  backgroundColor?: ColorDef;
+  analysisStyle?: AnalysisStyleProps;
+  contextRealityModels?: ContextRealityModelProps[];
+  scheduleScript?: object;
+
+}
 /** A DisplayStyle for 3d views.
  * See [how to create a DisplayStyle3d]$(docs/learning/backend/CreateElements.md#DisplayStyle3d).
  */
@@ -101,23 +122,31 @@ export class DisplayStyle3d extends DisplayStyle {
     super(props, iModel);
     this._settings = new DisplayStyle3dSettings(this.jsonProperties);
   }
-
   /**
-   * Insert a DisplayStyle3d for use by a ViewDefinition.
-   * @param iModelDb Insert into this iModel
-   * @param definitionModelId Insert the new DisplayStyle3d into this DefinitionModel
-   * @param name The name of the DisplayStyle3d
-   * @returns The Id of the newly inserted DisplayStyle3d element.
-   * @throws [[IModelError]] if unable to insert the element.
+   * Create a DisplayStyle3d for use by a ViewDefinition.
+   * @param iModelDb The iModel
+   * @param definitionModelId The [[DefinitionModel]]
+   * @param name The name/CodeValue of the DisplayStyle3d
+   * @returns The newly constructed DisplayStyle3d element.
+   * @throws [[IModelError]] if unable to create the element.
    */
-  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, viewFlagsIn?: ViewFlags, backgroundColor?: ColorDef, analysisStyle?: AnalysisStyleProps): Id64String {
-    const stylesIn: { [k: string]: any } = { viewflags: viewFlagsIn ? viewFlagsIn : new ViewFlags() };
 
-    if (analysisStyle)
-      stylesIn.analysisStyle = analysisStyle;
+  public static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, options?: DisplayStyleCreationOptions): DisplayStyle3d {
+    const stylesIn: { [k: string]: any } = { viewflags: (options && options.viewFlags) ? options.viewFlags : new ViewFlags() };
 
-    if (backgroundColor)
-      stylesIn.backgroundColor = backgroundColor;
+    if (options) {
+      if (options.analysisStyle)
+        stylesIn.analysisStyle = options.analysisStyle;
+
+      if (options.backgroundColor)
+        stylesIn.backgroundColor = options.backgroundColor;
+
+      if (options.scheduleScript)
+        stylesIn.scheduleScript = options.scheduleScript;
+
+      if (options.contextRealityModels)
+        stylesIn.contextRealityModels = options.contextRealityModels;
+    }
 
     const displayStyleProps: DisplayStyleProps = {
       classFullName: this.classFullName,
@@ -125,11 +154,21 @@ export class DisplayStyle3d extends DisplayStyle {
       model: definitionModelId,
       jsonProperties: { styles: stylesIn },
       isPrivate: false,
-      backgroundColor: new ColorDef(),
-      monochromeColor: ColorDef.white,
-      viewFlags: ViewFlags.createFrom(),
+
     };
-    return iModelDb.elements.insertElement(displayStyleProps);
+    return new DisplayStyle3d(displayStyleProps, iModelDb);
+  }
+  /**
+   * Insert a DisplayStyle3d for use by a ViewDefinition.
+   * @param iModelDb Insert into this iModel
+   * @param definitionModelId Insert the new DisplayStyle3d into this [[DefinitionModel]]
+   * @param name The name of the DisplayStyle3d
+   * @returns The Id of the newly inserted DisplayStyle3d element.
+   * @throws [[IModelError]] if unable to insert the element.
+   */
+  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, options?: DisplayStyleCreationOptions): Id64String {
+    const displayStyle = this.create(iModelDb, definitionModelId, name, options);
+    return iModelDb.elements.insertElement(displayStyle);
   }
 }
 
@@ -149,7 +188,6 @@ export class ModelSelector extends DefinitionElement implements ModelSelectorPro
     val.models = this.models;
     return val;
   }
-
   /** Create a Code for a ModelSelector given a name that is meant to be unique within the scope of the specified DefinitionModel.
    * @param iModel  The IModelDb
    * @param scopeModelId The Id of the DefinitionModel that contains the ModelSelector and provides the scope for its name.
@@ -159,17 +197,16 @@ export class ModelSelector extends DefinitionElement implements ModelSelectorPro
     const codeSpec: CodeSpec = iModel.codeSpecs.getByName(BisCodeSpec.modelSelector);
     return new Code({ spec: codeSpec.id, scope: scopeModelId, value: codeValue });
   }
-
   /**
-   * Insert a ModelSelector which is used to select which Models are displayed by a ViewDefinition.
-   * @param iModelDb Insert into this iModel
-   * @param definitionModelId Insert the new ModelSelector into this DefinitionModel
-   * @param name The name of the ModelSelector
+   * Create a ModelSelector which is used to select which Models are displayed by a ViewDefinition.
+   * @param iModelDb The iModel
+   * @param definitionModelId The [[DefinitionModel]]
+   * @param name The name/CodeValue of the ModelSelector
    * @param models Array of models to select for display
-   * @returns The Id of the newly inserted ModelSelector element.
-   * @throws [[IModelError]] if unable to insert the element.
+   * @returns The newly constructed ModelSelector element.
+   * @throws [[IModelError]] if unable to create the element.
    */
-  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, models: Id64Array): Id64String {
+  public static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, models: Id64Array): ModelSelector {
     const modelSelectorProps: ModelSelectorProps = {
       classFullName: this.classFullName,
       code: this.createCode(iModelDb, definitionModelId, name),
@@ -177,7 +214,20 @@ export class ModelSelector extends DefinitionElement implements ModelSelectorPro
       models,
       isPrivate: false,
     };
-    return iModelDb.elements.insertElement(modelSelectorProps);
+    return new ModelSelector(modelSelectorProps, iModelDb);
+  }
+  /**
+   * Insert a ModelSelector which is used to select which Models are displayed by a ViewDefinition.
+   * @param iModelDb Insert into this iModel
+   * @param definitionModelId Insert the new ModelSelector into this DefinitionModel
+   * @param name The name/CodeValue of the ModelSelector
+   * @param models Array of models to select for display
+   * @returns The Id of the newly inserted ModelSelector element.
+   * @throws [[IModelError]] if unable to insert the element.
+   */
+  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, models: Id64Array): Id64String {
+    const modelSelector = this.create(iModelDb, definitionModelId, name, models);
+    return iModelDb.elements.insertElement(modelSelector);
   }
 }
 
@@ -197,7 +247,6 @@ export class CategorySelector extends DefinitionElement implements CategorySelec
     val.categories = this.categories;
     return val;
   }
-
   /** Create a Code for a CategorySelector given a name that is meant to be unique within the scope of the specified DefinitionModel.
    * @param iModel  The IModelDb
    * @param scopeModelId The Id of the DefinitionModel that contains the CategorySelector and provides the scope for its name.
@@ -207,7 +256,25 @@ export class CategorySelector extends DefinitionElement implements CategorySelec
     const codeSpec: CodeSpec = iModel.codeSpecs.getByName(BisCodeSpec.categorySelector);
     return new Code({ spec: codeSpec.id, scope: scopeModelId, value: codeValue });
   }
-
+  /**
+   * Create a CategorySelector which is used to select which categories are displayed by a ViewDefinition.
+   * @param iModelDb The iModel
+   * @param definitionModelId The [[DefinitionModel]]
+   * @param name The name of the CategorySelector
+   * @param categories Array of categories to select for display
+   * @returns The newly constructed CategorySelector element.
+   * @throws [[IModelError]] if unable to create the element.
+   */
+  public static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, categories: Id64Array): CategorySelector {
+    const categorySelectorProps: CategorySelectorProps = {
+      classFullName: this.classFullName,
+      code: this.createCode(iModelDb, definitionModelId, name),
+      model: definitionModelId,
+      categories,
+      isPrivate: false,
+    };
+    return new CategorySelector(categorySelectorProps, iModelDb);
+  }
   /**
    * Insert a CategorySelector which is used to select which categories are displayed by a ViewDefinition.
    * @param iModelDb Insert into this iModel
@@ -218,14 +285,8 @@ export class CategorySelector extends DefinitionElement implements CategorySelec
    * @throws [[IModelError]] if unable to insert the element.
    */
   public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, categories: Id64Array): Id64String {
-    const categorySelectorProps: CategorySelectorProps = {
-      classFullName: this.classFullName,
-      code: this.createCode(iModelDb, definitionModelId, name),
-      model: definitionModelId,
-      categories,
-      isPrivate: false,
-    };
-    return iModelDb.elements.insertElement(categorySelectorProps);
+    const categorySelector = this.create(iModelDb, definitionModelId, name, categories);
+    return iModelDb.elements.insertElement(categorySelector);
   }
 }
 
@@ -361,6 +422,39 @@ export class SpatialViewDefinition extends ViewDefinition3d implements SpatialVi
 export class OrthographicViewDefinition extends SpatialViewDefinition {
   constructor(props: SpatialViewDefinitionProps, iModel: IModelDb) { super(props, iModel); }
   /**
+   * Create an OrthographicViewDefinition
+   * @param iModelDb The iModel
+   * @param definitionModelId The [[DefinitionModel]]
+   * @param name The name/CodeValue of the view
+   * @param modelSelectorId The [[ModelSelector]] that this view should use
+   * @param categorySelectorId The [[CategorySelector]] that this view should use
+   * @param displayStyleId The [[DisplayStyle3d]] that this view should use
+   * @param range Defines the view origin and extents
+   * @param standardView Optionally defines the view's rotation
+   * @returns The newly constructed OrthographicViewDefinition element
+   * @throws [[IModelError]] if there is a problem creating the view
+   */
+  public static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, modelSelectorId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range3d, standardView = StandardViewIndex.Iso): OrthographicViewDefinition {
+    const rotation = Matrix3d.createStandardWorldToView(standardView);
+    const angles = YawPitchRollAngles.createFromMatrix3d(rotation);
+    const rotationTransform = Transform.createOriginAndMatrix(undefined, rotation);
+    const rotatedRange = rotationTransform.multiplyRange(range);
+    const viewDefinitionProps: SpatialViewDefinitionProps = {
+      classFullName: this.classFullName,
+      model: definitionModelId,
+      code: this.createCode(iModelDb, definitionModelId, name),
+      modelSelectorId,
+      categorySelectorId,
+      displayStyleId,
+      origin: rotation.multiplyTransposeXYZ(rotatedRange.low.x, rotatedRange.low.y, rotatedRange.low.z),
+      extents: rotatedRange.diagonal(),
+      angles,
+      cameraOn: false,
+      camera: new Camera(), // not used when cameraOn === false
+    };
+    return new OrthographicViewDefinition(viewDefinitionProps, iModelDb);
+  }
+  /**
    * Insert an OrthographicViewDefinition
    * @param iModelDb Insert into this iModel
    * @param definitionModelId Insert the new OrthographicViewDefinition into this DefinitionModel
@@ -370,29 +464,12 @@ export class OrthographicViewDefinition extends SpatialViewDefinition {
    * @param displayStyleId The [[DisplayStyle3d]] that this view should use
    * @param range Defines the view origin and extents
    * @param standardView Optionally defines the view's rotation
+   * @returns The Id of the newly inserted OrthographicViewDefinition element
    * @throws [[IModelError]] if there is an insert problem.
    */
   public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, modelSelectorId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range3d, standardView = StandardViewIndex.Iso): Id64String {
-    const rotation = Matrix3d.createStandardWorldToView(standardView);
-    const angles = YawPitchRollAngles.createFromMatrix3d(rotation);
-    const rotationTransform = Transform.createOriginAndMatrix(undefined, rotation);
-    const rotatedRange = rotationTransform.multiplyRange(range);
-    const viewOrigin = rotation.multiplyTransposeXYZ(rotatedRange.low.x, rotatedRange.low.y, rotatedRange.low.z);
-    const viewExtents = rotatedRange.diagonal();
-    const viewDefinitionProps: SpatialViewDefinitionProps = {
-      classFullName: this.classFullName,
-      model: definitionModelId,
-      code: this.createCode(iModelDb, definitionModelId, name),
-      modelSelectorId,
-      categorySelectorId,
-      displayStyleId,
-      origin: viewOrigin,
-      extents: viewExtents,
-      angles,
-      cameraOn: false,
-      camera: new Camera(), // not used when cameraOn === false
-    };
-    return iModelDb.elements.insertElement(viewDefinitionProps);
+    const viewDefinition = this.create(iModelDb, definitionModelId, name, modelSelectorId, categorySelectorId, displayStyleId, range, standardView);
+    return iModelDb.elements.insertElement(viewDefinition);
   }
   /** Set a new viewed range without changing the rotation or any other properties. */
   public setRange(range: Range3d): void {
@@ -442,18 +519,19 @@ export class DrawingViewDefinition extends ViewDefinition2d {
   public constructor(props: ViewDefinition2dProps, iModel: IModelDb) {
     super(props, iModel);
   }
+
   /**
-   * Insert an DrawingViewDefinition
-   * @param iModelDb Insert into this iModel
-   * @param definitionModelId Insert the new DrawingViewDefinition into this [[DefinitionModel]]
+   * Create a DrawingViewDefinition
+   * @param iModelDb The iModel
+   * @param definitionModelId The [[DefinitionModel]]
    * @param name The name/CodeValue of the view
    * @param baseModelId The base [[DrawingModel]]
    * @param categorySelectorId The [[CategorySelector]] that this view should use
    * @param displayStyleId The [[DisplayStyle2d]] that this view should use
    * @param range Defines the view origin and extents
-   * @throws [[IModelError]] if there is an insert problem.
+   * @throws [[IModelError]] if there is a problem creating the element.
    */
-  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, baseModelId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range2d): Id64String {
+  public static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, baseModelId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range2d): DrawingViewDefinition {
     const viewDefinitionProps: ViewDefinition2dProps = {
       classFullName: this.classFullName,
       model: definitionModelId,
@@ -465,30 +543,34 @@ export class DrawingViewDefinition extends ViewDefinition2d {
       delta: range.diagonal(),
       angle: 0,
     };
-    return iModelDb.elements.insertElement(viewDefinitionProps);
+    return new DrawingViewDefinition(viewDefinitionProps, iModelDb);
+  }
+
+  /**
+   * Insert a DrawingViewDefinition
+   * @param iModelDb Insert into this iModel
+   * @param definitionModelId Insert the new DrawingViewDefinition into this [[DefinitionModel]]
+   * @param name The name/CodeValue of the view
+   * @param baseModelId The base [[DrawingModel]]
+   * @param categorySelectorId The [[CategorySelector]] that this view should use
+   * @param displayStyleId The [[DisplayStyle2d]] that this view should use
+   * @param range Defines the view origin and extents
+   * @throws [[IModelError]] if there is an insert problem.
+   */
+  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, baseModelId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range2d): Id64String {
+    const viewDefinition = this.create(iModelDb, definitionModelId, name, baseModelId, categorySelectorId, displayStyleId, range);
+    return iModelDb.elements.insertElement(viewDefinition);
   }
 }
 
 /** Defines a view of a [[SheetModel]]. */
-export class SheetViewDefinition extends ViewDefinition2d {
-  public constructor(props: ViewDefinition2dProps, iModel: IModelDb) {
-    super(props, iModel);
-  }
-}
+export class SheetViewDefinition extends ViewDefinition2d { }
 
 /** A ViewDefinition used to display a 2d template model. */
-export class TemplateViewDefinition2d extends ViewDefinition2d {
-  public constructor(props: ViewDefinition2dProps, iModel: IModelDb) {
-    super(props, iModel);
-  }
-}
+export class TemplateViewDefinition2d extends ViewDefinition2d { }
 
 /** A ViewDefinition used to display a 3d template model. */
-export class TemplateViewDefinition3d extends ViewDefinition3d {
-  public constructor(props: ViewDefinition3dProps, iModel: IModelDb) {
-    super(props, iModel);
-  }
-}
+export class TemplateViewDefinition3d extends ViewDefinition3d { }
 
 /**
  * An auxiliary coordinate system element. Auxiliary coordinate systems can be used by views to show
@@ -574,8 +656,4 @@ export class LightLocation extends SpatialLocationElement implements LightLocati
   /** Whether this light is currently turned on. */
   public enabled!: boolean;
   constructor(props: LightLocationProps, iModel: IModelDb) { super(props, iModel); }
-}
-
-/** Defines a rendering texture. */
-export class Texture extends DefinitionElement {
 }

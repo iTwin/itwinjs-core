@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module RpcInterface */
@@ -33,8 +33,8 @@ export abstract class WipRpcInterface extends RpcInterface {
     NOTE: Any add/remove/change to the methods below requires an update of the interface version.
     NOTE: Please consult the README in this folder for the semantic versioning rules.
   ===========================================================================================*/
-  public async placeholder(_iModelToken: IModelToken): Promise<string> { return this.forward.apply(this, arguments); } // here to test that WipRpcInterface is configured properly
-  public async isChangeCacheAttached(_iModelToken: IModelToken): Promise<boolean> { return this.forward.apply(this, arguments); }
-  public async attachChangeCache(_iModelToken: IModelToken): Promise<void> { return this.forward.apply(this, arguments); }
-  public async detachChangeCache(_iModelToken: IModelToken): Promise<void> { return this.forward.apply(this, arguments); }
+  public async placeholder(_iModelToken: IModelToken): Promise<string> { return this.forward(arguments); } // here to test that WipRpcInterface is configured properly
+  public async isChangeCacheAttached(_iModelToken: IModelToken): Promise<boolean> { return this.forward(arguments); }
+  public async attachChangeCache(_iModelToken: IModelToken): Promise<void> { return this.forward(arguments); }
+  public async detachChangeCache(_iModelToken: IModelToken): Promise<void> { return this.forward(arguments); }
 }

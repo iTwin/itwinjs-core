@@ -1,24 +1,22 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module PropertyGrid */
 
 import * as _ from "lodash";
-import { PropertyRecord } from "@bentley/ui-components/lib/properties/Record";
-import { PropertyValue, PropertyValueFormat } from "@bentley/ui-components/lib/properties/Value";
 import {
-  PropertyDataProvider as IPropertyDataProvider,
-  PropertyData, PropertyDataChangeEvent, PropertyCategory,
-} from "@bentley/ui-components/lib/propertygrid/PropertyDataProvider";
+  PropertyRecord, PropertyValueFormat, PropertyValue,
+  PropertyData, PropertyDataChangeEvent, PropertyCategory, IPropertyDataProvider,
+} from "@bentley/ui-components";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import {
   CategoryDescription, Descriptor, ContentFlags,
   Field, NestedContentField, DefaultContentDisplayTypes, Item,
   PresentationError, PresentationStatus,
 } from "@bentley/presentation-common";
-import ContentDataProvider, { CacheInvalidationProps } from "../common/ContentDataProvider";
-import ContentBuilder from "../common/ContentBuilder";
+import { ContentDataProvider, IContentDataProvider, CacheInvalidationProps } from "../common/ContentDataProvider";
+import { ContentBuilder } from "../common/ContentBuilder";
 import { prioritySortFunction, translate } from "../common/Utils";
 
 const favoritesCategoryName = "Favorite";
@@ -36,7 +34,7 @@ const getFavoritesCategory = async (): Promise<CategoryDescription> => {
       expand: true,
     }));
   }
-  return await favoritesCategoryPromise;
+  return favoritesCategoryPromise;
 };
 
 interface PropertyPaneCallbacks {
@@ -205,15 +203,20 @@ class PropertyDataBuilder {
 }
 
 /**
+ * Interface for presentation rules-driven property data provider.
+ */
+export type IPresentationPropertyDataProvider = IPropertyDataProvider & IContentDataProvider;
+
+/**
  * Presentation Rules-driven property data provider implementation.
  */
-export default class PresentationPropertyDataProvider extends ContentDataProvider implements IPropertyDataProvider {
+export class PresentationPropertyDataProvider extends ContentDataProvider implements IPresentationPropertyDataProvider {
   private _includeFieldsWithNoValues: boolean;
   public onDataChanged = new PropertyDataChangeEvent();
 
   /** Constructor. */
-  constructor(connection: IModelConnection, rulesetId: string) {
-    super(connection, rulesetId, DefaultContentDisplayTypes.PROPERTY_PANE);
+  constructor(imodel: IModelConnection, rulesetId: string) {
+    super(imodel, rulesetId, DefaultContentDisplayTypes.PROPERTY_PANE);
     this._includeFieldsWithNoValues = true;
   }
 
@@ -287,7 +290,7 @@ export default class PresentationPropertyDataProvider extends ContentDataProvide
     };
     const builder = new PropertyDataBuilder(content.descriptor, contentItem,
       this.includeFieldsWithNoValues, callbacks);
-    return await builder.buildPropertyData();
+    return builder.buildPropertyData();
   });
 
   /**

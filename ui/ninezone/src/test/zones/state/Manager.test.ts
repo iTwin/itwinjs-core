@@ -1,15 +1,11 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
 import * as Moq from "typemoq";
-import DefaultStateManager, { StateManager, NineZoneFactory } from "../../..//zones/state/Manager";
-import { TargetType } from "../../..//zones/state/Target";
-import NineZone, { NineZoneProps } from "../../..//zones/state/NineZone";
-import { HorizontalAnchor } from "../../..//widget/Stacked";
-import TestProps from "./TestProps";
-import { WidgetZone } from "../../..//zones/state/Zone";
+import { DefaultStateManager, StateManager, NineZoneFactory, TargetType, NineZone, NineZoneProps, HorizontalAnchor, WidgetZone } from "../../../ui-ninezone";
+import { TestProps } from "./TestProps";
 
 // use expect, because dirty-chai ruins the should.exist() helpers
 const expect = chai.expect;
@@ -230,7 +226,7 @@ describe("StateManager", () => {
       expect(state.zones[9].floating).undefined;
     });
 
-    it("should unset floating bounds of dragging widget", () => {
+    it("should not unset floating bounds of dragging widget", () => {
       const props: NineZoneProps = {
         ...TestProps.defaultProps,
         draggingWidget: { id: 8, tabIndex: 1, lastPosition: { x: 0, y: 0 }, isUnmerge: false },
@@ -251,7 +247,8 @@ describe("StateManager", () => {
         },
       };
       const state = DefaultStateManager.handleWidgetTabDragEnd(props);
-      expect(state.zones[8].floating).undefined;
+      expect(state.zones[8].floating).exist;
+      state.zones[8].floating!.should.eq(props.zones[8].floating);
     });
   });
 

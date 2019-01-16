@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
@@ -10,15 +10,14 @@ import {
 } from "@bentley/imodeljs-frontend";
 import { MessageSeverity } from "@bentley/ui-core";
 import {
-  CommandItemDef, ToolItemDef, WidgetState, FrontstageManager, ModalDialogManager, SyncUiEventId,
-  BaseItemState, ContentViewManager,
+  CommandItemDef, ToolItemDef, WidgetState, FrontstageManager, ModalDialogManager, BaseItemState, ContentViewManager, SyncUiEventId,
 } from "@bentley/ui-framework";
-import { SampleAppIModelApp, RootState } from "../";
+import { SampleAppIModelApp, RootState, SampleAppUiActionId } from "../";
 import { Tool1 } from "../tools/Tool1";
 import { Tool2 } from "../tools/Tool2";
-import { MeasurePointsTool } from "../tools/MeasurePoints";
 // cSpell:ignore appui
 import { TestMessageBox } from "../appui/dialogs/TestMessageBox";
+import { AppUi } from "../appui/AppUi";
 
 export class AppTools {
   public static get tool1() {
@@ -41,6 +40,7 @@ export class AppTools {
     });
   }
 
+  /* ------------- NEEDSWORK - figure out how to move to plugin.
   public static get measurePoints() {
     return new ToolItemDef({
       toolId: MeasurePointsTool.toolId,
@@ -51,16 +51,12 @@ export class AppTools {
 
       stateSyncIds: [SyncUiEventId.ActiveContentChanged],
       stateFunc: (currentState: Readonly<BaseItemState>): BaseItemState => {
-        const returnState: BaseItemState = { ...currentState };
-        const activeContentControl = ContentViewManager.getActiveContentControl();
-        if (activeContentControl && activeContentControl.viewport && ("BisCore:SheetViewDefinition" !== activeContentControl.viewport.view.classFullName))
-          returnState.isEnabled = true;
-        else
-          returnState.isEnabled = false;
+        returnState.isEnabled = ContentViewManager.isContent3dView(ContentViewManager.getActiveContentControl());
         return returnState;
       },
     });
   }
+  ----------------------------- */
 
   // Tool that toggles the backstage
   public static get backstageToggleCommand() {
@@ -71,7 +67,7 @@ export class AppTools {
       execute: () => {
         const state: RootState = SampleAppIModelApp.store.getState();
         // cSpell:Ignore BACKSTAGEHIDE BACKSTAGESHOW
-        const action: string = (state.sampleAppState!.backstageVisible) ? "SampleApp:BACKSTAGEHIDE" : "SampleApp:BACKSTAGESHOW";
+        const action: string = (state.sampleAppState!.backstageVisible) ? SampleAppUiActionId.hideBackstage : SampleAppUiActionId.showBackstage;
         SampleAppIModelApp.store.dispatch({ type: action });
       },
     });
@@ -83,7 +79,7 @@ export class AppTools {
       iconSpec: "icon-placeholder",
       labelKey: "SampleApp:buttons.item1",
       applicationData: { key: "value" },
-      execute: () => { IModelApp.tools.run(SelectionTool.toolId); },
+      execute: () => { AppUi.command1(); },
     });
   }
 
@@ -93,7 +89,7 @@ export class AppTools {
       iconSpec: "icon-placeholder",
       labelKey: "SampleApp:buttons.item2",
       applicationData: { key: "value" },
-      execute: () => { IModelApp.tools.run(SelectionTool.toolId); },
+      execute: () => { AppUi.command2(); },
     });
   }
 
@@ -177,6 +173,35 @@ export class AppTools {
       execute: () => {
         IModelApp.quantityFormatter.useImperialFormats = true;
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Set Length Format to Imperial"));
+      },
+    });
+  }
+
+  public static get toggleLengthFormatCommand() {
+    return new CommandItemDef({
+      commandId: "toggleLengthFormat",
+      iconSpec: "icon-info",
+      labelKey: "SampleApp:buttons.toggleLengthFormat",
+      execute: () => {
+        IModelApp.quantityFormatter.useImperialFormats = !IModelApp.quantityFormatter.useImperialFormats;
+        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, IModelApp.quantityFormatter.useImperialFormats ? "Set Length Format to Imperial" : "Set Length Format to Metric"));
+      },
+      stateSyncIds: [SyncUiEventId.ActiveContentChanged],
+      stateFunc: (currentState: Readonly<BaseItemState>): BaseItemState => {
+        const returnState: BaseItemState = { ...currentState };
+        returnState.isVisible = ContentViewManager.isContent3dView(ContentViewManager.getActiveContentControl());
+        return returnState;
+      },
+    });
+  }
+
+  public static get toggleHideShowItemsCommand() {
+    return new CommandItemDef({
+      commandId: "testHideShowItems",
+      iconSpec: "icon-info",
+      labelKey: "SampleApp:buttons.toggleItemDisplay",
+      execute: () => {
+        SampleAppIModelApp.setTestProperty(SampleAppIModelApp.getTestProperty() === "HIDE" ? "" : "HIDE");
       },
     });
   }
@@ -356,7 +381,7 @@ export class AppTools {
     return new CommandItemDef({
       commandId: "verticalPropertyGridOpen",
       iconSpec: "icon-placeholder",
-      labelKey: "SampleApp:buttons.tool1",
+      labelKey: "SampleApp:buttons.openPropertyGrid",
       execute: async () => {
         const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
         if (activeFrontstageDef) {
@@ -373,13 +398,13 @@ export class AppTools {
     return new CommandItemDef({
       commandId: "verticalPropertyGridOff",
       iconSpec: "icon-placeholder",
-      labelKey: "SampleApp:buttons.tool2",
+      labelKey: "SampleApp:buttons.closePropertyGrid",
       execute: async () => {
         const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
         if (activeFrontstageDef) {
           const widgetDef = activeFrontstageDef.findWidgetDef("VerticalPropertyGrid");
           if (widgetDef) {
-            widgetDef.setWidgetState(WidgetState.Off);
+            widgetDef.setWidgetState(WidgetState.Hidden);
           }
         }
       },

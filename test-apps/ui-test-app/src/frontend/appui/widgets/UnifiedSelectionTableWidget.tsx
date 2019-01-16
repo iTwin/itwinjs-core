@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
@@ -10,12 +10,12 @@ import {
   WidgetControl,
 } from "@bentley/ui-framework";
 import { Table } from "@bentley/ui-components";
-import { PresentationTableDataProvider, withUnifiedSelection } from "@bentley/presentation-components/lib/table";
+import { PresentationTableDataProvider, tableWithUnifiedSelection } from "@bentley/presentation-components";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 
 // create a HOC property grid component that supports unified selection
 // tslint:disable-next-line:variable-name
-const UnifiedSelectionTable = withUnifiedSelection(Table);
+const UnifiedSelectionTable = tableWithUnifiedSelection(Table);
 
 export class UnifiedSelectionTableWidgetControl extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {

@@ -1,16 +1,14 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
 import * as utils from "./TestUtils";
 
-import { AccessToken, IModelClient } from "../../";
-
 import {
-  CodeState, HubCode, AggregateResponseError, ConflictingCodesError, CodeQuery,
+  AccessToken, IModelClient, CodeState, HubCode, AggregateResponseError, ConflictingCodesError, CodeQuery,
   IModelHubClientError, CodeSequence, CodeSequenceType,
-} from "../../";
+} from "../../imodeljs-clients";
 
 import { ResponseBuilder } from "../ResponseBuilder";
 import { TestConfig, TestUsers } from "../TestConfig";

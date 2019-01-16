@@ -2,6 +2,252 @@
   "name": "@bentley/ui-components",
   "entries": [
     {
+      "version": "0.187.0",
+      "tag": "@bentley/ui-components_v0.187.0",
+      "date": "Tue, 15 Jan 2019 15:18:59 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add a separate PropertyGrid prop to tell if properties should be hoverable"
+          },
+          {
+            "comment": "Add ability to assign context menu for properties in PropertyGrid"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.186.0",
+      "tag": "@bentley/ui-components_v0.186.0",
+      "date": "Mon, 14 Jan 2019 23:09:10 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Property pane does not show struct or array info anymore"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.185.0",
+      "tag": "@bentley/ui-components_v0.185.0",
+      "date": "Fri, 11 Jan 2019 18:29:00 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.184.0",
+      "tag": "@bentley/ui-components_v0.184.0",
+      "date": "Thu, 10 Jan 2019 22:46:17 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Renamed PropertyDataProvider to IPropertyDataProvider."
+          },
+          {
+            "comment": "Add ui-component root to avoid relative file conflicts in bundles."
+          },
+          {
+            "comment": "Handle custom row and cell item styling in Table component"
+          },
+          {
+            "comment": "Fix double and navigation property value renderers to not append \".0\" to values in certain cases"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.183.0",
+      "tag": "@bentley/ui-components_v0.183.0",
+      "date": "Mon, 07 Jan 2019 21:49:21 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.182.0",
+      "tag": "@bentley/ui-components_v0.182.0",
+      "date": "Mon, 07 Jan 2019 13:31:34 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.181.0",
+      "tag": "@bentley/ui-components_v0.181.0",
+      "date": "Fri, 04 Jan 2019 13:02:40 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.180.0",
+      "tag": "@bentley/ui-components_v0.180.0",
+      "date": "Wed, 02 Jan 2019 15:18:23 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Changed property pane css."
+          },
+          {
+            "comment": " Changed how vertical PropertyPane looks."
+          },
+          {
+            "comment": "Fix BeInspireTree's render suspension not being consistent in some cases"
+          },
+          {
+            "comment": "Added optional viewState prop to ViewportComponent"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.179.0",
+      "tag": "@bentley/ui-components_v0.179.0",
+      "date": "Wed, 19 Dec 2018 18:26:14 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added Tests, updated Table, fixed breadcrumb mutability issues"
+          },
+          {
+            "comment": "Added DragDrop tests, added component withDragDrop HOC tests"
+          },
+          {
+            "comment": "Synchronizing navigation aids with view definition changes"
+          },
+          {
+            "comment": "Simplified property pane tooltips and improved Property Pane performance."
+          },
+          {
+            "comment": "Simplified struct and array tooltips in Table component. "
+          },
+          {
+            "comment": "Fix BeInspireTree's event listening functions to handle array inputs"
+          },
+          {
+            "comment": "Fix BeInspireTree's muting events with allowed number of triggers"
+          },
+          {
+            "comment": "Cache BeInspireTree.visible() result for better performance"
+          },
+          {
+            "comment": "Optimize BeInspireTree.selectBetween"
+          },
+          {
+            "comment": "Avoid loading PropertyGrid data for intermediate data changes"
+          },
+          {
+            "comment": "Avoid loading TableView data for intermediate column / row changes"
+          },
+          {
+            "comment": "Allow property converters and renderers to return result either sync or async"
+          },
+          {
+            "comment": "Fix tree node loosing its children when collapsed while children are being loaded"
+          },
+          {
+            "comment": "Fix tree not showing data after changing data provider while another data provider is being loaded"
+          },
+          {
+            "comment": "Show loading spinner in the Tree while root nodes are being loaded"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.178.0",
+      "tag": "@bentley/ui-components_v0.178.0",
+      "date": "Thu, 13 Dec 2018 22:06:10 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.177.0",
+      "tag": "@bentley/ui-components_v0.177.0",
+      "date": "Wed, 12 Dec 2018 17:21:32 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added a merged property value renderer."
+          },
+          {
+            "comment": "Set BeInspireTreeNode's payload as possibly `undefined`"
+          },
+          {
+            "comment": "Fix Tree component to handle data provider change before the first update"
+          },
+          {
+            "comment": "Handle shift-selecting not loaded tree nodes"
+          },
+          {
+            "comment": "Fix tree checkbox-related props"
+          },
+          {
+            "comment": "Improved speed & smoothness of CubeNavigationAid. Made class names unique to fix documentation. UI Tree doc fixes."
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.176.0",
+      "tag": "@bentley/ui-components_v0.176.0",
+      "date": "Mon, 10 Dec 2018 21:19:45 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.175.0",
+      "tag": "@bentley/ui-components_v0.175.0",
+      "date": "Mon, 10 Dec 2018 17:08:55 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.174.0",
+      "tag": "@bentley/ui-components_v0.174.0",
+      "date": "Mon, 10 Dec 2018 13:24:09 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added Tests, updated Table, fixed breadcrumb mutability issues"
+          },
+          {
+            "comment": "Tree now accepts propertyValueRendererManager as a property."
+          },
+          {
+            "comment": "PrimitivePropertyValueRenderer now accepts context and can render tree properties."
+          },
+          {
+            "comment": "TreeNodeItem now accepts an additional optional property - typename."
+          },
+          {
+            "comment": "TreeNode can now render asynchronously."
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.173.0",
+      "tag": "@bentley/ui-components_v0.173.0",
+      "date": "Thu, 06 Dec 2018 22:03:29 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added fillZone property to the Widget"
+          },
+          {
+            "comment": "Fixed initial & return layout of Frontstage. Styling of scrollbar in Chrome."
+          },
+          {
+            "comment": "Custom imodelJs noDirectImport lint rule implemented, noDuplicateImport lint rule turned on."
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.172.0",
+      "tag": "@bentley/ui-components_v0.172.0",
+      "date": "Tue, 04 Dec 2018 17:24:39 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Changed index file name to match package name, eliminate subdirectory index files, decrease usage of default exports, change imports to use other packages' index file."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.171.0",
       "tag": "@bentley/ui-components_v0.171.0",
       "date": "Mon, 03 Dec 2018 18:52:58 GMT",

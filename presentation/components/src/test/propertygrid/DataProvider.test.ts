@@ -1,7 +1,9 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+/* tslint:disable:no-direct-imports */
+
 import "@bentley/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment";
 import * as path from "path";
 import { expect } from "chai";
@@ -15,11 +17,14 @@ import {
 import { I18N } from "@bentley/imodeljs-i18n";
 import { PropertyRecord } from "@bentley/ui-components";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { ValuesDictionary } from "@bentley/presentation-common";
-import * as content from "@bentley/presentation-common/lib/content";
-import { Presentation } from "@bentley/presentation-frontend";
-import PresentationManager from "@bentley/presentation-frontend/lib/PresentationManager";
-import PresentationPropertyDataProvider from "../../propertygrid/DataProvider";
+import {
+  ValuesDictionary, Descriptor, Field,
+  CategoryDescription, Content, ContentFlags, Item,
+  NestedContentValue, NestedContentField, Property,
+  ArrayTypeDescription, PropertyValueFormat, PropertiesField, StructTypeDescription,
+} from "@bentley/presentation-common";
+import { Presentation, PresentationManager } from "@bentley/presentation-frontend";
+import { PresentationPropertyDataProvider } from "../../propertygrid/DataProvider";
 import { CacheInvalidationProps } from "../../common/ContentDataProvider";
 
 const favoritesCategoryName = "Favorite";
@@ -30,12 +35,12 @@ const favoritesCategoryName = "Favorite";
  */
 class Provider extends PresentationPropertyDataProvider {
   public invalidateCache(props: CacheInvalidationProps) { super.invalidateCache(props); }
-  public configureContentDescriptor(descriptor: content.Descriptor) { return super.configureContentDescriptor(descriptor); }
-  public shouldExcludeFromDescriptor(field: content.Field) { return super.shouldExcludeFromDescriptor(field); }
-  public isFieldHidden(field: content.Field) { return super.isFieldHidden(field); }
-  public isFieldFavorite(field: content.Field) { return super.isFieldFavorite(field); }
-  public sortCategories(categories: content.CategoryDescription[]) { return super.sortCategories(categories); }
-  public sortFields(category: content.CategoryDescription, fields: content.Field[]) { return super.sortFields(category, fields); }
+  public configureContentDescriptor(descriptor: Descriptor) { return super.configureContentDescriptor(descriptor); }
+  public shouldExcludeFromDescriptor(field: Field) { return super.shouldExcludeFromDescriptor(field); }
+  public isFieldHidden(field: Field) { return super.isFieldHidden(field); }
+  public isFieldFavorite(field: Field) { return super.isFieldFavorite(field); }
+  public sortCategories(categories: CategoryDescription[]) { return super.sortCategories(categories); }
+  public sortFields(category: CategoryDescription, fields: Field[]) { return super.sortFields(category, fields); }
 }
 
 interface MemoizedCacheSpies {
@@ -95,9 +100,9 @@ describe("PropertyDataProvider", () => {
 
     it("adds `showLabels` content flag", () => {
       const source = createRandomDescriptor();
-      source.contentFlags = content.ContentFlags.DistinctValues;
+      source.contentFlags = ContentFlags.DistinctValues;
       const descriptor = provider.configureContentDescriptor(source);
-      expect(descriptor.contentFlags).to.eq(content.ContentFlags.DistinctValues | content.ContentFlags.ShowLabels);
+      expect(descriptor.contentFlags).to.eq(ContentFlags.DistinctValues | ContentFlags.ShowLabels);
     });
 
   });
@@ -196,7 +201,7 @@ describe("PropertyDataProvider", () => {
     const createPrimitiveField = createRandomPrimitiveField;
 
     const createArrayField = () => {
-      const property: content.Property = {
+      const property: Property = {
         property: {
           classInfo: createRandomECClassInfo(),
           name: faker.random.word(),
@@ -204,18 +209,18 @@ describe("PropertyDataProvider", () => {
         },
         relatedClassPath: [],
       };
-      const typeDescription: content.ArrayTypeDescription = {
-        valueFormat: content.PropertyValueFormat.Array,
+      const typeDescription: ArrayTypeDescription = {
+        valueFormat: PropertyValueFormat.Array,
         typeName: faker.random.word(),
         memberType: createRandomPrimitiveTypeDescription(),
       };
-      return new content.PropertiesField(createRandomCategory(), faker.random.word(),
+      return new PropertiesField(createRandomCategory(), faker.random.word(),
         faker.random.words(), typeDescription, faker.random.boolean(),
         faker.random.number(), [property]);
     };
 
     const createStructField = () => {
-      const property: content.Property = {
+      const property: Property = {
         property: {
           classInfo: createRandomECClassInfo(),
           name: faker.random.word(),
@@ -223,8 +228,8 @@ describe("PropertyDataProvider", () => {
         },
         relatedClassPath: [],
       };
-      const typeDescription: content.StructTypeDescription = {
-        valueFormat: content.PropertyValueFormat.Struct,
+      const typeDescription: StructTypeDescription = {
+        valueFormat: PropertyValueFormat.Struct,
         typeName: faker.random.word(),
         members: [{
           name: faker.random.word(),
@@ -232,7 +237,7 @@ describe("PropertyDataProvider", () => {
           type: createRandomPrimitiveTypeDescription(),
         }],
       };
-      return new content.PropertiesField(createRandomCategory(), faker.random.word(),
+      return new PropertiesField(createRandomCategory(), faker.random.word(),
         faker.random.words(), typeDescription, faker.random.boolean(),
         faker.random.number(), [property]);
     };
@@ -247,7 +252,7 @@ describe("PropertyDataProvider", () => {
     });
 
     it("returns empty data object when receives content with no values", async () => {
-      const c: content.Content = {
+      const c: Content = {
         descriptor: createRandomDescriptor(),
         contentSet: [],
       };
@@ -264,9 +269,9 @@ describe("PropertyDataProvider", () => {
       descriptor.fields = [createPrimitiveField()];
       const values: ValuesDictionary<any> = {};
       const displayValues: ValuesDictionary<any> = {};
-      const record = new content.Item([createRandomECInstanceKey()],
+      const record = new Item([createRandomECInstanceKey()],
         faker.random.words(), faker.random.word(), createRandomECClassInfo(), values, displayValues, []);
-      const c: content.Content = {
+      const c: Content = {
         descriptor,
         contentSet: [record],
       };
@@ -283,9 +288,9 @@ describe("PropertyDataProvider", () => {
         values[field.name] = faker.random.word();
         displayValues[field.name] = faker.random.words();
       });
-      const record = new content.Item([createRandomECInstanceKey()],
+      const record = new Item([createRandomECInstanceKey()],
         faker.random.words(), faker.random.word(), createRandomECClassInfo(), values, displayValues, []);
-      const c: content.Content = {
+      const c: Content = {
         descriptor,
         contentSet: [record],
       };
@@ -303,9 +308,9 @@ describe("PropertyDataProvider", () => {
       const displayValues = {
         [field.name]: ["some display value 1", "some display value 2"],
       };
-      const record = new content.Item([createRandomECInstanceKey()],
+      const record = new Item([createRandomECInstanceKey()],
         faker.random.words(), faker.random.word(), createRandomECClassInfo(), values, displayValues, []);
-      const c: content.Content = {
+      const c: Content = {
         descriptor,
         contentSet: [record],
       };
@@ -319,17 +324,17 @@ describe("PropertyDataProvider", () => {
       descriptor.fields = [field];
       const values = {
         [field.name]: {
-          [(field.type as content.StructTypeDescription).members[0].name]: "some value",
+          [(field.type as StructTypeDescription).members[0].name]: "some value",
         },
       };
       const displayValues = {
         [field.name]: {
-          [(field.type as content.StructTypeDescription).members[0].name]: "some display value",
+          [(field.type as StructTypeDescription).members[0].name]: "some display value",
         },
       };
-      const record = new content.Item([createRandomECInstanceKey()],
+      const record = new Item([createRandomECInstanceKey()],
         faker.random.words(), faker.random.word(), createRandomECClassInfo(), values, displayValues, []);
-      const c: content.Content = {
+      const c: Content = {
         descriptor,
         contentSet: [record],
       };
@@ -339,12 +344,12 @@ describe("PropertyDataProvider", () => {
 
     describe("nested content handling", () => {
 
-      let descriptor: content.Descriptor;
-      let field1: content.NestedContentField;
-      let field2: content.Field;
+      let descriptor: Descriptor;
+      let field1: NestedContentField;
+      let field2: Field;
       beforeEach(() => {
         descriptor = createRandomDescriptor();
-        field1 = new content.NestedContentField(createRandomCategory(), faker.random.word(),
+        field1 = new NestedContentField(createRandomCategory(), faker.random.word(),
           faker.random.words(), createRandomPrimitiveTypeDescription(), faker.random.boolean(),
           faker.random.number(), createRandomECClassInfo(), createRandomRelationshipPath(1),
           [createRandomPrimitiveField(), createRandomPrimitiveField()]);
@@ -374,16 +379,16 @@ describe("PropertyDataProvider", () => {
               [field1.nestedFields[0].name]: faker.random.words(),
             },
             mergedFieldNames: [],
-          }] as content.NestedContentValue[],
+          }] as NestedContentValue[],
           [field2.name]: faker.random.word(),
         };
         const displayValues = {
           [field1.name]: undefined,
           [field2.name]: faker.random.words(),
         };
-        const record = new content.Item([createRandomECInstanceKey()], faker.random.words(),
+        const record = new Item([createRandomECInstanceKey()], faker.random.words(),
           faker.random.uuid(), undefined, values, displayValues, []);
-        const c: content.Content = {
+        const c: Content = {
           descriptor,
           contentSet: [record],
         };
@@ -412,16 +417,16 @@ describe("PropertyDataProvider", () => {
               [field1.nestedFields[0].name]: faker.random.words(),
             },
             mergedFieldNames: [],
-          }] as content.NestedContentValue[],
+          }] as NestedContentValue[],
           [field2.name]: faker.random.word(),
         };
         const displayValues = {
           [field1.name]: undefined,
           [field2.name]: faker.random.words(),
         };
-        const record = new content.Item([createRandomECInstanceKey()], faker.random.words(),
+        const record = new Item([createRandomECInstanceKey()], faker.random.words(),
           faker.random.uuid(), undefined, values, displayValues, []);
-        const c: content.Content = {
+        const c: Content = {
           descriptor,
           contentSet: [record],
         };
@@ -440,16 +445,16 @@ describe("PropertyDataProvider", () => {
               [field1.nestedFields[0].name]: faker.random.words(),
             },
             mergedFieldNames: [],
-          }] as content.NestedContentValue[],
+          }] as NestedContentValue[],
           [field2.name]: faker.random.word(),
         };
         const displayValues = {
           [field1.name]: undefined,
           [field2.name]: faker.random.words(),
         };
-        const record = new content.Item([createRandomECInstanceKey()], faker.random.words(),
+        const record = new Item([createRandomECInstanceKey()], faker.random.words(),
           faker.random.uuid(), undefined, values, displayValues, []);
-        const c: content.Content = {
+        const c: Content = {
           descriptor,
           contentSet: [record],
         };
@@ -469,14 +474,14 @@ describe("PropertyDataProvider", () => {
               [field1.nestedFields[0].name]: faker.random.words(),
             },
             mergedFieldNames: [],
-          }] as content.NestedContentValue[],
+          }] as NestedContentValue[],
         };
         const displayValues = {
           [field1.name]: undefined,
         };
-        const record = new content.Item([createRandomECInstanceKey()], faker.random.words(),
+        const record = new Item([createRandomECInstanceKey()], faker.random.words(),
           faker.random.uuid(), undefined, values, displayValues, []);
-        const c: content.Content = {
+        const c: Content = {
           descriptor,
           contentSet: [record],
         };
@@ -496,14 +501,14 @@ describe("PropertyDataProvider", () => {
               [field1.nestedFields[0].name]: faker.random.words(),
             },
             mergedFieldNames: [],
-          }] as content.NestedContentValue[],
+          }] as NestedContentValue[],
         };
         const displayValues = {
           [field1.name]: undefined,
         };
-        const record = new content.Item([createRandomECInstanceKey()], faker.random.words(),
+        const record = new Item([createRandomECInstanceKey()], faker.random.words(),
           faker.random.uuid(), undefined, values, displayValues, []);
-        const c: content.Content = {
+        const c: Content = {
           descriptor,
           contentSet: [record],
         };
@@ -513,16 +518,16 @@ describe("PropertyDataProvider", () => {
 
       it("returns empty nested content for nested content with no values", async () => {
         const values = {
-          [field1.name]: [] as content.NestedContentValue[],
+          [field1.name]: [] as NestedContentValue[],
           [field2.name]: faker.random.word(),
         };
         const displayValues = {
           [field1.name]: undefined,
           [field2.name]: faker.random.words(),
         };
-        const record = new content.Item([createRandomECInstanceKey()], faker.random.words(),
+        const record = new Item([createRandomECInstanceKey()], faker.random.words(),
           faker.random.uuid(), undefined, values, displayValues, []);
-        const c: content.Content = {
+        const c: Content = {
           descriptor,
           contentSet: [record],
         };
@@ -533,14 +538,14 @@ describe("PropertyDataProvider", () => {
       it("returns nothing for nested content with no values when there's only one record in category", async () => {
         descriptor.fields = [field1];
         const values = {
-          [field1.name]: [] as content.NestedContentValue[],
+          [field1.name]: [] as NestedContentValue[],
         };
         const displayValues = {
           [field1.name]: undefined,
         };
-        const record = new content.Item([createRandomECInstanceKey()], faker.random.words(),
+        const record = new Item([createRandomECInstanceKey()], faker.random.words(),
           faker.random.uuid(), undefined, values, displayValues, []);
-        const c: content.Content = {
+        const c: Content = {
           descriptor,
           contentSet: [record],
         };
@@ -551,12 +556,12 @@ describe("PropertyDataProvider", () => {
       it("favorites nested content records", async () => {
         const field111 = createPrimitiveField();
         const field112 = createPrimitiveField();
-        const field11 = new content.NestedContentField(createRandomCategory(), faker.random.word(),
+        const field11 = new NestedContentField(createRandomCategory(), faker.random.word(),
           faker.random.words(), createRandomPrimitiveTypeDescription(), faker.random.boolean(),
           faker.random.number(), createRandomECClassInfo(), createRandomRelationshipPath(1),
           [field111, field112]);
         const field12 = createPrimitiveField();
-        field1 = new content.NestedContentField(createRandomCategory(), faker.random.word(),
+        field1 = new NestedContentField(createRandomCategory(), faker.random.word(),
           faker.random.words(), createRandomPrimitiveTypeDescription(), faker.random.boolean(),
           faker.random.number(), createRandomECClassInfo(), createRandomRelationshipPath(1),
           [field11, field12]);
@@ -580,7 +585,7 @@ describe("PropertyDataProvider", () => {
                   [field111.name]: faker.random.words(),
                   [field112.name]: faker.random.words(),
                 },
-              }] as content.NestedContentValue[],
+              }] as NestedContentValue[],
               [field12.name]: faker.random.word(),
             },
             displayValues: {
@@ -602,7 +607,7 @@ describe("PropertyDataProvider", () => {
                   [field111.name]: faker.random.words(),
                   [field112.name]: faker.random.words(),
                 },
-              }] as content.NestedContentValue[],
+              }] as NestedContentValue[],
               [field12.name]: faker.random.word(),
             },
             displayValues: {
@@ -610,16 +615,16 @@ describe("PropertyDataProvider", () => {
               [field12.name]: faker.random.words(),
             },
             mergedFieldNames: [],
-          }] as content.NestedContentValue[],
+          }] as NestedContentValue[],
           [field2.name]: faker.random.word(),
         };
         const displayValues = {
           [field1.name]: undefined,
           [field2.name]: faker.random.words(),
         };
-        const record = new content.Item([createRandomECInstanceKey()], faker.random.words(),
+        const record = new Item([createRandomECInstanceKey()], faker.random.words(),
           faker.random.uuid(), undefined, values, displayValues, []);
-        const c: content.Content = {
+        const c: Content = {
           descriptor,
           contentSet: [record],
         };
@@ -641,9 +646,9 @@ describe("PropertyDataProvider", () => {
         const descriptor = createRandomDescriptor();
         const values: ValuesDictionary<any> = { [descriptor.fields[0].name]: faker.random.word() };
         const displayValues: ValuesDictionary<any> = { [descriptor.fields[0].name]: faker.random.words() };
-        const record = new content.Item([createRandomECInstanceKey()],
+        const record = new Item([createRandomECInstanceKey()],
           faker.random.words(), faker.random.word(), undefined, values, displayValues, []);
-        const c: content.Content = {
+        const c: Content = {
           descriptor,
           contentSet: [record],
         };
@@ -666,9 +671,9 @@ describe("PropertyDataProvider", () => {
           [fields[0].name]: [faker.random.words()],
           [fields[1].name]: [],
         };
-        const record = new content.Item([createRandomECInstanceKey()],
+        const record = new Item([createRandomECInstanceKey()],
           faker.random.words(), faker.random.word(), undefined, values, displayValues, []);
-        const c: content.Content = {
+        const c: Content = {
           descriptor,
           contentSet: [record],
         };
@@ -681,7 +686,7 @@ describe("PropertyDataProvider", () => {
 
       it("doesn't include struct fields with no values when set", async () => {
         const fields = [1, 2].map(() => createStructField());
-        (fields[1].type as content.StructTypeDescription).members = [];
+        (fields[1].type as StructTypeDescription).members = [];
         const descriptor = createRandomDescriptor();
         descriptor.fields = fields;
         const values: ValuesDictionary<any> = {};
@@ -690,9 +695,9 @@ describe("PropertyDataProvider", () => {
           values[field.name] = {};
           displayValues[field.name] = {};
         });
-        const record = new content.Item([createRandomECInstanceKey()],
+        const record = new Item([createRandomECInstanceKey()],
           faker.random.words(), faker.random.word(), undefined, values, displayValues, []);
-        const c: content.Content = {
+        const c: Content = {
           descriptor,
           contentSet: [record],
         };
@@ -706,8 +711,8 @@ describe("PropertyDataProvider", () => {
     });
 
     it("sorts categories according to sortCategories callback", async () => {
-      provider.sortCategories = (cats: content.CategoryDescription[]) => {
-        cats.sort((lhs: content.CategoryDescription, rhs: content.CategoryDescription): number => {
+      provider.sortCategories = (cats: CategoryDescription[]) => {
+        cats.sort((lhs: CategoryDescription, rhs: CategoryDescription): number => {
           if (lhs.label < rhs.label)
             return -1;
           if (lhs.label > rhs.label)
@@ -734,9 +739,9 @@ describe("PropertyDataProvider", () => {
 
       const values: ValuesDictionary<any> = {};
       const displayValues: ValuesDictionary<any> = {};
-      const record = new content.Item([createRandomECInstanceKey()],
+      const record = new Item([createRandomECInstanceKey()],
         faker.random.words(), faker.random.word(), undefined, values, displayValues, []);
-      const c: content.Content = {
+      const c: Content = {
         descriptor,
         contentSet: [record],
       };
@@ -749,8 +754,8 @@ describe("PropertyDataProvider", () => {
     });
 
     it("sorts records according to sortFields callback", async () => {
-      provider.sortFields = (_cat: content.CategoryDescription, fields: content.Field[]) => {
-        fields.sort((lhs: content.Field, rhs: content.Field): number => {
+      provider.sortFields = (_cat: CategoryDescription, fields: Field[]) => {
+        fields.sort((lhs: Field, rhs: Field): number => {
           if (lhs.label < rhs.label)
             return -1;
           if (lhs.label > rhs.label)
@@ -770,9 +775,9 @@ describe("PropertyDataProvider", () => {
 
       const values: ValuesDictionary<any> = {};
       const displayValues: ValuesDictionary<any> = {};
-      const record = new content.Item([createRandomECInstanceKey()],
+      const record = new Item([createRandomECInstanceKey()],
         faker.random.words(), faker.random.word(), undefined, values, displayValues, []);
-      const c: content.Content = {
+      const c: Content = {
         descriptor,
         contentSet: [record],
       };
@@ -790,13 +795,13 @@ describe("PropertyDataProvider", () => {
     });
 
     it("hides records according to isFieldHidden callback", async () => {
-      provider.isFieldHidden = (_field: content.Field) => true;
+      provider.isFieldHidden = (_field: Field) => true;
       const descriptor = createRandomDescriptor();
       const values: ValuesDictionary<any> = {};
       const displayValues: ValuesDictionary<any> = {};
-      const record = new content.Item([createRandomECInstanceKey()],
+      const record = new Item([createRandomECInstanceKey()],
         faker.random.words(), faker.random.word(), undefined, values, displayValues, []);
-      const c: content.Content = {
+      const c: Content = {
         descriptor,
         contentSet: [record],
       };
@@ -807,16 +812,16 @@ describe("PropertyDataProvider", () => {
     });
 
     it("makes records favorite according to isFieldFavorite callback", async () => {
-      provider.isFieldFavorite = (_field: content.Field) => true;
+      provider.isFieldFavorite = (_field: Field) => true;
       const descriptor = createRandomDescriptor();
       descriptor.fields.forEach((field, index) => {
         field.category = { ...field.category, name: `category_${index}` };
       });
       const values: ValuesDictionary<any> = {};
       const displayValues: ValuesDictionary<any> = {};
-      const record = new content.Item([createRandomECInstanceKey()],
+      const record = new Item([createRandomECInstanceKey()],
         faker.random.words(), faker.random.word(), undefined, values, displayValues, []);
-      const c: content.Content = {
+      const c: Content = {
         descriptor,
         contentSet: [record],
       };

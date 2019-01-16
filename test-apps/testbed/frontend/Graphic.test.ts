@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
@@ -7,12 +7,13 @@ import * as path from "path";
 import { Point3d, Range3d } from "@bentley/geometry-core";
 import { ColorByName, QParams3d, QPoint3dList } from "@bentley/imodeljs-common";
 import { IModelConnection, IModelApp } from "@bentley/imodeljs-frontend";
-import { RenderGraphic, MeshArgs } from "@bentley/imodeljs-frontend/lib/rendering";
+import { RenderGraphic, MeshArgs, RenderMemory } from "@bentley/imodeljs-frontend/lib/rendering";
 import { CONSTANTS } from "../common/Testbed";
 import { WebGLTestContext } from "./WebGLTestContext";
 
 export class FakeGraphic extends RenderGraphic {
   public dispose(): void { }
+  public collectStatistics(_stats: RenderMemory.Statistics): void { }
 }
 
 const iModelLocation = path.join(CONSTANTS.IMODELJS_CORE_DIRNAME, "core/backend/lib/test/assets/test.bim");

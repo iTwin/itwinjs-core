@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
@@ -15,10 +15,9 @@ import { Ray3d } from "../geometry3d/Ray3d";
 import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
 import { GeometryHandler, IStrokeHandler } from "../geometry3d/GeometryHandler";
 import { StrokeOptions } from "./StrokeOptions";
-import { CurvePrimitive } from "./CurvePrimitive";
+import { CurvePrimitive, AnnounceNumberNumberCurvePrimitive } from "./CurvePrimitive";
 import { GeometryQuery } from "./GeometryQuery";
 import { CurveLocationDetail } from "./CurveLocationDetail";
-import { AnnounceNumberNumberCurvePrimitive } from "./CurvePrimitive";
 import { LineString3d } from "./LineString3d";
 import { Clipper } from "../clipping/ClipUtils";
 /* tslint:disable:variable-name no-empty*/
@@ -253,16 +252,16 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
 
   /** Emit strokes to caller-supplied linestring */
   public emitStrokes(dest: LineString3d, options?: StrokeOptions): void {
-    dest.appendStrokePoint(this._point0);
 
     if (options) {
       let numStroke = 1;
       if (options.maxEdgeLength)
         numStroke = options.applyMaxEdgeLength(numStroke, this.curveLength());
       numStroke = options.applyMinStrokesPerPrimitive(numStroke);
-      dest.appendFractionalStrokePoints(this, numStroke, 0.0, 1.0, false);
+      dest.appendFractionalStrokePoints(this, numStroke, 0.0, 1.0);
+    } else {
+      dest.appendFractionalStrokePoints(this, 1, 0.0, 1.0);
     }
-    dest.appendStrokePoint(this._point1);
   }
   /** Emit strokes to caller-supplied handler */
   public emitStrokableParts(handler: IStrokeHandler, options?: StrokeOptions): void {

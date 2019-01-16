@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
@@ -10,7 +10,7 @@ import { CodeScopeSpec, ColorDef, GeometricElement2dProps, IModel, SubCategoryAp
 import {
   CategorySelector, DefinitionModel, DisplayStyle2d, DisplayStyle3d, DocumentListModel, Drawing, DrawingCategory, DrawingGraphic, DrawingGraphicRepresentsElement, DrawingViewDefinition,
   IModelDb, IModelJsFs, ModelSelector, OrthographicViewDefinition, PhysicalModel, SpatialCategory, SubCategory, Subject,
-} from "../../backend";
+} from "../../imodeljs-backend";
 import { KnownTestLocations } from "../KnownTestLocations";
 
 class TestImporter {

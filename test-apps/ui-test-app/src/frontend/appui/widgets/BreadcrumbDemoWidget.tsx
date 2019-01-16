@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
@@ -11,11 +11,12 @@ import {
   WidgetControl,
   DragDropLayerManager,
 } from "@bentley/ui-framework";
+
 import {
   Breadcrumb, BreadcrumbProps, BreadcrumbMode, BreadcrumbDetailsProps, BreadcrumbDetails, BreadcrumbPath,
+  withBreadcrumbDragDrop, withBreadcrumbDetailsDragDrop,
 } from "@bentley/ui-components";
-import withBreadcrumbDragDrop from "@bentley/ui-components/lib/breadcrumb/hoc/withDragDrop";
-import withBreadcrumbDetailsDragDrop from "@bentley/ui-components/lib/breadcrumb/breadcrumbdetails/hoc/withDragDrop";
+
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { demoMutableTreeDataProvider, treeDragProps, treeDropProps, TreeDragTypes, DemoTreeDragDropType } from "./demodataproviders/demoTreeDataProvider";
 import { TableDragTypes } from "./demodataproviders/demoTableDataProvider";
@@ -81,7 +82,6 @@ class BreadcrumbDemoWidget extends React.Component<Props, State> {
         </div>
       </div>
     );
-    return null;
   }
 }
 

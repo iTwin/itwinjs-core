@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
@@ -8,13 +8,13 @@ import * as sinon from "sinon";
 import * as inspire from "inspire-tree";
 import { using } from "@bentley/bentleyjs-core";
 import {
-  BeInspireTree, BeInspireTreeRenderer, BeInspireTreeNodes, BeInspireTreeNode,
+  BeInspireTree, BeInspireTreeNodes, BeInspireTreeNode,
   BeInspireTreeDataProviderMethod, BeInspireTreeNodeConfig,
   MapPayloadToInspireNodeCallback, BeInspireTreeEvent, BeInspireTreeDataProviderInterface,
   toNode,
   BeInspireTreeDataProvider,
-} from "../../../tree/component/BeInspireTree";
-import { PageOptions } from "../../../common/PageOptions";
+} from "../../../ui-components/tree/component/BeInspireTree";
+import { PageOptions } from "../../../ui-components/common/PageOptions";
 
 interface Node {
   id: string;
@@ -35,7 +35,7 @@ describe("BeInspireTree", () => {
   let hierarchy: Node[];
   let tree: BeInspireTree<Node>;
   let renderedTree: RenderedNode[];
-  const rendererMock = moq.Mock.ofType<BeInspireTreeRenderer<Node>>();
+  let renderer: sinon.SinonSpy;
 
   const mapImmediateNodeToInspireNodeConfig = (n: Node, remapper: MapPayloadToInspireNodeCallback<Node>): BeInspireTreeNodeConfig => ({
     id: n.id,
@@ -139,20 +139,22 @@ describe("BeInspireTree", () => {
   beforeEach(() => {
     hierarchy = createHierarchy(2, 2);
     renderedTree = [];
-    rendererMock.reset();
-    rendererMock.setup((x) => x(moq.It.isAny())).callback((_flatNodes: BeInspireTreeNodes<Node>) => {
+    renderer = sinon.fake((): void => {
       if (!tree.visible().some((n) => n.isDirty())) {
         // the Tree component has this check to avoid re-rendering non-dirty
         // trees - have it here as well to catch any places we don't dirty the
         // tree when we should
         return;
       }
-
       renderedTree = [];
       tree.visible().forEach((n) => {
         handleNodeRender(renderedTree, n);
       });
     });
+  });
+  afterEach(() => {
+    if (tree)
+      tree.removeAllListeners();
   });
 
   // run tests for every type of supported provider
@@ -174,13 +176,19 @@ describe("BeInspireTree", () => {
         dataProvider = entry.createProvider(hierarchy);
         tree = new BeInspireTree({
           dataProvider,
-          renderer: rendererMock.object,
           mapPayloadToInspireNodeConfig,
         });
+        tree.on([BeInspireTreeEvent.ChangesApplied], renderer);
 
         await tree.ready;
         if (entry.isDelayLoaded)
           await loadHierarchy(tree.nodes());
+
+        // renders:
+        // 1. model.loaded
+        // 2. apply.changes
+        // 3. (only for delay-loaded providers) loadHierarchy - see above
+        expect(renderer).to.have.callCount(entry.isDelayLoaded ? 3 : 2);
       });
 
       // node access functions can be used directly on the tree or
@@ -311,10 +319,9 @@ describe("BeInspireTree", () => {
       describe("reload", () => {
 
         it("re-renders tree", async () => {
-          const initialRendersCount = entry.isDelayLoaded ? 2 : 1;
-          rendererMock.verify((x) => x(moq.It.isAny()), moq.Times.exactly(initialRendersCount));
+          renderer.resetHistory();
           await tree.reload();
-          rendererMock.verify((x) => x(moq.It.isAny()), moq.Times.exactly(initialRendersCount + 1));
+          expect(renderer).to.have.callCount(1);
         });
 
       });
@@ -327,7 +334,6 @@ describe("BeInspireTree", () => {
           tree = new BeInspireTree<Node>({
             dataProvider: entry.createProvider(h),
             mapPayloadToInspireNodeConfig,
-            renderer: rendererMock.object,
           });
           await tree.ready;
 
@@ -343,7 +349,6 @@ describe("BeInspireTree", () => {
           tree = new BeInspireTree<Node>({
             dataProvider: entry.createProvider(h),
             mapPayloadToInspireNodeConfig,
-            renderer: rendererMock.object,
           });
           await tree.ready;
 
@@ -361,7 +366,6 @@ describe("BeInspireTree", () => {
           tree = new BeInspireTree<Node>({
             dataProvider: entry.createProvider(h),
             mapPayloadToInspireNodeConfig,
-            renderer: rendererMock.object,
           });
           await tree.ready;
 
@@ -384,7 +388,6 @@ describe("BeInspireTree", () => {
             tree = new BeInspireTree<Node>({
               dataProvider: entry.createProvider(h),
               mapPayloadToInspireNodeConfig,
-              renderer: rendererMock.object,
               pageSize: 1,
             });
             await tree.ready;
@@ -402,7 +405,6 @@ describe("BeInspireTree", () => {
             tree = new BeInspireTree<Node>({
               dataProvider: entry.createProvider(h),
               mapPayloadToInspireNodeConfig,
-              renderer: rendererMock.object,
               pageSize: 1,
             });
             await tree.ready;
@@ -424,7 +426,6 @@ describe("BeInspireTree", () => {
             tree = new BeInspireTree<Node>({
               dataProvider: entry.createProvider(h),
               mapPayloadToInspireNodeConfig,
-              renderer: rendererMock.object,
               pageSize: 1,
             });
             await tree.ready;
@@ -691,7 +692,6 @@ describe("BeInspireTree", () => {
           beforeEach(async () => {
             tree = new BeInspireTree({
               dataProvider,
-              renderer: rendererMock.object,
               mapPayloadToInspireNodeConfig,
               disposeChildrenOnCollapse: true,
             });
@@ -716,7 +716,6 @@ describe("BeInspireTree", () => {
           it("throws", async () => {
             const ctor = () => new BeInspireTree({
               dataProvider,
-              renderer: rendererMock.object,
               mapPayloadToInspireNodeConfig,
               disposeChildrenOnCollapse: true,
             });
@@ -736,11 +735,45 @@ describe("BeInspireTree", () => {
     beforeEach(async () => {
       tree = new BeInspireTree({
         dataProvider: hierarchy,
-        renderer: rendererMock.object,
         mapPayloadToInspireNodeConfig: mapImmediateNodeToInspireNodeConfig,
       });
+      tree.on(BeInspireTreeEvent.ChangesApplied, renderer);
       await tree.ready;
-      rendererMock.reset();
+      renderer.resetHistory();
+    });
+
+    it("allows registering a listener for multiple events", () => {
+      const listener = sinon.spy();
+      const node = tree.node("0")!;
+
+      // verify registering multiple listeners works
+      tree.on([BeInspireTreeEvent.NodeFocused, BeInspireTreeEvent.NodeBlurred], listener);
+      node.focus();
+      node.blur();
+      expect(listener).to.be.calledTwice;
+
+      // verify unregistering a listener for specific events works
+      listener.resetHistory();
+      tree.removeListener([BeInspireTreeEvent.NodeFocused, BeInspireTreeEvent.NodeBlurred], listener);
+      node.focus();
+      node.blur();
+      expect(listener).to.not.be.called;
+
+      // verify unregistering all listeners for specific events works
+      listener.resetHistory();
+      tree.on([BeInspireTreeEvent.NodeFocused, BeInspireTreeEvent.NodeBlurred], listener);
+      tree.removeAllListeners([BeInspireTreeEvent.NodeFocused, BeInspireTreeEvent.NodeBlurred]);
+      node.focus();
+      node.blur();
+      expect(listener).to.not.be.called;
+
+      // verify unregistering all listeners for all events works
+      listener.resetHistory();
+      tree.on([BeInspireTreeEvent.NodeFocused, BeInspireTreeEvent.NodeBlurred], listener);
+      tree.removeAllListeners();
+      node.focus();
+      node.blur();
+      expect(listener).to.not.be.called;
     });
 
     it("fires ChangesApplied event when applyChanges is called", () => {
@@ -786,61 +819,73 @@ describe("BeInspireTree", () => {
       listener.verify((x) => x(moq.It.isAny(), false), moq.Times.never());
     });
 
-    it("calls renderer method when node is selected", () => {
+    it("fires ChangesApplied event when node is selected", () => {
       const node = tree.node("0")!;
       node.select();
-      rendererMock.verify((x) => x(moq.It.isAny()), moq.Times.once());
+      expect(renderer).to.be.calledOnce;
     });
 
-    it("calls renderer method only after rendering is resumed when node is selected and rendering is paused", () => {
+    it("fires ChangesApplied event only after rendering is resumed when node is selected and rendering is paused", () => {
       const node = tree.node("0")!;
       using(tree.pauseRendering(2), () => {
         node.select();
-        rendererMock.verify((x) => x(moq.It.isAny()), moq.Times.exactly(1));
+        expect(renderer).to.be.calledOnce;
         node.deselect();
-        rendererMock.verify((x) => x(moq.It.isAny()), moq.Times.exactly(2));
+        expect(renderer).to.be.calledTwice;
         node.select();
-        rendererMock.verify((x) => x(moq.It.isAny()), moq.Times.exactly(2));
+        expect(renderer).to.be.calledTwice;
       });
-      rendererMock.verify((x) => x(moq.It.isAny()), moq.Times.exactly(3));
+      expect(renderer).to.be.calledThrice;
     });
 
-    it("allows `allowedRendersBeforePause` renders before pausing", () => {
+    it("allows `allowedRendersBeforePause` ChangesApplied events before muting", () => {
       const node = tree.node("0")!;
       const pausedRendering = tree.pauseRendering();
       node.select();
-      rendererMock.verify((x) => x(moq.It.isAny()), moq.Times.never());
+      expect(renderer).to.not.be.called;
       pausedRendering.dispose();
-      rendererMock.verify((x) => x(moq.It.isAny()), moq.Times.once());
+      expect(renderer).to.be.calledOnce;
     });
 
-    it("calls renderer method only after outer context is disposed", () => {
+    it("nested pause context with `allowedRendersBeforePause` doesn't unmute wrapped pause context", () => {
+      const node = tree.node("0")!;
+      using(tree.pauseRendering(), () => {
+        using(tree.pauseRendering(1), () => {
+        });
+        node.select();
+        expect(renderer).to.not.be.called;
+      });
+      node.select();
+      expect(renderer).to.be.calledOnce;
+    });
+
+    it("fires ChangesApplied event only after outer `pauseRendering` context is disposed", () => {
       const node = tree.node("0")!;
       using(tree.pauseRendering(), () => {
         using(tree.pauseRendering(), () => {
           node.select();
-          rendererMock.verify((x) => x(moq.It.isAny()), moq.Times.never());
+          expect(renderer).to.not.be.called;
         });
-        rendererMock.verify((x) => x(moq.It.isAny()), moq.Times.never());
+        expect(renderer).to.not.be.called;
       });
-      rendererMock.verify((x) => x(moq.It.isAny()), moq.Times.once());
+      expect(renderer).to.be.calledOnce;
     });
 
-    it("doesn't call renderer method if no changes done in the hierarchy", () => {
+    it("doesn't fire ChangesApplied event if no changes done in the hierarchy", () => {
       using(tree.pauseRendering(), () => {
       });
-      rendererMock.verify((x) => x(moq.It.isAny()), moq.Times.never());
+      expect(renderer).to.not.be.called;
     });
 
-    it("doesn't call renderer method on excessive pause context disposals", () => {
+    it("doesn't fire ChangesApplied event on excessive pause context disposals", () => {
       const node = tree.node("0")!;
       const pausedRendering = tree.pauseRendering();
       node.select();
-      rendererMock.verify((x) => x(moq.It.isAny()), moq.Times.never());
+      expect(renderer).to.not.be.called;
       pausedRendering.dispose();
-      rendererMock.verify((x) => x(moq.It.isAny()), moq.Times.once());
+      expect(renderer).to.be.calledOnce;
       pausedRendering.dispose();
-      rendererMock.verify((x) => x(moq.It.isAny()), moq.Times.once());
+      expect(renderer).to.be.calledOnce;
     });
 
   });
@@ -856,11 +901,11 @@ describe("BeInspireTree", () => {
       getNodesSpy = sinon.spy(dataProvider, "getNodes");
       tree = new BeInspireTree({
         dataProvider,
-        renderer: rendererMock.object,
         mapPayloadToInspireNodeConfig: mapDelayLoadedNodeToInspireNodeConfig,
         disposeChildrenOnCollapse: true,
         pageSize: 2,
       });
+      tree.on(BeInspireTreeEvent.ChangesApplied, renderer);
       await tree.ready;
     });
 
@@ -921,13 +966,13 @@ describe("BeInspireTree", () => {
       expect(renderedTree).to.matchSnapshot();
     });
 
-    it("calls render callback when child node is loaded for not rendered parent", async () => {
+    it("fires ChangesApplied event when child node is loaded for not rendered parent", async () => {
       tree = new BeInspireTree({
         dataProvider: createDataProviderInterface(createHierarchy(2, 3)),
-        renderer: rendererMock.object,
         mapPayloadToInspireNodeConfig: mapDelayLoadedNodeToInspireNodeConfig,
         pageSize: 1,
       });
+      tree.on(BeInspireTreeEvent.ChangesApplied, renderer);
       await tree.ready;
 
       const node0 = tree.node("0")!;
@@ -947,7 +992,6 @@ describe("BeInspireTree", () => {
     it("throws when `requestNodeLoad` is called on tree with non-paginating data provider", async () => {
       tree = new BeInspireTree({
         dataProvider: hierarchy,
-        renderer: rendererMock.object,
         mapPayloadToInspireNodeConfig: mapDelayLoadedNodeToInspireNodeConfig,
       });
       await tree.ready;
@@ -958,7 +1002,6 @@ describe("BeInspireTree", () => {
       dataProvider = createDataProviderInterface(hierarchy);
       tree = new BeInspireTree({
         dataProvider,
-        renderer: rendererMock.object,
         mapPayloadToInspireNodeConfig: mapDelayLoadedNodeToInspireNodeConfig,
       });
       await tree.ready;
@@ -978,6 +1021,10 @@ describe("BeInspireTree", () => {
       expect(getNodesSpy).to.be.calledOnce;
       // but expect children to be `true` because it was reset on collapse
       expect(node.children).to.be.true;
+
+      // now expand the node again and expect its children to be loaded normally
+      await node.expand();
+      expect(renderedTree).to.matchSnapshot();
     });
 
     it("doesn't request nodes when loadChildren is called", async () => {

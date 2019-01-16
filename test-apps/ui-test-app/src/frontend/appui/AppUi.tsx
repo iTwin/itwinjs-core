@@ -1,19 +1,17 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import "@bentley/icons-generic-webfont/dist/bentley-icons-generic-webfont.css";
 
-import { ConfigurableUiManager, FrontstageManager, WidgetState } from "@bentley/ui-framework";
-import { ContentGroupProps, ViewClass } from "@bentley/ui-framework";
-import { TaskPropsList } from "@bentley/ui-framework";
-import { WorkflowPropsList } from "@bentley/ui-framework";
-import { ContentLayoutProps } from "@bentley/ui-framework";
+import {
+  ConfigurableUiManager, FrontstageManager, WidgetState,
+  ContentGroupProps, ViewClass, TaskPropsList, WorkflowPropsList, ContentLayoutProps, KeyboardShortcutProps, CoreTools, FunctionKey, CommandItemDef, KeyboardShortcutManager,
+} from "@bentley/ui-framework";
 import { StandardViewId } from "@bentley/imodeljs-frontend";
 
 /** Include application registered Controls in Webpack
  */
-import "./contentviews/IModelViewport";   // TODO - move to ui-framework
 import "./contentviews/CubeContent";
 import "./contentviews/TableExampleContent";
 import "./contentviews/TreeExampleContent";
@@ -32,7 +30,8 @@ import { Frontstage1 } from "./frontstages/Frontstage1";
 import { Frontstage2 } from "./frontstages/Frontstage2";
 import { Frontstage3 } from "./frontstages/Frontstage3";
 import { Frontstage4 } from "./frontstages/Frontstage4";
-import IModelViewportControl from "./contentviews/IModelViewport";
+import { IModelViewportControl } from "./contentviews/IModelViewport";
+import { AppTools } from "../tools/ToolSpecifications";
 
 /** Example Ui Configuration for an iModelJS App
  */
@@ -45,6 +44,7 @@ export class AppUi {
     AppUi.defineContentGroups();
     AppUi.defineContentLayouts();
     AppUi.defineTasksAndWorkflows();
+    AppUi.defineKeyboardShortcuts();
   }
 
   /** Define Frontstages
@@ -57,7 +57,7 @@ export class AppUi {
     ConfigurableUiManager.addFrontstageProvider(new Frontstage4());
   }
 
-  public static tool1 = () => {
+  public static command1 = () => {
     const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
     if (activeFrontstageDef) {
       const widgetDef = activeFrontstageDef.findWidgetDef("VerticalPropertyGrid");
@@ -67,12 +67,12 @@ export class AppUi {
     }
   }
 
-  public static tool2 = () => {
+  public static command2 = () => {
     const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
     if (activeFrontstageDef) {
       const widgetDef = activeFrontstageDef.findWidgetDef("VerticalPropertyGrid");
       if (widgetDef) {
-        widgetDef.setWidgetState(WidgetState.Off);
+        widgetDef.setWidgetState(WidgetState.Hidden);
       }
     }
   }
@@ -350,4 +350,55 @@ export class AppUi {
 
     ConfigurableUiManager.loadWorkflows(workflowPropsList);
   }
+
+  /** Define Keyboard Shortcuts list.
+   */
+  private static defineKeyboardShortcuts() {
+    const keyboardShortcutList: KeyboardShortcutProps[] = [
+      {
+        key: "a",
+        item: AppTools.verticalPropertyGridOpenCommand,
+      },
+      {
+        key: "s",
+        item: AppTools.verticalPropertyGridOffCommand,
+      },
+      {
+        key: "d",
+        labelKey: "SampleApp:buttons.shortcutsSubMenu",
+        shortcuts: [
+          {
+            key: "1",
+            item: AppTools.tool1,
+          },
+          {
+            key: "2",
+            item: AppTools.tool2,
+          },
+          {
+            key: "s",
+            item: CoreTools.selectElementCommand,
+          },
+        ],
+      },
+      {
+        key: FunctionKey.F7,
+        item: AppUi._showShortcutsMenuCommand,
+      },
+    ];
+
+    ConfigurableUiManager.loadKeyboardShortcuts(keyboardShortcutList);
+  }
+
+  private static get _showShortcutsMenuCommand() {
+    return new CommandItemDef({
+      commandId: "showShortcutsMenu",
+      iconSpec: "icon-placeholder",
+      labelKey: "SampleApp:buttons.showShortcutsMenu",
+      execute: () => {
+        KeyboardShortcutManager.displayShortcutsMenu();
+      },
+    });
+  }
+
 }

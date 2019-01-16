@@ -1,11 +1,11 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { ECDbTestHelper } from "./ECDbTestHelper";
 import { IModelTestUtils } from "../IModelTestUtils";
-import { ECSqlStatement, ECSqlInsertResult } from "../../ECSqlStatement";
+import { ECSqlStatement, ECSqlInsertResult, ECSqlValue, ECEnumValue } from "../../ECSqlStatement";
 import { NavigationValue } from "@bentley/imodeljs-common";
 import { ECDb } from "../../ECDb";
 import { IModelDb } from "../../IModelDb";
@@ -1613,4 +1613,232 @@ describe("ECSqlStatement", () => {
       });
   });
 
+  it("ECEnums", () => {
+    using(ECDbTestHelper.createECDb(_outDir, "ecenums.ecdb",
+      `<ECSchema schemaName="Test" alias="test" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+        <ECEnumeration typeName="Status" backingTypeName="int" isStrict="true">
+          <ECEnumerator name="On" value="1" />
+          <ECEnumerator name="Off" value="2" />
+        </ECEnumeration>
+        <ECEnumeration typeName="Domain" backingTypeName="string" isStrict="true">
+          <ECEnumerator name="Org" value="Org" />
+          <ECEnumerator name="Com" value="Com" />
+        </ECEnumeration>
+        <ECEntityClass typeName="Foo" modifier="Sealed">
+          <ECProperty propertyName="MyStat" typeName="Status"/>
+          <ECArrayProperty propertyName="MyStats" typeName="Status"/>
+          <ECProperty propertyName="MyDomain" typeName="Domain"/>
+          <ECArrayProperty propertyName="MyDomains" typeName="Domain"/>
+       </ECEntityClass>
+      </ECSchema>`), (ecdb: ECDb) => {
+        assert.isTrue(ecdb.isOpen);
+
+        const id: Id64String = ecdb.withPreparedStatement("INSERT INTO test.Foo(MyStat,MyStats,MyDomain,MyDomains) VALUES(test.Status.[On],?,test.Domain.Org,?)", (stmt: ECSqlStatement) => {
+          stmt.bindValue(1, [1, 2]);
+          stmt.bindValue(2, ["Org", "Com"]);
+          const res: ECSqlInsertResult = stmt.stepForInsert();
+          assert.equal(res.status, DbResult.BE_SQLITE_DONE);
+          assert.isDefined(res.id);
+          return res.id!;
+        });
+
+        ecdb.withPreparedStatement("SELECT MyStat,MyStats, MyDomain,MyDomains FROM test.Foo WHERE ECInstanceId=?", (stmt: ECSqlStatement) => {
+          stmt.bindId(1, id);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          // getRow just returns the enum values
+          const row: any = stmt.getRow();
+          assert.equal(row.myStat, 1);
+          assert.deepEqual(row.myStats, [1, 2]);
+          assert.equal(row.myDomain, "Org");
+          assert.deepEqual(row.myDomains, ["Org", "Com"]);
+
+          const myStatVal: ECSqlValue = stmt.getValue(0);
+          assert.isFalse(myStatVal.isNull);
+          assert.isTrue(myStatVal.columnInfo.isEnum());
+          assert.equal(myStatVal.getInteger(), 1);
+          assert.deepEqual(myStatVal.getEnum(), [{ schema: "Test", name: "Status", key: "On", value: 1 }]);
+
+          const myStatsVal: ECSqlValue = stmt.getValue(1);
+          assert.isFalse(myStatsVal.isNull);
+          assert.isTrue(myStatsVal.columnInfo.isEnum());
+          assert.deepEqual(myStatsVal.getArray(), [1, 2]);
+          const actualStatsEnums: ECEnumValue[][] = [];
+          for (const arrayElement of myStatsVal.getArrayIterator()) {
+            actualStatsEnums.push(arrayElement.getEnum()!);
+          }
+          assert.equal(actualStatsEnums.length, 2);
+          assert.deepEqual(actualStatsEnums[0], [{ schema: "Test", name: "Status", key: "On", value: 1 }]);
+          assert.deepEqual(actualStatsEnums[1], [{ schema: "Test", name: "Status", key: "Off", value: 2 }]);
+
+          const myDomainVal: ECSqlValue = stmt.getValue(2);
+          assert.isFalse(myDomainVal.isNull);
+          assert.isTrue(myDomainVal.columnInfo.isEnum());
+          assert.equal(myDomainVal.getString(), "Org");
+          assert.deepEqual(myDomainVal.getEnum(), [{ schema: "Test", name: "Domain", key: "Org", value: "Org" }]);
+
+          const myDomainsVal: ECSqlValue = stmt.getValue(3);
+          assert.isFalse(myDomainsVal.isNull);
+          assert.isTrue(myDomainsVal.columnInfo.isEnum());
+          assert.deepEqual(myDomainsVal.getArray(), ["Org", "Com"]);
+          const actualDomainsEnums: ECEnumValue[][] = [];
+          for (const arrayElement of myDomainsVal.getArrayIterator()) {
+            actualDomainsEnums.push(arrayElement.getEnum()!);
+          }
+          assert.equal(actualDomainsEnums.length, 2);
+          assert.deepEqual(actualDomainsEnums[0], [{ schema: "Test", name: "Domain", key: "Org", value: "Org" }]);
+          assert.deepEqual(actualDomainsEnums[1], [{ schema: "Test", name: "Domain", key: "Com", value: "Com" }]);
+        });
+
+        // test some enums in the built-in schemas
+        ecdb.withPreparedStatement("SELECT Type,Modifier FROM meta.ECClassDef WHERE Name='Foo'", (stmt: ECSqlStatement) => {
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          // getRow just returns the enum values
+          const row: any = stmt.getRow();
+          assert.deepEqual(row, { type: 0, modifier: 2 });
+
+          const typeVal: ECSqlValue = stmt.getValue(0);
+          assert.isFalse(typeVal.isNull);
+          assert.isTrue(typeVal.columnInfo.isEnum());
+          assert.equal(typeVal.getInteger(), 0);
+          assert.deepEqual(typeVal.getEnum(), [{ schema: "ECDbMeta", name: "ECClassType", key: "Entity", value: 0 }]);
+
+          const modifierVal: ECSqlValue = stmt.getValue(1);
+          assert.isFalse(modifierVal.isNull);
+          assert.isTrue(modifierVal.columnInfo.isEnum());
+          assert.equal(modifierVal.getInteger(), 2);
+          assert.deepEqual(modifierVal.getEnum(), [{ schema: "ECDbMeta", name: "ECClassModifier", key: "Sealed", value: 2 }]);
+        });
+      });
+  });
+
+  it("ORed ECEnums", () => {
+    using(ECDbTestHelper.createECDb(_outDir, "oredecenums.ecdb",
+      `<ECSchema schemaName="Test" alias="test" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+        <ECEnumeration typeName="Color" backingTypeName="int" isStrict="true">
+          <ECEnumerator name="Red" value="1" />
+          <ECEnumerator name="Yellow" value="2" />
+          <ECEnumerator name="Blue" value="4" />
+        </ECEnumeration>
+        <ECEnumeration typeName="Domain" backingTypeName="string" isStrict="true">
+          <ECEnumerator name="Org" value="org" />
+          <ECEnumerator name="Com" value="com" />
+          <ECEnumerator name="Gov" value="gov" />
+        </ECEnumeration>
+        <ECEntityClass typeName="Foo" modifier="Sealed">
+          <ECProperty propertyName="MyColor" typeName="Color"/>
+          <ECProperty propertyName="MyDomain" typeName="Domain"/>
+       </ECEntityClass>
+      </ECSchema>`), (ecdb: ECDb) => {
+        assert.isTrue(ecdb.isOpen);
+
+        const ids: { unored: Id64String, ored: Id64String, unmatched: Id64String } = ecdb.withPreparedStatement("INSERT INTO test.Foo(MyColor,MyDomain) VALUES(?,?)", (stmt: ECSqlStatement) => {
+          stmt.bindValue(1, 4);
+          stmt.bindValue(2, "com");
+          let res: ECSqlInsertResult = stmt.stepForInsert();
+          assert.equal(res.status, DbResult.BE_SQLITE_DONE);
+          assert.isDefined(res.id);
+          const unored: Id64String = res.id!;
+          stmt.reset();
+          stmt.clearBindings();
+
+          stmt.bindValue(1, 5);
+          stmt.bindValue(2, "gov,com");
+          res = stmt.stepForInsert();
+          assert.equal(res.status, DbResult.BE_SQLITE_DONE);
+          assert.isDefined(res.id);
+          const ored: Id64String = res.id!;
+          stmt.reset();
+          stmt.clearBindings();
+
+          stmt.bindValue(1, 9);
+          stmt.bindValue(2, "gov,de");
+          res = stmt.stepForInsert();
+          assert.equal(res.status, DbResult.BE_SQLITE_DONE);
+          assert.isDefined(res.id);
+          const unmatched: Id64String = res.id!;
+          stmt.reset();
+          stmt.clearBindings();
+
+          return { unored, ored, unmatched };
+        });
+
+        ecdb.withPreparedStatement("SELECT MyColor,MyDomain FROM test.Foo WHERE ECInstanceId=?", (stmt: ECSqlStatement) => {
+          stmt.bindId(1, ids.unored);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          // getRow just returns the enum values
+          let row: any = stmt.getRow();
+          assert.equal(row.myColor, 4);
+          assert.equal(row.myDomain, "com");
+
+          let colVal: ECSqlValue = stmt.getValue(0);
+          assert.isFalse(colVal.isNull);
+          assert.isTrue(colVal.columnInfo.isEnum());
+          assert.equal(colVal.getInteger(), 4);
+          assert.deepEqual(colVal.getEnum(), [{ schema: "Test", name: "Color", key: "Blue", value: 4 }]);
+
+          let domainVal: ECSqlValue = stmt.getValue(1);
+          assert.isFalse(domainVal.isNull);
+          assert.isTrue(domainVal.columnInfo.isEnum());
+          assert.equal(domainVal.getString(), "com");
+          assert.deepEqual(domainVal.getEnum(), [{ schema: "Test", name: "Domain", key: "Com", value: "com" }]);
+          stmt.reset();
+          stmt.clearBindings();
+
+          stmt.bindId(1, ids.ored);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          // getRow just returns the enum values
+          row = stmt.getRow();
+          assert.equal(row.myColor, 5);
+          assert.equal(row.myDomain, "gov,com");
+
+          colVal = stmt.getValue(0);
+          assert.isFalse(colVal.isNull);
+          assert.isTrue(colVal.columnInfo.isEnum());
+          assert.equal(colVal.getInteger(), 5);
+          assert.deepEqual(colVal.getEnum(), [{ schema: "Test", name: "Color", key: "Red", value: 1 }, { schema: "Test", name: "Color", key: "Blue", value: 4 }]);
+
+          domainVal = stmt.getValue(1);
+          assert.isFalse(domainVal.isNull);
+          assert.isTrue(domainVal.columnInfo.isEnum());
+          assert.equal(domainVal.getString(), "gov,com");
+          assert.deepEqual(domainVal.getEnum(), [{ schema: "Test", name: "Domain", key: "Com", value: "com" }, { schema: "Test", name: "Domain", key: "Gov", value: "gov" }]);
+
+          stmt.reset();
+          stmt.clearBindings();
+
+          stmt.bindId(1, ids.unmatched);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          // getRow just returns the enum values
+          row = stmt.getRow();
+          assert.equal(row.myColor, 9);
+          assert.equal(row.myDomain, "gov,de");
+
+          colVal = stmt.getValue(0);
+          assert.isFalse(colVal.isNull);
+          assert.isTrue(colVal.columnInfo.isEnum());
+          assert.equal(colVal.getInteger(), 9);
+          assert.isUndefined(colVal.getEnum());
+
+          domainVal = stmt.getValue(1);
+          assert.isFalse(domainVal.isNull);
+          assert.isTrue(domainVal.columnInfo.isEnum());
+          assert.equal(domainVal.getString(), "gov,de");
+          assert.isUndefined(domainVal.getEnum());
+        });
+
+        // test some enums in the built-in schemas
+        ecdb.withPreparedStatement("SELECT CustomAttributeContainerType caType FROM meta.ECClassDef WHERE Type=meta.ECClassType.CustomAttribute AND Name='DateTimeInfo'", (stmt: ECSqlStatement) => {
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          const row: any = stmt.getRow();
+          assert.equal(row.caType, 160);
+
+          const caTypeVal: ECSqlValue = stmt.getValue(0);
+          assert.isFalse(caTypeVal.isNull);
+          assert.isTrue(caTypeVal.columnInfo.isEnum());
+          assert.equal(caTypeVal.getInteger(), 160);
+          assert.deepEqual(caTypeVal.getEnum(), [{ schema: "ECDbMeta", name: "ECCustomAttributeContainerType", key: "PrimitiveProperty", value: 32 },
+          { schema: "ECDbMeta", name: "ECCustomAttributeContainerType", key: "PrimitiveArrayProperty", value: 128 }]);
+        });
+      });
+  });
 });

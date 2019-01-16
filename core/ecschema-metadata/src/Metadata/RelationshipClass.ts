@@ -1,10 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
 import { ECClass } from "./Class";
-import { processCustomAttributes, CustomAttributeSet, serializeCustomAttributes } from "./CustomAttribute";
+import { CustomAttributeSet, serializeCustomAttributes, CustomAttribute } from "./CustomAttribute";
 import { EntityClass, createNavigationProperty, createNavigationPropertySync } from "./EntityClass";
 import { Mixin } from "./Mixin";
 import { NavigationProperty } from "./Property";
@@ -12,12 +12,13 @@ import { Schema } from "./Schema";
 import { DelayedPromiseWithProps } from "./../DelayedPromise";
 import { RelationshipClassProps, RelationshipConstraintProps } from "./../Deserialization/JsonProps";
 import {
-  CustomAttributeContainerType, ECClassModifier, SchemaItemType, StrengthDirection,
-  strengthDirectionToString, strengthToString, StrengthType, RelationshipEnd,
+  ECClassModifier, SchemaItemType, StrengthDirection,
+  strengthDirectionToString, strengthToString, StrengthType, RelationshipEnd, parseStrength, parseStrengthDirection,
 } from "./../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "./../Exception";
 import { LazyLoadedRelationshipConstraintClass } from "./../Interfaces";
 import { SchemaItemKey } from "./../SchemaKey";
+import { SchemaItem } from "./SchemaItem";
 
 type AnyConstraintClass = EntityClass | Mixin | RelationshipClass;
 
@@ -74,8 +75,17 @@ export class RelationshipClass extends ECClass {
 
   public deserializeSync(relationshipClassProps: RelationshipClassProps) {
     super.deserializeSync(relationshipClassProps);
-    this._strength = relationshipClassProps.strength;
-    this._strengthDirection = relationshipClassProps.strengthDirection;
+
+    const strength = parseStrength(relationshipClassProps.strength);
+    if (undefined === strength)
+      throw new ECObjectsError(ECObjectsStatus.InvalidStrength, `The RelationshipClass ${this.fullName} has an invalid 'strength' attribute. '${relationshipClassProps.strength}' is not a valid StrengthType.`);
+
+    const strengthDirection = parseStrengthDirection(relationshipClassProps.strengthDirection);
+    if (undefined === strengthDirection)
+      throw new ECObjectsError(ECObjectsStatus.InvalidStrength, `The RelationshipClass ${this.fullName} has an invalid 'strengthDirection' attribute. '${relationshipClassProps.strengthDirection}' is not a valid StrengthDirection.`);
+
+    this._strength = strength;
+    this._strengthDirection = strengthDirection;
   }
 
   public async deserialize(relationshipClassProps: RelationshipClassProps) {
@@ -94,7 +104,7 @@ export class RelationshipConstraint {
   protected _polymorphic?: boolean;
   protected _roleLabel?: string;
   protected _constraintClasses?: LazyLoadedRelationshipConstraintClass[];
-  protected _customAttributes?: CustomAttributeSet;
+  private _customAttributes?: Map<string, CustomAttribute>;
 
   constructor(relClass: RelationshipClass, relEnd: RelationshipEnd, roleLabel?: string, polymorphic?: boolean) {
     this._relationshipEnd = relEnd;
@@ -207,13 +217,79 @@ export class RelationshipConstraint {
       const constraintClass = loadEachConstraint(constraintClassName);
       this.addClass(constraintClass);
     }
-
-    this._customAttributes = processCustomAttributes(relationshipConstraintProps.customAttributes, debugName(this), CustomAttributeContainerType.AnyRelationshipConstraint);
   }
+
   public async deserialize(relationshipConstraintProps: RelationshipConstraintProps) {
     this.deserializeSync(relationshipConstraintProps);
   }
 
+  /**
+   * Indicates if the provided [[ECClass]] is supported by this [[RelationshipConstraint]].
+   * @param ecClass The class to check.
+   */
+  public async supportsClass(ecClass: ECClass): Promise<boolean> {
+    if (!this.constraintClasses) {
+      if (this.relationshipClass.baseClass) {
+        const baseRelationship = await this.relationshipClass.baseClass as RelationshipClass;
+        const baseConstraint = this.isSource ? baseRelationship.source : baseRelationship.target;
+        return baseConstraint.supportsClass(ecClass);
+      }
+      return false;
+    }
+
+    if (ecClass.schemaItemType !== SchemaItemType.EntityClass && ecClass.schemaItemType !== SchemaItemType.RelationshipClass &&
+      ecClass.schemaItemType !== SchemaItemType.Mixin) {
+      return false;
+    }
+
+    const abstractConstraint = await this.abstractConstraint;
+
+    if (abstractConstraint && await RelationshipConstraint.classCompatibleWithConstraint(abstractConstraint, ecClass, this.polymorphic || false))
+      return true;
+
+    for (const constraint of this.constraintClasses) {
+      if (await RelationshipConstraint.classCompatibleWithConstraint(await constraint, ecClass, this.polymorphic || false))
+        return true;
+    }
+
+    return false;
+  }
+
+  /**
+   * Indicates if an ECClass is of the type or applies to the type (if a mixin) of the ECClass specified by the constraintClass parameter.
+   * @param constraintClass The ECClass that is a constraint class of a relationship.
+   * @param testClass The ECClass to check against the constraint class.
+   * @param isPolymorphic Indicates if the testClass should be checked polymorphically.
+   */
+  public static async classCompatibleWithConstraint(constraintClass: ECClass, testClass: ECClass, isPolymorphic: boolean): Promise<boolean> {
+    if (SchemaItem.equalByKey(constraintClass, testClass))
+      return true;
+
+    if (isPolymorphic) {
+      if (testClass.schemaItemType === SchemaItemType.EntityClass || testClass.schemaItemType === SchemaItemType.RelationshipClass) {
+        return testClass.is(constraintClass);
+      }
+
+      if (testClass.schemaItemType === SchemaItemType.Mixin && constraintClass.schemaItemType === SchemaItemType.EntityClass) {
+        return (testClass as Mixin).applicableTo(constraintClass as EntityClass);
+      }
+    }
+    return false;
+  }
+
+  protected addCustomAttribute(customAttribute: CustomAttribute) {
+    if (!this._customAttributes)
+      this._customAttributes = new Map<string, CustomAttribute>();
+
+    this._customAttributes.set(customAttribute.className, customAttribute);
+  }
+}
+
+/** @hidden
+ * Hackish approach that works like a "friend class" so we can access protected members without making them public.
+ */
+export abstract class MutableRelationshipConstraint extends RelationshipConstraint {
+  public abstract addCustomAttribute(customAttribute: CustomAttribute): void;
 }
 
 const INT32_MAX = 2147483647;
@@ -261,8 +337,4 @@ export class RelationshipMultiplicity {
   public toString(): string {
     return `(${this.lowerLimit}..${this.upperLimit === INT32_MAX ? "*" : this.upperLimit})`;
   }
-}
-
-function debugName(constraint: RelationshipConstraint): string {
-  return constraint.relationshipClass.name + ((constraint.isSource) ? ".source" : ".target");
 }

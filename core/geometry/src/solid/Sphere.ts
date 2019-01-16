@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
@@ -50,6 +50,8 @@ export class Sphere extends SolidPrimitive implements UVSurface {
     return new Sphere(this._localToWorld.clone(), this._latitudeSweep.clone(), this.capped);
   }
   public tryTransformInPlace(transform: Transform): boolean {
+    if (transform.matrix.isSingular())
+      return false;
     transform.multiplyTransformTransform(this._localToWorld, this._localToWorld);
     return true;
   }
@@ -82,7 +84,7 @@ export class Sphere extends SolidPrimitive implements UVSurface {
     latitudeSweep: AngleSweep,
     capped: boolean): Sphere | undefined {
     const vectorY = vectorX.rotate90Around(vectorZ);
-    if (vectorY) {
+    if (vectorY && !vectorX.isParallelTo(vectorZ)) {
       const matrix = Matrix3d.createColumns(vectorX, vectorY, vectorZ);
       matrix.scaleColumns(radiusXY, radiusXY, radiusZ, matrix);
       const frame = Transform.createOriginAndMatrix(center, matrix);
@@ -133,6 +135,7 @@ export class Sphere extends SolidPrimitive implements UVSurface {
   }
   /**
    *  return strokes for a cross-section (elliptic arc) at specified fraction v along the axis.
+   * * if strokeOptions is supplied, it is applied to the equator radii.
    * @param v fractional position along the cone axis
    * @param strokes stroke count or options.
    */
@@ -140,19 +143,19 @@ export class Sphere extends SolidPrimitive implements UVSurface {
     let strokeCount = 16;
     if (strokes === undefined) {
       // accept the default above.
-    } else if (strokes instanceof Number) {
+    } else if (Number.isFinite(strokes as number)) {
       strokeCount = strokes as number;
     } else if (strokes instanceof StrokeOptions) {
-      strokeCount = strokes.defaultCircleStrokes;   // NEEDS WORK -- get circle stroke count with this.maxRadius !!!
+      strokeCount = strokes.applyTolerancesToArc(Geometry.maxXY(this._localToWorld.matrix.columnXMagnitude(), this._localToWorld.matrix.columnYMagnitude()));
     }
     strokeCount = Geometry.clampToStartEnd(strokeCount, 4, 64);
+    const transform = this._localToWorld;
     const phi = this.vFractionToRadians(v);
     const c1 = Math.cos(phi);
     const s1 = Math.sin(phi);
     const result = LineString3d.create();
     const deltaRadians = Math.PI * 2.0 / strokeCount;
     let radians = 0;
-    const transform = this._localToWorld;
     for (let i = 0; i <= strokeCount; i++) {
       if (i * 2 <= strokeCount)
         radians = i * deltaRadians;
@@ -229,7 +232,7 @@ export class Sphere extends SolidPrimitive implements UVSurface {
     return Plane3dByOriginAndVectors.createOriginAndVectors(
       this._localToWorld.multiplyXYZ(cosTheta * cosPhi, sinTheta * cosPhi, sinPhi),
       this._localToWorld.multiplyVectorXYZ(-fTheta * sinTheta * cosPhi, fTheta * cosTheta * cosPhi, 0),
-      this._localToWorld.multiplyVectorXYZ(-fPhi * cosTheta * sinPhi, -fPhi * sinTheta, fPhi * cosPhi),
+      this._localToWorld.multiplyVectorXYZ(-fPhi * cosTheta * sinPhi, -fPhi * sinTheta * sinPhi, fPhi * cosPhi),
       result);
   }
 }

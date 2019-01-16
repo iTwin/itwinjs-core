@@ -1,7 +1,9 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+/* tslint:disable:no-direct-imports */
+
 import "@bentley/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment";
 import * as React from "react";
 import { expect } from "chai";
@@ -17,14 +19,13 @@ import {
   Presentation,
   SelectionHandler, SelectionManager, SelectionChangeEvent, ISelectionProvider, SelectionChangeEventArgs, SelectionChangeType,
 } from "@bentley/presentation-frontend";
-import { Tree, TreeNodeItem, UiComponents } from "@bentley/ui-components";
+import { Tree, TreeProps, TreeNodeItem, UiComponents } from "@bentley/ui-components";
 import { I18N } from "@bentley/imodeljs-i18n";
-import { TreeProps as TreeProps } from "@bentley/ui-components/lib/tree/component/Tree";
-import IUnifiedSelectionComponent from "../../common/IUnifiedSelectionComponent";
-import { IPresentationTreeDataProvider, withUnifiedSelection, SelectionTarget } from "../../tree";
+import { IUnifiedSelectionComponent } from "../../common/IUnifiedSelectionComponent";
+import { IPresentationTreeDataProvider, treeWithUnifiedSelection } from "../../presentation-components";
 
 // tslint:disable-next-line:variable-name naming-convention
-const PresentationTree = withUnifiedSelection(Tree);
+const PresentationTree = treeWithUnifiedSelection(Tree);
 
 describe("Tree withUnifiedSelection", () => {
   before(async () => {
@@ -41,7 +42,7 @@ describe("Tree withUnifiedSelection", () => {
     // note: can't use `ofType` because it creates a mock whose typeof is "function" and
     // we expect it to be "object" for IPresentationTreeDataProvider instances
     dataProviderMock = moq.Mock.ofInstance<any>({
-      connection: undefined,
+      imodel: undefined,
       rulesetId: undefined,
       onTreeNodeChanged: undefined,
       getNodesCount: async () => 0,
@@ -65,7 +66,7 @@ describe("Tree withUnifiedSelection", () => {
       rootNodes = () => [];
     if (!childNodes)
       childNodes = () => [];
-    providerMock.setup((x) => x.connection).returns(() => imodel!);
+    providerMock.setup((x) => x.imodel).returns(() => imodel!);
     providerMock.setup((x) => x.rulesetId).returns(() => rulesetId!);
     providerMock.setup((x) => x.onTreeNodeChanged).returns(() => undefined);
     providerMock.setup((x) => x.getNodeKey(moq.It.isAny())).returns((n: TreeNodeItem) => n.extendedData.key);
@@ -160,57 +161,6 @@ describe("Tree withUnifiedSelection", () => {
 
     describe("checking if node should be selected", () => {
 
-      it("returns true if node's id is in selectedNodes array prop", () => {
-        const node = createRandomTreeNodeItem();
-        const arr = [faker.random.uuid(), node.id, faker.random.uuid()];
-
-        const tree = shallow(<PresentationTree
-          dataProvider={dataProviderMock.object}
-          selectionHandler={selectionHandlerMock.object}
-          selectedNodes={arr}
-        />);
-
-        const propCallback = tree.find(Tree).prop("selectedNodes") as ((node: TreeNodeItem) => boolean);
-        const actualResult = propCallback(node);
-
-        expect(actualResult).to.eq(true);
-      });
-
-      it("returns false if node's id is not in selectedNodes array prop", () => {
-        const node = createRandomTreeNodeItem();
-        const arr = [faker.random.uuid(), faker.random.uuid()];
-
-        const tree = shallow(<PresentationTree
-          dataProvider={dataProviderMock.object}
-          selectionHandler={selectionHandlerMock.object}
-          selectedNodes={arr}
-        />);
-
-        const propCallback = tree.find(Tree).prop("selectedNodes") as ((node: TreeNodeItem) => boolean);
-        const actualResult = propCallback(node);
-
-        expect(actualResult).to.eq(false);
-      });
-
-      it("calls props callback and returns its result", () => {
-        const node = createRandomTreeNodeItem();
-        const result = faker.random.boolean();
-        const callback = moq.Mock.ofType<(node: TreeNodeItem) => boolean>();
-        callback.setup((x) => x(node)).returns(() => result).verifiable();
-
-        const tree = shallow(<PresentationTree
-          dataProvider={dataProviderMock.object}
-          selectionHandler={selectionHandlerMock.object}
-          selectedNodes={callback.object}
-        />);
-
-        const propCallback = tree.find(Tree).prop("selectedNodes") as ((node: TreeNodeItem) => boolean);
-        const actualResult = propCallback(node);
-
-        callback.verifyAll();
-        expect(actualResult).to.eq(result);
-      });
-
       it("returns false when there's no selection handler", () => {
         const node = createRandomTreeNodeItem();
         selectionHandlerMock.setup((x) => x.getSelection()).returns(() => new KeySet());
@@ -293,7 +243,7 @@ describe("Tree withUnifiedSelection", () => {
 
         tree.find(Tree).prop("onNodesSelected")!(nodes, false);
 
-        selectionHandlerMock.verify((x) => x.addToSelection(nodes.map((n) => n.extendedData.key)), moq.Times.once());
+        selectionHandlerMock.verify((x) => x.addToSelection(nodes.map((n) => (n.extendedData.key as ECInstanceNodeKey).instanceKey)), moq.Times.once());
         selectionHandlerMock.verify((x) => x.replaceSelection(moq.It.isAny()), moq.Times.never());
         callback.verifyAll();
       });
@@ -328,7 +278,7 @@ describe("Tree withUnifiedSelection", () => {
         selectionHandlerMock.verify((x) => x.replaceSelection(moq.It.isAny()), moq.Times.never());
       });
 
-      it("replaces ECInstance keys in selection manager when selection target is set to `ECInstance`", () => {
+      it("replaces ECInstance keys in selection manager", () => {
         const nodes = [createRandomTreeNodeItem(), createRandomTreeNodeItem()];
         nodes[0].extendedData.key = createRandomECInstanceNodeKey();
         nodes[1].extendedData.key = { type: faker.random.word(), pathFromRoot: [] };
@@ -336,7 +286,6 @@ describe("Tree withUnifiedSelection", () => {
         const tree = shallow(<PresentationTree
           dataProvider={dataProviderMock.object}
           selectionHandler={selectionHandlerMock.object}
-          selectionTarget={SelectionTarget.Instance}
         />);
 
         tree.find(Tree).prop("onNodesSelected")!(nodes, true);
@@ -365,7 +314,7 @@ describe("Tree withUnifiedSelection", () => {
 
         tree.find(Tree).prop("onNodesDeselected")!(nodes);
 
-        selectionHandlerMock.verify((x) => x.removeFromSelection(nodes.map((n) => n.extendedData.key)), moq.Times.once());
+        selectionHandlerMock.verify((x) => x.removeFromSelection(nodes.map((n) => (n.extendedData.key as ECInstanceNodeKey).instanceKey)), moq.Times.once());
         callback.verifyAll();
       });
 
@@ -397,7 +346,7 @@ describe("Tree withUnifiedSelection", () => {
         selectionHandlerMock.verify((x) => x.removeFromSelection(moq.It.isAny()), moq.Times.never());
       });
 
-      it("removes ECInstance keys from selection manager when selection target is set to `ECInstance`", () => {
+      it("removes ECInstance keys from selection manager", () => {
         const nodes = [createRandomTreeNodeItem(), createRandomTreeNodeItem()];
         nodes[0].extendedData.key = createRandomECInstanceNodeKey();
         nodes[1].extendedData.key = { type: faker.random.word(), pathFromRoot: [] };
@@ -405,7 +354,6 @@ describe("Tree withUnifiedSelection", () => {
         const tree = shallow(<PresentationTree
           dataProvider={dataProviderMock.object}
           selectionHandler={selectionHandlerMock.object}
-          selectionTarget={SelectionTarget.Instance}
         />);
 
         tree.find(Tree).prop("onNodesDeselected")!(nodes);

@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
@@ -14,7 +14,9 @@ import { ShowSignOption, FormatType, FormatTraits, DecimalPrecision } from "./..
 import { ECObjectsError } from "./../../src/Exception";
 import { FormatProps } from "../../src/Deserialization/JsonProps";
 import { JsonParser } from "../../src/Deserialization/JsonParser";
-import { SchemaContext } from "../../src";
+import { SchemaContext } from "../../src/Context";
+
+type Mutable<T> = { -readonly [P in keyof T]: T[P] };
 
 function createSchemaJson(koq: any) {
   return createSchemaJsonWithItems({
@@ -30,7 +32,7 @@ function createSchemaJson(koq: any) {
         },
       ],
     });
-};
+}
 
 describe("Format", () => {
   let schema: Schema;
@@ -65,16 +67,16 @@ describe("Format", () => {
       items: {
         TestFormat: {
           schemaItemType: "Format",
-        }
-      }
+        },
+      },
     };
 
     function createFormatJson(extraStuff: any): any {
       return {
         schemaItemType: "Format",
         type: "Decimal",
-        ...extraStuff
-      }
+        ...extraStuff,
+      };
     }
 
     beforeEach(() => {
@@ -102,11 +104,11 @@ describe("Format", () => {
           units: [
             {
               name: "",
-              label: ""
-            }
-          ]
-        }
-      }
+              label: "",
+            },
+          ],
+        },
+      };
 
       const formatProps = jsonParser.parseFormat(correctFormat);
       assert.isDefined(formatProps);
@@ -184,8 +186,8 @@ describe("Format", () => {
 
     const invalidCompositeSpacer = {
       composite: {
-        spacer: true
-      }
+        spacer: true,
+      },
     };
     it("invalid composite spacer attribute", () => {
       assert.throws(() => jsonParser.parseFormat(createFormatJson(invalidCompositeSpacer)), ECObjectsError, `The Format TestSchema.TestFormat has a Composite with an invalid 'spacer' attribute. It should be of type 'string'.`);
@@ -193,8 +195,8 @@ describe("Format", () => {
 
     const invalidCompositeIncludeZero = {
       composite: {
-        includeZero: ""
-      }
+        includeZero: "",
+      },
     };
     it("invalid composite include zero attribute", () => {
       assert.throws(() => jsonParser.parseFormat(createFormatJson(invalidCompositeIncludeZero)), ECObjectsError, `The Format TestSchema.TestFormat has a Composite with an invalid 'includeZero' attribute. It should be of type 'boolean'.`);
@@ -202,8 +204,8 @@ describe("Format", () => {
 
     const invalidCompositeUnits = {
       composite: {
-        units: true
-      }
+        units: true,
+      },
     };
     it("invalid composite units attribute", () => {
       assert.throws(() => jsonParser.parseFormat(createFormatJson(invalidCompositeUnits)), ECObjectsError, `The Format TestSchema.TestFormat has a Composite with an invalid 'units' attribute. It should be of type 'object[]'.`);
@@ -262,7 +264,7 @@ describe("Format", () => {
 
     const invalidTypeAttributeValue: FormatProps = {
       schemaItemType: "Format",
-      type: "BadType"
+      type: "BadType",
     };
     it("sync - invalid type attribute value", () => {
       assert.throws(() => testFormat.deserializeSync(invalidTypeAttributeValue), ECObjectsError, `The Format TestSchema.TestFormat has an invalid 'type' attribute.`);
@@ -342,10 +344,10 @@ describe("Format", () => {
       assert(testFormat.precision === 12);
     });
 
-    const invalidMinWidth: FormatProps = {
+    const invalidMinWidth: Mutable<FormatProps> = {
       schemaItemType: "Format",
       type: "Decimal",
-      minWidth: 5.5
+      minWidth: 5.5,
     };
     it("sync - minWidth value is invalid", () => {
       assert.throws(() => testFormat.deserializeSync(invalidMinWidth), ECObjectsError, `The Format TestSchema.TestFormat has an invalid 'minWidth' attribute. It should be a positive integer.`);
@@ -363,8 +365,8 @@ describe("Format", () => {
 
     const missingScientificType: FormatProps = {
       schemaItemType: "Format",
-      type: "Scientific"
-    }
+      type: "Scientific",
+    };
     it("sync - scientific type is required when type is scientific", () => {
       assert.throws(() => testFormat.deserializeSync(missingScientificType), ECObjectsError, `The Format TestSchema.TestFormat is 'Scientific' type therefore the attribute 'scientificType' is required.`);
     });
@@ -375,8 +377,8 @@ describe("Format", () => {
     const invalidScientificType: FormatProps = {
       schemaItemType: "Format",
       type: "Scientific",
-      scientificType: "badType"
-    }
+      scientificType: "badType",
+    };
     it("sync - scientific type is not supported", () => {
       assert.throws(() => testFormat.deserializeSync(invalidScientificType), ECObjectsError, `The Format TestSchema.TestFormat has an invalid 'scientificType' attribute.`);
     });
@@ -398,7 +400,7 @@ describe("Format", () => {
     const invalidStationOffsetSize: FormatProps = {
       schemaItemType: "Format",
       type: "station",
-      stationOffsetSize: -1
+      stationOffsetSize: -1,
     };
     it("sync - stationOffsetSize is invalid value", () => {
       assert.throws(() => testFormat.deserializeSync(invalidStationOffsetSize), ECObjectsError, `The Format TestSchema.TestFormat has an invalid 'stationOffsetSize' attribute. It should be a positive integer.`);
@@ -422,7 +424,7 @@ describe("Format", () => {
     const invalidDecimalSeparator: FormatProps = {
       schemaItemType: "Format",
       type: "decimal",
-      decimalSeparator: "badSeparator"
+      decimalSeparator: "badSeparator",
     };
     it("sync - decimal separator cannot be larger than 1 character", () => {
       assert.throws(() => testFormat.deserializeSync(invalidDecimalSeparator), ECObjectsError, `The Format TestSchema.TestFormat has an invalid 'decimalSeparator' attribute.`);
@@ -434,7 +436,7 @@ describe("Format", () => {
     const invalidThousandSeparator: FormatProps = {
       schemaItemType: "Format",
       type: "decimal",
-      thousandSeparator: "badSeparator"
+      thousandSeparator: "badSeparator",
     };
     it("sync - thousand separator cannot be larger than 1 character", () => {
       assert.throws(() => testFormat.deserializeSync(invalidThousandSeparator), ECObjectsError, `The Format TestSchema.TestFormat has an invalid 'thousandSeparator' attribute.`);
@@ -446,7 +448,7 @@ describe("Format", () => {
     const invalidUOMSeparator: FormatProps = {
       schemaItemType: "Format",
       type: "decimal",
-      uomSeparator: "badSeparator"
+      uomSeparator: "badSeparator",
     };
     it("sync - UOM separator cannot be larger than 1 character", () => {
       assert.throws(() => testFormat.deserializeSync(invalidUOMSeparator), ECObjectsError, `The Format TestSchema.TestFormat has an invalid 'uomSeparator' attribute.`);
@@ -458,7 +460,7 @@ describe("Format", () => {
     const invalidStationSeparator: FormatProps = {
       schemaItemType: "Format",
       type: "decimal",
-      stationSeparator: "badSeparator"
+      stationSeparator: "badSeparator",
     };
     it("sync - station separator cannot be larger than 1 character", () => {
       assert.throws(() => testFormat.deserializeSync(invalidStationSeparator), ECObjectsError, `The Format TestSchema.TestFormat has an invalid 'stationSeparator' attribute.`);
@@ -471,8 +473,8 @@ describe("Format", () => {
       const validEmptyFormatTraitSring: FormatProps = {
         schemaItemType: "Format",
         type: "decimal",
-        formatTraits: ""
-      }
+        formatTraits: "",
+      };
       it("sync - ", () => {
         testFormat.deserializeSync(validEmptyFormatTraitSring);
         assert.isTrue(testFormat.hasFormatTrait(0x0));
@@ -606,8 +608,8 @@ describe("Format", () => {
         schemaItemType: "Format",
         type: "decimal",
         formatTraits: [
-          "badTraits"
-        ]
+          "badTraits",
+        ],
       };
       it("sync - invalid format trait within a array", () => {
         assert.throws(() => testFormat.deserializeSync(invalidFormatTraitInArray), ECObjectsError, `The Format TestSchema.TestFormat has an invalid 'formatTraits' attribute. The string 'badTraits' is not a valid format trait.`);
@@ -630,8 +632,8 @@ describe("Format", () => {
           includeZero: false,
           spacer: "spacer",
           units: [
-            { name: "Formats.MILE" }
-          ]
+            { name: "Formats.MILE" },
+          ],
         },
       };
       it("sync - spacer must be a one character string", () => {
@@ -655,7 +657,7 @@ describe("Format", () => {
       const invalidCompositeEmptyUnits = {
         type: "fractional",
         composite: {
-          units: []
+          units: [],
         },
       };
       it("sync - invalid composite without units", () => {
@@ -673,8 +675,8 @@ describe("Format", () => {
             { name: "Formats.YRD" },
             { name: "Formats.FT" },
             { name: "Formats.IN" },
-            { name: "Formats.MILLIINCH" }
-          ]
+            { name: "Formats.MILLIINCH" },
+          ],
         },
       };
       it("sync - invalid composite with too many units", () => {
@@ -689,9 +691,9 @@ describe("Format", () => {
         composite: {
           units: [
             { name: "Formats.MILE" },
-            { name: "Formats.MILE" }
-          ]
-        }
+            { name: "Formats.MILE" },
+          ],
+        },
       };
       it("sync - invalid composite with duplicate units", () => {
         assert.throws(() => Schema.fromJsonSync(createSchemaJson(invalidCompositeDuplicateUnits), context), ECObjectsError, `The Format TestSchema.TestFormat has duplicate units, 'Formats.MILE'.`);
@@ -708,22 +710,22 @@ describe("Format", () => {
           units: [
             {
               name: "Formats.MILE",
-              label: "mile(s)"
+              label: "mile(s)",
             },
             {
               name: "Formats.YRD",
-              label: "yrd(s)"
+              label: "yrd(s)",
             },
             {
               name: "Formats.FT",
-              label: "'"
+              label: "'",
             },
             {
               name: "Formats.IN",
-              label: "\""
+              label: "\"",
             },
-          ]
-        }
+          ],
+        },
       };
       function validateTestFormat(testFormat: Format | undefined) {
         assert.isDefined(testFormat);
@@ -746,13 +748,13 @@ describe("Format", () => {
         expect(testFormat!.units![3][1]).eq("\"");
       }
       it("sync - ", () => {
-        const schema = Schema.fromJsonSync(createSchemaJson(validComposite), context)
+        const schema = Schema.fromJsonSync(createSchemaJson(validComposite), context);
         assert.isDefined(schema);
         const testFormat = schema.getItemSync<Format>("TestFormat");
         validateTestFormat(testFormat);
       });
       it("async - ", async () => {
-        const schema = await Schema.fromJson(createSchemaJson(validComposite), context)
+        const schema = await Schema.fromJson(createSchemaJson(validComposite), context);
         assert.isDefined(schema);
         const testFormat = await schema.getItem<Format>("TestFormat");
         validateTestFormat(testFormat);
@@ -782,7 +784,7 @@ describe("Format", () => {
               label: "mile(s)",
             },
           ],
-        }
+        },
       };
       const ecSchema = Schema.fromJsonSync(createSchemaJson(testFormatJson), context);
       assert.isDefined(ecSchema);

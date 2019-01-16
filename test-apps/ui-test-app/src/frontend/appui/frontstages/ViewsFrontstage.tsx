@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
@@ -23,7 +23,6 @@ import {
   ToolButton,
   ToolWidget,
   ZoneState,
-  WidgetState,
   NavigationWidget,
   ContentLayoutDef,
   ContentLayoutProps,
@@ -37,20 +36,21 @@ import {
   Zone,
   Widget,
   GroupItemDef,
+  BaseItemState,
   CoreTools,
   SyncUiEventId,
-  BaseItemState,
+  WidgetState,
   ContentViewManager,
+  BooleanSyncUiListener,
 } from "@bentley/ui-framework";
 
-import Toolbar from "@bentley/ui-ninezone/lib/toolbar/Toolbar";
-import Direction from "@bentley/ui-ninezone/lib/utilities/Direction";
+import { Direction, Toolbar } from "@bentley/ui-ninezone";
 
 import { AppUi } from "../AppUi";
 import { TestRadialMenu } from "../dialogs/TestRadialMenu";
 import { AppTools } from "../../tools/ToolSpecifications";
 
-import { SampleAppIModelApp } from "../../../frontend/index";
+import { SampleAppIModelApp, SampleAppUiActionId } from "../../../frontend/index";
 
 // cSpell:Ignore contentviews statusbars
 import { IModelViewportControl } from "../contentviews/IModelViewport";
@@ -62,7 +62,6 @@ import { BreadcrumbDemoWidgetControl } from "../widgets/BreadcrumbDemoWidget";
 import { FeedbackDemoWidget } from "../widgets/FeedbackWidget";
 import { UnifiedSelectionPropertyGridWidgetControl } from "../widgets/UnifiedSelectionPropertyGridWidget";
 import { UnifiedSelectionTableWidgetControl } from "../widgets/UnifiedSelectionTableWidget";
-// import SvgPath from "@bentley/ui-ninezone/lib/base/SvgPath";
 
 export class ViewsFrontstage extends FrontstageProvider {
 
@@ -94,7 +93,6 @@ export class ViewsFrontstage extends FrontstageProvider {
       <Frontstage id="ViewsFrontstage"
         defaultToolId="Select" defaultLayout={contentLayoutDef} contentGroup={myContentGroup}
         isInFooterMode={true} applicationData={{ key: "value" }}
-
         topLeft={
           <Zone
             widgets={[
@@ -119,21 +117,19 @@ export class ViewsFrontstage extends FrontstageProvider {
         centerLeft={
           <Zone defaultState={ZoneState.Minimized} allowsMerging={true}
             widgets={[
-              <Widget defaultState={WidgetState.Open} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.FeedbackDemo" control={FeedbackDemoWidget} />,
-              <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.BreadcrumbDemo" control={BreadcrumbDemoWidgetControl}
-                stateSyncIds={[SyncUiEventId.ActiveContentChanged]}
-                stateFunc={(currentState: Readonly<BaseItemState>): BaseItemState => {
-                  const returnState: BaseItemState = { ...currentState };
-                  const activeContentControl = ContentViewManager.getActiveContentControl();
-                  if (activeContentControl && activeContentControl.viewport && ("BisCore:SheetViewDefinition" !== activeContentControl.viewport.view.classFullName))
-                    returnState.isVisible = true;
-                  else
-                    returnState.isVisible = false;
-                  return returnState;
-                }}
+              <Widget defaultState={WidgetState.Closed} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.FeedbackDemo" control={FeedbackDemoWidget}
+                syncEventIds={[SampleAppUiActionId.setTestProperty]}
+                stateFunc={(): WidgetState => SampleAppIModelApp.getTestProperty() !== "HIDE" ? WidgetState.Closed : WidgetState.Hidden}
               />,
-              <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.ModelSelector" control={ModelSelectorWidgetControl}
-                applicationData={{ iModelConnection: this.iModelConnection }} />,
+              <Widget defaultState={WidgetState.Closed} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.BreadcrumbDemo" control={BreadcrumbDemoWidgetControl}
+                syncEventIds={[SampleAppUiActionId.setTestProperty]}
+                stateFunc={(): WidgetState => SampleAppIModelApp.getTestProperty() !== "HIDE" ? WidgetState.Closed : WidgetState.Hidden}
+              />,
+              <Widget defaultState={WidgetState.Closed} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.ModelSelector" control={ModelSelectorWidgetControl}
+                applicationData={{ iModelConnection: this.iModelConnection }} fillZone={true}
+                syncEventIds={[SampleAppUiActionId.setTestProperty]}
+                stateFunc={(): WidgetState => SampleAppIModelApp.getTestProperty() !== "HIDE" ? WidgetState.Closed : WidgetState.Hidden}
+              />,
             ]}
           />
         }
@@ -141,7 +137,7 @@ export class ViewsFrontstage extends FrontstageProvider {
           <Zone defaultState={ZoneState.Minimized} allowsMerging={true}
             widgets={[
               <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.NavigationTree" control={NavigationTreeWidgetControl}
-                applicationData={{ iModelConnection: this.iModelConnection, rulesetId: "Items" }} />,
+                applicationData={{ iModelConnection: this.iModelConnection, rulesetId: "Items" }} fillZone={true} />,
             ]}
           />
         }
@@ -149,7 +145,7 @@ export class ViewsFrontstage extends FrontstageProvider {
           <Zone defaultState={ZoneState.Minimized} allowsMerging={true}
             widgets={[
               <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.UnifiedSelectionTable" control={UnifiedSelectionTableWidgetControl}
-                applicationData={{ iModelConnection: this.iModelConnection, rulesetId: "Items" }} />,
+                applicationData={{ iModelConnection: this.iModelConnection, rulesetId: "Items" }} fillZone={true} />,
             ]}
           />
         }
@@ -163,10 +159,18 @@ export class ViewsFrontstage extends FrontstageProvider {
         bottomRight={
           <Zone defaultState={ZoneState.Minimized} allowsMerging={true}
             widgets={[
-              <Widget defaultState={WidgetState.Open} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.UnifiedSelectPropertyGrid"
-                control={UnifiedSelectionPropertyGridWidgetControl}
-                applicationData={{ iModelConnection: this.iModelConnection, rulesetId: "Items" }} />,
-              <Widget id="VerticalPropertyGrid" defaultState={WidgetState.Off} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.VerticalPropertyGrid" control={VerticalPropertyGridWidgetControl} />,
+              <Widget defaultState={WidgetState.Closed} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.UnifiedSelectPropertyGrid"
+                control={UnifiedSelectionPropertyGridWidgetControl} fillZone={true}
+                applicationData={{ iModelConnection: this.iModelConnection, rulesetId: "Items" }}
+                syncEventIds={[SyncUiEventId.SelectionSetChanged]}
+                stateFunc={(): WidgetState => {
+                  const activeContentControl = ContentViewManager.getActiveContentControl();
+                  if (activeContentControl && activeContentControl.viewport && (activeContentControl.viewport.view.iModel.selectionSet.size > 0))
+                    return WidgetState.Open;
+                  return WidgetState.Closed;
+                }}
+              />,
+              <Widget id="VerticalPropertyGrid" defaultState={WidgetState.Hidden} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.VerticalPropertyGrid" control={VerticalPropertyGridWidgetControl} />,
             ]}
           />
         }
@@ -197,7 +201,7 @@ class FrontstageToolWidget extends React.Component {
     let isCancelled = false;
     let progress = 0;
 
-    const details = new ActivityMessageDetails(true, true, true);
+    const details = new ActivityMessageDetails(true, true, true, true);
     details.onActivityCancelled = () => {
       isCancelled = true;
     };
@@ -269,23 +273,54 @@ class FrontstageToolWidget extends React.Component {
     );
   }
 
+  /** example that hides the button if active content is not a 3d View */
+  private _anotherGroupStateFunc = (currentState: Readonly<BaseItemState>): BaseItemState => {
+    const returnState: BaseItemState = { ...currentState };
+    returnState.isVisible = ContentViewManager.isContent3dView(ContentViewManager.getActiveContentControl());
+    return returnState;
+  }
+
+  /** example that disables the button if active content is not a 3d view */
+  private _measureStateFunc = (currentState: Readonly<BaseItemState>): BaseItemState => {
+    const returnState: BaseItemState = { ...currentState };
+    returnState.isEnabled = ContentViewManager.isContent3dView(ContentViewManager.getActiveContentControl());
+    return returnState;
+  }
+
+  private executeMeasureByPoints() {
+    // first load the plugin
+    IModelApp.tools.run("Plugin", ["MeasurePoints.js"]);
+    // then wait one second and run the newly installed Plugin tool.
+    BeDuration.wait(1000).then(() => { IModelApp.tools.run("Measure.Points"); })
+      .catch();
+  }
+
   private _horizontalToolbar =
     <Toolbar
       expandsTo={Direction.Bottom}
       items={
         <>
           <ActionItemButton actionItem={CoreTools.selectElementCommand} />
-          <ActionItemButton actionItem={AppTools.tool1} />
-          <ActionItemButton actionItem={AppTools.tool2} />
-          <ActionItemButton actionItem={AppTools.measurePoints} />
+          <ToolButton toolId="Measure.Points" iconSpec="icon-measure-distance" labelKey="SampleApp:tools.Measure.Points.flyover"
+            execute={this.executeMeasureByPoints} stateSyncIds={[SyncUiEventId.ActiveContentChanged]} stateFunc={this._measureStateFunc} />
+          <BooleanSyncUiListener eventIds={[SampleAppUiActionId.setTestProperty]} boolFunc={(): boolean => SampleAppIModelApp.getTestProperty() !== "HIDE"}>
+            {(enabled: boolean, otherProps: any) => <ActionItemButton actionItem={AppTools.tool2} isEnabled={enabled} {...otherProps} />}
+          </BooleanSyncUiListener>
           <ActionItemButton actionItem={CoreTools.analysisAnimationCommand} />
-          <GroupButton
-            labelKey="SampleApp:buttons.toolGroup"
-            iconSpec="icon-placeholder"
-            items={[AppTools.setLengthFormatMetricCommand, AppTools.setLengthFormatImperialCommand]}
-            direction={Direction.Bottom}
-            itemsInColumn={4}
-          />
+          <ActionItemButton actionItem={AppTools.toggleHideShowItemsCommand} />
+          <BooleanSyncUiListener eventIds={[SampleAppUiActionId.setTestProperty]} boolFunc={(): boolean => SampleAppIModelApp.getTestProperty() !== "HIDE"}>
+            {(isVisible: boolean, otherProps: any) => {
+              return isVisible ?
+                <GroupButton
+                  labelKey="SampleApp:buttons.toolGroup"
+                  iconSpec="icon-placeholder"
+                  items={[AppTools.setLengthFormatMetricCommand, AppTools.setLengthFormatImperialCommand, AppTools.toggleLengthFormatCommand]}
+                  direction={Direction.Bottom}
+                  itemsInColumn={4}
+                  {...otherProps}
+                /> : null;
+            }}
+          </BooleanSyncUiListener>
         </>
       }
     />;
@@ -297,8 +332,8 @@ class FrontstageToolWidget extends React.Component {
         <>
           <ActionItemButton actionItem={AppTools.verticalPropertyGridOpenCommand} />
           <ActionItemButton actionItem={AppTools.verticalPropertyGridOffCommand} />
-          <ToolButton toolId="tool3" iconSpec="icon-placeholder" labelKey="SampleApp:buttons.tool3" isEnabled={false} execute={this._tool3} />
-          <ToolButton toolId="tool4" iconSpec="icon-placeholder" labelKey="SampleApp:buttons.tool4" isVisible={false} execute={this._tool4} />
+          <ToolButton toolId="tool3" iconSpec="icon-placeholder" labelKey="SampleApp:buttons.tool3" execute={this._tool3} />
+          <ToolButton toolId="tool4" iconSpec="icon-placeholder" labelKey="SampleApp:buttons.tool4" execute={this._tool4} />
           <ToolButton toolId="item5" iconSpec="icon-placeholder" labelKey="SampleApp:buttons.outputMessage" execute={() => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Test"))} />
           <ToolButton toolId="openRadial" iconSpec="icon-placeholder" labelKey="SampleApp:buttons.openRadial" execute={() => ModalDialogManager.openModalDialog(this.radialMenu())} />
           <GroupButton
@@ -306,6 +341,7 @@ class FrontstageToolWidget extends React.Component {
             iconSpec="icon-placeholder"
             items={[AppTools.tool1, AppTools.tool2, this._groupItemDef]}
             direction={Direction.Right}
+            stateSyncIds={[SyncUiEventId.ActiveContentChanged]} stateFunc={this._anotherGroupStateFunc}
           />
         </>
       }

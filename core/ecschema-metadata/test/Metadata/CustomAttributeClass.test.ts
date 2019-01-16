@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
@@ -10,7 +10,7 @@ import { Schema } from "../../src/Metadata/Schema";
 import { ECObjectsError } from "../../src/Exception";
 import { CustomAttributeClass } from "../../src/Metadata/CustomAttributeClass";
 import { ECClassModifier } from "../../src/ECObjects";
-import { CustomAttributeContainerType } from "../../src";
+import { CustomAttributeContainerType } from "../../src/ECObjects";
 
 describe("CustomAttributeClass", () => {
   describe("deserialization", () => {

@@ -2,6 +2,330 @@
   "name": "@bentley/imodeljs-frontend",
   "entries": [
     {
+      "version": "0.187.0",
+      "tag": "@bentley/imodeljs-frontend_v0.187.0",
+      "date": "Tue, 15 Jan 2019 15:18:59 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.186.0",
+      "tag": "@bentley/imodeljs-frontend_v0.186.0",
+      "date": "Mon, 14 Jan 2019 23:09:10 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix visible seams between map tiles."
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.185.0",
+      "tag": "@bentley/imodeljs-frontend_v0.185.0",
+      "date": "Fri, 11 Jan 2019 18:29:00 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Optimize performance of schedule animation."
+          },
+          {
+            "comment": "Use QuantityType.Coordinate for measure distance start/end points."
+          },
+          {
+            "comment": "Add QuantityTypes LatLong and Coordinate."
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.184.0",
+      "tag": "@bentley/imodeljs-frontend_v0.184.0",
+      "date": "Thu, 10 Jan 2019 22:46:17 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add support for general 3d tilesets"
+          },
+          {
+            "comment": "Fix drag select decorator when cursor moves out of view. Doc fixes."
+          },
+          {
+            "comment": "Support region bounding volumes"
+          },
+          {
+            "comment": "Fix IModelJsLoader to ensure react loaded before bwc."
+          },
+          {
+            "comment": "MeasureLocationTool show lat/long and altitude."
+          },
+          {
+            "comment": "Make raster text locate behave better."
+          },
+          {
+            "comment": "Removed default OIDC scopes. All applications must now explicitly pass the required scopes. "
+          },
+          {
+            "comment": "Can now await result from QuantityFormatter. Report delta relative to ACS when context lock enabled. Cleanup \"Measure.Points\" plug-in example until real measure tools are available."
+          },
+          {
+            "comment": "Quantity formatter now allows async method to get FormatterSpec that can be used to format quantities."
+          },
+          {
+            "comment": "QuantityFormatter.formatQuantity is now the only method to format quantities."
+          },
+          {
+            "comment": "Rename formatQuantityWithSpec to formatQuantity"
+          },
+          {
+            "comment": "Added ToolAdmin method for undo/undo last data button and call from Ctrl+Z."
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.183.0",
+      "tag": "@bentley/imodeljs-frontend_v0.183.0",
+      "date": "Mon, 07 Jan 2019 21:49:21 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add ambient occlusion to the display frontend system."
+          },
+          {
+            "comment": "Account for global origin when reporting coordinates."
+          },
+          {
+            "comment": "Add measure distance tool, will be moved to plug-in later."
+          },
+          {
+            "comment": "Fixed unnecessary reload during OIDC redirect callback."
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.182.0",
+      "tag": "@bentley/imodeljs-frontend_v0.182.0",
+      "date": "Mon, 07 Jan 2019 13:31:34 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "When the iModel covers a large enough area, get the corners of background map tiles using Geographic reprojection"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.181.0",
+      "tag": "@bentley/imodeljs-frontend_v0.181.0",
+      "date": "Fri, 04 Jan 2019 13:02:40 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix incorrect display of point strings containing duplicate points."
+          },
+          {
+            "comment": "Optimize performance when reading depth buffer."
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.180.0",
+      "tag": "@bentley/imodeljs-frontend_v0.180.0",
+      "date": "Wed, 02 Jan 2019 15:18:23 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Allow the maximum number of active tile requests to be modified at run-time."
+          },
+          {
+            "comment": "Fix excessive memory consumption by polyline graphics."
+          },
+          {
+            "comment": "merge"
+          },
+          {
+            "comment": "Enable path interpolation"
+          },
+          {
+            "comment": "Enable schedule animation"
+          },
+          {
+            "comment": "if view delta is too large or small, set it to max/min rather than aborting viewing operations."
+          },
+          {
+            "comment": "Fix transform order when pushing branch."
+          },
+          {
+            "comment": "Implement quaternion interpolation for Synchro schedule animation"
+          },
+          {
+            "comment": "remove trash files"
+          },
+          {
+            "comment": "Add batch feature overrides to optimize schedule animation."
+          },
+          {
+            "comment": "Prioritize tile requests based on tile type and depth."
+          },
+          {
+            "comment": "Improve performance by limiting the number of simultaneously-active tile requests."
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.179.0",
+      "tag": "@bentley/imodeljs-frontend_v0.179.0",
+      "date": "Wed, 19 Dec 2018 18:26:14 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added showDialogInitially support to ActivityMessageDetails"
+          },
+          {
+            "comment": "View tools enhancement to use background map plane for depth point when geometry isn't identified."
+          },
+          {
+            "comment": "Fix regression in the display of reality models induced by switch to OIDC for access token."
+          },
+          {
+            "comment": "Support Pre animation tiles"
+          },
+          {
+            "comment": "Add support for Syncro schedules (transform disabled)"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.178.0",
+      "tag": "@bentley/imodeljs-frontend_v0.178.0",
+      "date": "Thu, 13 Dec 2018 22:06:10 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix view becoming black in some circumstnces when locate cursor exits viewport."
+          },
+          {
+            "comment": "Only make createGraphicBuilder available to DecorationContext. DynamicsContext/SceneContext require a scene graphic."
+          },
+          {
+            "comment": "Added StringGetter support to ItemDefBase, ItemProps & ToolButton. Added IModelApp.i18n checks to Tool for unit tests."
+          },
+          {
+            "comment": "Fix failure to locate elements if their transparency is overridden."
+          },
+          {
+            "comment": "Added tool prompts. Fix dynamics changing locate circle. Hide touch cursor on mouse motion."
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.177.0",
+      "tag": "@bentley/imodeljs-frontend_v0.177.0",
+      "date": "Wed, 12 Dec 2018 17:21:31 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added TwoWayViewportSync class to connect two Viewports so that changes to one are reflected in the other."
+          },
+          {
+            "comment": "Renamed ViewStateData to ViewStateProps and ViewState.createFromStateData to ViewState.createFromProps."
+          },
+          {
+            "comment": "turn off locate circle when mouse leaves a view"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.176.0",
+      "tag": "@bentley/imodeljs-frontend_v0.176.0",
+      "date": "Mon, 10 Dec 2018 21:19:45 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Move cursors and sprites to separate directories"
+          },
+          {
+            "comment": "Fix bug in which the frustum of a spatial view was always expanded to include the ground plane even if the ground plane was not displayed."
+          },
+          {
+            "comment": "Ignore 2d models in model selectors."
+          },
+          {
+            "comment": "Add tracking of active + pending tile requests."
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.175.0",
+      "tag": "@bentley/imodeljs-frontend_v0.175.0",
+      "date": "Mon, 10 Dec 2018 17:08:55 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "route map tiles over https"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.174.0",
+      "tag": "@bentley/imodeljs-frontend_v0.174.0",
+      "date": "Mon, 10 Dec 2018 13:24:09 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Touch tap with AccuSnap enabled now brings up a decoration planchette to help choose the snap point."
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.173.0",
+      "tag": "@bentley/imodeljs-frontend_v0.173.0",
+      "date": "Thu, 06 Dec 2018 22:03:29 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "map api cors fix"
+          },
+          {
+            "comment": "Fix failure to display Bing maps logo."
+          },
+          {
+            "comment": "Fix \"maximum window\" error when viewing large drawings."
+          },
+          {
+            "comment": "enable tslint rules for asyncs"
+          },
+          {
+            "comment": "T"
+          },
+          {
+            "comment": "Custom imodelJs noDirectImport lint rule implemented, noDuplicateImport lint rule turned on."
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.172.0",
+      "tag": "@bentley/imodeljs-frontend_v0.172.0",
+      "date": "Tue, 04 Dec 2018 17:24:39 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Changed index file name to match package name. Change imports to use other packages' index file."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.171.0",
       "tag": "@bentley/imodeljs-frontend_v0.171.0",
       "date": "Mon, 03 Dec 2018 18:52:58 GMT",

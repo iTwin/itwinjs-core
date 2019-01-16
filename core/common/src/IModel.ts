@@ -1,15 +1,15 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module iModels */
 
-import { Id64String, Id64, GuidString, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
-import { Point3d, XYZProps, Range3dProps, YawPitchRollProps, YawPitchRollAngles, Transform, XYAndZ, Vector3d, Matrix3d, AxisOrder } from "@bentley/geometry-core";
-import { AxisAlignedBox3d } from "./geometry/Primitives";
-import { ThumbnailProps } from "./Thumbnail";
-import { IModelError } from "./IModelError";
+import { GuidString, Id64, Id64String, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
+import { AxisOrder, Matrix3d, Point3d, Range3dProps, Transform, Vector3d, XYAndZ, XYZProps, YawPitchRollAngles, YawPitchRollProps } from "@bentley/geometry-core";
 import { Cartographic } from "./geometry/Cartographic";
+import { AxisAlignedBox3d } from "./geometry/Primitives";
+import { IModelError } from "./IModelError";
+import { ThumbnailProps } from "./Thumbnail";
 
 /** A token that identifies a specific instance of an iModel to be operated on */
 export class IModelToken {
@@ -33,7 +33,7 @@ export class IModelToken {
 export interface EcefLocationProps {
   /** The Origin of an iModel on the earth in ECEF coordinates */
   origin: XYZProps;
-  /** The [orientation](https://en.wikipedia.org/wiki/Geographic_coordinate_conversion) of an iModel on the earth. See */
+  /** The [orientation](https://en.wikipedia.org/wiki/Geographic_coordinate_conversion) of an iModel on the earth. */
   orientation: YawPitchRollProps;
 }
 

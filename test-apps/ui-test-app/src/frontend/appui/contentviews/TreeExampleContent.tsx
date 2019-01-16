@@ -1,12 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 
-import { ConfigurableUiManager } from "@bentley/ui-framework";
-import { ConfigurableCreateInfo } from "@bentley/ui-framework";
-import { ContentControl } from "@bentley/ui-framework";
+import { ConfigurableUiManager, ConfigurableCreateInfo, ContentControl } from "@bentley/ui-framework";
 import {
   SelectionMode, DelayLoadedTreeNodeItem,
   SimpleTreeDataProvider, SimpleTreeDataProviderHierarchy,
@@ -93,7 +91,7 @@ class TreeExampleContent extends React.Component<{}, TreeExampleState> {
   }
 
   private _onCellUpdated = async (args: TreeCellUpdatedArgs): Promise<boolean> => {
-    const nodeItem: TreeNodeItem = args.node.payload;
+    const nodeItem: TreeNodeItem = args.node.payload!;
     this.state.dataProvider.updateLabel(nodeItem, args.newValue);
     return true;
   }
@@ -109,7 +107,7 @@ class TreeExampleContent extends React.Component<{}, TreeExampleState> {
             <option value={SelectionMode.Extended} > Extended </option>
           </select>
         </div>
-        <div style={{ flex: "1", height: "100%" }}>
+        <div style={{ flex: "1", height: "calc(100% - 22px)" }}>
           <Tree dataProvider={this.state.dataProvider} selectionMode={this.state.selectionMode} onCellEditing={this._onCellEditing} onCellUpdated={this._onCellUpdated} />
         </div>
       </div >

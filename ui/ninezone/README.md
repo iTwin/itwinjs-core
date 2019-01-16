@@ -1,6 +1,6 @@
 # @bentley/ui-ninezone
 
-Copyright © 2018 Bentley Systems, Incorporated. All rights reserved.
+Copyright © 2019 Bentley Systems, Incorporated. All rights reserved.
 
 ## Description
 
@@ -21,7 +21,7 @@ npm install @bentley/ui-ninezone
 ### Basic Usage
 
 ```javascript
-import BackButton from "@bentley/ui-ninezone/lib/components/buttons/Back";
+import BackButton from "@bentley/ui-ninezone/lib/ui-ninezone/components/buttons/Back";
 
 <BackButton />
 ```

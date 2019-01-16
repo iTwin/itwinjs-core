@@ -1,9 +1,9 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { StringTypeConverter } from "../..//index";
+import { StringTypeConverter } from "../../ui-components";
 import TestUtils from "../TestUtils";
 
 describe("StringTypeConverter", () => {
@@ -19,18 +19,18 @@ describe("StringTypeConverter", () => {
   });
 
   describe("convertToString", () => {
-    it("returns same string", async () => {
-      expect(await converter.convertToString("ABCdefGhIjK!@#$%^&*")).to.equal("ABCdefGhIjK!@#$%^&*");
+    it("returns same string", () => {
+      expect(converter.convertToString("ABCdefGhIjK!@#$%^&*")).to.equal("ABCdefGhIjK!@#$%^&*");
     });
 
-    it("returns empty string if given string is undefined", async () => {
-      expect(await converter.convertToString(undefined)).to.equal("");
+    it("returns empty string if given string is undefined", () => {
+      expect(converter.convertToString(undefined)).to.equal("");
     });
   });
 
   describe("convertFromString", () => {
-    it("returns same string", async () => {
-      expect(await converter.convertFromString("ABCdefGhIjK!@#$%^&*")).to.equal("ABCdefGhIjK!@#$%^&*");
+    it("returns same string", () => {
+      expect(converter.convertFromString("ABCdefGhIjK!@#$%^&*")).to.equal("ABCdefGhIjK!@#$%^&*");
     });
   });
 

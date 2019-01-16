@@ -1,10 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Rendering */
 
-import { Id64, Id64String, JsonUtils, assert, IndexMap, IndexedValue, Comparable, compare, compareNumbers, compareStrings, IDisposable } from "@bentley/bentleyjs-core";
+import { Id64, Id64String, JsonUtils, assert, IndexMap, IndexedValue, compareNumbers, compareStrings, IDisposable } from "@bentley/bentleyjs-core";
 import { ColorDef, ColorDefProps, ColorByName } from "./ColorDef";
 import { Light } from "./Lighting";
 import { IModel } from "./IModel";
@@ -103,18 +103,15 @@ export class PolylineFlags {
 export class PolylineData {
   public vertIndices: number[];
   public numIndices: number;
-  public startDistance: number;
-  public constructor(vertIndices: number[] = [], numIndices = 0, startDistance = 0) {
+  public constructor(vertIndices: number[] = [], numIndices = 0) {
     this.vertIndices = vertIndices;
     this.numIndices = numIndices;
-    this.startDistance = startDistance;
   }
   public get isValid(): boolean { return 0 < this.numIndices; }
-  public reset(): void { this.numIndices = 0; this.vertIndices = []; this.startDistance = 0; }
+  public reset(): void { this.numIndices = 0; this.vertIndices = []; }
   public init(polyline: MeshPolyline) {
     this.numIndices = polyline.indices.length;
     this.vertIndices = 0 < this.numIndices ? polyline.indices : [];
-    this.startDistance = polyline.startDistance;
     return this.isValid;
   }
 }
@@ -122,10 +119,8 @@ export class PolylineData {
 /** @hidden */
 export class MeshPolyline {
   public readonly indices: number[];
-  public readonly startDistance: number;
-  public constructor(startDistance: number = 0, indices: number[] = []) {
+  public constructor(indices: number[] = []) {
     this.indices = indices.slice();
-    this.startDistance = startDistance;
   }
   public addIndex(index: number) {
     const { indices } = this;
@@ -142,7 +137,8 @@ export class MeshPolylineList extends Array<MeshPolyline> { constructor(...args:
 export class MeshEdge {
   public indices = [0, 0];
   public constructor(index0?: number, index1?: number) {
-    if (undefined === index0 || undefined === index1) { return; }
+    if (undefined === index0 || undefined === index1)
+      return;
     if (index0 < index1) {
       this.indices[0] = index0;
       this.indices[1] = index1;
@@ -217,7 +213,7 @@ export class PolylineEdgeArgs {
  * @see [[RenderSystem]] for functions used to create RenderTextures.
  */
 export abstract class RenderTexture implements IDisposable {
-  /** A string uniquely identifying this texture within the context of an [[IModelConnection]]. Typically this is the element ID of the corresponding Texture element in the [[IModelDb]].
+  /** A string uniquely identifying this texture within the context of an [[IModelConnection]]. Typically this is the element Id of the corresponding Texture element in the [[IModelDb]].
    * Textures created on the front-end generally have no key.
    */
   public readonly key: string | undefined;
@@ -264,10 +260,10 @@ export namespace RenderTexture {
 
   /** Parameters used to construct a [[RenderTexture]]. */
   export class Params {
-    /** A string uniquely identifying this texture within the context of an [[IModelConnection]]. Typically this is the element ID of the corresponding Texture element in the [[IModelDb]].
+    /** A string uniquely identifying this texture within the context of an [[IModelConnection]]. Typically this is the element Id of the corresponding Texture element in the [[IModelDb]].
      * Textures created on the front-end generally have no key.
      */
-    public readonly key?: string; // The ID of a persistent texture
+    public readonly key?: string; // The Id of a persistent texture
     /** Indicates the type of texture. */
     public readonly type: Type;
     /** Indicates that some object is managing the lifetime of this texture and will take care of calling its dispose function appropriately.
@@ -292,7 +288,7 @@ export namespace RenderTexture {
 
 /** Represents a material which can be applied to a surface to control aspects of its appearance such as color, reflectivity, texture, and so on. */
 export abstract class RenderMaterial {
-  /** If the material originated from a Material element in the [[IModelDb]], the ID of that element. */
+  /** If the material originated from a Material element in the [[IModelDb]], the Id of that element. */
   public readonly key?: string;
   /** Describes how to map an image to a surface to which this material is applied. */
   public readonly textureMapping?: TextureMapping;
@@ -309,7 +305,7 @@ export abstract class RenderMaterial {
 export namespace RenderMaterial {
   /** Parameters used to construct a [[RenderMaterial]] */
   export class Params {
-    /** If the material originates from a Material element in the [[IModelDb]], the ID of that element. */
+    /** If the material originates from a Material element in the [[IModelDb]], the Id of that element. */
     public key?: string;
     public diffuseColor?: ColorDef;
     public specularColor?: ColorDef;
@@ -517,7 +513,7 @@ export class ViewFlags {
   public constructions: boolean = false;
   /** Draw all graphics in a single color */
   public monochrome: boolean = false;
-  /** Ignore geometry maps */
+  /** @hidden unused Ignore geometry maps */
   public noGeometryMap: boolean = false;
   /** Display background map */
   public backgroundMap: boolean = false;
@@ -525,6 +521,8 @@ export class ViewFlags {
   public hLineMaterialColors: boolean = false;
   /** @hidden 0=none, 1=generate mask, 2=use mask */
   public edgeMask: number = 0;
+  /** Controls whether ambient occlusion is used. */
+  public ambientOcclusion: boolean = false;
 
   public clone(out?: ViewFlags): ViewFlags { return ViewFlags.createFrom(this, out); }
   public static createFrom(other?: ViewFlags, out?: ViewFlags): ViewFlags {
@@ -555,6 +553,7 @@ export class ViewFlags {
       val.hLineMaterialColors = other.hLineMaterialColors;
       val.backgroundMap = other.backgroundMap;
       val.edgeMask = other.edgeMask;
+      val.ambientOcclusion = other.ambientOcclusion;
     }
     return val;
   }
@@ -596,6 +595,7 @@ export class ViewFlags {
     if (this.monochrome) out.monochrome = true;
     if (this.backgroundMap) out.backgroundMap = true;
     if (this.edgeMask !== 0) out.edgeMask = this.edgeMask;
+    if (this.ambientOcclusion) out.ambientOcclusion = true;
 
     out.renderMode = this.renderMode;
     return out;
@@ -629,6 +629,7 @@ export class ViewFlags {
     val.edgeMask = JsonUtils.asInt(json.edgeMask);
     val.hLineMaterialColors = JsonUtils.asBool(json.hlMatColors);
     val.backgroundMap = JsonUtils.asBool(json.backgroundMap);
+    val.ambientOcclusion = JsonUtils.asBool(json.ambientOcclusion);
 
     const renderModeValue = JsonUtils.asInt(json.renderMode);
     if (renderModeValue < RenderMode.HiddenLine)
@@ -666,7 +667,8 @@ export class ViewFlags {
       && this.noGeometryMap === other.noGeometryMap
       && this.hLineMaterialColors === other.hLineMaterialColors
       && this.backgroundMap === other.backgroundMap
-      && this.edgeMask === other.edgeMask;
+      && this.edgeMask === other.edgeMask
+      && this.ambientOcclusion === other.ambientOcclusion;
   }
 }
 
@@ -911,6 +913,75 @@ export namespace FrustumPlanes {
     const plane = ClipPlane.createNormalAndDistance(normal, normal.dotProduct(points[i0]) - expandPlaneDistance);
     if (undefined !== plane) {
       planes.push(plane);
+    }
+  }
+}
+
+/** Namespace containing types controlling how ambient occlusion should be drawn. */
+export namespace AmbientOcclusion {
+  /** Describes the properties with which ambient occlusion should be drawn. These properties correspond to a horizon-based ambient occlusion approach. */
+  export interface Props {
+    /** If defined, represents an angle in radians. If the dot product between the normal of the sample and the vector to the camera is less than this value, sampling stops in the current direction. This is used to remove shadows from near planar edges. If undefined, the bias defaults to 0.25. */
+    readonly bias?: number;
+    /** If defined, if the distance in linear depth from the current sample to first sample is greater than this value, sampling stops in the current direction. If undefined, the zLengthCap defaults to 0.0025.  The full range of linear depth is 0 to 1. */
+    readonly zLengthCap?: number;
+    /** If defined, raise the final ambient occlusion to the power of this value. Larger values make the ambient shadows darker. If undefined, the intensity defaults to 2.0. */
+    readonly intensity?: number;
+    /** If defined, indicates the distance to step toward the next texel sample in the current direction. If undefined, texelStepSize defaults to 1.95. */
+    readonly texelStepSize?: number;
+    /** If defined, blurDelta is used to compute the weight of a Gaussian filter. The equation is exp((-0.5 * blurDelta * blurDelta) / (blurSigma * blurSigma)). If undefined, blurDelta defaults to 1.0. */
+    readonly blurDelta?: number;
+    /** If defined, blurSigma is used to compute the weight of a Gaussian filter. The equation is exp((-0.5 * blurDelta * blurDelta) / (blurSigma * blurSigma)). If undefined, blurSigma defaults to 2.0. */
+    readonly blurSigma?: number;
+    /* If defined, blurTexelStepSize indicates the distance to the next texel for blurring. If undefined, blurTexelStepSize defaults to 1.0. */
+    readonly blurTexelStepSize?: number;
+  }
+
+  /** Describes the symbology with which edges should be drawn. */
+  export class Settings implements Props {
+    private static _defaultBias: number = 0.25;
+    private static _defaultZLengthCap: number = 0.0025;
+    private static _defaultIntensity: number = 2.0;
+    private static _defaultTexelStepSize: number = 1.95;
+    private static _defaultBlurDelta: number = 1.0;
+    private static _defaultBlurSigma: number = 2.0;
+    private static _defaultBlurTexelStepSize: number = 1.0;
+
+    public readonly bias?: number;
+    public readonly zLengthCap?: number;
+    public readonly intensity?: number;
+    public readonly texelStepSize?: number;
+    public readonly blurDelta?: number;
+    public readonly blurSigma?: number;
+    public readonly blurTexelStepSize?: number;
+
+    private constructor(json?: Props) {
+      if (undefined === json)
+        return;
+
+      this.bias = JsonUtils.asDouble(json.bias, Settings._defaultBias);
+      this.zLengthCap = JsonUtils.asDouble(json.zLengthCap, Settings._defaultZLengthCap);
+      this.intensity = JsonUtils.asDouble(json.intensity, Settings._defaultIntensity);
+      this.texelStepSize = JsonUtils.asDouble(json.texelStepSize, Settings._defaultTexelStepSize);
+      this.blurDelta = JsonUtils.asDouble(json.blurDelta, Settings._defaultBlurDelta);
+      this.blurSigma = JsonUtils.asDouble(json.blurSigma, Settings._defaultBlurSigma);
+      this.blurTexelStepSize = JsonUtils.asDouble(json.blurTexelStepSize, Settings._defaultBlurTexelStepSize);
+    }
+
+    public static defaults = new Settings({});
+
+    public static fromJSON(json?: Props): Settings { return undefined !== json ? new Settings(json) : this.defaults; }
+
+    public toJSON(): Props {
+      return {
+        bias: this.bias,
+        zLengthCap: this.zLengthCap,
+        intensity: this.intensity,
+        texelStepSize: this.texelStepSize,
+        blurDelta: this.blurDelta,
+        blurSigma: this.blurSigma,
+        blurTexelStepSize: this.blurTexelStepSize,
+      };
     }
   }
 }
@@ -1846,7 +1917,7 @@ export namespace Hilite {
  *
  * @see [[FeatureSymbology]] for mechanisms for controlling or overriding the symbology of individual features within a [[ViewState]].
  */
-export class Feature implements Comparable<Feature> {
+export class Feature {
   public readonly elementId: string;
   public readonly subCategoryId: string;
   public readonly geometryClass: GeometryClass;
@@ -1907,7 +1978,7 @@ export class FeatureTable extends IndexMap<Feature> {
 
   /** Construct an empty FeatureTable. */
   public constructor(maxFeatures: number, modelId: Id64String = Id64.invalid, type: BatchType = BatchType.Primary) {
-    super(compare, maxFeatures);
+    super((lhs, rhs) => lhs.compare(rhs), maxFeatures);
     this.modelId = modelId;
     this.type = type;
   }
@@ -2102,7 +2173,7 @@ export namespace TextureMapping {
       if (visitor.normal === undefined)
         normal = points.getPoint3dAt(0).crossProductToPoints(points.getPoint3dAt(1), points.getPoint3dAt(2));
       else
-        normal = visitor.normal[0];
+        normal = visitor.normal.atVector3dIndex(0)!;
 
       if (!normal.normalize(normal))
         return undefined;

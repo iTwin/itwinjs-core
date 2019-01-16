@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
@@ -7,7 +7,7 @@ import * as faker from "faker";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { createRandomId } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { Id64String } from "@bentley/bentleyjs-core";
-import { VariableValueTypes } from "@bentley/presentation-common/lib/RulesetVariables";
+import { VariableValueTypes } from "@bentley/presentation-common";
 import { NativePlatformDefinition } from "../NativePlatform";
 import RulesetVariablesManager from "../RulesetVariablesManager";
 

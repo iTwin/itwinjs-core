@@ -1,7 +1,9 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+/* tslint:disable:no-direct-imports */
+
 import { expect } from "chai";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import * as faker from "faker";
@@ -10,8 +12,8 @@ import { createRandomECInstanceNodeKey, createRandomNodePathElement } from "@ben
 import { NodePathElement } from "@bentley/presentation-common";
 import { PageOptions } from "@bentley/ui-components";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import FilteredPresentationTreeDataProvider from "../../tree/FilteredDataProvider";
-import IPresentationTreeDataProvider from "../../tree/IPresentationTreeDataProvider";
+import { FilteredPresentationTreeDataProvider } from "../../tree/FilteredDataProvider";
+import { IPresentationTreeDataProvider } from "../../tree/IPresentationTreeDataProvider";
 import { createTreeNodeItem } from "../../tree/Utils";
 
 describe("FilteredTreeDataProvider", () => {
@@ -80,13 +82,13 @@ describe("FilteredTreeDataProvider", () => {
 
   });
 
-  describe("connection", () => {
+  describe("imodel", () => {
 
-    it("returns connection of the parent data provider", () => {
-      parentProviderMock.setup((x) => x.connection)
+    it("returns imodel of the parent data provider", () => {
+      parentProviderMock.setup((x) => x.imodel)
         .returns(() => imodelMock.object)
         .verifiable();
-      expect(provider.connection).to.eq(imodelMock.object);
+      expect(provider.imodel).to.eq(imodelMock.object);
       parentProviderMock.verifyAll();
     });
 

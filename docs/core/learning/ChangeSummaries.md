@@ -42,7 +42,7 @@ This is achieved by executing ECSQL queries against the [ECDbChange](./ECDbChang
 
 ECSQL | Description
 --- | ---
-`SELECT Summary.Id,ParentWsgId,Description,PushDate,Author FROM ecchange.imodelchange.ChangeSet WHERE WsgId=?` | For the specified Changeset (the WsgId of the Changeset) the ECInstanceId of the corresponding ChangeSummary is returned along with the id of the parent changeset, the description, the date when the changeset was pushed and by who
+`SELECT Summary.Id,ParentWsgId,Description,PushDate,UserCreated FROM ecchange.imodelchange.ChangeSet WHERE WsgId=?` | For the specified Changeset (the WsgId of the Changeset) the ECInstanceId of the corresponding ChangeSummary is returned along with the id of the parent changeset, the description, the date when the changeset was pushed and by who
 `SELECT ChangedInstance.Id, OpCode FROM ecchange.change.InstanceChange WHERE Summary.Id=?` | Returns the Ids of all changed instances in the specified Change Summary, plus the instance change's [ChangeOpCode]($common) (e.g. whether the instance was inserted, updated or deleted)
 
 ### Find out *how* values have changed
@@ -142,10 +142,10 @@ After having extracting Change Summaries for each of the three Changesets the fo
 >
 > `Summary.Id` | `ChangedInstance.Id` | `OpCode`
 > ------------ | -------------------- | -------
-> 1            | 1                    | 1 (Insert)
-> 2            | 1                    | 2 (Update)
-> 2            | 2                    | 1 (Insert)
-> 3            | 1                    | 4 (Delete)
+> 1            | 1                    | Insert
+> 2            | 1                    | Update
+> 2            | 2                    | Insert
+> 3            | 1                    | Delete
 >
 > - `ChangedInstance.Id` is the ECInstanceId of the changed instance, i.e. the changed `Person` instance in this example.
 > - The `OpCode` values refer to the [ChangeOpCode]($common) enumeration as defined in the [ECDbChange](./ECDbChange.ecschema.md) ECSchema.
@@ -156,17 +156,16 @@ After having extracting Change Summaries for each of the three Changesets the fo
 >
 > ```sql
 > SELECT i.ChangedInstance.Id, p.AccessString, i.OpCode FROM change.PropertyValueChange p
->     JOIN change.InstanceChange i USING change.InstanceChangeOwnsPropertyValueChanges
->     WHERE i.Summary.Id=2
+>     JOIN change.InstanceChange i ON p.InstanceChange.Id=i.ECInstanceId WHERE i.Summary.Id=2
 > ```
 >
 > *Result*
 >
 > `ChangedInstance.Id` | `AccessString` | `OpCode`
 > -------------------- | -------------- | -------
-> 1                    | Name           | 2 (Update)
-> 2                    | Name           | 1 (Insert)
-> 2                    | Age            | 1 (Insert)
+> 1                    | Name           | Update
+> 2                    | Name           | Insert
+> 2                    | Age            | Insert
 >
 > The ECSQL returns the property values that have changed in the Change Summary with Id 2. For every property value change, the
 > ECInstanceId of the respective class is returned as well as the OpCode.

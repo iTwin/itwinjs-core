@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as http2 from "http2";
@@ -16,8 +16,7 @@ import { IModelHost } from "@bentley/imodeljs-backend";
 import { TestbedConfig, TestbedIpcMessage } from "../common/TestbedConfig";
 import { TestRpcImpl, TestRpcImpl2, TestRpcImpl3, resetOp8Initializer, TestZeroMajorRpcImpl } from "./TestRpcImpl";
 import { CONSTANTS } from "../common/Testbed";
-import { RpcConfiguration, IModelReadRpcInterface } from "@bentley/imodeljs-common";
-import { HttpServerRequest, HttpServerResponse } from "@bentley/imodeljs-common";
+import { RpcConfiguration, IModelReadRpcInterface, HttpServerRequest, HttpServerResponse } from "@bentley/imodeljs-common";
 import { Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
 import { Config } from "@bentley/imodeljs-clients";
@@ -232,7 +231,7 @@ function setupMobileMock() {
     connection = con;
     con.on("message", (msg) => {
       if (Buffer.isBuffer(msg)) {
-        const copy = new Buffer(msg.length);
+        const copy = Buffer.alloc(msg.length);
         msg.copy(copy);
         mobilegateway.handler(copy.buffer as ArrayBuffer);
       } else if (typeof (msg) === "string") {

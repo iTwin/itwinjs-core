@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Notifications */
@@ -132,8 +132,9 @@ export class ActivityMessageDetails {
    * @param showProgressBar         Indicates whether to show the progress bar in the activity message dialog.
    * @param showPercentInMessage    Indicates whether to show the percentage complete in the activity message text.
    * @param supportsCancellation    Indicates whether to show the Cancel button, giving the user the ability to cancel the operation.
+   * @param showDialogInitially     Indicates whether to show the activity message dialog initially. User can click status bar to open it.
    */
-  public constructor(public showProgressBar: boolean, public showPercentInMessage: boolean, public supportsCancellation: boolean) { }
+  public constructor(public showProgressBar: boolean, public showPercentInMessage: boolean, public supportsCancellation: boolean, public showDialogInitially: boolean = true) { }
 
   /** Called from NotificationAdmin when the user cancels the activity. */
   public onActivityCancelled() { this.wasCancelled = true; }

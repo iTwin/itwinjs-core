@@ -1,7 +1,9 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+/* tslint:disable:no-direct-imports */
+
 import "@bentley/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment";
 import { expect } from "chai";
 import * as faker from "faker";
@@ -11,10 +13,9 @@ import { createRandomECInstanceNodeKey, createRandomECInstanceNode, createRandom
 import { createRandomTreeNodeItem } from "../_helpers/UiComponents";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { Node } from "@bentley/presentation-common";
-import { Presentation } from "@bentley/presentation-frontend";
-import PresentationManager from "@bentley/presentation-frontend/lib/PresentationManager";
+import { Presentation, PresentationManager } from "@bentley/presentation-frontend";
 import { PageOptions } from "@bentley/ui-components";
-import PresentationTreeDataProvider from "../../tree/DataProvider";
+import { PresentationTreeDataProvider } from "../../tree/DataProvider";
 import { pageOptionsUiToPresentation } from "../../tree/Utils";
 
 describe("TreeDataProvider", () => {
@@ -40,10 +41,10 @@ describe("TreeDataProvider", () => {
 
   });
 
-  describe("connection", () => {
+  describe("imodel", () => {
 
-    it("returns connection provider is initialized with", () => {
-      expect(provider.connection).to.eq(imodelMock.object);
+    it("returns imodel provider is initialized with", () => {
+      expect(provider.imodel).to.eq(imodelMock.object);
     });
 
   });

@@ -1,17 +1,16 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { ChangeSetUtilityConfig } from "./ChangeSetUtilityConfig";
 import { HubUtility } from "./HubUtility";
 import { IModelDbHandler } from "./IModelDbHandler";
 import { TestChangesetSequence } from "./TestChangesetSequence";
-import { Id64String, Logger, assert, ActivityLoggingContext } from "@bentley/bentleyjs-core/lib/bentleyjs-core";
-import { IModelDb } from "@bentley/imodeljs-backend/lib/backend";
-import { GeometricElement3dProps, Code } from "@bentley/imodeljs-common/lib/common";
-import { AccessToken } from "@bentley/imodeljs-clients/lib";
-import { YawPitchRollAngles, Point3d, Box, Vector3d } from "@bentley/geometry-core/lib/geometry-core";
-import { GeometryStreamBuilder, GeometryStreamProps } from "@bentley/imodeljs-common/lib/common";
+import { Id64String, Logger, assert, ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { IModelDb } from "@bentley/imodeljs-backend";
+import { GeometricElement3dProps, Code, GeometryStreamBuilder, GeometryStreamProps } from "@bentley/imodeljs-common";
+import { AccessToken } from "@bentley/imodeljs-clients";
+import { YawPitchRollAngles, Point3d, Box, Vector3d } from "@bentley/geometry-core";
 
 const actx = new ActivityLoggingContext("");
 

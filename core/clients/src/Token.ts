@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Authentication */
@@ -8,7 +8,7 @@ import * as xpath from "xpath";
 import { DOMParser } from "xmldom";
 import { UserInfo } from "./UserInfo";
 import { Base64 } from "js-base64";
-import { BentleyError, BentleyStatus } from "@bentley/bentleyjs-core";
+import { BentleyError, BentleyStatus, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 
 export enum IncludePrefix {
   Yes = 0,
@@ -154,8 +154,7 @@ export class AccessToken extends Token {
         throw new BentleyError(BentleyStatus.ERROR, "Invalid saml token");
     }
 
-    // Need to replace the trailing \u0000 - see https://github.com/nodejs/node/issues/4775
-    const samlStr = Base64.atob(extractedStr).replace(/\0$/, "");
+    const samlStr = Base64.decode(extractedStr);
     if (!samlStr)
       throw new BentleyError(BentleyStatus.ERROR, "Invalid saml token");
 
@@ -179,7 +178,7 @@ export class AccessToken extends Token {
     if (!this._samlAssertion)
       throw new BentleyError(BentleyStatus.ERROR, "Cannot convert invalid access token to string");
 
-    const tokenStr: string = Base64.btoa(this._samlAssertion);
+    const tokenStr: string = Base64.encode(this._samlAssertion);
     return (includePrefix === IncludePrefix.Yes) ? AccessToken._samlTokenPrefix + " " + tokenStr : tokenStr;
   }
 
@@ -193,4 +192,13 @@ export class AccessToken extends Token {
     return AccessToken.fromSamlAssertion(jsonObj._samlAssertion);
   }
 
+}
+
+/** Interface to fetch the accessToken for authorization of various API */
+export interface IAccessTokenManager {
+  /** Returns a promise that resolves to the AccessToken if signed in.
+   * The token is refreshed if it's possible and necessary.
+   * Rejects with an appropriate error if the access token cannot be obtained.
+   */
+  getAccessToken(actx: ActivityLoggingContext): Promise<AccessToken>;
 }

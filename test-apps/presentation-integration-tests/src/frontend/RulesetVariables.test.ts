@@ -1,15 +1,15 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as faker from "faker";
 import { initialize, terminate } from "../IntegrationTests";
+// tslint:disable-next-line:no-direct-imports
 import { createRandomId } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { Id64 } from "@bentley/bentleyjs-core";
 import { Ruleset } from "@bentley/presentation-common";
-import { Presentation } from "@bentley/presentation-frontend";
-import RulesetVariablesManager from "@bentley/presentation-frontend/lib/RulesetVariablesManager";
+import { Presentation, RulesetVariablesManager } from "@bentley/presentation-frontend";
 
 describe("Ruleset Variables", async () => {
 

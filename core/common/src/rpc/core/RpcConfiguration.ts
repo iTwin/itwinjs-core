@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module RpcInterface */
@@ -54,6 +54,12 @@ export abstract class RpcConfiguration {
 
   /** Reserved for an application authorization value. */
   public applicationAuthorizationValue: string = "";
+
+  /** Reserved for an application version key. */
+  public applicationVersionKey: string = "";
+
+  /** Reserved for an application version value. */
+  public static applicationVersionValue: string = "";
 
   /** The target interval (in milliseconds) between connection attempts for pending RPC operation requests. */
   public pendingOperationRetryInterval = 10000;

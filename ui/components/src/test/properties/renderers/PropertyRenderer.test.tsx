@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
@@ -7,12 +7,12 @@ import sinon from "sinon";
 import { mount } from "enzyme";
 import * as React from "react";
 import { Orientation } from "@bentley/ui-core";
-import { PropertyRenderer } from "../../../properties/renderers/PropertyRenderer";
+import { PropertyRenderer } from "../../../ui-components/properties/renderers/PropertyRenderer";
 import TestUtils from "../../TestUtils";
-import { PropertyValueRendererManager } from "../../../properties/ValueRendererManager";
-import { PrimitivePropertyRenderer } from "../../../properties/renderers/PrimitivePropertyRenderer";
-import { PropertyRecord } from "../../..";
-import { NonPrimitivePropertyRenderer } from "../../../properties/renderers/NonPrimitivePropertyRenderer";
+import { PropertyValueRendererManager } from "../../../ui-components/properties/ValueRendererManager";
+import { PrimitivePropertyRenderer } from "../../../ui-components/properties/renderers/PrimitivePropertyRenderer";
+import { PropertyRecord } from "../../../ui-components";
+import { NonPrimitivePropertyRenderer } from "../../../ui-components/properties/renderers/NonPrimitivePropertyRenderer";
 
 describe("PropertyRenderer", () => {
   describe("getLabelOffset", () => {
@@ -51,16 +51,14 @@ describe("PropertyRenderer", () => {
     await TestUtils.flushAsyncOperations();
     propertyRenderer.update();
 
-    let valueElementMount = mount(<>{propertyRenderer.find(PrimitivePropertyRenderer).prop("valueElement")}</>);
-    expect(valueElementMount.html().indexOf(originalValue)).to.be.greaterThan(-1);
+    expect(propertyRenderer.find(PrimitivePropertyRenderer).prop("valueElement")).to.be.equal(originalValue);
 
     propertyRenderer.setProps({ propertyRecord: TestUtils.createPrimitiveStringProperty("Label", recordValue) });
 
     await TestUtils.flushAsyncOperations();
     propertyRenderer.update();
 
-    valueElementMount = mount(<>{propertyRenderer.find(PrimitivePropertyRenderer).prop("valueElement")}</>);
-    expect(valueElementMount.html().indexOf(recordValue)).to.be.greaterThan(-1);
+    expect(propertyRenderer.find(PrimitivePropertyRenderer).prop("valueElement")).to.be.equal(recordValue);
   });
 
   it("renders value differently if provided with custom propertyValueRendererManager", async () => {

@@ -1,16 +1,15 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Curve */
 import { CurvePrimitive } from "./CurvePrimitive";
 import { AnyCurve } from "./CurveChain";
 import { UnionRegion } from "./UnionRegion";
-import { BagOfCurves } from "./CurveCollection";
+import { BagOfCurves, CurveCollection } from "./CurveCollection";
 import { ParityRegion } from "./ParityRegion";
 import { Loop } from "./Loop";
 import { Path } from "./Path";
-import { CurveCollection } from "./CurveCollection";
 /* tslint:disable:variable-name no-empty*/
 
 /** base class for detailed traversal of curve artifacts.  This recurses to children in the quickest way (no records of path)

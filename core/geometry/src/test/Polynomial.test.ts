@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
@@ -13,10 +13,7 @@ import { Quadrature } from "../numerics/Quadrature";
 import { Point2d, Vector2d } from "../geometry3d/Point2dVector2d";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { Arc3d } from "../curve/Arc3d";
-import { Degree2PowerPolynomial, Degree3PowerPolynomial, Degree4PowerPolynomial } from "../numerics/Polynomials";
-import { TrigPolynomial, SmallSystem } from "../numerics/Polynomials";
-import { AnalyticRoots } from "../numerics/Polynomials";
-import { SphereImplicit, TorusImplicit } from "../numerics/Polynomials";
+import { Degree2PowerPolynomial, Degree3PowerPolynomial, Degree4PowerPolynomial, TrigPolynomial, SmallSystem, AnalyticRoots, SphereImplicit, TorusImplicit } from "../numerics/Polynomials";
 /* tslint:disable:no-console */
 
 import { UnivariateBezier, Order2Bezier, Order3Bezier, Order4Bezier, Order5Bezier, BezierCoffs } from "../numerics/BezierPolynomials";
@@ -536,7 +533,7 @@ describe("LinearSystems", () => {
     const b1 = Point3d.create(5.2, -4, 4.2);
     const fractions = Vector2d.create();
     if (ck.testTrue(SmallSystem.lineSegment3dClosestApproachUnbounded(a0, a1, b0, b1, fractions))) {
-      console.log("fractions", fractions);
+      // console.log("fractions", fractions);
       const a = a0.interpolate(fractions.x, a1);
       const b = b0.interpolate(fractions.y, b1);
       const vectorAB = a.vectorTo(b);

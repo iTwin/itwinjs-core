@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Rendering */
@@ -7,6 +7,14 @@
 import { LinePixels, ColorDef, RgbColor, Feature, GeometryClass, SubCategoryOverride, BatchType } from "@bentley/imodeljs-common";
 import { Id64, Id64String } from "@bentley/bentleyjs-core";
 import { ViewState } from "../ViewState";
+
+function copyIdSetToUint32Set(dst: Id64.Uint32Set, src?: Set<string>): void {
+  dst.clear();
+  if (undefined !== src) {
+    for (const id of src)
+      dst.addId(id);
+  }
+}
 
 /** Contains types that enable an application to customize how [[Feature]]s are drawn within a [[Viewport]]. */
 export namespace FeatureSymbology {
@@ -162,27 +170,49 @@ export namespace FeatureSymbology {
    * @see [[ViewState.neverDrawn]]
    */
   export class Overrides {
-    /** The IDs of elements which should never be drawn */
-    public readonly neverDrawn = new Set<string>();
-    /** The IDs of elements which should always be drawn. If an element ID is present in both neverDrawn and alwaysDrawn, it is never drawn. */
-    public readonly alwaysDrawn = new Set<string>();
-    /** If true, no elements except those included in the alwaysDrawn set will be drawn */
-    public isAlwaysDrawnExclusive: boolean = false;
+    /** Ids of elements which should never be drawn. This takes precedence over [[_alwaysDrawn]]. @hidden */
+    protected readonly _neverDrawn = new Id64.Uint32Set();
+    /** Ids of elements which should always be drawn. [[_neverDrawn]] takes precedence over this set. @hidden */
+    protected readonly _alwaysDrawn = new Id64.Uint32Set();
+    /** If true, no elements *except* those defined in the "always drawn" set will be drawn.
+     * @see [[setAlwaysDrawn]]
+     */
+    public isAlwaysDrawnExclusive = false;
 
-    private _defaultOverrides = Appearance.defaults;
-    private _constructions = false;
-    private _dimensions = false;
-    private _patterns = false;
-    private _lineWeights = true;
+    /** Overrides applied to any feature not explicitly overridden. @hidden */
+    protected _defaultOverrides = Appearance.defaults;
+    /** Whether construction geometry should be drawn. @hidden */
+    protected _constructions = false;
+    /** Whether dimensions should be drawn. @hidden */
+    protected _dimensions = false;
+    /** Whether area patterns should be drawn. @hidden */
+    protected _patterns = false;
+    /** Whether line weights should be applied. If false, all lines are rendered 1-pixel wide. @hidden */
+    protected _lineWeights = true;
 
-    /** Mapping of model IDs to overrides applied to all elements within the corresponding model */
-    public readonly modelOverrides = new Map<string, Appearance>();
-    /** Mapping of element IDs to overrides applied to the corresponding element */
-    public readonly elementOverrides = new Map<string, Appearance>();
-    /** Mapping of subcategory IDs to overrides applied to geometry belonging to the corresponding subcategory */
-    public readonly subCategoryOverrides = new Map<string, Appearance>();
-    /** Set of IDs of visible subcategories. Geometry belonging to other subcategories will not be drawn */
-    public readonly visibleSubCategories = new Set<string>();
+    /** Overrides applied to all elements belonging to each model. @hidden */
+    protected readonly _modelOverrides = new Id64.Uint32Map<Appearance>();
+    /** Overrides applied to specific elements. @hidden */
+    protected readonly _elementOverrides = new Id64.Uint32Map<Appearance>();
+    /** Overrides applied to geometry belonging to each subcategory. @hidden */
+    protected readonly _subCategoryOverrides = new Id64.Uint32Map<Appearance>();
+    /** The set of displayed subcategories. Geometry belonging to subcategories not included in this set will not be drawn. @hidden */
+    protected readonly _visibleSubCategories = new Id64.Uint32Set();
+
+    /** Mapping of elements IDs to batch ID. When a large number of elements have the same neverDrawn or appearance overrides
+     * as is the case with schedule simulation, setting these values once rather than for each element is is much
+     * more efficient. Overrides of a specific element always take precedence over batch overrides. Chiefly used for schedule simulation animation.
+     * @hidden
+     */
+    public batchMap: Id64.Uint32Map<number> | undefined = undefined;
+    /**  IDs of batch which should never be drawn.
+     * @hidden
+     */
+    public readonly batchNeverDrawn = new Set<number>();
+    /** Mapping of batch IDS to overrides applied to the corresponding batch.
+     * @hidden
+     */
+    public readonly batchOverrides = new Map<number, Appearance>();
 
     /** Overrides applied to features for which no other overrides are defined */
     public get defaultOverrides(): Appearance { return this._defaultOverrides; }
@@ -190,66 +220,91 @@ export namespace FeatureSymbology {
     public get lineWeights(): boolean { return this._lineWeights; }
 
     /** @hidden */
-    public isNeverDrawn(id: Id64String): boolean { return this.neverDrawn.has(id.toString()); }
-    /** @hidden */
-    public isAlwaysDrawn(id: Id64String): boolean { return this.alwaysDrawn.has(id.toString()); }
-    /** Returns true if the [[SubCategory]] specified by ID is in the set of visible subcategories. */
-    public isSubCategoryVisible(id: Id64String): boolean { return this.visibleSubCategories.has(id.toString()); }
+    protected isNeverDrawn(idLo: number, idHi: number): boolean {
+      if (this._neverDrawn.has(idLo, idHi))
+        return true;
+      else if (undefined === this.batchMap)
+        return false;
 
-    /** Remove any overrides for elements belonging to a model specified by ID. */
-    public clearModelOverrides(id: Id64String): void { this.modelOverrides.delete(id.toString()); }
-    /** Remove any overrides applied to an element specified by ID. */
-    public clearElementOverrides(id: Id64String): void { this.elementOverrides.delete(id.toString()); }
-    /** Remove any overrides applied to a [[SubCategory]] specified by ID. */
-    public clearSubCategoryOverrides(id: Id64String): void { this.subCategoryOverrides.delete(id.toString()); }
+      const batchId = this.batchMap.get(idLo, idHi);
+      return undefined !== batchId && this.batchNeverDrawn.has(batchId);
+    }
+    /** @hidden */
+    protected isAlwaysDrawn(idLo: number, idHi: number): boolean { return this._alwaysDrawn.has(idLo, idHi); }
+    /** Returns true if the [[SubCategory]] specified by ID is in the set of visible subcategories. @hidden */
+    protected isSubCategoryVisible(idLo: number, idHi: number): boolean { return this._visibleSubCategories.has(idLo, idHi); }
 
     /** @hidden */
-    public getModelOverrides(id: Id64String): Appearance | undefined { return this.modelOverrides.get(id.toString()); }
+    protected getModelOverrides(idLo: number, idHi: number): Appearance | undefined { return this._modelOverrides.get(idLo, idHi); }
     /** @hidden */
-    public getElementOverrides(id: Id64String): Appearance | undefined { return this.elementOverrides.get(id.toString()); }
+    protected getElementOverrides(idLo: number, idHi: number): Appearance | undefined {
+      const app = this._elementOverrides.get(idLo, idHi);
+      if (app !== undefined || undefined === this.batchMap)
+        return app;
+
+      const batchId = this.batchMap.get(idLo, idHi);
+      return undefined !== batchId ? this.batchOverrides.get(batchId) : undefined;
+    }
     /** @hidden */
-    public getSubCategoryOverrides(id: Id64String): Appearance | undefined { return this.subCategoryOverrides.get(id.toString()); }
+    protected getSubCategoryOverrides(idLo: number, idHi: number): Appearance | undefined { return this._subCategoryOverrides.get(idLo, idHi); }
 
     /** Add a [[SubCategory]] to the set of visible subcategories. */
-    public setVisibleSubCategory(id: Id64String): void { this.visibleSubCategories.add(id.toString()); }
+    public setVisibleSubCategory(id: Id64String): void { this._visibleSubCategories.addId(id); }
     /** Specify the ID of an element which should never be drawn in this view. */
-    public setNeverDrawn(id: Id64String): void { this.neverDrawn.add(id.toString()); }
+    public setNeverDrawn(id: Id64String): void { this._neverDrawn.addId(id); }
     /** Specify the ID of an element which should always be drawn in this view. */
-    public setAlwaysDrawn(id: Id64String): void { this.alwaysDrawn.add(id.toString()); }
+    public setAlwaysDrawn(id: Id64String): void { this._alwaysDrawn.addId(id); }
+    /** Specify the ID of a batch which should never be drawn in this view. */
+    public setBatchNeverDrawn(id: number): void { this.batchNeverDrawn.add(id); }
 
     /** Returns the feature's Appearance overrides, or undefined if the feature is not visible. */
-    public getAppearance(feature: Feature, modelId: Id64String, type: BatchType = BatchType.Primary): Appearance | undefined {
-      if (BatchType.Classifier === type)
-        return this.getClassifierAppearance(feature, modelId);
+    public getFeatureAppearance(feature: Feature, modelId: Id64String, type: BatchType = BatchType.Primary): Appearance | undefined {
+      return this.getAppearance(
+        Id64.getLowerUint32(feature.elementId), Id64.getUpperUint32(feature.elementId),
+        Id64.getLowerUint32(feature.subCategoryId), Id64.getUpperUint32(feature.subCategoryId),
+        feature.geometryClass,
+        Id64.getLowerUint32(modelId), Id64.getUpperUint32(modelId),
+        type);
+    }
 
-      let app = !this._lineWeights ? Appearance.fromJSON({ weight: 1 }) : Appearance.defaults;
-      const modelApp = this.getModelOverrides(modelId);
+    private static readonly _weight1Appearance = Appearance.fromJSON({ weight: 1 });
+
+    /** Returns a feature's Appearance overrides, or undefined if the feature is not visible.
+     * Takes Id64s as pairs of unsigned 32-bit integers, because that is how they are stored by the PackedFeatureTable associated with each batch of graphics.
+     * This API is much uglier but also much more efficient.
+     * @hidden
+     */
+    public getAppearance(elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, geomClass: GeometryClass, modelLo: number, modelHi: number, type: BatchType): Appearance | undefined {
+      if (BatchType.Classifier === type)
+        return this.getClassifierAppearance(elemLo, elemHi, subcatLo, subcatHi, modelLo, modelHi);
+
+      let app = !this._lineWeights ? Overrides._weight1Appearance : Appearance.defaults;
+      const modelApp = this.getModelOverrides(modelLo, modelHi);
       if (undefined !== modelApp)
         app = modelApp.extendAppearance(app);
 
       // Is the element visible?
-      const { elementId, subCategoryId, geometryClass } = feature;
       let elemApp, alwaysDrawn = false;
 
-      if (!Id64.isInvalid(elementId)) {
-        if (this.isNeverDrawn(elementId))
+      if (Id64.isValidUint32Pair(elemLo, elemHi)) {
+        if (this.isNeverDrawn(elemLo, elemHi))
           return undefined;
 
-        alwaysDrawn = this.isAlwaysDrawn(elementId);
+        alwaysDrawn = this.isAlwaysDrawn(elemLo, elemHi);
         if (!alwaysDrawn && this.isAlwaysDrawnExclusive)
           return undefined;
 
         // Element overrides take precedence
-        elemApp = this.getElementOverrides(elementId);
+        elemApp = this.getElementOverrides(elemLo, elemHi);
         if (undefined !== elemApp)
           app = undefined !== modelApp ? elemApp.extendAppearance(app) : elemApp;
       }
 
-      if (!Id64.isInvalid(subCategoryId)) {
-        if (!alwaysDrawn && !this.isSubCategoryVisible(subCategoryId))
+      if (Id64.isValidUint32Pair(subcatLo, subcatHi)) {
+        if (!alwaysDrawn && !this.isSubCategoryVisible(subcatLo, subcatHi))
           return undefined;
 
-        const subCat = this.getSubCategoryOverrides(subCategoryId);
+        const subCat = this.getSubCategoryOverrides(subcatLo, subcatHi);
         if (undefined !== subCat)
           app = subCat.extendAppearance(app);
       }
@@ -257,27 +312,28 @@ export namespace FeatureSymbology {
       if (undefined === elemApp && undefined === modelApp)
         app = this._defaultOverrides.extendAppearance(app);
 
-      let visible = alwaysDrawn || this.isClassVisible(geometryClass);
+      let visible = alwaysDrawn || this.isClassVisible(geomClass);
       if (visible && app.isFullyTransparent)
         visible = false; // don't bother rendering something with full transparency...
 
       return visible ? app : undefined;
     }
 
-    /** Classifiers behave totally differently...in particular they are never invisible unless fully-transparent. */
-    private getClassifierAppearance(feature: Feature, modelId: Id64String): Appearance | undefined {
+    /** Classifiers behave totally differently...in particular they are never invisible unless fully-transparent.
+     * @hidden
+     */
+    protected getClassifierAppearance(elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, modelLo: number, modelHi: number): Appearance | undefined {
       let app = Appearance.defaults;
-      const modelApp = this.getModelOverrides(modelId);
+      const modelApp = this.getModelOverrides(modelLo, modelHi);
       if (undefined !== modelApp)
         app = modelApp.extendAppearance(app);
 
-      const { elementId, subCategoryId } = feature;
-      const elemApp = this.getElementOverrides(elementId);
+      const elemApp = this.getElementOverrides(elemLo, elemHi);
       if (undefined !== elemApp)
         app = undefined !== modelApp ? elemApp.extendAppearance(app) : elemApp;
 
-      if (!Id64.isInvalid(subCategoryId)) {
-        const subCat = this.getSubCategoryOverrides(subCategoryId);
+      if (Id64.isValidUint32Pair(subcatLo, subcatHi)) {
+        const subCat = this.getSubCategoryOverrides(subcatLo, subcatHi);
         if (undefined !== subCat)
           app = subCat.extendAppearance(app);
       }
@@ -301,24 +357,6 @@ export namespace FeatureSymbology {
       }
     }
 
-    /** Returns true if the specified Feature is visible within a [[ViewState]] to which these Overrides are applied. */
-    public isFeatureVisible(feature: Feature): boolean {
-      const { elementId, subCategoryId, geometryClass } = feature;
-      const isValidElemId = !Id64.isInvalid(elementId);
-
-      if (isValidElemId && this.isNeverDrawn(elementId))
-        return false;
-
-      const alwaysDrawn = isValidElemId && this.isAlwaysDrawn(elementId);
-      if (alwaysDrawn || this.isAlwaysDrawnExclusive)
-        return alwaysDrawn;
-
-      if (!this.isSubCategoryVisible(subCategoryId))
-        return false;
-
-      return this.isClassVisible(geometryClass);
-    }
-
     /** Specify overrides for all elements within the specified model.
      * @param id The ID of the model.
      * @param app The symbology overrides.
@@ -327,8 +365,10 @@ export namespace FeatureSymbology {
      * @note If [[defaultOverrides]] are defined, they will not apply to any element within this model, even if the supplied Appearance overrides nothing.
      */
     public overrideModel(id: Id64String, app: Appearance, replaceExisting: boolean = true): void {
-      if (replaceExisting || undefined === this.getModelOverrides(id))
-        this.modelOverrides.set(id.toString(), app);
+      const idLo = Id64.getLowerUint32(id);
+      const idHi = Id64.getUpperUint32(id);
+      if (replaceExisting || undefined === this.getModelOverrides(idLo, idHi))
+        this._modelOverrides.set(idLo, idHi, app);
     }
 
     /** Specify overrides for all geometry belonging to the specified [[SubCategory]].
@@ -339,12 +379,14 @@ export namespace FeatureSymbology {
      * @note If [[defaultOverrides]] are defined, they will not apply to any geometry within this subcategory, even if the supplied Appearance overrides nothing.
      */
     public overrideSubCategory(id: Id64String, app: Appearance, replaceExisting: boolean = true): void {
-      if (!this.isSubCategoryVisible(id))
+      const idLo = Id64.getLowerUint32(id);
+      const idHi = Id64.getUpperUint32(id);
+      if (!this.isSubCategoryVisible(idLo, idHi))
         return;
 
       // NB: Appearance may specify no overridden symbology - this means "don't apply the default overrides to this subcategory"
-      if (replaceExisting || undefined === this.getSubCategoryOverrides(id))
-        this.subCategoryOverrides.set(id.toString(), app);
+      if (replaceExisting || undefined === this.getSubCategoryOverrides(idLo, idHi))
+        this._subCategoryOverrides.set(idLo, idHi, app);
     }
 
     /** Specify overrides for all geometry originating from the specified element.
@@ -355,13 +397,21 @@ export namespace FeatureSymbology {
      * @note If [[defaultOverrides]] are defined, they will not apply to this element, even if the supplied Appearance overrides nothing.
      */
     public overrideElement(id: Id64String, app: Appearance, replaceExisting: boolean = true): void {
-      if (this.isNeverDrawn(id))
+      const idLo = Id64.getLowerUint32(id);
+      const idHi = Id64.getUpperUint32(id);
+      if (this.isNeverDrawn(idLo, idHi))
         return;
 
       // NB: Appearance may specify no overridden symbology - this means "don't apply the default overrides to this element"
-      if (replaceExisting || undefined === this.getElementOverrides(id))
-        this.elementOverrides.set(id.toString(), app);
+      if (replaceExisting || undefined === this.getElementOverrides(idLo, idHi))
+        this._elementOverrides.set(idLo, idHi, app);
     }
+    /** Specify overrides for all geometry originating from the specified batch.
+     * @param id The ID of the batch.
+     * @param app The symbology overrides.
+     * @note These overides do not take precedence over element overrides.
+     */
+    public overrideBatch(id: number, app: Appearance): void { this.batchOverrides.set(id, app); }
 
     /** Defines a default Appearance to be applied to any [[Feature]] *not* explicitly overridden.
      * @param appearance The symbology overides.
@@ -379,8 +429,12 @@ export namespace FeatureSymbology {
       const { alwaysDrawn, neverDrawn, viewFlags } = view;
       const { constructions, dimensions, patterns } = viewFlags;
 
-      this.copy(this.alwaysDrawn, alwaysDrawn);
-      this.copy(this.neverDrawn, neverDrawn);
+      copyIdSetToUint32Set(this._alwaysDrawn, alwaysDrawn);
+      copyIdSetToUint32Set(this._neverDrawn, neverDrawn);
+
+      this.batchMap = undefined;
+      this.batchNeverDrawn.clear();
+      this.batchOverrides.clear();
 
       this.isAlwaysDrawnExclusive = view.isAlwaysDrawnExclusive;
       this._constructions = constructions;
@@ -395,32 +449,51 @@ export namespace FeatureSymbology {
 
         for (const subCategoryId of subCategoryIds) {
           if (view.isSubCategoryVisible(subCategoryId)) {
-            this.visibleSubCategories.add(subCategoryId);
+            const idLo = Id64.getLowerUint32(subCategoryId);
+            const idHi = Id64.getUpperUint32(subCategoryId);
+            this._visibleSubCategories.add(idLo, idHi);
             const ovr = view.getSubCategoryOverride(subCategoryId);
             if (undefined !== ovr) {
               const app = Appearance.fromSubCategoryOverride(ovr);
               if (app.overridesSymbology)
-                this.subCategoryOverrides.set(subCategoryId, app);
+                this._subCategoryOverrides.set(idLo, idHi, app);
             }
           }
         }
         if (view.scheduleScript) {
-          view.scheduleScript.getSymbologyOverrides(view.scheduleTime).forEach((override, elementID) => {
-            this.overrideElement(elementID, Appearance.fromJSON(override));
-          });
+          view.scheduleScript.getSymbologyOverrides(this, view.scheduleTime);
         }
       }
     }
-
     /** Create an Overrides based on the supplied [[ViewState]]. */
     constructor(view?: ViewState) { if (undefined !== view) this.initFromView(view); }
 
-    private copy(dst: Set<string>, src?: Set<string>): void {
-      dst.clear();
-      if (undefined !== src) {
-        for (const id of src)
-          dst.add(id);
-      }
+    /** Returns true if geometry belonging to the specified subcategory will be drawn. */
+    public isSubCategoryIdVisible(id: Id64String): boolean { return this.isSubCategoryVisible(Id64.getLowerUint32(id), Id64.getUpperUint32(id)); }
+    /** Returns the overrides applied to geometry belonging to the specified model, if any such are defined. */
+    public getModelOverridesById(id: Id64String): Appearance | undefined { return this.getModelOverrides(Id64.getLowerUint32(id), Id64.getUpperUint32(id)); }
+    /** Returns the overrides applied to geometry belonging to the specified element, if any such are defined. */
+    public getElementOverridesById(id: Id64String): Appearance | undefined { return this.getElementOverrides(Id64.getLowerUint32(id), Id64.getUpperUint32(id)); }
+    /** Returns the overrides applied to geometry belonging to the specified subcategory, if any such are defined. */
+    public getSubCategoryOverridesById(id: Id64String): Appearance | undefined { return this.getSubCategoryOverrides(Id64.getLowerUint32(id), Id64.getUpperUint32(id)); }
+
+    /** Returns true if the specified Feature will be drawn. */
+    public isFeatureVisible(feature: Feature): boolean {
+      const { elementId, subCategoryId, geometryClass } = feature;
+      const isValidElemId = !Id64.isInvalid(elementId);
+      const elemIdParts = isValidElemId ? Id64.getUint32Pair(elementId) : undefined;
+
+      if (undefined !== elemIdParts && this.isNeverDrawn(elemIdParts.lower, elemIdParts.upper))
+        return false;
+
+      const alwaysDrawn = undefined !== elemIdParts && this.isAlwaysDrawn(elemIdParts.lower, elemIdParts.upper);
+      if (alwaysDrawn || this.isAlwaysDrawnExclusive)
+        return alwaysDrawn;
+
+      if (!this.isSubCategoryIdVisible(subCategoryId))
+        return false;
+
+      return this.isClassVisible(geometryClass);
     }
   }
 }

@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
@@ -228,7 +228,7 @@ export class Format extends SchemaItem implements IFormat {
   }
 
   public async deserialize(formatProps: FormatProps) {
-    super.deserialize(formatProps);
+    await super.deserialize(formatProps);
     this.typecheck(formatProps);
     if (undefined === formatProps.composite)
       return;
@@ -292,5 +292,10 @@ export class Format extends SchemaItem implements IFormat {
   public async accept(visitor: SchemaItemVisitor) {
     if (visitor.visitFormat)
       await visitor.visitFormat(this);
+  }
+
+  public acceptSync(visitor: SchemaItemVisitor) {
+    if (visitor.visitFormatSync)
+      visitor.visitFormatSync(this);
   }
 }

@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Schema */
@@ -13,6 +13,7 @@ import * as modelMod from "./Model";
 import * as categoryMod from "./Category";
 import * as viewMod from "./ViewDefinition";
 import * as linkMod from "./Relationship";
+import * as textureMod from "./Texture";
 
 /**
  * The [BisCore]($docs/bis/intro/schemas-domains.md) schema is the lowest level Schema in an iModel.
@@ -44,5 +45,6 @@ export class BisCore extends Schema {
     ClassRegistry.registerModule(categoryMod, this);
     ClassRegistry.registerModule(viewMod, this);
     ClassRegistry.registerModule(linkMod, this);
+    ClassRegistry.registerModule(textureMod, this);
   }
 }

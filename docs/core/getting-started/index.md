@@ -1,10 +1,12 @@
 # Getting Started With iModel.js
 
+<iframe width="672" height="378" style="margin-top: -36px;" src="https://www.youtube.com/embed/SPyN8w1XEAE?rel=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
 ## Required Tools
 
 Writing an iModel.js application requires the following software:
 
-- [Node.js](https://nodejs.org/) (latest 8.x LTS version)
+- [Node.js](https://nodejs.org) (latest 10.x LTS version)
   - This provides the backend JavaScript runtime.
   - The installation also includes the `npm` command line tool.
 - [Google Chrome](https://www.google.com/chrome/)
@@ -13,9 +15,11 @@ Writing an iModel.js application requires the following software:
   - This is the source code control system for the iModel.js repositories.
 
 ## Code Samples
+
 **_Note: Samples must be registered, and require a sample Project/iModel. See [Developer Registration](#developer-registration)_**
 
 The following samples showcase the iModel.js API in action:
+
 - [Simple Viewer App](https://github.com/imodeljs/simple-viewer-app)
   - Embed an iModel.js viewport into your application to display graphical data.
   - Browse iModel catalog and view element properties.
@@ -26,13 +30,16 @@ The following samples showcase the iModel.js API in action:
 ## Developer Registration
 
 ### Register a New Application
+
 - [Agent Application](./agent-application.md) - Such as iModel Query Agent
 - [Browser Application](./browser-application.md) - Such as Simple Viewer App
 
 ### Update an Existing Application
+
 - [Update Existing Application](./update-application.md)
 
 ### Create Sample Project and iModel
+
 - [Create New Sample Project](./sample-project.md)
 - [Update Sample Project](./update-project.md)
 

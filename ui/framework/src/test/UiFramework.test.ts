@@ -1,12 +1,12 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import TestUtils from "./TestUtils";
-import { UiFramework } from "..";
-import { DefaultIModelServices } from "../clientservices/DefaultIModelServices";
-import { DefaultProjectServices } from "../clientservices/DefaultProjectServices";
+import { UiFramework } from "../ui-framework";
+import { DefaultIModelServices } from "../ui-framework/clientservices/DefaultIModelServices";
+import { DefaultProjectServices } from "../ui-framework/clientservices/DefaultProjectServices";
 
 describe("UiFramework", () => {
 
@@ -31,9 +31,19 @@ describe("UiFramework", () => {
   });
 
   it("projectServices & iModelServices should return defaults", async () => {
+    await TestUtils.initializeUiFramework(true);
+    expect(UiFramework.projectServices).to.be.instanceOf(DefaultProjectServices);
+    expect(UiFramework.iModelServices).to.be.instanceOf(DefaultIModelServices);
+    expect(UiFramework.frameworkStateKey).to.equal("testDifferentFrameworkKey");
+    TestUtils.terminateUiFramework();
+  });
+
+  it("test default frameworkState key", async () => {
     await TestUtils.initializeUiFramework();
     expect(UiFramework.projectServices).to.be.instanceOf(DefaultProjectServices);
     expect(UiFramework.iModelServices).to.be.instanceOf(DefaultIModelServices);
+    expect(UiFramework.frameworkStateKey).to.equal("frameworkState");
+    TestUtils.terminateUiFramework();
   });
 
 });

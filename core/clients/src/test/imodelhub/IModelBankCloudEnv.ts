@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as fs from "fs";
@@ -10,7 +10,7 @@ import { IModelBankDummyAuthorizationClient } from "../../IModelBank/IModelBankD
 import { TestIModelHubCloudEnv } from "./IModelHubCloudEnv";
 import { IModelClient } from "../../IModelClient";
 import { UrlFileHandler } from "../../UrlFileHandler";
-import { IModelBankClient } from "../../IModelBank";
+import { IModelBankClient } from "../../IModelBank/IModelBankClient";
 import { workDir } from "./TestUtils";
 import { IModelBankFileSystemContextClient } from "../../IModelBank/IModelBankFileSystemContextClient";
 

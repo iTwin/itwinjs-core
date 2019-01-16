@@ -1,24 +1,24 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { ActivityLoggingContext, BeEvent, DbResult, Guid, Id64, Id64String, OpenMode } from "@bentley/bentleyjs-core";
 import { Angle, Matrix4d, Point3d, Range3d, Transform } from "@bentley/geometry-core";
-import { AccessToken } from "@bentley/imodeljs-clients";
+import { AccessToken, IAccessTokenManager } from "@bentley/imodeljs-clients";
 import {
   AxisAlignedBox3d, Code, CodeScopeSpec, CodeSpec, ColorByName, EntityMetaData, EntityProps, FilePropertyProps, FontMap,
   FontType, GeometricElementProps, IModel, IModelError, IModelStatus, PrimitiveTypeCode, RelatedElement, SubCategoryAppearance,
-  ViewDefinitionProps, DisplayStyleSettingsProps, ColorDef, ViewFlags, RenderMode, DisplayStyleProps, BisCodeSpec,
+  ViewDefinitionProps, DisplayStyleSettingsProps, ColorDef, ViewFlags, RenderMode, DisplayStyleProps, BisCodeSpec, ImageSourceFormat, TextureFlags,
 } from "@bentley/imodeljs-common";
 import { assert, expect } from "chai";
 import * as path from "path";
 import {
-  AutoPush, AutoPushEventHandler, AutoPushEventType, AutoPushState, BisCore, Category, ClassRegistry, DefinitionPartition,
+  AutoPush, AutoPushParams, AutoPushEventHandler, AutoPushEventType, AutoPushState, BisCore, Category, ClassRegistry, DefinitionPartition,
   DictionaryModel, DocumentPartition, ECSqlStatement, Element, ElementGroupsMembers, ElementPropertyFormatter, Entity,
   GeometricElement2d, GeometricElement3d, GeometricModel, GroupInformationPartition, IModelDb, InformationPartitionElement,
   LightLocation, LinkPartition, Model, PhysicalModel, PhysicalPartition, SpatialCategory, SqliteStatement, SqliteValue,
-  SqliteValueType, SubCategory, Subject, ViewDefinition, DisplayStyle3d, ElementDrivesElement, PhysicalObject,
-} from "../../backend";
+  SqliteValueType, SubCategory, Subject, Texture, ViewDefinition, DisplayStyle3d, ElementDrivesElement, PhysicalObject,
+} from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 
@@ -36,6 +36,7 @@ describe("iModel", () => {
   const actx = new ActivityLoggingContext("");
 
   before(async () => {
+    IModelTestUtils.registerTestBim();
     imodel1 = IModelTestUtils.openIModel("test.bim");
     imodel2 = IModelTestUtils.openIModel("CompatibilityTestSeed.bim");
     imodel3 = IModelTestUtils.openIModel("GetSetAutoHandledStructProperties.bim");
@@ -197,6 +198,34 @@ describe("iModel", () => {
       const elementId: Id64String = imodel2.elements.insertElement(element);
       assert.isTrue(Id64.isValidId64(elementId));
     }
+  });
+
+  it("should insert a Texture", () => {
+    const model = imodel2.models.getModel(IModel.dictionaryId) as DictionaryModel;
+    expect(model).not.to.be.undefined;
+
+    // This is an encoded png containing a 3x3 square with white in top left pixel, blue in middle pixel, and green in
+    // bottom right pixel.  The rest of the square is red.
+    const pngData: Uint8Array = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 3, 0, 0, 0, 3, 8, 2, 0, 0, 0, 217, 74, 34, 232, 0, 0, 0, 1, 115, 82, 71, 66, 0, 174, 206, 28, 233, 0, 0, 0, 4, 103, 65, 77, 65, 0, 0, 177, 143, 11, 252, 97, 5, 0, 0, 0, 9, 112, 72, 89, 115, 0, 0, 14, 195, 0, 0, 14, 195, 1, 199, 111, 168, 100, 0, 0, 0, 24, 73, 68, 65, 84, 24, 87, 99, 248, 15, 4, 12, 12, 64, 4, 198, 64, 46, 132, 5, 162, 254, 51, 0, 0, 195, 90, 10, 246, 127, 175, 154, 145, 0, 0, 0, 0, 73, 69, 78, 68, 174, 66, 96, 130]);
+
+    const testTextureName = "fake texture name";
+    const testTextureFormat = ImageSourceFormat.Png;
+    const testTextureData = Base64.btoa(String.fromCharCode.apply(null, pngData));
+    const testTextureWidth = 3;
+    const testTextureHeight = 3;
+    const testTextureDescription = "empty description";
+    const testTextureFlags = TextureFlags.None;
+
+    const textureId = Texture.insert(imodel2, IModel.dictionaryId, testTextureName, testTextureFormat, testTextureData, testTextureWidth, testTextureHeight, testTextureDescription, testTextureFlags);
+
+    const texture = imodel2.elements.getElement<Texture>(textureId);
+    assert((texture instanceof Texture) === true, "did not retrieve an instance of Texture");
+    expect(texture.format).to.equal(testTextureFormat);
+    expect(texture.data).to.equal(testTextureData);
+    expect(texture.width).to.equal(testTextureWidth);
+    expect(texture.height).to.equal(testTextureHeight);
+    expect(texture.description).to.equal(testTextureDescription);
+    expect(texture.flags).to.equal(testTextureFlags);
   });
 
   it("should insert a DisplayStyle", () => {
@@ -807,6 +836,8 @@ describe("iModel", () => {
     const codeSpec: CodeSpec = new CodeSpec(testImodel, Id64.invalid, "CodeSpec1", CodeScopeSpec.Type.Model);
     const codeSpecId: Id64String = testImodel.codeSpecs.insert(codeSpec); // throws in case of error
     assert.deepEqual(codeSpecId, codeSpec.id);
+    assert.equal(codeSpec.specScopeType, CodeScopeSpec.Type.Model);
+    assert.equal(codeSpec.scopeReq, CodeScopeSpec.ScopeRequirement.ElementId);
 
     // Should not be able to insert a duplicate.
     try {
@@ -829,6 +860,24 @@ describe("iModel", () => {
     const codeSpec3Id: Id64String = testImodel.codeSpecs.insert(codeSpec3); // throws in case of error
     assert.notDeepEqual(codeSpec2Id, codeSpec3Id);
 
+    const codeSpec4: CodeSpec = testImodel.codeSpecs.getById(codeSpec3Id);
+    codeSpec4.name = "CodeSpec4";
+    const codeSpec4Id: Id64String = testImodel.codeSpecs.insert(codeSpec4); // throws in case of error
+    assert.notDeepEqual(codeSpec3Id, codeSpec4Id);
+    assert.equal(codeSpec4.specScopeType, CodeScopeSpec.Type.Repository);
+    assert.equal(codeSpec4.scopeReq, CodeScopeSpec.ScopeRequirement.FederationGuid);
+
+    assert.isTrue(testImodel.codeSpecs.hasName("CodeSpec1"));
+    assert.isTrue(testImodel.codeSpecs.hasName("CodeSpec2"));
+    assert.isTrue(testImodel.codeSpecs.hasName("CodeSpec3"));
+    assert.isTrue(testImodel.codeSpecs.hasName("CodeSpec4"));
+    assert.isFalse(testImodel.codeSpecs.hasName("CodeSpec5"));
+
+    assert.isTrue(testImodel.codeSpecs.hasId(codeSpec.id));
+    assert.isTrue(testImodel.codeSpecs.hasId(codeSpec2.id));
+    assert.isTrue(testImodel.codeSpecs.hasId(codeSpec3.id));
+    assert.isTrue(testImodel.codeSpecs.hasId(codeSpec4.id));
+    assert.isFalse(testImodel.codeSpecs.hasId(Id64.invalid));
   });
 
   it("snapping", async () => {
@@ -986,10 +1035,9 @@ describe("iModel", () => {
     [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(testImodel, Code.createEmpty(), true);
 
     // Find or create a SpatialCategory
-    const dictionary = testImodel.models.getModel(IModel.dictionaryId) as DictionaryModel;
-    let spatialCategoryId = SpatialCategory.queryCategoryIdByName(dictionary.iModel, dictionary.id, "MySpatialCategory");
+    let spatialCategoryId = SpatialCategory.queryCategoryIdByName(testImodel, IModel.dictionaryId, "MySpatialCategory");
     if (undefined === spatialCategoryId) {
-      spatialCategoryId = IModelTestUtils.createAndInsertSpatialCategory(dictionary, "MySpatialCategory", new SubCategoryAppearance());
+      spatialCategoryId = SpatialCategory.insert(testImodel, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance());
     }
 
     const trelClassName = "TestBim:TestPhysicalObjectRelatedToTestPhysicalObject";
@@ -1156,14 +1204,20 @@ describe("iModel", () => {
         hasLocalChanges: () => true,
       },
     };
-    const fakeAccessToken2 = {} as AccessToken;
-    IModelDb.updateAccessToken(iModel.iModelToken.iModelId, fakeAccessToken2);
+
+    const accessTokenManager: IAccessTokenManager = {
+      getAccessToken: async (_actx: ActivityLoggingContext): Promise<AccessToken> => {
+        const fakeAccessToken2 = {} as AccessToken;
+        return fakeAccessToken2;
+      },
+    };
 
     lastPushTimeMillis = 0;
     lastAutoPushEventType = undefined;
 
     // Create an autopush in manual-schedule mode.
-    const autoPush = new AutoPush(iModel as any, { pushIntervalSecondsMin: 0, pushIntervalSecondsMax: 1, autoSchedule: false, activityContext: actx }, activityMonitor);
+    const autoPushParams: AutoPushParams = { pushIntervalSecondsMin: 0, pushIntervalSecondsMax: 1, autoSchedule: false, activityContext: actx };
+    const autoPush = new AutoPush(iModel as any, autoPushParams, accessTokenManager, activityMonitor);
     assert.equal(autoPush.state, AutoPushState.NotRunning, "I configured auto-push NOT to start automatically");
     assert.isFalse(autoPush.autoSchedule);
 

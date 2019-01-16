@@ -1,0 +1,35 @@
+{
+  "name": "@bentley/presentation-testing",
+  "entries": [
+    {
+      "version": "0.187.0",
+      "tag": "@bentley/presentation-testing_v0.187.0",
+      "date": "Tue, 15 Jan 2019 15:18:59 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.186.0",
+      "tag": "@bentley/presentation-testing_v0.186.0",
+      "date": "Mon, 14 Jan 2019 23:09:10 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.185.0",
+      "tag": "@bentley/presentation-testing_v0.185.0",
+      "date": "Fri, 11 Jan 2019 18:29:00 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.184.0",
+      "tag": "@bentley/presentation-testing_v0.184.0",
+      "date": "Thu, 10 Jan 2019 22:46:17 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added initialization/termination helpers."
+          }
+        ]
+      }
+    }
+  ]
+}

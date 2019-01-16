@@ -1,12 +1,12 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Core */
 
 import { Id64, GuidString, Guid } from "@bentley/bentleyjs-core";
 import { InstanceId, InstanceKey } from "./EC";
-import { NodeKey, NodeKeyJSON, fromJSON as nodeKeyFromJSON } from "./hierarchy/Key";
+import { NodeKey, NodeKeyJSON, nodeKeyFromJSON } from "./hierarchy/Key";
 import { EntityProps } from "@bentley/imodeljs-common";
 import { PresentationError, PresentationStatus } from "./Error";
 
@@ -87,6 +87,15 @@ export default class KeySet {
   }
 
   /**
+   * Get instance keys count
+   */
+  public get instanceKeysCount(): number {
+    let count = 0;
+    this._instanceKeys.forEach((set: Set<string>) => count += set.size);
+    return count;
+  }
+
+  /**
    * Get a set of node keys stored in this KeySet
    *
    * **Warning**: getting node keys might be expensive for
@@ -99,6 +108,13 @@ export default class KeySet {
       set.add(key);
     }
     return set;
+  }
+
+  /**
+   * Get node keys count
+   */
+  public get nodeKeysCount(): number {
+    return this._nodeKeys.size;
   }
 
   private isKeySetJSON(set: Keys | Key): set is Readonly<KeySetJSON> {

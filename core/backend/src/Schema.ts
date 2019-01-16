@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Schema */
@@ -43,7 +43,7 @@ export class Schemas {
    */
   public static unregisterSchema(schemaName: string): void {
     const key = schemaName.toLowerCase();
-    if (!(key === "biscore")) // Can't unregister BisCore
+    if (key !== "biscore") // Can't unregister BisCore
       delete Schemas._registeredSchemas[key];
   }
 
@@ -52,4 +52,6 @@ export class Schemas {
    * @returns the previously registered schema or undefined if not registered.
    */
   public static getRegisteredSchema(schemaName: string): Schema | undefined { return Schemas._registeredSchemas[schemaName.toLowerCase()]; }
+
+  public static isRegistered(schema: Schema): boolean { return undefined !== this.getRegisteredSchema(schema.name); }
 }

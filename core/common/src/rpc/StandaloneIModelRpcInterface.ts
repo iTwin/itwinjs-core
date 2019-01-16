@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module RpcInterface */
@@ -23,6 +23,6 @@ export abstract class StandaloneIModelRpcInterface extends RpcInterface {
   /** Returns the StandaloneIModelRpcInterface client instance for the frontend. */
   public static getClient(): StandaloneIModelRpcInterface { return RpcManager.getClientForInterface(StandaloneIModelRpcInterface); }
 
-  public async openStandalone(_fileName: string, _openMode: OpenMode): Promise<IModel> { return this.forward.apply(this, arguments); }
-  public async closeStandalone(_iModelToken: IModelToken): Promise<boolean> { return this.forward.apply(this, arguments); }
+  public async openStandalone(_fileName: string, _openMode: OpenMode): Promise<IModel> { return this.forward(arguments); }
+  public async closeStandalone(_iModelToken: IModelToken): Promise<boolean> { return this.forward(arguments); }
 }

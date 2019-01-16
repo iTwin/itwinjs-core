@@ -1,14 +1,19 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
 import { Schema } from "../../src/Metadata/Schema";
 import { EntityClass } from "../../src/Metadata/EntityClass";
-import { RelationshipClass, RelationshipMultiplicity } from "../../src/Metadata/RelationshipClass";
-import { StrengthType, StrengthDirection } from "../../src/ECObjects";
+import { RelationshipClass, RelationshipMultiplicity, RelationshipConstraint } from "../../src/Metadata/RelationshipClass";
+import { StrengthType, StrengthDirection, RelationshipEnd } from "../../src/ECObjects";
 import { ECObjectsError } from "../../src/Exception";
+import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
+import sinon = require("sinon");
+import { CustomAttributeClass } from "../../src/Metadata/CustomAttributeClass";
+import { Mixin } from "../../src/Metadata/Mixin";
+import { DelayedPromiseWithProps } from "../../src/DelayedPromise";
 
 describe("RelationshipMultiplicity", () => {
   describe("fromString", () => {
@@ -439,6 +444,224 @@ describe("RelationshipClass", () => {
       assert(relClassJson.target.roleLabel, "Target RoleLabel");
       assert(relClassJson.target.abstractConstraint, "TestSchema.TargetBaseEntity");
       assert(relClassJson.target.constraintClasses[0], "TestSchema.TestTargetEntity");
+    });
+  });
+
+  describe("validation", () => {
+    let schema: Schema;
+
+    describe("supportsClass method tests", () => {
+      let vehicleOwner: RelationshipClass;
+      let childVehicleOwner: RelationshipClass;
+      let grandChildVehicleOwner: RelationshipClass;
+      let americanVehicleOwner: RelationshipClass;
+      let vehicle: EntityClass;
+      let chevy: EntityClass;
+      let ford: EntityClass;
+      let f150: EntityClass;
+      let honda: EntityClass;
+
+      function createSchemaJson() {
+        return createSchemaJsonWithItems({
+          VehicleOwner: {
+            schemaItemType: "RelationshipClass",
+            strength: "referencing",
+            strengthDirection: "forward",
+            source: {
+              polymorphic: true,
+              multiplicity: "(0..*)",
+              roleLabel: "Vehicle belongs to owner",
+              constraintClasses: [
+                "TestSchema.Vehicle",
+              ],
+            },
+            target: {
+              polymorphic: true,
+              multiplicity: "(0..*)",
+              roleLabel: "Owner owns vehicle",
+              constraintClasses: [
+                "TestSchema.Owner",
+              ],
+            },
+          },
+          AmericanVehicleOwner: {
+            baseClass: "TestSchema.VehicleOwner",
+            schemaItemType: "RelationshipClass",
+            strength: "referencing",
+            strengthDirection: "forward",
+            source: {
+              polymorphic: false,
+              multiplicity: "(0..*)",
+              roleLabel: "Vehicle belongs to owner",
+              constraintClasses: [
+                "TestSchema.Ford",
+                "TestSchema.Chevy",
+              ],
+            },
+            target: {
+              polymorphic: true,
+              multiplicity: "(0..*)",
+              roleLabel: "Owner owns vehicle",
+              constraintClasses: [
+                "TestSchema.Owner",
+              ],
+            },
+          },
+          ChildVehicleOwner: {
+            baseClass: "TestSchema.VehicleOwner",
+            schemaItemType: "RelationshipClass",
+            strength: "referencing",
+            strengthDirection: "forward",
+            source: {
+              polymorphic: false,
+              multiplicity: "(0..*)",
+              roleLabel: "Vehicle belongs to owner",
+              constraintClasses: [],
+            },
+            target: {
+              polymorphic: true,
+              multiplicity: "(0..*)",
+              roleLabel: "Owner owns vehicle",
+              constraintClasses: [],
+            },
+          },
+          GrandChildVehicleOwner: {
+            baseClass: "TestSchema.ChildVehicleOwner",
+            schemaItemType: "RelationshipClass",
+            strength: "referencing",
+            strengthDirection: "forward",
+            source: {
+              polymorphic: false,
+              multiplicity: "(0..*)",
+              roleLabel: "Vehicle belongs to owner",
+              constraintClasses: [],
+            },
+            target: {
+              polymorphic: true,
+              multiplicity: "(0..*)",
+              roleLabel: "Owner owns vehicle",
+              constraintClasses: [],
+            },
+          },
+          Vehicle: {
+            schemaItemType: "EntityClass",
+          },
+          Honda: {
+            schemaItemType: "EntityClass",
+            baseClass: "TestSchema.Vehicle",
+          },
+          Ford: {
+            schemaItemType: "EntityClass",
+            baseClass: "TestSchema.Vehicle",
+          },
+          Chevy: {
+            schemaItemType: "EntityClass",
+            baseClass: "TestSchema.Vehicle",
+          },
+          F150: {
+            schemaItemType: "EntityClass",
+            baseClass: "TestSchema.Ford",
+          },
+          Owner: {
+            schemaItemType: "EntityClass",
+          },
+        });
+      }
+
+      before(async () => {
+        schema = await Schema.fromJson(createSchemaJson());
+        assert.isDefined(schema);
+        vehicleOwner = schema.getItemSync("VehicleOwner") as RelationshipClass;
+        childVehicleOwner = schema.getItemSync("ChildVehicleOwner") as RelationshipClass;
+        grandChildVehicleOwner = schema.getItemSync("GrandChildVehicleOwner") as RelationshipClass;
+        americanVehicleOwner = schema.getItemSync("AmericanVehicleOwner") as RelationshipClass;
+        vehicle = schema.getItemSync("Vehicle") as EntityClass;
+        chevy = schema.getItemSync("Chevy") as EntityClass;
+        ford = schema.getItemSync("Ford") as EntityClass;
+        f150 = schema.getItemSync("F150") as EntityClass;
+        honda = schema.getItemSync("Honda") as EntityClass;
+      });
+
+      afterEach(() => {
+        sinon.restore();
+      });
+
+      it("unsupported constraint class type, returns false", async () => {
+        const classCompatibleWithConstraint = sinon.spy(RelationshipConstraint, "classCompatibleWithConstraint");
+        const testClass = new CustomAttributeClass(schema, "TestCA");
+        expect(await vehicleOwner!.source.supportsClass(testClass)).to.be.false;
+        expect(classCompatibleWithConstraint.notCalled).to.be.true;
+      });
+
+      it("constraint has no constraint classes, supported constraint class, base constraint supportsClass returns true", async () => {
+        const baseSupportsClass = sinon.spy(vehicleOwner.source, "supportsClass");
+        expect(await childVehicleOwner!.source.supportsClass(ford)).to.be.true;
+        expect(baseSupportsClass.calledOnce).to.be.true;
+      });
+
+      it("child constraint has no constraint classes, parent constraint has no constraint classes, base constraint supportsClass returns true", async () => {
+        const baseSupportsClass = sinon.spy(vehicleOwner.source, "supportsClass");
+        const parentSupportsClass = sinon.spy(childVehicleOwner.source, "supportsClass");
+        expect(await grandChildVehicleOwner!.source.supportsClass(ford)).to.be.true;
+        expect(parentSupportsClass.calledOnce).to.be.true;
+        expect(baseSupportsClass.calledOnce).to.be.true;
+      });
+
+      it("constraint has no constraint classes, unsupported constraint class, base constraint supportsClass returns false", async () => {
+        const baseSupportsClass = sinon.spy(vehicleOwner.source, "supportsClass");
+        const testClass = new CustomAttributeClass(schema, "TestCA");
+        expect(await childVehicleOwner!.source.supportsClass(testClass)).to.be.false;
+        expect(baseSupportsClass.calledOnce).to.be.true;
+      });
+
+      it("EntityClass, classCompatibleWithConstraint called", async () => {
+        const classCompatibleWithConstraint = sinon.spy(RelationshipConstraint, "classCompatibleWithConstraint");
+        expect(await vehicleOwner!.source.supportsClass(vehicle)).to.be.true;
+        expect(classCompatibleWithConstraint.called).to.be.true;
+      });
+
+      it("RelationshipClass, classCompatibleWithConstraint called", async () => {
+        const classCompatibleWithConstraint = sinon.spy(RelationshipConstraint, "classCompatibleWithConstraint");
+        expect(await vehicleOwner!.source.supportsClass(new RelationshipClass(schema, "TestRelationship"))).to.be.false;
+        expect(classCompatibleWithConstraint.called).to.be.true;
+      });
+
+      it("MixinClass, classCompatibleWithConstraint called", async () => {
+        const mixin = new Mixin(schema, "TestMixin");
+        const entity = new EntityClass(schema, "TestEntity");
+        const promise = new DelayedPromiseWithProps(entity.key, async () => entity);
+        sinon.stub(Mixin.prototype, "appliesTo").get(() => promise);
+        const classCompatibleWithConstraint = sinon.spy(RelationshipConstraint, "classCompatibleWithConstraint");
+        expect(await vehicleOwner!.source.supportsClass(mixin)).to.be.false;
+        expect(classCompatibleWithConstraint.called).to.be.true;
+      });
+
+      it("supported constraint class, returns true", async () => {
+        expect(await americanVehicleOwner!.source.supportsClass(ford)).to.be.true;
+        expect(await americanVehicleOwner!.source.supportsClass(chevy)).to.be.true;
+      });
+
+      it("unsupported constraint class, returns false", async () => {
+        expect(await americanVehicleOwner!.source.supportsClass(honda)).to.be.false;
+      });
+
+      it("valid polymorphic constraints, returns true", async () => {
+        expect(await vehicleOwner!.source.supportsClass(chevy)).to.be.true;
+        expect(await vehicleOwner!.source.supportsClass(ford)).to.be.true;
+        expect(await vehicleOwner!.source.supportsClass(honda)).to.be.true;
+      });
+
+      it("not a polymorphic constraint, child class, returns false", async () => {
+        expect(await americanVehicleOwner!.source.supportsClass(f150)).to.be.false;
+      });
+
+      it("no restraint classes, returns false", async () => {
+        const classCompatibleWithConstraint = sinon.spy(RelationshipConstraint, "classCompatibleWithConstraint");
+        const relationship = new RelationshipClass(schema, "TestRelationship");
+        const constraint = new RelationshipConstraint(relationship, RelationshipEnd.Source);
+        expect(await constraint.supportsClass(new EntityClass(schema, "TestEntity"))).to.be.false;
+        expect(classCompatibleWithConstraint.called).to.be.false;
+      });
     });
   });
 });

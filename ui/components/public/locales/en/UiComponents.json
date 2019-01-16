@@ -4,7 +4,8 @@
     "false": "false",
     "loading": "loading",
     "noData": "No data",
-    "length": "Length"
+    "length": "Length",
+    "label": "Label"
   },
   "button": {
     "label": {
@@ -24,5 +25,8 @@
     "showAll": "Show all",
     "list": "List...",
     "title": "Show/Hide"
+  },
+  "property": {
+    "varies": "*** Varies ***"
   }
 }

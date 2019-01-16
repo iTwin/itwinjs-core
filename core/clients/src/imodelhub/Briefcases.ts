@@ -1,18 +1,17 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module iModelHub */
 
 import { ECJsonTypeMap, WsgInstance } from "./../ECJsonTypeMap";
-import { IModelHubClientError } from "./Errors";
+import { IModelHubClientError, ArgumentCheck } from "./Errors";
 import { AccessToken } from "../Token";
 import { Logger, ActivityLoggingContext, GuidString } from "@bentley/bentleyjs-core";
 import { Query, addSelectFileAccessKey } from "./Query";
 import { FileHandler } from "../FileHandler";
 import { ProgressInfo } from "../Request";
 import { IModelBaseHandler } from "./BaseHandler";
-import { ArgumentCheck } from "./Errors";
 
 const loggingCategory = "imodeljs-clients.imodelhub";
 

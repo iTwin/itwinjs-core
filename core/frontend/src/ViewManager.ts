@@ -1,9 +1,9 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Views */
-import { BentleyStatus, BeUiEvent } from "@bentley/bentleyjs-core";
+import { BentleyStatus, BeEvent, BeUiEvent } from "@bentley/bentleyjs-core";
 import { HitDetail } from "./HitDetail";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
@@ -124,6 +124,22 @@ export class ViewManager {
    */
   public readonly onViewResume = new BeUiEvent<ScreenViewport>();
 
+  /**
+   * Called at the beginning of each tick of the render loop, before any viewports have been updated.
+   * The render loop is typically invoked by a requestAnimationFrame() callback. It will not be invoked if the ViewManager is tracking no viewports.
+   * @note Due to the frequency of this event, avoid performing expensive work inside event listeners.
+   * @see [[ViewManager.onFinishRender]]
+   */
+  public readonly onBeginRender = new BeEvent<() => void>();
+
+  /**
+   * Called at the end of each tick of the render loop, after all viewports have been updated.
+   * The render loop is typically invoked by a requestAnimationFrame() callback. It will not be invoked if the ViewManager is tracking no viewports.
+   * @note Due to the frequency of this event, avoid performing expensive work inside event listeners.
+   * @see [[ViewManager.onBeginRender]]
+   */
+  public readonly onFinishRender = new BeEvent<() => void>();
+
   /** @hidden */
   public endDynamicsMode(): void {
     if (!this.inDynamicsMode)
@@ -232,7 +248,9 @@ export class ViewManager {
       return BentleyStatus.ERROR;
 
     this.onViewClose.emit(vp);
-    IModelApp.toolAdmin.onViewportClosed(vp); // notify tools that this view is no longer valid
+
+    // make sure tools don't think the cursor is still in this viewport
+    IModelApp.toolAdmin.onMouseLeave(vp); // tslint:disable-line:no-floating-promises
 
     vp.setEventController(undefined);
     this._viewports.splice(index, 1);
@@ -279,10 +297,14 @@ export class ViewManager {
 
     const cursorVp = IModelApp.toolAdmin.cursorView;
 
+    this.onBeginRender.raiseEvent();
+
     if (undefined === cursorVp || cursorVp.renderFrame())
       for (const vp of this._viewports)
         if (vp !== cursorVp && !vp.renderFrame())
           break;
+
+    this.onFinishRender.raiseEvent();
   }
 
   /** Add a new [[Decorator]] to display decorations into the active views.
@@ -345,10 +367,10 @@ export class ViewManager {
     return undefined;
   }
 
-  public get crossHairCursor(): string { return "url(crosshair.cur), crosshair"; }
-  public get dynamicsCursor(): string { return "url(dynamics.cur), move"; }
-  public get grabCursor(): string { return "url(openHand.cur), auto"; }
-  public get grabbingCursor(): string { return "url(closedHand.cur), auto"; }
+  public get crossHairCursor(): string { return "url(cursors/crosshair.cur), crosshair"; }
+  public get dynamicsCursor(): string { return "url(cursors/dynamics.cur), move"; }
+  public get grabCursor(): string { return "url(cursors/openHand.cur), auto"; }
+  public get grabbingCursor(): string { return "url(cursors/closedHand.cur), auto"; }
 
   /** Change the cursor shown in all Viewports.
    * @param cursor The new cursor to display. If undefined, the default cursor is used.

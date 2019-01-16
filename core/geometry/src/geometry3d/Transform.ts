@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
@@ -9,10 +9,8 @@ import { Geometry, AxisOrder, BeJSONFunctions } from "../Geometry";
 import { Point4d } from "../geometry4d/Point4d";
 import { Range3d } from "./Range";
 import { Point2d } from "./Point2dVector2d";
-import { XYAndZ } from "./XYZProps";
-import { Point3d, Vector3d } from "./Point3dVector3d";
-import { XAndY, TransformProps } from "./XYZProps";
-import { XYZ } from "./Point3dVector3d";
+import { XAndY, XYAndZ, TransformProps } from "./XYZProps";
+import { XYZ, Point3d, Vector3d } from "./Point3dVector3d";
 import { Matrix3d } from "./Matrix3d";
 
 /** A transform is an origin and a Matrix3d.
@@ -134,6 +132,12 @@ export class Transform implements BeJSONFunctions {
     }
     return new Transform(Point3d.create(ax, ay, az), Matrix3d.createRowValues(qxx, qxy, qxz, qyx, qyy, qyz, qzx, qzy, qzz));
   }
+  /** Create a transform with all zeros.
+   */
+  public static createZero(result?: Transform): Transform {
+    return Transform.createRowValues(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, result);
+  }
+
   /**
    * create a Transform with translation provided by x,y,z parts.
    * @param x x part of translation

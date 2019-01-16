@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
@@ -7,15 +7,16 @@
 import { QPoint3dList, QParams3d, RenderTexture, ViewFlags, RenderMode } from "@bentley/imodeljs-common";
 import { TesselatedPolyline } from "../primitives/VertexTable";
 import { assert, IDisposable, dispose } from "@bentley/bentleyjs-core";
-import { Point3d } from "@bentley/geometry-core";
+import { Point3d, Vector2d } from "@bentley/geometry-core";
 import { AttributeHandle, BufferHandle, QBufferHandle3d } from "./Handle";
 import { Target } from "./Target";
 import { ShaderProgramParams } from "./DrawCommand";
-import { TechniqueId } from "./TechniqueId";
+import { TechniqueId, computeCompositeTechniqueId } from "./TechniqueId";
 import { RenderPass, RenderOrder, CompositeFlags } from "./RenderFlags";
 import { LineCode } from "./EdgeOverrides";
 import { GL } from "./GL";
 import { System } from "./System";
+import { RenderMemory } from "../System";
 import { ColorInfo } from "./ColorInfo";
 import { FeaturesInfo } from "./FeaturesInfo";
 import { VertexLUT } from "./VertexLUT";
@@ -24,7 +25,7 @@ import { Material } from "./Material";
 import { SkyBox } from "../../DisplayStyleState";
 
 /** Represents a geometric primitive ready to be submitted to the GPU for rendering. */
-export abstract class CachedGeometry implements IDisposable {
+export abstract class CachedGeometry implements IDisposable, RenderMemory.Consumer {
   // Returns true if white portions of this geometry should render as black on white background
   protected abstract _wantWoWReversal(_target: Target): boolean;
   // Returns the edge/line weight used to render this geometry
@@ -104,6 +105,8 @@ export abstract class CachedGeometry implements IDisposable {
     else
       return vf.sourceLights || vf.cameraLights || vf.solarLight;
   }
+
+  public abstract collectStatistics(stats: RenderMemory.Statistics): void;
 }
 
 // Geometry which is drawn using indices into a look-up texture of vertex data, via gl.drawArrays()
@@ -183,6 +186,11 @@ export abstract class IndexedGeometry extends CachedGeometry {
 export class ClipMaskGeometry extends IndexedGeometry {
   public constructor(indices: Uint32Array, vertices: QPoint3dList) {
     super(IndexedGeometryParams.createFromList(vertices, indices)!);
+  }
+
+  public collectStatistics(stats: RenderMemory.Statistics): void {
+    stats.addClipVolume(this._params.positions.bytesUsed);
+    stats.addClipVolume(this._params.indices.bytesUsed);
   }
 
   public getTechniqueId(_target: Target): TechniqueId { return TechniqueId.ClipMask; }
@@ -315,6 +323,10 @@ export class SkyBoxQuadsGeometry extends CachedGeometry {
     return undefined !== sbxGeomParams ? new SkyBoxQuadsGeometry(sbxGeomParams, texture) : undefined;
   }
 
+  public collectStatistics(_stats: RenderMemory.Statistics): void {
+    // ###TODO, maybe.
+  }
+
   public getTechniqueId(_target: Target) { return this._techniqueId; }
   public getRenderPass(_target: Target) { return RenderPass.SkyBox; }
   public get renderOrder() { return RenderOrder.Surface; }
@@ -397,6 +409,10 @@ export class ViewportQuadGeometry extends IndexedGeometry {
   public getTechniqueId(_target: Target) { return this._techniqueId; }
   public getRenderPass(_target: Target) { return RenderPass.OpaqueGeneral; }
   public get renderOrder() { return RenderOrder.Surface; }
+
+  public collectStatistics(_stats: RenderMemory.Statistics): void {
+    // NB: These don't really count...
+  }
 }
 
 // Geometry used for view-space rendering techniques which involve sampling one or more textures.
@@ -514,35 +530,73 @@ export class SkySphereViewportQuadGeometry extends ViewportQuadGeometry {
   }
 }
 
-// Geometry used during the 'composite' pass to apply transparency and/or hilite effects.
-export class CompositeGeometry extends TexturedViewportQuadGeometry {
-  public static createGeometry(opaque: WebGLTexture, accum: WebGLTexture, reveal: WebGLTexture, hilite: WebGLTexture) {
+// Geometry used when rendering ambient occlusion information to an output texture
+export class AmbientOcclusionGeometry extends TexturedViewportQuadGeometry {
+  public static createGeometry(depthAndOrder: WebGLTexture) {
     const params = ViewportQuad.getInstance().createParams();
     if (undefined === params) {
       return undefined;
     }
 
-    return new CompositeGeometry(params, [opaque, accum, reveal, hilite]);
+    // Will derive positions and normals from depthAndOrder.
+    return new AmbientOcclusionGeometry(params, [depthAndOrder]);
+  }
+
+  public get depthAndOrder() { return this._textures[0]; }
+  public get noise() { return System.instance.noiseTexture!.getHandle()!; }
+
+  private constructor(params: IndexedGeometryParams, textures: WebGLTexture[]) {
+    super(params, TechniqueId.AmbientOcclusion, textures);
+  }
+}
+
+export class BlurGeometry extends TexturedViewportQuadGeometry {
+  public readonly blurDir: Vector2d;
+
+  public static createGeometry(texToBlur: WebGLTexture, depthAndOrder: WebGLTexture, blurDir: Vector2d) {
+    const params = ViewportQuad.getInstance().createParams();
+    if (undefined === params) {
+      return undefined;
+    }
+    return new BlurGeometry(params, [texToBlur, depthAndOrder], blurDir);
+  }
+
+  public get textureToBlur() { return this._textures[0]; }
+  public get depthAndOrder() { return this._textures[1]; }
+
+  private constructor(params: IndexedGeometryParams, textures: WebGLTexture[], blurDir: Vector2d) {
+    super(params, TechniqueId.Blur, textures);
+    this.blurDir = blurDir;
+  }
+}
+
+// Geometry used during the 'composite' pass to apply transparency and/or hilite effects.
+export class CompositeGeometry extends TexturedViewportQuadGeometry {
+  public static createGeometry(opaque: WebGLTexture, accum: WebGLTexture, reveal: WebGLTexture, hilite: WebGLTexture, occlusion: WebGLTexture) {
+    const params = ViewportQuad.getInstance().createParams();
+    if (undefined === params) {
+      return undefined;
+    }
+
+    return new CompositeGeometry(params, [opaque, accum, reveal, hilite, occlusion]);
   }
 
   public get opaque() { return this._textures[0]; }
   public get accum() { return this._textures[1]; }
   public get reveal() { return this._textures[2]; }
   public get hilite() { return this._textures[3]; }
+  public get occlusion() { return this._textures[4]; }
 
   // Invoked each frame to determine the appropriate Technique to use.
   public update(flags: CompositeFlags): void { this._techniqueId = this.determineTechnique(flags); }
+
   private determineTechnique(flags: CompositeFlags): TechniqueId {
-    switch (flags) {
-      case CompositeFlags.Hilite: return TechniqueId.CompositeHilite;
-      case CompositeFlags.Translucent: return TechniqueId.CompositeTranslucent;
-      default: return TechniqueId.CompositeHiliteAndTranslucent;
-    }
+    return computeCompositeTechniqueId(flags);
   }
 
   private constructor(params: IndexedGeometryParams, textures: WebGLTexture[]) {
     super(params, TechniqueId.CompositeHilite, textures);
-    assert(4 === this._textures.length);
+    assert(5 === this._textures.length);
   }
 }
 
@@ -587,28 +641,29 @@ export class PolylineBuffers implements IDisposable {
   public indices: BufferHandle;
   public prevIndices: BufferHandle;
   public nextIndicesAndParams: BufferHandle;
-  public distances: BufferHandle;
-
-  private constructor(indices: BufferHandle, prevIndices: BufferHandle, nextIndicesAndParams: BufferHandle, distances: BufferHandle) {
+  private constructor(indices: BufferHandle, prevIndices: BufferHandle, nextIndicesAndParams: BufferHandle) {
     this.indices = indices;
     this.prevIndices = prevIndices;
     this.nextIndicesAndParams = nextIndicesAndParams;
-    this.distances = distances;
   }
 
   public static create(polyline: TesselatedPolyline): PolylineBuffers | undefined {
     const indices = BufferHandle.createArrayBuffer(polyline.indices.data);
     const prev = BufferHandle.createArrayBuffer(polyline.prevIndices.data);
     const next = BufferHandle.createArrayBuffer(polyline.nextIndicesAndParams);
-    const dist = BufferHandle.createArrayBuffer(polyline.distances);
 
-    return undefined !== indices && undefined !== prev && undefined !== next && undefined !== dist ? new PolylineBuffers(indices, prev, next, dist) : undefined;
+    return undefined !== indices && undefined !== prev && undefined !== next ? new PolylineBuffers(indices, prev, next) : undefined;
+  }
+
+  public collectStatistics(stats: RenderMemory.Statistics, type: RenderMemory.BufferType): void {
+    stats.addBuffer(type, this.indices.bytesUsed);
+    stats.addBuffer(type, this.prevIndices.bytesUsed);
+    stats.addBuffer(type, this.nextIndicesAndParams.bytesUsed);
   }
 
   public dispose() {
     dispose(this.indices);
     dispose(this.prevIndices);
     dispose(this.nextIndicesAndParams);
-    dispose(this.distances);
   }
 }

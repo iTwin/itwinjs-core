@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
@@ -16,15 +16,19 @@ import {
   Widget,
   FrontstageProvider,
   FrontstageProps,
+  ZoneLocation,
+  ActionItemButton,
+  CommandItemDef,
+  FrontstageManager,
 } from "@bentley/ui-framework";
 
 import { AppStatusBarWidgetControl } from "../statusbars/AppStatusBar";
-import { NavigationTreeWidgetControl } from "../widgets/NavigationTreeWidget";
+// import { NavigationTreeWidgetControl } from "../widgets/NavigationTreeWidget";
 import { VerticalPropertyGridWidgetControl, HorizontalPropertyGridWidgetControl } from "../widgets/PropertyGridDemoWidget";
 
-import Toolbar from "@bentley/ui-ninezone/lib/toolbar/Toolbar";
-import Direction from "@bentley/ui-ninezone/lib/utilities/Direction";
+import { Toolbar, Direction } from "@bentley/ui-ninezone";
 import { AppTools } from "../../tools/ToolSpecifications";
+import { NestedFrontstage1 } from "./NestedFrontstage1";
 
 export class Frontstage1 extends FrontstageProvider {
 
@@ -58,11 +62,11 @@ export class Frontstage1 extends FrontstageProvider {
             ]}
           />
         }
+        /** The HorizontalPropertyGrid in zone 9 should be merged across zones 6 & 9 and take up the height of both zones initially.
+         *  The zones can be resized manually to take up the full height.
+         */
         centerRight={
-          <Zone allowsMerging={true}
-            widgets={[
-              <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.NavigationTree" control={NavigationTreeWidgetControl} />,
-            ]}
+          <Zone defaultState={ZoneState.Open} allowsMerging={true} mergeWithZone={ZoneLocation.BottomRight}
           />
         }
         bottomCenter={
@@ -73,10 +77,10 @@ export class Frontstage1 extends FrontstageProvider {
           />
         }
         bottomRight={
-          <Zone allowsMerging={true}
+          <Zone defaultState={ZoneState.Open} allowsMerging={true}
             widgets={[
-              <Widget id="VerticalPropertyGrid" defaultState={WidgetState.Off} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.VerticalPropertyGrid" control={VerticalPropertyGridWidgetControl} />,
-              <Widget defaultState={WidgetState.Open} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.HorizontalPropertyGrid" control={HorizontalPropertyGridWidgetControl} />,
+              <Widget defaultState={WidgetState.Open} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.HorizontalPropertyGrid" control={HorizontalPropertyGridWidgetControl} fillZone={true} />,
+              <Widget id="VerticalPropertyGrid" defaultState={WidgetState.Hidden} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.VerticalPropertyGrid" control={VerticalPropertyGridWidgetControl} />,
             ]}
           />
         }
@@ -88,13 +92,28 @@ export class Frontstage1 extends FrontstageProvider {
 /** Define a ToolWidget with Buttons to display in the TopLeft zone.
  */
 class FrontstageToolWidget extends React.Component {
+  /** Command that opens a nested Frontstage */
+  private get _openNestedFrontstage1() {
+    return new CommandItemDef({
+      commandId: "openNestedFrontstage1",
+      iconSpec: "icon-placeholder",
+      labelKey: "SampleApp:buttons.openNestedFrontstage1",
+      execute: async () => {
+        const frontstageProvider = new NestedFrontstage1();
+        const frontstageDef = frontstageProvider.initializeDef();
+        await FrontstageManager.openNestedFrontstage(frontstageDef);
+      },
+    });
+  }
+
   private _horizontalToolbar =
     <Toolbar
       expandsTo={Direction.Bottom}
       items={
         <>
-          <ToolButton toolId={AppTools.tool1.id} iconSpec={AppTools.tool1.iconSpec!} labelKey={AppTools.tool1.label} execute={AppTools.tool1.execute} />
-          <ToolButton toolId={AppTools.tool2.id} iconSpec={AppTools.tool2.iconSpec!} labelKey={AppTools.tool2.label} execute={AppTools.tool2.execute} />
+          <ActionItemButton actionItem={AppTools.item1} />
+          <ActionItemButton actionItem={AppTools.item2} />
+          <ActionItemButton actionItem={this._openNestedFrontstage1} />
           <GroupButton
             labelKey="SampleApp:buttons.toolGroup"
             iconSpec="icon-placeholder"

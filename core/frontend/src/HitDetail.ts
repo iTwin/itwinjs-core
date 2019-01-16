@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module LocatingElements */
@@ -287,13 +287,13 @@ export class SnapDetail extends HitDetail {
   /**  */
   private static getSnapSpriteUrl(snapType: SnapMode): string {
     switch (snapType) {
-      case SnapMode.Nearest: return "SnapPointOn.png";
-      case SnapMode.NearestKeypoint: return "SnapKeypoint.png";
-      case SnapMode.MidPoint: return "SnapMidpoint.png";
-      case SnapMode.Center: return "SnapCenter.png";
-      case SnapMode.Origin: return "SnapOrigin.png";
-      case SnapMode.Bisector: return "SnapBisector.png";
-      case SnapMode.Intersection: return "SnapIntersection.png";
+      case SnapMode.Nearest: return "sprites/SnapPointOn.png";
+      case SnapMode.NearestKeypoint: return "sprites/SnapKeypoint.png";
+      case SnapMode.MidPoint: return "sprites/SnapMidpoint.png";
+      case SnapMode.Center: return "sprites/SnapCenter.png";
+      case SnapMode.Origin: return "sprites/SnapOrigin.png";
+      case SnapMode.Bisector: return "sprites/SnapBisector.png";
+      case SnapMode.Intersection: return "sprites/SnapIntersection.png";
     }
     return "";
   }

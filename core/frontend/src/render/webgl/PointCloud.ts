@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
@@ -15,6 +15,7 @@ import { Target } from "./Target";
 import { GL } from "./GL";
 import { System } from "./System";
 import { dispose } from "@bentley/bentleyjs-core";
+import { RenderMemory } from "../System";
 
 export class PointCloudPrimitive extends Primitive {
   public get renderOrder(): RenderOrder { return RenderOrder.Surface; }
@@ -44,6 +45,12 @@ export class PointCloudGeometry extends CachedGeometry {
     this.features = FeaturesInfo.create(pointCloud.features);
     if (undefined !== pointCloud.colors)
       this._colorHandle = BufferHandle.createArrayBuffer(pointCloud.colors);
+  }
+
+  public collectStatistics(stats: RenderMemory.Statistics): void {
+    stats.addPointCloud(this._vertices.bytesUsed);
+    if (undefined !== this._colorHandle)
+      stats.addPointCloud(this._colorHandle.bytesUsed);
   }
 
   protected _wantWoWReversal(_target: Target): boolean { return false; }

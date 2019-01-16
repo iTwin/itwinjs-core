@@ -1,10 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 // tslint:disable-next-line
 const RulesetSchema = require("../../../../Ruleset.schema.json");
-import { Ruleset } from "../../..";
+import { Ruleset } from "../../../presentation-common";
 
 const hasIndexSignature = (o: any): o is { [key: string]: string } => {
   return typeof o === "object";

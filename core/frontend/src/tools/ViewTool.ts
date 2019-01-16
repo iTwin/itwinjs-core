@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Tools */
@@ -7,7 +7,7 @@
 import { BeButtonEvent, BeWheelEvent, CoordSource, InteractiveTool, EventHandled, BeTouchEvent, BeButton, InputSource } from "./Tool";
 import { Viewport, CoordSystem, DepthRangeNpc, ViewRect, ScreenViewport } from "../Viewport";
 import { Angle, Point3d, Vector3d, YawPitchRollAngles, Point2d, Vector2d, Matrix3d, Transform, Range3d } from "@bentley/geometry-core";
-import { Frustum, NpcCenter, Npc, ColorDef, ViewFlags, RenderMode } from "@bentley/imodeljs-common";
+import { Frustum, NpcCenter, Npc, ColorDef } from "@bentley/imodeljs-common";
 import { MarginPercent, ViewStatus, ViewState3d } from "../ViewState";
 import { IModelApp } from "../IModelApp";
 import { DecorateContext } from "../ViewContext";
@@ -663,10 +663,15 @@ class ViewTargetCenter extends ViewingToolHandle {
     if (context.viewport !== this.viewTool.viewport)
       return;
 
+    if (!this.viewTool.targetCenterLocked && !this.viewTool.inHandleModify)
+      return; // Don't display default target center, will be updated to use pick point on element...
+
     let sizeInches = 0.2;
     if (!hasFocus && this.viewTool.inHandleModify) {
+      const hitHandle = this.viewTool.viewHandles.hitHandle;
+      if (undefined !== hitHandle && ViewHandleType.Rotate !== hitHandle.handleType)
+        return; // Only display when modifying another handle if that handle is rotate (not pan)...
       sizeInches = 0.1; // Display small target when dragging...
-      hasFocus = false;
     }
 
     const crossSize = Math.floor(context.viewport.pixelsFromInches(sizeInches)) + 0.5;
@@ -738,7 +743,7 @@ class ViewPan extends ViewingToolHandle {
     this._anchorPt.setFrom(ev.rawPoint);
 
     // if the camera is on, we need to find the element under the starting point to get the z
-    if (CoordSource.User === ev.coordsFrom && vp.isCameraOn) {
+    if (vp.isCameraOn) {
       const visiblePoint = vp.pickNearestVisibleGeometry(this._anchorPt, vp.pixelsFromInches(ToolSettings.viewToolPickRadiusInches));
       if (undefined !== visiblePoint) {
         this._anchorPt.setFrom(visiblePoint);
@@ -750,6 +755,7 @@ class ViewPan extends ViewingToolHandle {
     }
 
     this.viewTool.beginDynamicUpdate();
+    IModelApp.notifications.outputPromptByKey("CoreTools:tools.View.Pan.Prompts.NextPoint");
     return true;
   }
 
@@ -819,6 +825,7 @@ class ViewRotate extends ViewingToolHandle {
     this._frustum.setFrom(this._activeFrustum);
 
     tool.beginDynamicUpdate();
+    IModelApp.notifications.outputPromptByKey("CoreTools:tools.View.Rotate.Prompts.NextPoint");
     return true;
   }
 
@@ -923,6 +930,7 @@ class ViewLook extends ViewingToolHandle {
 
     vp.getWorldFrustum(this._frustum);
     tool.beginDynamicUpdate();
+    IModelApp.notifications.outputPromptByKey("CoreTools:tools.View.Look.Prompts.NextPoint");
     return true;
   }
 
@@ -1024,6 +1032,7 @@ class ViewScroll extends ViewingToolHandle {
     this._anchorPtView.setFrom(ev.viewPoint);
     this._lastPtView.setFrom(ev.viewPoint);
     tool.beginDynamicUpdate();
+    IModelApp.notifications.outputPromptByKey("CoreTools:tools.View.Scroll.Prompts.NextPoint");
     return true;
   }
 
@@ -1138,6 +1147,7 @@ class ViewZoom extends ViewingToolHandle {
         this._lastPtView.setFrom(this._anchorPtView);
         tool.viewport!.viewToNpc(this._anchorPtView, this._anchorPtNpc);
         tool.beginDynamicUpdate();
+        IModelApp.notifications.outputPromptByKey("CoreTools:tools.View.Zoom.Prompts.NextPoint");
         return true;
       }
     }
@@ -1149,6 +1159,7 @@ class ViewZoom extends ViewingToolHandle {
     this._lastPtView.setFrom(this._anchorPtView);
     tool.viewport!.viewToNpc(this._anchorPtView, this._anchorPtNpc);
     tool.beginDynamicUpdate();
+    IModelApp.notifications.outputPromptByKey("CoreTools:tools.View.Zoom.Prompts.NextPoint");
     return true;
   }
 
@@ -1548,6 +1559,7 @@ class ViewWalk extends ViewNavigate {
     this._navigateMotion = new NavigateMotion(this.viewTool.viewport!);
   }
   public get handleType(): ViewHandleType { return ViewHandleType.Walk; }
+  public firstPoint(ev: BeButtonEvent): boolean { IModelApp.notifications.outputPromptByKey("CoreTools:tools.View.Walk.Prompts.NextPoint"); return super.firstPoint(ev); }
 
   protected getNavigateMotion(elapsedTime: number): NavigateMotion | undefined {
     const input = this.getInputVector();
@@ -1584,6 +1596,7 @@ class ViewFly extends ViewNavigate {
     this._navigateMotion = new NavigateMotion(this.viewTool.viewport!);
   }
   public get handleType(): ViewHandleType { return ViewHandleType.Fly; }
+  public firstPoint(ev: BeButtonEvent): boolean { IModelApp.notifications.outputPromptByKey("CoreTools:tools.View.Fly.Prompts.NextPoint"); return super.firstPoint(ev); }
 
   protected getNavigateMotion(elapsedTime: number): NavigateMotion | undefined {
     const input = this.getInputVector();
@@ -1619,6 +1632,7 @@ export class PanViewTool extends ViewManip {
   constructor(vp: ScreenViewport, oneShot = false, isDraggingRequired = false) {
     super(vp, ViewHandleType.Pan, oneShot, isDraggingRequired);
   }
+  public onReinitialize(): void { super.onReinitialize(); IModelApp.notifications.outputPromptByKey("CoreTools:tools.View.Pan.Prompts.FirstPoint"); }
 }
 
 /** A tool that performs a Rotate view operation */
@@ -1627,6 +1641,7 @@ export class RotateViewTool extends ViewManip {
   constructor(vp: ScreenViewport, oneShot = false, isDraggingRequired = false) {
     super(vp, ViewHandleType.Rotate | ViewHandleType.Pan | ViewHandleType.TargetCenter, oneShot, isDraggingRequired);
   }
+  public onReinitialize(): void { super.onReinitialize(); IModelApp.notifications.outputPromptByKey("CoreTools:tools.View.Rotate.Prompts.FirstPoint"); }
 }
 
 /** A tool that performs the look operation */
@@ -1635,6 +1650,7 @@ export class LookViewTool extends ViewManip {
   constructor(vp: ScreenViewport, oneShot = false, isDraggingRequired = false) {
     super(vp, ViewHandleType.Look, oneShot, isDraggingRequired);
   }
+  public onReinitialize(): void { super.onReinitialize(); IModelApp.notifications.outputPromptByKey("CoreTools:tools.View.Look.Prompts.FirstPoint"); }
 }
 
 /** A tool that performs the scroll operation */
@@ -1643,6 +1659,7 @@ export class ScrollViewTool extends ViewManip {
   constructor(vp: ScreenViewport, oneShot = false, isDraggingRequired = false) {
     super(vp, ViewHandleType.Scroll, oneShot, isDraggingRequired);
   }
+  public onReinitialize(): void { super.onReinitialize(); IModelApp.notifications.outputPromptByKey("CoreTools:tools.View.Scroll.Prompts.FirstPoint"); }
 }
 
 /** A tool that performs the zoom operation */
@@ -1651,6 +1668,7 @@ export class ZoomViewTool extends ViewManip {
   constructor(vp: ScreenViewport, oneShot = false, isDraggingRequired = false) {
     super(vp, ViewHandleType.Zoom, oneShot, isDraggingRequired);
   }
+  public onReinitialize(): void { super.onReinitialize(); IModelApp.notifications.outputPromptByKey("CoreTools:tools.View.Zoom.Prompts.FirstPoint"); }
 }
 
 /** A tool that performs the walk operation */
@@ -1659,6 +1677,7 @@ export class WalkViewTool extends ViewManip {
   constructor(vp: ScreenViewport, oneShot = false, isDraggingRequired = false) {
     super(vp, ViewHandleType.Walk, oneShot, isDraggingRequired);
   }
+  public onReinitialize(): void { super.onReinitialize(); IModelApp.notifications.outputPromptByKey("CoreTools:tools.View.Walk.Prompts.FirstPoint"); }
 }
 
 /** A tool that performs the fly operation */
@@ -1667,6 +1686,7 @@ export class FlyViewTool extends ViewManip {
   constructor(vp: ScreenViewport, oneShot = false, isDraggingRequired = false) {
     super(vp, ViewHandleType.Fly, oneShot, isDraggingRequired);
   }
+  public onReinitialize(): void { super.onReinitialize(); IModelApp.notifications.outputPromptByKey("CoreTools:tools.View.Fly.Prompts.FirstPoint"); }
 }
 
 /** A tool that performs a fit view */
@@ -1691,6 +1711,9 @@ export class FitViewTool extends ViewTool {
 
   public onPostInstall() {
     super.onPostInstall();
+    if (undefined === this.viewport || !this.oneShot)
+      IModelApp.notifications.outputPromptByKey("CoreTools:tools.View.Fit.Prompts.FirstPoint");
+
     if (this.viewport)
       this.doFit(this.viewport, this.oneShot, this.doAnimate);
   }
@@ -1717,7 +1740,8 @@ export class WindowAreaTool extends ViewTool {
 
   constructor(viewport: Viewport) { super(); this._viewport = viewport; }
 
-  public onReinitialize() { this._haveFirstPoint = false; this._firstPtWorld.setZero(); this._secondPtWorld.setZero(); }
+  public onPostInstall() { super.onPostInstall(); IModelApp.notifications.outputPromptByKey("CoreTools:tools.View.WindowArea.Prompts.FirstPoint"); }
+  public onReinitialize() { this._haveFirstPoint = false; this._firstPtWorld.setZero(); this._secondPtWorld.setZero(); IModelApp.notifications.outputPromptByKey("CoreTools:tools.View.WindowArea.Prompts.FirstPoint"); }
   public async onResetButtonUp(ev: BeButtonEvent): Promise<EventHandled> { if (this._haveFirstPoint) { this.onReinitialize(); return EventHandled.Yes; } return super.onResetButtonUp(ev); }
 
   public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
@@ -1731,6 +1755,7 @@ export class WindowAreaTool extends ViewTool {
       this._secondPtWorld.setFrom(this._firstPtWorld);
       this._haveFirstPoint = true;
       this._lastPtView = ev.viewPoint;
+      IModelApp.notifications.outputPromptByKey("CoreTools:tools.View.WindowArea.Prompts.NextPoint");
     }
 
     return EventHandled.Yes;
@@ -1886,8 +1911,7 @@ export class WindowAreaTool extends ViewTool {
       delta.z = vp.view.getExtents().z;
 
       // make sure its not too big or too small
-      if (vp.view.validateViewDelta(delta, true) !== ViewStatus.Success)
-        return;
+      vp.view.validateViewDelta(delta, true);
 
       vp.view.setExtents(delta);
 
@@ -2151,68 +2175,5 @@ export class ViewToggleCameraTool extends ViewTool {
 
     this._viewport.synchWithView(true);
     this.exitTool();
-  }
-}
-
-/** @hidden */
-export class ViewChangeRenderModeTool extends ViewTool {
-  // Tool currently only used for debugging purposes. Users of imodeljs-core have the ability to set these flags from their app directly and do not need this ViewTool.
-  public static toolId = "View.ChangeRenderMode";
-  private _viewport: Viewport;
-  // REFERENCE to app's map of rendering options to true/false values (i.e. - whether or not to display skybox, groundPlane, etc.)
-  private _renderOptions: Map<string, boolean>;
-  // REFERENCE to app's menu for changing render modes
-  private _renderMenu: HTMLElement;
-  private _renderMode: RenderMode;
-
-  constructor(viewport: Viewport, renderOptionsMap: Map<string, boolean>, renderMenuDialog: HTMLElement, mode: RenderMode) {
-    super();
-    this._viewport = viewport;
-    this._renderOptions = renderOptionsMap;
-    this._renderMenu = renderMenuDialog;
-    this._renderMode = mode;
-  }
-
-  // We want changes to happen immediately when checking or unchecking an option
-  public onPostInstall() {
-    const viewflags = ViewFlags.createFrom(this._viewport.viewFlags);
-    viewflags.renderMode = this._renderMode;
-    viewflags.acsTriad = this._renderOptions.get("ACSTriad")!;
-    viewflags.fill = this._renderOptions.get("fill")!;
-    viewflags.grid = this._renderOptions.get("grid")!;
-    viewflags.textures = this._renderOptions.get("textures")!;
-    viewflags.visibleEdges = this._renderOptions.get("visibleEdges")!;
-    viewflags.materials = this._renderOptions.get("materials")!;
-    viewflags.monochrome = this._renderOptions.get("monochrome")!;
-    viewflags.constructions = this._renderOptions.get("constructions")!;
-    viewflags.transparency = this._renderOptions.get("transparency")!;
-    viewflags.hiddenEdges = this._renderOptions.get("hiddenEdges")!;
-    viewflags.weights = this._renderOptions.get("weights")!;
-    viewflags.styles = this._renderOptions.get("styles")!;
-    viewflags.clipVolume = this._renderOptions.get("clipVolume")!;
-    viewflags.backgroundMap = this._renderOptions.get("backgroundMap")!;
-
-    const lights = this._renderOptions.get("lights")!;
-    viewflags.sourceLights = lights;
-    viewflags.solarLight = lights;
-    viewflags.cameraLights = lights;
-
-    // Now handle environment
-    if (this._viewport.view.is3d()) {
-      const view = this._viewport.view as ViewState3d;
-      const displayStyle = view.getDisplayStyle3d();
-      const env = displayStyle.environment;
-      env.ground.display = this._renderOptions.get("groundplane")!; // Changes directly within displaystyle
-      env.sky.display = this._renderOptions.get("skybox")!;  // Changes directly within displaystyle
-    }
-
-    this._viewport.view.viewFlags = viewflags;
-    this._viewport.sync.invalidateController();
-  }
-
-  public async onDataButtonDown(_ev: BeButtonEvent): Promise<EventHandled> {
-    this._renderMenu.style.display = "none";
-    this.exitTool();
-    return EventHandled.Yes;
   }
 }

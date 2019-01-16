@@ -1,12 +1,14 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+import { expect } from "chai";
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import ExpansionToggle from "../..//tree/ExpansionToggle";
-import Node from "../..//tree/Node";
+import { Checkbox } from "@bentley/bwc";
+import ExpansionToggle from "../../ui-core/tree/ExpansionToggle";
+import Node from "../../ui-core/tree/Node";
 
 describe("<Node />", () => {
   it("should render", () => {
@@ -54,27 +56,44 @@ describe("<Node />", () => {
     wrapper.find(".unique").should.have.lengthOf(1);
   });
 
-  it("should handle click events", () => {
-    const clickHandler = sinon.spy();
-    const expandHandler = sinon.spy();
-    const wrapper = shallow(<Node label="a" level={0} onClick={clickHandler} onClickExpansionToggle={expandHandler} />);
-    wrapper.should.exist;
-
-    const expander = wrapper.find(ExpansionToggle);
-    expander.should.have.lengthOf(1);
-
+  it("should call onClick callback when node is clicked", () => {
+    const callback = sinon.spy();
+    const wrapper = mount(<Node label="a" level={0} onClick={callback} />);
     const content = wrapper.find("div.contents");
-    content.should.have.lengthOf(1);
-    content.simulate("click", new MouseEvent("click"));
-    clickHandler.calledOnce.should.true;
-    expandHandler.should.not.have.been.called;
+    content.simulate("click");
+    expect(callback).to.be.calledOnce;
+  });
 
-    clickHandler.resetHistory();
-    expandHandler.resetHistory();
+  it("should call onClickExpansionToggle callback when expansion toggle is clicked", () => {
+    const callback = sinon.spy();
+    const wrapper = mount(<Node label="a" level={0} onClickExpansionToggle={callback} />);
+    const expander = wrapper.find(ExpansionToggle);
+    expander.simulate("click");
+    expect(callback).to.be.calledOnce;
+  });
 
-    expander.simulate("click", new MouseEvent("click"));
-    clickHandler.should.not.have.been.called;
-    expandHandler.calledOnce.should.true;
+  it("should not call onClick callback when expansion toggle is clicked", () => {
+    const callback = sinon.spy();
+    const wrapper = mount(<Node label="a" level={0} onClick={callback} />);
+    const expander = wrapper.find(ExpansionToggle);
+    expander.simulate("click");
+    expect(callback).to.not.be.called;
+  });
+
+  it("should call onCheckboxClick callback when checkbox state changes", () => {
+    const callback = sinon.spy();
+    const wrapper = mount(<Node label="a" level={0} isCheckboxVisible={true} onCheckboxClick={callback} />);
+    const checkbox = wrapper.find(Checkbox).find("input");
+    checkbox.simulate("change");
+    expect(callback).to.be.calledOnce;
+  });
+
+  it("should not call onClick callback when checkbox is clicked", () => {
+    const callback = sinon.spy();
+    const wrapper = mount(<Node label="a" level={0} isCheckboxVisible={true} onClick={callback} />);
+    const checkbox = wrapper.find(Checkbox).find("input");
+    checkbox.simulate("click");
+    expect(callback).to.not.be.called;
   });
 
   it("should safely handle click events with undefined handlers", () => {

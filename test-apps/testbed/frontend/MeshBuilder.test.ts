@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { expect, assert } from "chai";
@@ -31,7 +31,7 @@ import {
 import { System } from "@bentley/imodeljs-frontend/lib/webgl";
 import { FakeDisplayParams } from "./DisplayParams.test";
 import { CONSTANTS } from "../common/Testbed";
-import { WebGLTestContext } from "./WebGLTestContext";
+import { MockRender } from "./MockRender";
 
 const iModelLocation = path.join(CONSTANTS.IMODELJS_CORE_DIRNAME, "core/backend/lib/test/assets/test.bim");
 
@@ -52,11 +52,11 @@ describe("Mesh Builder Tests", () => {
     imodel = await IModelConnection.openStandalone(iModelLocation);
     spatialView = await imodel.views.load("0x34") as SpatialViewState;
     spatialView.setStandardRotation(StandardViewId.RightIso);
-    WebGLTestContext.startup();
+    MockRender.App.startup();
   });
 
   after(async () => {
-    WebGLTestContext.shutdown();
+    MockRender.App.shutdown();
     if (imodel) await imodel.closeStandalone();
   });
 
@@ -80,10 +80,6 @@ describe("Mesh Builder Tests", () => {
   });
 
   it("addStrokePointLists", () => {
-    if (!WebGLTestContext.isInitialized) {
-      return;
-    }
-
     const viewport = ScreenViewport.create(viewDiv, spatialView);
     const primBuilder = new PrimitiveBuilder(System.instance, GraphicType.Scene, viewport);
 
@@ -346,14 +342,14 @@ describe("Mesh Builder Tests", () => {
     const fillColor = ColorDef.white.tbgr;
 
     // throws assertion error if type is mesh (should be point or polyline)
-    expect(() => mb.addPolyline(points, fillColor, 0)).to.throw("Assert: Programmer Error");
+    expect(() => mb.addPolyline(points, fillColor)).to.throw("Assert: Programmer Error");
 
     points = [new Point3d(), new Point3d(1, 1, 1), new Point3d(2, 2, 2)];
     type = Mesh.PrimitiveType.Polyline;
     mb = MeshBuilder.create({ displayParams, type, range, is2d, isPlanar, tolerance, areaTolerance });
 
     expect(mb.mesh.polylines!.length).to.equal(0);
-    mb.addPolyline(points, fillColor, 0);
+    mb.addPolyline(points, fillColor);
     expect(mb.mesh.polylines!.length).to.equal(1);
 
     points = [new Point3d()];
@@ -361,7 +357,7 @@ describe("Mesh Builder Tests", () => {
 
     // if array is less than 1 in length, no polylines added
     expect(mb.mesh.polylines!.length).to.equal(0);
-    mb.addPolyline(points, fillColor, 0);
+    mb.addPolyline(points, fillColor);
     expect(mb.mesh.polylines!.length).to.equal(0);
   });
 
@@ -380,14 +376,14 @@ describe("Mesh Builder Tests", () => {
     const fillColor = ColorDef.white.tbgr;
 
     // throws assertion error if type is mesh (should be point or polyline)
-    expect(() => mb.addPointString(points, fillColor, 0)).to.throw("Assert: Programmer Error");
+    expect(() => mb.addPointString(points, fillColor)).to.throw("Assert: Programmer Error");
 
     points = [new Point3d(), new Point3d(1, 1, 1), new Point3d(2, 2, 2)];
     type = Mesh.PrimitiveType.Polyline;
     mb = MeshBuilder.create({ displayParams, type, range, is2d, isPlanar, tolerance, areaTolerance });
 
     expect(mb.mesh.polylines!.length).to.equal(0);
-    mb.addPointString(points, fillColor, 0);
+    mb.addPointString(points, fillColor);
     expect(mb.mesh.polylines!.length).to.equal(1);
 
     points = [new Point3d()];
@@ -395,7 +391,7 @@ describe("Mesh Builder Tests", () => {
 
     // if array is less than 1 in length, no polylines added
     expect(mb.mesh.polylines!.length).to.equal(0);
-    mb.addPointString(points, fillColor, 0);
+    mb.addPointString(points, fillColor);
     expect(mb.mesh.polylines!.length).to.equal(0);
   });
 

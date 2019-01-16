@@ -1,15 +1,12 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 
-import { ConfigurableUiManager } from "@bentley/ui-framework";
-import { ConfigurableCreateInfo } from "@bentley/ui-framework";
-import { ToolUiProvider } from "@bentley/ui-framework";
+import { ConfigurableUiManager, ConfigurableCreateInfo, ToolUiProvider } from "@bentley/ui-framework";
 
-import AssistanceItem from "@bentley/ui-ninezone/lib/footer/tool-assistance/Item";
-import AssistanceSeparator from "@bentley/ui-ninezone/lib/footer/tool-assistance/Separator";
+import { ToolAssistanceItem, ToolAssistanceSeparator } from "@bentley/ui-ninezone";
 import { SampleAppIModelApp } from "../..";
 
 class Tool1UiProvider extends ToolUiProvider {
@@ -65,24 +62,24 @@ class Tool1Assistance extends React.Component {
   public render(): React.ReactNode {
     return (
       <>
-        <AssistanceItem>
+        <ToolAssistanceItem>
           <i className="icon icon-cursor" />
           Identify piece to trim
-        </AssistanceItem>
-        <AssistanceSeparator label="Inputs" />
-        <AssistanceItem>
+        </ToolAssistanceItem>
+        <ToolAssistanceSeparator label="Inputs" />
+        <ToolAssistanceItem>
           <i className="icon icon-cursor-click" />
           Clink on element
-        </AssistanceItem>
-        <AssistanceItem>
+        </ToolAssistanceItem>
+        <ToolAssistanceItem>
           <i className="icon  icon-check-out" />
           Drag across elements
-        </AssistanceItem>
-        <AssistanceSeparator />
-        <AssistanceItem>
+        </ToolAssistanceItem>
+        <ToolAssistanceSeparator />
+        <ToolAssistanceItem>
           <input type="checkbox" />
           Show prompt @ cursor
-        </AssistanceItem>
+        </ToolAssistanceItem>
       </>
     );
   }

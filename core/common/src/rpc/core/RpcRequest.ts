@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module RpcInterface */
@@ -317,6 +317,10 @@ export abstract class RpcRequest<TResponse = any> {
 
     if (this.protocol.authorizationHeaderName) {
       this.setHeader(this.protocol.authorizationHeaderName, this.protocol.configuration.applicationAuthorizationValue);
+    }
+
+    if (this.protocol.versionHeaderName && RpcConfiguration.applicationVersionValue) {
+      this.setHeader(this.protocol.versionHeaderName, RpcConfiguration.applicationVersionValue);
     }
   }
 

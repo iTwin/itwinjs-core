@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
@@ -7,7 +7,7 @@
 
 // import { Point2d } from "./Geometry2d";
 /* tslint:disable:variable-name jsdoc-format no-empty no-console*/
-import { AxisOrder } from "../Geometry";
+import { AxisOrder, Geometry } from "../Geometry";
 import { Point3d } from "../geometry3d/Point3dVector3d";
 import { Range3d } from "../geometry3d/Range";
 import { Transform } from "../geometry3d/Transform";
@@ -15,8 +15,7 @@ import { Matrix3d } from "../geometry3d/Matrix3d";
 import { Point3dArray, Point4dArray } from "../geometry3d/PointHelpers";
 import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
 import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
-import { KnotVector } from "./KnotVector";
-import { Geometry } from "../Geometry";
+import { KnotVector, BSplineWrapMode } from "./KnotVector";
 import { Point4d } from "../geometry4d/Point4d";
 import { GeometryQuery } from "../curve/GeometryQuery";
 import { GeometryHandler } from "../geometry3d/GeometryHandler";
@@ -386,7 +385,7 @@ export abstract class BSpline2dNd extends GeometryQuery {
   /**
    * Set the flag indicating the bspline might be suitable for having wrapped "closed" interpretation.
    */
-  public setWrappable(select: UVSelect, value: boolean) {
+  public setWrappable(select: UVSelect, value: BSplineWrapMode) {
     this.knots[select].wrappable = value;
   }
   /**
@@ -395,7 +394,7 @@ export abstract class BSpline2dNd extends GeometryQuery {
    * @returns true if coordinates matched.
    */
   public isClosable(select: UVSelect): boolean {
-    if (!this.knots[select].wrappable)
+    if (this.knots[select].wrappable === BSplineWrapMode.None)
       return false;
     if (!this.knots[select].testClosable())
       return false;

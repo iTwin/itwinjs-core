@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 "use strict";
@@ -10,7 +10,7 @@ exports.describe = chalk.bold("Runs a production build.");
 exports.builder = (yargs) =>
   yargs.strict(true)
     .positional("target", {
-      choices: ["electron", "web"],
+      choices: ["electron", "web", "ios"],
       describe: `The target environment.`,
       type: "string"
     })
@@ -47,6 +47,9 @@ exports.handler = async (argv) => {
   if ("electron" === buildTarget)
     process.env.ELECTRON_ENV = "production";
 
+    if ("ios" === buildTarget)
+    process.env.IOS_ENV = "dev";
+
   const path = require("path");
   const fs = require("fs-extra");
   const webpack = require("webpack");
@@ -57,8 +60,16 @@ exports.handler = async (argv) => {
   const { buildFrontend, buildBackend, saveJsonStats } = require("./utils/webpackWrappers");
 
   const paths = require("../config/paths");
-  const frontendConfig = require("../config/webpack.config.frontend.prod");
-  const backendConfig = require("../config/webpack.config.backend.prod");
+  let frontendConfig;
+  let backendConfig;
+  if (process.env.IOS_ENV) {
+    backendConfig = require("../config/ios.config.backend.dev")
+    frontendConfig = require("../config/ios.config.frontend.dev");
+  } else {
+    backendConfig = require("../config/webpack.config.backend.prod")
+    frontendConfig = require("../config/webpack.config.frontend.prod");
+  }
+
   const statDumpPromises = [];
 
   const skipBackend = Boolean(argv.frontend);

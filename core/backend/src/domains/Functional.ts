@@ -1,10 +1,11 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Schema */
 
-import { ActivityLoggingContext, DbResult, Logger } from "@bentley/bentleyjs-core";
+import { ActivityLoggingContext, DbResult, Logger, AuthStatus } from "@bentley/bentleyjs-core";
+import { AccessToken } from "@bentley/imodeljs-clients";
 import { IModelError } from "@bentley/imodeljs-common";
 import { ClassRegistry } from "../ClassRegistry";
 import { IModelDb } from "../IModelDb";
@@ -23,11 +24,13 @@ export class Functional extends Schema {
     super();
     ClassRegistry.registerModule(elementsModule, this);
   }
-  public static async importSchema(activityLoggingContext: ActivityLoggingContext, iModelDb: IModelDb) {
+  public static async importSchema(activityLoggingContext: ActivityLoggingContext, iModelDb: IModelDb, accessToken?: AccessToken) {
     // NOTE: this concurrencyControl logic was copied from IModelDb.importSchema
     activityLoggingContext.enter();
     if (!iModelDb.briefcase.isStandalone) {
-      await iModelDb.concurrencyControl.lockSchema(activityLoggingContext, IModelDb.getAccessToken(iModelDb.iModelToken.iModelId!));
+      if (!accessToken)
+        throw new IModelError(AuthStatus.Error, "Importing the schema requires the accessToken of the authorized user");
+      await iModelDb.concurrencyControl.lockSchema(activityLoggingContext, accessToken);
       activityLoggingContext.enter();
     }
     const stat = iModelDb.briefcase.nativeDb.importFunctionalSchema();

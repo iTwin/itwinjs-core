@@ -1,7 +1,9 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+/* tslint:disable:no-direct-imports */
+
 import "@bentley/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment";
 import * as React from "react";
 import { expect } from "chai";
@@ -18,11 +20,11 @@ import {
 } from "@bentley/presentation-frontend";
 import PresentationManager from "@bentley/presentation-frontend/lib/PresentationManager";
 import { Table, TableProps, ColumnDescription, RowItem, TableDataChangeEvent } from "@bentley/ui-components";
-import IUnifiedSelectionComponent from "../../common/IUnifiedSelectionComponent";
-import { PresentationTableDataProvider, withUnifiedSelection } from "../../table";
+import { IUnifiedSelectionComponent } from "../../common/IUnifiedSelectionComponent";
+import { PresentationTableDataProvider, tableWithUnifiedSelection } from "../../presentation-components";
 
 // tslint:disable-next-line:variable-name naming-convention
-const PresentationTable = withUnifiedSelection(Table);
+const PresentationTable = tableWithUnifiedSelection(Table);
 
 describe("Table withUnifiedSelection", () => {
 
@@ -57,7 +59,7 @@ describe("Table withUnifiedSelection", () => {
     providerMock.reset();
     providerMock.setup((x) => x.keys).returns(() => new KeySet());
     providerMock.setup((x) => x.getColumns()).returns(async () => columns!);
-    providerMock.setup((x) => x.connection).returns(() => imodel!);
+    providerMock.setup((x) => x.imodel).returns(() => imodel!);
     providerMock.setup((x) => x.rulesetId).returns(() => rulesetId!);
     providerMock.setup((x) => x.getRowsCount()).returns(async () => rows!.length);
     providerMock.setup((x) => x.getRow(moq.It.isAnyNumber())).returns(async (i: number) => rows![i]);

@@ -1,11 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { PrimitiveValue, PropertyValueFormat, PropertyRecord } from "../../properties";
-import { SimplePropertyDataProvider, PropertyCategory } from "../../propertygrid";
+import { PrimitiveValue, PropertyValueFormat, PropertyRecord, SimplePropertyDataProvider, PropertyCategory } from "../../ui-components";
 import TestUtils from "../TestUtils";
 
 class SamplePropertyDataProvider extends SimplePropertyDataProvider {

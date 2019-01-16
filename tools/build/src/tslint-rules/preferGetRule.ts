@@ -1,24 +1,21 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-// ====================================================================================================================
 /**
  * This rule enforces the use of get-accessors in place of methods for functions starting with "is", "has", or "want",
  * such that they may be accessed as properties of the object.
  */
-// ====================================================================================================================
 import * as ts from "typescript";
 import * as Lint from "tslint";
 
 /** A list of file names (with extensions) that this rule should not be applied to. */
 const FILENAME_EXCEPTIONS: string[] = [
-  "imodeljs-native-platform-api.ts",
 ];
 
 export class Rule extends Lint.Rules.AbstractRule {
-  public static FAILURE_STRING: string = "Consider replacing this method with a property or add the 'get' modifier. If the value is expensive to compute, consider renaming the method instead.";
+  public static FAILURE_STRING: string = "Consider making this method an accessor. If the value is expensive to compute, consider renaming the method instead.";
 
   // override
   public apply(sourceFile: ts.SourceFile): Lint.RuleFailure[] {

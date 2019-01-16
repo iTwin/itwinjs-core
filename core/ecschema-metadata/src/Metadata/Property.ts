@@ -1,10 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
 import { ECClass, StructClass } from "./Class";
-import { processCustomAttributes, CustomAttributeSet, serializeCustomAttributes } from "./CustomAttribute";
+import { CustomAttributeSet, serializeCustomAttributes, CustomAttribute } from "./CustomAttribute";
 import { Enumeration } from "./Enumeration";
 import { KindOfQuantity } from "./KindOfQuantity";
 import { PropertyCategory } from "./PropertyCategory";
@@ -14,7 +14,7 @@ import {
   EnumerationPropertyProps, PrimitiveArrayPropertyProps, PrimitiveOrEnumPropertyBaseProps,
   PrimitivePropertyProps, PropertyProps, StructPropertyProps,
 } from "./../Deserialization/JsonProps";
-import { CustomAttributeContainerType, parsePrimitiveType, PrimitiveType, primitiveTypeToString, StrengthDirection, strengthDirectionToString } from "./../ECObjects";
+import { parsePrimitiveType, PrimitiveType, primitiveTypeToString, StrengthDirection, strengthDirectionToString } from "./../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "./../Exception";
 import { AnyClass, LazyLoadedEnumeration, LazyLoadedKindOfQuantity, LazyLoadedPropertyCategory, LazyLoadedRelationshipClass } from "./../Interfaces";
 import { PropertyType, propertyTypeToString, PropertyTypeUtils } from "./../PropertyTypes";
@@ -34,7 +34,7 @@ export abstract class Property {
   protected _priority: number;
   protected _category?: LazyLoadedPropertyCategory;
   protected _kindOfQuantity?: LazyLoadedKindOfQuantity;
-  protected _customAttributes?: CustomAttributeSet;
+  private _customAttributes?: Map<string, CustomAttribute>;
 
   constructor(ecClass: ECClass, name: string, type: PropertyType) {
     this._class = ecClass as AnyClass;
@@ -143,11 +143,17 @@ export abstract class Property {
           return koq;
         });
     }
-    this._customAttributes = processCustomAttributes(propertyProps.customAttributes, this.name, CustomAttributeContainerType.AnyProperty);
   }
 
   public async deserialize(propertyProps: PropertyProps) {
     this.deserializeSync(propertyProps);
+  }
+
+  protected addCustomAttribute(customAttribute: CustomAttribute) {
+    if (!this._customAttributes)
+      this._customAttributes = new Map<string, CustomAttribute>();
+
+    this._customAttributes.set(customAttribute.className, customAttribute);
   }
 }
 
@@ -410,3 +416,10 @@ export type AnyPrimitiveProperty = PrimitiveProperty | PrimitiveArrayProperty;
 export type AnyEnumerationProperty = EnumerationProperty | EnumerationArrayProperty;
 export type AnyStructProperty = StructProperty | StructArrayProperty;
 export type AnyProperty = AnyPrimitiveProperty | AnyEnumerationProperty | AnyStructProperty | NavigationProperty;
+
+/** @hidden
+ * Hackish approach that works like a "friend class" so we can access protected members without making them public.
+ */
+export abstract class MutableProperty extends Property {
+  public abstract addCustomAttribute(customAttribute: CustomAttribute): void;
+}

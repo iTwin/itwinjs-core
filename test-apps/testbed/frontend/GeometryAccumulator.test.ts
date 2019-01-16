@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
@@ -23,8 +23,7 @@ import {
 } from "@bentley/imodeljs-frontend/lib/rendering";
 import { Branch, System } from "@bentley/imodeljs-frontend/lib/webgl";
 import { Transform, Range3d, StrokeOptions, LineString3d, Path, Point3d, Loop } from "@bentley/geometry-core";
-import { GraphicParams } from "@bentley/imodeljs-common/lib/Render";
-import { ColorDef } from "@bentley/imodeljs-common";
+import { ColorDef, GraphicParams } from "@bentley/imodeljs-common";
 import { CONSTANTS } from "../common/Testbed";
 import { WebGLTestContext } from "./WebGLTestContext";
 import { FakeDisplayParams } from "./DisplayParams.test";

@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { RpcInterface, RpcManager } from "@bentley/imodeljs-common";
@@ -17,7 +17,7 @@ export default class DisplayPerfRpcInterface extends RpcInterface {
 
   public static getClient(): DisplayPerfRpcInterface { return RpcManager.getClientForInterface(DisplayPerfRpcInterface); }
 
-  public async getDefaultConfigs(): Promise<string> { return this.forward.apply(this, arguments); }
-  public async saveCsv(_outputPath: string, _outputName: string, _rowData: Map<string, number | string>): Promise<void> { return this.forward.apply(this, arguments); }
-  public async savePng(_fileName: string, _png: string): Promise<void> { return this.forward.apply(this, arguments); }
+  public async getDefaultConfigs(): Promise<string> { return this.forward(arguments); }
+  public async saveCsv(_outputPath: string, _outputName: string, _rowData: Map<string, number | string>): Promise<void> { return this.forward(arguments); }
+  public async savePng(_fileName: string, _png: string): Promise<void> { return this.forward(arguments); }
 }

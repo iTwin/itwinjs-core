@@ -29,6 +29,7 @@
     "testFrontstage3": "Test 3 Frontstage",
     "testFrontstage4": "Test 4 Frontstage",
     "testFrontstage5": "Test 5 Frontstage",
+    "iModelStage": "Review iModel",
     "task1": "Task 1",
     "task2": "Task 2",
     "task3": "Task 3",
@@ -97,8 +98,15 @@
     "openMessageBox": "Open Message Box",
     "setLengthFormatMetric": "Set Format Metric",
     "setLengthFormatImperial": "Set Format Imperial",
+    "toggleLengthFormat": "Toggle Length Format (Imperial/Metric)",
+    "toggleItemDisplay": "Toggle Hide/Show Test",
     "openRadial": "Open Radial Menu",
-    "outputMessage": "Call outputMessage"
+    "outputMessage": "Call outputMessage",
+    "openPropertyGrid": "Open Property Grid",
+    "closePropertyGrid": "Close Property Grid",
+    "showShortcutsMenu": "Show Shortcuts Menu",
+    "shortcutsSubMenu": "Shortcuts Submenu Sample",
+    "openNestedFrontstage1": "Open Nested Frontstage"
   },
   "tools": {
     "Tool1": {

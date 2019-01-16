@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
@@ -9,10 +9,9 @@ import { RobotWorldEngine } from "../RobotWorldEngine";
 import { Angle, AngleProps, Point3d, Range3d, XYZProps } from "@bentley/geometry-core";
 import { Robot } from "../RobotElement";
 import { Barrier } from "../BarrierElement";
-import { Project, IModelHubClient, IModelQuery } from "@bentley/imodeljs-clients";
+import { AccessToken, HubIModel, Project, IModelHubClient, IModelQuery } from "@bentley/imodeljs-clients";
 // __PUBLISH_EXTRACT_START__ Bridge.imports.example-code
 import { ActivityLoggingContext, Guid, Id64String } from "@bentley/bentleyjs-core";
-import { AccessToken, HubIModel } from "@bentley/imodeljs-clients";
 import { BriefcaseManager, CategorySelector, ConcurrencyControl, DefinitionModel, DisplayStyle3d, IModelDb, IModelHost, ModelSelector, OpenParams, OrthographicViewDefinition, PhysicalModel, SpatialCategory, Subject } from "@bentley/imodeljs-backend";
 import { ColorByName, ColorDef, IModel } from "@bentley/imodeljs-common";
 // __PUBLISH_EXTRACT_END__

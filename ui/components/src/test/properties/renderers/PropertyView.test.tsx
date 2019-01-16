@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
@@ -8,8 +8,8 @@ import sinon from "sinon";
 import * as React from "react";
 import { Orientation, ElementSeparator } from "@bentley/ui-core";
 import TestUtils from "../../TestUtils";
-import { PropertyView } from "../../../properties/renderers/PropertyView";
-import { PropertyRecord } from "../../../properties/Record";
+import { PropertyView } from "../../../ui-components/properties/renderers/PropertyView";
+import { PropertyRecord } from "../../../ui-components/properties/Record";
 
 describe("PropertyView", () => {
   let propertyRecord: PropertyRecord;
@@ -153,29 +153,42 @@ describe("PropertyView", () => {
     expect(propertyRenderer.find(".components--clickable").first().exists()).to.be.true;
   });
 
-  it("renders as hoverable when isSelectable prop is true", () => {
+  it("renders as hoverable when isHoverable prop is true", () => {
     const propertyRenderer = mount(
       <PropertyView
         orientation={Orientation.Horizontal}
         propertyRecord={propertyRecord}
-        onClick={() => { }}
         labelElement={"label"}
-        isSelectable={true}
+        isHoverable={true}
       />);
 
     expect(propertyRenderer.find(".components--hoverable").first().exists()).to.be.true;
   });
-  it("does not renders as hoverable when isSelectable prop is true, but it is already selected", () => {
+
+  it("renders only label when property record is non primitive", () => {
+    propertyRecord = TestUtils.createStructProperty("StructProperty");
     const propertyRenderer = mount(
       <PropertyView
         orientation={Orientation.Horizontal}
         propertyRecord={propertyRecord}
-        onClick={() => { }}
-        labelElement={"label"}
-        isSelectable={true}
-        isSelected={true}
+        labelElement={"City"}
+        valueElement={"Vilnius"}
       />);
-
-    expect(propertyRenderer.find(".components--hoverable").first().exists()).to.be.false;
+    expect(propertyRenderer.find(".components-property-record-label").first().text()).to.be.eq("City");
+    expect(propertyRenderer.find(".components-property-record-value").exists()).to.be.false;
   });
+
+  it("calls onContextMenu callback on property right click", () => {
+    const callback = sinon.spy();
+    const propertyRenderer = mount(
+      <PropertyView
+        orientation={Orientation.Horizontal}
+        propertyRecord={propertyRecord}
+        onContextMenu={callback}
+        labelElement={"label"}
+      />);
+    propertyRenderer.find(".components-property-record--horizontal").first().simulate("contextMenu");
+    expect(callback).to.be.calledOnceWith(propertyRecord);
+  });
+
 });

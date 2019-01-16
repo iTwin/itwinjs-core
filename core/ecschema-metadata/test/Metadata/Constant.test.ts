@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
@@ -10,7 +10,7 @@ import { ECObjectsError } from "../../src/Exception";
 import * as sinon from "sinon";
 import { Phenomenon } from "../../src/Metadata/Phenomenon";
 import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
-import { SchemaItemType } from "../../src";
+import { SchemaItemType } from "../../src/ECObjects";
 
 describe("Constant", () => {
   describe("accept", () => {

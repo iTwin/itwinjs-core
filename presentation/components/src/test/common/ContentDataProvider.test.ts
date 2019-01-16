@@ -1,7 +1,9 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+/* tslint:disable:no-direct-imports */
+
 import "@bentley/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment";
 import { expect } from "chai";
 import * as sinon from "sinon";
@@ -10,35 +12,37 @@ import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { PromiseContainer } from "@bentley/presentation-common/lib/test/_helpers/Promises";
 import { createRandomDescriptor } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import * as content from "@bentley/presentation-common/lib/content";
-import { KeySet, PageOptions } from "@bentley/presentation-common";
-import { Presentation } from "@bentley/presentation-frontend";
-import PresentationManager from "@bentley/presentation-frontend/lib/PresentationManager";
-import ContentDataProvider, { CacheInvalidationProps } from "../../common/ContentDataProvider";
+import {
+  Descriptor, Field, Content,
+  SelectionInfo, Item,
+  KeySet, PageOptions,
+} from "@bentley/presentation-common";
+import { Presentation, PresentationManager } from "@bentley/presentation-frontend";
+import { ContentDataProvider, CacheInvalidationProps } from "../../common/ContentDataProvider";
 
 /**
  * The Provider class is used to make protected ContentDataProvider
  * function public so the tests can call and spy on them.
  */
 class Provider extends ContentDataProvider {
-  constructor(connection: IModelConnection, rulesetId: string, displayType: string) {
-    super(connection, rulesetId, displayType);
+  constructor(imodel: IModelConnection, rulesetId: string, displayType: string) {
+    super(imodel, rulesetId, displayType);
   }
   public invalidateCache(props: CacheInvalidationProps): void {
     super.invalidateCache(props);
   }
-  public configureContentDescriptor(descriptor: Readonly<content.Descriptor>): content.Descriptor {
+  public configureContentDescriptor(descriptor: Readonly<Descriptor>): Descriptor {
     return super.configureContentDescriptor(descriptor);
   }
-  public shouldExcludeFromDescriptor(field: content.Field): boolean {
+  public shouldExcludeFromDescriptor(field: Field): boolean {
     return super.shouldExcludeFromDescriptor(field);
   }
-  public isFieldHidden(field: content.Field): boolean {
+  public isFieldHidden(field: Field): boolean {
     return super.isFieldHidden(field);
   }
-  public publicGetContentDescriptor: (() => Promise<Readonly<content.Descriptor> | undefined>) & _.MemoizedFunction = this.getContentDescriptor;
+  public publicGetContentDescriptor: (() => Promise<Readonly<Descriptor> | undefined>) & _.MemoizedFunction = this.getContentDescriptor;
   public publicGetContentSetSize: (() => Promise<number>) & _.MemoizedFunction = this.getContentSetSize;
-  public publicGetContent: ((pageOptions?: PageOptions) => Promise<Readonly<content.Content> | undefined>) & _.MemoizedFunction = this.getContent;
+  public publicGetContent: ((pageOptions?: PageOptions) => Promise<Readonly<Content> | undefined>) & _.MemoizedFunction = this.getContent;
 }
 
 interface MemoizedCacheSpies {
@@ -115,22 +119,22 @@ describe("ContentDataProvider", () => {
 
   });
 
-  describe("connection", () => {
+  describe("imodel", () => {
 
-    it("returns connection provider is initialized with", () => {
-      expect(provider.connection).to.eq(imodelMock.object);
+    it("returns imodel provider is initialized with", () => {
+      expect(provider.imodel).to.eq(imodelMock.object);
     });
 
-    it("sets a different connection and clears caches", () => {
+    it("sets a different imodel and clears caches", () => {
       const newConnection = moq.Mock.ofType<IModelConnection>();
-      provider.connection = newConnection.object;
-      expect(provider.connection).to.eq(newConnection.object);
+      provider.imodel = newConnection.object;
+      expect(provider.imodel).to.eq(newConnection.object);
       verifyMemoizedCachesCleared();
     });
 
-    it("doesn't clear caches if setting to the same connection", () => {
-      provider.connection = imodelMock.object;
-      expect(provider.connection).to.eq(imodelMock.object);
+    it("doesn't clear caches if setting to the same imodel", () => {
+      provider.imodel = imodelMock.object;
+      expect(provider.imodel).to.eq(imodelMock.object);
       verifyMemoizedCachesCleared(false);
     });
 
@@ -139,19 +143,19 @@ describe("ContentDataProvider", () => {
   describe("selectionInfo", () => {
 
     it("sets a different selectionInfo and clears caches", () => {
-      const info1: content.SelectionInfo = { providerName: "a" };
+      const info1: SelectionInfo = { providerName: "a" };
       provider.selectionInfo = info1;
       expect(provider.selectionInfo).to.eq(info1);
       resetMemoizedCacheSpies();
 
-      const info2: content.SelectionInfo = { providerName: "b" };
+      const info2: SelectionInfo = { providerName: "b" };
       provider.selectionInfo = info2;
       expect(provider.selectionInfo).to.eq(info2);
       verifyMemoizedCachesCleared(true);
     });
 
     it("doesn't clear caches if setting to the same selectionInfo", () => {
-      const info1: content.SelectionInfo = { providerName: "a" };
+      const info1: SelectionInfo = { providerName: "a" };
       provider.selectionInfo = info1;
       expect(provider.selectionInfo).to.eq(info1);
       resetMemoizedCacheSpies();
@@ -212,7 +216,7 @@ describe("ContentDataProvider", () => {
 
   describe("getContentDescriptor", () => {
 
-    const selection: content.SelectionInfo = { providerName: "test" };
+    const selection: SelectionInfo = { providerName: "test" };
 
     it("requests presentation manager for descriptor and returns its copy", async () => {
       const result = createRandomDescriptor(displayType);
@@ -244,7 +248,7 @@ describe("ContentDataProvider", () => {
     });
 
     it("memoizes result", async () => {
-      const resultPromiseContainer = new PromiseContainer<content.Descriptor>();
+      const resultPromiseContainer = new PromiseContainer<Descriptor>();
       presentationManagerMock.setup((x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetId }, moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
         .returns(() => resultPromiseContainer.promise)
         .verifiable(moq.Times.once());
@@ -317,7 +321,7 @@ describe("ContentDataProvider", () => {
 
     it("requests presentation manager for content", async () => {
       const descriptor = createRandomDescriptor();
-      const result: content.Content = {
+      const result: Content = {
         descriptor,
         contentSet: [],
       };
@@ -334,7 +338,7 @@ describe("ContentDataProvider", () => {
 
     it("memoizes result", async () => {
       const descriptor = createRandomDescriptor();
-      const resultPromiseContainers = [1, 2, 3].map(() => new PromiseContainer<content.Content>());
+      const resultPromiseContainers = [1, 2, 3].map(() => new PromiseContainer<Content>());
       presentationManagerMock.setup((x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetId }, moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
         .returns(async () => descriptor)
         .verifiable();
@@ -357,15 +361,15 @@ describe("ContentDataProvider", () => {
         provider.publicGetContent({ start: 0, size: 1 }),
         provider.publicGetContent({ start: 1, size: 0 }),
       ];
-      const results: content.Content[] = [{
+      const results: Content[] = [{
         descriptor,
-        contentSet: [new content.Item([], "1", "", undefined, {}, {}, [])],
+        contentSet: [new Item([], "1", "", undefined, {}, {}, [])],
       }, {
         descriptor,
-        contentSet: [new content.Item([], "2", "", undefined, {}, {}, [])],
+        contentSet: [new Item([], "2", "", undefined, {}, {}, [])],
       }, {
         descriptor,
-        contentSet: [new content.Item([], "3", "", undefined, {}, {}, [])],
+        contentSet: [new Item([], "3", "", undefined, {}, {}, [])],
       }];
       resultPromiseContainers.forEach((container, index) => container.resolve(results[index]));
       const responses = await Promise.all(requests);

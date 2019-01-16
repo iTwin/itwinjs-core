@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
@@ -8,11 +8,11 @@ import * as moq from "./_helpers/Mocks";
 import { createRandomDescriptor, createRandomECInstanceNodeKey, createRandomECInstanceKey } from "./_helpers/random";
 import { using } from "@bentley/bentleyjs-core";
 import { IModelToken, RpcOperation, RpcRequest, RpcSerializedValue } from "@bentley/imodeljs-common";
-import { RpcRegistry } from "@bentley/imodeljs-common/lib/rpc/core/RpcRegistry";
+import { RpcRegistry } from "@bentley/imodeljs-common";
 import {
   PresentationRpcInterface,
   KeySet, Paged,
-} from "..";
+} from "../presentation-common";
 import {
   RpcRequestOptions, HierarchyRpcRequestOptions, ContentRpcRequestOptions,
   ClientStateSyncRequestOptions,
@@ -48,10 +48,12 @@ describe("PresentationRpcInterface", () => {
     RpcRegistry.instance.terminateRpcInterface(PresentationRpcInterface);
   });
 
+  function toArguments(..._arguments: any[]) { return arguments; }
+
   describe("calls forwarding", () => {
 
     let rpcInterface: PresentationRpcInterface;
-    let mock: moq.IMock<(<T>(operation: string, ...parameters: any[]) => Promise<T>)>;
+    let mock: moq.IMock<(<T>(parameters: IArguments) => Promise<T>)>;
     const token = new IModelToken();
     const defaultRpcOptions: RpcRequestOptions = {};
 
@@ -67,7 +69,7 @@ describe("PresentationRpcInterface", () => {
         rulesetId: faker.random.word(),
       };
       await rpcInterface.getRootNodes(token, options);
-      mock.verify((x) => x(token as any, options), moq.Times.once());
+      mock.verify((x) => x(toArguments(token, options)), moq.Times.once());
     });
 
     it("forwards getRootNodesCount call", async () => {
@@ -76,7 +78,7 @@ describe("PresentationRpcInterface", () => {
         rulesetId: faker.random.word(),
       };
       await rpcInterface.getRootNodesCount(token, options);
-      mock.verify((x) => x(token as any, options), moq.Times.once());
+      mock.verify((x) => x(toArguments(token, options)), moq.Times.once());
     });
 
     it("forwards getChildren call", async () => {
@@ -86,7 +88,7 @@ describe("PresentationRpcInterface", () => {
       };
       const parentKey = createRandomECInstanceNodeKey();
       await rpcInterface.getChildren(token, options, parentKey);
-      mock.verify((x) => x(token as any, options, parentKey), moq.Times.once());
+      mock.verify((x) => x(toArguments(token, options, parentKey)), moq.Times.once());
     });
 
     it("forwards getChildrenCount call", async () => {
@@ -96,7 +98,7 @@ describe("PresentationRpcInterface", () => {
       };
       const parentKey = createRandomECInstanceNodeKey();
       await rpcInterface.getChildrenCount(token, options, parentKey);
-      mock.verify((x) => x(token as any, options, parentKey), moq.Times.once());
+      mock.verify((x) => x(toArguments(token, options, parentKey)), moq.Times.once());
     });
 
     it("forwards getFilteredNodePaths call", async () => {
@@ -105,7 +107,7 @@ describe("PresentationRpcInterface", () => {
         rulesetId: faker.random.word(),
       };
       await rpcInterface.getFilteredNodePaths(token, options, "filter");
-      mock.verify((x) => x(token as any, options, "filter"), moq.Times.once());
+      mock.verify((x) => x(toArguments(token, options, "filter")), moq.Times.once());
     });
 
     it("forwards getNodePaths call", async () => {
@@ -115,7 +117,7 @@ describe("PresentationRpcInterface", () => {
       };
       const keys = [[createRandomECInstanceKey(), createRandomECInstanceKey()]];
       await rpcInterface.getNodePaths(token, options, keys, 1);
-      mock.verify((x) => x(token as any, options, keys, 1), moq.Times.once());
+      mock.verify((x) => x(toArguments(token, options, keys, 1)), moq.Times.once());
     });
 
     it("forwards getContentDescriptor call", async () => {
@@ -123,8 +125,9 @@ describe("PresentationRpcInterface", () => {
         ...defaultRpcOptions,
         rulesetId: faker.random.word(),
       };
-      await rpcInterface.getContentDescriptor(token, options, "test", new KeySet(), undefined);
-      mock.verify((x) => x(token as any, options, "test", moq.It.is((a) => a instanceof KeySet), undefined), moq.Times.once());
+      const keys = new KeySet();
+      await rpcInterface.getContentDescriptor(token, options, "test", keys, undefined);
+      mock.verify((x) => x(toArguments(token, options, "test", keys, undefined)), moq.Times.once());
     });
 
     it("forwards getContentSetSize call", async () => {
@@ -133,8 +136,9 @@ describe("PresentationRpcInterface", () => {
         rulesetId: faker.random.word(),
       };
       const descriptor = createRandomDescriptor();
-      await rpcInterface.getContentSetSize(token, options, descriptor, new KeySet());
-      mock.verify((x) => x(token as any, options, descriptor, moq.It.is((a) => a instanceof KeySet)), moq.Times.once());
+      const keys = new KeySet();
+      await rpcInterface.getContentSetSize(token, options, descriptor, keys);
+      mock.verify((x) => x(toArguments(token, options, descriptor, keys)), moq.Times.once());
     });
 
     it("forwards getContent call", async () => {
@@ -143,8 +147,9 @@ describe("PresentationRpcInterface", () => {
         rulesetId: faker.random.word(),
       };
       const descriptor = createRandomDescriptor();
-      await rpcInterface.getContent(token, options, descriptor, new KeySet());
-      mock.verify((x) => x(token as any, options, descriptor, moq.It.is((a) => a instanceof KeySet), undefined), moq.Times.once());
+      const keys = new KeySet();
+      await rpcInterface.getContent(token, options, descriptor, keys);
+      mock.verify((x) => x(toArguments(token, options, descriptor, keys)), moq.Times.once());
     });
 
     it("forwards getDistinctValues call", async () => {
@@ -155,8 +160,9 @@ describe("PresentationRpcInterface", () => {
       const descriptor = createRandomDescriptor();
       const fieldName = faker.random.word();
       const maximumValueCount = faker.random.number();
-      await rpcInterface.getDistinctValues(token, options, descriptor, new KeySet(), fieldName, maximumValueCount);
-      mock.verify((x) => x(token as any, options, descriptor, moq.It.is((a) => a instanceof KeySet), fieldName, maximumValueCount), moq.Times.once());
+      const keys = new KeySet();
+      await rpcInterface.getDistinctValues(token, options, descriptor, keys, fieldName, maximumValueCount);
+      mock.verify((x) => x(toArguments(token, options, descriptor, keys, fieldName, maximumValueCount)), moq.Times.once());
     });
 
     it("forwards syncClientState call", async () => {
@@ -165,7 +171,7 @@ describe("PresentationRpcInterface", () => {
         state: {},
       };
       await rpcInterface.syncClientState(token, options);
-      mock.verify((x) => x(token as any, options), moq.Times.once());
+      mock.verify((x) => x(toArguments(token, options)), moq.Times.once());
     });
 
   });

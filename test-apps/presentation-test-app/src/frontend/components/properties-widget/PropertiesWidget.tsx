@@ -1,16 +1,16 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
 import * as React from "react";
 import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
-import { PresentationPropertyDataProvider, withUnifiedSelection } from "@bentley/presentation-components/lib/propertygrid";
+import { PresentationPropertyDataProvider, propertyGridWithUnifiedSelection } from "@bentley/presentation-components";
 import { PropertyGrid, PropertyData, PropertyCategory } from "@bentley/ui-components";
 import "./PropertiesWidget.css";
 
 // tslint:disable-next-line:variable-name naming-convention
-const SamplePropertyGrid = withUnifiedSelection(PropertyGrid);
+const SamplePropertyGrid = propertyGridWithUnifiedSelection(PropertyGrid);
 
 export interface Props {
   imodel: IModelConnection;
@@ -18,7 +18,6 @@ export interface Props {
 }
 export interface State {
   dataProvider: PresentationPropertyDataProvider;
-  show?: boolean;
 }
 export default class PropertiesWidget extends React.Component<Props, State> {
   constructor(props: Props, context?: any) {
@@ -28,26 +27,18 @@ export default class PropertiesWidget extends React.Component<Props, State> {
     };
   }
   public static getDerivedStateFromProps(props: Props, state: State) {
-    if (props.imodel !== state.dataProvider.connection || props.rulesetId !== state.dataProvider.rulesetId)
+    if (props.imodel !== state.dataProvider.imodel || props.rulesetId !== state.dataProvider.rulesetId)
       return { ...state, dataProvider: createDataProvider(props.imodel, props.rulesetId) };
     return null;
   }
   public render() {
-    const togglePropertyPane = () => {
-      this.setState((prev) => ({ show: prev.show ? false : true }));
-    };
-    let pane;
-    if (this.state.show) {
-      pane = (<SamplePropertyGrid
-        dataProvider={this.state.dataProvider}
-      />);
-    }
     return (
       <div className="PropertiesWidget">
         <h3>{IModelApp.i18n.translate("Sample:controls.properties")}</h3>
-        <button onClick={togglePropertyPane}>Show/Hide</button>
         <div className="ContentContainer">
-          {pane}
+          <SamplePropertyGrid
+            dataProvider={this.state.dataProvider}
+          />
         </div>
       </div>
     );

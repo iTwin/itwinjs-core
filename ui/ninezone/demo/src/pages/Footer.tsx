@@ -1,26 +1,26 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 
 import { cols2 } from "./Tools";
 
-import ActivityMessage from "@src/footer/message/Activity";
-import StatusMessage from "@src/footer/message/content/status/Message";
-import StatusLayout from "@src/footer/message/content/status/Layout";
-import Label from "@src/footer/message/content/Label";
-import Hyperlink from "@src/footer/message/content/Hyperlink";
-import Progress from "@src/footer/message/content/Progress";
-import Button from "@src/footer/message/content/Button";
-import Status from "@src/footer/message/content/status/Status";
+import { Activity } from "@src/footer/message/Activity";
+import { StatusMessage } from "@src/footer/message/content/status/Message";
+import { MessageLayout } from "@src/footer/message/content/status/Layout";
+import { Label } from "@src/footer/message/content/Label";
+import { Hyperlink } from "@src/footer/message/content/Hyperlink";
+import { Progress } from "@src/footer/message/content/Progress";
+import { MessageButton } from "@src/footer/message/content/Button";
+import { Status } from "@src/footer/message/content/status/Status";
 
 export const cols3: React.CSSProperties = {
   ...cols2,
   gridTemplateColumns: "1fr 1fr 1fr",
 };
 
-export default class Footer extends React.Component {
+export default class Footer extends React.PureComponent {
   public render() {
     return (
       <div
@@ -33,23 +33,23 @@ export default class Footer extends React.Component {
       >
         <h1>Messages</h1>
         <div style={cols3}>
-          <ActivityMessage>
+          <Activity>
             <StatusMessage
               status={Status.Information}
               icon={
                 <i className="icon icon-info-hollow" />
               }
             >
-              <StatusLayout
+              <MessageLayout
                 label={
                   <Label text="Processing - 25% completed." />
                 }
                 buttons={
                   <>
                     <Hyperlink text="Cancel" />
-                    <Button>
+                    <MessageButton>
                       <i className="icon icon-close" />
-                    </Button>
+                    </MessageButton>
                   </>
                 }
                 progress={
@@ -60,51 +60,51 @@ export default class Footer extends React.Component {
                 }
               />
             </StatusMessage>
-          </ActivityMessage>
-          <ActivityMessage>
+          </Activity>
+          <Activity>
             <StatusMessage
               status={Status.Success}
               icon={
                 <i className="icon icon-status-success-hollow" />
               }
             >
-              <StatusLayout
+              <MessageLayout
                 label={
                   <Label text="Processing completed." />
                 }
                 buttons={
                   <>
                     <Hyperlink text="View the report" />
-                    <Button>
+                    <MessageButton>
                       <i className="icon icon-close" />
-                    </Button>
+                    </MessageButton>
                   </>
                 }
               />
             </StatusMessage>
-          </ActivityMessage>
-          <ActivityMessage>
+          </Activity>
+          <Activity>
             <StatusMessage
               status={Status.Error}
               icon={
                 <i className="icon icon-status-error-hollow" />
               }
             >
-              <StatusLayout
+              <MessageLayout
                 label={
                   <Label text="Processing failed." />
                 }
                 buttons={
                   <>
                     <Hyperlink text="View error log" />
-                    <Button>
+                    <MessageButton>
                       <i className="icon icon-close" />
-                    </Button>
+                    </MessageButton>
                   </>
                 }
               />
             </StatusMessage>
-          </ActivityMessage>
+          </Activity>
         </div>
       </div>
     );

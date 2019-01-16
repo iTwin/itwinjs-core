@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Tile */
@@ -83,14 +83,14 @@ export namespace B3dmTileIO {
       colorTable.insert(0x777777);
       return true;
     }
-    protected createDisplayParams(materialJson: any): DisplayParams | undefined {
+    protected createDisplayParams(materialJson: any, hasBakedLighting: boolean): DisplayParams | undefined {
       let textureMapping: TextureMapping | undefined;
       if (undefined !== materialJson &&
         undefined !== materialJson.values.tex) {
         textureMapping = this.findTextureMapping(materialJson.values.tex);
       }
       const grey: ColorDef = new ColorDef(0x77777777);
-      return new DisplayParams(DisplayParams.Type.Mesh, grey, grey, 1, LinePixels.Solid, FillFlags.Always, undefined, undefined, true, textureMapping);
+      return new DisplayParams(DisplayParams.Type.Mesh, grey, grey, 1, LinePixels.Solid, FillFlags.Always, undefined, undefined, hasBakedLighting, textureMapping);
     }
     protected extractReturnToCenter(extensions: any): number[] | undefined {
       if (extensions === undefined) { return undefined; }

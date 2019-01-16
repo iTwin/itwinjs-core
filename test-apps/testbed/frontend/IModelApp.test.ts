@@ -1,12 +1,13 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
 import { IModelApp, Tool, AccuDraw, IdleTool, RotateViewTool, PanViewTool, SelectionTool } from "@bentley/imodeljs-frontend";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
 import { TestbedConfig } from "../common/TestbedConfig";
-import { MaybeRenderApp, WebGLTestContext } from "./WebGLTestContext";
+import { WebGLTestContext } from "./WebGLTestContext";
+import { MockRender } from "./MockRender";
 
 /** class to simulate overriding the default AccuDraw */
 class TestAccuDraw extends AccuDraw { }
@@ -38,7 +39,7 @@ class FourthImmediate extends Tool {
 class TestRotateTool extends RotateViewTool { }
 class TestSelectTool extends SelectionTool { }
 
-class TestApp extends MaybeRenderApp {
+class TestApp extends MockRender.App {
   public static testNamespace?: I18NNamespace;
 
   protected static onStartup() {
@@ -145,7 +146,7 @@ describe("IModelApp", () => {
   });
 
   // Still failing to acquire WebGLRenderingContext on CI server.
-  it.skip("Should support WebGL", () => {
+  it("Should support WebGL", () => {
     expect(TestApp.hasRenderSystem).to.be.true;
     const canvas = WebGLTestContext.createCanvas();
     expect(canvas).not.to.be.undefined;
@@ -154,5 +155,10 @@ describe("IModelApp", () => {
       expect(context).not.to.be.null;
       expect(context).not.to.be.undefined;
     }
+  });
+
+  it("Should create mock render system without WebGL", () => {
+    expect(TestApp.hasRenderSystem).to.be.true;
+    expect(TestApp.renderSystem).instanceof(MockRender.System);
   });
 });

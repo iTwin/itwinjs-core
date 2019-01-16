@@ -1,12 +1,11 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module RpcInterface */
 
 import { IModelError } from "../../IModelError";
-import { BentleyStatus, RpcInterfaceStatus } from "@bentley/bentleyjs-core";
-import { Logger, ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { BentleyStatus, RpcInterfaceStatus, Logger, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { RpcInterface } from "../../RpcInterface";
 import { RpcOperation } from "./RpcOperation";
 import { RpcRegistry, CURRENT_INVOCATION } from "./RpcRegistry";
@@ -111,7 +110,7 @@ export class RpcInvocation {
     const impl = RpcRegistry.instance.getImplForInterface(this.operation.interfaceDefinition);
     (impl as any)[CURRENT_INVOCATION] = this;
     const op = this.lookupOperationFunction(impl);
-    const context = new ActivityLoggingContext(this.request.id);
+    const context = new ActivityLoggingContext(this.request.id, this.request.version);
     context.enter();
     return Promise.resolve(op.call(impl, ...parameters));
   }

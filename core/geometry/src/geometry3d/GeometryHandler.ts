@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
@@ -8,11 +8,10 @@
 import { CurvePrimitive } from "../curve/CurvePrimitive";
 import { CoordinateXYZ } from "../curve/CoordinateXYZ";
 import { UnionRegion } from "../curve/UnionRegion";
-import { BagOfCurves } from "../curve/CurveCollection";
+import { BagOfCurves, CurveCollection } from "../curve/CurveCollection";
 import { ParityRegion } from "../curve/ParityRegion";
 import { Loop } from "../curve/Loop";
 import { Path } from "../curve/Path";
-import { CurveCollection } from "../curve/CurveCollection";
 import { Point3d, Vector3d } from "./Point3dVector3d";
 import { BSplineCurve3d } from "../bspline/BSplineCurve";
 import { BSplineCurve3dH } from "../bspline/BSplineCurve3dH";

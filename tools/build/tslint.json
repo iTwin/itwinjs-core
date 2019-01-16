@@ -5,7 +5,10 @@
   ],
   "jsRules": {},
   "rules": {
-    "await-promise": [true, "PromisedAssertion"],
+    "await-promise": [
+      true,
+      "PromisedAssertion"
+    ],
     "no-return-await": true,
     "promise-function-async": true,
     "no-floating-promises": true,
@@ -56,6 +59,7 @@
     "no-empty": false,
     "no-switch-case-fall-through": true,
     "no-conditional-assignment": false,
+    "no-duplicate-imports": true,
     "member-ordering": [
       false
     ],
@@ -105,7 +109,8 @@
       }
     ],
     // Custom rules ========================================================
-    "prefer-get": true
+    "prefer-get": true,
+    "no-direct-imports": true
   },
   "rulesDirectory": [
     "./tslint-rules/tslint-consistent-codestyle/rules",

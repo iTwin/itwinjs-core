@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
@@ -8,17 +8,16 @@ import { assert, Id64, Id64String, BeTimePoint, IDisposable, dispose } from "@be
 import { ViewFlags, ElementAlignedBox3d } from "@bentley/imodeljs-common";
 import { Transform } from "@bentley/geometry-core";
 import { Primitive } from "./Primitive";
-import { RenderGraphic, GraphicBranch, GraphicList, PackedFeatureTable } from "../System";
+import { RenderGraphic, GraphicBranch, GraphicList, PackedFeatureTable, RenderMemory } from "../System";
 import { RenderCommands } from "./DrawCommand";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { TextureHandle, Texture2DHandle, Texture2DDataUpdater } from "./Texture";
 import { LUTDimensions, LUTParams } from "./FeatureDimensions";
 import { Target } from "./Target";
-import { OvrFlags } from "./RenderFlags";
+import { OvrFlags, RenderPass } from "./RenderFlags";
 import { LineCode } from "./EdgeOverrides";
 import { GL } from "./GL";
 import { ClipPlanesVolume, ClipMaskVolume } from "./ClipVolume";
-import { RenderPass } from "./RenderFlags";
 
 export class FeatureOverrides implements IDisposable {
   public lut?: TextureHandle;
@@ -33,6 +32,7 @@ export class FeatureOverrides implements IDisposable {
   public anyOpaque: boolean = true;
   public anyHilited: boolean = true;
 
+  public get byteLength(): number { return undefined !== this.lut ? this.lut.bytesUsed : 0; }
   public get isUniform() { return 2 === this.lutParams.width && 1 === this.lutParams.height; }
   public get isUniformFlashed() {
     if (!this.isUniform || undefined === this.lut)
@@ -43,7 +43,7 @@ export class FeatureOverrides implements IDisposable {
     return 0 !== (flags & OvrFlags.Flashed);
   }
 
-  private _initialize(map: PackedFeatureTable, ovrs: FeatureSymbology.Overrides, hilite: Set<string>, flashedElemId: Id64String): TextureHandle | undefined {
+  private _initialize(map: PackedFeatureTable, ovrs: FeatureSymbology.Overrides, hilite: Id64.Uint32Set, flashedElemId: Id64String): TextureHandle | undefined {
     const nFeatures = map.numFeatures;
     const dims: LUTDimensions = LUTDimensions.computeWidthAndHeight(nFeatures, 2);
     const width = dims.width;
@@ -59,7 +59,7 @@ export class FeatureOverrides implements IDisposable {
     return TextureHandle.createForData(width, height, data, true, GL.Texture.WrapMode.ClampToEdge);
   }
 
-  private _update(map: PackedFeatureTable, lut: TextureHandle, flashedElemId: Id64String, hilites?: Set<string>, ovrs?: FeatureSymbology.Overrides) {
+  private _update(map: PackedFeatureTable, lut: TextureHandle, flashedElemId: Id64String, hilites?: Id64.Uint32Set, ovrs?: FeatureSymbology.Overrides) {
     const updater = new Texture2DDataUpdater(lut.dataBytes!);
 
     if (undefined === ovrs) {
@@ -72,7 +72,9 @@ export class FeatureOverrides implements IDisposable {
     (lut as Texture2DHandle).update(updater);
   }
 
-  private buildLookupTable(data: Texture2DDataUpdater, map: PackedFeatureTable, ovr: FeatureSymbology.Overrides, flashedElemId: Id64String, hilites: Set<string>) {
+  private buildLookupTable(data: Texture2DDataUpdater, map: PackedFeatureTable, ovr: FeatureSymbology.Overrides, flashedElemId: Id64String, hilites: Id64.Uint32Set) {
+    const modelIdParts = Id64.getUint32Pair(map.modelId);
+    const flashedIdParts = Id64.isValid(flashedElemId) ? Id64.getUint32Pair(flashedElemId) : undefined;
     this.anyOpaque = this.anyTranslucent = this.anyHilited = false;
 
     let nHidden = 0;
@@ -88,10 +90,15 @@ export class FeatureOverrides implements IDisposable {
     //      RGB = rgb
     //      A = alpha
     for (let i = 0; i < map.numFeatures; i++) {
-      const feature = map.getFeature(i);
+      const feature = map.getPackedFeature(i);
       const dataIndex = i * 4 * 2;
 
-      const app = ovr.getAppearance(feature, map.modelId, map.type);
+      const app = ovr.getAppearance(
+        feature.elementId.lower, feature.elementId.upper,
+        feature.subCategoryId.lower, feature.subCategoryId.upper,
+        feature.geometryClass,
+        modelIdParts.lower, modelIdParts.upper, map.type);
+
       if (undefined === app || app.isFullyTransparent) {
         // The feature is not visible. We don't care about any of the other overrides, because we're not going to render it.
         data.setOvrFlagsAtIndex(dataIndex, OvrFlags.Visibility);
@@ -101,7 +108,7 @@ export class FeatureOverrides implements IDisposable {
       }
 
       let flags = OvrFlags.None;
-      if (hilites!.has(feature.elementId)) {
+      if (hilites!.has(feature.elementId.lower, feature.elementId.upper)) {
         flags |= OvrFlags.Hilited;
         this.anyHilited = true;
       }
@@ -143,7 +150,7 @@ export class FeatureOverrides implements IDisposable {
       if (app.ignoresMaterial)
         flags |= OvrFlags.IgnoreMaterial;
 
-      if (Id64.isValid(flashedElemId) && feature.elementId === flashedElemId)
+      if (undefined !== flashedIdParts && feature.elementId.lower === flashedIdParts.lower && feature.elementId.upper === flashedIdParts.upper)
         flags |= OvrFlags.Flashed;
 
       data.setOvrFlagsAtIndex(dataIndex, flags);
@@ -155,12 +162,12 @@ export class FeatureOverrides implements IDisposable {
     this.anyOverridden = (nOverridden > 0);
   }
 
-  private updateFlashedAndHilited(data: Texture2DDataUpdater, map: PackedFeatureTable, flashedElemId: Id64String, hilites?: Set<string>) {
+  private updateFlashedAndHilited(data: Texture2DDataUpdater, map: PackedFeatureTable, flashedElemId: Id64String, hilites?: Id64.Uint32Set) {
     // NB: If hilites is undefined, it means the hilited set has not changed...
     this.anyOverridden = false;
     this.anyHilited = false;
 
-    const flashedElemIdParts = Id64.isValid(flashedElemId) ? { lo: Id64.getLowerUint32(flashedElemId), hi: Id64.getUpperUint32(flashedElemId) } : undefined;
+    const flashedElemIdParts = Id64.isValid(flashedElemId) ? Id64.getUint32Pair(flashedElemId) : undefined;
     const haveFlashed = undefined !== flashedElemIdParts;
     const haveHilited = undefined !== hilites;
     const needElemId = haveFlashed || haveHilited;
@@ -175,13 +182,13 @@ export class FeatureOverrides implements IDisposable {
         continue;
       }
 
-      const elemIdParts = needElemId ? map.getElementIdParts(i) : undefined;
-      const isFlashed = haveFlashed && elemIdParts!.low === flashedElemIdParts!.lo && elemIdParts!.high === flashedElemIdParts!.hi;
+      const elemIdParts = needElemId ? map.getElementIdPair(i) : undefined;
+      const isFlashed = haveFlashed && elemIdParts!.lower === flashedElemIdParts!.lower && elemIdParts!.upper === flashedElemIdParts!.upper;
 
       // NB: If hilited set has not changed, retain previous hilite flag.
       let isHilited: boolean;
       if (undefined !== hilites)
-        isHilited = hilites.has(Id64.fromUint32Pair(elemIdParts!.low, elemIdParts!.high));
+        isHilited = hilites.has(elemIdParts!.lower, elemIdParts!.upper);
       else
         isHilited = 0 !== (oldFlags & OvrFlags.Hilited);
 
@@ -216,7 +223,7 @@ export class FeatureOverrides implements IDisposable {
     this.lut = undefined;
 
     const ovrs: FeatureSymbology.Overrides = this.target.currentFeatureSymbologyOverrides;
-    const hilite: Set<string> = this.target.hilite;
+    const hilite = this.target.hilite;
     this.lut = this._initialize(map, ovrs, hilite, this.target.flashedElemId);
     this._lastOverridesUpdated = this._lastFlashUpdated = this._lastHiliteUpdated = BeTimePoint.now();
   }
@@ -245,7 +252,6 @@ export abstract class Graphic extends RenderGraphic {
   public get isPickable(): boolean { return false; }
   public addHiliteCommands(_commands: RenderCommands, _batch: Batch, _pass: RenderPass): void { assert(false); }
   public toPrimitive(): Primitive | undefined { return undefined; }
-  // public abstract setIsPixelMode(): void;
 }
 
 export class Batch extends Graphic {
@@ -270,6 +276,13 @@ export class Batch extends Graphic {
       dispose(over);
     }
     this._overrides.length = 0;
+  }
+
+  public collectStatistics(stats: RenderMemory.Statistics): void {
+    this.graphic.collectStatistics(stats);
+    stats.addFeatureTable(this.featureTable.byteLength);
+    for (const ovrs of this._overrides)
+      stats.addFeatureOverrides(ovrs.byteLength);
   }
 
   public addCommands(commands: RenderCommands): void { commands.addBatch(this); }
@@ -318,8 +331,9 @@ export class Batch extends Graphic {
 
 export class Branch extends Graphic {
   public readonly branch: GraphicBranch;
-  public readonly localToWorldTransform: Transform;
-  public readonly clips?: ClipPlanesVolume | ClipMaskVolume;
+  public localToWorldTransform: Transform;
+  public clips?: ClipPlanesVolume | ClipMaskVolume;
+  public readonly animationId?: number;
 
   public constructor(branch: GraphicBranch, localToWorld: Transform = Transform.createIdentity(), clips?: ClipMaskVolume | ClipPlanesVolume, viewFlags?: ViewFlags) {
     super();
@@ -331,6 +345,11 @@ export class Branch extends Graphic {
   }
 
   public dispose() { this.branch.dispose(); }
+  public collectStatistics(stats: RenderMemory.Statistics): void {
+    this.branch.collectStatistics(stats);
+    if (undefined !== this.clips)
+      this.clips.collectStatistics(stats);
+  }
 
   public addCommands(commands: RenderCommands): void { commands.addBranch(this); }
   public addHiliteCommands(commands: RenderCommands, batch: Batch, pass: RenderPass): void { commands.addHiliteBranch(this, batch, pass); }
@@ -366,5 +385,10 @@ export class GraphicsArray extends Graphic {
     for (const graphic of this.graphics) {
       (graphic as Graphic).addHiliteCommands(commands, batch, pass);
     }
+  }
+
+  public collectStatistics(stats: RenderMemory.Statistics): void {
+    for (const graphic of this.graphics)
+      graphic.collectStatistics(stats);
   }
 }

@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
@@ -14,7 +14,7 @@ import {
   ExpandableSection,
   ListPickerBase,
   ListItemType,
-} from "../../index";
+} from "../../ui-framework";
 
 const title = "Test";
 const listItems = new Array<ListItem>();
@@ -54,24 +54,28 @@ describe("ListPicker", () => {
       expect(
         listPickerInstance.isSpecialItem({
           key: ListPicker.Key_All,
+          enabled: true,
         } as ListItem),
       ).to.be.true;
 
       expect(
         listPickerInstance.isSpecialItem({
           key: ListPicker.Key_Invert,
+          enabled: true,
         } as ListItem),
       ).to.be.true;
 
       expect(
         listPickerInstance.isSpecialItem({
           key: ListPicker.Key_None,
+          enabled: true,
         } as ListItem),
       ).to.be.true;
 
       expect(
         listPickerInstance.isSpecialItem({
           key: ListPicker.Key_Separator,
+          enabled: true,
         } as ListItem),
       ).to.be.true;
     });
@@ -81,6 +85,7 @@ describe("ListPicker", () => {
         listPickerInstance.isSpecialItem({
           key: "",
           type: ListItemType.Container,
+          enabled: true,
         } as ListItem),
       ).to.be.true;
     });
@@ -90,6 +95,7 @@ describe("ListPicker", () => {
         listPickerInstance.isSpecialItem({
           key: "",
           type: ListItemType.Item,
+          enabled: true,
         } as ListItem),
       ).to.be.false;
     });

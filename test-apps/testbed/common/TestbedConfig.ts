@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import {
@@ -14,9 +14,9 @@ import {
   StandaloneIModelRpcInterface,
   RpcManager,
   MobileRpcManager,
+  IModelUnitTestRpcInterface,
+  WipRpcInterface,
 } from "@bentley/imodeljs-common";
-import { IModelUnitTestRpcInterface } from "@bentley/imodeljs-common/lib/rpc/IModelUnitTestRpcInterface"; // not part of the "barrel"
-import { WipRpcInterface } from "@bentley/imodeljs-common/lib/rpc/WipRpcInterface"; // not part of the "barrel"
 import {
   TestRpcInterface,
   TestRpcInterface2,

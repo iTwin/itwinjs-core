@@ -1,13 +1,13 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
 import { Transform, Vector3d, Point3d, Matrix4d, Point2d, XAndY } from "@bentley/geometry-core";
 import { BeTimePoint, assert, Id64String, Id64, StopWatch, dispose, disposeArray } from "@bentley/bentleyjs-core";
-import { RenderTarget, RenderSystem, Decorations, GraphicList, RenderPlan, ClippingType, CanvasDecoration } from "../System";
-import { ViewFlags, Frustum, Hilite, ColorDef, Npc, RenderMode, ImageLight, ImageBuffer, ImageBufferFormat, AnalysisStyle, RenderTexture } from "@bentley/imodeljs-common";
+import { RenderTarget, RenderSystem, Decorations, GraphicList, RenderPlan, ClippingType, CanvasDecoration, Pixel, AnimationBranchStates } from "../System";
+import { ViewFlags, Frustum, Hilite, ColorDef, Npc, RenderMode, ImageLight, ImageBuffer, ImageBufferFormat, AnalysisStyle, RenderTexture, AmbientOcclusion } from "@bentley/imodeljs-common";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { Techniques } from "./Technique";
 import { TechniqueId } from "./TechniqueId";
@@ -27,7 +27,6 @@ import { FrameBuffer } from "./FrameBuffer";
 import { TextureHandle } from "./Texture";
 import { SingleTexturedViewportQuadGeometry } from "./CachedGeometry";
 import { ShaderLights } from "./Lighting";
-import { Pixel } from "../System";
 import { ClipDef } from "./TechniqueFlags";
 import { ClipMaskVolume, ClipPlanesVolume } from "./ClipVolume";
 
@@ -179,7 +178,7 @@ export abstract class Target extends RenderTarget {
   private _dynamics?: GraphicList;
   private _worldDecorations?: WorldDecorations;
   private _overridesUpdateTime = BeTimePoint.now();
-  private _hilite?: Set<string>;
+  private _hilite = new Id64.Uint32Set();
   private _hiliteUpdateTime = BeTimePoint.now();
   private _flashedElemId = Id64.invalid;
   private _flashedUpdateTime = BeTimePoint.now();
@@ -216,8 +215,12 @@ export abstract class Target extends RenderTarget {
   public analysisStyle?: AnalysisStyle;
   public analysisTexture?: RenderTexture;
   private _currentOverrides?: FeatureOverrides;
+  public ambientOcclusionSettings = AmbientOcclusion.Settings.defaults;
+  private _wantAmbientOcclusion = false;
   private _batches: Batch[] = [];
   public plan?: RenderPlan;
+  private _animationBranches?: AnimationBranchStates;
+  private _isReadPixelsInProgress = false;
 
   protected constructor(rect?: ViewRect) {
     super();
@@ -230,6 +233,8 @@ export abstract class Target extends RenderTarget {
     this.renderRect = rect ? rect : new ViewRect();  // if the rect is undefined, expect that it will be updated dynamically in an OnScreenTarget
   }
 
+  public get isReadPixelsInProgress(): boolean { return this._isReadPixelsInProgress; }
+
   public get currentOverrides(): FeatureOverrides | undefined { return this._currentOverrides; }
   // public get currentOverrides(): FeatureOverrides | undefined { return this._currentOverrides ? undefined : undefined; } // ###TODO remove this - for testing purposes only (forces overrides off)
   public set currentOverrides(ovr: FeatureOverrides | undefined) {
@@ -240,7 +245,7 @@ export abstract class Target extends RenderTarget {
   public get transparencyThreshold(): number { return this._transparencyThreshold; }
   public get techniques(): Techniques { return System.instance.techniques!; }
 
-  public get hilite(): Set<string> { return this._hilite!; }
+  public get hilite(): Id64.Uint32Set { return this._hilite; }
   public get hiliteUpdateTime(): BeTimePoint { return this._hiliteUpdateTime; }
 
   public get flashedElemId(): Id64String { return this._flashedElemId; }
@@ -255,6 +260,9 @@ export abstract class Target extends RenderTarget {
 
   public get scene(): GraphicList { return this._scene; }
   public get dynamics(): GraphicList | undefined { return this._dynamics; }
+
+  public get animationBranches(): AnimationBranchStates | undefined { return this._animationBranches; }
+  public set animationBranches(branches: AnimationBranchStates | undefined) { this._animationBranches = branches; }
 
   public getWorldDecorations(decs: GraphicList): Branch {
     if (undefined === this._worldDecorations) {
@@ -366,6 +374,10 @@ export abstract class Target extends RenderTarget {
     this._batches.splice(index, 1);
   }
 
+  public get wantAmbientOcclusion(): boolean {
+    return this._wantAmbientOcclusion;
+  }
+
   // ---- Implementation of RenderTarget interface ---- //
 
   public get renderSystem(): RenderSystem { return System.instance; }
@@ -396,7 +408,10 @@ export abstract class Target extends RenderTarget {
     this._overridesUpdateTime = BeTimePoint.now();
   }
   public setHiliteSet(hilite: Set<string>): void {
-    this._hilite = hilite;
+    this._hilite.clear();
+    for (const id of hilite)
+      this._hilite.addId(id);
+
     this._hiliteUpdateTime = BeTimePoint.now();
   }
   public setFlashed(id: Id64String, intensity: number) {
@@ -525,7 +540,6 @@ export abstract class Target extends RenderTarget {
     let hidEdgeOvrs = undefined !== plan.hline ? plan.hline.hidden : undefined;
 
     const vf = ViewFlags.createFrom(plan.viewFlags, scratch.viewFlags);
-
     let forceEdgesOpaque = true; // most render modes want edges to be opaque so don't allow overrides to their alpha
     switch (vf.renderMode) {
       case RenderMode.Wireframe: {
@@ -539,6 +553,7 @@ export abstract class Target extends RenderTarget {
         // Hidden edges require visible edges
         if (!vf.visibleEdges)
           vf.hiddenEdges = false;
+
         break;
       }
       case RenderMode.SolidFill: {
@@ -566,6 +581,13 @@ export abstract class Target extends RenderTarget {
 
         break;
       }
+    }
+
+    if (RenderMode.SmoothShade === vf.renderMode && plan.is3d && undefined !== plan.ao && vf.ambientOcclusion) {
+      this._wantAmbientOcclusion = true;
+      this.ambientOcclusionSettings = plan.ao;
+    } else {
+      this._wantAmbientOcclusion = vf.ambientOcclusion = false;
     }
 
     this._visibleEdgeOverrides.init(forceEdgesOpaque, visEdgeOvrs);
@@ -688,6 +710,8 @@ export abstract class Target extends RenderTarget {
     // Set this to true to visualize the output of readPixels()...useful for debugging pick.
     const drawForReadPixels = false;
     if (drawForReadPixels) {
+      this._isReadPixelsInProgress = true;
+
       if (this.performanceMetrics) this.performanceMetrics.recordTime("Begin Paint");
       const vf = this.currentViewFlags.clone(this._scratchViewFlags);
       vf.transparency = false;
@@ -711,6 +735,8 @@ export abstract class Target extends RenderTarget {
       if (this.performanceMetrics) this.performanceMetrics.recordTime("Draw Read Pixels");
 
       this._stack.pop();
+
+      this._isReadPixelsInProgress = false;
     } else {
       if (this.performanceMetrics) this.performanceMetrics.recordTime("Begin Paint");
       this._renderCommands.init(this._scene, this._terrain, this._decorations, this._dynamics);
@@ -819,6 +845,8 @@ export abstract class Target extends RenderTarget {
   private readonly _scratchRectFrustum = new Frustum();
   private readonly _scratchViewFlags = new ViewFlags();
   private readPixelsFromFbo(rect: ViewRect, selector: Pixel.Selector): Pixel.Buffer | undefined {
+    this._isReadPixelsInProgress = true;
+
     // Temporarily turn off lighting to speed things up.
     // ###TODO: Disable textures *unless* they contain transparency. If we turn them off unconditionally then readPixels() will locate fully-transparent pixels, which we don't want.
     const vf = this.currentViewFlags.clone(this._scratchViewFlags);
@@ -833,6 +861,7 @@ export abstract class Target extends RenderTarget {
     vf.grid = false;
     vf.monochrome = false;
     vf.materials = false;
+    vf.ambientOcclusion = false;
 
     const state = BranchState.create(this._stack.top.symbologyOverrides, vf);
     this.pushState(state);
@@ -877,7 +906,9 @@ export abstract class Target extends RenderTarget {
     // Restore the state
     this._stack.pop();
 
-    return this.compositor.readPixels(rect, selector);
+    const result = this.compositor.readPixels(rect, selector);
+    this._isReadPixelsInProgress = false;
+    return result;
   }
 
   /** Given a ViewRect, return a new rect that has been adjusted for the given aspect ratio. */

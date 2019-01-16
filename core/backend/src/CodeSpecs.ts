@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Codes */
@@ -54,6 +54,15 @@ export class CodeSpecs {
     return loadedCodeSpec;
   }
 
+  /** Returns true if the IModelDb has a CodeSpec of the specified Id. */
+  public hasId(codeSpecId: Id64String): boolean {
+    try {
+      return undefined !== this.getById(codeSpecId);
+    } catch (error) {
+      return false;
+    }
+  }
+
   /** Look up a CodeSpec by name. The CodeSpec will be loaded from the database if necessary.
    * @param name The name of the CodeSpec to load
    * @returns The CodeSpec with the specified name
@@ -70,6 +79,15 @@ export class CodeSpecs {
     if (codeSpecId === undefined)
       throw new IModelError(IModelStatus.NotFound, "CodeSpec not found", Logger.logWarning, loggingCategory, () => ({ name }));
     return this.getById(codeSpecId);
+  }
+
+  /** Returns true if the IModelDb has a CodeSpec of the specified name. */
+  public hasName(name: string): boolean {
+    try {
+      return undefined !== this.getByName(name);
+    } catch (error) {
+      return false;
+    }
   }
 
   /** Add a new CodeSpec to the IModelDb.
@@ -116,7 +134,10 @@ export class CodeSpecs {
         throw new IModelError(IModelStatus.InvalidId, "Invalid codeSpecId", Logger.logWarning, loggingCategory);
 
       const row: any = stmt.getRow();
-      return new CodeSpec(this._imodel, id, row.name, JSON.parse(row.jsonProperties));
+      const jsonProperties = JSON.parse(row.jsonProperties);
+      const scopeType = jsonProperties.scopeSpec && jsonProperties.scopeSpec.type ? jsonProperties.scopeSpec.type : CodeScopeSpec.Type.Repository;
+      const scopeReq = jsonProperties.scopeSpec && jsonProperties.scopeSpec.fGuidRequired ? CodeScopeSpec.ScopeRequirement.FederationGuid : CodeScopeSpec.ScopeRequirement.ElementId;
+      return new CodeSpec(this._imodel, id, row.name, scopeType, scopeReq, jsonProperties);
     });
   }
 }

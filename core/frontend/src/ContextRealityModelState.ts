@@ -1,10 +1,11 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Views */
 import { ContextRealityModelProps, CartographicRange } from "@bentley/imodeljs-common";
 import { IModelConnection } from "./IModelConnection";
+import { IModelApp } from "./IModelApp";
 import { TileTreeModelState } from "./ModelState";
 import { TileTree, TileTreeState } from "./tile/TileTree";
 import { RealityModelTileTree, RealityModelTileClient, RealityModelTileUtils } from "./tile/RealityModelTileTree";
@@ -35,14 +36,15 @@ export class ContextRealityModelState implements TileTreeModelState {
     return tileTreeState.loadStatus;
   }
   public async intersectsProjectExtents(): Promise<boolean> {
-    if (undefined === this._iModel.ecefLocation)
+    if (undefined === this._iModel.ecefLocation || undefined === IModelApp.accessToken)
       return false;
-    const client = new RealityModelTileClient(this._tilesetUrl);
+
+    const client = new RealityModelTileClient(this._tilesetUrl, IModelApp.accessToken);
     const json = await client.getRootDocument(this._tilesetUrl);
     let tileTreeRange, tileTreeTransform;
     if (json === undefined ||
       undefined === json.root ||
-      undefined === (tileTreeRange = RealityModelTileUtils.rangeFromBoundingVolume(json.root.boundingVolume)) ||
+      undefined === (tileTreeRange = RealityModelTileUtils.rangeFromBoundingVolume(json.root.boundingVolume, this._iModel.ecefLocation)) ||
       undefined === (tileTreeTransform = RealityModelTileUtils.transformFromJson(json.root.transform)))
       return false;
 
@@ -60,6 +62,7 @@ export class ContextRealityModelState implements TileTreeModelState {
     /* This is location to query all reality models available for this project.  They will be filtered spatially to only those
       that overlap the project extents later.... */
 
+    availableRealityModels.push({ name: "Sample", tilesetUrl: "http://localhost:8080/TilesetWithDiscreteLOD/tileset.json" });
     /* Testing... should be quering RDS to find models.
     availableRealityModels.push({ name: "Clark Island", tilesetUrl: "http://localhost:8080/clarkIsland/74/TileRoot.json" });
     availableRealityModels.push({ name: "Philadelphia LoRes", tilesetUrl: "http://localhost:8080/PhiladelphiaLoResClassification/80/TileRoot.json" });

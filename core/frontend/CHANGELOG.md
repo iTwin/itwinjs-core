@@ -1,6 +1,162 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Mon, 03 Dec 2018 18:52:58 GMT and should not be manually modified.
+This log was last generated on Tue, 15 Jan 2019 15:18:59 GMT and should not be manually modified.
+
+## 0.187.0
+Tue, 15 Jan 2019 15:18:59 GMT
+
+*Version update only*
+
+## 0.186.0
+Mon, 14 Jan 2019 23:09:10 GMT
+
+### Updates
+
+- Fix visible seams between map tiles.
+
+## 0.185.0
+Fri, 11 Jan 2019 18:29:00 GMT
+
+### Updates
+
+- Optimize performance of schedule animation.
+- Use QuantityType.Coordinate for measure distance start/end points.
+- Add QuantityTypes LatLong and Coordinate.
+
+## 0.184.0
+Thu, 10 Jan 2019 22:46:17 GMT
+
+### Updates
+
+- Add support for general 3d tilesets
+- Fix drag select decorator when cursor moves out of view. Doc fixes.
+- Support region bounding volumes
+- Fix IModelJsLoader to ensure react loaded before bwc.
+- MeasureLocationTool show lat/long and altitude.
+- Make raster text locate behave better.
+- Removed default OIDC scopes. All applications must now explicitly pass the required scopes. 
+- Can now await result from QuantityFormatter. Report delta relative to ACS when context lock enabled. Cleanup "Measure.Points" plug-in example until real measure tools are available.
+- Quantity formatter now allows async method to get FormatterSpec that can be used to format quantities.
+- QuantityFormatter.formatQuantity is now the only method to format quantities.
+- Rename formatQuantityWithSpec to formatQuantity
+- Added ToolAdmin method for undo/undo last data button and call from Ctrl+Z.
+
+## 0.183.0
+Mon, 07 Jan 2019 21:49:21 GMT
+
+### Updates
+
+- Add ambient occlusion to the display frontend system.
+- Account for global origin when reporting coordinates.
+- Add measure distance tool, will be moved to plug-in later.
+- Fixed unnecessary reload during OIDC redirect callback.
+
+## 0.182.0
+Mon, 07 Jan 2019 13:31:34 GMT
+
+### Updates
+
+- When the iModel covers a large enough area, get the corners of background map tiles using Geographic reprojection
+
+## 0.181.0
+Fri, 04 Jan 2019 13:02:40 GMT
+
+### Updates
+
+- Fix incorrect display of point strings containing duplicate points.
+- Optimize performance when reading depth buffer.
+
+## 0.180.0
+Wed, 02 Jan 2019 15:18:23 GMT
+
+### Updates
+
+- Allow the maximum number of active tile requests to be modified at run-time.
+- Fix excessive memory consumption by polyline graphics.
+- merge
+- Enable path interpolation
+- Enable schedule animation
+- if view delta is too large or small, set it to max/min rather than aborting viewing operations.
+- Fix transform order when pushing branch.
+- Implement quaternion interpolation for Synchro schedule animation
+- remove trash files
+- Add batch feature overrides to optimize schedule animation.
+- Prioritize tile requests based on tile type and depth.
+- Improve performance by limiting the number of simultaneously-active tile requests.
+
+## 0.179.0
+Wed, 19 Dec 2018 18:26:14 GMT
+
+### Updates
+
+- Added showDialogInitially support to ActivityMessageDetails
+- View tools enhancement to use background map plane for depth point when geometry isn't identified.
+- Fix regression in the display of reality models induced by switch to OIDC for access token.
+- Support Pre animation tiles
+- Add support for Syncro schedules (transform disabled)
+
+## 0.178.0
+Thu, 13 Dec 2018 22:06:10 GMT
+
+### Updates
+
+- Fix view becoming black in some circumstnces when locate cursor exits viewport.
+- Only make createGraphicBuilder available to DecorationContext. DynamicsContext/SceneContext require a scene graphic.
+- Added StringGetter support to ItemDefBase, ItemProps & ToolButton. Added IModelApp.i18n checks to Tool for unit tests.
+- Fix failure to locate elements if their transparency is overridden.
+- Added tool prompts. Fix dynamics changing locate circle. Hide touch cursor on mouse motion.
+
+## 0.177.0
+Wed, 12 Dec 2018 17:21:31 GMT
+
+### Updates
+
+- Added TwoWayViewportSync class to connect two Viewports so that changes to one are reflected in the other.
+- Renamed ViewStateData to ViewStateProps and ViewState.createFromStateData to ViewState.createFromProps.
+- turn off locate circle when mouse leaves a view
+
+## 0.176.0
+Mon, 10 Dec 2018 21:19:45 GMT
+
+### Updates
+
+- Move cursors and sprites to separate directories
+- Fix bug in which the frustum of a spatial view was always expanded to include the ground plane even if the ground plane was not displayed.
+- Ignore 2d models in model selectors.
+- Add tracking of active + pending tile requests.
+
+## 0.175.0
+Mon, 10 Dec 2018 17:08:55 GMT
+
+### Updates
+
+- route map tiles over https
+
+## 0.174.0
+Mon, 10 Dec 2018 13:24:09 GMT
+
+### Updates
+
+- Touch tap with AccuSnap enabled now brings up a decoration planchette to help choose the snap point.
+
+## 0.173.0
+Thu, 06 Dec 2018 22:03:29 GMT
+
+### Updates
+
+- map api cors fix
+- Fix failure to display Bing maps logo.
+- Fix "maximum window" error when viewing large drawings.
+- enable tslint rules for asyncs
+- T
+- Custom imodelJs noDirectImport lint rule implemented, noDuplicateImport lint rule turned on.
+
+## 0.172.0
+Tue, 04 Dec 2018 17:24:39 GMT
+
+### Updates
+
+- Changed index file name to match package name. Change imports to use other packages' index file.
 
 ## 0.171.0
 Mon, 03 Dec 2018 18:52:58 GMT

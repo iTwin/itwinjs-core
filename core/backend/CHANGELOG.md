@@ -1,6 +1,117 @@
 # Change Log - @bentley/imodeljs-backend
 
-This log was last generated on Mon, 03 Dec 2018 18:52:58 GMT and should not be manually modified.
+This log was last generated on Tue, 15 Jan 2019 15:18:59 GMT and should not be manually modified.
+
+## 0.187.0
+Tue, 15 Jan 2019 15:18:59 GMT
+
+*Version update only*
+
+## 0.186.0
+Mon, 14 Jan 2019 23:09:10 GMT
+
+### Updates
+
+- More logging of HTTP requests, and enabled use of fiddler for backend diagnostics. 
+- Removed IModelDb's cache of accessToken. For long running operations like AutoPush, the user must explicitly supply an IAccessTokenManager to keep the token current. 
+- Renamed RequestProxy->RequestHost. Allowed applications to configure proxy server with HTTPS_PROXY env.
+- Add backend TextureAPI and accompanying test
+
+## 0.185.0
+Fri, 11 Jan 2019 18:29:00 GMT
+
+*Version update only*
+
+## 0.184.0
+Thu, 10 Jan 2019 22:46:17 GMT
+
+### Updates
+
+- Generalize create method for display styles
+- Property Changeset.Author in IModelChange ECSchema was renamed UserCreated. It holds the user ID instead of the user e-mail.
+
+## 0.183.0
+Mon, 07 Jan 2019 21:49:21 GMT
+
+### Updates
+
+- Moved electron utilities into a separate "@bentley/electron-manager" package.
+
+## 0.182.0
+Mon, 07 Jan 2019 13:31:34 GMT
+
+### Updates
+
+- Implement the typescript side for new Geocoordinate services in the native iModel.js addon
+- upgrade to Node 10. There is no longer separate packages for Node and Electron.
+
+## 0.181.0
+Fri, 04 Jan 2019 13:02:40 GMT
+
+### Updates
+
+- upgrade to Node 10. There is no longer separate packages for Node and Electron.
+
+## 0.180.0
+Wed, 02 Jan 2019 15:18:23 GMT
+
+*Version update only*
+
+## 0.179.0
+Wed, 19 Dec 2018 18:26:14 GMT
+
+### Updates
+
+- Fix CodeSpecs.load
+- Add CodeSpecs.hasId, CodeSpecs.hasName
+
+## 0.178.0
+Thu, 13 Dec 2018 22:06:10 GMT
+
+### Updates
+
+- temporarily disable TxnManager events.
+
+## 0.177.0
+Wed, 12 Dec 2018 17:21:31 GMT
+
+*Version update only*
+
+## 0.176.0
+Mon, 10 Dec 2018 21:19:45 GMT
+
+### Updates
+
+- fix for timing problem in TxnManager test
+- Add IModelDb.Elements.updateAspect
+
+## 0.175.0
+Mon, 10 Dec 2018 17:08:55 GMT
+
+*Version update only*
+
+## 0.174.0
+Mon, 10 Dec 2018 13:24:09 GMT
+
+### Updates
+
+- Add static create methods for certain Element classes
+
+## 0.173.0
+Thu, 06 Dec 2018 22:03:29 GMT
+
+### Updates
+
+- Use IOSAzureFileHandler when on mobile
+- added IModelConnection.findClassFor
+- Custom imodelJs noDirectImport lint rule implemented, noDuplicateImport lint rule turned on.
+
+## 0.172.0
+Tue, 04 Dec 2018 17:24:39 GMT
+
+### Updates
+
+- don't register testing domain multiple times
 
 ## 0.171.0
 Mon, 03 Dec 2018 18:52:58 GMT

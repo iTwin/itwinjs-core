@@ -1,14 +1,19 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { mount } from "enzyme";
 import * as React from "react";
-import { PropertyValueRendererManager, IPropertyValueRenderer } from "../../properties/ValueRendererManager";
+import { PropertyValueRendererManager, IPropertyValueRenderer } from "../../ui-components/properties/ValueRendererManager";
 import TestUtils from "../TestUtils";
+import UiComponents from "../../ui-components/UiComponents";
 
 describe("PropertyValueRendererManager", () => {
+  before(async () => {
+    await TestUtils.initializeUiComponents();
+  });
+
   const fakeRenderer: IPropertyValueRenderer = {
     canRender: () => true,
     render: async () => undefined,
@@ -103,6 +108,17 @@ describe("PropertyValueRendererManager", () => {
       const valueMount = mount(<div>{value}</div>);
 
       expect(valueMount.text()).to.be.empty;
+    });
+
+    it("renders merged properties", async () => {
+      const property = TestUtils.createPrimitiveStringProperty("Label", "Test prop");
+      property.isMerged = true;
+
+      const value = await manager.render(property);
+
+      const valueMount = mount(<div>{value}</div>);
+
+      expect(valueMount.text()).to.be.equal(UiComponents.i18n.translate("UiComponents:property.varies"));
     });
   });
 });

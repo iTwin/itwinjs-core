@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module RpcInterface */
@@ -10,8 +10,7 @@ import { SerializedRpcOperation } from "../core/RpcProtocol";
 import { RpcOperation } from "../core/RpcOperation";
 import { RpcRequest } from "../core/RpcRequest";
 import { IModelError } from "../../IModelError";
-import { BentleyStatus, OpenMode } from "@bentley/bentleyjs-core";
-import { Logger, assert } from "@bentley/bentleyjs-core";
+import { BentleyStatus, OpenMode, Logger, assert } from "@bentley/bentleyjs-core";
 import { URL } from "url";
 
 enum AppMode {

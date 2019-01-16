@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module RpcInterface */
@@ -37,8 +37,8 @@ export abstract class IModelWriteRpcInterface extends RpcInterface {
       NOTE: Any add/remove/change to the methods below requires an update of the interface version.
       NOTE: Please consult the README in this folder for the semantic versioning rules.
   ===========================================================================================*/
-  public async openForWrite(_accessToken: AccessToken, _iModelToken: IModelToken): Promise<IModel> { return this.forward.apply(this, arguments); }
-  public async saveChanges(_iModelToken: IModelToken, _description?: string): Promise<void> { return this.forward.apply(this, arguments); }
-  public async updateProjectExtents(_iModelToken: IModelToken, _newExtents: AxisAlignedBox3d): Promise<void> { return this.forward.apply(this, arguments); }
-  public async saveThumbnail(_iModelToken: IModelToken, _val: Uint8Array): Promise<void> { return this.forward.apply(this, arguments); }
+  public async openForWrite(_accessToken: AccessToken, _iModelToken: IModelToken): Promise<IModel> { return this.forward(arguments); }
+  public async saveChanges(_iModelToken: IModelToken, _description?: string): Promise<void> { return this.forward(arguments); }
+  public async updateProjectExtents(_iModelToken: IModelToken, _newExtents: AxisAlignedBox3d): Promise<void> { return this.forward(arguments); }
+  public async saveThumbnail(_iModelToken: IModelToken, _val: Uint8Array): Promise<void> { return this.forward(arguments); }
 }

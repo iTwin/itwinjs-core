@@ -1,10 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Rendering */
 
-import { IndexMap, Comparable, compare, assert, compareWithTolerance } from "@bentley/bentleyjs-core";
+import { IndexMap, assert, compareWithTolerance } from "@bentley/bentleyjs-core";
 import { Point2d } from "@bentley/geometry-core";
 import { QPoint3d, OctEncodedNormal } from "@bentley/imodeljs-common";
 
@@ -15,7 +15,7 @@ export interface VertexKeyProps {
   uvParam?: Point2d;
 }
 
-export class VertexKey implements Comparable<VertexKey> {
+export class VertexKey {
   public readonly position: QPoint3d;
   public readonly octEncodedNormal: number = 0;
   public readonly uvParam?: Point2d;
@@ -76,7 +76,7 @@ export class VertexKey implements Comparable<VertexKey> {
 }
 
 export class VertexMap extends IndexMap<VertexKey> {
-  public constructor() { super(compare); }
+  public constructor() { super((lhs, rhs) => lhs.compare(rhs)); }
 
   public insertKey(props: VertexKeyProps, onInsert?: (vk: VertexKey) => any): number {
     return this.insert(VertexKey.create(props), onInsert);

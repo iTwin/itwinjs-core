@@ -84,7 +84,7 @@ ECEnumeration
 |Description||string||
 |Type||PrimitiveType||
 |IsStrict||boolean||
-|EnumValues||||
+|EnumValues||[ECEnumeratorDef](#ECEnumeratorDef)[]||
 |            |                   |            |                        |
 
 ### ECEnumeratorDef
@@ -95,9 +95,11 @@ ECEnumeration
 
 |    Name    |    Description    |    Type    |      Extended Type     |
 |:-----------|:------------------|:-----------|:-----------------------|
+|Name||string||
+|DisplayLabel||string||
+|Description||string||
 |IntValue||int||
 |StringValue||string||
-|DisplayLabel||string||
 |            |                   |            |                        |
 
 ### ECPropertyDef

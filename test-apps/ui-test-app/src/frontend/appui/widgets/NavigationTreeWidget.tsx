@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
@@ -14,11 +14,11 @@ import {
 
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { Tree } from "@bentley/ui-components";
-import { PresentationTreeDataProvider, withUnifiedSelection } from "@bentley/presentation-components/lib/tree";
+import { PresentationTreeDataProvider, treeWithUnifiedSelection } from "@bentley/presentation-components";
 
 // create a HOC tree component that supports unified selection
 // tslint:disable-next-line:variable-name
-const UnifiedSelectionTree = withUnifiedSelection(Tree);
+const UnifiedSelectionTree = treeWithUnifiedSelection(Tree);
 
 export class NavigationTreeWidgetControl extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {

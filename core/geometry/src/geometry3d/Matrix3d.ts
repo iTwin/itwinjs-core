@@ -1,17 +1,15 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { Geometry, AxisOrder, AxisIndex, BeJSONFunctions, StandardViewIndex } from "../Geometry";
 import { Angle } from "./Angle";
 import { Point4d } from "../geometry4d/Point4d";
 import { Point2d } from "./Point2dVector2d";
-import { XYAndZ } from "./XYZProps";
-import { Point3d, Vector3d } from "./Point3dVector3d";
-import { XAndY, Matrix3dProps } from "./XYZProps";
-import { XYZ } from "./Point3dVector3d";
+import { XYAndZ, XAndY, Matrix3dProps } from "./XYZProps";
+import { XYZ, Point3d, Vector3d } from "./Point3dVector3d";
 import { Transform } from "./Transform";
-
+/* tslint:disable:prefer-get */
 /**
  * PackedMatrix3dOps contains static methods for matrix operations where the matrix is a Float64Array.
  * * The Float64Array contains the matrix entries in row-major order
@@ -1665,6 +1663,12 @@ export class Matrix3d implements BeJSONFunctions {
   private static rowColumnDot(coffA: Float64Array, rowStartA: number, coffB: Float64Array, columnStartB: number): number {
     return coffA[rowStartA] * coffB[columnStartB] + coffA[rowStartA + 1] * coffB[columnStartB + 3] + coffA[rowStartA + 2] * coffB[columnStartB + 6];
   }
+  /**
+   * @returns true if the matrix is singular (i.e. collapses data to a plane, line, or point)
+   */
+  public isSingular(): boolean {
+    return !this.computeCachedInverse(true);
+  }
   /** compute the inverse of this Matrix3d. The inverse is stored for later use.
    * @returns Return true if the inverse computed.  (False if the columns collapse to a point, line or plane.)
    */
@@ -2022,5 +2026,100 @@ export class Matrix3d implements BeJSONFunctions {
       return result;
     return undefined;
   }
+  private static computeQuatTerm(numerator: number, denomCoff: number, reciprocal: number, diagSum: number): number {
+    let coff: number;
+    const diagTol = 0.500;
+    if (diagSum > diagTol) {
+      coff = Math.sqrt(diagSum) * 0.5;
+      if (denomCoff * numerator < 0.0)
+        coff = - coff;
+    } else {
+      coff = numerator * reciprocal;
+    }
+    return coff;
+  }
 
+  public static createFromQuaternion(quat: Point4d): Matrix3d {
+
+    const qqx = quat.x * quat.x;
+    const qqy = quat.y * quat.y;
+    const qqz = quat.z * quat.z;
+    const qqw = quat.w * quat.w;
+
+    const mag2 = qqx + qqy + qqz + qqw;
+
+    if (mag2 === 0.0) {
+      return Matrix3d.createIdentity();
+    } else {
+      const props: number[][] = [[], [], []];
+      const a = 1.0 / mag2;
+
+      props[0][0] = a * (qqw + qqx - qqy - qqz);
+      props[1][0] = 2.0 * a * (quat.w * quat.z + quat.x * quat.y);
+      props[2][0] = 2.0 * a * (quat.x * quat.z - quat.w * quat.y);
+
+      props[0][1] = 2.0 * a * (quat.x * quat.y - quat.w * quat.z);
+      props[1][1] = a * (qqw - qqx + qqy - qqz);
+      props[2][1] = 2.0 * a * (quat.w * quat.x + quat.y * quat.z);
+
+      props[0][2] = 2.0 * a * (quat.x * quat.z + quat.w * quat.y);
+      props[1][2] = 2.0 * a * (quat.y * quat.z - quat.w * quat.x);
+      props[2][2] = a * (qqw - qqx - qqy + qqz);
+      const matrix = Matrix3d.fromJSON(props);
+      matrix.transposeInPlace();
+      return matrix;
+    }
+  }
+  public toQuaternion(): Point4d {
+    const result = Point4d.createZero();
+    const props = [[this.coffs[0], this.coffs[3], this.coffs[6]],
+    [this.coffs[1], this.coffs[4], this.coffs[7]],
+    [this.coffs[2], this.coffs[5], this.coffs[8]]];
+
+    const xx = props[0][0];
+    const yy = props[1][1];
+    const zz = props[2][2];
+    const dSum: number[] = [];
+    let denom: number, maxIndex: number, i: number;
+
+    dSum[0] = 1.0 + xx - yy - zz;
+    dSum[1] = 1.0 - xx + yy - zz;
+    dSum[2] = 1.0 - xx - yy + zz;
+    dSum[3] = 1.0 + xx + yy + zz;
+
+    maxIndex = 0;
+    for (i = 1; i < 4; i++) {
+      if (dSum[i] > dSum[maxIndex])
+        maxIndex = i;
+    }
+
+    if (maxIndex === 0) {
+      result.x = 0.5 * Math.sqrt(dSum[0]);
+      denom = 1.0 / (4.0 * result.x);
+      result.y = Matrix3d.computeQuatTerm(props[0][1] + props[1][0], result.x, denom, dSum[1]);
+      result.z = Matrix3d.computeQuatTerm(props[0][2] + props[2][0], result.x, denom, dSum[2]);
+      result.w = Matrix3d.computeQuatTerm(props[2][1] - props[1][2], result.x, denom, dSum[3]);
+    } else if (maxIndex === 1) {
+      result.y = 0.5 * Math.sqrt(dSum[1]);
+      denom = 1.0 / (4.0 * result.y);
+      result.x = Matrix3d.computeQuatTerm(props[0][1] + props[1][0], result.y, denom, dSum[0]);
+      result.z = Matrix3d.computeQuatTerm(props[1][2] + props[2][1], result.y, denom, dSum[2]);
+      result.w = Matrix3d.computeQuatTerm(props[0][2] - props[2][0], result.y, denom, dSum[3]);
+
+    } else if (maxIndex === 2) {
+      result.z = 0.5 * Math.sqrt(dSum[2]);
+      denom = 1.0 / (4.0 * result.z);
+      result.x = Matrix3d.computeQuatTerm(props[0][2] + props[2][0], result.z, denom, dSum[0]);
+      result.y = Matrix3d.computeQuatTerm(props[1][2] + props[2][1], result.z, denom, dSum[1]);
+      result.w = Matrix3d.computeQuatTerm(props[1][0] - props[0][1], result.z, denom, dSum[3]);
+
+    } else {
+      result.w = 0.5 * Math.sqrt(dSum[3]);
+      denom = 1.0 / (4.0 * result.w);
+      result.x = Matrix3d.computeQuatTerm(props[2][1] - props[1][2], result.w, denom, dSum[0]);
+      result.y = Matrix3d.computeQuatTerm(props[0][2] - props[2][0], result.w, denom, dSum[1]);
+      result.z = Matrix3d.computeQuatTerm(props[1][0] - props[0][1], result.w, denom, dSum[2]);
+    }
+    return result;
+  }
 }

@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
@@ -9,9 +9,8 @@ import {
   ToolWidget,
   ActionItemButton,
   CoreTools,
-} from "../index";
-import Toolbar from "@bentley/ui-ninezone/lib/toolbar/Toolbar";
-import Direction from "@bentley/ui-ninezone/lib/utilities/Direction";
+} from "../ui-framework";
+import { Direction, Toolbar } from "@bentley/ui-ninezone";
 
 describe("CoreToolDefinitions", () => {
 

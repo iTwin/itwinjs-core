@@ -1,13 +1,14 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Geometry */
 
 import {
-  Point2d, Point3d, Vector3d, YawPitchRollAngles, YawPitchRollProps, Transform, Matrix3d, Angle, GeometryQuery, XYZProps, LowAndHighXYZ, Range3d, TransformProps,
+  Point2d, Point3d, Vector3d, YawPitchRollAngles, YawPitchRollProps, Transform, Matrix3d, Angle,
+  GeometryQuery, XYZProps, LowAndHighXYZ, Range3d, TransformProps, IModelJson as GeomJson,
 } from "@bentley/geometry-core";
-import { IModelJson as GeomJson } from "@bentley/geometry-core/lib/serialization/IModelJsonSchema";
+
 import { Id64, Id64String, IModelStatus } from "@bentley/bentleyjs-core";
 import { ColorDef, ColorDefProps } from "../ColorDef";
 import { GeometryClass, GeometryParams, FillDisplay, BackgroundFill, Gradient } from "../Render";
@@ -337,7 +338,7 @@ export class GeometryStreamIteratorEntry {
 }
 
 /** GeometryStreamIterator is a helper class for iterating a [[GeometryStreamProps]].
- * A [[GeometricElement]]'s GeometryStream must be specifically requesting using [[ElementLoadProps.wantGeometry]].
+ * A [[GeometricElement]]'s GeometryStream must be specifically requested using [[ElementLoadProps.wantGeometry]].
  */
 export class GeometryStreamIterator implements IterableIterator<GeometryStreamIteratorEntry> {
   /** GeometryStream entries */
@@ -347,7 +348,7 @@ export class GeometryStreamIterator implements IterableIterator<GeometryStreamIt
   /** Current entry position */
   private _index = 0;
 
-  /** Construct a new GeometryStreamIterator given a [[GeometryStreamProps]] from either a [[GeometricElement3d]], [[GeometricElement3d]], or [[GeometryPart]].
+  /** Construct a new GeometryStreamIterator given a [[GeometryStreamProps]] from either a [[GeometricElement3d]], [[GeometricElement2d]], or [[GeometryPart]].
    * Supply the [[GeometricElement]]'s category to initialize the appearance information for each geometric entry.
    */
   public constructor(geometryStream: GeometryStreamProps, category?: Id64String) {

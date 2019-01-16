@@ -1,10 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 // WIP import { assert } from "chai";
 // WIP import { QPoint3dList } from "@bentley/imodeljs-common";
-// WIP import { PointCloudGeometryCreateParams } from "@bentley/imodeljs-frontend/lib/rendering";
+// WIP import { PointCloudGeometryCreateParams } from "@bentley/imodeljs-frontend";
 // WIP
 // WIP describe("PointCloudGeometryCreateParams", () => {
 // WIP   it("should create PointCloudGeometryCreateParams", () => {

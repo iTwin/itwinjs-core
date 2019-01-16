@@ -1,15 +1,12 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 
-import { ConfigurableUiManager } from "@bentley/ui-framework";
-import { WidgetControl } from "@bentley/ui-framework";
-import { ConfigurableCreateInfo } from "@bentley/ui-framework";
-import { ContentControl } from "@bentley/ui-framework";
-
+import { ConfigurableUiManager, ConfigurableCreateInfo, ContentControl, WidgetControl } from "@bentley/ui-framework";
 import { Orientation } from "@bentley/ui-core";
+
 import {
   PropertyDescription, PropertyRecord, PropertyValueFormat, PrimitiveValue,
   PropertyGrid, SimplePropertyDataProvider, PropertyValue, PropertyUpdatedArgs, PropertyCategory,

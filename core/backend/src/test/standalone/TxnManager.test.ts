@@ -1,14 +1,14 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { ActivityLoggingContext, IModelStatus } from "@bentley/bentleyjs-core";
+import { ActivityLoggingContext, BeDuration, IModelStatus } from "@bentley/bentleyjs-core";
+import { Code, ColorByName, IModel, IModelError, SubCategoryAppearance } from "@bentley/imodeljs-common";
 import { assert } from "chai";
 import * as path from "path";
+import { IModelDb, PhysicalModel, SpatialCategory, TxnAction } from "../../imodeljs-backend";
 import { IModelTestUtils, TestElementDrivesElement, TestPhysicalObject, TestPhysicalObjectProps } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
-import { IModelDb, SpatialCategory, TxnAction, PhysicalModel } from "../../backend";
-import { Code, IModel, SubCategoryAppearance, ColorByName, IModelError } from "@bentley/imodeljs-common";
 
 describe("TxnManager", () => {
   let imodel: IModelDb;
@@ -17,7 +17,8 @@ describe("TxnManager", () => {
   const actx = new ActivityLoggingContext("");
 
   before(async () => {
-    imodel = IModelTestUtils.openIModel("test.bim");
+    IModelTestUtils.registerTestBim();
+    imodel = IModelTestUtils.openIModel("test.bim", { copyFilename: "TxnManager_Test.bim" });
     const schemaPathname = path.join(KnownTestLocations.assetsDir, "TestBim.ecschema.xml");
     await imodel.importSchema(actx, schemaPathname); // will throw an exception if import fails
 
@@ -28,9 +29,11 @@ describe("TxnManager", () => {
       code: Code.createEmpty(),
       intProperty: 100,
     };
+
     imodel.saveChanges("schema change");
     imodel.nativeDb.enableTxnTesting();
   });
+
   after(() => IModelTestUtils.closeIModel(imodel));
 
   it("Undo/Redo", () => {
@@ -140,58 +143,76 @@ describe("TxnManager", () => {
     assert.isFalse(txns.hasLocalChanges);
   });
 
-  it("Element drives element events", () => {
+  it("Element drives element events", async () => {
+    assert.isDefined(imodel.getMetaData("TestBim:TestPhysicalObject"), "TestPhysicalObject is present");
+
     const el1 = imodel.elements.insertElement(props);
     const el2 = imodel.elements.insertElement(props);
     const ede = TestElementDrivesElement.create<TestElementDrivesElement>(imodel, el1, el2);
     ede.property1 = "test ede";
     ede.insert();
+
+    const removals: VoidFunction[] = [];
     let beforeOutputsHandled = 0;
     let allInputsHandled = 0;
     let rootChanged = 0;
     let validateOutput = 0;
     let deletedDependency = 0;
-    TestElementDrivesElement.deletedDependency.addListener((evProps) => {
+    let commits = 0;
+    let committed = 0;
+    removals.push(TestElementDrivesElement.deletedDependency.addListener((evProps) => {
       assert.equal(evProps.sourceId, el1);
       assert.equal(evProps.targetId, el2);
       ++deletedDependency;
-    });
-    TestElementDrivesElement.rootChanged.addListener((evProps, im) => {
+    }));
+    removals.push(TestElementDrivesElement.rootChanged.addListener((evProps, im) => {
       const ede2 = im.relationships.getInstance<TestElementDrivesElement>(evProps.classFullName, evProps.id!);
       assert.equal(ede2.property1, ede.property1);
       assert.equal(evProps.sourceId, el1);
       assert.equal(evProps.targetId, el2);
       ++rootChanged;
-    });
-    TestElementDrivesElement.validateOutput.addListener((_props) => ++validateOutput);
-    TestPhysicalObject.beforeOutputsHandled.addListener((id, im) => {
-      const e1 = im.elements.getElement<TestPhysicalObject>(id);
-      assert.equal(e1.intProperty, props.intProperty);
+    }));
+    removals.push(TestElementDrivesElement.validateOutput.addListener((_props) => ++validateOutput));
+    removals.push(TestPhysicalObject.beforeOutputsHandled.addListener((id) => {
       assert.equal(id, el1);
       ++beforeOutputsHandled;
-    });
-    TestPhysicalObject.allInputsHandled.addListener((id, im) => {
-      const e2 = im.elements.getElement<TestPhysicalObject>(id);
-      assert.equal(e2.intProperty, props.intProperty);
+    }));
+    removals.push(TestPhysicalObject.allInputsHandled.addListener((id) => {
       assert.equal(id, el2);
       ++allInputsHandled;
-    });
+    }));
+
+    removals.push(imodel.txns.onCommit.addListener(() => commits++));
+    removals.push(imodel.txns.onCommitted.addListener(() => committed++));
 
     imodel.saveChanges("step 1");
-    assert.equal(1, beforeOutputsHandled);
-    assert.equal(1, allInputsHandled);
-    assert.equal(1, rootChanged);
-    assert.equal(0, validateOutput);
-    assert.equal(0, deletedDependency);
+    assert.equal(commits, 1);
+    assert.equal(committed, 1);
+    assert.equal(beforeOutputsHandled, 1);
+    assert.equal(allInputsHandled, 1);
+    assert.equal(rootChanged, 1);
+    assert.equal(validateOutput, 0);
+    assert.equal(deletedDependency, 0);
+
+    // NOTE: for this test, we're going to update the element we just inserted. The TxnManager relies on the last-modified-time of the element
+    // to recognize that something changed about that element (unless you modify one of the properties of the Element *base class*).
+    // Since the resolution of that value is milliseconds, we need to wait at least 1 millisecond
+    // before we call update on the same element we just inserted.
+    // We don't think this will be a problem in the real world.
+    await BeDuration.wait(2); // wait 2 milliseconds, just for safety
 
     const element2 = imodel.elements.getElement<TestPhysicalObject>(el2);
-    element2.update();
+    element2.update(); // since nothing really changed about this element, only the last-modified-time will change.
     imodel.saveChanges("step 2");
-    assert.equal(2, beforeOutputsHandled);
-    assert.equal(2, allInputsHandled);
-    assert.equal(2, rootChanged);
-    assert.equal(0, validateOutput);
-    assert.equal(0, deletedDependency);
+    assert.equal(commits, 2);
+    assert.equal(committed, 2);
+
+    assert.equal(allInputsHandled, 2, "allInputsHandled not called for update");
+    assert.equal(beforeOutputsHandled, 2, "beforeOutputsHandled not called for update");
+    assert.equal(rootChanged, 2, "rootChanged not called for update");
+    assert.equal(validateOutput, 0, "validateOutput shouldn't be called for update");
+    assert.equal(deletedDependency, 0, "deleteDependency shouldn't be called for update");
+    removals.forEach((drop) => drop());
   });
 
 });

@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
@@ -16,11 +16,12 @@ import {
 // __PUBLISH_EXTRACT_START__ Presentation.Frontend.Imports
 import { Presentation } from "@bentley/presentation-frontend";
 // __PUBLISH_EXTRACT_END__
+import { UiCore } from "@bentley/ui-core";
 import { UiComponents } from "@bentley/ui-components";
+import { MyAppFrontend } from "./api/MyAppFrontend";
 import rpcs from "../common/Rpcs";
 import App from "./components/app/App";
 import "./index.css";
-import { UiCore } from "@bentley/ui-core/lib";
 
 // initialize logging
 Logger.initializeToConsole();
@@ -30,7 +31,7 @@ Logger.initializeToConsole();
   if (ElectronRpcConfiguration.isElectron) {
     ElectronRpcManager.initializeClient({}, rpcs);
   } else {
-    const rpcParams: BentleyCloudRpcParams = { info: { title: "presentation-test-app", version: "v1.0" } };
+    const rpcParams: BentleyCloudRpcParams = { info: { title: "presentation-test-app", version: "v1.0" }, uriPrefix: "http://localhost:3001" };
     // __PUBLISH_EXTRACT_START__ Presentation.Frontend.RpcInterface
     const rpcConfiguration = BentleyCloudRpcManager.initializeClient(rpcParams, rpcs);
     // __PUBLISH_EXTRACT_END__
@@ -50,10 +51,15 @@ export class SampleApp extends IModelApp {
 
     // Configure a CORS proxy in development mode.
     if (process.env.NODE_ENV === "development")
-      Config.App.set("imjs_dev_cors_proxy_server", `http://${window.location.hostname}:${process.env.CORS_PROXY_PORT}`);
+      Config.App.set("imjs_dev_cors_proxy_server", `http://${window.location.hostname}:3001`); // By default, this will run on port 3001
 
     // __PUBLISH_EXTRACT_START__ Presentation.Frontend.Initialization
     Presentation.initialize({
+      // specify `clientId` so Presentation framework can share caches
+      // between sessions for the same clients
+      clientId: MyAppFrontend.getClientId(),
+
+      // specify locale for localizing presentation data
       activeLocale: IModelApp.i18n.languageList()[0],
     });
     // __PUBLISH_EXTRACT_END__

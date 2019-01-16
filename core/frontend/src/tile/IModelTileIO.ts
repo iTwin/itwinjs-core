@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Tile */
@@ -26,7 +26,7 @@ import {
 } from "../render/primitives/VertexTable";
 import { ColorMap } from "../render/primitives/ColorMap";
 import { Id64String, JsonUtils, assert } from "@bentley/bentleyjs-core";
-import { RenderSystem, RenderGraphic, PackedFeatureTable } from "../render/System";
+import { RenderSystem, RenderGraphic, PackedFeatureTable, GraphicBranch } from "../render/System";
 import { imageElementFromImageSource } from "../ImageUtil";
 import {
   ElementAlignedBox3d,
@@ -46,7 +46,7 @@ import {
 } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../IModelConnection";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
-import { Range2d, Point3d, Range3d } from "@bentley/geometry-core";
+import { Range2d, Point3d, Range3d, Transform } from "@bentley/geometry-core";
 
 /** Provides facilities for deserializing tiles in 'imodel' format. These tiles contain element geometry encoded into a format optimized for the imodeljs webgl renderer.
  * @hidden
@@ -528,16 +528,14 @@ export namespace IModelTileIO {
       const indices = this.readVertexIndices(json.indices);
       const prevIndices = this.readVertexIndices(json.prevIndices);
       const nextIndicesAndParams = this.findBuffer(json.nextIndicesAndParams);
-      const distanceBytes = this.findBuffer(json.distances);
 
-      if (undefined === indices || undefined === prevIndices || undefined === nextIndicesAndParams || undefined === distanceBytes)
+      if (undefined === indices || undefined === prevIndices || undefined === nextIndicesAndParams)
         return undefined;
 
       return {
         indices,
         prevIndices,
         nextIndicesAndParams,
-        distances: new Float32Array(distanceBytes.buffer),
       };
     }
 
@@ -573,7 +571,7 @@ export namespace IModelTileIO {
         type,
         indices,
         fillFlags: displayParams.fillFlags,
-        hasBakedLighting: this._hasBakedLighting,
+        hasBakedLighting: displayParams.ignoreLighting,
         material: displayParams.material,
         texture,
       };
@@ -603,7 +601,8 @@ export namespace IModelTileIO {
       if (undefined !== json.silhouettes && undefined === (silhouettes = this.readSilhouettes(json.silhouettes)))
         return { succeeded };
 
-      if (undefined !== json.polylines && undefined === (polylines = this.readTesselatedPolyline(json.polylines)))
+      const ignorePolylineEdges = true; // ###TODO: Fix add-on - it duplicates these with the segment edges, and these waste tons of memory...
+      if (!ignorePolylineEdges && undefined !== json.polylines && undefined === (polylines = this.readTesselatedPolyline(json.polylines)))
         return { succeeded };
 
       succeeded = true;
@@ -643,16 +642,43 @@ export namespace IModelTileIO {
     private finishRead(isLeaf: boolean, featureTable: PackedFeatureTable, contentRange: ElementAlignedBox3d, sizeMultiplier?: number): GltfTileIO.ReaderResult {
       const graphics: RenderGraphic[] = [];
 
-      for (const meshKey of Object.keys(this._meshes)) {
-        const meshValue = this._meshes[meshKey];
-        const primitives = JsonUtils.asArray(meshValue.primitives);
-        if (undefined === primitives)
-          continue;
+      if (undefined === this._nodes.Node_Root) {
+        // Unstructured -- prior to animation support....
+        for (const meshKey of Object.keys(this._meshes)) {
+          const meshValue = this._meshes[meshKey];
+          const primitives = JsonUtils.asArray(meshValue.primitives);
+          if (undefined === primitives)
+            continue;
+          for (const primitive of primitives) {
+            const graphic = this.readMeshGraphic(primitive);
+            if (undefined !== graphic)
+              graphics.push(graphic);
+          }
+        }
+      } else {
+        for (const nodeKey of Object.keys(this._nodes)) {
+          const meshValue = this._meshes[this._nodes[nodeKey]];
+          const primitives = JsonUtils.asArray(meshValue.primitives);
+          if (undefined === primitives)
+            continue;
 
-        for (const primitive of primitives) {
-          const graphic = this.readMeshGraphic(primitive);
-          if (undefined !== graphic)
-            graphics.push(graphic);
+          if ("Node_Root" === nodeKey) {
+            for (const primitive of primitives) {
+              const graphic = this.readMeshGraphic(primitive);
+              if (undefined !== graphic)
+                graphics.push(graphic);
+            }
+          } else {
+            const branch = new GraphicBranch(true);
+            branch.animationId = this._modelId + "_" + nodeKey;
+            for (const primitive of primitives) {
+              const graphic = this.readMeshGraphic(primitive);
+              if (undefined !== graphic)
+                branch.add(graphic);
+            }
+            if (!branch.isEmpty)
+              graphics.push(this._system.createBranch(branch, Transform.createIdentity()));
+          }
         }
       }
 

@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
@@ -7,17 +7,15 @@ import * as moq from "typemoq";
 import * as faker from "faker";
 import "@bentley/presentation-common/lib/test/_helpers/Promises";
 import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
-import { NativePlatformRegistry, IModelHost, IModelDb } from "@bentley/imodeljs-backend";
-import { NativeECPresentationManager, NativeECPresentationStatus } from "@bentley/imodeljs-backend/lib/imodeljs-native-platform-api";
-import { PresentationError } from "@bentley/presentation-common";
-import { VariableValueTypes } from "@bentley/presentation-common/lib/RulesetVariables";
+import { IModelHost, IModelDb, IModelJsNative } from "@bentley/imodeljs-backend";
+import { PresentationError, VariableValueTypes } from "@bentley/presentation-common";
 import "./IModelHostSetup";
 import { NativePlatformDefinition, createDefaultNativePlatform } from "../NativePlatform";
 
 describe("default NativePlatform", () => {
 
   let nativePlatform: NativePlatformDefinition;
-  const addonMock = moq.Mock.ofType<NativeECPresentationManager>();
+  const addonMock = moq.Mock.ofType<IModelJsNative.ECPresentationManager>();
 
   beforeEach(() => {
     IModelHost.shutdown();
@@ -26,7 +24,7 @@ describe("default NativePlatform", () => {
     } catch (e) {
       let isLoaded = false;
       try {
-        NativePlatformRegistry.getNativePlatform();
+        IModelHost.platform;
         isLoaded = true;
       } catch (_e) { }
       if (!isLoaded)
@@ -71,7 +69,7 @@ describe("default NativePlatform", () => {
   it("throws on handleRequest error response", async () => {
     addonMock
       .setup((x) => x.handleRequest(moq.It.isAny(), "", moq.It.isAny()))
-      .callback((_db, _options, cb) => { cb({ error: { status: NativeECPresentationStatus.Error, message: "test" } }); });
+      .callback((_db, _options, cb) => { cb({ error: { status: IModelJsNative.ECPresentationStatus.Error, message: "test" } }); });
     await expect(nativePlatform.handleRequest(ActivityLoggingContext.current, undefined, "")).to.be.rejectedWith(PresentationError, "test");
   });
 
@@ -107,7 +105,7 @@ describe("default NativePlatform", () => {
   it("throws on void error response", async () => {
     addonMock
       .setup((x) => x.setupRulesetDirectories(moq.It.isAny()))
-      .returns(() => ({ error: { status: NativeECPresentationStatus.InvalidArgument, message: "test" } }));
+      .returns(() => ({ error: { status: IModelJsNative.ECPresentationStatus.InvalidArgument, message: "test" } }));
     expect(() => nativePlatform.setupRulesetDirectories([])).to.throw(PresentationError, "test");
   });
 

@@ -1,14 +1,14 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
+// tslint:disable:no-duplicate-imports
 import * as geometry from "../geometry-core";
+import { YawPitchRollAngles, Matrix3d } from "../geometry-core";
 import { Vector3d, Point3d } from "../geometry3d/Point3dVector3d";
 import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
 import { Ray3d } from "../geometry3d/Ray3d";
-import { YawPitchRollAngles } from "../geometry-core";
-import { Matrix3d } from "../geometry-core";
 // import { LineSegment3d } from "../curve/LineSegment3d";
 // import { GeometryQuery } from "../curve/CurvePrimitive";
 // import { LineString3d } from "../curve/LineString3d";
@@ -18,27 +18,30 @@ import { Matrix3d } from "../geometry-core";
 // import { Loop, Path, ParityRegion } from "../curve/CurveChain";
 
 /* tslint:disable:no-console */
-
+const emitToConsole = false;
 // In geometry source tests, convert to string and emit to console.
 // In browser or other playpen, implement this function appropriately.
+// BUT ... suppress the output for batch test mode .  ..
 function emit(...data: any[]) {
-  const stringData = [];
-  // Catch known types for special formatting.  Dispatch others unchanged.
-  for (const d of data) {
-    if (d === undefined) {
-      stringData.push("undefined");
-    } else {
-      const imjs = geometry.IModelJson.Writer.toIModelJson(d);
-      if (imjs !== undefined) {
-        stringData.push(JSON.stringify(imjs));
-      } else if (d.toJSON) {
-        stringData.push(d.toJSON());
+  if (emitToConsole) {
+    const stringData = [];
+    // Catch known types for special formatting.  Dispatch others unchanged.
+    for (const d of data) {
+      if (d === undefined) {
+        stringData.push("undefined");
       } else {
-        stringData.push(d);
+        const imjs = geometry.IModelJson.Writer.toIModelJson(d);
+        if (imjs !== undefined) {
+          stringData.push(JSON.stringify(imjs));
+        } else if (d.toJSON) {
+          stringData.push(d.toJSON());
+        } else {
+          stringData.push(d);
+        }
       }
     }
+    console.log(stringData);
   }
-  console.log(stringData);
 }
 // Typical snippets for sandbox windows . . . . These assume that
 // the window alwyas has

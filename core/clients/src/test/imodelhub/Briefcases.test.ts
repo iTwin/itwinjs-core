@@ -1,16 +1,14 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
 import * as fs from "fs";
 import * as path from "path";
 
-import { AccessToken } from "../../";
-
 import {
-  IModelHubClient, Briefcase, BriefcaseQuery, IModelHubClientError,
-} from "../../";
+  AccessToken, IModelHubClient, Briefcase, BriefcaseQuery, IModelHubClientError,
+} from "../../imodeljs-clients";
 import { TestConfig, TestUsers } from "../TestConfig";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
 import * as utils from "./TestUtils";

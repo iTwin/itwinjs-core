@@ -1,16 +1,16 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { Logger, OpenMode, Id64, Id64String, IDisposable, ActivityLoggingContext, BeEvent } from "@bentley/bentleyjs-core";
+import { Logger, OpenMode, Id64, Id64String, IDisposable, ActivityLoggingContext, BeEvent, LogLevel } from "@bentley/bentleyjs-core";
 import { AccessToken, Config, ChangeSet } from "@bentley/imodeljs-clients";
-import { SubCategoryAppearance, Code, CreateIModelProps, ElementProps, RpcManager, GeometricElementProps, IModel, IModelReadRpcInterface, RelatedElement, RpcConfiguration, CodeProps } from "@bentley/imodeljs-common";
+import { Code, CreateIModelProps, ElementProps, RpcManager, GeometricElementProps, IModel, IModelReadRpcInterface, RelatedElement, RpcConfiguration, CodeProps } from "@bentley/imodeljs-common";
 import {
-  IModelHostConfiguration, IModelHost, BriefcaseManager, IModelDb, DefinitionModel, Model, Element,
-  InformationPartitionElement, SpatialCategory, IModelJsFs, IModelJsFsStats, PhysicalPartition, PhysicalModel, NativePlatformRegistry, SubjectOwnsPartitionElements,
-} from "../backend";
-import { DisableNativeAssertions as NativeDisableNativeAssertions } from "../imodeljs-native-platform-api";
+  IModelHostConfiguration, IModelHost, BriefcaseManager, IModelDb, Model, Element,
+  InformationPartitionElement, SpatialCategory, IModelJsFs, IModelJsFsStats, PhysicalPartition, PhysicalModel, SubjectOwnsPartitionElements,
+} from "../imodeljs-backend";
+import { IModelJsNative } from "../IModelJsNative";
 import { KnownTestLocations } from "./KnownTestLocations";
 import { HubUtility, UserCredentials } from "./integration/HubUtility";
 import * as path from "path";
@@ -18,6 +18,7 @@ import { Schema, Schemas } from "../Schema";
 import { ElementDrivesElement, RelationshipProps } from "../Relationship";
 import { PhysicalElement } from "../Element";
 import { ClassRegistry } from "../ClassRegistry";
+import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
 
 const actx = new ActivityLoggingContext("");
 
@@ -63,18 +64,6 @@ export class TestIModelInfo {
 }
 
 RpcConfiguration.developmentMode = true;
-
-Logger.initializeToConsole();
-if (process.env.imjs_test_logging_config === undefined) {
-  // tslint:disable-next-line:no-console
-  console.log("FYI You can set the environment variable imjs_test_logging_config to point to a logging configuration json file.");
-}
-
-const loggingConfigFile: string = process.env.imjs_test_logging_config || path.join(__dirname, "logging.config.json");
-if (IModelJsFs.existsSync(loggingConfigFile)) {
-  // tslint:disable-next-line:no-var-requires
-  Logger.configureLevels(require(loggingConfigFile));
-}
 
 // Initialize the RPC interface classes used by tests
 RpcManager.initializeInterface(IModelReadRpcInterface);
@@ -134,10 +123,10 @@ export class TestUsers {
  * this class.
  */
 export class DisableNativeAssertions implements IDisposable {
-  private _native: NativeDisableNativeAssertions | undefined;
+  private _native: IModelJsNative.DisableNativeAssertions | undefined;
 
   constructor() {
-    this._native = new (NativePlatformRegistry.getNativePlatform()).DisableNativeAssertions();
+    this._native = new IModelHost.platform.DisableNativeAssertions();
   }
 
   public dispose(): void {
@@ -324,14 +313,6 @@ export class IModelTestUtils {
     }
   }
 
-  // Create a SpatialCategory, insert it, and set its default appearance
-  public static createAndInsertSpatialCategory(definitionModel: DefinitionModel, categoryName: string, appearance: SubCategoryAppearance): Id64String {
-    const cat: SpatialCategory = SpatialCategory.create(definitionModel, categoryName);
-    cat.id = definitionModel.iModel.elements.insertElement(cat);
-    cat.setDefaultAppearance(appearance);
-    return cat.id;
-  }
-
   // Create a PhysicalObject. (Does not insert it.)
   public static createPhysicalObject(testImodel: IModelDb, modelId: Id64String, categoryId: Id64String, elemCode?: Code): Element {
     const elementProps: GeometricElementProps = {
@@ -345,18 +326,56 @@ export class IModelTestUtils {
   }
 
   public static startBackend() {
+    IModelJsConfig.init(true /* suppress exception */, false /* suppress error message */, Config.App);
     const config = new IModelHostConfiguration();
     IModelHost.startup(config);
-    Schemas.registerSchema(TestBim);
-    ClassRegistry.register(TestPhysicalObject, TestBim);
-    ClassRegistry.register(TestElementDrivesElement, TestBim);
+  }
+
+  public static registerTestBim() {
+    if (!Schemas.isRegistered(TestBim)) {
+      Schemas.registerSchema(TestBim);
+      ClassRegistry.register(TestPhysicalObject, TestBim);
+      ClassRegistry.register(TestElementDrivesElement, TestBim);
+    }
   }
 
   public static shutdownBackend() {
-    Schemas.unregisterSchema(TestBim.name);
     IModelHost.shutdown();
+  }
+
+  public static setupLogging() {
+    Logger.initializeToConsole();
+    Logger.setLevelDefault(LogLevel.Error);
+
+    if (process.env.imjs_test_logging_config === undefined) {
+      // tslint:disable-next-line:no-console
+      console.log(`You can set the environment variable imjs_test_logging_config to point to a logging configuration json file.`);
+    }
+    const loggingConfigFile: string = process.env.imjs_test_logging_config || path.join(__dirname, "logging.config.json");
+
+    if (IModelJsFs.existsSync(loggingConfigFile)) {
+      // tslint:disable-next-line:no-console
+      console.log(`Setting up logging levels from ${loggingConfigFile}`);
+      // tslint:disable-next-line:no-var-requires
+      Logger.configureLevels(require(loggingConfigFile));
+    }
+  }
+
+  // Setup typical programmatic log level overrides here
+  // Convenience method used to debug specific tests/fixtures
+  public static setupDebugLogLevels() {
+    Logger.setLevelDefault(LogLevel.Warning);
+    Logger.setLevel("Performance", LogLevel.Info);
+    Logger.setLevel("imodeljs-backend.BriefcaseManager", LogLevel.Trace);
+    Logger.setLevel("imodeljs-backend.OpenIModelDb", LogLevel.Trace);
+    Logger.setLevel("imodeljs-clients.Clients", LogLevel.Trace);
+    Logger.setLevel("imodeljs-clients.imodelhub", LogLevel.Trace);
+    Logger.setLevel("imodeljs-clients.Request", LogLevel.Trace);
+    Logger.setLevel("imodeljs-clients.Url", LogLevel.Trace);
+    Logger.setLevel("DgnCore", LogLevel.Error);
+    Logger.setLevel("BeSQLite", LogLevel.Error);
   }
 }
 
-// Start the backend
+IModelTestUtils.setupLogging();
 IModelTestUtils.startBackend();

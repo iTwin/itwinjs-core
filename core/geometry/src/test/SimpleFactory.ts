@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
@@ -7,9 +7,9 @@
 
 import * as g from "../geometry-core";
 
-console.log("=========================");
-console.log("Standalone Output");
-console.log("=========================");
+// console.log("=========================");
+// console.log("Standalone Output");
+// console.log("=========================");
 
 /**
  * This class has static methods to create typical instances of various classes.

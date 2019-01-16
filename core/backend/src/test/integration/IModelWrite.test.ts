@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
@@ -8,7 +8,7 @@ import { Id64String, DbOpcode, DbResult, ActivityLoggingContext } from "@bentley
 import { IModelVersion, SubCategoryAppearance, IModel } from "@bentley/imodeljs-common";
 import { IModelTestUtils, TestUsers, Timer, TestIModelInfo } from "../IModelTestUtils";
 import { IModelJsFs } from "../../IModelJsFs";
-import { KeepBriefcase, IModelDb, OpenParams, Element, DictionaryModel, BriefcaseManager, SqliteStatement, SqliteValue, SqliteValueType } from "../../backend";
+import { KeepBriefcase, IModelDb, OpenParams, Element, DictionaryModel, BriefcaseManager, SpatialCategory, SqliteStatement, SqliteValue, SqliteValueType, BriefcaseEntry } from "../../imodeljs-backend";
 import { ConcurrencyControl } from "../../ConcurrencyControl";
 import { AccessToken, CodeState, HubIModel, HubCode, IModelQuery, MultiCode } from "@bentley/imodeljs-clients";
 import { HubUtility } from "./HubUtility";
@@ -23,7 +23,7 @@ export async function createNewModelAndCategory(rwIModel: IModelDb, accessToken:
   // Find or create a SpatialCategory.
   const dictionary: DictionaryModel = rwIModel.models.getModel(IModel.dictionaryId) as DictionaryModel;
   const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory");
-  const spatialCategoryId: Id64String = IModelTestUtils.createAndInsertSpatialCategory(dictionary, newCategoryCode.value!, new SubCategoryAppearance({ color: 0xff0000 }));
+  const spatialCategoryId: Id64String = SpatialCategory.insert(rwIModel, IModel.dictionaryId, newCategoryCode.value!, new SubCategoryAppearance({ color: 0xff0000 }));
 
   // Reserve all of the codes that are required by the new model and category.
   try {
@@ -44,6 +44,16 @@ describe("IModelWriteTest (#integration)", () => {
   let readOnlyTestIModel: TestIModelInfo;
   let readWriteTestIModel: TestIModelInfo;
 
+  const validateBriefcaseCache = () => {
+    const paths = new Array<string>();
+    (BriefcaseManager as any)._cache._briefcases.forEach((briefcase: BriefcaseEntry, key: string) => {
+      assert.isTrue(IModelJsFs.existsSync(briefcase.pathname), `File corresponding to briefcase cache entry not found: ${briefcase.pathname}`);
+      assert.strictEqual<string>(briefcase.getKey(), key, `Cached key ${key} doesn't match the current generated key ${briefcase.getKey()}`);
+      assert.isFalse(paths.includes(briefcase.pathname), `Briefcase with path: ${briefcase.pathname} (key: ${key}) has a duplicate in the cache`);
+      paths.push(briefcase.pathname);
+    });
+  };
+
   before(async () => {
     accessToken = await HubUtility.login(TestUsers.manager);
 
@@ -57,6 +67,10 @@ describe("IModelWriteTest (#integration)", () => {
     const managerAccessToken: AccessToken = await HubUtility.login(TestUsers.manager);
     await HubUtility.purgeAcquiredBriefcases(managerAccessToken, "iModelJsIntegrationTest", "ReadOnlyTest");
     await HubUtility.purgeAcquiredBriefcases(managerAccessToken, "iModelJsIntegrationTest", "ReadWriteTest");
+  });
+
+  afterEach(() => {
+    validateBriefcaseCache();
   });
 
   it("test change-merging scenarios in optimistic concurrency mode (#integration)", async () => {
@@ -350,7 +364,7 @@ describe("IModelWriteTest (#integration)", () => {
     // Find or create a SpatialCategory.
     const dictionary: DictionaryModel = rwIModel.models.getModel(IModel.dictionaryId) as DictionaryModel;
     const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory");
-    const spatialCategoryId: Id64String = IModelTestUtils.createAndInsertSpatialCategory(dictionary, newCategoryCode.value!, new SubCategoryAppearance({ color: 0xff0000 }));
+    const spatialCategoryId: Id64String = SpatialCategory.insert(rwIModel, IModel.dictionaryId, newCategoryCode.value!, new SubCategoryAppearance({ color: 0xff0000 }));
 
     timer.end();
 

@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Tools */
@@ -176,13 +176,14 @@ export abstract class PrimitiveTool extends InteractiveTool {
    * Called to revert to a previous tool state (ex. undo last data button).
    * @return false to instead reverse the most recent transaction.
    */
-  public onUndoPreviousStep(): boolean { return false; }
+  public async onUndoPreviousStep(): Promise<boolean> { return false; }
 
-  public undoPreviousStep(): boolean {
-    if (!this.onUndoPreviousStep())
+  public async undoPreviousStep(): Promise<boolean> {
+    if (!await this.onUndoPreviousStep())
       return false;
 
     AccuDrawShortcuts.processPendingHints(); // Process any hints the active tool setup in _OnUndoPreviousStep now...
+    IModelApp.viewManager.invalidateDecorationsAllViews();
     IModelApp.toolAdmin.updateDynamics();
 
     return true;

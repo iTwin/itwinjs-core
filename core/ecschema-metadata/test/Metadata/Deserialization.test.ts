@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
@@ -548,6 +548,205 @@ describe("Full Schema Deserialization", () => {
       expect(descriptions[1]).to.equal("Description for BEntityClass",
         `SchemaDeserializationVisitor.visitClass was called for "ARelationshipClass" before the entity class its constraints use, "BEntityClass" was fully deserialized.`);
 
+    });
+  });
+
+  describe("with schema custom attributes", () => {
+    const baseJson = {
+      $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
+      name: "ValidSchema",
+      version: "1.2.3",
+      alias: "vs",
+      label: "SomeDisplayLabel",
+      description: "A really long description...",
+      items: {
+        TestCAClassA: { schemaItemType: "CustomAttributeClass", appliesTo: "AnyClass" },
+        TestCAClassB: { schemaItemType: "CustomAttributeClass", appliesTo: "AnyClass" },
+      }
+    };
+
+    const oneCustomAttributeJson = {
+      ...baseJson,
+      customAttributes: [
+        {
+          className: "ValidSchema.TestCAClassA",
+          ShowClasses: true,
+        },
+      ],
+    };
+
+    it("async - single schema CustomAttribute", async () => {
+      const testSchema = await Schema.fromJson(oneCustomAttributeJson);
+      expect(testSchema).to.exist;
+      expect(testSchema.customAttributes!.get("ValidSchema.TestCAClassA")).to.exist;
+      assert(testSchema.customAttributes!.get("ValidSchema.TestCAClassA")!.ShowClasses === true);
+    });
+
+    it("sync - single schema CustomAttribute", () => {
+      const testSchema = Schema.fromJsonSync(oneCustomAttributeJson);
+      expect(testSchema).to.exist;
+      expect(testSchema.customAttributes!.get("ValidSchema.TestCAClassA")).to.exist;
+      assert(testSchema.customAttributes!.get("ValidSchema.TestCAClassA")!.ShowClasses === true);
+    });
+
+    const twoCustomAttributeJson = {
+      ...baseJson,
+      customAttributes: [
+        {
+          className: "ValidSchema.TestCAClassA",
+        },
+        {
+          className: "ValidSchema.TestCAClassB",
+        },
+      ],
+    };
+
+    it("async - multiple schema CustomAttributes", async () => {
+      const testSchema = await Schema.fromJson(twoCustomAttributeJson);
+      expect(testSchema).to.exist;
+      expect(testSchema.customAttributes!.get("ValidSchema.TestCAClassA")).to.exist;
+      expect(testSchema.customAttributes!.get("ValidSchema.TestCAClassB")).to.exist;
+    });
+
+    it("sync - multiple schema CustomAttributes", () => {
+      const testSchema = Schema.fromJsonSync(twoCustomAttributeJson);
+      expect(testSchema).to.exist;
+      expect(testSchema.customAttributes!.get("ValidSchema.TestCAClassA")).to.exist;
+      expect(testSchema.customAttributes!.get("ValidSchema.TestCAClassB")).to.exist;
+    });
+
+    it("sync - multiple schema CustomAttributes with additional properties", () => {
+      const propertyJson = {
+        ...baseJson,
+        customAttributes: [
+          {
+            className: "ValidSchema.TestCAClassA",
+            ShowClasses: false,
+          },
+          {
+            className: "ValidSchema.TestCAClassB",
+            ShowClasses: true,
+          },
+        ],
+      };
+
+      const testSchema = Schema.fromJsonSync(propertyJson);
+      expect(testSchema.customAttributes!.get("ValidSchema.TestCAClassA")).to.exist;
+      expect(testSchema.customAttributes!.get("ValidSchema.TestCAClassB")).to.exist;
+      assert(testSchema.customAttributes!.get("ValidSchema.TestCAClassA")!.ShowClasses === false);
+      assert(testSchema.customAttributes!.get("ValidSchema.TestCAClassB")!.ShowClasses === true);
+    });
+  });
+
+  describe("with property custom attributes", () => {
+    const getSchemaJson = (propJson: any) => ({
+      $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
+      name: "ValidSchema",
+      version: "1.2.3",
+      alias: "vs",
+      items: {
+        TestCAClassA: { schemaItemType: "CustomAttributeClass", appliesTo: "AnyProperty" },
+        TestCAClassB: { schemaItemType: "CustomAttributeClass", appliesTo: "AnyProperty" },
+        TestCAClassC: { schemaItemType: "CustomAttributeClass", appliesTo: "AnyProperty" },
+        TestClass: {
+          schemaItemType: "EntityClass",
+          properties: [
+            {
+              name: "TestProp",
+              type: "PrimitiveProperty",
+              typeName: "int",
+              ...propJson,
+            }
+          ],
+        },
+      },
+    });
+
+    const oneCustomAttributeJson = getSchemaJson({
+      customAttributes: [
+        {
+          className: "ValidSchema.TestCAClassA",
+          ExampleAttribute: 1234,
+        },
+      ],
+    });
+
+    it("async - single property CustomAttribute", async () => {
+      const testSchema = await Schema.fromJson(oneCustomAttributeJson);
+      expect(testSchema).to.exist;
+      const testProp = (await testSchema.getItem("TestClass") as AnyClass).properties![0];
+      expect(testProp).to.exist;
+      expect(testProp.name).to.eql("TestProp");
+      expect(testProp.customAttributes!.get("ValidSchema.TestCAClassA")).to.exist;
+      assert(testProp.customAttributes!.get("ValidSchema.TestCAClassA")!.ExampleAttribute === 1234);
+    });
+
+    it("sync - single property CustomAttribute", () => {
+      const testSchema = Schema.fromJsonSync(oneCustomAttributeJson);
+      expect(testSchema).to.exist;
+      const testProp = (testSchema.getItemSync("TestClass") as AnyClass).properties![0];
+      expect(testProp).to.exist;
+      expect(testProp.name).to.eql("TestProp");
+      expect(testProp.customAttributes!.get("ValidSchema.TestCAClassA")).to.exist;
+      assert(testProp.customAttributes!.get("ValidSchema.TestCAClassA")!.ExampleAttribute === 1234);
+    });
+
+    const twoCustomAttributesJson = getSchemaJson({
+      customAttributes: [
+        {
+          className: "ValidSchema.TestCAClassA",
+        },
+        {
+          className: "ValidSchema.TestCAClassB",
+        },
+      ],
+    });
+
+    it("async - multiple property CustomAttributes", async () => {
+      const testSchema = await Schema.fromJson(twoCustomAttributesJson);
+      expect(testSchema).to.exist;
+      const testProp = (await testSchema.getItem("TestClass") as AnyClass).properties![0];
+      expect(testProp).to.exist;
+      expect(testProp.name).to.eql("TestProp");
+      expect(testProp.customAttributes!.get("ValidSchema.TestCAClassA")).to.exist;
+      expect(testProp.customAttributes!.get("ValidSchema.TestCAClassB")).to.exist;
+    });
+
+    it("sync - multiple property CustomAttributes", () => {
+      const testSchema = Schema.fromJsonSync(twoCustomAttributesJson);
+      expect(testSchema).to.exist;
+      const testProp = (testSchema.getItemSync("TestClass") as AnyClass).properties![0];
+      expect(testProp).to.exist;
+      expect(testProp.name).to.eql("TestProp");
+      expect(testProp.customAttributes!.get("ValidSchema.TestCAClassA")).to.exist;
+      expect(testProp.customAttributes!.get("ValidSchema.TestCAClassB")).to.exist;
+    });
+
+    it("sync - multiple property CustomAttributes with additional properties", () => {
+      const propertyJson = {
+        customAttributes: [
+          {
+            className: "ValidSchema.TestCAClassA",
+            ShowClasses: 1.2,
+          },
+          {
+            className: "ValidSchema.TestCAClassB",
+            ExampleAttribute: true,
+          },
+          {
+            className: "ValidSchema.TestCAClassC",
+            Example2Attribute: "example",
+          },
+        ],
+      };
+      const testSchema = Schema.fromJsonSync(getSchemaJson(propertyJson));
+      expect(testSchema).to.exist;
+      const testProp = (testSchema.getItemSync("TestClass") as AnyClass).properties![0];
+      expect(testProp).to.exist;
+
+      assert(testProp.customAttributes!.get("ValidSchema.TestCAClassA")!.ShowClasses === 1.2);
+      assert(testProp.customAttributes!.get("ValidSchema.TestCAClassB")!.ExampleAttribute === true);
+      assert(testProp.customAttributes!.get("ValidSchema.TestCAClassC")!.Example2Attribute === "example");
     });
   });
 });
