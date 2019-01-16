@@ -324,9 +324,9 @@ export class MeasureDistanceTool extends PrimitiveTool {
     }
 
     if (undefined !== delta) {
-      const formattedDeltaX = IModelApp.quantityFormatter.formatQuantity(delta.x, distanceFormatterSpec);
-      const formattedDeltaY = IModelApp.quantityFormatter.formatQuantity(delta.y, distanceFormatterSpec);
-      const formattedDeltaZ = IModelApp.quantityFormatter.formatQuantity(delta.z, distanceFormatterSpec);
+      const formattedDeltaX = IModelApp.quantityFormatter.formatQuantity(Math.abs(delta.x), distanceFormatterSpec);
+      const formattedDeltaY = IModelApp.quantityFormatter.formatQuantity(Math.abs(delta.y), distanceFormatterSpec);
+      const formattedDeltaZ = IModelApp.quantityFormatter.formatQuantity(Math.abs(delta.z), distanceFormatterSpec);
       toolTip += IModelApp.i18n.translateKeys("<b>%{CoreTools:tools.Measure.Labels.Delta}:</b> ") + formattedDeltaX + ", " + formattedDeltaY + ", " + formattedDeltaZ + "<br>";
     }
 

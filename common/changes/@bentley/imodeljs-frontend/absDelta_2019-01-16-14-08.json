@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Report unsigned measure distance deltas.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Brien.Bastings@bentley.com"
+}
