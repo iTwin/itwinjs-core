@@ -12,7 +12,7 @@ import {
 import { IModelBankClient } from "@bentley/imodeljs-clients/lib/IModelBank/IModelBankClient";
 import { AzureFileHandler } from "@bentley/imodeljs-clients/lib/imodelhub/AzureFileHandler";
 import { IOSAzureFileHandler } from "@bentley/imodeljs-clients/lib/imodelhub/IOSAzureFileHandler";
-import { ChangeSetApplyOption, BeEvent, DbResult, OpenMode, assert, Logger, LogLevel, ChangeSetStatus, BentleyStatus, IModelHubStatus, PerfLogger, ActivityLoggingContext, GuidString, Id64 } from "@bentley/bentleyjs-core";
+import { ChangeSetApplyOption, BeEvent, DbResult, OpenMode, assert, Logger, LogLevel, ChangeSetStatus, BentleyStatus, IModelHubStatus, PerfLogger, ActivityLoggingContext, GuidString, Id64, IModelStatus } from "@bentley/bentleyjs-core";
 import { BriefcaseStatus, IModelError, IModelVersion, IModelToken, CreateIModelProps } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "./IModelJsNative";
 import { IModelDb, OpenParams, SyncMode, AccessMode, ExclusiveAccessOption } from "./IModelDb";
@@ -192,10 +192,8 @@ class BriefcaseCache {
   public addBriefcase(briefcase: BriefcaseEntry) {
     const key = briefcase.getKey();
 
-    if (this._briefcases.get(key)) {
-      Logger.logError(loggingCategory, "Briefcase already exists in the cache.", () => briefcase.getDebugInfo());
-      throw new IModelError(DbResult.BE_SQLITE_ERROR, `Briefcase ${key} already exists in the cache.`);
-    }
+    if (this._briefcases.get(key))
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, `Briefcase ${key} already exists in the cache.`, Logger.logError, loggingCategory, () => briefcase.getDebugInfo());
 
     Logger.logTrace(loggingCategory, "Added briefcase to the cache", () => briefcase.getDebugInfo());
     this._briefcases.set(key, briefcase);
@@ -207,11 +205,8 @@ class BriefcaseCache {
   /** Delete a briefcase from the cache by key */
   public deleteBriefcaseByKey(key: string) {
     const briefcase = this._briefcases.get(key);
-    if (!briefcase) {
-      const msg = `Briefcase ${key} not found in cache`;
-      Logger.logError(loggingCategory, msg);
-      throw new IModelError(DbResult.BE_SQLITE_ERROR, msg);
-    }
+    if (!briefcase)
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, "Briefcase not found in cache", Logger.logError, loggingCategory, () => ({ key }));
 
     this._briefcases.delete(key);
     Logger.logTrace(loggingCategory, "Deleted briefcase from the cache", () => briefcase.getDebugInfo());
@@ -340,7 +335,7 @@ export class BriefcaseManager {
     actx.enter();
     const fileNames = IModelJsFs.readdirSync(briefcaseDir);
     if (fileNames.length !== 1)
-      throw new IModelError(DbResult.BE_SQLITE_ERROR, `Briefcase directory ${briefcaseDir} must contain exactly one briefcase`);
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, `Briefcase directory ${briefcaseDir} must contain exactly one briefcase`, Logger.logError, loggingCategory);
     const pathname = path.join(briefcaseDir, fileNames[0]);
 
     // Open the briefcase to populate the briefcase entry with briefcaseid changesetid and reversedchangesetid
@@ -352,7 +347,7 @@ export class BriefcaseManager {
     const nativeDb = new IModelHost.platform.DgnDb();
     const res: DbResult = nativeDb.openIModelFile(briefcase.pathname, OpenMode.Readonly);
     if (DbResult.BE_SQLITE_OK !== res)
-      throw new IModelError(DbResult.BE_SQLITE_ERROR, `Unable to open briefcase at ${briefcase.pathname}`);
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, `Unable to open briefcase at ${briefcase.pathname}`, Logger.logError, loggingCategory);
 
     briefcase.briefcaseId = nativeDb.getBriefcaseId();
     briefcase.changeSetId = nativeDb.getParentChangeSetId();
@@ -369,7 +364,7 @@ export class BriefcaseManager {
       if (briefcase.briefcaseId !== BriefcaseId.Standalone) {
         const hubBriefcases: HubBriefcase[] = await BriefcaseManager.imodelClient.briefcases.get(actx, accessToken, iModelId, new BriefcaseQuery().byId(briefcase.briefcaseId));
         if (hubBriefcases.length === 0)
-          throw new IModelError(DbResult.BE_SQLITE_ERROR, `Unable to find briefcase ${briefcase.briefcaseId}:${briefcase.pathname} on the Hub (for the current user)`);
+          throw new IModelError(DbResult.BE_SQLITE_ERROR, `Unable to find briefcase ${briefcase.briefcaseId}:${briefcase.pathname} on the Hub (for the current user)`, Logger.logError, loggingCategory, () => briefcase.getDebugInfo());
         briefcase.userId = hubBriefcases[0].userId;
         briefcase.fileId = hubBriefcases[0].fileId!.toString();
       }
@@ -465,7 +460,7 @@ export class BriefcaseManager {
       return;
 
     if (!IModelHost.configuration)
-      throw new IModelError(DbResult.BE_SQLITE_ERROR, "IModelHost.startup() should be called before any backend operations");
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, "IModelHost.startup() should be called before any backend operations", Logger.logError, loggingCategory);
     Logger.logTrace(loggingCategory, "Initializing briefcase cache");
 
     IModelHost.onBeforeShutdown.addListener(BriefcaseManager.onIModelHostShutdown);
@@ -554,10 +549,10 @@ export class BriefcaseManager {
 
     assert(!!briefcase);
     if (changeSetIndex < briefcase.changeSetIndex! && openParams.syncMode === SyncMode.PullAndPush) {
-      Logger.logError(loggingCategory, "No support to open an older version when opening an IModel to push changes (SyncMode.PullAndPush). Cannot open briefcase", () => briefcase!.getDebugInfo());
+      Logger.logError(loggingCategory, "Cannot open an older version of an IModel to push changes (SyncMode.PullAndPush)", () => briefcase!.getDebugInfo());
       await BriefcaseManager.deleteBriefcase(actx, accessToken, briefcase);
       actx.enter();
-      throw new IModelError(BriefcaseStatus.CannotApplyChanges, "Cannot merge when there are reversed changes");
+      throw new IModelError(BriefcaseStatus.CannotApplyChanges, "Cannot open an older version of an IModel to push changes (SyncMode.PullAndPush)");
     }
 
     // Apply the required change sets
@@ -578,7 +573,7 @@ export class BriefcaseManager {
       briefcase.nativeDb.closeIModel();
       const res: DbResult = briefcase.nativeDb.openIModelFile(briefcase.pathname, openParams.openMode);
       if (DbResult.BE_SQLITE_OK !== res)
-        throw new IModelError(res, briefcase.pathname);
+        throw new IModelError(res, `Unable to reopen briefcase at ${briefcase.pathname}`, Logger.logError, loggingCategory, () => briefcase!.getDebugInfo());
 
       briefcase.openParams = openParams;
     }
@@ -721,20 +716,20 @@ export class BriefcaseManager {
     const nativeDb: IModelJsNative.DgnDb = new IModelHost.platform.DgnDb();
     let res: DbResult = BriefcaseManager.openDb(nativeDb, actx, accessToken, contextId, briefcase.pathname, openParams.openMode);
     if (DbResult.BE_SQLITE_OK !== res) {
-      Logger.logError(loggingCategory, `Unable to open briefcase at ${briefcase.pathname}`);
-      Logger.logWarning(loggingCategory, `Unable to create briefcase ${briefcase.pathname}. Deleting any remnants of it`);
+      const msg = `Unable to open Db at ${briefcase.pathname} when creating a briefcase`;
+      Logger.logError(loggingCategory, msg, () => briefcase.getDebugInfo());
       await BriefcaseManager.deleteBriefcase(actx, accessToken, briefcase);
       actx.enter();
-      throw new IModelError(res, briefcase.pathname);
+      throw new IModelError(res, msg);
     }
 
     res = nativeDb.setBriefcaseId(briefcase.briefcaseId);
     if (DbResult.BE_SQLITE_OK !== res) {
-      Logger.logError(loggingCategory, `Unable to setup briefcase id for ${briefcase.pathname}`);
-      Logger.logWarning(loggingCategory, `Unable to create briefcase ${briefcase.pathname}. Deleting any remnants of it`);
+      const msg = `Unable to setup briefcase id for Db at ${briefcase.pathname} when creating a briefcase`;
+      Logger.logError(loggingCategory, msg);
       await BriefcaseManager.deleteBriefcase(actx, accessToken, briefcase);
       actx.enter();
-      throw new IModelError(res, briefcase.pathname);
+      throw new IModelError(res, msg);
     }
     assert(nativeDb.getParentChangeSetId() === briefcase.changeSetId);
 
@@ -921,13 +916,13 @@ export class BriefcaseManager {
   /** Open a standalone iModel from the local disk */
   public static openStandalone(pathname: string, openMode: OpenMode, enableTransactions: boolean): BriefcaseEntry {
     if (BriefcaseManager._cache.findBriefcaseByToken(new IModelToken(pathname, undefined, undefined, undefined, openMode)))
-      throw new IModelError(DbResult.BE_SQLITE_CANTOPEN, `Cannot open ${pathname} again - it has already been opened once`);
+      throw new IModelError(DbResult.BE_SQLITE_CANTOPEN, `Cannot open standalone iModel at ${pathname} again - it has already been opened once`, Logger.logError, loggingCategory);
 
     const nativeDb = new IModelHost.platform.DgnDb();
 
     const res = nativeDb.openIModelFile(pathname, openMode);
     if (DbResult.BE_SQLITE_OK !== res)
-      throw new IModelError(res, pathname);
+      throw new IModelError(res, `Cannot open standalone iModel at ${pathname}`, Logger.logError, loggingCategory);
 
     let briefcaseId: number = nativeDb.getBriefcaseId();
     if (enableTransactions) {
@@ -961,7 +956,7 @@ export class BriefcaseManager {
 
     const res: DbResult = nativeDb.createStandaloneIModel(fileName, JSON.stringify(args));
     if (DbResult.BE_SQLITE_OK !== res)
-      throw new IModelError(res, fileName);
+      throw new IModelError(res, `Cannot open standalone iModel at ${fileName}`, Logger.logError, loggingCategory);
 
     nativeDb.setBriefcaseId(BriefcaseId.Standalone);
 
@@ -1065,13 +1060,13 @@ export class BriefcaseManager {
 
   private static openBriefcase(actx: ActivityLoggingContext, accessToken: AccessToken, contextId: string, briefcase: BriefcaseEntry, openParams: OpenParams): void {
     if (briefcase.isOpen)
-      throw new Error(`Briefcase ${briefcase.pathname} is already open.`);
+      throw new IModelError(IModelStatus.AlreadyOpen, `Briefcase ${briefcase.pathname} is already open.`, Logger.logError, loggingCategory, () => briefcase.getDebugInfo());
 
     briefcase.nativeDb = briefcase.nativeDb || new IModelHost.platform.DgnDb();
 
     const res: DbResult = BriefcaseManager.openDb(briefcase.nativeDb!, actx, accessToken, contextId, briefcase.pathname, openParams.openMode);
     if (DbResult.BE_SQLITE_OK !== res)
-      throw new IModelError(res, briefcase.pathname);
+      throw new IModelError(res, `Cannot open briefcase at ${briefcase.pathname}`, Logger.logError, loggingCategory, () => briefcase.getDebugInfo());
 
     briefcase.openParams = openParams;
     briefcase.userId = accessToken.getUserInfo()!.id;
@@ -1083,18 +1078,18 @@ export class BriefcaseManager {
     const perfLogger = new PerfLogger("BriefcaseManager.processChangeSets");
 
     if (!briefcase.nativeDb || !briefcase.isOpen)
-      return Promise.reject(new IModelError(ChangeSetStatus.ApplyError, "Briefcase must be open to process change sets"));
+      return Promise.reject(new IModelError(ChangeSetStatus.ApplyError, "Briefcase must be open to process change sets", Logger.logError, loggingCategory, () => briefcase.getDebugInfo()));
     if (briefcase.openParams!.openMode !== OpenMode.ReadWrite)
-      return Promise.reject(new IModelError(ChangeSetStatus.ApplyError, "Briefcase must be open ReadWrite to process change sets"));
+      return Promise.reject(new IModelError(ChangeSetStatus.ApplyError, "Briefcase must be open ReadWrite to process change sets", Logger.logError, loggingCategory, () => briefcase.getDebugInfo()));
     assert(briefcase.nativeDb.getParentChangeSetId() === briefcase.changeSetId, "Mismatch between briefcase and the native Db");
     if (briefcase.changeSetIndex === undefined)
-      return Promise.reject(new IModelError(ChangeSetStatus.ApplyError, "Cannot apply changes to a standalone file"));
+      return Promise.reject(new IModelError(ChangeSetStatus.ApplyError, "Cannot apply changes to a standalone file", Logger.logError, loggingCategory, () => briefcase.getDebugInfo()));
 
     const targetChangeSetId: string = await targetVersion.evaluateChangeSet(actx, accessToken, briefcase.iModelId, BriefcaseManager.imodelClient);
     const targetChangeSetIndex: number = await BriefcaseManager.getChangeSetIndexFromId(actx, accessToken, briefcase.iModelId, targetChangeSetId);
     actx.enter();
     if (typeof targetChangeSetIndex === "undefined")
-      return Promise.reject(new IModelError(ChangeSetStatus.ApplyError, "Could not determine change set information from the Hub"));
+      return Promise.reject(new IModelError(ChangeSetStatus.ApplyError, "Could not determine change set information from the Hub", Logger.logError, loggingCategory, () => briefcase.getDebugInfo()));
 
     // Error check the requested change set option
     if (requestedChangeSetOption) {
@@ -1102,19 +1097,19 @@ export class BriefcaseManager {
       switch (requestedChangeSetOption) {
         case ChangeSetApplyOption.Merge:
           if (targetChangeSetIndex < currentChangeSetIndex)
-            return Promise.reject(new IModelError(ChangeSetStatus.NothingToMerge, "Nothing to merge"));
+            return Promise.reject(new IModelError(ChangeSetStatus.NothingToMerge, "Nothing to merge", Logger.logError, loggingCategory, () => ({ ...briefcase.getDebugInfo(), targetChangeSetId, targetChangeSetIndex })));
           break;
         case ChangeSetApplyOption.Reinstate:
           if (targetChangeSetIndex < currentChangeSetIndex)
-            return Promise.reject(new IModelError(ChangeSetStatus.ApplyError, "Cannot reinstate to an earlier version"));
+            return Promise.reject(new IModelError(ChangeSetStatus.ApplyError, "Cannot reinstate to an earlier version", Logger.logError, loggingCategory, () => ({ ...briefcase.getDebugInfo(), targetChangeSetId, targetChangeSetIndex })));
           break;
         case ChangeSetApplyOption.Reverse:
           if (targetChangeSetIndex >= currentChangeSetIndex)
-            return Promise.reject(new IModelError(ChangeSetStatus.ApplyError, "Cannot reverse to a later version"));
+            return Promise.reject(new IModelError(ChangeSetStatus.ApplyError, "Cannot reverse to a later version", Logger.logError, loggingCategory, () => ({ ...briefcase.getDebugInfo(), targetChangeSetId, targetChangeSetIndex })));
           break;
         default:
           assert(false, "Unknown change set process option");
-          return Promise.reject(new IModelError(ChangeSetStatus.ApplyError, "Unknown ChangeSet process option"));
+          return Promise.reject(new IModelError(ChangeSetStatus.ApplyError, "Unknown ChangeSet process option", Logger.logError, loggingCategory, () => ({ ...briefcase.getDebugInfo(), targetChangeSetId, targetChangeSetIndex })));
       }
     }
 
@@ -1193,7 +1188,7 @@ export class BriefcaseManager {
     // Apply the changes
     const status: ChangeSetStatus = briefcase.nativeDb!.applyChangeSets(JSON.stringify(changeSetTokens), processOption);
     if (ChangeSetStatus.Success !== status)
-      return Promise.reject(new IModelError(status, "Error applying changesets", Logger.logError, loggingCategory));
+      return Promise.reject(new IModelError(status, "Error applying changesets", Logger.logError, loggingCategory, () => ({ ...briefcase.getDebugInfo(), targetChangeSetId, targetChangeSetIndex })));
 
     // Mark Db as reopened after merge (if there are schema changes)
     if (containsSchemaChanges)
@@ -1223,7 +1218,7 @@ export class BriefcaseManager {
         break;
       default:
         assert(false, "Unknown change set process option");
-        return Promise.reject(new IModelError(BriefcaseStatus.CannotApplyChanges, "Unknown ChangeSet process option"));
+        return Promise.reject(new IModelError(BriefcaseStatus.CannotApplyChanges, "Unknown ChangeSet process option", Logger.logError, loggingCategory, () => ({ ...briefcase.getDebugInfo(), targetChangeSetId, targetChangeSetIndex })));
     }
 
     // Update cache if necessary
@@ -1237,13 +1232,13 @@ export class BriefcaseManager {
 
   public static async reverseChanges(actx: ActivityLoggingContext, accessToken: AccessToken, briefcase: BriefcaseEntry, reverseToVersion: IModelVersion): Promise<void> {
     if (briefcase.openParams!.accessMode === AccessMode.Shared)
-      return Promise.reject(new IModelError(ChangeSetStatus.ApplyError, "Cannot reverse changes when the Db allows shared access - open with AccessMode.Exclusive"));
+      return Promise.reject(new IModelError(ChangeSetStatus.ApplyError, "Cannot reverse changes when the Db allows shared access - open with AccessMode.Exclusive", Logger.logError, loggingCategory, () => briefcase.getDebugInfo()));
     return BriefcaseManager.processChangeSets(actx, accessToken, briefcase, reverseToVersion);
   }
 
   public static async reinstateChanges(actx: ActivityLoggingContext, accessToken: AccessToken, briefcase: BriefcaseEntry, reinstateToVersion?: IModelVersion): Promise<void> {
     if (briefcase.openParams!.accessMode === AccessMode.Shared)
-      return Promise.reject(new IModelError(ChangeSetStatus.ApplyError, "Cannot reinstate (or reverse) changes when the Db allows shared access - open with AccessMode.Exclusive"));
+      return Promise.reject(new IModelError(ChangeSetStatus.ApplyError, "Cannot reinstate (or reverse) changes when the Db allows shared access - open with AccessMode.Exclusive", Logger.logError, loggingCategory, () => briefcase.getDebugInfo()));
     const targetVersion: IModelVersion = reinstateToVersion || IModelVersion.asOfChangeSet(briefcase.changeSetId);
     return BriefcaseManager.processChangeSets(actx, accessToken, briefcase, targetVersion);
   }
@@ -1263,14 +1258,14 @@ export class BriefcaseManager {
   private static startCreateChangeSet(briefcase: BriefcaseEntry): ChangeSetToken {
     const res: IModelJsNative.ErrorStatusOrResult<ChangeSetStatus, string> = briefcase.nativeDb!.startCreateChangeSet();
     if (res.error)
-      throw new IModelError(res.error.status, "Error in startCreateChangeSet", Logger.logError, loggingCategory);
+      throw new IModelError(res.error.status, "Error in startCreateChangeSet", Logger.logError, loggingCategory, () => briefcase.getDebugInfo());
     return JSON.parse(res.result!);
   }
 
   private static finishCreateChangeSet(briefcase: BriefcaseEntry) {
     const status = briefcase.nativeDb!.finishCreateChangeSet();
     if (ChangeSetStatus.Success !== status)
-      throw new IModelError(status, "Error in finishCreateChangeSet", Logger.logError, loggingCategory);
+      throw new IModelError(status, "Error in finishCreateChangeSet", Logger.logError, loggingCategory, () => briefcase.getDebugInfo());
   }
 
   private static abandonCreateChangeSet(briefcase: BriefcaseEntry) {
@@ -1281,7 +1276,7 @@ export class BriefcaseManager {
   private static getPendingChangeSets(briefcase: BriefcaseEntry): string[] {
     const res: IModelJsNative.ErrorStatusOrResult<DbResult, string> = briefcase.nativeDb!.getPendingChangeSets();
     if (res.error)
-      throw new IModelError(res.error.status, "Error in getPendingChangeSets", Logger.logWarning, loggingCategory);
+      throw new IModelError(res.error.status, "Error in getPendingChangeSets", Logger.logWarning, loggingCategory, () => briefcase.getDebugInfo());
     return JSON.parse(res.result!) as string[];
   }
 
@@ -1289,14 +1284,14 @@ export class BriefcaseManager {
   private static addPendingChangeSet(briefcase: BriefcaseEntry, changeSetId: string): void {
     const result = briefcase.nativeDb!.addPendingChangeSet(changeSetId);
     if (DbResult.BE_SQLITE_OK !== result)
-      throw new IModelError(result, "Error in addPendingChangeSet", Logger.logError, loggingCategory);
+      throw new IModelError(result, "Error in addPendingChangeSet", Logger.logError, loggingCategory, () => briefcase.getDebugInfo());
   }
 
   /** Remove a pending ChangeSet after its codes have been updated */
   private static removePendingChangeSet(briefcase: BriefcaseEntry, changeSetId: string): void {
     const result = briefcase.nativeDb!.removePendingChangeSet(changeSetId);
     if (DbResult.BE_SQLITE_OK !== result)
-      throw new IModelError(result, "Error in removePendingChangeSet", Logger.logError, loggingCategory);
+      throw new IModelError(result, "Error in removePendingChangeSet", Logger.logError, loggingCategory, () => briefcase.getDebugInfo());
   }
 
   /** Update codes for all pending ChangeSets */
@@ -1354,7 +1349,7 @@ export class BriefcaseManager {
   private static extractCodes(briefcase: BriefcaseEntry): HubCode[] {
     const res: IModelJsNative.ErrorStatusOrResult<DbResult, string> = briefcase.nativeDb!.extractCodes();
     if (res.error)
-      throw new IModelError(res.error.status, "Error in extractCodes", Logger.logError, loggingCategory);
+      throw new IModelError(res.error.status, "Error in extractCodes", Logger.logError, loggingCategory, () => briefcase.getDebugInfo());
     return BriefcaseManager.parseCodesFromJson(briefcase, res.result!);
   }
 
@@ -1362,7 +1357,7 @@ export class BriefcaseManager {
   private static extractCodesFromFile(briefcase: BriefcaseEntry, changeSetTokens: ChangeSetToken[]): HubCode[] {
     const res: IModelJsNative.ErrorStatusOrResult<DbResult, string> = briefcase.nativeDb!.extractCodesFromFile(JSON.stringify(changeSetTokens));
     if (res.error)
-      throw new IModelError(res.error.status, "Error in extractCodesFromFile", Logger.logError, loggingCategory);
+      throw new IModelError(res.error.status, "Error in extractCodesFromFile", Logger.logError, loggingCategory, () => briefcase.getDebugInfo());
     return BriefcaseManager.parseCodesFromJson(briefcase, res.result!);
   }
 
@@ -1395,7 +1390,7 @@ export class BriefcaseManager {
       }
     } catch (error) {
       actx.enter();
-      Logger.logError(loggingCategory, "`Relinquishing codes or locks has failed with: ${error}`", () => briefcase.getDebugInfo());
+      Logger.logError(loggingCategory, "`Relinquishing codes or locks has failed with: ${ error } `", () => briefcase.getDebugInfo());
     }
 
     // Remove ChangeSet id if it succeeded or failed with conflicts
@@ -1409,7 +1404,7 @@ export class BriefcaseManager {
    */
   public static createStandaloneChangeSet(briefcase: BriefcaseEntry): ChangeSetToken {
     if (!briefcase.isStandalone)
-      throw new IModelError(BentleyStatus.ERROR, "Error in createStandaloneChangeSet", Logger.logError, loggingCategory);
+      throw new IModelError(BentleyStatus.ERROR, "Cannot call createStandaloneChangeSet() when the briefcase is not standalone", Logger.logError, loggingCategory, () => briefcase.getDebugInfo());
 
     const changeSetToken: ChangeSetToken = BriefcaseManager.startCreateChangeSet(briefcase);
     BriefcaseManager.finishCreateChangeSet(briefcase);
@@ -1420,7 +1415,7 @@ export class BriefcaseManager {
   /** Applies a change set to a standalone iModel */
   public static applyStandaloneChangeSets(briefcase: BriefcaseEntry, changeSetTokens: ChangeSetToken[], processOption: ChangeSetApplyOption): ChangeSetStatus {
     if (!briefcase.isStandalone)
-      throw new IModelError(BentleyStatus.ERROR, "Error in applyStandaloneChangeSet", Logger.logError, loggingCategory);
+      throw new IModelError(BentleyStatus.ERROR, "Cannot call applyStandaloneChangeSets() when the briefcase is not standalone", Logger.logError, loggingCategory, () => briefcase.getDebugInfo());
 
     return briefcase.nativeDb!.applyChangeSets(JSON.stringify(changeSetTokens), processOption);
   }
@@ -1434,7 +1429,7 @@ export class BriefcaseManager {
   private static async pushChangeSet(actx: ActivityLoggingContext, accessToken: AccessToken, briefcase: BriefcaseEntry, description: string, relinquishCodesLocks: boolean): Promise<void> {
     actx.enter();
     if (briefcase.openParams!.syncMode !== SyncMode.PullAndPush) {
-      throw new IModelError(BriefcaseStatus.CannotUpload, "Cannot push from an IModelDb that's opened PullOnly");
+      throw new IModelError(BriefcaseStatus.CannotUpload, "Cannot push from an IModelDb that's opened PullOnly", Logger.logError, loggingCategory, () => briefcase.getDebugInfo());
     }
 
     const changeSetToken: ChangeSetToken = BriefcaseManager.startCreateChangeSet(briefcase);
@@ -1557,7 +1552,7 @@ export class BriefcaseManager {
         // apps need to switch to OIDC authentication first.
         Logger.logWarning(loggingCategory, "Usage tracking failed.", () => ({ userId: !accessToken.getUserInfo() ? undefined : accessToken.getUserInfo()!.id, projectId }));
       } else
-        throw new IModelError(res, fileName);
+        throw new IModelError(res, `Cannot create iModel ${fileName}`, Logger.logError, loggingCategory);
     }
 
     res = nativeDb.saveChanges();
