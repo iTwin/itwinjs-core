@@ -6,12 +6,13 @@
 
 import * as React from "react";
 import * as classnames from "classnames";
+import { CommonProps } from "../Props";
 import { UiCore } from "../UiCore";
 
 import "./SearchBox.scss";
 
 /** Property interface for [[SearchBox]] */
-export interface SearchBoxProps {
+export interface SearchBoxProps extends CommonProps {
   /** value to set SearchBox to initially */
   initialValue?: string;
   /** placeholder value to show in gray before anything is entered in */
@@ -45,6 +46,7 @@ export class SearchBox extends React.Component<SearchBoxProps, SearchBoxState> {
 
   /** @hidden */
   public render(): React.ReactNode {
+    const searchClassName = classnames ("searchbox", this.props.className);
     const emptyString = this.state.value === "";
     const iconClassName = classnames(
       "searchbox-icon",
@@ -55,7 +57,7 @@ export class SearchBox extends React.Component<SearchBoxProps, SearchBoxState> {
       },
     );
     return (
-      <div className="searchbox">
+      <div className={searchClassName}>
         <input
           ref={(el) => { this._inputElement = el; }}
           onChange={this._trackChange}
