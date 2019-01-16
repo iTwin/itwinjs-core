@@ -38,6 +38,7 @@ export namespace RenderSchedule {
         value: CuttingPlaneProps;
     }
     export interface ElementTimelineProps {
+        batchId: number;
         elementIds: Id64String[];
         visibilityTimeline?: VisibilityEntryProps[];
         colorTimeline?: ColorEntryProps[];

@@ -63,17 +63,18 @@ export namespace RenderScheduleState {
   export class ElementTimeline implements RenderSchedule.ElementTimelineProps {
     public currentClip: ClipPlanesVolume | undefined = undefined;
     public elementIds: Id64String[];
+    public batchId: number;
     public visibilityTimeline?: VisibilityEntry[];
     public colorTimeline?: ColorEntry[];
     public transformTimeline?: TransformEntry[];
     public cuttingPlaneTimeline?: CuttingPlaneEntry[];
     public get isValid() { return this.elementIds.length > 0 && (Array.isArray(this.visibilityTimeline) && this.visibilityTimeline.length > 0) || (Array.isArray(this.colorTimeline) && this.colorTimeline.length > 0); }
-    private constructor(elementIds: Id64String[]) { this.elementIds = elementIds; }
+    private constructor(elementIds: Id64String[], batchId: number) { this.elementIds = elementIds; this.batchId = batchId; }
     public static fromJSON(json?: RenderSchedule.ElementTimelineProps): ElementTimeline {
       if (!json)
-        return new ElementTimeline([]);
+        return new ElementTimeline([], 0);
 
-      const val = new ElementTimeline(json.elementIds);
+      const val = new ElementTimeline(json.elementIds, json.batchId);
       if (json.visibilityTimeline) {
         val.visibilityTimeline = [];
         json.visibilityTimeline.forEach((entry) => val.visibilityTimeline!.push(new VisibilityEntry(entry)));
@@ -276,7 +277,7 @@ export namespace RenderScheduleState {
 
       return value;
     }
-    public getSymbologyOverrides(overrides: FeatureSymbology.Overrides, time: number, nextBatchId: number) { const interval = new Interval(); this.elementTimelines.forEach((entry) => entry.getSymbologyOverrides(overrides, time, interval, nextBatchId++)); }
+    public getSymbologyOverrides(overrides: FeatureSymbology.Overrides, time: number) { const interval = new Interval(); this.elementTimelines.forEach((entry) => entry.getSymbologyOverrides(overrides, time, interval, entry.batchId)); }
     public forEachAnimatedId(idFunction: (id: Id64String) => void): void {
       if (this.containsAnimation) {
         for (const timeline of this.elementTimelines)
@@ -294,12 +295,10 @@ export namespace RenderScheduleState {
           branches.set(this.modelId + "_Node_" + (i + 1).toString(), new AnimationBranchState(transform, clip));
       }
     }
-    public initBatchMap(batchMap: Id64.Uint32Map<number>, nextBatchId: number) {
+    public initBatchMap(batchMap: Id64.Uint32Map<number>) {
       for (const timeline of this.elementTimelines) {
         for (const id of timeline.elementIds)
-          batchMap.setById(id, nextBatchId);
-
-        nextBatchId++;
+          batchMap.setById(id, timeline.batchId);
       }
     }
   }
@@ -318,8 +317,7 @@ export namespace RenderScheduleState {
       return value;
     }
     public initBatchMap() {
-      const nextBatchId = 0;
-      this.modelTimelines.forEach((modelTimeline) => modelTimeline.initBatchMap(this._batchMap, nextBatchId));
+      this.modelTimelines.forEach((modelTimeline) => modelTimeline.initBatchMap(this._batchMap));
     }
     public get containsAnimation() {
       for (const modelTimeline of this.modelTimelines)
@@ -350,8 +348,7 @@ export namespace RenderScheduleState {
 
     public getSymbologyOverrides(overrides: FeatureSymbology.Overrides, time: number) {
       overrides.batchMap = this._batchMap;   // Is it necessary to clone this??
-      const batchId = 0;
-      this.modelTimelines.forEach((entry) => entry.getSymbologyOverrides(overrides, time, batchId));
+      this.modelTimelines.forEach((entry) => entry.getSymbologyOverrides(overrides, time));
     }
 
     public forEachAnimationModel(tileTreeFunction: (model: TileTreeModelState) => void): void {

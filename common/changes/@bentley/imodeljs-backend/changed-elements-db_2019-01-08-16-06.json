@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Changed Elements Db class for backend processing",
+      "packageName": "@bentley/imodeljs-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-backend",
+  "email": "Diego.Pinate@bentley.com"
+}

@@ -28,6 +28,7 @@ export * from "./Schema";
 export * from "./SqliteStatement";
 export * from "./ViewDefinition";
 export * from "./BisCore";
+export * from "./ChangedElementsDb";
 export * from "./domains/Functional";
 export * from "./domains/FunctionalElements";
 export * from "./domains/Generic";

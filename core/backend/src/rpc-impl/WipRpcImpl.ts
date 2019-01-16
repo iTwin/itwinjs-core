@@ -5,10 +5,11 @@
 /** @module RpcInterface */
 
 import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
-import { IModelToken, RpcInterface, RpcManager } from "@bentley/imodeljs-common";
+import { IModelToken, RpcInterface, RpcManager, ChangedElements } from "@bentley/imodeljs-common";
 import { WipRpcInterface } from "@bentley/imodeljs-common/lib/rpc/WipRpcInterface"; // not part of the "barrel"
 import { IModelDb } from "../IModelDb";
 import { ChangeSummaryManager } from "../ChangeSummaryManager";
+import { ChangedElementsManager } from "../ChangedElementsManager";
 
 /**
  * The backend implementation of WipRpcInterface.
@@ -35,5 +36,13 @@ export class WipRpcImpl extends RpcInterface implements WipRpcInterface {
     const iModel: IModelDb = IModelDb.find(iModelToken);
     if (ChangeSummaryManager.isChangeCacheAttached(iModel))
       ChangeSummaryManager.detachChangeCache(iModel);
+  }
+
+  public async getChangedElements(iModelToken: IModelToken, startChangesetId: string, endChangesetId: string): Promise<ChangedElements | undefined> {
+    return ChangedElementsManager.getChangedElements(iModelToken.iModelId!, startChangesetId, endChangesetId);
+  }
+
+  public async isChangesetProcessed(iModelToken: IModelToken, changesetId: string): Promise<boolean> {
+    return ChangedElementsManager.isProcessed(iModelToken.iModelId!, changesetId);
   }
 }
