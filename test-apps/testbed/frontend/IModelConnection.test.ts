@@ -50,9 +50,6 @@ describe("IModelConnection (#integration)", () => {
     const queryElementIds = await iModel.elements.queryIds({ from: "BisCore.Category", limit: 20, offset: 0 });
     assert.isAtLeast(queryElementIds.size, 1);
 
-    const formatObjs: any[] = await iModel.elements.formatElements(queryElementIds);
-    assert.isAtLeast(formatObjs.length, 1);
-
     const modelProps = await iModel.models.getProps(iModel.models.repositoryModelId);
     assert.exists(modelProps);
     assert.equal(modelProps.length, 1);

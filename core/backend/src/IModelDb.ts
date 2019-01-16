@@ -22,12 +22,11 @@ import { Element, Subject } from "./Element";
 import { ElementAspect } from "./ElementAspect";
 import { Entity } from "./Entity";
 import { IModelJsNative } from "./IModelJsNative";
-import { IModelJsFs } from "./IModelJsFs";
 import { Model } from "./Model";
 import { Relationship, RelationshipProps, Relationships } from "./Relationship";
 import { CachedSqliteStatement, SqliteStatement, SqliteStatementCache } from "./SqliteStatement";
 import { SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
-import { IModelHost, KnownLocations } from "./IModelHost";
+import { IModelHost } from "./IModelHost";
 
 /** @hidden */
 const loggingCategory = "imodeljs-backend.IModelDb";
@@ -852,14 +851,6 @@ export class IModelDb extends IModel {
       request.cancelSnap();
       this._snaps.delete(connectionId);
     }
-  }
-
-  /** Load a file from the *Assets* directory of imodeljs-native
-   * @param assetName The asset file name with path relative to the *Assets* directory.
-   */
-  public static loadNativeAsset(assetName: string): Uint8Array {
-    const fileName = path.join(KnownLocations.nativeAssetsDir, assetName);
-    return IModelJsFs.readFileSync(fileName) as Buffer;
   }
 
   /** Execute a test from native code

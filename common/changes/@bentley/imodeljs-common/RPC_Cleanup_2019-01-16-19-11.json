@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Remove loadNativeAsset and formatElements RPC calls from the IModelReadRpcInterface",
+      "packageName": "@bentley/imodeljs-common",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-common",
+  "email": "Colin.Kerr@bentley.com"
+}

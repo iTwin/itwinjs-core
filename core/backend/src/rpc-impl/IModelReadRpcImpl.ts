@@ -98,17 +98,6 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     return res;
   }
 
-  public async formatElements(iModelToken: IModelToken, elementIds: Id64Set): Promise<any[]> {
-    const activityContext = ActivityLoggingContext.current; activityContext.enter();
-    const iModelDb: IModelDb = IModelDb.find(iModelToken);
-    const formatArray: any[] = [];
-    for (const elementId of elementIds) {
-      const formatString: string = iModelDb.getElementPropertiesForDisplay(elementId);
-      formatArray.push(JSON.parse(formatString));
-    }
-    return formatArray;
-  }
-
   public async getClassHierarchy(iModelToken: IModelToken, classFullName: string): Promise<string[]> {
     const activityContext = ActivityLoggingContext.current; activityContext.enter();
     const iModelDb: IModelDb = IModelDb.find(iModelToken);
@@ -154,11 +143,6 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
   public async cancelSnap(iModelToken: IModelToken, connectionId: string): Promise<void> {
     const activityContext = ActivityLoggingContext.current; activityContext.enter();
     return IModelDb.find(iModelToken).cancelSnap(connectionId);
-  }
-
-  public async loadNativeAsset(_iModelToken: IModelToken, assetName: string): Promise<Uint8Array> {
-    const activityContext = ActivityLoggingContext.current; activityContext.enter();
-    return IModelDb.loadNativeAsset(assetName);
   }
 
   public async getToolTipMessage(iModelToken: IModelToken, id: string): Promise<string[]> {
