@@ -7,7 +7,7 @@
     "baseUrl": "../node_modules/",
     "paths": {
       "@src/*": [
-        "../src/*"
+        "../src/ui-ninezone/*"
       ]
     },
   },
