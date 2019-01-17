@@ -9,6 +9,8 @@ import { IModelApp } from "./IModelApp";
 import { TileTreeModelState } from "./ModelState";
 import { TileTree, TileTreeState } from "./tile/TileTree";
 import { RealityModelTileTree, RealityModelTileClient, RealityModelTileUtils } from "./tile/RealityModelTileTree";
+import { RealityDataServicesClient } from "@bentley/imodeljs-clients";
+import { ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
 
 export class ContextRealityModelState implements TileTreeModelState {
   protected _tilesetUrl: string;
@@ -56,18 +58,36 @@ export class ContextRealityModelState implements TileTreeModelState {
   public matches(other: ContextRealityModelState) {
     return other.name === this.name && other.url === this.url;
   }
-  public static findAvailableRealityModels(): ContextRealityModelProps[] {
+  public static async findAvailableRealityModels(): Promise<ContextRealityModelProps[]> {
+
     const availableRealityModels: ContextRealityModelProps[] = [];
 
-    /* This is location to query all reality models available for this project.  They will be filtered spatially to only those
-      that overlap the project extents later.... */
+    if (undefined !== IModelApp.accessToken) {
+      // ##TODO Alain Robert - This needs an instance of the RealityDataServicesClient which inherits from WSGClient that is by principle stateful
+      // ## though we only use a method that could be static except for the WSG states (the WSG version mainly). This seems to indicate
+      // ## instances of this class should be stateless (except for the WSG states which we can do nothing about). This is not currently the case.
+      const client = new RealityDataServicesClient();
+      const alctx = new ActivityLoggingContext(Guid.createValue());
+      // ##TODO Alain Robert - The projectid of the database must be obtained and used here.
+      const projectId: string = "Server";
+      const realityData = await client.getRealityDataInProject(alctx, IModelApp.accessToken, projectId);
 
-    availableRealityModels.push({ name: "Sample", tilesetUrl: "http://localhost:8080/TilesetWithDiscreteLOD/tileset.json" });
-    /* Testing... should be quering RDS to find models.
-    availableRealityModels.push({ name: "Clark Island", tilesetUrl: "http://localhost:8080/clarkIsland/74/TileRoot.json" });
-    availableRealityModels.push({ name: "Philadelphia LoRes", tilesetUrl: "http://localhost:8080/PhiladelphiaLoResClassification/80/TileRoot.json" });
-    availableRealityModels.push({ name: "Philadelphia HiRes", tilesetUrl: "http://localhost:8080/PhiladelphiaHiResClassification/80/TileRoot.json" });
-    */
+      let currentNonameNum: number = 0;
+      for (const currentRealityData of realityData) {
+        let realityDataName: string;
+        if (currentRealityData.name && currentRealityData.name !== "") {
+          realityDataName = currentRealityData.name as string;
+        } else {
+          realityDataName = `noname-${currentNonameNum}`;
+          currentNonameNum++;
+        }
+
+        if (currentRealityData.id) {
+          const url = await client.getRealityDataUrl(alctx, projectId, currentRealityData.id as string);
+          availableRealityModels.push({ tilesetUrl: url, name: realityDataName });
+        }
+      }
+    }
 
     return availableRealityModels;
   }

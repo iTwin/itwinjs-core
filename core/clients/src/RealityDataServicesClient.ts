@@ -11,6 +11,7 @@ import { URL } from "url";
 import { request, RequestOptions } from "./Request";
 import { Config } from "./Config";
 import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { Angle, XY } from "@bentley/geometry-core";
 
 /** RealityData */
 @ECJsonTypeMap.classToJson("wsg", "S3MX.RealityData", { schemaPropertyName: "schemaName", classPropertyName: "className" })
@@ -94,6 +95,9 @@ export class RealityData extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.OwnedBy")
   public ownedBy?: string;
 
+  @ECJsonTypeMap.propertyToJson("wsg", "properties.CreatorId")
+  public creatorId?: string;
+
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Version")
   public version?: string;
 }
@@ -115,6 +119,13 @@ export class FileAccessKey extends WsgInstance {
 }
 
 /**
+ * ##TODO Alain Robert - The present class serves both as a representation of RDS (all static methods) and as a representation of a single
+ * ## entity of a reality data. I think these should be split somehow eventually. The obviously elegant solution is to move everything that has
+ * ## to do with a specific Reality Data to the RealityData class above.
+ * ##TODO Alain Robert - The instances of the present class offer a cached Azure Blob URL cache member. Although such
+ * ## URLs are usually valid for a limited amount of time, there is no refresh mechansim.
+ * ##TODO Current implementation does not filter by Reality Data type even though the iModelJS does not understand anything other than
+ * ## WebReady3DTiles (variation? Connely Tiles or pure Cesium or both)
  * Client wrapper to Reality Data Service
  */
 export class RealityDataServicesClient extends WsgClient {
@@ -174,6 +185,24 @@ export class RealityDataServicesClient extends WsgClient {
   }
 
   /**
+   * ##TODO Alain Robert - This method returns the URL to obtain the Reality Data details from PW Context Share.
+   * ## Technically it should not be required as the RealityData object returned should have all the information to obtain the
+   * ## data. It should be removed once calling modules are modified to use RealityData instances
+   * ## instead of a URL to represent a RealityData.
+   * Returns the reality data URL to the ProjectWise Context Share CONNECT service.
+   * This URL is used by calling modules
+   * @param token Delegation token of the authorized user issued for this service.
+   * @param projectId id of associated connect project
+   * @param tilesId realityDataInstance id, called tilesId when returned from tile generator job
+   * @returns an array of RealityData
+   */
+  public async getRealityDataUrl(alctx: ActivityLoggingContext, projectId: string, tilesId: string): Promise<string> {
+    const serverUrl: string = await this.getUrl(alctx);
+
+    return serverUrl + `/Repositories/S3MXECPlugin--${projectId}/S3MX/RealityData/${tilesId}`;
+  }
+
+  /**
    * Gets reality data properties
    * @param token Delegation token of the authorized user issued for this service.
    * @param projectId id of associated connect project
@@ -185,17 +214,52 @@ export class RealityDataServicesClient extends WsgClient {
   }
 
   /**
-   * Gets a tileset's app data json file access key
+   * ##TODO Alain Robert - Filtering by RealityData type is definitely needed here. We may additionaly want to add
+   * ## spatial filtering. The test project we are using is a real dump and there is no spatial cohesion
+   * ## within Reality Data associated.
+   * ## NOTE: We could probably add rules to projects such that the reality data associated to a project must
+   * ## at least overlap the project area.
+   * ## First things first, we are currently working on providing an easy and elegant way that
+   * ## CONNECT project be associated a real spatial extent. Once this is done we can start to leverage
+   * ## on the definition.
+   * Gets reality data for each data associated to the project
    * @param token Delegation token of the authorized user issued for this service.
    * @param projectId id of associated connect project
-   * @param tilesId realityDataInstance id, called tilesId when returned from tile generator job
-   * @returns an array of FileAccessKey
+   * @returns an array of RealityData that are associated to the project.
    */
-  public async getAppDataFileAccessKey(alctx: ActivityLoggingContext, token: AccessToken, projectId: string, tilesId: string): Promise<FileAccessKey[]> {
-    return this.getFileAccessKey(alctx, token, projectId, tilesId, "Bim_AppData.json");
+  public async getRealityDataInProject(alctx: ActivityLoggingContext, token: AccessToken, projectId: string): Promise<RealityData[]> {
+    return this.getInstances<RealityData>(alctx, RealityData, token, `/Repositories/S3MXECPlugin--${projectId}/S3MX/RealityData?project=${projectId}&$filter=Type+eq+'RealityMesh3DTiles'`);
   }
 
   /**
+   * #TODO Alain Robert - Need to use the LatLong interface instead of XY but it is only defined in backend currently.
+   * ## also note that no  filtering per type is performed. This would be required.
+   * Gets reality data for each data that has a footprint defined that overlaps the given area. Reality Data returned must be accessible by user
+   * as public, enterprise data, private or accessible through context RBAC rights attributed to user.
+   * @param token Delegation token of the authorized user issued for this service.
+   * @param projectId id of associated connect project
+   * @returns an array of RealityData
+   */
+  public async getRealityDataInProjectOverlapping(alctx: ActivityLoggingContext, token: AccessToken, projectId: string, polygon: XY[]): Promise<RealityData[]> {
+
+    let finalPolygon: string = "";
+    if (polygon.length > 5) {
+
+      let polygonString = "{\"points\":[";
+      polygon.forEach((point) => { polygonString += `[${Angle.radiansToDegrees(point.x)}, ${Angle.radiansToDegrees(point.y)}],`; });
+      finalPolygon = polygonString.substring(0, polygonString.length - 2) + "], \"coordinate_system\":\"4326\"}";
+    }
+    return this.getInstances<RealityData>(alctx, RealityData, token, `/Repositories/S3MXECPlugin--${projectId}/S3MX/RealityData?project=${projectId}&polygon=${finalPolygon}&$filter=Type+eq+'RealityMesh3DTiles'`);
+
+  }
+
+  /**
+   * ## TODO Obtaining the FileAccessKey is usually performed on a RealityData (no specific document indicated) but use of a folder
+   * ## or a document is possible to obtain the file access key though this key will be exactly the same as for a RealityData (without the named document included in the URL)
+   * ## though when using a document the key will only be returned if the document exists. So this method is a weird way to
+   * ## check the existence of a file (see comment on getAppDataFileAccessKey just removed)
+   * ## If checking for the existence of a specific file is useful then we could rather provide a function instead and get rid of the
+   * ## whole obtention of a file access key using a document name.
    * Gets a tile file access key
    * @param token Delegation token of the authorized user issued for this service.
    * @param projectId id of associated connect project
@@ -204,8 +268,8 @@ export class RealityDataServicesClient extends WsgClient {
    * @returns a string url
    */
   public async getFileAccessKey(alctx: ActivityLoggingContext, token: AccessToken, projectId: string, tilesId: string, name: string): Promise<FileAccessKey[]> {
-    const path = encodeURIComponent(tilesId + "/" + this.updateModelName(name)).split("%").join("~");
-    return this.getInstances<FileAccessKey>(alctx, FileAccessKey, token, `/Repositories/S3MXECPlugin--${projectId}/S3MX/Document/${path}/FileAccess.FileAccessKey?$filter=Permissions+eq+%27Read%27`);
+    const path = (name === "" ? encodeURIComponent(tilesId) : encodeURIComponent(tilesId + "/" + this.updateModelName(name)).split("%").join("~"));
+    return this.getInstances<FileAccessKey>(alctx, FileAccessKey, token, `/Repositories/S3MXECPlugin--${projectId}/S3MX/` + (name === "" ? `RealityData` : `Document`) + `/${path}/FileAccess.FileAccessKey?$filter=Permissions+eq+%27Read%27`);
   }
 
   /**
@@ -216,34 +280,9 @@ export class RealityDataServicesClient extends WsgClient {
    * @param name name or path of tile
    * @returns a string url
    */
-  public async getTileDataBlobUrl(alctx: ActivityLoggingContext, token: AccessToken, projectId: string, tilesId: string, name: string): Promise<string> {
-    const keys: FileAccessKey[] = await this.getFileAccessKey(alctx, token, projectId, tilesId, name);
+  public async getTileDataBlobUrl(alctx: ActivityLoggingContext, token: AccessToken, projectId: string, tilesId: string): Promise<string> {
+    const keys: FileAccessKey[] = await this.getFileAccessKey(alctx, token, projectId, tilesId, "");
     return keys[0].url!;
-  }
-
-  /**
-   * Gets a tileset's app data json blob url
-   * @param token Delegation token of the authorized user issued for this service.
-   * @param projectId id of associated connect project
-   * @param tilesId realityDataInstance id, called tilesId when returned from tile generator job
-   * @param name name or path of tile
-   * @returns a string url
-   */
-  public async getAppDataBlobUrl(alctx: ActivityLoggingContext, token: AccessToken, projectId: string, tilesId: string): Promise<string> {
-    const keys: FileAccessKey[] = await this.getFileAccessKey(alctx, token, projectId, tilesId, "Bim_AppData.json");
-    return keys[0].url!;
-  }
-
-  /**
-   * Gets a tileset's app data json
-   * @param token Delegation token of the authorized user issued for this service.
-   * @param projectId id of associated connect project
-   * @param tilesId realityDataInstance id, called tilesId when returned from tile generator job
-   * @param name name or path of tile
-   * @returns app data json object
-   */
-  public async getAppData(alctx: ActivityLoggingContext, token: AccessToken, projectId: string, tilesId: string): Promise<any> {
-    return this.getTileJson(alctx, token, projectId, tilesId, "Bim_AppData.json");
   }
 
   /**
@@ -276,8 +315,8 @@ export class RealityDataServicesClient extends WsgClient {
    * @param name name or path of tile
    * @returns app URL object for blob url
    */
-  public async getBlobUrl(alctx: ActivityLoggingContext, token: AccessToken, projectId: string, tilesId: string, name: string): Promise<URL> {
-    const urlString = await this.getTileDataBlobUrl(alctx, token, projectId, tilesId, name);
+  public async getBlobUrl(alctx: ActivityLoggingContext, token: AccessToken, projectId: string, tilesId: string): Promise<URL> {
+    const urlString = await this.getTileDataBlobUrl(alctx, token, projectId, tilesId);
     if (typeof this._blobUrl === "undefined")
       this._blobUrl = (typeof window !== "undefined") ? new window.URL(urlString) : new URL(urlString);
     return Promise.resolve(this._blobUrl);
@@ -292,7 +331,7 @@ export class RealityDataServicesClient extends WsgClient {
    * @returns string url for blob data
    */
   public async getBlobStringUrl(alctx: ActivityLoggingContext, token: AccessToken, projectId: string, tilesId: string, name: string): Promise<string> {
-    const url = undefined === this._blobUrl ? await this.getBlobUrl(alctx, token, projectId, tilesId, name) : this._blobUrl;
+    const url = undefined === this._blobUrl ? await this.getBlobUrl(alctx, token, projectId, tilesId) : this._blobUrl;
     const host = url.origin + url.pathname;
     const query = url.search;
     return `${host}/${this.updateModelName(name)}${query}`;
@@ -358,12 +397,15 @@ export class RealityDataServicesClient extends WsgClient {
   }
 
   /**
+   * ## TODO Alain Robert - Should probably be removed. Data access should not rely identifying project and reality data through a URL.
+   * ## Does not appear to be currently used.
    * Gets reality data corresponding to given url
    * @param token Delegation token of the authorized user issued for this service.
    * @param url expected to be similar to this: https://...realitydataservices.bentley.com/<ver>/Repositories/S3MXECPlugin--<project-id-guid>/S3MX/RealityData/<tile-id-guid>/<model-name>.json
    * @param tileRequest method to fetch tile data from (either getTileJson or getTileContent)
    * @returns tile data json
    */
+  /* ##TODO Alain Robert - Deactivated unused private that contains reuseable code
   private async getTileDataFromUrl(token: AccessToken, url: string, tileRequest: (token: AccessToken, projectId: string, tilesId: string, name: string) => Promise<any>): Promise<any> {
     try {
       const urlParts = url.split("/");
@@ -376,24 +418,6 @@ export class RealityDataServicesClient extends WsgClient {
       throw new Error(ex);
     }
   }
+    */
 
-  /**
-   * Gets a reality data tile json corresponding to given url
-   * @param token Delegation token of the authorized user issued for this service.
-   * @param url expected to be similar to this: https://...realitydataservices.bentley.com/<ver>/Repositories/S3MXECPlugin--<project-id-guid>/S3MX/RealityData/<tile-id-guid>/<model-name>.json
-   * @returns tile data json
-   */
-  public async getTileJsonFromUrl(token: AccessToken, url: string): Promise<any> {
-    return this.getTileDataFromUrl(token, url, this.getTileJson.bind(this));
-  }
-
-  /**
-   * Gets a reality data tile content corresponding to given url
-   * @param token Delegation token of the authorized user issued for this service.
-   * @param url expected to be similar to this: https://...realitydataservices.bentley.com/<ver>/Repositories/S3MXECPlugin--<project-id-guid>/S3MX/RealityData/<tile-id-guid>/<model-name>.json
-   * @returns tile data content
-   */
-  public async getTileContentFromUrl(token: AccessToken, url: string): Promise<any> {
-    return this.getTileDataFromUrl(token, url, this.getTileContent.bind(this));
-  }
 }
