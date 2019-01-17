@@ -40,7 +40,7 @@ describe("SchemaItem", () => {
     });
     it("Serialize SchemaItem", async () => {
       const schemaItemJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
         name: "ExampleSchema",
         version: "1.0.0",
         alias: "ex",

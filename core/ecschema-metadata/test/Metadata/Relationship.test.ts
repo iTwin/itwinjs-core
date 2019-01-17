@@ -58,7 +58,7 @@ describe("RelationshipClass", () => {
 
     function createSchemaJson(relClassJson: any): any {
       return {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
         name: "TestSchema",
         version: "1.2.3",
         items: {
@@ -329,7 +329,7 @@ describe("RelationshipClass", () => {
 
     function createSchemaJson(relClassJson: any): any {
       return {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
         name: "TestSchema",
         version: "1.2.3",
         items: {

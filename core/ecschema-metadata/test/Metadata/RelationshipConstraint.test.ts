@@ -100,7 +100,7 @@ describe("RelationshipConstraint", () => {
       assert(testConstraint.customAttributes!.get("TestSchema.TestCAClassA")!.ShowClasses === true);
     });
     const twoCustomAttributesJson = {
-      $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
+      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
       name: "ValidSchema",
       polymorphic: true,
       multiplicity: "(0..1)",

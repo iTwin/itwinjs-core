@@ -27,7 +27,7 @@ export class TestSchemaLocater implements ISchemaLocater {
 }
 
 const testFormatSchema = {
-  $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
+  $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
   name: "Formats",
   version: "1.0.0",
   items: {

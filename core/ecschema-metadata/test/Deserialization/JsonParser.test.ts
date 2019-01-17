@@ -665,7 +665,7 @@ describe("JsonParser", () => {
 
     it("should throw for invalid version", () => {
       const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
         name: "BadSchema",
         version: 0,
       };
@@ -675,7 +675,7 @@ describe("JsonParser", () => {
 
     it("should throw for missing version", () => {
       const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
         name: "BadSchema",
       };
       parser = new JsonParser(json);

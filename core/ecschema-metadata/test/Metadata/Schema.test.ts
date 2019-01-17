@@ -81,7 +81,7 @@ describe("Schema", () => {
 
       it("with name/version first specified in JSON", async () => {
         const propertyJson = {
-          $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
+          $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
           name: "ValidSchema",
           version: "1.2.3",
           alias: "vs",
@@ -96,7 +96,7 @@ describe("Schema", () => {
 
       it("with name/version repeated in JSON", async () => {
         const propertyJson = {
-          $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
+          $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
           name: "ValidSchema",
           version: "1.2.3",
           alias: "vs",
@@ -115,14 +115,15 @@ describe("Schema", () => {
           name: "InvalidSchema",
           version: "1.2.3",
         };
-        const testSchema = new Schema("BadSchema", 1, 2, 3);
+        const testSchema = new Schema("InvalidSchema", 1, 2, 3);
         expect(testSchema).to.exist;
-        await expect(testSchema.deserialize(schemaJson as any)).to.be.rejectedWith(ECObjectsError);
+        await expect(testSchema.deserialize(schemaJson as any)).to.be.rejectedWith(ECObjectsError, "The Schema InvalidSchema has an unsupported namespace 'https://badmetaschema.com'.");
+        await expect(Schema.fromJson(schemaJson as any)).to.be.rejectedWith(ECObjectsError, "The Schema InvalidSchema has an unsupported namespace 'https://badmetaschema.com'.");
       });
 
       it("should throw for mismatched name", async () => {
         const json = {
-          $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
+          $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
           name: "ThisDoesNotMatch",
           version: "1.2.3",
           alias: "bad",
@@ -134,7 +135,7 @@ describe("Schema", () => {
 
       it("should throw for mismatched version", async () => {
         const json = {
-          $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
+          $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
           name: "BadSchema",
           version: "1.2.6",
           alias: "bad",
@@ -147,7 +148,7 @@ describe("Schema", () => {
     describe("toJSON", () => {
       it("Simple serialization", async () => {
         const propertyJson = {
-          $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
+          $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
           name: "ValidSchema",
           version: "1.2.3",
           alias: "vs",
@@ -158,7 +159,7 @@ describe("Schema", () => {
         expect(testSchema).to.exist;
         await testSchema.deserialize(propertyJson);
         const serialized = testSchema.toJson();
-        assert(serialized.$schema, "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema");
+        assert(serialized.$schema, "https://dev.bentley.com/json_schemas/ec/32/ecschema");
         assert(serialized.name, "ValidSchema");
         assert(serialized.version, "01.02.03");
         assert(serialized.alias, "vs");
@@ -167,7 +168,7 @@ describe("Schema", () => {
       });
       it("Serialization with one custom attribute- only class name", async () => {
         const propertyJson = {
-          $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
+          $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
           name: "ValidSchema",
           version: "1.2.3",
           alias: "vs",
@@ -183,7 +184,7 @@ describe("Schema", () => {
       });
       it("Serialization with one custom attribute- additional properties", () => {
         const propertyJson = {
-          $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
+          $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
           name: "ValidSchema",
           version: "1.2.3",
           alias: "vs",
@@ -200,7 +201,7 @@ describe("Schema", () => {
       });
       it("Serialization with multiple custom attributes- only class name", async () => {
         const propertyJson = {
-          $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
+          $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
           name: "ValidSchema",
           version: "1.2.3",
           alias: "vs",
@@ -220,7 +221,7 @@ describe("Schema", () => {
       });
       it("Serialization with multiple custom attributes- additional properties", async () => {
         const propertyJson = {
-          $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
+          $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
           name: "ValidSchema",
           version: "1.2.3",
           alias: "vs",
@@ -240,7 +241,7 @@ describe("Schema", () => {
       });
       it("Serialization with one reference", async () => {
         const schemaJson = {
-          $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
+          $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
           name: "ValidSchema",
           version: "1.2.3",
           alias: "vs",
@@ -266,7 +267,7 @@ describe("Schema", () => {
       });
       it("Serialization with multiple references", () => {
         const schemaJson = {
-          $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
+          $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
           name: "ValidSchema",
           version: "1.2.3",
           alias: "vs",
@@ -300,7 +301,7 @@ describe("Schema", () => {
       });
       it("Serialization with one reference and item", async () => {
         const schemaJson = {
-          $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
+          $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
           name: "TestSchema",
           version: "1.2.3",
           references: [
@@ -334,7 +335,7 @@ describe("Schema", () => {
       });
       it("Serialization with one reference and multiple items", async () => {
         const schemaJson = {
-          $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
+          $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
           name: "TestSchema",
           version: "1.2.3",
           references: [

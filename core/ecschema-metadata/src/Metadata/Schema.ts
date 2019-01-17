@@ -28,7 +28,7 @@ import { ECObjectsError, ECObjectsStatus } from "./../Exception";
 import { AnyClass, AnySchemaItem } from "./../Interfaces";
 import { SchemaKey, ECVersion, SchemaItemKey } from "./../SchemaKey";
 
-const SCHEMAURL3_2 = "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema";
+const SCHEMAURL3_2 = "https://dev.bentley.com/json_schemas/ec/32/ecschema";
 
 /**
  *
@@ -444,9 +444,6 @@ export class Schema implements CustomAttributeContainerProps {
   }
 
   public deserializeSync(schemaProps: SchemaProps) {
-    if (SCHEMAURL3_2 !== schemaProps.$schema) // TODO: Allow for 3.x URI versions to allow the API to read newer specs. (Start at 3.2 though)
-      throw new ECObjectsError(ECObjectsStatus.MissingSchemaUrl, `The Schema ${this.name} has an unsupported namespace '${schemaProps.$schema}'.`);
-
     if (undefined === this._schemaKey) {
       const schemaName = schemaProps.name;
       const version = ECVersion.fromString(schemaProps.version);
@@ -457,6 +454,9 @@ export class Schema implements CustomAttributeContainerProps {
       if (schemaProps.version !== this.schemaKey.version.toString())
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Schema ${this.name} has the version '${this.schemaKey.version}' that does not match the provided version '${schemaProps.version}'.`);
     }
+
+    if (SCHEMAURL3_2 !== schemaProps.$schema) // TODO: Allow for 3.x URI versions to allow the API to read newer specs. (Start at 3.2 though)
+      throw new ECObjectsError(ECObjectsStatus.MissingSchemaUrl, `The Schema ${this.name} has an unsupported namespace '${schemaProps.$schema}'.`);
 
     if (undefined !== schemaProps.alias)
       this._alias = schemaProps.alias;
