@@ -8,7 +8,6 @@ import { TileIO } from "./TileIO";
 import { DisplayParams } from "../render/primitives/DisplayParams";
 import { Triangle } from "../render/primitives/Primitives";
 import { Mesh, MeshList, MeshGraphicArgs } from "../render/primitives/mesh/MeshPrimitives";
-import { ColorMap } from "../render/primitives/ColorMap";
 import {
   FeatureTable,
   QPoint3d,
@@ -17,15 +16,13 @@ import {
   OctEncodedNormal,
   MeshPolyline,
   MeshPolylineList,
-  MeshEdges,
-  MeshEdge,
-  OctEncodedNormalPair,
   ElementAlignedBox3d,
   TextureMapping,
   ImageSource,
   ImageSourceFormat,
   RenderTexture,
   BatchType,
+  ColorDef,
 } from "@bentley/imodeljs-common";
 import { Id64String, assert, JsonUtils, utf8ToString } from "@bentley/bentleyjs-core";
 import { Range3d, Point2d, Point3d, Vector3d, Transform, Matrix3d, Angle } from "@bentley/geometry-core";
@@ -100,7 +97,7 @@ export namespace GltfTileIO {
   }
 
   /** @hidden */
-  export const enum PrimitiveType {
+  export const enum MeshMode {
     Lines = 1,
     LineStrip = 3,
     Triangles = 4,
@@ -468,8 +465,7 @@ export namespace GltfTileIO {
 
     /** @hidden */
     protected readFeatureIndices(_json: any): number[] | undefined { return undefined; }
-    /** @hidden */
-    protected abstract readColorTable(_colorTable: ColorMap, _json: any): boolean | undefined;
+
     /** @hidden */
     protected abstract createDisplayParams(_json: any, hasBakedLighting: boolean): DisplayParams | undefined;
     /** @hidden */
@@ -485,7 +481,7 @@ export namespace GltfTileIO {
 
         for (const primitive of primitives) {
           const mesh = this.readMeshPrimitive(primitive, geometry.meshes.features);
-          assert(undefined !== mesh);
+          // assert(undefined !== mesh);  Not now - Polylines WIP.
           if (undefined !== mesh)
             geometry.meshes.push(mesh);
         }
@@ -503,7 +499,20 @@ export namespace GltfTileIO {
       if (undefined === displayParams)
         return undefined;
 
-      const primitiveType = JsonUtils.asInt(primitive.type, Mesh.PrimitiveType.Mesh);
+      let primitiveType: number = -1;
+      const meshMode = JsonUtils.asInt(primitive.mode, GltfTileIO.MeshMode.Triangles);
+      switch (meshMode) {
+        case GltfTileIO.MeshMode.Lines:
+          primitiveType = Mesh.PrimitiveType.Polyline;
+          return undefined; // Needs work...
+          break;
+        case GltfTileIO.MeshMode.Triangles:
+          primitiveType = Mesh.PrimitiveType.Mesh;
+          break;
+        default:
+          assert(false);
+          return undefined;
+      }
       const isPlanar = JsonUtils.asBool(primitive.isPlanar);
 
       const asClassifier = this._isClassifier;
@@ -521,14 +530,22 @@ export namespace GltfTileIO {
       if (!this.readVertices(mesh.points, primitive))
         return undefined;
 
-      if (!this.readColorTable(mesh.colorMap, primitive))
-        return undefined;
+      // We don't have real colormap - just load material color.  This will be used if non-Bentley
+      // tile or fit the color table is uniform. For a non-Bentley, non-Uniform, we'll set the
+      // uv parameters to pick the colors out of the color map texture.
+      if (materialValue && materialValue.values) {
+        if (Array.isArray(materialValue.values.color))
+          mesh.colorMap.insert(ColorDef.from(materialValue.values.color[0] * 255, materialValue.values.color[1] * 255, materialValue.values.color[2] * 255).tbgr);
+        else
+          mesh.colorMap.insert(0xffffff);   // White...
 
-      const colorIndices = this.readColorIndices(primitive);
-      if (undefined !== colorIndices)
-        mesh.colors = colorIndices;
-      else if (mesh.colorMap.length !== 1)
-        return undefined;
+        let colorIndices;
+        if (Array.isArray(materialValue.values.texStep) && undefined !== (colorIndices = this.readBufferData16(primitive.attributes, "_COLORINDEX"))) {
+          const texStep = materialValue.values.texStep;
+          for (let i = 0; i < colorIndices.count; i++)
+            mesh.uvParams.push(new Point2d(texStep[1] + texStep[0] * colorIndices.buffer[i], .5));
+        }
+      }
 
       if (undefined !== mesh.features && !this.readFeatures(mesh.features, primitive))
         return undefined;
@@ -541,10 +558,11 @@ export namespace GltfTileIO {
           if (!displayParams.ignoreLighting && !this.readNormals(mesh.normals, primitive.attributes, "NORMAL"))
             return undefined;
 
-          this.readUVParams(mesh.uvParams, primitive.attributes, "TEXCOORD_0");
-          this.readMeshEdges(mesh, primitive.edges);
+          if (0 === mesh.uvParams.length)
+            this.readUVParams(mesh.uvParams, primitive.attributes, "TEXCOORD_0");
           break;
         }
+
         case Mesh.PrimitiveType.Polyline:
         case Mesh.PrimitiveType.Point: {
           if (undefined !== mesh.polylines && !this.readPolylines(mesh.polylines, primitive, "indices", Mesh.PrimitiveType.Point === primitiveType))
@@ -631,19 +649,6 @@ export namespace GltfTileIO {
 
       features.setIndices(indices);
       return true;
-    }
-
-    /** @hidden */
-    protected readColorIndices(json: any): Uint16Array | undefined {
-      const data = this.readBufferData16(json.attributes, "_COLORINDEX");
-      if (undefined === data)
-        return undefined;
-
-      const colors = new Uint16Array(data.count);
-      for (let i = 0; i < data.count; i++)
-        colors[i] = data.buffer[i];
-
-      return colors;
     }
 
     /** @hidden */
@@ -742,64 +747,6 @@ export namespace GltfTileIO {
       }
 
       return true;
-    }
-
-    /** @hidden */
-    protected readMeshEdges(mesh: Mesh, json: any): boolean {
-      if (undefined === json || undefined === mesh)
-        return false;
-
-      mesh.edges = new MeshEdges();
-      const visEdges = this.readEdgeIndices(json, "visibles");
-      if (undefined !== visEdges)
-        mesh.edges.visible = visEdges;
-
-      if (undefined !== json.silhouettes) {
-        const normPairs = this.readNormalPairs(json.silhouettes, "normalPairs");
-        if (undefined !== normPairs)
-          mesh.edges.silhouetteNormals = normPairs;
-        const silEdges = this.readEdgeIndices(json.silhouettes, "indices");
-        if (undefined !== silEdges)
-          mesh.edges.silhouette = silEdges;
-      }
-
-      mesh.edges.polylines = new MeshPolylineList();
-      return this.readPolylines(mesh.edges.polylines, json, "polylines", false);
-    }
-
-    /** @hidden */
-    protected readEdgeIndices(json: any, accessorName: string): MeshEdge[] | undefined {
-      const data = this.readBufferData32(json, accessorName);
-      if (undefined === data)
-        return undefined;
-
-      const edges = new Array<MeshEdge>(data.count / 2);
-
-      let e = 0;
-      for (let i = 0; i < data.count; i += 2)
-        edges[e++] = new MeshEdge(data.buffer[i], data.buffer[i + 1]);
-
-      return edges;
-    }
-
-    /** @hidden */
-    protected readNormalPairs(json: any, accessorName: string): OctEncodedNormalPair[] | undefined {
-      const data = this.readBufferData8(json, accessorName);
-      if (undefined === data)
-        return undefined;
-
-      const normPairs = new Array<OctEncodedNormalPair>(data.count);
-
-      // ###TODO: we shouldn't have to allocate OctEncodedNormal objects...just use uint16s / numbers...
-      for (let i = 0; i < data.count; i++) {
-        // ###TODO? not clear why ray writes these as pairs of uint8...
-        const index = i * 4;
-        const normal0 = data.buffer[index] | (data.buffer[index + 1] << 8);
-        const normal1 = data.buffer[index + 2] | (data.buffer[index + 3] << 8);
-        normPairs[i] = new OctEncodedNormalPair(new OctEncodedNormal(normal0), new OctEncodedNormal(normal1));
-      }
-
-      return normPairs;
     }
 
     /** @hidden */

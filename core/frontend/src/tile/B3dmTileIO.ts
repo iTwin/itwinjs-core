@@ -9,7 +9,6 @@ import { DisplayParams } from "../render/primitives/DisplayParams";
 import { ElementAlignedBox3d, ColorDef, LinePixels, FillFlags, FeatureTable, Feature, TextureMapping, BatchType } from "@bentley/imodeljs-common";
 import { Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import { RenderSystem } from "../render/System";
-import { ColorMap } from "../render/primitives/ColorMap";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 import { IModelConnection } from "../IModelConnection";
 
@@ -79,19 +78,18 @@ export namespace B3dmTileIO {
       features.add(feature, 1);
       return true;
     }
-    protected readColorTable(colorTable: ColorMap, _json: any): boolean | undefined {
-      colorTable.insert(0x777777);
-      return true;
-    }
+
     protected createDisplayParams(materialJson: any, hasBakedLighting: boolean): DisplayParams | undefined {
       let textureMapping: TextureMapping | undefined;
+
       if (undefined !== materialJson &&
         undefined !== materialJson.values &&
-        undefined !== materialJson.values.tex) {
+        undefined !== materialJson.values.tex)
         textureMapping = this.findTextureMapping(materialJson.values.tex);
-      }
-      const grey: ColorDef = new ColorDef(0x77777777);
-      return new DisplayParams(DisplayParams.Type.Mesh, grey, grey, 1, LinePixels.Solid, FillFlags.Always, undefined, undefined, hasBakedLighting, textureMapping);
+
+      const color = new ColorDef(0x77777777);   // Grey.
+
+      return new DisplayParams(DisplayParams.Type.Mesh, color, color, 1, LinePixels.Solid, FillFlags.Always, undefined, undefined, hasBakedLighting, textureMapping);
     }
     protected extractReturnToCenter(extensions: any): number[] | undefined {
       if (extensions === undefined) { return undefined; }

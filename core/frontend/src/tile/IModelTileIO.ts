@@ -24,7 +24,6 @@ import {
   AuxNormal,
   AuxParam,
 } from "../render/primitives/VertexTable";
-import { ColorMap } from "../render/primitives/ColorMap";
 import { Id64String, JsonUtils, assert } from "@bentley/bentleyjs-core";
 import { RenderSystem, RenderGraphic, PackedFeatureTable, GraphicBranch } from "../render/System";
 import { imageElementFromImageSource } from "../ImageUtil";
@@ -184,9 +183,6 @@ export namespace IModelTileIO {
 
     /** @hidden */
     protected extractReturnToCenter(_extensions: any): number[] | undefined { return undefined; }
-
-    /** @hidden */
-    protected readColorTable(_colorTable: ColorMap, _json: any): boolean | undefined { assert(false); return false; }
 
     /** @hidden */
     protected createDisplayParams(json: any): DisplayParams | undefined {
