@@ -5,7 +5,7 @@
 
 import { assert } from "chai";
 import { IModelJsFs } from "../../IModelJsFs";
-import { OpenMode, ActivityLoggingContext, GuidString } from "@bentley/bentleyjs-core";
+import { OpenMode, ActivityLoggingContext, GuidString, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { IModelVersion } from "@bentley/imodeljs-common";
 import { IModelTestUtils, TestUsers, TestIModelInfo } from "../IModelTestUtils";
 import { KeepBriefcase, IModelDb, OpenParams, AccessMode, ExclusiveAccessOption, Element, IModelHost, IModelHostConfiguration, BriefcaseManager, BriefcaseEntry } from "../../imodeljs-backend";
@@ -46,6 +46,9 @@ describe("BriefcaseManager (#integration)", () => {
   };
 
   before(async () => {
+    IModelTestUtils.setupLogging();
+    // IModelTestUtils.setupDebugLogLevels();
+
     accessToken = await HubUtility.login(TestUsers.regular);
 
     testProjectId = await HubUtility.queryProjectIdByName(accessToken, "iModelJsIntegrationTest");
@@ -267,6 +270,8 @@ describe("BriefcaseManager (#integration)", () => {
     await iModelPullOnly.pullAndMergeChanges(actx, accessToken, IModelVersion.asOfChangeSet(thirdChangeSetId));
     assert.strictEqual<string>(iModelPullOnly.briefcase.currentChangeSetId, thirdChangeSetId);
 
+    const prevLogLevel: LogLevel | undefined = Logger.getLevel("imodeljs-backend.BriefcaseManager");
+    Logger.setLevel("imodeljs-backend.BriefcaseManager", LogLevel.None);
     let exceptionThrown = false;
     try {
       await iModelFixed.pullAndMergeChanges(actx, accessToken, IModelVersion.asOfChangeSet(thirdChangeSetId));
@@ -283,6 +288,7 @@ describe("BriefcaseManager (#integration)", () => {
       exceptionThrown = true;
     }
     assert.isTrue(exceptionThrown);
+    Logger.setLevel("imodeljs-backend.BriefcaseManager", prevLogLevel || LogLevel.None);
 
     await iModelPullOnly.close(actx, accessToken, KeepBriefcase.No);
     await iModelFixed.close(actx, accessToken, KeepBriefcase.No);
@@ -304,6 +310,8 @@ describe("BriefcaseManager (#integration)", () => {
     iModelPullOnly.elements.updateElement(rootEl);
     iModelPullOnly.saveChanges();
 
+    const prevLogLevel: LogLevel | undefined = Logger.getLevel("imodeljs-backend.BriefcaseManager");
+    Logger.setLevel("imodeljs-backend.BriefcaseManager", LogLevel.None);
     let exceptionThrown = false;
     try {
       await iModelPullOnly.pushChanges(actx, accessToken);
@@ -311,6 +319,7 @@ describe("BriefcaseManager (#integration)", () => {
       exceptionThrown = true;
     }
     assert.isTrue(exceptionThrown);
+    Logger.setLevel("imodeljs-backend.BriefcaseManager", prevLogLevel || LogLevel.None);
 
     const iModelPullAndPush: IModelDb = await IModelDb.open(actx, accessToken, testProjectId, readWriteTestIModel.id, OpenParams.pullAndPush(), IModelVersion.latest());
     assert.exists(iModelPullAndPush);

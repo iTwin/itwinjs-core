@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Validated size of change sets before applying them. ",
+      "packageName": "@bentley/imodeljs-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-backend",
+  "email": "Ramanujam.Raman@bentley.com"
+}

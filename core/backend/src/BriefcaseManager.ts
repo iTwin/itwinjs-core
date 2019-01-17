@@ -12,7 +12,7 @@ import {
 import { IModelBankClient } from "@bentley/imodeljs-clients/lib/IModelBank/IModelBankClient";
 import { AzureFileHandler } from "@bentley/imodeljs-clients/lib/imodelhub/AzureFileHandler";
 import { IOSAzureFileHandler } from "@bentley/imodeljs-clients/lib/imodelhub/IOSAzureFileHandler";
-import { ChangeSetApplyOption, BeEvent, DbResult, OpenMode, assert, Logger, LogLevel, ChangeSetStatus, BentleyStatus, IModelHubStatus, PerfLogger, ActivityLoggingContext, GuidString, Id64, IModelStatus } from "@bentley/bentleyjs-core";
+import { ChangeSetApplyOption, BeEvent, DbResult, OpenMode, assert, Logger, ChangeSetStatus, BentleyStatus, IModelHubStatus, PerfLogger, ActivityLoggingContext, GuidString, Id64, IModelStatus } from "@bentley/bentleyjs-core";
 import { BriefcaseStatus, IModelError, IModelVersion, IModelToken, CreateIModelProps } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "./IModelJsNative";
 import { IModelDb, OpenParams, SyncMode, AccessMode, ExclusiveAccessOption } from "./IModelDb";
@@ -560,8 +560,14 @@ export class BriefcaseManager {
       await BriefcaseManager.processChangeSets(actx, accessToken, briefcase, version);
     } catch (error) {
       actx.enter();
-      Logger.logWarning(loggingCategory, "Error applying changes to briefcase. Closing and then deleting it so that it can be re-fetched again.", () => briefcase!.getDebugInfo());
+      // Clean up the cache for a retry
+      Logger.logError(loggingCategory, "Error applying changes to briefcase. Deleting the briefcase from cache to enable retries", () => briefcase!.getDebugInfo());
       await BriefcaseManager.deleteBriefcase(actx, accessToken, briefcase);
+      if (error.errorNumber === ChangeSetStatus.CorruptedChangeStream || error.errorNumber === ChangeSetStatus.InvalidId || error.errorNumber === ChangeSetStatus.InvalidVersion) {
+        Logger.logError(loggingCategory, "Detected potential corruption of change sets. Deleting them from cache to enable retries", () => ({ iModelId }));
+        BriefcaseManager.deleteChangeSetsFromLocalDisk(iModelId);
+      }
+
       actx.enter();
       throw error;
     }
@@ -798,10 +804,15 @@ export class BriefcaseManager {
   private static deleteBriefcaseFromLocalDisk(briefcase: BriefcaseEntry) {
     assert(!briefcase.isOpen);
     const dirName = path.dirname(briefcase.pathname);
-    BriefcaseManager.deleteFolderRecursive(dirName);
-    if (Logger.isEnabled(loggingCategory, LogLevel.Trace) && !IModelJsFs.existsSync(briefcase.pathname)) {
+    if (BriefcaseManager.deleteFolderRecursive(dirName))
       Logger.logTrace(loggingCategory, "Deleted briefcase from local disk", () => briefcase.getDebugInfo());
-    }
+  }
+
+  /** Deletes change sets of an iModel from local disk */
+  private static deleteChangeSetsFromLocalDisk(iModelId: string) {
+    const changeSetsPath: string = BriefcaseManager.getChangeSetsPath(iModelId);
+    if (BriefcaseManager.deleteFolderRecursive(changeSetsPath))
+      Logger.logTrace(loggingCategory, "Deleted change sets from local disk", () => ({ iModelId, changeSetsPath }));
   }
 
   /** Deletes a briefcase from the IModelServer (if it exists) */
@@ -840,12 +851,15 @@ export class BriefcaseManager {
   /** Deletes a briefcase, and releases its references in iModelHub if necessary */
   private static async deleteBriefcase(actx: ActivityLoggingContext, accessToken: AccessToken, briefcase: BriefcaseEntry): Promise<void> {
     actx.enter();
-    Logger.logTrace(loggingCategory, "Attempting to delete briefcase", () => briefcase.getDebugInfo());
-    assert(!briefcase.isOpen);
 
+    Logger.logTrace(loggingCategory, "Attempting to delete briefcase", () => briefcase.getDebugInfo());
+    if (briefcase.isOpen)
+      BriefcaseManager.closeBriefcase(briefcase, false);
     BriefcaseManager.deleteBriefcaseFromCache(briefcase);
+
     await BriefcaseManager.deleteBriefcaseFromServer(actx, accessToken, briefcase);
     actx.enter();
+
     BriefcaseManager.deleteBriefcaseFromLocalDisk(briefcase);
   }
 
@@ -876,14 +890,35 @@ export class BriefcaseManager {
     return Promise.reject(new IModelError(BriefcaseStatus.VersionNotFound, "Version not found", Logger.logWarning, loggingCategory));
   }
 
+  private static wasChangeSetDownloaded(changeSet: ChangeSet, changeSetsPath: string): boolean {
+    const pathname = path.join(changeSetsPath, changeSet.fileName!);
+
+    // Was the file downloaded?
+    if (!IModelJsFs.existsSync(pathname))
+      return false;
+
+    // Was the download complete?
+    const actualFileSize: number = IModelJsFs.lstatSync(pathname)!.size;
+    const expectedFileSize: number = +changeSet.fileSize!;
+    if (actualFileSize === expectedFileSize)
+      return true;
+
+    Logger.logError(loggingCategory, `ChangeSet size ${actualFileSize} does not match the expected size ${expectedFileSize}. Deleting it so that it can be refetched`, () => (changeSet));
+    try {
+      IModelJsFs.unlinkSync(pathname);
+    } catch (error) {
+      Logger.logError(loggingCategory, `Cannot delete ChangeSet file at ${pathname}`);
+    }
+    return false;
+  }
+
   private static async downloadChangeSetsInternal(actx: ActivityLoggingContext, iModelId: GuidString, changeSets: ChangeSet[]) {
     actx.enter();
     const changeSetsPath: string = BriefcaseManager.getChangeSetsPath(iModelId);
 
     const changeSetsToDownload = new Array<ChangeSet>();
     for (const changeSet of changeSets) {
-      const changeSetPathname = path.join(changeSetsPath, changeSet.fileName!);
-      if (!IModelJsFs.existsSync(changeSetPathname))
+      if (!BriefcaseManager.wasChangeSetDownloaded(changeSet, changeSetsPath))
         changeSetsToDownload.push(changeSet);
     }
 
@@ -992,9 +1027,12 @@ export class BriefcaseManager {
     }
   }
 
-  private static deleteFolderRecursive(folderPath: string) {
+  /** Deletes a folder on disk. Does not throw any errors, but returns true
+   * if the delete was successful.
+   */
+  private static deleteFolderRecursive(folderPath: string): boolean {
     if (!IModelJsFs.existsSync(folderPath))
-      return;
+      return true;
 
     try {
       const files = IModelJsFs.readdirSync(folderPath);
@@ -1019,6 +1057,8 @@ export class BriefcaseManager {
       }
     } catch (error) {
     }
+
+    return !IModelJsFs.existsSync(folderPath);
   }
 
   /** Purges the cache of briefcases - closes any open briefcases,
