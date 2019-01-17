@@ -8,31 +8,29 @@
 const path = require("path");
 const fs = require("fs-extra")
 const argv = require("yargs").argv;
-// the arguments are --package={packagefile}
 //                   --destDir={destination directory}
 //                   -- type={dev|prod}
 
-function makeModulePath(localNodeModules, moduleName, relativePath) {
-  return path.resolve(localNodeModules, moduleName, relativePath);
+function makeModuleRelativePath(moduleName, relativePath) {
+  return path.join(moduleName, relativePath);
 }
 
 function makeBentleyModulePath(localNodeModules, moduleName, isDev) {
   return path.resolve(localNodeModules, moduleName, isDev ? "lib/module/dev" : "lib/module/prod");
 }
 
-function getBentleyVersionString(localNodeModules, moduleName, buildType) {
-  if (buildType !== "prod") {
-    return "-latest"
-  } else {
-    const packageFileName = path.resolve(localNodeModules, moduleName, "./package.json");
-    const packageFileContents = fs.readFileSync(packageFileName, "utf8");
-
-    // parse it
-    const package = JSON.parse(packageFileContents);
-    return package.version;
-  }
+function getPackageContents(moduleDirectory, moduleName) {
+  const packageFileName = path.resolve(moduleDirectory, moduleName, "./package.json");
+  if (!fs.existsSync(packageFileName))
+    return {};
+  const packageFileContents = fs.readFileSync(packageFileName, "utf8");
+  return JSON.parse(packageFileContents);
 }
 
+function getBentleyVersionString(localNodeModules, moduleName) {
+  const packageFileContents = getPackageContents(localNodeModules, moduleName);
+  return packageFileContents.version;
+}
 
 function isFile(fileName) {
   fs.statSync(fileName);
@@ -46,9 +44,7 @@ function linkRecursive(sourceDirectory, outputDirectory) {
     const stats = fs.statSync(sourceFile);
     if (stats.isFile()) {
       outputFile = path.resolve(outputDirectory, thisEntry);
-      if (fs.existsSync(outputFile)) {
-        console.log("file", outputFile, "already exists, not linking.");
-      } else {
+      if (!fs.existsSync(outputFile)) {
         fs.symlinkSync(sourceFile, outputFile);
       }
     }
@@ -79,16 +75,13 @@ function linkStaticFiles(sourceDirectory, outputDirectory) {
 }
 
 function linkPublicStaticFiles(sourcePublicDirectory, outputPublicDirectory) {
-  console.log("linkPublicStaticFiles", sourcePublicDirectory, outputPublicDirectory);
   if (fs.existsSync(sourcePublicDirectory)) {
     linkRecursive(sourcePublicDirectory, outputPublicDirectory);
   }
 }
 
 function linkModuleFile(moduleSourceFile, outFilePath) {
-  if (fs.existsSync(outFilePath)) {
-    console.log("file", outFilePath, "already exists, skipping");
-  } else {
+  if (!fs.existsSync(outFilePath)) {
     console.log("linking .js file", moduleSourceFile, "to", outFilePath);
     fs.symlinkSync(moduleSourceFile, outFilePath);
   }
@@ -102,17 +95,55 @@ function linkModuleFile(moduleSourceFile, outFilePath) {
 }
 
 class ModuleInfo {
-  constructor(inRushRepo, moduleName, moduleSourceFile, publicResourceDirectory) {
+  constructor(inRushRepo, moduleName, relativePath, publicResourceDirectory) {
     this.inRushRepo = inRushRepo;
     this.moduleName = moduleName;
-    this.moduleSourceFile = moduleSourceFile;
+    this.relativePath = relativePath;
     this.publicResourceDirectory = publicResourceDirectory;
   }
 }
 
+// this function adds either dependencies or peerDependencies.
+function AddListOfDependents(packagePath, dependentList, packageFileContents, packageKey, depth) {
+  const newDependents = [];
+  for (const dependent in packageFileContents[packageKey]) {
+    alreadyHave = false;
+    for (existingDependent of dependentList) {
+      if (dependent === existingDependent.name) {
+        alreadyHave = true;
+        break;
+      }
+    }
+    if (!alreadyHave) {
+      newDependents.push({packagePath, name: dependent});
+    }
+  }
+
+  // add the newly discovered dependents to the current list of dependents.
+  for (newDependent of newDependents) {
+    dependentList.push(newDependent);
+  }
+
+  if (depth < 2) {
+    for (newDependent of newDependents) {
+      const localNodeModules = path.resolve(packagePath, "node_modules");
+      AddDependents(dependentList, localNodeModules, newDependent.name, depth + 1);
+    }
+  }
+}
+
+// this function adds the dependencies and peerDependencies from the specifed package.
+function AddDependents (dependentList, packagePath, packageName, depth) {
+  const packageFileContents = getPackageContents(packagePath, packageName);
+
+  // get both the dependencies and the peerDependencies.
+  const childPackagePath = path.join(packagePath, packageName);
+  AddListOfDependents(childPackagePath, dependentList, packageFileContents, "dependencies", depth + 1);
+  AddListOfDependents(childPackagePath, dependentList, packageFileContents, "peerDependencies", depth + 1);
+}
+
 // these are the modules that we have specified as externals when we webpack
 function main() {
-  const packageFileName = (argv.packageFile === undefined) ? "./package.json" : argv.packageFile;
   const buildType = (argv.type == undefined) ? "dev" : argv.type;
   const isDev = buildType === "dev";
   const localNodeModules = path.resolve(process.cwd(), "node_modules");
@@ -124,7 +155,7 @@ function main() {
   const externalModules = [
     new ModuleInfo(true, "@bentley/bentleyjs-core", undefined),
     new ModuleInfo(true, "@bentley/geometry-core", undefined),
-    new ModuleInfo(false, "@bentley/bwc", makeModulePath(localNodeModules, "@bentley/bwc", isDev ? "lib/module/dev/bwc.js" : "lib/module/prod/bwc.js")),
+    new ModuleInfo(false, "@bentley/bwc", makeModuleRelativePath("@bentley/bwc", isDev ? "lib/module/dev/bwc.js" : "lib/module/prod/bwc.js")),
     new ModuleInfo(true, "@bentley/imodeljs-i18n", undefined),
     new ModuleInfo(true, "@bentley/imodeljs-clients", undefined),
     new ModuleInfo(true, "@bentley/imodeljs-common", undefined),
@@ -137,14 +168,14 @@ function main() {
     new ModuleInfo(true, "@bentley/presentation-common", undefined),
     new ModuleInfo(true, "@bentley/presentation-components", undefined),
     new ModuleInfo(true, "@bentley/presentation-frontend", undefined),
-    new ModuleInfo(false, "react", makeModulePath(localNodeModules, "react", isDev ? "umd/react.development.js" : "umd/react.production.min.js")),
-    new ModuleInfo(false, "react-dnd", makeModulePath(localNodeModules, "react-dnd", isDev ? "dist/ReactDnd.js" : "dist/ReactDnD.min.js")),
-    new ModuleInfo(false, "react-dnd-html5-backend", makeModulePath(localNodeModules, "react-dnd-html5-backend", isDev ? "dist/ReactDnDHTML5Backend.js" : "dist/ReactDnDHTML5Backend.min.js")),
-    new ModuleInfo(false, "react-dom", makeModulePath(localNodeModules, "react-dom", isDev ? "umd/react-dom.development.js" : "umd/react-dom.production.min.js")),
-    new ModuleInfo(false, "react-redux", makeModulePath(localNodeModules, "react-redux", isDev ? "dist/react-redux.js" : "dist/react-redux.min.js")),
-    new ModuleInfo(false, "redux", makeModulePath(localNodeModules, "redux", isDev ? "dist/redux.js" : "dist/redux.min.js")),
-    new ModuleInfo(false, "inspire-tree", makeModulePath(localNodeModules, "inspire-tree", isDev ? "dist/inspire-tree.js" : "dist/inspire-tree.min.js")),
-    new ModuleInfo(false, "lodash", makeModulePath(localNodeModules, "lodash", isDev ? "lodash.js" : "lodash.min.js")),
+    new ModuleInfo(false, "react", makeModuleRelativePath("react", isDev ? "umd/react.development.js" : "umd/react.production.min.js")),
+    new ModuleInfo(false, "react-dnd", makeModuleRelativePath("react-dnd", isDev ? "dist/ReactDnd.js" : "dist/ReactDnD.min.js")),
+    new ModuleInfo(false, "react-dnd-html5-backend", makeModuleRelativePath("react-dnd-html5-backend", isDev ? "dist/ReactDnDHTML5Backend.js" : "dist/ReactDnDHTML5Backend.min.js")),
+    new ModuleInfo(false, "react-dom", makeModuleRelativePath("react-dom", isDev ? "umd/react-dom.development.js" : "umd/react-dom.production.min.js")),
+    new ModuleInfo(false, "react-redux", makeModuleRelativePath("react-redux", isDev ? "dist/react-redux.js" : "dist/react-redux.min.js")),
+    new ModuleInfo(false, "redux", makeModuleRelativePath("redux", isDev ? "dist/redux.js" : "dist/redux.min.js")),
+    new ModuleInfo(false, "inspire-tree", makeModuleRelativePath("inspire-tree", isDev ? "dist/inspire-tree.js" : "dist/inspire-tree.min.js")),
+    new ModuleInfo(false, "lodash", makeModuleRelativePath("lodash", isDev ? "lodash.js" : "lodash.min.js")),
   ];
 
   try {
@@ -154,28 +185,26 @@ function main() {
       fs.mkdirSync(outputDirectory, { recursive: true });
     }
 
-    // open and read the package.json file.
-    const packagePath = path.resolve(process.cwd(), packageFileName);
-    const packageFileContents = fs.readFileSync(packagePath, "utf8");
+    // read package.json for this package, and the package.json for its dependents recursively (to depth 2) to the sub-dependencies of the iModelJs modules.
+    const dependentList = []; // array of DependentInfos
+    AddDependents(dependentList, process.cwd(), "", 0);
 
-    // parse it
-    const package = JSON.parse(packageFileContents);
-    for (const dependent in package.dependencies) {
+    for (const dependent of dependentList) {
       // see if it matches one of our externals.
       for (const externalModule of externalModules) {
-        if (dependent === externalModule.moduleName) {
+        if (dependent.name === externalModule.moduleName) {
           // yes, link the file.
           let fileName = "";
           let moduleSourceFile = undefined;
           let versionString = undefined;
           if (externalModule.inRushRepo) {
             // These are our iModelJs modules. Get the version from the package.json file.
-            versionString = getBentleyVersionString(localNodeModules, externalModule.moduleName, buildType);
+            versionString = getBentleyVersionString(localNodeModules, externalModule.moduleName);
             const modulePath = makeBentleyModulePath(localNodeModules, externalModule.moduleName, isDev);
             fileName = externalModule.moduleName.slice(9) + ".js";
             moduleSourceFile = path.resolve(modulePath, fileName);
           } else {
-            moduleSourceFile = externalModule.moduleSourceFile; // we stored the correct source file name in the externalModules object.
+            moduleSourceFile = path.resolve(dependent.packagePath, "node_modules", externalModule.relativePath);
             if (0 === externalModule.moduleName.indexOf("@bentley")) {
               // this is for @bentley/bwc -
               fileName = externalModule.moduleName.slice(9) + ".js";

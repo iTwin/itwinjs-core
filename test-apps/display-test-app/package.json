@@ -15,8 +15,8 @@
     "build": "tsc 1>&2 && npm run copy:public && npm run copy:modules && npm run makeconfig && npm run webpack:main",
     "clean": "rimraf lib package-deps.json",
     "copy:public": "cpx \"public/**/*\" ./lib/webresources",
-    "copy:modules": "node ./node_modules/@bentley/webpack-tools/modules/copyExternalModules.js --packageFile=./package.json --destDir=./lib/webresources --type=dev",
-    "copy:modulesprod": "node ./node_modules/@bentley/webpack-tools/modules/copyExternalModules.js --packageFile=./package.json --destDir=./lib/webresources --type=prod",
+    "copy:modules": "node ./node_modules/@bentley/webpack-tools/modules/copyExternalModules.js --destDir=./lib/webresources --type=dev",
+    "copy:modulesprod": "node ./node_modules/@bentley/webpack-tools/modules/copyExternalModules.js --destDir=./lib/webresources --type=prod",
     "makeconfig": "node ./node_modules/@bentley/config-loader/scripts/write.js ./lib/webresources/config.json ^imjs_",
     "docs": "",
     "lint": "tslint --project . 1>&2",
@@ -28,7 +28,7 @@
     "start:servers": "run-p \"start:webserver\" \"start:backend\"",
     "test": "",
     "cover": "",
-    "webpack:main": "webpack --config ./node_modules/@bentley/webpack-tools/modules/webpackModule.config.js --env.outdir=./lib/webresources --env.entry=./lib/frontend/SimpleViewTest.js --env.bundlename=main"
+    "webpack:main": "webpack --config ./node_modules/@bentley/webpack-tools/modules/webpackModule.config.js --env.outdir=./lib/webresources --env.entry=./lib/frontend/SimpleViewTest.js --env.bundlename=main --env.htmltemplate=./src/frontend/index.html"
   },
   "repository": {},
   "dependencies": {

@@ -8,7 +8,7 @@ import { ColorDef } from "@bentley/imodeljs-common";
 import { Point3d, XYAndZ, XAndY, Point2d } from "@bentley/geometry-core";
 import {
   IModelApp, PrimitiveTool, ViewRect, Viewport, QuantityType, BeButtonEvent,
-  EventHandled, DynamicsContext, DecorateContext, CanvasDecoration,
+  EventHandled, DynamicsContext, DecorateContext, CanvasDecoration, Plugin, PluginAdmin,
 } from "@bentley/imodeljs-frontend";
 
 class DistanceMarker implements CanvasDecoration {
@@ -161,12 +161,38 @@ export class MeasurePointsTool extends PrimitiveTool {
   }
 }
 
-// define and run the entry point
 // tslint:disable:no-console
+class MeasurePointsPlugin extends Plugin {
+  private _measureNamespace: I18NNamespace | undefined;
+
+  public constructor(name: string, versionsRequired: string) {
+    super(name, versionsRequired);
+    this._measureNamespace = undefined;
+  }
+
+  public onLoad(_args: string[]): void {
+    // don't register the namespace and the tool until the onLoad method. That's called after we know the versions of the modules required are good.
+    this._measureNamespace = IModelApp.i18n.registerNamespace("MeasureTool");
+    this._measureNamespace.readFinished.then(() => { MeasurePointsTool.register(this._measureNamespace); })
+      .catch((err) => { console.log(err); });
+  }
+
+  public onExecute(args: string[]): void {
+    this._measureNamespace!.readFinished.then(() => {
+      // restart the tool.
+      console.log("MeasurePoints onExecute called, args", args);
+      IModelApp.tools.run("Measure.Points");
+    })
+      .catch((err) => { console.log(err); });
+  }
+}
+
+declare var IMODELJS_VERSIONS_REQUIRED: string;
+declare var PLUGIN_NAME: string;
+
+// define and run the entry point
 function main() {
-  const measureNamespace: I18NNamespace = IModelApp.i18n.registerNamespace("MeasureTool");
-  measureNamespace.readFinished.then(() => { MeasurePointsTool.register(measureNamespace); })
-    .catch((err) => { console.log(err); });
+  PluginAdmin.register(new MeasurePointsPlugin(PLUGIN_NAME, IMODELJS_VERSIONS_REQUIRED));
 }
 
 main();

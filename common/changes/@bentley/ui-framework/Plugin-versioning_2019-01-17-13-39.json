@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Save BUILD_SEMVER to globally accessible map",
+      "packageName": "@bentley/ui-framework",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-framework",
+  "email": "Barry.Bentley@bentley.com"
+}

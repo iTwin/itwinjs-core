@@ -256,6 +256,9 @@ SampleAppIModelApp.initialize().then(() => { // tslint:disable-line:no-floating-
 
   AppUi.initialize();
 
+  // tslint:disable-next-line:no-console
+  console.log("Versions:", (window as any).iModelJsVersions);
+
   ReactDOM.render(
     <Provider store={SampleAppIModelApp.store} >
       <OverallContent {...overallContentProps} />

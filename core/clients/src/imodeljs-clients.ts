@@ -47,6 +47,14 @@ export * from "./imodelhub/AzureFileHandler";
 export * from "./oidc/OidcClient";
 export * from "./oidc/OidcFrontendClient";
 
+// Set the version number so it can be found at runtime. BUILD_SEMVER is replaced at build time by the webpack DefinePlugin.
+declare var BUILD_SEMVER: string;
+if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") && window) {
+  if (!(window as any).iModelJsVersions)
+    (window as any).iModelJsVersions = new Map<string, string>();
+  (window as any).iModelJsVersions.set("imodeljs-clients", BUILD_SEMVER);
+}
+
 /** @docs-package-description
  * The imodeljs-clients package allows sending requests to various CONNECT services.
  *

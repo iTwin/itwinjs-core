@@ -5,28 +5,8 @@
 /** @module Tools */
 
 import { Tool } from "./Tool";
-
-async function loadPackage(packageName: string): Promise<void> {
-  return new Promise<void>((resolve, reject) => {
-    const head = document.getElementsByTagName("head")[0];
-    if (!head)
-      reject(new Error("no head element found"));
-
-    // create the script element. handle onload and onerror.
-    const scriptElement = document.createElement("script");
-    scriptElement.onload = () => {
-      scriptElement.onload = null;
-      resolve();
-    };
-    scriptElement.onerror = (ev) => {
-      scriptElement.onload = null;
-      reject(new Error("can't load " + packageName + " : " + ev));
-    };
-    scriptElement.async = true;
-    scriptElement.src = packageName;
-    head.insertBefore(scriptElement, head.lastChild);
-  });
-}
+import { PluginAdmin } from "../Plugin";
+import { IModelApp } from "../IModelApp";
 
 /**
  * An Immediate Tool that allows an iModelJs plugin module to be loaded .
@@ -42,10 +22,11 @@ export class PluginTool extends Tool {
     }
 
     // tslint:disable:no-console
-    console.log(args);
     if (args && args.length > 0 && args[0]) {
       // tslint:disable-line:no-console
-      loadPackage(args[0]).then(() => { console.log("script", args[0], "loaded"); }).catch((_err) => { console.log("Unable to load plugin"); });
+      PluginAdmin.loadPlugin(args[0], args.slice(1))
+        .then(() => { })
+        .catch((_err) => { console.log(IModelApp.i18n.translate("IModelJs:PluginErrors.UnableToLoad", { pluginName: args[0] })); });
     }
     return true;
   }

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Save BUILD_SEMVER to globally accessible map",
+      "packageName": "@bentley/imodeljs-i18n",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-i18n",
+  "email": "Barry.Bentley@bentley.com"
+}

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Save BUILD_SEMVER to globally accessible map",
+      "packageName": "@bentley/ui-ninezone",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-ninezone",
+  "email": "Barry.Bentley@bentley.com"
+}

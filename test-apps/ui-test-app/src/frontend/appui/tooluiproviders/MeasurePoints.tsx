@@ -6,7 +6,6 @@ import * as React from "react";
 
 import { IModelApp } from "@bentley/imodeljs-frontend";
 import { ToolButton, FrontstageManager, ConfigurableUiControlType, ContentControlActivatedEventArgs } from "@bentley/ui-framework";
-import { BeDuration } from "@bentley/bentleyjs-core";
 // import { constants } from "perf_hooks";
 
 export interface ToolState {
@@ -22,9 +21,6 @@ export class MeasureByPointsButton extends React.Component<{}, ToolState> {
   public static executeCommand = () => {
     // first load the plugin
     IModelApp.tools.run("Plugin", ["MeasurePoints.js"]);
-    // then wait one second and run the newly installed Plugin tool.
-    BeDuration.wait(1000).then(() => { IModelApp.tools.run("Measure.Points"); })
-    .catch();
   }
 
   private _handleContentControlActivatedEvent = (args: ContentControlActivatedEventArgs) => {

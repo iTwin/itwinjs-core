@@ -32,6 +32,7 @@ export * from "./Marker";
 export * from "./ModelSelectorState";
 export * from "./ModelState";
 export * from "./NotificationManager";
+export * from "./Plugin";
 export * from "./SelectionSet";
 export * from "./Sheet";
 export * from "./Sprites";
@@ -52,6 +53,14 @@ export * from "./render/System";
 export * from "./render/webgl/Target";
 export * from "./oidc/OidcBrowserClient";
 export * from "./oidc/OidcClientWrapper";
+
+// Set the version number so it can be found at runtime. BUILD_SEMVER is replaced at build time by the webpack DefinePlugin.
+declare var BUILD_SEMVER: string;
+if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") && window) {
+  if (!(window as any).iModelJsVersions)
+    (window as any).iModelJsVersions = new Map<string, string>();
+  (window as any).iModelJsVersions.set("imodeljs-frontend", BUILD_SEMVER);
+}
 
 /** @docs-package-description
  * The ($frontend) package always runs in a web browser. It contains classes for [querying iModels and showing views]($docs/learning/frontend/index.md).

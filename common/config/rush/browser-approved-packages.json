@@ -652,7 +652,7 @@
     },
     {
       "name": "semver",
-      "allowedCategories": [ "backend", "common", "internal" ]
+      "allowedCategories": [ "backend", "common", "frontend", "internal" ]
     },
     {
       "name": "sinon",

@@ -14,14 +14,65 @@
 // env.bundlename= : the name of the bundled module (e.g. imodeljs-frontend). Required
 // env.stylesheets : if specified (no value needed), sets up webpack to process .scss files into the bundle. Optional.
 // env.prod : if specified, makes the production version of the module. (Optional. If not specified, builds the development version)
+// env.htmltemplate: if specified, reads the html template and substitutes the versions required into the lodash tempolate '<%= htmlWebpackPlugin.options.imjsVersions %>',
+//                   which should appear as the value for the data-imjsversions property of the IModelJsLoader script tag.
+// env.isplugin: if specified, saves the versions of the iModelJs modules required into the webpack output so that the plugin can verify their presence at runtime.
 
 const path = require("path");
+const fs = require("fs-extra");
+const webpack = require("webpack");
 const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
 const SpriteLoaderPlugin = require("svg-sprite-loader/plugin");
 const autoprefixer = require("autoprefixer");
 
 // NOTE: This was set up to return an array of configs, one for target: "web" and one for target: "node", but the node target didn't work, so I dropped it.
 module.exports = (env) => { return getConfig(env, false); };
+
+function getIModelJsVersionsFromPackage(iModelJsVersions, packageContents, sourceDir, externalList, depth) {
+  // we need the dependents and peer dependents. We care only about those that start with @bentley and are also in externalList.
+  let dependentsAndPeerDependents = [];
+  if (packageContents.dependencies)
+    dependentsAndPeerDependents = Object.getOwnPropertyNames(packageContents.dependencies);
+  if (packageContents.peerDependencies)
+    dependentsAndPeerDependents = dependentsAndPeerDependents.concat(Object.getOwnPropertyNames(packageContents.peerDependencies));
+  for (dependent of dependentsAndPeerDependents) {
+    if (dependent.startsWith("@bentley") && externalList[dependent]) {
+      const packageName = dependent.substr(9);
+      // if we don't already have it, get its info.
+      if (!iModelJsVersions[packageName]) {
+        const version = packageContents.dependencies[dependent] || packageContents.peerDependencies[dependent];
+        iModelJsVersions[packageName] = version;
+      }
+    }
+  }
+
+  // we need to get the versions of the next level of @bentley dependents (but only one deep, that's enough to find them all)
+  if (depth < 1) {
+    for (dependent of dependentsAndPeerDependents) {
+      if (dependent.startsWith("@bentley") && externalList[dependent]) {
+        const subDirectory = path.join(sourceDir, "node_modules", dependent);
+        const dependentPackageContents = getPackageFromJson(subDirectory);
+        getIModelJsVersionsFromPackage(iModelJsVersions, dependentPackageContents, subDirectory, externalList, depth + 1);
+      }
+    }
+  }
+}
+
+// gets a Map with the dependent iModel.js modules as the keys and the required version as the values.
+function getIModelJsVersions(sourceDir, packageContents, externalList) {
+  const iModelJsVersions = new Object();
+  getIModelJsVersionsFromPackage(iModelJsVersions, packageContents, sourceDir, externalList, 0);
+  return iModelJsVersions;
+}
+
+
+// gets the version from this modules package.json file, so it can be injected into the output.
+function getPackageFromJson(sourceDir) {
+  const packageFileName = path.resolve(sourceDir, "./package.json");
+  const packageFileContents = fs.readFileSync(packageFileName, "utf8");
+  const packageContents = JSON.parse(packageFileContents);
+  return packageContents;
+}
 
 function dropDashes(name) {
   return name.replace("-", "_");
@@ -49,6 +100,9 @@ function getConfig(env, nodeAsTarget) {
 
   // name of the output bundle.
   const bundleName = env.bundlename;
+
+  // get the version number for the javascript currently being webpacked.
+  const packageContents = getPackageFromJson(env.sourcedir);
 
   // build the object for the webpack configuration
   const webpackLib = {
@@ -109,13 +163,17 @@ function getConfig(env, nodeAsTarget) {
       fs: "empty",
       process: true
     },
-    plugins: []
+    plugins: [
+    ]
   };
 
-  Object.defineProperty(webpackLib, "entry", { configurable: true, enumerable: true, writable: true, value: {} });
-  Object.defineProperty(webpackLib.entry, bundleName, { configurable: true, enumerable: true, writable: true, value: bundleEntry });
-  Object.defineProperty(webpackLib, "mode", { configurable: true, enumerable: true, writable: true, value: devMode ? "development" : "production" });
-  Object.defineProperty(webpackLib, "devtool", { configurable: true, enumerable: true, writable: true, value: devMode ? "cheap-module-source-map" : "source-map" });
+  // Set up for the DefinePlugin. We always want the BUILD_SEMVER to be available in the webpacked module, will add more definitions as needed.
+  definePluginDefinitions = { "BUILD_SEMVER": JSON.stringify(packageContents.version) };
+
+  webpackLib.entry = {}
+  webpackLib.entry[bundleName] = bundleEntry;
+  webpackLib.mode = devMode ? "development" : "production";
+  webpackLib.devtool = devMode ? "cheap-module-source-map" : "source-map";
 
   if (!devMode) {
     webpackLib.optimization.minimizer = [
@@ -127,6 +185,33 @@ function getConfig(env, nodeAsTarget) {
       })
     ];
   }
+
+  // env.htmltemplate is passed to webpackModule.config.js only for applications that are creating an HtmlTemplate.
+  // The reason for it is to set the version of the iModelJs modules that the application requires into index.html.
+  // It gets that by reading the version of imodeljs-frontend listed in package.json.
+  if (env.htmltemplate || env.isplugin) {
+    const iModelJsVersions = getIModelJsVersions(env.sourcedir, packageContents, webpackLib.externals);
+    const versionString = JSON.stringify(iModelJsVersions);
+
+    if (env.htmltemplate) {
+      const HtmlWebpackPlugin = require("html-webpack-plugin");
+      webpackLib.plugins.push(new HtmlWebpackPlugin({
+        imjsVersions: versionString,
+        template: env.htmltemplate,
+        filename: "./index.html",
+        minify: "false",
+        chunks: [],     // we don't want it to add any .js to the template, those are already in there.
+      }));
+    }
+
+    if (env.isplugin) {
+      definePluginDefinitions.IMODELJS_VERSIONS_REQUIRED = JSON.stringify(versionString);
+      definePluginDefinitions.PLUGIN_NAME = JSON.stringify(bundleName);
+    }
+  }
+
+  // add the DefinePlugin.
+  webpackLib.plugins.push(new webpack.DefinePlugin(definePluginDefinitions));
 
   // if using style sheets (import "xxx.scss" lines in .ts or .tsx files), then we need the sass-loader
   if (env.stylesheets) {
@@ -226,7 +311,7 @@ function getConfig(env, nodeAsTarget) {
     ];
 
     webpackLib.module.rules = webpackLib.module.rules.concat(cssRules);
-    webpackLib.plugins = webpackLib.plugins.concat([new SpriteLoaderPlugin()]);
+    webpackLib.plugins.push(new SpriteLoaderPlugin());
   }
 
   webpackLib.output.library = dropDashes(webpackLib.output.library);
