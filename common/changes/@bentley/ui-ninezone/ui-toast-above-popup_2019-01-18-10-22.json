@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Display status message above status indicator popup.",
+      "packageName": "@bentley/ui-ninezone",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-ninezone",
+  "email": "gerardas.butkevicius@bentley.com"
+}
