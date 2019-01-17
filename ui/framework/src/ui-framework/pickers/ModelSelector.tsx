@@ -320,13 +320,21 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
    */
   private _selectEnabledItems = async (items: ListItem[]) => {
     const selectedNodes = Array<string>();
+    const promises = Array<Promise<DelayLoadedTreeNodeItem | undefined>>();
     for (const item of items) {
-      const node = await this._getNodeFromItem(item);
-      if (node && item.enabled) {
-        selectedNodes.push(node.id);
-        this._selectLabel(node);
-      }
+      if (item.enabled)
+        promises.push(this._getNodeFromItem(item));
     }
+
+    await Promise.all(promises).then((nodes) => {
+      nodes.forEach((node) => {
+        if (node) {
+          selectedNodes.push(node.id);
+          this._selectLabel(node);
+        }
+      });
+    });
+
     return selectedNodes;
   }
 
