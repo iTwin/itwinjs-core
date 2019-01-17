@@ -31,6 +31,8 @@ export class SelectionScopesManager {
     this._getLocale = props.localeProvider ? props.localeProvider : (() => undefined);
   }
 
+  public get activeLocale() { return this._getLocale(); }
+
   /**
    * Get available selection scopes.
    * @param imodel The iModel to get selection scopes for

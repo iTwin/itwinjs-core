@@ -96,6 +96,17 @@ describe("Presentation", () => {
       i18nMock.verifyAll();
     });
 
+    it("initializes SelectionScopesManager's locale callback to return PresentationManager's activeLocale", () => {
+      Presentation.initialize({
+        activeLocale: "test"
+      });
+      expect(Presentation.presentation.activeLocale).to.eq("test");
+      expect(Presentation.selection.scopes.activeLocale).to.eq("test");
+      Presentation.presentation.activeLocale = "other";
+      expect(Presentation.presentation.activeLocale).to.eq("other");
+      expect(Presentation.selection.scopes.activeLocale).to.eq("other");
+    });
+
   });
 
   describe("terminate", () => {
