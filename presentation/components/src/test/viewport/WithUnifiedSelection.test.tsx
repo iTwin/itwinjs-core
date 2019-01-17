@@ -29,6 +29,7 @@ import {
 import { ViewportComponent } from "@bentley/ui-components";
 import { IUnifiedSelectionComponent } from "../../common/IUnifiedSelectionComponent";
 import { viewWithUnifiedSelection, ViewportSelectionHandler } from "../../viewport/WithUnifiedSelection";
+import { SelectionScopesManager } from "@bentley/presentation-frontend/lib/selection/SelectionScopesManager";
 
 // tslint:disable-next-line:variable-name naming-convention
 const PresentationViewport = viewWithUnifiedSelection(ViewportComponent);
@@ -552,7 +553,7 @@ describe("Integration: ViewportSelectionHandler", () => {
 
   let rulesetId: string;
   let key: InstanceKey;
-  let selectionManager = new SelectionManager();
+  let selectionManager = new SelectionManager({ scopes: moq.Mock.ofType<SelectionScopesManager>().object });
   const presentationManagerMock = moq.Mock.ofType<PresentationManager>();
   const imodelMock = moq.Mock.ofType<IModelConnection>();
 
@@ -571,7 +572,7 @@ describe("Integration: ViewportSelectionHandler", () => {
   beforeEach(() => {
     presentationManagerMock.reset();
     mockIModel(imodelMock);
-    Presentation.selection = selectionManager = new SelectionManager();
+    Presentation.selection = selectionManager = new SelectionManager({ scopes: moq.Mock.ofType<SelectionScopesManager>().object });
   });
 
   describe("multiple ViewportSelectionHandlers", () => {

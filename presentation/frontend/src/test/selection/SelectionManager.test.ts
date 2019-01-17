@@ -7,10 +7,15 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { createRandomECInstanceKey } from "@bentley/presentation-common/lib/test/_helpers/random";
+import {
+  createRandomECInstanceKey, createRandomSelectionScope,
+  createRandomEntityProps,
+} from "@bentley/presentation-common/lib/test/_helpers/random";
+import { EntityProps } from "@bentley/imodeljs-common";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { InstanceKey } from "@bentley/presentation-common";
+import { KeySet, InstanceKey, SelectionScope } from "@bentley/presentation-common";
 import { SelectionManager } from "../../presentation-frontend";
+import { SelectionScopesManager } from "../../selection/SelectionScopesManager";
 
 const generateSelection = (): InstanceKey[] => {
   return [
@@ -25,10 +30,12 @@ describe("SelectionManager", () => {
   let selectionManager: SelectionManager;
   let baseSelection: InstanceKey[];
   const imodelMock = moq.Mock.ofType<IModelConnection>();
+  const scopesMock = moq.Mock.ofType<SelectionScopesManager>();
   const source: string = "test";
 
   beforeEach(() => {
-    selectionManager = new SelectionManager();
+    selectionManager = new SelectionManager({ scopes: scopesMock.object });
+    scopesMock.reset();
     imodelMock.reset();
     baseSelection = generateSelection();
   });
@@ -262,7 +269,7 @@ describe("SelectionManager", () => {
 
   });
 
-  describe("removeSelection", () => {
+  describe("removeFromSelection", () => {
 
     it("removes part of the selection", () => {
       selectionManager.addToSelection(source, imodelMock.object, baseSelection);
@@ -333,6 +340,78 @@ describe("SelectionManager", () => {
       selectionManager.removeFromSelection(source, imodelMock.object, [createRandomECInstanceKey()]);
       const selectedItemsSet = selectionManager.getSelection(imodelMock.object, 1);
       expect(selectedItemsSet.isEmpty).to.be.false;
+    });
+
+  });
+
+  describe("addToSelectionWithSelectionScope", () => {
+
+    let scope: SelectionScope;
+    let ids: EntityProps[];
+
+    beforeEach(() => {
+      scope = createRandomSelectionScope();
+      ids = [createRandomEntityProps()];
+      scopesMock.setup(async (x) => x.getSelectionScopes(imodelMock.object)).returns(async () => [scope]);
+      scopesMock.setup(async (x) => x.computeSelection(imodelMock.object, ids, scope)).returns(async () => new KeySet(baseSelection)).verifiable();
+    });
+
+    it("adds scoped selection", async () => {
+      await selectionManager.addToSelectionWithScope(source, imodelMock.object, ids, scope);
+      const selectedItemsSet = selectionManager.getSelection(imodelMock.object);
+      expect(selectedItemsSet.size).to.be.equal(baseSelection.length);
+      for (const key of baseSelection) {
+        expect(selectedItemsSet.has(key)).true;
+      }
+      scopesMock.verifyAll();
+    });
+
+  });
+
+  describe("replaceSelectionWithSelectionScope", () => {
+
+    let scope: SelectionScope;
+    let ids: EntityProps[];
+
+    beforeEach(() => {
+      scope = createRandomSelectionScope();
+      ids = [createRandomEntityProps()];
+      scopesMock.setup(async (x) => x.getSelectionScopes(imodelMock.object)).returns(async () => [scope]);
+      scopesMock.setup(async (x) => x.computeSelection(imodelMock.object, ids, scope)).returns(async () => new KeySet(baseSelection)).verifiable();
+    });
+
+    it("replaces empty selection with scoped selection", async () => {
+      await selectionManager.replaceSelectionWithScope(source, imodelMock.object, ids, scope);
+      const selectedItemsSet = selectionManager.getSelection(imodelMock.object);
+      expect(selectedItemsSet.size).to.be.equal(baseSelection.length);
+      for (const key of baseSelection) {
+        expect(selectedItemsSet.has(key)).true;
+      }
+      scopesMock.verifyAll();
+    });
+
+  });
+
+  describe("removeFromSelectionWithSelectionScope", () => {
+
+    let scope: SelectionScope;
+    let ids: EntityProps[];
+
+    beforeEach(() => {
+      scope = createRandomSelectionScope();
+      ids = [createRandomEntityProps()];
+      scopesMock.setup(async (x) => x.getSelectionScopes(imodelMock.object)).returns(async () => [scope]);
+      scopesMock.setup(async (x) => x.computeSelection(imodelMock.object, ids, scope)).returns(async () => new KeySet(baseSelection)).verifiable();
+    });
+
+    it("removes scoped selection", async () => {
+      const additionalKey = createRandomECInstanceKey();
+      selectionManager.addToSelection(source, imodelMock.object, [...baseSelection, additionalKey]);
+      await selectionManager.removeFromSelectionWithScope(source, imodelMock.object, ids, scope);
+      const selectedItemsSet = selectionManager.getSelection(imodelMock.object);
+      expect(selectedItemsSet.size).to.equal(1);
+      expect(selectedItemsSet.has(additionalKey)).true;
+      scopesMock.verifyAll();
     });
 
   });

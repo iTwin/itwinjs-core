@@ -12,12 +12,13 @@ import {
   createRandomECInstanceNodeKeyJSON,
   createRandomECClassInfoJSON, createRandomRelationshipPathJSON,
   createRandomECInstanceKeyJSON, createRandomECInstanceKey,
-  createRandomDescriptor, createRandomCategory,
+  createRandomDescriptor, createRandomCategory, createRandomEntityProps, createRandomId,
 } from "@bentley/presentation-common/lib/test/_helpers/random";
 import "@bentley/presentation-common/lib/test/_helpers/Promises";
 import "./IModelHostSetup";
 import { using, ActivityLoggingContext } from "@bentley/bentleyjs-core";
-import { IModelHost, IModelDb } from "@bentley/imodeljs-backend";
+import { RelatedElementProps, EntityMetaData } from "@bentley/imodeljs-common";
+import { IModelHost, IModelDb, Element, DrawingGraphic } from "@bentley/imodeljs-backend";
 import { PageOptions, SelectionInfo, KeySet, PresentationError, PropertyInfoJSON, HierarchyRequestOptions, Paged, ContentRequestOptions } from "@bentley/presentation-common";
 import { instanceKeyFromJSON } from "@bentley/presentation-common";
 import { NodeJSON } from "@bentley/presentation-common";
@@ -767,6 +768,197 @@ describe("PresentationManager", () => {
         rulesetId: testData.rulesetId,
       };
       return expect(manager.getRootNodesCount(ActivityLoggingContext.current, options)).to.eventually.be.rejectedWith(Error);
+    });
+
+  });
+
+  describe("WIP", () => {
+
+    // the below tests are temporary
+
+    const imodelMock = moq.Mock.ofType<IModelDb>();
+    const addonMock = moq.Mock.ofType<NativePlatformDefinition>();
+    let manager: PresentationManager;
+
+    beforeEach(() => {
+      imodelMock.reset();
+      addonMock.reset();
+      manager = new PresentationManager({ addon: addonMock.object });
+    });
+
+    describe("getSelectionScopes", () => {
+
+      it("returns expected selection scopes", async () => {
+        const result = await manager.getSelectionScopes(ActivityLoggingContext.current, { imodel: imodelMock.object });
+        expect(result.map((s) => s.id)).to.deep.eq(["element", "assembly", "top-assembly", "category", "model"]);
+      });
+
+    });
+
+    describe("computeSelection", () => {
+
+      const elementsMock = moq.Mock.ofType<IModelDb.Elements>();
+
+      const createRandomTopmostElement = (): Element => {
+        const mock = moq.Mock.ofType<Element>();
+        mock.setup((x) => x.parent).returns(() => undefined);
+        return mock.object;
+      };
+
+      const createRandomElement = (parentKey?: RelatedElementProps): Element => {
+        const mock = moq.Mock.ofType<Element>();
+        if (!parentKey)
+          parentKey = { relClassName: faker.random.word(), id: createRandomId() };
+        mock.setup((x) => x.parent).returns(() => parentKey);
+        return mock.object;
+      };
+
+      beforeEach(() => {
+        elementsMock.reset();
+        imodelMock.setup((x) => x.elements).returns(() => elementsMock.object);
+        imodelMock.setup((x) => x.getMetaData(moq.It.isAnyString())).returns((className: string) => new EntityMetaData({
+          baseClasses: [],
+          properties: {},
+          ecclass: className,
+        }));
+
+        /*
+        const meta = iModel.getMetaData(classFullName); // will load if necessary
+        for (const propName in meta.properties) {
+          if (propName) {
+            const propMeta = meta.properties[propName];
+            if (includeCustom || !propMeta.isCustomHandled || propMeta.isCustomHandledOrphan)
+              func(propName, propMeta);
+          }
+        }
+
+        if (wantSuper && meta.baseClasses && meta.baseClasses.length > 0)
+          meta.baseClasses.forEach((baseClass) => this.forEachMetaData(iModel, baseClass, true, func, includeCustom));
+        */
+      });
+
+      it("throws on invalid scopeId", async () => {
+        await expect(manager.computeSelection(ActivityLoggingContext.current, { imodel: imodelMock.object }, [], "invalid")).to.eventually.be.rejected;
+      });
+
+      describe("scope: 'element'", () => {
+
+        it("returns entity keys", async () => {
+          const keys = [createRandomEntityProps(), createRandomEntityProps()];
+          const result = await manager.computeSelection(ActivityLoggingContext.current, { imodel: imodelMock.object }, keys, "element");
+          expect(result.size).to.eq(2);
+          expect(result.has({ className: keys[0].classFullName, id: keys[0].id! })).to.be.true;
+          expect(result.has({ className: keys[1].classFullName, id: keys[1].id! })).to.be.true;
+        });
+
+      });
+
+      describe("scope: 'assembly'", () => {
+
+        it("returns parent keys", async () => {
+          const keys = [createRandomEntityProps(), createRandomEntityProps()];
+          const elements = [createRandomElement(), createRandomElement()];
+          elementsMock.setup((x) => x.getElement(keys[0].id!)).returns(() => elements[0]);
+          elementsMock.setup((x) => x.getElement(keys[1].id!)).returns(() => elements[1]);
+
+          const result = await manager.computeSelection(ActivityLoggingContext.current, { imodel: imodelMock.object }, keys, "assembly");
+          expect(result.size).to.eq(2);
+          expect(result.has({ className: elements[0].parent!.relClassName!, id: elements[0].parent!.id! })).to.be.true;
+          expect(result.has({ className: elements[1].parent!.relClassName!, id: elements[1].parent!.id! })).to.be.true;
+        });
+
+        it("does not duplicate keys", async () => {
+          const parentKey = { relClassName: faker.random.word(), id: createRandomId() };
+          const keys = [createRandomEntityProps(), createRandomEntityProps()];
+          const elements = [createRandomElement(parentKey), createRandomElement(parentKey)];
+          elementsMock.setup((x) => x.getElement(keys[0].id!)).returns(() => elements[0]);
+          elementsMock.setup((x) => x.getElement(keys[1].id!)).returns(() => elements[1]);
+
+          const result = await manager.computeSelection(ActivityLoggingContext.current, { imodel: imodelMock.object }, keys, "assembly");
+          expect(result.size).to.eq(1);
+          expect(result.has({ className: parentKey.relClassName, id: parentKey.id })).to.be.true;
+        });
+
+        it("returns element key if it has no parent", async () => {
+          const keys = [createRandomEntityProps()];
+          const element = createRandomTopmostElement();
+          elementsMock.setup((x) => x.getElement(keys[0].id!)).returns(() => element);
+          const result = await manager.computeSelection(ActivityLoggingContext.current, { imodel: imodelMock.object }, keys, "assembly");
+          expect(result.size).to.eq(1);
+          expect(result.has({ className: keys[0].classFullName, id: keys[0].id! })).to.be.true;
+        });
+
+      });
+
+      describe("scope: 'top-assembly'", () => {
+
+        it("returns topmost parent key", async () => {
+          const grandparentKey = { relClassName: faker.random.word(), id: createRandomId() };
+          const parentKey = { relClassName: faker.random.word(), id: createRandomId() };
+          const elementProps = createRandomEntityProps();
+          const grandparent = createRandomTopmostElement();
+          const parent = createRandomElement(grandparentKey);
+          const element = createRandomElement(parentKey);
+          elementsMock.setup((x) => x.getElement(elementProps.id!)).returns(() => element);
+          elementsMock.setup((x) => x.getElement(parentKey.id!)).returns(() => parent);
+          elementsMock.setup((x) => x.getElement(grandparentKey.id!)).returns(() => grandparent);
+
+          const result = await manager.computeSelection(ActivityLoggingContext.current, { imodel: imodelMock.object }, [elementProps], "top-assembly");
+          expect(result.size).to.eq(1);
+          expect(result.has({ className: grandparentKey.relClassName!, id: grandparentKey.id! })).to.be.true;
+        });
+
+      });
+
+      describe("scope: 'category'", () => {
+
+        it("returns category key", async () => {
+          const elementProps = createRandomEntityProps();
+          const element = new DrawingGraphic({
+            id: createRandomId(),
+            classFullName: faker.random.word(),
+            model: createRandomId(),
+            category: createRandomId(),
+            code: { scope: faker.random.word(), spec: faker.random.word() },
+          }, imodelMock.object);
+          elementsMock.setup((x) => x.getElement(elementProps.id!)).returns(() => element);
+
+          const result = await manager.computeSelection(ActivityLoggingContext.current, { imodel: imodelMock.object }, [elementProps], "category");
+          expect(result.size).to.eq(1);
+          expect(result.has({ className: "BisCore:Category", id: element.category! })).to.be.true;
+        });
+
+        it("skips non-geometric elements", async () => {
+          const elementProps = createRandomEntityProps();
+          const element = createRandomElement();
+          elementsMock.setup((x) => x.getElement(elementProps.id!)).returns(() => element);
+
+          const result = await manager.computeSelection(ActivityLoggingContext.current, { imodel: imodelMock.object }, [elementProps], "category");
+          expect(result.isEmpty).to.be.true;
+        });
+
+      });
+
+      describe("scope: 'model'", () => {
+
+        it("returns model key", async () => {
+          const elementProps = createRandomEntityProps();
+          const element = new DrawingGraphic({
+            id: createRandomId(),
+            classFullName: faker.random.word(),
+            model: createRandomId(),
+            category: createRandomId(),
+            code: { scope: faker.random.word(), spec: faker.random.word() },
+          }, imodelMock.object);
+          elementsMock.setup((x) => x.getElement(elementProps.id!)).returns(() => element);
+
+          const result = await manager.computeSelection(ActivityLoggingContext.current, { imodel: imodelMock.object }, [elementProps], "model");
+          expect(result.size).to.eq(1);
+          expect(result.has({ className: "BisCore:Model", id: element.model! })).to.be.true;
+        });
+
+      });
+
     });
 
   });

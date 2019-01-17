@@ -5,7 +5,7 @@
 /** @module RPC */
 
 import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
-import { IModelToken } from "@bentley/imodeljs-common";
+import { IModelToken, EntityProps } from "@bentley/imodeljs-common";
 import { IModelDb } from "@bentley/imodeljs-backend";
 import {
   PresentationRpcInterface,
@@ -15,12 +15,14 @@ import {
   Paged, RequestOptions, InstanceKey, KeySet,
   RulesetManagerState, RulesetVariablesState,
   Omit,
+  SelectionScope,
 } from "@bentley/presentation-common";
 import {
   RpcRequestOptions,
   HierarchyRpcRequestOptions,
   ContentRpcRequestOptions,
   ClientStateSyncRequestOptions,
+  SelectionScopeRpcRequestOptions,
 } from "@bentley/presentation-common/lib/PresentationRpcInterface";
 import Presentation from "./Presentation";
 import PresentationManager from "./PresentationManager";
@@ -61,8 +63,8 @@ export default class PresentationRpcImpl extends PresentationRpcInterface {
     return imodel;
   }
 
-  private toIModelDbOptions<TOptions extends (RpcRequestOptions & Omit<RequestOptions<IModelToken>, "imodel">)>(token: IModelToken, options: TOptions) {
-    const { clientId, knownBackendIds, ...requestOptions } = options as any;
+  private toIModelDbOptions<TOptions extends (RpcRequestOptions & Omit<RequestOptions<IModelToken>, "imodel" | "rulesetId">)>(token: IModelToken, options: TOptions) {
+    const { clientId, clientStateId, ...requestOptions } = options as any;
     return Object.assign({}, requestOptions, {
       imodel: this.getIModel(token),
     });
@@ -165,6 +167,18 @@ export default class PresentationRpcImpl extends PresentationRpcInterface {
     return distinctValues;
   }
 
+  public async getSelectionScopes(token: IModelToken, requestOptions: SelectionScopeRpcRequestOptions): Promise<SelectionScope[]> {
+    const actx = ActivityLoggingContext.current; actx.enter();
+    this.verifyRequest(requestOptions);
+    return this.getManager(requestOptions.clientId).getSelectionScopes(actx, this.toIModelDbOptions(token, requestOptions));
+  }
+
+  public async computeSelection(token: IModelToken, requestOptions: SelectionScopeRpcRequestOptions, keys: Readonly<EntityProps[]>, scopeId: string): Promise<KeySet> {
+    const actx = ActivityLoggingContext.current; actx.enter();
+    this.verifyRequest(requestOptions);
+    return this.getManager(requestOptions.clientId).computeSelection(actx, this.toIModelDbOptions(token, requestOptions), keys, scopeId);
+  }
+
   public async syncClientState(_token: IModelToken, options: ClientStateSyncRequestOptions): Promise<void> {
     const actx = ActivityLoggingContext.current; actx.enter();
     if (!options.clientStateId)
@@ -193,7 +207,7 @@ export default class PresentationRpcImpl extends PresentationRpcInterface {
     actx.enter();
     const manager = this.getManager(clientId).rulesets();
     manager.clear();
-    Promise.all(rulesets.map((r) => manager.add(r)));
+    await Promise.all(rulesets.map((r) => manager.add(r)));
   }
 
   private async syncClientRulesetVariablesState(actx: ActivityLoggingContext, clientId: string | undefined, vars: RulesetVariablesState): Promise<void> {

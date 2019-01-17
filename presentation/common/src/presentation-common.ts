@@ -17,6 +17,9 @@ export * from "./RegisteredRuleset";
 export * from "./Logging";
 export * from "./Utils";
 
+/** @module UnifiedSelection */
+export * from "./selection/SelectionScope";
+
 /** @module Content */
 export { default as CategoryDescription } from "./content/Category";
 export { default as Content, ContentJSON } from "./content/Content";

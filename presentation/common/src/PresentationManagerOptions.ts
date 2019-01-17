@@ -33,3 +33,12 @@ export type Paged<TOptions extends {}> = TOptions & {
   /** Optional paging parameters */
   paging?: PageOptions;
 };
+
+/** Request options used for selection scope related requests */
+export interface SelectionScopeRequestOptions<TIModel> {
+  /** iModel to request data for */
+  imodel: TIModel;
+
+  /** Optional locale to use when localizing data */
+  locale?: string;
+}

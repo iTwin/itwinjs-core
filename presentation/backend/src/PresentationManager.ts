@@ -6,12 +6,14 @@
 
 import * as path from "path";
 import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
-import { IModelDb } from "@bentley/imodeljs-backend";
+import { EntityProps } from "@bentley/imodeljs-common";
+import { IModelDb, GeometricElement } from "@bentley/imodeljs-backend";
 import {
   PresentationError, PresentationStatus,
   HierarchyRequestOptions, NodeKey, Node, NodePathElement,
   ContentRequestOptions, SelectionInfo, Content, Descriptor,
   RequestOptions, Paged, KeySet, InstanceKey,
+  SelectionScopeRequestOptions, SelectionScope,
 } from "@bentley/presentation-common";
 import { listReviver as nodesListReviver } from "@bentley/presentation-common/lib/hierarchy/Node";
 import { listReviver as nodePathElementReviver } from "@bentley/presentation-common/lib/hierarchy/NodePathElement";
@@ -286,6 +288,108 @@ export default class PresentationManager {
       maximumValueCount,
     });
     return this.request<string[]>(activityLoggingContext, requestOptions.imodel, params);
+  }
+
+  /**
+   * Retrieves available selection scopes.
+   * @param activityLoggingContext Logging context holding request's ActivityId
+   * @param requestOptions options for the request
+   */
+  public async getSelectionScopes(activityLoggingContext: ActivityLoggingContext, requestOptions: SelectionScopeRequestOptions<IModelDb>): Promise<SelectionScope[]> {
+    activityLoggingContext.enter();
+    (requestOptions as any);
+
+    const createSelectionScope = (scopeId: string, label: string, description: string): SelectionScope => ({
+      id: scopeId,
+      label,
+      description,
+    });
+
+    return [
+      createSelectionScope("element", "Element", "Select the picked element"),
+      createSelectionScope("assembly", "Assembly", "Select parent of the picked element"),
+      createSelectionScope("top-assembly", "Top Assembly", "Select the topmost parent of the picked element"),
+      createSelectionScope("category", "Category", "Select all elements in the picked element's category"),
+      createSelectionScope("model", "Model", "Select all elements in the picked element's model"),
+    ];
+  }
+
+  private getParentInstanceKey(imodel: IModelDb, key: InstanceKey): InstanceKey | undefined {
+    const parentElementProps = imodel.elements.getElement(key.id!).parent;
+    if (!parentElementProps)
+      return undefined;
+    return {
+      className: parentElementProps.relClassName!,
+      id: parentElementProps.id,
+    };
+  }
+
+  private computeAssemblySelection(requestOptions: SelectionScopeRequestOptions<IModelDb>, keys: EntityProps[]) {
+    const parentKeys = new KeySet();
+    keys.forEach((key) => {
+      const thisKey = { className: key.classFullName, id: key.id! };
+      const parentKey = this.getParentInstanceKey(requestOptions.imodel, thisKey);
+      if (parentKey)
+        parentKeys.add(parentKey);
+      else
+        parentKeys.add(thisKey);
+    });
+    return parentKeys;
+  }
+
+  private computeTopAssemblySelection(requestOptions: SelectionScopeRequestOptions<IModelDb>, keys: EntityProps[]) {
+    const parentKeys = new KeySet();
+    keys.forEach((key) => {
+      let curr = { className: key.classFullName, id: key.id! };
+      let parent = this.getParentInstanceKey(requestOptions.imodel, curr);
+      while (parent) {
+        curr = parent;
+        parent = this.getParentInstanceKey(requestOptions.imodel, curr);
+      }
+      parentKeys.add(curr);
+    });
+    return parentKeys;
+  }
+
+  private computeCategorySelection(requestOptions: SelectionScopeRequestOptions<IModelDb>, keys: EntityProps[]) {
+    const categoryKeys = new KeySet();
+    keys.forEach((key) => {
+      const el = requestOptions.imodel.elements.getElement(key.id!);
+      if (el instanceof GeometricElement)
+        categoryKeys.add({ className: "BisCore:Category", id: el.category });
+    });
+    return categoryKeys;
+  }
+
+  private computeModelSelection(requestOptions: SelectionScopeRequestOptions<IModelDb>, keys: EntityProps[]) {
+    const modelKeys = new KeySet();
+    keys.forEach((key) => {
+      const el = requestOptions.imodel.elements.getElement(key.id!);
+      modelKeys.add({ className: "BisCore:Model", id: el.model });
+    });
+    return modelKeys;
+  }
+
+  /**
+   * Computes selection set based on provided selection scope.
+   * @param activityLoggingContext Logging context holding request's ActivityId
+   * @param requestOptions Options for the request
+   * @param keys Keys of elements to get the content for.
+   * @param scopeId ID of selection scope to use for computing selection
+   */
+  public async computeSelection(activityLoggingContext: ActivityLoggingContext, requestOptions: SelectionScopeRequestOptions<IModelDb>, keys: EntityProps[], scopeId: string): Promise<KeySet> {
+    activityLoggingContext.enter();
+    (requestOptions as any);
+
+    switch (scopeId) {
+      case "element": return new KeySet(keys);
+      case "assembly": return this.computeAssemblySelection(requestOptions, keys);
+      case "top-assembly": return this.computeTopAssemblySelection(requestOptions, keys);
+      case "category": return this.computeCategorySelection(requestOptions, keys);
+      case "model": return this.computeModelSelection(requestOptions, keys);
+    }
+
+    throw new PresentationError(PresentationStatus.InvalidArgument, "scopeId");
   }
 
   private async request<T>(activityLoggingContext: ActivityLoggingContext, imodel: IModelDb, params: string, reviver?: (key: string, value: any) => any): Promise<T> {

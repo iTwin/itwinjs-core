@@ -12,6 +12,7 @@ import { I18N } from "@bentley/imodeljs-i18n";
 import { IModelApp, NoRenderApp } from "@bentley/imodeljs-frontend";
 import { PresentationError } from "@bentley/presentation-common";
 import { Presentation, SelectionManager } from "../presentation-frontend";
+import { SelectionScopesManager } from "../selection/SelectionScopesManager";
 import PresentationManager from "../PresentationManager";
 
 describe("Presentation", () => {
@@ -135,14 +136,14 @@ describe("Presentation", () => {
   describe("[set] selection", () => {
 
     it("overwrites selection manager instance before initialization", () => {
-      const manager = new SelectionManager();
+      const manager = new SelectionManager({ scopes: moq.Mock.ofType<SelectionScopesManager>().object });
       Presentation.selection = manager;
       Presentation.initialize();
       expect(Presentation.selection).to.eq(manager);
     });
 
     it("overwrites selection manager instance after initialization", () => {
-      const otherManager = new SelectionManager();
+      const otherManager = new SelectionManager({ scopes: moq.Mock.ofType<SelectionScopesManager>().object });
       Presentation.initialize();
       expect(Presentation.selection).to.be.not.null;
       expect(Presentation.selection).to.not.eq(otherManager);

@@ -8,21 +8,17 @@ import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import {
   createRandomECInstanceKey,
   createRandomECInstanceNodeKey, createRandomECInstanceNode, createRandomNodePathElement,
-  createRandomDescriptor, createRandomRuleset, createRandomId,
+  createRandomDescriptor, createRandomRuleset, createRandomId, createRandomSelectionScope, createRandomEntityProps,
 } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { IModelToken } from "@bentley/imodeljs-common";
 import { IModelDb } from "@bentley/imodeljs-backend";
 import {
-  PageOptions, KeySet, PresentationError, InstanceKey,
-  Paged, RulesetManagerState,
-  HierarchyRequestOptions, ContentRequestOptions, RulesetVariablesState,
-  Omit,
-} from "@bentley/presentation-common";
-import { Node, Descriptor, Content } from "@bentley/presentation-common";
-import { VariableValueTypes } from "@bentley/presentation-common";
-import {
-  RpcRequestOptions, HierarchyRpcRequestOptions, ClientStateSyncRequestOptions,
+  RpcRequestOptions, ContentRequestOptions, HierarchyRequestOptions,
+  ClientStateSyncRequestOptions, SelectionScopeRequestOptions,
+  HierarchyRpcRequestOptions, RulesetVariablesState,
+  Node, Descriptor, Content, PageOptions, KeySet, PresentationError, InstanceKey,
+  Paged, RulesetManagerState, VariableValueTypes, Omit,
 } from "@bentley/presentation-common";
 import RulesetVariablesManager from "../RulesetVariablesManager";
 import PresentationManager from "../PresentationManager";
@@ -383,7 +379,7 @@ describe("PresentationRpcImpl", () => {
           rulesetId: testData.rulesetId,
           paging: testData.pageOptions,
         };
-        presentationManagerMock.setup((x) => x.getContent(ActivityLoggingContext.current, { ...options, imodel: testData.imodelMock.object }, descriptorMock.object, testData.inputKeys))
+        presentationManagerMock.setup(async (x) => x.getContent(ActivityLoggingContext.current, { ...options, imodel: testData.imodelMock.object }, descriptorMock.object, testData.inputKeys))
           .returns(async () => contentMock.object)
           .verifiable();
         const actualResult = await impl.getContent(testData.imodelToken, { ...defaultRpcParams, ...options },
@@ -412,6 +408,42 @@ describe("PresentationRpcImpl", () => {
           testData.inputKeys, fieldName, maximumValueCount);
         presentationManagerMock.verifyAll();
         expect(actualResult).to.deep.eq(distinctValues);
+      });
+
+    });
+
+    describe("getSelectionScopes", () => {
+
+      it("calls manager", async () => {
+        const options: SelectionScopeRequestOptions<IModelToken> = {
+          imodel: testData.imodelToken,
+        };
+        const result = [createRandomSelectionScope()];
+        presentationManagerMock.setup((x) => x.getSelectionScopes(ActivityLoggingContext.current, { ...options, imodel: testData.imodelMock.object }))
+          .returns(async () => result)
+          .verifiable();
+        const actualResult = await impl.getSelectionScopes(testData.imodelToken, { ...defaultRpcParams, ...options });
+        presentationManagerMock.verifyAll();
+        expect(actualResult).to.deep.eq(result);
+      });
+
+    });
+
+    describe("getSelectionScopes", () => {
+
+      it("calls manager", async () => {
+        const options: SelectionScopeRequestOptions<IModelToken> = {
+          imodel: testData.imodelToken,
+        };
+        const scope = createRandomSelectionScope();
+        const keys = [createRandomEntityProps()];
+        const result = new KeySet();
+        presentationManagerMock.setup((x) => x.computeSelection(ActivityLoggingContext.current, { ...options, imodel: testData.imodelMock.object }, keys, scope.id))
+          .returns(async () => result)
+          .verifiable();
+        const actualResult = await impl.computeSelection(testData.imodelToken, { ...defaultRpcParams, ...options }, keys, scope.id);
+        presentationManagerMock.verifyAll();
+        expect(actualResult).to.deep.eq(result);
       });
 
     });

@@ -12,5 +12,5 @@ export { default as RulesetVariablesManager } from "./RulesetVariablesManager";
 /** @module UnifiedSelection */
 export { default as SelectionChangeEvent, SelectionChangeEventArgs, SelectionChangeType, SelectionChangesListener } from "./selection/SelectionChangeEvent";
 export { default as ISelectionProvider } from "./selection/ISelectionProvider";
-export { default as SelectionManager } from "./selection/SelectionManager";
+export { SelectionManager } from "./selection/SelectionManager";
 export { default as SelectionHandler } from "./selection/SelectionHandler";
