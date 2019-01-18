@@ -15,8 +15,8 @@ function makeModuleRelativePath(moduleName, relativePath) {
   return path.join(moduleName, relativePath);
 }
 
-function makeBentleyModulePath(localNodeModules, moduleName, isDev) {
-  return path.resolve(localNodeModules, moduleName, isDev ? "lib/module/dev" : "lib/module/prod");
+function makeBentleyModulePath(nodeModulesPath, moduleName, isDev) {
+  return path.resolve(nodeModulesPath, "node_modules", moduleName, isDev ? "lib/module/dev" : "lib/module/prod");
 }
 
 function getPackageContents(moduleDirectory, moduleName) {
@@ -25,11 +25,6 @@ function getPackageContents(moduleDirectory, moduleName) {
     return {};
   const packageFileContents = fs.readFileSync(packageFileName, "utf8");
   return JSON.parse(packageFileContents);
-}
-
-function getBentleyVersionString(localNodeModules, moduleName) {
-  const packageFileContents = getPackageContents(localNodeModules, moduleName);
-  return packageFileContents.version;
 }
 
 function isFile(fileName) {
@@ -115,7 +110,7 @@ function AddListOfDependents(packagePath, dependentList, packageFileContents, pa
       }
     }
     if (!alreadyHave) {
-      newDependents.push({packagePath, name: dependent});
+      newDependents.push({packagePath, name: dependent, version: packageFileContents[packageKey][dependent]});
     }
   }
 
@@ -126,8 +121,8 @@ function AddListOfDependents(packagePath, dependentList, packageFileContents, pa
 
   if (depth < 2) {
     for (newDependent of newDependents) {
-      const localNodeModules = path.resolve(packagePath, "node_modules");
-      AddDependents(dependentList, localNodeModules, newDependent.name, depth + 1);
+      const dependentNodeModules = path.resolve(packagePath, "node_modules");
+      AddDependents(dependentList, dependentNodeModules, newDependent.name, depth + 1);
     }
   }
 }
@@ -197,12 +192,13 @@ function main() {
           let fileName = "";
           let moduleSourceFile = undefined;
           let versionString = undefined;
+
           if (externalModule.inRushRepo) {
             // These are our iModelJs modules. Get the version from the package.json file.
-            versionString = getBentleyVersionString(localNodeModules, externalModule.moduleName);
-            const modulePath = makeBentleyModulePath(localNodeModules, externalModule.moduleName, isDev);
+            versionString = dependent.version;
+            const moduleSourcePath = makeBentleyModulePath(dependent.packagePath, externalModule.moduleName, isDev);
             fileName = externalModule.moduleName.slice(9) + ".js";
-            moduleSourceFile = path.resolve(modulePath, fileName);
+            moduleSourceFile = path.resolve(moduleSourcePath, fileName);
           } else {
             moduleSourceFile = path.resolve(dependent.packagePath, "node_modules", externalModule.relativePath);
             if (0 === externalModule.moduleName.indexOf("@bentley")) {
@@ -229,7 +225,7 @@ function main() {
             }
             linkModuleFile(moduleSourceFile, outFilePath);
             if (externalModule.publicResourceDirectory) {
-              const publicPath = path.resolve(localNodeModules, externalModule.moduleName, externalModule.publicResourceDirectory);
+              const publicPath = path.resolve(dependent.packagePath, "node_modules", externalModule.moduleName, externalModule.publicResourceDirectory);
               linkPublicStaticFiles(publicPath, outputDirectory);
             }
             // found dependent in list of external, no need to look at the rest of the externals.
@@ -239,8 +235,8 @@ function main() {
       }
     }
 
-    // link the IModelJsLoader.js from imodeljs/frontend also.
-    const loaderPath = makeBentleyModulePath(localNodeModules, "@bentley/imodeljs-frontend", isDev);
+    // link the IModelJsLoader.js from imodeljs/frontend also. NOTE: imodeljs-frontend must always be in package.json's dependencies.
+    const loaderPath = makeBentleyModulePath(process.cwd(), "@bentley/imodeljs-frontend", isDev);
     const loaderFile = path.resolve(loaderPath, "IModelJsLoader.js");
     const outFilePath = path.resolve(outputDirectory, "IModelJsLoader.js");
     linkModuleFile(loaderFile, outFilePath);
