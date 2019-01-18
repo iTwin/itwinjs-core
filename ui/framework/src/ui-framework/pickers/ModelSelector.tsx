@@ -149,7 +149,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
     this.updateState(); // tslint:disable-line:no-floating-promises
   }
 
-  /** Iinitialize listeners and category/model rulesets */
+  /** Initialize listeners and category/model rulesets */
   public componentDidMount() {
     this._isMounted = true;
     this._initModelState();
@@ -158,7 +158,12 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
     this._removeSelectedViewportChanged = IModelApp.viewManager.onSelectedViewportChanged.addListener(this._handleSelectedViewportChanged);
   }
 
+  /** Initialize models */
   private _initModelState = () => {
+    if (!IModelApp.viewManager)
+      return;
+    const vp = IModelApp.viewManager.getFirstOpenView();
+
     Presentation.presentation.rulesets().add(require("../../../rulesets/Models")) // tslint:disable-line:no-floating-promises
       .then((ruleset: RegisteredRuleset) => {
         if (!this._isMounted)
@@ -177,20 +182,88 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
           },
           expand: true,
         });
-        // tslint:disable:no-floating-promises
-        this._onSetEnableAll(true);
+
+        if (vp) {
+          this._updateModelsWithViewport(vp).then(() => { this._setModelsFromViewState(); });
+        }
       });
   }
 
+  /** Initialize categories */
   private _initCategoryState = () => {
+    if (!IModelApp.viewManager)
+      return;
+    const vp = IModelApp.viewManager.getFirstOpenView();
+
     Presentation.presentation.rulesets().add(require("../../../rulesets/Categories")) // tslint:disable-line:no-floating-promises
       .then((ruleset: RegisteredRuleset) => {
         if (!this._isMounted)
           return;
         this._categoryRuleset = ruleset;
-        // tslint:disable:no-floating-promises
-        this._onSetEnableAll(true);
+        if (vp) {
+          this._updateCategoriesWithViewport(vp).then(() => { this._setCategoriesFromViewState(); });
+        }
       });
+  }
+
+  /** Set initial model selection state based on ViewState */
+  private _setModelsFromViewState = async () => {
+    if (!IModelApp.viewManager)
+      return;
+
+    const vp = IModelApp.viewManager.getFirstOpenView();
+    const view = vp!.view as SpatialViewState;
+
+    const promises: Array<Promise<DelayLoadedTreeNodeItem | undefined>> = [];
+    this._groups[0].items.forEach((item: ListItem) => {
+      if (view.modelSelector.models.has(item.key))
+        promises.push(this._getNodeFromItem(item));
+    });
+
+    const selectedNodes: string[] = [];
+    await Promise.all(promises).then((nodes: Array<DelayLoadedTreeNodeItem | undefined>) => {
+      nodes.forEach((node) => {
+        if (node)
+          selectedNodes.push(node!.id);
+      });
+    });
+
+    this.setState({
+      treeInfo: {
+        ...this.state.treeInfo!,
+        selectedNodes: this.state.treeInfo!.selectedNodes!.concat(selectedNodes),
+      },
+    });
+  }
+
+  /** Set initial category selection state based on ViewState */
+  private _setCategoriesFromViewState = async () => {
+    if (!IModelApp.viewManager)
+      return;
+
+    const vp = IModelApp.viewManager.getFirstOpenView();
+    const view = vp!.view as SpatialViewState;
+
+    const promises: Array<Promise<DelayLoadedTreeNodeItem | undefined>> = [];
+    this._groups[0].items.forEach((item: ListItem) => {
+      if (view.categorySelector.categories.has(item.key))
+        promises.push(this._getNodeFromItem(item));
+    });
+
+    const selectedNodes: string[] = [];
+    await Promise.all(promises).then((nodes: Array<DelayLoadedTreeNodeItem | undefined>) => {
+      nodes.forEach((node) => {
+        if (node)
+          selectedNodes.push(node!.id);
+      });
+    });
+
+    this.setState({
+      treeInfo: {
+        ...this.state.treeInfo!,
+        selectedNodes: this.state.treeInfo!.selectedNodes!.concat(selectedNodes),
+      },
+    });
   }
 
   /** Removes listeners */
@@ -284,6 +357,15 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
    * @param activeRuleset Ruleset to provide to tree.
    */
   private _setActiveRuleset = async (activeRuleset: RegisteredRuleset) => {
+    if (!IModelApp.viewManager)
+      return;
+
+    const vp = IModelApp.viewManager.getFirstOpenView();
+    const view = vp!.view as SpatialViewState;
+
+    const viewType = view.is3d() ? "3d" : "2d";
+    Presentation.presentation.vars(this.state.treeInfo!.ruleset.id).setString("ViewType", viewType);
+
     this.setState({
       treeInfo: {
         ...this.state.treeInfo!,
