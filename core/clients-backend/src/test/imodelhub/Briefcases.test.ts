@@ -6,14 +6,11 @@ import * as chai from "chai";
 import * as fs from "fs";
 import * as path from "path";
 
-import {
-  AccessToken, IModelHubClient, Briefcase, BriefcaseQuery, IModelHubClientError,
-} from "../../imodeljs-clients";
+import { IModelHubStatus, ActivityLoggingContext, GuidString } from "@bentley/bentleyjs-core";
+import { AccessToken, IModelHubClient, Briefcase, BriefcaseQuery, IModelHubClientError, IModelClient } from "@bentley/imodeljs-clients";
 import { TestConfig, TestUsers } from "../TestConfig";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
 import * as utils from "./TestUtils";
-import { IModelHubStatus, ActivityLoggingContext, GuidString } from "@bentley/bentleyjs-core";
-import { IModelClient } from "../../IModelClient";
 
 function mockGetBriefcaseById(imodelId: GuidString, briefcase: Briefcase) {
   if (!TestConfig.enableMocks)

@@ -3,14 +3,11 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
-
-import { TestUsers, TestConfig } from "../TestConfig";
-
-import { AccessToken } from "../../Token";
-import { ResponseBuilder, ScopeType, RequestType } from "../ResponseBuilder";
-import * as utils from "./TestUtils";
-import { UserInfoQuery, HubUserInfo, UserInfo, IModelHubClientError, IModelClient } from "../../imodeljs-clients";
 import { IModelHubStatus, ActivityLoggingContext, GuidString } from "@bentley/bentleyjs-core";
+import { AccessToken, UserInfoQuery, HubUserInfo, UserInfo, IModelHubClientError, IModelClient } from "@bentley/imodeljs-clients";
+import { ResponseBuilder, ScopeType, RequestType } from "../ResponseBuilder";
+import { TestUsers, TestConfig } from "../TestConfig";
+import * as utils from "./TestUtils";
 
 function mockGetUserInfo(imodelId: GuidString, userInfo: HubUserInfo[], query?: string) {
   if (!TestConfig.enableMocks)

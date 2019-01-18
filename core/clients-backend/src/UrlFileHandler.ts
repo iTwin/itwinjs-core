@@ -3,13 +3,12 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Utils */
-import { ProgressInfo } from "./Request";
-import { FileHandler } from "./FileHandler";
+import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { ProgressInfo, FileHandler } from "@bentley/imodeljs-clients";
 import * as fs from "fs-extra";
 import * as path from "path";
 import * as https from "https";
 import { URL } from "url";
-import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
 
 /**
  * Provides methods to upload and download files from the Internet

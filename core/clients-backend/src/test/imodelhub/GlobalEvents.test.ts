@@ -5,13 +5,11 @@
 import * as chai from "chai";
 
 import { Guid, ActivityLoggingContext } from "@bentley/bentleyjs-core";
-
 import {
   AccessToken, IModelClient, HubIModel, GlobalEventSubscription, GlobalEventSAS, GlobalEventType,
   SoftiModelDeleteEvent, HardiModelDeleteEvent, IModelCreatedEvent, ChangeSetCreatedEvent,
   NamedVersionCreatedEvent, IModelHubGlobalEvent, GetEventOperationType,
-} from "../../imodeljs-clients";
-
+} from "@bentley/imodeljs-clients";
 import { TestConfig, TestUsers } from "../TestConfig";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
 import * as utils from "./TestUtils";

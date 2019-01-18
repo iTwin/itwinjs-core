@@ -4,7 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 // __PUBLISH_EXTRACT_START__ IModelHubClient.example-code
-import { IModelHubClient, AzureFileHandler } from "@bentley/imodeljs-clients";
+import { IModelHubClient } from "@bentley/imodeljs-clients";
+import { AzureFileHandler } from "@bentley/imodeljs-clients-backend";
 
 const imodelHubClient = new IModelHubClient(new AzureFileHandler());
 // __PUBLISH_EXTRACT_END__

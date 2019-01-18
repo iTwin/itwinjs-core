@@ -2,13 +2,12 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+import { Logger, ActivityLoggingContext, Id64, GuidString } from "@bentley/bentleyjs-core";
 import {
   AccessToken, ResponseError, AuthenticationError, IModelClient,
   Briefcase, HubCode, CodeState, CodeQuery, Lock, LockLevel, LockType, LockQuery,
-} from "../../imodeljs-clients";
-
+} from "@bentley/imodeljs-clients";
 import * as utils from "./TestUtils";
-import { Logger, ActivityLoggingContext, Id64, GuidString } from "@bentley/bentleyjs-core";
 
 describe.skip("iModelHub Performance tests", function (this: Mocha.ISuiteCallbackContext) {
   let accessToken: AccessToken;

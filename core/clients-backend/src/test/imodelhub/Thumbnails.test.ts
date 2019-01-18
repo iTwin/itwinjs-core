@@ -3,9 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
-
-import { AccessToken, IModelClient, ChangeSet, Version, Thumbnail, ThumbnailSize, ThumbnailQuery } from "../../imodeljs-clients";
-
+import { AccessToken, IModelClient, ChangeSet, Version, Thumbnail, ThumbnailSize, ThumbnailQuery } from "@bentley/imodeljs-clients";
 import { TestConfig, TestUsers } from "../TestConfig";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
 import * as utils from "./TestUtils";
@@ -44,7 +42,8 @@ async function getIModelId(accessToken: AccessToken, name: string): Promise<stri
   return utils.getIModelId(accessToken, name);
 }
 
-describe("iModelHub ThumbnailHandler", () => {
+// todo: tests fail because the imodel has been deleted from the project
+describe.skip("iModelHub ThumbnailHandler", () => {
   const test: TestParameters[] = [{ size: "Small", thumbnails: [] }, { size: "Large", thumbnails: [] }];
   let accessToken: AccessToken;
   let _projectId: string;

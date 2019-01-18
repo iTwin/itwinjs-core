@@ -2,11 +2,11 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { AccessToken, UserInfo, ConnectClient, Project, IModelHubClient } from "../../imodeljs-clients";
-import { TestConfig } from "../TestConfig";
-import { ContextManagerClient, IModelAuthorizationClient, IModelCloudEnvironment } from "../../IModelCloudEnvironment";
-import { getDefaultClient } from "./TestUtils";
 import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { AccessToken, UserInfo, ConnectClient, Project, IModelHubClient } from "@bentley/imodeljs-clients";
+import { ContextManagerClient, IModelAuthorizationClient, IModelCloudEnvironment } from "@bentley/imodeljs-clients/lib/IModelCloudEnvironment";
+import { TestConfig } from "../TestConfig";
+import { getDefaultClient } from "./TestUtils";
 
 /** An implementation of IModelProjectAbstraction backed by a iModelHub/Connect project */
 class TestConnectClient implements ContextManagerClient {

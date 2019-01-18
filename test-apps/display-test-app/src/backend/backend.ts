@@ -9,7 +9,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
 import { IModelBankClient, Config } from "@bentley/imodeljs-clients";
-import { UrlFileHandler } from "@bentley/imodeljs-clients/lib/UrlFileHandler";
+import { UrlFileHandler } from "@bentley/imodeljs-clients-backend";
 import { SVTConfiguration } from "../common/SVTConfiguration";
 
 IModelJsConfig.init(true /* suppress exception */, true /* suppress error message */, Config.App);

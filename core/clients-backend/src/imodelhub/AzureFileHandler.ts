@@ -4,10 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module iModelHub */
 
-import { request, RequestOptions, ProgressInfo, ResponseError } from "../Request";
 import { Logger, ActivityLoggingContext } from "@bentley/bentleyjs-core";
-import { FileHandler } from "../FileHandler";
-import { ArgumentCheck } from "./Errors";
+import { request, RequestOptions, ProgressInfo, ResponseError, FileHandler, ArgumentCheck } from "@bentley/imodeljs-clients";
 import * as fs from "fs";
 import * as path from "path";
 import * as https from "https";

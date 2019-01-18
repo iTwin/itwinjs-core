@@ -2,20 +2,38 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { ImsActiveSecureTokenClient } from "../ImsClients";
-import { AuthorizationToken, AccessToken } from "../Token";
-import { HubIModel } from "../imodelhub/iModels";
-import { IModelHubClient, IModelClient } from "../imodeljs-clients";
-import { ConnectClient, Project } from "../ConnectClients";
 import { expect } from "chai";
-
-import { Logger, ActivityLoggingContext, GuidString, Guid } from "@bentley/bentleyjs-core";
-import { Config } from "../Config";
+import * as fs from "fs";
+import * as path from "path";
+import { Logger, LogLevel, ActivityLoggingContext, GuidString, Guid } from "@bentley/bentleyjs-core";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
+import { ImsActiveSecureTokenClient, AuthorizationToken, AccessToken, HubIModel, IModelHubClient, IModelClient, ConnectClient, Project, Config } from "@bentley/imodeljs-clients";
+import { loggingCategoryFullUrl } from "@bentley/imodeljs-clients/lib/Request";
 
 IModelJsConfig.init(true /* suppress exception */, false /* suppress error message */, Config.App);
 
 const actx = new ActivityLoggingContext(Guid.createValue());
+
+const logFileStream = fs.createWriteStream(path.join(__dirname, "./iModelClientsTests.log"), { flags: "a" });
+
+// The Request URLs are captured separate. The log file is used by the Hub URL whitelist validation.
+export const urlLogPath = path.join(__dirname, "./requesturls.log");
+const urlLogFileStream = fs.createWriteStream(urlLogPath, { flags: "a" });
+console.log("URL Log file created at: " + urlLogPath);
+
+function logFunction(logLevel: string, category: string, message: string) {
+  if (category === loggingCategoryFullUrl)
+    urlLogFileStream.write(message + "\n");
+  else
+    logFileStream.write(logLevel + "|" + category + "|" + message + "\n");
+}
+
+// Initialize logger to file
+Logger.initialize(
+  (category: string, message: string): void => { logFunction("Error", category, message); },
+  (category: string, message: string): void => { logFunction("Warning", category, message); },
+  (category: string, message: string): void => { logFunction("Info", category, message); },
+  (category: string, message: string): void => { logFunction("Trace", category, message); });
 
 // Note: Turn this off unless really necessary - it causes Error messages on the
 // console with the existing suite of tests, and this is quite misleading,
@@ -25,6 +43,9 @@ if (!!loggingConfigFile) {
   // tslint:disable-next-line:no-var-requires
   Logger.configureLevels(require(loggingConfigFile));
 }
+
+// log all request URLs as this will be the input to the Hub URL whitelist test
+Logger.setLevel(loggingCategoryFullUrl, LogLevel.Trace);
 
 /** Credentials for test users */
 export interface UserCredentials {

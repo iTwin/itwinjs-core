@@ -5,14 +5,13 @@
 import * as chai from "chai";
 import * as utils from "./TestUtils";
 
+import { IModelHubStatus, ActivityLoggingContext, Id64, GuidString } from "@bentley/bentleyjs-core";
 import {
   AccessToken, IModelClient, CodeState, HubCode, AggregateResponseError, ConflictingCodesError, CodeQuery,
   IModelHubClientError, CodeSequence, CodeSequenceType,
-} from "../../imodeljs-clients";
-
+} from "@bentley/imodeljs-clients";
 import { ResponseBuilder } from "../ResponseBuilder";
 import { TestConfig, TestUsers } from "../TestConfig";
-import { IModelHubStatus, ActivityLoggingContext, Id64, GuidString } from "@bentley/bentleyjs-core";
 
 chai.should();
 

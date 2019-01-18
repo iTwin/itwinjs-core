@@ -74,7 +74,7 @@ describe("OidcBackendClient (#integration)", () => {
       clientSecret: Config.App.getString("imjs_agent_test_client_secret"),
       serviceUserEmail: Config.App.getString("imjs_agent_test_service_user_email"),
       serviceUserPassword: Config.App.getString("imjs_agent_test_service_user_password"),
-      scope: "openid email profile organization",
+      scope: "openid email profile organization context-registry-service imodelhub",
     };
 
     const authToken: AuthorizationToken = await (new ImsActiveSecureTokenClient()).getToken(actx, testUser.email, testUser.password);

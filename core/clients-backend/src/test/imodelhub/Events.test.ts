@@ -6,16 +6,13 @@ import * as chai from "chai";
 import * as utils from "./TestUtils";
 
 import { GuidString, Guid, IModelHubStatus, ActivityLoggingContext, Id64 } from "@bentley/bentleyjs-core";
-
 import {
   AccessToken, IModelClient, LockEvent, AllLocksDeletedEvent, ChangeSetPostPushEvent, ChangeSetPrePushEvent,
   CodeEvent, AllCodesDeletedEvent, BriefcaseDeletedEvent, IModelDeletedEvent, VersionEvent,
-  EventSubscription, EventSAS, EventType, IModelHubEvent,
-} from "../../imodeljs-clients";
-
+  EventSubscription, EventSAS, EventType, IModelHubEvent, LockLevel, LockType,
+} from "@bentley/imodeljs-clients";
 import { TestConfig, TestUsers } from "../TestConfig";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
-import { LockLevel, LockType } from "../../imodelhub/Locks";
 
 chai.should();
 

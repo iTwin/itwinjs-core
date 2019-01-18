@@ -5,8 +5,9 @@
 import { ChangeSetUtilityConfig } from "./ChangeSetUtilityConfig";
 import {
     AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, ConnectClient, IModelHubClient,
-    AzureFileHandler, Project, IModelQuery, HubIModel, Version,
+    Project, IModelQuery, HubIModel, Version,
 } from "@bentley/imodeljs-clients";
+import { AzureFileHandler } from "@bentley/imodeljs-clients-backend";
 import { Logger, assert, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { IModelVersion } from "@bentley/imodeljs-common";
 import * as path from "path";

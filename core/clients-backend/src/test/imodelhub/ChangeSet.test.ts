@@ -6,16 +6,11 @@ import * as chai from "chai";
 import * as fs from "fs";
 import * as path from "path";
 import * as deepAssign from "deep-assign";
-
-import { TestConfig, TestUsers } from "../TestConfig";
-
-import {
-  AccessToken, IModelClient, IModelHubClient, Briefcase, ChangeSet, ChangeSetQuery, IModelHubClientError, Version,
-} from "../../imodeljs-clients";
-
-import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
-import * as utils from "./TestUtils";
 import { IModelHubStatus, ActivityLoggingContext, GuidString } from "@bentley/bentleyjs-core";
+import { AccessToken, IModelClient, IModelHubClient, Briefcase, ChangeSet, ChangeSetQuery, IModelHubClientError, Version } from "@bentley/imodeljs-clients";
+import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
+import { TestConfig, TestUsers } from "../TestConfig";
+import * as utils from "./TestUtils";
 
 chai.should();
 

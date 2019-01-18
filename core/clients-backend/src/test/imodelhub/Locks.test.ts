@@ -3,17 +3,15 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
-
+import { GuidString, Guid, IModelHubStatus, ActivityLoggingContext, Id64, Id64String } from "@bentley/bentleyjs-core";
 import {
   AccessToken, IModelClient, Lock, Briefcase, ChangeSet, LockType, LockLevel, LockQuery,
   AggregateResponseError, ConflictingLocksError,
   IModelHubClientError,
-} from "../../imodeljs-clients";
-
+} from "@bentley/imodeljs-clients";
 import { TestConfig, TestUsers } from "../TestConfig";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
 import * as utils from "./TestUtils";
-import { GuidString, Guid, IModelHubStatus, ActivityLoggingContext, Id64, Id64String } from "@bentley/bentleyjs-core";
 
 chai.should();
 

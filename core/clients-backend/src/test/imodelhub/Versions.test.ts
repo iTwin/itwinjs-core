@@ -3,17 +3,14 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
-
+import { ActivityLoggingContext, GuidString } from "@bentley/bentleyjs-core";
 import {
   AccessToken, Version, VersionQuery, Briefcase, ChangeSet, Thumbnail,
-  ThumbnailQuery, ThumbnailSize,
-} from "../../imodeljs-clients";
-
+  ThumbnailQuery, ThumbnailSize, IModelClient,
+} from "@bentley/imodeljs-clients";
 import { TestConfig, TestUsers } from "../TestConfig";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
 import * as utils from "./TestUtils";
-import { ActivityLoggingContext, GuidString } from "@bentley/bentleyjs-core";
-import { IModelClient } from "../../IModelClient";
 
 function getSelectStatement(thumbnailSizes: ThumbnailSize[]) {
   let selectStatement: string = "*";

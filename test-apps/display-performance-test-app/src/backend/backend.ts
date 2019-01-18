@@ -9,7 +9,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
 import { IModelBankClient } from "@bentley/imodeljs-clients/lib/IModelBank/IModelBankClient";
-import { UrlFileHandler } from "@bentley/imodeljs-clients/lib/UrlFileHandler";
+import { UrlFileHandler } from "@bentley/imodeljs-clients-backend";
 import { SVTConfiguration } from "../common/SVTConfiguration";
 import "./DisplayPerfRpcImpl"; // just to get the RPC implementation registered
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";

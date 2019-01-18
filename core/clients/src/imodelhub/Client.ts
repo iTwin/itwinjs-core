@@ -17,7 +17,7 @@ import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
 export class IModelHubClient extends IModelClient {
   /**
    * Create an instance of IModelHubClient.
-   * @param fileHandler File handler to handle file upload/download and file system operations. See [[AzureFileHandler]].
+   * @param fileHandler File handler to handle file upload/download and file system operations.
    * @param iModelBaseHandler WSG Client for iModel Hub operations. See [[IModelBaseHandler]]
    */
   public constructor(fileHandler?: FileHandler, iModelBaseHandler: IModelBaseHandler = new IModelBaseHandler()) {

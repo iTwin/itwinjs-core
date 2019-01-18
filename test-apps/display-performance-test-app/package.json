@@ -33,6 +33,7 @@
     "@bentley/electron-manager": "0.189.0-dev.1",
     "@bentley/geometry-core": "0.189.0-dev.1",
     "@bentley/imodeljs-clients": "0.189.0-dev.1",
+    "@bentley/imodeljs-clients-backend": "0.189.0-dev.1",
     "@bentley/imodeljs-common": "0.189.0-dev.1",
     "@bentley/imodeljs-frontend": "0.189.0-dev.1",
     "@bentley/imodeljs-backend": "0.189.0-dev.1",

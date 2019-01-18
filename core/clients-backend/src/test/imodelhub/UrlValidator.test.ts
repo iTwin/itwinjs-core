@@ -2,14 +2,12 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { assert, should } from "chai";
-
 import * as fs from "fs";
 import * as path from "path";
-import { urlLogPath, TestConfig } from "../TestConfig";
-import { IModelBaseHandler } from "../../imodelhub/BaseHandler";
-import { UrlDiscoveryClient } from "../../Client";
+import { assert, should } from "chai";
 import { ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
+import { IModelBaseHandler, UrlDiscoveryClient } from "@bentley/imodeljs-clients";
+import { urlLogPath, TestConfig } from "../TestConfig";
 
 export const whitelistRelPath: string = "../assets/whitelist.txt";
 

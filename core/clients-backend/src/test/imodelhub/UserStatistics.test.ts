@@ -3,15 +3,11 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
-
-import { TestConfig, TestUsers } from "../TestConfig";
-
-import { IModelHubClientError, IModelClient } from "../../imodeljs-clients";
-import { AccessToken } from "../../Token";
+import { IModelHubStatus, ActivityLoggingContext, GuidString } from "@bentley/bentleyjs-core";
+import { IModelHubClientError, IModelClient, UserStatisticsQuery, UserStatistics, AccessToken } from "@bentley/imodeljs-clients";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
 import * as utils from "./TestUtils";
-import { UserStatisticsQuery, UserStatistics } from "../../imodelhub/Users";
-import { IModelHubStatus, ActivityLoggingContext, GuidString } from "@bentley/bentleyjs-core";
+import { TestConfig, TestUsers } from "../TestConfig";
 
 chai.should();
 

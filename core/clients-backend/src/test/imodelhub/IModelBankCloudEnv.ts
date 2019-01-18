@@ -6,13 +6,11 @@ import * as fs from "fs";
 import * as fsextra from "fs-extra";
 import * as path from "path";
 import * as child_process from "child_process";
-import { IModelBankDummyAuthorizationClient } from "../../IModelBank/IModelBankDummyAuthorizationClient";
-import { TestIModelHubCloudEnv } from "./IModelHubCloudEnv";
-import { IModelClient } from "../../IModelClient";
+import { IModelClient, IModelBankClient, IModelBankFileSystemContextClient } from "@bentley/imodeljs-clients";
+import { IModelBankDummyAuthorizationClient } from "@bentley/imodeljs-clients/lib/IModelBank/IModelBankDummyAuthorizationClient";
 import { UrlFileHandler } from "../../UrlFileHandler";
-import { IModelBankClient } from "../../IModelBank/IModelBankClient";
+import { TestIModelHubCloudEnv } from "./IModelHubCloudEnv";
 import { workDir } from "./TestUtils";
-import { IModelBankFileSystemContextClient } from "../../IModelBank/IModelBankFileSystemContextClient";
 
 export function getIModelBankCloudEnv(): [TestIModelHubCloudEnv, IModelClient] {
 
