@@ -11,10 +11,11 @@ import { CONSTANTS } from "../common/Testbed";
 import { RenderPlan } from "@bentley/imodeljs-frontend/lib/rendering";
 import { MockRender } from "./MockRender";
 
-const iModelLocation = path.join(CONSTANTS.IMODELJS_CORE_DIRNAME, "core/backend/lib/test/assets/test.bim");
+const iModelDir = path.join(CONSTANTS.IMODELJS_CORE_DIRNAME, "core/backend/lib/test/assets");
 
 describe("Viewport", () => {
   let imodel: IModelConnection;
+  let imodel2: IModelConnection;
   let spatialView: SpatialViewState;
 
   const createViewDiv = () => {
@@ -30,7 +31,8 @@ describe("Viewport", () => {
 
   before(async () => {   // Create a ViewState to load into a Viewport
     MockRender.App.startup();
-    imodel = await IModelConnection.openStandalone(iModelLocation);
+    imodel = await IModelConnection.openStandalone(path.join(iModelDir, "test.bim"));
+    imodel2 = await IModelConnection.openStandalone(path.join(iModelDir, "test2.bim"));
     spatialView = await imodel.views.load("0x34") as SpatialViewState;
     spatialView.setStandardRotation(StandardViewId.RightIso);
   });
@@ -53,7 +55,7 @@ describe("Viewport", () => {
     assert.notEqual(saveView.displayStyle, vpView.displayStyle, "clone should copy displayStyle");
     const frustSave = vp.getFrustum();
 
-    const vpView2 = spatialView.clone<SpatialViewState>();
+    const vpView2 = spatialView.clone<SpatialViewState>(imodel2);
     vpView2.setStandardRotation(StandardViewId.Top);
     const vp2 = ScreenViewport.create(viewDiv2!, vpView2);
     assert.isFalse(vp2.getFrustum().isSame(vp.getFrustum()), "frustums should start out different");
@@ -62,18 +64,12 @@ describe("Viewport", () => {
     const vpConnection = new TwoWayViewportSync();
     vpConnection.connect(vp, vp2); // wire them together
     assert.isTrue(vp2.getFrustum().isSame(frustSave), "vp2 frustum should be same as vp1 after connect");
-
-    // const clientRect = vp.getClientRect();
-    vpView.camera.validateLens();
-
-    // currently the range test for visible elements doesn't match native code, so we get a different result.
-    // re-enable this test when models hold their ranges.
-    // const testParams: any = { view: vpView, rect: { left: clientRect.left, bottom: clientRect.bottom, right: clientRect.right, top: clientRect.top } };
-    // const cppView = await imodel.executeTest("turnCameraOn", testParams);
     vp.turnCameraOn();
-    // compareView(vpView, cppView, "turnCameraOn 3");
 
     vp.synchWithView(true);
+    assert.equal(vp.iModel, imodel);
+    assert.equal(vp2.iModel, imodel2);
+
     assert.isTrue(vp.isCameraOn, "camera should be on");
     assert.isTrue(vp2.isCameraOn, "camera should be synched");
     assert.isTrue(vp2.getFrustum().isSame(vp.getFrustum()), "frustum should be synched");

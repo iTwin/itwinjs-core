@@ -1523,7 +1523,7 @@ export abstract class Viewport implements IDisposable {
   /** @hidden */
   public applyViewState(val: ViewState, animationTime?: BeDuration) {
     const startFrust = this.getFrustum();
-    this._viewFrustum.view = val.clone<ViewState>();
+    this._viewFrustum.view = val.clone<ViewState>(this.view.iModel); // preserve our iModel in case val is coming from a different connection
     this.synchWithView(false);
     if (animationTime)
       this.animateFrustumChange(startFrust, this.getFrustum(), animationTime);
