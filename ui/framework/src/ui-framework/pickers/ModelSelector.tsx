@@ -223,8 +223,11 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
     const selectedNodes: string[] = [];
     await Promise.all(promises).then((nodes: Array<DelayLoadedTreeNodeItem | undefined>) => {
       nodes.forEach((node) => {
-        if (node)
+        if (node) {
+          node.checkBoxState = CheckBoxState.On;
+          node.labelBold = true;
           selectedNodes.push(node!.id);
+        }
       });
     });
 
@@ -253,8 +256,11 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
     const selectedNodes: string[] = [];
     await Promise.all(promises).then((nodes: Array<DelayLoadedTreeNodeItem | undefined>) => {
       nodes.forEach((node) => {
-        if (node)
+        if (node) {
+          node.checkBoxState = CheckBoxState.On;
+          node.labelBold = true;
           selectedNodes.push(node!.id);
+        }
       });
     });
 
