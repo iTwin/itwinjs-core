@@ -184,7 +184,9 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
         });
 
         if (vp) {
-          this._updateModelsWithViewport(vp).then(() => { this._setModelsFromViewState(); });
+          this._updateModelsWithViewport(vp).then(() => {
+            this._setModelsFromViewState(); // tslint:disable-line:no-floating-promises
+          });
         }
       });
   }
@@ -201,7 +203,9 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
           return;
         this._categoryRuleset = ruleset;
         if (vp) {
-          this._updateCategoriesWithViewport(vp).then(() => { this._setCategoriesFromViewState(); });
+          this._updateCategoriesWithViewport(vp).then(() => {
+            this._setCategoriesFromViewState(); // tslint:disable-line:no-floating-promises
+          });
         }
       });
   }
@@ -341,7 +345,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
       return;
 
     await this._setActiveRuleset(activeRuleset);
-    this._setInitialExpandedState(group);
+    this._setInitialExpandedState(group); // tslint:disable-line:no-floating-promises
   }
 
   /**
@@ -370,7 +374,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
     const view = vp!.view as SpatialViewState;
 
     const viewType = view.is3d() ? "3d" : "2d";
-    Presentation.presentation.vars(this.state.treeInfo!.ruleset.id).setString("ViewType", viewType);
+    Presentation.presentation.vars(this.state.treeInfo!.ruleset.id).setString("ViewType", viewType); // tslint:disable-line:no-floating-promises
 
     this.setState({
       treeInfo: {
@@ -432,7 +436,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
    */
   private _onSetEnableAll = (enable: boolean) => {
     this._setEnableAllItems(enable);
-    this._setEnableAllNodes(enable);
+    this._setEnableAllNodes(enable); // tslint:disable-line:no-floating-promises
   }
 
   /**
@@ -456,7 +460,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
     if (enable) {
       selectedNodes = await this._selectAllNodes();
     } else {
-      this._deselectAllNodes();
+      this._deselectAllNodes(); // tslint:disable-line:no-floating-promises
     }
 
     this.setState({
@@ -482,7 +486,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
     });
     this.state.treeInfo!.dataProvider.onTreeNodeChanged.raiseEvent(parents);
 
-    Promise.all(promises).then((childNodeCollection: DelayLoadedTreeNodeItem[][]) => {
+    Promise.all(promises).then((childNodeCollection: DelayLoadedTreeNodeItem[][]) => { // tslint:disable-line:no-floating-promises
       childNodeCollection.forEach((childNodes) => {
         childNodes.forEach((child) => {
           child.checkBoxState = CheckBoxState.Off;
@@ -530,7 +534,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
   /** Invert display on all items and state of all nodes */
   private _onInvertAll = () => {
     this._invertEnableOnAllItems();
-    this._invertEnableOnAllNodes();
+    this._invertEnableOnAllNodes(); // tslint:disable-line:no-floating-promises
   }
 
   /** Invert display on all items */
@@ -847,7 +851,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
   private _setItemStateOn = (treeItem: TreeNodeItem) => {
     this._setEnableItem(treeItem, true);
     this._setEnableNode(treeItem, true);
-    this._setEnableChildren(treeItem, true);
+    this._setEnableChildren(treeItem, true); // tslint:disable-line:no-floating-promises
     this.state.treeInfo!.dataProvider.onTreeNodeChanged.raiseEvent([treeItem]);
   }
 
@@ -858,7 +862,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
   private _setItemStateOff = async (treeItem: TreeNodeItem) => {
     this._setEnableItem(treeItem, false);
     this._setEnableNode(treeItem, false);
-    this._setEnableChildren(treeItem, false);
+    this._setEnableChildren(treeItem, false); // tslint:disable-line:no-floating-promises
     this.state.treeInfo!.dataProvider.onTreeNodeChanged.raiseEvent([treeItem]);
   }
 
