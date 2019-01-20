@@ -9,6 +9,7 @@ import * as fs from "fs-extra";
 import * as path from "path";
 import * as https from "https";
 import { URL } from "url";
+import WriteStreamAtomic = require("fs-write-stream-atomic");
 
 /**
  * Provides methods to upload and download files from the Internet
@@ -40,7 +41,7 @@ export class UrlFileHandler implements FileHandler {
         if (response.statusCode !== 200) {
           reject();
         } else {
-          const target = fs.createWriteStream(downloadToPathname);
+          const target = new WriteStreamAtomic(downloadToPathname);
           target.on("error", (err) => {
             reject(err);
           });

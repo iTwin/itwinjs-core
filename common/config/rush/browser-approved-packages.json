@@ -315,6 +315,10 @@
       "allowedCategories": [ "backend", "common", "internal", "tools" ]
     },
     {
+      "name": "fs-write-stream-atomic",
+      "allowedCategories": [ "common" ]
+    },
+    {
       "name": "fuse.js",
       "allowedCategories": [ "frontend", "internal" ]
     },

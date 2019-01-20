@@ -10,7 +10,7 @@ import * as fs from "fs";
 import * as path from "path";
 import * as https from "https";
 import { Transform, TransformCallback } from "stream";
-
+import WriteStreamAtomic = require("fs-write-stream-atomic");
 const loggingCategory = "imodeljs-clients.imodelhub";
 
 /**
@@ -97,33 +97,35 @@ export class AzureFileHandler implements FileHandler {
     AzureFileHandler.makeDirectoryRecursive(path.dirname(downloadToPathname));
 
     const bufferedStream = new BufferedStream(this._threshold);
-    const fileStream = fs.createWriteStream(downloadToPathname, "binary");
-    const bytesWritten: () => number = () => fileStream.bytesWritten;
+    const fileStream = new WriteStreamAtomic(downloadToPathname, { encoding: "binary" });
+    let bytesWritten: number = 0;
+
     if (progressCallback) {
       fileStream.on("drain", () => {
-        progressCallback({ loaded: bytesWritten(), total: fileSize, percent: fileSize ? bytesWritten() / fileSize : 0 });
+        progressCallback({ loaded: bytesWritten, total: fileSize, percent: fileSize ? bytesWritten / fileSize : 0 });
       });
       fileStream.on("finish", () => {
-        progressCallback({ loaded: bytesWritten(), total: fileSize, percent: fileSize ? bytesWritten() / fileSize : 0 });
+        progressCallback({ loaded: bytesWritten, total: fileSize, percent: fileSize ? bytesWritten / fileSize : 0 });
       });
     }
 
     try {
       await new Promise((resolve, reject) => {
         https.get(downloadUrl, ((res) => {
-          res.pipe(bufferedStream).pipe(fileStream)
+          res.pipe(bufferedStream)
+            .on("data", (chunk: any) => {
+              bytesWritten += chunk.length;
+            })
+            .pipe(fileStream)
             .on("error", (error: any) => {
-              fileStream.close();
               const parsedError = ResponseError.parse(error);
               reject(parsedError);
             })
             .on("finish", () => {
-              fileStream.close();
               resolve();
             });
         }))
           .on("error", (error: any) => {
-            fileStream.close();
             const parsedError = ResponseError.parse(error);
             reject(parsedError);
           });
