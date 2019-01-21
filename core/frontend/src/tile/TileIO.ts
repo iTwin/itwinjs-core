@@ -29,6 +29,8 @@ export namespace TileIO {
     Dgn = 0x546e6764, // "dgnT"
     Pnts = 0x73746e70,  // "pnts"
     IModel = 0x6c644d69, // "iMdl"
+    Cmpt = 0x74706d63,  // cmpt
+    I3dm = 0x6d643369,  // i3dm
   }
 
   /** Given a magic number, return whether it identifies a known tile format. */
@@ -40,6 +42,8 @@ export namespace TileIO {
       case Format.IModel:
       case Format.Dgn:
       case Format.Pnts:
+      case Format.Cmpt:
+      case Format.I3dm:
         return true;
       default:
         return false;

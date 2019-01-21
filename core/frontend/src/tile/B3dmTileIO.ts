@@ -5,9 +5,8 @@
 /** @module Tile */
 import { TileIO } from "./TileIO";
 import { GltfTileIO } from "./GltfTileIO";
-import { DisplayParams } from "../render/primitives/DisplayParams";
-import { ElementAlignedBox3d, ColorDef, LinePixels, FillFlags, FeatureTable, Feature, TextureMapping, BatchType } from "@bentley/imodeljs-common";
-import { Id64String, JsonUtils } from "@bentley/bentleyjs-core";
+import { ElementAlignedBox3d, FeatureTable, Feature, BatchType } from "@bentley/imodeljs-common";
+import { Id64String } from "@bentley/bentleyjs-core";
 import { RenderSystem } from "../render/System";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 import { IModelConnection } from "../IModelConnection";
@@ -78,25 +77,5 @@ export namespace B3dmTileIO {
       features.add(feature, 1);
       return true;
     }
-
-    protected createDisplayParams(materialJson: any, hasBakedLighting: boolean): DisplayParams | undefined {
-      let textureMapping: TextureMapping | undefined;
-
-      if (undefined !== materialJson &&
-        undefined !== materialJson.values &&
-        undefined !== materialJson.values.tex)
-        textureMapping = this.findTextureMapping(materialJson.values.tex);
-
-      const color = new ColorDef(0x77777777);   // Grey.
-
-      return new DisplayParams(DisplayParams.Type.Mesh, color, color, 1, LinePixels.Solid, FillFlags.Always, undefined, undefined, hasBakedLighting, textureMapping);
-    }
-    protected extractReturnToCenter(extensions: any): number[] | undefined {
-      if (extensions === undefined) { return undefined; }
-      const cesiumRtc = JsonUtils.asObject(extensions.CESIUM_RTC);
-      return (cesiumRtc === undefined) ? undefined : JsonUtils.asArray(cesiumRtc.center);
-    }
-
-    protected get _hasBakedLighting(): boolean { return true; } // ###TODO? currently always desired (3mx, 3sm) - may change in future.
   }
 }

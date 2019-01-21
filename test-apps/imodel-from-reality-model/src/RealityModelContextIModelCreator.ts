@@ -73,7 +73,7 @@ export class RealityModelContextIModelCreator {
 
             let geoLocated = true;
             let worldRange: AxisAlignedBox3d;
-            if (undefined === json.root.boundingVolume) {
+            if (undefined === json.root.boundingVolume.box) {
                 const region = JsonUtils.asArray(json.root.boundingVolume.region);
                 if (undefined === region)
                     throw new TypeError("Unable to determine GeoLocation - no root Transform or Region on root.");

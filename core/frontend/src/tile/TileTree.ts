@@ -36,6 +36,8 @@ import { TileIO } from "./TileIO";
 import { TileRequest } from "./TileRequest";
 import { GltfTileIO } from "./GltfTileIO";
 import { B3dmTileIO } from "./B3dmTileIO";
+import { I3dmTileIO } from "./I3dmTileIO";
+import { CompositeTileIO } from "./CompositeTileIO";
 import { PntsTileIO } from "./PntsTileIO";
 import { DgnTileIO } from "./DgnTileIO";
 import { IModelTileIO } from "./IModelTileIO";
@@ -126,11 +128,11 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
         if (undefined === this.request)
           return Tile.LoadStatus.NotLoaded;
         else if (TileRequest.State.Loading === this.request.state)
-            return Tile.LoadStatus.Loading;
+          return Tile.LoadStatus.Loading;
 
         assert(TileRequest.State.Completed !== this.request.state && TileRequest.State.Failed !== this.request.state); // this.request should be undefined in these cases...
         return Tile.LoadStatus.Queued;
-        }
+      }
       case TileState.Ready: {
         assert(undefined === this.request);
         return Tile.LoadStatus.Ready;
@@ -734,10 +736,14 @@ export abstract class TileLoader {
   public async loadTileGraphic(tile: Tile, data: TileRequest.ResponseData, isCanceled?: () => boolean): Promise<TileRequest.Graphic> {
     assert(data instanceof Uint8Array);
     const blob = data as Uint8Array;
-
     const streamBuffer: TileIO.StreamBuffer = new TileIO.StreamBuffer(blob.buffer);
+    return this.loadTileGraphicFromStream(tile, streamBuffer, isCanceled);
+  }
+  public async loadTileGraphicFromStream(tile: Tile, streamBuffer: TileIO.StreamBuffer, isCanceled?: () => boolean): Promise<TileRequest.Graphic> {
+
+    const position = streamBuffer.curPos;
     const format = streamBuffer.nextUint32;
-    streamBuffer.rewind(4);
+    streamBuffer.curPos = position;
 
     if (undefined === isCanceled)
       isCanceled = () => !tile.isLoading;
@@ -758,6 +764,24 @@ export abstract class TileLoader {
       case TileIO.Format.IModel:
         reader = IModelTileIO.Reader.create(streamBuffer, tile.root.iModel, tile.root.modelId, tile.root.is3d, IModelApp.renderSystem, this._batchType, isCanceled, tile.hasSizeMultiplier ? tile.sizeMultiplier : undefined);
         break;
+      case TileIO.Format.I3dm:
+        reader = I3dmTileIO.Reader.create(streamBuffer, tile.root.iModel, tile.root.modelId, tile.root.is3d, tile.range, IModelApp.renderSystem, tile.yAxisUp, tile.isLeaf, isCanceled);
+        break;
+      case TileIO.Format.Cmpt:
+        const header = new CompositeTileIO.Header(streamBuffer);
+        if (!header.isValid) return {};
+        const branch = new GraphicBranch();
+        for (let i = 0; i < header.tileCount; i++) {
+          const tilePosition = streamBuffer.curPos;
+          streamBuffer.advance(8);    // Skip magic and version.
+          const tileBytes = streamBuffer.nextUint32;
+          streamBuffer.curPos = tilePosition;
+          const result = await this.loadTileGraphicFromStream(tile, streamBuffer, isCanceled);
+          if (result.renderGraphic)
+            branch.add(result.renderGraphic);
+          streamBuffer.curPos = tilePosition + tileBytes;
+        }
+        return { renderGraphic: branch.isEmpty ? undefined : IModelApp.renderSystem.createBranch(branch, Transform.createIdentity()), isLeaf: tile.isLeaf, sizeMultiplier: tile.sizeMultiplier };
 
       default:
         assert(false, "unknown tile format " + format);

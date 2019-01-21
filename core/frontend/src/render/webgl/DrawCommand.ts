@@ -151,8 +151,14 @@ class BranchCommand extends DrawCommand {
     if (this._branch.branch.animationId && _exec.target.animationBranches) {
       const animationBranch = _exec.target.animationBranches.get(this._branch.branch.animationId);
       if (animationBranch) {
-        if (animationBranch.transform)
-          this._branch.localToWorldTransform = animationBranch.transform;
+        if (animationBranch.transform) {
+          let branchTransform = animationBranch.transform;
+          const prevLocalToWorld = _exec.target.currentTransform;
+          const prevWorldToLocal = prevLocalToWorld.inverse();
+          if (prevLocalToWorld && prevWorldToLocal)
+            branchTransform = prevWorldToLocal.multiplyTransformTransform(branchTransform.multiplyTransformTransform(prevLocalToWorld));
+          this._branch.localToWorldTransform = branchTransform;
+        }
         if (animationBranch.clip)
           this._branch.clips = animationBranch.clip;
       }

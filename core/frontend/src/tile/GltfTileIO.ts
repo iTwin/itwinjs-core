@@ -23,6 +23,8 @@ import {
   RenderTexture,
   BatchType,
   ColorDef,
+  LinePixels,
+  FillFlags,
 } from "@bentley/imodeljs-common";
 import { Id64String, assert, JsonUtils, utf8ToString } from "@bentley/bentleyjs-core";
 import { Range3d, Point2d, Point3d, Vector3d, Transform, Matrix3d, Angle } from "@bentley/geometry-core";
@@ -466,11 +468,25 @@ export namespace GltfTileIO {
     /** @hidden */
     protected readFeatureIndices(_json: any): number[] | undefined { return undefined; }
 
-    /** @hidden */
-    protected abstract createDisplayParams(_json: any, hasBakedLighting: boolean): DisplayParams | undefined;
-    /** @hidden */
-    protected abstract extractReturnToCenter(extensions: any): number[] | undefined;
+    protected createDisplayParams(materialJson: any, hasBakedLighting: boolean): DisplayParams | undefined {
+      let textureMapping: TextureMapping | undefined;
 
+      if (undefined !== materialJson &&
+        undefined !== materialJson.values &&
+        undefined !== materialJson.values.tex)
+        textureMapping = this.findTextureMapping(materialJson.values.tex);
+
+      const color = new ColorDef(0x77777777);   // Grey.
+
+      return new DisplayParams(DisplayParams.Type.Mesh, color, color, 1, LinePixels.Solid, FillFlags.Always, undefined, undefined, hasBakedLighting, textureMapping);
+    }
+    protected extractReturnToCenter(extensions: any): number[] | undefined {
+      if (extensions === undefined) { return undefined; }
+      const cesiumRtc = JsonUtils.asObject(extensions.CESIUM_RTC);
+      if (cesiumRtc === undefined) return undefined;
+      const rtc = JsonUtils.asArray(cesiumRtc.center);
+      return (rtc[0] === 0.0 && rtc[1] === 0.0 && rtc[2] === 0.0) ? undefined : rtc;
+    }
     /** @hidden */
     protected readGltf(geometry: TileIO.GeometryCollection): TileIO.ReadStatus {
       for (const meshKey of Object.keys(this._meshes)) {
@@ -533,18 +549,16 @@ export namespace GltfTileIO {
       // We don't have real colormap - just load material color.  This will be used if non-Bentley
       // tile or fit the color table is uniform. For a non-Bentley, non-Uniform, we'll set the
       // uv parameters to pick the colors out of the color map texture.
-      if (materialValue && materialValue.values) {
-        if (Array.isArray(materialValue.values.color))
-          mesh.colorMap.insert(ColorDef.from(materialValue.values.color[0] * 255, materialValue.values.color[1] * 255, materialValue.values.color[2] * 255).tbgr);
-        else
-          mesh.colorMap.insert(0xffffff);   // White...
+      if (materialValue && materialValue.values && Array.isArray(materialValue.values.color))
+        mesh.colorMap.insert(ColorDef.from(materialValue.values.color[0] * 255, materialValue.values.color[1] * 255, materialValue.values.color[2] * 255).tbgr);
+      else
+        mesh.colorMap.insert(0xffffff);   // White...
 
-        let colorIndices;
-        if (Array.isArray(materialValue.values.texStep) && undefined !== (colorIndices = this.readBufferData16(primitive.attributes, "_COLORINDEX"))) {
-          const texStep = materialValue.values.texStep;
-          for (let i = 0; i < colorIndices.count; i++)
-            mesh.uvParams.push(new Point2d(texStep[1] + texStep[0] * colorIndices.buffer[i], .5));
-        }
+      let colorIndices;
+      if (materialValue.values !== undefined && Array.isArray(materialValue.values.texStep) && undefined !== (colorIndices = this.readBufferData16(primitive.attributes, "_COLORINDEX"))) {
+        const texStep = materialValue.values.texStep;
+        for (let i = 0; i < colorIndices.count; i++)
+          mesh.uvParams.push(new Point2d(texStep[1] + texStep[0] * colorIndices.buffer[i], .5));
       }
 
       if (undefined !== mesh.features && !this.readFeatures(mesh.features, primitive))
