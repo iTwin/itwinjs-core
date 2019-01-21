@@ -497,8 +497,7 @@ export class BriefcaseManager {
       const changeSet: ChangeSet = (await BriefcaseManager.imodelClient.changeSets.get(actx, accessToken, iModelId, new ChangeSetQuery().byId(changeSetId)))[0];
       return +changeSet.index!;
     } catch (err) {
-      assert(false, "Could not determine index of change set");
-      return -1;
+      throw new IModelError(ChangeSetStatus.InvalidId, "Could not determine index of change set", Logger.logError, loggingCategory, () => ({ iModelId, changeSetId }));
     }
   }
 
