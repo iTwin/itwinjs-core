@@ -3,14 +3,3 @@ ignore: true
 ---
 # NextVersion
 
-## iModelHub file handlers have been moved to imodeljs-clients-backend
-Moved AzureFileHandler, IOSAzureFileHandler, UrlFileHandler and the iModelHub tests to the imodeljs-clients-backend package. This removes the dependency of imodeljs-clients on the "fs" module, and turns it into a browser only package.
-
-To fix related build errors, update imports for these utilities from
-```import {AzureFileHandler, IOSAzureFileHandler, UrlFileHandler} from "@bentley/imodels-clients";```
-to
-```import {AzureFileHandler, IOSAzureFileHandler, UrlFileHandler} from "@bentley/imodels-clients-backend";```
-
-## Prevented partial downloads of ChangeSets and Briefcases
-Backend ChangeSet and Briefcase downloads are atomic - i.e., will not be partially downloaded, and can simultaneously happen in multiple machines.
-
