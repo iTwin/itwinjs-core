@@ -8,5 +8,5 @@
   position: absolute;
   padding: 10px 15px;
   background-color: rgba(#EEE, 0.8);
-  @include uicore-z-index(message);
+  @include uicore-z-index(status-message);
 }

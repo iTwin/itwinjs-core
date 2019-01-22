@@ -3,6 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 @import "@bentley/ui-core/lib/ui-core/colors";
+@import "@bentley/ui-core/lib/ui-core/_z-index";
 @import "../_variables";
 
 .nz-footer-toolAssistance-dialog {
@@ -10,6 +11,8 @@
   min-height: 75px;
   transform: translateX(-50%);
   color: $background-5;
+
+  @include uicore-z-index(status-popover);
 
   &#{&} {
     left: 50%;

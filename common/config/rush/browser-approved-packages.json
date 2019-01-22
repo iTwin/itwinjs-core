@@ -327,6 +327,10 @@
       "allowedCategories": [ "backend", "common", "internal", "tools" ]
     },
     {
+      "name": "highlight.js",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "html-webpack-plugin",
       "allowedCategories": [ "frontend", "tools" ]
     },

@@ -3,6 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 @import "@bentley/ui-core/lib/ui-core/colors";
+@import "@bentley/ui-core/lib/ui-core/_z-index";
 @import "../_variables";
 
 .nz-footer-snapMode-dialog {
@@ -11,6 +12,8 @@
   min-width: $nz-footer-popover-min-width;
   transform: translateX(calc(-50% - #{$snap-mode-icon-size / 2 + $nz-footer-indicator-horizontal-padding}));
   color: $bg-color;
+
+  @include uicore-z-index(status-popover);
 
   > .nz-content {
     > div {
