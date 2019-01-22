@@ -29,6 +29,20 @@ const maximizeWindow = (undefined !== process.env.SVT_MAXIMIZE_WINDOW);
 
 (async () => { // tslint:disable-line:no-floating-promises
   const manager = new IModelJsElectronManager(path.join(__dirname, "..", "webresources"));
+
+  // Handle custom keyboard shortcuts
+  electron.app.on("web-contents-created", (_e, wc) => {
+    wc.on("before-input-event", (event, input) => {
+      // CTRL + SHIFT + I  ==> Toggle DevTools
+      if (input.key === "I" && input.control && !input.alt && !input.meta && input.shift) {
+        if (manager.mainWindow)
+          manager.mainWindow.webContents.toggleDevTools();
+
+        event.preventDefault();
+      }
+    });
+  });
+
   await manager.initialize({
     width: 1280,
     height: 800,
@@ -61,17 +75,4 @@ const maximizeWindow = (undefined !== process.env.SVT_MAXIMIZE_WINDOW);
       callback(true);
     });
   }
-
-  // Handle custom keyboard shortcuts
-  electron.app.on("web-contents-created", (_e, wc) => {
-    wc.on("before-input-event", (event, input) => {
-      // CTRL + SHIFT + I  ==> Toggle DevTools
-      if (input.key === "I" && input.control && !input.alt && !input.meta && input.shift) {
-        if (manager.mainWindow)
-          manager.mainWindow.webContents.toggleDevTools();
-
-        event.preventDefault();
-      }
-    });
-  });
 })();
