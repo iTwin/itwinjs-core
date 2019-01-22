@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module RpcInterface */
 
-import { Logger, Id64String, Id64Set, Id64, assert, ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { Logger, Id64String, Id64Set, Id64, assert, ActivityLoggingContext, OpenMode } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import {
   EntityQueryParams, RpcInterface, RpcManager, IModel, IModelReadRpcInterface, IModelToken,
@@ -15,6 +15,7 @@ import { IModelDb, OpenParams } from "../IModelDb";
 import { OpenIModelDbMemoizer } from "./OpenIModelDbMemoizer";
 import { SpatialCategory } from "../Category";
 import { DictionaryModel } from "../Model";
+import { KeepBriefcase } from "../BriefcaseManager";
 
 const loggingCategory = "imodeljs-backend.IModelReadRpcImpl";
 
@@ -32,7 +33,7 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
 
   public async close(accessToken: AccessToken, iModelToken: IModelToken): Promise<boolean> {
     const activityContext = ActivityLoggingContext.current; activityContext.enter();
-    await IModelDb.find(iModelToken).close(activityContext, AccessToken.fromJson(accessToken)!);
+    await IModelDb.find(iModelToken).close(activityContext, AccessToken.fromJson(accessToken)!, iModelToken.openMode === OpenMode.Readonly ? KeepBriefcase.Yes : KeepBriefcase.No);
     return Promise.resolve(true);
   }
 

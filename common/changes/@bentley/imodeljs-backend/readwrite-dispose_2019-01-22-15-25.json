@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "IModelConnection.close() always disposes the briefcase held at the backend in the case of ReadWrite connections. ",
+      "packageName": "@bentley/imodeljs-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-backend",
+  "email": "Ramanujam.Raman@bentley.com"
+}

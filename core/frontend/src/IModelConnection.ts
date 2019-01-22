@@ -220,7 +220,10 @@ export class IModelConnection extends IModel {
     resubmit();
   }
 
-  /** Close this IModelConnection */
+  /** Close this IModelConnection
+   * In the case of ReadWrite connections ensure all changes are pushed to the iModelHub before making this call -
+   * any un-pushed changes are lost after the close.
+   */
   public async close(accessToken: AccessToken): Promise<void> {
     if (!this.iModelToken)
       return;
