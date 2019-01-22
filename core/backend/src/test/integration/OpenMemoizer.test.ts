@@ -39,7 +39,7 @@ describe("OpenIModelDbMemoizer (#integration)", () => {
     assert.isTrue(qp1.isPending);
     assert.notStrictEqual(qp3, qp1);
 
-    await pause(5000); // Hopefully it won't take more than 5 seconds to re-establish the cache from scratch (if necessary)
+    await pause(20000); // Hopefully it won't take more than 20 seconds to re-establish the cache from scratch (if necessary)
     assert.isTrue(qp1.isFulfilled);
     assert.isTrue(qp3.isFulfilled);
     assert.exists(qp1.result);

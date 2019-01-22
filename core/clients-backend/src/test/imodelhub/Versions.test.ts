@@ -78,8 +78,8 @@ describe("iModelHub VersionHandler", () => {
     }
 
     accessToken = TestConfig.enableMocks ? new utils.MockAccessToken() : await utils.login(TestUsers.super);
-    await utils.createIModel(accessToken, imodelName);
-    await utils.createIModel(accessToken, imodelName2);
+    await utils.createIModel(accessToken, imodelName, undefined, false, true);
+    await utils.createIModel(accessToken, imodelName2, undefined, false, true);
     imodelId = await utils.getIModelId(accessToken, imodelName);
     imodelId2 = await utils.getIModelId(accessToken, imodelName2);
     iModelClient = utils.getDefaultClient();
@@ -90,7 +90,7 @@ describe("iModelHub VersionHandler", () => {
       const changeSetCount = (await iModelClient.changeSets.get(actx, accessToken, imodelId)).length;
       if (changeSetCount > 9) {
         // Recreate iModel if can't create any new changesets
-        await utils.createIModel(accessToken, imodelName, undefined, true);
+        await utils.createIModel(accessToken, imodelName, undefined, true, true);
         imodelId = await utils.getIModelId(accessToken, imodelName);
         briefcase = (await utils.getBriefcases(accessToken, imodelId, 1))[0];
       }

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Create iModel from empty template if seed file path not defined.",
+      "packageName": "@bentley/imodeljs-clients",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-clients",
+  "email": "Algirdas.Mikoliunas@bentley.com"
+}

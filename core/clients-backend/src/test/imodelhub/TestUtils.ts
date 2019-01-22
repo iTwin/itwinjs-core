@@ -623,7 +623,7 @@ export function getMockSeedFilePath() {
   return path.join(dir, fs.readdirSync(dir).find((value) => value.endsWith(".bim"))!);
 }
 
-export async function createIModel(accessToken: AccessToken, name: string, projectId?: string, deleteIfExists = false) {
+export async function createIModel(accessToken: AccessToken, name: string, projectId?: string, deleteIfExists = false, fromSeedFile = false) {
   if (TestConfig.enableMocks)
     return;
 
@@ -641,7 +641,8 @@ export async function createIModel(accessToken: AccessToken, name: string, proje
     }
   }
 
-  return client.iModels.create(actx, accessToken, projectId, name, getMockSeedFilePath(), "");
+  const pathName = fromSeedFile ? getMockSeedFilePath() : undefined;
+  return client.iModels.create(actx, accessToken, projectId, name, pathName, "");
 }
 
 export function getMockChangeSets(briefcase: Briefcase): ChangeSet[] {
@@ -738,10 +739,16 @@ export class ProgressTracker {
     };
   }
 
-  public check() {
-    chai.expect(this._count).to.be.greaterThan(0);
-    chai.expect(this._loaded).to.be.greaterThan(0);
-    chai.expect(this._loaded).to.be.equal(this._total);
+  public check(expectCalled: boolean = true) {
+    if (expectCalled) {
+      chai.expect(this._count).to.be.greaterThan(0);
+      chai.expect(this._loaded).to.be.greaterThan(0);
+      chai.expect(this._loaded).to.be.equal(this._total);
+    } else {
+      chai.expect(this._count).to.be.eq(0);
+      chai.expect(this._loaded).to.be.eq(0);
+      chai.expect(this._loaded).to.be.eq(0);
+    }
   }
 }
 

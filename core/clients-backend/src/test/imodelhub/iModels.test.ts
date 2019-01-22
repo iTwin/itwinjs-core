@@ -50,20 +50,25 @@ function mockGetIModel(projectId: string, imodelName: string, imodelId: GuidStri
   ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Get, requestPath, requestResponse);
 }
 
-function mockPostiModel(projectId: string, imodelId: GuidString, imodelName: string, description: string) {
+function mockPostiModel(projectId: string, imodelId: GuidString, imodelName: string, description: string, iModelTemplate?: string) {
   const requestPath = utils.createRequestUrl(ScopeType.Project, projectId, "iModel");
+  const postBodyProperties = new Map<string, any>([
+    ["name", imodelName],
+    ["description", description],
+  ]);
+
+  if (!!iModelTemplate) {
+    postBodyProperties.set("iModelTemplate", iModelTemplate);
+  }
+
   const postBody = ResponseBuilder.generatePostBody<HubIModel>(
-    ResponseBuilder.generateObject<HubIModel>(HubIModel,
-      new Map<string, any>([
-        ["name", imodelName],
-        ["description", description],
-      ])));
+    ResponseBuilder.generateObject<HubIModel>(HubIModel, postBodyProperties));
   const requestResponse = ResponseBuilder.generatePostResponse<HubIModel>(ResponseBuilder.generateObject<HubIModel>(HubIModel,
     new Map<string, any>([
       ["wsgId", imodelId],
       ["name", imodelName],
       ["description", description],
-      ["initialized", false],
+      ["initialized", !!iModelTemplate],
     ])));
   ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Post, requestPath, requestResponse, 1, postBody);
 }
@@ -134,6 +139,13 @@ function mockCreateiModel(projectId: string, imodelId: GuidString, imodelName: s
   utils.mockUploadFile(imodelId, chunks);
   mockPostUpdatedSeedFile(imodelId, fileId, filePath, description);
   mockGetSeedFile(imodelId);
+}
+
+function mockCreateEmptyiModel(projectId: string, imodelId: GuidString, imodelName: string, description: string) {
+  if (!TestConfig.enableMocks)
+    return;
+
+  mockPostiModel(projectId, imodelId, imodelName, description, "Empty");
 }
 
 function mockDeleteiModel(projectId: string, imodelId: GuidString) {
@@ -519,6 +531,40 @@ describe("iModelHub iModelsHandler", () => {
     }
     chai.assert(error);
     chai.expect(error!.errorNumber).to.be.equal(IModelHubStatus.iModelAlreadyExists);
+  });
+
+  it("should create iModel from empty seed file", async function (this: Mocha.ITestCallbackContext) {
+    await utils.deleteIModelByName(accessToken, projectId, createIModelName);
+
+    const description = "Test iModel created by imodeljs-clients tests";
+    mockCreateEmptyiModel(projectId, Guid.createValue(), createIModelName, description);
+    const progressTracker = new utils.ProgressTracker();
+    const imodel = await imodelClient.iModels.create(alctx, accessToken, projectId, createIModelName, undefined, description, progressTracker.track());
+
+    chai.expect(imodel.name).to.be.equal(createIModelName);
+    chai.expect(imodel.initialized).to.be.equal(true);
+    progressTracker.check(false);
+
+    mockGetIModelByName(projectId, createIModelName, description, imodel.id);
+    const getiModel = (await iModelClient.iModels.get(alctx, accessToken, projectId, new IModelQuery().byName(createIModelName)))[0];
+    chai.assert(!!getiModel);
+    chai.expect(getiModel.wsgId).to.be.equal(imodel.id!);
+  });
+
+  it("should create single iModel from empty seed file", async function (this: Mocha.ITestCallbackContext) {
+    if (!TestConfig.enableMocks)
+      this.skip();
+
+    const description = "Test iModel created by imodeljs-clients tests";
+    imodelId = imodelId || Guid.createValue();
+    mockGetIModel(projectId, createIModelName, imodelId, 0);
+    mockCreateEmptyiModel(projectId, Guid.createValue(), createIModelName, description);
+    const progressTracker = new utils.ProgressTracker();
+    const imodel = await imodelClient.iModel.create(alctx, accessToken, projectId, createIModelName, undefined, description, progressTracker.track());
+
+    chai.expect(imodel.name).to.be.equal(createIModelName);
+    chai.expect(imodel.initialized).to.be.equal(true);
+    progressTracker.check(false);
   });
 
   it("should update iModel", async () => {
