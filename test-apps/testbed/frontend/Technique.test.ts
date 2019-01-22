@@ -98,4 +98,29 @@ describe("Technique tests", () => {
     const prog = tech.getShader(flags);
     expect(prog.compile()).to.be.true;
   });
+
+  it("should successfully compile animation shaders", () => {
+    if (!WebGLTestContext.isInitialized)
+      return;
+
+    const flags = new TechniqueFlags();
+    flags.isAnimated = true;
+    let tech = System.instance.techniques.getTechnique(TechniqueId.Edge);
+    let prog = tech.getShader(flags);
+    expect(prog.compile()).to.be.true;
+
+    tech = System.instance.techniques.getTechnique(TechniqueId.Surface);
+    prog = tech.getShader(flags);
+    expect(prog.compile()).to.be.true;
+
+    flags.isTranslucent = true;
+    flags.featureMode = FeatureMode.Overrides;
+    prog = tech.getShader(flags);
+    expect(prog.compile()).to.be.true;
+
+    flags.clip.type = ClippingType.Planes;
+    flags.clip.numberOfPlanes = 6;
+    prog = tech.getShader(flags);
+    expect(prog.compile()).to.be.true;
+  });
 });

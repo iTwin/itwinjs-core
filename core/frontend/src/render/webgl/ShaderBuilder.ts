@@ -789,10 +789,16 @@ export const enum ShaderType {
 export class ProgramBuilder {
   public readonly vert: VertexShaderBuilder;
   public readonly frag: FragmentShaderBuilder;
+  private readonly _positionFromLUT: boolean;
+  private readonly _isAnimated: boolean;
 
   public constructor(positionFromLUT: boolean, isAnimated: boolean = false) {
     this.vert = new VertexShaderBuilder(positionFromLUT, isAnimated);
     this.frag = new FragmentShaderBuilder();
+
+    // The following are needed only for clone()
+    this._positionFromLUT = positionFromLUT;
+    this._isAnimated = isAnimated;
   }
 
   private addVariable(v: ShaderVariable, which: ShaderType) {
@@ -852,7 +858,7 @@ export class ProgramBuilder {
 
   /** Returns a deep copy of this program builder. */
   public clone(): ProgramBuilder {
-    const clone = new ProgramBuilder(false);
+    const clone = new ProgramBuilder(this._positionFromLUT, this._isAnimated);
 
     // Copy from vertex builder
     clone.vert.headerComment = this.vert.headerComment;
