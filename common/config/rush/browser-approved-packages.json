@@ -183,6 +183,10 @@
       "allowedCategories": [ "tools" ]
     },
     {
+      "name": "chrome-launcher",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "chromedriver",
       "allowedCategories": [ "tools" ]
     },

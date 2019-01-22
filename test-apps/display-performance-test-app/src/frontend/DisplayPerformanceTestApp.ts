@@ -3,21 +3,18 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { OpenMode, StopWatch } from "@bentley/bentleyjs-core";
-import { Config, AccessToken, HubIModel, Project } from "@bentley/imodeljs-clients";
+import { ActivityLoggingContext, Guid, OpenMode, StopWatch } from "@bentley/bentleyjs-core";
+import { Config, AccessToken, HubIModel, Project, OidcFrontendClientConfiguration } from "@bentley/imodeljs-clients";
 import {
-  BentleyCloudRpcManager, ElectronRpcConfiguration, ElectronRpcManager, IModelReadRpcInterface,
-  IModelTileRpcInterface, IModelToken, RpcConfiguration,
-  RpcOperation, StandaloneIModelRpcInterface,
-  ViewDefinitionProps, ViewFlag, RenderMode, DisplayStyleProps,
+  BentleyCloudRpcManager, DisplayStyleProps, ElectronRpcConfiguration, ElectronRpcManager, IModelReadRpcInterface,
+  IModelTileRpcInterface, IModelToken, RpcConfiguration, RpcOperation, RenderMode, StandaloneIModelRpcInterface,
+  ViewDefinitionProps, ViewFlag, MobileRpcConfiguration, MobileRpcManager,
 } from "@bentley/imodeljs-common";
-import { MobileRpcConfiguration, MobileRpcManager } from "@bentley/imodeljs-common/lib/rpc/mobile/MobileRpcManager";
-import { SVTConfiguration } from "../common/SVTConfiguration";
+import { ConnectProjectConfiguration, SVTConfiguration } from "../common/SVTConfiguration";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
-import { DisplayStyleState, DisplayStyle3dState, IModelApp, IModelConnection, Viewport, ViewState, ScreenViewport } from "@bentley/imodeljs-frontend";
-import { PerformanceMetrics, /*System,*/ Target } from "@bentley/imodeljs-frontend/lib/webgl";
+import { DisplayStyleState, DisplayStyle3dState, IModelApp, IModelConnection, Viewport, ViewState, ScreenViewport, OidcClientWrapper, PerformanceMetrics, Target } from "@bentley/imodeljs-frontend";
 import { IModelApi } from "./IModelApi";
-import { ProjectApi } from "./ProjectApi";
+import { initializeIModelHub } from "./ConnectEnv";
 
 // Retrieve default config data from json file
 async function getDefaultConfigs(): Promise<string> {
@@ -55,6 +52,18 @@ function removeFilesFromDir(_startPath: string, _filter: string) {
   //     fs.unlinkSync(filename); // Delete file
   //   }
   // });
+}
+
+function combineFilePaths(additionalPath: string, initPath?: string) {
+  if (initPath === undefined || additionalPath[1] === ":") // if additionalPath is full path (like D:), ignore the initial path
+    return additionalPath;
+  let combined = initPath;
+  while (combined.endsWith("\\") || combined.endsWith("\/"))
+    combined = combined.slice(0, -1);
+  if (additionalPath[0] !== "\\" && additionalPath[0] !== "\/")
+    combined += "\\";
+  combined += additionalPath;
+  return combined;
 }
 
 function setViewFlagOverrides(vf: any, vfo?: ViewFlag.Overrides): ViewFlag.Overrides {
@@ -195,7 +204,12 @@ async function waitForTilesToLoad(modelLocation?: string) {
     sceneContext.requestMissingTiles();
 
     // The scene is ready when (1) all required TileTree roots have been created and (2) all required tiles have finished loading
-    haveNewTiles = !(activeViewState.viewState!.areAllTileTreesLoaded) || sceneContext.hasMissingTiles;
+    haveNewTiles = !(activeViewState.viewState!.areAllTileTreesLoaded) || sceneContext.hasMissingTiles || 0 < sceneContext.missingTiles.size;
+
+    // NB: The viewport is NOT added to the ViewManager's render loop, therefore we must manually pump the tile request scheduler...
+    if (haveNewTiles)
+      IModelApp.tileAdmin.process();
+
     // debugPrint(haveNewTiles ? "Awaiting tile loads..." : "...All tiles loaded.");
 
     await resolveAfterXMilSeconds(100);
@@ -225,20 +239,8 @@ function getRowData(finalFrameTimings: Array<Map<string, number>>, configs: Defa
     });
     rowData.set(colName, sum / finalFrameTimings.length);
   }
+  rowData.set("Effective FPS", (1000.0 / Number(rowData.get("Total Time w/ GPU"))).toFixed(2));
   return rowData;
-}
-
-function printResults(_configs: DefaultConfigs, _rowData: Map<string, number | string>) {
-  // debugPrint("outputFile: " + configs.outputFile);
-  // if (fs.existsSync(configs.outputFile!)) {
-  //   addColumnsToCsvFile(configs.outputFile!, rowData);
-  //   debugPrint("outputFile: " + configs.outputFile);
-  // } else {
-  //   debugPrint("outputPath: " + configs.outputPath);
-  //   debugPrint("outputName: " + configs.outputName);
-  //   createNewCsvFile(configs.outputPath!, configs.outputName!, rowData);
-  // }
-  // addDataToCsvFile(configs.outputFile!, rowData);
 }
 
 function getImageString(configs: DefaultConfigs): string {
@@ -276,6 +278,7 @@ class DefaultConfigs {
   public outputPath?: string;
   public iModelLocation?: string;
   public iModelName?: string;
+  public iModelHubProject?: string;
   public viewName?: string;
   public testType?: string;
   public displayStyle?: string;
@@ -286,8 +289,8 @@ class DefaultConfigs {
       this.view = new ViewSize(1000, 1000);
       this.outputName = "performanceResults.csv";
       this.outputPath = "D:\\output\\performanceData\\";
-      this.iModelLocation = "D:\\models\\TimingTests\\";
       this.iModelName = "Wraith.ibim";
+      this.iModelHubProject = "DisplayPerformanceTest";
       this.viewName = "V0";
       this.testType = "timing";
     }
@@ -297,16 +300,19 @@ class DefaultConfigs {
       if (prevConfigs.outputPath) this.outputPath = prevConfigs.outputPath;
       if (prevConfigs.iModelLocation) this.iModelLocation = prevConfigs.iModelLocation;
       if (prevConfigs.iModelName) this.iModelName = prevConfigs.iModelName;
+      if (prevConfigs.iModelHubProject) this.iModelHubProject = prevConfigs.iModelHubProject;
       if (prevConfigs.viewName) this.viewName = prevConfigs.viewName;
       if (prevConfigs.testType) this.testType = prevConfigs.testType;
       if (prevConfigs.displayStyle) this.displayStyle = prevConfigs.displayStyle;
       if (prevConfigs.viewFlags) this.viewFlags = prevConfigs.viewFlags;
-    }
+    } else if (jsonData.argOutputPath)
+      this.outputPath = jsonData.argOutputPath;
     if (jsonData.view) this.view = new ViewSize(jsonData.view.width, jsonData.view.height);
     if (jsonData.outputName) this.outputName = jsonData.outputName;
-    if (jsonData.outputPath) this.outputPath = jsonData.outputPath;
-    if (jsonData.iModelLocation) this.iModelLocation = jsonData.iModelLocation;
+    if (jsonData.outputPath) this.outputPath = combineFilePaths(jsonData.outputPath, this.outputPath);
+    if (jsonData.iModelLocation) this.iModelLocation = combineFilePaths(jsonData.iModelLocation, this.iModelLocation);
     if (jsonData.iModelName) this.iModelName = jsonData.iModelName;
+    if (jsonData.iModelHubProject) this.iModelHubProject = jsonData.iModelHubProject;
     if (jsonData.viewName) this.viewName = jsonData.viewName;
     if (jsonData.testType) this.testType = jsonData.testType;
     if (jsonData.displayStyle) this.displayStyle = jsonData.displayStyle;
@@ -319,6 +325,7 @@ class DefaultConfigs {
     debugPrint("iModelFile: " + this.iModelFile);
     debugPrint("iModelLocation: " + this.iModelLocation);
     debugPrint("iModelName: " + this.iModelName);
+    debugPrint("iModelHubProject: " + this.iModelHubProject);
     debugPrint("viewName: " + this.viewName);
     debugPrint("testType: " + this.testType);
     debugPrint("displayStyle: " + this.displayStyle);
@@ -351,6 +358,7 @@ class SimpleViewState {
   public viewDefinition?: ViewDefinitionProps;
   public viewState?: ViewState;
   public viewPort?: Viewport;
+  public projectConfig?: ConnectProjectConfiguration;
   constructor() { }
 }
 
@@ -369,6 +377,8 @@ async function openView(state: SimpleViewState, viewSize: ViewSize) {
   const vpDiv = document.getElementById("imodel-viewport") as HTMLDivElement;
 
   if (vpDiv) {
+    vpDiv.style.width = String(viewSize.width) + "px";
+    vpDiv.style.height = String(viewSize.height) + "px";
     theViewport = ScreenViewport.create(vpDiv, state.viewState!);
     debugPrint("theViewport: " + theViewport);
     const canvas = theViewport.canvas as HTMLCanvasElement;
@@ -382,18 +392,82 @@ async function openView(state: SimpleViewState, viewSize: ViewSize) {
   }
 }
 
+async function initializeOidc(actx: ActivityLoggingContext) {
+  actx.enter();
+  // const clientId = Config.App.get((ElectronRpcConfiguration.isElectron) ? "imjs_electron_test_client_id" : "imjs_browser_test_client_id");
+  // const redirectUri = Config.App.get((ElectronRpcConfiguration.isElectron) ? "imjs_electron_test_redirect_uri" : "imjs_browser_test_redirect_uri");
+  const clientId = (ElectronRpcConfiguration.isElectron) ? "spa-5lgQRridBuvb8dUm6EVmaQmZL" : Config.App.get("imjs_browser_test_client_id"); // imjs_electron_test_client_id => "spa-5lgQRridBuvb8dUm6EVmaQmZL"
+  const redirectUri = (ElectronRpcConfiguration.isElectron) ? "electron://frontend/signin-callback" : Config.App.get("imjs_browser_test_redirect_uri"); // imjs_electron_test_redirect_uri => "electron://frontend/signin-callback"
+  const oidcConfig: OidcFrontendClientConfiguration = { clientId, redirectUri, scope: "openid email profile organization imodelhub context-registry-service imodeljs-router reality-data:read" };
+
+  await OidcClientWrapper.initialize(actx, oidcConfig);
+  actx.enter();
+
+  OidcClientWrapper.oidcClient.onUserStateChanged.addListener((accessToken: AccessToken | undefined) => {
+    activeViewState.accessToken = accessToken;
+  });
+  activeViewState.accessToken = await OidcClientWrapper.oidcClient.getAccessToken(actx);
+  actx.enter();
+}
+
+// Retrieves the configuration for which project and imodel to open from connect-configuration.json file located in the built public folder
+async function retrieveProjectConfiguration(): Promise<void> {
+  return new Promise<void>((resolve, _reject) => {
+    const request: XMLHttpRequest = new XMLHttpRequest();
+    request.open("GET", "connect-configuration.json", false);
+    request.setRequestHeader("Cache-Control", "no-cache");
+    request.onreadystatechange = ((_event: Event) => {
+      if (request.readyState === XMLHttpRequest.DONE) {
+        if (request.status === 200) {
+          activeViewState.projectConfig = JSON.parse(request.responseText);
+          resolve();
+        }
+      }
+    });
+    request.send();
+  });
+}
+
 async function loadIModel(testConfig: DefaultConfigs) {
   // start the app.
   IModelApp.startup();
 
-  // initialize the Project and IModel Api
-  await ProjectApi.init();
-  await IModelApi.init();
-
   activeViewState = new SimpleViewState();
   activeViewState.viewState;
 
-  await openStandaloneIModel(activeViewState, testConfig.iModelFile!);
+  // Open an iModel from a local file
+  let openLocalIModel = (testConfig.iModelLocation !== undefined);
+  if (openLocalIModel) {
+    try {
+      activeViewState.iModelConnection = await IModelConnection.openStandalone(testConfig.iModelFile!);
+    } catch (err) {
+      debugPrint("openStandalone on local iModel failed: " + err.toString());
+      openLocalIModel = false;
+    }
+  }
+
+  // Open an iModel from the iModelHub
+  if (!openLocalIModel && testConfig.iModelHubProject !== undefined) {
+    const actx = new ActivityLoggingContext(Guid.createValue());
+    actx.enter();
+
+    // Connected to hub
+    await initializeOidc(actx);
+    actx.enter();
+
+    if (!activeViewState.accessToken)
+      OidcClientWrapper.oidcClient.signIn(actx);
+    else {
+      await retrieveProjectConfiguration();
+      activeViewState.projectConfig!.projectName = testConfig.iModelHubProject;
+      activeViewState.projectConfig!.iModelName = testConfig.iModelName!.replace(".ibim", "").replace(".bim", "");
+      await initializeIModelHub(activeViewState);
+      activeViewState.iModel = await IModelApi.getIModelByName(activeViewState.accessToken!, activeViewState.project!.wsgId, activeViewState.projectConfig!.iModelName);
+      if (activeViewState.iModel === undefined)
+        throw new Error(`${activeViewState.projectConfig!.iModelName} - IModel not found in project ${activeViewState.project!.name}`);
+      activeViewState.iModelConnection = await IModelApi.openIModel(activeViewState.accessToken!, activeViewState.project!.wsgId, activeViewState.iModel!.wsgId, undefined, OpenMode.Readonly);
+    }
+  }
 
   // open the specified view
   await loadView(activeViewState, testConfig.viewName!);
@@ -406,11 +480,6 @@ async function loadIModel(testConfig: DefaultConfigs) {
   const iModCon = activeViewState.iModelConnection;
   if (iModCon && testConfig.displayStyle) {
     const displayStyleProps = await iModCon.elements.queryProps({ from: DisplayStyleState.sqlName, where: "CodeValue = '" + testConfig.displayStyle + "'" });
-    // const displayStyleProps = await iModCon.elements.queryProps({ from: DisplayStyleState.sqlName });
-    // for (const prop of displayStyleProps) {
-    //   debugPrint("code: " + prop.code);
-    //   debugPrint("value: " + prop.code!.value);
-    // }
     if (displayStyleProps.length >= 1)
       theViewport!.view.setDisplayStyle(new DisplayStyle3dState(displayStyleProps[0] as DisplayStyleProps, iModCon));
   }
@@ -420,12 +489,17 @@ async function loadIModel(testConfig: DefaultConfigs) {
     testConfig.viewFlags.apply(activeViewState.viewState.displayStyle.viewFlags);
 
   // Load all tiles
-  await waitForTilesToLoad(testConfig.iModelLocation!);
+  await waitForTilesToLoad(testConfig.iModelLocation);
 }
 
-async function closeIModel() {
+async function closeIModel(standalone: boolean) {
   debugPrint("start closeIModel" + activeViewState.iModelConnection);
-  if (activeViewState.iModelConnection) await activeViewState.iModelConnection.closeStandalone();
+  if (activeViewState.iModelConnection) {
+    if (standalone)
+      await activeViewState.iModelConnection.closeStandalone();
+    else
+      await activeViewState.iModelConnection!.close(activeViewState.accessToken!);
+  }
   IModelApp.shutdown();
   debugPrint("end closeIModel");
 }
@@ -456,22 +530,44 @@ async function runTest(testConfig: DefaultConfigs) {
       finalFrameTimings[i] = (theViewport!.target as Target).performanceMetrics!.frameTimings;
     }
     timer.stop();
-    debugPrint("------------ Elapsed Time: " + timer.elapsed.milliseconds + " = " + timer.elapsed.milliseconds / numToRender + "ms per frame");
-    debugPrint("Tile Loading Time: " + curTileLoadingTime);
-    for (const t of finalFrameTimings) {
-      let timingsString = "[";
-      t.forEach((val) => {
-        timingsString += val + ", ";
-      });
-      debugPrint(timingsString + "]");
+    if (wantConsoleOutput) {
+      debugPrint("------------ Elapsed Time: " + timer.elapsed.milliseconds + " = " + timer.elapsed.milliseconds / numToRender + "ms per frame");
+      debugPrint("Tile Loading Time: " + curTileLoadingTime);
+      for (const t of finalFrameTimings) {
+        let timingsString = "[";
+        t.forEach((val) => {
+          timingsString += val + ", ";
+        });
+        debugPrint(timingsString + "]");
+      }
     }
+    const rowData = getRowData(finalFrameTimings, testConfig);
+    await saveCsv(testConfig.outputPath!, testConfig.outputName!, rowData);
 
-    printResults(testConfig, getRowData(finalFrameTimings, testConfig));
-    await saveCsv(testConfig.outputPath!, testConfig.outputName!, getRowData(finalFrameTimings, testConfig));
+    // Prepare the html data table
+    const table = document.getElementById("perfData") as HTMLTableElement;
+    const tableColNames = document.getElementById("perfDataColNames") as HTMLTableRowElement;
+    if (tableColNames !== undefined && tableColNames.cells.length === 0) {
+      rowData.forEach((_value, colName) => {
+        const cell = tableColNames.insertCell();
+        cell.innerHTML = colName;
+        cell.id = colName;
+      });
+    }
+    const newRow = table.insertRow();
+    rowData.forEach((value, colName) => {
+      const cellIndex = tableColNames!.cells!.namedItem(colName)!.cellIndex;
+      while (newRow.childElementCount < cellIndex) {
+        const tempNewCell = newRow.insertCell(-1);
+        tempNewCell.innerHTML = "";
+      }
+      const newCell = newRow.insertCell(cellIndex);
+      newCell.innerHTML = value.toString();
+    });
   }
 
   // Close the imodel
-  await closeIModel();
+  await closeIModel(testConfig.iModelLocation !== undefined);
 }
 
 // selects the configured view.
@@ -482,16 +578,6 @@ async function loadView(state: SimpleViewState, viewName: string) {
 
   if (undefined === state.viewState)
     debugPrint("Error: failed to load view by name");
-}
-
-// opens the configured iModel from disk
-async function openStandaloneIModel(state: SimpleViewState, filename: string) {
-  try {
-    state.iModelConnection = await IModelConnection.openStandalone(filename);
-  } catch (err) {
-    debugPrint("openStandaloneIModel failed: " + err.toString());
-    throw err;
-  }
 }
 
 async function testModel(configs: DefaultConfigs, modelData: any) {
@@ -520,13 +606,16 @@ async function main() {
   // Retrieve DefaultConfigs
   const defaultConfigStr = await getDefaultConfigs();
   const jsonData = JSON.parse(defaultConfigStr);
-
   for (const i in jsonData.testSet) {
     if (i) {
       const modelData = jsonData.testSet[i];
       await testModel(new DefaultConfigs(jsonData), modelData);
     }
   }
+  document.getElementById("topdiv")!.style.display = "block";
+  document.getElementById("imodel-viewport")!.style.display = "hidden";
+
+  DisplayPerfRpcInterface.getClient().finishTest(); // tslint:disable-line:no-floating-promises
 }
 
 window.onload = () => {
@@ -537,12 +626,11 @@ window.onload = () => {
   if (ElectronRpcConfiguration.isElectron) {
     rpcConfiguration = ElectronRpcManager.initializeClient({}, [DisplayPerfRpcInterface, IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface]);
   } else if (MobileRpcConfiguration.isMobileFrontend) {
-    // Object.assign(configuration, { standalone: true, iModelName: "sample_documents/04_Plant.i.ibim" });
     rpcConfiguration = MobileRpcManager.initializeClient([DisplayPerfRpcInterface, IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface]);
   } else {
-    const uriPrefix = configuration.customOrchestratorUri;
-    rpcConfiguration = BentleyCloudRpcManager.initializeClient({ info: { title: "SimpleViewApp", version: "v1.0" }, uriPrefix }, [DisplayPerfRpcInterface, IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface]);
-    Config.App.set("imjs_dev_cors_proxy_server", "https://localhost:3001");
+    const uriPrefix = configuration.customOrchestratorUri || "http://localhost:3001";
+    rpcConfiguration = BentleyCloudRpcManager.initializeClient({ info: { title: "DisplayPerformanceTestApp", version: "v1.0" }, uriPrefix }, [DisplayPerfRpcInterface, IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface]);
+
     // WIP: WebAppRpcProtocol seems to require an IModelToken for every RPC request. ECPresentation initialization tries to set active locale using
     // RPC without any imodel and fails...
     for (const definition of rpcConfiguration.interfaces())

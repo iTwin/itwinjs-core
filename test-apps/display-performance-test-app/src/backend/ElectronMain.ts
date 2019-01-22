@@ -8,6 +8,7 @@ import { ElectronRpcManager } from "@bentley/imodeljs-common";
 import { initializeBackend, getRpcInterfaces } from "./backend";
 import { Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { IModelJsElectronManager } from "@bentley/electron-manager";
+import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 
 import * as electron from "electron";
 
@@ -21,6 +22,9 @@ initializeBackend();
 const logLevelEnv = process.env.SVT_LOG_LEVEL as string;
 const logLevel = undefined !== logLevelEnv ? Logger.parseLogLevel(logLevelEnv) : LogLevel.None;
 Logger.setLevelDefault(logLevel);
+
+if (process.argv.length > 2 && process.argv[2].split(".").pop() === "json")
+  DisplayPerfRpcInterface.jsonFilePath = process.argv[2];
 
 // --------------------------------------------------------------------------------------
 // ---------------- This part copied from protogist ElectronMain.ts ---------------------
@@ -53,7 +57,8 @@ const maximizeWindow = (undefined !== process.env.SVT_MAXIMIZE_WINDOW);
   }
 
   // tslint:disable-next-line:no-var-requires
-  const configuration = require(path.join(__dirname, "../webresources", "configuration.json"));
+  const configPathname = path.normalize(path.join(__dirname, "../webresources", "config.json"));
+  const configuration = require(configPathname);
   if (configuration.useIModelBank) {
     electron.app.on("certificate-error", (event, _webContents, _url, _error, _certificate, callback) => {
       // (needed temporarily to use self-signed cert to communicate with iModelBank via https)
