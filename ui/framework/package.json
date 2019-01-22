@@ -42,7 +42,6 @@
     "@bentley/imodeljs-clients": "0.189.0-dev.3",
     "@bentley/presentation-common": "0.189.0-dev.3",
     "@bentley/presentation-frontend": "0.189.0-dev.3",
-    "@bentley/presentation-testing": "0.189.0-dev.3",
     "@bentley/ui-core": "0.189.0-dev.3",
     "@bentley/ui-components": "0.189.0-dev.3",
     "@bentley/ui-ninezone": "0.189.0-dev.3"
