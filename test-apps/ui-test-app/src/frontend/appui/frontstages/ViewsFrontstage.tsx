@@ -220,7 +220,7 @@ class FrontstageToolWidget extends React.Component {
   /** Tool that will display a pointer message on keyboard presses.
    */
   private _tool4 = () => {
-    const details = new NotifyMessageDetails(OutputMessagePriority.Info, "Press an arrow", "Press an arrow and move mouse to dismiss", OutputMessageType.Pointer);
+    const details = new NotifyMessageDetails(OutputMessagePriority.Error, "Press an arrow", "Press an arrow and move mouse to dismiss", OutputMessageType.Pointer);
     details.setPointerTypeDetails(IModelApp.viewManager.selectedView!.parentDiv,
       {
         x: window.innerWidth / 2,
@@ -232,7 +232,7 @@ class FrontstageToolWidget extends React.Component {
   }
 
   private _handleTool4Keypress = (event: any) => {
-    const details = new NotifyMessageDetails(OutputMessagePriority.Info, "", "", OutputMessageType.Pointer);
+    const details = new NotifyMessageDetails(OutputMessagePriority.Warning, "", "", OutputMessageType.Pointer);
     const viewport = IModelApp.viewManager.selectedView!.parentDiv;
     const midX = window.innerWidth / 2;
     const midY = window.innerHeight / 2;

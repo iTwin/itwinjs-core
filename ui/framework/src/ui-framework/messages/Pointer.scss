@@ -29,10 +29,16 @@
   overflow:visible;
 }
 
-.popup-message-brief {
-  @include bwc-text(body);
-}
+.nz-popup-message-pointer {
+  .icon {
+    margin: 0 5px 0 0;
+  }
 
-.popup-message-detailed {
-  @include bwc-text(small);
+  .popup-message-brief {
+    @include bwc-text(body);
+  }
+
+  .popup-message-detailed {
+    @include bwc-text(small);
+  }
 }

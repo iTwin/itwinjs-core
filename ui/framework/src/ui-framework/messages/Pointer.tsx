@@ -9,7 +9,7 @@ import * as classnames from "classnames";
 import { UiEvent } from "@bentley/ui-core";
 import { XAndY } from "@bentley/geometry-core";
 import { CommonProps, ToolSettingsTooltip, offsetAndContainInContainer, PointProps, SizeProps, Rectangle, Point } from "@bentley/ui-ninezone";
-import { RelativePosition, NotifyMessageDetails } from "@bentley/imodeljs-frontend";
+import { RelativePosition, NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
 import "./Pointer.scss";
 
 /** Properties of [[PointerMessage]] component. */
@@ -21,9 +21,10 @@ export interface PointerMessageProps extends CommonProps {
 /** [[PointerMessage]] state.
  */
 export interface PointerMessageState {
-  detailedMessage?: string;
   isVisible: boolean;
+  priority: OutputMessagePriority;
   message: string;
+  detailedMessage?: string;
   position: PointProps;
 }
 
@@ -31,6 +32,7 @@ export interface PointerMessageState {
  */
 export interface PointerMessageChangedEventArgs {
   isVisible: boolean;
+  priority: OutputMessagePriority;
   message: string;
   detailedMessage?: string;
   relativePosition?: RelativePosition;
@@ -62,6 +64,7 @@ export class PointerMessage extends React.Component<PointerMessageProps, Pointer
   public static showMessage(message: NotifyMessageDetails): void {
     PointerMessage.onPointerMessageChangedEvent.emit({
       isVisible: true,
+      priority: message.priority,
       message: message.briefMessage,
       detailedMessage: message.detailedMessage,
       relativePosition: message.relativePosition,
@@ -73,6 +76,7 @@ export class PointerMessage extends React.Component<PointerMessageProps, Pointer
   public static hideMessage(): void {
     PointerMessage.onPointerMessageChangedEvent.emit({
       isVisible: false,
+      priority: OutputMessagePriority.None,
       message: "",
     });
   }
@@ -80,6 +84,7 @@ export class PointerMessage extends React.Component<PointerMessageProps, Pointer
   public readonly state: Readonly<PointerMessageState> = {
     message: "",
     isVisible: false,
+    priority: OutputMessagePriority.None,
     position: {
       x: 0,
       y: 0,
@@ -109,9 +114,11 @@ export class PointerMessage extends React.Component<PointerMessageProps, Pointer
         position={this.state.position}
         style={this.props.style}
       >
+        {this.state.priority === OutputMessagePriority.Warning ? <span className="icon icon-status-warning" /> : <span />}
+        {this.state.priority === OutputMessagePriority.Error ? <span className="icon icon-status-error" /> : <span />}
         {
           this.state.message &&
-          <div
+          <span
             className="popup-message-brief"
             dangerouslySetInnerHTML={{ __html: this.state.message }}
           />
@@ -146,6 +153,7 @@ export class PointerMessage extends React.Component<PointerMessageProps, Pointer
     this._position = args.pt;
     this.setState(() => ({
       isVisible: args.isVisible,
+      priority: args.priority,
       message: args.message,
       detailedMessage: args.detailedMessage,
     }));
