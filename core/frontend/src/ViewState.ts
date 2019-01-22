@@ -288,66 +288,6 @@ public cancelAllTileLoads(): void {
   /** Get this view's background color. */
   public get backgroundColor(): ColorDef { return this.displayStyle.backgroundColor; }
 
-  private _neverDrawn?: Id64Set;
-  private _alwaysDrawn?: Id64Set;
-  private _alwaysDrawnExclusive: boolean = false;
-
-  /**
-   * IDs of a set of elements which should not be rendered within this view.
-   * @note Do not modify this set directly - use [[setNeverDrawn]] or [[clearNeverDrawn]] instead.
-   * @note This set takes precedence over the [[alwaysDrawn]] set - if an element is present in both sets, it is never drawn.
-   */
-  public get neverDrawn(): Id64Set | undefined { return this._neverDrawn; }
-
-  /**
-   * IDs of a set of elements which should always be rendered within this view, regardless of category and subcategory visibility.
-   * If the [[isAlwaysDrawnExclusive]] flag is also set, *only* those elements in this set will be drawn.
-   * @note Do not modify this set directly - use [[setAlwaysDrawn]] or [[clearAlwaysDrawn]] instead.
-   * @note The [[neverDrawn]] set takes precedence - if an element is present in both sets, it is never drawn.
-   */
-  public get alwaysDrawn(): Id64Set | undefined { return this._alwaysDrawn; }
-
-  /** Clear the set of always-drawn elements.
-   * @see [[alwaysDrawn]]
-   */
-  public clearAlwaysDrawn(): void {
-    if (undefined !== this.alwaysDrawn && 0 < this.alwaysDrawn.size) {
-      this.alwaysDrawn.clear();
-      this._alwaysDrawnExclusive = false;
-      this.setFeatureOverridesDirty();
-    }
-  }
-
-  /** Clear the set of never-drawn elements.
-   * @see [[neverDrawn]]
-   */
-  public clearNeverDrawn(): void {
-    if (undefined !== this.neverDrawn && 0 < this.neverDrawn.size) {
-      this.neverDrawn.clear();
-      this.setFeatureOverridesDirty();
-    }
-  }
-
-  /** Specify the IDs of a set of elements which should never be rendered within this view.
-   * @see [[neverDrawn]].
-   */
-  public setNeverDrawn(ids: Id64Set): void {
-    this._neverDrawn = ids;
-    this.setFeatureOverridesDirty();
-  }
-
-  /** Specify the IDs of a set of elements which should always be rendered within this view, regardless of category and subcategory visibility.
-   * @param ids The IDs of the elements to always draw.
-   * @param exclusive If true, *only* the specified elements will be drawn.
-   * @see [[alwaysDrawn]]
-   * @see [[isAlwaysDrawnExclusive]]
-   */
-  public setAlwaysDrawn(ids: Id64Set, exclusive: boolean = false): void {
-    this._alwaysDrawn = ids;
-    this._alwaysDrawnExclusive = exclusive;
-    this.setFeatureOverridesDirty();
-  }
-
   /** Remove any [[SubCategoryOverride]] for the specified subcategory.
    * @param id The ID of the subcategory.
    * @see [[overrideSubCategory]]
@@ -402,9 +342,6 @@ public cancelAllTileLoads(): void {
     else
       return !ovr.invisible;
   }
-
-  /** Returns true if the set of elements in the [[alwaysDrawn]] set are the *only* elements rendered within this view. */
-  public get isAlwaysDrawnExclusive(): boolean { return this._alwaysDrawnExclusive; }
 
   /**
    * Enable or disable display of elements belonging to a set of categories specified by ID.

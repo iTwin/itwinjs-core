@@ -21,6 +21,7 @@ export * from "./CategorySelectorState";
 export * from "./ContextRealityModelState";
 export * from "./DisplayStyleState";
 export * from "./ElementLocateManager";
+export * from "./EmphasizeElements";
 export * from "./EntityState";
 export * from "./FenceParams";
 export * from "./FuzzySearch";

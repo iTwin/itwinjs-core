@@ -5,7 +5,7 @@
 /** @module Rendering */
 
 import { LinePixels, ColorDef, RgbColor, Feature, GeometryClass, SubCategoryOverride, BatchType } from "@bentley/imodeljs-common";
-import { Id64, Id64String } from "@bentley/bentleyjs-core";
+import { Id64, Id64String, Id64Set } from "@bentley/bentleyjs-core";
 import { ViewState } from "../ViewState";
 
 function copyIdSetToUint32Set(dst: Id64.Uint32Set, src?: Set<string>): void {
@@ -256,6 +256,10 @@ export namespace FeatureSymbology {
     public setAlwaysDrawn(id: Id64String): void { this._alwaysDrawn.addId(id); }
     /** Specify the ID of a batch which should never be drawn in this view. */
     public setBatchNeverDrawn(id: number): void { this.batchNeverDrawn.add(id); }
+    /** Specify the IDs of elements which should never be drawn in this view. */
+    public setNeverDrawnSet(ids: Id64Set) { copyIdSetToUint32Set(this._neverDrawn, ids); }
+    /** Specify the IDs of elements which should always be drawn in this view. */
+    public setAlwaysDrawnSet(ids: Id64Set, exclusive: boolean) { copyIdSetToUint32Set(this._alwaysDrawn, ids); this.isAlwaysDrawnExclusive = exclusive; }
 
     /** Returns the feature's Appearance overrides, or undefined if the feature is not visible. */
     public getFeatureAppearance(feature: Feature, modelId: Id64String, type: BatchType = BatchType.Primary): Appearance | undefined {
@@ -426,17 +430,13 @@ export namespace FeatureSymbology {
      * @hidden
      */
     public initFromView(view: ViewState) {
-      const { alwaysDrawn, neverDrawn, viewFlags } = view;
+      const { viewFlags } = view;
       const { constructions, dimensions, patterns } = viewFlags;
-
-      copyIdSetToUint32Set(this._alwaysDrawn, alwaysDrawn);
-      copyIdSetToUint32Set(this._neverDrawn, neverDrawn);
 
       this.batchMap = undefined;
       this.batchNeverDrawn.clear();
       this.batchOverrides.clear();
 
-      this.isAlwaysDrawnExclusive = view.isAlwaysDrawnExclusive;
       this._constructions = constructions;
       this._dimensions = dimensions;
       this._patterns = patterns;

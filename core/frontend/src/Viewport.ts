@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Views */
 
-import { assert, BeDuration, BeEvent, BeTimePoint, dispose, Id64, Id64Arg, IDisposable, StopWatch } from "@bentley/bentleyjs-core";
+import { assert, BeDuration, BeEvent, BeTimePoint, dispose, Id64, Id64Arg, IDisposable, StopWatch, Id64Set } from "@bentley/bentleyjs-core";
 import {
   Angle, AngleSweep, Arc3d, AxisOrder, Constant, LowAndHighXY, LowAndHighXYZ, Map4d, Matrix3d,
   Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point4d, Range3d, Ray3d, Transform, Vector3d, XAndY,
@@ -30,10 +30,14 @@ import { DecorateContext, SceneContext } from "./ViewContext";
 import { GridOrientationType, MarginPercent, ViewState, ViewStatus } from "./ViewState";
 import { Tile } from "./tile/TileTree";
 
-/** A function which customizes the appearance of Features within a Viewport.
- * @see [[Viewport.addFeatureOverrides]]
+/**
+ * An object which customizes the appearance of Features within a [[Viewport]].
+ * Only one FeatureOverrideProvider may be associated with a viewport at a time. Setting a new FeatureOverrideProvider replaces any existing provider.
+ * @see [[Viewport.featureOverrideProvider]]
  */
-export type AddFeatureOverrides = (overrides: FeatureSymbology.Overrides, viewport: Viewport) => void;
+export interface FeatureOverrideProvider {
+  addFeatureOverrides(overrides: FeatureSymbology.Overrides, viewport: Viewport): void;
+}
 
 /** Viewport synchronization flags. Synchronization is handled internally - do not use directly.
  * @hidden
@@ -922,11 +926,14 @@ export abstract class Viewport implements IDisposable {
   public static undoDelay = BeDuration.fromSeconds(.5);
   private static _nextViewportId = 1;
 
-  private _addFeatureOverrides?: AddFeatureOverrides;
   private _debugBoundingBoxes: Tile.DebugBoundingBoxes = Tile.DebugBoundingBoxes.None;
   private _freezeScene = false;
   private _viewFrustum!: ViewFrustum;
   private _target?: RenderTarget;
+  private _neverDrawn?: Id64Set;
+  private _alwaysDrawn?: Id64Set;
+  private _alwaysDrawnExclusive: boolean = false;
+  private _featureOverrideProvider?: FeatureOverrideProvider;
 
   /** @hidden */
   public get viewFrustum(): ViewFrustum { return this._viewFrustum; }
@@ -1038,16 +1045,80 @@ export abstract class Viewport implements IDisposable {
   public get backgroundMapPlane() { return this.view.displayStyle.backgroundMapPlane; }
 
   /**
-   * Sets a function which can customize the appearance of [[Feature]]s within a viewport.
-   * If defined, this function will be invoked whenever the overrides are determined to need updating.
+   * IDs of a set of elements which should not be rendered within this view.
+   * @note Do not modify this set directly - use [[setNeverDrawn]] or [[clearNeverDrawn]] instead.
+   * @note This set takes precedence over the [[alwaysDrawn]] set - if an element is present in both sets, it is never drawn.
+   */
+  public get neverDrawn(): Id64Set | undefined { return this._neverDrawn; }
+
+  /**
+   * IDs of a set of elements which should always be rendered within this view, regardless of category and subcategory visibility.
+   * If the [[isAlwaysDrawnExclusive]] flag is also set, *only* those elements in this set will be drawn.
+   * @note Do not modify this set directly - use [[setAlwaysDrawn]] or [[clearAlwaysDrawn]] instead.
+   * @note The [[neverDrawn]] set takes precedence - if an element is present in both sets, it is never drawn.
+   */
+  public get alwaysDrawn(): Id64Set | undefined { return this._alwaysDrawn; }
+
+  /** Clear the set of always-drawn elements.
+   * @see [[alwaysDrawn]]
+   */
+  public clearAlwaysDrawn(): void {
+    if (undefined !== this.alwaysDrawn && 0 < this.alwaysDrawn.size) {
+      this.alwaysDrawn.clear();
+      this._alwaysDrawnExclusive = false;
+      this.view.setFeatureOverridesDirty();
+    }
+  }
+
+  /** Clear the set of never-drawn elements.
+   * @see [[neverDrawn]]
+   */
+  public clearNeverDrawn(): void {
+    if (undefined !== this.neverDrawn && 0 < this.neverDrawn.size) {
+      this.neverDrawn.clear();
+      this.view.setFeatureOverridesDirty();
+    }
+  }
+
+  /** Specify the IDs of a set of elements which should never be rendered within this view.
+   * @see [[neverDrawn]].
+   */
+  public setNeverDrawn(ids: Id64Set): void {
+    this._neverDrawn = ids;
+    this.view.setFeatureOverridesDirty();
+  }
+
+  /** Specify the IDs of a set of elements which should always be rendered within this view, regardless of category and subcategory visibility.
+   * @param ids The IDs of the elements to always draw.
+   * @param exclusive If true, *only* the specified elements will be drawn.
+   * @see [[alwaysDrawn]]
+   * @see [[isAlwaysDrawnExclusive]]
+   */
+  public setAlwaysDrawn(ids: Id64Set, exclusive: boolean = false): void {
+    this._alwaysDrawn = ids;
+    this._alwaysDrawnExclusive = exclusive;
+    this.view.setFeatureOverridesDirty();
+  }
+
+  /** Returns true if the set of elements in the [[alwaysDrawn]] set are the *only* elements rendered within this view. */
+  public get isAlwaysDrawnExclusive(): boolean { return this._alwaysDrawnExclusive; }
+
+  /**
+   * Sets an object which can customize the appearance of [[Feature]]s within a viewport.
+   * If defined, the provider will be invoked whenever the overrides are determined to need updating.
    * The overrides can be explicitly marked as needing a refresh by calling [[ViewState.setFeatureOverridesDirty]].
    * @see [[FeatureSymbology.Overrides]]
    */
-  public set addFeatureOverrides(addFeatureOverrides: AddFeatureOverrides | undefined) {
-    if (addFeatureOverrides !== this._addFeatureOverrides) {
-      this._addFeatureOverrides = addFeatureOverrides;
+  public set featureOverrideProvider(provider: FeatureOverrideProvider | undefined) {
+    if (provider !== this._featureOverrideProvider) {
+      this._featureOverrideProvider = provider;
       this.view.setFeatureOverridesDirty(true);
     }
+  }
+
+  /** Get the current FeatureOverrideProvider for this viewport if defined. */
+  public get featureOverrideProvider(): FeatureOverrideProvider | undefined {
+    return this._featureOverrideProvider;
   }
 
   /** True if this is a 3d view with the camera turned on. */
@@ -1714,8 +1785,12 @@ export abstract class Viewport implements IDisposable {
 
     if (view.areFeatureOverridesDirty) {
       const ovr = new FeatureSymbology.Overrides(view);
-      if (undefined !== this._addFeatureOverrides)
-        this._addFeatureOverrides(ovr, this);
+      if (undefined !== this._neverDrawn)
+        ovr.setNeverDrawnSet(this._neverDrawn);
+      if (undefined !== this._alwaysDrawn)
+        ovr.setAlwaysDrawnSet(this._alwaysDrawn, this._alwaysDrawnExclusive);
+      if (undefined !== this._featureOverrideProvider)
+        this._featureOverrideProvider.addFeatureOverrides(ovr, this);
 
       target.overrideFeatureSymbology(ovr);
       view.setFeatureOverridesDirty(false);
