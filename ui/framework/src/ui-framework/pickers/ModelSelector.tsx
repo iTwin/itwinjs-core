@@ -149,7 +149,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
     this.updateState(); // tslint:disable-line:no-floating-promises
   }
 
-  /** Iinitialize listeners and category/model rulesets */
+  /** Initialize listeners and category/model rulesets */
   public componentDidMount() {
     this._isMounted = true;
     this._initModelState();
@@ -158,7 +158,12 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
     this._removeSelectedViewportChanged = IModelApp.viewManager.onSelectedViewportChanged.addListener(this._handleSelectedViewportChanged);
   }
 
+  /** Initialize models */
   private _initModelState = () => {
+    if (!IModelApp.viewManager)
+      return;
+    const vp = IModelApp.viewManager.getFirstOpenView();
+
     Presentation.presentation.rulesets().add(require("../../../rulesets/Models")) // tslint:disable-line:no-floating-promises
       .then((ruleset: RegisteredRuleset) => {
         if (!this._isMounted)
@@ -177,20 +182,98 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
           },
           expand: true,
         });
-        // tslint:disable:no-floating-promises
-        this._onSetEnableAll(true);
+
+        if (vp) {
+          this._updateModelsWithViewport(vp).then(() => {
+            this._setModelsFromViewState(); // tslint:disable-line:no-floating-promises
+          });
+        }
       });
   }
 
+  /** Initialize categories */
   private _initCategoryState = () => {
+    if (!IModelApp.viewManager)
+      return;
+    const vp = IModelApp.viewManager.getFirstOpenView();
+
     Presentation.presentation.rulesets().add(require("../../../rulesets/Categories")) // tslint:disable-line:no-floating-promises
       .then((ruleset: RegisteredRuleset) => {
         if (!this._isMounted)
           return;
         this._categoryRuleset = ruleset;
-        // tslint:disable:no-floating-promises
-        this._onSetEnableAll(true);
+        if (vp) {
+          this._updateCategoriesWithViewport(vp).then(() => {
+            this._setCategoriesFromViewState(); // tslint:disable-line:no-floating-promises
+          });
+        }
       });
+  }
+
+  /** Set initial model selection state based on ViewState */
+  private _setModelsFromViewState = async () => {
+    if (!IModelApp.viewManager)
+      return;
+
+    const vp = IModelApp.viewManager.getFirstOpenView();
+    const view = vp!.view as SpatialViewState;
+
+    const promises: Array<Promise<DelayLoadedTreeNodeItem | undefined>> = [];
+    this._groups[0].items.forEach((item: ListItem) => {
+      if (view.modelSelector.models.has(item.key))
+        promises.push(this._getNodeFromItem(item));
+    });
+
+    const selectedNodes: string[] = [];
+    await Promise.all(promises).then((nodes: Array<DelayLoadedTreeNodeItem | undefined>) => {
+      nodes.forEach((node) => {
+        if (node) {
+          node.checkBoxState = CheckBoxState.On;
+          node.labelBold = true;
+          selectedNodes.push(node!.id);
+        }
+      });
+    });
+
+    this.setState({
+      treeInfo: {
+        ...this.state.treeInfo!,
+        selectedNodes: this.state.treeInfo!.selectedNodes!.concat(selectedNodes),
+      },
+    });
+  }
+
+  /** Set initial category selection state based on ViewState */
+  private _setCategoriesFromViewState = async () => {
+    if (!IModelApp.viewManager)
+      return;
+
+    const vp = IModelApp.viewManager.getFirstOpenView();
+    const view = vp!.view as SpatialViewState;
+
+    const promises: Array<Promise<DelayLoadedTreeNodeItem | undefined>> = [];
+    this._groups[0].items.forEach((item: ListItem) => {
+      if (view.categorySelector.categories.has(item.key))
+        promises.push(this._getNodeFromItem(item));
+    });
+
+    const selectedNodes: string[] = [];
+    await Promise.all(promises).then((nodes: Array<DelayLoadedTreeNodeItem | undefined>) => {
+      nodes.forEach((node) => {
+        if (node) {
+          node.checkBoxState = CheckBoxState.On;
+          node.labelBold = true;
+          selectedNodes.push(node!.id);
+        }
+      });
+    });
+
+    this.setState({
+      treeInfo: {
+        ...this.state.treeInfo!,
+        selectedNodes: this.state.treeInfo!.selectedNodes!.concat(selectedNodes),
+      },
+    });
   }
 
   /** Removes listeners */
@@ -262,7 +345,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
       return;
 
     await this._setActiveRuleset(activeRuleset);
-    this._setInitialExpandedState(group);
+    this._setInitialExpandedState(group); // tslint:disable-line:no-floating-promises
   }
 
   /**
@@ -284,6 +367,15 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
    * @param activeRuleset Ruleset to provide to tree.
    */
   private _setActiveRuleset = async (activeRuleset: RegisteredRuleset) => {
+    if (!IModelApp.viewManager)
+      return;
+
+    const vp = IModelApp.viewManager.getFirstOpenView();
+    const view = vp!.view as SpatialViewState;
+
+    const viewType = view.is3d() ? "3d" : "2d";
+    Presentation.presentation.vars(this.state.treeInfo!.ruleset.id).setString("ViewType", viewType); // tslint:disable-line:no-floating-promises
+
     this.setState({
       treeInfo: {
         ...this.state.treeInfo!,
@@ -344,7 +436,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
    */
   private _onSetEnableAll = (enable: boolean) => {
     this._setEnableAllItems(enable);
-    this._setEnableAllNodes(enable);
+    this._setEnableAllNodes(enable); // tslint:disable-line:no-floating-promises
   }
 
   /**
@@ -368,7 +460,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
     if (enable) {
       selectedNodes = await this._selectAllNodes();
     } else {
-      this._deselectAllNodes();
+      this._deselectAllNodes(); // tslint:disable-line:no-floating-promises
     }
 
     this.setState({
@@ -394,7 +486,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
     });
     this.state.treeInfo!.dataProvider.onTreeNodeChanged.raiseEvent(parents);
 
-    Promise.all(promises).then((childNodeCollection: DelayLoadedTreeNodeItem[][]) => {
+    Promise.all(promises).then((childNodeCollection: DelayLoadedTreeNodeItem[][]) => { // tslint:disable-line:no-floating-promises
       childNodeCollection.forEach((childNodes) => {
         childNodes.forEach((child) => {
           child.checkBoxState = CheckBoxState.Off;
@@ -442,7 +534,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
   /** Invert display on all items and state of all nodes */
   private _onInvertAll = () => {
     this._invertEnableOnAllItems();
-    this._invertEnableOnAllNodes();
+    this._invertEnableOnAllNodes(); // tslint:disable-line:no-floating-promises
   }
 
   /** Invert display on all items */
@@ -759,7 +851,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
   private _setItemStateOn = (treeItem: TreeNodeItem) => {
     this._setEnableItem(treeItem, true);
     this._setEnableNode(treeItem, true);
-    this._setEnableChildren(treeItem, true);
+    this._setEnableChildren(treeItem, true); // tslint:disable-line:no-floating-promises
     this.state.treeInfo!.dataProvider.onTreeNodeChanged.raiseEvent([treeItem]);
   }
 
@@ -770,7 +862,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
   private _setItemStateOff = async (treeItem: TreeNodeItem) => {
     this._setEnableItem(treeItem, false);
     this._setEnableNode(treeItem, false);
-    this._setEnableChildren(treeItem, false);
+    this._setEnableChildren(treeItem, false); // tslint:disable-line:no-floating-promises
     this.state.treeInfo!.dataProvider.onTreeNodeChanged.raiseEvent([treeItem]);
   }
 
