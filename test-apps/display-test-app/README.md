@@ -76,3 +76,5 @@ Debugging display-test-app can be accomplished using the following procedures, d
   * If defined, do not open the electron dev tools on startup
 * SVT_LOG_LEVEL
   * If defined, the minimum logging level will be set to this value. Log messages are output to the terminal from which display-test-app was run. Example log levels include "debug", "error", "warning", etc - see Logger.ParseLogLevel() for the complete list.
+* SVT_DISABLE_DIAGNOSTICS
+  * By default, all debug-only code paths are enabled. These include assertions, console output, and potentially-expensive WebGL state checks like checkFramebufferStatus(). If this environment variable is defined (value does not matter), all of these debug-only code paths will be disabled. Note that this *only* affects assertions and console output produced within the rendering code.

@@ -5,7 +5,7 @@
 /** @module WebGL */
 
 import { Vector3d, Point3d, Matrix3d, Transform, Matrix4d } from "@bentley/geometry-core";
-import { assert } from "@bentley/bentleyjs-core";
+import { Debug } from "./Diagnostics";
 
 export class Matrix3 {
   public readonly data: Float32Array = new Float32Array(3 * 3);
@@ -60,9 +60,9 @@ export class Matrix3 {
   }
 
   public swap(firstIndex: number, secondIndex: number) {
-    assert(firstIndex < this.data.length);
-    assert(secondIndex < this.data.length);
-    assert(secondIndex !== firstIndex);
+    Debug.assert(() => firstIndex < this.data.length);
+    Debug.assert(() => secondIndex < this.data.length);
+    Debug.assert(() => secondIndex !== firstIndex);
     const tmp = this.data[firstIndex];
     this.data[firstIndex] = this.data[secondIndex];
     this.data[secondIndex] = tmp;
@@ -79,8 +79,8 @@ export class Matrix3 {
     return mat;
   }
 
-  public get(index: number) { assert(index < this.data.length); return this.data[index]; }
-  public set(index: number, value: number) { assert(index < this.data.length); this.data[index] = value; }
+  public get(index: number) { Debug.assert(() => index < this.data.length); return this.data[index]; }
+  public set(index: number, value: number) { Debug.assert(() => index < this.data.length); this.data[index] = value; }
 
   public at(row: number, col: number) { return this.get(col * 3 + row); }
   public setAt(row: number, col: number, value: number) { this.set(col * 3 + row, value); }
@@ -168,7 +168,7 @@ export class Matrix4 {
   }
   public toTransform(): Transform {
     const data = this.data;
-    assert(0.0 === data[3] && 0.0 === data[7] && 0.0 === data[11] && 1.0 === data[15]);
+    Debug.assert(() => 0.0 === data[3] && 0.0 === data[7] && 0.0 === data[11] && 1.0 === data[15]);
     const origin = new Point3d(data[12], data[13], data[14]);
     const rotMat = Matrix3d.createIdentity();
     for (let i = 0; i < 3; i++)
@@ -295,9 +295,9 @@ export class Matrix4 {
   }
 
   public swap(firstIndex: number, secondIndex: number) {
-    assert(firstIndex < this.data.length);
-    assert(secondIndex < this.data.length);
-    assert(secondIndex !== firstIndex);
+    Debug.assert(() => firstIndex < this.data.length);
+    Debug.assert(() => secondIndex < this.data.length);
+    Debug.assert(() => secondIndex !== firstIndex);
     const tmp = this.data[firstIndex];
     this.data[firstIndex] = this.data[secondIndex];
     this.data[secondIndex] = tmp;
@@ -350,8 +350,8 @@ export class Matrix4 {
     }
   }
 
-  public get(index: number) { assert(index < this.data.length); return this.data[index]; }
-  public set(index: number, value: number) { assert(index < this.data.length); this.data[index] = value; }
+  public get(index: number) { Debug.assert(() => index < this.data.length); return this.data[index]; }
+  public set(index: number, value: number) { Debug.assert(() => index < this.data.length); this.data[index] = value; }
 
   public at(row: number, col: number) { return this.get(col * 4 + row); }
   public setAt(row: number, col: number, value: number) { this.set(col * 4 + row, value); }

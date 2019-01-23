@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { assert } from "@bentley/bentleyjs-core";
 import { ProgramBuilder, VariableType, VariablePrecision, FragmentShaderComponent } from "../ShaderBuilder";
 import { addModelViewMatrix } from "./Vertex";
 import { addWindowToTexCoords } from "./Fragment";
@@ -13,6 +12,7 @@ import { System } from "../System";
 import { ClipDef } from "../TechniqueFlags";
 import { addViewMatrix, addEyeSpace } from "./Common";
 import { ClippingType } from "../../System";
+import { Debug } from "../Diagnostics";
 
 const getClipPlaneFloat = `
   vec4 getClipPlane(int index) {
@@ -117,7 +117,7 @@ export function addClipping(prog: ProgramBuilder, clipDef: ClipDef) {
 }
 
 function addClippingPlanes(prog: ProgramBuilder, maxClipPlanes: number) {
-  assert(maxClipPlanes > 0);
+  Debug.assert(() => maxClipPlanes > 0);
   const frag = prog.frag;
   const vert = prog.vert;
 
@@ -125,7 +125,7 @@ function addClippingPlanes(prog: ProgramBuilder, maxClipPlanes: number) {
   prog.addUniform("u_numClips", VariableType.Int, (program) => {
     program.addGraphicUniform("u_numClips", (uniform, params) => {
       const numClips = params.target.hasClipVolume ? params.target.clips.count : 0;
-      assert(numClips > 0);
+      Debug.assert(() => numClips > 0);
       uniform.setUniform1i(numClips);
     });
   });
@@ -146,7 +146,7 @@ function addClippingPlanes(prog: ProgramBuilder, maxClipPlanes: number) {
   frag.addUniform("s_clipSampler", VariableType.Sampler2D, (program) => {
     program.addGraphicUniform("s_clipSampler", (uniform, params) => {
       const texture = params.target.clips.texture;
-      assert(texture !== undefined);
+      Debug.assert(() => texture !== undefined);
       if (texture !== undefined)
         texture.bindSampler(uniform, TextureUnit.ClipVolume);
     });
@@ -158,7 +158,7 @@ function addClippingMask(prog: ProgramBuilder) {
   prog.frag.addUniform("s_clipSampler", VariableType.Sampler2D, (program) => {
     program.addGraphicUniform("s_clipSampler", (uniform, params) => {
       const texture = params.target.clipMask;
-      assert(texture !== undefined);
+      Debug.assert(() => texture !== undefined);
       if (texture !== undefined)
         texture.bindSampler(uniform, TextureUnit.ClipVolume);
     });

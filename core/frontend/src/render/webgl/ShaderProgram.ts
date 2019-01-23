@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { assert, IDisposable } from "@bentley/bentleyjs-core";
+import { IDisposable } from "@bentley/bentleyjs-core";
 import { UniformHandle, AttributeHandle } from "./Handle";
 import { ShaderProgramParams, DrawParams } from "./DrawCommand";
 import { GL } from "./GL";
@@ -13,6 +13,7 @@ import { RenderPass } from "./RenderFlags";
 import { TechniqueFlags } from "./TechniqueFlags";
 import { System } from "./System";
 import { Branch, Batch } from "./Graphic";
+import { Debug } from "./Diagnostics";
 
 /** Flags which control some conditional branches in shader code */
 export const enum ShaderFlags {
@@ -31,7 +32,7 @@ export class Uniform {
   protected constructor(name: string) { this._name = name; }
 
   public compile(prog: ShaderProgram): boolean {
-    assert(!this.isValid);
+    Debug.assert(() => !this.isValid);
     if (undefined !== prog.glProgram) {
       this._handle = UniformHandle.create(prog.glProgram, this._name, true);
     }
@@ -108,7 +109,7 @@ export class Attribute {
   }
 
   public compile(prog: ShaderProgram): boolean {
-    assert(!this.isValid);
+    Debug.assert(() => !this.isValid);
     if (undefined !== prog.glProgram) {
       this._handle = AttributeHandle.create(prog.glProgram, this._name, true);
     }
@@ -153,14 +154,14 @@ export class ShaderProgram implements IDisposable {
     this._glProgram = (null === glProgram) ? undefined : glProgram;
 
     // ###TODO: Silencing 'unused variable' warnings temporarily...
-    assert(undefined !== this._description);
+    Debug.assert(() => undefined !== this._description);
   }
 
   public get isDisposed(): boolean { return this._glProgram === undefined; }
 
   public dispose(): void {
     if (!this.isDisposed) {
-      assert(!this._inUse);
+      Debug.assert(() => !this._inUse);
       System.instance.context.deleteProgram(this._glProgram!);
       this._glProgram = undefined;
       this._status = CompileStatus.Uncompiled;
@@ -184,11 +185,11 @@ export class ShaderProgram implements IDisposable {
     const succeeded = gl.getShaderParameter(shader, GL.ShaderParameter.CompileStatus) as boolean;
     const compileLog = succeeded ? "" : (GL.ShaderType.Vertex === type ? "Vertex" : "Fragment") + " compilation errors: " + gl.getShaderInfoLog(shader) + "\n" + src;
 
-    assert(succeeded, compileLog);
+    Debug.assert(() => succeeded, compileLog);
     return succeeded ? shader : undefined;
   }
   private linkProgram(vert: WebGLShader, frag: WebGLShader): boolean {
-    assert(undefined !== this.glProgram);
+    Debug.assert(() => undefined !== this.glProgram);
     if (undefined === this._glProgram || null === this._glProgram) { // because WebGL APIs used Thing|null, not Thing|undefined...
       return false;
     }
@@ -204,7 +205,7 @@ export class ShaderProgram implements IDisposable {
 
     const succeeded = gl.getProgramParameter(this._glProgram, GL.ProgramParameter.LinkStatus) as boolean;
     if (!succeeded)
-      assert(succeeded, "Link errors: " + linkLog + " Validate errors: " + validateLog);
+      Debug.assert(() => succeeded, "Link errors: " + linkLog + " Validate errors: " + validateLog);
 
     return succeeded;
   }
@@ -239,12 +240,12 @@ export class ShaderProgram implements IDisposable {
       return false;
     }
 
-    assert(undefined !== this._glProgram);
+    Debug.assert(() => undefined !== this._glProgram);
     if (null === this._glProgram || undefined === this._glProgram) {
       return false;
     }
 
-    assert(!this._inUse);
+    Debug.assert(() => !this._inUse);
     this._inUse = true;
     params.context.useProgram(this._glProgram);
 
@@ -255,13 +256,13 @@ export class ShaderProgram implements IDisposable {
     return true;
   }
   public endUse() {
-    assert(this._inUse);
+    Debug.assert(() => this._inUse);
     this._inUse = false;
     System.instance.context.useProgram(null);
   }
 
   public draw(params: DrawParams): void {
-    assert(this._inUse);
+    Debug.assert(() => this._inUse);
     for (const uniform of this._graphicUniforms) {
       uniform.bind(params);
     }
@@ -275,15 +276,15 @@ export class ShaderProgram implements IDisposable {
   }
 
   public addProgramUniform(name: string, binding: BindProgramUniform) {
-    assert(this.isUncompiled);
+    Debug.assert(() => this.isUncompiled);
     this._programUniforms.push(new ProgramUniform(name, binding));
   }
   public addGraphicUniform(name: string, binding: BindGraphicUniform) {
-    assert(this.isUncompiled);
+    Debug.assert(() => this.isUncompiled);
     this._graphicUniforms.push(new GraphicUniform(name, binding));
   }
   public addAttribute(name: string, binding: BindAttribute) {
-    assert(this.isUncompiled);
+    Debug.assert(() => this.isUncompiled);
     this._attributes.push(new Attribute(name, binding));
   }
 
@@ -333,13 +334,13 @@ export class ShaderProgramExecutor {
   }
 
   public draw(params: DrawParams) {
-    assert(this.isValid);
+    Debug.assert(() => this.isValid);
     if (undefined !== this._program) {
       this._program.draw(params);
     }
   }
   public drawInterrupt(params: DrawParams) {
-    assert(params.target === this.params.target);
+    Debug.assert(() => params.target === this.params.target);
 
     const tech = params.target.techniques.getTechnique(params.geometry.getTechniqueId(params.target));
     const program = tech.getShader(TechniqueFlags.defaults);

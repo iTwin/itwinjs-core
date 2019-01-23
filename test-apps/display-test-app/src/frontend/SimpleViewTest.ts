@@ -21,6 +21,7 @@ import {
   IModelApp,
   IModelConnection,
   OidcClientWrapper,
+  RenderDiagnostics,
 } from "@bentley/imodeljs-frontend";
 import { SimpleViewState } from "./SimpleViewState";
 import { showStatus } from "./Utils";
@@ -97,6 +98,9 @@ async function main() {
   }
   // Start the app. (This tries to fetch a number of localization json files from the origin.)
   DisplayTestApp.startup();
+
+  if (configuration.enableDiagnostics)
+    DisplayTestApp.renderSystem.enableDiagnostics(RenderDiagnostics.All);
 
   // Choose RpcConfiguration based on whether we are in electron or browser
   let rpcConfiguration: RpcConfiguration;

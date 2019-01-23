@@ -4,12 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { assert, IDisposable } from "@bentley/bentleyjs-core";
+import { IDisposable } from "@bentley/bentleyjs-core";
 import { TextureHandle } from "./Texture";
 import { RenderBuffer } from "./RenderBuffer";
 import { GL } from "./GL";
 import { System } from "./System";
-import { debugPrint } from "./debugPrint";
+import { Debug } from "./Diagnostics";
 
 export type DepthBuffer = RenderBuffer | TextureHandle;
 
@@ -29,11 +29,10 @@ export class FrameBuffer implements IDisposable {
 
   public get isDisposed(): boolean { return this._fbo === undefined; }
 
-  public get isValid(): boolean { return System.instance.context.FRAMEBUFFER_COMPLETE === this.checkStatus(); }
   public get isBound(): boolean { return FrameBufferBindState.Bound === this._bindState || FrameBufferBindState.BoundWithAttachments === this._bindState; }
   public get isSuspended(): boolean { return FrameBufferBindState.Suspended === this._bindState; }
   public getColor(ndx: number): TextureHandle {
-    assert(ndx < this._colorTextures.length);
+    Debug.assert(() => ndx < this._colorTextures.length);
     return this._colorTextures[ndx];
   }
 
@@ -87,17 +86,9 @@ export class FrameBuffer implements IDisposable {
     }
   }
 
-  private getDebugAttachmentsString(): string {
-    let str = "[";
-    for (const tx of this._colorTextures)
-      str += " " + (tx.getHandle()! as any)._debugId;
-
-    return str + " ]";
-  }
-
   public bind(bindAttachments: boolean = false): boolean {
-    assert(undefined !== this._fbo);
-    assert(!this.isBound);
+    Debug.assert(() => undefined !== this._fbo);
+    Debug.assert(() => !this.isBound);
 
     if (undefined === this._fbo)
       return false;
@@ -109,9 +100,6 @@ export class FrameBuffer implements IDisposable {
     if (bindAttachments) {
       System.instance.setDrawBuffers(this._colorAttachments);
       this._bindState = FrameBufferBindState.BoundWithAttachments;
-
-      if (TextureHandle.wantDebugIds)
-        debugPrint("Bound attachments " + this.getDebugAttachmentsString());
     } else {
       this._bindState = FrameBufferBindState.Bound;
     }
@@ -119,18 +107,12 @@ export class FrameBuffer implements IDisposable {
   }
 
   public unbind() {
-    assert(this.isBound);
+    Debug.assert(() => this.isBound);
     System.instance.context.bindFramebuffer(GL.FrameBuffer.TARGET, null);
     this._bindState = FrameBufferBindState.Unbound;
-    if (TextureHandle.wantDebugIds)
-      debugPrint("Unbound attachments " + this.getDebugAttachmentsString());
   }
 
-  public suspend() { assert(this.isBound); this._bindState = FrameBufferBindState.Suspended; }
-  public checkStatus(): GLenum {
-    const status: GLenum = System.instance.context.checkFramebufferStatus(GL.FrameBuffer.TARGET);
-    return status;
-  }
+  public suspend() { Debug.assert(() => this.isBound); this._bindState = FrameBufferBindState.Suspended; }
 
   // Chiefly for debugging currently - assumes RGBA, unsigned byte, want all pixels.
   public get debugPixels(): Uint8Array | undefined {
@@ -170,15 +152,15 @@ export class FrameBufferStack {
       this._top.fbo.suspend();
     }
 
-    assert(!fbo.isBound);
+    Debug.assert(() => !fbo.isBound);
     fbo.bind(withAttachments);
-    assert(fbo.isBound);
+    Debug.assert(() => fbo.isBound);
 
     this._stack.push({ fbo, withAttachments });
   }
 
   public pop(): void {
-    assert(!this.isEmpty);
+    Debug.assert(() => !this.isEmpty);
     if (undefined === this._top) {
       return;
     }
@@ -186,22 +168,22 @@ export class FrameBufferStack {
     const fbo = this._top.fbo;
     this._stack.pop();
 
-    assert(fbo.isBound);
+    Debug.assert(() => fbo.isBound);
     fbo.unbind();
-    assert(!fbo.isBound);
+    Debug.assert(() => !fbo.isBound);
 
     if (this.isEmpty) {
       System.instance.context.bindFramebuffer(GL.FrameBuffer.TARGET, null);
     } else {
       const top = this._top;
-      assert(top.fbo.isSuspended);
+      Debug.assert(() => top.fbo.isSuspended);
       top.fbo.bind(top.withAttachments);
-      assert(top.fbo.isBound);
+      Debug.assert(() => top.fbo.isBound);
     }
   }
 
   public get currentColorBuffer(): TextureHandle | undefined {
-    assert(!this.isEmpty);
+    Debug.assert(() => !this.isEmpty);
     return undefined !== this._top ? this._top.fbo.getColor(0) : undefined;
   }
 

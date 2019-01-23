@@ -4,13 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { assert, IDisposable, dispose } from "@bentley/bentleyjs-core";
+import { IDisposable, dispose } from "@bentley/bentleyjs-core";
 import { ImageBuffer, ImageBufferFormat, isPowerOfTwo, nextHighestPowerOfTwo, RenderTexture } from "@bentley/imodeljs-common";
 import { GL } from "./GL";
 import { System } from "./System";
 import { UniformHandle } from "./Handle";
 import { TextureUnit, OvrFlags } from "./RenderFlags";
-import { debugPrint } from "./debugPrint";
+import { Debug } from "./Diagnostics";
 
 type CanvasOrImage = HTMLCanvasElement | HTMLImageElement;
 
@@ -256,7 +256,7 @@ export abstract class TextureHandle implements IDisposable {
   public abstract get dataBytes(): Uint8Array | undefined;
   public get bytesUsed(): number { return this._bytesUsed; }
   public set bytesUsed(bytesUsed: number) {
-    assert(0 === this.bytesUsed);
+    Debug.assert(() => 0 === this.bytesUsed);
     this._bytesUsed = bytesUsed;
   }
 
@@ -306,17 +306,8 @@ export abstract class TextureHandle implements IDisposable {
     return TextureCubeHandle.createForCubeImages(posX, negX, posY, negY, posZ, negZ);
   }
 
-  // Set following to true to assign sequential numeric identifiers to WebGLTexture objects.
-  // This helps in debugging issues in which e.g. the same texture is bound as an input and output.
-  public static wantDebugIds: boolean = false;
-  private static _debugId: number = 0;
-  private static readonly _maxDebugId = 0xffffff;
   protected constructor(glTexture: WebGLTexture) {
     this._glTexture = glTexture;
-    if (TextureHandle.wantDebugIds) {
-      (glTexture as any)._debugId = ++TextureHandle._debugId;
-      TextureHandle._debugId %= TextureHandle._maxDebugId;
-    }
   }
 }
 
@@ -335,15 +326,13 @@ export class Texture2DHandle extends TextureHandle {
 
   /** Bind specified texture handle to specified texture unit. */
   public static bindTexture(texUnit: TextureUnit, glTex: WebGLTexture | undefined) {
-    assert(!(glTex instanceof TextureHandle));
+    Debug.assert(() => !(glTex instanceof TextureHandle));
     System.instance.bindTexture2d(texUnit, glTex);
-    if (this.wantDebugIds)
-      debugPrint("Texture Unit " + (texUnit - TextureUnit.Zero) + " = " + (glTex ? (glTex as any)._debugId : "null"));
   }
 
   /** Bind the specified texture to a uniform sampler2D */
   public static bindSampler(uniform: UniformHandle, tex: WebGLTexture, unit: TextureUnit): void {
-    assert(!(tex instanceof TextureHandle));
+    Debug.assert(() => !(tex instanceof TextureHandle));
     this.bindTexture(unit, tex);
     uniform.setUniform1i(unit - TextureUnit.Zero);
   }
@@ -365,7 +354,7 @@ export class Texture2DHandle extends TextureHandle {
   /** Update the 2D texture contents. */
   public update(updater: Texture2DDataUpdater): boolean {
     if (0 === this.width || 0 === this.height || undefined === this._dataBytes || 0 === this._dataBytes.length) {
-      assert(false);
+      Debug.assert(() => false);
       return false;
     }
 
@@ -404,7 +393,7 @@ export class Texture2DHandle extends TextureHandle {
 
   /** Create a texture from a bitmap */
   public static createForImageBuffer(image: ImageBuffer, type: RenderTexture.Type) {
-    assert(isPowerOfTwo(image.width) && isPowerOfTwo(image.height), "###TODO: Resize image dimensions to powers-of-two if necessary");
+    Debug.assert(() => isPowerOfTwo(image.width) && isPowerOfTwo(image.height), "###TODO: Resize image dimensions to powers-of-two if necessary");
     return this.create(Texture2DCreateParams.createForImageBuffer(image, type));
   }
 
@@ -441,15 +430,13 @@ export class TextureCubeHandle extends TextureHandle {
 
   /** Bind specified cubemap texture handle to specified texture unit. */
   public static bindTexture(texUnit: TextureUnit, glTex: WebGLTexture | undefined) {
-    assert(!(glTex instanceof TextureHandle));
+    Debug.assert(() => !(glTex instanceof TextureHandle));
     System.instance.bindTextureCubeMap(texUnit, glTex);
-    if (this.wantDebugIds)
-      debugPrint("Texture Unit " + (texUnit - TextureUnit.Zero) + " = " + (glTex ? (glTex as any)._debugId : "null"));
   }
 
   /** Bind the specified texture to a uniform sampler2D */
   public static bindSampler(uniform: UniformHandle, tex: WebGLTexture, unit: TextureUnit): void {
-    assert(!(tex instanceof TextureHandle));
+    Debug.assert(() => !(tex instanceof TextureHandle));
     this.bindTexture(unit, tex);
     uniform.setUniform1i(unit - TextureUnit.Zero);
   }
@@ -499,19 +486,19 @@ export class Texture2DDataUpdater {
   public constructor(data: Uint8Array) { this.data = data; }
 
   public setByteAtIndex(index: number, byte: number) {
-    assert(index < this.data.length);
+    Debug.assert(() => index < this.data.length);
     if (byte !== this.data[index]) {
       this.data[index] = byte;
       this.modified = true;
     }
   }
   public setOvrFlagsAtIndex(index: number, value: OvrFlags) {
-    assert(index < this.data.length);
+    Debug.assert(() => index < this.data.length);
     if (value !== this.data[index]) {
       this.data[index] = value;
       this.modified = true;
     }
   }
-  public getByteAtIndex(index: number): number { assert(index < this.data.length); return this.data[index]; }
+  public getByteAtIndex(index: number): number { Debug.assert(() => index < this.data.length); return this.data[index]; }
   public getFlagsAtIndex(index: number): OvrFlags { return this.getByteAtIndex(index); }
 }

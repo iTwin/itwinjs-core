@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { assert } from "@bentley/bentleyjs-core";
 import { FloatPreMulRgba } from "./FloatRGBA";
 import { ColorIndex, ColorDef } from "@bentley/imodeljs-common";
 import { VertexTable } from "../primitives/VertexTable";
+import { Debug } from "./Diagnostics";
 
 /* Describes a primitive's basic color properties */
 export class ColorInfo {
@@ -33,7 +33,7 @@ export class ColorInfo {
 
   public get isUniform() { return undefined !== this._uniform; }
   public get isNonUniform() { return !this.isUniform; }
-  public get uniform(): FloatPreMulRgba { assert(this.isUniform); return this._uniform!; }
+  public get uniform(): FloatPreMulRgba { Debug.assert(() => this.isUniform); return this._uniform!; }
 
   private static _nonUniformTranslucent = new ColorInfo(true);
   private static _nonUniformOpaque = new ColorInfo(false);

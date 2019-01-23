@@ -9,7 +9,7 @@ import {
   ClipVector, Transform, Point3d, ClipUtilities, PolyfaceBuilder, Point2d, IndexedPolyface, Range3d,
   IndexedPolyfaceVisitor, Triangulator, StrokeOptions, HalfEdgeGraph, HalfEdge, HalfEdgeMask,
 } from "@bentley/geometry-core";
-import { RenderGraphic, GraphicBranch, RenderSystem, RenderTarget, RenderClipVolume, GraphicList, PackedFeatureTable } from "../System";
+import { RenderGraphic, GraphicBranch, RenderSystem, RenderDiagnostics, RenderTarget, RenderClipVolume, GraphicList, PackedFeatureTable } from "../System";
 import { SkyBox } from "../../DisplayStyleState";
 import { OnScreenTarget, OffScreenTarget } from "./Target";
 import { GraphicBuilder, GraphicType } from "../GraphicBuilder";
@@ -19,7 +19,7 @@ import { PointStringParams, MeshParams, PolylineParams } from "../primitives/Ver
 import { MeshArgs } from "../primitives/mesh/MeshPrimitives";
 import { Branch, Batch, GraphicsArray } from "./Graphic";
 import { IModelConnection } from "../../IModelConnection";
-import { BentleyStatus, assert, Dictionary, IDisposable, dispose, Id64String } from "@bentley/bentleyjs-core";
+import { BentleyStatus, Dictionary, IDisposable, dispose, Id64String } from "@bentley/bentleyjs-core";
 import { Techniques } from "./Technique";
 import { IModelApp } from "../../IModelApp";
 import { ViewRect, Viewport } from "../../Viewport";
@@ -39,10 +39,7 @@ import { SkyBoxPrimitive, SkySpherePrimitive } from "./Primitive";
 import { ClipPlanesVolume, ClipMaskVolume } from "./ClipVolume";
 import { TextureUnit } from "./RenderFlags";
 import { UniformHandle } from "./Handle";
-
-function debugPrint(_str: string): void {
-  // console.log(_str); // tslint:disable-line:no-console
-}
+import { Debug } from "./Diagnostics";
 
 export const enum ContextState {
   Uninitialized,
@@ -159,7 +156,7 @@ export class Capabilities {
     // this._maxDepthType = this.queryExtensionObject("WEBGL_depth_texture") !== undefined ? DepthType.TextureUnsignedInt32 : DepthType.RenderBufferUnsignedShort16;
     this._maxDepthType = this.queryExtensionObject("WEBGL_depth_texture") !== undefined ? DepthType.TextureUnsignedInt24Stencil8 : DepthType.RenderBufferUnsignedShort16;
 
-    this.debugPrint(gl); // uses debugPrint at top of file; uncomment console.log in there to activate this.
+    this.debugPrint(gl);
 
     // Return based on currently-required features.  This must change if the amount used is increased or decreased.
     return this._hasRequiredFeatures && this._hasRequiredTextureUnits;
@@ -201,50 +198,53 @@ export class Capabilities {
   }
 
   private debugPrint(gl: WebGLRenderingContext) {
-    debugPrint("GLES Capabilities Information:");
-    debugPrint("     hasRequiredFeatures : " + this._hasRequiredFeatures);
-    debugPrint(" hasRequiredTextureUnits : " + this._hasRequiredTextureUnits);
-    debugPrint("              GL_VERSION : " + gl.getParameter(gl.VERSION));
-    debugPrint("               GL_VENDOR : " + gl.getParameter(gl.VENDOR));
-    debugPrint("             GL_RENDERER : " + gl.getParameter(gl.RENDERER));
-    debugPrint("          maxTextureSize : " + this.maxTextureSize);
-    debugPrint("     maxColorAttachments : " + this.maxColorAttachments);
-    debugPrint("          maxDrawBuffers : " + this.maxDrawBuffers);
-    debugPrint("     maxFragTextureUnits : " + this.maxFragTextureUnits);
-    debugPrint("     maxVertTextureUnits : " + this.maxVertTextureUnits);
-    debugPrint("     nonPowerOf2Textures : " + (this.supportsNonPowerOf2Textures ? "yes" : "no"));
-    debugPrint("             drawBuffers : " + (this.supportsDrawBuffers ? "yes" : "no"));
-    debugPrint("       32BitElementIndex : " + (this.supports32BitElementIndex ? "yes" : "no"));
-    debugPrint("            textureFloat : " + (this.supportsTextureFloat ? "yes" : "no"));
-    debugPrint("        textureHalfFloat : " + (this.supportsTextureHalfFloat ? "yes" : "no"));
-    debugPrint("        shaderTextureLOD : " + (this.supportsShaderTextureLOD ? "yes" : "no"));
+    if (!Debug.printEnabled)
+      return;
+
+    Debug.print(() => "GLES Capabilities Information:");
+    Debug.print(() => "     hasRequiredFeatures : " + this._hasRequiredFeatures);
+    Debug.print(() => " hasRequiredTextureUnits : " + this._hasRequiredTextureUnits);
+    Debug.print(() => "              GL_VERSION : " + gl.getParameter(gl.VERSION));
+    Debug.print(() => "               GL_VENDOR : " + gl.getParameter(gl.VENDOR));
+    Debug.print(() => "             GL_RENDERER : " + gl.getParameter(gl.RENDERER));
+    Debug.print(() => "          maxTextureSize : " + this.maxTextureSize);
+    Debug.print(() => "     maxColorAttachments : " + this.maxColorAttachments);
+    Debug.print(() => "          maxDrawBuffers : " + this.maxDrawBuffers);
+    Debug.print(() => "     maxFragTextureUnits : " + this.maxFragTextureUnits);
+    Debug.print(() => "     maxVertTextureUnits : " + this.maxVertTextureUnits);
+    Debug.print(() => "     nonPowerOf2Textures : " + (this.supportsNonPowerOf2Textures ? "yes" : "no"));
+    Debug.print(() => "             drawBuffers : " + (this.supportsDrawBuffers ? "yes" : "no"));
+    Debug.print(() => "       32BitElementIndex : " + (this.supports32BitElementIndex ? "yes" : "no"));
+    Debug.print(() => "            textureFloat : " + (this.supportsTextureFloat ? "yes" : "no"));
+    Debug.print(() => "        textureHalfFloat : " + (this.supportsTextureHalfFloat ? "yes" : "no"));
+    Debug.print(() => "        shaderTextureLOD : " + (this.supportsShaderTextureLOD ? "yes" : "no"));
 
     switch (this.maxRenderType) {
       case RenderType.TextureUnsignedByte:
-        debugPrint("           maxRenderType : TextureUnsigedByte");
+        Debug.print(() => "           maxRenderType : TextureUnsigedByte");
         break;
       case RenderType.TextureHalfFloat:
-        debugPrint("           maxRenderType : TextureHalfFloat");
+        Debug.print(() => "           maxRenderType : TextureHalfFloat");
         break;
       case RenderType.TextureFloat:
-        debugPrint("           maxRenderType : TextureFloat");
+        Debug.print(() => "           maxRenderType : TextureFloat");
         break;
       default:
-        debugPrint("           maxRenderType : Unknown");
+        Debug.print(() => "           maxRenderType : Unknown");
     }
 
     switch (this.maxDepthType) {
       case DepthType.RenderBufferUnsignedShort16:
-        debugPrint("            maxDepthType : RenderBufferUnsignedShort16");
+        Debug.print(() => "            maxDepthType : RenderBufferUnsignedShort16");
         break;
       case DepthType.TextureUnsignedInt24Stencil8:
-        debugPrint("            maxDepthType : TextureUnsignedInt24Stencil8");
+        Debug.print(() => "            maxDepthType : TextureUnsignedInt24Stencil8");
         break;
       case DepthType.TextureUnsignedInt32:
-        debugPrint("            maxDepthType : TextureUnsignedInt32");
+        Debug.print(() => "            maxDepthType : TextureUnsignedInt32");
         break;
       default:
-        debugPrint("            maxDepthType : Unknown");
+        Debug.print(() => "            maxDepthType : Unknown");
     }
   }
 }
@@ -399,14 +399,14 @@ class TextureStats implements TextureMonitor {
   private _maxSize = 0;
 
   public onTextureCreated(tex: TextureHandle): void {
-    assert(!this._allocated.has(tex));
+    Debug.assert(() => !this._allocated.has(tex));
     const size = tex.width * tex.height;
     this._maxSize = Math.max(size, this._maxSize);
     this._allocated.add(tex);
   }
 
   public onTextureDisposed(tex: TextureHandle): void {
-    assert(this._allocated.has(tex));
+    Debug.assert(() => this._allocated.has(tex));
     this._allocated.delete(tex);
     const thisSize = tex.width * tex.height;
     if (thisSize < this._maxSize)
@@ -494,10 +494,10 @@ export class System extends RenderSystem {
     const noiseDim = 4;
     const noiseArr = new Uint8Array([152, 235, 94, 173, 219, 215, 115, 176, 73, 205, 43, 201, 10, 81, 205, 198]);
     this._noiseTexture = TextureHandle.createForData(noiseDim, noiseDim, noiseArr, false, GL.Texture.WrapMode.Repeat, GL.Texture.Format.Luminance);
-    assert(undefined !== this._noiseTexture, "System.noiseTexture not created.");
+    Debug.assert(() => undefined !== this._noiseTexture, "System.noiseTexture not created.");
 
     this._lineCodeTexture = TextureHandle.createForData(LineCode.size, LineCode.count, new Uint8Array(LineCode.lineCodeData), false, GL.Texture.WrapMode.Repeat, GL.Texture.Format.Luminance);
-    assert(undefined !== this._lineCodeTexture, "System.lineCodeTexture not created.");
+    Debug.assert(() => undefined !== this._lineCodeTexture, "System.lineCodeTexture not created.");
   }
 
   public createTarget(canvas: HTMLCanvasElement): RenderTarget { return new OnScreenTarget(canvas); }
@@ -518,7 +518,7 @@ export class System extends RenderSystem {
       const cachedGeom = SkyBoxQuadsGeometry.create(params.cube);
       return cachedGeom !== undefined ? new SkyBoxPrimitive(cachedGeom) : undefined;
     } else {
-      assert(undefined !== params.sphere || undefined !== params.gradient);
+      Debug.assert(() => undefined !== params.sphere || undefined !== params.gradient);
       const cachedGeom = SkySphereViewportQuadGeometry.createGeometry(params);
       return cachedGeom !== undefined ? new SkySpherePrimitive(cachedGeom) : undefined;
     }
@@ -543,7 +543,7 @@ export class System extends RenderSystem {
         return TextureHandle.createForAttachment(width, height, GL.Texture.Format.DepthStencil, dtExt!.UNSIGNED_INT_24_8_WEBGL);
       }
       default: {
-        assert(false);
+        Debug.assert(() => false);
         return undefined;
       }
     }
@@ -708,7 +708,7 @@ export class System extends RenderSystem {
               params.push(Point2d.create(paramUnscaled.x * sheetTileScale, paramUnscaled.y * sheetTileScale));
             });
 
-            assert(trianglePoints.length === 3);
+            Debug.assert(() => trianglePoints.length === 3);
             polyfaceBuilder.addTriangleFacet(trianglePoints, params);
           }
           return true;
@@ -826,5 +826,11 @@ export class System extends RenderSystem {
 
       next[i] = false;
     }
+  }
+
+  public enableDiagnostics(enable: RenderDiagnostics): void {
+    Debug.assertionsEnabled = RenderDiagnostics.None !== (enable & RenderDiagnostics.Assertions);
+    Debug.printEnabled = RenderDiagnostics.None !== (enable & RenderDiagnostics.DebugOutput);
+    Debug.evaluateEnabled = RenderDiagnostics.None !== (enable & RenderDiagnostics.WebGL);
   }
 }

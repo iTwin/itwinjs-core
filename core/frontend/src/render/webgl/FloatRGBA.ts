@@ -5,10 +5,10 @@
 /** @module WebGL */
 
 import { ColorDef } from "@bentley/imodeljs-common";
-import { assert } from "@bentley/bentleyjs-core";
 import { UniformHandle } from "./Handle";
+import { Debug } from "./Diagnostics";
 
-function assertComponent(c: number) { assert(1.0 >= c && 0.0 <= c); }
+function assertComponent(c: number) { Debug.assert(() => 1.0 >= c && 0.0 <= c); }
 function assertRgb(rgb: FloatRgb) {
   assertComponent(rgb.red);
   assertComponent(rgb.green);

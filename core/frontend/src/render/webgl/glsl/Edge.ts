@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { assert } from "@bentley/bentleyjs-core";
 import {
   ProgramBuilder,
   VariableType,
@@ -19,6 +18,7 @@ import { addShaderFlags } from "./Common";
 import { addLineCode, adjustWidth } from "./Polyline";
 import { EdgeGeometry, SilhouetteEdgeGeometry } from "../Mesh";
 import { octDecodeNormal } from "./Surface";
+import { Debug } from "../Diagnostics";
 
 const decodeEndPointAndQuadIndices = `
   g_otherIndex = decodeUInt32(a_endPointAndQuadIndices.xyz);
@@ -130,7 +130,7 @@ function createBase(isSilhouette: boolean, isAnimated: boolean): ProgramBuilder 
   vert.addAttribute("a_endPointAndQuadIndices", VariableType.Vec4, (shaderProg) => {
     shaderProg.addAttribute("a_endPointAndQuadIndices", (attr, params) => {
       const geom = params.geometry;
-      assert(geom instanceof EdgeGeometry);
+      Debug.assert(() => geom instanceof EdgeGeometry);
       const edgeGeom = geom as EdgeGeometry;
       attr.enableArray(edgeGeom.endPointAndQuadIndices, 4, GL.DataType.UnsignedByte, false, 0, 0);
     });
@@ -149,7 +149,7 @@ function createBase(isSilhouette: boolean, isAnimated: boolean): ProgramBuilder 
     vert.addAttribute("a_normals", VariableType.Vec4, (shaderProg) => {
       shaderProg.addAttribute("a_normals", (attr, params) => {
         const geom = params.geometry;
-        assert(geom instanceof SilhouetteEdgeGeometry);
+        Debug.assert(() => geom instanceof SilhouetteEdgeGeometry);
         const silhouetteGeom = geom as SilhouetteEdgeGeometry;
         attr.enableArray(silhouetteGeom.normalPairs, 4, GL.DataType.UnsignedByte, false, 0, 0);
       });

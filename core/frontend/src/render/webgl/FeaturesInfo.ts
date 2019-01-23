@@ -9,7 +9,7 @@ import {
   FeatureIndex,
 } from "@bentley/imodeljs-common";
 import { VertexTable } from "../primitives/VertexTable";
-import { assert } from "@bentley/bentleyjs-core";
+import { Debug } from "./Diagnostics";
 
 export class FeaturesInfo {
   public readonly uniform?: number;
@@ -29,7 +29,7 @@ export class FeaturesInfo {
       case FeatureIndexType.Empty: return undefined;
       case FeatureIndexType.NonUniform: return FeaturesInfo._nonUniform;
       default:
-        assert(undefined !== vt.uniformFeatureID);
+        Debug.assert(() => undefined !== vt.uniformFeatureID);
         return new FeaturesInfo(vt.uniformFeatureID!);
     }
   }

@@ -6,7 +6,7 @@
 
 import { QPoint3dList, QParams3d, RenderTexture, ViewFlags, RenderMode } from "@bentley/imodeljs-common";
 import { TesselatedPolyline } from "../primitives/VertexTable";
-import { assert, IDisposable, dispose } from "@bentley/bentleyjs-core";
+import { IDisposable, dispose } from "@bentley/bentleyjs-core";
 import { Point3d, Vector2d } from "@bentley/geometry-core";
 import { AttributeHandle, BufferHandle, QBufferHandle3d } from "./Handle";
 import { Target } from "./Target";
@@ -23,6 +23,7 @@ import { VertexLUT } from "./VertexLUT";
 import { TextureHandle } from "./Texture";
 import { Material } from "./Material";
 import { SkyBox } from "../../DisplayStyleState";
+import { Debug } from "./Diagnostics";
 
 /** Represents a geometric primitive ready to be submitted to the GPU for rendering. */
 export abstract class CachedGeometry implements IDisposable, RenderMemory.Consumer {
@@ -60,7 +61,7 @@ export abstract class CachedGeometry implements IDisposable, RenderMemory.Consum
   // Intended to be overridden by specific subclasses
   public get material(): Material | undefined { return undefined; }
   public get polylineBuffers(): PolylineBuffers | undefined { return undefined; }
-  public set uniformFeatureIndices(value: number) { assert(undefined !== value); } // silence 'unused variable' warning...
+  public set uniformFeatureIndices(value: number) { Debug.assert(() => undefined !== value); } // silence 'unused variable' warning...
   public get featuresInfo(): FeaturesInfo | undefined { return undefined; }
   public get debugString(): string { return ""; }
 
@@ -90,7 +91,7 @@ export abstract class CachedGeometry implements IDisposable, RenderMemory.Consum
     let weight = this._getLineWeight(params);
     weight = Math.max(weight, minWeight);
     weight = Math.min(weight, 31.0);
-    assert(Math.floor(weight) === weight);
+    Debug.assert(() => Math.floor(weight) === weight);
     return weight;
   }
   // Returns true if flashing this geometry should mix its color with the hilite color. If not, the geometry color will be brightened instead.
@@ -140,11 +141,11 @@ export class IndexedGeometryParams implements IDisposable {
     const posBuf = QBufferHandle3d.create(qparams, positions);
     const indBuf = BufferHandle.createBuffer(GL.Buffer.Target.ElementArrayBuffer, indices);
     if (undefined === posBuf || undefined === indBuf) {
-      assert(false);
+      Debug.assert(() => false);
       return undefined;
     }
 
-    assert(!posBuf.isDisposed && !indBuf.isDisposed);
+    Debug.assert(() => !posBuf.isDisposed && !indBuf.isDisposed);
     return new IndexedGeometryParams(posBuf, indBuf, indices.length);
   }
   public static createFromList(positions: QPoint3dList, indices: Uint32Array) {
@@ -281,11 +282,11 @@ export class SkyBoxGeometryParams implements IDisposable {
   public static create(positions: Uint16Array, qparams: QParams3d) {
     const posBuf = QBufferHandle3d.create(qparams, positions);
     if (undefined === posBuf) {
-      assert(false);
+      Debug.assert(() => false);
       return undefined;
     }
 
-    assert(!posBuf.isDisposed);
+    Debug.assert(() => !posBuf.isDisposed);
     return new SkyBoxGeometryParams(posBuf);
   }
 
@@ -426,7 +427,7 @@ export class TexturedViewportQuadGeometry extends ViewportQuadGeometry {
     // TypeScript compiler will happily accept TextureHandle (or any other type) in place of WebGLTexture.
     // There is no such 'type' as WebGLTexture at run-time.
     for (const texture of this._textures) {
-      assert(!(texture instanceof TextureHandle));
+      Debug.assert(() => !(texture instanceof TextureHandle));
     }
   }
 }
@@ -596,7 +597,7 @@ export class CompositeGeometry extends TexturedViewportQuadGeometry {
 
   private constructor(params: IndexedGeometryParams, textures: WebGLTexture[]) {
     super(params, TechniqueId.CompositeHilite, textures);
-    assert(5 === this._textures.length);
+    Debug.assert(() => 5 === this._textures.length);
   }
 }
 

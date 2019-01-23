@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { assert, dispose } from "@bentley/bentleyjs-core";
+import { dispose } from "@bentley/bentleyjs-core";
 import { ClipVector, Point3d, ClipUtilities, Triangulator, PolyfaceBuilder, IndexedPolyfaceVisitor, UnionOfConvexClipPlaneSets, Vector3d, StrokeOptions } from "@bentley/geometry-core";
 import { QPoint3dList, Frustum, QParams3d } from "@bentley/imodeljs-common";
 import { ShaderProgramExecutor } from "./ShaderProgram";
@@ -18,6 +18,7 @@ import { GL } from "./GL";
 import { System } from "./System";
 import { RenderState } from "./RenderState";
 import { DrawParams } from "./DrawCommand";
+import { Debug } from "./Diagnostics";
 
 abstract class PlanesWriter {
   protected readonly _view: DataView;
@@ -245,7 +246,7 @@ export class ClipMaskVolume extends RenderClipVolume implements RenderMemory.Con
     const polyface = polyfaceBuilder.claimPolyface();
     const nPoints = polyface.pointCount;
     const pPoints = polyface.data.point;
-    assert(nPoints !== 0);
+    Debug.assert(() => nPoints !== 0);
 
     for (let i = 0; i < nPoints; i++)
       vertices.add(pPoints.getPoint3dAt(i));
@@ -255,7 +256,7 @@ export class ClipMaskVolume extends RenderClipVolume implements RenderMemory.Con
       for (let i = 0; i < 3; i++)
         indices.push(visitor.clientPointIndex(i));
 
-    assert(indices.length > 0);
+    Debug.assert(() => indices.length > 0);
     if (indices.length === 0 || vertices.length === 0)
       return undefined;
 
@@ -271,7 +272,7 @@ export class ClipMaskVolume extends RenderClipVolume implements RenderMemory.Con
   }
 
   /** Push this ClipMaskVolume clipping onto a target. */
-  public pushToTarget(_target: Target) { assert(false); }
+  public pushToTarget(_target: Target) { Debug.assert(() => false); }
 
   /** Push this ClipMaskVolume clipping onto the target of a program executor. */
   public pushToShaderExecutor(shader: ShaderProgramExecutor) {

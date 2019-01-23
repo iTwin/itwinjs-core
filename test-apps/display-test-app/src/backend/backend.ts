@@ -27,6 +27,7 @@ function setupStandaloneConfiguration() {
     configuration.standalonePath = process.env.SVT_STANDALONE_FILEPATH; // optional (browser-use only)
     configuration.viewName = process.env.SVT_STANDALONE_VIEWNAME; // optional
     configuration.iModelName = filename;
+    configuration.enableDiagnostics = undefined === process.env.SVT_DISABLE_DIAGNOSTICS;
     if (undefined !== process.env.SVT_STANDALONE_SIGNIN)
       configuration.signInForStandalone = true;
 

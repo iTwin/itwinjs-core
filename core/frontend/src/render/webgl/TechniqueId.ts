@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { assert } from "@bentley/bentleyjs-core";
 import { CompositeFlags } from "./RenderFlags";
+import { Debug } from "./Diagnostics";
 
 /** Technique enumeration */
 export const enum TechniqueId {
@@ -55,6 +55,6 @@ const compositeTechniqueIds = [
 ];
 
 export function computeCompositeTechniqueId(flags: CompositeFlags): TechniqueId {
-  assert(flags >= 0 && flags <= 7);
+  Debug.assert(() => flags >= 0 && flags <= 7);
   return compositeTechniqueIds[flags];
 }

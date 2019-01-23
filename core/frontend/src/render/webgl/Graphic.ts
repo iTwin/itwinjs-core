@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { assert, Id64, Id64String, BeTimePoint, IDisposable, dispose } from "@bentley/bentleyjs-core";
+import { Id64, Id64String, BeTimePoint, IDisposable, dispose } from "@bentley/bentleyjs-core";
 import { ViewFlags, ElementAlignedBox3d } from "@bentley/imodeljs-common";
 import { Transform } from "@bentley/geometry-core";
 import { Primitive } from "./Primitive";
@@ -18,6 +18,7 @@ import { OvrFlags, RenderPass } from "./RenderFlags";
 import { LineCode } from "./EdgeOverrides";
 import { GL } from "./GL";
 import { ClipPlanesVolume, ClipMaskVolume } from "./ClipVolume";
+import { Debug } from "./Diagnostics";
 
 export class FeatureOverrides implements IDisposable {
   public lut?: TextureHandle;
@@ -48,7 +49,7 @@ export class FeatureOverrides implements IDisposable {
     const dims: LUTDimensions = LUTDimensions.computeWidthAndHeight(nFeatures, 2);
     const width = dims.width;
     const height = dims.height;
-    assert(width * height >= nFeatures);
+    Debug.assert(() => width * height >= nFeatures);
 
     this.lutParams = new LUTParams(width, height);
 
@@ -65,7 +66,7 @@ export class FeatureOverrides implements IDisposable {
     if (undefined === ovrs) {
       this.updateFlashedAndHilited(updater, map, flashedElemId, hilites);
     } else {
-      assert(undefined !== hilites);
+      Debug.assert(() => undefined !== hilites);
       this.buildLookupTable(updater, map, ovrs, flashedElemId, hilites!);
     }
 
@@ -218,7 +219,7 @@ export class FeatureOverrides implements IDisposable {
 
   public initFromMap(map: PackedFeatureTable) {
     const nFeatures = map.numFeatures;
-    assert(0 < nFeatures);
+    Debug.assert(() => 0 < nFeatures);
 
     this.lut = undefined;
 
@@ -250,7 +251,7 @@ export class FeatureOverrides implements IDisposable {
 export abstract class Graphic extends RenderGraphic {
   public abstract addCommands(_commands: RenderCommands): void;
   public get isPickable(): boolean { return false; }
-  public addHiliteCommands(_commands: RenderCommands, _batch: Batch, _pass: RenderPass): void { assert(false); }
+  public addHiliteCommands(_commands: RenderCommands, _batch: Batch, _pass: RenderPass): void { Debug.assert(() => false); }
   public toPrimitive(): Primitive | undefined { return undefined; }
 }
 

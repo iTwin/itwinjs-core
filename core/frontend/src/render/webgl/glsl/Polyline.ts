@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { assert } from "@bentley/bentleyjs-core";
 import {
   ProgramBuilder,
   VariableType,
@@ -22,6 +21,7 @@ import { addWhiteOnWhiteReversal } from "./Fragment";
 import { System } from "../System";
 import { TextureUnit } from "../RenderFlags";
 import { addHiliter } from "./FeatureSymbology";
+import { Debug } from "../Diagnostics";
 
 const checkForDiscard = "return discardByLineCode;";
 
@@ -127,7 +127,7 @@ export function addLineCodeTexture(frag: FragmentShaderBuilder) {
   frag.addUniform("u_lineCodeTexture", VariableType.Sampler2D, (prog) => {
     prog.addProgramUniform("u_lineCodeTexture", (uniform) => {
       const lct = System.instance.lineCodeTexture;
-      assert(undefined !== lct);
+      Debug.assert(() => undefined !== lct);
       if (undefined !== lct)
         lct.bindSampler(uniform, TextureUnit.LineCode);
     });

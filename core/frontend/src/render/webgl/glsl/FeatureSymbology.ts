@@ -23,11 +23,11 @@ import { GLSLFragment, addWindowToTexCoords } from "./Fragment";
 import { GLSLCommon, addEyeSpace, addUInt32s } from "./Common";
 import { GLSLDecode } from "./Decode";
 import { addLookupTable } from "./LookupTable";
-import { assert } from "@bentley/bentleyjs-core";
 import { addRenderPass } from "./RenderPass";
 import { SurfaceGeometry } from "../Surface";
 import { UniformHandle } from "../Handle";
 import { DrawParams } from "../DrawCommand";
+import { Debug } from "../Diagnostics";
 
 export const enum FeatureSymbologyOptions {
   None = 0,
@@ -146,7 +146,7 @@ function addCommon(builder: ProgramBuilder, mode: FeatureMode, opts: FeatureSymb
   const wantLineCode = FeatureSymbologyOptions.None !== (opts & FeatureSymbologyOptions.LineCode);
   const wantColor = FeatureSymbologyOptions.None !== (opts & FeatureSymbologyOptions.Color);
   const wantAlpha = FeatureSymbologyOptions.None !== (opts & FeatureSymbologyOptions.Alpha);
-  assert(wantColor || !wantAlpha);
+  Debug.assert(() => wantColor || !wantAlpha);
 
   vert.addGlobal("feature_invisible", VariableType.Boolean, "false");
   vert.addFunction(GLSLCommon.extractNthBit);
@@ -194,7 +194,7 @@ function addCommon(builder: ProgramBuilder, mode: FeatureMode, opts: FeatureSymb
   vert.addUniform("u_featureLUT", VariableType.Sampler2D, (prog) => {
     prog.addGraphicUniform("u_featureLUT", (uniform, params) => {
       const ovr = params.target.currentOverrides;
-      assert(undefined !== ovr);
+      Debug.assert(() => undefined !== ovr);
       ovr!.lut!.bindSampler(uniform, TextureUnit.FeatureSymbology);
     });
   });
@@ -618,7 +618,7 @@ export function addFeatureSymbology(builder: ProgramBuilder, feat: FeatureMode, 
   if (!addCommon(builder, feat, opts) || FeatureSymbologyOptions.None === opts)
     return;
 
-  assert((FeatureSymbologyOptions.HasOverrides | FeatureSymbologyOptions.Color) === (opts & (FeatureSymbologyOptions.HasOverrides | FeatureSymbologyOptions.Color)));
+  Debug.assert(() => (FeatureSymbologyOptions.HasOverrides | FeatureSymbologyOptions.Color) === (opts & (FeatureSymbologyOptions.HasOverrides | FeatureSymbologyOptions.Color)));
 
   builder.addVarying("v_feature_rgb", VariableType.Vec3);
   builder.addVarying("v_feature_alpha_flashed", VariableType.Vec2);
