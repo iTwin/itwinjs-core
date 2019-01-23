@@ -334,7 +334,7 @@ export namespace GltfTileIO {
     protected get _isClassifier(): boolean { return BatchType.Classifier === this._type; }
 
     /** @hidden */
-    protected readGltfAndCreateGraphics(isLeaf: boolean, isCurved: boolean, isComplete: boolean, featureTable: FeatureTable, contentRange: ElementAlignedBox3d, sizeMultiplier?: number): GltfTileIO.ReaderResult {
+    protected readGltfAndCreateGraphics(isLeaf: boolean, isCurved: boolean, isComplete: boolean, featureTable: FeatureTable, contentRange: ElementAlignedBox3d, transformToRoot?: Transform, sizeMultiplier?: number): GltfTileIO.ReaderResult {
       if (this._isCanceled)
         return { readStatus: TileIO.ReadStatus.Canceled, isLeaf, sizeMultiplier };
 
@@ -357,11 +357,12 @@ export namespace GltfTileIO {
         }
         if (undefined !== renderGraphic) {
           renderGraphic = this._system.createBatch(renderGraphic, PackedFeatureTable.pack(featureTable), contentRange);
-          if (undefined !== this._returnToCenter || this._yAxisUp) {
+          if (undefined !== this._returnToCenter || this._yAxisUp || undefined !== transformToRoot) {
             const branch = new GraphicBranch();
             branch.add(renderGraphic);
             let transform = (undefined === this._returnToCenter) ? Transform.createIdentity() : Transform.createTranslationXYZ(this._returnToCenter[0], this._returnToCenter[1], this._returnToCenter[2]);
             if (this._yAxisUp) transform = transform.multiplyTransformMatrix3d(Matrix3d.createRotationAroundVector(Vector3d.create(1.0, 0.0, 0.0), Angle.createRadians(Angle.piOver2Radians)) as Matrix3d);
+            if (undefined !== transformToRoot) transform = transformToRoot.multiplyTransformTransform(transform);
             renderGraphic = this._system.createBranch(branch, transform);
           }
         }
@@ -468,16 +469,31 @@ export namespace GltfTileIO {
     /** @hidden */
     protected readFeatureIndices(_json: any): number[] | undefined { return undefined; }
 
+    private colorFromJson(values: number[]): ColorDef { return ColorDef.from(values[0] * 255, values[1] * 255, values[2] * 255, (1.0 - values[3]) * 255); }
+
+    private colorFromMaterial(materialJson: any): ColorDef {
+      if (materialJson) {
+        if (materialJson.values && Array.isArray(materialJson.values.color))
+          return this.colorFromJson(materialJson.values.color);
+        else if (materialJson.pbrMetallicRoughness && Array.isArray(materialJson.pbrMetallicRoughness.baseColorFactor))
+          return this.colorFromJson(materialJson.pbrMetallicRoughness.baseColorFactor);
+        else if (materialJson.extensions && materialJson.extensions.KHR_techniques_webgl && materialJson.extensions.KHR_techniques_webgl.values && materialJson.extensions.KHR_techniques_webgl.values.u_color)
+          return this.colorFromJson(materialJson.extensions.KHR_techniques_webgl.values.u_color);
+      }
+      return ColorDef.white.clone();
+    }
+
     protected createDisplayParams(materialJson: any, hasBakedLighting: boolean): DisplayParams | undefined {
       let textureMapping: TextureMapping | undefined;
 
-      if (undefined !== materialJson &&
-        undefined !== materialJson.values &&
-        undefined !== materialJson.values.tex)
-        textureMapping = this.findTextureMapping(materialJson.values.tex);
+      if (undefined !== materialJson) {
+        if (materialJson.values && materialJson.values.tex)
+          textureMapping = this.findTextureMapping(materialJson.values.tex);
+        else if (materialJson.extensions && materialJson.extensions.KHR_techniques_webgl && materialJson.extensions.KHR_techniques_webgl.values && materialJson.extensions.KHR_techniques_webgl.values.u_tex)
+          textureMapping = this.findTextureMapping(materialJson.extensions.KHR_techniques_webgl.values.u_tex.index);
+      }
 
-      const color = new ColorDef(0x77777777);   // Grey.
-
+      const color = this.colorFromMaterial(materialJson);
       return new DisplayParams(DisplayParams.Type.Mesh, color, color, 1, LinePixels.Solid, FillFlags.Always, undefined, undefined, hasBakedLighting, textureMapping);
     }
     protected extractReturnToCenter(extensions: any): number[] | undefined {
@@ -549,16 +565,19 @@ export namespace GltfTileIO {
       // We don't have real colormap - just load material color.  This will be used if non-Bentley
       // tile or fit the color table is uniform. For a non-Bentley, non-Uniform, we'll set the
       // uv parameters to pick the colors out of the color map texture.
-      if (materialValue && materialValue.values && Array.isArray(materialValue.values.color))
-        mesh.colorMap.insert(ColorDef.from(materialValue.values.color[0] * 255, materialValue.values.color[1] * 255, materialValue.values.color[2] * 255).tbgr);
-      else
-        mesh.colorMap.insert(0xffffff);   // White...
+      mesh.colorMap.insert(displayParams.fillColor.tbgr);   // White...
 
-      let colorIndices;
-      if (materialValue.values !== undefined && Array.isArray(materialValue.values.texStep) && undefined !== (colorIndices = this.readBufferData16(primitive.attributes, "_COLORINDEX"))) {
-        const texStep = materialValue.values.texStep;
-        for (let i = 0; i < colorIndices.count; i++)
-          mesh.uvParams.push(new Point2d(texStep[1] + texStep[0] * colorIndices.buffer[i], .5));
+      const colorIndices = this.readBufferData16(primitive.attributes, "_COLORINDEX");
+      if (undefined !== colorIndices) {
+        let texStep;
+        if (materialValue.values !== undefined && Array.isArray(materialValue.values.texStep))
+          texStep = materialValue.values.texStep;
+        else if (materialValue.extensions && materialValue.extensions.KHR_techniques_webgl && materialValue.extensions.KHR_techniques_webgl.values && Array.isArray(materialValue.extensions.KHR_techniques_webgl.values.u_texStep))
+          texStep = materialValue.extensions.KHR_techniques_webgl.values.u_texStep;
+
+        if (texStep)
+          for (let i = 0; i < colorIndices.count; i++)
+            mesh.uvParams.push(new Point2d(texStep[1] + texStep[0] * colorIndices.buffer[i], .5));
       }
 
       if (undefined !== mesh.features && !this.readFeatures(mesh.features, primitive))
@@ -588,6 +607,8 @@ export namespace GltfTileIO {
           return undefined;
         }
       }
+      if (displayParams.textureMapping && 0 === mesh.uvParams.length)
+        return undefined;
 
       return mesh;
     }

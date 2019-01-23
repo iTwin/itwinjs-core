@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Handle transforms on child tiles.",
+      "packageName": "@bentley/imodeljs-common",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-common",
+  "email": "ray.bentley@bentley.con"
+}

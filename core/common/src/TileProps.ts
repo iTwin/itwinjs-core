@@ -20,6 +20,8 @@ export interface TileProps {
   sizeMultiplier?: number;
   /** Optional boolean indicating this tile has no children. Defaults to false if undefined. */
   isLeaf?: boolean;
+  /** Optional transform (from tile to root) */
+  transformToRoot?: TransformProps;
 }
 
 /** @hidden */

@@ -63,67 +63,103 @@ export class RealityModelContextIModelCreator {
         this.iModelDb = IModelDb.createStandalone(iModelFileName, { rootSubject: { name: "Reality Model Context" } });
         this.url = url;
     }
+    private realityModelFromJson(json: any, worldRange: AxisAlignedBox3d): { realityModel: ContextRealityModelProps | undefined, geoLocated: boolean } {
+        let geoLocated = true;
+        if (undefined === json.root.boundingVolume.box) {
+            const region = JsonUtils.asArray(json.root.boundingVolume.region);
+            if (undefined === region)
+                throw new TypeError("Unable to determine GeoLocation - no root Transform or Region on root.");
+            const ecefLow = (new Cartographic(region[0], region[1], region[4])).toEcef();
+            const ecefHigh = (new Cartographic(region[2], region[3], region[5])).toEcef();
+            const ecefRange = Range3d.create(ecefLow, ecefHigh);
+            const cartoCenter = new Cartographic((region[0] + region[2]) / 2.0, (region[1] + region[3]) / 2.0, (region[4] + region[5]) / 2.0);
+            const ecefLocation = EcefLocation.createFromCartographicOrigin(cartoCenter!);
+            this.iModelDb.setEcefLocation(ecefLocation);
+            const ecefToWorld = ecefLocation.getTransform().inverse()!;
+            worldRange.extendRange(AxisAlignedBox3d.fromJSON(ecefToWorld.multiplyRange(ecefRange)));
+        } else {
+            let rootTransform = RealityModelTileUtils.transformFromJson(json.root.transform);
+            const range = RealityModelTileUtils.rangeFromBoundingVolume(json.root.boundingVolume)!;
+            if (undefined === rootTransform)
+                rootTransform = Transform.createIdentity();
 
+            const tileRange = rootTransform.multiplyRange(range);
+            if (rootTransform.matrix.isIdentity) {
+                geoLocated = false;
+                worldRange.extendRange(AxisAlignedBox3d.fromJSON(tileRange));
+            } else {
+                const ecefCenter = tileRange.localXYZToWorld(.5, .5, .5)!;
+                const cartoCenter = Cartographic.fromEcef(ecefCenter);
+                const ecefLocation = EcefLocation.createFromCartographicOrigin(cartoCenter!);
+                this.iModelDb.setEcefLocation(ecefLocation);
+                const ecefToWorld = ecefLocation.getTransform().inverse()!;
+                worldRange.extendRange(AxisAlignedBox3d.fromJSON(ecefToWorld.multiplyRange(tileRange)));
+            }
+        }
+        return { realityModel: { tilesetUrl: this.url, name: this.url }, geoLocated };
+    }
     /** Perform the import */
     public async create(): Promise<void> {
         this.definitionModelId = DefinitionModel.insert(this.iModelDb, IModelDb.rootSubjectId, "Definitions");
         this.physicalModelId = PhysicalModel.insert(this.iModelDb, IModelDb.rootSubjectId, "Empty Model");
 
+        let geoLocated = false;
+        const worldRange = new AxisAlignedBox3d();
+        const realityModels: ContextRealityModelProps[] = [];
         requestPromise(this.url, { json: true }).then((json: any) => {
-
-            let geoLocated = true;
-            let worldRange: AxisAlignedBox3d;
-            if (undefined === json.root.boundingVolume.box) {
-                const region = JsonUtils.asArray(json.root.boundingVolume.region);
-                if (undefined === region)
-                    throw new TypeError("Unable to determine GeoLocation - no root Transform or Region on root.");
-                const ecefLow = (new Cartographic(region[0], region[1], region[4])).toEcef();
-                const ecefHigh = (new Cartographic(region[2], region[3], region[5])).toEcef();
-                const ecefRange = Range3d.create(ecefLow, ecefHigh);
-                const cartoCenter = new Cartographic((region[0] + region[2]) / 2.0, (region[1] + region[3]) / 2.0, (region[4] + region[5]) / 2.0);
-                const ecefLocation = EcefLocation.createFromCartographicOrigin(cartoCenter!);
-                this.iModelDb.setEcefLocation(ecefLocation);
-                const ecefToWorld = ecefLocation.getTransform().inverse()!;
-                worldRange = AxisAlignedBox3d.fromJSON(ecefToWorld.multiplyRange(ecefRange));
+            if (this.url.endsWith("_AppData.json")) {
+                const nameIndex = this.url.lastIndexOf("TileSets");
+                const prefix = this.url.substr(0, nameIndex);
+                let worldToEcef: Transform | undefined;
+                for (const modelValue of Object.values(json.models)) {
+                    const model = modelValue as any;
+                    if (model.tilesetUrl !== undefined &&
+                        model.type === "spatial") {
+                        let modelUrl = prefix + model.tilesetUrl.replace(/\/\//g, "/");
+                        modelUrl = modelUrl.replace(/ /g, "%20");
+                        const ecefRange = Range3d.fromJSON(model.extents);
+                        if (!worldToEcef) {
+                            worldToEcef = RealityModelTileUtils.transformFromJson(model.transform)!;
+                            const ecefCenter = ecefRange.localXYZToWorld(.5, .5, .5)!;
+                            const cartoCenter = Cartographic.fromEcef(ecefCenter);
+                            const ecefLocation = EcefLocation.createFromCartographicOrigin(cartoCenter!);
+                            this.iModelDb.setEcefLocation(ecefLocation);
+                            geoLocated = true;
+                        }
+                        worldRange.extendRange(worldToEcef.inverse()!.multiplyRange(ecefRange));
+                        realityModels.push({ tilesetUrl: modelUrl, name: model.name });
+                    }
+                }
             } else {
-                let rootTransform = RealityModelTileUtils.transformFromJson(json.root.transform);
-                const range = RealityModelTileUtils.rangeFromBoundingVolume(json.root.boundingVolume)!;
-                if (undefined === rootTransform)
-                    rootTransform = Transform.createIdentity();
+                const result = this.realityModelFromJson(json, worldRange);
+                if (result.realityModel) {
+                    realityModels.push(result.realityModel);
+                    if (result.geoLocated)
+                        geoLocated = true;
 
-                const tileRange = rootTransform.multiplyRange(range);
-                if (rootTransform.matrix.isIdentity) {
-                    geoLocated = false;
-                    worldRange = AxisAlignedBox3d.fromJSON(tileRange);
-                } else {
-                    const ecefCenter = tileRange.localXYZToWorld(.5, .5, .5)!;
-                    const cartoCenter = Cartographic.fromEcef(ecefCenter);
-                    const ecefLocation = EcefLocation.createFromCartographicOrigin(cartoCenter!);
-                    this.iModelDb.setEcefLocation(ecefLocation);
-                    const ecefToWorld = ecefLocation.getTransform().inverse()!;
-                    worldRange = AxisAlignedBox3d.fromJSON(ecefToWorld.multiplyRange(tileRange));
+                    realityModels.push();
                 }
             }
 
-            this.insertSpatialView("Reality Model View", worldRange, { tilesetUrl: this.url, name: this.url }, geoLocated);
+            this.insertSpatialView("Reality Model View", worldRange, realityModels, geoLocated);
             this.iModelDb.updateProjectExtents(worldRange);
             this.iModelDb.saveChanges();
         })
             .catch((error) => {
-                process.stdout.write("Error occurred requsting data from: " + this.url + "Error: " + error + "\n");
+                process.stdout.write("Error occurred requesting data from: " + this.url + "Error: " + error + "\n");
             });
 
     }
 
     /** Insert a SpatialView configured to display the GeoJSON data that was converted/imported. */
-    protected insertSpatialView(viewName: string, range: AxisAlignedBox3d, realityModel: ContextRealityModelProps, geoLocated: boolean): Id64String {
+    protected insertSpatialView(viewName: string, range: AxisAlignedBox3d, realityModels: ContextRealityModelProps[], geoLocated: boolean): Id64String {
         const modelSelectorId: Id64String = ModelSelector.insert(this.iModelDb, this.definitionModelId, viewName, [this.physicalModelId]);
         const categorySelectorId: Id64String = CategorySelector.insert(this.iModelDb, this.definitionModelId, viewName, []);
         const vf = new ViewFlags();
         vf.backgroundMap = geoLocated;
         vf.renderMode = RenderMode.SmoothShade;
         vf.cameraLights = true;
-        const displayStyleId: Id64String = DisplayStyle3d.insert(this.iModelDb, this.definitionModelId, viewName, { viewFlags: vf, contextRealityModels: [realityModel] });
+        const displayStyleId: Id64String = DisplayStyle3d.insert(this.iModelDb, this.definitionModelId, viewName, { viewFlags: vf, contextRealityModels: realityModels });
         return OrthographicViewDefinition.insert(this.iModelDb, this.definitionModelId, viewName, modelSelectorId, categorySelectorId, displayStyleId, range, StandardViewIndex.Iso);
     }
 }

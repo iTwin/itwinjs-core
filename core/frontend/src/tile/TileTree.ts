@@ -52,6 +52,7 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
   public contentId: string;
   public readonly center: Point3d;
   public readonly radius: number;
+  public readonly transformToRoot?: Transform;
   protected _maximumSize: number;
   protected _isLeaf: boolean;
   protected _childrenLastUsed: BeTimePoint;
@@ -63,6 +64,9 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
   protected _rangeGraphicType: Tile.DebugBoundingBoxes = Tile.DebugBoundingBoxes.None;
   protected _sizeMultiplier?: number;
   protected _request?: TileRequest;
+  protected _transformToRoot?: Transform;
+  protected _localRange?: ElementAlignedBox3d;
+  protected _localContentRange?: ElementAlignedBox3d;
   private _state: TileState;
 
   public constructor(props: Tile.Params) {
@@ -77,7 +81,14 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
     this._childrenLastUsed = BeTimePoint.now();
     this._contentRange = props.contentRange;
     this._sizeMultiplier = props.sizeMultiplier;
-
+    if (undefined !== (this.transformToRoot = props.transformToRoot)) {
+      this.transformToRoot.multiplyRange(props.range, this.range);
+      this._localRange = this.range;
+      if (undefined !== props.contentRange) {
+        this.transformToRoot.multiplyRange(props.contentRange, this._contentRange);
+        this._localContentRange = props.contentRange;
+      }
+    }
     if (!this.root.loader.tileRequiresLoading(props)) {
       this.setIsReady();    // If no contents, this node is for structure only and no content loading is required.
     }
@@ -619,11 +630,13 @@ export namespace Tile {
       public readonly isLeaf?: boolean,
       public readonly parent?: Tile,
       public readonly contentRange?: ElementAlignedBox3d,
+      public readonly transformToRoot?: Transform,
       public readonly sizeMultiplier?: number) { }
 
     public static fromJSON(props: TileProps, root: TileTree, parent?: Tile) {
       const contentRange = undefined !== props.contentRange ? ElementAlignedBox3d.fromJSON(props.contentRange) : undefined;
-      return new Params(root, props.contentId, ElementAlignedBox3d.fromJSON(props.range), props.maximumSize, props.isLeaf, parent, contentRange, props.sizeMultiplier);
+      const transformToRoot = undefined !== props.transformToRoot ? Transform.fromJSON(props.transformToRoot) : undefined;
+      return new Params(root, props.contentId, ElementAlignedBox3d.fromJSON(props.range), props.maximumSize, props.isLeaf, parent, contentRange, transformToRoot, props.sizeMultiplier);
     }
   }
 }
@@ -754,7 +767,7 @@ export abstract class TileLoader {
         return { renderGraphic: PntsTileIO.readPointCloud(streamBuffer, tile.root.iModel, tile.root.modelId, tile.root.is3d, tile.range, IModelApp.renderSystem, tile.yAxisUp) };
 
       case TileIO.Format.B3dm:
-        reader = B3dmTileIO.Reader.create(streamBuffer, tile.root.iModel, tile.root.modelId, tile.root.is3d, tile.range, IModelApp.renderSystem, tile.yAxisUp, tile.isLeaf, isCanceled);
+        reader = B3dmTileIO.Reader.create(streamBuffer, tile.root.iModel, tile.root.modelId, tile.root.is3d, tile.range, IModelApp.renderSystem, tile.yAxisUp, tile.isLeaf, tile.transformToRoot, isCanceled);
         break;
 
       case TileIO.Format.Dgn:
@@ -819,7 +832,7 @@ export abstract class TileLoader {
     streamBuffer.rewind(4);
     switch (format) {
       case TileIO.Format.B3dm:
-        reader = B3dmTileIO.Reader.create(streamBuffer, tile.root.iModel, tile.root.modelId, tile.root.is3d, tile.range, IModelApp.renderSystem, tile.yAxisUp, tile.isLeaf, isCanceled);
+        reader = B3dmTileIO.Reader.create(streamBuffer, tile.root.iModel, tile.root.modelId, tile.root.is3d, tile.range, IModelApp.renderSystem, tile.yAxisUp, tile.isLeaf, tile.transformToRoot, isCanceled);
         break;
 
       case TileIO.Format.Dgn:
