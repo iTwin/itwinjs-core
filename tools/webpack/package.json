@@ -101,8 +101,6 @@
   "peerDependencies": {
     "@types/react": "^16.4.6",
     "@types/react-dom": "16.0.7",
-    "chromedriver": "^2.34.1",
-    "electron-chromedriver": "^2.0.0",
     "react": "^16.4.2",
     "react-dom": "^16.4.2",
     "react-test-renderer": "^16.4.2",
@@ -111,8 +109,6 @@
   "devDependencies": {
     "@types/react": "^16.4.14",
     "@types/react-dom": "16.0.7",
-    "chromedriver": "^2.41.0",
-    "electron-chromedriver": "^2.0.0",
     "react": "^16.4.2",
     "react-dom": "^16.4.2",
     "react-test-renderer": "^16.4.2",

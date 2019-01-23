@@ -19,7 +19,8 @@ exports.config = mergeWdioConfigs(base.config, {
     chromeOptions: {
       binary: require.resolve("electron/dist/electron.exe"),
       args: [
-        "--disable-gpu",
+        "disable-gpu",
+        "remote-debugging-port=54199",
         `app=${paths.appBuiltMainJs}`,
       ]
     },
