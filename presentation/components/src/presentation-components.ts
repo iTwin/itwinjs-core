@@ -27,6 +27,7 @@ export { viewWithUnifiedSelection } from "./viewport/WithUnifiedSelection";
 
 // Set the version number so it can be found at runtime. BUILD_SEMVER is replaced at build time by the webpack DefinePlugin.
 declare var BUILD_SEMVER: string;
+/* istanbul ignore next */
 if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") && window) {
   if (!(window as any).iModelJsVersions)
     (window as any).iModelJsVersions = new Map<string, string>();

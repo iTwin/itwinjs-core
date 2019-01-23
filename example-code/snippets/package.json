@@ -12,7 +12,7 @@
     "lint": "tslint --project . 1>&2",
     "test": "npm run test:backend",
     "test:backend": "npm run copy:assets && node ./node_modules/@bentley/build-tools/scripts/test.js --testDir=\"./lib\"",
-    "cover": ""
+    "cover": "npm test"
   },
   "repository": {},
   "dependencies": {

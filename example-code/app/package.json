@@ -14,7 +14,7 @@
     "docs": "",
     "lint": "tslint --project . 1>&2",
     "test": "npm run copy:test-backend-assets && npm run copy:backend-assets && node ./node_modules/@bentley/build-tools/scripts/test.js --defineWindow --testDir=\"./lib/backend/test\"",
-    "cover": ""
+    "cover": "npm test"
   },
   "repository": {},
   "dependencies": {

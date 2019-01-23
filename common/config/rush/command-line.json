@@ -1,6 +1,7 @@
 {
   "$schema": "https://dev.office.com/json-schemas/rush/command-line.schema.json",
-  "commands": [{
+  "commands": [
+    {
       "name": "audit",
       "commandKind": "global",
       "summary": "Runs npm audit for the entire monorepo",
@@ -20,7 +21,7 @@
       "commandKind": "bulk",
       "summary": "Run cover script for each package",
       "description": "Iterates through each package in the monorepo and runs the 'cover' script",
-      "enableParallelism": false,
+      "enableParallelism": true,
       "ignoreMissingScript": false
     },
     {

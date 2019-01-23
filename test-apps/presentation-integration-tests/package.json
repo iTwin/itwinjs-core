@@ -16,7 +16,7 @@
     "lint": "tslint --project . 1>&2",
     "test": "mocha --opts ./mocha.opts ./lib/**/*.js",
     "test:watch": "npm test -- --reporter min --watch-extensions ts --watch",
-    "cover": ""
+    "cover": "npm test"
   },
   "dependencies": {
     "@bentley/bentleyjs-core": "0.189.0-dev.4",
@@ -64,7 +64,6 @@
     "cross-env": "^5.1.4",
     "ignore-styles": "^5.0.1",
     "jsdom-global": "3.0.2",
-    "nyc": "^13.0.1",
     "ts-node": "^7.0.1",
     "tslint": "^5.11.0",
     "typescript": "~3.1.0"
