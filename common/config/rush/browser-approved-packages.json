@@ -156,7 +156,7 @@
     },
     {
       "name": "chai-as-promised",
-      "allowedCategories": [ "backend", "common", "frontend", "internal" ]
+      "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
     },
     {
       "name": "chai-jest-snapshot",

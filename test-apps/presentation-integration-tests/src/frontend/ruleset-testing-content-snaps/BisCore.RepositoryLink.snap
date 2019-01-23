@@ -1,0 +1,71 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`RulesetTesting generates correct content for 'Items' ruleset. ClassName: 'BisCore:RepositoryLink' 1`] = `
+Array [
+  PropertyRecord {
+    "description": "Properties_60InstancesWithUrl2.dgn",
+    "property": Object {
+      "displayLabel": "User Label",
+      "name": "RepositoryLink_UserLabel",
+      "typename": "string",
+    },
+    "value": Object {
+      "displayValue": "Properties_60InstancesWithUrl2.dgn",
+      "value": "Properties_60InstancesWithUrl2.dgn",
+      "valueFormat": 0,
+    },
+  },
+  PropertyRecord {
+    "description": "file:///d|/temp/properties_60instanceswithurl2.dgn",
+    "property": Object {
+      "displayLabel": "URL",
+      "name": "RepositoryLink_Url",
+      "typename": "string",
+    },
+    "value": Object {
+      "displayValue": "file:///d|/temp/properties_60instanceswithurl2.dgn",
+      "value": "file:///d|/temp/properties_60instanceswithurl2.dgn",
+      "valueFormat": 0,
+    },
+  },
+  PropertyRecord {
+    "description": "DgnV8Bridge",
+    "isReadonly": true,
+    "property": Object {
+      "displayLabel": "Model",
+      "name": "RepositoryLink_Model",
+      "typename": "navigation",
+    },
+    "value": Object {
+      "displayValue": "DgnV8Bridge",
+      "value": 1,
+      "valueFormat": 0,
+    },
+  },
+  PropertyRecord {
+    "property": Object {
+      "displayLabel": "Description",
+      "name": "RepositoryLink_Description",
+      "typename": "string",
+    },
+    "value": Object {
+      "displayValue": "",
+      "value": undefined,
+      "valueFormat": 0,
+    },
+  },
+  PropertyRecord {
+    "description": "file:///d|/temp/properties_60instanceswithurl2.dgn",
+    "property": Object {
+      "displayLabel": "Code",
+      "name": "RepositoryLink_CodeValue",
+      "typename": "string",
+    },
+    "value": Object {
+      "displayValue": "file:///d|/temp/properties_60instanceswithurl2.dgn",
+      "value": "file:///d|/temp/properties_60instanceswithurl2.dgn",
+      "valueFormat": 0,
+    },
+  },
+]
+`;

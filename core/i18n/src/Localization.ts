@@ -17,18 +17,20 @@ export class I18N {
   private _i18n: i18next.i18n;
   private _namespaceRegistry: Map<string, I18NNamespace> = new Map<string, I18NNamespace>();
 
-  public constructor(nameSpaces: string[], defaultNameSpace: string, options?: I18NOptions, renderFunction?: any) {
+  public constructor(nameSpaces: string[], defaultNameSpace: string, options?: I18NOptions, renderFunction?: i18next.Callback) {
     this._i18n = i18next.createInstance();
+
+    const backendOptions: i18nextXHRBackend.BackendOptions = {
+      loadPath: options && options.urlTemplate ? options.urlTemplate : "locales/{{lng}}/{{ns}}.json",
+      crossDomain: true,
+    };
 
     const initOptions: i18next.InitOptions = {
       interpolation: { escapeValue: true },
       fallbackLng: "en",
       ns: nameSpaces,
       defaultNS: defaultNameSpace,
-      backend: {
-        loadPath: options && options.urlTemplate ? options.urlTemplate : "locales/{{lng}}/{{ns}}.json",
-        crossDomain: true,
-      },
+      backend: backendOptions,
     };
 
     // if in a development environment, set to pseudo-localize, otherwise detect from browser.

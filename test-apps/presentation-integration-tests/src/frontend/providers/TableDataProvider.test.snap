@@ -45,7 +45,6 @@ Object {
       "key": "/DisplayLabel/",
       "record": PropertyRecord {
         "description": "Properties_60InstancesWithUrl2",
-        "isMerged": false,
         "isReadonly": true,
         "property": Object {
           "displayLabel": "£ábêl",
@@ -63,7 +62,6 @@ Object {
       "key": "PhysicalModel_ModeledElement",
       "record": PropertyRecord {
         "description": "Properties_60InstancesWithUrl2",
-        "isMerged": false,
         "isReadonly": true,
         "property": Object {
           "displayLabel": "Modeled Element",
@@ -90,7 +88,6 @@ Array [
         "key": "/DisplayLabel/",
         "record": PropertyRecord {
           "description": "BisCore.DictionaryModel",
-          "isMerged": false,
           "isReadonly": true,
           "property": Object {
             "displayLabel": "£ábêl",
@@ -108,7 +105,6 @@ Array [
         "key": "DictionaryModel_PhysicalModel_RepositoryModel_ModeledElement",
         "record": PropertyRecord {
           "description": "BisCore.DictionaryModel",
-          "isMerged": false,
           "isReadonly": true,
           "property": Object {
             "displayLabel": "Modeled Element",
@@ -131,7 +127,6 @@ Array [
         "key": "/DisplayLabel/",
         "record": PropertyRecord {
           "description": "DgnV8Bridge",
-          "isMerged": false,
           "isReadonly": true,
           "property": Object {
             "displayLabel": "£ábêl",
@@ -149,7 +144,6 @@ Array [
         "key": "DictionaryModel_PhysicalModel_RepositoryModel_ModeledElement",
         "record": PropertyRecord {
           "description": "Ñót spêçìfíêd",
-          "isMerged": false,
           "isReadonly": true,
           "property": Object {
             "displayLabel": "Modeled Element",
@@ -172,7 +166,6 @@ Array [
         "key": "/DisplayLabel/",
         "record": PropertyRecord {
           "description": "Properties_60InstancesWithUrl2",
-          "isMerged": false,
           "isReadonly": true,
           "property": Object {
             "displayLabel": "£ábêl",
@@ -190,7 +183,6 @@ Array [
         "key": "DictionaryModel_PhysicalModel_RepositoryModel_ModeledElement",
         "record": PropertyRecord {
           "description": "Properties_60InstancesWithUrl2",
-          "isMerged": false,
           "isReadonly": true,
           "property": Object {
             "displayLabel": "Modeled Element",
@@ -218,7 +210,6 @@ Array [
         "key": "/DisplayLabel/",
         "record": PropertyRecord {
           "description": "Properties_60InstancesWithUrl2",
-          "isMerged": false,
           "isReadonly": true,
           "property": Object {
             "displayLabel": "£ábêl",
@@ -236,7 +227,6 @@ Array [
         "key": "DictionaryModel_PhysicalModel_RepositoryModel_ModeledElement",
         "record": PropertyRecord {
           "description": "Properties_60InstancesWithUrl2",
-          "isMerged": false,
           "isReadonly": true,
           "property": Object {
             "displayLabel": "Modeled Element",
@@ -259,7 +249,6 @@ Array [
         "key": "/DisplayLabel/",
         "record": PropertyRecord {
           "description": "DgnV8Bridge",
-          "isMerged": false,
           "isReadonly": true,
           "property": Object {
             "displayLabel": "£ábêl",
@@ -277,7 +266,6 @@ Array [
         "key": "DictionaryModel_PhysicalModel_RepositoryModel_ModeledElement",
         "record": PropertyRecord {
           "description": "Ñót spêçìfíêd",
-          "isMerged": false,
           "isReadonly": true,
           "property": Object {
             "displayLabel": "Modeled Element",
@@ -300,7 +288,6 @@ Array [
         "key": "/DisplayLabel/",
         "record": PropertyRecord {
           "description": "BisCore.DictionaryModel",
-          "isMerged": false,
           "isReadonly": true,
           "property": Object {
             "displayLabel": "£ábêl",
@@ -318,7 +305,6 @@ Array [
         "key": "DictionaryModel_PhysicalModel_RepositoryModel_ModeledElement",
         "record": PropertyRecord {
           "description": "BisCore.DictionaryModel",
-          "isMerged": false,
           "isReadonly": true,
           "property": Object {
             "displayLabel": "Modeled Element",

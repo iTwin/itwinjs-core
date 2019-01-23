@@ -48,7 +48,6 @@ Object {
 exports[`ContentBuilder createPropertyRecord creates record with array value 1`] = `
 PropertyRecord {
   "description": undefined,
-  "isMerged": false,
   "isReadonly": true,
   "property": Object {
     "displayLabel": "SAS",
@@ -59,7 +58,6 @@ PropertyRecord {
     "items": Array [
       PropertyRecord {
         "description": "some display value 1",
-        "isMerged": false,
         "isReadonly": true,
         "property": Object {
           "displayLabel": "SAS",
@@ -74,7 +72,6 @@ PropertyRecord {
       },
       PropertyRecord {
         "description": "some display value 2",
-        "isMerged": false,
         "isReadonly": true,
         "property": Object {
           "displayLabel": "SAS",
@@ -114,7 +111,6 @@ PropertyRecord {
 
 exports[`ContentBuilder createPropertyRecord creates record with merged inside nested content value 1`] = `
 PropertyRecord {
-  "isMerged": false,
   "isReadonly": true,
   "property": Object {
     "displayLabel": "payment Unbranded revolutionary",
@@ -203,8 +199,6 @@ PropertyRecord {
 
 exports[`ContentBuilder createPropertyRecord creates record with multiple nested content values 1`] = `
 PropertyRecord {
-  "isMerged": false,
-  "isReadonly": false,
   "property": Object {
     "displayLabel": "Tasty",
     "name": "knowledge user",
@@ -224,7 +218,6 @@ PropertyRecord {
           "members": Object {
             "world-class": PropertyRecord {
               "description": "some display value 1",
-              "isMerged": false,
               "isReadonly": true,
               "property": Object {
                 "displayLabel": "green payment lavender",
@@ -257,7 +250,6 @@ PropertyRecord {
           "members": Object {
             "world-class": PropertyRecord {
               "description": "some display value 2",
-              "isMerged": false,
               "isReadonly": true,
               "property": Object {
                 "displayLabel": "green payment lavender",
@@ -287,7 +279,6 @@ PropertyRecord {
 
 exports[`ContentBuilder createPropertyRecord creates record with only properties in field path 1`] = `
 PropertyRecord {
-  "isMerged": false,
   "isReadonly": true,
   "property": Object {
     "displayLabel": "backing up orchestration",
@@ -297,7 +288,6 @@ PropertyRecord {
   "value": Object {
     "members": Object {
       "Future-proofed": PropertyRecord {
-        "isMerged": false,
         "isReadonly": true,
         "property": Object {
           "displayLabel": "Dynamic Plastic Estates",
@@ -318,8 +308,6 @@ PropertyRecord {
                 "members": Object {
                   "Jamaican Dollar": PropertyRecord {
                     "description": "some display value 1.2",
-                    "isMerged": false,
-                    "isReadonly": false,
                     "property": Object {
                       "displayLabel": "multi-byte Research synthesize",
                       "editor": Object {
@@ -351,8 +339,6 @@ PropertyRecord {
                 "members": Object {
                   "Jamaican Dollar": PropertyRecord {
                     "description": "some display value 2.2",
-                    "isMerged": false,
-                    "isReadonly": false,
                     "property": Object {
                       "displayLabel": "multi-byte Research synthesize",
                       "editor": Object {
@@ -386,7 +372,6 @@ PropertyRecord {
 exports[`ContentBuilder createPropertyRecord creates record with primitive value 1`] = `
 PropertyRecord {
   "description": "some display value",
-  "isMerged": false,
   "isReadonly": true,
   "property": Object {
     "displayLabel": "portals Bond Markets Units European Composite Unit (EURCO) action-items",
@@ -403,7 +388,6 @@ PropertyRecord {
 
 exports[`ContentBuilder createPropertyRecord creates record with single nested content value 1`] = `
 PropertyRecord {
-  "isMerged": false,
   "isReadonly": true,
   "property": Object {
     "displayLabel": "Branding Cambridgeshire",
@@ -414,7 +398,6 @@ PropertyRecord {
     "members": Object {
       "functionalities": PropertyRecord {
         "description": "some display value",
-        "isMerged": false,
         "isReadonly": true,
         "property": Object {
           "displayLabel": "parse Kansas Ergonomic Granite Tuna",
@@ -436,7 +419,6 @@ PropertyRecord {
 exports[`ContentBuilder createPropertyRecord creates record with struct value 1`] = `
 PropertyRecord {
   "description": undefined,
-  "isMerged": false,
   "isReadonly": true,
   "property": Object {
     "displayLabel": "wireless Fantastic Wooden Chips killer",
@@ -447,7 +429,6 @@ PropertyRecord {
     "members": Object {
       "multi-state": PropertyRecord {
         "description": "some display value",
-        "isMerged": false,
         "isReadonly": true,
         "property": Object {
           "displayLabel": "Vermont payment",
@@ -468,9 +449,6 @@ PropertyRecord {
 
 exports[`ContentBuilder createPropertyRecord creates record with undefined array value 1`] = `
 PropertyRecord {
-  "description": undefined,
-  "isMerged": false,
-  "isReadonly": false,
   "property": Object {
     "displayLabel": "backing up driver e-markets",
     "name": "optimize",
@@ -486,8 +464,6 @@ PropertyRecord {
 
 exports[`ContentBuilder createPropertyRecord creates record with undefined primitive value 1`] = `
 PropertyRecord {
-  "description": undefined,
-  "isMerged": false,
   "isReadonly": true,
   "property": Object {
     "displayLabel": "discrete Fundamental non-volatile",
@@ -504,8 +480,6 @@ PropertyRecord {
 
 exports[`ContentBuilder createPropertyRecord creates record with undefined struct value 1`] = `
 PropertyRecord {
-  "description": undefined,
-  "isMerged": false,
   "isReadonly": true,
   "property": Object {
     "displayLabel": "Tools",

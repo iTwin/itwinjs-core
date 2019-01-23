@@ -404,10 +404,15 @@ export default class PresentationManager {
 
   private createRequestParams(requestId: string, genericOptions: Paged<RequestOptions<IModelDb>>, additionalOptions?: object): string {
     const { imodel, locale, ...genericOptionsStripped } = genericOptions;
+
+    let lowerCaseLocale = locale ? locale : this.activeLocale;
+    if (lowerCaseLocale)
+      lowerCaseLocale = lowerCaseLocale.toLowerCase();
+
     const request = {
       requestId,
       params: {
-        locale: locale ? locale : this.activeLocale,
+        locale: lowerCaseLocale,
         ...genericOptionsStripped,
         ...additionalOptions,
       },

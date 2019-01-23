@@ -1,0 +1,20 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`RulesetTesting generates correct content for 'Items' ruleset. ClassName: 'BisCore:LinkModel' 1`] = `
+Array [
+  PropertyRecord {
+    "description": "BisCore.RealityDataSources",
+    "isReadonly": true,
+    "property": Object {
+      "displayLabel": "Modeled Element",
+      "name": "LinkModel_ModeledElement",
+      "typename": "navigation",
+    },
+    "value": Object {
+      "displayValue": "BisCore.RealityDataSources",
+      "value": 14,
+      "valueFormat": 0,
+    },
+  },
+]
+`;

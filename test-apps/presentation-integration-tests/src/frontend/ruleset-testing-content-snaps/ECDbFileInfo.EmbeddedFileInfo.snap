@@ -1,0 +1,69 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`RulesetTesting generates correct content for 'Items' ruleset. ClassName: 'ECDbFileInfo:EmbeddedFileInfo' 1`] = `
+Array [
+  PropertyRecord {
+    "description": "PresentationRuleSet",
+    "property": Object {
+      "displayLabel": "Type",
+      "name": "EmbeddedFileInfo_Type",
+      "typename": "string",
+    },
+    "value": Object {
+      "displayValue": "PresentationRuleSet",
+      "value": "PresentationRuleSet",
+      "valueFormat": 0,
+    },
+  },
+  PropertyRecord {
+    "description": "13287",
+    "property": Object {
+      "displayLabel": "Size",
+      "name": "EmbeddedFileInfo_Size",
+      "typename": "long",
+    },
+    "value": Object {
+      "displayValue": "13287",
+      "value": 13287,
+      "valueFormat": 0,
+    },
+  },
+  PropertyRecord {
+    "description": "Properties_60InstancesWithUrl2_supplemental_DgnCustomItemTypes_MyProp specific.01.00",
+    "property": Object {
+      "displayLabel": "Name",
+      "name": "EmbeddedFileInfo_Name",
+      "typename": "string",
+    },
+    "value": Object {
+      "displayValue": "Properties_60InstancesWithUrl2_supplemental_DgnCustomItemTypes_MyProp specific.01.00",
+      "value": "Properties_60InstancesWithUrl2_supplemental_DgnCustomItemTypes_MyProp specific.01.00",
+      "valueFormat": 0,
+    },
+  },
+  PropertyRecord {
+    "property": Object {
+      "displayLabel": "LastModified",
+      "name": "EmbeddedFileInfo_LastModified",
+      "typename": "dateTime",
+    },
+    "value": Object {
+      "displayValue": "",
+      "value": undefined,
+      "valueFormat": 0,
+    },
+  },
+  PropertyRecord {
+    "property": Object {
+      "displayLabel": "Description",
+      "name": "EmbeddedFileInfo_Description",
+      "typename": "string",
+    },
+    "value": Object {
+      "displayValue": "",
+      "value": undefined,
+      "valueFormat": 0,
+    },
+  },
+]
+`;

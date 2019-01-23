@@ -99,9 +99,12 @@ const createRecord = (propertyDescription: PropertyDescription, typeDescription:
   value: Value, displayValue: DisplayValue, isReadOnly: boolean, isMerged: boolean): PropertyRecord => {
   const valueObj = createValue(propertyDescription, typeDescription, isMerged, value, displayValue);
   const record = new PropertyRecord(valueObj, propertyDescription);
-  record.description = createRecordDescription(typeDescription, displayValue);
-  record.isMerged = isMerged;
-  record.isReadonly = isReadOnly;
+  if (displayValue)
+    record.description = createRecordDescription(typeDescription, displayValue);
+  if (isMerged)
+    record.isMerged = true;
+  if (isReadOnly)
+    record.isReadonly = true;
   return record;
 };
 
@@ -162,8 +165,10 @@ const createNestedContentRecord = (field: NestedContentField, item: Item, path?:
   }
 
   const record = new PropertyRecord(value, ContentBuilder.createPropertyDescription(field));
-  record.isMerged = isMerged;
-  record.isReadonly = field.isReadonly || isMerged;
+  if (isMerged)
+    record.isMerged = true;
+  if (field.isReadonly || isMerged)
+    record.isReadonly = true;
   return record;
 };
 

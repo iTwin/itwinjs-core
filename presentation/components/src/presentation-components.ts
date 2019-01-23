@@ -4,6 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Components */
 
+/** @module Common */
+export { ContentBuilder } from "./common/ContentBuilder";
+export { ContentDataProvider } from "./common/ContentDataProvider";
+
 /** @module PropertyGrid */
 export { IPresentationPropertyDataProvider, PresentationPropertyDataProvider } from "./propertygrid/DataProvider";
 export { propertyGridWithUnifiedSelection } from "./propertygrid/WithUnifiedSelection";

@@ -42,7 +42,7 @@ const copyBentleyFrontendAssets = (outputDir: string) => {
 
 class IntegrationTestsApp extends NoRenderApp {
   protected static supplyI18NOptions(): I18NOptions {
-    const urlTemplate = `file://${path.resolve("lib/public/locales")}/{{lng}}/{{ns}}.json`;
+    const urlTemplate = "file://" + path.join(path.resolve("lib/public/locales"), "{{lng}}/{{ns}}.json").replace(/\\/g, "/");
     return { urlTemplate };
   }
   protected static onStartup(): void {
@@ -59,7 +59,8 @@ export const initialize = () => {
   Logger.setLevel(LoggingNamespaces.ECPresentation, LogLevel.None);
 
   initializeTesting(
-    { rulesetDirectories: ["lib/assets/rulesets"], localeDirectories: ["lib/assets/locales"] },
+    { activeLocale: "en-PSEUDO", rulesetDirectories: ["lib/assets/rulesets"], localeDirectories: ["lib/assets/locales"] },
+    { activeLocale: "en-PSEUDO" },
     IntegrationTestsApp);
 };
 

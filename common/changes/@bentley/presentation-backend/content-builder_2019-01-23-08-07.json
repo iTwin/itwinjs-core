@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "PresentationManager now converts locale string to lower case when creating request parameters.",
+      "packageName": "@bentley/presentation-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-backend",
+  "email": "elonas.seviakovas@bentley.com"
+}

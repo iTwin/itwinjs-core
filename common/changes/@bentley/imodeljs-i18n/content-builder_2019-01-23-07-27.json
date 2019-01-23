@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fixed type definitions",
+      "packageName": "@bentley/imodeljs-i18n",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-i18n",
+  "email": "elonas.seviakovas@bentley.com"
+}

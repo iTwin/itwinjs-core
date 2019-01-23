@@ -4,4 +4,5 @@
 *--------------------------------------------------------------------------------------------*/
 
 export * from "./HierarchyBuilder";
+export * from "./ContentBuilder";
 export * from "./Helpers";

@@ -1,0 +1,20 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`RulesetTesting generates correct content for 'Items' ruleset. ClassName: 'BisCore:DictionaryModel' 1`] = `
+Array [
+  PropertyRecord {
+    "description": "BisCore.DictionaryModel",
+    "isReadonly": true,
+    "property": Object {
+      "displayLabel": "Modeled Element",
+      "name": "DictionaryModel_ModeledElement",
+      "typename": "navigation",
+    },
+    "value": Object {
+      "displayValue": "BisCore.DictionaryModel",
+      "value": 16,
+      "valueFormat": 0,
+    },
+  },
+]
+`;

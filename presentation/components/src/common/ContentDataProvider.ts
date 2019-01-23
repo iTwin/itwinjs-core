@@ -70,7 +70,7 @@ export interface IContentDataProvider extends IPresentationDataProvider {
 /**
  * Base class for all presentation-driven content providers.
  */
-export abstract class ContentDataProvider implements IContentDataProvider {
+export class ContentDataProvider implements IContentDataProvider {
   private _imodel: IModelConnection;
   private _rulesetId: string;
   private _displayType: string;
@@ -186,7 +186,7 @@ export abstract class ContentDataProvider implements IContentDataProvider {
   /**
    * Get the content descriptor.
    */
-  protected getContentDescriptor = _.memoize(async (): Promise<Readonly<Descriptor> | undefined> => {
+  public getContentDescriptor = _.memoize(async (): Promise<Readonly<Descriptor> | undefined> => {
     const descriptor = await this.getDefaultContentDescriptor();
     if (!descriptor)
       return undefined;
@@ -196,7 +196,7 @@ export abstract class ContentDataProvider implements IContentDataProvider {
   /**
    * Get the number of content records.
    */
-  protected getContentSetSize = _.memoize(async (): Promise<number> => {
+  public getContentSetSize = _.memoize(async (): Promise<number> => {
     const descriptor = await this.getContentDescriptor();
     if (!descriptor)
       return 0;
@@ -207,7 +207,7 @@ export abstract class ContentDataProvider implements IContentDataProvider {
    * Get the content.
    * @param pageOptions Paging options.
    */
-  protected getContent = _.memoize(async (pageOptions?: PageOptions): Promise<Readonly<Content> | undefined> => {
+  public getContent = _.memoize(async (pageOptions?: PageOptions): Promise<Readonly<Content> | undefined> => {
     const descriptor = await this.getContentDescriptor();
     if (!descriptor)
       return undefined;
