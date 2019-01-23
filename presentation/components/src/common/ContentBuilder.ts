@@ -12,6 +12,7 @@ import {
   NestedContentValue, NestedContentField,
   TypeDescription, StructTypeDescription, ArrayTypeDescription,
 } from "@bentley/presentation-common";
+import { Omit } from "@bentley/ui-core";
 import {
   PropertyRecord, PropertyValue, PropertyValueFormat as UiPropertyValueFormat,
   ArrayValue, StructValue, PrimitiveValue,
@@ -87,12 +88,12 @@ const createValue = (propertyDescription: PropertyDescription, typeDescription: 
   return createPrimitiveValue(value, displayValue);
 };
 
-const createRecordDescription = (typeDescription: TypeDescription, displayValue: DisplayValue): string | undefined => {
+const createRecordDescription = (typeDescription: TypeDescription, displayValue: Omit<DisplayValue, "undefined">): string | undefined => {
   if (PropertyValueFormat.Array === typeDescription.valueFormat || PropertyValueFormat.Struct === typeDescription.valueFormat)
     return undefined;
   if (PropertyValueFormat.Primitive !== typeDescription.valueFormat || !isPrimitive(displayValue))
     throw new PresentationError(PresentationStatus.InvalidArgument, "displayValue is of wrong type");
-  return (undefined !== displayValue) ? displayValue.toString() : undefined;
+  return displayValue.toString();
 };
 
 const createRecord = (propertyDescription: PropertyDescription, typeDescription: TypeDescription,
