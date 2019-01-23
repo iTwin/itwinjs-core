@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { ECClass } from "./Class";
-import { CustomAttributeSet, serializeCustomAttributes, CustomAttribute } from "./CustomAttribute";
+import { CustomAttributeContainerProps, CustomAttributeSet, serializeCustomAttributes, CustomAttribute } from "./CustomAttribute";
 import { EntityClass, createNavigationProperty, createNavigationPropertySync } from "./EntityClass";
 import { Mixin } from "./Mixin";
 import { NavigationProperty } from "./Property";
@@ -96,7 +96,7 @@ export class RelationshipClass extends ECClass {
 /**
  * A Typescript class representation of a ECRelationshipConstraint.
  */
-export class RelationshipConstraint {
+export class RelationshipConstraint implements CustomAttributeContainerProps {
   protected _abstractConstraint?: LazyLoadedRelationshipConstraintClass;
   protected _relationshipClass: RelationshipClass;
   protected _relationshipEnd: RelationshipEnd;
@@ -125,6 +125,12 @@ export class RelationshipConstraint {
   get relationshipClass() { return this._relationshipClass; }
   get relationshipEnd() { return this._relationshipEnd; }
   get customAttributes(): CustomAttributeSet | undefined { return this._customAttributes; }
+
+  /** Returns the constraint name, ie. 'RelationshipName.Source/Target' */
+  get fullName() { return this._relationshipClass.name + ":" + this.isSource ? "Source" : "Target"; }
+
+  /** Returns the schema of the RelationshipClass. */
+  get schema(): Schema { return this._relationshipClass.schema; }
 
   get abstractConstraint(): LazyLoadedRelationshipConstraintClass | undefined {
     if (this._abstractConstraint)

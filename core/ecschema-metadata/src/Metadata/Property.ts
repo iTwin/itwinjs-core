@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { ECClass, StructClass } from "./Class";
-import { CustomAttributeSet, serializeCustomAttributes, CustomAttribute } from "./CustomAttribute";
+import { CustomAttributeSet, serializeCustomAttributes, CustomAttribute, CustomAttributeContainerProps } from "./CustomAttribute";
 import { Enumeration } from "./Enumeration";
 import { KindOfQuantity } from "./KindOfQuantity";
 import { PropertyCategory } from "./PropertyCategory";
@@ -19,11 +19,12 @@ import { ECObjectsError, ECObjectsStatus } from "./../Exception";
 import { AnyClass, LazyLoadedEnumeration, LazyLoadedKindOfQuantity, LazyLoadedPropertyCategory, LazyLoadedRelationshipClass } from "./../Interfaces";
 import { PropertyType, propertyTypeToString, PropertyTypeUtils } from "./../PropertyTypes";
 import { ECName, SchemaItemKey } from "./../SchemaKey";
+import { Schema } from "./Schema";
 
 /**
  * A common abstract class for all ECProperty types.
  */
-export abstract class Property {
+export abstract class Property implements CustomAttributeContainerProps {
   protected _name: ECName;
   protected _type: PropertyType;
 
@@ -67,6 +68,12 @@ export abstract class Property {
   get kindOfQuantity(): LazyLoadedKindOfQuantity | undefined { return this._kindOfQuantity; }
 
   get customAttributes(): CustomAttributeSet | undefined { return this._customAttributes; }
+
+  /** Returns the name in the format 'ClassName.PropertyName'. */
+  get fullName(): string { return this._class.name + "." + name; }
+
+  /** Returns the schema of the class holding the property. */
+  get schema(): Schema { return this._class.schema; }
 
   public getCategorySync(): PropertyCategory | undefined {
     if (!this._category)

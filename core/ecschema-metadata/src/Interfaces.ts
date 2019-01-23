@@ -14,13 +14,15 @@ import { KindOfQuantity } from "./Metadata/KindOfQuantity";
 import { Mixin } from "./Metadata/Mixin";
 import { Phenomenon } from "./Metadata/Phenomenon";
 import { PropertyCategory } from "./Metadata/PropertyCategory";
-import { RelationshipClass } from "./Metadata/RelationshipClass";
+import { RelationshipClass, RelationshipConstraint } from "./Metadata/RelationshipClass";
 import { Schema } from "./Metadata/Schema";
 import { SchemaItem } from "./Metadata/SchemaItem";
 import { Unit } from "./Metadata/Unit";
 import { UnitSystem } from "./Metadata/UnitSystem";
 import { Format } from "./Metadata/Format";
 import { SchemaKey, SchemaItemKey } from "./SchemaKey";
+import { AnyProperty } from "./Metadata/Property";
+import { CustomAttributeContainerProps, CustomAttribute } from "./Metadata/CustomAttribute";
 
 export type LazyLoadedSchema = Readonly<SchemaKey> & DelayedPromise<Schema> & Promise<Schema>;
 
@@ -44,6 +46,141 @@ export type LazyLoadedFormat = LazyLoadedSchemaItem<Format>;
 
 export type AnyClass = EntityClass | Mixin | StructClass | CustomAttributeClass | RelationshipClass;
 export type AnySchemaItem = AnyClass | Enumeration | KindOfQuantity | PropertyCategory | Unit | InvertedUnit | Constant | Phenomenon | UnitSystem | Format;
+export type AnyECType = Schema | SchemaItem | AnyProperty | RelationshipConstraint | CustomAttributeContainerProps | CustomAttribute;
+
+/**
+ * Interface to allow schema traversal/deserialization workflows to visit
+ * each part, item, class, etc. that exists in a given schema.
+ */
+export interface ISchemaPartVisitor {
+  /**
+   * Called for a partially loaded schema. During deserialization, this would
+   * be after a schema and all its references are deserialized, but _before_
+   * any of its items or custom attributes have been deserialized.
+   * @param schema A partially-loaded Schema.
+   */
+  /* async */ visitEmptySchema?: (schema: Schema) => Promise<void>;
+
+  /**
+   * Called for a fully loaded schema.
+   * @param schema A fully-loaded Schema.
+   */
+  /* async */ visitFullSchema?: (schema: Schema) => Promise<void>;
+
+  /**
+   * Called for each [[SchemaItem]] instance.
+   * @param schemaItem a SchemaItem object.
+   */
+  /* async */ visitSchemaItem?: (schemaItem: SchemaItem) => Promise<void>;
+
+  /**
+   * Called for each [[AnyClass]] instance.
+   * @param ecClass an ECClass object.
+   */
+  /* async */ visitClass?: (ecClass: AnyClass) => Promise<void>;
+
+  /**
+   * Called for each [[AnyProperty]] instance of an ECClass.
+   * @param property an AnyProperty object.
+   */
+  /* async */ visitProperty?: (property: AnyProperty) => Promise<void>;
+
+  /**
+   * Called for each [[EntityClass]] instance.
+   * @param entityClass an EntityClass object.
+   */
+  /* async */ visitEntityClass?: (entityClass: EntityClass) => Promise<void>;
+
+  /**
+   * Called for each [[StructClass]] instance.
+   * @param structClass a StructClass object.
+   */
+  /* async */ visitStructClass?: (structClass: StructClass) => Promise<void>;
+
+  /**
+   * Called for each [[Mixin]] instance.
+   * @param mixin a Mixin object.
+   */
+  /* async */ visitMixin?: (mixin: Mixin) => Promise<void>;
+
+  /**
+   * Called for each [[RelationshipClass]] instance.
+   * @param relationshipClass a RelationshipClass object.
+   */
+  /* async */ visitRelationshipClass?: (relationshipClass: RelationshipClass) => Promise<void>;
+
+  /**
+   * Called for each [[RelationshipConstraint]] of each RelationshipClass.
+   * @param relationshipConstraint a RelationshipConstraint object.
+   */
+  /* async */ visitRelationshipConstraint?: (relationshipConstraint: RelationshipConstraint) => Promise<void>;
+
+  /**
+   * Called for each [[CustomAttributeClass]] instance.
+   * @param customAttributeClass a CustomAttributeClass object.
+   */
+  /* async */ visitCustomAttributeClass?: (customAttributeClass: CustomAttributeClass) => Promise<void>;
+
+  /**
+   * Called for each CustomAttribute container in the schema.
+   * @param customAttributeContainer a CustomAttributeContainerProps object.
+   */
+  /* async */ visitCustomAttributeContainer?: (customAttributeContainer: CustomAttributeContainerProps) => Promise<void>;
+
+  /**
+   * Called for each [[Enumeration]] instance.
+   * @param enumeration an Enumeration object.
+   */
+  /* async */ visitEnumeration?: (enumeration: Enumeration) => Promise<void>;
+
+  /**
+   * Called for each [[KindOfQuantity]] instance.
+   * @param koq a KindOfQuantity object.
+   */
+  /* async */ visitKindOfQuantity?: (koq: KindOfQuantity) => Promise<void>;
+
+  /**
+   * Called for each [[PropertyCategory]] instance.
+   * @param category a PropertyCategory object.
+   */
+  /* async */ visitPropertyCategory?: (category: PropertyCategory) => Promise<void>;
+
+  /**
+   * Called for each [[Format]] instance.
+   * @param format a Format object.
+   */
+  /* async */ visitFormat?: (format: Format) => Promise<void>;
+
+  /**
+   * Called for each [[Unit]] instance.
+   * @param unit a Unit object.
+   */
+  /* async */ visitUnit?: (unit: Unit) => Promise<void>;
+
+  /**
+   * Called for each [[InvertedUnit]] instance.
+   * @param invertedUnit an InvertedUnit object.
+   */
+  /* async */ visitInvertedUnit?: (invertedUnit: InvertedUnit) => Promise<void>;
+
+  /**
+   * Called for each [[UnitSystem]] instance.
+   * @param unitSystem a UnitSystem object.
+   */
+  /* async */ visitUnitSystem?: (unitSystem: UnitSystem) => Promise<void>;
+
+  /**
+   * Called for each [[Phenomenon]] instance.
+   * @param phenomena a Phenomenon object.
+   */
+  /* async */ visitPhenomenon?: (phenomena: Phenomenon) => Promise<void>;
+
+  /**
+   * Called for each [[Constant]] instance.
+   * @param constant a Constant object.
+   */
+  /* async */ visitConstant?: (constant: Constant) => Promise<void>;
+}
 
 export interface SchemaItemVisitor {
   /* async */ visitFormat?: (format: Format) => Promise<void>;

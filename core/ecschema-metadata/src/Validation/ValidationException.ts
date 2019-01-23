@@ -4,17 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, BentleyError } from "@bentley/bentleyjs-core";
-import { ECValidationStatus } from "./Diagnostics";
 
 export class ECValidationError extends BentleyError {
   public constructor(public readonly errorNumber: number, message?: string) {
     super(errorNumber, message);
-    assert(errorNumber as number !== ECValidationStatus.Success as number, message);
   }
 
   public toDebugString(): string {
     switch (this.errorNumber) {
-      case ECValidationStatus.BaseClassIsSealed: return this._appendMessage("ECValidationStatus.BaseClassIsSealed");
       default:
         assert(false);
         /* istanbul ignore next */

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Added schema validation support via the configuration of rule sets that can be applied during schema traversal",
+      "packageName": "@bentley/ecschema-metadata",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ecschema-metadata",
+  "email": "chris.lawson@bentley.com"
+}

@@ -3,21 +3,21 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import { DiagnosticCategory, ECValidationStatus, DiagnosticType } from "../../src/Validation/Diagnostics";
+import { DiagnosticCategory, DiagnosticType, DiagnosticCode } from "../../src/Validation/Diagnostic";
 import { I18N } from "@bentley/imodeljs-i18n";
-import * as I18NodeFSBackend from "i18next-node-fs-backend"
+import * as I18NodeFSBackend from "i18next-node-fs-backend";
 
-export const TestMessages = {
-  TestErrorA: { code: ECValidationStatus.BaseClassIsSealed, category: DiagnosticCategory.Error, diagnosticType: DiagnosticType.SchemaItem, key: 'TestErrorA', message: "Test message with parameter '{0}'" },
-  TestErrorB: { code: ECValidationStatus.BaseClassIsSealed, category: DiagnosticCategory.Error, diagnosticType: DiagnosticType.SchemaItem, key: 'TestErrorB', message: "Second test message with parameter '{0}'" },
-  TestWarning: { code: ECValidationStatus.BaseClassIsSealed, category: DiagnosticCategory.Warning, diagnosticType: DiagnosticType.SchemaItem, key: 'TestWarning', message: "Test warning message." },
-  TestMessage: { code: ECValidationStatus.BaseClassIsSealed, category: DiagnosticCategory.Message, diagnosticType: DiagnosticType.SchemaItem, key: 'TestWarning', message: "Test message." },
-  TestSuggestion: { code: ECValidationStatus.BaseClassIsSealed, category: DiagnosticCategory.Suggestion, diagnosticType: DiagnosticType.SchemaItem, key: 'TestSuggestion', message: "Test suggestion." }
-}
+export const testMessages = {
+  TestErrorA: { code: DiagnosticCode.BaseClassIsSealed, category: DiagnosticCategory.Error, diagnosticType: DiagnosticType.SchemaItem, key: "TestErrorA", message: "Test message with parameter '{0}'" },
+  TestErrorB: { code: DiagnosticCode.BaseClassIsSealed, category: DiagnosticCategory.Error, diagnosticType: DiagnosticType.SchemaItem, key: "TestErrorB", message: "Second test message with parameter '{0}'" },
+  TestWarning: { code: DiagnosticCode.BaseClassIsSealed, category: DiagnosticCategory.Warning, diagnosticType: DiagnosticType.SchemaItem, key: "TestWarning", message: "Test warning message." },
+  TestMessage: { code: DiagnosticCode.BaseClassIsSealed, category: DiagnosticCategory.Message, diagnosticType: DiagnosticType.SchemaItem, key: "TestWarning", message: "Test message." },
+  TestSuggestion: { code: DiagnosticCode.BaseClassIsSealed, category: DiagnosticCategory.Suggestion, diagnosticType: DiagnosticType.SchemaItem, key: "TestSuggestion", message: "Test suggestion." },
+};
 
 type LoadCallback = (error: any, result: any) => void;
 
-interface BackendOptions { }
+interface BackendOptions { test: undefined; }
 
 export class I18NTestHelper {
   private static _i18n?: I18N;
@@ -26,7 +26,7 @@ export class I18NTestHelper {
 
   public static get i18n(): I18N {
     if (!I18NTestHelper._i18n) {
-      const i18nOptions = { urlTemplate: "public/locales/{{lng}}/{{ns}}.json", backend: TestBackend };
+      const i18nOptions = { urlTemplate: "public/locales/{{lng}}/{{ns}}.json", backend: testBackend };
       I18NTestHelper._i18n = new I18N([], "", i18nOptions);
     }
     return I18NTestHelper._i18n;
@@ -42,7 +42,7 @@ export class I18NTestHelper {
 
   public static get i18nFrench(): I18N {
     if (!I18NTestHelper._i18nFrench) {
-      const i18nOptions = { urlTemplate: "public/locales/{{lng}}/{{ns}}.json", backend: TestBackend, languageDetector: TestLangDetector };
+      const i18nOptions = { urlTemplate: "public/locales/{{lng}}/{{ns}}.json", backend: testBackend, languageDetector: testLangDetector };
       I18NTestHelper._i18nFrench = new I18N([], "", i18nOptions);
     }
     return I18NTestHelper._i18nFrench;
@@ -54,8 +54,8 @@ export class I18NTestHelper {
   }
 }
 
-export const TestBackend = {
-  type: 'backend',
+export const testBackend = {
+  type: "backend",
   init(services?: any, options?: BackendOptions) {
     /* use services and options */
     services;
@@ -68,7 +68,7 @@ export const TestBackend = {
 
     /* return resources */
     if (language === "en") {
-      const result = { Diagnostics: { TestErrorA: TestMessages.TestErrorA.message } };
+      const result = { Diagnostics: { TestErrorA: testMessages.TestErrorA.message } };
       callback(undefined, result);
     }
 
@@ -85,14 +85,14 @@ export const TestBackend = {
     languages;
     key;
     fallbackValue;
-  }
-}
+  },
+};
 
-export const TestLangDetector = {
-  type: 'languageDetector',
+export const testLangDetector = {
+  type: "languageDetector",
   init: Function.prototype,
   detect: () => {
-    return 'fr';
+    return "fr";
   },
-  cacheUserLanguage: Function.prototype
-}
+  cacheUserLanguage: Function.prototype,
+};

@@ -29,6 +29,7 @@ export const enum ECObjectsStatus {
   UnableToLocateSchema = ECOBJECTS_ERROR_BASE + 19,
   InvalidSchemaXML = ECOBJECTS_ERROR_BASE + 20,
   InvalidSchemaString = ECOBJECTS_ERROR_BASE + 21,
+  ClassNotFound = ECOBJECTS_ERROR_BASE + 22,
 }
 
 export class ECObjectsError extends BentleyError {
@@ -58,6 +59,7 @@ export class ECObjectsError extends BentleyError {
       case ECObjectsStatus.InvalidType: return this._appendMessage("ECObjectsStatus.InvalidType");
       case ECObjectsStatus.MissingSchemaUrl: return this._appendMessage("ECObjectsStatus.MissingSchemaUrl");
       case ECObjectsStatus.UnableToLocateSchema: return this._appendMessage("ECObjectsStatus.UnableToLocateSchema");
+      case ECObjectsStatus.ClassNotFound: return this._appendMessage("ECObjectsStatus.ClassNotFound");
       default:
         assert(false);
         /* istanbul ignore next */

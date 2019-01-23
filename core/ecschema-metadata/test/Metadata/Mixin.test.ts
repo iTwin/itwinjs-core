@@ -135,6 +135,34 @@ describe("Mixin", () => {
       });
       await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Mixin TestSchema.TestMixin has an invalid 'appliesTo' attribute. It should be of type 'string'.`);
     });
+
+    it("applicableTo, wrong entity, fails", async () => {
+      const json = createSchemaJson({
+        appliesTo: "TestSchema.TestEntity",
+        properties: [
+          {
+            type: "NavigationProperty",
+            name: "testNavProp",
+            relationshipName: "TestSchema.NavPropRelationship",
+            direction: "forward",
+          },
+        ],
+      });
+
+      const schema = Schema.fromJsonSync(json);
+      expect(schema).to.exist;
+
+      const mixin = schema.getItemSync<Mixin>("TestMixin");
+      expect(mixin).to.exist;
+
+      const validEntity = schema.getItemSync<EntityClass>("TestEntity");
+      expect(validEntity).to.exist;
+
+      const invalidEntity = new EntityClass(schema, "TestEntityB");
+
+      expect(await mixin!.applicableTo(validEntity!)).to.be.true;
+      expect(await mixin!.applicableTo(invalidEntity)).to.be.false;
+    });
   });
 
   describe("Async fromJson", () => {
@@ -238,8 +266,7 @@ describe("Mixin", () => {
       const schema = new Schema("TestSchema", 1, 1, 1);
       const entity = new EntityClass(schema, "TestEntity");
       const mixin = new Mixin(schema, "TestMixin");
-      let undefinedEntity: EntityClass;
-      const promise = new DelayedPromiseWithProps(entity.key, async () => undefinedEntity);
+      const promise = new DelayedPromiseWithProps(entity.key, async () => undefined);
       sinon.stub(Mixin.prototype, "appliesTo").get(() => promise);
 
       await expect(mixin!.applicableTo(entity)).to.be.rejectedWith(`Unable to locate the appliesTo ${promise.fullName}`);

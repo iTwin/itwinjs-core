@@ -6,7 +6,7 @@
 const fs = require("fs");
 const path = require("path");
 const root = process.cwd();
-const diagnosticsDir = path.resolve(root, "lib", "Validation", "Diagnostics");
+const diagnosticsDir = path.resolve(root, "lib", "Validation", "DiagnosticClasses");
 const diagnostics = require(diagnosticsDir);
 
 function printErrorAndFail(errorMessage) {
@@ -18,8 +18,8 @@ function createLocalization() {
   const localesDir = path.resolve(root, "public", "locales", "en");
   const entries = {};
 
-  for (const [key, value] of Object.entries(diagnostics.DIAGNOSTICS)) {
-    entries[value.key] = value.message;
+  for (const [, value] of Object.entries(diagnostics.DIAGNOSTICS)) {
+    entries[value.prototype.key] = value.prototype.messageText;
   }
 
   var jsonString = JSON.stringify(entries);

@@ -1,0 +1,62 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+
+import { Schema, MutableSchema } from "../../../src/Metadata/Schema";
+import { expect } from "chai";
+import * as Rules from "../../../src/Validation/ECRules";
+import { EntityClass, CustomAttributeClass, ECClassModifier } from "../../../src/ecschema-metadata";
+import { MutableClass } from "../../../src/Metadata/Class";
+import { DiagnosticCategory, DiagnosticCode, DiagnosticType } from "../../../src/Validation/Diagnostic";
+
+describe("CustomAttribute Rules Tests", () => {
+  let schema: Schema;
+  let caSchema: Schema;
+
+  function addCA(modifier: ECClassModifier) {
+    const testCA = new CustomAttributeClass(caSchema, "TestCA", modifier);
+    (caSchema as MutableSchema).addItem(testCA);
+  }
+
+  beforeEach(async () => {
+    schema = new Schema("TestSchema", 1, 0, 0);
+    caSchema = new Schema("TestCASchema", 1, 0, 0);
+    await (schema as MutableSchema).addReference(caSchema);
+  });
+
+  describe("CustomAttributeNotOfConcreteClass tests", () => {
+    it("CustomAttribute is abstract, rule violated", async () => {
+      addCA(ECClassModifier.Abstract);
+      const testEntity = new EntityClass(schema, "TestEntity");
+      (testEntity as unknown as MutableClass).addCustomAttribute({ className: "TestCASchema.TestCA" });
+
+      const result = await Rules.customAttributeNotOfConcreteClass(testEntity, testEntity.customAttributes!.get("TestCASchema.TestCA")!);
+
+      let resultHasEntries = false;
+      for await (const diagnostic of result!) {
+        resultHasEntries = true;
+        expect(diagnostic).to.not.be.undefined;
+        expect(diagnostic!.ecDefinition).to.equal(testEntity);
+        expect(diagnostic!.messageArgs).to.eql([testEntity.fullName, "TestCASchema.TestCA"]);
+        expect(diagnostic!.category).to.equal(DiagnosticCategory.Error);
+        expect(diagnostic!.code).to.equal(DiagnosticCode.CustomAttributeNotOfConcreteClass);
+        expect(diagnostic!.key).to.equal(DiagnosticCode[DiagnosticCode.CustomAttributeNotOfConcreteClass]);
+        expect(diagnostic!.diagnosticType).to.equal(DiagnosticType.CustomAttributeContainer);
+      }
+      expect(resultHasEntries, "expected rule to return an AsyncIterable with entries.").to.be.true;
+    });
+
+    it("CustomAttribute is concrete, rule passes", async () => {
+      addCA(ECClassModifier.None);
+      const testEntity = new EntityClass(schema, "TestEntity");
+      (testEntity as unknown as MutableClass).addCustomAttribute({ className: "TestCASchema.TestCA" });
+
+      const result = await Rules.customAttributeNotOfConcreteClass(testEntity, testEntity.customAttributes!.get("TestCASchema.TestCA")!);
+
+      for await (const _diagnostic of result!) {
+        expect(false, "Rule should have passed").to.be.true;
+      }
+    });
+  });
+});

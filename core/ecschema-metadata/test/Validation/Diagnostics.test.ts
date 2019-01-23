@@ -4,63 +4,64 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { ECObjectsStatus } from "../../src/Exception";
-import * as Diagnostics from "../../src/Validation/Diagnostics";
-import { Schema } from "../../src/Metadata/Schema";
-import { EntityClass } from "../../src/Metadata/EntityClass";
+import * as Diagnostics from "../../src/Validation/Diagnostic";
 
-describe("Diagnostics tests", () => {
-  const validDiagnostic = { category: Diagnostics.DiagnosticCategory.Error, code: ECObjectsStatus.InvalidECJson, messageText: "message", defaultMessageText: "default message" };
-  afterEach(() => {
+describe("createClassDiagnostic tests", () => {
+
+  beforeEach(async () => {
   });
 
-  it("isDiagnostic, valid Diagnostic, returns true", async () => {
-    expect(Diagnostics.isDiagnostic(validDiagnostic)).to.be.true;
+  it("createSchemaDiagnosticClass, class created properly", async () => {
+    const newClass = Diagnostics.createSchemaDiagnosticClass(Diagnostics.DiagnosticCode.BaseClassIsSealed, "Test Message", Diagnostics.DiagnosticCategory.Message);
+    expect(newClass.prototype.diagnosticType).to.equal(Diagnostics.DiagnosticType.Schema);
+    expect(newClass.prototype.code).to.equal(Diagnostics.DiagnosticCode.BaseClassIsSealed);
+    expect(newClass.prototype.key).to.equal(Diagnostics.DiagnosticCode[Diagnostics.DiagnosticCode.BaseClassIsSealed]);
+    expect(newClass.prototype.category).to.equal(Diagnostics.DiagnosticCategory.Message);
+    expect(newClass.prototype.messageText).to.equal("Test Message");
   });
 
-  it("isDiagnostic, valid DiagnosticWithSchema, returns true", async () => {
-    const diag = { ...validDiagnostic, ...{ schema: new Schema() } };
-    expect(Diagnostics.isDiagnostic(diag)).to.be.true;
+  it("createSchemaItemDiagnosticClass, class created properly", async () => {
+    const newClass = Diagnostics.createSchemaItemDiagnosticClass(Diagnostics.DiagnosticCode.BaseClassIsSealed, "Test Message", Diagnostics.DiagnosticCategory.Message);
+    expect(newClass.prototype.diagnosticType).to.equal(Diagnostics.DiagnosticType.SchemaItem);
+    expect(newClass.prototype.code).to.equal(Diagnostics.DiagnosticCode.BaseClassIsSealed);
+    expect(newClass.prototype.key).to.equal(Diagnostics.DiagnosticCode[Diagnostics.DiagnosticCode.BaseClassIsSealed]);
+    expect(newClass.prototype.category).to.equal(Diagnostics.DiagnosticCategory.Message);
+    expect(newClass.prototype.messageText).to.equal("Test Message");
   });
 
-  it("isDiagnostic, invalid Diagnostic, returns false", async () => {
-    const diag = { category: Diagnostics.DiagnosticCategory.Error, code: ECObjectsStatus.InvalidECJson, messageText: "message" };
-    expect(Diagnostics.isDiagnostic(diag)).to.be.false;
+  it("createClassDiagnosticClass, class created properly", async () => {
+    const newClass = Diagnostics.createClassDiagnosticClass(Diagnostics.DiagnosticCode.BaseClassIsSealed, "Test Message", Diagnostics.DiagnosticCategory.Message);
+    expect(newClass.prototype.diagnosticType).to.equal(Diagnostics.DiagnosticType.SchemaItem);
+    expect(newClass.prototype.code).to.equal(Diagnostics.DiagnosticCode.BaseClassIsSealed);
+    expect(newClass.prototype.key).to.equal(Diagnostics.DiagnosticCode[Diagnostics.DiagnosticCode.BaseClassIsSealed]);
+    expect(newClass.prototype.category).to.equal(Diagnostics.DiagnosticCategory.Message);
+    expect(newClass.prototype.messageText).to.equal("Test Message");
   });
 
-  it("isSchemaDiagnostic, valid DiagnosticWithSchema, returns true", async () => {
-    const diag = { ...validDiagnostic, ...{ schema: new Schema() } };
-    expect(Diagnostics.isSchemaDiagnostic(diag)).to.be.true;
+  it("createPropertyDiagnosticClass, class created properly", async () => {
+    const newClass = Diagnostics.createPropertyDiagnosticClass(Diagnostics.DiagnosticCode.BaseClassIsSealed, "Test Message", Diagnostics.DiagnosticCategory.Warning);
+    expect(newClass.prototype.diagnosticType).to.equal(Diagnostics.DiagnosticType.Property);
+    expect(newClass.prototype.code).to.equal(Diagnostics.DiagnosticCode.BaseClassIsSealed);
+    expect(newClass.prototype.key).to.equal(Diagnostics.DiagnosticCode[Diagnostics.DiagnosticCode.BaseClassIsSealed]);
+    expect(newClass.prototype.category).to.equal(Diagnostics.DiagnosticCategory.Warning);
+    expect(newClass.prototype.messageText).to.equal("Test Message");
   });
 
-  it("isSchemaDiagnostic, invalid DiagnosticWithSchema, returns false", async () => {
-    const diag = validDiagnostic;
-    expect(Diagnostics.isSchemaDiagnostic(diag)).to.be.false;
+  it("createRelationshipConstraintDiagnosticClass, class created properly", async () => {
+    const newClass = Diagnostics.createRelationshipConstraintDiagnosticClass(Diagnostics.DiagnosticCode.BaseClassIsSealed, "Test Message", Diagnostics.DiagnosticCategory.Error);
+    expect(newClass.prototype.diagnosticType).to.equal(Diagnostics.DiagnosticType.RelationshipConstraint);
+    expect(newClass.prototype.code).to.equal(Diagnostics.DiagnosticCode.BaseClassIsSealed);
+    expect(newClass.prototype.key).to.equal(Diagnostics.DiagnosticCode[Diagnostics.DiagnosticCode.BaseClassIsSealed]);
+    expect(newClass.prototype.category).to.equal(Diagnostics.DiagnosticCategory.Error);
+    expect(newClass.prototype.messageText).to.equal("Test Message");
   });
 
-  it("isSchemaItemDiagnostic, valid DiagnosticWithSchemaItem, returns true", async () => {
-    const schema = new Schema("TestSchema", 1, 0, 0);
-    const diag = { ...validDiagnostic, ...{ schema: schema, schemaItem: new EntityClass(schema, "TestEntityClass") } };
-    expect(Diagnostics.isSchemaItemDiagnostic(diag)).to.be.true;
+  it("createCustomAttributeContainerDiagnosticClass, class created properly", async () => {
+    const newClass = Diagnostics.createCustomAttributeContainerDiagnosticClass(Diagnostics.DiagnosticCode.BaseClassIsSealed, "Test Message", Diagnostics.DiagnosticCategory.Error);
+    expect(newClass.prototype.diagnosticType).to.equal(Diagnostics.DiagnosticType.CustomAttributeContainer);
+    expect(newClass.prototype.code).to.equal(Diagnostics.DiagnosticCode.BaseClassIsSealed);
+    expect(newClass.prototype.key).to.equal(Diagnostics.DiagnosticCode[Diagnostics.DiagnosticCode.BaseClassIsSealed]);
+    expect(newClass.prototype.category).to.equal(Diagnostics.DiagnosticCategory.Error);
+    expect(newClass.prototype.messageText).to.equal("Test Message");
   });
-
-  it("isSchemaItemDiagnostic, invalid DiagnosticWithSchemaItem, returns false", async () => {
-    const diag = { ...validDiagnostic, ...{ schema: new Schema("TestSchema", 1, 0, 0) } };
-    expect(Diagnostics.isSchemaItemDiagnostic(diag)).to.be.false;
-  });
-
-  it("isPropertyDiagnostic, valid DiagnosticWithProperty, returns true", async () => {
-    const schema = new Schema("TestSchema", 1, 0, 0);
-    const item = new EntityClass(schema, "TestEntityClass");
-    const diag = { ...validDiagnostic, ...{ schema: schema, schemaItem: item, propertyName: "TestProperty" } };
-    expect(Diagnostics.isPropertyDiagnostic(diag)).to.be.true;
-  });
-
-  it("isPropertyDiagnostic, invalid DiagnosticWithProperty, returns false", async () => {
-    const schema = new Schema("TestSchema", 1, 0, 0);
-    const item = new EntityClass(schema, "TestEntityClass");
-    const diag = { ...validDiagnostic, ...{ schema: schema, schemaItem: item } };
-    expect(Diagnostics.isPropertyDiagnostic(diag)).to.be.false;
-  });
-
 });

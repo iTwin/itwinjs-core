@@ -90,6 +90,12 @@ export class Schema implements CustomAttributeContainerProps {
 
   get customAttributes(): CustomAttributeSet | undefined { return this._customAttributes; }
 
+  /** Returns the schema name. */
+  get fullName() { return this.schemaKey.name; }
+
+  /** Returns the schema. */
+  get schema(): Schema { return this; }
+
   /**
    * Returns a SchemaItemKey given the item name and the schema it belongs to
    * @param fullName: fully qualified name {Schema name}.{Item Name}
