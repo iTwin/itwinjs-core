@@ -14,6 +14,7 @@ import * as categoryMod from "./Category";
 import * as viewMod from "./ViewDefinition";
 import * as linkMod from "./Relationship";
 import * as textureMod from "./Texture";
+import * as materialMod from "./Material";
 
 /**
  * The [BisCore]($docs/bis/intro/schemas-domains.md) schema is the lowest level Schema in an iModel.
@@ -46,5 +47,6 @@ export class BisCore extends Schema {
     ClassRegistry.registerModule(viewMod, this);
     ClassRegistry.registerModule(linkMod, this);
     ClassRegistry.registerModule(textureMod, this);
+    ClassRegistry.registerModule(materialMod, this);
   }
 }

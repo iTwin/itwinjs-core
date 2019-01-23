@@ -20,6 +20,7 @@ export * from "./IModel";
 export * from "./IModelError";
 export * from "./IModelVersion";
 export * from "./Lighting";
+export * from "./MaterialProps";
 export * from "./ModelProps";
 export * from "./OctEncodedNormal";
 export * from "./QPoint";

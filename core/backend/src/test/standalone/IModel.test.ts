@@ -8,7 +8,8 @@ import { AccessToken, IAccessTokenManager } from "@bentley/imodeljs-clients";
 import {
   AxisAlignedBox3d, Code, CodeScopeSpec, CodeSpec, ColorByName, EntityMetaData, EntityProps, FilePropertyProps, FontMap,
   FontType, GeometricElementProps, IModel, IModelError, IModelStatus, PrimitiveTypeCode, RelatedElement, SubCategoryAppearance,
-  ViewDefinitionProps, DisplayStyleSettingsProps, ColorDef, ViewFlags, RenderMode, DisplayStyleProps, BisCodeSpec, ImageSourceFormat, TextureFlags,
+  ViewDefinitionProps, DisplayStyleSettingsProps, ColorDef, ViewFlags, RenderMode, DisplayStyleProps, BisCodeSpec, ImageSourceFormat,
+  TextureFlags, TextureMapping, TextureMapProps, Units,
 } from "@bentley/imodeljs-common";
 import { assert, expect } from "chai";
 import * as path from "path";
@@ -16,7 +17,7 @@ import {
   AutoPush, AutoPushParams, AutoPushEventHandler, AutoPushEventType, AutoPushState, BisCore, Category, ClassRegistry, DefinitionPartition,
   DictionaryModel, DocumentPartition, ECSqlStatement, Element, ElementGroupsMembers, ElementPropertyFormatter, Entity,
   GeometricElement2d, GeometricElement3d, GeometricModel, GroupInformationPartition, IModelDb, InformationPartitionElement,
-  LightLocation, LinkPartition, Model, PhysicalModel, PhysicalPartition, SpatialCategory, SqliteStatement, SqliteValue,
+  LightLocation, LinkPartition, Model, PhysicalModel, PhysicalPartition, RenderMaterial, SpatialCategory, SqliteStatement, SqliteValue,
   SqliteValueType, SubCategory, Subject, Texture, ViewDefinition, DisplayStyle3d, ElementDrivesElement, PhysicalObject,
 } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
@@ -226,6 +227,78 @@ describe("iModel", () => {
     expect(texture.height).to.equal(testTextureHeight);
     expect(texture.description).to.equal(testTextureDescription);
     expect(texture.flags).to.equal(testTextureFlags);
+  });
+
+  it("should insert a RenderMaterial", () => {
+    const model = imodel2.models.getModel(IModel.dictionaryId) as DictionaryModel;
+    expect(model).not.to.be.undefined;
+
+    const testMaterialName = "test material name";
+    const testPaletteName = "test palette name";
+    const testDescription = "test description";
+    const color = [25, 32, 9];
+    const specularColor = [99, 255, 1];
+    const finish = 0.4;
+    const transmit = 0.1;
+    const diffuse = 0.24;
+    const specular = 0.9;
+    const reflect = 0.3;
+    const reflectColor = [255, 0, 127];
+    const textureMapProps: TextureMapProps = {
+      pattern_angle: 3.0,
+      pattern_u_flip: false,
+      pattern_flip: false,
+      pattern_scale: [1.0, 1.0],
+      pattern_offset: [0.0, 0.0],
+      pattern_scalemode: Units.Inches,
+      pattern_mapping: TextureMapping.Mode.Planar,
+      pattern_weight: 0.5,
+      TextureId: "test_textureid",
+    };
+
+    const renderMaterialParams = new RenderMaterial.Params(testPaletteName);
+    renderMaterialParams.description = testDescription;
+    renderMaterialParams.color = color;
+    renderMaterialParams.specularColor = specularColor;
+    renderMaterialParams.finish = finish;
+    renderMaterialParams.transmit = transmit;
+    renderMaterialParams.diffuse = diffuse;
+    renderMaterialParams.specular = specular;
+    renderMaterialParams.reflect = reflect;
+    renderMaterialParams.reflectColor = reflectColor;
+    renderMaterialParams.textureMapProps = textureMapProps;
+    const renderMaterialId = RenderMaterial.insert(imodel2, IModel.dictionaryId, testMaterialName, renderMaterialParams);
+
+    const renderMaterial = imodel2.elements.getElement<RenderMaterial>(renderMaterialId);
+    assert((renderMaterial instanceof RenderMaterial) === true, "did not retrieve an instance of RenderMaterial");
+    expect(renderMaterial.paletteName).to.equal(testPaletteName);
+    expect(renderMaterial.description).to.equal(testDescription);
+    expect(renderMaterial.jsonProperties.materialAssets.renderMaterial.HasBaseColor).to.equal(true);
+    expect(JSON.stringify(renderMaterial.jsonProperties.materialAssets.renderMaterial.color)).to.equal(JSON.stringify(color));
+    expect(renderMaterial.jsonProperties.materialAssets.renderMaterial.HasSpecularColor).to.equal(true);
+    expect(JSON.stringify(renderMaterial.jsonProperties.materialAssets.renderMaterial.specular_color)).to.equal(JSON.stringify(specularColor));
+    expect(renderMaterial.jsonProperties.materialAssets.renderMaterial.HasFinish).to.equal(true);
+    expect(renderMaterial.jsonProperties.materialAssets.renderMaterial.finish).to.equal(finish);
+    expect(renderMaterial.jsonProperties.materialAssets.renderMaterial.HasTransmit).to.equal(true);
+    expect(renderMaterial.jsonProperties.materialAssets.renderMaterial.transmit).to.equal(transmit);
+    expect(renderMaterial.jsonProperties.materialAssets.renderMaterial.HasDiffuse).to.equal(true);
+    expect(renderMaterial.jsonProperties.materialAssets.renderMaterial.diffuse).to.equal(diffuse);
+    expect(renderMaterial.jsonProperties.materialAssets.renderMaterial.HasSpecular).to.equal(true);
+    expect(renderMaterial.jsonProperties.materialAssets.renderMaterial.specular).to.equal(specular);
+    expect(renderMaterial.jsonProperties.materialAssets.renderMaterial.HasReflect).to.equal(true);
+    expect(renderMaterial.jsonProperties.materialAssets.renderMaterial.reflect).to.equal(reflect);
+    expect(renderMaterial.jsonProperties.materialAssets.renderMaterial.HasReflectColor).to.equal(true);
+    expect(JSON.stringify(renderMaterial.jsonProperties.materialAssets.renderMaterial.reflect_color)).to.equal(JSON.stringify(reflectColor));
+    expect(renderMaterial.jsonProperties.materialAssets.renderMaterial.Map).not.to.be.undefined;
+    expect(renderMaterial.jsonProperties.materialAssets.renderMaterial.Map.pattern_angle).to.equal(textureMapProps.pattern_angle);
+    expect(renderMaterial.jsonProperties.materialAssets.renderMaterial.Map.pattern_u_flip).to.equal(textureMapProps.pattern_u_flip);
+    expect(renderMaterial.jsonProperties.materialAssets.renderMaterial.Map.pattern_flip).to.equal(textureMapProps.pattern_flip);
+    expect(JSON.stringify(renderMaterial.jsonProperties.materialAssets.renderMaterial.Map.pattern_scale)).to.equal(JSON.stringify(textureMapProps.pattern_scale));
+    expect(JSON.stringify(renderMaterial.jsonProperties.materialAssets.renderMaterial.Map.pattern_offset)).to.equal(JSON.stringify(textureMapProps.pattern_offset));
+    expect(renderMaterial.jsonProperties.materialAssets.renderMaterial.Map.pattern_scalemode).to.equal(textureMapProps.pattern_scalemode);
+    expect(renderMaterial.jsonProperties.materialAssets.renderMaterial.Map.pattern_mapping).to.equal(textureMapProps.pattern_mapping);
+    expect(renderMaterial.jsonProperties.materialAssets.renderMaterial.Map.pattern_weight).to.equal(textureMapProps.pattern_weight);
+    expect(renderMaterial.jsonProperties.materialAssets.renderMaterial.Map.TextureId).to.equal(textureMapProps.TextureId);
   });
 
   it("should insert a DisplayStyle", () => {
