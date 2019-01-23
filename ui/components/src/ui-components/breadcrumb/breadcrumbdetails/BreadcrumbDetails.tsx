@@ -12,6 +12,7 @@ import { BreadcrumbTreeUtils, DataRowItem } from "../BreadcrumbTreeUtils";
 import { TreeNodeItem, isTreeDataProviderInterface, DelayLoadedTreeNodeItem, ImmediatelyLoadedTreeNodeItem } from "../../tree/TreeDataProvider";
 import { BreadcrumbPath, BreadcrumbUpdateEventArgs } from "../BreadcrumbPath";
 import { BeInspireTree, BeInspireTreeEvent, BeInspireTreeNodes, BeInspireTreeNode, toNodes, BeInspireTreeNodeConfig, MapPayloadToInspireNodeCallback } from "../../tree/component/BeInspireTree";
+import UiComponents from "../../UiComponents";
 
 /** Property interface for the [[BreadcrumbDetails]] component */
 export interface BreadcrumbDetailsProps {
@@ -41,13 +42,6 @@ export interface BreadcrumbDetailsState {
 export class BreadcrumbDetails extends React.Component<BreadcrumbDetailsProps, BreadcrumbDetailsState> {
   private _tree!: BeInspireTree<TreeNodeItem>;
   private _mounted: boolean = false;
-  public static defaultProps: Partial<BreadcrumbDetailsProps> = {
-    columns: [
-      { key: "icon", label: "", icon: true },
-      { key: "label", label: "Name" },
-      { key: "description", label: "Description" },
-    ],
-  };
 
   public readonly state: BreadcrumbDetailsState;
 
@@ -108,6 +102,7 @@ export class BreadcrumbDetails extends React.Component<BreadcrumbDetailsProps, B
       return true;
     }
 
+    // istanbul ignore if
     if (!nextState.modelReady) {
       // if we got here and model is not ready - don't render
       return false;
@@ -119,18 +114,20 @@ export class BreadcrumbDetails extends React.Component<BreadcrumbDetailsProps, B
     return this.props.renderTable !== nextProps.renderTable
       || this.props.path !== nextProps.path
       || this.state.table !== nextState.table
-      || (current !== undefined && current.isDirty());
+      || (current !== undefined && /* istanbul ignore next */ current.isDirty());
   }
 
   private _onModelLoaded = (rootNodes: BeInspireTreeNodes<TreeNodeItem>) => {
-    this._updateTree(undefined);
+    const node = this.props.path.getCurrentNode();
+    if (node === undefined)
+      this._updateTree(undefined);
     if (this.props.onRootNodesLoaded)
       this.props.onRootNodesLoaded(rootNodes.map((n) => n.payload!));
   }
 
   private _onChildrenLoaded = (parentNode: BeInspireTreeNode<TreeNodeItem>) => {
     const node = this.props.path.getCurrentNode();
-    if (node) {
+    if (node !== undefined) {
       const iNode = this._tree.node(node.id);
       this._updateTree(iNode);
     }
@@ -140,6 +137,7 @@ export class BreadcrumbDetails extends React.Component<BreadcrumbDetailsProps, B
   }
 
   private _onModelReady = () => {
+    // istanbul ignore else
     if (this._mounted)
       this.setState({ modelReady: true });
   }
@@ -147,7 +145,6 @@ export class BreadcrumbDetails extends React.Component<BreadcrumbDetailsProps, B
   private _onTreeNodeChanged = (_items: Array<TreeNodeItem | undefined>) => {
     using((this._tree as any).pauseRendering(), async () => { // tslint:disable-line:no-floating-promises
       await this._tree.reload();
-      // await Promise.all(this._tree.nodes().map(async (n) => n.loadChildren()));
     });
   }
 
@@ -182,6 +179,13 @@ export class BreadcrumbDetails extends React.Component<BreadcrumbDetailsProps, B
       // subscribe for new data provider `onTreeNodeChanged` events
       args.dataProvider.onTreeNodeChanged.addListener(this._onTreeNodeChanged);
     }
+    if (args.dataProvider !== args.oldDataProvider) {
+      // istanbul ignore else
+      if (this._mounted)
+        this.setState({ modelReady: false }, () => {
+          this._recreateTree();
+        });
+    }
   }
   private _updateTree = (node: BeInspireTreeNode<TreeNodeItem> | undefined) => {
     const childNodes = (node ? toNodes<TreeNodeItem>(node.getChildren()) : this._tree.nodes()).map((child) => child.payload!);
@@ -193,8 +197,14 @@ export class BreadcrumbDetails extends React.Component<BreadcrumbDetailsProps, B
       else if (parents.length === 1)
         this.props.path.setCurrentNode(undefined);
     }
-    const table = BreadcrumbTreeUtils.aliasNodeListToTableDataProvider(childNodes, this.props.columns!, this.props.path.getDataProvider());
-    this.setState({ table, childNodes });
+    const table = BreadcrumbTreeUtils.aliasNodeListToTableDataProvider(childNodes, this.props.columns || [
+      { key: "icon", label: UiComponents.i18n.translate("UiComponents:breadcrumb.icon"), icon: true },
+      { key: "label", label: UiComponents.i18n.translate("UiComponents:breadcrumb.name") },
+      { key: "description", label: UiComponents.i18n.translate("UiComponents:breadcrumb.description") },
+    ], this.props.path.getDataProvider());
+    // istanbul ignore else hard to control whether mounted or not
+    if (this._mounted)
+      this.setState({ table, childNodes });
   }
   public render(): React.ReactNode {
     const node = this.props.path.getCurrentNode();
@@ -214,11 +224,10 @@ export class BreadcrumbDetails extends React.Component<BreadcrumbDetailsProps, B
             dataProvider: this.state.table,
             onRowsSelected: async (rowIterator: AsyncIterableIterator<RowItem>, replace: boolean) => {
               const iteratorResult = await rowIterator.next();
+              // istanbul ignore else should always be false
               if (!iteratorResult.done) {
                 const row = iteratorResult.value as DataRowItem;
-                if ("_node" in row && row._node && row._node.hasChildren) {
-                  this.props.path.setCurrentNode(row._node);
-                }
+                this.props.path.setCurrentNode(row._node!);
               }
               return replace;
             },

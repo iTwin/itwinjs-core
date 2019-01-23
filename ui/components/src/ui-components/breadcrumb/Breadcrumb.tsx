@@ -134,8 +134,10 @@ export class Breadcrumb extends React.Component<BreadcrumbProps, BreadcrumbState
   private _handleUpdate = (args: BreadcrumbUpdateEventArgs) => {
     if (args.currentNode && this._mounted) {
       const current = this._tree.node(args.currentNode.id);
-      const p = current ? current.getTextualHierarchy().join(this.props.delimiter) : "";
-      this.setState({ current: args.currentNode, pathString: p });
+      if (current) {
+        const p = current.getTextualHierarchy().join(this.props.delimiter);
+        this.setState({ current: args.currentNode, pathString: p });
+      }
     } else {
       this.setState({ current: undefined, pathString: "" });
     }
@@ -415,6 +417,7 @@ export class BreadcrumbInput extends React.Component<BreadcrumbInputProps, Bread
 
                     const autocompleteStr = this._inputElement.value.substring(0, this._inputElement.selectionEnd!);
                     this._getAutocompleteList(autocompleteStr).then((list) => { // tslint:disable-line:no-floating-promises
+                      // istanbul ignore else
                       if (this._mounted)
                         this.setState({
                           autocompleting: false,
@@ -429,7 +432,7 @@ export class BreadcrumbInput extends React.Component<BreadcrumbInputProps, Bread
             );
           })}
         </ContextMenu>
-        <MessageBox opened={this.state.messageBoxOpened} modal={false} severity={MessageSeverity.Warning} buttonCluster={[{ type: ButtonType.OK, onClick: this._handleMessageBoxClose }]}>
+        <MessageBox opened={this.state.messageBoxOpened} modal={false} onClose={this._handleMessageBoxClose} severity={MessageSeverity.Warning} buttonCluster={[{ type: ButtonType.OK, onClick: this._handleMessageBoxClose }]}>
           {UiComponents.i18n.translate("UiComponents:breadcrumb.invalidBreadcrumbPath")}
         </MessageBox>
       </div>
@@ -526,6 +529,7 @@ export class BreadcrumbInput extends React.Component<BreadcrumbInputProps, Bread
   }
 
   private _handleClick = (event: any): void => {
+    // istanbul ignore else
     if (this._autocomplete) {
       // istanbul ignore else
       if (this._inputElement && event.target === this._inputElement) {
@@ -545,18 +549,19 @@ export class BreadcrumbInput extends React.Component<BreadcrumbInputProps, Bread
   private _handleKeyUp = async (event: any) => {
     switch (event.keyCode) {
       case 27: /*<Esc>*/
+        // istanbul ignore else
         if (this._mounted)
           this.setState({ autocompleting: false });
         break;
       case 38: /*<Up>*/
       case 40: /*<Down>*/
         event.preventDefault();
+        // istanbul ignore else
         if (this._autocomplete && this.state.autocompleteList.length > 0) {
           this._autocomplete.focus();
+          // istanbul ignore else
           if (this._mounted)
             this.setState({ autocompleting: true });
-        } else /* istanbul ignore else */ if (this._inputElement) {
-          this._inputElement.focus();
         }
         break;
       case 13: /*<Return>*/
@@ -565,17 +570,15 @@ export class BreadcrumbInput extends React.Component<BreadcrumbInputProps, Bread
           const path = this._inputElement.value;
           if (path === "" || path === this.props.delimiter!) {
             this.props.onNodeChange(undefined);
+            // istanbul ignore else
             if (this._mounted)
               this.setState({ autocompleting: false });
           } else {
             const node = await this._findChildUserInput(path);
             if (node === undefined)
               this.setState({ messageBoxOpened: true });
-            else {
+            else
               this.props.onNodeChange(node.payload);
-              if (this._mounted)
-                this.setState({ autocompleting: false });
-            }
           }
         }
         break;
@@ -693,15 +696,13 @@ export class BreadcrumbDropdown extends React.Component<BreadcrumbDropdownProps>
   }
 
   private _handleUpClick = () => {
-    if (this.props.onNodeChange) {
-      let parent: TreeNodeItem | undefined;
-      if (this.props.node) {
-        const p = (this.props.node.getParent()) as BeInspireTreeNode<TreeNodeItem>;
-        if (p)
-          parent = p.payload;
-      }
-      this.props.onNodeChange(parent);
+    let parent: TreeNodeItem | undefined;
+    if (this.props.node) {
+      const p = (this.props.node.getParent()) as BeInspireTreeNode<TreeNodeItem>;
+      if (p)
+        parent = p.payload;
     }
+    this.props.onNodeChange(parent);
   }
 
   private _focusInput = (event: React.MouseEvent) => {
@@ -714,7 +715,7 @@ export class BreadcrumbDropdown extends React.Component<BreadcrumbDropdownProps>
 export interface BreadcrumbDropdownNodeProps {
   tree: BeInspireTree<TreeNodeItem>;
   node?: BeInspireTreeNode<TreeNodeItem>;
-  onNodeSelected?: (node: TreeNodeItem | undefined) => void;
+  onNodeSelected: (node: TreeNodeItem | undefined) => void;
   staticOnly?: boolean;
   parentsOnly?: boolean;
   last?: boolean;
@@ -756,8 +757,7 @@ export class BreadcrumbDropdownNode extends React.Component<BreadcrumbDropdownNo
           className="breadcrumb-split-button"
           onClick={(event) => {
             event.stopPropagation();
-            if (this.props.onNodeSelected)
-              this.props.onNodeSelected(n);
+            this.props.onNodeSelected(n);
           }}
           label={renderNode({ label, icon }, n, parent)}
         >
@@ -767,8 +767,7 @@ export class BreadcrumbDropdownNode extends React.Component<BreadcrumbDropdownNo
                 key={d}
                 icon={child.payload!.icon}
                 onSelect={(_event) => {
-                  if (this.props.onNodeSelected)
-                    this.props.onNodeSelected(child.payload);
+                  this.props.onNodeSelected(child.payload);
                 }}>
                 {child.payload!.label}
               </ContextMenuItem>
@@ -797,12 +796,26 @@ export interface BreadcrumbNodeProps {
   icon: string;
   /** Node label */
   label: string;
+  /** @hidden */
+  onRender?: () => void;
 }
 
 /** Default BreadcrumbNode component */
 export class BreadcrumbNode extends React.Component<BreadcrumbNodeProps> {
   public render(): React.ReactNode {
     const { icon, label } = this.props;
-    return <span data-testid="breadcrumb-node"><span className={classnames("icon", icon || "")} /> {label}</span>;
+    return <span data-testid="breadcrumb-node"><span className={classnames("icon", icon)} /> {label}</span>;
+  }
+
+  public componentDidMount() {
+    // istanbul ignore next
+    if (this.props.onRender)
+      this.props.onRender();
+  }
+
+  public componentDidUpdate() {
+    // istanbul ignore next
+    if (this.props.onRender)
+      this.props.onRender();
   }
 }

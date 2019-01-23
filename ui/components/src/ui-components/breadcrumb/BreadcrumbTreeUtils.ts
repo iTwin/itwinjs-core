@@ -6,6 +6,7 @@
 import { TreeNodeItem, ImmediatelyLoadedTreeNodeItem, DelayLoadedTreeNodeItem, TreeDataProvider, hasChildren } from "../tree/TreeDataProvider";
 import { TableDataProvider, TableDataChangeEvent, RowItem, CellItem, ColumnDescription } from "../table/TableDataProvider";
 import { PropertyRecord, PropertyValueFormat } from "../../ui-components";
+import UiComponents from "../UiComponents";
 
 /**
  * Utility class for tree searching and manipulation in the Breadcrumb component.
@@ -24,9 +25,8 @@ export class BreadcrumbTreeUtils {
       getColumns: async () => columns,
       getRowsCount: async () => nodes.length,
       getRow: async (rowIndex: number, _unfiltered?: boolean): Promise<DataRowItem> => {
-        if (rowIndex > nodes.length) return { _node: {} as DelayLoadedTreeNodeItem, key: "", cells: [] };
+        if (rowIndex < 0 || rowIndex > nodes.length) return { _node: {} as TreeNodeItem, key: "", cells: [] };
         const n = nodes[rowIndex];
-        if (!n) return { _node: {} as DelayLoadedTreeNodeItem, key: "", cells: [] };
         const colorOverrides = {
           foreColor: n.labelForeColor,
           backColor: n.labelBackColor,
@@ -42,7 +42,7 @@ export class BreadcrumbTreeUtils {
                 },
                 {
                   name: "icon",
-                  displayLabel: "icon",
+                  displayLabel: UiComponents.i18n.translate("UiComponents:breadcrumb.icon"),
                   typename: "icon",
                 }),
           },
@@ -56,7 +56,7 @@ export class BreadcrumbTreeUtils {
               },
               {
                 name: "label",
-                displayLabel: "label",
+                displayLabel: UiComponents.i18n.translate("UiComponents:breadcrumb.name"),
                 typename: "text",
               }),
           },
@@ -70,17 +70,35 @@ export class BreadcrumbTreeUtils {
               },
               {
                 name: "description",
-                displayLabel: "description",
+                displayLabel: UiComponents.i18n.translate("UiComponents:breadcrumb.description"),
                 typename: "text",
               }),
           },
         ];
         for (const k in n.extendedData) {
           // only add string values to table cell list
-          if (n.extendedData.hasOwnProperty(k) && typeof n.extendedData[k] === "string") {
+          if (n.extendedData.hasOwnProperty(k) && n.extendedData[k] instanceof PropertyRecord) {
             cells.push({
               key: k,
               record: n.extendedData[k],
+              isBold: n.labelBold,
+              isItalic: n.labelItalic,
+              colorOverrides,
+            });
+          } else if (n.extendedData.hasOwnProperty(k) && (typeof n.extendedData[k] === "string" || typeof n.extendedData[k] === "boolean" || typeof n.extendedData[k] === "number")) {
+            cells.push({
+              key: k,
+              record: new PropertyRecord(
+                {
+                  value: n.extendedData[k].toString(),
+                  valueFormat: PropertyValueFormat.Primitive,
+                  displayValue: n.extendedData[k].toString(),
+                },
+                {
+                  name: k,
+                  displayLabel: k,
+                  typename: "text",
+                }),
               isBold: n.labelBold,
               isItalic: n.labelItalic,
               colorOverrides,
@@ -94,7 +112,7 @@ export class BreadcrumbTreeUtils {
         if ((n as DelayLoadedTreeNodeItem).hasChildren !== undefined)
           n.extendedData.hasChildren = (n as DelayLoadedTreeNodeItem).hasChildren;
         if ((n as ImmediatelyLoadedTreeNodeItem).children !== undefined)
-          n.extendedData.hasChildren = (n as DelayLoadedTreeNodeItem).hasChildren;
+          n.extendedData.children = (n as ImmediatelyLoadedTreeNodeItem).children;
         n.extendedData.dataProvider = treeDataProvider;
         n.extendedData.icon = n.icon;
         const row: DataRowItem = {
@@ -111,12 +129,12 @@ export class BreadcrumbTreeUtils {
         return row;
       },
       // TODO: implement sorting function
-      sort: async () => { },
+      sort: /* istanbul ignore next */ async () => { },
     };
   }
 }
 
 /** @hidden */
 export interface DataRowItem extends RowItem {
-  _node?: DelayLoadedTreeNodeItem;
+  _node?: TreeNodeItem;
 }

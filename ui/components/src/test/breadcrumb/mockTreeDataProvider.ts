@@ -227,9 +227,10 @@ export const mockRawTreeDataProvider: ImmediatelyLoadedTreeNodeItem[] = [
       {
         label: "Raw Node 2.1", id: "2.1", parentId: "2", description: "node 2.1 child",
         children: [
-          { label: "Raw Node 2.1.1", id: "2.1.1", description: "node 2.1.1 child" },
+          { label: "Raw Node 2.1.1", id: "2.1.1", parentId: "2.1", description: "node 2.1.1 child" },
         ] as ImmediatelyLoadedTreeNodeItem[],
       },
+      { label: "Raw Node 2.2", id: "2.2", parentId: "2", description: "node 2.2 child" },
     ] as ImmediatelyLoadedTreeNodeItem[],
   },
   { label: "Raw Node 3", id: "3", description: "node 3 child" },

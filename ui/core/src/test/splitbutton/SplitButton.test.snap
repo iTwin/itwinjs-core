@@ -3,9 +3,11 @@
 exports[`<SplitButton /> renders correctly 1`] = `
 <div
   className="split-button"
+  data-testid="split-button-root"
 >
   <div
     className="split-button-label"
+    data-testid="split-button-label"
   >
      
     test
@@ -37,9 +39,11 @@ exports[`<SplitButton /> renders correctly 1`] = `
 exports[`<SplitButton /> renders with icon correctly 1`] = `
 <div
   className="split-button"
+  data-testid="split-button-root"
 >
   <div
     className="split-button-label"
+    data-testid="split-button-label"
   >
     <span
       className="icon icon-placeholder"

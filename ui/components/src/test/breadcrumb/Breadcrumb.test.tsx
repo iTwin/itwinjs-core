@@ -10,6 +10,8 @@ import { render, cleanup, fireEvent, RenderResult, waitForElement } from "react-
 import { Breadcrumb, BreadcrumbMode, BreadcrumbPath } from "../../ui-components";
 import { mockRawTreeDataProvider, mockInterfaceTreeDataProvider, mockMutableInterfaceTreeDataProvider, mockRawTreeDataProvider2 } from "./mockTreeDataProvider";
 import TestUtils from "../TestUtils";
+import { BreadcrumbNodeProps, BreadcrumbNode } from "../../ui-components/breadcrumb/Breadcrumb";
+import { TreeNodeItem } from "../../ui-components/tree/TreeDataProvider";
 
 describe("Breadcrumb", () => {
   let renderSpy: sinon.SinonSpy;
@@ -44,6 +46,14 @@ describe("Breadcrumb", () => {
         await waitForUpdate(() => renderedComponent = render(<Breadcrumb onRender={renderSpy} dataProvider={mockInterfaceTreeDataProvider} onChildrenLoaded={onChildrenLoadedSpy} />), renderSpy, 2);
         expect(onChildrenLoadedSpy).to.have.have.callCount(3);
       });
+    });
+
+    it("should render with renderTable defined", () => {
+      const renderNode = (props: BreadcrumbNodeProps, _node?: TreeNodeItem, _parent?: TreeNodeItem) => {
+        return <BreadcrumbNode label={props.label} icon={props.icon} onRender={renderSpy} />;
+      };
+      render(<Breadcrumb dataProvider={mockRawTreeDataProvider} renderNode={renderNode} />);
+      expect(renderSpy).to.be.called;
     });
 
     describe("with current prop", () => {
@@ -163,6 +173,10 @@ describe("Breadcrumb", () => {
         fireEvent.click(dropdownBackground);
         expect(renderedComponent.queryByTestId("breadcrumb-input-root")).to.not.exist;
       });
+      it("should not change to input mode when dropdown background is clicked", async () => {
+        await waitForUpdate(() => renderedComponent = render(<Breadcrumb onRender={renderSpy} dataProvider={mockRawTreeDataProvider} staticOnly={true} initialCurrent={mockRawTreeDataProvider[0]} />), renderSpy, 2);
+        expect(renderedComponent.getByText(mockRawTreeDataProvider[0].label)).to.exist;
+      });
     });
 
     describe("With path", () => {
@@ -177,6 +191,12 @@ describe("Breadcrumb", () => {
         const node = mockRawTreeDataProvider[1].children![0];
         path.setCurrentNode(node);
         expect(await waitForElement(() => renderedComponent.getByText(node.label))).to.exist;
+      });
+      it("should not update if node isn't found", async () => {
+        await waitForUpdate(() => renderedComponent = render(<Breadcrumb onRender={renderSpy} dataProvider={mockRawTreeDataProvider} path={path} />), renderSpy, 1);
+        const node = { ...mockRawTreeDataProvider[1].children![0], id: "INVALID ID" };
+        path.setCurrentNode(node);
+        expect(renderedComponent.queryByText(node.label)).to.not.exist;
       });
       it("should update path to root", async () => {
         await waitForUpdate(() => renderedComponent = render(<Breadcrumb onRender={renderSpy} dataProvider={mockRawTreeDataProvider} path={path} />), renderSpy, 1);
@@ -204,6 +224,15 @@ describe("Breadcrumb", () => {
           await waitForUpdate(() => fireEvent.keyUp(breadcrumbInput, { keyCode: 13 /* <Return> */ }), renderSpy, 1);
           expect(renderedComponent.getByTestId("breadcrumb-dropdown-background")).to.exist;
         });
+        it("should submit undefined node with parentsOnly={false}", async () => {
+          await waitForUpdate(() => renderedComponent = render(<Breadcrumb onRender={renderSpy} dataProvider={mockRawTreeDataProvider} parentsOnly={false} initialBreadcrumbMode={BreadcrumbMode.Input} />), renderSpy, 1);
+          const breadcrumbInput = renderedComponent.getByTestId("breadcrumb-input") as HTMLInputElement;
+          breadcrumbInput.value = "";
+          breadcrumbInput.setSelectionRange(0, 0);
+          fireEvent.click(breadcrumbInput);
+          await waitForUpdate(() => fireEvent.keyUp(breadcrumbInput, { keyCode: 13 /* <Return> */ }), renderSpy, 1);
+          expect(renderedComponent.getByTestId("breadcrumb-dropdown-background")).to.exist;
+        });
         it("should submit node", async () => {
           await waitForUpdate(() => renderedComponent = render(<Breadcrumb onRender={renderSpy} delimiter={"\\"} dataProvider={mockRawTreeDataProvider} initialBreadcrumbMode={BreadcrumbMode.Input} />), renderSpy, 1);
           const breadcrumbInput = renderedComponent.getByTestId("breadcrumb-input") as HTMLInputElement;
@@ -215,6 +244,32 @@ describe("Breadcrumb", () => {
           await waitForUpdate(() => fireEvent.keyUp(breadcrumbInput, { keyCode: 13 /* <Return> */ }), renderSpy, 3);
           expect(renderedComponent.getByTestId("breadcrumb-dropdown-background")).to.exist;
           expect(renderedComponent.getByText(label)).to.exist;
+        });
+        it("should submit node without trailing slash", async () => {
+          await waitForUpdate(() => renderedComponent = render(<Breadcrumb onRender={renderSpy} delimiter={"\\"} dataProvider={mockRawTreeDataProvider} initialBreadcrumbMode={BreadcrumbMode.Input} />), renderSpy, 1);
+          const breadcrumbInput = renderedComponent.getByTestId("breadcrumb-input") as HTMLInputElement;
+          const label = mockRawTreeDataProvider[1].label;
+          breadcrumbInput.value = label;
+          const l = breadcrumbInput.value.length;
+          breadcrumbInput.setSelectionRange(l, l);
+          fireEvent.click(breadcrumbInput);
+          await waitForUpdate(() => fireEvent.keyUp(breadcrumbInput, { keyCode: 13 /* <Return> */ }), renderSpy, 3);
+          expect(renderedComponent.getByTestId("breadcrumb-dropdown-background")).to.exist;
+          expect(renderedComponent.getByText(label)).to.exist;
+        });
+        it("should submit node with parentsOnly={false}", async () => {
+          await waitForUpdate(() => renderedComponent = render(<Breadcrumb onRender={renderSpy} delimiter={"\\"} dataProvider={mockRawTreeDataProvider} parentsOnly={false} initialBreadcrumbMode={BreadcrumbMode.Input} />), renderSpy, 1);
+          const breadcrumbInput = renderedComponent.getByTestId("breadcrumb-input") as HTMLInputElement;
+          const label1 = mockRawTreeDataProvider[1].label;
+          const label2 = mockRawTreeDataProvider[1].children![1].label;
+          breadcrumbInput.value = label1 + "\\" + label2;
+          const l = breadcrumbInput.value.length;
+          breadcrumbInput.setSelectionRange(l, l);
+          fireEvent.click(breadcrumbInput);
+          await waitForUpdate(() => fireEvent.keyUp(breadcrumbInput, { keyCode: 13 /* <Return> */ }), renderSpy, 3);
+          expect(renderedComponent.getByTestId("breadcrumb-dropdown-background")).to.exist;
+          expect(renderedComponent.getByText(label1)).to.exist;
+          expect(renderedComponent.getByText(label2)).to.exist;
         });
         it("should submit node from preselected node", async () => {
           const node = mockRawTreeDataProvider[0];
@@ -229,7 +284,7 @@ describe("Breadcrumb", () => {
           expect(renderedComponent.getByTestId("breadcrumb-dropdown-background")).to.exist;
           expect(renderedComponent.getByText(label)).to.exist;
         });
-        it("should submit node", async () => {
+        it("should submit invalid node", async () => {
           await waitForUpdate(() => renderedComponent = render(<Breadcrumb onRender={renderSpy} delimiter={"\\"} dataProvider={mockRawTreeDataProvider} initialBreadcrumbMode={BreadcrumbMode.Input} />), renderSpy, 1);
           const breadcrumbInput = renderedComponent.getByTestId("breadcrumb-input") as HTMLInputElement;
           breadcrumbInput.value = "\\invalidInput\\";
@@ -237,7 +292,10 @@ describe("Breadcrumb", () => {
           breadcrumbInput.setSelectionRange(l, l);
           fireEvent.click(breadcrumbInput);
           fireEvent.keyUp(breadcrumbInput, { keyCode: 13 /* <Return> */ });
-          expect(renderedComponent.queryByTestId("breadcrumb-dropdown-background")).to.not.exist;
+          const close = await waitForElement(() => renderedComponent.getByTestId("dialog-close"));
+          expect(close).to.exist;
+          fireEvent.click(close);
+          expect(renderedComponent.queryByTestId("dialog-close")).to.not.exist;
         });
         it("should submit node from path", async () => {
           const path = new BreadcrumbPath(mockRawTreeDataProvider);
@@ -271,6 +329,46 @@ describe("Breadcrumb", () => {
           await waitForUpdate(() => fireEvent.click(inputRoot), renderSpy, 1);
           expect(renderedComponent.getByTestId("breadcrumb-dropdown-background")).to.exist;
         });
+        it("should focus inputElement on <Esc> pressed", async () => {
+          await waitForUpdate(() => renderedComponent = render(<Breadcrumb onRender={renderSpy} dataProvider={mockRawTreeDataProvider} initialBreadcrumbMode={BreadcrumbMode.Input} />), renderSpy, 1);
+          const menu = renderedComponent.getByTestId("context-menu-root");
+          fireEvent.keyUp(menu, { keyCode: 27 });
+        });
+        it("should navigate to node when autocomplete item chosen", async () => {
+          await waitForUpdate(() => renderedComponent = render(<Breadcrumb onRender={renderSpy} dataProvider={mockRawTreeDataProvider} initialBreadcrumbMode={BreadcrumbMode.Input} />), renderSpy, 1);
+          const menuItem = renderedComponent.getAllByTestId("context-menu-item");
+          fireEvent.click(menuItem[0]);
+          expect(await waitForElement(() => renderedComponent.getByDisplayValue(mockRawTreeDataProvider[1].label + "\\"))).to.exist;
+        });
+        describe("Keyboard Navigation", () => {
+          it("Should close context menu on <Esc>", async () => {
+            await waitForUpdate(() => renderedComponent = render(<Breadcrumb onRender={renderSpy} dataProvider={mockRawTreeDataProvider} initialBreadcrumbMode={BreadcrumbMode.Input} />), renderSpy, 1);
+            const input = renderedComponent.getByTestId("breadcrumb-input");
+            fireEvent.keyUp(input, { keyCode: 27 });
+            expect(renderedComponent.getByTestId("context-menu-container").classList.contains("opened")).to.be.false;
+          });
+          it("Should prevent default on <Up> and <Down> keydown", async () => {
+            await waitForUpdate(() => renderedComponent = render(<Breadcrumb onRender={renderSpy} dataProvider={mockRawTreeDataProvider} initialBreadcrumbMode={BreadcrumbMode.Input} />), renderSpy, 1);
+            const input = renderedComponent.getByTestId("breadcrumb-input");
+            fireEvent.keyDown(input, { keyCode: 38 });
+            fireEvent.keyDown(input, { keyCode: 40 });
+          });
+          it("Should prevent default on <Up> and <Down> keyup", async () => {
+            await waitForUpdate(() => renderedComponent = render(<Breadcrumb onRender={renderSpy} dataProvider={mockRawTreeDataProvider} initialBreadcrumbMode={BreadcrumbMode.Input} />), renderSpy, 1);
+            const input = renderedComponent.getByTestId("breadcrumb-input");
+            fireEvent.keyUp(input, { keyCode: 38 });
+            fireEvent.keyUp(input, { keyCode: 40 });
+          });
+          it("Should reopen autocomplete on Up/Down keypress", async () => {
+            await waitForUpdate(() => renderedComponent = render(<Breadcrumb onRender={renderSpy} dataProvider={mockRawTreeDataProvider} initialBreadcrumbMode={BreadcrumbMode.Input} />), renderSpy, 1);
+            const input = renderedComponent.getByTestId("breadcrumb-input");
+            fireEvent.keyUp(input, { keyCode: 27 });
+            expect(renderedComponent.getByTestId("context-menu-container").classList.contains("opened")).to.be.false;
+            fireEvent.keyUp(input, { keyCode: 38 });
+            fireEvent.keyUp(input, { keyCode: 40 });
+            expect(renderedComponent.getByTestId("context-menu-container").classList.contains("opened")).to.be.true;
+          });
+        });
       });
       describe("BreadcrumbDropDown mode", () => {
         it("should set current to root/undefined", async () => {
@@ -280,6 +378,31 @@ describe("Breadcrumb", () => {
           const menuItems = renderedComponent.getAllByTestId("context-menu-item");
           await waitForUpdate(() => fireEvent.click(menuItems[0]), renderSpy, 2);
           expect(renderedComponent.queryByText(node.label)).to.not.exist;
+        });
+        it("should set current to root/undefined from split button press", async () => {
+          const node = mockRawTreeDataProvider[0];
+          renderedComponent = render(<Breadcrumb onRender={renderSpy} dataProvider={mockRawTreeDataProvider} initialCurrent={node} />);
+          const nodes = renderedComponent.getAllByTestId("split-button-label");
+          fireEvent.click(nodes[0]);
+          expect(renderedComponent.queryAllByTestId("breadcrumb-node")).to.have.lengthOf(1);
+        });
+        it("should navigate to root on updir button press when initialCurrent is a root level node", async () => {
+          renderedComponent = render(<Breadcrumb onRender={renderSpy} dataProvider={mockRawTreeDataProvider} initialCurrent={mockRawTreeDataProvider[0]} />);
+          const upDir = renderedComponent.getByTestId("breadcrumb-up-dir");
+          fireEvent.click(upDir);
+          expect(renderedComponent.queryAllByTestId("breadcrumb-node")).to.have.lengthOf(1);
+        });
+        it("should navigate to parent of node on updir button press when initialCurrent is a non-root level node", async () => {
+          renderedComponent = render(<Breadcrumb onRender={renderSpy} dataProvider={mockRawTreeDataProvider} initialCurrent={mockRawTreeDataProvider[1].children![0]} />);
+          const upDir = renderedComponent.getByTestId("breadcrumb-up-dir");
+          fireEvent.click(upDir);
+          expect(renderedComponent.queryAllByTestId("breadcrumb-node")).to.have.lengthOf(2);
+        });
+        it("should not change node on updir button press when on root node", async () => {
+          renderedComponent = render(<Breadcrumb onRender={renderSpy} dataProvider={mockRawTreeDataProvider} />);
+          const upDir = renderedComponent.getByTestId("breadcrumb-up-dir");
+          fireEvent.click(upDir);
+          expect(renderedComponent.queryAllByTestId("breadcrumb-node")).to.have.lengthOf(1);
         });
       });
     });
