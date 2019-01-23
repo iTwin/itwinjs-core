@@ -92,7 +92,8 @@ class TreeExampleContent extends React.Component<{}, TreeExampleState> {
 
   private _onCellUpdated = async (args: TreeCellUpdatedArgs): Promise<boolean> => {
     const nodeItem: TreeNodeItem = args.node.payload!;
-    this.state.dataProvider.updateLabel(nodeItem, args.newValue);
+    const newLabel = args.newValue;
+    this.state.dataProvider.updateLabel(nodeItem, newLabel);
     return true;
   }
 

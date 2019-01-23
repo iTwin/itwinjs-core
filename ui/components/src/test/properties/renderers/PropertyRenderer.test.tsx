@@ -127,7 +127,7 @@ describe("PropertyRenderer", () => {
     expect(propertyRenderer.find(".components-text-editor").length).to.eq(1);
   });
 
-  it("calls onEditCommit on Enter key when editing", () => {
+  it("calls onEditCommit on Enter key when editing", async () => {
     const spyMethod = sinon.spy();
     const propertyRenderer = mount(
       <PropertyRenderer
@@ -141,6 +141,7 @@ describe("PropertyRenderer", () => {
     expect(inputNode.length).to.eq(1);
 
     inputNode.simulate("keyDown", { key: "Enter" });
+    await TestUtils.flushAsyncOperations();
     expect(spyMethod.calledOnce).to.be.true;
   });
 

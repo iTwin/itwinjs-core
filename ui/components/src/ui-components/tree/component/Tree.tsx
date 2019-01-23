@@ -193,7 +193,7 @@ export interface TreeCellUpdatedArgs {
   /** The cell being updated. */
   node: BeInspireTreeNode<TreeNodeItem>;
   /** The new value for the cell. */
-  newValue: any;
+  newValue: string;
 }
 
 /** Params to the TreeNodeProps.renderLabel method */
@@ -704,9 +704,10 @@ export class Tree extends React.Component<TreeProps, TreeState> {
 
   private _onCellEditCommit = async (args: PropertyUpdatedArgs) => {
     if (this.props.onCellUpdated && this.state.cellEditorState.node) {
+      const newValue = (args.newValue as PrimitiveValue).value as string;
       const cellUpdatedArgs: TreeCellUpdatedArgs = {
         node: this.state.cellEditorState.node,
-        newValue: args.newValue,
+        newValue,
       };
       const allowed = await this.props.onCellUpdated(cellUpdatedArgs);
       if (allowed)
@@ -931,16 +932,16 @@ class PlaceholderNode extends React.Component<{ node: BeInspireTreeNode<TreeNode
 
 /** PropertyRecord for cell editing */
 class CellEditorPropertyRecord extends PropertyRecord {
-  constructor(value: any, typename: string = "string", editor?: string) {
-    const name = "cell-editor";
+  constructor(value: string, typename: string = "text", editor?: string) {
+    const name = "tree-cell-editor";
     const v: PrimitiveValue = {
       valueFormat: PropertyValueFormat.Primitive,
       value,
-      displayValue: value.toString(),
+      displayValue: value,
     };
     const p: PropertyDescription = {
       name,
-      displayLabel: "Cell Editor",
+      displayLabel: "Tree Cell Editor",
       typename,
     };
     if (editor)

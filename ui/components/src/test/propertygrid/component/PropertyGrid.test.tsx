@@ -298,7 +298,7 @@ describe("PropertyGrid", () => {
 
   describe("property editing", () => {
 
-    it("starts editor on click", async () => {
+    it("starts editor on click & commits on Enter", async () => {
       const spyMethod = sinon.spy();
       const wrapper = mount(
         <PropertyGrid
@@ -324,6 +324,7 @@ describe("PropertyGrid", () => {
       expect(inputNode.length).to.eq(1);
 
       inputNode.simulate("keyDown", { key: "Enter" });
+      await TestUtils.flushAsyncOperations();
       expect(spyMethod.calledOnce).to.be.true;
     });
 

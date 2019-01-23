@@ -1,0 +1,9 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<EnumEditor /> renders correctly 1`] = `
+<select
+  className="cell components-cell-editor components-enum-editor"
+  data-testid="components-select-editor"
+  onChange={[Function]}
+/>
+`;

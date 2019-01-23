@@ -20,6 +20,7 @@ import { waitForSpy, ResolvablePromise } from "../../test-helpers/misc";
 import { DragDropContext } from "react-dnd";
 import { DragDropHeaderWrapper } from "../../../ui-components/table/component/DragDropHeaderCell";
 import TestUtils from "../../TestUtils";
+import { PrimitiveValue } from "../../../ui-components/properties/Value";
 
 describe("Table", () => {
 
@@ -902,7 +903,7 @@ describe("Table", () => {
       let updated = false;
 
       if (args.propertyRecord) {
-        expect(args.newValue).to.eq(newPropertyValue);
+        expect((args.newValue as PrimitiveValue).value).to.eq(newPropertyValue);
         args.propertyRecord = args.propertyRecord.copyWithNewValue(args.newValue);
         updated = true;
       }

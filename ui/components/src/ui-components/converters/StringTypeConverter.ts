@@ -103,3 +103,4 @@ export class StringTypeConverter extends TypeConverter implements StringOperator
 }
 
 TypeConverterManager.registerConverter("text", StringTypeConverter);
+TypeConverterManager.registerConverter("string", StringTypeConverter);

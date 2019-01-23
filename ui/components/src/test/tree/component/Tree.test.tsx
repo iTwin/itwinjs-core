@@ -141,7 +141,7 @@ describe("Tree", () => {
         expect(getSelectedNodes().length).to.eq(2);
 
         // select node 0
-        await waitForUpdate(() => fireEvent.click(getNode("0").contentArea), renderSpy, 2);
+        await waitForUpdate(() => fireEvent.click(getNode("0").contentArea), renderSpy, 1);
 
         // verify node 0 replaced multi-selection
         nodesSelectedCallbackMock.verify((x) => x(moq.It.is<TreeNodeItem[]>((items: TreeNodeItem[]): boolean => verifyNodes(items, ["0"])), true), moq.Times.once());

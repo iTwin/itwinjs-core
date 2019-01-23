@@ -41,6 +41,8 @@ export * from "./ui-components/dragdrop/BeDragDropContext";
 export * from "./ui-components/editors/EditorContainer";
 export * from "./ui-components/editors/PropertyEditorManager";
 export * from "./ui-components/editors/TextEditor";
+export * from "./ui-components/editors/EnumEditor";
+export * from "./ui-components/editors/BooleanEditor";
 
 export * from "./ui-components/filtering/FilteringInput";
 export * from "./ui-components/filtering/ResultSelector";

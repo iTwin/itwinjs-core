@@ -6,24 +6,18 @@
 
 import * as React from "react";
 import classnames from "classnames";
-import { PropertyRecord } from "../properties/Record";
-import { PropertyValueFormat, PrimitiveValue } from "../properties/Value";
+import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
+import { PropertyValueFormat, PrimitiveValue, PropertyValue } from "../properties/Value";
 import { TypeConverterManager } from "../converters/TypeConverterManager";
 
 import "./TextEditor.scss";
-
-/** Properties for [[TextEditor]] component */
-export interface TextEditorProps {
-  onBlur?: (event: any) => void;
-  value?: PropertyRecord;
-}
 
 interface TextEditorState {
   inputValue: string;
 }
 
 /** TextEditor React component that is a property editor with text input  */
-export class TextEditor extends React.Component<TextEditorProps, TextEditorState> {
+export class TextEditor extends React.Component<PropertyEditorProps, TextEditorState> implements TypeEditor {
   private _input: HTMLInputElement | null = null;
   private _isMounted = false;
 
@@ -36,11 +30,28 @@ export class TextEditor extends React.Component<TextEditorProps, TextEditorState
     return this.state.inputValue;
   }
 
-  public getInputNode(): HTMLInputElement | null {
-    return this._input;
+  public async getPropertyValue(): Promise<PropertyValue | undefined> {
+    const record = this.props.propertyRecord;
+    let propertyValue: PropertyValue | undefined;
+
+    // istanbul ignore else
+    if (record && record.value.valueFormat === PropertyValueFormat.Primitive) {
+      propertyValue = await TypeConverterManager.getConverter(record.property.typename).convertFromStringToPropertyValue(this.state.inputValue, record);
+      (propertyValue as PrimitiveValue).displayValue = this.state.inputValue;
+    }
+
+    return propertyValue;
+  }
+
+  public setFocus(): void {
+    // istanbul ignore else
+    if (this._input) {
+      this._input.focus();
+    }
   }
 
   private _updateInputValue = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // istanbul ignore else
     if (this._isMounted)
       this.setState({
         inputValue: e.target.value,
@@ -57,22 +68,22 @@ export class TextEditor extends React.Component<TextEditorProps, TextEditorState
   }
 
   private async getInitialValue() {
-    const record = this.props.value;
+    const record = this.props.propertyRecord;
     let initialValue = "";
 
+    // istanbul ignore else
     if (record && record.value.valueFormat === PropertyValueFormat.Primitive) {
       const value = (record.value as PrimitiveValue).value;
       initialValue = await TypeConverterManager.getConverter(record.property.typename).convertPropertyToString(record.property, value);
     }
 
+    // istanbul ignore else
     if (this._isMounted)
       this.setState(
-        () => ({ inputValue: initialValue }),
+        { inputValue: initialValue },
         () => {
-          if (this._input) {
-            this._input.focus();
+          if (this._input)
             this._input.select();
-          }
         },
       );
   }

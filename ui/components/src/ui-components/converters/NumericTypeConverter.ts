@@ -52,7 +52,7 @@ export class FloatTypeConverter extends NumericTypeConverterBase {
     return stringValue;
   }
 
-  public convertFromString(value: string) {
+  public convertFromString(value: string): number {
     return parseFloat(value);
   }
 }
@@ -74,7 +74,7 @@ export class IntTypeConverter extends NumericTypeConverterBase {
     return stringValue;
   }
 
-  public convertFromString(value: string) {
+  public convertFromString(value: string): number {
     return parseInt(value, 10);
   }
 }

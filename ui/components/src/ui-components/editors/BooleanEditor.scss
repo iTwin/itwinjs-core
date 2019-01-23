@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 @import "@bentley/bwc/lib/mixins";
 
-.components-text-editor {
-  font-family:            $bwc-font-family;
-  font-size:              $bwc-font-size;
-  background: #fff;
-  width: 100%;
-  height: 100%;
+.components-boolean-editor {
+  font-family:        $bwc-font-family;
+  font-size:          $bwc-font-size;
+  height:             $bwc-font-size;
+  width:              $bwc-font-size;
+  margin-left:        $bwc-font-size;    // Clear the resizer in the PropertyGrid
 }

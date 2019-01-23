@@ -81,7 +81,7 @@ export class PropertyEditorManager {
     PropertyEditorManager._dataControllers[controllerName] = controller;
   }
 
-  public static createEditor(editType: string, editorName?: string, dataControllerName?: string): PropertyEditorBase | null {
+  public static createEditor(editType: string, editorName?: string, dataControllerName?: string): PropertyEditorBase {
     let fullEditorName = editType;
     if (editorName)
       fullEditorName += ":" + editorName;

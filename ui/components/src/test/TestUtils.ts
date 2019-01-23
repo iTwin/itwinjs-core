@@ -97,4 +97,50 @@ export default class TestUtils {
     property.isReadonly = false;
     return property;
   }
+
+  public static createEnumProperty(name: string, index: string | number) {
+    const value: PrimitiveValue = {
+      displayValue: "",
+      value: index,
+      valueFormat: PropertyValueFormat.Primitive,
+    };
+
+    const description: PropertyDescription = {
+      displayLabel: name,
+      name,
+      typename: "enum",
+    };
+
+    const propertyRecord = new PropertyRecord(value, description);
+    propertyRecord.isReadonly = false;
+    propertyRecord.property.enum = { choices: [], isStrict: false };
+    propertyRecord.property.enum.choices = [
+      { label: "Yellow", value: 0 },
+      { label: "Red", value: 1 },
+      { label: "Green", value: 2 },
+      { label: "Blue", value: 3 },
+    ];
+
+    return propertyRecord;
+  }
+
+  public static createBooleanProperty(name: string, booleanValue: boolean) {
+    const value: PrimitiveValue = {
+      displayValue: "",
+      value: booleanValue,
+      valueFormat: PropertyValueFormat.Primitive,
+    };
+
+    const description: PropertyDescription = {
+      displayLabel: name,
+      name,
+      typename: "boolean",
+    };
+
+    const propertyRecord = new PropertyRecord(value, description);
+    propertyRecord.isReadonly = false;
+
+    return propertyRecord;
+  }
+
 }

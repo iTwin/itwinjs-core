@@ -65,12 +65,12 @@ class SamplePropertyDataProvider extends SimplePropertyDataProvider {
             new SamplePropertyRecord("ID_Attribute", iVolume, "34B72774-E885-4FB7-B031-64D040E37322"),
             new SamplePropertyRecord("Name", iVolume, "DT1002"),
             enumPropertyRecord,
+            booleanPropertyRecord,
           ],
           [
             new SamplePropertyRecord("ID", iVolume, "34B72774-E885-4FB7-B031-64D040E37322", ""),
             new SamplePropertyRecord("Model", iVolume, "Default"),
             new SamplePropertyRecord("Level", iVolume, "Default"),
-            booleanPropertyRecord,
           ],
           [
             new SamplePropertyRecord("Area", iVolume, "6.1875", "ft2"),
@@ -107,13 +107,8 @@ class VerticalPropertyGridWidget extends React.Component {
     this._dataProvider = new SamplePropertyDataProvider();
   }
 
-  private _updatePropertyRecord(record: PropertyRecord, newValue: string): PropertyRecord {
-    const propertyValue: PropertyValue = {
-      valueFormat: PropertyValueFormat.Primitive,
-      value: newValue,
-      displayValue: newValue.toString(),
-    };
-    return record.copyWithNewValue(propertyValue);
+  private _updatePropertyRecord(record: PropertyRecord, newValue: PropertyValue): PropertyRecord {
+    return record.copyWithNewValue(newValue);
   }
 
   private _handlePropertyUpdated = async (args: PropertyUpdatedArgs, category: PropertyCategory): Promise<boolean> => {
@@ -157,13 +152,8 @@ class HorizontalPropertyGridWidget extends React.Component {
     this._dataProvider = new SamplePropertyDataProvider();
   }
 
-  private _updatePropertyRecord(record: PropertyRecord, newValue: string): PropertyRecord {
-    const propertyValue: PropertyValue = {
-      valueFormat: PropertyValueFormat.Primitive,
-      value: newValue,
-      displayValue: newValue.toString(),
-    };
-    return record.copyWithNewValue(propertyValue);
+  private _updatePropertyRecord(record: PropertyRecord, newValue: PropertyValue): PropertyRecord {
+    return record.copyWithNewValue(newValue);
   }
 
   private _handlePropertyUpdated = async (args: PropertyUpdatedArgs, category: PropertyCategory): Promise<boolean> => {
@@ -207,13 +197,8 @@ class HorizontalPropertyGridContent extends React.Component {
     this._dataProvider = new SamplePropertyDataProvider();
   }
 
-  private _updatePropertyRecord(record: PropertyRecord, newValue: string): PropertyRecord {
-    const propertyValue: PropertyValue = {
-      valueFormat: PropertyValueFormat.Primitive,
-      value: newValue,
-      displayValue: newValue.toString(),
-    };
-    return record.copyWithNewValue(propertyValue);
+  private _updatePropertyRecord(record: PropertyRecord, newValue: PropertyValue): PropertyRecord {
+    return record.copyWithNewValue(newValue);
   }
 
   private _handlePropertyUpdated = async (args: PropertyUpdatedArgs, category: PropertyCategory): Promise<boolean> => {
