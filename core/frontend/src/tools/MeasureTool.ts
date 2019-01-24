@@ -266,6 +266,14 @@ export class MeasureDistanceTool extends PrimitiveTool {
 
   public async onMouseMotion(ev: BeButtonEvent): Promise<void> { if (this._locationData.length > 0 && undefined !== ev.viewport) ev.viewport.invalidateDecorations(); }
 
+  protected reportMeasurements(): void {
+    if (undefined === this._totalDistanceMarker)
+      return;
+    const briefMsg = IModelApp.i18n.translateKeys(this._acceptedSegments.length > 1 ? "%{CoreTools:tools.Measure.Labels.CumulativeDistance}: " : "%{CoreTools:tools.Measure.Labels.Distance}: ") + this._totalDistanceMarker.label;
+    const msgDetail = new NotifyMessageDetails(OutputMessagePriority.Info, briefMsg, undefined, OutputMessageType.InputField);
+    IModelApp.notifications.outputMessage(msgDetail);
+  }
+
   protected async updateTotals(): Promise<void> {
     this._totalDistance = 0.0;
     this._totalDistanceMarker = undefined;
@@ -280,10 +288,7 @@ export class MeasureDistanceTool extends PrimitiveTool {
 
     const formattedTotalDistance = IModelApp.quantityFormatter.formatQuantity(this._totalDistance, formatterSpec);
     this._totalDistanceMarker = new MeasureLabel(this._acceptedSegments[this._acceptedSegments.length - 1].end, formattedTotalDistance);
-
-    const briefMsg = IModelApp.i18n.translateKeys(this._acceptedSegments.length > 1 ? "%{CoreTools:tools.Measure.Labels.CumulativeDistance}: " : "%{CoreTools:tools.Measure.Labels.Distance}: ") + formattedTotalDistance;
-    const msgDetail = new NotifyMessageDetails(OutputMessagePriority.Info, briefMsg, undefined, OutputMessageType.InputField);
-    IModelApp.notifications.outputMessage(msgDetail);
+    this.reportMeasurements();
   }
 
   protected async getMarkerToolTip(distance: number, slope: number, start: Point3d, end: Point3d, delta?: Vector3d): Promise<string> {
@@ -537,6 +542,8 @@ export class MeasureLocationTool extends PrimitiveTool {
   public decorate(context: DecorateContext): void { if (!context.viewport.view.isSpatialView()) return; this._acceptedLocations.forEach((marker) => marker.addDecoration(context)); }
   public decorateSuspended(context: DecorateContext): void { this.decorate(context); }
 
+  protected reportMeasurements(): void { }
+
   public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
     const point = ev.point.clone();
     const toolTip = await this.getMarkerToolTip(point);
@@ -546,6 +553,7 @@ export class MeasureLocationTool extends PrimitiveTool {
     marker.onMouseButton = noOpButtonFunc;
 
     this._acceptedLocations.push(marker);
+    this.reportMeasurements();
     this.setupAndPromptForNextAction();
     if (undefined !== ev.viewport)
       ev.viewport.invalidateDecorations();
@@ -562,10 +570,12 @@ export class MeasureLocationTool extends PrimitiveTool {
       return false;
 
     this._acceptedLocations.pop();
-    if (0 === this._acceptedLocations.length)
+    if (0 === this._acceptedLocations.length) {
       this.onReinitialize();
-    else
+    } else {
+      this.reportMeasurements();
       this.setupAndPromptForNextAction();
+    }
     return true;
   }
 

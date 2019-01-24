@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Add EmphasizeElements to/from wire format methods",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Brien.Bastings@bentley.com"
+}
