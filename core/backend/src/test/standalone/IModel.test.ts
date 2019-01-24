@@ -607,6 +607,24 @@ describe("iModel", () => {
     assert.deepEqual(afterUpdateElemFetched.id, editElem.id, " the id should not have changed.");
     assert.deepEqual(afterUpdateElemFetched.p3d, wasp3d, " p3d property should not have changed");
 
+    // Make array shorter
+    assert.equal(afterUpdateElemFetched.arrayOfInt.length, 300);
+
+    afterUpdateElemFetched.arrayOfInt = [99, 3];
+    imodel4.elements.updateElement(afterUpdateElemFetched);
+
+    const afterShortenArray = imodel4.elements.getElement(afterUpdateElemFetched.id);
+    assert.equal(afterUpdateElemFetched.arrayOfInt.length, 2);
+    assert.deepEqual(afterShortenArray.arrayOfInt, [99, 3]);
+
+    // Make array longer
+    afterShortenArray.arrayOfInt = [1, 2, 3];
+    imodel4.elements.updateElement(afterShortenArray);
+    const afterLengthenArray = imodel4.elements.getElement(afterShortenArray.id);
+    assert.equal(afterLengthenArray.arrayOfInt.length, 3);
+    assert.deepEqual(afterLengthenArray.arrayOfInt, [1, 2, 3]);
+
+
     // ------------ delete -----------------
     const elid = afterUpdateElemFetched.id;
     imodel4.elements.deleteElement(elid);
