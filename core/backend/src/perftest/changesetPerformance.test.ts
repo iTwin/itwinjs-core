@@ -173,6 +173,52 @@ async function pushImodelAfterDataChanges(csvPath: string) {
   await rwIModel.close(actLogCtx, accessToken, KeepBriefcase.No);
 }
 
+async function pushImodelAfterSchemaChanges(csvPath: string) {
+  csvPath = csvPath;
+  const fs1 = require("fs");
+  const configData = JSON.parse(fs1.readFileSync("src/perftest/CSPerfConfig.json"));
+  const uname = configData.username;
+  const pass = configData.password;
+  const projectId = configData.projectId;
+  const myAppConfig = {
+    imjs_buddi_resolve_url_using_region: 102,
+    imjs_default_relying_party_uri: "https://connect-wsg20.bentley.com",
+  };
+  Config.App.merge(myAppConfig);
+  const client: IModelHubClient = new IModelHubClient();
+  IModelHost.loadNative(myAppConfig.imjs_buddi_resolve_url_using_region);
+  process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+  const actLogCtx = new ActivityLoggingContext(Guid.createValue());
+  const imsClient: ImsActiveSecureTokenClient = new ImsActiveSecureTokenClient();
+  const authToken: AuthorizationToken = await imsClient.getToken(actLogCtx, uname, pass);
+  const accessToken: AccessToken = await client.getAccessToken(actLogCtx, authToken);
+
+  const iModelName = "SchemaPushTest";
+  // delete any existing imodel with given name
+  const iModels: HubIModel[] = await BriefcaseManager.imodelClient.iModels.get(actLogCtx, accessToken, projectId, new IModelQuery().byName(iModelName));
+  for (const iModelTemp of iModels) {
+    await BriefcaseManager.imodelClient.iModels.delete(actLogCtx, accessToken, projectId, iModelTemp.id!);
+  }
+  // create new imodel with given name
+  const rwIModel: IModelDb = await IModelDb.create(actLogCtx, accessToken, projectId, iModelName, { rootSubject: { name: "TestSubject" } });
+  const rwIModelId = rwIModel.iModelToken.iModelId;
+  assert.isNotEmpty(rwIModelId);
+  // import schema and push change to hub
+  const schemaPathname = path.join(KnownTestLocations.assetsDir, "PerfTestDomain.ecschema.xml");
+  rwIModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
+  await rwIModel.importSchema(actLogCtx, schemaPathname).catch();
+  assert.isDefined(rwIModel.getMetaData("PerfTestDomain:" + "PerfElement"), "PerfElement" + "is present in iModel.");
+  await rwIModel.concurrencyControl.request(actLogCtx, accessToken);
+  rwIModel.saveChanges("schema change pushed");
+  await rwIModel.pullAndMergeChanges(actLogCtx, accessToken);
+  const startTime1 = new Date().getTime();
+  await rwIModel.pushChanges(actLogCtx, accessToken);
+  const endTime1 = new Date().getTime();
+  const elapsedTime1 = (endTime1 - startTime1) / 1000.0;
+  fs.appendFileSync(csvPath, "Push, Schema Change(import schema) to Hub," + elapsedTime1 + "\n");
+  await rwIModel.close(actLogCtx, accessToken, KeepBriefcase.No);
+}
+
 describe("ImodelChangesetPerformance", async () => {
   if (!IModelJsFs.existsSync(KnownTestLocations.outputDir))
     IModelJsFs.mkdirSync(KnownTestLocations.outputDir);
@@ -196,4 +242,9 @@ describe("ImodelChangesetPerformance", async () => {
   it("PushImodelDataChangeToImodelHUb", async () => {
     pushImodelAfterDataChanges(csvPath).catch();
   });
+
+  it("pushImodelAfterSchemaChanges", async () => {
+    pushImodelAfterSchemaChanges(csvPath).catch();
+  });
+
 });
