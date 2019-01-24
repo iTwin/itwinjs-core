@@ -334,38 +334,42 @@ export namespace GltfTileIO {
     protected get _isClassifier(): boolean { return BatchType.Classifier === this._type; }
 
     /** @hidden */
-    protected readGltfAndCreateGraphics(isLeaf: boolean, isCurved: boolean, isComplete: boolean, featureTable: FeatureTable, contentRange: ElementAlignedBox3d, transformToRoot?: Transform, sizeMultiplier?: number): GltfTileIO.ReaderResult {
+    protected readGltfAndCreateGraphics(isLeaf: boolean, featureTable: FeatureTable, contentRange: ElementAlignedBox3d, transformToRoot?: Transform, sizeMultiplier?: number): GltfTileIO.ReaderResult {
       if (this._isCanceled)
         return { readStatus: TileIO.ReadStatus.Canceled, isLeaf, sizeMultiplier };
 
-      const geometry = new TileIO.GeometryCollection(new MeshList(featureTable), isComplete, isCurved);
-      const readStatus = this.readGltf(geometry);
+      const childNodes = new Set<string>();
+      for (const key of Object.keys(this._nodes)) {
+        const node = this._nodes[key];
+        if (node.children)
+          for (const child of node.children)
+            childNodes.add(child.toString());
+      }
+
+      const renderGraphicList: RenderGraphic[] = [];
+      let readStatus: TileIO.ReadStatus = TileIO.ReadStatus.InvalidTileData;
+      for (const nodeKey of Object.keys(this._nodes))
+        if (!childNodes.has(nodeKey))
+          if (TileIO.ReadStatus.Success !== (readStatus = this.readNodeAndCreateGraphics(renderGraphicList, this._nodes[nodeKey], featureTable, undefined)))
+            return { readStatus, isLeaf };
+
+      if (0 === renderGraphicList.length)
+        return { readStatus: TileIO.ReadStatus.InvalidTileData, isLeaf };
 
       let renderGraphic: RenderGraphic | undefined;
-      if (!geometry.isEmpty) {
-        const meshGraphicArgs = new MeshGraphicArgs();
-        if (1 === geometry.meshes.length) {
-          renderGraphic = geometry.meshes[0].getGraphics(meshGraphicArgs, this._system);
-        } else {
-          const renderGraphicList: RenderGraphic[] = [];
-          for (const mesh of geometry.meshes) {
-            renderGraphic = mesh.getGraphics(meshGraphicArgs, this._system);
-            if (undefined !== renderGraphic)
-              renderGraphicList.push(renderGraphic);
-          }
-          renderGraphic = this._system.createGraphicList(renderGraphicList);
-        }
-        if (undefined !== renderGraphic) {
-          renderGraphic = this._system.createBatch(renderGraphic, PackedFeatureTable.pack(featureTable), contentRange);
-          if (undefined !== this._returnToCenter || this._yAxisUp || undefined !== transformToRoot) {
-            const branch = new GraphicBranch();
-            branch.add(renderGraphic);
-            let transform = (undefined === this._returnToCenter) ? Transform.createIdentity() : Transform.createTranslationXYZ(this._returnToCenter[0], this._returnToCenter[1], this._returnToCenter[2]);
-            if (this._yAxisUp) transform = transform.multiplyTransformMatrix3d(Matrix3d.createRotationAroundVector(Vector3d.create(1.0, 0.0, 0.0), Angle.createRadians(Angle.piOver2Radians)) as Matrix3d);
-            if (undefined !== transformToRoot) transform = transformToRoot.multiplyTransformTransform(transform);
-            renderGraphic = this._system.createBranch(branch, transform);
-          }
-        }
+      if (1 === renderGraphicList.length)
+        renderGraphic = renderGraphicList[0];
+      else
+        renderGraphic = this._system.createGraphicList(renderGraphicList);
+
+      renderGraphic = this._system.createBatch(renderGraphic, PackedFeatureTable.pack(featureTable), contentRange);
+      if (undefined !== this._returnToCenter || this._yAxisUp || undefined !== transformToRoot) {
+        const branch = new GraphicBranch();
+        branch.add(renderGraphic);
+        let transform = (undefined === this._returnToCenter) ? Transform.createIdentity() : Transform.createTranslationXYZ(this._returnToCenter[0], this._returnToCenter[1], this._returnToCenter[2]);
+        if (this._yAxisUp) transform = transform.multiplyTransformMatrix3d(Matrix3d.createRotationAroundVector(Vector3d.create(1.0, 0.0, 0.0), Angle.createRadians(Angle.piOver2Radians)) as Matrix3d);
+        if (undefined !== transformToRoot) transform = transformToRoot.multiplyTransformTransform(transform);
+        renderGraphic = this._system.createBranch(branch, transform);
       }
 
       return {
@@ -375,6 +379,59 @@ export namespace GltfTileIO {
         contentRange,
         renderGraphic,
       };
+    }
+    private readNodeAndCreateGraphics(renderGraphicList: RenderGraphic[], node: any, featureTable: FeatureTable, parentTransform: Transform | undefined): TileIO.ReadStatus {
+      if (undefined === node)
+        return TileIO.ReadStatus.InvalidTileData;
+
+      let thisTransform = parentTransform;
+      if (Array.isArray(node.matrix)) {
+        const jTrans = node.matrix;
+        const nodeTransform = Transform.createOriginAndMatrix(Point3d.create(jTrans[12], jTrans[13], jTrans[14]), Matrix3d.createRowValues(jTrans[0], jTrans[4], jTrans[8], jTrans[1], jTrans[5], jTrans[9], jTrans[2], jTrans[6], jTrans[10]));
+        thisTransform = thisTransform ? thisTransform.multiplyTransformTransform(nodeTransform) : nodeTransform;
+      }
+      const meshKey = node.meshes ? node.meshes : node.mesh;
+      if (undefined !== meshKey) {
+        const nodeMesh = this._meshes[meshKey];
+        if (nodeMesh) {
+          const meshGraphicArgs = new MeshGraphicArgs();
+          const geometryCollection = new TileIO.GeometryCollection(new MeshList(featureTable), true, false);
+          for (const primitive of nodeMesh.primitives) {
+            const geometry = this.readMeshPrimitive(primitive, featureTable);
+            if (undefined !== geometry)
+              geometryCollection.meshes.push(geometry);
+          }
+
+          let renderGraphic: RenderGraphic | undefined;
+          if (!geometryCollection.isEmpty) {
+            if (1 === geometryCollection.meshes.length) {
+              renderGraphic = geometryCollection.meshes[0].getGraphics(meshGraphicArgs, this._system);
+            } else {
+              const thisList: RenderGraphic[] = [];
+              for (const mesh of geometryCollection.meshes) {
+                renderGraphic = mesh.getGraphics(meshGraphicArgs, this._system);
+                if (undefined !== renderGraphic)
+                  thisList.push(renderGraphic!);
+              }
+              if (0 !== thisList.length)
+                renderGraphic = this._system.createGraphicList(thisList);
+            }
+            if (renderGraphic) {
+              if (thisTransform && !thisTransform.isIdentity) {
+                const branch = new GraphicBranch();
+                branch.add(renderGraphic);
+                renderGraphic = this._system.createBranch(branch, thisTransform);
+              }
+              renderGraphicList.push(renderGraphic);
+            }
+          }
+        }
+      }
+      if (node.children) {
+        for (const child of node.children)
+          this.readNodeAndCreateGraphics(renderGraphicList, this._nodes[child], featureTable, thisTransform);
+      }
+      return TileIO.ReadStatus.Success;
     }
 
     /** @hidden */
@@ -502,24 +559,6 @@ export namespace GltfTileIO {
       if (cesiumRtc === undefined) return undefined;
       const rtc = JsonUtils.asArray(cesiumRtc.center);
       return (rtc[0] === 0.0 && rtc[1] === 0.0 && rtc[2] === 0.0) ? undefined : rtc;
-    }
-    /** @hidden */
-    protected readGltf(geometry: TileIO.GeometryCollection): TileIO.ReadStatus {
-      for (const meshKey of Object.keys(this._meshes)) {
-        const meshValue = this._meshes[meshKey];
-        const primitives = JsonUtils.asArray(meshValue.primitives);
-        if (undefined === primitives)
-          continue;
-
-        for (const primitive of primitives) {
-          const mesh = this.readMeshPrimitive(primitive, geometry.meshes.features);
-          // assert(undefined !== mesh);  Not now - Polylines WIP.
-          if (undefined !== mesh)
-            geometry.meshes.push(mesh);
-        }
-      }
-
-      return TileIO.ReadStatus.Success;
     }
 
     /** @hidden */

@@ -79,7 +79,7 @@ export namespace I3dmTileIO {
       if (this._isCanceled)
         return Promise.resolve({ readStatus: TileIO.ReadStatus.Canceled, isLeaf: this._isLeaf });
 
-      const graphic = this.readGltfAndCreateGraphics(this._isLeaf, false, true, featureTable, this._range);
+      const graphic = this.readGltfAndCreateGraphics(this._isLeaf, featureTable, this._range);
       if (graphic.readStatus !== TileIO.ReadStatus.Success || undefined === graphic.renderGraphic)
         return graphic;
 

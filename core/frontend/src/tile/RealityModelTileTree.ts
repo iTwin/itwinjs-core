@@ -7,7 +7,7 @@
 import { IModelError, TileTreeProps, TileProps, ViewFlag, ViewFlags, RenderMode, Cartographic, EcefLocation } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../IModelConnection";
 import { BentleyStatus, assert, Guid, ActivityLoggingContext } from "@bentley/bentleyjs-core";
-import { TransformProps, Range3dProps, Range3d, Transform, Point3d, Vector3d, Matrix3d } from "@bentley/geometry-core";
+import { TransformProps, Range3dProps, Range3d, Transform, Point3d, Vector3d, Matrix3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import { RealityDataServicesClient, AccessToken, getArrayBuffer, getJson } from "@bentley/imodeljs-clients";
 import { TileTree, TileTreeState, Tile, TileLoader } from "./TileTree";
 import { TileRequest } from "./TileRequest";
@@ -57,7 +57,8 @@ export class RealityModelTileUtils {
   }
   public static ecefTransformFromRegion(region: number[]) {
     const cartoCenter = new Cartographic((region[0] + region[2]) / 2.0, (region[1] + region[3]) / 2.0, (region[4] + region[5]) / 2.0);
-    const ecefLocation = EcefLocation.createFromCartographicOrigin(cartoCenter!);
+    // With bounding region and no tranform use center only... Don't align with equatorial axes (from debugging Cesium).
+    const ecefLocation = new EcefLocation({ origin: cartoCenter.toEcef(), orientation: new YawPitchRollAngles() });
     return ecefLocation.getTransform();
   }
 }

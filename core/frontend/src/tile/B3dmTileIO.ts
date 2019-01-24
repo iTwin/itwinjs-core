@@ -94,7 +94,7 @@ export namespace B3dmTileIO {
       if (this._isCanceled)
         return Promise.resolve({ readStatus: TileIO.ReadStatus.Canceled, isLeaf: this._isLeaf });
 
-      return Promise.resolve(this.readGltfAndCreateGraphics(this._isLeaf, false, true, featureTable, this._range, this._transformToRoot));
+      return Promise.resolve(this.readGltfAndCreateGraphics(this._isLeaf, featureTable, this._range, this._transformToRoot));
     }
     protected readFeatures(features: Mesh.Features, _json: any): boolean {
       const feature = new Feature(this._modelId);

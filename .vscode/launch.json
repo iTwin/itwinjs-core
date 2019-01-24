@@ -567,7 +567,7 @@
         "--input",
         "http://localhost:8080/Cesium3DTiles/Batched/BatchedColors/tileset.json",
         "--output",
-        "e:\\briefcases\\testRealityModel.ibim"
+        "g:\\briefcases\\testRealityModel.ibim"
       ],
     },
     {

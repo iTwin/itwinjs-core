@@ -39,7 +39,6 @@ import { B3dmTileIO } from "./B3dmTileIO";
 import { I3dmTileIO } from "./I3dmTileIO";
 import { CompositeTileIO } from "./CompositeTileIO";
 import { PntsTileIO } from "./PntsTileIO";
-import { DgnTileIO } from "./DgnTileIO";
 import { IModelTileIO } from "./IModelTileIO";
 import { ViewFrustum } from "../Viewport";
 
@@ -769,11 +768,6 @@ export abstract class TileLoader {
       case TileIO.Format.B3dm:
         reader = B3dmTileIO.Reader.create(streamBuffer, tile.root.iModel, tile.root.modelId, tile.root.is3d, tile.range, IModelApp.renderSystem, tile.yAxisUp, tile.isLeaf, tile.transformToRoot, isCanceled);
         break;
-
-      case TileIO.Format.Dgn:
-        reader = DgnTileIO.Reader.create(streamBuffer, tile.root.iModel, tile.root.modelId, tile.root.is3d, IModelApp.renderSystem, this._batchType, isCanceled);
-        break;
-
       case TileIO.Format.IModel:
         reader = IModelTileIO.Reader.create(streamBuffer, tile.root.iModel, tile.root.modelId, tile.root.is3d, IModelApp.renderSystem, this._batchType, isCanceled, tile.hasSizeMultiplier ? tile.sizeMultiplier : undefined);
         break;
@@ -833,10 +827,6 @@ export abstract class TileLoader {
     switch (format) {
       case TileIO.Format.B3dm:
         reader = B3dmTileIO.Reader.create(streamBuffer, tile.root.iModel, tile.root.modelId, tile.root.is3d, tile.range, IModelApp.renderSystem, tile.yAxisUp, tile.isLeaf, tile.transformToRoot, isCanceled);
-        break;
-
-      case TileIO.Format.Dgn:
-        reader = DgnTileIO.Reader.create(streamBuffer, tile.root.iModel, tile.root.modelId, tile.root.is3d, IModelApp.renderSystem, this._batchType, isCanceled);
         break;
 
       case TileIO.Format.IModel:

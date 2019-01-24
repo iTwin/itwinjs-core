@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Traverse GLTF node structure rather than meshes so that node transforms are used correctly.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "ray.bentley@bentley.com"
+}
