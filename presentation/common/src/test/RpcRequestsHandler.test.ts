@@ -5,6 +5,7 @@
 import { expect } from "chai";
 import * as faker from "faker";
 import * as moq from "typemoq";
+import * as sinon from "sinon";
 import {
   createRandomECInstanceNodeKey, createRandomECInstanceKey,
   createRandomECInstanceNode, createRandomNodePathElement,
@@ -176,7 +177,7 @@ describe("RpcRequestsHandler", () => {
         },
       };
 
-      rpcInterfaceMock.setup(async (x) => x.syncClientState(token, expectedSyncOptions)).returns(async () => undefined).verifiable();
+      rpcInterfaceMock.setup(async (x) => x.syncClientState(token, expectedSyncOptions)).returns(async () => { }).verifiable();
       await handler.sync(token);
       rpcInterfaceMock.verifyAll();
     });
@@ -198,7 +199,7 @@ describe("RpcRequestsHandler", () => {
         },
       };
 
-      rpcInterfaceMock.setup(async (x) => x.syncClientState(token, expectedSyncOptions)).returns(async () => undefined).verifiable();
+      rpcInterfaceMock.setup(async (x) => x.syncClientState(token, expectedSyncOptions)).returns(async () => { }).verifiable();
       await handler.sync(token);
       rpcInterfaceMock.verifyAll();
     });
@@ -231,7 +232,7 @@ describe("RpcRequestsHandler", () => {
         },
       };
 
-      rpcInterfaceMock.setup(async (x) => x.syncClientState(token, expectedSyncOptions)).returns(async () => undefined).verifiable();
+      rpcInterfaceMock.setup(async (x) => x.syncClientState(token, expectedSyncOptions)).returns(async () => { }).verifiable();
       await handler.sync(token);
       rpcInterfaceMock.verifyAll();
     });
@@ -264,34 +265,27 @@ describe("RpcRequestsHandler", () => {
 
       it("re-throws exception when request throws unknown exception", async () => {
         const func = async () => { throw new Error("test"); };
-        expect(handler.request(undefined, func, defaultRpcOptions)).to.eventually.be.rejectedWith(Error);
+        await expect(handler.request(undefined, func, defaultRpcOptions)).to.eventually.be.rejectedWith(Error);
       });
 
     });
 
     describe("when request throws BackendOutOfSync exception", () => {
 
-      let callsCount: number;
-      let func: () => Promise<number>;
-
-      beforeEach(() => {
-        callsCount = 0;
-        func = async () => {
-          switch (callsCount++) {
-            case 0: throw new PresentationError(PresentationStatus.BackendOutOfSync);
-            default: return faker.random.number();
-          }
-        };
-      });
-
       it("syncs and repeats request", async () => {
-        const syncMock = moq.Mock.ofInstance(async (_token: IModelToken) => undefined);
-        handler.sync = syncMock.object;
+        const syncStub = sinon.stub();
+        handler.sync = syncStub;
 
-        const result = await handler.request(undefined, func, defaultRpcOptions);
+        const requestHandlerStub = sinon.stub();
+        requestHandlerStub.onFirstCall().returns(Promise.reject(new PresentationError(PresentationStatus.BackendOutOfSync)));
+        requestHandlerStub.onSecondCall().returns(Promise.reject(new PresentationError(PresentationStatus.BackendOutOfSync)));
+        requestHandlerStub.onThirdCall().returns(Promise.resolve(faker.random.number()));
+        const requestHandlerSpy = sinon.spy(() => requestHandlerStub());
+
+        const result = await handler.request<number, RpcRequestOptions & { imodel: IModelToken }, []>(undefined, requestHandlerSpy, defaultRpcOptions);
         expect(result).to.not.be.undefined;
-        syncMock.verify(async (x) => x(defaultRpcOptions.imodel), moq.Times.once());
-        expect(callsCount).to.eq(2);
+        expect(syncStub).to.be.calledTwice;
+        expect(requestHandlerSpy).to.be.calledThrice;
       });
 
     });

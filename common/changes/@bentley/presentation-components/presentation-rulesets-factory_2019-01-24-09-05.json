@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Make all content data providers IDisposable. **Important:** providers must be disposed after use.",
+      "packageName": "@bentley/presentation-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-components",
+  "email": "grigas.petraitis@bentley.com"
+}

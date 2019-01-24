@@ -32,7 +32,7 @@ class Provider extends PresentationTableDataProvider {
 }
 
 interface MemoizedCacheSpies {
-  getColumns: any;
+  getColumns: sinon.SinonSpy;
 }
 
 describe("TableDataProvider", () => {
@@ -48,15 +48,14 @@ describe("TableDataProvider", () => {
   });
   beforeEach(() => {
     presentationManagerMock.reset();
-    provider = new Provider(imodelMock.object, rulesetId);
-    resetMemoizedCacheSpies();
-  });
-
-  const resetMemoizedCacheSpies = () => {
-    sinon.restore();
+    provider = new Provider({ imodel: imodelMock.object, ruleset: rulesetId });
     memoizedCacheSpies = {
       getColumns: sinon.spy(provider.getColumns.cache, "clear"),
     };
+  });
+
+  const resetMemoizedCacheSpies = () => {
+    memoizedCacheSpies.getColumns.resetHistory();
   };
 
   const createEmptyContentItem = (): Item => {
@@ -91,14 +90,16 @@ describe("TableDataProvider", () => {
 
   describe("invalidateCache", () => {
 
-    it("resets filtering, sorting, memoized columns and raises onColumnsChanged event when 'descriptor' flag is set", () => {
+    it("resets filtering, sorting, memoized columns and raises onColumnsChanged event when 'descriptor' flag is set", async () => {
       const onColumnsChangedSpy = sinon.spy(provider.onColumnsChanged, "raiseEvent");
-      presentationManagerMock.setup((x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetId }, moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
+      presentationManagerMock.setup(async (x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetId }, moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
         .returns(async () => createRandomDescriptor());
 
       provider.filterExpression = faker.random.words();
-      provider.sort(0, SortDirection.Descending);
+      await provider.sort(0, SortDirection.Descending);
+
       resetMemoizedCacheSpies();
+      onColumnsChangedSpy.resetHistory();
 
       provider.invalidateCache({ descriptor: true });
 
@@ -154,7 +155,7 @@ describe("TableDataProvider", () => {
 
     it("sets sorting properties", async () => {
       const source = createRandomDescriptor();
-      presentationManagerMock.setup((x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetId }, moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
+      presentationManagerMock.setup(async (x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetId }, moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
         .returns(async () => source);
 
       await provider.sort(0, SortDirection.Descending);
@@ -218,14 +219,14 @@ describe("TableDataProvider", () => {
     it("throws when trying to sort by invalid column", async () => {
       const source = createRandomDescriptor();
       source.fields = [];
-      presentationManagerMock.setup((x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetId }, moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
+      presentationManagerMock.setup(async (x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetId }, moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
         .returns(async () => source);
       await expect(provider.sort(0, SortDirection.NoSort)).to.eventually.be.rejectedWith(PresentationError);
     });
 
     it("invalidates descriptor configuration and content", async () => {
       const source = createRandomDescriptor();
-      presentationManagerMock.setup((x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetId }, moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
+      presentationManagerMock.setup(async (x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetId }, moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
         .returns(async () => source);
       const invalidateCacheMock = moq.Mock.ofInstance(provider.invalidateCache);
       provider.invalidateCache = invalidateCacheMock.object;
@@ -235,7 +236,7 @@ describe("TableDataProvider", () => {
 
     it("sets sorting properties", async () => {
       const source = createRandomDescriptor();
-      presentationManagerMock.setup((x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetId }, moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
+      presentationManagerMock.setup(async (x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetId }, moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
         .returns(async () => source);
       await provider.sort(0, SortDirection.Descending);
       expect(provider.sortColumnKey).to.eq((await provider.getColumns())[0].key);
@@ -264,7 +265,7 @@ describe("TableDataProvider", () => {
 
     it("returns valid sorting column", async () => {
       const source = createRandomDescriptor();
-      presentationManagerMock.setup((x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetId }, moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
+      presentationManagerMock.setup(async (x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetId }, moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
         .returns(async () => source);
       await provider.sort(0, SortDirection.Descending);
       const sortingColumn = await provider.sortColumn;
@@ -292,11 +293,11 @@ describe("TableDataProvider", () => {
       const descriptor = createRandomDescriptor();
       const resultPromiseContainer = new PromiseContainer<Descriptor>();
       const getContentDescriptorMock = moq.Mock.ofInstance(() => (provider as any).getContentDescriptor);
-      getContentDescriptorMock.setup((x) => x()).returns(() => resultPromiseContainer.promise).verifiable(moq.Times.once());
+      getContentDescriptorMock.setup((x) => x()).returns(async () => resultPromiseContainer.promise).verifiable(moq.Times.once());
       getContentDescriptorMock.setup((x) => x()).verifiable(moq.Times.never());
       (provider as any).getContentDescriptor = getContentDescriptorMock.object;
 
-      const requests = [1, 2].map(() => provider.getColumns());
+      const requests = [1, 2].map(async () => provider.getColumns());
       resultPromiseContainer.resolve(descriptor);
       const response = await Promise.all(requests);
       expect(response[0]).to.deep.eq(response[1], "both responses should be equal");
@@ -341,17 +342,22 @@ describe("TableDataProvider", () => {
     });
 
     it("requests content in pages", async () => {
-      provider = new Provider(imodelMock.object, rulesetId, 2, 10);
+      provider = new Provider({
+        imodel: imodelMock.object,
+        ruleset: rulesetId,
+        pageSize: 2,
+        cachedPagesCount: 10,
+      });
       const contentResolver = [0, 1].map(() => new PromiseContainer<Content>());
 
       const getContentMock = moq.Mock.ofInstance((provider as any).getContent);
       (provider as any).getContent = getContentMock.object;
-      getContentMock.setup((x) => x({ start: 0, size: 2 })).returns(() => contentResolver[0].promise).verifiable(moq.Times.once());
-      getContentMock.setup((x) => x({ start: 2, size: 2 })).returns(() => contentResolver[1].promise).verifiable(moq.Times.once());
+      getContentMock.setup((x) => x({ start: 0, size: 2 })).returns(async () => contentResolver[0].promise).verifiable(moq.Times.once());
+      getContentMock.setup((x) => x({ start: 2, size: 2 })).returns(async () => contentResolver[1].promise).verifiable(moq.Times.once());
 
       // request rows without await to make sure paging is handled properly (new
       // pages are not created while other pages for the same position are being loaded)
-      const requests = [0, 1, 2].map((index) => provider.getRow(index));
+      const requests = [0, 1, 2].map(async (index) => provider.getRow(index));
       contentResolver.forEach((resolver) => resolver.resolve(createContent(2)));
       const rows = await Promise.all(requests);
       rows.forEach((row) => expect(row).to.not.be.undefined);

@@ -35,7 +35,7 @@ describe("TableDataProvider", async () => {
     const testIModelName: string = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
     imodel = await IModelConnection.openStandalone(testIModelName, OpenMode.Readonly);
     instances = await createMeaningfulInstances(imodel);
-    provider = new PresentationTableDataProvider(imodel, "SimpleContent", 10);
+    provider = new PresentationTableDataProvider({ imodel, ruleset: "SimpleContent", pageSize: 10 });
   });
 
   after(async () => {

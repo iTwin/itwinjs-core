@@ -9,9 +9,11 @@ import { IModelConnection } from "@bentley/imodeljs-frontend";
 import {
   KeySet, PageOptions, SelectionInfo,
   ContentRequestOptions, Content, Descriptor, Field,
+  Ruleset, RegisteredRuleset,
 } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
 import { IPresentationDataProvider } from "./IPresentationDataProvider";
+import { IDisposable } from "@bentley/bentleyjs-core";
 
 /**
  * Properties for invalidating content cache.
@@ -58,13 +60,29 @@ namespace CacheInvalidationProps {
 /**
  * Interface for all presentation-driven content providers.
  */
-export interface IContentDataProvider extends IPresentationDataProvider {
+export interface IContentDataProvider extends IPresentationDataProvider, IDisposable {
   /** Display type used to format content */
   readonly displayType: string;
   /** Keys defining what to request content for */
   keys: Readonly<KeySet>;
   /** Information about selection event that results in content change */
   selectionInfo: Readonly<SelectionInfo> | undefined;
+
+  /**
+   * Get the content descriptor.
+   */
+  getContentDescriptor: () => Promise<Readonly<Descriptor> | undefined>;
+
+  /**
+   * Get the number of content records.
+   */
+  getContentSetSize: () => Promise<number>;
+
+  /**
+   * Get the content.
+   * @param pageOptions Paging options.
+   */
+  getContent: (pageOptions?: PageOptions) => Promise<Readonly<Content> | undefined>;
 }
 
 /**
@@ -76,20 +94,47 @@ export class ContentDataProvider implements IContentDataProvider {
   private _displayType: string;
   private _keys: Readonly<KeySet>;
   private _selectionInfo?: Readonly<SelectionInfo>;
+  private _registeredRuleset?: RegisteredRuleset;
+  private _isDisposed?: boolean;
 
   /**
    * Constructor.
    * @param imodel IModel to pull data from.
-   * @param rulesetId Id of the ruleset to use when requesting content.
+   * @param ruleset Id of the ruleset to use when requesting content or a ruleset itself.
    * @param displayType The content display type which this provider is going to
    * load data for.
    */
-  constructor(imodel: IModelConnection, rulesetId: string, displayType: string) {
-    this._rulesetId = rulesetId;
+  constructor(imodel: IModelConnection, ruleset: string | Ruleset, displayType: string) {
+    this._rulesetId = (typeof ruleset === "string") ? ruleset : ruleset.id;
     this._displayType = displayType;
     this._imodel = imodel;
     this._keys = new KeySet();
     this.invalidateCache(CacheInvalidationProps.full());
+    if (typeof ruleset === "object") {
+      this.registerRuleset(ruleset); // tslint:disable-line: no-floating-promises
+    }
+  }
+
+  public dispose() {
+    this._isDisposed = true;
+    this.disposeRegisteredRuleset();
+  }
+
+  private disposeRegisteredRuleset() {
+    if (!this._registeredRuleset)
+      return;
+
+    this._registeredRuleset.dispose();
+    this._registeredRuleset = undefined;
+  }
+
+  private async registerRuleset(ruleset: Ruleset) {
+    this._registeredRuleset = await Presentation.presentation.rulesets().add(ruleset);
+    if (this._isDisposed) {
+      // ensure we don't keep a hanging registered ruleset if the data provider
+      // gets destroyed before the ruleset finishes registration
+      this.disposeRegisteredRuleset();
+    }
   }
 
   /** Display type used to format content */

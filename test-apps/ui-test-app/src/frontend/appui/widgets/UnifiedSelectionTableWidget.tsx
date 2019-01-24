@@ -31,19 +31,41 @@ interface UnifiedSelectionTableWidgetProps {
   rulesetId?: string;
 }
 
-class UnifiedSelectionTableWidget extends React.Component<UnifiedSelectionTableWidgetProps> {
+interface UnifiedSelectionTableWidgetState {
+  dataProvider: PresentationTableDataProvider;
+}
 
+class UnifiedSelectionTableWidget extends React.PureComponent<UnifiedSelectionTableWidgetProps, UnifiedSelectionTableWidgetState> {
+  constructor(props: UnifiedSelectionTableWidgetProps, context?: any) {
+    super(props, context);
+    this.state = { dataProvider: createDataProviderFromProps(props) };
+  }
+  public static getDerivedStateFromProps(props: UnifiedSelectionTableWidgetProps, state: UnifiedSelectionTableWidgetState): UnifiedSelectionTableWidgetState | null {
+    const needsDataProviderRecreated = (props.iModelConnection !== state.dataProvider.imodel || props.rulesetId !== state.dataProvider.rulesetId);
+    if (needsDataProviderRecreated)
+      state.dataProvider = createDataProviderFromProps(props);
+    return state;
+  }
+  public componentWillUnmount() {
+    this.state.dataProvider.dispose();
+  }
+  public componentDidUpdate(_prevProps: UnifiedSelectionTableWidgetProps, prevState: UnifiedSelectionTableWidgetState) {
+    if (this.state.dataProvider !== prevState.dataProvider)
+      prevState.dataProvider.dispose();
+  }
   public render() {
     if (this.props.iModelConnection && this.props.rulesetId) {
       return (
         <div style={{ height: "100%" }}>
-          <UnifiedSelectionTable dataProvider={new PresentationTableDataProvider(this.props.iModelConnection, this.props.rulesetId)} />
+          <UnifiedSelectionTable dataProvider={this.state.dataProvider} />
         </div>
       );
     }
-
     return null;
   }
 }
+
+const createDataProviderFromProps = (props: UnifiedSelectionTableWidgetProps) =>
+  new PresentationTableDataProvider({ imodel: props.iModelConnection!, ruleset: props.rulesetId! });
 
 ConfigurableUiManager.registerControl("UnifiedSelectionTableDemoWidget", UnifiedSelectionTableWidgetControl);

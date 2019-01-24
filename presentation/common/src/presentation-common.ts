@@ -14,6 +14,7 @@ export { default as PresentationRpcInterface, RpcRequestOptions, HierarchyRpcReq
 export { default as RpcRequestsHandler, IClientStateHolder } from "./RpcRequestsHandler";
 export { RulesetVariablesState, VariableValueTypes, VariableValue } from "./RulesetVariables";
 export * from "./RegisteredRuleset";
+export * from "./RulesetsFactory";
 export * from "./Logging";
 export * from "./Utils";
 

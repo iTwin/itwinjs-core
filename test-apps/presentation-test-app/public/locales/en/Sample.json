@@ -2,8 +2,22 @@
   "welcome-message": "Welcome to iModel.js Presentation Test App",
   "controls": {
     "grid": "Grid Widget",
-    "properties": "Properties Widget",
+    "properties": {
+      "widget-label": "Properties Widget",
+      "context-menu": {
+        "find-similar": {
+          "label": "Find Similar",
+          "description": "Find elements with similar properties"
+        }
+      }
+    },
     "tree": "Tree Widget",
+    "find-similar": {
+      "results": "Similar Instances",
+      "dismiss-button": {
+        "label": "Dismiss"
+      }
+    },
     "notifications": {
       "error": "Error",
       "nothing-selected": "Nothing selected",

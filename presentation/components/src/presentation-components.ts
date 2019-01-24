@@ -7,6 +7,7 @@
 /** @module Common */
 export { ContentBuilder } from "./common/ContentBuilder";
 export { ContentDataProvider } from "./common/ContentDataProvider";
+export * from "./DataProvidersFactory";
 
 /** @module PropertyGrid */
 export { IPresentationPropertyDataProvider, PresentationPropertyDataProvider } from "./propertygrid/DataProvider";

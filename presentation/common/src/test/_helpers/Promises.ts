@@ -35,5 +35,10 @@ export class ResolvablePromise<T> implements PromiseLike<T> {
   public then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): PromiseLike<TResult1 | TResult2> {
     return this._wrapped.then(onfulfilled, onrejected);
   }
-  public resolve(result: T) { this._resolve(result); }
+  public async resolve(result: T) {
+    this._resolve(result);
+    await new Promise((resolve: () => void) => {
+      setImmediate(resolve);
+    });
+  }
 }

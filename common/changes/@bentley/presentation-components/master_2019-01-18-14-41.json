@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Expose presentation-specific content request methods through IContentDataProvider so they're available for provider consumers",
+      "packageName": "@bentley/presentation-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-components",
+  "email": "grigas.petraitis@bentley.com"
+}

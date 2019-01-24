@@ -6,7 +6,7 @@
 
 import * as faker from "faker";
 import { createRandomECInstanceNodeKey } from "@bentley/presentation-common/lib/test/_helpers/random";
-import { DelayLoadedTreeNodeItem } from "@bentley/ui-components";
+import { DelayLoadedTreeNodeItem, PropertyRecord, PrimitiveValue, PropertyDescription, PropertyValueFormat } from "@bentley/ui-components";
 import { NodeKey } from "@bentley/presentation-common";
 
 export const createRandomTreeNodeItem = (key?: NodeKey, parentId?: string): DelayLoadedTreeNodeItem => {
@@ -20,4 +20,18 @@ export const createRandomTreeNodeItem = (key?: NodeKey, parentId?: string): Dela
       key: key ? key : createRandomECInstanceNodeKey(),
     },
   };
+};
+
+export const createRandomPropertyRecord = (): PropertyRecord => {
+  const value: PrimitiveValue = {
+    valueFormat: PropertyValueFormat.Primitive,
+    value: faker.random.word(),
+    displayValue: faker.random.words(),
+  };
+  const descr: PropertyDescription = {
+    typename: "string",
+    name: faker.random.word(),
+    displayLabel: faker.random.word(),
+  };
+  return new PropertyRecord(value, descr);
 };

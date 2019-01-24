@@ -17,6 +17,7 @@ import { default as Content } from "./content/Content";
 import { SelectionScope } from "./selection/SelectionScope";
 import { HierarchyRequestOptions, ContentRequestOptions, Paged, SelectionScopeRequestOptions } from "./PresentationManagerOptions";
 import PresentationRpcInterface, { RpcRequestOptions } from "./PresentationRpcInterface";
+import { Omit } from "./Utils";
 
 /**
  * Configuration parameters for [[RpcRequestsHandler]].
@@ -118,6 +119,21 @@ export default class RpcRequestsHandler implements IDisposable {
     await this.rpcClient.syncClientState(token, this.createRequestOptions({ state: clientState }));
   }
 
+  private async requestRepeatedly<TResult, TOptions extends RpcRequestOptions>(func: (opts: TOptions) => Promise<TResult>, options: TOptions, imodelToken: IModelToken): Promise<TResult> {
+    try {
+      return await func(options);
+    } catch (e) {
+      if (e.errorNumber === PresentationStatus.BackendOutOfSync) {
+        options.clientStateId = this._clientStateId;
+        await this.sync(imodelToken);
+        return this.requestRepeatedly(func, options, imodelToken);
+      } else {
+        // unknown error - rethrow
+        throw e;
+      }
+    }
+  }
+
   /**
    * Send request to current backend. If the backend is unknown to the requestor,
    * the request is rejected with `PresentationStatus.UnknownBackend` status. In
@@ -126,25 +142,15 @@ export default class RpcRequestsHandler implements IDisposable {
    *
    * @hidden
    */
-  public async request<TResult, TOptions extends RpcRequestOptions & { imodel: IModelToken }, TArg extends any[]>(
+  public async request<TResult, TOptions extends RpcRequestOptions & { imodel: IModelToken }, TArg>(
     context: any,
-    func: (token: IModelToken, options: TOptions, ...args: TArg) => Promise<TResult>,
+    func: (token: IModelToken, options: Omit<TOptions, "imodel">, ...args: TArg[]) => Promise<TResult>,
     options: TOptions,
-    ...args: TArg): Promise<TResult> {
-
-    const { imodel, ...rpcOptions } = options as (RpcRequestOptions & { imodel: IModelToken });
-    const doRequest = async () => func.apply(context, [imodel, rpcOptions, ...args]);
-    try {
-      return await doRequest();
-    } catch (e) {
-      if (e.errorNumber === PresentationStatus.BackendOutOfSync) {
-        await this.sync(options.imodel);
-        return doRequest();
-      } else {
-        // unknown error - rethrow
-        throw e;
-      }
-    }
+    ...args: TArg[]): Promise<TResult> {
+    type TFuncOptions = Omit<TOptions, "imodel">;
+    const { imodel, ...rpcOptions } = (options as (RpcRequestOptions & { imodel: IModelToken })); // TS2700: Rest types may only be created from object types...
+    const doRequest = async (funcOptions: TFuncOptions) => func.apply(context, [imodel, funcOptions, ...args]);
+    return this.requestRepeatedly(doRequest, rpcOptions as TFuncOptions, options.imodel);
   }
 
   public async getRootNodes(options: Paged<HierarchyRequestOptions<IModelToken>>): Promise<Node[]> {
