@@ -20,6 +20,7 @@ import {
   FrontstageProvider,
   Frontstage,
   FrontstageProps,
+  SyncUiEventId,
 } from "../../ui-framework";
 import TestUtils from "../TestUtils";
 import { BackstageItem as NZ_BackstageItem } from "@bentley/ui-ninezone";
@@ -72,7 +73,12 @@ describe("Backstage", () => {
 
     it("CommandLaunchBackstageItem should render & execute", () => {
       const spyMethod = sinon.stub();
-      const wrapper = mount(<CommandLaunchBackstageItem commandId="my-command-id" labelKey="UiFramework:tests.label" descriptionKey="UiFramework:tests.subtitle" iconSpec="icon-placeholder" execute={spyMethod} />);
+      const stateFunc = sinon.stub();
+      const wrapper = mount(
+        <CommandLaunchBackstageItem commandId="my-command-id" labelKey="UiFramework:tests.label"
+          descriptionKey="UiFramework:tests.subtitle" iconSpec="icon-placeholder" execute={spyMethod}
+          stateSyncIds={[SyncUiEventId.FrontstageReady]} stateFunc={stateFunc} />,
+      );
       const backstageItem = wrapper.find(NZ_BackstageItem);
       backstageItem.find(".nz-backstage-item").simulate("click");
       expect(spyMethod.calledOnce).to.be.true;
@@ -86,6 +92,7 @@ describe("Backstage", () => {
 
     it("FrontstageLaunchBackstageItem should render & execute", () => {
       const spyMethod = sinon.stub();
+      const stateFunc = sinon.stub();
 
       class Frontstage1 extends FrontstageProvider {
         public get frontstage(): React.ReactElement<FrontstageProps> {
@@ -102,7 +109,10 @@ describe("Backstage", () => {
       ConfigurableUiManager.addFrontstageProvider(new Frontstage1());
 
       const remove = FrontstageManager.onFrontstageActivatedEvent.addListener((_args: FrontstageActivatedEventArgs) => spyMethod());
-      const wrapper = mount(<FrontstageLaunchBackstageItem frontstageId="Test1" labelKey="UiFramework:tests.label" iconSpec="icon-placeholder" />);
+      const wrapper = mount(
+        <FrontstageLaunchBackstageItem frontstageId="Test1" labelKey="UiFramework:tests.label" iconSpec="icon-placeholder"
+          stateSyncIds={[SyncUiEventId.FrontstageReady]} stateFunc={stateFunc} />,
+      );
       const backstageItem = wrapper.find(NZ_BackstageItem);
       backstageItem.find(".nz-backstage-item").simulate("click");
       setImmediate(() => {
@@ -148,11 +158,6 @@ describe("Backstage", () => {
       // Test Workflows
       const workflowPropsList: WorkflowPropsList = {
         defaultWorkflowId: "default-workflow",
-        taskPicker: {
-          classId: "taskpicker-class",
-          iconSpec: "taskpicker-icon",
-          labelKey: "taskpicker-label",
-        },
         workflows: [
           {
             id: "ExampleWorkflow",
@@ -167,8 +172,12 @@ describe("Backstage", () => {
       ConfigurableUiManager.loadWorkflows(workflowPropsList);
 
       const spyMethod = sinon.stub();
+      const stateFunc = sinon.stub();
       const remove = FrontstageManager.onFrontstageActivatedEvent.addListener((_args: FrontstageActivatedEventArgs) => spyMethod());
-      const wrapper = mount(<TaskLaunchBackstageItem taskId="Task1" workflowId="ExampleWorkflow" labelKey="UiFramework:tests.label" iconSpec="icon-placeholder" />);
+      const wrapper = mount(
+        <TaskLaunchBackstageItem taskId="Task1" workflowId="ExampleWorkflow" labelKey="UiFramework:tests.label" iconSpec="icon-placeholder"
+          stateSyncIds={[SyncUiEventId.FrontstageReady]} stateFunc={stateFunc} />,
+      );
       const backstageItem = wrapper.find(NZ_BackstageItem);
       backstageItem.find(".nz-backstage-item").simulate("click");
       setImmediate(() => {

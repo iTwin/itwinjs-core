@@ -23,17 +23,10 @@ export interface WorkflowProps extends ItemProps {
   isDefault?: boolean;
 }
 
-/** Properties for a TaskPicker.
- */
-export interface TaskPickerProps extends ItemProps {
-  classId: string;
-}
-
 /** Workflow Properties List definition.
  */
 export interface WorkflowPropsList {
   defaultWorkflowId: string;
-  taskPicker: TaskPickerProps;
   workflows: WorkflowProps[];
 }
 
@@ -74,15 +67,6 @@ export class Workflow extends ItemDefBase {
   /** Gets the Id of the Workflow. */
   public get id(): string {
     return this.workflowId;
-  }
-
-  /** Override of the execute method. A Workflow's execute does nothing. */
-  public async execute(): Promise<void> {
-  }
-
-  /** Override of the toolbarReactNode method. A Workflow provides no Toolbar React node. */
-  public toolbarReactNode(_index: number): React.ReactNode {
-    return null;
   }
 
   /** Gets the active Task. */
@@ -185,7 +169,6 @@ export class WorkflowManager {
   private static _workflows: Map<string, Workflow> = new Map<string, Workflow>();
   private static _activeWorkflow: Workflow;
   private static _defaultWorkflowId: string;
-  private static _taskPickerProps: TaskPickerProps;
 
   /** Get Workflow Activated event. */
   public static readonly onWorkflowActivatedEvent = new WorkflowActivatedEvent();
@@ -197,7 +180,6 @@ export class WorkflowManager {
    */
   public static loadWorkflows(workflowPropsList: WorkflowPropsList) {
     this._defaultWorkflowId = workflowPropsList.defaultWorkflowId;
-    this._taskPickerProps = workflowPropsList.taskPicker;
     WorkflowManager.loadWorkflowDefs(workflowPropsList.workflows);
   }
 
@@ -261,16 +243,12 @@ export class WorkflowManager {
     return this._defaultWorkflowId;
   }
 
-  /** Gets the Task Picker properties */
-  public static get taskPickerProps(): TaskPickerProps {
-    return this._taskPickerProps;
-  }
-
   public static getSortedWorkflows(): Workflow[] {
     const sortedWorkflows = new Array<Workflow>();
 
     for (const key of this._workflows.keys()) {
       const workflow = this._workflows.get(key);
+      // istanbul ignore else
       if (workflow) {
         sortedWorkflows.push(workflow);
       }

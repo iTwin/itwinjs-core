@@ -20,12 +20,22 @@ describe("KeyboardShortcut", () => {
 
   const testSpyMethod = sinon.spy();
   let testCommand: CommandItemDef;
+  let testCommand2: CommandItemDef;
 
   before(async () => {
     await TestUtils.initializeUiFramework();
 
     testCommand = new CommandItemDef({
       commandId: "testCommand",
+      iconSpec: "icon-placeholder",
+      label: "Test",
+      execute: () => {
+        testSpyMethod();
+      },
+    });
+
+    testCommand2 = new CommandItemDef({
+      commandId: "testCommand2",
       iconSpec: "icon-placeholder",
       label: "Test",
       execute: () => {
@@ -62,6 +72,25 @@ describe("KeyboardShortcut", () => {
       }
     });
 
+    it("Registering with duplicate key should replace", () => {
+      KeyboardShortcutManager.loadKeyboardShortcut({
+        key: "b",
+        item: testCommand,
+      });
+      KeyboardShortcutManager.loadKeyboardShortcut({
+        key: "b",
+        item: testCommand2,
+      });
+      const shortcut = KeyboardShortcutManager.getShortcut("b");
+      expect(shortcut).to.not.be.undefined;
+      if (shortcut) {
+        expect(shortcut.item).to.eq(testCommand2);
+        const shortcuts = KeyboardShortcutManager.shortcutContainer.getAvailableKeyboardShortcuts();
+        expect(shortcuts.length).to.eq(1);
+        expect(shortcuts[0].item).to.eq(testCommand2);
+      }
+    });
+
     it("KeyboardShortcut should support child shortcuts", () => {
       KeyboardShortcutManager.loadKeyboardShortcut({
         key: "d",
@@ -95,6 +124,9 @@ describe("KeyboardShortcut", () => {
         isAltKeyRequired: true,
         isCtrlKeyRequired: true,
         isShiftKeyRequired: true,
+        iconSpec: "icon-placeholder",
+        label: "Test",
+        tooltip: "Tooltip",
       });
       const keyMapKey = KeyboardShortcutContainer.generateKeyMapKey("A", true, true, true);
       expect(keyMapKey).to.eq("Ctrl+Shift+Alt+A");
@@ -137,6 +169,10 @@ describe("KeyboardShortcut", () => {
         },
       ];
 
+      const menuSpyMethod = sinon.spy();
+      KeyboardShortcutManager.displayShortcutsMenu();   // No shortcuts to display yet
+      expect(menuSpyMethod.calledOnce).to.be.false;
+
       ConfigurableUiManager.loadKeyboardShortcuts(keyboardShortcutList);
 
       expect(KeyboardShortcutManager.shortcutContainer.areKeyboardShortcutsAvailable()).to.be.true;
@@ -146,7 +182,6 @@ describe("KeyboardShortcut", () => {
       expect(KeyboardShortcutManager.getShortcut(FunctionKey.F7)).to.not.be.undefined;
       expect(KeyboardShortcutManager.getShortcut(SpecialKey.Home)).to.not.be.undefined;
 
-      const menuSpyMethod = sinon.spy();
       const remove = KeyboardShortcutMenu.onKeyboardShortcutMenuEvent.addListener(menuSpyMethod);
       KeyboardShortcutManager.displayShortcutsMenu();
       expect(menuSpyMethod.calledOnce).to.be.true;
@@ -181,10 +216,15 @@ describe("KeyboardShortcut", () => {
     });
 
     it("setFocusToHome should make document.body active element", () => {
-      KeyboardShortcutManager.setFocusToHome();
+      const buttonElement = document.createElement("button");
+      document.body.appendChild(buttonElement);
+      buttonElement.focus();
+      let activeElement = document.activeElement as HTMLElement;
+      expect(activeElement === buttonElement).to.be.true;
 
-      const element = document.activeElement as HTMLElement;
-      expect(element === document.body).to.be.true;
+      KeyboardShortcutManager.setFocusToHome();
+      activeElement = document.activeElement as HTMLElement;
+      expect(activeElement === document.body).to.be.true;
     });
   });
 

@@ -73,6 +73,11 @@ describe("ConfigurableUiManager", () => {
     expect(() => ConfigurableUiManager.registerControl("TestWidget", TestWidget)).to.throw(Error);
   });
 
+  it("unregisterControl removes a registered control", () => {
+    ConfigurableUiManager.unregisterControl("TestWidget");
+    expect(ConfigurableUiManager.isControlRegistered("TestWidget")).to.be.false;
+  });
+
   it("createConfigurable trying to create an unregistered control", () => {
     expect(() => ConfigurableUiManager.createControl("invalid", "1")).to.throw(Error);
   });
@@ -165,12 +170,7 @@ describe("ConfigurableUiManager", () => {
 
   it("loadWorkflows", () => {
     const workflowPropsList: WorkflowPropsList = {
-      defaultWorkflowId: "default-workflow",
-      taskPicker: {
-        classId: "taskpicker-class",
-        iconSpec: "taskpicker-icon",
-        labelKey: "taskpicker-label",
-      },
+      defaultWorkflowId: "ExampleWorkflow",
       workflows: [
         {
           id: "ExampleWorkflow",

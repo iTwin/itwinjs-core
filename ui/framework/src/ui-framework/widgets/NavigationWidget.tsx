@@ -44,6 +44,7 @@ export class NavigationWidgetDef extends ToolbarWidgetDefBase {
   }
 
   public renderCornerItem(): React.ReactNode {
+    // istanbul ignore if
     if (FrontstageManager.isLoading)
       return null;
 

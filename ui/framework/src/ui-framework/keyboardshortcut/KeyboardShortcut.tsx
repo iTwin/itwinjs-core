@@ -133,6 +133,7 @@ export class KeyboardShortcut extends ItemDefBase {
       this._shortcuts.showShortcutsMenu();
     } else {
       setImmediate(() => {
+        // istanbul ignore else
         if (this._item)
           this._item.execute();
       });
@@ -155,15 +156,26 @@ export class KeyboardShortcutContainer {
   private _keyMap: Map<string, KeyboardShortcut> = new Map<string, KeyboardShortcut>();
   private _keyArray: KeyboardShortcut[] = new Array<KeyboardShortcut>();
 
-  public registerKey(keyMapKey: string, inShortcut: KeyboardShortcut): KeyboardShortcut {
+  public registerKey(keyMapKey: string, inShortcut: KeyboardShortcut): KeyboardShortcut | undefined {
     let shortcut: KeyboardShortcut | undefined;
 
     if ((shortcut = this.findKey(keyMapKey)) === undefined) {
       shortcut = inShortcut;
       this._keyArray.push(shortcut);
+    } else {
+      const index = this._keyArray.findIndex((value: KeyboardShortcut) => {
+        return value.keyMapKey === keyMapKey;
+      });
+      // istanbul ignore else
+      if (index >= 0) {
+        shortcut = inShortcut;
+        this._keyArray[index] = shortcut;
+      }
     }
 
-    this._keyMap.set(keyMapKey, shortcut);
+    // istanbul ignore else
+    if (shortcut)
+      this._keyMap.set(keyMapKey, shortcut);
 
     return shortcut;
   }
@@ -256,7 +268,7 @@ export class KeyboardShortcutManager {
     const element = document.activeElement as HTMLElement;
     if (element && element !== document.body) {
       element.blur();
-      window.focus();
+      document.body.focus();
     }
   }
 

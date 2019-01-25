@@ -105,7 +105,7 @@ export class CardContainer extends React.Component<CardContainerProps> {
               const iconClassName = (typeof card.iconSpec === "string") ? card.iconSpec : "icon-placeholder";
 
               if (this.props.searchValue) {
-                includeCard = this.contains(card.label, this.props.searchValue, false);
+                includeCard = this.contains(card.label, this.props.searchValue);
               }
 
               if (includeCard) {
@@ -126,18 +126,14 @@ export class CardContainer extends React.Component<CardContainerProps> {
    * Determines if string contains a substring
    * @param valueA The string to search through
    * @param valueB The value to search for
-   * @param caseSensitive Flag for if the search should be case sensitive
    * @return True if valueB can be found in valueA, false otherwise
    */
-  private contains(valueA: string, valueB: string, caseSensitive: boolean): boolean {
+  private contains(valueA: string, valueB: string): boolean {
     if (!valueA || !valueB)
       return false;
 
     if (valueB.length > valueA.length)
       return false;
-
-    if (caseSensitive)
-      return valueA.indexOf(valueB, 0) !== -1;
 
     return valueA.toLocaleUpperCase().indexOf(valueB.toLocaleUpperCase(), 0) !== -1;
   }

@@ -55,6 +55,7 @@ export class ViewportContentControl extends ContentControl {
   /** Returns a promise that resolves when the control is ready for usage.
    */
   public setIsReady(): void {
+    // istanbul ignore else
     if (this._viewportReadyCallback) {
       this._viewportReadyCallback();
     }
@@ -79,9 +80,12 @@ export class ViewportContentControl extends ContentControl {
   /** Get the NavigationAidControl associated with this ContentControl */
   public get navigationAidControl(): string {
     let navigationAidId = "";
+
+    // istanbul ignore else
     if (this._viewport) {
       navigationAidId = this._getNavigationAid(this._viewport.view.classFullName);
     }
+
     return navigationAidId;
   }
 

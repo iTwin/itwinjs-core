@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { mount } from "enzyme";
+import { expect } from "chai";
 
 import TestUtils from "../TestUtils";
 import {
@@ -50,6 +51,10 @@ describe("StatusBarWidgetControl", () => {
   });
 
   it("StatusBarWidgetControl should be instantiated", () => {
+    expect(widgetControl).to.not.be.undefined;
+    if (widgetControl)
+      expect(widgetControl.getType()).to.eq(ConfigurableUiControlType.StatusBarWidget);
+
     const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
     wrapper.unmount();
   });

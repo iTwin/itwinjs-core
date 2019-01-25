@@ -11,8 +11,14 @@ import { PointerMessage, AppNotificationManager } from "../../ui-framework";
 import { NotifyMessageDetails, OutputMessagePriority, OutputMessageType, RelativePosition } from "@bentley/imodeljs-frontend";
 
 describe("PointerMessage", () => {
+  let showMessage: sinon.SinonSpy;
+  let hideMessage: sinon.SinonSpy;
+
   before(async () => {
     await TestUtils.initializeUiFramework();
+
+    showMessage = sinon.spy(PointerMessage, "showMessage");
+    hideMessage = sinon.spy(PointerMessage, "hideMessage");
   });
 
   let notifications: AppNotificationManager;
@@ -32,15 +38,28 @@ describe("PointerMessage", () => {
   });
 
   it("should display the message", () => {
-    const showMessage = sinon.spy(PointerMessage, "showMessage");
+    showMessage.resetHistory();
     notifications.outputMessage(details);
     expect(showMessage.called).to.be.true;
   });
 
   it("should hide the message", () => {
-    const hideMessage = sinon.spy(PointerMessage, "hideMessage");
     notifications.closePointerMessage();
     expect(hideMessage.called).to.be.true;
+  });
+
+  it("should display a warning message", () => {
+    showMessage.resetHistory();
+    const localDetails = new NotifyMessageDetails(OutputMessagePriority.Warning, "Brief", "Detailed", OutputMessageType.Pointer);
+    notifications.outputMessage(localDetails);
+    expect(showMessage.called).to.be.true;
+  });
+
+  it("should display an error message", () => {
+    showMessage.resetHistory();
+    const localDetails = new NotifyMessageDetails(OutputMessagePriority.Error, "Brief", "Detailed", OutputMessageType.Pointer);
+    notifications.outputMessage(localDetails);
+    expect(showMessage.called).to.be.true;
   });
 
   it("should offset the message", () => {

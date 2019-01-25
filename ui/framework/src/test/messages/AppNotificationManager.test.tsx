@@ -85,6 +85,7 @@ describe("AppNotificationManager", () => {
     notifications.clearToolTip();
     expect(showMethod.calledOnce).to.be.true;
     expect(hideMethod.calledOnce).to.be.true;
+    expect(notifications.isToolTipSupported).to.be.true;
   });
 
 });

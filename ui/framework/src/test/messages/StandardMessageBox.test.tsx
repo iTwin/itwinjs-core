@@ -6,6 +6,7 @@ import * as React from "react";
 import { mount, shallow } from "enzyme";
 import * as sinon from "sinon";
 import { expect } from "chai";
+import { render } from "react-testing-library";
 
 import TestUtils from "../TestUtils";
 import { StandardMessageBox } from "../../ui-framework";
@@ -29,7 +30,7 @@ describe("StandardMessageBox", () => {
     />;
 
     const wrapper = mount(reactNode);
-    const buttonWrapper = wrapper.find("button.dialog-button"); // OK button
+    const buttonWrapper = wrapper.find("button.dialog-button-ok");
     buttonWrapper.simulate("click");
     expect(spyMethod.calledOnce).to.be.true;
 
@@ -50,7 +51,7 @@ describe("StandardMessageBox", () => {
     />;
 
     const wrapper = mount(reactNode);
-    const buttonWrapper = wrapper.find("button.bwc-buttons-hollow");  // Cancel button
+    const buttonWrapper = wrapper.find("button.dialog-button-ok");
     buttonWrapper.simulate("click");
     expect(spyMethod.calledOnce).to.be.true;
 
@@ -71,7 +72,7 @@ describe("StandardMessageBox", () => {
     />;
 
     const wrapper = mount(reactNode);
-    const buttonWrapper = wrapper.find("span.icon-close");  // Close button
+    const buttonWrapper = wrapper.find("button.dialog-button-yes");
     buttonWrapper.simulate("click");
     expect(spyMethod.calledOnce).to.be.true;
 
@@ -81,29 +82,77 @@ describe("StandardMessageBox", () => {
   });
 
   it("MediumAlert & Question", () => {
+    const spyMethod = sinon.spy();
     const reactNode = <StandardMessageBox
       opened={true}
       title="My Title"
       iconType={MessageBoxIconType.Warning}
       messageBoxType={MessageBoxType.MediumAlert}
+      onResult={spyMethod}
     />;
     const wrapper = mount(reactNode);
+    const buttonWrapper = wrapper.find("button.dialog-button-cancel");
+    buttonWrapper.simulate("click");
+    expect(spyMethod.calledOnce).to.be.true;
+
     wrapper.unmount();
 
     shallow(reactNode).should.matchSnapshot();
   });
 
   it("YesNoCancel & Critical", () => {
+    const spyMethod = sinon.spy();
     const reactNode = <StandardMessageBox
       opened={true}
       title="My Title"
       iconType={MessageBoxIconType.Critical}
       messageBoxType={MessageBoxType.YesNoCancel}
+      onResult={spyMethod}
     />;
     const wrapper = mount(reactNode);
+
+    const buttonWrapper = wrapper.find("button.dialog-button-no");
+    buttonWrapper.simulate("click");
+    expect(spyMethod.calledOnce).to.be.true;
+
     wrapper.unmount();
 
     shallow(reactNode).should.matchSnapshot();
+  });
+
+  it("YesNoCancel & Warning", () => {
+    const spyMethod = sinon.spy();
+    const reactNode = <StandardMessageBox
+      opened={true}
+      title="My Title"
+      iconType={MessageBoxIconType.Warning}
+      messageBoxType={MessageBoxType.YesNoCancel}
+      onResult={spyMethod}
+    />;
+    const wrapper = mount(reactNode);
+
+    const buttonWrapper = wrapper.find("button.dialog-button-cancel");
+    buttonWrapper.simulate("click");
+    expect(spyMethod.calledOnce).to.be.true;
+
+    wrapper.unmount();
+
+    shallow(reactNode).should.matchSnapshot();
+  });
+
+  it("should close on Esc key", () => {
+    const spyOnEscape = sinon.spy();
+    const reactNode = <StandardMessageBox
+      opened={true}
+      title="My Title"
+      iconType={MessageBoxIconType.NoSymbol}
+      messageBoxType={MessageBoxType.Ok}
+      onResult={spyOnEscape}
+    />;
+    const component = render(reactNode);
+
+    component.baseElement.dispatchEvent(new KeyboardEvent("keyup", { key: "Escape" }));
+    expect(spyOnEscape).to.be.calledOnce;
   });
 
 });

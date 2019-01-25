@@ -129,3 +129,33 @@ exports[`StandardMessageBox YesNoCancel & Critical 1`] = `
   width="512px"
 />
 `;
+
+exports[`StandardMessageBox YesNoCancel & Warning 1`] = `
+<MessageBox
+  buttonCluster={
+    Array [
+      Object {
+        "onClick": [Function],
+        "type": "yes",
+      },
+      Object {
+        "onClick": [Function],
+        "type": "no",
+      },
+      Object {
+        "onClick": [Function],
+        "type": "cancel",
+      },
+    ]
+  }
+  minHeight={400}
+  minWidth={400}
+  modal={true}
+  onClose={[Function]}
+  onEscape={[Function]}
+  opened={true}
+  severity={3}
+  title="My Title"
+  width="512px"
+/>
+`;

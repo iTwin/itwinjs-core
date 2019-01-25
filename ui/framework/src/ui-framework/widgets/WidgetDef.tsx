@@ -129,9 +129,6 @@ export class WidgetDef {
   }
 
   public static initializeFromWidgetProps(widgetProps: WidgetProps, me: WidgetDef) {
-    if (!widgetProps)
-      return;
-
     if (widgetProps.label)
       me.setLabel(widgetProps.label);
     else if (widgetProps.labelKey)

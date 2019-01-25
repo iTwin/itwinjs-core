@@ -96,6 +96,7 @@ describe("SheetsModalFrontstage", () => {
 
     it("handles mouse down and leave", () => {
       const card = shallow(<SheetCard label="" iconSpec="" onClick={() => { }} isActive={false} index={0} />);
+      card.simulate("mouseLeave");
       card.simulate("mouseDown");
       card.update();
       expect(card.find("div.is-pressed").length).to.eq(1);

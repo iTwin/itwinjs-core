@@ -48,7 +48,9 @@ export class ActionItemButton extends React.Component<ActionItemButtonProps, Bas
   }
 
   private _handleSyncUiEvent = (args: SyncUiEventArgs): void => {
-    if (this._componentUnmounting) return;
+    // istanbul ignore if
+    if (this._componentUnmounting)
+      return;
 
     let refreshState = false;
     let newState: BaseItemState = { ...this.state };
@@ -92,12 +94,14 @@ export class ActionItemButton extends React.Component<ActionItemButtonProps, Bas
   }
 
   private _execute = () => {
+    // istanbul ignore else
     if (this.props.actionItem.execute) {
       this.props.actionItem.execute();
     }
   }
 
   private _handleKeyDown = (e: React.KeyboardEvent): void => {
+    // istanbul ignore else
     if (e.key === "Escape") {
       KeyboardShortcutManager.setFocusToHome();
     }

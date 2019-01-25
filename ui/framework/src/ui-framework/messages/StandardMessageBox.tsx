@@ -100,6 +100,7 @@ export class StandardMessageBox extends React.Component<StandardMessageBoxProps,
 
   private _handleButton = (buttonType: MessageBoxValue) => {
     this._closeDialog(() => {
+      // istanbul ignore else
       if (this.props.onResult)
         this.props.onResult(buttonType);
     });
@@ -107,6 +108,7 @@ export class StandardMessageBox extends React.Component<StandardMessageBoxProps,
 
   private _handleCancel = () => {
     this._closeDialog(() => {
+      // istanbul ignore else
       if (this.props.onResult)
         this.props.onResult(MessageBoxValue.Cancel);
     });
@@ -116,8 +118,7 @@ export class StandardMessageBox extends React.Component<StandardMessageBoxProps,
     this.setState((_prevState) => ({
       opened: false,
     }), () => {
-      if (!this.state.opened)
-        ModalDialogManager.closeModalDialog();
+      ModalDialogManager.closeModalDialog();
       followUp();
     });
   }

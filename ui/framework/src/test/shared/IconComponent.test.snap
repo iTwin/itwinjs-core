@@ -1,0 +1,21 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`IconComponent should render correctly 1`] = `
+<i
+  className="icon item-svg-icon"
+>
+  <span>
+    Test
+  </span>
+</i>
+`;
+
+exports[`IconComponent should render correctly with ReactNode 1`] = `
+<i
+  className="icon item-svg-icon"
+>
+  <span>
+    Test
+  </span>
+</i>
+`;

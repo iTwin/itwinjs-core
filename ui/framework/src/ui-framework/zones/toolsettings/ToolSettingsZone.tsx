@@ -93,7 +93,7 @@ export class ToolSettingsZone extends React.Component<ToolSettingsZoneProps, Too
     });
   }
 
-  private getToolSettingsWidget() {
+  private getToolSettingsWidget(): React.ReactNode {
     const tab = (
       <ToolSettingsTab
         onClick={this._processClick}
@@ -103,8 +103,12 @@ export class ToolSettingsZone extends React.Component<ToolSettingsZoneProps, Too
         {/*this.getToolAssistanceButton()*/}
       </ToolSettingsTab>
     );
+
+    let widget: React.ReactNode;
+
     switch (this.state.toolSettingsZoneContent) {
       case ToolSettingsZoneContent.ToolSettings: {
+        // istanbul ignore else
         if (FrontstageManager.activeToolSettingsNode) {
           const settingsStyle: React.CSSProperties = {
             borderWidth: "thin",
@@ -114,7 +118,7 @@ export class ToolSettingsZone extends React.Component<ToolSettingsZoneProps, Too
             paddingRight: "10px",
           };
 
-          return (
+          widget = (
             <ToolSettingsWidget
               tab={tab}
               content={
@@ -128,7 +132,7 @@ export class ToolSettingsZone extends React.Component<ToolSettingsZoneProps, Too
         break;
       }
       case ToolSettingsZoneContent.Closed: {
-        return (
+        widget = (
           <ToolSettingsWidget
             tab={tab}
           />
@@ -136,7 +140,7 @@ export class ToolSettingsZone extends React.Component<ToolSettingsZoneProps, Too
       }
     }
 
-    return undefined;
+    return widget;
   }
 
   // private getToolAssistanceButton() {
@@ -169,13 +173,16 @@ export class ToolSettingsZone extends React.Component<ToolSettingsZoneProps, Too
   //   return null;
   // }
 
-  private getToolSettingsButton() {
+  private getToolSettingsButton(): React.ReactNode {
+    let button: React.ReactNode;
+
+    // istanbul ignore else
     if (FrontstageManager.activeToolSettingsNode) {
-      return (
+      button = (
         <TabIcon iconSpec="icon-settings" isActive={this.state.toolSettingsZoneContent === ToolSettingsZoneContent.ToolSettings} />
       );
     }
 
-    return null;
+    return button;
   }
 }

@@ -110,6 +110,7 @@ export class FrontstageDef {
       control.onFrontstageReady();
     }
 
+    // istanbul ignore else
     if (this.contentGroup)
       this.contentGroup.onFrontstageReady();
   }
@@ -151,6 +152,7 @@ export class FrontstageDef {
       case 9:
         zoneDef = this.bottomRight;
         break;
+      // istanbul ignore default
       default:
         throw new RangeError();
     }
@@ -209,6 +211,7 @@ export class FrontstageDef {
    * @param frontstageProvider The FrontstageProvider to initialize from
    */
   public initializeFromProvider(frontstageProvider: FrontstageProvider) {
+    // istanbul ignore else
     if (frontstageProvider.frontstage && React.isValidElement(frontstageProvider.frontstage)) {
       Frontstage.initializeFrontstageDef(this, frontstageProvider.frontstage.props);
       this.frontstageProvider = frontstageProvider;

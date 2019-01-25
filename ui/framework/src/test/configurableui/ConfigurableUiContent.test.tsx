@@ -31,6 +31,29 @@ describe("ConfigurableUiContent", () => {
       </Provider>).should.matchSnapshot();
   });
 
+  it("key presses should be handled", () => {
+    const wrapper = mount(
+      <Provider store={TestUtils.store} >
+        <ConfigurableUiContent />
+      </Provider>);
+
+    wrapper.simulate("keyDown", { key: "a" });
+    wrapper.simulate("keyDown", { key: "Escape" });
+
+    wrapper.unmount();
+  });
+
+  it("mouse moves should be handled", () => {
+    const wrapper = mount(
+      <Provider store={TestUtils.store} >
+        <ConfigurableUiContent />
+      </Provider>);
+
+    wrapper.simulate("mouseMove", { buttons: 1 });
+
+    wrapper.unmount();
+  });
+
   after(() => {
     // clear out the framework key
     TestUtils.terminateUiFramework();

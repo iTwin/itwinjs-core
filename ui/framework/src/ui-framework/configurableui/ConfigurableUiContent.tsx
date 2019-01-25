@@ -22,6 +22,7 @@ export interface ConfigurableUiContentProps {
 
 function mapStateToProps(state: any) {
   const frameworkState = state[UiFramework.frameworkStateKey];  // since app sets up key, don't hard-code name
+  // istanbul ignore if
   if (!frameworkState)
     return undefined;
 
@@ -40,16 +41,12 @@ class ConfigurableUiContentClass extends React.Component<ConfigurableUiContentPr
 
   public componentDidMount() {
     window.addEventListener("keydown", this._handleKeyDown);
-    // window.addEventListener("focusin", this._handleFocusIn);
 
-    const wrapper = document.body;
-    if (wrapper)
-      wrapper.focus();
+    KeyboardShortcutManager.setFocusToHome();
   }
 
   public componentWillUnmount() {
     window.removeEventListener("keydown", this._handleKeyDown);
-    // window.removeEventListener("focusin", this._handleFocusIn);
   }
 
   public render(): JSX.Element | undefined {
@@ -63,7 +60,7 @@ class ConfigurableUiContentClass extends React.Component<ConfigurableUiContentPr
       overflow: "hidden",
     };
     return (
-      <div id="configurableui-wrapper" style={wrapperStyle} onMouseMove={this._handleMouseMove}>
+      <div id="configurableui-wrapper" style={wrapperStyle} onMouseMove={this._handleMouseMove} >
         {this.props.appBackstage}
         <FrontstageComposer style={{ position: "relative", height: "100%" }} />
         <ModalDialogRenderer />

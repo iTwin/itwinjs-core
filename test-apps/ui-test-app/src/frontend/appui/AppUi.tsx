@@ -331,12 +331,7 @@ export class AppUi {
 
     // Test Workflows
     const workflowPropsList: WorkflowPropsList = {
-      defaultWorkflowId: "default-workflow",
-      taskPicker: {
-        classId: "taskpicker-class",
-        iconSpec: "taskpicker-icon",
-        labelKey: "taskpicker-label",
-      },
+      defaultWorkflowId: "ExampleWorkflow",
       workflows: [
         {
           id: "ExampleWorkflow",

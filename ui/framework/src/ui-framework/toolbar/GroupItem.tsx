@@ -55,14 +55,10 @@ export class GroupItemDef extends ActionButtonItemDef {
     this._itemList = new ItemList();
     this._itemMap = new ItemMap();
 
-    this.items.map((value, _index) => {
-      const item: ItemDefBase | undefined = value;
-      const id: string = item ? item.id : "";
-
-      if (item) {
-        this._itemList.addItem(item);
-        this._itemMap.set(id, item);
-      }
+    this.items.map((item: AnyItemDef) => {
+      const id: string = item.id;
+      this._itemList.addItem(item);
+      this._itemMap.set(id, item);
     });
   }
 
@@ -224,6 +220,7 @@ class GroupItem extends React.Component<Props, State> {
 
       for (; itemIndex < columnItemMax; itemIndex++) {
         const item = groupItemDef.getItemByIndex(itemIndex);
+        // istanbul ignore else
         if (item)
           columnItems.set(item.id, item);
       }
@@ -271,6 +268,7 @@ class GroupItem extends React.Component<Props, State> {
   }
 
   private _handleKeyDown = (e: React.KeyboardEvent): void => {
+    // istanbul ignore else
     if (e.key === "Escape") {
       this._closeGroupButton();
       KeyboardShortcutManager.setFocusToHome();

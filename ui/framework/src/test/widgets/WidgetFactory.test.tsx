@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import TestUtils from "../TestUtils";
-import { AnyWidgetProps, WidgetDefFactory, ToolWidgetDef, NavigationWidgetDef } from "../../ui-framework";
+import { AnyWidgetProps, WidgetDefFactory, ToolWidgetDef, NavigationWidgetDef, WidgetDef } from "../../ui-framework";
 
 describe("WidgetFactory", () => {
 
@@ -32,6 +32,16 @@ describe("WidgetFactory", () => {
     const widgetDef = WidgetDefFactory.create(props);
 
     expect(widgetDef).to.be.instanceof(NavigationWidgetDef);
+  });
+
+  it("basic support", () => {
+    const props: AnyWidgetProps = {
+      classId: "BasicWidget",
+    };
+
+    const widgetDef = WidgetDefFactory.create(props);
+
+    expect(widgetDef).to.be.instanceof(WidgetDef);
   });
 
 });

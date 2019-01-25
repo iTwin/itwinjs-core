@@ -111,6 +111,8 @@ export class Frontstage extends React.Component<FrontstageProps> {
     if (zoneNode) {
       const zoneDef = new ZoneDef();
       const zoneElement = Frontstage.getZoneElement(zoneLocation, props);
+
+      // istanbul ignore else
       if (zoneElement && React.isValidElement(zoneElement)) {
         Zone.initializeZoneDef(zoneDef, zoneElement.props);
         return zoneDef;
@@ -148,6 +150,7 @@ export class Frontstage extends React.Component<FrontstageProps> {
       case ZoneLocation.BottomRight:
         zoneElement = props.bottomRight;
         break;
+      // istanbul ignore default
       default:
         throw new RangeError();
     }
@@ -159,6 +162,7 @@ export class Frontstage extends React.Component<FrontstageProps> {
 
   // This uses ConfigurableUi to render the content
   private doContentLayoutRender(): any {
+    // istanbul ignore else
     if (this.props.runtimeProps && this.props.runtimeProps.frontstageDef) {
       const frontstageDef = this.props.runtimeProps.frontstageDef;
       return (
@@ -216,6 +220,8 @@ export class Frontstage extends React.Component<FrontstageProps> {
                 return null;
 
               const zoneDef = runtimeProps.zoneDefProvider.getZoneDef(zoneId);
+
+              // istanbul ignore if
               if (!zoneDef)
                 return null;
 
@@ -239,6 +245,7 @@ export class Frontstage extends React.Component<FrontstageProps> {
                 lastPosition,
                 isUnmergeDrag,
               };
+
               return React.cloneElement(zoneElement, { key: zoneId, runtimeProps: zoneRuntimeProps });
             })
           }

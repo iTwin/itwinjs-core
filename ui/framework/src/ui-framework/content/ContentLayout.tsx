@@ -472,12 +472,14 @@ export class ContentLayout extends React.Component<ContentLayoutReactProps, Cont
 
     contentGroup = this.props.contentGroup;
 
+    // istanbul ignore else
     if (contentGroup) {
       const content: React.ReactNode[] = contentGroup.getContentNodes();
       let contentLayout: ContentLayoutDef;
 
       contentLayout = this.props.contentLayout;
 
+      // istanbul ignore else
       if (content && contentLayout)
         contentContainer = contentLayout.fillLayoutContainer(content, true);
     }
@@ -501,10 +503,13 @@ export class ContentLayout extends React.Component<ContentLayoutReactProps, Cont
     const contentGroup: ContentGroup = args.contentGroup;
     let contentContainer: React.ReactNode;
 
+    // istanbul ignore else
     if (contentGroup) {
       const content: React.ReactNode[] = contentGroup.getContentNodes();
 
       const contentLayout = args.contentLayout;
+
+      // istanbul ignore else
       if (contentLayout)
         contentContainer = contentLayout.fillLayoutContainer(content, true);
     }

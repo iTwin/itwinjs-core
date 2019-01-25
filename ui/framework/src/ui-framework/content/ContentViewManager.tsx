@@ -62,30 +62,38 @@ export class ContentViewManager {
   public static getActiveContentControl(): ContentControl | undefined {
     const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
 
+    // istanbul ignore else
     if (this._activeContent && activeFrontstageDef) {
-      if (activeFrontstageDef) {
-        const activeContentGroup = activeFrontstageDef.contentGroup;
-        if (activeContentGroup) {
-          return activeContentGroup.getControlFromElement(this._activeContent);
-        }
+      const activeContentGroup = activeFrontstageDef.contentGroup;
+      // istanbul ignore else
+      if (activeContentGroup) {
+        return activeContentGroup.getControlFromElement(this._activeContent);
       }
     }
+
     return undefined;
   }
 
   /** Sets the active [[ContentControl]] */
   public static setActiveContent(activeContent?: React.ReactNode, forceEventProcessing = false): void {
+    // istanbul ignore else
     if (this._activeContent !== activeContent || forceEventProcessing) {
       const oldContent = this._activeContent;
       this._activeContent = activeContent;
       this.onActiveContentChangedEvent.emit({ oldContent, activeContent });
 
       const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
+
+      // istanbul ignore else
       if (activeFrontstageDef) {
         const activeContentGroup = activeFrontstageDef.contentGroup;
+
+        // istanbul ignore else
         if (activeContentGroup) {
           const oldContentControl = activeContentGroup.getControlFromElement(oldContent);
           const activeContentControl = activeContentGroup.getControlFromElement(this._activeContent);
+
+          // istanbul ignore else
           if (activeContentControl)
             activeFrontstageDef.setActiveView(activeContentControl, oldContentControl);
         }

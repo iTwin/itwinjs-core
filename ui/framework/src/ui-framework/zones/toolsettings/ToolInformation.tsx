@@ -19,6 +19,8 @@ export class ToolInformation {
   public get toolUiProvider(): ToolUiProvider | undefined {
     if (!this._toolUiProvider && ConfigurableUiManager.isControlRegistered(this.toolId)) {
       const toolUiProvider = ConfigurableUiManager.createControl(this.toolId, this.toolId) as ToolUiProvider;
+
+      // istanbul ignore else
       if (toolUiProvider) {
         if (toolUiProvider.getType() !== ConfigurableUiControlType.ToolUiProvider) {
           throw Error("ToolInformation.toolUiProvider error: toolId '" + this.toolId + "' is registered to a control that is NOT a ToolUiProvider");
