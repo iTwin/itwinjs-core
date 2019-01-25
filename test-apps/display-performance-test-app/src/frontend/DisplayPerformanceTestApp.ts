@@ -549,27 +549,6 @@ async function runTest(testConfig: DefaultConfigs) {
     }
     const rowData = getRowData(finalFrameTimings, testConfig);
     await saveCsv(testConfig.outputPath!, testConfig.outputName!, rowData);
-
-    // Prepare the html data table
-    const table = document.getElementById("perfData") as HTMLTableElement;
-    const tableColNames = document.getElementById("perfDataColNames") as HTMLTableRowElement;
-    if (tableColNames !== undefined && tableColNames.cells.length === 0) {
-      rowData.forEach((_value, colName) => {
-        const cell = tableColNames.insertCell();
-        cell.innerHTML = colName;
-        cell.id = colName;
-      });
-    }
-    const newRow = table.insertRow();
-    rowData.forEach((value, colName) => {
-      const cellIndex = tableColNames!.cells!.namedItem(colName)!.cellIndex;
-      while (newRow.childElementCount < cellIndex) {
-        const tempNewCell = newRow.insertCell(-1);
-        tempNewCell.innerHTML = "";
-      }
-      const newCell = newRow.insertCell(cellIndex);
-      newCell.innerHTML = value.toString();
-    });
   }
 
   // Close the imodel
@@ -618,7 +597,11 @@ async function main() {
       await testModel(new DefaultConfigs(jsonData), modelData);
     }
   }
-  document.getElementById("topdiv")!.style.display = "block";
+
+  const topdiv = document.getElementById("topdiv")!;
+  topdiv.style.display = "block";
+  topdiv.innerText = "Tests Completed.";
+
   document.getElementById("imodel-viewport")!.style.display = "hidden";
 
   DisplayPerfRpcInterface.getClient().finishTest(); // tslint:disable-line:no-floating-promises
