@@ -1,0 +1,34 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+$light-background-5: #c7ccd1;
+$light-foreground-body: #000;
+$light-foreground-primary: #008be1;
+
+.core-lb {
+  display: flex;
+  align-items: center;
+
+  > .lb-container {
+    background-color: $light-background-5;
+    flex: 1;
+
+    > .fill {
+      height: 100%;
+      background-color: $light-foreground-primary;
+      -webkit-transition: width .3s linear;
+      -moz-transition: width .3s linear;
+      -o-transition: width .3s linear;
+      transition: width .3s linear;
+    }
+  }
+
+  > .percent {
+    flex: initial;
+    opacity: 0.85;
+    width: 3em;
+    font-size: .9em;
+    margin-left: .3em;
+  }
+}
