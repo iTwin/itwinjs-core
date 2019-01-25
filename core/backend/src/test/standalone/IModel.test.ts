@@ -697,7 +697,6 @@ describe("iModel", () => {
     assert.equal(afterLengthenArray.arrayOfInt.length, 3);
     assert.deepEqual(afterLengthenArray.arrayOfInt, [1, 2, 3]);
 
-
     // ------------ delete -----------------
     const elid = afterUpdateElemFetched.id;
     imodel4.elements.deleteElement(elid);
