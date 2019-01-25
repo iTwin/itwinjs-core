@@ -12,6 +12,7 @@
 - [Dialog]($core:Dialog)
 - [ElementSeparator]($core:ElementSeparator)
 - [Expandable]($core:Expandable)
+- [Loading]($core:Loading)
 - [MessageBox]($core:MessageBox)
 - [Popup]($core:Popup)
 - [RadialMenu]($core:RadialMenu)

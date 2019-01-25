@@ -45,6 +45,11 @@ export { SearchBox, SearchBoxProps } from "./ui-core/searchbox/SearchBox";
 
 export * from "./ui-core/splitbutton/SplitButton";
 
+export { LoadingBar, LoadingBarProps } from "./ui-core/loading/LoadingBar";
+export { LoadingPrompt, LoadingPromptProps } from "./ui-core/loading/LoadingPrompt";
+export { LoadingSpinner, LoadingSpinnerProps } from "./ui-core/loading/LoadingSpinner";
+export { LoadingStatus, LoadingStatusProps } from "./ui-core/loading/LoadingStatus";
+
 export * from "./ui-core/toggle/Toggle";
 
 export { default as ExpansionToggle, ExpansionToggleProps } from "./ui-core/tree/ExpansionToggle";
@@ -104,6 +109,10 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
 /**
  * @docs-group-description Expandable
  * Classes for working with a ExpandableBlock or ExpandableList.
+ */
+/**
+ * @docs-group-description Loading
+ * Classes for working with Loading spinner and progress indicator.
  */
 /**
  * @docs-group-description MessageBox
