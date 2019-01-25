@@ -537,7 +537,7 @@ const computeFeatureOverrides = `
   }
 
   float flags = value.r * 256.0;
-  feature_invisible = 1.0 == extractNthFeatureBit(flags, kOvrBit_Visibility);
+  feature_invisible = 1.0 == extractNthFeatureBit(flags, kOvrBit_Visibility) || 0.0 != value.a * extractShaderBit(kShaderBit_IgnoreNonLocatable); // .a > 0 if non-locatable...
   if (feature_invisible)
     return;
 

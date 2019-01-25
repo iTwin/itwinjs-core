@@ -58,7 +58,7 @@ export namespace MockRender {
     public changeRenderPlan(_plan: RenderPlan) { }
     public drawFrame(_sceneTime?: number) { }
     public updateViewRect() { return false; }
-    public readPixels(_rect: ViewRect, _selector: Pixel.Selector, receiver: Pixel.Receiver) { receiver(undefined); }
+    public readPixels(_rect: ViewRect, _selector: Pixel.Selector, receiver: Pixel.Receiver, _excludeNonLocatable: boolean) { receiver(undefined); }
   }
 
   export class OnScreenTarget extends Target {

@@ -80,6 +80,8 @@ export class ViewAttributes {
     this.addViewFlagAttribute(flagsDiv, "Line Styles", "styles");
     this.addViewFlagAttribute(flagsDiv, "Clip Volume", "clipVolume", true);
 
+    this.addLightingToggle(flagsDiv);
+
     this.addEnvAttribute(flagsDiv, "Sky Box", "sky");
     this.addEnvAttribute(flagsDiv, "Ground Plane", "ground");
 
@@ -117,6 +119,24 @@ export class ViewAttributes {
       elems.div.style.display = visible ? "block" : "none";
       if (visible)
         elems.checkbox.checked = view.viewFlags[flag];
+    };
+
+    this._updates.push(update);
+  }
+
+  private addLightingToggle(parent: HTMLElement): void {
+    const elems = this.addCheckbox("Lights", (enabled: boolean) => {
+      const vf = this._vp.viewFlags.clone(this._scratchViewFlags);
+      vf.solarLight = vf.cameraLights = vf.sourceLights = enabled;
+      this._vp.view.viewFlags = vf;
+      this.sync();
+    }, parent);
+
+    const update = (view: ViewState) => {
+      const vf = view.viewFlags;
+      const visible = view.is3d() && RenderMode.SmoothShade === vf.renderMode;
+      if (visible)
+        elems.checkbox.checked = vf.solarLight || vf.cameraLights || vf.sourceLights;
     };
 
     this._updates.push(update);

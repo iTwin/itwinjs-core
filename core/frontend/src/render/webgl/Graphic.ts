@@ -86,7 +86,7 @@ export class FeatureOverrides implements IDisposable {
     //      R = override flags (see FeatureOverrides::Flags)
     //      G = line weight
     //      B = line code
-    //      A = unused
+    //      A = 1 if no-locatable
     //  [1]
     //      RGB = rgb
     //      A = alpha
@@ -154,8 +154,10 @@ export class FeatureOverrides implements IDisposable {
       if (undefined !== flashedIdParts && feature.elementId.lower === flashedIdParts.lower && feature.elementId.upper === flashedIdParts.upper)
         flags |= OvrFlags.Flashed;
 
+      data.setByteAtIndex(dataIndex + 3, app.nonLocatable ? 1 : 0);
+
       data.setOvrFlagsAtIndex(dataIndex, flags);
-      if (OvrFlags.None !== flags)
+      if (OvrFlags.None !== flags || app.nonLocatable)
         nOverridden++;
     }
 

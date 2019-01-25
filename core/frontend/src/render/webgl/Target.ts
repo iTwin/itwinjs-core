@@ -222,6 +222,8 @@ export abstract class Target extends RenderTarget {
   public plan?: RenderPlan;
   private _animationBranches?: AnimationBranchStates;
   private _isReadPixelsInProgress = false;
+  private _drawNonLocatable = true;
+  public isFadeOutActive = false;
 
   protected constructor(rect?: ViewRect) {
     super();
@@ -235,6 +237,7 @@ export abstract class Target extends RenderTarget {
   }
 
   public get isReadPixelsInProgress(): boolean { return this._isReadPixelsInProgress; }
+  public get drawNonLocatable(): boolean { return this._drawNonLocatable; }
 
   public get currentOverrides(): FeatureOverrides | undefined { return this._currentOverrides; }
   // public get currentOverrides(): FeatureOverrides | undefined { return this._currentOverrides ? undefined : undefined; } // ###TODO remove this - for testing purposes only (forces overrides off)
@@ -523,6 +526,7 @@ export abstract class Target extends RenderTarget {
     this.bgColor.setFrom(plan.bgColor);
     this.monoColor.setFrom(plan.monoColor);
     this.hiliteSettings = plan.hiliteSettings;
+    this.isFadeOutActive = plan.isFadeOutActive;
     this._transparencyThreshold = 0.0;
     this.analysisStyle = plan.analysisStyle === undefined ? undefined : plan.analysisStyle.clone();
     this.analysisTexture = plan.analysisTexture;
@@ -815,7 +819,7 @@ export abstract class Target extends RenderTarget {
     return this._dcAssigned;
   }
 
-  public readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver): void {
+  public readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable: boolean): void {
     // We can't reuse the previous frame's data for a variety of reasons, chief among them that some types of geometry (surfaces, translucent stuff) don't write
     // to the pick buffers and others we don't want - such as non-pickable decorations - do.
     // Render to an offscreen buffer so that we don't destroy the current color buffer.
@@ -829,7 +833,9 @@ export abstract class Target extends RenderTarget {
     const fbo = FrameBuffer.create([texture]);
     if (undefined !== fbo) {
       System.instance.frameBufferStack.execute(fbo, true, () => {
+        this._drawNonLocatable = !excludeNonLocatable;
         result = this.readPixelsFromFbo(rect, selector);
+        this._drawNonLocatable = true;
       });
 
       dispose(fbo);

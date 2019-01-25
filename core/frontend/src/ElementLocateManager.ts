@@ -42,6 +42,8 @@ export const enum SnapStatus {
 export class LocateOptions {
   /** If true, also test graphics from view decorations. */
   public allowDecorations = false;
+  /** If true, also test graphics with non-locatable flag set. */
+  public allowNonLocatable = false;
   /** Maximum number of hits to return. */
   public maxHits = 20;
   /** The [[HitSource]] identifying the caller. */
@@ -50,11 +52,12 @@ export class LocateOptions {
   public clone(): LocateOptions {
     const other = new LocateOptions();
     other.allowDecorations = this.allowDecorations;
+    other.allowNonLocatable = this.allowNonLocatable;
     other.maxHits = this.maxHits;
     other.hitSource = this.hitSource;
     return other;
   }
-  public init() { this.allowDecorations = false; this.maxHits = 20; this.hitSource = HitSource.DataPoint; }
+  public init() { this.allowDecorations = this.allowNonLocatable = false; this.maxHits = 20; this.hitSource = HitSource.DataPoint; }
 }
 
 export class LocateResponse {
@@ -180,7 +183,7 @@ export class ElementPicker {
           this.hitList!.hits.length = options.maxHits; // truncate array...
       }
       result = this.hitList!.length;
-    });
+    }, !options.allowNonLocatable);
 
     return result;
   }

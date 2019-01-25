@@ -5,7 +5,7 @@
 /** @module Rendering */
 
 import { FeatureOverrideProvider, Viewport } from "./Viewport";
-import { ColorDef, ColorDefProps } from "@bentley/imodeljs-common";
+import { ColorDef, ColorDefProps, RgbColor } from "@bentley/imodeljs-common";
 import { Id64Set, Id64Arg, Id64 } from "@bentley/bentleyjs-core";
 import { FeatureSymbology } from "./rendering";
 
@@ -94,7 +94,13 @@ export class EmphasizeElements implements FeatureOverrideProvider {
   public get defaultAppearance(): FeatureSymbology.Appearance | undefined { return this._defaultAppearance; }
 
   /** Create default appearance to use for emphasizeElements when not supplied by caller. */
-  public createDefaultAppearance(): FeatureSymbology.Appearance { return FeatureSymbology.Appearance.fromRgba(ColorDef.from(127, 127, 127, 127)); }
+  public createDefaultAppearance(): FeatureSymbology.Appearance {
+    return FeatureSymbology.Appearance.fromJSON({
+      rgb: new RgbColor(0xe4, 0xe4, 0xe4),
+      transparency: 0.8,
+      nonLocatable: true,
+    });
+  }
 
   /** @hidden Get the IDs of the currently never drawn elements. */
   public getNeverDrawnElements(vp: Viewport): Id64Set | undefined { return (undefined !== vp.neverDrawn && 0 !== vp.neverDrawn.size ? vp.neverDrawn : undefined); }
@@ -279,7 +285,7 @@ export class EmphasizeElements implements FeatureOverrideProvider {
   /** Set the element IDs to be always drawn normally with all other elements in the view overridden to draw using a default appearance..
    * @param ids The IDs of the elements to always draw.
    * @param vp The viewport.
-   * @param defaultAppearance Optional default appearance, uses transparent grey if not specified.
+   * @param defaultAppearance Optional default appearance, uses non-locatable transparent grey if not specified.
    * @param replace true to replace currently overridden elements (if any) or false to add to the existing set.
    * @return true if overrides were changed.
    * @see [[Viewport.alwaysDrawn]]

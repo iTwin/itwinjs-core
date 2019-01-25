@@ -25,6 +25,7 @@ function addShaderFlagsLookup(shader: ShaderBuilder) {
   shader.addConstant("kShaderBit_NonUniformColor", VariableType.Float, "1.0");
   shader.addConstant("kShaderBit_OITFlatAlphaWeight", VariableType.Float, "2.0");
   shader.addConstant("kShaderBit_OITScaleOutput", VariableType.Float, "3.0");
+  shader.addConstant("kShaderBit_IgnoreNonLocatable", VariableType.Float, "4.0");
 
   shader.addFunction(GLSLCommon.extractNthBit);
   shader.addFunction(extractShaderBit);
@@ -56,15 +57,25 @@ function setShaderFlags(uniform: UniformHandle, params: DrawParams) {
   // Otherwise, the very tiny Z range makes things fade to black as the precision limit is encountered.  This workaround disregards Z
   // in calculating the color, so it means that transparency is less accurate based on Z-ordering, but it is the best we can do with
   // this algorithm on low-end hardware.
+
+  // Finally, the application can put the viewport into "fadeout mode", which explicitly enables flat alpha weight in order to de-emphasize transparent geometry.
   const maxRenderType = System.instance.capabilities.maxRenderType;
-  const surface = params.geometry instanceof SurfaceGeometry ? params.geometry as SurfaceGeometry : undefined;
-  if ((undefined !== surface && (surface.isGlyph || surface.isTileSection)) || RenderType.TextureUnsignedByte === maxRenderType)
+  let flatAlphaWeight = RenderType.TextureUnsignedByte === maxRenderType || params.target.isFadeOutActive;
+  if (!flatAlphaWeight) {
+    const surface = params.geometry instanceof SurfaceGeometry ? params.geometry as SurfaceGeometry : undefined;
+    flatAlphaWeight = undefined !== surface && (surface.isGlyph || surface.isTileSection);
+  }
+
+  if (flatAlphaWeight)
     flags |= ShaderFlags.OITFlatAlphaWeight;
 
   // If Cesium-style transparency is being used with non-float texture targets, we must scale the output in the shaders to 0-1 range.
   // Otherwise, it will get implicitly clamped to that range and we'll lose any semblance our desired precision (even though it is low).
   if (maxRenderType < RenderType.TextureHalfFloat)
     flags |= ShaderFlags.OITScaleOutput;
+
+  if (!params.target.drawNonLocatable)
+    flags |= ShaderFlags.IgnoreNonLocatable;
 
   uniform.setUniform1f(flags);
 }

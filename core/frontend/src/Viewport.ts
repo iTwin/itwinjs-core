@@ -930,6 +930,7 @@ export abstract class Viewport implements IDisposable {
   private _freezeScene = false;
   private _viewFrustum!: ViewFrustum;
   private _target?: RenderTarget;
+  private _fadeOutActive = false;
   private _neverDrawn?: Id64Set;
   private _alwaysDrawn?: Id64Set;
   private _alwaysDrawnExclusive: boolean = false;
@@ -1015,6 +1016,18 @@ export abstract class Viewport implements IDisposable {
   public get isSnapAdjustmentRequired(): boolean { return IModelApp.toolAdmin.acsPlaneSnapLock && this.view.is3d(); }
   /** @hidden */
   public get isContextRotationRequired(): boolean { return IModelApp.toolAdmin.acsContextLock; }
+
+  /** Enables or disables "fade-out" mode. When this mode is enabled, transparent graphics are rendered with a flat alpha weight,
+   * causing them to appear de-emphasized. This is typically used in contexts in which a handful of elements are to be emphasized in the view,
+   * while the rest of the graphics are drawn transparently.
+   */
+  public get isFadeOutActive(): boolean { return this._fadeOutActive; }
+  public set isFadeOutActive(active: boolean) {
+    if (active !== this._fadeOutActive) {
+      this._fadeOutActive = active;
+      this.invalidateRenderPlan();
+    }
+  }
 
   /** @hidden */
   protected constructor(target: RenderTarget) {
@@ -1863,14 +1876,15 @@ export abstract class Viewport implements IDisposable {
    * @param rect The area of the viewport's contents to read. The origin specifies the upper-left corner. Must lie entirely within the viewport's dimensions.
    * @param selector Specifies which aspect(s) of data to read.
    * @param receiver A function accepting a [[Pixel.Buffer]] object from which the selected data can be retrieved, or receiving undefined if the viewport is not active, the rect is out of bounds, or some other error.
+   * @param excludeNonLocatable If true, geometry with the "non-locatable" flag set will not be drawn.
    * @note The [[Pixel.Buffer]] supplied to the `receiver` function becomes invalid once that function exits. Do not store a reference to it.
    */
-  public readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver): void {
+  public readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable = false): void {
     const viewRect = this.viewRect;
     if (!rect.isContained(viewRect))
       receiver(undefined);
     else
-      this.target.readPixels(rect, selector, receiver);
+      this.target.readPixels(rect, selector, receiver, excludeNonLocatable);
   }
 
   /**
@@ -2043,12 +2057,15 @@ export class ScreenViewport extends Viewport {
    * Find a point on geometry visible in this Viewport, within a radius of supplied pick point.
    * @param pickPoint Point to search about, in world coordinates
    * @param radius Radius, in pixels, of the circular area to search.
+   * @param allowNonLocatable If true, include geometry with non-locatable flag set.
    * @param out Optional Point3d to hold the result. If undefined, a new Point3d is returned.
    * @returns The point, in world coordinates, on the element closest to `pickPoint`, or undefined if no elements within `radius`.
    */
-  public pickNearestVisibleGeometry(pickPoint: Point3d, radius: number, out?: Point3d): Point3d | undefined {
+  public pickNearestVisibleGeometry(pickPoint: Point3d, radius: number, allowNonLocatable = true, out?: Point3d): Point3d | undefined {
     const picker = new ElementPicker();
-    if (0 !== picker.doPick(this, pickPoint, radius, new LocateOptions())) {
+    const options = new LocateOptions();
+    options.allowNonLocatable = allowNonLocatable;
+    if (0 !== picker.doPick(this, pickPoint, radius, options)) {
       const result = undefined !== out ? out : new Point3d();
       result.setFrom(picker.getHit(0)!.getPoint());
       return result;

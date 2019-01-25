@@ -30,6 +30,8 @@ export namespace FeatureSymbology {
     linePixels?: LinePixels;
     /** If true, ignore the [[RenderMaterial]] associated with surfaces. */
     ignoresMaterial?: true | undefined;
+    /** If true, the associated [[Feature]]s will not be drawn when using [[Viewport.readPixels]]. */
+    nonLocatable?: true | undefined;
   }
 
   /** Defines overrides for selected aspects of a [[Feature]]'s symbology.
@@ -47,12 +49,14 @@ export namespace FeatureSymbology {
     public readonly linePixels?: LinePixels;
     /** If true, ignore the [[RenderMaterial]] associated with surfaces. */
     public readonly ignoresMaterial?: true | undefined;
+    /** If true, ignore the [[Feature]] when using [[Viewport.readPixels]]. */
+    public readonly nonLocatable?: true | undefined;
 
     /** An Appearance which overrides nothing. */
     public static readonly defaults = new Appearance({});
 
     public static fromJSON(props?: AppearanceProps) {
-      if (undefined === props || (undefined === props.rgb && undefined === props.weight && undefined === props.transparency && undefined === props.linePixels && !props.ignoresMaterial))
+      if (undefined === props || (undefined === props.rgb && undefined === props.weight && undefined === props.transparency && undefined === props.linePixels && !props.ignoresMaterial && !props.nonLocatable))
         return this.defaults;
       else
         return new Appearance(props);
@@ -102,6 +106,7 @@ export namespace FeatureSymbology {
         transparency: this.transparency,
         linePixels: this.linePixels,
         ignoresMaterial: this.ignoresMaterial ? true : undefined,
+        nonLocatable: this.nonLocatable ? true : undefined,
       };
     }
 
@@ -116,6 +121,7 @@ export namespace FeatureSymbology {
       if (undefined === props.linePixels) props.linePixels = this.linePixels;
       if (undefined === props.weight) props.weight = this.weight;
       if (undefined === props.ignoresMaterial && this.ignoresMaterial) props.ignoresMaterial = true;
+      if (undefined === props.nonLocatable && this.nonLocatable) props.nonLocatable = true;
 
       return Appearance.fromJSON(props);
     }
@@ -126,6 +132,7 @@ export namespace FeatureSymbology {
       this.transparency = props.transparency;
       this.linePixels = props.linePixels;
       this.ignoresMaterial = props.ignoresMaterial;
+      this.nonLocatable = props.nonLocatable;
 
       if (undefined !== this.weight)
         this.weight = Math.max(1, Math.min(this.weight, 32));

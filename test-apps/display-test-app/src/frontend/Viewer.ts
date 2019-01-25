@@ -33,6 +33,7 @@ import { createComboBox } from "./ComboBox";
 import { toggleIncidentMarkers } from "./IncidentMarkerDemo";
 import { toggleProjectExtents } from "./ProjectExtents";
 import { AnimationPanel } from "./AnimationPanel";
+import { emphasizeSelectedElements } from "./FeatureOverrides";
 
 // ###TODO: I think the picker populates correctly, but I have no way to test - and if no reality models are available,
 // the button doesn't disappear until you click on it. Revisit when Alain has something useful for us.
@@ -83,6 +84,12 @@ class DebugTools extends ToolBarDropDown {
     this._element.appendChild(createToolButton({
       className: "rd-icon-measure-distance",
       click: () => IModelApp.tools.run("DrawingAidTest.Points", vp), // ###TODO Fix the drop-down...
+    }));
+
+    this._element.appendChild(createToolButton({
+      className: "bim-icon-cancel",
+      click: () => emphasizeSelectedElements(vp),
+      tooltip: "Emphasize selected elements",
     }));
 
     parent.appendChild(this._element);

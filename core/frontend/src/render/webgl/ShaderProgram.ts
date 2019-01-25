@@ -22,6 +22,7 @@ export const enum ShaderFlags {
   NonUniformColor = 1 << 1,
   OITFlatAlphaWeight = 1 << 2,
   OITScaleOutput = 1 << 3,
+  IgnoreNonLocatable = 1 << 4,
 }
 
 /** Describes the location of a uniform variable within a shader program. */
