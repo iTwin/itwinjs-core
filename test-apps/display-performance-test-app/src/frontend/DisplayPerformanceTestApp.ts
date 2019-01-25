@@ -180,6 +180,7 @@ function getViewFlagsString(): string {
   if (vf.hLineMaterialColors) vfString += "+hln";
   if (vf.edgeMask === 1) vfString += "+genM";
   if (vf.edgeMask === 2) vfString += "+useM";
+  if (vf.ambientOcclusion) vfString += "+ao";
   return vfString;
 }
 
@@ -283,6 +284,7 @@ class DefaultConfigs {
   public testType?: string;
   public displayStyle?: string;
   public viewFlags?: ViewFlag.Overrides;
+  public aoEnabled = false;
 
   public constructor(jsonData: any, prevConfigs?: DefaultConfigs, useDefaults = false) {
     if (useDefaults) {
@@ -317,6 +319,7 @@ class DefaultConfigs {
     if (jsonData.testType) this.testType = jsonData.testType;
     if (jsonData.displayStyle) this.displayStyle = jsonData.displayStyle;
     if (jsonData.viewFlags) this.viewFlags = setViewFlagOverrides(jsonData.viewFlags, this.viewFlags);
+    this.aoEnabled = undefined !== jsonData.viewFlags && !!jsonData.viewFlags.ambientOcclusion;
 
     debugPrint("view: " + this.view ? (this.view!.width + "X" + this.view!.height) : "undefined");
     debugPrint("outputFile: " + this.outputFile);
@@ -485,8 +488,11 @@ async function loadIModel(testConfig: DefaultConfigs) {
   }
 
   // Set the viewFlags (including the render mode)
-  if (activeViewState.viewState !== undefined && testConfig.viewFlags)
-    testConfig.viewFlags.apply(activeViewState.viewState.displayStyle.viewFlags);
+  if (undefined !== activeViewState.viewState) {
+    activeViewState.viewState.displayStyle.viewFlags.ambientOcclusion = testConfig.aoEnabled;
+    if (testConfig.viewFlags)
+      testConfig.viewFlags.apply(activeViewState.viewState.displayStyle.viewFlags);
+  }
 
   // Load all tiles
   await waitForTilesToLoad(testConfig.iModelLocation);

@@ -403,8 +403,8 @@ abstract class Compositor extends SceneCompositor {
       System.instance.applyRenderState(RenderState.defaults);
       const params = getDrawParams(this.target, this._geom.occlusion!);
       this.target.techniques.draw(params);
-
     });
+    this.target.recordPerformanceMetric("Compute AO");
 
     // Render the X-blurred ambient occlusion based on unblurred ambient occlusion
     fbo = this._frameBuffers.occlusionBlur!;
@@ -413,6 +413,7 @@ abstract class Compositor extends SceneCompositor {
       const params = getDrawParams(this.target, this._geom.occlusionXBlur!);
       this.target.techniques.draw(params);
     });
+    this.target.recordPerformanceMetric("Blur AO X");
 
     // Render the Y-blurred ambient occlusion based on X-blurred ambient occlusion (render into original occlusion framebuffer)
     fbo = this._frameBuffers.occlusion!;
@@ -421,6 +422,7 @@ abstract class Compositor extends SceneCompositor {
       const params = getDrawParams(this.target, this._geom.occlusionYBlur!);
       this.target.techniques.draw(params);
     });
+    this.target.recordPerformanceMetric("Blur AO Y");
   }
 
   protected constructor(target: Target, fbos: FrameBuffers, geometry: Geometry) {
@@ -510,37 +512,37 @@ abstract class Compositor extends SceneCompositor {
 
     // Render the background
     this.renderBackground(commands, needComposite);
-    if (this.target.performanceMetrics) this.target.performanceMetrics.recordTime("Render Background");
+    this.target.recordPerformanceMetric("Render Background");
 
     // Render the sky box
     this.renderSkyBox(commands, needComposite);
-    if (this.target.performanceMetrics) this.target.performanceMetrics.recordTime("Render SkyBox");
+    this.target.recordPerformanceMetric("Render SkyBox");
 
     // Render the terrain
     this.renderTerrain(commands, needComposite);
-    if (this.target.performanceMetrics) this.target.performanceMetrics.recordTime("Render Terrain");
+    this.target.recordPerformanceMetric("Render Terrain");
 
     // Enable clipping
     this.target.pushActiveVolume();
-    if (this.target.performanceMetrics) this.target.performanceMetrics.recordTime("Enable Clipping");
+    this.target.recordPerformanceMetric("Enable Clipping");
 
     // Render opaque geometry
     this.renderOpaque(commands, compositeFlags, false);
-    if (this.target.performanceMetrics) this.target.performanceMetrics.recordTime("Render Opaque");
+    this.target.recordPerformanceMetric("Render Opaque");
 
     // Render stencil volumes
     this.renderClassification(commands, needComposite, false);
-    if (this.target.performanceMetrics) this.target.performanceMetrics.recordTime("Render Stencils");
+    this.target.recordPerformanceMetric("Render Stencils");
 
     if (needComposite) {
       this._geom.composite!.update(compositeFlags);
       this.clearTranslucent();
       this.renderTranslucent(commands);
-      if (this.target.performanceMetrics) this.target.performanceMetrics.recordTime("Render Translucent");
+      this.target.recordPerformanceMetric("Render Translucent");
       this.renderHilite(commands);
-      if (this.target.performanceMetrics) this.target.performanceMetrics.recordTime("Render Hilite");
+      this.target.recordPerformanceMetric("Render Hilite");
       this.composite();
-      if (this.target.performanceMetrics) this.target.performanceMetrics.recordTime("Composite");
+      this.target.recordPerformanceMetric("Composite");
     }
     this.target.popActiveVolume();
   }

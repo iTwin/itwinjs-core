@@ -695,6 +695,11 @@ export abstract class Target extends RenderTarget {
   private _doDebugPaint: boolean = false;
   protected debugPaint(): void { }
 
+  public recordPerformanceMetric(operation: string): void {
+    if (this.performanceMetrics)
+      this.performanceMetrics.recordTime(operation);
+  }
+
   private paintScene(sceneMilSecElapsed?: number): void {
     if (this._doDebugPaint) {
       this.debugPaint();
@@ -717,7 +722,7 @@ export abstract class Target extends RenderTarget {
     if (drawForReadPixels) {
       this._isReadPixelsInProgress = true;
 
-      if (this.performanceMetrics) this.performanceMetrics.recordTime("Begin Paint");
+      this.recordPerformanceMetric("Begin Paint");
       const vf = this.currentViewFlags.clone(this._scratchViewFlags);
       vf.transparency = false;
       vf.textures = false;
@@ -735,18 +740,18 @@ export abstract class Target extends RenderTarget {
       this.pushState(state);
 
       this._renderCommands.init(this._scene, this._terrain, this._decorations, this._dynamics, true);
-      if (this.performanceMetrics) this.performanceMetrics.recordTime("Init Commands");
+      this.recordPerformanceMetric("Init Commands");
       this.compositor.drawForReadPixels(this._renderCommands);
-      if (this.performanceMetrics) this.performanceMetrics.recordTime("Draw Read Pixels");
+      this.recordPerformanceMetric("Draw Read Pixels");
 
       this._stack.pop();
 
       this._isReadPixelsInProgress = false;
     } else {
-      if (this.performanceMetrics) this.performanceMetrics.recordTime("Begin Paint");
+      this.recordPerformanceMetric("Begin Paint");
       this._renderCommands.init(this._scene, this._terrain, this._decorations, this._dynamics);
 
-      if (this.performanceMetrics) this.performanceMetrics.recordTime("Init Commands");
+      this.recordPerformanceMetric("Init Commands");
       this.compositor.draw(this._renderCommands); // scene compositor gets disposed and then re-initialized... target remains undisposed
 
       this._stack.pushState(this.decorationState);
@@ -754,14 +759,14 @@ export abstract class Target extends RenderTarget {
       this.drawPass(RenderPass.ViewOverlay);
       this._stack.pop();
 
-      if (this.performanceMetrics) this.performanceMetrics.recordTime("Overlay Draws");
+      this.recordPerformanceMetric("Overlay Draws");
     }
 
     // Reset the batch IDs in all batches drawn for this call.
     this._batchState.reset();
 
     this._endPaint();
-    if (this.performanceMetrics) this.performanceMetrics.recordTime("End Paint");
+    this.recordPerformanceMetric("End Paint");
 
     if (this.performanceMetrics) {
       if (this.performanceMetrics.gatherCurPerformanceMetrics) {

@@ -882,6 +882,70 @@
           }
         }
       ]
+    },
+    {
+      "iModelName": "TimingTest_01.bim",
+      "testName": "Ambient Occlusion",
+      "testType": "both",
+      "viewName": "V0",
+      "tests": [
+        {
+          "viewName": "V0",
+          "viewFlags": {
+            "renderMode": "SmoothShade",
+            "dimensions": true,
+            "patterns": true,
+            "weights": true,
+            "styles": true,
+            "transparency": true,
+            "fill": true,
+            "textures": true,
+            "materials": true,
+            "visibleEdges": false,
+            "hiddenEdges": false,
+            "sourceLights": true,
+            "cameraLights": true,
+            "solarLights": true,
+            "shadows": false,
+            "clipVolume": true,
+            "constructions": false,
+            "monochrome": false,
+            "noGeometryMap": false,
+            "backgroundMap": false,
+            "hLineMaterialColors": false,
+            "edgeMask": 0,
+            "ambientOcclusion": false
+          }
+        },
+        {
+          "viewName": "V0",
+          "viewFlags": {
+            "renderMode": "SmoothShade",
+            "dimensions": true,
+            "patterns": true,
+            "weights": true,
+            "styles": true,
+            "transparency": true,
+            "fill": true,
+            "textures": true,
+            "materials": true,
+            "visibleEdges": false,
+            "hiddenEdges": false,
+            "sourceLights": true,
+            "cameraLights": true,
+            "solarLights": true,
+            "shadows": false,
+            "clipVolume": true,
+            "constructions": false,
+            "monochrome": false,
+            "noGeometryMap": false,
+            "backgroundMap": false,
+            "hLineMaterialColors": false,
+            "edgeMask": 0,
+            "ambientOcclusion": true
+          }
+        }
+      ]
     }
   ]
 }
