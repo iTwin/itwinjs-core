@@ -346,8 +346,8 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
     if (!activeRuleset)
       return;
 
-    await this._setActiveRuleset(activeRuleset);
-    this._setInitialExpandedState(group); // tslint:disable-line:no-floating-promises
+    await this._setViewType();
+    this._setInitialExpandedState(group, activeRuleset); // tslint:disable-line:no-floating-promises
   }
 
   /**
@@ -368,7 +368,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
    * Sets provided ruleset as new ruleset for tree.
    * @param activeRuleset Ruleset to provide to tree.
    */
-  private _setActiveRuleset = async (activeRuleset: RegisteredRuleset) => {
+  private _setViewType = async () => {
     if (!IModelApp.viewManager)
       return;
 
@@ -377,27 +377,28 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
 
     const viewType = view.is3d() ? "3d" : "2d";
     Presentation.presentation.vars(this.state.treeInfo!.ruleset.id).setString("ViewType", viewType); // tslint:disable-line:no-floating-promises
-
-    this.setState({
-      treeInfo: {
-        ...this.state.treeInfo!,
-        ruleset: activeRuleset,
-        dataProvider: new ModelSelectorDataProvider(this.props.iModelConnection, activeRuleset.id),
-      },
-    });
   }
 
   /**
    * Sets initial state as tab expands
    * @param group ModelGroup to initialize state on
    */
-  private _setInitialExpandedState = async (group: ModelGroup) => {
+  private _setInitialExpandedState = async (group: ModelGroup, activeRuleset: RegisteredRuleset) => {
     if (this.state.treeInfo) {
-      const selectedNodes = await this._selectInitialEnabledItems(group.items);
+      const dataProvider = new ModelSelectorDataProvider(this.props.iModelConnection, activeRuleset.id);
+
+      console.time("getNodes"); // tslint:disable-line:no-console
+      const nodes: TreeNodeItem[] = await dataProvider.getNodes();
+      console.timeEnd("getNodes"); // tslint:disable-line:no-console
+      console.time("selectInitialEnabledItems"); // tslint:disable-line:no-console
+      const selectedNodes = await this._selectInitialEnabledItems(group.items, nodes);
+      console.timeEnd("selectInitialEnabledItems"); // tslint:disable-line:no-console
 
       this.setState({
         treeInfo: {
           ...this.state.treeInfo,
+          ruleset: activeRuleset,
+          dataProvider,
           selectedNodes,
         },
         activeGroup: group,
@@ -412,8 +413,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
    * @param items Items to set selection for if enabled
    * @returns Nodes that have been selected
    */
-  private _selectInitialEnabledItems = async (items: ListItem[]) => {
-    const nodes: TreeNodeItem[] = await this.state.treeInfo!.dataProvider.getNodes();
+  private _selectInitialEnabledItems = async (items: ListItem[], nodes: TreeNodeItem[]) => {
     const selectedNodes = Array<string>();
     const promises = Array<Promise<DelayLoadedTreeNodeItem | undefined>>();
     for (const item of items) {
