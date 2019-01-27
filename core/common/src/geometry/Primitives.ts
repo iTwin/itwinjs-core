@@ -21,7 +21,6 @@ export class AxisAlignedBox3d extends Range3d {
     else
       super(low.x, low.y, low.z, high.x, high.y, high.z);
   }
-  public clone() { return new AxisAlignedBox3d(this.low, this.high); }
 
   /** Construct a new AxisAlignedBox3d from a LowAndHighXY */
   public static fromRange2d(r: LowAndHighXY) { const v = new AxisAlignedBox3d(); v.low.x = r.low.x; v.low.y = r.low.y; v.high.x = r.high.x; v.high.y = r.high.y; return v; }
@@ -49,13 +48,6 @@ export class AxisAlignedBox3d extends Range3d {
       this.high.z += size;
     }
   }
-
-  /** @hidden */
-  public static fromJSON(json: any): AxisAlignedBox3d {
-    const val = new AxisAlignedBox3d();
-    val.setFromJSON(json);
-    return val;
-  }
 }
 
 /** A bounding box aligned to the orientation of a 3d Element */
@@ -75,12 +67,6 @@ export class ElementAlignedBox3d extends Range3d {
     return !this.isNull && lo.x > -max && lo.y > -max && lo.z > -max && hi.x < max && hi.y < max && hi.z < max;
   }
 
-  public static fromJSON(json?: any): ElementAlignedBox3d {
-    const val = new ElementAlignedBox3d();
-    if (json)
-      val.setFromJSON(json);
-    return val;
-  }
 }
 
 /** A bounding box aligned to the orientation of a 2d Element */
@@ -92,12 +78,6 @@ export class ElementAlignedBox2d extends Range2d {
   public get top(): number { return this.high.y; }
   public get width(): number { return this.xLength(); }
   public get height(): number { return this.yLength(); }
-  public static fromJSON(json?: any): ElementAlignedBox2d {
-    const val = new ElementAlignedBox2d();
-    if (json)
-      val.setFromJSON(json);
-    return val;
-  }
   public get isValid(): boolean {
     const max = Constant.circumferenceOfEarth; const lo = this.low; const hi = this.high;
     return !this.isNull && lo.x > -max && lo.y > -max && hi.x < max && hi.y < max;
@@ -118,7 +98,7 @@ export class Placement3d implements Placement3dProps {
   /** Create a new Placement3d from a Placement3dProps. */
   public static fromJSON(json?: Placement3dProps): Placement3d {
     const props: any = json ? json : {};
-    return new Placement3d(Point3d.fromJSON(props.origin), YawPitchRollAngles.fromJSON(props.angles), ElementAlignedBox3d.fromJSON(props.bbox));
+    return new Placement3d(Point3d.fromJSON(props.origin), YawPitchRollAngles.fromJSON(props.angles), ElementAlignedBox3d.fromJSON<ElementAlignedBox3d>(props.bbox));
   }
 
   /** Get the 8 corners, in world coordinates, of this placement. */

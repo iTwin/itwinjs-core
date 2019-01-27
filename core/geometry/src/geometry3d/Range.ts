@@ -97,7 +97,7 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
   public static fromFloat64Array(f64: Float64Array) {
     if (f64.length !== 6)
       throw new Error("invalid array");
-    return new Range3d(f64[0], f64[1], f64[2], f64[3], f64[4], f64[5]);
+    return new this(f64[0], f64[1], f64[2], f64[3], f64[4], f64[5]);
   }
   /**
    * Construct a Range3d from an un-typed array. This mostly useful when interpreting ECSQL query results of the 'blob' type, where you know that that result is a Range3d.
@@ -150,8 +150,8 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
   /** Return a JSON object */
   public toJSON(): Range3dProps { return { low: this.low.toJSON(), high: this.high.toJSON() }; }
 
-  public static fromJSON(json?: Range3dProps): Range3d {
-    const result = new Range3d();
+  public static fromJSON<T extends Range3d>(json?: Range3dProps): T {
+    const result = new this() as T;
     result.setFromJSON(json);
     return result;
   }
@@ -172,14 +172,14 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
     }
   }
 
-  public clone(result?: Range3d) {
-    result = result ? result : new Range3d();
+  public clone<T extends Range3d>(result?: T): T {
+    result = result ? result : new (this.constructor as any)() as T;
     result.setDirect(this.low.x, this.low.y, this.low.z, this.high.x, this.high.y, this.high.z, false);
     return result;
   }
   /** Return a range initialized to have no content. */
   public static createNull(result?: Range3d): Range3d {
-    result = result ? result : new Range3d();
+    result = result ? result : new this();
     result.setNull();
     return result;
   }
@@ -228,14 +228,14 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
 
   /** Create a single point range */
   public static createXYZ(x: number, y: number, z: number, result?: Range3d): Range3d {
-    result = result ? result : new Range3d();
+    result = result ? result : new this();
     result.setDirect(x, y, z, x, y, z, false);
     return result;
   }
 
   /** Create a box with 2 pairs of xyz candidates. Theses are compared and shuffled as needed for the box. */
   public static createXYZXYZ(xA: number, yA: number, zA: number, xB: number, yB: number, zB: number, result?: Range3d): Range3d {
-    result = result ? result : new Range3d();
+    result = result ? result : new this();
     result.setDirect(
       Math.min(xA, xB), Math.min(yA, yB), Math.min(zA, zB),
       Math.max(xA, xB), Math.max(yA, yB), Math.max(zA, zB), false);
@@ -244,7 +244,7 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
 
   /** Create a box with 2 pairs of xyz candidates. If any direction has order flip, create null. */
   public static createXYZXYZOrCorrectToNull(xA: number, yA: number, zA: number, xB: number, yB: number, zB: number, result?: Range3d): Range3d {
-    result = result ? result : new Range3d();
+    result = result ? result : new this();
     result.setDirect(
       Math.min(xA, xB), Math.min(yA, yB), Math.min(zA, zB),
       Math.max(xA, xB), Math.max(yA, yB), Math.max(zA, zB), true);
@@ -253,7 +253,7 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
 
   /** Creates a 3d range from a 2d range's low and high members, setting the corresponding z values to the value given. */
   public static createRange2d(range: Range2d, z: number = 0, result?: Range3d): Range3d {
-    const retVal = result ? result : new Range3d();
+    const retVal = result ? result : new this();
     retVal.setNull();
 
     retVal.extendXYZ(range.low.x, range.low.y, z);
@@ -263,7 +263,7 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
 
   /** Create a range around an array of points. */
   public static createArray(points: Point3d[], result?: Range3d): Range3d {
-    result = result ? result : new Range3d();
+    result = result ? result : new this();
     result.setNull();
     let point;
     for (point of points)
@@ -578,9 +578,9 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
       return Range3d.createNull(result);
     return Range3d.createXYZXYZOrCorrectToNull
       (
-      Math.max(this.low.x, other.low.x), Math.max(this.low.y, other.low.y), Math.max(this.low.z, other.low.z),
-      Math.min(this.high.x, other.high.x), Math.min(this.high.y, other.high.y), Math.min(this.high.z, other.high.z),
-      result);
+        Math.max(this.low.x, other.low.x), Math.max(this.low.y, other.low.y), Math.max(this.low.z, other.low.z),
+        Math.min(this.high.x, other.high.x), Math.min(this.high.y, other.high.y), Math.min(this.high.z, other.high.z),
+        result);
 
   }
 
@@ -593,9 +593,9 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
     // we trust null ranges have EXTREME values, so a null in either input leads to expected results.
     return Range3d.createXYZXYZOrCorrectToNull
       (
-      Math.min(this.low.x, other.low.x), Math.min(this.low.y, other.low.y), Math.min(this.low.z, other.low.z),
-      Math.max(this.high.x, other.high.x), Math.max(this.high.y, other.high.y), Math.max(this.high.z, other.high.z),
-      result);
+        Math.min(this.low.x, other.low.x), Math.min(this.low.y, other.low.y), Math.min(this.low.z, other.low.z),
+        Math.max(this.high.x, other.high.x), Math.max(this.high.y, other.high.y), Math.max(this.high.z, other.high.z),
+        result);
   }
   /**
    * move low and high points by scaleFactor around the center point.
@@ -707,8 +707,8 @@ export class Range1d extends RangeBase {
       this.extendX(json.high);
     }
   }
-  public static fromJSON(json?: Range1dProps): Range1d {
-    const result = new Range1d();
+  public static fromJSON<T extends Range1d>(json?: Range1dProps): T {
+    const result = new this() as T;
     if (json)
       result.setFromJSON(json);
     return result;
@@ -727,8 +727,8 @@ export class Range1d extends RangeBase {
   /** return a new Range1d with contents of this.
    * @param result optional result.
    */
-  public clone(result?: Range1d) {
-    result = result ? result : new Range1d();
+  public clone<T extends Range1d>(result?: T): T {
+    result = result ? result : new (this.constructor as any)() as T;
     result.set_direct(this.low, this.high);
     return result;
   }
@@ -737,7 +737,7 @@ export class Range1d extends RangeBase {
    * @param result optional result.
    */
   public static createFrom(other: Range1d, result?: Range1d) {
-    result = result ? result : new Range1d();
+    result = result ? result : new this();
     result.set_direct(other.low, other.high);
     return result;
   }
@@ -746,7 +746,7 @@ export class Range1d extends RangeBase {
    * @param result optional result.
    */
   public static createNull(result?: Range1d): Range1d {
-    result = result ? result : new Range1d();
+    result = result ? result : new this();
     result.setNull();
     return result;
   }
@@ -759,7 +759,7 @@ export class Range1d extends RangeBase {
 
   /** Create a single point box */
   public static createX(x: number, result?: Range1d): Range1d {
-    result = result ? result : new Range1d();
+    result = result ? result : new this();
     result.set_direct(x, x);
     return result;
   }
@@ -769,7 +769,7 @@ export class Range1d extends RangeBase {
    * @param xB second value
    */
   public static createXX(xA: number, xB: number, result?: Range1d): Range1d {
-    result = result ? result : new Range1d();
+    result = result ? result : new this();
     result.set_direct(
       Math.min(xA, xB),
       Math.max(xA, xB));
@@ -784,7 +784,7 @@ export class Range1d extends RangeBase {
     if (xB < xA)
       return Range1d.createNull(result);
 
-    result = result ? result : new Range1d();
+    result = result ? result : new this();
     result.set_direct(
       Math.min(xA, xB),
       Math.max(xA, xB));
@@ -796,7 +796,7 @@ export class Range1d extends RangeBase {
    * @param result optional result.
    */
   public static createArray(values: Float64Array | number[], result?: Range1d): Range1d {
-    result = result ? result : new Range1d();
+    result = result ? result : new this();
     let x;
     for (x of values)
       result.extendX(x);
@@ -898,9 +898,9 @@ export class Range1d extends RangeBase {
 
     return Range1d.createXXOrCorrectToNull
       (
-      Math.max(this.low, other.low),
-      Math.min(this.high, other.high),
-      result);
+        Math.max(this.low, other.low),
+        Math.min(this.high, other.high),
+        result);
 
   }
 
@@ -910,9 +910,9 @@ export class Range1d extends RangeBase {
     // we trust null ranges have EXTREME values, so a null in either input leads to expected results.
     return Range1d.createXX
       (
-      Math.min(this.low, other.low),
-      Math.max(this.high, other.high),
-      result);
+        Math.min(this.low, other.low),
+        Math.max(this.high, other.high),
+        result);
   }
   /**
    * move low and high points by scaleFactor around the center point.
@@ -961,9 +961,9 @@ export class Range2d extends RangeBase implements LowAndHighXY {
    * @return a new Range2d object
    */
   public static fromFloat64Array(f64: Float64Array) {
-    if (f64.length !== 6)
+    if (f64.length !== 4)
       throw new Error("invalid array");
-    return new Range3d(f64[0], f64[1], f64[2], f64[3], f64[4], f64[5]);
+    return new this(f64[0], f64[1], f64[2], f64[3]);
   }
   /**
    * Construct a Range2d from an un-typed array. This mostly useful when interpreting ECSQL query results of the 'blob' type, where you know that that result is a Range3d.
@@ -1013,8 +1013,8 @@ export class Range2d extends RangeBase implements LowAndHighXY {
   public freeze() { Object.freeze(this.low); Object.freeze(this.high); }
   public toJSON(): Range2dProps { return this.isNull ? [] : [this.low.toJSON(), this.high.toJSON()]; }
 
-  public static fromJSON(json?: Range2dProps): Range2d {
-    const result = new Range2d();
+  public static fromJSON<T extends Range2d>(json?: Range2dProps): T {
+    const result = new this() as T;
     if (json)
       result.setFromJSON(json);
     return result;
@@ -1032,14 +1032,14 @@ export class Range2d extends RangeBase implements LowAndHighXY {
     }
   }
   /** return a clone of this range (or copy to optional result) */
-  public clone(result?: Range2d) {
-    result = result ? result : new Range2d();
+  public clone<T extends Range2d>(result?: T): T {
+    result = result ? result : new (this.constructor as any)() as T;
     result.setDirect(this.low.x, this.low.y, this.high.x, this.high.y, false);
     return result;
   }
   /** create a range with no content. */
   public static createNull(result?: Range2d): Range2d {
-    result = result ? result : new Range2d();
+    result = result ? result : new this();
     result.setNull();
     return result;
   }
@@ -1051,14 +1051,14 @@ export class Range2d extends RangeBase implements LowAndHighXY {
 
   /** Create a single point box */
   public static createXY(x: number, y: number, result?: Range2d): Range2d {
-    result = result ? result : new Range2d();
+    result = result ? result : new this();
     result.setDirect(x, y, x, y, false);
     return result;
   }
 
   /** Create a box with 2 pairs of xy candidates. Theses are compared and shuffled as needed for the box. */
   public static createXYXY(xA: number, yA: number, xB: number, yB: number, result?: Range2d): Range2d {
-    result = result ? result : new Range2d();
+    result = result ? result : new this();
     result.setDirect(
       Math.min(xA, xB), Math.min(yA, yB),
       Math.max(xA, xB), Math.max(yA, yB), false);
@@ -1068,7 +1068,7 @@ export class Range2d extends RangeBase implements LowAndHighXY {
   public static createXYXYOrCorrectToNull(xA: number, yA: number, xB: number, yB: number, result?: Range2d): Range2d {
     if (xA > xB || yA > yB)
       return Range2d.createNull(result);
-    result = result ? result : new Range2d();
+    result = result ? result : new this();
     result.setDirect(
       Math.min(xA, xB), Math.min(yA, yB),
       Math.max(xA, xB), Math.max(yA, yB), true);
@@ -1077,7 +1077,7 @@ export class Range2d extends RangeBase implements LowAndHighXY {
 
   /** Create a range around an array of points. */
   public static createArray(points: Point2d[], result?: Range2d): Range2d {
-    result = result ? result : new Range2d();
+    result = result ? result : new this();
     let point;
     for (point of points)
       result.extendPoint(point);
@@ -1209,9 +1209,9 @@ export class Range2d extends RangeBase implements LowAndHighXY {
       return Range2d.createNull(result);
     return Range2d.createXYXY
       (
-      Math.max(this.low.x, other.low.x), Math.max(this.low.y, other.low.y),
-      Math.min(this.high.x, other.high.x), Math.min(this.high.y, other.high.y),
-      result);
+        Math.max(this.low.x, other.low.x), Math.max(this.low.y, other.low.y),
+        Math.min(this.high.x, other.high.x), Math.min(this.high.y, other.high.y),
+        result);
 
   }
 
@@ -1224,9 +1224,9 @@ export class Range2d extends RangeBase implements LowAndHighXY {
     // we trust null ranges have EXTREME values, so a null in either input leads to expected results.
     return Range2d.createXYXY
       (
-      Math.min(this.low.x, other.low.x), Math.min(this.low.y, other.low.y),
-      Math.max(this.high.x, other.high.x), Math.max(this.high.y, other.high.y),
-      result);
+        Math.min(this.low.x, other.low.x), Math.min(this.low.y, other.low.y),
+        Math.max(this.high.x, other.high.x), Math.max(this.high.y, other.high.y),
+        result);
   }
 
   /**
