@@ -565,7 +565,7 @@
       ],
       "args": [
         "--input",
-        "http://localhost:8080/Cesium3DTiles/Batched/BatchedColors/tileset.json",
+        "http://localhost:8080/3d-tiles-test/data/tileset.json",
         "--output",
         "g:\\briefcases\\testRealityModel.ibim"
       ],

@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Tile */
 
-import { IModelError, TileTreeProps, TileProps, ViewFlag, ViewFlags, RenderMode, Cartographic, EcefLocation } from "@bentley/imodeljs-common";
+import { IModelError, TileTreeProps, TileProps, ViewFlag, ViewFlags, RenderMode, Cartographic } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../IModelConnection";
 import { BentleyStatus, assert, Guid, ActivityLoggingContext } from "@bentley/bentleyjs-core";
-import { TransformProps, Range3dProps, Range3d, Transform, Point3d, Vector3d, Matrix3d, YawPitchRollAngles } from "@bentley/geometry-core";
+import { TransformProps, Range3dProps, Range3d, Transform, Point3d, Vector3d, Matrix3d } from "@bentley/geometry-core";
 import { RealityDataServicesClient, AccessToken, getArrayBuffer, getJson } from "@bentley/imodeljs-clients";
 import { TileTree, TileTreeState, Tile, TileLoader } from "./TileTree";
 import { TileRequest } from "./TileRequest";
@@ -17,7 +17,7 @@ import { IModelApp } from "../IModelApp";
 function getUrl(content: any) { return content ? (content.url ? content.url : content.uri) : undefined; }
 /** @hidden */
 export class RealityModelTileUtils {
-  public static rangeFromBoundingVolume(boundingVolume: any, ecefLocation: EcefLocation | undefined): Range3d | undefined {
+  public static rangeFromBoundingVolume(boundingVolume: any): Range3d | undefined {
     if (undefined === boundingVolume)
       return undefined;
     if (undefined !== boundingVolume.box) {
@@ -40,11 +40,10 @@ export class RealityModelTileUtils {
       const center = Point3d.create(sphere[0], sphere[1], sphere[2]);
       const radius = sphere[3];
       return Range3d.createXYZXYZ(center.x - radius, center.y - radius, center.z - radius, center.x + radius, center.y + radius, center.z + radius);
-    } else if (Array.isArray(boundingVolume.region) && undefined !== ecefLocation) {
+    } else if (Array.isArray(boundingVolume.region)) {
       const ecefLow = (new Cartographic(boundingVolume.region[0], boundingVolume.region[1], boundingVolume.region[4])).toEcef();
       const ecefHigh = (new Cartographic(boundingVolume.region[2], boundingVolume.region[3], boundingVolume.region[5])).toEcef();
-      const ecefRange = Range3d.create(ecefLow, ecefHigh);
-      return ecefLocation.getTransform().inverse()!.multiplyRange(ecefRange);
+      return Range3d.create(ecefLow, ecefHigh);
     } else return undefined;
 
   }
@@ -55,12 +54,6 @@ export class RealityModelTileUtils {
   public static transformFromJson(jTrans: number[] | undefined): Transform {
     return (jTrans === undefined) ? Transform.createIdentity() : Transform.createOriginAndMatrix(Point3d.create(jTrans[12], jTrans[13], jTrans[14]), Matrix3d.createRowValues(jTrans[0], jTrans[4], jTrans[8], jTrans[1], jTrans[5], jTrans[9], jTrans[2], jTrans[6], jTrans[10]));
   }
-  public static ecefTransformFromRegion(region: number[]) {
-    const cartoCenter = new Cartographic((region[0] + region[2]) / 2.0, (region[1] + region[3]) / 2.0, (region[4] + region[5]) / 2.0);
-    // With bounding region and no tranform use center only... Don't align with equatorial axes (from debugging Cesium).
-    const ecefLocation = new EcefLocation({ origin: cartoCenter.toEcef(), orientation: new YawPitchRollAngles() });
-    return ecefLocation.getTransform();
-  }
 }
 
 /** @hidden */
@@ -70,16 +63,12 @@ class RealityModelTileTreeProps implements TileTreeProps {
   public location: TransformProps;
   public tilesetJson: object;
   public yAxisUp: boolean = false;
-  public ecefLocation?: EcefLocation;
-  public inverseTilesetTransform?: Transform;
-  constructor(json: any, tilesetTransform: Transform | undefined, public client: RealityModelTileClient, tileToDb: Transform, ecefLocation: EcefLocation | undefined) {
+  constructor(json: any, public client: RealityModelTileClient, tilesetTransform: Transform) {
     this.tilesetJson = json.root;
-    this.rootTile = new RealityModelTileProps(json.root, "", ecefLocation);
-    this.location = tileToDb.toJSON();
+    this.rootTile = new RealityModelTileProps(json.root, "");
+    this.location = tilesetTransform.toJSON();
     if (json.asset.gltfUpAxis === undefined || json.asset.gltfUpAxis === "y")
       this.yAxisUp = true;
-    if (tilesetTransform)
-      this.inverseTilesetTransform = tilesetTransform.inverse();
   }
 }
 
@@ -93,14 +82,14 @@ class RealityModelTileProps implements TileProps {
   public readonly transformToRoot?: TransformProps;
   public geometry?: string | ArrayBuffer;
   public hasContents: boolean;
-  constructor(json: any, thisId: string, ecefLocation: EcefLocation | undefined, transformToRoot?: Transform) {
+  constructor(json: any, thisId: string, transformToRoot?: Transform) {
     this.contentId = thisId;
-    this.range = RealityModelTileUtils.rangeFromBoundingVolume(json.boundingVolume, ecefLocation)!;
+    this.range = RealityModelTileUtils.rangeFromBoundingVolume(json.boundingVolume)!;
     this.isLeaf = !Array.isArray(json.children) || 0 === json.children.length;
     this.hasContents = undefined !== getUrl(json.content);
     this.transformToRoot = transformToRoot;
     if (this.hasContents) {
-      this.contentRange = json.content.boundingVolume && RealityModelTileUtils.rangeFromBoundingVolume(json.content.boundingVolume, ecefLocation);
+      this.contentRange = RealityModelTileUtils.rangeFromBoundingVolume(json.content.boundingVolume);
       this.maximumSize = RealityModelTileUtils.maximumSizeFromGeometricTolerance(Range3d.fromJSON(this.range), json.geometricError);
     } else {
       this.maximumSize = 0.0;
@@ -126,13 +115,13 @@ class RealityModelTileLoader extends TileLoader {
 
     const thisId = parent.contentId;
     const prefix = thisId.length ? thisId + "_" : "";
-    const findResult = await this.findTileInJson(this._tree.tilesetJson, thisId, "", this._tree.inverseTilesetTransform);
+    const findResult = await this.findTileInJson(this._tree.tilesetJson, thisId, "", undefined, true);
     if (undefined !== findResult && Array.isArray(findResult.json.children)) {
       for (let i = 0; i < findResult.json.children.length; i++) {
         const childId = prefix + i;
-        const foundChild = await this.findTileInJson(this._tree.tilesetJson, childId, "", this._tree.inverseTilesetTransform);
+        const foundChild = await this.findTileInJson(this._tree.tilesetJson, childId, "", undefined, true);
         if (undefined !== foundChild)
-          props.push(new RealityModelTileProps(foundChild.json, foundChild.id, this._tree.ecefLocation, foundChild.transformToRoot));
+          props.push(new RealityModelTileProps(foundChild.json, foundChild.id, foundChild.transformToRoot));
       }
     }
 
@@ -147,8 +136,8 @@ class RealityModelTileLoader extends TileLoader {
     return this._tree.client.getTileContent(getUrl(foundChild.json.content));
   }
 
-  private async findTileInJson(tilesetJson: any, id: string, parentId: string, transformToRoot?: Transform): Promise<FindChildResult | undefined> {
-    if (tilesetJson.transform) {
+  private async findTileInJson(tilesetJson: any, id: string, parentId: string, transformToRoot?: Transform, isRoot: boolean = false): Promise<FindChildResult | undefined> {
+    if (!isRoot && tilesetJson.transform) {   // Child tiles may have their own transform.
       const thisTransform = RealityModelTileUtils.transformFromJson(tilesetJson.transform);
       transformToRoot = transformToRoot ? transformToRoot.multiplyTransformTransform(thisTransform) : thisTransform;
     }
@@ -189,41 +178,20 @@ export class RealityModelTileTree {
       IModelApp.viewManager.onNewTilesReady();
     }).catch((_err) => tileTreeState.loadStatus = TileTree.LoadStatus.NotFound);
   }
-  private static findTransform(json: any): Transform | undefined {
-    if (undefined !== json && undefined !== json.transform)
-      return RealityModelTileUtils.transformFromJson(json.transform);
-    if (Array.isArray(json.children)) {
-      for (const child of json.children) {
-        let childTransform;
-        if (undefined !== (childTransform = this.findTransform(child)))
-          return childTransform;
-      }
-    }
-    return undefined;
-  }
 
   private static async getTileTreeProps(url: string, tilesetToDbJson: any, iModel: IModelConnection): Promise<RealityModelTileTreeProps> {
     if (undefined !== url) {
       const tileClient = new RealityModelTileClient(url, IModelApp.accessToken);
       const json = await tileClient.getRootDocument(url);
       const ecefLocation = iModel.ecefLocation;
-      const tilesetTransform = this.findTransform(json.root);
-      let rootTransform;
-      if (undefined !== tilesetTransform) {
-        rootTransform = tilesetTransform;
-      } else if (undefined !== json.root.boundingVolume && Array.isArray(json.root.boundingVolume.region)) {
-        rootTransform = RealityModelTileUtils.ecefTransformFromRegion(json.root.boundingVolume.region);
-      } else {
-        rootTransform = Transform.createIdentity();
-      }
-      let tilesetToDb = Transform.createIdentity();
+      let rootTransform = ecefLocation ? ecefLocation.getTransform().inverse()! : Transform.createIdentity();
+      if (json.root.transform)
+        rootTransform = rootTransform.multiplyTransformTransform(RealityModelTileUtils.transformFromJson(json.root.transform));
 
-      if (undefined !== tilesetToDbJson) {
-        tilesetToDb.setFromJSON(tilesetToDbJson);
-      } else if (ecefLocation !== undefined) {
-        tilesetToDb = ecefLocation.getTransform().inverse()!;
-      }
-      return new RealityModelTileTreeProps(json, tilesetTransform, tileClient, tilesetToDb.multiplyTransformTransform(rootTransform), ecefLocation);
+      if (undefined !== tilesetToDbJson)
+        rootTransform = Transform.fromJSON(tilesetToDbJson).multiplyTransformTransform(rootTransform);
+
+      return new RealityModelTileTreeProps(json, tileClient, rootTransform);
     } else {
       throw new IModelError(BentleyStatus.ERROR, "Unable to read reality data");
     }

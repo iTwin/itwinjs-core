@@ -6,7 +6,7 @@
 import { TileIO } from "./TileIO";
 import { GltfTileIO } from "./GltfTileIO";
 import { ElementAlignedBox3d, FeatureTable, Feature, BatchType } from "@bentley/imodeljs-common";
-import { Id64String } from "@bentley/bentleyjs-core";
+import { Id64String, utf8ToString } from "@bentley/bentleyjs-core";
 import { RenderSystem } from "../render/System";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 import { IModelConnection } from "../IModelConnection";
@@ -23,6 +23,7 @@ export namespace B3dmTileIO {
     public readonly featureTableBinaryLength: number;
     public readonly batchTableJsonLength: number;
     public readonly batchTableBinaryLength: number;
+    public readonly featureTableJson: any;
     public get isValid(): boolean { return TileIO.Format.B3dm === this.format; }
 
     public constructor(stream: TileIO.StreamBuffer) {
@@ -56,7 +57,11 @@ export namespace B3dmTileIO {
         this.featureTableJsonLength = 0;
         this.featureTableBinaryLength = 0;
       }
-      stream.advance(this.featureTableJsonLength);
+      if (0 !== this.featureTableJsonLength) {
+        const sceneStrData = stream.nextBytes(this.featureTableJsonLength);
+        const sceneStr = utf8ToString(sceneStrData);
+        if (sceneStr) this.featureTableJson = JSON.parse(sceneStr);
+      }
       stream.advance(this.featureTableBinaryLength);
       stream.advance(this.batchTableJsonLength);
       stream.advance(this.batchTableBinaryLength);
@@ -75,6 +80,11 @@ export namespace B3dmTileIO {
       const header = new Header(stream);
       if (!header.isValid)
         return undefined;
+
+      if (header.featureTableJson && Array.isArray(header.featureTableJson.RTC_CENTER)) {
+        const returnToCenterTransform = Transform.createTranslationXYZ(header.featureTableJson.RTC_CENTER[0], header.featureTableJson.RTC_CENTER[1], header.featureTableJson.RTC_CENTER[2]);
+        transformToRoot = transformToRoot ? transformToRoot.multiplyTransformTransform(returnToCenterTransform) : returnToCenterTransform;
+      }
 
       const props = GltfTileIO.ReaderProps.create(stream, yAxisUp);
       return undefined !== props ? new Reader(props, iModel, modelId, is3d, system, range, isLeaf, transformToRoot, isCanceled) : undefined;
