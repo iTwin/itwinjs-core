@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module iModels */
 import { ActivityLoggingContext, BeEvent, BentleyStatus, DbResult, AuthStatus, GuidString, Id64, Id64Arg, Id64Set, Id64String, JsonUtils, Logger, OpenMode } from "@bentley/bentleyjs-core";
-import { AccessToken } from "@bentley/imodeljs-clients";
+import { AccessToken, UlasClient, UsageLogEntry, UsageType, LogPostingResponse } from "@bentley/imodeljs-clients";
 import {
   AxisAlignedBox3d, CategorySelectorProps, Code, CodeSpec, CreateIModelProps, DisplayStyleProps, EcefLocation, ElementAspectProps,
   ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontMap, FontMapProps, FontProps,
@@ -13,6 +13,7 @@ import {
   ViewStateProps, IModelCoordinatesResponseProps, GeoCoordinatesResponseProps,
 } from "@bentley/imodeljs-common";
 import * as path from "path";
+import * as os from "os";
 import { BriefcaseEntry, BriefcaseId, BriefcaseManager, KeepBriefcase } from "./BriefcaseManager";
 import { ClassRegistry, MetaDataRegistry } from "./ClassRegistry";
 import { CodeSpecs } from "./CodeSpecs";
@@ -235,10 +236,39 @@ export class IModelDb extends IModel {
     IModelDb.onOpen.raiseEvent(accessToken, contextId, iModelId, openParams, version, activity);
     const briefcaseEntry: BriefcaseEntry = await BriefcaseManager.open(activity, accessToken, contextId, iModelId, openParams, version);
     activity.enter();
+
     const imodelDb = IModelDb.constructIModelDb(briefcaseEntry, openParams, contextId);
+    await imodelDb.logUsage(activity, accessToken, contextId);
     IModelDb.onOpened.raiseEvent(imodelDb, activity);
     Logger.logTrace(loggingCategory, "IModelDb.open", () => ({ ...imodelDb._token, ...openParams }));
     return imodelDb;
+  }
+
+  private static createUsageLogEntry(accessToken: AccessToken, contextId: GuidString): UsageLogEntry {
+    const entry: UsageLogEntry = new UsageLogEntry(os.hostname(), UsageType.Trial);
+    const userInfo = accessToken.getUserInfo();
+
+    const featureTrackingInfo = userInfo ? userInfo.featureTracking : undefined;
+    const imsId = userInfo ? userInfo.id : "";
+    const ultimateSite: number = !featureTrackingInfo ? 0 : parseInt(featureTrackingInfo.ultimateSite, 10);
+    const usageCountryIso: string = !featureTrackingInfo ? "" : featureTrackingInfo.usageCountryIso;
+    const hostUserName = os.userInfo().username;
+    entry.userInfo = { imsId, ultimateSite, usageCountryIso, hostUserName };
+
+    entry.projectId = contextId;
+    entry.productId = 2686; // todo: needs to be passed in from frontend
+    entry.productVersion = { major: 1, minor: 0 }; // todo: needs to be passed in from frontend
+
+    return entry;
+  }
+
+  private async logUsage(actx: ActivityLoggingContext, accessToken: AccessToken, contextId: GuidString): Promise<void> {
+    const client = new UlasClient();
+    const entry = IModelDb.createUsageLogEntry(accessToken, contextId);
+    const resp: LogPostingResponse = await client.logUsage(actx, accessToken, entry);
+    if (!resp || resp.status !== BentleyStatus.SUCCESS) {
+      Logger.logError(loggingCategory, "Could not log usage information", () => this.iModelToken);
+    }
   }
 
   /**

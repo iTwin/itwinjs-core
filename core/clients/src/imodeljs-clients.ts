@@ -40,6 +40,9 @@ export * from "./imodelhub/Thumbnails";
 export * from "./oidc/OidcClient";
 export * from "./oidc/OidcFrontendClient";
 
+export * from "./ulas/LogEntryConverter";
+export * from "./ulas/UlasClient";
+
 // Set the version number so it can be found at runtime. BUILD_SEMVER is replaced at build time by the webpack DefinePlugin.
 declare var BUILD_SEMVER: string;
 if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") && window) {
