@@ -4,12 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Tools */
 
-import {
-  IModelApp, SelectionTool, FitViewTool, WindowAreaTool,
-  PanViewTool, RotateViewTool, ViewToggleCameraTool, WalkViewTool, FlyViewTool, ZoomViewTool,
-} from "@bentley/imodeljs-frontend";
-
 // cSpell:ignore configurableui
+import { FitViewTool, FlyViewTool, IModelApp, PanViewTool, RotateViewTool, SelectionTool, ViewToggleCameraTool, WalkViewTool, WindowAreaTool, ZoomViewTool } from "@bentley/imodeljs-frontend";
 import { ToolItemDef } from "./shared/Item";
 import { ContentViewManager } from "./content/ContentViewManager";
 import { BaseItemState } from "./shared/ItemDefBase";
@@ -121,7 +117,7 @@ export class CoreTools {
         const returnState: BaseItemState = { ...currentState };
         const activeContentControl = ContentViewManager.getActiveContentControl();
 
-        if (activeContentControl && activeContentControl.viewport && (undefined !== activeContentControl.viewport.view.AnalysisStyle))
+        if (activeContentControl && activeContentControl.viewport && (undefined !== activeContentControl.viewport.view.analysisStyle))
           returnState.isVisible = true;
         else
           returnState.isVisible = false;

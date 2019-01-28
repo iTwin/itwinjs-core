@@ -6,13 +6,12 @@
 
 import { assert, BeDuration, BeEvent, BeTimePoint, dispose, Id64, Id64Arg, IDisposable, StopWatch, Id64Set } from "@bentley/bentleyjs-core";
 import {
-  Angle, AngleSweep, Arc3d, AxisOrder, Constant, LowAndHighXY, LowAndHighXYZ, Map4d, Matrix3d,
-  Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point4d, Range3d, Ray3d, Transform, Vector3d, XAndY,
-  XYAndZ, XYZ, Geometry,
+  Angle, AngleSweep, Arc3d, AxisOrder, Constant, Geometry, LowAndHighXY, LowAndHighXYZ, Map4d, Matrix3d,
+  Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point4d, Range3d, Ray3d, Transform, Vector3d, XAndY, XYAndZ, XYZ,
 } from "@bentley/geometry-core";
 import {
-  AnalysisStyle, AntiAliasPref, Camera, ColorDef, ElementProps, Frustum, Hilite, ImageBuffer, Npc,
-  NpcCenter, NpcCorners, Placement2d, Placement2dProps, Placement3d, PlacementProps, ViewFlags,
+  AnalysisStyle, AntiAliasPref, Camera, ColorDef, ElementProps, Frustum, Hilite, ImageBuffer, Npc, NpcCenter,
+  NpcCorners, Placement2d, Placement2dProps, Placement3d, PlacementProps, ViewFlags,
 } from "@bentley/imodeljs-common";
 import { AuxCoordSystemState } from "./AuxCoordSys";
 import { ElementPicker, LocateOptions } from "./ElementLocateManager";
@@ -24,11 +23,11 @@ import { FeatureSymbology } from "./render/FeatureSymbology";
 import { GraphicType } from "./render/GraphicBuilder";
 import { Decorations, GraphicList, Pixel, RenderPlan, RenderTarget } from "./render/System";
 import { StandardView, StandardViewId } from "./StandardView";
+import { Tile } from "./tile/TileTree";
 import { EventController } from "./tools/EventController";
 import { ToolSettings } from "./tools/ToolAdmin";
 import { DecorateContext, SceneContext } from "./ViewContext";
 import { GridOrientationType, MarginPercent, ViewState, ViewStatus } from "./ViewState";
-import { Tile } from "./tile/TileTree";
 
 /**
  * An object which customizes the appearance of Features within a [[Viewport]].
@@ -1007,7 +1006,7 @@ export abstract class Viewport implements IDisposable {
   }
 
   /** @hidden */
-  public get AnalysisStyle(): AnalysisStyle | undefined { return this.view.AnalysisStyle; }
+  public get AnalysisStyle(): AnalysisStyle | undefined { return this.view.analysisStyle; }
   /** The iModel of this Viewport */
   public get iModel(): IModelConnection { return this.view.iModel; }
   /** @hidden */
