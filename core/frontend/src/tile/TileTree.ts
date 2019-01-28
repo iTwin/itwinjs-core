@@ -572,9 +572,9 @@ export namespace Tile {
     public get tileSizeModifier(): number { return 1.0; } // ###TODO? may adjust for performance, or device pixel density, etc
     public getTileCenter(tile: Tile): Point3d { return this.location.multiplyPoint3d(tile.center); }
 
-    private static _scratchRange = new Range3d();
+    private static _scratchRange = new ElementAlignedBox3d();
     public getTileRadius(tile: Tile): number {
-      let range = tile.range.clone(DrawArgs._scratchRange);
+      let range: Range3d = tile.range.clone(DrawArgs._scratchRange);
       range = this.location.multiplyRange(range, range);
       return 0.5 * (tile.root.is3d ? range.low.distance(range.high) : range.low.distanceXY(range.high));
     }

@@ -1607,7 +1607,7 @@ export abstract class Viewport implements IDisposable {
   /** @hidden */
   public applyViewState(val: ViewState, animationTime?: BeDuration) {
     const startFrust = this.getFrustum();
-    this._viewFrustum.view = val.clone<ViewState>(this.view.iModel); // preserve our iModel in case val is coming from a different connection
+    this._viewFrustum.view = val.clone(this.view.iModel); // preserve our iModel in case val is coming from a different connection
     this.synchWithView(false);
     if (animationTime)
       this.animateFrustumChange(startFrust, this.getFrustum(), animationTime);
@@ -2156,7 +2156,7 @@ export class ScreenViewport extends Viewport {
 
     // the first time we're called we need to establish the baseline
     if (!this._currentBaseline)
-      this._currentBaseline = this.view.clone<ViewState>();
+      this._currentBaseline = this.view.clone();
 
     if (this.view.equalState(this._currentBaseline!)) // this does a deep compare of the ViewState plus DisplayStyle, CategorySelector, and ModelSelector
       return; // nothing changed, we're done
@@ -2176,7 +2176,7 @@ export class ScreenViewport extends Viewport {
       this._forwardStack.length = 0; // not possible to do redo after this
     }
 
-    this._currentBaseline = this.view.clone<ViewState>();
+    this._currentBaseline = this.view.clone();
   }
   /**
    * Reverses the most recent change to the Viewport from the undo stack.

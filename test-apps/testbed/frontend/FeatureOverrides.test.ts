@@ -50,7 +50,7 @@ describe("FeatureOverrides tests", () => {
       return;
     }
 
-    const vpView = spatialView.clone<SpatialViewState>();
+    const vpView = spatialView.clone();
     vp = ScreenViewport.create(viewDiv!, vpView);
 
     vp.target.setHiliteSet(new Set<string>());
@@ -75,7 +75,7 @@ describe("FeatureOverrides tests", () => {
     if (!IModelApp.hasRenderSystem)
       return;
 
-    const vpView = spatialView.clone<SpatialViewState>();
+    const vpView = spatialView.clone();
     vp = ScreenViewport.create(viewDiv!, vpView);
 
     vp.target.setHiliteSet(new Set<string>());

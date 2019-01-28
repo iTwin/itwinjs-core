@@ -64,5 +64,5 @@ export class Entity implements EntityProps {
   public get className(): string { return this.constructor.name; }
 
   /** Make a deep copy of this Entity */
-  public clone<T extends Entity>(): T { return new (this.constructor as any)(this, this.iModel) as T; }
+  public clone(): this { return new (this.constructor as any)(this, this.iModel); }
 }

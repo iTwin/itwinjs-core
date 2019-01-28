@@ -43,19 +43,19 @@ describe("Viewport", () => {
   });
 
   it("Viewport", async () => {
-    const vpView = spatialView.clone<SpatialViewState>();
+    const vpView = spatialView.clone();
     const vp = ScreenViewport.create(viewDiv!, vpView);
     assert.isFalse(vp.isRedoPossible, "no redo");
     assert.isFalse(vp.isUndoPossible, "no undo");
     assert.isFalse(vp.isCameraOn, "camera is off");
 
-    const saveView = vpView.clone<SpatialViewState>();
+    const saveView = vpView.clone();
     assert.notEqual(saveView.modelSelector, vpView.modelSelector, "clone should copy modelSelector");
     assert.notEqual(saveView.categorySelector, vpView.categorySelector, "clone should copy categorySelector");
     assert.notEqual(saveView.displayStyle, vpView.displayStyle, "clone should copy displayStyle");
     const frustSave = vp.getFrustum();
 
-    const vpView2 = spatialView.clone<SpatialViewState>(imodel2);
+    const vpView2 = spatialView.clone(imodel2);
     vpView2.setStandardRotation(StandardViewId.Top);
     const vp2 = ScreenViewport.create(viewDiv2!, vpView2);
     assert.isFalse(vp2.getFrustum().isSame(vp.getFrustum()), "frustums should start out different");
@@ -98,7 +98,7 @@ describe("Viewport", () => {
   });
 
   it("AccuDraw", () => {
-    const vpView = spatialView.clone<SpatialViewState>();
+    const vpView = spatialView.clone();
     const viewport = ScreenViewport.create(viewDiv!, vpView);
     const accudraw = IModelApp.accuDraw;
     assert.isTrue(accudraw.isEnabled, "Accudraw should be enabled");
@@ -133,7 +133,7 @@ describe("Viewport", () => {
   });
 
   it("creates a RenderPlan from a viewport", () => {
-    const vpView = spatialView.clone<SpatialViewState>();
+    const vpView = spatialView.clone();
     const vp = ScreenViewport.create(viewDiv!, vpView);
     let plan: RenderPlan | undefined;
     try {

@@ -64,7 +64,7 @@ describe("ViewState", () => {
     assert.equal(viewState.modelSelector.models.size, 5);
     assert.isTrue(viewState.origin.isAlmostEqual(new Point3d(-87.73958171815832, -108.96514044887601, -0.0853709702222105)), "View origin as expected");
 
-    const v2 = viewState.clone<SpatialViewState>();
+    const v2 = viewState.clone();
     compareView(viewState, v2.toJSON(), "v2 clone");
 
     assert.notEqual(v2.origin, viewState.origin); // make sure we're really looking at a copy
@@ -86,7 +86,7 @@ describe("ViewState", () => {
   });
 
   it("should be able to propagate viewFlags and displayStyle changes when cloning ViewState", async () => {
-    const vs0 = viewState.clone<SpatialViewState>();
+    const vs0 = viewState.clone();
 
     assert.isTrue(vs0.is3d(), "viewState should be 3d");
 
@@ -168,7 +168,7 @@ describe("ViewState", () => {
 
     // clone the state and check if the changes persisted
 
-    const vs1 = vs0.clone<SpatialViewState>();
+    const vs1 = vs0.clone();
     const vs1DisplayStyle3d = (vs1 as ViewState3d).getDisplayStyle3d();
 
     const vs1AOSettings = vs1DisplayStyle3d.settings.ambientOcclusionSettings;

@@ -222,7 +222,7 @@ export abstract class ViewState extends ElementState {
   /** Determine whether this ViewState exactly matches another.
    * @see [[ViewState.equalState]] for determining broader equivalence of two ViewStates.
    */
-  public equals(other: ViewState): boolean { return super.equals(other) && this.categorySelector.equals(other.categorySelector) && this.displayStyle.equals(other.displayStyle); }
+  public equals(other: this): boolean { return super.equals(other) && this.categorySelector.equals(other.categorySelector) && this.displayStyle.equals(other.displayStyle); }
 
   /** Determine whether this ViewState is equivalent to another for the purposes of display.
    * @see [[ViewState.equals]] for determining exact equality.
@@ -1606,7 +1606,7 @@ export class SpatialViewState extends ViewState3d {
       this.modelSelector = arg3.modelSelector.clone();
     }
   }
-  public equals(other: SpatialViewState): boolean { return super.equals(other) && this.modelSelector.equals(other.modelSelector); }
+  public equals(other: this): boolean { return super.equals(other) && this.modelSelector.equals(other.modelSelector); }
 
   public equalState(other: SpatialViewState): boolean {
     if (!super.equalState(other))
