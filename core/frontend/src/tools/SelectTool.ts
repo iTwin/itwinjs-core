@@ -49,6 +49,13 @@ export const enum SelectionProcessing {
   ReplaceSelectionWithElement,
 }
 
+export const enum SelectionScope {
+  /** Identified elements are selected. */
+  Element,
+  /** Identified elements as well as all members of assemblies that include the identified elements are selected. */
+  Assembly,
+}
+
 /** Tool for picking a set of elements of interest, selected by the user. */
 export class SelectionTool extends PrimitiveTool {
   public static hidden = false;
@@ -66,6 +73,7 @@ export class SelectionTool extends PrimitiveTool {
 
   protected getSelectionMethod(): SelectionMethod { return SelectionMethod.Pick; } // NEEDSWORK: Setting...
   protected getSelectionMode(): SelectionMode { return SelectionMode.Replace; } // NEEDSWORK: Settings...
+  protected getSelectionScope(): SelectionScope { return SelectionScope.Assembly; } // NEEDSWORK: Settings...
   protected wantToolSettings(): boolean { return true; } // NEEDSWORK: Settings...
 
   protected showPrompt(mode: SelectionMode, method: SelectionMethod): void {
@@ -125,7 +133,7 @@ export class SelectionTool extends PrimitiveTool {
     this.showPrompt(mode, method);
   }
 
-  public processSelection(elementId: Id64Arg, process: SelectionProcessing): boolean {
+  public updateSelection(elementId: Id64Arg, process: SelectionProcessing): boolean {
     switch (process) {
       case SelectionProcessing.AddElementToSelection:
         return this.iModel.selectionSet.add(elementId);
@@ -139,6 +147,20 @@ export class SelectionTool extends PrimitiveTool {
       default:
         return false;
     }
+  }
+
+  public async processSelection(elementId: Id64Arg, process: SelectionProcessing): Promise<boolean> {
+    if (SelectionScope.Assembly === this.getSelectionScope()) {
+      const assemblyIds = new Set<string>();
+      Id64.toIdSet(elementId).forEach((id) => { assemblyIds.add(id); });
+      if (0 === assemblyIds.size)
+        return false;
+      const where = [...assemblyIds].join(",");
+      const ecsql = "SELECT ECInstanceId as id, Parent.Id as parentId FROM BisCore.GeometricElement WHERE Parent.Id IN (SELECT Parent.Id as parentId FROM BisCore.GeometricElement WHERE parent.Id != 0 AND ECInstanceId IN (" + where + "))";
+      await this.iModel.executeQuery(ecsql).then((rows: any[]) => { for (const row of rows) { assemblyIds.add(row.parentId as string); assemblyIds.add(row.id as string); } });
+      return this.updateSelection(assemblyIds, process);
+    }
+    return this.updateSelection(elementId, process);
   }
 
   protected useOverlapSelection(ev: BeButtonEvent): boolean {
@@ -251,15 +273,15 @@ export class SelectionTool extends PrimitiveTool {
       switch (this.getSelectionMode()) {
         case SelectionMode.Replace:
           if (!ev.isControlKey)
-            this.processSelection(contents, SelectionProcessing.ReplaceSelectionWithElement);
+            this.processSelection(contents, SelectionProcessing.ReplaceSelectionWithElement); // tslint:disable-line:no-floating-promises
           else
-            this.processSelection(contents, SelectionProcessing.InvertElementInSelection);
+            this.processSelection(contents, SelectionProcessing.InvertElementInSelection); // tslint:disable-line:no-floating-promises
           break;
         case SelectionMode.Add:
-          this.processSelection(contents, SelectionProcessing.AddElementToSelection);
+          this.processSelection(contents, SelectionProcessing.AddElementToSelection); // tslint:disable-line:no-floating-promises
           break;
         case SelectionMode.Remove:
-          this.processSelection(contents, SelectionProcessing.RemoveElementFromSelection);
+          this.processSelection(contents, SelectionProcessing.RemoveElementFromSelection); // tslint:disable-line:no-floating-promises
           break;
       }
     });
@@ -347,15 +369,15 @@ export class SelectionTool extends PrimitiveTool {
 
       switch (this.getSelectionMode()) {
         case SelectionMode.Replace:
-          this.processSelection(hit.sourceId, ev.isControlKey ? SelectionProcessing.InvertElementInSelection : SelectionProcessing.ReplaceSelectionWithElement);
+          this.processSelection(hit.sourceId, ev.isControlKey ? SelectionProcessing.InvertElementInSelection : SelectionProcessing.ReplaceSelectionWithElement); // tslint:disable-line:no-floating-promises
           break;
 
         case SelectionMode.Add:
-          this.processSelection(hit.sourceId, SelectionProcessing.AddElementToSelection);
+          this.processSelection(hit.sourceId, SelectionProcessing.AddElementToSelection); // tslint:disable-line:no-floating-promises
           break;
 
         case SelectionMode.Remove:
-          this.processSelection(hit.sourceId, SelectionProcessing.RemoveElementFromSelection);
+          this.processSelection(hit.sourceId, SelectionProcessing.RemoveElementFromSelection); // tslint:disable-line:no-floating-promises
           break;
       }
       return EventHandled.Yes;
@@ -387,11 +409,11 @@ export class SelectionTool extends PrimitiveTool {
 
         // remove element(s) previously selected if in replace mode, or if we have a next element in add mode
         if (SelectionMode.Replace === this.getSelectionMode() || undefined !== nextHit)
-          this.processSelection(lastHit.sourceId, SelectionProcessing.RemoveElementFromSelection);
+          this.processSelection(lastHit.sourceId, SelectionProcessing.RemoveElementFromSelection); // tslint:disable-line:no-floating-promises
 
         // add element(s) located via reset button
         if (undefined !== nextHit)
-          this.processSelection(nextHit.sourceId, SelectionProcessing.AddElementToSelection);
+          this.processSelection(nextHit.sourceId, SelectionProcessing.AddElementToSelection); // tslint:disable-line:no-floating-promises
         return EventHandled.Yes;
       }
     }
