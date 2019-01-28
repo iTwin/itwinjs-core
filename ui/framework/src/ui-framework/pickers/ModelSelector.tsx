@@ -155,7 +155,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
   /** Initialize listeners and category/model rulesets */
   public componentDidMount() {
     this._isMounted = true;
-    this._initialize();
+    this._initialize(); // tslint:disable-line:no-floating-promises
     this._removeSelectedViewportChanged = IModelApp.viewManager.onSelectedViewportChanged.addListener(this._handleSelectedViewportChanged);
   }
 
@@ -321,7 +321,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
     const view = vp!.view as SpatialViewState;
 
     const viewType = view.is3d() ? "3d" : "2d";
-    Presentation.presentation.vars(ruleset.id).setString("ViewType", viewType); // tslint:disable-line:no-floating-promises
+    await Presentation.presentation.vars(ruleset.id).setString("ViewType", viewType); // tslint:disable-line:no-floating-promises
   }
 
   /** Removes listeners */
@@ -407,12 +407,8 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
    */
   private _setInitialExpandedState = async (group: ModelGroup) => {
     const activeTree = this._getActiveTree(group);
-    console.time("getNodes"); // tslint:disable-line:no-console
     const nodes = await activeTree.dataProvider.getNodes();
-    console.timeEnd("getNodes"); // tslint:disable-line:no-console
-    console.time("selectInitialEnabledItems"); // tslint:disable-line:no-console
     const selectedNodes = await this._selectInitialEnabledItems(group.items, nodes);
-    console.timeEnd("selectInitialEnabledItems"); // tslint:disable-line:no-console
 
     this.setState({
       activeTree: {
@@ -465,10 +461,10 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
    * @param enable Specifies if items should be enabled or disabled
    */
   private _setEnableAllItems = (enable: boolean) => {
-    for (const item of this.state.activeGroup.items) {
+    this.state.activeGroup.items.forEach((item) => {
       item.enabled = enable;
       this.state.activeGroup.setEnabled(item, enable);
-    }
+    });
     this.state.activeGroup.updateState();
   }
 
@@ -517,7 +513,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
       });
     });
 
-    this._setEnableAllItems(false);
+    this._setEnableAllItems(false); // tslint:disable-line:no-floating-promises
   }
 
   /**
@@ -723,6 +719,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
     } else if (IModelApp.viewManager.selectedView) {
       updateViewport(IModelApp.viewManager.selectedView);
     }
+
     this._updateCategoriesWithViewport(IModelApp.viewManager.selectedView); // tslint:disable-line:no-floating-promises
   }
 
