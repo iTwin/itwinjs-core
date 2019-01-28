@@ -284,14 +284,14 @@ export class ContextMenu extends React.Component<ContextMenuProps, ContextMenuSt
   private _handleKeyUp = (event: React.KeyboardEvent<HTMLDivElement>) => {
     for (const [key, value] of this._hotKeyMap) {
       if (key > this.state.selectedIndex) { // Start search at current index.
-        if (event.key.toUpperCase() === value) {
+        if (event.key && event.key.toUpperCase() === value) {
           this.setState({ selectedIndex: key });
           return;
         }
       }
     }
     for (const [key, value] of this._hotKeyMap) {
-      if (event.key.toUpperCase() === value) {
+      if (event.key && event.key.toUpperCase() === value) {
         this.setState({ selectedIndex: key });
         return;
       }

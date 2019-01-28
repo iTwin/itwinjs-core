@@ -30,6 +30,7 @@ export class CheckListBoxItem extends React.Component<CheckListBoxItemProps> {
   }
 
   private _onClick = () => {
+    // istanbul ignore else
     if (this.props.onClick) {
       this.props.onClick();
     }

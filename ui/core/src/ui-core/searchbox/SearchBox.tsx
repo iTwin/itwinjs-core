@@ -46,7 +46,7 @@ export class SearchBox extends React.Component<SearchBoxProps, SearchBoxState> {
 
   /** @hidden */
   public render(): React.ReactNode {
-    const searchClassName = classnames ("searchbox", this.props.className);
+    const searchClassName = classnames("searchbox", this.props.className);
     const emptyString = this.state.value === "";
     const iconClassName = classnames(
       "searchbox-icon",
@@ -76,6 +76,7 @@ export class SearchBox extends React.Component<SearchBoxProps, SearchBoxState> {
   private _trackChange = (_event?: any): void => {
     let value = "";
 
+    // istanbul ignore else
     if (this._inputElement)
       value = this._inputElement.value;
 
@@ -96,19 +97,26 @@ export class SearchBox extends React.Component<SearchBoxProps, SearchBoxState> {
   private _handleKeyDown = (e: React.KeyboardEvent) => {
     switch (e.key) {
       case "Escape":
-        if (this.props.onEscPressed) this.props.onEscPressed();
+        // istanbul ignore else
+        if (this.props.onEscPressed)
+          this.props.onEscPressed();
         break;
       case "Enter":
-        if (this.props.onEnterPressed) this.props.onEnterPressed();
+        // istanbul ignore else
+        if (this.props.onEnterPressed)
+          this.props.onEnterPressed();
         break;
     }
   }
 
   private _handleIconClick = (_event: React.MouseEvent<HTMLElement>): void => {
+    // istanbul ignore else
     if (this._inputElement) {
       const clear = this.state.value !== "";
       this._inputElement.value = "";
-      if (clear && this.props.onClear) this.props.onClear();
+      // istanbul ignore else
+      if (clear && this.props.onClear)
+        this.props.onClear();
       this._inputElement.focus();
     }
     this._trackChange();

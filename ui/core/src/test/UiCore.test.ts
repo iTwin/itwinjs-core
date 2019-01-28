@@ -16,4 +16,8 @@ describe("UiCore", () => {
     expect(() => UiCore.i18n).to.throw(Error);
   });
 
+  it("terminate should run even if no i18n to unregister", () => {
+    expect(() => UiCore.terminate()).to.not.throw(Error);
+  });
+
 });
