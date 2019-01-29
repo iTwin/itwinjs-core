@@ -11,9 +11,8 @@ import { Id64, Id64String } from "@bentley/bentleyjs-core";
 import { TileData } from "./TileIO.data";
 import * as path from "path";
 import { CONSTANTS } from "../common/Testbed";
-import { RenderGraphic, IModelApp, IModelConnection, GeometricModelState } from "@bentley/imodeljs-frontend";
+import { MockRender, RenderGraphic, IModelApp, IModelConnection, GeometricModelState } from "@bentley/imodeljs-frontend";
 import { WebGLTestContext } from "./WebGLTestContext";
-import { MockRender } from "./MockRender";
 
 const iModelLocation = path.join(CONSTANTS.IMODELJS_CORE_DIRNAME, "core/backend/lib/test/assets/test.bim");
 

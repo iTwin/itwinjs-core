@@ -3,10 +3,9 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { IModelApp, Tool, FuzzySearchResults, FuzzySearchResult } from "@bentley/imodeljs-frontend";
+import { MockRender, IModelApp, Tool, FuzzySearchResults, FuzzySearchResult } from "@bentley/imodeljs-frontend";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
 import { TestbedConfig } from "../common/TestbedConfig";
-import { MockRender } from "./MockRender";
 
 // these are later set by executing the TestImmediate tool.
 let testVal1: string;

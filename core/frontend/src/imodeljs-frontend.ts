@@ -50,6 +50,7 @@ export * from "./tile/TileAdmin";
 export * from "./tile/TileTree";
 export * from "./render/FeatureSymbology";
 export * from "./render/GraphicBuilder";
+export * from "./render/MockRender";
 export * from "./render/System";
 export * from "./render/webgl/Target";
 export * from "./oidc/OidcBrowserClient";

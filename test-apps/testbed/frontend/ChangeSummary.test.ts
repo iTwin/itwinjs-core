@@ -7,8 +7,7 @@ import { OpenMode, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { TestData } from "./TestData";
 import { TestRpcInterface } from "../common/TestRpcInterface";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { MockRender } from "./MockRender";
+import { IModelConnection, MockRender } from "@bentley/imodeljs-frontend";
 
 describe("ChangeSummary (#integration)", () => {
   let iModel: IModelConnection;

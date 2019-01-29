@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { MeshArgs, MeshParams } from "@bentley/imodeljs-frontend/lib/rendering";
+import { MockRender } from "@bentley/imodeljs-frontend";
 import { RenderTexture, QParams2d, QPoint3dList, QParams3d, QPoint3d, ColorIndex, FeatureIndexType } from "@bentley/imodeljs-common";
 import { Point2d } from "@bentley/geometry-core";
-import { MockRender } from "./MockRender";
 
 function expectMeshParams(args: MeshArgs, colorIndex: ColorIndex, vertexBytes: number[][], expectedColors?: number[], quvParams?: QParams2d) {
   const params = MeshParams.create(args);

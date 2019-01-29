@@ -9,11 +9,10 @@ import { BisCodeSpec, CodeSpec, NavigationValue, RelatedElement, IModelVersion }
 import { TestData } from "./TestData";
 import {
   DrawingViewState, OrthographicViewState, ViewState, IModelConnection,
-  ModelSelectorState, DisplayStyle3dState, DisplayStyle2dState, CategorySelectorState,
+  ModelSelectorState, DisplayStyle3dState, DisplayStyle2dState, CategorySelectorState, MockRender,
 } from "@bentley/imodeljs-frontend";
 import { TestbedConfig } from "../common/TestbedConfig";
 import { CONSTANTS } from "../common/Testbed";
-import { MockRender } from "./MockRender";
 
 describe("IModelConnection (#integration)", () => {
   let iModel: IModelConnection;

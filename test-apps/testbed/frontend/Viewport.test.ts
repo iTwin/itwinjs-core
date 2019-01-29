@@ -6,10 +6,9 @@ import { assert } from "chai";
 import { Point3d, Angle } from "@bentley/geometry-core";
 import { Cartographic, FontType, FontMap, ColorDef } from "@bentley/imodeljs-common";
 import * as path from "path";
-import { SpatialViewState, StandardViewId, IModelConnection, ScreenViewport, IModelApp, PanViewTool, CompassMode, TwoWayViewportSync } from "@bentley/imodeljs-frontend";
+import { MockRender, SpatialViewState, StandardViewId, IModelConnection, ScreenViewport, IModelApp, PanViewTool, CompassMode, TwoWayViewportSync } from "@bentley/imodeljs-frontend";
 import { CONSTANTS } from "../common/Testbed";
 import { RenderPlan } from "@bentley/imodeljs-frontend/lib/rendering";
-import { MockRender } from "./MockRender";
 
 const iModelDir = path.join(CONSTANTS.IMODELJS_CORE_DIRNAME, "core/backend/lib/test/assets");
 
