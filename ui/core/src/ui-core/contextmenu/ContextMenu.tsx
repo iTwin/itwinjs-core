@@ -192,9 +192,10 @@ export class ContextMenu extends React.Component<ContextMenuProps, ContextMenuSt
     let index = 0;
     // add inheritance data to submenu children
     const ch = React.Children.map(children, (child) => {
-      if (typeof child === "string" || typeof child === "number" || child.props.disabled)
+      if (typeof child === "string" || typeof child === "number" || (child as React.ReactElement<any>).props.disabled)
         return child;
 
+      const childElement = (child as React.ReactElement<any>);
       const id = index;
       const onHover = () => {
         this.setState({ selectedIndex: id });
@@ -206,10 +207,10 @@ export class ContextMenu extends React.Component<ContextMenuProps, ContextMenuSt
           this._selectedElement = el;
       };
       const boundHandleHotKeyParse = this._handleHotKeyParsed.bind(this, index); // bind local callback for specific index
-      if (child.type === ContextSubMenu) {
+      if (childElement.type === ContextSubMenu) {
         index++;
-        return React.cloneElement(child, {
-          direction: child.props.direction || direction,
+        return React.cloneElement(childElement, {
+          direction: childElement.props.direction || direction,
           parentMenu: this,
           ref,
           onHover,
@@ -217,9 +218,9 @@ export class ContextMenu extends React.Component<ContextMenuProps, ContextMenuSt
           onHotKeyParsed: boundHandleHotKeyParse,
         });
       }
-      if (child.type === ContextMenuItem) {
+      if (childElement.type === ContextMenuItem) {
         index++;
-        return React.cloneElement(child, {
+        return React.cloneElement(childElement, {
           parentMenu: this,
           ref,
           onHover,
@@ -227,7 +228,7 @@ export class ContextMenu extends React.Component<ContextMenuProps, ContextMenuSt
           onHotKeyParsed: boundHandleHotKeyParse,
         });
       }
-      return child;
+      return childElement;
     });
     this._length = index;
     return ch;

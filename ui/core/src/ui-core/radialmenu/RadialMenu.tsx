@@ -84,14 +84,15 @@ export class RadialMenu extends React.Component<RadialMenuProps, RadialMenuState
           {React.Children.map(this.props.children, (child, index) => {
             if (typeof child === "string" || typeof child === "number")
               return child;
-            return React.cloneElement(child, {
+            const childElement = (child as React.ReactElement<any>);
+            return React.cloneElement(childElement, {
               key: index,
               ref: (el: any) => {
                 if (this.props.selected === index)
                   this._selectedButton = el;
               },
               selected: index === this.props.selected,
-              labelRotate: child.props.labelRotate || this.props.labelRotate,
+              labelRotate: childElement.props.labelRotate || this.props.labelRotate,
               annularSector: this.state.sectors[index],
             });
           })}
