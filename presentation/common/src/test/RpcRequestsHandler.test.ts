@@ -310,7 +310,7 @@ describe("RpcRequestsHandler", () => {
 
     beforeEach(() => {
       handler = new RpcRequestsHandler({ clientId });
-      handler.request = async <TResult, TOptions extends RpcRequestOptions, TArg extends any[]>(context: any, func: (token: IModelToken, options: TOptions, ...args: TArg) => Promise<TResult>, options: TOptions, ...args: TArg): Promise<TResult> => {
+      handler.request = async <TResult, TOptions extends RpcRequestOptions>(context: any, func: (token: IModelToken, options: TOptions, ...args: any[]) => Promise<TResult>, options: TOptions, ...args: any[]): Promise<TResult> => {
         expect(context).to.eq(rpcInterfaceMock.object);
         return func.apply(context, [token, options, ...args]);
       };

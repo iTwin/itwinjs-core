@@ -7,7 +7,7 @@ import { initialize, terminate } from "../IntegrationTests";
 import { OpenMode, using } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { Presentation } from "@bentley/presentation-frontend";
-import { Ruleset, RootNodeRule, CustomNodeSpecification } from "@bentley/presentation-common";
+import { Ruleset, RootNodeRule, CustomNodeSpecification, RegisteredRuleset } from "@bentley/presentation-common";
 
 describe("Rulesets", async () => {
 
@@ -28,7 +28,7 @@ describe("Rulesets", async () => {
 
   it("creates ruleset from json and gets root node using it", async () => {
     const spec = ((ruleset.rules![0] as RootNodeRule).specifications![0] as CustomNodeSpecification);
-    await using(await Presentation.presentation.rulesets().add(ruleset), async () => {
+    await using<RegisteredRuleset, Promise<void>>(await Presentation.presentation.rulesets().add(ruleset), async () => {
       const rootNodes = await Presentation.presentation.getRootNodes({ imodel, rulesetId: ruleset.id });
       expect(rootNodes.length).to.be.equal(1);
       expect(rootNodes[0].label).to.be.equal(spec.label);

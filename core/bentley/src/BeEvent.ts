@@ -78,7 +78,7 @@ export class BeEvent<T extends Listener> {
    * @param args This method takes any number of parameters and passes them through to the listeners.
    * @see [[BeEvent.removeListener]], [[BeEvent.addListener]]
    */
-  public raiseEvent(..._args: any[]) {
+  public raiseEvent(...args: any[]) {
     this._insideRaiseEvent = true;
 
     const listeners = this._listeners;
@@ -90,7 +90,7 @@ export class BeEvent<T extends Listener> {
       if (!context.listener) {
         dropped = true;
       } else {
-        context.listener.apply(context.scope, arguments);
+        context.listener.apply(context.scope, args);
         if (context.once) {
           context.listener = undefined;
           dropped = true;

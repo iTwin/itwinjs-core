@@ -1235,8 +1235,8 @@ describe("Tree", () => {
       scrollToSpy.resetHistory();
       Element.prototype.scrollTo = scrollToSpy;
       // tslint:disable-next-line:only-arrow-functions
-      window.getComputedStyle = function () {
-        const result = methodOverrides.getComputedStyle.apply(window, arguments);
+      window.getComputedStyle = function (elt: Element, pseudoElt?: string | null | undefined) {
+        const result = methodOverrides.getComputedStyle.call(window, elt, pseudoElt);
         result.overflow = "auto";
         return result;
       };

@@ -7,13 +7,14 @@
 import * as React from "react";
 import classnames from "classnames";
 import * as RDG from "react-data-grid";
+import { DndComponentClass } from "react-dnd";
 
 // tslint:disable-next-line:variable-name
 const HeaderCell = (RDG && (RDG as any).HeaderCell); // react-data-grid @types does not support the HeaderCell export, but it is exported in the js-only library.
 
 import { DragSourceArguments, DropTargetArguments } from "../../dragdrop/DragDropDef";
-import { withDragSource } from "../../dragdrop/withDragSource";
-import { withDropTarget } from "../../dragdrop/withDropTarget";
+import { withDragSource, WithDragSourceProps } from "../../dragdrop/withDragSource";
+import { withDropTarget, WithDropTargetProps } from "../../dragdrop/withDropTarget";
 import { ColumnDragLayer } from "./ColumnDragLayer";
 
 /** @hidden */
@@ -60,7 +61,7 @@ class HeaderWrapper extends React.Component<HeaderWrapperProps> {
 }
 
 /** @hidden */
-export const DragDropHeaderWrapper = withDragSource(withDropTarget(HeaderWrapper)); // tslint:disable-line:variable-name
+export const DragDropHeaderWrapper: DndComponentClass<HeaderWrapperProps & WithDropTargetProps<any> & WithDragSourceProps<any>> = withDragSource(withDropTarget(HeaderWrapper)); // tslint:disable-line:variable-name
 
 // Used only internally in ./Table.tsx
 /** @hidden */

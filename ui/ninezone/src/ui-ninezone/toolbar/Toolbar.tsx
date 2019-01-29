@@ -106,7 +106,7 @@ export class PanelsProvider extends React.PureComponent<PanelsProviderProps> {
     this._refs = [];
     this._update = false;
 
-    const items = itemsArray.reduce((acc, item) => {
+    const items = itemsArray.reduce<React.ReactNode[]>((acc, item) => {
       if (!React.isValidElement<ToolbarItemProps<ToolbarItem>>(item))
         return acc;
 
@@ -121,7 +121,7 @@ export class PanelsProvider extends React.PureComponent<PanelsProviderProps> {
       const accElement = (acc as React.ReactNodeArray);
       accElement.push(item);
       return acc;
-    }, new Array<React.ReactNode>());
+    }, []);
     return this.props.children && this.props.children(items);
   }
 

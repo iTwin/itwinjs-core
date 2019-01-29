@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "upgrade to TypeScript 3.2.2",
+      "packageName": "@bentley/presentation-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-components",
+  "email": "keith.bentley@bentley.com"
+}

@@ -5,7 +5,7 @@
 /** @module DragDrop */
 
 import * as React from "react";
-import { DragLayer } from "react-dnd";
+import { DragLayer, DndComponentClass } from "react-dnd";
 
 import { UiEvent } from "@bentley/ui-core";
 import { DragSourceArguments, DragLayerProps } from "@bentley/ui-components";
@@ -136,7 +136,7 @@ class DragDropLayerRendererComponent extends React.Component<DragDropLayerRender
  * New DragLayers are registered by type using [[DragDropLayerManager.registerTypeLayer]]
  * This component must be placed on a root DOM node at the bottom to render DragLayers properly.
  */
-export const DragDropLayerRenderer = DragLayer((monitor) => ({ // tslint:disable-line:variable-name
+export const DragDropLayerRenderer: typeof DragDropLayerRendererComponent & DndComponentClass<{}> = DragLayer((monitor) => ({ // tslint:disable-line:variable-name
   item: monitor.getItem(),
   itemType: monitor.getItemType(),
   clientOffset: monitor.getClientOffset(),

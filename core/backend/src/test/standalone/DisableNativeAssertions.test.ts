@@ -43,7 +43,7 @@ describe("DisableNativeAssertions", () => {
     using(ECDbTestHelper.createECDb(_outDir, "create.ecdb"), (ecdb: ECDb) => {
       assert.isTrue(ecdb.isOpen);
 
-      using(new DisableNativeAssertions(), () => {
+      using(new DisableNativeAssertions(), (_r) => {
         let hasThrown: boolean = false;
         try {
           // An invalid SQL is expected to fire an assertion in native code BeSQLite during preparation

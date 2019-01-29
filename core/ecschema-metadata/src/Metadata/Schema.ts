@@ -305,7 +305,7 @@ export class Schema implements CustomAttributeContainerProps {
    */
   public async getItem<T extends SchemaItem>(name: string): Promise<T | undefined> {
     // this method exists so we can rewire it later when we load partial schemas, for now it is identical to the sync version
-    return this.getItemSync(name);
+    return this.getItemSync<T>(name);
   }
 
   /**

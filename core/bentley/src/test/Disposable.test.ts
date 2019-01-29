@@ -51,7 +51,7 @@ describe("Disposable", () => {
       const disposable = new CallbackDisposable(() => {
         disposed = true;
       });
-      await using(disposable, async () => {
+      await using(disposable, async (_r) => {
         return new Promise<void>((resolve: () => void, _reject: () => void) => {
           setTimeout(() => {
             resolve();
@@ -67,7 +67,7 @@ describe("Disposable", () => {
       const disposable = new CallbackDisposable(() => {
         disposed = true;
       });
-      const result = using(disposable, async () => {
+      const result = using(disposable, async (_r) => {
         return new Promise<void>((_resolve: () => void, reject: () => void) => {
           setTimeout(() => {
             reject();
@@ -90,7 +90,7 @@ describe("Disposable", () => {
       const disposable2 = new CallbackDisposable(() => {
         disposed2 = true;
       });
-      const result = using([disposable1, disposable2], (resource1: CallbackDisposable, resource2: CallbackDisposable) => {
+      const result = using([disposable1, disposable2], (resource1, resource2) => {
         assert.equal(resource1, disposable1);
         assert.equal(resource2, disposable2);
         return 123;

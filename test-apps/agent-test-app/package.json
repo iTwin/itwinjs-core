@@ -42,7 +42,7 @@
     "@bentley/build-tools": "0.189.0-dev.9",
     "@types/body-parser": "^1.17.0",
     "@types/chai": "^4.1.4",
-    "@types/express": "^4.11.1",
+    "@types/express": "^4.16.1",
     "@types/express-session": "^1.15.11",
     "@types/minimist": "^1.2.0",
     "@types/mocha": "^5.2.5",
@@ -57,7 +57,7 @@
     "nyc": "^13.0.1",
     "tslint": "^5.11.0",
     "typemoq": "^2.1.0",
-    "typescript": "~3.1.0"
+    "typescript": "~3.2.2"
   },
   "nyc": {
     "include": [

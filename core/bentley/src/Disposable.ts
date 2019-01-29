@@ -68,7 +68,7 @@ export function disposeArray(list?: IDisposable[]): undefined {
  * of this function is equal to return value of func. If func throws, this function also throws (after
  * disposing the resource).
  */
-export function using<TDisposable extends IDisposable, TResult, TArg = TDisposable>(resources: TDisposable | TDisposable[], func: (...resources: TArg[]) => TResult): TResult {
+export function using<T extends IDisposable, TResult>(resources: T | T[], func: (...r: T[]) => TResult): TResult {
   if (!Array.isArray(resources))
     return using([resources], func);
 
@@ -76,8 +76,8 @@ export function using<TDisposable extends IDisposable, TResult, TArg = TDisposab
   let shouldDisposeImmediately = true;
 
   try {
-    const result = func.apply(undefined, resources);
-    if (result && result.then) {
+    const result = func(...resources);
+    if (result instanceof Promise) {
       shouldDisposeImmediately = false;
       result.then(doDispose, doDispose);
     }

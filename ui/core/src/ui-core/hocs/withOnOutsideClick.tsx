@@ -44,10 +44,10 @@ export const withOnOutsideClick = <ComponentProps extends {}>(
     }
 
     public render() {
-      const { onOutsideClick, ...props } = this.props as WithOnOutsideClickProps; // todo: better solution to rest object of intersected type
+      const { onOutsideClick, ...props } = this.props; // todo: better solution to rest object of intersected type
       return (
         <div ref={this.setRef}>
-          <Component {...props} {...this.state} />
+          <Component {...props as ComponentProps} {...this.state} />
         </div>
       );
     }

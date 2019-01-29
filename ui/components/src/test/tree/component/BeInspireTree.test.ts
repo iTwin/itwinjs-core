@@ -125,7 +125,7 @@ describe("BeInspireTree", () => {
   const asText = (n: BeInspireTreeNode<Node>) => n.text;
 
   const loadHierarchy = async (h: inspire.TreeNode[] | inspire.TreeNodes) => {
-    await using(tree.pauseRendering(), async () => {
+    await using(tree.pauseRendering(), async (_r) => {
       await Promise.all(h.map(async (n) => {
         if (!n.hasOrWillHaveChildren())
           return;
@@ -795,7 +795,7 @@ describe("BeInspireTree", () => {
       const listener = moq.Mock.ofInstance((_node: BeInspireTreeNode<Node>, _noIdeaWhatThisMeans: boolean) => { });
       tree.on(BeInspireTreeEvent.NodeSelected, listener.object);
       const node = tree.node("0")!;
-      using(tree.mute([BeInspireTreeEvent.NodeSelected]), () => {
+      using(tree.mute([BeInspireTreeEvent.NodeSelected]), (_r) => {
         node.select();
       });
       listener.verify((x) => x(moq.It.isAny(), false), moq.Times.never());
@@ -827,7 +827,7 @@ describe("BeInspireTree", () => {
 
     it("fires ChangesApplied event only after rendering is resumed when node is selected and rendering is paused", () => {
       const node = tree.node("0")!;
-      using(tree.pauseRendering(2), () => {
+      using(tree.pauseRendering(2), (_r) => {
         node.select();
         expect(renderer).to.be.calledOnce;
         node.deselect();
@@ -849,8 +849,8 @@ describe("BeInspireTree", () => {
 
     it("nested pause context with `allowedRendersBeforePause` doesn't unmute wrapped pause context", () => {
       const node = tree.node("0")!;
-      using(tree.pauseRendering(), () => {
-        using(tree.pauseRendering(1), () => {
+      using(tree.pauseRendering(), (_r) => {
+        using(tree.pauseRendering(1), (_r1) => {
         });
         node.select();
         expect(renderer).to.not.be.called;
@@ -861,8 +861,8 @@ describe("BeInspireTree", () => {
 
     it("fires ChangesApplied event only after outer `pauseRendering` context is disposed", () => {
       const node = tree.node("0")!;
-      using(tree.pauseRendering(), () => {
-        using(tree.pauseRendering(), () => {
+      using(tree.pauseRendering(), (_r) => {
+        using(tree.pauseRendering(), (_r1) => {
           node.select();
           expect(renderer).to.not.be.called;
         });
@@ -872,7 +872,7 @@ describe("BeInspireTree", () => {
     });
 
     it("doesn't fire ChangesApplied event if no changes done in the hierarchy", () => {
-      using(tree.pauseRendering(), () => {
+      using(tree.pauseRendering(), (_r) => {
       });
       expect(renderer).to.not.be.called;
     });

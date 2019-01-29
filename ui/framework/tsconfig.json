@@ -5,7 +5,8 @@
     "module": "commonjs",
     "outDir": "./lib",
     "skipLibCheck": true,
-    "jsx": "react"
+    "jsx": "react",
+    "preserveSymlinks": true
   },
   "include": [
     "./src/**/*.ts*"

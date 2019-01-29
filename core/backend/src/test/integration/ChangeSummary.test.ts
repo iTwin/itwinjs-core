@@ -376,7 +376,7 @@ describe("ChangeSummary (#integration)", () => {
     let iModel: IModelDb = await IModelDb.open(actx, accessToken, testProjectId, readOnlyTestIModel.id, OpenParams.fixedVersion(AccessMode.Exclusive));
     try {
       assert.exists(iModel);
-      await using(new DisableNativeAssertions(), async () => {
+      await using(new DisableNativeAssertions(), async (_r) => {
         await ChangeSummaryManager.extractChangeSummaries(actx, accessToken, iModel);
       });
     } catch (e) {
@@ -390,7 +390,7 @@ describe("ChangeSummary (#integration)", () => {
     iModel = await IModelDb.open(actx, accessToken, testProjectId, readOnlyTestIModel.id, OpenParams.fixedVersion(AccessMode.Shared));
     try {
       assert.exists(iModel);
-      await using(new DisableNativeAssertions(), async () => {
+      await using(new DisableNativeAssertions(), async (_r) => {
         await ChangeSummaryManager.extractChangeSummaries(actx, accessToken, iModel);
       });
     } catch (e) {
@@ -405,7 +405,7 @@ describe("ChangeSummary (#integration)", () => {
     try {
       assert.exists(iModel);
       await iModel.close(actx, accessToken);
-      await using(new DisableNativeAssertions(), async () => {
+      await using(new DisableNativeAssertions(), async (_r) => {
         await ChangeSummaryManager.extractChangeSummaries(actx, accessToken, iModel);
       });
     } catch (e) {
@@ -419,7 +419,7 @@ describe("ChangeSummary (#integration)", () => {
     assert.exists(iModel.briefcase);
     assert.isTrue(iModel.briefcase!.isStandalone);
     try {
-      await using(new DisableNativeAssertions(), async () => {
+      await using(new DisableNativeAssertions(), async (_r) => {
         await ChangeSummaryManager.extractChangeSummaries(actx, accessToken, iModel);
       });
     } catch (e) {

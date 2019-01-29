@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Properties */
 
-import React from "react";
+import * as React from "react";
 import { IPropertyValueRenderer, PropertyValueRendererContext, PropertyContainerType } from "../../ValueRendererManager";
 import { PropertyRecord } from "../../Record";
 import { PropertyValueFormat, ArrayValue } from "../../Value";

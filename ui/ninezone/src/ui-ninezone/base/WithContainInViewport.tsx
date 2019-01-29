@@ -59,7 +59,7 @@ export const withContainInViewport = <ComponentProps extends {}>(
       const { noVerticalContainment, noHorizontalContainment, ...props } = this.props as WithContainInViewportProps;
       return (
         <Component
-          {...props}
+          {...props as ComponentProps}
           {...this.state}
         />
       );

@@ -406,7 +406,7 @@ describe("Logger", () => {
           perfMessages.push(message);
       }, undefined);
 
-    using(new PerfLogger("mytestroutine"), () => {
+    using(new PerfLogger("mytestroutine"), (_r) => {
       for (let i = 0; i < 1000; i++) {
         if (i % 2 === 0)
           continue;
@@ -416,7 +416,7 @@ describe("Logger", () => {
 
     Logger.setLevel("Performance", LogLevel.Info);
 
-    using(new PerfLogger("mytestroutine2"), () => {
+    using(new PerfLogger("mytestroutine2"), (_r) => {
       for (let i = 0; i < 1000; i++) {
         if (i % 2 === 0)
           continue;

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Properties */
 
-import React from "react";
+import * as React from "react";
 import { PropertyValueRendererContext } from "../../ValueRendererManager";
 
 const internalWithContextStyle = (node: React.ReactNode, context?: PropertyValueRendererContext) => {

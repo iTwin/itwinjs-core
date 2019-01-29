@@ -2,7 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import React from "react";
+import * as React from "react";
 import _ from "lodash";
 import { Omit } from "@bentley/ui-core";
 import { PropertyCategoryBlock, PropertyCategoryBlockProps } from "./PropertyCategoryBlock";

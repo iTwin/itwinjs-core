@@ -283,7 +283,7 @@ export class Tree extends React.Component<TreeProps, TreeState> {
 
     // update tree selection if either selected nodes changed or model became ready
     if (!providerChanged && (selectedNodesChanged || (modelReadyChanged && state.modelReady))) {
-      using((state.model.mute([BeInspireTreeEvent.ChangesApplied])), () => {
+      using((state.model.mute([BeInspireTreeEvent.ChangesApplied])), (_r) => {
         // note: calling this may actually mutate `model`
         // in state, but that should be fine
         state.model.updateTreeSelection(props.selectedNodes);

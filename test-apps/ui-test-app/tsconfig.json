@@ -1,6 +1,8 @@
 {
   "extends": "./node_modules/@bentley/build-tools/tsconfig-base.json",
   "compilerOptions": {
+    "declaration": false,
+    "declarationMap": false,
     "skipLibCheck": true,
     "outDir": "./lib",
     "jsx": "react",

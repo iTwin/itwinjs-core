@@ -26,5 +26,5 @@ export default class DisplayPerfRpcInterface extends RpcInterface {
   public async saveCsv(_outputPath: string, _outputName: string, _rowData: Map<string, number | string>): Promise<void> { return this.forward(arguments); }
   public async savePng(_fileName: string, _png: string): Promise<void> { return this.forward(arguments); }
 
-  public async finishTest(): Promise<void> { return this.forward.apply(this, arguments); }
+  public async finishTest(): Promise<void> { return this.forward(arguments); }
 }

@@ -232,7 +232,7 @@ export class BeInspireTree<TNodePayload> {
     const baseTreeLoad = this._tree.load;
     this._tree.load = async (loader): Promise<Inspire.TreeNodes> => {
       const result = await baseTreeLoad.call(this._tree, loader);
-      await using(this.pauseRendering(), async () => {
+      await using(this.pauseRendering(), async (_r) => {
         await ensureNodesAutoExpanded(result);
       });
       return result;
@@ -259,7 +259,7 @@ export class BeInspireTree<TNodePayload> {
     }).then(async () => {
       // note: the following is only needed for the initial load of the tree
       // when our `load` override isn't assigned yet
-      await using(this.pauseRendering(), async () => {
+      await using(this.pauseRendering(), async (_r) => {
         await ensureNodesAutoExpanded(this._tree.nodes());
       });
     });
@@ -411,7 +411,7 @@ export class BeInspireTree<TNodePayload> {
 
   /** Reload the tree */
   public async reload() {
-    await using(this.pauseRendering(), async () => {
+    await using(this.pauseRendering(), async (_r) => {
       const rootNodes = await this._tree.reload();
       rootNodes.forEach((n) => toNode(n).setDirty(true));
     });
@@ -421,7 +421,7 @@ export class BeInspireTree<TNodePayload> {
    * Deselects all nodes
    */
   public deselectAll(muteEvents = true) {
-    using(this.mute((muteEvents) ? [BeInspireTreeEvent.NodeDeselected] : []), () => {
+    using(this.mute((muteEvents) ? [BeInspireTreeEvent.NodeDeselected] : []), (_r) => {
       this._tree.deselectDeep();
     });
   }
@@ -432,7 +432,7 @@ export class BeInspireTree<TNodePayload> {
    * Note: order of supplied nodes is not important
    */
   public selectBetween(node1: BeInspireTreeNode<TNodePayload>, node2: BeInspireTreeNode<TNodePayload>, muteEvents = true): Array<BeInspireTreeNode<TNodePayload>> {
-    return using(this.mute((muteEvents) ? [BeInspireTreeEvent.NodeSelected] : []), () => {
+    return using(this.mute((muteEvents) ? [BeInspireTreeEvent.NodeSelected] : []), (_r) => {
       let start, end: BeInspireTreeNode<TNodePayload>;
       if (node1.indexPath() <= node2.indexPath()) {
         start = node1;
@@ -478,7 +478,7 @@ export class BeInspireTree<TNodePayload> {
     if (!predicate)
       return;
 
-    using(this.mute((muteEvents) ? [BeInspireTreeEvent.NodeSelected, BeInspireTreeEvent.NodeDeselected] : []), () => {
+    using(this.mute((muteEvents) ? [BeInspireTreeEvent.NodeSelected, BeInspireTreeEvent.NodeDeselected] : []), (_r) => {
       this._tree.disableDeselection();
       selectHandler(predicate);
       this._tree.enableDeselection();
@@ -780,7 +780,7 @@ class WrappedInterfaceProvider<TPayload> extends CallableInstance implements Def
       // merge current nodes with stash), there's no point to show the
       // `loading` state and then re-render with `completed` state + nodes.
       // instead, just pause rendering until we have the nodes
-      await using(this._tree.pauseRendering(), async () => {
+      await using(this._tree.pauseRendering(), async (_r) => {
         // request children for `parent` to reload - the load handler
         // will merge the current children with stash (see `inspireLoad`)
         if (parentId)

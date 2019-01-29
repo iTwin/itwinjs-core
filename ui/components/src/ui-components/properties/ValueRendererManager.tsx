@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Properties */
 
-import React from "react";
+import * as React from "react";
 import { Orientation } from "@bentley/ui-core";
 import { PropertyRecord } from "./Record";
 import { PropertyValueFormat } from "./Value";

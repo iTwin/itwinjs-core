@@ -82,7 +82,7 @@ export class RadialMenu extends React.Component<RadialMenuProps, RadialMenuState
           width={width} height={width}
           className={"radial-menu-container"}>
           {React.Children.map(this.props.children, (child, index) => {
-            if (typeof child === "string" || typeof child === "number")
+            if (!child || typeof child !== "object" || !("props" in child))
               return child;
             const childElement = (child as React.ReactElement<any>);
             return React.cloneElement(childElement, {

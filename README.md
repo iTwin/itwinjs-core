@@ -110,7 +110,7 @@ Use these instructions to update dependencies and devDependencies on external pa
 
 1. Edit the appropriate `package.json` file to update the semantic version range
 2. Run `rush check` to make sure that you are specifying consistent versions across the repository
-3. Run `rush update` to make sure the newer version of the module specified in #1 is installed
+3. Run `rush update --full` to make sure the newer version of the module specified in #1 is installed
 
 ## Other NPM Scripts
 

@@ -241,7 +241,7 @@ export const treeDragSourceBeginCallback = (args: DragSourceArguments<DemoTreeDr
       type: extendedData.type,
       dataProvider: demoMutableTreeDataProvider,
       children: extendedData.children,
-    };
+    } as DemoTreeDragDropType;
   }
   return args;
 };

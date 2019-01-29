@@ -42,7 +42,7 @@ export class EntityState implements EntityProps {
   public equals(other: this): boolean { return JSON.stringify(this.toJSON()) === JSON.stringify(other.toJSON()); }
 
   /** Make an independent copy of this EntityState */
-  public clone(iModel?: IModelConnection): this { return new (this.constructor as any)(this.toJSON(), iModel ? iModel : this.iModel, this); }
+  public clone(iModel?: IModelConnection): this { return new (this.constructor as typeof EntityState)(this.toJSON(), iModel ? iModel : this.iModel, this) as this; }
 
   /**
    * Get full class name of this Entity in the form "SchemaName:ClassName".

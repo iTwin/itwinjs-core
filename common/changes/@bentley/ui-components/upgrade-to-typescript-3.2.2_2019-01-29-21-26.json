@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "upgrade to TypeScript 3.2.2",
+      "packageName": "@bentley/ui-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "keith.bentley@bentley.com"
+}

@@ -31,14 +31,14 @@ export class SignIn extends React.Component<SignInProps, SignInState> {
     this.state = { isSigningIn: false };
   }
 
-  private onSignInClick(e: Event) {
+  private _onSignInClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     this.setState(Object.assign({}, this.state, { isSigningIn: true }));
     if (this.props.onSignIn)
       this.props.onSignIn();
   }
 
-  private onRegisterShow() {
+  private _onRegisterShow = () => {
   }
 
   public render() {
@@ -48,8 +48,8 @@ export class SignIn extends React.Component<SignInProps, SignInState> {
         <div className="signin-content">
           <span className="icon icon-placeholder" />
           <span className="prompt">Please sign in to access your Bentley Services.</span>
-          <button className={signinButtonClassName} type="button" onClick={this.onSignInClick.bind(this)}>Sign In</button>
-          <span className="signin-register-div">Don't have a profile?<a onClick={this.onRegisterShow}>Register</a></span>
+          <button className={signinButtonClassName} type="button" onClick={this._onSignInClick}>Sign In</button>
+          <span className="signin-register-div">Don't have a profile?<a onClick={this._onRegisterShow}>Register</a></span>
           <a className="signin-offline" onClick={this.props.onOffline}>Work Offline?</a>
         </div>
       </div>
