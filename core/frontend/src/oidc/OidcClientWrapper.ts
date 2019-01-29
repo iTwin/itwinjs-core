@@ -8,13 +8,16 @@ import { IOidcFrontendClient, OidcFrontendClientConfiguration } from "@bentley/i
 import { OidcBrowserClient } from "./OidcBrowserClient";
 import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
 
-import { ElectronRpcConfiguration } from "@bentley/imodeljs-common";
+import { ElectronRpcConfiguration, MobileRpcConfiguration } from "@bentley/imodeljs-common";
+import { OidcIOSClient } from "./OidcIOSClient";
 
 let OidcClient: any; // tslint:disable-line:variable-name
 if (ElectronRpcConfiguration.isElectron) {
   // TODO: Need to figure a way to load a module that contains OidcDeviceClient, and
   // eventually migrate that to a separate imodeljs-clients-device package.
   OidcClient = OidcBrowserClient; // eval("require")("@bentley/imodeljs-clients-backend").OidcDeviceClient; // tslint:disable-line:no-eval
+} else if (MobileRpcConfiguration.isIOSFrontend) {
+  OidcClient = OidcIOSClient;
 } else {
   OidcClient = OidcBrowserClient;
 }
