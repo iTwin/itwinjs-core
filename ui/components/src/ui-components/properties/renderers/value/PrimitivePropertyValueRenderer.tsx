@@ -25,6 +25,6 @@ export class PrimitivePropertyValueRenderer implements IPropertyValueRenderer {
     if (value !== undefined)
       return withContextStyle(TypeConverterManager.getConverter(record.property.typename).convertPropertyToString(record.property, value), context);
 
-    return "";
+    return withContextStyle("", context);
   }
 }

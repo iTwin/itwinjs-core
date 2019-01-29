@@ -21,7 +21,7 @@ export class DoublePropertyValueRenderer implements IPropertyValueRenderer {
   public render(record: PropertyRecord, context?: PropertyValueRendererContext) {
     const primitive = record.value as PrimitiveValue;
     if (primitive.displayValue)
-      return primitive.displayValue;
+      return withContextStyle(primitive.displayValue, context);
     return withContextStyle(TypeConverterManager.getConverter(record.property.typename).convertPropertyToString(record.property, primitive.value), context);
   }
 }

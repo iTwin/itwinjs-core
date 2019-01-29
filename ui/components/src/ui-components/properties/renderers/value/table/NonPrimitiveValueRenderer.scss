@@ -6,7 +6,8 @@
 
 .components-table-value-button {
   @include bwc-buttons-hollow;
-  width: calc(100% - 16px) !important; // !important because of row * {width: 100%} rule
+  margin: -8px 0 0 -8px; // Offset automatic padding for table cell content
+  width: calc(100% - 16px);
   height: 100%;
 }
 

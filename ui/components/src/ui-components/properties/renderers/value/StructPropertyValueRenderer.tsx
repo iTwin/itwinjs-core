@@ -31,7 +31,7 @@ export class StructPropertyValueRenderer implements IPropertyValueRenderer {
     }
 
     if (context && context.containerType === PropertyContainerType.PropertyPane) {
-      return "";
+      return withContextStyle("", context);
     }
 
     return withContextStyle(`{${record.property.typename}}`, context);

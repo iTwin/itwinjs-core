@@ -1,0 +1,24 @@
+.components-table-cell {
+  background-color: #F9F9F9;
+  user-select: none;
+  display: flex;
+  align-items: center;
+
+  &.is-selected {
+    background-color: #a6d7f5;
+  }
+
+  &:focus {
+    outline: none;
+  }
+
+  &>* {
+    padding: 8px 0 0 8px;
+    height: 100%;
+    width: 100%;
+  }
+
+  >span:empty:before {
+    content: "\200b"; // unicode zero width space character
+  }
+}

@@ -7,10 +7,11 @@
 import { memoize } from "lodash";
 import * as React from "react";
 import ReactDataGrid from "react-data-grid";
+import ReactResizeDetector from "react-resize-detector";
 import classnames from "classnames";
 import { DisposableList, Guid, GuidString } from "@bentley/bentleyjs-core";
 import {
-  SortDirection, Dialog, HorizontalAlignment,
+  SortDirection, Dialog,
   LocalUiSettings, UiSettings, UiSettingsStatus,
 } from "@bentley/ui-core";
 import { TableDataProvider, ColumnDescription, RowItem, CellItem } from "../TableDataProvider";
@@ -19,15 +20,17 @@ import {
   SelectionHandler, SingleSelectionHandler, MultiSelectionHandler,
   OnItemsSelectedCallback, OnItemsDeselectedCallback,
 } from "../../common/selection/SelectionHandler";
-import ReactResizeDetector from "react-resize-detector";
-
-import "./Grid.scss";
-import { EditorContainer, PropertyUpdatedArgs } from "../../editors/EditorContainer";
-import { PropertyValueRendererManager, PropertyContainerType, PropertyDialogState, PropertyValueRendererContext } from "../../properties/ValueRendererManager";
+import { PropertyUpdatedArgs } from "../../editors/EditorContainer";
+import { PropertyValueRendererManager, PropertyDialogState } from "../../properties/ValueRendererManager";
 import { PropertyValueFormat, PrimitiveValue } from "../../properties/Value";
 import { TypeConverterManager } from "../../converters/TypeConverterManager";
 import { DragDropHeaderCell } from "./DragDropHeaderCell";
 import { ShowHideMenu } from "../../common/showhide/ShowHideMenu";
+import { TableIconCellContent, TableCellContent, TableCell } from "./TableCell";
+
+import "./Table.scss";
+
+const TABLE_ROW_HEIGHT = 25;
 
 /**
  * Specifies table selection target.
@@ -81,7 +84,10 @@ export interface TableProps {
   settingsIdentifier?: string;
   /** Custom property value renderer manager */
   propertyValueRendererManager?: PropertyValueRendererManager;
-  /** @hidden */
+  /**
+   * Gets called when rendering is finished. Should be used while testing to know when asynchronous rendering has finished.
+   * @hidden
+   */
   onRender?: () => void;
 }
 
@@ -89,7 +95,7 @@ export interface TableProps {
 export interface CellProps {
   item: CellItem;
   displayValue: string;
-  render: () => React.ReactNode;
+  render: React.ComponentType<{ isSelected: boolean }>;
 }
 
 /** Properties for a Table row */
@@ -200,7 +206,7 @@ export class Table extends React.Component<TableProps, TableState> {
   private _rowItemSelectionHandlers?: Array<SingleSelectionHandler<number>>;
   private _cellItemSelectionHandlers?: Array<Array<SingleSelectionHandler<CellKey>>>;
   private _pressedItemSelected: boolean = false;
-  private _reactPortalRef = React.createRef<HTMLDivElement>();
+  private _tableRef = React.createRef<HTMLDivElement>();
 
   public readonly state: Readonly<TableState> = initialState;
 
@@ -292,25 +298,24 @@ export class Table extends React.Component<TableProps, TableState> {
   }
 
   public componentDidUpdate(previousProps: TableProps) {
-    /* istanbul ignore next */
-    if (this.props.onRender)
-      this.props.onRender();
-
     if (this.props.dataProvider !== previousProps.dataProvider) {
       // tslint:disable-next-line:no-floating-promises
       this.update();
-    } else if (this.props.isCellSelected !== previousProps.isCellSelected
+      return;
+    }
+    if (this.props.isCellSelected !== previousProps.isCellSelected
       || this.props.isRowSelected !== previousProps.isRowSelected) {
       this.updateSelectedRows();
       this.updateSelectedCells();
     }
+
+    /* istanbul ignore next */
+    if (this.props.onRender)
+      this.props.onRender();
   }
 
   public componentDidMount() {
     this._isMounted = true;
-    /* istanbul ignore next */
-    if (this.props.onRender)
-      this.props.onRender();
 
     // tslint:disable-next-line:no-floating-promises
     this.update();
@@ -418,10 +423,16 @@ export class Table extends React.Component<TableProps, TableState> {
 
   /** @hidden */
   public async update(): Promise<UpdateStatus> {
-    const status = await this.updateColumns();
-    if (status === UpdateStatus.Abort)
-      return status;
-    return this.updateRows();
+    let status = await this.updateColumns();
+
+    if (status !== UpdateStatus.Abort)
+      status = await this.updateRows();
+
+    /* istanbul ignore next */
+    if (this.props.onRender)
+      this.props.onRender();
+
+    return status;
   }
 
   public updateSelectedRows() {
@@ -681,36 +692,21 @@ export class Table extends React.Component<TableProps, TableState> {
     });
   });
 
-  private async createCellRenderer(cellItem: CellItem, column: ReactDataGridColumn, displayValue: string): Promise<() => React.ReactNode> {
-    if (!cellItem.record)
-      return () => undefined;
+  private async renderCellContent(cellItem: CellItem, column: ReactDataGridColumn, displayValue: string): Promise<React.ComponentType<{ isSelected: boolean }>> {
     if (column.icon)
-      return () => <IconCell value={displayValue} />;
+      return () => <TableIconCellContent iconName={displayValue} />;
 
-    const cellStyle: React.CSSProperties = {
-      color: cellItem.colorOverrides && cellItem.colorOverrides.foreColor ? colorDecimalToHex(cellItem.colorOverrides.foreColor) : undefined,
-      backgroundColor: cellItem.colorOverrides && cellItem.colorOverrides.backColor ? colorDecimalToHex(cellItem.colorOverrides.backColor) : undefined,
-      fontWeight: cellItem.isBold ? "bold" : undefined,
-      fontStyle: cellItem.isItalic ? "italic" : undefined,
-      textAlign: cellItem.alignment ? horizontalAlignmentToCssAlignment(cellItem.alignment) : undefined,
-    };
-
-    const rendererContext: PropertyValueRendererContext = {
-      containerType: PropertyContainerType.Table,
-      onDialogOpen: this._onDialogOpen,
-      style: cellStyle,
-      // TODO: Enable, when table gets refactored. Explanation in ./../table/NonPrimitiveValueRenderer
-      // onPopupShow: this._onPopupShow,
-      // onPopupHide: this._onPopupHide,
-    };
-
-    let renderedElement: React.ReactNode;
-
-    if (this.props.propertyValueRendererManager)
-      renderedElement = await this.props.propertyValueRendererManager.render(cellItem.record!, rendererContext);
-    else
-      renderedElement = await PropertyValueRendererManager.defaultManager.render(cellItem.record!, rendererContext);
-    return () => renderedElement;
+    return (props: { isSelected: boolean }) => (
+      <TableCellContent
+        height={TABLE_ROW_HEIGHT}
+        isSelected={props.isSelected}
+        cellItem={cellItem}
+        onDialogOpen={this._onDialogOpen}
+        propertyValueRendererManager={this.props.propertyValueRendererManager
+          ? this.props.propertyValueRendererManager
+          : PropertyValueRendererManager.defaultManager}
+      />
+    );
   }
 
   private async getCellDisplayValue(cellItem: CellItem): Promise<string> {
@@ -737,7 +733,7 @@ export class Table extends React.Component<TableProps, TableState> {
       cellProps[column.key] = {
         item: cellItem,
         displayValue,
-        render: await this.createCellRenderer(cellItem, column, displayValue),
+        render: await this.renderCellContent(cellItem, column, displayValue),
       };
     }
     const rowStyle: React.CSSProperties = {
@@ -847,59 +843,70 @@ export class Table extends React.Component<TableProps, TableState> {
     this.updateRows(); // tslint:disable-line:no-floating-promises
   }
 
-  private createRowCells(rowProps: RowProps): { [columnKey: string]: React.ReactNode } {
+  private createRowCells(rowProps: RowProps, isSelected: boolean): { [columnKey: string]: React.ReactNode } {
     const cells: { [columnKey: string]: React.ReactNode } = {};
-    let columnIndex = -1;
-    for (const column of this.state.columns) {
-      columnIndex++;
+
+    for (let index = 0; index < this.state.columns.length; index++) {
+      const column = this.state.columns[index];
+
       const cellProps = rowProps.cells[column.key];
       if (!cellProps) {
         continue;
       }
-      const cell = cellProps.render();
+      // tslint:disable-next-line:variable-name
+      const CellContent = cellProps.render;
       const isEditorCell =
         this.state.cellEditorState.active
         && this.state.cellEditorState.rowIndex === rowProps.index
-        && this.state.cellEditorState.colIndex === columnIndex;
+        && this.state.cellEditorState.colIndex === index
+        && cellProps.item.record;
+
+      let onClick: ((e: React.MouseEvent) => void) | undefined;
+      let onMouseMove: ((e: React.MouseEvent) => void) | undefined;
+      let onMouseDown: ((e: React.MouseEvent) => void) | undefined;
+      let className: string | undefined;
 
       if (this._tableSelectionTarget === TableSelectionTarget.Cell) {
         const cellKey = { rowIndex: rowProps.index, columnKey: column.key };
         const selectionHandler = this.createCellItemSelectionHandler(cellKey);
         const selectionFunction = this._cellSelectionHandler.createSelectionFunction(this._cellComponentSelectionHandler, selectionHandler);
-        const onClick = (e: React.MouseEvent) => selectionFunction(e.shiftKey, e.ctrlKey);
-        const onMouseMove = (e: React.MouseEvent) => { if (e.buttons === 1) this._cellSelectionHandler.updateDragAction(cellKey); };
-        const onMouseDown = () => {
+        onClick = (e: React.MouseEvent) => selectionFunction(e.shiftKey, e.ctrlKey);
+        onMouseMove = (e: React.MouseEvent) => { if (e.buttons === 1) this._cellSelectionHandler.updateDragAction(cellKey); };
+        onMouseDown = () => {
           this._cellSelectionHandler.createDragAction(this._cellComponentSelectionHandler, this.cellItemSelectionHandlers, cellKey);
         };
-        const className = classnames("cell", this.isCellSelected(cellKey) ? "is-selected" : "is-hover-enabled");
-        cells[column.key] = <div
+        isSelected = this.isCellSelected(cellKey);
+        className = classnames(isSelected ? "is-selected" : "is-hover-enabled");
+      }
+
+      cells[column.key] = (
+        <TableCell
           className={className}
+          title={cellProps.displayValue}
           onClick={onClick}
           onMouseMove={onMouseMove}
-          onMouseDown={onMouseDown}>
-          {cell}
-        </div>;
-      } else {
-        if (isEditorCell && cellProps.item.record)
-          cells[column.key] = <EditorContainer propertyRecord={cellProps.item.record} title={cellProps.displayValue} onCommit={this._onCellCommit} onCancel={this._deactivateCellEditor} />;
-        else
-          cells[column.key] = <div className={"cell"} title={cellProps.displayValue}>{cell}</div>;
-      }
+          onMouseDown={onMouseDown}
+          cellEditingProps={isEditorCell ? {
+            onCancel: this._deactivateCellEditor,
+            onCommit: this._onCellCommit,
+            propertyRecord: cellProps.item.record!,
+          } : undefined}
+        >
+          <CellContent isSelected={isSelected} />
+        </TableCell>
+      );
     }
     return cells;
   }
 
   private _createRowRenderer = () => {
-    return (props: { row: RowProps, [k: string]: any }) => {
+    return (props: { row: RowProps, [k: string]: React.ReactNode }) => {
       const renderRow = this.props.renderRow ? this.props.renderRow : this.renderRow;
       const { row: rowProps, ...reactDataGridRowProps } = props;
-      const cells = this.createRowCells(rowProps);
       if (this._tableSelectionTarget === TableSelectionTarget.Row) {
         const selectionFunction = this._rowSelectionHandler.createSelectionFunction(this._rowComponentSelectionHandler, this.createRowItemSelectionHandler(props.row.index));
-        const onClick = (e: React.MouseEvent) => {
-          selectionFunction(e.shiftKey, e.ctrlKey);
-        };
-        const onMouseDown = (_e: React.MouseEvent) => {
+        const onClick = (e: React.MouseEvent) => selectionFunction(e.shiftKey, e.ctrlKey);
+        const onMouseDown = () => {
           this._rowSelectionHandler.createDragAction(this._rowComponentSelectionHandler, [this.rowItemSelectionHandlers], props.row.index);
         };
         const onMouseMove = (e: React.MouseEvent) => {
@@ -907,17 +914,20 @@ export class Table extends React.Component<TableProps, TableState> {
             this._rowSelectionHandler.updateDragAction(props.row.index);
         };
         const isSelected = this._selectedRowIndices.has(props.row.index);
+        const cells = this.createRowCells(rowProps, isSelected);
         const row = renderRow(rowProps.item, { ...reactDataGridRowProps, cells, isSelected });
         return <div
-          className={classnames("row", !isSelected && "is-hover-enabled")}
+          className={classnames("components-table-row", !isSelected && "is-hover-enabled")}
           onClickCapture={onClick}
           onMouseMove={onMouseMove}
           onMouseDown={onMouseDown}
           style={props.row.style}>
           {row}
         </div>;
+      } else {
+        const cells = this.createRowCells(rowProps, false);
+        return renderRow(rowProps.item, { ...reactDataGridRowProps, cells });
       }
-      return renderRow(rowProps.item, { ...reactDataGridRowProps, cells });
     };
   }
 
@@ -1048,21 +1058,14 @@ export class Table extends React.Component<TableProps, TableState> {
     return true;
   }
 
-  private _onDialogOpen = (dialogState: PropertyDialogState) => {
-    this.setState({ dialog: dialogState });
-  }
+  private _onDialogOpen = (dialogState: PropertyDialogState) => this.setState({ dialog: dialogState });
 
-  private _onDialogClose = () => {
-    this.setState({ dialog: undefined });
-  }
+  private _onDialogClose = () => this.setState({ dialog: undefined });
 
   // TODO: Enable, when table gets refactored. Explanation in ./../table/NonPrimitiveValueRenderer
-  // private _onPopupShow = (popupState: PropertyPopupState) => {
-  //   this.setState({ popup: popupState });
-  // }
-  // private _onPopupHide = () => {
-  //   this.setState({ popup: undefined });
-  // }
+  // private _onPopupShow = (popupState: PropertyPopupState) => this.setState({ popup: popupState });
+
+  // private _onPopupHide = () =>  this.setState({ popup: undefined });
 
   public render() {
     const rowRenderer = <TableRowRenderer rowRendererCreator={() => this._createRowRenderer()} />;
@@ -1070,7 +1073,7 @@ export class Table extends React.Component<TableProps, TableState> {
     const visibleColumns = this._getVisibleColumns();
     return (
       <>
-        <div className="react-data-grid-wrapper" onMouseDown={this._onMouseDown} onContextMenu={this.props.showHideColumns ? this._showContextMenu : undefined}>
+        <div className="components-table" onMouseDown={this._onMouseDown} onContextMenu={this.props.showHideColumns ? this._showContextMenu : undefined}>
           {this.props.showHideColumns &&
             <ShowHideMenu
               opened={this.state.menuVisible}
@@ -1081,25 +1084,25 @@ export class Table extends React.Component<TableProps, TableState> {
               onShowHideChange={this._handleShowHideChange} />
           }
           <ReactResizeDetector handleWidth handleHeight >
-            {(width: number, height: number) => <ReactDataGrid
-              columns={visibleColumns}
-              rowGetter={this._rowGetter}
-              rowRenderer={rowRenderer}
-              rowsCount={this.state.rowsCount}
-              {...(this.props.reorderableColumns ? {
-                draggableHeaderCell: DragDropHeaderCell,
-                onHeaderDrop: this._onHeaderDrop,
-              } as any : {})}
-              enableCellSelect={true}
-              minHeight={height}
-              minWidth={width}
-              headerRowHeight={25}
-              rowHeight={25}
-              onGridSort={this._handleGridSort}
-            />}
+            {(width: number, height: number) =>
+              <ReactDataGrid
+                columns={visibleColumns}
+                rowGetter={this._rowGetter}
+                rowRenderer={rowRenderer}
+                rowsCount={this.state.rowsCount}
+                {...(this.props.reorderableColumns ? {
+                  draggableHeaderCell: DragDropHeaderCell,
+                  onHeaderDrop: this._onHeaderDrop,
+                } as any : {})}
+                minHeight={height}
+                minWidth={width}
+                headerRowHeight={TABLE_ROW_HEIGHT}
+                rowHeight={TABLE_ROW_HEIGHT}
+                onGridSort={this._handleGridSort}
+              />}
           </ReactResizeDetector>
         </div>
-        <div ref={this._reactPortalRef}>
+        <div ref={this._tableRef}>
           {this.state.dialog
             ?
             <Dialog
@@ -1111,7 +1114,7 @@ export class Table extends React.Component<TableProps, TableState> {
               {this.state.dialog.content}
             </Dialog>
             : undefined}
-          {/* TODO: Enable, when table gets refactored. Explanation in ./../table/NonPrimitiveValueRenderer */}
+          {/* TODO: Enable, when table gets refactored. Explanation in ./../../properties/renderers/value/table/NonPrimitiveValueRenderer */}
           {/* {this.state.popup
             ?
             <Popup
@@ -1129,32 +1132,7 @@ export class Table extends React.Component<TableProps, TableState> {
   }
 }
 
-const horizontalAlignmentToCssAlignment = (alignment: HorizontalAlignment) => {
-  switch (alignment) {
-    case HorizontalAlignment.Left: return "left";
-    case HorizontalAlignment.Center: return "center";
-    case HorizontalAlignment.Right: return "right";
-    case HorizontalAlignment.Justify: return "justify";
-  }
-  return "left";
-};
-
-const colorDecimalToHex = (decimal: number) => `#${decimal.toString(16).padStart(6, "0")}`;
-
-/** Properties for the [[IconCell]] component  */
-export interface IconCellProps {
-  /** Icon name */
-  value: string;
-}
-
-/**
- * Formatter for Bentley icons.
- */
-export class IconCell extends React.Component<IconCellProps> {
-  public render() {
-    return <div className={`icon ${this.props.value}`} />;
-  }
-}
+export const colorDecimalToHex = (decimal: number) => `#${decimal.toString(16).padStart(6, "0")}`;
 
 /**
  * Props for the [[TableRow]] component

@@ -77,7 +77,6 @@ export * from "./ui-components/propertygrid/component/PropertyCategoryBlock";
 
 export * from "./ui-components/table/TableDataProvider";
 export * from "./ui-components/table/SimpleTableDataProvider";
-export { Grid, GridProps } from "./ui-components/table/component/Grid";
 export { Table, TableProps, TableSelectionTarget } from "./ui-components/table/component/Table";
 export { TableCellEditorState, TableCellUpdatedArgs } from "./ui-components/table/component/Table";
 export { TableDragDropType, TableDropTargetProps, TableDragDropProps, withTableDragDrop } from "./ui-components/table/hocs/withDragDrop";

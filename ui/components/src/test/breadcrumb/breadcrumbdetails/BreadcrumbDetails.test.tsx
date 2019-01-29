@@ -6,7 +6,7 @@ import * as React from "react";
 import { expect } from "chai";
 import * as sinon from "sinon";
 import { waitForUpdate } from "../../test-helpers/misc";
-import { render, cleanup, RenderResult, waitForElement } from "react-testing-library";
+import { render, cleanup, RenderResult, waitForElement, wait } from "react-testing-library";
 import TestUtils from "../../TestUtils";
 import { BreadcrumbDetails, BreadcrumbPath } from "../../../ui-components";
 import { mockRawTreeDataProvider, mockInterfaceTreeDataProvider } from "../mockTreeDataProvider";
@@ -39,13 +39,14 @@ describe("BreadcrumbDetails", () => {
       render(<BreadcrumbDetails onRender={renderSpy} path={path} />);
     });
 
-    it("should render with renderTable defined", () => {
+    it("should render with renderTable defined", async () => {
       const path = new BreadcrumbPath(mockRawTreeDataProvider);
       const renderTable = (props: TableProps, _node: TreeNodeItem | undefined, _children: TreeNodeItem[]) => {
         return <Table {...props} onRender={renderSpy} />;
       };
       render(<BreadcrumbDetails path={path} renderTable={renderTable} />);
-      expect(renderSpy).to.be.called;
+
+      await wait(() => renderSpy.called);
     });
 
     it("should update path to child", async () => {
@@ -77,7 +78,7 @@ describe("BreadcrumbDetails", () => {
       renderedComponent = render(<BreadcrumbDetails onRender={renderSpy} path={path} />);
       expect(await waitForElement(() => renderedComponent.getByText(nodeInterface.label))).to.exist;
       path.setDataProvider(mockRawTreeDataProvider);
-      await waitForUpdate(() => renderedComponent.rerender(<BreadcrumbDetails onRender={renderSpy} path={path} />), renderSpy, 8);
+      await waitForUpdate(() => renderedComponent.rerender(<BreadcrumbDetails onRender={renderSpy} path={path} />), renderSpy, 9);
     });
 
     it("should rerender from raw dataProvider to interface dataProvider", async () => {
@@ -86,7 +87,7 @@ describe("BreadcrumbDetails", () => {
       renderedComponent = render(<BreadcrumbDetails onRender={renderSpy} path={path} />);
       expect(await waitForElement(() => renderedComponent.getByText(nodeRaw.label))).to.exist;
       path.setDataProvider(mockInterfaceTreeDataProvider);
-      await waitForUpdate(() => renderedComponent.rerender(<BreadcrumbDetails onChildrenLoaded={renderSpy} path={path} />), renderSpy, 3);
+      await waitForUpdate(() => renderedComponent.rerender(<BreadcrumbDetails onChildrenLoaded={renderSpy} path={path} />), renderSpy, 4);
     });
 
     it("rerenders when currentNode is set to undefined", async () => {
