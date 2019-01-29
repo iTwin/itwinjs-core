@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "WIP: ViewportComponent unit tests. Removed imodeljs-clients-backend dependency from ui-framework",
+      "packageName": "@bentley/ui-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "dan.east@bentley.com"
+}
