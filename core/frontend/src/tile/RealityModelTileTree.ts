@@ -187,6 +187,8 @@ export class RealityModelTileTree {
       let rootTransform = ecefLocation ? ecefLocation.getTransform().inverse()! : Transform.createIdentity();
       if (json.root.transform)
         rootTransform = rootTransform.multiplyTransformTransform(RealityModelTileUtils.transformFromJson(json.root.transform));
+      else if (json.root.boundingVolume && Array.isArray(json.root.boundingVolume.region))
+        rootTransform = Transform.createTranslationXYZ(0, 0, (json.root.boundingVolume.region[4] + json.root.boundingVolume.region[5]) / 2.0).multiplyTransformTransform(rootTransform);
 
       if (undefined !== tilesetToDbJson)
         rootTransform = Transform.fromJSON(tilesetToDbJson).multiplyTransformTransform(rootTransform);
