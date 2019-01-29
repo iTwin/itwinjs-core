@@ -284,7 +284,7 @@ export class SelectionTool extends PrimitiveTool {
           this.processSelection(contents, SelectionProcessing.RemoveElementFromSelection); // tslint:disable-line:no-floating-promises
           break;
       }
-    });
+    }, true);
   }
 
   protected selectByPointsStart(ev: BeButtonEvent): boolean {

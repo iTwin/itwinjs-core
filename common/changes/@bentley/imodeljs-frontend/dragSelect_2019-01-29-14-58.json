@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Change drag select to exclude non locatable",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Brien.Bastings@bentley.com"
+}
