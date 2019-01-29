@@ -4,26 +4,30 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import * as Rules from "../../../src/Validation/ECRules";
-import { Schema, MutableSchema } from "../../../src/Metadata/Schema";
-import { EntityClass } from "../../../src/Metadata/EntityClass";
-import { MutableClass, ECClass, StructClass } from "../../../src/Metadata/Class";
-import { KindOfQuantity } from "../../../src/Metadata/KindOfQuantity";
+
+import { SchemaContext } from "../../../src/Context";
 import { DelayedPromiseWithProps } from "../../../src/DelayedPromise";
 import { PrimitiveType } from "../../../src/ECObjects";
-import { Unit } from "../../../src/Metadata/Unit";
+import { ECClass, MutableClass, StructClass } from "../../../src/Metadata/Class";
+import { EntityClass } from "../../../src/Metadata/EntityClass";
+import { KindOfQuantity } from "../../../src/Metadata/KindOfQuantity";
 import { PrimitiveProperty } from "../../../src/Metadata/Property";
+import { MutableSchema, Schema } from "../../../src/Metadata/Schema";
+import { Unit } from "../../../src/Metadata/Unit";
 import { DiagnosticCategory, DiagnosticCode, DiagnosticType } from "../../../src/Validation/Diagnostic";
+import * as Rules from "../../../src/Validation/ECRules";
 
 describe("PropertyRule tests", () => {
   let schema: Schema;
+  let context: SchemaContext;
   let testClass: EntityClass;
   let testBaseClass: EntityClass;
   let testKindOfQuantity: KindOfQuantity;
   let testBaseKindOfQuantity: KindOfQuantity;
 
   beforeEach(async () => {
-    schema = new Schema("TestSchema", 1, 0, 0);
+    context = new SchemaContext();
+    schema = new Schema(context, "TestSchema", 1, 0, 0);
     const mutable = schema as MutableSchema;
     testClass = await mutable.createEntityClass("TestClass");
     testBaseClass = await mutable.createEntityClass("TestBaseClass");
@@ -119,7 +123,7 @@ describe("PropertyRule tests", () => {
   });
 
   it("IncompatibleValueTypePropertyOverride, no base class, rule passes.", async () => {
-    const entityClass = new EntityClass(new Schema("TestSchema", 1, 2, 3), "TestEntity");
+    const entityClass = new EntityClass(new Schema(new SchemaContext(), "TestSchema", 1, 2, 3), "TestEntity");
     await (entityClass as ECClass as MutableClass).createPrimitiveProperty("TestProperty", PrimitiveType.Integer);
 
     const result = await Rules.incompatibleValueTypePropertyOverride (entityClass.properties![0] as PrimitiveProperty);
@@ -184,7 +188,7 @@ describe("PropertyRule tests", () => {
   });
 
   it("IncompatibleTypePropertyOverride, no base class, rule passes.", async () => {
-    const entityClass = new EntityClass(new Schema("TestSchema", 1, 2, 3), "TestEntity");
+    const entityClass = new EntityClass(new Schema(new SchemaContext(), "TestSchema", 1, 2, 3), "TestEntity");
     await (entityClass as ECClass as MutableClass).createPrimitiveProperty("TestProperty", PrimitiveType.Integer);
 
     const result = await Rules.incompatibleTypePropertyOverride (entityClass.properties![0] as PrimitiveProperty);

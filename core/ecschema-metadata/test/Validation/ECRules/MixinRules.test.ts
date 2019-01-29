@@ -4,18 +4,20 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import * as Rules from "../../../src/Validation/ECRules";
-import { Schema } from "../../../src/Metadata/Schema";
-import { EntityClass, MutableEntityClass } from "../../../src/Metadata/EntityClass";
-import { DiagnosticCategory, DiagnosticCode, DiagnosticType } from "../../../src/Validation/Diagnostic";
+
+import { SchemaContext } from "../../../src/Context";
 import { DelayedPromiseWithProps } from "../../../src/DelayedPromise";
+import { EntityClass, MutableEntityClass } from "../../../src/Metadata/EntityClass";
 import { Mixin } from "../../../src/Metadata/Mixin";
+import { Schema } from "../../../src/Metadata/Schema";
+import { DiagnosticCategory, DiagnosticCode, DiagnosticType } from "../../../src/Validation/Diagnostic";
+import * as Rules from "../../../src/Validation/ECRules";
 
 describe("Mixin Rule Tests", () => {
   let schema: Schema;
 
   beforeEach(async () => {
-    schema = new Schema("TestSchema", 1, 0, 0);
+    schema = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);
   });
 
   class TestMixin extends Mixin {

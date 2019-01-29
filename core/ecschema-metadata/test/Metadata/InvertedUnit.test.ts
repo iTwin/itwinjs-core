@@ -12,12 +12,13 @@ import { ECObjectsError } from "../../src/Exception";
 import { UnitSystem } from "../../src/Metadata/UnitSystem";
 import { Unit } from "../../src/Metadata/Unit";
 import { schemaItemTypeToString, SchemaItemType } from "../../src/ECObjects";
+import { SchemaContext } from "../../src/Context";
 
 describe("Inverted Unit tests", () => {
   let testUnit: InvertedUnit;
   describe("accept", () => {
     beforeEach(() => {
-      const schema = new Schema("TestSchema", 1, 0, 0);
+      const schema = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);
       testUnit = new InvertedUnit(schema, "TestInvertedUnit");
     });
 
@@ -36,7 +37,7 @@ describe("Inverted Unit tests", () => {
   });
 
   describe("SchemaItemType", () => {
-    const schema = new Schema("TestSchema", 1, 0, 0);
+    const schema = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);
     testUnit = new InvertedUnit(schema, "Test");
     it("should return correct item type and string", () => {
       assert.equal(testUnit.schemaItemType, SchemaItemType.InvertedUnit);
@@ -46,7 +47,7 @@ describe("Inverted Unit tests", () => {
 
   describe("Async fromJson", () => {
     beforeEach(() => {
-      const schema = new Schema("TestSchema", 1, 0, 0);
+      const schema = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);
       testUnit = new InvertedUnit(schema, "HORIZONTAL_PER_VERTICAL");
     });
 
@@ -79,7 +80,7 @@ describe("Inverted Unit tests", () => {
           },
         },
       };
-      const ecSchema = await Schema.fromJson(json);
+      const ecSchema = await Schema.fromJson(json, new SchemaContext());
       assert.isDefined(ecSchema);
       const testItem = await ecSchema.getItem("HORIZONTAL_PER_VERTICAL");
       assert.isDefined(testItem);
@@ -117,7 +118,7 @@ describe("Inverted Unit tests", () => {
           },
         },
       };
-      const ecSchema = await Schema.fromJson(json);
+      const ecSchema = await Schema.fromJson(json, new SchemaContext());
       assert.isDefined(ecSchema);
       const testItem = await ecSchema.getItem("HORIZONTAL_PER_VERTICAL");
       assert.isDefined(testItem);
@@ -155,7 +156,7 @@ describe("Inverted Unit tests", () => {
           },
         },
       };
-      await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The InvertedUnit TestSchema.HORIZONTAL_PER_VERTICAL does not have the required 'unitSystem' attribute.`);
+      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The InvertedUnit TestSchema.HORIZONTAL_PER_VERTICAL does not have the required 'unitSystem' attribute.`);
     });
     it("Resolve all dependencies for inverts unit and unit system", async () => {
       const json = {
@@ -185,7 +186,7 @@ describe("Inverted Unit tests", () => {
           },
         },
       };
-      const ecSchema = await Schema.fromJson(json);
+      const ecSchema = await Schema.fromJson(json, new SchemaContext());
       assert.isDefined(ecSchema);
       const testItem = await ecSchema.getItem("HORIZONTAL_PER_VERTICAL");
       assert.isDefined(testItem);
@@ -211,7 +212,7 @@ describe("Inverted Unit tests", () => {
   });
   describe("Sync fromJson", () => {
     beforeEach(() => {
-      const schema = new Schema("TestSchema", 1, 0, 0);
+      const schema = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);
       testUnit = new InvertedUnit(schema, "HORIZONTAL_PER_VERTICAL");
     });
 
@@ -244,7 +245,7 @@ describe("Inverted Unit tests", () => {
           },
         },
       };
-      const ecSchema = Schema.fromJsonSync(json);
+      const ecSchema = Schema.fromJsonSync(json, new SchemaContext());
       assert.isDefined(ecSchema);
       const testItem = ecSchema.getItemSync("HORIZONTAL_PER_VERTICAL");
       assert.isDefined(testItem);
@@ -282,7 +283,7 @@ describe("Inverted Unit tests", () => {
           },
         },
       };
-      const ecSchema = Schema.fromJsonSync(json);
+      const ecSchema = Schema.fromJsonSync(json, new SchemaContext());
       assert.isDefined(ecSchema);
       const testItem = ecSchema.getItemSync("HORIZONTAL_PER_VERTICAL");
       assert.isDefined(testItem);
@@ -320,7 +321,7 @@ describe("Inverted Unit tests", () => {
           },
         },
       };
-      const ecSchema = Schema.fromJsonSync(json);
+      const ecSchema = Schema.fromJsonSync(json, new SchemaContext());
       assert.isDefined(ecSchema);
       const testItem = ecSchema.getItemSync("HORIZONTAL_PER_VERTICAL");
       assert.isDefined(testItem);
@@ -346,7 +347,7 @@ describe("Inverted Unit tests", () => {
   });
   describe("toJson", () => {
     beforeEach(() => {
-      const schema = new Schema("TestSchema", 1, 0, 0);
+      const schema = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);
       testUnit = new InvertedUnit(schema, "HORIZONTAL_PER_VERTICAL");
     });
 
@@ -378,7 +379,7 @@ describe("Inverted Unit tests", () => {
       },
     };
     it("async- Serialization of fully defined inverted unit", async () => {
-      const ecSchema = await Schema.fromJson(jsonOne);
+      const ecSchema = await Schema.fromJson(jsonOne, new SchemaContext());
       assert.isDefined(ecSchema);
       const testItem = await ecSchema.getItem("HORIZONTAL_PER_VERTICAL");
       assert.isTrue(testItem instanceof InvertedUnit);
@@ -389,7 +390,7 @@ describe("Inverted Unit tests", () => {
       expect(invertedUnitSerialization.invertsUnit).to.eql("VERTICAL_PER_HORIZONTAL");
     });
     it("sync- Serialization of fully defined inverted unit", () => {
-      const ecSchema = Schema.fromJsonSync(jsonOne);
+      const ecSchema = Schema.fromJsonSync(jsonOne, new SchemaContext());
       assert.isDefined(ecSchema);
       const testItem = ecSchema.getItemSync("HORIZONTAL_PER_VERTICAL");
       assert.isTrue(testItem instanceof InvertedUnit);

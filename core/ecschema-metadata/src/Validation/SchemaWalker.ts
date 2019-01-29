@@ -3,14 +3,14 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import { SchemaContext } from "./../Context";
-import { Schema } from "./../Metadata/Schema";
-import { SchemaItem } from "../Metadata/SchemaItem";
 import { SchemaItemType } from "../ECObjects";
+import { ISchemaPartVisitor } from "../Interfaces";
 import { ECClass } from "../Metadata/Class";
 import { RelationshipClass } from "../Metadata/RelationshipClass";
+import { SchemaItem } from "../Metadata/SchemaItem";
 import { SchemaPartVisitorHelper } from "../SchemaPartVisitorHelper";
-import { ISchemaPartVisitor } from "../Interfaces";
+import { SchemaContext } from "./../Context";
+import { Schema } from "./../Metadata/Schema";
 
 /**
  * @hidden

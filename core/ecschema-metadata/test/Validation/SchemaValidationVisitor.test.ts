@@ -3,26 +3,28 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import { SchemaValidationVisitor } from "../../src/Validation/SchemaValidationVisitor";
-import sinon = require("sinon");
-import { EntityClass } from "../../src/Metadata/EntityClass";
 import { expect } from "chai";
-import { Schema } from "../../src/Metadata/Schema";
-import { TestReporter, TestRuleSet, TestRuleSetB, TESTDIAGNOSTICS } from "../TestUtils/DiagnosticHelpers";
-import { ECClass, MutableClass, StructClass } from "../../src/Metadata/Class";
+import sinon = require("sinon");
+
+import { SchemaContext } from "../../src/Context";
 import { PrimitiveType, RelationshipEnd } from "../../src/ECObjects";
-import { AnyProperty, MutableProperty } from "../../src/Metadata/Property";
-import { RelationshipClass, RelationshipConstraint } from "../../src/Metadata/RelationshipClass";
+import { ECClass, MutableClass, StructClass } from "../../src/Metadata/Class";
+import { Constant } from "../../src/Metadata/Constant";
+import { EntityClass } from "../../src/Metadata/EntityClass";
 import { Enumeration } from "../../src/Metadata/Enumeration";
-import { KindOfQuantity } from "../../src/Metadata/KindOfQuantity";
-import { PropertyCategory } from "../../src/Metadata/PropertyCategory";
 import { Format } from "../../src/Metadata/Format";
-import { Unit } from "../../src/Metadata/Unit";
 import { InvertedUnit } from "../../src/Metadata/InvertedUnit";
-import { UnitSystem } from "../../src/Metadata/UnitSystem";
+import { KindOfQuantity } from "../../src/Metadata/KindOfQuantity";
 import { Mixin } from "../../src/Metadata/Mixin";
 import { Phenomenon } from "../../src/Metadata/Phenomenon";
-import { Constant } from "../../src/Metadata/Constant";
+import { AnyProperty, MutableProperty } from "../../src/Metadata/Property";
+import { PropertyCategory } from "../../src/Metadata/PropertyCategory";
+import { RelationshipClass, RelationshipConstraint } from "../../src/Metadata/RelationshipClass";
+import { Schema } from "../../src/Metadata/Schema";
+import { Unit } from "../../src/Metadata/Unit";
+import { UnitSystem } from "../../src/Metadata/UnitSystem";
+import { SchemaValidationVisitor } from "../../src/Validation/SchemaValidationVisitor";
+import { TESTDIAGNOSTICS, TestReporter, TestRuleSet, TestRuleSetB } from "../TestUtils/DiagnosticHelpers";
 
 describe("SchemaValidationVisitor tests", () => {
   let visitor: SchemaValidationVisitor;
@@ -30,7 +32,7 @@ describe("SchemaValidationVisitor tests", () => {
 
   beforeEach(async () => {
     visitor = new SchemaValidationVisitor();
-    schema = new Schema("TestSchema", 1, 0, 0);
+    schema = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);
   });
 
   afterEach(() => {
@@ -71,7 +73,7 @@ describe("SchemaValidationVisitor tests", () => {
       const ruleSetB = new TestRuleSetB();
       visitor.registerRuleSet(ruleSetA);
       visitor.registerRuleSet(ruleSetB);
-      const testSchema = new Schema("TestSchema", 1, 0, 0);
+      const testSchema = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);
 
       await visitor.visitFullSchema(testSchema);
 
@@ -85,7 +87,7 @@ describe("SchemaValidationVisitor tests", () => {
       const reporter = new TestReporter();
       const reportSpy = sinon.spy(reporter, "report");
       visitor.registerReporter(reporter);
-      const testSchema = new Schema("TestSchema", 1, 0, 0);
+      const testSchema = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);
 
       await visitor.visitFullSchema(testSchema);
 

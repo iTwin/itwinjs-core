@@ -11,7 +11,7 @@ export class BisTestHelper {
 
   public static get bisSchema(): Schema {
     if (!this._schema) {
-      this._schema = Schema.fromJsonSync(bisCoreSchema);
+      this._schema = Schema.fromJsonSync(bisCoreSchema, new SchemaContext());
     }
 
     return this._schema;

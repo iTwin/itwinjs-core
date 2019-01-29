@@ -5,7 +5,6 @@
 
 import * as path from "path";
 import { assert } from "chai";
-
 import { SchemaXmlFileLocater } from "./../../src/Deserialization/SchemaXmlFileLocater";
 import { FileSchemaKey } from "./../../src/Deserialization/SchemaFileLocater";
 import { SchemaContext } from "./../../src/Context";
@@ -55,8 +54,8 @@ describe("SchemaXmlFileLocater tests:", () => {
     const schemaKey = new SchemaKey("SchemaD", 4, 4, 4);
 
     // Act
-    const locater1 = await locater.getSchema(schemaKey, SchemaMatchType.Exact);
-    const locater2 = await locater.getSchema(schemaKey, SchemaMatchType.Exact);
+    const locater1 = await locater.getSchema(schemaKey, SchemaMatchType.Exact, new SchemaContext());
+    const locater2 = await locater.getSchema(schemaKey, SchemaMatchType.Exact, new SchemaContext());
     const context1 = await context.getSchema(schemaKey, SchemaMatchType.Exact);
     const context2 = await context.getSchema(schemaKey, SchemaMatchType.Exact);
 
@@ -72,7 +71,7 @@ describe("SchemaXmlFileLocater tests:", () => {
     const schemaKey = new SchemaKey("DoesNotExist");
 
     // Act
-    const result = await locater.getSchema(schemaKey, SchemaMatchType.Exact);
+    const result = await locater.getSchema(schemaKey, SchemaMatchType.Exact, context);
 
     assert.isUndefined(result);
   });
@@ -260,34 +259,34 @@ describe("SchemaXmlFileLocater tests:", () => {
     assert.equal(stub!.schemaKey.version.toString(), "1.1.1");
   });
   it("getSchemaKey, valid version and name, succeeds", () => {
-    const schemaXml = "<ECSchema schemaName=\"SchemaA\" version=\"1.1.1\"> </ECSchema>"
+    const schemaXml = `<ECSchema schemaName="SchemaA" version="1.1.1"> </ECSchema>`;
     // Act
     const key = locater.getSchemaKey(schemaXml);
     // Assert
     assert.deepEqual(key, new SchemaKey("SchemaA", new ECVersion(1, 1, 1)));
   });
   it("getSchemaKey, invalid xml, throws", () => {
-    const schemaXml = "<ECSchemaBad schemaName=\"SchemaA\" version=\"1.1.1\"> </ECSchemaBad>"
+    const schemaXml = `<ECSchemaBad schemaName="SchemaA" version="1.1.1"> </ECSchemaBad>`;
     // Act / Assert
     assert.throws(() => locater.getSchemaKey(schemaXml), ECObjectsError, `Could not find '<ECSchema>' tag in the given file`);
   });
   it("getSchemaKey, invalid schemaName attribute, throws", () => {
-    const schemaXml = "<ECSchema schemaNameBad=\"SchemaA\" version=\"1.1.1\"> </ECSchema>"
+    const schemaXml = `<ECSchema schemaNameBad="SchemaA" version="1.1.1"> </ECSchema>`;
     // Act / Assert
     assert.throws(() => locater.getSchemaKey(schemaXml), ECObjectsError, `Could not find the ECSchema 'schemaName' or 'version' tag in the given file`);
   });
   it("getSchemaKey, invalid schemaName, throws", () => {
-    const schemaXml = "<ECSchema version=\"1.1.1\" schemaName=\"\"> </ECSchema>"
+    const schemaXml = `<ECSchema version="1.1.1" schemaName=""> </ECSchema>`;
     // Act / Assert
     assert.throws(() => locater.getSchemaKey(schemaXml), ECObjectsError, `Could not find the ECSchema 'schemaName' or 'version' tag in the given file`);
   });
   it("getSchemaKey, invalid version attribute, throws", () => {
-    const schemaXml = "<ECSchema schemaName=\"SchemaA\" versionBad=\"1.1.1\"> </ECSchema>"
+    const schemaXml = `<ECSchema schemaName="SchemaA" versionBad="1.1.1"> </ECSchema>`;
     // Act / Assert
     assert.throws(() => locater.getSchemaKey(schemaXml), ECObjectsError, `Could not find the ECSchema 'schemaName' or 'version' tag in the given file`);
   });
   it("getSchemaKey, invalid version, throws", () => {
-    const schemaXml = "<ECSchema schemaName=\"SchemaA\" version=\"\"> </ECSchema>"
+    const schemaXml = `<ECSchema schemaName="SchemaA" version=""> </ECSchema>`;
     // Act / Assert
     assert.throws(() => locater.getSchemaKey(schemaXml), ECObjectsError, `Could not find the ECSchema 'schemaName' or 'version' tag in the given file`);
   });

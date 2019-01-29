@@ -4,25 +4,25 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { AnyClass, AnyECType } from "../Interfaces";
-import { AnyProperty } from "../Metadata/Property";
-import { RelationshipClass, RelationshipConstraint } from "../Metadata/RelationshipClass";
-import { BaseDiagnostic } from "./Diagnostic";
-import { CustomAttributeContainerProps, CustomAttribute } from "../Metadata/CustomAttribute";
-import { Enumeration } from "../Metadata/Enumeration";
-import { KindOfQuantity } from "../Metadata/KindOfQuantity";
-import { PropertyCategory } from "../Metadata/PropertyCategory";
-import { Format } from "../Metadata/Format";
-import { Unit } from "../Metadata/Unit";
-import { InvertedUnit } from "../Metadata/InvertedUnit";
-import { UnitSystem } from "../Metadata/UnitSystem";
-import { Phenomenon } from "../Metadata/Phenomenon";
+import { StructClass } from "../Metadata/Class";
 import { Constant } from "../Metadata/Constant";
+import { CustomAttribute, CustomAttributeContainerProps } from "../Metadata/CustomAttribute";
+import { CustomAttributeClass } from "../Metadata/CustomAttributeClass";
+import { EntityClass } from "../Metadata/EntityClass";
+import { Enumeration } from "../Metadata/Enumeration";
+import { Format } from "../Metadata/Format";
+import { InvertedUnit } from "../Metadata/InvertedUnit";
+import { KindOfQuantity } from "../Metadata/KindOfQuantity";
+import { Mixin } from "../Metadata/Mixin";
+import { Phenomenon } from "../Metadata/Phenomenon";
+import { AnyProperty } from "../Metadata/Property";
+import { PropertyCategory } from "../Metadata/PropertyCategory";
+import { RelationshipClass, RelationshipConstraint } from "../Metadata/RelationshipClass";
 import { Schema } from "../Metadata/Schema";
 import { SchemaItem } from "../Metadata/SchemaItem";
-import { EntityClass } from "../Metadata/EntityClass";
-import { StructClass } from "../Metadata/Class";
-import { Mixin } from "../Metadata/Mixin";
-import { CustomAttributeClass } from "../Metadata/CustomAttributeClass";
+import { Unit } from "../Metadata/Unit";
+import { UnitSystem } from "../Metadata/UnitSystem";
+import { BaseDiagnostic } from "./Diagnostic";
 
 /** Interface used for all rule implementations used during schema validation. */
 export type IRule<T extends AnyECType, U = {}> = (ecDefinition: T, ...args: U[]) => AsyncIterable<BaseDiagnostic<T, any[]>>;

@@ -5,20 +5,19 @@
 
 import { assert, expect } from "chai";
 
-import { Schema, MutableSchema } from "./../../src/Metadata/Schema";
-import { ECClass } from "./../../src/Metadata/Class";
+import { SchemaContext } from "./../../src/Context";
+import { SchemaMatchType } from "./../../src/ECObjects";
+import { ECObjectsError } from "./../../src/Exception";
+import { ECClass, StructClass } from "./../../src/Metadata/Class";
 import { EntityClass } from "./../../src/Metadata/EntityClass";
 import { Mixin } from "./../../src/Metadata/Mixin";
-import { SchemaContext } from "./../../src/Context";
-import { StructClass } from "./../../src/Metadata/Class";
-import { ECObjectsError } from "./../../src/Exception";
-import { SchemaMatchType } from "./../../src/ECObjects";
+import { MutableSchema, Schema } from "./../../src/Metadata/Schema";
 import { SchemaKey } from "./../../src/SchemaKey";
 
 describe("Schema", () => {
   describe("api creation of schema", () => {
     it("with only the essentials", () => {
-      const testSchema = new Schema("TestSchemaCreation", 10, 99, 15);
+      const testSchema = new Schema(new SchemaContext(), "TestSchemaCreation", 10, 99, 15);
       assert.equal(testSchema.name, "TestSchemaCreation");
       assert.equal(testSchema.readVersion, 10);
       assert.equal(testSchema.writeVersion, 99);
@@ -26,15 +25,16 @@ describe("Schema", () => {
     });
 
     it("with invalid version numbers should fail", () => {
-      expect(() => { new Schema("NewSchemaWithInvalidReadVersion", 123, 4, 5); }).to.throw(ECObjectsError);
-      expect(() => { new Schema("NewSchemaWithInvalidWriteVersion", 12, 345, 6); }).to.throw(ECObjectsError);
-      expect(() => { new Schema("NewSchemaWithInvalidMinorVersion", 12, 34, 567); }).to.throw(ECObjectsError);
+      const context = new SchemaContext();
+      expect(() => { new Schema(context, "NewSchemaWithInvalidReadVersion", 123, 4, 5); }).to.throw(ECObjectsError);
+      expect(() => { new Schema(context, "NewSchemaWithInvalidWriteVersion", 12, 345, 6); }).to.throw(ECObjectsError);
+      expect(() => { new Schema(context, "NewSchemaWithInvalidMinorVersion", 12, 34, 567); }).to.throw(ECObjectsError);
     });
   });
 
   describe("create schema items", () => {
     it("should succeed for entity class", async () => {
-      const testSchema = new Schema("TestSchema", 1, 1, 1);
+      const testSchema = new Schema(new SchemaContext(), "TestSchema", 1, 1, 1);
       await (testSchema as MutableSchema).createEntityClass("TestEntity");
 
       expect(await testSchema.getItem("TestEntity")).instanceof(ECClass);
@@ -42,7 +42,7 @@ describe("Schema", () => {
     });
 
     it("should succeed for mixin class", async () => {
-      const testSchema = new Schema("TestSchema", 1, 2, 3);
+      const testSchema = new Schema(new SchemaContext(), "TestSchema", 1, 2, 3);
       await (testSchema as MutableSchema).createMixinClass("TestMixin");
 
       expect(await testSchema.getItem("TestMixin")).instanceof(ECClass);
@@ -50,7 +50,7 @@ describe("Schema", () => {
     });
 
     it("should succeed for struct class", async () => {
-      const testSchema = new Schema("TestSchema", 1, 2, 3);
+      const testSchema = new Schema(new SchemaContext(), "TestSchema", 1, 2, 3);
       await (testSchema as MutableSchema).createStructClass("TestStruct");
 
       expect(await testSchema.getItem("TestStruct")).instanceof(ECClass);
@@ -58,7 +58,7 @@ describe("Schema", () => {
     });
 
     it("should succeed with case-insensitive search", async () => {
-      const testSchema = new Schema("TestSchema", 1, 0, 0);
+      const testSchema = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);
       await (testSchema as MutableSchema).createEntityClass("testEntity");
 
       expect(await testSchema.getItem("TESTENTITY")).not.undefined;
@@ -88,7 +88,7 @@ describe("Schema", () => {
           label: "SomeDisplayLabel",
           description: "A really long description...",
         };
-        const testSchema = new Schema();
+        const testSchema = new Schema(new SchemaContext());
         expect(testSchema).to.exist;
         await testSchema.deserialize(propertyJson);
         assertValidSchema(testSchema);
@@ -103,7 +103,7 @@ describe("Schema", () => {
           label: "SomeDisplayLabel",
           description: "A really long description...",
         };
-        const testSchema = new Schema("ValidSchema", 1, 2, 3);
+        const testSchema = new Schema(new SchemaContext(), "ValidSchema", 1, 2, 3);
         expect(testSchema).to.exist;
         await testSchema.deserialize(propertyJson);
         assertValidSchema(testSchema);
@@ -115,10 +115,11 @@ describe("Schema", () => {
           name: "InvalidSchema",
           version: "1.2.3",
         };
-        const testSchema = new Schema("InvalidSchema", 1, 2, 3);
+        const context = new SchemaContext();
+        const testSchema = new Schema(context, "InvalidSchema", 1, 2, 3);
         expect(testSchema).to.exist;
         await expect(testSchema.deserialize(schemaJson as any)).to.be.rejectedWith(ECObjectsError, "The Schema InvalidSchema has an unsupported namespace 'https://badmetaschema.com'.");
-        await expect(Schema.fromJson(schemaJson as any)).to.be.rejectedWith(ECObjectsError, "The Schema InvalidSchema has an unsupported namespace 'https://badmetaschema.com'.");
+        await expect(Schema.fromJson(schemaJson as any, context)).to.be.rejectedWith(ECObjectsError, "The Schema InvalidSchema has an unsupported namespace 'https://badmetaschema.com'.");
       });
 
       it("should throw for mismatched name", async () => {
@@ -128,7 +129,7 @@ describe("Schema", () => {
           version: "1.2.3",
           alias: "bad",
         };
-        const testSchema = new Schema("BadSchema", 1, 2, 3);
+        const testSchema = new Schema(new SchemaContext(), "BadSchema", 1, 2, 3);
         expect(testSchema).to.exist;
         await expect(testSchema.deserialize(json)).to.be.rejectedWith(ECObjectsError);
       });
@@ -140,7 +141,7 @@ describe("Schema", () => {
           version: "1.2.6",
           alias: "bad",
         };
-        const testSchema = new Schema("BadSchema", 1, 2, 3);
+        const testSchema = new Schema(new SchemaContext(), "BadSchema", 1, 2, 3);
         expect(testSchema).to.exist;
         await expect(testSchema.deserialize(json)).to.be.rejectedWith(ECObjectsError);
       });
@@ -155,7 +156,7 @@ describe("Schema", () => {
           label: "SomeDisplayLabel",
           description: "A really long description...",
         };
-        const testSchema = new Schema("ValidSchema", 1, 2, 3);
+        const testSchema = new Schema(new SchemaContext(), "ValidSchema", 1, 2, 3);
         expect(testSchema).to.exist;
         await testSchema.deserialize(propertyJson);
         const serialized = testSchema.toJson();
@@ -175,7 +176,7 @@ describe("Schema", () => {
           label: "SomeDisplayLabel",
           description: "A really long description...",
         };
-        const testSchema = new Schema("ValidSchema", 1, 2, 3);
+        const testSchema = new Schema(new SchemaContext(), "ValidSchema", 1, 2, 3);
         expect(testSchema).to.exist;
         await testSchema.deserialize(propertyJson);
         (testSchema as MutableSchema).addCustomAttribute({ className: "CoreCustomAttributes.HiddenSchema" });
@@ -191,7 +192,7 @@ describe("Schema", () => {
           label: "SomeDisplayLabel",
           description: "A really long description...",
         };
-        const testSchema = new Schema("ValidSchema", 1, 2, 3);
+        const testSchema = new Schema(new SchemaContext(), "ValidSchema", 1, 2, 3);
         expect(testSchema).to.exist;
         testSchema.deserializeSync(propertyJson);
         (testSchema as MutableSchema).addCustomAttribute({ className: "CoreCustomAttributes.HiddenSchema", ShowClasses: true });
@@ -208,7 +209,7 @@ describe("Schema", () => {
           label: "SomeDisplayLabel",
           description: "A really long description...",
         };
-        const testSchema = new Schema("ValidSchema", 1, 2, 3);
+        const testSchema = new Schema(new SchemaContext(), "ValidSchema", 1, 2, 3);
         expect(testSchema).to.exist;
         await testSchema.deserialize(propertyJson);
         (testSchema as MutableSchema).addCustomAttribute({ className: "CoreCustomAttributes.HiddenSchema" });
@@ -228,7 +229,7 @@ describe("Schema", () => {
           label: "SomeDisplayLabel",
           description: "A really long description...",
         };
-        const testSchema = new Schema("ValidSchema", 1, 2, 3);
+        const testSchema = new Schema(new SchemaContext(), "ValidSchema", 1, 2, 3);
         expect(testSchema).to.exist;
         await testSchema.deserialize(propertyJson);
         (testSchema as MutableSchema).addCustomAttribute({ className: "CoreCustomAttributes.HiddenSchema", ShowClasses: true });
@@ -254,10 +255,10 @@ describe("Schema", () => {
             },
           ],
         };
-        const refSchema = new Schema("RefSchema", 1, 0, 0);
+        const refSchema = new Schema(new SchemaContext(), "RefSchema", 1, 0, 0);
         const context = new SchemaContext();
         await context.addSchema(refSchema);
-        let testSchema = new Schema("ValidSchema", 1, 2, 3);
+        let testSchema = new Schema(new SchemaContext(), "ValidSchema", 1, 2, 3);
         testSchema = await Schema.fromJson(schemaJson, context);
         expect(testSchema).to.exist;
         const entityClassJson = testSchema.toJson();
@@ -284,12 +285,12 @@ describe("Schema", () => {
             },
           ],
         };
-        const refSchema = new Schema("RefSchema", 1, 0, 0);
-        const anotherRefSchema = new Schema("AnotherRefSchema", 1, 0, 2);
         const context = new SchemaContext();
+        const refSchema = new Schema(context, "RefSchema", 1, 0, 0);
+        const anotherRefSchema = new Schema(context, "AnotherRefSchema", 1, 0, 2);
         context.addSchemaSync(refSchema);
         context.addSchemaSync(anotherRefSchema);
-        let testSchema = new Schema("ValidSchema", 1, 2, 3);
+        let testSchema = new Schema(context, "ValidSchema", 1, 2, 3);
         testSchema = Schema.fromJsonSync(schemaJson, context);
         expect(testSchema).to.exist;
         const entityClassJson = testSchema.toJson();
@@ -319,12 +320,12 @@ describe("Schema", () => {
           },
         };
 
-        const refSchema = new Schema("RefSchema", 1, 0, 5);
+        const context = new SchemaContext();
+        const refSchema = new Schema(context, "RefSchema", 1, 0, 5);
         const refBaseClass = await (refSchema as MutableSchema).createEntityClass("BaseClassInRef");
         assert.isDefined(refBaseClass);
-        const context = new SchemaContext();
         await context.addSchema(refSchema);
-        let testSchema = new Schema("TestSchema", 1, 2, 3);
+        let testSchema = new Schema(context, "TestSchema", 1, 2, 3);
         testSchema = await Schema.fromJson(schemaJson, context);
         const entityClassJson = testSchema.toJson();
         assert.isDefined(entityClassJson);
@@ -382,12 +383,12 @@ describe("Schema", () => {
           },
         };
 
-        const refSchema = new Schema("RefSchema", 1, 0, 5);
+        const context = new SchemaContext();
+        const refSchema = new Schema(context, "RefSchema", 1, 0, 5);
         const refBaseClass = await (refSchema as MutableSchema).createEntityClass("BaseClassInRef");
         assert.isDefined(refBaseClass);
-        const context = new SchemaContext();
         await context.addSchema(refSchema);
-        let testSchema = new Schema("TestSchema", 1, 2, 3);
+        let testSchema = new Schema(context, "TestSchema", 1, 2, 3);
         testSchema = await Schema.fromJson(schemaJson, context);
         const entityClassJson = testSchema.toJson();
         assert.isDefined(entityClassJson);
@@ -494,8 +495,9 @@ describe("Schema", () => {
     // for more comprehensive cases.
     describe("compareByVersion", () => {
       it("exact match, returns zero", async () => {
-        const leftSchema = new Schema("LeftSchema", 1, 2, 3);
-        const rightSchema = new Schema("RightSchema", 1, 2, 3);
+        const context = new SchemaContext();
+        const leftSchema = new Schema(context, "LeftSchema", 1, 2, 3);
+        const rightSchema = new Schema(context, "RightSchema", 1, 2, 3);
         const result = leftSchema.schemaKey.compareByVersion(rightSchema.schemaKey);
         assert.equal(result, 0);
       });

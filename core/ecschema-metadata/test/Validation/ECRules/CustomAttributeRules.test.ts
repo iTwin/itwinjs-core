@@ -3,15 +3,20 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import { Schema, MutableSchema } from "../../../src/Metadata/Schema";
 import { expect } from "chai";
-import * as Rules from "../../../src/Validation/ECRules";
-import { EntityClass, CustomAttributeClass, ECClassModifier } from "../../../src/ecschema-metadata";
+
+import { SchemaContext } from "../../../src/Context";
+import { ECClassModifier } from "../../../src/ECObjects";
 import { MutableClass } from "../../../src/Metadata/Class";
+import { CustomAttributeClass } from "../../../src/Metadata/CustomAttributeClass";
+import { EntityClass } from "../../../src/Metadata/EntityClass";
+import { MutableSchema, Schema } from "../../../src/Metadata/Schema";
 import { DiagnosticCategory, DiagnosticCode, DiagnosticType } from "../../../src/Validation/Diagnostic";
+import * as Rules from "../../../src/Validation/ECRules";
 
 describe("CustomAttribute Rules Tests", () => {
   let schema: Schema;
+  let context: SchemaContext;
   let caSchema: Schema;
 
   function addCA(modifier: ECClassModifier) {
@@ -20,8 +25,9 @@ describe("CustomAttribute Rules Tests", () => {
   }
 
   beforeEach(async () => {
-    schema = new Schema("TestSchema", 1, 0, 0);
-    caSchema = new Schema("TestCASchema", 1, 0, 0);
+    context = new SchemaContext();
+    schema = new Schema(context, "TestSchema", 1, 0, 0);
+    caSchema = new Schema(context, "TestCASchema", 1, 0, 0);
     await (schema as MutableSchema).addReference(caSchema);
   });
 

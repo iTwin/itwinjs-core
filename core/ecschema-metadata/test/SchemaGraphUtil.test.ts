@@ -42,8 +42,8 @@ describe("SchemaGraphUtil tests:", () => {
 
   it("buildDependencyOrderedSchemaList with same schema references, contains schema once", () => {
     // Arrange
-    const importSchema = new Schema(new SchemaKey("SchemaA", 1, 0, 0));
-    const refSchema = new Schema(new SchemaKey("SchemaB", 1, 0, 0));
+    const importSchema = new Schema(context, new SchemaKey("SchemaA", 1, 0, 0));
+    const refSchema = new Schema(context, new SchemaKey("SchemaB", 1, 0, 0));
     importSchema.references.push(refSchema);
     importSchema.references.push(refSchema);
 

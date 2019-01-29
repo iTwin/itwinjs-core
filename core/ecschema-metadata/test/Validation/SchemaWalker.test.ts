@@ -3,16 +3,17 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import { SchemaWalker } from "../../src/Validation/SchemaWalker";
-import sinon = require("sinon");
 import { expect } from "chai";
-import { Schema } from "../../src/Metadata/Schema";
+import sinon = require("sinon");
+
+import { SchemaContext } from "../../src/Context";
 import { SchemaReadHelper } from "../../src/Deserialization/Helper";
 import { JsonParser } from "../../src/Deserialization/JsonParser";
-import { SchemaContext } from "../../src/Context";
+import { ISchemaPartVisitor } from "../../src/Interfaces";
 import { ECClass } from "../../src/Metadata/Class";
 import { RelationshipClass } from "../../src/Metadata/RelationshipClass";
-import { ISchemaPartVisitor } from "../../src/Interfaces";
+import { Schema } from "../../src/Metadata/Schema";
+import { SchemaWalker } from "../../src/Validation/SchemaWalker";
 
 describe("SchemaWalker tests", () => {
   let testSchema: Schema;
@@ -159,14 +160,13 @@ describe("SchemaWalker tests", () => {
       visitFullSchema: sinon.spy(),
     };
 
-    testSchema = new Schema();
+    testSchema = new Schema(new SchemaContext());
     const reader = new SchemaReadHelper(JsonParser, undefined);
     testSchema = await reader.readSchema(testSchema, schemaJson);
   });
 
   it("should call all visit methods", async () => {
-    const context = new SchemaContext();
-    const reader = new SchemaWalker(mockVisitor, context);
+    const reader = new SchemaWalker(mockVisitor, new SchemaContext());
     testSchema = await reader.traverseSchema(testSchema);
     expect(testSchema).to.exist;
 

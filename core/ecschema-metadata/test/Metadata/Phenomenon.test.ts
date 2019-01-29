@@ -7,12 +7,13 @@ import { assert, expect } from "chai";
 import { Schema } from "../../src/Metadata/Schema";
 import { Phenomenon } from "../../src/Metadata/Phenomenon";
 import * as sinon from "sinon";
+import { SchemaContext } from "../../src/Context";
 
 describe("Phenomenon tests", () => {
   let testPhenomenon: Phenomenon;
   describe("accept", () => {
     beforeEach(() => {
-      const schema = new Schema("TestSchema", 1, 0, 0);
+      const schema = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);
       testPhenomenon = new Phenomenon(schema, "TestEnumeration");
     });
 
@@ -31,7 +32,7 @@ describe("Phenomenon tests", () => {
   });
   describe("Async fromJson", () => {
     beforeEach(() => {
-      const schema = new Schema("ExampleSchema", 1, 0, 0);
+      const schema = new Schema(new SchemaContext(), "ExampleSchema", 1, 0, 0);
       testPhenomenon = new Phenomenon(schema, "AREA");
     });
     it("Basic test", async () => {
@@ -49,7 +50,7 @@ describe("Phenomenon tests", () => {
   });
   describe("Sync fromJson", () => {
     beforeEach(() => {
-      const schema = new Schema("ExampleSchema", 1, 0, 0);
+      const schema = new Schema(new SchemaContext(), "ExampleSchema", 1, 0, 0);
       testPhenomenon = new Phenomenon(schema, "AREA");
     });
     it("Basic test", () => {
@@ -60,14 +61,14 @@ describe("Phenomenon tests", () => {
         label: "Area",
         definition: "Units.LENGTH(2)",
       };
-      testPhenomenon.deserializeSync(json)
+      testPhenomenon.deserializeSync(json);
       assert(testPhenomenon.label, "Area");
       assert(testPhenomenon.definition, "Units.LENGTH(2)");
     });
   });
   describe("toJson", () => {
     beforeEach(() => {
-      const schema = new Schema("ExampleSchema", 1, 0, 0);
+      const schema = new Schema(new SchemaContext(), "ExampleSchema", 1, 0, 0);
       testPhenomenon = new Phenomenon(schema, "AREA");
     });
     it("async - Basic test", async () => {

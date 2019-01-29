@@ -45,7 +45,7 @@ describe("KindOfQuantity", () => {
     let testKoq: KindOfQuantity;
     let schema: Schema;
     beforeEach(() => {
-      schema = new Schema("TestSchema", 1, 2, 3);
+      schema = new Schema(new SchemaContext(), "TestSchema", 1, 2, 3);
       testKoq = new KindOfQuantity(schema, "TestKindOfQuantity");
     });
 
@@ -67,8 +67,8 @@ describe("KindOfQuantity", () => {
     let context: SchemaContext;
     let schema: Schema;
     beforeEach(() => {
-      schema = new Schema("TestSchema", 1, 2, 3);
       context = new SchemaContext();
+      schema = new Schema(new SchemaContext(), "TestSchema", 1, 2, 3);
       context.addLocater(new TestSchemaLocater());
     });
     it("should successfully deserialize valid JSON", async () => {
@@ -157,8 +157,8 @@ describe("KindOfQuantity", () => {
     let schema: Schema;
     let context: SchemaContext;
     beforeEach(() => {
-      schema = new Schema("TestSchema", 1, 2, 3);
       context = new SchemaContext();
+      schema = new Schema(context, "TestSchema", 1, 2, 3);
       context.addLocater(new TestSchemaLocater());
     });
 
@@ -334,8 +334,8 @@ describe("KindOfQuantity", () => {
     let schema: Schema;
     let context: SchemaContext;
     beforeEach(() => {
-      schema = new Schema("TestSchema", 1, 2, 3);
       context = new SchemaContext();
+      schema = new Schema(context, "TestSchema", 1, 2, 3);
       context.addLocater(new TestSchemaLocater());
     });
 

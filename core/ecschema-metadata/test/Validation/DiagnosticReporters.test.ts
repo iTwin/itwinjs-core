@@ -6,12 +6,13 @@
 import { Logger } from "@bentley/bentleyjs-core";
 import { I18N, I18NNamespace } from "@bentley/imodeljs-i18n";
 import { assert, expect } from "chai";
+import sinon = require("sinon");
+
 import { PrimitiveType } from "../../src/ECObjects";
-import { EntityClass, PrimitiveProperty, Schema } from "../../src/ecschema-metadata";
+import { EntityClass, PrimitiveProperty, Schema, SchemaContext } from "../../src/ecschema-metadata";
 import { ECClass, MutableClass } from "../../src/Metadata/Class";
 import { AnyDiagnostic, createPropertyDiagnosticClass, DiagnosticCategory, DiagnosticCode } from "../../src/Validation/Diagnostic";
 import { LoggingDiagnosticReporter } from "../../src/Validation/LoggingDiagnosticReporter";
-import sinon = require("sinon");
 
 describe("DiagnosticReporters tests", () => {
   let testSchema: Schema;
@@ -20,7 +21,7 @@ describe("DiagnosticReporters tests", () => {
   let testDiagnostics: AnyDiagnostic[];
 
   async function createTestDiagnostic(category: DiagnosticCategory, messageArgs: any[] = ["Param1", "Param2"]): Promise<AnyDiagnostic> {
-    testSchema = new Schema("TestSchema", 1, 0, 0);
+    testSchema = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);
     testSchemaItem = new EntityClass(testSchema, "TestEntity");
     testProperty = await (testSchemaItem as ECClass as MutableClass).createPrimitiveProperty("TestProperty", PrimitiveType.String);
     const diagnosticClass = createPropertyDiagnosticClass(DiagnosticCode.BaseClassIsSealed, "Test Message {0} {1}", category);

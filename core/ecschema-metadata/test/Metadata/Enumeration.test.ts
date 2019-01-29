@@ -10,13 +10,14 @@ import { Schema } from "../../src/Metadata/Schema";
 import { Enumeration, MutableEnumeration } from "./../../src/Metadata/Enumeration";
 import { ECObjectsError } from "./../../src/Exception";
 import { PrimitiveType } from "./../../src/ECObjects";
+import { SchemaContext } from "../../src/Context";
 
 describe("Enumeration", () => {
   describe("accept", () => {
     let testEnum: Enumeration;
 
     beforeEach(() => {
-      const schema = new Schema("TestSchema", 1, 0, 0);
+      const schema = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);
       testEnum = new Enumeration(schema, "TestEnumeration", PrimitiveType.Integer);
     });
 
@@ -39,7 +40,7 @@ describe("Enumeration", () => {
     let testStringEnum: Enumeration;
 
     beforeEach(() => {
-      const schema = new Schema("TestSchema", 1, 0, 0);
+      const schema = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);
       testEnum = new Enumeration(schema, "TestEnumeration", PrimitiveType.Integer);
       testStringEnum = new Enumeration(schema, "TestEnumeration", PrimitiveType.String);
     });
@@ -93,7 +94,7 @@ describe("Enumeration", () => {
         },
       };
 
-      const ecSchema = await Schema.fromJson(testSchema);
+      const ecSchema = await Schema.fromJson(testSchema, new SchemaContext());
       const testEnum = await ecSchema.getItem<Enumeration>("testEnum");
       assert.isDefined(testEnum);
 
@@ -125,7 +126,7 @@ describe("Enumeration", () => {
         },
       };
 
-      const ecSchema = await Schema.fromJson(testSchema);
+      const ecSchema = await Schema.fromJson(testSchema, new SchemaContext());
       const testEnum = await ecSchema.getItem<Enumeration>("testEnum");
       assert.isDefined(testEnum);
     });
@@ -138,7 +139,7 @@ describe("Enumeration", () => {
     const baseJson = { schemaItemType: "Enumeration" };
 
     beforeEach(() => {
-      const schema = new Schema("TestSchema", 1, 0, 0);
+      const schema = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);
       testEnum = new Enumeration(schema, "TestEnumeration", PrimitiveType.Integer);
       testStringEnum = new Enumeration(schema, "TestEnumeration", PrimitiveType.String);
       testEnumSansPrimType = new Enumeration(schema, "TestEnumeration");
@@ -356,7 +357,7 @@ describe("Enumeration", () => {
     };
 
     beforeEach(() => {
-      const schema = new Schema("TestSchema", 1, 0, 0);
+      const schema = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);
       testEnumSansPrimType = new Enumeration(schema, "TestEnumeration");
     });
     describe("Basic serialization tests", () => {

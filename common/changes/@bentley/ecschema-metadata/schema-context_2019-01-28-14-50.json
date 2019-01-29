@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "SchemaContext is now required when constructing a Schema instance.",
+      "packageName": "@bentley/ecschema-metadata",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ecschema-metadata",
+  "email": "chris.lawson@bentley.com"
+}

@@ -34,7 +34,7 @@ const SCHEMAURL3_2 = "https://dev.bentley.com/json_schemas/ec/32/ecschema";
  *
  */
 export class Schema implements CustomAttributeContainerProps {
-  // private _context?: SchemaContext; unused currently, but in the future we may use it for item lookup
+  private _context: SchemaContext;
   protected _schemaKey?: SchemaKey;
   protected _alias?: string;
   protected _label?: string;
@@ -43,29 +43,30 @@ export class Schema implements CustomAttributeContainerProps {
   private readonly _items: SchemaItem[];
   private _customAttributes?: Map<string, CustomAttribute>;
   /**
-   * Constructs an empty Schema with the given name and version, (optionally) in a given context.
+   * Constructs an empty Schema with the given name and version in the provided context.
+   * @param context The SchemaContext that will control the lifetime of the schema
    * @param name The schema's name
    * @param readVersion The integer read (major) version of the schema
    * @param writeVersion The integer write version of the schema
    * @param minorVersion The integer minor version of the schema
+   */
+  constructor(context: SchemaContext, name: string, readVersion: number, writeVersion: number, minorVersion: number);
+  /**
+   * Constructs an empty Schema with the given key in the provided context.
    * @param context The SchemaContext that will control the lifetime of the schema
-   */
-  constructor(name: string, readVersion: number, writeVersion: number, minorVersion: number, context?: SchemaContext);
-  /**
-   * Constructs an empty Schema with the given key, (optionally) in a given context.
    * @param key A SchemaKey that uniquely identifies the schema
-   * @param context The SchemaContext that will control the lifetime of the schema.
    */
-  constructor(key: SchemaKey, context?: SchemaContext);  // tslint:disable-line:unified-signatures
+  constructor(context: SchemaContext, key: SchemaKey);  // tslint:disable-line:unified-signatures
   /**
-   * Constructs an empty Schema (without a SchemaKey).
+   * Constructs an empty Schema (without a SchemaKey) in the provided context.
    * This should only be used when the schema name and version will be deserialized (via `fromJson()`) immediately after this Schema is instantiated.
+   * @param context The SchemaContext that will control the lifetime of the schema
    * @hidden
    */
-  constructor();
-  constructor(nameOrKey?: SchemaKey | string, readVerOrCtx?: SchemaContext | number, writeVer?: number, minorVer?: number, _otherCtx?: SchemaContext) {
-    this._schemaKey = (typeof (nameOrKey) === "string") ? new SchemaKey(nameOrKey, new ECVersion(readVerOrCtx as number, writeVer, minorVer)) : nameOrKey;
-    // this._context = (typeof(readVerOrCtx) === "number") ? otherCtx : readVerOrCtx;
+  constructor(context: SchemaContext);
+  constructor(context: SchemaContext, nameOrKey?: SchemaKey | string, readVer?: SchemaContext | number, writeVer?: number, minorVer?: number) {
+    this._schemaKey = (typeof (nameOrKey) === "string") ? new SchemaKey(nameOrKey, new ECVersion(readVer as number, writeVer, minorVer)) : nameOrKey;
+    this._context = context;
     this.references = [];
     this._items = [];
   }
@@ -95,6 +96,9 @@ export class Schema implements CustomAttributeContainerProps {
 
   /** Returns the schema. */
   get schema(): Schema { return this; }
+
+  /** Returns the schema context. */
+  get context(): SchemaContext { return this._context; }
 
   /**
    * Returns a SchemaItemKey given the item name and the schema it belongs to
@@ -328,14 +332,12 @@ export class Schema implements CustomAttributeContainerProps {
 
     if (!schemaName || schemaName.toUpperCase() === this.name.toUpperCase()) {
       return this.getItem<T>(itemName);
-      // this._context.
     }
 
     const refSchema = await this.getReference(schemaName);
     if (!refSchema)
       return undefined;
 
-    // TODO: use the context and not get the full schema here
     return refSchema.getItem<T>(itemName);
   }
 
@@ -354,14 +356,12 @@ export class Schema implements CustomAttributeContainerProps {
 
     if (!schemaName || schemaName.toUpperCase() === this.name.toUpperCase()) {
       return this.getItemSync<T>(itemName);
-      // this._context.
     }
 
     const refSchema = this.getReferenceSync(schemaName);
     if (!refSchema)
       return undefined;
 
-    // TODO: use the context and not get the full schema here
     return refSchema.getItemSync<T>(itemName);
   }
 
@@ -485,8 +485,8 @@ export class Schema implements CustomAttributeContainerProps {
     this._customAttributes.set(customAttribute.className, customAttribute);
   }
 
-  public static async fromJson(jsonObj: object | string, context?: SchemaContext): Promise<Schema> {
-    let schema: Schema = new Schema();
+  public static async fromJson(jsonObj: object | string, context: SchemaContext): Promise<Schema> {
+    let schema: Schema = new Schema(context);
 
     const reader = new SchemaReadHelper(JsonParser, context);
     const rawSchema = typeof jsonObj === "string" ? JSON.parse(jsonObj) : jsonObj;
@@ -495,8 +495,8 @@ export class Schema implements CustomAttributeContainerProps {
     return schema;
   }
 
-  public static fromJsonSync(jsonObj: object | string, context?: SchemaContext): Schema {
-    let schema: Schema = new Schema();
+  public static fromJsonSync(jsonObj: object | string, context: SchemaContext): Schema {
+    let schema: Schema = new Schema(context);
 
     const reader = new SchemaReadHelper(JsonParser, context);
     const rawSchema = typeof jsonObj === "string" ? JSON.parse(jsonObj) : jsonObj;

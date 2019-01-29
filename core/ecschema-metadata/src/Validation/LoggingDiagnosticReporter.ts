@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Logger } from "@bentley/bentleyjs-core";
-import { DiagnosticReporterBase } from "./DiagnosticReporter";
 import { AnyDiagnostic, DiagnosticCategory } from "./Diagnostic";
+import { DiagnosticReporterBase } from "./DiagnosticReporter";
 
 const loggingCategory = "ecschema-metadata";
 

@@ -39,7 +39,7 @@ describe("Format", () => {
   let testFormat: Format;
   describe("accept", () => {
     beforeEach(() => {
-      schema = new Schema("TestSchema", 1, 0, 0);
+      schema = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);
       testFormat = new Format(schema, "TestFormat");
     });
 
@@ -214,7 +214,7 @@ describe("Format", () => {
 
   describe("deserialize formatted ECJSON", () => {
     beforeEach(() => {
-      schema = new Schema("TestSchema", 1, 0, 0);
+      schema = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);
       testFormat = (schema as MutableSchema).createFormatSync("TestFormat");
     });
 

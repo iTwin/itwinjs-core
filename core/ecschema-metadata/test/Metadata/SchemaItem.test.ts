@@ -8,15 +8,18 @@ import { assert, expect } from "chai";
 import { Schema } from "./../../src/Metadata/Schema";
 import { SchemaKey, SchemaItemKey } from "./../../src/SchemaKey";
 import { EntityClass } from "./../../src/Metadata/EntityClass";
+import { SchemaContext } from "../../src/Context";
 
 describe("SchemaItem", () => {
   describe("toJson", () => {
     let baseClass: any;
     let schema;
+
     before(() => {
-      schema = new Schema("ExampleSchema", 1, 0, 0);
+      schema = new Schema(new SchemaContext(), "ExampleSchema", 1, 0, 0);
       baseClass = new EntityClass(schema, "ExampleEntity");
     });
+
     it("Serialize SchemaItem Standalone", async () => {
       const propertyJson = {
         $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/schemaitem",
@@ -52,7 +55,7 @@ describe("SchemaItem", () => {
           },
         },
       };
-      const ecschema = await Schema.fromJson(schemaItemJson);
+      const ecschema = await Schema.fromJson(schemaItemJson, new SchemaContext());
       const testEntity = await ecschema.getItem<EntityClass>("ExampleEntity");
       assert.isDefined(testEntity);
       const testClass = await testEntity!.toJson(true, true);

@@ -3,16 +3,16 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import { IRuleSet } from "./Rules";
-import { Schema } from "../Metadata/Schema";
-import * as Diagnostic from "./Diagnostic";
-import { Mixin } from "../Metadata/Mixin";
-import { EntityClass } from "../Metadata/EntityClass";
-import { Property } from "../Metadata/Property";
-import { ECClass } from "../Metadata/Class";
 import { SchemaItemType } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
+import { ECClass } from "../Metadata/Class";
+import { EntityClass } from "../Metadata/EntityClass";
+import { Mixin } from "../Metadata/Mixin";
+import { Property } from "../Metadata/Property";
 import { RelationshipClass } from "../Metadata/RelationshipClass";
+import { Schema } from "../Metadata/Schema";
+import * as Diagnostic from "./Diagnostic";
+import { IRuleSet } from "./Rules";
 
 const bisCoreName = "BisCore";
 const elementMultiAspectName = "ElementMultiAspect";

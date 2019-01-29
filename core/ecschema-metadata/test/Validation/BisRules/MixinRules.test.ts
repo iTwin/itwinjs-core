@@ -4,19 +4,21 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import * as Rules from "../../../src/Validation/BisRules";
-import { Schema } from "../../../src/Metadata/Schema";
-import { DiagnosticCategory, DiagnosticCode, DiagnosticType } from "../../../src/Validation/Diagnostic";
+
+import { SchemaContext } from "../../../src/Context";
 import { DelayedPromiseWithProps } from "../../../src/DelayedPromise";
-import { Mixin } from "../../../src/Metadata/Mixin";
 import { PrimitiveType } from "../../../src/ECObjects";
 import { ECClass, MutableClass } from "../../../src/Metadata/Class";
+import { Mixin } from "../../../src/Metadata/Mixin";
+import { Schema } from "../../../src/Metadata/Schema";
+import * as Rules from "../../../src/Validation/BisRules";
+import { DiagnosticCategory, DiagnosticCode, DiagnosticType } from "../../../src/Validation/Diagnostic";
 
 describe("Mixin Rule Tests", () => {
   let schema: Schema;
 
   beforeEach(async () => {
-    schema = new Schema("TestSchema", 1, 0, 0);
+    schema = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);
   });
 
   describe("MixinsCannotOverrideInheritedProperties tests", () => {

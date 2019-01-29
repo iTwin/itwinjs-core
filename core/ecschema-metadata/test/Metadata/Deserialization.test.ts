@@ -6,15 +6,14 @@
 import { assert, expect } from "chai";
 import * as sinon from "sinon";
 
-import { Schema } from "./../../src/Metadata/Schema";
-import { SchemaContext } from "./../../src/Context";
-import { ECObjectsError } from "./../../src/Exception";
-import { SchemaDeserializationVisitor } from "./../../src/Interfaces";
-import { SchemaReadHelper } from "./../../src/Deserialization/Helper";
-import { AnyClass } from "./../../src/Interfaces";
-import { SchemaItemType } from "./../../src/ECObjects";
-import { NavigationProperty } from "./../../src/Metadata/Property";
 import { JsonParser } from "../../src/Deserialization/JsonParser";
+import { SchemaContext } from "./../../src/Context";
+import { SchemaReadHelper } from "./../../src/Deserialization/Helper";
+import { SchemaItemType } from "./../../src/ECObjects";
+import { ECObjectsError } from "./../../src/Exception";
+import { AnyClass, SchemaDeserializationVisitor } from "./../../src/Interfaces";
+import { NavigationProperty } from "./../../src/Metadata/Property";
+import { Schema } from "./../../src/Metadata/Schema";
 
 describe("Full Schema Deserialization", () => {
   describe("basic (empty) schemas", () => {
@@ -27,7 +26,7 @@ describe("Full Schema Deserialization", () => {
         label: "This is a test label",
       });
 
-      const ecschema = await Schema.fromJson(schemaString);
+      const ecschema = await Schema.fromJson(schemaString, new SchemaContext());
       expect(ecschema.name).equal("TestSchema");
       expect(ecschema.readVersion).equal(1);
       expect(ecschema.writeVersion).equal(2);
@@ -44,7 +43,7 @@ describe("Full Schema Deserialization", () => {
         label: "This is a test label",
       });
 
-      const ecschema = Schema.fromJsonSync(schemaString);
+      const ecschema = Schema.fromJsonSync(schemaString, new SchemaContext());
       expect(ecschema.name).equal("TestSchema");
       expect(ecschema.readVersion).equal(1);
       expect(ecschema.writeVersion).equal(2);
@@ -62,7 +61,7 @@ describe("Full Schema Deserialization", () => {
         label: "This is a test label",
       };
 
-      const ecschema = await Schema.fromJson(schemaJson);
+      const ecschema = await Schema.fromJson(schemaJson, new SchemaContext());
       expect(ecschema.name).equal("TestSchema");
       expect(ecschema.readVersion).equal(1);
       expect(ecschema.writeVersion).equal(2);
@@ -78,7 +77,7 @@ describe("Full Schema Deserialization", () => {
         version: "1.100.0",
       };
 
-      await expect(Schema.fromJson(schemaJson)).to.be.rejectedWith(ECObjectsError);
+      await expect(Schema.fromJson(schemaJson, new SchemaContext())).to.be.rejectedWith(ECObjectsError);
     });
 
     it("should throw for invalid schema name", async () => {
@@ -88,7 +87,7 @@ describe("Full Schema Deserialization", () => {
         version: "1.0.0",
       };
 
-      await expect(Schema.fromJson(schemaJson)).to.be.rejectedWith(ECObjectsError);
+      await expect(Schema.fromJson(schemaJson, new SchemaContext())).to.be.rejectedWith(ECObjectsError);
     });
   });
 
@@ -109,8 +108,8 @@ describe("Full Schema Deserialization", () => {
     };
 
     it("should succeed when referenced schema is already in the schema context", async () => {
-      const refSchema = new Schema("RefSchema", 1, 0, 5);
       const context = new SchemaContext();
+      const refSchema = new Schema(context, "RefSchema", 1, 0, 5);
       await context.addSchema(refSchema);
 
       const schema = await Schema.fromJson(validSchemaJson, context);
@@ -126,16 +125,15 @@ describe("Full Schema Deserialization", () => {
     });
 
     it("should throw if the referenced schema cannot be found", async () => {
-      const context = new SchemaContext();
-      await expect(Schema.fromJson(validSchemaJson, context)).to.be.rejectedWith(ECObjectsError, "Could not locate the referenced schema, RefSchema.1.0.5, of TestSchema");
+      await expect(Schema.fromJson(validSchemaJson, new SchemaContext())).to.be.rejectedWith(ECObjectsError, "Could not locate the referenced schema, RefSchema.1.0.5, of TestSchema");
     });
 
     it("should throw for invalid references attribute", async () => {
       let json: any = { ...baseJson, references: 0 };
-      await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The schema TestSchema has an invalid 'references' attribute. It should be of type 'object[]'.`);
+      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The schema TestSchema has an invalid 'references' attribute. It should be of type 'object[]'.`);
 
       json = { ...baseJson, references: [0] };
-      await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The schema TestSchema has an invalid 'references' attribute. It should be of type 'object[]'.`);
+      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The schema TestSchema has an invalid 'references' attribute. It should be of type 'object[]'.`);
     });
 
     it("should throw for missing reference name", async () => {
@@ -143,7 +141,7 @@ describe("Full Schema Deserialization", () => {
         ...baseJson,
         references: [{ version: "1.0.5" }],
       };
-      await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The schema TestSchema has an invalid 'references' attribute. One of the references is missing the required 'name' attribute.`);
+      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The schema TestSchema has an invalid 'references' attribute. One of the references is missing the required 'name' attribute.`);
     });
 
     it("should throw for invalid reference name", async () => {
@@ -151,7 +149,7 @@ describe("Full Schema Deserialization", () => {
         ...baseJson,
         references: [{ name: 0, version: "1.0.5" }],
       };
-      await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The schema TestSchema has an invalid 'references' attribute. One of the references has an invalid 'name' attribute. It should be of type 'string'.`);
+      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The schema TestSchema has an invalid 'references' attribute. One of the references has an invalid 'name' attribute. It should be of type 'string'.`);
     });
 
     it("should throw for missing reference version", async () => {
@@ -159,7 +157,7 @@ describe("Full Schema Deserialization", () => {
         ...baseJson,
         references: [{ name: "RefSchema" }],
       };
-      await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The schema TestSchema has an invalid 'references' attribute. One of the references is missing the required 'version' attribute.`);
+      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The schema TestSchema has an invalid 'references' attribute. One of the references is missing the required 'version' attribute.`);
     });
 
     it("should throw for invalid reference version", async () => {
@@ -167,7 +165,7 @@ describe("Full Schema Deserialization", () => {
         ...baseJson,
         references: [{ name: "RefSchema", version: 0 }],
       };
-      await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The schema TestSchema has an invalid 'references' attribute. One of the references has an invalid 'version' attribute. It should be of type 'string'.`);
+      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The schema TestSchema has an invalid 'references' attribute. One of the references has an invalid 'version' attribute. It should be of type 'string'.`);
     });
   });
 
@@ -180,15 +178,15 @@ describe("Full Schema Deserialization", () => {
 
     it("should throw for invalid items attribute", async () => {
       let json: any = { ...baseJson, items: 0 };
-      await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The schema TestSchema has an invalid 'items' attribute. It should be of type 'object'.`);
+      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The schema TestSchema has an invalid 'items' attribute. It should be of type 'object'.`);
 
       json = { ...baseJson, items: [{}] };
-      await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The schema TestSchema has an invalid 'items' attribute. It should be of type 'object'.`);
+      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The schema TestSchema has an invalid 'items' attribute. It should be of type 'object'.`);
     });
 
     it("should throw for item with invalid name", async () => {
       const json = { ...baseJson, items: { "": {} } };
-      await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `A SchemaItem in TestSchema has an invalid 'name' attribute. '' is not a valid ECName.`);
+      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECObjectsError, `A SchemaItem in TestSchema has an invalid 'name' attribute. '' is not a valid ECName.`);
     });
 
     it("should throw for item with missing schemaItemType", async () => {
@@ -196,7 +194,7 @@ describe("Full Schema Deserialization", () => {
         ...baseJson,
         items: { BadItem: {} },
       };
-      await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The SchemaItem TestSchema.BadItem is missing the required 'schemaItemType' attribute.`);
+      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The SchemaItem TestSchema.BadItem is missing the required 'schemaItemType' attribute.`);
     });
 
     it("should throw for item with invalid schemaItemType", async () => {
@@ -204,7 +202,7 @@ describe("Full Schema Deserialization", () => {
         ...baseJson,
         items: { BadItem: { schemaItemType: 0 } },
       };
-      await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The SchemaItem TestSchema.BadItem has an invalid 'schemaItemType' attribute. It should be of type 'string'.`);
+      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The SchemaItem TestSchema.BadItem has an invalid 'schemaItemType' attribute. It should be of type 'string'.`);
     });
   });
 
@@ -266,7 +264,8 @@ describe("Full Schema Deserialization", () => {
           },
         },
       };
-      let testSchema = new Schema();
+
+      let testSchema = new Schema(new SchemaContext());
       const reader = new SchemaReadHelper(JsonParser, undefined, mockVisitor);
       testSchema = await reader.readSchema(testSchema, schemaJson);
       expect(testSchema).to.exist;
@@ -332,7 +331,7 @@ describe("Full Schema Deserialization", () => {
         }),
       };
 
-      let testSchema = new Schema();
+      let testSchema = new Schema(new SchemaContext());
       const reader = new SchemaReadHelper(JsonParser, undefined, mockVisitor);
 
       testSchema = await reader.readSchema(testSchema, schemaJson);
@@ -382,7 +381,7 @@ describe("Full Schema Deserialization", () => {
         }),
       };
 
-      let testSchema = new Schema();
+      let testSchema = new Schema(new SchemaContext());
       const reader = new SchemaReadHelper(JsonParser, undefined, mockVisitor);
 
       testSchema = await reader.readSchema(testSchema, schemaJson);
@@ -454,7 +453,7 @@ describe("Full Schema Deserialization", () => {
         }),
       };
 
-      let testSchema = new Schema();
+      let testSchema = new Schema(new SchemaContext());
       const reader = new SchemaReadHelper(JsonParser, undefined, mockVisitor);
 
       testSchema = await reader.readSchema(testSchema, schemaJson);
@@ -526,7 +525,7 @@ describe("Full Schema Deserialization", () => {
         }),
       };
 
-      let testSchema = new Schema();
+      let testSchema = new Schema(new SchemaContext());
       const reader = new SchemaReadHelper(JsonParser, undefined, mockVisitor);
 
       testSchema = await reader.readSchema(testSchema, schemaJson);
@@ -562,7 +561,7 @@ describe("Full Schema Deserialization", () => {
       items: {
         TestCAClassA: { schemaItemType: "CustomAttributeClass", appliesTo: "AnyClass" },
         TestCAClassB: { schemaItemType: "CustomAttributeClass", appliesTo: "AnyClass" },
-      }
+      },
     };
 
     const oneCustomAttributeJson = {
@@ -576,14 +575,14 @@ describe("Full Schema Deserialization", () => {
     };
 
     it("async - single schema CustomAttribute", async () => {
-      const testSchema = await Schema.fromJson(oneCustomAttributeJson);
+      const testSchema = await Schema.fromJson(oneCustomAttributeJson, new SchemaContext());
       expect(testSchema).to.exist;
       expect(testSchema.customAttributes!.get("ValidSchema.TestCAClassA")).to.exist;
       assert(testSchema.customAttributes!.get("ValidSchema.TestCAClassA")!.ShowClasses === true);
     });
 
     it("sync - single schema CustomAttribute", () => {
-      const testSchema = Schema.fromJsonSync(oneCustomAttributeJson);
+      const testSchema = Schema.fromJsonSync(oneCustomAttributeJson, new SchemaContext());
       expect(testSchema).to.exist;
       expect(testSchema.customAttributes!.get("ValidSchema.TestCAClassA")).to.exist;
       assert(testSchema.customAttributes!.get("ValidSchema.TestCAClassA")!.ShowClasses === true);
@@ -602,14 +601,14 @@ describe("Full Schema Deserialization", () => {
     };
 
     it("async - multiple schema CustomAttributes", async () => {
-      const testSchema = await Schema.fromJson(twoCustomAttributeJson);
+      const testSchema = await Schema.fromJson(twoCustomAttributeJson, new SchemaContext());
       expect(testSchema).to.exist;
       expect(testSchema.customAttributes!.get("ValidSchema.TestCAClassA")).to.exist;
       expect(testSchema.customAttributes!.get("ValidSchema.TestCAClassB")).to.exist;
     });
 
     it("sync - multiple schema CustomAttributes", () => {
-      const testSchema = Schema.fromJsonSync(twoCustomAttributeJson);
+      const testSchema = Schema.fromJsonSync(twoCustomAttributeJson, new SchemaContext());
       expect(testSchema).to.exist;
       expect(testSchema.customAttributes!.get("ValidSchema.TestCAClassA")).to.exist;
       expect(testSchema.customAttributes!.get("ValidSchema.TestCAClassB")).to.exist;
@@ -630,7 +629,7 @@ describe("Full Schema Deserialization", () => {
         ],
       };
 
-      const testSchema = Schema.fromJsonSync(propertyJson);
+      const testSchema = Schema.fromJsonSync(propertyJson, new SchemaContext());
       expect(testSchema.customAttributes!.get("ValidSchema.TestCAClassA")).to.exist;
       expect(testSchema.customAttributes!.get("ValidSchema.TestCAClassB")).to.exist;
       assert(testSchema.customAttributes!.get("ValidSchema.TestCAClassA")!.ShowClasses === false);
@@ -656,7 +655,7 @@ describe("Full Schema Deserialization", () => {
               type: "PrimitiveProperty",
               typeName: "int",
               ...propJson,
-            }
+            },
           ],
         },
       },
@@ -672,7 +671,7 @@ describe("Full Schema Deserialization", () => {
     });
 
     it("async - single property CustomAttribute", async () => {
-      const testSchema = await Schema.fromJson(oneCustomAttributeJson);
+      const testSchema = await Schema.fromJson(oneCustomAttributeJson, new SchemaContext());
       expect(testSchema).to.exist;
       const testProp = (await testSchema.getItem("TestClass") as AnyClass).properties![0];
       expect(testProp).to.exist;
@@ -682,7 +681,7 @@ describe("Full Schema Deserialization", () => {
     });
 
     it("sync - single property CustomAttribute", () => {
-      const testSchema = Schema.fromJsonSync(oneCustomAttributeJson);
+      const testSchema = Schema.fromJsonSync(oneCustomAttributeJson, new SchemaContext());
       expect(testSchema).to.exist;
       const testProp = (testSchema.getItemSync("TestClass") as AnyClass).properties![0];
       expect(testProp).to.exist;
@@ -703,7 +702,7 @@ describe("Full Schema Deserialization", () => {
     });
 
     it("async - multiple property CustomAttributes", async () => {
-      const testSchema = await Schema.fromJson(twoCustomAttributesJson);
+      const testSchema = await Schema.fromJson(twoCustomAttributesJson, new SchemaContext());
       expect(testSchema).to.exist;
       const testProp = (await testSchema.getItem("TestClass") as AnyClass).properties![0];
       expect(testProp).to.exist;
@@ -713,7 +712,7 @@ describe("Full Schema Deserialization", () => {
     });
 
     it("sync - multiple property CustomAttributes", () => {
-      const testSchema = Schema.fromJsonSync(twoCustomAttributesJson);
+      const testSchema = Schema.fromJsonSync(twoCustomAttributesJson, new SchemaContext());
       expect(testSchema).to.exist;
       const testProp = (testSchema.getItemSync("TestClass") as AnyClass).properties![0];
       expect(testProp).to.exist;
@@ -739,7 +738,8 @@ describe("Full Schema Deserialization", () => {
           },
         ],
       };
-      const testSchema = Schema.fromJsonSync(getSchemaJson(propertyJson));
+
+      const testSchema = Schema.fromJsonSync(getSchemaJson(propertyJson), new SchemaContext());
       expect(testSchema).to.exist;
       const testProp = (testSchema.getItemSync("TestClass") as AnyClass).properties![0];
       expect(testProp).to.exist;

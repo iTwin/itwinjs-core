@@ -4,27 +4,27 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { AnyClass, ISchemaPartVisitor } from "../Interfaces";
+import { StructClass } from "../Metadata/Class";
 import { Constant } from "../Metadata/Constant";
+import { CustomAttribute, CustomAttributeContainerProps } from "../Metadata/CustomAttribute";
+import { CustomAttributeClass } from "../Metadata/CustomAttributeClass";
+import { EntityClass } from "../Metadata/EntityClass";
 import { Enumeration } from "../Metadata/Enumeration";
 import { Format } from "../Metadata/Format";
 import { InvertedUnit } from "../Metadata/InvertedUnit";
 import { KindOfQuantity } from "../Metadata/KindOfQuantity";
+import { Mixin } from "../Metadata/Mixin";
 import { Phenomenon } from "../Metadata/Phenomenon";
 import { AnyProperty } from "../Metadata/Property";
 import { PropertyCategory } from "../Metadata/PropertyCategory";
 import { RelationshipClass, RelationshipConstraint } from "../Metadata/RelationshipClass";
 import { Schema } from "../Metadata/Schema";
+import { SchemaItem } from "../Metadata/SchemaItem";
 import { Unit } from "../Metadata/Unit";
 import { UnitSystem } from "../Metadata/UnitSystem";
+import { AnyDiagnostic } from "./Diagnostic";
 import { IDiagnosticReporter } from "./DiagnosticReporter";
 import { IRule, IRuleSet } from "./Rules";
-import { AnyDiagnostic } from "./Diagnostic";
-import { CustomAttributeContainerProps, CustomAttribute } from "../Metadata/CustomAttribute";
-import { SchemaItem } from "../Metadata/SchemaItem";
-import { EntityClass } from "../Metadata/EntityClass";
-import { CustomAttributeClass } from "../Metadata/CustomAttributeClass";
-import { StructClass } from "../Metadata/Class";
-import { Mixin } from "../Metadata/Mixin";
 
 interface RuleSetArray {
   [name: string]: IRuleSet;

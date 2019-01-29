@@ -7,6 +7,7 @@ import { assert, expect } from "chai";
 import { Schema } from "../../src/Metadata/Schema";
 import { PropertyCategory } from "../../src/Metadata/PropertyCategory";
 import * as sinon from "sinon";
+import { SchemaContext } from "../../src/Context";
 
 describe("PropertyCategory", () => {
   describe("deserialization", () => {
@@ -26,7 +27,7 @@ describe("PropertyCategory", () => {
         },
       };
 
-      const ecSchema = await Schema.fromJson(testSchema);
+      const ecSchema = await Schema.fromJson(testSchema, new SchemaContext());
       assert.isDefined(ecSchema);
 
       const item = await ecSchema.getItem<PropertyCategory>("TestPropertyCategory");
@@ -61,7 +62,7 @@ describe("PropertyCategory", () => {
         },
       };
 
-      const ecSchema = await Schema.fromJson(testSchema);
+      const ecSchema = await Schema.fromJson(testSchema, new SchemaContext());
       assert.isDefined(ecSchema);
 
       const item = await ecSchema.getItem("TestPropertyCategory");
@@ -79,7 +80,7 @@ describe("PropertyCategory", () => {
     let testCategory: PropertyCategory;
 
     beforeEach(() => {
-      const schema = new Schema("TestSchema", 1, 0, 0);
+      const schema = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);
       testCategory = new PropertyCategory(schema, "TestCategory");
     });
 

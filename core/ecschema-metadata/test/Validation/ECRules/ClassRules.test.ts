@@ -4,17 +4,18 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import * as Rules from "../../../src/Validation/ECRules";
-import { Schema } from "../../../src/Metadata/Schema";
+
+import { DelayedPromiseWithProps, ECClassModifier, RelationshipClass, SchemaContext, schemaItemTypeToString } from "../../../src/ecschema-metadata";
 import { EntityClass } from "../../../src/Metadata/EntityClass";
-import { ECClassModifier, RelationshipClass, schemaItemTypeToString, DelayedPromiseWithProps } from "../../../src/ecschema-metadata";
+import { Schema } from "../../../src/Metadata/Schema";
 import { DiagnosticCategory, DiagnosticCode, DiagnosticType } from "../../../src/Validation/Diagnostic";
+import * as Rules from "../../../src/Validation/ECRules";
 
 describe("ClassRule tests", () => {
   let schema: Schema;
 
   beforeEach(async () => {
-    schema = new Schema("TestSchema", 1, 0, 0);
+    schema = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);
   });
 
   it("BaseClassIsSealed, rule violated.", async () => {

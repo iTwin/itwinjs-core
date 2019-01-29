@@ -4,11 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { Schema } from "../../../src/Metadata/Schema";
+
+import { SchemaContext } from "../../../src/Context";
 import { RelationshipClass } from "../../../src/Metadata/RelationshipClass";
-import { createSchemaJsonWithItems } from "../../TestUtils/DeserializationHelpers";
-import * as Rules from "../../../src/Validation/ECRules";
+import { Schema } from "../../../src/Metadata/Schema";
 import { DiagnosticCategory, DiagnosticCode, DiagnosticType } from "../../../src/Validation/Diagnostic";
+import * as Rules from "../../../src/Validation/ECRules";
+import { createSchemaJsonWithItems } from "../../TestUtils/DeserializationHelpers";
 
 describe("RelationshipRule tests", () => {
   let schema: Schema;
@@ -114,7 +116,7 @@ describe("RelationshipRule tests", () => {
     it("supported source and target constraint classes, rule passes", async () => {
       const baseJson = createBaseRelationship(true, { constraintClasses: ["TestSchema.SBE1"] }, { constraintClasses: ["TestSchema.TBE1"] });
       const childJson = createChildRelationship(true, { constraintClasses: ["TestSchema.SDE1", "TestSchema.SDE2"] }, { constraintClasses: ["TestSchema.TDE1", "TestSchema.TDE2"] });
-      schema = await Schema.fromJson(createSchemaJson(baseJson, childJson));
+      schema = await Schema.fromJson(createSchemaJson(baseJson, childJson), new SchemaContext());
       const relationship = schema.getItemSync("ChildRelationship") as RelationshipClass;
 
       const result = await Rules.abstractConstraintMustNarrowBaseConstraints(relationship);
@@ -128,7 +130,7 @@ describe("RelationshipRule tests", () => {
       const baseJson = createBaseRelationship(true, { constraintClasses: ["TestSchema.SBE1"] }, { constraintClasses: ["TestSchema.TBE1"] });
       const childJson = createChildRelationship(true, { constraintClasses: ["TestSchema.SDE1", "TestSchema.SDE2"] }, { constraintClasses: ["TestSchema.TDE1", "TestSchema.TDE2"] });
       delete childJson.ChildRelationship.baseClass;
-      schema = await Schema.fromJson(createSchemaJson(baseJson, childJson));
+      schema = await Schema.fromJson(createSchemaJson(baseJson, childJson), new SchemaContext());
       const relationship = schema.getItemSync("ChildRelationship") as RelationshipClass;
 
       const result = await Rules.abstractConstraintMustNarrowBaseConstraints(relationship);
@@ -141,7 +143,7 @@ describe("RelationshipRule tests", () => {
     it("unsupported source constraint class, rule violated", async () => {
       const baseJson = createBaseRelationship(true, { constraintClasses: ["TestSchema.SBE1"] }, { constraintClasses: ["TestSchema.TBE1"] });
       const childJson = createChildRelationship(true, { constraintClasses: ["TestSchema.E1"] }, { constraintClasses: ["TestSchema.TDE1"] });
-      schema = await Schema.fromJson(createSchemaJson(baseJson, childJson));
+      schema = await Schema.fromJson(createSchemaJson(baseJson, childJson), new SchemaContext());
       const relationship = schema.getItemSync("ChildRelationship") as RelationshipClass;
 
       const result = await Rules.abstractConstraintMustNarrowBaseConstraints(relationship);
@@ -164,7 +166,7 @@ describe("RelationshipRule tests", () => {
     it("unsupported source and target constraint classes, rule violated twice", async () => {
       const baseJson = createBaseRelationship(true, { constraintClasses: ["TestSchema.SBE1"] }, { constraintClasses: ["TestSchema.TBE1"] });
       const childJson = createChildRelationship(true, { constraintClasses: ["TestSchema.E1"] }, { constraintClasses: ["TestSchema.E2"] });
-      schema = await Schema.fromJson(createSchemaJson(baseJson, childJson));
+      schema = await Schema.fromJson(createSchemaJson(baseJson, childJson), new SchemaContext());
       const relationship = schema.getItemSync("ChildRelationship") as RelationshipClass;
 
       const result = await Rules.abstractConstraintMustNarrowBaseConstraints(relationship);
@@ -191,7 +193,7 @@ describe("RelationshipRule tests", () => {
     it("supported source and target constraint classes, rule passes", async () => {
       const baseJson = createBaseRelationship(true, { constraintClasses: ["TestSchema.SBE1"] }, { constraintClasses: ["TestSchema.TBE1"] });
       const childJson = createChildRelationship(true, { constraintClasses: ["TestSchema.SDE1", "TestSchema.SDE2"] }, { constraintClasses: ["TestSchema.TDE1", "TestSchema.TDE2"] });
-      schema = await Schema.fromJson(createSchemaJson(baseJson, childJson));
+      schema = await Schema.fromJson(createSchemaJson(baseJson, childJson), new SchemaContext());
       const relationship = schema.getItemSync("ChildRelationship") as RelationshipClass;
 
       const result = await Rules.derivedConstraintsMustNarrowBaseConstraints(relationship);
@@ -205,7 +207,7 @@ describe("RelationshipRule tests", () => {
       const baseJson = createBaseRelationship(true, { constraintClasses: ["TestSchema.SBE1"] }, { constraintClasses: ["TestSchema.TBE1"] });
       const childJson = createChildRelationship(true, { constraintClasses: ["TestSchema.SDE1", "TestSchema.SDE2"] }, { constraintClasses: ["TestSchema.TDE1", "TestSchema.TDE2"] });
       delete childJson.ChildRelationship.baseClass;
-      schema = await Schema.fromJson(createSchemaJson(baseJson, childJson));
+      schema = await Schema.fromJson(createSchemaJson(baseJson, childJson), new SchemaContext());
       const relationship = schema.getItemSync("ChildRelationship") as RelationshipClass;
 
       const result = await Rules.derivedConstraintsMustNarrowBaseConstraints(relationship);
@@ -218,7 +220,7 @@ describe("RelationshipRule tests", () => {
     it("unsupported source constraint class, rule violated", async () => {
       const baseJson = createBaseRelationship(true, { constraintClasses: ["TestSchema.SBE1"] }, { constraintClasses: ["TestSchema.TBE1"] });
       const childJson = createChildRelationship(true, { constraintClasses: ["TestSchema.SDE1", "TestSchema.E1"] }, { constraintClasses: ["TestSchema.TDE1"] });
-      schema = await Schema.fromJson(createSchemaJson(baseJson, childJson));
+      schema = await Schema.fromJson(createSchemaJson(baseJson, childJson), new SchemaContext());
       const relationship = schema.getItemSync("ChildRelationship") as RelationshipClass;
 
       const result = await Rules.derivedConstraintsMustNarrowBaseConstraints(relationship);
@@ -241,7 +243,7 @@ describe("RelationshipRule tests", () => {
     it("unsupported source and target constraint classes, rule violated twice", async () => {
       const baseJson = createBaseRelationship(true, { constraintClasses: ["TestSchema.SBE1"] }, { constraintClasses: ["TestSchema.TBE1"] });
       const childJson = createChildRelationship(true, { constraintClasses: ["TestSchema.SDE1", "TestSchema.E1"] }, { constraintClasses: ["TestSchema.E2"] });
-      schema = await Schema.fromJson(createSchemaJson(baseJson, childJson));
+      schema = await Schema.fromJson(createSchemaJson(baseJson, childJson), new SchemaContext());
       const relationship = schema.getItemSync("ChildRelationship") as RelationshipClass;
 
       const result = await Rules.derivedConstraintsMustNarrowBaseConstraints(relationship);
@@ -276,7 +278,7 @@ describe("RelationshipRule tests", () => {
         constraintClasses: ["TestSchema.TDE1", "TestSchema.TDE2"],
       };
       const baseJson = createBaseRelationship(true, sourceConstraints, targetConstraints);
-      schema = await Schema.fromJson(createSchemaJson(baseJson, undefined));
+      schema = await Schema.fromJson(createSchemaJson(baseJson, undefined), new SchemaContext());
       const relationship = schema.getItemSync("BaseRelationship") as RelationshipClass;
 
       const result = await Rules.constraintClassesDeriveFromAbstractContraint(relationship);
@@ -297,7 +299,7 @@ describe("RelationshipRule tests", () => {
       };
 
       const baseJson = createBaseRelationship(true, sourceConstraints, targetConstraints);
-      schema = await Schema.fromJson(createSchemaJson(baseJson, undefined));
+      schema = await Schema.fromJson(createSchemaJson(baseJson, undefined), new SchemaContext());
       const relationship = schema.getItemSync("BaseRelationship") as RelationshipClass;
 
       const result = await Rules.constraintClassesDeriveFromAbstractContraint(relationship);
@@ -318,7 +320,7 @@ describe("RelationshipRule tests", () => {
       };
 
       const baseJson = createBaseRelationship(true, sourceConstraints, targetConstraints);
-      schema = await Schema.fromJson(createSchemaJson(baseJson, undefined));
+      schema = await Schema.fromJson(createSchemaJson(baseJson, undefined), new SchemaContext());
       const relationship = schema.getItemSync("BaseRelationship") as RelationshipClass;
 
       const result = await Rules.constraintClassesDeriveFromAbstractContraint(relationship);
@@ -348,7 +350,7 @@ describe("RelationshipRule tests", () => {
 
       const baseJson = createBaseRelationship(true, baseSourceConstraints, baseTargetConstraints);
       const childJson = createChildRelationship(true, childSourceConstraints, childTargetConstraints);
-      schema = await Schema.fromJson(createSchemaJson(baseJson, childJson));
+      schema = await Schema.fromJson(createSchemaJson(baseJson, childJson), new SchemaContext());
       const relationship = schema.getItemSync("ChildRelationship") as RelationshipClass;
 
       const result = await Rules.constraintClassesDeriveFromAbstractContraint(relationship);
@@ -368,7 +370,7 @@ describe("RelationshipRule tests", () => {
         constraintClasses: ["TestSchema.TDE1", "TestSchema.TDE2"],
       };
       const baseJson = createBaseRelationship(true, sourceConstraints, targetConstraints);
-      schema = await Schema.fromJson(createSchemaJson(baseJson, undefined));
+      schema = await Schema.fromJson(createSchemaJson(baseJson, undefined), new SchemaContext());
       const relationship = schema.getItemSync("BaseRelationship") as RelationshipClass;
 
       const result = await Rules.constraintClassesDeriveFromAbstractContraint(relationship);
@@ -398,7 +400,7 @@ describe("RelationshipRule tests", () => {
         constraintClasses: ["TestSchema.TM1"],
       };
       const baseJson = createBaseRelationship(true, sourceConstraints, targetConstraints);
-      schema = await Schema.fromJson(createSchemaJson(baseJson, undefined));
+      schema = await Schema.fromJson(createSchemaJson(baseJson, undefined), new SchemaContext());
       const relationship = schema.getItemSync("BaseRelationship") as RelationshipClass;
 
       const result = await Rules.constraintClassesDeriveFromAbstractContraint(relationship);
@@ -428,7 +430,7 @@ describe("RelationshipRule tests", () => {
         constraintClasses: ["TestSchema.TM1"],
       };
       const baseJson = createBaseRelationship(true, sourceConstraints, targetConstraints);
-      schema = await Schema.fromJson(createSchemaJson(baseJson, undefined));
+      schema = await Schema.fromJson(createSchemaJson(baseJson, undefined), new SchemaContext());
       const relationship = schema.getItemSync("BaseRelationship") as RelationshipClass;
 
       const result = await Rules.constraintClassesDeriveFromAbstractContraint(relationship);
@@ -458,7 +460,7 @@ describe("RelationshipRule tests", () => {
         constraintClasses: ["TestSchema.TDR1"],
       };
       const baseJson = createBaseRelationship(true, sourceConstraints, targetConstraints);
-      schema = await Schema.fromJson(createSchemaJson(baseJson, undefined));
+      schema = await Schema.fromJson(createSchemaJson(baseJson, undefined), new SchemaContext());
       const relationship = schema.getItemSync("BaseRelationship") as RelationshipClass;
 
       const result = await Rules.constraintClassesDeriveFromAbstractContraint(relationship);
@@ -489,7 +491,7 @@ describe("RelationshipRule tests", () => {
       };
 
       const baseJson = createBaseRelationship(true, sourceConstraints, targetConstraints);
-      schema = await Schema.fromJson(createSchemaJson(baseJson, undefined));
+      schema = await Schema.fromJson(createSchemaJson(baseJson, undefined), new SchemaContext());
       const relationship = schema.getItemSync("BaseRelationship") as RelationshipClass;
 
       const result = await Rules.constraintClassesDeriveFromAbstractContraint(relationship);

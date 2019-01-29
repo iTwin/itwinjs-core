@@ -4,16 +4,19 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import * as Rules from "../../../src/Validation/ECRules";
+
+import { SchemaContext } from "../../../src/Context";
+import { PrimitiveType } from "../../../src/ECObjects";
+import { Enumeration } from "../../../src/Metadata/Enumeration";
 import { Schema } from "../../../src/Metadata/Schema";
-import { Enumeration, PrimitiveType } from "../../../src/ecschema-metadata";
 import { DiagnosticCategory, DiagnosticCode, DiagnosticType } from "../../../src/Validation/Diagnostic";
+import * as Rules from "../../../src/Validation/ECRules";
 
 describe("Enumeration rule tests", () => {
   let schema: Schema;
 
   beforeEach(async () => {
-    schema = new Schema("TestSchema", 1, 0, 0);
+    schema = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);
   });
 
   it("enumerationTypeUnsupported, rule violated.", async () => {

@@ -4,16 +4,16 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
+import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
+import { TestSchemaLocater } from "../TestUtils/FormatTestHelper";
+
+import { SchemaContext } from "../../src/Context";
+import { Format } from "../../src/Metadata/Format";
+import { InvertedUnit } from "../../src/Metadata/InvertedUnit";
 import { OverrideFormat } from "../../src/Metadata/OverrideFormat";
 import { Schema } from "../../src/Metadata/Schema";
-import { Format } from "../../src/Metadata/Format";
 import { Unit } from "../../src/Metadata/Unit";
-import { FractionalPrecision, ShowSignOption, FormatTraits } from "../../src/utils/FormatEnums";
-
-import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
-import { SchemaContext } from "../../src/Context";
-import { TestSchemaLocater } from "../TestUtils/FormatTestHelper";
-import { InvertedUnit } from "../../src/Metadata/InvertedUnit";
+import { FormatTraits, FractionalPrecision, ShowSignOption } from "../../src/utils/FormatEnums";
 
 function createSchemaJson(format: any) {
   return createSchemaJsonWithItems({
@@ -52,7 +52,7 @@ describe("OverrideFormat", () => {
       uomSeparator: "-",
       formatTraits: [
         "TrailZeroes",
-        "PrependUnitLabel"
+        "PrependUnitLabel",
       ],
       composite: {
         includeZero: false,
@@ -63,7 +63,7 @@ describe("OverrideFormat", () => {
             label: "yard(s)",
           },
         ],
-      }
+      },
     });
 
     const schema = Schema.fromJsonSync(schemaJson, context);

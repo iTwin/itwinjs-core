@@ -5,15 +5,17 @@
 
 import { assert, expect } from "chai";
 import * as sinon from "sinon";
+
+import { SchemaContext } from "../../src/Context";
+import { SchemaItemType, schemaItemTypeToString } from "../../src/ECObjects";
 import { Schema } from "../../src/Metadata/Schema";
 import { UnitSystem } from "../../src/Metadata/UnitSystem";
-import { schemaItemTypeToString, SchemaItemType } from "../../src/ECObjects";
 
 describe("UnitSystem tests", () => {
   let testUnitSystem: UnitSystem;
   describe("accept", () => {
     beforeEach(() => {
-      const schema = new Schema("TestSchema", 1, 0, 0);
+      const schema = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);
       testUnitSystem = new UnitSystem(schema, "TestEnumeration");
     });
 
@@ -32,7 +34,7 @@ describe("UnitSystem tests", () => {
   });
 
   describe("SchemaItemType", () => {
-    const schema = new Schema("TestSchema", 1, 0, 0);
+    const schema = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);
     testUnitSystem = new UnitSystem(schema, "Test");
     it("should return correct item type and string", () => {
       assert.equal(testUnitSystem.schemaItemType, SchemaItemType.UnitSystem);
@@ -42,7 +44,7 @@ describe("UnitSystem tests", () => {
 
   describe("Async fromJson", () => {
     beforeEach(() => {
-      const schema = new Schema("ExampleSchema", 1, 0, 0);
+      const schema = new Schema(new SchemaContext(), "ExampleSchema", 1, 0, 0);
       testUnitSystem = new UnitSystem(schema, "IMPERIAL");
     });
     it("Basic test", async () => {
@@ -59,7 +61,7 @@ describe("UnitSystem tests", () => {
 
     describe("Sync fromJson", () => {
       beforeEach(() => {
-        const schema = new Schema("ExampleSchema", 1, 0, 0);
+        const schema = new Schema(new SchemaContext(), "ExampleSchema", 1, 0, 0);
         testUnitSystem = new UnitSystem(schema, "IMPERIAL");
       });
       it("Basic test", () => {

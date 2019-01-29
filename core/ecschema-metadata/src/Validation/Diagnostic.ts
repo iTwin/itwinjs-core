@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { AnyClass, AnyECType } from "../Interfaces";
+import { CustomAttributeContainerProps } from "../Metadata/CustomAttribute";
 import { AnyProperty } from "../Metadata/Property";
 import { RelationshipConstraint } from "../Metadata/RelationshipClass";
-import { CustomAttributeContainerProps } from "../Metadata/CustomAttribute";
 import { Schema } from "../Metadata/Schema";
 import { SchemaItem } from "../Metadata/SchemaItem";
 

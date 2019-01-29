@@ -3,9 +3,9 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import { Diagnostics as ECDiagnostics } from "./../../src/Validation/ECRules";
-import { Diagnostics as BisDiagnostics } from "./../../src/Validation/BisRules";
 import { expect } from "chai";
+import { Diagnostics as BisDiagnostics } from "./../../src/Validation/BisRules";
+import { Diagnostics as ECDiagnostics } from "./../../src/Validation/ECRules";
 
 describe("createClassDiagnostic tests", () => {
   function getMessageArgsHolders(text: string): string[] {
@@ -14,10 +14,10 @@ describe("createClassDiagnostic tests", () => {
     if (!matches)
       return holders;
 
-    for (let match of matches) {
+    for (const match of matches) {
       if (holders.includes(match.charAt(1)))
         continue;
-        holders.push(match.charAt(1));
+      holders.push(match.charAt(1));
     }
     holders.sort();
     return holders;

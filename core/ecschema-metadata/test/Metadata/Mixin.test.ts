@@ -14,6 +14,7 @@ import { NavigationProperty } from "../../src/Metadata/Property";
 import { StrengthDirection } from "../../src/ECObjects";
 import sinon = require("sinon");
 import { DelayedPromiseWithProps } from "../../src/DelayedPromise";
+import { SchemaContext } from "../../src/Context";
 
 describe("Mixin", () => {
 
@@ -64,7 +65,7 @@ describe("Mixin", () => {
         },
       });
 
-      const schema = await Schema.fromJson(testSchema);
+      const schema = await Schema.fromJson(testSchema, new SchemaContext());
       assert.isDefined(schema);
 
       const entity = await schema.getItem<EntityClass>("TestEntity");
@@ -92,7 +93,7 @@ describe("Mixin", () => {
         ],
       });
 
-      const schema = await Schema.fromJson(json);
+      const schema = await Schema.fromJson(json, new SchemaContext());
       expect(schema).to.exist;
 
       const mixin = await schema.getItem<Mixin>("TestMixin");
@@ -117,7 +118,7 @@ describe("Mixin", () => {
         ],
       });
 
-      const schema = Schema.fromJsonSync(json);
+      const schema = Schema.fromJsonSync(json, new SchemaContext());
       expect(schema).to.exist;
 
       const mixin = schema.getItemSync<Mixin>("TestMixin");
@@ -133,7 +134,7 @@ describe("Mixin", () => {
       const json = createSchemaJson({
         appliesTo: 0,
       });
-      await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Mixin TestSchema.TestMixin has an invalid 'appliesTo' attribute. It should be of type 'string'.`);
+      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The Mixin TestSchema.TestMixin has an invalid 'appliesTo' attribute. It should be of type 'string'.`);
     });
 
     it("applicableTo, wrong entity, fails", async () => {
@@ -149,7 +150,7 @@ describe("Mixin", () => {
         ],
       });
 
-      const schema = Schema.fromJsonSync(json);
+      const schema = Schema.fromJsonSync(json, new SchemaContext());
       expect(schema).to.exist;
 
       const mixin = schema.getItemSync<Mixin>("TestMixin");
@@ -171,7 +172,7 @@ describe("Mixin", () => {
     const baseJson = { schemaItemType: "Mixin" };
 
     beforeEach(async () => {
-      const schema = new Schema("TestSchema", 1, 0, 0);
+      const schema = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);
       testEntity = await (schema as MutableSchema).createEntityClass("TestEntity");
       testMixin = new Mixin(schema, "TestMixin");
     });
@@ -199,7 +200,7 @@ describe("Mixin", () => {
     const baseJson = { schemaItemType: "Mixin" };
 
     beforeEach(() => {
-      const schema = new Schema("TestSchema", 1, 0, 0);
+      const schema = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);
       testEntity = (schema as MutableSchema).createEntityClassSync("TestEntity");
       testMixin = new Mixin(schema, "TestMixin");
     });
@@ -239,7 +240,7 @@ describe("Mixin", () => {
         ],
       });
 
-      const schema = Schema.fromJsonSync(json);
+      const schema = Schema.fromJsonSync(json, new SchemaContext());
       expect(schema).to.exist;
 
       const mixin = schema.getItemSync<Mixin>("TestMixin");
@@ -255,7 +256,7 @@ describe("Mixin", () => {
     });
 
     it("applicableTo, appliesTo undefined, should throw", async () => {
-      const schema = new Schema("TestSchema", 1, 1, 1);
+      const schema = new Schema(new SchemaContext(), "TestSchema", 1, 1, 1);
       const mixin = new Mixin(schema, "TestMixin");
       const entity = new EntityClass(schema, "TestEntity");
 
@@ -263,7 +264,7 @@ describe("Mixin", () => {
     });
 
     it("applicableTo, appliesTo resolves undefined, should throw", async () => {
-      const schema = new Schema("TestSchema", 1, 1, 1);
+      const schema = new Schema(new SchemaContext(), "TestSchema", 1, 1, 1);
       const entity = new EntityClass(schema, "TestEntity");
       const mixin = new Mixin(schema, "TestMixin");
       const promise = new DelayedPromiseWithProps(entity.key, async () => undefined);

@@ -4,26 +4,27 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import * as Rules from "../../../src/Validation/BisRules";
-import { Schema, MutableSchema } from "../../../src/Metadata/Schema";
-import { DiagnosticCategory, DiagnosticCode, DiagnosticType } from "../../../src/Validation/Diagnostic";
+import sinon = require("sinon");
+import { BisTestHelper } from "../../TestUtils/BisTestHelper";
+import { createSchemaJsonWithItems } from "../../TestUtils/DeserializationHelpers";
+
+import { SchemaContext } from "../../../src/Context";
 import { DelayedPromiseWithProps } from "../../../src/DelayedPromise";
+import { PrimitiveType } from "../../../src/ECObjects";
+import { ECObjectsError, ECObjectsStatus } from "../../../src/Exception";
+import { ECClass, MutableClass } from "../../../src/Metadata/Class";
 import { EntityClass, MutableEntityClass } from "../../../src/Metadata/EntityClass";
 import { Mixin } from "../../../src/Metadata/Mixin";
-import { MutableClass, ECClass } from "../../../src/Metadata/Class";
-import { PrimitiveType } from "../../../src/ECObjects";
-import sinon = require("sinon");
-import { createSchemaJsonWithItems } from "../../TestUtils/DeserializationHelpers";
-import { BisTestHelper } from "../../TestUtils/BisTestHelper";
-import { SchemaContext } from "../../../src/Context";
-import { ECObjectsError, ECObjectsStatus } from "../../../src/Exception";
+import { MutableSchema, Schema } from "../../../src/Metadata/Schema";
+import * as Rules from "../../../src/Validation/BisRules";
+import { DiagnosticCategory, DiagnosticCode, DiagnosticType } from "../../../src/Validation/Diagnostic";
 
 describe("EntityClass Rule Tests", () => {
   let testSchema: Schema;
   let bisCoreSchema: Schema;
 
   async function getTestSchema(items: any, withBisReference: boolean = true): Promise<Schema> {
-    let context: SchemaContext | undefined;
+    let context = new SchemaContext();
     if (withBisReference) {
       context = await BisTestHelper.getContext();
     }
@@ -43,8 +44,9 @@ describe("EntityClass Rule Tests", () => {
   }
 
   beforeEach(async () => {
-    testSchema = new Schema("TestSchema", 1, 0, 0);
-    bisCoreSchema = new Schema("BisCore", 1, 0, 0);
+    const context = new SchemaContext();
+    testSchema = new Schema(context, "TestSchema", 1, 0, 0);
+    bisCoreSchema = new Schema(context, "BisCore", 1, 0, 0);
   });
 
   afterEach(() => {
@@ -368,7 +370,7 @@ describe("EntityClass Rule Tests", () => {
 
     it("ElementMultiAspect not found in BIS schema, throws.", async () => {
       let error: any;
-      const bisSchema = new Schema("BisCore", 1, 0, 0);
+      const bisSchema = new Schema(new SchemaContext(), "BisCore", 1, 0, 0);
       await (testSchema as MutableSchema).addReference(bisSchema);
       const testEntity = new EntityClass(testSchema, "TestEntity");
 
@@ -593,7 +595,7 @@ describe("EntityClass Rule Tests", () => {
 
     it("ElementUniqueAspect not found in BIS schema, throws.", async () => {
       let error: any;
-      const bisSchema = new Schema("BisCore", 1, 0, 0);
+      const bisSchema = new Schema(new SchemaContext(), "BisCore", 1, 0, 0);
       await (testSchema as MutableSchema).addReference(bisSchema);
       const testEntity = new EntityClass(testSchema, "TestEntity");
 

@@ -7,14 +7,14 @@ import { ECStringConstants } from "../Constants";
 import { ECClassModifier, PrimitiveType, primitiveTypeToString, SchemaItemType, schemaItemTypeToString } from "../ECObjects";
 import { AnyClass } from "../Interfaces";
 import { ECClass } from "../Metadata/Class";
+import { CustomAttribute, CustomAttributeContainerProps } from "../Metadata/CustomAttribute";
 import { EntityClass } from "../Metadata/EntityClass";
+import { Enumeration } from "../Metadata/Enumeration";
 import { Mixin } from "../Metadata/Mixin";
 import { AnyProperty, PrimitiveProperty, Property } from "../Metadata/Property";
 import { RelationshipClass, RelationshipConstraint } from "../Metadata/RelationshipClass";
 import * as Diagnostic from "./Diagnostic";
 import { IRuleSet } from "./Rules";
-import { Enumeration } from "../Metadata/Enumeration";
-import { CustomAttributeContainerProps, CustomAttribute } from "../Metadata/CustomAttribute";
 
 /**
  * The list of [[IDiagnostic]] implementation classes used by the EC rule implementations.
