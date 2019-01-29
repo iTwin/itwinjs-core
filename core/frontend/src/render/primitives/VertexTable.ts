@@ -24,6 +24,7 @@ import {
   PolylineTypeFlags,
   MeshEdge,
 } from "@bentley/imodeljs-common";
+import { AuxChannelTable } from "./AuxChannelTable";
 import { PolylineArgs, MeshArgs } from "./mesh/MeshPrimitives";
 import { IModelApp } from "../../IModelApp";
 /**
@@ -100,65 +101,6 @@ function computeDimensions(nEntries: number, nRgbaPerEntry: number, nExtraRgba: 
 
 const scratchColorDef = new ColorDef();
 
-/** Describes a auxilliary channel */
-export interface AuxChannelProps {
-  readonly name: string;
-  readonly qOrigin: number[];
-  readonly qScale: number[];
-  readonly inputs: number[];
-  readonly indices: number[];
-}
-export interface AuxChannelBaseProps {
-  readonly name: string;
-  readonly inputs: number[];
-  readonly indices: number[];
-}
-export class AuxChannelBase {
-  public readonly name: string;
-  public readonly inputs: number[];
-  public readonly indices: number[];
-
-  public constructor(props: AuxChannelBaseProps) {
-    this.name = props.name;
-    this.inputs = props.inputs;
-    this.indices = props.indices;
-  }
-}
-export class AuxDisplacement extends AuxChannelBase {
-
-  public readonly qOrigin: Float32Array;
-  public readonly qScale: Float32Array;
-
-  public constructor(props: AuxChannelProps) {
-    super(props);
-    this.qOrigin = new Float32Array(3);
-    this.qScale = new Float32Array(3);
-    for (let i = 0; i < 3; i++) {
-      this.qOrigin[i] = props.qOrigin[i];
-      this.qScale[i] = props.qScale[i];
-    }
-  }
-}
-export class AuxParam extends AuxChannelBase {
-  public readonly qOrigin: number;
-  public readonly qScale: number;
-
-  public constructor(props: AuxChannelProps) {
-    super(props);
-    this.qOrigin = props.qOrigin[0];
-    this.qScale = props.qScale[0];
-  }
-}
-export interface AuxNormalProps {
-  readonly name: string;
-  readonly inputs: number[];
-  readonly indices: number[];
-}
-export class AuxNormal extends AuxChannelBase {
-  public constructor(props: AuxNormalProps) {
-    super(props);
-  }
-}
 /** Describes a VertexTable. */
 export interface VertexTableProps {
   /** The rectangular array of vertex data, of size width*height*numRgbaPerVertex bytes. */
@@ -183,12 +125,6 @@ export interface VertexTableProps {
   readonly numRgbaPerVertex: number;
   /** If vertex data include texture UV coordinates, the quantization params for those coordinates. */
   readonly uvParams?: QParams2d;
-  // The auxilliary displacements for animations.
-  readonly auxDisplacements?: AuxDisplacement[];
-  // The auxilliary normals for animations.
-  readonly auxNormals?: AuxNormal[];
-  // The auxilliary parameters for animations.
-  readonly auxParams?: AuxParam[];
 }
 
 /**
@@ -221,12 +157,6 @@ export class VertexTable implements VertexTableProps {
   public readonly numRgbaPerVertex: number;
   /** If vertex data include texture UV coordinates, the quantization params for those coordinates. */
   public readonly uvParams?: QParams2d;
-  // The auxilliary displacements for animations.
-  public readonly auxDisplacements?: AuxDisplacement[];
-  // The auxilliary normals for animations.
-  public readonly auxNormals?: AuxNormal[];
-  // The auxilliary parameters for animations.
-  public readonly auxParams?: AuxParam[];
 
   /** Construct a VertexTable. The VertexTable takes ownership of all input data - it must not be later modified by the caller. */
   public constructor(props: VertexTableProps) {
@@ -241,29 +171,6 @@ export class VertexTable implements VertexTableProps {
     this.numVertices = props.numVertices;
     this.numRgbaPerVertex = props.numRgbaPerVertex;
     this.uvParams = props.uvParams;
-    this.auxDisplacements = props.auxDisplacements;
-    this.auxNormals = props.auxNormals;
-    this.auxParams = props.auxParams;
-
-    // ###TODO: Fix add-on to put uniform feature index into vertex table...
-    if (undefined !== this.uniformFeatureID)
-      this.fixUpUniformFeatureId(this.uniformFeatureID);
-  }
-
-  private fixUpUniformFeatureId(id: number): void {
-    if (0 === id)
-      return; // already set to zero
-
-    const u32 = new Uint32Array(1);
-    u32[0] = id;
-    const u8 = new Uint8Array(u32.buffer);
-    for (let i = 0; i < this.numVertices; i++) {
-      const u32Index = (i * this.numRgbaPerVertex) + 2;
-      const u8Index = u32Index * 4;
-      for (let j = 0; j < 4; j++) {
-        this.data[u8Index + j] = u8[j];
-      }
-    }
   }
 
   public static buildFrom(builder: VertexTableBuilder, colorIndex: ColorIndex, featureIndex: FeatureIndex): VertexTable {
@@ -728,13 +635,15 @@ export class MeshParams {
   public readonly surface: SurfaceParams;
   public readonly edges?: EdgeParams;
   public readonly isPlanar: boolean;
+  public readonly auxChannels?: AuxChannelTable;
 
   /** Directly construct a MeshParams. The MeshParams takes ownership of all input data. */
-  public constructor(vertices: VertexTable, surface: SurfaceParams, edges?: EdgeParams, isPlanar?: boolean) {
+  public constructor(vertices: VertexTable, surface: SurfaceParams, edges?: EdgeParams, isPlanar?: boolean, auxChannels?: AuxChannelTable) {
     this.vertices = vertices;
     this.surface = surface;
     this.edges = edges;
-    this.isPlanar = true === isPlanar;
+    this.isPlanar = !!isPlanar;
+    this.auxChannels = auxChannels;
   }
 
   /** Construct from a MeshArgs. */

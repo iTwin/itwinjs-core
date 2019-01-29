@@ -70,7 +70,7 @@ export const enum ViewStatus {
  */
 export class MarginPercent {
   constructor(public left: number, public top: number, public right: number, public bottom: number) {
-    const limitMargin = (val: number) => (val < 0.0) ? 0.0 : (val > .25) ? .25 : val;
+    const limitMargin = (val: number) => Geometry.clamp(val, 0.0, 0.25);
     this.left = limitMargin(left);
     this.top = limitMargin(top);
     this.right = limitMargin(right);
@@ -206,9 +206,9 @@ export abstract class ViewState extends ElementState {
     }
   }
   /** Get the AnalysisDisplayProperties from the displayStyle of this ViewState. */
-  public get AnalysisStyle(): AnalysisStyle | undefined { return this.displayStyle.analysisStyle; }
+  public get analysisStyle(): AnalysisStyle | undefined { return this.displayStyle.analysisStyle; }
 
-  /** Get the RenderSchedule.Script from the displayStyle ofthis viewState */
+  /** Get the RenderSchedule.Script from the displayStyle of this viewState */
   public get scheduleScript(): RenderScheduleState.Script | undefined { return this.displayStyle.scheduleScript; }
   public get scheduleTime() { return this._scheduleTime; }
   public set scheduleTime(time: number) {
@@ -222,7 +222,7 @@ export abstract class ViewState extends ElementState {
   /** Determine whether this ViewState exactly matches another.
    * @see [[ViewState.equalState]] for determining broader equivalence of two ViewStates.
    */
-  public equals(other: ViewState): boolean { return super.equals(other) && this.categorySelector.equals(other.categorySelector) && this.displayStyle.equals(other.displayStyle); }
+  public equals(other: this): boolean { return super.equals(other) && this.categorySelector.equals(other.categorySelector) && this.displayStyle.equals(other.displayStyle); }
 
   /** Determine whether this ViewState is equivalent to another for the purposes of display.
    * @see [[ViewState.equals]] for determining exact equality.
@@ -289,7 +289,7 @@ public cancelAllTileLoads(): void {
   public get backgroundColor(): ColorDef { return this.displayStyle.backgroundColor; }
 
   /** Remove any [[SubCategoryOverride]] for the specified subcategory.
-   * @param id The ID of the subcategory.
+   * @param id The Id of the subcategory.
    * @see [[overrideSubCategory]]
    */
   public dropSubCategoryOverride(id: Id64String) {
@@ -298,7 +298,7 @@ public cancelAllTileLoads(): void {
   }
 
   /** Override the symbology of geometry belonging to a specific subcategory when rendered within this view.
-   * @param id The ID of the subcategory.
+   * @param id The Id of the subcategory.
    * @param ovr The symbology overrides to apply to all geometry belonging to the specified subcategory.
    * @see [[dropSubCategoryOverride]]
    */
@@ -308,7 +308,7 @@ public cancelAllTileLoads(): void {
   }
 
   /** Query the symbology overrides applied to geometry belonging to a specific subcategory when rendered within this view.
-   * @param id The ID of the subcategory.
+   * @param id The Id of the subcategory.
    * @return The symbology overrides applied to all geometry belonging to the specified subcategory, or undefined if no such overrides exist.
    * @see [[overrideSubCategory]]
    */
@@ -317,7 +317,7 @@ public cancelAllTileLoads(): void {
   /** Query the symbology with which geometry belonging to a specific subcategory is rendered within this view.
    * Every [[SubCategory]] defines a base symbology independent of any [[ViewState]].
    * If a [[SubCategoryOverride]] has been applied to the subcategory within the context of this [[ViewState]], it will be applied to the subcategory's base symbology.
-   * @param id The ID of the subcategory.
+   * @param id The Id of the subcategory.
    * @return The symbology of the subcategory within this view, including any overrides.
    * @see [[overrideSubCategory]]
    */
@@ -344,10 +344,10 @@ public cancelAllTileLoads(): void {
   }
 
   /**
-   * Enable or disable display of elements belonging to a set of categories specified by ID.
+   * Enable or disable display of elements belonging to a set of categories specified by Id.
    * Visibility of individual subcategories belonging to a category can be controlled separately through the use of [[SubCategoryOverride]]s.
    * By default, enabling display of a category does not affect display of subcategories thereof which have been overridden to be invisible.
-   * @param categories The ID(s) of the categories to which the change should be applied. No other categories will be affected.
+   * @param categories The Id(s) of the categories to which the change should be applied. No other categories will be affected.
    * @param display Whether or not elements on the specified categories should be displayed in the view.
    * @param enableAllSubCategories Specifies that when enabling display for a category, all of its subcategories should also be displayed even if they are overridden to be invisible.
    */
@@ -424,7 +424,7 @@ public cancelAllTileLoads(): void {
    */
   public abstract onRenderFrame(_viewport: Viewport): void;
 
-  /** Returns true if this view displays the contents of a [[Model]] specified by ID. */
+  /** Returns true if this view displays the contents of a [[Model]] specified by Id. */
   public abstract viewsModel(modelId: Id64String): boolean;
 
   /** Get the origin of this view in [[CoordSystem.World]] coordinates. */
@@ -766,7 +766,7 @@ public cancelAllTileLoads(): void {
     return this._auxCoordSystem;
   }
 
-  /** Get the ID of the auxiliary coordinate system for this ViewState */
+  /** Get the Id of the auxiliary coordinate system for this ViewState */
   public getAuxiliaryCoordinateSystemId(): Id64String { return Id64.fromJSON(this.getDetail("acs")); }
 
   /** Set or clear the AuxiliaryCoordinateSystem for this view.
@@ -1281,7 +1281,7 @@ export abstract class ViewState3d extends ViewState {
    * @param fov The angle, in radians, that defines the field-of-view for the camera. Must be between .0001 and pi.
    * @param frontDistance The distance from the eyePoint to the front plane. If undefined, the existing front distance is used.
    * @param backDistance The distance from the eyePoint to the back plane. If undefined, the existing back distance is used.
-   * @returns Status indicating whether the camera was successfully positioned. See values at [[ViewStatus]] for possible errors.
+   * @returns [[ViewStatus]] indicating whether the camera was successfully positioned.
    * @note The aspect ratio of the view remains unchanged.
    */
   public lookAtUsingLensAngle(eyePoint: Point3d, targetPoint: Point3d, upVector: Vector3d, fov: Angle, frontDistance?: number, backDistance?: number): ViewStatus {
@@ -1528,9 +1528,8 @@ export abstract class ViewState3d extends ViewState {
   /** @hidden */
   protected drawGroundPlane(context: DecorateContext): void {
     const extents = this.getGroundExtents(context.viewport);
-    if (extents.isNull) {
+    if (extents.isNull)
       return;
-    }
 
     const ground = this.getDisplayStyle3d().environment.ground;
     if (!ground.display)
@@ -1606,7 +1605,7 @@ export class SpatialViewState extends ViewState3d {
       this.modelSelector = arg3.modelSelector.clone();
     }
   }
-  public equals(other: SpatialViewState): boolean { return super.equals(other) && this.modelSelector.equals(other.modelSelector); }
+  public equals(other: this): boolean { return super.equals(other) && this.modelSelector.equals(other.modelSelector); }
 
   public equalState(other: SpatialViewState): boolean {
     if (!super.equalState(other))
@@ -1641,7 +1640,7 @@ export class SpatialViewState extends ViewState3d {
   }
 
   public getViewedExtents(): AxisAlignedBox3d {
-    const extents = AxisAlignedBox3d.fromJSON(this.iModel.projectExtents);
+    const extents = AxisAlignedBox3d.fromJSON<AxisAlignedBox3d>(this.iModel.projectExtents);
     extents.scaleAboutCenterInPlace(1.0001); // projectExtents. lying smack up against the extents is not excluded by frustum...
     extents.extendRange(this.getGroundExtents());
     return extents;

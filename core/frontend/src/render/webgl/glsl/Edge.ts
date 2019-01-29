@@ -9,7 +9,8 @@ import {
   VariableType,
   VertexShaderComponent,
 } from "../ShaderBuilder";
-import { addModelViewMatrix, addProjectionMatrix, addAnimation, GLSLVertex, addNormalMatrix } from "./Vertex";
+import { addModelViewMatrix, addProjectionMatrix, GLSLVertex, addNormalMatrix } from "./Vertex";
+import { addAnimation } from "./Animation";
 import { addViewport, addModelToWindowCoordinates } from "./Viewport";
 import { GL } from "../GL";
 import { addColor } from "./Color";
@@ -97,7 +98,7 @@ const computePosition = `
 const lineCodeArgs = "g_windowDir, g_windowPos, 0.0";
 
 function createBase(isSilhouette: boolean, isAnimated: boolean): ProgramBuilder {
-  const builder = new ProgramBuilder(true, isAnimated);
+  const builder = new ProgramBuilder(true);
   const vert = builder.vert;
 
   vert.addGlobal("g_otherPos", VariableType.Vec4);
@@ -125,7 +126,7 @@ function createBase(isSilhouette: boolean, isAnimated: boolean): ProgramBuilder 
   addModelViewMatrix(vert);
 
   if (isAnimated)
-    addAnimation(vert, false, false);
+    addAnimation(vert, false);
 
   vert.addAttribute("a_endPointAndQuadIndices", VariableType.Vec4, (shaderProg) => {
     shaderProg.addAttribute("a_endPointAndQuadIndices", (attr, params) => {

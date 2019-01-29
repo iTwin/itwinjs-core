@@ -4,43 +4,22 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Tile */
 
-import {
-  assert,
-  Id64,
-  Id64String,
-  BeTimePoint,
-  BeDuration,
-  JsonUtils,
-  dispose,
-  IDisposable,
-  base64StringToUint8Array,
-} from "@bentley/bentleyjs-core";
-import {
-  ElementAlignedBox3d,
-  ViewFlag,
-  ViewFlags,
-  RenderMode,
-  Frustum,
-  FrustumPlanes,
-  TileProps,
-  TileTreeProps,
-  ColorDef,
-  BatchType,
-} from "@bentley/imodeljs-common";
-import { Range3d, Point3d, Transform, ClipVector, ClipPlaneContainment } from "@bentley/geometry-core";
-import { SceneContext } from "../ViewContext";
-import { RenderGraphic, GraphicBranch, RenderMemory } from "../render/System";
-import { IModelConnection } from "../IModelConnection";
+import { assert, base64StringToUint8Array, BeDuration, BeTimePoint, dispose, Id64, Id64String, IDisposable, JsonUtils } from "@bentley/bentleyjs-core";
+import { ClipPlaneContainment, ClipVector, Point3d, Range3d, Transform } from "@bentley/geometry-core";
+import { BatchType, ColorDef, ElementAlignedBox3d, Frustum, FrustumPlanes, RenderMode, TileProps, TileTreeProps, ViewFlag, ViewFlags } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
+import { IModelConnection } from "../IModelConnection";
+import { GraphicBranch, RenderGraphic, RenderMemory } from "../render/System";
+import { SceneContext } from "../ViewContext";
+import { ViewFrustum } from "../Viewport";
+import { B3dmTileIO } from "./B3dmTileIO";
+import { CompositeTileIO } from "./CompositeTileIO";
+import { GltfTileIO } from "./GltfTileIO";
+import { I3dmTileIO } from "./I3dmTileIO";
+import { IModelTileIO } from "./IModelTileIO";
+import { PntsTileIO } from "./PntsTileIO";
 import { TileIO } from "./TileIO";
 import { TileRequest } from "./TileRequest";
-import { GltfTileIO } from "./GltfTileIO";
-import { B3dmTileIO } from "./B3dmTileIO";
-import { I3dmTileIO } from "./I3dmTileIO";
-import { CompositeTileIO } from "./CompositeTileIO";
-import { PntsTileIO } from "./PntsTileIO";
-import { IModelTileIO } from "./IModelTileIO";
-import { ViewFrustum } from "../Viewport";
 
 /** @hidden */
 export class Tile implements IDisposable, RenderMemory.Consumer {
@@ -593,9 +572,9 @@ export namespace Tile {
     public get tileSizeModifier(): number { return 1.0; } // ###TODO? may adjust for performance, or device pixel density, etc
     public getTileCenter(tile: Tile): Point3d { return this.location.multiplyPoint3d(tile.center); }
 
-    private static _scratchRange = new Range3d();
+    private static _scratchRange = new ElementAlignedBox3d();
     public getTileRadius(tile: Tile): number {
-      let range = tile.range.clone(DrawArgs._scratchRange);
+      let range: Range3d = tile.range.clone(DrawArgs._scratchRange);
       range = this.location.multiplyRange(range, range);
       return 0.5 * (tile.root.is3d ? range.low.distance(range.high) : range.low.distanceXY(range.high));
     }
@@ -633,7 +612,7 @@ export namespace Tile {
       public readonly sizeMultiplier?: number) { }
 
     public static fromJSON(props: TileProps, root: TileTree, parent?: Tile) {
-      const contentRange = undefined !== props.contentRange ? ElementAlignedBox3d.fromJSON(props.contentRange) : undefined;
+      const contentRange = undefined !== props.contentRange ? ElementAlignedBox3d.fromJSON<ElementAlignedBox3d>(props.contentRange) : undefined;
       const transformToRoot = undefined !== props.transformToRoot ? Transform.fromJSON(props.transformToRoot) : undefined;
       return new Params(root, props.contentId, ElementAlignedBox3d.fromJSON(props.range), props.maximumSize, props.isLeaf, parent, contentRange, transformToRoot, props.sizeMultiplier);
     }

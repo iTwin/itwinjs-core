@@ -188,6 +188,7 @@ export class EditorContainer extends React.Component<EditorContainerProps> {
         onClick={this._handleClick}
         onContextMenu={this._handleRightClick}
         title={this.props.title}
+        data-testid="editor-container"
       >
         {this.createEditor()}
       </span>

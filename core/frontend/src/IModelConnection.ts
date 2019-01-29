@@ -48,7 +48,7 @@ export class IModelConnection extends IModel {
   /** The Geographic location services available for this iModelConnection */
   public readonly geoServices: GeoServices;
   /** The maximum time (in milliseconds) to wait before timing out the request to open a connection to a new iModel */
-  private static _connectionTimeout: number = 10 * 60 * 1000;
+  public static connectionTimeout: number = 10 * 60 * 1000;
 
   /** Check the [[openMode]] of this IModelConnection to see if it was opened read-only. */
   public get isReadonly(): boolean { return this.openMode === OpenMode.Readonly; }
@@ -139,7 +139,7 @@ export class IModelConnection extends IModel {
      * Waits for an increasing amount of time (but within a range) before checking on the pending request again.
      */
     const connectionRetryIntervalRange = { min: 100, max: 5000 }; // in milliseconds
-    let connectionRetryInterval = Math.min(connectionRetryIntervalRange.min, IModelConnection._connectionTimeout);
+    let connectionRetryInterval = Math.min(connectionRetryIntervalRange.min, IModelConnection.connectionTimeout);
 
     let openForReadOperation: RpcOperation | undefined;
     let openForWriteOperation: RpcOperation | undefined;
@@ -169,12 +169,12 @@ export class IModelConnection extends IModel {
       Logger.logTrace(loggingCategory, "Received pending open notification in IModelConnection.open", () => ({ ...iModelToken, openMode }));
 
       const connectionTimeElapsed = Date.now() - startTime;
-      if (connectionTimeElapsed > IModelConnection._connectionTimeout) {
-        Logger.logError(loggingCategory, `Timed out opening connection in IModelConnection.open (took longer than ${IModelConnection._connectionTimeout} milliseconds)`, () => ({ ...iModelToken, openMode }));
+      if (connectionTimeElapsed > IModelConnection.connectionTimeout) {
+        Logger.logError(loggingCategory, `Timed out opening connection in IModelConnection.open (took longer than ${IModelConnection.connectionTimeout} milliseconds)`, () => ({ ...iModelToken, openMode }));
         throw new IModelError(BentleyStatus.ERROR, "Opening a connection was timed out"); // NEEDS_WORK: More specific error status
       }
 
-      connectionRetryInterval = Math.min(connectionRetryIntervalRange.max, connectionRetryInterval * 2, IModelConnection._connectionTimeout - connectionTimeElapsed);
+      connectionRetryInterval = Math.min(connectionRetryIntervalRange.max, connectionRetryInterval * 2, IModelConnection.connectionTimeout - connectionTimeElapsed);
       if (request.retryInterval !== connectionRetryInterval) {
         request.retryInterval = connectionRetryInterval;
         Logger.logTrace(loggingCategory, `Adjusted open connection retry interval to ${request.retryInterval} milliseconds in IModelConnection.open`, () => ({ ...iModelToken, openMode }));

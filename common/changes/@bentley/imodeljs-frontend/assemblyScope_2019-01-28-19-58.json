@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "#66826 Default SelectTool to select all members of the selected element's assembly.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Brien.Bastings@bentley.com"
+}

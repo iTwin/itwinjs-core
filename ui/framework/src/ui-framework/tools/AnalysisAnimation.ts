@@ -4,12 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Tools */
 
-import {
-  IModelApp, PrimitiveTool,
-  BeButtonEvent, EventHandled, Viewport,
-} from "@bentley/imodeljs-frontend";
+// cSpell:ignore configurableui
 
 import { Point3d } from "@bentley/geometry-core";
+import { BeButtonEvent, EventHandled, IModelApp, PrimitiveTool, Viewport } from "@bentley/imodeljs-frontend";
 import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager";
 import { AnalysisAnimationToolSettingsProvider } from "./AnalysisAnimationToolSettings";
 
@@ -49,9 +47,8 @@ export class AnalysisAnimationTool extends PrimitiveTool {
 
   /** Process selected viewport changes. */
   public onSelectedViewportChanged(_previous: Viewport | undefined, current: Viewport | undefined): void {
-    if (current && undefined !== current.view.AnalysisStyle)
-      return;
-    IModelApp.toolAdmin.startDefaultTool();
+    if (undefined === current || undefined === current.view.analysisStyle)
+      IModelApp.toolAdmin.startDefaultTool();
   }
 }
 

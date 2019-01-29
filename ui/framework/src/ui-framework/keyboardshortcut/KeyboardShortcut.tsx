@@ -74,11 +74,18 @@ export class KeyboardShortcut extends ItemDefBase {
   private _isAltKeyRequired: boolean = false;
   private _isCtrlKeyRequired: boolean = false;
   private _isShiftKeyRequired: boolean = false;
+  private _isFunctionKey: boolean = false;
+  private _isSpecialKey: boolean = false;
 
   constructor(props: KeyboardShortcutProps) {
     super(props);
 
     this._key = props.key;
+
+    if (Object.values(FunctionKey).includes(this._key))
+      this._isFunctionKey = true;
+    if (Object.values(SpecialKey).includes(this._key))
+      this._isSpecialKey = true;
 
     this._shortcuts = new KeyboardShortcutContainer();
 
@@ -148,6 +155,10 @@ export class KeyboardShortcut extends ItemDefBase {
   public get isCtrlKeyRequired(): boolean { return this._isCtrlKeyRequired; }
   /** Gets whether the Shift key required. */
   public get isShiftKeyRequired(): boolean { return this._isShiftKeyRequired; }
+  /** Gets whether this is a Function key. */
+  public get isFunctionKey(): boolean { return this._isFunctionKey; }
+  /** Gets whether this is a Special key. */
+  public get isSpecialKey(): boolean { return this._isSpecialKey; }
 
 }
 

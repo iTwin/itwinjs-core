@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "add ios oidc client",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "khanaffan@gmail.com"
+}

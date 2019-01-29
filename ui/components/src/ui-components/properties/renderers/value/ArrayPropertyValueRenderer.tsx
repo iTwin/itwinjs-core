@@ -33,7 +33,7 @@ export class ArrayPropertyValueRenderer implements IPropertyValueRenderer {
     }
 
     if (context && context.containerType === PropertyContainerType.PropertyPane) {
-      return "";
+      return withContextStyle("", context);
     }
 
     return withContextStyle(

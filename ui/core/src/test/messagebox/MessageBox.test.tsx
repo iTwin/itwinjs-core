@@ -8,6 +8,7 @@ import { expect } from "chai";
 
 import { MessageBox, MessageSeverity, ButtonType, ButtonStyle } from "../../ui-core";
 import TestUtils from "../TestUtils";
+import { MessageContainer } from "../../ui-core/messagebox/MessageBox";
 
 describe("MessageBox", () => {
 
@@ -52,6 +53,16 @@ describe("MessageBox", () => {
       const wrapper = mount(<MessageBox opened={true} severity={MessageSeverity.Fatal} buttonCluster={buttonCluster} />);
       const icon = wrapper.find("div.message-box-fatal");
       expect(icon.length).to.eq(1);
+    });
+  });
+
+  describe("MessageContainer.getIconClassName with hollow param", () => {
+    it("hollow icons", () => {
+      expect(MessageContainer.getIconClassName(MessageSeverity.Information, true).length).to.not.eq(0);
+      expect(MessageContainer.getIconClassName(MessageSeverity.Question, true).length).to.not.eq(0);
+      expect(MessageContainer.getIconClassName(MessageSeverity.Warning, true).length).to.not.eq(0);
+      expect(MessageContainer.getIconClassName(MessageSeverity.Error, true).length).to.not.eq(0);
+      expect(MessageContainer.getIconClassName(MessageSeverity.Fatal, true).length).to.not.eq(0);
     });
   });
 

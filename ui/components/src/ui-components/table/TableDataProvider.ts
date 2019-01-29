@@ -5,9 +5,11 @@
 /** @module Table */
 
 import { BeEvent } from "@bentley/bentleyjs-core";
-import { HorizontalAlignment, SortDirection } from "@bentley/ui-core";
+import { SortDirection } from "@bentley/ui-core";
 import { PropertyRecord } from "../properties/Record";
 import { PropertyDescription } from "../properties/Description";
+
+type HorizontalAlignment = "left" | "center" | "right" | "justify";
 
 /**
  * Column definition provided to Table.

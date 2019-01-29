@@ -10,7 +10,7 @@ import * as React from "react";
 import * as sinon from "sinon";
 import TestBackend from "react-dnd-test-backend";
 import { BeDuration } from "@bentley/bentleyjs-core";
-import { LocalUiSettings, HorizontalAlignment } from "@bentley/ui-core";
+import { LocalUiSettings } from "@bentley/ui-core";
 import {
   Table, TableDataProvider, RowItem, TableDataChangeEvent, TableDataChangesListener, CellItem,
   TableSelectionTarget, TableProps, ColumnDescription, SelectionMode, PropertyRecord, PropertyValue,
@@ -28,11 +28,11 @@ describe("Table", () => {
     await TestUtils.initializeUiComponents();
   });
 
-  const rowClassName = "div.row";
-  const tableWrapper = ".react-data-grid-wrapper";
+  const rowClassName = "div.components-table-row";
+  const tableWrapper = ".components-table";
   const selectedRowClassName = "div.react-grid-Row.row-selected";
-  const cellClassName = "div.cell";
-  const selectedCellClassName = "div.cell.is-selected";
+  const cellClassName = "div.components-table-cell";
+  const selectedCellClassName = "div.components-table-cell.is-selected";
 
   const createRowItem = (index: number) => {
     const rowItem: RowItem = { key: index.toString(), cells: [] };
@@ -216,7 +216,7 @@ describe("Table", () => {
             record: testRecord(),
             isBold: true,
             isItalic: true,
-            alignment: HorizontalAlignment.Right,
+            alignment: "right",
             colorOverrides: {
               backColor: toColor("0xaa0000"),
               backColorSelected: toColor("0xaa00aa"),
@@ -231,7 +231,7 @@ describe("Table", () => {
             record: testRecord(),
             isBold: true,
             isItalic: true,
-            alignment: HorizontalAlignment.Justify,
+            alignment: "justify",
             colorOverrides: {
               backColor: toColor("0xaa0000"),
               backColorSelected: toColor("0xaa00aa"),
@@ -576,7 +576,7 @@ describe("Table", () => {
         const isCellSelected = (): boolean => true;
         table.setProps({ isCellSelected });
         table.update();
-        const selectedCells = table.find("div.cell.is-selected");
+        const selectedCells = table.find("div.components-table-cell.is-selected");
         expect(selectedCells.length).to.be.equal(0);
       });
 

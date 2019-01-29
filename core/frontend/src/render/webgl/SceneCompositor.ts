@@ -432,6 +432,7 @@ abstract class Compositor extends SceneCompositor {
     this._geom = geometry;
 
     this._opaqueRenderState.flags.depthTest = true;
+    // this._opaqueRenderState.flags.cull = true; ###TODO: Want backface culling but breaks edge display (presumably incorrect winding order)
 
     this._translucentRenderState.flags.depthMask = false;
     this._translucentRenderState.flags.blend = this._translucentRenderState.flags.depthTest = true;

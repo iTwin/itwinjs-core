@@ -206,20 +206,14 @@ export namespace FeatureSymbology {
     /** The set of displayed subcategories. Geometry belonging to subcategories not included in this set will not be drawn. @hidden */
     protected readonly _visibleSubCategories = new Id64.Uint32Set();
 
-    /** Mapping of elements IDs to batch ID. When a large number of elements have the same neverDrawn or appearance overrides
-     * as is the case with schedule simulation, setting these values once rather than for each element is is much
-     * more efficient. Overrides of a specific element always take precedence over batch overrides. Chiefly used for schedule simulation animation.
+    /**  IDs of animation nodes which should never be drawn.
      * @hidden
      */
-    public batchMap: Id64.Uint32Map<number> | undefined = undefined;
-    /**  IDs of batch which should never be drawn.
+    public readonly neverDrawnAnimationNodes = new Set<number>();
+    /** Mapping of animation node IDS to overrides applied to the corresponding animation nodes.
      * @hidden
      */
-    public readonly batchNeverDrawn = new Set<number>();
-    /** Mapping of batch IDS to overrides applied to the corresponding batch.
-     * @hidden
-     */
-    public readonly batchOverrides = new Map<number, Appearance>();
+    public readonly animationNodeOverrides = new Map<number, Appearance>();
 
     /** Overrides applied to features for which no other overrides are defined */
     public get defaultOverrides(): Appearance { return this._defaultOverrides; }
@@ -227,14 +221,11 @@ export namespace FeatureSymbology {
     public get lineWeights(): boolean { return this._lineWeights; }
 
     /** @hidden */
-    protected isNeverDrawn(idLo: number, idHi: number): boolean {
-      if (this._neverDrawn.has(idLo, idHi))
+    protected isNeverDrawn(elemIdLo: number, elemIdHi: number, animationNodeId: number): boolean {
+      if (this._neverDrawn.has(elemIdLo, elemIdHi))
         return true;
-      else if (undefined === this.batchMap)
-        return false;
-
-      const batchId = this.batchMap.get(idLo, idHi);
-      return undefined !== batchId && this.batchNeverDrawn.has(batchId);
+      else
+        return 0 !== animationNodeId && this.neverDrawnAnimationNodes.has(animationNodeId);
     }
     /** @hidden */
     protected isAlwaysDrawn(idLo: number, idHi: number): boolean { return this._alwaysDrawn.has(idLo, idHi); }
@@ -244,13 +235,12 @@ export namespace FeatureSymbology {
     /** @hidden */
     protected getModelOverrides(idLo: number, idHi: number): Appearance | undefined { return this._modelOverrides.get(idLo, idHi); }
     /** @hidden */
-    protected getElementOverrides(idLo: number, idHi: number): Appearance | undefined {
+    protected getElementOverrides(idLo: number, idHi: number, animationNodeId: number): Appearance | undefined {
       const app = this._elementOverrides.get(idLo, idHi);
-      if (app !== undefined || undefined === this.batchMap)
+      if (app !== undefined || 0 === animationNodeId)
         return app;
 
-      const batchId = this.batchMap.get(idLo, idHi);
-      return undefined !== batchId ? this.batchOverrides.get(batchId) : undefined;
+      return this.animationNodeOverrides.get(animationNodeId);
     }
     /** @hidden */
     protected getSubCategoryOverrides(idLo: number, idHi: number): Appearance | undefined { return this._subCategoryOverrides.get(idLo, idHi); }
@@ -261,8 +251,8 @@ export namespace FeatureSymbology {
     public setNeverDrawn(id: Id64String): void { this._neverDrawn.addId(id); }
     /** Specify the ID of an element which should always be drawn in this view. */
     public setAlwaysDrawn(id: Id64String): void { this._alwaysDrawn.addId(id); }
-    /** Specify the ID of a batch which should never be drawn in this view. */
-    public setBatchNeverDrawn(id: number): void { this.batchNeverDrawn.add(id); }
+    /** Specify the ID of a animation node which should never be drawn in this view. */
+    public setAnimationNodeNeverDrawn(id: number): void { this.neverDrawnAnimationNodes.add(id); }
     /** Specify the IDs of elements which should never be drawn in this view. */
     public setNeverDrawnSet(ids: Id64Set) { copyIdSetToUint32Set(this._neverDrawn, ids); }
     /** Specify the IDs of elements which should always be drawn in this view. */
@@ -275,7 +265,7 @@ export namespace FeatureSymbology {
         Id64.getLowerUint32(feature.subCategoryId), Id64.getUpperUint32(feature.subCategoryId),
         feature.geometryClass,
         Id64.getLowerUint32(modelId), Id64.getUpperUint32(modelId),
-        type);
+        type, 0);
     }
 
     private static readonly _weight1Appearance = Appearance.fromJSON({ weight: 1 });
@@ -285,7 +275,7 @@ export namespace FeatureSymbology {
      * This API is much uglier but also much more efficient.
      * @hidden
      */
-    public getAppearance(elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, geomClass: GeometryClass, modelLo: number, modelHi: number, type: BatchType): Appearance | undefined {
+    public getAppearance(elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, geomClass: GeometryClass, modelLo: number, modelHi: number, type: BatchType, animationNodeId: number): Appearance | undefined {
       if (BatchType.Classifier === type)
         return this.getClassifierAppearance(elemLo, elemHi, subcatLo, subcatHi, modelLo, modelHi);
 
@@ -298,7 +288,7 @@ export namespace FeatureSymbology {
       let elemApp, alwaysDrawn = false;
 
       if (Id64.isValidUint32Pair(elemLo, elemHi)) {
-        if (this.isNeverDrawn(elemLo, elemHi))
+        if (this.isNeverDrawn(elemLo, elemHi, animationNodeId))
           return undefined;
 
         alwaysDrawn = this.isAlwaysDrawn(elemLo, elemHi);
@@ -306,7 +296,7 @@ export namespace FeatureSymbology {
           return undefined;
 
         // Element overrides take precedence
-        elemApp = this.getElementOverrides(elemLo, elemHi);
+        elemApp = this.getElementOverrides(elemLo, elemHi, animationNodeId);
         if (undefined !== elemApp)
           app = undefined !== modelApp ? elemApp.extendAppearance(app) : elemApp;
       }
@@ -339,7 +329,7 @@ export namespace FeatureSymbology {
       if (undefined !== modelApp)
         app = modelApp.extendAppearance(app);
 
-      const elemApp = this.getElementOverrides(elemLo, elemHi);
+      const elemApp = this.getElementOverrides(elemLo, elemHi, 0);
       if (undefined !== elemApp)
         app = undefined !== modelApp ? elemApp.extendAppearance(app) : elemApp;
 
@@ -410,19 +400,19 @@ export namespace FeatureSymbology {
     public overrideElement(id: Id64String, app: Appearance, replaceExisting: boolean = true): void {
       const idLo = Id64.getLowerUint32(id);
       const idHi = Id64.getUpperUint32(id);
-      if (this.isNeverDrawn(idLo, idHi))
+      if (this.isNeverDrawn(idLo, idHi, 0))
         return;
 
       // NB: Appearance may specify no overridden symbology - this means "don't apply the default overrides to this element"
-      if (replaceExisting || undefined === this.getElementOverrides(idLo, idHi))
+      if (replaceExisting || undefined === this.getElementOverrides(idLo, idHi, 0))
         this._elementOverrides.set(idLo, idHi, app);
     }
-    /** Specify overrides for all geometry originating from the specified batch.
-     * @param id The ID of the batch.
+    /** Specify overrides for all geometry originating from the specified animation node.
+     * @param id The ID of the animation node.
      * @param app The symbology overrides.
      * @note These overides do not take precedence over element overrides.
      */
-    public overrideBatch(id: number, app: Appearance): void { this.batchOverrides.set(id, app); }
+    public overrideAnimationNode(id: number, app: Appearance): void { this.animationNodeOverrides.set(id, app); }
 
     /** Defines a default Appearance to be applied to any [[Feature]] *not* explicitly overridden.
      * @param appearance The symbology overides.
@@ -440,9 +430,8 @@ export namespace FeatureSymbology {
       const { viewFlags } = view;
       const { constructions, dimensions, patterns } = viewFlags;
 
-      this.batchMap = undefined;
-      this.batchNeverDrawn.clear();
-      this.batchOverrides.clear();
+      this.neverDrawnAnimationNodes.clear();
+      this.animationNodeOverrides.clear();
 
       this._constructions = constructions;
       this._dimensions = dimensions;
@@ -480,7 +469,7 @@ export namespace FeatureSymbology {
     /** Returns the overrides applied to geometry belonging to the specified model, if any such are defined. */
     public getModelOverridesById(id: Id64String): Appearance | undefined { return this.getModelOverrides(Id64.getLowerUint32(id), Id64.getUpperUint32(id)); }
     /** Returns the overrides applied to geometry belonging to the specified element, if any such are defined. */
-    public getElementOverridesById(id: Id64String): Appearance | undefined { return this.getElementOverrides(Id64.getLowerUint32(id), Id64.getUpperUint32(id)); }
+    public getElementOverridesById(id: Id64String): Appearance | undefined { return this.getElementOverrides(Id64.getLowerUint32(id), Id64.getUpperUint32(id), 0); }
     /** Returns the overrides applied to geometry belonging to the specified subcategory, if any such are defined. */
     public getSubCategoryOverridesById(id: Id64String): Appearance | undefined { return this.getSubCategoryOverrides(Id64.getLowerUint32(id), Id64.getUpperUint32(id)); }
 
@@ -490,7 +479,7 @@ export namespace FeatureSymbology {
       const isValidElemId = !Id64.isInvalid(elementId);
       const elemIdParts = isValidElemId ? Id64.getUint32Pair(elementId) : undefined;
 
-      if (undefined !== elemIdParts && this.isNeverDrawn(elemIdParts.lower, elemIdParts.upper))
+      if (undefined !== elemIdParts && this.isNeverDrawn(elemIdParts.lower, elemIdParts.upper, 0))
         return false;
 
       const alwaysDrawn = undefined !== elemIdParts && this.isAlwaysDrawn(elemIdParts.lower, elemIdParts.upper);

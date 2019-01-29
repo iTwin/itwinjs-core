@@ -2,10 +2,11 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-// spell-checker: disable
-
 /** @module Symbology */
 
+import { Geometry } from "@bentley/geometry-core";
+
+// spell-checker: disable
 /**
  * A set of known colors by name, as a 32-bit integer in the form 0xBBGGRR (red is the low byte).
  * This is different than color values in #RRGGBB format for HTML pages (red and blue are swapped).
@@ -437,12 +438,11 @@ export class ColorDef {
     };
     const hue2rgb = (p1: number, q1: number, t: number) => Math.round(torgb(p1, q1, t) * 255);
     const modulo = (n: number, m: number) => ((n % m) + m) % m;
-    const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value));
 
     // h,s,l ranges are in 0.0 - 1.0
     h = modulo(h, 1);
-    s = clamp(s, 0, 1);
-    l = clamp(l, 0, 1);
+    s = Geometry.clamp(s, 0, 1);
+    l = Geometry.clamp(l, 0, 1);
 
     if (s === 0)
       return ColorDef.from(l, l, l, 0, out);

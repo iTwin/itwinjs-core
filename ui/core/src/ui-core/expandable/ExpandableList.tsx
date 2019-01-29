@@ -38,6 +38,7 @@ export class ExpandableList extends React.Component<ExpandableListProps, Expanda
   private _handleBlockClick = (index: number, onClick: () => any) => {
     this.setState({ activeBlock: index });
 
+    // istanbul ignore else
     if (onClick) {
       onClick(); // fire the ExpandableBlock onClick
     }

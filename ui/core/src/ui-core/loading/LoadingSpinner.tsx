@@ -11,7 +11,7 @@ import "./LoadingSpinner.scss";
 export interface LoadingSpinnerProps {
   /** Message (text) displayed */
   message?: string;
-  /** Position the message above or below the spinner */
+  /** Position the message above or below the spinner (defaults to bottom) */
   messageOnTop: boolean;
 }
 

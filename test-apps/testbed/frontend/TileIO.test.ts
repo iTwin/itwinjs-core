@@ -8,14 +8,37 @@ import { SurfaceType } from "@bentley/imodeljs-frontend/lib/rendering";
 import { Batch, MeshGraphic, GraphicsArray, PolylinePrimitive, PolylineGeometry } from "@bentley/imodeljs-frontend/lib/webgl";
 import { ModelProps, RelatedElementProps, FeatureIndexType, BatchType } from "@bentley/imodeljs-common";
 import { Id64, Id64String } from "@bentley/bentleyjs-core";
-import { TileData } from "./TileIO.data";
 import * as path from "path";
 import { CONSTANTS } from "../common/Testbed";
 import { RenderGraphic, IModelApp, IModelConnection, GeometricModelState } from "@bentley/imodeljs-frontend";
 import { WebGLTestContext } from "./WebGLTestContext";
 import { MockRender } from "./MockRender";
+import { TileTestCase, TileTestData } from "./TileIO.data";
+import { TILE_DATA_1_1 } from "./TileIO.data.1.1";
+import { TILE_DATA_1_2 } from "./TileIO.data.1.2";
+import { TILE_DATA_1_3 } from "./TileIO.data.1.3";
+import { TILE_DATA_1_4 } from "./TileIO.data.1.4";
+import { changeMinorVersion, changeMajorVersion, changeHeaderLength } from "./TileIO.data.fake";
 
 const iModelLocation = path.join(CONSTANTS.IMODELJS_CORE_DIRNAME, "core/backend/lib/test/assets/test.bim");
+
+const testCases = [
+  TILE_DATA_1_1,
+  TILE_DATA_1_2,
+  TILE_DATA_1_3,
+  TILE_DATA_1_4,
+];
+
+const currentTestCase = testCases[testCases.length - 1];
+
+// Make fake versions of each real version
+const numBaseTestCases = testCases.length;
+for (let i = 0; i < numBaseTestCases; i++) {
+  const testCase = testCases[i];
+  testCases.push(changeMinorVersion(testCase, 5000 + i));
+  testCases.push(changeMajorVersion(testCase, 6000 + i));
+  testCases.push(changeHeaderLength(testCase, 7000 + i, 8));
+}
 
 export class FakeGMState extends GeometricModelState {
   public get is3d(): boolean { return true; }
@@ -37,14 +60,33 @@ export class FakeREProps implements RelatedElementProps {
 function delta(a: number, b: number): number { return Math.abs(a - b); }
 type ProcessGraphic = (graphic: RenderGraphic) => void;
 
-const rectangle = TileData.rectangle.buffer;
+function processHeader(data: TileTestData, test: TileTestCase, numElements: number) {
+  const stream = new TileIO.StreamBuffer(test.bytes.buffer);
+  stream.reset();
+  const header = new IModelTileIO.Header(stream);
+  expect(header.isValid).to.be.true;
+  expect(header.format).to.equal(TileIO.Format.IModel);
+  expect(header.versionMajor).to.equal(data.versionMajor);
+  expect(header.versionMinor).to.equal(data.versionMinor);
+  expect(header.headerLength).to.equal(data.headerLength);
+  expect(header.tileLength).to.equal(test.bytes.byteLength);
+  expect(header.flags).to.equal(test.flags);
+  expect(header.numElementsIncluded).to.equal(numElements);
+  expect(header.numElementsExcluded).to.equal(0);
+  expect(header.isReadableVersion).to.equal(!data.unreadable);
+}
 
-async function processRectangle(imodel: IModelConnection, processGraphic: ProcessGraphic) {
+function createReader(imodel: IModelConnection, data: TileTestData, test: TileTestCase): IModelTileIO.Reader | undefined {
   const model = new FakeGMState(new FakeModelProps(new FakeREProps()), imodel);
-  const stream = new TileIO.StreamBuffer(rectangle);
-  const reader = IModelTileIO.Reader.create(stream, model.iModel, model.id, model.is3d, IModelApp.renderSystem);
-  expect(reader).not.to.be.undefined;
+  const stream = new TileIO.StreamBuffer(test.bytes.buffer);
+  const reader = IModelTileIO.Reader.create(stream, imodel, model.id, model.is3d, IModelApp.renderSystem);
+  expect(undefined === reader).to.equal(!!data.unreadable);
+  return reader;
+}
 
+async function processRectangle(data: TileTestData, imodel: IModelConnection, processGraphic: ProcessGraphic) {
+  processHeader(data, data.rectangle, 1);
+  const reader = createReader(imodel, data, data.rectangle);
   if (undefined !== reader) {
     const result = await reader.read();
     expect(result.readStatus).to.equal(TileIO.ReadStatus.Success);
@@ -67,13 +109,14 @@ async function processRectangle(imodel: IModelConnection, processGraphic: Proces
   }
 }
 
-async function processTriangles(imodel: IModelConnection, processGraphic: ProcessGraphic) {
-  const triangles = TileData.triangles.buffer;
-  const model = new FakeGMState(new FakeModelProps(new FakeREProps()), imodel);
-  const stream = new TileIO.StreamBuffer(triangles);
-  const reader = IModelTileIO.Reader.create(stream, model.iModel, model.id, model.is3d, IModelApp.renderSystem);
-  expect(reader).not.to.be.undefined;
+async function processEachRectangle(imodel: IModelConnection, processGraphic: ProcessGraphic) {
+  for (const data of testCases)
+    await processRectangle(data, imodel, processGraphic);
+}
 
+async function processTriangles(data: TileTestData, imodel: IModelConnection, processGraphic: ProcessGraphic) {
+  processHeader(data, data.triangles, 6);
+  const reader = createReader(imodel, data, data.triangles);
   if (undefined !== reader) {
     const result = await reader.read();
     expect(result.readStatus).to.equal(TileIO.ReadStatus.Success);
@@ -96,13 +139,14 @@ async function processTriangles(imodel: IModelConnection, processGraphic: Proces
   }
 }
 
-async function processLineString(imodel: IModelConnection, processGraphic: ProcessGraphic) {
-  const lineString = TileData.lineString.buffer;
-  const model = new FakeGMState(new FakeModelProps(new FakeREProps()), imodel);
-  const stream = new TileIO.StreamBuffer(lineString);
-  const reader = IModelTileIO.Reader.create(stream, model.iModel, model.id, model.is3d, IModelApp.renderSystem);
-  expect(reader).not.to.be.undefined;
+async function processEachTriangles(imodel: IModelConnection, processGraphic: ProcessGraphic) {
+  for (const data of testCases)
+    await processTriangles(data, imodel, processGraphic);
+}
 
+async function processLineString(data: TileTestData, imodel: IModelConnection, processGraphic: ProcessGraphic) {
+  processHeader(data, data.lineString, 1);
+  const reader = createReader(imodel, data, data.lineString);
   if (undefined !== reader) {
     const result = await reader.read();
     expect(result.readStatus).to.equal(TileIO.ReadStatus.Success);
@@ -125,13 +169,14 @@ async function processLineString(imodel: IModelConnection, processGraphic: Proce
   }
 }
 
-async function processLineStrings(imodel: IModelConnection, processGraphic: ProcessGraphic) {
-  const lineStrings = TileData.lineStrings.buffer;
-  const model = new FakeGMState(new FakeModelProps(new FakeREProps()), imodel);
-  const stream = new TileIO.StreamBuffer(lineStrings);
-  const reader = IModelTileIO.Reader.create(stream, model.iModel, model.id, model.is3d, IModelApp.renderSystem);
-  expect(reader).not.to.be.undefined;
+async function processEachLineString(imodel: IModelConnection, processGraphic: ProcessGraphic) {
+  for (const data of testCases)
+    await processLineString(data, imodel, processGraphic);
+}
 
+async function processLineStrings(data: TileTestData, imodel: IModelConnection, processGraphic: ProcessGraphic) {
+  processHeader(data, data.lineStrings, 3);
+  const reader = createReader(imodel, data, data.lineStrings);
   if (undefined !== reader) {
     const result = await reader.read();
     expect(result.readStatus).to.equal(TileIO.ReadStatus.Success);
@@ -154,13 +199,14 @@ async function processLineStrings(imodel: IModelConnection, processGraphic: Proc
   }
 }
 
-async function processCylinder(imodel: IModelConnection, processGraphic: ProcessGraphic) {
-  const cylinder = TileData.cylinder.buffer;
-  const model = new FakeGMState(new FakeModelProps(new FakeREProps()), imodel);
-  const stream = new TileIO.StreamBuffer(cylinder);
-  const reader = IModelTileIO.Reader.create(stream, model.iModel, model.id, model.is3d, IModelApp.renderSystem);
-  expect(reader).not.to.be.undefined;
+async function processEachLineStrings(imodel: IModelConnection, processGraphic: ProcessGraphic) {
+  for (const data of testCases)
+    await processLineStrings(data, imodel, processGraphic);
+}
 
+async function processCylinder(data: TileTestData, imodel: IModelConnection, processGraphic: ProcessGraphic) {
+  processHeader(data, data.cylinder, 1);
+  const reader = createReader(imodel, data, data.cylinder);
   if (undefined !== reader) {
     const result = await reader.read();
     expect(result.readStatus).to.equal(TileIO.ReadStatus.Success);
@@ -183,8 +229,12 @@ async function processCylinder(imodel: IModelConnection, processGraphic: Process
   }
 }
 
-// ###TODO: TileIO.data.ts contains tiles in old format. Update it. (The tests below continue to pass, but could exercise more of the tile contents).
-// These tests require the real (webgl-based) RenderSystem. Won't execute in Windows CI job due to electron bug.
+async function processEachCylinder(imodel: IModelConnection, processGraphic: ProcessGraphic) {
+  for (const data of testCases)
+    await processCylinder(data, imodel, processGraphic);
+}
+
+// These tests require the real (webgl-based) RenderSystem.
 describe("TileIO (WebGL)", () => {
   let imodel: IModelConnection;
 
@@ -200,7 +250,7 @@ describe("TileIO (WebGL)", () => {
 
   it("should read an iModel tile containing a single rectangle", async () => {
     if (WebGLTestContext.isInitialized) {
-      await processRectangle(imodel, (graphic) => {
+      await processEachRectangle(imodel, (graphic) => {
         expect(graphic).to.be.instanceOf(Batch);
         const batch = graphic as Batch;
         expect(batch.featureTable.isUniform).to.be.true;
@@ -223,7 +273,7 @@ describe("TileIO (WebGL)", () => {
 
   it("should read an iModel tile containing multiple meshes and non-uniform feature/color tables", async () => {
     if (WebGLTestContext.isInitialized) {
-      await processTriangles(imodel, (graphic) => {
+      await processEachTriangles(imodel, (graphic) => {
         expect(graphic).to.be.instanceOf(Batch);
         const batch = graphic as Batch;
         expect(batch.featureTable.isUniform).to.be.false;
@@ -264,7 +314,7 @@ describe("TileIO (WebGL)", () => {
 
   it("should read an iModel tile containing single open yellow line string", async () => {
     if (WebGLTestContext.isInitialized) {
-      await processLineString(imodel, (graphic) => {
+      await processEachLineString(imodel, (graphic) => {
         expect(graphic).to.be.instanceOf(Batch);
         const batch = graphic as Batch;
         expect(batch.featureTable.isUniform).to.be.true;
@@ -289,7 +339,7 @@ describe("TileIO (WebGL)", () => {
 
   it("should read an iModel tile containing multiple line strings", async () => {
     if (WebGLTestContext.isInitialized) {
-      await processLineStrings(imodel, (graphic) => {
+      await processEachLineStrings(imodel, (graphic) => {
         expect(graphic).to.be.instanceOf(Batch);
         const batch = graphic as Batch;
         expect(batch.featureTable.isUniform).to.be.false;
@@ -332,7 +382,7 @@ describe("TileIO (WebGL)", () => {
 
   it("should read an iModel tile containing edges and silhouettes", async () => {
     if (WebGLTestContext.isInitialized) {
-      await processCylinder(imodel, (graphic) => {
+      await processEachCylinder(imodel, (graphic) => {
         expect(graphic).to.be.instanceOf(Batch);
         const batch = graphic as Batch;
         expect(batch.featureTable.isUniform).to.be.true;
@@ -368,32 +418,10 @@ describe("TileIO (mock render)", () => {
     if (imodel) await imodel.closeStandalone();
   });
 
-  it("should read tile headers", () => {
-    const stream = new TileIO.StreamBuffer(rectangle);
-    stream.reset();
-    const header = new IModelTileIO.Header(stream);
-    expect(header.isValid).to.be.true;
-    expect(header.format).to.equal(TileIO.Format.IModel);
-    expect(header.version).to.equal(0);
-    expect(header.flags).to.equal(IModelTileIO.Flags.None);
-    expect(header.length).to.equal(TileData.rectangle.length);
-
-    // content range is relative to tileset origin at (0, 0, 0)
-    const low = header.contentRange.low;
-    expect(delta(low.x, -2.5)).to.be.lessThan(0.0005);
-    expect(delta(low.y, -5.0)).to.be.lessThan(0.0005);
-    expect(delta(low.z, 0.0)).to.be.lessThan(0.0005);
-
-    const high = header.contentRange.high;
-    expect(delta(high.x, 2.5)).to.be.lessThan(0.0005);
-    expect(delta(high.y, 5.0)).to.be.lessThan(0.0005);
-    expect(delta(high.z, 0.0)).to.be.lessThan(0.0005);
-  });
-
   it("should support canceling operation", async () => {
     if (WebGLTestContext.isInitialized) {
       const model = new FakeGMState(new FakeModelProps(new FakeREProps()), imodel);
-      const stream = new TileIO.StreamBuffer(rectangle);
+      const stream = new TileIO.StreamBuffer(currentTestCase.rectangle.bytes.buffer);
       const reader = IModelTileIO.Reader.create(stream, model.iModel, model.id, model.is3d, IModelApp.renderSystem, BatchType.Primary, (_) => true);
       expect(reader).not.to.be.undefined;
 
@@ -419,7 +447,7 @@ describe("TileIO (mock render)", () => {
   });
 
   it("should read an iModel tile containing a single rectangle", async () => {
-    await processRectangle(imodel, (graphic) => {
+    await processEachRectangle(imodel, (graphic) => {
       expect(graphic).instanceof(MockRender.Batch);
       const batch = graphic as MockRender.Batch;
       expect(batch.featureTable.isUniform).to.be.true;
@@ -429,7 +457,7 @@ describe("TileIO (mock render)", () => {
   });
 
   it("should read an iModel tile containing multiple meshes and non-uniform feature/color tables", async () => {
-    await processTriangles(imodel, (graphic) => {
+    await processEachTriangles(imodel, (graphic) => {
       expect(graphic).instanceof(MockRender.Batch);
       const batch = graphic as MockRender.Batch;
       expect(batch.featureTable.isUniform).to.be.false;
@@ -442,7 +470,7 @@ describe("TileIO (mock render)", () => {
   });
 
   it("should read an iModel tile containing single open yellow line string", async () => {
-    await processLineString(imodel, (graphic) => {
+    await processEachLineString(imodel, (graphic) => {
       expect(graphic).instanceof(MockRender.Batch);
       const batch = graphic as MockRender.Batch;
       expect(batch.featureTable.isUniform).to.be.true;
@@ -452,7 +480,7 @@ describe("TileIO (mock render)", () => {
   });
 
   it("should read an iModel tile containing multiple line strings", async () => {
-    await processLineStrings(imodel, (graphic) => {
+    await processEachLineStrings(imodel, (graphic) => {
       expect(graphic).instanceof(MockRender.Batch);
       const batch = graphic as MockRender.Batch;
       expect(batch.featureTable.isUniform).to.be.false;
@@ -465,7 +493,7 @@ describe("TileIO (mock render)", () => {
   });
 
   it("should read an iModel tile containing edges and silhouettes", async () => {
-    await processCylinder(imodel, (graphic) => {
+    await processEachCylinder(imodel, (graphic) => {
       expect(graphic).instanceof(MockRender.Batch);
       const batch = graphic as MockRender.Batch;
       expect(batch.featureTable.isUniform).to.be.true;
@@ -559,7 +587,9 @@ describe("mirukuru TileTree", () => {
     const header = new IModelTileIO.Header(stream);
     expect(header.isValid).to.be.true;
     expect(header.format).to.equal(TileIO.Format.IModel);
-    expect(header.version).to.equal(0);
+    expect(header.version).to.equal(IModelTileIO.CurrentVersion.Combined);
+    expect(header.versionMajor).to.equal(IModelTileIO.CurrentVersion.Major);
+    expect(header.versionMinor).to.equal(IModelTileIO.CurrentVersion.Minor);
     expect(header.flags).to.equal(IModelTileIO.Flags.None);
     expect(header.numElementsIncluded).to.equal(1);
     expect(header.numElementsExcluded).to.equal(0);

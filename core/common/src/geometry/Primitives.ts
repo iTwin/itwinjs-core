@@ -4,10 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Geometry */
 
-import {
-  Point2d, Point3d, Vector3d, YawPitchRollAngles, XYAndZ, XAndY, LowAndHighXY,
-  Range2d, Range3d, Angle, Transform, Matrix3d, Constant,
-} from "@bentley/geometry-core";
+import { Angle, Constant, LowAndHighXY, Matrix3d, Point2d, Point3d, Range2d, Range3d, Transform, Vector3d, XAndY, XYAndZ, YawPitchRollAngles } from "@bentley/geometry-core";
 import { Placement2dProps, Placement3dProps } from "../ElementProps";
 import { Frustum } from "../Frustum";
 
@@ -21,13 +18,9 @@ export class AxisAlignedBox3d extends Range3d {
     else
       super(low.x, low.y, low.z, high.x, high.y, high.z);
   }
-  public clone() { return new AxisAlignedBox3d(this.low, this.high); }
 
   /** Construct a new AxisAlignedBox3d from a LowAndHighXY */
   public static fromRange2d(r: LowAndHighXY) { const v = new AxisAlignedBox3d(); v.low.x = r.low.x; v.low.y = r.low.y; v.high.x = r.high.x; v.high.y = r.high.y; return v; }
-
-  /** Get the center point of this AxisAlignedBox3d */
-  public get center(): Point3d { return this.low.interpolate(.5, this.high); }
 
   /** Ensure that the length of each dimension of this AxisAlignedBox3d is at least a minimum size. If not, expand to minimum about the center.
    * @param min The minimum length for each dimension.
@@ -49,55 +42,20 @@ export class AxisAlignedBox3d extends Range3d {
       this.high.z += size;
     }
   }
-
-  /** @hidden */
-  public static fromJSON(json: any): AxisAlignedBox3d {
-    const val = new AxisAlignedBox3d();
-    val.setFromJSON(json);
-    return val;
-  }
 }
 
 /** A bounding box aligned to the orientation of a 3d Element */
 export class ElementAlignedBox3d extends Range3d {
   public static createFromPoints(low: XYAndZ, high: XYAndZ): ElementAlignedBox3d { return new ElementAlignedBox3d(low.x, low.y, low.z, high.x, high.y, high.z); }
-  public get left(): number { return this.low.x; }
-  public get bottom(): number { return this.low.y; }
-  public get front(): number { return this.low.z; }
-  public get right(): number { return this.high.x; }
-  public get top(): number { return this.high.y; }
-  public get back(): number { return this.high.z; }
-  public get width(): number { return this.xLength(); }
-  public get depth(): number { return this.yLength(); }
-  public get height(): number { return this.zLength(); }
   public get isValid(): boolean {
     const max = Constant.circumferenceOfEarth; const lo = this.low; const hi = this.high;
     return !this.isNull && lo.x > -max && lo.y > -max && lo.z > -max && hi.x < max && hi.y < max && hi.z < max;
-  }
-
-  public static fromJSON(json?: any): ElementAlignedBox3d {
-    const val = new ElementAlignedBox3d();
-    if (json)
-      val.setFromJSON(json);
-    return val;
   }
 }
 
 /** A bounding box aligned to the orientation of a 2d Element */
 export class ElementAlignedBox2d extends Range2d {
   public static createFromPoints(low: XAndY, high: XAndY): ElementAlignedBox2d { return new ElementAlignedBox2d(low.x, low.y, high.x, high.y); }
-  public get left(): number { return this.low.x; }
-  public get bottom(): number { return this.low.y; }
-  public get right(): number { return this.high.x; }
-  public get top(): number { return this.high.y; }
-  public get width(): number { return this.xLength(); }
-  public get height(): number { return this.yLength(); }
-  public static fromJSON(json?: any): ElementAlignedBox2d {
-    const val = new ElementAlignedBox2d();
-    if (json)
-      val.setFromJSON(json);
-    return val;
-  }
   public get isValid(): boolean {
     const max = Constant.circumferenceOfEarth; const lo = this.low; const hi = this.high;
     return !this.isNull && lo.x > -max && lo.y > -max && hi.x < max && hi.y < max;
@@ -118,7 +76,7 @@ export class Placement3d implements Placement3dProps {
   /** Create a new Placement3d from a Placement3dProps. */
   public static fromJSON(json?: Placement3dProps): Placement3d {
     const props: any = json ? json : {};
-    return new Placement3d(Point3d.fromJSON(props.origin), YawPitchRollAngles.fromJSON(props.angles), ElementAlignedBox3d.fromJSON(props.bbox));
+    return new Placement3d(Point3d.fromJSON(props.origin), YawPitchRollAngles.fromJSON(props.angles), ElementAlignedBox3d.fromJSON<ElementAlignedBox3d>(props.bbox));
   }
 
   /** Get the 8 corners, in world coordinates, of this placement. */

@@ -5,6 +5,7 @@
 /** @module Expandable */
 
 import * as React from "react";
+import * as classnames from "classnames";
 import { ExpandableBlock as BwcExpandableBlock } from "@bentley/bwc";
 import "./ExpandableBlock.scss";
 
@@ -29,9 +30,14 @@ export interface ExpandableBlockProps {
 /** ExpandableBlock is a React component that shows and hides child content. */
 export class ExpandableBlock extends React.Component<ExpandableBlockProps> {
   public render() {
+    const className = classnames(
+      "core-expandable-block",
+      this.props.className,
+    );
+
     return (
       <BwcExpandableBlock
-        className={"core-expandable-block" + (this.props.className ? " " + this.props.className : "")}
+        className={className}
         isExpanded={this.props.isExpanded}
         onClick={this.props.onClick}
         onKeyPress={this.props.onKeyPress}

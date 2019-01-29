@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "clone methods are no longer generic",
+      "packageName": "@bentley/imodeljs-common",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-common",
+  "email": "keith.bentley@bentley.com"
+}

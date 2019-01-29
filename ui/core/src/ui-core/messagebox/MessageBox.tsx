@@ -91,19 +91,27 @@ export interface MessageContainerProps {
  */
 export class MessageContainer extends React.Component<MessageContainerProps> {
   public static getIconClassName(severity: MessageSeverity, hollow?: boolean): string {
+    let iconClassName = "icon-info";
+
     switch (severity) {
       case MessageSeverity.Information:
-        return hollow ? "icon-info-hollow" : "icon-info" + " message-box-information";
+        iconClassName = hollow ? "icon-info-hollow" : "icon-info" + " message-box-information";
+        break;
       case MessageSeverity.Question:
-        return hollow ? "icon-help-hollow" : "icon-help" + " message-box-question";
+        iconClassName = hollow ? "icon-help-hollow" : "icon-help" + " message-box-question";
+        break;
       case MessageSeverity.Warning:
-        return hollow ? "icon-status-warning" : "icon-status-warning" + " message-box-warning";  // TODO - need icon-status-warning-hollow icon
+        iconClassName = hollow ? "icon-status-warning" : "icon-status-warning" + " message-box-warning";  // TODO - need icon-status-warning-hollow icon
+        break;
       case MessageSeverity.Error:
-        return hollow ? "icon-status-error-hollow" : "icon-status-error" + " message-box-error";
+        iconClassName = hollow ? "icon-status-error-hollow" : "icon-status-error" + " message-box-error";
+        break;
       case MessageSeverity.Fatal:
-        return hollow ? "icon-status-rejected" : "icon-status-rejected" + " message-box-fatal"; // TODO - need icon-status-rejected-hollow icon
+        iconClassName = hollow ? "icon-status-rejected" : "icon-status-rejected" + " message-box-fatal"; // TODO - need icon-status-rejected-hollow icon
+        break;
     }
-    return "icon-info";
+
+    return iconClassName;
   }
 
   public render(): JSX.Element {

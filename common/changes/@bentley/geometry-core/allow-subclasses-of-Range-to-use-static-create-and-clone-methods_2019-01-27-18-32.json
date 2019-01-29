@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "allow subclasses of Range to use static methods",
+      "packageName": "@bentley/geometry-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/geometry-core",
+  "email": "keith.bentley@bentley.com"
+}
