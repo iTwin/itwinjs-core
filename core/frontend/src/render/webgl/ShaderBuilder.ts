@@ -451,6 +451,9 @@ export class ShaderBuilder extends ShaderVariables {
 
 // Describes the optional and required components which can be assembled into complete
 export const enum VertexShaderComponent {
+  // (Optional) Adjust the result of unquantizeVertexPosition().
+  // vec4 adjustRawPosition(vec4 rawPosition)
+  AdjustRawPosition,
   // (Optional) Return true to discard this vertex before evaluating feature overrides etc, given the model-space position.
   // bool checkForEarlyDiscard(vec4 rawPos)
   CheckForEarlyDiscard,
@@ -481,7 +484,7 @@ export class VertexShaderBuilder extends ShaderBuilder {
 
   private buildPrelude(): SourceBuilder { return this.buildPreludeCommon(); }
 
-  public constructor(positionFromLUT: boolean, private _isAnimated: boolean) {
+  public constructor(positionFromLUT: boolean) {
     super(VertexShaderComponent.COUNT);
     addPosition(this, positionFromLUT);
   }
@@ -514,8 +517,11 @@ export class VertexShaderBuilder extends ShaderBuilder {
     }
 
     main.addline("  vec4 rawPosition = unquantizeVertexPosition(a_pos, u_qOrigin, u_qScale);");
-    if (this._isAnimated)
-      main.addline("  rawPosition.xyz += computeAnimationDisplacement(g_vertexLUTIndex, u_animDispParams.x, u_animDispParams.y, u_animDispParams.z, u_qAnimDispOrigin, u_qAnimDispScale);");
+    const adjustRawPosition = this.get(VertexShaderComponent.AdjustRawPosition);
+    if (undefined !== adjustRawPosition) {
+      prelude.addFunction("vec4 adjustRawPosition(vec4 rawPos)", adjustRawPosition);
+      main.addline("  rawPosition = adjustRawPosition(rawPosition);");
+    }
 
     const checkForEarlyDiscard = this.get(VertexShaderComponent.CheckForEarlyDiscard);
     if (undefined !== checkForEarlyDiscard) {
@@ -790,15 +796,12 @@ export class ProgramBuilder {
   public readonly vert: VertexShaderBuilder;
   public readonly frag: FragmentShaderBuilder;
   private readonly _positionFromLUT: boolean;
-  private readonly _isAnimated: boolean;
 
-  public constructor(positionFromLUT: boolean, isAnimated: boolean = false) {
-    this.vert = new VertexShaderBuilder(positionFromLUT, isAnimated);
+  public constructor(positionFromLUT: boolean) {
+    this.vert = new VertexShaderBuilder(positionFromLUT);
     this.frag = new FragmentShaderBuilder();
 
-    // The following are needed only for clone()
-    this._positionFromLUT = positionFromLUT;
-    this._isAnimated = isAnimated;
+    this._positionFromLUT = positionFromLUT; // only needed for clone()...
   }
 
   private addVariable(v: ShaderVariable, which: ShaderType) {
@@ -858,7 +861,7 @@ export class ProgramBuilder {
 
   /** Returns a deep copy of this program builder. */
   public clone(): ProgramBuilder {
-    const clone = new ProgramBuilder(this._positionFromLUT, this._isAnimated);
+    const clone = new ProgramBuilder(this._positionFromLUT);
 
     // Copy from vertex builder
     clone.vert.headerComment = this.vert.headerComment;

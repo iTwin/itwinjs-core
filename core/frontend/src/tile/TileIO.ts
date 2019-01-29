@@ -18,6 +18,7 @@ export namespace TileIO {
     InvalidBatchTable,
     InvalidScene,
     InvalidFeatureTable,
+    NewerMajorVersion,
     Canceled,
   }
 
@@ -26,7 +27,6 @@ export namespace TileIO {
     Unknown = 0,
     B3dm = 0x6d643362, // "b3dm"
     Gltf = 0x46546c67, // "glTF"
-    Dgn = 0x546e6764, // "dgnT"
     Pnts = 0x73746e70,  // "pnts"
     IModel = 0x6c644d69, // "iMdl"
     Cmpt = 0x74706d63,  // cmpt
@@ -40,7 +40,6 @@ export namespace TileIO {
       case Format.B3dm:
       case Format.Gltf:
       case Format.IModel:
-      case Format.Dgn:
       case Format.Pnts:
       case Format.Cmpt:
       case Format.I3dm:

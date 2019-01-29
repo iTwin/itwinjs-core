@@ -288,6 +288,8 @@ export namespace GltfTileIO {
     /** @hidden */
     protected readonly _buffer: TileIO.StreamBuffer;
     /** @hidden */
+    protected readonly _scene: any;
+    /** @hidden */
     protected readonly _accessors: any;
     /** @hidden */
     protected readonly _bufferViews: any;
@@ -498,6 +500,7 @@ export namespace GltfTileIO {
     /** @hidden */
     protected constructor(props: ReaderProps, iModel: IModelConnection, modelId: Id64String, is3d: boolean, system: RenderSystem, type: BatchType = BatchType.Classifier, isCanceled?: IsCanceled) {
       this._buffer = props.buffer;
+      this._scene = props.scene;
       this._binaryData = props.binaryData;
       this._accessors = props.accessors;
       this._bufferViews = props.bufferViews;

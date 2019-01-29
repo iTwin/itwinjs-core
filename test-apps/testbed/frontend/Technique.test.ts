@@ -85,7 +85,7 @@ describe("Technique tests", () => {
   // NEEDS_WORK: Paul to look into making a fix for Linux failures
   // Clipping planes add an extra varying vec4 which was causing surface shaders to exceed max varying vectors (capped at min guaranteed by spec, primarily because iOS).
   // Verify this no longer occurs.
-  it.skip("should successfully compile surface shader with clipping planes", () => {
+  it("should successfully compile surface shader with clipping planes", () => {
     if (!WebGLTestContext.isInitialized)
       return;
 

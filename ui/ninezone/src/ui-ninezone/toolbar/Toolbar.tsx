@@ -118,7 +118,8 @@ export class PanelsProvider extends React.PureComponent<PanelsProviderProps> {
       });
       this._refs.push(toolbarItemRef);
 
-      acc.push(item);
+      const accElement = (acc as React.ReactNodeArray);
+      accElement.push(item);
       return acc;
     }, new Array<React.ReactNode>());
     return this.props.children && this.props.children(items);

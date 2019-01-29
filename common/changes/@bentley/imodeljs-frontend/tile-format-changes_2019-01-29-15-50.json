@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Optimizations to tile format and schedule animation.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Paul.Connelly@bentley.com"
+}
