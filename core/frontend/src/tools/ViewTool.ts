@@ -1050,7 +1050,6 @@ class ViewScroll extends ViewingToolHandle {
     if (ev.viewport !== this.viewTool.viewport)
       return false;
 
-    this.viewTool.beginDynamicUpdate();
     this.doScroll(ev);
     return false;
   }
@@ -1174,7 +1173,6 @@ class ViewZoom extends ViewingToolHandle {
     if (ev.viewport !== this.viewTool.viewport)
       return false;
 
-    this.viewTool.beginDynamicUpdate();
     this.doZoom(ev);
     return false;
   }
@@ -1485,7 +1483,6 @@ abstract class ViewNavigate extends ViewingToolHandle {
     if (ev.viewport !== this.viewTool.viewport)
       return false;
 
-    this.viewTool.beginDynamicUpdate();
     this.doNavigate(ev);
     return false;
   }
