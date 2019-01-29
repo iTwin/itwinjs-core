@@ -52,6 +52,7 @@ export enum TextureUnit {
     PickDepthAndOrder = Four,
 
     VertexLUT = Five,
+    AuxChannelLUT = Six,
 }
 
 /**

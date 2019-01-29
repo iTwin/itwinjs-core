@@ -55,7 +55,7 @@ export class MeshData implements IDisposable {
   }
 
   public static create(params: MeshParams): MeshData | undefined {
-    const lut = VertexLUT.createFromVertexTable(params.vertices);
+    const lut = VertexLUT.createFromVertexTable(params.vertices, params.auxChannels);
     return undefined !== lut ? new MeshData(lut, params) : undefined;
   }
 
@@ -139,7 +139,7 @@ export abstract class MeshGeometry extends LUTGeometry {
   public get texture() { return this._mesh.texture; }
   public get hasBakedLighting() { return this._mesh.hasBakedLighting; }
   public get lut() { return this._mesh.lut; }
-  public get hasScalarAnimation() { return this._mesh.lut.auxParams !== undefined; }
+  public get hasScalarAnimation() { return this._mesh.lut.hasScalarAnimation; }
 
   protected constructor(mesh: MeshData, numIndices: number) {
     super();

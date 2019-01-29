@@ -15,7 +15,8 @@ import {
 } from "../ShaderBuilder";
 import { FeatureMode } from "../TechniqueFlags";
 import { GLSLFragment, addWhiteOnWhiteReversal, addPickBufferOutputs } from "./Fragment";
-import { addProjectionMatrix, addModelViewMatrix, addNormalMatrix, addAnimation } from "./Vertex";
+import { addProjectionMatrix, addModelViewMatrix, addNormalMatrix } from "./Vertex";
+import { addAnimation } from "./Animation";
 import { GLSLDecode } from "./Decode";
 import { addColor } from "./Color";
 import { addLighting } from "./Lighting";
@@ -81,11 +82,11 @@ const computePosition = `
 `;
 
 function createCommon(animated: boolean): ProgramBuilder {
-  const builder = new ProgramBuilder(true, animated);
+  const builder = new ProgramBuilder(true);
   const vert = builder.vert;
 
   if (animated)
-    addAnimation(vert, true, true);
+    addAnimation(vert, true);
 
   addProjectionMatrix(vert);
   addModelViewMatrix(vert);

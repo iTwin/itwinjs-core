@@ -98,7 +98,7 @@ export class FeatureOverrides implements IDisposable {
         feature.elementId.lower, feature.elementId.upper,
         feature.subCategoryId.lower, feature.subCategoryId.upper,
         feature.geometryClass,
-        modelIdParts.lower, modelIdParts.upper, map.type);
+        modelIdParts.lower, modelIdParts.upper, map.type, feature.animationNodeId);
 
       if (undefined === app || app.isFullyTransparent) {
         // The feature is not visible. We don't care about any of the other overrides, because we're not going to render it.

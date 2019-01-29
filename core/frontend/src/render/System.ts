@@ -471,6 +471,7 @@ export interface PackedFeature {
   elementId: Id64.Uint32Pair;
   subCategoryId: Id64.Uint32Pair;
   geometryClass: GeometryClass;
+  animationNodeId: number;
 }
 
 /**
@@ -484,6 +485,7 @@ export class PackedFeatureTable {
   public readonly numFeatures: number;
   public readonly anyDefined: boolean;
   public readonly type: BatchType;
+  private readonly _animationNodeIds?: Uint8Array | Uint16Array | Uint32Array;
 
   public get byteLength(): number { return this._data.byteLength; }
 
@@ -491,12 +493,13 @@ export class PackedFeatureTable {
    * This is used internally when deserializing Tiles in iMdl format.
    * @hidden
    */
-  public constructor(data: Uint32Array, modelId: Id64String, numFeatures: number, maxFeatures: number, type: BatchType) {
+  public constructor(data: Uint32Array, modelId: Id64String, numFeatures: number, maxFeatures: number, type: BatchType, animationNodeIds?: Uint8Array | Uint16Array | Uint32Array) {
     this._data = data;
     this.modelId = modelId;
     this.maxFeatures = maxFeatures;
     this.numFeatures = numFeatures;
     this.type = type;
+    this._animationNodeIds = animationNodeIds;
 
     switch (this.numFeatures) {
       case 0:
@@ -512,6 +515,7 @@ export class PackedFeatureTable {
 
     assert(this._data.length >= this._subCategoriesOffset);
     assert(this.maxFeatures >= this.numFeatures);
+    assert(undefined === this._animationNodeIds || this._animationNodeIds.length === this.numFeatures);
   }
 
   /** Create a packed feature table from a [[FeatureTable]]. */
@@ -578,6 +582,11 @@ export class PackedFeatureTable {
   }
 
   /** @hidden */
+  public getAnimationNodeId(featureIndex: number): number {
+    return undefined !== this._animationNodeIds ? this._animationNodeIds[featureIndex] : 0;
+  }
+
+  /** @hidden */
   public getPackedFeature(featureIndex: number): PackedFeature {
     assert(featureIndex < this.numFeatures);
 
@@ -591,7 +600,8 @@ export class PackedFeatureTable {
     subCatIndex = subCatIndex * 2 + this._subCategoriesOffset;
     const subCategoryId = { lower: this._data[subCatIndex], upper: this._data[subCatIndex + 1] };
 
-    return { elementId, subCategoryId, geometryClass };
+    const animationNodeId = this.getAnimationNodeId(featureIndex);
+    return { elementId, subCategoryId, geometryClass, animationNodeId };
   }
 
   /** Returns the element ID of the Feature associated with the specified index, or undefined if the index is out of range. */

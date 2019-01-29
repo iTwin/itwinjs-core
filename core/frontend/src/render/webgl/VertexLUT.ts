@@ -9,7 +9,54 @@ import { QParams2d, QParams3d } from "@bentley/imodeljs-common";
 import { ColorInfo } from "./ColorInfo";
 import { TextureHandle } from "./Texture";
 import { qparams2dToArray, qorigin3dToArray, qscale3dToArray } from "./Handle";
-import { VertexTable, AuxDisplacement, AuxNormal, AuxParam } from "../primitives/VertexTable";
+import { VertexTable } from "../primitives/VertexTable";
+import { AuxChannelTable, AuxChannel, AuxDisplacementChannel, AuxParamChannel } from "../primitives/AuxChannelTable";
+
+type ChannelPropName = "normals" | "displacements" | "params";
+
+export class AuxChannelLUT implements IDisposable {
+  public readonly texture: TextureHandle;
+  public readonly numVertices: number;
+  public readonly numBytesPerVertex: number;
+  public displacements?: Map<string, AuxDisplacementChannel>;
+  public normals?: Map<string, AuxChannel>;
+  public params?: Map<string, AuxParamChannel>;
+
+  private constructor(texture: TextureHandle, table: AuxChannelTable) {
+    this.texture = texture;
+    this.numVertices = table.numVertices;
+    this.numBytesPerVertex = table.numBytesPerVertex;
+
+    this.initChannels<AuxDisplacementChannel>(table, "displacements");
+    this.initChannels<AuxChannel>(table, "normals");
+    this.initChannels<AuxParamChannel>(table, "params");
+  }
+
+  private initChannels<T extends AuxChannel>(table: AuxChannelTable, name: ChannelPropName): void {
+    const channels = table[name];
+    if (undefined === channels)
+      return;
+
+    const map = (this[name] = new Map<string, T>());
+    for (const channel of channels) {
+      // Compiler doesn't appear to deduce specific T here? 'as any' to work around...
+      // error TS2345: Argument of type 'AuxChannel | AuxDisplacementChannel | AuxParamChannel' is not assignable to parameter of type 'T'.
+      map.set(channel.name, channel as any);
+    }
+  }
+
+  public get bytesUsed(): number { return this.texture.bytesUsed; }
+  public get hasScalarAnimation() { return undefined !== this.params; }
+
+  public dispose() {
+    dispose(this.texture);
+  }
+
+  public static create(table: AuxChannelTable): AuxChannelLUT | undefined {
+    const texture = TextureHandle.createForData(table.width, table.height, table.data);
+    return undefined !== texture ? new AuxChannelLUT(texture, table) : undefined;
+  }
+}
 
 /** Represents the finished lookup table ready for submittal to GPU. */
 export class VertexLUT implements IDisposable {
@@ -20,42 +67,39 @@ export class VertexLUT implements IDisposable {
   public readonly qOrigin: Float32Array;  // Origin of quantized positions
   public readonly qScale: Float32Array;   // Scale of quantized positions
   public readonly uvQParams?: Float32Array; // If vertices contain texture UV params, quantization parameters as [origin.x, origin.y, scale.x, scale.y ]
-  public readonly auxDisplacements?: Map<string, AuxDisplacement>;  // Auxilliary displacements.
-  public readonly auxNormals?: Map<string, AuxNormal>;  // Auxilliary displacements.
-  public readonly auxParams?: Map<string, AuxParam>;  // Auxilliary displacements.
+  public readonly auxChannels?: AuxChannelLUT;
 
-  public get bytesUsed(): number { return this.texture.bytesUsed; }
+  public get hasAnimation() { return undefined !== this.auxChannels; }
+  public get hasScalarAnimation() { return undefined !== this.auxChannels && this.auxChannels.hasScalarAnimation; }
 
-  public static createFromVertexTable(vt: VertexTable): VertexLUT | undefined {
-    const texture = TextureHandle.createForData(vt.width, vt.height, vt.data);
-    return undefined !== texture ? new VertexLUT(texture, vt, ColorInfo.createFromVertexTable(vt), vt.qparams, vt.uvParams) : undefined;
+  public get bytesUsed(): number {
+    let bytesUsed = this.texture.bytesUsed;
+    if (undefined !== this.auxChannels)
+      bytesUsed += this.auxChannels.bytesUsed;
+
+    return bytesUsed;
   }
 
-  private constructor(texture: TextureHandle, table: VertexTable, colorInfo: ColorInfo, qparams: QParams3d, uvParams?: QParams2d) {
+  public static createFromVertexTable(vt: VertexTable, aux?: AuxChannelTable): VertexLUT | undefined {
+    const texture = TextureHandle.createForData(vt.width, vt.height, vt.data);
+    if (undefined === texture)
+      return undefined;
+
+    const auxLUT = undefined !== aux ? AuxChannelLUT.create(aux) : undefined;
+    return new VertexLUT(texture, vt, ColorInfo.createFromVertexTable(vt), vt.qparams, vt.uvParams, auxLUT);
+  }
+
+  private constructor(texture: TextureHandle, table: VertexTable, colorInfo: ColorInfo, qparams: QParams3d, uvParams?: QParams2d, auxChannels?: AuxChannelLUT) {
     this.texture = texture;
     this.numVertices = table.numVertices;
     this.numRgbaPerVertex = table.numRgbaPerVertex;
     this.colorInfo = colorInfo;
     this.qOrigin = qorigin3dToArray(qparams.origin);
     this.qScale = qscale3dToArray(qparams.scale);
+    this.auxChannels = auxChannels;
+
     if (undefined !== uvParams)
       this.uvQParams = qparams2dToArray(uvParams);
-
-    if (undefined !== table.auxDisplacements) {
-      this.auxDisplacements = new Map<string, AuxDisplacement>();
-      for (const auxDisplacement of table.auxDisplacements)
-        this.auxDisplacements.set(auxDisplacement.name, auxDisplacement);
-    }
-    if (undefined !== table.auxParams) {
-      this.auxParams = new Map<string, AuxParam>();
-      for (const auxParam of table.auxParams)
-        this.auxParams.set(auxParam.name, auxParam);
-    }
-    if (undefined !== table.auxNormals) {
-      this.auxNormals = new Map<string, AuxNormal>();
-      for (const auxNormal of table.auxNormals)
-        this.auxNormals.set(auxNormal.name, auxNormal);
-    }
   }
 
   public dispose() {

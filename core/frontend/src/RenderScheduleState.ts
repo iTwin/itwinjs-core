@@ -6,7 +6,7 @@
 
 import { RenderSchedule, RgbColor, TileTreeProps, BatchType } from "@bentley/imodeljs-common";
 import { Range1d, Transform, Point3d, Vector3d, Matrix3d, Plane3dByOriginAndUnitNormal, ClipPlane, ConvexClipPlaneSet, UnionOfConvexClipPlaneSets, Point4d } from "@bentley/geometry-core";
-import { Id64String, Id64 } from "@bentley/bentleyjs-core";
+import { Id64String } from "@bentley/bentleyjs-core";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 import { TileTreeModelState } from "./ModelState";
 import { IModelConnection } from "./IModelConnection";
@@ -137,7 +137,7 @@ export namespace RenderScheduleState {
           visibility = interpolate(visibility, timeline[interval.index1].value, interval.fraction);
 
         if (visibility <= 0) {
-          overrides.setBatchNeverDrawn(batchId);
+          overrides.setAnimationNodeNeverDrawn(batchId);
           return;
         }
         if (visibility <= 100)
@@ -153,7 +153,7 @@ export namespace RenderScheduleState {
       }
 
       if (colorOverride || transparencyOverride)
-        overrides.overrideBatch(batchId, FeatureSymbology.Appearance.fromJSON({ rgb: colorOverride, transparency: transparencyOverride }));
+        overrides.overrideAnimationNode(batchId, FeatureSymbology.Appearance.fromJSON({ rgb: colorOverride, transparency: transparencyOverride }));
     }
     public getAnimationTransform(time: number, interval: Interval): Transform | undefined {
       if (!ElementTimeline.findTimelineInterval(interval, time, this.transformTimeline) || this.transformTimeline![interval.index0].value === null)
@@ -295,29 +295,18 @@ export namespace RenderScheduleState {
           branches.set(this.modelId + "_Node_" + (i + 1).toString(), new AnimationBranchState(transform, clip));
       }
     }
-    public initBatchMap(batchMap: Id64.Uint32Map<number>) {
-      for (const timeline of this.elementTimelines) {
-        for (const id of timeline.elementIds)
-          batchMap.setById(id, timeline.batchId);
-      }
-    }
   }
 
   export class Script {
     public modelTimelines: ModelTimeline[] = [];
     public iModel: IModelConnection;
     public displayStyleId: Id64String;
-    private _batchMap = new Id64.Uint32Map<number>();
 
     constructor(displayStyleId: Id64String, iModel: IModelConnection) { this.displayStyleId = displayStyleId; this.iModel = iModel; }
     public static fromJSON(displayStyleId: Id64String, iModel: IModelConnection, modelTimelines: RenderSchedule.ModelTimelineProps[]): Script | undefined {
       const value = new Script(displayStyleId, iModel);
       modelTimelines.forEach((entry) => value.modelTimelines.push(ModelTimeline.fromJSON(entry)));
-      value.initBatchMap();
       return value;
-    }
-    public initBatchMap() {
-      this.modelTimelines.forEach((modelTimeline) => modelTimeline.initBatchMap(this._batchMap));
     }
     public get containsAnimation() {
       for (const modelTimeline of this.modelTimelines)
@@ -347,7 +336,6 @@ export namespace RenderScheduleState {
     }
 
     public getSymbologyOverrides(overrides: FeatureSymbology.Overrides, time: number) {
-      overrides.batchMap = this._batchMap;   // Is it necessary to clone this??
       this.modelTimelines.forEach((entry) => entry.getSymbologyOverrides(overrides, time));
     }
 
