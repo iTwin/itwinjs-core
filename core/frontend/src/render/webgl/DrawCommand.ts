@@ -6,9 +6,9 @@
 
 import { Matrix4 } from "./Matrix";
 import { CachedGeometry } from "./CachedGeometry";
-import { Transform } from "@bentley/geometry-core";
+import { Transform, Range3d } from "@bentley/geometry-core";
 import { Id64, Id64String } from "@bentley/bentleyjs-core";
-import { FeatureIndexType, RenderMode, ViewFlags, Frustum, FrustumPlanes, ElementAlignedBox3d } from "@bentley/imodeljs-common";
+import { FeatureIndexType, RenderMode, ViewFlags, Frustum, FrustumPlanes } from "@bentley/imodeljs-common";
 import { System } from "./System";
 import { Batch, Branch, Graphic, GraphicsArray } from "./Graphic";
 import { Primitive } from "./Primitive";
@@ -228,7 +228,7 @@ export type DrawCommands = DrawCommand[];
 export class RenderCommands {
   private _frustumPlanes?: FrustumPlanes;
   private readonly _scratchFrustum = new Frustum();
-  private readonly _scratchRange = new ElementAlignedBox3d();
+  private readonly _scratchRange = new Range3d();
   private readonly _commands: DrawCommands[];
   private readonly _stack: BranchStack; // refers to the Target's BranchStack
   private readonly _batchState: BatchState; // refers to the Target's BatchState

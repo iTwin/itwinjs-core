@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { IModelHost, IModelHostConfiguration, IModelDb, ECSqlStatement, IModelJsFs, ViewDefinition, DisplayStyle3d, OrthographicViewDefinition } from "@bentley/imodeljs-backend";
 import { OpenMode, DbResult, Id64String } from "@bentley/bentleyjs-core";
-import { Placement3d, ElementAlignedBox3d, AxisAlignedBox3d, RenderMode, ViewFlags, ColorDef } from "@bentley/imodeljs-common";
-import { YawPitchRollAngles, Point3d } from "@bentley/geometry-core";
+import { Placement3d, RenderMode, ViewFlags, ColorDef } from "@bentley/imodeljs-common";
+import { YawPitchRollAngles, Point3d, Range3d } from "@bentley/geometry-core";
 import * as Yargs from "yargs";
 import { readFileSync, writeFileSync, unlinkSync } from "fs";
 
@@ -19,13 +19,13 @@ interface ImportInputArgs {
 }
 
 function doFixRange(iModel: IModelDb) {
-    const totalRange = new AxisAlignedBox3d();
+    const totalRange = new Range3d();
 
     iModel.withPreparedStatement("SELECT ECInstanceId,Category.Id,Origin,Yaw,Pitch,Roll,BBoxLow,BBoxHigh FROM bis.GeometricElement3d", (stmt: ECSqlStatement) => {
         while (DbResult.BE_SQLITE_ROW === stmt.step()) {
             const row = stmt.getRow();
             if (undefined !== row.bBoxLow && undefined !== row.bBoxHigh && undefined !== row.origin) {
-                const box = ElementAlignedBox3d.createFromPoints(row.bBoxLow, row.bBoxHigh);
+                const box = Range3d.create(row.bBoxLow, row.bBoxHigh);
                 const placement = new Placement3d(Point3d.fromJSON(row.origin), YawPitchRollAngles.createDegrees(row.yaw, row.pitch, row.roll), box);
                 const range = placement.calculateRange();
                 totalRange.extendRange(range);

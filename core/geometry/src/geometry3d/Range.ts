@@ -651,7 +651,29 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
       matrix.coffs[8] = 1;
     return transform;
   }
+
+  /** Ensure that the length of each dimension of this AxisAlignedBox3d is at least a minimum size. If not, expand to minimum about the center.
+   * @param min The minimum length for each dimension.
+   */
+  public ensureMinLengths(min: number = .001) {
+    let size = (min - this.xLength()) / 2.0;
+    if (size > 0) {
+      this.low.x -= size;
+      this.high.x += size;
+    }
+    size = (min - this.yLength()) / 2.0;
+    if (size > 0) {
+      this.low.y -= size;
+      this.high.y += size;
+    }
+    size = (min - this.zLength()) / 2.0;
+    if (size > 0) {
+      this.low.z -= size;
+      this.high.z += size;
+    }
+  }
 }
+
 export class Range1d extends RangeBase {
 
   // low and high are always non-null objects

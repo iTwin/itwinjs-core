@@ -9,15 +9,15 @@ import { ChangesetGenerator } from "./ChangesetGenerator";
 import { TestChangesetSequence } from "./TestChangesetSequence";
 import { Id64String, Logger, LogLevel, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { CategorySelector, DisplayStyle3d, IModelDb, IModelHost, IModelHostConfiguration, KeepBriefcase, ModelSelector, OrthographicViewDefinition, PhysicalModel, SpatialCategory } from "@bentley/imodeljs-backend";
-import { IModel, CodeScopeSpec, ColorDef, AxisAlignedBox3d } from "@bentley/imodeljs-common";
-import { Point3d, Range3d } from "@bentley/geometry-core";
+import { IModel, CodeScopeSpec, ColorDef } from "@bentley/imodeljs-common";
+import { Range3d } from "@bentley/geometry-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import * as fs from "fs";
 import * as path from "path";
 
 const actx = new ActivityLoggingContext("");
 
-/** Harness used to facitilitate changeset generation */
+/** Harness used to facilitate changeset generation */
 export class ChangesetGenerationHarness {
     private _iModelDbHandler: IModelDbHandler;
     private _localIModelDbPath: string;
@@ -83,7 +83,7 @@ export class ChangesetGenerationHarness {
         const viewRange = new Range3d(0, 0, 0, 50, 50, 50);
         OrthographicViewDefinition.insert(this._iModelDb, definitionModelId, viewName, modelSelectorId, categorySelectorId, displayStyleId, viewRange);
 
-        this._iModelDb.updateProjectExtents(new AxisAlignedBox3d(new Point3d(-1000, -1000, -1000), new Point3d(1000, 1000, 1000)));
+        this._iModelDb.updateProjectExtents(new Range3d(-1000, -1000, -1000, 1000, 1000, 1000));
         this._iModelDb.saveChanges("Setup new iModel");
         this._iModelDb.closeStandalone();
         this._iModelDb = undefined;

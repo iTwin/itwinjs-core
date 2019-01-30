@@ -740,14 +740,14 @@ describe("iModel", () => {
 
   it("update the project extents", async () => {
     const originalExtents = imodel1.projectExtents;
-    const newExtents = new AxisAlignedBox3d(originalExtents.low, originalExtents.high);
+    const newExtents = Range3d.create(originalExtents.low, originalExtents.high);
     newExtents.low.x -= 50; newExtents.low.y -= 25; newExtents.low.z -= 189;
     newExtents.high.x += 1087; newExtents.high.y += 19; newExtents.high.z += .001;
     imodel1.updateProjectExtents(newExtents);
 
     const updatedProps = JSON.parse(imodel1.briefcase!.nativeDb.getIModelProps());
     assert.isTrue(updatedProps.hasOwnProperty("projectExtents"), "Returned property JSON object has project extents");
-    const updatedExtents = AxisAlignedBox3d.fromJSON(updatedProps.projectExtents);
+    const updatedExtents = Range3d.fromJSON(updatedProps.projectExtents);
     assert.isTrue(newExtents.isAlmostEqual(updatedExtents), "Project extents successfully updated in database");
   });
 

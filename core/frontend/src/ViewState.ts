@@ -1490,7 +1490,7 @@ export abstract class ViewState3d extends ViewState {
   /** Return the ground extents, which will originate either from the viewport frustum or the extents of the imodel. */
   public getGroundExtents(vp?: Viewport): AxisAlignedBox3d {
     const displayStyle = this.getDisplayStyle3d();
-    const extents = new AxisAlignedBox3d();
+    const extents = new Range3d();
     if (!displayStyle.environment.ground.display)
       return extents; // Ground plane is not enabled
 
@@ -1623,7 +1623,7 @@ export class SpatialViewState extends ViewState3d {
 
   public computeFitRange(): AxisAlignedBox3d {
     // Loop over the current models in the model selector with loaded tile trees and union their ranges
-    const range = new AxisAlignedBox3d();
+    const range = new Range3d();
     this.forEachTileTreeModel((model: TileTreeModelState) => {   // ...if we don't want to fit context reality mdoels this should cal forEachSpatialTileTreeModel...
       const tileTree = model.tileTree;
       if (tileTree !== undefined && tileTree.rootTile !== undefined) {   // can we assume that a loaded model
@@ -1640,7 +1640,7 @@ export class SpatialViewState extends ViewState3d {
   }
 
   public getViewedExtents(): AxisAlignedBox3d {
-    const extents = AxisAlignedBox3d.fromJSON<AxisAlignedBox3d>(this.iModel.projectExtents);
+    const extents = Range3d.fromJSON<AxisAlignedBox3d>(this.iModel.projectExtents);
     extents.scaleAboutCenterInPlace(1.0001); // projectExtents. lying smack up against the extents is not excluded by frustum...
     extents.extendRange(this.getGroundExtents());
     return extents;
@@ -1737,13 +1737,13 @@ export abstract class ViewState2d extends ViewState {
       if (undefined !== model && model.isGeometricModel) {
         const tree = (model as GeometricModelState).getOrLoadTileTree();
         if (undefined !== tree) {
-          this._viewedExtents = new AxisAlignedBox3d(tree.range.low, tree.range.high);
+          this._viewedExtents = Range3d.create(tree.range.low, tree.range.high);
           tree.location.multiplyRange(this._viewedExtents, this._viewedExtents);
         }
       }
     }
 
-    return undefined !== this._viewedExtents ? this._viewedExtents : new AxisAlignedBox3d();
+    return undefined !== this._viewedExtents ? this._viewedExtents : new Range3d();
   }
 
   public onRenderFrame(_viewport: Viewport): void { }

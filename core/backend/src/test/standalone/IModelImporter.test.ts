@@ -5,8 +5,8 @@
 import * as path from "path";
 import { assert } from "chai";
 import { Id64, Id64String } from "@bentley/bentleyjs-core";
-import { Box, LineString3d, Point3d, Range2d, Vector3d, YawPitchRollAngles, Point2d, StandardViewIndex } from "@bentley/geometry-core";
-import { AxisAlignedBox3d, CodeScopeSpec, ColorDef, FontType, GeometricElement2dProps, GeometryStreamBuilder, GeometryStreamProps, IModel, SubCategoryAppearance, Code, GeometricElement3dProps, CategorySelectorProps, SubjectProps, SpatialViewDefinitionProps, ModelSelectorProps, AuxCoordSystem2dProps } from "@bentley/imodeljs-common";
+import { Box, LineString3d, Point3d, Range2d, Vector3d, YawPitchRollAngles, Point2d, StandardViewIndex, Range3d } from "@bentley/geometry-core";
+import { CodeScopeSpec, ColorDef, FontType, GeometricElement2dProps, GeometryStreamBuilder, GeometryStreamProps, IModel, SubCategoryAppearance, Code, GeometricElement3dProps, CategorySelectorProps, SubjectProps, SpatialViewDefinitionProps, ModelSelectorProps, AuxCoordSystem2dProps } from "@bentley/imodeljs-common";
 import {
   AuxCoordSystem2d, CategorySelector, DefinitionModel, DisplayStyle2d, DisplayStyle3d, DocumentListModel,
   Drawing, DrawingCategory, DrawingGraphic, DrawingGraphicRepresentsElement, DrawingViewDefinition, IModelDb, IModelImporter, IModelJsFs, InformationPartitionElement,
@@ -48,7 +48,7 @@ class TestDataManager {
       assert.exists(this.sourceDb.fontMap.getFont("Arial"));
       assert.exists(this.sourceDb.fontMap.getFont(1));
     }
-    const projectExtents = new AxisAlignedBox3d(new Point3d(-1000, -1000, -1000), new Point3d(1000, 1000, 1000));
+    const projectExtents = new Range3d(-1000, -1000, -1000, 1000, 1000, 1000);
     this.sourceDb.updateProjectExtents(projectExtents);
     const codeSpecId1: Id64String = this.sourceDb.codeSpecs.insert("CodeSpec1", CodeScopeSpec.Type.Model);
     const codeSpecId2: Id64String = this.sourceDb.codeSpecs.insert("CodeSpec2", CodeScopeSpec.Type.ParentElement);

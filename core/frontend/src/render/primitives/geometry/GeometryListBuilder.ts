@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Rendering */
 
-import { Transform, Arc3d, LineSegment3d, CurvePrimitive, Loop, Path, Point2d, Point3d, Polyface, IndexedPolyface, LineString3d } from "@bentley/geometry-core";
-import { GraphicParams, RenderTexture, Gradient, ElementAlignedBox3d, FeatureTable } from "@bentley/imodeljs-common";
+import { Transform, Arc3d, LineSegment3d, CurvePrimitive, Loop, Path, Point2d, Point3d, Polyface, IndexedPolyface, LineString3d, Range3d } from "@bentley/geometry-core";
+import { GraphicParams, RenderTexture, Gradient, FeatureTable } from "@bentley/imodeljs-common";
 import { GraphicBuilder, GraphicType } from "../../GraphicBuilder";
 import { Viewport } from "../../../Viewport";
 import { GeometryOptions } from "../Primitives";
@@ -161,7 +161,7 @@ export class PrimitiveBuilder extends GeometryListBuilder {
 
     let graphic = (this.primitives.length !== 1) ? this.accum.system.createGraphicList(this.primitives) : this.primitives.pop() as RenderGraphic;
     if (undefined !== featureTable) {
-      const range = new ElementAlignedBox3d(); // ###TODO compute range...
+      const range = new Range3d(); // ###TODO compute range...
       graphic = this.accum.system.createBatch(graphic, PackedFeatureTable.pack(featureTable), range);
     }
 

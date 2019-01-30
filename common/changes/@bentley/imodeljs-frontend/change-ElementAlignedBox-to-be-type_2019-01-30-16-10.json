@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "AxisAlignedBox and ElementAlignedBox are now typed to Range3d rather than classes",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "keith.bentley@bentley.com"
+}

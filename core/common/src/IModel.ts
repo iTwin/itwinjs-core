@@ -5,9 +5,9 @@
 /** @module iModels */
 
 import { GuidString, Id64, Id64String, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
-import { AxisOrder, Matrix3d, Point3d, Range3dProps, Transform, Vector3d, XYAndZ, XYZProps, YawPitchRollAngles, YawPitchRollProps } from "@bentley/geometry-core";
+import { AxisOrder, Matrix3d, Point3d, Range3dProps, Transform, Vector3d, XYAndZ, XYZProps, YawPitchRollAngles, YawPitchRollProps, Range3d } from "@bentley/geometry-core";
 import { Cartographic } from "./geometry/Cartographic";
-import { AxisAlignedBox3d } from "./geometry/Primitives";
+import { AxisAlignedBox3d } from "./geometry/Placement";
 import { IModelError } from "./IModelError";
 import { ThumbnailProps } from "./Thumbnail";
 
@@ -166,7 +166,7 @@ export abstract class IModel implements IModelProps {
   protected initialize(name: string, props: IModelProps) {
     this.name = name;
     this.rootSubject = props.rootSubject;
-    this.projectExtents = AxisAlignedBox3d.fromJSON(props.projectExtents);
+    this.projectExtents = Range3d.fromJSON(props.projectExtents);
     this._globalOrigin = Point3d.fromJSON(props.globalOrigin);
     this._globalOrigin.freeze(); // cannot be modified
     if (props.ecefLocation)

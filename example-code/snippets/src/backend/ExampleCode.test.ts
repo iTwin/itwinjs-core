@@ -5,9 +5,10 @@
 import { assert } from "chai";
 import { BisCore, ConcurrencyControl, Element, ElementAspect, IModelDb, PhysicalModel } from "@bentley/imodeljs-backend";
 import { IModelTestUtils } from "./IModelTestUtils";
-import { ElementAspectProps, AxisAlignedBox3d, CodeSpec, CodeScopeSpec, IModel } from "@bentley/imodeljs-common";
+import { ElementAspectProps, CodeSpec, CodeScopeSpec, IModel } from "@bentley/imodeljs-common";
 import { Id64, Id64String, ActivityLoggingContext, Logger } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
+import { Range3d } from "../../../../core/geometry/lib/geometry-core";
 
 /** Example code organized as tests to make sure that it builds and runs successfully. */
 describe("Example Code", () => {
@@ -94,7 +95,7 @@ describe("Example Code", () => {
     // __PUBLISH_EXTRACT_START__ IModelDb.updateProjectExtents
     // This is an example of how to expand an iModel's project extents.
     const originalExtents = iModel.projectExtents;
-    const newExtents = new AxisAlignedBox3d(originalExtents.low, originalExtents.high);
+    const newExtents = Range3d.create(originalExtents.low, originalExtents.high);
     newExtents.low.x -= 50; newExtents.low.y -= 25; newExtents.low.z -= 189;
     newExtents.high.x += 1087; newExtents.high.y += 19; newExtents.high.z += .001;
     iModel.updateProjectExtents(newExtents);

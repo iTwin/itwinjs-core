@@ -270,7 +270,7 @@ export namespace Attachments {
       super(new Tile.Params(
         root,
         "",
-        new ElementAlignedBox3d(0, 0, -RenderTarget.frustumDepth2d, range.high.x, range.high.y, RenderTarget.frustumDepth2d),
+        new Range3d(0, 0, -RenderTarget.frustumDepth2d, range.high.x, range.high.y, RenderTarget.frustumDepth2d),
         512,  // does not matter... have no children
         true,
       ));
@@ -320,7 +320,7 @@ export namespace Attachments {
         fullRange = root.getRootRange();
 
       const mid = fullRange.low.interpolate(0.5, fullRange.high);
-      const range = new ElementAlignedBox3d();
+      const range = new Range3d();
       switch (placement) {
         case Tile3dPlacement.UpperLeft:
           range.extend(mid);
@@ -866,7 +866,7 @@ export namespace Attachments {
     /** Given a view and an origin point, compute a placement for an attachment. */
     private static computePlacement(view: ViewState, origin: Point2d, scale: number): Placement2d {
       const viewExtents = view.getExtents();
-      const box = new ElementAlignedBox2d();
+      const box = new Range2d();
       box.low.setZero();
       box.high.x = viewExtents.x / scale;
       box.high.y = viewExtents.y / scale;

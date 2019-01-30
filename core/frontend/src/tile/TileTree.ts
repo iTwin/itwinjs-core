@@ -222,7 +222,7 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
 
   /** Returns the range of this tile's contents in world coordinates. */
   public computeWorldContentRange(): ElementAlignedBox3d {
-    const range = new ElementAlignedBox3d();
+    const range = new Range3d();
     if (!this.contentRange.isNull)
       this.root.location.multiplyRange(this.contentRange, range);
 
@@ -414,7 +414,7 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
         this._childrenLoadStatus = TileTree.LoadStatus.Loaded;
         if (undefined !== props) {
           // If this tile is undisplayable, update its content range based on children's content ranges.
-          const parentRange = this.hasContentRange ? undefined : new ElementAlignedBox3d();
+          const parentRange = this.hasContentRange ? undefined : new Range3d();
           for (const prop of props) {
             // ###TODO if child is empty don't bother adding it to list...
             const child = new Tile(Tile.Params.fromJSON(prop, this.root, this));
@@ -572,7 +572,7 @@ export namespace Tile {
     public get tileSizeModifier(): number { return 1.0; } // ###TODO? may adjust for performance, or device pixel density, etc
     public getTileCenter(tile: Tile): Point3d { return this.location.multiplyPoint3d(tile.center); }
 
-    private static _scratchRange = new ElementAlignedBox3d();
+    private static _scratchRange = new Range3d();
     public getTileRadius(tile: Tile): number {
       let range: Range3d = tile.range.clone(DrawArgs._scratchRange);
       range = this.location.multiplyRange(range, range);
@@ -612,9 +612,9 @@ export namespace Tile {
       public readonly sizeMultiplier?: number) { }
 
     public static fromJSON(props: TileProps, root: TileTree, parent?: Tile) {
-      const contentRange = undefined !== props.contentRange ? ElementAlignedBox3d.fromJSON<ElementAlignedBox3d>(props.contentRange) : undefined;
+      const contentRange = undefined !== props.contentRange ? Range3d.fromJSON<ElementAlignedBox3d>(props.contentRange) : undefined;
       const transformToRoot = undefined !== props.transformToRoot ? Transform.fromJSON(props.transformToRoot) : undefined;
-      return new Params(root, props.contentId, ElementAlignedBox3d.fromJSON(props.range), props.maximumSize, props.isLeaf, parent, contentRange, transformToRoot, props.sizeMultiplier);
+      return new Params(root, props.contentId, Range3d.fromJSON(props.range), props.maximumSize, props.isLeaf, parent, contentRange, transformToRoot, props.sizeMultiplier);
     }
   }
 }
@@ -668,7 +668,7 @@ export class TileTree implements IDisposable, RenderMemory.Consumer {
   }
 
   public get is2d(): boolean { return !this.is3d; }
-  public get range(): ElementAlignedBox3d { return this._rootTile !== undefined ? this._rootTile.range : new ElementAlignedBox3d(); }
+  public get range(): ElementAlignedBox3d { return this._rootTile !== undefined ? this._rootTile.range : new Range3d(); }
 
   public selectTilesForScene(context: SceneContext): Tile[] { return this.selectTiles(this.createDrawArgs(context)); }
   public selectTiles(args: Tile.DrawArgs): Tile[] {
