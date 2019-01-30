@@ -51,6 +51,8 @@ export interface ButtonCluster {
   onClick: () => void;
   /** Which bwc button style to decorate button width */
   buttonStyle?: ButtonStyle;
+  /** Disable the button */
+  disabled?: boolean;
 }
 
 /** Property interface for [[Dialog]] */
@@ -271,7 +273,7 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
             buttonClass = classnames(buttonClass, button.buttonStyle || "bwc-buttons-hollow");
             break;
         }
-        buttons.push(<button className={buttonClass} key={index.toString()} onClick={button.onClick}>{buttonText}</button>);
+        buttons.push(<button className={buttonClass} disabled={button.disabled} key={index.toString()} onClick={button.onClick}>{buttonText}</button>);
       });
     }
     return buttons;

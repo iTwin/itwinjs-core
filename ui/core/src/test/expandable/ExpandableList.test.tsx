@@ -35,7 +35,7 @@ describe("ExpandableList", () => {
         </ExpandableBlock>
       </ExpandableList>);
 
-    const blocks = wrapper.find("div.core-expandable-block");
+    const blocks = wrapper.find("div.bwc-expandable-blocks-block");
     const expanded = wrapper.find("div.is-expanded");
 
     expect(expanded.length).to.eq(1);
@@ -54,7 +54,7 @@ describe("ExpandableList", () => {
         </ExpandableBlock>
       </ExpandableList>);
 
-    wrapper.find("div.core-expandable-block > .header").simulate("click");
+    wrapper.find("div.bwc-expandable-blocks-block > .header").simulate("click");
     expect(clickSpy.calledOnce).to.be.true;
 
     wrapper.unmount();

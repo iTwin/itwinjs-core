@@ -2,30 +2,136 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-@import "../colors.scss";
 @import "@bentley/bwc/lib/mixins";
+@import "../colors";
 
-.core-expandable-block {
-  @include bwc-expandable-blocks-block;
+.bwc-expandable-blocks-block {
   background-color: $background-1;
+  border: solid 1px $bwc-gray-9;
+  border-radius: 3px;
+  position: relative;
 
   > .header {
-    padding: 4px;
+    padding: $bwc-xs;
+    background: $bwc-white;
+    transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out;
+    cursor: pointer;
 
-    .icon-container {
+    > .icon-container {
       line-height: 23px;
       width: 23px;
       font-size: 12px;
+      float: left;
+      margin-right: 6px;
+      text-align: center;
+      color: $bwc-gray-5;
+      transition: 0.15s ease-in-out;
     }
 
-    .title {
+    > .caption {
+      @include no-link;
+      @include bwc-text( small );
+      display: block;
+      color: $bwc-gray-4;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    > .title {
+      @include no-link;
+      @include bwc-text( subheading );
       font-size: 0.95em;
       line-height: 23px;
+      display: block;
+      margin: 0;
+      color: $bwc-gray-4;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      -webkit-transition: 0.15s ease-in-out;
+      -o-transition: 0.15s ease-in-out;
+      transition: 0.15s ease-in-out;
     }
   }
 
-  &.is-expanded > .content {
-    padding-top: 5px;
-    padding-bottom: 5px;
+  > .content {
+    padding: 0;
+    margin: 0;
+    border: 0 none transparent;
+    transition:
+    padding-top 0.15s ease-in-out,
+    padding-bottom 0.15s ease-in-out;
+  }
+
+  &.with-caption > .header > .icon-container {
+    margin-top: $bwc-baseline;
+  }
+
+  &.is-collapsed {
+    > .content > * {
+      display: none;
+    }
+  }
+
+  &:hover {
+    > .header {
+      > .icon-container {
+        color: $bwc-gray-2;
+      }
+
+      > .caption,
+      > .title {
+        color: $bwc-gray-1;
+      }
+    }
+  }
+
+  &.is-expanded {
+
+    > .header {
+      -webkit-transition: 0.15s ease-in-out;
+      -o-transition: 0.15s ease-in-out;
+      transition: 0.15s ease-in-out;
+
+      > .icon-container,
+      > .caption,
+      > .title {
+        color: rgba($bwc-blue,.85);
+      }
+
+      > .icon-container {
+        transform: rotate( 90deg );
+      }
+
+      > .title {
+        -webkit-transition: 0.15s ease-in-out;
+        -o-transition: 0.15s ease-in-out;
+        transition: 0.15s ease-in-out;
+      }
+    }
+
+    &:hover > .header {
+      > .icon-container,
+      > .title {
+        color: rgba($bwc-blue,1);
+      }
+    }
+
+    > .content {
+      padding: 11px 9px 11px 34px;
+      background-color: $bwc-white;
+      border-style: none;
+    }
+
+    &:before {
+      content: '';
+      position: absolute;
+      top: 0;
+      height: 2px;
+      width: 100%;
+      background: $bwc-blue;
+      z-index: 1;
+    }
   }
 }

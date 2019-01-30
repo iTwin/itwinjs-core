@@ -1,27 +1,63 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`ExpandableBlock <ExpandableBlock /> renders correctly collapsed 1`] = `
-<ExpandableBlock
-  className="core-expandable-block"
-  isExpanded={false}
-  onClick={[Function]}
-  title="Test"
+<div
+  className="bwc-expandable-blocks-block is-collapsed"
 >
-  <div>
-    Hello
+  <div
+    aria-expanded="false"
+    className="header"
+    onClick={[Function]}
+  >
+    <div
+      className="icon-container"
+    >
+      <i
+        className="icon icon-chevron-right"
+      />
+    </div>
+    <div
+      className="title"
+      title="Test"
+    >
+      Test
+    </div>
   </div>
-</ExpandableBlock>
+  <div
+    className="content"
+  />
+</div>
 `;
 
 exports[`ExpandableBlock <ExpandableBlock /> renders correctly expanded 1`] = `
-<ExpandableBlock
-  className="core-expandable-block"
-  isExpanded={true}
-  onClick={[Function]}
-  title="Test"
+<div
+  className="bwc-expandable-blocks-block is-expanded"
 >
-  <div>
-    Hello
+  <div
+    aria-expanded="true"
+    className="header"
+    onClick={[Function]}
+  >
+    <div
+      className="icon-container"
+    >
+      <i
+        className="icon icon-chevron-right"
+      />
+    </div>
+    <div
+      className="title"
+      title="Test"
+    >
+      Test
+    </div>
   </div>
-</ExpandableBlock>
+  <div
+    className="content"
+  >
+    <div>
+      Hello
+    </div>
+  </div>
+</div>
 `;
