@@ -34,6 +34,7 @@ export * from "./domains/Functional";
 export * from "./domains/FunctionalElements";
 export * from "./domains/Generic";
 export * from "./domains/GenericElements";
+export * from "./IModelImporter";
 export * from "./IModelJsNative";
 export * from "./IModelDb"; // must be last
 
