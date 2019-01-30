@@ -127,22 +127,28 @@ export namespace RenderScheduleState {
       return true;
     }
 
+    private getVisibilityOverride(time: number, interval: Interval): number {
+      if (!ElementTimeline.findTimelineInterval(interval, time, this.visibilityTimeline) && this.visibilityTimeline![interval.index0].value !== null)
+        return 1.0;
+      const timeline = this.visibilityTimeline!;
+      let visibility = timeline[interval.index0].value;
+      if (interval.fraction > 0)
+        visibility = interpolate(visibility, timeline[interval.index1].value, interval.fraction);
+
+      return visibility;
+    }
+
     public getSymbologyOverrides(overrides: FeatureSymbology.Overrides, time: number, interval: Interval, batchId: number) {
       let colorOverride, transparencyOverride;
 
-      if (ElementTimeline.findTimelineInterval(interval, time, this.visibilityTimeline) && this.visibilityTimeline![interval.index0].value !== null) {
-        const timeline = this.visibilityTimeline!;
-        let visibility = timeline[interval.index0].value;
-        if (interval.fraction > 0)
-          visibility = interpolate(visibility, timeline[interval.index1].value, interval.fraction);
-
-        if (visibility <= 0) {
-          overrides.setAnimationNodeNeverDrawn(batchId);
-          return;
-        }
-        if (visibility <= 100)
-          transparencyOverride = 1.0 - visibility / 100.0;
+      const visibility = this.getVisibilityOverride(time, interval);
+      if (visibility <= 0) {
+        overrides.setAnimationNodeNeverDrawn(batchId);
+        return;
       }
+      if (visibility <= 100)
+        transparencyOverride = 1.0 - visibility / 100.0;
+
       if (ElementTimeline.findTimelineInterval(interval, time, this.colorTimeline) && this.colorTimeline![interval.index0].value !== null) {
         const entry0 = this.colorTimeline![interval.index0].value;
         if (interval.fraction > 0) {
@@ -156,6 +162,9 @@ export namespace RenderScheduleState {
         overrides.overrideAnimationNode(batchId, FeatureSymbology.Appearance.fromJSON({ rgb: colorOverride, transparency: transparencyOverride }));
     }
     public getAnimationTransform(time: number, interval: Interval): Transform | undefined {
+      if (this.getVisibilityOverride(time, interval) <= 0.0)
+        return undefined;
+
       if (!ElementTimeline.findTimelineInterval(interval, time, this.transformTimeline) || this.transformTimeline![interval.index0].value === null)
         return undefined;
 
@@ -195,6 +204,8 @@ export namespace RenderScheduleState {
         this.currentClip.dispose();
         this.currentClip = undefined;
       }
+      if (this.getVisibilityOverride(time, interval) <= 0.0)
+        return undefined;
       if (!ElementTimeline.findTimelineInterval(interval, time, this.cuttingPlaneTimeline) || this.cuttingPlaneTimeline![interval.index0].value === null)
         return undefined;
 
@@ -209,6 +220,9 @@ export namespace RenderScheduleState {
         const value1 = timeline[interval.index1].value;
         position.interpolate(interval.fraction, Point3d.fromJSON(value1.position), position);
         direction.interpolate(interval.fraction, Vector3d.fromJSON(value1.direction), direction);
+      } else {
+        if (value.hidden || value.visible)
+          return undefined;
       }
 
       direction.normalizeInPlace();

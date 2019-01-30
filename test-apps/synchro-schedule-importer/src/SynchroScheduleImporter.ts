@@ -2,10 +2,10 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { IModelHost, IModelHostConfiguration, IModelDb, ECSqlStatement, IModelJsFs, ViewDefinition, DisplayStyle3d, OrthographicViewDefinition } from "@bentley/imodeljs-backend";
+import { IModelHost, IModelHostConfiguration, IModelDb, ECSqlStatement, IModelJsFs, ViewDefinition, DisplayStyle3d, OrthographicViewDefinition, GeometricElement3d } from "@bentley/imodeljs-backend";
 import { OpenMode, DbResult, Id64String } from "@bentley/bentleyjs-core";
-import { Placement3d, RenderMode, ViewFlags, ColorDef } from "@bentley/imodeljs-common";
-import { YawPitchRollAngles, Point3d, Range3d } from "@bentley/geometry-core";
+import { Placement3d, RenderMode, ViewFlags, ColorDef, ElementAlignedBox3d } from "@bentley/imodeljs-common";
+import { YawPitchRollAngles, Point3d, Vector3d, Range3d } from "@bentley/geometry-core";
 import * as Yargs from "yargs";
 import { readFileSync, writeFileSync, unlinkSync } from "fs";
 
@@ -19,13 +19,13 @@ interface ImportInputArgs {
 }
 
 function doFixRange(iModel: IModelDb) {
-    const totalRange = new Range3d();
+    const totalRange = Range3d.createNull() as ElementAlignedBox3d;
 
     iModel.withPreparedStatement("SELECT ECInstanceId,Category.Id,Origin,Yaw,Pitch,Roll,BBoxLow,BBoxHigh FROM bis.GeometricElement3d", (stmt: ECSqlStatement) => {
         while (DbResult.BE_SQLITE_ROW === stmt.step()) {
             const row = stmt.getRow();
             if (undefined !== row.bBoxLow && undefined !== row.bBoxHigh && undefined !== row.origin) {
-                const box = Range3d.create(row.bBoxLow, row.bBoxHigh);
+                const box = Range3d.create(row.bBoxLow, row.bBoxHigh) as ElementAlignedBox3d;
                 const placement = new Placement3d(Point3d.fromJSON(row.origin), YawPitchRollAngles.createDegrees(row.yaw, row.pitch, row.roll), box);
                 const range = placement.calculateRange();
                 totalRange.extendRange(range);
@@ -49,6 +49,45 @@ class ScriptEntry {
             json[key] = value;
 
         return json;
+    }
+    public setCuttingPlaneLimits(iModel: IModelDb) {
+        for (let [key, value] of Object.entries(this.data)) {
+            if (key === "cuttingPlaneTimeline") {
+                if (Array.isArray(value)) {
+                    const range = Range3d.createNull() as ElementAlignedBox3d;
+                    this.elementIds.forEach((elementId) => {
+                        const element = iModel.elements.getElement<GeometricElement3d>(elementId);
+                        if (element)
+                            range.extendRange(element.placement.calculateRange());
+                    });
+                    if (range.isNull) {
+                        value = [];     // No graphic elements? -- Should never happen.
+                    } else {
+                        value.forEach((entry) => {
+                            if (entry.value && entry.value.position && entry.value.direction) {
+                                const position = Point3d.create(entry.value.position[0], entry.value.position[1], entry.value.position[2]);
+                                const normal = Vector3d.create(entry.value.direction[0], entry.value.direction[1], entry.value.direction[2]);
+                                normal.normalizeInPlace();
+                                const corners = range.corners();
+                                let min = 0, max = 0;
+                                for (let i = 0; i < 8; i++) {
+                                    const distance = normal.dotProductStartEnd(position, corners[i]);
+                                    if (i) {
+                                        if (distance < min) min = distance;
+                                        if (distance > max) max = distance;
+                                    } else {
+                                        min = max = distance;
+                                    }
+                                }
+                                const tolerance = 1.0E-3 * (max - min);
+                                if (max < tolerance) entry.value.hidden = true;
+                                if (min > -tolerance) entry.value.visible = true;
+                            }
+                        });
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -79,6 +118,9 @@ class ModelScript {
         const json: any = { modelId: this.modelId, elementTimelines: [] };
         this.entries.forEach((entry) => json.elementTimelines.push(entry.getJSON()));
         return json;
+    }
+    public setCuttingPlaneLimits(iModel: IModelDb) {
+        this.entries.forEach((entry) => entry.setCuttingPlaneLimits(iModel));
     }
 }
 
@@ -149,6 +191,7 @@ function animationScriptFromSynchro(synchroJson: object, iModel: IModelDb): any 
     });
     const script: object[] = [];
     modelScripts.forEach((modelScript) => {
+        modelScript.setCuttingPlaneLimits(iModel);
         script.push(modelScript.getJSON());
     });
     return script;

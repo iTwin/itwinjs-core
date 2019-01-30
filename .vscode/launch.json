@@ -549,9 +549,41 @@
       ],
       "args": [
         "--input",
-        "${workspaceRoot}/test-apps/synchro-schedule-importer/lib/assets/proj.ibim",
+        "G:/SyncroAnimation/large_proj_ibim/proj.ibim",
         "--script",
-        "${workspaceRoot}/test-apps/synchro-schedule-importer/lib/assets/anim.json"
+        "G:/SyncroAnimation/large_proj_ibim/anim.json"
+      ],
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Debug synchro-schedule-importer Large",
+      "program": "${workspaceRoot}/test-apps/synchro-schedule-importer/lib/SynchroScheduleImporter.js",
+      "cwd": "${workspaceRoot}/test-apps/synchro-schedule-importer/",
+      "outFiles": [
+        "${workspaceFolder}/lib/**/*.js"
+      ],
+      "args": [
+        "--input",
+        "G:/SyncroAnimation/large_proj_ibim/proj.ibim",
+        "--script",
+        "G:/SyncroAnimation/large_proj_ibim/anim.json"
+      ],
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Debug synchro-schedule-importer Castle",
+      "program": "${workspaceRoot}/test-apps/synchro-schedule-importer/lib/SynchroScheduleImporter.js",
+      "cwd": "${workspaceRoot}/test-apps/synchro-schedule-importer/",
+      "outFiles": [
+        "${workspaceFolder}/lib/**/*.js"
+      ],
+      "args": [
+        "--input",
+        "G:/briefcases/castle/proj.ibim",
+        "--script",
+        "G:/briefcases/castle/anim.json"
       ],
     },
     {
