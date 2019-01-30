@@ -139,7 +139,7 @@ describe("FrameBuilder.HelloWorldB", () => {
         AxisScaleSelect.NonUniformRangeContainment]) {
         const localToWorld = FrameBuilder.createLocalToWorldTransformInRange(range, select, 0, 0, 0, 2.0);
         if (ck.testPointer(localToWorld) && localToWorld) {
-          MatrixTests.CheckProperties(ck,
+          MatrixTests.checkProperties(ck,
             localToWorld.matrix,
             select === AxisScaleSelect.Unit,  // unit axes in range are identity
             select === AxisScaleSelect.Unit,  // and of course unitPerpendicular
@@ -600,7 +600,7 @@ describe("Point3dArray", () => {
     ck.testFalse(NumberArray.isAlmostEqual([], dataA0, 0.01));
     ck.testFalse(NumberArray.isAlmostEqual(dataA0, undefined, 0.01));
     ck.testFalse(NumberArray.isAlmostEqual(undefined, dataA0, 0.01));
-    ck.testExactNumber(0, NumberArray.PreciseSum([]));
+    ck.testExactNumber(0, NumberArray.preciseSum([]));
     const e = 0.01;
     dataA1[3] += e;
     ck.testTrue(NumberArray.isAlmostEqual(dataA0, dataA1, 2 * e));
@@ -610,7 +610,7 @@ describe("Point3dArray", () => {
       ck.testTrue(NumberArray.isCoordinateInArray(x, dataA0));
       ck.testFalse(NumberArray.isCoordinateInArray(x + 0.1231897897, dataA0));
     }
-    ck.testExactNumber(0, NumberArray.MaxAbsArray([]));
+    ck.testExactNumber(0, NumberArray.maxAbsArray([]));
     expect(ck.getNumErrors()).equals(0);
   });
 

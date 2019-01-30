@@ -19,7 +19,7 @@ import { OrderedRotationAngles } from "../geometry3d/OrderedRotationAngles";
 /* tslint:disable:no-console */
 class AngleTests {
   constructor(public noisy: boolean = false) { }
-  public TestAlmostEqual(ck: Checker) {
+  public testAlmostEqual(ck: Checker) {
     const a = 0.5 * Geometry.smallAngleRadians;
     const b = 8.0 * Geometry.smallAngleRadians;
     const c = 1.0;    // radians, a nonzero angle
@@ -51,7 +51,7 @@ class AngleTests {
       }
     }
   }
-  public TestAdjust(ck: Checker) {
+  public testAdjust(ck: Checker) {
     const degreeCandidates = [0, 2, 56, 179, 180, 181];
     const periodCandidates = [0, 1, -1, 4, -6];
     let shiftPeriod = 0;
@@ -73,7 +73,7 @@ class AngleTests {
     }
   }
 
-  public TestFractions(sweep: AngleSweep, ck: Checker) {
+  public testFractions(sweep: AngleSweep, ck: Checker) {
     const fractionCandidates = [0, 0.25, 0.5, 0.75, 1.0, -0.3, 1.3, -10, 10];
     let f0 = 0;
     const reverseSweep = sweep.clone();
@@ -119,7 +119,7 @@ describe("Angle.AlmostEqual", () => {
   it("Verify angle tolerance tests", () => {
     const ck = new Checker();
     const source = new AngleTests(false);
-    source.TestAlmostEqual(ck);
+    source.testAlmostEqual(ck);
     ck.testTrue(Angle.createDegrees(0).isExactZero);
     ck.testTrue(Angle.createRadians(0).isExactZero);
     ck.testFalse(Angle.createRadians(1.0e-20).isExactZero);
@@ -132,7 +132,7 @@ describe("Angle.Adjust", () => {
   it("Verify angle period adjustments tests", () => {
     const ck = new Checker();
     const source = new AngleTests(false);
-    source.TestAdjust(ck);
+    source.testAdjust(ck);
     ck.checkpoint("End Angle.Adjust");
     expect(ck.getNumErrors()).equals(0);
   });
@@ -166,10 +166,10 @@ describe("AngleSweep", () => {
   it("Fractions", () => {
     const ck = new Checker();
     const source = new AngleTests(false);
-    source.TestFractions(AngleSweep.createStartSweepDegrees(0, 90), ck);
-    source.TestFractions(AngleSweep.createStartSweepRadians(-1, 1), ck);
-    source.TestFractions(AngleSweep.createStartSweepRadians(1, -2), ck);
-    source.TestFractions(AngleSweep.createStartSweep(Angle.createRadians(0), Angle.createDegrees(360)), ck);
+    source.testFractions(AngleSweep.createStartSweepDegrees(0, 90), ck);
+    source.testFractions(AngleSweep.createStartSweepRadians(-1, 1), ck);
+    source.testFractions(AngleSweep.createStartSweepRadians(1, -2), ck);
+    source.testFractions(AngleSweep.createStartSweep(Angle.createRadians(0), Angle.createDegrees(360)), ck);
     ck.checkpoint("AngleSweeps.TestFractions");
     expect(ck.getNumErrors()).equals(0);
   });

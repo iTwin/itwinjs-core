@@ -1225,7 +1225,7 @@ export class Matrix3d implements BeJSONFunctions {
       (this.coffs[6] * v.x + this.coffs[7] * v.y + this.coffs[8] * v.z));
   }
 
-  public static XYZMinusMatrixTimesXYZ(origin: XYZ, matrix: Matrix3d, vector: XYZ, result?: Point3d): Point3d {
+  public static xyzMinusMatrixTimesXYZ(origin: XYZ, matrix: Matrix3d, vector: XYZ, result?: Point3d): Point3d {
     const x = vector.x;
     const y = vector.y;
     const z = vector.z;
@@ -1236,7 +1236,7 @@ export class Matrix3d implements BeJSONFunctions {
       result);
   }
 
-  public static XYPlusMatrixTimesXY(origin: XAndY, matrix: Matrix3d, vector: XAndY, result?: Point2d): Point2d {
+  public static xyPlusMatrixTimesXY(origin: XAndY, matrix: Matrix3d, vector: XAndY, result?: Point2d): Point2d {
     const x = vector.x;
     const y = vector.y;
     return Point2d.create(
@@ -1245,7 +1245,7 @@ export class Matrix3d implements BeJSONFunctions {
       result);
   }
 
-  public static XYZPlusMatrixTimesXYZ(origin: XYZ, matrix: Matrix3d, vector: XYAndZ, result?: Point3d): Point3d {
+  public static xyzPlusMatrixTimesXYZ(origin: XYZ, matrix: Matrix3d, vector: XYAndZ, result?: Point3d): Point3d {
     const x = vector.x;
     const y = vector.y;
     const z = vector.z;
@@ -1256,7 +1256,7 @@ export class Matrix3d implements BeJSONFunctions {
       result);
   }
 
-  public static XYZPlusMatrixTimesCoordinates(origin: XYZ, matrix: Matrix3d, x: number, y: number, z: number, result?: Point3d): Point3d {
+  public static xyzlusMatrixTimesCoordinates(origin: XYZ, matrix: Matrix3d, x: number, y: number, z: number, result?: Point3d): Point3d {
     return Point3d.create(
       origin.x + matrix.coffs[0] * x + matrix.coffs[1] * y + matrix.coffs[2] * z,
       origin.y + matrix.coffs[3] * x + matrix.coffs[4] * y + matrix.coffs[5] * z,
@@ -1275,7 +1275,7 @@ export class Matrix3d implements BeJSONFunctions {
    * @param w w part of multiplied point
    * @param result optional result.
    */
-  public static XYZPlusMatrixTimesWeightedCoordinates(origin: XYZ, matrix: Matrix3d, x: number, y: number, z: number, w: number, result?: Point4d): Point4d {
+  public static xyzPlusMatrixTimesWeightedCoordinates(origin: XYZ, matrix: Matrix3d, x: number, y: number, z: number, w: number, result?: Point4d): Point4d {
     return Point4d.create(
       w * origin.x + matrix.coffs[0] * x + matrix.coffs[1] * y + matrix.coffs[2] * z,
       w * origin.y + matrix.coffs[3] * x + matrix.coffs[4] * y + matrix.coffs[5] * z,
@@ -1294,7 +1294,7 @@ export class Matrix3d implements BeJSONFunctions {
    * @param w w part of multiplied point
    * @param result optional result.
    */
-  public static XYZPlusMatrixTimesWeightedCoordinatesToFloat64Array(origin: XYZ, matrix: Matrix3d, x: number, y: number, z: number, w: number, result?: Float64Array): Float64Array {
+  public static xyzPlusMatrixTimesWeightedCoordinatesToFloat64Array(origin: XYZ, matrix: Matrix3d, x: number, y: number, z: number, w: number, result?: Float64Array): Float64Array {
     if (!result)
       result = new Float64Array(4);
     result[0] = w * origin.x + matrix.coffs[0] * x + matrix.coffs[1] * y + matrix.coffs[2] * z;
@@ -1315,7 +1315,7 @@ export class Matrix3d implements BeJSONFunctions {
    * @param w w part of multiplied point
    * @param result optional result.
    */
-  public static XYZPlusMatrixTimesCoordinatesToFloat64Array(origin: XYZ, matrix: Matrix3d, x: number, y: number, z: number, result?: Float64Array): Float64Array {
+  public static xyzPlusMatrixTimesCoordinatesToFloat64Array(origin: XYZ, matrix: Matrix3d, x: number, y: number, z: number, result?: Float64Array): Float64Array {
     if (!result)
       result = new Float64Array(3);
     result[0] = origin.x + matrix.coffs[0] * x + matrix.coffs[1] * y + matrix.coffs[2] * z;

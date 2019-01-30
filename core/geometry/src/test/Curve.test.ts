@@ -293,7 +293,7 @@ class ExerciseCurve {
       console.log("STROKES", strokes);
     }
   }
-  public static RunTest(ck: Checker) {
+  public static runTest(ck: Checker) {
 
     {
       const segment = LineSegment3d.create(Point3d.create(1, 2, 3), Point3d.create(4, 5, 10));
@@ -433,7 +433,7 @@ class ExerciseCurve {
 describe("CurveChainWithDistanceIndex", () => {
   it("Exercise", () => {
     const ck = new Checker();
-    ExerciseCurve.RunTest(ck);
+    ExerciseCurve.runTest(ck);
     ck.checkpoint("End CurvePrimitive.Evaluations");
     expect(ck.getNumErrors()).equals(0);
   });

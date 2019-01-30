@@ -206,7 +206,7 @@ export class Sphere extends SolidPrimitive implements UVSurface {
    * @param uFraction fractional position in minor (phi)
    * @param vFraction fractional position on major (theta) arc
    */
-  public UVFractionToPoint(uFraction: number, vFraction: number, result?: Point3d): Point3d {
+  public uvFractionToPoint(uFraction: number, vFraction: number, result?: Point3d): Point3d {
     // sphere with radius 1 . . .
     const thetaRadians = this.uFractionToRadians(uFraction);
     const phiRadians = this.vFractionToRadians(vFraction);
@@ -220,7 +220,7 @@ export class Sphere extends SolidPrimitive implements UVSurface {
    * @param u fractional position in minor (phi)
    * @param v fractional position on major (theta) arc
    */
-  public UVFractionToPointAndTangents(uFraction: number, vFraction: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors {
+  public uvFractionToPointAndTangents(uFraction: number, vFraction: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors {
     const thetaRadians = this.uFractionToRadians(uFraction);
     const phiRadians = this.vFractionToRadians(vFraction);
     const fTheta = Math.PI * 2.0;

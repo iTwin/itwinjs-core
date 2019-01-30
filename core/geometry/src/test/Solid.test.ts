@@ -141,13 +141,13 @@ describe("Solids", () => {
       Cone.createAxisPoints(Point3d.create(0, 0, 0), Point3d.create(0, 0, 1), 1, 0, false)!,
       Cone.createAxisPoints(Point3d.create(1, 3, 2), Point3d.create(3, 9, 2), 4, 2, false)!]) {
       for (const u of [0.0, 0.25, 1.0]) {
-        const plane0 = cone.UVFractionToPointAndTangents(u, 0.0);
-        const plane1 = cone.UVFractionToPointAndTangents(u, 1.0);
+        const plane0 = cone.uvFractionToPointAndTangents(u, 0.0);
+        const plane1 = cone.uvFractionToPointAndTangents(u, 1.0);
         const vector01 = Vector3d.createStartEnd(plane0.origin, plane1.origin);
         for (const v of [0.0, 0.40, 0.80]) {
-          const pointV = cone.UVFractionToPoint(u, v);
+          const pointV = cone.uvFractionToPoint(u, v);
           ck.testPoint3d(pointV, plane0.origin.interpolate(v, plane1.origin));
-          const planeV = cone.UVFractionToPointAndTangents(u, v);
+          const planeV = cone.uvFractionToPointAndTangents(u, v);
           ck.testVector3d(vector01, planeV.vectorV, "V derivative is side stroke");
           ck.testVector3d(planeV.vectorU, plane0.vectorU.interpolate(v, plane1.vectorU), "U derivative interpolates");
         }
@@ -389,13 +389,13 @@ describe("CurveCurve", () => {
     const points = [Point3d.create(0, 0, 0), Point3d.create(1, 1, 0), Point3d.create(3, 1, 0), Point3d.create(3, 0, 0)];
     const bcurve = BSplineCurve3d.createUniformKnots(points, 3)!;
     const linestring = LineString3d.create(points);
-    ck.testUndefined(ConstructCurveBetweenCurves.InterpolateBetween(segment, 0.5, arc));
-    ck.testUndefined(ConstructCurveBetweenCurves.InterpolateBetween(segment, 0.5, linestring));
-    ck.testUndefined(ConstructCurveBetweenCurves.InterpolateBetween(segment, 0.5, bcurve));
-    ck.testUndefined(ConstructCurveBetweenCurves.InterpolateBetween(arc, 0.5, linestring));
-    ck.testUndefined(ConstructCurveBetweenCurves.InterpolateBetween(linestring, 0.5, arc));
-    ck.testUndefined(ConstructCurveBetweenCurves.InterpolateBetween(arc, 0.5, bcurve));
-    ck.testUndefined(ConstructCurveBetweenCurves.InterpolateBetween(bcurve, 0.5, segment));
+    ck.testUndefined(ConstructCurveBetweenCurves.interpolateBetween(segment, 0.5, arc));
+    ck.testUndefined(ConstructCurveBetweenCurves.interpolateBetween(segment, 0.5, linestring));
+    ck.testUndefined(ConstructCurveBetweenCurves.interpolateBetween(segment, 0.5, bcurve));
+    ck.testUndefined(ConstructCurveBetweenCurves.interpolateBetween(arc, 0.5, linestring));
+    ck.testUndefined(ConstructCurveBetweenCurves.interpolateBetween(linestring, 0.5, arc));
+    ck.testUndefined(ConstructCurveBetweenCurves.interpolateBetween(arc, 0.5, bcurve));
+    ck.testUndefined(ConstructCurveBetweenCurves.interpolateBetween(bcurve, 0.5, segment));
     expect(ck.getNumErrors()).equals(0);
   });
 });

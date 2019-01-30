@@ -118,7 +118,7 @@ export class RuledSweep extends SolidPrimitive {
     const localFraction = Geometry.clampToStartEnd(q - section0, 0, 1);
     return RuledSweep.mutatePartners(this._contours[section0].curves, this._contours[section1].curves,
       (primitive0: CurvePrimitive, primitive1: CurvePrimitive): CurvePrimitive | undefined => {
-        const newPrimitive = ConstructCurveBetweenCurves.InterpolateBetween(primitive0, localFraction, primitive1);
+        const newPrimitive = ConstructCurveBetweenCurves.interpolateBetween(primitive0, localFraction, primitive1);
         if (newPrimitive instanceof CurvePrimitive) return newPrimitive;
         return undefined;
       });

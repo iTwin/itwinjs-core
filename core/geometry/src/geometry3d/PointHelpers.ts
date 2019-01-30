@@ -21,7 +21,7 @@ export class NumberArray {
   /** return the sum of values in an array,   The summation is done with correction terms which
    * improves last-bit numeric accuracy.
    */
-  public static PreciseSum(data: number[]) {
+  public static preciseSum(data: number[]) {
     const n = data.length;
     if (n === 0)
       return 0.0;
@@ -77,7 +77,7 @@ export class NumberArray {
     }
     return false;
   }
-  public static MaxAbsArray(values: number[]) {
+  public static maxAbsArray(values: number[]) {
     const arrLen = values.length;
     if (arrLen === 0) {
       return 0.0;
@@ -91,7 +91,7 @@ export class NumberArray {
     }
     return a;
   }
-  public static MaxAbsTwo(a1: number, a2: number) {
+  public static maxAbsTwo(a1: number, a2: number) {
     a1 = Math.abs(a1);
     a2 = Math.abs(a2);
     return (a1 > a2) ? a1 : a2;

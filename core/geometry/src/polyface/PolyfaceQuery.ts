@@ -20,16 +20,16 @@ import { MomentData } from "../geometry4d/MomentData";
 /** PolyfaceQuery is a static class whose methods implement queries on a polyface or polyface visitor provided as a parameter to each mtehod. */
 export class PolyfaceQuery {
   /** copy the points from a visitor into a Linestring3d in a Loop object */
-  public static VisitorToLoop(visitor: PolyfaceVisitor) {
+  public static visitorToLoop(visitor: PolyfaceVisitor) {
     const ls = LineString3d.createPoints(visitor.point.getPoint3dArray());
     return Loop.create(ls);
   }
   /** Create a linestring loop for each facet of the polyface. */
-  public static IndexedPolyfaceToLoops(polyface: Polyface): BagOfCurves {
+  public static indexedPolyfaceToLoops(polyface: Polyface): BagOfCurves {
     const result = BagOfCurves.create();
     const visitor = polyface.createVisitor(1);
     while (visitor.moveToNextFacet()) {
-      const loop = PolyfaceQuery.VisitorToLoop(visitor);
+      const loop = PolyfaceQuery.visitorToLoop(visitor);
       result.tryAddChild(loop);
     }
     return result;
@@ -76,9 +76,9 @@ export class PolyfaceQuery {
     return s / 6.0;
   }
   /** Return the inertia products [xx,xy,xz,xw, yw, etc] integrated over all facets. */
-  public static SumFacetSecondAreaMomentProducts(source: Polyface | PolyfaceVisitor, origin: Point3d): Matrix4d {
+  public static sumFacetSecondAreaMomentProducts(source: Polyface | PolyfaceVisitor, origin: Point3d): Matrix4d {
     if (source instanceof Polyface)
-      return PolyfaceQuery.SumFacetSecondAreaMomentProducts(source.createVisitor(0), origin);
+      return PolyfaceQuery.sumFacetSecondAreaMomentProducts(source.createVisitor(0), origin);
     const products = Matrix4d.createZero();
     const visitor = source as PolyfaceVisitor;
     visitor.reset();
@@ -95,7 +95,7 @@ export class PolyfaceQuery {
   public static computePrincipalAreaMoments(source: Polyface): MomentData | undefined {
     const origin = source.data.getPoint(0);
     if (!origin) return undefined;
-    const inertiaProducts = PolyfaceQuery.SumFacetSecondAreaMomentProducts(source, origin);
+    const inertiaProducts = PolyfaceQuery.sumFacetSecondAreaMomentProducts(source, origin);
     return MomentData.inertiaProductsToPrincipalAxes(origin, inertiaProducts);
   }
 

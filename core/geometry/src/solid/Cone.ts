@@ -190,14 +190,14 @@ export class Cone extends SolidPrimitive implements UVSurface {
     arc1.extendRange(range, transform);
   }
 
-  public UVFractionToPoint(uFraction: number, vFraction: number, result?: Point3d): Point3d {
+  public uvFractionToPoint(uFraction: number, vFraction: number, result?: Point3d): Point3d {
     const theta = uFraction * Math.PI * 2.0;
     const r = Geometry.interpolate(this._radiusA, vFraction, this._radiusB);
     const cosTheta = Math.cos(theta);
     const sinTheta = Math.sin(theta);
     return this._localToWorld.multiplyXYZ(r * cosTheta, r * sinTheta, vFraction, result);
   }
-  public UVFractionToPointAndTangents(uFraction: number, vFraction: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors {
+  public uvFractionToPointAndTangents(uFraction: number, vFraction: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors {
     const theta = uFraction * Math.PI * 2.0;
     const r = Geometry.interpolate(this._radiusA, vFraction, this._radiusB);
     const drdv = this._radiusB - this._radiusA;

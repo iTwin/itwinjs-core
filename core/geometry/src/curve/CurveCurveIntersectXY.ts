@@ -360,7 +360,7 @@ class CurveCurveIntersectXY extends NullGeometryHandler {
   // invert the projection matrix matrixA.
   // apply the inverse to matrixB. Then arcb is an ellipse in the circular space of A
 
-  private dispatchArcArc_thisOrder(
+  private dispatchArcArcThisOrder(
     cpA: Arc3d,
     matrixA: Matrix3d,  // homogeneous xyw projection !!!
     extendA: boolean,
@@ -374,7 +374,7 @@ class CurveCurveIntersectXY extends NullGeometryHandler {
       const localB = inverseA.multiplyMatrixMatrix(matrixB);
       const ellipseRadians: number[] = [];
       const circleRadians: number[] = [];
-      TrigPolynomial.SolveUnitCircleHomogeneousEllipseIntersection(
+      TrigPolynomial.solveUnitCircleHomogeneousEllipseIntersection(
         localB.coffs[2], localB.coffs[5], localB.coffs[8],  // center xyw
         localB.coffs[0], localB.coffs[3], localB.coffs[6],  // center xyw
         localB.coffs[1], localB.coffs[4], localB.coffs[7],  // center xyw
@@ -424,9 +424,9 @@ class CurveCurveIntersectXY extends NullGeometryHandler {
     const conditionA = matrixA.conditionNumber();
     const conditionB = matrixB.conditionNumber();
     if (conditionA > conditionB)
-      this.dispatchArcArc_thisOrder(cpA, matrixA, extendA, cpB, matrixB, extendB, reversed);
+      this.dispatchArcArcThisOrder(cpA, matrixA, extendA, cpB, matrixB, extendB, reversed);
     else
-      this.dispatchArcArc_thisOrder(cpB, matrixB, extendB, cpA, matrixA, extendA, !reversed);
+      this.dispatchArcArcThisOrder(cpB, matrixB, extendB, cpA, matrixA, extendA, !reversed);
   }
   // Caller accesses data from two arcs.
   // Selects the best conditioned arc (in xy parts) as "circle after inversion"
@@ -897,7 +897,7 @@ export class CurveCurve {
    * @param geometryB second geometry
    * @param extendB true to allow geometryB to extend
    */
-  public static IntersectionXY(geometryA: GeometryQuery, extendA: boolean, geometryB: GeometryQuery, extendB: boolean): CurveLocationDetailArrayPair {
+  public static intersectionXY(geometryA: GeometryQuery, extendA: boolean, geometryB: GeometryQuery, extendB: boolean): CurveLocationDetailArrayPair {
     const handler = new CurveCurveIntersectXY(undefined, geometryA, extendA, geometryB, extendB);
     geometryA.dispatchToGeometryHandler(handler);
     return handler.grabResults();
@@ -910,7 +910,7 @@ export class CurveCurve {
    * @param geometryB second geometry
    * @param extendB true to allow geometryB to extend
    */
-  public static IntersectionProjectedXY(worldToLocal: Matrix4d,
+  public static intersectionProjectedXY(worldToLocal: Matrix4d,
     geometryA: GeometryQuery, extendA: boolean, geometryB: GeometryQuery, extendB: boolean): CurveLocationDetailArrayPair {
     const handler = new CurveCurveIntersectXY(worldToLocal, geometryA, extendA, geometryB, extendB);
     geometryA.dispatchToGeometryHandler(handler);

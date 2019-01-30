@@ -311,7 +311,7 @@ function arrayCheck(numTest: number, type: number) {
 
 export class Matrix3dOps extends Matrix3d {
   /** Multiply two matrices.* */
-  public static multiplyMatrixMatrix_directAssignment(matrixA: Matrix3d, matrixB: Matrix3d, result?: Matrix3d): Matrix3d {
+  public static multiplyMatrixMatrixdirectAssignment(matrixA: Matrix3d, matrixB: Matrix3d, result?: Matrix3d): Matrix3d {
     // WARNING -- matrixA does not allow result to be the same as one of the inputs . . .
     result = result ? result : new Matrix3d();
     result.coffs[0] = (matrixA.coffs[0] * matrixB.coffs[0] + matrixA.coffs[1] * matrixB.coffs[3] + matrixA.coffs[2] * matrixB.coffs[6]);
@@ -325,7 +325,7 @@ export class Matrix3dOps extends Matrix3d {
     result.coffs[8] = (matrixA.coffs[6] * matrixB.coffs[2] + matrixA.coffs[7] * matrixB.coffs[5] + matrixA.coffs[8] * matrixB.coffs[8]);
     return result;
   }
-  public static multiplyMatrixMatrix_directAssignmentN(numReps: number, matrixA: Matrix3d, matrixB: Matrix3d, result?: Matrix3d): Matrix3d {
+  public static multiplyMatrixMatrixdirectAssignmentN(numReps: number, matrixA: Matrix3d, matrixB: Matrix3d, result?: Matrix3d): Matrix3d {
     // WARNING -- matrixA does not allow result to be the same as one of the inputs . . .
     result = result ? result : new Matrix3d();
     for (let i = 0; i < numReps; i++) {
@@ -360,7 +360,7 @@ export class Matrix3dOps extends Matrix3d {
 }
 class TimingTests {
 
-  public static RunTestA(numTest: number) {
+  public static runTestA(numTest: number) {
     console.log("\n performance reps ", numTest);
     const matrixA = Matrix3d.createScale(1, 2, 3);
     const matrixB = Matrix3d.createScale(2, -1, 2);
@@ -379,7 +379,7 @@ class TimingTests {
     console.timeEnd("multiplyMatrixMatrix(result)");
 
   }
-  public static RunTestB(numTest: number) {
+  public static runTestB(numTest: number) {
     const matrixA = Matrix3dOps.createScale(1, 2, 3);
     const matrixB = Matrix3dOps.createScale(2, -1, 2);
 
@@ -397,27 +397,27 @@ class TimingTests {
       matrixD = matrixA.multiplyMatrixMatrix(matrixB, matrixD);
     console.timeEnd("Test_pre-allocated_result_static_Outside");
 
-    console.time("Matrix3dOps.multiplyMatrixMatrix_directAssignment");
+    console.time("Matrix3dOps.multiplyMatrixMatrixdirectAssignment");
     for (let k = 0; k < numTest; k++)
-      matrixD = Matrix3dOps.multiplyMatrixMatrix_directAssignment(matrixA, matrixB, matrixD);
-    console.timeEnd("Matrix3dOps.multiplyMatrixMatrix_directAssignment");
+      matrixD = Matrix3dOps.multiplyMatrixMatrixdirectAssignment(matrixA, matrixB, matrixD);
+    console.timeEnd("Matrix3dOps.multiplyMatrixMatrixdirectAssignment");
 
     for (let numReps = 0; numReps < 20; numReps = 3 * numReps + 1) {
-      const name = "Matrix3dOps.multiplyMatrixMatrix_directAssignment (numReps " + numReps + ")";
+      const name = "Matrix3dOps.multiplyMatrixMatrixdirectAssignment (numReps " + numReps + ")";
       console.time(name);
       for (let k = 0; k < numTest; k++)
-        matrixD = Matrix3dOps.multiplyMatrixMatrix_directAssignmentN(numReps, matrixA, matrixB, matrixD);
+        matrixD = Matrix3dOps.multiplyMatrixMatrixdirectAssignmentN(numReps, matrixA, matrixB, matrixD);
       console.timeEnd(name);
     }
   }
-  public static RunTestC(numTest: number) {
+  public static runTestC(numTest: number) {
     // console.log("==================");
     inverseCalculationLoop(numTest, true, true);
     inverseCalculationLoop(numTest, false, true);
     inverseCalculationLoop(numTest, true, false);
     inverseCalculationLoop(numTest, false, false);
   }
-  public static RunTestD(numTest: number) {
+  public static runTestD(numTest: number) {
     // console.log("==================");
     hypotenuseCalculationLoop(numTest, 1);
     hypotenuseCalculationLoop(numTest, 3);
@@ -436,13 +436,13 @@ class TimingTests {
     hypotenuseCalculationLoop(numTest, 4);
     hypotenuseCalculationLoop(numTest, 9);
   }
-  public static RunTestE(numTest: number) {
+  public static runTestE(numTest: number) {
     // console.log("==================");
     hypotenuseSquaredCalculationLoop(numTest, 0);
     hypotenuseSquaredCalculationLoop(numTest, 1);
     hypotenuseSquaredCalculationLoop(numTest, 2);
   }
-  public static RunTestG(numTest: number) {
+  public static runTestG(numTest: number) {
     // console.log("==================");
     // arrayCheck(numTest, 1);
     // arrayCheck(numTest, 2);
@@ -454,40 +454,40 @@ class TimingTests {
 const numTestGlobal = 200000;
 describe("Geometry.Allocations", () => {
   it("Expect caller-supplied result to be faster than constructor", () => {
-    TimingTests.RunTestA(numTestGlobal);
+    TimingTests.runTestA(numTestGlobal);
   });
 });
 
 describe("Geometry.ComputeBreakdown", () => {
   it("Expect increased time for shift to compute intensive", () => {
-    TimingTests.RunTestB(numTestGlobal / 10); // too many tests times out if there are background processes !!!!
+    TimingTests.runTestB(numTestGlobal / 10); // too many tests times out if there are background processes !!!!
   });
 });
 
 describe("Geometry.RotInverseCalculations", () => {
   it("RotmatrixInverse with (Cache*New) variants", () => {
     const myCount = numTestGlobal / 2;
-    TimingTests.RunTestC(myCount);
-    TimingTests.RunTestC(myCount);
-    TimingTests.RunTestC(myCount);
+    TimingTests.runTestC(myCount);
+    TimingTests.runTestC(myCount);
+    TimingTests.runTestC(myCount);
   });
 });
 
 describe("Geometry.Hypotenuse", () => {
   it("Math.hypotenuse against the Geometry's hypotenuse functions", () => {
-    TimingTests.RunTestD(numTestGlobal);
+    TimingTests.runTestD(numTestGlobal);
   });
 });
 
 describe("Geometry.HypotenuseSquared", () => {
   it("Various runtimes of Geometry's hypotenuse squared functions", () => {
-    TimingTests.RunTestE(numTestGlobal);
+    TimingTests.runTestE(numTestGlobal);
   });
 });
 
 describe("Array_Vs_Growable", () => {
   it("Use of indexing, pushing, popping, length, and reassignment of array types", () => {
     console.log({ numTest: numTestGlobal });
-    TimingTests.RunTestG(numTestGlobal * 2);
+    TimingTests.runTestG(numTestGlobal * 2);
   });
 });

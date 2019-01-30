@@ -1093,7 +1093,7 @@ export class Sample {
       Vector3d.create(0, 0, 1), Angle.createDegrees(10)) as Matrix3d;
     const vectorX = frame.columnX();
     const vectorY = frame.columnY();
-    const cornerB = Matrix3d.XYZPlusMatrixTimesCoordinates(cornerA, frame, 0, 0, h);
+    const cornerB = Matrix3d.xyzlusMatrixTimesCoordinates(cornerA, frame, 0, 0, h);
     result.push(Box.createDgnBox(cornerA, Vector3d.unitX(), Vector3d.unitY(),
       cornerB, aX, aY, aX, aY, true) as Box);
 

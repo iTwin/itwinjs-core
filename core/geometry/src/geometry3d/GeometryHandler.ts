@@ -184,12 +184,12 @@ export interface UVSurface {
    * @param vFraction fractional coordinate in the v direction
    * @param result optional pre-allocated point
    */
-  UVFractionToPoint(uFraction: number, vFraction: number, result?: Point3d): Point3d;
+  uvFractionToPoint(uFraction: number, vFraction: number, result?: Point3d): Point3d;
   /**
    * Convert fractional u and v coordinates to surface point and partial derivatives
    * @param uFraction fractional coordinate in u direction
    * @param vFraction fractional coordinate in the v direction
    * @param result optional pre-allocated carrier for point and vectors
    */
-  UVFractionToPointAndTangents(uFraction: number, vFraction: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors;
+  uvFractionToPointAndTangents(uFraction: number, vFraction: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors;
 }

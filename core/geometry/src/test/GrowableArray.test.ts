@@ -153,9 +153,9 @@ describe("BlockedArray", () => {
 
     // get clusters !!!!
     // note that the order the clusters appear has no relationship to 012345 above.
-    if (Checker.noisy.cluster) console.log(blocks.ToJSON());
+    if (Checker.noisy.cluster) console.log(blocks.toJSON());
     const clusterIndices = blocks.clusterIndicesLexical(tolerance);
-    if (Checker.noisy.cluster) console.log(blocks.ToJSON());
+    if (Checker.noisy.cluster) console.log(blocks.toJSON());
     if (Checker.noisy.cluster) console.log(JSON.stringify(clusterIndices));
     for (let i = 0; i < clusterIndices.length; i++) {
       const k0 = clusterIndices[i];
@@ -180,9 +180,9 @@ describe("BlockedArray", () => {
       }
     }
     // verify the various forms of index . ..
-    const clusterToClusterStart = blocks.createIndex_clusterToClusterStart(clusterIndices);
-    const blockToClusterStart = blocks.createIndex_blockToClusterStart(clusterIndices);
-    const blockToClusterIndex = blocks.createIndex_blockToClusterIndex(clusterIndices);
+    const clusterToClusterStart = blocks.createIndexClusterToClusterStart(clusterIndices);
+    const blockToClusterStart = blocks.createIndexBlockToClusterStart(clusterIndices);
+    const blockToClusterIndex = blocks.createIndexBlockToClusterIndex(clusterIndices);
     const n = clusterIndices.length;
     ck.testExactNumber(blockToClusterStart.length, blocks.numBlocks);
     ck.testExactNumber(blockToClusterIndex.length, blocks.numBlocks);
@@ -207,7 +207,7 @@ describe("BlockedArray", () => {
     blocks2.addPoint2d(Point2d.create(1, 2), 5, 6, 7);
     blocks2.addPoint3d(Point3d.create(1, 2, 3), 5, 6, 7);
     ck.testPoint3d(blocks2.getPoint3d(1), Point3d.create(1, 2, 3));
-    const obj = blocks2.ToJSON();
+    const obj = blocks2.toJSON();
     ck.testTrue(obj[0][2][0] === 1 && obj[0][2][1] === 2);
     ck.testTrue(obj[1][2][0] === 1 && obj[1][2][1] === 2);
     blocks2.popBlock();

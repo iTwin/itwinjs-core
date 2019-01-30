@@ -982,7 +982,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
       for (let u = 0; u <= numU; u++) {
         const uFrac = u * du;
         const vFrac = v * dv;
-        const plane = surface.UVFractionToPointAndTangents(uFrac, vFrac);
+        const plane = surface.uvFractionToPointAndTangents(uFrac, vFrac);
         if (needNormals) {
           plane.vectorU.crossProduct(plane.vectorV, normal);
           normal.normalizeInPlace();

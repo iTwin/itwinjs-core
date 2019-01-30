@@ -195,7 +195,7 @@ describe("Polyface.HelloWorld", () => {
     const numExpectedFacets = 2 * (numX - 1) * (numY - 1); // 2 triangles per quad .  .
     const expectedEdgeLength = numExpectedFacets * (2.0 + Math.sqrt(2.0));
     for (const pf of [polyface0, polyface1, polyface2]) {
-      const loops = PolyfaceQuery.IndexedPolyfaceToLoops(pf);
+      const loops = PolyfaceQuery.indexedPolyfaceToLoops(pf);
       ck.testExactNumber(pf.facetCount, loops.children.length, "facet count");
       // console.log("polyface area", PolyfaceQuery.sumFacetAreas(polyface));
       // console.log(loops);
@@ -232,7 +232,7 @@ describe("Polyface.HelloWorld", () => {
     polyface.addPointIndex(5);
     polyface.terminateFacet();
     polyface.data.compress();
-    const loops = PolyfaceQuery.IndexedPolyfaceToLoops(polyface);
+    const loops = PolyfaceQuery.indexedPolyfaceToLoops(polyface);
     // console.log("polyface area", PolyfaceQuery.sumFacetAreas(polyface));
     // console.log(loops);
     ck.testCoordinate(1.0, PolyfaceQuery.sumFacetAreas(polyface), "unit square facets area");
@@ -688,12 +688,12 @@ class UVSinusoidalSurface implements UVSurface {
     this.thetaV = thetaV;
     this.transform = transform;
   }
-  public UVFractionToPoint(u: number, v: number): Point3d {
+  public uvFractionToPoint(u: number, v: number): Point3d {
     const thetaU = this.thetaU.fractionToRadians(u);
     const thetaV = this.thetaV.fractionToRadians(v);
     return this.transform.multiplyXYZ(u, v, Math.cos(thetaU) * Math.cos(thetaV));
   }
-  public UVFractionToPointAndTangents(u: number, v: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors {
+  public uvFractionToPointAndTangents(u: number, v: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors {
     const thetaU = this.thetaU.fractionToRadians(u);
     const thetaV = this.thetaV.fractionToRadians(v);
     const cU = Math.cos(thetaU);

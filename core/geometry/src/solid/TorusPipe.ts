@@ -214,7 +214,7 @@ export class TorusPipe extends SolidPrimitive implements UVSurface {
    * @param u fractional position in minor (phi)
    * @param v fractional position on major (theta) arc
    */
-  public UVFractionToPoint(u: number, v: number, result?: Point3d): Point3d {
+  public uvFractionToPoint(u: number, v: number, result?: Point3d): Point3d {
     const thetaRadians = v * this._sweep.radians;
     const phiRadians = u * Math.PI * 2.0;
     const cosTheta = Math.cos(thetaRadians);
@@ -227,7 +227,7 @@ export class TorusPipe extends SolidPrimitive implements UVSurface {
    * @param u fractional position in minor (phi)
    * @param v fractional position on major (theta) arc
    */
-  public UVFractionToPointAndTangents(u: number, v: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors {
+  public uvFractionToPointAndTangents(u: number, v: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors {
     const thetaRadians = v * this._sweep.radians;
     const phiRadians = u * Math.PI * 2.0;
     const fTheta = this._sweep.radians;

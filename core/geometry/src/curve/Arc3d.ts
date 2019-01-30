@@ -325,7 +325,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     const uu = this.matrix.columnXMagnitudeSquared();
     const uv = this._matrix.columnXDotColumnY();
     const vv = this._matrix.columnYMagnitudeSquared();
-    TrigPolynomial.SolveUnitCircleImplicitQuadricIntersection(
+    TrigPolynomial.solveUnitCircleImplicitQuadricIntersection(
       uv,
       vv - uu,
       -uv,

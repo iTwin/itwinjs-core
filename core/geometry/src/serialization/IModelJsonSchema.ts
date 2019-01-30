@@ -966,7 +966,7 @@ export namespace IModelJson {
       const axes = Reader.parseOrientation(json, true)!;
 
       if (baseOrigin && !topOrigin)
-        topOrigin = Matrix3d.XYZMinusMatrixTimesXYZ(baseOrigin, axes, Vector3d.create(0, 0, height));
+        topOrigin = Matrix3d.xyzMinusMatrixTimesXYZ(baseOrigin, axes, Vector3d.create(0, 0, height));
 
       if (capped !== undefined
         && baseX !== undefined

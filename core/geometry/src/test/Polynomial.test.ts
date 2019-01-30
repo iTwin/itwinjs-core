@@ -63,7 +63,7 @@ describe("Bezier.HelloWorld", () => {
     const ck = new Checker();
     const nullTorus = new TorusImplicit(0, 0);    // DEGENERATE
     ck.testExactNumber(1.0, nullTorus.implicitFunctionScale());
-    const data = nullTorus.XYZToThetaPhiDistance(Point3d.create(0, 0, 0));
+    const data = nullTorus.xyzToThetaPhiDistance(Point3d.create(0, 0, 0));
     ck.testFalse(data.safePhi);
     ck.checkpoint("Bezier.degenerateCases");
     expect(ck.getNumErrors()).equals(0);
@@ -172,7 +172,7 @@ describe("TrigPolynomial.DegenerateLinear", () => {
     const ac = 0.6;
     const as = 0.9;
     const a0 = 0.1;
-    TrigPolynomial.SolveUnitCircleImplicitQuadricIntersection(
+    TrigPolynomial.solveUnitCircleImplicitQuadricIntersection(
       0, 0, 0,
       ac, as, a0, angles);
     ck.testExactNumber(2, angles.length);
@@ -198,7 +198,7 @@ describe("Ellipse.Intersection", () => {
       const center = Point3d.create(t, 2.0 * t, 0);
       const vectorU = Vector3d.create(majorRadius, 0, 0);
       const vectorV = Vector3d.create(0.1, minorRadius, 0);
-      TrigPolynomial.SolveUnitCircleEllipseIntersection(center.x, center.y, vectorU.x, vectorU.y, vectorV.x, vectorV.y, ellipseAngles, circleAngles);
+      TrigPolynomial.solveUnitCircleEllipseIntersection(center.x, center.y, vectorU.x, vectorU.y, vectorV.x, vectorV.y, ellipseAngles, circleAngles);
       if (ck.testExactNumber(ellipseAngles.length, circleAngles.length)) {
         // verify that all returned values are intersections.  This prevents false positives but not false negatives.
         for (let i = 0; i < ellipseAngles.length; i++) {
@@ -225,7 +225,7 @@ describe("Ellipse.Intersection", () => {
       const center = Point4d.create(t, 2.0 * t, 0, 0.98);
       const vectorU = Point4d.create(majorRadius, 0, 0, 0.2);
       const vectorV = Point4d.create(0.1, minorRadius, 0, 0.3);
-      TrigPolynomial.SolveUnitCircleHomogeneousEllipseIntersection(
+      TrigPolynomial.solveUnitCircleHomogeneousEllipseIntersection(
         center.x, center.y, center.w,
         vectorU.x, vectorU.y, vectorU.w,
         vectorV.x, vectorV.y, vectorV.w,
@@ -279,14 +279,14 @@ describe("ImplicitSurface", () => {
       ck.testPerpendicular(vectorX, ddTheta, "implicit sphere perpendicular derivatives");
       ck.testPerpendicular(vectorX, ddPhi, "implicit sphere perpendicular derivatives");
       ck.testCoordinate(r, vectorX.magnitude(), "implicit sphere distance from origin");
-      const thetaPhiA = sphere.XYZToThetaPhiR(xyz);
+      const thetaPhiA = sphere.xyzToThetaPhiR(xyz);
       ck.testCoordinate(thetaPhi[0], thetaPhiA.theta, "implicit sphere theta inverse");
       ck.testCoordinate(thetaPhi[1], thetaPhiA.phi, "implicit sphere phi inverse");
     }
     for (const sphereA of [
       new SphereImplicit(0), new SphereImplicit(1)]) {
-      const thetaPhiB = sphereA.XYZToThetaPhiR(Point3d.create(0, 0, 0));
-      const thetaPhiC = sphereA.XYZToThetaPhiR(Point3d.create(0, 0, 1));
+      const thetaPhiB = sphereA.xyzToThetaPhiR(Point3d.create(0, 0, 0));
+      const thetaPhiC = sphereA.xyzToThetaPhiR(Point3d.create(0, 0, 1));
       ck.testExactNumber(0.0, thetaPhiB.phi);
       ck.testExactNumber(0.0, thetaPhiC.theta);
     }
@@ -335,7 +335,7 @@ describe("ImplicitSurface", () => {
         const r = factorB * rB;
         const xyzR = torus.evaluateThetaPhiDistance(theta, phi, r);
         ck.testPerpendicular(ddTheta, ddPhi, "implicit torus perpendicular derivatives");
-        const thetaPhiA = torus.XYZToThetaPhiDistance(xyzR);
+        const thetaPhiA = torus.xyzToThetaPhiDistance(xyzR);
         ck.testCoordinate(thetaPhi[0], thetaPhiA.theta, "implicit sphere theta inverse");
         ck.testCoordinate(thetaPhi[1], thetaPhiA.phi, "implicit sphere phi inverse");
         ck.testCoordinate(factorB * rB, thetaPhiA.distance, "implicit sphere inverse distance from major circle");
