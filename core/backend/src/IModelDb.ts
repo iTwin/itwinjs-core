@@ -265,8 +265,16 @@ export class IModelDb extends IModel {
   private async logUsage(actx: ActivityLoggingContext, accessToken: AccessToken, contextId: GuidString): Promise<void> {
     const client = new UlasClient();
     const entry = IModelDb.createUsageLogEntry(accessToken, contextId);
-    const resp: LogPostingResponse = await client.logUsage(actx, accessToken, entry);
-    if (!resp || resp.status !== BentleyStatus.SUCCESS) {
+
+    let status: BentleyStatus;
+    try {
+      const resp: LogPostingResponse = await client.logUsage(actx, accessToken, entry);
+      status = resp ? resp.status : BentleyStatus.ERROR;
+    } catch (error) {
+      status = BentleyStatus.ERROR;
+    }
+
+    if (status !== BentleyStatus.SUCCESS) {
       Logger.logError(loggingCategory, "Could not log usage information", () => this.iModelToken);
     }
   }
