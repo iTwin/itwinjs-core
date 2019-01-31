@@ -103,6 +103,8 @@ export * from "./ui-framework/navigationaids/SheetNavigationAid";
 export * from "./ui-framework/navigationaids/SheetsModalFrontstage";
 export * from "./ui-framework/navigationaids/StandardRotationNavigationAid";
 
+export * from "./ui-framework/settings/Settings";
+
 export * from "./ui-framework/statusfields/ActivityCenter";
 export * from "./ui-framework/statusfields/MessageCenter";
 export * from "./ui-framework/statusfields/SnapMode";
@@ -195,6 +197,10 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
 /**
  * @docs-group-description Picker
  * Classes for working with various pickers
+ */
+/**
+ * @docs-group-description Settings
+ * Classes for Settings page
  */
 /**
  * @docs-group-description StatusBar

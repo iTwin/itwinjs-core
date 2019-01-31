@@ -1,0 +1,61 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+@import "@bentley/bwc/lib/mixins";
+@import "@bentley/bwc/lib/buttons/classes.scss";
+
+$settings-leftpanel-width: 225px;
+$settings-rightpanel-width: 200px;
+
+.settings {
+  background: var(--dialogBackground);
+  color: var(--dialogTextColor);
+  width: auto;
+  height: auto;
+  position: absolute;
+  top: 45%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  padding: 30px;
+  border-radius: 3px;
+  font-size: $bwc-font-size;
+  display: flex;
+  flex-direction: column;
+}
+
+.settings-item {
+  display: flex;
+
+  >.panel {
+    flex: 1;
+    display: flex;
+    box-sizing: border-box
+  }
+
+  >.left-panel {
+    flex-direction: column;
+    width: $settings-leftpanel-width;
+    padding: 30px 50px 30px 30px;
+
+    >.title {
+      font-size: 18px;
+    }
+
+    >.description {
+      margin-top: 10px;
+      font-size: 12px;
+      color: var(--dialogDimTextcolor);
+    }
+  }
+
+  >.right-panel {
+    align-items: center;
+    width: $settings-rightpanel-width;
+    padding: 30px;
+
+    .toggle {
+      margin-right: 10px;
+    }
+  }
+}

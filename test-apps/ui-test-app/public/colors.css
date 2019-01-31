@@ -1,0 +1,95 @@
+:root {
+  --bwc-text-color: #2a2f34;
+
+  --bwc-white: #fff;
+  --bwc-black: #000;
+  --bwc-yellow: #ffcf00;
+  --bwc-orange: #ff6600;
+
+  --bwc-red: #cc0000;
+  --bwc-red-highlight: #fae5e5;
+
+  --bwc-blue: #008be1;
+  --bwc-blue-1: #00121d;
+  --bwc-blue-2: #002a44;
+  --bwc-blue-3: #00426b;
+  --bwc-blue-4: #005a92;
+  --bwc-blue-5: #0073ba;
+  --bwc-blue-6: #008be1;
+  --bwc-blue-7: #30b0ff;
+  --bwc-blue-8: #58bfff;
+  --bwc-blue-9: #7fceff;
+  --bwc-blue-a: #a6ddff;
+  --bwc-blue-b: #cdecff;
+  --bwc-blue-c: #e5f5fd;
+  --bwc-blue-highlight: var(--bwc-blue-c);
+  --bwc-blue-highlight-alt: #d9eefb;
+  --bwc-dark-navy: #002a44;
+
+  --bwc-green: #56aa1c;
+  --bwc-green-1: #010200;
+  --bwc-green-2: #122306;
+  --bwc-green-3: #23450b;
+  --bwc-green-4: #346711;
+  --bwc-green-5: #458816;
+  --bwc-green-6: #56aa1c;
+  --bwc-green-7: #5fbb1f;
+  --bwc-green-8: #67cc22;
+  --bwc-green-9: #91e458;
+  --bwc-green-a: #b2ec8b;
+  --bwc-green-b: #d4f4bd;
+  --bwc-green-c: #eef6e8;
+  --bwc-green-highlight: var(--bwc-green-c);
+  --bwc-green-highlight-alt: #ecf5e6;
+
+  --bwc-teal: #2b9b7f;
+  --bwc-teal-0: #56aa1c;
+  --bwc-teal-1: #2b9b1b;
+  --bwc-teal-2: #2b9b2f;
+  --bwc-teal-3: #2b9b43;
+  --bwc-teal-4: #2b9b57;
+  --bwc-teal-5: #2b9b6b;
+  --bwc-teal-6: #2b9b7f;
+  --bwc-teal-7: #2b9b93;
+  --bwc-teal-8: #2b9ba7;
+  --bwc-teal-9: #2b9bbb;
+  --bwc-teal-a: #2b9bcf;
+  --bwc-teal-b: #2b9be3;
+  --bwc-teal-c: #008be1;
+  --bwc-teal-d: #0073ba;
+  --bwc-teal-e: #005a92;
+  --bwc-teal-f: #00426b;
+
+  --bwc-gray: #9ba5ae;
+  --bwc-gray-1: #070809;
+  --bwc-gray-2: #2a2f34;
+  --bwc-gray-3: #3c434a;
+  --bwc-gray-4: #4d575f;
+  --bwc-gray-5: #677480;
+  --bwc-gray-6: #85929d;
+  --bwc-gray-7: #9ba5ae;
+  --bwc-gray-8: #a6afb7;
+  --bwc-gray-9: #c7ccd1;
+  --bwc-gray-a: #dce0e3;
+  --bwc-gray-b: #eef0f3;
+  --bwc-gray-c: #f8f9fb;
+
+  --bwc-dataviz-blue-1: #4585a5;
+  --bwc-dataviz-blue-2: #85a9cf;
+  --bwc-dataviz-blue-3: #6ab9ec;
+  --bwc-dataviz-green: #b1c854;
+  --bwc-dataviz-red: #f7706c;
+  --bwc-dataviz-yellow: #ffc335;
+  --bwc-dataviz-orange: #f7963e;
+  --bwc-dataviz-teal: #73c7c1;
+  --bwc-dataviz-purple: #a3779f;
+  --bwc-dataviz-brown-1: #a47854;
+  --bwc-dataviz-brown-2: #c8c2b4;
+
+  --bwc-font-size-headline: 32px;
+  --bwc-font-size-title: 24px;
+  --bwc-font-size-subheading: 18px;
+  --bwc-font-size-leading: 16px;
+  --bwc-font-size: 14px;
+  --bwc-font-size-small: 12px;
+}

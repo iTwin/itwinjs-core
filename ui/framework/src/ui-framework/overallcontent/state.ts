@@ -20,6 +20,7 @@ export const OverallContentActions = {
   setAccessToken: (accessToken: AccessToken) => createAction("OverallContent:SET_ACCESS_TOKEN", accessToken),
   clearAccessToken: () => createAction("OverallContent:CLEAR_ACCESS_TOKEN"),
   goToConfigurableUi: () => createAction("OpenIModel:SET_SELECTED_VIEWS"),
+  setTheme: (theme: string) => createAction("Content:SET_THEME", theme),
 };
 
 /** The union of all actions that are handled by our reducer. */
@@ -29,9 +30,11 @@ export type OverallContentActionsUnion = ActionsUnion<typeof OverallContentActio
 export interface OverallContentState {
   currentPage: OverallContentPage | number;
   accessToken?: AccessToken;
+  theme: string;
 }
 
 const initialState: OverallContentState = {
+  theme: "light",
   currentPage: OverallContentPage.SelectIModelPage,
 };
 
@@ -46,6 +49,8 @@ export function OverallContentReducer(state: OverallContentState = initialState,
       return { ...state, accessToken: undefined };
     case "OpenIModel:SET_SELECTED_VIEWS":
       return { ...state, currentPage: OverallContentPage.ConfigurableUiPage };
+    case "Content:SET_THEME":
+      return { ...state, theme: action.payload };
   }
   return state;
 }
