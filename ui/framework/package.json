@@ -118,7 +118,7 @@
   ],
   "dependencies": {
     "@bentley/bwc": "^7.1.0",
-    "@bentley/icons-generic-webfont": "^0.0.6",
+    "@bentley/icons-generic-webfont": "^0.0.7",
     "@bentley/presentation-components": "0.189.0-dev.11",
     "classnames": "^2.2.5",
     "immutable": "^3.8.2",

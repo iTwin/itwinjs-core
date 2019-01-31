@@ -6,8 +6,8 @@
 
 import * as React from "react";
 import classnames from "classnames";
+import { PropertyValueFormat, PropertyValue, PrimitiveValue } from "@bentley/imodeljs-frontend";
 import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
-import { PropertyValueFormat, PrimitiveValue, PropertyValue } from "../properties/Value";
 import { TypeConverterManager } from "../converters/TypeConverterManager";
 
 import "./TextEditor.scss";

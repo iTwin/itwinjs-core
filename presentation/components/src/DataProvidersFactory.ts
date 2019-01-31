@@ -6,7 +6,7 @@
 
 import { IDisposable } from "@bentley/bentleyjs-core";
 import { RulesetsFactory, Omit } from "@bentley/presentation-common";
-import { PropertyRecord } from "@bentley/ui-components";
+import { PropertyRecord } from "@bentley/imodeljs-frontend";
 import { IPresentationPropertyDataProvider } from "./propertygrid/DataProvider";
 import {
   IPresentationTableDataProvider, PresentationTableDataProvider,

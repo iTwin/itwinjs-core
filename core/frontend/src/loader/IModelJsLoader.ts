@@ -67,7 +67,7 @@ class ScriptLoader {
   }
 }
 
-// Load Options. Loading the UiComponents and UiFramework are optiona.
+// Load Options. Loading the UiComponents and UiFramework are optional.
 class IModelJsLoadOptions {
   private _iModelJsVersions: any;
   public loadUiComponents: boolean;

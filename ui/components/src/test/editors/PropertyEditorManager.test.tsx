@@ -7,7 +7,7 @@ import * as React from "react";
 import { expect } from "chai";
 import { PropertyEditorManager, BasicPropertyEditor, PropertyEditorBase, DataControllerBase } from "../../ui-components/editors/PropertyEditorManager";
 import { TextEditor } from "../../ui-components/editors/TextEditor";
-import { PropertyValue, PropertyValueFormat, PropertyDescription, PropertyRecord, PropertyEditorParams, PropertyEditorParamTypes } from "../../ui-components";
+import { PropertyValue, PropertyValueFormat, PropertyDescription, PropertyRecord, PropertyEditorParams, PropertyEditorParamTypes } from "@bentley/imodeljs-frontend";
 import { AsyncValueProcessingResult } from "../../ui-components/converters/TypeConverter";
 
 describe("PropertyEditorManager", () => {
@@ -162,7 +162,7 @@ describe("PropertyEditorManager", () => {
       if (property.editor && property.editor.params) {
         property.editor.params.forEach((params: PropertyEditorParams) => {
           if (params.type === PropertyEditorParamTypes.Icon) {
-            if (params.definition.iconPath === "cool")
+            if (params.definition.iconClass === "cool")
               (record as any).iconParamsWorked = true;
           }
         });
@@ -181,7 +181,7 @@ describe("PropertyEditorManager", () => {
         params: [
           {
             type: PropertyEditorParamTypes.Icon,
-            definition: { iconPath: "cool", iconColor: 0 },
+            definition: { iconClass: "cool" },
           },
         ],
       };

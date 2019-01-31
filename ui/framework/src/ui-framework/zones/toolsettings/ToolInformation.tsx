@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Item */
 
+import { FrontstageManager } from "../../frontstage/FrontstageManager";
 import { ConfigurableUiManager } from "../../configurableui/ConfigurableUiManager";
 import { ConfigurableUiControlType } from "../../configurableui/ConfigurableUiControl";
 import { ToolUiProvider } from "./ToolUiProvider";
@@ -17,9 +18,15 @@ export class ToolInformation {
 
   /** Get the ToolUiProvider registered for this tool */
   public get toolUiProvider(): ToolUiProvider | undefined {
-    if (!this._toolUiProvider && ConfigurableUiManager.isControlRegistered(this.toolId)) {
-      const toolUiProvider = ConfigurableUiManager.createControl(this.toolId, this.toolId) as ToolUiProvider;
+    if (!this._toolUiProvider) {
+      let toolUiProvider: ToolUiProvider | undefined;
 
+      if (ConfigurableUiManager.isControlRegistered(this.toolId)) {
+        toolUiProvider = ConfigurableUiManager.createControl(this.toolId, this.toolId) as ToolUiProvider;
+      } else {
+        if (FrontstageManager.useDefaultToolSettings)
+          toolUiProvider = ConfigurableUiManager.createControl("DefaultToolSettings", this.toolId) as ToolUiProvider;
+      }
       // istanbul ignore else
       if (toolUiProvider) {
         if (toolUiProvider.getType() !== ConfigurableUiControlType.ToolUiProvider) {
@@ -29,8 +36,11 @@ export class ToolInformation {
         toolUiProvider.initialize();
         this._toolUiProvider = toolUiProvider;
       }
+    } else {
+      // if the tool settings are coming from tool, reinitialize provider so latest properties published from tool are displayed in UI
+      if (FrontstageManager.useDefaultToolSettings && this._toolUiProvider)
+        this._toolUiProvider.initialize();
     }
-
     return this._toolUiProvider;
   }
 }

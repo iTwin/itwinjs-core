@@ -8,10 +8,9 @@ import * as React from "react";
 import { Id64 } from "@bentley/bentleyjs-core";
 import TestUtils from "../../../TestUtils";
 import { NavigationPropertyValueRenderer } from "../../../../ui-components/properties/renderers/value/NavigationPropertyValueRenderer";
-import { PrimitiveValue } from "../../../../ui-components/properties/Value";
-import { Hexadecimal } from "../../../../ui-components/converters/valuetypes/PrimitiveTypes";
+import { PrimitiveValue, Primitives } from "@bentley/imodeljs-frontend";
 
-function createNavigationProperty(value: Hexadecimal, displayValue?: string) {
+function createNavigationProperty(value: Primitives.Hexadecimal, displayValue?: string) {
   const property = TestUtils.createPrimitiveStringProperty("Category", "", displayValue);
   property.property.typename = "navigation";
   (property.value as PrimitiveValue).value = value;

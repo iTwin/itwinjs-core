@@ -36,7 +36,7 @@
     "@bentley/geometry-core": "0.189.0-dev.11",
     "@bentley/bwc": "^7.1.0",
     "@bentley/electron-manager": "0.189.0-dev.11",
-    "@bentley/icons-generic-webfont": "^0.0.6",
+    "@bentley/icons-generic-webfont": "^0.0.7",
     "@bentley/imodeljs-clients": "0.189.0-dev.11",
     "@bentley/imodeljs-common": "0.189.0-dev.11",
     "@bentley/imodeljs-backend": "0.189.0-dev.11",

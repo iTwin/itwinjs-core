@@ -5,9 +5,8 @@
 /** @module PropertyEditors */
 
 import * as React from "react";
-import { PropertyRecord } from "../properties/Record";
+import { PropertyRecord, PropertyValue } from "@bentley/imodeljs-frontend";
 import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager";
-import { PropertyValue } from "../properties/Value";
 
 import "./EditorContainer.scss";
 

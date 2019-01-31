@@ -19,6 +19,7 @@ import { IdleTool } from "./IdleTool";
 import { PrimitiveTool } from "./PrimitiveTool";
 import { BeButton, BeButtonEvent, BeButtonState, BeModifierKeys, BeTouchEvent, BeWheelEvent, CoordSource, EventHandled, InputCollector, InputSource, InteractiveTool, Tool } from "./Tool";
 import { ViewTool } from "./ViewTool";
+import { ToolSettingsPropertySyncItem } from "../properties/ToolSettingsValue";
 
 export const enum CoordinateLockOverrides {
   None = 0,
@@ -328,6 +329,20 @@ export class ToolAdmin {
 
   // Workaround for Edge Bug.
   private static _keysCurrentlyDown = new Set<string>(); // The (small) set of keys that are currently pressed.
+
+  /** Handler that wants to process synching latest tool setting properties with UI.
+   *  @hidden
+   */
+  private _toolSettingsChangeHandler: ((toolId: string, syncProperties: ToolSettingsPropertySyncItem[]) => void) | undefined = undefined;
+
+  /** @hidden */
+  /** Set by object that will be provide UI for tool settings properties. */
+  public set toolSettingsChangeHandler(handler: ((toolId: string, syncProperties: ToolSettingsPropertySyncItem[]) => void) | undefined) {
+    this._toolSettingsChangeHandler = handler;
+  }
+
+  /** @hidden */
+  public get toolSettingsChangeHandler() { return this._toolSettingsChangeHandler; }
 
   /** Handler for keyboard events. */
   private static _keyEventHandler = (ev: KeyboardEvent) => {
@@ -1281,6 +1296,12 @@ export class ToolAdmin {
 
     this.setCursor(IModelApp.viewManager.crossHairCursor);
     this.setPrimitiveTool(newTool);
+  }
+
+  /** Method used by interactive tools to send updated values to UI components, typically showing tool settings. */
+  public syncToolSettingsProperties(toolId: string, syncProperties: ToolSettingsPropertySyncItem[]): void {
+    if (this.toolSettingsChangeHandler)
+      this.toolSettingsChangeHandler(toolId, syncProperties);
   }
 
   /**

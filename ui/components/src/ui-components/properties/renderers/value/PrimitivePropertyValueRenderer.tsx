@@ -5,8 +5,7 @@
 /** @module Properties */
 
 import { IPropertyValueRenderer, PropertyValueRendererContext, PropertyContainerType } from "../../ValueRendererManager";
-import { PropertyRecord } from "../../Record";
-import { PropertyValueFormat, PrimitiveValue } from "../../Value";
+import { PropertyRecord, PropertyValueFormat, PrimitiveValue } from "@bentley/imodeljs-frontend";
 import { TypeConverterManager } from "../../../converters/TypeConverterManager";
 import { withContextStyle } from "./WithContextStyle";
 

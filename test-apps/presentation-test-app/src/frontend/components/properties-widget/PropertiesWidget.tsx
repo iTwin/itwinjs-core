@@ -4,13 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as React from "react";
-import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
+import { IModelApp, IModelConnection, PropertyRecord } from "@bentley/imodeljs-frontend";
 import {
   PresentationPropertyDataProvider, propertyGridWithUnifiedSelection,
   IPresentationPropertyDataProvider,
 } from "@bentley/presentation-components";
 import { GlobalContextMenu, ContextMenuItem } from "@bentley/ui-core";
-import { PropertyGrid, PropertyData, PropertyCategory, PropertyGridContextMenuArgs, PropertyRecord } from "@bentley/ui-components";
+import { PropertyGrid, PropertyData, PropertyCategory, PropertyGridContextMenuArgs } from "@bentley/ui-components";
 import "./PropertiesWidget.css";
 
 // tslint:disable-next-line:variable-name naming-convention

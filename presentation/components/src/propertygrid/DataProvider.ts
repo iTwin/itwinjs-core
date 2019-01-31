@@ -6,10 +6,9 @@
 
 import * as _ from "lodash";
 import {
-  PropertyRecord, PropertyValueFormat, PropertyValue,
   PropertyData, PropertyDataChangeEvent, PropertyCategory, IPropertyDataProvider,
 } from "@bentley/ui-components";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { IModelConnection, PropertyRecord, PropertyValueFormat, PropertyValue } from "@bentley/imodeljs-frontend";
 import {
   CategoryDescription, Descriptor, ContentFlags,
   Field, NestedContentField, DefaultContentDisplayTypes, Item,

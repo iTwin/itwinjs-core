@@ -3,7 +3,8 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { I18N } from "@bentley/imodeljs-i18n";
-import { UiComponents, PropertyRecord, PrimitiveValue, PropertyValueFormat, PropertyDescription, ArrayValue, StructValue } from "../ui-components";
+import { PropertyRecord, PrimitiveValue, PropertyValueFormat, PropertyDescription, ArrayValue, StructValue } from "@bentley/imodeljs-frontend";
+import { UiComponents } from "../ui-components";
 import { UiCore } from "@bentley/ui-core";
 
 export default class TestUtils {

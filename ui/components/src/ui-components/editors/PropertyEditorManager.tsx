@@ -4,10 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module PropertyEditors */
 
-import { PropertyValue } from "../properties/Value";
-import { PropertyRecord } from "../properties/Record";
-import { PropertyDescription } from "../properties/Description";
-
+import { PropertyValue, PropertyRecord, PropertyDescription } from "@bentley/imodeljs-frontend";
 import * as React from "react";
 import { AsyncValueProcessingResult } from "../converters/TypeConverter";
 import { TextEditor } from "./TextEditor";

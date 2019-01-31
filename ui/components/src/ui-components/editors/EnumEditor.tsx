@@ -6,8 +6,7 @@
 
 import * as React from "react";
 import classnames from "classnames";
-import { PropertyValueFormat, PrimitiveValue, PropertyValue } from "../properties/Value";
-import { EnumerationChoice } from "../properties/Description";
+import { PropertyValueFormat, PrimitiveValue, PropertyValue, EnumerationChoice } from "@bentley/imodeljs-frontend";
 import { PropertyEditorManager, PropertyEditorBase } from "./PropertyEditorManager";
 import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
 import "./EnumEditor.scss";

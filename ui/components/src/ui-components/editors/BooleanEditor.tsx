@@ -6,7 +6,7 @@
 
 import * as React from "react";
 import classnames from "classnames";
-import { PropertyValueFormat, PrimitiveValue, PropertyValue } from "../properties/Value";
+import { PropertyValueFormat, PrimitiveValue, PropertyValue } from "@bentley/imodeljs-frontend";
 import { PropertyEditorManager, PropertyEditorBase } from "./PropertyEditorManager";
 import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
 import "./BooleanEditor.scss";

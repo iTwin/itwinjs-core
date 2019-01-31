@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Move property definitions to imodeljs-frontend so they could be used by tools to define properties for tool settings.",
+      "packageName": "@bentley/presentation-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-components",
+  "email": "bill.steinbock@bentley.com"
+}

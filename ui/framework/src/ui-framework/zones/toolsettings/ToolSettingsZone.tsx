@@ -37,7 +37,7 @@ export class ToolSettingsZone extends React.Component<ToolSettingsZoneProps, Too
 
   /** @hidden */
   public readonly state: Readonly<ToolSettingsZoneState> = {
-    toolSettingsZoneContent: ToolSettingsZoneContent.Closed,
+    toolSettingsZoneContent: ToolSettingsZoneContent.ToolSettings,
     isPopoverOpen: false,
     isNestedPopoverOpen: false,
     toolId: "",
@@ -123,6 +123,7 @@ export class ToolSettingsZone extends React.Component<ToolSettingsZoneProps, Too
               tab={tab}
               content={
                 <ToolSettings style={settingsStyle} >
+                  <div className="nz-widget-toolSettings-title">{FrontstageManager.activeToolLabel}</div>
                   {FrontstageManager.activeToolSettingsNode}
                 </ToolSettings>
               }

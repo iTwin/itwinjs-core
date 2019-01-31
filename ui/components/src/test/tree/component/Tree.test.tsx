@@ -19,7 +19,7 @@ import HighlightingEngine, { HighlightableTreeProps } from "../../../ui-componen
 import { BeEvent, BeDuration } from "@bentley/bentleyjs-core";
 import { TreeNodeProps } from "../../../ui-components/tree/component/Node";
 import { PropertyValueRendererManager, PropertyValueRendererContext, PropertyContainerType } from "../../../ui-components/properties/ValueRendererManager";
-import { PropertyRecord } from "../../../ui-components/properties/Record";
+import { PropertyRecord } from "@bentley/imodeljs-frontend";
 
 describe("Tree", () => {
 

@@ -5,7 +5,7 @@
 /** @module PropertyGrid */
 
 import { BeEvent } from "@bentley/bentleyjs-core";
-import { PropertyRecord } from "../properties/Record";
+import { PropertyRecord } from "@bentley/imodeljs-frontend";
 
 /**
  * Contains metadata about a group of Properties.

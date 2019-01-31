@@ -31,9 +31,7 @@ import {
 } from "../../common/selection/SelectionHandler";
 // cell editing imports
 import { EditorContainer, PropertyUpdatedArgs } from "../../editors/EditorContainer";
-import { PropertyRecord } from "../../properties/Record";
-import { PropertyValueFormat, PrimitiveValue } from "../../properties/Value";
-import { PropertyDescription } from "../../properties/Description";
+import { PrimitiveValue, PropertyRecord, PropertyValueFormat, PropertyDescription } from "@bentley/imodeljs-frontend";
 // node highlighting
 import HighlightingEngine, { HighlightableTreeProps, HighlightableTreeNodeProps } from "../HighlightingEngine";
 // misc

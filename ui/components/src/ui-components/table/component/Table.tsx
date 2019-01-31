@@ -22,7 +22,7 @@ import {
 } from "../../common/selection/SelectionHandler";
 import { PropertyUpdatedArgs } from "../../editors/EditorContainer";
 import { PropertyValueRendererManager, PropertyDialogState } from "../../properties/ValueRendererManager";
-import { PropertyValueFormat, PrimitiveValue } from "../../properties/Value";
+import { PropertyValueFormat, PrimitiveValue } from "@bentley/imodeljs-frontend";
 import { TypeConverterManager } from "../../converters/TypeConverterManager";
 import { DragDropHeaderCell } from "./DragDropHeaderCell";
 import { ShowHideMenu } from "../../common/showhide/ShowHideMenu";

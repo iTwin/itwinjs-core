@@ -84,6 +84,8 @@ export * from "./ui-framework/workflow/Workflow";
 export * from "./ui-framework/zones/FrameworkZone";
 export * from "./ui-framework/zones/toolsettings/ToolSettingsZone";
 export * from "./ui-framework/zones/toolsettings/ToolUiProvider";
+export * from "./ui-framework/zones/toolsettings/DefaultToolSettingsProvider";
+
 export * from "./ui-framework/zones/Zone";
 export * from "./ui-framework/zones/ZoneDef";
 

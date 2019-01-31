@@ -35,7 +35,7 @@ export class NestedFrontstage1 extends FrontstageProvider {
         defaultToolId="PlaceLine"
         defaultLayout="TwoHalvesHorizontal"
         contentGroup="TestContentGroup2"
-        isInFooterMode={false}
+        isInFooterMode={true}
         applicationData={{ key: "value" }}
         topLeft={
           <Zone

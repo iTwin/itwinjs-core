@@ -15,8 +15,7 @@ import {
   createRandomECInstanceKey, createRandomECClassInfo, createRandomRelationshipPath,
 } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { I18N } from "@bentley/imodeljs-i18n";
-import { PropertyRecord } from "@bentley/ui-components";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { IModelConnection, PropertyRecord } from "@bentley/imodeljs-frontend";
 import {
   ValuesDictionary, Descriptor, Field,
   CategoryDescription, Content, ContentFlags, Item,

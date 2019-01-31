@@ -7,8 +7,7 @@
 import * as React from "react";
 import _ from "lodash";
 import { Orientation } from "@bentley/ui-core";
-import { PropertyValueFormat, ArrayValue } from "../Value";
-import { PropertyRecord } from "../Record";
+import { PropertyValueFormat, ArrayValue, PropertyRecord } from "@bentley/imodeljs-frontend";
 import { PropertyValueRendererManager, PropertyValueRendererContext, PropertyContainerType } from "../ValueRendererManager";
 import { PrimitiveRendererProps, PrimitivePropertyRenderer } from "./PrimitivePropertyRenderer";
 import { NonPrimitivePropertyRenderer } from "./NonPrimitivePropertyRenderer";

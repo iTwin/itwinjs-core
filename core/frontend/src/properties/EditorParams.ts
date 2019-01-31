@@ -15,6 +15,8 @@ export enum PropertyEditorParamTypes {
   Icon,
   CheckBoxIcons,
   SuppressUnitLabel,
+  SuppressEditorLabel,
+  ButtonGroupData,
 }
 
 /**
@@ -29,6 +31,7 @@ export interface BasePropertyEditorParams {
  */
 export interface JsonEditorParams extends BasePropertyEditorParams {
   type: PropertyEditorParamTypes.JSON;
+  json: any;
 }
 
 /**
@@ -75,10 +78,17 @@ export interface MultilineTextEditorParams extends BasePropertyEditorParams {
  * Information about an icon displayed next to a property editor.
  */
 export interface IconDefinition {
-  /** relative path to the image file. */
-  iconPath: string;
-  /** icon color. */
-  iconColor: number;
+  /** icon class name. */
+  iconClass: string;
+  isEnabledFunction?: () => boolean;
+}
+
+/**
+ * Parameters used by EnumButtonGroupEditor to define icons in button group.
+ */
+export interface ButtonGroupEditorParams extends BasePropertyEditorParams {
+  type: PropertyEditorParamTypes.ButtonGroupData;
+  buttons: IconDefinition[];
 }
 
 /**
@@ -106,7 +116,14 @@ export interface SuppressUnitLabelEditorParams extends BasePropertyEditorParams 
 }
 
 /**
+ * Parameters used to suppress the label for a type editor in the ToolSettings widget.
+ */
+export interface SuppressLabelEditorParams extends BasePropertyEditorParams {
+  type: PropertyEditorParamTypes.SuppressEditorLabel;
+}
+
+/**
  * Type definition for all Property Editor params
  */
-export type PropertyEditorParams = JsonEditorParams | RangeEditorParams | SliderEditorParams
-  | MultilineTextEditorParams | IconEditorParams | CheckBoxIconsEditorParams | SuppressUnitLabelEditorParams;
+export type PropertyEditorParams = JsonEditorParams | RangeEditorParams | SliderEditorParams | ButtonGroupEditorParams
+  | MultilineTextEditorParams | IconEditorParams | CheckBoxIconsEditorParams | SuppressUnitLabelEditorParams | SuppressLabelEditorParams;

@@ -138,7 +138,8 @@
         "IdentifyLineRemove": "Identify elements to remove by crossing line",
         "IdentifyBoxRemove": "Identify elements to remove by box corner points",
         "AcceptSelection": "Accept/Reject Selection",
-        "AcceptFence": "Accept/Reject Fence Contents"
+        "AcceptFence": "Accept/Reject Fence Contents",
+        "Mode": "Mode"
       },
       "Error": {
         "NoFence": "No fence defined",
@@ -147,6 +148,13 @@
         "NoSSElems": "No elements selected.",
         "NotSuportedElmType": "Element type not valid for this tool",
         "ProjectExtents": "Invalid location. All elements must fit within the volume defined by the project extents."
+      },
+      "SelectionOptions": {
+        "Pick": "Pick",
+        "Line": "Line",
+        "Box": "Box",
+        "Add": "Add",
+        "Remove": "Remove"
       }
     },
     "Plugin": {

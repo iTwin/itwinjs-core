@@ -17,8 +17,6 @@ export class PropertyRecord {
   public description?: string;
   public isReadonly?: boolean;
   public isMerged?: boolean;
-  // unit?: string; // [grigas] should this be in the PropertyValue?
-  // KOQ?: ECKindOfQuantityInfo; // [grigas] should this be in the PropertyValue or PropertyDescription?
 
   public constructor(value: PropertyValue, property: PropertyDescription) {
     this.value = value;

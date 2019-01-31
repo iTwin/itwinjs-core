@@ -112,7 +112,7 @@
   ],
   "dependencies": {
     "@bentley/bwc": "^7.1.0",
-    "@bentley/icons-generic-webfont": "^0.0.6",
+    "@bentley/icons-generic-webfont": "^0.0.7",
     "callable-instance2": "1.0.0",
     "classnames": "^2.2.5",
     "eventemitter2": "^5.0.1",

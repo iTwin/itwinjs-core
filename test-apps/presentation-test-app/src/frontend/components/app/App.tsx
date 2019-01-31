@@ -6,11 +6,10 @@
 import * as React from "react";
 import { Id64String } from "@bentley/bentleyjs-core";
 import { ViewQueryParams } from "@bentley/imodeljs-common";
-import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
+import { IModelApp, IModelConnection, PropertyRecord } from "@bentley/imodeljs-frontend";
 import { DefaultContentDisplayTypes } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
 import { ElementSeparator, Orientation } from "@bentley/ui-core";
-import { PropertyRecord } from "@bentley/ui-components";
 import { IPresentationTableDataProvider, IPresentationPropertyDataProvider, DataProvidersFactory } from "@bentley/presentation-components";
 import IModelSelector from "../imodel-selector/IModelSelector";
 import PropertiesWidget from "../properties-widget/PropertiesWidget";

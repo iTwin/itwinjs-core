@@ -12,8 +12,7 @@ import { Orientation } from "@bentley/ui-core";
 import { PropertyCategoryBlock } from "../../../ui-components";
 import { PropertyGrid, PropertyGridCategory } from "../../../ui-components/propertygrid/component/PropertyGrid";
 import { IPropertyDataProvider, PropertyDataChangeEvent, PropertyCategory, PropertyData } from "../../../ui-components/propertygrid/PropertyDataProvider";
-import { PropertyRecord } from "../../../ui-components/properties/Record";
-import { PropertyValueFormat } from "../../../ui-components/properties/Value";
+import { PropertyRecord, PropertyValueFormat } from "@bentley/imodeljs-frontend";
 import { ResolvablePromise } from "../../test-helpers/misc";
 import TestUtils from "../../TestUtils";
 
