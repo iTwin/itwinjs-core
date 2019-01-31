@@ -9,7 +9,7 @@ import { IModelApp } from "./IModelApp";
 import { TileTreeModelState } from "./ModelState";
 import { TileTree, TileTreeState } from "./tile/TileTree";
 import { RealityModelTileTree, RealityModelTileClient, RealityModelTileUtils } from "./tile/RealityModelTileTree";
-import { RealityDataServicesClient } from "@bentley/imodeljs-clients";
+import { RealityDataServicesClient, RealityData } from "@bentley/imodeljs-clients";
 import { ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
 
 export class ContextRealityModelState implements TileTreeModelState {
@@ -37,6 +37,10 @@ export class ContextRealityModelState implements TileTreeModelState {
     RealityModelTileTree.loadRealityModelTileTree(this._tilesetUrl, undefined, tileTreeState);
     return tileTreeState.loadStatus;
   }
+  /**
+   * Indicates if the reality model overlaps the project extent
+   * @returns a bool that indicates if the model and the reality data overlap
+   */
   public async intersectsProjectExtents(): Promise<boolean> {
     if (undefined === this._iModel.ecefLocation || undefined === IModelApp.accessToken)
       return false;
@@ -55,10 +59,21 @@ export class ContextRealityModelState implements TileTreeModelState {
 
     return treeCartographicRange.intersectsRange(projectCartographicRange);
   }
+  /**
+   * Gets a tileset's tile data blob key url
+   * @param other Another ContextRealityModelState oject to compare with self.
+   * @returns a bool that indicates if the two match
+   */
   public matches(other: ContextRealityModelState) {
     return other.name === this.name && other.url === this.url;
   }
-  public static async findAvailableRealityModels(): Promise<ContextRealityModelProps[]> {
+  /**
+   * Returns a list of reality data associated to the given CONNECT project
+   * @param projectId id of associated connect project
+   * @param modelCartographicRange optional cartographic range of the model that can limit the spatial range for the search
+   * @returns a list of reality model properties associated with the project
+   */
+  public static async findAvailableRealityModels(projectid: string, modelCartographicRange?: CartographicRange | undefined): Promise<ContextRealityModelProps[]> {
 
     const availableRealityModels: ContextRealityModelProps[] = [];
 
@@ -68,23 +83,36 @@ export class ContextRealityModelState implements TileTreeModelState {
       // ## instances of this class should be stateless (except for the WSG states which we can do nothing about). This is not currently the case.
       const client = new RealityDataServicesClient();
       const alctx = new ActivityLoggingContext(Guid.createValue());
-      // ##TODO Alain Robert - The projectid of the database must be obtained and used here.
-      const projectId: string = "Server";
-      const realityData = await client.getRealityDataInProject(alctx, IModelApp.accessToken, projectId);
 
-      let currentNonameNum: number = 0;
+      let realityData: RealityData[];
+      if (modelCartographicRange) {
+        const polygon = modelCartographicRange.getLongitudeLatitudeBoundingBox();
+
+        realityData = await client.getRealityDataInProjectOverlapping(alctx, IModelApp.accessToken, projectid, polygon);
+
+      } else {
+        realityData = await client.getRealityDataInProject(alctx, IModelApp.accessToken, projectid);
+      }
+
+      // We obtain the reality data name, and RDS URL for each RD retuned.
       for (const currentRealityData of realityData) {
-        let realityDataName: string;
+        let realityDataName: string = "";
+        let validRd: boolean = true;
         if (currentRealityData.name && currentRealityData.name !== "") {
           realityDataName = currentRealityData.name as string;
+        } else if (currentRealityData.rootDocument) {
+          // In case root document contains a relative path we only keep the filename
+          const rootDocParts = (currentRealityData.rootDocumentb as string).split("/");
+          realityDataName = rootDocParts[rootDocParts.length - 1];
         } else {
-          realityDataName = `noname-${currentNonameNum}`;
-          currentNonameNum++;
+          // This case would not occur normally but if it does the RD is considered invalid
+          validRd = false;
         }
 
-        if (currentRealityData.id) {
-          const url = await client.getRealityDataUrl(alctx, projectId, currentRealityData.id as string);
-          availableRealityModels.push({ tilesetUrl: url, name: realityDataName });
+        // If the RealityData is valid then we add it to the list.
+        if (currentRealityData.id && validRd === true) {
+          const url = await client.getRealityDataUrl(alctx, projectid, currentRealityData.id as string);
+          availableRealityModels.push({ tilesetUrl: url, name: realityDataName, description: (currentRealityData.description ? currentRealityData.description : "") });
         }
       }
     }

@@ -11,7 +11,7 @@ import { URL } from "url";
 import { request, RequestOptions } from "./Request";
 import { Config } from "./Config";
 import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
-import { Angle, XY } from "@bentley/geometry-core";
+import { Angle, Range2d } from "@bentley/geometry-core";
 
 /** RealityData */
 @ECJsonTypeMap.classToJson("wsg", "S3MX.RealityData", { schemaPropertyName: "schemaName", classPropertyName: "className" })
@@ -238,19 +238,20 @@ export class RealityDataServicesClient extends WsgClient {
    * as public, enterprise data, private or accessible through context RBAC rights attributed to user.
    * @param token Delegation token of the authorized user issued for this service.
    * @param projectId id of associated connect project
+   * @param range The range to search for given as a range 2d where X repesentents the longitude in radians and Y the latitude in radians
+   * longitude can be in the range -2P to 2PI but the minimum value must be smaller numerically to the maximum.
+   * Note that usually the longitudes are usually by convention in the range of -PI to PI except
+   * for ranges that overlap the -PI/+PI frontier in which case either representation is acceptable.
    * @returns an array of RealityData
    */
-  public async getRealityDataInProjectOverlapping(alctx: ActivityLoggingContext, token: AccessToken, projectId: string, polygon: XY[]): Promise<RealityData[]> {
+  public async getRealityDataInProjectOverlapping(alctx: ActivityLoggingContext, token: AccessToken, projectId: string, range: Range2d): Promise<RealityData[]> {
+    const minLongDeg = Angle.radiansToDegrees(range.low.x);
+    const maxLongDeg = Angle.radiansToDegrees(range.high.x);
+    const minLatDeg = Angle.radiansToDegrees(range.low.y);
+    const maxLatDeg = Angle.radiansToDegrees(range.high.y);
+    const polygonString = `{\"points\":[[${minLongDeg},${minLatDeg}],[${maxLongDeg},${minLatDeg}],[${maxLongDeg},${maxLatDeg}],[${minLongDeg},${maxLatDeg}],[${minLongDeg},${minLatDeg}]], \"coordinate_system\":\"4326\"}`;
 
-    let finalPolygon: string = "";
-    if (polygon.length > 5) {
-
-      let polygonString = "{\"points\":[";
-      polygon.forEach((point) => { polygonString += `[${Angle.radiansToDegrees(point.x)}, ${Angle.radiansToDegrees(point.y)}],`; });
-      finalPolygon = polygonString.substring(0, polygonString.length - 2) + "], \"coordinate_system\":\"4326\"}";
-    }
-    return this.getInstances<RealityData>(alctx, RealityData, token, `/Repositories/S3MXECPlugin--${projectId}/S3MX/RealityData?project=${projectId}&polygon=${finalPolygon}&$filter=Type+eq+'RealityMesh3DTiles'`);
-
+    return this.getInstances<RealityData>(alctx, RealityData, token, `/Repositories/S3MXECPlugin--${projectId}/S3MX/RealityData?project=${projectId}&polygon=${polygonString}&$filter=Type+eq+'RealityMesh3DTiles'`);
   }
 
   /**
