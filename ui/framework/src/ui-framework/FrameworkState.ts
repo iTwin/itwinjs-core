@@ -16,8 +16,8 @@ export interface FrameworkState {
   appState: AppState;
 }
 
-/** Framework reducer that combines the [[OverallContentReducer]],  [[ConfigurableUiReducer]] and OidcReducer. */
-export const FrameworkReducer = combineReducers({   // tslint:disable-line:variable-name
+/** Framework reducer that combines the [[OverallContentReducer]], [[ConfigurableUiReducer]] and [[AppStateReducer]]. */
+export const FrameworkReducer = combineReducers({ // tslint:disable-line:variable-name
   overallContentState: OverallContentReducer,
   configurableUiState: ConfigurableUiReducer,
   appState: AppStateReducer,

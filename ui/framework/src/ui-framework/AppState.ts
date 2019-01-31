@@ -12,22 +12,27 @@ import { createAction, ActionsUnion } from "./utils/redux-ts";
  */
 export const enum AppStateActionId {
   SetNumItemsSelected = "appstate:set-num-items-selected",
+  SetCurrentProperty = "appstate:set-current-property",
 }
 
 /** The portion of state managed by the AppStateReducer. */
 export interface AppState {
   numItemsSelected: number;
+  property?: any;
 }
 
 /** used on first call of AppStateReducer */
 const initialState: AppState = {
   /** number of selected items in Presentation Selection */
   numItemsSelected: 0,
+  /** Current property selected in the property grid - used in Find Similar Widget */
+  property: undefined,
 };
 
 /** An object with a function that creates each AppStateReducer that can be handled by our reducer. */ // tslint:disable-next-line:variable-name
 export const AppStateActions = {
   setNumItemsSelected: (numSelected: number) => createAction(AppStateActionId.SetNumItemsSelected, numSelected),
+  setCurrentProperty: (property: any) => createAction(AppStateActionId.SetCurrentProperty, property),
 };
 
 /** Union of AppState Redux actions  */
@@ -41,7 +46,9 @@ export function AppStateReducer(state: AppState = initialState, _action: AppStat
         return { ...state, numItemsSelected: _action.payload };
       break;
     }
-
+    case AppStateActionId.SetCurrentProperty: {
+      return { ...state, property: _action.payload };
+    }
   }
 
   return state;
