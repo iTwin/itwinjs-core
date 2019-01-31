@@ -680,7 +680,7 @@
     },
     {
       "name": "source-map-support",
-      "allowedCategories": [ "backend", "common" ]
+      "allowedCategories": [ "backend", "common", "frontend" ]
     },
     {
       "name": "style-loader",
@@ -696,7 +696,11 @@
     },
     {
       "name": "svg-sprite-loader",
-      "allowedCategories": [ "internal", "tools" ]
+      "allowedCategories": [ "frontend", "internal", "tools" ]
+    },
+    {
+      "name": "svg.js",
+      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "sw-precache-webpack-plugin",
@@ -768,7 +772,7 @@
     },
     {
       "name": "uglifyjs-webpack-plugin",
-      "allowedCategories": [ "internal", "tools" ]
+      "allowedCategories": [ "frontend", "internal", "tools" ]
     },
     {
       "name": "url-loader",

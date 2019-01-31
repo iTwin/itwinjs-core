@@ -85,8 +85,13 @@
           "description": "Fit all graphics in the chosen model"
         }
       },
-      "SelectView": "Select view"
+      "Standard": {
+        "keyin": "Rotate to Standard View",
+        "description": "align view with standard rotation",
+        "flyover": "Standard View"
+      }
     },
+    "SelectView": "Select view",
     "Select": {
       "keyin": "Select Elements",
       "description": "Selects Element for inspection or manipulation",

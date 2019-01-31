@@ -4,22 +4,22 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module SelectionSet */
 
-import { Point3d, Point2d, Range2d } from "@bentley/geometry-core";
-import { PrimitiveTool } from "./PrimitiveTool";
-import { IModelApp } from "../IModelApp";
-import { CoordinateLockOverrides, ManipulatorToolEvent } from "./ToolAdmin";
-import { DecorateContext } from "../ViewContext";
-import { BeButtonEvent, BeButton, BeModifierKeys, EventHandled, BeTouchEvent, InputSource } from "./Tool";
-import { LocateResponse, LocateFilterStatus } from "../ElementLocateManager";
-import { HitDetail } from "../HitDetail";
-import { Id64Arg, Id64 } from "@bentley/bentleyjs-core";
-import { ViewRect } from "../Viewport";
-import { Pixel } from "../rendering";
+import { Id64, Id64Arg } from "@bentley/bentleyjs-core";
+import { Point2d, Point3d, Range2d } from "@bentley/geometry-core";
 import { ColorDef } from "@bentley/imodeljs-common";
+import { LocateFilterStatus, LocateResponse } from "../ElementLocateManager";
+import { HitDetail } from "../HitDetail";
+import { IModelApp } from "../IModelApp";
 import { PropertyDescription } from "../properties/Description";
 import { PropertyEditorParamTypes } from "../properties/EditorParams";
+import { ToolSettingsPropertyRecord, ToolSettingsPropertySyncItem, ToolSettingsValue, TsHorizontalAlignment } from "../properties/ToolSettingsValue";
 import { PrimitiveValue } from "../properties/Value";
-import { ToolSettingsValue, ToolSettingsPropertySyncItem, ToolSettingsPropertyRecord, TsHorizontalAlignment } from "../properties/ToolSettingsValue";
+import { Pixel } from "../rendering";
+import { DecorateContext } from "../ViewContext";
+import { ViewRect } from "../Viewport";
+import { PrimitiveTool } from "./PrimitiveTool";
+import { BeButton, BeButtonEvent, BeModifierKeys, BeTouchEvent, EventHandled, InputSource } from "./Tool";
+import { CoordinateLockOverrides, ManipulatorToolEvent } from "./ToolAdmin";
 
 /** The method for choosing elements with the [[SelectionTool]] */
 export const enum SelectionMethod {
@@ -54,53 +54,13 @@ export const enum SelectionProcessing {
 }
 
 /** The selection options to display in the tool settings. */
-export enum SelectOptions {
+export const enum SelectOptions {
   PickAndReplace,
   LineAndReplace,
   BoxAndReplace,
   PickAndAdd,
   PickAndRemove,
 }
-
-const enableRemovalMode = (): boolean => {
-  if (IModelApp && IModelApp.toolAdmin && IModelApp.toolAdmin.activeTool instanceof PrimitiveTool)
-    return IModelApp.toolAdmin.activeTool.iModel.selectionSet.isActive;
-  return false;
-};
-
-/** The property description used to generate ToolSettings UI. */
-const selectionOptionDescription = (): PropertyDescription => {
-  return {
-    name: "selectionOptions",
-    displayLabel: IModelApp.i18n.translate("CoreTools:tools.ElementSet.Prompts.Mode"),
-    typename: "enum",
-    editor: {
-      name: "enum-buttongroup",
-
-      params: [
-        {
-          type: PropertyEditorParamTypes.ButtonGroupData,
-          buttons: [
-            { iconClass: "icon icon-select-single" },
-            { iconClass: "icon icon-select-line" },
-            { iconClass: "icon icon-select-box" },
-            { iconClass: "icon icon-select-plus" },
-            { iconClass: "icon icon-select-minus", isEnabledFunction: enableRemovalMode },
-          ],
-        },
-      ],
-    },
-    enum: {
-      choices: [
-        { label: IModelApp.i18n.translate("CoreTools:tools.ElementSet.SelectionOptions.Pick"), value: SelectOptions.PickAndReplace },
-        { label: IModelApp.i18n.translate("CoreTools:tools.ElementSet.SelectionOptions.Line"), value: SelectOptions.LineAndReplace },
-        { label: IModelApp.i18n.translate("CoreTools:tools.ElementSet.SelectionOptions.Box"), value: SelectOptions.BoxAndReplace },
-        { label: IModelApp.i18n.translate("CoreTools:tools.ElementSet.SelectionOptions.Add"), value: SelectOptions.PickAndAdd },
-        { label: IModelApp.i18n.translate("CoreTools:tools.ElementSet.SelectionOptions.Remove"), value: SelectOptions.PickAndRemove },
-      ],
-    },
-  };
-};
 
 export const enum SelectionScope {
   /** Identified elements are selected. */
@@ -116,10 +76,9 @@ export class SelectionTool extends PrimitiveTool {
   public isSelectByPoints = false;
   public isSuspended = false;
   public readonly points: Point3d[] = [];
-  private _selectionMode: SelectionMode = SelectionMode.Replace;
-  private _selectionMethod: SelectionMethod = SelectionMethod.Pick;
-  private _selectionOptionValue: ToolSettingsValue = new ToolSettingsValue(SelectOptions.PickAndReplace);
-  private _selectionOptionDescription = selectionOptionDescription();
+  private _selectionMode = SelectionMode.Replace;
+  private _selectionMethod = SelectionMethod.Pick;
+  private _selectionOptionValue = new ToolSettingsValue(SelectOptions.PickAndReplace);
 
   public requireWriteableTarget(): boolean { return false; }
   public autoLockTarget(): void { } // NOTE: For selecting elements we only care about iModel, so don't lock target model automatically.
@@ -135,48 +94,86 @@ export class SelectionTool extends PrimitiveTool {
   protected getSelectionScope(): SelectionScope { return SelectionScope.Assembly; } // NEEDSWORK: Settings...
   protected wantToolSettings(): boolean { return true; }
 
+  private static optionMessage(str: string) { return IModelApp.i18n.translate("CoreTools:tools.ElementSet.SelectionOptions." + str); }
+  private static _optionsName = "selectionOptions";
+  /* The property description used to generate ToolSettings UI. */
+  private static _getOptionsDescription(): PropertyDescription {
+    return {
+      name: SelectionTool._optionsName,
+      displayLabel: IModelApp.i18n.translate("CoreTools:tools.ElementSet.Prompts.Mode"),
+      typename: "enum",
+      editor: {
+        name: "enum-buttongroup",
+        params: [
+          {
+            type: PropertyEditorParamTypes.ButtonGroupData,
+            buttons: [
+              { iconClass: "icon icon-select-single" },
+              { iconClass: "icon icon-select-line" },
+              { iconClass: "icon icon-select-box" },
+              { iconClass: "icon icon-select-plus" },
+              {
+                iconClass: "icon icon-select-minus",
+                isEnabledFunction: () => { const tool = IModelApp.toolAdmin.activeTool; return tool instanceof PrimitiveTool ? tool.iModel.selectionSet.isActive : false; },
+              },
+            ],
+          },
+        ],
+      },
+      enum: {
+        choices: [
+          { label: SelectionTool.optionMessage("Pick"), value: SelectOptions.PickAndReplace },
+          { label: SelectionTool.optionMessage("Line"), value: SelectOptions.LineAndReplace },
+          { label: SelectionTool.optionMessage("Box"), value: SelectOptions.BoxAndReplace },
+          { label: SelectionTool.optionMessage("Add"), value: SelectOptions.PickAndAdd },
+          { label: SelectionTool.optionMessage("Remove"), value: SelectOptions.PickAndRemove },
+        ],
+      },
+    };
+  }
+
   protected showPrompt(mode: SelectionMode, method: SelectionMethod): void {
+    let msg = "IdentifyElement";
     switch (mode) {
       case SelectionMode.Replace:
         switch (method) {
-          case SelectionMethod.Pick:
-            IModelApp.notifications.outputPromptByKey("CoreTools:tools.ElementSet.Prompts.IdentifyElement");
-            break;
           case SelectionMethod.Line:
-            IModelApp.notifications.outputPromptByKey("CoreTools:tools.ElementSet.Prompts.IdentifyLine");
+            msg = "IdentifyLine";
             break;
           case SelectionMethod.Box:
-            IModelApp.notifications.outputPromptByKey("CoreTools:tools.ElementSet.Prompts.IdentifyBox");
+            msg = "IdentifyBox";
             break;
         }
         break;
       case SelectionMode.Add:
         switch (method) {
           case SelectionMethod.Pick:
-            IModelApp.notifications.outputPromptByKey("CoreTools:tools.ElementSet.Prompts.IdentifyElementAdd");
+            msg = "IdentifyElementAdd";
             break;
           case SelectionMethod.Line:
-            IModelApp.notifications.outputPromptByKey("CoreTools:tools.ElementSet.Prompts.IdentifyLineAdd");
+            msg = "IdentifyLineAdd";
             break;
           case SelectionMethod.Box:
-            IModelApp.notifications.outputPromptByKey("CoreTools:tools.ElementSet.Prompts.IdentifyBoxAdd");
+            msg = "IdentifyBoxAdd";
             break;
         }
         break;
       case SelectionMode.Remove:
         switch (method) {
           case SelectionMethod.Pick:
-            IModelApp.notifications.outputPromptByKey("CoreTools:tools.ElementSet.Prompts.IdentifyElementRemove");
+            msg = "IdentifyElementRemove";
             break;
           case SelectionMethod.Line:
-            IModelApp.notifications.outputPromptByKey("CoreTools:tools.ElementSet.Prompts.IdentifyLineRemove");
+            msg = "IdentifyLineRemove";
             break;
           case SelectionMethod.Box:
-            IModelApp.notifications.outputPromptByKey("CoreTools:tools.ElementSet.Prompts.IdentifyBoxRemove");
+            msg = "IdentifyBoxRemove";
             break;
         }
         break;
     }
+
+    IModelApp.notifications.outputPromptByKey("CoreTools:tools.ElementSet.Prompts." + msg);
   }
 
   protected initSelectTool(): void {
@@ -556,7 +553,7 @@ export class SelectionTool extends PrimitiveTool {
       this.setSelectionMethod(SelectionMethod.Pick);
     }
 
-    const syncItem: ToolSettingsPropertySyncItem = { value: this._selectionOptionValue.clone(), propertyName: this._selectionOptionDescription.name };
+    const syncItem: ToolSettingsPropertySyncItem = { value: this._selectionOptionValue.clone(), propertyName: SelectionTool._optionsName };
     // tslint:disable-next-line:no-console
     // console.log(`SelectTool [syncSelectionOption] - sync UI with latest values ${JSON.stringify(syncItem)}`);
     this.syncToolSettingsProperties([syncItem]);
@@ -612,13 +609,13 @@ export class SelectionTool extends PrimitiveTool {
     if (!this.wantToolSettings())
       return undefined;
     const toolSettings = new Array<ToolSettingsPropertyRecord>();
-    toolSettings.push(new ToolSettingsPropertyRecord(this._selectionOptionValue.clone() as PrimitiveValue, this._selectionOptionDescription, { rowPriority: 0, columnPriority: 0, horizontalAlignment: TsHorizontalAlignment.Center }));
+    toolSettings.push(new ToolSettingsPropertyRecord(this._selectionOptionValue.clone() as PrimitiveValue, SelectionTool._getOptionsDescription(), { rowPriority: 0, columnPriority: 0, horizontalAlignment: TsHorizontalAlignment.Center }));
     return toolSettings;
   }
 
   /** Used to send changes from UI back to Tool */
   public applyToolSettingPropertyChange(updatedValue: ToolSettingsPropertySyncItem): boolean {
-    if (updatedValue.propertyName === this._selectionOptionDescription.name) {
+    if (updatedValue.propertyName === SelectionTool._optionsName) {
       // tslint:disable-next-line:no-console
       // console.log(`SelectTool [applyToolSettingPropertyChange] - update tool to match UI value ${JSON.stringify(updatedValue)}`);
 

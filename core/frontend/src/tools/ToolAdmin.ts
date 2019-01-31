@@ -44,7 +44,7 @@ export class ToolSettings {
   /** Number of screen inches of movement allowed between clicks to still qualify as a double-click.  */
   public static doubleClickToleranceInches = 0.05;
   /** Duration without movement before a no-motion event is generated. */
-  public static noMotionTimeout = BeDuration.fromMilliseconds(50);
+  public static noMotionTimeout = BeDuration.fromMilliseconds(10);
   /** If true, view rotation tool keeps the up vector (worldZ) aligned with screenY. */
   public static preserveWorldUp = true;
   /** Delay with a touch on the surface before a move operation begins. */
@@ -295,6 +295,7 @@ interface ToolEvent {
 
 /** Controls operation of Tools. Administers the current view, primitive, and idle tools. Forwards events to the appropriate tool. */
 export class ToolAdmin {
+  public markupView?: ScreenViewport;
   /** @hidden */
   public readonly currentInputState = new CurrentInputState();
   /** @hidden */
@@ -480,7 +481,7 @@ export class ToolAdmin {
       return EventHandled.Yes;
 
     const tool = this.activeTool;
-    if (undefined === tool || EventHandled.Yes !== await tool.onMouseWheel(wheelEvent))
+    if (undefined === tool || EventHandled.Yes !== await tool.onMouseWheel(wheelEvent) && vp !== this.markupView)
       return this.idleTool.onMouseWheel(wheelEvent);
     return EventHandled.Yes;
   }
@@ -1235,6 +1236,7 @@ export class ToolAdmin {
 
   /** @hidden */
   public startViewTool(newTool: ViewTool) {
+
     IModelApp.notifications.outputPrompt("");
     IModelApp.accuDraw.onViewToolInstall();
 
@@ -1543,7 +1545,7 @@ export class WheelEventProcessor {
         vp.npcToWorld(targetNpc, target);
       }
 
-      const cameraView = vp.view as ViewState3d;
+      const cameraView: ViewState3d = vp.view;
       const transform = Transform.createFixedPointAndMatrix(target, Matrix3d.createScale(zoomRatio, zoomRatio, zoomRatio));
       const oldCameraPos = cameraView.getEyePoint();
       const newCameraPos = transform.multiplyPoint3d(oldCameraPos);

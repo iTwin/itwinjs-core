@@ -1006,7 +1006,7 @@ export abstract class Viewport implements IDisposable {
   }
 
   /** @hidden */
-  public get AnalysisStyle(): AnalysisStyle | undefined { return this.view.analysisStyle; }
+  public get analysisStyle(): AnalysisStyle | undefined { return this.view.analysisStyle; }
   /** The iModel of this Viewport */
   public get iModel(): IModelConnection { return this.view.iModel; }
   /** @hidden */

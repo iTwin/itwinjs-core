@@ -76,14 +76,15 @@ export class IModelHost {
 
   private static checkVersion(): void {
     const requiredVersion = require("../package.json").dependencies["@bentley/imodeljs-native"];
-    if (semver.satisfies(this.platform.version, requiredVersion))
+    const thisVersion = this.platform.version;
+    if (semver.satisfies(thisVersion, requiredVersion))
       return;
     if (IModelJsFs.existsSync(path.join(__dirname, "DevBuild.txt"))) {
       console.log("Bypassing version checks for development build"); // tslint:disable-line:no-console
       return;
     }
     this._platform = undefined;
-    throw new IModelError(IModelStatus.BadRequest, "imodeljs-native version is (" + this.platform.version + "). imodeljs-backend requires version (" + requiredVersion + ")");
+    throw new IModelError(IModelStatus.BadRequest, "imodeljs-native version is (" + thisVersion + "). imodeljs-backend requires version (" + requiredVersion + ")");
   }
 
   /** @hidden */

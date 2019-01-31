@@ -4,16 +4,18 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Tools */
 
-import { BeButtonEvent, BeWheelEvent, CoordSource, InteractiveTool, EventHandled, BeTouchEvent, BeButton, InputSource } from "./Tool";
-import { Viewport, CoordSystem, DepthRangeNpc, ViewRect, ScreenViewport } from "../Viewport";
-import { Angle, Point3d, Vector3d, YawPitchRollAngles, Point2d, Vector2d, Matrix3d, Transform, Range3d } from "@bentley/geometry-core";
-import { Frustum, NpcCenter, Npc, ColorDef } from "@bentley/imodeljs-common";
-import { MarginPercent, ViewStatus, ViewState3d } from "../ViewState";
-import { IModelApp } from "../IModelApp";
-import { DecorateContext } from "../ViewContext";
+import { Angle, Matrix3d, Point2d, Point3d, Range3d, Transform, Vector2d, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
+import { ColorDef, Frustum, Npc, NpcCenter } from "@bentley/imodeljs-common";
 import { TentativeOrAccuSnap } from "../AccuSnap";
+import { IModelApp } from "../IModelApp";
 import { GraphicType } from "../rendering";
+import { DecorateContext } from "../ViewContext";
+import { CoordSystem, DepthRangeNpc, ScreenViewport, Viewport, ViewRect } from "../Viewport";
+import { MarginPercent, ViewState3d, ViewStatus } from "../ViewState";
+import { BeButton, BeButtonEvent, BeTouchEvent, BeWheelEvent, CoordSource, EventHandled, InputSource, InteractiveTool } from "./Tool";
 import { ToolSettings } from "./ToolAdmin";
+import { AccuDraw } from "../AccuDraw";
+import { StandardViewId } from "../StandardView";
 
 export const enum ViewHandleWeight {
   Thin = 1,
@@ -58,6 +60,11 @@ export abstract class ViewTool extends InteractiveTool {
   public endDynamicUpdate() { this.inDynamicUpdate = false; }
   public run(): boolean {
     const toolAdmin = IModelApp.toolAdmin;
+    if (undefined !== this.viewport && this.viewport === toolAdmin.markupView) {
+      IModelApp.notifications.outputPromptByKey("Viewing.NotDuringMarkup");
+      return false;
+    }
+
     if (!toolAdmin.onInstallTool(this))
       return false;
 
@@ -66,10 +73,13 @@ export abstract class ViewTool extends InteractiveTool {
     return true;
   }
 
+  public constructor(public viewport?: ScreenViewport) { super(); }
   public async onResetButtonUp(_ev: BeButtonEvent) { this.exitTool(); return EventHandled.Yes; }
 
   /** Do not override. */
   public exitTool(): void { IModelApp.toolAdmin.exitViewTool(); }
+  public static showPrompt(prompt: string) { IModelApp.notifications.outputPromptByKey("CoreTools:tools.View." + prompt); }
+
 }
 
 /** @hidden */
@@ -200,7 +210,6 @@ export class ViewHandleArray {
 
 /** Base class for tools that manipulate the frustum of a Viewport. */
 export abstract class ViewManip extends ViewTool {
-  public viewport?: ScreenViewport = undefined;
   public viewHandles: ViewHandleArray;
   public frustumValid = false;
   public readonly targetCenterWorld = new Point3d();
@@ -211,10 +220,9 @@ export abstract class ViewManip extends ViewTool {
   public targetCenterLocked = false;
   public nPts = 0;
   protected _forcedHandle = ViewHandleType.None;
-  public readonly lastFrustum = new Frustum();
 
   constructor(viewport: ScreenViewport | undefined, public handleMask: number, public oneShot: boolean, public isDraggingRequired: boolean = false) {
-    super();
+    super(viewport);
     this.viewHandles = new ViewHandleArray(this);
     this.changeViewport(viewport);
   }
@@ -237,7 +245,7 @@ export abstract class ViewManip extends ViewTool {
 
   public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
     // Tool was started in "drag required" mode, don't advance tool state and wait to see if we get the start drag event.
-    if (0 === this.nPts && this.isDraggingRequired && !this.isDragging)
+    if (0 === this.nPts && this.isDraggingRequired && !this.isDragging || undefined === ev.viewport)
       return EventHandled.No;
 
     switch (this.nPts) {
@@ -389,17 +397,6 @@ export abstract class ViewManip extends ViewTool {
       vp.invalidateDecorations();
     }
     this.viewHandles.empty();
-    this.viewport = undefined;
-  }
-
-  public frustumDidNotChange(): boolean {
-    const frust = this.viewport!.getWorldFrustum();
-    if (this.frustumValid && frust.equals(this.lastFrustum))
-      return true;
-
-    this.lastFrustum.setFrom(frust);
-    this.frustumValid = true;
-    return false;
   }
 
   public updateTargetCenter(): void {
@@ -586,21 +583,19 @@ export abstract class ViewManip extends ViewTool {
     return true;
   }
 
-  public changeViewport(vp: ScreenViewport | undefined): void {
-    // If viewport isn't really changing do nothing...
-    if (vp === this.viewport)
+  public changeViewport(vp?: ScreenViewport): void {
+    if (vp === this.viewport && 0 !== this.viewHandles.count) // If viewport isn't really changing do nothing...
       return;
 
-    if (undefined !== this.viewport) {
+    if (this.viewport) {
       this.viewport.invalidateDecorations(); // Remove decorations from current viewport...
       this.viewHandles.empty();
     }
 
-    // Set m_viewport to new viewport and return if new viewport is undefined...
-    if (undefined === (this.viewport = vp))
+    this.viewport = vp;
+    if (this.viewport === undefined)
       return;
 
-    // allocate and initialize handles array
     this.viewHandles.viewport = vp;
     this.targetCenterValid = false;
     this.updateTargetCenter();
@@ -755,7 +750,7 @@ class ViewPan extends ViewingToolHandle {
     }
 
     this.viewTool.beginDynamicUpdate();
-    IModelApp.notifications.outputPromptByKey("CoreTools:tools.View.Pan.Prompts.NextPoint");
+    ViewTool.showPrompt("Pan.Prompts.NextPoint");
     return true;
   }
 
@@ -825,7 +820,7 @@ class ViewRotate extends ViewingToolHandle {
     this._frustum.setFrom(this._activeFrustum);
 
     tool.beginDynamicUpdate();
-    IModelApp.notifications.outputPromptByKey("CoreTools:tools.View.Rotate.Prompts.NextPoint");
+    ViewTool.showPrompt("Rotate.Prompts.NextPoint");
     return true;
   }
 
@@ -930,7 +925,7 @@ class ViewLook extends ViewingToolHandle {
 
     vp.getWorldFrustum(this._frustum);
     tool.beginDynamicUpdate();
-    IModelApp.notifications.outputPromptByKey("CoreTools:tools.View.Look.Prompts.NextPoint");
+    ViewTool.showPrompt("Look.Prompts.NextPoint");
     return true;
   }
 
@@ -1032,7 +1027,7 @@ class ViewScroll extends ViewingToolHandle {
     this._anchorPtView.setFrom(ev.viewPoint);
     this._lastPtView.setFrom(ev.viewPoint);
     tool.beginDynamicUpdate();
-    IModelApp.notifications.outputPromptByKey("CoreTools:tools.View.Scroll.Prompts.NextPoint");
+    ViewTool.showPrompt("Scroll.Prompts.NextPoint");
     return true;
   }
 
@@ -1146,7 +1141,7 @@ class ViewZoom extends ViewingToolHandle {
         this._lastPtView.setFrom(this._anchorPtView);
         tool.viewport!.viewToNpc(this._anchorPtView, this._anchorPtNpc);
         tool.beginDynamicUpdate();
-        IModelApp.notifications.outputPromptByKey("CoreTools:tools.View.Zoom.Prompts.NextPoint");
+        ViewTool.showPrompt("Zoom.Prompts.NextPoint");
         return true;
       }
     }
@@ -1158,7 +1153,7 @@ class ViewZoom extends ViewingToolHandle {
     this._lastPtView.setFrom(this._anchorPtView);
     tool.viewport!.viewToNpc(this._anchorPtView, this._anchorPtNpc);
     tool.beginDynamicUpdate();
-    IModelApp.notifications.outputPromptByKey("CoreTools:tools.View.Zoom.Prompts.NextPoint");
+    ViewTool.showPrompt("Zoom.Prompts.NextPoint");
     return true;
   }
 
@@ -1556,7 +1551,7 @@ class ViewWalk extends ViewNavigate {
     this._navigateMotion = new NavigateMotion(this.viewTool.viewport!);
   }
   public get handleType(): ViewHandleType { return ViewHandleType.Walk; }
-  public firstPoint(ev: BeButtonEvent): boolean { IModelApp.notifications.outputPromptByKey("CoreTools:tools.View.Walk.Prompts.NextPoint"); return super.firstPoint(ev); }
+  public firstPoint(ev: BeButtonEvent): boolean { ViewTool.showPrompt("Walk.Prompts.NextPoint"); return super.firstPoint(ev); }
 
   protected getNavigateMotion(elapsedTime: number): NavigateMotion | undefined {
     const input = this.getInputVector();
@@ -1593,7 +1588,7 @@ class ViewFly extends ViewNavigate {
     this._navigateMotion = new NavigateMotion(this.viewTool.viewport!);
   }
   public get handleType(): ViewHandleType { return ViewHandleType.Fly; }
-  public firstPoint(ev: BeButtonEvent): boolean { IModelApp.notifications.outputPromptByKey("CoreTools:tools.View.Fly.Prompts.NextPoint"); return super.firstPoint(ev); }
+  public firstPoint(ev: BeButtonEvent): boolean { ViewTool.showPrompt("Fly.Prompts.NextPoint"); return super.firstPoint(ev); }
 
   protected getNavigateMotion(elapsedTime: number): NavigateMotion | undefined {
     const input = this.getInputVector();
@@ -1626,10 +1621,10 @@ class ViewFly extends ViewNavigate {
 /** The tool that performs a Pan view operation */
 export class PanViewTool extends ViewManip {
   public static toolId = "View.Pan";
-  constructor(vp: ScreenViewport, oneShot = false, isDraggingRequired = false) {
+  constructor(vp: ScreenViewport | undefined, oneShot = false, isDraggingRequired = false) {
     super(vp, ViewHandleType.Pan, oneShot, isDraggingRequired);
   }
-  public onReinitialize(): void { super.onReinitialize(); IModelApp.notifications.outputPromptByKey("CoreTools:tools.View.Pan.Prompts.FirstPoint"); }
+  public onReinitialize(): void { super.onReinitialize(); ViewTool.showPrompt("Pan.Prompts.FirstPoint"); }
 }
 
 /** A tool that performs a Rotate view operation */
@@ -1638,7 +1633,7 @@ export class RotateViewTool extends ViewManip {
   constructor(vp: ScreenViewport, oneShot = false, isDraggingRequired = false) {
     super(vp, ViewHandleType.Rotate | ViewHandleType.Pan | ViewHandleType.TargetCenter, oneShot, isDraggingRequired);
   }
-  public onReinitialize(): void { super.onReinitialize(); IModelApp.notifications.outputPromptByKey("CoreTools:tools.View.Rotate.Prompts.FirstPoint"); }
+  public onReinitialize(): void { super.onReinitialize(); ViewTool.showPrompt("Rotate.Prompts.FirstPoint"); }
 }
 
 /** A tool that performs the look operation */
@@ -1647,7 +1642,7 @@ export class LookViewTool extends ViewManip {
   constructor(vp: ScreenViewport, oneShot = false, isDraggingRequired = false) {
     super(vp, ViewHandleType.Look, oneShot, isDraggingRequired);
   }
-  public onReinitialize(): void { super.onReinitialize(); IModelApp.notifications.outputPromptByKey("CoreTools:tools.View.Look.Prompts.FirstPoint"); }
+  public onReinitialize(): void { super.onReinitialize(); ViewTool.showPrompt("Look.Prompts.FirstPoint"); }
 }
 
 /** A tool that performs the scroll operation */
@@ -1656,7 +1651,7 @@ export class ScrollViewTool extends ViewManip {
   constructor(vp: ScreenViewport, oneShot = false, isDraggingRequired = false) {
     super(vp, ViewHandleType.Scroll, oneShot, isDraggingRequired);
   }
-  public onReinitialize(): void { super.onReinitialize(); IModelApp.notifications.outputPromptByKey("CoreTools:tools.View.Scroll.Prompts.FirstPoint"); }
+  public onReinitialize(): void { super.onReinitialize(); ViewTool.showPrompt("Scroll.Prompts.FirstPoint"); }
 }
 
 /** A tool that performs the zoom operation */
@@ -1665,7 +1660,7 @@ export class ZoomViewTool extends ViewManip {
   constructor(vp: ScreenViewport, oneShot = false, isDraggingRequired = false) {
     super(vp, ViewHandleType.Zoom, oneShot, isDraggingRequired);
   }
-  public onReinitialize(): void { super.onReinitialize(); IModelApp.notifications.outputPromptByKey("CoreTools:tools.View.Zoom.Prompts.FirstPoint"); }
+  public onReinitialize(): void { super.onReinitialize(); ViewTool.showPrompt("Zoom.Prompts.FirstPoint"); }
 }
 
 /** A tool that performs the walk operation */
@@ -1674,7 +1669,7 @@ export class WalkViewTool extends ViewManip {
   constructor(vp: ScreenViewport, oneShot = false, isDraggingRequired = false) {
     super(vp, ViewHandleType.Walk, oneShot, isDraggingRequired);
   }
-  public onReinitialize(): void { super.onReinitialize(); IModelApp.notifications.outputPromptByKey("CoreTools:tools.View.Walk.Prompts.FirstPoint"); }
+  public onReinitialize(): void { super.onReinitialize(); ViewTool.showPrompt("Walk.Prompts.FirstPoint"); }
 }
 
 /** A tool that performs the fly operation */
@@ -1683,17 +1678,16 @@ export class FlyViewTool extends ViewManip {
   constructor(vp: ScreenViewport, oneShot = false, isDraggingRequired = false) {
     super(vp, ViewHandleType.Fly, oneShot, isDraggingRequired);
   }
-  public onReinitialize(): void { super.onReinitialize(); IModelApp.notifications.outputPromptByKey("CoreTools:tools.View.Fly.Prompts.FirstPoint"); }
+  public onReinitialize(): void { super.onReinitialize(); ViewTool.showPrompt("Fly.Prompts.FirstPoint"); }
 }
 
 /** A tool that performs a fit view */
 export class FitViewTool extends ViewTool {
   public static toolId = "View.Fit";
-  public viewport: ScreenViewport;
   public oneShot: boolean;
   public doAnimate: boolean;
   constructor(viewport: ScreenViewport, oneShot: boolean, doAnimate = true) {
-    super();
+    super(viewport);
     this.viewport = viewport;
     this.oneShot = oneShot;
     this.doAnimate = doAnimate;
@@ -1708,8 +1702,8 @@ export class FitViewTool extends ViewTool {
 
   public onPostInstall() {
     super.onPostInstall();
-    if (undefined === this.viewport || !this.oneShot)
-      IModelApp.notifications.outputPromptByKey("CoreTools:tools.View.Fit.Prompts.FirstPoint");
+    if (!this.oneShot)
+      ViewTool.showPrompt("Fit.Prompts.FirstPoint");
 
     if (this.viewport)
       this.doFit(this.viewport, this.oneShot, this.doAnimate);
@@ -1723,6 +1717,33 @@ export class FitViewTool extends ViewTool {
   }
 }
 
+/** A tool that rotates the view to one of the standard views. */
+export class StandardViewTool extends ViewTool {
+  public static toolId = "View.Standard";
+  constructor(viewport: ScreenViewport, private _standardViewId: StandardViewId) { super(viewport); }
+
+  public onPostInstall() {
+    super.onPostInstall();
+    if (this.viewport) {
+      const id = this._standardViewId;
+      const vp = this.viewport;
+      const rMatrix = AccuDraw.getStandardRotation(id, vp, vp.isContextRotationRequired);
+      const inverse = rMatrix.inverse();
+      if (undefined !== inverse) {
+        const targetMatrix = inverse.multiplyMatrixMatrix(vp.rotation);
+        const rotateTransform = Transform.createFixedPointAndMatrix(vp.view.getTargetPoint(), targetMatrix);
+        const startFrustum = vp.getFrustum();
+        const newFrustum = startFrustum.clone();
+        newFrustum.multiply(rotateTransform);
+        vp.animateFrustumChange(startFrustum, newFrustum);
+        vp.view.setupFromFrustum(newFrustum);
+        vp.synchWithView(true);
+      }
+    }
+    this.exitTool();
+  }
+}
+
 /** A tool that performs a Window-area view operation */
 export class WindowAreaTool extends ViewTool {
   public static toolId = "View.WindowArea";
@@ -1730,15 +1751,12 @@ export class WindowAreaTool extends ViewTool {
   private _firstPtWorld: Point3d = Point3d.create();
   private _secondPtWorld: Point3d = Point3d.create();
   private _lastPtView?: Point3d;
-  private _viewport: Viewport;
   private _corners = [new Point3d(), new Point3d()];
   private _shapePts = [new Point3d(), new Point3d(), new Point3d(), new Point3d(), new Point3d()];
   private _fillColor = ColorDef.from(0, 0, 255, 200);
 
-  constructor(viewport: Viewport) { super(); this._viewport = viewport; }
-
-  public onPostInstall() { super.onPostInstall(); IModelApp.notifications.outputPromptByKey("CoreTools:tools.View.WindowArea.Prompts.FirstPoint"); }
-  public onReinitialize() { this._haveFirstPoint = false; this._firstPtWorld.setZero(); this._secondPtWorld.setZero(); IModelApp.notifications.outputPromptByKey("CoreTools:tools.View.WindowArea.Prompts.FirstPoint"); }
+  public onPostInstall() { super.onPostInstall(); ViewTool.showPrompt("WindowArea.Prompts.FirstPoint"); }
+  public onReinitialize() { this._haveFirstPoint = false; this._firstPtWorld.setZero(); this._secondPtWorld.setZero(); ViewTool.showPrompt("WindowArea.Prompts.FirstPoint"); }
   public async onResetButtonUp(ev: BeButtonEvent): Promise<EventHandled> { if (this._haveFirstPoint) { this.onReinitialize(); return EventHandled.Yes; } return super.onResetButtonUp(ev); }
 
   public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
@@ -1746,13 +1764,13 @@ export class WindowAreaTool extends ViewTool {
       this._secondPtWorld.setFrom(ev.point);
       this.doManipulation(ev, false);
       this.onReinitialize();
-      this._viewport.invalidateDecorations();
+      this.viewport!.invalidateDecorations();
     } else {
       this._firstPtWorld.setFrom(ev.point);
       this._secondPtWorld.setFrom(this._firstPtWorld);
       this._haveFirstPoint = true;
       this._lastPtView = ev.viewPoint;
-      IModelApp.notifications.outputPromptByKey("CoreTools:tools.View.WindowArea.Prompts.NextPoint");
+      ViewTool.showPrompt("WindowArea.Prompts.NextPoint");
     }
 
     return EventHandled.Yes;
@@ -1766,7 +1784,7 @@ export class WindowAreaTool extends ViewTool {
   public async onTouchCancel(ev: BeTouchEvent): Promise<void> { if (this._haveFirstPoint) return IModelApp.toolAdmin.convertTouchEndToButtonUp(ev, BeButton.Reset); }
 
   private computeWindowCorners(): Point3d[] | undefined {
-    const vp = this._viewport;
+    const vp = this.viewport!;
     const corners = this._corners;
 
     corners[0].setFrom(this._firstPtWorld);
@@ -1777,7 +1795,7 @@ export class WindowAreaTool extends ViewTool {
     if (delta.magnitudeXY() < vp.pixelsFromInches(ToolSettings.startDragDistanceInches))
       return undefined;
 
-    const currentDelta = this._viewport.viewDelta;
+    const currentDelta = vp.viewDelta;
     if (currentDelta.x === 0 || delta.x === 0)
       return undefined;
 
@@ -1803,7 +1821,8 @@ export class WindowAreaTool extends ViewTool {
   }
 
   public decorate(context: DecorateContext): void {
-    const color = this._viewport.getContrastToBackgroundColor();
+    const vp = this.viewport!;
+    const color = vp.getContrastToBackgroundColor();
     if (this._haveFirstPoint) {
       const corners = this.computeWindowCorners();
       if (undefined === corners)
@@ -1815,7 +1834,7 @@ export class WindowAreaTool extends ViewTool {
       this._shapePts[2].y = this._shapePts[3].y = corners[1].y;
       this._shapePts[0].z = this._shapePts[1].z = this._shapePts[2].z = this._shapePts[3].z = corners[0].z;
       this._shapePts[4].setFrom(this._shapePts[0]);
-      this._viewport.viewToWorldArray(this._shapePts);
+      vp.viewToWorldArray(this._shapePts);
 
       const builder = context.createGraphicBuilder(GraphicType.WorldOverlay);
 
@@ -1836,7 +1855,7 @@ export class WindowAreaTool extends ViewTool {
       return;
 
     const cursorPt = this._lastPtView.clone(); cursorPt.x = Math.floor(cursorPt.x) + 0.5; cursorPt.y = Math.floor(cursorPt.y) + 0.5;
-    const viewRect = this._viewport.viewRect;
+    const viewRect = vp.viewRect;
 
     const drawDecoration = (ctx: CanvasRenderingContext2D) => {
       ctx.beginPath();
@@ -1864,7 +1883,7 @@ export class WindowAreaTool extends ViewTool {
       return;
 
     let delta: Vector3d;
-    const vp = this._viewport;
+    const vp = this.viewport!;
     const startFrust = vp.getWorldFrustum();
     vp.viewToWorldArray(corners);
 
@@ -2132,12 +2151,10 @@ export class DefaultViewTouchTool extends ViewManip {
 /** A tool that performs view undo operation. An application could also just call Viewport.doUndo directly, creating a ViewTool isn't required. */
 export class ViewUndoTool extends ViewTool {
   public static toolId = "View.Undo";
-  private _viewport: ScreenViewport;
-
-  constructor(vp: ScreenViewport) { super(); this._viewport = vp; }
 
   public onPostInstall() {
-    this._viewport.doUndo(ToolSettings.animationTime);
+    if (this.viewport)
+      this.viewport.doUndo(ToolSettings.animationTime);
     this.exitTool();
   }
 }
@@ -2145,12 +2162,10 @@ export class ViewUndoTool extends ViewTool {
 /** A tool that performs view redo operation. An application could also just call Viewport.doRedo directly, creating a ViewTool isn't required. */
 export class ViewRedoTool extends ViewTool {
   public static toolId = "View.Redo";
-  private _viewport: ScreenViewport;
-
-  constructor(vp: ScreenViewport) { super(); this._viewport = vp; }
 
   public onPostInstall() {
-    this._viewport.doRedo(ToolSettings.animationTime);
+    if (this.viewport)
+      this.viewport.doRedo(ToolSettings.animationTime);
     this.exitTool();
   }
 }
@@ -2158,19 +2173,19 @@ export class ViewRedoTool extends ViewTool {
 /** A tool that toggles the camera on/off in a spatial view */
 export class ViewToggleCameraTool extends ViewTool {
   public static toolId = "View.ToggleCamera";
-  private _viewport: Viewport;
 
-  constructor(viewport: Viewport) { super(); this._viewport = viewport; }
-
-  public onInstall(): boolean { return (undefined !== this._viewport && this._viewport.view.allow3dManipulations()); }
+  public onInstall(): boolean { return (undefined !== this.viewport && this.viewport.view.allow3dManipulations()); }
 
   public onPostInstall(): void {
-    if (this._viewport.isCameraOn)
-      (this._viewport.view as ViewState3d).turnCameraOff();
-    else
-      this._viewport.turnCameraOn();
+    if (this.viewport) {
+      const vp = this.viewport;
+      if (vp.isCameraOn)
+        (vp.view as ViewState3d).turnCameraOff();
+      else
+        vp.turnCameraOn();
 
-    this._viewport.synchWithView(true);
+      vp.synchWithView(true);
+    }
     this.exitTool();
   }
 }

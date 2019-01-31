@@ -2,34 +2,12 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-
+import { AngleSweep, Arc3d, Point2d, Point3d, XAndY, XYAndZ } from "@bentley/geometry-core";
+import { AxisAlignedBox3d, ColorByName, ColorDef } from "@bentley/imodeljs-common";
 import {
-  imageElementFromUrl,
-  BeButton,
-  BeButtonEvent,
-  Cluster,
-  DecorateContext,
-  GraphicType,
-  IModelApp,
-  Marker,
-  MarkerImage,
-  MarkerSet,
-  MessageBoxIconType,
-  MessageBoxType,
+  BeButton, BeButtonEvent, Cluster, DecorateContext, GraphicType, imageElementFromUrl,
+  IModelApp, Marker, MarkerImage, MarkerSet, MessageBoxIconType, MessageBoxType,
 } from "@bentley/imodeljs-frontend";
-import {
-  AxisAlignedBox3d,
-  ColorByName,
-  ColorDef,
-} from "@bentley/imodeljs-common";
-import {
-  AngleSweep,
-  Arc3d,
-  Point2d,
-  Point3d,
-  XAndY,
-  XYAndZ,
-} from "@bentley/geometry-core";
 
 /** Example Marker to show an *incident*. Each incident has an *id*, a *severity*, and an *icon*. */
 class IncidentMarker extends Marker {
@@ -57,16 +35,6 @@ class IncidentMarker extends Marker {
     }
     return true;
   }
-
-  // /** draw a filled square with the incident color and a white outline */
-  // public drawFunc(ctx: CanvasRenderingContext2D) {
-  //   ctx.beginPath();
-  //   ctx.fillStyle = this._color.toHexString();
-  //   ctx.rect(-11, -11, 20, 20);
-  //   ctx.fill();
-  //   ctx.strokeStyle = "white";
-  //   ctx.stroke();
-  // }
 
   /** Create a new IncidentMarker */
   constructor(location: XYAndZ, public severity: number, public id: number, icon: Promise<HTMLImageElement>) {
@@ -160,12 +128,12 @@ class IncidentMarkerSet extends MarkerSet<IncidentMarker> {
  * "incidents" at random locations within the ProjectExtents. For each incident, it creates an IncidentMarker with an Id and
  * with a random value between 1-30 for "severity", and one of 5 possible icons.
  */
-class IncidentMarkerDemo {
+export class IncidentMarkerDemo {
   public static warningSign?: HTMLImageElement;
   private _incidents = new IncidentMarkerSet();
   private static _decorator?: IncidentMarkerDemo; // static variable just so we can tell if the demo is active.
 
-  public constructor(extents: AxisAlignedBox3d) {
+  private constructor(extents: AxisAlignedBox3d) {
     const markerIcons = [
       imageElementFromUrl("Hazard_biological.svg"),
       imageElementFromUrl("Hazard_electric.svg"),
@@ -195,7 +163,7 @@ class IncidentMarkerDemo {
   /** Turn the markers on and off. Each time it runs it creates a new random set of incidents. */
   public static toggle(extents: AxisAlignedBox3d) {
     if (undefined === IncidentMarkerDemo._decorator) {
-      // start the demo by creating the demo object and adding it as a ViewManager decorator.
+      // start the demo by creating the IncidentMarkerDemo object and adding it as a ViewManager decorator.
       IncidentMarkerDemo._decorator = new IncidentMarkerDemo(extents);
       IModelApp.viewManager.addDecorator(IncidentMarkerDemo._decorator);
     } else {
@@ -204,8 +172,4 @@ class IncidentMarkerDemo {
       IncidentMarkerDemo._decorator = undefined;
     }
   }
-}
-
-export function toggleIncidentMarkers(extents: AxisAlignedBox3d): void {
-  IncidentMarkerDemo.toggle(extents);
 }
