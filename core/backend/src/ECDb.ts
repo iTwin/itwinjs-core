@@ -126,12 +126,15 @@ export class ECDb implements IDisposable {
    */
   public withPreparedStatement<T>(ecsql: string, cb: (stmt: ECSqlStatement) => T): T {
     const stmt = this.getPreparedStatement(ecsql);
+    const release = () => this._statementCache.release(stmt);
     try {
       const val: T = cb(stmt);
-      this._statementCache.release(stmt);
+      if (val instanceof Promise) {
+        val.then(release, release);
+      }
       return val;
     } catch (err) {
-      this._statementCache.release(stmt);
+      release();
       Logger.logError(loggingCategory, err.toString());
       throw err;
     }
@@ -180,12 +183,15 @@ export class ECDb implements IDisposable {
    */
   public withPreparedSqliteStatement<T>(sql: string, cb: (stmt: SqliteStatement) => T): T {
     const stmt = this.getPreparedSqliteStatement(sql);
+    const release = () => this._sqliteStatementCache.release(stmt);
     try {
       const val: T = cb(stmt);
-      this._sqliteStatementCache.release(stmt);
+      if (val instanceof Promise) {
+        val.then(release, release);
+      }
       return val;
     } catch (err) {
-      this._sqliteStatementCache.release(stmt);
+      release();
       Logger.logError(loggingCategory, err.toString());
       throw err;
     }

@@ -266,6 +266,30 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    */
   public step(): DbResult { return this._stmt!.step(); }
 
+  /** Asynchronous version of Step method.
+   *
+   *  For **ECSQL SELECT** statements the method returns
+   *  - [DbResult.BE_SQLITE_ROW]($bentleyjs-core) if the statement now points successfully to the next row.
+   *  - [DbResult.BE_SQLITE_DONE]($bentleyjs-core) if the statement has no more rows.
+   *  - Error status in case of errors.
+   *
+   *  For **ECSQL INSERT, UPDATE, DELETE** statements the method returns
+   *  - [DbResult.BE_SQLITE_DONE]($bentleyjs-core) if the statement has been executed successfully.
+   *  - Error status in case of errors.
+   *
+   *  >  Insert statements can be used with ECDb only, not with IModelDb.
+   *
+   * See also: [Code Samples]($docs/learning/backend/ECSQLCodeExamples)
+   */
+  public async stepAsync(): Promise<DbResult> {
+    return new Promise<DbResult>((resolve, reject) => {
+      if (!this._stmt)
+        reject();
+      else
+        this._stmt.stepAsync(resolve);
+    });
+  }
+
   /** Step this INSERT statement and returns status and the ECInstanceId of the newly
    * created instance.
    *
@@ -280,6 +304,29 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
       return new ECSqlInsertResult(r.status, r.id);
 
     return new ECSqlInsertResult(r.status);
+  }
+
+  /** Asynchronous version of stepForInsert method
+   * created instance.
+   *
+   * > Insert statements can be used with ECDb only, not with IModelDb.
+   *
+   * @returns Returns the generated ECInstanceId in case of success and the status of the step
+   * call. In case of error, the respective error code is returned.
+   */
+  public async stepForInsertAsync(): Promise<ECSqlInsertResult> {
+    return new Promise<ECSqlInsertResult>((resolve, reject) => {
+      if (!this._stmt)
+        reject();
+      else {
+        this._stmt.stepForInsertAsync((r: { status: DbResult, id: string }) => {
+          if (r.status === DbResult.BE_SQLITE_DONE)
+            resolve(new ECSqlInsertResult(r.status, r.id));
+          else
+            resolve(new ECSqlInsertResult(r.status));
+        });
+      }
+    });
   }
 
   /** Get the query result's column count (only for ECSQL SELECT statements). */

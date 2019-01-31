@@ -18,6 +18,30 @@ describe("ECSqlStatement", () => {
   const testRange = new Range3d(1.2, 2.3, 3.4, 4.5, 5.6, 6.7);
   const blobVal = new Uint8Array(testRange.toFloat64Array().buffer);
 
+  it("Asynchronous step and stepForInsert Methods", async () => {
+    await using(ECDbTestHelper.createECDb(_outDir, "asyncmethodtest.ecdb",
+      `<ECSchema schemaName="Test" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+        <ECEntityClass typeName="Foo" modifier="Sealed">
+          <ECProperty propertyName="n" typeName="int"/>
+          <ECProperty propertyName="dt" typeName="dateTime"/>
+          <ECProperty propertyName="fooId" typeName="long" extendedTypeName="Id"/>
+        </ECEntityClass>
+      </ECSchema>`), async (ecdb: ECDb) => {
+        assert.isTrue(ecdb.isOpen);
+
+        const r: ECSqlInsertResult = await ecdb.withPreparedStatement("INSERT INTO ts.Foo(n,dt,fooId) VALUES(20,TIMESTAMP '2018-10-18T12:00:00Z',20)", async (stmt: ECSqlStatement) => {
+          return stmt.stepForInsertAsync();
+        });
+        assert.equal(r.status, DbResult.BE_SQLITE_DONE);
+        assert.equal(r.id, "0x1");
+
+        const s: DbResult = await ecdb.withPreparedStatement("SELECT n, dt, fooId FROM ts.Foo", async (stmt: ECSqlStatement) => {
+          return stmt.stepAsync();
+        });
+        assert.equal(s, DbResult.BE_SQLITE_ROW);
+      });
+  });
+
   it("Bind Ids", () => {
     using(ECDbTestHelper.createECDb(_outDir, "bindids.ecdb"), (ecdb: ECDb) => {
 

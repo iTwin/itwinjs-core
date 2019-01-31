@@ -190,7 +190,9 @@ export declare namespace IModelJsNative {
     public getBinder(param: number | string): ECSqlBinder;
     public clearBindings(): DbResult;
     public step(): DbResult;
+    public stepAsync(callback: (result: DbResult) => void): void;
     public stepForInsert(): { status: DbResult, id: string };
+    public stepForInsertAsync(callback: (result: { status: DbResult, id: string }) => void): void;
     public getValue(columnIndex: number): ECSqlValue;
     public getColumnCount(): number;
   }
@@ -270,6 +272,7 @@ export declare namespace IModelJsNative {
     public bindGuid(param: number | string, guidStr: GuidString): DbResult;
     public clearBindings(): DbResult;
     public step(): DbResult;
+    public stepAsync(callback: (result: DbResult) => void): void;
     public getColumnCount(): number;
     public getColumnType(columnIndex: number): number;
     public getColumnName(columnIndex: number): string;

@@ -17,6 +17,35 @@ describe("SqliteStatement", () => {
   const doubleVal: number = -2.5;
   const blobVal = new Uint8Array(new Range3d(1.2, 2.3, 3.4, 4.5, 5.6, 6.7).toFloat64Array().buffer);
 
+  it("Asynchronous step", async () => {
+    await using(ECDbTestHelper.createECDb(_outDir, "testAsync.ecdb"), async (ecdb: ECDb) => {
+      assert.isTrue(ecdb.isOpen);
+
+      let r: DbResult;
+      r = await ecdb.withPreparedSqliteStatement("CREATE TABLE MyTable(id INTEGER PRIMARY KEY, stringcol TEXT)", (stmt: SqliteStatement) => {
+        return stmt.stepAsync();
+      });
+      assert.equal(r, DbResult.BE_SQLITE_DONE);
+
+      r = await ecdb.withPreparedSqliteStatement("INSERT INTO MyTable(stringcol) VALUES('test1')", (stmt: SqliteStatement) => {
+        return stmt.stepAsync();
+      });
+      assert.equal(r, DbResult.BE_SQLITE_DONE);
+
+      r = await ecdb.withPreparedSqliteStatement("INSERT INTO MyTable(stringcol) VALUES('test2')", (stmt: SqliteStatement) => {
+        return stmt.stepAsync();
+      });
+      assert.equal(r, DbResult.BE_SQLITE_DONE);
+
+      const stringCol = await ecdb.withPreparedSqliteStatement("SELECT stringcol FROM MyTable", async (stmt: SqliteStatement) => {
+        const rv = await stmt.stepAsync();
+        assert.equal(rv, DbResult.BE_SQLITE_ROW);
+        return stmt.getValue(0).getString();
+      });
+      assert.equal(stringCol, "test1");
+    });
+  });
+
   it("Create Table, Insert, Select with ECDb", () => {
     using(ECDbTestHelper.createECDb(_outDir, "sqlitestatement.ecdb"), (ecdb: ECDb) => {
       assert.isTrue(ecdb.isOpen);
