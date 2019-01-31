@@ -129,9 +129,12 @@ export namespace RenderScheduleState {
 
     private getVisibilityOverride(time: number, interval: Interval): number {
       if (!ElementTimeline.findTimelineInterval(interval, time, this.visibilityTimeline) && this.visibilityTimeline![interval.index0].value !== null)
-        return 1.0;
+        return 100.0;
       const timeline = this.visibilityTimeline!;
       let visibility = timeline[interval.index0].value;
+      if (visibility === undefined || visibility === null)
+        return 100.0;
+
       if (interval.fraction > 0)
         visibility = interpolate(visibility, timeline[interval.index1].value, interval.fraction);
 
