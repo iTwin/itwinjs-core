@@ -9,7 +9,7 @@ import { ShaderProgram, ShaderProgramExecutor } from "./ShaderProgram";
 import { TechniqueId, computeCompositeTechniqueId } from "./TechniqueId";
 import { TechniqueFlags, FeatureMode, ClipDef } from "./TechniqueFlags";
 import { ProgramBuilder, FragmentShaderComponent, ClippingShaders } from "./ShaderBuilder";
-import { DrawParams, DrawCommands } from "./DrawCommand";
+import { DrawParams, DrawCommands, OmitStatus } from "./DrawCommand";
 import { Target } from "./Target";
 import { RenderPass } from "./RenderFlags";
 import { createClearTranslucentProgram } from "./glsl/ClearTranslucent";
@@ -427,9 +427,12 @@ export class Techniques implements IDisposable {
 
     const flags = this._scratchTechniqueFlags;
     using(new ShaderProgramExecutor(target, renderPass), (executor: ShaderProgramExecutor) => {
+      let omitCounter = 0;
       for (const command of commands) {
+        const omitStatus = command.getOmitStatus(target);
+        if ((omitCounter += omitStatus) !== 0 || omitStatus !== OmitStatus.Neutral)
+          continue;
         command.preExecute(executor);
-
         const techniqueId = command.getTechniqueId(target);
         if (TechniqueId.Invalid !== techniqueId) {
           // A primitive command.

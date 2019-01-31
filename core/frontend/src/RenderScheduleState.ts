@@ -127,7 +127,7 @@ export namespace RenderScheduleState {
       return true;
     }
 
-    private getVisibilityOverride(time: number, interval: Interval): number {
+    public getVisibilityOverride(time: number, interval: Interval): number {
       if (!ElementTimeline.findTimelineInterval(interval, time, this.visibilityTimeline) && this.visibilityTimeline![interval.index0].value !== null)
         return 100.0;
       const timeline = this.visibilityTimeline!;
@@ -165,9 +165,6 @@ export namespace RenderScheduleState {
         overrides.overrideAnimationNode(batchId, FeatureSymbology.Appearance.fromJSON({ rgb: colorOverride, transparency: transparencyOverride }));
     }
     public getAnimationTransform(time: number, interval: Interval): Transform | undefined {
-      if (this.getVisibilityOverride(time, interval) <= 0.0)
-        return undefined;
-
       if (!ElementTimeline.findTimelineInterval(interval, time, this.transformTimeline) || this.transformTimeline![interval.index0].value === null)
         return undefined;
 
@@ -207,8 +204,6 @@ export namespace RenderScheduleState {
         this.currentClip.dispose();
         this.currentClip = undefined;
       }
-      if (this.getVisibilityOverride(time, interval) <= 0.0)
-        return undefined;
       if (!ElementTimeline.findTimelineInterval(interval, time, this.cuttingPlaneTimeline) || this.cuttingPlaneTimeline![interval.index0].value === null)
         return undefined;
 
@@ -306,10 +301,15 @@ export namespace RenderScheduleState {
     public getAnimationBranches(branches: AnimationBranchStates, scheduleTime: number) {
       const interval = new Interval();
       for (let i = 0; i < this.elementTimelines.length; i++) {
-        const transform = this.elementTimelines[i].getAnimationTransform(scheduleTime, interval);
-        const clip = this.elementTimelines[i].getAnimationClip(scheduleTime, interval);
-        if (transform || clip)
-          branches.set(this.modelId + "_Node_" + (i + 1).toString(), new AnimationBranchState(transform, clip));
+        const elementTimeline = this.elementTimelines[i];
+        if (elementTimeline.getVisibilityOverride(scheduleTime, interval) <= 0.0) {
+          branches.set(this.modelId + "_Node_" + (i + 1).toString(), new AnimationBranchState(undefined, undefined, true));
+        } else {
+          const transform = elementTimeline.getAnimationTransform(scheduleTime, interval);
+          const clip = elementTimeline.getAnimationClip(scheduleTime, interval);
+          if (transform || clip)
+            branches.set(this.modelId + "_Node_" + (i + 1).toString(), new AnimationBranchState(transform, clip));
+        }
       }
     }
   }

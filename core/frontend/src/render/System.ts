@@ -958,9 +958,10 @@ export abstract class RenderSystem implements IDisposable {
 
 /** Clip/Transform for a branch that are varied over time. */
 export class AnimationBranchState {
+  public readonly omit?: boolean;
   public readonly transform?: Transform;
   public readonly clip?: ClipPlanesVolume;
-  constructor(transform?: Transform, clip?: ClipPlanesVolume) { this.transform = transform; this.clip = clip; }
+  constructor(transform?: Transform, clip?: ClipPlanesVolume, omit?: boolean) { this.transform = transform; this.clip = clip; this.omit = omit; }
 }
 
 /** Mapping from node/branch IDs to animation branch state  */

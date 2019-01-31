@@ -57,7 +57,7 @@ export class SyncFlags {
   public get isValidAnimationFraction(): boolean { return this._animationFraction; }
   public get isRedrawPending(): boolean { return this._redrawPending; }
   public invalidateDecorations(): void { this._decorations = false; }
-  public invalidateScene(): void { this._scene = false; this.invalidateDecorations(); }
+  public invalidateScene(): void { this._scene = false; this.invalidateDecorations(); this.invalidateAnimationFraction(); }
   public invalidateRenderPlan(): void { this._renderPlan = false; this.invalidateScene(); }
   public invalidateController(): void { this._controller = false; this.invalidateRenderPlan(); }
   public invalidateRotatePoint(): void { this._rotatePoint = false; }

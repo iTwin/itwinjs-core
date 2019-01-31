@@ -16,7 +16,7 @@ import { ShaderProgramExecutor } from "./ShaderProgram";
 import { RenderPass, RenderOrder, CompositeFlags } from "./RenderFlags";
 import { Target } from "./Target";
 import { BranchStack, BatchState } from "./BranchState";
-import { GraphicList, Decorations, RenderGraphic } from "../System";
+import { GraphicList, Decorations, RenderGraphic, AnimationBranchState } from "../System";
 import { TechniqueId } from "./TechniqueId";
 import { SurfacePrimitive, SurfaceGeometry } from "./Surface";
 import { SurfaceType } from "../primitives/VertexTable";
@@ -105,6 +105,12 @@ export const enum PushOrPop {
  * to draw a primitive; others involve state changes such as pushing/popping transforms
  * and symbology overrides, which require that commands be executed in order.
  */
+export const enum OmitStatus {
+  Neutral = 0,
+  Begin = 1,
+  End = -1,
+}
+
 export abstract class DrawCommand {
   public preExecute(_exec: ShaderProgramExecutor): void { }
   public abstract execute(_exec: ShaderProgramExecutor): void;
@@ -121,6 +127,7 @@ export abstract class DrawCommand {
   public get hasAnimation(): boolean { return undefined !== this.primitive ? this.primitive.hasAnimation : false; }
   public getRenderPass(target: Target): RenderPass { return undefined !== this.primitive ? this.primitive.getRenderPass(target) : RenderPass.None; }
   public getTechniqueId(target: Target): TechniqueId { return undefined !== this.primitive ? this.primitive.getTechniqueId(target) : TechniqueId.Invalid; }
+  public getOmitStatus(_target: Target) { return OmitStatus.Neutral; }
 
   public isPushCommand(branch?: Branch) {
     return PushOrPop.Push === this.pushOrPop && (undefined === branch || this.branch === branch);
@@ -147,22 +154,28 @@ class BranchCommand extends DrawCommand {
     this._branch = branch;
     this._pushOrPop = pushOrPop;
   }
+  private getAnimationBranch(target: Target): AnimationBranchState | undefined {
+    return (this._branch.branch.animationId && target.animationBranches) ? target.animationBranches.get(this._branch.branch.animationId) : undefined;
+  }
+
+  public getOmitStatus(target: Target): OmitStatus {
+    const animationBranch = this.getAnimationBranch(target);
+    return (animationBranch && animationBranch.omit) ? (this._pushOrPop === PushOrPop.Push ? OmitStatus.Begin : OmitStatus.End) : OmitStatus.Neutral;
+  }
 
   public preExecute(_exec: ShaderProgramExecutor): void {
-    if (this._branch.branch.animationId && _exec.target.animationBranches) {
-      const animationBranch = _exec.target.animationBranches.get(this._branch.branch.animationId);
-      if (animationBranch) {
-        if (animationBranch.transform) {
-          let branchTransform = animationBranch.transform;
-          const prevLocalToWorld = _exec.target.currentTransform;
-          const prevWorldToLocal = prevLocalToWorld.inverse();
-          if (prevLocalToWorld && prevWorldToLocal)
-            branchTransform = prevWorldToLocal.multiplyTransformTransform(branchTransform.multiplyTransformTransform(prevLocalToWorld));
-          this._branch.localToWorldTransform = branchTransform;
-        }
-        if (animationBranch.clip)
-          this._branch.clips = animationBranch.clip;
+    const animationBranch = this.getAnimationBranch(_exec.target);
+    if (animationBranch) {
+      if (animationBranch.transform) {
+        let branchTransform = animationBranch.transform;
+        const prevLocalToWorld = _exec.target.currentTransform;
+        const prevWorldToLocal = prevLocalToWorld.inverse();
+        if (prevLocalToWorld && prevWorldToLocal)
+          branchTransform = prevWorldToLocal.multiplyTransformTransform(branchTransform.multiplyTransformTransform(prevLocalToWorld));
+        this._branch.localToWorldTransform = branchTransform;
       }
+      if (animationBranch.clip)
+        this._branch.clips = animationBranch.clip;
     }
   }
 
