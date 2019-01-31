@@ -16,7 +16,7 @@ interface BooleanEditorState {
 }
 
 /** BooleanEditor React component that is a property editor with checkbox input  */
-export class BooleanEditor extends React.Component<PropertyEditorProps, BooleanEditorState> implements TypeEditor {
+export class BooleanEditor extends React.PureComponent<PropertyEditorProps, BooleanEditorState> implements TypeEditor {
   private _checkboxElement: HTMLInputElement | null = null;
   private _isMounted = false;
 
@@ -42,7 +42,7 @@ export class BooleanEditor extends React.Component<PropertyEditorProps, BooleanE
     return propertyValue;
   }
 
-  public setFocus(): void {
+  private setFocus(): void {
     // istanbul ignore else
     if (this._checkboxElement) {
       this._checkboxElement.focus();
@@ -53,10 +53,15 @@ export class BooleanEditor extends React.Component<PropertyEditorProps, BooleanE
     // istanbul ignore else
     if (this._isMounted) {
       let checkboxValue: boolean = false;
+
+      // istanbul ignore if
       if (e.target.checked !== undefined)   // Needed for unit test environment
         checkboxValue = e.target.checked;
-      else if (e.target.value !== undefined && typeof e.target.value === "boolean")
-        checkboxValue = e.target.value;
+      else {
+        // istanbul ignore else
+        if (e.target.value !== undefined && typeof e.target.value === "boolean")
+          checkboxValue = e.target.value;
+      }
 
       this.setState({
         checkboxValue,
@@ -74,14 +79,20 @@ export class BooleanEditor extends React.Component<PropertyEditorProps, BooleanE
 
   public componentDidMount() {
     this._isMounted = true;
-    this.getInitialValue(); // tslint:disable-line:no-floating-promises
+    this.setStateFromProps(); // tslint:disable-line:no-floating-promises
   }
 
   public componentWillUnmount() {
     this._isMounted = false;
   }
 
-  private async getInitialValue() {
+  public componentDidUpdate(prevProps: PropertyEditorProps) {
+    if (this.props.propertyRecord !== prevProps.propertyRecord) {
+      this.setStateFromProps(); // tslint:disable-line:no-floating-promises
+    }
+  }
+
+  private async setStateFromProps() {
     const { propertyRecord } = this.props;
     let checkboxValue = false;
 
@@ -94,7 +105,11 @@ export class BooleanEditor extends React.Component<PropertyEditorProps, BooleanE
     // istanbul ignore else
     if (this._isMounted)
       this.setState(
-        () => ({ checkboxValue }),
+        { checkboxValue },
+        () => {
+          if (this.props.setFocus)
+            this.setFocus();
+        },
       );
   }
 

@@ -119,6 +119,7 @@ export class PropertyRenderer extends React.Component<PropertyRendererProps, Pro
             propertyRecord={props.propertyRecord}
             onCommit={this._onEditCommit}
             onCancel={this._onEditCancel}
+            setFocus={true}
           />,
       });
   }

@@ -73,4 +73,20 @@ describe("<BooleanEditor />", () => {
     expect(booleanValue).to.be.true;
   });
 
+  it("componentDidUpdate updates the value", async () => {
+    const record = TestUtils.createBooleanProperty("Test", false);
+    const wrapper = mount(<BooleanEditor propertyRecord={record} />);
+
+    await TestUtils.flushAsyncOperations();
+    const enumEditor = wrapper.instance() as BooleanEditor;
+    expect(enumEditor.getValue()).to.equal(false);
+
+    const newRecord = TestUtils.createBooleanProperty("Test", true);
+    wrapper.setProps({ propertyRecord: newRecord });
+    await TestUtils.flushAsyncOperations();
+    expect(enumEditor.getValue()).to.equal(true);
+
+    wrapper.unmount();
+  });
+
 });

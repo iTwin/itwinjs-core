@@ -7,70 +7,28 @@ import * as React from "react";
 import { mount, shallow } from "enzyme";
 import { expect } from "chai";
 import sinon from "sinon";
-import { EnumEditor } from "../../ui-components/editors/EnumEditor";
+import { EnumButtonGroupEditor } from "../../ui-components/editors/EnumButtonGroupEditor";
 import { EditorContainer, PropertyUpdatedArgs } from "../../ui-components/editors/EditorContainer";
 import TestUtils from "../TestUtils";
 
-describe("<EnumEditor />", () => {
+describe("<EnumButtonGroupEditor />", () => {
   it("should render", () => {
-    mount(<EnumEditor />);
+    mount(<EnumButtonGroupEditor />);
   });
 
   it("renders correctly", () => {
-    shallow(<EnumEditor />).should.matchSnapshot();
+    shallow(<EnumButtonGroupEditor />).should.matchSnapshot();
   });
 
   it("getValue returns proper value after componentDidMount & setState", async () => {
     const record = TestUtils.createEnumProperty("Test", 0);
-    const wrapper = mount(<EnumEditor propertyRecord={record} />);
+    const wrapper = mount(<EnumButtonGroupEditor propertyRecord={record} />);
 
     await TestUtils.flushAsyncOperations();
-    const enumEditor = wrapper.instance() as EnumEditor;
+    const enumEditor = wrapper.instance() as EnumButtonGroupEditor;
     expect(enumEditor.getValue()).to.equal(0);
 
     wrapper.unmount();
-  });
-
-  it("HTML select onChange updates string value", async () => {
-    const record = TestUtils.createEnumProperty("Test1", "0");
-    const spyOnCommit = sinon.spy();
-    function handleCommit(_commit: PropertyUpdatedArgs): void {
-      spyOnCommit();
-    }
-    const wrapper = mount(<EnumEditor propertyRecord={record} onCommit={handleCommit} />);
-    const enumEditor = wrapper.instance() as EnumEditor;
-    const selectNode = wrapper.find("select");
-
-    expect(selectNode.length).to.eq(1);
-    if (selectNode) {
-      const testValue = "1";
-      selectNode.simulate("change", { target: { value: testValue } });
-      wrapper.update();
-      expect(enumEditor.getValue()).to.equal(testValue);
-      await TestUtils.flushAsyncOperations();
-      expect(spyOnCommit.calledOnce).to.be.true;
-    }
-  });
-
-  it("HTML select onChange updates numeric value", async () => {
-    const record = TestUtils.createEnumProperty("Test1", 0);
-    const spyOnCommit = sinon.spy();
-    function handleCommit(_commit: PropertyUpdatedArgs): void {
-      spyOnCommit();
-    }
-    const wrapper = mount(<EnumEditor propertyRecord={record} onCommit={handleCommit} />);
-    const enumEditor = wrapper.instance() as EnumEditor;
-    const selectNode = wrapper.find("select");
-
-    expect(selectNode.length).to.eq(1);
-    if (selectNode) {
-      const testValue = 1;
-      selectNode.simulate("change", { target: { value: testValue } });
-      wrapper.update();
-      expect(enumEditor.getValue()).to.equal(testValue);
-      await TestUtils.flushAsyncOperations();
-      expect(spyOnCommit.calledOnce).to.be.true;
-    }
   });
 
   it("onCommit should be called for Enter", async () => {
@@ -90,10 +48,10 @@ describe("<EnumEditor />", () => {
 
   it("componentDidUpdate updates the value", async () => {
     const record = TestUtils.createEnumProperty("Test", 0);
-    const wrapper = mount(<EnumEditor propertyRecord={record} />);
+    const wrapper = mount(<EnumButtonGroupEditor propertyRecord={record} />);
 
     await TestUtils.flushAsyncOperations();
-    const enumEditor = wrapper.instance() as EnumEditor;
+    const enumEditor = wrapper.instance() as EnumButtonGroupEditor;
     expect(enumEditor.getValue()).to.equal(0);
 
     const testValue = 1;

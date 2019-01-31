@@ -890,6 +890,7 @@ export class Table extends React.Component<TableProps, TableState> {
             onCancel: this._deactivateCellEditor,
             onCommit: this._onCellCommit,
             propertyRecord: cellProps.item.record!,
+            setFocus: true,
           } : undefined}
         >
           <CellContent isSelected={isSelected} />

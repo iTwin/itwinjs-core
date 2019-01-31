@@ -745,7 +745,7 @@ export class Tree extends React.Component<TreeProps, TreeState> {
         const record = new CellEditorPropertyRecord(node.text);
         return (
           <span style={labelStyle}>
-            <EditorContainer propertyRecord={record} title={record.description}
+            <EditorContainer propertyRecord={record} title={record.description} setFocus={true}
               onCommit={cellEditorProps.onCellEditCommit} onCancel={cellEditorProps.onCellEditCancel} ignoreEditorBlur={cellEditorProps.ignoreEditorBlur} />
           </span>
         );

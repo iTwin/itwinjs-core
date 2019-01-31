@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Updated type editors to support updated PropertyRecord. Moved setFocus to props in type editors..",
+      "packageName": "@bentley/ui-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "dan.east@bentley.com"
+}

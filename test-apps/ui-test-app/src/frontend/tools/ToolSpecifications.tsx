@@ -206,7 +206,7 @@ export class AppTools {
     });
   }
 
-  private static _detailedMessage = "This is a detailed message with a line<br>break and <b>bold</b> and <i>italic</i> text.";
+  private static _detailedMessage = "This is a detailed message with a line<br>break and <b>bold</b>, <i>italic</i> and <span class='red-text'>red</span> text.";
 
   public static get infoMessageCommand() {
     return new CommandItemDef({
@@ -231,7 +231,10 @@ export class AppTools {
       commandId: "errorMessage",
       iconSpec: "icon-status-rejected",
       labelKey: "SampleApp:buttons.errorMessageBox",
-      execute: () => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, "This is an error message", "1. " + this._detailedMessage + "<br>" + "2. " + this._detailedMessage, OutputMessageType.Alert)),
+      execute: () => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, "This is an error message",
+        "1. " + this._detailedMessage + "<br>" +
+        "2. " + this._detailedMessage + "<br>" +
+        "For more details, <a href='https://www.google.com/' target='_blank'>Google it!</a>", OutputMessageType.Alert)),
     });
   }
 
@@ -261,7 +264,7 @@ export class AppTools {
     });
   }
 
-  private static _detailMsg = "This is a description of the alert with lots and lots of words that explains what the user did & what they can do to remedy the situation."; // <br />Hello <a href=\"http://www.google.com\">Google!</a>
+  private static _detailMsg = "This is a description of the alert with lots and lots of words that explains what the user did & what they can do to remedy the situation. <br />For more info, <a href='http://www.google.com' target='_blank'>Google it!</a>";
   public static get warningMessageStickyCommand() {
     return new CommandItemDef({
       commandId: "warningMessage",

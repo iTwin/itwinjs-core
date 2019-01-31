@@ -60,9 +60,7 @@ export class PropertyEditorManager {
   private static _dataControllers: { [index: string]: (new () => DataControllerBase) } = {};
 
   public static registerEditor(editType: string, editor: new () => PropertyEditorBase, editorName?: string): void {
-    let fullEditorName = editType;
-    if (editorName)
-      fullEditorName += ":" + editorName;
+    const fullEditorName = PropertyEditorManager.getFullEditorName(editType, editorName);
 
     if (PropertyEditorManager._editors.hasOwnProperty(fullEditorName)) {
       const nameOfEditor = PropertyEditorManager._editors[fullEditorName].name;
@@ -71,17 +69,22 @@ export class PropertyEditorManager {
     PropertyEditorManager._editors[fullEditorName] = editor;
   }
 
+  private static getFullEditorName(editType: string, editorName?: string): string {
+    let fullEditorName = editType;
+    if (editorName)
+      fullEditorName += ":" + editorName;
+    return fullEditorName;
+  }
+
   public static registerDataController(controllerName: string, controller: new () => DataControllerBase): void {
     if (PropertyEditorManager._dataControllers.hasOwnProperty(controllerName)) {
-      throw Error("PropertyEditorManager.RegisterDataController error: type '" + controllerName + "' already registered to '" + (typeof PropertyEditorManager._dataControllers[controllerName]).toString() + "'");
+      throw Error("PropertyEditorManager.registerDataController error: type '" + controllerName + "' already registered to '" + (typeof PropertyEditorManager._dataControllers[controllerName]).toString() + "'");
     }
     PropertyEditorManager._dataControllers[controllerName] = controller;
   }
 
   public static createEditor(editType: string, editorName?: string, dataControllerName?: string): PropertyEditorBase {
-    let fullEditorName = editType;
-    if (editorName)
-      fullEditorName += ":" + editorName;
+    const fullEditorName = PropertyEditorManager.getFullEditorName(editType, editorName);
 
     let editor: PropertyEditorBase;
     if (PropertyEditorManager._editors.hasOwnProperty(fullEditorName))
@@ -94,13 +97,15 @@ export class PropertyEditorManager {
     if (dataControllerName) {
       if (PropertyEditorManager._dataControllers.hasOwnProperty(dataControllerName))
         editor.customDataController = new PropertyEditorManager._dataControllers[dataControllerName]();
+      else
+        throw Error("PropertyEditorManager.createEditor error: data controller '" + dataControllerName + "' is not registered");
     }
 
     return editor;
   }
 
   public static hasCustomEditor(editType: string, editorName: string): boolean {
-    const fullEditorName = editType + ":" + editorName;
+    const fullEditorName = PropertyEditorManager.getFullEditorName(editType, editorName);
     return PropertyEditorManager._editors.hasOwnProperty(fullEditorName);
   }
 }

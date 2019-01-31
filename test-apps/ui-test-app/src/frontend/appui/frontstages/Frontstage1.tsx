@@ -39,7 +39,7 @@ export class Frontstage1 extends FrontstageProvider {
         defaultLayout="TwoHalvesVertical"
         contentGroup="TestContentGroup1"
         defaultContentId="TestContent1"
-        isInFooterMode={false}
+        isInFooterMode={true}
         applicationData={{ key: "value" }}
         topLeft={
           <Zone

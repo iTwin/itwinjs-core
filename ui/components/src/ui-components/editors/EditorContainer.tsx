@@ -24,6 +24,7 @@ export interface PropertyEditorProps {
   onCommit?: (args: PropertyUpdatedArgs) => void;
   onCancel?: () => void;
   onBlur?: (event: React.FocusEvent) => void;
+  setFocus?: boolean;
 }
 
 /** [[EditorContainer]] React component properties */
@@ -32,6 +33,7 @@ export interface EditorContainerProps {
   title?: string;
   onCommit: (args: PropertyUpdatedArgs) => void;
   onCancel: () => void;
+  setFocus?: boolean;
 
   /** @hidden */
   ignoreEditorBlur?: boolean;
@@ -44,13 +46,12 @@ interface CloneProps extends PropertyEditorProps {
 /** Interface implemented by React based type editors  */
 export interface TypeEditor {
   getPropertyValue: () => Promise<PropertyValue | undefined>;
-  setFocus: () => void;
 }
 
 /**
  * EditorContainer React component
  */
-export class EditorContainer extends React.Component<EditorContainerProps> {
+export class EditorContainer extends React.PureComponent<EditorContainerProps> {
 
   private _editorRef: any;
   private _propertyEditor: PropertyEditorBase | undefined;
@@ -68,6 +69,7 @@ export class EditorContainer extends React.Component<EditorContainerProps> {
       onCancel: this._handleEditorCancel,
       onBlur: this._handleEditorBlur,
       propertyRecord: this.props.propertyRecord,
+      setFocus: this.props.setFocus !== undefined ? this.props.setFocus : true,
     };
 
     let editorNode: React.ReactNode;
@@ -172,11 +174,6 @@ export class EditorContainer extends React.Component<EditorContainerProps> {
 
   private _commitCancel = () => {
     this.props.onCancel();
-  }
-
-  public componentDidMount() {
-    if (this.getEditor())
-      return this.getEditor().setFocus();
   }
 
   public render() {
