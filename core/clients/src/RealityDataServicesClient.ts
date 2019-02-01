@@ -132,8 +132,13 @@ export class RealityDataServicesClient extends WsgClient {
   public static readonly searchKey: string = "RealityDataServices";
   public static readonly configRelyingPartyUri = "imjs_reality_data_service_relying_party_uri";
 
+  // # TODO Alain Robert ... These cache parameters must be removed since the client appears to be used for multiple instances
+  // of reality data nullifying the benefit of caching blobUrl in case of conflicts. The new member _blobTileId insures that we can
+  // know to which reality data the content
+  // of _blobUrl refers to and wipe their content in case of difference.
   private _blobUrl: any;
   private _blobRoot: undefined | string;
+  private _blobTileId: undefined | string;
 
   /**
    * Creates an instance of RealityDataServicesClient.
@@ -318,8 +323,10 @@ export class RealityDataServicesClient extends WsgClient {
    */
   public async getBlobUrl(alctx: ActivityLoggingContext, token: AccessToken, projectId: string, tilesId: string): Promise<URL> {
     const urlString = await this.getTileDataBlobUrl(alctx, token, projectId, tilesId);
-    if (typeof this._blobUrl === "undefined")
+    if (typeof this._blobUrl === "undefined" || !this._blobTileId || this._blobTileId !== tilesId) {
       this._blobUrl = (typeof window !== "undefined") ? new window.URL(urlString) : new URL(urlString);
+      this._blobTileId = tilesId;
+    }
     return Promise.resolve(this._blobUrl);
   }
 
@@ -332,7 +339,7 @@ export class RealityDataServicesClient extends WsgClient {
    * @returns string url for blob data
    */
   public async getBlobStringUrl(alctx: ActivityLoggingContext, token: AccessToken, projectId: string, tilesId: string, name: string): Promise<string> {
-    const url = undefined === this._blobUrl ? await this.getBlobUrl(alctx, token, projectId, tilesId) : this._blobUrl;
+    const url = (undefined === this._blobUrl || (this._blobTileId && this._blobTileId !== tilesId)) ? await this.getBlobUrl(alctx, token, projectId, tilesId) : this._blobUrl;
     const host = url.origin + url.pathname;
     const query = url.search;
     return `${host}/${this.updateModelName(name)}${query}`;
@@ -384,15 +391,11 @@ export class RealityDataServicesClient extends WsgClient {
   public async getRootDocumentJson(alctx: ActivityLoggingContext, token: AccessToken, projectId: string, tilesId: string): Promise<any> {
     const realityData: RealityData[] = await this.getRealityData(alctx, token, projectId, tilesId);
     alctx.enter();
-    let root = realityData[0].rootDocument!;
 
-    // reset the blob url when a root document is requested to ensure the previous blob storage key isn't reused
-    this._blobUrl = undefined;
+    if (!realityData[0].rootDocument)
+      return Promise.reject(new Error("Root document not defined for reality data: " + tilesId));
 
-    // if the RootDocument is ClarkSimple/RootTile.json, then only use RootTile.json,
-    // so we need to only use the last part of the RootDocument path
-    if (root.includes("/"))
-      root = root.split("/")[root.split("/").length - 1];
+    const root = realityData[0].rootDocument!;
 
     return this.getModelData(alctx, token, projectId, tilesId, root);
   }
