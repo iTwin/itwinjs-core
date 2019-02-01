@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fixed submenus, added default autoselect for hotkeys",
+      "packageName": "@bentley/ui-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-core",
+  "email": "Simeon.McGraw@bentley.com"
+}
