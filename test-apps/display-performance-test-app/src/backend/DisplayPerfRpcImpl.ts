@@ -68,10 +68,14 @@ export default class DisplayPerfRpcImpl extends DisplayPerfRpcInterface {
 
   public async finishTest() {
     IModelHost.shutdown();
-    if (app !== undefined)
-      app.exit(); // Electron only
-    else if (DisplayPerfRpcInterface.webServer !== undefined)
-      DisplayPerfRpcInterface.webServer.close(); // Browser only
+
+    // Electron only
+    if (app !== undefined) app.exit();
+
+    // Browser only
+    if (DisplayPerfRpcInterface.webServer) DisplayPerfRpcInterface.webServer.close();
+    if (DisplayPerfRpcInterface.backendServer) DisplayPerfRpcInterface.backendServer.close();
+    if (DisplayPerfRpcInterface.chrome) await DisplayPerfRpcInterface.chrome.kill();
   }
 
   private createFullFilePath(filePath: string | undefined, fileName: string | undefined): string | undefined {
