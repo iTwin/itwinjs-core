@@ -24,6 +24,9 @@ import { initializeRpcBackend } from "./RpcBackend";
 import * as os from "os";
 import * as semver from "semver";
 
+/** @hidden */
+const loggingCategory = "imodeljs-backend.IModelHost";
+
 /**
  * Configuration of imodeljs-backend.
  */
@@ -97,7 +100,7 @@ export class IModelHost {
    */
   public static startup(configuration: IModelHostConfiguration = new IModelHostConfiguration()) {
     if (IModelHost.configuration)
-      throw new IModelError(BentleyStatus.ERROR, "startup may only be called once");
+      throw new IModelError(BentleyStatus.ERROR, "startup may only be called once", Logger.logError, loggingCategory);
 
     this.backendVersion = require("../package.json").version;
     initializeRpcBackend();

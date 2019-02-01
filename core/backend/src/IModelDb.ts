@@ -247,13 +247,20 @@ export class IModelDb extends IModel {
   private static createUsageLogEntry(accessToken: AccessToken, contextId: GuidString): UsageLogEntry {
     const entry: UsageLogEntry = new UsageLogEntry(os.hostname(), UsageType.Trial);
     const userInfo = accessToken.getUserInfo();
-
     const featureTrackingInfo = userInfo ? userInfo.featureTracking : undefined;
-    const imsId = userInfo ? userInfo.id : "";
-    const ultimateSite: number = !featureTrackingInfo ? 0 : parseInt(featureTrackingInfo.ultimateSite, 10);
-    const usageCountryIso: string = !featureTrackingInfo ? "" : featureTrackingInfo.usageCountryIso;
-    const hostUserName = os.userInfo().username;
-    entry.userInfo = { imsId, ultimateSite, usageCountryIso, hostUserName };
+    let hostUserInfo: any;
+    try {
+      hostUserInfo = os.userInfo();
+    } catch (error) {
+      Logger.logError(loggingCategory, "Could not determine hostUserInfo for Usage Logging");
+    }
+
+    entry.userInfo = {
+      imsId: userInfo ? userInfo.id : "",
+      ultimateSite: !featureTrackingInfo ? 0 : parseInt(featureTrackingInfo.ultimateSite, 10),
+      usageCountryIso: !featureTrackingInfo ? "" : featureTrackingInfo.usageCountryIso,
+      hostUserName: hostUserInfo ? hostUserInfo.username : undefined,
+    };
 
     entry.projectId = contextId;
     entry.productId = 2686; // todo: needs to be passed in from frontend
@@ -264,10 +271,9 @@ export class IModelDb extends IModel {
 
   private async logUsage(actx: ActivityLoggingContext, accessToken: AccessToken, contextId: GuidString): Promise<void> {
     const client = new UlasClient();
-    const entry = IModelDb.createUsageLogEntry(accessToken, contextId);
-
     let status: BentleyStatus;
     try {
+      const entry: UsageLogEntry = IModelDb.createUsageLogEntry(accessToken, contextId);
       const resp: LogPostingResponse = await client.logUsage(actx, accessToken, entry);
       status = resp ? resp.status : BentleyStatus.ERROR;
     } catch (error) {

@@ -203,8 +203,8 @@ const logRequest = (req: sarequest.SuperAgentRequest) => {
 };
 
 // @todo The purpose of this wrapper is to allow us to easily replace this with another
-// module that will rid us of NodeJs dependency.The alternate HTTP module is currently
-// being written and allow working in desktop environments also.
+// module that will rid us of NodeJs dependency.
+
 /**
  * Wrapper around HTTP request utility
  * @param url Server URL to address the request
