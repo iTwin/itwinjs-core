@@ -162,7 +162,7 @@ export class AccessToken extends Token {
   }
 
   /** Create an AccessToken from a JWT token for OIDC workflows */
-  public static fromJsonWebTokenString(jwt: string, startsAt: Date, expiresAt: Date, userInfo: UserInfo): AccessToken {
+  public static fromJsonWebTokenString(jwt: string, startsAt: Date, expiresAt: Date, userInfo?: UserInfo): AccessToken {
     const token = new AccessToken("");
     token._jwt = jwt;
     token._startsAt = startsAt;

@@ -3,9 +3,9 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import { OidcClient, AccessToken, IncludePrefix, UserInfo } from "@bentley/imodeljs-clients";
+import { OidcClient, AccessToken, UserInfo } from "@bentley/imodeljs-clients";
 import { Issuer, Client as OpenIdClient, ClientConfiguration, TokenSet, UserInfo as OpenIdUserInfo } from "openid-client";
-import { ActivityLoggingContext, BentleyStatus, BentleyError } from "@bentley/bentleyjs-core";
+import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
 
 /** Client configuration to create OIDC/OAuth tokens for backend applications */
 export interface OidcBackendClientConfiguration {
@@ -66,27 +66,11 @@ export abstract class OidcBackendClient extends OidcClient {
     return this._client;
   }
 
-  protected createToken(tokenSet: TokenSet, openIdUserInfo: OpenIdUserInfo): AccessToken {
+  protected createToken(tokenSet: TokenSet, openIdUserInfo?: OpenIdUserInfo): AccessToken {
     const startsAt: Date = new Date(tokenSet.expires_at - tokenSet.expires_in);
     const expiresAt: Date = new Date(tokenSet.expires_at);
-    const userInfo = UserInfo.fromJson(openIdUserInfo);
+    const userInfo = openIdUserInfo ? UserInfo.fromJson(openIdUserInfo) : undefined;
     return AccessToken.fromJsonWebTokenString(tokenSet.access_token, startsAt, expiresAt, userInfo);
   }
 
-  /** Refresh the supplied JSON Web Token (assuming the client was registered for offline access) */
-  public async refreshToken(actx: ActivityLoggingContext, jwt: AccessToken): Promise<AccessToken> {
-    actx.enter();
-
-    // Refresh 1 minute before expiry
-    const expiresAt = jwt.getExpiresAt();
-    if (!expiresAt)
-      throw new BentleyError(BentleyStatus.ERROR, "Invalid JWT passed to refresh");
-    if ((expiresAt.getTime() - Date.now()) > 1 * 60 * 1000)
-      return jwt;
-
-    const client = await this.getClient(actx);
-    const tokenSet: TokenSet = await client.refresh(jwt.toTokenString(IncludePrefix.No)!);
-    const userInfo: OpenIdUserInfo = await client.userinfo(tokenSet.access_token);
-    return this.createToken(tokenSet, userInfo);
-  }
 }
