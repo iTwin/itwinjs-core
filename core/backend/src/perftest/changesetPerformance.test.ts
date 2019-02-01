@@ -14,27 +14,8 @@ import { Element } from "../Element";
 import { IModelHost } from "../IModelHost";
 import { IModelTestUtils } from "../test/IModelTestUtils";
 
-async function getImodelAfterApplyingCS(csvPath: string) {
+async function getImodelAfterApplyingCS(csvPath: string, projectId: string, imodelId: string, actLogCtx: ActivityLoggingContext, accessToken: AccessToken, client: IModelHubClient) {
   csvPath = csvPath;
-  const fs1 = require("fs");
-  const configData = JSON.parse(fs1.readFileSync("src/perftest/CSPerfConfig.json"));
-  const uname = configData.username;
-  const pass = configData.password;
-  const projectId = configData.projectId;
-  const imodelId = configData.imodelId;
-  const myAppConfig = {
-    imjs_buddi_resolve_url_using_region: 102,
-    imjs_default_relying_party_uri: "https://connect-wsg20.bentley.com",
-  };
-  Config.App.merge(myAppConfig);
-  const client: IModelHubClient = new IModelHubClient();
-  IModelHost.loadNative(myAppConfig.imjs_buddi_resolve_url_using_region);
-  process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
-  const actLogCtx = new ActivityLoggingContext(Guid.createValue());
-  const imsClient: ImsActiveSecureTokenClient = new ImsActiveSecureTokenClient();
-  const authToken: AuthorizationToken = await imsClient.getToken(actLogCtx, uname, pass);
-  const accessToken: AccessToken = await client.getAccessToken(actLogCtx, authToken);
-
   const changeSets: ChangeSet[] = await client.changeSets.get(actLogCtx, accessToken, imodelId);
   const firstChangeSetId = changeSets[0].wsgId;
   const secondChangeSetId = changeSets[1].wsgId;
@@ -60,27 +41,8 @@ async function getImodelAfterApplyingCS(csvPath: string) {
   fs.appendFileSync(csvPath, "Open, From Cache second cs," + elapsedTime1 + "\n");
 }
 
-async function pushImodelAfterMetaChanges(csvPath: string) {
+async function pushImodelAfterMetaChanges(csvPath: string, projectId: string, imodelPushId: string, actLogCtx: ActivityLoggingContext, accessToken: AccessToken) {
   csvPath = csvPath;
-  const fs1 = require("fs");
-  const configData = JSON.parse(fs1.readFileSync("src/perftest/CSPerfConfig.json"));
-  const uname = configData.username;
-  const pass = configData.password;
-  const projectId = configData.projectId;
-  const imodelPushId = configData.imodelPushId;
-  const myAppConfig = {
-    imjs_buddi_resolve_url_using_region: 102,
-    imjs_default_relying_party_uri: "https://connect-wsg20.bentley.com",
-  };
-  Config.App.merge(myAppConfig);
-  const client: IModelHubClient = new IModelHubClient();
-  IModelHost.loadNative(myAppConfig.imjs_buddi_resolve_url_using_region);
-  process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
-  const actLogCtx = new ActivityLoggingContext(Guid.createValue());
-  const imsClient: ImsActiveSecureTokenClient = new ImsActiveSecureTokenClient();
-  const authToken: AuthorizationToken = await imsClient.getToken(actLogCtx, uname, pass);
-  const accessToken: AccessToken = await client.getAccessToken(actLogCtx, authToken);
-
   const iModelPullAndPush: IModelDb = await IModelDb.open(actLogCtx, accessToken, projectId, imodelPushId, OpenParams.pullAndPush(), IModelVersion.latest());
   assert.exists(iModelPullAndPush);
 
@@ -127,26 +89,8 @@ export async function createNewModelAndCategory(rwIModel: IModelDb, accessToken:
   return { modelId, spatialCategoryId };
 }
 
-async function pushImodelAfterDataChanges(csvPath: string) {
+async function pushImodelAfterDataChanges(csvPath: string, projectId: string, actLogCtx: ActivityLoggingContext, accessToken: AccessToken) {
   csvPath = csvPath;
-  const fs1 = require("fs");
-  const configData = JSON.parse(fs1.readFileSync("src/perftest/CSPerfConfig.json"));
-  const uname = configData.username;
-  const pass = configData.password;
-  const projectId = configData.projectId;
-  const myAppConfig = {
-    imjs_buddi_resolve_url_using_region: 102,
-    imjs_default_relying_party_uri: "https://connect-wsg20.bentley.com",
-  };
-  Config.App.merge(myAppConfig);
-  const client: IModelHubClient = new IModelHubClient();
-  IModelHost.loadNative(myAppConfig.imjs_buddi_resolve_url_using_region);
-  process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
-  const actLogCtx = new ActivityLoggingContext(Guid.createValue());
-  const imsClient: ImsActiveSecureTokenClient = new ImsActiveSecureTokenClient();
-  const authToken: AuthorizationToken = await imsClient.getToken(actLogCtx, uname, pass);
-  const accessToken: AccessToken = await client.getAccessToken(actLogCtx, authToken);
-
   const iModelName = "CodesPushTest";
   // delete any existing imodel with given name
   const iModels: HubIModel[] = await BriefcaseManager.imodelClient.iModels.get(actLogCtx, accessToken, projectId, new IModelQuery().byName(iModelName));
@@ -173,26 +117,8 @@ async function pushImodelAfterDataChanges(csvPath: string) {
   await rwIModel.close(actLogCtx, accessToken, KeepBriefcase.No);
 }
 
-async function pushImodelAfterSchemaChanges(csvPath: string) {
+async function pushImodelAfterSchemaChanges(csvPath: string, projectId: string, actLogCtx: ActivityLoggingContext, accessToken: AccessToken) {
   csvPath = csvPath;
-  const fs1 = require("fs");
-  const configData = JSON.parse(fs1.readFileSync("src/perftest/CSPerfConfig.json"));
-  const uname = configData.username;
-  const pass = configData.password;
-  const projectId = configData.projectId;
-  const myAppConfig = {
-    imjs_buddi_resolve_url_using_region: 102,
-    imjs_default_relying_party_uri: "https://connect-wsg20.bentley.com",
-  };
-  Config.App.merge(myAppConfig);
-  const client: IModelHubClient = new IModelHubClient();
-  IModelHost.loadNative(myAppConfig.imjs_buddi_resolve_url_using_region);
-  process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
-  const actLogCtx = new ActivityLoggingContext(Guid.createValue());
-  const imsClient: ImsActiveSecureTokenClient = new ImsActiveSecureTokenClient();
-  const authToken: AuthorizationToken = await imsClient.getToken(actLogCtx, uname, pass);
-  const accessToken: AccessToken = await client.getAccessToken(actLogCtx, authToken);
-
   const iModelName = "SchemaPushTest";
   // delete any existing imodel with given name
   const iModels: HubIModel[] = await BriefcaseManager.imodelClient.iModels.get(actLogCtx, accessToken, projectId, new IModelQuery().byName(iModelName));
@@ -219,6 +145,19 @@ async function pushImodelAfterSchemaChanges(csvPath: string) {
   await rwIModel.close(actLogCtx, accessToken, KeepBriefcase.No);
 }
 
+async function executeQueryTime(csvPath: string, projectId: string, imodelId: string, actLogCtx: ActivityLoggingContext, accessToken: AccessToken) {
+  csvPath = csvPath;
+  const imodeldb: IModelDb = await IModelDb.open(actLogCtx, accessToken, projectId, imodelId, OpenParams.pullOnly(), IModelVersion.latest());
+  assert.exists(imodeldb);
+  const startTime = new Date().getTime();
+  const stat = imodeldb.executeQuery("SELECT * FROM BisCore.LineStyle");
+  const endTime = new Date().getTime();
+  const elapsedTime1 = (endTime - startTime) / 1000.0;
+  assert.equal(7, stat.length);
+  fs.appendFileSync(csvPath, "ExecuteQuery, Execute a simple ECSQL query based on 1 table," + elapsedTime1 + "\n");
+  imodeldb.close(actLogCtx, accessToken).catch();
+}
+
 describe("ImodelChangesetPerformance", async () => {
   if (!IModelJsFs.existsSync(KnownTestLocations.outputDir))
     IModelJsFs.mkdirSync(KnownTestLocations.outputDir);
@@ -226,25 +165,54 @@ describe("ImodelChangesetPerformance", async () => {
   if (!IModelJsFs.existsSync(csvPath)) {
     fs.appendFileSync(csvPath, "Operation,Description,ExecutionTime\n");
   }
+  let projectId: string;
+  let imodelId: string;
+  let imodelPushId: string;
+  let actLogCtx: ActivityLoggingContext;
+  let accessToken: AccessToken;
+  let client: IModelHubClient;
 
   before(async () => {
+    const fs1 = require("fs");
+    const configData = JSON.parse(fs1.readFileSync("src/perftest/CSPerfConfig.json"));
+    const uname = configData.username;
+    const pass = configData.password;
+    projectId = configData.projectId;
+    imodelId = configData.imodelId;
+    imodelPushId = configData.imodelPushId;
+    const myAppConfig = {
+      imjs_buddi_resolve_url_using_region: 102,
+      imjs_default_relying_party_uri: "https://connect-wsg20.bentley.com",
+    };
+    Config.App.merge(myAppConfig);
+    client = new IModelHubClient();
+    IModelHost.loadNative(myAppConfig.imjs_buddi_resolve_url_using_region);
+    process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+    actLogCtx = new ActivityLoggingContext(Guid.createValue());
+    const imsClient: ImsActiveSecureTokenClient = new ImsActiveSecureTokenClient();
+    const authToken: AuthorizationToken = await imsClient.getToken(actLogCtx, uname, pass);
+    accessToken = await client.getAccessToken(actLogCtx, authToken);
 
   });
 
   it("GetImodelFromHubAFterCSApplied", async () => {
-    await getImodelAfterApplyingCS(csvPath);
+    await getImodelAfterApplyingCS(csvPath, projectId, imodelId, actLogCtx, accessToken, client);
   });
 
   it("PushImodelMetaChangeToImodelHUb", async () => {
-    pushImodelAfterMetaChanges(csvPath).catch();
+    pushImodelAfterMetaChanges(csvPath, projectId, imodelPushId, actLogCtx, accessToken).catch();
   });
 
   it("PushImodelDataChangeToImodelHUb", async () => {
-    pushImodelAfterDataChanges(csvPath).catch();
+    pushImodelAfterDataChanges(csvPath, projectId, actLogCtx, accessToken).catch();
   });
 
   it("pushImodelAfterSchemaChanges", async () => {
-    pushImodelAfterSchemaChanges(csvPath).catch();
+    pushImodelAfterSchemaChanges(csvPath, projectId, actLogCtx, accessToken).catch();
+  });
+
+  it("executeQuery", async () => {
+    executeQueryTime(csvPath, projectId, imodelId, actLogCtx, accessToken).catch();
   });
 
 });
