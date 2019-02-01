@@ -5,7 +5,7 @@
 /** @module Measure */
 
 import { CanvasDecoration, GraphicType } from "../rendering";
-import { Point3d, XYAndZ, XAndY, Vector3d, Matrix3d, PointString3d, AxisOrder, Point2d, IModelJson, Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core";
+import { Point3d, XYAndZ, XAndY, Vector3d, Matrix3d, PointString3d, AxisOrder, Point2d, IModelJson, Plane3dByOriginAndUnitNormal, Angle } from "@bentley/geometry-core";
 import { Viewport } from "../Viewport";
 import { DecorateContext } from "../ViewContext";
 import { Marker } from "../Marker";
@@ -69,9 +69,10 @@ class MeasureMarker extends Marker {
     const markerDrawFunc = (ctx: CanvasRenderingContext2D) => {
       ctx.beginPath();
       ctx.arc(0, 0, this.size.x * 0.5, 0, 2 * Math.PI);
-      ctx.lineWidth = 1;
+      ctx.lineWidth = 2;
       ctx.strokeStyle = "black";
-      ctx.fillStyle = this.isSelected ? "rgba(255,200,200,.5)" : "rgba(255,255,255,.5)";
+      const hilite = this.isSelected && this._hiliteColor ? this._hiliteColor.colors : undefined;
+      ctx.fillStyle = undefined !== hilite ? "rgba(" + (hilite.r | 0) + "," + (hilite.g | 0) + "," + (hilite.b | 0) + ", 0.5)" : "rgba(255,255,255,.5)";
       ctx.fill();
       ctx.stroke();
     };
@@ -188,6 +189,10 @@ export class MeasureDistanceTool extends PrimitiveTool {
       builderAxes.setSymbology(colorZ, ColorDef.black, 5);
       builderAxes.addLineString(segPoints);
     }
+
+    const segGlow = context.viewport.hilite.color.clone(); segGlow.setAlpha(50);
+    builderAxes.setSymbology(segGlow, ColorDef.black, 8);
+    builderAxes.addLineString([seg.start, seg.end]);
 
     context.addDecorationFromBuilder(builderAxes);
   }
@@ -500,6 +505,30 @@ export class MeasureLocationTool extends PrimitiveTool {
     this.showPrompt();
   }
 
+  protected async spatialToCartographic(spatial: XYAndZ, result?: Cartographic): Promise<Cartographic> {
+    // ###TODO Only “map” iModels need to use the GCS (non-linear projection)...ecef transform fine otherwise...
+    const geoConverter = this.iModel.geoServices.getConverter();
+    const coordResponse = await geoConverter.getGeoCoordinatesFromIModelCoordinates([spatial]);
+    if (1 === coordResponse.geoCoords.length && GeoCoordStatus.Success === coordResponse.geoCoords[0].s) {
+      const longLatHeight = Point3d.fromJSON(coordResponse.geoCoords[0].p); // x is longitude in degrees, y is latitude in degrees, z is height in meters...
+      return Cartographic.fromDegrees(longLatHeight.x, longLatHeight.y, longLatHeight.z, result);
+    }
+    return this.iModel.spatialToCartographic(spatial, result); // Get lat/long/height from ecef location if no gcs present...
+  }
+
+  protected async cartographicToSpatial(cartographic: Cartographic, result?: Point3d): Promise<Point3d> {
+    // ###TODO Only “map” iModels need to use the GCS (non-linear projection)...ecef transform fine otherwise...
+    const geoConverter = this.iModel.geoServices.getConverter();
+    const geoCoord = Point3d.create(Angle.radiansToDegrees(cartographic.longitude), Angle.radiansToDegrees(cartographic.latitude), cartographic.height); // x is longitude in degrees, y is latitude in degrees, z is height in meters...
+    const coordResponse = await geoConverter.getIModelCoordinatesFromGeoCoordinates([geoCoord]);
+    if (1 === coordResponse.iModelCoords.length && GeoCoordStatus.Success === coordResponse.iModelCoords[0].s) {
+      result = result ? result : Point3d.createZero();
+      result.setFromJSON(coordResponse.iModelCoords[0].p);
+      return result;
+    }
+    return this.iModel.cartographicToSpatial(cartographic, result); // Get spatial location from ecef location if no gcs present...
+  }
+
   protected async getMarkerToolTip(point: Point3d): Promise<string> {
     let toolTip = "";
 
@@ -517,14 +546,11 @@ export class MeasureLocationTool extends PrimitiveTool {
         toolTip += IModelApp.i18n.translateKeys("<b>%{CoreTools:tools.Measure.Labels.Coordinate}:</b> ") + formattedPointX + ", " + formattedPointY + ", " + formattedPointZ + "<br>";
     }
 
-    if (undefined !== this.targetView && this.targetView.view.isSpatialView() && undefined !== this.iModel.ecefLocation) {
+    if (undefined !== this.targetView && this.targetView.view.isSpatialView()) {
       const latLongFormatterSpec = await IModelApp.quantityFormatter.getFormatterSpecByQuantityType(QuantityType.LatLong);
       if (undefined !== latLongFormatterSpec && undefined !== coordFormatterSpec) {
-        const geoConverter = this.iModel.geoServices.getConverter();
-        const coordResponse = await geoConverter.getGeoCoordinatesFromIModelCoordinates([point]);
-        if (1 === coordResponse.geoCoords.length && GeoCoordStatus.Success === coordResponse.geoCoords[0].s) {
-          const longLatHeight = Point3d.fromJSON(coordResponse.geoCoords[0].p); // x is longitude in degrees, y is latitude in degrees, z is height in meters...
-          const cartographic = Cartographic.fromDegrees(longLatHeight.x, longLatHeight.y, longLatHeight.z);
+        try {
+          const cartographic = await this.spatialToCartographic(point);
           const formattedLat = IModelApp.quantityFormatter.formatQuantity(Math.abs(cartographic.latitude), latLongFormatterSpec);
           const formattedLong = IModelApp.quantityFormatter.formatQuantity(Math.abs(cartographic.longitude), latLongFormatterSpec);
           const formattedHeight = IModelApp.quantityFormatter.formatQuantity(cartographic.height, coordFormatterSpec);
@@ -532,7 +558,7 @@ export class MeasureLocationTool extends PrimitiveTool {
           const longDir = IModelApp.i18n.translateKeys(cartographic.longitude < 0 ? "%{CoreTools:tools.Measure.Labels.W}" : "%{CoreTools:tools.Measure.Labels.E}");
           toolTip += IModelApp.i18n.translateKeys("<b>%{CoreTools:tools.Measure.Labels.LatLong}:</b> ") + formattedLat + latDir + ", " + formattedLong + longDir + "<br>";
           toolTip += IModelApp.i18n.translateKeys("<b>%{CoreTools:tools.Measure.Labels.Altitude}:</b> ") + formattedHeight + "<br>";
-        }
+        } catch { }
       }
     }
 
