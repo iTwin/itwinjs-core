@@ -10,7 +10,8 @@ import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { Transform } from "../geometry3d/Transform";
 import { IStrokeHandler, GeometryHandler } from "../geometry3d/GeometryHandler";
 import { StrokeOptions } from "./StrokeOptions";
-import { CurvePrimitive } from "./CurvePrimitive";
+import { CurvePrimitive } from "../curve/CurvePrimitive";
+import { StrokeCountMap } from "../curve/Query/StrokeCountMap";
 import { GeometryQuery } from "./GeometryQuery";
 import { CurveChain } from "./CurveCollection";
 import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
@@ -228,9 +229,32 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
       c.emitStrokableParts(dest, options);
     }
   }
+  /**
+   * return the stroke count required for given options.
+   * @param options StrokeOptions that determine count
+   */
+  public computeStrokeCountForOptions(options?: StrokeOptions): number {
+    let numStroke = 0;
+    for (const c of this._path.children) {
+      numStroke += c.computeStrokeCountForOptions(options);
+    }
+    return numStroke;
+  }
+  /**
+   * construct StrokeCountMap for each child, accumulating data to stroke count map for this primitive.
+   * @param options StrokeOptions that determine count
+   * @param parentStrokeMap evolving parent map.
+   */
+  public computeAndAttachRecursiveStrokeCounts(options?: StrokeOptions, parentStrokeMap?: StrokeCountMap) {
+    const myMap = StrokeCountMap.createWithCurvePrimitiveAndOptionalParent(this, parentStrokeMap);
+    for (const c of this._path.children) {
+      c.computeAndAttachRecursiveStrokeCounts(options, myMap);
+    }
+    CurvePrimitive.installStrokeCountMap(this, myMap, parentStrokeMap);
+  }
   /** dispatch the path to the handler */
   public dispatchToGeometryHandler(handler: GeometryHandler): any {
-    this._path.dispatchToGeometryHandler(handler);
+    return this._path.dispatchToGeometryHandler(handler);
   }
   /** Extend (increase) `rangeToExtend` as needed to include these curves (optionally transformed)
    */

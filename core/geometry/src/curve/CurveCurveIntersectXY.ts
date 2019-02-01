@@ -623,8 +623,8 @@ class CurveCurveIntersectXY extends NullGeometryHandler {
     for (let a = 0; a < numA; a++) {
       for (let b = 0; b < numB; b++) {
         if (rangeA[a].intersectsRangeXY(rangeB[b])) {
-          const strokeCountA = bezierSpanA[a].strokeCount();
-          const strokeCountB = bezierSpanB[b].strokeCount();
+          const strokeCountA = bezierSpanA[a].computeStrokeCountForOptions();
+          const strokeCountB = bezierSpanB[b].computeStrokeCountForOptions();
           if (strokeCountA < strokeCountB)
             this.dispatchBezierBezierStrokeFirst(bezierSpanA[a], bcurveA, strokeCountA, bezierSpanB[b], bcurveB, strokeCountB, univairateCoffsB, !_reversed);
           else

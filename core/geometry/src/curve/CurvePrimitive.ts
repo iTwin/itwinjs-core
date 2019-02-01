@@ -19,6 +19,8 @@ import { LineString3d } from "./LineString3d";
 import { Clipper } from "../clipping/ClipUtils";
 import { CurveLocationDetail, CurveSearchStatus } from "./CurveLocationDetail";
 import { GeometryQuery } from "./GeometryQuery";
+import { StrokeCountMap } from "../curve/Query/StrokeCountMap";
+
 /** Type for callback function which announces a pair of numbers, such as a fractional interval, along with a containing CurvePrimitive. */
 export type AnnounceNumberNumberCurvePrimitive = (a0: number, a1: number, cp: CurvePrimitive) => void;
 export type AnnounceNumberNumber = (a0: number, a1: number) => void;
@@ -39,6 +41,11 @@ export type AnnounceCurvePrimitive = (cp: CurvePrimitive) => void;
  */
 export abstract class CurvePrimitive extends GeometryQuery {
   protected constructor() { super(); }
+  /**
+   * data attached during stroking for facets.
+   */
+  public strokeData?: StrokeCountMap;
+
   /** Return the point (x,y,z) on the curve at fractional position.
    * @param fraction fractional position along the geometry.
    * @returns Returns a point on the curve.
@@ -361,6 +368,67 @@ export abstract class CurvePrimitive extends GeometryQuery {
    * See IStrokeHandler for description of the sequence of the method calls.
    */
   public abstract emitStrokableParts(dest: IStrokeHandler, options?: StrokeOptions): void;
+  /**
+   * return the stroke count required for given options.
+   * * This returns a single number
+   * * See computeComponentStrokeCountForOptions to get structured per-component counts and fraction mappings.
+   * @param options StrokeOptions that determine count
+   */
+  public abstract computeStrokeCountForOptions(options?: StrokeOptions): number;
+
+  /**
+   * attach StrokeCountMap structure to this primitive (and recursively to any children)
+   * * Base class implementation (here) gets the simple count from computeStrokeCountForOptions and attaches it.
+   * * LineString3d, arc3d, BezierCurve3d, BezierCurve3dH accept that default.
+   * * Subdivided primitives (linestring, bspline curve) implment themselves and attach a StrokeCountMap containing the
+   *       total count, and also containing an array of StrokeCountMap per component.
+   * * For CurvePrimitiveWithDistanceIndex, the top level gets (only) a total count, and each child gets
+   *       its own StrokeCountMap with appropriate structure.
+   * @param options StrokeOptions that determine count
+   * @param parentStrokeMap optional map from parent.  Its count, curveLength, and a1 values are incresed with count and distance from this primitive.
+   * @return sum of `a0+this.curveLength()`, for use as `a0` of successor in chain.
+   */
+  public computeAndAttachRecursiveStrokeCounts(options?: StrokeOptions, parentMap?: StrokeCountMap) {
+    const n = this.computeStrokeCountForOptions(options);
+    const a = this.curveLength();
+    CurvePrimitive.installStrokeCountMap(
+      this,
+      StrokeCountMap.createWithCurvePrimitive(this, n, a, 0, a),
+      parentMap);
+  }
+
+  /**
+   * evaluate strokes at fractions indicated in a StrokeCountMap.
+   * * Base class implementation (here) gets the simple count from computeStrokeCountForOptions and strokes at uniform fractions.
+   * * LineString3d, arc3d, BezierCurve3d, BezierCurve3dH accept that default.
+   * * Subdivided primitives (linestring, bspline curve) implment themselves and evaluate within components.
+   * * CurvePrimitiveWithDistanceIndex recurses to its children.
+   * @param map = stroke count data.
+   * @param linestring = receiver linestring.
+   * @return number of strokes added.  0 if any errors matching the map to the curve primitive.
+   */
+  public addMappedStrokesToLineString3D(map: StrokeCountMap, linestring: LineString3d): number {
+    const numPoint0 = linestring.numPoints();
+    if (map.primitive && map.primitive === this && map.numStroke > 0) {
+      for (let i = 0; i <= map.numStroke; i++) {
+        const fraction = i / map.numStroke;
+        linestring.addPoint(this.fractionToPoint(fraction));
+      }
+    }
+    return linestring.numPoints() - numPoint0;
+  }
+
+  /**
+   * final install step to save curveMap in curve.  If parentMap is given, update its length, count, and a1 fields
+   * @param curve curve to receive the annotation
+   * @param map
+   * @param parentMap
+   */
+  public static installStrokeCountMap(curve: CurvePrimitive, curveMap: StrokeCountMap, parentMap?: StrokeCountMap) {
+    if (parentMap)
+      parentMap.addToCountAndLength(curveMap.numStroke, curveMap.curveLength);
+    curve.strokeData = curveMap;
+  }
 }
 
 /** Intermediate class for managing the parentCurve announcements from an IStrokeHandler */

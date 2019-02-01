@@ -109,7 +109,11 @@ export class ClipUtilities {
     return output;
   }
 
-  /** Given an array of points, return whether or not processing is required to clip to a ClipPlaneSet region. */
+  /** Given an array of points, test for trivial containment conditions.
+   * * ClipStatus.TrivialAccept if all points are in any one of the convexSet's.
+   * * ClipStatus.ClipRequired if (in any single convexSet) there were points on both sides of any single plane.
+   * * ClipStatus.TrivialReject if neither of those occurred.
+   */
   public static pointSetSingleClipStatus(points: GrowableXYZArray, planeSet: UnionOfConvexClipPlaneSets, tolerance: number): ClipStatus {
     if (planeSet.convexSets.length === 0)
       return ClipStatus.TrivialAccept;

@@ -188,4 +188,29 @@ describe("BSplineSurface", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
+  it("Cones", () => {
+    const ck = new Checker();
+    const allGeometry = [];
+    let dx = 0.0;
+    const dy = 0.0;
+    for (const bsurf of [Sample.createConeBsplineSurface(
+      Point3d.create(0, 0, 0),
+      Point3d.create(0, 0, 1),
+      4.0, 1.0, 2),
+    Sample.createConeBsplineSurface(
+      Point3d.create(0, 0, 0),
+      Point3d.create(1, 3, 1),
+      4.0, 1.0,
+      3)]) {
+      if (ck.testPointer(bsurf) && bsurf) {
+        bsurf.tryTranslateInPlace(dx, dy);
+        allGeometry.push(bsurf);
+        dx += 10.0;
+      }
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "BSplineSurface", "createCone");
+    ck.checkpoint("BSplineSurface.Wrapped");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
 });

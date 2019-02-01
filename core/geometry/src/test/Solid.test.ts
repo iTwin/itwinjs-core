@@ -187,15 +187,15 @@ describe("Solids", () => {
     for (const s of spheres) {
       const r = s.trueSphereRadius();
       if (r !== undefined) {
-        ck.testCoordinate(r, s.cloneVectorX().magnitude());
-        ck.testCoordinate(r, s.cloneVectorY().magnitude());
-        ck.testCoordinate(r, s.cloneVectorZ().magnitude());
+        ck.testCoordinate(r, s.cloneVectorX().magnitude(), s);
+        ck.testCoordinate(r, s.cloneVectorY().magnitude(), s);
+        ck.testCoordinate(r, s.cloneVectorZ().magnitude(), s);
       }
       const sectionA = s.strokeConstantVSection(0.25, undefined);
       const sectionB = s.strokeConstantVSection(0.25, 32);
       const options = StrokeOptions.createForCurves();
       options.angleTol = Angle.createDegrees(360 / 12);
-      const sectionC = s.strokeConstantVSection(0.25, options);
+      const sectionC = s.strokeConstantVSection(0.25, undefined, options);
       ck.testExactNumber(sectionA.numPoints(), 17);
       ck.testExactNumber(sectionB.numPoints(), 33, "explicit stroke count");
       ck.testExactNumber(sectionC.numPoints(), 13, "stroke count by angle");

@@ -376,6 +376,24 @@ export class TransitionSpiral3d extends CurvePrimitive {
     this._strokes.emitStrokableParts(dest, options);
     dest.endParentCurvePrimitive(this);
   }
+
+  /**
+   * return the stroke count required for given options.
+   * @param options StrokeOptions that determine count
+   */
+  public computeStrokeCountForOptions(options?: StrokeOptions): number {
+    let numStroke = 1;
+    if (options) {
+      const rMin = Math.min(Math.abs(this.radius01.x0), Math.abs(this.radius01.x1));
+      numStroke = options.applyTolerancesToArc(rMin, this.bearing01.sweepRadians);
+      numStroke = options.applyMaxEdgeLength(numStroke, this.curveLength());
+      numStroke = options.applyMinStrokesPerPrimitive(numStroke);
+    } else {
+      numStroke = StrokeOptions.applyAngleTol(undefined, 4, this.bearing01.sweepRadians);
+    }
+    return numStroke;
+  }
+
   // hm.. nothing to do but reverse the interval . . . maybe that's cheesy . . .
   public reverseInPlace(): void {
     this.activeFractionInterval.reverseInPlace();

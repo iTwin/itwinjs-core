@@ -24,6 +24,8 @@ import { Point3dArray, Point4dArray } from "../geometry3d/PointHelpers";
 import { BezierCurveBase } from "./BezierCurveBase";
 import { BezierCurve3dH } from "./BezierCurve3dH";
 import { BSplineCurve3dBase } from "./BSplineCurve";
+import { CurvePrimitive } from "../curve/CurvePrimitive";
+import { StrokeCountMap } from "../curve/Query/StrokeCountMap";
 
 /**
  * Weighted (Homogeneous) BSplineCurve in 3d
@@ -208,7 +210,7 @@ export class BSplineCurve3dH extends BSplineCurve3dBase {
     for (let spanIndex = 0; spanIndex < numSpan; spanIndex++) {
       const bezier = this.getSaturatedBezierSpan3dOr3dH(spanIndex, false, workBezier);
       if (bezier) {
-        numStrokes = bezier.strokeCount(options);
+        numStrokes = bezier.computeStrokeCountForOptions(options);
         if (needBeziers) {
           (handler as any).announceBezierCurve(bezier, numStrokes, this,
             spanIndex,
@@ -233,7 +235,41 @@ export class BSplineCurve3dH extends BSplineCurve3dBase {
         bezier.emitStrokes(dest, options);
     }
   }
+  /**
+   * Assess legnth and turn to determine a stroke count.
+   * @param options stroke options structure.
+   */
+  public computeStrokeCountForOptions(options?: StrokeOptions): number {
+    const workBezier = this.initializeWorkBezier();
+    const numSpan = this.numSpan;
+    let numStroke = 0;
+    for (let spanIndex = 0; spanIndex < numSpan; spanIndex++) {
+      const bezier = this.getSaturatedBezierSpan3dH(spanIndex, workBezier);
+      if (bezier)
+        numStroke += bezier.computeStrokeCountForOptions(options);
+    }
+    return numStroke;
+  }
+  /**
+   * Compute individual segment stroke counts.  Attach in a StrokeCountMap.
+   * @param options StrokeOptions that determine count
+   * @param parentStrokeMap evolving parent map.
+   */
+  public computeAndAttachRecursiveStrokeCounts(options?: StrokeOptions, parentStrokeMap?: StrokeCountMap) {
+    const workBezier = this.initializeWorkBezier();
+    const numSpan = this.numSpan;
+    const myData = StrokeCountMap.createWithCurvePrimitiveAndOptionalParent(this, parentStrokeMap, []);
 
+    for (let spanIndex = 0; spanIndex < numSpan; spanIndex++) {
+      const bezier = this.getSaturatedBezierSpan3dH(spanIndex, workBezier);
+      if (bezier) {
+        const segmentLength = workBezier.curveLength();
+        const numStrokeOnSegment = workBezier.computeStrokeCountForOptions(options);
+        myData.addToCountAndLength(numStrokeOnSegment, segmentLength);
+      }
+    }
+    CurvePrimitive.installStrokeCountMap(this, myData, parentStrokeMap);
+  }
   /**
    * return true if the spline is (a) unclamped with (degree-1) matching knot intervals,
    * (b) (degree-1) wrapped points,

@@ -125,6 +125,9 @@ export class TorusPipe extends SolidPrimitive implements UVSurface {
     }
     return false;
   }
+  /** Return the angle (in radians) for given fractional position around the major hoop.
+   */
+  public vFractionToRadians(v: number): number { return this._sweep.radians * v; }
   public dispatchToGeometryHandler(handler: GeometryHandler): any {
     return handler.handleTorusPipe(this);
   }
@@ -133,8 +136,8 @@ export class TorusPipe extends SolidPrimitive implements UVSurface {
    * @returns Return the Arc3d section at vFraction.  For the TorusPipe, this is a minor circle.
    * @param vFraction fractional position along the sweep direction
    */
-  public constantVSection(vFraction: number): CurveCollection | undefined {
-    const thetaRadians = this._sweep.radians * vFraction;
+  public constantVSection(v: number): CurveCollection | undefined {
+    const thetaRadians = this.vFractionToRadians(v);
     const c0 = Math.cos(thetaRadians);
     const s0 = Math.sin(thetaRadians);
     const majorRadius = this.getMajorRadius();
@@ -246,5 +249,4 @@ export class TorusPipe extends SolidPrimitive implements UVSurface {
       this._localToWorld.multiplyVectorXYZ(-rxy * sinTheta * fTheta, rxy * cosTheta * fTheta, 0),
       result);
   }
-
 }

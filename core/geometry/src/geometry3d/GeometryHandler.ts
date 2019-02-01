@@ -34,6 +34,7 @@ import { LineString3d } from "../curve/LineString3d";
 import { PointString3d } from "../curve/PointString3d";
 import { Plane3dByOriginAndVectors } from "./Plane3dByOriginAndVectors";
 import { BezierCurveBase } from "../bspline/BezierCurveBase";
+import { GeometryQuery } from "../curve/GeometryQuery";
 
 export abstract class GeometryHandler {
   // Currently will include functionality on "how to handle" (note: Subclasses of CurveCollection are linked to one method)
@@ -110,6 +111,49 @@ export class NullGeometryHandler extends GeometryHandler {
   public handleBezierCurve3d(_g: BezierCurve3d): any { return undefined; }
   public handleBezierCurve3dH(_g: BezierCurve3dH): any { return undefined; }
 }
+/**
+ * Implement GeometryHandler methods, with all curve collection methods recursing to children.
+ */
+export class RecurseToCurvesGeometryHandler extends GeometryHandler {
+  public handleLineSegment3d(_g: LineSegment3d): any { return undefined; }
+  public handleLineString3d(_g: LineString3d): any { return undefined; }
+  public handleArc3d(_g: Arc3d): any { return undefined; }
+  public handleCurveCollection(_g: CurveCollection): any { return undefined; }
+  public handleBSplineCurve3d(_g: BSplineCurve3d): any { return undefined; }
+  public handleBSplineCurve3dH(_g: BSplineCurve3dH): any { return undefined; }
+  public handleBSplineSurface3d(_g: BSplineSurface3d): any { return undefined; }
+
+  public handleCoordinateXYZ(_g: CoordinateXYZ): any { return undefined; }
+  public handleBSplineSurface3dH(_g: BSplineSurface3dH): any { return undefined; }
+  public handleIndexedPolyface(_g: IndexedPolyface): any { return undefined; }
+  public handleTransitionSpiral(_g: TransitionSpiral3d): any { return undefined; }
+
+  public handleChildren(g: GeometryQuery): any {
+    const children = g.children;
+    if (children)
+      for (const child of children) {
+        child.dispatchToGeometryHandler(this);
+      }
+  }
+
+  public handlePath(g: Path): any { return this.handleChildren(g); }
+  public handleLoop(g: Loop): any { return this.handleChildren(g); }
+  public handleParityRegion(g: ParityRegion): any { return this.handleChildren(g); }
+  public handleUnionRegion(g: UnionRegion): any { return this.handleChildren(g); }
+  public handleBagOfCurves(g: BagOfCurves): any { return this.handleChildren(g); }
+
+  public handleSphere(_g: Sphere): any { return undefined; }
+  public handleCone(_g: Cone): any { return undefined; }
+  public handleBox(_g: Box): any { return undefined; }
+  public handleTorusPipe(_g: TorusPipe): any { return undefined; }
+  public handleLinearSweep(_g: LinearSweep): any { return undefined; }
+  public handleRotationalSweep(_g: RotationalSweep): any { return undefined; }
+  public handleRuledSweep(_g: RuledSweep): any { return undefined; }
+  public handlePointString3d(_g: PointString3d): any { return undefined; }
+  public handleBezierCurve3d(_g: BezierCurve3d): any { return undefined; }
+  public handleBezierCurve3dH(_g: BezierCurve3dH): any { return undefined; }
+}
+
 /** IStrokeHandler is an interface with methods to receive data about curves being stroked.
  * CurvePrimitives emitStrokes () methods emit calls to a handler object with these methods.
  * The various CurvePrimitive types are free to announce either single points (announcePoint), linear fragments,

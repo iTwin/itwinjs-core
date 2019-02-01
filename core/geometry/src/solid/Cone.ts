@@ -146,27 +146,40 @@ export class Cone extends SolidPrimitive implements UVSurface {
     const fractions = result.fractions;     // possibly undefined !!!
     const derivatives = result.packedDerivatives; // possibly undefined !!!
     const uvParams = result.packedUVParams; // possibly undefined !!
+    const surfaceNormals = result.packedSurfaceNormals;
     const xyz = Point3d.create();
-    const uvw = Vector3d.create();
+    const dXdu = Vector3d.create();
+    const dXdv = Vector3d.create();
+    const normal = Vector3d.create();
     const transform = this._localToWorld;
-    let rc, rs;
+    let rc, rs, cc, ss;
     for (let i = 0; i <= strokeCount; i++) {
       if (i * 2 <= strokeCount)
         radians = i * deltaRadians;
       else
         radians = (i - strokeCount) * deltaRadians;
-      rc = r * Math.cos(radians);
-      rs = r * Math.sin(radians);
+      cc = Math.cos(radians);
+      ss = Math.sin(radians);
+      rc = r * cc;
+      rs = r * ss;
+
       transform.multiplyXYZ(rc, rs, v, xyz);
       result.addPoint(xyz);
       if (fractions)
         fractions.push(i / strokeCount);
       if (derivatives) {
-        transform.matrix.multiplyXYZ(-rs * twoPi, rc * twoPi, 0.0, uvw);
-        derivatives.push(uvw);
+        transform.matrix.multiplyXYZ(-rs * twoPi, rc * twoPi, 0.0, dXdu);
+        derivatives.push(dXdu);
+      }
+      if (surfaceNormals) {
+        // the along-hoop vector does not need to be scaled by radius -- just need the direction for a cross product.
+        transform.matrix.multiplyXYZ(-ss, cc, 0.0, dXdu);
+        transform.matrix.multiplyXYZ(0, 0, 1, dXdv);
+        dXdu.unitCrossProduct(dXdv, normal);
+        surfaceNormals.push(normal);
       }
       if (uvParams) {
-        uvParams.pushXY(rc, rs);
+        uvParams.pushXY(i / strokeCount, v);
       }
     }
     return result;

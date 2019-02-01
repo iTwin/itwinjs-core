@@ -11,6 +11,7 @@ import { Range3d } from "../geometry3d/Range";
 import { Transform } from "../geometry3d/Transform";
 import { StrokeOptions } from "../curve/StrokeOptions";
 import { CurvePrimitive } from "../curve/CurvePrimitive";
+import { StrokeCountMap } from "../curve/Query/StrokeCountMap";
 import { NewtonEvaluatorRtoR, Newton1dUnboundedApproximateDerivative } from "../numerics/Newton";
 import { BSplineCurve3d } from "../bspline/BSplineCurve";
 import { BSplineCurve3dH } from "../bspline/BSplineCurve3dH";
@@ -37,9 +38,75 @@ import { CurveChainWithDistanceIndex } from "../curve/CurveChainWithDistanceInde
 import { RuledSweep } from "../solid/RuledSweep";
 import { GeometryQuery } from "../curve/GeometryQuery";
 import { BagOfCurves, CurveCollection } from "../curve/CurveCollection";
+import { NullGeometryHandler } from "../geometry3d/GeometryHandler";
 /* tslint:disable:no-console */
 
+class StrokeCountSearch extends NullGeometryHandler {
+  public emitPackedStrokeCountMap(m: StrokeCountMap): any {
+    const baseData = [m.numStroke, m.curveLength, m.a0, m.a1];
+    if (!m.componentData) return baseData;
+    const components = [];
+    for (const cd of m.componentData) {
+      const json = this.emitPackedStrokeCountMap(cd);
+      components.push(json);
+    }
+    return { base: baseData, array: components };
+  }
+  public emitCountData(g: any) {
+    if (g.strokeData instanceof StrokeCountMap)
+      return this.emitPackedStrokeCountMap(g.strokeData);
+    return undefined;
+  }
+  public handleLineString3d(g: LineString3d) { return { LineString3d: this.emitCountData(g) }; }
+  public handleArc3d(g: Arc3d) { return { Arc3d: this.emitCountData(g) }; }
+  public handleLineSegment3d(g: LineSegment3d) { return { LineSegment3d: this.emitCountData(g) }; }
+  public handleBSplineCurve3d(g: BSplineCurve3d) { return { BSplineCurve3d: this.emitCountData(g) }; }
+  public handleBSplineCurve3dH(g: BSplineCurve3dH) { return { BSplineCurve3dH: this.emitCountData(g) }; }
+  public handleLBezierCurve3d(g: BezierCurve3d) { return { BezierCurve3d: this.emitCountData(g) }; }
+  public handleLBezierCurve3dH(g: BezierCurve3dH) { return { BezierCurve3dH: this.emitCountData(g) }; }
+  public handleCurveChainWithDistanceIndex(g: CurveChainWithDistanceIndex) {
+    const data = { CurveVectorWithDistanceIndex: this.emitCountData(g) };
+    const children = g.children;
+    if (children) {
+      (data as any).childCounts = [];
+      for (const c of children) {
+        (data as any).childCounts.push(this.emitCountData(c));
+      }
+    }
+  }
+  public handlePath(g: Path) {
+    const childData = [];
+    const children = g.children;
+    if (children) {
+      for (const c of children) {
+        childData.push(this.emitCountData(c));
+      }
+    }
+    return { path: childData };
+  }
+
+  public static getJSON(g: GeometryQuery): any {
+    const handler = new StrokeCountSearch();
+    return g.dispatchToGeometryHandler(handler);
+  }
+}
+
 class ExerciseCurve {
+  public static exerciseStrokeData(ck: Checker, curve: CurvePrimitive) {
+
+    const curveA = curve.clone() as CurvePrimitive;
+    const count0 = curveA.computeStrokeCountForOptions();
+    curveA.computeAndAttachRecursiveStrokeCounts();
+    // console.log("strokes by count", count0);
+    // console.log("attached to curve", prettyPrint(StrokeCountSearch.getJSON(curveA)));
+
+    if (ck.testPointer(curveA.strokeData, "StrokeData attached", curveA) && curveA.strokeData) {
+      if (!ck.testExactNumber(curveA.strokeData.numStroke, count0, curveA)) {
+        console.log("strokes by count", count0);
+        console.log("attached to curve", prettyPrint(StrokeCountSearch.getJSON(curveA)));
+      }
+    }
+  }
 
   public static exerciseCloneAndTransform(ck: Checker, curveA: CurvePrimitive) {
     const u0 = 0.25;
@@ -226,6 +293,7 @@ class ExerciseCurve {
     ExerciseCurve.exerciseReverseInPlace(ck, curve);
     ExerciseCurve.exerciseCloneAndTransform(ck, curve);
     ExerciseCurve.exerciseCloneAndTransform(ck, curve);
+    ExerciseCurve.exerciseStrokeData(ck, curve);
     // evaluate near endpoints to trigger end conditions
     const point0A = curve.startPoint();
     const point1A = curve.endPoint();
@@ -293,7 +361,7 @@ class ExerciseCurve {
       console.log("STROKES", strokes);
     }
   }
-  public static runTest(ck: Checker) {
+  public static testManyCurves(ck: Checker) {
 
     {
       const segment = LineSegment3d.create(Point3d.create(1, 2, 3), Point3d.create(4, 5, 10));
@@ -430,10 +498,10 @@ class ExerciseCurve {
   }
 }
 
-describe("CurveChainWithDistanceIndex", () => {
+describe("Curves", () => {
   it("Exercise", () => {
     const ck = new Checker();
-    ExerciseCurve.runTest(ck);
+    ExerciseCurve.testManyCurves(ck);
     ck.checkpoint("End CurvePrimitive.Evaluations");
     expect(ck.getNumErrors()).equals(0);
   });

@@ -234,7 +234,7 @@ export class Transform implements BeJSONFunctions {
 
   /** Transform the input point.  Return as a new point or in the pre-allocated result (if result is given) */
   public multiplyXYZ(x: number, y: number, z: number, result?: Point3d): Point3d {
-    return Matrix3d.xyzlusMatrixTimesCoordinates(this._origin, this._matrix, x, y, z, result);
+    return Matrix3d.xyzPlusMatrixTimesCoordinates(this._origin, this._matrix, x, y, z, result);
   }
   /** Multiply a specific row of the transform times xyz. Return the (number). */
   public multiplyComponentXYZ(componentIndex: number, x: number, y: number, z: number): number {
