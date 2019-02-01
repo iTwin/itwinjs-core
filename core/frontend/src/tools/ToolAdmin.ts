@@ -310,12 +310,30 @@ export class ToolAdmin {
   private _saveCursor?: string;
   private _saveLocateCircle = false;
   private _modifierKeyWentDown = false;
+  private _defaultToolId = "Select";
+  private _defaultToolArgs?: any[];
   private _modifierKey = BeModifierKeys.None;
   /** Return the name of the [[PrimitiveTool]] to use as the default tool, if any.
    * @see [[startDefaultTool]]
    * @hidden
    */
-  public get defaultToolId(): string { return "Select"; }
+  public get defaultToolId(): string { return this._defaultToolId; }
+  /** Set the name of the [[PrimitiveTool]] to use as the default tool, if any.
+   * @see [[startDefaultTool]]
+   * @hidden
+   */
+  public set defaultToolId(toolId: string) { this._defaultToolId = toolId; }
+  /** Return the default arguments to pass in when starting the default tool, if any.
+   * @see [[startDefaultTool]]
+   * @hidden
+   */
+  public get defaultToolArgs(): any[] | undefined { return this._defaultToolArgs; }
+
+  /** Set the default arguments to pass in when starting the default tool, if any.
+   * @see [[startDefaultTool]]
+   * @hidden
+   */
+  public set defaultToolArgs(args: any[] | undefined) { this._defaultToolArgs = args; }
   /** Apply operations such as transform, copy or delete to all members of an assembly. */
   public assemblyLock = false;
   /** If Grid Lock is on, project data points to grid. */
@@ -1313,7 +1331,7 @@ export class ToolAdmin {
    * @hidden
    */
   public startDefaultTool() {
-    if (!IModelApp.tools.run(this.defaultToolId))
+    if (!IModelApp.tools.run(this.defaultToolId, this.defaultToolArgs))
       this.startPrimitiveTool(undefined);
   }
 

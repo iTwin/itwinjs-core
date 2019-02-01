@@ -144,7 +144,8 @@
         "IdentifyBoxRemove": "Identify elements to remove by box corner points",
         "AcceptSelection": "Accept/Reject Selection",
         "AcceptFence": "Accept/Reject Fence Contents",
-        "Mode": "Mode"
+        "Mode": "Mode",
+        "Scope": "Scope"
       },
       "Error": {
         "NoFence": "No fence defined",
@@ -155,11 +156,15 @@
         "ProjectExtents": "Invalid location. All elements must fit within the volume defined by the project extents."
       },
       "SelectionOptions": {
-        "Pick": "Pick",
-        "Line": "Line",
-        "Box": "Box",
-        "Add": "Add",
-        "Remove": "Remove"
+        "Pick": "Select single",
+        "Line": "Select all crossing line",
+        "Box": "Select by range",
+        "Add": "Add to selection",
+        "Remove": "Remove from selection"
+      },
+      "SelectionScope": {
+        "Element": "Element",
+        "Assembly": "Assembly"
       }
     },
     "Plugin": {

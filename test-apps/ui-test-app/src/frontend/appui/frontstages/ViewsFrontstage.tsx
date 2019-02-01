@@ -300,7 +300,7 @@ class FrontstageToolWidget extends React.Component {
       expandsTo={Direction.Bottom}
       items={
         <>
-          <ActionItemButton actionItem={CoreTools.selectElementCommand} />
+          <ActionItemButton actionItem={AppTools.appSelectElementCommand} />
           <ToolButton toolId="Measure.Points" iconSpec="icon-measure-distance" labelKey="SampleApp:tools.Measure.Points.flyover"
             execute={this.executeMeasureByPoints} stateSyncIds={[SyncUiEventId.ActiveContentChanged]} stateFunc={this._measureStateFunc} />
           <BooleanSyncUiListener eventIds={[SampleAppUiActionId.setTestProperty]} boolFunc={(): boolean => SampleAppIModelApp.getTestProperty() !== "HIDE"}>

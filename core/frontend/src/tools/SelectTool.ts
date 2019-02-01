@@ -12,7 +12,7 @@ import { HitDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
 import { PropertyDescription } from "../properties/Description";
 import { PropertyEditorParamTypes } from "../properties/EditorParams";
-import { ToolSettingsPropertyRecord, ToolSettingsPropertySyncItem, ToolSettingsValue, TsHorizontalAlignment } from "../properties/ToolSettingsValue";
+import { ToolSettingsPropertyRecord, ToolSettingsPropertySyncItem, ToolSettingsValue } from "../properties/ToolSettingsValue";
 import { PrimitiveValue } from "../properties/Value";
 import { Pixel } from "../rendering";
 import { DecorateContext } from "../ViewContext";
@@ -79,6 +79,7 @@ export class SelectionTool extends PrimitiveTool {
   private _selectionMode = SelectionMode.Replace;
   private _selectionMethod = SelectionMethod.Pick;
   private _selectionOptionValue = new ToolSettingsValue(SelectOptions.PickAndReplace);
+  protected _selectionScopeValue = new ToolSettingsValue(SelectionScope.Assembly);
 
   public requireWriteableTarget(): boolean { return false; }
   public autoLockTarget(): void { } // NOTE: For selecting elements we only care about iModel, so don't lock target model automatically.
@@ -91,12 +92,12 @@ export class SelectionTool extends PrimitiveTool {
   protected setSelectionMethod(method: SelectionMethod): void { this._selectionMethod = method; }
   protected getSelectionMode(): SelectionMode { return this._selectionMode; }
   protected setSelectionMode(mode: SelectionMode): void { this._selectionMode = mode; }
-  protected getSelectionScope(): SelectionScope { return SelectionScope.Assembly; } // NEEDSWORK: Settings...
-  protected wantToolSettings(): boolean { return true; }
+  protected wantToolSettings(): boolean { return false; }
+  protected wantSelectionScopeInToolSettings(): boolean { return true; }
 
   private static optionMessage(str: string) { return IModelApp.i18n.translate("CoreTools:tools.ElementSet.SelectionOptions." + str); }
   private static _optionsName = "selectionOptions";
-  /* The property description used to generate ToolSettings UI. */
+  /* The property descriptions used to generate ToolSettings UI. */
   private static _getOptionsDescription(): PropertyDescription {
     return {
       name: SelectionTool._optionsName,
@@ -127,6 +128,22 @@ export class SelectionTool extends PrimitiveTool {
           { label: SelectionTool.optionMessage("Box"), value: SelectOptions.BoxAndReplace },
           { label: SelectionTool.optionMessage("Add"), value: SelectOptions.PickAndAdd },
           { label: SelectionTool.optionMessage("Remove"), value: SelectOptions.PickAndRemove },
+        ],
+      },
+    };
+  }
+
+  private static scopeMessage(str: string) { return IModelApp.i18n.translate("CoreTools:tools.ElementSet.SelectionScope." + str); }
+  private static _scopesName = "selectionScope";
+  private static _getScopesDescription = (): PropertyDescription => {
+    return {
+      name: SelectionTool._scopesName,
+      displayLabel: IModelApp.i18n.translate("CoreTools:tools.ElementSet.Prompts.Scope"),
+      typename: "enum",
+      enum: {
+        choices: [
+          { label: SelectionTool.scopeMessage("Element"), value: SelectionScope.Element },
+          { label: SelectionTool.scopeMessage("Assembly"), value: SelectionScope.Assembly },
         ],
       },
     };
@@ -214,7 +231,7 @@ export class SelectionTool extends PrimitiveTool {
   }
 
   public async processSelection(elementId: Id64Arg, process: SelectionProcessing): Promise<boolean> {
-    if (SelectionScope.Assembly === this.getSelectionScope()) {
+    if (SelectionScope.Assembly === this.selectionScope) {
       const assemblyIds = new Set<string>();
       Id64.toIdSet(elementId).forEach((id) => { assemblyIds.add(id); });
       if (0 === assemblyIds.size)
@@ -546,16 +563,13 @@ export class SelectionTool extends PrimitiveTool {
 
   private syncSelectionOption(): void {
     if (SelectOptions.PickAndRemove === this._selectionOptionValue.value && !this.iModel.selectionSet.isActive) {
-      // tslint:disable-next-line:no-console
-      // console.log(`SelectTool [syncSelectionOption] - no selection active resetting selection option`);
+      // No selection active resetting selection option since PickAndRemove is no longer valid
       this._selectionOptionValue.value = SelectOptions.PickAndReplace;
       this.setSelectionMode(SelectionMode.Replace);
       this.setSelectionMethod(SelectionMethod.Pick);
     }
 
     const syncItem: ToolSettingsPropertySyncItem = { value: this._selectionOptionValue.clone(), propertyName: SelectionTool._optionsName };
-    // tslint:disable-next-line:no-console
-    // console.log(`SelectTool [syncSelectionOption] - sync UI with latest values ${JSON.stringify(syncItem)}`);
     this.syncToolSettingsProperties([syncItem]);
   }
 
@@ -604,27 +618,50 @@ export class SelectionTool extends PrimitiveTool {
       this.initSelectTool();
   }
 
+  private syncSelectionScope(): void {
+    const syncItem: ToolSettingsPropertySyncItem = { value: this._selectionScopeValue.clone(), propertyName: SelectionTool._scopesName };
+    this.syncToolSettingsProperties([syncItem]);
+  }
+
+  public get selectionScope(): SelectionScope {
+    return this._selectionScopeValue.value as SelectionScope;
+  }
+
+  public set selectionScope(scope: SelectionScope) {
+    this._selectionScopeValue.value = scope;
+    this.syncSelectionScope();
+  }
+
+  private applySelectionScope(scope: SelectionScope): void {
+    // if we change scopes clear the selection
+    if (scope !== this.selectionScope) {
+      this._selectionScopeValue.value = scope;
+      this.iModel.selectionSet.emptyAll();
+      this.syncSelectionOption();
+    }
+  }
+
   /** Used to supply DefaultToolSettingProvider with a list of properties to use to generate ToolSettings.  If undefined then no ToolSettings will be displayed */
   public supplyToolSettingsProperties(): ToolSettingsPropertyRecord[] | undefined {
     if (!this.wantToolSettings())
       return undefined;
     const toolSettings = new Array<ToolSettingsPropertyRecord>();
-    toolSettings.push(new ToolSettingsPropertyRecord(this._selectionOptionValue.clone() as PrimitiveValue, SelectionTool._getOptionsDescription(), { rowPriority: 0, columnPriority: 0, horizontalAlignment: TsHorizontalAlignment.Center }));
+    toolSettings.push(new ToolSettingsPropertyRecord(this._selectionOptionValue.clone() as PrimitiveValue, SelectionTool._getOptionsDescription(), { rowPriority: 0, columnPriority: 0 }));
+    if (this.wantSelectionScopeInToolSettings())
+      toolSettings.push(new ToolSettingsPropertyRecord(this._selectionScopeValue.clone() as PrimitiveValue, SelectionTool._getScopesDescription(), { rowPriority: 10, columnPriority: 0 }));
+
     return toolSettings;
   }
 
   /** Used to send changes from UI back to Tool */
   public applyToolSettingPropertyChange(updatedValue: ToolSettingsPropertySyncItem): boolean {
     if (updatedValue.propertyName === SelectionTool._optionsName) {
-      // tslint:disable-next-line:no-console
-      // console.log(`SelectTool [applyToolSettingPropertyChange] - update tool to match UI value ${JSON.stringify(updatedValue)}`);
-
-      if (this._selectionOptionValue.update(updatedValue.value)) {
+      if (this._selectionOptionValue.update(updatedValue.value))
         this.applySelectionOption(updatedValue.value.value as SelectOptions);
-        // tslint:disable-next-line:no-console
-        // console.log(`SelectTool [applyToolSettingPropertyChange] - updated tool value = ${JSON.stringify(this._selectionOptionValue)}`);
-      }
+    } else if (updatedValue.propertyName === SelectionTool._scopesName) {
+      this.applySelectionScope(updatedValue.value.value as SelectionScope);
     }
+
     // return true is change is valid
     return true;
   }

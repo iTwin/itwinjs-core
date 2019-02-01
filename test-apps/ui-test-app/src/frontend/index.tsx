@@ -35,6 +35,7 @@ import AppBackstage, { BackstageShow, BackstageHide } from "./appui/AppBackstage
 import { ViewsFrontstage } from "./appui/frontstages/ViewsFrontstage";
 import { Tool1 } from "./tools/Tool1";
 import { Tool2 } from "./tools/Tool2";
+import { AppSelectTool } from "./tools/AppSelectTool";
 
 // Mobx demo
 import { configure as mobxConfigure } from "mobx";
@@ -190,6 +191,8 @@ export class SampleAppIModelApp extends IModelApp {
     BackstageHide.register(this.sampleAppNamespace);
     Tool1.register(this.sampleAppNamespace);
     Tool2.register(this.sampleAppNamespace);
+    AppSelectTool.register();
+    IModelApp.toolAdmin.defaultToolId = AppSelectTool.toolId;
   }
 
   public static async handleIModelViewsSelected(iModelInfo: IModelInfo, viewIdsSelected: Id64String[]) {
