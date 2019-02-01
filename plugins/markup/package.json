@@ -10,7 +10,7 @@
     "docs": "",
     "lint": "tslint --project . 1>&2",
     "test": "",
-    "cover": "nyc npm test",
+    "cover": "",
     "webpack:main": "webpack --config ./node_modules/@bentley/webpack-tools/modules/webpackModule.config.js --env.outdir=./lib/webresources --env.entry=./lib/Markup.js --env.bundlename=MarkupPlugin --env.isplugin"
   },
   "repository": {
