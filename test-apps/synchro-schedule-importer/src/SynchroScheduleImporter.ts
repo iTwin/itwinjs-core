@@ -216,8 +216,6 @@ function doAddAnimationScript(iModel: IModelDb, animationScript: string, createS
         const bgColor = new ColorDef("rgb(127, 127, 127)");
 
         const displayStyleId = DisplayStyle3d.insert(iModel, view.model, "Schedule View Style", { viewFlags: vf, backgroundColor: bgColor, scheduleScript: script });
-        const displayStyleProps = iModel.elements.getElementProps(displayStyleId);
-        iModel.elements.updateElement(displayStyleProps);
         iModel.views.setDefaultViewId(OrthographicViewDefinition.insert(iModel, view.model, "Schedule View", view.modelSelectorId, view.categorySelectorId, displayStyleId, iModel.projectExtents));
         return true;
     });
