@@ -90,6 +90,7 @@ export class Config {
       }
     });
 
+    this._expanded[name] = value;
     return value;
   }
   /** Get a property value. Throws exception if property name is not found */
