@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { I18N } from "@bentley/imodeljs-i18n";
-import { PropertyRecord, PrimitiveValue, PropertyValueFormat, PropertyDescription, ArrayValue, StructValue } from "@bentley/imodeljs-frontend";
+import { PropertyRecord, PrimitiveValue, PropertyValueFormat, PropertyDescription, ArrayValue, StructValue, PropertyEditorParamTypes } from "@bentley/imodeljs-frontend";
 import { UiComponents } from "../ui-components";
 import { UiCore } from "@bentley/ui-core";
 
@@ -123,6 +123,28 @@ export default class TestUtils {
     ];
 
     return propertyRecord;
+  }
+
+  public static blueEnumValueIsEnabled = true;
+  public static toggleBlueEnumValueEnabled() { TestUtils.blueEnumValueIsEnabled = !TestUtils.blueEnumValueIsEnabled; }
+  public static addEnumButtonGroupEditorSpecification(propertyRecord: PropertyRecord) {
+    propertyRecord.property.editor = {
+      name: "enum-buttongroup",
+      params: [
+        {
+          type: PropertyEditorParamTypes.ButtonGroupData,
+          buttons: [
+            { iconClass: "icon-yellow" },
+            { iconClass: "icon-red" },
+            { iconClass: "icon-green" },
+            {
+              iconClass: "icon-blue",
+              isEnabledFunction: () => TestUtils.blueEnumValueIsEnabled,
+            },
+          ],
+        },
+      ],
+    };
   }
 
   public static createBooleanProperty(name: string, booleanValue: boolean) {

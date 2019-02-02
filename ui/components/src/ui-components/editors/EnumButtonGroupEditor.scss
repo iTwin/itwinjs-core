@@ -160,6 +160,8 @@ $components-enumbuttongroup-editor-space-between-toolbar-items: 1px;
   }
 
   &.nz-is-disabled {
+    pointer-events: none;
+
     >i {
       color: $disabled-icon-color;
     }
