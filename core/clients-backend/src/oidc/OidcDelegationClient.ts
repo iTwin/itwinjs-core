@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { AccessToken, IncludePrefix } from "@bentley/imodeljs-clients";
-import { GrantParams, TokenSet, UserInfo as OpenIdUserInfo } from "openid-client";
+import { GrantParams, TokenSet } from "openid-client";
 import { ActivityLoggingContext, BentleyStatus, BentleyError } from "@bentley/bentleyjs-core";
 import { OidcBackendClientConfiguration, OidcBackendClient } from "./OidcBackendClient";
 
@@ -31,8 +31,7 @@ export class OidcDelegationClient extends OidcBackendClient {
 
     const client = await this.getClient(actx);
     const tokenSet: TokenSet = await client.grant(grantParams);
-    const userInfo: OpenIdUserInfo = await client.userinfo(tokenSet.access_token);
-    return this.createToken(tokenSet, userInfo);
+    return this.createToken(tokenSet, accessToken.getUserInfo());
   }
 
   /** Get a JWT for the specified scope from a SAML token */

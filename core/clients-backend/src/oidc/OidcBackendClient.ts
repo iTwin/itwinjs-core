@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { OidcClient, AccessToken, UserInfo } from "@bentley/imodeljs-clients";
-import { Issuer, Client as OpenIdClient, ClientConfiguration, TokenSet, UserInfo as OpenIdUserInfo } from "openid-client";
+import { Issuer, Client as OpenIdClient, ClientConfiguration, TokenSet } from "openid-client";
 import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
 
 /** Client configuration to create OIDC/OAuth tokens for backend applications */
@@ -66,10 +66,9 @@ export abstract class OidcBackendClient extends OidcClient {
     return this._client;
   }
 
-  protected createToken(tokenSet: TokenSet, openIdUserInfo?: OpenIdUserInfo): AccessToken {
+  protected createToken(tokenSet: TokenSet, userInfo?: UserInfo): AccessToken {
     const startsAt: Date = new Date(tokenSet.expires_at - tokenSet.expires_in);
     const expiresAt: Date = new Date(tokenSet.expires_at);
-    const userInfo = openIdUserInfo ? UserInfo.fromJson(openIdUserInfo) : undefined;
     return AccessToken.fromJsonWebTokenString(tokenSet.access_token, startsAt, expiresAt, userInfo);
   }
 

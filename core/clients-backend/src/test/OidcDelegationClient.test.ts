@@ -15,7 +15,7 @@ IModelJsConfig.init(true /* suppress exception */, false /* suppress error messa
 chai.should();
 
 // @todo: Work with OIDC team to get these tests working
-describe.skip("OidcDelegationClient (#integration)", () => {
+describe("OidcDelegationClient (#integration)", () => {
 
   let validator: HubAccessTestValidator;
   let jwt: AccessToken;
@@ -29,7 +29,7 @@ describe.skip("OidcDelegationClient (#integration)", () => {
       clientSecret: Config.App.getString("imjs_agent_test_client_secret"),
       serviceUserEmail: Config.App.getString("imjs_agent_test_service_user_email"),
       serviceUserPassword: Config.App.getString("imjs_agent_test_service_user_password"),
-      scope: "openid email profile organization context-registry-service imodelhub",
+      scope: "openid email profile organization imodeljs-backend-2686",
     };
 
     const agentClient = new OidcAgentClient(agentConfiguration);
@@ -57,6 +57,7 @@ describe.skip("OidcDelegationClient (#integration)", () => {
       clientSecret: Config.App.getString("imjs_delegation_test_client_secret"),
       scope: "context-registry-service imodelhub rbac-service",
     };
+
     const delegationClient = new OidcDelegationClient(delegationConfiguration);
     const delegationJwt = await delegationClient.getJwtFromJwt(actx, jwt);
     await validator.validateConnectAccess(delegationJwt);

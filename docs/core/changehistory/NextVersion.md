@@ -25,3 +25,9 @@ Backend ChangeSet and Briefcase downloads are atomic - i.e., will not be partial
 ## Changes to IModelApp
 
 Added unique id per session: IModelApp.sessionId
+
+## Authentication and Authorization related changes (OpenID Connect, OAuth)
+
+Fixes to OidcDelegationClient-s. Backend applications can now exchange -
+* OIDC Jason Web Tokens (JWT) for other JWT tokens with additional scope.
+* JWT tokens for legacy SAML tokens for legacy applications.
