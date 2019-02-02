@@ -868,18 +868,18 @@ export class IModelDb extends IModel {
    */
   public queryNextAvailableFileProperty(prop: FilePropertyProps) { return this.nativeDb.queryNextAvailableFileProperty(JSON.stringify(prop)); }
 
-  public async requestSnap(activity: ActivityLoggingContext, connectionId: string, props: SnapRequestProps): Promise<SnapResponseProps> {
+  public async requestSnap(activity: ActivityLoggingContext, sessionId: string, props: SnapRequestProps): Promise<SnapResponseProps> {
     activity.enter();
-    let request = this._snaps.get(connectionId);
+    let request = this._snaps.get(sessionId);
     if (undefined === request) {
       request = new IModelHost.platform.SnapRequest();
-      this._snaps.set(connectionId, request);
+      this._snaps.set(sessionId, request);
     } else
       request.cancelSnap();
 
     return new Promise<SnapResponseProps>((resolve, reject) => {
       request!.doSnap(this.nativeDb, JsonUtils.toObject(props), (ret: IModelJsNative.ErrorStatusOrResult<IModelStatus, SnapResponseProps>) => {
-        this._snaps.delete(connectionId);
+        this._snaps.delete(sessionId);
         if (ret.error !== undefined)
           reject(new Error(ret.error.message));
         else
@@ -889,11 +889,11 @@ export class IModelDb extends IModel {
   }
 
   /** Cancel a previously requested snap. */
-  public cancelSnap(connectionId: string): void {
-    const request = this._snaps.get(connectionId);
+  public cancelSnap(sessionId: string): void {
+    const request = this._snaps.get(sessionId);
     if (undefined !== request) {
       request.cancelSnap();
-      this._snaps.delete(connectionId);
+      this._snaps.delete(sessionId);
     }
   }
 

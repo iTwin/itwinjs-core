@@ -136,14 +136,14 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     return IModelDb.find(iModelToken).readFontJson();
   }
 
-  public async requestSnap(iModelToken: IModelToken, connectionId: string, props: SnapRequestProps): Promise<SnapResponseProps> {
+  public async requestSnap(iModelToken: IModelToken, sessionId: string, props: SnapRequestProps): Promise<SnapResponseProps> {
     const activityContext = ActivityLoggingContext.current; activityContext.enter();
-    return IModelDb.find(iModelToken).requestSnap(activityContext, connectionId, props);
+    return IModelDb.find(iModelToken).requestSnap(activityContext, sessionId, props);
   }
 
-  public async cancelSnap(iModelToken: IModelToken, connectionId: string): Promise<void> {
+  public async cancelSnap(iModelToken: IModelToken, sessionId: string): Promise<void> {
     const activityContext = ActivityLoggingContext.current; activityContext.enter();
-    return IModelDb.find(iModelToken).cancelSnap(connectionId);
+    return IModelDb.find(iModelToken).cancelSnap(sessionId);
   }
 
   public async getToolTipMessage(iModelToken: IModelToken, id: string): Promise<string[]> {

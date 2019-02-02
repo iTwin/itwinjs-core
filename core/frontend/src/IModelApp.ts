@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module IModelApp */
 
-import { dispose } from "@bentley/bentleyjs-core";
+import { dispose, Guid, GuidString } from "@bentley/bentleyjs-core";
 import { AccessToken, ConnectSettingsClient, IModelClient, IModelHubClient, SettingsAdmin } from "@bentley/imodeljs-clients";
 import { FeatureGates, IModelError, IModelStatus } from "@bentley/imodeljs-common";
 import { I18N, I18NOptions } from "@bentley/imodeljs-i18n";
@@ -65,6 +65,8 @@ export class IModelApp {
   public static settings: SettingsAdmin;
   /** The name of this application. */
   public static applicationId: string;
+  /** A uniqueId for this session */
+  public static sessionId: GuidString;
   /** @hidden */
   public static readonly features = new FeatureGates();
   /** The [[ToolRegistry]] for this session. */
@@ -107,7 +109,7 @@ export class IModelApp {
       throw new IModelError(IModelStatus.AlreadyLoaded, "startup may only be called once");
 
     IModelApp._initialized = true;
-
+    IModelApp.sessionId = Guid.createValue();
     if (imodelClient !== undefined)
       this._imodelClient = imodelClient;
 

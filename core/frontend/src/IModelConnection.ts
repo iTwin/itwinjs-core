@@ -43,8 +43,6 @@ export class IModelConnection extends IModel {
   public readonly tiles: IModelConnection.Tiles;
   /** Generator for unique Ids of transient graphics for this IModelConnection. */
   public readonly transientIds = new TransientIdSequence();
-  /** A unique Id of this IModelConnection. */
-  public readonly connectionId = Guid.createValue();
   /** The Geographic location services available for this iModelConnection */
   public readonly geoServices: GeoServices;
   /** The maximum time (in milliseconds) to wait before timing out the request to open a connection to a new iModel */
@@ -347,7 +345,7 @@ export class IModelConnection extends IModel {
   public async executeTest(testName: string, params: any): Promise<any> { return IModelUnitTestRpcInterface.getClient().executeTest(this.iModelToken, testName, params); }
 
   /** Request a snap from the backend. */
-  public async requestSnap(props: SnapRequestProps): Promise<SnapResponseProps> { return IModelReadRpcInterface.getClient().requestSnap(this.iModelToken, this.connectionId, props); }
+  public async requestSnap(props: SnapRequestProps): Promise<SnapResponseProps> { return IModelReadRpcInterface.getClient().requestSnap(this.iModelToken, IModelApp.sessionId, props); }
 
   /** Request a tooltip from the backend.  */
   public async getToolTipMessage(id: string): Promise<string[]> { return IModelReadRpcInterface.getClient().getToolTipMessage(this.iModelToken, id); }

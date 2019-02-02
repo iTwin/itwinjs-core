@@ -20,3 +20,8 @@ Backend ChangeSet and Briefcase downloads are atomic - i.e., will not be partial
 
 * In the case of ReadWrite connections, IModelConnection.close() now always disposes the briefcase held at the backend. Applications must ensure that any changes are saved and pushed out to the iModelHub before making this call.
 * IModelConnection.connectionTimeout is now public, allowing applications to customize this in the case of slow networks.
+* Removed unique id per connection: IModelConnection.connectionId
+
+## Changes to IModelApp
+
+Added unique id per session: IModelApp.sessionId
