@@ -79,7 +79,7 @@ export class SelectionTool extends PrimitiveTool {
   private _selectionMode = SelectionMode.Replace;
   private _selectionMethod = SelectionMethod.Pick;
   private _selectionOptionValue = new ToolSettingsValue(SelectOptions.PickAndReplace);
-  protected _selectionScopeValue = new ToolSettingsValue(SelectionScope.Assembly);
+  protected _selectionScopeValue = new ToolSettingsValue(SelectionScope.Element);
 
   public requireWriteableTarget(): boolean { return false; }
   public autoLockTarget(): void { } // NOTE: For selecting elements we only care about iModel, so don't lock target model automatically.
