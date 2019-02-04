@@ -190,8 +190,7 @@ export class ClipMaskGeometry extends IndexedGeometry {
   }
 
   public collectStatistics(stats: RenderMemory.Statistics): void {
-    stats.addClipVolume(this._params.positions.bytesUsed);
-    stats.addClipVolume(this._params.indices.bytesUsed);
+    stats.addClipVolume(this._params.positions.bytesUsed + this._params.indices.bytesUsed);
   }
 
   public getTechniqueId(_target: Target): TechniqueId { return TechniqueId.ClipMask; }
@@ -657,9 +656,7 @@ export class PolylineBuffers implements IDisposable {
   }
 
   public collectStatistics(stats: RenderMemory.Statistics, type: RenderMemory.BufferType): void {
-    stats.addBuffer(type, this.indices.bytesUsed);
-    stats.addBuffer(type, this.prevIndices.bytesUsed);
-    stats.addBuffer(type, this.nextIndicesAndParams.bytesUsed);
+    stats.addBuffer(type, this.indices.bytesUsed + this.prevIndices.bytesUsed + this.nextIndicesAndParams.bytesUsed);
   }
 
   public dispose() {

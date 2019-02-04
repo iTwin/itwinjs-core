@@ -191,8 +191,7 @@ export class EdgeGeometry extends MeshGeometry {
   }
 
   public collectStatistics(stats: RenderMemory.Statistics): void {
-    stats.addVisibleEdges(this._indices.bytesUsed);
-    stats.addVisibleEdges(this._endPointAndQuadIndices.bytesUsed);
+    stats.addVisibleEdges(this._indices.bytesUsed + this._endPointAndQuadIndices.bytesUsed);
   }
 
   public bindVertexArray(attr: AttributeHandle): void {
@@ -249,9 +248,7 @@ export class SilhouetteEdgeGeometry extends EdgeGeometry {
   }
 
   public collectStatistics(stats: RenderMemory.Statistics): void {
-    stats.addSilhouetteEdges(this._indices.bytesUsed);
-    stats.addSilhouetteEdges(this._endPointAndQuadIndices.bytesUsed);
-    stats.addSilhouetteEdges(this._normalPairs.bytesUsed);
+    stats.addSilhouetteEdges(this._indices.bytesUsed + this._endPointAndQuadIndices.bytesUsed + this._normalPairs.bytesUsed);
   }
 
   public getTechniqueId(_target: Target): TechniqueId { return TechniqueId.SilhouetteEdge; }

@@ -48,9 +48,8 @@ export class PointCloudGeometry extends CachedGeometry {
   }
 
   public collectStatistics(stats: RenderMemory.Statistics): void {
-    stats.addPointCloud(this._vertices.bytesUsed);
-    if (undefined !== this._colorHandle)
-      stats.addPointCloud(this._colorHandle.bytesUsed);
+    const bytesUsed = this._vertices.bytesUsed + (undefined !== this._colorHandle ? this._colorHandle.bytesUsed : 0);
+    stats.addPointCloud(bytesUsed);
   }
 
   protected _wantWoWReversal(_target: Target): boolean { return false; }

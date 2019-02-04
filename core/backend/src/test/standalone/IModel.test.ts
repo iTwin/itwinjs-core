@@ -3,13 +3,25 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { ActivityLoggingContext, BeEvent, DbResult, Guid, Id64, Id64String, OpenMode } from "@bentley/bentleyjs-core";
-import { Angle, Matrix4d, Point3d, Range3d, Transform } from "@bentley/geometry-core";
+import {
+  Angle,
+  GeometryQuery,
+  LineString3d,
+  Loop,
+  Matrix4d,
+  Point3d,
+  Range3d,
+  Transform,
+  StrokeOptions,
+  PolyfaceBuilder,
+  YawPitchRollAngles,
+} from "@bentley/geometry-core";
 import { AccessToken, IAccessTokenManager } from "@bentley/imodeljs-clients";
 import {
   AxisAlignedBox3d, Code, CodeScopeSpec, CodeSpec, ColorByName, EntityMetaData, EntityProps, FilePropertyProps, FontMap,
   FontType, GeometricElementProps, IModel, IModelError, IModelStatus, PrimitiveTypeCode, RelatedElement, SubCategoryAppearance,
   ViewDefinitionProps, DisplayStyleSettingsProps, ColorDef, ViewFlags, RenderMode, DisplayStyleProps, BisCodeSpec, ImageSourceFormat,
-  TextureFlags, TextureMapping, TextureMapProps, Units,
+  TextureFlags, TextureMapping, TextureMapProps, TextureMapUnits, GeometryStreamBuilder, GeometricElement3dProps, GeometryParams,
 } from "@bentley/imodeljs-common";
 import { assert, expect } from "chai";
 import * as path from "path";
@@ -250,7 +262,7 @@ describe("iModel", () => {
       pattern_flip: false,
       pattern_scale: [1.0, 1.0],
       pattern_offset: [0.0, 0.0],
-      pattern_scalemode: Units.Inches,
+      pattern_scalemode: TextureMapUnits.Inches,
       pattern_mapping: TextureMapping.Mode.Planar,
       pattern_weight: 0.5,
       TextureId: "test_textureid",
@@ -266,7 +278,7 @@ describe("iModel", () => {
     renderMaterialParams.specular = specular;
     renderMaterialParams.reflect = reflect;
     renderMaterialParams.reflectColor = reflectColor;
-    renderMaterialParams.textureMapProps = textureMapProps;
+    renderMaterialParams.patternMap = textureMapProps;
     const renderMaterialId = RenderMaterial.insert(imodel2, IModel.dictionaryId, testMaterialName, renderMaterialParams);
 
     const renderMaterial = imodel2.elements.getElement<RenderMaterial>(renderMaterialId);
@@ -290,15 +302,99 @@ describe("iModel", () => {
     expect(renderMaterial.jsonProperties.materialAssets.renderMaterial.HasReflectColor).to.equal(true);
     expect(JSON.stringify(renderMaterial.jsonProperties.materialAssets.renderMaterial.reflect_color)).to.equal(JSON.stringify(reflectColor));
     expect(renderMaterial.jsonProperties.materialAssets.renderMaterial.Map).not.to.be.undefined;
-    expect(renderMaterial.jsonProperties.materialAssets.renderMaterial.Map.pattern_angle).to.equal(textureMapProps.pattern_angle);
-    expect(renderMaterial.jsonProperties.materialAssets.renderMaterial.Map.pattern_u_flip).to.equal(textureMapProps.pattern_u_flip);
-    expect(renderMaterial.jsonProperties.materialAssets.renderMaterial.Map.pattern_flip).to.equal(textureMapProps.pattern_flip);
-    expect(JSON.stringify(renderMaterial.jsonProperties.materialAssets.renderMaterial.Map.pattern_scale)).to.equal(JSON.stringify(textureMapProps.pattern_scale));
-    expect(JSON.stringify(renderMaterial.jsonProperties.materialAssets.renderMaterial.Map.pattern_offset)).to.equal(JSON.stringify(textureMapProps.pattern_offset));
-    expect(renderMaterial.jsonProperties.materialAssets.renderMaterial.Map.pattern_scalemode).to.equal(textureMapProps.pattern_scalemode);
-    expect(renderMaterial.jsonProperties.materialAssets.renderMaterial.Map.pattern_mapping).to.equal(textureMapProps.pattern_mapping);
-    expect(renderMaterial.jsonProperties.materialAssets.renderMaterial.Map.pattern_weight).to.equal(textureMapProps.pattern_weight);
-    expect(renderMaterial.jsonProperties.materialAssets.renderMaterial.Map.TextureId).to.equal(textureMapProps.TextureId);
+
+    const patternMap = renderMaterial.jsonProperties.materialAssets.renderMaterial.Map.Pattern;
+    expect(patternMap).not.to.be.undefined;
+    expect(patternMap.pattern_angle).to.equal(textureMapProps.pattern_angle);
+    expect(patternMap.pattern_u_flip).to.equal(textureMapProps.pattern_u_flip);
+    expect(patternMap.pattern_flip).to.equal(textureMapProps.pattern_flip);
+    expect(JSON.stringify(patternMap.pattern_scale)).to.equal(JSON.stringify(textureMapProps.pattern_scale));
+    expect(JSON.stringify(patternMap.pattern_offset)).to.equal(JSON.stringify(textureMapProps.pattern_offset));
+    expect(patternMap.pattern_scalemode).to.equal(textureMapProps.pattern_scalemode);
+    expect(patternMap.pattern_mapping).to.equal(textureMapProps.pattern_mapping);
+    expect(patternMap.pattern_weight).to.equal(textureMapProps.pattern_weight);
+    expect(patternMap.TextureId).to.equal(textureMapProps.TextureId);
+  });
+
+  it.skip("attempt to apply material to new element in imodel5", () => {
+    // This is an encoded png containing a 3x3 square with white in top left pixel, blue in middle pixel, and green in
+    // bottom right pixel.  The rest of the square is red.
+    const pngData = [137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 3, 0, 0, 0, 3, 8, 2, 0, 0, 0, 217, 74, 34, 232, 0, 0, 0, 1, 115, 82, 71, 66, 0, 174, 206, 28, 233, 0, 0, 0, 4, 103, 65, 77, 65, 0, 0, 177, 143, 11, 252, 97, 5, 0, 0, 0, 9, 112, 72, 89, 115, 0, 0, 14, 195, 0, 0, 14, 195, 1, 199, 111, 168, 100, 0, 0, 0, 24, 73, 68, 65, 84, 24, 87, 99, 248, 15, 4, 12, 12, 64, 4, 198, 64, 46, 132, 5, 162, 254, 51, 0, 0, 195, 90, 10, 246, 127, 175, 154, 145, 0, 0, 0, 0, 73, 69, 78, 68, 174, 66, 96, 130];
+
+    const testTextureName = "fake texture name";
+    const testTextureFormat = ImageSourceFormat.Png;
+    const testTextureData = Base64.btoa(String.fromCharCode(...pngData));
+    const testTextureWidth = 3;
+    const testTextureHeight = 3;
+    const testTextureDescription = "empty description";
+    const testTextureFlags = TextureFlags.None;
+
+    const texId = Texture.insert(imodel5, IModel.dictionaryId, testTextureName, testTextureFormat, testTextureData, testTextureWidth, testTextureHeight, testTextureDescription, testTextureFlags);
+
+    const matId = RenderMaterial.insert(imodel5, IModel.dictionaryId, "test material name",
+      {
+        paletteName: "TestPaletteName",
+        patternMap: {
+          TextureId: texId,
+          pattern_offset: [0, 0],
+          pattern_scale: [1, 1],
+          pattern_scalemode: TextureMapUnits.Relative,
+        },
+      });
+
+    /** Create a simple flat mesh with 4 points (2x2) */
+    const width = imodel5.projectExtents.width * 0.2;
+    const height = imodel5.projectExtents.depth * 0.2;
+    let shape: GeometryQuery;
+    const doPolyface = true;
+    if (doPolyface) {
+      const options = StrokeOptions.createForFacets();
+      options.shouldTriangulate = false;
+      const builder = PolyfaceBuilder.create(options);
+
+      const quad = [
+        Point3d.create(0.0, 0.0, 0.0),
+        Point3d.create(width, 0.0, 0.0),
+        Point3d.create(width, height, 0.0),
+        Point3d.create(0.0, height, 0.0),
+      ];
+
+      builder.addQuadFacet(quad);
+      shape = builder.claimPolyface();
+    } else {
+      shape = Loop.create(LineString3d.create([
+        Point3d.create(0, 0, 0),
+        Point3d.create(width, 0, 0),
+        Point3d.create(width, height, 0),
+        Point3d.create(0, height, 0),
+        Point3d.create(0, 0, 0),
+      ]));
+    }
+
+    const modelId = PhysicalModel.insert(imodel5, IModelDb.rootSubjectId, "test_render_material_model_name");
+
+    const categoryId = SpatialCategory.insert(imodel5, IModel.dictionaryId, "GeoJSON Feature", { color: ColorDef.white });
+
+    /** generate a geometry stream containing the polyface */
+    const gsBuilder = new GeometryStreamBuilder();
+    const params = new GeometryParams(categoryId);
+    params.materialId = matId;
+    gsBuilder.appendGeometryParamsChange(params);
+    gsBuilder.appendGeometry(shape);
+    const geometry = gsBuilder.geometryStream;
+    // geometry[0].material = { materialId: matId };
+
+    /** The [[GeometricElement3dProps]]  */
+    const props: GeometricElement3dProps = {
+      placement: { origin: imodel5.projectExtents.center, angles: new YawPitchRollAngles() },
+      model: modelId,
+      code: Code.createEmpty(),
+      classFullName: "Generic:PhysicalObject",
+      category: categoryId,
+      geom: geometry,
+    };
+    imodel5.elements.insertElement(props);
+    imodel5.saveChanges();
   });
 
   it("should insert a DisplayStyle", () => {
