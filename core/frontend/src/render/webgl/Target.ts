@@ -394,9 +394,8 @@ export abstract class Target extends RenderTarget {
     this._decorations = dispose(this._decorations);
     this._decorations = decs;
   }
-  public changeScene(scene: GraphicList, _activeVolume: ClipPlanesVolume | ClipMaskVolume) {
+  public changeScene(scene: GraphicList) {
     this._scene = scene;
-    this._activeClipVolume = _activeVolume;
   }
   public changeTerrain(terrain: GraphicList) {
     this._terrain = terrain;
@@ -532,11 +531,12 @@ export abstract class Target extends RenderTarget {
     this.analysisTexture = plan.analysisTexture;
 
     let clipVolume: ClipPlanesVolume | ClipMaskVolume | undefined;
-    if (plan.activeVolume !== undefined)
+    if (plan.activeVolume !== undefined) {
       if (plan.activeVolume.type === ClippingType.Planes)
         clipVolume = plan.activeVolume as ClipPlanesVolume;
       else if (plan.activeVolume.type === ClippingType.Mask)
         clipVolume = plan.activeVolume as ClipMaskVolume;
+    }
 
     this._activeClipVolume = clipVolume;
 
