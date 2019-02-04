@@ -150,6 +150,9 @@ export interface TreeProps {
 
   /** Custom property value renderer manager */
   propertyValueRendererManager?: PropertyValueRendererManager;
+
+  /** Turns on node description rendering when enabled */
+  showDescriptions?: boolean;
 }
 
 /** State for the [[Tree]] component  */
@@ -766,7 +769,27 @@ export class Tree extends React.Component<TreeProps, TreeState> {
     const nodeRecord = this.nodeToPropertyRecord(node);
     if (!valueRendererManager)
       valueRendererManager = PropertyValueRendererManager.defaultManager;
-    return valueRendererManager.render(nodeRecord, context);
+    const label = valueRendererManager.render(nodeRecord, context);
+
+    if (isPromise(label)) {
+      return label.then((l) => this.renderContent(l, node.payload!.description));
+    }
+    return this.renderContent(label, node.payload!.description);
+  }
+
+  // tslint:disable-next-line:naming-convention
+  private renderContent = (label: React.ReactNode, description?: string): React.ReactNode => {
+    if (!description || !this.props.showDescriptions)
+      return label;
+
+    return (
+      <div className="components-tree-node-content">
+        {label}
+        <div className="components-tree-node-description">
+          {description}
+        </div>
+      </div>
+    );
   }
 
   private _onCheckboxClick = (node: BeInspireTreeNode<TreeNodeItem>) => {
@@ -851,6 +874,9 @@ export class Tree extends React.Component<TreeProps, TreeState> {
       );
     }
 
+    if (this._scrollableContainerRef.current)
+      this._scrollableContainerRef.current.recomputeRowHeights();
+
     const getNodesRenderInfo = () => {
       if (!this._nodesRenderInfo)
         this._nodesRenderInfo = { total: 0, rendered: 0, renderId: Guid.createValue() };
@@ -883,6 +909,13 @@ export class Tree extends React.Component<TreeProps, TreeState> {
       );
     };
 
+    const getNodeHeight = ({ index }: { index: number }) => {
+      if (this.props.showDescriptions && nodes[index].payload && nodes[index].payload!.description)
+        return 44;
+
+      return 24;
+    };
+
     return (
       <TreeBase ref={this._treeRef} onMouseDown={this._onMouseDown} className="ui-components-tree">
         <AutoSizer>
@@ -892,7 +925,7 @@ export class Tree extends React.Component<TreeProps, TreeState> {
               width={width} height={height}
               rowCount={nodes.length}
               overscanRowCount={10}
-              rowHeight={24}
+              rowHeight={getNodeHeight}
               rowRenderer={renderNode}
               autoContainerWidth={false}
             />
@@ -949,4 +982,8 @@ class CellEditorPropertyRecord extends PropertyRecord {
     this.description = "";
     this.isReadonly = false;
   }
+}
+
+function isPromise(value: any): value is Promise<any> {
+  return !!(value && value.then && value.catch);
 }

@@ -6,14 +6,16 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-
-import ExpansionToggle from "./ExpansionToggle";
-import "./Node.scss";
 import { Checkbox } from "@bentley/bwc";
 import { CheckBoxState } from "../enums/CheckBoxState";
+import ExpansionToggle from "./ExpansionToggle";
+
+import "./Node.scss";
 
 /** Number of pixels the node gets offset per each hierarchy level */
 export const LEVEL_OFFSET = 20;
+
+const EXPANSION_TOGGLE_WIDTH = 24;
 
 /** Properties for the [[TreeNode]] React component */
 export interface NodeProps {
@@ -35,7 +37,6 @@ export interface NodeProps {
   onMouseDown?: (e: React.MouseEvent) => void;
   onMouseUp?: (e: React.MouseEvent) => void;
   onClickExpansionToggle?: () => void;
-
   children?: React.ReactNode;
   className?: string;
   style?: React.CSSProperties;
@@ -52,7 +53,10 @@ export default class TreeNode extends React.PureComponent<NodeProps> {
       this.props.isSelected && "is-selected",
       this.props.isHoverDisabled && "is-hover-disabled",
       this.props.className);
-    const offset = this.props.level * LEVEL_OFFSET;
+    let offset = this.props.level * LEVEL_OFFSET;
+    if (!this.props.isLoading && this.props.isLeaf)
+      offset += EXPANSION_TOGGLE_WIDTH; // Add expansion toggle/loader width if they're not rendered
+
     const loader = this.props.isLoading ? (<div className="loader"><i></i><i></i><i></i><i></i><i></i><i></i></div>) : undefined;
     const checkbox = this.props.isCheckboxVisible ?
       <Checkbox
@@ -79,21 +83,21 @@ export default class TreeNode extends React.PureComponent<NodeProps> {
         className={className}
         style={style}
         data-testid={this.props["data-testid"]}
+        onClick={this._onClick}
+        onMouseDown={this.props.onMouseDown}
+        onMouseUp={this.props.onMouseUp}
+        onMouseMove={this.props.onMouseMove}
       >
         {loader}
         {toggle}
         <div
           className="contents"
           data-testid={this.createSubComponentTestId("contents")}
-          onClick={this._onClick}
-          onMouseDown={this.props.onMouseDown}
-          onMouseUp={this.props.onMouseUp}
-          onMouseMove={this.props.onMouseMove}>
+        >
           {checkbox}
           {icon}
           {this.props.label}
         </div>
-        <div className="whole-row" ></div>
         {this.props.children}
       </div>
     );

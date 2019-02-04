@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Added an ability to show node descriptions in the Tree component via showDescriptions property.",
+      "packageName": "@bentley/ui-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "elonas.seviakovas@bentley.com"
+}

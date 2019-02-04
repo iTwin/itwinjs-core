@@ -3,6 +3,7 @@
 exports[`<Node /> renders correctly 1`] = `
 <div
   className="nz-tree-node"
+  onClick={[Function]}
   style={
     Object {
       "paddingLeft": 0,
@@ -15,40 +16,34 @@ exports[`<Node /> renders correctly 1`] = `
   />
   <div
     className="contents"
-    onClick={[Function]}
   >
     a
   </div>
-  <div
-    className="whole-row"
-  />
 </div>
 `;
 
 exports[`<Node /> renders expander correctly 1`] = `
 <div
   className="nz-tree-node"
+  onClick={[Function]}
   style={
     Object {
-      "paddingLeft": 0,
+      "paddingLeft": 24,
     }
   }
 >
   <div
     className="contents"
-    onClick={[Function]}
   >
     a
   </div>
-  <div
-    className="whole-row"
-  />
 </div>
 `;
 
 exports[`<Node /> renders expander correctly 2`] = `
 <div
   className="nz-tree-node"
+  onClick={[Function]}
   style={
     Object {
       "paddingLeft": 0,
@@ -62,40 +57,34 @@ exports[`<Node /> renders expander correctly 2`] = `
   />
   <div
     className="contents"
-    onClick={[Function]}
   >
     a
   </div>
-  <div
-    className="whole-row"
-  />
 </div>
 `;
 
 exports[`<Node /> renders expander correctly 3`] = `
 <div
   className="nz-tree-node"
+  onClick={[Function]}
   style={
     Object {
-      "paddingLeft": 0,
+      "paddingLeft": 24,
     }
   }
 >
   <div
     className="contents"
-    onClick={[Function]}
   >
     a
   </div>
-  <div
-    className="whole-row"
-  />
 </div>
 `;
 
 exports[`<Node /> renders icon correctly 1`] = `
 <div
   className="nz-tree-node"
+  onClick={[Function]}
   style={
     Object {
       "paddingLeft": 0,
@@ -108,7 +97,6 @@ exports[`<Node /> renders icon correctly 1`] = `
   />
   <div
     className="contents"
-    onClick={[Function]}
   >
     <div
       className="icon"
@@ -119,15 +107,13 @@ exports[`<Node /> renders icon correctly 1`] = `
     </div>
     a
   </div>
-  <div
-    className="whole-row"
-  />
 </div>
 `;
 
 exports[`<Node /> renders label correctly 1`] = `
 <div
   className="nz-tree-node"
+  onClick={[Function]}
   style={
     Object {
       "paddingLeft": 0,
@@ -140,7 +126,6 @@ exports[`<Node /> renders label correctly 1`] = `
   />
   <div
     className="contents"
-    onClick={[Function]}
   >
     <span
       id="test"
@@ -148,15 +133,13 @@ exports[`<Node /> renders label correctly 1`] = `
       This is some test label
     </span>
   </div>
-  <div
-    className="whole-row"
-  />
 </div>
 `;
 
 exports[`<Node /> renders loader correctly 1`] = `
 <div
   className="nz-tree-node"
+  onClick={[Function]}
   style={
     Object {
       "paddingLeft": 0,
@@ -175,19 +158,16 @@ exports[`<Node /> renders loader correctly 1`] = `
   </div>
   <div
     className="contents"
-    onClick={[Function]}
   >
     a
   </div>
-  <div
-    className="whole-row"
-  />
 </div>
 `;
 
 exports[`<Node /> should set is-focused class 1`] = `
 <div
   className="nz-tree-node is-focused"
+  onClick={[Function]}
   style={
     Object {
       "paddingLeft": 0,
@@ -200,19 +180,16 @@ exports[`<Node /> should set is-focused class 1`] = `
   />
   <div
     className="contents"
-    onClick={[Function]}
   >
     a
   </div>
-  <div
-    className="whole-row"
-  />
 </div>
 `;
 
 exports[`<Node /> should set is-hover-disabled class 1`] = `
 <div
   className="nz-tree-node is-hover-disabled"
+  onClick={[Function]}
   style={
     Object {
       "paddingLeft": 0,
@@ -225,19 +202,16 @@ exports[`<Node /> should set is-hover-disabled class 1`] = `
   />
   <div
     className="contents"
-    onClick={[Function]}
   >
     a
   </div>
-  <div
-    className="whole-row"
-  />
 </div>
 `;
 
 exports[`<Node /> should set is-selected class 1`] = `
 <div
   className="nz-tree-node is-selected"
+  onClick={[Function]}
   style={
     Object {
       "paddingLeft": 0,
@@ -250,12 +224,8 @@ exports[`<Node /> should set is-selected class 1`] = `
   />
   <div
     className="contents"
-    onClick={[Function]}
   >
     a
   </div>
-  <div
-    className="whole-row"
-  />
 </div>
 `;

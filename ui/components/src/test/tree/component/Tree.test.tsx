@@ -6,7 +6,7 @@ import { expect } from "chai";
 import * as moq from "typemoq";
 import * as React from "react";
 import * as sinon from "sinon";
-import { RenderResult, render, within, fireEvent, cleanup } from "react-testing-library";
+import { RenderResult, render, within, fireEvent, cleanup, waitForElement } from "react-testing-library";
 import { waitForUpdate, ResolvablePromise } from "../../test-helpers/misc";
 import TestUtils from "../../TestUtils";
 import {
@@ -1091,6 +1091,30 @@ describe("Tree", () => {
       if (error)
         throw error;
       renderedTree.getByText("Custom renderer label");
+    });
+
+    it("renders description when showDescriptions prop is set to true", async () => {
+      const dp: TreeDataProviderRaw = [{ id: "0", label: "0", icon: "test-icon", description: "Test label", children: [] }];
+      const tree = render(
+        <Tree
+          {...defaultProps}
+          dataProvider={dp}
+          showDescriptions={true}
+        />);
+
+      await waitForElement(() => tree.getByText("Test label"));
+    });
+
+    it("does not render description when showDescriptions prop is set to false", async () => {
+      const dp: TreeDataProviderRaw = [{ id: "0", label: "0", icon: "test-icon", description: "Test label", children: [] }];
+      const tree = render(
+        <Tree
+          {...defaultProps}
+          dataProvider={dp}
+          showDescriptions={false}
+        />);
+
+      await expect(waitForElement(() => tree.getByText("Test label"), { timeout: 500 })).to.be.rejected;
     });
   });
 

@@ -131,6 +131,7 @@ export default class TreeWidget extends React.Component<Props, State> {
         </div>
         <SampleTree dataProvider={this.state.dataProvider}
           pageSize={5} disposeChildrenOnCollapse={true}
+          showDescriptions={true}
           filter={this.state.filter}
           onFilterApplied={this.onFilterApplied}
           onMatchesCounted={this._onMatchesCounted}
