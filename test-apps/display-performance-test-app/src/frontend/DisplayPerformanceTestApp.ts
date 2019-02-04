@@ -376,6 +376,11 @@ async function _changeView(view: ViewState) {
 
 // opens the view and connects it to the HTML canvas element.
 async function openView(state: SimpleViewState, viewSize: ViewSize) {
+  if (undefined !== theViewport) {
+    theViewport.dispose();
+    theViewport = undefined;
+  }
+
   // find the canvas.
   const vpDiv = document.getElementById("imodel-viewport") as HTMLDivElement;
 
@@ -432,9 +437,6 @@ async function retrieveProjectConfiguration(): Promise<void> {
 }
 
 async function loadIModel(testConfig: DefaultConfigs) {
-  // start the app.
-  IModelApp.startup();
-
   activeViewState = new SimpleViewState();
   activeViewState.viewState;
 
@@ -506,7 +508,7 @@ async function closeIModel(standalone: boolean) {
     else
       await activeViewState.iModelConnection!.close(activeViewState.accessToken!);
   }
-  IModelApp.shutdown();
+
   debugPrint("end closeIModel");
 }
 
@@ -588,6 +590,8 @@ async function testModel(configs: DefaultConfigs, modelData: any) {
 }
 
 async function main() {
+  IModelApp.startup();
+
   // Retrieve DefaultConfigs
   const defaultConfigStr = await getDefaultConfigs();
   const jsonData = JSON.parse(defaultConfigStr);
@@ -605,6 +609,8 @@ async function main() {
   document.getElementById("imodel-viewport")!.style.display = "hidden";
 
   DisplayPerfRpcInterface.getClient().finishTest(); // tslint:disable-line:no-floating-promises
+
+  IModelApp.shutdown();
 }
 
 window.onload = () => {
