@@ -113,7 +113,7 @@ async function pushImodelAfterDataChanges(csvPath: string, projectId: string, ac
   await rwIModel.pushChanges(actLogCtx, accessToken).catch();
   const endTime1 = new Date().getTime();
   const elapsedTime1 = (endTime1 - startTime1) / 1000.0;
-  fs.appendFileSync(csvPath, "Push, Data(Element model category inserted) Changes to Hub," + elapsedTime1 + "\n");
+  fs.appendFileSync(csvPath, "Push, Data Changes to Hub," + elapsedTime1 + "\n");
   await rwIModel.close(actLogCtx, accessToken, KeepBriefcase.No);
 }
 
@@ -141,7 +141,7 @@ async function pushImodelAfterSchemaChanges(csvPath: string, projectId: string, 
   await rwIModel.pushChanges(actLogCtx, accessToken);
   const endTime1 = new Date().getTime();
   const elapsedTime1 = (endTime1 - startTime1) / 1000.0;
-  fs.appendFileSync(csvPath, "Push, Schema Change(import schema) to Hub," + elapsedTime1 + "\n");
+  fs.appendFileSync(csvPath, "Push, Schema Changes to Hub," + elapsedTime1 + "\n");
   await rwIModel.close(actLogCtx, accessToken, KeepBriefcase.No);
 }
 
@@ -154,7 +154,7 @@ async function executeQueryTime(csvPath: string, projectId: string, imodelId: st
   const endTime = new Date().getTime();
   const elapsedTime1 = (endTime - startTime) / 1000.0;
   assert.equal(7, stat.length);
-  fs.appendFileSync(csvPath, "ExecuteQuery, Execute a simple ECSQL query based on 1 table," + elapsedTime1 + "\n");
+  fs.appendFileSync(csvPath, "ExecuteQuery, Execute a simple ECSQL query," + elapsedTime1 + "\n");
   imodeldb.close(actLogCtx, accessToken).catch();
 }
 
