@@ -457,7 +457,7 @@ export class Schema implements CustomAttributeContainerProps {
     } else {
       if (schemaProps.name.toLowerCase() !== this.name.toLowerCase())
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Schema ${this.name} does not match the provided name, '${schemaProps.name}'.`);
-      if (schemaProps.version !== this.schemaKey.version.toString())
+      if (this.schemaKey.version.compare(ECVersion.fromString(schemaProps.version)))
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Schema ${this.name} has the version '${this.schemaKey.version}' that does not match the provided version '${schemaProps.version}'.`);
     }
 

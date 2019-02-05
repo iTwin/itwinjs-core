@@ -214,7 +214,7 @@ describe("Constant", () => {
 
       expect(constantSerialization.$schema).eql("https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem");
       expect(constantSerialization.name).eql("TestConstant");
-      expect(constantSerialization.schemaVersion).eql("1.2.3");
+      expect(constantSerialization.schemaVersion).eql("01.02.03");
       expect(constantSerialization.schema).eql("TestSchema");
 
       expect(constantSerialization.label).eql("Test Constant");
@@ -239,7 +239,7 @@ describe("Constant", () => {
 
       expect(constantSerialization.$schema).eql("https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem");
       expect(constantSerialization.name).eql("TestConstant");
-      expect(constantSerialization.schemaVersion).eql("1.2.3");
+      expect(constantSerialization.schemaVersion).eql("01.02.03");
       expect(constantSerialization.schema).eql("TestSchema");
 
       expect(constantSerialization.label).eql("Test Constant");

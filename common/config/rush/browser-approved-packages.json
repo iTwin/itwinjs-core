@@ -127,6 +127,10 @@
       "allowedCategories": [ "internal", "tools" ]
     },
     {
+      "name": "benchmark",
+      "allowedCategories": [ "common" ]
+    },
+    {
       "name": "body-parser",
       "allowedCategories": [ "backend", "internal" ]
     },

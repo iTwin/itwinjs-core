@@ -85,7 +85,7 @@ describe("CustomAttributeClass", () => {
       assert(caJson.name, "TestCustomAttribute");
       assert(caJson.schema, "TestSchema");
       assert(caJson.schemaItemType, "CustomAttributeClass");
-      assert(caJson.schemaVersion, "1.0.0");
+      assert(caJson.schemaVersion, "01.00.00");
     });
     it("sync - should succeed with fully defined standalone", () => {
       const schemaJson = {
@@ -106,7 +106,7 @@ describe("CustomAttributeClass", () => {
       assert(caJson.name, "TestCustomAttribute");
       assert(caJson.schema, "TestSchema");
       assert(caJson.schemaItemType, "CustomAttributeClass");
-      assert(caJson.schemaVersion, "1.0.0");
+      assert(caJson.schemaVersion, "01.00.00");
     });
     it("async - should succeed with fully defined without standalone", async () => {
       const schemaJson = createSchemaJsonWithItems({

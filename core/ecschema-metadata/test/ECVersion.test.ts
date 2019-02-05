@@ -47,11 +47,11 @@ describe("ECVersion", () => {
   describe("toString", () => {
     it("fully defined version string", () => {
       const testVersion = new ECVersion(1, 0, 14);
-      assert.equal("1.0.14", testVersion.toString());
+      assert.equal("01.00.14", testVersion.toString());
     });
-    it("fully defined version string with leading zero", () => {
+    it("fully defined version string without leading zero", () => {
       const testVersion = new ECVersion(1, 0, 14);
-      assert.equal("01.00.14", testVersion.toString(true));
+      assert.equal("1.0.14", testVersion.toString(false));
     });
   });
 
