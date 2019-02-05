@@ -60,11 +60,8 @@ The element aligned bounding box that is part of the placement is computed autom
     * The [TextStringProps.origin]($common) and [TextStringProps.rotation]($common) specify the relative location from the basis point (typically 0,0,0) used for the GeometricElement's geometry.
   * [BRepEntity.DataProps]($common)
     * Raw BRep data, not generally useful outside of a geometry export scenario.
-    * Must be specifically requested using [ElementLoadProps.wantBRepData]($common).
-    * When not requested will be returned as a [IModelJson.GeometryProps]($geometry) entry.
-      * A wire body will be represented as a [IModelJson.CurvePrimitiveProps]($geometry) or [IModelJson.CurveCollectionProps.path]($geometry).
-      * A planar sheet body will be represented as a [IModelJson.PlanarRegionProps]($geometry).
-      * A solid body or non-planar sheet body will be represented as a [IModelJson.IndexedMeshProps]($geometry).
+    * The BRep data must be specifically requested using [ElementLoadProps.wantBRepData]($common).
+    * The body type, body to local transform, and any face material attachments are returned when requested using [ElementLoadProps.wantGeometry]($common).
   * [LowAndHighXYZ]($geometry)
     * Store range of each geometric primitive to allow efficient filtering on range criteria without having to instantiate the geometry.
     * Useful for GeometryStreams containing more than one geometric primitive; for a single geometric primitive, the geometry range is the placement's bounding box.
