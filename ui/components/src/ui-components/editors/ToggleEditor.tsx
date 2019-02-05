@@ -9,24 +9,24 @@ import classnames from "classnames";
 import { PropertyValueFormat, PrimitiveValue, PropertyValue } from "@bentley/imodeljs-frontend";
 import { PropertyEditorManager, PropertyEditorBase } from "./PropertyEditorManager";
 import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
-import "./BooleanEditor.scss";
+import { Toggle } from "@bentley/ui-core";
+import "./ToggleEditor.scss";
 
-interface BooleanEditorState {
-  checkboxValue: boolean;
+interface ToggleEditorState {
+  toggleValue: boolean;
 }
 
-/** BooleanEditor React component that is a property editor with checkbox input  */
-export class BooleanEditor extends React.PureComponent<PropertyEditorProps, BooleanEditorState> implements TypeEditor {
-  private _checkboxElement: HTMLInputElement | null = null;
+/** ToggleEditor React component that is a property editor with checkbox input  */
+export class ToggleEditor extends React.PureComponent<PropertyEditorProps, ToggleEditorState> implements TypeEditor {
   private _isMounted = false;
 
   /** @hidden */
-  public readonly state: Readonly<BooleanEditorState> = {
-    checkboxValue: false,
+  public readonly state: Readonly<ToggleEditorState> = {
+    toggleValue: false,
   };
 
   public getValue(): boolean {
-    return this.state.checkboxValue;
+    return this.state.toggleValue;
   }
 
   public async getPropertyValue(): Promise<PropertyValue | undefined> {
@@ -36,35 +36,21 @@ export class BooleanEditor extends React.PureComponent<PropertyEditorProps, Bool
     // istanbul ignore else
     if (record && record.value.valueFormat === PropertyValueFormat.Primitive) {
       propertyValue = record.value;
-      (record.value as PrimitiveValue).value = this.state.checkboxValue;
+      (record.value as PrimitiveValue).value = this.state.toggleValue;
     }
 
     return propertyValue;
   }
 
   private setFocus(): void {
-    // istanbul ignore else
-    if (this._checkboxElement) {
-      this._checkboxElement.focus();
-    }
   }
 
-  private _updateCheckboxValue = (e: React.ChangeEvent<HTMLInputElement>) => {
+  private _updateToggleValue = (toggleValue: boolean): any => {
     // istanbul ignore else
     if (this._isMounted) {
-      let checkboxValue: boolean = false;
-
-      // istanbul ignore if
-      if (e.target.checked !== undefined)   // Needed for unit test environment
-        checkboxValue = e.target.checked;
-      else {
-        // istanbul ignore else
-        if (e.target.value !== undefined && typeof e.target.value === "boolean")
-          checkboxValue = e.target.value;
-      }
 
       this.setState({
-        checkboxValue,
+        toggleValue,
       }, async () => {
         // istanbul ignore else
         if (this.props.propertyRecord && this.props.onCommit) {
@@ -94,18 +80,18 @@ export class BooleanEditor extends React.PureComponent<PropertyEditorProps, Bool
 
   private async setStateFromProps() {
     const { propertyRecord } = this.props;
-    let checkboxValue = false;
+    let toggleValue = false;
 
     // istanbul ignore else
     if (propertyRecord && propertyRecord.value.valueFormat === PropertyValueFormat.Primitive) {
       const primitiveValue = (propertyRecord.value as PrimitiveValue).value;
-      checkboxValue = primitiveValue as boolean;
+      toggleValue = primitiveValue as boolean;
     }
 
     // istanbul ignore else
     if (this._isMounted)
       this.setState(
-        { checkboxValue },
+        { toggleValue },
         () => {
           if (this.props.setFocus)
             this.setFocus();
@@ -114,30 +100,26 @@ export class BooleanEditor extends React.PureComponent<PropertyEditorProps, Bool
   }
 
   public render() {
-    const className = classnames("cell", "components-cell-editor", "components-boolean-editor");
-    const checked = this.state.checkboxValue;
+    const className = classnames("cell", "components-cell-editor", "components-toggle-editor");
+    const inOn = this.state.toggleValue;
 
     return (
-      <input
-        type="checkbox"
-        ref={(node) => this._checkboxElement = node}
+      <Toggle
         onBlur={this.props.onBlur}
         className={className}
-        checked={checked}
-        onChange={this._updateCheckboxValue} >
-
-      </input>
+        isOn={inOn}
+        onChange={this._updateToggleValue} />
     );
   }
 }
 
-/** BooleanPropertyEditor React component that uses the [[BooleanEditor]] property editor. */
-export class BooleanPropertyEditor extends PropertyEditorBase {
+/** TogglePropertyEditor React component that uses the [[ToggleEditor]] property editor. */
+export class TogglePropertyEditor extends PropertyEditorBase {
 
   public get reactElement(): React.ReactNode {
-    return <BooleanEditor />;
+    return <ToggleEditor />;
   }
 }
 
-PropertyEditorManager.registerEditor("bool", BooleanPropertyEditor);
-PropertyEditorManager.registerEditor("boolean", BooleanPropertyEditor);
+PropertyEditorManager.registerEditor("bool", TogglePropertyEditor, "toggle");
+PropertyEditorManager.registerEditor("boolean", TogglePropertyEditor, "toggle");

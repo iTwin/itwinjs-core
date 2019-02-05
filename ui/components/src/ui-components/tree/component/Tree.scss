@@ -26,16 +26,6 @@
   display: inline-block;
 }
 
-.components-cell-editor {
-  border: $uicore-blue solid 1px;
-  background: #F9F9F9 !important;
-  box-sizing: border-box;
-  height: 100%;
-  width: 100%;
-  padding-top: 1px;
-  padding-bottom: 3px;
-}
-
 .ui-components-tree {
   /**
    * Workaround for horizontal scroll issue.
@@ -67,4 +57,15 @@
       }
     }
   }
+
+  .components-cell-editor {
+    border: $uicore-blue solid 1px;
+    background: #F9F9F9 !important;
+    box-sizing: border-box;
+    height: 100%;
+    width: 100%;
+    padding-top: 1px;
+    padding-bottom: 3px;
+  }
+
 }

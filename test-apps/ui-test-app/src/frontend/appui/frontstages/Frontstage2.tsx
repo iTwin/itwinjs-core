@@ -70,7 +70,8 @@ export class Frontstage2 extends FrontstageProvider {
 
     return (
       <Frontstage id="Test2"
-        defaultToolId="Select" defaultLayout={contentLayoutDef} contentGroup={myContentGroup}
+        defaultTool={AppTools.appSelectElementCommand}
+        defaultLayout={contentLayoutDef} contentGroup={myContentGroup}
         isInFooterMode={true} applicationData={{ key: "value" }}
 
         topLeft={

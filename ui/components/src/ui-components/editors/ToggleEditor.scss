@@ -4,16 +4,16 @@
 *--------------------------------------------------------------------------------------------*/
 @import "@bentley/ui-core/lib/ui-core/index";
 
-$checkbox-size: $uicore-font-size * 1.2;
+$toggle-height: $uicore-font-size * 1.3;
+$toggle-width:  $toggle-height * 2;
 
-.components-boolean-editor {
-  height:      $checkbox-size;
-  width:       $checkbox-size;
-  margin-left: 0px;
+.components-toggle-editor {
+  height:             $toggle-height;
+  width:              $toggle-width;
 }
 
 .components-property-list--horizontal {
-  .components-boolean-editor {
-    margin-left: $uicore-font-size;    // Clear the resizer in the PropertyGrid
+  .components-toggle-editor {
+    margin-left:        $uicore-font-size;    // Clear the resizer in the PropertyGrid
   }
 }

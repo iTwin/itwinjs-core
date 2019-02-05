@@ -20,6 +20,7 @@ import {
   ActionItemButton,
   CommandItemDef,
   FrontstageManager,
+  CoreTools,
 } from "@bentley/ui-framework";
 
 import { AppStatusBarWidgetControl } from "../statusbars/AppStatusBar";
@@ -35,7 +36,7 @@ export class Frontstage1 extends FrontstageProvider {
   public get frontstage(): React.ReactElement<FrontstageProps> {
     return (
       <Frontstage id="Test1"
-        defaultToolId="PlaceLine"
+        defaultTool={AppTools.appSelectElementCommand}
         defaultLayout="TwoHalvesVertical"
         contentGroup="TestContentGroup1"
         defaultContentId="TestContent1"
@@ -111,6 +112,7 @@ class FrontstageToolWidget extends React.Component {
       expandsTo={Direction.Bottom}
       items={
         <>
+          <ActionItemButton actionItem={AppTools.appSelectElementCommand} />
           <ActionItemButton actionItem={AppTools.item1} />
           <ActionItemButton actionItem={AppTools.item2} />
           <ActionItemButton actionItem={this._openNestedFrontstage1} />
@@ -131,6 +133,7 @@ class FrontstageToolWidget extends React.Component {
       expandsTo={Direction.Right}
       items={
         <>
+          <ActionItemButton actionItem={CoreTools.rotateViewCommand} />
           <ToolButton toolId={AppTools.tool1.id} iconSpec={AppTools.tool1.iconSpec!} labelKey={AppTools.tool1.label} execute={AppTools.tool1.execute} />
           <ToolButton toolId={AppTools.tool2.id} iconSpec={AppTools.tool2.iconSpec!} labelKey={AppTools.tool2.label} execute={AppTools.tool2.execute} />
           <GroupButton

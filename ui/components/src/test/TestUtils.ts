@@ -147,7 +147,7 @@ export default class TestUtils {
     };
   }
 
-  public static createBooleanProperty(name: string, booleanValue: boolean) {
+  public static createBooleanProperty(name: string, booleanValue: boolean, editor?: string) {
     const value: PrimitiveValue = {
       displayValue: "",
       value: booleanValue,
@@ -158,6 +158,7 @@ export default class TestUtils {
       displayLabel: name,
       name,
       typename: "boolean",
+      editor: editor ? { name: editor } : undefined,
     };
 
     const propertyRecord = new PropertyRecord(value, description);

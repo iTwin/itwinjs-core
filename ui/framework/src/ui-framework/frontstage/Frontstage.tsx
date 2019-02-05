@@ -9,6 +9,7 @@ import { ContentLayoutDef, ContentLayout } from "../content/ContentLayout";
 import { ContentGroup } from "../content/ContentGroup";
 import { FrontstageRuntimeProps } from "./FrontstageComposer";
 import { FrontstageDef } from "./FrontstageDef";
+import { ToolItemDef } from "../shared/Item";
 import { ZoneDef } from "../zones/ZoneDef";
 import { Zone, ZoneProps, ZoneRuntimeProps } from "../zones/Zone";
 
@@ -32,8 +33,8 @@ export enum ZoneLocation {
 export interface FrontstageProps {
   /** Id for the Frontstage */
   id: string;
-  /** ToolId that is started once the Frontstage is activated */
-  defaultToolId: string;
+  /** Tool that is started once the Frontstage is activated */
+  defaultTool: ToolItemDef;
   /** The default Content Layout used */
   defaultLayout: string | ContentLayoutDef;
   /** The Content Group providing the Content Views */
@@ -77,7 +78,7 @@ export class Frontstage extends React.Component<FrontstageProps> {
   public static initializeFrontstageDef(frontstageDef: FrontstageDef, props: FrontstageProps): void {
     frontstageDef.id = props.id;
 
-    frontstageDef.defaultToolId = props.defaultToolId;
+    frontstageDef.defaultTool = props.defaultTool;
 
     if (props.defaultContentId !== undefined)
       frontstageDef.defaultContentId = props.defaultContentId;

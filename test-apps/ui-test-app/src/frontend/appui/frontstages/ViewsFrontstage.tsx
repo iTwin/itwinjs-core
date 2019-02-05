@@ -91,7 +91,8 @@ export class ViewsFrontstage extends FrontstageProvider {
 
     return (
       <Frontstage id="ViewsFrontstage"
-        defaultToolId="Select" defaultLayout={contentLayoutDef} contentGroup={myContentGroup}
+        defaultTool={AppTools.appSelectElementCommand}
+        defaultLayout={contentLayoutDef} contentGroup={myContentGroup}
         isInFooterMode={true} applicationData={{ key: "value" }}
         topLeft={
           <Zone

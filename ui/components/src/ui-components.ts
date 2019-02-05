@@ -43,6 +43,7 @@ export * from "./ui-components/editors/TextEditor";
 export * from "./ui-components/editors/EnumEditor";
 export * from "./ui-components/editors/EnumButtonGroupEditor";
 export * from "./ui-components/editors/BooleanEditor";
+export * from "./ui-components/editors/ToggleEditor";
 
 export * from "./ui-components/filtering/FilteringInput";
 export * from "./ui-components/filtering/ResultSelector";

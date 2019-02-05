@@ -24,6 +24,7 @@ import {
 } from "../../ui-framework";
 import TestUtils from "../TestUtils";
 import { BackstageItem as NZ_BackstageItem } from "@bentley/ui-ninezone";
+import { CoreTools } from "../../ui-framework/CoreToolDefinitions";
 
 describe("Backstage", () => {
 
@@ -99,7 +100,7 @@ describe("Backstage", () => {
           return (
             <Frontstage
               id="Test1"
-              defaultToolId="PlaceLine"
+              defaultTool={CoreTools.selectElementCommand}
               defaultLayout="FourQuadrants"
               contentGroup="TestContentGroup1"
             />
@@ -132,7 +133,7 @@ describe("Backstage", () => {
           return (
             <Frontstage
               id="Test1"
-              defaultToolId="PlaceLine"
+              defaultTool={CoreTools.selectElementCommand}
               defaultLayout="FourQuadrants"
               contentGroup="TestContentGroup1"
             />

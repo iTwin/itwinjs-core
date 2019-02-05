@@ -67,7 +67,7 @@ export class Frontstage3 extends FrontstageProvider {
     return (
       <Frontstage
         id="Test3"
-        defaultToolId="Select"
+        defaultTool={AppTools.appSelectElementCommand}
         defaultLayout={contentLayoutDef}
         contentGroup={myContentGroup}
         isInFooterMode={true}

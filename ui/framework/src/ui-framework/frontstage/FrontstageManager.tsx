@@ -319,6 +319,8 @@ export class FrontstageManager {
       frontstageDef.onFrontstageReady();
       FrontstageManager.onFrontstageReadyEvent.emit({ frontstageDef });
 
+      frontstageDef.startDefaultTool();
+
       // istanbul ignore else
       if (frontstageDef.contentControls.length >= 0) {
         // TODO: get content control to activate from state info

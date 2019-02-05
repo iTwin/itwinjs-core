@@ -18,6 +18,7 @@ import {
   Widget,
   FrontstageManager,
   FrontstageComposer,
+  CoreTools,
 } from "../../../ui-framework";
 import { Tool1 } from "../../tools/Tool1";
 
@@ -65,7 +66,7 @@ describe("ToolSettingsZone", () => {
         return (
           <Frontstage
             id="ToolSettingsZone-TestFrontstage"
-            defaultToolId="PlaceLine"
+            defaultTool={CoreTools.selectElementCommand}
             defaultLayout="FourQuadrants"
             contentGroup="TestContentGroup1"
             topCenter={

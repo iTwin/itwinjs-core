@@ -131,8 +131,13 @@
     background: inherit;
   }
 
+  .components-editor-container {
+    margin-left: 6px;
+    margin-right: 6px;
+  }
+
   .components-cell-editor {
-    border: $uicore-blue solid 2px;
+    border: $uicore-blue solid 1px;
     background: #F9F9F9 !important;
     box-sizing: border-box;
     height: 100%;
