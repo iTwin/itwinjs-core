@@ -110,6 +110,24 @@
     "openNestedFrontstage1": "Open Nested Frontstage"
   },
   "tools": {
+    "ToolWithSettings": {
+      "keyin": "ToolWithSettings",
+      "description": "Demo Tool with Settings",
+      "flyover": "Tool with Settings",
+      "Prompts": {
+        "GetPoint": "Enter point/Reset to Exit",
+        "Options": "Options",
+        "Lock": "Lock",
+        "City": "City",
+        "State": "State"
+      },
+      "Options": {
+        "Red": "Red",
+        "White": "White",
+        "Blue": "Blue",
+        "Yellow": "Yellow"
+      }
+    },
     "Tool1": {
       "keyin": "Tool1",
       "description": "Test1 tool",

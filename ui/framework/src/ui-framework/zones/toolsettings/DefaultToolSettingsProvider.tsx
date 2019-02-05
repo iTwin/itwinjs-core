@@ -15,7 +15,7 @@ import { FrontstageManager, SyncToolSettingsPropertiesEventArgs } from "../../fr
 import { PropertyUpdatedArgs, EditorContainer } from "@bentley/ui-components";
 import {
   IModelApp, PropertyRecord, ToolSettingsPropertyRecord, ToolSettingsPropertySyncItem, ToolSettingsValue,
-  PropertyEditorParams, PropertyEditorParamTypes, PropertyDescription,
+  PropertyEditorParams, PropertyEditorParamTypes, PropertyDescription, PrimitiveValue, PropertyValueFormat, EditorPosition,
 } from "@bentley/imodeljs-frontend";
 
 class TsCol {
@@ -31,6 +31,7 @@ class TsRow {
 }
 
 interface TsProps {
+  toolId: string;
   rows: TsRow[] | undefined;
 }
 
@@ -42,43 +43,36 @@ const handleCommit = (commit: PropertyUpdatedArgs): void => {
   }
 };
 
+interface TsState {
+  toolId: string;
+  numCols: number;
+  properties: Map<string, PropertyDescription>;
+  editors: Map<string, React.ReactNode>;
+}
+
 /** Component to populate ToolSetting for ToolSettings properties */
-export class DefaultToolSettings extends React.Component<TsProps> {
-  private _numCols = 0;
-  private _editors = new Map<string, React.ReactNode>();
-  private _properties = new Map<string, PropertyDescription>();
+export class DefaultToolSettings extends React.Component<TsProps, TsState> {
 
   constructor(props: TsProps) {
     super(props);
 
-    // sort rows and columns by priority.
-    if (props.rows) {
-      if (props.rows.length > 1)
-        props.rows.sort((a, b) => a.priority - b.priority);
-      props.rows.forEach((row) => {
-        if (row.cols.length > 1)
-          row.cols.sort((a, b) => a.priority - b.priority);
-        if (row.cols.length > this._numCols) this._numCols = row.cols.length; {
-          row.cols.forEach((col) => {
-            this._properties.set(col.record.property.name, col.record.property);
-          });
-        }
-      });
-    }
+    const state = DefaultToolSettings.getStateFromProps(props);
+    if (state)
+      this.state = state;
   }
 
   private _handleSyncToolSettingsPropertiesEvent = (args: SyncToolSettingsPropertiesEventArgs): void => {
     let needToForceUpdate = false;
     args.syncProperties.forEach((syncItem: ToolSettingsPropertySyncItem) => {
       // create a new property editor for each property to sync
-      const propertyDescription = this._properties.get(syncItem.propertyName);
+      const propertyDescription = this.state.properties.get(syncItem.propertyName);
       if (propertyDescription) {
         const updatedRecord = new PropertyRecord(syncItem.value, propertyDescription);
         const editor = this.getEditor(updatedRecord);
         if (editor) {
           // tslint:disable-next-line:no-console
           // console.log(`Default ToolSettings Provider - updating editor for ${updatedRecord.property.name} with new value ${JSON.stringify(updatedRecord.value)}`);
-          this._editors.set(updatedRecord.property.name, editor);
+          this.state.editors.set(updatedRecord.property.name, editor);
           needToForceUpdate = true;
         }
       }
@@ -95,8 +89,63 @@ export class DefaultToolSettings extends React.Component<TsProps> {
     FrontstageManager.onSyncToolSettingsProperties.removeListener(this._handleSyncToolSettingsPropertiesEvent);
   }
 
-  private getEditor(record: PropertyRecord): React.ReactNode {
-    return <EditorContainer propertyRecord={record} onCommit={handleCommit} onCancel={() => { }} />;
+  /** @hidden */
+  public componentDidUpdate() {
+    // required to ensure the state is kept in sync with props, since props may be updated from outside the type editor. For example from interactive tool.
+    const state = DefaultToolSettings.getStateFromProps(this.props);
+    // istanbul ignore else
+    if (state && (this.state.toolId !== state.toolId || this.state.numCols !== state.numCols)) {
+      this.setState(state);
+    }
+  }
+
+  private static _placeholderCellName = "__";
+  private static _blankDescription: PropertyDescription = {
+    displayLabel: DefaultToolSettings._placeholderCellName,
+    name: DefaultToolSettings._placeholderCellName,
+    typename: "string",
+  };
+
+  private static _blankValue: PrimitiveValue = {
+    valueFormat: PropertyValueFormat.Primitive,
+  };
+
+  private static getStateFromProps(props: TsProps): TsState | null {
+    const toolId = props.toolId;
+    const properties = new Map<string, PropertyDescription>();
+    let numCols = 0;
+    const editors = new Map<string, React.ReactNode>();
+
+    const blankCellRecord = new ToolSettingsPropertyRecord(DefaultToolSettings._blankValue, DefaultToolSettings._blankDescription, { rowPriority: 0, columnPriority: 0 } as EditorPosition);
+
+    // sort rows and columns by priority.
+    if (props.rows) {
+      if (props.rows.length > 1)
+        props.rows.sort((a, b) => a.priority - b.priority);
+      props.rows.forEach((row) => {
+        if (row.cols.length > 1)
+          row.cols.sort((a, b) => a.priority - b.priority);
+        if (row.cols.length > numCols) numCols = row.cols.length; {
+          row.cols.forEach((col) => {
+            properties.set(col.record.property.name, col.record.property);
+          });
+        }
+      });
+
+      // add a placeholder entries so each cell in the grid has something defined
+      props.rows.forEach((row) => {
+        if (row.cols.length < numCols)
+          row.cols.push(new TsCol(-1, blankCellRecord));
+      });
+
+      return { properties, toolId, numCols, editors };
+    }
+
+    return null;
+  }
+
+  private getEditor(record: PropertyRecord, setFocus = false): React.ReactNode {
+    return <EditorContainer propertyRecord={record} setFocus={setFocus} onCommit={handleCommit} onCancel={() => { }} />;
   }
 
   private hasSuppressEditorLabelParam(record: PropertyRecord) {
@@ -106,12 +155,22 @@ export class DefaultToolSettings extends React.Component<TsProps> {
     return false;
   }
 
-  private getCol(col: TsCol) {
-    const label = !this.hasSuppressEditorLabelParam(col.record) ? col.record.property.displayLabel + ":" : null;
-    let editor = this._editors.get(col.record.property.name);
+  private getCol(col: TsCol, rowIndex: number, colIndex: number) {
+    if (col.record!.property.name === DefaultToolSettings._placeholderCellName) {
+      // build placeholder elements for label and editor
+      return (
+        <React.Fragment key={`${rowIndex.toString()}-${colIndex.toString()}`}>
+          <span></span>
+          <span></span>
+        </React.Fragment>
+      );
+    }
+
+    const label = !this.hasSuppressEditorLabelParam(col.record) ? col.record.property.displayLabel + ":" : <span></span>;
+    let editor = this.state.editors.get(col.record.property.name);
     if (!editor) {
       editor = this.getEditor(col.record);
-      this._editors.set(col.record.property.name, editor);
+      this.state.editors.set(col.record.property.name, editor);
       // tslint:disable-next-line:no-console
       // console.log(`Created new editor for ${col.record.property.name}`);
     } else {
@@ -130,13 +189,13 @@ export class DefaultToolSettings extends React.Component<TsProps> {
     );
   }
 
-  private getRow(row: TsRow, index: number) {
+  private getRow(row: TsRow, rowIndex: number) {
     if (!row.cols) {
       return null;
     } else {
       return (
-        <React.Fragment key={index}>
-          {row.cols.map((col) => this.getCol(col))}
+        <React.Fragment key={rowIndex}>
+          {row.cols.map((col, colIndex: number) => this.getCol(col, rowIndex, colIndex))}
         </React.Fragment>
       );
     }
@@ -147,7 +206,7 @@ export class DefaultToolSettings extends React.Component<TsProps> {
     if (!rows) {
       return null;
     } else {
-      const autoColArray = new Array<string>(this._numCols * 2); // * 2 because optional label for each editor
+      const autoColArray = new Array<string>(this.state.numCols * 2); // * 2 because optional label for each editor
       autoColArray.fill("auto");
       const gridStyle: React.CSSProperties = {
         display: "grid",
@@ -156,7 +215,7 @@ export class DefaultToolSettings extends React.Component<TsProps> {
       };
 
       return (
-        <div style={gridStyle} className="toolSettingsRow" >
+        <div style={gridStyle} className="toolSettingsContainer" >
           {rows.map((row, index) => this.getRow(row, index))}
         </div>
       );
@@ -173,7 +232,7 @@ export class DefaultToolSettingsProvider extends ToolUiProvider {
 
     const hasProperties = this.getGridSpecsFromToolSettingProperties();
     if (hasProperties)
-      this.toolSettingsNode = <DefaultToolSettings rows={this.rows} />;
+      this.toolSettingsNode = <DefaultToolSettings rows={this.rows} toolId={FrontstageManager.activeToolId} />;
     else
       this.toolSettingsNode = null;
   }
@@ -195,7 +254,7 @@ export class DefaultToolSettingsProvider extends ToolUiProvider {
   }
 
   public onInitialize(): void {
-    // reload the data so it match current values from tool
+    // reload the data so it matches current values from tool
     this.rows.length = 0;
     this.getGridSpecsFromToolSettingProperties();
   }
