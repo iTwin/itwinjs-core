@@ -31,6 +31,7 @@ import { Range3d, Point2d, Point3d, Vector3d, Transform, Matrix3d, Angle } from 
 import { RenderSystem, RenderGraphic, GraphicBranch, PackedFeatureTable } from "../render/System";
 import { imageElementFromImageSource, getImageSourceFormatForMimeType } from "../ImageUtil";
 import { IModelConnection } from "../IModelConnection";
+import { DracoDecoder } from "./DracoDecoder";
 
 /** Provides facilities for deserializing tiles in the [glTF tile format](https://www.khronos.org/gltf/). */
 export namespace GltfTileIO {
@@ -553,9 +554,13 @@ export namespace GltfTileIO {
 
       if (undefined !== materialJson) {
         if (materialJson.values && materialJson.values.tex)
-          textureMapping = this.findTextureMapping(materialJson.values.tex);
+          textureMapping = this.findTextureMapping(materialJson.values.tex);    // Bimiums shader value.
         else if (materialJson.extensions && materialJson.extensions.KHR_techniques_webgl && materialJson.extensions.KHR_techniques_webgl.values && materialJson.extensions.KHR_techniques_webgl.values.u_tex)
-          textureMapping = this.findTextureMapping(materialJson.extensions.KHR_techniques_webgl.values.u_tex.index);
+          textureMapping = this.findTextureMapping(materialJson.extensions.KHR_techniques_webgl.values.u_tex.index);    // Bimiums colorIndex.
+        else if (materialJson.diffuseTexture)
+          textureMapping = this.findTextureMapping(materialJson.diffuseTexture.index);        // TBD -- real map support with PBR
+        else if (materialJson.emissiveTexture)
+          textureMapping = this.findTextureMapping(materialJson.emissiveTexture.index);      // TBD -- real map support with PBR
       }
 
       const color = this.colorFromMaterial(materialJson);
@@ -605,10 +610,6 @@ export namespace GltfTileIO {
         hasBakedLighting,
         asClassifier,
       });
-
-      if (!this.readVertices(mesh.points, primitive))
-        return undefined;
-
       // We don't have real colormap - just load material color.  This will be used if non-Bentley
       // tile or fit the color table is uniform. For a non-Bentley, non-Uniform, we'll set the
       // uv parameters to pick the colors out of the color map texture.
@@ -628,6 +629,16 @@ export namespace GltfTileIO {
       }
 
       if (undefined !== mesh.features && !this.readFeatures(mesh.features, primitive))
+        return undefined;
+      if (primitive.extensions && primitive.extensions.KHR_draco_mesh_compression) {
+        const dracoExtension = primitive.extensions.KHR_draco_mesh_compression;
+        const bufferView = this._bufferViews[dracoExtension.bufferView];
+        if (undefined === bufferView) return undefined;
+        const bufferData = this._binaryData.subarray(bufferView.byteOffset, bufferView.byteOffset + bufferView.byteLength);
+
+        return DracoDecoder.readDracoMesh(mesh, primitive, bufferData);
+      }
+      if (!this.readVertices(mesh.points, primitive))
         return undefined;
 
       switch (primitiveType) {

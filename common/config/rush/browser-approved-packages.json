@@ -259,6 +259,10 @@
       "allowedCategories": [ "tools" ]
     },
     {
+      "name": "draco3d",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "electron",
       "allowedCategories": [ "backend", "internal" ]
     },

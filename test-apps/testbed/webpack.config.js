@@ -17,6 +17,13 @@ module.exports = {
   },
   devtool: "nosources-source-map",
   module: {
+    noParse: [
+      // Don't parse draco_*_nodejs.js modules for `require` calls.  There are
+      // requires for fs that cause it to fail even though the fs dependency
+      // is not used.
+      /draco_decoder_nodejs.js$/,
+      /draco_encoder_nodejs.js$/
+    ],
     rules: [
       {
         test: /\.js$/,
@@ -47,5 +54,5 @@ module.exports = {
         }, {}),
     })
   ]
-  };
+};
 

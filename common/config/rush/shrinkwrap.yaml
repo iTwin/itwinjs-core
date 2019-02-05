@@ -41,7 +41,6 @@ dependencies:
   '@rush-temp/ui-ninezone': 'file:projects/ui-ninezone.tgz'
   '@rush-temp/ui-test-app': 'file:projects/ui-test-app.tgz'
   '@rush-temp/webpack-tools': 'file:projects/webpack-tools.tgz'
-  '@types/benchmark': 1.0.31
   '@types/body-parser': 1.17.0
   '@types/bunyan': 1.8.5
   '@types/chai': 4.1.7
@@ -100,7 +99,6 @@ dependencies:
   app-root-path: 2.1.0
   asn1: 0.2.3
   autoprefixer: 8.6.5
-  benchmark: 2.1.4
   body-parser: 1.18.3
   bunyan: 1.8.12
   bunyan-seq: 0.2.0
@@ -114,7 +112,7 @@ dependencies:
   chai-string: 1.5.0
   chalk: 2.4.2
   child_process: 1.0.2
-  chokidar: 2.0.4
+  chokidar: 2.1.0
   chrome-launcher: 0.10.5
   classnames: 2.2.6
   cli-highlight: 2.0.0
@@ -132,6 +130,7 @@ dependencies:
   deep-equal: 1.0.1
   delay-cli: 1.1.0
   dotenv: 6.2.0
+  draco3d: 1.3.4
   electron: 4.0.4
   electron-chromedriver: 2.0.0
   enzyme: 3.8.0
@@ -249,7 +248,7 @@ dependencies:
   ts-key-enum: 2.0.0
   ts-loader: 4.5.0
   ts-node: 7.0.1
-  tsconfig-paths: 3.7.0
+  tsconfig-paths: 3.8.0
   tslib: 1.9.3
   tslint: 5.12.1
   tslint-consistent-codestyle: 1.15.0
@@ -568,10 +567,6 @@ packages:
     dev: false
     resolution:
       integrity: sha1-WCskdhaabLpGCiFNR2x0REHYc9U=
-  /@types/benchmark/1.0.31:
-    dev: false
-    resolution:
-      integrity: sha512-F6fVNOkGEkSdo/19yWYOwVKGvzbTeWkR/XQYBKtGBQ9oGRjBN9f/L4aJI4sDcVPJO58Y1CJZN8va9V2BhrZapA==
   /@types/body-parser/1.17.0:
     dependencies:
       '@types/connect': 3.4.32
@@ -1775,13 +1770,6 @@ packages:
     dev: false
     resolution:
       integrity: sha1-pDAdOJtqQ/m2f/PKEaP2Y342Dp4=
-  /benchmark/2.1.4:
-    dependencies:
-      lodash: 4.17.11
-      platform: 1.3.5
-    dev: false
-    resolution:
-      integrity: sha1-CfPeMckWQl1JjMLuVloOvzwqVik=
   /big.js/3.2.0:
     dev: false
     resolution:
@@ -2429,7 +2417,7 @@ packages:
       fsevents: 1.2.7
     resolution:
       integrity: sha1-eY5ol3gVHIB2tLNg5e3SjNortGg=
-  /chokidar/2.0.4:
+  /chokidar/2.1.0:
     dependencies:
       anymatch: 2.0.0
       async-each: 1.0.1
@@ -2438,8 +2426,7 @@ packages:
       inherits: 2.0.3
       is-binary-path: 1.0.1
       is-glob: 4.0.0
-      lodash.debounce: 4.0.8
-      normalize-path: 2.1.1
+      normalize-path: 3.0.0
       path-is-absolute: 1.0.1
       readdirp: 2.2.1
       upath: 1.1.0
@@ -2447,7 +2434,7 @@ packages:
     optionalDependencies:
       fsevents: 1.2.7
     resolution:
-      integrity: sha512-z9n7yt9rOvIJrMhvDtDictKrkFHeihkNl6uWMmZlmL6tJtX9Cs+87oK+teBx+JIgzvbX3yZHT3eF8vpbDxHJXQ==
+      integrity: sha512-5t6G2SH8eO6lCvYOoUpaRnF5Qfd//gd7qJAkwRUw9qlGVkiQ13uwQngqbWWaurOsaAm9+kUGbITADxt6H0XFNQ==
   /chownr/1.1.1:
     dev: false
     resolution:
@@ -3656,6 +3643,10 @@ packages:
       node: '>=6'
     resolution:
       integrity: sha512-HygQCKUBSFl8wKQZBSemMywRWcEDNidvNbjGVyZu3nbZ8qq9ubiPoGLMdRDpfSrpkkm9BXYFkpKxxFX38o/76w==
+  /draco3d/1.3.4:
+    dev: false
+    resolution:
+      integrity: sha512-I7kAKyiSIb++K5VdWGeIC9xXWkoQ1HZ8wSCQhaRMf41KKxYX5jYmy+rRna/o7o3CrunxvCGbZBl6d6bdWVcJXw==
   /drange/1.1.1:
     dev: false
     engines:
@@ -4677,7 +4668,7 @@ packages:
     dependencies:
       babel-code-frame: 6.26.0
       chalk: 2.4.2
-      chokidar: 2.0.4
+      chokidar: 2.1.0
       lodash: 4.17.11
       micromatch: 3.1.10
       minimatch: 3.0.4
@@ -4696,7 +4687,7 @@ packages:
     dependencies:
       babel-code-frame: 6.26.0
       chalk: 2.4.2
-      chokidar: 2.0.4
+      chokidar: 2.1.0
       lodash: 4.17.11
       micromatch: 3.1.10
       minimatch: 3.0.4
@@ -5924,14 +5915,6 @@ packages:
     dev: false
     resolution:
       integrity: sha512-NcdALwpXkTm5Zvvbk7owOUSvVvBKDgKP5/ewfXEznmQFfs4ZRmanOeKBTjRVjka3QFoN6XJ+9F3USqfHqTaU5w==
-  /is-builtin-module/1.0.0:
-    dependencies:
-      builtin-modules: 1.1.1
-    dev: false
-    engines:
-      node: '>=0.10.0'
-    resolution:
-      integrity: sha1-VAVy0096wxGfj3bDDLwbHgN6/74=
   /is-callable/1.1.4:
     dev: false
     engines:
@@ -6942,10 +6925,6 @@ packages:
     dev: false
     resolution:
       integrity: sha1-4j8/nE+Pvd6HJSnBBxhXoIblzO8=
-  /lodash.debounce/4.0.8:
-    dev: false
-    resolution:
-      integrity: sha1-gteb/zCmfEAF/9XiUVMArZyk168=
   /lodash.defaults/4.2.0:
     dev: false
     resolution:
@@ -7251,7 +7230,7 @@ packages:
       loud-rejection: 1.6.0
       map-obj: 1.0.1
       minimist: 1.2.0
-      normalize-package-data: 2.4.2
+      normalize-package-data: 2.5.0
       object-assign: 4.1.1
       read-pkg-up: 1.0.1
       redent: 1.0.0
@@ -7268,7 +7247,7 @@ packages:
       loud-rejection: 1.6.0
       minimist: 1.2.0
       minimist-options: 3.0.2
-      normalize-package-data: 2.4.2
+      normalize-package-data: 2.5.0
       read-pkg-up: 3.0.0
       redent: 2.0.0
       trim-newlines: 2.0.0
@@ -7615,7 +7594,7 @@ packages:
     dependencies:
       babel-runtime: 6.26.0
       chalk: 2.4.2
-      chokidar: 2.0.4
+      chokidar: 2.1.0
       glob-parent: 3.1.0
       globby: 7.1.1
       interpret: 1.2.0
@@ -7641,7 +7620,7 @@ packages:
     dependencies:
       babel-runtime: 6.26.0
       chalk: 2.4.2
-      chokidar: 2.0.4
+      chokidar: 2.1.0
       glob-parent: 3.1.0
       globby: 7.1.1
       interpret: 1.2.0
@@ -8008,7 +7987,7 @@ packages:
       integrity: sha512-bTVRrNgR8iIJrlj1c51JdRrp7eO5KIQzXjl0IuQPUI9THIOcsAwtO16kdr8r+Sp/ycXaFocyR3WfFNj7H8AocA==
   /nodemon/1.18.9:
     dependencies:
-      chokidar: 2.0.4
+      chokidar: 2.1.0
       debug: 3.2.6
       ignore-by-default: 1.0.1
       minimatch: 3.0.4
@@ -8052,15 +8031,15 @@ packages:
     hasBin: true
     resolution:
       integrity: sha1-xkZdvwirzU2zWTF/eaxopkayj/k=
-  /normalize-package-data/2.4.2:
+  /normalize-package-data/2.5.0:
     dependencies:
       hosted-git-info: 2.7.1
-      is-builtin-module: 1.0.0
+      resolve: 1.10.0
       semver: 5.6.0
       validate-npm-package-license: 3.0.4
     dev: false
     resolution:
-      integrity: sha512-YcMnjqeoUckXTPKZSAsPjUPLxH85XotbpqK3w4RyCwdFQSU5FxxBys8buehkSfg0j9fKvV1hn7O0+8reEgkAiw==
+      integrity: sha512-/5CMN3T0R4XTj4DcGaexo+roZSdSFW/0AOOTROrjxzCG1wrWXEsGbRKevjlIL+ZDE4sZlJr5ED4YW0yqmkK+eA==
   /normalize-path/2.1.1:
     dependencies:
       remove-trailing-separator: 1.1.0
@@ -8069,6 +8048,12 @@ packages:
       node: '>=0.10.0'
     resolution:
       integrity: sha1-GrKLVW4Zg2Oowab35vogE3/mrtk=
+  /normalize-path/3.0.0:
+    dev: false
+    engines:
+      node: '>=0.10.0'
+    resolution:
+      integrity: sha512-6eZs5Ls3WtCisHWp9S2GUy8dqkpGi4BVSz3GaqiE6ezub0512ESztXUwUB6C6IKbQkY2Pnb/mD4WYojCRwcwLA==
   /normalize-range/0.1.2:
     dev: false
     engines:
@@ -10056,7 +10041,7 @@ packages:
   /read-pkg/1.1.0:
     dependencies:
       load-json-file: 1.1.0
-      normalize-package-data: 2.4.2
+      normalize-package-data: 2.5.0
       path-type: 1.1.0
     dev: false
     engines:
@@ -10066,7 +10051,7 @@ packages:
   /read-pkg/3.0.0:
     dependencies:
       load-json-file: 4.0.0
-      normalize-package-data: 2.4.2
+      normalize-package-data: 2.5.0
       path-type: 3.0.0
     dev: false
     engines:
@@ -11911,7 +11896,7 @@ packages:
     hasBin: true
     resolution:
       integrity: sha512-BVwVbPJRspzNh2yfslyT1PSbl5uIk03EZlb493RKHN4qej/D06n1cEhjlOJG69oFsE7OT8XjpTUcYf6pKTLMhw==
-  /tsconfig-paths/3.7.0:
+  /tsconfig-paths/3.8.0:
     dependencies:
       '@types/json5': 0.0.29
       deepmerge: 2.2.1
@@ -11920,7 +11905,7 @@ packages:
       strip-bom: 3.0.0
     dev: false
     resolution:
-      integrity: sha512-7iE+Q/2E1lgvxD+c0Ot+GFFmgmfIjt/zCayyruXkXQ84BLT85gHXy0WSoQSiuFX9+d+keE/jiON7notV74ZY+A==
+      integrity: sha512-zZEYFo4sjORK8W58ENkRn9s+HmQFkkwydDG7My5s/fnfr2YYCaiyXe/HBUcIgU8epEKOXwiahOO+KZYjiXlWyQ==
   /tslib/1.9.3:
     dev: false
     resolution:
@@ -12649,7 +12634,7 @@ packages:
       integrity: sha512-wbTp09q/9C+jJn4KKJfJfoS6VleK/Dti0yqWSm6KMvJ4MRCXFQNapHuJXutJIrWV0Cf4AhTdeIe4qdKHR1+Hug==
   /watchpack/1.6.0:
     dependencies:
-      chokidar: 2.0.4
+      chokidar: 2.1.0
       graceful-fs: 4.1.15
       neo-async: 2.6.0
     dev: false
@@ -12885,7 +12870,7 @@ packages:
     dependencies:
       ansi-html: 0.0.7
       bonjour: 3.5.0
-      chokidar: 2.0.4
+      chokidar: 2.1.0
       compression: 1.7.3
       connect-history-api-fallback: 1.6.0
       debug: 3.2.6
@@ -12925,7 +12910,7 @@ packages:
     dependencies:
       ansi-html: 0.0.7
       bonjour: 3.5.0
-      chokidar: 2.0.4
+      chokidar: 2.1.0
       compression: 1.7.3
       connect-history-api-fallback: 1.6.0
       debug: 3.2.6
@@ -13487,7 +13472,7 @@ packages:
       cache-require-paths: 0.3.0
       chai: 4.2.0
       chalk: 2.4.2
-      chokidar: 2.0.4
+      chokidar: 2.1.0
       commander: 2.19.0
       comment-json: 1.1.3
       cpx: 1.5.0
@@ -13512,7 +13497,7 @@ packages:
       style-loader: 0.21.0
       svg-sprite-loader: 3.9.2
       ts-node: 7.0.1
-      tsconfig-paths: 3.7.0
+      tsconfig-paths: 3.8.0
       tslib: 1.9.3
       tslint: /tslint/5.12.1/typescript@3.2.4
       tslint-consistent-codestyle: /tslint-consistent-codestyle/1.15.0/tslint@5.12.1+typescript@3.2.4
@@ -13600,14 +13585,12 @@ packages:
     version: 0.0.0
   'file:projects/ecschema-metadata.tgz':
     dependencies:
-      '@types/benchmark': 1.0.31
       '@types/chai': 4.1.7
       '@types/chai-as-promised': 7.1.0
       '@types/glob': 5.0.36
       '@types/mocha': 5.2.5
       '@types/node': 10.10.3
       '@types/sinon': 5.0.7
-      benchmark: 2.1.4
       bunyan: 1.8.12
       bunyan-seq: 0.2.0
       chai: 4.2.0
@@ -13934,6 +13917,7 @@ packages:
       '@types/node': 10.10.3
       '@types/semver': 5.5.0
       cpx: 1.5.0
+      draco3d: 1.3.4
       fuse.js: 3.3.1
       js-base64: 2.5.1
       make-dir-cli: 1.0.0
@@ -13950,7 +13934,7 @@ packages:
     dev: false
     name: '@rush-temp/imodeljs-frontend'
     resolution:
-      integrity: sha512-xLSxxTpBDCNoQ7cXOllWCjN4GsZMm2tmbEewuVFUdimsaUpCixz//ehlf7CT3lqkB3Bqiqq99OoBfkXArrgLMg==
+      integrity: sha512-L4O5+AaQT5bUTvrI5XDKvKn7AFJnP7yUHhIgGfhYd7QrNdspK3IYxmAkxPOEQt4CJxq83lpzwKDSggz1aBvRzw==
       tarball: 'file:projects/imodeljs-frontend.tgz'
     version: 0.0.0
   'file:projects/imodeljs-i18n.tgz':
@@ -14469,7 +14453,7 @@ packages:
       source-map-loader: 0.2.4
       ts-key-enum: 2.0.0
       ts-node: 7.0.1
-      tsconfig-paths: 3.7.0
+      tsconfig-paths: 3.8.0
       tslint: /tslint/5.12.1/typescript@3.2.4
       typedoc: 0.11.1
       typedoc-plugin-external-module-name: /typedoc-plugin-external-module-name/1.1.3/typedoc@0.11.1
@@ -14525,7 +14509,7 @@ packages:
       sinon-chai: /sinon-chai/3.3.0/chai@4.2.0+sinon@7.2.3
       source-map-loader: 0.2.4
       ts-node: 7.0.1
-      tsconfig-paths: 3.7.0
+      tsconfig-paths: 3.8.0
       tslint: /tslint/5.12.1/typescript@3.2.4
       typedoc: 0.11.1
       typedoc-plugin-external-module-name: /typedoc-plugin-external-module-name/1.1.3/typedoc@0.11.1
@@ -14589,7 +14573,7 @@ packages:
       sinon-chai: /sinon-chai/3.3.0/chai@4.2.0+sinon@7.2.3
       source-map-loader: 0.2.4
       ts-node: 7.0.1
-      tsconfig-paths: 3.7.0
+      tsconfig-paths: 3.8.0
       tslint: /tslint/5.12.1/typescript@3.2.4
       typedoc: 0.11.1
       typedoc-plugin-external-module-name: /typedoc-plugin-external-module-name/1.1.3/typedoc@0.11.1
@@ -14655,7 +14639,7 @@ packages:
       svg-react-loader: 0.4.6
       ts-loader: 4.5.0
       ts-node: 7.0.1
-      tsconfig-paths: 3.7.0
+      tsconfig-paths: 3.8.0
       tslint: /tslint/5.12.1/typescript@3.2.4
       tslint-loader: /tslint-loader/3.6.0/tslint@5.12.1
       typedoc: 0.11.1
@@ -14705,7 +14689,7 @@ packages:
       source-map-loader: 0.2.4
       style-loader: 0.21.0
       svg-sprite-loader: 3.9.2
-      tsconfig-paths: 3.7.0
+      tsconfig-paths: 3.8.0
       tslint: /tslint/5.12.1/typescript@3.2.4
       typescript: 3.2.4
       uglifyjs-webpack-plugin: /uglifyjs-webpack-plugin/1.3.0/webpack@4.29.1
@@ -14882,7 +14866,6 @@ specifiers:
   '@rush-temp/ui-ninezone': 'file:./projects/ui-ninezone.tgz'
   '@rush-temp/ui-test-app': 'file:./projects/ui-test-app.tgz'
   '@rush-temp/webpack-tools': 'file:./projects/webpack-tools.tgz'
-  '@types/benchmark': ~1.0.31
   '@types/body-parser': ^1.17.0
   '@types/bunyan': ^1.8.4
   '@types/chai': ^4.1.4
@@ -14941,7 +14924,6 @@ specifiers:
   app-root-path: ^2.0.1
   asn1: 0.2.3
   autoprefixer: ^8.6.5
-  benchmark: ^2.1.4
   body-parser: ^1.18.2
   bunyan: ^1.8.12
   bunyan-seq: ^0.2.0
@@ -14973,6 +14955,7 @@ specifiers:
   deep-equal: ^1
   delay-cli: ^1.1.0
   dotenv: ^6.0.0
+  draco3d: ^1.3.4
   electron: ^4.0.1
   electron-chromedriver: ^2.0.0
   enzyme: ^3.4.0
