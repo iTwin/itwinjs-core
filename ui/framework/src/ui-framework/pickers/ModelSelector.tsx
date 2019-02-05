@@ -688,13 +688,15 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
     if (!IModelApp.viewManager)
       return;
 
-    IModelApp.viewManager.forEachViewport((vp: Viewport) => {
+    IModelApp.viewManager.forEachViewport(async (vp: Viewport) => {
       if (!(vp.view instanceof SpatialViewState))
         return;
       const view: SpatialViewState = vp.view.clone();
       if (checked)
-        items.forEach((item) => {
+        items.forEach(async (item) => {
           item.enabled = checked;
+          if (!this.props.iModelConnection.models.getLoaded(item.key))
+            await this.props.iModelConnection.models.load(item.key);
           view.modelSelector.addModels(item.key);
         });
       else
