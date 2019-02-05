@@ -38,15 +38,24 @@ $node-font-size: $bwc-font-size;
     margin: auto 4px;
   }
 
+  .bwc-inputs-checkbox {
+    display: inline-block;
+    padding: 0;
+    margin: 0;
+    margin-right: 5px;
+
+    > input {
+      position: relative;
+      left: 0px;
+      height: auto;
+      line-height: unset;
+    }
+  }
+
   > .contents {
     margin-left: 5px;
     display: flex;
     align-items: center;
-
-    > .bwc-inputs-checkbox {
-      display: inline-block;
-      margin-right: 5px
-    }
 
     .icon {
       width: 16px;
