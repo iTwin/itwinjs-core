@@ -2,8 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-@import "@bentley/bwc/lib/mixins";
-@import "@bentley/ui-core/lib/ui-core/colors";
+@import "@bentley/ui-core/lib/ui-core/index";
 
 $desktop-tool-stripe-width: 2px;
 $desktop-tool-stripe-height: 22px;
@@ -25,8 +24,8 @@ $components-enumbuttongroup-editor-item-border-width: 1px;
 $components-enumbuttongroup-editor-space-between-toolbar-items: 1px;
 
 .components-enumbuttongroup-editor {
-  font-family: $bwc-font-family;
-  font-size: $bwc-font-size;
+  font-family: $uicore-font-family;
+  font-size: $uicore-font-size;
   background: #fff;
   width: 100%;
 

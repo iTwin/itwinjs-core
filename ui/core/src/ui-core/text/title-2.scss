@@ -2,18 +2,12 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { mount, shallow } from "enzyme";
-import * as React from "react";
-import { WaitSpinner } from "../../ui-core";
+@import "./mixins";
 
-describe("WaitSpinner", () => {
+@mixin uicore-text-title-2 {
 
-  it("should render", () => {
-    mount(<WaitSpinner />);
-  });
+    @include uicore-text( title-2 );
+    @include uicore-text-block-spacing;
+}
 
-  it("renders correctly", () => {
-    shallow(<WaitSpinner />).should.matchSnapshot();
-  });
-
-});
+.uicore-text-title-2 { @include uicore-text-title-2 }

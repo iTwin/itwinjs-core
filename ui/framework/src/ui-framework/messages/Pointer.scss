@@ -3,8 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-@import "@bentley/ui-core/lib/ui-core/colors";
-@import "@bentley/bwc/lib/mixins";
+@import "@bentley/ui-core/lib/ui-core/index";
 
 .nz-popup-message-pointer {
   background-color: $background-1;
@@ -35,10 +34,10 @@
   }
 
   .popup-message-brief {
-    @include bwc-text(body);
+    @include uicore-text(body);
   }
 
   .popup-message-detailed {
-    @include bwc-text(small);
+    @include uicore-text(small);
   }
 }

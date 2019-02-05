@@ -2,18 +2,17 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-@import "@bentley/bwc/lib/mixins";
-@import "../colors";
+@import "../index.scss";
 
-.bwc-expandable-blocks-block {
+.uicore-expandable-blocks-block {
   background-color: $background-1;
-  border: solid 1px $bwc-gray-9;
+  border: solid 1px $uicore-gray-9;
   border-radius: 3px;
   position: relative;
 
   > .header {
-    padding: $bwc-xs;
-    background: $bwc-white;
+    padding: $uicore-xs;
+    background: $uicore-white;
     transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out;
     cursor: pointer;
 
@@ -24,15 +23,15 @@
       float: left;
       margin-right: 6px;
       text-align: center;
-      color: $bwc-gray-5;
+      color: $uicore-gray-5;
       transition: 0.15s ease-in-out;
     }
 
     > .caption {
       @include no-link;
-      @include bwc-text( small );
+      @include uicore-text( small );
       display: block;
-      color: $bwc-gray-4;
+      color: $uicore-gray-4;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -40,12 +39,12 @@
 
     > .title {
       @include no-link;
-      @include bwc-text( subheading );
+      @include uicore-text( subheading );
       font-size: 0.95em;
       line-height: 23px;
       display: block;
       margin: 0;
-      color: $bwc-gray-4;
+      color: $uicore-gray-4;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -65,7 +64,7 @@
   }
 
   &.with-caption > .header > .icon-container {
-    margin-top: $bwc-baseline;
+    margin-top: $uicore-baseline;
   }
 
   &.is-collapsed {
@@ -77,12 +76,12 @@
   &:hover {
     > .header {
       > .icon-container {
-        color: $bwc-gray-2;
+        color: $uicore-gray-2;
       }
 
       > .caption,
       > .title {
-        color: $bwc-gray-1;
+        color: $uicore-gray-1;
       }
     }
   }
@@ -97,7 +96,7 @@
       > .icon-container,
       > .caption,
       > .title {
-        color: rgba($bwc-blue,.85);
+        color: rgba($uicore-blue,.85);
       }
 
       > .icon-container {
@@ -114,13 +113,13 @@
     &:hover > .header {
       > .icon-container,
       > .title {
-        color: rgba($bwc-blue,1);
+        color: rgba($uicore-blue,1);
       }
     }
 
     > .content {
       padding: 11px 9px 11px 34px;
-      background-color: $bwc-white;
+      background-color: $uicore-white;
       border-style: none;
     }
 
@@ -130,7 +129,7 @@
       top: 0;
       height: 2px;
       width: 100%;
-      background: $bwc-blue;
+      background: $uicore-blue;
       z-index: 1;
     }
   }

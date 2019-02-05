@@ -2,8 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
- @import "@bentley/bwc/lib/index.scss";
- @import "@bentley/ui-core/lib/ui-core/_scrollbar";
+@import "@bentley/ui-core/lib/ui-core/index";
 
  $sheets-modal-padding: 10px;
 
@@ -66,17 +65,17 @@
     }
 
     &.is-active {
-      border-color: $bwc-blue;
+      border-color: $uicore-blue;
     }
 
     &.is-pressed {
-      border-color: $bwc-blue;
+      border-color: $uicore-blue;
     }
 
     &:not(.is-active) {
       &:not(.is-pressed) {
         &:hover {
-          border-color: $bwc-blue-a;
+          border-color: $uicore-blue-a;
         }
       }
     }

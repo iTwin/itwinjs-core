@@ -149,12 +149,9 @@ exports[`<Node /> renders loader correctly 1`] = `
   <div
     className="loader"
   >
-    <i />
-    <i />
-    <i />
-    <i />
-    <i />
-    <i />
+    <Spinner
+      size={0}
+    />
   </div>
   <div
     className="contents"

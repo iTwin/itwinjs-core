@@ -10,7 +10,7 @@ import * as React from "react";
 import { AutoSizer, Size, List as VirtualizedList, ListRowProps as VirtualizedListRowProps } from "react-virtualized";
 // bentley imports
 import { using, Guid } from "@bentley/bentleyjs-core";
-import { Tree as TreeBase, TreeNodePlaceholder, shallowDiffers, CheckBoxState } from "@bentley/ui-core";
+import { Tree as TreeBase, TreeNodePlaceholder, shallowDiffers, CheckBoxState, Spinner, SpinnerSize } from "@bentley/ui-core";
 // tree-related imports
 import {
   BeInspireTree, BeInspireTreeNode, BeInspireTreeNodes, BeInspireTreeNodeConfig,
@@ -858,7 +858,7 @@ export class Tree extends React.Component<TreeProps, TreeState> {
     if (!this.state.modelReady) {
       return (
         <div className="ui-components-tree-loader">
-          <i></i><i></i><i></i><i></i><i></i><i></i>
+          <Spinner size={SpinnerSize.Large} />
         </div>
       );
     }

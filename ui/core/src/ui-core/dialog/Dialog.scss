@@ -2,12 +2,10 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-@import "@bentley/bwc/lib/mixins";
-@import "../_z-index";
-@import "../_scrollbar";
+@import "../index.scss";
 
 .dialog {
-  @include bwc-font-family;
+  @include uicore-font-family;
 
   display: none;
   position: fixed;
@@ -94,20 +92,20 @@
       display: flex;
       flex-grow: 1;
       flex-direction: column;
-      border: 1px solid $bwc-gray-3;
-      border-radius: $bwc-border-radius;
-      background-color: $bwc-gray-c;
+      border: 1px solid $uicore-gray-3;
+      border-radius: $uicore-border-radius;
+      background-color: $uicore-gray-c;
       padding: 0;
 
       > .dialog-head {
         flex-shrink: 0;
         align-items: center;
-        background-color: $bwc-blue;
-        color: $bwc-blue-highlight;
+        background-color: $uicore-blue;
+        color: $uicore-blue-highlight;
         display: flex;
         padding: 6px;
 
-        /* padding: $bwc-unbordered-padding; */
+        /* padding: $uicore-unbordered-padding; */
         &.dialog-movable {
           cursor: move;
         }
@@ -115,7 +113,7 @@
         > .dialog-title {
           flex: 1 1;
 
-          @include bwc-text-title;
+          @include uicore-text-title;
 
           font-size: 20px;
           margin: 0;
@@ -123,14 +121,14 @@
 
         > .dialog-close {
           cursor: pointer;
-          height: $bwc-font-size-title;
-          width: $bwc-font-size-title;
-          line-height: $bwc-font-size-title;
-          flex: 0 0 $bwc-icons-medium;
+          height: $uicore-font-size-title;
+          width: $uicore-font-size-title;
+          line-height: $uicore-font-size-title;
+          flex: 0 0 $uicore-icons-medium;
           text-align: center;
 
           &:hover {
-            color: $bwc-white;
+            color: $uicore-white;
           }
         }
       }
@@ -139,9 +137,9 @@
         overflow: auto;
         flex: 1 1;
 
-        @include bwc-text-block;
+        @include uicore-text-block;
 
-        padding: $bwc-unbordered-padding;
+        padding: $uicore-unbordered-padding;
 
         @include uicore-touch-scrolling;
         @include uicore-scrollbar();
@@ -149,7 +147,7 @@
 
       > .dialog-footer {
         flex-shrink: 0;
-        padding: $bwc-unbordered-padding;
+        padding: $uicore-unbordered-padding;
 
         > .dialog-buttons {
           display: flex;
@@ -161,7 +159,7 @@
             padding-bottom: 2px;
 
             &:not(:first-child) {
-              margin-left: $bwc-inputs-margin;
+              margin-left: $uicore-inputs-margin;
             }
           }
         }

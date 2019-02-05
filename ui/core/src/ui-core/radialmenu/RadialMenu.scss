@@ -2,7 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-@import "@bentley/bwc/lib/mixins";
+@import "../index.scss";
 
 .radial-menu {
   visibility: hidden;
@@ -19,12 +19,12 @@
     margin-top: -50%;
 
     .radial-menu-sector {
-      stroke: $bwc-inputs-border-color;
-      fill: $bwc-white;
+      stroke: $uicore-inputs-border-color;
+      fill: $uicore-white;
       stroke-width: 1px;
 
       &.selected {
-        fill: $bwc-blue;
+        fill: $uicore-blue;
       }
     }
 
@@ -35,15 +35,15 @@
         align-items: center;
 
         .radial-menu-button-icon {
-          height: $bwc-icons-small;
-          width: $bwc-icons-small;
-          line-height: $bwc-icons-small;
+          height: $uicore-icons-small;
+          width: $uicore-icons-small;
+          line-height: $uicore-icons-small;
         }
 
         .radial-menu-button-content {
           cursor: default;
-          color: $bwc-text-color;
-          font-size: $bwc-font-size-small;
+          color: $uicore-text-color;
+          font-size: $uicore-font-size-small;
           user-select: none;
         }
       }

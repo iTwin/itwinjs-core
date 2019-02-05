@@ -2,10 +2,10 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-@import "@bentley/bwc/lib/mixins";
+@import "@bentley/ui-core/lib/ui-core/index";
 
 .components-table-value-button {
-  @include bwc-buttons-hollow;
+  @include uicore-buttons-hollow;
   margin: -8px 0 0 -8px; // Offset automatic padding for table cell content
   width: calc(100% - 16px);
   height: 100%;
@@ -23,7 +23,7 @@
 }
 
 .components-table-value-popup {
-  background: $bwc-gray-c;
+  background: $uicore-gray-c;
   padding: 5px;
   border-radius: 3px;
 }

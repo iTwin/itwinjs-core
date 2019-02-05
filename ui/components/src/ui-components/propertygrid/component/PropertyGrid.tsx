@@ -7,7 +7,7 @@
 import * as React from "react";
 import ResizeObserver from "resize-observer-polyfill";
 import { DisposeFunc } from "@bentley/bentleyjs-core";
-import { Orientation } from "@bentley/ui-core";
+import { Orientation, Spinner, SpinnerSize } from "@bentley/ui-core";
 import { PropertyRecord, PropertyValueFormat } from "@bentley/imodeljs-frontend";
 import { IPropertyDataProvider, PropertyCategory, PropertyData } from "../PropertyDataProvider";
 import { SelectablePropertyBlock } from "./SelectablePropertyBlock";
@@ -287,7 +287,7 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
     if (this.state.isLoading) {
       return (
         <div className="components-property-grid-loader">
-          <i></i><i></i><i></i><i></i><i></i><i></i>
+          <Spinner size={SpinnerSize.Large} />
         </div>
       );
     }

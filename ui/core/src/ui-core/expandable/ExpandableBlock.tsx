@@ -28,7 +28,7 @@ export class ExpandableBlock extends React.Component<ExpandableBlockProps> {
 
   public render() {
     const cName = classnames(
-      "bwc-expandable-blocks-block",
+      "uicore-expandable-blocks-block",
       this.props.caption && "with-caption",
       this.props.isExpanded ? "is-expanded" : "is-collapsed",
       this.props.className,

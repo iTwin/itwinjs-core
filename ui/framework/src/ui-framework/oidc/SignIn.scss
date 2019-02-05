@@ -2,8 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
- @import "@bentley/bwc/lib/mixins";
- @import "@bentley/bwc/lib/buttons/classes.scss";
+@import "@bentley/ui-core/lib/ui-core/index";
 
 /************************************************************************
  * SignIn2Dialog - OIDC sign-in dialog.
@@ -15,21 +14,21 @@ $signin-height: 315px; // 250px;
 $signin-width:  275px;
 
 // light theme
-$signin-background: $bwc-white;
-$signin-logo-color: $bwc-blue-4;
-$signin-text-color: $bwc-text-color;
-$signin-font-size:  $bwc-font-size;
-$signin-hyperlink-color: $bwc-blue;
-$signin-hyperlink-hover-color: $bwc-blue-5;
+$signin-background: $uicore-white;
+$signin-logo-color: $uicore-blue-4;
+$signin-text-color: $uicore-text-color;
+$signin-font-size:  $uicore-font-size;
+$signin-hyperlink-color: $uicore-blue;
+$signin-hyperlink-hover-color: $uicore-blue-5;
 
 // dark theme
 /*
-$signin-background: $bwc-gray-5;
-$signin-logo-color: $bwc-blue-4;
-$signin-text-color: $bwc-white;
-$signin-font-size:  $bwc-font-size;
-$signin-hyperlink-color: $bwc-dataviz-blue-3;
-$signin-hyperlink-hover-color: $bwc-blue-5;
+$signin-background: $uicore-gray-5;
+$signin-logo-color: $uicore-blue-4;
+$signin-text-color: $uicore-white;
+$signin-font-size:  $uicore-font-size;
+$signin-hyperlink-color: $uicore-dataviz-blue-3;
+$signin-hyperlink-hover-color: $uicore-blue-5;
 */
 
 /* sign in dialog */
@@ -76,13 +75,13 @@ $signin-hyperlink-hover-color: $bwc-blue-5;
 
 /* sign in button */
 .signin2 .signin-button {
-  @extend .bwc-buttons-primary;
+  @extend .uicore-buttons-primary;
   margin-top: auto;
 }
 
 /* sign in button disabled */
 .signin2 .signin-button-disabled {
-  @extend .bwc-buttons-disabled;
+  @extend .uicore-buttons-disabled;
 }
 
 /* "Register" container */

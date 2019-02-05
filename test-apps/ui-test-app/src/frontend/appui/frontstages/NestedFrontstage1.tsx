@@ -35,7 +35,7 @@ export class NestedFrontstage1 extends FrontstageProvider {
         defaultToolId="PlaceLine"
         defaultLayout="TwoHalvesHorizontal"
         contentGroup="TestContentGroup2"
-        isInFooterMode={true}
+        isInFooterMode={false}
         applicationData={{ key: "value" }}
         topLeft={
           <Zone
@@ -75,7 +75,7 @@ export class NestedFrontstage1 extends FrontstageProvider {
         bottomRight={
           <Zone defaultState={ZoneState.Open} allowsMerging={true}
             widgets={[
-              <Widget defaultState={WidgetState.Open} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.HorizontalPropertyGrid" control={HorizontalPropertyGridWidgetControl} fillZone={true} />,
+              <Widget defaultState={WidgetState.Closed} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.HorizontalPropertyGrid" control={HorizontalPropertyGridWidgetControl} fillZone={true} />,
               <Widget id="VerticalPropertyGrid" defaultState={WidgetState.Hidden} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.VerticalPropertyGrid" control={VerticalPropertyGridWidgetControl} />,
             ]}
           />

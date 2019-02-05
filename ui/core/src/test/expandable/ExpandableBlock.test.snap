@@ -2,7 +2,7 @@
 
 exports[`ExpandableBlock <ExpandableBlock /> renders correctly collapsed 1`] = `
 <div
-  className="bwc-expandable-blocks-block is-collapsed"
+  className="uicore-expandable-blocks-block is-collapsed"
 >
   <div
     aria-expanded="false"
@@ -31,7 +31,7 @@ exports[`ExpandableBlock <ExpandableBlock /> renders correctly collapsed 1`] = `
 
 exports[`ExpandableBlock <ExpandableBlock /> renders correctly expanded 1`] = `
 <div
-  className="bwc-expandable-blocks-block is-expanded"
+  className="uicore-expandable-blocks-block is-expanded"
 >
   <div
     aria-expanded="true"

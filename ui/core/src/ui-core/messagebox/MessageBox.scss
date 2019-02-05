@@ -2,14 +2,14 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
- @import "@bentley/bwc/lib/mixins";
+ @import "../index.scss";
 
 .message-box-container {
   display: flex;
   .message-box-icon {
     flex: 0 0;
-    font-size: $bwc-icons-medium;
-    padding: 0 $bwc-unbordered-padding $bwc-unbordered-padding $bwc-unbordered-padding;
+    font-size: $uicore-icons-medium;
+    padding: 0 $uicore-unbordered-padding $uicore-unbordered-padding $uicore-unbordered-padding;
   }
   .message-box-content {
     flex: 1 1;
@@ -17,19 +17,19 @@
 }
 
 .message-box-success {
-  color: $bwc-green;
+  color: $uicore-green;
 }
 .message-box-information {
-  color: $bwc-blue;
+  color: $uicore-blue;
 }
 .message-box-question {
-  color: $bwc-yellow;
+  color: $uicore-yellow;
 }
 .message-box-warning {
-  color: $bwc-orange;
+  color: $uicore-orange;
 }
 .message-box-error, .message-box-fatal {
-  color: $bwc-red;
+  color: $uicore-red;
 }
 
 .notifymessage-icon {

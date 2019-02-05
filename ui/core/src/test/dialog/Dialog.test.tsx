@@ -7,7 +7,7 @@ import * as React from "react";
 import * as sinon from "sinon";
 import { expect } from "chai";
 
-import { Dialog, ButtonType } from "../../ui-core";
+import { Dialog, DialogButtonType } from "../../ui-core";
 import TestUtils from "../TestUtils";
 import { UiCore } from "../../ui-core/UiCore";
 import { GlobalDialog } from "../../ui-core/dialog/Dialog";
@@ -49,8 +49,8 @@ describe("Dialog", () => {
     it("should render with OK & Cancel buttons", () => {
       const component = render(<Dialog opened={true}
         buttonCluster={[
-          { type: ButtonType.OK, onClick: () => { } },
-          { type: ButtonType.Cancel, onClick: () => { } },
+          { type: DialogButtonType.OK, onClick: () => { } },
+          { type: DialogButtonType.Cancel, onClick: () => { } },
         ]} />);
       expect(component.getByText(UiCore.i18n.translate("UiCore:dialog.ok"))).to.exist;
       expect(component.getByText(UiCore.i18n.translate("UiCore:dialog.cancel"))).to.exist;
@@ -59,7 +59,7 @@ describe("Dialog", () => {
     it("should render with Close button", () => {
       const component = render(<Dialog opened={true}
         buttonCluster={[
-          { type: ButtonType.Close, onClick: () => { } },
+          { type: DialogButtonType.Close, onClick: () => { } },
         ]} />);
       expect(component.getByText(UiCore.i18n.translate("UiCore:dialog.close"))).to.exist;
     });
@@ -67,9 +67,9 @@ describe("Dialog", () => {
     it("should render with Yes, No & Retry buttons", () => {
       const component = render(<Dialog opened={true}
         buttonCluster={[
-          { type: ButtonType.Yes, onClick: () => { } },
-          { type: ButtonType.No, onClick: () => { } },
-          { type: ButtonType.Retry, onClick: () => { } },
+          { type: DialogButtonType.Yes, onClick: () => { } },
+          { type: DialogButtonType.No, onClick: () => { } },
+          { type: DialogButtonType.Retry, onClick: () => { } },
         ]} />);
       expect(component.getByText(UiCore.i18n.translate("UiCore:dialog.yes"))).to.exist;
       expect(component.getByText(UiCore.i18n.translate("UiCore:dialog.no"))).to.exist;

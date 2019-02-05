@@ -1,0 +1,74 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+
+/// Imports --------------------------------------------------------------------
+
+@import "../style/index";
+@import "../inputs/variables";
+
+
+/// Mixins ---------------------------------------------------------------------
+
+@mixin uicore-buttons-button {
+
+    display:                inline-block;
+
+    padding:                $uicore-inputs-padding $uicore-unbordered-padding;
+    margin:                 $uicore-inputs-margin 0;
+    border-radius:          $uicore-border-radius;
+    line-height:            $uicore-line-height;
+    outline:                none;
+    box-shadow:             none;
+    font-family:            $uicore-font-family;
+    font-size:              $uicore-font-size;
+    text-decoration:        none;
+    cursor:                 pointer;
+
+    &:hover {
+
+        text-decoration:    none;
+    }
+
+    &:active,
+    &:focus {
+
+        outline:            none;
+        box-shadow:         none;
+        text-decoration:    none;
+    }
+
+    &[disabled],
+    &[disabled]:hover,
+    &[disabled]:active,
+    &[disabled]:focus {
+
+        @include uicore-buttons-button-disabled;
+    }
+}
+
+@mixin uicore-buttons-button-disabled {
+
+    opacity:                0.4;
+    background-color:       $uicore-gray;
+    border:                 0;
+    color:                  $uicore-white;
+    cursor:                 not-allowed;
+}
+
+@mixin uicore-buttons-large-size {
+
+    padding:                $uicore-inputs-padding-large $uicore-unbordered-padding-large;
+    margin:                 $uicore-inputs-margin-large 0;
+    font-size:              $uicore-font-size-leading;
+    font-weight:            $uicore-font-weight-normal;
+}
+
+@mixin uicore-buttons-large-bordered-size {
+
+    padding:                $uicore-inputs-padding-bordered-large $uicore-bordered-padding-large;
+    margin:                 $uicore-inputs-margin-large 0;
+    font-size:              $uicore-font-size-leading;
+    font-weight:            $uicore-font-weight-normal;
+}

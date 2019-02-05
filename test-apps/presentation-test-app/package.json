@@ -34,7 +34,6 @@
   "dependencies": {
     "@bentley/bentleyjs-core": "0.189.0-dev.16",
     "@bentley/geometry-core": "0.189.0-dev.16",
-    "@bentley/bwc": "^7.1.0",
     "@bentley/electron-manager": "0.189.0-dev.16",
     "@bentley/icons-generic-webfont": "^0.0.9",
     "@bentley/imodeljs-clients": "0.189.0-dev.16",
@@ -59,7 +58,6 @@
   "devDependencies": {
     "@bentley/config-loader": "0.189.0-dev.16",
     "@bentley/build-tools": "0.189.0-dev.16",
-    "@bentley/bwc": "^7.1.0",
     "@bentley/imodeljs-webserver": "0.189.0-dev.16",
     "@bentley/webpack-tools": "0.189.0-dev.16",
     "@types/body-parser": "^1.17.0",

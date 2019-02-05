@@ -1,0 +1,145 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<Spinner /> renders correctly 1`] = `
+<svg
+  className="core-spinner core-spinner-medium"
+  viewBox="0 0 50 50"
+>
+  <circle
+    className="shape"
+    cx="25"
+    cy="25"
+    fill="none"
+    r="20"
+    strokeWidth="4"
+  />
+  <circle
+    className="fill"
+    cx="25"
+    cy="25"
+    fill="none"
+    r="20"
+    strokeWidth="4"
+  />
+</svg>
+`;
+
+exports[`<Spinner /> should render large 1`] = `
+<svg
+  className="core-spinner core-spinner-large"
+  viewBox="0 0 50 50"
+>
+  <circle
+    className="shape"
+    cx="25"
+    cy="25"
+    fill="none"
+    r="20"
+    strokeWidth="4"
+  />
+  <circle
+    className="fill"
+    cx="25"
+    cy="25"
+    fill="none"
+    r="20"
+    strokeWidth="4"
+  />
+</svg>
+`;
+
+exports[`<Spinner /> should render medium 1`] = `
+<svg
+  className="core-spinner core-spinner-medium"
+  viewBox="0 0 50 50"
+>
+  <circle
+    className="shape"
+    cx="25"
+    cy="25"
+    fill="none"
+    r="20"
+    strokeWidth="4"
+  />
+  <circle
+    className="fill"
+    cx="25"
+    cy="25"
+    fill="none"
+    r="20"
+    strokeWidth="4"
+  />
+</svg>
+`;
+
+exports[`<Spinner /> should render small 1`] = `
+<svg
+  className="core-spinner core-spinner-small"
+  viewBox="0 0 50 50"
+>
+  <circle
+    className="shape"
+    cx="25"
+    cy="25"
+    fill="none"
+    r="20"
+    strokeWidth="4"
+  />
+  <circle
+    className="fill"
+    cx="25"
+    cy="25"
+    fill="none"
+    r="20"
+    strokeWidth="4"
+  />
+</svg>
+`;
+
+exports[`<Spinner /> should render with sizeClass 1`] = `
+<svg
+  className="core-spinner test-class"
+  viewBox="0 0 50 50"
+>
+  <circle
+    className="shape"
+    cx="25"
+    cy="25"
+    fill="none"
+    r="20"
+    strokeWidth="4"
+  />
+  <circle
+    className="fill"
+    cx="25"
+    cy="25"
+    fill="none"
+    r="20"
+    strokeWidth="4"
+  />
+</svg>
+`;
+
+exports[`<Spinner /> should render x-large 1`] = `
+<svg
+  className="core-spinner core-spinner-xlarge"
+  viewBox="0 0 50 50"
+>
+  <circle
+    className="shape"
+    cx="25"
+    cy="25"
+    fill="none"
+    r="20"
+    strokeWidth="4"
+  />
+  <circle
+    className="fill"
+    cx="25"
+    cy="25"
+    fill="none"
+    r="20"
+    strokeWidth="4"
+  />
+</svg>
+`;

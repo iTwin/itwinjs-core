@@ -2,11 +2,10 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-@import "@bentley/bwc/lib/mixins";
-@import "@bentley/ui-core/lib/ui-core/colors";
+@import "@bentley/ui-core/lib/ui-core/index";
 
 .category-model-horizontal-tabs {
-  @include bwc-tabs-horizontal;
+  @include uicore-tabs-horizontal;
 
   > li {
     width: 50%;
@@ -53,15 +52,15 @@
       display: flex;
       align-items: center;
       font-size: 16px;
-      color: $bwc-text-color;
+      color: $uicore-text-color;
       border-bottom: 1px solid #ccc;
       cursor: pointer;
 
       &:hover {
-        color: $bwc-blue;
+        color: $uicore-blue;
 
         > .icon {
-          color: $bwc-blue;
+          color: $uicore-blue;
         }
       }
 
@@ -96,7 +95,7 @@
     background-color: $background-2;
 
     .nz-tree-tree .nz-tree-node {
-      @include bwc-text( leading );
+      @include uicore-text( leading );
       padding: 5px;
       background-color: $background-1;
     }
@@ -119,10 +118,10 @@
         align-items: center;
         margin-right: auto;
         width: 100%;
-        color: $bwc-text-color;
+        color: $uicore-text-color;
 
         &:hover {
-          color: $bwc-blue;
+          color: $uicore-blue;
           cursor: pointer;
         }
 
@@ -139,15 +138,15 @@
         ul {
           margin: 0;
           padding: .5em 0;
-          font-size: $bwc-font-size;
+          font-size: $uicore-font-size;
           list-style: none;
-          background-color: $bwc-white;
+          background-color: $uicore-white;
 
           > li {
             display: flex;
             align-items: center;
             padding: .25em 1em;
-            color: $bwc-text-color;
+            color: $uicore-text-color;
             white-space: nowrap;
             cursor: pointer;
 
@@ -179,16 +178,16 @@
           padding: 7px;
           border: 1px solid #ccc;
           font-size: 18px;
-          color: $bwc-icons-light;
+          color: $uicore-icons-light;
           cursor: pointer;
           -webkit-transition: color .2s ease;
           -moz-transition: color .2s ease;
           -o-transition: color .2s ease;
           transition: color .2s ease;
-          color: $bwc-icons-dark;
+          color: $uicore-icons-dark;
 
           &:hover {
-          color: $bwc-icons-dark;
+          color: $uicore-icons-dark;
           }
         }
       }
@@ -203,7 +202,7 @@
     .nz-tree-tree  {
 
       .nz-tree-node {
-        @include bwc-text( leading );
+        @include uicore-text( leading );
         padding: 5px 0;
         background-color: $background-1;
       }

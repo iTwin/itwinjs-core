@@ -10,7 +10,7 @@ import { IModelInfo } from "../clientservices/IModelServices";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { IModelViewPicker } from "./IModelViewPicker";
 import { ViewDefinitionProps } from "@bentley/imodeljs-common";
-import { Popup, Position } from "@bentley/ui-core";
+import { Popup, Position, Spinner, SpinnerSize } from "@bentley/ui-core";
 import { PopupTest } from "./PopupTest";
 import "./IModelCard.scss";
 
@@ -113,7 +113,7 @@ export class IModelCard extends React.Component<IModelCardProps, IModelCardState
     if (this.state.waitingForThumbnail) {
       return (
         <div className="preview-loader">
-          <span><i /><i /><i /><i /><i /><i /></span>
+          <Spinner size={SpinnerSize.Large} />
         </div>
       );
     } else if (this.props.iModel.thumbnail) {

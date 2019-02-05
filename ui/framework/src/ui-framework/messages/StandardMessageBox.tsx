@@ -7,7 +7,7 @@
 import * as React from "react";
 
 import { MessageBoxType, MessageBoxIconType, MessageBoxValue } from "@bentley/imodeljs-frontend";
-import { ButtonType, ButtonCluster, MessageBox, MessageSeverity } from "@bentley/ui-core";
+import { DialogButtonType, DialogButton, MessageBox, MessageSeverity } from "@bentley/ui-core";
 
 import { ModalDialogManager } from "../ModalDialogManager";
 
@@ -44,24 +44,24 @@ export class StandardMessageBox extends React.Component<StandardMessageBoxProps,
   }
 
   public render(): JSX.Element {
-    const buttonCluster: ButtonCluster[] = new Array<ButtonCluster>();
+    const buttonCluster: DialogButton[] = new Array<DialogButton>();
 
     switch (this.props.messageBoxType) {
       case MessageBoxType.Ok:
       case MessageBoxType.LargeOk:
-        buttonCluster.push({ type: ButtonType.OK, onClick: () => { this._handleButton(MessageBoxValue.Ok); } });
+        buttonCluster.push({ type: DialogButtonType.OK, onClick: () => { this._handleButton(MessageBoxValue.Ok); } });
         break;
       case MessageBoxType.OkCancel:
       case MessageBoxType.MediumAlert:
-        buttonCluster.push({ type: ButtonType.OK, onClick: () => { this._handleButton(MessageBoxValue.Ok); } });
-        buttonCluster.push({ type: ButtonType.Cancel, onClick: () => { this._handleButton(MessageBoxValue.Cancel); } });
+        buttonCluster.push({ type: DialogButtonType.OK, onClick: () => { this._handleButton(MessageBoxValue.Ok); } });
+        buttonCluster.push({ type: DialogButtonType.Cancel, onClick: () => { this._handleButton(MessageBoxValue.Cancel); } });
         break;
       case MessageBoxType.YesNo:
       case MessageBoxType.YesNoCancel:
-        buttonCluster.push({ type: ButtonType.Yes, onClick: () => { this._handleButton(MessageBoxValue.Yes); } });
-        buttonCluster.push({ type: ButtonType.No, onClick: () => { this._handleButton(MessageBoxValue.No); } });
+        buttonCluster.push({ type: DialogButtonType.Yes, onClick: () => { this._handleButton(MessageBoxValue.Yes); } });
+        buttonCluster.push({ type: DialogButtonType.No, onClick: () => { this._handleButton(MessageBoxValue.No); } });
         if (MessageBoxType.YesNoCancel === this.props.messageBoxType)
-          buttonCluster.push({ type: ButtonType.Cancel, onClick: () => { this._handleButton(MessageBoxValue.Cancel); } });
+          buttonCluster.push({ type: DialogButtonType.Cancel, onClick: () => { this._handleButton(MessageBoxValue.Cancel); } });
         break;
     }
 

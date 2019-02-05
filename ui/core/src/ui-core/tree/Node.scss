@@ -3,21 +3,10 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-@import "@bentley/bwc/lib/mixins";
+@import "../index.scss";
 @import "../colors.scss";
 
-$node-font-size: $bwc-font-size;
-
-/* FIXME: Without this, the loader animation is broken...
- * I guess we'd need to fix BWC's animations to support CSS modules?
- * (I mean, we should probably just be using the loader component anyway...)
- */
-@keyframes :global(bwc-loaders-animate-opacity) {
-
-  0% {    opacity:        0.85; }
-  50% {   opacity:        0.25; }
-  100% {  opacity:        0.25; }
-}
+$node-font-size: $uicore-font-size;
 
 .nz-tree-node {
   /* Rules applied to the <be-tree-node> itself */
@@ -25,7 +14,7 @@ $node-font-size: $bwc-font-size;
   box-sizing: border-box;
   width: fit-content;
   min-width: 100%;
-  font-family: $bwc-sans;
+  font-family: $uicore-sans;
   font-size: $node-font-size;
   color: $text-dark;
   white-space: nowrap;
@@ -34,11 +23,10 @@ $node-font-size: $bwc-font-size;
   min-height: 24px;
 
   > .loader {
-    @include bwc-loaders-small;
     margin: auto 4px;
   }
 
-  .bwc-inputs-checkbox {
+  .uicore-inputs-checkbox {
     display: inline-block;
     padding: 0;
     margin: 0;
@@ -80,13 +68,13 @@ $node-font-size: $bwc-font-size;
   &:not(.is-hover-disabled) {
     &:not(.is-selected) {
       &:hover{
-        background: $bwc-blue-highlight;
+        background: $uicore-blue-highlight;
       }
     }
   }
 
   &.is-selected {
-    background: $bwc-blue-a;
+    background: $uicore-blue-a;
     outline: none;
   }
 }

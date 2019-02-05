@@ -6,7 +6,7 @@
 
 import * as React from "react";
 import { ShowHideItem, ShowHideID } from "./ShowHideItem";
-import { GlobalDialog, GlobalDialogProps, ButtonType } from "@bentley/ui-core";
+import { GlobalDialog, GlobalDialogProps, DialogButtonType } from "@bentley/ui-core";
 import UiComponents from "../../UiComponents";
 
 /** Properties for the [[ShowHideDialog]] component */
@@ -83,7 +83,7 @@ export class ShowHideDialog<T extends ShowHideID> extends React.Component<ShowHi
         onClose={onClose}
         onEscape={onClose}
         onOutsideClick={onClose}
-        buttonCluster={onClose && [{ onClick: onClose, type: ButtonType.Close }]}
+        buttonCluster={onClose && [{ onClick: onClose, type: DialogButtonType.Close }]}
         {...props}>
         {this.props.items.map((item, index) => {
           const visible = this.state.hiddenColumns.indexOf(item.id) === -1;

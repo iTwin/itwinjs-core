@@ -1,0 +1,31 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+/** @module Utilities */
+
+export const COLORS = [
+  "#6ab9ec",
+  "#b1c854",
+  "#f7706c",
+  "#4585a5",
+  "#ffc335",
+  "#f7963e",
+  "#73c7c1",
+  "#85a9cf",
+  "#a3779f",
+  "#c8c2b4",
+  "#a47854",
+];
+
+export function getUserColor(email: string): string {
+  const cleanString = email.trim().toLowerCase();
+
+  let hash = 0;
+  for (let i = 0; i < cleanString.length; i++) {
+    const charCode = cleanString.charCodeAt(i);
+    hash = (hash + charCode) % COLORS.length;
+  }
+  return COLORS[hash];
+}
+export default getUserColor;

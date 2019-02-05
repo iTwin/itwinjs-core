@@ -3,12 +3,12 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 @import "_variables";
-@import "@bentley/bwc/lib/mixins";
+@import "@bentley/ui-core/lib/ui-core/index";
 
 div.nz-widget-toolSettings-title {
-  font-family: $bwc-font-family;
-  font-size: $bwc-font-size;
-  color: $bwc-text-color;
+  font-family: $uicore-font-family;
+  font-size: $uicore-font-size;
+  color: $uicore-text-color;
   text-overflow: ellipsis;
   text-align: center;
   white-space: nowrap;

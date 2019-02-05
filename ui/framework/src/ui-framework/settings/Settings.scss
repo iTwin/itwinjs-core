@@ -2,8 +2,7 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-@import "@bentley/bwc/lib/mixins";
-@import "@bentley/bwc/lib/buttons/classes.scss";
+@import "@bentley/ui-core/lib/ui-core/index";
 
 $settings-leftpanel-width: 225px;
 $settings-rightpanel-width: 200px;
@@ -19,7 +18,7 @@ $settings-rightpanel-width: 200px;
   transform: translate(-50%, -50%);
   padding: 30px;
   border-radius: 3px;
-  font-size: $bwc-font-size;
+  font-size: $uicore-font-size;
   display: flex;
   flex-direction: column;
 }

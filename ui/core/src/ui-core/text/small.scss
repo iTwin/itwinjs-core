@@ -1,0 +1,14 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+@import "./mixins";
+
+@mixin uicore-text-small {
+
+    @include uicore-text( small );
+    padding:        0;
+    margin:         0;
+}
+
+.uicore-text-small { @include uicore-text-small }

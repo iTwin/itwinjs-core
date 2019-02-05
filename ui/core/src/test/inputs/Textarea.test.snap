@@ -1,0 +1,15 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<Textarea /> renders correctly 1`] = `
+<textarea
+  className="uicore-inputs-textarea"
+  rows={3}
+/>
+`;
+
+exports[`<Textarea /> renders rows correctly 1`] = `
+<textarea
+  className="uicore-inputs-textarea"
+  rows={30}
+/>
+`;

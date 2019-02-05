@@ -2,12 +2,12 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-@import "@bentley/bwc/lib/mixins";
+@import "@bentley/ui-core/lib/ui-core/index";
 
 .components-boolean-editor {
-  font-family:        $bwc-font-family;
-  font-size:          $bwc-font-size;
-  height:             $bwc-font-size;
-  width:              $bwc-font-size;
-  margin-left:        $bwc-font-size;    // Clear the resizer in the PropertyGrid
+  font-family:        $uicore-font-family;
+  font-size:          $uicore-font-size;
+  height:             $uicore-font-size;
+  width:              $uicore-font-size;
+  margin-left:        $uicore-font-size;    // Clear the resizer in the PropertyGrid
 }

@@ -2,9 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-@import "@bentley/bwc/lib/mixins";
-@import "@bentley/bwc/lib/buttons/classes.scss";
-@import "@bentley/ui-core/lib/ui-core/_scrollbar";
+@import "@bentley/ui-core/lib/ui-core/index";
 
 .cards-content {
   height: 100%;
@@ -34,7 +32,7 @@
     padding: 7px;
     border: 1px solid #ccc;
     font-size: 18px;
-    color: $bwc-icons-light;
+    color: $uicore-icons-light;
     cursor: pointer;
     -webkit-transition: color background-color.2s ease;
     -moz-transition: color background-color.2s ease;
@@ -44,8 +42,8 @@
 
   .viewtype:hover,
   .viewtype.active {
-    color: $bwc-white;
-    background: $bwc-blue;
+    color: $uicore-white;
+    background: $uicore-blue;
   }
 
   .icon-app-launcher {
@@ -95,7 +93,7 @@
 		flex-direction: column;
 
 		> button {
-			@extend .bwc-buttons-primary;
+			@extend .uicore-buttons-primary;
 			margin-top: 1em;
 		}
 	}
@@ -111,7 +109,7 @@
   transform: translate(-50%,-50%);
   font-style: italic;
   font-size: 1.25em;
-  color: $bwc-gray;
+  color: $uicore-gray;
 }
 
 .cards-content .table-container {
@@ -126,7 +124,7 @@
   border-collapse: collapse;
 
   th, td {
-    border-bottom: 1px solid $bwc-tables-border-color;
+    border-bottom: 1px solid $uicore-tables-border-color;
     cursor: pointer;
   }
 
@@ -134,15 +132,15 @@
     font-weight: 500;
     text-align: left;
     padding: .75em;
-    font-size: $bwc-font-size-leading;
+    font-size: $uicore-font-size-leading;
     color: dimgray;
-    background: $bwc-tables-head-light;
+    background: $uicore-tables-head-light;
   }
 
   td {
     text-align: left;
     padding: .75em;
-    font-size: $bwc-font-size;
+    font-size: $uicore-font-size;
     color: dimgray;
   }
 
@@ -150,7 +148,7 @@
     margin-right: .5em;
     vertical-align: middle;
     font-size: 1.5em;
-    color: $bwc-icons-light;
+    color: $uicore-icons-light;
   }
 
   tr:hover {background-color: #f5f5f5}

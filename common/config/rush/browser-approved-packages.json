@@ -12,7 +12,7 @@
     },
     {
       "name": "@bentley/bwc",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "@bentley/config-loader",

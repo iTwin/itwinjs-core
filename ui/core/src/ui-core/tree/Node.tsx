@@ -6,9 +6,10 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import { Checkbox } from "@bentley/bwc";
+import { Checkbox } from "../inputs/Checkbox";
 import { CheckBoxState } from "../enums/CheckBoxState";
 import ExpansionToggle from "./ExpansionToggle";
+import { Spinner, SpinnerSize } from "../loading/Spinner";
 
 import "./Node.scss";
 
@@ -57,7 +58,7 @@ export default class TreeNode extends React.PureComponent<NodeProps> {
     if (!this.props.isLoading && this.props.isLeaf)
       offset += EXPANSION_TOGGLE_WIDTH; // Add expansion toggle/loader width if they're not rendered
 
-    const loader = this.props.isLoading ? (<div className="loader"><i></i><i></i><i></i><i></i><i></i><i></i></div>) : undefined;
+    const loader = this.props.isLoading ? (<div className="loader"><Spinner size={SpinnerSize.Small} /></div>) : undefined;
     const checkbox = this.props.isCheckboxVisible ?
       <Checkbox
         label=""

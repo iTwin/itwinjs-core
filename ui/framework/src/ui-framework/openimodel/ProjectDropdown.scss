@@ -2,8 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
- @import "@bentley/bwc/lib/mixins";
- @import "@bentley/ui-core/lib/ui-core/_scrollbar";
+@import "@bentley/ui-core/lib/ui-core/index";
 
 $separator-background: #F0F0F0;
 $pp-highlight-size: 4px;
@@ -41,7 +40,7 @@ $pp-max-dropdown-width: 450px;
     display: block;
     width: 0;
     height: $pp-highlight-size;
-    background-color: $bwc-blue;
+    background-color: $uicore-blue;
     margin: auto;
     content: '';
     transition: width 0.4s ease;
@@ -56,7 +55,7 @@ $pp-max-dropdown-width: 450px;
 .pp-content {
   flex: 1;
   padding: 0 .7em;
-  background: $bwc-blue-highlight;
+  background: $uicore-blue-highlight;
   display: flex;
   align-items: center;
   outline: none;
@@ -64,12 +63,12 @@ $pp-max-dropdown-width: 450px;
 
   /* change text color on hover */
   &:hover {
-    color: $bwc-blue;
+    color: $uicore-blue;
   }
 
   /* current project number & name */
   > div {
-    font-size: $bwc-font-size-leading;
+    font-size: $uicore-font-size-leading;
     display: flex;
     justify-content: center;
     flex-direction: column;
@@ -84,7 +83,7 @@ $pp-max-dropdown-width: 450px;
     /* project name font is smaller (and add some spacing between number and name) */
     .name {
       @extend .text-clip;
-      font-size: $bwc-font-size;
+      font-size: $uicore-font-size;
       margin-top: .25em;
     }
   }
@@ -99,7 +98,7 @@ $pp-max-dropdown-width: 450px;
 .pp-highlight {
   flex: initial;
   height: $pp-highlight-size;
-  background: $bwc-gray-8;
+  background: $uicore-gray-8;
   transition: background-color .4s ease;
 }
 
@@ -159,14 +158,14 @@ $pp-max-dropdown-width: 450px;
 
         /* number is a larger font size than name */
         span:first-child{
-          font-size: $bwc-font-size;
+          font-size: $uicore-font-size;
           font-weight: 550;
         }
 
         /* name is a smaller font size and space the number/name */
         span:last-child{
           margin-top: .4em;
-          font-size: $bwc-font-size-small;
+          font-size: $uicore-font-size-small;
           font-weight: 300;
         }
       }
@@ -182,8 +181,8 @@ $pp-max-dropdown-width: 450px;
 /* no project MRU's */
 .pp-no-mru {
   display: block;
-  color: $bwc-gray;
-  font-size: $bwc-font-size;
+  color: $uicore-gray;
+  font-size: $uicore-font-size;
   padding: .25em 1.25em;
 }
 
@@ -217,5 +216,5 @@ $pp-max-dropdown-width: 450px;
 
 /*
  .content:hover + .highlight, .highlight:hover {
-  background-color: $bwc-gray;}
+  background-color: $uicore-gray;}
 */
