@@ -8,6 +8,7 @@ import * as sinon from "sinon";
 
 import TestUtils from "../TestUtils";
 import { WidgetState, WidgetProps, WidgetDef, ConfigurableUiManager, WidgetControl, ConfigurableCreateInfo, ConfigurableUiControlType, SyncUiEventId } from "../../ui-framework";
+import { SyncUiEventDispatcher } from "../../ui-framework/syncui/SyncUiEventDispatcher";
 
 describe("WidgetDef", () => {
 
@@ -96,6 +97,25 @@ describe("WidgetDef", () => {
     expect(widgetDef.isVisible).to.eq(true);
     expect(widgetDef.isActive).to.eq(true);
     expect(widgetDef.canOpen()).to.be.true;
+  });
+
+  it("setWidgetState using state function", () => {
+    const testEventId = "test-widgetstate";
+    const widgetProps: WidgetProps = {
+      classId: "WidgetDefTest",
+      syncEventIds: [testEventId],
+      stateFunc: (): WidgetState => WidgetState.Hidden,
+    };
+
+    const widgetDef: WidgetDef = new WidgetDef(widgetProps);
+    widgetDef.setWidgetState(WidgetState.Open);
+
+    expect(widgetDef.isVisible).to.eq(true);
+    expect(widgetDef.isActive).to.eq(true);
+    expect(widgetDef.canOpen()).to.be.true;
+    // firing sync event should trigger state function and set state to Hidden.
+    SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(testEventId);
+    expect(widgetDef.isVisible).to.eq(false);
   });
 
   it("getWidgetControl throws an Error when type is incorrect", () => {
