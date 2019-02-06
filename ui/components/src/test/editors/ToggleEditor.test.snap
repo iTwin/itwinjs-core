@@ -4,6 +4,7 @@ exports[`<ToggleEditor /> renders correctly 1`] = `
 <Toggle
   buttonType={1}
   className="cell components-cell-editor components-toggle-editor"
+  data-testid="components-toggle-editor"
   isOn={false}
   onChange={[Function]}
   rounded={true}

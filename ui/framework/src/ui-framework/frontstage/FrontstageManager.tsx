@@ -195,6 +195,9 @@ export class FrontstageManager {
   /** Returns true if the toolsettings are to be auto populated from the toolsettingsProperties. */
   public static get useDefaultToolSettings(): boolean { return FrontstageManager._useDefaultToolSettingsProvider; }
 
+  /** @hidden for use only by testing  */
+  public static set useDefaultToolSettings(useDefaultToolSettings: boolean) { FrontstageManager._useDefaultToolSettingsProvider = useDefaultToolSettings; }
+
   /** Returns the name label of the active tool. */
   public static get activeToolLabel(): string { return FrontstageManager._activeToolLabel; }
 

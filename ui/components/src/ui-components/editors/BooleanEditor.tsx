@@ -124,8 +124,8 @@ export class BooleanEditor extends React.PureComponent<PropertyEditorProps, Bool
         onBlur={this.props.onBlur}
         className={className}
         checked={checked}
-        onChange={this._updateCheckboxValue} >
-
+        onChange={this._updateCheckboxValue}
+        data-testid="components-checkbox-editor">
       </input>
     );
   }

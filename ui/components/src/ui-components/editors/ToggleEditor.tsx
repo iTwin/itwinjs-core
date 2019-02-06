@@ -108,7 +108,8 @@ export class ToggleEditor extends React.PureComponent<PropertyEditorProps, Toggl
         onBlur={this.props.onBlur}
         className={className}
         isOn={inOn}
-        onChange={this._updateToggleValue} />
+        onChange={this._updateToggleValue}
+        data-testid="components-toggle-editor" />
     );
   }
 }
