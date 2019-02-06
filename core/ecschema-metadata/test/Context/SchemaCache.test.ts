@@ -21,7 +21,7 @@ describe("Schema Cache", () => {
     const schema = new Schema(new SchemaContext(), new SchemaKey("TestSchema"));
     await cache.addSchema(schema);
 
-    assert.equal(cache.count, 1);
+    assert.strictEqual(cache.count, 1);
   });
 
   it("should not be able to add multiple schemas that match using SchemaMatchType Latest", async () => {

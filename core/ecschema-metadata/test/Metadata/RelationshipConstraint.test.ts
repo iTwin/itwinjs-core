@@ -91,14 +91,14 @@ describe("RelationshipConstraint", () => {
       testConstraint = (await schema.getItem<RelationshipClass>("TestRelationship"))!.source;
       expect(testConstraint).to.exist;
       expect(testConstraint.customAttributes!.get("TestSchema.TestCAClassA")).to.exist;
-      assert(testConstraint.customAttributes!.get("TestSchema.TestCAClassA")!.ShowClasses === true);
+      assert.isTrue(testConstraint.customAttributes!.get("TestSchema.TestCAClassA")!.ShowClasses);
     });
     it("sync - Deserialize One Custom Attribute", () => {
       const schema = Schema.fromJsonSync(createSchemaJson(oneCustomAttributeJson, targetStubJson), new SchemaContext());
       testConstraint = schema.getItemSync<RelationshipClass>("TestRelationship")!.source;
       expect(testConstraint).to.exist;
       expect(testConstraint.customAttributes!.get("TestSchema.TestCAClassA")).to.exist;
-      assert(testConstraint.customAttributes!.get("TestSchema.TestCAClassA")!.ShowClasses === true);
+      assert.isTrue(testConstraint.customAttributes!.get("TestSchema.TestCAClassA")!.ShowClasses);
     });
     const twoCustomAttributesJson = {
       $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
@@ -154,8 +154,8 @@ describe("RelationshipConstraint", () => {
       const schema = Schema.fromJsonSync(createSchemaJson(relConstraintJson, targetStubJson), new SchemaContext());
       testConstraint = schema.getItemSync<RelationshipClass>("TestRelationship")!.source;
       expect(testConstraint).to.exist;
-      assert(testConstraint.customAttributes!.get("TestSchema.TestCAClassA")!.ShowClasses === false);
-      assert(testConstraint.customAttributes!.get("TestSchema.TestCAClassB")!.ShowClasses === true);
+      assert.isFalse(testConstraint.customAttributes!.get("TestSchema.TestCAClassA")!.ShowClasses);
+      assert.isTrue(testConstraint.customAttributes!.get("TestSchema.TestCAClassB")!.ShowClasses);
     });
   });
 });

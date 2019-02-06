@@ -171,15 +171,11 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
     schemaJson.multiplicity = this.multiplicity!.toString();
     schemaJson.roleLabel = this.roleLabel;
     schemaJson.polymorphic = this.polymorphic;
-    if (undefined !== this.abstractConstraint) {
-      schemaJson.abstractConstraint = this.abstractConstraint.fullName;
-    }
-    if (this.constraintClasses !== undefined && this.constraintClasses.length > 0) {
-      schemaJson.constraintClasses = [];
-      this.constraintClasses.forEach(async (constraintClass: LazyLoadedRelationshipConstraintClass) => {
-        schemaJson.constraintClasses.push(constraintClass.fullName);
-      });
-    }
+    if (undefined !== this._abstractConstraint)
+      schemaJson.abstractConstraint = this._abstractConstraint.fullName;
+    if (undefined !== this.constraintClasses && this.constraintClasses.length > 0)
+      schemaJson.constraintClasses = this.constraintClasses.map((constraintClass) => constraintClass.fullName);
+
     const customAttributes = serializeCustomAttributes(this.customAttributes);
     if (undefined !== customAttributes)
       schemaJson.customAttributes = customAttributes;

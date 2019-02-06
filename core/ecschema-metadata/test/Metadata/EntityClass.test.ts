@@ -518,18 +518,18 @@ describe("EntityClass", () => {
     it("async - Simple serialization", async () => {
       await testEntityClass.deserialize(schemaJsonOne);
       const serialized = testEntityClass.toJson(true, true);
-      assert(serialized.baseClass, "TestSchema.testBaseClass");
-      assert(serialized.modifier, "None");
-      assert(serialized.schemaVersion, "1.0.0");
-      assert(serialized.name, "testClass");
+      assert.strictEqual(serialized.baseClass, "TestSchema.testBaseClass");
+      assert.notProperty(serialized, "modifier");
+      assert.strictEqual(serialized.schemaVersion, "01.00.00");
+      assert.strictEqual(serialized.name, "testClass");
     });
     it("sync - Simple serialization", () => {
       testEntityClass.deserializeSync(schemaJsonOne);
       const serialized = testEntityClass.toJson(true, true);
-      assert(serialized.baseClass, "TestSchema.testBaseClass");
-      assert(serialized.modifier, "None");
-      assert(serialized.schemaVersion, "1.0.0");
-      assert(serialized.name, "testClass");
+      assert.strictEqual(serialized.baseClass, "TestSchema.testBaseClass");
+      assert.notProperty(serialized, "modifier");
+      assert.strictEqual(serialized.schemaVersion, "01.00.00");
+      assert.strictEqual(serialized.name, "testClass");
     });
     it("should succeed with mixin", async () => {
       const schemaJson = createSchemaJsonWithItems({
@@ -553,7 +553,6 @@ describe("EntityClass", () => {
       const entityClassSerialization = entityClass!.toJson(false, true);
       const expectedResult = {
         schemaItemType: "EntityClass",
-        modifier: "None",
         mixins: ["TestSchema.testMixin"],
       };
       expect(entityClassSerialization).to.deep.equal(expectedResult);

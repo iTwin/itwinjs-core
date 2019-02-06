@@ -27,7 +27,7 @@ describe("Schema Context", () => {
     const foundSchema = await context.getSchema(testKey);
 
     assert.isDefined(foundSchema);
-    assert.equal(foundSchema, schema);
+    assert.strictEqual(foundSchema, schema);
   });
 
   it("returns undefined when schema does not exist", async () => {

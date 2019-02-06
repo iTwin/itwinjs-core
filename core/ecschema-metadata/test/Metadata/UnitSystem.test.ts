@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, expect } from "chai";
+import { expect } from "chai";
 import * as sinon from "sinon";
 
 import { SchemaContext } from "../../src/Context";
@@ -37,8 +37,8 @@ describe("UnitSystem tests", () => {
     const schema = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);
     testUnitSystem = new UnitSystem(schema, "Test");
     it("should return correct item type and string", () => {
-      assert.equal(testUnitSystem.schemaItemType, SchemaItemType.UnitSystem);
-      assert.equal(schemaItemTypeToString(testUnitSystem.schemaItemType), "UnitSystem");
+      expect(testUnitSystem.schemaItemType).to.equal(SchemaItemType.UnitSystem);
+      expect(schemaItemTypeToString(testUnitSystem.schemaItemType)).to.equal("UnitSystem");
     });
   });
 
@@ -55,8 +55,8 @@ describe("UnitSystem tests", () => {
         label: "Imperial",
       };
       await testUnitSystem.deserialize(json);
-      assert(testUnitSystem.label, "Imperial");
-      assert(testUnitSystem.description === undefined);
+      expect(testUnitSystem.label).to.equal("Imperial");
+      expect(testUnitSystem.description).to.be.undefined;
     });
 
     describe("Sync fromJson", () => {
@@ -72,8 +72,8 @@ describe("UnitSystem tests", () => {
           label: "Imperial",
         };
         testUnitSystem.deserializeSync(json);
-        assert(testUnitSystem.label, "Imperial");
-        assert(testUnitSystem.description === undefined);
+        expect(testUnitSystem.label).to.equal("Imperial");
+        expect(testUnitSystem.description).to.be.undefined;
       });
     });
   });

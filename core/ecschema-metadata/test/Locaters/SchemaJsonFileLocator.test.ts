@@ -30,8 +30,8 @@ describe("SchemaJsonFileLocater tests: ", () => {
     const schema = await context.getSchema(schemaKey, SchemaMatchType.Exact);
 
     assert.isDefined(schema);
-    assert.equal(schema!.schemaKey.name, "SchemaA");
-    assert.equal(schema!.schemaKey.version.toString(), "01.01.01");
+    assert.strictEqual(schema!.schemaKey.name, "SchemaA");
+    assert.strictEqual(schema!.schemaKey.version.toString(), "01.01.01");
   });
 
   it("locate valid schema with multiple references synchronously", () => {
@@ -39,8 +39,8 @@ describe("SchemaJsonFileLocater tests: ", () => {
     const schema = context.getSchemaSync(schemaKey, SchemaMatchType.Exact);
 
     assert.isDefined(schema);
-    assert.equal(schema!.schemaKey.name, "SchemaA");
-    assert.equal(schema!.schemaKey.version.toString(), "01.01.01");
+    assert.strictEqual(schema!.schemaKey.name, "SchemaA");
+    assert.strictEqual(schema!.schemaKey.version.toString(), "01.01.01");
   });
 
   it("getSchema called multiple times for same schema", async () => {
@@ -54,7 +54,7 @@ describe("SchemaJsonFileLocater tests: ", () => {
     // locater should not cache, but context should cache
     assert.notEqual(locater1, locater2);
     assert.notEqual(locater1, context1);
-    assert.equal(context1, context2);
+    assert.strictEqual(context1, context2);
   });
 
   it("getSchema called multiple times for same schema synchronously", () => {
@@ -68,7 +68,7 @@ describe("SchemaJsonFileLocater tests: ", () => {
     // locater should not cache, but context should cache
     assert.notEqual(locater1, locater2);
     assert.notEqual(locater1, context1);
-    assert.equal(context1, context2);
+    assert.strictEqual(context1, context2);
   });
 
   it("getSchema which does not exist, returns undefined", async () => {
@@ -84,7 +84,7 @@ describe("SchemaJsonFileLocater tests: ", () => {
       await locater.getSchema(schemaKey, SchemaMatchType.Exact, context);
     } catch (e) {
       const error = e as ECObjectsError;
-      assert.equal(error.errorNumber, ECObjectsStatus.InvalidECJson);
+      assert.strictEqual(error.errorNumber, ECObjectsStatus.InvalidECJson);
       return;
     }
 
@@ -98,7 +98,7 @@ describe("SchemaJsonFileLocater tests: ", () => {
       await locater.getSchema(schemaKey, SchemaMatchType.Exact, context);
     } catch (e) {
       const error = e as ECObjectsError;
-      assert.equal(error.errorNumber, ECObjectsStatus.InvalidECJson);
+      assert.strictEqual(error.errorNumber, ECObjectsStatus.InvalidECJson);
       return;
     }
 
@@ -110,8 +110,8 @@ describe("SchemaJsonFileLocater tests: ", () => {
 
     assert.isDefined(stub);
     const key = stub!.schemaKey as FileSchemaKey;
-    assert.equal(key.name, "SchemaA");
-    assert.equal(key.version.toString(), "01.01.01");
+    assert.strictEqual(key.name, "SchemaA");
+    assert.strictEqual(key.version.toString(), "01.01.01");
   });
 
   it("getSchema, exact version, wrong minor, fails", async () => {
@@ -121,16 +121,16 @@ describe("SchemaJsonFileLocater tests: ", () => {
   it("getSchema, latest, succeeds", async () => {
     const schema = await locater.getSchema(new SchemaKey("SchemaA", 1, 1, 0), SchemaMatchType.Latest, context);
     assert.isDefined(schema);
-    assert.equal(schema!.schemaKey.name, "SchemaA");
-    assert.equal(schema!.schemaKey.version.toString(), "02.00.02");
+    assert.strictEqual(schema!.schemaKey.name, "SchemaA");
+    assert.strictEqual(schema!.schemaKey.version.toString(), "02.00.02");
   });
 
   it("getSchema, latest write compatible, succeeds", async () => {
     const stub = await locater.getSchema(new SchemaKey("SchemaA", 1, 1, 0), SchemaMatchType.LatestWriteCompatible, context);
 
     assert.isDefined(stub);
-    assert.equal(stub!.schemaKey.name, "SchemaA");
-    assert.equal(stub!.schemaKey.version.toString(), "01.01.01");
+    assert.strictEqual(stub!.schemaKey.name, "SchemaA");
+    assert.strictEqual(stub!.schemaKey.version.toString(), "01.01.01");
   });
 
   it("getSchema, latest write compatible, write version wrong, fails", async () => {
@@ -141,8 +141,8 @@ describe("SchemaJsonFileLocater tests: ", () => {
     const stub = await locater.getSchema(new SchemaKey("SchemaA", 1, 0, 0), SchemaMatchType.LatestReadCompatible, context);
 
     assert.isDefined(stub);
-    assert.equal(stub!.schemaKey.name, "SchemaA");
-    assert.equal(stub!.schemaKey.version.toString(), "01.01.01");
+    assert.strictEqual(stub!.schemaKey.name, "SchemaA");
+    assert.strictEqual(stub!.schemaKey.version.toString(), "01.01.01");
   });
 
   it("getSchema, latest read compatible, read version wrong, fails", async () => {

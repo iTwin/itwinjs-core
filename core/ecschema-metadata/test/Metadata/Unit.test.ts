@@ -90,11 +90,11 @@ describe("Unit", () => {
 
       const phen = ecSchema.getItemSync<Phenomenon>("TestPhenomenon");
       assert.isDefined(phen);
-      assert.equal(phen, ecSchema.getItemSync<Phenomenon>(unit!.phenomenon!.name));
+      assert.strictEqual(phen, ecSchema.getItemSync<Phenomenon>(unit!.phenomenon!.name));
 
       const unitSystem = ecSchema.getItemSync<UnitSystem>("TestUnitSystem");
       assert.isDefined(unitSystem);
-      assert.equal(unitSystem, ecSchema.getItemSync<UnitSystem>(unit!.unitSystem!.name));
+      assert.strictEqual(unitSystem, ecSchema.getItemSync<UnitSystem>(unit!.unitSystem!.name));
 
       expect(unit!.definition).to.eql("[MILLI]*Units.MM");
       expect(unit!.denominator).to.equal(1);

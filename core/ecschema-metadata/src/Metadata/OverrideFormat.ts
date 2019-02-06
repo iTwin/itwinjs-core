@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import { Format, IFormat } from "./Format";
+import { Format } from "./Format";
 import { InvertedUnit } from "./InvertedUnit";
 import { Unit } from "./Unit";
 import { DecimalPrecision, FormatTraits, FormatType, FractionalPrecision, ScientificType, ShowSignOption } from "./../utils/FormatEnums";
@@ -11,7 +11,7 @@ import { DecimalPrecision, FormatTraits, FormatType, FractionalPrecision, Scient
 /**
  * Overrides of a Format, from a Schema, and is SchemaItem that is used specifically on KindOfQuantity.
  */
-export class OverrideFormat implements IFormat {
+export class OverrideFormat {
   private _precision?: DecimalPrecision | FractionalPrecision;
   private _units?: Array<[Unit | InvertedUnit, string | undefined]>;
 
@@ -36,6 +36,7 @@ export class OverrideFormat implements IFormat {
   get units() { return (undefined === this._units) ? this.parent.units : this._units; }
 
   // Properties that cannot be overriden
+  get fullName(): string { return this.name; }
   get roundFactor(): number { return this.parent.roundFactor; }
   get type(): FormatType { return this.parent.type; }
   get minWidth(): number | undefined { return this.parent.minWidth; }

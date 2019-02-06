@@ -428,15 +428,9 @@ export class Schema implements CustomAttributeContainerProps {
       schemaJson.label = this.label;
     if (undefined !== this.description) // description is optional
       schemaJson.description = this.description;
-    if (undefined !== this.references && this.references.length > 0) { // references is optional
-      schemaJson.references = [];
-      this.references.forEach((refSchema: Schema) => {
-        schemaJson.references.push({
-          name: refSchema.name,
-          version: refSchema.schemaKey.version.toString(true),
-        });
-      });
-    }
+    if (undefined !== this.references && this.references.length > 0) // references is optional
+      schemaJson.references = this.references.map(({ name, schemaKey }) => ({ name, version: schemaKey.version.toString() }));
+
     const customAttributes = serializeCustomAttributes(this.customAttributes);
     if (undefined !== customAttributes)
       schemaJson.customAttributes = customAttributes;

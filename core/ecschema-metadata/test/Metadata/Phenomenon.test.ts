@@ -44,8 +44,8 @@ describe("Phenomenon tests", () => {
         definition: "Units.LENGTH(2)",
       };
       await testPhenomenon.deserialize(json);
-      assert(testPhenomenon.label, "Area");
-      assert(testPhenomenon.definition, "Units.LENGTH(2)");
+      assert.strictEqual(testPhenomenon.label, "Area");
+      assert.strictEqual(testPhenomenon.definition, "Units.LENGTH(2)");
     });
   });
   describe("Sync fromJson", () => {
@@ -62,8 +62,8 @@ describe("Phenomenon tests", () => {
         definition: "Units.LENGTH(2)",
       };
       testPhenomenon.deserializeSync(json);
-      assert(testPhenomenon.label, "Area");
-      assert(testPhenomenon.definition, "Units.LENGTH(2)");
+      assert.strictEqual(testPhenomenon.label, "Area");
+      assert.strictEqual(testPhenomenon.definition, "Units.LENGTH(2)");
     });
   });
   describe("toJson", () => {
@@ -80,7 +80,7 @@ describe("Phenomenon tests", () => {
       };
       await testPhenomenon.deserialize(json);
       const phenomSerialization = testPhenomenon.toJson(true, true);
-      assert(phenomSerialization.definition, "Units.LENGTH(2)");
+      assert.strictEqual(phenomSerialization.definition, "Units.LENGTH(2)");
     });
     it("sync - Basic test", () => {
       const json = {
@@ -91,7 +91,7 @@ describe("Phenomenon tests", () => {
       };
       testPhenomenon.deserializeSync(json);
       const phenomSerialization = testPhenomenon.toJson(true, true);
-      assert(phenomSerialization.definition, "Units.LENGTH(2)");
+      assert.strictEqual(phenomSerialization.definition, "Units.LENGTH(2)");
     });
   });
 });

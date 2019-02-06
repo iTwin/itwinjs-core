@@ -68,7 +68,7 @@ describe("CustomAttributeClass", () => {
 
     it("async - should succeed with fully defined standalone", async () => {
       const schemaJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/schemaitem",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem",
         schema: "TestSchema",
         schemaVersion: "1.0.0",
         schemaItemType: "CustomAttributeClass",
@@ -79,17 +79,17 @@ describe("CustomAttributeClass", () => {
 
       await testClass.deserialize(schemaJson);
       const caJson = testClass!.toJson(true, true);
-      assert(caJson.$schema, "https://dev.bentley.com/json_schemas/ec/31/draft-01/schemaitem");
-      assert(caJson.appliesTo, "Schema,AnyProperty");
-      assert(caJson.modifier, "Sealed");
-      assert(caJson.name, "TestCustomAttribute");
-      assert(caJson.schema, "TestSchema");
-      assert(caJson.schemaItemType, "CustomAttributeClass");
-      assert(caJson.schemaVersion, "01.00.00");
+      assert.strictEqual(caJson.$schema, "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem");
+      assert.strictEqual(caJson.appliesTo, "Schema, AnyProperty");
+      assert.strictEqual(caJson.modifier, "Sealed");
+      assert.strictEqual(caJson.name, "TestCustomAttribute");
+      assert.strictEqual(caJson.schema, "TestSchema");
+      assert.strictEqual(caJson.schemaItemType, "CustomAttributeClass");
+      assert.strictEqual(caJson.schemaVersion, "01.00.00");
     });
     it("sync - should succeed with fully defined standalone", () => {
       const schemaJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/schemaitem",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem",
         schema: "TestSchema",
         schemaVersion: "1.0.0",
         schemaItemType: "CustomAttributeClass",
@@ -100,13 +100,13 @@ describe("CustomAttributeClass", () => {
 
       testClass.deserializeSync(schemaJson);
       const caJson = testClass!.toJson(true, true);
-      assert(caJson.$schema, "https://dev.bentley.com/json_schemas/ec/31/draft-01/schemaitem");
-      assert(caJson.appliesTo, "Schema,AnyProperty");
-      assert(caJson.modifier, "Sealed");
-      assert(caJson.name, "TestCustomAttribute");
-      assert(caJson.schema, "TestSchema");
-      assert(caJson.schemaItemType, "CustomAttributeClass");
-      assert(caJson.schemaVersion, "01.00.00");
+      assert.strictEqual(caJson.$schema, "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem");
+      assert.strictEqual(caJson.appliesTo, "Schema, AnyProperty");
+      assert.strictEqual(caJson.modifier, "Sealed");
+      assert.strictEqual(caJson.name, "TestCustomAttribute");
+      assert.strictEqual(caJson.schema, "TestSchema");
+      assert.strictEqual(caJson.schemaItemType, "CustomAttributeClass");
+      assert.strictEqual(caJson.schemaVersion, "01.00.00");
     });
     it("async - should succeed with fully defined without standalone", async () => {
       const schemaJson = createSchemaJsonWithItems({
