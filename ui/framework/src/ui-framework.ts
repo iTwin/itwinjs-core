@@ -159,10 +159,6 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
  * Classes for managing DragDrop API drag layers
  */
 /**
- * @docs-group-description FrameworkState
- * Classes for working with the Framework state
- */
-/**
  * @docs-group-description Frontstage
  * Classes for working with a Frontstage
  */
@@ -201,6 +197,10 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
 /**
  * @docs-group-description Settings
  * Classes for Settings page
+ */
+/**
+ * @docs-group-description State
+ * Classes for maintaining state
  */
 /**
  * @docs-group-description StatusBar

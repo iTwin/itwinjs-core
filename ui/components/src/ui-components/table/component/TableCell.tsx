@@ -75,7 +75,7 @@ export interface TableCellContentProps {
 
 /** State of the [[TableCellContent]] React component */
 export interface TableCellContentState {
-  /** Rendererd content */
+  /** Rendered content */
   content: React.ReactNode;
 }
 

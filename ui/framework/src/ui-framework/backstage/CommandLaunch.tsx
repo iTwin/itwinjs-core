@@ -13,13 +13,14 @@ import { CommandHandler } from "../shared/ItemProps";
 
 import { BackstageItem as NZ_BackstageItem } from "@bentley/ui-ninezone";
 
-/** Properties for a Command Launch Backstage item.
+/** Properties for a [[CommandLaunchBackstageItem]] component
  */
 export interface CommandLaunchBackstageItemProps extends BackstageItemProps, CommandHandler {
   /** Unique Id for this backstage item. */
   commandId: string;
 }
 
+/** Backstage item that launches a Command */
 export class CommandLaunchBackstageItem extends React.PureComponent<CommandLaunchBackstageItemProps, BackstageItemState> {
 
   /** @hidden */

@@ -7,6 +7,7 @@
 import { Rectangle } from "../../../utilities/Rectangle";
 import { SizeProps } from "../../../utilities/Size";
 
+/** @hidden */
 export class Root {
   public static readonly FOOTER_HEIGHT = 48;
   private _isInFooterMode: boolean;

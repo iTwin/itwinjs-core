@@ -165,7 +165,7 @@ interface DeferredLoadingHandler<TPayload> {
 /**
  * Configuration properties for [[BeInspireTree]]
  */
-export interface Props<TNodePayload> {
+export interface BeInspireTreeProps<TNodePayload> {
   dataProvider: BeInspireTreeDataProvider<TNodePayload>;
   mapPayloadToInspireNodeConfig: MapPayloadToInspireNodeCallback<TNodePayload>;
   pageSize?: number;
@@ -183,9 +183,9 @@ export class BeInspireTree<TNodePayload> {
   private _deferredLoadingHandler?: DeferredLoadingHandler<TNodePayload>;
   private _visibleCached?: BeInspireTreeNodes<TNodePayload>;
   private _suspendedRendering?: EventsMuteContext;
-  public props: Props<TNodePayload>;
+  public props: BeInspireTreeProps<TNodePayload>;
 
-  constructor(props: Props<TNodePayload>) {
+  constructor(props: BeInspireTreeProps<TNodePayload>) {
     this.props = props;
     this._eventMutes = new Map();
 

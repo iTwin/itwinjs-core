@@ -28,7 +28,7 @@ export interface MessageCenterProps extends CommonProps, NoChildrenProps {
   buttons?: React.ReactNode;
   /** Tabs of message center. See [[MessageCenterTab]] */
   tabs?: React.ReactNode;
-  /** Messages of message center. I.e. [[Message]] */
+  /** Messages of message center. I.e. [[MessageCenterMessage]] */
   messages?: React.ReactNode;
   /* Optional prompt when no messages are present */
   prompt?: string;

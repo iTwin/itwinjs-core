@@ -43,11 +43,11 @@ export class HorizontalAnchorHelpers {
   }
 }
 
-/** Helpers for [[Anchor]]. */
+/** Helpers for [[VerticalAnchor]]. */
 export class VerticalAnchorHelpers {
-  /** Class name of [[VerticalAnchor.Start]] */
+  /** Class name of [[VerticalAnchor.Middle]] */
   public static readonly MIDDLE_CLASS_NAME = "nz-middle-anchor";
-  /** Class name of [[VerticalAnchor.End]] */
+  /** Class name of [[VerticalAnchor.Bottom]] */
   public static readonly BOTTOM_CLASS_NAME = "nz-bottom-anchor";
 
   /** @returns Class name of specified [[VerticalAnchor]] */

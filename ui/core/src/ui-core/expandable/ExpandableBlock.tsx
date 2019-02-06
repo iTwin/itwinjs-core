@@ -6,11 +6,11 @@
 
 import * as React from "react";
 import * as classnames from "classnames";
-import { CommonProps } from "../Props";
+import { CommonProps } from "../utils/Props";
 import "./ExpandableBlock.scss";
 
 /** Properties for the [[ExpandableBlock]] React component */
-export interface ExpandableBlockProps extends CommonProps  {
+export interface ExpandableBlockProps extends CommonProps {
   /** Label */
   title: string;
   /** Indicates whether the ExpandableBlock is expanded */
@@ -38,7 +38,7 @@ export class ExpandableBlock extends React.Component<ExpandableBlockProps> {
     return (
       <div className={cName} style={this.props.style}>
         <div aria-expanded={ariaExpanded} className="header" onClick={this.props.onClick}
-             onKeyPress={this.props.onKeyPress} tabIndex={this.props.onKeyPress ? 0 : undefined}>
+          onKeyPress={this.props.onKeyPress} tabIndex={this.props.onKeyPress ? 0 : undefined}>
           <div className="icon-container">
             <i className="icon icon-chevron-right" />
           </div>

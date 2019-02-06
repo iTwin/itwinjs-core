@@ -13,7 +13,7 @@ import { WorkflowManager } from "../workflow/Workflow";
 
 import { BackstageItem as NZ_BackstageItem } from "@bentley/ui-ninezone";
 
-/** Properties for a Command Launch Backstage item.
+/** Properties for a [[TaskLaunchBackstageItem]] component
  */
 export interface TaskLaunchBackstageItemProps extends BackstageItemProps {
   /** Workflow Id */
@@ -22,6 +22,7 @@ export interface TaskLaunchBackstageItemProps extends BackstageItemProps {
   taskId: string;
 }
 
+/** Backstage item that activates a Task */
 export class TaskLaunchBackstageItem extends React.PureComponent<TaskLaunchBackstageItemProps, BackstageItemState> {
 
   /** @hidden */

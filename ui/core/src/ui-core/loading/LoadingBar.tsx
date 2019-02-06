@@ -6,7 +6,7 @@
 
 import * as React from "react";
 import * as classnames from "classnames";
-import { CommonProps } from "../Props";
+import { CommonProps } from "../utils/Props";
 import "./LoadingBar.scss";
 
 /** Properties for [[LoadingBar]] component */
@@ -15,7 +15,7 @@ export interface LoadingBarProps extends CommonProps {
   percent: number;
   /** Show percentage (optional) */
   showPercentage?: boolean;
-   /** Height (in pixels) of the loading bar */
+  /** Height (in pixels) of the loading bar */
   barHeight: number;
 }
 
@@ -28,9 +28,9 @@ export class LoadingBar extends React.Component<LoadingBarProps> {
   };
 
   // sanity check to keep percentage between 0 & 100
-  private inRange (percent: number): number {
-    let value = Math.min (percent, 100);
-    value = Math.max (value, 0);
+  private inRange(percent: number): number {
+    let value = Math.min(percent, 100);
+    value = Math.max(value, 0);
     return value;
   }
 
@@ -39,8 +39,8 @@ export class LoadingBar extends React.Component<LoadingBarProps> {
     const containerClass = classnames(this.props.className, "core-lb");
     return (
       <div className={containerClass} style={this.props.style}>
-        <div className="lb-container" style={{height: this.props.barHeight}}>
-          <div className="fill" style={{width: percent}} />
+        <div className="lb-container" style={{ height: this.props.barHeight }}>
+          <div className="fill" style={{ width: percent }} />
         </div>
         {this.props.showPercentage && <span className="percent">{percent}</span>}
       </div>

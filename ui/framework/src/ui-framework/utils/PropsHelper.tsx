@@ -10,6 +10,7 @@ import { UiFramework } from "../UiFramework";
 import { StringGetter } from "../shared/ItemProps";
 import { Icon } from "../shared/IconComponent";
 
+/** A set of helper methods for various props */
 export class PropsHelper {
   /** Get spec for returning a string. Could be a simple string of a 'StringGetter' method used to return the string. */
   public static getStringSpec(explicitValue: string | StringGetter | undefined, stringKey?: string): string | StringGetter {

@@ -1133,6 +1133,7 @@ export class Table extends React.Component<TableProps, TableState> {
   }
 }
 
+/** Converts a color value from a number to an HTML/CSS hex string */
 export const colorDecimalToHex = (decimal: number) => `#${decimal.toString(16).padStart(6, "0")}`;
 
 /**

@@ -46,6 +46,7 @@ export interface ModelSelectorWidgetState {
   activeTree: ModelSelectorTree;
 }
 
+/** Tree information used in the [[ModelSelectorWidget]] component */
 export interface ModelSelectorTree {
   ruleset: RegisteredRuleset;
   dataProvider: ModelSelectorDataProvider;
@@ -1000,7 +1001,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
 
   /**
    * Find an item specified by a node based on shared label.
-   * @param label  Label of item to be retreived
+   * @param label  Label of item to be retrieved
    * @returns Specified item from list. Defaults to first item if none found.
    */
   private _getItem = (label: string): ListItem => {

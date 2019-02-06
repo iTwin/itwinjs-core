@@ -9,11 +9,13 @@ import { Cell } from "../../utilities/Cell";
 import { PointProps } from "../../utilities/Point";
 import { NineZone, WidgetZoneIndex } from "./NineZone";
 
+/** @hidden */
 export interface WidgetProps {
   readonly id: WidgetZoneIndex;
   readonly tabIndex: number;
 }
 
+/** @hidden */
 export interface DraggingWidgetProps {
   readonly id: WidgetZoneIndex;
   readonly tabIndex: number;
@@ -21,6 +23,7 @@ export interface DraggingWidgetProps {
   readonly isUnmerge: boolean;
 }
 
+/** @hidden */
 export const getDefaultWidgetProps = (id: WidgetZoneIndex): WidgetProps => {
   return {
     id,
@@ -28,6 +31,7 @@ export const getDefaultWidgetProps = (id: WidgetZoneIndex): WidgetProps => {
   };
 };
 
+/** @hidden */
 export class Widget {
   public static sort(widgets: ReadonlyArray<Widget>) {
     return widgets.slice().sort((a, b) => a.defaultZone.props.id - b.defaultZone.props.id);
@@ -95,6 +99,7 @@ export class Widget {
   }
 }
 
+/** @hidden */
 export class DraggingWidget {
   private _widget: Widget;
 

@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 export * from "./ui-core/UiCore";
-export { CommonProps } from "./ui-core/Props";
+export { CommonProps } from "./ui-core/utils/Props";
 
 export * from "./ui-core/base/Div";
 export * from "./ui-core/base/WebFontIcon";
@@ -183,7 +183,7 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
  */
 /**
  * @docs-group-description Tree
- * Classes for working with a Tree.
+ * Presentation React components for working with a Tree.
  */
 /**
  * @docs-group-description UiSettings

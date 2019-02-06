@@ -40,6 +40,7 @@ interface RowWrapperState {
   hoverMode: HoverMode;
 }
 
+/** @hidden */
 export class DragDropRowWrapper extends React.Component<RowWrapperProps, RowWrapperState> {
   private _root: HTMLDivElement | null = null;
   public readonly state: RowWrapperState = {

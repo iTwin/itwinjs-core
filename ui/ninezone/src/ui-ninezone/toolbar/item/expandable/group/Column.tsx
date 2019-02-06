@@ -9,9 +9,9 @@ import * as React from "react";
 import { CommonProps } from "../../../../utilities/Props";
 import "./Column.scss";
 
-/** Properties of [[Column]] component. */
+/** Properties of [[GroupColumn]] component. */
 export interface GroupColumnProps extends CommonProps {
-  /** Actual content. I.e. tool items: [[Expander]], [[Tool]] */
+  /** Actual content. I.e. tool items: [[GroupToolExpander]], [[GroupTool]] */
   children?: React.ReactNode;
 }
 
