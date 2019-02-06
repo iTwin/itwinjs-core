@@ -100,17 +100,22 @@ export class IModelHost {
    */
   public static startup(configuration: IModelHostConfiguration = new IModelHostConfiguration()) {
     if (IModelHost.configuration)
-      throw new IModelError(BentleyStatus.ERROR, "startup may only be called once", Logger.logError, loggingCategory);
+      throw new IModelError(BentleyStatus.ERROR, "startup may only be called once", Logger.logError, loggingCategory, () => (configuration));
 
     this.backendVersion = require("../package.json").version;
     initializeRpcBackend();
 
     const region: number = Config.App.getNumber(UrlDiscoveryClient.configResolveUrlUsingRegion, 0);
     if (!this._isNativePlatformLoaded) {
-      if (configuration.nativePlatform !== undefined)
-        this.registerPlatform(configuration.nativePlatform, region);
-      else
-        this.loadNative(region);
+      try {
+        if (configuration.nativePlatform !== undefined)
+          this.registerPlatform(configuration.nativePlatform, region);
+        else
+          this.loadNative(region);
+      } catch (error) {
+        Logger.logError(loggingCategory, "Error registering/loading the native platform API", () => (configuration));
+        throw error;
+      }
     }
 
     if (configuration.imodelClient)
