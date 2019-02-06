@@ -31,7 +31,7 @@ import { Range3d, Point2d, Point3d, Vector3d, Transform, Matrix3d, Angle } from 
 import { RenderSystem, RenderGraphic, GraphicBranch, PackedFeatureTable } from "../render/System";
 import { imageElementFromImageSource, getImageSourceFormatForMimeType } from "../ImageUtil";
 import { IModelConnection } from "../IModelConnection";
-import { DracoDecoder } from "./DracoDecoder";
+// Defer Draco for now.   import { DracoDecoder } from "./DracoDecoder";
 
 /** Provides facilities for deserializing tiles in the [glTF tile format](https://www.khronos.org/gltf/). */
 export namespace GltfTileIO {
@@ -631,12 +631,14 @@ export namespace GltfTileIO {
       if (undefined !== mesh.features && !this.readFeatures(mesh.features, primitive))
         return undefined;
       if (primitive.extensions && primitive.extensions.KHR_draco_mesh_compression) {
+        return undefined;     // Defer Draco support until moved to web worker.
+        /*
         const dracoExtension = primitive.extensions.KHR_draco_mesh_compression;
         const bufferView = this._bufferViews[dracoExtension.bufferView];
         if (undefined === bufferView) return undefined;
         const bufferData = this._binaryData.subarray(bufferView.byteOffset, bufferView.byteOffset + bufferView.byteLength);
 
-        return DracoDecoder.readDracoMesh(mesh, primitive, bufferData);
+        return  DracoDecoder.readDracoMesh(mesh, primitive, bufferData); */
       }
       if (!this.readVertices(mesh.points, primitive))
         return undefined;
