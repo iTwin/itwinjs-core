@@ -21,7 +21,7 @@
   "main": "lib/presentation-backend.js",
   "typings": "lib/presentation-backend",
   "scripts": {
-    "build": "tsc -b ./src/test 1>&2 && npm run build:assets && npm run extract",
+    "build": "tsc -b ./src/test 1>&2 && npm run build:assets && npm run extract && node ./node_modules/@bentley/build-tools/scripts/ignoreargs.js 1>&2",
     "build:assets": "cpx \"./assets/**/*\" ./lib/assets && npm run pseudolocalize",
     "build:watch": "npm run build:assets && tsc -b ./src/test -w",
     "clean": "rimraf lib package-deps.json",

@@ -20,7 +20,7 @@
   "main": "lib/presentation-common.js",
   "typings": "lib/presentation-common",
   "scripts": {
-    "build": "tsc -b ./src/test 1>&2 && npm run ruleset-json-schema && npm run extract && npm run webpackModule-dev",
+    "build": "npm run ruleset-json-schema && npm run extract && node ./node_modules/@bentley/webpack-tools/bin/buildIModelJsModule.js",
     "build:watch": "npm run ruleset-json-schema && tsc -b ./src/test -w",
     "clean": "rimraf lib package-deps.json",
     "cover": "nyc npm test",
@@ -34,9 +34,18 @@
     "lint": "echo Disabled until https://github.com/palantir/tslint/issues/4148 is fixed",
     "//lint": "tslint -p ./src/tsconfig.json 1>&2",
     "test": "mocha --opts ../mocha.opts lib/test/**/*.js",
-    "test:watch": "npm test -- --reporter min --watch-extensions ts --watch",
-    "webpackModule-dev": "make-dir ./lib/module/dev/ && webpack --config ./node_modules/@bentley/webpack-tools/modules/webpackModule.config.js --env.entry=./lib/presentation-common.js --env.bundlename=presentation-common --json >./lib/module/dev/webpackStats.json",
-    "webpackModule-prod": "webpack --config ./node_modules/@bentley/webpack-tools/modules/webpackModule.config.js --env.entry=./lib/presentation-common.js --env.bundlename=presentation-common --env.prod --env.stylesheets"
+    "test:watch": "npm test -- --reporter min --watch-extensions ts --watch"
+  },
+  "iModelJs": {
+    "buildModule": {
+      "type": "system",
+      "tscOptions": "-b ./src/test",
+      "webpack": {
+        "dest": "./lib/module",
+        "entry": "./lib/presentation-common.js",
+        "bundleName": "presentation-common"
+      }
+    }
   },
   "peerDependencies": {
     "@bentley/bentleyjs-core": "0.189.0-dev.20",
@@ -64,13 +73,11 @@
     "deep-equal": "^1",
     "faker": "^4.1.0",
     "json-schema-faker": "^0.5.0-rc15",
-    "make-dir-cli": "^1.0.0",
     "mocha": "^5.2.0",
     "nyc": "^13.0.1",
     "rimraf": "^2.6.2",
     "sinon": "^7.1.1",
     "sinon-chai": "^3.2.0",
-    "source-map-loader": "^0.2.3",
     "tslint": "^5.11.0",
     "tslint-consistent-codestyle": "^1.11.0",
     "typedoc": "^0.11.1",
@@ -78,8 +85,6 @@
     "typemoq": "^2.1.0",
     "typescript": "~3.2.2",
     "typescript-json-schema": "^0.28.0",
-    "webpack": "^4.20.2",
-    "webpack-cli": "^3.1.0",
     "yargs": "^12.0.0"
   },
   "nyc": {

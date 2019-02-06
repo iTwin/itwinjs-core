@@ -7,7 +7,7 @@
 import { Matrix4 } from "./Matrix";
 import { CachedGeometry } from "./CachedGeometry";
 import { Transform, Range3d } from "@bentley/geometry-core";
-import { Id64, Id64String } from "@bentley/bentleyjs-core";
+import { Id64, Id64String, assert } from "@bentley/bentleyjs-core";
 import { FeatureIndexType, RenderMode, ViewFlags, Frustum, FrustumPlanes } from "@bentley/imodeljs-common";
 import { System } from "./System";
 import { Batch, Branch, Graphic, GraphicsArray } from "./Graphic";
@@ -21,14 +21,13 @@ import { TechniqueId } from "./TechniqueId";
 import { SurfacePrimitive, SurfaceGeometry } from "./Surface";
 import { SurfaceType } from "../primitives/VertexTable";
 import { MeshGraphic } from "./Mesh";
-import { Debug } from "./Diagnostics";
 
 export class ShaderProgramParams {
   private _target?: Target;
   private _renderPass: RenderPass = RenderPass.None;
   private readonly _projectionMatrix: Matrix4 = new Matrix4();
 
-  public get target(): Target { Debug.assert(() => undefined !== this._target); return this._target!; }
+  public get target(): Target { assert(undefined !== this._target); return this._target!; }
   public get renderPass() { return this._renderPass; }
   public get projectionMatrix() { return this._projectionMatrix; }
 
@@ -57,8 +56,8 @@ export class DrawParams {
   private readonly _modelMatrix = new Matrix4();
   private readonly _viewMatrix = new Matrix4();
 
-  public get geometry(): CachedGeometry { Debug.assert(() => undefined !== this._geometry); return this._geometry!; }
-  public get programParams(): ShaderProgramParams { Debug.assert(() => undefined !== this._programParams); return this._programParams!; }
+  public get geometry(): CachedGeometry { assert(undefined !== this._geometry); return this._geometry!; }
+  public get programParams(): ShaderProgramParams { assert(undefined !== this._programParams); return this._programParams!; }
   public get modelViewMatrix() { return this._modelViewMatrix; }
   public get modelMatrix() { return this._modelMatrix; }
   public get viewMatrix() { return this._viewMatrix; }
@@ -75,7 +74,7 @@ export class DrawParams {
     if (undefined === pass)
       pass = programParams.renderPass;
     else
-      Debug.assert(() => pass === this.programParams.renderPass); // ###TODO remove this once confirmed it's redundant...
+      assert(pass === this.programParams.renderPass); // ###TODO remove this once confirmed it's redundant...
 
     this._geometry = geometry;
     Matrix4.fromTransform(modelMatrix, this._modelMatrix);
@@ -345,7 +344,7 @@ export class RenderCommands {
     if (undefined === gf)
       return;
 
-    Debug.assert(() => RenderPass.None === this._forcedRenderPass);
+    assert(RenderPass.None === this._forcedRenderPass);
 
     this._forcedRenderPass = RenderPass.Background;
     this._stack.pushState(this.target.decorationState);
@@ -358,7 +357,7 @@ export class RenderCommands {
     if (undefined === gf)
       return;
 
-    Debug.assert(() => RenderPass.None === this._forcedRenderPass);
+    assert(RenderPass.None === this._forcedRenderPass);
 
     this._forcedRenderPass = RenderPass.SkyBox;
     this._stack.pushState(this.target.decorationState);
@@ -440,7 +439,7 @@ export class RenderCommands {
 
   public getCommands(pass: RenderPass): DrawCommands {
     let idx = pass as number;
-    Debug.assert(() => idx < this._commands.length);
+    assert(idx < this._commands.length);
     if (idx >= this._commands.length)
       idx -= 1;
 
@@ -454,7 +453,7 @@ export class RenderCommands {
   }
 
   private pushAndPopBranchForPass(pass: RenderPass, branch: Branch, func: () => void): void {
-    Debug.assert(() => RenderPass.None !== pass);
+    assert(RenderPass.None !== pass);
 
     this._stack.pushBranch(branch);
     const cmds = this.getCommands(pass);
@@ -488,7 +487,7 @@ export class RenderCommands {
     const popCmd = DrawCommand.createForBranch(branch, PushOrPop.Pop);
     for (let i = start; i < end; ++i) {
       cmds = this._commands[i];
-      Debug.assert(() => 0 < cmds.length);
+      assert(0 < cmds.length);
       if (0 < cmds.length && cmds[cmds.length - 1].isPushCommand(branch))
         cmds.pop();
       else
@@ -499,7 +498,7 @@ export class RenderCommands {
   }
 
   public clear(): void {
-    Debug.assert(() => this._batchState.isEmpty, () => "BatchState should be cleared at end of frame");
+    assert(this._batchState.isEmpty);
     this._clearCommands();
   }
   private _clearCommands(): void {
@@ -635,9 +634,9 @@ export class RenderCommands {
     // Batches (aka element tiles) should only draw during ordinary (translucent or opaque) passes.
     // They may draw during both, or neither.
     // NB: This is no longer true - pickable overlay decorations are defined as Batches. Problem?
-    // Debug.assert(() => RenderPass.None === this._forcedRenderPass);
-    Debug.assert(() => !this._opaqueOverrides && !this._translucentOverrides);
-    Debug.assert(() => undefined === this._curBatch);
+    // assert(RenderPass.None === this._forcedRenderPass);
+    assert(!this._opaqueOverrides && !this._translucentOverrides);
+    assert(undefined === this._curBatch);
 
     // If all features are overridden to be invisible, draw no graphics in this batch
     const overrides = batch.getOverrides(this.target);

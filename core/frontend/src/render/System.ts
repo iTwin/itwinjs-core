@@ -727,14 +727,12 @@ export interface TextureImage {
 export const enum RenderDiagnostics {
   /** No diagnostics enabled. */
   None = 0,
-  /** Assertions enabled. Failed assertions will produce (often uncaught) exceptions. */
-  Assertions = 1 << 0,
   /** Debugging output to browser console enabled. */
   DebugOutput = 1 << 1,
   /** Potentially expensive checks of WebGL state enabled. */
   WebGL = 1 << 2,
   /** All diagnostics enabled. */
-  All = Assertions | DebugOutput | WebGL,
+  All = DebugOutput | WebGL,
 }
 
 /** A RenderSystem provides access to resources used by the internal WebGL-based rendering system.

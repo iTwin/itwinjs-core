@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { IDisposable, dispose } from "@bentley/bentleyjs-core";
+import { IDisposable, dispose, assert } from "@bentley/bentleyjs-core";
 import { RenderPass, RenderOrder } from "./RenderFlags";
 import { LUTGeometry, PolylineBuffers } from "./CachedGeometry";
 import { SurfaceType, MeshParams, SegmentEdgeParams, SilhouetteParams, TesselatedPolyline } from "../primitives/VertexTable";
@@ -26,7 +26,6 @@ import { BufferHandle, AttributeHandle } from "./Handle";
 import { GL } from "./GL";
 import { TechniqueId } from "./TechniqueId";
 import { RenderMemory } from "../System";
-import { Debug } from "./Diagnostics";
 
 export class MeshData implements IDisposable {
   public readonly edgeWidth: number;
@@ -172,7 +171,7 @@ export abstract class MeshPrimitive extends Primitive {
     this.mesh = mesh;
   }
 
-  public assignUniformFeatureIndices(_index: number) { Debug.assert(() => false); } // handled by MeshGraphic...
+  public assignUniformFeatureIndices(_index: number) { assert(false); } // handled by MeshGraphic...
 }
 
 export class EdgeGeometry extends MeshGeometry {

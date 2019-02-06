@@ -9,7 +9,7 @@
   },
   "scripts": {
     "copy:rules": "cpx \"./node_modules/tslint-consistent-codestyle/rules/**/*\" ./tslint-rules/tslint-consistent-codestyle/rules && cpx \"./node_modules/tslint-consistent-codestyle/src/**/*\" ./tslint-rules/tslint-consistent-codestyle/src",
-    "build": "tsc 1>&2 && npm run copy:rules",
+    "build": "tsc 1>&2 && npm run copy:rules && node ./scripts/ignoreargs.js 1>&2",
     "clean": "rimraf tslint-rules ../../modules",
     "docs": "",
     "lint": "",

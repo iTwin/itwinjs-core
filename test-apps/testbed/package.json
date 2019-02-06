@@ -5,7 +5,7 @@
   "license": "MIT",
   "scripts": {
     "prebuild": "rush build -t testbed",
-    "build": "tsc 1>&2 && npm run copy:frontendpublic && npm run copy:testpublic && npm run webpack:frontend",
+    "build": "tsc 1>&2 && npm run copy:frontendpublic && npm run copy:testpublic && npm run webpack:frontend && node ./node_modules/@bentley/build-tools/scripts/ignoreargs.js 1>&2",
     "clean": "rimraf lib backend/lib frontend/lib package-deps.json coverage",
     "copy:frontendpublic": "cpx \"../../core/frontend/src/public/**/*\" ./lib/backend/public",
     "copy:testpublic": "cpx \"./public/**/*\" ./lib/backend/public",
@@ -55,7 +55,7 @@
     "@types/i18next-xhr-backend": "^1.4.1",
     "@types/js-base64": "^2.3.1",
     "@types/mocha": "^5.2.5",
-    "@types/node": "10.10.3",
+    "@types/node": "10.12.18",
     "@types/webpack": "^3.8.5",
     "@types/semver": "^5.5.0",
     "@types/ws": "^6.0.1",

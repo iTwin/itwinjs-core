@@ -23,10 +23,7 @@
   "main": "lib/presentation-components.js",
   "typings": "lib/presentation-components",
   "scripts": {
-    "build": "tsc -b ./src/test 1>&2 && npm run build:assets && npm run build:scss && npm run extract && npm run webpackModule-dev",
-    "build:scss": "cpx \"./src/**/*.scss\" ./lib",
-    "build:assets": "cpx \"./public/**/*\" ./lib/public && npm run pseudolocalize",
-    "build:watch": "npm run build:assets && npm run build:scss && tsc -b ./src/test -w",
+    "build": "npm run extract && node ./node_modules/@bentley/webpack-tools/bin/buildIModelJsModule.js",
     "clean": "rimraf lib package-deps.json",
     "cover": "nyc npm test",
     "docs": "npm run docs:reference && npm run docs:changelog",
@@ -35,11 +32,34 @@
     "extract": "node ./node_modules/@bentley/build-tools/scripts/extract.js --fileExt=ts --extractFrom=./src/test --recursive --out=../../generated-docs/extract",
     "lint": "echo Disabled until https://github.com/palantir/tslint/issues/4148 is fixed",
     "//lint": "tslint -p ./src 1>&2",
-    "pseudolocalize": "node ./node_modules/@bentley/build-tools/scripts/pseudolocalize.js --englishDir ./public/locales/en --out ./lib/public/locales/en-pseudo",
     "test": "mocha --opts ../mocha.opts -r ignore-styles -r jsdom-global/register --file ./lib/test/index.test.js lib/test/**/*.js",
-    "test:watch": "npm test -- --reporter min --watch-extensions ts,tsx --watch",
-    "webpackModule-dev": "make-dir ./lib/module/dev/ && webpack --config ./node_modules/@bentley/webpack-tools/modules/webpackModule.config.js --env.entry=./lib/presentation-components.js --env.bundlename=presentation-components --env.stylesheets --json >./lib/module/dev/webpackStats.json",
-    "webpackModule-prod": "webpack --config ./node_modules/@bentley/webpack-tools/modules/webpackModule.config.js --env.entry=./lib/presentation-components.js --env.bundlename=presentation-components --env.prod --env.stylesheets"
+    "test:watch": "npm test -- --reporter min --watch-extensions ts,tsx --watch"
+  },
+  "iModelJs": {
+    "buildModule": {
+      "type": "system",
+      "tscOptions": "-b ./src/test",
+      "sourceResources": [
+        {
+          "source": "./src/**/*.scss",
+          "dest": "./lib"
+        },
+        {
+          "source": "./public/**/*",
+          "dest": "./lib/public"
+        }
+      ],
+      "webpack": {
+        "dest": "./lib/module",
+        "entry": "./lib/presentation-components.js",
+        "bundleName": "presentation-components",
+        "styleSheets": true
+      },
+      "pseudoLocalize": {
+        "source": "./lib/public/locales/en",
+        "dest": "./lib/public/locales/en-pseudo"
+      }
+    }
   },
   "dependencies": {
     "lodash": "^4.17.10",
@@ -88,20 +108,16 @@
     "enzyme-to-json": "^3.3.4",
     "faker": "^4.1.0",
     "ignore-styles": "^5.0.1",
-    "make-dir-cli": "^1.0.0",
     "mocha": "^5.2.0",
     "nyc": "^13.0.1",
     "rimraf": "^2.6.2",
     "sinon": "^7.1.1",
     "sinon-chai": "^3.2.0",
-    "source-map-loader": "^0.2.3",
     "tslint": "^5.11.0",
     "typedoc": "^0.11.1",
     "typedoc-plugin-external-module-name": "^1.1.1",
     "typemoq": "^2.1.0",
     "typescript": "~3.2.2",
-    "webpack": "^4.20.2",
-    "webpack-cli": "^3.1.0",
     "xmlhttprequest": "^1.8.0"
   },
   "nyc": {

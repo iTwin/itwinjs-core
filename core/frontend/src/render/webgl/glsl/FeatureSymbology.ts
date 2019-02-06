@@ -27,7 +27,7 @@ import { addRenderPass } from "./RenderPass";
 import { SurfaceGeometry } from "../Surface";
 import { UniformHandle } from "../Handle";
 import { DrawParams } from "../DrawCommand";
-import { Debug } from "../Diagnostics";
+import { assert } from "@bentley/bentleyjs-core";
 
 export const enum FeatureSymbologyOptions {
   None = 0,
@@ -146,7 +146,7 @@ function addCommon(builder: ProgramBuilder, mode: FeatureMode, opts: FeatureSymb
   const wantLineCode = FeatureSymbologyOptions.None !== (opts & FeatureSymbologyOptions.LineCode);
   const wantColor = FeatureSymbologyOptions.None !== (opts & FeatureSymbologyOptions.Color);
   const wantAlpha = FeatureSymbologyOptions.None !== (opts & FeatureSymbologyOptions.Alpha);
-  Debug.assert(() => wantColor || !wantAlpha);
+  assert(wantColor || !wantAlpha);
 
   vert.addGlobal("feature_invisible", VariableType.Boolean, "false");
   vert.addFunction(GLSLCommon.extractNthBit);
@@ -194,7 +194,7 @@ function addCommon(builder: ProgramBuilder, mode: FeatureMode, opts: FeatureSymb
   vert.addUniform("u_featureLUT", VariableType.Sampler2D, (prog) => {
     prog.addGraphicUniform("u_featureLUT", (uniform, params) => {
       const ovr = params.target.currentOverrides;
-      Debug.assert(() => undefined !== ovr);
+      assert(undefined !== ovr);
       ovr!.lut!.bindSampler(uniform, TextureUnit.FeatureSymbology);
     });
   });
@@ -618,7 +618,7 @@ export function addFeatureSymbology(builder: ProgramBuilder, feat: FeatureMode, 
   if (!addCommon(builder, feat, opts) || FeatureSymbologyOptions.None === opts)
     return;
 
-  Debug.assert(() => (FeatureSymbologyOptions.HasOverrides | FeatureSymbologyOptions.Color) === (opts & (FeatureSymbologyOptions.HasOverrides | FeatureSymbologyOptions.Color)));
+  assert((FeatureSymbologyOptions.HasOverrides | FeatureSymbologyOptions.Color) === (opts & (FeatureSymbologyOptions.HasOverrides | FeatureSymbologyOptions.Color)));
 
   builder.addVarying("v_feature_rgb", VariableType.Vec3);
   builder.addVarying("v_feature_alpha_flashed", VariableType.Vec2);

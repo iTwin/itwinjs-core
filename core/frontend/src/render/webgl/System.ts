@@ -19,7 +19,7 @@ import { PointStringParams, MeshParams, PolylineParams } from "../primitives/Ver
 import { MeshArgs } from "../primitives/mesh/MeshPrimitives";
 import { Branch, Batch, GraphicsArray } from "./Graphic";
 import { IModelConnection } from "../../IModelConnection";
-import { BentleyStatus, Dictionary, IDisposable, dispose, Id64String } from "@bentley/bentleyjs-core";
+import { assert, BentleyStatus, Dictionary, IDisposable, dispose, Id64String } from "@bentley/bentleyjs-core";
 import { Techniques } from "./Technique";
 import { IModelApp } from "../../IModelApp";
 import { ViewRect, Viewport } from "../../Viewport";
@@ -399,14 +399,14 @@ class TextureStats implements TextureMonitor {
   private _maxSize = 0;
 
   public onTextureCreated(tex: TextureHandle): void {
-    Debug.assert(() => !this._allocated.has(tex));
+    assert(!this._allocated.has(tex));
     const size = tex.width * tex.height;
     this._maxSize = Math.max(size, this._maxSize);
     this._allocated.add(tex);
   }
 
   public onTextureDisposed(tex: TextureHandle): void {
-    Debug.assert(() => this._allocated.has(tex));
+    assert(this._allocated.has(tex));
     this._allocated.delete(tex);
     const thisSize = tex.width * tex.height;
     if (thisSize < this._maxSize)
@@ -494,10 +494,10 @@ export class System extends RenderSystem {
     const noiseDim = 4;
     const noiseArr = new Uint8Array([152, 235, 94, 173, 219, 215, 115, 176, 73, 205, 43, 201, 10, 81, 205, 198]);
     this._noiseTexture = TextureHandle.createForData(noiseDim, noiseDim, noiseArr, false, GL.Texture.WrapMode.Repeat, GL.Texture.Format.Luminance);
-    Debug.assert(() => undefined !== this._noiseTexture, "System.noiseTexture not created.");
+    assert(undefined !== this._noiseTexture, "System.noiseTexture not created.");
 
     this._lineCodeTexture = TextureHandle.createForData(LineCode.size, LineCode.count, new Uint8Array(LineCode.lineCodeData), false, GL.Texture.WrapMode.Repeat, GL.Texture.Format.Luminance);
-    Debug.assert(() => undefined !== this._lineCodeTexture, "System.lineCodeTexture not created.");
+    assert(undefined !== this._lineCodeTexture, "System.lineCodeTexture not created.");
   }
 
   public createTarget(canvas: HTMLCanvasElement): RenderTarget { return new OnScreenTarget(canvas); }
@@ -518,7 +518,7 @@ export class System extends RenderSystem {
       const cachedGeom = SkyBoxQuadsGeometry.create(params.cube);
       return cachedGeom !== undefined ? new SkyBoxPrimitive(cachedGeom) : undefined;
     } else {
-      Debug.assert(() => undefined !== params.sphere || undefined !== params.gradient);
+      assert(undefined !== params.sphere || undefined !== params.gradient);
       const cachedGeom = SkySphereViewportQuadGeometry.createGeometry(params);
       return cachedGeom !== undefined ? new SkySpherePrimitive(cachedGeom) : undefined;
     }
@@ -543,7 +543,7 @@ export class System extends RenderSystem {
         return TextureHandle.createForAttachment(width, height, GL.Texture.Format.DepthStencil, dtExt!.UNSIGNED_INT_24_8_WEBGL);
       }
       default: {
-        Debug.assert(() => false);
+        assert(false);
         return undefined;
       }
     }
@@ -708,7 +708,7 @@ export class System extends RenderSystem {
               params.push(Point2d.create(paramUnscaled.x * sheetTileScale, paramUnscaled.y * sheetTileScale));
             });
 
-            Debug.assert(() => trianglePoints.length === 3);
+            assert(trianglePoints.length === 3);
             polyfaceBuilder.addTriangleFacet(trianglePoints, params);
           }
           return true;
@@ -829,7 +829,6 @@ export class System extends RenderSystem {
   }
 
   public enableDiagnostics(enable: RenderDiagnostics): void {
-    Debug.assertionsEnabled = RenderDiagnostics.None !== (enable & RenderDiagnostics.Assertions);
     Debug.printEnabled = RenderDiagnostics.None !== (enable & RenderDiagnostics.DebugOutput);
     Debug.evaluateEnabled = RenderDiagnostics.None !== (enable & RenderDiagnostics.WebGL);
   }

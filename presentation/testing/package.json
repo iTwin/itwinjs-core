@@ -20,7 +20,7 @@
   "main": "lib/presentation-testing.js",
   "typings": "lib/presentation-testing",
   "scripts": {
-    "build": "tsc -b",
+    "build": "tsc -b && node ./node_modules/@bentley/build-tools/scripts/ignoreargs.js 1>&2",
     "clean": "rimraf lib package-deps.json",
     "cover": "nyc npm test",
     "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/presentation/presentation-testing/json/file.json --tsIndexFile=presentation-testing.ts --onlyJson %TYPEDOC_THEME%",

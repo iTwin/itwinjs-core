@@ -571,6 +571,18 @@
     {
       "type": "node",
       "request": "launch",
+      "name": "Debug buildIModelJsModule",
+      "program": "${workspaceRoot}/core/bentley/node_modules/@bentley/webpack-tools/lib/buildIModelJsModule.js",
+      "cwd": "${workspaceRoot}/test-apps/ui-test-app/",
+      "outFiles": [
+        "${workspaceRoot}/core/bentley/node_modules/@bentley/webpack-tools/lib/*.js",
+      ],
+      "args": [
+      ],
+    },
+    {
+      "type": "node",
+      "request": "launch",
       "name": "Debug imodel-from-geojson",
       "program": "${workspaceRoot}/test-apps/imodel-from-geojson/lib/Main.js",
       "cwd": "${workspaceRoot}/test-apps/imodel-from-geojson",

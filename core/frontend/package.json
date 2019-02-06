@@ -6,16 +6,36 @@
   "typings": "lib/imodeljs-frontend",
   "license": "MIT",
   "scripts": {
-    "build": "tsc 1>&2 && npm run copy:public && npm run webpackModule-dev && npm run webpack-loader",
+    "build": "node ./node_modules/@bentley/webpack-tools/bin/buildIModelJsModule.js",
     "clean": "rimraf lib package-deps.json",
-    "copy:public": "cpx \"./src/public/**/*\" ./lib/public",
     "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-frontend/file.json --tsIndexFile=./imodeljs-frontend.ts --onlyJson %TYPEDOC_THEME% --excludes=webgl/**/*,**/primitives",
     "lint": "tslint --project . 1>&2",
     "test": "",
-    "cover": "",
-    "webpack-loader": "webpack --config ./node_modules/@bentley/webpack-tools/modules/webpackModule.config.js --env.entry=./lib/loader/IModelJsLoader.js --env.bundlename=IModelJsLoader --env.sourcedir=./",
-    "webpackModule-dev": "make-dir ./lib/module/dev/ && webpack --config ./node_modules/@bentley/webpack-tools/modules/webpackModule.config.js --env.entry=./lib/imodeljs-frontend.js --env.bundlename=imodeljs-frontend --json >./lib/module/dev/webpackStats.json",
-    "webpackModule-prod": "webpack --config ./node_modules/@bentley/webpack-tools/modules/webpackModule.config.js --env.entry=./lib/imodeljs-frontend.js --env.bundlename=imodeljs-frontend --env.prod"
+    "cover": ""
+  },
+  "iModelJs": {
+    "buildModule": {
+      "type": "system",
+      "sourceResources": [
+        {
+          "source": "./src/public/**/*",
+          "dest": "./lib/public"
+        }
+      ],
+      "webpack": {
+        "dest": "./lib/module",
+        "entry": "./lib/imodeljs-frontend.js",
+        "bundleName": "imodeljs-frontend"
+      },
+      "plugins": [
+        {
+          "dest": "./lib/module",
+          "entry": "./lib/loader/IModelJsLoader.js",
+          "bundleName": "IModelJsLoader",
+          "system": "true"
+        }
+      ]
+    }
   },
   "repository": {
     "type": "git",
@@ -52,18 +72,13 @@
     "@bentley/imodeljs-quantity": "0.189.0-dev.20",
     "@bentley/webpack-tools": "0.189.0-dev.20",
     "@types/js-base64": "^2.3.1",
-    "@types/node": "10.10.3",
+    "@types/node": "10.12.18",
     "@types/semver": "^5.5.0",
-    "cpx": "^1.5.0",
-    "make-dir-cli": "^1.0.0",
     "rimraf": "^2.6.2",
-    "source-map-loader": "^0.2.3",
     "tslint": "^5.11.0",
     "typedoc": "^0.11.1",
     "typedoc-plugin-external-module-name": "^1.1.1",
-    "typescript": "~3.2.2",
-    "webpack": "^4.20.2",
-    "webpack-cli": "^3.1.0"
+    "typescript": "~3.2.2"
   },
   "//dependencies": [
     "NOTE: these dependencies should be only for things that DO NOT APPEAR IN THE API",

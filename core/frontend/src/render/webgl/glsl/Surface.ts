@@ -28,7 +28,7 @@ import { SurfaceFlags, TextureUnit } from "../RenderFlags";
 import { Texture } from "../Texture";
 import { Material } from "../Material";
 import { System } from "../System";
-import { Debug } from "../Diagnostics";
+import { assert } from "@bentley/bentleyjs-core";
 
 const sampleSurfaceTexture = `
   vec4 sampleSurfaceTexture() {
@@ -231,7 +231,7 @@ function addSurfaceFlags(builder: ProgramBuilder, withFeatureOverrides: boolean)
   addSurfaceFlagsLookup(builder.frag);
   builder.addUniform("u_surfaceFlags", VariableType.Float, (prog) => {
     prog.addGraphicUniform("u_surfaceFlags", (uniform, params) => {
-      Debug.assert(() => params.geometry instanceof SurfaceGeometry);
+      assert(params.geometry instanceof SurfaceGeometry);
       const mesh = params.geometry as SurfaceGeometry;
       const surfFlags = mesh.computeSurfaceFlags(params.programParams);
       uniform.setUniform1f(surfFlags);
@@ -270,7 +270,7 @@ function addTexture(builder: ProgramBuilder, animated: boolean) {
       const surfFlags = surfGeom.computeSurfaceFlags(params.programParams);
       if (SurfaceFlags.None !== (SurfaceFlags.HasTexture & surfFlags)) {
         const texture = (params.target.analysisTexture ? params.target.analysisTexture : surfGeom.texture) as Texture;
-        Debug.assert(() => undefined !== texture);
+        assert(undefined !== texture);
         texture.texture.bindSampler(uniform, TextureUnit.SurfaceTexture);
       } else {
         System.instance.ensureSamplerBound(uniform, TextureUnit.SurfaceTexture);

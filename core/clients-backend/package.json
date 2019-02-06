@@ -9,7 +9,7 @@
     "node": ">=10.14.0 <11.0"
   },
   "scripts": {
-    "build": "tsc 1>&2 && npm run copy:typedefs",
+    "build": "tsc 1>&2 && npm run copy:typedefs && node ./node_modules/@bentley/build-tools/scripts/ignoreargs.js 1>&2",
     "copy:typedefs": "cpx \"./src/openid-client.d.ts\" ./lib/",
     "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/test/assets",
     "clean": "rimraf lib package-deps.json",
@@ -47,7 +47,7 @@
     "@types/chai": "^4.1.4",
     "@types/mocha": "^5.2.5",
     "@types/nock": "^9.1.2",
-    "@types/node": "10.10.3",
+    "@types/node": "10.12.18",
     "@types/deep-assign": "^0.1.0",
     "@types/fs-extra": "^4.0.7",
     "@types/js-base64": "^2.3.1",

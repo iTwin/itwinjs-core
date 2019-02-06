@@ -10,7 +10,7 @@ import { System } from "./System";
 import { addClipping } from "./glsl/Clipping";
 import { ClipDef } from "./TechniqueFlags";
 import { ClippingType } from "../System";
-import { Debug } from "./Diagnostics";
+import { assert } from "@bentley/bentleyjs-core";
 
 /** Describes the data type of a shader program variable. */
 export const enum VariableType {
@@ -61,7 +61,7 @@ namespace Convert {
       case VariableType.Mat4: return "mat4";
       case VariableType.Sampler2D: return "sampler2D";
       case VariableType.SamplerCube: return "samplerCube";
-      default: Debug.assert(() => false); return "undefined";
+      default: assert(false); return "undefined";
     }
   }
 
@@ -71,7 +71,7 @@ namespace Convert {
       case VariableScope.Varying: return "varying";
       case VariableScope.Uniform: return "uniform";
       case VariableScope.Attribute: return "attribute";
-      default: Debug.assert(() => false); return "undefined";
+      default: assert(false); return "undefined";
     }
   }
 
@@ -81,7 +81,7 @@ namespace Convert {
       case VariablePrecision.Low: return "lowp";
       case VariablePrecision.Medium: return "mediump";
       case VariablePrecision.High: return "highp";
-      default: Debug.assert(() => false); return "undefined";
+      default: assert(false); return "undefined";
     }
   }
 }
@@ -171,7 +171,7 @@ export class ShaderVariables {
   public addVariable(v: ShaderVariable): void {
     const found = this.find(v.name);
     if (undefined !== found) {
-      Debug.assert(() => found.type === v.type);
+      assert(found.type === v.type);
       // assume same binding etc...
     } else {
       this.list.push(v);
@@ -253,7 +253,7 @@ export class ShaderVariables {
           variableSize = 4;
           break;
         default:
-          Debug.assert(() => false, "Invalid varying variable type");
+          assert(false, "Invalid varying variable type");
           continue;
       }
 
@@ -332,18 +332,18 @@ export class ShaderBuilder extends ShaderVariables {
   }
 
   protected addComponent(index: number, component: string): void {
-    Debug.assert(() => index < this.components.length);
+    assert(index < this.components.length);
 
     // assume if caller is replacing an existing component, they know what they're doing...
     this.components[index] = component;
   }
   protected removeComponent(index: number) {
-    Debug.assert(() => index < this.components.length);
+    assert(index < this.components.length);
     this.components[index] = undefined;
   }
 
   protected getComponent(index: number): string | undefined {
-    Debug.assert(() => index < this.components.length);
+    assert(index < this.components.length);
     return this.components[index];
   }
 
@@ -364,7 +364,7 @@ export class ShaderBuilder extends ShaderVariables {
       this.functions[index] = replacement;
     }
 
-    Debug.assert(() => -1 !== index);
+    assert(-1 !== index);
     return -1 !== index;
   }
 
@@ -399,7 +399,7 @@ export class ShaderBuilder extends ShaderVariables {
     let needMultiDrawBuffers = false;
     for (const ext of this.extensions) {
       if (ext === "GL_EXT_draw_buffers") {
-        Debug.assert(() => System.instance.capabilities.supportsDrawBuffers, "GL_EXT_draw_bufers unsupported");
+        assert(System.instance.capabilities.supportsDrawBuffers, "GL_EXT_draw_bufers unsupported");
         needMultiDrawBuffers = true;
       }
 
@@ -505,7 +505,7 @@ export class VertexShaderBuilder extends ShaderBuilder {
     main.newline();
 
     const computePosition = this.get(VertexShaderComponent.ComputePosition);
-    Debug.assert(() => undefined !== computePosition);
+    assert(undefined !== computePosition);
     if (undefined !== computePosition) {
       prelude.addFunction("vec4 computePosition(vec4 rawPos)", computePosition);
     }
@@ -619,7 +619,7 @@ export class FragmentShaderBuilder extends ShaderBuilder {
   public unset(id: FragmentShaderComponent) { this.removeComponent(id); }
 
   public addDrawBuffersExtension(): void {
-    Debug.assert(() => System.instance.capabilities.supportsDrawBuffers, "WEBGL_draw_buffers unsupported");
+    assert(System.instance.capabilities.supportsDrawBuffers, "WEBGL_draw_buffers unsupported");
     this.addExtension("GL_EXT_draw_buffers");
   }
 
@@ -628,7 +628,7 @@ export class FragmentShaderBuilder extends ShaderBuilder {
     const prelude = this.buildPrelude(undefined !== applyLighting);
 
     const computeBaseColor = this.get(FragmentShaderComponent.ComputeBaseColor);
-    Debug.assert(() => undefined !== computeBaseColor);
+    assert(undefined !== computeBaseColor);
     if (undefined !== computeBaseColor) {
       prelude.addFunction("vec4 computeBaseColor()", computeBaseColor);
     }
@@ -709,7 +709,7 @@ export class FragmentShaderBuilder extends ShaderBuilder {
     }
 
     const assignFragData = this.get(FragmentShaderComponent.AssignFragData);
-    Debug.assert(() => undefined !== assignFragData);
+    assert(undefined !== assignFragData);
     if (undefined !== assignFragData) {
       prelude.addFunction("void assignFragData(vec4 baseColor)", assignFragData);
       main.addline("  assignFragData(baseColor);");
@@ -720,7 +720,7 @@ export class FragmentShaderBuilder extends ShaderBuilder {
   }
 
   private buildPrelude(isLit: boolean): SourceBuilder {
-    Debug.assert(() => this.maxClippingPlanes === 0 || this.get(FragmentShaderComponent.ApplyClipping) !== undefined);
+    assert(this.maxClippingPlanes === 0 || this.get(FragmentShaderComponent.ApplyClipping) !== undefined);
     return this.buildPreludeCommon(true, isLit, this.maxClippingPlanes);
   }
 }
@@ -738,13 +738,13 @@ export class ClippingShaders {
     const maskBuilder = prog.clone();
     addClipping(maskBuilder, ClipDef.forMask());
     this.maskShader = maskBuilder.buildProgram(context);
-    Debug.assert(() => this.maskShader !== undefined);
+    assert(this.maskShader !== undefined);
   }
 
   private static roundUpToNearesMultipleOf(value: number, factor: number): number {
     const maxPlanes = Math.ceil(value / factor) * factor;
-    Debug.assert(() => maxPlanes > 0);
-    Debug.assert(() => maxPlanes <= value);
+    assert(maxPlanes > 0);
+    assert(maxPlanes <= value);
     return maxPlanes;
   }
 
@@ -765,7 +765,7 @@ export class ClippingShaders {
     if (clipDef.type === ClippingType.Mask) {
       return this.maskShader;
     } else if (clipDef.type === ClippingType.Planes) {
-      Debug.assert(() => clipDef.numberOfPlanes > 0);
+      assert(clipDef.numberOfPlanes > 0);
       const numClips = ClippingShaders.roundNumPlanes(clipDef.numberOfPlanes);
       for (const shader of this.shaders)
         if (shader.maxClippingPlanes === numClips)
@@ -776,7 +776,7 @@ export class ClippingShaders {
       this.shaders.push(newProgram);
       return newProgram;
     } else {
-      Debug.assert(() => false);
+      assert(false);
       return undefined;
     }
   }
@@ -847,7 +847,7 @@ export class ProgramBuilder {
   /** Assembles the vertex and fragment shader code and returns a ready-to-compile shader program */
   public buildProgram(gl: WebGLRenderingContext): ShaderProgram {
     if (this.vert.exceedsMaxVaryingVectors())
-      Debug.assert(() => false, "GL_MAX_VARYING_VECTORS exceeded");
+      assert(false, "GL_MAX_VARYING_VECTORS exceeded");
 
     const prog = new ShaderProgram(gl, this.vert.buildSource(), this.frag.buildSource(), this.vert.headerComment, this.frag.maxClippingPlanes);
     this.vert.addBindings(prog);

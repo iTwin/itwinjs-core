@@ -5,7 +5,7 @@
 /** @module WebGL */
 
 import { Transform, Vector3d, Point3d, Matrix4d, Point2d, XAndY } from "@bentley/geometry-core";
-import { BeTimePoint, Id64String, Id64, StopWatch, dispose, disposeArray } from "@bentley/bentleyjs-core";
+import { assert, BeTimePoint, Id64String, Id64, StopWatch, dispose, disposeArray } from "@bentley/bentleyjs-core";
 import { RenderTarget, RenderSystem, Decorations, GraphicList, RenderPlan, ClippingType, CanvasDecoration, Pixel, AnimationBranchStates } from "../System";
 import { ViewFlags, Frustum, Hilite, ColorDef, Npc, RenderMode, ImageLight, ImageBuffer, ImageBufferFormat, AnalysisStyle, RenderTexture, AmbientOcclusion } from "@bentley/imodeljs-common";
 import { FeatureSymbology } from "../FeatureSymbology";
@@ -29,7 +29,6 @@ import { SingleTexturedViewportQuadGeometry } from "./CachedGeometry";
 import { ShaderLights } from "./Lighting";
 import { ClipDef } from "./TechniqueFlags";
 import { ClipMaskVolume, ClipPlanesVolume } from "./ClipVolume";
-import { Debug } from "./Diagnostics";
 
 export const enum FrustumUniformType {
   TwoDee,
@@ -305,8 +304,8 @@ export abstract class Target extends RenderTarget {
   public get hasClipMask(): boolean { return undefined !== this.clipMask; }
   public get clipMask(): TextureHandle | undefined { return this._clipMask; }
   public set clipMask(mask: TextureHandle | undefined) {
-    Debug.assert(() => (mask === undefined) === this.hasClipMask);
-    Debug.assert(() => this.is2d);
+    assert((mask === undefined) === this.hasClipMask);
+    assert(this.is2d);
     this._clipMask = mask;
   }
 
@@ -334,7 +333,7 @@ export abstract class Target extends RenderTarget {
     }
   }
   public pushState(state: BranchState) {
-    Debug.assert(() => undefined === state.clipVolume);
+    assert(undefined === state.clipVolume);
     this._stack.pushState(state);
   }
   public popBranch(): void {
@@ -368,13 +367,13 @@ export abstract class Target extends RenderTarget {
   }
 
   public addBatch(batch: Batch) {
-    Debug.assert(() => this._batches.indexOf(batch) < 0);
+    assert(this._batches.indexOf(batch) < 0);
     this._batches.push(batch);
   }
 
   public onBatchDisposed(batch: Batch) {
     const index = this._batches.indexOf(batch);
-    Debug.assert(() => index > -1);
+    assert(index > -1);
     this._batches.splice(index, 1);
   }
 
@@ -518,7 +517,7 @@ export abstract class Target extends RenderTarget {
     }
 
     if (!this.assignDC()) {
-      Debug.assert(() => false);
+      assert(false);
       return;
     }
 
@@ -565,7 +564,7 @@ export abstract class Target extends RenderTarget {
         // In solid fill, if the edge color is not overridden, the edges do not use the element's line color
         if (undefined !== visEdgeOvrs && !visEdgeOvrs.ovrColor) {
           // ###TODO? Probably supposed to be contrast with fill and/or background color...
-          Debug.assert(() => undefined !== hidEdgeOvrs);
+          assert(undefined !== hidEdgeOvrs);
           visEdgeOvrs = visEdgeOvrs.overrideColor(ColorDef.white);
           hidEdgeOvrs = hidEdgeOvrs!.overrideColor(ColorDef.white);
         }
@@ -575,7 +574,7 @@ export abstract class Target extends RenderTarget {
         // In solid fill and hidden line mode, visible edges always rendered and edge overrides always apply
         vf.visibleEdges = true;
 
-        Debug.assert(() => undefined !== plan.hline); // these render modes only supported in 3d, in which case hline always initialized
+        assert(undefined !== plan.hline); // these render modes only supported in 3d, in which case hline always initialized
         if (undefined !== plan.hline) {
           // The threshold in HiddenLineParams ranges from 0.0 (hide anything that's not 100% opaque)
           // to 1.0 (don't hide anything regardless of transparency). Convert it to an alpha value.
@@ -614,14 +613,14 @@ export abstract class Target extends RenderTarget {
   }
 
   public drawFrame(sceneMilSecElapsed?: number): void {
-    Debug.assert(() => System.instance.frameBufferStack.isEmpty);
+    assert(System.instance.frameBufferStack.isEmpty);
     if (undefined === this._scene) {
       return;
     }
 
     this.paintScene(sceneMilSecElapsed);
     this.drawOverlayDecorations();
-    Debug.assert(() => System.instance.frameBufferStack.isEmpty);
+    assert(System.instance.frameBufferStack.isEmpty);
   }
 
   protected drawOverlayDecorations(): void { }
@@ -688,7 +687,7 @@ export abstract class Target extends RenderTarget {
     return undefined !== ovrs && undefined !== ovrs.lineCode ? ovrs.lineCode : baseCode;
   }
   public get edgeColor(): ColorInfo {
-    Debug.assert(() => this.isEdgeColorOverridden);
+    assert(this.isEdgeColorOverridden);
     return ColorInfo.createUniform(this._visibleEdgeOverrides.color!);
   }
 
@@ -811,7 +810,7 @@ export abstract class Target extends RenderTarget {
 
   private getRenderState(pass: RenderPass): RenderState {
     // the other passes are handled by SceneCompositor
-    Debug.assert(() => RenderPass.ViewOverlay === pass || RenderPass.WorldOverlay === pass);
+    assert(RenderPass.ViewOverlay === pass || RenderPass.WorldOverlay === pass);
     return this._overlayRenderState;
   }
 
@@ -820,7 +819,7 @@ export abstract class Target extends RenderTarget {
       this._dcAssigned = this._assignDC();
     }
 
-    Debug.assert(() => this._dcAssigned);
+    assert(this._dcAssigned);
     return this._dcAssigned;
   }
 
@@ -941,7 +940,7 @@ export abstract class Target extends RenderTarget {
   }
 
   protected readImagePixels(out: Uint8Array, x: number, y: number, w: number, h: number): boolean {
-    Debug.assert(() => this._fbo !== undefined);
+    assert(this._fbo !== undefined);
     if (this._fbo === undefined)
       return false;
 
@@ -1070,15 +1069,15 @@ export class OnScreenTarget extends Target {
   public set animationFraction(fraction: number) { this._animationFraction = fraction; }
 
   public get viewRect(): ViewRect {
-    Debug.assert(() => 0 < this.renderRect.width && 0 < this.renderRect.height, "Zero-size view rect");
-    Debug.assert(() => Math.floor(this.renderRect.width) === this.renderRect.width && Math.floor(this.renderRect.height) === this.renderRect.height, "fractional view rect dimensions");
+    assert(0 < this.renderRect.width && 0 < this.renderRect.height, "Zero-size view rect");
+    assert(Math.floor(this.renderRect.width) === this.renderRect.width && Math.floor(this.renderRect.height) === this.renderRect.height, "fractional view rect dimensions");
     return this.renderRect;
   }
 
-  public setViewRect(_rect: ViewRect, _temporary: boolean): void { Debug.assert(() => false); }
+  public setViewRect(_rect: ViewRect, _temporary: boolean): void { assert(false); }
 
   protected _assignDC(): boolean {
-    Debug.assert(() => undefined === this._fbo);
+    assert(undefined === this._fbo);
 
     const rect = this.viewRect; // updates the render rect to be the client width and height
     const color = TextureHandle.createForAttachment(rect.width, rect.height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
@@ -1092,7 +1091,7 @@ export class OnScreenTarget extends Target {
     }
 
     const tx = this._fbo.getColor(0);
-    Debug.assert(() => undefined !== tx.getHandle());
+    assert(undefined !== tx.getHandle());
     this._blitGeom = SingleTexturedViewportQuadGeometry.createGeometry(tx.getHandle()!, TechniqueId.CopyColorNoAlpha);
     return undefined !== this._blitGeom;
   }
@@ -1109,7 +1108,7 @@ export class OnScreenTarget extends Target {
     gl.clear(gl.COLOR_BUFFER_BIT);
 
     const context = this._canvas.getContext("2d");
-    Debug.assert(() => null !== context);
+    assert(null !== context);
     context!.drawImage(canvas, 0, 0);
   }
 
@@ -1128,7 +1127,7 @@ export class OnScreenTarget extends Target {
   }
 
   protected _beginPaint(): void {
-    Debug.assert(() => undefined !== this._fbo);
+    assert(undefined !== this._fbo);
 
     // Render to our framebuffer
     const system = System.instance;
@@ -1142,8 +1141,8 @@ export class OnScreenTarget extends Target {
     if (system.canvas.height !== viewRect.height)
       system.canvas.height = viewRect.height;
 
-    Debug.assert(() => system.context.drawingBufferWidth === viewRect.width, "offscreen context dimensions don't match onscreen");
-    Debug.assert(() => system.context.drawingBufferHeight === viewRect.height, "offscreen context dimensions don't match onscreen");
+    assert(system.context.drawingBufferWidth === viewRect.width, "offscreen context dimensions don't match onscreen");
+    assert(system.context.drawingBufferHeight === viewRect.height, "offscreen context dimensions don't match onscreen");
   }
 
   private static _progParams?: ShaderProgramParams;
@@ -1161,8 +1160,8 @@ export class OnScreenTarget extends Target {
 
   protected _endPaint(): void {
     const onscreenContext = this._canvas.getContext("2d");
-    Debug.assert(() => null !== onscreenContext);
-    Debug.assert(() => undefined !== this._blitGeom);
+    assert(null !== onscreenContext);
+    assert(undefined !== this._blitGeom);
     if (undefined === this._blitGeom || null === onscreenContext) {
       return;
     }
@@ -1227,7 +1226,7 @@ export class OffScreenTarget extends Target {
 
   public get viewRect(): ViewRect { return this.renderRect; }
 
-  public onResized(): void { Debug.assert(() => false); } // offscreen viewport's dimensions are set once, in constructor.
+  public onResized(): void { assert(false); } // offscreen viewport's dimensions are set once, in constructor.
   public updateViewRect(): boolean { return false; } // offscreen target does not dynamically resize the view rect
 
   public setViewRect(rect: ViewRect, temporary: boolean): void {
@@ -1255,12 +1254,12 @@ export class OffScreenTarget extends Target {
     if (color === undefined)
       return false;
     this._fbo = FrameBuffer.create([color]);
-    Debug.assert(() => this._fbo !== undefined);
+    assert(this._fbo !== undefined);
     return this._fbo !== undefined;
   }
 
   protected _beginPaint(): void {
-    Debug.assert(() => this._fbo !== undefined);
+    assert(this._fbo !== undefined);
     System.instance.frameBufferStack.push(this._fbo!, true);
   }
 

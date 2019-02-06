@@ -11,7 +11,7 @@ import { LUTGeometry } from "../CachedGeometry";
 import { ShaderFlags } from "../ShaderProgram";
 import { System, RenderType } from "../System";
 import { SurfaceGeometry } from "../Surface";
-import { Debug } from "../Diagnostics";
+import { assert } from "@bentley/bentleyjs-core";
 
 const extractShaderBit = `
   float extractShaderBit(float flag) { return extractNthBit(floor(u_shaderFlags + 0.5), flag); }
@@ -41,7 +41,7 @@ export function addViewMatrix(vert: ShaderBuilder): void {
 }
 
 function setShaderFlags(uniform: UniformHandle, params: DrawParams) {
-  Debug.assert(() => params.geometry instanceof LUTGeometry);
+  assert(params.geometry instanceof LUTGeometry);
   const geom = params.geometry as LUTGeometry;
   let flags = params.target.currentShaderFlags;
 

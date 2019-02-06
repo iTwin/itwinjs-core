@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { using, IDisposable, dispose } from "@bentley/bentleyjs-core";
+import { assert, using, IDisposable, dispose } from "@bentley/bentleyjs-core";
 import { ShaderProgram, ShaderProgramExecutor } from "./ShaderProgram";
 import { TechniqueId, computeCompositeTechniqueId } from "./TechniqueId";
 import { TechniqueFlags, FeatureMode, ClipDef } from "./TechniqueFlags";
@@ -34,7 +34,6 @@ import { createSkyBoxProgram } from "./glsl/SkyBox";
 import { createSkySphereProgram } from "./glsl/SkySphere";
 import { createAmbientOcclusionProgram } from "./glsl/AmbientOcclusion";
 import { createBlurProgram } from "./glsl/Blur";
-import { Debug } from "./Diagnostics";
 
 // Defines a rendering technique implemented using one or more shader programs.
 export interface Technique extends IDisposable {
@@ -103,18 +102,18 @@ export abstract class VariedTechnique implements Technique {
     builder.setDebugDescription(descr);
 
     const index = this.getShaderIndex(flags);
-    Debug.assert(() => this._basicPrograms[index] === undefined);
+    assert(this._basicPrograms[index] === undefined);
     this._basicPrograms[index] = builder.buildProgram(gl);
-    Debug.assert(() => this._basicPrograms[index] !== undefined);
+    assert(this._basicPrograms[index] !== undefined);
 
-    Debug.assert(() => this._clippingPrograms[index] === undefined);
+    assert(this._clippingPrograms[index] === undefined);
     this._clippingPrograms[index] = new ClippingShaders(builder, gl);
-    Debug.assert(() => this._clippingPrograms[index] !== undefined);
+    assert(this._clippingPrograms[index] !== undefined);
   }
 
   protected addProgram(flags: TechniqueFlags, program: ShaderProgram): void {
     const index = this.getShaderIndex(flags);
-    Debug.assert(() => undefined === this._basicPrograms[index], "program already exists");
+    assert(undefined === this._basicPrograms[index], "program already exists");
     this._basicPrograms[index] = program;
   }
 
@@ -146,9 +145,9 @@ export abstract class VariedTechnique implements Technique {
   }
 
   private getShaderIndex(flags: TechniqueFlags) {
-    Debug.assert(() => !flags.isHilite || (!flags.isTranslucent && flags.hasFeatures), "invalid technique flags");
+    assert(!flags.isHilite || (!flags.isTranslucent && flags.hasFeatures), "invalid technique flags");
     const index = this.computeShaderIndex(flags);
-    Debug.assert(() => index < this._basicPrograms.length, "shader index out of bounds");
+    assert(index < this._basicPrograms.length, "shader index out of bounds");
     return index;
   }
 
@@ -158,7 +157,7 @@ export abstract class VariedTechnique implements Technique {
 
     if (flags.hasClip) {
       const entry = this._clippingPrograms[index];
-      Debug.assert(() => undefined !== entry);
+      assert(undefined !== entry);
       program = entry.getProgram(flags.clip);
     }
 
@@ -201,7 +200,7 @@ class SurfaceTechnique extends VariedTechnique {
 
   public computeShaderIndex(flags: TechniqueFlags): number {
     if (flags.isHilite) {
-      Debug.assert(() => flags.hasFeatures);
+      assert(flags.hasFeatures);
       return SurfaceTechnique._kHilite;
     }
 
@@ -251,7 +250,7 @@ class PolylineTechnique extends VariedTechnique {
 
   public computeShaderIndex(flags: TechniqueFlags): number {
     if (flags.isHilite) {
-      Debug.assert(() => flags.hasFeatures);
+      assert(flags.hasFeatures);
       return PolylineTechnique._kHilite;
     }
 
@@ -347,7 +346,7 @@ class PointStringTechnique extends VariedTechnique {
 
   public computeShaderIndex(flags: TechniqueFlags): number {
     if (flags.isHilite) {
-      Debug.assert(() => flags.hasFeatures);
+      assert(flags.hasFeatures);
       return PointStringTechnique._kHilite;
     }
 
@@ -403,7 +402,7 @@ export class Techniques implements IDisposable {
   }
 
   public getTechnique(id: TechniqueId): Technique {
-    Debug.assert(() => id < this._list.length, "technique index out of bounds");
+    assert(id < this._list.length, "technique index out of bounds");
     return this._list[id];
   }
 
@@ -423,7 +422,7 @@ export class Techniques implements IDisposable {
 
   /** Execute each command in the list */
   public execute(target: Target, commands: DrawCommands, renderPass: RenderPass) {
-    Debug.assert(() => RenderPass.None !== renderPass, "invalid render pass");
+    assert(RenderPass.None !== renderPass, "invalid render pass");
 
     const flags = this._scratchTechniqueFlags;
     using(new ShaderProgramExecutor(target, renderPass), (executor: ShaderProgramExecutor) => {
@@ -436,7 +435,7 @@ export class Techniques implements IDisposable {
         const techniqueId = command.getTechniqueId(target);
         if (TechniqueId.Invalid !== techniqueId) {
           // A primitive command.
-          Debug.assert(() => command.isPrimitiveCommand, "expected primitive command");
+          assert(command.isPrimitiveCommand, "expected primitive command");
           flags.init(target, renderPass, command.hasAnimation);
           const tech = this.getTechnique(techniqueId);
           const program = tech.getShader(flags);
@@ -445,7 +444,7 @@ export class Techniques implements IDisposable {
           }
         } else {
           // A branch command.
-          Debug.assert(() => !command.isPrimitiveCommand, "expected non-primitive command");
+          assert(!command.isPrimitiveCommand, "expected non-primitive command");
           command.execute(executor);
         }
 
@@ -456,7 +455,7 @@ export class Techniques implements IDisposable {
 
   /** Execute the commands for a single given classification primitive */
   public executeForIndexedClassifier(target: Target, cmdsByIndex: DrawCommands, renderPass: RenderPass, index: number, techId?: TechniqueId) {
-    Debug.assert(() => RenderPass.None !== renderPass, "invalid render pass");
+    assert(RenderPass.None !== renderPass, "invalid render pass");
     // There should be 3 commands per classifier in the cmdsByIndex array.
     index *= 3;
     if (index < 0 || index > cmdsByIndex.length - 3)
@@ -472,17 +471,17 @@ export class Techniques implements IDisposable {
       // First execute the push.
       pushCmd.preExecute(executor);
       let techniqueId = pushCmd.getTechniqueId(target);
-      Debug.assert(() => TechniqueId.Invalid === techniqueId);
-      Debug.assert(() => !pushCmd.isPrimitiveCommand, "expected non-primitive command");
+      assert(TechniqueId.Invalid === techniqueId);
+      assert(!pushCmd.isPrimitiveCommand, "expected non-primitive command");
       pushCmd.execute(executor);
       pushCmd.postExecute(executor);
 
       // Execute the command for the given classification primitive.
       primCmd.preExecute(executor);
       techniqueId = primCmd.getTechniqueId(target);
-      Debug.assert(() => TechniqueId.Invalid !== techniqueId);
+      assert(TechniqueId.Invalid !== techniqueId);
       // A primitive command.
-      Debug.assert(() => primCmd.isPrimitiveCommand, "expected primitive command");
+      assert(primCmd.isPrimitiveCommand, "expected primitive command");
       flags.init(target, renderPass, primCmd.hasAnimation);
       const tech = this.getTechnique(undefined !== techId ? techId : techniqueId);
       const program = tech.getShader(flags);
@@ -494,8 +493,8 @@ export class Techniques implements IDisposable {
       // Execute the batch pop.
       popCmd.preExecute(executor);
       techniqueId = popCmd.getTechniqueId(target);
-      Debug.assert(() => TechniqueId.Invalid === techniqueId);
-      Debug.assert(() => !popCmd.isPrimitiveCommand, "expected non-primitive command");
+      assert(TechniqueId.Invalid === techniqueId);
+      assert(!popCmd.isPrimitiveCommand, "expected non-primitive command");
       popCmd.execute(executor);
       popCmd.postExecute(executor);
     });
@@ -506,7 +505,7 @@ export class Techniques implements IDisposable {
     const tech = this.getTechnique(params.geometry.getTechniqueId(params.target));
     const program = tech.getShader(TechniqueFlags.defaults);
     using(new ShaderProgramExecutor(params.target, params.renderPass, program), (executor: ShaderProgramExecutor) => {
-      Debug.assert(() => executor.isValid);
+      assert(executor.isValid);
       if (executor.isValid) {
         executor.draw(params);
       }
@@ -559,6 +558,6 @@ export class Techniques implements IDisposable {
       this._list[techId] = new SingularTechnique(createCompositeProgram(compositeFlags, gl));
     }
 
-    Debug.assert(() => this._list.length === TechniqueId.NumBuiltIn, "unexpected number of built-in techniques");
+    assert(this._list.length === TechniqueId.NumBuiltIn, "unexpected number of built-in techniques");
   }
 }

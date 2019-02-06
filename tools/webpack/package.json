@@ -12,22 +12,23 @@
     "url": "http://www.bentley.com"
   },
   "scripts": {
-    "build": "",
-    "clean": "",
+    "build": "tsc 1>&2 && cpx ./lib/buildIModelJsModule.js ./bin && node ../build/scripts/ignoreargs.js 1>&2",
+    "clean": "rimraf lib",
     "docs": "",
     "lint": "",
     "test": "",
     "cover": ""
   },
   "bin": {
-    "bentley-webpack-tools": "./bin/bentley-webpack-tools.js"
+    "bentley-webpack-tools": "./bin/bentley-webpack-tools.js",
+    "buildIModelJsModule": "./bin/buildIModelJsModule.js"
   },
   "dependencies": {
     "@bentley/config-loader": "0.189.0-dev.20",
     "@types/chai": "^4.1.4",
     "@types/enzyme": "^3.1.12",
     "@types/mocha": "^5.2.5",
-    "@types/node": "10.10.3",
+    "@types/node": "10.12.18",
     "@types/sinon": "^5.0.5",
     "@types/webdriverio": "^4.8.6",
     "app-root-path": "^2.0.1",
@@ -107,11 +108,15 @@
     "typescript": ">=2.9.1"
   },
   "devDependencies": {
+    "@types/glob": "^5.0.35",
     "@types/react": "16.7.22",
     "@types/react-dom": "16.0.11",
+    "@types/yargs": "^12.0.5",
+    "cpx": "^1.5.0",
     "react": "^16.4.2",
     "react-dom": "^16.4.2",
     "react-test-renderer": "^16.4.2",
+    "rimraf": "^2.6.2",
     "typescript": "~3.2.2"
   },
   "types": "./index.d.ts"

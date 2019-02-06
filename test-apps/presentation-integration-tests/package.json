@@ -9,7 +9,7 @@
   },
   "private": true,
   "scripts": {
-    "build": "tsc 1>&2 && npm run extract",
+    "build": "tsc 1>&2 && npm run extract && node ./node_modules/@bentley/build-tools/scripts/ignoreargs.js 1>&2",
     "clean": "rimraf lib",
     "docs": "",
     "extract": "node ./node_modules/@bentley/build-tools/scripts/extract.js --fileExt=ts --extractFrom=./src --recursive --out=../../generated-docs/extract",

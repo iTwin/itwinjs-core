@@ -291,9 +291,6 @@ class FrontstageToolWidget extends React.Component {
   private executeMeasureByPoints() {
     // first load the plugin
     IModelApp.tools.run("Plugin", ["MeasurePoints.js"]);
-    // then wait one second and run the newly installed Plugin tool.
-    BeDuration.wait(1000).then(() => { IModelApp.tools.run("Measure.Points"); })
-      .catch();
   }
 
   private _horizontalToolbar =

@@ -5,13 +5,22 @@
   "license": "MIT",
   "main": "lib/markup.js",
   "scripts": {
-    "build": "tsc 1>&2 && npm run webpack:main",
+    "build": "node ./node_modules/@bentley/webpack-tools/bin/buildIModelJsModule.js",
     "clean": "rimraf lib package-deps.json",
     "docs": "",
     "lint": "tslint --project . 1>&2",
     "test": "",
-    "cover": "",
-    "webpack:main": "webpack --config ./node_modules/@bentley/webpack-tools/modules/webpackModule.config.js --env.outdir=./lib/webresources --env.entry=./lib/Markup.js --env.bundlename=MarkupPlugin --env.isplugin"
+    "cover": ""
+  },
+  "iModelJs": {
+    "buildModule": {
+      "type": "plugin",
+      "webpack": {
+        "dest": "./lib/webresources",
+        "entry": "./lib/Markup.js",
+        "bundleName": "MarkupPlugin"
+      }
+    }
   },
   "repository": {
     "type": "git",
@@ -48,21 +57,14 @@
     "@bentley/bentleyjs-core": "0.189.0-dev.20",
     "@bentley/build-tools": "0.189.0-dev.20",
     "@bentley/webpack-tools": "0.189.0-dev.20",
-    "@types/node": "10.10.3",
+    "@types/node": "10.12.18",
     "chai": "^4.1.2",
     "mocha": "^5.2.0",
     "rimraf": "^2.6.2",
-    "sass-loader": "^7.1.0",
-    "source-map-loader": "^0.2.3",
-    "source-map-support": "^0.5.6",
-    "style-loader": "^0.21.0",
-    "svg-sprite-loader": "^3.8.0",
     "ts-node": "^7.0.1",
     "tslint": "^5.11.0",
     "typescript": "~3.2.2",
-    "typedoc": "^0.11.1",
-    "uglifyjs-webpack-plugin": "^1.2.5",
-    "webpack": "^4.20.2"
+    "typedoc": "^0.11.1"
   },
   "//optionalDependencies": [
     "NOTE: Rush (as of 4.2.5) does not support optionalDependencies!"

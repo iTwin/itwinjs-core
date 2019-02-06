@@ -11,7 +11,7 @@ import { LUTGeometry } from "../CachedGeometry";
 import { DrawParams } from "../DrawCommand";
 import { octDecodeNormal } from "./Surface";
 import { AnalysisStyle, Gradient } from "@bentley/imodeljs-common";
-import { Debug } from "../Diagnostics";
+import { assert } from "@bentley/bentleyjs-core";
 import { TextureUnit } from "../RenderFlags";
 
 const initialize = `
@@ -187,7 +187,7 @@ export function addAnimation(vert: VertexShaderBuilder, isSurface: boolean): voi
   vert.addUniform("u_animLUT", VariableType.Sampler2D, (prog) => {
     prog.addGraphicUniform("u_animLUT", (uniform, params) => {
       const channels = (params.geometry as LUTGeometry).lut.auxChannels!;
-      Debug.assert(() => undefined !== channels);
+      assert(undefined !== channels);
       channels.texture.bindSampler(uniform, TextureUnit.AuxChannelLUT);
     });
   });
@@ -195,7 +195,7 @@ export function addAnimation(vert: VertexShaderBuilder, isSurface: boolean): voi
   vert.addUniform("u_animLUTParams", VariableType.Vec3, (prog) => {
     prog.addGraphicUniform("u_animLUTParams", (uniform, params) => {
       const geom = params.geometry as LUTGeometry;
-      Debug.assert(() => undefined !== geom && undefined !== geom.lut.auxChannels);
+      assert(undefined !== geom && undefined !== geom.lut.auxChannels);
       const tex = geom.lut.auxChannels!.texture;
       const array = getAnimParams(3);
       array[0] = tex.width;
