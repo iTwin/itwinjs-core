@@ -135,7 +135,7 @@ export class SelectionTool extends PrimitiveTool {
 
   private static scopeMessage(str: string) { return IModelApp.i18n.translate("CoreTools:tools.ElementSet.SelectionScope." + str); }
   private static _scopesName = "selectionScope";
-  private static _getScopesDescription = (): PropertyDescription => {
+  private static _getScopesDescription(): PropertyDescription {
     return {
       name: SelectionTool._scopesName,
       displayLabel: IModelApp.i18n.translate("CoreTools:tools.ElementSet.Prompts.Scope"),

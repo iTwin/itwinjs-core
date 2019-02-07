@@ -1702,7 +1702,7 @@ export class FitViewTool extends ViewTool {
 
   public onPostInstall() {
     super.onPostInstall();
-    if (!this.oneShot)
+    if (undefined === this.viewport || !this.oneShot)
       ViewTool.showPrompt("Fit.Prompts.FirstPoint");
 
     if (this.viewport)

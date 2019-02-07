@@ -115,6 +115,10 @@
       "allowedCategories": [ "common" ]
     },
     {
+      "name": "@svgdotjs/svg.js",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "app-root-path",
       "allowedCategories": [ "tools" ]
     },

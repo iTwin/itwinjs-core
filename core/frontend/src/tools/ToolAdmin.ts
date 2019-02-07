@@ -1147,8 +1147,14 @@ export class ToolAdmin {
     if (BeModifierKeys.None !== modifierKey)
       return this.onModifierKeyTransition(wentDown, modifierKey, keyEvent);
 
-    if (wentDown && keyEvent.ctrlKey && "z" === keyEvent.key.toLowerCase())
-      return this.doUndoOperation();
+    if (wentDown && keyEvent.ctrlKey) {
+      switch (keyEvent.key) {
+        case "z":
+          return this.doUndoOperation();
+        case "y":
+          return this.doRedoOperation();
+      }
+    }
 
     return activeTool.onKeyTransition(wentDown, keyEvent);
   }
@@ -1159,6 +1165,18 @@ export class ToolAdmin {
     if (activeTool instanceof PrimitiveTool) {
       // ### TODO Add method so UI can be showing string to inform user that undo of last data point is available...
       if (await activeTool.undoPreviousStep())
+        return true;
+    }
+    // ### TODO Request TxnManager undo and restart this.primitiveTool...
+    return false;
+  }
+
+  /** Called to redo previous data button for primitive tools or undo last write operation. */
+  public async doRedoOperation(): Promise<boolean> {
+    const activeTool = this.activeTool;
+    if (activeTool instanceof PrimitiveTool) {
+      // ### TODO Add method so UI can be showing string to inform user that undo of last data point is available...
+      if (await activeTool.redoPreviousStep())
         return true;
     }
     // ### TODO Request TxnManager undo and restart this.primitiveTool...
