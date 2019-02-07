@@ -661,10 +661,10 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
     // Query categories and add them to state
     const view: ViewState = vp.view.clone();
     const ecsql = "SELECT ECInstanceId as id, CodeValue as code, UserLabel as label FROM " + (view.is3d() ? "BisCore.SpatialCategory" : "BisCore.DrawingCategory");
-    let rows = [];
+    let rows: IterableIterator<any> = ([])[Symbol.iterator]();
 
     if (this.props.iModelConnection)
-      rows = await this.props.iModelConnection.executeQuery(ecsql);
+      rows = await this.props.iModelConnection.queryRows(ecsql);
 
     const categories: ListItem[] = [];
     for (const row of rows) {

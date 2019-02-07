@@ -42,6 +42,49 @@ describe("ECSqlStatement", () => {
       });
   });
 
+  it("Paging Resultset", async () => {
+    await using(ECDbTestHelper.createECDb(_outDir, "pagingresultset.ecdb",
+      `<ECSchema schemaName="Test" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+        <ECEntityClass typeName="Foo" modifier="Sealed">
+          <ECProperty propertyName="n" typeName="int"/>
+        </ECEntityClass>
+      </ECSchema>`), async (ecdb: ECDb) => {
+        assert.isTrue(ecdb.isOpen);
+        const ROW_COUNT = 27;
+        // insert test rows
+        for (let i = 1; i <= ROW_COUNT; i++) {
+          const r: ECSqlInsertResult = await ecdb.withPreparedStatement(`insert into ts.Foo(n) values(${i})`, async (stmt: ECSqlStatement) => {
+            return stmt.stepForInsertAsync();
+          });
+          assert.equal(r.status, DbResult.BE_SQLITE_DONE);
+        }
+        for (let i = 1; i < ROW_COUNT; i++) {
+          const rowCount = await ecdb.queryRowCount("SELECT ECInstanceId, ECClassId, n FROM ts.Foo WHERE n <= ?", [i]);
+          assert.equal(rowCount, i);
+        }
+
+        // query page by page
+        const PAGE_SIZE = 5;
+        const QUERY = "SELECT n FROM ts.Foo";
+        const EXPECTED_ROW_COUNT = [5, 5, 5, 5, 5, 2, 0];
+        const ready = [];
+        for (let i = 0; i < EXPECTED_ROW_COUNT.length; i++) {
+          ready.push(ecdb.queryRows(QUERY, undefined, { start: i, size: PAGE_SIZE }));
+        }
+        // verify if each page has right count of rows
+        const results = await Promise.all(ready);
+        for (let i = 0; i < EXPECTED_ROW_COUNT.length; i++) {
+          assert.equal(Array.from(results[i]).length, EXPECTED_ROW_COUNT[i]);
+        }
+
+        let rowNo = 1;
+        for await (const row of ecdb.query("SELECT n FROM ts.Foo", undefined, { size: 5 })) {
+          assert.equal(row.n, rowNo);
+          rowNo = rowNo + 1;
+        }
+      });
+  });
+
   it("Bind Ids", () => {
     using(ECDbTestHelper.createECDb(_outDir, "bindids.ecdb"), (ecdb: ECDb) => {
 

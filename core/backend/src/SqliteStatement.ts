@@ -451,6 +451,19 @@ export class SqliteStatementCache {
       }
     }
   }
+  public replace(str: string, stmt: SqliteStatement) {
+    if (stmt.isShared) {
+      throw new Error("expecting a unshared statement");
+    }
+    const existingCS = this.find(str);
+    if (existingCS) {
+      existingCS.statement.setIsShared(false);
+      this._statements.delete(str);
+    }
+    const newCS = new CachedSqliteStatement(stmt);
+    newCS.statement.setIsShared(true);
+    this._statements.set(str, newCS);
+  }
 
   public removeUnusedStatementsIfNecessary(): void {
     if (this.getCount() <= this.maxCount)

@@ -89,12 +89,12 @@ export class ContentBuilder {
   }
 
   private async getECClassNames(): Promise<Array<{ schemaName: string, className: string }>> {
-    return this._iModel.executeQuery(`
+    return Array.from(await this._iModel.queryRows(`
       SELECT s.Name schemaName, c.Name className FROM meta.ECClassDef c
       INNER JOIN meta.ECSchemaDef s ON c.Schema.id = s.ECInstanceId
       WHERE c.Modifier <> 1 AND c.Type = 0
       ORDER BY s.Name, c.Name
-    `);
+    `));
   }
 
   private async createContentForClasses(rulesetOrId: Ruleset | string, limitInstances: boolean, displayType: string) {
@@ -104,10 +104,10 @@ export class ContentBuilder {
 
     for (const nameEntry of classNameEntries) {
       // try {
-      const instanceIds = await this._iModel.executeQuery(`
+      const instanceIds = Array.from(await this._iModel.queryRows(`
           SELECT ECInstanceId FROM ONLY "${nameEntry.schemaName}"."${nameEntry.className}"
           ORDER BY ECInstanceId ${limitInstances ? "LIMIT 1" : ""}
-        `) as Array<{ id: Id64String }>;
+        `)) as Array<{ id: Id64String }>;
 
       if (!instanceIds.length)
         continue;

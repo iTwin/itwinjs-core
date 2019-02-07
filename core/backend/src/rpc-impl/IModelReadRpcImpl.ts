@@ -9,7 +9,7 @@ import { AccessToken } from "@bentley/imodeljs-clients";
 import {
   EntityQueryParams, RpcInterface, RpcManager, IModel, IModelReadRpcInterface, IModelToken,
   ModelProps, ElementProps, SnapRequestProps, SnapResponseProps, EntityMetaData, ViewStateProps, ImageSourceFormat,
-  IModelCoordinatesResponseProps, GeoCoordinatesResponseProps,
+  IModelCoordinatesResponseProps, GeoCoordinatesResponseProps, PageOptions,
 } from "@bentley/imodeljs-common";
 import { IModelDb, OpenParams } from "../IModelDb";
 import { OpenIModelDbMemoizer } from "./OpenIModelDbMemoizer";
@@ -37,12 +37,20 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     return Promise.resolve(true);
   }
 
-  public async executeQuery(iModelToken: IModelToken, sql: string, bindings?: any[] | object): Promise<string[]> {
+  public async queryRows(iModelToken: IModelToken, ecsql: string, options: PageOptions, bindings?: any[] | object): Promise<any[]> {
     const activityContext = ActivityLoggingContext.current; activityContext.enter();
     const iModelDb: IModelDb = IModelDb.find(iModelToken);
-    const rows: any[] = iModelDb.executeQuery(sql, bindings);
-    Logger.logTrace(loggingCategory, "IModelDbRemoting.executeQuery", () => ({ sql, numRows: rows.length }));
+    const rows = Array.from(await iModelDb.queryRows(ecsql, bindings, options));
+    Logger.logTrace(loggingCategory, "IModelDbRemoting.getRows", () => ({ ecsql, numRows: rows.length }));
     return rows;
+  }
+
+  public async queryRowCount(iModelToken: IModelToken, ecsql: string, bindings?: any[] | object): Promise<number> {
+    const activityContext = ActivityLoggingContext.current; activityContext.enter();
+    const iModelDb: IModelDb = IModelDb.find(iModelToken);
+    const rowCount: number = await iModelDb.queryRowCount(ecsql, bindings);
+    Logger.logTrace(loggingCategory, "IModelDbRemoting.getRowCount", () => ({ ecsql, count: rowCount }));
+    return rowCount;
   }
 
   public async getModelProps(iModelToken: IModelToken, modelIds: Id64Set): Promise<ModelProps[]> {

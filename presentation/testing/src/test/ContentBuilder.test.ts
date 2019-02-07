@@ -122,7 +122,7 @@ function verifyInstanceKey(instanceKey: [string, Set<string>], instances: TestIn
   throw new Error(`Wrong className provided - '${className}'`);
 }
 
-async function executeQuery(query: string, instances: TestInstance[]) {
+async function executeQuery(query: string, instances: TestInstance[]): Promise<any[]> {
   if (query.includes("SELECT s.Name")) {
     return instances as Array<{ schemaName: string, className: string }>; // ids are returned as well, but that shouldn't be a problem
   }
@@ -206,7 +206,7 @@ describe("ContentBuilder", () => {
 
     before(() => {
       imodelMock.reset();
-      imodelMock.setup(async (imodel) => imodel.executeQuery(moq.It.isAny())).returns(async (query) => executeQuery(query, testInstances));
+      imodelMock.setup(async (imodel) => imodel.queryRows(moq.It.isAny())).returns(async (query) => (await executeQuery(query, testInstances))[Symbol.iterator]());
     });
 
     it("returns all required instances with empty records", async () => {
@@ -247,7 +247,7 @@ describe("ContentBuilder", () => {
 
       it("returns all required instances with empty records", async () => {
         imodelMock.reset();
-        imodelMock.setup(async (imodel) => imodel.executeQuery(moq.It.isAny())).returns(async (query) => executeQuery(query, testInstances));
+        imodelMock.setup(async (imodel) => imodel.queryRows(moq.It.isAny())).returns(async (query) => (await executeQuery(query, testInstances))[Symbol.iterator]());
 
         const verificationSpy = sinon.spy();
 
@@ -277,7 +277,7 @@ describe("ContentBuilder", () => {
         }
 
         imodelMock.reset();
-        imodelMock.setup(async (imodel) => imodel.executeQuery(moq.It.isAny())).returns(async (query) => executeQueryAndThrow(query, testInstances));
+        imodelMock.setup(async (imodel) => imodel.queryRows(moq.It.isAny())).returns(async (query) => (executeQueryAndThrow(query, testInstances))[Symbol.iterator]());
 
         const verificationSpy = sinon.spy();
 
@@ -294,7 +294,7 @@ describe("ContentBuilder", () => {
 
       before(() => {
         imodelMock.reset();
-        imodelMock.setup(async (imodel) => imodel.executeQuery(moq.It.isAny())).returns(async (query) => executeQuery(query, testInstances));
+        imodelMock.setup(async (imodel) => imodel.queryRows(moq.It.isAny())).returns(async (query) => (await executeQuery(query, testInstances))[Symbol.iterator]());
       });
 
       it("returns an empty list", async () => {

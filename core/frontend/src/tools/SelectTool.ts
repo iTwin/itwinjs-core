@@ -238,7 +238,10 @@ export class SelectionTool extends PrimitiveTool {
         return false;
       const where = [...assemblyIds].join(",");
       const ecsql = "SELECT ECInstanceId as id, Parent.Id as parentId FROM BisCore.GeometricElement WHERE Parent.Id IN (SELECT Parent.Id as parentId FROM BisCore.GeometricElement WHERE parent.Id != 0 AND ECInstanceId IN (" + where + "))";
-      await this.iModel.executeQuery(ecsql).then((rows: any[]) => { for (const row of rows) { assemblyIds.add(row.parentId as string); assemblyIds.add(row.id as string); } });
+      for (const row of await this.iModel.queryRows(ecsql)) {
+        assemblyIds.add(row.parentId as string);
+        assemblyIds.add(row.id as string);
+      }
       return this.updateSelection(assemblyIds, process);
     }
     return this.updateSelection(elementId, process);

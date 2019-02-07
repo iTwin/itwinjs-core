@@ -26,7 +26,8 @@ export default class PersistenceHelper {
   public static async createPersistentKeysContainer(imodel: IModelConnection, keyset: KeySet): Promise<PersistentKeysContainer> {
     const instanceClassNames = Array.from(keyset.instanceKeys.keys());
     const instanceClassNameBindings = instanceClassNames.map(() => "?").join(",");
-    const modelClassNameObjs = await imodel.executeQuery(`
+    const modelClassNameObjs = [];
+    for await (const modelClassNameObj of imodel.query(`
       SELECT s.Alias || '.' || c.Name AS fullClassName
         FROM [meta].[ECSchemaDef] s
         JOIN [meta].[ECClassDef] c ON c.SchemaId = s.ECInstanceId
@@ -35,7 +36,9 @@ export default class PersistenceHelper {
         JOIN [meta].[ECSchemaDef] ms ON ms.ECInstanceId = mc.SchemaId
        WHERE ms.Alias || '.' || mc.Name = 'bis.Model'
              AND s.Alias || '.' || c.Name IN (${instanceClassNameBindings})
-    `, instanceClassNames);
+    `, instanceClassNames)) {
+      modelClassNameObjs.push(modelClassNameObj);
+    }
     const modelClassNames = new Set(modelClassNameObjs.map((o: any) => (o.fullClassName as string)));
     let modelIds = new Array<Id64String>();
     let elementIds = new Array<Id64String>();

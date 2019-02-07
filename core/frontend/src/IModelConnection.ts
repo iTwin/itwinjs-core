@@ -4,13 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module IModelConnection */
 
-import { ActivityLoggingContext, assert, BeEvent, BentleyStatus, Guid, Id64, Id64Arg, Id64Set, Id64String, Logger, OpenMode, TransientIdSequence } from "@bentley/bentleyjs-core";
+import { ActivityLoggingContext, assert, BeEvent, BentleyStatus, Guid, Id64, Id64Arg, Id64Set, Id64String, Logger, OpenMode, TransientIdSequence, DbResult } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import {
   AxisAlignedBox3d, CodeSpec, ElementProps, EntityQueryParams, FontMap, ImageSourceFormat, IModel, IModelError, IModelNotFoundResponse,
   IModelReadRpcInterface, IModelStatus, IModelTileRpcInterface, IModelToken, IModelUnitTestRpcInterface, IModelVersion, IModelWriteRpcInterface,
   ModelProps, ModelQueryParams, RpcNotFoundResponse, RpcOperation, RpcRequest, RpcRequestEvent, SnapRequestProps, SnapResponseProps,
-  StandaloneIModelRpcInterface, ThumbnailProps, TileTreeProps, ViewDefinitionProps, ViewQueryParams, WipRpcInterface, Cartographic, GeoCoordStatus,
+  StandaloneIModelRpcInterface, ThumbnailProps, TileTreeProps, ViewDefinitionProps, ViewQueryParams, WipRpcInterface, Cartographic, GeoCoordStatus, PageOptions, kPagingDefaultOptions
 } from "@bentley/imodeljs-common";
 import { EntityState } from "./EntityState";
 import { IModelApp } from "./IModelApp";
@@ -262,28 +262,98 @@ export class IModelConnection extends IModel {
     }
   }
 
-  /**
-   * Execute an ECSQL query against the iModel.
+  /** Compute number of rows that would be returned by the ECSQL.
+   *
+   * See also:
+   * - [ECSQL Overview]($docs/learning/backend/ExecutingECSQL)
+   * - [Code Examples]($docs/learning/backend/ECSQLCodeExamples)
+   *
+   * @param ecsql The ECSQL statement to execute
+   * @param bindings The values to bind to the parameters (if the ECSQL has any).
+   * Pass an *array* of values if the parameters are *positional*.
+   * Pass an *object of the values keyed on the parameter name* for *named parameters*.
+   * The values in either the array or object must match the respective types of the parameters.
+   * See "[iModel.js Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" for details.
+   * @returns Return row count.
+   * @throws [IModelError]($common) If the statement is invalid
+   */
+  public async queryRowCount(ecsql: string, bindings?: any[] | object): Promise<number> {
+    Logger.logTrace(loggingCategory, "IModelConnection.queryRowCount", () => ({ iModelId: this.iModelToken.iModelId, ecsql, bindings }));
+    return IModelReadRpcInterface.getClient().queryRowCount(this.iModelToken, ecsql, bindings);
+  }
+
+  /** Execute a query agaisnt this ECDb
    * The result of the query is returned as an array of JavaScript objects where every array element represents an
    * [ECSQL row]($docs/learning/ECSQLRowFormat).
    *
    * See also:
-   * - [ECSQL Overview]($docs/learning/frontend/ExecutingECSQL)
-   * - [Code Examples]($docs/learning/frontend/ECSQLCodeExamples)
+   * - [ECSQL Overview]($docs/learning/backend/ExecutingECSQL)
+   * - [Code Examples]($docs/learning/backend/ECSQLCodeExamples)
    *
-   * @param ecsql The ECSQL to execute
+   * @param ecsql The ECSQL statement to execute
    * @param bindings The values to bind to the parameters (if the ECSQL has any).
-   * The section "[iModel.js Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" describes the
-   * iModel.js types to be used for the different ECSQL parameter types.
    * Pass an *array* of values if the parameters are *positional*.
    * Pass an *object of the values keyed on the parameter name* for *named parameters*.
    * The values in either the array or object must match the respective types of the parameters.
-   * @returns Returns the query result as an array of the resulting rows or an empty array if the query has returned no rows
-   * @throws [IModelError]($common) if the ECSQL is invalid
+   * See "[iModel.js Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" for details.
+   * @param options Provide paging option. This allow set page size and page number from which to grab rows from.
+   * @returns Returns the query result as an array of the resulting rows or an empty array if the query has returned no rows.
+   * See [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned rows.
+   * @throws [IModelError]($common) If the statement is invalid
    */
-  public async executeQuery(ecsql: string, bindings?: any[] | object): Promise<any[]> {
-    Logger.logTrace(loggingCategory, "IModelConnection.executeQuery", () => ({ iModelId: this.iModelToken.iModelId, ecsql, bindings }));
-    return IModelReadRpcInterface.getClient().executeQuery(this.iModelToken, ecsql, bindings);
+  public async queryRows(ecsql: string, bindings?: any[] | object, options?: PageOptions): Promise<IterableIterator<any>> {
+    Logger.logTrace(loggingCategory, "IModelConnection.queryRows", () => ({ iModelId: this.iModelToken.iModelId, ecsql, options, bindings }));
+    return (await IModelReadRpcInterface.getClient().queryRows(this.iModelToken, ecsql, bindings, options))[Symbol.iterator]();
+  }
+
+  /** Execute a pagable query.
+   * The result of the query is async iterator over the rows. The iterator will get next page automatically once rows in current page has been read.
+   * [ECSQL row]($docs/learning/ECSQLRowFormat).
+   *
+   * See also:
+   * - [ECSQL Overview]($docs/learning/backend/ExecutingECSQL)
+   * - [Code Examples]($docs/learning/backend/ECSQLCodeExamples)
+   *
+   * @param ecsql The ECSQL statement to execute
+   * @param bindings The values to bind to the parameters (if the ECSQL has any).
+   * Pass an *array* of values if the parameters are *positional*.
+   * Pass an *object of the values keyed on the parameter name* for *named parameters*.
+   * The values in either the array or object must match the respective types of the parameters.
+   * See "[iModel.js Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" for details.
+   * @param options Provide paging option. Which allow page to start iterating from and also size of the page to use.
+   * @returns Returns the query result as an array of the resulting rows or an empty array if the query has returned no rows.
+   * See [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned rows.
+   * @throws [IModelError]($common) If the statement is invalid
+   */
+  public async * query(ecsql: string, bindings?: any[] | object, options?: PageOptions): AsyncIterableIterator<any> {
+    Logger.logTrace(loggingCategory, "IModelConnection.query", () => ({ iModelId: this.iModelToken.iModelId, ecsql, options, bindings }));
+    if (!options) {
+      options = kPagingDefaultOptions;
+    }
+
+    let pageNo = options.start || kPagingDefaultOptions.start!;
+    const pageSize = options.size || kPagingDefaultOptions.size!;
+
+    // verify if correct options was provided.
+    if (pageNo < 0)
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, "options.start must be positive integer");
+
+    if (pageSize < 0)
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, "options.size must be positive integer starting from 1");
+
+    do {
+      const it = await this.queryRows(ecsql, bindings, { start: pageNo, size: pageSize });
+      let cur = it.next();
+      if (cur.done) {
+        pageNo = -1;
+      } else {
+        do {
+          yield cur.value;
+          cur = it.next();
+        } while (!cur.done);
+        pageNo = pageNo + 1;
+      }
+    } while (pageNo >= 0);
   }
 
   /** Query for a set of element ids that satisfy the supplied query params  */

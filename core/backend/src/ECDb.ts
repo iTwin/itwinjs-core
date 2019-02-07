@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module ECDb */
 
-import { IModelError, IModelStatus } from "@bentley/imodeljs-common";
+import { IModelError, IModelStatus, PageOptions, kPagingDefaultOptions, PagableECSql } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "./IModelJsNative";
 import { ECSqlStatement, ECSqlStatementCache } from "./ECSqlStatement";
 import { SqliteStatement, SqliteStatementCache, CachedSqliteStatement } from "./SqliteStatement";
@@ -12,7 +12,6 @@ import { DbResult, OpenMode, IDisposable, Logger, assert } from "@bentley/bentle
 import { IModelHost } from "./IModelHost";
 
 const loggingCategory = "imodeljs-backend.ECDb";
-
 /** Modes for how to open [ECDb]($backend) files. */
 export enum ECDbOpenMode {
   Readonly,
@@ -22,13 +21,136 @@ export enum ECDbOpenMode {
 }
 
 /** An ECDb file */
-export class ECDb implements IDisposable {
+export class ECDb implements IDisposable, PagableECSql {
   private _nativeDb?: IModelJsNative.ECDb;
   private readonly _statementCache: ECSqlStatementCache = new ECSqlStatementCache();
   private readonly _sqliteStatementCache: SqliteStatementCache = new SqliteStatementCache();
 
   constructor() {
     this._nativeDb = new IModelHost.platform.ECDb();
+  }
+  /** Compute number of rows that would be returned by the ECSQL.
+   *
+   * See also:
+   * - [ECSQL Overview]($docs/learning/backend/ExecutingECSQL)
+   * - [Code Examples]($docs/learning/backend/ECSQLCodeExamples)
+   *
+   * @param ecsql The ECSQL statement to execute
+   * @param bindings The values to bind to the parameters (if the ECSQL has any).
+   * Pass an *array* of values if the parameters are *positional*.
+   * Pass an *object of the values keyed on the parameter name* for *named parameters*.
+   * The values in either the array or object must match the respective types of the parameters.
+   * See "[iModel.js Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" for details.
+   * @returns Return row count.
+   * @throws [IModelError]($common) If the statement is invalid
+   */
+  public async queryRowCount(ecsql: string, bindings?: any[] | object): Promise<number> {
+    return this.withPreparedStatement(`select count(*) from (${ecsql})`, async (stmt: ECSqlStatement) => {
+      if (bindings)
+        stmt.bindValues(bindings);
+      const ret = await stmt.stepAsync();
+      if (ret === DbResult.BE_SQLITE_ROW) {
+        return stmt.getValue(0).getInteger();
+      }
+      throw new IModelError(ret, "Fail to compute row count");
+    });
+  }
+
+  /** Execute a query agaisnt this ECDb
+   * The result of the query is returned as an array of JavaScript objects where every array element represents an
+   * [ECSQL row]($docs/learning/ECSQLRowFormat).
+   *
+   * See also:
+   * - [ECSQL Overview]($docs/learning/backend/ExecutingECSQL)
+   * - [Code Examples]($docs/learning/backend/ECSQLCodeExamples)
+   *
+   * @param ecsql The ECSQL statement to execute
+   * @param bindings The values to bind to the parameters (if the ECSQL has any).
+   * Pass an *array* of values if the parameters are *positional*.
+   * Pass an *object of the values keyed on the parameter name* for *named parameters*.
+   * The values in either the array or object must match the respective types of the parameters.
+   * See "[iModel.js Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" for details.
+   * @param options Provide paging option. This allow set page size and page number from which to grab rows from.
+   * @returns Returns the query result as an array of the resulting rows or an empty array if the query has returned no rows.
+   * See [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned rows.
+   * @throws [IModelError]($common) If the statement is invalid
+   */
+  public async queryRows(ecsql: string, bindings?: any[] | object, options?: PageOptions): Promise<IterableIterator<any>> {
+    if (!options) {
+      options = kPagingDefaultOptions;
+    }
+
+    const pageNo = options.start || 0;
+    const pageSize = options.size || kPagingDefaultOptions;
+
+    // verify if correct options was provided.
+    if (pageNo < 0)
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, "options.start must be positive integer");
+
+    if (pageSize < 0)
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, "options.size must be positive integer starting from 1");
+
+    return this.withPreparedStatement(`select * from (${ecsql}) limit (${pageSize}) offset (${pageNo}*${pageSize})`, async (stmt: ECSqlStatement) => {
+      if (bindings)
+        stmt.bindValues(bindings);
+      const rows: any[] = [];
+
+      let ret = await stmt.stepAsync();
+      while (ret === DbResult.BE_SQLITE_ROW) {
+        rows.push(stmt.getRow());
+        ret = await stmt.stepAsync();
+      }
+      return rows[Symbol.iterator]();
+    });
+  }
+
+  /** Execute a pagable query.
+   * The result of the query is async iterator over the rows. The iterator will get next page automatically once rows in current page has been read.
+   * [ECSQL row]($docs/learning/ECSQLRowFormat).
+   *
+   * See also:
+   * - [ECSQL Overview]($docs/learning/backend/ExecutingECSQL)
+   * - [Code Examples]($docs/learning/backend/ECSQLCodeExamples)
+   *
+   * @param ecsql The ECSQL statement to execute
+   * @param bindings The values to bind to the parameters (if the ECSQL has any).
+   * Pass an *array* of values if the parameters are *positional*.
+   * Pass an *object of the values keyed on the parameter name* for *named parameters*.
+   * The values in either the array or object must match the respective types of the parameters.
+   * See "[iModel.js Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" for details.
+   * @param options Provide paging option. Which allow page to start iterating from and also size of the page to use.
+   * @returns Returns the query result as an array of the resulting rows or an empty array if the query has returned no rows.
+   * See [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned rows.
+   * @throws [IModelError]($common) If the statement is invalid
+   */
+  public async * query(ecsql: string, bindings?: any[] | object, options?: PageOptions): AsyncIterableIterator<any> {
+    if (!options) {
+      options = kPagingDefaultOptions;
+    }
+
+    let pageNo = options.start || kPagingDefaultOptions.start!;
+    const pageSize = options.size || kPagingDefaultOptions.size!;
+
+    // verify if correct options was provided.
+    if (pageNo < 0)
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, "options.start must be positive integer");
+
+    if (pageSize < 0)
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, "options.size must be positive integer starting from 1");
+
+    do {
+      const it = await this.queryRows(ecsql, bindings, { start: pageNo, size: pageSize });
+      let cur = it.next();
+      if (cur.done) {
+        pageNo = -1;
+      } else {
+        do {
+          yield cur.value;
+          cur = it.next();
+        } while (!cur.done);
+        pageNo = pageNo + 1;
+      }
+    } while (pageNo >= 0);
   }
 
   /** Call this function when finished with this ECDb object. This releases the native resources held by the
@@ -126,7 +248,13 @@ export class ECDb implements IDisposable {
    */
   public withPreparedStatement<T>(ecsql: string, cb: (stmt: ECSqlStatement) => T): T {
     const stmt = this.getPreparedStatement(ecsql);
-    const release = () => this._statementCache.release(stmt);
+    const release = () => {
+      if (stmt.isShared)
+        this._statementCache.release(stmt);
+      else
+        stmt.dispose();
+    };
+
     try {
       const val: T = cb(stmt);
       if (val instanceof Promise) {
@@ -156,9 +284,12 @@ export class ECDb implements IDisposable {
     }
 
     this._statementCache.removeUnusedStatementsIfNecessary();
-
     const stmt = this.prepareStatement(ecsql);
-    this._statementCache.add(ecsql, stmt);
+    if (cachedStmt)
+      this._statementCache.replace(ecsql, stmt);
+    else
+      this._statementCache.add(ecsql, stmt);
+
     return stmt;
   }
 
@@ -183,7 +314,12 @@ export class ECDb implements IDisposable {
    */
   public withPreparedSqliteStatement<T>(sql: string, cb: (stmt: SqliteStatement) => T): T {
     const stmt = this.getPreparedSqliteStatement(sql);
-    const release = () => this._sqliteStatementCache.release(stmt);
+    const release = () => {
+      if (stmt.isShared)
+        this._sqliteStatementCache.release(stmt);
+      else
+        stmt.dispose();
+    }
     try {
       const val: T = cb(stmt);
       if (val instanceof Promise) {
@@ -211,11 +347,12 @@ export class ECDb implements IDisposable {
       cachedStmt.useCount++;
       return cachedStmt.statement;
     }
-
     this._sqliteStatementCache.removeUnusedStatementsIfNecessary();
-
     const stmt: SqliteStatement = this.prepareSqliteStatement(sql);
-    this._sqliteStatementCache.add(sql, stmt);
+    if (cachedStmt)
+      this._sqliteStatementCache.replace(sql, stmt);
+    else
+      this._sqliteStatementCache.add(sql, stmt);
     return stmt;
   }
   /** Prepare an SQLite SQL statement.
