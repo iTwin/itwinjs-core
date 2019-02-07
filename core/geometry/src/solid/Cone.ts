@@ -223,4 +223,10 @@ export class Cone extends SolidPrimitive implements UVSurface {
       this._localToWorld.multiplyVectorXYZ(drdv * cosTheta, drdv * sinTheta, 1.0),
       result);
   }
+  /**
+   * @return true if this is a closed volume.
+   */
+  public get isClosedVolume(): boolean {
+    return this.capped;
+  }
 }

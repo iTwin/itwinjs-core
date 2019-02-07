@@ -8,15 +8,19 @@ import { render, cleanup } from "react-testing-library";
 
 import TestUtils from "../../TestUtils";
 import { ConfigurableUiManager, FrontstageManager, FrontstageProvider, Frontstage, Zone, Widget, FrontstageProps, CoreTools } from "../../../ui-framework";
-import { ToolSettingsValue, ToolSettingsPropertyRecord, PrimitiveValue, PropertyDescription } from "@bentley/imodeljs-frontend";
+import { ToolSettingsValue, ToolSettingsPropertyRecord, PrimitiveValue, PropertyDescription, PropertyEditorParamTypes, SuppressLabelEditorParams } from "@bentley/imodeljs-frontend";
 
 describe("DefaultToolUiSettingsProvider", () => {
 
+  const firstToolId = "DefaultToolUiSettingsProvider-FirstTestTool";
   const testToolId = "DefaultToolUiSettingsProvider-TestTool";
   const useLengthDescription: PropertyDescription = {
     name: "use-length",
     displayLabel: "TEST-USELENGTH",
     typename: "boolean",
+    editor: {
+      params: [{type: PropertyEditorParamTypes.SuppressEditorLabel} as SuppressLabelEditorParams],
+    },
   };
 
   const lengthDescription: PropertyDescription = {
@@ -67,6 +71,33 @@ describe("DefaultToolUiSettingsProvider", () => {
 
     const frontstageProvider = new Frontstage1();
     ConfigurableUiManager.addFrontstageProvider(frontstageProvider);
+    FrontstageManager.useDefaultToolSettings = false;
+  });
+
+  it("starting a tool with undefined tool settings", async () => {
+    const frontstageDef = FrontstageManager.findFrontstageDef("ToolUiProvider-TestFrontstage");
+    expect(frontstageDef).to.not.be.undefined;
+    if (frontstageDef) {
+      await FrontstageManager.setActiveFrontstageDef(frontstageDef); // tslint:disable-line:no-floating-promises
+
+      // do not define FrontstageManager.toolsettingsProperties to test that case.
+      FrontstageManager.useDefaultToolSettings = true;
+
+      FrontstageManager.setActiveToolId(firstToolId);
+      expect(FrontstageManager.activeToolId).to.eq(firstToolId);
+
+      const toolInformation = FrontstageManager.activeToolInformation;
+      expect(toolInformation).to.not.be.undefined;
+
+      if (toolInformation) {
+        const toolUiProvider = toolInformation.toolUiProvider;
+        expect(toolUiProvider).to.not.be.undefined;
+
+        if (toolUiProvider) {
+          expect(toolUiProvider.toolSettingsNode).to.be.null;
+        }
+      }
+    }
   });
 
   it("starting a tool with tool settings", async () => {
@@ -108,8 +139,7 @@ describe("DefaultToolUiSettingsProvider", () => {
       expect(renderedComponent).not.to.be.undefined;
       // renderedComponent.debug();
 
-      const toggleLabel = renderedComponent.getByText("TEST-USELENGTH:");
-      expect(toggleLabel).not.to.be.undefined;
+      expect (renderedComponent.queryByText("TEST-USELENGTH:")).to.be.null;
 
       const toggleEditor = renderedComponent.getByTestId("components-checkbox-editor");
       expect(toggleEditor).not.to.be.undefined;

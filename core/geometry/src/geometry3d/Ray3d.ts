@@ -9,6 +9,7 @@ import { Transform } from "./Transform";
 import { Matrix3d } from "./Matrix3d";
 import { AxisOrder, BeJSONFunctions, Geometry } from "../Geometry";
 import { Plane3dByOriginAndUnitNormal } from "./Plane3dByOriginAndUnitNormal";
+import { XYAndZ } from "./XYZProps";
 /** A Ray3d contains
  * * an origin point.
  * * a direction vector.  The vector is NOT required to be normalized.
@@ -232,5 +233,18 @@ export class Ray3d implements BeJSONFunctions {
       this.origin.plusScaled(this.direction, division, result);
     }
     return division;
+  }
+
+  /** Construct a vector from `ray.origin` to target point.
+   * * return the part of the vector that is perpendicular to `ray.direction`.
+   *  * i.e. return the shortest vector from the ray to the point.
+   */
+  public perpendicularPartOfVectorToTarget(targetPoint: XYAndZ, result?: Vector3d): Vector3d {
+    const vectorV = Vector3d.createStartEnd(this.origin, targetPoint);
+    const uu = this.direction.magnitudeSquared();
+    const uv = this.direction.dotProductStartEnd(this.origin, targetPoint);
+    const fraction = Geometry.safeDivideFraction(uv, uu, 0.0);
+    return vectorV.plusScaled(this.direction, -fraction, result);
+
   }
 }

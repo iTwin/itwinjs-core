@@ -286,7 +286,9 @@ describe("Polyface.Box", () => {
 function writeMeshes(geometry: GeometryQuery[], fileName: string, options?: StrokeOptions, dx0: number = 0, dy0: number = 0) {
   const allMesh = [];
   let dx = dx0;
+  let gCount = -1;
   for (const g of geometry) {
+    gCount++;
     if (options === undefined) {
       options = new StrokeOptions();
     }
@@ -322,6 +324,10 @@ function writeMeshes(geometry: GeometryQuery[], fileName: string, options?: Stro
       allMesh.push(polyface);
     }
     if (g instanceof SolidPrimitive) {
+      const isClosedMesh = PolyfaceQuery.isPolyfaceClosedByEdgePairing(polyface);
+      const isClosedSolid = g.isClosedVolume;
+      if (isClosedMesh !== isClosedSolid)
+        console.log(fileName, gCount + " of " + geometry.length, { isClosedBySolid: isClosedSolid, isClosedByEdgePairing: isClosedMesh });
       for (const f of [0.0, 0.10, 0.20, 0.25, 0.50, 0.75, 1.0]) {
         const section = g.constantVSection(f);
         if (section) {
@@ -374,30 +380,43 @@ describe("Polyface.Facets", () => {
     const all = Sample.createCones();
     writeMeshes(all, "Cone", options0, 0, y0Cone);
     writeMeshes(all, "Cone", optionsPN, 0, y0Cone + optionYStep);
+    writeMeshes(all, "Cone", optionsPN, 0, y0Cone + 2 * optionYStep);
   });
   it("Spheres", () => {
     const all = Sample.createSpheres();
     writeMeshes(all, "Sphere", options0, 0, y0Sphere);
-    writeMeshes(all, "Sphere", optionsPN, 0, y0Sphere + optionYStep);
+    writeMeshes(all, "Sphere", optionsN, 0, y0Sphere + optionYStep);
+    writeMeshes(all, "Sphere", optionsPN, 0, y0Sphere + 2 * optionYStep);
   });
   it("Boxes", () => {
-    writeMeshes(Sample.createBoxes(), "Box", options0, 0, y0Box);
-    writeMeshes(Sample.createBoxes(), "Box", optionsPN, 0, y0Box + optionYStep);
+    const box0 = Sample.createBoxes(false)[0];
+    const box1 = Sample.createBoxes(true)[0];
+    writeMeshes([box0, box1], "BoxOpenClosed", options0, 0, y0Box);
+
+    writeMeshes(Sample.createBoxes(true), "Box", options0, 0, y0Box);
+    writeMeshes(Sample.createBoxes(false), "BoxOpen", options0, 0, y0Box);
+    // writeMeshes(Sample.createBoxes(), "Box", optionsN, 0, y0Box + optionYStep);
+    // writeMeshes(Sample.createBoxes(), "Box", optionsPN, 0, y0Box + 2 * optionYStep);
   });
   it("TorusPipes", () => {
     writeMeshes(Sample.createTorusPipes(), "TorusPipe", options0, 0, y0TorusPipe);
-    writeMeshes(Sample.createTorusPipes(), "TorusPipe", optionsPN, 0, y0TorusPipe + optionYStep);
+    writeMeshes(Sample.createTorusPipes(), "TorusPipe", optionsN, 0, y0TorusPipe + optionYStep);
+    writeMeshes(Sample.createTorusPipes(), "TorusPipe", optionsPN, 0, y0TorusPipe + 2 * optionYStep);
   });
   it("LinearSweeps", () => {
     writeMeshes(Sample.createSimpleLinearSweeps(), "LinearSweep", options0E, 0, y0LinearSweep);
+    writeMeshes(Sample.createSimpleLinearSweeps(), "LinearSweep", optionsN, 0, y0LinearSweep + optionYStep);
   });
 
   it("RotationalSweeps", () => {
     writeMeshes(Sample.createSimpleRotationalSweeps(), "RotationalSweep", options0E, 0, y0RotationalSweep);
+    writeMeshes(Sample.createSimpleRotationalSweeps(), "RotationalSweep", optionsN, 0, y0RotationalSweep + optionYStep);
   });
   it("RuledSweeps", () => {
-    const sweeps = Sample.createRuledSweeps(true);
-    writeMeshes(sweeps, "RuledSweep", options0E, 0, y0RuledSweep);
+    const sweepA = Sample.createRuledSweeps(true);
+    writeMeshes(sweepA, "RuledSweepA", optionsN, 0, y0RuledSweep + optionYStep);
+    const sweepB = Sample.createRuledSweeps(true);
+    writeMeshes(sweepB, "RuledSweepB", options0E, 0, y0RuledSweep);
   });
 });
 

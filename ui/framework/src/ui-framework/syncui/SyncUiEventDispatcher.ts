@@ -125,6 +125,7 @@ export class SyncUiEventDispatcher {
 
   /** Trigger registered event processing when timer has expired and no addition eventId are added. */
   private static checkForAdditionalIds() {
+    /* istanbul ignore else */
     if (!SyncUiEventDispatcher._eventIdAdded && SyncUiEventDispatcher._syncEventTimerId) {
       if (SyncUiEventDispatcher._syncEventTimerId) window.clearTimeout(SyncUiEventDispatcher._syncEventTimerId);
       SyncUiEventDispatcher._syncEventTimerId = undefined;
@@ -138,6 +139,7 @@ export class SyncUiEventDispatcher {
       return;
     }
 
+    /* istanbul ignore else */
     if (SyncUiEventDispatcher._syncEventTimerId) clearTimeout(SyncUiEventDispatcher._syncEventTimerId);
     SyncUiEventDispatcher._eventIdAdded = false;
     // if events have been added before the initial timer expired wait half that time to see if events are still being added.
@@ -146,6 +148,7 @@ export class SyncUiEventDispatcher {
 
   /** Checks to see if an eventId of interest is contained in the set of eventIds */
   public static hasEventOfInterest(eventIds: Set<string>, idsOfInterest: string[]) {
+    /* istanbul ignore else */
     if ((idsOfInterest.length > 0) && idsOfInterest.some((value: string): boolean => eventIds.has(value)))
       return true;
     return false;

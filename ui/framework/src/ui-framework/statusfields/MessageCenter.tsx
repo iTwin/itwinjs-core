@@ -128,11 +128,13 @@ export class MessageCenterField extends React.Component<MessageCenterProps, Mess
     const tabRows: React.ReactChild[] = new Array<React.ReactChild>();
 
     messages.forEach((details: NotifyMessageDetails, index: number) => {
+      /* istanbul ignore else */
       if (this.state.activeTab === MessageCenterActiveTab.AllMessages || this.isProblemStatus(details.priority)) {
 
         const iconClassName = MessageManager.getIconClassName(details);
 
         let message = details.briefMessage;
+        /* istanbul ignore else */
         if (details.detailedMessage)
           message = message + "<br><br>" + details.detailedMessage;
 

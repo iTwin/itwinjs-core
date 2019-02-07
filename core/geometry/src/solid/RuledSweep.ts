@@ -177,5 +177,12 @@ export class RuledSweep extends SolidPrimitive {
     }
     return undefined;
   }
+  /**
+   * @return true if this is a closed volume.
+   */
+  public get isClosedVolume(): boolean {
+    const n = this._contours.length;
+    return n > 1 && (this.capped || this._contours[0].isAlmostEqual(this._contours[n - 1]));
+  }
 
 }

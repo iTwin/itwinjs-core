@@ -1069,7 +1069,7 @@ export class Sample {
       Vector3d.unitX(radius),
       Vector3d.unitY(radius),
       AngleSweep.createStartEndDegrees(startDegrees, endDegrees));
-    return [arc, LineSegment3d.create(arc.fractionToPoint(0.0), arc.fractionToPoint(1.0))];
+    return [arc, LineSegment3d.create(arc.fractionToPoint(1.0), arc.fractionToPoint(0.0))];
   }
   /** Return a Path structure for a segment of arc, with closure segment */
   public static createCappedArcPath(radius: number, startDegrees: number, endDegrees: number): Path {
@@ -1089,7 +1089,7 @@ export class Sample {
       Ray3d.createXYZUVW(0, 0, 0, 0, 1, 0),
       Ray3d.createXYZUVW(5, 0, 0, 0, 1, 0),
       Ray3d.createXYZUVW(-1, 0, 0, -1, 1, 0)]) {
-      result.push(RotationalSweep.create(base, axis, Angle.createDegrees(120.0), false) as RotationalSweep);
+      result.push(RotationalSweep.create(base, axis, Angle.createDegrees(45.0), false) as RotationalSweep);
       result.push(RotationalSweep.create(base, axis, Angle.createDegrees(150.0), true) as RotationalSweep);
     }
 
@@ -1169,7 +1169,7 @@ export class Sample {
     return result;
   }
 
-  public static createBoxes(): Box[] {
+  public static createBoxes(capped: boolean = true): Box[] {
     const result: Box[] = [];
     const cornerA = Point3d.create(1, 2, 3);
     const aX = 3.0;
@@ -1183,16 +1183,16 @@ export class Sample {
     const vectorY = frame.columnY();
     const cornerB = Matrix3d.xyzPlusMatrixTimesCoordinates(cornerA, frame, 0, 0, h);
     result.push(Box.createDgnBox(cornerA, Vector3d.unitX(), Vector3d.unitY(),
-      cornerB, aX, aY, aX, aY, true) as Box);
+      cornerB, aX, aY, aX, aY, capped) as Box);
 
     result.push(Box.createDgnBox(cornerA, Vector3d.unitX(), Vector3d.unitY(),
-      cornerB, aX, aY, bX, bY, true) as Box);
-    result.push(Box.createDgnBox(cornerA, vectorX, vectorY, cornerB, aX, aY, bX, bY, true) as Box);
+      cornerB, aX, aY, bX, bY, capped) as Box);
+    result.push(Box.createDgnBox(cornerA, vectorX, vectorY, cornerB, aX, aY, bX, bY, capped) as Box);
 
     const frameY = Matrix3d.createRotationAroundVector(
       Vector3d.create(0, 1, 0), Angle.createDegrees(10)) as Matrix3d;
     result.push(Box.createDgnBox(cornerA, frameY.columnX(), frameY.columnY(),
-      cornerA.plusScaled(frameY.columnZ(), h), aX, aY, bX, bY, true) as Box);
+      cornerA.plusScaled(frameY.columnZ(), h), aX, aY, bX, bY, capped) as Box);
     return result;
   }
   /** create an array of points for a rectangle with corners (x0,y0,z) and (x1,y1,z)

@@ -44,17 +44,21 @@ export class CommandLaunchBackstageItem extends React.PureComponent<CommandLaunc
 
   public componentWillUnmount() {
     this._componentUnmounting = true;
+    /* istanbul ignore else */
     if (this.props.stateFunc && this._stateSyncIds.length > 0)
       SyncUiEventDispatcher.onSyncUiEvent.removeListener(this._handleSyncUiEvent);
   }
 
   private _handleSyncUiEvent = (args: SyncUiEventArgs): void => {
+    /* istanbul ignore next */
     if (this._componentUnmounting)
       return;
 
     if (SyncUiEventDispatcher.hasEventOfInterest(args.eventIds, this._stateSyncIds))
       if (this.props.stateFunc) {
         const newState = this.props.stateFunc(this.state);
+        /* istanbul ignore else */
+
         if (!PropsHelper.isShallowEqual(newState, this.state))
           this.setState((_prevState) => newState);
       }

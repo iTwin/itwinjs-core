@@ -262,4 +262,13 @@ export class Sphere extends SolidPrimitive implements UVSurface {
       this._localToWorld.multiplyVectorXYZ(-fPhi * cosTheta * sinPhi, -fPhi * sinTheta * sinPhi, fPhi * cosPhi),
       result);
   }
+  /**
+   * * A sphere is can be closed two ways:
+   *   * full sphere (no caps needed for closure)
+   *   * incomplete but with caps
+   * @return true if this is a closed volume.
+   */
+  public get isClosedVolume(): boolean {
+    return this.capped || this._latitudeSweep.isFullLatitudeSweep;
+  }
 }

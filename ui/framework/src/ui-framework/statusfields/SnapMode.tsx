@@ -60,9 +60,11 @@ class SnapModeFieldComponent extends React.Component<SnapModeFieldProps> {
         return mode.iconName;
     }
 
+    /* istanbul ignore else */
     if (snapMode > 0)
       return "snaps-multione";
 
+    /* istanbul ignore next */
     return "placeholder";
   }
 
@@ -135,6 +137,7 @@ const mapDispatch = {
 /** Function used by Redux to map state data in Redux store to props that are used to render this component. */
 function mapStateToProps(state: any) {
   const frameworkState = state[UiFramework.frameworkStateKey];  // since app sets up key, don't hard-code name
+  /* istanbul ignore next */
   if (!frameworkState)
     return undefined;
 
