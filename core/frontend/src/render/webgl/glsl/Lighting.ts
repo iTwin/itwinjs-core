@@ -8,9 +8,6 @@ import {
   ProgramBuilder,
   VariableType,
   FragmentShaderComponent,
-  /* ###TODO: IBL
-    FragmentShaderBuilder,
-  */
 } from "../ShaderBuilder";
 import { addFrustum } from "./Common";
 import { Material } from "../Material";

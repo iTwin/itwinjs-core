@@ -686,7 +686,7 @@ export abstract class RenderTarget implements IDisposable {
   /** @hidden */
   public reset(): void { }
   /** @hidden */
-  public abstract changeScene(scene: GraphicList, activeVolume?: RenderClipVolume): void;
+  public abstract changeScene(scene: GraphicList): void;
   /** @hidden */
   public abstract changeTerrain(_scene: GraphicList): void;
   /** @hidden */

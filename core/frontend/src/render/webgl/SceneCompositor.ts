@@ -1186,7 +1186,6 @@ class MPCompositor extends Compositor {
   }
 
   protected renderOpaque(commands: RenderCommands, compositeFlags: CompositeFlags, renderForReadPixels: boolean): void {
-    // ###TODO: Support ambient occlusion.
     // Output the first 2 passes to color and pick data buffers. (All 3 in the case of rendering for readPixels()).
     this._readPickDataFromPingPong = true;
     const needComposite = CompositeFlags.None !== compositeFlags;

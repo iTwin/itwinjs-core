@@ -15,7 +15,7 @@ function addTexture(prog: ProgramBuilder) {
 }
 
 export function createViewportQuadBuilder(textured: boolean): ProgramBuilder {
-  const prog = new ProgramBuilder(false);
+  const prog = new ProgramBuilder();
   prog.vert.set(VertexShaderComponent.ComputePosition, computePosition);
   if (textured) {
     addTexture(prog);

@@ -7,10 +7,8 @@
 import { ShaderBuilder, ProgramBuilder, VariableType, ShaderType } from "../ShaderBuilder";
 import { UniformHandle } from "../Handle";
 import { DrawParams } from "../DrawCommand";
-import { LUTGeometry } from "../CachedGeometry";
 import { ShaderFlags } from "../ShaderProgram";
 import { System, RenderType } from "../System";
-import { SurfaceGeometry } from "../Surface";
 import { assert } from "@bentley/bentleyjs-core";
 
 const extractShaderBit = `
@@ -41,8 +39,8 @@ export function addViewMatrix(vert: ShaderBuilder): void {
 }
 
 function setShaderFlags(uniform: UniformHandle, params: DrawParams) {
-  assert(params.geometry instanceof LUTGeometry);
-  const geom = params.geometry as LUTGeometry;
+  assert(params.geometry.asLUT !== undefined);
+  const geom = params.geometry.asLUT!;
   let flags = params.target.currentShaderFlags;
 
   const color = geom.getColor(params.target);
@@ -62,7 +60,7 @@ function setShaderFlags(uniform: UniformHandle, params: DrawParams) {
   const maxRenderType = System.instance.capabilities.maxRenderType;
   let flatAlphaWeight = RenderType.TextureUnsignedByte === maxRenderType || params.target.isFadeOutActive;
   if (!flatAlphaWeight) {
-    const surface = params.geometry instanceof SurfaceGeometry ? params.geometry as SurfaceGeometry : undefined;
+    const surface = params.geometry.asSurface;
     flatAlphaWeight = undefined !== surface && (surface.isGlyph || surface.isTileSection);
   }
 
@@ -101,7 +99,7 @@ export function addFrustum(builder: ProgramBuilder) {
   builder.addGlobal("kFrustumType_Perspective", VariableType.Float, ShaderType.Both, "2.0", true);
 }
 
-const computeEyeSpace = "v_eyeSpace = (u_mv * rawPosition);";
+const computeEyeSpace = "v_eyeSpace = (MAT_MV * rawPosition);";
 
 export function addEyeSpace(builder: ProgramBuilder) {
   builder.addInlineComputedVarying("v_eyeSpace", VariableType.Vec4, computeEyeSpace);

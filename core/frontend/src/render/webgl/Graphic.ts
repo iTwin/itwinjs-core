@@ -304,7 +304,6 @@ export class Batch extends Graphic {
       ret = FeatureOverrides.createFromTarget(target);
       this._overrides.push(ret);
       target.addBatch(this);
-      // ###TODO target.addBatch(*this);
       ret.initFromMap(this.featureTable);
     }
 

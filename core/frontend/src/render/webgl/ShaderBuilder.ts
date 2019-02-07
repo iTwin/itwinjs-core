@@ -5,7 +5,7 @@
 /** @module WebGL */
 
 import { ShaderProgram } from "./ShaderProgram";
-import { GLSLVertex, addPosition } from "./glsl/Vertex";
+import { GLSLVertex, addPosition, addInstancedModelMatrix } from "./glsl/Vertex";
 import { System } from "./System";
 import { addClipping } from "./glsl/Clipping";
 import { ClipDef } from "./TechniqueFlags";
@@ -316,6 +316,16 @@ export class SourceBuilder {
   public addMain(implementation: string): void { this.addFunction("void main()", implementation); }
 }
 
+export const enum ShaderBuilderFlags {
+  // No special flags. Vertex data comes from attributes, geometry is not instanced.
+  None = 0,
+  // Vertex data comes from a texture.
+  VertexTable = 1 << 0,
+  // Geometry is instanced.
+  Instanced = 1 << 1,
+  InstancedVertexTable = VertexTable | Instanced,
+}
+
 /*
  * Represents a fragment or vertex shader under construction. The shader consists of a set of defined variables,
  * plus a set of code snippets which can be concatenated together to form the shader source.
@@ -325,10 +335,15 @@ export class ShaderBuilder extends ShaderVariables {
   public readonly functions: string[] = new Array<string>();
   public readonly extensions: string[] = new Array<string>();
   public headerComment: string = "";
+  protected readonly _flags: ShaderBuilderFlags;
 
-  protected constructor(maxComponents: number) {
-    super(); // dumb but required. superclass has no explicit constructor.
+  public get usesVertexTable() { return ShaderBuilderFlags.None !== (this._flags & ShaderBuilderFlags.VertexTable); }
+  public get usesInstancedGeometry() { return ShaderBuilderFlags.None !== (this._flags & ShaderBuilderFlags.Instanced); }
+
+  protected constructor(maxComponents: number, flags: ShaderBuilderFlags) {
+    super();
     this.components.length = maxComponents;
+    this._flags = flags;
   }
 
   protected addComponent(index: number, component: string): void {
@@ -414,7 +429,15 @@ export class ShaderBuilder extends ShaderVariables {
     // Variable declarations
     src.add(this.buildDeclarations());
 
-    if (isFrag) {
+    if (!isFrag) {
+      if (!this.usesInstancedGeometry) {
+        src.addline("#define MAT_MV u_mv");
+        src.addline("#define MAT_MVP u_mvp");
+      } else {
+        src.addline("#define MAT_MV g_mv");
+        src.addline("#define MAT_MVP g_mvp");
+      }
+    } else {
       src.addline("#define FragColor gl_FragColor");
       if (needMultiDrawBuffers) {
         src.addline("#define FragColor0 gl_FragData[0]");
@@ -424,17 +447,7 @@ export class ShaderBuilder extends ShaderVariables {
       }
 
       if (isLit) {
-        /* ###TODO: Source Lighting
-        // ###TODO: May end up needing to change this to 8 for unrolled lighting loop...see ShaderBuilder.cpp...
-        const maxShaderLights = 64;
-        src.addline("const int kMaxShaderLights = " + maxShaderLights);
-        src.addline("#define LightColor(i) u_lightData[i*3+0].rgb");
-        src.addline("#define LightAtten1(i) u_lightData[i*3+0].a");
-        src.addline("#define LightPos(i) u_lightData[i*3+1].xyz");
-        src.addline("#define cosHTheta(i) u_lightData[i*3+1].w");
-        src.addline("#define LightDir(i) u_lightData[i*3+2].xyz");
-        src.addline("#define cosHPhi(i) u_lightData[i*3+2].w");
-        */
+        // ###TODO: Source Lighting
       }
     }
 
@@ -484,9 +497,12 @@ export class VertexShaderBuilder extends ShaderBuilder {
 
   private buildPrelude(): SourceBuilder { return this.buildPreludeCommon(); }
 
-  public constructor(positionFromLUT: boolean) {
-    super(VertexShaderComponent.COUNT);
-    addPosition(this, positionFromLUT);
+  public constructor(flags: ShaderBuilderFlags) {
+    super(VertexShaderComponent.COUNT, flags);
+    if (this.usesInstancedGeometry)
+      addInstancedModelMatrix(this);
+
+    addPosition(this, this.usesVertexTable);
   }
 
   public get(id: VertexShaderComponent): string | undefined { return this.getComponent(id); }
@@ -610,8 +626,8 @@ export const enum FragmentShaderComponent {
 export class FragmentShaderBuilder extends ShaderBuilder {
   public maxClippingPlanes: number = 0;
 
-  public constructor() {
-    super(FragmentShaderComponent.COUNT);
+  public constructor(flags: ShaderBuilderFlags) {
+    super(FragmentShaderComponent.COUNT, flags);
   }
 
   public get(id: FragmentShaderComponent): string | undefined { return this.getComponent(id); }
@@ -795,13 +811,12 @@ export const enum ShaderType {
 export class ProgramBuilder {
   public readonly vert: VertexShaderBuilder;
   public readonly frag: FragmentShaderBuilder;
-  private readonly _positionFromLUT: boolean;
+  private readonly _flags: ShaderBuilderFlags;
 
-  public constructor(positionFromLUT: boolean) {
-    this.vert = new VertexShaderBuilder(positionFromLUT);
-    this.frag = new FragmentShaderBuilder();
-
-    this._positionFromLUT = positionFromLUT; // only needed for clone()...
+  public constructor(flags = ShaderBuilderFlags.None) {
+    this.vert = new VertexShaderBuilder(flags);
+    this.frag = new FragmentShaderBuilder(flags);
+    this._flags = flags; // only needed for clone - though could loook up from vert or frag shader.
   }
 
   private addVariable(v: ShaderVariable, which: ShaderType) {
@@ -861,7 +876,7 @@ export class ProgramBuilder {
 
   /** Returns a deep copy of this program builder. */
   public clone(): ProgramBuilder {
-    const clone = new ProgramBuilder(this._positionFromLUT);
+    const clone = new ProgramBuilder(this._flags);
 
     // Copy from vertex builder
     clone.vert.headerComment = this.vert.headerComment;

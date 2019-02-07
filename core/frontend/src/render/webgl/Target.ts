@@ -7,7 +7,7 @@
 import { Transform, Vector3d, Point3d, Matrix4d, Point2d, XAndY } from "@bentley/geometry-core";
 import { assert, BeTimePoint, Id64String, Id64, StopWatch, dispose, disposeArray } from "@bentley/bentleyjs-core";
 import { RenderTarget, RenderSystem, Decorations, GraphicList, RenderPlan, ClippingType, CanvasDecoration, Pixel, AnimationBranchStates } from "../System";
-import { ViewFlags, Frustum, Hilite, ColorDef, Npc, RenderMode, ImageLight, ImageBuffer, ImageBufferFormat, AnalysisStyle, RenderTexture, AmbientOcclusion } from "@bentley/imodeljs-common";
+import { ViewFlags, Frustum, Hilite, ColorDef, Npc, RenderMode, ImageBuffer, ImageBufferFormat, AnalysisStyle, RenderTexture, AmbientOcclusion } from "@bentley/imodeljs-common";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { Techniques } from "./Technique";
 import { TechniqueId } from "./TechniqueId";
@@ -207,9 +207,6 @@ export abstract class Target extends RenderTarget {
   public readonly nearPlaneCenter = new Point3d();
   public readonly viewMatrix = Transform.createIdentity();
   public readonly projectionMatrix = Matrix4d.createIdentity();
-  private _environmentMap?: TextureHandle; // ###TODO: for IBL
-  private _diffuseMap?: TextureHandle; // ###TODO: for IBL
-  public readonly imageSolar?: ImageLight.Solar; // ###TODO: for IBL
   private readonly _visibleEdgeOverrides = new EdgeOverrides();
   private readonly _hiddenEdgeOverrides = new EdgeOverrides();
   public analysisStyle?: AnalysisStyle;
@@ -239,7 +236,6 @@ export abstract class Target extends RenderTarget {
   public get drawNonLocatable(): boolean { return this._drawNonLocatable; }
 
   public get currentOverrides(): FeatureOverrides | undefined { return this._currentOverrides; }
-  // public get currentOverrides(): FeatureOverrides | undefined { return this._currentOverrides ? undefined : undefined; } // ###TODO remove this - for testing purposes only (forces overrides off)
   public set currentOverrides(ovr: FeatureOverrides | undefined) {
     // Don't bother setting up overrides if they don't actually override anything - wastes time doing texture lookups in shaders.
     this._currentOverrides = (undefined !== ovr && ovr.anyOverridden) ? ovr : undefined;
@@ -309,9 +305,6 @@ export abstract class Target extends RenderTarget {
     this._clipMask = mask;
   }
 
-  public get environmentMap(): TextureHandle | undefined { return this._environmentMap; }
-  public get diffuseMap(): TextureHandle | undefined { return this._diffuseMap; }
-
   public get is2d(): boolean { return this.frustumUniforms.is2d; }
   public get is3d(): boolean { return !this.is2d; }
 
@@ -319,8 +312,6 @@ export abstract class Target extends RenderTarget {
     this.reset();
 
     dispose(this.compositor);
-    this._environmentMap = dispose(this._environmentMap);
-    this._diffuseMap = dispose(this._diffuseMap);
 
     this._dcAssigned = false;   // necessary to reassign to OnScreenTarget fbo member when re-validating render plan
   }
@@ -530,12 +521,11 @@ export abstract class Target extends RenderTarget {
     this.analysisTexture = plan.analysisTexture;
 
     let clipVolume: ClipPlanesVolume | ClipMaskVolume | undefined;
-    if (plan.activeVolume !== undefined) {
+    if (plan.activeVolume !== undefined)
       if (plan.activeVolume.type === ClippingType.Planes)
         clipVolume = plan.activeVolume as ClipPlanesVolume;
       else if (plan.activeVolume.type === ClippingType.Mask)
         clipVolume = plan.activeVolume as ClipMaskVolume;
-    }
 
     this._activeClipVolume = clipVolume;
 
@@ -650,7 +640,7 @@ export abstract class Target extends RenderTarget {
 
     this._batches = [];
 
-    // ###TODO this._activeVolume = undefined;
+    dispose(this._activeClipVolume);
   }
 
   public get wantInvertBlackBackground(): boolean { return false; }

@@ -21,7 +21,7 @@ import {
 } from "@bentley/imodeljs-frontend/lib/webgl";
 
 function createPurpleQuadTechnique(target: Target): TechniqueId {
-  const builder = new ProgramBuilder(false);
+  const builder = new ProgramBuilder();
   builder.vert.set(VertexShaderComponent.ComputePosition, "return rawPos;");
   builder.frag.set(FragmentShaderComponent.ComputeBaseColor, "return vec4(1.0, 0.0, 0.5, 1.0);");
   builder.frag.set(FragmentShaderComponent.AssignFragData, "FragColor = baseColor;");
@@ -104,7 +104,7 @@ describe("Technique tests", () => {
       return;
 
     const flags = new TechniqueFlags();
-    flags.isAnimated = true;
+    flags.setAnimated(true);
     let tech = System.instance.techniques.getTechnique(TechniqueId.Edge);
     let prog = tech.getShader(flags);
     expect(prog.compile()).to.be.true;

@@ -28,14 +28,14 @@ import { FrameBufferStack, DepthBuffer } from "./FrameBuffer";
 import { RenderBuffer } from "./RenderBuffer";
 import { TextureHandle, Texture, TextureMonitor } from "./Texture";
 import { GL } from "./GL";
-import { PolylinePrimitive } from "./Polyline";
-import { PointStringPrimitive } from "./PointString";
+import { PolylineGeometry } from "./Polyline";
+import { PointStringGeometry } from "./PointString";
 import { MeshGraphic } from "./Mesh";
-import { PointCloudPrimitive } from "./PointCloud";
+import { PointCloudGeometry } from "./PointCloud";
 import { LineCode } from "./EdgeOverrides";
 import { Material } from "./Material";
 import { SkyBoxQuadsGeometry, SkySphereViewportQuadGeometry } from "./CachedGeometry";
-import { SkyBoxPrimitive, SkySpherePrimitive } from "./Primitive";
+import { SkyBoxPrimitive, Primitive } from "./Primitive";
 import { ClipPlanesVolume, ClipMaskVolume } from "./ClipVolume";
 import { TextureUnit } from "./RenderFlags";
 import { UniformHandle } from "./Handle";
@@ -103,6 +103,7 @@ export class Capabilities {
   /** These getters check for existence of extension objects to determine availability of features.  In WebGL2, could just return true for some. */
   public get supportsNonPowerOf2Textures(): boolean { return false; }
   public get supportsDrawBuffers(): boolean { return this.queryExtensionObject<WEBGL_draw_buffers>("WEBGL_draw_buffers") !== undefined; }
+  public get supportsInstancing(): boolean { return this.queryExtensionObject<ANGLE_instanced_arrays>("ANGLE_instanced_arrays") !== undefined; }
   public get supports32BitElementIndex(): boolean { return this.queryExtensionObject<OES_element_index_uint>("OES_element_index_uint") !== undefined; }
   public get supportsTextureFloat(): boolean { return this.queryExtensionObject<OES_texture_float>("OES_texture_float") !== undefined; }
   public get supportsTextureHalfFloat(): boolean { return this.queryExtensionObject<OES_texture_half_float>("OES_texture_half_float") !== undefined; }
@@ -132,7 +133,7 @@ export class Capabilities {
       for (const ext of extensions) {
         if ((!forceNoDrawBuffers && ext === "WEBGL_draw_buffers") || ext === "OES_element_index_uint" || (!forceHalfFloat && ext === "OES_texture_float") ||
           ext === "OES_texture_half_float" || ext === "WEBGL_depth_texture" || ext === "EXT_color_buffer_float" ||
-          ext === "EXT_shader_texture_lod") {
+          ext === "EXT_shader_texture_lod" || ext === "ANGLE_instanced_arrays") {
           const extObj: any = gl.getExtension(ext); // This call enables the extension and returns a WebGLObject containing extension instance.
           if (null !== extObj)
             this._extensionMap[ext] = extObj;
@@ -214,6 +215,7 @@ export class Capabilities {
     Debug.print(() => "     maxVertTextureUnits : " + this.maxVertTextureUnits);
     Debug.print(() => "     nonPowerOf2Textures : " + (this.supportsNonPowerOf2Textures ? "yes" : "no"));
     Debug.print(() => "             drawBuffers : " + (this.supportsDrawBuffers ? "yes" : "no"));
+    Debug.print(() => "              instancing : " + (this.supportsInstancing ? "yes" : "no"));
     Debug.print(() => "       32BitElementIndex : " + (this.supports32BitElementIndex ? "yes" : "no"));
     Debug.print(() => "            textureFloat : " + (this.supportsTextureFloat ? "yes" : "no"));
     Debug.print(() => "        textureHalfFloat : " + (this.supportsTextureHalfFloat ? "yes" : "no"));
@@ -420,6 +422,13 @@ class TextureStats implements TextureMonitor {
 
 export type TextureBinding = WebGLTexture | undefined;
 
+const enum VertexAttribState {
+  Disabled = 0,
+  Enabled = 1 << 0,
+  Instanced = 1 << 2,
+  InstancedEnabled = Instanced | Enabled,
+}
+
 export class System extends RenderSystem {
   public readonly canvas: HTMLCanvasElement;
   public readonly currentRenderState = new RenderState();
@@ -428,10 +437,15 @@ export class System extends RenderSystem {
   public readonly capabilities: Capabilities;
   public readonly resourceCache: Map<IModelConnection, IdMap>;
   private readonly _drawBuffersExtension?: WEBGL_draw_buffers;
+  private readonly _instancingExtension?: ANGLE_instanced_arrays;
   private readonly _textureStats?: TextureStats;
   private readonly _textureBindings: TextureBinding[] = [];
-  private readonly _curVertexAttribStates: boolean[] = [false, false, false, false];
-  private readonly _nextVertexAttribStates: boolean[] = [false, false, false, false];
+
+  // NB: Increase the size of these arrays when the maximum number of attributes used by any one shader increases.
+  private readonly _curVertexAttribStates: VertexAttribState[] = [VertexAttribState.Disabled, VertexAttribState.Disabled, VertexAttribState.Disabled, VertexAttribState.Disabled,
+    VertexAttribState.Disabled, VertexAttribState.Disabled, VertexAttribState.Disabled, VertexAttribState.Disabled];
+  private readonly _nextVertexAttribStates: VertexAttribState[] = [VertexAttribState.Disabled, VertexAttribState.Disabled, VertexAttribState.Disabled, VertexAttribState.Disabled,
+    VertexAttribState.Disabled, VertexAttribState.Disabled, VertexAttribState.Disabled, VertexAttribState.Disabled];
 
   // The following are initialized immediately after the System is constructed.
   private _lineCodeTexture?: TextureHandle;
@@ -505,9 +519,9 @@ export class System extends RenderSystem {
   public createGraphicBuilder(placement: Transform, type: GraphicType, viewport: Viewport, pickableId?: Id64String): GraphicBuilder { return new PrimitiveBuilder(this, type, viewport, placement, pickableId); }
 
   public createMesh(params: MeshParams): RenderGraphic | undefined { return MeshGraphic.create(params); }
-  public createPolyline(params: PolylineParams): RenderGraphic | undefined { return PolylinePrimitive.create(params); }
-  public createPointString(params: PointStringParams): RenderGraphic | undefined { return PointStringPrimitive.create(params); }
-  public createPointCloud(args: PointCloudArgs): RenderGraphic | undefined { return PointCloudPrimitive.create(args); }
+  public createPolyline(params: PolylineParams): RenderGraphic | undefined { return Primitive.create(() => PolylineGeometry.create(params)); }
+  public createPointString(params: PointStringParams): RenderGraphic | undefined { return Primitive.create(() => PointStringGeometry.create(params)); }
+  public createPointCloud(args: PointCloudArgs): RenderGraphic | undefined { return Primitive.create(() => new PointCloudGeometry(args)); }
 
   public createGraphicList(primitives: RenderGraphic[]): RenderGraphic { return new GraphicsArray(primitives); }
   public createBranch(branch: GraphicBranch, transform: Transform, clips?: ClipPlanesVolume | ClipMaskVolume): RenderGraphic { return new Branch(branch, transform, clips); }
@@ -515,12 +529,10 @@ export class System extends RenderSystem {
 
   public createSkyBox(params: SkyBox.CreateParams): RenderGraphic | undefined {
     if (undefined !== params.cube) {
-      const cachedGeom = SkyBoxQuadsGeometry.create(params.cube);
-      return cachedGeom !== undefined ? new SkyBoxPrimitive(cachedGeom) : undefined;
+      return SkyBoxPrimitive.create(() => SkyBoxQuadsGeometry.create(params.cube!));
     } else {
       assert(undefined !== params.sphere || undefined !== params.gradient);
-      const cachedGeom = SkySphereViewportQuadGeometry.createGeometry(params);
-      return cachedGeom !== undefined ? new SkySpherePrimitive(cachedGeom) : undefined;
+      return SkyBoxPrimitive.create(() => SkySphereViewportQuadGeometry.createGeometry(params));
     }
   }
 
@@ -631,6 +643,7 @@ export class System extends RenderSystem {
     this.context = context;
     this.capabilities = capabilities;
     this._drawBuffersExtension = capabilities.queryExtensionObject<WEBGL_draw_buffers>("WEBGL_draw_buffers");
+    this._instancingExtension = capabilities.queryExtensionObject<ANGLE_instanced_arrays>("ANGLE_instanced_arrays");
     this.resourceCache = new Map<IModelConnection, IdMap>();
 
     // Make this System a subscriber to the the IModelConnection onClose event
@@ -807,24 +820,57 @@ export class System extends RenderSystem {
   // System keeps track of current enabled state of vertex attribute arrays.
   // This prevents errors caused by leaving a vertex attrib array enabled after disposing of the buffer bound to it;
   // also prevents unnecessarily 'updating' the enabled state of a vertex attrib array when it hasn't actually changed.
-  public enableVertexAttribArray(id: number): void { this._nextVertexAttribStates[id] = true; }
+  public enableVertexAttribArray(id: number, instanced: boolean): void {
+    assert(id < this._nextVertexAttribStates.length, "if you add new vertex attributes you must update array length");
+    assert(id < this._curVertexAttribStates.length, "if you add new vertex attributes you must update array length");
+
+    this._nextVertexAttribStates[id] = instanced ? VertexAttribState.InstancedEnabled : VertexAttribState.Enabled;
+  }
+
   public updateVertexAttribArrays(): void {
     const cur = this._curVertexAttribStates;
     const next = this._nextVertexAttribStates;
     const context = this.context;
-    for (let i = 0; i < next.length; i++) {
-      const wasEnabled = cur[i];
-      const nowEnabled = next[i];
-      if (wasEnabled !== nowEnabled) {
-        if (wasEnabled)
-          context.disableVertexAttribArray(i);
-        else
-          context.enableVertexAttribArray(i);
 
-        cur[i] = nowEnabled;
+    for (let i = 0; i < next.length; i++) {
+      const oldState = cur[i];
+      const newState = next[i];
+      if (oldState !== newState) {
+        // Update the enabled state if it changed.
+        const wasEnabled = 0 !== (VertexAttribState.Enabled & oldState);
+        const nowEnabled = 0 !== (VertexAttribState.Enabled & newState);
+        if (wasEnabled !== nowEnabled) {
+          if (nowEnabled) {
+            context.enableVertexAttribArray(i);
+          } else {
+            context.disableVertexAttribArray(i);
+          }
+        }
+
+        // Only update the divisor if the attribute is enabled.
+        if (nowEnabled) {
+          const wasInstanced = 0 !== (VertexAttribState.Instanced & oldState);
+          const nowInstanced = 0 !== (VertexAttribState.Instanced & newState);
+          if (wasInstanced !== nowInstanced) {
+            assert(undefined !== this._instancingExtension);
+            this._instancingExtension!.vertexAttribDivisorANGLE(i, nowInstanced ? 1 : 0);
+          }
+        }
+
+        cur[i] = newState;
       }
 
-      next[i] = false;
+      // Set the attribute back to disabled, but preserve the divisor.
+      next[i] &= ~VertexAttribState.Enabled;
+    }
+  }
+
+  public drawArrays(type: GL.PrimitiveType, first: number, count: number, numInstances: number): void {
+    if (0 !== numInstances) {
+      if (undefined !== this._instancingExtension)
+        this._instancingExtension.drawArraysInstancedANGLE(type, first, count, numInstances);
+    } else {
+      this.context.drawArrays(type, first, count);
     }
   }
 

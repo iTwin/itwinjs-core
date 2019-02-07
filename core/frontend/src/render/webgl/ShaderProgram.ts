@@ -153,7 +153,7 @@ export class ShaderProgram implements IDisposable {
     const glProgram = gl.createProgram();
     this._glProgram = (null === glProgram) ? undefined : glProgram;
 
-    // ###TODO: Silencing 'unused variable' warnings temporarily...
+    // Silencing 'unused variable' warnings temporarily...
     assert(undefined !== this._description);
   }
 

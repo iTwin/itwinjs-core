@@ -17,7 +17,7 @@ const computePosition = `vec3 pos = u_rot * vec3(rawPos.x, rawPos.z, -rawPos.y);
 const computeTexDir = `v_texDir = rawPosition.xyz;`;
 
 export function createSkyBoxProgram(context: WebGLRenderingContext): ShaderProgram {
-  const prog = new ProgramBuilder(false);
+  const prog = new ProgramBuilder();
 
   prog.frag.set(FragmentShaderComponent.ComputeBaseColor, computeBaseColor);
   prog.frag.set(FragmentShaderComponent.AssignFragData, assignFragData);

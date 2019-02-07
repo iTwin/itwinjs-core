@@ -11,12 +11,12 @@ import { PointCloudGeometry } from "../PointCloud";
 import { GL } from "../GL";
 import { assert } from "@bentley/bentleyjs-core";
 
-const computePosition = "gl_PointSize = 1.0; return u_mvp * rawPos;";
+const computePosition = "gl_PointSize = 1.0; return MAT_MVP * rawPos;";
 const computeColor = "return vec4(a_color, 1.0);";
 const computeBaseColor = "return v_color;";
 
 function createBuilder(): ProgramBuilder {
-  const builder = new ProgramBuilder(false);
+  const builder = new ProgramBuilder();
   const vert = builder.vert;
   vert.set(VertexShaderComponent.ComputePosition, computePosition);
   addModelViewProjectionMatrix(vert);
