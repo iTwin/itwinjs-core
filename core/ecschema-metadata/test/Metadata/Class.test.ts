@@ -186,7 +186,7 @@ describe("ECClass", () => {
 
       assert.isDefined(testClass);
       assert.isDefined(testClass!.customAttributes!.get("TestSchema.TestCAClass"));
-      assert(testClass!.customAttributes!.get("TestSchema.TestCAClass")!.ShowClasses === true);
+      assert.isTrue(testClass!.customAttributes!.get("TestSchema.TestCAClass")!.ShowClasses);
     });
     it("sync - Deserialize One Custom Attribute", () => {
       schema = Schema.fromJsonSync(oneCustomAttributeJson, new SchemaContext());
@@ -195,7 +195,7 @@ describe("ECClass", () => {
 
       assert.isDefined(testClass);
       assert.isDefined(testClass!.customAttributes!.get("TestSchema.TestCAClass"));
-      assert(testClass!.customAttributes!.get("TestSchema.TestCAClass")!.ShowClasses === true);
+      assert.isTrue(testClass!.customAttributes!.get("TestSchema.TestCAClass")!.ShowClasses);
     });
     const twoCustomAttributesJson = {
       $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
@@ -289,9 +289,9 @@ describe("ECClass", () => {
       assert.isDefined(testClass!.customAttributes!.get("TestSchema.TestCAClassA"));
       assert.isDefined(testClass!.customAttributes!.get("TestSchema.TestCAClassB"));
       assert.isDefined(testClass!.customAttributes!.get("TestSchema.TestCAClassC"));
-      assert(testClass!.customAttributes!.get("TestSchema.TestCAClassA")!.ShowClasses === 1.2);
-      assert(testClass!.customAttributes!.get("TestSchema.TestCAClassB")!.ExampleAttribute === true);
-      assert(testClass!.customAttributes!.get("TestSchema.TestCAClassC")!.Example2Attribute === "example");
+      assert.strictEqual(testClass!.customAttributes!.get("TestSchema.TestCAClassA")!.ShowClasses, 1.2);
+      assert.isTrue(testClass!.customAttributes!.get("TestSchema.TestCAClassB")!.ExampleAttribute);
+      assert.strictEqual(testClass!.customAttributes!.get("TestSchema.TestCAClassC")!.Example2Attribute, "example");
     });
 
     // Used to test that all property types are deserialized correctly. For failure and other tests look at the property
@@ -469,31 +469,36 @@ describe("ECClass", () => {
   });
 
   describe("toJson", () => {
-    const schemaJsonOne = {
-      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
-      name: "TestSchema",
-      version: "1.2.3",
-      items: {
-        testBaseClass: {
-          schemaItemType: "EntityClass",
+    function getTestSchemaJson(classJson: any = {}) {
+      return {
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        name: "TestSchema",
+        version: "1.2.3",
+        items: {
+          testBaseClass: {
+            schemaItemType: "EntityClass",
+          },
+          testClass: {
+            schemaItemType: "EntityClass",
+            baseClass: "TestSchema.testBaseClass",
+            properties: [
+              {
+                name: "ValidProp",
+                description: "A really long description...",
+                label: "SomeDisplayLabel",
+                type: "PrimitiveProperty",
+                isReadOnly: true,
+                priority: 100,
+                typeName: "double",
+              },
+            ],
+            ...classJson,
+          },
         },
-        testClass: {
-          schemaItemType: "EntityClass",
-          baseClass: "TestSchema.testBaseClass",
-          properties: [
-            {
-              name: "ValidProp",
-              description: "A really long description...",
-              label: "SomeDisplayLabel",
-              type: "PrimitiveProperty",
-              isReadOnly: true,
-              priority: 100,
-              typeName: "double",
-            },
-          ],
-        },
-      },
-    };
+      };
+    }
+    const schemaJsonOne = getTestSchemaJson();
+
     it("async - Simple serialization", async () => {
       schema = await Schema.fromJson(schemaJsonOne, new SchemaContext());
       assert.isDefined(schema);
@@ -502,14 +507,44 @@ describe("ECClass", () => {
       assert.isDefined(testClass);
       expect(testClass).to.exist;
       const serialized = testClass!.toJson(true, true);
-      expect(serialized.baseClass).eql("TestSchema.testBaseClass");
-      expect(serialized.properties[0].name).eql("ValidProp");
-      expect(serialized.properties[0].description).eql("A really long description...");
-      expect(serialized.properties[0].label).eql("SomeDisplayLabel");
-      expect(serialized.properties[0].type).eql("PrimitiveProperty");
-      expect(serialized.properties[0].isReadOnly).eql(true);
-      expect(serialized.properties[0].priority).eql(100);
+      const expectedJson = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem",
+        name: "testClass",
+        schema: "TestSchema",
+        schemaVersion: "01.02.03",
+        ...schemaJsonOne.items.testClass,
+      };
+      expect(serialized).eql(expectedJson);
     });
+
+    it("should omit modifier if 'None'", async () => {
+      schema = await Schema.fromJson(getTestSchemaJson({ modifier: "None" }), new SchemaContext());
+      const testClass = await schema.getItem<EntityClass>("testClass");
+      expect(testClass).to.exist;
+      expect(testClass!.toJson(true, true)).to.not.have.property("modifier");
+    });
+
+    it("should include modifier if 'Abstract'", async () => {
+      schema = await Schema.fromJson(getTestSchemaJson({ modifier: "Abstract" }), new SchemaContext());
+      const testClass = await schema.getItem<EntityClass>("testClass");
+      expect(testClass).to.exist;
+      expect(testClass!.toJson(true, true)).to.include({ modifier: "Abstract" });
+    });
+
+    it("should include modifier if 'Sealed'", async () => {
+      schema = await Schema.fromJson(getTestSchemaJson({ modifier: "Sealed" }), new SchemaContext());
+      const testClass = await schema.getItem<EntityClass>("testClass");
+      expect(testClass).to.exist;
+      expect(testClass!.toJson(true, true)).to.include({ modifier: "Sealed" });
+    });
+
+    it("should omit customAttributes if empty", async () => {
+      schema = await Schema.fromJson(getTestSchemaJson({ customAttributes: [] }), new SchemaContext());
+      const testClass = await schema.getItem<EntityClass>("testClass");
+      expect(testClass).to.exist;
+      expect(testClass!.toJson(true, true)).to.not.have.property("customAttributes");
+    });
+
     it("sync - Simple serialization", () => {
       schema = Schema.fromJsonSync(schemaJsonOne, new SchemaContext());
       assert.isDefined(schema);
@@ -517,12 +552,14 @@ describe("ECClass", () => {
       const testClass = schema.getItemSync<EntityClass>("testClass");
       assert.isDefined(testClass);
       const serialized = testClass!.toJson(true, true);
-      assert(serialized.properties[0].name, "ValidProp");
-      assert(serialized.properties[0].description, "A really long description...");
-      assert(serialized.properties[0].label, "SomeDisplayLabel");
-      assert(serialized.properties[0].type, "PrimitiveProperty");
-      assert(serialized.properties[0].isReadOnly === true);
-      assert(serialized.properties[0].priority === 100);
+      const expectedJson = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem",
+        name: "testClass",
+        schema: "TestSchema",
+        schemaVersion: "01.02.03",
+        ...schemaJsonOne.items.testClass,
+      };
+      expect(serialized).eql(expectedJson);
     });
     const schemaJsonFive = {
       $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
@@ -573,9 +610,9 @@ describe("ECClass", () => {
       const testClass = await schema.getItem<EntityClass>("testClass");
       assert.isDefined(testClass);
       const serialized = testClass!.toJson(true, true);
-      assert(serialized.properties[0].customAttributes[0].ShowClasses === true);
-      assert(serialized.properties[0].customAttributes[1].FloatValue === 1.2);
-      assert(serialized.properties[0].customAttributes[2].IntegerValue === 5);
+      assert.isTrue(serialized.properties[0].customAttributes[0].ShowClasses);
+      assert.strictEqual(serialized.properties[0].customAttributes[1].FloatValue, 1.2);
+      assert.strictEqual(serialized.properties[0].customAttributes[2].IntegerValue, 5);
     });
     it("sync - Serialization with multiple custom attributes- additional properties", () => {
       schema = Schema.fromJsonSync(schemaJsonFive, new SchemaContext());
@@ -584,9 +621,9 @@ describe("ECClass", () => {
       const testClass = schema.getItemSync<EntityClass>("testClass");
       assert.isDefined(testClass);
       const serialized = testClass!.toJson(true, true);
-      assert(serialized.properties[0].customAttributes[0].ShowClasses === true);
-      assert(serialized.properties[0].customAttributes[1].FloatValue === 1.2);
-      assert(serialized.properties[0].customAttributes[2].IntegerValue === 5);
+      assert.isTrue(serialized.properties[0].customAttributes[0].ShowClasses);
+      assert.strictEqual(serialized.properties[0].customAttributes[1].FloatValue, 1.2);
+      assert.strictEqual(serialized.properties[0].customAttributes[2].IntegerValue, 5);
     });
     const schemaJsonSix = {
       $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
@@ -631,10 +668,10 @@ describe("ECClass", () => {
       const testClass = await schema.getItem<EntityClass>("testClass");
       assert.isDefined(testClass);
       const serialized = testClass!.toJson(true, true);
-      assert(serialized.properties[0].name, "A");
-      assert(serialized.properties[1].name, "B");
-      assert(serialized.properties[2].name, "C");
-      assert(serialized.properties[3].name, "D");
+      assert.strictEqual(serialized.properties[0].name, "A");
+      assert.strictEqual(serialized.properties[1].name, "B");
+      assert.strictEqual(serialized.properties[2].name, "C");
+      assert.strictEqual(serialized.properties[3].name, "D");
     });
     it("sync - Serialization with proper order of properties", () => {
       schema = Schema.fromJsonSync(schemaJsonSix, new SchemaContext());
@@ -643,10 +680,10 @@ describe("ECClass", () => {
       const testClass = schema.getItemSync<EntityClass>("testClass");
       assert.isDefined(testClass);
       const serialized = testClass!.toJson(true, true);
-      assert(serialized.properties[0].name, "A");
-      assert(serialized.properties[1].name, "B");
-      assert(serialized.properties[2].name, "C");
-      assert(serialized.properties[3].name, "D");
+      assert.strictEqual(serialized.properties[0].name, "A");
+      assert.strictEqual(serialized.properties[1].name, "B");
+      assert.strictEqual(serialized.properties[2].name, "C");
+      assert.strictEqual(serialized.properties[3].name, "D");
     });
   });
 

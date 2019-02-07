@@ -5,7 +5,7 @@
 /** @module Elements */
 
 import { Id64String, Id64, GuidString, DbOpcode, JsonUtils, IModelStatus } from "@bentley/bentleyjs-core";
-import { Transform } from "@bentley/geometry-core";
+import { Transform, Range3d } from "@bentley/geometry-core";
 import { DrawingModel } from "./Model";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
@@ -746,7 +746,7 @@ export class GeometryPart extends DefinitionElement implements GeometryPartProps
   public constructor(props: GeometryPartProps, iModel: IModelDb) {
     super(props, iModel);
     this.geom = props.geom;
-    this.bbox = ElementAlignedBox3d.fromJSON(props.bbox);
+    this.bbox = Range3d.fromJSON(props.bbox);
   }
 
   /** convert this geometry part to a JSON object.

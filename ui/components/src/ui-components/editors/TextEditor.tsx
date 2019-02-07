@@ -6,8 +6,8 @@
 
 import * as React from "react";
 import classnames from "classnames";
+import { PropertyValueFormat, PropertyValue, PrimitiveValue } from "@bentley/imodeljs-frontend";
 import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
-import { PropertyValueFormat, PrimitiveValue, PropertyValue } from "../properties/Value";
 import { TypeConverterManager } from "../converters/TypeConverterManager";
 
 import "./TextEditor.scss";
@@ -17,7 +17,7 @@ interface TextEditorState {
 }
 
 /** TextEditor React component that is a property editor with text input  */
-export class TextEditor extends React.Component<PropertyEditorProps, TextEditorState> implements TypeEditor {
+export class TextEditor extends React.PureComponent<PropertyEditorProps, TextEditorState> implements TypeEditor {
   private _input: HTMLInputElement | null = null;
   private _isMounted = false;
 
@@ -43,7 +43,7 @@ export class TextEditor extends React.Component<PropertyEditorProps, TextEditorS
     return propertyValue;
   }
 
-  public setFocus(): void {
+  private setFocus(): void {
     // istanbul ignore else
     if (this._input) {
       this._input.focus();
@@ -60,14 +60,20 @@ export class TextEditor extends React.Component<PropertyEditorProps, TextEditorS
 
   public componentDidMount() {
     this._isMounted = true;
-    this.getInitialValue(); // tslint:disable-line:no-floating-promises
+    this.setStateFromProps(); // tslint:disable-line:no-floating-promises
   }
 
   public componentWillUnmount() {
     this._isMounted = false;
   }
 
-  private async getInitialValue() {
+  public componentDidUpdate(prevProps: PropertyEditorProps) {
+    if (this.props.propertyRecord !== prevProps.propertyRecord) {
+      this.setStateFromProps(); // tslint:disable-line:no-floating-promises
+    }
+  }
+
+  private async setStateFromProps() {
     const record = this.props.propertyRecord;
     let initialValue = "";
 
@@ -82,8 +88,12 @@ export class TextEditor extends React.Component<PropertyEditorProps, TextEditorS
       this.setState(
         { inputValue: initialValue },
         () => {
-          if (this._input)
-            this._input.select();
+          if (this.props.setFocus) {
+            this.setFocus();
+            // istanbul ignore else
+            if (this._input)
+              this._input.select();
+          }
         },
       );
   }

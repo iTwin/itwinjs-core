@@ -79,11 +79,89 @@ export class MarginPercent {
 }
 
 /**
+ * A cancelable paginated request for subcategory information.
+ * @see ViewSubCategories
+ * @hidden
+ */
+export class SubCategoriesRequest {
+  private static readonly _LIMIT = 1000;
+
+  private readonly _imodel: IModelConnection;
+  private readonly _subcategories: ViewSubCategories;
+  private readonly _baseECSql: string;
+  private readonly _pages: any[][] = [];
+  private _canceled = false;
+
+  public constructor(subcategories: ViewSubCategories, categoryIds: Set<string>, imodel: IModelConnection) {
+    this._imodel = imodel;
+    this._subcategories = subcategories;
+
+    const where = [...categoryIds].join(",");
+    this._baseECSql = "SELECT ECInstanceId as id, Parent.Id as parentId, Properties as appearance FROM BisCore.SubCategory WHERE Parent.Id IN (" + where + ") LIMIT " + SubCategoriesRequest._LIMIT;
+  }
+
+  public cancel() { this._canceled = true; }
+
+  private get _offset() { return SubCategoriesRequest._LIMIT * this._pages.length; }
+
+  private buildECSql(): string {
+    // ###TODO: LIMIT/OFFSET grow potentially exponentially more expensive with the number of rows...better approach to pagination?
+    const offset = this._offset;
+    if (0 !== offset)
+      return this._baseECSql + " OFFSET " + offset;
+    else
+      return this._baseECSql;
+  }
+
+  public async dispatch(): Promise<void> {
+    if (this._canceled)
+      return Promise.resolve();
+
+    const ecsql = this.buildECSql();
+    let rows: any[] | undefined;
+    try {
+      rows = await this._imodel.executeQuery(ecsql);
+    } catch (_) {
+      // ###TODO: detect cases in which retry is warranted
+      // Note that currently, if we succeed in obtaining some pages of results and fail to retrieve another page, we will end up processing the
+      // incomplete results. Since we're not retrying, that's the best we can do.
+      rows = undefined;
+    }
+
+    if (undefined !== rows) {
+      this._pages.push(rows);
+      if (rows.length >= SubCategoriesRequest._LIMIT) {
+        // More rows exist. If we're canceled, we can't process the partial results we've obtained thus far.
+        if (this._canceled)
+          return Promise.resolve();
+
+        // Query the next page of results.
+        return this.dispatch();
+      }
+    }
+
+    // Even if we were canceled, we've retrieved all the rows. Might as well process them to prevent another request for some of the same rows from being enqueued.
+    this.processResults();
+    return Promise.resolve();
+  }
+
+  // Because this request can be canceled before all rows are obtained and processed, we must wait to populate the ViewSubCategories until we have all of the data.
+  private processResults(): void {
+    for (const rows of this._pages)
+      this._subcategories.loadFromRows(rows);
+
+    this._pages.length = 0;
+  }
+}
+
+/**
  * Stores information about sub-categories specific to a ViewState. Functions as a lazily-populated cache.
+ * @hidden
  */
 export class ViewSubCategories {
   private readonly _byCategoryId = new Map<string, Id64Set>();
   private readonly _appearances = new Map<string, SubCategoryAppearance>();
+  private _request?: SubCategoriesRequest;
 
   /** Get the Ids of all subcategories belonging to the category with the specified Id, or undefined if no such information is present. */
   public getSubCategories(categoryId: string): Id64Set | undefined { return this._byCategoryId.get(categoryId); }
@@ -97,12 +175,7 @@ export class ViewSubCategories {
    * categories in the ViewState's [[CategorySelector]].
    */
   public async load(categoryIds: Set<string>, iModel: IModelConnection): Promise<void> {
-    const where = [...categoryIds].join(",");
-    if (0 === where.length)
-      return Promise.resolve();
-
-    const ecsql = "SELECT ECInstanceId as id, Parent.Id as parentId, Properties as appearance FROM BisCore.SubCategory WHERE Parent.Id IN (" + where + ")";
-    return iModel.executeQuery(ecsql).then((rows: any[]) => this.loadFromRows(rows));
+    return 0 < categoryIds.size ? this.request(categoryIds, iModel) : Promise.resolve();
   }
 
   /**
@@ -111,6 +184,8 @@ export class ViewSubCategories {
    * categories.
    */
   public async update(addedCategoryIds: Set<string>, iModel: IModelConnection): Promise<void> {
+    this.cancelRequest(); // Just in case current request has obtained (some of) the data we want
+
     let missing: Set<string> | undefined;
     for (const catId of addedCategoryIds) {
       if (undefined === this._byCategoryId.get(catId)) {
@@ -121,10 +196,20 @@ export class ViewSubCategories {
       }
     }
 
-    if (undefined !== missing)
-      return this.load(missing, iModel);
-    else
-      return Promise.resolve();
+    return undefined !== missing ? this.request(missing, iModel) : Promise.resolve();
+  }
+
+  private async request(categoryIds: Set<string>, iModel: IModelConnection): Promise<void> {
+    this.cancelRequest();
+    this._request = new SubCategoriesRequest(this, categoryIds, iModel);
+    return this._request.dispatch();
+  }
+
+  private cancelRequest(): void {
+    if (undefined !== this._request) {
+      this._request.cancel();
+      this._request = undefined;
+    }
   }
 
   private static createSubCategoryAppearance(json?: any) {
@@ -135,7 +220,7 @@ export class ViewSubCategories {
     return new SubCategoryAppearance(props);
   }
 
-  private loadFromRows(rows: any[]): void {
+  public loadFromRows(rows: any[]): void {
     for (const row of rows)
       this.add(row.parentId as string, row.id as string, ViewSubCategories.createSubCategoryAppearance(row.appearance));
   }
@@ -166,6 +251,7 @@ export abstract class ViewState extends ElementState {
   public undoTime?: BeTimePoint;
   /** A cache of information about subcategories belonging to categories present in this view's [[CategorySelectorState]].
    * It is populated on-demand as new categories are added to the selector.
+   * @hidden
    */
   public readonly subCategories = new ViewSubCategories();
   public static get className() { return "ViewDefinition"; }
@@ -355,6 +441,7 @@ public cancelAllTileLoads(): void {
     if (display) {
       this.categorySelector.addCategories(categories);
       const categoryIds = Id64.toIdSet(categories);
+
       this.subCategories.update(categoryIds, this.iModel).then(() => { // tslint:disable-line:no-floating-promises
         this.setFeatureOverridesDirty();
         if (enableAllSubCategories) {
@@ -1490,7 +1577,7 @@ export abstract class ViewState3d extends ViewState {
   /** Return the ground extents, which will originate either from the viewport frustum or the extents of the imodel. */
   public getGroundExtents(vp?: Viewport): AxisAlignedBox3d {
     const displayStyle = this.getDisplayStyle3d();
-    const extents = new AxisAlignedBox3d();
+    const extents = new Range3d();
     if (!displayStyle.environment.ground.display)
       return extents; // Ground plane is not enabled
 
@@ -1623,7 +1710,7 @@ export class SpatialViewState extends ViewState3d {
 
   public computeFitRange(): AxisAlignedBox3d {
     // Loop over the current models in the model selector with loaded tile trees and union their ranges
-    const range = new AxisAlignedBox3d();
+    const range = new Range3d();
     this.forEachTileTreeModel((model: TileTreeModelState) => {   // ...if we don't want to fit context reality mdoels this should cal forEachSpatialTileTreeModel...
       const tileTree = model.tileTree;
       if (tileTree !== undefined && tileTree.rootTile !== undefined) {   // can we assume that a loaded model
@@ -1640,7 +1727,7 @@ export class SpatialViewState extends ViewState3d {
   }
 
   public getViewedExtents(): AxisAlignedBox3d {
-    const extents = AxisAlignedBox3d.fromJSON<AxisAlignedBox3d>(this.iModel.projectExtents);
+    const extents = Range3d.fromJSON<AxisAlignedBox3d>(this.iModel.projectExtents);
     extents.scaleAboutCenterInPlace(1.0001); // projectExtents. lying smack up against the extents is not excluded by frustum...
     extents.extendRange(this.getGroundExtents());
     return extents;
@@ -1737,13 +1824,13 @@ export abstract class ViewState2d extends ViewState {
       if (undefined !== model && model.isGeometricModel) {
         const tree = (model as GeometricModelState).getOrLoadTileTree();
         if (undefined !== tree) {
-          this._viewedExtents = new AxisAlignedBox3d(tree.range.low, tree.range.high);
+          this._viewedExtents = Range3d.create(tree.range.low, tree.range.high);
           tree.location.multiplyRange(this._viewedExtents, this._viewedExtents);
         }
       }
     }
 
-    return undefined !== this._viewedExtents ? this._viewedExtents : new AxisAlignedBox3d();
+    return undefined !== this._viewedExtents ? this._viewedExtents : new Range3d();
   }
 
   public onRenderFrame(_viewport: Viewport): void { }

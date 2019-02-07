@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Defer Draco support until moved to web worker",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "ray.bentley@bentley.com"
+}

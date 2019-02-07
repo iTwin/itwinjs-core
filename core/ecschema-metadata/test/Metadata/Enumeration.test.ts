@@ -49,14 +49,14 @@ describe("Enumeration", () => {
       (testStringEnum as MutableEnumeration).addEnumerator(testStringEnum.createEnumerator("Enum2", "Val2"));
       (testStringEnum as MutableEnumeration).addEnumerator(testStringEnum.createEnumerator("Enum3", "Val3"));
       (testStringEnum as MutableEnumeration).addEnumerator(testStringEnum.createEnumerator("Enum4", "Val4"));
-      assert(testStringEnum.enumerators.length === 4);
+      assert.strictEqual(testStringEnum.enumerators.length, 4);
     });
     it("Basic Integer Enumeration Test", async () => {
       (testEnum as MutableEnumeration).addEnumerator(testEnum.createEnumerator("Enum1", 1));
       (testEnum as MutableEnumeration).addEnumerator(testEnum.createEnumerator("Enum2", 2));
       (testEnum as MutableEnumeration).addEnumerator(testEnum.createEnumerator("Enum3", 3));
       (testEnum as MutableEnumeration).addEnumerator(testEnum.createEnumerator("Enum4", 4));
-      assert(testEnum.enumerators.length === 4);
+      assert.strictEqual(testEnum.enumerators.length, 4);
     });
     it("Add duplicate enumerator", async () => {
       const newEnum = testStringEnum.createEnumerator("Enum1", "Val1");
@@ -349,7 +349,7 @@ describe("Enumeration", () => {
   describe("toJson", () => {
     let testEnumSansPrimType: Enumeration;
     const baseJson = {
-      $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/schemaitem",
+      $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem",
       schemaItemType: "Enumeration",
       name: "TestEnumeration",
       schema: "TestSchema",

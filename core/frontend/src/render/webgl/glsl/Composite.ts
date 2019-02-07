@@ -12,7 +12,7 @@ import { Texture2DHandle } from "../Texture";
 import { createViewportQuadBuilder } from "./ViewportQuad";
 import { GLSLFragment, addWindowToTexCoords } from "./Fragment";
 import { addHiliteSettings } from "./FeatureSymbology";
-import { Debug } from "../Diagnostics";
+import { assert } from "@bentley/bentleyjs-core";
 
 const isEdgePixel = `
 bool isEdgePixel(float xOffset, float yOffset) {
@@ -83,7 +83,7 @@ const computeTranslucentBaseColor = "return computeColor();";
 const computeAmbientOcclusionBaseColor = `\nreturn computeOpaqueColor();\n`;
 
 export function createCompositeProgram(flags: CompositeFlags, context: WebGLRenderingContext): ShaderProgram {
-  Debug.assert(() => CompositeFlags.None !== flags);
+  assert(CompositeFlags.None !== flags);
 
   const wantHilite = CompositeFlags.None !== (flags & CompositeFlags.Hilite);
   const wantTranslucent = CompositeFlags.None !== (flags & CompositeFlags.Translucent);

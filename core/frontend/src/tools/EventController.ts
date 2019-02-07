@@ -18,7 +18,7 @@ export class EventController {
   private readonly _removals: VoidFunction[] = [];
 
   constructor(public vp: ScreenViewport) {
-    const element = vp.canvas;
+    const element = vp.parentDiv;
     if (element === undefined)
       return;
 

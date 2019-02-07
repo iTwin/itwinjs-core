@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
+import { assert } from "@bentley/bentleyjs-core";
 import { ProgramBuilder, VariableType, VariablePrecision, FragmentShaderComponent } from "../ShaderBuilder";
 import { addModelViewMatrix } from "./Vertex";
 import { addWindowToTexCoords } from "./Fragment";
@@ -12,7 +13,6 @@ import { System } from "../System";
 import { ClipDef } from "../TechniqueFlags";
 import { addViewMatrix, addEyeSpace } from "./Common";
 import { ClippingType } from "../../System";
-import { Debug } from "../Diagnostics";
 
 const getClipPlaneFloat = `
   vec4 getClipPlane(int index) {
@@ -38,9 +38,9 @@ const unpackFloat = `
   }
 `;
 
+// ###TODO: oct-encode the normal to reduce # of samples from 4 to 2
 const unpackClipPlane = `
   vec4 getClipPlane(int index) {
-    // ###TODO: oct-encode the normal to reduce # of samples from 4 to 2
     float y = (float(index) + 0.5) / float(u_numClips);
     float sx = 0.25;
     vec2 tc = vec2(0.125, y);
@@ -117,7 +117,7 @@ export function addClipping(prog: ProgramBuilder, clipDef: ClipDef) {
 }
 
 function addClippingPlanes(prog: ProgramBuilder, maxClipPlanes: number) {
-  Debug.assert(() => maxClipPlanes > 0);
+  assert(maxClipPlanes > 0);
   const frag = prog.frag;
   const vert = prog.vert;
 
@@ -125,7 +125,7 @@ function addClippingPlanes(prog: ProgramBuilder, maxClipPlanes: number) {
   prog.addUniform("u_numClips", VariableType.Int, (program) => {
     program.addGraphicUniform("u_numClips", (uniform, params) => {
       const numClips = params.target.hasClipVolume ? params.target.clips.count : 0;
-      Debug.assert(() => numClips > 0);
+      assert(numClips > 0);
       uniform.setUniform1i(numClips);
     });
   });
@@ -146,7 +146,7 @@ function addClippingPlanes(prog: ProgramBuilder, maxClipPlanes: number) {
   frag.addUniform("s_clipSampler", VariableType.Sampler2D, (program) => {
     program.addGraphicUniform("s_clipSampler", (uniform, params) => {
       const texture = params.target.clips.texture;
-      Debug.assert(() => texture !== undefined);
+      assert(texture !== undefined);
       if (texture !== undefined)
         texture.bindSampler(uniform, TextureUnit.ClipVolume);
     });
@@ -158,7 +158,7 @@ function addClippingMask(prog: ProgramBuilder) {
   prog.frag.addUniform("s_clipSampler", VariableType.Sampler2D, (program) => {
     program.addGraphicUniform("s_clipSampler", (uniform, params) => {
       const texture = params.target.clipMask;
-      Debug.assert(() => texture !== undefined);
+      assert(texture !== undefined);
       if (texture !== undefined)
         texture.bindSampler(uniform, TextureUnit.ClipVolume);
     });

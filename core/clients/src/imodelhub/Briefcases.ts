@@ -230,18 +230,18 @@ export class BriefcaseHandler {
    *
    * This method does not work on the browser. Directory containing the Briefcase file is created if it does not exist. If there is an error during download, any partially downloaded file is deleted from disk.
    * @param briefcase Briefcase to download. This needs to include a download link. See [[BriefcaseQuery.selectDownloadUrl]].
-   * @param downloadToPathname Directory where the Briefcase should be downloaded.
+   * @param path Path where briefcase file should be downloaded, including filename.
    * @param progressCallback Callback for tracking progress.
    * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) or [IModelHubStatus.InvalidArgumentError]($bentley) if one of the arguments is undefined or has an invalid value.
    * @throws [[IModelHubClientError]] with [IModelHubStatus.NotSupportedInBrowser]($bentley) if called in a browser.
    * @throws [[IModelHubClientError]] with [IModelHubStatus.FileHandlerNotSet]($bentley) if [[FileHandler]] instance was not set for [[IModelClient]].
    * @throws [[ResponseError]] if the briefcase cannot be downloaded.
    */
-  public async download(alctx: ActivityLoggingContext, briefcase: Briefcase, downloadToPathname: string, progressCallback?: (progress: ProgressInfo) => void): Promise<void> {
+  public async download(alctx: ActivityLoggingContext, briefcase: Briefcase, path: string, progressCallback?: (progress: ProgressInfo) => void): Promise<void> {
     alctx.enter();
     Logger.logInfo(loggingCategory, `Downloading briefcase ${briefcase.wsgId} for iModel ${briefcase.iModelId}`);
     ArgumentCheck.defined("briefcase", briefcase);
-    ArgumentCheck.defined("downloadToPathname", downloadToPathname);
+    ArgumentCheck.defined("path", path);
 
     if (typeof window !== "undefined")
       return Promise.reject(IModelHubClientError.browser());
@@ -252,7 +252,7 @@ export class BriefcaseHandler {
     if (!briefcase.downloadUrl)
       return Promise.reject(IModelHubClientError.missingDownloadUrl("briefcase"));
 
-    await this._fileHandler.downloadFile(alctx, briefcase.downloadUrl, downloadToPathname, parseInt(briefcase.fileSize!, 10), progressCallback);
+    await this._fileHandler.downloadFile(alctx, briefcase.downloadUrl, path, parseInt(briefcase.fileSize!, 10), progressCallback);
     alctx.enter();
     Logger.logTrace(loggingCategory, `Downloading briefcase ${briefcase.wsgId} for iModel ${briefcase.iModelId}`);
   }

@@ -5,8 +5,6 @@
 /** @module WebGL */
 import { PointCloudArgs } from "../primitives/PointCloudPrimitive";
 import { FeaturesInfo } from "./FeaturesInfo";
-import { RenderCommands } from "./DrawCommand";
-import { Primitive } from "./Primitive";
 import { CachedGeometry } from "./CachedGeometry";
 import { AttributeHandle, QBufferHandle3d, BufferHandle } from "./Handle";
 import { TechniqueId } from "./TechniqueId";
@@ -17,19 +15,6 @@ import { System } from "./System";
 import { dispose } from "@bentley/bentleyjs-core";
 import { RenderMemory } from "../System";
 
-export class PointCloudPrimitive extends Primitive {
-  public get renderOrder(): RenderOrder { return RenderOrder.Surface; }
-  public addCommands(commands: RenderCommands): void { commands.addPrimitive(this); }
-  public dispose(): void {
-  }
-  public static create(args: PointCloudArgs) {
-    return new PointCloudPrimitive(args);
-  }
-
-  private constructor(args: PointCloudArgs) {
-    super(new PointCloudGeometry(args));
-  }
-}
 export class PointCloudGeometry extends CachedGeometry {
   private _vertices: QBufferHandle3d;
   private _vertexCount: number;
@@ -48,9 +33,8 @@ export class PointCloudGeometry extends CachedGeometry {
   }
 
   public collectStatistics(stats: RenderMemory.Statistics): void {
-    stats.addPointCloud(this._vertices.bytesUsed);
-    if (undefined !== this._colorHandle)
-      stats.addPointCloud(this._colorHandle.bytesUsed);
+    const bytesUsed = this._vertices.bytesUsed + (undefined !== this._colorHandle ? this._colorHandle.bytesUsed : 0);
+    stats.addPointCloud(bytesUsed);
   }
 
   protected _wantWoWReversal(_target: Target): boolean { return false; }

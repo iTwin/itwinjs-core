@@ -5,11 +5,11 @@
 /** @module RpcInterface */
 
 import { AccessToken } from "@bentley/imodeljs-clients";
-import { Point3d } from "@bentley/geometry-core";
+import { Point3d, Range3d } from "@bentley/geometry-core";
 import { RpcInterface } from "../RpcInterface";
 import { RpcManager } from "../RpcManager";
 import { IModel, IModelToken } from "../IModel";
-import { AxisAlignedBox3d } from "../geometry/Primitives";
+import { AxisAlignedBox3d } from "../geometry/Placement";
 import { IModelNotFoundResponse } from "./IModelReadRpcInterface";
 
 /**
@@ -21,7 +21,7 @@ export abstract class IModelWriteRpcInterface extends RpcInterface {
   /** The types that can be marshaled by the interface. */
   public static types = () => [
     AccessToken,
-    AxisAlignedBox3d,
+    Range3d,
     IModelToken,
     Point3d,
     IModelNotFoundResponse,

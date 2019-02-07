@@ -68,8 +68,8 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
   public async getAllCodeSpecs(_iModelToken: IModelToken): Promise<any[]> { return this.forward(arguments); }
   public async getViewStateData(_iModelToken: IModelToken, _viewDefinitionId: string): Promise<ViewStateProps> { return this.forward(arguments); }
   public async readFontJson(_iModelToken: IModelToken): Promise<any> { return this.forward(arguments); }
-  public async requestSnap(_iModelToken: IModelToken, _connectionId: string, _props: SnapRequestProps): Promise<SnapResponseProps> { return this.forward(arguments); }
-  public async cancelSnap(_iModelToken: IModelToken, _connectionId: string): Promise<void> { return this.forward(arguments); }
+  public async requestSnap(_iModelToken: IModelToken, _sessionId: string, _props: SnapRequestProps): Promise<SnapResponseProps> { return this.forward(arguments); }
+  public async cancelSnap(_iModelToken: IModelToken, _sessionId: string): Promise<void> { return this.forward(arguments); }
   public async getToolTipMessage(_iModelToken: IModelToken, _elementId: string): Promise<string[]> { return this.forward(arguments); }
   public async getViewThumbnail(_iModelToken: IModelToken, _viewId: string): Promise<Uint8Array> { return this.forward(arguments); }
   public async getDefaultViewId(_iModelToken: IModelToken): Promise<Id64String> { return this.forward(arguments); }

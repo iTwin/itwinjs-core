@@ -1,15 +1,15 @@
 {
   "name": "@bentley/imodeljs-clients-backend",
-  "version": "0.189.0-dev.10",
+  "version": "0.189.0-dev.22",
   "description": "Clients for various Bentley Services used by iModel.js at the backend",
   "main": "lib/imodeljs-clients-backend.js",
   "typings": "lib/imodeljs-clients-backend",
   "license": "MIT",
   "engines": {
-    "node": ">=8.9.0 <9.0"
+    "node": ">=10.14.0 <11.0"
   },
   "scripts": {
-    "build": "tsc 1>&2 && npm run copy:typedefs",
+    "build": "tsc 1>&2 && npm run copy:typedefs && node ./node_modules/@bentley/build-tools/scripts/ignoreargs.js 1>&2",
     "copy:typedefs": "cpx \"./src/openid-client.d.ts\" ./lib/",
     "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/test/assets",
     "clean": "rimraf lib package-deps.json",
@@ -34,20 +34,20 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "0.189.0-dev.10"
+    "@bentley/bentleyjs-core": "0.189.0-dev.22"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/config-loader": "0.189.0-dev.10",
-    "@bentley/bentleyjs-core": "0.189.0-dev.10",
-    "@bentley/build-tools": "0.189.0-dev.10",
+    "@bentley/config-loader": "0.189.0-dev.22",
+    "@bentley/bentleyjs-core": "0.189.0-dev.22",
+    "@bentley/build-tools": "0.189.0-dev.22",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^5.2.5",
     "@types/nock": "^9.1.2",
-    "@types/node": "10.10.3",
+    "@types/node": "10.12.18",
     "@types/deep-assign": "^0.1.0",
     "@types/fs-extra": "^4.0.7",
     "@types/js-base64": "^2.3.1",
@@ -65,7 +65,7 @@
     "typescript": "~3.2.2"
   },
   "dependencies": {
-    "@bentley/imodeljs-clients": "0.189.0-dev.10",
+    "@bentley/imodeljs-clients": "0.189.0-dev.22",
     "openid-client": "^2.3.1",
     "@openid/appauth": "^1.1.1",
     "https-proxy-agent": "^2.2.1",

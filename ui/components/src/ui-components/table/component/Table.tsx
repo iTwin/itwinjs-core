@@ -22,7 +22,7 @@ import {
 } from "../../common/selection/SelectionHandler";
 import { PropertyUpdatedArgs } from "../../editors/EditorContainer";
 import { PropertyValueRendererManager, PropertyDialogState } from "../../properties/ValueRendererManager";
-import { PropertyValueFormat, PrimitiveValue } from "../../properties/Value";
+import { PropertyValueFormat, PrimitiveValue } from "@bentley/imodeljs-frontend";
 import { TypeConverterManager } from "../../converters/TypeConverterManager";
 import { DragDropHeaderCell } from "./DragDropHeaderCell";
 import { ShowHideMenu } from "../../common/showhide/ShowHideMenu";
@@ -890,6 +890,7 @@ export class Table extends React.Component<TableProps, TableState> {
             onCancel: this._deactivateCellEditor,
             onCommit: this._onCellCommit,
             propertyRecord: cellProps.item.record!,
+            setFocus: true,
           } : undefined}
         >
           <CellContent isSelected={isSelected} />
@@ -1132,6 +1133,7 @@ export class Table extends React.Component<TableProps, TableState> {
   }
 }
 
+/** Converts a color value from a number to an HTML/CSS hex string */
 export const colorDecimalToHex = (decimal: number) => `#${decimal.toString(16).padStart(6, "0")}`;
 
 /**

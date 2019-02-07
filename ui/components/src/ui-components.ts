@@ -29,9 +29,8 @@ export * from "./ui-components/converters/NumericTypeConverter";
 export * from "./ui-components/converters/PointTypeConverter";
 export * from "./ui-components/converters/StringTypeConverter";
 
-import * as Primitives from "./ui-components/converters/valuetypes/PrimitiveTypes";
 import * as ConvertedPrimitives from "./ui-components/converters/valuetypes/ConvertedTypes";
-export { Primitives, ConvertedPrimitives };
+export { ConvertedPrimitives };
 
 export * from "./ui-components/dragdrop/DragDropDef";
 export * from "./ui-components/dragdrop/withDragSource";
@@ -42,15 +41,13 @@ export * from "./ui-components/editors/EditorContainer";
 export * from "./ui-components/editors/PropertyEditorManager";
 export * from "./ui-components/editors/TextEditor";
 export * from "./ui-components/editors/EnumEditor";
+export * from "./ui-components/editors/EnumButtonGroupEditor";
 export * from "./ui-components/editors/BooleanEditor";
+export * from "./ui-components/editors/ToggleEditor";
 
 export * from "./ui-components/filtering/FilteringInput";
 export * from "./ui-components/filtering/ResultSelector";
 
-export * from "./ui-components/properties/Description";
-export * from "./ui-components/properties/EditorParams";
-export * from "./ui-components/properties/Record";
-export * from "./ui-components/properties/Value";
 export * from "./ui-components/properties/ValueRendererManager";
 
 export * from "./ui-components/properties/renderers/NonPrimitivePropertyRenderer";

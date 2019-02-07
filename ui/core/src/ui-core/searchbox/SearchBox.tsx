@@ -6,7 +6,7 @@
 
 import * as React from "react";
 import * as classnames from "classnames";
-import { CommonProps } from "../Props";
+import { CommonProps } from "../utils/Props";
 import { UiCore } from "../UiCore";
 
 import "./SearchBox.scss";

@@ -18,10 +18,10 @@ describe("Schema", () => {
   describe("api creation of schema", () => {
     it("with only the essentials", () => {
       const testSchema = new Schema(new SchemaContext(), "TestSchemaCreation", 10, 99, 15);
-      assert.equal(testSchema.name, "TestSchemaCreation");
-      assert.equal(testSchema.readVersion, 10);
-      assert.equal(testSchema.writeVersion, 99);
-      assert.equal(testSchema.minorVersion, 15);
+      assert.strictEqual(testSchema.name, "TestSchemaCreation");
+      assert.strictEqual(testSchema.readVersion, 10);
+      assert.strictEqual(testSchema.writeVersion, 99);
+      assert.strictEqual(testSchema.minorVersion, 15);
     });
 
     it("with invalid version numbers should fail", () => {
@@ -148,7 +148,7 @@ describe("Schema", () => {
     });
     describe("toJSON", () => {
       it("Simple serialization", async () => {
-        const propertyJson = {
+        const schemaJson = {
           $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
           name: "ValidSchema",
           version: "1.2.3",
@@ -158,14 +158,9 @@ describe("Schema", () => {
         };
         const testSchema = new Schema(new SchemaContext(), "ValidSchema", 1, 2, 3);
         expect(testSchema).to.exist;
-        await testSchema.deserialize(propertyJson);
+        await testSchema.deserialize(schemaJson);
         const serialized = testSchema.toJson();
-        assert(serialized.$schema, "https://dev.bentley.com/json_schemas/ec/32/ecschema");
-        assert(serialized.name, "ValidSchema");
-        assert(serialized.version, "01.02.03");
-        assert(serialized.alias, "vs");
-        assert(serialized.label, "SomeDisplayLabel");
-        assert(serialized.description, "A really long description...");
+        expect(serialized).to.deep.equal({ ...schemaJson, version: "01.02.03" });
       });
       it("Serialization with one custom attribute- only class name", async () => {
         const propertyJson = {
@@ -181,7 +176,7 @@ describe("Schema", () => {
         await testSchema.deserialize(propertyJson);
         (testSchema as MutableSchema).addCustomAttribute({ className: "CoreCustomAttributes.HiddenSchema" });
         const serialized = testSchema.toJson();
-        assert(serialized.customAttributes[0].className === "CoreCustomAttributes.HiddenSchema");
+        assert.strictEqual(serialized.customAttributes[0].className, "CoreCustomAttributes.HiddenSchema");
       });
       it("Serialization with one custom attribute- additional properties", () => {
         const propertyJson = {
@@ -197,8 +192,8 @@ describe("Schema", () => {
         testSchema.deserializeSync(propertyJson);
         (testSchema as MutableSchema).addCustomAttribute({ className: "CoreCustomAttributes.HiddenSchema", ShowClasses: true });
         const serialized = testSchema.toJson();
-        assert(serialized.customAttributes[0].className === "CoreCustomAttributes.HiddenSchema");
-        assert(serialized.customAttributes[0].ShowClasses === true);
+        assert.strictEqual(serialized.customAttributes[0].className, "CoreCustomAttributes.HiddenSchema");
+        assert.isTrue(serialized.customAttributes[0].ShowClasses);
       });
       it("Serialization with multiple custom attributes- only class name", async () => {
         const propertyJson = {
@@ -216,9 +211,9 @@ describe("Schema", () => {
         (testSchema as MutableSchema).addCustomAttribute({ className: "CoreAttributes.HiddenSchema" });
         (testSchema as MutableSchema).addCustomAttribute({ className: "CoreCustom.HiddenSchema" });
         const serialized = testSchema.toJson();
-        assert(serialized.customAttributes[0].className === "CoreCustomAttributes.HiddenSchema");
-        assert(serialized.customAttributes[1].className === "CoreAttributes.HiddenSchema");
-        assert(serialized.customAttributes[2].className === "CoreCustom.HiddenSchema");
+        assert.strictEqual(serialized.customAttributes[0].className, "CoreCustomAttributes.HiddenSchema");
+        assert.strictEqual(serialized.customAttributes[1].className, "CoreAttributes.HiddenSchema");
+        assert.strictEqual(serialized.customAttributes[2].className, "CoreCustom.HiddenSchema");
       });
       it("Serialization with multiple custom attributes- additional properties", async () => {
         const propertyJson = {
@@ -236,9 +231,9 @@ describe("Schema", () => {
         (testSchema as MutableSchema).addCustomAttribute({ className: "CoreAttributes.HiddenSchema", FloatValue: 1.2 });
         (testSchema as MutableSchema).addCustomAttribute({ className: "CoreCustom.HiddenSchema", IntegerValue: 5 });
         const serialized = testSchema.toJson();
-        assert(serialized.customAttributes[0].ShowClasses === true);
-        assert(serialized.customAttributes[1].FloatValue === 1.2);
-        assert(serialized.customAttributes[2].IntegerValue === 5);
+        assert.isTrue(serialized.customAttributes[0].ShowClasses);
+        assert.strictEqual(serialized.customAttributes[1].FloatValue, 1.2);
+        assert.strictEqual(serialized.customAttributes[2].IntegerValue, 5);
       });
       it("Serialization with one reference", async () => {
         const schemaJson = {
@@ -263,8 +258,8 @@ describe("Schema", () => {
         expect(testSchema).to.exist;
         const entityClassJson = testSchema.toJson();
         assert.isDefined(entityClassJson);
-        assert(entityClassJson.references[0].name === "RefSchema");
-        assert(entityClassJson.references[0].version === "01.00.00");
+        assert.strictEqual(entityClassJson.references[0].name, "RefSchema");
+        assert.strictEqual(entityClassJson.references[0].version, "01.00.00");
       });
       it("Serialization with multiple references", () => {
         const schemaJson = {
@@ -295,10 +290,10 @@ describe("Schema", () => {
         expect(testSchema).to.exist;
         const entityClassJson = testSchema.toJson();
         assert.isDefined(entityClassJson);
-        assert(entityClassJson.references[0].name === "RefSchema");
-        assert(entityClassJson.references[0].version === "01.00.00");
-        assert(entityClassJson.references[1].name === "AnotherRefSchema");
-        assert(entityClassJson.references[1].version === "01.00.02");
+        assert.strictEqual(entityClassJson.references[0].name, "RefSchema");
+        assert.strictEqual(entityClassJson.references[0].version, "01.00.00");
+        assert.strictEqual(entityClassJson.references[1].name, "AnotherRefSchema");
+        assert.strictEqual(entityClassJson.references[1].version, "01.00.02");
       });
       it("Serialization with one reference and item", async () => {
         const schemaJson = {
@@ -330,9 +325,9 @@ describe("Schema", () => {
         const entityClassJson = testSchema.toJson();
         assert.isDefined(entityClassJson);
         assert.isDefined(entityClassJson.items.testClass);
-        assert(entityClassJson.items.testClass.schemaItemType, "EntityClass");
-        assert(entityClassJson.items.testClass.label, "ExampleEntity");
-        assert(entityClassJson.items.testClass.description, "An example entity class.");
+        assert.strictEqual(entityClassJson.items.testClass.schemaItemType, "EntityClass");
+        assert.strictEqual(entityClassJson.items.testClass.label, "ExampleEntity");
+        assert.strictEqual(entityClassJson.items.testClass.description, "An example entity class.");
       });
       it("Serialization with one reference and multiple items", async () => {
         const schemaJson = {
@@ -394,18 +389,18 @@ describe("Schema", () => {
         assert.isDefined(entityClassJson);
 
         assert.isDefined(entityClassJson.items.testClass);
-        assert(entityClassJson.items.testClass.schemaItemType, "EntityClass");
-        assert(entityClassJson.items.testClass.label, "ExampleEntity");
-        assert(entityClassJson.items.testClass.description, "An example entity class.");
+        assert.strictEqual(entityClassJson.items.testClass.schemaItemType, "EntityClass");
+        assert.strictEqual(entityClassJson.items.testClass.label, "ExampleEntity");
+        assert.strictEqual(entityClassJson.items.testClass.description, "An example entity class.");
 
         assert.isDefined(entityClassJson.items.ExampleMixin);
-        assert(entityClassJson.items.ExampleMixin.schemaItemType, "Mixin");
+        assert.strictEqual(entityClassJson.items.ExampleMixin.schemaItemType, "Mixin");
 
         assert.isDefined(entityClassJson.items.ExampleStruct);
-        assert(entityClassJson.items.ExampleMixin.schemaItemType, "Mixin");
+        assert.strictEqual(entityClassJson.items.ExampleMixin.schemaItemType, "Mixin");
 
         assert.isDefined(entityClassJson.items.testEnum);
-        assert(entityClassJson.items.testEnum.schemaItemType, "Enumeration");
+        assert.strictEqual(entityClassJson.items.testEnum.schemaItemType, "Enumeration");
       });
     });
   }); // Schema tests
@@ -499,7 +494,7 @@ describe("Schema", () => {
         const leftSchema = new Schema(context, "LeftSchema", 1, 2, 3);
         const rightSchema = new Schema(context, "RightSchema", 1, 2, 3);
         const result = leftSchema.schemaKey.compareByVersion(rightSchema.schemaKey);
-        assert.equal(result, 0);
+        assert.strictEqual(result, 0);
       });
     });
   });

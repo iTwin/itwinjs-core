@@ -503,7 +503,7 @@ class GroupItem extends React.Component<Props, State> {
   }
 }
 
-/** Group Button Function component that generates a [[GroupItem]]
+/** Group Button React component
  */
 // tslint:disable-next-line:variable-name
 export const GroupButton: React.FunctionComponent<GroupButtonProps> = (props) => {

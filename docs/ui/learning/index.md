@@ -20,7 +20,6 @@ iModel.js UI is compatible with React 16.2 and later
 * [Components](./components/index)
 * [Nine Zone](./ninezone/index)
 * [Framework](./framework/index)
-* [BWC](./bwc/index)
 
 See also:
 
@@ -37,7 +36,6 @@ The iModel.js UI library is divided into these NPM packages in the `@bentley` sc
 |**ui&#8209;components**|React components that are data-oriented, such as PropertyGrid, Table, Tree and Breadcrumb.
 |**ui&#8209;ninezone**|React components for application user interface layouts following the Bentley 9&#8209;Zone pattern.
 |**ui&#8209;framework**|Application fragments for Login, Project, iModel and View selection, and configuration of the application UI including the Backstage, Frontstages, Widgets, etc.
-|**bwc**|Sass/SCSS library and React components for building standardized Bentley user interfaces.
 
 ## Application UI Configuration
 

@@ -6,7 +6,7 @@ exports[`MessageBox renders renders correctly 1`] = `
   buttonCluster={
     Array [
       Object {
-        "buttonStyle": "bwc-buttons-primary",
+        "buttonStyle": "uicore-buttons-primary",
         "onClick": [Function],
         "type": "close",
       },

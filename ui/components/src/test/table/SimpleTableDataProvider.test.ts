@@ -5,14 +5,17 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import {
-  ColumnDescription,
   PropertyValue,
   PropertyDescription,
   PropertyRecord,
   PropertyValueFormat,
+  PrimitiveValue,
+} from "@bentley/imodeljs-frontend";
+
+import {
+  ColumnDescription,
   RowItem,
   SimpleTableDataProvider,
-  PrimitiveValue,
 } from "../../ui-components";
 import { SortDirection } from "@bentley/ui-core";
 

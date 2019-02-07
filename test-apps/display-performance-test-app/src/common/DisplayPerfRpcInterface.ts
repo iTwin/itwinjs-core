@@ -3,6 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { RpcInterface, RpcManager } from "@bentley/imodeljs-common";
+import * as chromeLauncher from "chrome-launcher";
 import * as https from "https";
 import * as http from "http";
 
@@ -15,7 +16,11 @@ export default class DisplayPerfRpcInterface extends RpcInterface {
   public static jsonFilePath = "";
 
   /** The backend server, when running on a browser */
+  public static backendServer: http.Server | https.Server;
   public static webServer: http.Server | https.Server;
+
+  /** A chrome browser window, when testing with chrome */
+  public static chrome?: chromeLauncher.LaunchedChrome;
 
   /** The types that can be marshaled by the interface. */
   public static types = () => [];

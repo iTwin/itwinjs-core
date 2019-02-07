@@ -2,6 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+/** @alpha */
 export const enum FormatTraits {
   TrailZeroes = 0x1,
   KeepSingleZero = 0x2,
@@ -15,6 +16,7 @@ export const enum FormatTraits {
   ExponentOnlyNegative = 0x200,
 }
 
+/** @alpha */
 export const enum FractionalPrecision {
   One = 1,
   Two = 2,
@@ -27,6 +29,7 @@ export const enum FractionalPrecision {
   TwoHundredFiftySix = 256,
 }
 
+/** @alpha */
 export const enum DecimalPrecision {
   Zero = 0,
   One = 1,
@@ -43,6 +46,7 @@ export const enum DecimalPrecision {
   Twelve = 12,
 }
 
+/** @alpha */
 export const enum FormatType {
   Decimal,
   Fractional,
@@ -50,12 +54,14 @@ export const enum FormatType {
   Station,
 }
 
-export const enum ScientificType { // required if type is scientific; options: normalized, zeroNormalized
+/** @alpha */
+export const enum ScientificType {
   Normalized,
   ZeroNormalized,
 }
 
-export const enum ShowSignOption { // default is no sign
+/** @alpha */
+export const enum ShowSignOption {
   NoSign,
   OnlyNegative,
   SignAlways,

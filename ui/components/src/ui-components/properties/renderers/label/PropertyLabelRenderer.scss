@@ -2,7 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-@import "@bentley/bwc/lib/mixins";
+@import "@bentley/ui-core/lib/ui-core/index";
 
 @mixin rotate($amount) {
   -webkit-transform: rotate($amount);
@@ -54,7 +54,7 @@
   border: none;
   background: transparent;
   cursor: pointer;
-  color: $bwc-gray-3;
+  color: $uicore-gray-3;
   height: 100%;
   width: 100%;
 
@@ -72,6 +72,6 @@
   }
 
   &:hover {
-    color: $bwc-gray-1;
+    color: $uicore-gray-1;
   }
 }

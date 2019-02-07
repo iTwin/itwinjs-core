@@ -200,7 +200,7 @@ export class BezierCurve3dH extends BezierCurveBase {
    * Assess legnth and turn to determine a stroke count.
    * @param options stroke options structure.
    */
-  public strokeCount(options?: StrokeOptions): number {
+  public computeStrokeCountForOptions(options?: StrokeOptions): number {
     // ugh.   for pure 3d case, local dx,dy,dz vars worked efficiently.
     // managing the weights is tricky, so just do the easy code with temporary point vars.
     this.getPolePoint3d(0, this._workPoint0);

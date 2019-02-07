@@ -1,0 +1,73 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+@import "../style/index";
+
+@mixin uicore-inputs-labeled-select {
+
+    display:                    block;
+    padding:                    0;
+    margin:                     0 0 $uicore-unbordered-padding;
+    text-align:                 left;
+    font-family:                $uicore-font-family;
+    font-size:                  $uicore-font-size;
+    font-weight:                $uicore-font-weight-normal;
+    cursor:                     pointer;
+
+    > .label {
+
+        padding:                0;
+        margin:                 0;
+        border:                 0 none transparent;
+        display:                block;
+        font-size:              $uicore-font-size;
+        font-weight:            $uicore-font-weight-semibold;
+        line-height:            $uicore-line-height;
+        text-align:             left;
+        color:                  $uicore-text-color;
+    }
+
+    > .message {
+
+        display:                block;
+        font-size:              $uicore-font-size-small;
+        line-height:            $uicore-line-height;
+        color:                  $uicore-gray;
+    }
+
+
+    /// Status colors ----------------------------------------------------------
+
+    $status-colors: (
+        success:    $uicore-green,
+        warning:    $uicore-orange,
+        error:      $uicore-red
+    );
+
+    @each $status, $color in $status-colors {
+
+        &.#{$status},
+        &.#{$status} > .message {
+
+            color:              $color;
+        }
+
+        &.#{$status} {
+            > select,
+            > .uicore-inputs-select {
+
+                border-color:       $color;
+                box-shadow:         rgba( $uicore-black, 0.075 ) 0px 1px 1px inset;
+
+                &:focus {
+
+                    border-color:   $color;
+                    box-shadow:     rgba( $uicore-black, 0 ) 0px 1px 1px inset, rgba( $color, 0.15 ) 0px 0px 0px 2px;
+                }
+            }
+        }
+    }
+}
+
+.uicore-inputs-labeled-select { @include uicore-inputs-labeled-select; }

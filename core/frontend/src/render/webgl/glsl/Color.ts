@@ -9,7 +9,6 @@ import {
   VariableType,
   FragmentShaderComponent,
 } from "../ShaderBuilder";
-import { LUTGeometry } from "../CachedGeometry";
 import { GLSLFragment } from "./Fragment";
 import { addRenderPass } from "./RenderPass";
 
@@ -41,7 +40,7 @@ export function addColor(builder: ProgramBuilder, forwardBaseAlpha: boolean = fa
   // ShaderSource::AddRenderPass
   builder.vert.addUniform("u_color", VariableType.Vec4, (prog) => {
     prog.addGraphicUniform("u_color", (uniform, params) => {
-      const lutGeom = params.geometry as LUTGeometry;
+      const lutGeom = params.geometry.asLUT!;
       const color = lutGeom.getColor(params.target);
       if (color.isUniform) {
         const rgba = color.uniform;

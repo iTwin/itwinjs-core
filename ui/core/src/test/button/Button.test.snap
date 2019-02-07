@@ -1,0 +1,59 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<Button /> disabled renders correctly 1`] = `
+<button
+  className="uicore-buttons-blue"
+  disabled={true}
+>
+  Label
+</button>
+`;
+
+exports[`<Button /> renders correctly 1`] = `
+<button
+  className="uicore-buttons-blue"
+/>
+`;
+
+exports[`<Button /> should render blue 1`] = `
+<button
+  className="uicore-buttons-blue"
+  type="blue"
+/>
+`;
+
+exports[`<Button /> should render disabled 1`] = `
+<button
+  className="uicore-buttons-disabled"
+  type="disabled"
+/>
+`;
+
+exports[`<Button /> should render hollow 1`] = `
+<button
+  className="uicore-buttons-hollow"
+  type="hollow"
+/>
+`;
+
+exports[`<Button /> should render large 1`] = `
+<button
+  className="uicore-buttons-blue-large"
+  size="large"
+/>
+`;
+
+exports[`<Button /> should render primary 1`] = `
+<button
+  className="uicore-buttons-blue"
+  type="primary"
+/>
+`;
+
+exports[`<Button /> with children renders correctly 1`] = `
+<button
+  className="uicore-buttons-blue"
+>
+  children
+</button>
+`;

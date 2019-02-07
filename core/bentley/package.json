@@ -1,6 +1,6 @@
 {
   "name": "@bentley/bentleyjs-core",
-  "version": "0.189.0-dev.10",
+  "version": "0.189.0-dev.22",
   "description": "Bentley JavaScript core components",
   "main": "lib/bentleyjs-core.js",
   "typings": "lib/bentleyjs-core",
@@ -10,15 +10,23 @@
     "url": "https://github.com/imodeljs/imodeljs"
   },
   "scripts": {
-    "build": "tsc 1>&2 && npm run webpackModule-dev",
+    "build": "node ./node_modules/@bentley/webpack-tools/bin/buildIModelJsModule.js",
     "clean": "rimraf lib package-deps.json",
     "test": "node ./node_modules/@bentley/build-tools/scripts/test.js",
     "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --source=./src --json=../../generated-docs/core/bentleyjs-core/file.json --tsIndexFile=bentleyjs-core.ts --onlyJson %TYPEDOC_THEME%",
     "cover": "nyc npm test",
     "cover:docs": "node ./node_modules/@bentley/build-tools/scripts/docscoverage.js",
-    "lint": "tslint --project . 1>&2",
-    "webpackModule-dev": "make-dir ./lib/module/dev/ && webpack --config ./node_modules/@bentley/webpack-tools/modules/webpackModule.config.js --env.entry=./lib/bentleyjs-core.js --env.bundlename=bentleyjs-core  --json >./lib/module/dev/webpackStats.json",
-    "webpackModule-prod": "webpack --config ./node_modules/@bentley/webpack-tools/modules/webpackModule.config.js --env.entry=./lib/bentleyjs-core.js --env.bundlename=bentleyjs-core --env.prod"
+    "lint": "tslint --project . 1>&2"
+  },
+  "iModelJs": {
+    "buildModule": {
+      "type": "system",
+      "webpack": {
+        "dest": "./lib/module",
+        "entry": "./lib/bentleyjs-core.js",
+        "bundleName": "bentleyjs-core"
+      }
+    }
   },
   "keywords": [
     "Bentley",
@@ -30,13 +38,12 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "@bentley/build-tools": "0.189.0-dev.10",
-    "@bentley/webpack-tools": "0.189.0-dev.10",
+    "@bentley/build-tools": "0.189.0-dev.22",
+    "@bentley/webpack-tools": "0.189.0-dev.22",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^5.2.5",
-    "@types/node": "10.10.3",
+    "@types/node": "10.12.18",
     "chai": "^4.1.2",
-    "make-dir-cli": "^1.0.0",
     "mocha": "^5.2.0",
     "rimraf": "^2.6.2",
     "tslint": "^5.11.0",
@@ -44,11 +51,7 @@
     "typedoc-plugin-external-module-name": "^1.1.1",
     "typescript": "~3.2.2",
     "ts-node": "^7.0.1",
-    "nyc": "^13.0.1",
-    "source-map-loader": "^0.2.3",
-    "source-map-support": "^0.5.6",
-    "webpack": "^4.20.2",
-    "webpack-cli": "^3.1.0"
+    "nyc": "^13.0.1"
   },
   "nyc": {
     "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc"

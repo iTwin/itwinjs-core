@@ -18,7 +18,7 @@ import "./Dialog.scss";
 import { Omit } from "../utils/typeUtils";
 
 /** Enum for button types. Determines button label, and default button style. */
-export enum ButtonType {
+export enum DialogButtonType {
   None = "",
   Close = "close",
   OK = "ok",
@@ -29,11 +29,11 @@ export enum ButtonType {
 }
 
 /** Enum for button style. */
-export enum ButtonStyle {
+export enum DialogButtonStyle {
   None = "",
-  Primary = "bwc-buttons-primary",
-  Hollow = "bwc-buttons-hollow",
-  Blue = "bwc-buttons-blue",
+  Primary = "uicore-buttons-primary",
+  Hollow = "uicore-buttons-hollow",
+  Blue = "uicore-buttons-blue",
 }
 
 /** Enum for dialog alignment */
@@ -44,13 +44,15 @@ export enum DialogAlignment {
 }
 
 /** Interface for a given button in a button cluster */
-export interface ButtonCluster {
+export interface DialogButton {
   /** type of button */
-  type: ButtonType;
+  type: DialogButtonType;
   /** Triggered on button click */
   onClick: () => void;
   /** Which bwc button style to decorate button width */
-  buttonStyle?: ButtonStyle;
+  buttonStyle?: DialogButtonStyle;
+  /** Disable the button */
+  disabled?: boolean;
 }
 
 /** Property interface for [[Dialog]] */
@@ -63,8 +65,8 @@ export interface DialogProps extends Omit<React.AllHTMLAttributes<HTMLDivElement
   title?: string | JSX.Element;
   /** Footer to show at bottom of dialog. Note: will override buttonCluster */
   footer?: string | JSX.Element;
-  /** List of ButtonCluster objects specifying buttons and associated onClick events */
-  buttonCluster?: ButtonCluster[];
+  /** List of DialogButton objects specifying buttons and associated onClick events */
+  buttonCluster?: DialogButton[];
   /** onClick event for X button for dialog */
   onClose?: () => void;
   /** 'keyup' event for <Esc> key */
@@ -242,36 +244,36 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
   private getFooterButtons(props: DialogProps) {
     const buttons: React.ReactNode[] = [];
     if (props.buttonCluster) {
-      props.buttonCluster.forEach((button: ButtonCluster, index: number) => {
+      props.buttonCluster.forEach((button: DialogButton, index: number) => {
         let buttonText = "";
         let buttonClass = classnames("dialog-button", `dialog-button-${button.type}`);
         switch (button.type) {
-          case ButtonType.OK:
+          case DialogButtonType.OK:
             buttonText = UiCore.i18n.translate("UiCore:dialog.ok");
-            buttonClass = classnames(buttonClass, button.buttonStyle || "bwc-buttons-primary");
+            buttonClass = classnames(buttonClass, button.buttonStyle || "uicore-buttons-primary");
             break;
-          case ButtonType.Retry:
+          case DialogButtonType.Retry:
             buttonText = UiCore.i18n.translate("UiCore:dialog.retry");
-            buttonClass = classnames(buttonClass, button.buttonStyle || "bwc-buttons-primary");
+            buttonClass = classnames(buttonClass, button.buttonStyle || "uicore-buttons-primary");
             break;
-          case ButtonType.Yes:
+          case DialogButtonType.Yes:
             buttonText = UiCore.i18n.translate("UiCore:dialog.yes");
-            buttonClass = classnames(buttonClass, button.buttonStyle || "bwc-buttons-primary");
+            buttonClass = classnames(buttonClass, button.buttonStyle || "uicore-buttons-primary");
             break;
-          case ButtonType.No:
+          case DialogButtonType.No:
             buttonText = UiCore.i18n.translate("UiCore:dialog.no");
-            buttonClass = classnames(buttonClass, button.buttonStyle || "bwc-buttons-hollow");
+            buttonClass = classnames(buttonClass, button.buttonStyle || "uicore-buttons-hollow");
             break;
-          case ButtonType.Cancel:
+          case DialogButtonType.Cancel:
             buttonText = UiCore.i18n.translate("UiCore:dialog.cancel");
-            buttonClass = classnames(buttonClass, button.buttonStyle || "bwc-buttons-hollow");
+            buttonClass = classnames(buttonClass, button.buttonStyle || "uicore-buttons-hollow");
             break;
-          case ButtonType.Close:
+          case DialogButtonType.Close:
             buttonText = UiCore.i18n.translate("UiCore:dialog.close");
-            buttonClass = classnames(buttonClass, button.buttonStyle || "bwc-buttons-hollow");
+            buttonClass = classnames(buttonClass, button.buttonStyle || "uicore-buttons-hollow");
             break;
         }
-        buttons.push(<button className={buttonClass} key={index.toString()} onClick={button.onClick}>{buttonText}</button>);
+        buttons.push(<button className={buttonClass} disabled={button.disabled} key={index.toString()} onClick={button.onClick}>{buttonText}</button>);
       });
     }
     return buttons;

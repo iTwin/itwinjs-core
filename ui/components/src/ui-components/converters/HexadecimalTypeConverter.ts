@@ -7,7 +7,7 @@
 import { TypeConverter } from "./TypeConverter";
 import { TypeConverterManager } from "./TypeConverterManager";
 import { Id64 } from "@bentley/bentleyjs-core";
-import * as Primitives from "./valuetypes/PrimitiveTypes";
+import { Primitives } from "@bentley/imodeljs-frontend";
 
 /** Hexadecimal Type Converter.
  */

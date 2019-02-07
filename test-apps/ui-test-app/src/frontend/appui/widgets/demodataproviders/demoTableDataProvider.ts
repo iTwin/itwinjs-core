@@ -3,10 +3,11 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { SortDirection } from "@bentley/ui-core";
+import { PropertyValue, PropertyDescription, PropertyRecord, PropertyValueFormat } from "@bentley/imodeljs-frontend";
 import {
   TableDataProvider, MutableTableDataProvider,
   RowItem, TableDataChangeEvent, ColumnDescription,
-  DropTargetArguments, DragSourceArguments, DropStatus, DropEffects, PropertyValue, PropertyDescription, PropertyRecord, PropertyValueFormat, DragSourceProps, DropTargetProps,
+  DropTargetArguments, DragSourceArguments, DropStatus, DropEffects, DragSourceProps, DropTargetProps,
 } from "@bentley/ui-components";
 
 import { DemoDragDropObject } from "./demoTreeDataProvider";

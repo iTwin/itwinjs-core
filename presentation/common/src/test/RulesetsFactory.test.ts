@@ -65,10 +65,10 @@ describe("RulesetsFactory", () => {
         relatedClassPath: [],
       };
       const field = new PropertiesField(createRandomCategory(), "MyProperty",
-        faker.random.word(), createStringTypeDescription(), true, 1, [property]);
+        "My Property", createStringTypeDescription(), true, 1, [property]);
       const record = new Item([], faker.random.word(), "", recordClass,
         { MyProperty: "test value" }, { MyProperty: "test display value" }, []);
-      const ruleset = factory.createSimilarInstancesRuleset(field, record);
+      const result = factory.createSimilarInstancesRuleset(field, record);
       const expectedRules: Rule[] = [{
         ruleType: RuleTypes.Content,
         specifications: [{
@@ -79,7 +79,8 @@ describe("RulesetsFactory", () => {
           instanceFilter: `this.MyProperty = "test value"`,
         }],
       }];
-      expect(ruleset.rules).to.deep.eq(expectedRules);
+      expect(result.ruleset.rules).to.deep.eq(expectedRules);
+      expect(result.description).to.eq(`[My Class].[My Property] = test display value`);
     });
 
     it("creates a valid ruleset for boolean `true` record", () => {
@@ -97,10 +98,10 @@ describe("RulesetsFactory", () => {
         relatedClassPath: [],
       };
       const field = new PropertiesField(createRandomCategory(), "MyProperty",
-        faker.random.word(), createBooleanTypeDescription(), true, 1, [property]);
+        "My Property", createBooleanTypeDescription(), true, 1, [property]);
       const record = new Item([], faker.random.word(), "", recordClass,
         { MyProperty: true }, { MyProperty: "True" }, []);
-      const ruleset = factory.createSimilarInstancesRuleset(field, record);
+      const result = factory.createSimilarInstancesRuleset(field, record);
       const expectedRules: Rule[] = [{
         ruleType: RuleTypes.Content,
         specifications: [{
@@ -111,7 +112,8 @@ describe("RulesetsFactory", () => {
           instanceFilter: `this.MyProperty = TRUE`,
         }],
       }];
-      expect(ruleset.rules).to.deep.eq(expectedRules);
+      expect(result.ruleset.rules).to.deep.eq(expectedRules);
+      expect(result.description).to.eq(`[My Class].[My Property] = True`);
     });
 
     it("creates a valid ruleset for boolean `false` record", () => {
@@ -129,10 +131,10 @@ describe("RulesetsFactory", () => {
         relatedClassPath: [],
       };
       const field = new PropertiesField(createRandomCategory(), "MyProperty",
-        faker.random.word(), createBooleanTypeDescription(), true, 1, [property]);
+        "My Property", createBooleanTypeDescription(), true, 1, [property]);
       const record = new Item([], faker.random.word(), "", recordClass,
         { MyProperty: false }, { MyProperty: "False" }, []);
-      const ruleset = factory.createSimilarInstancesRuleset(field, record);
+      const result = factory.createSimilarInstancesRuleset(field, record);
       const expectedRules: Rule[] = [{
         ruleType: RuleTypes.Content,
         specifications: [{
@@ -143,7 +145,8 @@ describe("RulesetsFactory", () => {
           instanceFilter: `this.MyProperty = FALSE`,
         }],
       }];
-      expect(ruleset.rules).to.deep.eq(expectedRules);
+      expect(result.ruleset.rules).to.deep.eq(expectedRules);
+      expect(result.description).to.eq(`[My Class].[My Property] = False`);
     });
 
     it("creates a valid ruleset for int record", () => {
@@ -161,10 +164,10 @@ describe("RulesetsFactory", () => {
         relatedClassPath: [],
       };
       const field = new PropertiesField(createRandomCategory(), "MyProperty",
-        faker.random.word(), createIntTypeDescription(), true, 1, [property]);
+        "My Property", createIntTypeDescription(), true, 1, [property]);
       const record = new Item([], faker.random.word(), "", recordClass,
         { MyProperty: 123 }, { MyProperty: "123" }, []);
-      const ruleset = factory.createSimilarInstancesRuleset(field, record);
+      const result = factory.createSimilarInstancesRuleset(field, record);
       const expectedRules: Rule[] = [{
         ruleType: RuleTypes.Content,
         specifications: [{
@@ -175,7 +178,8 @@ describe("RulesetsFactory", () => {
           instanceFilter: `this.MyProperty = 123`,
         }],
       }];
-      expect(ruleset.rules).to.deep.eq(expectedRules);
+      expect(result.ruleset.rules).to.deep.eq(expectedRules);
+      expect(result.description).to.eq(`[My Class].[My Property] = 123`);
     });
 
     it("creates a valid ruleset for double record", () => {
@@ -193,10 +197,10 @@ describe("RulesetsFactory", () => {
         relatedClassPath: [],
       };
       const field = new PropertiesField(createRandomCategory(), "MyProperty",
-        faker.random.word(), createDoubleTypeDescription(), true, 1, [property]);
+        "My Property", createDoubleTypeDescription(), true, 1, [property]);
       const record = new Item([], faker.random.word(), "", recordClass,
         { MyProperty: 123.456 }, { MyProperty: "123.46" }, []);
-      const ruleset = factory.createSimilarInstancesRuleset(field, record);
+      const result = factory.createSimilarInstancesRuleset(field, record);
       const expectedRules: Rule[] = [{
         ruleType: RuleTypes.Content,
         specifications: [{
@@ -207,7 +211,8 @@ describe("RulesetsFactory", () => {
           instanceFilter: `this.MyProperty = 123.456`, // WIP should this use display value instead?
         }],
       }];
-      expect(ruleset.rules).to.deep.eq(expectedRules);
+      expect(result.ruleset.rules).to.deep.eq(expectedRules);
+      expect(result.description).to.eq(`[My Class].[My Property] = 123.46`);
     });
 
     it("creates a valid ruleset for null record", () => {
@@ -225,10 +230,10 @@ describe("RulesetsFactory", () => {
         relatedClassPath: [],
       };
       const field = new PropertiesField(createRandomCategory(), "MyProperty",
-        faker.random.word(), createStringTypeDescription(), true, 1, [property]);
+        "My Property", createStringTypeDescription(), true, 1, [property]);
       const record = new Item([], faker.random.word(), "", recordClass,
         { MyProperty: undefined }, { MyProperty: "" }, []);
-      const ruleset = factory.createSimilarInstancesRuleset(field, record);
+      const result = factory.createSimilarInstancesRuleset(field, record);
       const expectedRules: Rule[] = [{
         ruleType: RuleTypes.Content,
         specifications: [{
@@ -239,7 +244,8 @@ describe("RulesetsFactory", () => {
           instanceFilter: `this.MyProperty = NULL`,
         }],
       }];
-      expect(ruleset.rules).to.deep.eq(expectedRules);
+      expect(result.ruleset.rules).to.deep.eq(expectedRules);
+      expect(result.description).to.eq(`[My Class].[My Property] = NULL`);
     });
 
     it("creates a valid ruleset for navigation property record", () => {
@@ -257,10 +263,10 @@ describe("RulesetsFactory", () => {
         relatedClassPath: [],
       };
       const field = new PropertiesField(createRandomCategory(), "MyProperty",
-        faker.random.word(), createNavigationPropertyTypeDescription(), true, 1, [property]);
+        "My Property", createNavigationPropertyTypeDescription(), true, 1, [property]);
       const record = new Item([], faker.random.word(), "", recordClass,
         { MyProperty: "0x16" }, { MyProperty: "test display value" }, []);
-      const ruleset = factory.createSimilarInstancesRuleset(field, record);
+      const result = factory.createSimilarInstancesRuleset(field, record);
       const expectedRules: Rule[] = [{
         ruleType: RuleTypes.Content,
         specifications: [{
@@ -271,7 +277,8 @@ describe("RulesetsFactory", () => {
           instanceFilter: `this.MyProperty.Id = "0x16"`,
         }],
       }];
-      expect(ruleset.rules).to.deep.eq(expectedRules);
+      expect(result.ruleset.rules).to.deep.eq(expectedRules);
+      expect(result.description).to.eq(`[My Class].[My Property] = test display value`);
     });
 
     it("creates a valid ruleset for one-step forward related nested content record", () => {
@@ -305,7 +312,7 @@ describe("RulesetsFactory", () => {
         relatedClassPath: [],
       };
       const field = new PropertiesField(createRandomCategory(), faker.random.word(),
-        faker.random.word(), createStringTypeDescription(), true, 1, [property]);
+        "Related Property", createStringTypeDescription(), true, 1, [property]);
       const parentField = new NestedContentField(createRandomCategory(), faker.random.word(),
         faker.random.words(), createRandomPrimitiveTypeDescription(), faker.random.boolean(),
         faker.random.number(), createRandomECClassInfo(), relationshipPath, [field]);
@@ -326,7 +333,7 @@ describe("RulesetsFactory", () => {
         [field.name]: undefined,
       };
       const record = new Item([], faker.random.words(), "", recordClass, values, displayValues, []);
-      const ruleset = factory.createSimilarInstancesRuleset(field, record);
+      const result = factory.createSimilarInstancesRuleset(field, record);
       const expectedRules: Rule[] = [{
         ruleType: RuleTypes.Content,
         specifications: [{
@@ -343,7 +350,8 @@ describe("RulesetsFactory", () => {
           instanceFilter: `related_0.MyProperty = "test value"`,
         }],
       }];
-      expect(ruleset.rules).to.deep.eq(expectedRules);
+      expect(result.ruleset.rules).to.deep.eq(expectedRules);
+      expect(result.description).to.eq(`[Related Class].[Related Property] = test display value`);
     });
 
     it("creates a valid ruleset for one-step backward related nested content record", () => {
@@ -372,12 +380,12 @@ describe("RulesetsFactory", () => {
         property: {
           classInfo: propertyClass,
           type: "string",
-          name: "MyProperty",
+          name: "RelatedProperty",
         },
         relatedClassPath: [],
       };
       const field = new PropertiesField(createRandomCategory(), faker.random.word(),
-        faker.random.word(), createStringTypeDescription(), true, 1, [property]);
+        "Related Property", createStringTypeDescription(), true, 1, [property]);
       const parentField = new NestedContentField(createRandomCategory(), faker.random.word(),
         faker.random.words(), createRandomPrimitiveTypeDescription(), faker.random.boolean(),
         faker.random.number(), createRandomECClassInfo(), relationshipPath, [field]);
@@ -398,7 +406,7 @@ describe("RulesetsFactory", () => {
         [field.name]: undefined,
       };
       const record = new Item([], faker.random.words(), "", recordClass, values, displayValues, []);
-      const ruleset = factory.createSimilarInstancesRuleset(field, record);
+      const result = factory.createSimilarInstancesRuleset(field, record);
       const expectedRules: Rule[] = [{
         ruleType: RuleTypes.Content,
         specifications: [{
@@ -412,10 +420,11 @@ describe("RulesetsFactory", () => {
             isRequired: true,
             alias: "related_0",
           }],
-          instanceFilter: `related_0.MyProperty = "test value"`,
+          instanceFilter: `related_0.RelatedProperty = "test value"`,
         }],
       }];
-      expect(ruleset.rules).to.deep.eq(expectedRules);
+      expect(result.ruleset.rules).to.deep.eq(expectedRules);
+      expect(result.description).to.eq(`[Related Class].[Related Property] = test display value`);
     });
 
     it("creates a valid ruleset for one-step forward related property record", () => {
@@ -444,15 +453,15 @@ describe("RulesetsFactory", () => {
         property: {
           classInfo: propertyClass,
           type: "string",
-          name: "MyProperty",
+          name: "RelatedProperty",
         },
         relatedClassPath: relationshipPath,
       };
-      const field = new PropertiesField(createRandomCategory(), "MyProperty",
-        faker.random.word(), createStringTypeDescription(), true, 1, [property]);
+      const field = new PropertiesField(createRandomCategory(), "RelatedProperty",
+        "Related Property", createStringTypeDescription(), true, 1, [property]);
       const record = new Item([], faker.random.words(), "", recordClass,
-        { MyProperty: "test value" }, { MyProperty: "test display value" }, []);
-      const ruleset = factory.createSimilarInstancesRuleset(field, record);
+        { RelatedProperty: "test value" }, { RelatedProperty: "test display value" }, []);
+      const result = factory.createSimilarInstancesRuleset(field, record);
       const expectedRules: Rule[] = [{
         ruleType: RuleTypes.Content,
         specifications: [{
@@ -466,10 +475,11 @@ describe("RulesetsFactory", () => {
             isRequired: true,
             alias: "related_0",
           }],
-          instanceFilter: `related_0.MyProperty = "test value"`,
+          instanceFilter: `related_0.RelatedProperty = "test value"`,
         }],
       }];
-      expect(ruleset.rules).to.deep.eq(expectedRules);
+      expect(result.ruleset.rules).to.deep.eq(expectedRules);
+      expect(result.description).to.eq(`[Related Class].[Related Property] = test display value`);
     });
 
     it("creates a valid ruleset for one-step backward related property record", () => {
@@ -498,15 +508,15 @@ describe("RulesetsFactory", () => {
         property: {
           classInfo: propertyClass,
           type: "string",
-          name: "MyProperty",
+          name: "RelatedProperty",
         },
         relatedClassPath: relationshipPath,
       };
-      const field = new PropertiesField(createRandomCategory(), "MyProperty",
-        faker.random.word(), createStringTypeDescription(), true, 1, [property]);
+      const field = new PropertiesField(createRandomCategory(), "RelatedProperty",
+        "Related Property", createStringTypeDescription(), true, 1, [property]);
       const record = new Item([], faker.random.words(), "", recordClass,
-        { MyProperty: "test value" }, { MyProperty: "test display value" }, []);
-      const ruleset = factory.createSimilarInstancesRuleset(field, record);
+        { RelatedProperty: "test value" }, { RelatedProperty: "test display value" }, []);
+      const result = factory.createSimilarInstancesRuleset(field, record);
       const expectedRules: Rule[] = [{
         ruleType: RuleTypes.Content,
         specifications: [{
@@ -520,10 +530,11 @@ describe("RulesetsFactory", () => {
             isRequired: true,
             alias: "related_0",
           }],
-          instanceFilter: `related_0.MyProperty = "test value"`,
+          instanceFilter: `related_0.RelatedProperty = "test value"`,
         }],
       }];
-      expect(ruleset.rules).to.deep.eq(expectedRules);
+      expect(result.ruleset.rules).to.deep.eq(expectedRules);
+      expect(result.description).to.eq(`[Related Class].[Related Property] = test display value`);
     });
 
     it("creates a valid ruleset when related property record is based on multiple properties", () => {
@@ -553,7 +564,7 @@ describe("RulesetsFactory", () => {
         property: {
           classInfo: propertyClass1,
           type: "string",
-          name: "MyProperty",
+          name: "RelatedProperty",
         },
         relatedClassPath: relationshipPath1,
       };
@@ -577,15 +588,15 @@ describe("RulesetsFactory", () => {
         property: {
           classInfo: propertyClass2,
           type: "string",
-          name: "MyProperty",
+          name: "RelatedProperty",
         },
         relatedClassPath: relationshipPath2,
       };
-      const field = new PropertiesField(createRandomCategory(), "MyProperty",
-        faker.random.word(), createStringTypeDescription(), true, 1, [property1, property2]);
+      const field = new PropertiesField(createRandomCategory(), "RelatedProperty",
+        "Related Property", createStringTypeDescription(), true, 1, [property1, property2]);
       const record = new Item([], faker.random.words(), "", recordClass,
-        { MyProperty: "test value" }, { MyProperty: "test display value" }, []);
-      const ruleset = factory.createSimilarInstancesRuleset(field, record);
+        { RelatedProperty: "test value" }, { RelatedProperty: "test display value" }, []);
+      const result = factory.createSimilarInstancesRuleset(field, record);
       const expectedRules: Rule[] = [{
         ruleType: RuleTypes.Content,
         specifications: [{
@@ -605,10 +616,11 @@ describe("RulesetsFactory", () => {
             isRequired: true,
             alias: "related_1",
           }],
-          instanceFilter: `related_0.MyProperty = "test value" OR related_1.MyProperty = "test value"`,
+          instanceFilter: `related_0.RelatedProperty = "test value" OR related_1.RelatedProperty = "test value"`,
         }],
       }];
-      expect(ruleset.rules).to.deep.eq(expectedRules);
+      expect(result.ruleset.rules).to.deep.eq(expectedRules);
+      expect(result.description).to.eq(`[Related Class 1].[Related Property] = test display value OR [Related Class 2].[Related Property] = test display value`);
     });
 
     describe("invalid conditions", () => {

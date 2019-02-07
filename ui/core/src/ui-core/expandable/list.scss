@@ -1,0 +1,46 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+@import "../style/index";
+
+@mixin uicore-expandable-blocks-list {
+
+    > div {
+
+        transition:                 margin 0.15s ease-in-out;
+
+        > .header {
+
+            border-color:           $uicore-gray-a transparent transparent;
+        }
+
+        &:first-child {
+
+            > .header {
+
+                border-top-color:   transparent;
+            }
+        }
+    }
+
+    > .is-expanded + div {
+
+        > .header {
+
+            border-top-color:       transparent;
+        }
+
+        &.is-expanded  > .header {
+
+            border-top-color:       $uicore-blue;
+        }
+    }
+
+    > .is-expanded + .is-expanded {
+
+        margin-top:                 $uicore-unbordered-padding;
+    }
+}
+
+.uicore-expandable-blocks-list { @include uicore-expandable-blocks-list; }

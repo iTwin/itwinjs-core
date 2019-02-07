@@ -16,7 +16,7 @@ import {
   ArrayTypeDescription, StructTypeDescription, NestedContentField, NestedContentValue,
 } from "@bentley/presentation-common";
 import { ContentBuilder } from "../../common/ContentBuilder";
-import { PrimitiveValue } from "@bentley/ui-components";
+import { PrimitiveValue } from "@bentley/imodeljs-frontend";
 
 describe("ContentBuilder", () => {
 

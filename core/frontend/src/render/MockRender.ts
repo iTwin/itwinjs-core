@@ -48,7 +48,7 @@ export namespace MockRender {
     public get wantInvertBlackBackground() { return false; }
     public get animationFraction() { return 0; }
     public set animationFraction(_fraction: number) { }
-    public changeScene(_scene: GraphicList, _activeVolume?: RenderClipVolume) { }
+    public changeScene(_scene: GraphicList) { }
     public changeTerrain(_terrain: GraphicList) { }
     public changeDynamics(_dynamics?: GraphicList) { }
     public changeDecorations(_decs: Decorations) { }

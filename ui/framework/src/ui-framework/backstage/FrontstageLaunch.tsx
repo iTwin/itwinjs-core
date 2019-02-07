@@ -13,13 +13,14 @@ import { Backstage, BackstageItemProps, BackstageItemState, getBackstageItemStat
 
 import { BackstageItem as NZ_BackstageItem } from "@bentley/ui-ninezone";
 
-/** Properties for a Frontstage launch Backstage item.
+/** Properties for a [[FrontstageLaunchBackstageItem]] component
  */
 export interface FrontstageLaunchBackstageItemProps extends BackstageItemProps {
   /** id of the frontstage */
   frontstageId: string;
 }
 
+/** Backstage item that activates a Frontstage */
 export class FrontstageLaunchBackstageItem extends React.PureComponent<FrontstageLaunchBackstageItemProps, BackstageItemState> {
 
   /** @hidden */

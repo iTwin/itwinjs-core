@@ -165,7 +165,7 @@ interface DeferredLoadingHandler<TPayload> {
 /**
  * Configuration properties for [[BeInspireTree]]
  */
-export interface Props<TNodePayload> {
+export interface BeInspireTreeProps<TNodePayload> {
   dataProvider: BeInspireTreeDataProvider<TNodePayload>;
   mapPayloadToInspireNodeConfig: MapPayloadToInspireNodeCallback<TNodePayload>;
   pageSize?: number;
@@ -183,9 +183,9 @@ export class BeInspireTree<TNodePayload> {
   private _deferredLoadingHandler?: DeferredLoadingHandler<TNodePayload>;
   private _visibleCached?: BeInspireTreeNodes<TNodePayload>;
   private _suspendedRendering?: EventsMuteContext;
-  public props: Props<TNodePayload>;
+  public props: BeInspireTreeProps<TNodePayload>;
 
-  constructor(props: Props<TNodePayload>) {
+  constructor(props: BeInspireTreeProps<TNodePayload>) {
     this.props = props;
     this._eventMutes = new Map();
 
@@ -823,7 +823,7 @@ class WrappedInterfaceProvider<TPayload> extends CallableInstance implements Def
   }
 
   /** Called by inspire-tree */
-  private async inspireLoad(parent: BeInspireTreeNode<TPayload> | undefined, resolve: (nodes: Array<BeInspireTreeNodePayloadConfig<TPayload>>, totalCount: number) => any) {
+  private inspireLoad(parent: BeInspireTreeNode<TPayload> | undefined, resolve: (nodes: Array<BeInspireTreeNodePayloadConfig<TPayload>>, totalCount: number) => any) {
     if (!this._paginationHelper) {
       // pagination is disabled - just load all nodes for the parent
       const payload = parent ? parent.payload : undefined;
@@ -838,18 +838,22 @@ class WrappedInterfaceProvider<TPayload> extends CallableInstance implements Def
 
     // paginated behavior
     const parentId = parent ? parent.id : undefined;
+    const complete = () => {
+      const pagedNodes = this.createPagedNodesResult(parent);
+      if (parent && isArrayLike(parent.children)) {
+        // reset so concat doesn't duplicate nodes
+        parent.children = true;
+      }
+      onNodesDelayLoaded(parent, pagedNodes);
+      resolve(pagedNodes, pagedNodes.length);
+    };
     if (!this._paginationHelper.hasOrWillHaveLoadedPages(parentId)) {
       // parent has no children yet - initiate a request and wait
       this._initialRequests.add(parentId);
-      await this.requestNodeLoad(parent, 0);
+      this.requestNodeLoad(parent, 0).then(complete); // tslint:disable-line: no-floating-promises
+    } else {
+      complete();
     }
-    const pagedNodes = this.createPagedNodesResult(parent);
-    if (parent && isArrayLike(parent.children)) {
-      // reset so concat doesn't duplicate nodes
-      parent.children = true;
-    }
-    onNodesDelayLoaded(parent, pagedNodes);
-    resolve(pagedNodes, pagedNodes.length);
   }
 }
 interface WrappedInterfaceProvider<TPayload> {

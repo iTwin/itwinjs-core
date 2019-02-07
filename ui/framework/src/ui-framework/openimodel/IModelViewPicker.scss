@@ -2,9 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
- @import "@bentley/bwc/lib/mixins";
- @import "@bentley/bwc/lib/buttons/classes.scss";
- @import "@bentley/ui-core/lib/ui-core/_scrollbar";
+@import "@bentley/ui-core/lib/ui-core/index";
 
  $view-card-width: 215px;
  $view-card-height: 150px;
@@ -43,10 +41,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  > div {
-    @include bwc-loaders-large;
-    //@include bwc-loaders-loader($size: 90px);
-  }
 }
 
 .views-list {
@@ -65,7 +59,7 @@
   justify-content: center;
   align-items: center;
   font-size: 1.25em;
-  color: $bwc-gray;
+  color: $uicore-gray;
 }
 
 .views-header {
@@ -73,7 +67,7 @@
   padding: 1em;
   display: flex;
   align-items: center;
-  color: $bwc-text-color;
+  color: $uicore-text-color;
   border-bottom: 1px solid #eee;
 
   h3 {
@@ -112,7 +106,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      color: $bwc-white;
+      color: $uicore-white;
       font-size: .75em;
       border-radius: 50%;
       background: rgb(148, 147, 147);
@@ -120,7 +114,7 @@
   }
 */
   > button {
-    @extend .bwc-buttons-blue;
+    @extend .uicore-buttons-blue;
     margin-left: auto;
     padding-left: 3em;
     padding-right: 5em;
@@ -179,7 +173,7 @@ $view-card-width: 190px;
 }
 
 .view-card.isActive {
-  border: 4px solid $bwc-blue;
+  border: 4px solid $uicore-blue;
 }
 
 .view-card-content {
@@ -202,8 +196,8 @@ $view-card-width: 190px;
 .view-card-name {
   flex: initial;
   padding: .5em;
-  background: $bwc-white;
-  font-size: $bwc-font-size-small;
+  background: $uicore-white;
+  font-size: $uicore-font-size-small;
   text-overflow: ellipsis;
   white-space: nowrap;
   overflow: hidden;

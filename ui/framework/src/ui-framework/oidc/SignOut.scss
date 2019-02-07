@@ -2,8 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-@import "@bentley/bwc/lib/mixins";
-@import "@bentley/bwc/lib/buttons/classes.scss";
+@import "@bentley/ui-core/lib/ui-core/index";
 
 $user-profile-circle-size: 60px;
 
@@ -18,7 +17,7 @@ $user-profile-circle-size: 60px;
   display: flex;
   padding: 30px;
   border-radius: 3px;
-  font-size: $bwc-font-size;
+  font-size: $uicore-font-size;
 
   > .profile-info {
     flex: 1;
@@ -45,7 +44,7 @@ $user-profile-circle-size: 60px;
       margin-top: 15px;
       text-overflow: ellipsis;
       white-space: nowrap;
-      color: $bwc-gray;
+      color: $uicore-gray;
       overflow: hidden;
     }
   }
@@ -64,8 +63,8 @@ $user-profile-circle-size: 60px;
     align-items: center;
 
     > span:first-of-type {
-      font-size: $bwc-font-size-title;
-      color: $bwc-gray;
+      font-size: $uicore-font-size-title;
+      color: $uicore-gray;
       margin-top: 10px;
     }
 
@@ -76,7 +75,7 @@ $user-profile-circle-size: 60px;
     }
 
     > button {
-      @extend .bwc-buttons-primary;
+      @extend .uicore-buttons-primary;
       width: 75%;
       margin: auto 0 0 0;
      }

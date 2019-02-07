@@ -16,12 +16,14 @@ import { Frontstage } from "./Frontstage";
 import { FrontstageProvider } from "./FrontstageProvider";
 
 import { NineZoneProps } from "@bentley/ui-ninezone";
+import { IModelApp } from "@bentley/imodeljs-frontend";
+import { ToolItemDef } from "../shared/Item";
 
 /** FrontstageDef class provides an API for a Frontstage.
  */
 export class FrontstageDef {
   public id: string = "";
-  public defaultToolId: string = "";
+  public defaultTool?: ToolItemDef;
   public defaultLayoutId: string = "";
   public defaultContentId: string = "";
   public contentGroupId: string = "";
@@ -113,6 +115,15 @@ export class FrontstageDef {
     // istanbul ignore else
     if (this.contentGroup)
       this.contentGroup.onFrontstageReady();
+  }
+
+  /** Starts the default tool for the Frontstage */
+  public startDefaultTool(): void {
+    // Start the default tool
+    if (this.defaultTool && IModelApp.toolAdmin && IModelApp.viewManager) {
+      IModelApp.toolAdmin.defaultToolId = this.defaultTool.toolId;
+      this.defaultTool.execute();
+    }
   }
 
   /** Sets the active view content control */

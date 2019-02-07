@@ -16,7 +16,7 @@ import { CommonProps, NoChildrenProps } from "../../../../utilities/Props";
 export interface GroupProps extends CommonProps, NoChildrenProps {
   /** Tool group title. */
   title?: string;
-  /** Columns of tool group. I.e. [[Column]]  */
+  /** Columns of tool group. I.e. [[GroupColumn]]  */
   columns?: React.ReactNode;
 }
 

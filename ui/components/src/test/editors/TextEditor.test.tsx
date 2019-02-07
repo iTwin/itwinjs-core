@@ -43,4 +43,21 @@ describe("<TextEditor />", () => {
       expect(textEditor.getValue()).to.equal(testValue);
     }
   });
+
+  it("componentDidUpdate updates the value", async () => {
+    const record = TestUtils.createPrimitiveStringProperty("Test", "MyValue");
+    const wrapper = mount(<TextEditor propertyRecord={record} />);
+
+    await TestUtils.flushAsyncOperations();
+    const textEditor = wrapper.instance() as TextEditor;
+    expect(textEditor.getValue()).to.equal("MyValue");
+
+    const testValue = "MyNewValue";
+    const newRecord = TestUtils.createPrimitiveStringProperty("Test", testValue);
+    wrapper.setProps({ propertyRecord: newRecord });
+    await TestUtils.flushAsyncOperations();
+    expect(textEditor.getValue()).to.equal(testValue);
+
+    wrapper.unmount();
+  });
 });

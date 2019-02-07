@@ -17,26 +17,7 @@ import {
   parseShowSignOption, ScientificType, scientificTypeToString, ShowSignOption, showSignOptionToString,
 } from "./../utils/FormatEnums";
 
-export interface IFormat {
-  readonly name: string;
-  readonly roundFactor: number;
-  readonly type: FormatType;
-  readonly precision: DecimalPrecision | FractionalPrecision;
-  readonly minWidth: number | undefined;
-  readonly formatTraits: FormatTraits;
-  readonly showSignOption: ShowSignOption;
-  readonly decimalSeparator: string;
-  readonly thousandSeparator: string;
-  readonly uomSeparator: string;
-  readonly scientificType?: ScientificType;
-  readonly stationSeparator?: string;
-  readonly stationOffsetSize?: number;
-  readonly spacer?: string;
-  readonly includeZero?: boolean;
-  readonly units?: Array<[Unit | InvertedUnit, string | undefined]>;
-}
-
-export class Format extends SchemaItem implements IFormat {
+export class Format extends SchemaItem {
   public readonly schemaItemType!: SchemaItemType.Format; // tslint:disable-line
   protected _roundFactor: number;
   protected _type: FormatType; // required; options are decimal, frational, scientific, station

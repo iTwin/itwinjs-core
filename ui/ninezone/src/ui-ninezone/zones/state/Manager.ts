@@ -13,8 +13,10 @@ import { Widget } from "./Widget";
 import { WidgetZone, StatusZone, StatusZoneProps, ZonePropsBase } from "./Zone";
 import { TargetType, TargetZoneProps } from "./Target";
 
+/** @hidden */
 export type NineZoneFactory = (props: NineZoneProps) => NineZone;
 
+/** @hidden */
 export class StateManager {
   private _lastStackId = 1;
   private _nineZoneFactory: NineZoneFactory;

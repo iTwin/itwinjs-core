@@ -553,7 +553,7 @@ export class AccuSnap implements Decorator {
       return undefined;
 
     const worldToView = second.viewport.worldToViewMap.transform0;
-    const detail = CurveCurve.IntersectionProjectedXY(worldToView, tpSegment, true, segment, true);
+    const detail = CurveCurve.intersectionProjectedXY(worldToView, tpSegment, true, segment, true);
     if (0 === detail.dataA.length)
       return undefined;
 

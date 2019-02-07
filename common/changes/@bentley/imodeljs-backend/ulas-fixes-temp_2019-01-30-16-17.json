@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Quick fix to ULAS failures. ",
+      "packageName": "@bentley/imodeljs-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-backend",
+  "email": "Ramanujam.Raman@bentley.com"
+}

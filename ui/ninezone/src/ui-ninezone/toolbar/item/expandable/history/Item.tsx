@@ -24,7 +24,7 @@ export interface HistoryItemProps extends CommonProps {
 }
 
 /**
- * Basic history item used in [[Tray]] component.
+ * Basic history item used in [[HistoryTray]] component.
  * @note See [[Icon]] for item with icon.
  */
 export class HistoryItem extends React.PureComponent<HistoryItemProps> {

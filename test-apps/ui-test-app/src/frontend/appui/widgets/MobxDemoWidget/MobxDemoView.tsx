@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 
-import { Input, PrimaryButton } from "@bentley/bwc";
+import { Input, Button } from "@bentley/ui-core";
 import "./MobxDemoView.scss";
 
 interface MobxDemoViewProps {
@@ -35,7 +35,7 @@ export class MobxDemoView extends React.Component<MobxDemoViewProps> {
         <form onSubmit={addBird}>
           <Input placeholder="Enter bird" value={birdName} onChange={setBirdName} className="bird-name" />
           &nbsp;
-          <PrimaryButton disabled={shouldDisableSubmit}>Add bird</PrimaryButton>
+          <Button disabled={shouldDisableSubmit}>Add bird</Button>
         </form>
 
         <ul>

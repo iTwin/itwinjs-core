@@ -11,12 +11,14 @@ import { Layout } from "./Layout";
 import { Root } from "./Root";
 import { HorizontalAnchor } from "../../../widget/Stacked";
 
+/** @hidden */
 export class NineZoneRoot extends Root {
   public constructor(public readonly nineZone: NineZone) {
     super(nineZone.props.size, nineZone.getStatusZone().props.isInFooterMode);
   }
 }
 
+/** @hidden */
 export interface WidgetZoneLayoutProps {
   readonly zone: WidgetZone;
   readonly root: NineZoneRoot;
@@ -26,6 +28,7 @@ export interface WidgetZoneLayoutProps {
   readonly bottomZones?: WidgetZoneLayout.AdjacentZonesGetter;
 }
 
+/** @hidden */
 export class WidgetZoneLayout extends Layout {
   public readonly zone: WidgetZone;
   public readonly root: NineZoneRoot;
@@ -149,13 +152,16 @@ export class WidgetZoneLayout extends Layout {
   }
 }
 
+/** @hidden */
 export namespace WidgetZoneLayout {
+  /** @hidden */
   export interface AdjacentZonesStrategy {
     getSingleMergedZone(isMergedVertically: boolean): boolean;
     reduceToFirstZone(): boolean;
     getInitialZone(layout: WidgetZoneLayout): WidgetZone | undefined;
   }
 
+  /** @hidden */
   export class LeftZones implements AdjacentZonesStrategy {
     public getSingleMergedZone(isMergedVertically: boolean): boolean {
       return !isMergedVertically;
@@ -170,6 +176,7 @@ export namespace WidgetZoneLayout {
     }
   }
 
+  /** @hidden */
   export class TopZones implements AdjacentZonesStrategy {
     public getSingleMergedZone(isMergedVertically: boolean): boolean {
       return isMergedVertically;
@@ -184,6 +191,7 @@ export namespace WidgetZoneLayout {
     }
   }
 
+  /** @hidden */
   export class BottomZones implements AdjacentZonesStrategy {
     public getSingleMergedZone(isMergedVertically: boolean): boolean {
       return isMergedVertically;
@@ -198,6 +206,7 @@ export namespace WidgetZoneLayout {
     }
   }
 
+  /** @hidden */
   export class RightZones implements AdjacentZonesStrategy {
     public getSingleMergedZone(isMergedVertically: boolean): boolean {
       return !isMergedVertically;
@@ -212,8 +221,10 @@ export namespace WidgetZoneLayout {
     }
   }
 
+  /** @hidden */
   export type AdjacentZonesGetter = (layout: WidgetZoneLayout) => WidgetZone[];
 
+  /** @hidden */
   export const adjacentZones = (strategy: AdjacentZonesStrategy): AdjacentZonesGetter => (layout: WidgetZoneLayout) => {
     const zone = layout.zone;
     if (zone.hasMergedWidgets) {
@@ -245,6 +256,7 @@ export namespace WidgetZoneLayout {
   };
 }
 
+/** @hidden */
 export class Layout1 extends WidgetZoneLayout {
   public getInitialBottomZone() {
     return this.zone.nineZone.root.nineZone.getWidgetZone(4);
@@ -259,6 +271,7 @@ export class Layout1 extends WidgetZoneLayout {
   }
 }
 
+/** @hidden */
 export class Layout2 extends WidgetZoneLayout {
   public getInitialBottomZone() {
     return this.zone.nineZone.root.nineZone.getWidgetZone(7);
@@ -277,6 +290,7 @@ export class Layout2 extends WidgetZoneLayout {
   }
 }
 
+/** @hidden */
 export class Layout3 extends WidgetZoneLayout {
   public getInitialBottomZone() {
     return this.zone.nineZone.root.nineZone.getWidgetZone(6);
@@ -299,6 +313,7 @@ export class Layout3 extends WidgetZoneLayout {
   }
 }
 
+/** @hidden */
 export class Layout4 extends WidgetZoneLayout {
   public getInitialBottomZone() {
     return this.zone.nineZone.root.nineZone.getWidgetZone(7);
@@ -309,6 +324,7 @@ export class Layout4 extends WidgetZoneLayout {
   }
 }
 
+/** @hidden */
 export class Layout6 extends WidgetZoneLayout {
   public getInitialBottomZone() {
     return this.zone.nineZone.root.nineZone.getWidgetZone(9);
@@ -319,6 +335,7 @@ export class Layout6 extends WidgetZoneLayout {
   }
 }
 
+/** @hidden */
 export class Layout7 extends WidgetZoneLayout {
   public getInitialTopZone() {
     return this.zone.nineZone.root.nineZone.getWidgetZone(4);
@@ -337,6 +354,7 @@ export class Layout7 extends WidgetZoneLayout {
   }
 }
 
+/** @hidden */
 export class Layout8 extends WidgetZoneLayout {
   public getInitialLeftZone() {
     if (this.zone.nineZone.root.isInFooterMode)
@@ -359,6 +377,7 @@ export class Layout8 extends WidgetZoneLayout {
   }
 }
 
+/** @hidden */
 export class Layout9 extends WidgetZoneLayout {
   public getInitialTopZone() {
     return this.zone.nineZone.root.nineZone.getWidgetZone(6);

@@ -247,13 +247,20 @@ export class IModelDb extends IModel {
   private static createUsageLogEntry(accessToken: AccessToken, contextId: GuidString): UsageLogEntry {
     const entry: UsageLogEntry = new UsageLogEntry(os.hostname(), UsageType.Trial);
     const userInfo = accessToken.getUserInfo();
-
     const featureTrackingInfo = userInfo ? userInfo.featureTracking : undefined;
-    const imsId = userInfo ? userInfo.id : "";
-    const ultimateSite: number = !featureTrackingInfo ? 0 : parseInt(featureTrackingInfo.ultimateSite, 10);
-    const usageCountryIso: string = !featureTrackingInfo ? "" : featureTrackingInfo.usageCountryIso;
-    const hostUserName = os.userInfo().username;
-    entry.userInfo = { imsId, ultimateSite, usageCountryIso, hostUserName };
+    let hostUserInfo: any;
+    try {
+      hostUserInfo = os.userInfo();
+    } catch (error) {
+      Logger.logError(loggingCategory, "Could not determine hostUserInfo for Usage Logging");
+    }
+
+    entry.userInfo = {
+      imsId: userInfo ? userInfo.id : "",
+      ultimateSite: !featureTrackingInfo ? 0 : parseInt(featureTrackingInfo.ultimateSite, 10),
+      usageCountryIso: !featureTrackingInfo ? "" : featureTrackingInfo.usageCountryIso,
+      hostUserName: hostUserInfo ? hostUserInfo.username : undefined,
+    };
 
     entry.projectId = contextId;
     entry.productId = 2686; // todo: needs to be passed in from frontend
@@ -264,9 +271,16 @@ export class IModelDb extends IModel {
 
   private async logUsage(actx: ActivityLoggingContext, accessToken: AccessToken, contextId: GuidString): Promise<void> {
     const client = new UlasClient();
-    const entry = IModelDb.createUsageLogEntry(accessToken, contextId);
-    const resp: LogPostingResponse = await client.logUsage(actx, accessToken, entry);
-    if (!resp || resp.status !== BentleyStatus.SUCCESS) {
+    let status: BentleyStatus;
+    try {
+      const entry: UsageLogEntry = IModelDb.createUsageLogEntry(accessToken, contextId);
+      const resp: LogPostingResponse = await client.logUsage(actx, accessToken, entry);
+      status = resp ? resp.status : BentleyStatus.ERROR;
+    } catch (error) {
+      status = BentleyStatus.ERROR;
+    }
+
+    if (status !== BentleyStatus.SUCCESS) {
       Logger.logError(loggingCategory, "Could not log usage information", () => this.iModelToken);
     }
   }
@@ -854,18 +868,18 @@ export class IModelDb extends IModel {
    */
   public queryNextAvailableFileProperty(prop: FilePropertyProps) { return this.nativeDb.queryNextAvailableFileProperty(JSON.stringify(prop)); }
 
-  public async requestSnap(activity: ActivityLoggingContext, connectionId: string, props: SnapRequestProps): Promise<SnapResponseProps> {
+  public async requestSnap(activity: ActivityLoggingContext, sessionId: string, props: SnapRequestProps): Promise<SnapResponseProps> {
     activity.enter();
-    let request = this._snaps.get(connectionId);
+    let request = this._snaps.get(sessionId);
     if (undefined === request) {
       request = new IModelHost.platform.SnapRequest();
-      this._snaps.set(connectionId, request);
+      this._snaps.set(sessionId, request);
     } else
       request.cancelSnap();
 
     return new Promise<SnapResponseProps>((resolve, reject) => {
       request!.doSnap(this.nativeDb, JsonUtils.toObject(props), (ret: IModelJsNative.ErrorStatusOrResult<IModelStatus, SnapResponseProps>) => {
-        this._snaps.delete(connectionId);
+        this._snaps.delete(sessionId);
         if (ret.error !== undefined)
           reject(new Error(ret.error.message));
         else
@@ -875,11 +889,11 @@ export class IModelDb extends IModel {
   }
 
   /** Cancel a previously requested snap. */
-  public cancelSnap(connectionId: string): void {
-    const request = this._snaps.get(connectionId);
+  public cancelSnap(sessionId: string): void {
+    const request = this._snaps.get(sessionId);
     if (undefined !== request) {
       request.cancelSnap();
-      this._snaps.delete(connectionId);
+      this._snaps.delete(sessionId);
     }
   }
 

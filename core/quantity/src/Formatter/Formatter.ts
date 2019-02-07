@@ -7,10 +7,14 @@ import { QuantityStatus, QuantityError } from "../Exception";
 import { FormatterSpec } from "./Format";
 import { FormatType, ScientificType, ShowSignOption, DecimalPrecision, FractionalPrecision, FormatTraits } from "./FormatEnums";
 
-const FPV_MINTHRESHOLD = 1.0e-14;       // format parameter default values
-const FPV_ROUNDFACTOR = 0.50000000001;  // rounding additive
+/**  rounding additive
+ * @internal
+ */
+const FPV_ROUNDFACTOR = 0.50000000001;
 
-/** A private helper class used to format fraction part of value into a numerator and denominator. */
+/** A private helper class used to format fraction part of value into a numerator and denominator.
+ * @internal
+ */
 class FractionalNumeric {
   private _integral: number = 0;
   private _numerator: number = 0;
@@ -87,9 +91,14 @@ class FractionalNumeric {
   }
 }
 
-/** A helper class that contains methods used to format quantity values based on a format that are defined via the Format class. */
+/** A helper class that contains methods used to format quantity values based on a format that are defined via the Format class.
+ * @alpha
+ */
 export class Formatter {
-  private static isNegligible(value: number): boolean { return (Math.abs(value) < FPV_MINTHRESHOLD); }
+  // tslint:disable-next-line:naming-convention
+  private static FPV_MINTHRESHOLD = 1.0e-14;
+
+  private static isNegligible(value: number): boolean { return (Math.abs(value) < Formatter.FPV_MINTHRESHOLD); }
 
   /** Return floating point value rounded by specific rounding factor.
    *  @param value    Value to be rounded.
@@ -250,7 +259,7 @@ export class Formatter {
 
     let formattedValue = "";
     if (isDecimal) {
-      const actualVal = isPrecisionZero ? posMagnitude + FPV_ROUNDFACTOR : posMagnitude + FPV_MINTHRESHOLD;
+      const actualVal = isPrecisionZero ? posMagnitude + FPV_ROUNDFACTOR : posMagnitude + Formatter.FPV_MINTHRESHOLD;
       let wholePart = Math.floor(actualVal);
       let fractionPart = actualVal - wholePart;
       if (!isPrecisionZero) {

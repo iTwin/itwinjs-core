@@ -30,6 +30,7 @@ import { UVSurface } from "../geometry3d/GeometryHandler";
 import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
 import { Angle } from "../geometry3d/Angle";
 import { Cone } from "../solid/Cone";
+import { Sphere } from "../solid/Sphere";
 /* tslint:disable:no-console */
 
 // @param longEdgeIsHidden true if any edge longer than1/3 of face perimiter is expected to be hidden
@@ -195,7 +196,7 @@ describe("Polyface.HelloWorld", () => {
     const numExpectedFacets = 2 * (numX - 1) * (numY - 1); // 2 triangles per quad .  .
     const expectedEdgeLength = numExpectedFacets * (2.0 + Math.sqrt(2.0));
     for (const pf of [polyface0, polyface1, polyface2]) {
-      const loops = PolyfaceQuery.IndexedPolyfaceToLoops(pf);
+      const loops = PolyfaceQuery.indexedPolyfaceToLoops(pf);
       ck.testExactNumber(pf.facetCount, loops.children.length, "facet count");
       // console.log("polyface area", PolyfaceQuery.sumFacetAreas(polyface));
       // console.log(loops);
@@ -232,7 +233,7 @@ describe("Polyface.HelloWorld", () => {
     polyface.addPointIndex(5);
     polyface.terminateFacet();
     polyface.data.compress();
-    const loops = PolyfaceQuery.IndexedPolyfaceToLoops(polyface);
+    const loops = PolyfaceQuery.indexedPolyfaceToLoops(polyface);
     // console.log("polyface area", PolyfaceQuery.sumFacetAreas(polyface));
     // console.log(loops);
     ck.testCoordinate(1.0, PolyfaceQuery.sumFacetAreas(polyface), "unit square facets area");
@@ -282,16 +283,22 @@ describe("Polyface.Box", () => {
   });
 });
 
-function writeMeshes(geometry: GeometryQuery[], fileName: string) {
+function writeMeshes(geometry: GeometryQuery[], fileName: string, options?: StrokeOptions, dx0: number = 0, dy0: number = 0) {
   const allMesh = [];
-  let dx = 0.0;
-  let dy = 0.0;
+  let dx = dx0;
   for (const g of geometry) {
-    const builder = PolyfaceBuilder.create();
+    if (options === undefined) {
+      options = new StrokeOptions();
+    }
+    const builder = PolyfaceBuilder.create(options);
+
     const gRange = g.range();
-    dx += 2.0 * gRange.xLength();
-    dy = 4.0 * gRange.yLength();
-    const transformX = Transform.createTranslationXYZ(dx, 0, 0);
+    const dyLocal = Math.max(20.0, 2.0 * gRange.yLength());
+    const dxLocal = Math.max(30.0, 2.0 * gRange.xLength());
+    const dyUSection = dyLocal;
+    const dyVSection = 2.0 * dyLocal;
+    const transformForPolyface = Transform.createTranslationXYZ(dx, dy0, 0);
+    const transformForPolyfaceRangeSticks = Transform.createTranslationXYZ(dx, dy0, 0);
 
     if (!gRange.isNull) {
       const corners = gRange.corners();
@@ -305,61 +312,92 @@ function writeMeshes(geometry: GeometryQuery[], fileName: string) {
         corners[2],
         corners[0],
         corners[4], corners[5], corners[7], corners[6], corners[4]);
-      ls.tryTransformInPlace(transformX);
+      ls.tryTransformInPlace(transformForPolyface);
       allMesh.push(ls);
     }
     builder.addGeometryQuery(g);
     const polyface = builder.claimPolyface();
     if (polyface) {
-      polyface.tryTransformInPlace(transformX);
+      polyface.tryTransformInPlace(transformForPolyfaceRangeSticks);
       allMesh.push(polyface);
     }
     if (g instanceof SolidPrimitive) {
       for (const f of [0.0, 0.10, 0.20, 0.25, 0.50, 0.75, 1.0]) {
         const section = g.constantVSection(f);
         if (section) {
-          section.tryTransformInPlace(Transform.createTranslationXYZ(dx, dy, 0));
+          section.tryTransformInPlace(Transform.createTranslationXYZ(dx, dy0 + dyVSection, 0));
           allMesh.push(section);
         }
         if ((g as any).constantUSection) {
           const uSection = (g as any).constantUSection(f);
           if (uSection) {
-            uSection.tryTransformInPlace(Transform.createTranslationXYZ(dx, 2.0 * dy, 0));
+            uSection.tryTransformInPlace(Transform.createTranslationXYZ(dx, dy0 + dyUSection, 0));
             allMesh.push(uSection);
           }
         }
       }
     }
-    dx += 2.0 * gRange.xLength();
+    dx += dxLocal;
+  }
+  let fileName1 = fileName.slice() + ".X";
+  if (options) {
+    if (options.needNormals) fileName1 = fileName1 + "N";
+    if (options.needParams) fileName1 = fileName1 + "P";
   }
   if (allMesh.length > 0) {
-    GeometryCoreTestIO.saveGeometry(allMesh, "Polyface", fileName);
+    GeometryCoreTestIO.saveGeometry(allMesh, "Polyface", fileName1);
   }
 
 }
 
 describe("Polyface.Facets", () => {
+  const options0 = new StrokeOptions();
+  const options0E = new StrokeOptions();
+  options0E.maxEdgeLength = 0.5;
+  const optionsN = new StrokeOptions();
+  const optionsP = new StrokeOptions();
+  const optionsPN = new StrokeOptions();
+  optionsP.needParams = true;
+  optionsN.needNormals = true;
+  optionsPN.needNormals = true;
+  optionsPN.needParams = true;
+  const bigYStep = 400.0;       // step between starts for different solid types
+  const optionYStep = 100.0;    // steps between starts for option vairants of same solid type
+  const y0Box = 0.0;
+  const y0Cone = y0Box + bigYStep;
+  const y0Sphere = y0Cone + bigYStep;
+  const y0TorusPipe = y0Sphere + bigYStep;
+  const y0LinearSweep = y0TorusPipe + bigYStep;
+  const y0RotationalSweep = y0LinearSweep + bigYStep;
+  const y0RuledSweep = y0RotationalSweep + bigYStep;
   it("Cones", () => {
-    writeMeshes(Sample.createCones(), "FacetedCones");
+    const all = Sample.createCones();
+    writeMeshes(all, "Cone", options0, 0, y0Cone);
+    writeMeshes(all, "Cone", optionsPN, 0, y0Cone + optionYStep);
   });
   it("Spheres", () => {
-    writeMeshes(Sample.createSpheres(), "FacetedSpheres");
+    const all = Sample.createSpheres();
+    writeMeshes(all, "Sphere", options0, 0, y0Sphere);
+    writeMeshes(all, "Sphere", optionsPN, 0, y0Sphere + optionYStep);
   });
   it("Boxes", () => {
-    writeMeshes(Sample.createBoxes(), "FacetedBoxes");
+    writeMeshes(Sample.createBoxes(), "Box", options0, 0, y0Box);
+    writeMeshes(Sample.createBoxes(), "Box", optionsPN, 0, y0Box + optionYStep);
   });
   it("TorusPipes", () => {
-    writeMeshes(Sample.createTorusPipes(), "FacetedTorusPipes");
+    writeMeshes(Sample.createTorusPipes(), "TorusPipe", options0, 0, y0TorusPipe);
+    writeMeshes(Sample.createTorusPipes(), "TorusPipe", optionsPN, 0, y0TorusPipe + optionYStep);
   });
   it("LinearSweeps", () => {
-    writeMeshes(Sample.createSimpleLinearSweeps(), "FacetedLinearSweeps");
+    writeMeshes(Sample.createSimpleLinearSweeps(), "LinearSweep", options0E, 0, y0LinearSweep);
   });
 
   it("RotationalSweeps", () => {
-    writeMeshes(Sample.createSimpleRotationalSweeps(), "FacetedRotationalSweeps");
+    writeMeshes(Sample.createSimpleRotationalSweeps(), "RotationalSweep", options0E, 0, y0RotationalSweep);
   });
   it("RuledSweeps", () => {
-    writeMeshes(Sample.createRuledSweeps(true), "FacetedRuledSweeps");
+    const sweeps = Sample.createRuledSweeps(true);
+    writeMeshes(sweeps, "RuledSweep", options0E, 0, y0RuledSweep);
   });
 });
 
@@ -667,7 +705,7 @@ function createMeshByUVSurface(surface: UVSurface, numXEdge: number, numYEdge: n
   const builder = PolyfaceBuilder.create(options);
   if (reverseFacets)
     builder.toggleReversedFacetFlag();
-  builder.addUVGrid(surface, numXEdge + 1, numYEdge + 1, false);
+  builder.addUVGridBody(surface, numXEdge + 1, numYEdge + 1);
   return builder.claimPolyface();
 }
 
@@ -688,12 +726,12 @@ class UVSinusoidalSurface implements UVSurface {
     this.thetaV = thetaV;
     this.transform = transform;
   }
-  public UVFractionToPoint(u: number, v: number): Point3d {
+  public uvFractionToPoint(u: number, v: number): Point3d {
     const thetaU = this.thetaU.fractionToRadians(u);
     const thetaV = this.thetaV.fractionToRadians(v);
     return this.transform.multiplyXYZ(u, v, Math.cos(thetaU) * Math.cos(thetaV));
   }
-  public UVFractionToPointAndTangents(u: number, v: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors {
+  public uvFractionToPointAndTangents(u: number, v: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors {
     const thetaU = this.thetaU.fractionToRadians(u);
     const thetaV = this.thetaV.fractionToRadians(v);
     const cU = Math.cos(thetaU);
@@ -894,28 +932,30 @@ it("EmptyPolyface", () => {
 });
 
 it("VisitorParamQueries", () => {
-  const options = new StrokeOptions();
-  options.needParams = true;
-  options.needNormals = true;
-  const builder = PolyfaceBuilder.create(options);
-  builder.toggleReversedFacetFlag();
-  const cone = Cone.createAxisPoints(Point3d.create(0, 0, 0), Point3d.create(0, 0, 5), 1.0, 0.5, true)!;
-
-  builder.addCone(cone);
-  const polyface = builder.claimPolyface(true);
-  const visitor = polyface.createVisitor(0) as IndexedPolyfaceVisitor;
-  let facetIndex = 0;
-  const distanceRange = Range2d.createNull();
-  const fractionRange = Range2d.createNull();
-  for (; visitor.moveToNextFacet(); facetIndex++) {
-    for (let i = 0; i < visitor.numEdgesThisFacet; i++) {
-      const distanceParam = visitor.tryGetDistanceParameter(i);
-      const fractionParam = visitor.tryGetNormalizedParameter(i);
-      distanceRange.extendPoint(distanceParam!);
-      fractionRange.extendPoint(fractionParam!);
+  for (const s of [
+    Cone.createAxisPoints(Point3d.create(0, 0, 0), Point3d.create(0, 0, 5), 1.0, 0.5, true)!,
+    Sphere.createCenterRadius(Point3d.create(0, 0, 0), 2.0, AngleSweep.createStartEndDegrees(0, 90)),
+  ]) {
+    const options = new StrokeOptions();
+    options.needParams = true;
+    options.needNormals = true;
+    const builder = PolyfaceBuilder.create(options);
+    // builder.toggleReversedFacetFlag();
+    s.dispatchToGeometryHandler(builder);
+    const polyface = builder.claimPolyface(true);
+    const visitor = polyface.createVisitor(0) as IndexedPolyfaceVisitor;
+    let facetIndex = 0;
+    const distanceRange = Range2d.createNull();
+    const fractionRange = Range2d.createNull();
+    for (; visitor.moveToNextFacet(); facetIndex++) {
+      for (let i = 0; i < visitor.numEdgesThisFacet; i++) {
+        const distanceParam = visitor.tryGetDistanceParameter(i);
+        const fractionParam = visitor.tryGetNormalizedParameter(i);
+        distanceRange.extendPoint(distanceParam!);
+        fractionRange.extendPoint(fractionParam!);
+      }
     }
   }
-
 });
 
 it("VisitorQueryFailures", () => {

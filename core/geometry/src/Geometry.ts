@@ -409,7 +409,12 @@ export class Geometry {
   public static dotProductXYZXYZ(ux: number, uy: number, uz: number, vx: number, vy: number, vz: number): number {
     return ux * vx + uy * vy + uz * vz;
   }
-
+  /**
+   * Clamp to (min(a,b), max(a,b))
+   * @param x
+   * @param a
+   * @param b
+   */
   public static clampToStartEnd(x: number, a: number, b: number): number {
     if (a > b)
       return Geometry.clampToStartEnd(x, b, a);
@@ -419,9 +424,17 @@ export class Geometry {
       return b;
     return x;
   }
-
+  /**
+   * Clamp value to (min,max) with no test for order of (min,max)
+   * @param value C
+   * @param min
+   * @param max
+   */
   public static clamp(value: number, min: number, max: number): number { return Math.max(min, Math.min(max, value)); }
 
+  public static resolveNumber(value: number | undefined, defaultValue: number = 0): number {
+    return value !== undefined ? value : defaultValue;
+  }
   /** simple interpolation between values, but choosing (based on fraction) a or b as starting point for maximum accuracy. */
   public static interpolate(a: number, f: number, b: number): number {
     return f <= 0.5 ? a + f * (b - a) : b - (1.0 - f) * (b - a);

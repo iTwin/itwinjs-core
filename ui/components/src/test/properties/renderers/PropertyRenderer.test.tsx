@@ -11,7 +11,7 @@ import { PropertyRenderer } from "../../../ui-components/properties/renderers/Pr
 import TestUtils from "../../TestUtils";
 import { PropertyValueRendererManager } from "../../../ui-components/properties/ValueRendererManager";
 import { PrimitivePropertyRenderer } from "../../../ui-components/properties/renderers/PrimitivePropertyRenderer";
-import { PropertyRecord } from "../../../ui-components";
+import { PropertyRecord } from "@bentley/imodeljs-frontend";
 import { NonPrimitivePropertyRenderer } from "../../../ui-components/properties/renderers/NonPrimitivePropertyRenderer";
 
 describe("PropertyRenderer", () => {

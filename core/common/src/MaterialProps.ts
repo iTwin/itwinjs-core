@@ -13,7 +13,7 @@ export type RgbFactorProps = number[];
 /** Contains two array entries orders X, Y containing doubles */
 export type DPoint2dProps = number[];
 
-export enum Units { Relative = 0, Meters = 3, Millimeters = 4, Feet = 5, Inches = 6 }
+export enum TextureMapUnits { Relative = 0, Meters = 3, Millimeters = 4, Feet = 5, Inches = 6 }
 
 /** Properties that define how a texture is mapped to a material */
 export interface TextureMapProps {
@@ -23,17 +23,17 @@ export interface TextureMapProps {
   pattern_u_flip?: boolean;
   /** If true, flip the pattern map in V; if undefined, defaults to false */
   pattern_flip?: boolean;
-  /** X, Y scale to apply to the pattern map; if undefined, defaults to {0,0} */
+  /** X, Y scale to apply to the pattern map; if undefined, defaults to {0,0}, which is almost never useful. */
   pattern_scale?: DPoint2dProps;
   /** X, Y offset to apply to the pattern map; if undefined, defaults to {0,0} */
   pattern_offset?: DPoint2dProps;
-  /** Units to use when applying the scaling; if undefined, defaults to Units.Relative */
-  pattern_scalemode?: Units;
+  /** Units to use when applying the scaling; if undefined, defaults to TextureMapUnits.Relative */
+  pattern_scalemode?: TextureMapUnits;
   /** Mapping mode to use for the texture application; if undefined, defaults to TextureMapping.Mode.Parametric */
   pattern_mapping?: TextureMapping.Mode;
   /** Weight at which to combine diffuse image and color; if undefined, defaults to 1.0 */
   pattern_weight?: number;
-  /** A stringified base-64 encoded identifier for a Texture associated with this material */
+  /** The Id of the persistent Texture element defining the texture image. */
   TextureId: Id64String;
 }
 
@@ -78,8 +78,13 @@ export interface RenderMaterialProps extends DefinitionElementProps {
         HasReflectColor?: boolean;
         /** Surface reflectance color; if undefined, defaults to black */
         reflect_color?: RgbFactorProps;
-        /** A TextureMapProps object that contains settings for mapping a texture to this material */
-        Map?: TextureMapProps;
+        /** An optional set of texture maps associated with this material.
+         * A large variety of map types may be present (e.g., bump maps, specular maps, fur, etc), but currently only the pattern map is used.
+         */
+        Map?: {
+          /** Optional pattern map. */
+          Pattern?: TextureMapProps;
+        }
       };
     };
   };

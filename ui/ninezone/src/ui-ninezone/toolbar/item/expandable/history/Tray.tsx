@@ -54,7 +54,7 @@ export class HistoryManager {
 // tslint:disable-next-line:variable-name
 export const DefaultHistoryManager = new HistoryManager(4);
 
-/** Properties of [[Tray]] component. */
+/** Properties of [[HistoryTray]] component. */
 export interface HistoryTrayProps extends CommonProps, NoChildrenProps {
   /** Extend direction of tray. */
   direction?: Direction;

@@ -6,9 +6,8 @@
 
 import { dispose } from "@bentley/bentleyjs-core";
 import { QParams3d } from "@bentley/imodeljs-common";
-import { Primitive } from "./Primitive";
 import { Target } from "./Target";
-import { CachedGeometry, LUTGeometry } from "./CachedGeometry";
+import { LUTGeometry } from "./CachedGeometry";
 import { RenderPass, RenderOrder } from "./RenderFlags";
 import { TechniqueId } from "./TechniqueId";
 import { PointStringParams } from "../primitives/VertexTable";
@@ -50,10 +49,10 @@ export class PointStringGeometry extends LUTGeometry {
 
   protected _getLineWeight(_params: ShaderProgramParams): number { return this.weight; }
 
-  public draw(): void {
-    const gl = System.instance.context;
+  protected _draw(numInstances: number): void {
+    const gl = System.instance;
     this.indices.bind(GL.Buffer.Target.ArrayBuffer);
-    gl.drawArrays(GL.PrimitiveType.Points, 0, this.numIndices);
+    gl.drawArrays(GL.PrimitiveType.Points, 0, this.numIndices, numInstances);
   }
 
   public static create(params: PointStringParams): PointStringGeometry | undefined {
@@ -77,15 +76,4 @@ export class PointStringGeometry extends LUTGeometry {
     stats.addVertexTable(this.lut.bytesUsed);
     stats.addPointString(this.indices.bytesUsed);
   }
-}
-
-export class PointStringPrimitive extends Primitive {
-  public static create(params: PointStringParams): PointStringPrimitive | undefined {
-    const geom = PointStringGeometry.create(params);
-    return undefined !== geom ? new PointStringPrimitive(geom) : undefined;
-  }
-
-  private constructor(cachedGeom: CachedGeometry) { super(cachedGeom); }
-
-  public get renderOrder(): RenderOrder { return RenderOrder.Linear; }
 }

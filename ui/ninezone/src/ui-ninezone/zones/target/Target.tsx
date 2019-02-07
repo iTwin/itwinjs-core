@@ -9,7 +9,7 @@ import * as React from "react";
 import { CommonProps } from "../../utilities/Props";
 import "./Target.scss";
 
-/** Properties of [[Target]] component. */
+/** Properties of [[MergeTarget]] component. */
 export interface MergeTargetProps extends CommonProps {
   /** Function called when is targeted state of the target changes. */
   onTargetChanged?: (isTargeted: boolean) => void;

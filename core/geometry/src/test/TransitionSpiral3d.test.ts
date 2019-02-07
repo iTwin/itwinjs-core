@@ -14,8 +14,8 @@ import { expect } from "chai";
 import { AngleSweep } from "../geometry3d/AngleSweep";
 import { Transform } from "../geometry3d/Transform";
 import { Segment1d } from "../geometry3d/Segment1d";
-
-describe("TransitionSprialProperties", () => {
+/* tslint:disable:no-console */
+describe("TransitionSpiralProperties", () => {
   it("HelloWorld", () => {
     const ck = new Checker();
     const b0 = Angle.createDegrees(10);
@@ -54,6 +54,7 @@ describe("TransitionSprialProperties", () => {
     ck.testFalse(spiralB.isAlmostEqual(spiralA));
     spiralB.setFrom(spiralA);
     ck.testTrue(spiralA.isAlmostEqual(spiralB));
+    console.log(TransitionSpiral3d.radiusRadiusLengthToSweepRadians(0, 10, 50));
     expect(ck.getNumErrors()).equals(0);
   });
 });

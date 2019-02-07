@@ -68,7 +68,8 @@ export class Sphere extends SolidPrimitive implements UVSurface {
   public getConstructiveFrame(): Transform | undefined {
     return this._localToWorld.cloneRigid();
   }
-
+  /** Return the latitude sweep as fraction of south pole to north pole. */
+  public get latitudeSweepFraction(): number { return this._latitudeSweep.sweepRadians / Math.PI; }
   public static createCenterRadius(center: Point3d, radius: number, latitudeSweep?: AngleSweep): Sphere {
     const localToWorld = Transform.createOriginAndMatrix(center, Matrix3d.createUniformScale(radius));
     return new Sphere(localToWorld,
@@ -139,30 +140,56 @@ export class Sphere extends SolidPrimitive implements UVSurface {
    * @param v fractional position along the cone axis
    * @param strokes stroke count or options.
    */
-  public strokeConstantVSection(v: number, strokes: number | StrokeOptions | undefined): LineString3d {
+  public strokeConstantVSection(v: number, fixedStrokeCount: number | undefined,
+    options?: StrokeOptions): LineString3d {
     let strokeCount = 16;
-    if (strokes === undefined) {
-      // accept the default above.
-    } else if (Number.isFinite(strokes as number)) {
-      strokeCount = strokes as number;
-    } else if (strokes instanceof StrokeOptions) {
-      strokeCount = strokes.applyTolerancesToArc(Geometry.maxXY(this._localToWorld.matrix.columnXMagnitude(), this._localToWorld.matrix.columnYMagnitude()));
+    if (fixedStrokeCount !== undefined && Number.isFinite(fixedStrokeCount)) {
+      strokeCount = fixedStrokeCount as number;
+    } else if (options instanceof StrokeOptions) {
+      strokeCount = options.applyTolerancesToArc(Geometry.maxXY(this._localToWorld.matrix.columnXMagnitude(), this._localToWorld.matrix.columnYMagnitude()));
     }
     strokeCount = Geometry.clampToStartEnd(strokeCount, 4, 64);
     const transform = this._localToWorld;
     const phi = this.vFractionToRadians(v);
     const c1 = Math.cos(phi);
     const s1 = Math.sin(phi);
-    const result = LineString3d.create();
+    let c0, s0;
+    const result = LineString3d.createForStrokes(fixedStrokeCount, options);
     const deltaRadians = Math.PI * 2.0 / strokeCount;
+    const fractions = result.fractions;     // possibly undefined !!!
+    const derivatives = result.packedDerivatives; // possibly undefined !!!
+    const uvParams = result.packedUVParams; // possibly undefined !!
+    const surfaceNormals = result.packedSurfaceNormals;
+    const dXdu = Vector3d.create();
+    const dXdv = Vector3d.create();
+    const normal = Vector3d.create();
     let radians = 0;
     for (let i = 0; i <= strokeCount; i++) {
       if (i * 2 <= strokeCount)
         radians = i * deltaRadians;
       else
         radians = (i - strokeCount) * deltaRadians;
-      const xyz = transform.multiplyXYZ(c1 * Math.cos(radians), c1 * Math.sin(radians), s1);
+      c0 = Math.cos(radians);
+      s0 = Math.sin(radians);
+      const xyz = transform.multiplyXYZ(c1 * c0, c1 * s0, s1);
       result.addPoint(xyz);
+
+      if (fractions)
+        fractions.push(i / strokeCount);
+
+      if (derivatives) {
+        transform.matrix.multiplyXYZ(-c1 * s0, c1 * c0, 0.0, dXdu);
+        derivatives.push(dXdu);
+      }
+      if (uvParams) {
+        uvParams.pushXY(i / strokeCount, v);
+      }
+      if (surfaceNormals) {
+        transform.matrix.multiplyXYZ(-s0, c0, 0, dXdu);
+        transform.matrix.multiplyXYZ(-s1 * c0, -s1 * s0, c1, dXdv);
+        dXdu.unitCrossProduct(dXdv, normal);
+        surfaceNormals.push(normal);
+      }
     }
     return result;
   }
@@ -206,7 +233,7 @@ export class Sphere extends SolidPrimitive implements UVSurface {
    * @param uFraction fractional position in minor (phi)
    * @param vFraction fractional position on major (theta) arc
    */
-  public UVFractionToPoint(uFraction: number, vFraction: number, result?: Point3d): Point3d {
+  public uvFractionToPoint(uFraction: number, vFraction: number, result?: Point3d): Point3d {
     // sphere with radius 1 . . .
     const thetaRadians = this.uFractionToRadians(uFraction);
     const phiRadians = this.vFractionToRadians(vFraction);
@@ -220,7 +247,7 @@ export class Sphere extends SolidPrimitive implements UVSurface {
    * @param u fractional position in minor (phi)
    * @param v fractional position on major (theta) arc
    */
-  public UVFractionToPointAndTangents(uFraction: number, vFraction: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors {
+  public uvFractionToPointAndTangents(uFraction: number, vFraction: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors {
     const thetaRadians = this.uFractionToRadians(uFraction);
     const phiRadians = this.vFractionToRadians(vFraction);
     const fTheta = Math.PI * 2.0;

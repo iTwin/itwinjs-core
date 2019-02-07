@@ -3,6 +3,17 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 @import "_variables";
+@import "@bentley/ui-core/lib/ui-core/index";
+
+div.nz-widget-toolSettings-title {
+  font-family: $uicore-font-family;
+  font-size: $uicore-font-size;
+  color: $uicore-text-color;
+  text-overflow: ellipsis;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+}
 
 .nz-widget-toolSettings-settings {
   $horizontal-padding: 5px;

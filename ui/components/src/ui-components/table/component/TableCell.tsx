@@ -1,3 +1,9 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+/** @module Table */
+
 import * as React from "react";
 import classnames from "classnames";
 import { Omit } from "@bentley/ui-core";
@@ -10,7 +16,7 @@ import "./TableCell.scss";
  * Properties of the [[TableCell]] React component
  */
 export interface TableCellProps {
-  /** Additinional class name for the cell container */
+  /** Additional class name for the cell container */
   className?: string;
   /** Title of the cell container */
   title: string;
@@ -69,7 +75,7 @@ export interface TableCellContentProps {
 
 /** State of the [[TableCellContent]] React component */
 export interface TableCellContentState {
-  /** Rendererd content */
+  /** Rendered content */
   content: React.ReactNode;
 }
 

@@ -8,6 +8,7 @@ import * as React from "react";
 import { FrontstageManager, ToolActivatedEventArgs } from "../../frontstage/FrontstageManager";
 
 import { ToolSettingsWidget, ToolSettingsTab, ToolSettings, CommonProps, RectangleProps, TabIcon, ZoneComponent } from "@bentley/ui-ninezone";
+import { KeyboardShortcutManager } from "../../keyboardshortcut/KeyboardShortcut";
 
 /** State for the ToolSettingsZone content.
  */
@@ -37,7 +38,7 @@ export class ToolSettingsZone extends React.Component<ToolSettingsZoneProps, Too
 
   /** @hidden */
   public readonly state: Readonly<ToolSettingsZoneState> = {
-    toolSettingsZoneContent: ToolSettingsZoneContent.Closed,
+    toolSettingsZoneContent: ToolSettingsZoneContent.ToolSettings,
     isPopoverOpen: false,
     isNestedPopoverOpen: false,
     toolId: "",
@@ -93,10 +94,18 @@ export class ToolSettingsZone extends React.Component<ToolSettingsZoneProps, Too
     });
   }
 
+  private _handleKeyDown = (e: React.KeyboardEvent): void => {
+    // istanbul ignore else
+    if (e.key === "Escape") {
+      KeyboardShortcutManager.setFocusToHome();
+    }
+  }
+
   private getToolSettingsWidget(): React.ReactNode {
     const tab = (
       <ToolSettingsTab
         onClick={this._processClick}
+        onKeyDown={this._handleKeyDown}
         isActive={this.state.toolSettingsZoneContent === ToolSettingsZoneContent.ToolSettings}
       >
         {this.getToolSettingsButton()}
@@ -123,6 +132,7 @@ export class ToolSettingsZone extends React.Component<ToolSettingsZoneProps, Too
               tab={tab}
               content={
                 <ToolSettings style={settingsStyle} >
+                  <div className="nz-widget-toolSettings-title">{FrontstageManager.activeToolLabel}</div>
                   {FrontstageManager.activeToolSettingsNode}
                 </ToolSettings>
               }

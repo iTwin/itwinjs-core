@@ -13,6 +13,7 @@ exports[`<Toggle /> renders correctly 1`] = `
   <input
     className="toggle-input"
     defaultChecked={false}
+    onBlur={[Function]}
     onChange={[Function]}
     type="checkbox"
   />

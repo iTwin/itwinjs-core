@@ -4,27 +4,7 @@ exports[`<LoadingSpinner /> renders correctly 1`] = `
 <div
   className="core-ls"
 >
-  <svg
-    className="ls-spinner"
-    viewBox="0 0 50 50"
-  >
-    <circle
-      className="shape"
-      cx="25"
-      cy="25"
-      fill="none"
-      r="20"
-      strokeWidth="4"
-    />
-    <circle
-      className="fill"
-      cx="25"
-      cy="25"
-      fill="none"
-      r="20"
-      strokeWidth="4"
-    />
-  </svg>
+  <Spinner />
 </div>
 `;
 
@@ -37,27 +17,7 @@ exports[`<LoadingSpinner /> renders with message and position correctly 1`] = `
   >
     test
   </span>
-  <svg
-    className="ls-spinner"
-    viewBox="0 0 50 50"
-  >
-    <circle
-      className="shape"
-      cx="25"
-      cy="25"
-      fill="none"
-      r="20"
-      strokeWidth="4"
-    />
-    <circle
-      className="fill"
-      cx="25"
-      cy="25"
-      fill="none"
-      r="20"
-      strokeWidth="4"
-    />
-  </svg>
+  <Spinner />
 </div>
 `;
 
@@ -65,27 +25,7 @@ exports[`<LoadingSpinner /> renders with message correctly 1`] = `
 <div
   className="core-ls"
 >
-  <svg
-    className="ls-spinner"
-    viewBox="0 0 50 50"
-  >
-    <circle
-      className="shape"
-      cx="25"
-      cy="25"
-      fill="none"
-      r="20"
-      strokeWidth="4"
-    />
-    <circle
-      className="fill"
-      cx="25"
-      cy="25"
-      fill="none"
-      r="20"
-      strokeWidth="4"
-    />
-  </svg>
+  <Spinner />
   <span
     className="ls-message-bottom"
   >

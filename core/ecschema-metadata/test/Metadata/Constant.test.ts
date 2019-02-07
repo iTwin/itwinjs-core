@@ -80,7 +80,7 @@ describe("Constant", () => {
       expect(testConst.numerator).eql(5.5);
       expect(testConst.denominator).eql(5.1);
 
-      assert(testConst.definition, "PI");
+      assert.strictEqual(testConst.definition, "PI");
       assert.isDefined(testConst.phenomenon);
       expect(await testConst.phenomenon).eql(await ecSchema.getItem<Phenomenon>(testConst.phenomenon!.name));
     });
@@ -214,7 +214,7 @@ describe("Constant", () => {
 
       expect(constantSerialization.$schema).eql("https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem");
       expect(constantSerialization.name).eql("TestConstant");
-      expect(constantSerialization.schemaVersion).eql("1.2.3");
+      expect(constantSerialization.schemaVersion).eql("01.02.03");
       expect(constantSerialization.schema).eql("TestSchema");
 
       expect(constantSerialization.label).eql("Test Constant");
@@ -223,8 +223,8 @@ describe("Constant", () => {
       expect(constantSerialization.numerator).eql(5.5);
       expect(constantSerialization.denominator).eql(5.1);
 
-      assert(constantSerialization.definition, "PI");
-      assert(constantSerialization.phenomenon, "TestSchema.TestPhenomenon");
+      assert.strictEqual(constantSerialization.definition, "PI");
+      assert.strictEqual(constantSerialization.phenomenon, "TestSchema.TestPhenomenon");
     });
 
     it("sync - should succeed with fully defined with standalone", () => {
@@ -239,7 +239,7 @@ describe("Constant", () => {
 
       expect(constantSerialization.$schema).eql("https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem");
       expect(constantSerialization.name).eql("TestConstant");
-      expect(constantSerialization.schemaVersion).eql("1.2.3");
+      expect(constantSerialization.schemaVersion).eql("01.02.03");
       expect(constantSerialization.schema).eql("TestSchema");
 
       expect(constantSerialization.label).eql("Test Constant");
@@ -248,8 +248,8 @@ describe("Constant", () => {
       expect(constantSerialization.numerator).eql(5.5);
       expect(constantSerialization.denominator).eql(5.1);
 
-      assert(constantSerialization.definition, "PI");
-      assert(constantSerialization.phenomenon, "TestSchema.TestPhenomenon");
+      assert.strictEqual(constantSerialization.definition, "PI");
+      assert.strictEqual(constantSerialization.phenomenon, "TestSchema.TestPhenomenon");
     });
     it("async - should succeed with fully defined without standalone", async () => {
       const ecSchema = await Schema.fromJson(fullyDefinedConstant, new SchemaContext());
@@ -267,8 +267,8 @@ describe("Constant", () => {
       expect(constantSerialization.numerator).eql(5.5);
       expect(constantSerialization.denominator).eql(5.1);
 
-      assert(constantSerialization.definition, "PI");
-      assert(constantSerialization.phenomenon, "TestSchema.TestPhenomenon");
+      assert.strictEqual(constantSerialization.definition, "PI");
+      assert.strictEqual(constantSerialization.phenomenon, "TestSchema.TestPhenomenon");
     });
 
     it("sync - should succeed with fully defined without standalone", () => {
@@ -287,8 +287,8 @@ describe("Constant", () => {
       expect(constantSerialization.numerator).eql(5.5);
       expect(constantSerialization.denominator).eql(5.1);
 
-      assert(constantSerialization.definition, "PI");
-      assert(constantSerialization.phenomenon, "TestSchema.TestPhenomenon");
+      assert.strictEqual(constantSerialization.definition, "PI");
+      assert.strictEqual(constantSerialization.phenomenon, "TestSchema.TestPhenomenon");
     });
   });
 });

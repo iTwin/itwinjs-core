@@ -29,7 +29,7 @@ export interface ModelGroup {
   items: ListItem[];
   initialized: boolean;
   updateState: () => void;
-  setEnabled: (item: ListItem, enabled: boolean) => void;
+  setEnabled: (item: ListItem[], enabled: boolean) => void;
 }
 
 /** Properties for the [[ModelSelectorWidget]] component */
@@ -46,6 +46,7 @@ export interface ModelSelectorWidgetState {
   activeTree: ModelSelectorTree;
 }
 
+/** Tree information used in the [[ModelSelectorWidget]] component */
 export interface ModelSelectorTree {
   ruleset: RegisteredRuleset;
   dataProvider: ModelSelectorDataProvider;
@@ -352,7 +353,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
       items: [],
       initialized: false,
       updateState: this.updateModelsState.bind(this),
-      setEnabled: this._onModelChecked,
+      setEnabled: this._onModelsChecked,
     };
   }
 
@@ -367,7 +368,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
       items: [],
       initialized: false,
       updateState: this.updateCategoriesState.bind(this),
-      setEnabled: this._onCategoryChecked,
+      setEnabled: this._onCategoriesChecked,
     };
   }
 
@@ -463,8 +464,9 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
   private _setEnableAllItems = (enable: boolean) => {
     this.state.activeGroup.items.forEach((item) => {
       item.enabled = enable;
-      this.state.activeGroup.setEnabled(item, enable);
+      // this.state.activeGroup.setEnabled(item, enable);
     });
+    this.state.activeGroup.setEnabled(this.state.activeGroup.items, enable);
     this.state.activeGroup.updateState();
   }
 
@@ -560,10 +562,14 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
 
   /** Invert display on all items */
   private _invertEnableOnAllItems = () => {
+    const enabledItems = [];
+    const disabledItems = [];
     for (const item of this.state.activeGroup.items) {
-      this.state.activeGroup.setEnabled(item, !item.enabled);
       item.enabled = !item.enabled;
+      item.enabled ? enabledItems.push(item) : disabledItems.push(item);
     }
+    this.state.activeGroup.setEnabled(enabledItems, true);
+    this.state.activeGroup.setEnabled(disabledItems, false);
     this.state.activeGroup.updateState();
   }
 
@@ -679,37 +685,46 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
   }
 
   /** Modify viewport to display checked models */
-  private _onModelChecked = (item: ListItem, checked: boolean) => {
+  private _onModelsChecked = (items: ListItem[], checked: boolean) => {
     if (!IModelApp.viewManager)
       return;
 
-    item.enabled = checked;
-    IModelApp.viewManager.forEachViewport((vp: Viewport) => {
+    IModelApp.viewManager.forEachViewport(async (vp: Viewport) => {
       if (!(vp.view instanceof SpatialViewState))
         return;
       const view: SpatialViewState = vp.view.clone();
       if (checked)
-        view.modelSelector.addModels(item.key);
+        items.forEach(async (item) => {
+          item.enabled = checked;
+          if (!this.props.iModelConnection.models.getLoaded(item.key))
+            await this.props.iModelConnection.models.load(item.key);
+          view.modelSelector.addModels(item.key);
+        });
       else
-        view.modelSelector.dropModels(item.key);
+        items.forEach((item) => {
+          item.enabled = checked;
+          view.modelSelector.dropModels(item.key);
+        });
       vp.changeView(view);
     });
   }
 
   /** Modify viewport to display checked categories */
-  private _onCategoryChecked = (item: ListItem, checked: boolean) => {
+  private _onCategoriesChecked = (items: ListItem[], checked: boolean) => {
     if (!IModelApp.viewManager || !IModelApp.viewManager.selectedView)
       return;
 
-    item.enabled = checked;
+    const keys: string[] = [];
+    items.forEach((item) => {
+      item.enabled = checked;
+      keys.push(item.key);
+    });
 
     const updateViewport = (vp: Viewport) => {
       // Only act on viewports that are both 3D or both 2D. Important if we have multiple viewports opened and we
       // are using 'allViewports' property
       if (IModelApp.viewManager.selectedView && IModelApp.viewManager.selectedView.view.is3d() === vp.view.is3d()) {
-        const view: ViewState = vp.view.clone();
-        view.categorySelector.changeCategoryDisplay(item.key, checked);
-        vp.changeView(view);
+        vp.view.changeCategoryDisplay(keys, checked);
       }
     };
 
@@ -894,7 +909,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
    */
   private _setEnableItem = (treeItem: TreeNodeItem, enable: boolean) => {
     const item = this._getItem(treeItem.label);
-    this.state.activeGroup.setEnabled(item, enable);
+    this.state.activeGroup.setEnabled([item], enable);
   }
 
   /**
@@ -986,7 +1001,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
 
   /**
    * Find an item specified by a node based on shared label.
-   * @param label  Label of item to be retreived
+   * @param label  Label of item to be retrieved
    * @returns Specified item from list. Defaults to first item if none found.
    */
   private _getItem = (label: string): ListItem => {

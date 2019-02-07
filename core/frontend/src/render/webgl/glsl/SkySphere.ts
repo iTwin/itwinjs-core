@@ -16,7 +16,7 @@ import { GL } from "../GL";
 import { Texture } from "../Texture";
 import { TextureUnit } from "../RenderFlags";
 import { System } from "../System";
-import { Debug } from "../Diagnostics";
+import { assert } from "@bentley/bentleyjs-core";
 
 const computeGradientValue = `
   // For the gradient sky it's good enough to calculate these in the vertex shader.
@@ -96,7 +96,7 @@ export function createSkySphereProgram(context: WebGLRenderingContext, isGradien
     shaderProg.addAttribute("a_worldPos", (attr, params) => {
       // Send in the corners of the view in world space.
       const geom = params.geometry;
-      Debug.assert(() => geom instanceof SkySphereViewportQuadGeometry);
+      assert(geom instanceof SkySphereViewportQuadGeometry);
       const skyGeometry = geom as SkySphereViewportQuadGeometry;
       setPointsFromFrustum(skyGeometry, params.target.planFrustum);
       skyGeometry.bind();

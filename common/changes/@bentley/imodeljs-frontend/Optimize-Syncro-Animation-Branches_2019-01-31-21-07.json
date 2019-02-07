@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Omit animation branches that are not visible.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "ray.bentley@bentley.com"
+}

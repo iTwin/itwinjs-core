@@ -6,12 +6,10 @@
 
 import { AuxChannel, AuxParamChannel, AuxDisplacementChannel } from "../../primitives/AuxChannelTable";
 import { VertexShaderComponent, VertexShaderBuilder, VariableType } from "../ShaderBuilder";
-import { MeshGeometry } from "../Mesh";
-import { LUTGeometry } from "../CachedGeometry";
 import { DrawParams } from "../DrawCommand";
 import { octDecodeNormal } from "./Surface";
 import { AnalysisStyle, Gradient } from "@bentley/imodeljs-common";
-import { Debug } from "../Diagnostics";
+import { assert } from "@bentley/bentleyjs-core";
 import { TextureUnit } from "../RenderFlags";
 
 const initialize = `
@@ -136,7 +134,7 @@ function getDisplacementChannel(params: DrawParams): { channel: AuxDisplacementC
   if (undefined === style || undefined === style.displacementChannelName)
     return undefined;
 
-  const lutGeom = params.geometry as LUTGeometry;
+  const lutGeom = params.geometry.asLUT!;
   const displacements = undefined !== lutGeom.lut.auxChannels ? lutGeom.lut.auxChannels.displacements : undefined;
   const channel = undefined !== displacements ? displacements.get(style.displacementChannelName) : undefined;
   return undefined !== channel ? { channel, style } : undefined;
@@ -147,7 +145,7 @@ function getNormalChannel(params: DrawParams): AuxChannel | undefined {
   if (undefined === style || undefined === style.normalChannelName)
     return undefined;
 
-  const lutGeom = params.geometry as LUTGeometry;
+  const lutGeom = params.geometry.asLUT!;
   const normals = undefined !== lutGeom.lut.auxChannels ? lutGeom.lut.auxChannels.normals : undefined;
   return undefined !== normals ? normals.get(style.normalChannelName) : undefined;
 }
@@ -157,7 +155,7 @@ function getScalarChannel(params: DrawParams): { channel: AuxParamChannel, style
   if (undefined === style || undefined === style.scalarChannelName)
     return undefined;
 
-  const geom = params.geometry as MeshGeometry;
+  const geom = params.geometry.asMesh!;
   const scalars = undefined !== geom.lut.auxChannels ? geom.lut.auxChannels.params : undefined;
   const channel = undefined !== scalars ? scalars.get(style.scalarChannelName) : undefined;
   return undefined !== channel ? { channel, style } : undefined;
@@ -186,16 +184,16 @@ export function addAnimation(vert: VertexShaderBuilder, isSurface: boolean): voi
 
   vert.addUniform("u_animLUT", VariableType.Sampler2D, (prog) => {
     prog.addGraphicUniform("u_animLUT", (uniform, params) => {
-      const channels = (params.geometry as LUTGeometry).lut.auxChannels!;
-      Debug.assert(() => undefined !== channels);
+      const channels = (params.geometry.asLUT!).lut.auxChannels!;
+      assert(undefined !== channels);
       channels.texture.bindSampler(uniform, TextureUnit.AuxChannelLUT);
     });
   });
 
   vert.addUniform("u_animLUTParams", VariableType.Vec3, (prog) => {
     prog.addGraphicUniform("u_animLUTParams", (uniform, params) => {
-      const geom = params.geometry as LUTGeometry;
-      Debug.assert(() => undefined !== geom && undefined !== geom.lut.auxChannels);
+      const geom = params.geometry.asLUT!;
+      assert(undefined !== geom && undefined !== geom.lut.auxChannels);
       const tex = geom.lut.auxChannels!.texture;
       const array = getAnimParams(3);
       array[0] = tex.width;
@@ -213,12 +211,11 @@ export function addAnimation(vert: VertexShaderBuilder, isSurface: boolean): voi
   vert.addFunction(computeAnimationDisplacement);
   vert.set(VertexShaderComponent.AdjustRawPosition, adjustRawPosition);
 
-  const doDisplacement = true; // ###TODO enable displacement
   vert.addUniform("u_animDispParams", VariableType.Vec3, (prog) => {
     prog.addGraphicUniform("u_animDispParams", (uniform, params) => {
       const animParams = getAnimParams(3, 0.0);
       const disp = getDisplacementChannel(params);
-      if (undefined !== disp && doDisplacement)
+      if (undefined !== disp)
         computeAnimParams(animParams, disp.channel, params.target.animationFraction);
 
       uniform.setUniform3fv(animParams);
@@ -228,7 +225,7 @@ export function addAnimation(vert: VertexShaderBuilder, isSurface: boolean): voi
     prog.addGraphicUniform("u_qAnimDispScale", (uniform, params) => {
       const animParams = getAnimParams(3, 0.0);
       const disp = getDisplacementChannel(params);
-      if (undefined !== disp && doDisplacement) {
+      if (undefined !== disp) {
         const displacementScale = disp.style.displacementScale ? disp.style.displacementScale : 1.0;
         for (let i = 0; i < 3; i++)
           animParams[i] = disp.channel.qScale[i] * displacementScale; // Apply displacement scale.
@@ -241,7 +238,7 @@ export function addAnimation(vert: VertexShaderBuilder, isSurface: boolean): voi
     prog.addGraphicUniform("u_qAnimDispOrigin", (uniform, params) => {
       const animParams = getAnimParams(3, 0.0);
       const disp = getDisplacementChannel(params);
-      if (undefined !== disp && doDisplacement) {
+      if (undefined !== disp) {
         const displacementScale = disp.style.displacementScale ? disp.style.displacementScale : 1.0;
         for (let i = 0; i < 3; i++)
           animParams[i] = disp.channel.qOrigin[i] * displacementScale;   // Apply displacement scale

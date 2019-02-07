@@ -578,14 +578,14 @@ describe("Full Schema Deserialization", () => {
       const testSchema = await Schema.fromJson(oneCustomAttributeJson, new SchemaContext());
       expect(testSchema).to.exist;
       expect(testSchema.customAttributes!.get("ValidSchema.TestCAClassA")).to.exist;
-      assert(testSchema.customAttributes!.get("ValidSchema.TestCAClassA")!.ShowClasses === true);
+      assert.isTrue(testSchema.customAttributes!.get("ValidSchema.TestCAClassA")!.ShowClasses);
     });
 
     it("sync - single schema CustomAttribute", () => {
       const testSchema = Schema.fromJsonSync(oneCustomAttributeJson, new SchemaContext());
       expect(testSchema).to.exist;
       expect(testSchema.customAttributes!.get("ValidSchema.TestCAClassA")).to.exist;
-      assert(testSchema.customAttributes!.get("ValidSchema.TestCAClassA")!.ShowClasses === true);
+      assert.isTrue(testSchema.customAttributes!.get("ValidSchema.TestCAClassA")!.ShowClasses);
     });
 
     const twoCustomAttributeJson = {
@@ -632,8 +632,8 @@ describe("Full Schema Deserialization", () => {
       const testSchema = Schema.fromJsonSync(propertyJson, new SchemaContext());
       expect(testSchema.customAttributes!.get("ValidSchema.TestCAClassA")).to.exist;
       expect(testSchema.customAttributes!.get("ValidSchema.TestCAClassB")).to.exist;
-      assert(testSchema.customAttributes!.get("ValidSchema.TestCAClassA")!.ShowClasses === false);
-      assert(testSchema.customAttributes!.get("ValidSchema.TestCAClassB")!.ShowClasses === true);
+      assert.isFalse(testSchema.customAttributes!.get("ValidSchema.TestCAClassA")!.ShowClasses);
+      assert.isTrue(testSchema.customAttributes!.get("ValidSchema.TestCAClassB")!.ShowClasses);
     });
   });
 
@@ -677,7 +677,7 @@ describe("Full Schema Deserialization", () => {
       expect(testProp).to.exist;
       expect(testProp.name).to.eql("TestProp");
       expect(testProp.customAttributes!.get("ValidSchema.TestCAClassA")).to.exist;
-      assert(testProp.customAttributes!.get("ValidSchema.TestCAClassA")!.ExampleAttribute === 1234);
+      assert.strictEqual(testProp.customAttributes!.get("ValidSchema.TestCAClassA")!.ExampleAttribute, 1234);
     });
 
     it("sync - single property CustomAttribute", () => {
@@ -687,7 +687,7 @@ describe("Full Schema Deserialization", () => {
       expect(testProp).to.exist;
       expect(testProp.name).to.eql("TestProp");
       expect(testProp.customAttributes!.get("ValidSchema.TestCAClassA")).to.exist;
-      assert(testProp.customAttributes!.get("ValidSchema.TestCAClassA")!.ExampleAttribute === 1234);
+      assert.strictEqual(testProp.customAttributes!.get("ValidSchema.TestCAClassA")!.ExampleAttribute, 1234);
     });
 
     const twoCustomAttributesJson = getSchemaJson({
@@ -744,9 +744,9 @@ describe("Full Schema Deserialization", () => {
       const testProp = (testSchema.getItemSync("TestClass") as AnyClass).properties![0];
       expect(testProp).to.exist;
 
-      assert(testProp.customAttributes!.get("ValidSchema.TestCAClassA")!.ShowClasses === 1.2);
-      assert(testProp.customAttributes!.get("ValidSchema.TestCAClassB")!.ExampleAttribute === true);
-      assert(testProp.customAttributes!.get("ValidSchema.TestCAClassC")!.Example2Attribute === "example");
+      assert.strictEqual(testProp.customAttributes!.get("ValidSchema.TestCAClassA")!.ShowClasses, 1.2);
+      assert.isTrue(testProp.customAttributes!.get("ValidSchema.TestCAClassB")!.ExampleAttribute);
+      assert.strictEqual(testProp.customAttributes!.get("ValidSchema.TestCAClassC")!.Example2Attribute, "example");
     });
   });
 });

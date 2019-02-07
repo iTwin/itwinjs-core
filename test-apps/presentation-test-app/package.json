@@ -8,12 +8,11 @@
   },
   "version": "0.0.0",
   "engines": {
-    "node": "8.9.1"
+    "node": ">=10.14.0 <11.0"
   },
   "private": true,
   "scripts": {
-    "build": "tsc 1>&2 && npm run copy:css && npm run copy:public && npm run webpack:modules && npm run extract",
-    "copy:css": "cpx \"./src/**/*.css\" ./lib",
+    "build": "npm run extract && node ./node_modules/@bentley/webpack-tools/bin/buildIModelJsModule",
     "clean": "rimraf lib",
     "docs": "",
     "extract": "node ./node_modules/@bentley/build-tools/scripts/extract.js --fileExt=ts,tsx --extractFrom=./src --recursive --out=../../generated-docs/extract",
@@ -22,33 +21,52 @@
     "start:webserver": "node ./node_modules/@bentley/imodeljs-webserver/lib/webserver.js --port=3000 --resources=./lib/webresources/",
     "start:backend": "node lib/backend/main.js",
     "start:servers": "run-p start:webserver start:backend",
-    "copy:public": "cpx \"public/**/*\" ./lib/webresources",
-    "copy:modules": "node ./node_modules/@bentley/webpack-tools/modules/copyExternalModules.js --packageFile=./package.json --destDir=./lib/webresources --type=dev",
-    "copy:modulesprod": "node ./node_modules/@bentley/webpack-tools/modules/copyExternalModules.js --packageFile=./package.json --destDir=./lib/webresources --type=prod",
-    "makeconfig": "node ./node_modules/@bentley/config-loader/scripts/write.js ./lib/webresources/config.json ^imjs_",
-    "webpack:main": "webpack --config ./node_modules/@bentley/webpack-tools/modules/webpackModule.config.js --env.outdir=./lib/webresources --env.entry=./lib/frontend/index.js --env.bundlename=main --env.stylesheets --env.htmltemplate=./src/frontend/index.html",
-    "webpack:modules": "npm run copy:modules && npm run webpack:main && npm run makeconfig",
     "test": "",
     "cover": ""
   },
+  "iModelJs": {
+    "buildModule": {
+      "type": "application",
+      "sourceResources": [
+        {
+          "source": "./src/**/*.css",
+          "dest": "./lib"
+        },
+        {
+          "source": "./public/**/*",
+          "dest": "./lib/webresources"
+        }
+      ],
+      "webpack": {
+        "dest": "./lib/webresources",
+        "entry": "./lib/frontend/index.js",
+        "bundleName": "main",
+        "styleSheets": true,
+        "htmlTemplate": "./src/frontend/index.html"
+      },
+      "makeConfig": {
+        "dest": "./lib/webresources/config.json",
+        "filter": "^imjs_"
+      }
+    }
+  },
   "dependencies": {
-    "@bentley/bentleyjs-core": "0.189.0-dev.10",
-    "@bentley/geometry-core": "0.189.0-dev.10",
-    "@bentley/bwc": "^7.1.0",
-    "@bentley/electron-manager": "0.189.0-dev.10",
-    "@bentley/icons-generic-webfont": "^0.0.6",
-    "@bentley/imodeljs-clients": "0.189.0-dev.10",
-    "@bentley/imodeljs-common": "0.189.0-dev.10",
-    "@bentley/imodeljs-backend": "0.189.0-dev.10",
-    "@bentley/imodeljs-frontend": "0.189.0-dev.10",
-    "@bentley/imodeljs-i18n": "0.189.0-dev.10",
-    "@bentley/imodeljs-quantity": "0.189.0-dev.10",
-    "@bentley/presentation-common": "0.189.0-dev.10",
-    "@bentley/presentation-backend": "0.189.0-dev.10",
-    "@bentley/presentation-frontend": "0.189.0-dev.10",
-    "@bentley/presentation-components": "0.189.0-dev.10",
-    "@bentley/ui-core": "0.189.0-dev.10",
-    "@bentley/ui-components": "0.189.0-dev.10",
+    "@bentley/bentleyjs-core": "0.189.0-dev.22",
+    "@bentley/geometry-core": "0.189.0-dev.22",
+    "@bentley/electron-manager": "0.189.0-dev.22",
+    "@bentley/icons-generic-webfont": "^0.0.9",
+    "@bentley/imodeljs-clients": "0.189.0-dev.22",
+    "@bentley/imodeljs-common": "0.189.0-dev.22",
+    "@bentley/imodeljs-backend": "0.189.0-dev.22",
+    "@bentley/imodeljs-frontend": "0.189.0-dev.22",
+    "@bentley/imodeljs-i18n": "0.189.0-dev.22",
+    "@bentley/imodeljs-quantity": "0.189.0-dev.22",
+    "@bentley/presentation-common": "0.189.0-dev.22",
+    "@bentley/presentation-backend": "0.189.0-dev.22",
+    "@bentley/presentation-frontend": "0.189.0-dev.22",
+    "@bentley/presentation-components": "0.189.0-dev.22",
+    "@bentley/ui-core": "0.189.0-dev.22",
+    "@bentley/ui-components": "0.189.0-dev.22",
     "body-parser": "^1.18.2",
     "express": "^4.16.3",
     "react": "^16.4.2",
@@ -57,35 +75,24 @@
     "immutable": "^3.8.2"
   },
   "devDependencies": {
-    "@bentley/config-loader": "0.189.0-dev.10",
-    "@bentley/build-tools": "0.189.0-dev.10",
-    "@bentley/bwc": "^7.1.0",
-    "@bentley/imodeljs-webserver": "0.189.0-dev.10",
-    "@bentley/webpack-tools": "0.189.0-dev.10",
+    "@bentley/config-loader": "0.189.0-dev.22",
+    "@bentley/build-tools": "0.189.0-dev.22",
+    "@bentley/imodeljs-webserver": "0.189.0-dev.22",
+    "@bentley/webpack-tools": "0.189.0-dev.22",
     "@types/body-parser": "^1.17.0",
     "@types/bunyan": "^1.8.4",
     "@types/express": "^4.16.1",
     "@types/react": "16.7.22",
     "@types/react-dom": "16.0.11",
     "autoprefixer": "^8.6.5",
-    "css-loader": "^0.28.11",
-    "cpx": "^1.5.0",
     "electron": "^4.0.1",
     "electron-chromedriver": "^2.0.0",
-    "file-loader": "^1.1.11",
     "npm-run-all": "^4.1.5",
     "postcss-flexbugs-fixes": "^3.3.1",
     "postcss-loader": "^2.1.6",
     "rimraf": "^2.6.2",
-    "sass-loader": "^7.1.0",
-    "source-map-loader": "^0.2.3",
-    "style-loader": "^0.21.0",
-    "svg-sprite-loader": "^3.8.0",
     "tslint": "^5.11.0",
-    "typescript": "~3.2.2",
-    "uglifyjs-webpack-plugin": "^1.2.5",
-    "url-loader": "^1.0.1",
-    "webpack": "^4.20.2"
+    "typescript": "~3.2.2"
   },
   "proxy": "http://localhost:5000"
 }

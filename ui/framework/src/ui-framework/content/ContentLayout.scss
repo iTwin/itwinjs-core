@@ -2,7 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-@import "@bentley/bwc/lib/mixins";
+@import "@bentley/ui-core/lib/ui-core/style/index";
 @import "@bentley/ui-ninezone/lib/ui-ninezone/footer/_variables";
 
 .ContentViewPane {
@@ -77,7 +77,7 @@
   z-index: 5;   // TODO - fix for Grid column resizers, which have a z-index of 2
 
   &.contentlayout-overlay-active {
-    border-color: $bwc-orange;
+    border-color: $uicore-orange;
   }
 
   &.contentlayout-overlay-inactive {

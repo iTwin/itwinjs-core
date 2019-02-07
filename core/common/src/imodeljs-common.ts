@@ -38,7 +38,7 @@ export * from "./geometry/AreaPattern";
 export * from "./geometry/Cartographic";
 export * from "./geometry/GeometryStream";
 export * from "./geometry/LineStyle";
-export * from "./geometry/Primitives";
+export * from "./geometry/Placement";
 export * from "./geometry/TextString";
 export * from "./rpc/TestRpcManager";
 export * from "./rpc/WipRpcInterface";

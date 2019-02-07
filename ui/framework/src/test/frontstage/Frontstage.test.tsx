@@ -13,6 +13,7 @@ import {
   FrontstageManager,
   WidgetState,
   FrontstageComposer,
+  CoreTools,
 } from "../../ui-framework";
 import { TestFrontstage } from "./FrontstageTestUtils";
 
@@ -24,11 +25,11 @@ describe("Frontstage", () => {
   });
 
   it("should render", () => {
-    mount(<Frontstage id="test1" defaultToolId="Select" defaultLayout="defaultLayout1" contentGroup="contentGroup1" />);
+    mount(<Frontstage id="test1" defaultTool={CoreTools.selectElementCommand} defaultLayout="defaultLayout1" contentGroup="contentGroup1" />);
   });
 
   it("renders correctly", () => {
-    shallow(<Frontstage id="test1" defaultToolId="Select" defaultLayout="defaultLayout1" contentGroup="contentGroup1" />).should.matchSnapshot();
+    shallow(<Frontstage id="test1" defaultTool={CoreTools.selectElementCommand} defaultLayout="defaultLayout1" contentGroup="contentGroup1" />).should.matchSnapshot();
   });
 
   it("FrontstageProvider supplies valid Frontstage", async () => {

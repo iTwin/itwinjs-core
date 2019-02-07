@@ -575,9 +575,9 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
       return Range3d.createNull(result);
     return Range3d.createXYZXYZOrCorrectToNull
       (
-        Math.max(this.low.x, other.low.x), Math.max(this.low.y, other.low.y), Math.max(this.low.z, other.low.z),
-        Math.min(this.high.x, other.high.x), Math.min(this.high.y, other.high.y), Math.min(this.high.z, other.high.z),
-        result);
+      Math.max(this.low.x, other.low.x), Math.max(this.low.y, other.low.y), Math.max(this.low.z, other.low.z),
+      Math.min(this.high.x, other.high.x), Math.min(this.high.y, other.high.y), Math.min(this.high.z, other.high.z),
+      result);
 
   }
 
@@ -590,9 +590,9 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
     // we trust null ranges have EXTREME values, so a null in either input leads to expected results.
     return Range3d.createXYZXYZOrCorrectToNull
       (
-        Math.min(this.low.x, other.low.x), Math.min(this.low.y, other.low.y), Math.min(this.low.z, other.low.z),
-        Math.max(this.high.x, other.high.x), Math.max(this.high.y, other.high.y), Math.max(this.high.z, other.high.z),
-        result);
+      Math.min(this.low.x, other.low.x), Math.min(this.low.y, other.low.y), Math.min(this.low.z, other.low.z),
+      Math.max(this.high.x, other.high.x), Math.max(this.high.y, other.high.y), Math.max(this.high.z, other.high.z),
+      result);
   }
   /**
    * move low and high points by scaleFactor around the center point.
@@ -651,7 +651,29 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
       matrix.coffs[8] = 1;
     return transform;
   }
+
+  /** Ensure that the length of each dimension of this AxisAlignedBox3d is at least a minimum size. If not, expand to minimum about the center.
+   * @param min The minimum length for each dimension.
+   */
+  public ensureMinLengths(min: number = .001) {
+    let size = (min - this.xLength()) / 2.0;
+    if (size > 0) {
+      this.low.x -= size;
+      this.high.x += size;
+    }
+    size = (min - this.yLength()) / 2.0;
+    if (size > 0) {
+      this.low.y -= size;
+      this.high.y += size;
+    }
+    size = (min - this.zLength()) / 2.0;
+    if (size > 0) {
+      this.low.z -= size;
+      this.high.z += size;
+    }
+  }
 }
+
 export class Range1d extends RangeBase {
 
   // low and high are always non-null objects
@@ -664,7 +686,7 @@ export class Range1d extends RangeBase {
     this.high = RangeBase._EXTREME_NEGATIVE;
   }
   // internal use only -- directly set all coordinates, test only if directed.
-  private setDirect(low: number, high: number, correctToNull: boolean) {
+  private setDirect(low: number, high: number, correctToNull: boolean = false) {
     this.low = low;
     this.high = high;
     if (correctToNull && low > high)
@@ -676,7 +698,7 @@ export class Range1d extends RangeBase {
     high: number = RangeBase._EXTREME_NEGATIVE) {
     super();
     this.low = low; this.high = high; // duplicates set_direct, but compiler is not convinced they are set.
-    this.set_direct(low, high);
+    this.setDirect(low, high);
   }
   /** Returns true if this and other have equal low and high parts */
   public isAlmostEqual(other: Range1d): boolean {
@@ -717,16 +739,12 @@ export class Range1d extends RangeBase {
    */
   public toJSON(): Range1dProps { if (this.isNull) return new Array<number>(); else return [this.low, this.high]; }
 
-  // internal use only -- directly set both lwo and high coordinates, without tests.
-  private set_direct(low: number, high: number) {
-    this.low = low; this.high = high;
-  }
   /** return a new Range1d with contents of this.
    * @param result optional result.
    */
   public clone(result?: this): this {
     result = result ? result : new (this.constructor as any)() as this;
-    result.set_direct(this.low, this.high);
+    result.setDirect(this.low, this.high);
     return result;
   }
 
@@ -735,7 +753,7 @@ export class Range1d extends RangeBase {
    */
   public static createFrom<T extends Range1d>(other: T, result?: T) {
     result = result ? result : new this() as T;
-    result.set_direct(other.low, other.high);
+    result.setDirect(other.low, other.high);
     return result;
   }
 
@@ -757,7 +775,7 @@ export class Range1d extends RangeBase {
   /** Create a single point box */
   public static createX<T extends Range1d>(x: number, result?: T): T {
     result = result ? result : new this() as T;
-    result.set_direct(x, x);
+    result.setDirect(x, x);
     return result;
   }
 
@@ -767,7 +785,7 @@ export class Range1d extends RangeBase {
    */
   public static createXX<T extends Range1d>(xA: number, xB: number, result?: T): T {
     result = result ? result : new this() as T;
-    result.set_direct(
+    result.setDirect(
       Math.min(xA, xB),
       Math.max(xA, xB));
     return result;
@@ -782,7 +800,7 @@ export class Range1d extends RangeBase {
       return Range1d.createNull(result);
 
     result = result ? result : new this() as T;
-    result.set_direct(
+    result.setDirect(
       Math.min(xA, xB),
       Math.max(xA, xB));
     return result;
@@ -895,9 +913,9 @@ export class Range1d extends RangeBase {
 
     return Range1d.createXXOrCorrectToNull
       (
-        Math.max(this.low, other.low),
-        Math.min(this.high, other.high),
-        result);
+      Math.max(this.low, other.low),
+      Math.min(this.high, other.high),
+      result);
 
   }
 
@@ -907,9 +925,9 @@ export class Range1d extends RangeBase {
     // we trust null ranges have EXTREME values, so a null in either input leads to expected results.
     return Range1d.createXX
       (
-        Math.min(this.low, other.low),
-        Math.max(this.high, other.high),
-        result);
+      Math.min(this.low, other.low),
+      Math.max(this.high, other.high),
+      result);
   }
   /**
    * move low and high points by scaleFactor around the center point.
@@ -1214,9 +1232,9 @@ export class Range2d extends RangeBase implements LowAndHighXY {
       return Range2d.createNull(result);
     return Range2d.createXYXY
       (
-        Math.max(this.low.x, other.low.x), Math.max(this.low.y, other.low.y),
-        Math.min(this.high.x, other.high.x), Math.min(this.high.y, other.high.y),
-        result);
+      Math.max(this.low.x, other.low.x), Math.max(this.low.y, other.low.y),
+      Math.min(this.high.x, other.high.x), Math.min(this.high.y, other.high.y),
+      result);
 
   }
 
@@ -1229,9 +1247,9 @@ export class Range2d extends RangeBase implements LowAndHighXY {
     // we trust null ranges have EXTREME values, so a null in either input leads to expected results.
     return Range2d.createXYXY
       (
-        Math.min(this.low.x, other.low.x), Math.min(this.low.y, other.low.y),
-        Math.max(this.high.x, other.high.x), Math.max(this.high.y, other.high.y),
-        result);
+      Math.min(this.low.x, other.low.x), Math.min(this.low.y, other.low.y),
+      Math.max(this.high.x, other.high.x), Math.max(this.high.y, other.high.y),
+      result);
   }
 
   /**

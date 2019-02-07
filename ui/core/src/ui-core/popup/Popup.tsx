@@ -8,7 +8,7 @@ import * as React from "react";
 import * as classnames from "classnames";
 
 import Timer from "../utils/Timer";
-import { CommonProps } from "../Props";
+import { CommonProps } from "../utils/Props";
 import "./Popup.scss";
 
 /** Position of the popup relative to its target */

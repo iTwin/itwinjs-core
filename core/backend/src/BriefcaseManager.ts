@@ -346,7 +346,7 @@ export class BriefcaseManager {
     const nativeDb = new IModelHost.platform.DgnDb();
     const res: DbResult = nativeDb.openIModelFile(briefcase.pathname, OpenMode.Readonly);
     if (DbResult.BE_SQLITE_OK !== res)
-      throw new IModelError(DbResult.BE_SQLITE_ERROR, `Unable to open briefcase at ${briefcase.pathname}`, Logger.logError, loggingCategory);
+      throw new IModelError(res, "Unable to open briefcase", Logger.logError, loggingCategory, () => ({ iModelId: briefcase.iModelId, pathname: briefcase.pathname, result: res }));
 
     briefcase.briefcaseId = nativeDb.getBriefcaseId();
     briefcase.changeSetId = nativeDb.getParentChangeSetId();
@@ -721,7 +721,7 @@ export class BriefcaseManager {
     let res: DbResult = BriefcaseManager.openDb(nativeDb, actx, accessToken, contextId, briefcase.pathname, openParams.openMode);
     if (DbResult.BE_SQLITE_OK !== res) {
       const msg = `Unable to open Db at ${briefcase.pathname} when creating a briefcase`;
-      Logger.logError(loggingCategory, msg, () => briefcase.getDebugInfo());
+      Logger.logError(loggingCategory, msg, () => ({ ...briefcase.getDebugInfo(), result: res }));
       await BriefcaseManager.deleteBriefcase(actx, accessToken, briefcase);
       actx.enter();
       throw new IModelError(res, msg);
@@ -730,7 +730,7 @@ export class BriefcaseManager {
     res = nativeDb.setBriefcaseId(briefcase.briefcaseId);
     if (DbResult.BE_SQLITE_OK !== res) {
       const msg = `Unable to setup briefcase id for Db at ${briefcase.pathname} when creating a briefcase`;
-      Logger.logError(loggingCategory, msg);
+      Logger.logError(loggingCategory, msg, () => ({ ...briefcase.getDebugInfo(), result: res }));
       await BriefcaseManager.deleteBriefcase(actx, accessToken, briefcase);
       actx.enter();
       throw new IModelError(res, msg);

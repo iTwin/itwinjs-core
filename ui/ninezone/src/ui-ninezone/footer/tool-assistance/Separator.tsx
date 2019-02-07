@@ -15,7 +15,7 @@ export interface ToolAssistanceSeparatorProps extends CommonProps {
   label?: string;
 }
 
-/** Assistance item separator. Used in [[ToolAssistance]] component. */
+/** Assistance item separator. Used in [[ToolAssistanceContent]] component. */
 export class ToolAssistanceSeparator extends React.PureComponent<ToolAssistanceSeparatorProps> {
   public render() {
     const className = classnames(

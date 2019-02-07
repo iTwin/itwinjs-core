@@ -29,6 +29,7 @@ exports[`<EditorContainer /> renders correctly 1`] = `
         },
       }
     }
+    setFocus={true}
   />
 </span>
 `;

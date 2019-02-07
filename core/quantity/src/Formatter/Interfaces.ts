@@ -8,7 +8,9 @@ import {
 
 import { UnitProps } from "../Interfaces";
 
-/** This interface defines the properties required to format quantity values. */
+/** This interface defines the properties required to format quantity values.
+ * @alpha
+ */
 export interface FormatProps {
   readonly name: string;
   readonly roundFactor: number;

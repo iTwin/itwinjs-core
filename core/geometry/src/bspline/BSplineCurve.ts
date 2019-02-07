@@ -14,6 +14,7 @@ import { Ray3d } from "../geometry3d/Ray3d";
 import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
 
 import { CurvePrimitive } from "../curve/CurvePrimitive";
+import { StrokeCountMap } from "../curve/Query/StrokeCountMap";
 import { CurveLocationDetail } from "../curve/CurveLocationDetail";
 
 import { StrokeOptions } from "../curve/StrokeOptions";
@@ -468,7 +469,7 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
     for (let spanIndex = 0; spanIndex < numSpan; spanIndex++) {
       const bezier = this.getSaturatedBezierSpan3dOr3dH(spanIndex, false, workBezier);
       if (bezier) {
-        numStrokes = bezier.strokeCount(options);
+        numStrokes = bezier.computeStrokeCountForOptions(options);
         if (needBeziers) {
           handler.announceBezierCurve!(bezier, numStrokes, this,
             spanIndex,
@@ -484,6 +485,42 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
     }
   }
 
+  /**
+   * Assess legnth and turn to determine a stroke count.
+   * @param options stroke options structure.
+   */
+  public computeStrokeCountForOptions(options?: StrokeOptions): number {
+    const workBezier = this.initializeWorkBezier();
+    const numSpan = this.numSpan;
+    let numStroke = 0;
+    for (let spanIndex = 0; spanIndex < numSpan; spanIndex++) {
+      const bezier = this.getSaturatedBezierSpan3dH(spanIndex, workBezier);
+      if (bezier)
+        numStroke += bezier.computeStrokeCountForOptions(options);
+    }
+    return numStroke;
+  }
+  /**
+   * Compute individual segment stroke counts.  Attach in a StrokeCountMap.
+   * @param options StrokeOptions that determine count
+   * @param parentStrokeMap evolving parent map.
+   */
+  public computeAndAttachRecursiveStrokeCounts(options?: StrokeOptions, parentStrokeMap?: StrokeCountMap) {
+    const workBezier = this.initializeWorkBezier();
+    const numSpan = this.numSpan;
+    const myData = StrokeCountMap.createWithCurvePrimitiveAndOptionalParent(this, parentStrokeMap, []);
+
+    for (let spanIndex = 0; spanIndex < numSpan; spanIndex++) {
+      const bezier = this.getSaturatedBezierSpan3dH(spanIndex, workBezier);
+      if (bezier) {
+        const segmentLength = workBezier.curveLength();
+        const numStrokeOnSegment = workBezier.computeStrokeCountForOptions(options);
+        myData.addToCountAndLength(numStrokeOnSegment, segmentLength);
+      }
+    }
+    CurvePrimitive.installStrokeCountMap(this, myData, parentStrokeMap);
+  }
+
   public emitStrokes(dest: LineString3d, options?: StrokeOptions): void {
     const workBezier = this.initializeWorkBezier();
     const numSpan = this.numSpan;
@@ -493,7 +530,6 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
         bezier.emitStrokes(dest, options);
     }
   }
-
   /**
    * Test knots, control points, and wrappable flag to see if all agree for a possible wrapping.
    * @returns the manner of closing.   Se BSplineWrapMode for particulars of each mode.

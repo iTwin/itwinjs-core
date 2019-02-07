@@ -23,6 +23,9 @@ export interface BooleanListenerProps {
   defaultValue?: boolean;
 }
 
+/**
+ * State for the [[BooleanSyncUiListener]] component.
+ */
 export interface BooleanListenerState {
   boolValue: boolean;
 }

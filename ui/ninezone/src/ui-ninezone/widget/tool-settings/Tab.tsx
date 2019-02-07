@@ -17,6 +17,10 @@ export interface ToolSettingsTabProps extends CommonProps {
   isActive?: boolean;
   /** Function called when the tab is clicked. */
   onClick?: () => void;
+  /** Function called when a key is pressed. */
+  onKeyDown?: (e: React.KeyboardEvent) => void;
+  /** Title for the item. */
+  title?: string;
 }
 
 /**
@@ -35,6 +39,8 @@ export class ToolSettingsTab extends React.PureComponent<ToolSettingsTabProps> {
         className={className}
         style={this.props.style}
         onClick={this.props.onClick}
+        onKeyDown={this.props.onKeyDown}
+        title={this.props.title}
       >
         {this.props.children}
       </button>

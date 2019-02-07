@@ -9,6 +9,7 @@ import { Key } from "ts-key-enum";
 import { ResultSelector, ResultSelectorProps } from "./ResultSelector";
 import "./FilteringInput.scss";
 import UiComponents from "../UiComponents";
+import { Spinner, SpinnerSize } from "@bentley/ui-core";
 
 /** [[FilteringInput]] React Component state */
 export interface FilteringInputState {
@@ -112,7 +113,10 @@ export class FilteringInput extends React.Component<FilteringInputProps, Filteri
 
           <span className="filtering-input-input-components">
             {this.state.context === InputContext.FilteringInProgress ?
-              <div className="filtering-input-loader"><i></i><i></i><i></i><i></i><i></i><i></i></div> : undefined}
+              <div className="filtering-input-loader">
+                <Spinner size={SpinnerSize.Medium} />
+              </div>
+              : undefined}
 
             {this.state.context === InputContext.FilteringFinished ?
               <ResultSelector {...this.props.resultSelectorProps!} /> : undefined}

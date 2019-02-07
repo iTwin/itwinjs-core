@@ -23,6 +23,7 @@ export interface SyncUiProps {
 /** Prototype for string getter function. */
 export type StringGetter = () => string;
 
+/** Properties for a label in an item */
 export interface LabelProps {
   /** if set, it is used to explicitly set the label shown by a component. */
   label?: string | StringGetter;
@@ -30,6 +31,7 @@ export interface LabelProps {
   labelKey?: string;
 }
 
+/** Properties for a description in an item */
 export interface DescriptionProps {
   /** if set, it is used to explicitly set the description shown by a component. */
   description?: string | StringGetter;
@@ -37,6 +39,7 @@ export interface DescriptionProps {
   descriptionKey?: string;
 }
 
+/** Properties for a tooltip in an item */
 export interface TooltipProps {
   /** used to explicitly set the tooltip shown by a component. */
   tooltip?: string | StringGetter;
@@ -44,7 +47,7 @@ export interface TooltipProps {
   tooltipKey?: string;
 }
 
-/** Definition that specify properties shared between many ConfigurableUi components.
+/** Definition that specifies properties shared between many ConfigurableUi components.
  */
 export interface ItemProps extends IconProps, LabelProps, SyncUiProps, TooltipProps {
   /** if set, component will be visible - defaults to true */

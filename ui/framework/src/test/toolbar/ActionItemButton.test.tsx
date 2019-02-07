@@ -11,6 +11,7 @@ import {
   ActionItemButton,
   CommandItemDef,
   KeyboardShortcutManager,
+  BaseItemState, SyncUiEventDispatcher,
 } from "../../ui-framework";
 import TestUtils from "../TestUtils";
 
@@ -72,4 +73,25 @@ describe("ActionItemButton", () => {
     wrapper.unmount();
   });
 
+  it("sync event should trigger stateFunc", () => {
+    const testEventId = "test-buttonstate";
+    let stateFunctionCalled = false;
+    const testStateFunc = (state: Readonly<BaseItemState>): BaseItemState => { stateFunctionCalled = true; return state; };
+    const testSyncStateCommand =
+      new CommandItemDef({
+        commandId: "command",
+        iconSpec: "icon-placeholder",
+        labelKey: "UiFramework:tests.label",
+        isEnabled: false,
+        stateSyncIds: [testEventId],
+        stateFunc: testStateFunc,
+        execute: () => { },
+      });
+
+    const wrapper = mount(<ActionItemButton actionItem={testSyncStateCommand} />);
+    expect(stateFunctionCalled).to.eq(false);
+    SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(testEventId);
+    expect(stateFunctionCalled).to.eq(true);
+    wrapper.unmount();
+  });
 });

@@ -85,7 +85,7 @@ describe("Test shader compilation", () => {
   after(() => WebGLTestContext.shutdown());
 
   it.skip("should build and compile a simple shader program", () => {
-    const builder = new ProgramBuilder(false);
+    const builder = new ProgramBuilder();
     builder.vert.set(VertexShaderComponent.ComputePosition, "return vec4(0.0);");
     builder.frag.set(FragmentShaderComponent.ComputeBaseColor, "return vec4(1.0);");
     builder.frag.set(FragmentShaderComponent.AssignFragData, "FragColor = baseColor;");

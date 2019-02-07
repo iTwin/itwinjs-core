@@ -48,7 +48,7 @@
   > div {
     display: flex;
     flex-direction: column;
-    padding-right: $bwc-sm;
+    padding-right: $uicore-sm;
     overflow: hidden;
 
     > span {
@@ -62,9 +62,9 @@
     }
 
     > span:nth-child(2) {
-      margin-top: $bwc-s;
-      font-size: $bwc-font-size;
-      color: $bwc-gray;
+      margin-top: $uicore-s;
+      font-size: $uicore-font-size;
+      color: $uicore-gray;
     }
   }
 }

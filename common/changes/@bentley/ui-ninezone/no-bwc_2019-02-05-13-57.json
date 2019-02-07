@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Removed dependency on BWC. Parts of BWC copied into ui-core in preparation for theming support.",
+      "packageName": "@bentley/ui-ninezone",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-ninezone",
+  "email": "dan.east@bentley.com"
+}

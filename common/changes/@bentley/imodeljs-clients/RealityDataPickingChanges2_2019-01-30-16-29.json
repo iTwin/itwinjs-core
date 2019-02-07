@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Implemented spatial criterai when searching through all reality data associated to a project.",
+      "packageName": "@bentley/imodeljs-clients",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-clients",
+  "email": "Alain.Robert@Bentley.com"
+}

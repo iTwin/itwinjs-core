@@ -13,7 +13,9 @@ import {
 // cSpell:ignore ZERONORMALIZED, nosign, onlynegative, signalways, negativeparentheses
 // cSpell:ignore trailzeroes, keepsinglezero, zeroempty, keepdecimalpoint, applyrounding, fractiondash, showunitlabel, prependunitlabel, exponentonlynegative
 
-/** A class used to both define the specifications for formatting a quantity values and the methods to do the formatting. */
+/** A class used to both define the specifications for formatting a quantity values and the methods to do the formatting.
+ * @alpha
+ */
 export class Format implements FormatProps {
   private _name = "";
 

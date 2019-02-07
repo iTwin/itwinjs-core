@@ -686,7 +686,7 @@ export abstract class RenderTarget implements IDisposable {
   /** @hidden */
   public reset(): void { }
   /** @hidden */
-  public abstract changeScene(scene: GraphicList, activeVolume?: RenderClipVolume): void;
+  public abstract changeScene(scene: GraphicList): void;
   /** @hidden */
   public abstract changeTerrain(_scene: GraphicList): void;
   /** @hidden */
@@ -727,14 +727,12 @@ export interface TextureImage {
 export const enum RenderDiagnostics {
   /** No diagnostics enabled. */
   None = 0,
-  /** Assertions enabled. Failed assertions will produce (often uncaught) exceptions. */
-  Assertions = 1 << 0,
   /** Debugging output to browser console enabled. */
   DebugOutput = 1 << 1,
   /** Potentially expensive checks of WebGL state enabled. */
   WebGL = 1 << 2,
   /** All diagnostics enabled. */
-  All = Assertions | DebugOutput | WebGL,
+  All = DebugOutput | WebGL,
 }
 
 /** A RenderSystem provides access to resources used by the internal WebGL-based rendering system.
@@ -958,9 +956,10 @@ export abstract class RenderSystem implements IDisposable {
 
 /** Clip/Transform for a branch that are varied over time. */
 export class AnimationBranchState {
+  public readonly omit?: boolean;
   public readonly transform?: Transform;
   public readonly clip?: ClipPlanesVolume;
-  constructor(transform?: Transform, clip?: ClipPlanesVolume) { this.transform = transform; this.clip = clip; }
+  constructor(transform?: Transform, clip?: ClipPlanesVolume, omit?: boolean) { this.transform = transform; this.clip = clip; this.omit = omit; }
 }
 
 /** Mapping from node/branch IDs to animation branch state  */

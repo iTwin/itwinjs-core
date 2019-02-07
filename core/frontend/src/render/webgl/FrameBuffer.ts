@@ -4,12 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { IDisposable } from "@bentley/bentleyjs-core";
+import { IDisposable, assert } from "@bentley/bentleyjs-core";
 import { TextureHandle } from "./Texture";
 import { RenderBuffer } from "./RenderBuffer";
 import { GL } from "./GL";
 import { System } from "./System";
-import { Debug } from "./Diagnostics";
 
 export type DepthBuffer = RenderBuffer | TextureHandle;
 
@@ -32,7 +31,7 @@ export class FrameBuffer implements IDisposable {
   public get isBound(): boolean { return FrameBufferBindState.Bound === this._bindState || FrameBufferBindState.BoundWithAttachments === this._bindState; }
   public get isSuspended(): boolean { return FrameBufferBindState.Suspended === this._bindState; }
   public getColor(ndx: number): TextureHandle {
-    Debug.assert(() => ndx < this._colorTextures.length);
+    assert(ndx < this._colorTextures.length);
     return this._colorTextures[ndx];
   }
 
@@ -87,8 +86,8 @@ export class FrameBuffer implements IDisposable {
   }
 
   public bind(bindAttachments: boolean = false): boolean {
-    Debug.assert(() => undefined !== this._fbo);
-    Debug.assert(() => !this.isBound);
+    assert(undefined !== this._fbo);
+    assert(!this.isBound);
 
     if (undefined === this._fbo)
       return false;
@@ -107,12 +106,12 @@ export class FrameBuffer implements IDisposable {
   }
 
   public unbind() {
-    Debug.assert(() => this.isBound);
+    assert(this.isBound);
     System.instance.context.bindFramebuffer(GL.FrameBuffer.TARGET, null);
     this._bindState = FrameBufferBindState.Unbound;
   }
 
-  public suspend() { Debug.assert(() => this.isBound); this._bindState = FrameBufferBindState.Suspended; }
+  public suspend() { assert(this.isBound); this._bindState = FrameBufferBindState.Suspended; }
 
   // Chiefly for debugging currently - assumes RGBA, unsigned byte, want all pixels.
   public get debugPixels(): Uint8Array | undefined {
@@ -152,15 +151,15 @@ export class FrameBufferStack {
       this._top.fbo.suspend();
     }
 
-    Debug.assert(() => !fbo.isBound);
+    assert(!fbo.isBound);
     fbo.bind(withAttachments);
-    Debug.assert(() => fbo.isBound);
+    assert(fbo.isBound);
 
     this._stack.push({ fbo, withAttachments });
   }
 
   public pop(): void {
-    Debug.assert(() => !this.isEmpty);
+    assert(!this.isEmpty);
     if (undefined === this._top) {
       return;
     }
@@ -168,22 +167,22 @@ export class FrameBufferStack {
     const fbo = this._top.fbo;
     this._stack.pop();
 
-    Debug.assert(() => fbo.isBound);
+    assert(fbo.isBound);
     fbo.unbind();
-    Debug.assert(() => !fbo.isBound);
+    assert(!fbo.isBound);
 
     if (this.isEmpty) {
       System.instance.context.bindFramebuffer(GL.FrameBuffer.TARGET, null);
     } else {
       const top = this._top;
-      Debug.assert(() => top.fbo.isSuspended);
+      assert(top.fbo.isSuspended);
       top.fbo.bind(top.withAttachments);
-      Debug.assert(() => top.fbo.isBound);
+      assert(top.fbo.isBound);
     }
   }
 
   public get currentColorBuffer(): TextureHandle | undefined {
-    Debug.assert(() => !this.isEmpty);
+    assert(!this.isEmpty);
     return undefined !== this._top ? this._top.fbo.getColor(0) : undefined;
   }
 

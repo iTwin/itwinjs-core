@@ -76,7 +76,7 @@ export class RealityModelContextIModelCreator {
             const ecefLocation = EcefLocation.createFromCartographicOrigin(cartoCenter!);
             this.iModelDb.setEcefLocation(ecefLocation);
             const ecefToWorld = ecefLocation.getTransform().inverse()!;
-            worldRange.extendRange(AxisAlignedBox3d.fromJSON(ecefToWorld.multiplyRange(ecefRange)));
+            worldRange.extendRange(Range3d.fromJSON(ecefToWorld.multiplyRange(ecefRange)));
         } else {
             let rootTransform = RealityModelTileUtils.transformFromJson(json.root.transform);
             const range = RealityModelTileUtils.rangeFromBoundingVolume(json.root.boundingVolume)!;
@@ -86,14 +86,14 @@ export class RealityModelContextIModelCreator {
             const tileRange = rootTransform.multiplyRange(range);
             if (rootTransform.matrix.isIdentity) {
                 geoLocated = false;
-                worldRange.extendRange(AxisAlignedBox3d.fromJSON(tileRange));
+                worldRange.extendRange(Range3d.fromJSON(tileRange));
             } else {
                 const ecefCenter = tileRange.localXYZToWorld(.5, .5, .5)!;
                 const cartoCenter = Cartographic.fromEcef(ecefCenter);
                 const ecefLocation = EcefLocation.createFromCartographicOrigin(cartoCenter!);
                 this.iModelDb.setEcefLocation(ecefLocation);
                 const ecefToWorld = ecefLocation.getTransform().inverse()!;
-                worldRange.extendRange(AxisAlignedBox3d.fromJSON(ecefToWorld.multiplyRange(tileRange)));
+                worldRange.extendRange(Range3d.fromJSON(ecefToWorld.multiplyRange(tileRange)));
             }
         }
         return { realityModel: { tilesetUrl: this.url, name: this.url }, geoLocated };
@@ -104,7 +104,7 @@ export class RealityModelContextIModelCreator {
         this.physicalModelId = PhysicalModel.insert(this.iModelDb, IModelDb.rootSubjectId, "Empty Model");
 
         let geoLocated = false;
-        const worldRange = new AxisAlignedBox3d();
+        const worldRange = new Range3d();
         const realityModels: ContextRealityModelProps[] = [];
         requestPromise(this.url, { json: true }).then((json: any) => {
             if (this.url.endsWith("_AppData.json")) {

@@ -15,7 +15,7 @@ import { AxisOrder } from "../Geometry";
 /* tslint:disable:no-console */
 export class MatrixTests {
 
-  public static TestCreateProperties(ck: bsiChecker.Checker) {
+  public static testCreateProperties(ck: bsiChecker.Checker) {
     const matrix = Matrix3d.createRotationAroundVector(Vector3d.create(0, 0, 1), Angle.createDegrees(45.0));
     if (matrix) {
       const vectorA = Vector3d.create(10, 1, 1);
@@ -51,13 +51,13 @@ export class MatrixTests {
         ck.testPerpendicular(vectorB, frame.columnZ(), "input Y perp frame.Z");
         ck.testParallel(vectorA, frame.columnX(), "input X parallel frame.X");
         ck.testCoordinateOrder(0, vectorB.dotProduct(frame.columnY()), "vectorB in positive XY half plane");
-        MatrixTests.CheckProperties(ck, frame, false, true, true, true, undefined);
+        MatrixTests.checkProperties(ck, frame, false, true, true, true, undefined);
 
         const frame1 = frame.multiplyMatrixMatrix(Matrix3d.createScale(1, 1, 2));
-        MatrixTests.CheckProperties(ck, frame1, false, false, false, true, false);
+        MatrixTests.checkProperties(ck, frame1, false, false, false, true, false);
 
         const frame2 = frame.multiplyMatrixMatrix(Matrix3d.createScale(1, 1, -1));
-        MatrixTests.CheckProperties(ck, frame2, false, true, false, true, false);
+        MatrixTests.checkProperties(ck, frame2, false, true, false, true, false);
         let vector;
         const e = 1.0 / 64.0;
         for (vector of [
@@ -71,7 +71,7 @@ export class MatrixTests {
         ]) {
           const triad = Matrix3d.createRigidHeadsUp(vector);
           if (ck.testPointer(triad) && triad) {
-            MatrixTests.CheckProperties(ck, triad, undefined, true, true, true,
+            MatrixTests.checkProperties(ck, triad, undefined, true, true, true,
               vector.isAlmostEqual(Vector3d.unitZ()));
             ck.testParallel(vector, triad.columnZ());
           }
@@ -79,7 +79,7 @@ export class MatrixTests {
       }
     }
   }
-  public static CheckInverse(ck: bsiChecker.Checker, matrixA: Matrix3d) {
+  public static checkInverse(ck: bsiChecker.Checker, matrixA: Matrix3d) {
     const matrixB = matrixA.inverse();
     ck.testPointer(matrixB, "inverse");
     // console.log("matrixA", matrixA);
@@ -89,7 +89,7 @@ export class MatrixTests {
       ck.testBoolean(true, AB.isIdentity, "A * Ainverse = I");
     }
   }
-  public static CheckProperties(
+  public static checkProperties(
     ck: bsiChecker.Checker,
     matrix: Matrix3d,
     isIdentity: boolean | undefined,
@@ -116,7 +116,7 @@ export class MatrixTests {
     if (isDiagonal !== undefined)
       ck.testBoolean(isDiagonal, matrix.isDiagonal, "isDiagonal");
   }
-  public static CheckPointArrays(
+  public static checkPointArrays(
     ck: bsiChecker.Checker, pointA: Point3d[]) {
     const transform = Transform.createScaleAboutPoint(Point3d.create(3, 3, 3), 2);
     const pointB = transform.multiplyPoint3dArray(pointA);
@@ -143,7 +143,7 @@ export class MatrixTests {
 describe("Matrix3d.Construction", () => {
   it("Verify properties of Matrix3d.create", () => {
     const ck = new bsiChecker.Checker();
-    MatrixTests.TestCreateProperties(ck);
+    MatrixTests.testCreateProperties(ck);
     ck.checkpoint("End Matrix3d.Construction");
     expect(ck.getNumErrors()).equals(0);
   });
@@ -155,7 +155,7 @@ describe("Matrix3d.Inverse", () => {
     const matrixA = Matrix3d.createRowValues(4, 2, 1,
       -1, 5, 3,
       0.5, 0.75, 9);
-    MatrixTests.CheckInverse(ck, matrixA);
+    MatrixTests.checkInverse(ck, matrixA);
     ck.checkpoint("End Matrix3d.Inverse");
     expect(ck.getNumErrors()).equals(0);
   });
@@ -165,7 +165,7 @@ describe("Point3dArray.HelloWorld", () => {
   it("Point3dArray.HelloWorld", () => {
     const ck = new bsiChecker.Checker();
     const pointA = [Point3d.create(1, 2, 3), Point3d.create(4, 5, 2)];
-    MatrixTests.CheckPointArrays(ck, pointA);
+    MatrixTests.checkPointArrays(ck, pointA);
     ck.checkpoint("Point3dArray.HelloWorld");
     expect(ck.getNumErrors()).equals(0);
   });

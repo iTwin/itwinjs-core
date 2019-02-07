@@ -7,6 +7,7 @@
 import * as React from "react";
 import "./BlockingPrompt.scss";
 import "./Common.scss";
+import { Spinner, SpinnerSize } from "@bentley/ui-core";
 
 interface BlockingPromptProps {
   prompt: string;
@@ -25,7 +26,7 @@ export class BlockingPrompt extends React.Component<BlockingPromptProps> {
     return (
       <div className="blocking-modal-background fade-in-fast">
         <div className="blocking-prompt fade-in">
-          <div className="loader-large"><i /><i /><i /><i /><i /><i /></div>
+          <Spinner size={SpinnerSize.Large} />
           <span>{this.props.prompt}</span>
         </div>
       </div>

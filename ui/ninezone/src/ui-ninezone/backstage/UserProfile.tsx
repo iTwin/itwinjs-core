@@ -6,7 +6,7 @@
 
 import * as React from "react";
 import { CommonProps, NoChildrenProps } from "../utilities/Props";
-import { getUserColor } from "@bentley/bwc";
+import { getUserColor } from "@bentley/ui-core";
 import "./UserProfile.scss";
 
 /** Properties of [[UserProfile]] component. */

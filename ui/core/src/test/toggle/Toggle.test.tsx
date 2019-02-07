@@ -41,4 +41,20 @@ describe("<Toggle />", () => {
     wrapper.unmount();
   });
 
+  it("Toggle should call onBlur handler", () => {
+    const spyMethod = sinon.spy();
+
+    const wrapper = mount(
+      <Toggle isOn={false} onBlur={spyMethod} />,
+    );
+
+    const input = wrapper.find("input.toggle-input");
+    input.should.exist;
+
+    input.simulate("blur");
+    spyMethod.calledOnce.should.true;
+
+    wrapper.unmount();
+  });
+
 });

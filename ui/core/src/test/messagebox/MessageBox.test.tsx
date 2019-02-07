@@ -6,7 +6,7 @@ import { mount, shallow } from "enzyme";
 import * as React from "react";
 import { expect } from "chai";
 
-import { MessageBox, MessageSeverity, ButtonType, ButtonStyle } from "../../ui-core";
+import { MessageBox, MessageSeverity, DialogButtonStyle, DialogButtonType } from "../../ui-core";
 import TestUtils from "../TestUtils";
 import { MessageContainer } from "../../ui-core/messagebox/MessageBox";
 
@@ -17,7 +17,7 @@ describe("MessageBox", () => {
   });
 
   const buttonCluster = [
-    { type: ButtonType.Close, buttonStyle: ButtonStyle.Primary, onClick: () => { } },
+    { type: DialogButtonType.Close, buttonStyle: DialogButtonStyle.Primary, onClick: () => { } },
   ];
 
   describe("renders", () => {

@@ -2,7 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
- @import "@bentley/bwc/lib/mixins";
+ @import "../style/index.scss";
  @import "../colors";
 
  //$toggle-handle-inset: 2px;
@@ -13,10 +13,10 @@
   position: relative;
   display: inline-block;
   border-radius: 3px;
-  color: $bwc-white;
+  color: $uicore-white;
   vertical-align: middle;
   overflow: hidden;
-  font-size: $bwc-font-size;
+  font-size: $uicore-font-size;
   cursor: pointer;
 }
 
@@ -31,19 +31,19 @@
   position: relative;
   display: block;
   height: inherit;
-  background: $bwc-gray-6;
-  color: $bwc-white;
+  background: $uicore-gray-6;
+  color: $uicore-white;
   border-radius: inherit;
 }
 
 /* Blue (default) */
 .toggle-input:checked ~ .toggle-label {
-  background: $bwc-blue;
+  background: $uicore-blue;
 }
 
 /* Green (primary) */
 .toggle-primary > .toggle-input:checked ~ .toggle-label {
-  background: $bwc-green;
+  background: $uicore-green;
 }
 
 .toggle-handle {
@@ -80,7 +80,7 @@
 
 .toggle-input:checked ~ .toggle-checkmark.visible {
   opacity: 1;
-  color: $bwc-white;
+  color: $uicore-white;
   font-size: inherit;
   left: 15%;
 }

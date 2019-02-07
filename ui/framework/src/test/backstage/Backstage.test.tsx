@@ -20,12 +20,14 @@ import {
   FrontstageProvider,
   Frontstage,
   FrontstageProps,
-  SyncUiEventId,
 } from "../../ui-framework";
 import TestUtils from "../TestUtils";
 import { BackstageItem as NZ_BackstageItem } from "@bentley/ui-ninezone";
+import { CoreTools } from "../../ui-framework/CoreToolDefinitions";
+import { SyncUiEventDispatcher } from "../../ui-framework/syncui/SyncUiEventDispatcher";
 
 describe("Backstage", () => {
+  const testEventId = "test-state-function-event";
 
   before(async () => {
     await TestUtils.initializeUiFramework();
@@ -77,8 +79,13 @@ describe("Backstage", () => {
       const wrapper = mount(
         <CommandLaunchBackstageItem commandId="my-command-id" labelKey="UiFramework:tests.label"
           descriptionKey="UiFramework:tests.subtitle" iconSpec="icon-placeholder" execute={spyMethod}
-          stateSyncIds={[SyncUiEventId.FrontstageReady]} stateFunc={stateFunc} />,
+          stateSyncIds={[testEventId]} stateFunc={stateFunc} />,
       );
+
+      expect(stateFunc.calledOnce).to.be.false;
+      SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(testEventId);
+      expect(stateFunc.calledOnce).to.be.true;
+
       const backstageItem = wrapper.find(NZ_BackstageItem);
       backstageItem.find(".nz-backstage-item").simulate("click");
       expect(spyMethod.calledOnce).to.be.true;
@@ -99,7 +106,7 @@ describe("Backstage", () => {
           return (
             <Frontstage
               id="Test1"
-              defaultToolId="PlaceLine"
+              defaultTool={CoreTools.selectElementCommand}
               defaultLayout="FourQuadrants"
               contentGroup="TestContentGroup1"
             />
@@ -111,9 +118,15 @@ describe("Backstage", () => {
       const remove = FrontstageManager.onFrontstageActivatedEvent.addListener((_args: FrontstageActivatedEventArgs) => spyMethod());
       const wrapper = mount(
         <FrontstageLaunchBackstageItem frontstageId="Test1" labelKey="UiFramework:tests.label" iconSpec="icon-placeholder"
-          stateSyncIds={[SyncUiEventId.FrontstageReady]} stateFunc={stateFunc} />,
+          stateSyncIds={[testEventId]} stateFunc={stateFunc} />,
       );
+
       const backstageItem = wrapper.find(NZ_BackstageItem);
+
+      expect(stateFunc.calledOnce).to.be.false;
+      SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(testEventId);
+      expect(stateFunc.calledOnce).to.be.true;
+
       backstageItem.find(".nz-backstage-item").simulate("click");
       setImmediate(() => {
         expect(spyMethod.calledOnce).to.be.true;
@@ -132,7 +145,7 @@ describe("Backstage", () => {
           return (
             <Frontstage
               id="Test1"
-              defaultToolId="PlaceLine"
+              defaultTool={CoreTools.selectElementCommand}
               defaultLayout="FourQuadrants"
               contentGroup="TestContentGroup1"
             />
@@ -176,9 +189,14 @@ describe("Backstage", () => {
       const remove = FrontstageManager.onFrontstageActivatedEvent.addListener((_args: FrontstageActivatedEventArgs) => spyMethod());
       const wrapper = mount(
         <TaskLaunchBackstageItem taskId="Task1" workflowId="ExampleWorkflow" labelKey="UiFramework:tests.label" iconSpec="icon-placeholder"
-          stateSyncIds={[SyncUiEventId.FrontstageReady]} stateFunc={stateFunc} />,
+          stateSyncIds={[testEventId]} stateFunc={stateFunc} />,
       );
       const backstageItem = wrapper.find(NZ_BackstageItem);
+
+      expect(stateFunc.calledOnce).to.be.false;
+      SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(testEventId);
+      expect(stateFunc.calledOnce).to.be.true;
+
       backstageItem.find(".nz-backstage-item").simulate("click");
       setImmediate(() => {
         expect(spyMethod.calledOnce).to.be.true;

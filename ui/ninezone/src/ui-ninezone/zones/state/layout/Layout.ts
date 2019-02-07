@@ -9,6 +9,7 @@ import { ResizeHandle } from "../../../widget/rectangular/ResizeHandle";
 import { HorizontalAnchor } from "../../../widget/Stacked";
 import { Root } from "./Root";
 
+/** @hidden */
 export interface LayoutProps {
   readonly bounds: RectangleProps;
   readonly floatingBounds?: RectangleProps;
@@ -16,6 +17,7 @@ export interface LayoutProps {
   readonly resizers?: Partial<Resizers>;
 }
 
+/** @hidden */
 export class Layout {
   public static readonly RECTANGULAR_DEFAULT_MIN_WIDTH = 296;
   public static readonly RECTANGULAR_DEFAULT_MIN_HEIGHT = 220;
@@ -236,12 +238,14 @@ export class Layout {
   }
 }
 
+/** @hidden */
 export interface ResizeStrategy {
   getMaxResize(px: number, layout: Layout): number;
   tryResize(px: number, layout: Layout): number;
   tryResizeFloating(px: number, layout: Layout): number;
 }
 
+/** @hidden */
 export abstract class GrowStrategy implements ResizeStrategy {
   public abstract getLayoutsToShrink(layout: Layout): Layout[];
   public abstract getSpaceToRoot(bounds: Rectangle, root: Root): number;
@@ -311,6 +315,7 @@ export abstract class GrowStrategy implements ResizeStrategy {
   }
 }
 
+/** @hidden */
 export abstract class ShrinkStrategy implements ResizeStrategy {
   public abstract getLayoutsToShrink(layout: Layout): Layout[];
   public abstract getMaxMoveToRoot(layout: Layout): number;
@@ -387,6 +392,7 @@ export abstract class ShrinkStrategy implements ResizeStrategy {
   }
 }
 
+/** @hidden */
 export abstract class ShrinkVerticalStrategy extends ShrinkStrategy {
   public getMinSize(layout: Layout): number {
     return layout.minHeight;
@@ -397,6 +403,7 @@ export abstract class ShrinkVerticalStrategy extends ShrinkStrategy {
   }
 }
 
+/** @hidden */
 export abstract class ShrinkHorizontalStrategy extends ShrinkStrategy {
   public getMinSize(layout: Layout): number {
     return layout.minWidth;
@@ -407,6 +414,7 @@ export abstract class ShrinkHorizontalStrategy extends ShrinkStrategy {
   }
 }
 
+/** @hidden */
 export class GrowTopStrategy extends GrowStrategy {
   public getLayoutsToShrink(layout: Layout) {
     return layout.topLayouts;
@@ -433,6 +441,7 @@ export class GrowTopStrategy extends GrowStrategy {
   }
 }
 
+/** @hidden */
 export class ShrinkTopStrategy extends ShrinkVerticalStrategy {
   public getLayoutsToShrink(layout: Layout) {
     return layout.bottomLayouts;
@@ -460,6 +469,7 @@ export class ShrinkTopStrategy extends ShrinkVerticalStrategy {
   }
 }
 
+/** @hidden */
 export class GrowBottomStrategy extends GrowStrategy {
   public getLayoutsToShrink(layout: Layout) {
     return layout.bottomLayouts;
@@ -486,6 +496,7 @@ export class GrowBottomStrategy extends GrowStrategy {
   }
 }
 
+/** @hidden */
 export class ShrinkBottomStrategy extends ShrinkVerticalStrategy {
   public getLayoutsToShrink(layout: Layout) {
     return layout.topLayouts;
@@ -513,6 +524,7 @@ export class ShrinkBottomStrategy extends ShrinkVerticalStrategy {
   }
 }
 
+/** @hidden */
 export class GrowLeftStrategy extends GrowStrategy {
   public getLayoutsToShrink(layout: Layout) {
     return layout.leftLayouts;
@@ -547,6 +559,7 @@ export class GrowLeftStrategy extends GrowStrategy {
   }
 }
 
+/** @hidden */
 export class ShrinkLeftStrategy extends ShrinkHorizontalStrategy {
   public getLayoutsToShrink(layout: Layout) {
     return layout.rightLayouts;
@@ -574,6 +587,7 @@ export class ShrinkLeftStrategy extends ShrinkHorizontalStrategy {
   }
 }
 
+/** @hidden */
 export class GrowRightStrategy extends GrowStrategy {
   public getLayoutsToShrink(layout: Layout) {
     return layout.rightLayouts;
@@ -608,6 +622,7 @@ export class GrowRightStrategy extends GrowStrategy {
   }
 }
 
+/** @hidden */
 export class ShrinkRightStrategy extends ShrinkHorizontalStrategy {
   public getLayoutsToShrink(layout: Layout) {
     return layout.leftLayouts;
@@ -635,6 +650,7 @@ export class ShrinkRightStrategy extends ShrinkHorizontalStrategy {
   }
 }
 
+/** @hidden */
 export interface Resizers {
   readonly growTop: ResizeStrategy;
   readonly growBottom: ResizeStrategy;

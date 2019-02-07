@@ -6,7 +6,7 @@
 import { Id64String, ActivityLoggingContext, GuidString } from "@bentley/bentleyjs-core";
 import { Point3d, Range3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
-import { IModelVersion, CodeScopeSpec, Code, ColorDef, IModel, GeometricElement3dProps, AxisAlignedBox3d } from "@bentley/imodeljs-common";
+import { IModelVersion, CodeScopeSpec, Code, ColorDef, IModel, GeometricElement3dProps } from "@bentley/imodeljs-common";
 import { IModelDb, OpenParams, BriefcaseManager, CategorySelector, DisplayStyle3d, ModelSelector, OrthographicViewDefinition, PhysicalModel, SpatialCategory } from "../../imodeljs-backend";
 import * as path from "path";
 import * as fs from "fs";
@@ -78,7 +78,7 @@ export class TestPushUtility {
     const viewRange = new Range3d(0, 0, 0, 50, 50, 50);
     OrthographicViewDefinition.insert(this._iModelDb, definitionModelId, viewName, modelSelectorId, categorySelectorId, displayStyleId, viewRange);
 
-    this._iModelDb.updateProjectExtents(new AxisAlignedBox3d(new Point3d(-1000, -1000, -1000), new Point3d(1000, 1000, 1000)));
+    this._iModelDb.updateProjectExtents(new Range3d(-1000, -1000, -1000, 1000, 1000, 1000));
 
     this.insertTestElement(this._currentLevel, 0);
     this.insertTestElement(this._currentLevel, 1);

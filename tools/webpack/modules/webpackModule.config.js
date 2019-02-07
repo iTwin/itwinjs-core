@@ -8,8 +8,7 @@
 // All the other @bentley dependencies are set to external.
 
 // arguments (specified on the package.json script line)
-// env.sourcedir= : the source directory for the package. (Optional. If not specified, use ./)
-// env.outdir= : the output directory for the webpack result, relative to env.sourcedir. (Optional. If not specified, use {env.sourcedir}/lib/module/{env.prod ? "prod", "dev"}/
+// env.outdir= : the output directory for the webpack result, relative to the package file dir. (Optional. If not specified, use ./lib/module/{env.prod ? "prod", "dev"}/
 // env.entry= : the entry point of the module in the compiled file (e.g. ./lib/imodeljs-frontend.js). Required
 // env.bundlename= : the name of the bundled module (e.g. imodeljs-frontend). Required
 // env.stylesheets : if specified (no value needed), sets up webpack to process .scss files into the bundle. Optional.
@@ -79,18 +78,17 @@ function dropDashes(name) {
 }
 
 function getConfig(env, nodeAsTarget) {
-  // set sourcedir if not specified in arguments.
-  if (!env.sourcedir)
-    env.sourcedir = "./";
+  // sourceDir is always the current directory, which npm sets to that of the package file.
+  const sourceDir = process.cwd();
 
   if (!env.outdir)
     env.outdir = "./lib/module" + (env.prod ? "/prod" : "/dev");
 
   // get the directory for the bundle.
-  bundleDirectory = path.resolve(env.sourcedir, env.outdir);
+  bundleDirectory = path.resolve(sourceDir, env.outdir);
 
   // the context directory (for looking up imports, etc.) is the original module source directory.
-  const contextDirectory = path.resolve(env.sourcedir);
+  const contextDirectory = path.resolve(sourceDir);
 
   // unless specified with env.prod, create a development build.
   const devMode = !(env.prod);
@@ -102,10 +100,11 @@ function getConfig(env, nodeAsTarget) {
   const bundleName = env.bundlename;
 
   // get the version number for the javascript currently being webpacked.
-  const packageContents = getPackageFromJson(env.sourcedir);
+  const packageContents = getPackageFromJson(sourceDir);
 
   // build the object for the webpack configuration
   const webpackLib = {
+    bail: true,                    // don't continue on error.
     context: contextDirectory,
     output: {
       path: bundleDirectory,
@@ -121,7 +120,6 @@ function getConfig(env, nodeAsTarget) {
     externals: {
       '@bentley/bentleyjs-core': 'bentleyjs_core',
       '@bentley/geometry-core': 'geometry_core',
-      '@bentley/bwc': 'bwc',
       '@bentley/imodeljs-i18n': 'imodeljs_i18n',
       '@bentley/imodeljs-clients': 'imodeljs_clients',
       '@bentley/imodeljs-common': 'imodeljs_common',
@@ -144,15 +142,6 @@ function getConfig(env, nodeAsTarget) {
       'lodash': { root: '_', commonjs2: 'lodash', commonjs: 'lodash', amd: 'lodash' },
       'electron': 'commonjs electron',
     },
-    module: {
-      rules: [
-        {
-          test: /\.js$/,
-          use: "source-map-loader",
-          enforce: "pre"
-        },
-      ]
-    },
     optimization: {
       // create only one runtime chunk.
       runtimeChunk: "single",
@@ -163,8 +152,7 @@ function getConfig(env, nodeAsTarget) {
       fs: "empty",
       process: true
     },
-    plugins: [
-    ]
+    plugins: []
   };
 
   // Set up for the DefinePlugin. We always want the BUILD_SEMVER to be available in the webpacked module, will add more definitions as needed.
@@ -175,6 +163,19 @@ function getConfig(env, nodeAsTarget) {
   webpackLib.mode = devMode ? "development" : "production";
   webpackLib.devtool = devMode ? "cheap-module-source-map" : "source-map";
 
+  // Loaders setup:
+  // always use source-map-loader, use strip-assert-loader on production builds;
+  const stripAssertLoader = path.resolve(__dirname, "../config/strip-assert-loader.js");
+  const sourceMapLoader = path.resolve(__dirname, "../node_modules", "source-map-loader");
+  const jsLoaders = env.prod ? [sourceMapLoader, stripAssertLoader] : [sourceMapLoader];
+  webpackLib.module = {};
+  webpackLib.module.rules = [{
+    test: /\.js$/,
+    enforce: "pre",
+    use: jsLoaders
+  }];
+
+  // set up Uglify.
   if (!devMode) {
     webpackLib.optimization.minimizer = [
       new UglifyJSPlugin({
@@ -190,7 +191,7 @@ function getConfig(env, nodeAsTarget) {
   // The reason for it is to set the version of the iModelJs modules that the application requires into index.html.
   // It gets that by reading the version of imodeljs-frontend listed in package.json.
   if (env.htmltemplate || env.isplugin) {
-    const iModelJsVersions = getIModelJsVersions(env.sourcedir, packageContents, webpackLib.externals);
+    const iModelJsVersions = getIModelJsVersions(sourceDir, packageContents, webpackLib.externals);
     const versionString = JSON.stringify(iModelJsVersions);
 
     if (env.htmltemplate) {

@@ -19,6 +19,7 @@ import { ViewDefinitionProps } from "@bentley/imodeljs-common";
 import { IModelInfo } from "../clientservices/IModelServices";
 import { Id64String, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { UiFramework } from "../UiFramework";
+import { ThemeManager } from "../theme/ThemeManager";
 
 type IModelViewsSelectedFunc = (iModelInfo: IModelInfo, viewIdsSelected: Id64String[]) => void;
 
@@ -131,10 +132,12 @@ class OverallContentComponent extends React.Component<OverallContentProps> {
     }
 
     return (
-      <BeDragDropContext>
-        {element}
-        <DragDropLayerRenderer />
-      </BeDragDropContext>
+      <ThemeManager>
+        <BeDragDropContext>
+          {element}
+          <DragDropLayerRenderer />
+        </BeDragDropContext>
+      </ThemeManager>
     );
   }
 }

@@ -8,7 +8,7 @@ import * as sinon from "sinon";
 import { mount, shallow } from "enzyme";
 
 import TestUtils from "../TestUtils";
-import { GroupButton, CommandItemDef, GroupItemDef, KeyboardShortcutManager } from "../../ui-framework";
+import { GroupButton, CommandItemDef, GroupItemDef, KeyboardShortcutManager, BaseItemState, SyncUiEventDispatcher } from "../../ui-framework";
 import { Direction } from "@bentley/ui-ninezone";
 
 const tool1 = new CommandItemDef({
@@ -29,6 +29,7 @@ describe("GroupItem", () => {
   });
 
   describe("<GroupButton />", () => {
+
     it("should render", () => {
       mount(
         <GroupButton
@@ -51,6 +52,30 @@ describe("GroupItem", () => {
           itemsInColumn={4}
         />,
       ).should.matchSnapshot();
+    });
+
+    it("sync event should trigger stateFunc", () => {
+      const testEventId = "test-buttonstate";
+      let stateFunctionCalled = false;
+      const testStateFunc = (state: Readonly<BaseItemState>): BaseItemState => { stateFunctionCalled = true; return state; };
+
+      const wrapper = mount(
+        <GroupButton
+          labelKey="UiFramework:tests.label"
+          iconSpec="icon-placeholder"
+          items={[tool1, tool2]}
+          direction={Direction.Bottom}
+          itemsInColumn={4}
+          stateSyncIds={[testEventId]}
+          stateFunc={testStateFunc}
+        />,
+      );
+
+      expect(stateFunctionCalled).to.eq(false);
+      SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(testEventId);
+      expect(stateFunctionCalled).to.eq(true);
+
+      wrapper.unmount();
     });
 
     it("GroupButton opens", () => {

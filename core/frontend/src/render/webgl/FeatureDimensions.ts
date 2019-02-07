@@ -6,7 +6,7 @@
 
 import { FeatureIndexType } from "@bentley/imodeljs-common";
 import { System } from "./System";
-import { Debug } from "./Diagnostics";
+import { assert } from "@bentley/bentleyjs-core";
 
 /** Describes the dimensionality of a texture used as a look-up table. */
 export const enum LUTDimension {
@@ -56,14 +56,14 @@ export class LUTDimensions implements WidthAndHeight {
     // Compute height
     const height = Math.ceil(nRgba / width);
 
-    Debug.assert(() => height <= maxSize);
-    Debug.assert(() => width <= maxSize);
-    Debug.assert(() => width * height >= nRgba);
-    Debug.assert(() => Math.floor(height) === height);
-    Debug.assert(() => Math.floor(width) === width);
+    assert(height <= maxSize);
+    assert(width <= maxSize);
+    assert(width * height >= nRgba);
+    assert(Math.floor(height) === height);
+    assert(Math.floor(width) === width);
 
     // Row padding should never be necessary...
-    Debug.assert(() => 0 === width % nRgbaPerEntry);
+    assert(0 === width % nRgbaPerEntry);
 
     return { width, height };
   }
@@ -83,7 +83,7 @@ export function getFeatureName(dim: FeatureDimension): string {
     case FeatureDimension.SingleUniform: return "Single/Uniform";
     case FeatureDimension.SingleNonUniform: return "Single/Non-uniform";
     case FeatureDimension.Multiple: return "Multiple";
-    default: Debug.assert(() => false); return "Invalid";
+    default: assert(false); return "Invalid";
   }
 }
 
@@ -92,7 +92,7 @@ export function computeFeatureDimension(dim: LUTDimension, type: FeatureIndexTyp
     case FeatureIndexType.Empty:
       return FeatureDimension.Empty;
     case FeatureIndexType.NonUniform:
-      Debug.assert(() => LUTDimension.Uniform !== dim);
+      assert(LUTDimension.Uniform !== dim);
       return FeatureDimension.Multiple;
     default:
       return LUTDimension.Uniform === dim ? FeatureDimension.SingleUniform : FeatureDimension.SingleNonUniform;

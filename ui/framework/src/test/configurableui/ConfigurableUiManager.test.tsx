@@ -22,6 +22,7 @@ import {
   Frontstage,
   FrontstageProvider,
   FrontstageProps,
+  CoreTools,
 } from "../../ui-framework";
 
 describe("ConfigurableUiManager", () => {
@@ -42,7 +43,7 @@ describe("ConfigurableUiManager", () => {
         return (
           <Frontstage
             id="TestFrontstage2"
-            defaultToolId="PlaceLine"
+            defaultTool={CoreTools.selectElementCommand}
             defaultLayout="FourQuadrants"
             contentGroup="TestContentGroup1"
           />

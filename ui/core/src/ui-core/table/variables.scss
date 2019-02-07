@@ -1,0 +1,19 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+@import "../icons/index";
+@import "../style/index";
+
+
+$uicore-tables-expanded-color:         $uicore-blue;
+$uicore-tables-expanded-hover:         $uicore-blue-5;
+$uicore-tables-hover:                  $uicore-blue-highlight;
+$uicore-tables-padding:                $uicore-m;
+$uicore-tables-padding-condensed:      $uicore-sm;
+$uicore-tables-padding-x-condensed:    $uicore-s;
+
+$uicore-tables-border-color:           $uicore-gray-a;
+$uicore-tables-head-dark:              $uicore-gray-a;
+$uicore-tables-head-light:             $uicore-gray-b;
+$uicore-tables-min-width:              $uicore-cap-size;

@@ -13,7 +13,7 @@ import "./Content.scss";
 export interface MessageCenterContentProps extends CommonProps, NoChildrenProps {
   /** Tabs of message center. See [[MessageCenterTab]] */
   tabs?: React.ReactNode;
-  /** Messages of message center. See [[Message]] */
+  /** Messages of message center. See [[MessageCenterMessage]] */
   messages?: React.ReactNode;
   /* Optional prompt when no messages are present */
   prompt?: string;

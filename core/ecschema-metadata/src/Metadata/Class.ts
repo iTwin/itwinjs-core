@@ -329,15 +329,15 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
 
   public toJson(standalone: boolean, includeSchemaVersion: boolean) {
     const schemaJson = super.toJson(standalone, includeSchemaVersion);
-    schemaJson.modifier = classModifierToString(this.modifier);
+    const isMixin = SchemaItemType.Mixin === this.schemaItemType;
+    const isRelationship = SchemaItemType.RelationshipClass === this.schemaItemType;
+    if (!isMixin && (ECClassModifier.None !== this.modifier || isRelationship))
+      schemaJson.modifier = classModifierToString(this.modifier);
     if (this.baseClass !== undefined)
       schemaJson.baseClass = this.baseClass.fullName;
-    if (this.properties !== undefined && this.properties.length > 0) {
-      schemaJson.properties = [];
-      this.properties.forEach((prop: Property) => {
-        schemaJson.properties.push(prop.toJson());
-      });
-    }
+    if (this.properties !== undefined && this.properties.length > 0)
+      schemaJson.properties = this.properties.map((prop) => prop.toJson());
+
     const customAttributes = serializeCustomAttributes(this.customAttributes);
     if (customAttributes !== undefined)
       schemaJson.customAttributes = customAttributes;

@@ -153,7 +153,6 @@ export class SyncUiEventDispatcher {
 
   /** Initializes the Monitoring of Events that trigger dispatching sync events */
   public static initialize() {
-    // TODO: add selection change processing event(s)
     FrontstageManager.onContentControlActivatedEvent.addListener(() => {
       SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.ContentControlActivated);
     });

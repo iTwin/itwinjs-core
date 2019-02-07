@@ -9,7 +9,7 @@ import * as React from "react";
 import { CommonProps } from "../../../../../utilities/Props";
 import "./Tool.scss";
 
-/** Properties of [[Tool]] component. */
+/** Properties of [[GroupTool]] component. */
 export interface GroupToolProps extends CommonProps {
   /** Additional content, besides icon and label. */
   children?: React.ReactNode;
@@ -27,7 +27,7 @@ export interface GroupToolProps extends CommonProps {
   onClick?: () => void;
 }
 
-/** Tool entry of tool group panel. Used in [[Column]]. */
+/** Tool entry of tool group panel. Used in [[GroupColumn]]. */
 export class GroupTool extends React.PureComponent<GroupToolProps> {
   public render() {
     const itemClassName = classnames(

@@ -162,7 +162,7 @@ export class BezierCurve3d extends BezierCurveBase {
    * Assess legnth and turn to determine a stroke count.
    * @param options stroke options structure.
    */
-  public strokeCount(options?: StrokeOptions): number {
+  public computeStrokeCountForOptions(options?: StrokeOptions): number {
     const data = this._polygon.packedData;
     let dx0 = data[3] - data[0];
     let dy0 = data[4] - data[1];

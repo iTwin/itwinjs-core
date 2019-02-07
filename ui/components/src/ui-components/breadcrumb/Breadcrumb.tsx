@@ -10,7 +10,7 @@ import classnames from "classnames";
 import "./Breadcrumb.scss";
 import * as _ from "lodash";
 import { using } from "@bentley/bentleyjs-core";
-import { SplitButton, withOnOutsideClick, MessageSeverity, ButtonType, MessageBox, ContextMenu, ContextMenuItem } from "@bentley/ui-core";
+import { SplitButton, withOnOutsideClick, MessageSeverity, DialogButtonType, MessageBox, ContextMenu, ContextMenuItem } from "@bentley/ui-core";
 import { TreeDataProvider, TreeNodeItem, isTreeDataProviderInterface, DelayLoadedTreeNodeItem, ImmediatelyLoadedTreeNodeItem } from "../tree/TreeDataProvider";
 import { BreadcrumbPath, BreadcrumbUpdateEventArgs } from "./BreadcrumbPath";
 import { BeInspireTree, BeInspireTreeNode, BeInspireTreeNodeConfig, MapPayloadToInspireNodeCallback, BeInspireTreeEvent, BeInspireTreeNodes, toNodes } from "../tree/component/BeInspireTree";
@@ -432,7 +432,7 @@ export class BreadcrumbInput extends React.Component<BreadcrumbInputProps, Bread
             );
           })}
         </ContextMenu>
-        <MessageBox opened={this.state.messageBoxOpened} modal={false} onClose={this._handleMessageBoxClose} severity={MessageSeverity.Warning} buttonCluster={[{ type: ButtonType.OK, onClick: this._handleMessageBoxClose }]}>
+        <MessageBox opened={this.state.messageBoxOpened} modal={false} onClose={this._handleMessageBoxClose} severity={MessageSeverity.Warning} buttonCluster={[{ type: DialogButtonType.OK, onClick: this._handleMessageBoxClose }]}>
           {UiComponents.i18n.translate("UiComponents:breadcrumb.invalidBreadcrumbPath")}
         </MessageBox>
       </div>

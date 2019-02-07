@@ -145,7 +145,7 @@ export class GeoJsonImporter {
     for (const inPoint of inLoop) {
       cartographic.longitude = Angle.degreesToRadians(inPoint[0]);
       cartographic.latitude = Angle.degreesToRadians(inPoint[1]);
-      outPoints.push(this.iModelDb.cartographicToSpatial(cartographic));
+      outPoints.push(this.iModelDb.cartographicToSpatialFromEcef(cartographic));
     }
     return Loop.create(LineString3d.createPoints(outPoints));
   }

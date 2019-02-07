@@ -357,75 +357,136 @@ describe("RelationshipClass", () => {
       };
     }
 
-    it("async - Serialization of fully defined relationship", async () => {
-      const schemaJson = createSchemaJson({
-        strength: "Embedding",
-        strengthDirection: "Backward",
-        modifier: "Sealed",
-        source: {
-          polymorphic: true,
-          multiplicity: "(0..*)",
-          roleLabel: "Source RoleLabel",
-          abstractConstraint: "TestSchema.SourceBaseEntity",
-          constraintClasses: [
-            "TestSchema.TestSourceEntity",
-          ],
-        },
-        target: {
-          polymorphic: true,
-          multiplicity: "(0..*)",
-          roleLabel: "Target RoleLabel",
-          abstractConstraint: "TestSchema.TargetBaseEntity",
-          constraintClasses: [
-            "TestSchema.TestTargetEntity",
-          ],
-        },
-      });
+    const validRelationshipJson = {
+      strength: "Embedding",
+      strengthDirection: "Backward",
+      modifier: "Sealed",
+      source: {
+        polymorphic: true,
+        multiplicity: "(0..*)",
+        roleLabel: "Source RoleLabel",
+        abstractConstraint: "TestSchema.SourceBaseEntity",
+        constraintClasses: [
+          "TestSchema.TestSourceEntity",
+        ],
+      },
+      target: {
+        polymorphic: true,
+        multiplicity: "(0..*)",
+        roleLabel: "Target RoleLabel",
+        abstractConstraint: "TestSchema.TargetBaseEntity",
+        constraintClasses: [
+          "TestSchema.TestTargetEntity",
+        ],
+      },
+    };
 
-      const schema = await Schema.fromJson(schemaJson, new SchemaContext());
-      assert.isDefined(schema);
+    it("async - Serialization of fully defined relationship", async () => {
+      const schema = await Schema.fromJson(createSchemaJson(validRelationshipJson), new SchemaContext());
       const relClass = await schema.getItem<RelationshipClass>("TestRelationship");
-      assert.isDefined(relClass);
-      const relClassJson = relClass!.toJson(true, true);
-      assert.isDefined(relClassJson);
-      assert(relClassJson.strength, "Embedding");
-      assert(relClassJson.strengthDirection, "Backward");
-      assert(relClassJson.modifier, "Sealed");
-      assert(relClassJson.source.polymorphic === true);
-      assert(relClassJson.source.multiplicity, "(0..*)");
-      assert(relClassJson.source.roleLabel, "Source RoleLabel");
-      assert(relClassJson.source.abstractConstraint, "TestSchema.SourceBaseEntity");
-      assert(relClassJson.source.constraintClasses[0], "TestSchema.TestSourceEntity");
-      assert(relClassJson.target.polymorphic === true);
-      assert(relClassJson.target.multiplicity, "(0..*)");
-      assert(relClassJson.target.roleLabel, "Target RoleLabel");
-      assert(relClassJson.target.abstractConstraint, "TestSchema.TargetBaseEntity");
-      assert(relClassJson.target.constraintClasses[0], "TestSchema.TestTargetEntity");
+      const expectedJson = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem",
+        name: "TestRelationship",
+        schema: "TestSchema",
+        schemaVersion: "01.02.03",
+        schemaItemType: "RelationshipClass",
+        ...validRelationshipJson,
+      };
+      expect(relClass).to.exist;
+      expect(relClass!.toJson(true, true)).to.deep.equal(expectedJson);
     });
-    it("sync - Serialization of fully defined relationship", async () => {
-      const schemaJson = createSchemaJson({
-        strength: "Embedding",
-        strengthDirection: "Backward",
-        modifier: "Sealed",
+
+    it("should include modifier if 'None'", async () => {
+      const schema = await Schema.fromJson(createSchemaJson({ ...validRelationshipJson, modifier: "None" }), new SchemaContext());
+      const relClass = await schema.getItem<RelationshipClass>("TestRelationship");
+      expect(relClass).to.exist;
+      expect(relClass!.toJson(true, true)).to.include({ modifier: "None" });
+    });
+
+    it("should include modifier if 'Abstract'", async () => {
+      const schema = await Schema.fromJson(createSchemaJson({ ...validRelationshipJson, modifier: "Abstract" }), new SchemaContext());
+      const relClass = await schema.getItem<RelationshipClass>("TestRelationship");
+      expect(relClass).to.exist;
+      expect(relClass!.toJson(true, true)).to.include({ modifier: "Abstract" });
+    });
+
+    it("should include modifier if 'Sealed'", async () => {
+      const schema = await Schema.fromJson(createSchemaJson({ ...validRelationshipJson, modifier: "Sealed" }), new SchemaContext());
+      const relClass = await schema.getItem<RelationshipClass>("TestRelationship");
+      expect(relClass).to.exist;
+      expect(relClass!.toJson(true, true)).to.include({ modifier: "Sealed" });
+    });
+
+    it("should omit customAttributes if empty", async () => {
+      const schema = await Schema.fromJson(createSchemaJson({ ...validRelationshipJson, customAttributes: [] }), new SchemaContext());
+      const relClass = await schema.getItem<RelationshipClass>("TestRelationship");
+      expect(relClass).to.exist;
+      expect(relClass!.toJson(true, true)).to.not.have.property("customAttributes");
+    });
+
+    it("should omit constraint customAttributes if empty", async () => {
+      const relClassJson = {
+        ...validRelationshipJson,
+        customAttributes: [],
+        source: {
+          ...validRelationshipJson.source,
+          customAttributes: [],
+        },
+        target: {
+          ...validRelationshipJson.target,
+          customAttributes: [],
+        },
+      };
+      const schema = await Schema.fromJson(createSchemaJson(relClassJson), new SchemaContext());
+      const relClass = await schema.getItem<RelationshipClass>("TestRelationship");
+      expect(relClass).to.exist;
+      const actualJson = relClass!.toJson(true, true);
+      expect(actualJson).to.not.have.property("customAttributes");
+      expect(actualJson.source).to.not.have.property("customAttributes");
+      expect(actualJson.target).to.not.have.property("customAttributes");
+    });
+
+    it("should omit implicit abstractConstraint", async () => {
+      const relClassJson = {
+        ...validRelationshipJson,
         source: {
           polymorphic: true,
           multiplicity: "(0..*)",
           roleLabel: "Source RoleLabel",
-          abstractConstraint: "TestSchema.SourceBaseEntity",
           constraintClasses: [
             "TestSchema.TestSourceEntity",
           ],
         },
-        target: {
+      };
+      const schema = await Schema.fromJson(createSchemaJson(relClassJson), new SchemaContext());
+      const relClass = await schema.getItem<RelationshipClass>("TestRelationship");
+      expect(relClass).to.exist;
+      const actualJson = relClass!.toJson(true, true);
+      expect(actualJson.source).to.not.have.property("abstractConstraint");
+    });
+
+    it("should include explicit abstractConstraint", async () => {
+      const relClassJson = {
+        ...validRelationshipJson,
+        source: {
           polymorphic: true,
           multiplicity: "(0..*)",
-          roleLabel: "Target RoleLabel",
-          abstractConstraint: "TestSchema.TargetBaseEntity",
+          roleLabel: "Source RoleLabel",
+          abstractConstraint: "TestSchema.TestSourceEntity",
           constraintClasses: [
-            "TestSchema.TestTargetEntity",
+            "TestSchema.TestSourceEntity",
           ],
         },
-      });
+      };
+      const schema = await Schema.fromJson(createSchemaJson(relClassJson), new SchemaContext());
+      const relClass = await schema.getItem<RelationshipClass>("TestRelationship");
+      expect(relClass).to.exist;
+      const actualJson = relClass!.toJson(true, true);
+      expect(actualJson.source).to.include({ abstractConstraint: "TestSchema.TestSourceEntity" });
+    });
+
+    it("sync - Serialization of fully defined relationship", async () => {
+      const schemaJson = createSchemaJson(validRelationshipJson);
 
       const schema = Schema.fromJsonSync(schemaJson, new SchemaContext());
       assert.isDefined(schema);
@@ -433,19 +494,19 @@ describe("RelationshipClass", () => {
       assert.isDefined(relClass);
       const relClassJson = relClass!.toJson(true, true);
       assert.isDefined(relClassJson);
-      assert(relClassJson.strength, "Embedding");
-      assert(relClassJson.strengthDirection, "Backward");
-      assert(relClassJson.modifier, "Sealed");
-      assert(relClassJson.source.polymorphic === true);
-      assert(relClassJson.source.multiplicity, "(0..*)");
-      assert(relClassJson.source.roleLabel, "Source RoleLabel");
-      assert(relClassJson.source.abstractConstraint, "TestSchema.SourceBaseEntity");
-      assert(relClassJson.source.constraintClasses[0], "TestSchema.TestSourceEntity");
-      assert(relClassJson.target.polymorphic === true);
-      assert(relClassJson.target.multiplicity, "(0..*)");
-      assert(relClassJson.target.roleLabel, "Target RoleLabel");
-      assert(relClassJson.target.abstractConstraint, "TestSchema.TargetBaseEntity");
-      assert(relClassJson.target.constraintClasses[0], "TestSchema.TestTargetEntity");
+      assert.strictEqual(relClassJson.strength, "Embedding");
+      assert.strictEqual(relClassJson.strengthDirection, "Backward");
+      assert.strictEqual(relClassJson.modifier, "Sealed");
+      assert.isTrue(relClassJson.source.polymorphic);
+      assert.strictEqual(relClassJson.source.multiplicity, "(0..*)");
+      assert.strictEqual(relClassJson.source.roleLabel, "Source RoleLabel");
+      assert.strictEqual(relClassJson.source.abstractConstraint, "TestSchema.SourceBaseEntity");
+      assert.strictEqual(relClassJson.source.constraintClasses[0], "TestSchema.TestSourceEntity");
+      assert.isTrue(relClassJson.target.polymorphic);
+      assert.strictEqual(relClassJson.target.multiplicity, "(0..*)");
+      assert.strictEqual(relClassJson.target.roleLabel, "Target RoleLabel");
+      assert.strictEqual(relClassJson.target.abstractConstraint, "TestSchema.TargetBaseEntity");
+      assert.strictEqual(relClassJson.target.constraintClasses[0], "TestSchema.TestTargetEntity");
     });
   });
 

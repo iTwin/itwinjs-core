@@ -12,15 +12,17 @@ import TestBackend from "react-dnd-test-backend";
 import { BeDuration } from "@bentley/bentleyjs-core";
 import { LocalUiSettings } from "@bentley/ui-core";
 import {
+  PropertyRecord, PropertyValue, PropertyValueFormat, PropertyDescription, PrimitiveValue,
+} from "@bentley/imodeljs-frontend";
+
+import {
   Table, TableDataProvider, RowItem, TableDataChangeEvent, TableDataChangesListener, CellItem,
-  TableSelectionTarget, TableProps, ColumnDescription, SelectionMode, PropertyRecord, PropertyValue,
-  PropertyValueFormat, PropertyDescription, PropertyUpdatedArgs, EditorContainer,
+  TableSelectionTarget, TableProps, ColumnDescription, SelectionMode, PropertyUpdatedArgs, EditorContainer,
 } from "../../../ui-components";
 import { waitForSpy, ResolvablePromise } from "../../test-helpers/misc";
 import { DragDropContext } from "react-dnd";
 import { DragDropHeaderWrapper } from "../../../ui-components/table/component/DragDropHeaderCell";
 import TestUtils from "../../TestUtils";
-import { PrimitiveValue } from "../../../ui-components/properties/Value";
 
 describe("Table", () => {
 

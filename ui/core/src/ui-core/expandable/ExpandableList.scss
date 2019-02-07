@@ -2,8 +2,8 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-@import "@bentley/bwc/lib/mixins";
+@import "./list.scss";
 
 .BwcExpandableBlocksList {
-  @include bwc-expandable-blocks-list;
+  @include uicore-expandable-blocks-list;
 }

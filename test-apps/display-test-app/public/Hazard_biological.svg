@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 20010904//EN"
 "http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd">
-<svg height="144.407" id="svg1603" inkscape:version="0.40" sodipodi:docbase="/mnt/donnees/09-Mes_images/Travaux/Travaux vectoriel/pictogrammes/s  cu SVG/Avertissement" sodipodi:docname="RisqueBiologique.svg" sodipodi:version="0.32" width="156.262" xmlns="http://www.w3.org/2000/svg" xmlns:cc="http://web.resource.org/cc/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:xlink="http://www.w3.org/1999/xlink">
+<svg height="144.407" width="156.262" xmlns="http://www.w3.org/2000/svg" xmlns:cc="http://web.resource.org/cc/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"  xmlns:xlink="http://www.w3.org/1999/xlink">
   <metadata>
     <rdf:RDF xmlns:cc="http://web.resource.org/cc/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
       <cc:Work rdf:about="">
@@ -45,17 +45,8 @@
       </cc:License>
     </rdf:RDF>
   </metadata>
-  <sodipodi:namedview bordercolor="#666666" borderopacity="1.0" id="base" inkscape:current-layer="svg1603" inkscape:cx="62.504797" inkscape:cy="57.762799" inkscape:pageopacity="0.0" inkscape:pageshadow="2" inkscape:window-height="1121" inkscape:window-width="1590" inkscape:window-x="0" inkscape:window-y="0" inkscape:zoom="8.1626931" pagecolor="#ffffff"/>
-  <defs id="defs1604">
-    <marker id="ArrowEnd" markerHeight="3" markerUnits="strokeWidth" markerWidth="4" orient="auto" refX="0" refY="5" viewBox="0 0 10 10">
-      <path d="M 0 0 L 10 5 L 0 10 z" id="path1606"/>
-    </marker>
-    <marker id="ArrowStart" markerHeight="3" markerUnits="strokeWidth" markerWidth="4" orient="auto" refX="10" refY="5" viewBox="0 0 10 10">
-      <path d="M 10 0 L 0 5 L 10 10 z" id="path1608"/>
-    </marker>
-  </defs>
   <g id="g1609">
-    <path d="M 12.473000,121.08200 C 11.492258,122.80712 10.481800,124.49000 10.481700,126.42300 L 10.521980,126.94626 C 10.521980,131.11826 13.756600,133.92500 17.511300,133.92500 L 138.83100,133.92500 C 142.58600,133.92500 145.78214,130.73542 145.78214,126.56342 L 145.78000,125.81500 C 145.78000,123.88200 144.75508,122.20699 143.78900,120.47400 L 83.705600,12.693800 C 81.051000,9.7442300 76.747300,9.7442300 74.092300,12.694200 L 12.473000,121.08200 z " id="path1610" sodipodi:nodetypes="cccccccsccs" style="stroke:#000000; stroke-width:2; fill:#ffffff"/>
+    <path d="M 12.473000,121.08200 C 11.492258,122.80712 10.481800,124.49000 10.481700,126.42300 L 10.521980,126.94626 C 10.521980,131.11826 13.756600,133.92500 17.511300,133.92500 L 138.83100,133.92500 C 142.58600,133.92500 145.78214,130.73542 145.78214,126.56342 L 145.78000,125.81500 C 145.78000,123.88200 144.75508,122.20699 143.78900,120.47400 L 83.705600,12.693800 C 81.051000,9.7442300 76.747300,9.7442300 74.092300,12.694200 L 12.473000,121.08200 z " id="path1610" style="stroke:#000000; stroke-width:2; fill:#ffffff"/>
     <path d="M 78.703 16.2916L 15.2797 128.128L 76.4667 128.128L 79.3188 128.128L 139.826 128.128L 79.5155 16.2916L 78.703 16.2916z" id="path1611" style="stroke:#000000; stroke-width:4.8516000000000004; stroke-linejoin:round; stroke-linecap:round; fill:#ffcc00"/>
   </g>
   <g id="g1612">

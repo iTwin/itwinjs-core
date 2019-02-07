@@ -5,7 +5,7 @@
 
 /** @module Serialization */
 
-import { Geometry } from "../Geometry";
+import { Geometry, AxisOrder } from "../Geometry";
 import { AngleSweep } from "../geometry3d/AngleSweep";
 import { Angle } from "../geometry3d/Angle";
 import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
@@ -29,7 +29,7 @@ import { Loop } from "../curve/Loop";
 import { Path } from "../curve/Path";
 import { IndexedPolyface } from "../polyface/Polyface";
 import { BSplineCurve3d, BSplineCurve3dBase } from "../bspline/BSplineCurve";
-import { BSplineSurface3d, BSplineSurface3dH } from "../bspline/BSplineSurface";
+import { BSplineSurface3d, BSplineSurface3dH, WeightStyle } from "../bspline/BSplineSurface";
 import { Sphere } from "../solid/Sphere";
 import { Cone } from "../solid/Cone";
 import { Box } from "../solid/Box";
@@ -284,6 +284,44 @@ export class Sample {
     const curve = BSplineCurve3dH.create(points, knots, 3) as BSplineCurve3dH;
     result.push(curve);
     return result;
+  }
+
+  /** Return array   [x,y,z,w] bspline control points for an arc in 90 degree bspline spans.
+   * @param points array of [x,y,z,w]
+   * @param center center of arc
+   * @param axes matrix with 0 and 90 degree axes
+   * @param radius0 radius mulitplier for x direction.
+   * @param radius90 radius multiplier for y direction.
+   * @param applyWeightsToXYZ
+   */
+  public static createBsplineArc90SectionToXYZWArrays(
+    center: Point3d,
+    axes: Matrix3d,
+    radius0: number,
+    radius90: number,
+    applyWeightsToXYZ: boolean): number[][] {
+    const a = Math.sqrt(0.5);
+    const xyz = Point3d.create();
+    Matrix3d.xyzPlusMatrixTimesCoordinates(center, axes, radius0, 0.0, 0, xyz);
+    const controlPoints = [];
+    controlPoints.push([xyz.x, xyz.y, xyz.z, 1.0]);
+    const cornerTrig = [1, 1, -1, -1, 1];
+    const axisTrig = [1, 0, -1, 0, 1];
+    for (let i = 0; i < 4; i++) {
+      Matrix3d.xyzPlusMatrixTimesCoordinates(center, axes, radius0 * cornerTrig[i + 1], radius90 * cornerTrig[i], 0, xyz);
+      controlPoints.push([xyz.x, xyz.y, xyz.z, a]);
+      Matrix3d.xyzPlusMatrixTimesCoordinates(center, axes, radius0 * axisTrig[i + 1], radius90 * axisTrig[i], 0, xyz);
+      controlPoints.push([xyz.x, xyz.y, xyz.z, 1.0]);
+    }
+    if (applyWeightsToXYZ) {
+      for (const xyzw of controlPoints) {
+        const b = xyzw[3];
+        xyzw[0] *= b;
+        xyzw[1] *= b;
+        xyzw[2] *= b;
+      }
+    }
+    return controlPoints;
   }
 
   /**
@@ -915,6 +953,53 @@ export class Sample {
     return result;
   }
 
+  /**
+   * @param centerA center at section A
+   * @param centerB center at section B
+   * @param radiusA radius at point A
+   * @param radiusB radius at point B
+   */
+  public static createConeBsplineSurface(
+    centerA: Point3d,
+    centerB: Point3d,
+    radiusA: number,
+    radiusB: number,
+    numSection: number): BSplineSurface3dH | undefined {
+    if (numSection < 2)
+      numSection = 2;
+    const controlPoints: number[][][] = [];
+    const numVPole = numSection;
+    const q1 = 0.25;
+    const q2 = 0.5;
+    const q3 = 0.75;
+
+    const uKnots = [0, 0, q1, q1, q2, q2, q3, q3, 1, 1];
+    const vKnots = [];
+    const dv = 1.0 / (numSection - 1);
+    for (let i = 0; i < numSection; i++) {
+      vKnots.push(i * dv);
+    }
+    const center = Point3d.create();
+    const vectorAB = Vector3d.createStartEnd(centerA, centerB);
+    const axes = Matrix3d.createRigidHeadsUp(vectorAB, AxisOrder.ZXY);
+    let r0, r90, v;
+    for (let iV = 0; iV < numVPole; iV++) {
+      v = iV * dv;
+      centerA.interpolate(v, centerB, center);
+      r0 = r90 = Geometry.interpolate(radiusA, v, radiusB);
+      controlPoints.push(Sample.createBsplineArc90SectionToXYZWArrays(center, axes, r0, r90, false));
+    }
+
+    const result = BSplineSurface3dH.createGrid(controlPoints,
+      WeightStyle.WeightsSeparateFromCoordinates,
+      3, uKnots, 2, vKnots);
+    // if (result) {
+    // result.setWrappable(0, BSplineWrapMode.OpenByAddingControlPoints);
+    // result.setWrappable(1, BSplineWrapMode.OpenByAddingControlPoints);
+    // }
+    return result;
+  }
+
   public static createWeightedXYGridBsplineSurface(
     numU: number, numV: number, orderU: number, orderV: number,
     weight00: number = 1.0,
@@ -1056,6 +1141,8 @@ export class Sample {
     const topZ = Point3d.create(0, 0, 5);
     const centerA = Point3d.create(1, 2, 1);
     const centerB = Point3d.create(2, 3, 8);
+    result.push(Cone.createAxisPoints(Point3d.create(0, 0, 0), Point3d.create(0, 0, 1), 0.5, 0.5, false) as Cone);
+
     result.push(Cone.createAxisPoints(centerA, centerB, 0.5, 0.5, false) as Cone);
     result.push(Cone.createAxisPoints(origin, topZ, 1.0, 0.2, true) as Cone);
     result.push(Cone.createAxisPoints(centerA, centerB, 0.2, 0.5, false) as Cone);
@@ -1066,7 +1153,7 @@ export class Sample {
 
   public static createTorusPipes(): TorusPipe[] {
     const result: TorusPipe[] = [];
-    const center = Point3d.create(1, 50, 3);
+    const center = Point3d.create(1, 2, 3);
 
     const frame = Matrix3d.createRotationAroundVector(
       Vector3d.create(1, 2, 3), Angle.createRadians(10)) as Matrix3d;
@@ -1074,6 +1161,7 @@ export class Sample {
     const vectorY = frame.columnY();
     const vectorZ = frame.columnZ();
     result.push(TorusPipe.createInFrame(Transform.createIdentity(), 5.0, 0.8, Angle.create360(), false)!);
+    result.push(TorusPipe.createInFrame(Transform.createIdentity(), 5.0, 1.0, Angle.createDegrees(90), true)!);
     result.push(TorusPipe.createDgnTorusPipe(center, vectorX, vectorY, 10, 1, Angle.createDegrees(180), true)!);
 
     result.push(TorusPipe.createDgnTorusPipe(center, vectorY, vectorZ, 10, 1, Angle.createDegrees(45), true) as TorusPipe);
@@ -1093,7 +1181,7 @@ export class Sample {
       Vector3d.create(0, 0, 1), Angle.createDegrees(10)) as Matrix3d;
     const vectorX = frame.columnX();
     const vectorY = frame.columnY();
-    const cornerB = Matrix3d.XYZPlusMatrixTimesCoordinates(cornerA, frame, 0, 0, h);
+    const cornerB = Matrix3d.xyzPlusMatrixTimesCoordinates(cornerA, frame, 0, 0, h);
     result.push(Box.createDgnBox(cornerA, Vector3d.unitX(), Vector3d.unitY(),
       cornerB, aX, aY, aX, aY, true) as Box);
 

@@ -6,14 +6,14 @@ import { expect } from "chai";
 import * as faker from "faker";
 import { initialize, terminate } from "../IntegrationTests";
 import { OpenMode, Id64String, using } from "@bentley/bentleyjs-core";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { IModelConnection, PropertyRecord } from "@bentley/imodeljs-frontend";
 import { KeySet, Ruleset, RuleTypes, RuleSpecificationTypes, RegisteredRuleset, InstanceKey, instanceKeyFromJSON } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
 import {
   PresentationPropertyDataProvider, IPresentationPropertyDataProvider,
   DataProvidersFactory, IPresentationTableDataProvider,
 } from "@bentley/presentation-components";
-import { PropertyData, PropertyRecord, RowItem } from "@bentley/ui-components";
+import { PropertyData, RowItem } from "@bentley/ui-components";
 
 describe("Find Similar", () => {
 

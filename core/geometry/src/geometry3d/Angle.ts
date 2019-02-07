@@ -20,6 +20,8 @@ export class Angle implements BeJSONFunctions {
     private _degrees?: number;
     private constructor(radians = 0, degrees?: number) { this._radians = radians; this._degrees = degrees; }
     public clone(): Angle { return new Angle(this._radians, this._degrees); }
+    public freeze() { Object.freeze(this); }
+
     /**
      * Return a new Angle object for angle given in degrees.
      * @param degrees angle in degrees

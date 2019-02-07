@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import { TileIO, IModelTileIO, IModelTileLoader, TileTree, TileRequest } from "@bentley/imodeljs-frontend/lib/tile";
 import { SurfaceType } from "@bentley/imodeljs-frontend/lib/rendering";
-import { Batch, MeshGraphic, GraphicsArray, PolylinePrimitive, PolylineGeometry } from "@bentley/imodeljs-frontend/lib/webgl";
+import { Batch, MeshGraphic, GraphicsArray, Primitive, PolylineGeometry } from "@bentley/imodeljs-frontend/lib/webgl";
 import { ModelProps, RelatedElementProps, FeatureIndexType, BatchType } from "@bentley/imodeljs-common";
 import { Id64, Id64String } from "@bentley/bentleyjs-core";
 import * as path from "path";
@@ -319,12 +319,11 @@ describe("TileIO (WebGL)", () => {
         expect(batch.featureTable.isUniform).to.be.true;
         expect(batch.featureTable.numFeatures).to.equal(1);
         expect(batch.graphic).not.to.be.undefined;
-        expect(batch.graphic).to.be.instanceOf(PolylinePrimitive);
-        const plinePrim = batch.graphic as PolylinePrimitive;
+        expect(batch.graphic).to.be.instanceOf(Primitive);
+        const plinePrim = batch.graphic as Primitive;
         expect(plinePrim.featureIndexType).to.equal(FeatureIndexType.Uniform);
         expect(plinePrim.isEdge).to.be.false;
         expect(plinePrim.isLit).to.be.false;
-        expect(plinePrim.isPlanar).to.be.false;
         expect(plinePrim.renderOrder).to.equal(3);
         expect(plinePrim.cachedGeometry).to.not.be.undefined;
         const plGeom = plinePrim.cachedGeometry as PolylineGeometry;
@@ -332,6 +331,7 @@ describe("TileIO (WebGL)", () => {
         expect(plGeom.lut.numVertices).to.equal(6);
         expect(plGeom.lineCode).to.equal(0);
         expect(plGeom.lineWeight).to.equal(9);
+        expect(plGeom.isPlanar).to.be.false;
       });
     }
   });
@@ -348,12 +348,11 @@ describe("TileIO (WebGL)", () => {
         const list = batch.graphic as GraphicsArray;
         expect(list.graphics.length).to.equal(2);
 
-        expect(list.graphics[0]).to.be.instanceOf(PolylinePrimitive);
-        let plinePrim = list.graphics[0] as PolylinePrimitive;
+        expect(list.graphics[0]).to.be.instanceOf(Primitive);
+        let plinePrim = list.graphics[0] as Primitive;
         expect(plinePrim.featureIndexType).to.equal(FeatureIndexType.Uniform);
         expect(plinePrim.isEdge).to.be.false;
         expect(plinePrim.isLit).to.be.false;
-        expect(plinePrim.isPlanar).to.be.false;
         expect(plinePrim.renderOrder).to.equal(3);
         expect(plinePrim.cachedGeometry).to.not.be.undefined;
         let plGeom = plinePrim.cachedGeometry as PolylineGeometry;
@@ -361,13 +360,13 @@ describe("TileIO (WebGL)", () => {
         expect(plGeom.lut.numVertices).to.equal(6);
         expect(plGeom.lineCode).to.equal(0);
         expect(plGeom.lineWeight).to.equal(9);
+        expect(plGeom.isPlanar).to.be.false;
 
-        expect(list.graphics[1]).to.be.instanceOf(PolylinePrimitive);
-        plinePrim = list.graphics[1] as PolylinePrimitive;
+        expect(list.graphics[1]).to.be.instanceOf(Primitive);
+        plinePrim = list.graphics[1] as Primitive;
         expect(plinePrim.featureIndexType).to.equal(FeatureIndexType.NonUniform);
         expect(plinePrim.isEdge).to.be.false;
         expect(plinePrim.isLit).to.be.false;
-        expect(plinePrim.isPlanar).to.be.false;
         expect(plinePrim.renderOrder).to.equal(3);
         expect(plinePrim.cachedGeometry).to.not.be.undefined;
         plGeom = plinePrim.cachedGeometry as PolylineGeometry;
@@ -375,6 +374,7 @@ describe("TileIO (WebGL)", () => {
         expect(plGeom.lut.numVertices).to.equal(12);
         expect(plGeom.lineCode).to.equal(2);
         expect(plGeom.lineWeight).to.equal(9);
+        expect(plGeom.isPlanar).to.be.false;
       });
     }
   });

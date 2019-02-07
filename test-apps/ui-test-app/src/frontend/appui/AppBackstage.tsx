@@ -4,15 +4,16 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { connect } from "react-redux";
-
 import { SampleAppIModelApp, RootState, SampleAppUiActionId } from "..";
-
 import {
   Backstage,
+  FrontstageManager,
   FrontstageLaunchBackstageItem,
+  CommandLaunchBackstageItem,
   SeparatorBackstageItem,
   BackstageCloseEventArgs,
   BooleanSyncUiListener,
+  SettingsModalFrontstage,
 } from "@bentley/ui-framework";
 
 import { Tool } from "@bentley/imodeljs-frontend";
@@ -72,7 +73,6 @@ class AppBackstage extends React.Component<AppBackstageProps> {
   }
 
   public render(): React.ReactNode {
-
     return (
       <Backstage isVisible={this.props.isVisible} onClose={this._handleOnClose} accessToken={SampleAppIModelApp.store.getState().frameworkState!.overallContentState.accessToken} >
         <FrontstageLaunchBackstageItem frontstageId="Test1" labelKey="SampleApp:backstage.testFrontstage1" iconSpec="icon icon-placeholder" />
@@ -83,6 +83,9 @@ class AppBackstage extends React.Component<AppBackstageProps> {
         <BooleanSyncUiListener eventIds={[SampleAppUiActionId.setTestProperty]} boolFunc={(): boolean => SampleAppIModelApp.getTestProperty() === "HIDE"} defaultValue={false}>
           {(isEnabled: boolean) => <FrontstageLaunchBackstageItem frontstageId="Test4" labelKey="SampleApp:backstage.testFrontstage4" iconSpec="icon icon-placeholder" isEnabled={isEnabled} />}
         </BooleanSyncUiListener>
+        <SeparatorBackstageItem />
+        <CommandLaunchBackstageItem labelKey="SampleApp:backstage.testFrontstage6" iconSpec="icon icon-settings"
+              commandId="SampleApp:backstage.testFrontstage6" execute={() => FrontstageManager.openModalFrontstage(new SettingsModalFrontstage())}/>
         <SeparatorBackstageItem />
         <FrontstageLaunchBackstageItem frontstageId="ViewsFrontstage" label="View iModel" descriptionKey="SampleApp:backstage.iModelStage" iconSpec="icon-placeholder" />
       </Backstage>

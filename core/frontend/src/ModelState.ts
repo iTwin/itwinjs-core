@@ -6,7 +6,7 @@
 
 import { Id64String, Id64, JsonUtils, dispose } from "@bentley/bentleyjs-core";
 import { EntityState } from "./EntityState";
-import { Point2d } from "@bentley/geometry-core";
+import { Point2d, Range3d } from "@bentley/geometry-core";
 import { ModelProps, GeometricModel2dProps, AxisAlignedBox3d, RelatedElement, TileTreeProps, BatchType } from "@bentley/imodeljs-common";
 import { IModelConnection } from "./IModelConnection";
 import { IModelApp } from "./IModelApp";
@@ -42,7 +42,7 @@ export class ModelState extends EntityState implements ModelProps {
       val.isTemplate = this.isTemplate;
     return val;
   }
-  public getExtents(): AxisAlignedBox3d { return new AxisAlignedBox3d(); } // NEEDS_WORK
+  public getExtents(): AxisAlignedBox3d { return new Range3d(); } // NEEDS_WORK
 
   /** Determine whether this is a GeometricModel */
   public get isGeometricModel(): boolean { return false; }

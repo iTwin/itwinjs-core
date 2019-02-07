@@ -1,0 +1,11 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+$uicore-baseline:                  11px;
+$uicore-line-height:               $uicore-baseline * 2;    ///  22px; /// ~1.618;
+
+$uicore-bordered-padding:          $uicore-baseline - 1px;
+$uicore-bordered-padding-large:    $uicore-baseline * 2 - 1px;
+$uicore-unbordered-padding:        $uicore-baseline;
+$uicore-unbordered-padding-large:  $uicore-baseline * 2;

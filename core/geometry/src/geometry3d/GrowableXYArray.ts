@@ -238,6 +238,38 @@ export class GrowableXYArray extends IndexedXYCollection {
   }
 
   /**
+   * push coordinates from the source array to the end of this array.
+   * @param source source array
+   * @param transform optional transform to apply to points.
+   * @param dest optional result.
+   */
+  public static createFromGrowableXYZArray(source: GrowableXYZArray, transform?: Transform, dest?: GrowableXYArray) {
+    const packedXYZ = source.float64Data();
+    const numXYZ = source.length;    // this is in xyz points
+    const nDouble = 3 * numXYZ;
+    if (!dest)
+      dest = new GrowableXYArray(numXYZ);
+    dest.clear();
+    let x;
+    let y;
+    let z;
+    if (transform) {
+      for (let i = 0; i < nDouble; i += 3) {
+        x = packedXYZ[i];
+        y = packedXYZ[i + 1];
+        z = packedXYZ[i + 2];
+        dest.pushXY(transform.multiplyComponentXYZ(0, x, y, z), transform.multiplyComponentXYZ(1, x, y, z));
+      }
+    } else {
+      for (let i = 0; i < nDouble; i += 3) {
+        x = packedXYZ[i];
+        y = packedXYZ[i + 1];
+        dest.pushXY(x, y);
+      }
+    }
+    return dest;
+  }
+  /**
    * @returns Return the first point, or undefined if the array is empty.
    */
   public front(result?: Point2d): Point2d | undefined {

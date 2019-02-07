@@ -45,6 +45,8 @@ describe("Config", () => {
 
     assert.equal(101, Config.App.get("APPLE"));
     assert.equal("101_101_101_101", Config.App.get("MY_APPLE"));
+    assert.equal("101_101_101_101", Config.App.get("MY_APPLE"));
+    assert.equal("202_202_202_202", Config.App.get("MY_BANANA"));
     assert.equal("202_202_202_202", Config.App.get("MY_BANANA"));
   });
 

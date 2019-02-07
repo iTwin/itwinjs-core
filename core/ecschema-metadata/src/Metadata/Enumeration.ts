@@ -107,16 +107,13 @@ export class Enumeration extends SchemaItem {
     const schemaJson = super.toJson(standalone, includeSchemaVersion);
     schemaJson.type = (this.isInt) ? "int" : "string";
     schemaJson.isStrict = this.isStrict;
-    schemaJson.enumerators = [];
-    this._enumerators.forEach((element: AnyEnumerator) => {
-      const enumJson: any = {};
-      enumJson.name = element.name;
-      enumJson.value = element.value;
-      if (undefined !== element.label)
-        enumJson.label = element.label;
-      if (undefined !== element.description)
-        enumJson.description = element.description;
-      schemaJson.enumerators.push(enumJson);
+    schemaJson.enumerators = this._enumerators.map(({ name, label, value, description }) => {
+      const enumJson: any = { name, value };
+      if (undefined !== label)
+        enumJson.label = label;
+      if (undefined !== description)
+        enumJson.description = description;
+      return enumJson;
     });
     return schemaJson;
   }

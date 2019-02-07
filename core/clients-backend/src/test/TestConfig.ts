@@ -7,7 +7,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { Logger, LogLevel, ActivityLoggingContext, GuidString, Guid } from "@bentley/bentleyjs-core";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
-import { ImsActiveSecureTokenClient, AuthorizationToken, AccessToken, HubIModel, IModelHubClient, IModelClient, ConnectClient, Project, Config } from "@bentley/imodeljs-clients";
+import { ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, AuthorizationToken, AccessToken, HubIModel, IModelHubClient, IModelClient, ConnectClient, Project, Config, IModelQuery } from "@bentley/imodeljs-clients";
 import { loggingCategoryFullUrl } from "@bentley/imodeljs-clients/lib/Request";
 
 IModelJsConfig.init(true /* suppress exception */, false /* suppress error message */, Config.App);
@@ -76,27 +76,35 @@ export class TestConfig {
     return authToken;
   }
 
-  public static async queryProject(accessToken: AccessToken, projectName: string): Promise<Project> {
-    const connectClient = new ConnectClient();
+  /** Login the specified user and return the AccessToken */
+  public static async getAccessToken(user: UserCredentials = TestUsers.regular): Promise<AccessToken> {
+    const authToken: AuthorizationToken | undefined = await TestConfig.login(user);
 
+    const accessToken: AccessToken = await (new ImsDelegationSecureTokenClient()).getToken(actx, authToken);
+    expect(accessToken);
+
+    return accessToken;
+  }
+
+  /** Query for the specified project */
+  public static async queryProjectId(accessToken: AccessToken, projectName: string): Promise<string> {
+    const connectClient = new ConnectClient();
     const project: Project | undefined = await connectClient.getProject(actx, accessToken, {
       $select: "*",
       $filter: `Name+eq+'${projectName}'`,
     });
     if (!project || !project.wsgId)
       throw new Error(`Project ${projectName} not found for user ${!accessToken.getUserInfo() ? "n/a" : accessToken.getUserInfo()!.email}.`);
-
-    return project;
+    return project.wsgId;
   }
 
-  public static async queryIModel(accessToken: AccessToken, projectId: GuidString): Promise<HubIModel> {
+  /** Query for the specified iModel */
+  public static async queryIModelId(accessToken: AccessToken, iModelName: string, projectId: GuidString): Promise<string> {
     const imodelHubClient: IModelClient = new IModelHubClient();
-
-    const iModel: HubIModel = await imodelHubClient.iModel.get(actx, accessToken, projectId);
-    if (!iModel || !iModel.wsgId)
-      throw new Error(`Primary iModel not found for project ${projectId} for user ${!accessToken.getUserInfo() ? "n/a" : accessToken.getUserInfo()!.email}.`);
-
-    return iModel;
+    const iModel: HubIModel = (await imodelHubClient.iModels.get(actx, accessToken, projectId, new IModelQuery().byName(iModelName)))[0];
+    if (!iModel || !iModel.wsgId || iModel.name !== iModelName)
+      throw new Error(`iModel ${iModelName} not found for project ${projectId} for user ${!accessToken.getUserInfo() ? "n/a" : accessToken.getUserInfo()!.email}.`);
+    return iModel.wsgId;
   }
 }
 
@@ -131,20 +139,6 @@ export class TestUsers {
     return {
       email: Config.App.getString("imjs_test_super_manager_user_name"),
       password: Config.App.getString("imjs_test_super_manager_user_password"),
-    };
-  }
-  /** Just another user */
-  public static get user1(): UserCredentials {
-    return {
-      email: Config.App.getString("imjs_test_user1_user_name"),
-      password: Config.App.getString("imjs_test_user1_user_password"),
-    };
-  }
-  /** Just another user */
-  public static get user3(): UserCredentials {
-    return {
-      email: Config.App.getString("imjs_test_user3_user_name"),
-      password: Config.App.getString("imjs_test_user3_user_password"),
     };
   }
   public static get serviceAccount1(): UserCredentials {

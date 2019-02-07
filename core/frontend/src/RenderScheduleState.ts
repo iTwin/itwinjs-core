@@ -127,22 +127,31 @@ export namespace RenderScheduleState {
       return true;
     }
 
+    public getVisibilityOverride(time: number, interval: Interval): number {
+      if (!ElementTimeline.findTimelineInterval(interval, time, this.visibilityTimeline) && this.visibilityTimeline![interval.index0].value !== null)
+        return 100.0;
+      const timeline = this.visibilityTimeline!;
+      let visibility = timeline[interval.index0].value;
+      if (visibility === undefined || visibility === null)
+        return 100.0;
+
+      if (interval.fraction > 0)
+        visibility = interpolate(visibility, timeline[interval.index1].value, interval.fraction);
+
+      return visibility;
+    }
+
     public getSymbologyOverrides(overrides: FeatureSymbology.Overrides, time: number, interval: Interval, batchId: number) {
       let colorOverride, transparencyOverride;
 
-      if (ElementTimeline.findTimelineInterval(interval, time, this.visibilityTimeline) && this.visibilityTimeline![interval.index0].value !== null) {
-        const timeline = this.visibilityTimeline!;
-        let visibility = timeline[interval.index0].value;
-        if (interval.fraction > 0)
-          visibility = interpolate(visibility, timeline[interval.index1].value, interval.fraction);
-
-        if (visibility <= 0) {
-          overrides.setAnimationNodeNeverDrawn(batchId);
-          return;
-        }
-        if (visibility <= 100)
-          transparencyOverride = 1.0 - visibility / 100.0;
+      const visibility = this.getVisibilityOverride(time, interval);
+      if (visibility <= 0) {
+        overrides.setAnimationNodeNeverDrawn(batchId);
+        return;
       }
+      if (visibility <= 100)
+        transparencyOverride = 1.0 - visibility / 100.0;
+
       if (ElementTimeline.findTimelineInterval(interval, time, this.colorTimeline) && this.colorTimeline![interval.index0].value !== null) {
         const entry0 = this.colorTimeline![interval.index0].value;
         if (interval.fraction > 0) {
@@ -209,6 +218,9 @@ export namespace RenderScheduleState {
         const value1 = timeline[interval.index1].value;
         position.interpolate(interval.fraction, Point3d.fromJSON(value1.position), position);
         direction.interpolate(interval.fraction, Vector3d.fromJSON(value1.direction), direction);
+      } else {
+        if (value.hidden || value.visible)
+          return undefined;
       }
 
       direction.normalizeInPlace();
@@ -289,10 +301,15 @@ export namespace RenderScheduleState {
     public getAnimationBranches(branches: AnimationBranchStates, scheduleTime: number) {
       const interval = new Interval();
       for (let i = 0; i < this.elementTimelines.length; i++) {
-        const transform = this.elementTimelines[i].getAnimationTransform(scheduleTime, interval);
-        const clip = this.elementTimelines[i].getAnimationClip(scheduleTime, interval);
-        if (transform || clip)
-          branches.set(this.modelId + "_Node_" + (i + 1).toString(), new AnimationBranchState(transform, clip));
+        const elementTimeline = this.elementTimelines[i];
+        if (elementTimeline.getVisibilityOverride(scheduleTime, interval) <= 0.0) {
+          branches.set(this.modelId + "_Node_" + (i + 1).toString(), new AnimationBranchState(undefined, undefined, true));
+        } else {
+          const transform = elementTimeline.getAnimationTransform(scheduleTime, interval);
+          const clip = elementTimeline.getAnimationClip(scheduleTime, interval);
+          if (transform || clip)
+            branches.set(this.modelId + "_Node_" + (i + 1).toString(), new AnimationBranchState(transform, clip));
+        }
       }
     }
   }

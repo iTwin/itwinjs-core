@@ -320,28 +320,28 @@ describe("Format", () => {
     };
     it("sync - precision value is valid with different format types", () => {
       testFormat.deserializeSync(validPrecisionDecimal);
-      assert(testFormat.precision === 3);
+      assert.strictEqual(testFormat.precision, 3);
 
       testFormat = (schema as MutableSchema).createFormatSync("TestFormatA");
       testFormat.deserializeSync(validPrecisionScientific);
-      assert(testFormat.precision === 0);
+      assert.strictEqual(testFormat.precision, 0);
 
       testFormat = (schema as MutableSchema).createFormatSync("TestFormatB");
       testFormat.deserializeSync(validPrecisionStation);
-      assert(testFormat.precision === 12);
+      assert.strictEqual(testFormat.precision, 12);
     });
 
     it("async - precision value is valid with different format types", async () => {
       await testFormat.deserialize(validPrecisionDecimal);
-      assert(testFormat.precision === 3);
+      assert.strictEqual(testFormat.precision, 3);
 
       testFormat = (schema as MutableSchema).createFormatSync("TestFormatA");
       await testFormat.deserialize(validPrecisionScientific);
-      assert(testFormat.precision === 0);
+      assert.strictEqual(testFormat.precision, 0);
 
       testFormat = (schema as MutableSchema).createFormatSync("TestFormatB");
       await testFormat.deserialize(validPrecisionStation);
-      assert(testFormat.precision === 12);
+      assert.strictEqual(testFormat.precision, 12);
     });
 
     const invalidMinWidth: Mutable<FormatProps> = {

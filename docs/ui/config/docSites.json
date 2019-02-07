@@ -30,8 +30,7 @@
       "components": "ui-components",
       "core": "ui-core",
       "framework": "ui-framework",
-      "ninezone": "ui-ninezone",
-      "bwc": "bwc"
+      "ninezone": "ui-ninezone"
     }
   }
 }
