@@ -497,7 +497,7 @@ export class HalfEdge {
       node = node.vertexSuccessor;
     } while (node !== this);
   }
-  /** Returns the signed sum of a loop of nodes.
+  /** Returns the signed sum of xy areas of triangls from first node to edges.
    *
    * * A positive area is counterclockwise.
    * * A negative area is clockwise.

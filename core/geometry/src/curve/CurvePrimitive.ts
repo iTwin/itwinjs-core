@@ -398,11 +398,12 @@ export abstract class CurvePrimitive extends GeometryQuery {
   }
 
   /**
-   * evaluate strokes at fractions indicated in a StrokeCountMap.
-   * * Base class implementation (here) gets the simple count from computeStrokeCountForOptions and strokes at uniform fractions.
-   * * LineString3d, arc3d, BezierCurve3d, BezierCurve3dH accept that default.
-   * * Subdivided primitives (linestring, bspline curve) implment themselves and evaluate within components.
-   * * CurvePrimitiveWithDistanceIndex recurses to its children.
+   * * evaluate strokes at fractions indicated in a StrokeCountMap.
+   *   * Base class implementation (here) gets the simple count from computeStrokeCountForOptions and strokes at uniform fractions.
+   *   * LineString3d, arc3d, BezierCurve3d, BezierCurve3dH accept that default.
+   *   * Subdivided primitives (linestring, bspline curve) implment themselves and evaluate within components.
+   *   * CurvePrimitiveWithDistanceIndex recurses to its children.
+   * * if packedFraction and packedDerivative arrays are present in the LineString3d, fill them.
    * @param map = stroke count data.
    * @param linestring = receiver linestring.
    * @return number of strokes added.  0 if any errors matching the map to the curve primitive.
@@ -412,7 +413,7 @@ export abstract class CurvePrimitive extends GeometryQuery {
     if (map.primitive && map.primitive === this && map.numStroke > 0) {
       for (let i = 0; i <= map.numStroke; i++) {
         const fraction = i / map.numStroke;
-        linestring.addPoint(this.fractionToPoint(fraction));
+        linestring.appendFractionToPoint(this, fraction);
       }
     }
     return linestring.numPoints() - numPoint0;

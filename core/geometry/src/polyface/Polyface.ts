@@ -19,6 +19,7 @@ import { GeometryQuery } from "../curve/GeometryQuery";
 import { GeometryHandler } from "../geometry3d/GeometryHandler";
 import { PolyfaceData } from "./PolyfaceData";
 import { FacetFaceData } from "./FacetFaceData";
+import { Geometry } from "../Geometry";
 
 function allDefined(valueA: any, valueB: any, valueC: any): boolean {
   return valueA !== undefined && valueB !== undefined && valueC !== undefined;
@@ -227,7 +228,7 @@ export class IndexedPolyface extends Polyface {
         const i1 = source._facetStart[i + 1];
         if (reversed) {
           for (let j = i1; j-- > i0;)
-            this.addNormalIndex(startOfNewNormals + source.data.normalIndex![j - 1]);
+            this.addNormalIndex(startOfNewNormals + source.data.normalIndex![j]);
         } else {
           for (let j = i0; j < i1; j++)
             this.addNormalIndex(startOfNewNormals + source.data.normalIndex![j]);
@@ -279,9 +280,19 @@ export class IndexedPolyface extends Polyface {
     return new IndexedPolyface(new PolyfaceData(needNormals, needParams, needColors));
   }
   /** add (a clone of ) a point. return its 0 based index.
+   * @param point point coordinates
+   * @param priorIndex optional index of prior point to check for repeated coordinates
    * @returns Returns the zero-based index of the added point.
    */
-  public addPoint(point: Point3d): number { this.data.point.pushXYZ(point.x, point.y, point.z); return this.data.point.length - 1; }
+  public addPoint(point: Point3d, priorIndex?: number): number {
+    if (priorIndex !== undefined) {
+      const distance = this.data.point.distanceIndexToPoint(priorIndex, point);
+      if (distance !== undefined && Geometry.isSmallMetricDistance(distance))
+        return priorIndex;
+    }
+    this.data.point.pushXYZ(point.x, point.y, point.z);
+    return this.data.point.length - 1;
+  }
 
   /** add a point.
    * @returns Returns the zero-based index of the added point.
@@ -304,7 +315,20 @@ export class IndexedPolyface extends Polyface {
     return this.data.param.length - 1;
   }
 
-  public addNormal(normal: Vector3d): number {
+  public addNormal(normal: Vector3d, priorIndexA?: number, priorIndexB?: number): number {
+    if (this.data.normal !== undefined) {
+      if (priorIndexA !== undefined) {
+        const distance = this.data.normal.distanceIndexToPoint(priorIndexA, normal);
+        if (distance !== undefined && Geometry.isSmallMetricDistance(distance))
+          return priorIndexA;
+      }
+      if (priorIndexB !== undefined) {
+        const distance = this.data.normal.distanceIndexToPoint(priorIndexB, normal);
+        if (distance !== undefined && Geometry.isSmallMetricDistance(distance))
+          return priorIndexB;
+      }
+    }
+
     return this.addNormalXYZ(normal.x, normal.y, normal.z);
   }
 
@@ -456,11 +480,6 @@ export class IndexedPolyface extends Polyface {
       this._facetToFaceData.push(0 === this._facetStart[i] ? 0 : faceDataIndex);
 
     return true;
-  }
-
-  /** TODO: IMPLEMENT */
-  public checkIfClosedByEdgePairing(): boolean {
-    return false;
   }
 
   public dispatchToGeometryHandler(handler: GeometryHandler): any {
