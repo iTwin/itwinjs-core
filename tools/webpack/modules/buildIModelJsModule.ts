@@ -58,7 +58,7 @@ class Utils {
     return JSON.parse(packageFileContents);
   }
 
-  public static symlinkFiles(cwd: string, source: string, dest: string, detail: number): Result {
+  public static symlinkFiles(cwd: string, source: string, dest: string, doCopy: boolean, detail: number): Result {
     // first we must create the destination directory, if it isn't already there.
     const sourceSpecification: string = path.resolve(cwd, source);
     let sourceDirectory: string = path.dirname(sourceSpecification);
@@ -81,9 +81,12 @@ class Utils {
             console.log("  File", outputPath, "already exists");
         } else {
           if (detail > 3)
-            console.log("  Symlinking", fileName, "to", outputPath);
+            console.log(doCopy ? "  Copying" : "  Symlinking", fileName, "to", outputPath);
           Utils.makeDirectoryNoError(path.dirname(outputPath));
-          fs.symlinkSync(fileName, outputPath);
+          if (doCopy)
+            fs.copyFileSync(fileName, outputPath);
+          else
+            fs.symlinkSync(fileName, outputPath);
         }
       }
     } catch (error) {
@@ -109,7 +112,7 @@ class Utils {
       let createDir;
       while (createDir = directoriesToCreate.pop()) {
         fs.mkdirSync(createDir);
-        }
+      }
 
     } catch (_error) {
       // do nothing on error.
@@ -177,7 +180,7 @@ class ModuleCopier {
   // symlinks the public static files from a module into the output web resources directories.
   private symlinkPublicStaticFiles(sourcePublicDirectory: string, outputPublicDirectory: string) {
     const symlinkSource = `${sourcePublicDirectory}/**/*`;
-    Utils.symlinkFiles(process.cwd(), symlinkSource, outputPublicDirectory, this._detail);
+    Utils.symlinkFiles(process.cwd(), symlinkSource, outputPublicDirectory, false, this._detail);
   }
 
   // checks contents of existing symlink and replaces it if necessary
@@ -547,7 +550,8 @@ class IModelJsModuleBuilder {
       if (this._detail > 0)
         console.log("Symlinking files from ", resource.source, "to", resource.dest);
 
-      const result = Utils.symlinkFiles(process.cwd(), resource.source, resource.dest, this._detail);
+      const doCopy = resource.copy && resource.copy === true;
+      const result = Utils.symlinkFiles(process.cwd(), resource.source, resource.dest, doCopy, this._detail);
       if (0 != result.exitCode)
         return result;
     }

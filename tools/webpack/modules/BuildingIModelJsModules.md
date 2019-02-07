@@ -143,7 +143,7 @@ Frequently, some files from the source directory will have to be placed into the
   },
 ```
 
-This symlinks all the .scss files in all subdirectories of the src directory to parallel directories in the lib directory, and symlinks all of the files in all subdirectories of the public directory into the lib/webresources directory.
+This symlinks all the .scss files in all subdirectories of the src directory to parallel directories in the lib directory, and symlinks all of the files in all subdirectories of the public directory into the lib/webresources directory. In some cases, you might prefer that the resources be copied rather than linked. In that case, add a boolean "copy" property alongside the "source" and "dest" properties and set it to true. If the resource specified with a "copy" property would also be copied by a sourceResources entry with a glob specification, make sure it appears earlier in the array of sourceResources.
 
 ### Webpacking
 
