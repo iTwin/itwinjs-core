@@ -12,7 +12,7 @@ import * as fs from "fs";
 import { assert } from "chai";
 import { Element } from "../Element";
 import { IModelHost } from "../IModelHost";
-import { IModelTestUtils } from "../test/IModelTestUtils";
+import { IModelTestUtils, TestIModelInfo } from "../test/IModelTestUtils";
 
 async function getImodelAfterApplyingCS(csvPath: string, projectId: string, imodelId: string, actLogCtx: ActivityLoggingContext, accessToken: AccessToken, client: IModelHubClient) {
   csvPath = csvPath;
@@ -145,6 +145,12 @@ async function pushImodelAfterSchemaChanges(csvPath: string, projectId: string, 
   await rwIModel.close(actLogCtx, accessToken, KeepBriefcase.No);
 }
 
+const getElementCount = (iModel: IModelDb): number => {
+  const rows: any[] = iModel.executeQuery("SELECT COUNT(*) AS cnt FROM bis.Element");
+  const count = +(rows[0].cnt);
+  return count;
+};
+
 async function executeQueryTime(csvPath: string, projectId: string, imodelId: string, actLogCtx: ActivityLoggingContext, accessToken: AccessToken) {
   csvPath = csvPath;
   const imodeldb: IModelDb = await IModelDb.open(actLogCtx, accessToken, projectId, imodelId, OpenParams.pullOnly(), IModelVersion.latest());
@@ -156,6 +162,53 @@ async function executeQueryTime(csvPath: string, projectId: string, imodelId: st
   assert.equal(7, stat.length);
   fs.appendFileSync(csvPath, "ExecuteQuery, Execute a simple ECSQL query," + elapsedTime1 + "\n");
   imodeldb.close(actLogCtx, accessToken).catch();
+}
+
+async function reverseChanges(csvPath: string, projectId: string, actLogCtx: ActivityLoggingContext, accessToken: AccessToken) {
+  csvPath = csvPath;
+  const iModelName = "reverseChangeTest";
+  // delete any existing imodel with given name
+  const iModels: HubIModel[] = await BriefcaseManager.imodelClient.iModels.get(actLogCtx, accessToken, projectId, new IModelQuery().byName(iModelName));
+  for (const iModelTemp of iModels) {
+    await BriefcaseManager.imodelClient.iModels.delete(actLogCtx, accessToken, projectId, iModelTemp.id!);
+  }
+  // create new imodel with given name
+  const rwIModel: IModelDb = await IModelDb.create(actLogCtx, accessToken, projectId, iModelName, { rootSubject: { name: "TestSubject" } });
+  const rwIModelId = rwIModel.iModelToken.iModelId;
+  assert.isNotEmpty(rwIModelId);
+
+  // create new model, category and physical element, and insert in imodel, and push these changes
+  rwIModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
+  const r: { modelId: Id64String, spatialCategoryId: Id64String } = await createNewModelAndCategory(rwIModel, accessToken, actLogCtx);
+  rwIModel.elements.insertElement(IModelTestUtils.createPhysicalObject(rwIModel, r.modelId, r.spatialCategoryId));
+  rwIModel.saveChanges("User created model, category and one physical element");
+  await rwIModel.pushChanges(actLogCtx, accessToken).catch();
+  const firstCount = getElementCount(rwIModel);
+  assert.equal(firstCount, 7);
+
+  let i = 0;
+  while (i < 4) {
+    rwIModel.elements.insertElement(IModelTestUtils.createPhysicalObject(rwIModel, r.modelId, r.spatialCategoryId));
+    i = i + 1;
+  }
+  rwIModel.saveChanges("added more elements to imodel");
+  await rwIModel.pushChanges(actLogCtx, accessToken).catch();
+  const secondCount = getElementCount(rwIModel);
+  assert.equal(secondCount, 11);
+
+  let imodelInfo: TestIModelInfo;
+  imodelInfo = await IModelTestUtils.getTestModelInfo(accessToken, projectId, "reverseChangeTest");
+  const firstChangeSetId = imodelInfo.changeSets[0].wsgId;
+  const startTime = new Date().getTime();
+  await rwIModel.reverseChanges(actLogCtx, accessToken, IModelVersion.asOfChangeSet(firstChangeSetId));
+  const endTime = new Date().getTime();
+  const elapsedTime1 = (endTime - startTime) / 1000.0;
+
+  const reverseCount = getElementCount(rwIModel);
+  assert.equal(reverseCount, firstCount);
+
+  fs.appendFileSync(csvPath, "ReverseChanges, Reverse the imodel to first CS from latest," + elapsedTime1 + "\n");
+  await rwIModel.close(actLogCtx, accessToken, KeepBriefcase.No);
 }
 
 describe("ImodelChangesetPerformance", async () => {
@@ -213,6 +266,10 @@ describe("ImodelChangesetPerformance", async () => {
 
   it("executeQuery", async () => {
     executeQueryTime(csvPath, projectId, imodelId, actLogCtx, accessToken).catch();
+  });
+
+  it("reverseChanges", async () => {
+    reverseChanges(csvPath, projectId, actLogCtx, accessToken).catch();
   });
 
 });
