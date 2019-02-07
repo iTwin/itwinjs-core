@@ -126,6 +126,22 @@
     {
       "type": "node",
       "request": "launch",
+      "name": "Clients-Backend Tests (Offline)",
+      "program": "${workspaceFolder}/core/clients-backend/node_modules/@bentley/build-tools/scripts/test",
+      "cwd": "${workspaceFolder}/core/clients-backend",
+      "args": [
+        "--testDir=${workspaceFolder}/core/clients-backend/lib/test",
+        "--debug",
+        "--offline",
+        "mock"
+      ],
+      "port": 9229,
+      "protocol": "inspector",
+      "outputCapture": "std"
+    },
+    {
+      "type": "node",
+      "request": "launch",
       "name": "Clients-Backend Tests (Integration)",
       "program": "${workspaceFolder}/core/clients-backend/node_modules/@bentley/build-tools/scripts/test",
       "cwd": "${workspaceFolder}/core/clients-backend",

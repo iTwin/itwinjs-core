@@ -115,7 +115,7 @@ export class ResponseError extends BentleyError {
    * @returns Parsed error.
    */
   public static parse(response: any, log = true): ResponseError {
-    const error = new ResponseError(ResponseError.parseHttpStatus(response.status / 100));
+    const error = new ResponseError(ResponseError.parseHttpStatus(response.statusType));
     if (!response) {
       error.message = "Couldn't get response object.";
       return error;
@@ -161,8 +161,8 @@ export class ResponseError extends BentleyError {
     return (response !== undefined && response.statusType === HttpStatus.ServerError);
   }
 
-  public static parseHttpStatus(status: number): HttpStatus {
-    switch (status) {
+  public static parseHttpStatus(statusType: number): HttpStatus {
+    switch (statusType) {
       case 1:
         return HttpStatus.Info;
       case 2:
