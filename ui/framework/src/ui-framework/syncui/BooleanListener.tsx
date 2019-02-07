@@ -47,6 +47,7 @@ export class BooleanSyncUiListener extends React.Component<BooleanListenerProps,
   }
 
   private _handleVisibilitySyncUiEvent = (args: SyncUiEventArgs): void => {
+    /* istanbul ignore next */
     if (this._componentUnmounting) return;
     let boolValue = this.state.boolValue;
     if (this.props.eventIds.some((value: string): boolean => args.eventIds.has(value))) {
@@ -58,6 +59,7 @@ export class BooleanSyncUiListener extends React.Component<BooleanListenerProps,
   }
 
   public componentDidMount() {
+    /* istanbul ignore else */
     if (this.props.boolFunc && this.props.eventIds.length > 0)
       SyncUiEventDispatcher.onSyncUiEvent.addListener(this._handleVisibilitySyncUiEvent);
   }

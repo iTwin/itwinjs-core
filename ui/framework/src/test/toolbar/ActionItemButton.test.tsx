@@ -74,9 +74,11 @@ describe("ActionItemButton", () => {
   });
 
   it("sync event should trigger stateFunc", () => {
+    const states: BaseItemState[] = [{ isVisible: true, isActive: false }, { isVisible: false, isActive: false }, { isVisible: true, isActive: true }];
+    let count = -1;
     const testEventId = "test-buttonstate";
     let stateFunctionCalled = false;
-    const testStateFunc = (state: Readonly<BaseItemState>): BaseItemState => { stateFunctionCalled = true; return state; };
+    const testStateFunc = (): BaseItemState => { count += 1; stateFunctionCalled = true; return states[count]; };
     const testSyncStateCommand =
       new CommandItemDef({
         commandId: "command",
@@ -90,8 +92,20 @@ describe("ActionItemButton", () => {
 
     const wrapper = mount(<ActionItemButton actionItem={testSyncStateCommand} />);
     expect(stateFunctionCalled).to.eq(false);
+    // force to state[0]
     SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(testEventId);
     expect(stateFunctionCalled).to.eq(true);
+    wrapper.update();
+    // force to state[1]
+    stateFunctionCalled = false;
+    SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(testEventId);
+    expect(stateFunctionCalled).to.eq(true);
+    wrapper.update();
+    // force to state[2]
+    stateFunctionCalled = false;
+    SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(testEventId);
+    expect(stateFunctionCalled).to.eq(true);
+    wrapper.update();
     wrapper.unmount();
   });
 });

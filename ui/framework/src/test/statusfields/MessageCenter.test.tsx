@@ -111,7 +111,7 @@ describe("MessageCenter", () => {
     MessageManager.clearMessages();
     expect(MessageManager.messages.length).to.eq(0);
 
-    const infoMessage = new NotifyMessageDetails(OutputMessagePriority.Info, "Message text.");
+    const infoMessage = new NotifyMessageDetails(OutputMessagePriority.Info, "Brief text.", "Detail text");
     MessageManager.addMessage(infoMessage);
     const errorMessage = new NotifyMessageDetails(OutputMessagePriority.Error, "Message text.");
     MessageManager.addMessage(errorMessage);

@@ -12,7 +12,7 @@ import {
 } from "../../ui-framework/frontstage/FrontstageManager";
 import { Backstage, BackstageCloseEventArgs } from "../../ui-framework/backstage/Backstage";
 import { WorkflowManager, TaskActivatedEventArgs, WorkflowActivatedEventArgs } from "../../ui-framework/workflow/Workflow";
-import {ContentViewManager, ActiveContentChangedEventArgs} from "../../ui-framework/content/ContentViewManager";
+import { ContentViewManager, ActiveContentChangedEventArgs } from "../../ui-framework/content/ContentViewManager";
 
 describe("SyncUiEventDispatcher", () => {
   let clock = sinon.useFakeTimers(Date.now());
@@ -24,6 +24,21 @@ describe("SyncUiEventDispatcher", () => {
 
   afterEach(() => {
     clock.restore();
+  });
+
+  it("test hasEventOfInterest", () => {
+    const eventIds = new Set<string>();
+    eventIds.add("dog");
+    eventIds.add("cat");
+    eventIds.add("rabbit");
+
+    expect(SyncUiEventDispatcher.hasEventOfInterest(eventIds, ["dog", "cat", "rabbit"])).to.be.true;
+    expect(SyncUiEventDispatcher.hasEventOfInterest(eventIds, ["dog", "cat"])).to.be.true;
+    expect(SyncUiEventDispatcher.hasEventOfInterest(eventIds, ["dog"])).to.be.true;
+    expect(SyncUiEventDispatcher.hasEventOfInterest(eventIds, ["cat", "rabbit"])).to.be.true;
+    expect(SyncUiEventDispatcher.hasEventOfInterest(eventIds, ["rabbit"])).to.be.true;
+    // test is case sensitive
+    expect(SyncUiEventDispatcher.hasEventOfInterest(eventIds, ["Rabbit"])).to.be.false;
   });
 
   it("test immediate sync event", () => {
