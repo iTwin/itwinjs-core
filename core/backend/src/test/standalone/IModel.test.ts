@@ -886,13 +886,13 @@ describe("iModel", () => {
     const z2 = imodel5.ecefToSpatial(ecefPt);
     assert.isTrue(z2.isAlmostEqual(center), "ecefToSpatial");
 
-    const carto = imodel5.spatialToCartographic(center);
+    const carto = imodel5.spatialToCartographicFromEcef(center);
     assert.approximately(Angle.radiansToDegrees(carto.longitude), 132.70599650539427, .1); // this data is in Japan
     assert.approximately(Angle.radiansToDegrees(carto.latitude), 34.35461328445589, .1);
     const c2 = { longitude: 2.316156576159219, latitude: 0.5996011150631385, height: 10 };
     assert.isTrue(carto.equalsEpsilon(c2, .001), "spatialToCartographic");
 
-    imodel5.cartographicToSpatial(carto, z2);
+    imodel5.cartographicToSpatialFromEcef(carto, z2);
     assert.isTrue(z2.isAlmostEqual(center, .001), "cartographicToSpatial");
   });
 

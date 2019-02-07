@@ -10,7 +10,7 @@ import {
   AxisAlignedBox3d, CodeSpec, ElementProps, EntityQueryParams, FontMap, ImageSourceFormat, IModel, IModelError, IModelNotFoundResponse,
   IModelReadRpcInterface, IModelStatus, IModelTileRpcInterface, IModelToken, IModelUnitTestRpcInterface, IModelVersion, IModelWriteRpcInterface,
   ModelProps, ModelQueryParams, RpcNotFoundResponse, RpcOperation, RpcRequest, RpcRequestEvent, SnapRequestProps, SnapResponseProps,
-  StandaloneIModelRpcInterface, ThumbnailProps, TileTreeProps, ViewDefinitionProps, ViewQueryParams, WipRpcInterface,
+  StandaloneIModelRpcInterface, ThumbnailProps, TileTreeProps, ViewDefinitionProps, ViewQueryParams, WipRpcInterface, Cartographic, GeoCoordStatus,
 } from "@bentley/imodeljs-common";
 import { EntityState } from "./EntityState";
 import { IModelApp } from "./IModelApp";
@@ -18,6 +18,7 @@ import { ModelState } from "./ModelState";
 import { HilitedSet, SelectionSet } from "./SelectionSet";
 import { GeoServices } from "./GeoServices";
 import { ViewState } from "./ViewState";
+import { XYAndZ, Point3d, Angle } from "@bentley/geometry-core";
 
 const loggingCategory = "imodeljs-frontend.IModelConnection";
 
@@ -45,6 +46,8 @@ export class IModelConnection extends IModel {
   public readonly transientIds = new TransientIdSequence();
   /** The Geographic location services available for this iModelConnection */
   public readonly geoServices: GeoServices;
+  /** @hidden Whether it has already been determined that this iModelConnection does not have a map projection. */
+  protected _noGcsDefined?: boolean;
   /** The maximum time (in milliseconds) to wait before timing out the request to open a connection to a new iModel */
   public static connectionTimeout: number = 10 * 60 * 1000;
 
@@ -349,6 +352,104 @@ export class IModelConnection extends IModel {
 
   /** Request a tooltip from the backend.  */
   public async getToolTipMessage(id: string): Promise<string[]> { return IModelReadRpcInterface.getClient().getToolTipMessage(this.iModelToken, id); }
+
+  /**
+   * Convert a point in this iModel's Spatial coordinates to a [[Cartographic]] using the Geographic location services for this IModelConnection.
+   * @param spatial A point in the iModel's spatial coordinates
+   * @param result If defined, use this for output
+   * @returns A Cartographic location
+   * @throws IModelError if [[isGeoLocated]] is false or point could not be converted.
+   */
+  public async spatialToCartographicFromGcs(spatial: XYAndZ, result?: Cartographic): Promise<Cartographic> {
+    if (undefined === this._noGcsDefined && !this.isGeoLocated)
+      this._noGcsDefined = true;
+
+    if (this._noGcsDefined)
+      throw new IModelError(IModelStatus.NoGeoLocation, "iModel does not have a Geographic Coordinate system. It may be Geolocated with an EcefTransform");
+
+    const geoConverter = this.geoServices.getConverter();
+    const coordResponse = await geoConverter.getGeoCoordinatesFromIModelCoordinates([spatial]);
+
+    if (this._noGcsDefined = (1 !== coordResponse.geoCoords.length || GeoCoordStatus.NoGCSDefined === coordResponse.geoCoords[0].s))
+      throw new IModelError(IModelStatus.NoGeoLocation, "iModel does not have a Geographic Coordinate system. It may be Geolocated with an EcefTransform");
+
+    if (GeoCoordStatus.Success !== coordResponse.geoCoords[0].s)
+      throw new IModelError(IModelStatus.BadRequest, "Error converting spatial to cartographic");
+
+    const longLatHeight = Point3d.fromJSON(coordResponse.geoCoords[0].p); // x is longitude in degrees, y is latitude in degrees, z is height in meters...
+    return Cartographic.fromDegrees(longLatHeight.x, longLatHeight.y, longLatHeight.z, result);
+  }
+
+  /**
+   * Convert a point in this iModel's Spatial coordinates to a [[Cartographic]] using the Geographic location services for this IModelConnection or [[IModel.ecefLocation]].
+   * @param spatial A point in the iModel's spatial coordinates
+   * @param result If defined, use this for output
+   * @returns A Cartographic location
+   * @throws IModelError if [[isGeoLocated]] is false or point could not be converted.
+   * @see [[spatialToCartographicFromGcs]]
+   * @see [[spatialToCartographicFromEcef]]
+   */
+  public async spatialToCartographic(spatial: XYAndZ, result?: Cartographic): Promise<Cartographic> {
+    if (undefined === this._noGcsDefined) {
+      try {
+        return await this.spatialToCartographicFromGcs(spatial, result);
+      } catch (error) {
+        if (!this._noGcsDefined)
+          throw error;
+      }
+    }
+    return (this._noGcsDefined ? this.spatialToCartographicFromEcef(spatial, result) : this.spatialToCartographicFromGcs(spatial, result));
+  }
+
+  /**
+   * Convert a [[Cartographic]] to a point in this iModel's Spatial coordinates using the Geographic location services for this IModelConnection.
+   * @param cartographic A cartographic location
+   * @param result If defined, use this for output
+   * @returns A point in this iModel's spatial coordinates
+   * @throws IModelError if [[isGeoLocated]] is false or cartographic location could not be converted.
+   */
+  public async cartographicToSpatialFromGcs(cartographic: Cartographic, result?: Point3d): Promise<Point3d> {
+    if (undefined === this._noGcsDefined && !this.isGeoLocated)
+      this._noGcsDefined = true;
+
+    if (this._noGcsDefined)
+      throw new IModelError(IModelStatus.NoGeoLocation, "iModel does not have a Geographic Coordinate system. It may be Geolocated with an EcefTransform");
+
+    const geoConverter = this.geoServices.getConverter();
+    const geoCoord = Point3d.create(Angle.radiansToDegrees(cartographic.longitude), Angle.radiansToDegrees(cartographic.latitude), cartographic.height); // x is longitude in degrees, y is latitude in degrees, z is height in meters...
+    const coordResponse = await geoConverter.getIModelCoordinatesFromGeoCoordinates([geoCoord]);
+
+    if (this._noGcsDefined = (1 !== coordResponse.iModelCoords.length || GeoCoordStatus.NoGCSDefined === coordResponse.iModelCoords[0].s))
+      throw new IModelError(IModelStatus.NoGeoLocation, "iModel does not have a Geographic Coordinate system. It may be Geolocated with an EcefTransform");
+
+    if (GeoCoordStatus.Success !== coordResponse.iModelCoords[0].s)
+      throw new IModelError(IModelStatus.BadRequest, "Error converting cartographic to spatial");
+
+    result = result ? result : Point3d.createZero();
+    result.setFromJSON(coordResponse.iModelCoords[0].p);
+    return result;
+  }
+
+  /**
+   * Convert a [[Cartographic]] to a point in this iModel's Spatial coordinates using the Geographic location services for this IModelConnection or [[IModel.ecefLocation]].
+   * @param cartographic A cartographic location
+   * @param result If defined, use this for output
+   * @returns A point in this iModel's spatial coordinates
+   * @throws IModelError if [[isGeoLocated]] is false or cartographic location could not be converted.
+   * @see [[cartographicToSpatialFromGcs]]
+   * @see [[cartographicToSpatialFromEcef]]
+   */
+  public async cartographicToSpatial(cartographic: Cartographic, result?: Point3d): Promise<Point3d> {
+    if (undefined === this._noGcsDefined) {
+      try {
+        return await this.cartographicToSpatialFromGcs(cartographic, result);
+      } catch (error) {
+        if (!this._noGcsDefined)
+          throw error;
+      }
+    }
+    return (this._noGcsDefined ? this.cartographicToSpatialFromEcef(cartographic, result) : this.cartographicToSpatialFromGcs(cartographic, result));
+  }
 }
 
 export namespace IModelConnection {

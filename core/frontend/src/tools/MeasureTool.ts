@@ -5,14 +5,14 @@
 /** @module Measure */
 
 import { CanvasDecoration, GraphicType } from "../rendering";
-import { Point3d, XYAndZ, XAndY, Vector3d, Matrix3d, PointString3d, AxisOrder, Point2d, IModelJson, Plane3dByOriginAndUnitNormal, Angle } from "@bentley/geometry-core";
+import { Point3d, XYAndZ, XAndY, Vector3d, Matrix3d, PointString3d, AxisOrder, Point2d, IModelJson, Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core";
 import { Viewport } from "../Viewport";
 import { DecorateContext } from "../ViewContext";
 import { Marker } from "../Marker";
 import { PrimitiveTool } from "./PrimitiveTool";
 import { IModelApp } from "../IModelApp";
 import { HitDetail, HitGeomType } from "../HitDetail";
-import { GeometryStreamProps, ColorDef, GeoCoordStatus, Cartographic } from "@bentley/imodeljs-common";
+import { GeometryStreamProps, ColorDef } from "@bentley/imodeljs-common";
 import { QuantityType } from "../QuantityFormatter";
 import { BeButtonEvent, EventHandled } from "./Tool";
 import { NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "../NotificationManager";
@@ -505,30 +505,6 @@ export class MeasureLocationTool extends PrimitiveTool {
     this.showPrompt();
   }
 
-  protected async spatialToCartographic(spatial: XYAndZ, result?: Cartographic): Promise<Cartographic> {
-    // ###TODO Only “map” iModels need to use the GCS (non-linear projection)...ecef transform fine otherwise...
-    const geoConverter = this.iModel.geoServices.getConverter();
-    const coordResponse = await geoConverter.getGeoCoordinatesFromIModelCoordinates([spatial]);
-    if (1 === coordResponse.geoCoords.length && GeoCoordStatus.Success === coordResponse.geoCoords[0].s) {
-      const longLatHeight = Point3d.fromJSON(coordResponse.geoCoords[0].p); // x is longitude in degrees, y is latitude in degrees, z is height in meters...
-      return Cartographic.fromDegrees(longLatHeight.x, longLatHeight.y, longLatHeight.z, result);
-    }
-    return this.iModel.spatialToCartographic(spatial, result); // Get lat/long/height from ecef location if no gcs present...
-  }
-
-  protected async cartographicToSpatial(cartographic: Cartographic, result?: Point3d): Promise<Point3d> {
-    // ###TODO Only “map” iModels need to use the GCS (non-linear projection)...ecef transform fine otherwise...
-    const geoConverter = this.iModel.geoServices.getConverter();
-    const geoCoord = Point3d.create(Angle.radiansToDegrees(cartographic.longitude), Angle.radiansToDegrees(cartographic.latitude), cartographic.height); // x is longitude in degrees, y is latitude in degrees, z is height in meters...
-    const coordResponse = await geoConverter.getIModelCoordinatesFromGeoCoordinates([geoCoord]);
-    if (1 === coordResponse.iModelCoords.length && GeoCoordStatus.Success === coordResponse.iModelCoords[0].s) {
-      result = result ? result : Point3d.createZero();
-      result.setFromJSON(coordResponse.iModelCoords[0].p);
-      return result;
-    }
-    return this.iModel.cartographicToSpatial(cartographic, result); // Get spatial location from ecef location if no gcs present...
-  }
-
   protected async getMarkerToolTip(point: Point3d): Promise<string> {
     let toolTip = "";
 
@@ -550,7 +526,7 @@ export class MeasureLocationTool extends PrimitiveTool {
       const latLongFormatterSpec = await IModelApp.quantityFormatter.getFormatterSpecByQuantityType(QuantityType.LatLong);
       if (undefined !== latLongFormatterSpec && undefined !== coordFormatterSpec) {
         try {
-          const cartographic = await this.spatialToCartographic(point);
+          const cartographic = await this.iModel.spatialToCartographic(point);
           const formattedLat = IModelApp.quantityFormatter.formatQuantity(Math.abs(cartographic.latitude), latLongFormatterSpec);
           const formattedLong = IModelApp.quantityFormatter.formatQuantity(Math.abs(cartographic.longitude), latLongFormatterSpec);
           const formattedHeight = IModelApp.quantityFormatter.formatQuantity(cartographic.height, coordFormatterSpec);

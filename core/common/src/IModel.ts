@@ -216,13 +216,13 @@ export abstract class IModel implements IModelProps {
   public ecefToSpatial(ecef: XYAndZ, result?: Point3d): Point3d { return this.getEcefTransform().multiplyInversePoint3d(ecef, result)!; }
 
   /**
-   * Convert a point in this iModel's Spatial coordinates to a [[Cartographic]]  using its [[IModel.ecefLocation]].
+   * Convert a point in this iModel's Spatial coordinates to a [[Cartographic]] using its [[IModel.ecefLocation]].
    * @param spatial A point in the iModel's spatial coordinates
    * @param result If defined, use this for output
    * @returns A Cartographic location
    * @throws IModelError if [[isGeoLocated]] is false.
    */
-  public spatialToCartographic(spatial: XYAndZ, result?: Cartographic): Cartographic { return Cartographic.fromEcef(this.spatialToEcef(spatial), result)!; }
+  public spatialToCartographicFromEcef(spatial: XYAndZ, result?: Cartographic): Cartographic { return Cartographic.fromEcef(this.spatialToEcef(spatial), result)!; }
 
   /**
    * Convert a [[Cartographic]] to a point in this iModel's Spatial coordinates using its [[IModel.ecefLocation]].
@@ -232,5 +232,5 @@ export abstract class IModel implements IModelProps {
    * @throws IModelError if [[isGeoLocated]] is false.
    * @note The resultant point will only be meaningful if the ECEF coordinate is close on the earth to the iModel.
    */
-  public cartographicToSpatial(cartographic: Cartographic, result?: Point3d) { return this.ecefToSpatial(cartographic.toEcef(result), result); }
+  public cartographicToSpatialFromEcef(cartographic: Cartographic, result?: Point3d) { return this.ecefToSpatial(cartographic.toEcef(result), result); }
 }
