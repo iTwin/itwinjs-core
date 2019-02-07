@@ -4,13 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Core */
 
-import { IDisposable } from "@bentley/bentleyjs-core";
 import { RulesetsFactory, Omit } from "@bentley/presentation-common";
 import { PropertyRecord } from "@bentley/imodeljs-frontend";
 import { IPresentationPropertyDataProvider } from "./propertygrid/DataProvider";
 import {
   IPresentationTableDataProvider, PresentationTableDataProvider,
-  PresentationTableDataProviderProps
+  PresentationTableDataProviderProps,
 } from "./table/DataProvider";
 
 /**
@@ -41,7 +40,7 @@ export class DataProvidersFactory {
    */
   public async createSimilarInstancesTableDataProvider(propertiesProvider: IPresentationPropertyDataProvider, record: PropertyRecord,
     props: Omit<PresentationTableDataProviderProps, "imodel" | "ruleset">,
-  ): Promise<IPresentationTableDataProvider & IDisposable> {
+  ): Promise<IPresentationTableDataProvider & { description: string }> {
     const content = await propertiesProvider.getContent();
     if (!content || content.contentSet.length === 0)
       throw new Error("Properties provider has no content. Where did record come from?");
@@ -50,7 +49,21 @@ export class DataProvidersFactory {
     if (!field)
       throw new Error("Properties provider doesn't have a property with provided record. Where did record come from?");
 
-    const ruleset = this._rulesetsFactory.createSimilarInstancesRuleset(field, content.contentSet[0]);
-    return new PresentationTableDataProvider({ ...props, imodel: propertiesProvider.imodel, ruleset });
+    const result = this._rulesetsFactory.createSimilarInstancesRuleset(field, content.contentSet[0]);
+    return new TableDataProviderWithDescription({
+      ...props,
+      imodel: propertiesProvider.imodel,
+      ruleset: result.ruleset,
+      description: result.description,
+    });
+  }
+}
+
+class TableDataProviderWithDescription extends PresentationTableDataProvider {
+  public readonly description: string;
+  public constructor(props: (PresentationTableDataProviderProps & { description: string })) {
+    const { description, ...baseProps } = props;
+    super(baseProps);
+    this.description = description;
   }
 }
