@@ -1091,7 +1091,7 @@ public cancelAllTileLoads(): void {
   }
 
   private addModelToScene(model: TileTreeModelState, context: SceneContext): void {
-    model.loadTileTree();
+    model.loadTileTree(context.viewFlags.edgesRequired(), this.scheduleScript ? this.scheduleScript.getModelAnimationId(model.treeModelId) : undefined);
     const tileTree = model.tileTree;
     if (undefined !== tileTree) {
       tileTree.drawScene(context);
@@ -1754,14 +1754,7 @@ export class SpatialViewState extends ViewState3d {
   }
   public forEachTileTreeModel(func: (model: TileTreeModelState) => void): void {
     this.displayStyle.forEachContextRealityModel((model: TileTreeModelState) => func(model));
-    this.forEachSpatialTileTreeModel((model: TileTreeModelState) => func(model));
-  }
-
-  public forEachSpatialTileTreeModel(func: (model: TileTreeModelState) => void): void {
-    if (this.scheduleScript && this.scheduleScript.containsAnimation)
-      this.scheduleScript.forEachAnimationModel((model: TileTreeModelState) => func(model));
-    else
-      this.forEachModel((model: GeometricModelState) => func(model));
+    this.forEachModel((model: TileTreeModelState) => func(model));
   }
 }
 
@@ -1822,7 +1815,7 @@ export abstract class ViewState2d extends ViewState {
     if (undefined === this._viewedExtents) {
       const model = this.iModel.models.getLoaded(this.baseModelId);
       if (undefined !== model && model.isGeometricModel) {
-        const tree = (model as GeometricModelState).getOrLoadTileTree();
+        const tree = (model as GeometricModelState).getOrLoadTileTree(true);
         if (undefined !== tree) {
           this._viewedExtents = Range3d.create(tree.range.low, tree.range.high);
           tree.location.multiplyRange(this._viewedExtents, this._viewedExtents);

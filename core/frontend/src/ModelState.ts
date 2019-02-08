@@ -61,7 +61,8 @@ export class ModelState extends EntityState implements ModelProps {
 export interface TileTreeModelState {
   readonly tileTree: TileTree | undefined;
   readonly loadStatus: TileTree.LoadStatus;
-  loadTileTree(asClassifier?: boolean, classifierExpansion?: number): TileTree.LoadStatus;
+  readonly treeModelId: Id64String | undefined;    // Model Id or undefined if not a model (context reality model)
+  loadTileTree(edgesRequired: boolean, animationId?: Id64String, asClassifier?: boolean, classifierExpansion?: number): TileTree.LoadStatus;
 }
 /** Represents the front-end state of a [GeometricModel]($backend).
  * The contents of a GeometricModelState can be rendered inside a [[Viewport]].
@@ -89,16 +90,21 @@ export abstract class GeometricModelState extends ModelState implements TileTree
   /** @hidden */
   public get isGeometricModel(): boolean { return true; }
   /** @hidden */
-  public getOrLoadTileTree(): TileTree | undefined {
+  public get treeModelId(): Id64String | undefined { return this.id; }
+  /** @hidden  */
+  public getOrLoadTileTree(edgesRequired: boolean): TileTree | undefined {
     if (undefined === this.tileTree)
-      this.loadTileTree();
+      this.loadTileTree(edgesRequired);
 
     return this.tileTree;
   }
 
   /** @hidden */
-  public loadTileTree(asClassifier?: boolean, classifierExpansion?: number): TileTree.LoadStatus {
+  public loadTileTree(edgesRequired: boolean, animationId?: Id64String, asClassifier?: boolean, classifierExpansion?: number): TileTree.LoadStatus {
     const tileTreeState = asClassifier ? this._classifierTileTreeState : this._tileTreeState;
+    if (tileTreeState.edgesOmitted && edgesRequired)
+      tileTreeState.clearTileTree();
+
     if (TileTree.LoadStatus.NotLoaded !== tileTreeState.loadStatus)
       return tileTreeState.loadStatus;
 
@@ -109,14 +115,15 @@ export abstract class GeometricModelState extends ModelState implements TileTree
       return tileTreeState.loadStatus;
     }
 
-    return this.loadIModelTileTree(tileTreeState, asClassifier, classifierExpansion);
+    return this.loadIModelTileTree(tileTreeState, edgesRequired, animationId, asClassifier, classifierExpansion);
   }
 
-  private loadIModelTileTree(tileTreeState: TileTreeState, asClassifier?: boolean, classifierExpansion?: number): TileTree.LoadStatus {
-    const id = asClassifier ? ("C:" + classifierExpansion as string + "_" + this.id) : this.id;
+  private loadIModelTileTree(tileTreeState: TileTreeState, edgesRequired: boolean, animationId?: Id64String, asClassifier?: boolean, classifierExpansion?: number): TileTree.LoadStatus {
+    const id = (asClassifier ? ("C:" + classifierExpansion as string + "_" + this.id) : "") + (animationId ? ("A:" + animationId + "_") : "") + this.id;
 
     this.iModel.tiles.getTileTreeProps(id).then((result: TileTreeProps) => {
-      tileTreeState.setTileTree(result, new IModelTileLoader(this.iModel, asClassifier ? BatchType.Classifier : BatchType.Primary));
+      tileTreeState.setTileTree(result, new IModelTileLoader(this.iModel, asClassifier ? BatchType.Classifier : BatchType.Primary, edgesRequired));
+      this._tileTreeState.edgesOmitted = !edgesRequired;
       IModelApp.viewManager.onNewTilesReady();
     }).catch((_err) => {
       this._tileTreeState.loadStatus = TileTree.LoadStatus.NotFound; // on separate line because stupid chrome debugger.

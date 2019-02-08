@@ -151,9 +151,10 @@ export namespace IModelTileIO {
    */
   export class Reader extends GltfTileIO.Reader {
     private readonly _sizeMultiplier?: number;
+    private readonly _loadEdges: boolean;
 
     /** Attempt to initialize a Reader to deserialize iModel tile data beginning at the stream's current position. */
-    public static create(stream: TileIO.StreamBuffer, iModel: IModelConnection, modelId: Id64String, is3d: boolean, system: RenderSystem, type: BatchType = BatchType.Primary, isCanceled?: GltfTileIO.IsCanceled, sizeMultiplier?: number): Reader | undefined {
+    public static create(stream: TileIO.StreamBuffer, iModel: IModelConnection, modelId: Id64String, is3d: boolean, system: RenderSystem, type: BatchType = BatchType.Primary, loadEdges: boolean = true, isCanceled?: GltfTileIO.IsCanceled, sizeMultiplier?: number): Reader | undefined {
       const header = new Header(stream);
       if (!header.isValid || !header.isReadableVersion)
         return undefined;
@@ -164,7 +165,7 @@ export namespace IModelTileIO {
 
       // A glTF header follows the feature table
       const props = GltfTileIO.ReaderProps.create(stream, false);
-      return undefined !== props ? new Reader(props, iModel, modelId, is3d, system, type, isCanceled, sizeMultiplier) : undefined;
+      return undefined !== props ? new Reader(props, iModel, modelId, is3d, system, type, loadEdges, isCanceled, sizeMultiplier) : undefined;
     }
 
     /** Attempt to deserialize the tile data */
@@ -420,9 +421,10 @@ export namespace IModelTileIO {
       return new PackedFeatureTable(packedFeatureArray, this._modelId, header.count, header.maxFeatures, this._type, animNodesArray);
     }
 
-    private constructor(props: GltfTileIO.ReaderProps, iModel: IModelConnection, modelId: Id64String, is3d: boolean, system: RenderSystem, type: BatchType, isCanceled?: GltfTileIO.IsCanceled, sizeMultiplier?: number) {
+    private constructor(props: GltfTileIO.ReaderProps, iModel: IModelConnection, modelId: Id64String, is3d: boolean, system: RenderSystem, type: BatchType, loadEdges: boolean, isCanceled?: GltfTileIO.IsCanceled, sizeMultiplier?: number) {
       super(props, iModel, modelId, is3d, system, type, isCanceled);
       this._sizeMultiplier = sizeMultiplier;
+      this._loadEdges = loadEdges;
     }
 
     private static skipFeatureTable(stream: TileIO.StreamBuffer): boolean {
@@ -662,7 +664,7 @@ export namespace IModelTileIO {
 
       // ###TODO: Tile generator shouldn't bother producing edges for classification meshes in the first place...
       let edgeParams: EdgeParams | undefined;
-      if (undefined !== primitive.edges && SurfaceType.Classifier !== surface.type) {
+      if (this._loadEdges && undefined !== primitive.edges && SurfaceType.Classifier !== surface.type) {
         const edgeResult = this.readEdges(primitive.edges, displayParams);
         if (!edgeResult.succeeded)
           return undefined;

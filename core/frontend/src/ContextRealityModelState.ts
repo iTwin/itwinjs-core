@@ -10,7 +10,7 @@ import { TileTreeModelState } from "./ModelState";
 import { TileTree, TileTreeState } from "./tile/TileTree";
 import { RealityModelTileTree, RealityModelTileClient, RealityModelTileUtils } from "./tile/RealityModelTileTree";
 import { RealityDataServicesClient, RealityData } from "@bentley/imodeljs-clients";
-import { ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
+import { ActivityLoggingContext, Guid, Id64String } from "@bentley/bentleyjs-core";
 
 export class ContextRealityModelState implements TileTreeModelState {
   protected _tilesetUrl: string;
@@ -27,7 +27,8 @@ export class ContextRealityModelState implements TileTreeModelState {
   public get url() { return this._tilesetUrl; }
   public get tileTree(): TileTree | undefined { return this._tileTreeState.tileTree; }
   public get loadStatus(): TileTree.LoadStatus { return this._tileTreeState.loadStatus; }
-  public loadTileTree(_asClassifier?: boolean, _classifierExpansion?: number): TileTree.LoadStatus {
+  public get treeModelId(): Id64String | undefined { return undefined; }
+  public loadTileTree(_edgesRequired: boolean, _animationId?: Id64String, _asClassifier?: boolean, _classifierExpansion?: number): TileTree.LoadStatus {
     const tileTreeState = this._tileTreeState;
     if (TileTree.LoadStatus.NotLoaded !== tileTreeState.loadStatus)
       return tileTreeState.loadStatus;

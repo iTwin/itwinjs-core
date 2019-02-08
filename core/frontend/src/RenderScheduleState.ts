@@ -4,14 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Views */
 
-import { RenderSchedule, RgbColor, TileTreeProps, BatchType } from "@bentley/imodeljs-common";
+import { RenderSchedule, RgbColor } from "@bentley/imodeljs-common";
 import { Range1d, Transform, Point3d, Vector3d, Matrix3d, Plane3dByOriginAndUnitNormal, ClipPlane, ConvexClipPlaneSet, UnionOfConvexClipPlaneSets, Point4d } from "@bentley/geometry-core";
 import { Id64String } from "@bentley/bentleyjs-core";
 import { FeatureSymbology } from "./render/FeatureSymbology";
-import { TileTreeModelState } from "./ModelState";
 import { IModelConnection } from "./IModelConnection";
-import { TileTree, TileTreeState, IModelTileLoader } from "./tile/TileTree";
-import { IModelApp } from "./IModelApp";
 import { ClipPlanesVolume } from "./render/webgl/ClipVolume";
 import { AnimationBranchStates, AnimationBranchState } from "./render/System";
 
@@ -232,39 +229,11 @@ export namespace RenderScheduleState {
     }
   }
 
-  class AnimationModelState implements TileTreeModelState {
-    private _iModel: IModelConnection;
-    private _modelId: Id64String;
-    private _displayStyleId: Id64String;
-    protected _tileTreeState: TileTreeState;
-    constructor(modelId: Id64String, displayStyleId: Id64String, iModel: IModelConnection) { this._modelId = modelId; this._displayStyleId = displayStyleId, this._iModel = iModel; this._tileTreeState = new TileTreeState(iModel, true, modelId); }
-
-    public get tileTree(): TileTree | undefined { return this._tileTreeState.tileTree; }
-    public get loadStatus(): TileTree.LoadStatus { return this._tileTreeState.loadStatus; }
-    /** @hidden */
-    public loadTileTree(_asClassifier?: boolean, _classifierExpansion?: number): TileTree.LoadStatus {
-      if (TileTree.LoadStatus.NotLoaded !== this._tileTreeState.loadStatus)
-        return this._tileTreeState.loadStatus;
-
-      this._tileTreeState.loadStatus = TileTree.LoadStatus.Loading;
-      const id = "A:" + this._displayStyleId + "_" + this._modelId;
-
-      this._iModel.tiles.getTileTreeProps(id).then((result: TileTreeProps) => {
-        this._tileTreeState.setTileTree(result, new IModelTileLoader(this._iModel, BatchType.Primary));
-        IModelApp.viewManager.onNewTilesReady();
-      }).catch((_err) => {
-        this._tileTreeState.loadStatus = TileTree.LoadStatus.NotFound; // on separate line because stupid chrome debugger.
-      });
-
-      return this._tileTreeState.loadStatus;
-    }
-  }
   export class ModelTimeline implements RenderSchedule.ModelTimelineProps {
     public modelId: Id64String;
     public elementTimelines: ElementTimeline[] = [];
     public containsFeatureOverrides: boolean = false;
     public containsAnimation: boolean = false;
-    public animationModel?: AnimationModelState;
     private constructor(modelId: Id64String) { this.modelId = modelId; }
     public get duration() {
       const duration = Range1d.createNull();
@@ -355,15 +324,13 @@ export namespace RenderScheduleState {
     public getSymbologyOverrides(overrides: FeatureSymbology.Overrides, time: number) {
       this.modelTimelines.forEach((entry) => entry.getSymbologyOverrides(overrides, time));
     }
+    public getModelAnimationId(modelId: Id64String | undefined): Id64String | undefined {
+      if (!modelId) return undefined;
+      for (const modelTimeline of this.modelTimelines)
+        if (modelTimeline.modelId === modelId && modelTimeline.containsAnimation)
+          return this.displayStyleId;
 
-    public forEachAnimationModel(tileTreeFunction: (model: TileTreeModelState) => void): void {
-      for (const modelTimeline of this.modelTimelines) {
-        if (modelTimeline.containsAnimation) {
-          if (!modelTimeline.animationModel)
-            modelTimeline.animationModel = new AnimationModelState(modelTimeline.modelId, this.displayStyleId, this.iModel);
-          tileTreeFunction(modelTimeline.animationModel);
-        }
-      }
+      return undefined;
     }
   }
 }
