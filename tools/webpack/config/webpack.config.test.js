@@ -114,7 +114,7 @@ const config = {
           // Compile .tsx?
           {
             test: /\.(ts|tsx)$/,
-            exclude: /(node_modules|bower_components)/,
+            exclude: /(node_modules|bower_components|\.d\.ts)/,
             use: {
               loader: require.resolve("ts-loader"),
               options: {
