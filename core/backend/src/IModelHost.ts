@@ -71,13 +71,13 @@ export class IModelHost {
       return;
 
     if (!Platform.isMobile)
-      this.checkVersion();
+      this.validateNativePlatformVersion();
 
     platform.logger = Logger;
     platform.initializeRegion(region);
   }
 
-  private static checkVersion(): void {
+  private static validateNativePlatformVersion(): void {
     const requiredVersion = require("../package.json").dependencies["@bentley/imodeljs-native"];
     const thisVersion = this.platform.version;
     if (semver.satisfies(thisVersion, requiredVersion))
@@ -88,6 +88,14 @@ export class IModelHost {
     }
     this._platform = undefined;
     throw new IModelError(IModelStatus.BadRequest, "imodeljs-native version is (" + thisVersion + "). imodeljs-backend requires version (" + requiredVersion + ")");
+  }
+
+  private static validateNodeJsVersion(): void {
+    const requiredVersion = require("../package.json").engines.node;
+    if (!semver.satisfies(process.version, requiredVersion)) {
+      throw new IModelError(IModelStatus.BadRequest, `Node.js version ${process.version} is not within the range acceptable to imodeljs-backend: (${requiredVersion})`);
+    }
+    return;
   }
 
   /** @hidden */
@@ -101,6 +109,8 @@ export class IModelHost {
   public static startup(configuration: IModelHostConfiguration = new IModelHostConfiguration()) {
     if (IModelHost.configuration)
       throw new IModelError(BentleyStatus.ERROR, "startup may only be called once", Logger.logError, loggingCategory, () => (configuration));
+
+    this.validateNodeJsVersion();
 
     this.backendVersion = require("../package.json").version;
     initializeRpcBackend();

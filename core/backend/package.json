@@ -6,7 +6,7 @@
   "typings": "lib/imodeljs-backend",
   "license": "MIT",
   "engines": {
-    "node": ">=10.14.0 <11.0"
+    "node": ">=10.6.0 <11.0"
   },
   "scripts": {
     "build": "tsc 1>&2 && npm run copy:assets && npm run copy:test-assets && node ./node_modules/@bentley/build-tools/scripts/ignoreargs.js 1>&2",
