@@ -106,19 +106,18 @@ class Utils {
 }
 // description of each node_module.
 class ModuleInfo {
-    constructor(isDevelopment, useVersion, moduleName, relativePath, publicResourceDirectory) {
+    constructor(isDevelopment, useVersion, moduleName, destFileName, relativePath, publicResourceDirectory) {
         this.isDevelopment = isDevelopment;
         this.useVersion = useVersion;
         this.moduleName = moduleName;
         this.publicResourceDirectory = publicResourceDirectory;
         // if relativePath not supplied, it's one of our @bentley modules and we can figure it out.
+        this.destFileName = destFileName ? destFileName : moduleName + ".js";
         if (!relativePath) {
-            this.fileName = (0 === moduleName.indexOf("@bentley")) ? moduleName.slice(9) + ".js" : moduleName + ".js";
-            this.relativePath = path.join(moduleName, isDevelopment ? "lib/module/dev" : "lib/module/prod", this.fileName);
+            this.relativePath = path.join(moduleName, isDevelopment ? "lib/module/dev" : "lib/module/prod", this.destFileName);
         }
         else {
             this.relativePath = relativePath;
-            this.fileName = this.moduleName + ".js";
         }
     }
 }
@@ -141,28 +140,28 @@ class ModuleCopier {
         this._detail = _detail;
         this._dependentList = [];
         this._externalModules = [
-            new ModuleInfo(_isDevelopment, true, "@bentley/bentleyjs-core", undefined),
-            new ModuleInfo(_isDevelopment, true, "@bentley/geometry-core", undefined),
-            new ModuleInfo(_isDevelopment, true, "@bentley/imodeljs-i18n", undefined),
-            new ModuleInfo(_isDevelopment, true, "@bentley/imodeljs-clients", undefined),
-            new ModuleInfo(_isDevelopment, true, "@bentley/imodeljs-common", undefined),
-            new ModuleInfo(_isDevelopment, true, "@bentley/imodeljs-quantity", undefined),
-            new ModuleInfo(_isDevelopment, true, "@bentley/imodeljs-frontend", undefined, "lib/public"),
-            new ModuleInfo(_isDevelopment, true, "@bentley/ui-core", undefined, "lib/public"),
-            new ModuleInfo(_isDevelopment, true, "@bentley/ui-components", undefined, "lib/public"),
-            new ModuleInfo(_isDevelopment, true, "@bentley/ui-framework", undefined, "lib/public"),
-            new ModuleInfo(_isDevelopment, true, "@bentley/ui-ninezone", undefined),
-            new ModuleInfo(_isDevelopment, true, "@bentley/presentation-common", undefined),
-            new ModuleInfo(_isDevelopment, true, "@bentley/presentation-components", undefined, "lib/public"),
-            new ModuleInfo(_isDevelopment, true, "@bentley/presentation-frontend", undefined),
-            new ModuleInfo(_isDevelopment, false, "react", path.join("react", _isDevelopment ? "umd/react.development.js" : "umd/react.production.min.js")),
-            new ModuleInfo(_isDevelopment, false, "react-dnd", path.join("react-dnd", _isDevelopment ? "dist/ReactDnD.js" : "dist/ReactDnD.min.js")),
-            new ModuleInfo(_isDevelopment, false, "react-dnd-html5-backend", path.join("react-dnd-html5-backend", _isDevelopment ? "dist/ReactDnDHTML5Backend.js" : "dist/ReactDnDHTML5Backend.min.js")),
-            new ModuleInfo(_isDevelopment, false, "react-dom", path.join("react-dom", _isDevelopment ? "umd/react-dom.development.js" : "umd/react-dom.production.min.js")),
-            new ModuleInfo(_isDevelopment, false, "react-redux", path.join("react-redux", _isDevelopment ? "dist/react-redux.js" : "dist/react-redux.min.js")),
-            new ModuleInfo(_isDevelopment, false, "redux", path.join("redux", _isDevelopment ? "dist/redux.js" : "dist/redux.min.js")),
-            new ModuleInfo(_isDevelopment, false, "inspire-tree", path.join("inspire-tree", _isDevelopment ? "dist/inspire-tree.js" : "dist/inspire-tree.min.js")),
-            new ModuleInfo(_isDevelopment, false, "lodash", path.join("lodash", _isDevelopment ? "lodash.js" : "lodash.min.js")),
+            new ModuleInfo(_isDevelopment, true, "@bentley/bentleyjs-core", "bentleyjs-core.js", undefined),
+            new ModuleInfo(_isDevelopment, true, "@bentley/geometry-core", "geometry-core.js", undefined),
+            new ModuleInfo(_isDevelopment, true, "@bentley/imodeljs-i18n", "imodeljs-i18n.js", undefined),
+            new ModuleInfo(_isDevelopment, true, "@bentley/imodeljs-clients", "imodeljs-clients.js", undefined),
+            new ModuleInfo(_isDevelopment, true, "@bentley/imodeljs-common", "imodeljs-common.js", undefined),
+            new ModuleInfo(_isDevelopment, true, "@bentley/imodeljs-quantity", "imodeljs-quantity.js", undefined),
+            new ModuleInfo(_isDevelopment, true, "@bentley/imodeljs-frontend", "imodeljs-frontend.js", undefined, "lib/public"),
+            new ModuleInfo(_isDevelopment, true, "@bentley/ui-core", "ui-core.js", undefined, "lib/public"),
+            new ModuleInfo(_isDevelopment, true, "@bentley/ui-components", "ui-components.js", undefined, "lib/public"),
+            new ModuleInfo(_isDevelopment, true, "@bentley/ui-framework", "ui-framework.js", undefined, "lib/public"),
+            new ModuleInfo(_isDevelopment, true, "@bentley/ui-ninezone", "ui-ninezone.js", undefined),
+            new ModuleInfo(_isDevelopment, true, "@bentley/presentation-common", "presentation-common.js", undefined),
+            new ModuleInfo(_isDevelopment, true, "@bentley/presentation-components", "presentation-components.js", undefined, "lib/public"),
+            new ModuleInfo(_isDevelopment, true, "@bentley/presentation-frontend", "presentation-frontend.js", undefined),
+            new ModuleInfo(_isDevelopment, false, "react", undefined, path.join("react", _isDevelopment ? "umd/react.development.js" : "umd/react.production.min.js")),
+            new ModuleInfo(_isDevelopment, false, "react-dnd", undefined, path.join("react-dnd", _isDevelopment ? "dist/ReactDnD.js" : "dist/ReactDnD.min.js")),
+            new ModuleInfo(_isDevelopment, false, "react-dnd-html5-backend", undefined, path.join("react-dnd-html5-backend", _isDevelopment ? "dist/ReactDnDHTML5Backend.js" : "dist/ReactDnDHTML5Backend.min.js")),
+            new ModuleInfo(_isDevelopment, false, "react-dom", undefined, path.join("react-dom", _isDevelopment ? "umd/react-dom.development.js" : "umd/react-dom.production.min.js")),
+            new ModuleInfo(_isDevelopment, false, "react-redux", undefined, path.join("react-redux", _isDevelopment ? "dist/react-redux.js" : "dist/react-redux.min.js")),
+            new ModuleInfo(_isDevelopment, false, "redux", undefined, path.join("redux", _isDevelopment ? "dist/redux.js" : "dist/redux.min.js")),
+            new ModuleInfo(_isDevelopment, false, "inspire-tree", undefined, path.join("inspire-tree", _isDevelopment ? "dist/inspire-tree.js" : "dist/inspire-tree.min.js")),
+            new ModuleInfo(_isDevelopment, false, "lodash", undefined, path.join("lodash", _isDevelopment ? "lodash.js" : "lodash.min.js")),
         ];
     }
     // symlinks the public static files from a module into the output web resources directories.
@@ -298,7 +297,7 @@ class ModuleCopier {
                             fs.mkdirSync(outFilePath, { recursive: true });
                         }
                     }
-                    const fullFilePath = path.resolve(outFilePath, externalModule.fileName);
+                    const fullFilePath = path.resolve(outFilePath, externalModule.destFileName);
                     this.symlinkModuleFile(moduleSourceFile, fullFilePath);
                     // symlink the external modules resource files if necessary.
                     if (externalModule.publicResourceDirectory) {

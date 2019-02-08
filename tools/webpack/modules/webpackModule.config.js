@@ -180,10 +180,36 @@ function getConfig(env, nodeAsTarget) {
     webpackLib.optimization.minimizer = [
       new UglifyJSPlugin({
         uglifyOptions: {
-          keep_classnames: true,
+          ecma: 8,
+          mangle: {
+            safari10: true,
+            // NEEDSWORK: Mangling classnames appears to break gateway marshalling...
+            keep_classnames: true,
+          },
+          compress: {
+            warnings: false,
+            // Disabled because of an issue with Uglify breaking seemingly valid code:
+            // https://github.com/facebook/create-react-app/issues/2376
+            // Pending further investigation:
+            // https://github.com/mishoo/UglifyJS2/issues/2011
+            comparisons: false,
+            // Compressing classnames also breaks reflection
+            keep_classnames: true,
+          },
+          output: {
+            comments: false,
+            // Turned on because emoji and regex is not minified properly using default
+            // https://github.com/facebook/create-react-app/issues/2488
+            ascii_only: true,
+          },
         },
-        sourceMap: true
-      })
+        // Use multi-process parallel running to improve the build speed
+        // Default number of concurrent runs: os.cpus().length - 1
+        parallel: true,
+        // Enable file caching
+        cache: true,
+        sourceMap: true,
+      }),
     ];
   }
 
