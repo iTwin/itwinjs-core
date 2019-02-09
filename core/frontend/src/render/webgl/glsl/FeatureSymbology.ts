@@ -544,13 +544,15 @@ const computeFeatureOverrides = `
   v_feature_alpha_flashed = vec2(-1.0, 0.0);
   vec4 value = getFirstFeatureRgba();
 
-  // 2 RGBA values per feature - first R is override flags mask
-  if (0.0 == value.r) {
+  // 2 RGBA values per feature - first R is override flags mask, first A is 1.0 for non-locatable feature.
+  // The latter makes the feature invisible only if the "ignore non-locatable" shader flag is set.
+  float nonLocatable = value.a * extractShaderBit(kShaderBit_IgnoreNonLocatable);
+  if (0.0 == value.r + nonLocatable)
     return; // nothing overridden for this feature
-  }
 
   float flags = value.r * 256.0;
-  feature_invisible = 1.0 == extractNthFeatureBit(flags, kOvrBit_Visibility) || 0.0 != value.a * extractShaderBit(kShaderBit_IgnoreNonLocatable); // .a > 0 if non-locatable...
+  float invisible = extractNthFeatureBit(flags, kOvrBit_Visibility);
+  feature_invisible = 0.0 != (invisible + nonLocatable);
   if (feature_invisible)
     return;
 

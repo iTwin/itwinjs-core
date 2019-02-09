@@ -193,6 +193,17 @@ describe("Render mirukuru", () => {
       let pixels = vp.readUniquePixelData();
       expect(pixels.length).to.equal(1);
 
+      // Specify element is nonLocatable
+      ovrProvider.ovrFunc = (ovrs, _) => ovrs.overrideElement(elemId, FeatureSymbology.Appearance.fromJSON({ nonLocatable: true }));
+      vp.view.setFeatureOverridesDirty(true);
+      await vp.drawFrame();
+      pixels = vp.readUniquePixelData(undefined, true); // Exclude non-locatable elements
+      expect(pixels.length).to.equal(1);
+      expect(pixels.containsElement(elemId)).to.be.false;
+      pixels = vp.readUniquePixelData(); // Include non-locatable elements
+      expect(pixels.length).to.equal(2);
+      expect(pixels.containsElement(elemId)).to.be.true;
+
       // Specify element is drawn blue
       ovrProvider.ovrFunc = (ovrs, _) => ovrs.overrideElement(elemId, FeatureSymbology.Appearance.fromRgb(ColorDef.blue));
       vp.view.setFeatureOverridesDirty(true);
