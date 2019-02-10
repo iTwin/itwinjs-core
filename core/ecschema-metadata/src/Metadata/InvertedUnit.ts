@@ -11,7 +11,7 @@ import { DelayedPromiseWithProps } from "./../DelayedPromise";
 import { SchemaItemType } from "./../ECObjects";
 import { InvertedUnitProps } from "./../Deserialization/JsonProps";
 import { ECObjectsError, ECObjectsStatus } from "./../Exception";
-import { LazyLoadedUnit, LazyLoadedUnitSystem, SchemaItemVisitor } from "./../Interfaces";
+import { LazyLoadedUnit, LazyLoadedUnitSystem } from "./../Interfaces";
 import { SchemaItemKey } from "./../SchemaKey";
 
 /**
@@ -62,15 +62,5 @@ export class InvertedUnit extends SchemaItem {
 
   public async deserialize(invertedUnitProps: InvertedUnitProps) {
     this.deserializeSync(invertedUnitProps);
-  }
-
-  public async accept(visitor: SchemaItemVisitor) {
-    if (visitor.visitInvertedUnit)
-      await visitor.visitInvertedUnit(this);
-  }
-
-  public acceptSync(visitor: SchemaItemVisitor) {
-    if (visitor.visitInvertedUnitSync)
-      visitor.visitInvertedUnitSync(this);
   }
 }

@@ -13,7 +13,7 @@ import { DelayedPromiseWithProps } from "./../DelayedPromise";
 import { KindOfQuantityProps } from "./../Deserialization/JsonProps";
 import { SchemaItemType } from "./../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "./../Exception";
-import { LazyLoadedInvertedUnit, LazyLoadedUnit, SchemaItemVisitor } from "./../Interfaces";
+import { LazyLoadedInvertedUnit, LazyLoadedUnit } from "./../Interfaces";
 import { formatStringRgx } from "./../utils/FormatEnums";
 
 /**
@@ -246,14 +246,5 @@ export class KindOfQuantity extends SchemaItem {
 
     if (kindOfQuantityProps.presentationUnits)
       await this.processPresentationUnits(kindOfQuantityProps.presentationUnits);
-  }
-
-  public async accept(visitor: SchemaItemVisitor) {
-    if (visitor.visitKindOfQuantity)
-      await visitor.visitKindOfQuantity((this as any) as KindOfQuantity);
-  }
-  public acceptSync(visitor: SchemaItemVisitor) {
-    if (visitor.visitKindOfQuantitySync)
-      visitor.visitKindOfQuantitySync((this as any) as KindOfQuantity);
   }
 }

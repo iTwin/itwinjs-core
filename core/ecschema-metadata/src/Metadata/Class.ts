@@ -19,7 +19,7 @@ import {
   parseClassModifier, parsePrimitiveType, PrimitiveType, SchemaItemType,
 } from "./../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "./../Exception";
-import { AnyClass, LazyLoadedECClass, SchemaItemVisitor } from "./../Interfaces";
+import { AnyClass, LazyLoadedECClass } from "./../Interfaces";
 import { SchemaItemKey } from "./../SchemaKey";
 
 /**
@@ -376,16 +376,6 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
       this._customAttributes = new Map<string, CustomAttribute>();
 
     this._customAttributes.set(customAttribute.className, customAttribute);
-  }
-
-  public async accept(visitor: SchemaItemVisitor) {
-    if (visitor.visitClass)
-      await visitor.visitClass(this as AnyClass);
-  }
-
-  public acceptSync(visitor: SchemaItemVisitor) {
-    if (visitor.visitClassSync)
-      visitor.visitClassSync(this as AnyClass);
   }
 
   /**

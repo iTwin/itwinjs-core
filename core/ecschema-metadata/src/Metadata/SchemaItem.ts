@@ -7,7 +7,6 @@ import { Schema } from "./Schema";
 import { SchemaItemProps } from "./../Deserialization/JsonProps";
 import { SchemaItemType, schemaItemTypeToString } from "./../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "./../Exception";
-import { SchemaItemVisitor } from "./../Interfaces";
 import { SchemaItemKey, ECVersion } from "./../SchemaKey";
 
 const SCHEMAURL3_2 = "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem";
@@ -114,7 +113,4 @@ export abstract class SchemaItem {
 
     return thisSchemaItem.key.matches(thatSchemaItem.key);
   }
-
-  public abstract async accept(visitor: SchemaItemVisitor): Promise<void>;
-  public abstract acceptSync(visitor: SchemaItemVisitor): void;
 }

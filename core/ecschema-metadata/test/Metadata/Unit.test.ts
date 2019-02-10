@@ -4,9 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import * as sinon from "sinon";
 import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
-
 import { Schema } from "../../src/Metadata/Schema";
 import { Unit } from "../../src/Metadata/Unit";
 import { Phenomenon } from "../../src/Metadata/Phenomenon";
@@ -15,26 +13,6 @@ import { ECObjectsError } from "../../src/Exception";
 import { SchemaContext } from "../../src/Context";
 
 describe("Unit", () => {
-  describe("accept", () => {
-    let testUnit: Unit;
-    beforeEach(() => {
-      const schema = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);
-      testUnit = new Unit(schema, "TestUnit");
-    });
-
-    it("should call visitUnit on a SchemaItemVisitor object", async () => {
-      expect(testUnit).to.exist;
-      const mockVisitor = { visitUnit: sinon.spy() };
-      await testUnit.accept(mockVisitor);
-      expect(mockVisitor.visitUnit.calledOnce).to.be.true;
-      expect(mockVisitor.visitUnit.calledWithExactly(testUnit)).to.be.true;
-    });
-
-    it("should safely handle a SchemaItemVisitor without visitUnit defined", async () => {
-      expect(testUnit).to.exist;
-      await testUnit.accept({});
-    });
-  });
 
   function createSchemaJson(unitJson: any): any {
     return createSchemaJsonWithItems({

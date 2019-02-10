@@ -7,7 +7,6 @@ import { Schema } from "./Schema";
 import { SchemaItem } from "./SchemaItem";
 import { PropertyCategoryProps } from "./../Deserialization/JsonProps";
 import { SchemaItemType } from "./../ECObjects";
-import { SchemaItemVisitor } from "./../Interfaces";
 
 export class PropertyCategory extends SchemaItem {
   public readonly schemaItemType!: SchemaItemType.PropertyCategory; // tslint:disable-line
@@ -34,15 +33,5 @@ export class PropertyCategory extends SchemaItem {
 
   public async deserialize(propertyCategoryProps: PropertyCategoryProps) {
     this.deserializeSync(propertyCategoryProps);
-  }
-
-  public async accept(visitor: SchemaItemVisitor) {
-    if (visitor.visitPropertyCategory)
-      await visitor.visitPropertyCategory(this);
-  }
-
-  public acceptSync(visitor: SchemaItemVisitor) {
-    if (visitor.visitPropertyCategorySync)
-      visitor.visitPropertyCategorySync(this);
   }
 }

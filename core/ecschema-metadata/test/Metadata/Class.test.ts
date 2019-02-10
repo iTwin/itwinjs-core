@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import * as sinon from "sinon";
 
 import { SchemaContext } from "../../src/Context";
 import { DelayedPromiseWithProps } from "../../src/DelayedPromise";
@@ -684,28 +683,6 @@ describe("ECClass", () => {
       assert.strictEqual(serialized.properties[1].name, "B");
       assert.strictEqual(serialized.properties[2].name, "C");
       assert.strictEqual(serialized.properties[3].name, "D");
-    });
-  });
-
-  describe("accept", () => {
-    let testClass: ECClass;
-    class MockECClass extends ECClass { }
-
-    beforeEach(() => {
-      testClass = new MockECClass(schema, "TestClass");
-    });
-
-    it("should call visitClass on a SchemaItemVisitor object", async () => {
-      expect(testClass).to.exist;
-      const mockVisitor = { visitClass: sinon.spy() };
-      await testClass.accept(mockVisitor);
-      expect(mockVisitor.visitClass.calledOnce).to.be.true;
-      expect(mockVisitor.visitClass.calledWithExactly(testClass)).to.be.true;
-    });
-
-    it("should safely handle a SchemaItemVisitor without visitClass defined", async () => {
-      expect(testClass).to.exist;
-      await testClass.accept({});
     });
   });
 
