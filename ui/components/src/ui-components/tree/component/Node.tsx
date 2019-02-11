@@ -5,23 +5,21 @@
 /** @module Tree */
 
 import * as React from "react";
-import { TreeCellEditorState, RenderNodeLabelProps, Tree } from "./Tree";
-import { PropertyUpdatedArgs } from "../../editors/EditorContainer";
+import { Tree } from "./Tree";
 import { BeInspireTreeNode } from "./BeInspireTree";
 import { TreeNodeItem } from "../TreeDataProvider";
+import { TreeNode as TreeNodeBase, NodeCheckboxProps as CheckboxProps, Omit, shallowDiffers } from "@bentley/ui-core";
+import { TreeNodeContent } from "./NodeContent";
+import { CellEditingEngine } from "../CellEditingEngine";
 import { HighlightableTreeNodeProps } from "../HighlightingEngine";
-import { TreeNode as TreeNodeBase, TreeNodePlaceholder, shallowDiffers, CheckBoxState } from "@bentley/ui-core";
 import { PropertyValueRendererManager } from "../../properties/ValueRendererManager";
 
 /**
- * Properties related to a Tree node cell editor
+ * Properties for Checkbox in [[TreeNode]]
  * @hidden
  */
-export interface TreeNodeCellEditorProps {
-  cellEditorState: TreeCellEditorState;
-  onCellEditCommit: (args: PropertyUpdatedArgs) => void;
-  onCellEditCancel: () => void;
-  ignoreEditorBlur?: boolean;
+export interface NodeCheckboxProps extends Omit<CheckboxProps, "onClick"> {
+  onClick: (node: TreeNodeItem) => void;
 }
 
 /**
@@ -30,19 +28,17 @@ export interface TreeNodeCellEditorProps {
  */
 export interface TreeNodeProps {
   node: BeInspireTreeNode<TreeNodeItem>;
-  highlightProps?: HighlightableTreeNodeProps;
-  isCheckboxVisible?: boolean;
-  isCheckboxDisabled?: boolean;
-  onCheckboxClick?: (node: BeInspireTreeNode<TreeNodeItem>) => void;
-  checkboxState?: CheckBoxState;
-  cellEditorProps?: TreeNodeCellEditorProps;
-  /** A function that renders node label. Both synchronous and asynchronous can be handled */
-  renderLabel: (props: RenderNodeLabelProps) => React.ReactNode | Promise<React.ReactNode>;
+  checkboxProps?: NodeCheckboxProps;
   onClick?: (e: React.MouseEvent) => void;
   onMouseDown?: (e: React.MouseEvent) => void;
   onMouseMove?: (e: React.MouseEvent) => void;
   onMouseUp?: (e: React.MouseEvent) => void;
-  valueRendererManager?: PropertyValueRendererManager;
+
+  cellEditing?: CellEditingEngine;
+  highlightProps?: HighlightableTreeNodeProps;
+  showDescription?: boolean;
+  valueRendererManager: PropertyValueRendererManager;
+
   /**
    * Called when all of the component tasks are done.
    * There are 3 different conditions:
@@ -55,96 +51,55 @@ export interface TreeNodeProps {
    * Id specified by the parent component to identify all
    * nodes rendered at one request
    */
-  renderId: string;
-}
-
-/**
- * State of [[TreeNode]] React component
- * @hidden
- */
-export interface TreeNodeState {
-  prevProps: TreeNodeProps;
-  renderedLabel?: React.ReactNode;
-  onLabelRendered: (renderedLabel: React.ReactNode) => void;
+  renderId?: string;
 }
 
 /**
  * Default component for rendering a node for the [[Tree]]
  * @hidden
  */
-export class TreeNode extends React.Component<TreeNodeProps, TreeNodeState> {
-  private _isMounted = false;
-
-  public constructor(props: TreeNodeProps) {
-    super(props);
-    const label = createLabel(props);
-    if (isPromise(label)) {
-      // tslint:disable-next-line: no-floating-promises
-      label.then(this._onLabelRendered);
-    }
-    this.state = {
-      prevProps: props,
-      renderedLabel: isPromise(label) ? undefined : label,
-      onLabelRendered: this._onLabelRendered,
-    };
+export class TreeNode extends React.Component<TreeNodeProps> {
+  private doPropsDiffer(props1: TreeNodeProps, props2: TreeNodeProps) {
+    return shallowDiffers(props1.highlightProps, props2.highlightProps)
+      || props1.valueRendererManager !== props2.valueRendererManager
+      || props1.cellEditing !== props2.cellEditing
+      || props1.showDescription !== props2.showDescription
+      || shallowDiffers(props1.checkboxProps, props2.checkboxProps);
   }
 
-  private _onLabelRendered = (renderedLabel: React.ReactNode) => {
-    if (this._isMounted)
-      this.setState({ renderedLabel });
-  }
-
-  public static getDerivedStateFromProps(props: TreeNodeProps, state: TreeNodeState): TreeNodeState | null {
-    const base = { ...state, prevProps: props };
-    const needReset = (props.node.isDirty() || doPropsDiffer(props, state.prevProps))
-      && props.renderId !== state.prevProps.renderId;
-    if (!needReset)
-      return base;
-
-    const label = createLabel(props);
-    if (isPromise(label)) {
-      // tslint:disable-next-line: no-floating-promises
-      label.then(state.onLabelRendered);
-      return { ...base, renderedLabel: undefined };
-    }
-
-    return { ...base, renderedLabel: label };
-  }
-
-  public componentDidMount() {
-    this._isMounted = true;
-    if (this.state.renderedLabel && this.props.onFinalRenderComplete)
-      this.props.onFinalRenderComplete(this.props.renderId);
-  }
-
-  public componentWillUnmount() {
-    this._isMounted = false;
-  }
-
-  public shouldComponentUpdate(nextProps: TreeNodeProps, nextState: TreeNodeState) {
-    if (this.state.renderedLabel !== nextState.renderedLabel || nextProps.node.isDirty())
+  public shouldComponentUpdate(nextProps: TreeNodeProps) {
+    if (nextProps.node.isDirty() || this.doPropsDiffer(this.props, nextProps))
       return true;
 
-    if (nextState.renderedLabel) {
-      // This is an anti-pattern, but it's main purpose is for testing.
-      // We need to know when all of the nodes have finished rendering
-      // and asynchronous updates make it very difficult. If it should not
-      // render, let the parent know that it's already fully rendered
-      if (nextProps.onFinalRenderComplete)
-        nextProps.onFinalRenderComplete(nextProps.renderId);
-    }
+    // This is an anti-pattern, but it's main purpose is for testing.
+    // We need to know when all of the nodes have finished rendering
+    // and asynchronous updates make it very difficult.
+    // If it should not render, let the parent know that it's
+    // already fully rendered
+    if (nextProps.renderId && nextProps.onFinalRenderComplete)
+      nextProps.onFinalRenderComplete(nextProps.renderId);
 
     return false;
   }
 
-  public componentDidUpdate(_prevProps: TreeNodeProps) {
-    if (this.state.renderedLabel && this.props.onFinalRenderComplete)
-      this.props.onFinalRenderComplete(this.props.renderId);
-  }
-
   public render() {
-    // note: props get mutated here
-    this.props.node.setDirty(false);
+    const checkboxProps: CheckboxProps | undefined = this.props.checkboxProps ? {
+      ...this.props.checkboxProps,
+      onClick: this._onCheckboxClick,
+    } : undefined;
+
+    const label = (
+      <TreeNodeContent
+        node={this.props.node}
+        cellEditing={this.props.cellEditing}
+        highlightProps={this.props.highlightProps}
+        showDescription={this.props.showDescription}
+        valueRendererManager={this.props.valueRendererManager}
+
+        onFinalRenderComplete={this.props.onFinalRenderComplete}
+        renderId={this.props.renderId}
+      />);
+
     return (
       <TreeNodeBase
         data-testid={Tree.TestId.Node}
@@ -152,12 +107,9 @@ export class TreeNode extends React.Component<TreeNodeProps, TreeNodeState> {
         isSelected={this.props.node.selected()}
         isLoading={this.props.node.loading()}
         isLeaf={!this.props.node.hasOrWillHaveChildren()}
-        label={this.state.renderedLabel ? this.state.renderedLabel : <TreeNodePlaceholder level={0} data-testid={"node-label-placeholder"} />}
+        label={label}
         icon={this.props.node.itree && this.props.node.itree.icon ? <span className={this.props.node.itree.icon} /> : undefined}
-        isCheckboxVisible={this.props.isCheckboxVisible}
-        isCheckboxDisabled={this.props.isCheckboxDisabled}
-        onCheckboxClick={this._onCheckboxClick}
-        checkboxState={this.props.checkboxState}
+        checkboxProps={checkboxProps}
         level={this.props.node.getParents().length}
         onClick={this.props.onClick}
         onMouseMove={this.props.onMouseMove}
@@ -168,27 +120,7 @@ export class TreeNode extends React.Component<TreeNodeProps, TreeNodeState> {
   }
 
   private _onCheckboxClick = () => {
-    if (this.props.onCheckboxClick)
-      this.props.onCheckboxClick(this.props.node);
+    if (this.props.checkboxProps && this.props.node.payload)
+      this.props.checkboxProps.onClick(this.props.node.payload);
   }
-}
-
-function doPropsDiffer(props1: TreeNodeProps, props2: TreeNodeProps | null) {
-  return null === props2
-    || shallowDiffers(props1.highlightProps, props2.highlightProps)
-    || props1.valueRendererManager !== props2.valueRendererManager
-    || shallowDiffers(props1.cellEditorProps, props2.cellEditorProps);
-}
-
-function isPromise(value: any): value is Promise<any> {
-  return !!(value && value.then && value.catch);
-}
-
-function createLabel(props: TreeNodeProps) {
-  return props.renderLabel({
-    node: props.node,
-    highlightProps: props.highlightProps,
-    cellEditorProps: props.cellEditorProps,
-    valueRendererManager: props.valueRendererManager,
-  });
 }

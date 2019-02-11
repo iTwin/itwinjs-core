@@ -81,7 +81,7 @@ export { TableDragDropType, TableDropTargetProps, TableDragDropProps, withTableD
 export * from "./ui-components/tree/TreeDataProvider";
 export * from "./ui-components/tree/HighlightingEngine";
 export { Tree, TreeProps } from "./ui-components/tree/component/Tree";
-export { TreeCellEditorState, TreeCellUpdatedArgs } from "./ui-components/tree/component/Tree";
+export { TreeCellUpdatedArgs } from "./ui-components/tree/CellEditingEngine";
 export { TreeDragDropType, TreeDragDropProps, withTreeDragDrop } from "./ui-components/tree/hocs/withDragDrop";
 export { SimpleTreeDataProvider, SimpleTreeDataProviderHierarchy } from "./ui-components/tree/SimpleTreeDataProvider";
 
