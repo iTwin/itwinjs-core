@@ -4,13 +4,17 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module BeSQLite */
 
-/** Whether to open a database readonly or writeable. */
+/** Whether to open a database readonly or writeable.
+ * @public
+ */
 export const enum OpenMode {
   Readonly = 0x00000001,
   ReadWrite = 0x00000002,
 }
 
-/** Values, stored in changesets, that indicate what operation was performed on the database. */
+/** Values, stored in changesets, that indicate what operation was performed on the database.
+ * @public
+ */
 export const enum DbOpcode {
   /** A row was deleted. */
   Delete = 9,
@@ -20,7 +24,9 @@ export const enum DbOpcode {
   Update = 23,
 }
 
-/** Values for return codes from BeSQLite functions. Consult SQLite documentation for further explanations. */
+/** Values for return codes from BeSQLite functions. Consult SQLite documentation for further explanations.
+ * @public
+ */
 export const enum DbResult {
   /** Success */
   BE_SQLITE_OK = 0,
@@ -169,8 +175,8 @@ export const enum DbResult {
   BE_SQLITE_CONSTRAINT_VTAB = (BE_SQLITE_CONSTRAINT_BASE | (9 << 8)),
 }
 
-/**
- * Options that specify how to apply ChangeSets.
+/** Options that specify how to apply ChangeSets.
+ * @public
  */
 export enum ChangeSetApplyOption {
   /** ChangeSet won't be used.  */

@@ -8,9 +8,14 @@ import { GetMetaDataFunction, IModelStatus, BentleyError } from "./BentleyError"
 import { IDisposable } from "./Disposable";
 import { ActivityLoggingContext } from "./ActivityLoggingContext";
 
-/** Defines the *signature* for a log function. */
+/** Defines the *signature* for a log function.
+ * @public
+ */
 export type LogFunction = (category: string, message: string, metaData?: GetMetaDataFunction) => void;
 
+/** Use to categorize logging messages by severity.
+ * @public
+ */
 export enum LogLevel {
   /** Tracing and debugging - low level */
   Trace,
@@ -24,13 +29,17 @@ export enum LogLevel {
   None,
 }
 
-/** Identifies a logging category and the LogLevel that should be used for it. The LogLevel is specified by its string name. */
+/** Identifies a logging category and the LogLevel that should be used for it. The LogLevel is specified by its string name.
+ * @public
+ */
 export interface LoggerCategoryAndLevel {
   category: string;
   logLevel: string;
 }
 
-/** Specifies logging levels, including the default logging level and a set of categories and levels for them. */
+/** Specifies logging levels, including the default logging level and a set of categories and levels for them.
+ * @public
+ */
 export interface LoggerLevelsConfig {
   defaultLevel?: string;
   categoryLevels?: LoggerCategoryAndLevel[];
@@ -38,6 +47,7 @@ export interface LoggerLevelsConfig {
 
 /** Logger allows libraries and apps to report potentially useful information about operations, and it allows apps and users to control
  * how or if the logged information is displayed or collected. See [Learning about Logging]($docs/learning/common/Logging.md).
+ * @public
  */
 export class Logger {
   private static _logError: LogFunction | undefined;
@@ -277,6 +287,7 @@ export class Logger {
  *
  * The timings are logged using the log category **Performance** and log severity [[LogLevel.INFO]].
  * Enable those, if you want to capture timings.
+ * @public
  */
 export class PerfLogger implements IDisposable {
   private static _loggerName: string = "Performance";
@@ -306,7 +317,9 @@ export class PerfLogger implements IDisposable {
   }
 }
 
-/** Helps with macro-substitution */
+/** Helps with macro-substitution
+ * @alpha Better name?
+ */
 export class EnvMacroSubst {
   /** Replace macros delimited by ${} assuming that they refer to environment variables. */
   public static replace(str: string, defaultValues?: any): string {

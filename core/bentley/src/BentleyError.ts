@@ -11,6 +11,7 @@ import { LogFunction, Logger } from "./Logger";
  * This status code should be rarely used.
  * Prefer to throw an exception to indicate an error, rather than returning a special status code.
  * If a status code is to be returned, prefer to return a more specific error status type such as IModelStatus or DbResult.
+ * @public
  */
 export const enum BentleyStatus {
   SUCCESS = 0x0000,
@@ -19,6 +20,7 @@ export const enum BentleyStatus {
 
 /** Status codes that are used in conjunction with [[BentleyError]].
  * Error status codes are divided into separate ranges for different kinds of errors. All known ranges at least should be defined here, to avoid collisions.
+ * @public
  */
 export const enum IModelStatus {
   IMODEL_ERROR_BASE = 0x10000,
@@ -91,7 +93,9 @@ export const enum IModelStatus {
   NoGeoLocation = IMODEL_ERROR_BASE + 66,
 }
 
-/** Error status from various briefcase operations */
+/** Error status from various briefcase operations
+ * @beta Should these be internal?
+ */
 export const enum BriefcaseStatus {
   CannotAcquire = 0x20000,
   CannotDownload = 0x20001,
@@ -102,7 +106,9 @@ export const enum BriefcaseStatus {
   CannotApplyChanges = 0x20006,
 }
 
-/** RpcInterface status codes */
+/** RpcInterface status codes
+ * @beta Should these be internal?
+ */
 export enum RpcInterfaceStatus {
   Success = 0,
   RPC_INTERFACE_ERROR_BASE = 0x21000,
@@ -110,7 +116,9 @@ export enum RpcInterfaceStatus {
   IncompatibleVersion = RPC_INTERFACE_ERROR_BASE,
 }
 
-/** Error status from various ChangeSet operations */
+/** Error status from various ChangeSet operations
+ * @beta Should these be internal?
+ */
 export const enum ChangeSetStatus { // Note: Values must be kept in sync with ChangeSetStatus in DgnPlatform
   Success = 0,
   CHANGESET_ERROR_BASE = 0x16000,
@@ -166,7 +174,9 @@ export const enum ChangeSetStatus { // Note: Values must be kept in sync with Ch
   CannotMergeIntoReversed = CHANGESET_ERROR_BASE + 25,
 }
 
-/** Return codes for methods which perform repository management operations */
+/** Return codes for methods which perform repository management operations
+ * @beta Should these be internal?
+ */
 export const enum RepositoryStatus {
   Success = 0,
   /** The repository server did not respond to a request */
@@ -199,7 +209,9 @@ export const enum RepositoryStatus {
   RepositoryIsLocked = 0x1500E,
 }
 
-/** Status from returned HTTP status code */
+/** Status from returned HTTP status code
+ * @beta Should these be internal?
+ */
 export const enum HttpStatus {
   /** 2xx Success */
   Success = 0,
@@ -213,7 +225,9 @@ export const enum HttpStatus {
   ServerError = 0x17004,
 }
 
-/** Server returned WSG errors */
+/** Server returned WSG errors
+ * @beta Right name? Right package?
+ */
 export const enum WSStatus {
   Success = 0,
   WSERROR_BASE = 0x18000,
@@ -234,7 +248,9 @@ export const enum WSStatus {
   LoginRequired = WSERROR_BASE + 15,
 }
 
-// iModelHub Services Errors
+/** iModelHub Services Errors
+ * @beta Right package?
+ */
 export enum IModelHubStatus {
   Success = 0,
   IMODELHUBERROR_BASE = 0x19000,
@@ -294,14 +310,18 @@ export enum IModelHubStatus {
   FileNotFound = IMODELHUBERROR_REQUESTERRORBASE + 6,
 }
 
-// Authentication Errors
+/** Authentication Errors
+ * @beta Internal? Right package?
+ */
 export enum AuthStatus {
   Success = 0,
   AUTHSTATUS_BASE = 0x20000,
   Error = AUTHSTATUS_BASE,
 }
 
-/** When you want to associate an explanatory message with an error status value. */
+/** When you want to associate an explanatory message with an error status value.
+ * @beta Internal?
+ */
 export interface StatusCodeWithMessage<ErrorCodeType> {
   status: ErrorCodeType;
   message: string;
@@ -309,10 +329,13 @@ export interface StatusCodeWithMessage<ErrorCodeType> {
 
 /** Defines the *signature* for a function that returns meta-data related to an error.
  * Declared as a function so that the expense of creating the meta-data is only paid when it is needed.
+ * @public
  */
 export type GetMetaDataFunction = () => any;
 
-/** The error type thrown by this module. `BentleyError` subclasses `Error` to add an `errorNumber` member. See [[IModelStatus]] for `errorNumber` values. */
+/** The error type thrown by this module. `BentleyError` subclasses `Error` to add an `errorNumber` member. See [[IModelStatus]] for `errorNumber` values.
+ * @public
+ */
 export class BentleyError extends Error {
   private readonly _getMetaData: GetMetaDataFunction | undefined;
   public errorNumber: number;

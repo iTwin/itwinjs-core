@@ -7,11 +7,13 @@
 import { CloneFunction, shallowClone } from "./SortedArray";
 import { OrderedComparator } from "./Compare";
 
+/** @public */
 export type ComputePriorityFunction<T> = (value: T) => number;
 
 /**
  * A [priority queue](https://en.wikipedia.org/wiki/Priority_queue) implemented as a heap array.
  * The queue is ordered by an [[OrderedComparator]] function supplied by the user such that the value in the queue that compares less than all other values is always located at the front of the queue.
+ * @public
  */
 export class PriorityQueue<T> implements Iterable<T> {
   protected _array: T[] = [];

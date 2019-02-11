@@ -32,6 +32,7 @@ class DictionaryIterator<K, V> implements Iterator<DictionaryEntry<K, V>> {
 
 /**
  * Represents an entry in a [[Dictionary]].
+ * @public
  */
 export interface DictionaryEntry<K, V> {
   /** The key used for lookup in the Dictionary. */
@@ -52,6 +53,7 @@ export interface DictionaryEntry<K, V> {
  *
  * Modifying a key in a way that affects the comparison function will produce unpredictable results, the
  * most likely of which is that keys will cease to map to the values with which they were initially inserted.
+ * @public
  */
 export class Dictionary<K, V> implements Iterable<DictionaryEntry<K, V>> {
   protected _keys: K[] = [];

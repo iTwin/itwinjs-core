@@ -11,7 +11,9 @@ const seq = require("bunyan-seq");
 // tslint:disable-next-line:no-var-requires
 const bunyan = require("bunyan");
 
-/** seq logging server configuration. */
+/** seq logging server configuration.
+ * @alpha Right package?
+ */
 export interface SeqConfig {
   /** The URL of the seq server to connect to. Defaults to localhost. */
   hostURL?: string;
@@ -29,6 +31,7 @@ export interface SeqConfig {
 
 /** Helps to configure the bentleyjs-core Logger to use bunyan and seq.
  * Note: The app must depend on the bunyan and bunyan-seq packages.
+ * @alpha Right package?
  */
 export class SeqLoggerConfig {
 
