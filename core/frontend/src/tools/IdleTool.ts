@@ -142,7 +142,7 @@ export class IdleTool extends InteractiveTool {
 
   public async onTouchMoveStart(ev: BeTouchEvent, startEv: BeTouchEvent): Promise<EventHandled> {
     const tool = new DefaultViewTouchTool(startEv, ev);
-    return (tool.run() ? EventHandled.Yes : EventHandled.No);
+    return tool.run() ? EventHandled.Yes : EventHandled.No;
   }
 
   public async onTouchTap(ev: BeTouchEvent): Promise<EventHandled> {
@@ -157,7 +157,7 @@ export class IdleTool extends InteractiveTool {
     } else if (ev.isDoubleTap) {
       // Fit view on single finger double tap.
       const tool = new FitViewTool(ev.viewport!, true);
-      return (tool.run() ? EventHandled.Yes : EventHandled.No);
+      return tool.run() ? EventHandled.Yes : EventHandled.No;
     }
     return EventHandled.No;
   }

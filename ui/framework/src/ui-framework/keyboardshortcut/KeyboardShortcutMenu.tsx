@@ -8,6 +8,7 @@ import * as React from "react";
 import { GlobalContextMenu, ContextMenuItem, UiEvent, ContextSubMenu } from "@bentley/ui-core";
 import { KeyboardShortcut } from "./KeyboardShortcut";
 
+/** State for a [[KeyboardShortcutMenuEvent]] and [[KeyboardShortcutMenu]] component */
 export interface KeyboardShortcutMenuState {
   menuVisible: boolean;
   menuX: number;

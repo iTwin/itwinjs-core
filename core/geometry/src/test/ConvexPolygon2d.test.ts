@@ -229,8 +229,8 @@ describe("ConvexPolygon2d", () => {
   it("Ray2d", () => {
     const ck = new Checker();
     const ray0 = Ray2d.createOriginAndDirection(Point2d.create(2, 3), Vector2d.create(1, 4));
-    const perp0 = ray0.CCWPerpendicularRay();
-    const perp1 = ray0.CWPerpendicularRay();
+    const perp0 = ray0.ccwPerpendicularRay();
+    const perp1 = ray0.cwPerpendicularRay();
     ck.testCoordinate(ray0.direction.magnitude(), perp0.direction.magnitude());
     ck.testCoordinate(ray0.direction.magnitude(), perp1.direction.magnitude());
     ck.testPerpendicular2d(perp0.direction, ray0.direction, "CCW rotate");

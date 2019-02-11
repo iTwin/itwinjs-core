@@ -105,8 +105,8 @@ describe("AnalyticRoots.SolveQuadric", () => {
     const coffs = new Float64Array([1, 2, 3, 4]);
     ck.testExactNumber(0, PowerPolynomial.degreeKnownEvaluate(coffs, -1, 4));
     const radians: number[] = [];
-    ck.testTrue(TrigPolynomial.SolveAngles(new Float64Array([1, 1, 0, 0, 0]), 4, 100, radians));
-    ck.testTrue(TrigPolynomial.SolveAngles(new Float64Array([0, 1, 1, 0, 0, 0]), 4, 100, radians));
+    ck.testTrue(TrigPolynomial.solveAngles(new Float64Array([1, 1, 0, 0, 0]), 4, 100, radians));
+    ck.testTrue(TrigPolynomial.solveAngles(new Float64Array([0, 1, 1, 0, 0, 0]), 4, 100, radians));
 
     const z3 = new Degree3PowerPolynomial();
     const z2 = new Degree2PowerPolynomial();
@@ -167,7 +167,7 @@ function matchRoots(target: number[], actual: GrowableFloat64Array) {
 
     for (let i = 0; i < target.length; i++) {
       const e = target[i] - actual.at(i);
-      eMax = NumberArray.MaxAbsTwo(e, eMax);
+      eMax = NumberArray.maxAbsTwo(e, eMax);
     }
   }
   return eMax;
@@ -213,7 +213,7 @@ describe("AnalyticRoots.SolveCubic", () => {
         ck.testCoordinate(actual.length, 1, "simple root count");
 
         const eMax = matchRoots(target, actual);
-        ck.testTrue(eMax < (1.0e-14 * (1.0 + NumberArray.MaxAbsArray(target))), "root error");
+        ck.testTrue(eMax < (1.0e-14 * (1.0 + NumberArray.maxAbsArray(target))), "root error");
 
         if (Checker.noisy.cubicRoots) {
           console.log("  (target " + a + ") (b " + b + ")");
@@ -239,8 +239,8 @@ describe("AnalyticRoots.SolveCubic", () => {
 
         const coffs = new Float64Array(4);
         coffs[3] = 1.0;
-        coffs[2] = - NumberArray.PreciseSum([u0, u1, u2]);
-        coffs[1] = NumberArray.PreciseSum([u0 * u1, u1 * u2, u0 * u2]);
+        coffs[2] = - NumberArray.preciseSum([u0, u1, u2]);
+        coffs[1] = NumberArray.preciseSum([u0 * u1, u1 * u2, u0 * u2]);
         coffs[0] = - u0 * u1 * u2;
 
         const target = [u0, u1, u2];
@@ -249,7 +249,7 @@ describe("AnalyticRoots.SolveCubic", () => {
         AnalyticRoots.appendCubicRoots(coffs, actual);
 
         if (ck.testPointer(actual) && actual && ck.testExactNumber(3, actual.length, "3 root cubic")) {
-          const uMax = NumberArray.MaxAbsArray(target);
+          const uMax = NumberArray.maxAbsArray(target);
           const eMax = matchRoots(target, actual) / uMax;
           const eSafe = maxDiffMatchedArrays(target, actual) / uMax;
           const printTrigger = 1.0e-12;
@@ -341,7 +341,7 @@ describe("AnalyticRoots.SolveCubic", () => {
 function CheckQuartic(u0: number, u1: number, u2: number, u3: number, tolerance: number, ck: Checker) {
   const coffs = new Float64Array(5);
   coffs[4] = 1.0;
-  coffs[3] = - NumberArray.PreciseSum([u0, u1, u2, u3]);
+  coffs[3] = - NumberArray.preciseSum([u0, u1, u2, u3]);
   const xx: number[] = [];
   xx[0] = u0 * u1;
   xx[1] = u0 * u2;
@@ -349,8 +349,8 @@ function CheckQuartic(u0: number, u1: number, u2: number, u3: number, tolerance:
   xx[3] = u1 * u2;
   xx[4] = u1 * u3;
   xx[5] = u2 * u3;
-  coffs[2] = NumberArray.PreciseSum(xx);
-  coffs[1] = -NumberArray.PreciseSum([u0 * u1 * u2, u0 * u1 * u3, u0 * u2 * u3, u1 * u2 * u3]);
+  coffs[2] = NumberArray.preciseSum(xx);
+  coffs[1] = -NumberArray.preciseSum([u0 * u1 * u2, u0 * u1 * u3, u0 * u2 * u3, u1 * u2 * u3]);
   coffs[0] = u0 * u1 * u2 * u3;
 
   const target = [u0, u1, u2, u3];
@@ -362,7 +362,7 @@ function CheckQuartic(u0: number, u1: number, u2: number, u3: number, tolerance:
 
   ck.testExactNumber(4, actual.length, "quartic root count");
 
-  const uMax = NumberArray.MaxAbsArray(target);
+  const uMax = NumberArray.maxAbsArray(target);
   let eMax = matchRoots(target, actual) / uMax;
   const ok: boolean = ck.testTrue(eMax < tolerance, "quartic root tolerance", eMax, tolerance);
   // Accurate when compared to multiple of 1.0e-8... any higher negative power likely to fail

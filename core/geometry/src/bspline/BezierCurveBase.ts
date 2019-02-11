@@ -82,11 +82,11 @@ export abstract class BezierCurveBase extends CurvePrimitive {
   public setInterval(a: number, b: number) { this._polygon.setInterval(a, b); }
   public fractionToParentFraction(fraction: number): number { return this._polygon.fractionToParentFraction(fraction); }
   /** Return a stroke count appropriate for given stroke options. */
-  public abstract strokeCount(options?: StrokeOptions): number;
+  public abstract computeStrokeCountForOptions(options?: StrokeOptions): number;
 
   /** append stroke points to a linestring, based on `strokeCount` and `fractionToPoint` from derived class*/
   public emitStrokes(dest: LineString3d, options?: StrokeOptions): void {
-    const numPerSpan = this.strokeCount(options);
+    const numPerSpan = this.computeStrokeCountForOptions(options);
     const fractionStep = 1.0 / numPerSpan;
     for (let i = 0; i <= numPerSpan; i++) {
       const fraction = i * fractionStep;
@@ -96,7 +96,7 @@ export abstract class BezierCurveBase extends CurvePrimitive {
   }
   /** announce intervals with stroke counts */
   public emitStrokableParts(handler: IStrokeHandler, _options?: StrokeOptions): void {
-    const numPerSpan = this.strokeCount(_options);
+    const numPerSpan = this.computeStrokeCountForOptions(_options);
     handler.announceIntervalForUniformStepStrokes(this, numPerSpan, 0.0, 1.0);
   }
   /** Return a simple array of arrays with the control points as `[[x,y,z],[x,y,z],..]` */

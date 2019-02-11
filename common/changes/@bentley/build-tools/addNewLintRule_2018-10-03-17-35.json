@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Add new lint rule that checks that all method names are camel cased.",
+      "packageName": "@bentley/build-tools",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/build-tools",
+  "email": "Caleb.Shafer@bentley.com"
+}

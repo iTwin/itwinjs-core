@@ -1,0 +1,15 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<BodyText /> content renders correctly 1`] = `
+<span
+  className="uicore-text-block"
+>
+  Test content
+</span>
+`;
+
+exports[`<BodyText /> renders correctly 1`] = `
+<span
+  className="uicore-text-block"
+/>
+`;

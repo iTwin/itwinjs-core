@@ -4,14 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Views */
 
-import { RenderSchedule, RgbColor, TileTreeProps, BatchType } from "@bentley/imodeljs-common";
+import { RenderSchedule, RgbColor } from "@bentley/imodeljs-common";
 import { Range1d, Transform, Point3d, Vector3d, Matrix3d, Plane3dByOriginAndUnitNormal, ClipPlane, ConvexClipPlaneSet, UnionOfConvexClipPlaneSets, Point4d } from "@bentley/geometry-core";
-import { Id64String } from "@bentley/bentleyjs-core";
+import { Id64String, Id64 } from "@bentley/bentleyjs-core";
 import { FeatureSymbology } from "./render/FeatureSymbology";
-import { TileTreeModelState } from "./ModelState";
 import { IModelConnection } from "./IModelConnection";
-import { TileTree, TileTreeState, IModelTileLoader } from "./tile/TileTree";
-import { IModelApp } from "./IModelApp";
 import { ClipPlanesVolume } from "./render/webgl/ClipVolume";
 import { AnimationBranchStates, AnimationBranchState } from "./render/System";
 
@@ -127,22 +124,31 @@ export namespace RenderScheduleState {
       return true;
     }
 
+    public getVisibilityOverride(time: number, interval: Interval): number {
+      if (!ElementTimeline.findTimelineInterval(interval, time, this.visibilityTimeline) && this.visibilityTimeline![interval.index0].value !== null)
+        return 100.0;
+      const timeline = this.visibilityTimeline!;
+      let visibility = timeline[interval.index0].value;
+      if (visibility === undefined || visibility === null)
+        return 100.0;
+
+      if (interval.fraction > 0)
+        visibility = interpolate(visibility, timeline[interval.index1].value, interval.fraction);
+
+      return visibility;
+    }
+
     public getSymbologyOverrides(overrides: FeatureSymbology.Overrides, time: number, interval: Interval, batchId: number) {
       let colorOverride, transparencyOverride;
 
-      if (ElementTimeline.findTimelineInterval(interval, time, this.visibilityTimeline) && this.visibilityTimeline![interval.index0].value !== null) {
-        const timeline = this.visibilityTimeline!;
-        let visibility = timeline[interval.index0].value;
-        if (interval.fraction > 0)
-          visibility = interpolate(visibility, timeline[interval.index1].value, interval.fraction);
-
-        if (visibility <= 0) {
-          overrides.setAnimationNodeNeverDrawn(batchId);
-          return;
-        }
-        if (visibility <= 100)
-          transparencyOverride = 1.0 - visibility / 100.0;
+      const visibility = this.getVisibilityOverride(time, interval);
+      if (visibility <= 0) {
+        overrides.setAnimationNodeNeverDrawn(batchId);
+        return;
       }
+      if (visibility <= 100)
+        transparencyOverride = 1.0 - visibility / 100.0;
+
       if (ElementTimeline.findTimelineInterval(interval, time, this.colorTimeline) && this.colorTimeline![interval.index0].value !== null) {
         const entry0 = this.colorTimeline![interval.index0].value;
         if (interval.fraction > 0) {
@@ -209,6 +215,9 @@ export namespace RenderScheduleState {
         const value1 = timeline[interval.index1].value;
         position.interpolate(interval.fraction, Point3d.fromJSON(value1.position), position);
         direction.interpolate(interval.fraction, Vector3d.fromJSON(value1.direction), direction);
+      } else {
+        if (value.hidden || value.visible)
+          return undefined;
       }
 
       direction.normalizeInPlace();
@@ -220,39 +229,11 @@ export namespace RenderScheduleState {
     }
   }
 
-  class AnimationModelState implements TileTreeModelState {
-    private _iModel: IModelConnection;
-    private _modelId: Id64String;
-    private _displayStyleId: Id64String;
-    protected _tileTreeState: TileTreeState;
-    constructor(modelId: Id64String, displayStyleId: Id64String, iModel: IModelConnection) { this._modelId = modelId; this._displayStyleId = displayStyleId, this._iModel = iModel; this._tileTreeState = new TileTreeState(iModel, true, modelId); }
-
-    public get tileTree(): TileTree | undefined { return this._tileTreeState.tileTree; }
-    public get loadStatus(): TileTree.LoadStatus { return this._tileTreeState.loadStatus; }
-    /** @hidden */
-    public loadTileTree(_asClassifier?: boolean, _classifierExpansion?: number): TileTree.LoadStatus {
-      if (TileTree.LoadStatus.NotLoaded !== this._tileTreeState.loadStatus)
-        return this._tileTreeState.loadStatus;
-
-      this._tileTreeState.loadStatus = TileTree.LoadStatus.Loading;
-      const id = "A:" + this._displayStyleId + "_" + this._modelId;
-
-      this._iModel.tiles.getTileTreeProps(id).then((result: TileTreeProps) => {
-        this._tileTreeState.setTileTree(result, new IModelTileLoader(this._iModel, BatchType.Primary));
-        IModelApp.viewManager.onNewTilesReady();
-      }).catch((_err) => {
-        this._tileTreeState.loadStatus = TileTree.LoadStatus.NotFound; // on separate line because stupid chrome debugger.
-      });
-
-      return this._tileTreeState.loadStatus;
-    }
-  }
   export class ModelTimeline implements RenderSchedule.ModelTimelineProps {
     public modelId: Id64String;
     public elementTimelines: ElementTimeline[] = [];
     public containsFeatureOverrides: boolean = false;
     public containsAnimation: boolean = false;
-    public animationModel?: AnimationModelState;
     private constructor(modelId: Id64String) { this.modelId = modelId; }
     public get duration() {
       const duration = Range1d.createNull();
@@ -289,10 +270,15 @@ export namespace RenderScheduleState {
     public getAnimationBranches(branches: AnimationBranchStates, scheduleTime: number) {
       const interval = new Interval();
       for (let i = 0; i < this.elementTimelines.length; i++) {
-        const transform = this.elementTimelines[i].getAnimationTransform(scheduleTime, interval);
-        const clip = this.elementTimelines[i].getAnimationClip(scheduleTime, interval);
-        if (transform || clip)
-          branches.set(this.modelId + "_Node_" + (i + 1).toString(), new AnimationBranchState(transform, clip));
+        const elementTimeline = this.elementTimelines[i];
+        if (elementTimeline.getVisibilityOverride(scheduleTime, interval) <= 0.0) {
+          branches.set(this.modelId + "_Node_" + (i + 1).toString(), new AnimationBranchState(undefined, undefined, true));
+        } else {
+          const transform = elementTimeline.getAnimationTransform(scheduleTime, interval);
+          const clip = elementTimeline.getAnimationClip(scheduleTime, interval);
+          if (transform || clip)
+            branches.set(this.modelId + "_Node_" + (i + 1).toString(), new AnimationBranchState(transform, clip));
+        }
       }
     }
   }
@@ -338,15 +324,15 @@ export namespace RenderScheduleState {
     public getSymbologyOverrides(overrides: FeatureSymbology.Overrides, time: number) {
       this.modelTimelines.forEach((entry) => entry.getSymbologyOverrides(overrides, time));
     }
+    public getModelAnimationId(modelId: Id64String): Id64String | undefined {
+      if (Id64.isTransient(modelId))
+        return undefined;
 
-    public forEachAnimationModel(tileTreeFunction: (model: TileTreeModelState) => void): void {
-      for (const modelTimeline of this.modelTimelines) {
-        if (modelTimeline.containsAnimation) {
-          if (!modelTimeline.animationModel)
-            modelTimeline.animationModel = new AnimationModelState(modelTimeline.modelId, this.displayStyleId, this.iModel);
-          tileTreeFunction(modelTimeline.animationModel);
-        }
-      }
+      for (const modelTimeline of this.modelTimelines)
+        if (modelTimeline.modelId === modelId && modelTimeline.containsAnimation)
+          return this.displayStyleId;
+
+      return undefined;
     }
   }
 }

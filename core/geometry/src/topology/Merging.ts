@@ -34,7 +34,7 @@ export class Merger {
   // SORTING FUNCTIONS (compare methods used by sort() in larger algorithms) -----------------------------------------------------------
 
   /** Compare function for sorting X, Y, and theta componenets stored in a Point3d, useful for forming a graph from an array of segments */
-  private static XYThetaCompare(a: any, b: any) {
+  private static xyThetaCompare(a: any, b: any) {
     // Check x's
     if (!Geometry.isSameCoordinate(a.xyTheta.x, b.xyTheta.x))
       if (a.xyTheta.x < b.xyTheta.x)
@@ -317,7 +317,7 @@ export class Merger {
     const arr = Merger.segmentsToXYThetaNode(segments, returnGraph);
 
     // Sort lexically
-    arr.sort(Merger.XYThetaCompare);
+    arr.sort(Merger.xyThetaCompare);
     let lastNode = 0;
 
     // Connect nodes at vertices
@@ -422,12 +422,12 @@ export class Merger {
    * * !! mark both new half edges visited!!! (This is strange)
    */
   private static join(node0: HalfEdge, node1: HalfEdge, graph: HalfEdgeGraph) {
-    const alpha = graph.createEdgeXYZXYZ (
-        node0.x, node0.y, node0.z, node0.i,
-        node1.x, node1.y, node1.z, node1.i);
+    const alpha = graph.createEdgeXYZXYZ(
+      node0.x, node0.y, node0.z, node0.i,
+      node1.x, node1.y, node1.z, node1.i);
     const beta = alpha.edgeMate;
-    HalfEdge.pinch (node0, alpha);
-    HalfEdge.pinch (node1, beta);
+    HalfEdge.pinch(node0, alpha);
+    HalfEdge.pinch(node1, beta);
     alpha.setMask(HalfEdgeMask.VISITED);
     beta.setMask(HalfEdgeMask.VISITED);
   }

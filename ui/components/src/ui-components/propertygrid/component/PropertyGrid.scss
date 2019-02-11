@@ -2,11 +2,9 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-@import "@bentley/bwc/lib/mixins";
-@import "@bentley/ui-core/lib/ui-core/_scrollbar";
+@import "@bentley/ui-core/lib/ui-core/index";
 
 .components-property-grid-loader {
-  @include bwc-loaders-large;
   position: relative;
   display: block;
   left: calc(50% - 24px);
@@ -14,7 +12,7 @@
 }
 
 .components-property-grid {
-  @include bwc-expandable-blocks-list;
+  @include uicore-expandable-blocks-list;
 
   padding-top: 8px;
   padding-bottom: 8px;
@@ -36,7 +34,7 @@
   width: 100%;
 
   .components--selected {
-    background-color: $bwc-blue-a;
+    background-color: $uicore-blue-a;
   }
 
   .components--clickable {
@@ -44,14 +42,13 @@
   }
 
   .components--hoverable:hover {
-    background-color: $bwc-blue-highlight;
+    background-color: $uicore-blue-highlight;
   }
 
   .components-cell-editor {
     border: #c7ccd1 solid 1px;
     border-radius: 3px;
     box-sizing: border-box;
-    padding: 2px 8px;
   }
 }
 

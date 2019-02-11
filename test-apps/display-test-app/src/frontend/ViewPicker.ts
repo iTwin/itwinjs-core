@@ -108,11 +108,15 @@ export class ViewPicker {
     while (this._select.hasChildNodes())
       this._select.removeChild(this._select.firstChild!);
 
+    let index = 0;
     for (const spec of views) {
       const option = document.createElement("option") as HTMLOptionElement;
       option.innerText = spec.name;
       option.value = spec.id;
       this._select.appendChild(option);
+      if (spec.id === views.defaultViewId)
+        this._select.selectedIndex = index;
+      index++;
     }
   }
 }

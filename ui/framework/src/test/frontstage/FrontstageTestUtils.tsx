@@ -17,6 +17,7 @@ import {
   WidgetState,
   WidgetControl,
   ZoneLocation,
+  CoreTools,
 } from "../../ui-framework";
 
 export class TestContentControl extends ContentControl {
@@ -60,7 +61,7 @@ export class TestFrontstage extends FrontstageProvider {
     return (
       <Frontstage
         id="TestFrontstage"
-        defaultToolId="Select"
+        defaultTool={CoreTools.selectElementCommand}
         defaultLayout={contentLayoutDef}
         contentGroup={myContentGroup}
         defaultContentId="defaultContentId"

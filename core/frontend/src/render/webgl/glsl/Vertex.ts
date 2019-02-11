@@ -4,10 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
+import { assert } from "@bentley/bentleyjs-core";
 import { VertexShaderBuilder, VariableType } from "../ShaderBuilder";
 import { Matrix3, Matrix4 } from "../Matrix";
-import { LUTGeometry } from "../CachedGeometry";
 import { TextureUnit, RenderPass } from "../RenderFlags";
+import { GL } from "../GL";
 import { GLSLDecode } from "./Decode";
 import { addLookupTable } from "./LookupTable";
 
@@ -24,22 +25,21 @@ const unquantizeVertexPosition = `
 vec4 unquantizeVertexPosition(vec3 pos, vec3 origin, vec3 scale) { return unquantizePosition(pos, origin, scale); }
 `;
 
-const unquantizeVertexPositionFromLUT = `
+const unquantizeVertexPositionFromLUTPrelude = `
 vec4 unquantizeVertexPosition(vec3 encodedIndex, vec3 origin, vec3 scale) {
   // Need to read 2 rgba values to obtain 6 16-bit integers for position
   vec2 tc = g_vertexBaseCoords;
   vec4 enc1 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
   tc.x += g_vert_stepX;
   vec4 enc2 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
+`;
+const computeFeatureIndexCoords = `
   tc.x += g_vert_stepX;
   g_featureIndexCoords = tc;
-
+`;
+const unquantizeVertexPositionFromLUTPostlude = `
   vec3 qpos = vec3(decodeUInt16(enc1.xy), decodeUInt16(enc1.zw), decodeUInt16(enc2.xy));
-
-  // Might as well decode the color index since we already read it...may not end up being used.
-  // (NOTE = If this is a textured mesh, the normal is stored where the color index would otherwise be...)
   g_vertexData2 = enc2.zw;
-
   return unquantizePosition(qpos, origin, scale);
 }
 `;
@@ -47,13 +47,20 @@ vec4 unquantizeVertexPosition(vec3 encodedIndex, vec3 origin, vec3 scale) {
 const scratchMVPMatrix = new Matrix4();
 
 export function addModelViewProjectionMatrix(vert: VertexShaderBuilder): void {
-  vert.addUniform("u_mvp", VariableType.Mat4, (prog) => {
-    prog.addGraphicUniform("u_mvp", (uniform, params) => {
-      const mvp = params.projectionMatrix.clone(scratchMVPMatrix);
-      mvp.multiplyBy(params.modelViewMatrix);
-      uniform.setMatrix4(mvp);
+  if (vert.usesInstancedGeometry) {
+    addModelViewMatrix(vert);
+    addProjectionMatrix(vert);
+    vert.addGlobal("g_mvp", VariableType.Mat4);
+    vert.addInitializer("g_mvp = u_proj * g_mv;");
+  } else {
+    vert.addUniform("u_mvp", VariableType.Mat4, (prog) => {
+      prog.addGraphicUniform("u_mvp", (uniform, params) => {
+        const mvp = params.projectionMatrix.clone(scratchMVPMatrix);
+        mvp.multiplyBy(params.modelViewMatrix);
+        uniform.setMatrix4(mvp);
+      });
     });
-  });
+  }
 }
 
 export function addProjectionMatrix(vert: VertexShaderBuilder): void {
@@ -65,21 +72,82 @@ export function addProjectionMatrix(vert: VertexShaderBuilder): void {
 }
 
 export function addModelViewMatrix(vert: VertexShaderBuilder): void {
-  vert.addUniform("u_mv", VariableType.Mat4, (prog) => {
-    prog.addGraphicUniform("u_mv", (uniform, params) => {
-      uniform.setMatrix4(params.modelViewMatrix);
+  if (vert.usesInstancedGeometry) {
+    // ###TODO_INSTANCING: We only need 3 rows, not 4...
+    vert.addUniform("u_viewMatrix", VariableType.Mat4, (prog) => {
+      prog.addProgramUniform("u_viewMatrix", (uniform, params) => {
+        uniform.setMatrix4(params.viewMatrix);
+      });
+    });
+
+    vert.addGlobal("g_mv", VariableType.Mat4);
+    vert.addInitializer("g_mv = u_viewMatrix * g_modelMatrix;");
+  } else {
+    vert.addUniform("u_mv", VariableType.Mat4, (prog) => {
+      // ###TODO: We only need 3 rows, not 4...
+      prog.addGraphicUniform("u_mv", (uniform, params) => {
+        uniform.setMatrix4(params.modelViewMatrix);
+      });
+    });
+  }
+}
+
+export function addNormalMatrix(vert: VertexShaderBuilder) {
+  if (vert.usesInstancedGeometry) {
+    vert.addGlobal("g_nmx", VariableType.Mat3);
+    vert.addInitializer("g_nmx = mat3(MAT_MV);");
+  } else {
+    vert.addUniform("u_nmx", VariableType.Mat3, (prog) => {
+      prog.addGraphicUniform("u_nmx", (uniform, params) => {
+        const rotMat: Matrix3 | undefined = params.modelViewMatrix.getRotation();
+        if (undefined !== rotMat)
+          uniform.setMatrix3(rotMat);
+      });
+    });
+  }
+}
+
+function addInstanceMatrixRow(vert: VertexShaderBuilder, row: number) {
+  // 3 rows per instance; 4 floats per row; 4 bytes per float.
+  const floatsPerRow = 4;
+  const bytesPerVertex = floatsPerRow * 4;
+  const offset = row * bytesPerVertex;
+  const stride = 3 * bytesPerVertex;
+  const name = "a_instanceMatrixRow" + row;
+  vert.addAttribute(name, VariableType.Vec4, (prog) => {
+    prog.addAttribute(name, (attr, params) => {
+      const geom = params.geometry.asInstanced!;
+      assert(undefined !== geom);
+      attr.enableArray(geom.transforms, floatsPerRow, GL.DataType.Float, false, stride, offset, true);
     });
   });
 }
 
-export function addNormalMatrix(vert: VertexShaderBuilder) {
-  vert.addUniform("u_nmx", VariableType.Mat3, (prog) => {
-    prog.addGraphicUniform("u_nmx", (uniform, params) => {
-      const rotMat: Matrix3 | undefined = params.modelViewMatrix.getRotation();
-      if (undefined !== rotMat)
-        uniform.setMatrix3(rotMat);
+const computeInstancedModelMatrix = `
+  mat4 instanceMatrix = mat4(
+    a_instanceMatrixRow0.x, a_instanceMatrixRow1.x, a_instanceMatrixRow2.x, 0.0,
+    a_instanceMatrixRow0.y, a_instanceMatrixRow1.y, a_instanceMatrixRow2.y, 0.0,
+    a_instanceMatrixRow0.z, a_instanceMatrixRow1.z, a_instanceMatrixRow2.z, 0.0,
+    a_instanceMatrixRow0.w, a_instanceMatrixRow1.w, a_instanceMatrixRow2.w, 1.0);
+  g_modelMatrix = instanceMatrix * u_rootModelMatrix;
+`;
+
+export function addInstancedModelMatrix(vert: VertexShaderBuilder) {
+  // ###TODO_INSTANCING: We can make this more efficient, reduce amount of data sent as uniforms and attributes, and reduce computation on the GPU.
+  // Get it working the straightforward way first.
+  vert.addUniform("u_rootModelMatrix", VariableType.Mat4, (prog) => {
+    // ###TODO_INSTANCING: We only need 3 rows, not 4...
+    prog.addGraphicUniform("u_rootModelMatrix", (uniform, params) => {
+      uniform.setMatrix4(params.modelMatrix);
     });
   });
+
+  addInstanceMatrixRow(vert, 0);
+  addInstanceMatrixRow(vert, 1);
+  addInstanceMatrixRow(vert, 2);
+
+  vert.addGlobal("g_modelMatrix", VariableType.Mat4);
+  vert.addInitializer(computeInstancedModelMatrix);
 }
 
 const scratchLutParams = new Float32Array(4);
@@ -87,22 +155,26 @@ function addPositionFromLUT(vert: VertexShaderBuilder) {
   vert.addGlobal("g_vertexLUTIndex", VariableType.Float);
   vert.addGlobal("g_vertexBaseCoords", VariableType.Vec2);
   vert.addGlobal("g_vertexData2", VariableType.Vec2);
-  vert.addGlobal("g_featureIndexCoords", VariableType.Vec2);
 
   vert.addFunction(GLSLDecode.uint32);
   vert.addFunction(GLSLDecode.uint16);
-  vert.addFunction(unquantizeVertexPositionFromLUT);
+  if (vert.usesInstancedGeometry) {
+    vert.addFunction(unquantizeVertexPositionFromLUTPrelude + unquantizeVertexPositionFromLUTPostlude);
+  } else {
+    vert.addGlobal("g_featureIndexCoords", VariableType.Vec2);
+    vert.addFunction(unquantizeVertexPositionFromLUTPrelude + computeFeatureIndexCoords + unquantizeVertexPositionFromLUTPostlude);
+  }
 
   vert.addUniform("u_vertLUT", VariableType.Sampler2D, (prog) => {
     prog.addGraphicUniform("u_vertLUT", (uniform, params) => {
-      (params.geometry as LUTGeometry).lut.texture.bindSampler(uniform, TextureUnit.VertexLUT);
+      (params.geometry.asLUT!).lut.texture.bindSampler(uniform, TextureUnit.VertexLUT);
     });
   });
 
   vert.addUniform("u_vertParams", VariableType.Vec4, (prog) => {
     prog.addGraphicUniform("u_vertParams", (uniform, params) => {
-      const lutGeom: LUTGeometry = params.geometry as LUTGeometry;
-      const lut = lutGeom.lut;
+      assert(undefined !== params.geometry.asLUT);
+      const lut = params.geometry.asLUT!.lut;
       const lutParams = scratchLutParams;
       lutParams[0] = lut.texture.width;
       lutParams[1] = lut.texture.height;

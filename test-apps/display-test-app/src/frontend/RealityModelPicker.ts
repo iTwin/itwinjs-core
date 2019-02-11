@@ -5,6 +5,7 @@
 
 import {
   ContextRealityModelProps,
+  CartographicRange,
 } from "@bentley/imodeljs-common";
 import {
   ContextRealityModelState,
@@ -28,7 +29,13 @@ export class RealityModelPicker extends ToolBarDropDown {
     this._vp = vp;
     this._parent = parent;
 
-    this._availableModels = ContextRealityModelState.findAvailableRealityModels();
+    if (this._vp.iModel.ecefLocation) {
+      const modelCartographicRange = new CartographicRange(this._vp.iModel.projectExtents, this._vp.iModel.ecefLocation.getTransform());
+
+      this._availableModels = ContextRealityModelState.findAvailableRealityModels("fb1696c8-c074-4c76-a539-a5546e048cc6", modelCartographicRange);
+    } else {
+      this._availableModels = ContextRealityModelState.findAvailableRealityModels("fb1696c8-c074-4c76-a539-a5546e048cc6", undefined);
+    }
 
     this._element = document.createElement("div");
     this._element.className = "scrollingToolMenu";
@@ -71,9 +78,12 @@ export class RealityModelPicker extends ToolBarDropDown {
 
   private async populateModels(): Promise<void> {
     for (const props of await this._availableModels) {
-      const model = new ContextRealityModelState(props, this._vp.iModel);
-      if (await model.intersectsProjectExtents())
-        this._models.push(model);
+      try {
+        const model = new ContextRealityModelState(props, this._vp.iModel);
+        if (await model.intersectsProjectExtents())
+          this._models.push(model);
+      } catch (e) {
+      }
     }
   }
 

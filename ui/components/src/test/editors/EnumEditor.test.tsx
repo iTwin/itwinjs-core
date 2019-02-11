@@ -88,4 +88,21 @@ describe("<EnumEditor />", () => {
     expect(spyOnCommit.calledOnce).to.be.true;
   });
 
+  it("componentDidUpdate updates the value", async () => {
+    const record = TestUtils.createEnumProperty("Test", 0);
+    const wrapper = mount(<EnumEditor propertyRecord={record} />);
+
+    await TestUtils.flushAsyncOperations();
+    const enumEditor = wrapper.instance() as EnumEditor;
+    expect(enumEditor.getValue()).to.equal(0);
+
+    const testValue = 1;
+    const newRecord = TestUtils.createEnumProperty("Test", testValue);
+    wrapper.setProps({ propertyRecord: newRecord });
+    await TestUtils.flushAsyncOperations();
+    expect(enumEditor.getValue()).to.equal(testValue);
+
+    wrapper.unmount();
+  });
+
 });

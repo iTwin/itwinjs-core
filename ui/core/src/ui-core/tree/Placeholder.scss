@@ -3,14 +3,14 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-@import "@bentley/bwc/lib/mixins";
+@import "../style/index.scss";
 @import "../colors.scss";
 
 .nz-tree-placeholder {
   display: block;
   box-sizing: border-box;
   height: 24px;
-  margin-left: $bwc-l;
+  margin-left: $uicore-l;
   padding-top: 3px;
   padding-bottom: 3px;
   > .contents {

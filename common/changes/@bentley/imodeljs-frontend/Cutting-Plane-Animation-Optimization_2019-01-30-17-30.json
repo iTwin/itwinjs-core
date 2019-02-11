@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Avoid using cutting planes while animating if not displayed, completely hidden or completely visible.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "ray.bentley@bentley.com"
+}

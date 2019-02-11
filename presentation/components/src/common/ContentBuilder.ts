@@ -17,7 +17,7 @@ import {
   PropertyRecord, PropertyValue, PropertyValueFormat as UiPropertyValueFormat,
   ArrayValue, StructValue, PrimitiveValue,
   PropertyDescription, PropertyEditorInfo, EnumerationChoicesInfo,
-} from "@bentley/ui-components";
+} from "@bentley/imodeljs-frontend";
 
 const createArrayValue = (propertyDescription: PropertyDescription, arrayDescription: ArrayTypeDescription, values: Value[], displayValues: DisplayValue[]): ArrayValue => {
   const records = new Array<PropertyRecord>();

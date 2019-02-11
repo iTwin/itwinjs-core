@@ -1,6 +1,6 @@
 {
   "name": "@bentley/ecschema-metadata",
-  "version": "0.189.0-dev.10",
+  "version": "0.189.0-dev.24",
   "description": "ECObjects core concepts in typescript",
   "license": "MIT",
   "main": "lib/ecschema-metadata.js",
@@ -10,7 +10,7 @@
     "url": "https://github.com/imodeljs/imodeljs"
   },
   "scripts": {
-    "build": "tsc 1>&2",
+    "build": "tsc 1>&2 && node ./node_modules/@bentley/build-tools/scripts/ignoreargs.js 1>&2",
     "clean": "rimraf lib package-deps.json",
     "lint": "tslint --project . 1>&2",
     "test": "node ./node_modules/@bentley/build-tools/scripts/test-tsnode.js --testDir=./test/",
@@ -30,14 +30,14 @@
     "url": "http://www.bentley.com"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "0.189.0-dev.10",
-    "@bentley/build-tools": "0.189.0-dev.10",
-    "@bentley/imodeljs-i18n": "0.189.0-dev.10",
+    "@bentley/bentleyjs-core": "0.189.0-dev.24",
+    "@bentley/build-tools": "0.189.0-dev.24",
+    "@bentley/imodeljs-i18n": "0.189.0-dev.24",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
     "@types/glob": "^5.0.35",
     "@types/mocha": "^5.2.5",
-    "@types/node": "10.10.3",
+    "@types/node": "10.12.18",
     "@types/sinon": "^5.0.5",
     "chai": "^4.1.2",
     "chai-as-promised": "^7",
@@ -56,8 +56,8 @@
     "bunyan-seq": "^0.2.0"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "0.189.0-dev.10",
-    "@bentley/imodeljs-i18n": "0.189.0-dev.10"
+    "@bentley/bentleyjs-core": "0.189.0-dev.24",
+    "@bentley/imodeljs-i18n": "0.189.0-dev.24"
   },
   "nyc": {
     "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc"

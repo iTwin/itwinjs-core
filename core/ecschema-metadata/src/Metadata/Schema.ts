@@ -428,15 +428,9 @@ export class Schema implements CustomAttributeContainerProps {
       schemaJson.label = this.label;
     if (undefined !== this.description) // description is optional
       schemaJson.description = this.description;
-    if (undefined !== this.references && this.references.length > 0) { // references is optional
-      schemaJson.references = [];
-      this.references.forEach((refSchema: Schema) => {
-        schemaJson.references.push({
-          name: refSchema.name,
-          version: refSchema.schemaKey.version.toString(true),
-        });
-      });
-    }
+    if (undefined !== this.references && this.references.length > 0) // references is optional
+      schemaJson.references = this.references.map(({ name, schemaKey }) => ({ name, version: schemaKey.version.toString() }));
+
     const customAttributes = serializeCustomAttributes(this.customAttributes);
     if (undefined !== customAttributes)
       schemaJson.customAttributes = customAttributes;
@@ -457,7 +451,7 @@ export class Schema implements CustomAttributeContainerProps {
     } else {
       if (schemaProps.name.toLowerCase() !== this.name.toLowerCase())
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Schema ${this.name} does not match the provided name, '${schemaProps.name}'.`);
-      if (schemaProps.version !== this.schemaKey.version.toString())
+      if (this.schemaKey.version.compare(ECVersion.fromString(schemaProps.version)))
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Schema ${this.name} has the version '${this.schemaKey.version}' that does not match the provided version '${schemaProps.version}'.`);
     }
 

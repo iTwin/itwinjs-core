@@ -192,4 +192,10 @@ export class Box extends SolidPrimitive {
       range.extendTransformedXYZ(boxTransform, bx, by, 1);
     }
   }
+  /**
+   * @return true if this is a closed volume.
+   */
+  public get isClosedVolume(): boolean {
+    return this.capped;
+  }
 }

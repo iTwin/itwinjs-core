@@ -43,6 +43,7 @@ export class ToolButton extends React.Component<ToolItemProps, BaseItemState> {
   }
 
   private _handleSyncUiEvent = (args: SyncUiEventArgs): void => {
+    // istanbul ignore if
     if (this._componentUnmounting) return;
 
     let refreshState = false;
@@ -79,6 +80,7 @@ export class ToolButton extends React.Component<ToolItemProps, BaseItemState> {
       this.props.execute();
     } else {
       const thisTool: typeof Tool | undefined = IModelApp.tools.find(this.props.toolId);
+      // istanbul ignore else
       if (thisTool)
         (new thisTool()).run();
     }

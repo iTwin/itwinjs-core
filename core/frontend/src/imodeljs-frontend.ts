@@ -56,6 +56,14 @@ export * from "./render/webgl/Target";
 export * from "./oidc/OidcBrowserClient";
 export * from "./oidc/OidcClientWrapper";
 
+export * from "./properties/Description";
+export * from "./properties/EditorParams";
+export * from "./properties/Record";
+export * from "./properties/Value";
+export * from "./properties/ToolSettingsValue";
+import * as Primitives from "./properties/PrimitiveTypes";
+export { Primitives };
+
 // Set the version number so it can be found at runtime. BUILD_SEMVER is replaced at build time by the webpack DefinePlugin.
 declare var BUILD_SEMVER: string;
 if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") && window) {
@@ -114,6 +122,10 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
  * @docs-group-description SelectionSet
  * Classes for working with the set of selected elements.
  * See [the learning articles]($docs/learning/frontend/index.md).
+ */
+/**
+ * @docs-group-description Properties
+ * Classes for working with property records and descriptions.
  */
 /**
  * @docs-group-description Rendering

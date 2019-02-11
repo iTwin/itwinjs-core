@@ -150,7 +150,7 @@ export class Point4d implements BeJSONFunctions {
   public magnitudeXYZW(): number {
     return Geometry.hypotenuseXYZW(this.xyzw[0], this.xyzw[1], this.xyzw[2], this.xyzw[3]);
   }
-  /**  @returns Returns the magnitude of the leading xyz components */
+  /**  @returns Returns the magnitude of the leading xyz components.  w is ignored.  (i.e. the leading xyz are NOT divided by w.) */
   public magnitudeSquaredXYZ(): number {
     return Geometry.hypotenuseSquaredXYZ(this.xyzw[0], this.xyzw[1], this.xyzw[2]);
   }
@@ -237,7 +237,7 @@ export class Point4d implements BeJSONFunctions {
   public altitude(point: Point3d): number {
     return this.xyzw[0] * point.x + this.xyzw[1] * point.y + this.xyzw[2] * point.z + this.xyzw[3];
   }
-  /** dotProduct with (point.x, point.y, point.z, 1) Used in PlaneAltitudeEvaluator interface */
+  /** dotProduct with (point.x, point.y, point.z, point.w) Used in PlaneAltitudeEvaluator interface */
   public weightedAltitude(point: Point4d): number {
     return this.xyzw[0] * point.x + this.xyzw[1] * point.y + this.xyzw[2] * point.z + this.xyzw[3] * point.w;
   }
@@ -488,5 +488,15 @@ export class Point4d implements BeJSONFunctions {
     const angleOfInterpolant = angle * fractionParameter;
     result = Point4d.createAdd2Scaled(q0, Math.cos(angleOfInterpolant), q2, Math.sin(angleOfInterpolant));
     return result;
+  }
+  // Return the (radians of the) angle from `this` to `other`, considering xyzw (ALL) parts.
+  public radiansToPoint4dXYZW(other: Point4d): number | undefined {
+    const magA = this.magnitudeXYZW();
+    const magB = other.magnitudeXYZW();
+    const dot = this.dotProduct(other);  // == cos (theta) * magA * magB
+    const cos = Geometry.conditionalDivideFraction(dot, magA * magB);
+    if (cos === undefined)
+      return undefined;
+    return Math.acos(cos);
   }
 }

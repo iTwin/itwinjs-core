@@ -64,6 +64,7 @@ describe("DataProvidersFactory", () => {
 
     it("creates a provider with similar instances ruleset", async () => {
       const ruleset = await createRandomRuleset();
+      const description = "Test description";
 
       const field = createRandomPrimitiveField();
       const descriptor = createRandomDescriptor();
@@ -80,11 +81,12 @@ describe("DataProvidersFactory", () => {
 
       const rulesetsFactoryMock = moq.Mock.ofType<RulesetsFactory>();
       props = { rulesetsFactory: rulesetsFactoryMock.object };
-      rulesetsFactoryMock.setup((x) => x.createSimilarInstancesRuleset(field, contentItem)).returns(() => ruleset);
+      rulesetsFactoryMock.setup((x) => x.createSimilarInstancesRuleset(field, contentItem)).returns(() => ({ ruleset, description }));
 
       const dataProvider = await getFactory().createSimilarInstancesTableDataProvider(propertiesProvider.object, record, {});
       expect(dataProvider).to.be.instanceOf(PresentationTableDataProvider);
       expect(dataProvider.rulesetId).to.eq(ruleset.id);
+      expect(dataProvider.description).to.eq(description);
     });
 
   });

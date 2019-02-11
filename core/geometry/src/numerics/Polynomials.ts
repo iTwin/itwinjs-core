@@ -271,7 +271,7 @@ export class TorusImplicit {
    * @param xyz space point in local coordinates.
    * @return object with properties theta, phi, distance, rho
    */
-  public XYZToThetaPhiDistance(xyz: Point3d): { theta: number, phi: number, distance: number, rho: number, safePhi: boolean } {
+  public xyzToThetaPhiDistance(xyz: Point3d): { theta: number, phi: number, distance: number, rho: number, safePhi: boolean } {
     const rho = xyz.magnitudeXY();
     const majorRadiusFactor = Geometry.conditionalDivideFraction(this.majorRadius, rho);
     let safeMajor;
@@ -343,7 +343,7 @@ export class SphereImplicit {
     return (wx * wx + wy * wy + wz * wz) - this.radius * this.radius * w * w;
   }
 
-  public XYZToThetaPhiR(xyz: Point3d): { theta: number, phi: number, r: number, valid: boolean } {
+  public xyzToThetaPhiR(xyz: Point3d): { theta: number, phi: number, r: number, valid: boolean } {
     const rhoSquared = xyz.x * xyz.x + xyz.y * xyz.y;
     const rho = Math.sqrt(rhoSquared);
     const r = Math.sqrt(rhoSquared + xyz.z * xyz.z);
@@ -443,7 +443,7 @@ export class AnalyticRoots {
   public static readonly s_quadricRelTol = 1.0e-14;
   public static readonly sTestWindow = 1.0e-6;
   /** Absolute zero test with a tolerance that has worked well for the analytic root use case . . . */
-  public static IsZero(x: number): boolean {
+  public static isZero(x: number): boolean {
     return Math.abs(x) < this.EQN_EPS;
   }
   /** Without actually doing a division, test if (x/y) is small.
@@ -471,7 +471,7 @@ export class AnalyticRoots {
    * @param defaultValue value to save if denominator is too small to divide.
    * @param offset index of value to replace.
    */
-  public static SafeDivide(values: Float64Array, numerator: number, denominator: number, defaultValue: number = 0.0, offset: number): boolean {
+  public static safeDivide(values: Float64Array, numerator: number, denominator: number, defaultValue: number = 0.0, offset: number): boolean {
     if (Math.abs(denominator) > (this.s_safeDivideFactor * Math.abs(numerator))) {
       values[offset] = numerator / denominator;
       return true;
@@ -489,7 +489,7 @@ export class AnalyticRoots {
       return (roots.at(i) > roots.at(i - 1));
     }
   }
-  private static NewtonMethodAdjustment(coffs: Float64Array | number[], root: number, order: number) {
+  private static newtonMethodAdjustment(coffs: Float64Array | number[], root: number, order: number) {
     if (order === 3) {
       const f = coffs[0] + root * (coffs[1] + root * (coffs[2] + root * coffs[3]));
       const df = coffs[1] + root * (2.0 * coffs[2] + root * 3.0 * coffs[3]);
@@ -507,7 +507,7 @@ export class AnalyticRoots {
 
     // Loop through each root
     for (let i = 0; i < roots.length; i++) {
-      let dx = this.NewtonMethodAdjustment(coffs, roots.at(i), degree);
+      let dx = this.newtonMethodAdjustment(coffs, roots.at(i), degree);
       if (!dx) continue;  // skip if newton step had divide by zero.
       const originalValue = roots.at(i);
       let counter = 0;
@@ -533,7 +533,7 @@ export class AnalyticRoots {
           break;
         }
 
-        dx = this.NewtonMethodAdjustment(coffs, roots.at(i), degree);
+        dx = this.newtonMethodAdjustment(coffs, roots.at(i), degree);
         counter++;
       }
     }
@@ -604,7 +604,7 @@ export class AnalyticRoots {
 
     const D = p * p - q;
 
-    if (this.IsZero(D)) {
+    if (this.isZero(D)) {
       this.appendSolution(-p, values);
       return;
     } else if (D < 0) {
@@ -660,8 +660,8 @@ export class AnalyticRoots {
     cb_p = p * p * p;
     D = q * q + cb_p;
     const origin = A / (-3.0);
-    if (D >= 0.0 && this.IsZero(D)) {
-      if (this.IsZero(q)) {
+    if (D >= 0.0 && this.isZero(D)) {
+      if (this.isZero(q)) {
         // One triple solution
         results.push(origin);
         results.push(origin);
@@ -721,7 +721,7 @@ export class AnalyticRoots {
     // normal form: x^4 + Ax^3 + Bx^2 + Cx + D = 0
 
     const coffScale = new Float64Array(1);
-    if (!this.SafeDivide(coffScale, 1.0, c[4], 0.0, 0)) {
+    if (!this.safeDivide(coffScale, 1.0, c[4], 0.0, 0)) {
       this.appendCubicRoots(c, results);
       return;
     }
@@ -739,7 +739,7 @@ export class AnalyticRoots {
 
     const tempStack = new GrowableFloat64Array();
 
-    if (this.IsZero(r)) {
+    if (this.isZero(r)) {
 
       // no absolute term: y(y^3 + py + q) = 0
       coeffs[0] = q;
@@ -931,7 +931,7 @@ export class PowerPolynomial {
     return p;
   }
   // Evaluate a standard basis polynomial
-  public static Evaluate(coff: Float64Array, x: number): number {
+  public static evaluate(coff: Float64Array, x: number): number {
     const degree = coff.length - 1;
     return this.degreeKnownEvaluate(coff, degree, x);
   }
@@ -939,7 +939,7 @@ export class PowerPolynomial {
   // Accumulate Q*scale into P.  Both are treated as full degree.
   //         (Expect Address exceptions if P is smaller than Q)
   // Returns degree of result as determined by comparing leading coefficients to zero
-  public static Accumulate(coffP: Float64Array, coffQ: Float64Array, scaleQ: number): number {
+  public static accumulate(coffP: Float64Array, coffQ: Float64Array, scaleQ: number): number {
     let degreeP = coffP.length - 1;
     const degreeQ = coffQ.length - 1;
 
@@ -953,7 +953,7 @@ export class PowerPolynomial {
     return degreeP;
   }
   // Zero all coefficients in a polynomial
-  public static Zero(coff: Float64Array) {
+  public static zero(coff: Float64Array) {
     for (let i = 0; i < coff.length; i++) {
       coff[i] = 0.0;
     }
@@ -1001,7 +1001,7 @@ export class TrigPolynomial {
   // ------------------------------------------------------------------------------------------------
   // Solve a standard basis polynomial.   Immediately use the roots as ordinates
   //            in rational polynomials for sine and cosine, and convert to angle via arctan
-  public static SolveAngles(coff: Float64Array, nominalDegree: number, referenceCoefficient: number,
+  public static solveAngles(coff: Float64Array, nominalDegree: number, referenceCoefficient: number,
     radians: number[]): boolean {
     let maxCoff = Math.abs(referenceCoefficient);
     let a;
@@ -1048,8 +1048,8 @@ export class TrigPolynomial {
         //  Math.Cos(theta)=C(t)/W(t),  ,sin(theta)=S(t)/W(t)
         // Division by W has no effect on Atan2 calculations, so we just compute S(t),C(t)
         for (let i = 0; i < roots.length; i++) {
-          const ss = PowerPolynomial.Evaluate(this.S, roots.at(i));
-          const cc = PowerPolynomial.Evaluate(this.C, roots.at(i));
+          const ss = PowerPolynomial.evaluate(this.S, roots.at(i));
+          const cc = PowerPolynomial.evaluate(this.C, roots.at(i));
           radians.push(Math.atan2(ss, cc));
         }
 
@@ -1075,23 +1075,23 @@ export class TrigPolynomial {
   /// <param name="a1">Constant coefficient</param>
   /// <param name="angles">solution angles</param>
   /// <param name="numAngle">number of solution angles (Passed as array to make changes to reference)</param>
-  public static SolveUnitCircleImplicitQuadricIntersection(axx: number, axy: number, ayy: number,
+  public static solveUnitCircleImplicitQuadricIntersection(axx: number, axy: number, ayy: number,
     ax: number, ay: number, a1: number, radians: number[]): boolean {
     const Coffs = new Float64Array(5);
-    PowerPolynomial.Zero(Coffs);
+    PowerPolynomial.zero(Coffs);
     let degree = 2;
     if (Math.hypot(axx, axy, ayy) > TrigPolynomial.coeffientRelTol * Math.hypot(ax, ay, a1)) {
-      PowerPolynomial.Accumulate(Coffs, this.CW, ax);
-      PowerPolynomial.Accumulate(Coffs, this.SW, ay);
-      PowerPolynomial.Accumulate(Coffs, this.WW, a1);
-      PowerPolynomial.Accumulate(Coffs, this.SS, ayy);
-      PowerPolynomial.Accumulate(Coffs, this.CC, axx);
-      PowerPolynomial.Accumulate(Coffs, this.SC, axy);
+      PowerPolynomial.accumulate(Coffs, this.CW, ax);
+      PowerPolynomial.accumulate(Coffs, this.SW, ay);
+      PowerPolynomial.accumulate(Coffs, this.WW, a1);
+      PowerPolynomial.accumulate(Coffs, this.SS, ayy);
+      PowerPolynomial.accumulate(Coffs, this.CC, axx);
+      PowerPolynomial.accumulate(Coffs, this.SC, axy);
       degree = 4;
     } else {
-      PowerPolynomial.Accumulate(Coffs, this.C, ax);
-      PowerPolynomial.Accumulate(Coffs, this.S, ay);
-      PowerPolynomial.Accumulate(Coffs, this.W, a1);
+      PowerPolynomial.accumulate(Coffs, this.C, ax);
+      PowerPolynomial.accumulate(Coffs, this.S, ay);
+      PowerPolynomial.accumulate(Coffs, this.W, a1);
       degree = 2;
     }
 
@@ -1104,7 +1104,7 @@ export class TrigPolynomial {
       Math.abs(ay),
       Math.abs(a1));
 
-    const b = this.SolveAngles(Coffs, degree, maxCoff, radians);
+    const b = this.solveAngles(Coffs, degree, maxCoff, radians);
     /*
     for (const theta of angles) {
       const c = theta.cos();
@@ -1128,7 +1128,7 @@ export class TrigPolynomial {
   /// <param name="ellipseAngles">solution angles in ellipse parameter space</param>
   /// <param name="circleAngles">solution angles in circle parameter space</param>
   /// <param name="numAngle">number of solution angles (passed as an array to change reference)</param>
-  public static SolveUnitCircleEllipseIntersection(cx: number, cy: number, ux: number, uy: number,
+  public static solveUnitCircleEllipseIntersection(cx: number, cy: number, ux: number, uy: number,
     vx: number, vy: number, ellipseRadians: number[], circleRadians: number[]): boolean {
     circleRadians.length = 0;
     const acc = ux * ux + uy * uy;
@@ -1137,7 +1137,7 @@ export class TrigPolynomial {
     const ac = 2.0 * (ux * cx + uy * cy);
     const asi = 2.0 * (vx * cx + vy * cy);
     const a = cx * cx + cy * cy - 1.0;
-    const boolstat = this.SolveUnitCircleImplicitQuadricIntersection(acc, acs, ass, ac, asi, a, ellipseRadians);
+    const boolstat = this.solveUnitCircleImplicitQuadricIntersection(acc, acs, ass, ac, asi, a, ellipseRadians);
     for (const radians of ellipseRadians) {
       const cc = Math.cos(radians);
       const ss = Math.sin(radians);
@@ -1163,7 +1163,7 @@ export class TrigPolynomial {
   /// <param name="ellipseAngles">solution angles in ellipse parameter space</param>
   /// <param name="circleAngles">solution angles in circle parameter space</param>
   /// <param name="numAngle">number of solution angles (passed as an array to change reference)</param>
-  public static SolveUnitCircleHomogeneousEllipseIntersection(cx: number, cy: number, cw: number,
+  public static solveUnitCircleHomogeneousEllipseIntersection(cx: number, cy: number, cw: number,
     ux: number, uy: number, uw: number,
     vx: number, vy: number, vw: number,
     ellipseRadians: number[], circleRadians: number[]): boolean {
@@ -1174,7 +1174,7 @@ export class TrigPolynomial {
     const ac = 2.0 * (ux * cx + uy * cy - uw * cw);
     const asi = 2.0 * (vx * cx + vy * cy - vw * cw);
     const a = cx * cx + cy * cy - cw * cw;
-    const boolstat = this.SolveUnitCircleImplicitQuadricIntersection(acc, acs, ass, ac, asi, a, ellipseRadians);
+    const boolstat = this.solveUnitCircleImplicitQuadricIntersection(acc, acs, ass, ac, asi, a, ellipseRadians);
     for (const radians of ellipseRadians) {
       const cc = Math.cos(radians);
       const ss = Math.sin(radians);

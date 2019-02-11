@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Added spatial <-> cartographic methods that check/use the geographic coordinate system before using ecef location.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Brien.Bastings@bentley.com"
+}

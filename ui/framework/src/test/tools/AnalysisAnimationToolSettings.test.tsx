@@ -9,7 +9,7 @@ import { mount } from "enzyme";
 import TestUtils from "../TestUtils";
 import {
   AnalysisAnimationToolSettings, ConfigurableUiManager, ZoneState, WidgetState, FrontstageManager, AnalysisAnimationTool,
-  FrontstageProvider, FrontstageProps, Frontstage, Zone, Widget, ToolWidget,
+  FrontstageProvider, FrontstageProps, Frontstage, Zone, Widget, ToolWidget, CoreTools,
 } from "../../ui-framework";
 
 describe("AnalysisAnimationToolUiProvider", () => {
@@ -22,7 +22,7 @@ describe("AnalysisAnimationToolUiProvider", () => {
         return (
           <Frontstage
             id="ToolUiProvider-TestFrontstage"
-            defaultToolId="PlaceLine"
+            defaultTool={CoreTools.selectElementCommand}
             defaultLayout="FourQuadrants"
             contentGroup="TestContentGroup1"
             topLeft={

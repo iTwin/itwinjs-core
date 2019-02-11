@@ -16,6 +16,7 @@ import {
   FrontstageProvider,
   FrontstageProps,
   Frontstage,
+  CoreTools,
 } from "../../ui-framework";
 import TestUtils from "../TestUtils";
 
@@ -53,7 +54,7 @@ describe("ContentControl", () => {
         return (
           <Frontstage
             id="ContentFrontstage1"
-            defaultToolId="PlaceLine"
+            defaultTool={CoreTools.selectElementCommand}
             defaultLayout={myContentLayout}
             contentGroup={myContentGroup}
           />
@@ -111,7 +112,7 @@ describe("ContentControl", () => {
         return (
           <Frontstage
             id="ContentFrontstage2"
-            defaultToolId="PlaceLine"
+            defaultTool={CoreTools.selectElementCommand}
             defaultLayout={contentLayout2}
             contentGroup={contentGroup2}
           />

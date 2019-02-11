@@ -23,13 +23,13 @@ function getArgs(): yargs.Arguments<Args> {
     .usage("$0 <port> <resources>")
     .wrap(yargs.terminalWidth())
     .option("port", {
-      alias: ["p", "port"],
+      alias: "p",
       description: "Web Server Port",
       default: 3000,
       type: "number",
     })
     .option("resources", {
-      alias: ["r", "resources"],
+      alias: "r",
       description: "Path to resource root directory",
       demandOption: true,
       type: "string",

@@ -13,7 +13,7 @@ import { TechniqueId } from "./TechniqueId";
 import { System, RenderType, DepthType } from "./System";
 import { PackedFeatureTable, Pixel, GraphicList } from "../System";
 import { ViewRect } from "../../Viewport";
-import { Id64, IDisposable, dispose } from "@bentley/bentleyjs-core";
+import { assert, Id64, IDisposable, dispose } from "@bentley/bentleyjs-core";
 import { GL } from "./GL";
 import { RenderCommands, ShaderProgramParams, DrawParams, DrawCommands, BatchPrimitiveCommand } from "./DrawCommand";
 import { RenderState } from "./RenderState";
@@ -60,7 +60,7 @@ class Textures implements IDisposable {
   }
 
   public init(width: number, height: number): boolean {
-    Debug.assert(() => undefined === this.accumulation);
+    assert(undefined === this.accumulation);
 
     let pixelDataType: GL.Texture.DataType = GL.Texture.DataType.UnsignedByte;
     switch (System.instance.capabilities.maxRenderType) {
@@ -164,10 +164,10 @@ class Geometry implements IDisposable {
   public occlusionYBlur?: BlurGeometry;
 
   public init(textures: Textures): boolean {
-    Debug.assert(() => undefined === this.composite);
+    assert(undefined === this.composite);
     this.composite = CompositeGeometry.createGeometry(textures.color!.getHandle()!, textures.accumulation!.getHandle()!, textures.revealage!.getHandle()!, textures.hilite!.getHandle()!, textures.occlusion!.getHandle()!);
     this.stencilCopy = ViewportQuadGeometry.create(TechniqueId.CopyStencil);
-    Debug.assert(() => textures.depthAndOrder !== undefined);
+    assert(textures.depthAndOrder !== undefined);
     this.occlusion = AmbientOcclusionGeometry.createGeometry(textures.depthAndOrder!.getHandle()!);
     this.occlusionXBlur = BlurGeometry.createGeometry(textures.occlusion!.getHandle()!, textures.depthAndOrder!.getHandle()!, new Vector2d(1.0, 0.0));
     this.occlusionYBlur = BlurGeometry.createGeometry(textures.occlusionBlur!.getHandle()!, textures.depthAndOrder!.getHandle()!, new Vector2d(0.0, 1.0));
@@ -241,8 +241,8 @@ class PixelBuffer implements Pixel.Buffer {
     const fpt = Vector3d.create(bytes[1] / 255.0, bytes[2] / 255.0, bytes[3] / 255.0, this._scratchVector3d);
     let depth = fpt.dotProduct(this._mult);
 
-    Debug.assert(() => 0.0 <= depth);
-    Debug.assert(() => 1.01 >= depth); // rounding error...
+    assert(0.0 <= depth);
+    assert(1.01 >= depth); // rounding error...
 
     depth = Math.min(1.0, depth);
     depth = Math.max(0.0, depth);
@@ -301,7 +301,7 @@ class PixelBuffer implements Pixel.Buffer {
             break;
           default:
             // ###TODO: may run into issues with point clouds - they are not written correctly in C++.
-            Debug.assert(() => false, () => "Invalid render order");
+            assert(false, "Invalid render order");
             geometryType = Pixel.GeometryType.None;
             planarity = Pixel.Planarity.None;
             break;
@@ -495,13 +495,13 @@ abstract class Compositor extends SceneCompositor {
     this._height = height;
 
     const result = this.init();
-    Debug.assert(() => result);
+    assert(result);
     return result;
   }
 
   public draw(commands: RenderCommands) {
     if (!this.update()) {
-      Debug.assert(() => false);
+      assert(false);
       return;
     }
 
@@ -552,7 +552,7 @@ abstract class Compositor extends SceneCompositor {
 
   public drawForReadPixels(commands: RenderCommands, overlays?: GraphicList) {
     if (!this.update()) {
-      Debug.assert(() => false);
+      assert(false);
       return;
     }
 
@@ -914,7 +914,7 @@ class MRTFrameBuffers extends FrameBuffers {
     if (!super.init(textures, depth))
       return false;
 
-    Debug.assert(() => undefined === this.opaqueAll);
+    assert(undefined === this.opaqueAll);
 
     const boundColor = System.instance.frameBufferStack.currentColorBuffer;
     if (undefined === boundColor)
@@ -973,7 +973,7 @@ class MRTGeometry extends Geometry {
     if (!super.init(textures))
       return false;
 
-    Debug.assert(() => undefined === this.copyPickBuffers);
+    assert(undefined === this.copyPickBuffers);
 
     this.copyPickBuffers = CopyPickBufferGeometry.createGeometry(textures.featureId!.getHandle()!, textures.depthAndOrder!.getHandle()!);
     this.clearTranslucent = ViewportQuadGeometry.create(TechniqueId.OITClearTranslucent);
@@ -998,7 +998,7 @@ class MRTCompositor extends Compositor {
   }
 
   public get currentRenderTargetIndex(): number {
-    Debug.assert(() => false, () => "MRT is supported");
+    assert(false, "MRT is supported");
     return 0;
   }
 
@@ -1104,7 +1104,7 @@ class MPFrameBuffers extends FrameBuffers {
     if (!super.init(textures, depth))
       return false;
 
-    Debug.assert(() => undefined === this.accumulation);
+    assert(undefined === this.accumulation);
 
     this.accumulation = FrameBuffer.create([textures.accumulation!], depth);
     this.revealage = FrameBuffer.create([textures.revealage!], depth);
@@ -1131,7 +1131,7 @@ class MPGeometry extends Geometry {
     if (!super.init(textures))
       return false;
 
-    Debug.assert(() => undefined === this.copyColor);
+    assert(undefined === this.copyColor);
     this.copyColor = SingleTexturedViewportQuadGeometry.createGeometry(textures.featureId!.getHandle()!, TechniqueId.CopyColor);
     return undefined !== this.copyColor;
   }
@@ -1186,7 +1186,6 @@ class MPCompositor extends Compositor {
   }
 
   protected renderOpaque(commands: RenderCommands, compositeFlags: CompositeFlags, renderForReadPixels: boolean): void {
-    // ###TODO: Support ambient occlusion.
     // Output the first 2 passes to color and pick data buffers. (All 3 in the case of rendering for readPixels()).
     this._readPickDataFromPingPong = true;
     const needComposite = CompositeFlags.None !== compositeFlags;

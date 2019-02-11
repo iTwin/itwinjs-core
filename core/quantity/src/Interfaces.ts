@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** This interface provides basic information about a Unit that is return from a UnitProvider. This info
  * uniquely identifies a unit by its name.
+ * @alpha
  */
 export interface UnitProps {
   /** Unique name for unit. */
@@ -17,6 +18,7 @@ export interface UnitProps {
 }
 
 /** This interface defines the required properties of a Quantity.
+ * @alpha
  */
 export interface QuantityProps {
   readonly magnitude: number;
@@ -26,6 +28,7 @@ export interface QuantityProps {
 
 /** This interface defines the properties required to convert a quantity value from one unit to another such as from meters to feet
  * or from Celsius to Fahrenheit.
+ * @alpha
  */
 export interface UnitConversion {
   factor: number;
@@ -34,6 +37,7 @@ export interface UnitConversion {
 
 /** This interface is implemented by the class that is responsible for locating units by name or label and providing conversion values between units.
  * The methods to be implemented are async allowing the UnitsProvider to query the backend when necessary to look up unit definition and conversion rules.
+ * @alpha
  */
 export interface UnitsProvider {
   findUnit(unitLabel: string, unitFamily?: string): Promise<UnitProps>;
@@ -42,6 +46,7 @@ export interface UnitsProvider {
 }
 
 /** This class is a convenience class that can be returned when a valid Unit cannot be determined.
+ * @alpha
  */
 export class BadUnit implements UnitProps {
   public name = "";

@@ -24,6 +24,9 @@ import { initializeRpcBackend } from "./RpcBackend";
 import * as os from "os";
 import * as semver from "semver";
 
+/** @hidden */
+const loggingCategory = "imodeljs-backend.IModelHost";
+
 /**
  * Configuration of imodeljs-backend.
  */
@@ -68,22 +71,31 @@ export class IModelHost {
       return;
 
     if (!Platform.isMobile)
-      this.checkVersion();
+      this.validateNativePlatformVersion();
 
     platform.logger = Logger;
     platform.initializeRegion(region);
   }
 
-  private static checkVersion(): void {
+  private static validateNativePlatformVersion(): void {
     const requiredVersion = require("../package.json").dependencies["@bentley/imodeljs-native"];
-    if (semver.satisfies(this.platform.version, requiredVersion))
+    const thisVersion = this.platform.version;
+    if (semver.satisfies(thisVersion, requiredVersion))
       return;
     if (IModelJsFs.existsSync(path.join(__dirname, "DevBuild.txt"))) {
       console.log("Bypassing version checks for development build"); // tslint:disable-line:no-console
       return;
     }
     this._platform = undefined;
-    throw new IModelError(IModelStatus.BadRequest, "imodeljs-native version is (" + this.platform.version + "). imodeljs-backend requires version (" + requiredVersion + ")");
+    throw new IModelError(IModelStatus.BadRequest, "imodeljs-native version is (" + thisVersion + "). imodeljs-backend requires version (" + requiredVersion + ")");
+  }
+
+  private static validateNodeJsVersion(): void {
+    const requiredVersion = require("../package.json").engines.node;
+    if (!semver.satisfies(process.version, requiredVersion)) {
+      throw new IModelError(IModelStatus.BadRequest, `Node.js version ${process.version} is not within the range acceptable to imodeljs-backend: (${requiredVersion})`);
+    }
+    return;
   }
 
   /** @hidden */
@@ -96,17 +108,24 @@ export class IModelHost {
    */
   public static startup(configuration: IModelHostConfiguration = new IModelHostConfiguration()) {
     if (IModelHost.configuration)
-      throw new IModelError(BentleyStatus.ERROR, "startup may only be called once");
+      throw new IModelError(BentleyStatus.ERROR, "startup may only be called once", Logger.logError, loggingCategory, () => (configuration));
+
+    this.validateNodeJsVersion();
 
     this.backendVersion = require("../package.json").version;
     initializeRpcBackend();
 
     const region: number = Config.App.getNumber(UrlDiscoveryClient.configResolveUrlUsingRegion, 0);
     if (!this._isNativePlatformLoaded) {
-      if (configuration.nativePlatform !== undefined)
-        this.registerPlatform(configuration.nativePlatform, region);
-      else
-        this.loadNative(region);
+      try {
+        if (configuration.nativePlatform !== undefined)
+          this.registerPlatform(configuration.nativePlatform, region);
+        else
+          this.loadNative(region);
+      } catch (error) {
+        Logger.logError(loggingCategory, "Error registering/loading the native platform API", () => (configuration));
+        throw error;
+      }
     }
 
     if (configuration.imodelClient)

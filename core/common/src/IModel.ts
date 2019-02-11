@@ -5,9 +5,9 @@
 /** @module iModels */
 
 import { GuidString, Id64, Id64String, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
-import { AxisOrder, Matrix3d, Point3d, Range3dProps, Transform, Vector3d, XYAndZ, XYZProps, YawPitchRollAngles, YawPitchRollProps } from "@bentley/geometry-core";
+import { AxisOrder, Matrix3d, Point3d, Range3dProps, Transform, Vector3d, XYAndZ, XYZProps, YawPitchRollAngles, YawPitchRollProps, Range3d } from "@bentley/geometry-core";
 import { Cartographic } from "./geometry/Cartographic";
-import { AxisAlignedBox3d } from "./geometry/Primitives";
+import { AxisAlignedBox3d } from "./geometry/Placement";
 import { IModelError } from "./IModelError";
 import { ThumbnailProps } from "./Thumbnail";
 
@@ -166,7 +166,7 @@ export abstract class IModel implements IModelProps {
   protected initialize(name: string, props: IModelProps) {
     this.name = name;
     this.rootSubject = props.rootSubject;
-    this.projectExtents = AxisAlignedBox3d.fromJSON(props.projectExtents);
+    this.projectExtents = Range3d.fromJSON(props.projectExtents);
     this._globalOrigin = Point3d.fromJSON(props.globalOrigin);
     this._globalOrigin.freeze(); // cannot be modified
     if (props.ecefLocation)
@@ -216,13 +216,13 @@ export abstract class IModel implements IModelProps {
   public ecefToSpatial(ecef: XYAndZ, result?: Point3d): Point3d { return this.getEcefTransform().multiplyInversePoint3d(ecef, result)!; }
 
   /**
-   * Convert a point in this iModel's Spatial coordinates to a [[Cartographic]]  using its [[IModel.ecefLocation]].
+   * Convert a point in this iModel's Spatial coordinates to a [[Cartographic]] using its [[IModel.ecefLocation]].
    * @param spatial A point in the iModel's spatial coordinates
    * @param result If defined, use this for output
    * @returns A Cartographic location
    * @throws IModelError if [[isGeoLocated]] is false.
    */
-  public spatialToCartographic(spatial: XYAndZ, result?: Cartographic): Cartographic { return Cartographic.fromEcef(this.spatialToEcef(spatial), result)!; }
+  public spatialToCartographicFromEcef(spatial: XYAndZ, result?: Cartographic): Cartographic { return Cartographic.fromEcef(this.spatialToEcef(spatial), result)!; }
 
   /**
    * Convert a [[Cartographic]] to a point in this iModel's Spatial coordinates using its [[IModel.ecefLocation]].
@@ -232,5 +232,5 @@ export abstract class IModel implements IModelProps {
    * @throws IModelError if [[isGeoLocated]] is false.
    * @note The resultant point will only be meaningful if the ECEF coordinate is close on the earth to the iModel.
    */
-  public cartographicToSpatial(cartographic: Cartographic, result?: Point3d) { return this.ecefToSpatial(cartographic.toEcef(result), result); }
+  public cartographicToSpatialFromEcef(cartographic: Cartographic, result?: Point3d) { return this.ecefToSpatial(cartographic.toEcef(result), result); }
 }

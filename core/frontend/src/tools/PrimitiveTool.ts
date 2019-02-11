@@ -173,11 +173,12 @@ export abstract class PrimitiveTool extends InteractiveTool {
   public exitTool(): void { IModelApp.toolAdmin.startDefaultTool(); }
 
   /**
-   * Called to revert to a previous tool state (ex. undo last data button).
+   * Called to reverse to a previous tool state (ex. undo last data button).
    * @return false to instead reverse the most recent transaction.
    */
   public async onUndoPreviousStep(): Promise<boolean> { return false; }
 
+  /** @hidden */
   public async undoPreviousStep(): Promise<boolean> {
     if (!await this.onUndoPreviousStep())
       return false;
@@ -189,6 +190,23 @@ export abstract class PrimitiveTool extends InteractiveTool {
     return true;
   }
 
+  /**
+   * Called to reinstate to a previous tool state (ex. redo last data button).
+   * @return false to instead reinstate the most recent transaction.
+   */
+  public async onRedoPreviousStep(): Promise<boolean> { return false; }
+
+  /** @hidden */
+  public async redoPreviousStep(): Promise<boolean> {
+    if (!await this.onRedoPreviousStep())
+      return false;
+
+    AccuDrawShortcuts.processPendingHints(); // Process any hints the active tool setup in _OnUndoPreviousStep now...
+    IModelApp.viewManager.invalidateDecorationsAllViews();
+    IModelApp.toolAdmin.updateDynamics();
+
+    return true;
+  }
   /**
    * Tools need to call SaveChanges to commit any elements they have added/changes they have made.
    * This helper method supplies the tool name for the undo string to iModel.saveChanges.

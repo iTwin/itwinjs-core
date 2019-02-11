@@ -24,7 +24,8 @@ import { Schema } from "../../src/Metadata/Schema";
 import { Unit } from "../../src/Metadata/Unit";
 import { UnitSystem } from "../../src/Metadata/UnitSystem";
 import { SchemaValidationVisitor } from "../../src/Validation/SchemaValidationVisitor";
-import { TESTDIAGNOSTICS, TestReporter, TestRuleSet, TestRuleSetB } from "../TestUtils/DiagnosticHelpers";
+import { TestReporter, TestRuleSet, TestRuleSetB, EmptyRuleSet, TestDiagnostics } from "../TestUtils/DiagnosticHelpers";
+import { CustomAttributeClass } from "../../src/Metadata/CustomAttributeClass";
 
 describe("SchemaValidationVisitor tests", () => {
   let visitor: SchemaValidationVisitor;
@@ -81,6 +82,13 @@ describe("SchemaValidationVisitor tests", () => {
       ruleSetB.schemaRules.forEach((spy) => expect(spy.calledOnceWithExactly(schema)).to.be.true);
     });
 
+    it("No rules, visit does not fail", async () => {
+      visitor.registerRuleSet(new EmptyRuleSet());
+      const testSchema = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);
+
+      await visitor.visitFullSchema(testSchema);
+    });
+
     it("failing rules, reporter called properly", async () => {
       const ruleSet = new TestRuleSet();
       visitor.registerRuleSet(ruleSet);
@@ -91,7 +99,7 @@ describe("SchemaValidationVisitor tests", () => {
 
       await visitor.visitFullSchema(testSchema);
 
-      const diagnostic = new TESTDIAGNOSTICS.FailingSchemaDiagnostic(schema, ["Param1", "Param2"]);
+      const diagnostic = new TestDiagnostics.FailingSchemaDiagnostic(schema, ["Param1", "Param2"]);
       expect(reportSpy.calledOnceWithExactly(diagnostic)).to.be.true;
     });
   });
@@ -110,6 +118,13 @@ describe("SchemaValidationVisitor tests", () => {
       ruleSetB.schemaItemRules.forEach((spy) => expect(spy.calledOnceWithExactly(schemaItem)).to.be.true);
     });
 
+    it("No rules, visit does not fail", async () => {
+      visitor.registerRuleSet(new EmptyRuleSet());
+      const schemaItem = new EntityClass(schema, "TestClass");
+
+      await visitor.visitSchemaItem(schemaItem);
+    });
+
     it("failing rules, reporter called properly", async () => {
       const ruleSet = new TestRuleSet();
       visitor.registerRuleSet(ruleSet);
@@ -120,7 +135,7 @@ describe("SchemaValidationVisitor tests", () => {
 
       await visitor.visitSchemaItem(schemaItem);
 
-      const diagnostic = new TESTDIAGNOSTICS.FailingSchemaItemDiagnostic(schemaItem, ["Param1", "Param2"]);
+      const diagnostic = new TestDiagnostics.FailingSchemaItemDiagnostic(schemaItem, ["Param1", "Param2"]);
       expect(reportSpy.calledOnceWithExactly(diagnostic)).to.be.true;
     });
   });
@@ -139,6 +154,13 @@ describe("SchemaValidationVisitor tests", () => {
       ruleSetB.classRules.forEach((spy) => expect(spy.calledOnceWithExactly(entityClass)).to.be.true);
     });
 
+    it("No rules, visit does not fail", async () => {
+      visitor.registerRuleSet(new EmptyRuleSet());
+      const schemaItem = new EntityClass(schema, "TestClass");
+
+      await visitor.visitClass(schemaItem);
+    });
+
     it("failing rules, reporter called properly", async () => {
       const ruleSet = new TestRuleSet();
       visitor.registerRuleSet(ruleSet);
@@ -149,7 +171,7 @@ describe("SchemaValidationVisitor tests", () => {
 
       await visitor.visitClass(entityClass);
 
-      const diagnostic = new TESTDIAGNOSTICS.FailingClassDiagnostic(entityClass, ["Param1", "Param2"]);
+      const diagnostic = new TestDiagnostics.FailingClassDiagnostic(entityClass, ["Param1", "Param2"]);
       expect(reportSpy.calledOnceWithExactly(diagnostic)).to.be.true;
     });
   });
@@ -159,11 +181,19 @@ describe("SchemaValidationVisitor tests", () => {
       const ruleSet = new TestRuleSet();
       visitor.registerRuleSet(ruleSet);
       const entityClass = new EntityClass(schema, "TestClass");
-      await (entityClass as ECClass as MutableClass).createPrimitiveProperty("TestPropertyA", PrimitiveType.String);
+      const property = await (entityClass as ECClass as MutableClass).createPrimitiveProperty("TestPropertyA", PrimitiveType.String);
 
-      await visitor.visitProperty(entityClass.properties![0] as AnyProperty);
+      await visitor.visitProperty(property as AnyProperty);
 
-      ruleSet.propertyRules.forEach((spy) => expect(spy.calledOnceWithExactly(entityClass.properties![0])).to.be.true);
+      ruleSet.propertyRules.forEach((spy) => expect(spy.calledOnceWithExactly(property)).to.be.true);
+    });
+
+    it("No rules, visit does not fail", async () => {
+      visitor.registerRuleSet(new EmptyRuleSet());
+      const schemaItem = new EntityClass(schema, "TestClass");
+      const property = await (schemaItem as ECClass as MutableClass).createPrimitiveProperty("TestPropertyA", PrimitiveType.String);
+
+      await visitor.visitProperty(property);
     });
 
     it("failing rules, reporter called properly", async () => {
@@ -177,7 +207,7 @@ describe("SchemaValidationVisitor tests", () => {
 
       await visitor.visitProperty(entityClass.properties![0] as AnyProperty);
 
-      const diagnostic = new TESTDIAGNOSTICS.FailingPropertyDiagnostic(entityClass.properties![0] as AnyProperty, ["Param1", "Param2"]);
+      const diagnostic = new TestDiagnostics.FailingPropertyDiagnostic(entityClass.properties![0] as AnyProperty, ["Param1", "Param2"]);
       expect(reportSpy.calledOnceWithExactly(diagnostic)).to.be.true;
     });
   });
@@ -196,6 +226,13 @@ describe("SchemaValidationVisitor tests", () => {
       ruleSetB.entityClassRules.forEach((spy) => expect(spy.calledOnceWithExactly(entity)).to.be.true);
     });
 
+    it("No rules, visit does not fail", async () => {
+      visitor.registerRuleSet(new EmptyRuleSet());
+      const schemaItem = new EntityClass(schema, "TestClass");
+
+      await visitor.visitEntityClass(schemaItem);
+    });
+
     it("failing rules, reporter called properly", async () => {
       const ruleSet = new TestRuleSet();
       visitor.registerRuleSet(ruleSet);
@@ -206,7 +243,7 @@ describe("SchemaValidationVisitor tests", () => {
 
       await visitor.visitEntityClass(entity);
 
-      const diagnostic = new TESTDIAGNOSTICS.FailingEntityClassDiagnostic(entity, ["Param1", "Param2"]);
+      const diagnostic = new TestDiagnostics.FailingEntityClassDiagnostic(entity, ["Param1", "Param2"]);
       expect(reportSpy.calledOnceWithExactly(diagnostic)).to.be.true;
     });
   });
@@ -225,6 +262,13 @@ describe("SchemaValidationVisitor tests", () => {
       ruleSetB.structClassRules.forEach((spy) => expect(spy.calledOnceWithExactly(struct)).to.be.true);
     });
 
+    it("No rules, visit does not fail", async () => {
+      visitor.registerRuleSet(new EmptyRuleSet());
+      const schemaItem = new StructClass(schema, "TestClass");
+
+      await visitor.visitStructClass(schemaItem);
+    });
+
     it("failing rules, reporter called properly", async () => {
       const ruleSet = new TestRuleSet();
       visitor.registerRuleSet(ruleSet);
@@ -235,7 +279,7 @@ describe("SchemaValidationVisitor tests", () => {
 
       await visitor.visitStructClass(struct);
 
-      const diagnostic = new TESTDIAGNOSTICS.FailingStructClassDiagnostic(struct, ["Param1", "Param2"]);
+      const diagnostic = new TestDiagnostics.FailingStructClassDiagnostic(struct, ["Param1", "Param2"]);
       expect(reportSpy.calledOnceWithExactly(diagnostic)).to.be.true;
     });
   });
@@ -254,6 +298,13 @@ describe("SchemaValidationVisitor tests", () => {
       ruleSetB.mixinRules.forEach((spy) => expect(spy.calledOnceWithExactly(mixin)).to.be.true);
     });
 
+    it("No rules, visit does not fail", async () => {
+      visitor.registerRuleSet(new EmptyRuleSet());
+      const schemaItem = new Mixin(schema, "TestClass");
+
+      await visitor.visitMixin(schemaItem);
+    });
+
     it("failing rules, reporter called properly", async () => {
       const ruleSet = new TestRuleSet();
       visitor.registerRuleSet(ruleSet);
@@ -264,7 +315,7 @@ describe("SchemaValidationVisitor tests", () => {
 
       await visitor.visitMixin(mixin);
 
-      const diagnostic = new TESTDIAGNOSTICS.FailingMixinDiagnostic(mixin, ["Param1", "Param2"]);
+      const diagnostic = new TestDiagnostics.FailingMixinDiagnostic(mixin, ["Param1", "Param2"]);
       expect(reportSpy.calledOnceWithExactly(diagnostic)).to.be.true;
     });
   });
@@ -280,6 +331,13 @@ describe("SchemaValidationVisitor tests", () => {
       ruleSet.relationshipRules.forEach((spy) => expect(spy.calledOnceWithExactly(relationshipClass)).to.be.true);
     });
 
+    it("No rules, visit does not fail", async () => {
+      visitor.registerRuleSet(new EmptyRuleSet());
+      const schemaItem = new RelationshipClass(schema, "TestClass");
+
+      await visitor.visitRelationshipClass(schemaItem);
+    });
+
     it("failing rules, reporter called properly", async () => {
       const ruleSet = new TestRuleSet();
       visitor.registerRuleSet(ruleSet);
@@ -290,7 +348,7 @@ describe("SchemaValidationVisitor tests", () => {
 
       await visitor.visitRelationshipClass(relationship);
 
-      const diagnostic = new TESTDIAGNOSTICS.FailingRelationshipDiagnostic(relationship, ["Param1", "Param2"]);
+      const diagnostic = new TestDiagnostics.FailingRelationshipDiagnostic(relationship, ["Param1", "Param2"]);
       expect(reportSpy.calledOnceWithExactly(diagnostic)).to.be.true;
     });
   });
@@ -307,6 +365,14 @@ describe("SchemaValidationVisitor tests", () => {
       ruleSet.relationshipConstraintRules.forEach((spy) => expect(spy.calledOnceWithExactly(constraint)).to.be.true);
     });
 
+    it("No rules, visit does not fail", async () => {
+      visitor.registerRuleSet(new EmptyRuleSet());
+      const relationshipClass = new RelationshipClass(schema, "TestClass");
+      const constraint = new RelationshipConstraint(relationshipClass, RelationshipEnd.Source);
+
+      await visitor.visitRelationshipConstraint(constraint);
+    });
+
     it("failing rules, reporter called properly", async () => {
       const ruleSet = new TestRuleSet();
       visitor.registerRuleSet(ruleSet);
@@ -318,7 +384,43 @@ describe("SchemaValidationVisitor tests", () => {
 
       await visitor.visitRelationshipConstraint(constraint);
 
-      const diagnostic = new TESTDIAGNOSTICS.FailingRelationshipConstraintDiagnostic(constraint, ["Param1", "Param2"]);
+      const diagnostic = new TestDiagnostics.FailingRelationshipConstraintDiagnostic(constraint, ["Param1", "Param2"]);
+      expect(reportSpy.calledOnceWithExactly(diagnostic)).to.be.true;
+    });
+  });
+
+  describe("visitCustomAttributeClass tests", () => {
+    it("calls CustomAttributeClass rules properly", async () => {
+      const ruleSetA = new TestRuleSet();
+      const ruleSetB = new TestRuleSetB();
+      visitor.registerRuleSet(ruleSetA);
+      visitor.registerRuleSet(ruleSetB);
+      const schemaItem = new CustomAttributeClass(schema, "TestClass");
+
+      await visitor.visitCustomAttributeClass(schemaItem);
+
+      ruleSetA.customAttributeClassRules.forEach((spy) => expect(spy.calledOnceWithExactly(schemaItem)).to.be.true);
+      ruleSetB.customAttributeClassRules.forEach((spy) => expect(spy.calledOnceWithExactly(schemaItem)).to.be.true);
+    });
+
+    it("No rules, visit does not fail", async () => {
+      visitor.registerRuleSet(new EmptyRuleSet());
+      const schemaItem = new CustomAttributeClass(schema, "TestClass");
+
+      await visitor.visitCustomAttributeClass(schemaItem);
+    });
+
+    it("failing rules, reporter called properly", async () => {
+      const ruleSet = new TestRuleSet();
+      visitor.registerRuleSet(ruleSet);
+      const reporter = new TestReporter();
+      const reportSpy = sinon.spy(reporter, "report");
+      visitor.registerReporter(reporter);
+      const schemaItem = new CustomAttributeClass(schema, "TestClass");
+
+      await visitor.visitCustomAttributeClass(schemaItem);
+
+      const diagnostic = new TestDiagnostics.FailingCustomAttributeClassDiagnostic(schemaItem, ["Param1", "Param2"]);
       expect(reportSpy.calledOnceWithExactly(diagnostic)).to.be.true;
     });
   });
@@ -334,6 +436,14 @@ describe("SchemaValidationVisitor tests", () => {
 
       ruleSet.customAttributeContainerRules.forEach((spy) => expect(spy.calledOnceWithExactly(entityClass)).to.be.true);
       ruleSet.customAttributeInstanceRules.forEach((spy) => expect(spy.calledOnceWithExactly(entityClass, entityClass.customAttributes!.get("TestSchema.TestCA"))).to.be.true);
+    });
+
+    it("No rules, visit does not fail", async () => {
+      visitor.registerRuleSet(new EmptyRuleSet());
+      const entityClass = new EntityClass(schema, "TestClass");
+      (entityClass as unknown as MutableClass).addCustomAttribute({ className: "TestSchema.TestCA" });
+
+      await visitor.visitCustomAttributeContainer(entityClass);
     });
 
     it("Property, calls CustomAttributeContainer rules properly", async () => {
@@ -386,7 +496,7 @@ describe("SchemaValidationVisitor tests", () => {
 
       await visitor.visitCustomAttributeContainer(entityClass);
 
-      const diagnostic = new TESTDIAGNOSTICS.FailingCustomAttributeContainerDiagnostic(entityClass, ["Param1", "Param2"]);
+      const diagnostic = new TestDiagnostics.FailingCustomAttributeContainerDiagnostic(entityClass, ["Param1", "Param2"]);
       expect(reportSpy.calledTwice).to.be.true;
       expect(reportSpy.calledWithExactly(diagnostic)).to.be.true;
     });
@@ -403,6 +513,13 @@ describe("SchemaValidationVisitor tests", () => {
       ruleSet.enumerationRules.forEach((spy) => expect(spy.calledOnceWithExactly(enumeration)).to.be.true);
     });
 
+    it("No rules, visit does not fail", async () => {
+      visitor.registerRuleSet(new EmptyRuleSet());
+      const schemaItem = new Enumeration(schema, "TestClass");
+
+      await visitor.visitEnumeration(schemaItem);
+    });
+
     it("failing rules, reporter called properly", async () => {
       const ruleSet = new TestRuleSet();
       visitor.registerRuleSet(ruleSet);
@@ -413,7 +530,7 @@ describe("SchemaValidationVisitor tests", () => {
 
       await visitor.visitEnumeration(enumeration);
 
-      const diagnostic = new TESTDIAGNOSTICS.FailingEnumerationDiagnostic(enumeration, ["Param1", "Param2"]);
+      const diagnostic = new TestDiagnostics.FailingEnumerationDiagnostic(enumeration, ["Param1", "Param2"]);
       expect(reportSpy.calledOnceWithExactly(diagnostic)).to.be.true;
     });
   });
@@ -429,6 +546,13 @@ describe("SchemaValidationVisitor tests", () => {
       ruleSet.kindOfQuantityRules.forEach((spy) => expect(spy.calledOnceWithExactly(koq)).to.be.true);
     });
 
+    it("No rules, visit does not fail", async () => {
+      visitor.registerRuleSet(new EmptyRuleSet());
+      const schemaItem = new KindOfQuantity(schema, "TestClass");
+
+      await visitor.visitKindOfQuantity(schemaItem);
+    });
+
     it("failing rules, reporter called properly", async () => {
       const ruleSet = new TestRuleSet();
       visitor.registerRuleSet(ruleSet);
@@ -439,7 +563,7 @@ describe("SchemaValidationVisitor tests", () => {
 
       await visitor.visitKindOfQuantity(koq);
 
-      const diagnostic = new TESTDIAGNOSTICS.FailingKindOfQuantityDiagnostic(koq, ["Param1", "Param2"]);
+      const diagnostic = new TestDiagnostics.FailingKindOfQuantityDiagnostic(koq, ["Param1", "Param2"]);
       expect(reportSpy.calledOnceWithExactly(diagnostic)).to.be.true;
     });
   });
@@ -455,6 +579,13 @@ describe("SchemaValidationVisitor tests", () => {
       ruleSet.propertyCategoryRules.forEach((spy) => expect(spy.calledOnceWithExactly(category)).to.be.true);
     });
 
+    it("No rules, visit does not fail", async () => {
+      visitor.registerRuleSet(new EmptyRuleSet());
+      const schemaItem = new PropertyCategory(schema, "TestClass");
+
+      await visitor.visitPropertyCategory(schemaItem);
+    });
+
     it("failing rules, reporter called properly", async () => {
       const ruleSet = new TestRuleSet();
       visitor.registerRuleSet(ruleSet);
@@ -465,7 +596,7 @@ describe("SchemaValidationVisitor tests", () => {
 
       await visitor.visitPropertyCategory(category);
 
-      const diagnostic = new TESTDIAGNOSTICS.FailingPropertyCategoryDiagnostic(category, ["Param1", "Param2"]);
+      const diagnostic = new TestDiagnostics.FailingPropertyCategoryDiagnostic(category, ["Param1", "Param2"]);
       expect(reportSpy.calledOnceWithExactly(diagnostic)).to.be.true;
     });
   });
@@ -481,6 +612,13 @@ describe("SchemaValidationVisitor tests", () => {
       ruleSet.formatRules.forEach((spy) => expect(spy.calledOnceWithExactly(format)).to.be.true);
     });
 
+    it("No rules, visit does not fail", async () => {
+      visitor.registerRuleSet(new EmptyRuleSet());
+      const schemaItem = new Format(schema, "TestClass");
+
+      await visitor.visitFormat(schemaItem);
+    });
+
     it("failing rules, reporter called properly", async () => {
       const ruleSet = new TestRuleSet();
       visitor.registerRuleSet(ruleSet);
@@ -491,7 +629,7 @@ describe("SchemaValidationVisitor tests", () => {
 
       await visitor.visitFormat(format);
 
-      const diagnostic = new TESTDIAGNOSTICS.FailingFormatDiagnostic(format, ["Param1", "Param2"]);
+      const diagnostic = new TestDiagnostics.FailingFormatDiagnostic(format, ["Param1", "Param2"]);
       expect(reportSpy.calledOnceWithExactly(diagnostic)).to.be.true;
     });
   });
@@ -507,6 +645,13 @@ describe("SchemaValidationVisitor tests", () => {
       ruleSet.unitRules.forEach((spy) => expect(spy.calledOnceWithExactly(unit)).to.be.true);
     });
 
+    it("No rules, visit does not fail", async () => {
+      visitor.registerRuleSet(new EmptyRuleSet());
+      const schemaItem = new Unit(schema, "TestClass");
+
+      await visitor.visitUnit(schemaItem);
+    });
+
     it("failing rules, reporter called properly", async () => {
       const ruleSet = new TestRuleSet();
       visitor.registerRuleSet(ruleSet);
@@ -517,7 +662,7 @@ describe("SchemaValidationVisitor tests", () => {
 
       await visitor.visitUnit(unit);
 
-      const diagnostic = new TESTDIAGNOSTICS.FailingUnitDiagnostic(unit, ["Param1", "Param2"]);
+      const diagnostic = new TestDiagnostics.FailingUnitDiagnostic(unit, ["Param1", "Param2"]);
       expect(reportSpy.calledOnceWithExactly(diagnostic)).to.be.true;
     });
   });
@@ -533,6 +678,13 @@ describe("SchemaValidationVisitor tests", () => {
       ruleSet.invertedUnitRules.forEach((spy) => expect(spy.calledOnceWithExactly(invertedUnit)).to.be.true);
     });
 
+    it("No rules, visit does not fail", async () => {
+      visitor.registerRuleSet(new EmptyRuleSet());
+      const schemaItem = new InvertedUnit(schema, "TestClass");
+
+      await visitor.visitInvertedUnit(schemaItem);
+    });
+
     it("failing rules, reporter called properly", async () => {
       const ruleSet = new TestRuleSet();
       visitor.registerRuleSet(ruleSet);
@@ -543,7 +695,7 @@ describe("SchemaValidationVisitor tests", () => {
 
       await visitor.visitInvertedUnit(invertedUnit);
 
-      const diagnostic = new TESTDIAGNOSTICS.FailingInvertedUnitFormatDiagnostic(invertedUnit, ["Param1", "Param2"]);
+      const diagnostic = new TestDiagnostics.FailingInvertedUnitFormatDiagnostic(invertedUnit, ["Param1", "Param2"]);
       expect(reportSpy.calledOnceWithExactly(diagnostic)).to.be.true;
     });
   });
@@ -559,6 +711,13 @@ describe("SchemaValidationVisitor tests", () => {
       ruleSet.unitSystemRules.forEach((spy) => expect(spy.calledOnceWithExactly(unitSystem)).to.be.true);
     });
 
+    it("No rules, visit does not fail", async () => {
+      visitor.registerRuleSet(new EmptyRuleSet());
+      const schemaItem = new UnitSystem(schema, "TestClass");
+
+      await visitor.visitUnitSystem(schemaItem);
+    });
+
     it("failing rules, reporter called properly", async () => {
       const ruleSet = new TestRuleSet();
       visitor.registerRuleSet(ruleSet);
@@ -569,7 +728,7 @@ describe("SchemaValidationVisitor tests", () => {
 
       await visitor.visitUnitSystem(unitSystem);
 
-      const diagnostic = new TESTDIAGNOSTICS.FailingUnitSystemDiagnostic(unitSystem, ["Param1", "Param2"]);
+      const diagnostic = new TestDiagnostics.FailingUnitSystemDiagnostic(unitSystem, ["Param1", "Param2"]);
       expect(reportSpy.calledOnceWithExactly(diagnostic)).to.be.true;
     });
   });
@@ -585,6 +744,13 @@ describe("SchemaValidationVisitor tests", () => {
       ruleSet.phenomenonRules.forEach((spy) => expect(spy.calledOnceWithExactly(phenomenon)).to.be.true);
     });
 
+    it("No rules, visit does not fail", async () => {
+      visitor.registerRuleSet(new EmptyRuleSet());
+      const schemaItem = new Phenomenon(schema, "TestClass");
+
+      await visitor.visitPhenomenon(schemaItem);
+    });
+
     it("failing rules, reporter called properly", async () => {
       const ruleSet = new TestRuleSet();
       visitor.registerRuleSet(ruleSet);
@@ -595,7 +761,7 @@ describe("SchemaValidationVisitor tests", () => {
 
       await visitor.visitPhenomenon(phenomenon);
 
-      const diagnostic = new TESTDIAGNOSTICS.FailingPhenomenonDiagnostic(phenomenon, ["Param1", "Param2"]);
+      const diagnostic = new TestDiagnostics.FailingPhenomenonDiagnostic(phenomenon, ["Param1", "Param2"]);
       expect(reportSpy.calledOnceWithExactly(diagnostic)).to.be.true;
     });
   });
@@ -611,6 +777,13 @@ describe("SchemaValidationVisitor tests", () => {
       ruleSet.constantRules.forEach((spy) => expect(spy.calledOnceWithExactly(constant)).to.be.true);
     });
 
+    it("No rules, visit does not fail", async () => {
+      visitor.registerRuleSet(new EmptyRuleSet());
+      const schemaItem = new Constant(schema, "TestClass");
+
+      await visitor.visitConstant(schemaItem);
+    });
+
     it("failing rules, reporter called properly", async () => {
       const ruleSet = new TestRuleSet();
       visitor.registerRuleSet(ruleSet);
@@ -621,7 +794,7 @@ describe("SchemaValidationVisitor tests", () => {
 
       await visitor.visitConstant(constant);
 
-      const diagnostic = new TESTDIAGNOSTICS.FailingConstantDiagnostic(constant, ["Param1", "Param2"]);
+      const diagnostic = new TestDiagnostics.FailingConstantDiagnostic(constant, ["Param1", "Param2"]);
       expect(reportSpy.calledOnceWithExactly(diagnostic)).to.be.true;
     });
   });

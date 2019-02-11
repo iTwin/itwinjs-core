@@ -4,14 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { assert } from "@bentley/bentleyjs-core";
 import { GL } from "./GL";
 import { System } from "./System";
 
 /** Provides facilities for conditionally executing diagnostic/debug code. By default, all facilities are disabled - they must be explicitly enabled. */
 export class Debug {
-  /** Whether [[Debug.assert]] will actually perform the assertion. */
-  public static assertionsEnabled = false;
   /** Whether [[Debug.print]] will actually produce output. */
   public static printEnabled = false;
   /** Whether [[Debug.evaluate]] will actually evaluate an expression. */
@@ -23,20 +20,6 @@ export class Debug {
   public static print(message: () => string): void {
     if (this.printEnabled)
       console.log(message()); // tslint:disable-line:no-console
-  }
-
-  /** If [[Debug.assertionsEnabled]] is true, asserts that a condition is true. Otherwise, does nothing.
-   * @param condition The function which evaluates the condition
-   * @param message An optional custom message in the event that the supplied condition evaluates false, or a function returning such a message.
-   * @note Supply a function for `message` if the message is not a string literal.
-   */
-  public static assert(condition: () => boolean, message?: string | (() => string)): void {
-    if (this.assertionsEnabled) {
-      if ("function" === typeof message)
-        message = message();
-
-      assert(condition(), undefined !== message ? message : "Rendering assertion failed.");
-    }
   }
 
   /** If [[Debug.evaluate]] is true, executes the supplied function and returns its result; otherwise returns the supplied default value.

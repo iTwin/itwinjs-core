@@ -1,0 +1,40 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+@import "../style/index";
+@import "../inputs/variables";
+
+@import "./button";
+@import "./disabled";
+
+
+@mixin uicore-buttons-hollow {
+
+    @include uicore-buttons-button;
+
+    &, &:active, &:focus {
+
+        padding:            $uicore-inputs-padding-bordered $uicore-bordered-padding;
+        border:             1px solid $uicore-gray-6;
+        background-color:   transparent;
+        color:              $uicore-gray-3;
+    }
+
+    &:hover {
+
+        background-color:   transparent;
+        border-color:       $uicore-gray-4;
+        color:              $uicore-gray-1;
+    }
+
+    &[disabled],
+    &[disabled]:hover,
+    &[disabled]:active,
+    &[disabled]:focus {
+
+        padding:            $uicore-inputs-padding $uicore-unbordered-padding;
+    }
+}
+
+.uicore-buttons-hollow { @include uicore-buttons-hollow; }

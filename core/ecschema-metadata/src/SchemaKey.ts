@@ -31,10 +31,10 @@ export class ECVersion {
 
   /**
    * Creates a string, in the format 'RR.ww.mm', representing this ECVersion.
-   * @ note The default is to not pad with zeroes.
+   * @note The default is to pad with zeroes.
    * @param padZeroes If true, the returned string will strictly follow `RR.ww.mm` and add leading zeroes if necessary.
    */
-  public toString(padZeroes: boolean = false): string {
+  public toString(padZeroes: boolean = true): string {
     if (!padZeroes)
       return `${this.read}.${this.write}.${this.minor}`;
 
@@ -132,7 +132,12 @@ export class SchemaKey {
 
   get minorVersion() { return this.version.minor; }
 
-  public toString() { return `${this.name}.${this.readVersion}.${this.writeVersion}.${this.minorVersion}`; }
+  /**
+   * Creates a string, in the format 'RR.ww.mm', representing this SchemaKey.
+   * @note The default is to pad the full name with zeroes.
+   * @param padZeroes If true, the returned string will strictly follow `Name.RR.ww.mm` and add leading zeroes if necessary.
+   */
+  public toString(padZeroes: boolean = true) { return `${this.name}.${this.version.toString(padZeroes)}`; }
 
   public static parseString(fullName: string) {
     const keyPieces = fullName.split(".");

@@ -19,6 +19,7 @@ import {
   ConfigurableUiControlType,
   ContentViewManager,
   ContentLayoutManager,
+  CoreTools,
 } from "../../ui-framework";
 import { ScreenViewport, ViewState3d } from "@bentley/imodeljs-frontend";
 
@@ -76,7 +77,7 @@ describe("ViewportContentControl", () => {
         return (
           <Frontstage
             id="Test1"
-            defaultToolId="Select"
+            defaultTool={CoreTools.selectElementCommand}
             defaultLayout={this.contentLayoutDef}
             contentGroup={myContentGroup}
           />

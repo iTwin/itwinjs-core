@@ -271,6 +271,13 @@ export class Cartographic implements LatLongAndHeight {
  */
 export class CartographicRange {
   private _ranges: Range2d[];
+
+  // These following are used to preserve the min/max latitude and longitudes.
+  // The longitudes are raw values and may cross over the -PI or 2PI boundaries.
+  private _minLongitude: number = 0;
+  private _maxLongitude: number = 0;
+  private _minLatitude: number = 0;
+  private _maxLatitude: number = 0;
   constructor(spatialRange: Range3d, spatialToEcef: Transform) {
 
     const ecefRange = spatialToEcef.multiplyRange(spatialRange);
@@ -279,22 +286,22 @@ export class CartographicRange {
     const high = Cartographic.fromEcef(ecefRange.high)!;
 
     const longitudeRanges = [];
-    const minLongitude = Math.min(low.longitude, high.longitude), maxLongitude = Math.max(low.longitude, high.longitude);
-    if (maxLongitude - minLongitude > Angle.piRadians) {
-      longitudeRanges.push(Range1d.createXX(0.0, minLongitude));
-      longitudeRanges.push(Range1d.createXX(maxLongitude, Angle.pi2Radians));
+    this._minLongitude = Math.min(low.longitude, high.longitude), this._maxLongitude = Math.max(low.longitude, high.longitude);
+    if (this._maxLongitude - this._minLongitude > Angle.piRadians) {
+      longitudeRanges.push(Range1d.createXX(0.0, this._minLongitude));
+      longitudeRanges.push(Range1d.createXX(this._maxLongitude, Angle.pi2Radians));
     } else {
-      longitudeRanges.push(Range1d.createXX(minLongitude, maxLongitude));
+      longitudeRanges.push(Range1d.createXX(this._minLongitude, this._maxLongitude));
     }
 
     this._ranges = [];
     for (const longitudeRange of longitudeRanges) {
-      const minLatitude = Math.min(low.latitude, high.latitude), maxLatitude = Math.max(low.latitude, high.latitude);
-      if (maxLatitude - minLatitude > Angle.piOver2Radians) {
-        this._ranges.push(Range2d.createXYXY(longitudeRange.low, 0.0, longitudeRange.high, minLatitude));
-        this._ranges.push(Range2d.createXYXY(longitudeRange.low, maxLatitude, longitudeRange.high, Angle.piRadians));
+      this._minLatitude = Math.min(low.latitude, high.latitude), this._maxLatitude = Math.max(low.latitude, high.latitude);
+      if (this._maxLatitude - this._minLatitude > Angle.piOver2Radians) {
+        this._ranges.push(Range2d.createXYXY(longitudeRange.low, 0.0, longitudeRange.high, this._minLatitude));
+        this._ranges.push(Range2d.createXYXY(longitudeRange.low, this._maxLatitude, longitudeRange.high, Angle.piRadians));
       } else {
-        this._ranges.push(Range2d.createXYXY(longitudeRange.low, minLatitude, longitudeRange.high, maxLatitude));
+        this._ranges.push(Range2d.createXYXY(longitudeRange.low, this._minLatitude, longitudeRange.high, this._maxLatitude));
       }
     }
   }
@@ -304,5 +311,18 @@ export class CartographicRange {
         if (range.intersectsRange(otherRange))
           return true;
     return false;
+  }
+
+  /**
+   * This method returns the raw latitude / longitude for the range in a Range2d object.
+   * The X value represents the longitude and the Y value the latitudes.
+   * Y values are kepts conscribed between -PI and +PI while
+   * longitude values can be expressed in any range between -2PI to +2PI
+   * given the minimum longitude is always smaller numerically than the maximum longitude.
+   * Note that usually the longitudes are usually by convention in the range of -PI to PI except
+   * for ranges that overlap the -PI/+PI frontier in which case either representation is acceptable.
+   */
+  public getLongitudeLatitudeBoundingBox(): Range2d {
+    return Range2d.createXYXY(this._minLongitude, this._minLatitude, this._maxLongitude, this._maxLatitude);
   }
 }

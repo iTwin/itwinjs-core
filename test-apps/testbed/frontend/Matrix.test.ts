@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect, assert } from "chai";
-import { Debug, Matrix3, Matrix4, fromNormalizedCrossProduct, normalizedDifference } from "@bentley/imodeljs-frontend/lib/webgl";
+import { Matrix3, Matrix4, fromNormalizedCrossProduct, normalizedDifference } from "@bentley/imodeljs-frontend/lib/webgl";
 import { Vector3d, Point3d, Matrix3d, Transform, Matrix4d } from "@bentley/geometry-core";
 
 describe("Matrix3", () => {
@@ -118,11 +118,6 @@ describe("Matrix4", () => {
     assert.isTrue(mat4.data[15] === 1, "(3,3) --> 1");
   });
   it("toTransform works as expected", () => {
-    const invalidMat = Matrix4.fromValues(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1);
-    // throws error when (3,0) !== 0 && (3,1) !== 0 && (3,2) !== 0 && (3,3) !== 1
-    Debug.assertionsEnabled = true;
-    assert.throw(invalidMat.toTransform.bind(invalidMat));
-    Debug.assertionsEnabled = false;
     const validMat = Matrix4.fromValues(1, 2, 3, 10, 4, 5, 6, 11, 7, 8, 9, 12, 0, 0, 0, 1);
     const tran = validMat.toTransform();
     const mat = tran.matrix;

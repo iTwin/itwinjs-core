@@ -6,7 +6,7 @@
 
 import { TypeConverter } from "./TypeConverter";
 import { TypeConverterManager } from "./TypeConverterManager";
-import * as Primitives from "./valuetypes/PrimitiveTypes";
+import { Primitives } from "@bentley/imodeljs-frontend";
 
 /** Operators for string types */
 export interface StringOperatorProcessor {

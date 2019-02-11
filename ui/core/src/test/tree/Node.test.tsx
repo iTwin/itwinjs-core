@@ -6,9 +6,9 @@ import { expect } from "chai";
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { Checkbox } from "@bentley/bwc";
 import ExpansionToggle from "../../ui-core/tree/ExpansionToggle";
 import Node from "../../ui-core/tree/Node";
+import { Checkbox } from "../../ui-core/inputs/Checkbox";
 
 describe("<Node />", () => {
   it("should render", () => {

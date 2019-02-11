@@ -8,8 +8,10 @@ import { ConfigurableUiManager, ConfigurableCreateInfo, ContentControl, WidgetCo
 import { Orientation } from "@bentley/ui-core";
 
 import {
-  PropertyDescription, PropertyRecord, PropertyValueFormat, PrimitiveValue,
-  PropertyGrid, SimplePropertyDataProvider, PropertyValue, PropertyUpdatedArgs, PropertyCategory,
+  PropertyDescription, PropertyRecord, PropertyValueFormat, PrimitiveValue, PropertyValue,
+} from "@bentley/imodeljs-frontend";
+import {
+  PropertyGrid, SimplePropertyDataProvider, PropertyUpdatedArgs, PropertyCategory,
 } from "@bentley/ui-components";
 
 class SamplePropertyRecord extends PropertyRecord {

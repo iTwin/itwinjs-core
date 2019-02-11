@@ -2,21 +2,21 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-@import "@bentley/bwc/lib/mixins";
+@import "@bentley/ui-core/lib/ui-core/index";
 
 .column-drag-layer {
-  border: 1px solid rgba($bwc-black, 0.5);
-  border-radius: $bwc-border-radius;
+  border: 1px solid rgba($uicore-black, 0.5);
+  border-radius: $uicore-border-radius;
   padding: 0px;
   margin: 0px;
-  line-height: $bwc-line-height;
-  color: rgba($bwc-text-color, 0.5);
+  line-height: $uicore-line-height;
+  color: rgba($uicore-text-color, 0.5);
   font-weight: bold;
 }
 
 .table-header-drag-drop {
   &.dragging .react-grid-HeaderCell {
-    background: $bwc-gray;
+    background: $uicore-gray;
   }
   &.left .react-grid-HeaderCell {
     border-left: solid black 2px;
@@ -37,7 +37,7 @@
   &.on {
     .react-grid-Row * {
       /* !important used because react-data-grid did. only way to override */
-      background-color: $bwc-blue-8 !important;
+      background-color: $uicore-blue-8 !important;
     }
   }
 
@@ -47,7 +47,7 @@
 
   &.dragging {
     .react-grid-Row * {
-      color: $bwc-gray;
+      color: $uicore-gray;
     }
   }
 }

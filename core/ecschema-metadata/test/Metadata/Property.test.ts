@@ -170,7 +170,6 @@ describe("Property", () => {
   describe("toJson", () => {
     it("Simple serialization", async () => {
       const propertyJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/schemaitem",
         name: "ValidProp",
         description: "A really long description...",
         label: "SomeDisplayLabel",
@@ -179,19 +178,89 @@ describe("Property", () => {
         priority: 100,
       };
       const testProp = new MockProperty("ValidProp");
-      expect(testProp).to.exist;
       await testProp.deserialize(propertyJson);
       const serialized = testProp.toJson();
-      assert(serialized.name, "ValidProp");
-      assert(serialized.description, "A really long description...");
-      assert(serialized.label, "SomeDisplayLabel");
-      assert(serialized.type, "PrimitiveProperty");
-      assert(serialized.isReadOnly === true);
-      assert(serialized.priority === 100);
+      expect(serialized).to.deep.equal({ ...propertyJson });
     });
+
+    it("should omit undefined isReadOnly", async () => {
+      const propertyJson = {
+        name: "ValidProp",
+        type: "PrimitiveProperty",
+      };
+      const testProp = new MockProperty("ValidProp");
+      await testProp.deserialize(propertyJson);
+      expect(testProp.toJson()).to.not.have.property("isReadOnly");
+    });
+
+    it("should include false isReadOnly", async () => {
+      const propertyJson = {
+        name: "ValidProp",
+        type: "PrimitiveProperty",
+        isReadOnly: false,
+      };
+      const testProp = new MockProperty("ValidProp");
+      await testProp.deserialize(propertyJson);
+      expect(testProp.toJson()).to.include({ isReadOnly: false });
+    });
+
+    it("should omit undefined priority", async () => {
+      const propertyJson = {
+        name: "ValidProp",
+        type: "PrimitiveProperty",
+      };
+      const testProp = new MockProperty("ValidProp");
+      await testProp.deserialize(propertyJson);
+      expect(testProp.toJson()).to.not.have.property("priority");
+    });
+
+    it("should include 0 priority", async () => {
+      const propertyJson = {
+        name: "ValidProp",
+        type: "PrimitiveProperty",
+        priority: 0,
+      };
+      const testProp = new MockProperty("ValidProp");
+      await testProp.deserialize(propertyJson);
+      expect(testProp.toJson()).to.include({ priority: 0 });
+    });
+
+    it("should include kindOfQuantity", async () => {
+      const propertyJson = {
+        name: "ValidProp",
+        type: "PrimitiveProperty",
+        kindOfQuantity: "TestSchema.TestKoQ",
+      };
+      const testProp = new MockProperty("ValidProp");
+      await testProp.deserialize(propertyJson);
+      expect(testProp.toJson()).to.include({ kindOfQuantity: "TestSchema.TestKoQ" });
+    });
+
+    it("should include category", async () => {
+      const propertyJson = {
+        name: "ValidProp",
+        type: "PrimitiveProperty",
+        category: "TestSchema.TestCategory",
+      };
+      const testProp = new MockProperty("ValidProp");
+      await testProp.deserialize(propertyJson);
+      expect(testProp.toJson()).to.include({ category: "TestSchema.TestCategory" });
+    });
+
+    it("should omit customAttributes if empty", async () => {
+      const propertyJson = {
+        name: "ValidProp",
+        type: "PrimitiveProperty",
+        customAttributes: [],
+      };
+      const testProp = new MockProperty("ValidProp");
+      await testProp.deserialize(propertyJson);
+      expect(testProp!.toJson()).to.not.have.property("customAttributes");
+    });
+
     it("Serialization with one custom attribute- only class name", async () => {
       const propertyJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/schemaitem",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem",
         name: "ValidProp",
         type: "PrimitiveProperty",
       };
@@ -202,11 +271,11 @@ describe("Property", () => {
         className: "CoreCustomAttributes.HiddenSchema",
       });
       const serialized = testProp.toJson();
-      assert(serialized.customAttributes[0].className === "CoreCustomAttributes.HiddenSchema");
+      assert.strictEqual(serialized.customAttributes[0].className, "CoreCustomAttributes.HiddenSchema");
     });
     it("Serialization with one custom attribute- additional properties", () => {
       const propertyJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/schemaitem",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem",
         name: "ValidProp",
         type: "PrimitiveProperty",
       };
@@ -218,12 +287,12 @@ describe("Property", () => {
         ShowClasses: true,
       });
       const serialized = testProp.toJson();
-      assert(serialized.customAttributes[0].className === "CoreCustomAttributes.HiddenSchema");
-      assert(serialized.customAttributes[0].ShowClasses === true);
+      assert.strictEqual(serialized.customAttributes[0].className, "CoreCustomAttributes.HiddenSchema");
+      assert.isTrue(serialized.customAttributes[0].ShowClasses);
     });
     it("Serialization with multiple custom attributes- only class name", async () => {
       const propertyJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/schemaitem",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem",
         name: "ValidProp",
         type: "PrimitiveProperty",
       };
@@ -234,13 +303,13 @@ describe("Property", () => {
       testProp.addCustomAttribute({ className: "CoreAttributes.HiddenSchema" });
       testProp.addCustomAttribute({ className: "CoreCustom.HiddenSchema" });
       const serialized = testProp.toJson();
-      assert(serialized.customAttributes[0].className === "CoreCustomAttributes.HiddenSchema");
-      assert(serialized.customAttributes[1].className === "CoreAttributes.HiddenSchema");
-      assert(serialized.customAttributes[2].className === "CoreCustom.HiddenSchema");
+      assert.strictEqual(serialized.customAttributes[0].className, "CoreCustomAttributes.HiddenSchema");
+      assert.strictEqual(serialized.customAttributes[1].className, "CoreAttributes.HiddenSchema");
+      assert.strictEqual(serialized.customAttributes[2].className, "CoreCustom.HiddenSchema");
     });
     it("Serialization with multiple custom attributes- additional properties", async () => {
       const propertyJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/schemaitem",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem",
         name: "ValidProp",
         type: "PrimitiveProperty",
       };
@@ -260,9 +329,9 @@ describe("Property", () => {
         IntegerValue: 5,
       });
       const serialized = testProp.toJson();
-      assert(serialized.customAttributes[0].ShowClasses === true);
-      assert(serialized.customAttributes[1].FloatValue === 1.2);
-      assert(serialized.customAttributes[2].IntegerValue === 5);
+      assert.isTrue(serialized.customAttributes[0].ShowClasses);
+      assert.strictEqual(serialized.customAttributes[1].FloatValue, 1.2);
+      assert.strictEqual(serialized.customAttributes[2].IntegerValue, 5);
     });
   });
 });
@@ -334,14 +403,14 @@ describe("PrimitiveProperty", () => {
       testProperty.deserializeSync(propertyJson);
       const koq = testProperty.getKindOfQuantitySync();
       assert(koq !== undefined);
-      assert(koq!.name === "MyKindOfQuantity");
+      assert.strictEqual(koq!.name, "MyKindOfQuantity");
     });
 
     it("Should load KindOfQuantity", async () => {
       await testProperty.deserialize(propertyJson);
       const koq = await testProperty.kindOfQuantity;
       assert(koq !== undefined);
-      assert(koq!.name === "MyKindOfQuantity");
+      assert.strictEqual(koq!.name, "MyKindOfQuantity");
     });
   });
 
@@ -370,14 +439,14 @@ describe("PrimitiveProperty", () => {
       testProperty.deserializeSync(propertyJson);
       const cat = testProperty.getCategorySync();
       assert(cat !== undefined);
-      assert(cat!.name === "MyCategory");
+      assert.strictEqual(cat!.name, "MyCategory");
     });
 
     it("Should load PropertyCategory", async () => {
       await testProperty.deserialize(propertyJson);
       const cat = await testProperty.category;
       assert(cat !== undefined);
-      assert(cat!.name === "MyCategory");
+      assert.strictEqual(cat!.name, "MyCategory");
     });
   });
   describe("toJson", () => {
@@ -465,7 +534,7 @@ describe("EnumerationProperty", () => {
       expect(testProperty).to.exist;
       await testProperty.deserialize(propertyJson);
       const testPropSerialization = testProperty.toJson();
-      assert(testPropSerialization.typeName, "TestSchema.TestEnum");
+      assert.strictEqual(testPropSerialization.typeName, "TestSchema.TestEnum");
     });
   });
 });
@@ -523,7 +592,7 @@ describe("StructProperty", () => {
       expect(testProperty).to.exist;
       await testProperty.deserialize(propertyJson);
       const testPropSerialization = testProperty.toJson();
-      assert(testPropSerialization.typeName, "TestStruct");
+      assert.strictEqual(testPropSerialization.typeName, "TestSchema.TestStruct");
     });
   });
 });

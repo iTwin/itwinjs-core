@@ -252,29 +252,29 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
 
   /** Emit strokes to caller-supplied linestring */
   public emitStrokes(dest: LineString3d, options?: StrokeOptions): void {
-
-    if (options) {
-      let numStroke = 1;
-      if (options.maxEdgeLength)
-        numStroke = options.applyMaxEdgeLength(numStroke, this.curveLength());
-      numStroke = options.applyMinStrokesPerPrimitive(numStroke);
-      dest.appendFractionalStrokePoints(this, numStroke, 0.0, 1.0);
-    } else {
-      dest.appendFractionalStrokePoints(this, 1, 0.0, 1.0);
-    }
+    const numStroke = this.computeStrokeCountForOptions(options);
+    dest.appendFractionalStrokePoints(this, numStroke, 0.0, 1.0);
   }
   /** Emit strokes to caller-supplied handler */
   public emitStrokableParts(handler: IStrokeHandler, options?: StrokeOptions): void {
     handler.startCurvePrimitive(this);
-    const tangent = this._point0.vectorTo(this._point1);
+    const numStroke = this.computeStrokeCountForOptions(options);
+    handler.announceSegmentInterval(this, this._point0, this._point1, numStroke, 0.0, 1.0);
+    handler.endCurvePrimitive(this);
+  }
+
+  /**
+   * return the stroke count required for given options.
+   * @param options StrokeOptions that determine count
+   */
+  public computeStrokeCountForOptions(options?: StrokeOptions): number {
     let numStroke = 1;
     if (options) {
       if (options.maxEdgeLength)
-        numStroke = options.applyMaxEdgeLength(numStroke, tangent.magnitude());
+        numStroke = options.applyMaxEdgeLength(numStroke, this.curveLength());
       numStroke = options.applyMinStrokesPerPrimitive(numStroke);
     }
-    handler.announceSegmentInterval(this, this._point0, this._point1, numStroke, 0.0, 1.0);
-    handler.endCurvePrimitive(this);
+    return numStroke;
   }
 
   public dispatchToGeometryHandler(handler: GeometryHandler): any {

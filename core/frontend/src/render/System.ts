@@ -55,6 +55,7 @@ export namespace RenderMemory {
     Polylines,
     PointStrings,
     PointClouds,
+    Instances,
 
     COUNT,
   }
@@ -79,6 +80,7 @@ export namespace RenderMemory {
     public get polylines() { return this.consumers[BufferType.Polylines]; }
     public get pointStrings() { return this.consumers[BufferType.PointStrings]; }
     public get pointClouds() { return this.consumers[BufferType.PointClouds]; }
+    public get instances() { return this.consumers[BufferType.Instances]; }
 
     public clear(): void {
       for (const consumer of this.consumers)
@@ -152,6 +154,7 @@ export namespace RenderMemory {
     public addPolyline(numBytes: number) { this.addBuffer(BufferType.Polylines, numBytes); }
     public addPointString(numBytes: number) { this.addBuffer(BufferType.PointStrings, numBytes); }
     public addPointCloud(numBytes: number) { this.addBuffer(BufferType.PointClouds, numBytes); }
+    public addInstances(numBytes: number) { this.addBuffer(BufferType.Instances, numBytes); }
   }
 
   /** @hidden */
@@ -686,7 +689,7 @@ export abstract class RenderTarget implements IDisposable {
   /** @hidden */
   public reset(): void { }
   /** @hidden */
-  public abstract changeScene(scene: GraphicList, activeVolume?: RenderClipVolume): void;
+  public abstract changeScene(scene: GraphicList): void;
   /** @hidden */
   public abstract changeTerrain(_scene: GraphicList): void;
   /** @hidden */
@@ -727,14 +730,28 @@ export interface TextureImage {
 export const enum RenderDiagnostics {
   /** No diagnostics enabled. */
   None = 0,
-  /** Assertions enabled. Failed assertions will produce (often uncaught) exceptions. */
-  Assertions = 1 << 0,
   /** Debugging output to browser console enabled. */
   DebugOutput = 1 << 1,
   /** Potentially expensive checks of WebGL state enabled. */
   WebGL = 1 << 2,
   /** All diagnostics enabled. */
-  All = Assertions | DebugOutput | WebGL,
+  All = DebugOutput | WebGL,
+}
+
+/** Parameters for creating a [[RenderGraphic]] representing a collection of instances of shared geometry.
+ * Each instance is drawn using the same graphics, but with its own transform and (optionally) [[Feature]] Id.
+ */
+export interface InstancedGraphicParams {
+  /** The number of instances.
+   * Must be greater than zero.
+   * Must be equal to (transforms.length / 12)
+   * If featureIds is defined, must be equal to (featureIds.length / 3)
+   */
+  readonly count: number;
+  /** An array of instance-to-model transforms. Each transform consists of 3 rows of 4 columns where the 4th column holds the translation. */
+  readonly transforms: Float32Array;
+  /** If defined, an array of little-endian 24-bit unsigned integers containing the feature ID of each instance. */
+  readonly featureIds?: Uint8Array;
 }
 
 /** A RenderSystem provides access to resources used by the internal WebGL-based rendering system.
@@ -784,28 +801,28 @@ export abstract class RenderSystem implements IDisposable {
   public abstract createGraphicBuilder(placement: Transform, type: GraphicType, viewport: Viewport, pickableId?: Id64String): GraphicBuilder;
 
   /** @hidden */
-  public createTriMesh(args: MeshArgs): RenderGraphic | undefined {
+  public createTriMesh(args: MeshArgs, instances?: InstancedGraphicParams): RenderGraphic | undefined {
     const params = MeshParams.create(args);
-    return this.createMesh(params);
+    return this.createMesh(params, instances);
   }
 
   /** @hidden */
-  public createIndexedPolylines(args: PolylineArgs): RenderGraphic | undefined {
+  public createIndexedPolylines(args: PolylineArgs, instances?: InstancedGraphicParams): RenderGraphic | undefined {
     if (args.flags.isDisjoint) {
       const pointStringParams = PointStringParams.create(args);
-      return undefined !== pointStringParams ? this.createPointString(pointStringParams) : undefined;
+      return undefined !== pointStringParams ? this.createPointString(pointStringParams, instances) : undefined;
     } else {
       const polylineParams = PolylineParams.create(args);
-      return undefined !== polylineParams ? this.createPolyline(polylineParams) : undefined;
+      return undefined !== polylineParams ? this.createPolyline(polylineParams, instances) : undefined;
     }
   }
 
   /** @hidden */
-  public createMesh(_params: MeshParams): RenderGraphic | undefined { return undefined; }
+  public createMesh(_params: MeshParams, _instances?: InstancedGraphicParams): RenderGraphic | undefined { return undefined; }
   /** @hidden */
-  public createPolyline(_params: PolylineParams): RenderGraphic | undefined { return undefined; }
+  public createPolyline(_params: PolylineParams, _instances?: InstancedGraphicParams): RenderGraphic | undefined { return undefined; }
   /** @hidden */
-  public createPointString(_params: PointStringParams): RenderGraphic | undefined { return undefined; }
+  public createPointString(_params: PointStringParams, _instances?: InstancedGraphicParams): RenderGraphic | undefined { return undefined; }
   /** @hidden */
   public createPointCloud(_args: PointCloudArgs, _imodel: IModelConnection): RenderGraphic | undefined { return undefined; }
   /** @hidden */
@@ -958,9 +975,10 @@ export abstract class RenderSystem implements IDisposable {
 
 /** Clip/Transform for a branch that are varied over time. */
 export class AnimationBranchState {
+  public readonly omit?: boolean;
   public readonly transform?: Transform;
   public readonly clip?: ClipPlanesVolume;
-  constructor(transform?: Transform, clip?: ClipPlanesVolume) { this.transform = transform; this.clip = clip; }
+  constructor(transform?: Transform, clip?: ClipPlanesVolume, omit?: boolean) { this.transform = transform; this.clip = clip; this.omit = omit; }
 }
 
 /** Mapping from node/branch IDs to animation branch state  */

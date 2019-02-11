@@ -22,13 +22,14 @@ import { LineString3d } from "../curve/LineString3d";
 import { CurvePrimitive, AnnounceNumberNumberCurvePrimitive } from "../curve/CurvePrimitive";
 import { GeometryQuery } from "../curve/GeometryQuery";
 
-import { ClipPlaneContainment, Clipper, ClipUtilities } from "../clipping/ClipUtils";
+import { ClipPlaneContainment, Clipper, ClipUtilities, ClipStatus } from "../clipping/ClipUtils";
 import { ClipPlane } from "../clipping/ClipPlane";
 import { ConvexClipPlaneSet } from "../clipping/ConvexClipPlaneSet";
 import { UnionOfConvexClipPlaneSets } from "../clipping/UnionOfConvexClipPlaneSets";
 import { Sample } from "../serialization/GeometrySamples";
 
 import { GeometryCoreTestIO } from "./GeometryCoreTestIO";
+import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 /* tslint:disable:no-console no-trailing-whitespace */
 
 Checker.noisy.clipPlane = false;
@@ -784,6 +785,76 @@ describe("CurveClips", () => {
     }
 
     ck.checkpoint("SweptPolygon");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("QuickClipStatus", () => {
+    const ck = new Checker();
+    const convexSetA = ConvexClipPlaneSet.createXYBox(0, 0, 4, 4);
+    const convexSetB = ConvexClipPlaneSet.createXYBox(6, 6, 11, 10);
+    const clipAB = UnionOfConvexClipPlaneSets.createConvexSets([convexSetA, convexSetB]);
+
+    // These are all contained in convexSetA.
+    const pointsInA = GrowableXYZArray.create([Point3d.create(1, 1), Point3d.create(2, 2), Point3d.create(2, 3)]);
+    const pointsInB = GrowableXYZArray.create([Point3d.create(7, 8), Point3d.create(8, 8), Point3d.create(8, 9)]);
+
+    ck.testExactNumber(ClipStatus.TrivialAccept, ClipUtilities.pointSetSingleClipStatus(pointsInA, clipAB, 0.0));
+    ck.testExactNumber(ClipStatus.TrivialAccept, ClipUtilities.pointSetSingleClipStatus(pointsInB, clipAB, 0.0));
+
+    const boundaryA = GrowableXYZArray.create([Point3d.create(1, 1), Point3d.create(1, -1)]);
+    const boundaryB = GrowableXYZArray.create([Point3d.create(7, 7), Point3d.create(7, 5)]);
+    ck.testExactNumber(ClipStatus.ClipRequired, ClipUtilities.pointSetSingleClipStatus(boundaryA, clipAB, 0.0));
+    ck.testExactNumber(ClipStatus.ClipRequired, ClipUtilities.pointSetSingleClipStatus(boundaryB, clipAB, 0.0));
+
+    const spreadQ = GrowableXYZArray.create(
+      [Point3d.create(1, 8), Point3d.create(2, 8)]);
+    ck.testExactNumber(ClipStatus.TrivialReject, ClipUtilities.pointSetSingleClipStatus(spreadQ, clipAB, 0.0));
+    ck.testExactNumber(ClipStatus.TrivialAccept, ClipUtilities.pointSetSingleClipStatus(spreadQ,
+      UnionOfConvexClipPlaneSets.createConvexSets([]), 0.0));
+    ck.checkpoint("QuickClipStatus");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("createPlaneVariants", () => {
+    const ck = new Checker();
+    const clipPlaneA = ClipPlane.createNormalAndPointXYZXYZ(1, 0, 0, 0, 0, 0);
+    const unitB = Vector3d.create(1, 5, 2);
+    unitB.normalizeInPlace();
+    const planeByNormalB = Plane3dByOriginAndUnitNormal.create(Point3d.create(1, 2, 3), unitB)!;
+    const clipPlaneB0 = ClipPlane.createPlane(planeByNormalB);
+    const clipPlaneB1 = ClipPlane.createPlane(planeByNormalB, false, false, clipPlaneA);
+    ck.testTrue(clipPlaneB0.isAlmostEqual(clipPlaneB1));
+    ck.checkpoint("QuickClipStatus");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("createNormalAndDistanceVariants", () => {
+    const ck = new Checker();
+    const clipPlaneA = ClipPlane.createNormalAndPointXYZXYZ(1, 0, 0, 0, 0, 0);
+    const unitB = Vector3d.create(1, 5, 2);
+    unitB.normalizeInPlace();
+    const distance = -12.0;
+    const clipPlaneB0 = ClipPlane.createNormalAndDistance(unitB, distance, false, true)!;
+    const clipPlaneB1 = ClipPlane.createNormalAndDistance(unitB, distance, false, true, clipPlaneA)!;
+    ck.testTrue(clipPlaneB0.isAlmostEqual(clipPlaneB1));
+
+    ck.testUndefined(ClipPlane.createNormalAndDistance(Vector3d.createZero(), distance));
+    ck.checkpoint("QuickClipStatus");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("createNormalAndPointVariants", () => {
+    const ck = new Checker();
+    const clipPlaneA = ClipPlane.createNormalAndPointXYZXYZ(1, 0, 0, 0, 0, 0);
+    const unitB = Vector3d.create(1, 5, 2);
+    unitB.normalizeInPlace();
+    const pointOnPlane = Point3d.create(3, 2, 9);
+    const clipPlaneB0 = ClipPlane.createNormalAndPoint(unitB, pointOnPlane, false, true)!;
+    const clipPlaneB1 = ClipPlane.createNormalAndPoint(unitB, pointOnPlane, false, true, clipPlaneA)!;
+    ck.testTrue(clipPlaneB0.isAlmostEqual(clipPlaneB1));
+
+    ck.testUndefined(ClipPlane.createNormalAndPoint(Vector3d.createZero(), pointOnPlane));
+    ck.checkpoint("QuickClipStatus");
     expect(ck.getNumErrors()).equals(0);
   });
 });

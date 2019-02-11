@@ -67,7 +67,7 @@ class ScriptLoader {
   }
 }
 
-// Load Options. Loading the UiComponents and UiFramework are optiona.
+// Load Options. Loading the UiComponents and UiFramework are optional.
 class IModelJsLoadOptions {
   private _iModelJsVersions: any;
   public loadUiComponents: boolean;
@@ -126,7 +126,7 @@ export async function loadIModelJs(options: IModelJsLoadOptions): Promise<void> 
   if (options.loadUiComponents) {
     await thirdPartyRootPromise;
     // load the rest of the third party modules that depend on react and redux.
-    await ScriptLoader.loadPackagesParallel(["bwc.js", "react-dom.js", "inspire-tree.js", "react-dnd.js", "react-dnd-html5-backend.js", "react-redux.js"]);
+    await ScriptLoader.loadPackagesParallel(["react-dom.js", "inspire-tree.js", "react-dnd.js", "react-dnd-html5-backend.js", "react-redux.js"]);
     await ScriptLoader.loadPackage(options.prefixVersion("ui-core.js"));
     await ScriptLoader.loadPackage(options.prefixVersion("ui-components.js"));
     if (options.loadECPresentation) {

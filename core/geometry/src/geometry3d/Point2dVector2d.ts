@@ -28,6 +28,7 @@ export class XY implements XAndY {
       this.x = 0; this.y = 0;
     }
   }
+  public freeze() { Object.freeze(this); }
 
   /** Returns true if this and other have equal x,y parts within Geometry.smallMetricDistance. */
   public isAlmostEqual(other: XAndY, tol?: number): boolean { return Geometry.isSameCoordinate(this.x, other.x, tol) && Geometry.isSameCoordinate(this.y, other.y, tol); }

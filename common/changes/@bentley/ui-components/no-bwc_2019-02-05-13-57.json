@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Removed dependency on BWC. Parts of BWC copied into ui-core in preparation for theming support.",
+      "packageName": "@bentley/ui-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "dan.east@bentley.com"
+}

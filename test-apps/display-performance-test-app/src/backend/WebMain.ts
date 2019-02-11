@@ -32,6 +32,33 @@ function setupStandaloneConfiguration() {
   }
 }
 
+// Start the Express web server
+function startWebServer() {
+  // set up the express server.
+  const appExp = express();
+  // Enable CORS for all apis
+  appExp.all("/*", (_req, res, next) => {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Methods", "POST, GET");
+    res.header("Access-Control-Allow-Headers", "Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With, X-Correlation-Id");
+    next();
+  });
+  // All we do is serve out static files, so We have only the simple public path route.
+  // If args.resources is relative, we expect it to be relative to process.cwd
+  const resourceRoot = path.resolve(process.cwd(), "./lib/webresources/");
+  appExp.use(express.static(resourceRoot));
+  appExp.use("*", (_req, resp) => {
+    resp.sendFile(path.resolve("./lib/webresources/", "index.html"));
+  });
+  // Run the server...
+  appExp.set("port", 3000);
+  const announceWebServer = () => { }; // console.log(`***** WebServer listening on http:localHost:${appExp.get("port")}, resource root is ${resourceRoot}`);
+  DisplayPerfRpcInterface.webServer = appExp.listen(appExp.get("port"), announceWebServer);
+}
+
+// Initialize the webserver
+startWebServer();
+
 // Initialize the backend
 initializeBackend();
 
@@ -92,13 +119,13 @@ app.get("/signin-callback", (_req, res) => {
 app.set("port", serverConfig.port);
 const announce = () => console.log(`***** Display Performance Testing App listening on ${serverConfig.baseUrl}:${app.get("port")}`);
 
-DisplayPerfRpcInterface.webServer = app.listen(app.get("port"), announce);
+DisplayPerfRpcInterface.backendServer = app.listen(app.get("port"), announce);
 
 // ---------------------------------------------
 // Start the browser, if given a specific one
 // ---------------------------------------------
 if (browser === "chrome")
-  chromeLauncher.launch({ startingUrl: "http://localhost:3000" }); // tslint:disable-line:no-floating-promises
+  chromeLauncher.launch({ startingUrl: "http://localhost:3000" }).then((val) => { DisplayPerfRpcInterface.chrome = val; }); // tslint:disable-line:no-floating-promises
 else if (browser === "firefox")
   child_process.execSync("start firefox http://localhost:3000");
 else if (browser === "edge")

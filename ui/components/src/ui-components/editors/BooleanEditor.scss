@@ -2,12 +2,18 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-@import "@bentley/bwc/lib/mixins";
+@import "@bentley/ui-core/lib/ui-core/index";
+
+$checkbox-size: $uicore-font-size * 1.2;
 
 .components-boolean-editor {
-  font-family:        $bwc-font-family;
-  font-size:          $bwc-font-size;
-  height:             $bwc-font-size;
-  width:              $bwc-font-size;
-  margin-left:        $bwc-font-size;    // Clear the resizer in the PropertyGrid
+  height:      $checkbox-size;
+  width:       $checkbox-size;
+  margin-left: 0px;
+}
+
+.components-property-list--horizontal {
+  .components-boolean-editor {
+    margin-left: $uicore-font-size;    // Clear the resizer in the PropertyGrid
+  }
 }

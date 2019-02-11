@@ -584,7 +584,7 @@ describe("Matrix3d.ViewConstructions", () => {
     const origin = Point2d.create(4, 3);
     columnX.z = columnY.z = 0.0;
     for (const v of vectors) {
-      const xy1 = Matrix3d.XYPlusMatrixTimesXY(origin, projector, v);
+      const xy1 = Matrix3d.xyPlusMatrixTimesXY(origin, projector, v);
       const xy2 = origin.plus2Scaled(columnX, v.x, columnY, v.y);
       ck.testPoint2d(xy1, xy2);
 
@@ -623,9 +623,9 @@ describe("Matrix3d.ViewConstructions", () => {
       const origin = Point3d.create(4, 3, 0.1231);
       const w = 0.9213123678687689769;
       for (const v of vectors) {
-        const resultBW = Matrix3d.XYZPlusMatrixTimesWeightedCoordinatesToFloat64Array(origin, matrix, v.x, v.y, v.z, w);
+        const resultBW = Matrix3d.xyzPlusMatrixTimesWeightedCoordinatesToFloat64Array(origin, matrix, v.x, v.y, v.z, w);
         const resultAW = Point3d.createScale(origin, w).plus3Scaled(columnX, v.x, columnY, v.y, columnZ, v.z);
-        const resultB = Matrix3d.XYZPlusMatrixTimesCoordinatesToFloat64Array(origin, matrix, v.x, v.y, v.z);
+        const resultB = Matrix3d.xyzPlusMatrixTimesCoordinatesToFloat64Array(origin, matrix, v.x, v.y, v.z);
         const resultA = origin.plus3Scaled(columnX, v.x, columnY, v.y, columnZ, v.z);
         ck.testXYZ(resultA, Vector3d.createFrom(resultB), "XYZPlusMatrixTimesWeightedCoordinatesToFloat64Array");
         ck.testXYZ(resultAW, Vector3d.createFrom(resultBW), "XYZPlusMatrixTimesCoordinatesToFloat64Array");

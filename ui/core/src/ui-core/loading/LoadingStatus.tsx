@@ -6,7 +6,7 @@
 
 import * as React from "react";
 import * as classnames from "classnames";
-import { CommonProps } from "../Props";
+import { CommonProps } from "../utils/Props";
 import "./LoadingStatus.scss";
 
 /** Properties for [[LoadingStatus]] component */
@@ -27,9 +27,9 @@ export class LoadingStatus extends React.Component<LoadingStatusProps> {
   };
 
   // sanity check to keep percentage between 0 & 100
-  private inRange (percent: number): number {
-    let value = Math.min (percent, 100);
-    value = Math.max (value, 0);
+  private inRange(percent: number): number {
+    let value = Math.min(percent, 100);
+    value = Math.max(value, 0);
     return value;
   }
 

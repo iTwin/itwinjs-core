@@ -8,7 +8,6 @@ import { SchemaItem } from "./SchemaItem";
 import { EnumerationProps, EnumeratorProps } from "./../Deserialization/JsonProps";
 import { PrimitiveType, SchemaItemType } from "./../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "./../Exception";
-import { SchemaItemVisitor } from "./../Interfaces";
 import { ECName } from "./../SchemaKey";
 
 export interface Enumerator<T> {
@@ -107,16 +106,13 @@ export class Enumeration extends SchemaItem {
     const schemaJson = super.toJson(standalone, includeSchemaVersion);
     schemaJson.type = (this.isInt) ? "int" : "string";
     schemaJson.isStrict = this.isStrict;
-    schemaJson.enumerators = [];
-    this._enumerators.forEach((element: AnyEnumerator) => {
-      const enumJson: any = {};
-      enumJson.name = element.name;
-      enumJson.value = element.value;
-      if (undefined !== element.label)
-        enumJson.label = element.label;
-      if (undefined !== element.description)
-        enumJson.description = element.description;
-      schemaJson.enumerators.push(enumJson);
+    schemaJson.enumerators = this._enumerators.map(({ name, label, value, description }) => {
+      const enumJson: any = { name, value };
+      if (undefined !== label)
+        enumJson.label = label;
+      if (undefined !== description)
+        enumJson.description = description;
+      return enumJson;
     });
     return schemaJson;
   }
@@ -148,16 +144,6 @@ export class Enumeration extends SchemaItem {
 
   public async deserialize(enumerationProps: EnumerationProps) {
     this.deserializeSync(enumerationProps);
-  }
-
-  public async accept(visitor: SchemaItemVisitor) {
-    if (visitor.visitEnumeration)
-      await visitor.visitEnumeration(this);
-  }
-
-  public acceptSync(visitor: SchemaItemVisitor) {
-    if (visitor.visitEnumerationSync)
-      visitor.visitEnumerationSync(this);
   }
 }
 

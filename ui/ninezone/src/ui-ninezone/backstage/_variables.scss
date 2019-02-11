@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-@import "@bentley/bwc/lib/mixins";
+@import "@bentley/ui-core/lib/ui-core/index";
 
 // backstage common values
 $nz-backstage-width: 300px;
@@ -22,11 +22,11 @@ $nz-backstage-user-profile-spacing: 14px; // top & bottom
 $nz-backstage-user-profile-divider-height: 2px;
 
 // light theme
-$nz-backstage-background: $bwc-gray-c;
-$nz-backstage-item-color: $bwc-text-color;
+$nz-backstage-background: $uicore-gray-c;
+$nz-backstage-item-color: $uicore-text-color;
 $nz-backstage-item-active-background: #fff;
-$nz-backstage-highlight-bar-background: $bwc-blue;
-$nz-backstage-divider-color: $bwc-gray-9;
+$nz-backstage-highlight-bar-background: $uicore-blue;
+$nz-backstage-divider-color: $uicore-gray-9;
 
 // dark theme
 /*

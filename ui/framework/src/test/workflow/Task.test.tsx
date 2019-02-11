@@ -16,6 +16,7 @@ import {
   FrontstageManager,
   FrontstageActivatedEventArgs,
   WorkflowManager,
+  CoreTools,
 } from "../../ui-framework";
 
 describe("Task", () => {
@@ -30,7 +31,7 @@ describe("Task", () => {
         return (
           <Frontstage
             id="Test1"
-            defaultToolId="PlaceLine"
+            defaultTool={CoreTools.selectElementCommand}
             defaultLayout="FourQuadrants"
             contentGroup="TestContentGroup1"
           />

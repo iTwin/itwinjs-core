@@ -6,7 +6,7 @@
 
 import * as React from "react";
 import * as classnames from "classnames";
-import { CommonProps } from "../Props";
+import { CommonProps } from "../utils/Props";
 import "./Toggle.scss";
 
 /** Toggle display types */
@@ -31,6 +31,8 @@ export interface ToggleProps extends CommonProps {
   buttonType?: ToggleButtonType;
   /** Function called when the toggle state is changed */
   onChange?: (checked: boolean) => any;
+  /** Function called when the toggle loses focus  */
+  onBlur?: (event: React.FocusEvent) => any;
 }
 
 interface ToggleState {
@@ -63,6 +65,11 @@ export class Toggle extends React.Component<ToggleProps, ToggleState> {
     this.setState({ checked: !this.state.checked }, () => { this.props.onChange && this.props.onChange(this.state.checked); });
   }
 
+  private _handleBlur = (event: React.FocusEvent) => {
+    if (this.props.onBlur)
+      this.props.onBlur(event);
+  }
+
   private _setHeight = (newHeight: number, newWidth: number) => {
     if (this.state.height !== newHeight || this.state.width !== newWidth) {
       this.setState({ height: newHeight, width: newWidth });
@@ -92,7 +99,7 @@ export class Toggle extends React.Component<ToggleProps, ToggleState> {
     };
     return (
       <label ref={(el) => { if (el) this._setHeight(el.clientHeight, el.clientWidth); }} style={toggleStyle} className={toggleClassName}>
-        <input defaultChecked={this.props.isOn} className="toggle-input" disabled={this.props.disabled} type="checkbox" onChange={this._handleChange} />
+        <input defaultChecked={this.props.isOn} className="toggle-input" disabled={this.props.disabled} type="checkbox" onChange={this._handleChange} onBlur={this._handleBlur} />
         <span className="toggle-label" />
         <span className={checkmarkClassName} />
         <span className="toggle-handle" style={toggleHandleStyle} />

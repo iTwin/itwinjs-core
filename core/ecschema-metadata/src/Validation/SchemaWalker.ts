@@ -4,11 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { SchemaItemType } from "../ECObjects";
-import { ISchemaPartVisitor } from "../Interfaces";
 import { ECClass } from "../Metadata/Class";
 import { RelationshipClass } from "../Metadata/RelationshipClass";
 import { SchemaItem } from "../Metadata/SchemaItem";
-import { SchemaPartVisitorHelper } from "../SchemaPartVisitorHelper";
+import { ISchemaPartVisitor, SchemaPartVisitorDelegate } from "../SchemaPartVisitorDelegate";
 import { SchemaContext } from "./../Context";
 import { Schema } from "./../Metadata/Schema";
 
@@ -19,7 +18,7 @@ import { Schema } from "./../Metadata/Schema";
  */
 export class SchemaWalker {
   private _context: SchemaContext;
-  private _visitorHelper: SchemaPartVisitorHelper;
+  private _visitorHelper: SchemaPartVisitorDelegate;
 
   // This is a cache of the schema we are traversing. The schema also exists within the _context but in order
   // to not have to go back to the context every time we use this cache.
@@ -32,7 +31,7 @@ export class SchemaWalker {
    */
   constructor(visitor: ISchemaPartVisitor, context?: SchemaContext) {
     this._context = (undefined !== context) ? context : new SchemaContext();
-    this._visitorHelper = new SchemaPartVisitorHelper(visitor);
+    this._visitorHelper = new SchemaPartVisitorDelegate(visitor);
   }
 
   /**

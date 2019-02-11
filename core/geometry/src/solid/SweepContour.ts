@@ -108,7 +108,8 @@ export class SweepContour {
       } else if (this.curves instanceof ParityRegion) {
         this._xyStrokes = this.curves.cloneStroked(options);
         if (this._xyStrokes instanceof (ParityRegion)) {
-          this._xyStrokes.tryTransformInPlace(this.localToWorld);
+          const worldToLocal = this.localToWorld.inverse()!;
+          this._xyStrokes.tryTransformInPlace(worldToLocal);
           const strokes = [];
           for (const childLoop of this._xyStrokes.children) {
             const loopCurves = childLoop.children;

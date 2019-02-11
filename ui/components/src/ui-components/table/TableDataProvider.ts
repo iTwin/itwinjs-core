@@ -5,10 +5,8 @@
 /** @module Table */
 
 import { BeEvent } from "@bentley/bentleyjs-core";
+import { PropertyRecord, PropertyDescription } from "@bentley/imodeljs-frontend";
 import { SortDirection } from "@bentley/ui-core";
-import { PropertyRecord } from "../properties/Record";
-import { PropertyDescription } from "../properties/Description";
-
 type HorizontalAlignment = "left" | "center" | "right" | "justify";
 
 /**

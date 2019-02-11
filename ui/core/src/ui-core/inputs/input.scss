@@ -1,0 +1,45 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+@import "../style/index";
+@import "./variables";
+
+@mixin uicore-inputs-input {
+
+    display:                block;
+    width:                  100%;
+    padding:                $uicore-inputs-padding-bordered $uicore-bordered-padding;
+    margin:                 $uicore-inputs-margin 0;
+    font-family:            $uicore-font-family;
+    font-size:              $uicore-font-size;
+    line-height:            $uicore-line-height;
+    color:                  $uicore-text-color;
+    background-color:       $uicore-white;
+    background-image:       none;
+    border:                 1px solid $uicore-inputs-border-color;
+    border-radius:          $uicore-border-radius;
+    box-shadow:             rgba( $uicore-black, 0.075 ) 0px 1px 1px inset;
+    transition:             border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+
+    &:-ms-input-placeholder {       color: $uicore-gray-9; }
+    &::-webkit-input-placeholder {  color: $uicore-gray-9; }
+    &::placeholder {                color: $uicore-gray-9; }
+
+    &[disabled],
+    &[readonly] {
+
+        background-color:   $uicore-gray-b;
+        color:              $uicore-gray-9;
+        cursor:             not-allowed;
+    }
+
+    &:focus {
+
+        border-color:       $uicore-inputs-border-color;
+        outline:            0px;
+        box-shadow:         rgba( $uicore-black, 0 ) 0px 1px 1px inset, rgba( $uicore-blue, 0.1 ) 0px 0px 0px 2px;
+    }
+}
+
+.uicore-inputs-input { @include uicore-inputs-input; }

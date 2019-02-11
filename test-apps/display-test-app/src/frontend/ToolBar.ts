@@ -27,6 +27,7 @@ export function createToolButton(props: ToolButtonProps): HTMLElement {
 
 export interface ImageButtonProps {
   src: string;
+  tooltip?: string;
   click: (ev: Event) => void;
 }
 
@@ -34,6 +35,8 @@ export function createImageButton(props: ImageButtonProps): HTMLElement {
   const img = document.createElement("img");
   img.className = "simpleicon";
   img.src = props.src;
+  if (undefined !== props.tooltip)
+    img.title = props.tooltip;
   img.addEventListener("click", (ev: Event) => props.click(ev));
   return img;
 }

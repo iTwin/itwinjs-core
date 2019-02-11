@@ -1,0 +1,56 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<LabeledTextarea /> renders correctly 1`] = `
+<label
+  className="uicore-inputs-labeled-textarea"
+>
+  <div
+    className="label"
+  >
+    textarea test
+  </div>
+  <Textarea
+    label="textarea test"
+    rows={3}
+  />
+</label>
+`;
+
+exports[`<LabeledTextarea /> renders message correctly 1`] = `
+<label
+  className="uicore-inputs-labeled-textarea"
+>
+  <div
+    className="label"
+  >
+    textarea test
+  </div>
+  <Textarea
+    label="textarea test"
+    message="Test message"
+    rows={3}
+  />
+  <div
+    className="message"
+  >
+    Test message
+  </div>
+</label>
+`;
+
+exports[`<LabeledTextarea /> renders status correctly 1`] = `
+<label
+  className="uicore-inputs-labeled-textarea success"
+>
+  <div
+    className="label"
+  >
+    textarea test
+  </div>
+  <Textarea
+    label="textarea test"
+    rows={3}
+    status="success"
+  />
+</label>
+`;

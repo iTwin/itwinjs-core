@@ -2,7 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
+import { assert, expect } from "chai";
 import { Point3d, Angle } from "@bentley/geometry-core";
 import { Cartographic, FontType, FontMap, ColorDef } from "@bentley/imodeljs-common";
 import * as path from "path";
@@ -94,6 +94,61 @@ describe("Viewport", () => {
     const pan = IModelApp.tools.create("View.Pan", vp) as PanViewTool;
     assert.instanceOf(pan, PanViewTool);
     assert.equal(pan.viewport, vp);
+
+    let neverDrawnChanged = 0;
+    let alwaysDrawnChanged = 0;
+    const removeNeverDrawnListener = vp.onNeverDrawnChanged.addListener((_) => ++neverDrawnChanged);
+    const removeAlwaysDrawnListener = vp.onAlwaysDrawnChanged.addListener((_) => ++alwaysDrawnChanged);
+
+    // No event if the set is already empty when we clear it.
+    vp.clearNeverDrawn();
+    expect(neverDrawnChanged).to.equal(0);
+    vp.clearAlwaysDrawn();
+    expect(alwaysDrawnChanged).to.equal(0);
+
+    // Assigning the set always raises an event.
+    const idSet = new Set<string>();
+    idSet.add("0x123");
+    vp.setNeverDrawn(idSet);
+    expect(neverDrawnChanged).to.equal(1);
+    vp.setAlwaysDrawn(idSet, false);
+    expect(alwaysDrawnChanged).to.equal(1);
+    vp.setAlwaysDrawn(idSet, true);
+    expect(alwaysDrawnChanged).to.equal(2);
+
+    // Clearing raises event if set was assigned.
+    vp.clearNeverDrawn();
+    expect(neverDrawnChanged).to.equal(2);
+    vp.clearAlwaysDrawn();
+    expect(alwaysDrawnChanged).to.equal(3);
+
+    // Clearing again will not re-raise because already cleared.
+    vp.clearNeverDrawn();
+    expect(neverDrawnChanged).to.equal(2);
+    vp.clearAlwaysDrawn();
+    expect(alwaysDrawnChanged).to.equal(3);
+
+    // Setting repeatedly to same set raises each time, because we're not going to compare to previous set every time it changes.
+    vp.setAlwaysDrawn(idSet, true);
+    vp.setAlwaysDrawn(idSet, true);
+    vp.setAlwaysDrawn(idSet, true);
+    expect(alwaysDrawnChanged).to.equal(6);
+
+    // Setting to an empty set, and also setting the 'exclusive' flags - effectively means no elements should draw.
+    idSet.clear();
+    vp.setAlwaysDrawn(idSet, true);
+    expect(alwaysDrawnChanged).to.equal(7);
+    vp.clearAlwaysDrawn();
+
+    // Raises even though set was already empty, because this resets the 'exclusive' flag.
+    expect(alwaysDrawnChanged).to.equal(8);
+
+    // Exclusive flag no longer set and set is empty, so no event.
+    vp.clearAlwaysDrawn();
+    expect(alwaysDrawnChanged).to.equal(8);
+
+    removeNeverDrawnListener();
+    removeAlwaysDrawnListener();
   });
 
   it("AccuDraw", () => {

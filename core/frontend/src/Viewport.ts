@@ -57,7 +57,7 @@ export class SyncFlags {
   public get isValidAnimationFraction(): boolean { return this._animationFraction; }
   public get isRedrawPending(): boolean { return this._redrawPending; }
   public invalidateDecorations(): void { this._decorations = false; }
-  public invalidateScene(): void { this._scene = false; this.invalidateDecorations(); }
+  public invalidateScene(): void { this._scene = false; this.invalidateDecorations(); this.invalidateAnimationFraction(); }
   public invalidateRenderPlan(): void { this._renderPlan = false; this.invalidateScene(); }
   public invalidateController(): void { this._controller = false; this.invalidateRenderPlan(); }
   public invalidateRotatePoint(): void { this._rotatePoint = false; }
@@ -875,6 +875,10 @@ export class ViewFrustum {
 export abstract class Viewport implements IDisposable {
   /** Event called whenever this viewport is synchronized with its ViewState. */
   public readonly onViewChanged = new BeEvent<(vp: Viewport) => void>();
+  /** Event called whenever this viewport's set of always-drawn elements changes. */
+  public readonly onAlwaysDrawnChanged = new BeEvent<(vp: Viewport) => void>();
+  /** Event called whenever this viewport's set of never-drawn elements changes. */
+  public readonly onNeverDrawnChanged = new BeEvent<(vp: Viewport) => void>();
 
   private readonly _viewportId: number;
   private _animationFraction = 0.0;
@@ -1006,7 +1010,7 @@ export abstract class Viewport implements IDisposable {
   }
 
   /** @hidden */
-  public get AnalysisStyle(): AnalysisStyle | undefined { return this.view.analysisStyle; }
+  public get analysisStyle(): AnalysisStyle | undefined { return this.view.analysisStyle; }
   /** The iModel of this Viewport */
   public get iModel(): IModelConnection { return this.view.iModel; }
   /** @hidden */
@@ -1075,10 +1079,13 @@ export abstract class Viewport implements IDisposable {
    * @see [[alwaysDrawn]]
    */
   public clearAlwaysDrawn(): void {
-    if (undefined !== this.alwaysDrawn && 0 < this.alwaysDrawn.size) {
-      this.alwaysDrawn.clear();
+    if ((undefined !== this.alwaysDrawn && 0 < this.alwaysDrawn.size) || this._alwaysDrawnExclusive) {
+      if (undefined !== this.alwaysDrawn)
+        this.alwaysDrawn.clear();
+
       this._alwaysDrawnExclusive = false;
       this.view.setFeatureOverridesDirty();
+      this.onAlwaysDrawnChanged.raiseEvent(this);
     }
   }
 
@@ -1089,6 +1096,7 @@ export abstract class Viewport implements IDisposable {
     if (undefined !== this.neverDrawn && 0 < this.neverDrawn.size) {
       this.neverDrawn.clear();
       this.view.setFeatureOverridesDirty();
+      this.onNeverDrawnChanged.raiseEvent(this);
     }
   }
 
@@ -1098,6 +1106,7 @@ export abstract class Viewport implements IDisposable {
   public setNeverDrawn(ids: Id64Set): void {
     this._neverDrawn = ids;
     this.view.setFeatureOverridesDirty();
+    this.onNeverDrawnChanged.raiseEvent(this);
   }
 
   /** Specify the IDs of a set of elements which should always be rendered within this view, regardless of category and subcategory visibility.
@@ -1110,6 +1119,7 @@ export abstract class Viewport implements IDisposable {
     this._alwaysDrawn = ids;
     this._alwaysDrawnExclusive = exclusive;
     this.view.setFeatureOverridesDirty();
+    this.onAlwaysDrawnChanged.raiseEvent(this);
   }
 
   /** Returns true if the set of elements in the [[alwaysDrawn]] set are the *only* elements rendered within this view. */
@@ -1995,6 +2005,31 @@ export class ScreenViewport extends Viewport {
     while (el.lastChild)
       el.removeChild(el.lastChild);
   }
+  /**  add a child element to this.parentDiv and set its size and position the same as the parent.
+   * @hidden
+   */
+  public addChildDiv(element: HTMLElement, zIndex: number) {
+    // get the (computed) z-index value of the parent, as an integer.
+    const parentZ = parseInt(window.getComputedStyle(this.parentDiv).zIndex || "0", 10);
+    const style = element.style;
+    style.position = "absolute";
+    style.top = "0";
+    style.left = "0";
+    style.height = "100%";
+    style.width = "100%";
+    style.zIndex = (parentZ + zIndex).toString();
+    this.parentDiv.appendChild(element);
+  }
+
+  /** @hidden */
+  public addNewDiv(className: string, overflowHidden: boolean, z: number): HTMLDivElement {
+    const div = document.createElement("div");
+    div.className = className;
+    div.style.pointerEvents = "none";
+    div.style.overflow = overflowHidden ? "hidden" : "visible";
+    this.addChildDiv(div, z);
+    return div;
+  }
 
   /** @hidden */
   constructor(canvas: HTMLCanvasElement, parentDiv: HTMLDivElement, target: RenderTarget) {
@@ -2002,39 +2037,14 @@ export class ScreenViewport extends Viewport {
     this.canvas = canvas;
     this.parentDiv = parentDiv;
 
-    // function to add a child element to this.parentDiv and set its size and position the same as the parent.
-    const addChild = (element: HTMLElement, zIndex: number) => {
-      const style = element.style;
-      style.position = "absolute";
-      style.top = "0";
-      style.left = "0";
-      style.height = "100%";
-      style.width = "100%";
-      style.zIndex = zIndex.toString();
-      this.parentDiv.appendChild(element);
-    };
-
-    // first remove all children of supplied element
+    // first remove all children of the parent Div
     ScreenViewport.removeAllChildren(parentDiv);
 
-    // get the (computed) z-index value of the parent, as an integer.
-    const parentZ = parseInt(window.getComputedStyle(parentDiv).zIndex || "0", 10);
-
-    addChild(canvas, parentZ + 10);
+    this.addChildDiv(canvas, 10);
     this.target.updateViewRect();
 
-    this.decorationDiv = document.createElement("div");
-    this.decorationDiv.className = "overlay-decorators";
-    this.decorationDiv.style.pointerEvents = "none";
-    this.decorationDiv.style.overflow = "hidden";
-    addChild(this.decorationDiv, parentZ + 20);
-
-    this.toolTipDiv = document.createElement("div");
-    this.toolTipDiv.className = "overlay-tooltip";
-    this.toolTipDiv.style.pointerEvents = "none";
-    this.toolTipDiv.style.overflow = "visible";
-    addChild(this.toolTipDiv, parentZ + 30);
-
+    this.decorationDiv = this.addNewDiv("overlay-decorators", true, 30);
+    this.toolTipDiv = this.addNewDiv("overlay-tooltip", false, 40);
     this.setCursor();
   }
 

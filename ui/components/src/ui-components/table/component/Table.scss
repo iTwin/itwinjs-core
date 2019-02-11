@@ -2,8 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-@import "@bentley/bwc/lib/mixins";
-@import "@bentley/ui-core/lib/ui-core/_scrollbar";
+@import "@bentley/ui-core/lib/ui-core/index";
 
 .components-table {
   height: 100%;
@@ -132,8 +131,13 @@
     background: inherit;
   }
 
+  .components-editor-container {
+    margin-left: 6px;
+    margin-right: 6px;
+  }
+
   .components-cell-editor {
-    border: $bwc-blue solid 2px;
+    border: $uicore-blue solid 1px;
     background: #F9F9F9 !important;
     box-sizing: border-box;
     height: 100%;

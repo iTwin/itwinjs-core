@@ -11,6 +11,7 @@ import { Angle } from "../geometry3d/Angle";
 import * as bsiChecker from "./Checker";
 // import { Sample } from "../serialization/GeometrySamples";
 import { expect, assert } from "chai";
+import { Matrix3d } from "../geometry3d/Matrix3d";
 /* tslint:disable:no-console */
 describe("YPR", () => {
   it("hello", () => {
@@ -78,4 +79,17 @@ describe("YPR", () => {
     ck.testTrue(ypr0.isAlmostEqual(ypr2));
     expect(ck.getNumErrors()).equals(0);
   });
+  it("mirror2d", () => {
+    const ck = new bsiChecker.Checker();
+    const mirror45 = Matrix3d.createRowValues(0, 1, 0, 1, 0, 0, 0, 0, -1);
+    ck.testExactNumber(1.0, mirror45.determinant(), "confirm correct z direction for rotate around 45 degrees");
+    const ypr = YawPitchRollAngles.createFromMatrix3d(mirror45);
+    if (ck.testPointer(ypr, "confirm ypr created from mirror xy") && ypr) {
+      ck.testAngleNoShift(Angle.createDegrees(180), ypr.roll);
+      ck.testAngleNoShift(Angle.createDegrees(90), ypr.yaw);
+      ck.testAngleNoShift(Angle.createDegrees(0), ypr.pitch);
+    }
+    expect(ck.getNumErrors()).equals(0);
+  });
+
 });

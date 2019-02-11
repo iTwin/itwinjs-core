@@ -193,6 +193,19 @@ export class QPoint2dList {
 
     return array;
   }
+  /** Construct a QPoint2dList containing all points in the supplied list, quantized to the range of those points. */
+  public static fromPoints(points: Point2d[], out?: QPoint2dList) {
+    let qPoints;
+    const qParams = QParams2d.fromRange(Range2d.createArray(points));
+    if (out) {
+      qPoints = out;
+      qPoints.reset(qParams);
+    } else qPoints = new QPoint2dList(qParams);
+    for (const point of points)
+      qPoints.add(point);
+
+    return qPoints;
+  }
 }
 
 /** Parameters used for quantization of 3d points.
@@ -356,12 +369,17 @@ export class QPoint3dList {
   }
 
   /** Construct a QPoint3dList containing all points in the supplied list, quantized to the range of those points. */
-  public static fromPoints(points: Point3d[]) {
-    const qpoints = new QPoint3dList(QParams3d.fromRange(Range3d.createArray(points)));
+  public static fromPoints(points: Point3d[], out?: QPoint3dList) {
+    let qPoints;
+    const qParams = QParams3d.fromRange(Range3d.createArray(points));
+    if (out) {
+      qPoints = out;
+      qPoints.reset(qParams);
+    } else qPoints = new QPoint3dList(qParams);
     for (const point of points)
-      qpoints.add(point);
+      qPoints.add(point);
 
-    return qpoints;
+    return qPoints;
   }
 
   /** Clears out the contents of the list */

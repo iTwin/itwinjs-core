@@ -4,13 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { IDisposable } from "@bentley/bentleyjs-core";
+import { assert, IDisposable } from "@bentley/bentleyjs-core";
 import { GL } from "./GL";
 import { QParams3d, QParams2d } from "@bentley/imodeljs-common";
 import { Matrix3, Matrix4 } from "./Matrix";
 import { System } from "./System";
 import { Point3d } from "@bentley/geometry-core";
-import { Debug } from "./Diagnostics";
 
 export type BufferData = number | Int8Array | Int16Array | Int32Array | Uint8Array | Uint16Array | Uint32Array | Uint8ClampedArray | Float32Array | Float64Array | DataView | ArrayBuffer;
 
@@ -33,7 +32,7 @@ export class BufferHandle implements IDisposable {
       this._glBuffer = undefined;
     }
 
-    Debug.assert(() => !this.isDisposed);
+    assert(!this.isDisposed);
   }
 
   public get isDisposed(): boolean { return this._glBuffer === undefined; }
@@ -181,7 +180,7 @@ export class AttributeHandle {
   public static create(program: WebGLProgram, name: string, required: boolean = false): AttributeHandle | undefined {
     const glId = System.instance.context.getAttribLocation(program, name);
     if (-1 === glId) {
-      Debug.assert(() => !required, "getAttribLocation failed for " + name);
+      assert(!required, "getAttribLocation failed for " + name);
       return undefined;
     }
 
@@ -192,12 +191,12 @@ export class AttributeHandle {
     System.instance.context.vertexAttribPointer(this._glId, size, type, normalized, stride, offset);
   }
 
-  public enableVertexAttribArray(): void { System.instance.enableVertexAttribArray(this._glId); }
+  public enableVertexAttribArray(instanced = false): void { System.instance.enableVertexAttribArray(this._glId, instanced); }
 
-  public enableArray(buffer: BufferHandle, size: number, type: GL.DataType, normalized: boolean, stride: number, offset: number): void {
+  public enableArray(buffer: BufferHandle, size: number, type: GL.DataType, normalized: boolean, stride: number, offset: number, instanced = false): void {
     buffer.bind(GL.Buffer.Target.ArrayBuffer);
     this.setVertexAttribPointer(size, type, normalized, stride, offset);
-    this.enableVertexAttribArray();
+    this.enableVertexAttribArray(instanced);
     BufferHandle.unbind(GL.Buffer.Target.ArrayBuffer);
   }
 }
@@ -225,7 +224,7 @@ export class UniformHandle {
   public static create(program: WebGLProgram, name: string, required: boolean = true): UniformHandle | undefined {
     const location = System.instance.context.getUniformLocation(program, name);
     if (null === location) {
-      Debug.assert(() => !required, "getUniformLocation failed for " + name);
+      assert(!required, "getUniformLocation failed for " + name);
       return undefined;
     }
 
@@ -233,7 +232,7 @@ export class UniformHandle {
   }
 
   private updateData(type: DataType, data: Float32Array | number[]): boolean {
-    Debug.assert(() => DataType.Undefined !== type && DataType.Int !== type && DataType.Float !== type);
+    assert(DataType.Undefined !== type && DataType.Int !== type && DataType.Float !== type);
 
     let updated = this._type !== type;
     if (updated) {
@@ -252,7 +251,7 @@ export class UniformHandle {
   }
 
   private updateDatum(type: DataType, datum: number): boolean {
-    Debug.assert(() => DataType.Int === type || DataType.Float === type);
+    assert(DataType.Int === type || DataType.Float === type);
 
     // NB: Yes, calling data.length without actually changing the length shows up as a significant performance bottleneck...
     if (this._data.length !== 1)

@@ -7,21 +7,47 @@
 import { FeatureIndexType } from "@bentley/imodeljs-common";
 import { Target } from "./Target";
 import { Graphic, Batch } from "./Graphic";
-import { CachedGeometry } from "./CachedGeometry";
+import { CachedGeometry, LUTGeometry } from "./CachedGeometry";
 import { RenderPass, RenderOrder } from "./RenderFlags";
 import { ShaderProgramExecutor } from "./ShaderProgram";
 import { DrawParams, RenderCommands, DrawCommand } from "./DrawCommand";
 import { TechniqueId } from "./TechniqueId";
-import { FeaturesInfo } from "./FeaturesInfo";
-import { dispose } from "@bentley/bentleyjs-core";
+import { assert, dispose } from "@bentley/bentleyjs-core";
 import { System } from "./System";
-import { RenderMemory } from "../System";
+import { InstancedGraphicParams, RenderMemory } from "../System";
+import { InstancedGeometry } from "./InstancedGeometry";
 
-export abstract class Primitive extends Graphic {
+export class Primitive extends Graphic {
   public cachedGeometry: CachedGeometry;
   public isPixelMode: boolean = false;
 
-  public constructor(cachedGeom: CachedGeometry) { super(); this.cachedGeometry = cachedGeom; }
+  protected constructor(cachedGeom: CachedGeometry) { super(); this.cachedGeometry = cachedGeom; }
+
+  // ###TODO_INSTANCING: Remove me when feature complete...
+  private static _forceInstancing = false;
+  private static _fakeInstanceParams = {
+    transforms: new Float32Array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0]),
+    featureIds: new Uint8Array([0, 0, 0]),
+    count: 1,
+  };
+
+  public static create(createGeom: () => CachedGeometry | undefined, instances?: InstancedGraphicParams): Primitive | undefined {
+    let geom = createGeom();
+    if (undefined === geom)
+      return undefined;
+
+    const doInstancing = undefined !== instances || (this._forceInstancing && geom instanceof LUTGeometry);
+    assert(geom instanceof LUTGeometry || !doInstancing, "Invalid geometry type for instancing");
+    if (doInstancing) {
+      assert(geom instanceof LUTGeometry, "Invalid geometry type for instancing");
+      if (undefined === instances)
+        instances = this._fakeInstanceParams;
+
+      geom = InstancedGeometry.create(geom as LUTGeometry, true, instances);
+    }
+
+    return undefined !== geom ? new this(geom) : undefined;
+  }
 
   public dispose() {
     dispose(this.cachedGeometry);
@@ -39,19 +65,13 @@ export abstract class Primitive extends Graphic {
 
   public get featureIndexType(): FeatureIndexType {
     const feature = this.cachedGeometry.featuresInfo;
-    if (feature instanceof FeaturesInfo)
-      return feature.type;
-    return FeatureIndexType.Empty;
+    return undefined !== feature ? feature.type : FeatureIndexType.Empty;
   }
 
   public get usesMaterialColor(): boolean {
     const materialData = this.cachedGeometry.material;
     return undefined !== materialData && (materialData.overridesRgb || materialData.overridesAlpha);
   }
-
-  public get isLit(): boolean { return this.cachedGeometry.isLitSurface; }
-
-  public get hasAnimation(): boolean { return this.cachedGeometry.hasAnimation; }
 
   public addCommands(commands: RenderCommands): void { commands.addPrimitive(this); }
 
@@ -64,12 +84,13 @@ export abstract class Primitive extends Graphic {
   }
 
   public setUniformFeatureIndices(featId: number): void { this.cachedGeometry.uniformFeatureIndices = featId; }
-
-  public get isEdge(): boolean { return false; }
+  public get hasAnimation(): boolean { return this.cachedGeometry.hasAnimation; }
+  public get isInstanced(): boolean { return this.cachedGeometry.isInstanced; }
+  public get isLit(): boolean { return this.cachedGeometry.isLitSurface; }
+  public get isEdge(): boolean { return this.cachedGeometry.isEdge; }
+  public get renderOrder(): RenderOrder { return this.cachedGeometry.renderOrder; }
 
   public toPrimitive(): Primitive { return this; }
-
-  public abstract get renderOrder(): RenderOrder;
 
   private static _drawParams?: DrawParams;
 
@@ -84,8 +105,6 @@ export abstract class Primitive extends Graphic {
   }
 
   public getTechniqueId(target: Target): TechniqueId { return this.cachedGeometry.getTechniqueId(target); }
-
-  public get debugString(): string { return this.cachedGeometry.debugString; }
 }
 
 export class SkyBoxPrimitive extends Primitive {
@@ -104,16 +123,4 @@ export class SkyBoxPrimitive extends Primitive {
 
     System.instance.context.viewport(0, 0, vw, vh); // Restore viewport
   }
-
-  public get renderOrder(): RenderOrder { return RenderOrder.Surface; }
-}
-
-export class SkySpherePrimitive extends Primitive {
-  public constructor(cachedGeom: CachedGeometry) { super(cachedGeom); }
-  public get renderOrder(): RenderOrder { return RenderOrder.Surface; }
-}
-
-export class PointCloudPrimitive extends Primitive {
-  public constructor(cachedGeom: CachedGeometry) { super(cachedGeom); }
-  public get renderOrder(): RenderOrder { return RenderOrder.Surface; }
 }

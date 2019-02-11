@@ -17,6 +17,7 @@ const isPromise = (value: React.ReactNode | Promise<React.ReactNode>): value is 
   return (undefined !== value) && (undefined !== (value as Promise<any>).then);
 };
 
+/** Wraps a React component with a span element with a given style attribute */
 export const withContextStyle = (value: React.ReactNode | Promise<React.ReactNode>, context?: PropertyValueRendererContext) => {
   if (isPromise(value))
     return value.then((v) => internalWithContextStyle(v, context));

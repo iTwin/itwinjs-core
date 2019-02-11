@@ -834,7 +834,7 @@ export class Vector3d extends XYZ {
    * @param pointA start point of second vector of dot product
    * @param pointB end point of second vector of dot product
    */
-  public dotProductStartEnd(pointA: Point3d, pointB: Point3d): number {
+  public dotProductStartEnd(pointA: XYAndZ, pointB: XYAndZ): number {
     return this.x * (pointB.x - pointA.x)
       + this.y * (pointB.y - pointA.y)
       + this.z * (pointB.z - pointA.z);

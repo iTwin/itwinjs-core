@@ -7,7 +7,7 @@
 import * as React from "react";
 import { FrontstageManager, ModalFrontstageInfo } from "../frontstage/FrontstageManager";
 import { UserInfo, AccessToken } from "@bentley/imodeljs-clients";
-import { getUserColor } from "@bentley/bwc";
+import { getUserColor } from "@bentley/ui-core";
 import { UiFramework } from "../UiFramework";
 import "./SignOut.scss";
 import { OidcClientWrapper } from "@bentley/imodeljs-frontend";

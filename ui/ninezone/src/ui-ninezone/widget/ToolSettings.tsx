@@ -11,7 +11,7 @@ import "./ToolSettings.scss";
 
 /** Properties of [[ToolSettings]] component. */
 export interface ToolSettingsWidgetProps extends CommonProps, NoChildrenProps {
-  /** Content of this ToolSettings widget. See: [[Nested]], [[Settings]] */
+  /** Content of this ToolSettings widget. See: [[Nested]], [[ToolSettings]] */
   content?: React.ReactNode;
   /** Tab to control the content. See [[ToolSettingsTab]] */
   tab?: React.ReactNode;

@@ -162,12 +162,8 @@ export class EntityClass extends ECClass {
 
   public toJson(standalone: boolean, includeSchemaVersion: boolean): any | void {
     const schemaJson = super.toJson(standalone, includeSchemaVersion);
-    if (this.mixins.length > 0) {
-      schemaJson.mixins = [];
-      this.mixins.forEach(async (mixin: LazyLoadedMixin) => {
-        schemaJson.mixins.push(mixin.fullName);
-      });
-    }
+    if (this.mixins.length > 0)
+      schemaJson.mixins = this.mixins.map((mixin) => mixin.fullName);
     return schemaJson;
   }
 

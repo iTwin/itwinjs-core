@@ -15,7 +15,7 @@ export interface ToolAssistanceItemProps extends CommonProps {
   children?: React.ReactNode;
 }
 
-/** Tool assistance item. Used in [[Assistance]] component. */
+/** Tool assistance item. Used in [[ToolAssistanceContent]] component. */
 export class ToolAssistanceItem extends React.PureComponent<ToolAssistanceItemProps> {
   public render() {
     const className = classnames(

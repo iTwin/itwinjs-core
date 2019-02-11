@@ -1,0 +1,103 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+@import "../style/index";
+
+@mixin uicore-inputs-labeled-input {
+
+    display:                    block;
+    padding:                    0;
+    margin:                     0 0 $uicore-unbordered-padding;
+    text-align:                 left;
+    font-size:                  $uicore-font-size;
+    font-weight:                $uicore-font-weight-normal;
+    cursor:                     pointer;
+
+    > .label {
+
+        padding:                0;
+        margin:                 0;
+        border:                 0 none transparent;
+        display:                block;
+        font-size:              $uicore-font-size;
+        font-weight:            $uicore-font-weight-semibold;
+        line-height:            $uicore-line-height;
+        text-align:             left;
+        color:                  $uicore-text-color;
+    }
+
+    > .input {
+
+        position:               relative;
+        /// Needed to vertically align the icon:
+        display:                inline-block;
+        width:                  100%;
+
+        &.with-icon {
+
+            > input,
+            > .bwx-inputs-input {
+
+                padding-right:  $uicore-bordered-padding + $uicore-line-height;
+            }
+        }
+
+        > .icon {
+
+            display:            block;
+            position:           absolute;
+            right:              0;
+            top:                0;
+            bottom:             0;
+            padding:            $uicore-unbordered-padding;
+
+            font-size:          16px;
+            font-weight:        normal;
+            line-height:        $uicore-line-height;
+        }
+    }
+
+    > .message {
+
+        display:                block;
+        font-size:              $uicore-font-size-small;
+        line-height:            $uicore-line-height;
+        color:                  $uicore-gray;
+    }
+
+
+    /// Status colors ----------------------------------------------------------
+
+    $status-colors: (
+        success:    $uicore-green,
+        warning:    $uicore-orange,
+        error:      $uicore-red
+    );
+
+    @each $status, $color in $status-colors {
+
+        &.#{$status},
+        &.#{$status} > .message {
+
+            color:              $color;
+        }
+
+        &.#{$status} > .input {
+            > input,
+            > .uicore-inputs-input {
+
+                border-color:       $color;
+                box-shadow:         rgba( $uicore-black, 0.075 ) 0px 1px 1px inset;
+
+                &:focus {
+
+                    border-color:   $color;
+                    box-shadow:     rgba( $uicore-black, 0 ) 0px 1px 1px inset, rgba( $color, 0.15 ) 0px 0px 0px 2px;
+                }
+            }
+        }
+    }
+}
+
+.uicore-inputs-labeled-input { @include uicore-inputs-labeled-input; }

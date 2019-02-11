@@ -36,11 +36,11 @@ export class TriDiagonalSystem {
     this._aRight = new Float64Array(n);
     this._b = new Float64Array(n);
     this._x = new Float64Array(n);
-    this.Reset();
+    this.reset();
   }
 
   // Reset to RawMatrix state with all coefficients zero
-  public Reset() {
+  public reset() {
     this._dataState = DataState.RawMatrix;
     const n = this._aDiag.length;
     for (let i = 0; i < n; i++) {
@@ -48,43 +48,43 @@ export class TriDiagonalSystem {
     }
   }
   // Install data in a row of the matrix
-  public SetRow(row: number, left: number, diag: number, right: number) {
+  public setRow(row: number, left: number, diag: number, right: number) {
     this._aLeft[row] = left;
     this._aDiag[row] = diag;
     this._aRight[row] = right;
   }
   // Add to row of matrix
-  public AddToRow(row: number, left: number, diag: number, right: number) {
+  public addToRow(row: number, left: number, diag: number, right: number) {
     this._aLeft[row] += left;
     this._aDiag[row] += diag;
     this._aRight[row] += right;
   }
   // Install data in the right side (B) vector
-  public SetB(row: number, bb: number) {
+  public setB(row: number, bb: number) {
     this._b[row] = bb;
   }
   // Add to an entry in the right side (B) vector
-  public AddToB(row: number, bb: number) {
+  public addToB(row: number, bb: number) {
     this._b[row] += bb;
   }
   // Access data from the right side (B) vector
-  public GetB(row: number): number {
+  public getB(row: number): number {
     return this._b[row];
   }
   // Install data in the solution (X) vector
-  public SetX(row: number, xx: number) {
+  public setX(row: number, xx: number) {
     this._x[row] = xx;
   }
   // Access data frin the solution (X) vector
-  public GetX(row: number): number {
+  public getX(row: number): number {
     return this._x[row];
   }
   // Get method for matrix and vector order
-  public Order(): number {
+  public order(): number {
     return this._aDiag.length;
   }
   // Compute product of AX and save as B
-  public MultiplyAX(): boolean {
+  public multiplyAX(): boolean {
     if (this._dataState === DataState.FactorFailed) {
       return false;
     } else if (this._dataState === DataState.FactorOK) {
@@ -114,7 +114,7 @@ export class TriDiagonalSystem {
   }
 
   // Compute product of AX and save as B
-  public MultiplyAXPoints(pointX: Point3d[], pointB: Point3d[]): boolean {
+  public multiplyAXPoints(pointX: Point3d[], pointB: Point3d[]): boolean {
     pointB.length = 0;
     while (pointB.length < pointX.length)
       pointB.push(Point3d.create());
@@ -153,7 +153,7 @@ export class TriDiagonalSystem {
   }
 
   // Multiply the stored factors together to return to plain matrix form
-  public Defactor(): boolean {
+  public defactor(): boolean {
     if (this._dataState === DataState.RawMatrix) {
       return true;
     }
@@ -171,7 +171,7 @@ export class TriDiagonalSystem {
     return true;
   }
   // Factor the tridiagonal matrix to LU parts. b, x, not altered
-  public Factor(): boolean {
+  public factor(): boolean {
     if (this._dataState === DataState.FactorOK) {
       return true;
     }
@@ -193,10 +193,10 @@ export class TriDiagonalSystem {
     return true;
   }
   // Solve AX=B. A is left in factored state. B unchanged.
-  public FactorAndBackSubstitute(): boolean {
+  public factorAndBackSubstitute(): boolean {
     const n = this._aDiag.length;
     const n1 = n - 1;
-    if (!this.Factor())
+    if (!this.factor())
       return false;
 
     // Apply Linv to B, same sequence as was done to A:
@@ -219,7 +219,7 @@ export class TriDiagonalSystem {
     return true;
   }
   // Solve AX=B. A is left in factored state. B unchanged. vectorB and vectorX may be the same array
-  public FactorAndBackSubstitutePointArrays(vectorB: Point3d[], vectorX: Point3d[]): boolean {
+  public factorAndBackSubstitutePointArrays(vectorB: Point3d[], vectorX: Point3d[]): boolean {
     const n = this._aDiag.length;
     if (vectorB.length < n)
       return false;
@@ -228,7 +228,7 @@ export class TriDiagonalSystem {
       vectorX.push(Point3d.create(0, 0, 0));
     vectorX.length = n;
     const n1 = n - 1;
-    if (!this.Factor())
+    if (!this.factor())
       return false;
 
     // Apply Linv to B, same sequence as was done to A:
@@ -266,7 +266,7 @@ export class TriDiagonalSystem {
     return true;
   }
   // Allocate a complete copy
-  public Copy(): TriDiagonalSystem {
+  public copy(): TriDiagonalSystem {
     const n = this._aDiag.length;
     const B = new TriDiagonalSystem(n);
     for (let i = 0; i < n; i++) {

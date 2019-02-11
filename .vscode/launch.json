@@ -126,6 +126,22 @@
     {
       "type": "node",
       "request": "launch",
+      "name": "Clients-Backend Tests (Offline)",
+      "program": "${workspaceFolder}/core/clients-backend/node_modules/@bentley/build-tools/scripts/test",
+      "cwd": "${workspaceFolder}/core/clients-backend",
+      "args": [
+        "--testDir=${workspaceFolder}/core/clients-backend/lib/test",
+        "--debug",
+        "--offline",
+        "mock"
+      ],
+      "port": 9229,
+      "protocol": "inspector",
+      "outputCapture": "std"
+    },
+    {
+      "type": "node",
+      "request": "launch",
       "name": "Clients-Backend Tests (Integration)",
       "program": "${workspaceFolder}/core/clients-backend/node_modules/@bentley/build-tools/scripts/test",
       "cwd": "${workspaceFolder}/core/clients-backend",
@@ -548,10 +564,8 @@
         "${workspaceFolder}/lib/**/*.js"
       ],
       "args": [
-        "--input",
-        "${workspaceRoot}/test-apps/synchro-schedule-importer/lib/assets/proj.ibim",
-        "--script",
-        "${workspaceRoot}/test-apps/synchro-schedule-importer/lib/assets/anim.json"
+        "--input=${workspaceFolder}/test-apps/synchro-schedule-importer/lib/assets/proj.ibim",
+        "--script=${workspaceFolder}/test-apps/synchro-schedule-importer/lib/assets/anim.json",
       ],
     },
     {
@@ -568,6 +582,18 @@
         "http://localhost:8080/3d-tiles-test/data/tileset.json",
         "--output",
         "g:\\briefcases\\testRealityModel.ibim"
+      ],
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Debug buildIModelJsModule",
+      "program": "${workspaceRoot}/core/bentley/node_modules/@bentley/webpack-tools/lib/buildIModelJsModule.js",
+      "cwd": "${workspaceRoot}/test-apps/ui-test-app/",
+      "outFiles": [
+        "${workspaceRoot}/core/bentley/node_modules/@bentley/webpack-tools/lib/*.js",
+      ],
+      "args": [
       ],
     },
     {

@@ -2,8 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-@import "@bentley/bwc/lib/mixins";
-@import "@bentley/bwc/lib/buttons/classes.scss";
+@import "@bentley/ui-core/lib/ui-core/index";
 
 $appbar-height: 65px;
 $navbar-width: 72px;
@@ -11,7 +10,7 @@ $projectpicker-min-width: 250px; /* project picker minimum width */
 $projectpicker-max-width: 450px; /* project picker maximum width */
 $open-background: #FCFDFD;
 $open-color: #6d6e77;
-$content-background: $bwc-white;
+$content-background: $uicore-white;
 $border-color: #e7e9ec;
 
 /* application bar*/
@@ -50,7 +49,7 @@ $border-color: #e7e9ec;
     /* "Projects" label */
     .projects-label {
       margin-right: 1em;
-      font-size: $bwc-font-size-subheading;
+      font-size: $uicore-font-size-subheading;
     }
 
     /* project picker */

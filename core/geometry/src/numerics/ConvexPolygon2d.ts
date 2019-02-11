@@ -40,11 +40,11 @@ export class Ray2d {
     return new Ray2d(this._origin.addForwardLeft(0.0, leftFraction, this._direction), this._direction);
   }
 
-  public CCWPerpendicularRay(): Ray2d {
+  public ccwPerpendicularRay(): Ray2d {
     return new Ray2d(this._origin, this._direction.rotate90CCWXY());
   }
 
-  public CWPerpendicularRay(): Ray2d {
+  public cwPerpendicularRay(): Ray2d {
     return new Ray2d(this._origin, this._direction.rotate90CWXY());
   }
 

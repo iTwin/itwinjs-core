@@ -91,11 +91,11 @@ export namespace BRepEntity {
     materialId?: Id64String;
   }
 
-  /** Geometry entry representing raw brep data. Must be specifically requested using [[ElementLoadProps.wantBRepData]].
+  /** Geometry entry representing raw brep data.
    * @see [[GeometryStreamEntryProps]]
    */
   export interface DataProps {
-    /** data as Base64 encoded string */
+    /** data as Base64 encoded string. Must be specifically requested using [[ElementLoadProps.wantBRepData]]. */
     data?: string;
     /** body type, default is Solid */
     type?: Type;

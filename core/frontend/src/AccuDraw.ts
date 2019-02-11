@@ -2807,7 +2807,7 @@ export class AccuDraw {
       return;
 
     const worldToView = this.currentView.worldToViewMap.transform0;
-    const detail = CurveCurve.IntersectionProjectedXY(worldToView, usePointOnSnap ? curveSegment : curve, true, usePointOnSnap ? curve : curveSegment, true);
+    const detail = CurveCurve.intersectionProjectedXY(worldToView, usePointOnSnap ? curveSegment : curve, true, usePointOnSnap ? curve : curveSegment, true);
     if (0 === detail.dataA.length)
       return;
 

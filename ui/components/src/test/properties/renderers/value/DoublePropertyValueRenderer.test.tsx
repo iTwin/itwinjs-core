@@ -7,7 +7,7 @@ import { mount } from "enzyme";
 import * as React from "react";
 import TestUtils from "../../../TestUtils";
 import { DoublePropertyValueRenderer } from "../../../../ui-components/properties/renderers/value/DoublePropertyValueRenderer";
-import { PrimitiveValue } from "../../../../ui-components/properties/Value";
+import { PrimitiveValue } from "@bentley/imodeljs-frontend";
 
 function createDoubleProperty(value: number, displayValue?: string) {
   const property = TestUtils.createPrimitiveStringProperty("Length", "", displayValue);

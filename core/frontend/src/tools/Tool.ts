@@ -14,6 +14,7 @@ import { IModelError, GeometryStreamProps } from "@bentley/imodeljs-common";
 import { FuzzySearch, FuzzySearchResults } from "../FuzzySearch";
 import { CoordinateLockOverrides } from "./ToolAdmin";
 import { LocateResponse, LocateFilterStatus } from "../ElementLocateManager";
+import { ToolSettingsPropertySyncItem, ToolSettingsPropertyRecord } from "../properties/ToolSettingsValue";
 
 export type ToolType = typeof Tool;
 export type ToolList = ToolType[];
@@ -500,6 +501,19 @@ export abstract class InteractiveTool extends Tool {
   public initLocateElements(enableLocate: boolean = true, enableSnap?: boolean, cursor?: string, coordLockOvr?: CoordinateLockOverrides): void {
     IModelApp.locateManager.initToolLocate();
     this.changeLocateState(enableLocate, enableSnap, cursor, coordLockOvr);
+  }
+
+  /** Used to supply list of properties that can be used to generate ToolSettings. If undefined is returned then no ToolSettings will be displayed */
+  public supplyToolSettingsProperties(): ToolSettingsPropertyRecord[] | undefined { return undefined; }
+
+  /** Used to receive property changes from UI. Return false if there was an error applying updatedValue. */
+  public applyToolSettingPropertyChange(_updatedValue: ToolSettingsPropertySyncItem): boolean { return true; }
+
+  /** Called by tool to synchronize the UI with property changes made by tool. This is typically used to provide user feedback during tool dynamics.
+   * If the syncData contains a quantity value and if the displayValue is not defined, the displayValue will be generated in the UI layer before displaying the value.
+   */
+  public syncToolSettingsProperties(syncData: ToolSettingsPropertySyncItem[]) {
+    IModelApp.toolAdmin.syncToolSettingsProperties(this.toolId, syncData);
   }
 }
 

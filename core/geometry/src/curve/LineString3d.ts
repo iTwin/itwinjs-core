@@ -2,14 +2,11 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-
 /** @module Curve */
-
 import { Geometry, AxisOrder, BeJSONFunctions, PlaneAltitudeEvaluator } from "../Geometry";
 import { Angle } from "../geometry3d/Angle";
 import { XAndY } from "../geometry3d/XYZProps";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
-import { Point2d } from "../geometry3d/Point2dVector2d";
 import { Range3d } from "../geometry3d/Range";
 import { Transform } from "../geometry3d/Transform";
 import { Matrix3d } from "../geometry3d/Matrix3d";
@@ -22,89 +19,13 @@ import { GrowableXYArray } from "../geometry3d/GrowableXYArray";
 import { GeometryHandler, IStrokeHandler } from "../geometry3d/GeometryHandler";
 import { StrokeOptions } from "./StrokeOptions";
 import { CurvePrimitive, AnnounceNumberNumberCurvePrimitive } from "./CurvePrimitive";
+import { StrokeCountMap } from "./Query/StrokeCountMap";
 import { GeometryQuery } from "./GeometryQuery";
 import { CurveLocationDetail, CurveSearchStatus, CurveIntervalRole } from "./CurveLocationDetail";
 import { Clipper } from "../clipping/ClipUtils";
 import { LineSegment3d } from "./LineSegment3d";
+
 /* tslint:disable:variable-name no-empty*/
-/**
- * context to be called to incrementally accumulate distance along line segments.
- */
-class MoveByDistanceContext {
-  public distance0: number;   // accumulated distance through point0
-  public point0: Point3d;      // most recent point
-  public fraction0: number;   // most recent fraction position
-  public targetDistance: number;  // this is always positive.
-  /** CAPTURE point0, fraction0, targetDistance */
-  public constructor(point0: Point3d, fraction0: number, targetDistance: number) {
-    this.point0 = point0;
-    this.distance0 = 0.0;
-    this.targetDistance = Math.abs(targetDistance);
-    this.fraction0 = fraction0;
-  }
-  // Return CurveSearchStatus indicating whether the accumulated distance has reached the target.
-  public distanceStatus(): CurveSearchStatus {
-    return Geometry.isSameCoordinate(this.distance0, this.targetDistance) ?
-      CurveSearchStatus.success : CurveSearchStatus.stoppedAtBoundary;
-  }
-  /**
-   * Announce next point on the polyline.
-   * * if the additional segment does NOT reach the target:
-   *   * accumulate the segment length
-   *   * update point0 and fraction0
-   *   * return false
-   *  * if the additional segment DOES reach the target:
-   *    * update point0 and fraction0 to the (possibly interpolated) final point and fraction
-   *    * return true
-   * @param point1 new point
-   * @param fraction1 fraction at point1
-   * @return true if targetDistance reached.
-   */
-  public announcePoint(point1: Point3d, fraction1: number): boolean {
-    const a = this.point0.distance(point1);
-    const distance1 = this.distance0 + a;
-    if (distance1 < this.targetDistance && !Geometry.isSameCoordinate(distance1, this.targetDistance)) {
-      this.point0.setFromPoint3d(point1);
-      this.distance0 = distance1;
-      this.fraction0 = fraction1;
-      return false;
-    }
-    const b = this.targetDistance - this.distance0;
-    const intervalFraction = Geometry.safeDivideFraction(b, a, 0.0);
-    this.point0.interpolate(intervalFraction, point1, this.point0);
-    this.fraction0 = Geometry.interpolate(this.fraction0, intervalFraction, fraction1);
-    this.distance0 = this.targetDistance;
-    return true;
-  }
-  /**
-   * Update point0, fraction0, and distance0 based on extrapolation of a segment between indices of a point array.
-   * @returns true if extraploation succeeded.  (False if indexed points are coincident)
-   * @param points
-   * @param index0
-   * @param index1
-   * @param fraction0
-   * @param fraction1
-   * @param result
-   * @param CurveLocationDetail
-   */
-  public announceExtrapolation(points: GrowableXYZArray,
-    index0: number, index1: number,
-    fraction0: number, fraction1: number): boolean {
-    const residual = this.targetDistance - this.distance0;
-    const d01 = points.distance(index0, index1);
-    if (!d01)
-      return false;
-    const extensionFraction = Geometry.conditionalDivideFraction(residual, d01);
-    if (extensionFraction === undefined)
-      return false;
-    // (Remark: indices are swapped and extensionFraction negated to prevent incidental precision
-    // loss with the alternative call with (index0, 1 + extensionFraction, index1);
-    points.interpolate(index1, -extensionFraction, index0, this.point0);
-    this.distance0 = this.targetDistance;
-    this.fraction0 = Geometry.interpolate(fraction1, -extensionFraction, fraction0);
-    return true;
-  }
-}
 
 /* Starting wtih baseIndex and moving index by stepDirection:
 If the vector from baseIndex to baseIndex +1 crossed with vectorA can be normalized, accumulate it (scaled) to normal.
@@ -162,6 +83,11 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
   private _fractions?: GrowableFloat64Array;
   private _uvParams?: GrowableXYArray;
   private _derivatives?: GrowableXYZArray;
+  private _surfaceNormals?: GrowableXYZArray;
+
+  private _pointIndices?: GrowableFloat64Array;
+  private _normalIndices?: GrowableFloat64Array;
+
   /** return the points array (cloned). */
   public get points(): Point3d[] { return this._points.getPoint3dArray(); }
   /** Return (reference to) point data in packed GrowableXYZArray. */
@@ -170,6 +96,33 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
   public get fractions(): GrowableFloat64Array | undefined { return this._fractions; }
   public get packedDerivatives(): GrowableXYZArray | undefined { return this._derivatives; }
   public get packedUVParams(): GrowableXYArray | undefined { return this._uvParams; }
+  public get packedSurfaceNormals(): GrowableXYZArray | undefined { return this._surfaceNormals; }
+  public get normalIndices(): GrowableFloat64Array | undefined { return this._normalIndices; }
+  public get pointIndices(): GrowableFloat64Array | undefined { return this._pointIndices; }
+  /**
+   * create and attach an array to record fractional data.
+   * @param retainArrayContentsIfAlreadyPresent if true and there is a prexisting array, leave the prior array contents in place.
+   *   If false and there is a preexisting array, leave the array there but clear its contents.
+   */
+  public initializeFractionArray(retainArrayContentsIfAlreadyPresent: boolean = false) {
+    if (!this._fractions)
+      this._fractions = new GrowableFloat64Array();
+    if (!retainArrayContentsIfAlreadyPresent)
+      this._fractions.clear();
+  }
+
+  /**
+   * create and attach an array to record derivative data.
+   * @param retainArrayContentsIfAlreadyPresent if true and there is a prexisting array, leave the prior array contents in place.
+   *   If false and there is a preexisting array, leave the array there but clear its contents.
+   */
+  public initializeDerivativeArray(retainArrayContentsIfAlreadyPresent: boolean = false) {
+    if (!this._derivatives)
+      this._derivatives = new GrowableXYZArray();
+    if (retainArrayContentsIfAlreadyPresent)
+      this._derivatives.clear();
+  }
+
   private constructor() {
     super();
     this._points = new GrowableXYZArray();
@@ -246,21 +199,88 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     this._fractions.push(fraction);
   }
 
+  /** Ensure that the parameter array exists with no points but at least the capacity of the point array. */
+  public ensureEmptyUVParams(): GrowableXYArray {
+    const n = this.numPoints();
+    if (!this._uvParams) {
+      this._uvParams = new GrowableXYArray(n);
+      return this._uvParams;
+    }
+    this._uvParams.clear();
+    this._uvParams.ensureCapacity(n);
+    return this._uvParams;
+  }
+  /** Ensure that the surfaceNormals array exists with no points but at least the capacity of the point array. */
+  public ensureEmptySurfaceNormals(): GrowableXYZArray {
+    const n = this.numPoints();
+    if (!this._surfaceNormals) {
+      this._surfaceNormals = new GrowableXYZArray(n);
+      return this._surfaceNormals;
+    }
+    this._surfaceNormals.clear();
+    this._surfaceNormals.ensureCapacity(n);
+    return this._surfaceNormals;
+  }
+
+  /** Ensure that the surfaceNormals array exists with no points but at least the capacity of the point array. */
+  public ensureEmptyNormalIndices(): GrowableFloat64Array {
+    const n = this.numPoints();
+    if (!this._normalIndices) {
+      this._normalIndices = new GrowableFloat64Array(n);
+      return this._normalIndices;
+    }
+    this._normalIndices.clear();
+    this._normalIndices.ensureCapacity(n);
+    return this._normalIndices;
+  }
+
+  /** Ensure that the surfaceNormals array exists with no points but at least the capacity of the point array. */
+  public ensureEmptyPointIndices(): GrowableFloat64Array {
+    const n = this.numPoints();
+    if (!this._pointIndices) {
+      this._pointIndices = new GrowableFloat64Array(n);
+      return this._pointIndices;
+    }
+    this._pointIndices.clear();
+    this._pointIndices.ensureCapacity(n);
+    return this._pointIndices;
+  }
+
   /**
-   * Append a fraction to the fractions array.
+   * Append a uv coordinate to the uvParams array
    * @param uv
    */
-  public addUVParam(uvParam: Point2d) {
+  public addUVParam(uvParam: XAndY) {
     if (!this._uvParams)
       this._uvParams = new GrowableXYArray();
     this._uvParams.pushXY(uvParam.x, uvParam.y);
   }
 
   /**
-   * Append a fraction to the fractions array.
-   * @param fraction
+   * Append a uv coordinate to the uvParams array
+   * @param uv
+   */
+  public addUVParamAsUV(u: number, v: number) {
+    if (!this._uvParams)
+      this._uvParams = new GrowableXYArray();
+    this._uvParams.pushXY(u, v);
+  }
+
+  /**
+   * Append a derivative to the derivative array
+   * @param vector
    */
   public addDerivative(vector: Vector3d) {
+    if (!this._derivatives)
+      this._derivatives = new GrowableXYZArray();
+    this._derivatives.push(vector);
+  }
+
+  /**
+   * Append a surface normal to the surface normal array.
+   * @param vector
+   */
+  public addSurfaceNormal(vector: Vector3d) {
     if (!this._derivatives)
       this._derivatives = new GrowableXYZArray();
     this._derivatives.push(vector);
@@ -278,7 +298,10 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
   public popPoint() {
     this._points.pop();
   }
-
+  /** Compute `uvParams` array as (xy parts of) a linear transform of the xyz coordinates */
+  public computeUVFromXYZTransform(transform: Transform) {
+    this._uvParams = GrowableXYArray.createFromGrowableXYZArray(this._points, transform);
+  }
   public static createRectangleXY(point0: Point3d, ax: number, ay: number, closed: boolean = true): LineString3d {
     const ls = LineString3d.create();
     const x0 = point0.x;
@@ -323,12 +346,24 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
   }
 
   public setFrom(other: LineString3d) {
-    this._points.clear();
-    let i = 0;
-    while (other._points.isIndexValid(i)) {
-      this._points.push(other._points.getPoint3dAt(i));
-      i++;
-    }
+    // ugly -- "clone" methods are inconsistent about 'reuse' and 'result' parameter . . .
+    this._points = other._points.clone(this._points);
+    if (other._derivatives)
+      this._derivatives = other._derivatives.clone(this._derivatives);
+    else
+      this._derivatives = undefined;
+    if (other._fractions)
+      this._fractions = other._fractions.clone(false);
+    else this._fractions = undefined;
+    if (other._surfaceNormals)
+      this._surfaceNormals = other._surfaceNormals.clone(this._surfaceNormals);
+    else
+      this._surfaceNormals = undefined;
+    if (other._uvParams)
+      this._uvParams = other._uvParams.clone();
+    else
+      this._uvParams = undefined;
+
   }
 
   public static createPoints(points: Point3d[]): LineString3d {
@@ -514,7 +549,14 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
   /** If i is a valid index, return that stored derivative vector. */
   public derivativeAt(i: number, result?: Vector3d): Vector3d | undefined {
     if (this._derivatives && this._derivatives.isIndexValid(i))
-      return this._points.atVector3dIndex(i, result);
+      return this._derivatives.atVector3dIndex(i, result);
+    return undefined;
+  }
+
+  /** If i is a valid index, return that stored surfaceNormal vector. */
+  public surfaceNormalAt(i: number, result?: Vector3d): Vector3d | undefined {
+    if (this._surfaceNormals && this._surfaceNormals.isIndexValid(i))
+      return this._surfaceNormals.atVector3dIndex(i, result);
     return undefined;
   }
 
@@ -542,6 +584,10 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
   }
   public tryTransformInPlace(transform: Transform): boolean {
     this._points.multiplyTransformInPlace(transform);
+    if (this._derivatives)
+      this._derivatives.multiplyMatrix3dInPlace(transform.matrix);
+    if (this._surfaceNormals)
+      this._surfaceNormals.multiplyAndRenormalizeMatrix3dInverseTransposeInPlace(transform.matrix);
     return true;
   }
 
@@ -739,10 +785,12 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
   /** Append (clone of) one point.
    * BUT ... skip if duplicates the tail of prior points.
    */
-  public appendStrokePoint(point: Point3d) {
+  public appendStrokePoint(point: Point3d, fraction?: number) {
     const n = this._points.length;
     if (n === 0 || !point.isAlmostEqual(this._points.getPoint3dAt(n - 1)))
       this._points.push(point);
+    if (fraction !== undefined && this._fractions !== undefined)
+      this.addFraction(fraction);
   }
 
   /** Append a suitable evaluation of a curve ..
@@ -752,24 +800,19 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
    * BUT ... skip if duplicates the tail of prior points.
    */
   public appendFractionToPoint(curve: CurvePrimitive, fraction: number) {
-    const n = this._points.length;
     if (this._derivatives) {
       const ray = curve.fractionToPointAndDerivative(fraction, LineString3d._workRay);
-      if (n === 0 || !ray.origin.isAlmostEqual(this._points.getPoint3dAt(n - 1))) {
-        if (this._fractions)
-          this._fractions.push(fraction);
-        this._points.push(ray.origin);
-        if (this._derivatives)
-          this._derivatives.push(ray.direction);
+      if (this._fractions)
+        this._fractions.push(fraction);
+      this._points.push(ray.origin);
+      if (this._derivatives)
+        this._derivatives.push(ray.direction);
 
-      }
     } else {
       const point = curve.fractionToPoint(fraction, LineString3d._workPointA);
-      if (n === 0 || !point.isAlmostEqual(this._points.getPoint3dAt(n - 1))) {
-        if (this._fractions)
-          this._fractions.push(fraction);
-        this._points.push(point);
-      }
+      if (this._fractions)
+        this._fractions.push(fraction);
+      this._points.push(point);
     }
   }
   /**
@@ -800,8 +843,10 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
         ls._fractions = new GrowableFloat64Array(capacity);
         ls._uvParams = new GrowableXYArray(capacity);
       }
-      if (options.needNormals)
+      if (options.needNormals) {
         ls._derivatives = new GrowableXYZArray(capacity);
+        ls._surfaceNormals = new GrowableXYZArray(capacity);
+      }
     }
     return ls;
   }
@@ -898,6 +943,38 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     handler.endCurvePrimitive(this);
   }
 
+  /**
+   * return the stroke count required for given options.
+   * @param options StrokeOptions that determine count
+   */
+  public computeStrokeCountForOptions(options?: StrokeOptions): number {
+    const numPoints = this._points.length;
+    let numStroke = numPoints - 1;
+
+    if (options && options.hasMaxEdgeLength) {
+      numStroke = 0;
+      for (let i = 1; i < numPoints; i++) {
+        numStroke += options.applyMaxEdgeLength(1, this._points.distance(i - 1, i)!);
+      }
+    }
+    return numStroke;
+  }
+  /**
+   * Compute individual segment stroke counts.  Attach in a StrokeCountMap.
+   * @param options StrokeOptions that determine count
+   * @param parentStrokeMap evolving parent map.
+   */
+  public computeAndAttachRecursiveStrokeCounts(options?: StrokeOptions, parentStrokeMap?: StrokeCountMap) {
+    const numPoints = this._points.length;
+    const applyOptions = options !== undefined && options.hasMaxEdgeLength;
+    const myData = StrokeCountMap.createWithCurvePrimitiveAndOptionalParent(this, parentStrokeMap, []);
+    for (let i = 1; i < numPoints; i++) {
+      const segmentLength = this._points.distance(i - 1, i)!;
+      const numStrokeOnSegment = applyOptions ? options!.applyMaxEdgeLength(1, segmentLength)! : 1;
+      myData.addToCountAndLength(numStrokeOnSegment, segmentLength);
+    }
+    CurvePrimitive.installStrokeCountMap(this, myData, parentStrokeMap);
+  }
   public dispatchToGeometryHandler(handler: GeometryHandler): any {
     return handler.handleLineString3d(this);
   }
@@ -994,8 +1071,52 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
       return LineSegment3d.create(this._points.atPoint3dIndex(index)!, this._points.atPoint3dIndex(index + 1)!);
     return undefined;
   }
-}
+  /**
+   * @returns true if first and last points are within metric tolerance.
+   */
+  public get isPhysicallyClosed(): boolean {
+    return this._points.length > 0 && Geometry.isSmallMetricDistance(this._points.distance(0, this._points.length - 1)!);
+  }
 
+  /**
+   * evaluate strokes at fractions indicated in a StrokeCountMap.
+   * * The map must have an array of component counts corresponding to the segemnet of this linestring.
+   * @param map = stroke count data.
+   * @param destLinestring = receiver linestring.
+   * @return number of strokes added.  0 if `map.componentData` does not match the linestring
+   */
+  public addMappedStrokesToLineString3D(map: StrokeCountMap, destLinestring: LineString3d): number {
+    const numPoint0 = destLinestring.numPoints();
+    const needFractions = destLinestring._fractions !== undefined;
+    const needDerivatives = destLinestring._derivatives !== undefined;
+    const points = this._points;
+    const pointA = LineString3d._workPointA;
+    const pointB = LineString3d._workPointB;
+    const pointC = LineString3d._workPointC;
+    const numParentPoint = points.length;
+    const numParentEdge = numParentPoint - 1;
+    if (map.primitive && map.primitive === this && map.componentData && map.componentData.length + 1 === numParentPoint) {
+      points.getPoint3dAt(0, pointA);
+      for (let k = 0; k + 1 < numParentPoint; k++ , pointA.setFromPoint3d(pointB)) {
+        points.getPoint3dAt(k + 1, pointB);
+        const segmentMap = map.componentData![k];
+        const m = segmentMap.numStroke;
+        const vectorAB = pointA.vectorTo(pointB);
+        vectorAB.scale(m);
+        for (let i = 0; i <= m; i++) {
+          const fraction = i / m;
+          destLinestring.addPoint(pointA.interpolate(fraction, pointB, pointC));
+          if (needFractions)
+            destLinestring._fractions!.push((k + fraction) / numParentEdge);
+          if (needDerivatives)
+            destLinestring._derivatives!.push(vectorAB);
+
+        }
+      }
+    }
+    return destLinestring.numPoints() - numPoint0;
+  }
+}
 /** An AnnotatedLineString3d is a linestring with additional data attached to each point
  * * This is useful in facet construction.
  */
@@ -1007,4 +1128,82 @@ export class AnnotatedLineString3d {
   public uvwParam?: GrowableXYZArray;
   public vecturU?: GrowableXYZArray;
   public vectorV?: GrowableXYZArray;
+}
+/**
+ * context to be called to incrementally accumulate distance along line segments.
+ */
+class MoveByDistanceContext {
+  public distance0: number;   // accumulated distance through point0
+  public point0: Point3d;      // most recent point
+  public fraction0: number;   // most recent fraction position
+  public targetDistance: number;  // this is always positive.
+  /** CAPTURE point0, fraction0, targetDistance */
+  public constructor(point0: Point3d, fraction0: number, targetDistance: number) {
+    this.point0 = point0;
+    this.distance0 = 0.0;
+    this.targetDistance = Math.abs(targetDistance);
+    this.fraction0 = fraction0;
+  }
+  // Return CurveSearchStatus indicating whether the accumulated distance has reached the target.
+  public distanceStatus(): CurveSearchStatus {
+    return Geometry.isSameCoordinate(this.distance0, this.targetDistance) ?
+      CurveSearchStatus.success : CurveSearchStatus.stoppedAtBoundary;
+  }
+  /**
+   * Announce next point on the polyline.
+   * * if the additional segment does NOT reach the target:
+   *   * accumulate the segment length
+   *   * update point0 and fraction0
+   *   * return false
+   *  * if the additional segment DOES reach the target:
+   *    * update point0 and fraction0 to the (possibly interpolated) final point and fraction
+   *    * return true
+   * @param point1 new point
+   * @param fraction1 fraction at point1
+   * @return true if targetDistance reached.
+   */
+  public announcePoint(point1: Point3d, fraction1: number): boolean {
+    const a = this.point0.distance(point1);
+    const distance1 = this.distance0 + a;
+    if (distance1 < this.targetDistance && !Geometry.isSameCoordinate(distance1, this.targetDistance)) {
+      this.point0.setFromPoint3d(point1);
+      this.distance0 = distance1;
+      this.fraction0 = fraction1;
+      return false;
+    }
+    const b = this.targetDistance - this.distance0;
+    const intervalFraction = Geometry.safeDivideFraction(b, a, 0.0);
+    this.point0.interpolate(intervalFraction, point1, this.point0);
+    this.fraction0 = Geometry.interpolate(this.fraction0, intervalFraction, fraction1);
+    this.distance0 = this.targetDistance;
+    return true;
+  }
+  /**
+   * Update point0, fraction0, and distance0 based on extrapolation of a segment between indices of a point array.
+   * @returns true if extraploation succeeded.  (False if indexed points are coincident)
+   * @param points
+   * @param index0
+   * @param index1
+   * @param fraction0
+   * @param fraction1
+   * @param result
+   * @param CurveLocationDetail
+   */
+  public announceExtrapolation(points: GrowableXYZArray,
+    index0: number, index1: number,
+    fraction0: number, fraction1: number): boolean {
+    const residual = this.targetDistance - this.distance0;
+    const d01 = points.distance(index0, index1);
+    if (!d01)
+      return false;
+    const extensionFraction = Geometry.conditionalDivideFraction(residual, d01);
+    if (extensionFraction === undefined)
+      return false;
+    // (Remark: indices are swapped and extensionFraction negated to prevent incidental precision
+    // loss with the alternative call with (index0, 1 + extensionFraction, index1);
+    points.interpolate(index1, -extensionFraction, index0, this.point0);
+    this.distance0 = this.targetDistance;
+    this.fraction0 = Geometry.interpolate(fraction1, -extensionFraction, fraction0);
+    return true;
+  }
 }

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Added OidcAgentClientV2. This will replace OidcAgentClient after some fixes from IMS+Connect.",
+      "packageName": "@bentley/imodeljs-clients",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-clients",
+  "email": "Ramanujam.Raman@bentley.com"
+}

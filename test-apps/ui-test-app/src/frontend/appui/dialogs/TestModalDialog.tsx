@@ -3,12 +3,12 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { Dialog, ButtonType } from "@bentley/ui-core";
+import { Dialog, DialogButtonType } from "@bentley/ui-core";
 import { ModalDialogManager } from "@bentley/ui-framework";
 
 export interface TestModalDialogProps {
   opened: boolean;
-  onResult?: (result: ButtonType) => void;
+  onResult?: (result: DialogButtonType) => void;
 }
 
 export interface TestModalDialogState {
@@ -39,8 +39,8 @@ export class TestModalDialog extends React.Component<TestModalDialogProps, TestM
         movable={this.state.movable}
         modal={this.state.overlay}
         buttonCluster={[
-          { type: ButtonType.OK, onClick: () => { this._handleOK(); } },
-          { type: ButtonType.Cancel, onClick: () => { this._handleCancel(); } },
+          { type: DialogButtonType.OK, onClick: () => { this._handleOK(); } },
+          { type: DialogButtonType.Cancel, onClick: () => { this._handleCancel(); } },
         ]}
         onClose={() => this._handleCancel()}
         onEscape={() => this._handleCancel()}
@@ -61,14 +61,14 @@ export class TestModalDialog extends React.Component<TestModalDialogProps, TestM
   private _handleOK = () => {
     this._closeDialog(() => {
       if (this.props.onResult)
-        this.props.onResult(ButtonType.OK);
+        this.props.onResult(DialogButtonType.OK);
     });
   }
 
   private _handleCancel = () => {
     this._closeDialog(() => {
       if (this.props.onResult)
-        this.props.onResult(ButtonType.Cancel);
+        this.props.onResult(DialogButtonType.Cancel);
     });
   }
 

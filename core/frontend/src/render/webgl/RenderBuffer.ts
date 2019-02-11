@@ -4,10 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { IDisposable } from "@bentley/bentleyjs-core";
+import { assert, IDisposable } from "@bentley/bentleyjs-core";
 import { GL } from "./GL";
 import { System } from "./System";
-import { Debug } from "./Diagnostics";
 
 export class RenderBuffer implements IDisposable {
   private _glBuffer?: WebGLRenderbuffer;
@@ -22,7 +21,7 @@ export class RenderBuffer implements IDisposable {
       return undefined;
     }
 
-    Debug.assert(() => 0 < width && 0 < height);
+    assert(0 < width && 0 < height);
     RenderBuffer.bindBuffer(glBuffer);
     gl.renderbufferStorage(GL.RenderBuffer.TARGET, format, width, height);
     RenderBuffer.unbind();
@@ -40,7 +39,7 @@ export class RenderBuffer implements IDisposable {
   }
 
   public bind() {
-    Debug.assert(() => undefined !== this._glBuffer);
+    assert(undefined !== this._glBuffer);
     if (undefined !== this._glBuffer) {
       RenderBuffer.bindBuffer(this._glBuffer);
     }

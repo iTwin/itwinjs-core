@@ -6,13 +6,14 @@
 
 import * as React from "react";
 import "./LoadingSpinner.scss";
+import { Spinner, SpinnerProps } from "./Spinner";
 
 /** Properties for [[LoadingSpinner]] component */
-export interface LoadingSpinnerProps {
+export interface LoadingSpinnerProps extends SpinnerProps {
   /** Message (text) displayed */
   message?: string;
   /** Position the message above or below the spinner (defaults to bottom) */
-  messageOnTop: boolean;
+  messageOnTop?: boolean;
 }
 
 /**
@@ -27,10 +28,7 @@ export class LoadingSpinner extends React.Component<LoadingSpinnerProps> {
     return (
       <div className="core-ls">
         {(this.props.message && this.props.messageOnTop) && <span className="ls-message-top">{this.props.message}</span>}
-        <svg className="ls-spinner" viewBox="0 0 50 50">
-          <circle className="shape" cx="25" cy="25" r="20" fill="none" strokeWidth="4"></circle>
-          <circle className="fill" cx="25" cy="25" r="20" fill="none" strokeWidth="4"></circle>
-        </svg>
+        <Spinner size={this.props.size} sizeClass={this.props.sizeClass} />
         {(this.props.message && !this.props.messageOnTop) && <span className="ls-message-bottom">{this.props.message}</span>}
       </div>
     );

@@ -52,6 +52,7 @@ export class RenderMaterial extends DefinitionElement implements RenderMaterialP
    * @throws [[IModelError]] if unable to create the element.
    */
   public static create(iModelDb: IModelDb, definitionModelId: Id64String, materialName: string, params: RenderMaterial.Params): RenderMaterial {
+    const map = undefined !== params.patternMap ? { Pattern: params.patternMap } : undefined;
     const renderMaterialProps: RenderMaterialProps = {
       classFullName: this.classFullName,
       code: this.createCode(iModelDb, definitionModelId, materialName),
@@ -76,7 +77,7 @@ export class RenderMaterial extends DefinitionElement implements RenderMaterialP
             reflect: params.reflect,
             HasReflectColor: params.reflectColor !== undefined,
             reflect_color: params.reflectColor,
-            Map: params.textureMapProps,
+            Map: map,
           },
         },
       },
@@ -123,8 +124,8 @@ export namespace RenderMaterial {
     public reflect?: number;
     /** If defined, apply this surface reflectance color; if undefined, defaults to whatever the specularColor is */
     public reflectColor?: number[];
-    /** If defined, use this TextureMapProps object to control how a texture is mapped to this material */
-    public textureMapProps?: TextureMapProps;
+    /** If defined, specifies the pattern mapping. */
+    public patternMap?: TextureMapProps;
 
     /** Construct a new RenderMaterial.Params object with the specified paletteName.  Alter the public members on that object to specify settings. */
     public constructor(paletteName: string) {

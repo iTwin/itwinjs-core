@@ -258,6 +258,12 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@bentley/plugin-markup",
+      "projectFolder": "plugins/markup",
+      "reviewCategory": "frontend",
+      "shouldPublish": false
+    },
+    {
       "packageName": "agent-test-app",
       "projectFolder": "test-apps/agent-test-app",
       "reviewCategory": "internal",

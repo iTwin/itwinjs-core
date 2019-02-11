@@ -10,11 +10,9 @@ for (let i = 2; i < process.argv.length; i++) {
   if (curArg === "chrome" || curArg === "edge" || curArg === "firefox")
     browser = curArg;
 }
-execSync("run-p \"start:webserver\" \"start:backend " + args + "\"", { stdio: [0, 1, 2] });
+execSync("npm run start:web " + args, { stdio: [0, 1, 2] });
 
-if (browser === "chrome")
-  execSync("taskkill /f /im chrome.exe /t >nul");
-else if (browser === "edge")
+if (browser === "edge")
   execSync("taskkill /f /im MicrosoftEdge.exe /t >nul");
 else if (browser === "firefox")
   execSync("taskkill /f /im firefox.exe /t >nul");

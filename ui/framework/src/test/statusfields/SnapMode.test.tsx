@@ -87,4 +87,21 @@ describe("SnapModeField", () => {
     wrapper.unmount();
   });
 
+  it("Validate multiple snaps mode", () => {
+
+    // force to use multi-snap
+    UiFramework.setAccudrawSnapMode(SnapMode.Intersection | SnapMode.NearestKeypoint);
+    const snapMode = UiFramework.getAccudrawSnapMode();
+    expect(snapMode).to.be.equal(SnapMode.Intersection | SnapMode.NearestKeypoint);
+    const wrapper = mount(<Provider store={TestUtils.store}>
+      <StatusBar widgetControl={widgetControl} isInFooterMode={true} />
+    </Provider>);
+
+    // the indicator field should contain the multi-snap icon.
+    const itemId = "div.icon-snaps-multione";
+    expect(wrapper.find(itemId).length).to.eq(1);
+
+    wrapper.unmount();
+  });
+
 });

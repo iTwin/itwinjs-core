@@ -10,7 +10,7 @@ import sinon from "sinon";
 import { BooleanEditor } from "../../ui-components/editors/BooleanEditor";
 import { EditorContainer, PropertyUpdatedArgs } from "../../ui-components/editors/EditorContainer";
 import TestUtils from "../TestUtils";
-import { PrimitiveValue } from "../../ui-components/properties/Value";
+import { PrimitiveValue } from "@bentley/imodeljs-frontend";
 
 describe("<BooleanEditor />", () => {
   it("should render", () => {
@@ -71,6 +71,22 @@ describe("<BooleanEditor />", () => {
     await TestUtils.flushAsyncOperations();
     expect(spyOnCommit.calledOnce).to.be.true;
     expect(booleanValue).to.be.true;
+  });
+
+  it("componentDidUpdate updates the value", async () => {
+    const record = TestUtils.createBooleanProperty("Test", false);
+    const wrapper = mount(<BooleanEditor propertyRecord={record} />);
+
+    await TestUtils.flushAsyncOperations();
+    const enumEditor = wrapper.instance() as BooleanEditor;
+    expect(enumEditor.getValue()).to.equal(false);
+
+    const newRecord = TestUtils.createBooleanProperty("Test", true);
+    wrapper.setProps({ propertyRecord: newRecord });
+    await TestUtils.flushAsyncOperations();
+    expect(enumEditor.getValue()).to.equal(true);
+
+    wrapper.unmount();
   });
 
 });

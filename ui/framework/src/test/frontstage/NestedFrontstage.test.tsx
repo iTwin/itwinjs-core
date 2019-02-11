@@ -17,6 +17,7 @@ import {
   ZoneState,
   NestedFrontstage,
   ToolWidget,
+  CoreTools,
 } from "../../ui-framework";
 import { TestFrontstage, TestContentControl, TestWidget } from "./FrontstageTestUtils";
 
@@ -45,7 +46,7 @@ class TestNestedFrontstage extends FrontstageProvider {
     return (
       <Frontstage
         id="Test1"
-        defaultToolId="Select"
+        defaultTool={CoreTools.selectElementCommand}
         defaultLayout={contentLayoutDef}
         contentGroup={myContentGroup}
         defaultContentId="defaultContentId"

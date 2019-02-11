@@ -1,0 +1,20 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+@import "../style/index";
+
+@import "./button";
+
+
+@mixin uicore-buttons-disabled {
+
+    @include uicore-buttons-button;
+
+    &, &:active, &:focus, &:hover {
+
+        @include uicore-buttons-button-disabled;
+    }
+}
+
+.uicore-buttons-disabled { @include uicore-buttons-disabled; }

@@ -3,13 +3,12 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { IModelConnection, PropertyRecord } from "@bentley/imodeljs-frontend";
 import { InstanceKey } from "../../common/lib/EC";
 import { Presentation } from "@bentley/presentation-frontend";
 import { KeySet, Ruleset, RegisteredRuleset, PageOptions, DefaultContentDisplayTypes, Content } from "@bentley/presentation-common";
 import { ContentBuilder as PresentationContentBuilder, ContentDataProvider } from "@bentley/presentation-components";
 import { using, Id64String } from "@bentley/bentleyjs-core";
-import { PropertyRecord } from "@bentley/ui-components";
 
 /** Interface for a data provider, which is used by ContentBuilder */
 export interface IContentBuilderDataProvider {

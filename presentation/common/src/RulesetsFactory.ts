@@ -10,7 +10,7 @@ import { Field, PropertiesField } from "./content/Fields";
 import Item from "./content/Item";
 import { RuleTypes } from "./rules/Rule";
 import { RuleSpecificationTypes } from "./rules/RuleSpecification";
-import { Value, isNestedContentValue } from "./content/Value";
+import { Value, isNestedContentValue, DisplayValue } from "./content/Value";
 import { MultiSchemaClassesSpecification, SingleSchemaClassSpecification } from "./rules/ClassSpecifications";
 import { PropertyValueFormat } from "./content/TypeDescription";
 import { ClassInfo, RelatedClassInfo } from "./EC";
@@ -28,7 +28,7 @@ export class RulesetsFactory {
    * @param field A field identifying which property of the record we should use
    * @param record A record whose similar instances should be found
    */
-  public createSimilarInstancesRuleset(field: Field, record: Item): Ruleset {
+  public createSimilarInstancesRuleset(field: Field, record: Item): { ruleset: Ruleset, description: string } {
     if (!field.isPropertiesField())
       throw new Error("Can only create 'similar instances' ruleset for properties-based records");
     if (field.type.valueFormat !== PropertyValueFormat.Primitive)
@@ -42,6 +42,7 @@ export class RulesetsFactory {
     const propertyName = getPropertyName(field);
     const propertyValue = getPropertyValue(record, field);
     const relatedInstances = createRelatedInstanceSpecs(field);
+    const relatedInstanceSpecs = relatedInstances.map((r) => r.spec);
     const ruleset: Ruleset = {
       id: `SimilarInstances/${propertyName}/${Guid.createValue()}`,
       rules: [],
@@ -52,13 +53,24 @@ export class RulesetsFactory {
         specType: RuleSpecificationTypes.ContentInstancesOfSpecificClasses,
         classes: createMultiClassSpecification(record.classInfo),
         arePolymorphic: true,
-        relatedInstances,
-        instanceFilter: createInstanceFilter(relatedInstances, propertyName, propertyValue),
+        relatedInstances: relatedInstanceSpecs,
+        instanceFilter: createInstanceFilter(relatedInstanceSpecs, propertyName, propertyValue.v),
       }],
     });
-    return ruleset;
+    const description = createDescription(record, relatedInstances.map((r) => r.class), field, propertyValue.d);
+    return { ruleset, description };
   }
 }
+
+const createDescription = (record: Item, relatedClasses: ClassInfo[], field: Field, value: string): string => {
+  const classes = (relatedClasses.length > 0) ? relatedClasses : [record.classInfo!];
+  return classes.reduce((descr, classInfo, index) => {
+    if (index !== 0)
+      descr += " OR ";
+    descr += `[${classInfo.label}].[${field.label}] = ${value}`;
+    return descr;
+  }, "");
+};
 
 const getPropertyName = (field: PropertiesField): string => {
   let name = field.properties[0].property.name;
@@ -67,15 +79,23 @@ const getPropertyName = (field: PropertiesField): string => {
   return name;
 };
 
-const getPropertyValue = (record: Item, field: Field): Value => {
+const toString = (displayValue: DisplayValue): string => {
+  if (!displayValue)
+    return "NULL";
+  return displayValue.toString();
+};
+
+const getPropertyValue = (record: Item, field: Field): { v: Value, d: string } => {
   const fieldNamesStack = [];
   let currField: Field | undefined = field;
   while (currField) {
     fieldNamesStack.push(currField.name);
     currField = currField.parent;
   }
-  let value: Value = record.values[fieldNamesStack.pop()!];
   let currFieldName = fieldNamesStack.pop();
+  let displayValue: DisplayValue = record.displayValues[currFieldName!];
+  let value: Value = record.values[currFieldName!];
+  currFieldName = fieldNamesStack.pop();
   while (currFieldName) {
     if (!isNestedContentValue(value) || value.length === 0)
       throw new Error("Invalid record value");
@@ -83,10 +103,11 @@ const getPropertyValue = (record: Item, field: Field): Value => {
       throw new Error("Can't create 'similar instances' for records related through many part of *-to-many relationship");
     if (value[0].mergedFieldNames.indexOf(currFieldName) !== -1)
       throw new Error("Can't create 'similar instances' ruleset for merged values");
+    displayValue = value[0].displayValues[currFieldName];
     value = value[0].values[currFieldName];
     currFieldName = fieldNamesStack.pop();
   }
-  return value;
+  return { v: value, d: toString(displayValue) };
 };
 
 const createInstanceFilter = (relatedInstances: Array<Readonly<RelatedInstanceSpecification>>, propertyName: string, propertyValue: Value): string => {
@@ -127,16 +148,19 @@ const createSingleClassSpecification = (classInfo: Readonly<ClassInfo>): SingleS
   return { schemaName, className };
 };
 
-const createRelatedInstanceSpec = (relatedClassInfo: RelatedClassInfo, index: number): RelatedInstanceSpecification => ({
-  relationship: createSingleClassSpecification(relatedClassInfo.relationshipInfo),
-  class: createSingleClassSpecification(relatedClassInfo.isForwardRelationship ? relatedClassInfo.targetClassInfo : relatedClassInfo.sourceClassInfo),
-  requiredDirection: relatedClassInfo.isForwardRelationship ? RelationshipDirection.Backward : RelationshipDirection.Forward,
-  isRequired: true,
-  alias: `related_${index}`,
+const createRelatedInstanceSpec = (relatedClassInfo: RelatedClassInfo, index: number): { spec: RelatedInstanceSpecification, class: ClassInfo } => ({
+  spec: {
+    relationship: createSingleClassSpecification(relatedClassInfo.relationshipInfo),
+    class: createSingleClassSpecification(relatedClassInfo.isForwardRelationship ? relatedClassInfo.targetClassInfo : relatedClassInfo.sourceClassInfo),
+    requiredDirection: relatedClassInfo.isForwardRelationship ? RelationshipDirection.Backward : RelationshipDirection.Forward,
+    isRequired: true,
+    alias: `related_${index}`,
+  },
+  class: relatedClassInfo.isForwardRelationship ? relatedClassInfo.targetClassInfo : relatedClassInfo.sourceClassInfo,
 });
 
-const createRelatedInstanceSpecs = (field: PropertiesField): RelatedInstanceSpecification[] => {
-  const specs = new Array<RelatedInstanceSpecification>();
+const createRelatedInstanceSpecs = (field: PropertiesField): Array<{ spec: RelatedInstanceSpecification, class: ClassInfo }> => {
+  const specs = new Array();
   field.properties.forEach((property, index) => {
     if (property.relatedClassPath.length === 0) {
       // not related

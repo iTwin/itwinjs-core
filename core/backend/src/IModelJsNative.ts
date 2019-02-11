@@ -341,4 +341,17 @@ export declare namespace IModelJsNative {
     constructor();
     public dispose(): void;
   }
+
+  /** @hidden */
+  export class ImportContext implements IDisposable {
+    constructor(sourceDb: DgnDb, targetDb: DgnDb);
+    public dispose(): void;
+    public addCodeSpecId(sourceId: Id64String, targetId: Id64String): BentleyStatus;
+    public addElementId(sourceId: Id64String, targetId: Id64String): BentleyStatus;
+    public findCodeSpecId(sourceId: Id64String): Id64String;
+    public findElementId(sourceId: Id64String): Id64String;
+    public cloneElement(sourceId: Id64String): ElementProps;
+    public importCodeSpec(sourceId: Id64String): Id64String;
+    public importFont(sourceId: number): number;
+  }
 }

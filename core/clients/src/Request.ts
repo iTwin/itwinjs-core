@@ -115,7 +115,7 @@ export class ResponseError extends BentleyError {
    * @returns Parsed error.
    */
   public static parse(response: any, log = true): ResponseError {
-    const error = new ResponseError(ResponseError.parseHttpStatus(response.status / 100));
+    const error = new ResponseError(ResponseError.parseHttpStatus(response.statusType));
     if (!response) {
       error.message = "Couldn't get response object.";
       return error;
@@ -161,8 +161,8 @@ export class ResponseError extends BentleyError {
     return (response !== undefined && response.statusType === HttpStatus.ServerError);
   }
 
-  public static parseHttpStatus(status: number): HttpStatus {
-    switch (status) {
+  public static parseHttpStatus(statusType: number): HttpStatus {
+    switch (statusType) {
       case 1:
         return HttpStatus.Info;
       case 2:
@@ -203,8 +203,8 @@ const logRequest = (req: sarequest.SuperAgentRequest) => {
 };
 
 // @todo The purpose of this wrapper is to allow us to easily replace this with another
-// module that will rid us of NodeJs dependency.The alternate HTTP module is currently
-// being written and allow working in desktop environments also.
+// module that will rid us of NodeJs dependency.
+
 /**
  * Wrapper around HTTP request utility
  * @param url Server URL to address the request

@@ -24,6 +24,8 @@ export namespace RenderSchedule {
     export interface CuttingPlaneProps {
         position: number[];
         direction: number[];
+        visible?: boolean;
+        hidden?: boolean;
     }
     export interface TransformProps {
         position: number[];

@@ -6,6 +6,7 @@
 
 import {
   ProgramBuilder,
+  ShaderBuilderFlags,
   VariableType,
   VertexShaderComponent,
 } from "../ShaderBuilder";
@@ -17,9 +18,9 @@ import { addColor } from "./Color";
 import { addWhiteOnWhiteReversal } from "./Fragment";
 import { addShaderFlags } from "./Common";
 import { addLineCode, adjustWidth } from "./Polyline";
-import { EdgeGeometry, SilhouetteEdgeGeometry } from "../Mesh";
 import { octDecodeNormal } from "./Surface";
-import { Debug } from "../Diagnostics";
+import { assert } from "@bentley/bentleyjs-core";
+import { IsInstanced, IsAnimated } from "../TechniqueFlags";
 
 const decodeEndPointAndQuadIndices = `
   g_otherIndex = decodeUInt32(a_endPointAndQuadIndices.xyz);
@@ -35,13 +36,13 @@ const animateEndPoint = `g_otherPos.xyz += computeAnimationDisplacement(g_otherI
 `;
 
 const checkForSilhouetteDiscard = `
-  vec3 n0 = u_nmx * octDecodeNormal(a_normals.xy);
-  vec3 n1 = u_nmx * octDecodeNormal(a_normals.zw);
+  vec3 n0 = MAT_NORM * octDecodeNormal(a_normals.xy);
+  vec3 n1 = MAT_NORM * octDecodeNormal(a_normals.zw);
 
-  if (0.0 == u_mvp[0].w) {
+  if (0.0 == MAT_MVP[0].w) {
     return n0.z * n1.z > 0.0;           // orthographic.
   } else {
-    vec4  viewPos = u_mv * rawPos;     // perspective
+    vec4  viewPos = MAT_MV * rawPos;     // perspective
     vec3  toEye = normalize(viewPos.xyz);
     float dot0 = dot(n0, toEye);
     float dot1 = dot(n1, toEye);
@@ -51,7 +52,7 @@ const checkForSilhouetteDiscard = `
 
     // Need to discard if either is non-silhouette.
     vec4 otherPosition = g_otherPos;
-    viewPos = u_mv * otherPosition;
+    viewPos = MAT_MV * otherPosition;
     toEye = normalize(viewPos.xyz);
     dot0 = dot(n0, toEye);
     dot1 = dot(n1, toEye);
@@ -62,7 +63,7 @@ const checkForSilhouetteDiscard = `
 
 const computePosition = `
   v_lnInfo = vec4(0.0, 0.0, 0.0, 0.0);  // init and set flag to false
-  vec4  pos = u_mvp * rawPos;
+  vec4  pos = MAT_MVP * rawPos;
   vec4  other = g_otherPos;
   vec3  modelDir = other.xyz - pos.xyz;
   float miterAdjust = 0.0;
@@ -97,8 +98,8 @@ const computePosition = `
 `;
 const lineCodeArgs = "g_windowDir, g_windowPos, 0.0";
 
-function createBase(isSilhouette: boolean, isAnimated: boolean): ProgramBuilder {
-  const builder = new ProgramBuilder(true);
+function createBase(isSilhouette: boolean, instanced: IsInstanced, isAnimated: IsAnimated): ProgramBuilder {
+  const builder = new ProgramBuilder(instanced ? ShaderBuilderFlags.InstancedVertexTable : ShaderBuilderFlags.VertexTable);
   const vert = builder.vert;
 
   vert.addGlobal("g_otherPos", VariableType.Vec4);
@@ -131,8 +132,8 @@ function createBase(isSilhouette: boolean, isAnimated: boolean): ProgramBuilder 
   vert.addAttribute("a_endPointAndQuadIndices", VariableType.Vec4, (shaderProg) => {
     shaderProg.addAttribute("a_endPointAndQuadIndices", (attr, params) => {
       const geom = params.geometry;
-      Debug.assert(() => geom instanceof EdgeGeometry);
-      const edgeGeom = geom as EdgeGeometry;
+      assert(undefined !== geom.asEdge);
+      const edgeGeom = geom.asEdge!;
       attr.enableArray(edgeGeom.endPointAndQuadIndices, 4, GL.DataType.UnsignedByte, false, 0, 0);
     });
   });
@@ -150,8 +151,8 @@ function createBase(isSilhouette: boolean, isAnimated: boolean): ProgramBuilder 
     vert.addAttribute("a_normals", VariableType.Vec4, (shaderProg) => {
       shaderProg.addAttribute("a_normals", (attr, params) => {
         const geom = params.geometry;
-        Debug.assert(() => geom instanceof SilhouetteEdgeGeometry);
-        const silhouetteGeom = geom as SilhouetteEdgeGeometry;
+        assert(undefined !== geom.asSilhouette);
+        const silhouetteGeom = geom.asSilhouette!;
         attr.enableArray(silhouetteGeom.normalPairs, 4, GL.DataType.UnsignedByte, false, 0, 0);
       });
     });
@@ -160,8 +161,8 @@ function createBase(isSilhouette: boolean, isAnimated: boolean): ProgramBuilder 
   return builder;
 }
 
-export function createEdgeBuilder(isSilhouette: boolean, isAnimated: boolean): ProgramBuilder {
-  const builder = createBase(isSilhouette, isAnimated);
+export function createEdgeBuilder(isSilhouette: boolean, instanced: IsInstanced, isAnimated: IsAnimated): ProgramBuilder {
+  const builder = createBase(isSilhouette, instanced, isAnimated);
   addShaderFlags(builder);
   addColor(builder);
   addWhiteOnWhiteReversal(builder.frag);

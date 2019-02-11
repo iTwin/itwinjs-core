@@ -84,6 +84,8 @@ export * from "./ui-framework/workflow/Workflow";
 export * from "./ui-framework/zones/FrameworkZone";
 export * from "./ui-framework/zones/toolsettings/ToolSettingsZone";
 export * from "./ui-framework/zones/toolsettings/ToolUiProvider";
+export * from "./ui-framework/zones/toolsettings/DefaultToolSettingsProvider";
+
 export * from "./ui-framework/zones/Zone";
 export * from "./ui-framework/zones/ZoneDef";
 
@@ -100,6 +102,8 @@ export * from "./ui-framework/navigationaids/CubeNavigationAid";
 export * from "./ui-framework/navigationaids/SheetNavigationAid";
 export * from "./ui-framework/navigationaids/SheetsModalFrontstage";
 export * from "./ui-framework/navigationaids/StandardRotationNavigationAid";
+
+export * from "./ui-framework/settings/Settings";
 
 export * from "./ui-framework/statusfields/ActivityCenter";
 export * from "./ui-framework/statusfields/MessageCenter";
@@ -155,10 +159,6 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
  * Classes for managing DragDrop API drag layers
  */
 /**
- * @docs-group-description FrameworkState
- * Classes for working with the Framework state
- */
-/**
  * @docs-group-description Frontstage
  * Classes for working with a Frontstage
  */
@@ -193,6 +193,14 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
 /**
  * @docs-group-description Picker
  * Classes for working with various pickers
+ */
+/**
+ * @docs-group-description Settings
+ * Classes for Settings page
+ */
+/**
+ * @docs-group-description State
+ * Classes for maintaining state
  */
 /**
  * @docs-group-description StatusBar

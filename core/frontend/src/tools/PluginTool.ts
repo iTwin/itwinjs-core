@@ -8,25 +8,14 @@ import { Tool } from "./Tool";
 import { PluginAdmin } from "../Plugin";
 import { IModelApp } from "../IModelApp";
 
-/**
- * An Immediate Tool that allows an iModelJs plugin module to be loaded .
- */
+/** An Immediate Tool that starts the process of loading an iModelJs plugin. */
 export class PluginTool extends Tool {
   public static toolId = "Plugin";
   public run(args: any[]): boolean {
-    // we can only use $script in a browser environment.
-    if (!typeof document) {
-      // tslint:disable:no-console
-      console.log("PluginTool is only available in browser environment");
-      return false;
-    }
-
-    // tslint:disable:no-console
     if (args && args.length > 0 && args[0]) {
-      // tslint:disable-line:no-console
       PluginAdmin.loadPlugin(args[0], args.slice(1))
         .then(() => { })
-        .catch((_err) => { console.log(IModelApp.i18n.translate("IModelJs:PluginErrors.UnableToLoad", { pluginName: args[0] })); });
+        .catch((_err) => { IModelApp.notifications.outputMessage(IModelApp.i18n.translate("PluginErrors.UnableToLoad", { pluginName: args[0] })); });
     }
     return true;
   }

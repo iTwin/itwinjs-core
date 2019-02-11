@@ -6,8 +6,7 @@
 
 import * as React from "react";
 import classnames from "classnames";
-import { PropertyValueFormat, PrimitiveValue, PropertyValue } from "../properties/Value";
-import { EnumerationChoice } from "../properties/Description";
+import { PropertyValueFormat, PrimitiveValue, PropertyValue, EnumerationChoice } from "@bentley/imodeljs-frontend";
 import { PropertyEditorManager, PropertyEditorBase } from "./PropertyEditorManager";
 import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
 import "./EnumEditor.scss";
@@ -18,7 +17,7 @@ interface EnumEditorState {
 }
 
 /** EnumEditor React component that is a property editor with select input  */
-export class EnumEditor extends React.Component<PropertyEditorProps, EnumEditorState> implements TypeEditor {
+export class EnumEditor extends React.PureComponent<PropertyEditorProps, EnumEditorState> implements TypeEditor {
   private _selectElement: HTMLSelectElement | null = null;
   private _isMounted = false;
 
@@ -35,14 +34,17 @@ export class EnumEditor extends React.Component<PropertyEditorProps, EnumEditorS
   public async getPropertyValue(): Promise<PropertyValue | undefined> {
     const record = this.props.propertyRecord;
     let propertyValue: PropertyValue | undefined;
+
+    // istanbul ignore else
     if (record && record.value.valueFormat === PropertyValueFormat.Primitive) {
       propertyValue = record.value;
       (record.value as PrimitiveValue).value = this.state.selectValue;
     }
+
     return propertyValue;
   }
 
-  public setFocus(): void {
+  private setFocus(): void {
     // istanbul ignore else
     if (this._selectElement) {
       this._selectElement.focus();
@@ -62,6 +64,7 @@ export class EnumEditor extends React.Component<PropertyEditorProps, EnumEditorS
       this.setState({
         selectValue,
       }, async () => {
+        // istanbul ignore else
         if (this.props.propertyRecord && this.props.onCommit) {
           const propertyValue = await this.getPropertyValue();
           // istanbul ignore else
@@ -74,17 +77,23 @@ export class EnumEditor extends React.Component<PropertyEditorProps, EnumEditorS
 
   public componentDidMount() {
     this._isMounted = true;
-    this.getInitialValue(); // tslint:disable-line:no-floating-promises
+    this.setStateFromProps(); // tslint:disable-line:no-floating-promises
   }
 
   public componentWillUnmount() {
     this._isMounted = false;
   }
 
-  private async getInitialValue() {
+  public componentDidUpdate(prevProps: PropertyEditorProps) {
+    if (this.props.propertyRecord !== prevProps.propertyRecord) {
+      this.setStateFromProps(); // tslint:disable-line:no-floating-promises
+    }
+  }
+
+  private async setStateFromProps() {
     const { propertyRecord } = this.props;
-    let initialValue: string | number;
-    let valueIsNumber: boolean;
+    let initialValue: string | number = "";
+    let valueIsNumber: boolean = false;
 
     // istanbul ignore else
     if (propertyRecord && propertyRecord.value.valueFormat === PropertyValueFormat.Primitive) {
@@ -101,7 +110,11 @@ export class EnumEditor extends React.Component<PropertyEditorProps, EnumEditorS
     // istanbul ignore else
     if (this._isMounted)
       this.setState(
-        () => ({ selectValue: initialValue, valueIsNumber }),
+        { selectValue: initialValue, valueIsNumber },
+        () => {
+          if (this.props.setFocus)
+            this.setFocus();
+        },
       );
   }
 

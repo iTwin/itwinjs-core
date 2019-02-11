@@ -33,7 +33,7 @@ export function serializeCustomAttributes(customAttributes: CustomAttributeSet |
       });
       attributes.push(attribute);
     }
-    return attributes;
+    return (attributes.length > 0) ? attributes : undefined;
   }
   return undefined;
 }

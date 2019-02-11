@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Removed IModelConnection.connectionId, added IModelApp.sessionId",
+      "packageName": "@bentley/imodeljs-common",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-common",
+  "email": "Ramanujam.Raman@bentley.com"
+}

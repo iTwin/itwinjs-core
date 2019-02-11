@@ -12,6 +12,12 @@
   font-size: $text-font-size;
   overflow: hidden;
 
+  .icon {
+    color: rgba($icon-color, $icon-opacity);
+    font-size: $icon-size;
+    padding-right: 4px;
+  }
+
   &.nz-is-in-footer-mode {
     padding-left: $nz-footer-horizontal-padding;
     padding-right: $nz-footer-horizontal-padding;

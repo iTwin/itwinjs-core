@@ -5,9 +5,10 @@
 import * as React from "react";
 
 import { ConfigurableUiManager, ConfigurableCreateInfo, ContentControl } from "@bentley/ui-framework";
+import { PropertyRecord, PropertyValueFormat, PropertyValue, PropertyDescription } from "@bentley/imodeljs-frontend";
 import {
   Table, ColumnDescription, RowItem, TableDataProvider,
-  SimpleTableDataProvider, TableSelectionTarget, SelectionMode, PropertyRecord, PropertyValueFormat, PropertyValue, PropertyDescription,
+  SimpleTableDataProvider, TableSelectionTarget, SelectionMode,
   PropertyUpdatedArgs, TableCellUpdatedArgs,
 } from "@bentley/ui-components";
 

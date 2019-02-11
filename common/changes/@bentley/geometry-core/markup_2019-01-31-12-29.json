@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "added freeze methods to Angle and Point2d",
+      "packageName": "@bentley/geometry-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/geometry-core",
+  "email": "keith.bentley@bentley.com"
+}

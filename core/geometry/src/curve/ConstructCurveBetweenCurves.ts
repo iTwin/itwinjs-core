@@ -94,7 +94,7 @@ export class ConstructCurveBetweenCurves extends NullGeometryHandler {
    * @param fraction  fractional positon
    * @param geometry1 geometry "at fraction 1"
    */
-  public static InterpolateBetween(geometry0: GeometryQuery, fraction: number, geometry1: GeometryQuery): GeometryQuery | undefined {
+  public static interpolateBetween(geometry0: GeometryQuery, fraction: number, geometry1: GeometryQuery): GeometryQuery | undefined {
     const handler = new ConstructCurveBetweenCurves(geometry0, fraction, geometry1);
     return geometry0.dispatchToGeometryHandler(handler);
   }

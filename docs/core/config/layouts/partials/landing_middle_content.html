@@ -79,9 +79,18 @@
   // LaunchDarkly script for turning off the viewer.
   $(document).ready(function () {
     var shouldShow = ldclient.variation(featureFlags.LandingPageViewer, false);
-    if (!shouldShow) {
+    if (shouldShow === undefined) {
+      ldclient.on('ready', function () {
+        shouldShow = ldclient.variation(featureFlags.LandingPageViewer);
+        if (!shouldShow) {
+          $('#viewiModelBtn').html('Under Construction').addClass('disabled').removeAttr('href').removeAttr('onclick');
+          $('.try-imodeljs-text').html('<h4> We are working on it. Check back later. </h4>');
+        }
+      });
+    }
+    else if (!shouldShow) {
       $('#viewiModelBtn').html('Under Construction').addClass('disabled').removeAttr('href').removeAttr('onclick');
       $('.try-imodeljs-text').html('<h4> We are working on it. Check back later. </h4>');
     }
-  })
+  });
 </script>

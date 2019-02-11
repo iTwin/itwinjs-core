@@ -49,7 +49,6 @@ class ModuleCopier {
     this.externalModules = [
       new ModuleInfo(isDevelopment, true, "@bentley/bentleyjs-core", undefined),
       new ModuleInfo(isDevelopment, true, "@bentley/geometry-core", undefined),
-      new ModuleInfo(isDevelopment, false, "@bentley/bwc", undefined),
       new ModuleInfo(isDevelopment, true, "@bentley/imodeljs-i18n", undefined),
       new ModuleInfo(isDevelopment, true, "@bentley/imodeljs-clients", undefined),
       new ModuleInfo(isDevelopment, true, "@bentley/imodeljs-common", undefined),

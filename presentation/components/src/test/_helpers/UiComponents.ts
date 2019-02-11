@@ -6,7 +6,8 @@
 
 import * as faker from "faker";
 import { createRandomECInstanceNodeKey } from "@bentley/presentation-common/lib/test/_helpers/random";
-import { DelayLoadedTreeNodeItem, PropertyRecord, PrimitiveValue, PropertyDescription, PropertyValueFormat } from "@bentley/ui-components";
+import { DelayLoadedTreeNodeItem } from "@bentley/ui-components";
+import { PropertyRecord, PrimitiveValue, PropertyDescription, PropertyValueFormat } from "@bentley/imodeljs-frontend";
 import { NodeKey } from "@bentley/presentation-common";
 
 export const createRandomTreeNodeItem = (key?: NodeKey, parentId?: string): DelayLoadedTreeNodeItem => {

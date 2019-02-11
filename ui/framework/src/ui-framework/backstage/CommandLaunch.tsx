@@ -13,13 +13,14 @@ import { CommandHandler } from "../shared/ItemProps";
 
 import { BackstageItem as NZ_BackstageItem } from "@bentley/ui-ninezone";
 
-/** Properties for a Command Launch Backstage item.
+/** Properties for a [[CommandLaunchBackstageItem]] component
  */
 export interface CommandLaunchBackstageItemProps extends BackstageItemProps, CommandHandler {
   /** Unique Id for this backstage item. */
   commandId: string;
 }
 
+/** Backstage item that launches a Command */
 export class CommandLaunchBackstageItem extends React.PureComponent<CommandLaunchBackstageItemProps, BackstageItemState> {
 
   /** @hidden */
@@ -43,17 +44,21 @@ export class CommandLaunchBackstageItem extends React.PureComponent<CommandLaunc
 
   public componentWillUnmount() {
     this._componentUnmounting = true;
+    /* istanbul ignore else */
     if (this.props.stateFunc && this._stateSyncIds.length > 0)
       SyncUiEventDispatcher.onSyncUiEvent.removeListener(this._handleSyncUiEvent);
   }
 
   private _handleSyncUiEvent = (args: SyncUiEventArgs): void => {
+    /* istanbul ignore next */
     if (this._componentUnmounting)
       return;
 
     if (SyncUiEventDispatcher.hasEventOfInterest(args.eventIds, this._stateSyncIds))
       if (this.props.stateFunc) {
         const newState = this.props.stateFunc(this.state);
+        /* istanbul ignore else */
+
         if (!PropsHelper.isShallowEqual(newState, this.state))
           this.setState((_prevState) => newState);
       }

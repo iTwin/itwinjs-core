@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Use new buildIModelJsBuild script",
+      "packageName": "@bentley/presentation-testing",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-testing",
+  "email": "Barry.Bentley@bentley.com"
+}

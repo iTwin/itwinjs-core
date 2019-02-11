@@ -190,9 +190,4 @@ class MeasurePointsPlugin extends Plugin {
 declare var IMODELJS_VERSIONS_REQUIRED: string;
 declare var PLUGIN_NAME: string;
 
-// define and run the entry point
-function main() {
-  PluginAdmin.register(new MeasurePointsPlugin(PLUGIN_NAME, IMODELJS_VERSIONS_REQUIRED));
-}
-
-main();
+PluginAdmin.register(new MeasurePointsPlugin(PLUGIN_NAME, IMODELJS_VERSIONS_REQUIRED));

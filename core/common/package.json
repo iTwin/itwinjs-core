@@ -1,22 +1,30 @@
 {
   "name": "@bentley/imodeljs-common",
-  "version": "0.189.0-dev.10",
+  "version": "0.189.0-dev.24",
   "description": "iModel.js components common to frontend and backend",
   "license": "MIT",
   "main": "lib/imodeljs-common.js",
   "typings": "lib/imodeljs-common",
   "engines": {
-    "node": ">=8.9.0 <9.0"
+    "node": ">=10.14.0 <11.0"
   },
   "scripts": {
-    "build": "tsc 1>&2 && npm run webpackModule-dev",
+    "build": "node ./node_modules/@bentley/webpack-tools/bin/buildIModelJsModule.js",
     "clean": "rimraf lib package-deps.json",
     "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-common/file.json --tsIndexFile=./imodeljs-common.ts --onlyJson %TYPEDOC_THEME%",
     "lint": "tslint --project . 1>&2",
     "test": "node ./node_modules/@bentley/build-tools/scripts/test.js",
-    "cover": "nyc npm test",
-    "webpackModule-dev": "make-dir ./lib/module/dev/ && webpack --config ./node_modules/@bentley/webpack-tools/modules/webpackModule.config.js --env.entry=./lib/imodeljs-common.js --env.bundlename=imodeljs-common --json >./lib/module/dev/webpackStats.json",
-    "webpackModule-prod": "webpack --config ./node_modules/@bentley/webpack-tools/modules/webpackModule.config.js --env.entry=./lib/imodeljs-common.js --env.bundlename=imodeljs-common --env.prod"
+    "cover": "nyc npm test"
+  },
+  "iModelJs": {
+    "buildModule": {
+      "type": "system",
+      "webpack": {
+        "dest": "./lib/module",
+        "entry": "./lib/imodeljs-common.js",
+        "bundleName": "imodeljs-common"
+      }
+    }
   },
   "repository": {
     "type": "git",
@@ -43,39 +51,33 @@
     "NOTE: peerDependencies are a standard way for npm to perform a module compatibility check"
   ],
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "0.189.0-dev.10",
-    "@bentley/geometry-core": "0.189.0-dev.10",
-    "@bentley/imodeljs-clients": "0.189.0-dev.10"
+    "@bentley/bentleyjs-core": "0.189.0-dev.24",
+    "@bentley/geometry-core": "0.189.0-dev.24",
+    "@bentley/imodeljs-clients": "0.189.0-dev.24"
   },
   "//devDependencies": [
     "NOTE: Must include modules mentioned in peerDependencies since those are not auto-installed",
     "NOTE: Must include modules used by the scripts section of package.json"
   ],
   "devDependencies": {
-    "@bentley/bentleyjs-core": "0.189.0-dev.10",
-    "@bentley/build-tools": "0.189.0-dev.10",
-    "@bentley/geometry-core": "0.189.0-dev.10",
-    "@bentley/imodeljs-clients": "0.189.0-dev.10",
-    "@bentley/webpack-tools": "0.189.0-dev.10",
+    "@bentley/bentleyjs-core": "0.189.0-dev.24",
+    "@bentley/build-tools": "0.189.0-dev.24",
+    "@bentley/geometry-core": "0.189.0-dev.24",
+    "@bentley/imodeljs-clients": "0.189.0-dev.24",
+    "@bentley/webpack-tools": "0.189.0-dev.24",
     "@types/semver": "^5.5.0",
     "@types/url-search-params": "^0.10.2",
-    "cpx": "^1.5.0",
-    "make-dir-cli": "^1.0.0",
     "rimraf": "^2.6.2",
-    "source-map-loader": "^0.2.3",
     "tslint": "^5.11.0",
     "typedoc": "^0.11.1",
     "typedoc-plugin-external-module-name": "^1.1.1",
     "typescript": "~3.2.2",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^5.2.5",
-    "@types/node": "10.10.3",
+    "@types/node": "10.12.18",
     "chai": "^4.1.2",
-    "webpack": "^4.20.2",
     "mocha": "^5.2.0",
-    "ts-node": "^7.0.1",
-    "source-map-support": "^0.5.6",
-    "webpack-cli": "^3.1.0"
+    "ts-node": "^7.0.1"
   },
   "//optionalDependencies": [
     "NOTE: Rush (as of 4.2.5) does not support optionalDependencies!"

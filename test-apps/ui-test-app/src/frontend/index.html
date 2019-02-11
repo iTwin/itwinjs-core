@@ -11,6 +11,7 @@
     -->
   <link rel="shortcut icon" href="favicon.ico">
   <link rel="manifest" href="manifest.json">
+  <link href="themes.css" rel="stylesheet" type="text/css" media="all">
   <title>iModel.js UI Test App</title>
   <style>
     html,
@@ -26,8 +27,8 @@
   </style>
   <!-- we use one webpack-generated runtime.js to get our modules to share dependencies. -->
   <script type="text/javascript" src="runtime.js"></script>
-  <!-- use the IModelJs loader to load the system modules in the correct order -->
-  <!-- The next line has a lodash template in it that is replaced by webpack at build time with the version of imodeljs-frontend -->
+  <!-- Use the IModelJs loader to load the system modules in the correct order -->
+  <!-- The lodash template in the next line is replaced by webpack with the name and versions of imodeljs frontend packages -->
   <script type="text/javascript" src="IModelJsLoader.js" data-imjsversions= '<%= htmlWebpackPlugin.options.imjsVersions %>'></script>
 </head>
 

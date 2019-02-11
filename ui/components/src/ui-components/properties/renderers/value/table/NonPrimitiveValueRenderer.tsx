@@ -8,7 +8,7 @@ import * as React from "react";
 import { Orientation } from "@bentley/ui-core";
 
 import "./NonPrimitiveValueRenderer.scss";
-import { PropertyRecord } from "../../../Record";
+import { PropertyRecord } from "@bentley/imodeljs-frontend";
 import { PropertyDialogState } from "../../../ValueRendererManager";
 
 /** Properties for [[TableArrayValueRenderer]] and [[TableStructValueRenderer]] React component */

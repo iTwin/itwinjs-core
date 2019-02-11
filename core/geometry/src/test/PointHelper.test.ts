@@ -139,7 +139,7 @@ describe("FrameBuilder.HelloWorldB", () => {
         AxisScaleSelect.NonUniformRangeContainment]) {
         const localToWorld = FrameBuilder.createLocalToWorldTransformInRange(range, select, 0, 0, 0, 2.0);
         if (ck.testPointer(localToWorld) && localToWorld) {
-          MatrixTests.CheckProperties(ck,
+          MatrixTests.checkProperties(ck,
             localToWorld.matrix,
             select === AxisScaleSelect.Unit,  // unit axes in range are identity
             select === AxisScaleSelect.Unit,  // and of course unitPerpendicular
@@ -263,7 +263,18 @@ describe("MomentData.HelloWorld", () => {
         }
       }
     }
+
+    const axes122 = Matrix3d.createScale(2, 1, 2);
+    const momentsXYZ = Vector3d.create(2, 1, 2);
+    MomentData.sortColumnsForIncreasingMoments(axes122, momentsXYZ);
     ck.checkpoint("MomentData.HelloWorld");
+
+    ck.testExactNumber(1, momentsXYZ.at(0));
+    ck.testExactNumber(2, momentsXYZ.at(1));
+    ck.testExactNumber(2, momentsXYZ.at(2));
+    ck.testCoordinate(1, axes122.columnXMagnitude());
+    ck.testCoordinate(2, axes122.columnYMagnitude());
+    ck.testCoordinate(2, axes122.columnZMagnitude());
     expect(ck.getNumErrors()).equals(0);
   });
 });
@@ -600,7 +611,7 @@ describe("Point3dArray", () => {
     ck.testFalse(NumberArray.isAlmostEqual([], dataA0, 0.01));
     ck.testFalse(NumberArray.isAlmostEqual(dataA0, undefined, 0.01));
     ck.testFalse(NumberArray.isAlmostEqual(undefined, dataA0, 0.01));
-    ck.testExactNumber(0, NumberArray.PreciseSum([]));
+    ck.testExactNumber(0, NumberArray.preciseSum([]));
     const e = 0.01;
     dataA1[3] += e;
     ck.testTrue(NumberArray.isAlmostEqual(dataA0, dataA1, 2 * e));
@@ -610,7 +621,7 @@ describe("Point3dArray", () => {
       ck.testTrue(NumberArray.isCoordinateInArray(x, dataA0));
       ck.testFalse(NumberArray.isCoordinateInArray(x + 0.1231897897, dataA0));
     }
-    ck.testExactNumber(0, NumberArray.MaxAbsArray([]));
+    ck.testExactNumber(0, NumberArray.maxAbsArray([]));
     expect(ck.getNumErrors()).equals(0);
   });
 
@@ -662,15 +673,15 @@ describe("Point3dArray", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 });
-/*
+
 function compareAreaData(ck: Checker, polygonA: Point3d[], polygonB: Point3d[] | GrowableXYZArray) {
   const areaA = PolygonOps.area(polygonA);
-  const rayA = PolygonOps.centroidAreaNormal (polygonA);
+  // const rayA = PolygonOps.centroidAreaNormal(polygonA);
   let areaB = -10203213;
-  let rayB = Ray3d.create ();
+  // let rayB = Ray3d.create();
   if (polygonB instanceof GrowableXYZArray) {
     const normalB = Vector3d.create();
-    PolygonOps.areaNormalGrowablePoint3dArrayGo(polygonB, normalB);
+    PolygonOps.areaNormalGo(polygonB, normalB);
     areaB = normalB.magnitude();
   } else {
     areaB = PolygonOps.area(polygonB);
@@ -698,4 +709,3 @@ describe("PolygonAreas", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 });
-*/

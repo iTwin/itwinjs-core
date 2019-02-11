@@ -325,7 +325,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     const uu = this.matrix.columnXMagnitudeSquared();
     const uv = this._matrix.columnXDotColumnY();
     const vv = this._matrix.columnYMagnitudeSquared();
-    TrigPolynomial.SolveUnitCircleImplicitQuadricIntersection(
+    TrigPolynomial.solveUnitCircleImplicitQuadricIntersection(
       uv,
       vv - uu,
       -uv,
@@ -546,29 +546,31 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
 
   /** Emit strokes to caller-supplied linestring */
   public emitStrokes(dest: LineString3d, options?: StrokeOptions): void {
-    let numStrokes = 1;
-    if (options) {
-      const rMax = this.maxVectorLength();
-      numStrokes = options.applyTolerancesToArc(rMax, this._sweep.sweepRadians);
-    } else {
-      numStrokes = StrokeOptions.applyAngleTol(undefined, 1, this._sweep.sweepRadians);
-    }
+    const numStrokes = this.computeStrokeCountForOptions(options);
     dest.appendFractionalStrokePoints(this, numStrokes, 0.0, 1.0, true);
   }
 
   /** Emit strokes to caller-supplied handler */
   public emitStrokableParts(handler: IStrokeHandler, options?: StrokeOptions): void {
-    let numStrokes = 1;
-    if (options) {
-      const rMax = this.maxVectorLength();
-      numStrokes = options.applyTolerancesToArc(rMax, this._sweep.sweepRadians);
-    } else {
-      numStrokes = StrokeOptions.applyAngleTol(undefined, 1, this._sweep.sweepRadians);
-    }
-
+    const numStrokes = this.computeStrokeCountForOptions(options);
     handler.startCurvePrimitive(this);
     handler.announceIntervalForUniformStepStrokes(this, numStrokes, 0.0, 1.0);
     handler.endCurvePrimitive(this);
+  }
+
+  /**
+   * return the stroke count required for given options.
+   * @param options StrokeOptions that determine count
+   */
+  public computeStrokeCountForOptions(options?: StrokeOptions): number {
+    let numStroke = 1;
+    if (options) {
+      const rMax = this.maxVectorLength();
+      numStroke = options.applyTolerancesToArc(rMax, this._sweep.sweepRadians);
+    } else {
+      numStroke = StrokeOptions.applyAngleTol(undefined, 1, this._sweep.sweepRadians);
+    }
+    return numStroke;
   }
 
   public dispatchToGeometryHandler(handler: GeometryHandler): any {

@@ -2,7 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-@import "@bentley/bwc/lib/mixins";
+@import "../style/index.scss";
 
  .core-ls{
   display: flex;
@@ -10,48 +10,11 @@
   justify-content: center;
   flex-direction: column;
 
-  .ls-spinner {
-    animation: rotate 2s linear infinite;
-    z-index: 2;
-    width: 2rem;
-    height: 2rem;
-
-    .fill {
-      stroke: $bwc-gray-9;
-      animation: dash 1.5s ease-in-out infinite;
-    }
-
-    .shape {
-      stroke: $bwc-blue;
-    }
-
-    @keyframes rotate {
-      100% {
-        transform: rotate(360deg);
-      }
-    }
-
-    @keyframes dash {
-      0% {
-        stroke-dasharray: 1, 150;
-        stroke-dashoffset: 0;
-      }
-      50% {
-        stroke-dasharray: 90, 150;
-        stroke-dashoffset: -35;
-      }
-      100% {
-        stroke-dasharray: 90, 150;
-        stroke-dashoffset: -124;
-      }
-    }
-  }
-
   .ls-message-top {
-    margin-bottom: $bwc-sm;
+    margin-bottom: $uicore-sm;
   }
 
   .ls-message-bottom {
-    margin-top: $bwc-sm;
+    margin-top: $uicore-sm;
   }
 }

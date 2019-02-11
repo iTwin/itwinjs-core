@@ -179,7 +179,7 @@ export class ClusterableArray extends GrowableBlockedArray {
       data[k] = dot;
     }
   }
-  public ToJSON(): any[] {
+  public toJSON(): any[] {
     const result: any[] = [];
     for (let b = 0; b < this.numBlocks; b++) {
       let i = this.blockIndexToDoubleIndex(b);
@@ -197,7 +197,7 @@ export class ClusterableArray extends GrowableBlockedArray {
    * @returns Return an array of indices from block index to cluster index.
    * @param clusteredBlocks clusters of block indices followed by separators.
    */
-  public createIndex_blockToClusterIndex(clusteredBlocks: Uint32Array): Uint32Array {
+  public createIndexBlockToClusterIndex(clusteredBlocks: Uint32Array): Uint32Array {
     const numBlocks = this.numBlocks;
     const blockToCluster = new Uint32Array(numBlocks);
     blockToCluster.fill(ClusterableArray.clusterTerminator);
@@ -215,7 +215,7 @@ export class ClusterableArray extends GrowableBlockedArray {
    * @returns Return an array of indices from block index to index of its cluster's start in the cluster index array.
    * @param clusteredBlocks clusters of block indices followed by separators.
    */
-  public createIndex_blockToClusterStart(clusteredBlocks: Uint32Array): Uint32Array {
+  public createIndexBlockToClusterStart(clusteredBlocks: Uint32Array): Uint32Array {
     const n = clusteredBlocks.length;
     const numBlocks = this.numBlocks;
     const blockToClusterStart = new Uint32Array(numBlocks);
@@ -245,7 +245,7 @@ export class ClusterableArray extends GrowableBlockedArray {
   /** create a reverse index: given a cluster index k, clusterToClusterStart[k] is the place
    * the cluster's block indices appear in clusterBlocks
    */
-  public createIndex_clusterToClusterStart(clusteredBlocks: Uint32Array): Uint32Array {
+  public createIndexClusterToClusterStart(clusteredBlocks: Uint32Array): Uint32Array {
     let numCluster = this.countClusters(clusteredBlocks);
     const clusterToClusterStart = new Uint32Array(numCluster);
     const terminator = ClusterableArray.clusterTerminator;

@@ -12,10 +12,9 @@ import {
   Toast as ToastMessage, Stage as ToastMessageStage, Sticky as StickyMessage, StatusMessage, MessageLayout as StatusMessageLayout,
   Label as MessageLabel, MessageButton, Status, Hyperlink, Progress,
 } from "@bentley/ui-ninezone";
-import { BlueButton as Button } from "@bentley/bwc";
 import { NotifyMessageDetails, OutputMessageType } from "@bentley/imodeljs-frontend";
 
-import { MessageContainer, MessageSeverity } from "@bentley/ui-core";
+import { MessageContainer, MessageSeverity, Button, ButtonType } from "@bentley/ui-core";
 
 import { MessageManager, MessageAddedEventArgs, ActivityMessageEventArgs } from "../messages/MessageManager";
 import { UiFramework } from "../UiFramework";
@@ -160,7 +159,7 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> i
                 content={
                   <DialogButtonsContent
                     buttons={
-                      <Button onClick={this._hideMessages}>
+                      <Button type={ButtonType.Blue} onClick={this._hideMessages}>
                         {UiFramework.i18n.translate("UiCore:dialog.close")}
                       </Button>
                     }

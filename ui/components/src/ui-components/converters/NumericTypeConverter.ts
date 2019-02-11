@@ -6,7 +6,7 @@
 
 import { TypeConverter, LessGreaterOperatorProcessor } from "./TypeConverter";
 import { TypeConverterManager } from "./TypeConverterManager";
-import * as Primitives from "./valuetypes/PrimitiveTypes";
+import { Primitives } from "@bentley/imodeljs-frontend";
 
 /**
  * Base Numeric Type Converter.

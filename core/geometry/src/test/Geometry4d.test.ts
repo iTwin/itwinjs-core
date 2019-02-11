@@ -229,6 +229,7 @@ describe("Geometry4d.BoxMap", () => {
     const highA = Point3d.create(2, 3, 5);
     const lowB = Point3d.create(100, 100, 100);
     const highB = Point3d.create(101, 101, 101);
+
     if (bsiChecker.Checker.noisy.boxMap) {
       console.log("lowA", lowA);
       console.log("highA", highA);
@@ -236,6 +237,18 @@ describe("Geometry4d.BoxMap", () => {
       console.log("highB", highB);
     }
     const map = Map4d.createBoxMap(lowA, highA, lowB, highB);
+    const map2 = Map4d.createIdentity();
+    const map3 = Map4d.createBoxMap(lowA, highA, lowB, highB, map2);
+    ck.testPointer(map);
+    ck.testPointer(map3);
+    ck.testTrue(map2 === map3, "reuse createBoxMap result");
+    ck.testTrue(map!.isAlmostEqual(map3!), "verify reused map");
+    ck.testUndefined(Map4d.createBoxMap(lowA, highA, lowB, lowB));
+    ck.testUndefined(Map4d.createBoxMap(highA, highA, lowB, highB));
+    ck.testUndefined(Map4d.createVectorFrustum(Point3d.create(0, 0, 1),
+      Vector3d.unitX(), Vector3d.unitY(), Vector3d.unitY(), 0.8), "expect no map from singular axes");
+    const map4 = Map4d.fromJSON({});
+    ck.testTrue(map4.isAlmostEqual(Map4d.createIdentity()));
     if (ck.testPointer(map, "Expect box map") && map) {
       if (bsiChecker.Checker.noisy.boxMap) {
         console.log("A==>B", prettyPrint(map.transform0));
@@ -421,6 +434,26 @@ describe("Matrix4d", () => {
       ck.testCoordinate(0, e, "A*Ainv error");
       // console.log("  max error in A*Ainv - I: " + e);
       Matrix4d.createZero(p1);
+
+      for (const singularMatrix of [
+        Matrix4d.createRowValues(     // row 1,2 match
+          10, 2, 3, 4,
+          5, 20, 2, 1,
+          5, 20, 2, 1,
+          3, 2, 1, 30),
+        Matrix4d.createRowValues(   // column 2,3 match
+          10, 2, 4, 4,
+          5, 20, 2, 2,
+          4, 6, 2, 2,
+          3, 2, 30, 30),
+        Matrix4d.createRowValues(     // row 3 is sum of rows 0,1,2
+          10, 2, 3, 4,
+          5, 20, 2, 1,
+          5, 20, 2, 1,
+          20, 42, 7, 6),
+      ]) {
+        ck.testUndefined(singularMatrix.createInverse());
+      }
       ck.testExactNumber(p1.maxAbs(), 0);
     }
 
@@ -725,10 +758,10 @@ describe("Map4d", () => {
             ck.testPerpendicular(lineVector, spaceVector);
           } else {
             // recompute for debug ...
-            console.log ("Error case");
-            console.log ("A0", hA0);
-            console.log ("A1", hA1);
-            console.log ("spacePoint", spacePoint);
+            console.log("Error case");
+            console.log("A0", hA0);
+            console.log("A1", hA1);
+            console.log("spacePoint", spacePoint);
             badFraction = SmallSystem.lineSegment3dHXYClosestPointUnbounded(hA0, hA1, spacePoint);
           }
         }
@@ -738,4 +771,20 @@ describe("Map4d", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
+  it("CreateMap4dWithUndefinedTransform1", () => {
+    const ck = new bsiChecker.Checker();
+    const transform1 = Transform.createRowValues(
+      10, 1, 1, 0,
+      1, 11, 2, 3,
+      2, 4, 20, -2);   // good transform, but skewed for fun
+    const singularTransform = Transform.createRowValues(
+      10, 1, 1, 0,
+      10, 1, 1, 0,
+      2, 4, 20, -2);   // repeated row makes it singular
+    const map1 = Map4d.createTransform(transform1);
+    const singularMap = Map4d.createTransform(singularTransform);
+    ck.testPointer(map1, "Map4d computed its own inverse");
+    ck.testUndefined(singularMap, "Map4d detected singular input");
+    expect(ck.getNumErrors()).equals(0);
+  });
 });

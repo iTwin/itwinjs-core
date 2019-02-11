@@ -9,13 +9,13 @@ import * as React from "react";
 import { CommonProps } from "../../utilities/Props";
 import "./Settings.scss";
 
-/** Properties of [[Settings]] component. */
+/** Properties of [[ToolSettings]] component. */
 export interface ToolSettingsProps extends CommonProps {
-  /** Actual content. I.e.: [[Nested]], [[Toggle]], [[ScrollableArea]], [[ToolSettingsOverflow]] */
+  /** Actual content. I.e.: [[Nested]], [[Toggle]], [[ScrollableArea]], [[Overflow]] */
   children?: React.ReactNode;
 }
 
-/** Tool settings. Used as content of [[ToolSettings]] component. */
+/** Tool Settings React component. */
 export class ToolSettings extends React.PureComponent<ToolSettingsProps> {
   public render() {
     const className = classnames(

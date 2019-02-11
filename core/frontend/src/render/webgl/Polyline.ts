@@ -6,9 +6,8 @@
 
 import { QParams3d, RenderMode, PolylineTypeFlags } from "@bentley/imodeljs-common";
 import { PolylineParams } from "../primitives/VertexTable";
-import { Primitive } from "./Primitive";
 import { Target } from "./Target";
-import { CachedGeometry, LUTGeometry, PolylineBuffers } from "./CachedGeometry";
+import { LUTGeometry, PolylineBuffers } from "./CachedGeometry";
 import { RenderPass, RenderOrder } from "./RenderFlags";
 import { TechniqueId } from "./TechniqueId";
 import { AttributeHandle } from "./Handle";
@@ -76,7 +75,7 @@ export class PolylineGeometry extends LUTGeometry {
     if (RenderMode.SmoothShade === vf.renderMode && !vf.visibleEdges)
       return RenderPass.None;
 
-    // Only want to return Translucent for edges if rendering in Wireframe mode TODO: what about overrides?
+    // Only want to return Translucent for edges if rendering in Wireframe mode ###TODO: what about overrides?
     const isTranslucent: boolean = RenderMode.Wireframe === vf.renderMode && vf.transparency && colorInfo.hasTranslucency;
     return isTranslucent ? RenderPass.Translucent : RenderPass.OpaqueLinear;
   }
@@ -114,10 +113,10 @@ export class PolylineGeometry extends LUTGeometry {
     attr.enableArray(this._buffers!.indices, 3, GL.DataType.UnsignedByte, false, 0, 0);
   }
 
-  public draw(): void {
-    const gl = System.instance.context;
+  protected _draw(numInstances: number): void {
+    const gl = System.instance;
     this._buffers!.indices.bind(GL.Buffer.Target.ArrayBuffer);
-    gl.drawArrays(GL.PrimitiveType.Triangles, 0, this.numIndices);
+    gl.drawArrays(GL.PrimitiveType.Triangles, 0, this.numIndices, numInstances);
   }
 
   public static create(params: PolylineParams): PolylineGeometry | undefined {
@@ -131,17 +130,4 @@ export class PolylineGeometry extends LUTGeometry {
 
     return new PolylineGeometry(lut, buffers, params);
   }
-}
-
-export class PolylinePrimitive extends Primitive {
-  private constructor(cachedGeom: CachedGeometry) { super(cachedGeom); }
-
-  public static create(params: PolylineParams): PolylinePrimitive | undefined {
-    const geom = PolylineGeometry.create(params);
-    return undefined !== geom ? new PolylinePrimitive(geom) : undefined;
-  }
-
-  public get renderOrder(): RenderOrder { return (this.cachedGeometry as PolylineGeometry).renderOrder; }
-  public get isPlanar(): boolean { return (this.cachedGeometry as PolylineGeometry).isPlanar; }
-  public get isEdge(): boolean { return (this.cachedGeometry as PolylineGeometry).isEdge; }
 }

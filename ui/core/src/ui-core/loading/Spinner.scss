@@ -1,0 +1,60 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+@import "../style/index.scss";
+
+.core-spinner {
+  animation: rotate 2s linear infinite;
+  z-index: 2;
+
+  .fill {
+    stroke: $uicore-gray-9;
+    animation: dash 1.5s ease-in-out infinite;
+  }
+
+  .shape {
+    stroke: $uicore-blue;
+  }
+
+  @keyframes rotate {
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+
+  @keyframes dash {
+    0% {
+      stroke-dasharray: 1, 150;
+      stroke-dashoffset: 0;
+    }
+    50% {
+      stroke-dasharray: 90, 150;
+      stroke-dashoffset: -35;
+    }
+    100% {
+      stroke-dasharray: 90, 150;
+      stroke-dashoffset: -124;
+    }
+  }
+}
+
+.core-spinner-small {
+  width: 1rem;
+  height: 1rem;
+}
+
+.core-spinner-medium {
+  width: 2rem;
+  height: 2rem;
+}
+
+.core-spinner-large {
+  width: 4rem;
+  height: 4rem;
+}
+
+.core-spinner-xlarge {
+  width: 6rem;
+  height: 6rem;
+}

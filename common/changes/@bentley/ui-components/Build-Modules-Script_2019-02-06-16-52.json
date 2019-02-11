@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Use new buildIModelJsBuild script",
+      "packageName": "@bentley/ui-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "Barry.Bentley@bentley.com"
+}

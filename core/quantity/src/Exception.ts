@@ -7,6 +7,7 @@ import { BentleyError } from "@bentley/bentleyjs-core";
 
 /**
  * Status codes used during Quantity parsing and formatting processing.
+ * @alpha
  */
 export const enum QuantityStatus {
   QUANTITY_ERROR_BASE = 0x88DF,
@@ -15,7 +16,9 @@ export const enum QuantityStatus {
   InvalidCompositeFormat = QUANTITY_ERROR_BASE + 2,
 }
 
-/** The error type thrown by this module. See [[QuantityStatus]] for `errorNumber` values. */
+/** The error type thrown by this module. See [[QuantityStatus]] for `errorNumber` values.
+ * @alpha
+ */
 export class QuantityError extends BentleyError {
   public constructor(public readonly errorNumber: number, message?: string) {
     super(errorNumber, message);

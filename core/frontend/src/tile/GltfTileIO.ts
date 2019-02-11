@@ -28,9 +28,10 @@ import {
 } from "@bentley/imodeljs-common";
 import { Id64String, assert, JsonUtils, utf8ToString } from "@bentley/bentleyjs-core";
 import { Range3d, Point2d, Point3d, Vector3d, Transform, Matrix3d, Angle } from "@bentley/geometry-core";
-import { RenderSystem, RenderGraphic, GraphicBranch, PackedFeatureTable } from "../render/System";
+import { InstancedGraphicParams, RenderSystem, RenderGraphic, GraphicBranch, PackedFeatureTable } from "../render/System";
 import { imageElementFromImageSource, getImageSourceFormatForMimeType } from "../ImageUtil";
 import { IModelConnection } from "../IModelConnection";
+// Defer Draco for now.   import { DracoDecoder } from "./DracoDecoder";
 
 /** Provides facilities for deserializing tiles in the [glTF tile format](https://www.khronos.org/gltf/). */
 export namespace GltfTileIO {
@@ -340,7 +341,7 @@ export namespace GltfTileIO {
     protected get _isClassifier(): boolean { return BatchType.Classifier === this._type; }
 
     /** @hidden */
-    protected readGltfAndCreateGraphics(isLeaf: boolean, featureTable: FeatureTable, contentRange: ElementAlignedBox3d, transformToRoot?: Transform, sizeMultiplier?: number): GltfTileIO.ReaderResult {
+    protected readGltfAndCreateGraphics(isLeaf: boolean, featureTable: FeatureTable, contentRange: ElementAlignedBox3d, transformToRoot?: Transform, sizeMultiplier?: number, instances?: InstancedGraphicParams): GltfTileIO.ReaderResult {
       if (this._isCanceled)
         return { readStatus: TileIO.ReadStatus.Canceled, isLeaf, sizeMultiplier };
 
@@ -356,7 +357,7 @@ export namespace GltfTileIO {
       let readStatus: TileIO.ReadStatus = TileIO.ReadStatus.InvalidTileData;
       for (const nodeKey of Object.keys(this._nodes))
         if (!childNodes.has(nodeKey))
-          if (TileIO.ReadStatus.Success !== (readStatus = this.readNodeAndCreateGraphics(renderGraphicList, this._nodes[nodeKey], featureTable, undefined)))
+          if (TileIO.ReadStatus.Success !== (readStatus = this.readNodeAndCreateGraphics(renderGraphicList, this._nodes[nodeKey], featureTable, undefined, instances)))
             return { readStatus, isLeaf };
 
       if (0 === renderGraphicList.length)
@@ -386,7 +387,7 @@ export namespace GltfTileIO {
         renderGraphic,
       };
     }
-    private readNodeAndCreateGraphics(renderGraphicList: RenderGraphic[], node: any, featureTable: FeatureTable, parentTransform: Transform | undefined): TileIO.ReadStatus {
+    private readNodeAndCreateGraphics(renderGraphicList: RenderGraphic[], node: any, featureTable: FeatureTable, parentTransform: Transform | undefined, instances?: InstancedGraphicParams): TileIO.ReadStatus {
       if (undefined === node)
         return TileIO.ReadStatus.InvalidTileData;
 
@@ -411,11 +412,11 @@ export namespace GltfTileIO {
           let renderGraphic: RenderGraphic | undefined;
           if (!geometryCollection.isEmpty) {
             if (1 === geometryCollection.meshes.length) {
-              renderGraphic = geometryCollection.meshes[0].getGraphics(meshGraphicArgs, this._system);
+              renderGraphic = geometryCollection.meshes[0].getGraphics(meshGraphicArgs, this._system, instances);
             } else {
               const thisList: RenderGraphic[] = [];
               for (const mesh of geometryCollection.meshes) {
-                renderGraphic = mesh.getGraphics(meshGraphicArgs, this._system);
+                renderGraphic = mesh.getGraphics(meshGraphicArgs, this._system, instances);
                 if (undefined !== renderGraphic)
                   thisList.push(renderGraphic!);
               }
@@ -435,7 +436,7 @@ export namespace GltfTileIO {
       }
       if (node.children) {
         for (const child of node.children)
-          this.readNodeAndCreateGraphics(renderGraphicList, this._nodes[child], featureTable, thisTransform);
+          this.readNodeAndCreateGraphics(renderGraphicList, this._nodes[child], featureTable, thisTransform, instances);
       }
       return TileIO.ReadStatus.Success;
     }
@@ -553,9 +554,13 @@ export namespace GltfTileIO {
 
       if (undefined !== materialJson) {
         if (materialJson.values && materialJson.values.tex)
-          textureMapping = this.findTextureMapping(materialJson.values.tex);
+          textureMapping = this.findTextureMapping(materialJson.values.tex);    // Bimiums shader value.
         else if (materialJson.extensions && materialJson.extensions.KHR_techniques_webgl && materialJson.extensions.KHR_techniques_webgl.values && materialJson.extensions.KHR_techniques_webgl.values.u_tex)
-          textureMapping = this.findTextureMapping(materialJson.extensions.KHR_techniques_webgl.values.u_tex.index);
+          textureMapping = this.findTextureMapping(materialJson.extensions.KHR_techniques_webgl.values.u_tex.index);    // Bimiums colorIndex.
+        else if (materialJson.diffuseTexture)
+          textureMapping = this.findTextureMapping(materialJson.diffuseTexture.index);        // TBD -- real map support with PBR
+        else if (materialJson.emissiveTexture)
+          textureMapping = this.findTextureMapping(materialJson.emissiveTexture.index);      // TBD -- real map support with PBR
       }
 
       const color = this.colorFromMaterial(materialJson);
@@ -605,10 +610,6 @@ export namespace GltfTileIO {
         hasBakedLighting,
         asClassifier,
       });
-
-      if (!this.readVertices(mesh.points, primitive))
-        return undefined;
-
       // We don't have real colormap - just load material color.  This will be used if non-Bentley
       // tile or fit the color table is uniform. For a non-Bentley, non-Uniform, we'll set the
       // uv parameters to pick the colors out of the color map texture.
@@ -628,6 +629,18 @@ export namespace GltfTileIO {
       }
 
       if (undefined !== mesh.features && !this.readFeatures(mesh.features, primitive))
+        return undefined;
+      if (primitive.extensions && primitive.extensions.KHR_draco_mesh_compression) {
+        return undefined;     // Defer Draco support until moved to web worker.
+        /*
+        const dracoExtension = primitive.extensions.KHR_draco_mesh_compression;
+        const bufferView = this._bufferViews[dracoExtension.bufferView];
+        if (undefined === bufferView) return undefined;
+        const bufferData = this._binaryData.subarray(bufferView.byteOffset, bufferView.byteOffset + bufferView.byteLength);
+
+        return  DracoDecoder.readDracoMesh(mesh, primitive, bufferData); */
+      }
+      if (!this.readVertices(mesh.points, primitive))
         return undefined;
 
       switch (primitiveType) {

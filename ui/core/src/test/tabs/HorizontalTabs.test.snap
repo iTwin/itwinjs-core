@@ -1,0 +1,7 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<HorizontalTabs /> renders correctly 1`] = `
+<ul
+  className="uicore-tabs-horizontal"
+/>
+`;

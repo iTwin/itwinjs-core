@@ -9,14 +9,14 @@ import { addUniformHiliter } from "./FeatureSymbology";
 import { ProgramBuilder, VertexShaderComponent, FragmentShaderComponent, VariableType } from "../ShaderBuilder";
 import { PointCloudGeometry } from "../PointCloud";
 import { GL } from "../GL";
-import { Debug } from "../Diagnostics";
+import { assert } from "@bentley/bentleyjs-core";
 
-const computePosition = "gl_PointSize = 1.0; return u_mvp * rawPos;";
+const computePosition = "gl_PointSize = 1.0; return MAT_MVP * rawPos;";
 const computeColor = "return vec4(a_color, 1.0);";
 const computeBaseColor = "return v_color;";
 
 function createBuilder(): ProgramBuilder {
-  const builder = new ProgramBuilder(false);
+  const builder = new ProgramBuilder();
   const vert = builder.vert;
   vert.set(VertexShaderComponent.ComputePosition, computePosition);
   addModelViewProjectionMatrix(vert);
@@ -30,7 +30,7 @@ export function createPointCloudBuilder(): ProgramBuilder {
   builder.vert.addAttribute("a_color", VariableType.Vec3, (shaderProg) => {
     shaderProg.addAttribute("a_color", (attr, params) => {
       const pointCloudGeom = params.geometry as PointCloudGeometry;
-      Debug.assert(() => pointCloudGeom !== undefined);
+      assert(pointCloudGeom !== undefined);
       if (undefined !== pointCloudGeom && undefined !== pointCloudGeom.colors)
         attr.enableArray(pointCloudGeom.colors, 3, GL.DataType.UnsignedByte, true, 0, 0);
     });

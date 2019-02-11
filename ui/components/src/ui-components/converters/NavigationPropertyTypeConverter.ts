@@ -4,10 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module TypeConverters */
 
-import { PropertyDescription } from "../properties/Description";
+import { PropertyDescription, Primitives } from "@bentley/imodeljs-frontend";
 import { TypeConverter, StandardTypeConverterTypeNames } from "./TypeConverter";
 import { TypeConverterManager } from "./TypeConverterManager";
-import * as Primitives from "./valuetypes/PrimitiveTypes";
 
 /**
  * Navigation property type converter

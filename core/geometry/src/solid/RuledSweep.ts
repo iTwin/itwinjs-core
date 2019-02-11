@@ -118,7 +118,7 @@ export class RuledSweep extends SolidPrimitive {
     const localFraction = Geometry.clampToStartEnd(q - section0, 0, 1);
     return RuledSweep.mutatePartners(this._contours[section0].curves, this._contours[section1].curves,
       (primitive0: CurvePrimitive, primitive1: CurvePrimitive): CurvePrimitive | undefined => {
-        const newPrimitive = ConstructCurveBetweenCurves.InterpolateBetween(primitive0, localFraction, primitive1);
+        const newPrimitive = ConstructCurveBetweenCurves.interpolateBetween(primitive0, localFraction, primitive1);
         if (newPrimitive instanceof CurvePrimitive) return newPrimitive;
         return undefined;
       });
@@ -176,6 +176,13 @@ export class RuledSweep extends SolidPrimitive {
       return collectionC;
     }
     return undefined;
+  }
+  /**
+   * @return true if this is a closed volume.
+   */
+  public get isClosedVolume(): boolean {
+    const n = this._contours.length;
+    return n > 1 && (this.capped || this._contours[0].isAlmostEqual(this._contours[n - 1]));
   }
 
 }

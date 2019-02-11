@@ -31,8 +31,8 @@ export abstract class Property implements CustomAttributeContainerProps {
   protected _class: AnyClass; // TODO: class seems to be unused?
   protected _description?: string;
   protected _label?: string;
-  protected _isReadOnly: boolean;
-  protected _priority: number;
+  protected _isReadOnly?: boolean;
+  protected _priority?: number;
   protected _category?: LazyLoadedPropertyCategory;
   protected _kindOfQuantity?: LazyLoadedKindOfQuantity;
   private _customAttributes?: Map<string, CustomAttribute>;
@@ -41,8 +41,6 @@ export abstract class Property implements CustomAttributeContainerProps {
     this._class = ecClass as AnyClass;
     this._name = new ECName(name);
     this._type = type;
-    this._isReadOnly = false;
-    this._priority = 0;
   }
 
   public isArray(): this is AnyArrayProperty { return PropertyTypeUtils.isArray(this._type); }
@@ -59,9 +57,9 @@ export abstract class Property implements CustomAttributeContainerProps {
 
   get description() { return this._description; }
 
-  get isReadOnly() { return this._isReadOnly; }
+  get isReadOnly() { return this._isReadOnly || false; }
 
-  get priority() { return this._priority; }
+  get priority() { return this._priority || 0; }
 
   get category(): LazyLoadedPropertyCategory | undefined { return this._category; }
 
@@ -97,11 +95,14 @@ export abstract class Property implements CustomAttributeContainerProps {
       schemaJson.description = this.description;
     if (this.label !== undefined)
       schemaJson.label = this.label;
-    schemaJson.isReadOnly = this.isReadOnly;
+    if (this._isReadOnly !== undefined)
+      schemaJson.isReadOnly = this._isReadOnly;
     if (this.category !== undefined)
       schemaJson.category = this.category.fullName; // needs to be fully qualified name
-    if (this.priority !== undefined)
-      schemaJson.priority = this.priority;
+    if (this._priority !== undefined)
+      schemaJson.priority = this._priority;
+    if (this.kindOfQuantity !== undefined)
+      schemaJson.kindOfQuantity = this.kindOfQuantity.fullName;
     const customAttributes = serializeCustomAttributes(this.customAttributes);
     if (customAttributes !== undefined)
       schemaJson.customAttributes = customAttributes;

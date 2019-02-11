@@ -12,13 +12,10 @@
   },
   "private": true,
   "scripts": {
-    "build": "tsc 1>&2 && npm run copy:public && npm run copy:modules && npm run makeconfig && npm run webpack:main",
+    "build": "node ./node_modules/@bentley/webpack-tools/bin/buildIModelJsModule",
     "clean": "rimraf lib package-deps.json",
-    "copy:public": "cpx \"public/**/*\" ./lib/webresources",
-    "copy:modules": "node ./node_modules/@bentley/webpack-tools/modules/copyExternalModules.js --destDir=./lib/webresources --type=dev",
-    "copy:modulesprod": "node ./node_modules/@bentley/webpack-tools/modules/copyExternalModules.js --destDir=./lib/webresources --type=prod",
-    "makeconfig": "node ./node_modules/@bentley/config-loader/scripts/write.js ./lib/webresources/config.json ^imjs_",
     "docs": "",
+    "linkplugins": "node linkplugins.js",
     "lint": "tslint --project . 1>&2",
     "mobile": "tsc 1>&2 && webpack --config mobile.backend.webpack.config.js 1>&2 && webpack --config mobile.frontend.webpack.config.js 1>&2 && cpx \"public/**/*\" ./lib/mobile/public && cpx \"assets/**/*\" ./lib/mobile/assets ",
     "start": "npm run start:electron",
@@ -27,45 +24,69 @@
     "start:backend": "node lib/backend/WebMain.js",
     "start:servers": "run-p \"start:webserver\" \"start:backend\"",
     "test": "",
-    "cover": "",
-    "webpack:main": "webpack --config ./node_modules/@bentley/webpack-tools/modules/webpackModule.config.js --env.outdir=./lib/webresources --env.entry=./lib/frontend/SimpleViewTest.js --env.bundlename=main --env.htmltemplate=./src/frontend/index.html"
+    "cover": ""
+  },
+  "iModelJs": {
+    "buildModule": {
+      "type": "application",
+      "sourceResources": [
+        {
+          "source": "./public/configuration.json",
+          "dest": "./lib/webresources",
+          "copy": true
+        },
+        {
+          "source": "./public/**/*",
+          "dest": "./lib/webresources"
+        }
+      ],
+      "webpack": {
+        "dest": "./lib/webresources",
+        "entry": "./lib/frontend/SimpleViewTest.js",
+        "bundleName": "main",
+        "htmlTemplate": "./src/frontend/index.html"
+      },
+      "makeConfig": {
+        "dest": "./lib/webresources/config.json",
+        "filter": "^imjs_"
+      }
+    }
   },
   "repository": {},
   "dependencies": {
-    "@bentley/bentleyjs-core": "0.189.0-dev.10",
-    "@bentley/electron-manager": "0.189.0-dev.10",
-    "@bentley/geometry-core": "0.189.0-dev.10",
-    "@bentley/imodeljs-clients": "0.189.0-dev.10",
-    "@bentley/imodeljs-clients-backend": "0.189.0-dev.10",
-    "@bentley/imodeljs-common": "0.189.0-dev.10",
-    "@bentley/imodeljs-i18n": "0.189.0-dev.10",
-    "@bentley/imodeljs-quantity": "0.189.0-dev.10",
-    "@bentley/imodeljs-frontend": "0.189.0-dev.10",
-    "@bentley/imodeljs-backend": "0.189.0-dev.10",
+    "@bentley/bentleyjs-core": "0.189.0-dev.24",
+    "@bentley/electron-manager": "0.189.0-dev.24",
+    "@bentley/geometry-core": "0.189.0-dev.24",
+    "@bentley/imodeljs-clients": "0.189.0-dev.24",
+    "@bentley/imodeljs-clients-backend": "0.189.0-dev.24",
+    "@bentley/imodeljs-common": "0.189.0-dev.24",
+    "@bentley/imodeljs-i18n": "0.189.0-dev.24",
+    "@bentley/imodeljs-quantity": "0.189.0-dev.24",
+    "@bentley/imodeljs-frontend": "0.189.0-dev.24",
+    "@bentley/imodeljs-backend": "0.189.0-dev.24",
     "body-parser": "^1.18.2",
     "tooltip.js": "^1.2.0"
   },
   "devDependencies": {
-    "@bentley/config-loader": "0.189.0-dev.10",
-    "@bentley/build-tools": "0.189.0-dev.10",
-    "@bentley/webpack-tools": "0.189.0-dev.10",
-    "@bentley/imodeljs-webserver": "0.189.0-dev.10",
+    "@bentley/config-loader": "0.189.0-dev.24",
+    "@bentley/build-tools": "0.189.0-dev.24",
+    "@bentley/webpack-tools": "0.189.0-dev.24",
+    "@bentley/imodeljs-webserver": "0.189.0-dev.24",
     "@types/body-parser": "^1.17.0",
     "@types/express": "^4.16.1",
-    "@types/node": "10.10.3",
-    "cpx": "^1.5.0",
+    "@types/node": "10.12.18",
     "child_process": "^1.0.2",
+    "cpx": "^1.5.0",
     "electron": "^4.0.1",
     "express": "^4.16.3",
+    "fs-extra": "^6.0.1",
     "node-glob": "^1.2.0",
     "npm-run-all": "^4.1.5",
     "null-loader": "^0.1.1",
     "popper.js": "^1.14.4",
     "rimraf": "^2.6.2",
-    "source-map-loader": "^0.2.3",
     "tslint": "^5.11.0",
-    "typescript": "~3.2.2",
-    "webpack": "^4.20.2"
+    "typescript": "~3.2.2"
   },
   "homepage": "http://localhost:3000/"
 }

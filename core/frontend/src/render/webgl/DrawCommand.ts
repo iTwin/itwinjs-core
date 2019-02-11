@@ -6,9 +6,9 @@
 
 import { Matrix4 } from "./Matrix";
 import { CachedGeometry } from "./CachedGeometry";
-import { Transform } from "@bentley/geometry-core";
-import { Id64, Id64String } from "@bentley/bentleyjs-core";
-import { FeatureIndexType, RenderMode, ViewFlags, Frustum, FrustumPlanes, ElementAlignedBox3d } from "@bentley/imodeljs-common";
+import { Transform, Range3d } from "@bentley/geometry-core";
+import { Id64, Id64String, assert } from "@bentley/bentleyjs-core";
+import { FeatureIndexType, RenderMode, ViewFlags, Frustum, FrustumPlanes } from "@bentley/imodeljs-common";
 import { System } from "./System";
 import { Batch, Branch, Graphic, GraphicsArray } from "./Graphic";
 import { Primitive } from "./Primitive";
@@ -16,21 +16,21 @@ import { ShaderProgramExecutor } from "./ShaderProgram";
 import { RenderPass, RenderOrder, CompositeFlags } from "./RenderFlags";
 import { Target } from "./Target";
 import { BranchStack, BatchState } from "./BranchState";
-import { GraphicList, Decorations, RenderGraphic } from "../System";
+import { GraphicList, Decorations, RenderGraphic, AnimationBranchState } from "../System";
 import { TechniqueId } from "./TechniqueId";
-import { SurfacePrimitive, SurfaceGeometry } from "./Surface";
 import { SurfaceType } from "../primitives/VertexTable";
 import { MeshGraphic } from "./Mesh";
-import { Debug } from "./Diagnostics";
 
 export class ShaderProgramParams {
   private _target?: Target;
   private _renderPass: RenderPass = RenderPass.None;
   private readonly _projectionMatrix: Matrix4 = new Matrix4();
+  private readonly _viewMatrix = new Matrix4();
 
-  public get target(): Target { Debug.assert(() => undefined !== this._target); return this._target!; }
+  public get target(): Target { assert(undefined !== this._target); return this._target!; }
   public get renderPass() { return this._renderPass; }
   public get projectionMatrix() { return this._projectionMatrix; }
+  public get viewMatrix() { return this._viewMatrix; }
 
   public get isViewCoords() { return RenderPass.ViewOverlay === this.renderPass || RenderPass.Background === this.renderPass; }
   public get isOverlayPass() { return RenderPass.WorldOverlay === this.renderPass || RenderPass.ViewOverlay === this.renderPass; }
@@ -45,6 +45,8 @@ export class ShaderProgramParams {
     } else {
       Matrix4.fromMatrix4d(target.projectionMatrix, this._projectionMatrix);
     }
+
+    Matrix4.fromTransform(this.target.viewMatrix, this._viewMatrix);
   }
 }
 
@@ -55,17 +57,16 @@ export class DrawParams {
   private _geometry?: CachedGeometry;
   private readonly _modelViewMatrix = new Matrix4();
   private readonly _modelMatrix = new Matrix4();
-  private readonly _viewMatrix = new Matrix4();
 
-  public get geometry(): CachedGeometry { Debug.assert(() => undefined !== this._geometry); return this._geometry!; }
-  public get programParams(): ShaderProgramParams { Debug.assert(() => undefined !== this._programParams); return this._programParams!; }
+  public get geometry(): CachedGeometry { assert(undefined !== this._geometry); return this._geometry!; }
+  public get programParams(): ShaderProgramParams { assert(undefined !== this._programParams); return this._programParams!; }
   public get modelViewMatrix() { return this._modelViewMatrix; }
   public get modelMatrix() { return this._modelMatrix; }
-  public get viewMatrix() { return this._viewMatrix; }
 
   public get target() { return this.programParams.target; }
   public get renderPass() { return this.programParams.renderPass; }
   public get projectionMatrix() { return this.programParams.projectionMatrix; }
+  public get viewMatrix() { return this.programParams.viewMatrix; }
   public get isViewCoords() { return this.programParams.isViewCoords; }
   public get isOverlayPass() { return this.programParams.isOverlayPass; }
   public get context() { return this.programParams.context; }
@@ -75,7 +76,7 @@ export class DrawParams {
     if (undefined === pass)
       pass = programParams.renderPass;
     else
-      Debug.assert(() => pass === this.programParams.renderPass); // ###TODO remove this once confirmed it's redundant...
+      assert(pass === this.programParams.renderPass);
 
     this._geometry = geometry;
     Matrix4.fromTransform(modelMatrix, this._modelMatrix);
@@ -89,8 +90,6 @@ export class DrawParams {
       modelViewMatrix = modelViewMatrix.multiplyTransformTransform(modelMatrix, modelViewMatrix);
       Matrix4.fromTransform(modelViewMatrix, this._modelViewMatrix);
     }
-
-    Matrix4.fromTransform(this.target.viewMatrix, this._viewMatrix);
   }
 }
 
@@ -105,6 +104,12 @@ export const enum PushOrPop {
  * to draw a primitive; others involve state changes such as pushing/popping transforms
  * and symbology overrides, which require that commands be executed in order.
  */
+export const enum OmitStatus {
+  Neutral = 0,
+  Begin = 1,
+  End = -1,
+}
+
 export abstract class DrawCommand {
   public preExecute(_exec: ShaderProgramExecutor): void { }
   public abstract execute(_exec: ShaderProgramExecutor): void;
@@ -119,8 +124,10 @@ export abstract class DrawCommand {
   public get hasFeatureOverrides(): boolean { return FeatureIndexType.Empty !== this.featureIndexType; }
   public get renderOrder(): RenderOrder { return undefined !== this.primitive ? this.primitive.renderOrder : RenderOrder.BlankingRegion; }
   public get hasAnimation(): boolean { return undefined !== this.primitive ? this.primitive.hasAnimation : false; }
+  public get isInstanced(): boolean { return undefined !== this.primitive ? this.primitive.isInstanced : false; }
   public getRenderPass(target: Target): RenderPass { return undefined !== this.primitive ? this.primitive.getRenderPass(target) : RenderPass.None; }
   public getTechniqueId(target: Target): TechniqueId { return undefined !== this.primitive ? this.primitive.getTechniqueId(target) : TechniqueId.Invalid; }
+  public getOmitStatus(_target: Target) { return OmitStatus.Neutral; }
 
   public isPushCommand(branch?: Branch) {
     return PushOrPop.Push === this.pushOrPop && (undefined === branch || this.branch === branch);
@@ -147,22 +154,28 @@ class BranchCommand extends DrawCommand {
     this._branch = branch;
     this._pushOrPop = pushOrPop;
   }
+  private getAnimationBranch(target: Target): AnimationBranchState | undefined {
+    return (this._branch.branch.animationId && target.animationBranches) ? target.animationBranches.get(this._branch.branch.animationId) : undefined;
+  }
+
+  public getOmitStatus(target: Target): OmitStatus {
+    const animationBranch = this.getAnimationBranch(target);
+    return (animationBranch && animationBranch.omit) ? (this._pushOrPop === PushOrPop.Push ? OmitStatus.Begin : OmitStatus.End) : OmitStatus.Neutral;
+  }
 
   public preExecute(_exec: ShaderProgramExecutor): void {
-    if (this._branch.branch.animationId && _exec.target.animationBranches) {
-      const animationBranch = _exec.target.animationBranches.get(this._branch.branch.animationId);
-      if (animationBranch) {
-        if (animationBranch.transform) {
-          let branchTransform = animationBranch.transform;
-          const prevLocalToWorld = _exec.target.currentTransform;
-          const prevWorldToLocal = prevLocalToWorld.inverse();
-          if (prevLocalToWorld && prevWorldToLocal)
-            branchTransform = prevWorldToLocal.multiplyTransformTransform(branchTransform.multiplyTransformTransform(prevLocalToWorld));
-          this._branch.localToWorldTransform = branchTransform;
-        }
-        if (animationBranch.clip)
-          this._branch.clips = animationBranch.clip;
+    const animationBranch = this.getAnimationBranch(_exec.target);
+    if (animationBranch) {
+      if (animationBranch.transform) {
+        let branchTransform = animationBranch.transform;
+        const prevLocalToWorld = _exec.target.currentTransform;
+        const prevWorldToLocal = prevLocalToWorld.inverse();
+        if (prevLocalToWorld && prevWorldToLocal)
+          branchTransform = prevWorldToLocal.multiplyTransformTransform(branchTransform.multiplyTransformTransform(prevLocalToWorld));
+        this._branch.localToWorldTransform = branchTransform;
       }
+      if (animationBranch.clip)
+        this._branch.clips = animationBranch.clip;
     }
   }
 
@@ -206,15 +219,13 @@ export class BatchPrimitiveCommand extends PrimitiveCommand {
   }
 
   public computeIsFlashed(flashedId: Id64String): boolean {
-    if (this.primitive instanceof SurfacePrimitive) {
-      const sp = this.primitive as SurfacePrimitive;
-      if (undefined !== sp.meshData.features && sp.meshData.features.isUniform) {
-        const fi = sp.meshData.features.uniform!;
-        const featureElementId = this._batch.featureTable.findElementId(fi);
-        if (undefined !== featureElementId) {
-          return featureElementId.toString() === flashedId.toString();
-        }
-      }
+    // ###TODO Can this be done in a less-ugly way? It's trying to determine if the batch's graphic is a classification primitive.
+    const sp = this.primitive.cachedGeometry.asSurface;
+    if (undefined !== sp && undefined !== sp.mesh.features && sp.mesh.features.isUniform) {
+      const fi = sp.mesh.features.uniform!;
+      const featureElementId = this._batch.featureTable.findElementId(fi);
+      if (undefined !== featureElementId)
+        return featureElementId.toString() === flashedId.toString();
     }
 
     return Id64.isInvalid(flashedId);
@@ -228,7 +239,7 @@ export type DrawCommands = DrawCommand[];
 export class RenderCommands {
   private _frustumPlanes?: FrustumPlanes;
   private readonly _scratchFrustum = new Frustum();
-  private readonly _scratchRange = new ElementAlignedBox3d();
+  private readonly _scratchRange = new Range3d();
   private readonly _commands: DrawCommands[];
   private readonly _stack: BranchStack; // refers to the Target's BranchStack
   private readonly _batchState: BatchState; // refers to the Target's BatchState
@@ -324,15 +335,13 @@ export class RenderCommands {
         }
       });
     }
-
-    // ###TODO: overlays
   }
 
   public addBackground(gf?: Graphic): void {
     if (undefined === gf)
       return;
 
-    Debug.assert(() => RenderPass.None === this._forcedRenderPass);
+    assert(RenderPass.None === this._forcedRenderPass);
 
     this._forcedRenderPass = RenderPass.Background;
     this._stack.pushState(this.target.decorationState);
@@ -345,7 +354,7 @@ export class RenderCommands {
     if (undefined === gf)
       return;
 
-    Debug.assert(() => RenderPass.None === this._forcedRenderPass);
+    assert(RenderPass.None === this._forcedRenderPass);
 
     this._forcedRenderPass = RenderPass.SkyBox;
     this._stack.pushState(this.target.decorationState);
@@ -427,7 +436,7 @@ export class RenderCommands {
 
   public getCommands(pass: RenderPass): DrawCommands {
     let idx = pass as number;
-    Debug.assert(() => idx < this._commands.length);
+    assert(idx < this._commands.length);
     if (idx >= this._commands.length)
       idx -= 1;
 
@@ -441,7 +450,7 @@ export class RenderCommands {
   }
 
   private pushAndPopBranchForPass(pass: RenderPass, branch: Branch, func: () => void): void {
-    Debug.assert(() => RenderPass.None !== pass);
+    assert(RenderPass.None !== pass);
 
     this._stack.pushBranch(branch);
     const cmds = this.getCommands(pass);
@@ -475,7 +484,7 @@ export class RenderCommands {
     const popCmd = DrawCommand.createForBranch(branch, PushOrPop.Pop);
     for (let i = start; i < end; ++i) {
       cmds = this._commands[i];
-      Debug.assert(() => 0 < cmds.length);
+      assert(0 < cmds.length);
       if (0 < cmds.length && cmds[cmds.length - 1].isPushCommand(branch))
         cmds.pop();
       else
@@ -486,7 +495,7 @@ export class RenderCommands {
   }
 
   public clear(): void {
-    Debug.assert(() => this._batchState.isEmpty, () => "BatchState should be cleared at end of frame");
+    assert(this._batchState.isEmpty);
     this._clearCommands();
   }
   private _clearCommands(): void {
@@ -563,10 +572,9 @@ export class RenderCommands {
 
   public addPrimitive(prim: Primitive): void {
     if (undefined !== this._frustumPlanes) { // See if we can cull this primitive.
-      if (prim instanceof SurfacePrimitive && RenderPass.Classification === prim.getRenderPass(this.target)) {
-        const surf = prim as SurfacePrimitive;
-        if (surf.cachedGeometry instanceof SurfaceGeometry) {
-          const geom = surf.cachedGeometry as SurfaceGeometry;
+      if (RenderPass.Classification === prim.getRenderPass(this.target)) {
+        const geom = prim.cachedGeometry.asSurface;
+        if (undefined !== geom) {
           this._scratchRange.setNull();
           const lowX = geom.qOrigin[0];
           const lowY = geom.qOrigin[1];
@@ -622,9 +630,9 @@ export class RenderCommands {
     // Batches (aka element tiles) should only draw during ordinary (translucent or opaque) passes.
     // They may draw during both, or neither.
     // NB: This is no longer true - pickable overlay decorations are defined as Batches. Problem?
-    // Debug.assert(() => RenderPass.None === this._forcedRenderPass);
-    Debug.assert(() => !this._opaqueOverrides && !this._translucentOverrides);
-    Debug.assert(() => undefined === this._curBatch);
+    // assert(RenderPass.None === this._forcedRenderPass);
+    assert(!this._opaqueOverrides && !this._translucentOverrides);
+    assert(undefined === this._curBatch);
 
     // If all features are overridden to be invisible, draw no graphics in this batch
     const overrides = batch.getOverrides(this.target);

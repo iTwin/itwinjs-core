@@ -1,11 +1,5 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`ExpandableList <ExpandableList /> renders correctly 1`] = `
-<div
-  className="BwcExpandableBlocksList"
-/>
-`;
-
 exports[`ExpandableList renders correctly 1`] = `
 <div
   className="BwcExpandableBlocksList"

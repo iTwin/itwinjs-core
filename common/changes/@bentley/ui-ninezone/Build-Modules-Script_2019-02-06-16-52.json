@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Use new buildIModelJsBuild script",
+      "packageName": "@bentley/ui-ninezone",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-ninezone",
+  "email": "Barry.Bentley@bentley.com"
+}

@@ -68,7 +68,7 @@ export function addViewportTransformation(shader: ShaderBuilder) {
 const modelToWindowCoordinates = `
 vec4 modelToWindowCoordinates(vec4 position, vec4 next) {
   if (kRenderPass_ViewOverlay == u_renderPass || kRenderPass_Background == u_renderPass) {
-    vec4 q = u_mvp * position;
+    vec4 q = MAT_MVP * position;
     q.xyz /= q.w;
     q.xyz = (u_viewportTransformation * vec4(q.xyz, 1.0)).xyz;
     return q;
@@ -76,8 +76,8 @@ vec4 modelToWindowCoordinates(vec4 position, vec4 next) {
 
   // Negative values are in front of the camera (visible).
   float s_maxZ = -u_frustum.x;            // use -near (front) plane for segment drop test since u_frustum's near & far are pos.
-  vec4  q = u_mv * position;              // eye coordinates.
-  vec4  n = u_mv * next;
+  vec4  q = MAT_MV * position;              // eye coordinates.
+  vec4  n = MAT_MV * next;
 
   if (q.z > s_maxZ) {
     if (n.z > s_maxZ)

@@ -1,0 +1,27 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+@import "./button";
+@import "./hollow";
+
+@mixin uicore-buttons-hollow-large {
+
+    @include uicore-buttons-hollow;
+    @include uicore-buttons-large-bordered-size;
+
+    &, &:active, &:focus {
+
+        @include uicore-buttons-large-bordered-size;
+    }
+
+    &[disabled],
+    &[disabled]:hover,
+    &[disabled]:active,
+    &[disabled]:focus {
+
+        @include uicore-buttons-large-size;
+    }
+}
+
+.uicore-buttons-hollow-large { @include uicore-buttons-hollow-large; }

@@ -1,0 +1,102 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<Select /> renders array options correctly 1`] = `
+<select
+  className="uicore-inputs-select"
+  defaultValue="undefined"
+  options={
+    Array [
+      "Option 1",
+      "Option 2",
+      "Option 3",
+    ]
+  }
+>
+  <option
+    key="0"
+    value="Option 1"
+  >
+    Option 1
+  </option>
+  <option
+    key="1"
+    value="Option 2"
+  >
+    Option 2
+  </option>
+  <option
+    key="2"
+    value="Option 3"
+  >
+    Option 3
+  </option>
+</select>
+`;
+
+exports[`<Select /> renders correctly 1`] = `
+<select
+  className="uicore-inputs-select"
+  defaultValue="undefined"
+  options={Array []}
+/>
+`;
+
+exports[`<Select /> renders object options correctly 1`] = `
+<select
+  className="uicore-inputs-select"
+  defaultValue="undefined"
+  options={
+    Object {
+      "option1": "Option 1",
+      "option2": "Option 2",
+      "option3": "Option3",
+    }
+  }
+>
+  <option
+    key="option1"
+    value="option1"
+  >
+    Option 1
+  </option>
+  <option
+    key="option2"
+    value="option2"
+  >
+    Option 2
+  </option>
+  <option
+    key="option3"
+    value="option3"
+  >
+    Option3
+  </option>
+</select>
+`;
+
+exports[`<Select /> renders placeholder correctly 1`] = `
+<select
+  className="uicore-inputs-select"
+  defaultValue="undefined"
+  options={Array []}
+  placeholder="test"
+  required={true}
+>
+  <option
+    className="placeholder"
+    disabled={true}
+    key=""
+    value=""
+  >
+    test
+  </option>
+</select>
+`;
+
+exports[`<Select /> renders status correctly 1`] = `
+<select
+  className="uicore-inputs-select"
+  defaultValue="undefined"
+  options={Array []}
+/>
+`;

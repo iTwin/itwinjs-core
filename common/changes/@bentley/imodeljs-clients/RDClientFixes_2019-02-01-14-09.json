@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "fix for cache member mix and preserve full root document",
+      "packageName": "@bentley/imodeljs-clients",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-clients",
+  "email": "Alain.Robert@Bentley.com"
+}
