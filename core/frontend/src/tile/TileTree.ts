@@ -416,7 +416,6 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
           // If this tile is undisplayable, update its content range based on children's content ranges.
           const parentRange = this.hasContentRange ? undefined : new Range3d();
           for (const prop of props) {
-            // ###TODO if child is empty don't bother adding it to list...
             const child = new Tile(Tile.Params.fromJSON(prop, this.root, this));
 
             // stick the corners on the Tile (used only by WebMercator Tiles)
@@ -940,12 +939,20 @@ export class TileTreeState {
 
   constructor(private _iModel: IModelConnection, private _is3d: boolean, private _modelId: Id64String) { }
   public setTileTree(props: TileTreeProps, loader: TileLoader) {
-    this.tileTree = new TileTree(TileTree.Params.fromJSON(props, this._iModel, this._is3d, loader, this._modelId));
-    this.loadStatus = TileTree.LoadStatus.Loaded;
+    const tileTree = new TileTree(TileTree.Params.fromJSON(props, this._iModel, this._is3d, loader, this._modelId));
+    if (tileTree.rootTile.contentRange.isNull) {
+      // No elements within model's range - don't create a TileTree for this model.
+      assert(tileTree.rootTile.isLeaf);
+      this.loadStatus = TileTree.LoadStatus.NotFound;
+    } else {
+      this.tileTree = tileTree;
+      this.loadStatus = TileTree.LoadStatus.Loaded;
+    }
+
   }
   public clearTileTree() {
     dispose(this.tileTree);
-    this.tileTree = undefined;    // Do we need destroy/free??
+    this.tileTree = undefined;
     this.loadStatus = TileTree.LoadStatus.NotLoaded;
   }
 }

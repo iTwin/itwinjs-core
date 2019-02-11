@@ -361,8 +361,8 @@ public cancelAllTileLoads(): void {
   public get areAllTileTreesLoaded(): boolean {
     let allLoaded = true;
     this.forEachTileTreeModel((model) => {
-      const loadStatus = model.loadStatus;
-      if (loadStatus !== TileTree.LoadStatus.Loaded)
+      // Loaded or NotFound qualify as "loaded" - either the load succeeded or failed.
+      if (model.loadStatus < TileTree.LoadStatus.Loaded)
         allLoaded = false;
     });
     return allLoaded;
@@ -1713,8 +1713,13 @@ export class SpatialViewState extends ViewState3d {
     const range = new Range3d();
     this.forEachTileTreeModel((model: TileTreeModelState) => {   // ...if we don't want to fit context reality mdoels this should cal forEachSpatialTileTreeModel...
       const tileTree = model.tileTree;
-      if (tileTree !== undefined && tileTree.rootTile !== undefined) {   // can we assume that a loaded model
-        range.extendRange(tileTree.rootTile.computeWorldContentRange());
+      if (tileTree !== undefined && tileTree.rootTile !== undefined) {
+        const contentRange = tileTree.rootTile.computeWorldContentRange();
+        assert(!contentRange.isNull);
+        assert(contentRange.intersectsRange(this.iModel.projectExtents));
+
+        range.extendRange(contentRange);
+
       }
     });
 
