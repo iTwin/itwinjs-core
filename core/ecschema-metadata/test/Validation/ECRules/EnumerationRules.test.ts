@@ -9,7 +9,7 @@ import { SchemaContext } from "../../../src/Context";
 import { PrimitiveType } from "../../../src/ECObjects";
 import { Enumeration } from "../../../src/Metadata/Enumeration";
 import { Schema } from "../../../src/Metadata/Schema";
-import { DiagnosticCategory, DiagnosticCode, DiagnosticType } from "../../../src/Validation/Diagnostic";
+import { DiagnosticCategory, DiagnosticType } from "../../../src/Validation/Diagnostic";
 import * as Rules from "../../../src/Validation/ECRules";
 
 describe("Enumeration rule tests", () => {
@@ -32,8 +32,7 @@ describe("Enumeration rule tests", () => {
       expect(diagnostic!.ecDefinition).to.equal(enumeration);
       expect(diagnostic!.messageArgs).to.eql([enumeration.fullName]);
       expect(diagnostic!.category).to.equal(DiagnosticCategory.Error);
-      expect(diagnostic!.code).to.equal(DiagnosticCode.InvalidEnumerationType);
-      expect(diagnostic!.key).to.equal(DiagnosticCode[DiagnosticCode.InvalidEnumerationType]);
+      expect(diagnostic!.code).to.equal(Rules.DiagnosticCodes.EnumerationTypeUnsupported);
       expect(diagnostic!.diagnosticType).to.equal(DiagnosticType.SchemaItem);
     }
     expect(resultHasEntries, "expected rule to return an AsyncIterable with entries.").to.be.true;

@@ -10,104 +10,6 @@ import { RelationshipConstraint } from "../Metadata/RelationshipClass";
 import { Schema } from "../Metadata/Schema";
 import { SchemaItem } from "../Metadata/SchemaItem";
 
-/**
- * Defines the unique identifiers for all diagnostic types used
- * during schema validation.
- */
-export enum DiagnosticCode {
-  SCHEMA_RULE_BASE = 0x9858,
-  SCHEMA_ITEM_RULE_BASE = 0x98BC,
-  CLASS_RULE_BASE = 0x9920,
-  PROPERTY_RULE_BASE = 0x9984,
-  ENTITY_RULE_BASE = 0x99E8,
-  STRUCT_RULE_BASE = 0x9A4C,
-  MIXIN_RULE_BASE = 0x9AB0,
-  RELATIONSHIP_RULE_BASE = 0x9B14,
-  REL_CONSTRAINT_RULE_BASE = 0x9B78,
-  CA_CLASS_RULE_BASE = 0x9BDC,
-  CA_CONTAINER_RULE_BASE = 0x9C40,
-  ENUM_RULE_BASE = 0x9CA4,
-  KOQ_RULE_BASE = 0x9D08,
-  PROP_CATEGORY_RULE_BASE = 0x9D6C,
-  FORMAT_RULE_BASE = 0x9DD0,
-  UNIT_RULE_BASE = 0x9E34,
-  INVERTED_UNIT_RULE_BASE = 0x9E98,
-  UNIT_SYSTEM_RULE_BASE = 0x9EFC,
-  PHENOMENON_RULE_BASE = 0x9F60,
-  CONSTANT_RULE_BASE = 0x9A4C,
-
-  // Schema Diagnostics
-  SchemaXmlVersionMustBeTheLatest = SCHEMA_RULE_BASE + 1,
-  SchemaReferencesOldStandardSchema = SCHEMA_RULE_BASE + 2,
-  SchemaWithDynamicInNameMustHaveDynamicSchemaCA = SCHEMA_RULE_BASE + 3,
-  SchemaClassDisplayLabelMustBeUnique = SCHEMA_RULE_BASE + 4,
-
-  // SchemaItem Diagnostics
-  // ...
-
-  // Class Diagnostics
-  BaseClassIsSealed = CLASS_RULE_BASE + 1,
-  BaseClassOfDifferentType = CLASS_RULE_BASE + 2,
-
-  // Property Diagnostics
-  IncompatibleValueTypePropertyOverride = PROPERTY_RULE_BASE + 1,
-  IncompatibleTypePropertyOverride = PROPERTY_RULE_BASE + 2,
-  IncompatibleUnitPropertyOverride = PROPERTY_RULE_BASE + 3,
-
-  // EntityClass Diagnostics
-  MixinAppliedToClassMustDeriveFromConstraint = ENTITY_RULE_BASE + 1,
-  EntityClassMustDeriveFromBisHierarchy = ENTITY_RULE_BASE + 2,
-  EntityClassMayNotInheritSameProperty = ENTITY_RULE_BASE + 3,
-  ElementMultiAspectMustHaveCorrespondingRelationship = ENTITY_RULE_BASE + 4,
-  ElementUniqueAspectMustHaveCorrespondingRelationship = ENTITY_RULE_BASE + 5,
-  EntityClassesCannotDeriveFromIParentElementAndISubModeledElement = ENTITY_RULE_BASE + 6,
-
-  // StructClass Diagnostics
-  // ...
-
-  // Mixin Rule Diagnostics
-  MixinsCannotOverrideInheritedProperties = MIXIN_RULE_BASE + 1,
-
-  // Relationship Rule Diagnostics
-  AbstractConstraintMustNarrowBaseConstraints = RELATIONSHIP_RULE_BASE + 1,
-  DerivedConstraintsMustNarrowBaseConstraints = RELATIONSHIP_RULE_BASE + 2,
-  ConstraintClassesDeriveFromAbstractContraint = RELATIONSHIP_RULE_BASE + 3,
-
-  // RelationshipConstraint Diagnostics
-  AtLeastOneConstraintClassDefined = REL_CONSTRAINT_RULE_BASE + 1,
-  AbstractConstraintMustExistWithMultipleConstraints = REL_CONSTRAINT_RULE_BASE + 2,
-
-  // CustomAttribute Diagnostics
-  // ...
-
-  // CustomAttributeContainer Diagnostics
-  CustomAttributeNotOfConcreteClass = CA_CONTAINER_RULE_BASE + 1,
-
-  // Enumeration Diagnostics
-  InvalidEnumerationType = ENUM_RULE_BASE + 1,
-
-  // KindOfQuantity Diagnostics
-  // ...
-
-  // PropertyCategory Diagnostics
-  // ...
-
-  // Unit Diagnostics
-  // ...
-
-  // InvertedUnit Diagnostics
-  // ...
-
-  // UnitSystem Diagnostics
-  // ...
-
-  // Phenomenon Diagnostics
-  // ...
-
-  // Constant Diagnostics
-  // ...
-}
-
 /** Defines the possible diagnostic types. */
 export const enum DiagnosticType {
   None,
@@ -132,10 +34,8 @@ export const enum DiagnosticCategory {
 export interface IDiagnostic<TYPE extends AnyECType, ARGS extends any[]> {
   /** The diagnostic category (error, warning, etc...). Value is static across all instances. */
   category: DiagnosticCategory;
-  /** The unique identifier of the diagnostic type. Value is static across all instances. */
-  code: DiagnosticCode;
-  /** The key used to lookup message translations. Value is static across all instances. */
-  key: string;
+  /** The unique string identifier of the diagnostic in the format '<ruleSetName>:<number>. Value is static across all instances. */
+  code: string;
   /** The context type of diagnostic (schema, schema item, property, etc...). Value is static across all instances. */
   diagnosticType: DiagnosticType;
   /** The unformatted message text associated with the diagnostic. Value is static across all instances. */
@@ -165,10 +65,8 @@ export abstract class BaseDiagnostic<TYPE extends AnyECType, ARGS extends any[]>
 
   /** Gets the category of the diagnostic. */
   public abstract get category(): DiagnosticCategory;
-  /** Gets the unique identifier of the diagnostic type. */
-  public abstract get code(): DiagnosticCode;
-  /** Gets the key used to lookup message translations. */
-  public abstract get key(): string;
+  /** Gets the unique string identifier for the diagnostic in the format '<ruleSetName>:<number>'. */
+  public abstract get code(): string;
   /** Gets the context type of the diagnostic (schema, schema item, property, etc...) */
   public abstract get diagnosticType(): DiagnosticType;
   /** Gets the message associated with the diagnostic. */
@@ -250,14 +148,14 @@ export abstract class CustomAttributeContainerDiagnostic<ARGS extends any[]> ext
 
 /**
  * Helper method for creating [[SchemaDiagnostic]] child classes.
- * @param code The [DiagnosticCode] that uniquely identifies the type of diagnostic.
+ * @param code The string that uniquely identifies the diagnostic in the format '<ruleSetName>:<number>'.
  * @param messageText The message to associate with the diagnostic class.
  * @param category The [[DiagnosticCategory]] to associate with the diagnostic class.
  */
-export function createSchemaDiagnosticClass<ARGS extends any[]>(code: DiagnosticCode, messageText: string, category: DiagnosticCategory = DiagnosticCategory.Error) {
+export function createSchemaDiagnosticClass<ARGS extends any[]>(code: string, messageText: string, category: DiagnosticCategory = DiagnosticCategory.Error) {
+  validateCode(code);
   return class extends SchemaDiagnostic<ARGS> {
-    public get code(): DiagnosticCode { return code; }
-    public get key(): string { return DiagnosticCode[code]; }
+    public get code(): string { return code; }
     public get category(): DiagnosticCategory { return category; }
     public get messageText(): string { return messageText; }
   };
@@ -265,14 +163,14 @@ export function createSchemaDiagnosticClass<ARGS extends any[]>(code: Diagnos
 
 /**
  * Helper method for creating [[SchemaItemDiagnostic]] child classes.
- * @param code The [DiagnosticCode] that uniquely identifies the type of diagnostic.
+ * @param code The string that uniquely identifies the diagnostic in the format '<ruleSetName>:<number>'.
  * @param messageText The message to associate with the diagnostic class.
  * @param category The [[DiagnosticCategory]] to associate with the diagnostic class.
  */
-export function createSchemaItemDiagnosticClass<ITEM extends SchemaItem, ARGS extends any[]>(code: DiagnosticCode, messageText: string, category: DiagnosticCategory = DiagnosticCategory.Error) {
+export function createSchemaItemDiagnosticClass<ITEM extends SchemaItem, ARGS extends any[]>(code: string, messageText: string, category: DiagnosticCategory = DiagnosticCategory.Error) {
+  validateCode(code);
   return class extends SchemaItemDiagnostic<ITEM, ARGS> {
-    public get code(): DiagnosticCode { return code; }
-    public get key(): string { return DiagnosticCode[code]; }
+    public get code(): string { return code; }
     public get category(): DiagnosticCategory { return category; }
     public get messageText(): string { return messageText; }
   };
@@ -280,14 +178,14 @@ export function createSchemaItemDiagnosticClass<ITEM extends SchemaItem, ARGS 
 
 /**
  * Helper method for creating [[ClassDiagnostic]] child classes.
- * @param code The [DiagnosticCode] that uniquely identifies the type of diagnostic.
+ * @param code The string that uniquely identifies the diagnostic in the format '<ruleSetName>:<number>'.
  * @param messageText The message to associate with the diagnostic class.
  * @param category The [[DiagnosticCategory]] to associate with the diagnostic class.
  */
-export function createClassDiagnosticClass<ARGS extends any[]>(code: DiagnosticCode, messageText: string, category: DiagnosticCategory = DiagnosticCategory.Error) {
+export function createClassDiagnosticClass<ARGS extends any[]>(code: string, messageText: string, category: DiagnosticCategory = DiagnosticCategory.Error) {
+  validateCode(code);
   return class extends ClassDiagnostic<ARGS> {
-    public get code(): DiagnosticCode { return code; }
-    public get key(): string { return DiagnosticCode[code]; }
+    public get code(): string { return code; }
     public get category(): DiagnosticCategory { return category; }
     public get messageText(): string { return messageText; }
   };
@@ -295,14 +193,14 @@ export function createClassDiagnosticClass<ARGS extends any[]>(code: Diagnost
 
 /**
  * Helper method for creating [[PropertyDiagnostic]] child classes.
- * @param code The [DiagnosticCode] that uniquely identifies the type of diagnostic.
+ * @param code The string that uniquely identifies the diagnostic in the format '<ruleSetName>:<number>'.
  * @param messageText The message to associate with the diagnostic class.
  * @param category The [[DiagnosticCategory]] to associate with the diagnostic class.
  */
-export function createPropertyDiagnosticClass<ARGS extends any[]>(code: DiagnosticCode, messageText: string, category: DiagnosticCategory = DiagnosticCategory.Error) {
+export function createPropertyDiagnosticClass<ARGS extends any[]>(code: string, messageText: string, category: DiagnosticCategory = DiagnosticCategory.Error) {
+  validateCode(code);
   return class extends PropertyDiagnostic<ARGS> {
-    public get code(): DiagnosticCode { return code; }
-    public get key(): string { return DiagnosticCode[code]; }
+    public get code(): string { return code; }
     public get category(): DiagnosticCategory { return category; }
     public get messageText(): string { return messageText; }
   };
@@ -310,14 +208,14 @@ export function createPropertyDiagnosticClass<ARGS extends any[]>(code: Diagn
 
 /**
  * Helper method for creating [[RelationshipConstraintDiagnostic]] child classes.
- * @param code The [DiagnosticCode] that uniquely identifies the type of diagnostic.
+ * @param code The string that uniquely identifies the type of diagnostic in the format '<ruleSetName>:<number>'.
  * @param messageText The message to associate with the diagnostic class.
  * @param category The [[DiagnosticCategory]] to associate with the diagnostic class.
  */
-export function createRelationshipConstraintDiagnosticClass<ARGS extends any[]>(code: DiagnosticCode, messageText: string, category: DiagnosticCategory = DiagnosticCategory.Error) {
+export function createRelationshipConstraintDiagnosticClass<ARGS extends any[]>(code: string, messageText: string, category: DiagnosticCategory = DiagnosticCategory.Error) {
+  validateCode(code);
   return class extends RelationshipConstraintDiagnostic<ARGS> {
-    public get code(): DiagnosticCode { return code; }
-    public get key(): string { return DiagnosticCode[code]; }
+    public get code(): string { return code; }
     public get category(): DiagnosticCategory { return category; }
     public get messageText(): string { return messageText; }
   };
@@ -325,15 +223,52 @@ export function createRelationshipConstraintDiagnosticClass<ARGS extends any[
 
 /**
  * Helper method for creating [[CustomAttributeContainerDiagnostic]] child classes.
- * @param code The [DiagnosticCode] that uniquely identifies the type of diagnostic.
+ * @param code The that uniquely identifies the type of diagnostic in the format '<ruleSetName>:<number>'.
  * @param messageText The message to associate with the diagnostic class.
  * @param category The [[DiagnosticCategory]] to associate with the diagnostic class.
  */
-export function createCustomAttributeContainerDiagnosticClass<ARGS extends any[]>(code: DiagnosticCode, messageText: string, category: DiagnosticCategory = DiagnosticCategory.Error) {
+export function createCustomAttributeContainerDiagnosticClass<ARGS extends any[]>(code: string, messageText: string, category: DiagnosticCategory = DiagnosticCategory.Error) {
+  validateCode(code);
   return class extends CustomAttributeContainerDiagnostic<ARGS> {
-    public get code(): DiagnosticCode { return code; }
-    public get key(): string { return DiagnosticCode[code]; }
+    public get code(): string { return code; }
     public get category(): DiagnosticCategory { return category; }
     public get messageText(): string { return messageText; }
   };
+}
+
+export function diagnosticCategoryToString(category: DiagnosticCategory) {
+  switch (category) {
+    case DiagnosticCategory.Error:
+      return "Error";
+    case DiagnosticCategory.Warning:
+      return "Warning";
+    case DiagnosticCategory.Message:
+      return "Message";
+    case DiagnosticCategory.Suggestion:
+      return "Suggestion";
+  }
+}
+
+export function diagnosticTypeToString(type: DiagnosticType) {
+  switch (type) {
+    case DiagnosticType.CustomAttributeContainer:
+      return "CustomAttributeContainer";
+    case DiagnosticType.None:
+      return "None";
+    case DiagnosticType.Property:
+      return "Property";
+    case DiagnosticType.RelationshipConstraint:
+      return "RelationshipConstraint";
+    case DiagnosticType.Schema:
+      return "Schema";
+    case DiagnosticType.SchemaItem:
+      return "SchemaItem";
+  }
+}
+
+function validateCode(code: string) {
+  const msg = `Diagnostic code ${code} is invalid. Expected the format <ruleSetName>:<number>.`;
+  const parts = code.split(":");
+  if (parts.length !== 2) throw new Error(msg);
+  if (isNaN(Number(parts[1]))) throw new Error(msg);
 }

@@ -11,7 +11,7 @@ import { MutableClass } from "../../../src/Metadata/Class";
 import { CustomAttributeClass } from "../../../src/Metadata/CustomAttributeClass";
 import { EntityClass } from "../../../src/Metadata/EntityClass";
 import { MutableSchema, Schema } from "../../../src/Metadata/Schema";
-import { DiagnosticCategory, DiagnosticCode, DiagnosticType } from "../../../src/Validation/Diagnostic";
+import { DiagnosticCategory, DiagnosticType } from "../../../src/Validation/Diagnostic";
 import * as Rules from "../../../src/Validation/ECRules";
 
 describe("CustomAttribute Rules Tests", () => {
@@ -46,8 +46,7 @@ describe("CustomAttribute Rules Tests", () => {
         expect(diagnostic!.ecDefinition).to.equal(testEntity);
         expect(diagnostic!.messageArgs).to.eql([testEntity.fullName, "TestCASchema.TestCA"]);
         expect(diagnostic!.category).to.equal(DiagnosticCategory.Error);
-        expect(diagnostic!.code).to.equal(DiagnosticCode.CustomAttributeNotOfConcreteClass);
-        expect(diagnostic!.key).to.equal(DiagnosticCode[DiagnosticCode.CustomAttributeNotOfConcreteClass]);
+        expect(diagnostic!.code).to.equal(Rules.DiagnosticCodes.CustomAttributeNotOfConcreteClass);
         expect(diagnostic!.diagnosticType).to.equal(DiagnosticType.CustomAttributeContainer);
       }
       expect(resultHasEntries, "expected rule to return an AsyncIterable with entries.").to.be.true;

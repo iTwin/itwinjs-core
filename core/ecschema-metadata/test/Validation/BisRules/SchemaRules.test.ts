@@ -9,14 +9,32 @@ import { SchemaContext } from "../../../src/Context";
 import { ECClass } from "../../../src/Metadata/Class";
 import { MutableSchema, Schema } from "../../../src/Metadata/Schema";
 import * as Rules from "../../../src/Validation/BisRules";
-import { DiagnosticCategory, DiagnosticCode, DiagnosticType } from "../../../src/Validation/Diagnostic";
+import { DiagnosticCategory, DiagnosticType } from "../../../src/Validation/Diagnostic";
+
+/** The names of all pre-EC3 standard schemas */
+const oldStandardSchemaNames = [
+  "Bentley_Standard_CustomAttributes",
+  "Bentley_Standard_Classes",
+  "Bentley_ECSchemaMap",
+  "EditorCustomAttributes",
+  "Bentley_Common_Classes",
+  "Dimension_Schema",
+  "iip_mdb_customAttributes",
+  "KindOfQuantity_Schema",
+  "rdl_customAttributes",
+  "SIUnitSystemDefaults",
+  "Unit_Attributes",
+  "Units_Schema",
+  "USCustomaryUnitSystemDefaults",
+  "ECDbMap",
+];
 
 describe("Schema Rule Tests", () => {
 
   describe("schemaXmlVersionMustBeTheLatest Tests", () => {
     // TODO: Re-implement when rule can be fully written
     it.skip("EC XML version is latest, rule passes.", async () => {
-      const schema  = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);
+      const schema = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);
 
       const result = await Rules.schemaXmlVersionMustBeTheLatest(schema);
 
@@ -27,7 +45,7 @@ describe("Schema Rule Tests", () => {
 
     // TODO: Re-implement when rule can be fully written
     it.skip("EC XML version less than latest, rule violated.", async () => {
-      const schema  = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);
+      const schema = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);
 
       const result = await Rules.schemaXmlVersionMustBeTheLatest(schema);
 
@@ -39,8 +57,7 @@ describe("Schema Rule Tests", () => {
         expect(diagnostic!.ecDefinition).to.equal(schema);
         expect(diagnostic!.messageArgs).to.eql(["3.1.0"]);
         expect(diagnostic!.category).to.equal(DiagnosticCategory.Error);
-        expect(diagnostic!.code).to.equal(DiagnosticCode.SchemaXmlVersionMustBeTheLatest);
-        expect(diagnostic!.key).to.equal(DiagnosticCode[DiagnosticCode.SchemaXmlVersionMustBeTheLatest]);
+        expect(diagnostic!.code).to.equal(Rules.DiagnosticCodes.SchemaXmlVersionMustBeTheLatest);
         expect(diagnostic!.diagnosticType).to.equal(DiagnosticType.Schema);
       }
       expect(resultHasEntries, "expected rule to return an AsyncIterable with entries.").to.be.true;
@@ -50,7 +67,7 @@ describe("Schema Rule Tests", () => {
   describe("schemaMustNotReferenceOldStandardSchemas Tests", () => {
     it("No standard schema references, rule passes.", async () => {
       const context = new SchemaContext();
-      const schema  = new Schema(context, "TestSchema", 1, 0, 0);
+      const schema = new Schema(context, "TestSchema", 1, 0, 0);
       const mutable = schema as MutableSchema;
       mutable.addReferenceSync(new Schema(context, "NotStandardSchema", 1, 0, 0));
 
@@ -63,9 +80,9 @@ describe("Schema Rule Tests", () => {
 
     it("Standard references exist, rule violated.", async () => {
       const context = new SchemaContext();
-      const schema  = new Schema(context, "TestSchema", 1, 0, 0);
+      const schema = new Schema(context, "TestSchema", 1, 0, 0);
       const mutable = schema as MutableSchema;
-      for (const name of Rules.oldStandardSchemaNames) {
+      for (const name of oldStandardSchemaNames) {
         const ref = new Schema(context, name, 1, 0, 0);
         mutable.addReferenceSync(ref);
       }
@@ -78,20 +95,33 @@ describe("Schema Rule Tests", () => {
         resultHasEntries = true;
         expect(diagnostic).to.not.be.undefined;
         expect(diagnostic!.ecDefinition).to.equal(schema);
-        expect(diagnostic!.messageArgs).to.eql([schema.schemaKey.toString(), Rules.oldStandardSchemaNames[nameIndex]]);
+        expect(diagnostic!.messageArgs).to.eql([schema.schemaKey.toString(), oldStandardSchemaNames[nameIndex]]);
         expect(diagnostic!.category).to.equal(DiagnosticCategory.Error);
-        expect(diagnostic!.code).to.equal(DiagnosticCode.SchemaReferencesOldStandardSchema);
-        expect(diagnostic!.key).to.equal(DiagnosticCode[DiagnosticCode.SchemaReferencesOldStandardSchema]);
+        expect(diagnostic!.code).to.equal(Rules.DiagnosticCodes.SchemaMustNotReferenceOldStandardSchemas);
         expect(diagnostic!.diagnosticType).to.equal(DiagnosticType.Schema);
         nameIndex++;
       }
       expect(resultHasEntries, "expected rule to return an AsyncIterable with entries.").to.be.true;
     });
+
+    it("ECDbMap 2.0 reference exist, rule passes.", async () => {
+      const context = new SchemaContext();
+      const schema  = new Schema(context, "TestSchema", 1, 0, 0);
+      const mutable = schema as MutableSchema;
+      const ref = new Schema(context, "ECDbMap", 2, 0, 0);
+      mutable.addReferenceSync(ref);
+
+      const result = await Rules.schemaMustNotReferenceOldStandardSchemas(schema);
+
+      for await (const _diagnostic of result!) {
+        expect(false, "Rule should have passed").to.be.true;
+      }
+    });
   });
 
   describe("schemaWithDynamicInNameMustHaveDynamicSchemaCA Tests", () => {
     it("Dynamic not in the name, rule passes.", async () => {
-      const schema  = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);
+      const schema = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);
 
       const result = await Rules.schemaWithDynamicInNameMustHaveDynamicSchemaCA(schema);
 
@@ -101,7 +131,7 @@ describe("Schema Rule Tests", () => {
     });
 
     it("Dynamic (mixed-case) in the name,  DynamicSchema attribute not applied, rule violated.", async () => {
-      const schema  = new Schema(new SchemaContext(), "TestDynamicSchema", 1, 0, 0);
+      const schema = new Schema(new SchemaContext(), "TestDynamicSchema", 1, 0, 0);
       (schema as MutableSchema).addCustomAttribute({ className: "CoreCustomAttributes.TestAttribute" });
 
       const result = await Rules.schemaWithDynamicInNameMustHaveDynamicSchemaCA(schema);
@@ -114,15 +144,14 @@ describe("Schema Rule Tests", () => {
         expect(diagnostic!.ecDefinition).to.equal(schema);
         expect(diagnostic!.messageArgs).to.eql([schema.schemaKey.toString()]);
         expect(diagnostic!.category).to.equal(DiagnosticCategory.Error);
-        expect(diagnostic!.code).to.equal(DiagnosticCode.SchemaWithDynamicInNameMustHaveDynamicSchemaCA);
-        expect(diagnostic!.key).to.equal(DiagnosticCode[DiagnosticCode.SchemaWithDynamicInNameMustHaveDynamicSchemaCA]);
+        expect(diagnostic!.code).to.equal(Rules.DiagnosticCodes.SchemaWithDynamicInNameMustHaveDynamicSchemaCA);
         expect(diagnostic!.diagnosticType).to.equal(DiagnosticType.Schema);
       }
       expect(resultHasEntries, "expected rule to return an AsyncIterable with entries.").to.be.true;
     });
 
     it("Dynamic (upper-case) in the name, DynamicSchema attribute not applied, rule violated.", async () => {
-      const schema  = new Schema(new SchemaContext(), "TestDYNAMICSchema", 1, 0, 0);
+      const schema = new Schema(new SchemaContext(), "TestDYNAMICSchema", 1, 0, 0);
       (schema as MutableSchema).addCustomAttribute({ className: "CoreCustomAttributes.TestAttribute" });
 
       const result = await Rules.schemaWithDynamicInNameMustHaveDynamicSchemaCA(schema);
@@ -135,15 +164,14 @@ describe("Schema Rule Tests", () => {
         expect(diagnostic!.ecDefinition).to.equal(schema);
         expect(diagnostic!.messageArgs).to.eql([schema.schemaKey.toString()]);
         expect(diagnostic!.category).to.equal(DiagnosticCategory.Error);
-        expect(diagnostic!.code).to.equal(DiagnosticCode.SchemaWithDynamicInNameMustHaveDynamicSchemaCA);
-        expect(diagnostic!.key).to.equal(DiagnosticCode[DiagnosticCode.SchemaWithDynamicInNameMustHaveDynamicSchemaCA]);
+        expect(diagnostic!.code).to.equal(Rules.DiagnosticCodes.SchemaWithDynamicInNameMustHaveDynamicSchemaCA);
         expect(diagnostic!.diagnosticType).to.equal(DiagnosticType.Schema);
       }
       expect(resultHasEntries, "expected rule to return an AsyncIterable with entries.").to.be.true;
     });
 
     it("Dynamic in the name, DynamicSchema attribute applied, rule passes.", async () => {
-      const schema  = new Schema(new SchemaContext(), "TestDynamicSchema", 1, 0, 0);
+      const schema = new Schema(new SchemaContext(), "TestDynamicSchema", 1, 0, 0);
       (schema as MutableSchema).addCustomAttribute({ className: "CoreCustomAttributes.DynamicSchema" });
       const result = await Rules.schemaWithDynamicInNameMustHaveDynamicSchemaCA(schema);
 
@@ -163,7 +191,7 @@ describe("Schema Rule Tests", () => {
     }
 
     it("Display labels are unique, rule passes.", async () => {
-      const schema  = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);
+      const schema = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);
       const mutable = schema as MutableSchema;
       mutable.addItem(new TestClass(schema, "TestEntityA", "LabelA"));
       mutable.addItem(new TestClass(schema, "TestEntityB", "LabelB"));
@@ -176,7 +204,7 @@ describe("Schema Rule Tests", () => {
     });
 
     it("Duplicate display labels, rule violated.", async () => {
-      const schema  = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);
+      const schema = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);
       const mutable = schema as MutableSchema;
       mutable.addItem(new TestClass(schema, "TestEntityA", "LabelA"));
       mutable.addItem(new TestClass(schema, "TestEntityB", "LabelA"));
@@ -196,8 +224,7 @@ describe("Schema Rule Tests", () => {
         else
           expect(diagnostic!.messageArgs).to.eql(["TestSchema.TestEntityC", "TestSchema.TestEntityA", "LabelA"]);
         expect(diagnostic!.category).to.equal(DiagnosticCategory.Error);
-        expect(diagnostic!.code).to.equal(DiagnosticCode.SchemaClassDisplayLabelMustBeUnique);
-        expect(diagnostic!.key).to.equal(DiagnosticCode[DiagnosticCode.SchemaClassDisplayLabelMustBeUnique]);
+        expect(diagnostic!.code).to.equal(Rules.DiagnosticCodes.SchemaClassDisplayLabelMustBeUnique);
         expect(diagnostic!.diagnosticType).to.equal(DiagnosticType.Schema);
         index++;
       }

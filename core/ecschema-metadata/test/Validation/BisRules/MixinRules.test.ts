@@ -12,7 +12,7 @@ import { ECClass, MutableClass } from "../../../src/Metadata/Class";
 import { Mixin } from "../../../src/Metadata/Mixin";
 import { Schema } from "../../../src/Metadata/Schema";
 import * as Rules from "../../../src/Validation/BisRules";
-import { DiagnosticCategory, DiagnosticCode, DiagnosticType } from "../../../src/Validation/Diagnostic";
+import { DiagnosticCategory, DiagnosticType } from "../../../src/Validation/Diagnostic";
 
 describe("Mixin Rule Tests", () => {
   let schema: Schema;
@@ -39,8 +39,7 @@ describe("Mixin Rule Tests", () => {
         expect(diagnostic!.ecDefinition).to.equal(mixin);
         expect(diagnostic!.messageArgs).to.eql([mixin.fullName, "TestProperty"]);
         expect(diagnostic!.category).to.equal(DiagnosticCategory.Error);
-        expect(diagnostic!.code).to.equal(DiagnosticCode.MixinsCannotOverrideInheritedProperties);
-        expect(diagnostic!.key).to.equal(DiagnosticCode[DiagnosticCode.MixinsCannotOverrideInheritedProperties]);
+        expect(diagnostic!.code).to.equal(Rules.DiagnosticCodes.MixinsCannotOverrideInheritedProperties);
         expect(diagnostic!.diagnosticType).to.equal(DiagnosticType.SchemaItem);
       }
       expect(resultHasEntries, "expected rule to return an AsyncIterable with entries.").to.be.true;
@@ -66,8 +65,7 @@ describe("Mixin Rule Tests", () => {
         expect(diagnostic!.ecDefinition).to.equal(grandChildMixin);
         expect(diagnostic!.messageArgs).to.eql([grandChildMixin.fullName, "TestProperty"]);
         expect(diagnostic!.category).to.equal(DiagnosticCategory.Error);
-        expect(diagnostic!.code).to.equal(DiagnosticCode.MixinsCannotOverrideInheritedProperties);
-        expect(diagnostic!.key).to.equal(DiagnosticCode[DiagnosticCode.MixinsCannotOverrideInheritedProperties]);
+        expect(diagnostic!.code).to.equal(Rules.DiagnosticCodes.MixinsCannotOverrideInheritedProperties);
         expect(diagnostic!.diagnosticType).to.equal(DiagnosticType.SchemaItem);
       }
       expect(resultHasEntries, "expected rule to return an AsyncIterable with entries.").to.be.true;

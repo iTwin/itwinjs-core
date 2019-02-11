@@ -8,7 +8,7 @@ import { expect } from "chai";
 import { SchemaContext } from "../../../src/Context";
 import { RelationshipClass } from "../../../src/Metadata/RelationshipClass";
 import { Schema } from "../../../src/Metadata/Schema";
-import { DiagnosticCategory, DiagnosticCode, DiagnosticType } from "../../../src/Validation/Diagnostic";
+import { DiagnosticCategory, DiagnosticType } from "../../../src/Validation/Diagnostic";
 import * as Rules from "../../../src/Validation/ECRules";
 import { createSchemaJsonWithItems } from "../../TestUtils/DeserializationHelpers";
 
@@ -69,10 +69,10 @@ describe("RelationshipConstraintRule tests", () => {
       ...baseRelationship,
       ...childRelationship,
 
-      SBE1: { schemaItemType: "EntityClass", modifier: "Abstract"},
+      SBE1: { schemaItemType: "EntityClass", modifier: "Abstract" },
       SDE1: { schemaItemType: "EntityClass", baseClass: "TestSchema.SBE1" },
       SDE2: { schemaItemType: "EntityClass", baseClass: "TestSchema.SBE1" },
-      TBE1: { schemaItemType: "EntityClass", modifier: "Abstract"},
+      TBE1: { schemaItemType: "EntityClass", modifier: "Abstract" },
       TDE1: { schemaItemType: "EntityClass", baseClass: "TestSchema.TBE1" },
       TDE2: { schemaItemType: "EntityClass", baseClass: "TestSchema.TBE1" },
     });
@@ -130,8 +130,7 @@ describe("RelationshipConstraintRule tests", () => {
         expect(diagnostic!.ecDefinition).to.equal(relationship.source);
         expect(diagnostic!.messageArgs).to.eql(["Source", "TestSchema.BaseRelationship"]);
         expect(diagnostic!.category).to.equal(DiagnosticCategory.Error);
-        expect(diagnostic!.code).to.equal(DiagnosticCode.AtLeastOneConstraintClassDefined);
-        expect(diagnostic!.key).to.equal(DiagnosticCode[DiagnosticCode.AtLeastOneConstraintClassDefined]);
+        expect(diagnostic!.code).to.equal(Rules.DiagnosticCodes.AtLeastOneConstraintClassDefined);
         expect(diagnostic!.diagnosticType).to.equal(DiagnosticType.RelationshipConstraint);
         break;
       }
@@ -165,8 +164,7 @@ describe("RelationshipConstraintRule tests", () => {
         expect(diagnostic!.ecDefinition).to.equal(relationship.target);
         expect(diagnostic!.messageArgs).to.eql(["Target", "TestSchema.BaseRelationship"]);
         expect(diagnostic!.category).to.equal(DiagnosticCategory.Error);
-        expect(diagnostic!.code).to.equal(DiagnosticCode.AtLeastOneConstraintClassDefined);
-        expect(diagnostic!.key).to.equal(DiagnosticCode[DiagnosticCode.AtLeastOneConstraintClassDefined]);
+        expect(diagnostic!.code).to.equal(Rules.DiagnosticCodes.AtLeastOneConstraintClassDefined);
         expect(diagnostic!.diagnosticType).to.equal(DiagnosticType.RelationshipConstraint);
         break;
       }

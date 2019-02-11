@@ -7,22 +7,30 @@ import { SchemaContext } from "../../src/Context";
 import { Schema } from "../../src/Metadata/Schema";
 
 export class BisTestHelper {
-  private static _schema: Schema;
-
-  public static get bisSchema(): Schema {
-    if (!this._schema) {
-      this._schema = Schema.fromJsonSync(bisCoreSchema, new SchemaContext());
-    }
-
-    return this._schema;
-  }
-
-  public static async getContext(): Promise<SchemaContext> {
+  public static async getNewContext(): Promise<SchemaContext> {
     const context = new SchemaContext();
-    await context.addSchema(this.bisSchema);
+    await Schema.fromJson(coreCustomAttributesSchema, context);
+    await Schema.fromJson(bisCoreSchema, context);
+
     return context;
   }
 }
+
+const coreCustomAttributesSchema = {
+  $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+  name: "CoreCustomAttributes",
+  alias: "CoreCA",
+  version: "01.00.01",
+  description: "Custom attributes to indicate core EC concepts, may include struct classes intended for use in core custom attributes.",
+  items: {
+    Deprecated: {
+      appliesTo: "Any",
+      description: "Identifies a schema or item within a schema as deprecated.  Deprecated things should not be used.",
+      modifier: "sealed",
+      schemaItemType: "CustomAttributeClass",
+   },
+  },
+};
 
 const bisCoreSchema = {
   $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
@@ -30,8 +38,18 @@ const bisCoreSchema = {
   name: "BisCore",
   version: "01.00.01",
   label: "BIS Core",
+  references : [
+    {
+       name: "CoreCustomAttributes",
+       version: "01.00.01",
+    },
+ ],
   items: {
     Element: {
+      modifier: "abstract",
+      schemaItemType: "EntityClass",
+    },
+    Model: {
       modifier: "abstract",
       schemaItemType: "EntityClass",
     },
@@ -95,6 +113,34 @@ const bisCoreSchema = {
         polymorphic: true,
         roleLabel: "is owned by",
       },
+    },
+    PhysicalModel: {
+      modifier: "none",
+      schemaItemType: "EntityClass",
+    },
+    SpatialLocationModel: {
+      modifier: "none",
+      schemaItemType: "EntityClass",
+    },
+    GroupInformationModel: {
+      modifier: "none",
+      schemaItemType: "EntityClass",
+    },
+    InformationRecordModel: {
+      modifier: "none",
+      schemaItemType: "EntityClass",
+    },
+    DefinitionModel: {
+      modifier: "none",
+      schemaItemType: "EntityClass",
+    },
+    DocumentListModel: {
+      modifier: "none",
+      schemaItemType: "EntityClass",
+    },
+    LinkModel: {
+      modifier: "none",
+      schemaItemType: "EntityClass",
     },
   },
 };

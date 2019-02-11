@@ -56,6 +56,14 @@ export class SchemaReadHelper<T = unknown> {
    * @param rawSchema The serialized data to use to populate the Schema.
    */
   public async readSchema<U extends Schema>(schema: U, rawSchema: T): Promise<U> {
+    // Ensure context matches schema context
+    if (schema.context) {
+      if (this._context !== schema.context)
+        throw new ECObjectsError(ECObjectsStatus.DifferentSchemaContexts, "The SchemaContext of the schema must be the same SchemaContext held by the SchemaReadHelper.");
+    } else {
+      (schema as Schema as MutableSchema).setContext(this._context);
+    }
+
     this._parser = new this._parserType(rawSchema);
 
     // Loads all of the properties on the Schema object

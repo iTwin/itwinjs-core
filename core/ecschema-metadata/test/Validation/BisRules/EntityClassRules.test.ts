@@ -6,7 +6,6 @@
 import { expect } from "chai";
 import sinon = require("sinon");
 import { BisTestHelper } from "../../TestUtils/BisTestHelper";
-import { createSchemaJsonWithItems } from "../../TestUtils/DeserializationHelpers";
 
 import { SchemaContext } from "../../../src/Context";
 import { DelayedPromiseWithProps } from "../../../src/DelayedPromise";
@@ -15,23 +14,23 @@ import { ECObjectsError, ECObjectsStatus } from "../../../src/Exception";
 import { ECClass, MutableClass } from "../../../src/Metadata/Class";
 import { EntityClass, MutableEntityClass } from "../../../src/Metadata/EntityClass";
 import { Mixin } from "../../../src/Metadata/Mixin";
-import { MutableSchema, Schema } from "../../../src/Metadata/Schema";
+import { Schema } from "../../../src/Metadata/Schema";
 import * as Rules from "../../../src/Validation/BisRules";
-import { DiagnosticCategory, DiagnosticCode, DiagnosticType } from "../../../src/Validation/Diagnostic";
+import { DiagnosticCategory, DiagnosticType } from "../../../src/Validation/Diagnostic";
 
 describe("EntityClass Rule Tests", () => {
   let testSchema: Schema;
   let bisCoreSchema: Schema;
 
-  async function getTestSchema(items: any, withBisReference: boolean = true): Promise<Schema> {
-    let context = new SchemaContext();
-    if (withBisReference) {
-      context = await BisTestHelper.getContext();
+  async function getTestSchema(items: any, name: string = "TestSchema", context?: SchemaContext, withBisReference: boolean = true): Promise<Schema> {
+    if (!context) {
+      context = withBisReference ? await BisTestHelper.getNewContext() : new SchemaContext();
+
     }
-    return Schema.fromJson(createSchemaJson(items, withBisReference), context);
+    return Schema.fromJson(createSchemaJson(name, items, withBisReference), context);
   }
 
-  function createSchemaJson(items: any, withBisReference: boolean) {
+  function createSchemaJson(name: string, items: any, withBisReference: boolean) {
     const refJson = !withBisReference ? {} : {
       references: [
         {
@@ -40,7 +39,19 @@ describe("EntityClass Rule Tests", () => {
         },
       ],
     };
-    return createSchemaJsonWithItems(items, refJson);
+    return createSchemaJsonWithItems(name, items, refJson);
+  }
+
+  function createSchemaJsonWithItems(name: string, itemsJson: any, referenceJson?: any): any {
+    return {
+      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+      name,
+      version: "1.2.3",
+      items: {
+        ...itemsJson,
+      },
+      ...referenceJson,
+    };
   }
 
   beforeEach(async () => {
@@ -51,6 +62,7 @@ describe("EntityClass Rule Tests", () => {
 
   afterEach(() => {
     sinon.restore();
+
   });
 
   describe("EntityClassMustDeriveFromBisHierarchy tests", () => {
@@ -68,8 +80,7 @@ describe("EntityClass Rule Tests", () => {
         expect(diagnostic!.ecDefinition).to.equal(childEntity);
         expect(diagnostic!.messageArgs).to.eql([childEntity.fullName]);
         expect(diagnostic!.category).to.equal(DiagnosticCategory.Error);
-        expect(diagnostic!.code).to.equal(DiagnosticCode.EntityClassMustDeriveFromBisHierarchy);
-        expect(diagnostic!.key).to.equal(DiagnosticCode[DiagnosticCode.EntityClassMustDeriveFromBisHierarchy]);
+        expect(diagnostic!.code).to.equal(Rules.DiagnosticCodes.EntityClassMustDeriveFromBisHierarchy);
         expect(diagnostic!.diagnosticType).to.equal(DiagnosticType.SchemaItem);
       }
       expect(resultHasEntries, "expected rule to return an AsyncIterable with entries.").to.be.true;
@@ -124,8 +135,7 @@ describe("EntityClass Rule Tests", () => {
         expect(diagnostic!.ecDefinition).to.equal(childEntity);
         expect(diagnostic!.messageArgs).to.eql([childEntity.fullName, "TestProperty", baseEntity.fullName, mixin.fullName]);
         expect(diagnostic!.category).to.equal(DiagnosticCategory.Error);
-        expect(diagnostic!.code).to.equal(DiagnosticCode.EntityClassMayNotInheritSameProperty);
-        expect(diagnostic!.key).to.equal(DiagnosticCode[DiagnosticCode.EntityClassMayNotInheritSameProperty]);
+        expect(diagnostic!.code).to.equal(Rules.DiagnosticCodes.EntityClassMayNotInheritSameProperty);
         expect(diagnostic!.diagnosticType).to.equal(DiagnosticType.SchemaItem);
       }
       expect(resultHasEntries, "expected rule to return an AsyncIterable with entries.").to.be.true;
@@ -152,8 +162,7 @@ describe("EntityClass Rule Tests", () => {
         expect(diagnostic!.ecDefinition).to.equal(childEntity);
         expect(diagnostic!.messageArgs).to.eql([childEntity.fullName, "TestProperty", mixin1.fullName, mixin2.fullName]);
         expect(diagnostic!.category).to.equal(DiagnosticCategory.Error);
-        expect(diagnostic!.code).to.equal(DiagnosticCode.EntityClassMayNotInheritSameProperty);
-        expect(diagnostic!.key).to.equal(DiagnosticCode[DiagnosticCode.EntityClassMayNotInheritSameProperty]);
+        expect(diagnostic!.code).to.equal(Rules.DiagnosticCodes.EntityClassMayNotInheritSameProperty);
         expect(diagnostic!.diagnosticType).to.equal(DiagnosticType.SchemaItem);
       }
       expect(resultHasEntries, "expected rule to return an AsyncIterable with entries.").to.be.true;
@@ -250,8 +259,72 @@ describe("EntityClass Rule Tests", () => {
         expect(diagnostic!.ecDefinition).to.equal(entity);
         expect(diagnostic!.messageArgs).to.eql([entity.fullName]);
         expect(diagnostic!.category).to.equal(DiagnosticCategory.Error);
-        expect(diagnostic!.code).to.equal(DiagnosticCode.ElementMultiAspectMustHaveCorrespondingRelationship);
-        expect(diagnostic!.key).to.equal(DiagnosticCode[DiagnosticCode.ElementMultiAspectMustHaveCorrespondingRelationship]);
+        expect(diagnostic!.code).to.equal(Rules.DiagnosticCodes.ElementMultiAspectMustHaveCorrespondingRelationship);
+        expect(diagnostic!.diagnosticType).to.equal(DiagnosticType.SchemaItem);
+      }
+      expect(resultHasEntries, "expected rule to return an AsyncIterable with entries.").to.be.true;
+    });
+
+    it("Base ElementMultiAspect in different schema, does not have a corresponding relationship, rule violated.", async () => {
+      const baseSchemaJson = {
+        BaseEntity: {
+          baseClass: "BisCore.ElementMultiAspect",
+          schemaItemType: "EntityClass",
+        },
+      };
+      const context = await BisTestHelper.getNewContext();
+      await getTestSchema(baseSchemaJson, "BaseSchema", context);
+
+      const schemaJson = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        name: "TestSchema",
+        version: "1.2.3",
+        references: [
+          {
+            name: "BaseSchema",
+            version: "1.2.3",
+          },
+        ],
+        items: {
+          TestRelationship: {
+            schemaItemType: "RelationshipClass",
+            strength: "embedding",
+            strengthDirection: "forward",
+            source: {
+              multiplicity: "(1..1)",
+              polymorphic: true,
+              roleLabel: "owns",
+              constraintClasses: [
+              ],
+            },
+            target: {
+              multiplicity: "(0..*)",
+              polymorphic: true,
+              roleLabel: "is owned by",
+              constraintClasses: [
+                "TestSchema.TestEntity",
+              ],
+            },
+          },
+          TestEntity: {
+            baseClass: "BaseSchema.BaseEntity",
+            schemaItemType: "EntityClass",
+          },
+        },
+      };
+      const schema = await Schema.fromJson(schemaJson, context);
+      const entity = (await schema.getItem("TestEntity")) as EntityClass;
+
+      const result = await Rules.elementMultiAspectMustHaveCorrespondingRelationship(entity);
+
+      let resultHasEntries = false;
+      for await (const diagnostic of result!) {
+        resultHasEntries = true;
+        expect(diagnostic).to.not.be.undefined;
+        expect(diagnostic!.ecDefinition).to.equal(entity);
+        expect(diagnostic!.messageArgs).to.eql([entity.fullName]);
+        expect(diagnostic!.category).to.equal(DiagnosticCategory.Error);
+        expect(diagnostic!.code).to.equal(Rules.DiagnosticCodes.ElementMultiAspectMustHaveCorrespondingRelationship);
         expect(diagnostic!.diagnosticType).to.equal(DiagnosticType.SchemaItem);
       }
       expect(resultHasEntries, "expected rule to return an AsyncIterable with entries.").to.be.true;
@@ -276,8 +349,7 @@ describe("EntityClass Rule Tests", () => {
         expect(diagnostic!.ecDefinition).to.equal(entity);
         expect(diagnostic!.messageArgs).to.eql([entity.fullName]);
         expect(diagnostic!.category).to.equal(DiagnosticCategory.Error);
-        expect(diagnostic!.code).to.equal(DiagnosticCode.ElementMultiAspectMustHaveCorrespondingRelationship);
-        expect(diagnostic!.key).to.equal(DiagnosticCode[DiagnosticCode.ElementMultiAspectMustHaveCorrespondingRelationship]);
+        expect(diagnostic!.code).to.equal(Rules.DiagnosticCodes.ElementMultiAspectMustHaveCorrespondingRelationship);
         expect(diagnostic!.diagnosticType).to.equal(DiagnosticType.SchemaItem);
       }
       expect(resultHasEntries, "expected rule to return an AsyncIterable with entries.").to.be.true;
@@ -367,72 +439,6 @@ describe("EntityClass Rule Tests", () => {
         expect(false, "Rule should have passed").to.be.true;
       }
     });
-
-    it("ElementMultiAspect not found in BIS schema, throws.", async () => {
-      let error: any;
-      const bisSchema = new Schema(new SchemaContext(), "BisCore", 1, 0, 0);
-      await (testSchema as MutableSchema).addReference(bisSchema);
-      const testEntity = new EntityClass(testSchema, "TestEntity");
-
-      try {
-        const result  = await Rules.elementMultiAspectMustHaveCorrespondingRelationship(testEntity);
-        for await (const _r of result!) {}
-      } catch (e) {
-        error = e;
-      }
-
-      expect(error).to.be.instanceOf(ECObjectsError);
-      expect(error.errorNumber).to.be.equal(ECObjectsStatus.ClassNotFound);
-      expect(error.message.includes("ElementMultiAspect")).to.be.true;
-    });
-
-    it("ElementOwnsMultiAspect not found in BIS schema, throws.", async () => {
-      let error: any;
-
-      const schemaJson = {
-        TestRelationship: {
-          schemaItemType: "RelationshipClass",
-          baseClass: "BisCore.ElementOwnsMultiAspects",
-          strength: "embedding",
-          strengthDirection: "forward",
-          source: {
-            multiplicity: "(1..1)",
-            polymorphic: true,
-            roleLabel: "owns",
-            constraintClasses: [
-            ],
-          },
-          target: {
-            multiplicity: "(0..*)",
-            polymorphic: true,
-            roleLabel: "is owned by",
-            constraintClasses: [
-              "TestSchema.TestEntity",
-            ],
-          },
-        },
-        TestEntity: {
-          baseClass: "BisCore.ElementMultiAspect",
-          schemaItemType: "EntityClass",
-        },
-      };
-      const schema = await getTestSchema(schemaJson);
-      const testEntity = (await schema.getItem("TestEntity")) as EntityClass;
-      const stub = sinon.stub(Schema.prototype, "getItem");
-      stub.withArgs("ElementOwnsMultiAspects").resolves(undefined);
-      stub.callThrough();
-
-      try {
-        const result  = await Rules.elementMultiAspectMustHaveCorrespondingRelationship(testEntity);
-        for await (const _r of result!) {}
-      } catch (e) {
-        error = e;
-      }
-
-      expect(error).to.be.instanceOf(ECObjectsError);
-      expect(error.errorNumber).to.be.equal(ECObjectsStatus.ClassNotFound);
-      expect(error.message.includes("ElementOwnsMultiAspect")).to.be.true;
-    });
   });
 
   describe("ElementUniqueAspectMustHaveCorrespondingRelationship tests", () => {
@@ -475,8 +481,7 @@ describe("EntityClass Rule Tests", () => {
         expect(diagnostic!.ecDefinition).to.equal(entity);
         expect(diagnostic!.messageArgs).to.eql([entity.fullName]);
         expect(diagnostic!.category).to.equal(DiagnosticCategory.Error);
-        expect(diagnostic!.code).to.equal(DiagnosticCode.ElementUniqueAspectMustHaveCorrespondingRelationship);
-        expect(diagnostic!.key).to.equal(DiagnosticCode[DiagnosticCode.ElementUniqueAspectMustHaveCorrespondingRelationship]);
+        expect(diagnostic!.code).to.equal(Rules.DiagnosticCodes.ElementUniqueAspectMustHaveCorrespondingRelationship);
         expect(diagnostic!.diagnosticType).to.equal(DiagnosticType.SchemaItem);
       }
       expect(resultHasEntries, "expected rule to return an AsyncIterable with entries.").to.be.true;
@@ -501,8 +506,7 @@ describe("EntityClass Rule Tests", () => {
         expect(diagnostic!.ecDefinition).to.equal(entity);
         expect(diagnostic!.messageArgs).to.eql([entity.fullName]);
         expect(diagnostic!.category).to.equal(DiagnosticCategory.Error);
-        expect(diagnostic!.code).to.equal(DiagnosticCode.ElementUniqueAspectMustHaveCorrespondingRelationship);
-        expect(diagnostic!.key).to.equal(DiagnosticCode[DiagnosticCode.ElementUniqueAspectMustHaveCorrespondingRelationship]);
+        expect(diagnostic!.code).to.equal(Rules.DiagnosticCodes.ElementUniqueAspectMustHaveCorrespondingRelationship);
         expect(diagnostic!.diagnosticType).to.equal(DiagnosticType.SchemaItem);
       }
       expect(resultHasEntries, "expected rule to return an AsyncIterable with entries.").to.be.true;
@@ -592,71 +596,6 @@ describe("EntityClass Rule Tests", () => {
         expect(false, "Rule should have passed").to.be.true;
       }
     });
-
-    it("ElementUniqueAspect not found in BIS schema, throws.", async () => {
-      let error: any;
-      const bisSchema = new Schema(new SchemaContext(), "BisCore", 1, 0, 0);
-      await (testSchema as MutableSchema).addReference(bisSchema);
-      const testEntity = new EntityClass(testSchema, "TestEntity");
-
-      try {
-        const result  = await Rules.elementUniqueAspectMustHaveCorrespondingRelationship(testEntity);
-        for await (const _r of result!) {}
-      } catch (e) {
-        error = e;
-      }
-
-      expect(error).to.be.instanceOf(ECObjectsError);
-      expect(error.errorNumber).to.be.equal(ECObjectsStatus.ClassNotFound);
-      expect(error.message.includes("ElementUniqueAspect")).to.be.true;
-    });
-
-    it("ElementOwnsUniqueAspect not found in BIS schema, throws.", async () => {
-      let error: any;
-      const schemaJson = {
-        TestRelationship: {
-          schemaItemType: "RelationshipClass",
-          baseClass: "BisCore.ElementOwnsUniqueAspect",
-          strength: "embedding",
-          strengthDirection: "forward",
-          source: {
-            multiplicity: "(1..1)",
-            polymorphic: true,
-            roleLabel: "owns",
-            constraintClasses: [
-            ],
-          },
-          target: {
-            multiplicity: "(0..*)",
-            polymorphic: true,
-            roleLabel: "is owned by",
-            constraintClasses: [
-              "TestSchema.TestEntity",
-            ],
-          },
-        },
-        TestEntity: {
-          baseClass: "BisCore.ElementUniqueAspect",
-          schemaItemType: "EntityClass",
-        },
-      };
-      const schema = await getTestSchema(schemaJson);
-      const testEntity = (await schema.getItem("TestEntity")) as EntityClass;
-      const stub = sinon.stub(Schema.prototype, "getItem");
-      stub.withArgs("ElementOwnsUniqueAspect").resolves(undefined);
-      stub.callThrough();
-
-      try {
-        const result  = await Rules.elementUniqueAspectMustHaveCorrespondingRelationship(testEntity);
-        for await (const _r of result!) {}
-      } catch (e) {
-        error = e;
-      }
-
-      expect(error).to.be.instanceOf(ECObjectsError);
-      expect(error.errorNumber).to.be.equal(ECObjectsStatus.ClassNotFound);
-      expect(error.message.includes("ElementOwnsUniqueAspect")).to.be.true;
-    });
   });
 
   describe("EntityClassesCannotDeriveFromIParentElementAndISubModeledElement tests", () => {
@@ -679,8 +618,7 @@ describe("EntityClass Rule Tests", () => {
         expect(diagnostic!.ecDefinition).to.equal(testEntity);
         expect(diagnostic!.messageArgs).to.eql([testEntity.fullName]);
         expect(diagnostic!.category).to.equal(DiagnosticCategory.Error);
-        expect(diagnostic!.code).to.equal(DiagnosticCode.EntityClassesCannotDeriveFromIParentElementAndISubModeledElement);
-        expect(diagnostic!.key).to.equal(DiagnosticCode[DiagnosticCode.EntityClassesCannotDeriveFromIParentElementAndISubModeledElement]);
+        expect(diagnostic!.code).to.equal(Rules.DiagnosticCodes.EntityClassesCannotDeriveFromIParentElementAndISubModeledElement);
         expect(diagnostic!.diagnosticType).to.equal(DiagnosticType.SchemaItem);
       }
       expect(resultHasEntries, "expected rule to return an AsyncIterable with entries.").to.be.true;
@@ -703,56 +641,172 @@ describe("EntityClass Rule Tests", () => {
       }
     });
 
-    it("IParentElement not found in BIS schema, throws.", async () => {
-      let error: any;
+    it("Schema does not reference BIS, rule passes.", async () => {
       const schemaJson = {
         TestEntity: {
           schemaItemType: "EntityClass",
-          mixins: ["BisCore.IParentElement", "BisCore.ISubModeledElement"],
+        },
+      };
+      const schema = await getTestSchema(schemaJson, "TestSchema", new SchemaContext(), false);
+      const testEntity = (await schema.getItem("TestEntity")) as EntityClass;
+
+      const result = await Rules.entityClassesCannotDeriveFromIParentElementAndISubModeledElement(testEntity);
+
+      for await (const _diagnostic of result!) {
+        expect(false, "Rule should have passed").to.be.true;
+      }
+    });
+  });
+
+  describe("EntityClassesCannotDeriveFromModelClasses tests", () => {
+    it("EntityClass derives from bis:PhysicalModel, rule violated.", async () => {
+      const schemaJson = {
+        TestEntity: {
+          schemaItemType: "EntityClass",
+          baseClass: "BisCore.PhysicalModel",
         },
       };
       const schema = await getTestSchema(schemaJson);
       const testEntity = (await schema.getItem("TestEntity")) as EntityClass;
-      const stub = sinon.stub(Schema.prototype, "getItem");
-      stub.withArgs("IParentElement").resolves(undefined);
-      stub.callThrough();
 
-      try {
-        const result  = await Rules.entityClassesCannotDeriveFromIParentElementAndISubModeledElement(testEntity);
-        for await (const _r of result!) {}
-      } catch (e) {
-        error = e;
+      const result = await Rules.entityClassesCannotDeriveFromModelClasses(testEntity);
+
+      let resultHasEntries = false;
+      for await (const diagnostic of result!) {
+        resultHasEntries = true;
+        expect(diagnostic).to.not.be.undefined;
+        expect(diagnostic!.ecDefinition).to.equal(testEntity);
+        expect(diagnostic!.messageArgs).to.eql([testEntity.fullName, "BisCore.PhysicalModel"]);
+        expect(diagnostic!.category).to.equal(DiagnosticCategory.Error);
+        expect(diagnostic!.code).to.equal(Rules.DiagnosticCodes.EntityClassesCannotDeriveFromModelClasses);
+        expect(diagnostic!.diagnosticType).to.equal(DiagnosticType.SchemaItem);
       }
-
-      expect(error).to.be.instanceOf(ECObjectsError);
-      expect(error.errorNumber).to.be.equal(ECObjectsStatus.ClassNotFound);
-      expect(error.message.includes("IParentElement")).to.be.true;
+      expect(resultHasEntries, "expected rule to return an AsyncIterable with entries.").to.be.true;
     });
 
-    it("ISubModeledElement not found in BIS schema, throws.", async () => {
-      let error: any;
+    it("EntityClass derives from bis:SpatialLocationModel, rule violated.", async () => {
       const schemaJson = {
         TestEntity: {
           schemaItemType: "EntityClass",
-          mixins: ["BisCore.IParentElement", "BisCore.ISubModeledElement"],
+          baseClass: "BisCore.SpatialLocationModel",
         },
       };
       const schema = await getTestSchema(schemaJson);
       const testEntity = (await schema.getItem("TestEntity")) as EntityClass;
-      const stub = sinon.stub(Schema.prototype, "getItem");
-      stub.withArgs("ISubModeledElement").resolves(undefined);
-      stub.callThrough();
 
-      try {
-        const result  = await Rules.entityClassesCannotDeriveFromIParentElementAndISubModeledElement(testEntity);
-        for await (const _r of result!) {}
-      } catch (e) {
-        error = e;
+      const result = await Rules.entityClassesCannotDeriveFromModelClasses(testEntity);
+
+      let resultHasEntries = false;
+      for await (const diagnostic of result!) {
+        resultHasEntries = true;
+        expect(diagnostic).to.not.be.undefined;
+        expect(diagnostic!.ecDefinition).to.equal(testEntity);
+        expect(diagnostic!.messageArgs).to.eql([testEntity.fullName, "BisCore.SpatialLocationModel"]);
+        expect(diagnostic!.category).to.equal(DiagnosticCategory.Error);
+        expect(diagnostic!.code).to.equal(Rules.DiagnosticCodes.EntityClassesCannotDeriveFromModelClasses);
+        expect(diagnostic!.diagnosticType).to.equal(DiagnosticType.SchemaItem);
       }
+      expect(resultHasEntries, "expected rule to return an AsyncIterable with entries.").to.be.true;
+    });
 
-      expect(error).to.be.instanceOf(ECObjectsError);
-      expect(error.errorNumber).to.be.equal(ECObjectsStatus.ClassNotFound);
-      expect(error.message.includes("ISubModeledElement")).to.be.true;
+    it("EntityClass derives from bis:InformationRecordModel, rule violated.", async () => {
+      const schemaJson = {
+        TestEntity: {
+          schemaItemType: "EntityClass",
+          baseClass: "BisCore.InformationRecordModel",
+        },
+      };
+      const schema = await getTestSchema(schemaJson);
+      const testEntity = (await schema.getItem("TestEntity")) as EntityClass;
+
+      const result = await Rules.entityClassesCannotDeriveFromModelClasses(testEntity);
+
+      let resultHasEntries = false;
+      for await (const diagnostic of result!) {
+        resultHasEntries = true;
+        expect(diagnostic).to.not.be.undefined;
+        expect(diagnostic!.ecDefinition).to.equal(testEntity);
+        expect(diagnostic!.messageArgs).to.eql([testEntity.fullName, "BisCore.InformationRecordModel"]);
+        expect(diagnostic!.category).to.equal(DiagnosticCategory.Error);
+        expect(diagnostic!.code).to.equal(Rules.DiagnosticCodes.EntityClassesCannotDeriveFromModelClasses);
+        expect(diagnostic!.diagnosticType).to.equal(DiagnosticType.SchemaItem);
+      }
+      expect(resultHasEntries, "expected rule to return an AsyncIterable with entries.").to.be.true;
+    });
+
+    it("EntityClass derives from bis:DefinitionModel, rule violated.", async () => {
+      const schemaJson = {
+        TestEntity: {
+          schemaItemType: "EntityClass",
+          baseClass: "BisCore.DefinitionModel",
+        },
+      };
+      const schema = await getTestSchema(schemaJson);
+      const testEntity = (await schema.getItem("TestEntity")) as EntityClass;
+
+      const result = await Rules.entityClassesCannotDeriveFromModelClasses(testEntity);
+
+      let resultHasEntries = false;
+      for await (const diagnostic of result!) {
+        resultHasEntries = true;
+        expect(diagnostic).to.not.be.undefined;
+        expect(diagnostic!.ecDefinition).to.equal(testEntity);
+        expect(diagnostic!.messageArgs).to.eql([testEntity.fullName, "BisCore.DefinitionModel"]);
+        expect(diagnostic!.category).to.equal(DiagnosticCategory.Error);
+        expect(diagnostic!.code).to.equal(Rules.DiagnosticCodes.EntityClassesCannotDeriveFromModelClasses);
+        expect(diagnostic!.diagnosticType).to.equal(DiagnosticType.SchemaItem);
+      }
+      expect(resultHasEntries, "expected rule to return an AsyncIterable with entries.").to.be.true;
+    });
+
+    it("EntityClass derives from bis:DocumentListModel, rule violated.", async () => {
+      const schemaJson = {
+        TestEntity: {
+          schemaItemType: "EntityClass",
+          baseClass: "BisCore.DocumentListModel",
+        },
+      };
+      const schema = await getTestSchema(schemaJson);
+      const testEntity = (await schema.getItem("TestEntity")) as EntityClass;
+
+      const result = await Rules.entityClassesCannotDeriveFromModelClasses(testEntity);
+
+      let resultHasEntries = false;
+      for await (const diagnostic of result!) {
+        resultHasEntries = true;
+        expect(diagnostic).to.not.be.undefined;
+        expect(diagnostic!.ecDefinition).to.equal(testEntity);
+        expect(diagnostic!.messageArgs).to.eql([testEntity.fullName, "BisCore.DocumentListModel"]);
+        expect(diagnostic!.category).to.equal(DiagnosticCategory.Error);
+        expect(diagnostic!.code).to.equal(Rules.DiagnosticCodes.EntityClassesCannotDeriveFromModelClasses);
+        expect(diagnostic!.diagnosticType).to.equal(DiagnosticType.SchemaItem);
+      }
+      expect(resultHasEntries, "expected rule to return an AsyncIterable with entries.").to.be.true;
+    });
+
+    it("EntityClass derives from bis:LinkModel, rule violated.", async () => {
+      const schemaJson = {
+        TestEntity: {
+          schemaItemType: "EntityClass",
+          baseClass: "BisCore.LinkModel",
+        },
+      };
+      const schema = await getTestSchema(schemaJson);
+      const testEntity = (await schema.getItem("TestEntity")) as EntityClass;
+
+      const result = await Rules.entityClassesCannotDeriveFromModelClasses(testEntity);
+
+      let resultHasEntries = false;
+      for await (const diagnostic of result!) {
+        resultHasEntries = true;
+        expect(diagnostic).to.not.be.undefined;
+        expect(diagnostic!.ecDefinition).to.equal(testEntity);
+        expect(diagnostic!.messageArgs).to.eql([testEntity.fullName, "BisCore.LinkModel"]);
+        expect(diagnostic!.category).to.equal(DiagnosticCategory.Error);
+        expect(diagnostic!.code).to.equal(Rules.DiagnosticCodes.EntityClassesCannotDeriveFromModelClasses);
+        expect(diagnostic!.diagnosticType).to.equal(DiagnosticType.SchemaItem);
+      }
+      expect(resultHasEntries, "expected rule to return an AsyncIterable with entries.").to.be.true;
     });
 
     it("Schema does not reference BIS, rule passes.", async () => {
@@ -761,10 +815,229 @@ describe("EntityClass Rule Tests", () => {
           schemaItemType: "EntityClass",
         },
       };
-      const schema = await getTestSchema(schemaJson, false);
+      const schema = await getTestSchema(schemaJson, "TestSchema", new SchemaContext(), false);
       const testEntity = (await schema.getItem("TestEntity")) as EntityClass;
 
-      const result  = await Rules.entityClassesCannotDeriveFromIParentElementAndISubModeledElement(testEntity);
+      const result = await Rules.entityClassesCannotDeriveFromModelClasses(testEntity);
+
+      for await (const _diagnostic of result!) {
+        expect(false, "Rule should have passed").to.be.true;
+      }
+    });
+
+    it("Model class not found in BIS schema, throws.", async () => {
+      let error: any;
+      const schemaJson = {
+        TestEntity: {
+          schemaItemType: "EntityClass",
+          baseClass: "BisCore.SpatialLocationModel",
+        },
+      };
+      const schema = await getTestSchema(schemaJson);
+      const testEntity = (await schema.getItem("TestEntity")) as EntityClass;
+      const stub = sinon.stub(Schema.prototype, "getItem");
+      stub.withArgs("PhysicalModel").resolves(undefined);
+      stub.callThrough();
+
+      try {
+        const result = await Rules.entityClassesCannotDeriveFromModelClasses(testEntity);
+        for await (const _r of result!) { }
+      } catch (e) {
+        error = e;
+      }
+
+      expect(error).to.be.instanceOf(ECObjectsError);
+      expect(error.errorNumber).to.be.equal(ECObjectsStatus.ClassNotFound);
+      expect(error.message.includes("PhysicalModel")).to.be.true;
+    });
+
+    it("EntityClass does not derive from unsupported model classes, rule passes.", async () => {
+      const schemaJson = {
+        BaseEntity: {
+          schemaItemType: "EntityClass",
+        },
+        TestEntity: {
+          schemaItemType: "EntityClass",
+          baseClass: "TestSchema.BaseEntity",
+        },
+      };
+      const schema = await getTestSchema(schemaJson);
+      const testEntity = (await schema.getItem("TestEntity")) as EntityClass;
+
+      const result = await Rules.entityClassesCannotDeriveFromModelClasses(testEntity);
+
+      for await (const _diagnostic of result!) {
+        expect(false, "Rule should have passed").to.be.true;
+      }
+    });
+  });
+
+  describe("BisModelSubClassesCannotDefineProperties tests", () => {
+    it("EntityClass derives from bis:Model and has local properties, rule violated.", async () => {
+      const schemaJson = {
+        TestEntity: {
+          schemaItemType: "EntityClass",
+          baseClass: "BisCore.Model",
+          properties: [
+            {
+              type: "PrimitiveProperty",
+              typeName: "string",
+              name: "TestProperty",
+            },
+          ],
+        },
+      };
+      const schema = await getTestSchema(schemaJson);
+      const testEntity = (await schema.getItem("TestEntity")) as EntityClass;
+
+      const result = await Rules.bisModelSubClassesCannotDefineProperties(testEntity);
+
+      let resultHasEntries = false;
+      for await (const diagnostic of result!) {
+        resultHasEntries = true;
+        expect(diagnostic).to.not.be.undefined;
+        expect(diagnostic!.ecDefinition).to.equal(testEntity);
+        expect(diagnostic!.messageArgs).to.eql([testEntity.fullName]);
+        expect(diagnostic!.category).to.equal(DiagnosticCategory.Error);
+        expect(diagnostic!.code).to.equal(Rules.DiagnosticCodes.BisModelSubClassesCannotDefineProperties);
+        expect(diagnostic!.diagnosticType).to.equal(DiagnosticType.SchemaItem);
+      }
+      expect(resultHasEntries, "expected rule to return an AsyncIterable with entries.").to.be.true;
+    });
+
+    it("EntityClass derives from bis:Model and has no local properties, rule passes.", async () => {
+      const schemaJson = {
+        TestEntity: {
+          baseClass: "BisCore.Model",
+          schemaItemType: "EntityClass",
+        },
+      };
+      const schema = await getTestSchema(schemaJson);
+      const testEntity = (await schema.getItem("TestEntity")) as EntityClass;
+
+      const result = await Rules.bisModelSubClassesCannotDefineProperties(testEntity);
+
+      for await (const _diagnostic of result!) {
+        expect(false, "Rule should have passed").to.be.true;
+      }
+    });
+
+    it("EntityClass does not derive from bis:Model and has local properties, rule passes.", async () => {
+      const schemaJson = {
+        TestEntity: {
+          schemaItemType: "EntityClass",
+          properties: [
+            {
+              type: "PrimitiveProperty",
+              typeName: "string",
+              name: "TestProperty",
+            },
+          ],
+        },
+      };
+      const schema = await getTestSchema(schemaJson);
+      const testEntity = (await schema.getItem("TestEntity")) as EntityClass;
+
+      const result = await Rules.bisModelSubClassesCannotDefineProperties(testEntity);
+
+      for await (const _diagnostic of result!) {
+        expect(false, "Rule should have passed").to.be.true;
+      }
+    });
+
+    it("Model class not found in BIS schema, throws.", async () => {
+      let error: any;
+      const schemaJson = {
+        TestEntity: {
+          schemaItemType: "EntityClass",
+          baseClass: "BisCore.Model",
+        },
+      };
+      const schema = await getTestSchema(schemaJson);
+      const testEntity = (await schema.getItem("TestEntity")) as EntityClass;
+      const stub = sinon.stub(Schema.prototype, "getItem");
+      stub.withArgs("Model").resolves(undefined);
+      stub.callThrough();
+
+      try {
+        const result = await Rules.bisModelSubClassesCannotDefineProperties(testEntity);
+        for await (const _r of result!) { }
+      } catch (e) {
+        error = e;
+      }
+
+      expect(error).to.be.instanceOf(ECObjectsError);
+      expect(error.errorNumber).to.be.equal(ECObjectsStatus.ClassNotFound);
+      expect(error.message.includes("Model")).to.be.true;
+    });
+  });
+
+  describe("EntityClassesMayNotSubclassDeprecatedClasses tests", () => {
+    it("EntityClass derives from deprecated class, rule violated.", async () => {
+      const schemaJson = {
+        BaseEntity: {
+          schemaItemType: "EntityClass",
+          customAttributes: [
+            {
+              className: "CoreCustomAttributes.Deprecated",
+            },
+          ],
+        },
+        TestEntity: {
+          schemaItemType: "EntityClass",
+          baseClass: "TestSchema.BaseEntity",
+        },
+      };
+      const schema = await getTestSchema(schemaJson);
+      const testEntity = (await schema.getItem("TestEntity")) as EntityClass;
+
+      const result = await Rules.entityClassesMayNotSubclassDeprecatedClasses(testEntity);
+
+      let resultHasEntries = false;
+      for await (const diagnostic of result!) {
+        resultHasEntries = true;
+        expect(diagnostic).to.not.be.undefined;
+        expect(diagnostic!.ecDefinition).to.equal(testEntity);
+        expect(diagnostic!.messageArgs).to.eql([testEntity.fullName, testEntity.baseClass!.fullName]);
+        expect(diagnostic!.category).to.equal(DiagnosticCategory.Error);
+        expect(diagnostic!.code).to.equal(Rules.DiagnosticCodes.EntityClassesMayNotSubclassDeprecatedClasses);
+        expect(diagnostic!.diagnosticType).to.equal(DiagnosticType.SchemaItem);
+      }
+      expect(resultHasEntries, "expected rule to return an AsyncIterable with entries.").to.be.true;
+    });
+
+    it("EntityClass does not derive from deprecated class, rule violated.", async () => {
+      const schemaJson = {
+        BaseEntity: {
+          schemaItemType: "EntityClass",
+          customAttributes: [
+          ],
+        },
+        TestEntity: {
+          schemaItemType: "EntityClass",
+          baseClass: "TestSchema.BaseEntity",
+        },
+      };
+      const schema = await getTestSchema(schemaJson);
+      const testEntity = (await schema.getItem("TestEntity")) as EntityClass;
+
+      const result = await Rules.entityClassesMayNotSubclassDeprecatedClasses(testEntity);
+
+      for await (const _diagnostic of result!) {
+        expect(false, "Rule should have passed").to.be.true;
+      }
+    });
+
+    it("EntityClass has no base class, rule passes.", async () => {
+      const schemaJson = {
+        TestEntity: {
+          schemaItemType: "EntityClass",
+        },
+      };
+      const schema = await getTestSchema(schemaJson);
+      const testEntity = (await schema.getItem("TestEntity")) as EntityClass;
+
+      const result = await Rules.entityClassesMayNotSubclassDeprecatedClasses(testEntity);
 
       for await (const _diagnostic of result!) {
         expect(false, "Rule should have passed").to.be.true;

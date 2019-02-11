@@ -8,7 +8,7 @@ import { expect } from "chai";
 import { DelayedPromiseWithProps, ECClassModifier, RelationshipClass, SchemaContext, schemaItemTypeToString } from "../../../src/ecschema-metadata";
 import { EntityClass } from "../../../src/Metadata/EntityClass";
 import { Schema } from "../../../src/Metadata/Schema";
-import { DiagnosticCategory, DiagnosticCode, DiagnosticType } from "../../../src/Validation/Diagnostic";
+import { DiagnosticCategory, DiagnosticType } from "../../../src/Validation/Diagnostic";
 import * as Rules from "../../../src/Validation/ECRules";
 
 describe("ClassRule tests", () => {
@@ -33,8 +33,7 @@ describe("ClassRule tests", () => {
       expect(diagnostic!.ecDefinition).to.equal(entityClass);
       expect(diagnostic!.messageArgs).to.eql([entityClass.fullName, baseClass.fullName]);
       expect(diagnostic!.category).to.equal(DiagnosticCategory.Error);
-      expect(diagnostic!.code).to.equal(DiagnosticCode.BaseClassIsSealed);
-      expect(diagnostic!.key).to.equal(DiagnosticCode[DiagnosticCode.BaseClassIsSealed]);
+      expect(diagnostic!.code).to.equal(Rules.DiagnosticCodes.BaseClassIsSealed);
       expect(diagnostic!.diagnosticType).to.equal(DiagnosticType.SchemaItem);
     }
     expect(resultHasEntries, "expected rule to return an AsyncIterable with entries.").to.be.true;
@@ -77,8 +76,7 @@ describe("ClassRule tests", () => {
       expect(diagnostic!.ecDefinition).to.equal(entityClass);
       expect(diagnostic!.messageArgs).to.eql([entityClass.fullName, baseClass.fullName, baseType]);
       expect(diagnostic!.category).to.equal(DiagnosticCategory.Error);
-      expect(diagnostic!.code).to.equal(DiagnosticCode.BaseClassOfDifferentType);
-      expect(diagnostic!.key).to.equal(DiagnosticCode[DiagnosticCode.BaseClassOfDifferentType]);
+      expect(diagnostic!.code).to.equal(Rules.DiagnosticCodes.BaseClassOfDifferentType);
       expect(diagnostic!.diagnosticType).to.equal(DiagnosticType.SchemaItem);
     }
     expect(resultHasEntries, "expected rule to return an AsyncIterable with entries.").to.be.true;

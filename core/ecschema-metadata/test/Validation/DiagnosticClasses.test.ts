@@ -7,7 +7,7 @@ import { expect } from "chai";
 import { Diagnostics as BisDiagnostics } from "./../../src/Validation/BisRules";
 import { Diagnostics as ECDiagnostics } from "./../../src/Validation/ECRules";
 
-describe("createClassDiagnostic tests", () => {
+describe("DiagnosticClasses tests", () => {
   function getMessageArgsHolders(text: string): string[] {
     const holders: string[] = [];
     const matches = text.match(/{(\d+)}/g);

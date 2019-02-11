@@ -10,7 +10,7 @@ import { DelayedPromiseWithProps } from "../../../src/DelayedPromise";
 import { EntityClass, MutableEntityClass } from "../../../src/Metadata/EntityClass";
 import { Mixin } from "../../../src/Metadata/Mixin";
 import { Schema } from "../../../src/Metadata/Schema";
-import { DiagnosticCategory, DiagnosticCode, DiagnosticType } from "../../../src/Validation/Diagnostic";
+import { DiagnosticCategory, DiagnosticType } from "../../../src/Validation/Diagnostic";
 import * as Rules from "../../../src/Validation/ECRules";
 
 describe("Mixin Rule Tests", () => {
@@ -68,8 +68,7 @@ describe("Mixin Rule Tests", () => {
       expect(diagnostic!.ecDefinition).to.equal(entityClass);
       expect(diagnostic!.messageArgs).to.eql([mixin.fullName, entityClass.fullName, mixin.appliesTo!.fullName]);
       expect(diagnostic!.category).to.equal(DiagnosticCategory.Error);
-      expect(diagnostic!.code).to.equal(DiagnosticCode.MixinAppliedToClassMustDeriveFromConstraint);
-      expect(diagnostic!.key).to.equal(DiagnosticCode[DiagnosticCode.MixinAppliedToClassMustDeriveFromConstraint]);
+      expect(diagnostic!.code).to.equal(Rules.DiagnosticCodes.MixinAppliedToClassMustDeriveFromConstraint);
       expect(diagnostic!.diagnosticType).to.equal(DiagnosticType.SchemaItem);
     }
     expect(resultHasEntries, "expected rule to return an AsyncIterable with entries.").to.be.true;
@@ -92,8 +91,7 @@ describe("Mixin Rule Tests", () => {
       expect(diagnostic!.ecDefinition).to.equal(entityClass);
       expect(diagnostic!.messageArgs).to.eql([mixin.fullName, entityClass.fullName, mixin.appliesTo!.fullName]);
       expect(diagnostic!.category).to.equal(DiagnosticCategory.Error);
-      expect(diagnostic!.code).to.equal(DiagnosticCode.MixinAppliedToClassMustDeriveFromConstraint);
-      expect(diagnostic!.key).to.equal(DiagnosticCode[DiagnosticCode.MixinAppliedToClassMustDeriveFromConstraint]);
+      expect(diagnostic!.code).to.equal(Rules.DiagnosticCodes.MixinAppliedToClassMustDeriveFromConstraint);
       expect(diagnostic!.diagnosticType).to.equal(DiagnosticType.SchemaItem);
     }
     expect(resultHasEntries, "expected rule to return an AsyncIterable with entries.").to.be.true;
