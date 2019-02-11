@@ -1088,6 +1088,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
                     onFilterApplied={this.onFilterApplied}
                     onMatchesCounted={this._onMatchesCounted}
                     activeMatchIndex={this.state.activeTree.activeMatchIndex}
+                    showDescriptions={true}
                     selectedNodes={this.state.activeTree.selectedNodes}
                     selectionMode={SelectionMode.Multiple}
                     onNodesSelected={this._onNodesSelected}
