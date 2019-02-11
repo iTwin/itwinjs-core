@@ -4,14 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Logging */
 
-// tslint:disable-next-line:no-var-requires
-const bunyan = require("bunyan");
+import * as bunyan from "bunyan";
+import { BentleyError, IModelStatus } from "@bentley/bentleyjs-core";
 import { FluentdLoggerStream, IFluentdConfig } from "./FluentdLoggerStream";
-import { BentleyError, IModelStatus } from "./BentleyError";
 
 /** Helps to configure the bentleyjs-core Logger to use fluentd and seq.
  * Note: The app must depend on the bunyan, request and request-promise packages.
- * @alpha Right package?
+ * @alpha
  */
 export class FluentdBunyanLoggerConfig {
   /** Create a bunyan logger that streams to fluentd

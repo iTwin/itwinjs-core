@@ -24,6 +24,7 @@
     "@bentley/imodeljs-clients": "0.189.0-dev.24",
     "@bentley/imodeljs-common": "0.189.0-dev.24",
     "@bentley/imodeljs-frontend": "0.189.0-dev.24",
+    "@bentley/logger-config": "0.189.0-dev.24",
     "body-parser": "^1.18.2",
     "chai": "^4.1.2",
     "commander": "^2.14.1",

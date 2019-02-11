@@ -71,6 +71,10 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "@bentley/logger-config",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "@bentley/presentation-backend",
       "allowedCategories": [ "internal", "tools" ]
     },
@@ -140,11 +144,11 @@
     },
     {
       "name": "bunyan",
-      "allowedCategories": [ "common", "internal" ]
+      "allowedCategories": [ "backend", "common", "internal" ]
     },
     {
       "name": "bunyan-seq",
-      "allowedCategories": [ "common" ]
+      "allowedCategories": [ "backend", "common" ]
     },
     {
       "name": "cache-require-paths",

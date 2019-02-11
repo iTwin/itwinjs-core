@@ -2,9 +2,4 @@
 *
 !lib/**/*.d.ts
 !lib/**/*.js
-!lib/assets/**
-assets/**
-test
-perftest
-!public/**
 !*.md

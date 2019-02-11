@@ -6,19 +6,17 @@
 
 import { Writable } from "stream";
 import * as domain from "domain";
-
-// tslint:disable-next-line:no-var-requires
-const bunyan = require("bunyan");
+import * as bunyan from "bunyan";
 // tslint:disable-next-line:no-var-requires
 const post = require("request-promise");
 
-/** @alpha Right package? */
+/** @alpha */
 export interface GenericPost {
   postasync(config: any, jsonbody: any): Promise<number>;
 }
 
 /** fluentd logging server configuration.
- * @alpha Right package?
+ * @alpha
  */
 export interface IFluentdConfig {
   /** The URL of the fluentd server to connect to. Defaults to localhost. */
@@ -35,7 +33,7 @@ export interface IFluentdConfig {
   seqApiKey?: string;
 }
 
-/** @alpha Right package? */
+/** @alpha */
 export class PostFluentd implements GenericPost {
   private generateOptions(config: IFluentdConfig, jsonbody: any): any {
     const customHeaders: any = {};
@@ -58,7 +56,7 @@ export class PostFluentd implements GenericPost {
   }
 }
 
-/** @alpha Right package? */
+/** @alpha */
 export class FluentdLoggerStream extends Writable {
   private _fluentdParams: IFluentdConfig;
   constructor(fluentdParams: IFluentdConfig) {

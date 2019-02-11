@@ -1,0 +1,51 @@
+{
+  "name": "@bentley/logger-config",
+  "version": "0.189.0-dev.24",
+  "description": "Logger configuration",
+  "main": "lib/logger-config.js",
+  "typings": "lib/logger-config",
+  "license": "MIT",
+  "engines": {
+    "node": ">=10.6.0 <11.0"
+  },
+  "scripts": {
+    "build": "tsc 1>&2 && node ./node_modules/@bentley/build-tools/scripts/ignoreargs.js 1>&2",
+    "clean": "rimraf lib package-deps.json",
+    "cover": "",
+    "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/core/logger-config/file.json --tsIndexFile=./logger-config.ts --onlyJson %TYPEDOC_THEME%",
+    "lint": "tslint --project . 1>&2",
+    "test": ""
+  },
+  "author": {
+    "name": "Bentley Systems, Inc.",
+    "url": "http://www.bentley.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/imodeljs/imodeljs"
+  },
+  "keywords": [
+    "Bentley",
+    "BIM",
+    "iModel"
+  ],
+  "peerDependencies": {
+    "@bentley/bentleyjs-core": "0.189.0-dev.24",
+    "bunyan": "^1.8.12",
+    "bunyan-seq": "^0.2.0"
+  },
+  "devDependencies": {
+    "@bentley/bentleyjs-core": "0.189.0-dev.24",
+    "@bentley/build-tools": "0.189.0-dev.24",
+    "@types/bunyan": "^1.8.4",
+    "@types/bunyan-seq": "^0.2.0",
+    "@types/node": "10.12.18",
+    "bunyan": "^1.8.12",
+    "bunyan-seq": "^0.2.0",
+    "rimraf": "^2.6.2",
+    "tslint": "^5.11.0",
+    "typedoc": "^0.11.1",
+    "typescript": "~3.2.2"
+  },
+  "dependencies": {}
+}

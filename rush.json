@@ -102,6 +102,13 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
+      "packageName": "@bentley/logger-config",
+      "projectFolder": "core/logger-config",
+      "reviewCategory": "backend",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
       "packageName": "@bentley/presentation-common",
       "projectFolder": "presentation/common",
       "reviewCategory": "common",
