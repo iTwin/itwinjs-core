@@ -206,7 +206,7 @@ describe("ContentBuilder", () => {
 
     before(() => {
       imodelMock.reset();
-      imodelMock.setup(async (imodel) => imodel.queryRows(moq.It.isAny())).returns(async (query) => (await executeQuery(query, testInstances))[Symbol.iterator]());
+      imodelMock.setup(async (imodel) => imodel.queryPage(moq.It.isAny(), moq.It.isAny(), moq.It.isAny())).returns(async (query) => executeQuery(query, testInstances));
     });
 
     it("returns all required instances with empty records", async () => {
@@ -247,7 +247,7 @@ describe("ContentBuilder", () => {
 
       it("returns all required instances with empty records", async () => {
         imodelMock.reset();
-        imodelMock.setup(async (imodel) => imodel.queryRows(moq.It.isAny())).returns(async (query) => (await executeQuery(query, testInstances))[Symbol.iterator]());
+        imodelMock.setup(async (imodel) => imodel.queryPage(moq.It.isAny(), moq.It.isAny(), moq.It.isAny())).returns(async (query) => executeQuery(query, testInstances));
 
         const verificationSpy = sinon.spy();
 
@@ -277,7 +277,7 @@ describe("ContentBuilder", () => {
         }
 
         imodelMock.reset();
-        imodelMock.setup(async (imodel) => imodel.queryRows(moq.It.isAny())).returns(async (query) => (executeQueryAndThrow(query, testInstances))[Symbol.iterator]());
+        imodelMock.setup(async (imodel) => imodel.queryPage(moq.It.isAny(), moq.It.isAny(), moq.It.isAny())).returns(async (query) => executeQueryAndThrow(query, testInstances));
 
         const verificationSpy = sinon.spy();
 
@@ -294,7 +294,7 @@ describe("ContentBuilder", () => {
 
       before(() => {
         imodelMock.reset();
-        imodelMock.setup(async (imodel) => imodel.queryRows(moq.It.isAny())).returns(async (query) => (await executeQuery(query, testInstances))[Symbol.iterator]());
+        imodelMock.setup(async (imodel) => imodel.queryPage(moq.It.isAny(), moq.It.isAny(), moq.It.isAny())).returns(async (query) => executeQuery(query, testInstances));
       });
 
       it("returns an empty list", async () => {

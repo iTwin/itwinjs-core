@@ -59,7 +59,7 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
   ===========================================================================================*/
   public async openForRead(_accessToken: AccessToken, _iModelToken: IModelToken): Promise<IModel> { return this.forward(arguments); }
   public async close(_accessToken: AccessToken, _iModelToken: IModelToken): Promise<boolean> { return this.forward(arguments); }
-  public async queryRows(_iModelToken: IModelToken, _ecsql: string, _bindings?: any[] | object, _options?: PageOptions): Promise<any[]> { return this.forward(arguments); }
+  public async queryPage(_iModelToken: IModelToken, _ecsql: string, _bindings?: any[] | object, _options?: PageOptions): Promise<any[]> { return this.forward(arguments); }
   public async queryRowCount(_iModelToken: IModelToken, _ecsql: string, _bindings?: any[] | object): Promise<number> { return this.forward(arguments); }
   public async getModelProps(_iModelToken: IModelToken, _modelIds: Id64Set): Promise<ModelProps[]> { return this.forward(arguments); }
   public async queryModelProps(_iModelToken: IModelToken, _params: EntityQueryParams): Promise<ModelProps[]> { return this.forward(arguments); }

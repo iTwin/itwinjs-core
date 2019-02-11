@@ -10,7 +10,7 @@ import {
   ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontMap, FontMapProps, FontProps,
   IModel, IModelError, IModelNotFoundResponse, IModelProps, IModelStatus, IModelToken, IModelVersion, ModelProps, ModelSelectorProps,
   PropertyCallback, SheetProps, SnapRequestProps, SnapResponseProps, ThumbnailProps, TileTreeProps, ViewDefinitionProps, ViewQueryParams,
-  ViewStateProps, IModelCoordinatesResponseProps, GeoCoordinatesResponseProps, PageOptions, kPagingDefaultOptions, PagableECSql
+  ViewStateProps, IModelCoordinatesResponseProps, GeoCoordinatesResponseProps, PageOptions, kPagingDefaultOptions, PagableECSql,
 } from "@bentley/imodeljs-common";
 import * as path from "path";
 import * as os from "os";
@@ -417,6 +417,8 @@ export class IModelDb extends IModel implements PagableECSql {
       const val: T = callback(stmt);
       if (val instanceof Promise) {
         val.then(release, release);
+      } else {
+        release();
       }
       return val;
     } catch (err) {
@@ -471,7 +473,7 @@ export class IModelDb extends IModel implements PagableECSql {
    * See [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned rows.
    * @throws [IModelError]($common) If the statement is invalid
    */
-  public async queryRows(ecsql: string, bindings?: any[] | object, options?: PageOptions): Promise<IterableIterator<any>> {
+  public async queryPage(ecsql: string, bindings?: any[] | object, options?: PageOptions): Promise<any[]> {
     if (!options) {
       options = kPagingDefaultOptions;
     }
@@ -496,7 +498,7 @@ export class IModelDb extends IModel implements PagableECSql {
         rows.push(stmt.getRow());
         ret = await stmt.stepAsync();
       }
-      return rows[Symbol.iterator]();
+      return rows;
     });
   }
 
@@ -535,16 +537,14 @@ export class IModelDb extends IModel implements PagableECSql {
       throw new IModelError(DbResult.BE_SQLITE_ERROR, "options.size must be positive integer starting from 1");
 
     do {
-      const it = await this.queryRows(ecsql, bindings, { start: pageNo, size: pageSize });
-      let cur = it.next();
-      if (cur.done) {
-        pageNo = -1;
-      } else {
-        do {
-          yield cur.value;
-          cur = it.next();
-        } while (!cur.done);
+      const page = await this.queryPage(ecsql, bindings, { start: pageNo, size: pageSize });
+      if (page.length > 0) {
+        for (const row of page) {
+          yield row;
+        }
         pageNo = pageNo + 1;
+      } else {
+        pageNo = -1;
       }
     } while (pageNo >= 0);
   }
@@ -597,11 +597,13 @@ export class IModelDb extends IModel implements PagableECSql {
         this._sqliteStatementCache.release(stmt);
       else
         stmt.dispose();
-    }
+    };
     try {
       const val: T = callback(stmt);
       if (val instanceof Promise) {
         val.then(release, release);
+      } else {
+        release();
       }
       return val;
     } catch (err) {

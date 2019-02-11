@@ -37,11 +37,11 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     return Promise.resolve(true);
   }
 
-  public async queryRows(iModelToken: IModelToken, ecsql: string, options: PageOptions, bindings?: any[] | object): Promise<any[]> {
+  public async queryPage(iModelToken: IModelToken, ecsql: string, bindings?: any[] | object, options?: PageOptions): Promise<any[]> {
     const activityContext = ActivityLoggingContext.current; activityContext.enter();
     const iModelDb: IModelDb = IModelDb.find(iModelToken);
-    const rows = Array.from(await iModelDb.queryRows(ecsql, bindings, options));
-    Logger.logTrace(loggingCategory, "IModelDbRemoting.getRows", () => ({ ecsql, numRows: rows.length }));
+    const rows = iModelDb.queryPage(ecsql, bindings, options);
+    Logger.logTrace(loggingCategory, "IModelDbRemoting.getRows", () => ({ ecsql }));
     return rows;
   }
 

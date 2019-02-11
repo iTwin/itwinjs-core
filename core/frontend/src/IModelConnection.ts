@@ -10,7 +10,7 @@ import {
   AxisAlignedBox3d, CodeSpec, ElementProps, EntityQueryParams, FontMap, ImageSourceFormat, IModel, IModelError, IModelNotFoundResponse,
   IModelReadRpcInterface, IModelStatus, IModelTileRpcInterface, IModelToken, IModelUnitTestRpcInterface, IModelVersion, IModelWriteRpcInterface,
   ModelProps, ModelQueryParams, RpcNotFoundResponse, RpcOperation, RpcRequest, RpcRequestEvent, SnapRequestProps, SnapResponseProps,
-  StandaloneIModelRpcInterface, ThumbnailProps, TileTreeProps, ViewDefinitionProps, ViewQueryParams, WipRpcInterface, Cartographic, GeoCoordStatus, PageOptions, kPagingDefaultOptions
+  StandaloneIModelRpcInterface, ThumbnailProps, TileTreeProps, ViewDefinitionProps, ViewQueryParams, WipRpcInterface, Cartographic, GeoCoordStatus, PageOptions, kPagingDefaultOptions,
 } from "@bentley/imodeljs-common";
 import { EntityState } from "./EntityState";
 import { IModelApp } from "./IModelApp";
@@ -301,9 +301,9 @@ export class IModelConnection extends IModel {
    * See [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned rows.
    * @throws [IModelError]($common) If the statement is invalid
    */
-  public async queryRows(ecsql: string, bindings?: any[] | object, options?: PageOptions): Promise<IterableIterator<any>> {
-    Logger.logTrace(loggingCategory, "IModelConnection.queryRows", () => ({ iModelId: this.iModelToken.iModelId, ecsql, options, bindings }));
-    return (await IModelReadRpcInterface.getClient().queryRows(this.iModelToken, ecsql, bindings, options))[Symbol.iterator]();
+  public async queryPage(ecsql: string, bindings?: any[] | object, options?: PageOptions): Promise<any[]> {
+    Logger.logTrace(loggingCategory, "IModelConnection.queryPage", () => ({ iModelId: this.iModelToken.iModelId, ecsql, options, bindings }));
+    return IModelReadRpcInterface.getClient().queryPage(this.iModelToken, ecsql, bindings, options);
   }
 
   /** Execute a pagable query.
@@ -326,7 +326,6 @@ export class IModelConnection extends IModel {
    * @throws [IModelError]($common) If the statement is invalid
    */
   public async * query(ecsql: string, bindings?: any[] | object, options?: PageOptions): AsyncIterableIterator<any> {
-    Logger.logTrace(loggingCategory, "IModelConnection.query", () => ({ iModelId: this.iModelToken.iModelId, ecsql, options, bindings }));
     if (!options) {
       options = kPagingDefaultOptions;
     }
@@ -342,16 +341,14 @@ export class IModelConnection extends IModel {
       throw new IModelError(DbResult.BE_SQLITE_ERROR, "options.size must be positive integer starting from 1");
 
     do {
-      const it = await this.queryRows(ecsql, bindings, { start: pageNo, size: pageSize });
-      let cur = it.next();
-      if (cur.done) {
-        pageNo = -1;
-      } else {
-        do {
-          yield cur.value;
-          cur = it.next();
-        } while (!cur.done);
+      const page = await this.queryPage(ecsql, bindings, { start: pageNo, size: pageSize });
+      if (page.length > 0) {
+        for (const row of page) {
+          yield row;
+        }
         pageNo = pageNo + 1;
+      } else {
+        pageNo = -1;
       }
     } while (pageNo >= 0);
   }

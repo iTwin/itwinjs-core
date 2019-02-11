@@ -75,7 +75,7 @@ export class ECDb implements IDisposable, PagableECSql {
    * See [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned rows.
    * @throws [IModelError]($common) If the statement is invalid
    */
-  public async queryRows(ecsql: string, bindings?: any[] | object, options?: PageOptions): Promise<IterableIterator<any>> {
+  public async queryPage(ecsql: string, bindings?: any[] | object, options?: PageOptions): Promise<any[]> {
     if (!options) {
       options = kPagingDefaultOptions;
     }
@@ -100,7 +100,7 @@ export class ECDb implements IDisposable, PagableECSql {
         rows.push(stmt.getRow());
         ret = await stmt.stepAsync();
       }
-      return rows[Symbol.iterator]();
+      return rows;
     });
   }
 
@@ -139,16 +139,14 @@ export class ECDb implements IDisposable, PagableECSql {
       throw new IModelError(DbResult.BE_SQLITE_ERROR, "options.size must be positive integer starting from 1");
 
     do {
-      const it = await this.queryRows(ecsql, bindings, { start: pageNo, size: pageSize });
-      let cur = it.next();
-      if (cur.done) {
-        pageNo = -1;
-      } else {
-        do {
-          yield cur.value;
-          cur = it.next();
-        } while (!cur.done);
+      const page = await this.queryPage(ecsql, bindings, { start: pageNo, size: pageSize });
+      if (page.length > 0) {
+        for (const row of page) {
+          yield row;
+        }
         pageNo = pageNo + 1;
+      } else {
+        pageNo = -1;
       }
     } while (pageNo >= 0);
   }
@@ -259,6 +257,8 @@ export class ECDb implements IDisposable, PagableECSql {
       const val: T = cb(stmt);
       if (val instanceof Promise) {
         val.then(release, release);
+      } else {
+        release();
       }
       return val;
     } catch (err) {
@@ -319,11 +319,13 @@ export class ECDb implements IDisposable, PagableECSql {
         this._sqliteStatementCache.release(stmt);
       else
         stmt.dispose();
-    }
+    };
     try {
       const val: T = cb(stmt);
       if (val instanceof Promise) {
         val.then(release, release);
+      } else {
+        release();
       }
       return val;
     } catch (err) {

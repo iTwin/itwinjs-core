@@ -63,18 +63,20 @@ describe("ECSqlStatement", () => {
           assert.equal(rowCount, i);
         }
 
+        const temp = await ecdb.queryPage("SELECT ECInstanceId FROM ONLY ts.Foo");
+        assert.equal(temp.length, ROW_COUNT);
         // query page by page
         const PAGE_SIZE = 5;
         const QUERY = "SELECT n FROM ts.Foo";
         const EXPECTED_ROW_COUNT = [5, 5, 5, 5, 5, 2, 0];
         const ready = [];
         for (let i = 0; i < EXPECTED_ROW_COUNT.length; i++) {
-          ready.push(ecdb.queryRows(QUERY, undefined, { start: i, size: PAGE_SIZE }));
+          ready.push(ecdb.queryPage(QUERY, undefined, { start: i, size: PAGE_SIZE }));
         }
         // verify if each page has right count of rows
         const results = await Promise.all(ready);
         for (let i = 0; i < EXPECTED_ROW_COUNT.length; i++) {
-          assert.equal(Array.from(results[i]).length, EXPECTED_ROW_COUNT[i]);
+          assert.equal(results[i].length, EXPECTED_ROW_COUNT[i]);
         }
 
         let rowNo = 1;

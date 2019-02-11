@@ -22,17 +22,17 @@ describe("SqliteStatement", () => {
       assert.isTrue(ecdb.isOpen);
 
       let r: DbResult;
-      r = await ecdb.withPreparedSqliteStatement("CREATE TABLE MyTable(id INTEGER PRIMARY KEY, stringcol TEXT)", (stmt: SqliteStatement) => {
+      r = await ecdb.withPreparedSqliteStatement("CREATE TABLE MyTable(id INTEGER PRIMARY KEY, stringcol TEXT)", async (stmt: SqliteStatement) => {
         return stmt.stepAsync();
       });
       assert.equal(r, DbResult.BE_SQLITE_DONE);
 
-      r = await ecdb.withPreparedSqliteStatement("INSERT INTO MyTable(stringcol) VALUES('test1')", (stmt: SqliteStatement) => {
+      r = await ecdb.withPreparedSqliteStatement("INSERT INTO MyTable(stringcol) VALUES('test1')", async (stmt: SqliteStatement) => {
         return stmt.stepAsync();
       });
       assert.equal(r, DbResult.BE_SQLITE_DONE);
 
-      r = await ecdb.withPreparedSqliteStatement("INSERT INTO MyTable(stringcol) VALUES('test2')", (stmt: SqliteStatement) => {
+      r = await ecdb.withPreparedSqliteStatement("INSERT INTO MyTable(stringcol) VALUES('test2')", async (stmt: SqliteStatement) => {
         return stmt.stepAsync();
       });
       assert.equal(r, DbResult.BE_SQLITE_DONE);

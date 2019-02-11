@@ -41,7 +41,7 @@ export class CategoryPicker extends ToolBarDropDown {
     const toggleAll = this.addCheckbox("Toggle All", "cat_toggleAll", false, (enabled: boolean) => this.toggleAll(enabled));
 
     const ecsql = "SELECT ECInstanceId as id, CodeValue as code, UserLabel as label FROM " + (view.is3d() ? "BisCore.SpatialCategory" : "BisCore.DrawingCategory");
-    const rows = Array.from(await view.iModel.queryRows(ecsql, undefined, { size: 1000 })); // max rows to return after which result will be truncated.
+    const rows = Array.from(await view.iModel.queryPage(ecsql, undefined, { size: 1000 })); // max rows to return after which result will be truncated.
     rows.sort((lhs, rhs) => {
       const lhName = getCategoryName(lhs);
       const rhName = getCategoryName(rhs);
