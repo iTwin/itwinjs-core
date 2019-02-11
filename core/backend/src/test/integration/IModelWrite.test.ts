@@ -12,6 +12,7 @@ import { KeepBriefcase, IModelDb, OpenParams, Element, DictionaryModel, Briefcas
 import { ConcurrencyControl } from "../../ConcurrencyControl";
 import { AccessToken, CodeState, HubIModel, HubCode, IModelQuery, MultiCode } from "@bentley/imodeljs-clients";
 import { HubUtility } from "./HubUtility";
+import * as os from "os";
 
 const actx = new ActivityLoggingContext("");
 
@@ -54,23 +55,44 @@ describe("IModelWriteTest (#integration)", () => {
     });
   };
 
+  let readWriteTestIModelName: string;
+
   before(async () => {
     accessToken = await HubUtility.login(TestUsers.manager);
 
     testProjectId = await HubUtility.queryProjectIdByName(accessToken, "iModelJsIntegrationTest");
     readOnlyTestIModel = await IModelTestUtils.getTestModelInfo(accessToken, testProjectId, "ReadOnlyTest");
-    readWriteTestIModel = await IModelTestUtils.getTestModelInfo(accessToken, testProjectId, "ReadWriteTest");
+
+    let username = "";
+    try {
+      username = os.userInfo().username;
+    } catch (err) {
+    }
+    readWriteTestIModelName = "ReadWriteTest".concat("_", username, "_", os.hostname() || "");
+
+    try {
+      await HubUtility.deleteIModel(accessToken, "iModelJsIntegrationTest", readWriteTestIModelName);
+    } catch (err) {
+    }
+    await BriefcaseManager.imodelClient.iModels.create(actx, accessToken, testProjectId, readWriteTestIModelName, undefined, "TestSubject", undefined, 2 * 60 * 1000);
+    readWriteTestIModel = await IModelTestUtils.getTestModelInfo(accessToken, testProjectId, readWriteTestIModelName);
 
     writeTestProjectId = await HubUtility.queryProjectIdByName(accessToken, "iModelJsTest");
 
     // Purge briefcases that are close to reaching the acquire limit
     const managerAccessToken: AccessToken = await HubUtility.login(TestUsers.manager);
     await HubUtility.purgeAcquiredBriefcases(managerAccessToken, "iModelJsIntegrationTest", "ReadOnlyTest");
-    await HubUtility.purgeAcquiredBriefcases(managerAccessToken, "iModelJsIntegrationTest", "ReadWriteTest");
   });
 
   afterEach(() => {
     validateBriefcaseCache();
+  });
+
+  after(async () => {
+    try {
+      await HubUtility.deleteIModel(accessToken, "iModelJsIntegrationTest", readWriteTestIModelName);
+    } catch (err) {
+    }
   });
 
   it("test change-merging scenarios in optimistic concurrency mode (#integration)", async () => {
@@ -199,7 +221,7 @@ describe("IModelWriteTest (#integration)", () => {
       assert.equal(elobj.userLabel, expectedValueofEl1UserLabel);
       assert.equal(elobj.getUserProperties(secondUserPropNs)[secondUserPropName], expectedValueOfSecondUserProp);
     }
-*/
+  */
     // --- Test 3: Non-overlapping changes ---
 
   });
@@ -231,7 +253,7 @@ describe("IModelWriteTest (#integration)", () => {
     }
     timer.end();
 
-    // Create a new iModel on the Hub (by uploading a seed file)
+    // Create a new empty iModel on the Hub & obtain a briefcase
     timer = new Timer("create iModel");
     const rwIModel: IModelDb = await IModelDb.create(actx, adminAccessToken, writeTestProjectId, iModelName, { rootSubject: { name: "TestSubject" } });
     const rwIModelId = rwIModel.iModelToken.iModelId;
@@ -277,7 +299,7 @@ describe("IModelWriteTest (#integration)", () => {
     }
     timer.end();
 
-    // Create a new iModel on the Hub (by uploading a seed file)
+    // Create a new empty iModel on the Hub & obtain a briefcase
     timer = new Timer("create iModel");
     const rwIModel: IModelDb = await IModelDb.create(actx, adminAccessToken, writeTestProjectId, iModelName, { rootSubject: { name: "TestSubject" } });
     const rwIModelId = rwIModel.iModelToken.iModelId;
@@ -334,7 +356,7 @@ describe("IModelWriteTest (#integration)", () => {
     }
     timer.end();
 
-    // Create a new iModel on the Hub (by uploading a seed file)
+    // Create a new empty iModel on the Hub & obtain a briefcase
     timer = new Timer("create iModel");
     const rwIModel: IModelDb = await IModelDb.create(actx, adminAccessToken, writeTestProjectId, iModelName, { rootSubject: { name: "TestSubject" } });
     const rwIModelId = rwIModel.iModelToken.iModelId;

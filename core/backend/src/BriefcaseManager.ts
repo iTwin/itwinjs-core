@@ -9,7 +9,6 @@ import {
   ChangesType, Briefcase, HubCode, IModelHubError,
   BriefcaseQuery, ChangeSetQuery, IModelQuery, ConflictingCodesError, IModelClient, HubIModel, IncludePrefix,
 } from "@bentley/imodeljs-clients";
-import { IModelBankClient } from "@bentley/imodeljs-clients/lib/IModelBank/IModelBankClient";
 import { AzureFileHandler, IOSAzureFileHandler } from "@bentley/imodeljs-clients-backend";
 import { ChangeSetApplyOption, BeEvent, DbResult, OpenMode, assert, Logger, ChangeSetStatus, BentleyStatus, IModelHubStatus, PerfLogger, ActivityLoggingContext, GuidString, Id64, IModelStatus } from "@bentley/bentleyjs-core";
 import { BriefcaseStatus, IModelError, IModelVersion, IModelToken, CreateIModelProps } from "@bentley/imodeljs-common";
@@ -294,8 +293,6 @@ export class BriefcaseManager {
 
     return path.join(pathBaseName, briefcaseId.toString(), iModelName.concat(".bim"));
   }
-
-  private static buildScratchPath(): string { return path.join(BriefcaseManager.cacheDir, "scratch"); }
 
   /** Clear the briefcase manager cache */
   private static clearCache() {
@@ -1558,61 +1555,6 @@ export class BriefcaseManager {
       const delay: number = Math.floor(Math.random() * 4800) + 200;
       await new Promise((resolve: any) => setTimeout(resolve, delay));
     }
-  }
-
-  private static isUsingIModelBankClient(): boolean {
-    return (this._imodelClient === undefined) || (this._imodelClient instanceof IModelBankClient);
-  }
-
-  /** Create an iModel on iModelHub */
-  public static async create(actx: ActivityLoggingContext, accessToken: AccessToken, projectId: string, hubName: string, args: CreateIModelProps): Promise<string> {
-    assert(!this.isUsingIModelBankClient(), "This is a Hub-only operation");
-
-    await BriefcaseManager.memoizedInitCache(actx, accessToken);
-    assert(!!BriefcaseManager.imodelClient);
-
-    actx.enter();
-
-    const nativeDb = new IModelHost.platform.DgnDb();
-
-    const scratchDir = BriefcaseManager.buildScratchPath();
-    if (!IModelJsFs.existsSync(scratchDir))
-      IModelJsFs.mkdirSync(scratchDir);
-
-    const fileName = path.join(scratchDir, hubName + ".bim");
-    if (IModelJsFs.existsSync(fileName))
-      IModelJsFs.unlinkSync(fileName); // Note: Cannot create two files with the same name at the same time with multiple async calls.
-
-    let res: DbResult = nativeDb.createIModel(accessToken.toTokenString(), IModelHost.backendVersion, projectId, fileName, JSON.stringify(args));
-    if (res !== DbResult.BE_SQLITE_OK) {
-      if (res === -100) {
-        // The addon returns -100 if usage tracking failed. For now we don't yet fail, as
-        // apps need to switch to OIDC authentication first.
-        Logger.logWarning(loggingCategory, "Usage tracking failed.", () => ({ userId: !accessToken.getUserInfo() ? undefined : accessToken.getUserInfo()!.id, projectId }));
-      } else
-        throw new IModelError(res, `Cannot create iModel ${fileName}`, Logger.logError, loggingCategory);
-    }
-
-    res = nativeDb.saveChanges();
-    if (DbResult.BE_SQLITE_OK !== res)
-      throw new IModelError(res, "Error saving changes", Logger.logError, loggingCategory);
-
-    nativeDb.closeIModel();
-
-    const iModelId: GuidString = await BriefcaseManager.upload(actx, accessToken, projectId, fileName, hubName, args.rootSubject.description);
-    return iModelId;
-  }
-
-  /** Pushes a new iModel to the Hub */
-  private static async upload(actx: ActivityLoggingContext, accessToken: AccessToken, projectId: string, pathname: string, hubName?: string, hubDescription?: string, timeOutInMilliseconds: number = 2 * 60 * 1000): Promise<string> {
-    assert(!this.isUsingIModelBankClient(), "This is a Hub-only operation");
-
-    hubName = hubName || path.basename(pathname, ".bim");
-
-    actx.enter();
-    const iModel: HubIModel = await BriefcaseManager.imodelClient.iModels.create(actx, accessToken, projectId, hubName, pathname, hubDescription, undefined, timeOutInMilliseconds);
-
-    return iModel.wsgId;
   }
 
   /** @hidden */

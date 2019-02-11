@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module iModels */
 import { ActivityLoggingContext, BeEvent, BentleyStatus, DbResult, AuthStatus, GuidString, Id64, Id64Arg, Id64Set, Id64String, JsonUtils, Logger, OpenMode } from "@bentley/bentleyjs-core";
-import { AccessToken, UlasClient, UsageLogEntry, UsageType, LogPostingResponse } from "@bentley/imodeljs-clients";
+import { AccessToken, UlasClient, UsageLogEntry, UsageType, LogPostingResponse, HubIModel } from "@bentley/imodeljs-clients";
 import {
   AxisAlignedBox3d, CategorySelectorProps, Code, CodeSpec, CreateIModelProps, DisplayStyleProps, EcefLocation, ElementAspectProps,
   ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontMap, FontMapProps, FontProps,
@@ -203,11 +203,11 @@ export class IModelDb extends IModel {
   }
 
   /** Create an iModel on iModelHub */
-  public static async create(activity: ActivityLoggingContext, accessToken: AccessToken, contextId: string, fileName: string, args: CreateIModelProps): Promise<IModelDb> {
+  public static async create(activity: ActivityLoggingContext, accessToken: AccessToken, contextId: string, iModelName: string, args: CreateIModelProps): Promise<IModelDb> {
     activity.enter();
     IModelDb.onCreate.raiseEvent(accessToken, contextId, args);
-    const iModelId: string = await BriefcaseManager.create(activity, accessToken, contextId, fileName, args);
-    return IModelDb.open(activity, accessToken, contextId, iModelId);
+    const hubIModel: HubIModel = await BriefcaseManager.imodelClient.iModels.create(activity, accessToken, contextId, iModelName, undefined, args.rootSubject.description, undefined, 2 * 60 * 1000);
+    return IModelDb.open(activity, accessToken, contextId, hubIModel.wsgId);
   }
 
   /** Open an iModel from a local file.
