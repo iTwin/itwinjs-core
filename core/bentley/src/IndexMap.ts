@@ -7,7 +7,9 @@
 import { CloneFunction, shallowClone, lowerBound } from "./SortedArray";
 import { OrderedComparator } from "./Compare";
 
-/** Associates a value of type T with an index representing its insertion order in an IndexMap<T> */
+/** Associates a value of type T with an index representing its insertion order in an IndexMap<T>
+ * @public
+ */
 export class IndexedValue<T> {
   public readonly value: T;
   public readonly index: number;
@@ -22,6 +24,7 @@ export class IndexedValue<T> {
  * Maintains a set of unique elements in sorted order and retains the insertion order of each.
  * The uniqueness of the elements is determined by a comparison routine supplied by the user.
  * The user may also supply a maximum size, beyond which insertions will fail.
+ * @public
  */
 export class IndexMap<T> {
   protected _array: Array<IndexedValue<T>> = [];

@@ -4,10 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import * as sinon from "sinon";
 import { TestSchemaLocater } from "../TestUtils/FormatTestHelper";
 import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
-
 import { Schema, MutableSchema } from "./../../src/Metadata/Schema";
 import { Format } from "./../../src/Metadata/Format";
 import { ShowSignOption, FormatType, FormatTraits, DecimalPrecision } from "./../../src/utils/FormatEnums";
@@ -37,25 +35,6 @@ function createSchemaJson(koq: any) {
 describe("Format", () => {
   let schema: Schema;
   let testFormat: Format;
-  describe("accept", () => {
-    beforeEach(() => {
-      schema = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);
-      testFormat = new Format(schema, "TestFormat");
-    });
-
-    it("should call visitFormat on a SchemaItemVisitor object", async () => {
-      expect(testFormat).to.exist;
-      const mockVisitor = { visitFormat: sinon.spy() };
-      await testFormat.accept(mockVisitor);
-      expect(mockVisitor.visitFormat.calledOnce).to.be.true;
-      expect(mockVisitor.visitFormat.calledWithExactly(testFormat)).to.be.true;
-    });
-
-    it("should safely handle a SchemaItemVisitor without visitFormat defined", async () => {
-      expect(testFormat).to.exist;
-      await testFormat.accept({});
-    });
-  });
 
   describe("type checking json", () => {
     let jsonParser: JsonParser; // This is an easy way to test the logic directly in the parser without having to go through deserialization every time.

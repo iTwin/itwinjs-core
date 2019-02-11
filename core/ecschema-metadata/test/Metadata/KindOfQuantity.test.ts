@@ -4,13 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import * as sinon from "sinon";
-
 import { ECObjectsError } from "../../src/Exception";
 import { KindOfQuantity } from "../../src/Metadata/KindOfQuantity";
 import { OverrideFormat } from "../../src/Metadata/OverrideFormat";
 import { Schema } from "../../src/Metadata/Schema";
-
 import { Format } from "../../src/Metadata/Format";
 import { SchemaContext } from "../../src/Context";
 import { DecimalPrecision } from "../../src/utils/FormatEnums";
@@ -40,28 +37,6 @@ describe("KindOfQuantity", () => {
     label: "SomeDisplayLabel",
     description: "A really long description...",
   };
-
-  describe("accept", () => {
-    let testKoq: KindOfQuantity;
-    let schema: Schema;
-    beforeEach(() => {
-      schema = new Schema(new SchemaContext(), "TestSchema", 1, 2, 3);
-      testKoq = new KindOfQuantity(schema, "TestKindOfQuantity");
-    });
-
-    it("should call visitKindOfQuantity on a SchemaItemVisitor object", async () => {
-      expect(testKoq).to.exist;
-      const mockVisitor = { visitKindOfQuantity: sinon.spy() };
-      await testKoq.accept(mockVisitor);
-      expect(mockVisitor.visitKindOfQuantity.calledOnce).to.be.true;
-      expect(mockVisitor.visitKindOfQuantity.calledWithExactly(testKoq)).to.be.true;
-    });
-
-    it("should safely handle a SchemaItemVisitor without visitKindOfQuantity defined", async () => {
-      expect(testKoq).to.exist;
-      await testKoq.accept({});
-    });
-  });
 
   describe("deserialization", () => {
     let context: SchemaContext;

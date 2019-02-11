@@ -35,8 +35,22 @@ const testFormatSchema = {
       schemaItemType: "Phenomenon",
       definition: "LENGTH(1)",
     },
+    PERCENTAGE: {
+      schemaItemType: "Phenomenon",
+      definition: "NUMBER",
+    },
     USCustom: {
       schemaItemType: "UnitSystem",
+    },
+    SI: {
+      schemaItemType: "UnitSystem",
+    },
+    M: {
+      schemaItemType: "Unit",
+      label: "m",
+      phenomenon: "Formats.Length",
+      unitSystem: "Formats.SI",
+      definition: "M",
     },
     MILE: {
       schemaItemType: "Unit",
@@ -76,6 +90,13 @@ const testFormatSchema = {
       phenomenon: "Formats.Length",
       unitSystem: "Formats.USCustom",
       definition: "[MILLI]*IN",
+    },
+    PERCENT: {
+      schemaItemType: "Unit",
+      label: "%",
+      phenomenon: "Formats.PERCENTAGE",
+      unitSystem: "Formats.USCustom",
+      definition: "ONE",
     },
     DefaultReal: {
       schemaItemType: "Format",

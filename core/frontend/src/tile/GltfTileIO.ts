@@ -28,7 +28,7 @@ import {
 } from "@bentley/imodeljs-common";
 import { Id64String, assert, JsonUtils, utf8ToString } from "@bentley/bentleyjs-core";
 import { Range3d, Point2d, Point3d, Vector3d, Transform, Matrix3d, Angle } from "@bentley/geometry-core";
-import { RenderSystem, RenderGraphic, GraphicBranch, PackedFeatureTable } from "../render/System";
+import { InstancedGraphicParams, RenderSystem, RenderGraphic, GraphicBranch, PackedFeatureTable } from "../render/System";
 import { imageElementFromImageSource, getImageSourceFormatForMimeType } from "../ImageUtil";
 import { IModelConnection } from "../IModelConnection";
 // Defer Draco for now.   import { DracoDecoder } from "./DracoDecoder";
@@ -341,7 +341,7 @@ export namespace GltfTileIO {
     protected get _isClassifier(): boolean { return BatchType.Classifier === this._type; }
 
     /** @hidden */
-    protected readGltfAndCreateGraphics(isLeaf: boolean, featureTable: FeatureTable, contentRange: ElementAlignedBox3d, transformToRoot?: Transform, sizeMultiplier?: number): GltfTileIO.ReaderResult {
+    protected readGltfAndCreateGraphics(isLeaf: boolean, featureTable: FeatureTable, contentRange: ElementAlignedBox3d, transformToRoot?: Transform, sizeMultiplier?: number, instances?: InstancedGraphicParams): GltfTileIO.ReaderResult {
       if (this._isCanceled)
         return { readStatus: TileIO.ReadStatus.Canceled, isLeaf, sizeMultiplier };
 
@@ -357,7 +357,7 @@ export namespace GltfTileIO {
       let readStatus: TileIO.ReadStatus = TileIO.ReadStatus.InvalidTileData;
       for (const nodeKey of Object.keys(this._nodes))
         if (!childNodes.has(nodeKey))
-          if (TileIO.ReadStatus.Success !== (readStatus = this.readNodeAndCreateGraphics(renderGraphicList, this._nodes[nodeKey], featureTable, undefined)))
+          if (TileIO.ReadStatus.Success !== (readStatus = this.readNodeAndCreateGraphics(renderGraphicList, this._nodes[nodeKey], featureTable, undefined, instances)))
             return { readStatus, isLeaf };
 
       if (0 === renderGraphicList.length)
@@ -387,7 +387,7 @@ export namespace GltfTileIO {
         renderGraphic,
       };
     }
-    private readNodeAndCreateGraphics(renderGraphicList: RenderGraphic[], node: any, featureTable: FeatureTable, parentTransform: Transform | undefined): TileIO.ReadStatus {
+    private readNodeAndCreateGraphics(renderGraphicList: RenderGraphic[], node: any, featureTable: FeatureTable, parentTransform: Transform | undefined, instances?: InstancedGraphicParams): TileIO.ReadStatus {
       if (undefined === node)
         return TileIO.ReadStatus.InvalidTileData;
 
@@ -412,11 +412,11 @@ export namespace GltfTileIO {
           let renderGraphic: RenderGraphic | undefined;
           if (!geometryCollection.isEmpty) {
             if (1 === geometryCollection.meshes.length) {
-              renderGraphic = geometryCollection.meshes[0].getGraphics(meshGraphicArgs, this._system);
+              renderGraphic = geometryCollection.meshes[0].getGraphics(meshGraphicArgs, this._system, instances);
             } else {
               const thisList: RenderGraphic[] = [];
               for (const mesh of geometryCollection.meshes) {
-                renderGraphic = mesh.getGraphics(meshGraphicArgs, this._system);
+                renderGraphic = mesh.getGraphics(meshGraphicArgs, this._system, instances);
                 if (undefined !== renderGraphic)
                   thisList.push(renderGraphic!);
               }
@@ -436,7 +436,7 @@ export namespace GltfTileIO {
       }
       if (node.children) {
         for (const child of node.children)
-          this.readNodeAndCreateGraphics(renderGraphicList, this._nodes[child], featureTable, thisTransform);
+          this.readNodeAndCreateGraphics(renderGraphicList, this._nodes[child], featureTable, thisTransform, instances);
       }
       return TileIO.ReadStatus.Success;
     }

@@ -54,6 +54,17 @@ export abstract class DiagnosticReporterBase implements IDiagnosticReporter {
    */
   protected abstract reportDiagnostic(diagnostic: AnyDiagnostic, messageText: string): void;
 
+  /**
+   * Helper method that formats string with provided arguments where the place holders
+   * are in the the format '{0}', '{1}', etc.
+   * @param text The text to format.
+   * @param args The arguments to place in the text.
+   * @param baseIndex The base index for the args, used for validation (typically 0, which is the default).
+   */
+  protected formatStringFromArgs(text: string, args: ArrayLike<string>, baseIndex = 0): string {
+    return text.replace(/{(\d+)}/g, (_match, index: string) => this.assertDefined(args[+index + baseIndex]));
+  }
+
   private formatMessage(diagnostic: AnyDiagnostic): string {
     let translatedMessage = this.translateMessage(diagnostic);
 
@@ -72,14 +83,10 @@ export abstract class DiagnosticReporterBase implements IDiagnosticReporter {
   }
 
   private getTranslationKey(diagnostic: AnyDiagnostic): string {
-    return baseTranslationKey + "." + diagnostic.key;
+    return baseTranslationKey + "." + diagnostic.code;
   }
 
-  private formatStringFromArgs(text: string, args: ArrayLike<string>, baseIndex = 0): string {
-    return text.replace(/{(\d+)}/g, (_match, index: string) => this.assertDefined(args[+index + baseIndex]));
-  }
-
-  private  assertDefined<T>(value: T | null | undefined, message?: string): T {
+  private assertDefined<T>(value: T | null | undefined, message?: string): T {
     if (value === undefined || value === null) return assert(false, message) as never;
     return value;
   }

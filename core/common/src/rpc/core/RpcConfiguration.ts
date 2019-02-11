@@ -35,10 +35,10 @@ export abstract class RpcConfiguration {
   }
 
   /** Obtains the instance of an RPC configuration class. */
-  public static obtain<T extends RpcConfiguration>(constructor: { new(): T }): T {
-    let instance = (constructor as any)[INSTANCE] as T;
+  public static obtain<T extends RpcConfiguration>(configurationConstructor: { new(): T }): T {
+    let instance = (configurationConstructor as any)[INSTANCE] as T;
     if (!instance)
-      instance = (constructor as any)[INSTANCE] = new constructor();
+      instance = (configurationConstructor as any)[INSTANCE] = new configurationConstructor();
 
     return instance;
   }

@@ -358,8 +358,8 @@ public cancelAllTileLoads(): void {
   public get areAllTileTreesLoaded(): boolean {
     let allLoaded = true;
     this.forEachTileTreeModel((model) => {
-      const loadStatus = model.loadStatus;
-      if (loadStatus !== TileTree.LoadStatus.Loaded)
+      // Loaded or NotFound qualify as "loaded" - either the load succeeded or failed.
+      if (model.loadStatus < TileTree.LoadStatus.Loaded)
         allLoaded = false;
     });
     return allLoaded;
@@ -1088,7 +1088,7 @@ public cancelAllTileLoads(): void {
   }
 
   private addModelToScene(model: TileTreeModelState, context: SceneContext): void {
-    model.loadTileTree();
+    model.loadTileTree(context.viewFlags.edgesRequired(), this.scheduleScript ? this.scheduleScript.getModelAnimationId(model.treeModelId) : undefined);
     const tileTree = model.tileTree;
     if (undefined !== tileTree) {
       tileTree.drawScene(context);
@@ -1710,8 +1710,13 @@ export class SpatialViewState extends ViewState3d {
     const range = new Range3d();
     this.forEachTileTreeModel((model: TileTreeModelState) => {   // ...if we don't want to fit context reality mdoels this should cal forEachSpatialTileTreeModel...
       const tileTree = model.tileTree;
-      if (tileTree !== undefined && tileTree.rootTile !== undefined) {   // can we assume that a loaded model
-        range.extendRange(tileTree.rootTile.computeWorldContentRange());
+      if (tileTree !== undefined && tileTree.rootTile !== undefined) {
+        const contentRange = tileTree.rootTile.computeWorldContentRange();
+        assert(!contentRange.isNull);
+        assert(contentRange.intersectsRange(this.iModel.projectExtents));
+
+        range.extendRange(contentRange);
+
       }
     });
 
@@ -1751,14 +1756,7 @@ export class SpatialViewState extends ViewState3d {
   }
   public forEachTileTreeModel(func: (model: TileTreeModelState) => void): void {
     this.displayStyle.forEachContextRealityModel((model: TileTreeModelState) => func(model));
-    this.forEachSpatialTileTreeModel((model: TileTreeModelState) => func(model));
-  }
-
-  public forEachSpatialTileTreeModel(func: (model: TileTreeModelState) => void): void {
-    if (this.scheduleScript && this.scheduleScript.containsAnimation)
-      this.scheduleScript.forEachAnimationModel((model: TileTreeModelState) => func(model));
-    else
-      this.forEachModel((model: GeometricModelState) => func(model));
+    this.forEachModel((model: TileTreeModelState) => func(model));
   }
 }
 
@@ -1819,7 +1817,7 @@ export abstract class ViewState2d extends ViewState {
     if (undefined === this._viewedExtents) {
       const model = this.iModel.models.getLoaded(this.baseModelId);
       if (undefined !== model && model.isGeometricModel) {
-        const tree = (model as GeometricModelState).getOrLoadTileTree();
+        const tree = (model as GeometricModelState).getOrLoadTileTree(true);
         if (undefined !== tree) {
           this._viewedExtents = Range3d.create(tree.range.low, tree.range.high);
           tree.location.multiplyRange(this._viewedExtents, this._viewedExtents);

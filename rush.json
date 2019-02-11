@@ -1,6 +1,6 @@
 {
   "rushVersion": "5.5.4",
-  "pnpmVersion": "2.17.3",
+  "pnpmVersion": "2.25.6",
   "nodeSupportedVersionRange": ">=10.6.0 <11.0.0",
   "projectFolderMinDepth": 2,
   "ensureConsistentVersions": true,

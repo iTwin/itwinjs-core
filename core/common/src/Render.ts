@@ -569,6 +569,17 @@ export class ViewFlags {
     }
     return true;
   }
+  /** @hidden */
+  public edgesRequired(): boolean {
+    switch (this.renderMode) {
+      case RenderMode.SolidFill:
+      case RenderMode.HiddenLine:
+      case RenderMode.Wireframe:
+        return true;
+      case RenderMode.SmoothShade:
+        return this.visibleEdges;
+    }
+  }
 
   public toJSON(): ViewFlagProps {
     const out: ViewFlagProps = {};

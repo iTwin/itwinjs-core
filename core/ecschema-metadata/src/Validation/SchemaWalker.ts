@@ -4,12 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { SchemaItemType } from "../ECObjects";
-import { ISchemaPartVisitor } from "../Interfaces";
 import { ECClass } from "../Metadata/Class";
 import { RelationshipClass } from "../Metadata/RelationshipClass";
 import { SchemaItem } from "../Metadata/SchemaItem";
-import { SchemaPartVisitorHelper } from "../SchemaPartVisitorHelper";
-import { SchemaContext } from "./../Context";
+import { ISchemaPartVisitor, SchemaPartVisitorDelegate } from "../SchemaPartVisitorDelegate";
 import { Schema } from "./../Metadata/Schema";
 
 /**
@@ -18,8 +16,7 @@ import { Schema } from "./../Metadata/Schema";
  * the traversal process via Visitors to allow for custom processing of the schema elements.
  */
 export class SchemaWalker {
-  private _context: SchemaContext;
-  private _visitorHelper: SchemaPartVisitorHelper;
+  private _visitorHelper: SchemaPartVisitorDelegate;
 
   // This is a cache of the schema we are traversing. The schema also exists within the _context but in order
   // to not have to go back to the context every time we use this cache.
@@ -28,11 +25,9 @@ export class SchemaWalker {
   /**
    * Initializes a new SchemaWalker instance.
    * @param visitor An ISchemaWalkerVisitor implementation whose methods will be called during schema traversal.
-   * @param context The SchemaContext instance. Maybe null.
    */
-  constructor(visitor: ISchemaPartVisitor, context?: SchemaContext) {
-    this._context = (undefined !== context) ? context : new SchemaContext();
-    this._visitorHelper = new SchemaPartVisitorHelper(visitor);
+  constructor(visitor: ISchemaPartVisitor) {
+    this._visitorHelper = new SchemaPartVisitorDelegate(visitor);
   }
 
   /**
@@ -41,9 +36,6 @@ export class SchemaWalker {
    */
   public async traverseSchema<T extends Schema>(schema: T): Promise<T> {
     this._schema = schema;
-
-    // Need to add this schema to the context to be able to locate schemaItems within the context.
-    await this._context.addSchema(schema);
 
     await this._visitorHelper.visitSchema(schema);
     await this._visitorHelper.visitSchemaPart(schema);

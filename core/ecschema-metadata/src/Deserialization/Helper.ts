@@ -8,7 +8,7 @@ import { SchemaReferenceProps, ClassProps, RelationshipConstraintProps, Property
 import { SchemaContext } from "./../Context";
 import { parsePrimitiveType, parseSchemaItemType, SchemaItemType } from "./../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "./../Exception";
-import { AnyClass, AnySchemaItem, SchemaDeserializationVisitor } from "./../Interfaces";
+import { AnyClass, AnySchemaItem } from "./../Interfaces";
 import { ECClass, MutableClass } from "./../Metadata/Class";
 import { Constant } from "./../Metadata/Constant";
 import { CustomAttribute } from "./../Metadata/CustomAttribute";
@@ -24,6 +24,7 @@ import { SchemaItem } from "./../Metadata/SchemaItem";
 import { Unit } from "./../Metadata/Unit";
 import { SchemaKey, ECVersion, SchemaItemKey } from "./../SchemaKey";
 import { getItemNamesFromFormatString } from "../utils/FormatEnums";
+import { SchemaPartVisitorDelegate, ISchemaPartVisitor } from "../SchemaPartVisitorDelegate";
 
 type AnyCAContainer = Schema | ECClass | Property | RelationshipConstraint;
 type AnyMutableCAContainer = MutableSchema | MutableClass | MutableProperty | MutableRelationshipConstraint;
@@ -35,7 +36,7 @@ type AnyMutableCAContainer = MutableSchema | MutableClass | MutableProperty | Mu
  */
 export class SchemaReadHelper<T = unknown> {
   private _context: SchemaContext;
-  private _visitor?: SchemaDeserializationVisitor;
+  private _visitorHelper?: SchemaPartVisitorDelegate;
   private _parserType: AbstractParserConstructor<T, unknown>;
   private _parser!: AbstractParser<unknown>;
 
@@ -43,9 +44,9 @@ export class SchemaReadHelper<T = unknown> {
   // to not have to go back to the context every time we use this cache.
   private _schema?: Schema;
 
-  constructor(parserType: AbstractParserConstructor<T>, context?: SchemaContext, visitor?: SchemaDeserializationVisitor) {
+  constructor(parserType: AbstractParserConstructor<T>, context?: SchemaContext, visitor?: ISchemaPartVisitor) {
     this._context = (undefined !== context) ? context : new SchemaContext();
-    this._visitor = visitor;
+    this._visitorHelper = visitor ? new SchemaPartVisitorDelegate(visitor) : undefined;
     this._parserType = parserType;
   }
 
@@ -55,6 +56,14 @@ export class SchemaReadHelper<T = unknown> {
    * @param rawSchema The serialized data to use to populate the Schema.
    */
   public async readSchema<U extends Schema>(schema: U, rawSchema: T): Promise<U> {
+    // Ensure context matches schema context
+    if (schema.context) {
+      if (this._context !== schema.context)
+        throw new ECObjectsError(ECObjectsStatus.DifferentSchemaContexts, "The SchemaContext of the schema must be the same SchemaContext held by the SchemaReadHelper.");
+    } else {
+      (schema as Schema as MutableSchema).setContext(this._context);
+    }
+
     this._parser = new this._parserType(rawSchema);
 
     // Loads all of the properties on the Schema object
@@ -71,8 +80,8 @@ export class SchemaReadHelper<T = unknown> {
       await this.loadSchemaReference(reference);
     }
 
-    if (this._visitor && this._visitor.visitEmptySchema)
-      await this._visitor.visitEmptySchema(schema);
+    if (this._visitorHelper)
+      await this._visitorHelper.visitSchema(schema, false);
 
     // Load all schema items
     for (const [itemName, itemType, rawItem] of this._parser.getItems()) {
@@ -82,15 +91,15 @@ export class SchemaReadHelper<T = unknown> {
         continue;
 
       const loadedItem = await this.loadSchemaItem(schema, itemName, itemType, rawItem);
-      if (loadedItem && this._visitor) {
-        await loadedItem.accept(this._visitor);
+      if (loadedItem && this._visitorHelper) {
+        await this._visitorHelper.visitSchemaPart(loadedItem);
       }
     }
 
     await this.loadCustomAttributes(schema, this._parser.getSchemaCustomAttributes());
 
-    if (this._visitor && this._visitor.visitFullSchema)
-      await this._visitor.visitFullSchema(schema);
+    if (this._visitorHelper)
+      await this._visitorHelper.visitSchema(schema);
 
     return schema;
   }
@@ -117,8 +126,8 @@ export class SchemaReadHelper<T = unknown> {
       this.loadSchemaReferenceSync(reference);
     }
 
-    if (this._visitor && this._visitor.visitEmptySchemaSync)
-      this._visitor.visitEmptySchemaSync(schema);
+    if (this._visitorHelper)
+      this._visitorHelper.visitSchemaSync(schema, false);
 
     // Load all schema items
     for (const [itemName, itemType, rawItem] of this._parser.getItems()) {
@@ -128,15 +137,15 @@ export class SchemaReadHelper<T = unknown> {
         continue;
 
       const loadedItem = this.loadSchemaItemSync(schema, itemName, itemType, rawItem);
-      if (loadedItem && this._visitor) {
-        loadedItem.acceptSync(this._visitor);
+      if (loadedItem && this._visitorHelper) {
+        this._visitorHelper.visitSchemaPartSync(loadedItem);
       }
     }
 
     this.loadCustomAttributesSync(schema, this._parser.getSchemaCustomAttributes());
 
-    if (this._visitor && this._visitor.visitFullSchemaSync)
-      this._visitor.visitFullSchemaSync(schema);
+    if (this._visitorHelper)
+      this._visitorHelper.visitSchemaSync(schema);
 
     return schema;
   }
@@ -340,8 +349,8 @@ export class SchemaReadHelper<T = unknown> {
       const foundItem = this._parser.findItem(itemName);
       if (foundItem) {
         const schemaItem = await this.loadSchemaItem(this._schema!, ...foundItem);
-        if (!skipVisitor && schemaItem && this._visitor) {
-          await schemaItem.accept(this._visitor);
+        if (!skipVisitor && schemaItem && this._visitorHelper) {
+          await this._visitorHelper.visitSchemaPart(schemaItem);
         }
         return schemaItem;
       }
@@ -372,8 +381,8 @@ export class SchemaReadHelper<T = unknown> {
       const foundItem = this._parser.findItem(itemName);
       if (foundItem) {
         const schemaItem = this.loadSchemaItemSync(this._schema!, ...foundItem);
-        if (!skipVisitor && schemaItem && this._visitor) {
-          schemaItem.acceptSync(this._visitor);
+        if (!skipVisitor && schemaItem && this._visitorHelper) {
+          this._visitorHelper.visitSchemaPartSync(schemaItem);
         }
         return schemaItem;
       }
@@ -561,8 +570,8 @@ export class SchemaReadHelper<T = unknown> {
       await this.loadPropertyTypes(classObj, propName, propType, rawProp);
     }
 
-    if (baseClass && this._visitor)
-      await baseClass.accept(this._visitor);
+    if (baseClass && this._visitorHelper)
+      await this._visitorHelper.visitSchemaPart(baseClass);
 
     await this.loadCustomAttributes(classObj, this._parser.getClassCustomAttributes(rawClass));
   }
@@ -588,8 +597,8 @@ export class SchemaReadHelper<T = unknown> {
       this.loadPropertyTypesSync(classObj, propName, propType, rawProp);
     }
 
-    if (baseClass && this._visitor)
-      baseClass.acceptSync(this._visitor);
+    if (baseClass && this._visitorHelper)
+      this._visitorHelper.visitSchemaPartSync(baseClass);
 
     this.loadCustomAttributesSync(classObj, this._parser.getClassCustomAttributes(rawClass));
   }
@@ -638,8 +647,8 @@ export class SchemaReadHelper<T = unknown> {
     const appliesToClass = await this.findSchemaItem(mixinProps.appliesTo, true);
 
     await this.loadClass(mixin, mixinProps, rawMixin);
-    if (appliesToClass && this._visitor)
-      await appliesToClass.accept(this._visitor);
+    if (appliesToClass && this._visitorHelper)
+      await this._visitorHelper.visitSchemaPart(appliesToClass);
   }
 
   /**
@@ -652,8 +661,8 @@ export class SchemaReadHelper<T = unknown> {
     const appliesToClass = this.findSchemaItemSync(mixinProps.appliesTo, true);
 
     this.loadClassSync(mixin, mixinProps, rawMixin);
-    if (appliesToClass && this._visitor)
-      appliesToClass.acceptSync(this._visitor);
+    if (appliesToClass && this._visitorHelper)
+      this._visitorHelper.visitSchemaPartSync(appliesToClass);
   }
 
   /**

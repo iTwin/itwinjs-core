@@ -8,7 +8,7 @@ import { IModelError, TileTreeProps, TileProps, ViewFlag, ViewFlags, RenderMode,
 import { IModelConnection } from "../IModelConnection";
 import { BentleyStatus, assert, Guid, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { TransformProps, Range3dProps, Range3d, Transform, Point3d, Vector3d, Matrix3d } from "@bentley/geometry-core";
-import { RealityDataServicesClient, AccessToken, getArrayBuffer, getJson } from "@bentley/imodeljs-clients";
+import { RealityDataServicesClient, AccessToken, getArrayBuffer, getJson, RealityData } from "@bentley/imodeljs-clients";
 import { TileTree, TileTreeState, Tile, TileLoader } from "./TileTree";
 import { TileRequest } from "./TileRequest";
 import { IModelApp } from "../IModelApp";
@@ -208,20 +208,44 @@ interface RDSClientProps {
 /**
  * ###TODO temporarly here for testing, needs to be moved to the clients repo
  * @hidden
+ * This class encapsulates access to a reality data wether it be from local access, http or RDS
+ * The url provided at the creation is parsed to determine if this is a RDS (ProjectWise Context Share) reference.
+ * If not then it is considered local (ex: C:\temp\TileRoot.json) or plain http access (http://someserver.com/data/TileRoot.json)
+ * There is a one to one relationship between a reality data and the instances of present class.
  */
 export class RealityModelTileClient {
-  public readonly rdsProps?: RDSClientProps;
-  private _baseUrl: string = "";
-  private readonly _token?: AccessToken;
-  private static _client = new RealityDataServicesClient();
+  public readonly rdsProps?: RDSClientProps; // For reality data stored on PW Context Share only. If undefined then Reality Data is not on Context Share.
+  private _realityData?: RealityData;        // For reality data stored on PW Context Share only.
+  private _baseUrl: string = "";             // For use by all Reality Data. For RD stored on PW Context Share, represents the portion from the root of the Azure Blob Container
+  private readonly _token?: AccessToken;     // Only used for accessing PW Context Share.
+  // #TODO Alain Robert - The following member must be modified as it is not stateless and contains cache data to last accessed RD on PW Context Share (NOT Threadsafe!)
+  private static _client = new RealityDataServicesClient();  // WSG Client for accessing Reality Data on PW Context Share
 
   // ###TODO we should be able to pass the projectId / tileId directly, instead of parsing the url
+  // But if the present can also be used by non PW Context Share stored data then the url is required and token is not. Possibly two classes inheriting from common interface.
   constructor(url: string, accessToken?: AccessToken) {
-    this.rdsProps = this.parseUrl(url);
+    this.rdsProps = this.parseUrl(url); // Note that returned is undefined if url does not refer to a PW Context Share reality data.
     this._token = accessToken;
   }
 
+  private async initializeRDSRealityData(alctx: ActivityLoggingContext): Promise<void> {
+    if (undefined !== this.rdsProps && undefined !== this._token) {
+      if (!this._realityData) {
+        // TODO Temporary fix ... the root document may not be located at the root. We need to set the base URL even for RD stored on server
+        // though this base URL is only the part relative to the root of the blob contining the data.
+        const realityDatas: RealityData[] = await RealityModelTileClient._client.getRealityData(alctx, this._token, this.rdsProps.projectId, this.rdsProps.tilesId);
+
+        this._realityData = realityDatas[0];
+
+        // ###TODO Alain Robert... A reality data that has not root document set should not be considered.
+        const rootDocument: string = (this._realityData!.rootDocument ? this._realityData!.rootDocument as string : "");
+        this.setBaseUrl(rootDocument);
+      }
+    }
+  }
+
   // ###TODO temporary means of extracting the tileId and projectId from the given url
+  // This is the method that determines if the url refers to Reality Data stored on PW Context Share. If not then undefined is returned.
   private parseUrl(url: string): RDSClientProps | undefined {
     const urlParts = url.split("/").map((entry: string) => entry.replace(/%2D/g, "-"));
     const tilesId = urlParts.find(Guid.isGuid);
@@ -239,40 +263,68 @@ export class RealityModelTileClient {
     return props;
   }
 
-  // this is only used for accessing locally served reality tiles.
+  // This is to set the root url fromt he provided root document path.
+  // If the root document is stored on PW Context Share then the root document property of the Reality Data is provided,
+  // otherwise the full path to root document is given.
+  // The base URL contains the base URL from which tile relative path are constructed.
   // The tile's path root will need to be reinserted for child tiles to return a 200
   private setBaseUrl(url: string): void {
     const urlParts = url.split("/");
     urlParts.pop();
-    this._baseUrl = urlParts.join("/") + "/";
+    if (urlParts.length === 0)
+      this._baseUrl = "";
+    else
+      this._baseUrl = urlParts.join("/") + "/";
   }
 
+  // ### TODO. Technically the url should not be required. If the reality data encapsulated is stored on PW Context Share then
+  // the relative path to root document is extracted from the reality data. Otherwise the full url to root document should have been provided at
+  // the construction of the instance.
   public async getRootDocument(url: string): Promise<any> {
     const alctx = new ActivityLoggingContext(Guid.createValue());
     if (undefined !== this.rdsProps && undefined !== this._token)
       return RealityModelTileClient._client.getRootDocumentJson(alctx, this._token, this.rdsProps.projectId, this.rdsProps.tilesId);
 
+    // The following is only if the reality data is not stored on PW Context Share.
     this.setBaseUrl(url);
     return getJson(alctx, url);
   }
 
+  /**
+   * Returns the tile content. The path to the tile is relative to the base url of present reality data whatever the type.
+   */
   public async getTileContent(url: string): Promise<any> {
     const alctx = new ActivityLoggingContext(Guid.createValue());
-    if (undefined !== this.rdsProps && undefined !== this._token)
-      return RealityModelTileClient._client.getTileContent(alctx, this._token, this.rdsProps.projectId, this.rdsProps.tilesId, url);
+
+    await this.initializeRDSRealityData(alctx); // Only needed for PW Context Share data ... return immediately otherwise.
+
+    let tileUrl: string = url;
     if (undefined !== this._baseUrl) {
-      const tileUrl = this._baseUrl + url;
+      tileUrl = this._baseUrl + url;
+
+      if (undefined !== this.rdsProps && undefined !== this._token)
+        return RealityModelTileClient._client.getTileContent(alctx, this._token, this.rdsProps.projectId, this.rdsProps.tilesId, tileUrl);
+
       return getArrayBuffer(alctx, tileUrl);
     }
     throw new IModelError(BentleyStatus.ERROR, "Unable to determine reality data content url");
   }
 
+  /**
+   * Returns the tile content in json format. The path to the tile is relative to the base url of present reality data whatever the type.
+   */
   public async getTileJson(url: string): Promise<any> {
     const alctx = new ActivityLoggingContext(Guid.createValue());
-    if (undefined !== this.rdsProps && undefined !== this._token)
-      return RealityModelTileClient._client.getTileJson(alctx, this._token, this.rdsProps.projectId, this.rdsProps.tilesId, url);
+
+    await this.initializeRDSRealityData(alctx); // Only needed for PW Context Share data ... return immediately otherwise.
+
+    let tileUrl: string = url;
     if (undefined !== this._baseUrl) {
-      const tileUrl = this._baseUrl + url;
+      tileUrl = this._baseUrl + url;
+
+      if (undefined !== this.rdsProps && undefined !== this._token)
+        return RealityModelTileClient._client.getTileJson(alctx, this._token, this.rdsProps.projectId, this.rdsProps.tilesId, tileUrl);
+
       return getJson(alctx, tileUrl);
     }
     throw new IModelError(BentleyStatus.ERROR, "Unable to determine reality data json url");

@@ -183,9 +183,14 @@ export class DefaultToolSettings extends React.Component<TsProps, TsState> {
       // tslint:disable-next-line:no-console
       // console.log(`Using cached  editor for ${col.record.property.name}`);
     }
+    const labelStyle: React.CSSProperties = {
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "flex-end",
+    };
     return (
       <React.Fragment key={col.record.property.name}>
-        <div key={col.record.property.name + "-label"}>
+        <div style={labelStyle} key={col.record.property.name + "-label"}>
           {label}
         </div>
         <div key={col.record.property.name + "-editor"}>
@@ -217,7 +222,8 @@ export class DefaultToolSettings extends React.Component<TsProps, TsState> {
       const gridStyle: React.CSSProperties = {
         display: "grid",
         gridTemplateColumns: autoColArray.join(" "),
-        gridGap: "4px",
+        gridRowGap: "4px",
+        gridColumnGap: "6px",
       };
 
       return (

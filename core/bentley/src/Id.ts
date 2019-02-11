@@ -4,25 +4,30 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Ids */
 
-/**
- * A string containing a well-formed string representation of an [Id64]($bentleyjs-core).
- *
+/** A string containing a well-formed string representation of an [Id64]($bentleyjs-core).
  * See [Working with Ids]($docs/learning/common/Id64.md).
+ * @public
  */
 export type Id64String = string;
 
-/**
- * A string containing a well-formed string representation of a [Guid]($bentleyjs-core).
+/** A string containing a well-formed string representation of a [Guid]($bentleyjs-core).
+ * @public
  */
 export type GuidString = string;
 
-/** A set of [[Id64String]]s. */
+/** A set of [[Id64String]]s.
+ * @public
+ */
 export type Id64Set = Set<Id64String>;
 
-/** An array of [[Id64String]]s. */
+/** An array of [[Id64String]]s.
+ * @public
+ */
 export type Id64Array = Id64String[];
 
-/** Used as an argument to a function that can accept one or more [[Id64String]]s. */
+/** Used as an argument to a function that can accept one or more [[Id64String]]s.
+ * @public
+ */
 export type Id64Arg = Id64String | Id64Set | Id64Array;
 
 function toHex(str: string): number {
@@ -63,6 +68,7 @@ function isValidHexString(id: string, startIndex: number, len: number) {
  * The [[Id64String]] type alias is used to indicate function arguments, return types, and variables which are known to contain a well-formed representation of a 64-bit Id.
  *
  * See [Working with Ids]($docs/learning/common/Id64.md) for a detailed description and code examples.
+ * @public
  */
 export namespace Id64 {
   /** Extract the "local" Id portion of an Id64String, contained in the lower 40 bits of the 64-bit value. */
@@ -417,6 +423,7 @@ export namespace Id64 {
    *  - The inputs are unsigned 32-bit integers;
    *  - The inputs represent a valid Id64String (e.g., local ID is not zero).
    * @see [[Id64.Uint32Map]] for a similarly-optimized replacement for Map<Id64String, T>
+   * @public
    */
   export class Uint32Set {
     protected readonly _map = new Map<number, Set<number>>();
@@ -479,6 +486,7 @@ export namespace Id64 {
 
   /** A specialized replacement for Map<Id64String, T> optimized for performance-critical code.
    * @see [[Id64.Uint32Set]] for implementation details.
+   * @public
    */
   export class Uint32Map<T> {
     protected readonly _map = new Map<number, Map<number, T>>();
@@ -524,6 +532,7 @@ export namespace Id64 {
  * Generates unique [[Id64String]] values in sequence, which are guaranteed not to conflict with Ids associated with persistent elements or models.
  * This is useful for associating stable, non-persistent identifiers with things like [Decorator]($frontend)s.
  * A TransientIdSequence can generate a maximum of (2^40)-2 unique Ids.
+ * @public
  */
 export class TransientIdSequence {
   private _localId: number = 0;
@@ -537,6 +546,7 @@ export class TransientIdSequence {
  *
  * The [[GuidString]] type alias is used to indicate function arguments, return types, and variables which are known to
  * be in the GUID format.
+ * @public
  */
 export namespace Guid {
   const uuidPattern = new RegExp("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$");

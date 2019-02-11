@@ -8,7 +8,6 @@ import { SchemaItem } from "./SchemaItem";
 import { EnumerationProps, EnumeratorProps } from "./../Deserialization/JsonProps";
 import { PrimitiveType, SchemaItemType } from "./../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "./../Exception";
-import { SchemaItemVisitor } from "./../Interfaces";
 import { ECName } from "./../SchemaKey";
 
 export interface Enumerator<T> {
@@ -145,16 +144,6 @@ export class Enumeration extends SchemaItem {
 
   public async deserialize(enumerationProps: EnumerationProps) {
     this.deserializeSync(enumerationProps);
-  }
-
-  public async accept(visitor: SchemaItemVisitor) {
-    if (visitor.visitEnumeration)
-      await visitor.visitEnumeration(this);
-  }
-
-  public acceptSync(visitor: SchemaItemVisitor) {
-    if (visitor.visitEnumerationSync)
-      visitor.visitEnumerationSync(this);
   }
 }
 

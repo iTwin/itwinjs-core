@@ -31,7 +31,7 @@ import {
 } from "@bentley/imodeljs-common";
 import { DisplayParams } from "../DisplayParams";
 import { ColorMap } from "../ColorMap";
-import { RenderGraphic, RenderSystem } from "../../System";
+import { InstancedGraphicParams, RenderGraphic, RenderSystem } from "../../System";
 import { Triangle, TriangleList } from "../Primitives";
 import { VertexKeyProps } from "../VertexKey";
 
@@ -243,12 +243,12 @@ export class Mesh {
       this.features.toFeatureIndex(index);
   }
 
-  public getGraphics(args: MeshGraphicArgs, system: RenderSystem): RenderGraphic | undefined {
+  public getGraphics(args: MeshGraphicArgs, system: RenderSystem, instances?: InstancedGraphicParams): RenderGraphic | undefined {
     if (undefined !== this.triangles && this.triangles.length !== 0) {
       if (args.meshArgs.init(this))
-        return system.createTriMesh(args.meshArgs);
+        return system.createTriMesh(args.meshArgs, instances);
     } else if (undefined !== this.polylines && this.polylines.length !== 0 && args.polylineArgs.init(this)) {
-      return system.createIndexedPolylines(args.polylineArgs);
+      return system.createIndexedPolylines(args.polylineArgs, instances);
     }
 
     return undefined;

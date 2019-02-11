@@ -8,7 +8,7 @@ import * as React from "react";
 import * as _ from "lodash";
 import classnames from "classnames";
 import { ListItem, ListItemType } from "./ListPicker";
-import { IModelApp, Viewport, ViewState, SpatialViewState, SpatialModelState, SelectedViewportChangedArgs, IModelConnection } from "@bentley/imodeljs-frontend";
+import { IModelApp, Viewport, SpatialViewState, SpatialModelState, SelectedViewportChangedArgs, IModelConnection } from "@bentley/imodeljs-frontend";
 import { ModelQueryParams, ModelProps } from "@bentley/imodeljs-common";
 import { UiFramework } from "../UiFramework";
 import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager";
@@ -632,7 +632,6 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
     if (!(vp.view instanceof SpatialViewState))
       return;
 
-    const spatialView = vp.view as SpatialViewState;
     const modelQueryParams: ModelQueryParams = { from: SpatialModelState.getClassFullName(), wantPrivate: false };
     let curModelProps: ModelProps[] = new Array<ModelProps>();
 
@@ -644,7 +643,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
       const model: ListItem = {
         key: (modelProps.id) ? modelProps.id.toString() : "",
         name: (modelProps.name) ? modelProps.name : "",
-        enabled: modelProps.id ? spatialView.modelSelector.has(modelProps.id) : false,
+        enabled: modelProps.id ? (vp.view as SpatialViewState).modelSelector.has(modelProps.id) : false,
         type: ListItemType.Item,
       };
       models.push(model);
@@ -652,15 +651,14 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
 
     this._groups[0].items = models;
 
-    vp.changeView(spatialView);
+    vp.sync.invalidateScene();
 
     this.forceUpdate();
   }
 
   private async _updateCategoriesWithViewport(vp: Viewport) {
     // Query categories and add them to state
-    const view: ViewState = vp.view.clone();
-    const ecsql = "SELECT ECInstanceId as id, CodeValue as code, UserLabel as label FROM " + (view.is3d() ? "BisCore.SpatialCategory" : "BisCore.DrawingCategory");
+    const ecsql = "SELECT ECInstanceId as id, CodeValue as code, UserLabel as label FROM " + (vp.view.is3d() ? "BisCore.SpatialCategory" : "BisCore.DrawingCategory");
     let rows = [];
 
     if (this.props.iModelConnection)
@@ -671,7 +669,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
       const category: ListItem = {
         key: row.id as string,
         name: row.label ? row.label as string : row.code as string,
-        enabled: view.categorySelector.has(row.id as string),
+        enabled: vp.view.categorySelector.has(row.id as string),
         type: ListItemType.Item,
       };
       categories.push(category);
@@ -679,7 +677,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
 
     this._groups[1].items = categories;
 
-    vp.changeView(view);
+    vp.sync.invalidateScene();
 
     this.forceUpdate();
   }
@@ -692,20 +690,19 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
     IModelApp.viewManager.forEachViewport(async (vp: Viewport) => {
       if (!(vp.view instanceof SpatialViewState))
         return;
-      const view: SpatialViewState = vp.view.clone();
       if (checked)
         items.forEach(async (item) => {
           item.enabled = checked;
           if (!this.props.iModelConnection.models.getLoaded(item.key))
             await this.props.iModelConnection.models.load(item.key);
-          view.modelSelector.addModels(item.key);
+          (vp.view as SpatialViewState).modelSelector.addModels(item.key);
         });
       else
         items.forEach((item) => {
           item.enabled = checked;
-          view.modelSelector.dropModels(item.key);
+          (vp.view as SpatialViewState).modelSelector.dropModels(item.key);
         });
-      vp.changeView(view);
+      vp.sync.invalidateScene();
     });
   }
 
@@ -1088,6 +1085,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
                     onFilterApplied={this.onFilterApplied}
                     onMatchesCounted={this._onMatchesCounted}
                     activeMatchIndex={this.state.activeTree.activeMatchIndex}
+                    showDescriptions={true}
                     selectedNodes={this.state.activeTree.selectedNodes}
                     selectionMode={SelectionMode.Multiple}
                     onNodesSelected={this._onNodesSelected}

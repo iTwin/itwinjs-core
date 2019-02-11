@@ -10,7 +10,7 @@ import { DelayedPromiseWithProps } from "./../DelayedPromise";
 import { ConstantProps } from "./../Deserialization/JsonProps";
 import { SchemaItemType } from "./../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "./../Exception";
-import { LazyLoadedPhenomenon, SchemaItemVisitor } from "./../Interfaces";
+import { LazyLoadedPhenomenon } from "./../Interfaces";
 import { SchemaItemKey } from "./../SchemaKey";
 
 /**
@@ -79,15 +79,5 @@ export class Constant extends SchemaItem {
 
   public async deserialize(constantProps: ConstantProps) {
     this.deserializeSync(constantProps);
-  }
-
-  public async accept(visitor: SchemaItemVisitor) {
-    if (visitor.visitConstant)
-      await visitor.visitConstant(this);
-  }
-
-  public acceptSync(visitor: SchemaItemVisitor) {
-    if (visitor.visitConstantSync)
-      visitor.visitConstantSync(this);
   }
 }

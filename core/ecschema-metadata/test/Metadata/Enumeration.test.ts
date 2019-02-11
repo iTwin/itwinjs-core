@@ -3,9 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import * as sinon from "sinon";
 import { assert, expect } from "chai";
-
 import { Schema } from "../../src/Metadata/Schema";
 import { Enumeration, MutableEnumeration } from "./../../src/Metadata/Enumeration";
 import { ECObjectsError } from "./../../src/Exception";
@@ -13,28 +11,6 @@ import { PrimitiveType } from "./../../src/ECObjects";
 import { SchemaContext } from "../../src/Context";
 
 describe("Enumeration", () => {
-  describe("accept", () => {
-    let testEnum: Enumeration;
-
-    beforeEach(() => {
-      const schema = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);
-      testEnum = new Enumeration(schema, "TestEnumeration", PrimitiveType.Integer);
-    });
-
-    it("should call visitEnumeration on a SchemaItemVisitor object", async () => {
-      expect(testEnum).to.exist;
-      const mockVisitor = { visitEnumeration: sinon.spy() };
-      await testEnum.accept(mockVisitor);
-      expect(mockVisitor.visitEnumeration.calledOnce).to.be.true;
-      expect(mockVisitor.visitEnumeration.calledWithExactly(testEnum)).to.be.true;
-    });
-
-    it("should safely handle a SchemaItemVisitor without visitEnumeration defined", async () => {
-      expect(testEnum).to.exist;
-      await testEnum.accept({});
-    });
-  });
-
   describe("addEnumerator tests", () => {
     let testEnum: Enumeration;
     let testStringEnum: Enumeration;

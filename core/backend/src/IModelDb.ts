@@ -248,18 +248,11 @@ export class IModelDb extends IModel implements PagableECSql {
     const entry: UsageLogEntry = new UsageLogEntry(os.hostname(), UsageType.Trial);
     const userInfo = accessToken.getUserInfo();
     const featureTrackingInfo = userInfo ? userInfo.featureTracking : undefined;
-    let hostUserInfo: any;
-    try {
-      hostUserInfo = os.userInfo();
-    } catch (error) {
-      Logger.logError(loggingCategory, "Could not determine hostUserInfo for Usage Logging");
-    }
 
     entry.userInfo = {
       imsId: userInfo ? userInfo.id : "",
       ultimateSite: !featureTrackingInfo ? 0 : parseInt(featureTrackingInfo.ultimateSite, 10),
       usageCountryIso: !featureTrackingInfo ? "" : featureTrackingInfo.usageCountryIso,
-      hostUserName: hostUserInfo ? hostUserInfo.username : undefined,
     };
 
     entry.projectId = contextId;

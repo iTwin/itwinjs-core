@@ -30,6 +30,8 @@ export const enum ECObjectsStatus {
   InvalidSchemaXML = ECOBJECTS_ERROR_BASE + 20,
   InvalidSchemaString = ECOBJECTS_ERROR_BASE + 21,
   ClassNotFound = ECOBJECTS_ERROR_BASE + 22,
+  SchemaContextUndefined = ECOBJECTS_ERROR_BASE + 23,
+  DifferentSchemaContexts = ECOBJECTS_ERROR_BASE + 24,
 }
 
 export class ECObjectsError extends BentleyError {
@@ -60,6 +62,8 @@ export class ECObjectsError extends BentleyError {
       case ECObjectsStatus.MissingSchemaUrl: return this._appendMessage("ECObjectsStatus.MissingSchemaUrl");
       case ECObjectsStatus.UnableToLocateSchema: return this._appendMessage("ECObjectsStatus.UnableToLocateSchema");
       case ECObjectsStatus.ClassNotFound: return this._appendMessage("ECObjectsStatus.ClassNotFound");
+      case ECObjectsStatus.SchemaContextUndefined: return this._appendMessage("ECObjectsStatus.SchemaContextUndefined");
+      case ECObjectsStatus.DifferentSchemaContexts: return this._appendMessage("ECObjectsStatus.DifferentSchemaContexts");
       default:
         assert(false);
         /* istanbul ignore next */

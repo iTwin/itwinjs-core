@@ -662,7 +662,7 @@ export namespace Attachments {
       if (!viewedModel)
         return State.Empty;
 
-      viewedModel.getOrLoadTileTree();
+      viewedModel.getOrLoadTileTree(true);
       const loadStatus = viewedModel.loadStatus;
       if (loadStatus === TileTree.LoadStatus.Loaded) {
         attachment.tree = new Tree2d(viewedModel.iModel, attachment, view, viewedModel.tileTree!);

@@ -7,7 +7,6 @@ import { Schema } from "./Schema";
 import { SchemaItemProps } from "./../Deserialization/JsonProps";
 import { SchemaItemType, schemaItemTypeToString } from "./../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "./../Exception";
-import { SchemaItemVisitor } from "./../Interfaces";
 import { SchemaItemKey, ECVersion } from "./../SchemaKey";
 
 const SCHEMAURL3_2 = "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem";
@@ -106,15 +105,13 @@ export abstract class SchemaItem {
   /**
    * Indicates if the two SchemaItem objects are equal by comparing their respective [[key]] properties.
    * @param thisSchemaItem The first SchemaItem.
-   * @param thatSchemaItem The second SchemaItem.
+   * @param thatSchemaItemOrKey The second SchemaItem or SchemaItemKey.
    */
-  public static equalByKey(thisSchemaItem: SchemaItem, thatSchemaItem?: SchemaItem) {
-    if (!thatSchemaItem)
+  public static equalByKey(thisSchemaItem: SchemaItem, thatSchemaItemOrKey?: SchemaItem | SchemaItemKey) {
+    if (!thatSchemaItemOrKey)
       return true;
 
-    return thisSchemaItem.key.matches(thatSchemaItem.key);
+    const key = thatSchemaItemOrKey instanceof SchemaItem ? thatSchemaItemOrKey.key : thatSchemaItemOrKey;
+    return thisSchemaItem.key.matches(key);
   }
-
-  public abstract async accept(visitor: SchemaItemVisitor): Promise<void>;
-  public abstract acceptSync(visitor: SchemaItemVisitor): void;
 }

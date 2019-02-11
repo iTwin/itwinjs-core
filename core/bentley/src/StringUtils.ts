@@ -8,7 +8,7 @@
 // ###TODO use TextDecoder where available
 // From https://github.com/AnalyticalGraphicsInc/cesium/blob/master/Source/Core/getStringFromTypedArray.js
 // which is itself inspired by https://github.com/inexorabletash/text-encoding
-// @hidden
+/** @internal */
 namespace Utf8ToString {
   function inRange(a: number, min: number, max: number): boolean { return min <= a && a <= max; }
 
@@ -117,6 +117,7 @@ namespace Utf8ToString {
 /** Given an array of bytes containing a utf-8 string, convert to a string.
  * @param utf8: An array of utf-8 characters as a byte array
  * @returns An equivalent string, or undefined if the array does not contain a valid utf-8 string.
+ * @public
  */
 export function utf8ToString(utf8: Uint8Array): string | undefined {
   // ###TODO: if available: const decoder = new TextDecoder("utf-8");
@@ -128,6 +129,7 @@ export function utf8ToString(utf8: Uint8Array): string | undefined {
  * @param base64 The base-64-encoded string.
  * @returns the decoded byte array.
  * @throws DOMException if the length of the input string is not a multiple of 4.
+ * @public
  */
 export function base64StringToUint8Array(base64: string): Uint8Array {
   return new Uint8Array(atob(base64).split("").map((c) => c.charCodeAt(0)));

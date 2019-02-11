@@ -9,6 +9,7 @@ import { OrderedComparator } from "./Compare";
 /**
  * A function that, given a value of type T, returns a copy of that value. Such functions are used by various collection classes in the iModel.js library.
  * It is up to the function to decide how deeply or shallowly the value is cloned. For example, [[shallowClone]] simply returns the input.
+ * @public
  */
 export type CloneFunction<T> = (value: T) => T;
 
@@ -17,6 +18,7 @@ export type CloneFunction<T> = (value: T) => T;
  * Useful as a default argument for functions that can alternatively accept custom logic for cloning values of object type.
  * @param value The value to clone.
  * @returns the input value.
+ * @public
  */
 export function shallowClone<T>(value: T) { return value; }
 
@@ -26,6 +28,7 @@ export function shallowClone<T>(value: T) { return value; }
  * @param list An array of U already sorted according to the comparison criterion.
  * @param compare The function used to compare the value with elements in `list`.
  * @returns an object with 'index' corresponding to the computed position and 'equal' set to true if an equivalent element already exists at that index.
+ * @public
  */
 export function lowerBound<T, U = T>(value: T, list: U[], compare: OrderedComparator<T, U>): { index: number, equal: boolean } {
   let low = 0;
@@ -67,6 +70,7 @@ export function lowerBound<T, U = T>(value: T, list: U[], compare: OrderedCompar
  *
  * Modifying an element in a way that affects the comparison function will produce unpredictable results, the
  * most likely of which is that the array will cease to be sorted.
+ * @public
  */
 export class SortedArray<T> implements Iterable<T> {
   protected _array: T[] = [];

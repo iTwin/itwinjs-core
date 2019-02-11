@@ -22,12 +22,13 @@
  * @see Dictionary
  * @see IndexMap
  * @see PriorityQueue
+ * @public
  */
 export type OrderedComparator<T, U = T> = (lhs: T, rhs: U) => number;
 
 /**
  * An [[OrderedComparator]] for numbers that treats two numbers as equal if the absolute value of their difference is less than a specified tolerance.
- * @hidden
+ * @public
  */
 export function compareWithTolerance(a: number, b: number, tolerance = 0.1): number {
   if (a < b - tolerance)
@@ -38,16 +39,16 @@ export function compareWithTolerance(a: number, b: number, tolerance = 0.1): num
     return 0;
 }
 
-/** @hidden */
+/** @public */
 export function compareNumbers(a: number, b: number): number { return a - b; }
 
-/** @hidden */
+/** @public */
 export function compareBooleans(a: boolean, b: boolean): number { return a !== b ? (a < b ? -1 : 1) : 0; }
 
-/** @hidden */
+/** @public */
 export function compareStrings(a: string, b: string): number { return a === b ? 0 : (a < b ? -1 : 1); }
 
-/** @hidden */
+/** @public */
 export function comparePossiblyUndefined<T>(compareDefined: (lhs: T, rhs: T) => number, lhs?: T, rhs?: T): number {
   if (undefined === lhs)
     return undefined === rhs ? 0 : -1;
@@ -57,5 +58,5 @@ export function comparePossiblyUndefined<T>(compareDefined: (lhs: T, rhs: T) => 
     return compareDefined(lhs, rhs);
 }
 
-/** @hidden */
+/** @public */
 export function compareStringsOrUndefined(lhs?: string, rhs?: string): number { return comparePossiblyUndefined(compareStrings, lhs, rhs); }
