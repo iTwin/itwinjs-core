@@ -6,7 +6,7 @@
 
 import { RenderSchedule, RgbColor } from "@bentley/imodeljs-common";
 import { Range1d, Transform, Point3d, Vector3d, Matrix3d, Plane3dByOriginAndUnitNormal, ClipPlane, ConvexClipPlaneSet, UnionOfConvexClipPlaneSets, Point4d } from "@bentley/geometry-core";
-import { Id64String } from "@bentley/bentleyjs-core";
+import { Id64String, Id64 } from "@bentley/bentleyjs-core";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 import { IModelConnection } from "./IModelConnection";
 import { ClipPlanesVolume } from "./render/webgl/ClipVolume";
@@ -324,8 +324,10 @@ export namespace RenderScheduleState {
     public getSymbologyOverrides(overrides: FeatureSymbology.Overrides, time: number) {
       this.modelTimelines.forEach((entry) => entry.getSymbologyOverrides(overrides, time));
     }
-    public getModelAnimationId(modelId: Id64String | undefined): Id64String | undefined {
-      if (!modelId) return undefined;
+    public getModelAnimationId(modelId: Id64String): Id64String | undefined {
+      if (Id64.isTransient(modelId))
+        return undefined;
+
       for (const modelTimeline of this.modelTimelines)
         if (modelTimeline.modelId === modelId && modelTimeline.containsAnimation)
           return this.displayStyleId;

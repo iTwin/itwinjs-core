@@ -9,7 +9,17 @@ import {
   ClipVector, Transform, Point3d, ClipUtilities, PolyfaceBuilder, Point2d, IndexedPolyface, Range3d,
   IndexedPolyfaceVisitor, Triangulator, StrokeOptions, HalfEdgeGraph, HalfEdge, HalfEdgeMask,
 } from "@bentley/geometry-core";
-import { RenderGraphic, GraphicBranch, RenderSystem, RenderDiagnostics, RenderTarget, RenderClipVolume, GraphicList, PackedFeatureTable } from "../System";
+import {
+  InstancedGraphicParams,
+  RenderGraphic,
+  GraphicBranch,
+  RenderSystem,
+  RenderDiagnostics,
+  RenderTarget,
+  RenderClipVolume,
+  GraphicList,
+  PackedFeatureTable,
+} from "../System";
 import { SkyBox } from "../../DisplayStyleState";
 import { OnScreenTarget, OffScreenTarget } from "./Target";
 import { GraphicBuilder, GraphicType } from "../GraphicBuilder";
@@ -518,9 +528,9 @@ export class System extends RenderSystem {
   public createOffscreenTarget(rect: ViewRect): RenderTarget { return new OffScreenTarget(rect); }
   public createGraphicBuilder(placement: Transform, type: GraphicType, viewport: Viewport, pickableId?: Id64String): GraphicBuilder { return new PrimitiveBuilder(this, type, viewport, placement, pickableId); }
 
-  public createMesh(params: MeshParams): RenderGraphic | undefined { return MeshGraphic.create(params); }
-  public createPolyline(params: PolylineParams): RenderGraphic | undefined { return Primitive.create(() => PolylineGeometry.create(params)); }
-  public createPointString(params: PointStringParams): RenderGraphic | undefined { return Primitive.create(() => PointStringGeometry.create(params)); }
+  public createMesh(params: MeshParams, instances?: InstancedGraphicParams): RenderGraphic | undefined { return MeshGraphic.create(params, instances); }
+  public createPolyline(params: PolylineParams, instances?: InstancedGraphicParams): RenderGraphic | undefined { return Primitive.create(() => PolylineGeometry.create(params), instances); }
+  public createPointString(params: PointStringParams, instances?: InstancedGraphicParams): RenderGraphic | undefined { return Primitive.create(() => PointStringGeometry.create(params), instances); }
   public createPointCloud(args: PointCloudArgs): RenderGraphic | undefined { return Primitive.create(() => new PointCloudGeometry(args)); }
 
   public createGraphicList(primitives: RenderGraphic[]): RenderGraphic { return new GraphicsArray(primitives); }

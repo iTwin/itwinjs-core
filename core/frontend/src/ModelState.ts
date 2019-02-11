@@ -61,7 +61,7 @@ export class ModelState extends EntityState implements ModelProps {
 export interface TileTreeModelState {
   readonly tileTree: TileTree | undefined;
   readonly loadStatus: TileTree.LoadStatus;
-  readonly treeModelId: Id64String | undefined;    // Model Id or undefined if not a model (context reality model)
+  readonly treeModelId: Id64String;    // Model Id, or transient Id if not a model (context reality model)
   loadTileTree(edgesRequired: boolean, animationId?: Id64String, asClassifier?: boolean, classifierExpansion?: number): TileTree.LoadStatus;
 }
 /** Represents the front-end state of a [GeometricModel]($backend).
@@ -90,7 +90,7 @@ export abstract class GeometricModelState extends ModelState implements TileTree
   /** @hidden */
   public get isGeometricModel(): boolean { return true; }
   /** @hidden */
-  public get treeModelId(): Id64String | undefined { return this.id; }
+  public get treeModelId(): Id64String { return this.id; }
   /** @hidden  */
   public getOrLoadTileTree(edgesRequired: boolean): TileTree | undefined {
     if (undefined === this.tileTree)

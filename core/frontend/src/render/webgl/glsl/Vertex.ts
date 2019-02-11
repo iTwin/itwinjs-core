@@ -93,20 +93,26 @@ export function addModelViewMatrix(vert: VertexShaderBuilder): void {
 }
 
 export function addNormalMatrix(vert: VertexShaderBuilder) {
-  vert.addUniform("u_nmx", VariableType.Mat3, (prog) => {
-    prog.addGraphicUniform("u_nmx", (uniform, params) => {
-      const rotMat: Matrix3 | undefined = params.modelViewMatrix.getRotation();
-      if (undefined !== rotMat)
-        uniform.setMatrix3(rotMat);
+  if (vert.usesInstancedGeometry) {
+    vert.addGlobal("g_nmx", VariableType.Mat3);
+    vert.addInitializer("g_nmx = mat3(MAT_MV);");
+  } else {
+    vert.addUniform("u_nmx", VariableType.Mat3, (prog) => {
+      prog.addGraphicUniform("u_nmx", (uniform, params) => {
+        const rotMat: Matrix3 | undefined = params.modelViewMatrix.getRotation();
+        if (undefined !== rotMat)
+          uniform.setMatrix3(rotMat);
+      });
     });
-  });
+  }
 }
 
 function addInstanceMatrixRow(vert: VertexShaderBuilder, row: number) {
   // 3 rows per instance; 4 floats per row; 4 bytes per float.
   const floatsPerRow = 4;
-  const stride = floatsPerRow * 4; // in bytes
-  const offset = row * stride;
+  const bytesPerVertex = floatsPerRow * 4;
+  const offset = row * bytesPerVertex;
+  const stride = 3 * bytesPerVertex;
   const name = "a_instanceMatrixRow" + row;
   vert.addAttribute(name, VariableType.Vec4, (prog) => {
     prog.addAttribute(name, (attr, params) => {

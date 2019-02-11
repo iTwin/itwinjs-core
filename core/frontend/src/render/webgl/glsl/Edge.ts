@@ -36,8 +36,8 @@ const animateEndPoint = `g_otherPos.xyz += computeAnimationDisplacement(g_otherI
 `;
 
 const checkForSilhouetteDiscard = `
-  vec3 n0 = u_nmx * octDecodeNormal(a_normals.xy);
-  vec3 n1 = u_nmx * octDecodeNormal(a_normals.zw);
+  vec3 n0 = MAT_NORM * octDecodeNormal(a_normals.xy);
+  vec3 n1 = MAT_NORM * octDecodeNormal(a_normals.zw);
 
   if (0.0 == MAT_MVP[0].w) {
     return n0.z * n1.z > 0.0;           // orthographic.

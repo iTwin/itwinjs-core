@@ -17,17 +17,19 @@ export class ContextRealityModelState implements TileTreeModelState {
   protected _name: string;
   protected _tileTreeState: TileTreeState;
   protected _iModel: IModelConnection;
+  protected _modelId: Id64String;
   constructor(props: ContextRealityModelProps, iModel: IModelConnection) {
     this._name = props.name ? props.name : "";
     this._tilesetUrl = props.tilesetUrl;
-    this._tileTreeState = new TileTreeState(iModel, true, "");
+    this._modelId = iModel.transientIds.next;
+    this._tileTreeState = new TileTreeState(iModel, true, this._modelId);
     this._iModel = iModel;
   }
   public get name() { return this._name; }
   public get url() { return this._tilesetUrl; }
   public get tileTree(): TileTree | undefined { return this._tileTreeState.tileTree; }
   public get loadStatus(): TileTree.LoadStatus { return this._tileTreeState.loadStatus; }
-  public get treeModelId(): Id64String | undefined { return undefined; }
+  public get treeModelId(): Id64String { return this._modelId; }
   public loadTileTree(_edgesRequired: boolean, _animationId?: Id64String, _asClassifier?: boolean, _classifierExpansion?: number): TileTree.LoadStatus {
     const tileTreeState = this._tileTreeState;
     if (TileTree.LoadStatus.NotLoaded !== tileTreeState.loadStatus)
