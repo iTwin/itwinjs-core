@@ -27,7 +27,17 @@ export class Segment1d {
     this.x0 = x0;
     this.x1 = x1;
   }
+  /**
+   * replace both end values.
+   * @param x0 new x0 value
+   * @param x1 new y0 value
+   */
   public set(x0: number, x1: number) { this.x0 = x0, this.x1 = x1; }
+  /**
+   * shift (translate) the segment along its axis by adding `dx` to both `x0` and `x1`.
+   * @param dx value to add to both x0 and x1
+   */
+  public shift(dx: number) { this.x0 += dx, this.x1 += dx; }
   /**
    * create segment1d with given end values
    * @param x0 start value

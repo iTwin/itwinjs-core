@@ -86,6 +86,7 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
   private _surfaceNormals?: GrowableXYZArray;
 
   private _pointIndices?: GrowableFloat64Array;
+  private _uvIndices?: GrowableFloat64Array;
   private _normalIndices?: GrowableFloat64Array;
 
   /** return the points array (cloned). */
@@ -98,6 +99,7 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
   public get packedUVParams(): GrowableXYArray | undefined { return this._uvParams; }
   public get packedSurfaceNormals(): GrowableXYZArray | undefined { return this._surfaceNormals; }
   public get normalIndices(): GrowableFloat64Array | undefined { return this._normalIndices; }
+  public get paramIndices(): GrowableFloat64Array | undefined { return this._uvIndices; }
   public get pointIndices(): GrowableFloat64Array | undefined { return this._pointIndices; }
   /**
    * create and attach an array to record fractional data.
@@ -121,6 +123,18 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
       this._derivatives = new GrowableXYZArray();
     if (retainArrayContentsIfAlreadyPresent)
       this._derivatives.clear();
+  }
+
+  /**
+   * create and attach an array to record derivative data.
+   * @param retainArrayContentsIfAlreadyPresent if true and there is a prexisting array, leave the prior array contents in place.
+   *   If false and there is a preexisting array, leave the array there but clear its contents.
+   */
+  public initializeUVParamsArray(retainArrayContentsIfAlreadyPresent: boolean = false) {
+    if (!this._uvParams)
+      this._uvParams = new GrowableXYArray();
+    if (retainArrayContentsIfAlreadyPresent)
+      this._uvParams.clear();
   }
 
   private constructor() {
@@ -232,6 +246,18 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     this._normalIndices.clear();
     this._normalIndices.ensureCapacity(n);
     return this._normalIndices;
+  }
+
+  /** Ensure that the surfaceNormals array exists with no points but at least the capacity of the point array. */
+  public ensureEmptyUVIndices(): GrowableFloat64Array {
+    const n = this.numPoints();
+    if (!this._uvIndices) {
+      this._uvIndices = new GrowableFloat64Array(n);
+      return this._uvIndices;
+    }
+    this._uvIndices.clear();
+    this._uvIndices.ensureCapacity(n);
+    return this._uvIndices;
   }
 
   /** Ensure that the surfaceNormals array exists with no points but at least the capacity of the point array. */
@@ -1081,6 +1107,7 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
   /**
    * evaluate strokes at fractions indicated in a StrokeCountMap.
    * * The map must have an array of component counts corresponding to the segemnet of this linestring.
+   * * "fractions" in the output are mapped within a0,a1 of the map.componetData
    * @param map = stroke count data.
    * @param destLinestring = receiver linestring.
    * @return number of strokes added.  0 if `map.componentData` does not match the linestring
@@ -1094,7 +1121,6 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     const pointB = LineString3d._workPointB;
     const pointC = LineString3d._workPointC;
     const numParentPoint = points.length;
-    const numParentEdge = numParentPoint - 1;
     if (map.primitive && map.primitive === this && map.componentData && map.componentData.length + 1 === numParentPoint) {
       points.getPoint3dAt(0, pointA);
       for (let k = 0; k + 1 < numParentPoint; k++ , pointA.setFromPoint3d(pointB)) {
@@ -1105,9 +1131,10 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
         vectorAB.scale(m);
         for (let i = 0; i <= m; i++) {
           const fraction = i / m;
+          const outputFraction = segmentMap.fractionToA(fraction);
           destLinestring.addPoint(pointA.interpolate(fraction, pointB, pointC));
           if (needFractions)
-            destLinestring._fractions!.push((k + fraction) / numParentEdge);
+            destLinestring._fractions!.push((outputFraction));
           if (needDerivatives)
             destLinestring._derivatives!.push(vectorAB);
 

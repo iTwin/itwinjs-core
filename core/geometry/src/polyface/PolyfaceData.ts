@@ -127,6 +127,12 @@ export class PolyfaceData {
   public copyNormalTo(i: number, dest: Vector3d): void { if (this.normal) this.normal.atVector3dIndex(i, dest); }
   /** Copy the contents (not pointer) of param[i] into dest. */
   public copyParamTo(i: number, dest: Point2d): void { if (this.param) dest.setFrom(this.param[i]); }
+  /** test if normal at a specified index matches uv */
+  public isAlmostEqualParamIndexUV(index: number, u: number, v: number): boolean {
+    if (this.param !== undefined && index >= 0 && index < this.param.length)
+      return this.param[index].isAlmostEqualXY(u, v);
+    return false;
+  }
   /**
    * * Copy data from other to this.
    * * This is the essense of transfering coordinates spread throughout a large polyface into a visitor's single facet.

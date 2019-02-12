@@ -580,6 +580,20 @@ export class GrowableXYZArray extends IndexedXYZCollection {
     return undefined;
   }
 
+  /** Return the distance between points in distinct arrays. */
+  public static distanceBetweenPointsIn2Arrays(arrayA: GrowableXYZArray, i: number, arrayB: GrowableXYZArray, j: number): number | undefined {
+
+    if (i >= 0 && i < arrayA._xyzInUse && j >= 0 && j <= arrayB._xyzInUse) {
+      const i0 = 3 * i;
+      const j0 = 3 * j;
+      return Geometry.hypotenuseXYZ(
+        arrayB._data[j0] - arrayA._data[i0],
+        arrayB._data[j0 + 1] - arrayA._data[i0 + 1],
+        arrayB._data[j0 + 2] - arrayA._data[i0 + 2]);
+    }
+    return undefined;
+  }
+
   public static isAlmostEqual(dataA: GrowableXYZArray | undefined, dataB: GrowableXYZArray | undefined): boolean {
     if (dataA && dataB) {
       if (dataA.length !== dataB.length)
