@@ -14,9 +14,9 @@ import {
   StandaloneIModelRpcInterface,
   RpcManager,
   MobileRpcManager,
-  IModelUnitTestRpcInterface,
   WipRpcInterface,
 } from "@bentley/imodeljs-common";
+import { IModelUnitTestRpcInterface } from "./IModelUnitTestRpcInterface";
 import {
   TestRpcInterface,
   TestRpcInterface2,

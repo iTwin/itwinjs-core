@@ -203,10 +203,10 @@ export class IModelDb extends IModel implements PagableECSql {
   }
 
   /** Create an iModel on iModelHub */
-  public static async create(activity: ActivityLoggingContext, accessToken: AccessToken, contextId: string, fileName: string, args: CreateIModelProps): Promise<IModelDb> {
+  public static async create(activity: ActivityLoggingContext, accessToken: AccessToken, contextId: string, iModelName: string, args: CreateIModelProps): Promise<IModelDb> {
     activity.enter();
     IModelDb.onCreate.raiseEvent(accessToken, contextId, args);
-    const iModelId: string = await BriefcaseManager.create(activity, accessToken, contextId, fileName, args);
+    const iModelId: string = await BriefcaseManager.create(activity, accessToken, contextId, iModelName, args);
     return IModelDb.open(activity, accessToken, contextId, iModelId);
   }
 
@@ -349,7 +349,9 @@ export class IModelDb extends IModel implements PagableECSql {
   /** Event called when the iModel is about to be closed */
   public readonly onBeforeClose = new BeEvent<() => void>();
 
-  /** Get the in-memory handle of the native Db */
+  /** Get the in-memory handle of the native Db
+   * @hidden
+   */
   public get nativeDb(): IModelJsNative.DgnDb { return this.briefcase.nativeDb; }
 
   /** Get the briefcase Id of this iModel */
@@ -1041,13 +1043,6 @@ export class IModelDb extends IModel implements PagableECSql {
       this._snaps.delete(sessionId);
     }
   }
-
-  /** Execute a test from native code
-   * @param testName The name of the test
-   * @param params parameters for the test
-   * @hidden
-   */
-  public executeTest(testName: string, params: any): any { return JSON.parse(this.nativeDb.executeTest(testName, JSON.stringify(params))); }
 
   /** Get the IModel coordinate corresponding to each GeoCoordinate point in the input */
   public async getIModelCoordinatesFromGeoCoordinates(activity: ActivityLoggingContext, props: string): Promise<IModelCoordinatesResponseProps> {

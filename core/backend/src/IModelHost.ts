@@ -16,7 +16,6 @@ import { IModelJsFs } from "./IModelJsFs";
 import { IModelJsNative } from "./IModelJsNative";
 import { IModelReadRpcImpl } from "./rpc-impl/IModelReadRpcImpl";
 import { IModelTileRpcImpl } from "./rpc-impl/IModelTileRpcImpl";
-import { IModelUnitTestRpcImpl } from "./rpc-impl/IModelUnitTestRpcImpl";
 import { IModelWriteRpcImpl } from "./rpc-impl/IModelWriteRpcImpl";
 import { StandaloneIModelRpcImpl } from "./rpc-impl/StandaloneIModelRpcImpl";
 import { WipRpcImpl } from "./rpc-impl/WipRpcImpl";
@@ -135,7 +134,6 @@ export class IModelHost {
     IModelTileRpcImpl.register();
     IModelWriteRpcImpl.register();
     StandaloneIModelRpcImpl.register();
-    IModelUnitTestRpcImpl.register();
     WipRpcImpl.register();
 
     BisCore.registerSchema();

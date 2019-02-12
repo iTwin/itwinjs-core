@@ -114,13 +114,16 @@ class ModelSelectorDataProvider implements IPresentationTreeDataProvider {
    */
   public getNodes = _.memoize(async (parentNode?: TreeNodeItem, pageOptions?: PageOptions): Promise<DelayLoadedTreeNodeItem[]> => {
     const nodes = await this._baseProvider.getNodes(parentNode, pageOptions);
-    nodes.forEach((n: DelayLoadedTreeNodeItem) => {
-      n.isCheckboxVisible = true;
+    nodes.forEach((node: DelayLoadedTreeNodeItem) => {
+      node.isCheckboxVisible = true;
 
-      if (n.checkBoxState && n.checkBoxState === CheckBoxState.On)
-        n.labelBold = true;
+      if (!node.style)
+        node.style = {};
+
+      if (node.checkBoxState && node.checkBoxState === CheckBoxState.On)
+        node.style.isBold = true;
       else
-        n.labelBold = false;
+        node.style.isBold = false;
     });
     return nodes;
   });
@@ -242,6 +245,15 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
       });
   }
 
+  private changeNodeItemSelection(node: TreeNodeItem, isSelected: boolean) {
+    if (!node.style) {
+      node.style = {};
+    }
+
+    node.style.isBold = isSelected;
+    node.checkBoxState = isSelected ? CheckBoxState.On : CheckBoxState.Off;
+  }
+
   /** Set initial model selection state based on ViewState */
   private _setModelsFromViewState = async () => {
     if (!IModelApp.viewManager)
@@ -261,8 +273,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
     await Promise.all(promises).then((enabledNodes: Array<DelayLoadedTreeNodeItem | undefined>) => {
       enabledNodes.forEach((node) => {
         if (node) {
-          node.checkBoxState = CheckBoxState.On;
-          node.labelBold = true;
+          this.changeNodeItemSelection(node, true);
           selectedNodes.push(node!.id);
         }
       });
@@ -295,8 +306,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
     await Promise.all(promises).then((enabledNodes: Array<DelayLoadedTreeNodeItem | undefined>) => {
       enabledNodes.forEach((node) => {
         if (node) {
-          node.checkBoxState = CheckBoxState.On;
-          node.labelBold = true;
+          this.changeNodeItemSelection(node, true);
           selectedNodes.push(node!.id);
         }
       });
@@ -438,8 +448,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
     await Promise.all(promises).then((enabledNodes) => {
       enabledNodes.forEach((node) => {
         if (node) {
-          node.checkBoxState = CheckBoxState.On;
-          node.labelBold = true;
+          this.changeNodeItemSelection(node, false);
           selectedNodes.push(node.id);
         }
       });
@@ -499,8 +508,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
     const promises: Array<Promise<DelayLoadedTreeNodeItem[]>> = [];
 
     parents.forEach((parent) => {
-      parent.checkBoxState = CheckBoxState.Off;
-      parent.labelBold = false;
+      this.changeNodeItemSelection(parent, false);
       promises.push(this.state.activeTree!.dataProvider.getNodes(parent));
     });
     this.state.activeTree!.dataProvider.onTreeNodeChanged.raiseEvent(parents);
@@ -508,8 +516,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
     Promise.all(promises).then((childNodeCollection: DelayLoadedTreeNodeItem[][]) => { // tslint:disable-line:no-floating-promises
       childNodeCollection.forEach((childNodes) => {
         childNodes.forEach((child) => {
-          child.checkBoxState = CheckBoxState.Off;
-          child.labelBold = false;
+          this.changeNodeItemSelection(child, false);
         });
         this.state.activeTree!.dataProvider.onTreeNodeChanged.raiseEvent(childNodes);
       });
@@ -530,8 +537,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
 
     parents.forEach((parent) => {
       if (!nodeIds.includes(parent.id)) {
-        parent.checkBoxState = CheckBoxState.On;
-        parent.labelBold = true;
+        this.changeNodeItemSelection(parent, true);
         nodeIds.push(parent.id);
         promises.push(this.state.activeTree!.dataProvider.getNodes(parent));
       }
@@ -542,8 +548,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
       childNodeCollection.forEach((childNodes) => {
         childNodes.forEach((child) => {
           if (!nodeIds.includes(child.id)) {
-            child.checkBoxState = CheckBoxState.On;
-            child.labelBold = true;
+            this.changeNodeItemSelection(child, true);
             nodeIds.push(child.id);
           }
         });
@@ -597,11 +602,9 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
 
     parents.forEach((parent) => {
       if (parent.checkBoxState === CheckBoxState.On) {
-        parent.checkBoxState = CheckBoxState.Off;
-        parent.labelBold = false;
+        this.changeNodeItemSelection(parent, false);
       } else {
-        parent.checkBoxState = CheckBoxState.On;
-        parent.labelBold = true;
+        this.changeNodeItemSelection(parent, true);
         nodeIds.push(parent.id);
       }
       promises.push(this.state.activeTree!.dataProvider.getNodes(parent));
@@ -612,11 +615,9 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
       childNodeCollection.forEach((childNodes) => {
         childNodes.forEach((child) => {
           if (child.checkBoxState === CheckBoxState.On) {
-            child.checkBoxState = CheckBoxState.Off;
-            child.labelBold = false;
+            this.changeNodeItemSelection(child, false);
           } else {
-            child.checkBoxState = CheckBoxState.On;
-            child.labelBold = true;
+            this.changeNodeItemSelection(child, true);
             nodeIds.push(child.id);
           }
         });
@@ -840,8 +841,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
   /** Set item state for selected node */
   private _onNodesSelected = (items: TreeNodeItem[]) => {
     items.forEach((item: TreeNodeItem) => {
-      item.checkBoxState = CheckBoxState.On;
-      item.labelBold = true;
+      this.changeNodeItemSelection(item, true);
       this._setItemState(item, true);
     });
     return true;
@@ -861,8 +861,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
   /** Set item state for deselected node */
   private _onNodesDeselected = (items: TreeNodeItem[]) => {
     items.forEach((item: TreeNodeItem) => {
-      item.checkBoxState = CheckBoxState.Off;
-      item.labelBold = false;
+      this.changeNodeItemSelection(item, false);
       this._setItemState(item, false);
     });
     return true;
@@ -958,8 +957,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
 
       const index = selectedNodes.indexOf(treeItem.id);
       if (index === -1) {
-        treeItem.checkBoxState = CheckBoxState.On;
-        treeItem.labelBold = true;
+        this.changeNodeItemSelection(treeItem, true);
 
         const nodes = selectedNodes;
         nodes.push(treeItem.id);
@@ -984,8 +982,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
 
       const index = selectedNodes.indexOf(treeItem.id);
       if (index > -1) {
-        treeItem.checkBoxState = CheckBoxState.Off;
-        treeItem.labelBold = false;
+        this.changeNodeItemSelection(treeItem, false);
 
         const nodes = selectedNodes;
         nodes.splice(index, 1);
@@ -1061,6 +1058,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
           <div className={listClassName}>
             <div className="modelselector-toolbar">
               <FilteringInput
+                key={this.state.activeGroup.id}
                 filteringInProgress={this.state.activeTree.filtering ? this.state.activeTree.filtering : false}
                 onFilterCancel={this._onFilterCancel}
                 onFilterClear={this._onFilterClear}

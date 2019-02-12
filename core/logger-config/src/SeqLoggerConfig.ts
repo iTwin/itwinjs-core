@@ -4,15 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Logging */
 
-import { BentleyError, IModelStatus } from "./BentleyError";
-
-// tslint:disable-next-line:no-var-requires
-const seq = require("bunyan-seq");
-// tslint:disable-next-line:no-var-requires
-const bunyan = require("bunyan");
+import * as bunyan from "bunyan";
+import * as seq from "bunyan-seq";
+import { BentleyError, IModelStatus } from "@bentley/bentleyjs-core";
 
 /** seq logging server configuration.
- * @alpha Right package?
+ * @alpha
  */
 export interface SeqConfig {
   /** The URL of the seq server to connect to. Defaults to localhost. */
@@ -31,7 +28,7 @@ export interface SeqConfig {
 
 /** Helps to configure the bentleyjs-core Logger to use bunyan and seq.
  * Note: The app must depend on the bunyan and bunyan-seq packages.
- * @alpha Right package?
+ * @alpha
  */
 export class SeqLoggerConfig {
 

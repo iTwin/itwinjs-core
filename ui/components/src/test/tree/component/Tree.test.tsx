@@ -11,9 +11,9 @@ import { waitForUpdate, ResolvablePromise } from "../../test-helpers/misc";
 import TestUtils from "../../TestUtils";
 import {
   Tree, TreeProps,
-  NodesSelectedCallback, NodesDeselectedCallback, TreeCellUpdatedArgs,
+  NodesSelectedCallback, NodesDeselectedCallback,
 } from "../../../ui-components/tree/component/Tree";
-import { SelectionMode, PageOptions, TreeDataProviderMethod, TreeNodeItem, TreeDataProviderRaw, DelayLoadedTreeNodeItem, ITreeDataProvider, TreeDataChangesListener } from "../../../ui-components";
+import { SelectionMode, PageOptions, TreeDataProviderMethod, TreeNodeItem, TreeDataProviderRaw, DelayLoadedTreeNodeItem, ITreeDataProvider, TreeDataChangesListener, TreeCellUpdatedArgs } from "../../../ui-components";
 import { BeInspireTreeNode } from "../../../ui-components/tree/component/BeInspireTree";
 import HighlightingEngine, { HighlightableTreeProps } from "../../../ui-components/tree/HighlightingEngine";
 import { BeEvent, BeDuration } from "@bentley/bentleyjs-core";
@@ -431,7 +431,7 @@ describe("Tree", () => {
           expect(selectionLoadCanceledListener).to.not.be.called;
 
           // resolve the 'b' child promise and wait for re-render
-          await waitForUpdate(() => delayedPromises["0"][1].resolve([childNodes[1]]), renderSpy);
+          await waitForUpdate(() => delayedPromises["0"][1].resolve([childNodes[1]]), renderSpy, 2);
           // expect the callback to be called for second intermediate selection
           nodesSelectedCallbackMock.verify((x) => x(moq.It.is<TreeNodeItem[]>((items: TreeNodeItem[]): boolean => verifyNodes(items, ["0", "a", "b", "1"])), true), moq.Times.once());
           expect(selectionLoadProgressListener.lastCall).to.be.calledWith(1, 2, sinon.match.func);
@@ -584,7 +584,12 @@ describe("Tree", () => {
         nodesDeselectedCallbackMock.verify((x) => x(moq.It.isAny()), moq.Times.never());
         expect(getSelectedNodes().length).to.equal(0);
 
-        const expectSelectAll = ["<span>0</span>", "<span>0-a</span>", "<span>0-b</span>", "<span>1</span>"];
+        const expectSelectAll = [
+          "<div class=\"components-tree-node-content\"><span>0</span></div>",
+          "<div class=\"components-tree-node-content\"><span>0-a</span></div>",
+          "<div class=\"components-tree-node-content\"><span>0-b</span></div>",
+          "<div class=\"components-tree-node-content\"><span>1</span></div>",
+        ];
 
         // drag
         // note: dragging re-renders to update selection
@@ -614,13 +619,19 @@ describe("Tree", () => {
         await waitForUpdate(() => fireEvent.mouseMove(getNode("0-b").contentArea, { buttons: 1 }), renderSpy);
         nodesSelectedCallbackMock.verify((x) => x(moq.It.isAny(), moq.It.isAny()), moq.Times.never());
         nodesDeselectedCallbackMock.verify((x) => x(moq.It.isAny()), moq.Times.never());
-        expect(getSelectedNodes().map((n) => n.label)).to.deep.eq(["<span>0</span>", "<span>0-a</span>"]);
+        expect(getSelectedNodes().map((n) => n.label)).to.deep.eq([
+          "<div class=\"components-tree-node-content\"><span>0</span></div>",
+          "<div class=\"components-tree-node-content\"><span>0-a</span></div>",
+        ]);
 
         // release
         fireEvent.mouseUp(getNode("0-b").contentArea);
         nodesSelectedCallbackMock.verify((x) => x(moq.It.isAny(), moq.It.isAny()), moq.Times.never());
         nodesDeselectedCallbackMock.verify((x) => x(moq.It.is<TreeNodeItem[]>((items: TreeNodeItem[]): boolean => verifyNodes(items, ["0-b", "1"]))), moq.Times.once());
-        expect(getSelectedNodes().map((n) => n.label)).to.deep.eq(["<span>0</span>", "<span>0-a</span>"]);
+        expect(getSelectedNodes().map((n) => n.label)).to.deep.eq([
+          "<div class=\"components-tree-node-content\"><span>0</span></div>",
+          "<div class=\"components-tree-node-content\"><span>0-a</span></div>",
+        ]);
       });
 
       it("dragging with multiple buttons pressed doesn't select nodes", async () => {
@@ -654,20 +665,29 @@ describe("Tree", () => {
         fireEvent.mouseDown(getNode("0").contentArea);
         nodesSelectedCallbackMock.verify((x) => x(moq.It.isAny(), moq.It.isAny()), moq.Times.never());
         nodesDeselectedCallbackMock.verify((x) => x(moq.It.isAny()), moq.Times.never());
-        expect(getSelectedNodes().map((n) => n.label)).to.deep.eq(["<span>0</span>", "<span>0-b</span>"]);
+        expect(getSelectedNodes().map((n) => n.label)).to.deep.eq([
+          "<div class=\"components-tree-node-content\"><span>0</span></div>",
+          "<div class=\"components-tree-node-content\"><span>0-b</span></div>",
+        ]);
 
         // drag
         // note: dragging re-renders to update selection
         await waitForUpdate(() => fireEvent.mouseMove(getNode("1").contentArea, { buttons: 1 }), renderSpy);
         nodesSelectedCallbackMock.verify((x) => x(moq.It.isAny(), moq.It.isAny()), moq.Times.never());
         nodesDeselectedCallbackMock.verify((x) => x(moq.It.isAny()), moq.Times.never());
-        expect(getSelectedNodes().map((n) => n.label)).to.deep.eq(["<span>0-a</span>", "<span>1</span>"]);
+        expect(getSelectedNodes().map((n) => n.label)).to.deep.eq([
+          "<div class=\"components-tree-node-content\"><span>0-a</span></div>",
+          "<div class=\"components-tree-node-content\"><span>1</span></div>",
+        ]);
 
         // release
         fireEvent.mouseUp(getNode("1").contentArea);
         nodesSelectedCallbackMock.verify((x) => x(moq.It.is<TreeNodeItem[]>((items: TreeNodeItem[]): boolean => verifyNodes(items, ["0-a", "1"])), false), moq.Times.once());
         nodesDeselectedCallbackMock.verify((x) => x(moq.It.is<TreeNodeItem[]>((items: TreeNodeItem[]): boolean => verifyNodes(items, ["0", "0-b"]))), moq.Times.once());
-        expect(getSelectedNodes().map((n) => n.label)).to.deep.eq(["<span>0-a</span>", "<span>1</span>"]);
+        expect(getSelectedNodes().map((n) => n.label)).to.deep.eq([
+          "<div class=\"components-tree-node-content\"><span>0-a</span></div>",
+          "<div class=\"components-tree-node-content\"><span>1</span></div>",
+        ]);
       });
 
       it("drag selecting nodes does not select collapsed nodes", async () => {
@@ -685,13 +705,19 @@ describe("Tree", () => {
         await waitForUpdate(() => fireEvent.mouseMove(getNode("1").contentArea, { buttons: 1 }), renderSpy);
         nodesSelectedCallbackMock.verify((x) => x(moq.It.isAny(), moq.It.isAny()), moq.Times.never());
         nodesDeselectedCallbackMock.verify((x) => x(moq.It.isAny()), moq.Times.never());
-        expect(getSelectedNodes().map((n) => n.label)).to.deep.eq(["<span>0</span>", "<span>1</span>"]);
+        expect(getSelectedNodes().map((n) => n.label)).to.deep.eq([
+          "<div class=\"components-tree-node-content\"><span>0</span></div>",
+          "<div class=\"components-tree-node-content\"><span>1</span></div>",
+        ]);
 
         // release
         fireEvent.mouseUp(getNode("1").contentArea);
         nodesSelectedCallbackMock.verify((x) => x(moq.It.is<TreeNodeItem[]>((items: TreeNodeItem[]): boolean => verifyNodes(items, ["0", "1"])), false), moq.Times.once());
         nodesDeselectedCallbackMock.verify((x) => x(moq.It.isAny()), moq.Times.never());
-        expect(getSelectedNodes().map((n) => n.label)).to.deep.eq(["<span>0</span>", "<span>1</span>"]);
+        expect(getSelectedNodes().map((n) => n.label)).to.deep.eq([
+          "<div class=\"components-tree-node-content\"><span>0</span></div>",
+          "<div class=\"components-tree-node-content\"><span>1</span></div>",
+        ]);
       });
 
     });
@@ -1022,8 +1048,8 @@ describe("Tree", () => {
         />);
       }, renderSpy, 2);
 
-      expect(renderedTree.baseElement.getElementsByClassName("nz-tree-node").length).to.eq(1);
-      expect(renderedTree.baseElement.getElementsByClassName("nz-tree-placeholder").length).to.eq(1);
+      expect(renderedTree.baseElement.getElementsByClassName("core-tree-node").length).to.eq(1);
+      expect(renderedTree.baseElement.getElementsByClassName("core-tree-placeholder").length).to.eq(1);
     });
   });
 
@@ -1189,7 +1215,12 @@ describe("Tree", () => {
         renderedTree = render(<Tree {...defaultProps} dataProvider={interfaceProvider} />);
       }, renderSpy, 2);
       expect(renderedTree.getAllByTestId(Tree.TestId.Node as any).length).to.eq(4);
-      expect(getFlatList()).to.deep.eq(["<span>0</span>", "<span>0-a</span>", "<span>0-b</span>", "<span>1</span>"]);
+      expect(getFlatList()).to.deep.eq([
+        "<div class=\"components-tree-node-content\"><span>0</span></div>",
+        "<div class=\"components-tree-node-content\"><span>0-a</span></div>",
+        "<div class=\"components-tree-node-content\"><span>0-b</span></div>",
+        "<div class=\"components-tree-node-content\"><span>1</span></div>",
+      ]);
 
       setReverseOrder(true);
 
@@ -1197,7 +1228,12 @@ describe("Tree", () => {
         interfaceProvider.onTreeNodeChanged!.raiseEvent([undefined]);
       }, renderSpy, 1);
       expect(renderedTree.getAllByTestId(Tree.TestId.Node as any).length).to.eq(4);
-      expect(getFlatList()).to.deep.eq(["<span>1</span>", "<span>0</span>", "<span>0-b</span>", "<span>0-a</span>"]);
+      expect(getFlatList()).to.deep.eq([
+        "<div class=\"components-tree-node-content\"><span>1</span></div>",
+        "<div class=\"components-tree-node-content\"><span>0</span></div>",
+        "<div class=\"components-tree-node-content\"><span>0-b</span></div>",
+        "<div class=\"components-tree-node-content\"><span>0-a</span></div>",
+      ]);
     });
 
     it("handles case when `onTreeNodeChanged` is broadcasted with invalid node", async () => {
@@ -1288,7 +1324,7 @@ describe("Tree", () => {
 
       await waitForUpdate(() => {
         renderedTree.rerender(<Tree {...defaultProps} dataProvider={dp} nodeHighlightingProps={highlightProps} />);
-      }, renderNodesSpy);
+      }, renderSpy);
 
       expect(scrollToSpy).to.be.calledOnce;
     });
@@ -1370,9 +1406,11 @@ describe("Tree", () => {
       defaultSelectionProps = {
         ...defaultProps,
         dataProvider: createDataProvider(),
-        onCellEditing: onCellEditingSpy,
-        onCellUpdated: handleCellUpdated,
-        ignoreEditorBlur: true,
+        cellEditing: {
+          onCellEditing: onCellEditingSpy,
+          onCellUpdated: handleCellUpdated,
+          ignoreEditorBlur: true,
+        },
       };
     });
 

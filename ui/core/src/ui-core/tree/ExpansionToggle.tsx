@@ -13,17 +13,16 @@ import "./ExpansionToggle.scss";
 export interface ExpansionToggleProps {
   isExpanded?: boolean;
   onClick?: (e: React.MouseEvent<HTMLDivElement>) => void;
-  children?: React.ReactNode;
   className?: string;
   style?: React.CSSProperties;
   ["data-testid"]?: string;
 }
 
 /** ExpansionToggle React component used by the [[TreeNode]] component */
-export default class ExpansionToggle extends React.Component<ExpansionToggleProps> {
+export default class ExpansionToggle extends React.PureComponent<ExpansionToggleProps> {
   public render() {
     const className = classnames(
-      "nz-tree-expansionToggle",
+      "core-tree-expansionToggle",
       this.props.isExpanded && "is-expanded",
       this.props.className);
 

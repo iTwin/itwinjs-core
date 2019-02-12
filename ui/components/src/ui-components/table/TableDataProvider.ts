@@ -7,6 +7,7 @@
 import { BeEvent } from "@bentley/bentleyjs-core";
 import { PropertyRecord, PropertyDescription } from "@bentley/imodeljs-frontend";
 import { SortDirection } from "@bentley/ui-core";
+import { ItemColorOverrides, ItemStyle } from "../properties/ItemStyle";
 type HorizontalAlignment = "left" | "center" | "right" | "justify";
 
 /**
@@ -46,21 +47,9 @@ export interface CellItem {
   record?: PropertyRecord;
 
   isDisabled?: boolean;
-  isBold?: boolean;
-  isItalic?: boolean;
   alignment?: HorizontalAlignment;
 
-  colorOverrides?: ColorOverrides;
-}
-
-/**
- * Color Overrides for Table rows or cells.
- */
-export interface ColorOverrides {
-  foreColor?: number;
-  backColor?: number;
-  foreColorSelected?: number;
-  backColorSelected?: number;
+  style?: ItemStyle;
 }
 
 /**
@@ -76,7 +65,7 @@ export interface RowItem {
   extendedData?: any;
 
   isDisabled?: boolean;
-  colorOverrides?: ColorOverrides;
+  colorOverrides?: ItemColorOverrides;
 }
 
 /**

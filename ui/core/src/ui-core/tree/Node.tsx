@@ -18,15 +18,23 @@ export const LEVEL_OFFSET = 20;
 
 const EXPANSION_TOGGLE_WIDTH = 24;
 
+/** Properties for [[TreeNode]] checkbox */
+export interface NodeCheckboxProps {
+  /** State of the checkbox */
+  state?: CheckBoxState;
+  /** Click event callback */
+  onClick: () => void;
+  /** Indicates whether checkbox is disabled */
+  isDisabled?: boolean;
+}
+
 /** Properties for the [[TreeNode]] React component */
 export interface NodeProps {
   label: React.ReactNode;
   level: number;
   icon?: React.ReactChild;
-  isCheckboxVisible?: boolean;
-  isCheckboxDisabled?: boolean;
-  checkboxState?: CheckBoxState;
-  onCheckboxClick?: () => void;
+  /** Properties for the checkbox */
+  checkboxProps?: NodeCheckboxProps;
   isLeaf?: boolean;
   isLoading?: boolean;
   isExpanded?: boolean;
@@ -46,10 +54,10 @@ export interface NodeProps {
 }
 
 /** Presentation React component for a Tree node  */
-export default class TreeNode extends React.PureComponent<NodeProps> {
+export default class TreeNode extends React.Component<NodeProps> {
   public render() {
     const className = classnames(
-      "nz-tree-node",
+      "core-tree-node",
       this.props.isFocused && "is-focused",
       this.props.isSelected && "is-selected",
       this.props.isHoverDisabled && "is-hover-disabled",
@@ -59,16 +67,19 @@ export default class TreeNode extends React.PureComponent<NodeProps> {
       offset += EXPANSION_TOGGLE_WIDTH; // Add expansion toggle/loader width if they're not rendered
 
     const loader = this.props.isLoading ? (<div className="loader"><Spinner size={SpinnerSize.Small} /></div>) : undefined;
-    const checkbox = this.props.isCheckboxVisible ?
+
+    const checkbox = this.props.checkboxProps ?
       <Checkbox
         label=""
-        checked={this.props.checkboxState === CheckBoxState.On ? true : false}
-        disabled={this.props.isCheckboxDisabled}
+        checked={this.props.checkboxProps.state === CheckBoxState.On ? true : false}
+        disabled={this.props.checkboxProps.isDisabled}
         onClick={this._onCheckboxClick}
         onChange={this._onCheckboxChange}
       /> :
       undefined;
+
     const icon = this.props.icon ? (<div className="icon">{this.props.icon}</div>) : undefined;
+
     const toggle = (this.props.isLoading || this.props.isLeaf) ? undefined : (
       <ExpansionToggle
         className="expansion-toggle"
@@ -77,6 +88,7 @@ export default class TreeNode extends React.PureComponent<NodeProps> {
         isExpanded={this.props.isExpanded}
       />
     );
+
     const style = { ...this.props.style, paddingLeft: offset };
 
     return (
@@ -111,8 +123,8 @@ export default class TreeNode extends React.PureComponent<NodeProps> {
   }
 
   private _onCheckboxChange = (_e: React.ChangeEvent<HTMLInputElement>) => {
-    if (this.props.onCheckboxClick)
-      this.props.onCheckboxClick();
+    if (this.props.checkboxProps)
+      this.props.checkboxProps.onClick();
   }
 
   private _onCheckboxClick = (e: React.MouseEvent<HTMLInputElement>) => {

@@ -94,7 +94,7 @@
     transition: .2s linear;
     background-color: $background-2;
 
-    .nz-tree-tree .nz-tree-node {
+    .core-tree-tree .core-tree-node {
       @include uicore-text( leading );
       padding: 5px;
       background-color: $background-1;
@@ -199,9 +199,9 @@
       overflow: auto;
     }
 
-    .nz-tree-tree  {
+    .core-tree-tree  {
 
-      .nz-tree-node {
+      .core-tree-node {
         @include uicore-text( leading );
         padding: 5px 0;
         background-color: $background-1;

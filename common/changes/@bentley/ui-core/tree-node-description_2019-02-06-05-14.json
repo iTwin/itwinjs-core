@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Tree node now accepts one checkbox prop object instead of multiple props.",
+      "packageName": "@bentley/ui-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-core",
+  "email": "elonas.seviakovas@bentley.com"
+}

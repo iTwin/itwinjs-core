@@ -2,7 +2,7 @@
 
 exports[`<ExpansionToggle /> renders correctly 1`] = `
 <div
-  className="nz-tree-expansionToggle"
+  className="core-tree-expansionToggle"
 >
   <svg
     className="toggle"
@@ -18,7 +18,7 @@ exports[`<ExpansionToggle /> renders correctly 1`] = `
 
 exports[`<ExpansionToggle /> should set is-focused class 1`] = `
 <div
-  className="nz-tree-expansionToggle is-expanded"
+  className="core-tree-expansionToggle is-expanded"
 >
   <svg
     className="toggle"

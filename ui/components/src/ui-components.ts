@@ -66,6 +66,7 @@ export * from "./ui-components/properties/renderers/value/NavigationPropertyValu
 export * from "./ui-components/properties/renderers/value/table/ArrayValueRenderer";
 export * from "./ui-components/properties/renderers/value/table/StructValueRenderer";
 export * from "./ui-components/properties/renderers/value/table/NonPrimitiveValueRenderer";
+export * from "./ui-components/properties/ItemStyle";
 
 export * from "./ui-components/propertygrid/PropertyDataProvider";
 export * from "./ui-components/propertygrid/SimplePropertyDataProvider";
@@ -81,7 +82,7 @@ export { TableDragDropType, TableDropTargetProps, TableDragDropProps, withTableD
 export * from "./ui-components/tree/TreeDataProvider";
 export * from "./ui-components/tree/HighlightingEngine";
 export { Tree, TreeProps } from "./ui-components/tree/component/Tree";
-export { TreeCellEditorState, TreeCellUpdatedArgs } from "./ui-components/tree/component/Tree";
+export { TreeCellUpdatedArgs } from "./ui-components/tree/CellEditingEngine";
 export { TreeDragDropType, TreeDragDropProps, withTreeDragDrop } from "./ui-components/tree/hocs/withDragDrop";
 export { SimpleTreeDataProvider, SimpleTreeDataProviderHierarchy } from "./ui-components/tree/SimpleTreeDataProvider";
 

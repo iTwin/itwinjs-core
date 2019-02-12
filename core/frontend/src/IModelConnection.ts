@@ -8,7 +8,7 @@ import { ActivityLoggingContext, assert, BeEvent, BentleyStatus, Guid, Id64, Id6
 import { AccessToken } from "@bentley/imodeljs-clients";
 import {
   AxisAlignedBox3d, CodeSpec, ElementProps, EntityQueryParams, FontMap, ImageSourceFormat, IModel, IModelError, IModelNotFoundResponse,
-  IModelReadRpcInterface, IModelStatus, IModelTileRpcInterface, IModelToken, IModelUnitTestRpcInterface, IModelVersion, IModelWriteRpcInterface,
+  IModelReadRpcInterface, IModelStatus, IModelTileRpcInterface, IModelToken, IModelVersion, IModelWriteRpcInterface,
   ModelProps, ModelQueryParams, RpcNotFoundResponse, RpcOperation, RpcRequest, RpcRequestEvent, SnapRequestProps, SnapResponseProps,
   StandaloneIModelRpcInterface, ThumbnailProps, TileTreeProps, ViewDefinitionProps, ViewQueryParams, WipRpcInterface, Cartographic, GeoCoordStatus, PageOptions, kPagingDefaultOptions,
 } from "@bentley/imodeljs-common";
@@ -405,14 +405,6 @@ export class IModelConnection extends IModel {
    * @hidden
    */
   public async detachChangeCache(): Promise<void> { return WipRpcInterface.getClient().detachChangeCache(this.iModelToken); }
-
-  /**
-   * Execute a test by name
-   * @param testName The name of the test to execute
-   * @param params A JSON string containing all parameters the test requires
-   * @hidden
-   */
-  public async executeTest(testName: string, params: any): Promise<any> { return IModelUnitTestRpcInterface.getClient().executeTest(this.iModelToken, testName, params); }
 
   /** Request a snap from the backend. */
   public async requestSnap(props: SnapRequestProps): Promise<SnapResponseProps> { return IModelReadRpcInterface.getClient().requestSnap(this.iModelToken, IModelApp.sessionId, props); }

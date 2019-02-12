@@ -17,7 +17,11 @@ Object {
   },
   "id": "19fb96ab-449d-4f28-a09d-cff691955c55/b5c02a04-6127-4f62-b128-58488bc1c9d1",
   "label": "engage",
-  "labelBackColor": -2027626753,
+  "style": Object {
+    "colorOverrides": Object {
+      "backgroundColor": -2027626753,
+    },
+  },
 }
 `;
 
@@ -40,10 +44,14 @@ Object {
   "hasChildren": true,
   "id": "f7dd0ef0-a772-4c3d-b03a-40a84a6a8c62/774cdc48-ca2b-4104-8800-7ce7a4f6d779",
   "label": "Avon Awesome Plastic Salad",
-  "labelBackColor": -1829999873,
-  "labelBold": true,
-  "labelForeColor": -166204673,
-  "labelItalic": true,
+  "style": Object {
+    "colorOverrides": Object {
+      "backgroundColor": -1829999873,
+      "color": -166204673,
+    },
+    "isBold": true,
+    "isItalic": true,
+  },
 }
 `;
 
@@ -91,7 +99,11 @@ Array [
     "id": "e845ce78-d049-4079-8e52-c1852841f2dd/4dcb61ac-32e0-49da-bf7d-e66ed5ccf6b5",
     "isCheckboxVisible": true,
     "label": "intranet Executive",
-    "labelBackColor": 99406079,
+    "style": Object {
+      "colorOverrides": Object {
+        "backgroundColor": 99406079,
+      },
+    },
   },
   Object {
     "extendedData": Object {
@@ -136,8 +148,12 @@ Array [
     "isCheckboxDisabled": true,
     "isCheckboxVisible": true,
     "label": "Haiti",
-    "labelBackColor": 480516607,
     "parentId": "Functionality",
+    "style": Object {
+      "colorOverrides": Object {
+        "backgroundColor": 480516607,
+      },
+    },
   },
   Object {
     "description": "Voluptas cupiditate rerum consequatur illum unde molestiae quam.",
@@ -158,9 +174,13 @@ Array [
     "isCheckboxDisabled": true,
     "isCheckboxVisible": true,
     "label": "SSL methodologies Berkshire",
-    "labelBackColor": 1088423167,
-    "labelForeColor": 944178687,
     "parentId": "Functionality",
+    "style": Object {
+      "colorOverrides": Object {
+        "backgroundColor": 1088423167,
+        "color": 944178687,
+      },
+    },
   },
 ]
 `;

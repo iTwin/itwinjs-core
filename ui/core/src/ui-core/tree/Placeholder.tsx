@@ -25,7 +25,7 @@ export interface PlaceholderProps {
  */
 export default class Placeholder extends React.PureComponent<PlaceholderProps> {
   public render() {
-    const className = classnames("nz-tree-placeholder", this.props.className);
+    const className = classnames("core-tree-placeholder", this.props.className);
     const offset = this.props.level * LEVEL_OFFSET;
     const min = (this.props.minWidth || 50);
     const max = (this.props.maxWidth || 200);

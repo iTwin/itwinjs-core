@@ -31,3 +31,7 @@ Added unique id per session: IModelApp.sessionId
 Fixes to OidcDelegationClient-s. Backend applications can now exchange -
 * OIDC Jason Web Tokens (JWT) for other JWT tokens with additional scope.
 * JWT tokens for legacy SAML tokens for legacy applications.
+
+## Logger Configuration Changes
+
+The BunyanLoggerConfig, FluentdBunyanLoggerConfig, FluentdLoggerStream, and SeqLoggerConfig classes have been moved out of @bentley/bentleyjs-core and into the new @bentley/logger-config package.

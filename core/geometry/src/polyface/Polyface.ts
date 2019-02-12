@@ -202,7 +202,7 @@ export class IndexedPolyface extends Polyface {
         const i1 = source._facetStart[i + 1];
         if (reversed) {
           for (let j = i1; j-- > i0;)
-            this.addParamIndex(startOfNewParams + source.data.paramIndex![j - 1]);
+            this.addParamIndex(startOfNewParams + source.data.paramIndex![j]);
         } else {
           for (let j = i0; j < i1; j++)
             this.addParamIndex(startOfNewParams + source.data.paramIndex![j]);
@@ -303,8 +303,12 @@ export class IndexedPolyface extends Polyface {
     this.data.param.push(param.clone());
     return this.data.param.length - 1;
   }
-  public addParamUV(u: number, v: number): number {
+  public addParamUV(u: number, v: number, priorIndexA?: number, priorIndexB?: number): number {
     if (!this.data.param) this.data.param = [];
+    if (priorIndexA !== undefined && this.data.isAlmostEqualParamIndexUV(priorIndexA, u, v))
+      return priorIndexA;
+    if (priorIndexB !== undefined && this.data.isAlmostEqualParamIndexUV(priorIndexB, u, v))
+      return priorIndexB;
     this.data.param.push(Point2d.create(u, v));
     return this.data.param.length - 1;
   }

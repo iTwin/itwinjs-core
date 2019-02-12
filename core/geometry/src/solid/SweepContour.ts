@@ -129,6 +129,13 @@ export class SweepContour {
       }
     }
   }
+  /** delete existing facets.
+   * * This protects against PolyfaceBuilder reusing facets constructed with different options settings.
+   */
+  public purgeFacets() {
+    this._facets = undefined;
+  }
+
   /** Emit facets to a builder.
    * This method may cache and reuse facets over multiple calls.
    */

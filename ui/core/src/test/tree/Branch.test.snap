@@ -2,6 +2,6 @@
 
 exports[`<Branch /> renders correctly 1`] = `
 <div
-  className="nz-tree-branch"
+  className="core-tree-branch"
 />
 `;
