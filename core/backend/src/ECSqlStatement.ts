@@ -10,6 +10,7 @@ import { XAndY, XYAndZ, XYZ, LowAndHighXYZ, Range3d } from "@bentley/geometry-co
 import { ECDb } from "./ECDb";
 import { IModelJsNative } from "./IModelJsNative";
 import { IModelHost } from "./IModelHost";
+import { Config } from "@bentley/imodeljs-clients";
 
 /** @hidden */
 const loggingCategory = "imodeljs-backend.ECSqlStatement";
@@ -1001,7 +1002,7 @@ export class ECSqlStatementCache {
   private readonly _statements: Map<string, CachedECSqlStatement> = new Map<string, CachedECSqlStatement>();
   public readonly maxCount: number;
 
-  public constructor(maxCount = 40) { this.maxCount = maxCount; }
+  public constructor(maxCount = Config.App.getNumber("imjs_ecsql_cache_size", 40)) { this.maxCount = maxCount; }
 
   public add(str: string, stmt: ECSqlStatement): void {
     const existing = this._statements.get(str);

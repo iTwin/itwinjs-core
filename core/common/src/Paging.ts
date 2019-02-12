@@ -14,7 +14,7 @@ export interface PageOptions {
   retries?: number;
 }
 /** Default option used when caller does not provide one */
-export const kPagingDefaultOptions: PageOptions = { start: 0, size: 100 };
+export const kPagingDefaultOptions: PageOptions = { start: 0, size: 512 };
 export interface PagableECSql {
   /** Compute number of rows that would be returned by the ECSQL. */
   queryRowCount(ecsql: string, bindings?: any[] | object): Promise<number>;
@@ -22,6 +22,6 @@ export interface PagableECSql {
   /** Execute a query agaisnt this ECDb */
   queryPage(ecsql: string, bindings?: any[] | object, options?: PageOptions): Promise<any[]>;
 
-/** Execute a pagable query. */
+  /** Execute a pagable query. */
   query(ecsql: string, bindings?: any[] | object, options?: PageOptions): AsyncIterableIterator<any>;
 }

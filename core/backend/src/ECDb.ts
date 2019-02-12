@@ -80,19 +80,22 @@ export class ECDb implements IDisposable, PagableECSql {
       options = kPagingDefaultOptions;
     }
 
-    const pageNo = options.start || 0;
-    const pageSize = options.size || kPagingDefaultOptions;
+    const pageNo = options.start || kPagingDefaultOptions.start;
+    const pageSize = options.size || kPagingDefaultOptions.size;
 
     // verify if correct options was provided.
-    if (pageNo < 0)
+    if (pageNo! < 0)
       throw new IModelError(DbResult.BE_SQLITE_ERROR, "options.start must be positive integer");
 
-    if (pageSize < 0)
+    if (pageSize! < 0)
       throw new IModelError(DbResult.BE_SQLITE_ERROR, "options.size must be positive integer starting from 1");
 
-    return this.withPreparedStatement(`select * from (${ecsql}) limit (${pageSize}) offset (${pageNo}*${pageSize})`, async (stmt: ECSqlStatement) => {
+    const pageParams = { sys_page_size: pageSize!, sys_page_offset: pageNo! * pageSize! };
+    return this.withPreparedStatement(`select * from (${ecsql}) limit :sys_page_size offset :sys_page_offset`, async (stmt: ECSqlStatement) => {
       if (bindings)
         stmt.bindValues(bindings);
+
+      stmt.bindValues(pageParams);
       const rows: any[] = [];
 
       let ret = await stmt.stepAsync();
@@ -196,6 +199,16 @@ export class ECDb implements IDisposable, PagableECSql {
     this._statementCache.clear();
     this._sqliteStatementCache.clear();
     this.nativeDb.closeDb();
+  }
+
+  /** @private use to test statement caching */
+  public clearStatementCache() {
+    this._statementCache.clear();
+  }
+
+  /** @private use to test statement caching */
+  public getCachedStatementCount() {
+    return this._statementCache.getCount();
   }
 
   /** Commit the outermost transaction, writing changes to the file. Then, restart the transaction.
