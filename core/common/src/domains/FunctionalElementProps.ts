@@ -6,6 +6,7 @@
 
 import { ElementProps, RelatedElementProps } from "../ElementProps";
 
+/** @public */
 export interface FunctionalElementProps extends ElementProps {
   typeDefinition?: RelatedElementProps;
 }

@@ -8,7 +8,9 @@ import { AccessToken, IModelClient, ChangeSet, ChangeSetQuery, VersionQuery } fr
 import { IModelError } from "./IModelError";
 import { BentleyStatus, ActivityLoggingContext, GuidString } from "@bentley/bentleyjs-core";
 
-/** Option to specify the version of the iModel to be acquired and used */
+/** Option to specify the version of the iModel to be acquired and used
+ * @public
+ */
 export class IModelVersion {
   private _first?: boolean;
   private _latest?: boolean;
@@ -124,5 +126,4 @@ export class IModelVersion {
 
     return versions[0].changeSetId!;
   }
-
 }

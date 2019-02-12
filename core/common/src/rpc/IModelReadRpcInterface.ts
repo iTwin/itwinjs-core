@@ -22,14 +22,15 @@ import { ViewStateProps } from "../ViewProps";
 
 /** Response if the IModelDb was not found at the backend
  * (if the service has moved)
+ * @public
  */
 export class IModelNotFoundResponse extends RpcNotFoundResponse {
 }
 
-/**
- * The RPC interface for reading from an iModel.
+/** The RPC interface for reading from an iModel.
  * All operations only require read-only access.
  * This interface is not normally used directly. See IModelConnection for higher-level and more convenient API for accessing iModels from a frontend.
+ * @public
  */
 export abstract class IModelReadRpcInterface extends RpcInterface {
   /** The types that can be marshaled by the interface. */

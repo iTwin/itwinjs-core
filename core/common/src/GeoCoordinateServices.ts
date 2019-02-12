@@ -6,6 +6,7 @@
 
 import { XYZProps } from "@bentley/geometry-core";
 
+/** @public */
 export const enum GeoCoordStatus {
   Success = 0,
   NoGCSDefined = 100,
@@ -17,37 +18,38 @@ export const enum GeoCoordStatus {
   Pending = -41556,
 }
 
-/**
- * Information required to request conversion of an array of Geographic coordinates (Longitude/Latitude) to iModel coordinates
+/** Information required to request conversion of an array of Geographic coordinates (Longitude/Latitude) to iModel coordinates
+ * @beta
  */
 export interface IModelCoordinatesRequestProps {
   sourceDatum: string;
   geoCoords: XYZProps[];
 }
 
-/**
- * Information returned from a request to convert an array of Geographic coordinates (Longitude/Latitude) to iModel coordinates
+/** Information returned from a request to convert an array of Geographic coordinates (Longitude/Latitude) to iModel coordinates
+ * @beta
  */
 export interface PointWithStatus {
   p: XYZProps;
   s: GeoCoordStatus;
 }
 
+/** @beta */
 export interface IModelCoordinatesResponseProps {
   iModelCoords: PointWithStatus[];
   fromCache: number;    // the number that were read from the cache rather than calculated.
 }
 
-/**
- * Information required to request conversion of an array of iModel coordinates to Geographic Coordinates (longitude and latitude)
+/** Information required to request conversion of an array of iModel coordinates to Geographic Coordinates (longitude and latitude)
+ * @beta
  */
 export interface GeoCoordinatesRequestProps {
   targetDatum: string;
   iModelCoords: XYZProps[];
 }
 
-/**
- * Information returned from a request to convert an array of iModel coordinates to Geographic Coordinates (longitude and latitude)
+/** Information returned from a request to convert an array of iModel coordinates to Geographic Coordinates (longitude and latitude)
+ * @beta
  */
 export interface GeoCoordinatesResponseProps {
   geoCoords: PointWithStatus[];
