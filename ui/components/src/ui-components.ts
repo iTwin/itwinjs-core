@@ -66,6 +66,7 @@ export * from "./ui-components/properties/renderers/value/NavigationPropertyValu
 export * from "./ui-components/properties/renderers/value/table/ArrayValueRenderer";
 export * from "./ui-components/properties/renderers/value/table/StructValueRenderer";
 export * from "./ui-components/properties/renderers/value/table/NonPrimitiveValueRenderer";
+export * from "./ui-components/properties/ItemStyle";
 
 export * from "./ui-components/propertygrid/PropertyDataProvider";
 export * from "./ui-components/propertygrid/SimplePropertyDataProvider";

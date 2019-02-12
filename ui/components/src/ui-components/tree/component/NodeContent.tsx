@@ -16,6 +16,7 @@ import { TreeNodePlaceholder, shallowDiffers } from "@bentley/ui-core";
 import { UiComponents } from "../../UiComponents";
 
 import "./NodeContent.scss";
+import { ItemStyleProvider, ItemStyle } from "../../properties/ItemStyle";
 
 export interface TreeNodeContentProps {
   node: BeInspireTreeNode<TreeNodeItem>;
@@ -50,13 +51,8 @@ export class TreeNodeContent extends React.Component<TreeNodeContentProps, TreeN
 
   private _isMounted = false;
 
-  private getStyle(node: TreeNodeItem): React.CSSProperties {
-    return {
-      color: node.labelForeColor ? node.labelForeColor!.toString(16) : undefined,
-      backgroundColor: node.labelBackColor ? node.labelBackColor!.toString(16) : undefined,
-      fontWeight: node.labelBold ? "bold" : undefined,
-      fontStyle: node.labelItalic ? "italic" : undefined,
-    };
+  private getStyle(style?: ItemStyle, isSelected?: boolean): React.CSSProperties {
+    return ItemStyleProvider.createStyle(style ? style : {}, isSelected);
   }
 
   private nodeToPropertyRecord(node: BeInspireTreeNode<TreeNodeItem>) {
@@ -84,7 +80,7 @@ export class TreeNodeContent extends React.Component<TreeNodeContentProps, TreeN
     const context: PropertyValueRendererContext = {
       containerType: PropertyContainerType.Tree,
       decoratedTextElement: labelElement,
-      style: props.node.payload ? this.getStyle(props.node.payload) : undefined,
+      style: props.node.payload ? this.getStyle(props.node.payload.style, props.node.selected()) : undefined,
     };
 
     const nodeRecord = this.nodeToPropertyRecord(props.node);
@@ -156,7 +152,7 @@ export class TreeNodeContent extends React.Component<TreeNodeContentProps, TreeN
     // handle cell editing
     if (this.props.cellEditing && this.props.cellEditing.isEditingEnabled(this.props.node)) {
       // if cell editing is enabled, return editor instead of the label
-      const style = this.props.node.payload ? this.getStyle(this.props.node.payload) : undefined;
+      const style = this.props.node.payload ? this.getStyle(this.props.node.payload.style, this.props.node.selected()) : undefined;
 
       editor = this.props.cellEditing.renderEditor(this.props.node, style);
     }

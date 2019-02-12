@@ -28,8 +28,11 @@ class SampleDataProvider implements IPresentationTreeDataProvider {
   }
   public async getNodes(parentNode?: TreeNodeItem, page?: PageOptions) {
     const result = await this._wrapped.getNodes(parentNode, page);
-    result.forEach((n) => {
-      n.labelItalic = true;
+    result.forEach((node) => {
+      if (!node.style)
+        node.style = {};
+
+      node.style.isItalic = true;
     });
     return result;
   }

@@ -38,10 +38,14 @@ Array [
     "isCheckboxDisabled": true,
     "isCheckboxVisible": true,
     "label": "root label",
-    "labelBackColor": 8388863,
-    "labelBold": true,
-    "labelForeColor": 4278190335,
-    "labelItalic": true,
+    "style": Object {
+      "colorOverrides": Object {
+        "backgroundColor": 8388863,
+        "color": 4278190335,
+      },
+      "isBold": true,
+      "isItalic": true,
+    },
   },
 ]
 `;

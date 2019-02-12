@@ -7,7 +7,7 @@
 import { StyleHelper } from "../common/StyleHelper";
 import { CheckBoxState } from "@bentley/ui-core";
 import { Node, PageOptions as PresentationPageOptions } from "@bentley/presentation-common";
-import { DelayLoadedTreeNodeItem, PageOptions as UiPageOptions } from "@bentley/ui-components";
+import { DelayLoadedTreeNodeItem, PageOptions as UiPageOptions, ItemStyle, ItemColorOverrides } from "@bentley/ui-components";
 
 /** @hidden */
 export const createTreeNodeItems = (nodes: ReadonlyArray<Readonly<Node>>, parentId?: string): DelayLoadedTreeNodeItem[] => {
@@ -24,6 +24,9 @@ export const createTreeNodeItem = (node: Readonly<Node>, parentId?: string): Del
     label: node.label,
     extendedData: { key: node.key },
   };
+  const style: ItemStyle = {};
+  const colorOverrides: ItemColorOverrides = {};
+
   if (parentId)
     item.parentId = parentId;
   if (node.description)
@@ -31,15 +34,15 @@ export const createTreeNodeItem = (node: Readonly<Node>, parentId?: string): Del
   if (node.hasChildren)
     item.hasChildren = true;
   if (StyleHelper.isBold(node))
-    item.labelBold = true;
+    style.isBold = true;
   if (StyleHelper.isItalic(node))
-    item.labelItalic = true;
+    style.isItalic = true;
   const foreColor = StyleHelper.getForeColor(node);
   if (foreColor)
-    item.labelForeColor = foreColor;
+    colorOverrides.color = foreColor;
   const backColor = StyleHelper.getBackColor(node);
   if (backColor)
-    item.labelBackColor = backColor;
+    colorOverrides.backgroundColor = backColor;
   if (node.isCheckboxVisible) {
     item.isCheckboxVisible = true;
     if (node.isChecked)
@@ -47,6 +50,12 @@ export const createTreeNodeItem = (node: Readonly<Node>, parentId?: string): Del
     if (!node.isCheckboxEnabled)
       item.isCheckboxDisabled = true;
   }
+
+  if (Object.keys(colorOverrides).length > 0)
+    style.colorOverrides = colorOverrides;
+  if (Object.keys(style).length > 0)
+    item.style = style;
+
   return item;
 };
 
