@@ -9,6 +9,7 @@ import {
   ChangesType, Briefcase, HubCode, IModelHubError,
   BriefcaseQuery, ChangeSetQuery, IModelQuery, ConflictingCodesError, IModelClient, HubIModel, IncludePrefix,
 } from "@bentley/imodeljs-clients";
+import { IModelBankClient } from "@bentley/imodeljs-clients/lib/IModelBank/IModelBankClient";
 import { AzureFileHandler, IOSAzureFileHandler } from "@bentley/imodeljs-clients-backend";
 import { ChangeSetApplyOption, BeEvent, DbResult, OpenMode, assert, Logger, ChangeSetStatus, BentleyStatus, IModelHubStatus, PerfLogger, ActivityLoggingContext, GuidString, Id64, IModelStatus } from "@bentley/bentleyjs-core";
 import { BriefcaseStatus, IModelError, IModelVersion, IModelToken, CreateIModelProps } from "@bentley/imodeljs-common";
@@ -1555,6 +1556,26 @@ export class BriefcaseManager {
       const delay: number = Math.floor(Math.random() * 4800) + 200;
       await new Promise((resolve: any) => setTimeout(resolve, delay));
     }
+  }
+
+  private static isUsingIModelBankClient(): boolean {
+    return (this._imodelClient === undefined) || (this._imodelClient instanceof IModelBankClient);
+  }
+
+  /**
+   * Create an iModel on iModelHub
+   * @hidden
+   */
+  public static async create(actx: ActivityLoggingContext, accessToken: AccessToken, contextId: string, iModelName: string, args: CreateIModelProps): Promise<string> {
+    actx.enter();
+    if (this.isUsingIModelBankClient()) {
+      throw new IModelError(IModelStatus.BadRequest, "Cannot create an iModel in iModelBank. This is a iModelHub only operation", Logger.logError, loggingCategory, () => ({ contextId, iModelName }));
+    }
+
+    const hubIModel: HubIModel = await BriefcaseManager.imodelClient.iModels.create(actx, accessToken, contextId, iModelName, undefined, args.rootSubject.description, undefined, 2 * 60 * 1000);
+    actx.enter();
+
+    return hubIModel.wsgId;
   }
 
   /** @hidden */
