@@ -7,9 +7,7 @@ const fs = require("fs");
 const path = require("path");
 const root = process.cwd();
 const ecDiagnosticsDir = path.resolve(root, "lib", "Validation", "ECRules");
-const bisDiagnosticsDir = path.resolve(root, "lib", "Validation", "BisRules");
 const ecDiagnostics = require(ecDiagnosticsDir);
-const bisDiagnostics = require(bisDiagnosticsDir);
 
 function printErrorAndFail(errorMessage) {
   console.log(`Build failed creating localization file ECSchemaMetadata.json: ${errorMessage}`);
@@ -21,10 +19,6 @@ function createLocalization() {
   const entries = {};
 
   for (const [, value] of Object.entries(ecDiagnostics.Diagnostics)) {
-    entries[value.prototype.code] = value.prototype.messageText;
-  }
-
-  for (const [, value] of Object.entries(bisDiagnostics.Diagnostics)) {
     entries[value.prototype.code] = value.prototype.messageText;
   }
 
