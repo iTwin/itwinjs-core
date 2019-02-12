@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import * as sinon from "sinon";
 
 import { SchemaContext } from "../../src/Context";
 import { SchemaItemType } from "../../src/ECObjects";
@@ -15,26 +14,6 @@ import { Schema } from "../../src/Metadata/Schema";
 import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
 
 describe("Constant", () => {
-  describe("accept", () => {
-    let testConstant: Constant;
-    beforeEach(() => {
-      const schema = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);
-      testConstant = new Constant(schema, "TestEnumeration");
-    });
-
-    it("should call visitConstant on a SchemaItemVisitor object", async () => {
-      expect(testConstant).to.exist;
-      const mockVisitor = { visitConstant: sinon.spy() };
-      await testConstant.accept(mockVisitor);
-      expect(mockVisitor.visitConstant.calledOnce).to.be.true;
-      expect(mockVisitor.visitConstant.calledWithExactly(testConstant)).to.be.true;
-    });
-
-    it("should safely handle a SchemaItemVisitor without visitConstant defined", async () => {
-      expect(testConstant).to.exist;
-      await testConstant.accept({});
-    });
-  });
 
   function createSchemaJson(constantJson: any): any {
     return createSchemaJsonWithItems({

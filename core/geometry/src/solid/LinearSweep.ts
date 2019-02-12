@@ -54,6 +54,7 @@ export class LinearSweep extends SolidPrimitive {
   public static createZSweep(xyPoints: XAndY[], z: number, zSweep: number, capped: boolean): LinearSweep | undefined {
     const xyz = LineString3d.createXY(xyPoints, z, capped);
     if (capped) {
+      xyz.addClosurePoint();
       const area = PolygonOps.areaXY(xyz.points);
       if (area * zSweep < 0.0)
         xyz.points.reverse();
@@ -127,5 +128,11 @@ export class LinearSweep extends SolidPrimitive {
       contourRange.high.addInPlace(this._direction);
     }
     range.extendRange(contourRange);
+  }
+  /**
+   * @return true if this is a closed volume.
+   */
+  public get isClosedVolume(): boolean {
+    return this.capped && this._contour.curves.isAnyRegionType;
   }
 }

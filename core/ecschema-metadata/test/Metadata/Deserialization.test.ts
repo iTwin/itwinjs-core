@@ -11,9 +11,10 @@ import { SchemaContext } from "./../../src/Context";
 import { SchemaReadHelper } from "./../../src/Deserialization/Helper";
 import { SchemaItemType } from "./../../src/ECObjects";
 import { ECObjectsError } from "./../../src/Exception";
-import { AnyClass, SchemaDeserializationVisitor } from "./../../src/Interfaces";
+import { AnyClass } from "./../../src/Interfaces";
 import { NavigationProperty } from "./../../src/Metadata/Property";
 import { Schema } from "./../../src/Metadata/Schema";
+import { ISchemaPartVisitor } from "../../src/SchemaPartVisitorDelegate";
 
 describe("Full Schema Deserialization", () => {
   describe("basic (empty) schemas", () => {
@@ -213,7 +214,7 @@ describe("Full Schema Deserialization", () => {
       version: "1.2.3",
     };
     type Mock<T> = { readonly [P in keyof T]: sinon.SinonSpy; };
-    let mockVisitor: Mock<SchemaDeserializationVisitor>;
+    let mockVisitor: Mock<ISchemaPartVisitor>;
 
     beforeEach(() => {
       mockVisitor = {
@@ -347,11 +348,11 @@ describe("Full Schema Deserialization", () => {
 
       expect(mockVisitor!.visitClass!.firstCall.calledWithExactly(testEntity)).to.be.true;
       expect(descriptions[0]).to.equal("Description for AMixin",
-        `SchemaDeserializationVisitor.visitClass was called for "BEntityClass" before its base class, "AMixin" was fully deserialized.`);
+        `ISchemaPartVisitor.visitClass was called for "BEntityClass" before its base class, "AMixin" was fully deserialized.`);
 
       expect(mockVisitor!.visitClass!.secondCall.calledWithExactly(testMixin)).to.be.true;
       expect(descriptions[1]).to.equal("Description for BEntityClass",
-        `SchemaDeserializationVisitor.visitClass was called for "AMixin" before its appliesTo class, "BEntityClass" was fully deserialized.`);
+        `ISchemaPartVisitor.visitClass was called for "AMixin" before its appliesTo class, "BEntityClass" was fully deserialized.`);
     });
 
     it("should safely handle EntityClass-extends-Mixin-appliesTo-EntityClass cycle", async () => {
@@ -397,11 +398,11 @@ describe("Full Schema Deserialization", () => {
 
       expect(mockVisitor!.visitClass!.firstCall.calledWithExactly(testMixin)).to.be.true;
       expect(descriptions[0]).to.equal("Description for AEntityClass",
-        `SchemaDeserializationVisitor.visitClass was called for "BMixin" before its appliesTo class, "AEntityClass" was fully deserialized.`);
+        `ISchemaPartVisitor.visitClass was called for "BMixin" before its appliesTo class, "AEntityClass" was fully deserialized.`);
 
       expect(mockVisitor!.visitClass!.secondCall.calledWithExactly(testEntity)).to.be.true;
       expect(descriptions[1]).to.equal("Description for BMixin",
-        `SchemaDeserializationVisitor.visitClass was called for "AEntityClass" before its base class, "BMixin" was fully deserialized.`);
+        `ISchemaPartVisitor.visitClass was called for "AEntityClass" before its base class, "BMixin" was fully deserialized.`);
     });
 
     it("should safely handle EntityClass-navProp-RelationshipClass-constraint-EntityClass cycle", async () => {
@@ -469,11 +470,11 @@ describe("Full Schema Deserialization", () => {
 
       expect(mockVisitor!.visitClass!.firstCall.calledWithExactly(testRelationship)).to.be.true;
       expect(descriptions[0]).to.equal("Description for AEntityClass",
-        `SchemaDeserializationVisitor.visitClass was called for "BRelationshipClass" before the entity class its constraints use, "AEntityClass" was fully deserialized.`);
+        `ISchemaPartVisitor.visitClass was called for "BRelationshipClass" before the entity class its constraints use, "AEntityClass" was fully deserialized.`);
 
       expect(mockVisitor!.visitClass!.secondCall.calledWithExactly(testEntity)).to.be.true;
       expect(descriptions[1]).to.equal("Description for BRelationshipClass",
-        `SchemaDeserializationVisitor.visitClass was called for "AEntityClass" before the relationship its NavigationProperty uses, "BRelationshipClass" was fully deserialized.`);
+        `ISchemaPartVisitor.visitClass was called for "AEntityClass" before the relationship its NavigationProperty uses, "BRelationshipClass" was fully deserialized.`);
     });
 
     it("should safely handle RelationshipClass-constraint-EntityClass-navProp-RelationshipClass cycle", async () => {
@@ -541,11 +542,11 @@ describe("Full Schema Deserialization", () => {
 
       expect(mockVisitor!.visitClass!.firstCall.calledWithExactly(testEntity)).to.be.true;
       expect(descriptions[0]).to.equal("Description for ARelationshipClass",
-        `SchemaDeserializationVisitor.visitClass was called for "BEntityClass" before the relationship its NavigationProperty uses, "ARelationshipClass" was fully deserialized.`);
+        `ISchemaPartVisitor.visitClass was called for "BEntityClass" before the relationship its NavigationProperty uses, "ARelationshipClass" was fully deserialized.`);
 
       expect(mockVisitor!.visitClass!.secondCall.calledWithExactly(testRelationship)).to.be.true;
       expect(descriptions[1]).to.equal("Description for BEntityClass",
-        `SchemaDeserializationVisitor.visitClass was called for "ARelationshipClass" before the entity class its constraints use, "BEntityClass" was fully deserialized.`);
+        `ISchemaPartVisitor.visitClass was called for "ARelationshipClass" before the entity class its constraints use, "BEntityClass" was fully deserialized.`);
 
     });
   });

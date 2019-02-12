@@ -8,7 +8,6 @@ import { SchemaItem } from "./SchemaItem";
 import { PhenomenonProps } from "./../Deserialization/JsonProps";
 import { SchemaItemType } from "./../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "./../Exception";
-import { SchemaItemVisitor } from "./../Interfaces";
 
 export class Phenomenon extends SchemaItem {
   public readonly schemaItemType!: SchemaItemType.Phenomenon; // tslint:disable-line
@@ -26,16 +25,6 @@ export class Phenomenon extends SchemaItem {
     const schemaJson = super.toJson(standalone, includeSchemaVersion);
     schemaJson.definition = this.definition;
     return schemaJson;
-  }
-
-  public async accept(visitor: SchemaItemVisitor) {
-    if (visitor.visitPhenomenon)
-      await visitor.visitPhenomenon(this);
-  }
-
-  public acceptSync(visitor: SchemaItemVisitor) {
-    if (visitor.visitPhenomenonSync)
-      visitor.visitPhenomenonSync(this);
   }
 
   public deserializeSync(phenomenonProps: PhenomenonProps) {

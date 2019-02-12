@@ -211,6 +211,56 @@ async function reverseChanges(csvPath: string, projectId: string, actLogCtx: Act
   await rwIModel.close(actLogCtx, accessToken, KeepBriefcase.No);
 }
 
+async function reinstateChanges(csvPath: string, projectId: string, actLogCtx: ActivityLoggingContext, accessToken: AccessToken) {
+  csvPath = csvPath;
+  const iModelName = "reinstateChangeTest";
+  // delete any existing imodel with given name
+  const iModels: HubIModel[] = await BriefcaseManager.imodelClient.iModels.get(actLogCtx, accessToken, projectId, new IModelQuery().byName(iModelName));
+  for (const iModelTemp of iModels) {
+    await BriefcaseManager.imodelClient.iModels.delete(actLogCtx, accessToken, projectId, iModelTemp.id!);
+  }
+  // create new imodel with given name
+  const rwIModel: IModelDb = await IModelDb.create(actLogCtx, accessToken, projectId, iModelName, { rootSubject: { name: "TestSubject" } });
+  const rwIModelId = rwIModel.iModelToken.iModelId;
+  assert.isNotEmpty(rwIModelId);
+
+  // create new model, category and physical element, and insert in imodel, and push these changes
+  rwIModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
+  const r: { modelId: Id64String, spatialCategoryId: Id64String } = await createNewModelAndCategory(rwIModel, accessToken, actLogCtx);
+  rwIModel.elements.insertElement(IModelTestUtils.createPhysicalObject(rwIModel, r.modelId, r.spatialCategoryId));
+  rwIModel.saveChanges("User created model, category and one physical element");
+  await rwIModel.pushChanges(actLogCtx, accessToken).catch();
+  const firstCount = getElementCount(rwIModel);
+  assert.equal(firstCount, 7);
+
+  let i = 0;
+  while (i < 4) {
+    rwIModel.elements.insertElement(IModelTestUtils.createPhysicalObject(rwIModel, r.modelId, r.spatialCategoryId));
+    i = i + 1;
+  }
+  rwIModel.saveChanges("added more elements to imodel");
+  await rwIModel.pushChanges(actLogCtx, accessToken).catch();
+  const secondCount = getElementCount(rwIModel);
+  assert.equal(secondCount, 11);
+
+  let imodelInfo: TestIModelInfo;
+  imodelInfo = await IModelTestUtils.getTestModelInfo(accessToken, projectId, iModelName);
+  const firstChangeSetId = imodelInfo.changeSets[0].wsgId;
+  await rwIModel.reverseChanges(actLogCtx, accessToken, IModelVersion.asOfChangeSet(firstChangeSetId));
+  const reverseCount = getElementCount(rwIModel);
+  assert.equal(reverseCount, firstCount);
+
+  const startTime = new Date().getTime();
+  await rwIModel.reinstateChanges(actLogCtx, accessToken, IModelVersion.latest());
+  const endTime = new Date().getTime();
+  const elapsedTime1 = (endTime - startTime) / 1000.0;
+  const reinstateCount = getElementCount(rwIModel);
+  assert.equal(reinstateCount, secondCount);
+
+  fs.appendFileSync(csvPath, "ReinstateChanges, Reinstate the imodel to latest CS from first," + elapsedTime1 + "\n");
+  await rwIModel.close(actLogCtx, accessToken, KeepBriefcase.No);
+}
+
 describe("ImodelChangesetPerformance", async () => {
   if (!IModelJsFs.existsSync(KnownTestLocations.outputDir))
     IModelJsFs.mkdirSync(KnownTestLocations.outputDir);
@@ -270,6 +320,10 @@ describe("ImodelChangesetPerformance", async () => {
 
   it("reverseChanges", async () => {
     reverseChanges(csvPath, projectId, actLogCtx, accessToken).catch();
+  });
+
+  it("reinstateChanges", async () => {
+    reinstateChanges(csvPath, projectId, actLogCtx, accessToken).catch();
   });
 
 });

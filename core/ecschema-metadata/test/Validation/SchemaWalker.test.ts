@@ -9,7 +9,7 @@ import sinon = require("sinon");
 import { SchemaContext } from "../../src/Context";
 import { SchemaReadHelper } from "../../src/Deserialization/Helper";
 import { JsonParser } from "../../src/Deserialization/JsonParser";
-import { ISchemaPartVisitor } from "../../src/Interfaces";
+import { ISchemaPartVisitor } from "../../src/SchemaPartVisitorDelegate";
 import { ECClass } from "../../src/Metadata/Class";
 import { RelationshipClass } from "../../src/Metadata/RelationshipClass";
 import { Schema } from "../../src/Metadata/Schema";

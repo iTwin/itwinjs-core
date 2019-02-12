@@ -5,24 +5,11 @@
 /** @module WebGL */
 
 import { assert, dispose } from "@bentley/bentleyjs-core";
-import { RenderMemory } from "../System";
+import { InstancedGraphicParams, RenderMemory } from "../System";
 import { CachedGeometry, LUTGeometry } from "./CachedGeometry";
 import { Target } from "./Target";
 import { ShaderProgramParams } from "./DrawCommand";
 import { AttributeHandle, BufferHandle } from "./Handle";
-
-export interface InstancedGraphicParams {
-  /** The number of instances.
-   * Must be greater than zero.
-   * Must be equal to (transforms.length / 12)
-   * If featureIds is defined, must be equal to (featureIds.length / 3)
-   */
-  readonly count: number;
-  /** An array of instance-to-model transforms. Each transform consists of 3 rows of 4 columns where the 4th column holds the translation. */
-  readonly transforms: Float32Array;
-  /** If defined, an array of little-endian 24-bit unsigned integers containing the feature ID of each instance. */
-  readonly featureIds?: Uint8Array;
-}
 
 export class InstancedGeometry extends CachedGeometry {
   public readonly numInstances: number;
@@ -70,12 +57,6 @@ export class InstancedGeometry extends CachedGeometry {
     return undefined !== tfBuf ? new InstancedGeometry(repr, ownsRepr, count, tfBuf, idBuf) : undefined;
   }
 
-  private static readonly _fakeTransforms = new Float32Array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0]);
-  private static readonly _fakeIds = new Uint8Array([0, 0, 0]);
-  public static createFake(repr: LUTGeometry): InstancedGeometry | undefined {
-    return this.create(repr, true, { count: 1, transforms: this._fakeTransforms, featureIds: this._fakeIds });
-  }
-
   private constructor(repr: LUTGeometry, ownsRepr: boolean, count: number, transforms: BufferHandle, featureIds?: BufferHandle) {
     super();
     this._repr = repr;
@@ -106,7 +87,8 @@ export class InstancedGeometry extends CachedGeometry {
   }
 
   public collectStatistics(stats: RenderMemory.Statistics) {
-    // ###TODO_INSTANCING: Record memory allocated to attributes
     this._repr.collectStatistics(stats);
+    const bytesUsed = this.transforms.bytesUsed + (undefined !== this.featureIds ? this.featureIds.bytesUsed : 0);
+    stats.addInstances(bytesUsed);
   }
 }

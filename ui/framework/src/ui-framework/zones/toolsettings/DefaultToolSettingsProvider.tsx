@@ -57,6 +57,7 @@ export class DefaultToolSettings extends React.Component<TsProps, TsState> {
     super(props);
 
     const state = DefaultToolSettings.getStateFromProps(props);
+    /* istanbul ignore else */
     if (state)
       this.state = state;
   }
@@ -119,12 +120,15 @@ export class DefaultToolSettings extends React.Component<TsProps, TsState> {
     const blankCellRecord = new ToolSettingsPropertyRecord(DefaultToolSettings._blankValue, DefaultToolSettings._blankDescription, { rowPriority: 0, columnPriority: 0 } as EditorPosition);
 
     // sort rows and columns by priority.
+    /* istanbul ignore else */
     if (props.rows) {
+      /* istanbul ignore else */
       if (props.rows.length > 1)
         props.rows.sort((a, b) => a.priority - b.priority);
       props.rows.forEach((row) => {
         if (row.cols.length > 1)
           row.cols.sort((a, b) => a.priority - b.priority);
+        /* istanbul ignore else */
         if (row.cols.length > numCols) numCols = row.cols.length; {
           row.cols.forEach((col) => {
             properties.set(col.record.property.name, col.record.property);
@@ -134,6 +138,7 @@ export class DefaultToolSettings extends React.Component<TsProps, TsState> {
 
       // add a placeholder entries so each cell in the grid has something defined
       props.rows.forEach((row) => {
+        /* istanbul ignore else */
         if (row.cols.length < numCols)
           row.cols.push(new TsCol(-1, blankCellRecord));
       });
@@ -149,6 +154,7 @@ export class DefaultToolSettings extends React.Component<TsProps, TsState> {
   }
 
   private hasSuppressEditorLabelParam(record: PropertyRecord) {
+    /* istanbul ignore else */
     if (record.property.editor && record.property.editor.params)
       return record.property.editor.params.find((param: PropertyEditorParams) => param.type === PropertyEditorParamTypes.SuppressEditorLabel);
 
@@ -250,6 +256,7 @@ export class DefaultToolSettingsProvider extends ToolUiProvider {
     return this.rows.length > 0;
   }
 
+  /* istanbul ignore next */
   public execute(): void {
   }
 

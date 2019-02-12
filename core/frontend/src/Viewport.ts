@@ -875,6 +875,10 @@ export class ViewFrustum {
 export abstract class Viewport implements IDisposable {
   /** Event called whenever this viewport is synchronized with its ViewState. */
   public readonly onViewChanged = new BeEvent<(vp: Viewport) => void>();
+  /** Event called whenever this viewport's set of always-drawn elements changes. */
+  public readonly onAlwaysDrawnChanged = new BeEvent<(vp: Viewport) => void>();
+  /** Event called whenever this viewport's set of never-drawn elements changes. */
+  public readonly onNeverDrawnChanged = new BeEvent<(vp: Viewport) => void>();
 
   private readonly _viewportId: number;
   private _animationFraction = 0.0;
@@ -1075,10 +1079,13 @@ export abstract class Viewport implements IDisposable {
    * @see [[alwaysDrawn]]
    */
   public clearAlwaysDrawn(): void {
-    if (undefined !== this.alwaysDrawn && 0 < this.alwaysDrawn.size) {
-      this.alwaysDrawn.clear();
+    if ((undefined !== this.alwaysDrawn && 0 < this.alwaysDrawn.size) || this._alwaysDrawnExclusive) {
+      if (undefined !== this.alwaysDrawn)
+        this.alwaysDrawn.clear();
+
       this._alwaysDrawnExclusive = false;
       this.view.setFeatureOverridesDirty();
+      this.onAlwaysDrawnChanged.raiseEvent(this);
     }
   }
 
@@ -1089,6 +1096,7 @@ export abstract class Viewport implements IDisposable {
     if (undefined !== this.neverDrawn && 0 < this.neverDrawn.size) {
       this.neverDrawn.clear();
       this.view.setFeatureOverridesDirty();
+      this.onNeverDrawnChanged.raiseEvent(this);
     }
   }
 
@@ -1098,6 +1106,7 @@ export abstract class Viewport implements IDisposable {
   public setNeverDrawn(ids: Id64Set): void {
     this._neverDrawn = ids;
     this.view.setFeatureOverridesDirty();
+    this.onNeverDrawnChanged.raiseEvent(this);
   }
 
   /** Specify the IDs of a set of elements which should always be rendered within this view, regardless of category and subcategory visibility.
@@ -1110,6 +1119,7 @@ export abstract class Viewport implements IDisposable {
     this._alwaysDrawn = ids;
     this._alwaysDrawnExclusive = exclusive;
     this.view.setFeatureOverridesDirty();
+    this.onAlwaysDrawnChanged.raiseEvent(this);
   }
 
   /** Returns true if the set of elements in the [[alwaysDrawn]] set are the *only* elements rendered within this view. */

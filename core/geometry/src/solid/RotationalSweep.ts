@@ -124,4 +124,10 @@ export class RotationalSweep extends SolidPrimitive {
         strokes.extendRange(range, this.getFractionalRotationTransform(i / numStep, stepTransform));
     }
   }
+  /**
+   * @return true if this is a closed volume.
+   */
+  public get isClosedVolume(): boolean {
+    return this.capped || this._sweepAngle.isFullCircle;
+  }
 }

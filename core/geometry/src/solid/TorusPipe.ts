@@ -249,4 +249,11 @@ export class TorusPipe extends SolidPrimitive implements UVSurface {
       this._localToWorld.multiplyVectorXYZ(-rxy * sinTheta * fTheta, rxy * cosTheta * fTheta, 0),
       result);
   }
+  /**
+   * @return true if this is a closed volume.
+   */
+  public get isClosedVolume(): boolean {
+    return this.capped || this._sweep.isFullCircle;
+  }
+
 }

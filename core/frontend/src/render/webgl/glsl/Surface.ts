@@ -170,12 +170,12 @@ const computeNormal = `
   tc.x += 3.0 * g_vert_stepX;
   vec4 enc = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
   vec2 normal = mix(g_vertexData2, enc.xy, extractSurfaceBit(kSurfaceBit_HasColorAndNormal));
-  return mix(vec3(0.0), normalize(u_nmx * octDecodeNormal(normal)), extractSurfaceBit(kSurfaceBit_HasNormals));
+  return mix(vec3(0.0), normalize(MAT_NORM * octDecodeNormal(normal)), extractSurfaceBit(kSurfaceBit_HasNormals));
 `;
 
 const computeAnimatedNormal = `
   if (u_animNormalParams.x >= 0.0)
-    return normalize(u_nmx * computeAnimationNormal(u_animNormalParams.x, u_animNormalParams.y, u_animNormalParams.z));
+    return normalize(MAT_NORM * computeAnimationNormal(u_animNormalParams.x, u_animNormalParams.y, u_animNormalParams.z));
 ` + computeNormal;
 
 const applyBackgroundColor = `

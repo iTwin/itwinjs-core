@@ -80,14 +80,19 @@ export class GrowableXYZArray extends IndexedXYZCollection {
    * Make a copy of the (active) points in this array.
    * (The clone does NOT get excess capacity)
    */
-  public clone(): GrowableXYZArray {
-    const newPoints = new GrowableXYZArray(this.length);
+  public clone(result?: GrowableXYZArray): GrowableXYZArray {
     const numValue = this.length * 3;
-    const newData = newPoints._data;
+    if (!result)
+      result = new GrowableXYZArray(this.length);
+    else {
+      result.clear();
+      result.ensureCapacity(this.length);
+    }
+    const newData = result._data;
     const data = this._data;
     for (let i = 0; i < numValue; i++) newData[i] = data[i];
-    newPoints._xyzInUse = this.length;
-    return newPoints;
+    result._xyzInUse = this.length;
+    return result;
   }
 
   public static create(data: XYAndZ[]): GrowableXYZArray {
@@ -337,6 +342,47 @@ export class GrowableXYZArray extends IndexedXYZCollection {
     }
   }
 
+  /** multiply each xyz (as a vector) by matrix inverse transpse, renormalize the vector, replace values.
+   * * This is the way to apply a matrix (possibly with skew and scale) to a surface normal, and
+   *      have it end up perpendicular to the transformed in-surface vectors.
+   *
+   */
+  public multiplyAndRenormalizeMatrix3dInverseTransposeInPlace(matrix: Matrix3d) {
+    const data = this._data;
+    const nDouble = this.float64Length;
+    const coffs = matrix.coffs;
+    const tol = 1.0e-15;
+    let x = 0;
+    let y = 0;
+    let z = 0;
+    let x1;
+    let y1;
+    let z1;
+    let q;
+    let a;
+    for (let i = 0; i + 3 <= nDouble; i += 3) {
+      x = data[i];
+      y = data[i + 1];
+      z = data[i + 2];
+      x1 = coffs[0] * x + coffs[1] * y + coffs[2] * z;
+      y1 = coffs[3] * x + coffs[4] * y + coffs[5] * z;
+      z1 = coffs[6] * x + coffs[7] * y + coffs[8] * z;
+      a = x1 * x1 + y1 * y1 + z1 * z1;
+      if (a < tol) {
+        // put the originals back ..
+        x1 = x; y1 = y; z1 = z;
+      } else if (Math.abs(a - 1.0) > tol) {
+        q = 1.0 / Math.sqrt(a);
+        x1 *= q;
+        y1 *= q;
+        z1 *= q;
+      } // else -- q is near 1, no need to do the division !!
+      data[i] = x1;
+      data[i + 1] = y1;
+      data[i + 2] = z1;
+    }
+  }
+
   /** multiply each point by the transform, replace values. */
   public tryTransformInverseInPlace(transform: Transform): boolean {
     const data = this._data;
@@ -523,7 +569,7 @@ export class GrowableXYZArray extends IndexedXYZCollection {
     return undefined;
   }
   /** Return the distance between an array point and the input point. */
-  public distanceIndexToPoint(i: number, spacePoint: Point3d): number | undefined {
+  public distanceIndexToPoint(i: number, spacePoint: XYAndZ): number | undefined {
     if (i >= 0 && i < this._xyzInUse) {
       const i0 = 3 * i;
       return Geometry.hypotenuseXYZ(

@@ -24,7 +24,7 @@ import { System } from "./System";
 import { BufferHandle, AttributeHandle } from "./Handle";
 import { GL } from "./GL";
 import { TechniqueId } from "./TechniqueId";
-import { RenderMemory } from "../System";
+import { InstancedGraphicParams, RenderMemory } from "../System";
 
 export class MeshData implements IDisposable {
   public readonly edgeWidth: number;
@@ -68,22 +68,22 @@ export class MeshGraphic extends Graphic {
   public readonly meshData: MeshData;
   private readonly _primitives: Primitive[] = [];
 
-  public static create(params: MeshParams): MeshGraphic | undefined {
+  public static create(params: MeshParams, instances?: InstancedGraphicParams): MeshGraphic | undefined {
     const data = MeshData.create(params);
-    return undefined !== data ? new MeshGraphic(data, params) : undefined;
+    return undefined !== data ? new MeshGraphic(data, params, instances) : undefined;
   }
 
-  private addPrimitive(createGeom: () => CachedGeometry | undefined) {
-    const primitive = Primitive.create(createGeom);
+  private addPrimitive(createGeom: () => CachedGeometry | undefined, instances?: InstancedGraphicParams) {
+    const primitive = Primitive.create(createGeom, instances);
     if (undefined !== primitive)
       this._primitives.push(primitive);
   }
 
-  private constructor(data: MeshData, params: MeshParams) {
+  private constructor(data: MeshData, params: MeshParams, instances?: InstancedGraphicParams) {
     super();
     this.meshData = data;
 
-    this.addPrimitive(() => SurfaceGeometry.create(this.meshData, params.surface.indices));
+    this.addPrimitive(() => SurfaceGeometry.create(this.meshData, params.surface.indices), instances);
 
     // Classifiers are surfaces only...no edges.
     if (this.surfaceType === SurfaceType.Classifier || undefined === params.edges)
@@ -91,13 +91,13 @@ export class MeshGraphic extends Graphic {
 
     const edges = params.edges;
     if (undefined !== edges.silhouettes)
-      this.addPrimitive(() => SilhouetteEdgeGeometry.createSilhouettes(this.meshData, edges.silhouettes!));
+      this.addPrimitive(() => SilhouetteEdgeGeometry.createSilhouettes(this.meshData, edges.silhouettes!), instances);
 
     if (undefined !== edges.segments)
-      this.addPrimitive(() => EdgeGeometry.create(this.meshData, edges.segments!));
+      this.addPrimitive(() => EdgeGeometry.create(this.meshData, edges.segments!), instances);
 
     if (undefined !== edges.polylines)
-      this.addPrimitive(() => PolylineEdgeGeometry.create(this.meshData, edges.polylines!));
+      this.addPrimitive(() => PolylineEdgeGeometry.create(this.meshData, edges.polylines!), instances);
   }
 
   public dispose() {

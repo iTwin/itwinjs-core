@@ -10,7 +10,6 @@ import { Unit } from "./Unit";
 import { FormatProps } from "./../Deserialization/JsonProps";
 import { SchemaItemType } from "./../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "./../Exception";
-import { SchemaItemVisitor } from "./../Interfaces";
 import {
   DecimalPrecision, FormatTraits, formatTraitsToArray, FormatType, formatTypeToString,
   FractionalPrecision, parseFormatTrait, parseFormatType, parsePrecision, parseScientificType,
@@ -268,15 +267,5 @@ export class Format extends SchemaItem {
     }
 
     return schemaJson;
-  }
-
-  public async accept(visitor: SchemaItemVisitor) {
-    if (visitor.visitFormat)
-      await visitor.visitFormat(this);
-  }
-
-  public acceptSync(visitor: SchemaItemVisitor) {
-    if (visitor.visitFormatSync)
-      visitor.visitFormatSync(this);
   }
 }

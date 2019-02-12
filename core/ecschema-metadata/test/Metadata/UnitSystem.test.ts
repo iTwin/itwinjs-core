@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import * as sinon from "sinon";
 
 import { SchemaContext } from "../../src/Context";
 import { SchemaItemType, schemaItemTypeToString } from "../../src/ECObjects";
@@ -13,25 +12,6 @@ import { UnitSystem } from "../../src/Metadata/UnitSystem";
 
 describe("UnitSystem tests", () => {
   let testUnitSystem: UnitSystem;
-  describe("accept", () => {
-    beforeEach(() => {
-      const schema = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);
-      testUnitSystem = new UnitSystem(schema, "TestEnumeration");
-    });
-
-    it("should call visitUnitSystem on a SchemaItemVisitor object", async () => {
-      expect(testUnitSystem).to.exist;
-      const mockVisitor = { visitUnitSystem: sinon.spy() };
-      await testUnitSystem.accept(mockVisitor);
-      expect(mockVisitor.visitUnitSystem.calledOnce).to.be.true;
-      expect(mockVisitor.visitUnitSystem.calledWithExactly(testUnitSystem)).to.be.true;
-    });
-
-    it("should safely handle a SchemaItemVisitor without visitUnitSystem defined", async () => {
-      expect(testUnitSystem).to.exist;
-      await testUnitSystem.accept({});
-    });
-  });
 
   describe("SchemaItemType", () => {
     const schema = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);

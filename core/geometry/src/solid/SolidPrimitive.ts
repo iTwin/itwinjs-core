@@ -26,4 +26,12 @@ export abstract class SolidPrimitive extends GeometryQuery {
    * * The particulars of origin and orientation are specific to each SolidPrimitive type.
    */
   public abstract getConstructiveFrame(): Transform | undefined;
+  /**
+   * @return true if this is a closed volume.
+   * * LinearSweep, Box, Cone only depend on capped.
+   * * Sphere affected by capped and latitude sweep
+   * * TorusPipe and RotationalSweep affected by capped and sweep
+   * * RuledSweep is affected by capped and match of first, last contour
+   */
+  public abstract get isClosedVolume(): boolean;
 }

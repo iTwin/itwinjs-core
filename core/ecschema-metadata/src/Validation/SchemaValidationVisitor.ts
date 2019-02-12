@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import { AnyClass, ISchemaPartVisitor } from "../Interfaces";
+import { AnyClass } from "../Interfaces";
 import { StructClass } from "../Metadata/Class";
 import { Constant } from "../Metadata/Constant";
 import { CustomAttribute, CustomAttributeContainerProps } from "../Metadata/CustomAttribute";
@@ -24,7 +24,8 @@ import { Unit } from "../Metadata/Unit";
 import { UnitSystem } from "../Metadata/UnitSystem";
 import { AnyDiagnostic } from "./Diagnostic";
 import { IDiagnosticReporter } from "./DiagnosticReporter";
-import { IRule, IRuleSet } from "./Rules";
+import { IRuleSet } from "./Rules";
+import { ISchemaPartVisitor } from "../SchemaPartVisitorDelegate";
 
 interface RuleSetArray {
   [name: string]: IRuleSet;
@@ -39,52 +40,10 @@ interface RuleSetArray {
 export class SchemaValidationVisitor implements ISchemaPartVisitor {
   private _reporters: IDiagnosticReporter[] = [];
   private _ruleSets: RuleSetArray = {};
-  private _classRules: Array<IRule<AnyClass>> = [];
-  private _propertyRules: Array<IRule<AnyProperty>> = [];
-  private _relationshipRules: Array<IRule<RelationshipClass>> = [];
-  private _relationshipConstraintRules: Array<IRule<RelationshipConstraint>> = [];
-  private _customAttributeContainerRules: Array<IRule<CustomAttributeContainerProps>> = [];
-  private _enumerationRules: Array<IRule<Enumeration>> = [];
-  private _kindOfQuantityRules: Array<IRule<KindOfQuantity>> = [];
 
   /** Gets the IRule<AnyClass> objects registered with the visitor. */
   public get ruleSets(): RuleSetArray {
     return this._ruleSets;
-  }
-
-  /** Gets the IRule<AnyClass> objects registered with the visitor. */
-  public get classRules(): Array<IRule<AnyClass>> {
-    return this._classRules;
-  }
-
-  /** Gets the IRule<AnyProperty> objects registered with the visitor. */
-  public get propertyRules(): Array<IRule<AnyProperty>> {
-    return this._propertyRules;
-  }
-
-  /** Gets the IRule<RelationshipClass> objects registered with the visitor. */
-  public get relationshipRules(): Array<IRule<RelationshipClass>> {
-    return this._relationshipRules;
-  }
-
-  /** Gets the IRule<RelationshipConstraint> objects registered with the visitor. */
-  public get relationshipConstraintRules(): Array<IRule<RelationshipConstraint>> {
-    return this._relationshipConstraintRules;
-  }
-
-  /** Gets the IRule<CustomAttributeContainerProps> objects registered with the visitor. */
-  public get customAttributeContainerRules(): Array<IRule<CustomAttributeContainerProps>> {
-    return this._customAttributeContainerRules;
-  }
-
-  /** Gets the IRule<Enumeration> objects registered with the visitor. */
-  public get enumerationRules(): Array<IRule<Enumeration>> {
-    return this._enumerationRules;
-  }
-
-  /** Gets the IRule<KindOfQuantity> objects registered with the visitor. */
-  public get kindOfQuantityRules(): Array<IRule<KindOfQuantity>> {
-    return this._kindOfQuantityRules;
   }
 
   /** Gets the IDiagnosticReporter objects registered with the visitor. */
@@ -329,9 +288,6 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
 
     for (const rule of ruleSet.schemaRules) {
       const result = rule(schema);
-      if (!result)
-        continue;
-
       await this.reportDiagnostics(result);
     }
   }
@@ -342,9 +298,6 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
 
     for (const rule of ruleSet.schemaItemRules) {
       const result = rule(schemaItem);
-      if (!result)
-        continue;
-
       await this.reportDiagnostics(result);
     }
   }
@@ -355,9 +308,6 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
 
     for (const rule of ruleSet.classRules) {
       const result = rule(ecClass);
-      if (!result)
-        continue;
-
       await this.reportDiagnostics(result);
     }
   }
@@ -368,9 +318,6 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
 
     for (const rule of ruleSet.propertyRules) {
       const result = rule(property);
-      if (!result)
-        continue;
-
       await this.reportDiagnostics(result);
     }
   }
@@ -381,9 +328,6 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
 
     for (const rule of ruleSet.entityClassRules) {
       const result = rule(entityClass);
-      if (!result)
-        continue;
-
       await this.reportDiagnostics(result);
     }
   }
@@ -394,9 +338,6 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
 
     for (const rule of ruleSet.structClassRules) {
       const result = rule(structClass);
-      if (!result)
-        continue;
-
       await this.reportDiagnostics(result);
     }
   }
@@ -407,9 +348,6 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
 
     for (const rule of ruleSet.mixinRules) {
       const result = rule(mixin);
-      if (!result)
-        continue;
-
       await this.reportDiagnostics(result);
     }
   }
@@ -420,9 +358,6 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
 
     for (const rule of ruleSet.relationshipRules) {
       const result = rule(relationship);
-      if (!result)
-        continue;
-
       await this.reportDiagnostics(result);
     }
   }
@@ -433,9 +368,6 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
 
     for (const rule of ruleSet.relationshipConstraintRules) {
       const result = rule(constraint);
-      if (!result)
-        continue;
-
       await this.reportDiagnostics(result);
     }
   }
@@ -446,9 +378,6 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
 
     for (const rule of ruleSet.customAttributeClassRules) {
       const result = rule(customAttribute);
-      if (!result)
-        continue;
-
       await this.reportDiagnostics(result);
     }
   }
@@ -459,9 +388,6 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
 
     for (const rule of ruleSet.customAttributeContainerRules) {
       const result = rule(container);
-      if (!result)
-        continue;
-
       await this.reportDiagnostics(result);
     }
   }
@@ -472,9 +398,6 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
 
     for (const rule of ruleSet.customAttributeInstanceRules) {
       const result = rule(container, customAttribute);
-      if (!result)
-        continue;
-
       await this.reportDiagnostics(result);
     }
   }
@@ -485,9 +408,6 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
 
     for (const rule of ruleSet.enumerationRules) {
       const result = rule(enumeration);
-      if (!result)
-        continue;
-
       await this.reportDiagnostics(result);
     }
   }
@@ -498,9 +418,6 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
 
     for (const rule of ruleSet.kindOfQuantityRules) {
       const result = rule(kindOfQuantity);
-      if (!result)
-        continue;
-
       await this.reportDiagnostics(result);
     }
   }
@@ -511,9 +428,6 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
 
     for (const rule of ruleSet.propertyCategoryRules) {
       const result = rule(propertyCategory);
-      if (!result)
-        continue;
-
       await this.reportDiagnostics(result);
     }
   }
@@ -524,9 +438,6 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
 
     for (const rule of ruleSet.formatRules) {
       const result = rule(format);
-      if (!result)
-        continue;
-
       await this.reportDiagnostics(result);
     }
   }
@@ -537,9 +448,6 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
 
     for (const rule of ruleSet.unitRules) {
       const result = rule(unit);
-      if (!result)
-        continue;
-
       await this.reportDiagnostics(result);
     }
   }
@@ -550,9 +458,6 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
 
     for (const rule of ruleSet.invertedUnitRules) {
       const result = rule(invertedUnit);
-      if (!result)
-        continue;
-
       await this.reportDiagnostics(result);
     }
   }
@@ -563,9 +468,6 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
 
     for (const rule of ruleSet.unitSystemRules) {
       const result = rule(unitSystem);
-      if (!result)
-        continue;
-
       await this.reportDiagnostics(result);
     }
   }
@@ -576,9 +478,6 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
 
     for (const rule of ruleSet.phenomenonRules) {
       const result = rule(phenomenon);
-      if (!result)
-        continue;
-
       await this.reportDiagnostics(result);
     }
   }
@@ -589,9 +488,6 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
 
     for (const rule of ruleSet.constantRules) {
       const result = rule(constant);
-      if (!result)
-        continue;
-
       await this.reportDiagnostics(result);
     }
   }

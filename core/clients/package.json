@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-clients",
-  "version": "0.189.0-dev.22",
+  "version": "0.189.0-dev.24",
   "description": "Clients for various Bentley Services used by iModel.js",
   "main": "lib/imodeljs-clients.js",
   "typings": "lib/imodeljs-clients",
@@ -47,18 +47,18 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "0.189.0-dev.22"
+    "@bentley/bentleyjs-core": "0.189.0-dev.24"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/config-loader": "0.189.0-dev.22",
-    "@bentley/bentleyjs-core": "0.189.0-dev.22",
-    "@bentley/build-tools": "0.189.0-dev.22",
-    "@bentley/webpack-tools": "0.189.0-dev.22",
-    "@bentley/geometry-core": "0.189.0-dev.22",
+    "@bentley/config-loader": "0.189.0-dev.24",
+    "@bentley/bentleyjs-core": "0.189.0-dev.24",
+    "@bentley/build-tools": "0.189.0-dev.24",
+    "@bentley/webpack-tools": "0.189.0-dev.24",
+    "@bentley/geometry-core": "0.189.0-dev.24",
     "@types/chai": "^4.1.4",
     "@types/deep-assign": "^0.1.0",
     "@types/js-base64": "^2.3.1",

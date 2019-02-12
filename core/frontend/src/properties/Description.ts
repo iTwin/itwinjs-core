@@ -28,7 +28,7 @@ export interface EnumerationChoicesInfo {
  * Information about a Property Editor
  */
 export interface PropertyEditorInfo {
-  name: string;
+  name?: string;
   params?: PropertyEditorParams[];
 }
 

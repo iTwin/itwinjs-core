@@ -4,8 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import * as sinon from "sinon";
-
 import { Schema } from "../../src/Metadata/Schema";
 import { InvertedUnit } from "../../src/Metadata/InvertedUnit";
 import { ECObjectsError } from "../../src/Exception";
@@ -16,25 +14,6 @@ import { SchemaContext } from "../../src/Context";
 
 describe("Inverted Unit tests", () => {
   let testUnit: InvertedUnit;
-  describe("accept", () => {
-    beforeEach(() => {
-      const schema = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);
-      testUnit = new InvertedUnit(schema, "TestInvertedUnit");
-    });
-
-    it("should call visitInvertedUnit on a SchemaItemVisitor object", async () => {
-      expect(testUnit).to.exist;
-      const mockVisitor = { visitInvertedUnit: sinon.spy() };
-      await testUnit.accept(mockVisitor);
-      expect(mockVisitor.visitInvertedUnit.calledOnce).to.be.true;
-      expect(mockVisitor.visitInvertedUnit.calledWithExactly(testUnit)).to.be.true;
-    });
-
-    it("should safely handle a SchemaItemVisitor without visitInvertedUnit defined", async () => {
-      expect(testUnit).to.exist;
-      await testUnit.accept({});
-    });
-  });
 
   describe("SchemaItemType", () => {
     const schema = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);

@@ -421,7 +421,7 @@ describe("TileIO (mock render)", () => {
     if (WebGLTestContext.isInitialized) {
       const model = new FakeGMState(new FakeModelProps(new FakeREProps()), imodel);
       const stream = new TileIO.StreamBuffer(currentTestCase.rectangle.bytes.buffer);
-      const reader = IModelTileIO.Reader.create(stream, model.iModel, model.id, model.is3d, IModelApp.renderSystem, BatchType.Primary, (_) => true);
+      const reader = IModelTileIO.Reader.create(stream, model.iModel, model.id, model.is3d, IModelApp.renderSystem, BatchType.Primary, true, (_) => true);
       expect(reader).not.to.be.undefined;
 
       const result = await reader!.read();
@@ -517,7 +517,7 @@ async function getTileTree(imodel: IModelConnection, modelId: Id64String): Promi
 
   let tree: TileTree | undefined;
   await waitUntil(() => {
-    tree = model.getOrLoadTileTree();
+    tree = model.getOrLoadTileTree(true);
     return undefined !== tree;
   });
 

@@ -136,9 +136,9 @@ export abstract class RpcRequest<TResponse = any> {
   public method: string;
 
   /** Finds the first parameter of a given type if present. */
-  public findParameterOfType<T>(constructor: { new(...args: any[]): T }): T | undefined {
+  public findParameterOfType<T>(requestConstructor: { new(...args: any[]): T }): T | undefined {
     for (const param of this.parameters) {
-      if (param instanceof constructor)
+      if (param instanceof requestConstructor)
         return param;
     }
 

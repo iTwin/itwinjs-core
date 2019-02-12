@@ -11,7 +11,7 @@ import { DelayedPromiseWithProps } from "./../DelayedPromise";
 import { SchemaItemType } from "./../ECObjects";
 import { UnitProps } from "./../Deserialization/JsonProps";
 import { ECObjectsError, ECObjectsStatus } from "./../Exception";
-import { LazyLoadedPhenomenon, LazyLoadedUnitSystem, SchemaItemVisitor } from "./../Interfaces";
+import { LazyLoadedPhenomenon, LazyLoadedUnitSystem } from "./../Interfaces";
 import { SchemaItemKey } from "./../SchemaKey";
 
 /**
@@ -105,15 +105,5 @@ export class Unit extends SchemaItem {
 
   public async deserialize(unitProps: UnitProps) {
     this.deserializeSync(unitProps);
-  }
-
-  public async accept(visitor: SchemaItemVisitor) {
-    if (visitor.visitUnit)
-      await visitor.visitUnit(this);
-  }
-
-  public acceptSync(visitor: SchemaItemVisitor) {
-    if (visitor.visitUnitSync)
-      visitor.visitUnitSync(this);
   }
 }

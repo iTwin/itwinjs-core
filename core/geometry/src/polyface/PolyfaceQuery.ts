@@ -16,6 +16,7 @@ import { Loop } from "../curve/Loop";
 import { LineString3d } from "../curve/LineString3d";
 import { PolygonOps } from "../geometry3d/PointHelpers";
 import { MomentData } from "../geometry4d/MomentData";
+import { IndexedEdgeMatcher, SortableEdgeCluster } from "./IndexedEdgeMatcher";
 
 /** PolyfaceQuery is a static class whose methods implement queries on a polyface or polyface visitor provided as a parameter to each mtehod. */
 export class PolyfaceQuery {
@@ -98,5 +99,22 @@ export class PolyfaceQuery {
     const inertiaProducts = PolyfaceQuery.sumFacetSecondAreaMomentProducts(source, origin);
     return MomentData.inertiaProductsToPrincipalAxes(origin, inertiaProducts);
   }
-
+  /**
+   * Test if the facets in `source` occur in perfectly mated pairs, as is required for a closed manifold volume.
+   * @param source
+   */
+  public static isPolyfaceClosedByEdgePairing(source: Polyface): boolean {
+    const edges = new IndexedEdgeMatcher();
+    const visitor = source.createVisitor(1) as PolyfaceVisitor;
+    visitor.reset();
+    while (visitor.moveToNextFacet()) {
+      const numEdges = visitor.pointCount - 1;
+      for (let i = 0; i < numEdges; i++) {
+        edges.addEdge(visitor.clientPointIndex(i), visitor.clientPointIndex(i + 1), visitor.currentReadIndex());
+      }
+    }
+    const badClusters: SortableEdgeCluster[] = [];
+    edges.sortAndcollectClusters(undefined, badClusters, undefined, badClusters);
+    return badClusters.length === 0;
+  }
 }

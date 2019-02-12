@@ -22,9 +22,20 @@ import { Point3d } from "../../geometry3d/Point3dVector3d";
 export class StrokeCountChain {
   public maps: StrokeCountMap[];
   public parent?: CurveCollection;
-  private constructor(parent?: CurveCollection) { this.parent = parent; this.maps = []; }
+  /**
+   * options are used (with different purposes) at two times:
+   * * When the StrokeCountChain is created, the options affect the stroke counts.  This is just creating markup, not actual strokes.
+   * * When actual stroking happens, the options control creation of parameters and tangents.
+   */
+  public options?: StrokeOptions;
+
+  private constructor(parent?: CurveCollection, options?: StrokeOptions) {
+    this.parent = parent;
+    this.maps = [];
+    this.options = options;
+  }
   public static createForCurveChain(chain: CurveChain, options?: StrokeOptions): StrokeCountChain {
-    const result = new StrokeCountChain(chain);
+    const result = new StrokeCountChain(chain, options);
     result.parent = chain;
     // A chain can only contain primitives !!!!
     for (const p of chain.children) {
@@ -36,6 +47,12 @@ export class StrokeCountChain {
   }
   public getStrokes(): LineString3d {
     const ls = LineString3d.create();
+    if (this.options) {
+      if (this.options.needNormals || this.options.needParams) {
+        ls.initializeFractionArray();
+        ls.initializeDerivativeArray();
+      }
+    }
     for (const m of this.maps) {
       if (m.primitive)
         m.primitive.addMappedStrokesToLineString3D(m, ls);

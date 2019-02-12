@@ -136,7 +136,7 @@ export class MemoryTracker {
     this.addSelector(parent);
 
     this._textures = new MemoryPanel(this._div, "Textures", ["Surface Textures", "Vertex Tables", "Feature Tables", "Feature Overrides", "Clip Volumes"]);
-    this._buffers = new MemoryPanel(this._div, "Buffers", ["Surfaces", "Visible Edges", "Silhouettes", "Polyline Edges", "Polylines", "Point Strings", "Point Clouds"]);
+    this._buffers = new MemoryPanel(this._div, "Buffers", ["Surfaces", "Visible Edges", "Silhouettes", "Polyline Edges", "Polylines", "Point Strings", "Point Clouds", "Instances"]);
     this._totalElem = this.addStatistics(this._div);
 
     this._purgeButton = this.addPurgeButton(this._div);
