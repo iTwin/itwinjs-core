@@ -160,13 +160,14 @@ describe("SchemaWalker tests", () => {
       visitFullSchema: sinon.spy(),
     };
 
-    testSchema = new Schema(new SchemaContext());
-    const reader = new SchemaReadHelper(JsonParser, undefined);
+    const context = new SchemaContext();
+    testSchema = new Schema(context);
+    const reader = new SchemaReadHelper(JsonParser, context);
     testSchema = await reader.readSchema(testSchema, schemaJson);
   });
 
   it("should call all visit methods", async () => {
-    const reader = new SchemaWalker(mockVisitor, new SchemaContext());
+    const reader = new SchemaWalker(mockVisitor);
     testSchema = await reader.traverseSchema(testSchema);
     expect(testSchema).to.exist;
 

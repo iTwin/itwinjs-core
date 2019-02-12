@@ -539,4 +539,5 @@ export abstract class MutableSchema extends Schema {
   public abstract addItem<T extends SchemaItem>(item: T): void;
   public abstract async addReference(refSchema: Schema): Promise<void>;
   public abstract addReferenceSync(refSchema: Schema): void;
+  public abstract setContext(schemaContext: SchemaContext): void;
 }

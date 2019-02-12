@@ -29,6 +29,7 @@ import { ShowHideMenu } from "../../common/showhide/ShowHideMenu";
 import { TableIconCellContent, TableCellContent, TableCell } from "./TableCell";
 
 import "./Table.scss";
+import { TableRowStyleProvider } from "../../properties/ItemStyle";
 
 const TABLE_ROW_HEIGHT = 25;
 
@@ -736,10 +737,7 @@ export class Table extends React.Component<TableProps, TableState> {
         render: await this.renderCellContent(cellItem, column, displayValue),
       };
     }
-    const rowStyle: React.CSSProperties = {
-      color: item.colorOverrides && item.colorOverrides.foreColor ? colorDecimalToHex(item.colorOverrides.foreColor) : undefined,
-      backgroundColor: item.colorOverrides && item.colorOverrides.backColor ? colorDecimalToHex(item.colorOverrides.backColor) : undefined,
-    };
+    const rowStyle = TableRowStyleProvider.createStyle(item.colorOverrides ? item.colorOverrides : {});
     return {
       item,
       index,
@@ -1132,9 +1130,6 @@ export class Table extends React.Component<TableProps, TableState> {
     );
   }
 }
-
-/** Converts a color value from a number to an HTML/CSS hex string */
-export const colorDecimalToHex = (decimal: number) => `#${decimal.toString(16).padStart(6, "0")}`;
 
 /**
  * Props for the [[TableRow]] component

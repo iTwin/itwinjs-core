@@ -22,9 +22,13 @@ Array [
     "id": "142b23f9-5f0d-4b34-b39f-de2c0a107d9c/dcb68625-021e-40e1-839b-08a0214f5943",
     "isCheckboxVisible": true,
     "label": "A-2-1",
-    "labelBackColor": 1531058431,
-    "labelForeColor": -1590574337,
     "parentId": "fb7680c8-0a28-4cf0-9ee8-272ec6682ae5/e14e4128-01ae-43e4-8790-9992f94b3186",
+    "style": Object {
+      "colorOverrides": Object {
+        "backgroundColor": 1531058431,
+        "color": -1590574337,
+      },
+    },
   },
   Object {
     "autoExpand": true,
@@ -90,8 +94,12 @@ Array [
     "hasChildren": true,
     "id": "fb7680c8-0a28-4cf0-9ee8-272ec6682ae5/e14e4128-01ae-43e4-8790-9992f94b3186",
     "label": "A-2",
-    "labelBackColor": 499774463,
-    "labelForeColor": -284526081,
+    "style": Object {
+      "colorOverrides": Object {
+        "backgroundColor": 499774463,
+        "color": -284526081,
+      },
+    },
   },
 ]
 `;

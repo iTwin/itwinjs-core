@@ -3,6 +3,8 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { CurvePrimitive } from "../CurvePrimitive";
+import { Geometry } from "../../Geometry";
+
 /** @module Curve */
 /**
  * data carrier interface for per-primitive stroke counts and distances used by PolyfaceBuilder.
@@ -64,7 +66,7 @@ export class StrokeCountMap {
    * @param a0
    * @param a1
    */
-  public static createWithComponentIndex(componentIndex: number, numStroke: number, curveLength: number, a0: number, a1: number) {
+  public static createWithComponentIndex(componentIndex: number = 0, numStroke: number = 0, curveLength: number = 0, a0: number = 0, a1: number = 0) {
     const result = new StrokeCountMap(numStroke, curveLength, a0, a1);
     result.componentIndex = componentIndex;
     return result;
@@ -121,5 +123,25 @@ export class StrokeCountMap {
     }
     // one has componentData, the other not.
     return false;
+  }
+  /**
+   * * clone all data from root.
+   * * clone componentData arrays recursively.
+   */
+  public clone(): StrokeCountMap {
+    const a = new StrokeCountMap(this.numStroke, this.curveLength, this.a0, this.a1);
+    if (this.componentData) {
+      a.componentData = [];
+      for (const child of this.componentData)
+        a.componentData.push(child.clone());
+    }
+    return a;
+  }
+  /**
+   * interpolate in the a0,a1 mapping.
+   * @param fraction fractional position between a0 and a1
+   */
+  public fractionToA(fraction: number) {
+    return Geometry.interpolate(this.a0, fraction, this.a1);
   }
 }

@@ -15,17 +15,6 @@
   padding-left: "10px"
 }
 
-.components-tree-node-description {
-  color: $uicore-gray;
-  font-size: $uicore-font-size-small;
-  margin-top: 4px;
-}
-
-.components-tree-node-content {
-  padding: 5px 0;
-  display: inline-block;
-}
-
 .ui-components-tree {
   /**
    * Workaround for horizontal scroll issue.

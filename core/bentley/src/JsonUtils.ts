@@ -4,7 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Utils */
 
-/** Utility functions for converting from JSON objects, with default values. */
+/** Utility functions for converting from JSON objects, with default values.
+ * @public
+ */
 export namespace JsonUtils {
   /** Get a value as a boolean.
    * @param json the input JSON object

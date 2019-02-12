@@ -21,11 +21,11 @@ function createLocalization() {
   const entries = {};
 
   for (const [, value] of Object.entries(ecDiagnostics.Diagnostics)) {
-    entries[value.prototype.key] = value.prototype.messageText;
+    entries[value.prototype.code] = value.prototype.messageText;
   }
 
   for (const [, value] of Object.entries(bisDiagnostics.Diagnostics)) {
-    entries[value.prototype.key] = value.prototype.messageText;
+    entries[value.prototype.code] = value.prototype.messageText;
   }
 
   var jsonString = JSON.stringify(entries);

@@ -206,24 +206,26 @@ describe("Table", () => {
           key: "row_overrides",
           cells: [{ key: "1", record: testRecord() }],
           colorOverrides: {
-            backColor: toColor("0xff0000"),
-            backColorSelected: toColor("0xff00ff"),
-            foreColor: toColor("0x00ff00"),
-            foreColorSelected: toColor("0x00ffff"),
+            backgroundColor: toColor("0xff0000"),
+            backgroundColorSelected: toColor("0xff00ff"),
+            color: toColor("0x00ff00"),
+            colorSelected: toColor("0x00ffff"),
           },
         }, {
           key: "cell_overrides",
           cells: [{
             key: "1",
             record: testRecord(),
-            isBold: true,
-            isItalic: true,
             alignment: "right",
-            colorOverrides: {
-              backColor: toColor("0xaa0000"),
-              backColorSelected: toColor("0xaa00aa"),
-              foreColor: toColor("0x00aa00"),
-              foreColorSelected: toColor("0x00aaaa"),
+            style: {
+              isBold: true,
+              isItalic: true,
+              colorOverrides: {
+                backgroundColor: toColor("0xaa0000"),
+                backgroundColorSelected: toColor("0xaa00aa"),
+                color: toColor("0x00aa00"),
+                colorSelected: toColor("0x00aaaa"),
+              },
             },
           }],
         }, {
@@ -231,21 +233,24 @@ describe("Table", () => {
           cells: [{
             key: "1",
             record: testRecord(),
-            isBold: true,
-            isItalic: true,
             alignment: "justify",
-            colorOverrides: {
-              backColor: toColor("0xaa0000"),
-              backColorSelected: toColor("0xaa00aa"),
-              foreColor: toColor("0x00aa00"),
-              foreColorSelected: toColor("0x00aaaa"),
+            style: {
+              isBold: true,
+              isItalic: true,
+
+              colorOverrides: {
+                backgroundColor: toColor("0xaa0000"),
+                backgroundColorSelected: toColor("0xaa00aa"),
+                color: toColor("0x00aa00"),
+                colorSelected: toColor("0x00aaaa"),
+              },
             },
           }],
           colorOverrides: {
-            backColor: toColor("0xff0000"),
-            backColorSelected: toColor("0xff00ff"),
-            foreColor: toColor("0x00ff00"),
-            foreColorSelected: toColor("0x00ffff"),
+            backgroundColor: toColor("0xff0000"),
+            backgroundColorSelected: toColor("0xff00ff"),
+            color: toColor("0x00ff00"),
+            colorSelected: toColor("0x00ffff"),
           },
         }];
         const onColumnsChanged = new TableDataChangeEvent();

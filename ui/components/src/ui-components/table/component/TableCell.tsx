@@ -7,10 +7,13 @@
 import * as React from "react";
 import classnames from "classnames";
 import { Omit } from "@bentley/ui-core";
-import { EditorContainerProps, EditorContainer, CellItem, PropertyValueRendererManager, PropertyDialogState, ColorOverrides, PropertyValueRendererContext, PropertyContainerType } from "../../../ui-components";
-import { colorDecimalToHex } from "./Table";
+import {
+  EditorContainerProps, EditorContainer, CellItem, PropertyValueRendererManager,
+  PropertyDialogState, PropertyValueRendererContext, PropertyContainerType,
+} from "../../../ui-components";
 
 import "./TableCell.scss";
+import { ItemStyleProvider } from "../../properties/ItemStyle";
 
 /**
  * Properties of the [[TableCell]] React component
@@ -87,45 +90,10 @@ export class TableCellContent extends React.PureComponent<TableCellContentProps,
 
   private _isMounted = false;
 
-  private getBackgroundColor(isSelected: boolean, colorOverrides?: ColorOverrides) {
-    if (!colorOverrides)
-      return undefined;
-
-    if (isSelected)
-      return colorOverrides.backColorSelected !== undefined
-        ? colorDecimalToHex(colorOverrides.backColorSelected)
-        : undefined;
-
-    if (colorOverrides.backColor)
-      return colorDecimalToHex(colorOverrides.backColor);
-
-    return undefined;
-  }
-
-  private getForegroundColor(isSelected: boolean, colorOverrides?: ColorOverrides) {
-    if (!colorOverrides)
-      return undefined;
-
-    if (isSelected)
-      return colorOverrides.foreColorSelected !== undefined
-        ? colorDecimalToHex(colorOverrides.foreColorSelected)
-        : undefined;
-
-    if (colorOverrides.foreColor)
-      return colorDecimalToHex(colorOverrides.foreColor);
-
-    return undefined;
-  }
-
   private getStyle(cellItem: CellItem, isSelected: boolean, height?: number): React.CSSProperties {
-    const { colorOverrides, isBold, isItalic, alignment } = cellItem;
-
     return {
-      color: this.getForegroundColor(isSelected, colorOverrides),
-      backgroundColor: this.getBackgroundColor(isSelected, colorOverrides),
-      fontWeight: isBold ? "bold" : undefined,
-      fontStyle: isItalic ? "italic" : undefined,
-      textAlign: alignment,
+      ...ItemStyleProvider.createStyle(cellItem.style ? cellItem.style : {}, isSelected),
+      textAlign: cellItem.alignment,
       height,
     };
   }

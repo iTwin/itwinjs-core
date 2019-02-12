@@ -266,8 +266,9 @@ describe("Full Schema Deserialization", () => {
         },
       };
 
-      let testSchema = new Schema(new SchemaContext());
-      const reader = new SchemaReadHelper(JsonParser, undefined, mockVisitor);
+      const context = new SchemaContext();
+      let testSchema = new Schema(context);
+      const reader = new SchemaReadHelper(JsonParser, context, mockVisitor);
       testSchema = await reader.readSchema(testSchema, schemaJson);
       expect(testSchema).to.exist;
       expect(mockVisitor!.visitEmptySchema!.calledOnce).to.be.true;
@@ -332,8 +333,9 @@ describe("Full Schema Deserialization", () => {
         }),
       };
 
-      let testSchema = new Schema(new SchemaContext());
-      const reader = new SchemaReadHelper(JsonParser, undefined, mockVisitor);
+      const context = new SchemaContext();
+      let testSchema = new Schema(context);
+      const reader = new SchemaReadHelper(JsonParser, context, mockVisitor);
 
       testSchema = await reader.readSchema(testSchema, schemaJson);
       expect(testSchema).to.exist;
@@ -382,8 +384,9 @@ describe("Full Schema Deserialization", () => {
         }),
       };
 
-      let testSchema = new Schema(new SchemaContext());
-      const reader = new SchemaReadHelper(JsonParser, undefined, mockVisitor);
+      const context = new SchemaContext();
+      let testSchema = new Schema(context);
+      const reader = new SchemaReadHelper(JsonParser, context, mockVisitor);
 
       testSchema = await reader.readSchema(testSchema, schemaJson);
       expect(testSchema).to.exist;
@@ -454,8 +457,9 @@ describe("Full Schema Deserialization", () => {
         }),
       };
 
-      let testSchema = new Schema(new SchemaContext());
-      const reader = new SchemaReadHelper(JsonParser, undefined, mockVisitor);
+      const context = new SchemaContext();
+      let testSchema = new Schema(context);
+      const reader = new SchemaReadHelper(JsonParser, context, mockVisitor);
 
       testSchema = await reader.readSchema(testSchema, schemaJson);
       expect(testSchema).to.exist;
@@ -526,8 +530,9 @@ describe("Full Schema Deserialization", () => {
         }),
       };
 
-      let testSchema = new Schema(new SchemaContext());
-      const reader = new SchemaReadHelper(JsonParser, undefined, mockVisitor);
+      const context = new SchemaContext();
+      let testSchema = new Schema(context);
+      const reader = new SchemaReadHelper(JsonParser, context, mockVisitor);
 
       testSchema = await reader.readSchema(testSchema, schemaJson);
       expect(testSchema).to.exist;

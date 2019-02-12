@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "PolyfaceBuilder creates params and normals for all Solid types",
+      "packageName": "@bentley/geometry-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/geometry-core",
+  "email": "Earlin.Lutz@bentley.com"
+}

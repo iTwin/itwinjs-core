@@ -91,8 +91,12 @@ Array [
     "hasChildren": true,
     "id": "1ab590b3-34ae-4253-b592-8504ca89d679/a8879663-af4c-4647-a5e6-6399295a54e2",
     "label": "Executive",
-    "labelForeColor": 2050433535,
     "parentId": "cfa5b4da-3271-4b2d-a97b-279993a4436c",
+    "style": Object {
+      "colorOverrides": Object {
+        "color": 2050433535,
+      },
+    },
   },
   Object {
     "checkBoxState": 1,
@@ -113,8 +117,12 @@ Array [
     "id": "efbbdf5e-70a4-4764-860c-82aebaa5384c/53634882-9809-4817-bdb7-62e5377376d7",
     "isCheckboxVisible": true,
     "label": "Cambridgeshire reboot",
-    "labelBackColor": 1592423167,
     "parentId": "cfa5b4da-3271-4b2d-a97b-279993a4436c",
+    "style": Object {
+      "colorOverrides": Object {
+        "backgroundColor": 1592423167,
+      },
+    },
   },
 ]
 `;
@@ -140,8 +148,12 @@ Array [
     "id": "4189a138-287e-4887-8294-0a6f4fc635a3/4689e684-8ae5-4ef5-8f6e-931fa4685cc1",
     "isCheckboxVisible": true,
     "label": "multi-state payment",
-    "labelBackColor": 81687551,
-    "labelForeColor": -1776365569,
+    "style": Object {
+      "colorOverrides": Object {
+        "backgroundColor": 81687551,
+        "color": -1776365569,
+      },
+    },
   },
   Object {
     "description": "Eum quidem reiciendis veniam sunt sunt.",
@@ -162,7 +174,11 @@ Array [
     "id": "762a6c71-77b4-413a-a82a-1d6b76624dbc/c0ad3c15-e225-48d9-9174-cf691c86639b",
     "isCheckboxVisible": true,
     "label": "Assimilated International Investment Account",
-    "labelForeColor": 633948927,
+    "style": Object {
+      "colorOverrides": Object {
+        "color": 633948927,
+      },
+    },
   },
 ]
 `;

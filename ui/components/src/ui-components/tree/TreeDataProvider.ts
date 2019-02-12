@@ -7,6 +7,7 @@
 import { CheckBoxState } from "@bentley/ui-core";
 import { PageOptions } from "../common/PageOptions";
 import { BeEvent } from "@bentley/bentleyjs-core";
+import { ItemStyle } from "../properties/ItemStyle";
 
 /**
  * A node item which can be displayed in a tree.
@@ -17,10 +18,6 @@ export interface TreeNodeItem {
   label: string;
   description?: string;
   autoExpand?: boolean;
-  labelForeColor?: number;
-  labelBackColor?: number;
-  labelBold?: boolean;
-  labelItalic?: boolean;
   icon?: string;
   isCheckboxVisible?: boolean;
   isCheckboxDisabled?: boolean;
@@ -29,6 +26,8 @@ export interface TreeNodeItem {
   isEditable?: boolean;
   /** Primitive typename. See PropertyRecord.PropertyDescription */
   typename?: string;
+
+  style?: ItemStyle;
 }
 
 /** A [[TreeNodeItem]] for immediately loaded trees */

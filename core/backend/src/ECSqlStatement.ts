@@ -10,6 +10,7 @@ import { XAndY, XYAndZ, XYZ, LowAndHighXYZ, Range3d } from "@bentley/geometry-co
 import { ECDb } from "./ECDb";
 import { IModelJsNative } from "./IModelJsNative";
 import { IModelHost } from "./IModelHost";
+import { Config } from "@bentley/imodeljs-clients";
 
 /** @hidden */
 const loggingCategory = "imodeljs-backend.ECSqlStatement";
@@ -989,7 +990,6 @@ export class CachedECSqlStatement {
     this.useCount = 1;
   }
 }
-
 /** A cache for ECSqlStatements.
  *
  * Preparing [ECSqlStatement]($backend)s can be costly. This class provides a way to
@@ -1002,7 +1002,7 @@ export class ECSqlStatementCache {
   private readonly _statements: Map<string, CachedECSqlStatement> = new Map<string, CachedECSqlStatement>();
   public readonly maxCount: number;
 
-  public constructor(maxCount = 20) { this.maxCount = maxCount; }
+  public constructor(maxCount = Config.App.getNumber("imjs_ecsql_cache_size", 40)) { this.maxCount = maxCount; }
 
   public add(str: string, stmt: ECSqlStatement): void {
     const existing = this._statements.get(str);
@@ -1018,6 +1018,20 @@ export class ECSqlStatementCache {
 
   public find(str: string): CachedECSqlStatement | undefined {
     return this._statements.get(str);
+  }
+
+  public replace(str: string, stmt: ECSqlStatement) {
+    if (stmt.isShared) {
+      throw new Error("expecting a unshared statement");
+    }
+    const existingCS = this.find(str);
+    if (existingCS) {
+      existingCS.statement.setIsShared(false);
+      this._statements.delete(str);
+    }
+    const newCS = new CachedECSqlStatement(stmt);
+    newCS.statement.setIsShared(true);
+    this._statements.set(str, newCS);
   }
 
   public release(stmt: ECSqlStatement): void {

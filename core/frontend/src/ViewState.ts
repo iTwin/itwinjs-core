@@ -88,7 +88,7 @@ export class SubCategoriesRequest {
 
   private readonly _imodel: IModelConnection;
   private readonly _subcategories: ViewSubCategories;
-  private readonly _baseECSql: string;
+  private readonly _ecsql: string;
   private readonly _pages: any[][] = [];
   private _canceled = false;
 
@@ -97,30 +97,29 @@ export class SubCategoriesRequest {
     this._subcategories = subcategories;
 
     const where = [...categoryIds].join(",");
-    this._baseECSql = "SELECT ECInstanceId as id, Parent.Id as parentId, Properties as appearance FROM BisCore.SubCategory WHERE Parent.Id IN (" + where + ") LIMIT " + SubCategoriesRequest._LIMIT;
+    this._ecsql = "SELECT ECInstanceId as id, Parent.Id as parentId, Properties as appearance FROM BisCore.SubCategory WHERE Parent.Id IN (" + where + ")";
   }
 
   public cancel() { this._canceled = true; }
-
-  private get _offset() { return SubCategoriesRequest._LIMIT * this._pages.length; }
-
-  private buildECSql(): string {
-    // ###TODO: LIMIT/OFFSET grow potentially exponentially more expensive with the number of rows...better approach to pagination?
-    const offset = this._offset;
-    if (0 !== offset)
-      return this._baseECSql + " OFFSET " + offset;
-    else
-      return this._baseECSql;
-  }
 
   public async dispatch(): Promise<void> {
     if (this._canceled)
       return Promise.resolve();
 
-    const ecsql = this.buildECSql();
     let rows: any[] | undefined;
     try {
-      rows = await this._imodel.executeQuery(ecsql);
+      const pageToGet = this._pages.length;
+      const pageSize = SubCategoriesRequest._LIMIT;
+      // we can actully use following async iterator here which would grab pages and iterator over rows automatically.
+      // at any time inside the loop user can break and cancel or stop reading the results. With catch that async iterator work on all browser except ie/edge and starting of safari 12/ ios 12
+      // rows = [];
+      // for await (const row of this._imodel.query(this._ecsql)) {
+      //   if (this._canceled)
+      //     return Promise.resolve();
+      //   else
+      //     rows.push(row);
+      // }
+      rows = Array.from(await this._imodel.queryPage(this._ecsql, undefined, { start: pageToGet, size: pageSize }));
     } catch (_) {
       // ###TODO: detect cases in which retry is warranted
       // Note that currently, if we succeed in obtaining some pages of results and fail to retrieve another page, we will end up processing the
@@ -128,16 +127,14 @@ export class SubCategoriesRequest {
       rows = undefined;
     }
 
-    if (undefined !== rows) {
+    if (undefined !== rows && rows.length > 0) {
       this._pages.push(rows);
-      if (rows.length >= SubCategoriesRequest._LIMIT) {
-        // More rows exist. If we're canceled, we can't process the partial results we've obtained thus far.
-        if (this._canceled)
-          return Promise.resolve();
+      // More rows exist. If we're canceled, we can't process the partial results we've obtained thus far.
+      if (this._canceled)
+        return Promise.resolve();
 
-        // Query the next page of results.
-        return this.dispatch();
-      }
+      // Query the next page of results.
+      return this.dispatch();
     }
 
     // Even if we were canceled, we've retrieved all the rows. Might as well process them to prevent another request for some of the same rows from being enqueued.
@@ -361,8 +358,8 @@ public cancelAllTileLoads(): void {
   public get areAllTileTreesLoaded(): boolean {
     let allLoaded = true;
     this.forEachTileTreeModel((model) => {
-      const loadStatus = model.loadStatus;
-      if (loadStatus !== TileTree.LoadStatus.Loaded)
+      // Loaded or NotFound qualify as "loaded" - either the load succeeded or failed.
+      if (model.loadStatus < TileTree.LoadStatus.Loaded)
         allLoaded = false;
     });
     return allLoaded;
@@ -1713,8 +1710,13 @@ export class SpatialViewState extends ViewState3d {
     const range = new Range3d();
     this.forEachTileTreeModel((model: TileTreeModelState) => {   // ...if we don't want to fit context reality mdoels this should cal forEachSpatialTileTreeModel...
       const tileTree = model.tileTree;
-      if (tileTree !== undefined && tileTree.rootTile !== undefined) {   // can we assume that a loaded model
-        range.extendRange(tileTree.rootTile.computeWorldContentRange());
+      if (tileTree !== undefined && tileTree.rootTile !== undefined) {
+        const contentRange = tileTree.rootTile.computeWorldContentRange();
+        assert(!contentRange.isNull);
+        assert(contentRange.intersectsRange(this.iModel.projectExtents));
+
+        range.extendRange(contentRange);
+
       }
     });
 

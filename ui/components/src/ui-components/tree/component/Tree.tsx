@@ -21,21 +21,20 @@ import {
   DelayLoadedTreeNodeItem, ImmediatelyLoadedTreeNodeItem,
   isTreeDataProviderInterface,
 } from "../TreeDataProvider";
-import { TreeNodeProps, TreeNode, TreeNodeCellEditorProps } from "./Node";
-import { PropertyValueRendererManager, PropertyValueRendererContext, PropertyContainerType } from "../../properties/ValueRendererManager";
+import { TreeNodeProps, TreeNode } from "./Node";
+import { PropertyValueRendererManager } from "../../properties/ValueRendererManager";
 // selection-related imports
 import { SelectionMode } from "../../common/selection/SelectionModes";
 import {
   SelectionHandler, SingleSelectionHandler, MultiSelectionHandler,
   OnItemsSelectedCallback, OnItemsDeselectedCallback,
 } from "../../common/selection/SelectionHandler";
-// cell editing imports
-import { EditorContainer, PropertyUpdatedArgs } from "../../editors/EditorContainer";
-import { PrimitiveValue, PropertyRecord, PropertyValueFormat, PropertyDescription } from "@bentley/imodeljs-frontend";
 // node highlighting
-import HighlightingEngine, { HighlightableTreeProps, HighlightableTreeNodeProps } from "../HighlightingEngine";
+import HighlightingEngine, { HighlightableTreeProps } from "../HighlightingEngine";
 // misc
 import UiComponents from "../../UiComponents";
+import { CellEditingEngine, EditableTreeProps } from "../CellEditingEngine";
+
 // css
 import "./Tree.scss";
 
@@ -139,12 +138,11 @@ export interface TreeProps {
   /** @hidden */
   onNodesRender?: () => void;
 
+  /** Properties for node highlighting logic. If not provided, node highlighting is disabled. */
   nodeHighlightingProps?: HighlightableTreeProps;
 
-  onCellEditing?: (cellEditorState: TreeCellEditorState) => void;
-  onCellUpdated?: (args: TreeCellUpdatedArgs) => Promise<boolean>;
-  /** @hidden */
-  ignoreEditorBlur?: boolean;
+  /** Properties for cell editing logic. If not provided, cell editing is disabled. */
+  cellEditing?: EditableTreeProps;
 
   onCheckboxClick?: (node: TreeNodeItem) => void;
 
@@ -162,12 +160,13 @@ export interface TreeState {
     modelReady: boolean;
     selectedNodes?: string[] | ((node: TreeNodeItem) => boolean);
     nodeHighlightingProps?: HighlightableTreeProps;
+    cellEditing?: EditableTreeProps;
   };
 
   model: BeInspireTree<TreeNodeItem>;
   modelReady: boolean;
 
-  cellEditorState: TreeCellEditorState;
+  currentlyEditedNode?: BeInspireTreeNode<TreeNodeItem>;
 
   pendingSelectionChange?: {
     range: [string, string];
@@ -181,28 +180,9 @@ export interface TreeState {
 
   /** @hidden */
   highlightingEngine?: HighlightingEngine;
-}
 
-/** Tree Cell Editor state */
-export interface TreeCellEditorState {
-  active: boolean;
-  node?: BeInspireTreeNode<TreeNodeItem>;
-}
-
-/** Arguments for the Tree Cell Updated event callback */
-export interface TreeCellUpdatedArgs {
-  /** The cell being updated. */
-  node: BeInspireTreeNode<TreeNodeItem>;
-  /** The new value for the cell. */
-  newValue: string;
-}
-
-/** Params to the TreeNodeProps.renderLabel method */
-export interface RenderNodeLabelProps {
-  node: BeInspireTreeNode<TreeNodeItem>;
-  highlightProps?: HighlightableTreeNodeProps;
-  cellEditorProps?: TreeNodeCellEditorProps;
-  valueRendererManager?: PropertyValueRendererManager;
+  /** @hidden */
+  cellEditingEngine?: CellEditingEngine;
 }
 
 /**
@@ -241,9 +221,11 @@ export class Tree extends React.Component<TreeProps, TreeState> {
       },
       model: Tree.createModel(props),
       modelReady: false,
-      cellEditorState: { active: false },
     };
   }
+
+  private _setCellEditorState = (state?: BeInspireTreeNode<TreeNodeItem>) => this.setState({ currentlyEditedNode: state });
+  private _getCellEditorState = () => this.state.currentlyEditedNode;
 
   private static createModel(props: TreeProps) {
     return new BeInspireTree<TreeNodeItem>({
@@ -268,12 +250,18 @@ export class Tree extends React.Component<TreeProps, TreeState> {
         modelReady: state.modelReady,
         selectedNodes: props.selectedNodes,
         nodeHighlightingProps: props.nodeHighlightingProps,
+        cellEditing: props.cellEditing,
       },
     };
 
     // update highlighting engine if related props changed
     if (props.nodeHighlightingProps !== state.prev.nodeHighlightingProps) {
       derivedState.highlightingEngine = props.nodeHighlightingProps ? new HighlightingEngine(props.nodeHighlightingProps) : undefined;
+    }
+
+    // update cell editing engine if related props changed
+    if (shallowDiffers(props.cellEditing, state.prev.cellEditing)) {
+      derivedState.cellEditingEngine = props.cellEditing ? new CellEditingEngine(props.cellEditing) : undefined;
     }
 
     // in case provider changed, have to re-create `model` and reset `modelReady`
@@ -299,6 +287,9 @@ export class Tree extends React.Component<TreeProps, TreeState> {
     this.assignModelListeners(this.state.model);
     this.assignDataProviderListeners(this.props.dataProvider);
 
+    if (this.state.cellEditingEngine && !this.state.cellEditingEngine.hasSubscriptions)
+      this.state.cellEditingEngine.subscribe(this._getCellEditorState, this._setCellEditorState);
+
     /* istanbul ignore next */
     if (this.props.onRender)
       this.props.onRender();
@@ -307,6 +298,8 @@ export class Tree extends React.Component<TreeProps, TreeState> {
   public componentWillUnmount() {
     this.dropModelListeners(this.state.model);
     this.dropDataProviderListeners(this.props.dataProvider);
+    if (this.state.cellEditingEngine)
+      this.state.cellEditingEngine.unsubscribe();
     this._mounted = false;
   }
 
@@ -326,7 +319,7 @@ export class Tree extends React.Component<TreeProps, TreeState> {
       || this.props.renderNode !== nextProps.renderNode
       || this.props.dataProvider !== nextProps.dataProvider
       || this.props.nodeHighlightingProps !== nextProps.nodeHighlightingProps
-      || this.state.cellEditorState !== nextState.cellEditorState
+      || this.state.currentlyEditedNode !== nextState.currentlyEditedNode
       || this.state.model.visible().some((n) => n.isDirty());
   }
 
@@ -352,6 +345,10 @@ export class Tree extends React.Component<TreeProps, TreeState> {
     if (this.props.dataProvider !== prevProps.dataProvider) {
       this.dropDataProviderListeners(prevProps.dataProvider);
       this.assignDataProviderListeners(this.props.dataProvider);
+    }
+
+    if (this.state.cellEditingEngine && !this.state.cellEditingEngine.hasSubscriptions) {
+      this.state.cellEditingEngine.subscribe(this._getCellEditorState, this._setCellEditorState);
     }
 
     /* istanbul ignore next */
@@ -656,7 +653,8 @@ export class Tree extends React.Component<TreeProps, TreeState> {
     deselectAll: () => {
       this.state.model.deselectAll();
       if (!this._pressedItemSelected) {
-        this._deactivateCellEditor();
+        if (this.state.cellEditingEngine)
+          this.state.cellEditingEngine.deactivateEditor();
         this.forceUpdate();
       }
     },
@@ -667,134 +665,9 @@ export class Tree extends React.Component<TreeProps, TreeState> {
     areEqual: (item1: BeInspireTreeNode<TreeNodeItem>, item2: BeInspireTreeNode<TreeNodeItem>) => item1 === item2,
   };
 
-  private _checkCellEditorStatus = (node: BeInspireTreeNode<TreeNodeItem>): void => {
-    let activate = false;
-
-    const isSelected = node.selected();
-    const nodeItem = node.payload;
-    if (nodeItem && isSelected && this._pressedItemSelected && nodeItem.isEditable)
-      activate = true;
-
-    if (activate)
-      this._activateCellEditor(node);
-    else
-      this._deactivateCellEditor();
-  }
-
-  private _activateCellEditor = (node: BeInspireTreeNode<TreeNodeItem>): void => {
-    const cellEditorState: TreeCellEditorState = { active: true, node };
-    if (cellEditorState !== this.state.cellEditorState) {
-      this.setState(
-        { cellEditorState },
-        () => {
-          if (this.props.onCellEditing)
-            this.props.onCellEditing(cellEditorState);
-        },
-      );
-    }
-  }
-
-  private _deactivateCellEditor = (): void => {
-    if (this.state.cellEditorState.active) {
-      if (this.state.cellEditorState.node)
-        this.state.cellEditorState.node.setDirty(true);
-      const cellEditorState: TreeCellEditorState = { active: false, node: undefined };
-      this.setState({ cellEditorState });
-    }
-  }
-
-  private _onCellEditCommit = async (args: PropertyUpdatedArgs) => {
-    if (this.props.onCellUpdated && this.state.cellEditorState.node) {
-      const newValue = (args.newValue as PrimitiveValue).value as string;
-      const cellUpdatedArgs: TreeCellUpdatedArgs = {
-        node: this.state.cellEditorState.node,
-        newValue,
-      };
-      const allowed = await this.props.onCellUpdated(cellUpdatedArgs);
-      if (allowed)
-        this.state.cellEditorState.node.setDirty(true);
-    }
-    this._deactivateCellEditor();
-  }
-
-  private nodeToPropertyRecord(node: BeInspireTreeNode<TreeNodeItem>) {
-    const value: PrimitiveValue = {
-      displayValue: node.text,
-      value: node.text,
-      valueFormat: PropertyValueFormat.Primitive,
-    };
-    const property: PropertyDescription = {
-      displayLabel: UiComponents.i18n.translate("UiComponents:general.label"),
-      typename: node.payload && node.payload.typename ? node.payload.typename : "string",
-      name: "node_label",
-    };
-
-    return new PropertyRecord(value, property);
-  }
-
-  // tslint:disable-next-line:naming-convention
-  private renderLabelComponent = ({ node, highlightProps, cellEditorProps, valueRendererManager }: RenderNodeLabelProps): React.ReactNode | Promise<React.ReactNode> => {
-    const labelStyle: React.CSSProperties = {
-      color: node.payload!.labelForeColor ? node.payload!.labelForeColor!.toString(16) : undefined,
-      backgroundColor: node.payload!.labelBackColor ? node.payload!.labelBackColor!.toString(16) : undefined,
-      fontWeight: node.payload!.labelBold ? "bold" : undefined,
-      fontStyle: node.payload!.labelItalic ? "italic" : undefined,
-    };
-
-    // handle cell editing
-    if (cellEditorProps) {
-      if (cellEditorProps.cellEditorState.active && node === cellEditorProps.cellEditorState.node) {
-        // if cell editing is enabled, return editor instead of the label
-        const record = new CellEditorPropertyRecord(node.text);
-        return (
-          <span style={labelStyle}>
-            <EditorContainer propertyRecord={record} title={record.description} setFocus={true}
-              onCommit={cellEditorProps.onCellEditCommit} onCancel={cellEditorProps.onCellEditCancel} ignoreEditorBlur={cellEditorProps.ignoreEditorBlur} />
-          </span>
-        );
-      }
-    }
-
-    // handle filtered matches' highlighting
-    let labelElement: React.ReactNode = node.text;
-    if (highlightProps)
-      labelElement = HighlightingEngine.renderNodeLabel(node.text, highlightProps);
-
-    // handle custom cell rendering
-    const context: PropertyValueRendererContext = {
-      containerType: PropertyContainerType.Tree,
-      decoratedTextElement: labelElement,
-      style: labelStyle,
-    };
-    const nodeRecord = this.nodeToPropertyRecord(node);
-    if (!valueRendererManager)
-      valueRendererManager = PropertyValueRendererManager.defaultManager;
-    const label = valueRendererManager.render(nodeRecord, context);
-
-    if (isPromise(label)) {
-      return label.then((l) => this.renderContent(l, node.payload!.description));
-    }
-    return this.renderContent(label, node.payload!.description);
-  }
-
-  // tslint:disable-next-line:naming-convention
-  private renderContent = (label: React.ReactNode, description?: string): React.ReactNode => {
-    if (!description || !this.props.showDescriptions)
-      return label;
-
-    return (
-      <div className="components-tree-node-content">
-        {label}
-        <div className="components-tree-node-description">
-          {description}
-        </div>
-      </div>
-    );
-  }
-
-  private _onCheckboxClick = (node: BeInspireTreeNode<TreeNodeItem>) => {
+  private _onCheckboxClick = (node: TreeNodeItem) => {
     if (this.props.onCheckboxClick)
-      this.props.onCheckboxClick(node.payload!);
+      this.props.onCheckboxClick(node);
   }
 
   // tslint:disable-next-line:naming-convention
@@ -825,32 +698,34 @@ export class Tree extends React.Component<TreeProps, TreeState> {
     this._nodesRenderInfo = undefined;
   }
 
-  private _createTreeNodeProps = (node: BeInspireTreeNode<TreeNodeItem>, props: TreeProps, state: TreeState): TreeNodeProps => {
+  private createTreeNodeProps(node: BeInspireTreeNode<TreeNodeItem>): TreeNodeProps {
     const onNodeSelectionChanged = this._selectionHandler.createSelectionFunction(this._multiSelectionHandler, this._createItemSelectionHandler(node));
 
     return {
       node,
-      highlightProps: state.highlightingEngine ? state.highlightingEngine.createRenderProps(node) : undefined,
-      isCheckboxVisible: node.payload!.isCheckboxVisible,
-      isCheckboxDisabled: node.payload!.isCheckboxDisabled,
-      checkboxState: node.payload!.checkBoxState,
-      onCheckboxClick: this._onCheckboxClick,
-      renderLabel: this.renderLabelComponent,
+      checkboxProps: node.payload!.isCheckboxVisible ? {
+        isDisabled: node.payload!.isCheckboxDisabled,
+        state: node.payload!.checkBoxState,
+        onClick: this._onCheckboxClick,
+      } : undefined,
+      cellEditing: this.state.cellEditingEngine,
+      showDescription: this.props.showDescriptions,
+      onFinalRenderComplete: this._onNodeFullyRendered,
+      renderId: this._nodesRenderInfo ? this._nodesRenderInfo.renderId : undefined,
+      highlightProps: this.state.highlightingEngine
+        ? this.state.highlightingEngine.createRenderProps(node)
+        : undefined,
+      valueRendererManager: this.props.propertyValueRendererManager
+        ? this.props.propertyValueRendererManager
+        : PropertyValueRendererManager.defaultManager,
       onClick: (e: React.MouseEvent) => {
         onNodeSelectionChanged(e.shiftKey, e.ctrlKey);
-        this._checkCellEditorStatus(node);
+        if (this.state.cellEditingEngine)
+          this.state.cellEditingEngine.checkStatus(node, this._pressedItemSelected);
       },
       onMouseDown: () => this._selectionHandler.createDragAction(this._multiSelectionHandler, [this.nodesSelectionHandlers], node),
       onMouseMove: (e: React.MouseEvent) => { if (e.buttons === 1) this._selectionHandler.updateDragAction(node); },
-      cellEditorProps: {
-        cellEditorState: state.cellEditorState,
-        onCellEditCommit: this._onCellEditCommit,
-        onCellEditCancel: this._deactivateCellEditor,
-        ignoreEditorBlur: props.ignoreEditorBlur,
-      },
-      valueRendererManager: props.propertyValueRendererManager,
-      onFinalRenderComplete: this._onNodeFullyRendered,
-      renderId: this._nodesRenderInfo!.renderId,
+
     };
   }
 
@@ -874,8 +749,10 @@ export class Tree extends React.Component<TreeProps, TreeState> {
       );
     }
 
-    if (this._scrollableContainerRef.current)
-      this._scrollableContainerRef.current.recomputeRowHeights();
+    // This is a hack (since it doesn't have a proper public method) to force Virtualized List to clear cell cache.
+    // There is recomputeRowHeights, but it forces an update
+    if (this._scrollableContainerRef.current && this._scrollableContainerRef.current.Grid)
+      (this._scrollableContainerRef.current.Grid as any).state.instanceProps.rowSizeAndPositionManager.resetCell(0);
 
     const getNodesRenderInfo = () => {
       if (!this._nodesRenderInfo)
@@ -885,8 +762,9 @@ export class Tree extends React.Component<TreeProps, TreeState> {
     this._nodesRenderInfo = undefined;
 
     const baseRenderNode = this.props.renderNode ? this.props.renderNode : this.renderNode;
-    const renderNode = ({ index, key, style, isScrolling }: VirtualizedListRowProps) => {
+    const renderNode = ({ index, style, isScrolling }: VirtualizedListRowProps) => {
       const node = nodes[index];
+      const key = node.id ? node.id : node.text;
       if (!node.payload) {
         if (!isScrolling) {
           // tslint:disable-next-line:no-floating-promises
@@ -901,7 +779,7 @@ export class Tree extends React.Component<TreeProps, TreeState> {
 
       getNodesRenderInfo().total++;
 
-      const props = this._createTreeNodeProps(node, this.props, this.state);
+      const props = this.createTreeNodeProps(node);
       return (
         <div key={key} className="node-wrapper" style={style}>
           {baseRenderNode(node, props)}
@@ -959,31 +837,4 @@ class PlaceholderNode extends React.Component<{ node: BeInspireTreeNode<TreeNode
     const level = this.props.node.getParents().length;
     return <TreeNodePlaceholder level={level} />;
   }
-}
-
-/** PropertyRecord for cell editing */
-class CellEditorPropertyRecord extends PropertyRecord {
-  constructor(value: string, typename: string = "text", editor?: string) {
-    const name = "tree-cell-editor";
-    const v: PrimitiveValue = {
-      valueFormat: PropertyValueFormat.Primitive,
-      value,
-      displayValue: value,
-    };
-    const p: PropertyDescription = {
-      name,
-      displayLabel: "Tree Cell Editor",
-      typename,
-    };
-    if (editor)
-      p.editor = { name: editor, params: [] };
-    super(v, p);
-
-    this.description = "";
-    this.isReadonly = false;
-  }
-}
-
-function isPromise(value: any): value is Promise<any> {
-  return !!(value && value.then && value.catch);
 }

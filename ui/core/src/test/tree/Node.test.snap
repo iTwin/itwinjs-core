@@ -2,7 +2,7 @@
 
 exports[`<Node /> renders correctly 1`] = `
 <div
-  className="nz-tree-node"
+  className="core-tree-node"
   onClick={[Function]}
   style={
     Object {
@@ -24,7 +24,7 @@ exports[`<Node /> renders correctly 1`] = `
 
 exports[`<Node /> renders expander correctly 1`] = `
 <div
-  className="nz-tree-node"
+  className="core-tree-node"
   onClick={[Function]}
   style={
     Object {
@@ -42,7 +42,7 @@ exports[`<Node /> renders expander correctly 1`] = `
 
 exports[`<Node /> renders expander correctly 2`] = `
 <div
-  className="nz-tree-node"
+  className="core-tree-node"
   onClick={[Function]}
   style={
     Object {
@@ -65,7 +65,7 @@ exports[`<Node /> renders expander correctly 2`] = `
 
 exports[`<Node /> renders expander correctly 3`] = `
 <div
-  className="nz-tree-node"
+  className="core-tree-node"
   onClick={[Function]}
   style={
     Object {
@@ -83,7 +83,7 @@ exports[`<Node /> renders expander correctly 3`] = `
 
 exports[`<Node /> renders icon correctly 1`] = `
 <div
-  className="nz-tree-node"
+  className="core-tree-node"
   onClick={[Function]}
   style={
     Object {
@@ -112,7 +112,7 @@ exports[`<Node /> renders icon correctly 1`] = `
 
 exports[`<Node /> renders label correctly 1`] = `
 <div
-  className="nz-tree-node"
+  className="core-tree-node"
   onClick={[Function]}
   style={
     Object {
@@ -138,7 +138,7 @@ exports[`<Node /> renders label correctly 1`] = `
 
 exports[`<Node /> renders loader correctly 1`] = `
 <div
-  className="nz-tree-node"
+  className="core-tree-node"
   onClick={[Function]}
   style={
     Object {
@@ -163,7 +163,7 @@ exports[`<Node /> renders loader correctly 1`] = `
 
 exports[`<Node /> should set is-focused class 1`] = `
 <div
-  className="nz-tree-node is-focused"
+  className="core-tree-node is-focused"
   onClick={[Function]}
   style={
     Object {
@@ -185,7 +185,7 @@ exports[`<Node /> should set is-focused class 1`] = `
 
 exports[`<Node /> should set is-hover-disabled class 1`] = `
 <div
-  className="nz-tree-node is-hover-disabled"
+  className="core-tree-node is-hover-disabled"
   onClick={[Function]}
   style={
     Object {
@@ -207,7 +207,7 @@ exports[`<Node /> should set is-hover-disabled class 1`] = `
 
 exports[`<Node /> should set is-selected class 1`] = `
 <div
-  className="nz-tree-node is-selected"
+  className="core-tree-node is-selected"
   onClick={[Function]}
   style={
     Object {

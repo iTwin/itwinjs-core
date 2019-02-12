@@ -29,47 +29,53 @@ export class TestReporter implements IDiagnosticReporter {
   }
 }
 
+const ruleSetName = "TestDiagnostics";
+
+function getCode(code: number): string {
+  return ruleSetName + ":" + code;
+}
+
 // tslint:disable-next-line:variable-name
 export const TestDiagnostics = {
-  FailingSchemaDiagnostic: Diagnostics.createSchemaDiagnosticClass<[string, string]>(Diagnostics.DiagnosticCode.BaseClassIsSealed,
+  FailingSchemaDiagnostic: Diagnostics.createSchemaDiagnosticClass<[string, string]>(getCode(1),
     "Failed with param {0} {1}"),
-  FailingSchemaItemDiagnostic: Diagnostics.createSchemaItemDiagnosticClass<SchemaItem, [string, string]>(Diagnostics.DiagnosticCode.BaseClassIsSealed,
+  FailingSchemaItemDiagnostic: Diagnostics.createSchemaItemDiagnosticClass<SchemaItem, [string, string]>(getCode(2),
     "Failed with param {0} {1}"),
-  FailingClassDiagnostic: Diagnostics.createClassDiagnosticClass<[string, string]>(Diagnostics.DiagnosticCode.BaseClassIsSealed,
+  FailingClassDiagnostic: Diagnostics.createClassDiagnosticClass<[string, string]>(getCode(3),
     "Failed with params {0} {1}"),
-  FailingPropertyDiagnostic: Diagnostics.createPropertyDiagnosticClass<[string, string]>(Diagnostics.DiagnosticCode.BaseClassIsSealed,
+  FailingPropertyDiagnostic: Diagnostics.createPropertyDiagnosticClass<[string, string]>(getCode(4),
     "Failed with param {0} {1}"),
-  FailingEntityClassDiagnostic: Diagnostics.createSchemaItemDiagnosticClass<EntityClass, [string, string]>(Diagnostics.DiagnosticCode.BaseClassIsSealed,
+  FailingEntityClassDiagnostic: Diagnostics.createSchemaItemDiagnosticClass<EntityClass, [string, string]>(getCode(5),
     "Failed with params {0} {1}"),
-  FailingStructClassDiagnostic: Diagnostics.createSchemaItemDiagnosticClass<StructClass, [string, string]>(Diagnostics.DiagnosticCode.BaseClassIsSealed,
+  FailingStructClassDiagnostic: Diagnostics.createSchemaItemDiagnosticClass<StructClass, [string, string]>(getCode(6),
     "Failed with params {0} {1}"),
-  FailingMixinDiagnostic: Diagnostics.createSchemaItemDiagnosticClass<Mixin, [string, string]>(Diagnostics.DiagnosticCode.BaseClassIsSealed,
+  FailingMixinDiagnostic: Diagnostics.createSchemaItemDiagnosticClass<Mixin, [string, string]>(getCode(8),
     "Failed with params {0} {1}"),
-  FailingRelationshipDiagnostic: Diagnostics.createSchemaItemDiagnosticClass<RelationshipClass, [string, string]>(Diagnostics.DiagnosticCode.BaseClassIsSealed,
+  FailingRelationshipDiagnostic: Diagnostics.createSchemaItemDiagnosticClass<RelationshipClass, [string, string]>(getCode(8),
     "Failed with param {0} {1}"),
-  FailingRelationshipConstraintDiagnostic: Diagnostics.createRelationshipConstraintDiagnosticClass<[string, string]>(Diagnostics.DiagnosticCode.BaseClassIsSealed,
+  FailingRelationshipConstraintDiagnostic: Diagnostics.createRelationshipConstraintDiagnosticClass<[string, string]>(getCode(9),
     "Failed with param {0} {1}"),
-  FailingCustomAttributeClassDiagnostic: Diagnostics.createSchemaItemDiagnosticClass<CustomAttributeClass, [string, string]>(Diagnostics.DiagnosticCode.BaseClassIsSealed,
+  FailingCustomAttributeClassDiagnostic: Diagnostics.createSchemaItemDiagnosticClass<CustomAttributeClass, [string, string]>(getCode(10),
     "Failed with param {0} {1}"),
-  FailingCustomAttributeContainerDiagnostic: Diagnostics.createCustomAttributeContainerDiagnosticClass<[string, string]>(Diagnostics.DiagnosticCode.BaseClassIsSealed,
+  FailingCustomAttributeContainerDiagnostic: Diagnostics.createCustomAttributeContainerDiagnosticClass<[string, string]>(getCode(11),
     "Failed with param {0} {1}"),
-  FailingEnumerationDiagnostic: Diagnostics.createSchemaItemDiagnosticClass<Enumeration, [string, string]>(Diagnostics.DiagnosticCode.BaseClassIsSealed,
+  FailingEnumerationDiagnostic: Diagnostics.createSchemaItemDiagnosticClass<Enumeration, [string, string]>(getCode(12),
     "Failed with param {0} {1}"),
-  FailingKindOfQuantityDiagnostic: Diagnostics.createSchemaItemDiagnosticClass<KindOfQuantity, [string, string]>(Diagnostics.DiagnosticCode.BaseClassIsSealed,
+  FailingKindOfQuantityDiagnostic: Diagnostics.createSchemaItemDiagnosticClass<KindOfQuantity, [string, string]>(getCode(13),
     "Failed with param {0} {1}"),
-  FailingPropertyCategoryDiagnostic: Diagnostics.createSchemaItemDiagnosticClass<PropertyCategory, [string, string]>(Diagnostics.DiagnosticCode.BaseClassIsSealed,
+  FailingPropertyCategoryDiagnostic: Diagnostics.createSchemaItemDiagnosticClass<PropertyCategory, [string, string]>(getCode(14),
     "Failed with param {0} {1}"),
-  FailingFormatDiagnostic: Diagnostics.createSchemaItemDiagnosticClass<Format, [string, string]>(Diagnostics.DiagnosticCode.BaseClassIsSealed,
+  FailingFormatDiagnostic: Diagnostics.createSchemaItemDiagnosticClass<Format, [string, string]>(getCode(15),
     "Failed with param {0} {1}"),
-  FailingUnitDiagnostic: Diagnostics.createSchemaItemDiagnosticClass<Unit, [string, string]>(Diagnostics.DiagnosticCode.BaseClassIsSealed,
+  FailingUnitDiagnostic: Diagnostics.createSchemaItemDiagnosticClass<Unit, [string, string]>(getCode(16),
     "Failed with param {0} {1}"),
-  FailingInvertedUnitFormatDiagnostic: Diagnostics.createSchemaItemDiagnosticClass<InvertedUnit, [string, string]>(Diagnostics.DiagnosticCode.BaseClassIsSealed,
+  FailingInvertedUnitFormatDiagnostic: Diagnostics.createSchemaItemDiagnosticClass<InvertedUnit, [string, string]>(getCode(17),
     "Failed with param {0} {1}"),
-  FailingUnitSystemDiagnostic: Diagnostics.createSchemaItemDiagnosticClass<UnitSystem, [string, string]>(Diagnostics.DiagnosticCode.BaseClassIsSealed,
+  FailingUnitSystemDiagnostic: Diagnostics.createSchemaItemDiagnosticClass<UnitSystem, [string, string]>(getCode(18),
     "Failed with param {0} {1}"),
-  FailingPhenomenonDiagnostic: Diagnostics.createSchemaItemDiagnosticClass<Phenomenon, [string, string]>(Diagnostics.DiagnosticCode.BaseClassIsSealed,
+  FailingPhenomenonDiagnostic: Diagnostics.createSchemaItemDiagnosticClass<Phenomenon, [string, string]>(getCode(19),
     "Failed with param {0} {1}"),
-  FailingConstantDiagnostic: Diagnostics.createSchemaItemDiagnosticClass<Constant, [string, string]>(Diagnostics.DiagnosticCode.BaseClassIsSealed,
+  FailingConstantDiagnostic: Diagnostics.createSchemaItemDiagnosticClass<Constant, [string, string]>(getCode(20),
     "Failed with param {0} {1}"),
 };
 

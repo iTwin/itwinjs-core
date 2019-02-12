@@ -13,6 +13,7 @@ const mobilePort = process.env.MOBILE_PORT ? parseInt(process.env.MOBILE_PORT, 1
 setupMobileMock();
 
 import { IModelHost } from "@bentley/imodeljs-backend";
+import { IModelUnitTestRpcImpl } from "./IModelUnitTestRpcImpl";
 import { TestbedConfig, TestbedIpcMessage } from "../common/TestbedConfig";
 import { TestRpcImpl, TestRpcImpl2, TestRpcImpl3, resetOp8Initializer, TestZeroMajorRpcImpl } from "./TestRpcImpl";
 import { CONSTANTS } from "../common/Testbed";
@@ -36,6 +37,7 @@ ipcMain.on("testbed", handleTestbedCommand);
 // Start the backend
 IModelHost.startup();
 
+IModelUnitTestRpcImpl.register();
 TestRpcImpl.register();
 TestRpcImpl3.register();
 TestZeroMajorRpcImpl.register();

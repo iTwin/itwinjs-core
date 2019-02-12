@@ -4,10 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Logging */
 
-// tslint:disable-next-line:no-var-requires
-const bunyan = require("bunyan");
-import { GetMetaDataFunction } from "./BentleyError";
-import { LogFunction, Logger } from "./Logger";
+import * as bunyan from "bunyan";
+import { GetMetaDataFunction, LogFunction, Logger } from "@bentley/bentleyjs-core";
 
 /** Helps to configure the bentleyjs-core Logger to use bunyan.
  * To use bunyan for logging output, the app should depend on the bunyan package.
@@ -18,6 +16,7 @@ import { LogFunction, Logger } from "./Logger";
  * You can then pipe the output through the bunyan command-line program to format and filter it.
  *
  * See [[SeqLoggerConfig]] to log to a seq server using bunyan.
+ * @alpha
  */
 export class BunyanLoggerConfig {
   // Generate metadata for a bunyan record. If nothing else, it must contain the message category.
@@ -51,5 +50,4 @@ export class BunyanLoggerConfig {
     const traceLogger: LogFunction = (category: string, message: string, getMetaData?: GetMetaDataFunction): void => blgr.trace(BunyanLoggerConfig.makeBunyanMetaData(category, getMetaData), message);
     Logger.initialize(errorLogger, warningLogger, infoLogger, traceLogger);
   }
-
 }

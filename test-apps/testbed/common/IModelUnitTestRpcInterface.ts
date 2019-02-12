@@ -4,9 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module RpcInterface */
 
-import { RpcInterface } from "../RpcInterface";
-import { RpcManager } from "../RpcManager";
-import { IModelToken } from "../IModel";
+import { RpcInterface, RpcManager, IModelToken } from "@bentley/imodeljs-common";
 
 /**
  * For unit testing purposes only. This interface should not be registered by real products.

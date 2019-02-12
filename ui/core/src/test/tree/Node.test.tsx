@@ -80,17 +80,17 @@ describe("<Node />", () => {
     expect(callback).to.not.be.called;
   });
 
-  it("should call onCheckboxClick callback when checkbox state changes", () => {
+  it("should call checkboxProps.onClick callback when checkbox state changes", () => {
     const callback = sinon.spy();
-    const wrapper = mount(<Node label="a" level={0} isCheckboxVisible={true} onCheckboxClick={callback} />);
+    const wrapper = mount(<Node label="a" level={0} checkboxProps={{ onClick: callback }} />);
     const checkbox = wrapper.find(Checkbox).find("input");
     checkbox.simulate("change");
     expect(callback).to.be.calledOnce;
   });
 
-  it("should not call onClick callback when checkbox is clicked", () => {
+  it("should not call checkboxProps.onClick callback when checkbox is clicked", () => {
     const callback = sinon.spy();
-    const wrapper = mount(<Node label="a" level={0} isCheckboxVisible={true} onClick={callback} />);
+    const wrapper = mount(<Node label="a" level={0} checkboxProps={{ onClick: callback }} />);
     const checkbox = wrapper.find(Checkbox).find("input");
     checkbox.simulate("click");
     expect(callback).to.not.be.called;

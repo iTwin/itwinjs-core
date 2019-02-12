@@ -8,7 +8,7 @@ import { expect } from "chai";
 import { SchemaContext } from "../../../src/Context";
 import { RelationshipClass } from "../../../src/Metadata/RelationshipClass";
 import { Schema } from "../../../src/Metadata/Schema";
-import { DiagnosticCategory, DiagnosticCode, DiagnosticType } from "../../../src/Validation/Diagnostic";
+import { DiagnosticCategory, DiagnosticType } from "../../../src/Validation/Diagnostic";
 import * as Rules from "../../../src/Validation/ECRules";
 import { createSchemaJsonWithItems } from "../../TestUtils/DeserializationHelpers";
 
@@ -72,7 +72,7 @@ describe("RelationshipRule tests", () => {
       SBE1: { schemaItemType: "EntityClass" },
       SDE1: { schemaItemType: "EntityClass", baseClass: "TestSchema.SBE1" },
       SDE2: { schemaItemType: "EntityClass", baseClass: "TestSchema.SBE1" },
-      TBE1: { schemaItemType: "EntityClass"},
+      TBE1: { schemaItemType: "EntityClass" },
       TDE1: { schemaItemType: "EntityClass", baseClass: "TestSchema.TBE1" },
       TDE2: { schemaItemType: "EntityClass", baseClass: "TestSchema.TBE1" },
 
@@ -155,8 +155,7 @@ describe("RelationshipRule tests", () => {
         expect(diagnostic!.ecDefinition).to.equal(relationship);
         expect(diagnostic!.messageArgs).to.eql(["TestSchema.E1", "Source", "TestSchema.ChildRelationship", "TestSchema.BaseRelationship"]);
         expect(diagnostic!.category).to.equal(DiagnosticCategory.Error);
-        expect(diagnostic!.code).to.equal(DiagnosticCode.AbstractConstraintMustNarrowBaseConstraints);
-        expect(diagnostic!.key).to.equal(DiagnosticCode[DiagnosticCode.AbstractConstraintMustNarrowBaseConstraints]);
+        expect(diagnostic!.code).to.equal(Rules.DiagnosticCodes.AbstractConstraintMustNarrowBaseConstraints);
         expect(diagnostic!.diagnosticType).to.equal(DiagnosticType.SchemaItem);
         break;
       }
@@ -175,14 +174,13 @@ describe("RelationshipRule tests", () => {
       for await (const diagnostic of result!) {
         count++;
         const expectedArgs = count === 1 ? ["TestSchema.E1", "Source", "TestSchema.ChildRelationship", "TestSchema.BaseRelationship"] :
-        ["TestSchema.E2", "Target", "TestSchema.ChildRelationship", "TestSchema.BaseRelationship"];
+          ["TestSchema.E2", "Target", "TestSchema.ChildRelationship", "TestSchema.BaseRelationship"];
 
         expect(diagnostic).not.undefined;
         expect(diagnostic!.ecDefinition).to.equal(relationship);
         expect(diagnostic!.messageArgs).to.eql(expectedArgs);
         expect(diagnostic!.category).to.equal(DiagnosticCategory.Error);
-        expect(diagnostic!.code).to.equal(DiagnosticCode.AbstractConstraintMustNarrowBaseConstraints);
-        expect(diagnostic!.key).to.equal(DiagnosticCode[DiagnosticCode.AbstractConstraintMustNarrowBaseConstraints]);
+        expect(diagnostic!.code).to.equal(Rules.DiagnosticCodes.AbstractConstraintMustNarrowBaseConstraints);
         expect(diagnostic!.diagnosticType).to.equal(DiagnosticType.SchemaItem);
       }
       expect(count, "expected rule to return an AsyncIterable with entries.").to.equal(2);
@@ -232,8 +230,7 @@ describe("RelationshipRule tests", () => {
         expect(diagnostic!.ecDefinition).to.equal(relationship);
         expect(diagnostic!.messageArgs).to.eql(["TestSchema.E1", "Source", "TestSchema.ChildRelationship", "TestSchema.BaseRelationship"]);
         expect(diagnostic!.category).to.equal(DiagnosticCategory.Error);
-        expect(diagnostic!.code).to.equal(DiagnosticCode.DerivedConstraintsMustNarrowBaseConstraints);
-        expect(diagnostic!.key).to.equal(DiagnosticCode[DiagnosticCode.DerivedConstraintsMustNarrowBaseConstraints]);
+        expect(diagnostic!.code).to.equal(Rules.DiagnosticCodes.DerivedConstraintsMustNarrowBaseConstraints);
         expect(diagnostic!.diagnosticType).to.equal(DiagnosticType.SchemaItem);
         break;
       }
@@ -252,14 +249,13 @@ describe("RelationshipRule tests", () => {
       for await (const diagnostic of result!) {
         count++;
         const expectedArgs = count === 1 ? ["TestSchema.E1", "Source", "TestSchema.ChildRelationship", "TestSchema.BaseRelationship"] :
-        ["TestSchema.E2", "Target", "TestSchema.ChildRelationship", "TestSchema.BaseRelationship"];
+          ["TestSchema.E2", "Target", "TestSchema.ChildRelationship", "TestSchema.BaseRelationship"];
 
         expect(diagnostic).not.undefined;
         expect(diagnostic!.ecDefinition).to.equal(relationship);
         expect(diagnostic!.messageArgs).to.eql(expectedArgs);
         expect(diagnostic!.category).to.equal(DiagnosticCategory.Error);
-        expect(diagnostic!.code).to.equal(DiagnosticCode.DerivedConstraintsMustNarrowBaseConstraints);
-        expect(diagnostic!.key).to.equal(DiagnosticCode[DiagnosticCode.DerivedConstraintsMustNarrowBaseConstraints]);
+        expect(diagnostic!.code).to.equal(Rules.DiagnosticCodes.DerivedConstraintsMustNarrowBaseConstraints);
         expect(diagnostic!.diagnosticType).to.equal(DiagnosticType.SchemaItem);
       }
       expect(count, "expected rule to return an AsyncIterable with entries.").to.equal(2);
@@ -288,6 +284,26 @@ describe("RelationshipRule tests", () => {
       }
     });
 
+    it("source and target constraint same as abstract constraint, rule passes", async () => {
+      const sourceConstraints = {
+        abstractConstraint: "TestSchema.SBE1",
+        constraintClasses: ["TestSchema.SBE1"],
+      };
+      const targetConstraints = {
+        abstractConstraint: "TestSchema.TBE1",
+        constraintClasses: ["TestSchema.TBE1"],
+      };
+      const baseJson = createBaseRelationship(true, sourceConstraints, targetConstraints);
+      schema = await Schema.fromJson(createSchemaJson(baseJson, undefined), new SchemaContext());
+      const relationship = schema.getItemSync("BaseRelationship") as RelationshipClass;
+
+      const result = await Rules.constraintClassesDeriveFromAbstractContraint(relationship);
+
+      for await (const _diagnostic of result!) {
+        expect(false, "Rule should have passed").to.be.true;
+      }
+    });
+
     it("supported source and target constraint Mixin classes, rule passes", async () => {
       const sourceConstraints = {
         abstractConstraint: "TestSchema.SBE1",
@@ -295,6 +311,27 @@ describe("RelationshipRule tests", () => {
       };
       const targetConstraints = {
         abstractConstraint: "TestSchema.TBE1",
+        constraintClasses: ["TestSchema.TM1"],
+      };
+
+      const baseJson = createBaseRelationship(true, sourceConstraints, targetConstraints);
+      schema = await Schema.fromJson(createSchemaJson(baseJson, undefined), new SchemaContext());
+      const relationship = schema.getItemSync("BaseRelationship") as RelationshipClass;
+
+      const result = await Rules.constraintClassesDeriveFromAbstractContraint(relationship);
+
+      for await (const _diagnostic of result!) {
+        expect(false, "Rule should have passed").to.be.true;
+      }
+    });
+
+    it("source and target constraint Mixin classes same as abstract, rule passes", async () => {
+      const sourceConstraints = {
+        abstractConstraint: "TestSchema.SM1",
+        constraintClasses: ["TestSchema.SM1"],
+      };
+      const targetConstraints = {
+        abstractConstraint: "TestSchema.TM1",
         constraintClasses: ["TestSchema.TM1"],
       };
 
@@ -382,8 +419,7 @@ describe("RelationshipRule tests", () => {
         expect(diagnostic!.ecDefinition).to.equal(relationship);
         expect(diagnostic!.messageArgs).to.eql(["TestSchema.E1", "Source", "TestSchema.BaseRelationship", "TestSchema.SBE1"]);
         expect(diagnostic!.category).to.equal(DiagnosticCategory.Error);
-        expect(diagnostic!.code).to.equal(DiagnosticCode.ConstraintClassesDeriveFromAbstractContraint);
-        expect(diagnostic!.key).to.equal(DiagnosticCode[DiagnosticCode.ConstraintClassesDeriveFromAbstractContraint]);
+        expect(diagnostic!.code).to.equal(Rules.DiagnosticCodes.ConstraintClassesDeriveFromAbstractContraint);
         expect(diagnostic!.diagnosticType).to.equal(DiagnosticType.SchemaItem);
         break;
       }
@@ -412,8 +448,7 @@ describe("RelationshipRule tests", () => {
         expect(diagnostic!.ecDefinition).to.equal(relationship);
         expect(diagnostic!.messageArgs).to.eql(["TestSchema.M1", "Source", "TestSchema.BaseRelationship", "TestSchema.SBE1"]);
         expect(diagnostic!.category).to.equal(DiagnosticCategory.Error);
-        expect(diagnostic!.code).to.equal(DiagnosticCode.ConstraintClassesDeriveFromAbstractContraint);
-        expect(diagnostic!.key).to.equal(DiagnosticCode[DiagnosticCode.ConstraintClassesDeriveFromAbstractContraint]);
+        expect(diagnostic!.code).to.equal(Rules.DiagnosticCodes.ConstraintClassesDeriveFromAbstractContraint);
         expect(diagnostic!.diagnosticType).to.equal(DiagnosticType.SchemaItem);
         break;
       }
@@ -442,8 +477,7 @@ describe("RelationshipRule tests", () => {
         expect(diagnostic!.ecDefinition).to.equal(relationship);
         expect(diagnostic!.messageArgs).to.eql(["TestSchema.SM1", "Source", "TestSchema.BaseRelationship", "TestSchema.R1"]);
         expect(diagnostic!.category).to.equal(DiagnosticCategory.Error);
-        expect(diagnostic!.code).to.equal(DiagnosticCode.ConstraintClassesDeriveFromAbstractContraint);
-        expect(diagnostic!.key).to.equal(DiagnosticCode[DiagnosticCode.ConstraintClassesDeriveFromAbstractContraint]);
+        expect(diagnostic!.code).to.equal(Rules.DiagnosticCodes.ConstraintClassesDeriveFromAbstractContraint);
         expect(diagnostic!.diagnosticType).to.equal(DiagnosticType.SchemaItem);
         break;
       }
@@ -472,8 +506,7 @@ describe("RelationshipRule tests", () => {
         expect(diagnostic!.ecDefinition).to.equal(relationship);
         expect(diagnostic!.messageArgs).to.eql(["TestSchema.R1", "Source", "TestSchema.BaseRelationship", "TestSchema.SBR1"]);
         expect(diagnostic!.category).to.equal(DiagnosticCategory.Error);
-        expect(diagnostic!.code).to.equal(DiagnosticCode.ConstraintClassesDeriveFromAbstractContraint);
-        expect(diagnostic!.key).to.equal(DiagnosticCode[DiagnosticCode.ConstraintClassesDeriveFromAbstractContraint]);
+        expect(diagnostic!.code).to.equal(Rules.DiagnosticCodes.ConstraintClassesDeriveFromAbstractContraint);
         expect(diagnostic!.diagnosticType).to.equal(DiagnosticType.SchemaItem);
         break;
       }
@@ -500,14 +533,13 @@ describe("RelationshipRule tests", () => {
       for await (const diagnostic of result!) {
         count++;
         const expectedArgs = count === 1 ? ["TestSchema.E1", "Source", "TestSchema.BaseRelationship", "TestSchema.SBE1"] :
-        ["TestSchema.E2", "Target", "TestSchema.BaseRelationship", "TestSchema.TBE1"];
+          ["TestSchema.E2", "Target", "TestSchema.BaseRelationship", "TestSchema.TBE1"];
 
         expect(diagnostic).not.undefined;
         expect(diagnostic!.ecDefinition).to.equal(relationship);
         expect(diagnostic!.messageArgs).to.eql(expectedArgs);
         expect(diagnostic!.category).to.equal(DiagnosticCategory.Error);
-        expect(diagnostic!.code).to.equal(DiagnosticCode.ConstraintClassesDeriveFromAbstractContraint);
-        expect(diagnostic!.key).to.equal(DiagnosticCode[DiagnosticCode.ConstraintClassesDeriveFromAbstractContraint]);
+        expect(diagnostic!.code).to.equal(Rules.DiagnosticCodes.ConstraintClassesDeriveFromAbstractContraint);
         expect(diagnostic!.diagnosticType).to.equal(DiagnosticType.SchemaItem);
       }
       expect(count, "expected rule to return an AsyncIterable with entries.").to.equal(2);

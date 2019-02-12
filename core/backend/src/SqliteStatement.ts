@@ -8,6 +8,7 @@ import { Id64String, GuidString, DbResult, IDisposable, StatusCodeWithMessage } 
 import { IModelError, ECJsNames } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "./IModelJsNative";
 import { IModelHost } from "./IModelHost";
+import { Config } from "@bentley/imodeljs-clients";
 
 /** Marks a string as either an [Id64String]($bentleyjs-core) or [GuidString]($bentleyjs-core), so
  *  that it can be passed to the [bindValue]($backend.SqliteStatement) or [bindValues]($backend.SqliteStatement)
@@ -413,7 +414,7 @@ export class SqliteStatementCache {
   private readonly _statements: Map<string, CachedSqliteStatement> = new Map<string, CachedSqliteStatement>();
   public readonly maxCount: number;
 
-  public constructor(maxCount = 20) { this.maxCount = maxCount; }
+  public constructor(maxCount = Config.App.getNumber("imjs_sqlite_cache_size", 40)) { this.maxCount = maxCount; }
 
   public add(str: string, stmt: SqliteStatement): void {
     const existing = this._statements.get(str);
@@ -450,6 +451,19 @@ export class SqliteStatementCache {
         break;
       }
     }
+  }
+  public replace(str: string, stmt: SqliteStatement) {
+    if (stmt.isShared) {
+      throw new Error("expecting a unshared statement");
+    }
+    const existingCS = this.find(str);
+    if (existingCS) {
+      existingCS.statement.setIsShared(false);
+      this._statements.delete(str);
+    }
+    const newCS = new CachedSqliteStatement(stmt);
+    newCS.statement.setIsShared(true);
+    this._statements.set(str, newCS);
   }
 
   public removeUnusedStatementsIfNecessary(): void {

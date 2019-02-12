@@ -712,6 +712,39 @@ describe("ECClass", () => {
         H: { schemaItemType: "EntityClass", baseClass: "TestSchema.G", mixins: ["TestSchema.E", "TestSchema.F"] },
       },
     };
+
+    const childSchemaJson = {
+      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+      name: "ChildSchema",
+      version: "01.00.00",
+      alias: "ts",
+      references: [
+        {
+          name: "TestSchema",
+          version: "1.0.0",
+        },
+      ],
+      items: {
+        I: { schemaItemType: "EntityClass", baseClass: "TestSchema.H" },
+      },
+    };
+
+    const grandChildSchemaJson = {
+      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+      name: "GrandChildSchema",
+      version: "01.00.00",
+      alias: "ts",
+      references: [
+        {
+          name: "ChildSchema",
+          version: "1.0.0",
+        },
+      ],
+      items: {
+        J: { schemaItemType: "EntityClass", baseClass: "ChildSchema.I" },
+      },
+    };
+
     const expectedNames = ["G", "A", "B", "E", "C", "F", "D"];
 
     it("getAllBaseClasses, should correctly traverse a complex inheritance hierarchy", async () => {
@@ -797,6 +830,46 @@ describe("ECClass", () => {
       expect(await gClass!.is(eClass!)).to.be.false;
       expect(await gClass!.is(dClass!)).to.be.false;
       expect(await gClass!.is(hClass!)).to.be.false;
+    });
+
+    it("class 'is' a base class from different schema", async () => {
+      const context = new SchemaContext();
+      schema = await Schema.fromJson(testSchemaJson, context);
+      const childSchema = await Schema.fromJson(childSchemaJson, context);
+      const grandChildSchema = await Schema.fromJson(grandChildSchemaJson, context);
+
+      const aClass = await schema.getItem<ECClass>("A");
+      const bClass = await schema.getItem<ECClass>("B");
+      const cClass = await schema.getItem<ECClass>("C");
+      const dClass = await schema.getItem<ECClass>("D");
+      const eClass = await schema.getItem<ECClass>("E");
+      const fClass = await schema.getItem<ECClass>("F");
+      const gClass = await schema.getItem<ECClass>("G");
+      const hClass = await schema.getItem<ECClass>("H");
+      const iClass = await childSchema.getItem<ECClass>("I");
+      const jClass = await grandChildSchema.getItem<ECClass>("J");
+
+      expect(await iClass!.is(gClass!)).to.be.true;
+      expect(await iClass!.is(aClass!)).to.be.true;
+      expect(await iClass!.is(bClass!)).to.be.true;
+      expect(await iClass!.is(eClass!)).to.be.true;
+      expect(await iClass!.is(cClass!)).to.be.true;
+      expect(await iClass!.is(fClass!)).to.be.true;
+      expect(await iClass!.is(dClass!)).to.be.true;
+      expect(await iClass!.is(hClass!)).to.be.true;
+
+      expect(await jClass!.is(gClass!)).to.be.true;
+      expect(await jClass!.is(aClass!)).to.be.true;
+      expect(await jClass!.is(bClass!)).to.be.true;
+      expect(await jClass!.is(eClass!)).to.be.true;
+      expect(await jClass!.is(cClass!)).to.be.true;
+      expect(await jClass!.is(fClass!)).to.be.true;
+      expect(await jClass!.is(dClass!)).to.be.true;
+      expect(await jClass!.is(hClass!)).to.be.true;
+      expect(await jClass!.is(iClass!)).to.be.true;
+
+      expect(await gClass!.is(iClass!)).to.be.false;
+      expect(await gClass!.is(jClass!)).to.be.false;
     });
 
     it("class 'is' a base class synchronous", () => {

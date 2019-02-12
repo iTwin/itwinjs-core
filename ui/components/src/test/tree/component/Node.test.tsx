@@ -2,20 +2,21 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
-import { render } from "react-testing-library";
+import { render, fireEvent } from "react-testing-library";
+import { expect } from "chai";
 import { Tree } from "../../../ui-components/tree/component/Tree";
 import { BeInspireTree, BeInspireTreeNode } from "../../../ui-components/tree/component/BeInspireTree";
 import { TreeNode } from "../../../ui-components/tree/component/Node";
-import { waitForSpy } from "../../test-helpers/misc";
 import { TreeNodeItem } from "../../../ui-components/tree/TreeDataProvider";
+import { CheckBoxState } from "@bentley/ui-core";
+import { PropertyValueRendererManager } from "../../../ui-components/properties/ValueRendererManager";
 
 describe("Node", () => {
-
   let tree: BeInspireTree<TreeNodeItem>;
   let node: BeInspireTreeNode<TreeNodeItem>;
+  const valueRendererManager = PropertyValueRendererManager.defaultManager;
 
   beforeEach(() => {
     tree = new BeInspireTree<TreeNodeItem>({
@@ -25,88 +26,48 @@ describe("Node", () => {
     node = tree.nodes()[0];
   });
 
-  it("renders label with synchronous function", async () => {
-    const renderLabelSpy = sinon.spy(() => "Test label");
+  it("renders content", () => {
+    node.text = "Test text";
     const renderedNode = render(
       <TreeNode
-        renderLabel={renderLabelSpy}
-        renderId=""
         node={node}
+        valueRendererManager={valueRendererManager}
       />);
 
-    expect(renderLabelSpy.called).to.be.true;
-    renderedNode.getByText("Test label");
+    renderedNode.getByText("Test text");
   });
 
-  it("renders label with asynchronous function", async () => {
-    const onRenderSpy = sinon.spy();
-    const renderLabelSpy = sinon.spy(async () => "Test label");
+  it("renders checkbox", () => {
+    const checkboxSpy = sinon.spy();
+
     const renderedNode = render(
       <TreeNode
-        onFinalRenderComplete={onRenderSpy}
-        renderLabel={renderLabelSpy}
-        renderId=""
         node={node}
+        valueRendererManager={valueRendererManager}
+        checkboxProps={{
+          isDisabled: false,
+          onClick: checkboxSpy,
+          state: CheckBoxState.On,
+        }}
       />);
 
-    renderedNode.getByTestId("node-label-placeholder");
+    const checkbox = renderedNode.baseElement.querySelector(".uicore-inputs-checkbox");
 
-    await waitForSpy(onRenderSpy);
+    expect(checkbox).to.not.be.empty;
+    fireEvent.click(checkbox!);
 
-    expect(renderLabelSpy.called).to.be.true;
-    renderedNode.getByText("Test label");
-    expect(() => renderedNode.getByTestId("node-label-placeholder")).to.throw;
+    expect(checkboxSpy.called).to.be.true;
   });
 
-  it("renders label when it's updated with asynchronous function", async () => {
-    const renderLabelSpy = sinon.spy(() => "Test label");
+  it("renders icon", () => {
+    node.itree = { icon: "test-icon", state: {} };
+
     const renderedNode = render(
       <TreeNode
-        renderLabel={renderLabelSpy}
-        renderId="1"
         node={node}
+        valueRendererManager={valueRendererManager}
       />);
 
-    expect(renderLabelSpy.called).to.be.true;
-    renderedNode.getByText("Test label");
-
-    const asyncRenderLabelSpy = sinon.spy(async () => "Different test label");
-    const onRenderSpy = sinon.spy();
-    node.setDirty(true);
-    renderedNode.rerender(
-      <TreeNode
-        onFinalRenderComplete={onRenderSpy}
-        renderLabel={asyncRenderLabelSpy}
-        renderId="2"
-        node={node}
-      />);
-
-    await waitForSpy(onRenderSpy);
-
-    renderedNode.getByText("Different test label");
-  });
-
-  it("calls onFullyRendered even if shouldComponentUpdate returns false", async () => {
-    const renderLabelSpy = sinon.spy(() => "Test label");
-    const onRenderedSpy = sinon.spy();
-    const renderedNode = render(
-      <TreeNode
-        onFinalRenderComplete={onRenderedSpy}
-        renderLabel={renderLabelSpy}
-        renderId="1"
-        node={node}
-      />);
-
-    expect(renderLabelSpy.called).to.be.true;
-    expect(onRenderedSpy.calledOnce);
-
-    renderedNode.rerender(
-      <TreeNode
-        renderLabel={renderLabelSpy}
-        renderId="2"
-        node={node}
-      />);
-
-    expect(onRenderedSpy.calledTwice);
+    expect(renderedNode.baseElement.querySelector(".test-icon")).to.not.be.empty;
   });
 });

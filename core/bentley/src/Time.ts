@@ -6,6 +6,7 @@
 
 /** A duration of time. Can be either positive (towards future) or negative (in the past).
  * BeDurations are immutable.
+ * @public
  */
 export class BeDuration {
   private readonly _milliseconds: number;
@@ -46,6 +47,7 @@ export class BeDuration {
 /** A specific point in time relative to the current time.
  * BeTimePoints are used for timing operations. They are created from a BeDuration relative to the "now".
  * BeTimePoints are immutable.
+ * @public
  */
 export class BeTimePoint {
   private readonly _milliseconds: number;
@@ -93,7 +95,9 @@ export class BeTimePoint {
   public plus(duration: BeDuration) { return new BeTimePoint(this._milliseconds + duration.milliseconds); }
 }
 
-/** A StopWatch for timing operations. */
+/** A StopWatch for timing operations.
+ * @public
+ */
 export class StopWatch {
   private _start?: BeTimePoint;
   private _stop?: BeTimePoint;

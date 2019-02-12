@@ -105,12 +105,13 @@ export abstract class SchemaItem {
   /**
    * Indicates if the two SchemaItem objects are equal by comparing their respective [[key]] properties.
    * @param thisSchemaItem The first SchemaItem.
-   * @param thatSchemaItem The second SchemaItem.
+   * @param thatSchemaItemOrKey The second SchemaItem or SchemaItemKey.
    */
-  public static equalByKey(thisSchemaItem: SchemaItem, thatSchemaItem?: SchemaItem) {
-    if (!thatSchemaItem)
+  public static equalByKey(thisSchemaItem: SchemaItem, thatSchemaItemOrKey?: SchemaItem | SchemaItemKey) {
+    if (!thatSchemaItemOrKey)
       return true;
 
-    return thisSchemaItem.key.matches(thatSchemaItem.key);
+    const key = thatSchemaItemOrKey instanceof SchemaItem ? thatSchemaItemOrKey.key : thatSchemaItemOrKey;
+    return thisSchemaItem.key.matches(key);
   }
 }

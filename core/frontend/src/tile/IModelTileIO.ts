@@ -111,7 +111,13 @@ export namespace IModelTileIO {
       super(stream);
       this.headerLength = stream.nextUint32;
       this.flags = stream.nextUint32;
-      this.contentRange = Range3d.create(stream.nextPoint3d64, stream.nextPoint3d64);
+
+      // NB: Cannot use any of the static create*() functions because they all want to compute a range to contain the supplied points.
+      // (If contentRange is null, this will produce maximum range).
+      this.contentRange = new Range3d();
+      this.contentRange.low = stream.nextPoint3d64;
+      this.contentRange.high = stream.nextPoint3d64;
+
       this.tolerance = stream.nextFloat64;
       this.numElementsIncluded = stream.nextUint32;
       this.numElementsExcluded = stream.nextUint32;
