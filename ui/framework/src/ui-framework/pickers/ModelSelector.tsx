@@ -1058,6 +1058,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
           <div className={listClassName}>
             <div className="modelselector-toolbar">
               <FilteringInput
+                key={this.state.activeGroup.id}
                 filteringInProgress={this.state.activeTree.filtering ? this.state.activeTree.filtering : false}
                 onFilterCancel={this._onFilterCancel}
                 onFilterClear={this._onFilterClear}
