@@ -9,6 +9,7 @@ import { RpcManager } from "../RpcManager";
 import { IModelToken } from "../IModel";
 import { TileTreeProps } from "../TileProps";
 
+/** @public */
 export abstract class IModelTileRpcInterface extends RpcInterface {
   public static types = () => [
     IModelToken,

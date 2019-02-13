@@ -9,6 +9,7 @@ import * as sinon from "sinon";
 import ExpansionToggle from "../../ui-core/tree/ExpansionToggle";
 import Node from "../../ui-core/tree/Node";
 import { Checkbox } from "../../ui-core/inputs/Checkbox";
+import { CheckBoxState } from "../../ui-core/enums/CheckBoxState";
 
 describe("<Node />", () => {
   it("should render", () => {
@@ -54,6 +55,18 @@ describe("<Node />", () => {
   it("renders children correctly", () => {
     const wrapper = shallow(<Node label="a" level={0}><div className="unique" /></Node>);
     wrapper.find(".unique").should.have.lengthOf(1);
+  });
+
+  it("renders checkbox correctly", () => {
+    const wrapper = mount(<Node label="a" level={0} checkboxProps={{ state: CheckBoxState.On }} />);
+    wrapper.find(`input[type="checkbox"]`).should.have.lengthOf(1);
+  });
+
+  it("renders checkbox using render override if specified", () => {
+    const ovr = sinon.stub().returns(<div className="custom-checkbox" />);
+    const wrapper = mount(<Node label="a" level={0} checkboxProps={{ state: CheckBoxState.On }} renderOverrides={{ renderCheckbox: ovr }} />);
+    ovr.should.be.calledOnce;
+    wrapper.find(`div.custom-checkbox`).should.have.lengthOf(1);
   });
 
   it("should call onClick callback when node is clicked", () => {

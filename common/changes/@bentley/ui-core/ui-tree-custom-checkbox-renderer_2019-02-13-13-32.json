@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Add a way to specify custom Node checkbox renderer",
+      "packageName": "@bentley/ui-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-core",
+  "email": "grigas.petraitis@bentley.com"
+}

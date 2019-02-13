@@ -7,17 +7,23 @@
 import { Id64, Id64String, GuidString, JsonUtils } from "@bentley/bentleyjs-core";
 import { IModel } from "./IModel";
 
-/** The props that hold the identity of the object defining the uniqueness scope for a set of Code values. */
+/** The props that hold the identity of the object defining the uniqueness scope for a set of Code values.
+ * @public
+ */
 export type CodeScopeProps = Id64String | GuidString;
 
-/** The wire format for a Code */
+/** The wire format for a Code
+ * @public
+ */
 export interface CodeProps {
   spec: Id64String;
   scope: CodeScopeProps;
   value?: string;
 }
 
-/** A three-part structure containing information about the [Code]($docs/bis/intro/codes) of an Element */
+/** A three-part structure containing information about the [Code]($docs/bis/intro/codes) of an Element
+ * @public
+ */
 export class Code implements CodeProps {
   /** The id of the [CodeSpec]($docs/bis/intro/codes.md#codespec) of the Element */
   public spec: Id64String;
@@ -39,10 +45,9 @@ export class Code implements CodeProps {
   public equals(other: Code): boolean { return this.spec === other.spec && this.scope === other.scope && this.value === other.value; }
 }
 
-/**
- * Names of the internal BIS CodeSpecs. These names match those specified by the native library.
- *
+/** Names of the internal BIS CodeSpecs. These names match those specified by the native library.
  * For other domains, the best practice is to include the domain name or alias as part of the CodeSpec name to ensure global uniqueness.
+ * @public
  */
 export const enum BisCodeSpec {
   nullCodeSpec = "bis:NullCodeSpec",
@@ -78,8 +83,13 @@ export const enum BisCodeSpec {
   viewDefinition = "bis:ViewDefinition",
 }
 
-/** The scope of the Code. */
+/** The scope of the Code.
+ * @public
+ */
 export namespace CodeScopeSpec {
+  /** The standard ways the CodeScope can be specified.
+   * @public
+   */
   export const enum Type {
     /** The Code value must be unique within (at least) the iModel repository */
     Repository = 1,
@@ -91,7 +101,9 @@ export namespace CodeScopeSpec {
     RelatedElement = 4,
   }
 
-  /** Requirements for using a Code. */
+  /** Requirements for how the CodeScope Element is identified.
+   * @public
+   */
   export const enum ScopeRequirement {
     /** The Code is required to have a valid ElementId as its scope */
     ElementId = 1,
@@ -100,12 +112,12 @@ export namespace CodeScopeSpec {
   }
 }
 
-/**
- * A [Code Specification]($docs/bis/intro/glossary#codespec) captures the rules for encoding and decoding significant business information into
+/** A [Code Specification]($docs/bis/intro/glossary#codespec) captures the rules for encoding and decoding significant business information into
  * and from a Code (string). This specification is used to generate and validate Codes.
  *
  * A CodeSpec defines the format of a Code for a certain type of Element in an IModel.
  * A CodeSpec can identify an external system that maintains and/or assigns Codes.
+ * @public
  */
 export class CodeSpec {
   /** The iModel holding this CodeSpec. */

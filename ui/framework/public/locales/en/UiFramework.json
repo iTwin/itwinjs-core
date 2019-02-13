@@ -72,6 +72,11 @@
     "models": "Models",
     "loadingMessage": "Loading..."
   },
+  "realityData": {
+    "title": "Reality Data",
+    "noneAvailable": "No reality data available.",
+    "bingMap": "Bing Map"
+  },
   "savedViews": {
     "views": "Views",
     "spatialViews": "Spatial Views",

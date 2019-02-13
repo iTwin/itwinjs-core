@@ -19,7 +19,7 @@ import "./ModelSelector.scss";
 import { PresentationTreeDataProvider, treeWithFilteringSupport, IPresentationTreeDataProvider } from "@bentley/presentation-components";
 import { Presentation } from "@bentley/presentation-frontend";
 import { RegisteredRuleset, NodeKey, NodePathElement } from "@bentley/presentation-common";
-import { CheckBoxState } from "@bentley/ui-core";
+import { CheckBoxState, LoadingSpinner, SpinnerSize } from "@bentley/ui-core";
 import { BeEvent } from "@bentley/bentleyjs-core";
 
 /** Model Group used by [[ModelSelectorWidget]] */
@@ -1034,70 +1034,98 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
 
   /** @hidden */
   public render() {
-    const listClassName = classnames("fw-modelselector", this.state.expand && "show");
-    const activeClassName = classnames(this.state.activeGroup.label && "active");
+    return (
+      <div className="widget-picker">
+        {!this.state.activeTree &&
+          <LoadingSpinner size={SpinnerSize.Medium} />
+        }
+        {this.state.activeTree &&
+          <>
+            {this._getGroupTabs()}
+            {this._getTabContent()}
+          </>
+        }
+      </div >
+    );
+  }
 
-    if (this.state.activeTree)
-      return (
-        <div className="widget-picker">
-          <div>
-            <ul className="category-model-horizontal-tabs">
-              {
-                this._groups.map((group: any) =>
-                  (
-                    <li
-                      key={group.id}
-                      className={group.label === this.state.activeGroup.label ? activeClassName : ""}
-                      onClick={this._onExpand.bind(this, group)}>
-                      <a>{group.label}</a>
-                    </li>
-                  ))
-              }
-            </ul>
-          </div>
-          <div className={listClassName}>
-            <div className="modelselector-toolbar">
-              <FilteringInput
-                key={this.state.activeGroup.id}
-                filteringInProgress={this.state.activeTree.filtering ? this.state.activeTree.filtering : false}
-                onFilterCancel={this._onFilterCancel}
-                onFilterClear={this._onFilterClear}
-                onFilterStart={this._onFilterStart}
-                resultSelectorProps={{
-                  onSelectedChanged: this._onSelectedMatchChanged,
-                  resultCount: this.state.activeTree.matchesCount ? this.state.activeTree.matchesCount : 0,
-                }}
-              />
-              <div className="modelselector-buttons">
-                <span className="icon icon-visibility" title={UiFramework.i18n.translate("UiFramework:pickerButtons.all")} onClick={this._onSetEnableAll.bind(this, true)} />
-                <span className="icon icon-visibility-hide" title={UiFramework.i18n.translate("UiFramework:pickerButtons.none")} onClick={this._onSetEnableAll.bind(this, false)} />
-                <span className="icon icon-visibility-invert" title={UiFramework.i18n.translate("UiFramework:pickerButtons.invert")} onClick={this._onInvertAll.bind(this)} />
-              </div>
-            </div>
-            <div style={{ height: "100%" }}>
-              {
-                (this.props.iModelConnection) ?
-                  <CategoryModelTree
-                    dataProvider={this.state.activeTree.dataProvider}
-                    filter={this.state.activeTree.filter}
-                    onFilterApplied={this.onFilterApplied}
-                    onMatchesCounted={this._onMatchesCounted}
-                    activeMatchIndex={this.state.activeTree.activeMatchIndex}
-                    showDescriptions={true}
-                    selectedNodes={this.state.activeTree.selectedNodes}
-                    selectionMode={SelectionMode.Multiple}
-                    onNodesSelected={this._onNodesSelected}
-                    onNodesDeselected={this._onNodesDeselected}
-                    onNodeExpanded={this._onNodeExpanded}
-                    onCheckboxClick={this._onCheckboxClick}
-                  /> :
-                  <div />
-              }
-            </div >
-          </div>
-        </div >
-      );
-    return UiFramework.i18n.translate("UiFramework:categoriesModels.loadingMessage");
+  private _getGroupTabs = () => {
+    const activeClassName = classnames(this.state.activeGroup.label && "active");
+    return (
+      <div>
+        <ul className="category-model-horizontal-tabs">
+          {
+            this._groups.map((group: any) =>
+              (
+                <li
+                  key={group.id}
+                  className={group.label === this.state.activeGroup.label ? activeClassName : ""}
+                  onClick={this._onExpand.bind(this, group)}>
+                  <a>{group.label}</a>
+                </li>
+              ))
+          }
+        </ul>
+      </div>
+    );
+  }
+
+  private _getTabContent = () => {
+    const listClassName = classnames("fw-modelselector", this.state.expand && "show");
+    return (
+      <div className={listClassName}>
+        {this._getToolbar()}
+        {this._getActiveContent()}
+      </div>
+    );
+  }
+
+  private _getToolbar = () => {
+    return (
+      <div className="modelselector-toolbar">
+        {
+          <FilteringInput
+            key={this.state.activeGroup.id}
+            filteringInProgress={this.state.activeTree.filtering ? this.state.activeTree.filtering : false}
+            onFilterCancel={this._onFilterCancel}
+            onFilterClear={this._onFilterClear}
+            onFilterStart={this._onFilterStart}
+            resultSelectorProps={{
+              onSelectedChanged: this._onSelectedMatchChanged,
+              resultCount: this.state.activeTree.matchesCount ? this.state.activeTree.matchesCount : 0,
+            }}
+          />
+        }
+        <div className="modelselector-buttons">
+          <span className="icon icon-visibility" title={UiFramework.i18n.translate("UiFramework:pickerButtons.all")} onClick={this._onSetEnableAll.bind(this, true)} />
+          <span className="icon icon-visibility-hide" title={UiFramework.i18n.translate("UiFramework:pickerButtons.none")} onClick={this._onSetEnableAll.bind(this, false)} />
+          <span className="icon icon-visibility-invert" title={UiFramework.i18n.translate("UiFramework:pickerButtons.invert")} onClick={this._onInvertAll.bind(this)} />
+        </div>
+      </div>
+    );
+  }
+
+  private _getActiveContent = () => {
+    return (
+      <div className="modelselector-content">
+        {
+          <CategoryModelTree
+            dataProvider={this.state.activeTree.dataProvider}
+            filter={this.state.activeTree.filter}
+            onFilterApplied={this.onFilterApplied}
+            onMatchesCounted={this._onMatchesCounted}
+            activeMatchIndex={this.state.activeTree.activeMatchIndex}
+            showDescriptions={true}
+            selectedNodes={this.state.activeTree.selectedNodes}
+            selectionMode={SelectionMode.Multiple}
+            onNodesSelected={this._onNodesSelected}
+            onNodesDeselected={this._onNodesDeselected}
+            onNodeExpanded={this._onNodeExpanded}
+            onCheckboxClick={this._onCheckboxClick}
+          />
+        }
+      </div >
+    );
   }
 }
 

@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { Id64String } from "@bentley/bentleyjs-core";
 
+/** @beta */
 export interface ChangedElements {
   elements: Id64String[];
   classIds: Id64String[];

@@ -10,7 +10,9 @@ import { Angle, Point3d, Vector3d, XYZ, XYAndZ, Range1d, Range2d, Range3d, Trans
 export interface LatAndLong { longitude: number; latitude: number; }
 export interface LatLongAndHeight extends LatAndLong { height: number; }
 
-/** A position on the earth defined by longitude, latitude, and height above the WSG84 ellipsoid . */
+/** A position on the earth defined by longitude, latitude, and height above the WSG84 ellipsoid.
+ * @public
+ */
 export class Cartographic implements LatLongAndHeight {
   /**
    * @param longitude longitude, in radians.
@@ -267,7 +269,8 @@ export class Cartographic implements LatLongAndHeight {
     return result;
   }
 }
-/**  A cartographic range representing a rectangular region if low longitude/latitude > high then area crossing seam is indicated.
+/** A cartographic range representing a rectangular region if low longitude/latitude > high then area crossing seam is indicated.
+ * @public
  */
 export class CartographicRange {
   private _ranges: Range2d[];
@@ -305,6 +308,7 @@ export class CartographicRange {
       }
     }
   }
+
   public intersectsRange(other: CartographicRange): boolean {
     for (const range of this._ranges)
       for (const otherRange of other._ranges)

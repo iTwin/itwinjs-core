@@ -7,6 +7,7 @@
 /** Format of an [[ImageBuffer]].
  * The format determines how many bytes are allocated for each pixel in the buffer and the semantics of each byte.
  * @see [[ImageBuffer.getNumBytesPerPixel]]
+ * @public
  */
 export const enum ImageBufferFormat {
   /** RGBA format - 4 bytes per pixel. */
@@ -17,7 +18,9 @@ export const enum ImageBufferFormat {
   Alpha = 5,
 }
 
-/** Uncompressed bitmap image data */
+/** Uncompressed bitmap image data
+ * @public
+ */
 export class ImageBuffer {
   /** Image data in which each pixel occupies 1 or more bytes depending of the [[ImageBufferFormat]]. */
   public readonly data: Uint8Array;
@@ -73,11 +76,13 @@ export class ImageBuffer {
 
 /** Returns whether the input is a power of two.
  * @note Floating point inputs are truncated.
+ * @public
  */
 export function isPowerOfTwo(num: number): boolean { return 0 === (num & (num - 1)); }
 
 /** Returns the first power-of-two value greater than or equal to the input.
  * @note Floating point inputs are truncated.
+ * @public
  */
 export function nextHighestPowerOfTwo(num: number): number {
   --num;
@@ -87,7 +92,9 @@ export function nextHighestPowerOfTwo(num: number): number {
   return num + 1;
 }
 
-/** The format of an ImageSource. */
+/** The format of an ImageSource.
+ * @public
+ */
 export const enum ImageSourceFormat {
   /** Image data is stored with JPEG compression. */
   Jpeg = 0,
@@ -106,7 +113,9 @@ export function isValidImageSourceFormat(format: ImageSourceFormat): boolean {
   }
 }
 
-/** Image data encoded and compressed in either Jpeg or Png format. */
+/** Image data encoded and compressed in either Jpeg or Png format.
+ * @public
+ */
 export class ImageSource {
   /** The content of the image, compressed */
   public readonly data: Uint8Array;

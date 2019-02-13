@@ -11,7 +11,9 @@ import { AxisAlignedBox3d } from "./geometry/Placement";
 import { IModelError } from "./IModelError";
 import { ThumbnailProps } from "./Thumbnail";
 
-/** A token that identifies a specific instance of an iModel to be operated on */
+/** A token that identifies a specific instance of an iModel to be operated on
+ * @public
+ */
 export class IModelToken {
   /** Constructor */
   public constructor(
@@ -29,7 +31,9 @@ export class IModelToken {
   }
 }
 
-/** Properties that position an iModel on the earth via [ECEF](https://en.wikipedia.org/wiki/ECEF) (Earth Centered Earth Fixed) coordinates */
+/** Properties that position an iModel on the earth via [ECEF](https://en.wikipedia.org/wiki/ECEF) (Earth Centered Earth Fixed) coordinates
+ * @public
+ */
 export interface EcefLocationProps {
   /** The Origin of an iModel on the earth in ECEF coordinates */
   origin: XYZProps;
@@ -37,7 +41,9 @@ export interface EcefLocationProps {
   orientation: YawPitchRollProps;
 }
 
-/** The position and orientation of an iModel on the earth in [ECEF](https://en.wikipedia.org/wiki/ECEF) (Earth Centered Earth Fixed) coordinates */
+/** The position and orientation of an iModel on the earth in [ECEF](https://en.wikipedia.org/wiki/ECEF) (Earth Centered Earth Fixed) coordinates
+ * @public
+ */
 export class EcefLocation implements EcefLocationProps {
   /** The origin of the ECEF transform. */
   public readonly origin: Point3d;
@@ -63,7 +69,9 @@ export class EcefLocation implements EcefLocationProps {
   }
 }
 
-/** Properties of the [Root Subject]($docs/bis/intro/glossary#subject-root). */
+/** Properties of the [Root Subject]($docs/bis/intro/glossary#subject-root).
+ * @alpha Why is this not just SubjectProps?
+ */
 export interface RootSubjectProps {
   /** The name of the root subject. */
   name: string;
@@ -71,7 +79,9 @@ export interface RootSubjectProps {
   description?: string;
 }
 
-/** Properties that are about an iModel. */
+/** Properties that are about an iModel.
+ * @public
+ */
 export interface IModelProps {
   /** The name and description of the root subject of this iModel */
   rootSubject: RootSubjectProps;
@@ -83,7 +93,9 @@ export interface IModelProps {
   ecefLocation?: EcefLocationProps;
 }
 
-/** The properties that can be supplied when creating a *new* iModel. */
+/** The properties that can be supplied when creating a *new* iModel.
+ * @public
+ */
 export interface CreateIModelProps extends IModelProps {
   /** The GUID of new iModel. If not present, a GUID will be generated. */
   guid?: GuidString;
@@ -93,6 +105,7 @@ export interface CreateIModelProps extends IModelProps {
   thumbnail?: ThumbnailProps;
 }
 
+/** @public */
 export interface FilePropertyProps {
   namespace: string;
   name: string;
@@ -100,7 +113,9 @@ export interface FilePropertyProps {
   subId?: number | string;
 }
 
-/** Represents an iModel in JavaScript. */
+/** Represents an iModel in JavaScript.
+ * @public
+ */
 export abstract class IModel implements IModelProps {
   /** The Id of the repository model. */
   public static readonly repositoryModelId: Id64String = "0x1";

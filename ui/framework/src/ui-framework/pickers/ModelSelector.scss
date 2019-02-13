@@ -29,6 +29,14 @@
   position: relative;
   overflow: hidden;
   height: 100%;
+  position: relative;
+
+  .core-ls {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
 
   > .widget-groups {
     height: 100%;
@@ -83,14 +91,11 @@
   }
 
   .fw-modelselector {
-    top: 0;
-    left: 0;
     width: 100%;
     height: calc(100% - 44px);
     display: flex;
     flex-direction: column;
     opacity: 0;
-    transform: translateX(100%);
     transition: .2s linear;
     background-color: $background-2;
 
@@ -193,10 +198,8 @@
       }
     }
 
-    > .fw-modelselector-listbox {
-      flex: 1;
-      margin: 8px 0 4px 0;
-      overflow: auto;
+    .modelselector-content {
+      height: 100%;
     }
 
     .core-tree-tree  {

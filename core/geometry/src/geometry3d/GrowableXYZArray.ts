@@ -8,7 +8,7 @@
 import { Geometry } from "../Geometry";
 import { XYAndZ } from "./XYZProps";
 import { Point3d, Vector3d } from "./Point3dVector3d";
-import { Range3d } from "./Range";
+import { Range3d, Range1d } from "./Range";
 import { Transform } from "./Transform";
 import { Matrix3d } from "./Matrix3d";
 import { IndexedXYZCollection } from "./IndexedXYZCollection";
@@ -657,4 +657,25 @@ export class GrowableXYZArray extends IndexedXYZCollection {
       numAdded++;
     }
   }
+
+  /**
+   * find the min and max distance between corresponding indexed points.   Excess points are ignored.
+   * @param arrayA first array
+   * @param arrayB second array
+   */
+  public static distanceRangeBetweenCorrespondingPoints(arrayA: GrowableXYZArray, arrayB: GrowableXYZArray): Range1d {
+    const dataA = arrayA._data;
+    const dataB = arrayB._data;
+    const n = Math.min(arrayA.length, arrayB.length);
+    let i = 0;
+    let k0;
+    const range = Range1d.createNull();
+    while (i < n) {
+      k0 = 3 * i;
+      range.extendX(Geometry.hypotenuseXYZ(dataA[k0] - dataB[k0], dataA[k0 + 1] - dataB[k0 + 1], dataA[k0 + 1] - dataB[k0 + 1]));
+      i++;
+    }
+    return range;
+  }
+
 }

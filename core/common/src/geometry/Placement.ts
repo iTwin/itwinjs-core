@@ -8,18 +8,29 @@ import { Angle, Constant, Matrix3d, Point2d, Point3d, Range2d, Range3d, Transfor
 import { Placement2dProps, Placement3dProps } from "../ElementProps";
 import { Frustum } from "../Frustum";
 
-/** A Range3d that is aligned with the axes of spatial coordinates. */
+/** A Range3d that is aligned with the axes of spatial coordinates.
+ * @public
+ */
 export type AxisAlignedBox3d = Range3d;
-/** A bounding box aligned to the orientation of a 3d Element */
+
+/** A bounding box aligned to the orientation of a 3d Element
+ * @public
+ */
 export type ElementAlignedBox3d = Range3d;
-/** A bounding box aligned to the orientation of a 2d Element */
+
+/** A bounding box aligned to the orientation of a 2d Element
+ * @public
+ */
 export type ElementAlignedBox2d = Range2d;
-/** A bounding box aligned to a local coordinate system */
+
+/** A bounding box aligned to a local coordinate system
+ * @public
+ */
 export type LocalAlignedBox3d = Range3d;
 
-/**
- * The placement of a GeometricElement3d. This includes the origin, orientation, and size (bounding box) of the element.
+/** The placement of a GeometricElement3d. This includes the origin, orientation, and size (bounding box) of the element.
  * All geometry of a GeometricElement are relative to its placement.
+ * @public
  */
 export class Placement3d implements Placement3dProps {
   public constructor(public origin: Point3d, public angles: YawPitchRollAngles, public bbox: ElementAlignedBox3d) { }
@@ -65,7 +76,9 @@ export class Placement3d implements Placement3dProps {
   }
 }
 
-/** The placement of a GeometricElement2d. This includes the origin, rotation, and size (bounding box) of the element. */
+/** The placement of a GeometricElement2d. This includes the origin, rotation, and size (bounding box) of the element.
+ * @public
+ */
 export class Placement2d implements Placement2dProps {
   public constructor(public origin: Point2d, public angle: Angle, public bbox: ElementAlignedBox2d) { }
   /** Get the rotation from local coordinates of this placement to world coordinates. */

@@ -13,6 +13,7 @@
 - [Dialog]($core:Dialog)
 - [ElementSeparator]($core:ElementSeparator)
 - [Expandable]($core:Expandable)
+- [ImageCheckBox]($core:ImageCheckBox)
 - [Inputs]($core:Inputs)
 - [Loading]($core:Loading)
 - [MessageBox]($core:MessageBox)

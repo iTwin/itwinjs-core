@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module WireFormats */
 
-/**
- * Metadata about a thumbnail. Often this is redundant with information in the image itself, but is held
+/** Metadata about a thumbnail. Often this is redundant with information in the image itself, but is held
  * outside of the image so it can be obtained without having to decode the image data.
+ * @alpha Needed given types in Image.ts?
  */
 export interface ThumbnailFormatProps {
   /** X size of the image, in pixels. */
@@ -17,7 +17,9 @@ export interface ThumbnailFormatProps {
   format: "jpeg" | "png";
 }
 
-/** Properties of a thumbnail in an iModel. */
+/** Properties of a thumbnail in an iModel.
+ * @alpha Needed given types in Image.ts?
+ */
 export interface ThumbnailProps extends ThumbnailFormatProps {
   /** Image data */
   image: Uint8Array;

@@ -6,7 +6,9 @@
 
 import { Vector3d, Point3d, LowAndHighXYZ, LowAndHighXY, Range3d, Transform, Geometry, Map4d, ConvexClipPlaneSet, ClipPlane } from "@bentley/geometry-core";
 
-/** The 8 corners of the [Normalized Plane Coordinate]($docs/learning/glossary.md#npc) cube. */
+/** The 8 corners of the [Normalized Plane Coordinate]($docs/learning/glossary.md#npc) cube.
+ * @public
+ */
 export const enum Npc {
   /** Left bottom rear */
   _000 = 0,
@@ -37,7 +39,9 @@ export const enum Npc {
   CORNER_COUNT = 8,
 }
 
-/** The 8 corners of an [[Npc]] Frustum. */
+/** The 8 corners of an [[Npc]] Frustum.
+ * @public
+ */
 // tslint:disable-next-line:variable-name
 export const NpcCorners = [
   new Point3d(0.0, 0.0, 0.0),
@@ -57,10 +61,9 @@ Object.freeze(NpcCorners);
 export const NpcCenter = new Point3d(.5, .5, .5);
 Object.freeze(NpcCenter);
 
-/**
- * The region of physical (3d) space that appears in a view. It forms the field-of-view of a camera.
- *
+/** The region of physical (3d) space that appears in a view. It forms the field-of-view of a camera.
  * It is stored as 8 points, in [[Npc]] order, that must define a truncated pyramid.
+ * @public
  */
 export class Frustum {
   /** Array of the 8 points of this Frustum. */

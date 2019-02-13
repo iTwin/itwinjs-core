@@ -13,7 +13,9 @@ import { ViewFlags, AnalysisStyleProps, HiddenLine, AmbientOcclusion } from "./R
 import { SubCategoryAppearance, SubCategoryOverride } from "./SubCategoryAppearance";
 import { RenderSchedule } from "./RenderSchedule";
 
-/** Returned from [IModelDb.Views.getViewStateData]($backend) */
+/** Returned from [IModelDb.Views.getViewStateData]($backend)
+ * @public
+ */
 export interface ViewStateProps {
   viewDefinitionProps: ViewDefinitionProps;
   categorySelectorProps: CategorySelectorProps;
@@ -23,28 +25,37 @@ export interface ViewStateProps {
   sheetAttachments?: Id64Array;
 }
 
-/** Properties that define a ModelSelector */
+/** Properties that define a ModelSelector
+ * @public
+ */
 export interface ModelSelectorProps extends DefinitionElementProps {
   models: Id64Array;
 }
 
-/** Properties that define a CategorySelector */
+/** Properties that define a CategorySelector
+ * @public
+ */
 export interface CategorySelectorProps extends DefinitionElementProps {
   categories: Id64Array;
 }
 
+/** @alpha Use ECSQL and IModelConnection.queryRows instead? */
 export interface ViewQueryParams extends EntityQueryParams {
   wantPrivate?: boolean;
 }
 
-/** Parameters used to construct a ViewDefinition */
+/** Parameters used to construct a ViewDefinition
+ * @public
+ */
 export interface ViewDefinitionProps extends DefinitionElementProps {
   categorySelectorId: Id64String;
   displayStyleId: Id64String;
   description?: string;
 }
 
-/** JSON representation of [[ViewFlags]] */
+/** JSON representation of [[ViewFlags]]
+ * @public
+ */
 export interface ViewFlagProps {
   /** If true, don't show construction class. */
   noConstruct?: boolean;
@@ -100,6 +111,7 @@ export interface ViewFlagProps {
 
 /** Describes the [[SubCategoryOverride]]s applied to a [[SubCategory]] by a [[DisplayStyle]].
  * @see [[DisplayStyleSettingsProps]]
+ * @public
  */
 export interface DisplayStyleSubCategoryProps extends SubCategoryAppearance.Props {
   /** The Id of the [[SubCategory]] whose appearance is to be overridden. */
@@ -109,6 +121,7 @@ export interface DisplayStyleSubCategoryProps extends SubCategoryAppearance.Prop
 /** Describes the type of background map displayed by a [[DisplayStyle]]
  * @see [[BackgroundMapProps]]
  * @see [[DisplayStyleSettingsProps]]
+ * @public
  */
 export const enum BackgroundMapType {
   Street = 1,
@@ -118,6 +131,7 @@ export const enum BackgroundMapType {
 
 /** JSON representation of the settings associated with a background map displayed by a [[DisplayStyle]].
  * @see [[DisplayStyleSettingsProps]]
+ * @public
  */
 export interface BackgroundMapProps {
   groundBias?: number;
@@ -128,7 +142,9 @@ export interface BackgroundMapProps {
   };
 }
 
-/** JSON representation of a [[GroundPlane]]. */
+/** JSON representation of a [[GroundPlane]].
+ * @public
+ */
 export interface GroundPlaneProps {
   /** Whether the ground plane should be displayed. Defaults to false. */
   display?: boolean;
@@ -140,7 +156,9 @@ export interface GroundPlaneProps {
   belowColor?: ColorDefProps;
 }
 
-/** Enumerates the supported types of [[SkyBox]] images. */
+/** Enumerates the supported types of [[SkyBox]] images.
+ * @public
+ */
 export const enum SkyBoxImageType {
   None,
   /** A single image mapped to the surface of a sphere. @see [[SkySphere]] */
@@ -151,7 +169,9 @@ export const enum SkyBoxImageType {
   Cylindrical,
 }
 
-/** JSON representation of a set of images used by a [[SkyCube]]. Each property specifies the element ID of a texture associated with one face of the cube. */
+/** JSON representation of a set of images used by a [[SkyCube]]. Each property specifies the element ID of a texture associated with one face of the cube.
+ * @public
+ */
 export interface SkyCubeProps {
   front?: Id64String;
   back?: Id64String;
@@ -161,7 +181,9 @@ export interface SkyCubeProps {
   left?: Id64String;
 }
 
-/** JSON representation of an image or images used by a [[SkySphere]] or [[SkyCube]]. */
+/** JSON representation of an image or images used by a [[SkySphere]] or [[SkyCube]].
+ * @public
+ */
 export interface SkyBoxImageProps {
   /** The type of skybox image. */
   type?: SkyBoxImageType;
@@ -171,7 +193,9 @@ export interface SkyBoxImageProps {
   textures?: SkyCubeProps;
 }
 
-/** JSON representation of a [[SkyBox]]. */
+/** JSON representation of a [[SkyBox]].
+ * @public
+ */
 export interface SkyBoxProps {
   /** Whether or not the skybox should be displayed. Defaults to false. */
   display?: boolean;
@@ -193,12 +217,17 @@ export interface SkyBoxProps {
   image?: SkyBoxImageProps;
 }
 
-/** JSON representation of the environment setup of a [[DisplayStyle3d]]. */
+/** JSON representation of the environment setup of a [[DisplayStyle3d]].
+ * @public
+ */
 export interface EnvironmentProps {
   ground?: GroundPlaneProps;
   sky?: SkyBoxProps;
 }
-/** JSON representation of a context reality model */
+
+/** JSON representation of a context reality model
+ * @public
+ */
 export interface ContextRealityModelProps {
   tilesetUrl: string;
   name?: string;
@@ -209,6 +238,7 @@ export interface ContextRealityModelProps {
  * These settings are not stored directly as members of the [[DisplayStyleProps]]. Instead, they are stored
  * as members of `jsonProperties.styles`.
  * @see [[DisplayStyleSettings]].
+ * @beta
  */
 export interface DisplayStyleSettingsProps {
   viewflags?: ViewFlagProps;
@@ -228,8 +258,9 @@ export interface DisplayStyleSettingsProps {
   ContextRealityModels?: ContextRealityModelProps[];
 }
 
-/** JSON representation of settings assocaited with a [[DisplayStyle3dProps]].
+/** JSON representation of settings associated with a [[DisplayStyle3dProps]].
  * @see [[DisplayStyle3dSettings]].
+ * @beta
  */
 export interface DisplayStyle3dSettingsProps extends DisplayStyleSettingsProps {
   /** Settings controlling display of skybox and ground plane. */
@@ -240,7 +271,9 @@ export interface DisplayStyle3dSettingsProps extends DisplayStyleSettingsProps {
   ao?: AmbientOcclusion.Props;
 }
 
-/** JSON representation of a [[DisplayStyle]] or [[DisplayStyleState]]. */
+/** JSON representation of a [[DisplayStyle]] or [[DisplayStyleState]].
+ * @beta
+ */
 export interface DisplayStyleProps extends DefinitionElementProps {
   /** Display styles store their settings in a `styles` property within [[ElementProps.jsonProperties]]. */
   jsonProperties?: {
@@ -248,7 +281,9 @@ export interface DisplayStyleProps extends DefinitionElementProps {
   };
 }
 
-/** JSON representation of a [[DisplayStyle3d]] or [[DisplayStyle3dState]]. */
+/** JSON representation of a [[DisplayStyle3d]] or [[DisplayStyle3dState]].
+ * @beta
+ */
 export interface DisplayStyle3dProps extends DisplayStyleProps {
   /** Display styles store their settings in a `styles` property within [[ElementProps.jsonProperties]]. */
   jsonProperties?: {
@@ -256,14 +291,18 @@ export interface DisplayStyle3dProps extends DisplayStyleProps {
   };
 }
 
-/** properties of a camera */
+/** properties of a camera
+ * @public
+ */
 export interface CameraProps {
   lens: AngleProps;
   focusDist: number; // NOTE: this is abbreviated, do not change!
   eye: XYZProps;
 }
 
-/** Parameters to construct a ViewDefinition3d */
+/** Parameters to construct a ViewDefinition3d
+ * @public
+ */
 export interface ViewDefinition3dProps extends ViewDefinitionProps {
   /** if true, camera is valid. */
   cameraOn: boolean;
@@ -277,12 +316,16 @@ export interface ViewDefinition3dProps extends ViewDefinitionProps {
   camera: CameraProps;
 }
 
-/** Parameters to construct a SpatialViewDefinition */
+/** Parameters to construct a SpatialViewDefinition
+ * @public
+ */
 export interface SpatialViewDefinitionProps extends ViewDefinition3dProps {
   modelSelectorId: Id64String;
 }
 
-/** Parameters used to construct a ViewDefinition2d */
+/** Parameters used to construct a ViewDefinition2d
+ * @public
+ */
 export interface ViewDefinition2dProps extends ViewDefinitionProps {
   baseModelId: Id64String;
   origin: XYProps;
@@ -290,12 +333,15 @@ export interface ViewDefinition2dProps extends ViewDefinitionProps {
   angle: AngleProps;
 }
 
+/** @public */
 export interface AuxCoordSystemProps extends ElementProps {
   type?: number;
   description?: string;
 }
 
-/**  Properties of AuxCoordSystem2d */
+/**  Properties of AuxCoordSystem2d
+ * @public
+ */
 export interface AuxCoordSystem2dProps extends AuxCoordSystemProps {
   /** Origin of the AuxCoordSystem2d */
   origin?: XYProps;
@@ -303,7 +349,9 @@ export interface AuxCoordSystem2dProps extends AuxCoordSystemProps {
   angle?: AngleProps;
 }
 
-/** Properties of AuxCoordSystem3d */
+/** Properties of AuxCoordSystem3d
+ * @public
+ */
 export interface AuxCoordSystem3dProps extends AuxCoordSystemProps {
   /** Origin of the AuxCoordSystem3d */
   origin?: XYZProps;
@@ -317,6 +365,7 @@ export interface AuxCoordSystem3dProps extends AuxCoordSystemProps {
 
 /** Provides access to the settings defined by a [[DisplayStyle]] or [[DisplayStyleState]], and ensures that
  * the style's JSON properties are kept in sync.
+ * @beta
  */
 export class DisplayStyleSettings {
   protected readonly _json: DisplayStyleSettingsProps;
@@ -460,6 +509,7 @@ export class DisplayStyleSettings {
 
 /** Provides access to the settings defined by a [[DisplayStyle3d]] or [[DisplayStyle3dState]], and ensures that
  * the style's JSON properties are kept in sync.
+ * @beta
  */
 export class DisplayStyle3dSettings extends DisplayStyleSettings {
   private _hline: HiddenLine.Settings;

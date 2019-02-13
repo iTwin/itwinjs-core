@@ -10,7 +10,7 @@ import { NullGeometryHandler } from "../geometry3d/GeometryHandler";
 
 import { LineSegment3d } from "./LineSegment3d";
 import { Arc3d } from "./Arc3d";
-import { Point3d } from "../geometry3d/Point3dVector3d";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { LineString3d } from "./LineString3d";
 import { Geometry } from "../Geometry";
 
@@ -58,6 +58,8 @@ export class ConstructCurveBetweenCurves extends NullGeometryHandler {
         const workPoint = Point3d.create();
         const workPoint0 = Point3d.create();
         const workPoint1 = Point3d.create();
+        let workVector0;
+        let workVector1;
         const fraction = this._fraction;
         for (let i = 0; i < numPoints; i++) {
           ls0.pointAt(i, workPoint0);
@@ -65,19 +67,29 @@ export class ConstructCurveBetweenCurves extends NullGeometryHandler {
           workPoint0.interpolate(fraction, workPoint1, workPoint);
           ls.addPoint(workPoint);
         }
-
         if (ls0.fractions && ls1.fractions) {
           for (let i = 0; i < numPoints; i++) {
             ls1.addFraction(Geometry.interpolate(ls0.fractions.at(i), fraction, ls1.fractions.at(i)));
           }
-          if (ls0.strokeData && ls1.strokeData) {
-            // Policy: simple clone of stroke count map from ls0.
-            // The curveLength will not match.
-            // But we expect to be called at a time compatible count and a0,a1 are the important thing.
-            ls.strokeData = ls0.strokeData.clone();
-          }
         }
+        if (ls0.strokeData && ls1.strokeData) {
+          // Policy: simple clone of stroke count map from ls0.
+          // The curveLength will not match.
+          // But we expect to be called at a time compatible count and a0,a1 are the important thing.
+          ls.strokeData = ls0.strokeData.clone();
+        }
+        if (ls0.packedDerivatives && ls1.packedDerivatives) {
+          if (!workVector0)
+            workVector0 = Vector3d.create();
+          if (!workVector1)
+            workVector1 = Vector3d.create();
+          for (let i = 0; i < numPoints; i++) {
+            ls0.packedDerivatives.atVector3dIndex(i, workVector0);
+            ls1.packedDerivatives.atVector3dIndex(i, workVector1);
+            ls1.addDerivative(workVector0.interpolate(fraction, workVector1));
+          }
 
+        }
         return ls;
       }
     }
