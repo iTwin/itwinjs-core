@@ -40,6 +40,8 @@ export { Popup, Position } from "./ui-core/popup/Popup";
 export * from "./ui-core/radialmenu/RadialMenu";
 export * from "./ui-core/radialmenu/Annulus";
 
+export * from "./ui-core/imagecheckbox/ImageCheckBox";
+
 export { SearchBox, SearchBoxProps } from "./ui-core/searchbox/SearchBox";
 
 export * from "./ui-core/splitbutton/SplitButton";
@@ -141,6 +143,10 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
 /**
  * @docs-group-description Expandable
  * Classes for working with a ExpandableBlock or ExpandableList.
+ */
+/**
+ * @docs-group-description ImageCheckBox
+ * Component for working with two image states, checked and unchecked.
  */
 /**
  * @docs-group-description Inputs
