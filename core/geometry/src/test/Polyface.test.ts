@@ -404,13 +404,15 @@ describe("Polyface.Facets", () => {
   const y0RuledSweep = y0RotationalSweep + bigYStep;
 
   const allOptions = [options0, optionsN, optionsP, options0E, optionsPNE];
-  const subsetOptions = [options0E, optionsPNE];
+  // const allEOptions = [options0E, optionsPNE];
   it("Cones", () => {
     const all = Sample.createCones();
+    // writeAllMeshes(all, "ConeE", [optionsP], -y0Cone, optionYStep);
     writeAllMeshes(all, "Cone", allOptions, y0Cone, optionYStep);
   });
   it("Spheres", () => {
     const all = Sample.createSpheres();
+    // writeAllMeshes(all, "SphereNN", [optionsN], 0.0, optionYStep);
     writeAllMeshes(all, "Sphere", allOptions, y0Sphere, optionYStep);
   });
   it("Boxes", () => {
@@ -422,7 +424,7 @@ describe("Polyface.Facets", () => {
     writeAllMeshes(allBox, "TorusPipe", allOptions, y0TorusPipe, optionYStep);
   });
   it("LinearSweeps", () => {
-    writeAllMeshes(Sample.createSimpleLinearSweeps(), "LinearSweepSubset", subsetOptions, -y0LinearSweep, optionYStep);
+    // writeAllMeshes(Sample.createSimpleLinearSweeps(), "LinearSweepSubset", allEOptions, -y0LinearSweep, optionYStep);
     writeAllMeshes(Sample.createSimpleLinearSweeps(), "LinearSweep", allOptions, y0LinearSweep, optionYStep);
   });
 

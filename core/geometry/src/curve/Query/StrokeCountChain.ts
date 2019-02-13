@@ -38,6 +38,7 @@ import { Geometry } from "../../Geometry";
  * if (!cb.endSweeps (chainIndex, primitiveIndex, componentIndex)) return false;
  * return true;
  * `
+ * @internal
  */
 export abstract class StrokeCountMapMultipassVisitor {
   /**
@@ -72,6 +73,7 @@ export abstract class StrokeCountMapMultipassVisitor {
 /**
  * * pass 1: determine max numStroke
  * * pass 2: impose max numStroke
+ * @internal
  */
 export class StrokeCountMapVisitorApplyMaxCount extends StrokeCountMapMultipassVisitor {
   public myMap: StrokeCountMap;
@@ -111,6 +113,7 @@ export class StrokeCountMapVisitorApplyMaxCount extends StrokeCountMapMultipassV
 /**
  * * pass 1: determine max curveLength among maps presented.
  * * pass 2: set the a0 and a1 values to 0 and that max distance
+ * @internal
  */
 export class StrokeCountMapVisitorApplyMaxCurveLength extends StrokeCountMapMultipassVisitor {
   public maxCurveLength: number;

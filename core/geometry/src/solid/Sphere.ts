@@ -22,6 +22,7 @@ import { CurveCollection } from "../curve/CurveCollection";
 import { Arc3d } from "../curve/Arc3d";
 import { LineString3d } from "../curve/LineString3d";
 import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
+import { Vector2d } from "../geometry3d/Point2dVector2d";
 /**
  * A Sphere is
  *
@@ -258,8 +259,8 @@ export class Sphere extends SolidPrimitive implements UVSurface {
     const cosPhi = Math.cos(phiRadians);
     return Plane3dByOriginAndVectors.createOriginAndVectors(
       this._localToWorld.multiplyXYZ(cosTheta * cosPhi, sinTheta * cosPhi, sinPhi),
-      this._localToWorld.multiplyVectorXYZ(-fTheta * sinTheta * cosPhi, fTheta * cosTheta * cosPhi, 0),
-      this._localToWorld.multiplyVectorXYZ(-fPhi * cosTheta * sinPhi, -fPhi * sinTheta * sinPhi, fPhi * cosPhi),
+      this._localToWorld.matrix.multiplyXYZ(-fTheta * sinTheta, fTheta * cosTheta, 0),   // !!! note cosTheta term is omitted -- scale is wrong, but remains non-zero at poles.
+      this._localToWorld.matrix.multiplyXYZ(-fPhi * cosTheta * sinPhi, -fPhi * sinTheta * sinPhi, fPhi * cosPhi),
       result);
   }
   /**
@@ -270,5 +271,23 @@ export class Sphere extends SolidPrimitive implements UVSurface {
    */
   public get isClosedVolume(): boolean {
     return this.capped || this._latitudeSweep.isFullLatitudeSweep;
+  }
+  /**
+   * Directional distance query
+   * * u direction is around longitude circle at maximum distance from axis.
+   * * v direction is on a line of longitude between the latitude limits.
+   */
+  public maxIsoParametricDistance(): Vector2d {
+    // approximate radius at equator .. if elliptic, this is not exact . . .
+    const rX = this._localToWorld.matrix.columnXMagnitude();
+    const rY = this._localToWorld.matrix.columnYMagnitude();
+    const rZ = this._localToWorld.matrix.columnZMagnitude();
+    const rMaxU = Math.max(rX, rY);
+    let dMaxU = Math.PI * 2.0 * rMaxU;
+    if (!this._latitudeSweep.isRadiansInSweep(0.0))
+      dMaxU *= Math.max(Math.cos(Math.abs(this._latitudeSweep.startRadians)), Math.cos(Math.abs(this._latitudeSweep.endRadians)));
+    const dMaxV = Math.max(rMaxU, rZ) * Math.abs(this._latitudeSweep.sweepRadians);
+
+    return Vector2d.create(dMaxU, dMaxV);
   }
 }

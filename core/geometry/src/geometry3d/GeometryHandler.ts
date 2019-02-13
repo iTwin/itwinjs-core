@@ -35,6 +35,7 @@ import { PointString3d } from "../curve/PointString3d";
 import { Plane3dByOriginAndVectors } from "./Plane3dByOriginAndVectors";
 import { BezierCurveBase } from "../bspline/BezierCurveBase";
 import { GeometryQuery } from "../curve/GeometryQuery";
+import { Vector2d } from "./Point2dVector2d";
 
 export abstract class GeometryHandler {
   // Currently will include functionality on "how to handle" (note: Subclasses of CurveCollection are linked to one method)
@@ -230,10 +231,26 @@ export interface UVSurface {
    */
   uvFractionToPoint(uFraction: number, vFraction: number, result?: Point3d): Point3d;
   /**
-   * Convert fractional u and v coordinates to surface point and partial derivatives
+   * Convert fractional u and v coordinates to surface point and in-surface tangent directions.
+   * * Remark: the vectors are expected to be non-zero tangents which can be crossed to get a normal.
+   * * Hence the are NOT precisely either (a) partial derivatives or (b) frenet vectors
    * @param uFraction fractional coordinate in u direction
    * @param vFraction fractional coordinate in the v direction
    * @param result optional pre-allocated carrier for point and vectors
    */
   uvFractionToPointAndTangents(uFraction: number, vFraction: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors;
+}
+/**
+ * Interface for queries of distance-along in u and v directions
+ */
+export interface UVSurfaceIsoParametricDistance {
+  /**
+   * * Return a vector whose x and y parts are "size" of the surface in the u and v directions.
+   * * Sizes are use for applying scaling to mesh parameters
+   * * These sizes are (reasonable approximations of) the max curve length along u and v isoparameter lines.
+   *   * e.g. for a sphere, these are:
+   *      * u direction = distance around the equator
+   *      * v direction = distance from south pole to north pole.
+   */
+  maxIsoParametricDistance(): Vector2d;
 }
