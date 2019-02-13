@@ -42,6 +42,7 @@ dependencies:
   '@rush-temp/ui-ninezone': 'file:projects/ui-ninezone.tgz'
   '@rush-temp/ui-test-app': 'file:projects/ui-test-app.tgz'
   '@rush-temp/webpack-tools': 'file:projects/webpack-tools.tgz'
+  '@rush-temp/webworker-test-app': 'file:projects/webworker-test-app.tgz'
   '@types/body-parser': 1.17.0
   '@types/bunyan': 1.8.5
   '@types/bunyan-seq': 0.2.0
@@ -14713,6 +14714,18 @@ packages:
       integrity: sha512-IgRocM+6COF4WRMn9KqdAUB/YYCKmxjfkGC3lxB5rDVJ6+BjIHneSFg6/v2VmWllrhSgTBj1YskvdFR5MQxpAQ==
       tarball: 'file:projects/webpack-tools.tgz'
     version: 0.0.0
+  'file:projects/webworker-test-app.tgz':
+    dependencies:
+      rimraf: 2.6.3
+      tsconfig-paths: 3.8.0
+      tslint: /tslint/5.12.1/typescript@3.2.4
+      typescript: 3.2.4
+    dev: false
+    name: '@rush-temp/webworker-test-app'
+    resolution:
+      integrity: sha512-lGZybytL1mpYSAR2ol+1qDCLsRAT/ozKEFcfIp5baL+ZfMzZwnHEmpdpc/RZmmbqeD4bHT/izf5jNf1hi44wgg==
+      tarball: 'file:projects/webworker-test-app.tgz'
+    version: 0.0.0
   npm.bentley.com/@bentley/dev-cors-proxy-server/0.0.9:
     dependencies:
       http-proxy: 1.11.1
@@ -14792,6 +14805,7 @@ specifiers:
   '@rush-temp/ui-ninezone': 'file:./projects/ui-ninezone.tgz'
   '@rush-temp/ui-test-app': 'file:./projects/ui-test-app.tgz'
   '@rush-temp/webpack-tools': 'file:./projects/webpack-tools.tgz'
+  '@rush-temp/webworker-test-app': 'file:./projects/webworker-test-app.tgz'
   '@types/body-parser': ^1.17.0
   '@types/bunyan': ^1.8.4
   '@types/bunyan-seq': ^0.2.0

@@ -296,6 +296,9 @@
 .bim-icon-stop:before {
   content: "\ea34";
 }
+.bim-icon-work:before {
+  content: "\e9b2";
+}
 
 .toolMenu {
   position:absolute;
