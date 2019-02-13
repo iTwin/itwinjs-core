@@ -6,11 +6,12 @@
 @import "../icons/variables.scss";
 
 .core-image-checkbox {
-  display: flex;
+  display: inline-block;
   font-size: 16px;
-  cursor: pointer;
   position: relative;
-
+  height: 1em;
+  cursor: pointer;
+  
   input[type="checkbox"]:not(:checked),
   input[type="checkbox"]:checked {
     position: absolute;
