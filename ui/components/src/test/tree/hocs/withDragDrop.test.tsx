@@ -42,6 +42,7 @@ describe("Tree withDragDrop HOC", () => {
     const tree = [{ label: "Raw Node", id: "1", description: "node description" }];
     const root = ReactTestUtils.renderIntoDocument(<DragDropTree dataProvider={tree} dragProps={{ objectType: "test" }} />) as any;
     const iTree = new BeInspireTree<TreeNodeItem>({ dataProvider: tree, mapPayloadToInspireNodeConfig: Tree.inspireNodeFromTreeNodeItem });
+    await iTree.ready;
     const node = iTree.node(tree[0].id);
     const treeNode = root.renderNode(node, { node, renderLabel: { node } });
     render(treeNode);
@@ -59,21 +60,23 @@ describe("Tree withDragDrop HOC", () => {
       const onDragSourceBegin = sinon.spy((args: DragSourceArguments) => args);
       const tree = [{ label: "Raw Node", id: "1", description: "node description", extendedData: { testData: true } }];
       const iTree = new BeInspireTree<TreeNodeItem>({ dataProvider: tree, mapPayloadToInspireNodeConfig: Tree.inspireNodeFromTreeNodeItem });
+      await iTree.ready;
       const root = ReactTestUtils.renderIntoDocument(<DragDropTree dataProvider={tree} dragProps={{ onDragSourceBegin, objectType: "test" }} />) as any;
       const callbacks = root.createNodeDragProps(iTree.node(tree[0].id)) as DragSourceProps;
       const ret = callbacks.onDragSourceBegin!({ dataObject: undefined, dropEffect: DropEffects.Move, dropStatus: DropStatus.None, clientOffset: { x: 0, y: 0 }, initialClientOffset: { x: 0, y: 0 } });
       expect(onDragSourceBegin).to.have.been.calledWithMatch({ dataObject: { testData: true } });
       expect(ret.dataObject).to.contain({ testData: true });
     });
-    it("should forward extendedData from tree node without onDragSourceBegin input callback", () => {
+    it("should forward extendedData from tree node without onDragSourceBegin input callback", async () => {
       const tree = [{ label: "Raw Node", id: "1", description: "node description", extendedData: { testData: true } }];
       const root = ReactTestUtils.renderIntoDocument(<DragDropTree dataProvider={tree} dragProps={{ objectType: "test" }} />) as any;
       const iTree = new BeInspireTree<TreeNodeItem>({ dataProvider: tree, mapPayloadToInspireNodeConfig: Tree.inspireNodeFromTreeNodeItem });
+      await iTree.ready;
       const callbacks = root.createNodeDragProps(iTree.node(tree[0].id)) as DragSourceProps;
       const ret = callbacks.onDragSourceBegin!({ dataObject: undefined, dropEffect: DropEffects.Move, dropStatus: DropStatus.None, clientOffset: { x: 0, y: 0 }, initialClientOffset: { x: 0, y: 0 } });
       expect(ret.dataObject).to.contain({ testData: true });
     });
-    it("should add properties to dataObject from onDragSourceBegin and pass them on", () => {
+    it("should add properties to dataObject from onDragSourceBegin and pass them on", async () => {
       const onDragSourceBegin = (args: DragSourceArguments) => {
         args.dataObject = { test: true };
         return args;
@@ -81,16 +84,18 @@ describe("Tree withDragDrop HOC", () => {
       const tree = [{ label: "Raw Node", id: "1", description: "node description" }];
       const root = ReactTestUtils.renderIntoDocument(<DragDropTree dataProvider={tree} dragProps={{ onDragSourceBegin, objectType: "test" }} />) as any;
       const iTree = new BeInspireTree<TreeNodeItem>({ dataProvider: tree, mapPayloadToInspireNodeConfig: Tree.inspireNodeFromTreeNodeItem });
+      await iTree.ready;
       const callbacks = root.createNodeDragProps(iTree.node(tree[0].id)) as DragSourceProps;
       const ret = callbacks.onDragSourceBegin!({ dataObject: undefined, dropEffect: DropEffects.Move, dropStatus: DropStatus.None, clientOffset: { x: 0, y: 0 }, initialClientOffset: { x: 0, y: 0 } });
       expect(ret.dataObject).to.contain({ test: true });
     });
-    it("should set parentObject to dataProvider when on root node", () => {
+    it("should set parentObject to dataProvider when on root node", async () => {
       const onDragSourceBegin = sinon.spy((args: DragSourceArguments) => args);
       const onDragSourceEnd = sinon.spy();
       const tree = [{ label: "Raw Node", id: "1", description: "node description" }];
       const root = ReactTestUtils.renderIntoDocument(<DragDropTree dataProvider={tree} dragProps={{ onDragSourceBegin, onDragSourceEnd, objectType: "test" }} />) as any;
       const iTree = new BeInspireTree<TreeNodeItem>({ dataProvider: tree, mapPayloadToInspireNodeConfig: Tree.inspireNodeFromTreeNodeItem });
+      await iTree.ready;
       const callbacks = root.createNodeDragProps(iTree.node(tree[0].id)) as DragSourceProps;
       const ret = callbacks.onDragSourceBegin!({ dataObject: undefined, dropEffect: DropEffects.Move, dropStatus: DropStatus.None, clientOffset: { x: 0, y: 0 }, initialClientOffset: { x: 0, y: 0 } });
       expect(onDragSourceBegin).to.be.calledWithMatch({ parentObject: tree });
@@ -108,6 +113,7 @@ describe("Tree withDragDrop HOC", () => {
       }];
       const root = ReactTestUtils.renderIntoDocument(<DragDropTree dataProvider={tree} dragProps={{ onDragSourceBegin, onDragSourceEnd, objectType: "test" }} />) as any;
       const iTree = new BeInspireTree<TreeNodeItem>({ dataProvider: tree, mapPayloadToInspireNodeConfig: Tree.inspireNodeFromTreeNodeItem });
+      await iTree.ready;
       const callbacks = root.createNodeDragProps(iTree.node(tree[0].children[0].id)) as DragSourceProps;
       const ret = callbacks.onDragSourceBegin!({ dataObject: undefined, dropEffect: DropEffects.Move, dropStatus: DropStatus.None, clientOffset: { x: 0, y: 0 }, initialClientOffset: { x: 0, y: 0 } });
       expect(onDragSourceBegin).to.be.calledWithMatch({ parentObject: tree[0] });
@@ -115,19 +121,21 @@ describe("Tree withDragDrop HOC", () => {
       callbacks.onDragSourceEnd!({ dataObject: undefined, dropEffect: DropEffects.Move, dropStatus: DropStatus.None, clientOffset: { x: 0, y: 0 }, initialClientOffset: { x: 0, y: 0 } });
       expect(onDragSourceEnd).to.be.calledWithMatch({ parentObject: tree[0] });
     });
-    it("should pass constant objectType through", () => {
+    it("should pass constant objectType through", async () => {
       const tree = [{ label: "Raw Node", id: "1", description: "node description" }];
       const root = ReactTestUtils.renderIntoDocument(<DragDropTree dataProvider={tree} dragProps={{ objectType: "test" }} />) as any;
       const iTree = new BeInspireTree<TreeNodeItem>({ dataProvider: tree, mapPayloadToInspireNodeConfig: Tree.inspireNodeFromTreeNodeItem });
+      await iTree.ready;
       const callbacks = root.createNodeDragProps(iTree.node(tree[0].id)) as DragSourceProps;
       const ret = (callbacks.objectType as any)();
       expect(ret).to.equal("test");
     });
-    it("should pass data through for functional objectType", () => {
+    it("should pass data through for functional objectType", async () => {
       const objectType = sinon.spy((data: { testType: string }) => data.testType);
       const tree = [{ label: "Raw Node", id: "1", description: "node description", extendedData: { testType: "function-test" } }];
       const root = ReactTestUtils.renderIntoDocument(<DragDropTree dataProvider={tree} dragProps={{ objectType }} />) as any;
       const iTree = new BeInspireTree<TreeNodeItem>({ dataProvider: tree, mapPayloadToInspireNodeConfig: Tree.inspireNodeFromTreeNodeItem });
+      await iTree.ready;
       const callbacks = root.createNodeDragProps(iTree.node(tree[0].id)) as DragSourceProps;
       const ret = (callbacks.objectType as any)();
       expect(ret).to.equal("function-test");
@@ -155,13 +163,14 @@ describe("Tree withDragDrop HOC", () => {
       callbacks.canDropTargetDrop!(args);
       expect(canDropTargetDrop).to.be.calledWithMatch({ dropLocation: tree });
     });
-    it("should add dropLocation as item to dropProps callbacks", () => {
+    it("should add dropLocation as item to dropProps callbacks", async () => {
       const onDropTargetDrop = sinon.spy();
       const onDropTargetOver = sinon.spy();
       const canDropTargetDrop = sinon.spy((_args: DropTargetArguments) => true);
       const tree = [{ label: "Raw Node", id: "1", description: "node description" }];
       const root = ReactTestUtils.renderIntoDocument(<DragDropTree dataProvider={tree} dropProps={{ onDropTargetDrop, onDropTargetOver, canDropTargetDrop, objectTypes: ["test"] }} />) as any;
       const iTree = new BeInspireTree<TreeNodeItem>({ dataProvider: tree, mapPayloadToInspireNodeConfig: Tree.inspireNodeFromTreeNodeItem });
+      await iTree.ready;
       const callbacks = root.createNodeDropProps(iTree.node(tree[0].id)) as DropTargetProps;
       const args = { dataObject: undefined, dropEffect: DropEffects.Move, dropStatus: DropStatus.None, clientOffset: { x: 0, y: 0 }, initialClientOffset: { x: 0, y: 0 } };
       callbacks.onDropTargetDrop!(args);
@@ -173,10 +182,11 @@ describe("Tree withDragDrop HOC", () => {
       callbacks.canDropTargetDrop!(args);
       expect(canDropTargetDrop).to.be.calledWithMatch({ dropLocation: tree[0] });
     });
-    it("should add dropLocation as item to dropProps callback returns without input callback", () => {
+    it("should add dropLocation as item to dropProps callback returns without input callback", async () => {
       const tree = [{ label: "Raw Node", id: "1", description: "node description" }];
       const root = ReactTestUtils.renderIntoDocument(<DragDropTree dataProvider={tree} dropProps={{ objectTypes: ["test"] }} />) as any;
       const iTree = new BeInspireTree<TreeNodeItem>({ dataProvider: tree, mapPayloadToInspireNodeConfig: Tree.inspireNodeFromTreeNodeItem });
+      await iTree.ready;
       const callbacks = root.createNodeDropProps(iTree.node(tree[0].id)) as DropTargetProps;
       const args = { dataObject: undefined, dropEffect: DropEffects.Move, dropStatus: DropStatus.None, clientOffset: { x: 0, y: 0 }, initialClientOffset: { x: 0, y: 0 } };
       const ret1 = callbacks.onDropTargetDrop!(args);
@@ -203,6 +213,7 @@ describe("Tree withDragDrop HOC", () => {
       const tree = [{ label: "Raw Node", id: "1", description: "node description" }];
       const root = ReactTestUtils.renderIntoDocument(<DragDropTree dataProvider={tree} dropProps={{ onDropTargetDrop, onDropTargetOver, canDropTargetDrop, objectTypes: ["test"] }} />) as any;
       const iTree = new BeInspireTree<TreeNodeItem>({ dataProvider: tree, mapPayloadToInspireNodeConfig: Tree.inspireNodeFromTreeNodeItem });
+      await iTree.ready;
       const callbacks = root.createNodeDropProps(iTree.node(tree[0].id)) as DropTargetProps;
       const args = {
         dataObject: undefined, row: undefined, dropEffect: DropEffects.Move, dropStatus: DropStatus.None,
@@ -224,6 +235,7 @@ describe("Tree withDragDrop HOC", () => {
       const tree = [{ label: "Raw Node", id: "1", description: "node description" }];
       const root = ReactTestUtils.renderIntoDocument(<DragDropTree dataProvider={tree} dropProps={{ onDropTargetDrop, onDropTargetOver, canDropTargetDrop, objectTypes: ["test"] }} />) as any;
       const iTree = new BeInspireTree<TreeNodeItem>({ dataProvider: tree, mapPayloadToInspireNodeConfig: Tree.inspireNodeFromTreeNodeItem });
+      await iTree.ready;
       const callbacks = root.createNodeDropProps(iTree.node(tree[0].id)) as DropTargetProps;
       const args = {
         dataObject: undefined, dropEffect: DropEffects.Move, dropStatus: DropStatus.None,
@@ -245,6 +257,7 @@ describe("Tree withDragDrop HOC", () => {
       const tree = [{ label: "Raw Node", id: "1", description: "node description" }];
       const root = ReactTestUtils.renderIntoDocument(<DragDropTree dataProvider={tree} dropProps={{ onDropTargetDrop, onDropTargetOver, canDropTargetDrop, objectTypes: ["test"] }} />) as any;
       const iTree = new BeInspireTree<TreeNodeItem>({ dataProvider: tree, mapPayloadToInspireNodeConfig: Tree.inspireNodeFromTreeNodeItem });
+      await iTree.ready;
       const callbacks = root.createNodeDropProps(iTree.node(tree[0].id)) as DropTargetProps;
       const args = {
         dataObject: undefined, dropEffect: DropEffects.Move, dropStatus: DropStatus.None,
@@ -267,6 +280,7 @@ describe("Tree withDragDrop HOC", () => {
       }];
       const root = ReactTestUtils.renderIntoDocument(<DragDropTree dataProvider={tree} dropProps={{ onDropTargetDrop, onDropTargetOver, canDropTargetDrop, objectTypes: ["test"] }} />) as any;
       const iTree = new BeInspireTree<TreeNodeItem>({ dataProvider: tree, mapPayloadToInspireNodeConfig: Tree.inspireNodeFromTreeNodeItem });
+      await iTree.ready;
       const callbacks = root.createNodeDropProps(iTree.node(tree[0].children[0].id)) as DropTargetProps;
       const args = {
         dataObject: undefined, dropEffect: DropEffects.Move, dropStatus: DropStatus.None,
@@ -292,6 +306,7 @@ describe("Tree withDragDrop HOC", () => {
       }];
       const root = ReactTestUtils.renderIntoDocument(<DragDropTree dataProvider={tree} dropProps={{ onDropTargetDrop, onDropTargetOver, canDropTargetDrop, objectTypes: ["test"] }} />) as any;
       const iTree = new BeInspireTree<TreeNodeItem>({ dataProvider: tree, mapPayloadToInspireNodeConfig: Tree.inspireNodeFromTreeNodeItem });
+      await iTree.ready;
       const callbacks = root.createNodeDropProps(iTree.node(tree[0].children[0].id)) as DropTargetProps;
       const args = {
         dataObject: undefined, dropEffect: DropEffects.Move, dropStatus: DropStatus.None,

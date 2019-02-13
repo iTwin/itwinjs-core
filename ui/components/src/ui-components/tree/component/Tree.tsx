@@ -10,7 +10,10 @@ import * as React from "react";
 import { AutoSizer, Size, List as VirtualizedList, ListRowProps as VirtualizedListRowProps } from "react-virtualized";
 // bentley imports
 import { using, Guid } from "@bentley/bentleyjs-core";
-import { Tree as TreeBase, TreeNodePlaceholder, shallowDiffers, CheckBoxState, Spinner, SpinnerSize } from "@bentley/ui-core";
+import {
+  Tree as TreeBase, TreeNodePlaceholder, shallowDiffers,
+  CheckBoxState, CheckBoxInfo, Spinner, SpinnerSize,
+} from "@bentley/ui-core";
 // tree-related imports
 import {
   BeInspireTree, BeInspireTreeNode, BeInspireTreeNodes, BeInspireTreeNodeConfig,
@@ -144,7 +147,18 @@ export interface TreeProps {
   /** Properties for cell editing logic. If not provided, cell editing is disabled. */
   cellEditing?: EditableTreeProps;
 
-  onCheckboxClick?: (node: TreeNodeItem) => void;
+  /**
+   * Describes nodes that should be checked. May be defined as:
+   * - an array of node ids
+   * - a callback that takes a node and returns a boolean
+   *
+   * **Note:** when set, this property overrides checkbox-related TreeNodeItem attributes
+   */
+  checkboxInfo?: (node: TreeNodeItem) => CheckBoxInfo | Promise<CheckBoxInfo>;
+  /**
+   * A callback that gets fired when checkbox state changes
+   */
+  onCheckboxClick?: (node: TreeNodeItem, newState: CheckBoxState) => void;
 
   /** Custom property value renderer manager */
   propertyValueRendererManager?: PropertyValueRendererManager;
@@ -159,6 +173,7 @@ export interface TreeState {
     dataProvider: TreeDataProvider;
     modelReady: boolean;
     selectedNodes?: string[] | ((node: TreeNodeItem) => boolean);
+    checkboxInfo?: (node: TreeNodeItem) => CheckBoxInfo | Promise<CheckBoxInfo>;
     nodeHighlightingProps?: HighlightableTreeProps;
     cellEditing?: EditableTreeProps;
   };
@@ -217,6 +232,7 @@ export class Tree extends React.Component<TreeProps, TreeState> {
       prev: {
         dataProvider: props.dataProvider,
         selectedNodes: props.selectedNodes,
+        checkboxInfo: props.checkboxInfo,
         modelReady: false,
       },
       model: Tree.createModel(props),
@@ -239,6 +255,7 @@ export class Tree extends React.Component<TreeProps, TreeState> {
   public static getDerivedStateFromProps(props: TreeProps, state: TreeState): TreeState | null {
     const providerChanged = (props.dataProvider !== state.prev.dataProvider);
     const selectedNodesChanged = (props.selectedNodes !== state.prev.selectedNodes);
+    const checkboxInfoChanged = (props.checkboxInfo !== state.prev.checkboxInfo);
     const modelReadyChanged = (state.modelReady !== state.prev.modelReady);
 
     // create derived state that just updates `prev` values
@@ -249,6 +266,7 @@ export class Tree extends React.Component<TreeProps, TreeState> {
         dataProvider: props.dataProvider,
         modelReady: state.modelReady,
         selectedNodes: props.selectedNodes,
+        checkboxInfo: props.checkboxInfo,
         nodeHighlightingProps: props.nodeHighlightingProps,
         cellEditing: props.cellEditing,
       },
@@ -268,15 +286,26 @@ export class Tree extends React.Component<TreeProps, TreeState> {
     if (providerChanged) {
       derivedState.model = Tree.createModel(props);
       derivedState.modelReady = false;
-    }
-
-    // update tree selection if either selected nodes changed or model became ready
-    if (!providerChanged && (selectedNodesChanged || (modelReadyChanged && state.modelReady))) {
-      using((state.model.mute([BeInspireTreeEvent.ChangesApplied])), (_r) => {
-        // note: calling this may actually mutate `model`
-        // in state, but that should be fine
-        state.model.updateTreeSelection(props.selectedNodes);
-      });
+    } else {
+      const modelBecameReady = (modelReadyChanged && state.modelReady);
+      if (modelBecameReady || selectedNodesChanged) {
+        // note: not using `pauseRendering()` here to avoid firing `ChangesApplied`
+        // when the EventsMuteContext is disposed - the component is going to be
+        // rendered anyway if we got here
+        using((state.model.mute([BeInspireTreeEvent.ChangesApplied])), (_r) => {
+          // note: calling this may mutate `model` in state
+          state.model.updateTreeSelection(props.selectedNodes);
+        });
+      }
+      if ((modelBecameReady || checkboxInfoChanged) && props.checkboxInfo) {
+        // note: using `pauseRendering()` here - need it to fire `ChangesApplied`
+        // event after checkboxes are asynchronously updated
+        // tslint:disable-next-line: no-floating-promises
+        using((state.model.pauseRendering()), async (_r) => {
+          // note: calling this may actually mutate `model` in state
+          await state.model.updateTreeCheckboxes(props.checkboxInfo!);
+        });
+      }
     }
 
     return derivedState;
@@ -316,6 +345,7 @@ export class Tree extends React.Component<TreeProps, TreeState> {
 
     // otherwise, render when any of the following props / state change
     return this.props.selectedNodes !== nextProps.selectedNodes
+      || this.props.checkboxInfo !== nextProps.checkboxInfo
       || this.props.renderNode !== nextProps.renderNode
       || this.props.dataProvider !== nextProps.dataProvider
       || this.props.nodeHighlightingProps !== nextProps.nodeHighlightingProps
@@ -508,7 +538,11 @@ export class Tree extends React.Component<TreeProps, TreeState> {
     // children immediately, then node has children here. if data provider
     // delay loads children, then `node.getChildren()` returns empty array and
     // the `_onChildrenLoaded` callback is called where we do the same thing as here
-    this.state.model.updateNodesSelection(node.getChildren(), this.props.selectedNodes);
+    this.state.model.updateNodesSelection(toNodes(node.getChildren()), this.props.selectedNodes);
+    if (this.props.checkboxInfo) {
+      // tslint:disable-next-line: no-floating-promises
+      this.state.model.updateNodesCheckboxes(toNodes(node.getChildren()), this.props.checkboxInfo);
+    }
 
     this._nodesSelectionHandlers = undefined;
   }
@@ -540,6 +574,11 @@ export class Tree extends React.Component<TreeProps, TreeState> {
     if (this.state.pendingSelectionChange) {
       // continue loading selection
       this.state.pendingSelectionChange.continue();
+    }
+
+    if (this.props.checkboxInfo) {
+      // tslint:disable-next-line: no-floating-promises
+      this.state.model.updateNodesCheckboxes(nodes, this.props.checkboxInfo);
     }
   }
 
@@ -577,7 +616,7 @@ export class Tree extends React.Component<TreeProps, TreeState> {
           const node = this.state.model.node(item.id);
           if (node) {
             const wasExpanded = node.expanded();
-            node.assign(Tree.inspireNodeFromTreeNodeItem(item, Tree.inspireNodeFromTreeNodeItem.bind(this), node));
+            node.assign(Tree.inspireNodeFromTreeNodeItem(item, Tree.inspireNodeFromTreeNodeItem, node));
             if (wasExpanded)
               await node.loadChildren();
           }
@@ -623,12 +662,22 @@ export class Tree extends React.Component<TreeProps, TreeState> {
         },
       },
     };
-    if (item.checkBoxState === CheckBoxState.On)
+
+    if (item.isCheckboxVisible)
+      node.itree!.state!.checkboxVisible = true;
+    if (item.isCheckboxDisabled)
+      node.itree!.state!.checkboxDisabled = true;
+    if (item.checkBoxState === CheckBoxState.Partial)
+      node.itree!.state!.indeterminate = true;
+    else if (item.checkBoxState === CheckBoxState.On)
       node.itree!.state!.checked = true;
+
     if (item.icon)
       node.itree!.icon = item.icon;
+
     if (item.autoExpand)
       node.itree!.state!.collapsed = false;
+
     if ((item as DelayLoadedTreeNodeItem).hasChildren)
       node.children = true;
     else if ((item as ImmediatelyLoadedTreeNodeItem).children)
@@ -665,9 +714,9 @@ export class Tree extends React.Component<TreeProps, TreeState> {
     areEqual: (item1: BeInspireTreeNode<TreeNodeItem>, item2: BeInspireTreeNode<TreeNodeItem>) => item1 === item2,
   };
 
-  private _onCheckboxClick = (node: TreeNodeItem) => {
+  private _onCheckboxClick = (node: BeInspireTreeNode<TreeNodeItem>, newState: CheckBoxState) => {
     if (this.props.onCheckboxClick)
-      this.props.onCheckboxClick(node);
+      this.props.onCheckboxClick(node.payload!, newState);
   }
 
   // tslint:disable-next-line:naming-convention
@@ -703,9 +752,9 @@ export class Tree extends React.Component<TreeProps, TreeState> {
 
     return {
       node,
-      checkboxProps: node.payload!.isCheckboxVisible ? {
-        isDisabled: node.payload!.isCheckboxDisabled,
-        state: node.payload!.checkBoxState,
+      checkboxProps: node.itree!.state!.checkboxVisible ? {
+        isDisabled: node.itree!.state!.checkboxDisabled,
+        state: node.itree!.state!.checked ? CheckBoxState.On : CheckBoxState.Off,
         onClick: this._onCheckboxClick,
       } : undefined,
       cellEditing: this.state.cellEditingEngine,
@@ -821,6 +870,7 @@ export namespace Tree {
     Node = "tree-node",
     NodeContents = "tree-node-contents",
     NodeExpansionToggle = "tree-node-expansion-toggle",
+    NodeCheckbox = "tree-node-checkbox",
   }
 }
 

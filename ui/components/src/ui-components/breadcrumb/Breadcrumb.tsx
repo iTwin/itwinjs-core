@@ -61,10 +61,15 @@ export enum BreadcrumbMode {
 
 /** @hidden */
 export interface BreadcrumbState {
+  prev: {
+    dataProvider: TreeDataProvider;
+    modelReady: boolean;
+  };
+  model: BeInspireTree<TreeNodeItem>;
+  modelReady: boolean;
   width: number | string;
   current?: TreeNodeItem;
   currentMode: BreadcrumbMode;
-  modelReady: boolean;
   pathString: string;
 }
 
@@ -75,7 +80,6 @@ export interface BreadcrumbState {
  */
 export class Breadcrumb extends React.Component<BreadcrumbProps, BreadcrumbState> {
   private _mounted: boolean = false;
-  private _tree!: BeInspireTree<TreeNodeItem>;
 
   /** @hidden */
   public static defaultProps: Partial<BreadcrumbProps> = {
@@ -94,73 +98,80 @@ export class Breadcrumb extends React.Component<BreadcrumbProps, BreadcrumbState
     super(props);
 
     this.state = {
-      modelReady: isTreeDataProviderInterface(props.dataProvider) ? false : true,
+      prev: {
+        dataProvider: props.dataProvider,
+        modelReady: false,
+      },
+      model: Breadcrumb.createModel(props),
+      modelReady: false,
       width: props.width!,
       currentMode: props.initialBreadcrumbMode!,
       current: props.initialCurrent,
       pathString: "",
     };
-    this._recreateTree();
+  }
+
+  private static createModel(props: BreadcrumbProps) {
+    return new BeInspireTree<TreeNodeItem>({
+      dataProvider: props.dataProvider,
+      mapPayloadToInspireNodeConfig: Breadcrumb.inspireNodeFromTreeNodeItem,
+    });
+  }
+
+  public static getDerivedStateFromProps(props: BreadcrumbProps, state: BreadcrumbState): BreadcrumbState | null {
+    const providerChanged = (props.dataProvider !== state.prev.dataProvider);
+
+    // create derived state that just updates `prev` values
+    const derivedState: BreadcrumbState = {
+      ...state,
+      prev: {
+        ...state.prev,
+        dataProvider: props.dataProvider,
+        modelReady: state.modelReady,
+      },
+    };
+
+    // in case provider changed, have to re-create `model` and reset `modelReady`
+    if (providerChanged) {
+      derivedState.model = Breadcrumb.createModel(props);
+      derivedState.modelReady = false;
+    }
+
+    return derivedState;
   }
 
   /** @hidden */
   public componentDidMount() {
     this._mounted = true;
-    /* istanbul ignore next */
-    if (this.props.onRender)
-      this.props.onRender();
+    this.assignModelListeners(this.state.model);
+    this.assignDataProviderListeners(this.props.dataProvider);
+
     if (this.props.path) {
       this.props.path.setDataProvider(this.props.dataProvider);
       this.props.path.BreadcrumbUpdateEvent.addListener(this._handleUpdate);
     }
-    if (isTreeDataProviderInterface(this.props.dataProvider) && this.props.dataProvider.onTreeNodeChanged) {
-      // subscribe for data provider `onTreeNodeChanged` events
-      this.props.dataProvider.onTreeNodeChanged.addListener(this._onTreeNodeChanged);
-    }
+
+    /* istanbul ignore next */
+    if (this.props.onRender)
+      this.props.onRender();
   }
 
   /** @hidden */
   public componentWillUnmount() {
-    this._tree.removeAllListeners();
     if (this.props.path)
       this.props.path.BreadcrumbUpdateEvent.removeListener(this._handleUpdate);
-    if (isTreeDataProviderInterface(this.props.dataProvider) && this.props.dataProvider.onTreeNodeChanged) {
-      // unsubscribe from data provider `onTreeNodeChanged` events
-      this.props.dataProvider.onTreeNodeChanged.removeListener(this._onTreeNodeChanged);
-    }
+    this.dropModelListeners(this.state.model);
+    this.dropDataProviderListeners(this.props.dataProvider);
     this._mounted = false;
-  }
-
-  private _handleUpdate = (args: BreadcrumbUpdateEventArgs) => {
-    if (args.currentNode && this._mounted) {
-      const current = this._tree.node(args.currentNode.id);
-      if (current) {
-        const p = current.getTextualHierarchy().join(this.props.delimiter);
-        this.setState({ current: args.currentNode, pathString: p });
-      }
-    } else {
-      this.setState({ current: undefined, pathString: "" });
-    }
-  }
-
-  private _recreateTree() {
-    this._tree = new BeInspireTree<TreeNodeItem>({
-      dataProvider: this.props.dataProvider,
-      mapPayloadToInspireNodeConfig: Breadcrumb.inspireNodeFromTreeNodeItem,
-    });
-    this._tree.on(BeInspireTreeEvent.ModelLoaded, this._onModelLoaded);
-    this._tree.on(BeInspireTreeEvent.ChildrenLoaded, this._onChildrenLoaded);
-    this._tree.ready.then(this._onModelReady); // tslint:disable-line:no-floating-promises
   }
 
   /** @hidden */
   public shouldComponentUpdate(nextProps: BreadcrumbProps, nextState: BreadcrumbState): boolean {
-    if (this.state.modelReady !== nextState.modelReady) {
-      // always render when state.modelReady changes
+    if (this.state.modelReady !== nextState.modelReady || this.state.model !== nextState.model) {
+      // always render when modelReady or model changes
       return true;
     }
 
-    // istanbul ignore if
     if (!nextState.modelReady) {
       // if we got here and model is not ready - don't render
       return false;
@@ -175,33 +186,70 @@ export class Breadcrumb extends React.Component<BreadcrumbProps, BreadcrumbState
       || this.props.showUpDir !== nextProps.showUpDir
       || this.state.current !== nextState.current
       || this.state.pathString !== nextState.pathString
-      || this.state.currentMode !== nextState.currentMode;
+      || this.state.currentMode !== nextState.currentMode
+      || this.state.model.visible().some((n) => n.isDirty());
   }
 
   /** @hidden */
-  public componentDidUpdate(prevProps: BreadcrumbProps) {
+  public componentDidUpdate(prevProps: BreadcrumbProps, prevState: BreadcrumbState) {
+    if (this.state.model !== prevState.model) {
+      this.dropModelListeners(prevState.model);
+      this.assignModelListeners(this.state.model);
+    }
+
+    if (this.props.dataProvider !== prevProps.dataProvider) {
+      this.dropDataProviderListeners(prevProps.dataProvider);
+      this.assignDataProviderListeners(this.props.dataProvider);
+    }
+
     /* istanbul ignore next */
     if (this.props.onRender)
       this.props.onRender();
-    if (this.props.dataProvider !== prevProps.dataProvider) {
-      if (isTreeDataProviderInterface(prevProps.dataProvider) && prevProps.dataProvider.onTreeNodeChanged) {
-        // unsubscribe from previous data provider `onTreeNodeChanged` events
-        prevProps.dataProvider.onTreeNodeChanged.removeListener(this._onTreeNodeChanged);
+  }
+
+  private assignModelListeners(model: BeInspireTree<TreeNodeItem>) {
+    model.on(BeInspireTreeEvent.ChangesApplied, this._onModelChanged);
+    model.on(BeInspireTreeEvent.ModelLoaded, this._onModelLoaded);
+    model.on(BeInspireTreeEvent.ChildrenLoaded, this._onChildrenLoaded);
+    // tslint:disable-next-line:no-floating-promises
+    model.ready.then(() => {
+      if (model === this.state.model)
+        this._onModelReady();
+    });
+  }
+
+  private dropModelListeners(model: BeInspireTree<TreeNodeItem>) {
+    model.removeAllListeners();
+  }
+
+  private assignDataProviderListeners(provider: TreeDataProvider) {
+    if (isTreeDataProviderInterface(provider) && provider.onTreeNodeChanged) {
+      provider.onTreeNodeChanged.addListener(this._onTreeNodeChanged);
+    }
+  }
+
+  private dropDataProviderListeners(provider: TreeDataProvider) {
+    if (isTreeDataProviderInterface(provider) && provider.onTreeNodeChanged) {
+      provider.onTreeNodeChanged.removeListener(this._onTreeNodeChanged);
+    }
+  }
+
+  private _handleUpdate = (args: BreadcrumbUpdateEventArgs) => {
+    if (args.currentNode && this._mounted) {
+      const current = this.state.model.node(args.currentNode.id);
+      if (current) {
+        const p = current.getTextualHierarchy().join(this.props.delimiter);
+        this.setState({ current: args.currentNode, pathString: p });
       }
-      if (isTreeDataProviderInterface(this.props.dataProvider) && this.props.dataProvider.onTreeNodeChanged) {
-        // subscribe for new data provider `onTreeNodeChanged` events
-        this.props.dataProvider.onTreeNodeChanged.addListener(this._onTreeNodeChanged);
-      }
-      this.setState({ modelReady: false }, () => {
-        this._recreateTree();
-      });
+    } else {
+      this.setState({ current: undefined, pathString: "" });
     }
   }
 
   private _onModelLoaded = (rootNodes: BeInspireTreeNodes<TreeNodeItem>) => {
     if (this.props.onRootNodesLoaded)
       this.props.onRootNodesLoaded(rootNodes.map((n) => n.payload!));
-    const current = this.state.current ? this._tree.node(this.state.current.id) : undefined;
+    const current = this.state.current ? this.state.model.node(this.state.current.id) : undefined;
     const p = current ? current.getTextualHierarchy().join(this.props.delimiter) : "";
     if (p !== this.state.pathString)
       this.setState({ pathString: p });
@@ -211,23 +259,28 @@ export class Breadcrumb extends React.Component<BreadcrumbProps, BreadcrumbState
     const children = parentNode.getChildren();
     if (this.props.onChildrenLoaded)
       this.props.onChildrenLoaded(parentNode.payload!, toNodes<TreeNodeItem>(children).map((c) => c.payload!));
-    const current = this.state.current ? this._tree.node(this.state.current.id) : undefined;
+    const current = this.state.current ? this.state.model.node(this.state.current.id) : undefined;
     const p = current ? current.getTextualHierarchy().join(this.props.delimiter) : "";
     if (p !== this.state.pathString)
       this.setState({ pathString: p });
   }
 
+  private _onModelChanged = () => {
+    // just re-set the model to initiate update
+    this.setState((prev) => ({ model: prev.model }));
+  }
+
   private _onModelReady = () => {
     // istanbul ignore else
     if (this._mounted) {
-      const current = this.state.current ? this._tree.node(this.state.current.id) : undefined;
+      const current = this.state.current ? this.state.model.node(this.state.current.id) : undefined;
       this.setState({ modelReady: true, pathString: current ? current.getTextualHierarchy().join(this.props.delimiter) : "" });
     }
   }
 
   private _onTreeNodeChanged = (_items: Array<TreeNodeItem | undefined>) => {
-    using((this._tree as any).pauseRendering(), async () => { // tslint:disable-line:no-floating-promises
-      await this._tree.reload();
+    using(this.state.model.pauseRendering(), async (_r) => { // tslint:disable-line:no-floating-promises
+      await this.state.model.reload();
     });
   }
 
@@ -249,7 +302,12 @@ export class Breadcrumb extends React.Component<BreadcrumbProps, BreadcrumbState
   }
 
   public render(): React.ReactNode {
-    const node = this.state.current ? this._tree.node(this.state.current.id) : undefined;
+    if (!this.state.modelReady) {
+      return (
+        <div className={classnames("breadcrumb", { background: this.props.background })} />
+      );
+    }
+    const node = this.state.current ? this.state.model.node(this.state.current.id) : undefined;
     return (
       <div
         className={classnames("breadcrumb", { background: this.props.background })}>
@@ -257,7 +315,7 @@ export class Breadcrumb extends React.Component<BreadcrumbProps, BreadcrumbState
           data-testid="breadcrumb-dropdown-input-parent">
           {this.props.dropdownOnly || this.props.staticOnly ?
             <BreadcrumbDropdown
-              tree={this._tree}
+              tree={this.state.model}
               node={node}
               onNodeChange={this._handleNodeChange}
               onInputStart={this._setInput}
@@ -267,7 +325,7 @@ export class Breadcrumb extends React.Component<BreadcrumbProps, BreadcrumbState
               parentsOnly={this.props.parentsOnly}
               width={this.props.width!} /> :
             <InputSwitch
-              tree={this._tree}
+              tree={this.state.model}
               node={node}
               pathString={this.state.pathString}
               currentMode={this.state.currentMode}
@@ -296,7 +354,7 @@ export class Breadcrumb extends React.Component<BreadcrumbProps, BreadcrumbState
       if (!node) {
         this.setState({ current: undefined, pathString: "" });
       } else {
-        const current = this.state.current ? this._tree.node(this.state.current.id) : undefined;
+        const current = this.state.current ? this.state.model.node(this.state.current.id) : undefined;
         const p = current ? current.getTextualHierarchy().join(this.props.delimiter) : "";
         this.setState({ current: node, pathString: p });
       }

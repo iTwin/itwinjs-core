@@ -8,7 +8,10 @@ import * as React from "react";
 import { Tree } from "./Tree";
 import { BeInspireTreeNode } from "./BeInspireTree";
 import { TreeNodeItem } from "../TreeDataProvider";
-import { TreeNode as TreeNodeBase, NodeCheckboxProps as CheckboxProps, Omit, shallowDiffers } from "@bentley/ui-core";
+import {
+  TreeNode as TreeNodeBase, NodeCheckboxProps as CheckboxProps, Omit,
+  CheckBoxState, shallowDiffers,
+} from "@bentley/ui-core";
 import { TreeNodeContent } from "./NodeContent";
 import { CellEditingEngine } from "../CellEditingEngine";
 import { HighlightableTreeNodeProps } from "../HighlightingEngine";
@@ -19,7 +22,7 @@ import { PropertyValueRendererManager } from "../../properties/ValueRendererMana
  * @hidden
  */
 export interface NodeCheckboxProps extends Omit<CheckboxProps, "onClick"> {
-  onClick: (node: TreeNodeItem) => void;
+  onClick: (node: BeInspireTreeNode<TreeNodeItem>, newState: CheckBoxState) => void;
 }
 
 /**
@@ -59,16 +62,8 @@ export interface TreeNodeProps {
  * @hidden
  */
 export class TreeNode extends React.Component<TreeNodeProps> {
-  private doPropsDiffer(props1: TreeNodeProps, props2: TreeNodeProps) {
-    return shallowDiffers(props1.highlightProps, props2.highlightProps)
-      || props1.valueRendererManager !== props2.valueRendererManager
-      || props1.cellEditing !== props2.cellEditing
-      || props1.showDescription !== props2.showDescription
-      || shallowDiffers(props1.checkboxProps, props2.checkboxProps);
-  }
-
   public shouldComponentUpdate(nextProps: TreeNodeProps) {
-    if (nextProps.node.isDirty() || this.doPropsDiffer(this.props, nextProps))
+    if (nextProps.node.isDirty() || doPropsDiffer(this.props, nextProps))
       return true;
 
     // This is an anti-pattern, but it's main purpose is for testing.
@@ -119,8 +114,16 @@ export class TreeNode extends React.Component<TreeNodeProps> {
     );
   }
 
-  private _onCheckboxClick = () => {
-    if (this.props.checkboxProps && this.props.node.payload)
-      this.props.checkboxProps.onClick(this.props.node.payload);
+  private _onCheckboxClick = (newValue: CheckBoxState) => {
+    if (this.props.checkboxProps && this.props.checkboxProps.onClick)
+      this.props.checkboxProps.onClick(this.props.node, newValue);
   }
+}
+
+function doPropsDiffer(props1: TreeNodeProps, props2: TreeNodeProps) {
+  return shallowDiffers(props1.highlightProps, props2.highlightProps)
+    || props1.valueRendererManager !== props2.valueRendererManager
+    || props1.cellEditing !== props2.cellEditing
+    || props1.showDescription !== props2.showDescription
+    || shallowDiffers(props1.checkboxProps, props2.checkboxProps);
 }

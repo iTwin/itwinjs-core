@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Expose node key type guards through index",
+      "packageName": "@bentley/presentation-common",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-common",
+  "email": "grigas.petraitis@bentley.com"
+}

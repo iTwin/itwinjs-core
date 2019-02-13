@@ -12,7 +12,7 @@ import { PropertyValueRendererManager, PropertyValueRendererContext, PropertyCon
 import { BeInspireTreeNode } from "./BeInspireTree";
 import { TreeNodeItem } from "../TreeDataProvider";
 import { CellEditingEngine } from "../CellEditingEngine";
-import { TreeNodePlaceholder, shallowDiffers } from "@bentley/ui-core";
+import { TreeNodePlaceholder, shallowDiffers, isPromiseLike } from "@bentley/ui-core";
 import { UiComponents } from "../../UiComponents";
 
 import "./NodeContent.scss";
@@ -94,7 +94,7 @@ export class TreeNodeContent extends React.Component<TreeNodeContentProps, TreeN
 
   private async updateLabel(props: TreeNodeContentProps) {
     const label = this.getLabel(props);
-    if (isPromise(label)) {
+    if (isPromiseLike(label)) {
       const result = await label;
 
       if (this._isMounted)
@@ -180,8 +180,4 @@ export class TreeNodeContent extends React.Component<TreeNodeContentProps, TreeN
       </div>
     );
   }
-}
-
-function isPromise(value: any): value is Promise<any> {
-  return !!(value && value.then && value.catch);
 }

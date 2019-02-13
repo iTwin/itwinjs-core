@@ -23,7 +23,7 @@ export interface NodeCheckboxProps {
   /** State of the checkbox */
   state?: CheckBoxState;
   /** Click event callback */
-  onClick: () => void;
+  onClick?: (newState: CheckBoxState) => void;
   /** Indicates whether checkbox is disabled */
   isDisabled?: boolean;
 }
@@ -70,8 +70,9 @@ export default class TreeNode extends React.Component<NodeProps> {
 
     const checkbox = this.props.checkboxProps ?
       <Checkbox
+        data-testid={this.createSubComponentTestId("checkbox")}
         label=""
-        checked={this.props.checkboxProps.state === CheckBoxState.On ? true : false}
+        checked={this.props.checkboxProps.state === CheckBoxState.On}
         disabled={this.props.checkboxProps.isDisabled}
         onClick={this._onCheckboxClick}
         onChange={this._onCheckboxChange}
@@ -122,9 +123,9 @@ export default class TreeNode extends React.Component<NodeProps> {
     return `${this.props["data-testid"]}-${subId}`;
   }
 
-  private _onCheckboxChange = (_e: React.ChangeEvent<HTMLInputElement>) => {
-    if (this.props.checkboxProps)
-      this.props.checkboxProps.onClick();
+  private _onCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (this.props.checkboxProps && this.props.checkboxProps.onClick && !this.props.checkboxProps.isDisabled)
+      this.props.checkboxProps.onClick(e.target.indeterminate ? CheckBoxState.Partial : e.target.checked ? CheckBoxState.On : CheckBoxState.Off);
   }
 
   private _onCheckboxClick = (e: React.MouseEvent<HTMLInputElement>) => {

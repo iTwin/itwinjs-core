@@ -66,6 +66,7 @@ export * from "./ui-core/utils/getDisplayName";
 export * from "./ui-core/utils/getUserColor";
 export * from "./ui-core/utils/shallowDiffers";
 export * from "./ui-core/utils/typeUtils";
+export * from "./ui-core/utils/isPromiseLike";
 
 export * from "./ui-core/button/Button";
 

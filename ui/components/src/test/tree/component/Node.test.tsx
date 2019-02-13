@@ -18,11 +18,12 @@ describe("Node", () => {
   let node: BeInspireTreeNode<TreeNodeItem>;
   const valueRendererManager = PropertyValueRendererManager.defaultManager;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     tree = new BeInspireTree<TreeNodeItem>({
       dataProvider: [{ id: "0", label: "0" }],
       mapPayloadToInspireNodeConfig: Tree.inspireNodeFromTreeNodeItem,
     });
+    await tree.ready;
     node = tree.nodes()[0];
   });
 
