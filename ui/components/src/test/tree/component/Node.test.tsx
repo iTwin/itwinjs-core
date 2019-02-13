@@ -12,11 +12,20 @@ import { TreeNode } from "../../../ui-components/tree/component/Node";
 import { TreeNodeItem } from "../../../ui-components/tree/TreeDataProvider";
 import { CheckBoxState } from "@bentley/ui-core";
 import { PropertyValueRendererManager } from "../../../ui-components/properties/ValueRendererManager";
+import TestUtils from "../../TestUtils";
 
 describe("Node", () => {
   let tree: BeInspireTree<TreeNodeItem>;
   let node: BeInspireTreeNode<TreeNodeItem>;
   const valueRendererManager = PropertyValueRendererManager.defaultManager;
+
+  before(async () => {
+    await TestUtils.initializeUiComponents();
+  });
+
+  after(() => {
+    TestUtils.terminateUiComponents();
+  });
 
   beforeEach(async () => {
     tree = new BeInspireTree<TreeNodeItem>({
@@ -58,6 +67,25 @@ describe("Node", () => {
     fireEvent.click(checkbox!);
 
     expect(checkboxSpy.called).to.be.true;
+  });
+
+  it("renders checkbox using custom renderer", () => {
+    const renderOverride = sinon.stub().returns(<div className="custom-checkbox" />);
+    const renderedNode = render(
+      <TreeNode
+        node={node}
+        valueRendererManager={valueRendererManager}
+        checkboxProps={{
+          onClick: sinon.spy(),
+          state: CheckBoxState.On,
+        }}
+        renderOverrides={{
+          renderCheckbox: renderOverride,
+        }}
+      />);
+    const checkbox = renderedNode.baseElement.querySelector(".custom-checkbox");
+    expect(renderOverride).to.be.calledOnce;
+    expect(checkbox).to.not.be.undefined;
   });
 
   it("renders icon", () => {

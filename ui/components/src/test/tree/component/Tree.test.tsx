@@ -80,8 +80,12 @@ describe("Tree", () => {
   let renderNodesSpy: sinon.SinonSpy;
   let defaultProps: Partial<TreeProps>;
 
-  before(() => {
-    TestUtils.initializeUiComponents(); // tslint:disable-line:no-floating-promises
+  before(async () => {
+    await TestUtils.initializeUiComponents();
+  });
+
+  after(() => {
+    TestUtils.terminateUiComponents();
   });
 
   beforeEach(() => {
@@ -1142,7 +1146,7 @@ describe("Tree", () => {
       expect(getNode("0").getElementsByClassName("test-icon").length).to.eq(1);
     });
 
-    it("renders with custom renderer", async () => {
+    it("renders with custom node renderer", async () => {
       const renderMock = moq.Mock.ofInstance((node: BeInspireTreeNode<TreeNodeItem>, _props: TreeNodeProps): React.ReactNode => {
         return <div key={node.id}>{node.text}</div>;
       });
@@ -1151,7 +1155,7 @@ describe("Tree", () => {
         renderedTree = render(<Tree
           {...defaultProps}
           dataProvider={[{ id: "0", label: "0" }, { id: "1", label: "1" }]}
-          renderNode={renderMock.object}
+          renderOverrides={{ renderNode: renderMock.object }}
         />);
       }, renderSpy, 2);
       expect(renderedTree.getAllByText("0").length).to.eq(1);
@@ -1159,6 +1163,20 @@ describe("Tree", () => {
       // note: node renderer called only 2 times, because the first render doesn't render nodes
       // and the second one renders each node once
       renderMock.verify((x) => x(moq.It.isAny(), moq.It.isAny()), moq.Times.exactly(2));
+    });
+
+    it("renders with custom node checkbox renderer", async () => {
+      const checkboxRenderer = sinon.stub().returns(<div data-testid="custom-checkbox" />);
+      await waitForUpdate(() => {
+        renderedTree = render(<Tree
+          {...defaultProps}
+          dataProvider={[{ id: "0", label: "0", isCheckboxVisible: true }]}
+          renderOverrides={{ renderCheckbox: checkboxRenderer }}
+        />);
+      }, renderSpy, 2);
+      expect(renderedTree.getAllByText("0").length).to.eq(1);
+      expect(checkboxRenderer).to.be.calledOnce;
+      expect(() => renderedTree.getByTestId("custom-checkbox")).to.not.throw;
     });
 
     it("renders placeholder when node has no payload", async () => {

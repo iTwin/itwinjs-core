@@ -10,7 +10,7 @@ import { BeInspireTreeNode } from "./BeInspireTree";
 import { TreeNodeItem } from "../TreeDataProvider";
 import {
   TreeNode as TreeNodeBase, NodeCheckboxProps as CheckboxProps, Omit,
-  CheckBoxState, shallowDiffers,
+  CheckBoxState, NodeCheckboxRenderer, shallowDiffers,
 } from "@bentley/ui-core";
 import { TreeNodeContent } from "./NodeContent";
 import { CellEditingEngine } from "../CellEditingEngine";
@@ -41,6 +41,10 @@ export interface TreeNodeProps {
   highlightProps?: HighlightableTreeNodeProps;
   showDescription?: boolean;
   valueRendererManager: PropertyValueRendererManager;
+
+  renderOverrides?: {
+    renderCheckbox?: NodeCheckboxRenderer;
+  };
 
   /**
    * Called when all of the component tasks are done.
@@ -90,7 +94,6 @@ export class TreeNode extends React.Component<TreeNodeProps> {
         highlightProps={this.props.highlightProps}
         showDescription={this.props.showDescription}
         valueRendererManager={this.props.valueRendererManager}
-
         onFinalRenderComplete={this.props.onFinalRenderComplete}
         renderId={this.props.renderId}
       />);
@@ -106,6 +109,7 @@ export class TreeNode extends React.Component<TreeNodeProps> {
         icon={this.props.node.itree && this.props.node.itree.icon ? <span className={this.props.node.itree.icon} /> : undefined}
         checkboxProps={checkboxProps}
         level={this.props.node.getParents().length}
+        renderOverrides={{ renderCheckbox: this.props.renderOverrides ? this.props.renderOverrides.renderCheckbox : undefined }}
         onClick={this.props.onClick}
         onMouseMove={this.props.onMouseMove}
         onMouseDown={this.props.onMouseDown}
@@ -122,6 +126,7 @@ export class TreeNode extends React.Component<TreeNodeProps> {
 
 function doPropsDiffer(props1: TreeNodeProps, props2: TreeNodeProps) {
   return shallowDiffers(props1.highlightProps, props2.highlightProps)
+    || shallowDiffers(props1.renderOverrides, props2.renderOverrides)
     || props1.valueRendererManager !== props2.valueRendererManager
     || props1.cellEditing !== props2.cellEditing
     || props1.showDescription !== props2.showDescription

@@ -56,7 +56,7 @@ export * from "./ui-core/toggle/Toggle";
 
 export { default as ExpansionToggle, ExpansionToggleProps } from "./ui-core/tree/ExpansionToggle";
 export { default as TreeBranch, TreeBranchProps } from "./ui-core/tree/Branch";
-export { default as TreeNode, NodeProps, NodeCheckboxProps } from "./ui-core/tree/Node";
+export { default as TreeNode, NodeProps, NodeCheckboxProps, NodeCheckboxRenderer } from "./ui-core/tree/Node";
 export { default as Tree, TreeProps } from "./ui-core/tree/Tree";
 export { default as TreeNodePlaceholder, PlaceholderProps as TreeNodePlaceholderProps } from "./ui-core/tree/Placeholder";
 

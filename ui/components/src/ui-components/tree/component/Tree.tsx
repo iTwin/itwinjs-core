@@ -12,7 +12,8 @@ import { AutoSizer, Size, List as VirtualizedList, ListRowProps as VirtualizedLi
 import { using, Guid } from "@bentley/bentleyjs-core";
 import {
   Tree as TreeBase, TreeNodePlaceholder, shallowDiffers,
-  CheckBoxState, CheckBoxInfo, Spinner, SpinnerSize,
+  CheckBoxState, CheckBoxInfo, NodeCheckboxRenderer,
+  Spinner, SpinnerSize,
 } from "@bentley/ui-core";
 // tree-related imports
 import {
@@ -135,7 +136,14 @@ export interface TreeProps {
    */
   onChildrenLoaded?: (parent: TreeNodeItem, children: TreeNodeItem[]) => void;
 
-  renderNode?: NodeRenderer;
+  /** Contains render overrides for different pieces of the tree component */
+  renderOverrides?: {
+    /** Callback to render a node */
+    renderNode?: NodeRenderer;
+    /** Callback to render a node checkbox. When a custom node renderer is used, it's responsible for calling this callback. */
+    renderCheckbox?: NodeCheckboxRenderer;
+  };
+
   /** @hidden */
   onRender?: () => void;
   /** @hidden */
@@ -346,7 +354,7 @@ export class Tree extends React.Component<TreeProps, TreeState> {
     // otherwise, render when any of the following props / state change
     return this.props.selectedNodes !== nextProps.selectedNodes
       || this.props.checkboxInfo !== nextProps.checkboxInfo
-      || this.props.renderNode !== nextProps.renderNode
+      || shallowDiffers(this.props.renderOverrides, nextProps.renderOverrides)
       || this.props.dataProvider !== nextProps.dataProvider
       || this.props.nodeHighlightingProps !== nextProps.nodeHighlightingProps
       || this.state.currentlyEditedNode !== nextState.currentlyEditedNode
@@ -720,7 +728,7 @@ export class Tree extends React.Component<TreeProps, TreeState> {
   }
 
   // tslint:disable-next-line:naming-convention
-  private renderNode = (node: BeInspireTreeNode<TreeNodeItem>, props: TreeNodeProps): React.ReactNode => {
+  private defaultRenderNode = (node: BeInspireTreeNode<TreeNodeItem>, props: TreeNodeProps): React.ReactNode => {
     return (
       <TreeNode
         key={node.id}
@@ -759,8 +767,11 @@ export class Tree extends React.Component<TreeProps, TreeState> {
       } : undefined,
       cellEditing: this.state.cellEditingEngine,
       showDescription: this.props.showDescriptions,
-      onFinalRenderComplete: this._onNodeFullyRendered,
+      renderOverrides: {
+        renderCheckbox: this.props.renderOverrides ? this.props.renderOverrides.renderCheckbox : undefined,
+      },
       renderId: this._nodesRenderInfo ? this._nodesRenderInfo.renderId : undefined,
+      onFinalRenderComplete: this._onNodeFullyRendered,
       highlightProps: this.state.highlightingEngine
         ? this.state.highlightingEngine.createRenderProps(node)
         : undefined,
@@ -810,7 +821,7 @@ export class Tree extends React.Component<TreeProps, TreeState> {
     };
     this._nodesRenderInfo = undefined;
 
-    const baseRenderNode = this.props.renderNode ? this.props.renderNode : this.renderNode;
+    const baseRenderNode = this.props.renderOverrides && this.props.renderOverrides.renderNode ? this.props.renderOverrides.renderNode : this.defaultRenderNode;
     const renderNode = ({ index, style, isScrolling }: VirtualizedListRowProps) => {
       const node = nodes[index];
       const key = node.id ? node.id : node.text;

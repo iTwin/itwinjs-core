@@ -6,12 +6,15 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import { Checkbox } from "../inputs/Checkbox";
+import { Checkbox, CheckboxProps } from "../inputs/Checkbox";
 import { CheckBoxState } from "../enums/CheckBoxState";
 import ExpansionToggle from "./ExpansionToggle";
 import { Spinner, SpinnerSize } from "../loading/Spinner";
 
 import "./Node.scss";
+
+/** Type for node checkbox renderer */
+export type NodeCheckboxRenderer = (props: CheckboxProps) => React.ReactNode;
 
 /** Number of pixels the node gets offset per each hierarchy level */
 export const LEVEL_OFFSET = 20;
@@ -49,7 +52,11 @@ export interface NodeProps {
   children?: React.ReactNode;
   className?: string;
   style?: React.CSSProperties;
-
+  /** Contains render overrides for different pieces of the node component */
+  renderOverrides?: {
+    /** Callback to render a checkbox. Only called when checkbox is displayed */
+    renderCheckbox?: NodeCheckboxRenderer;
+  };
   ["data-testid"]?: string;
 }
 
@@ -68,16 +75,21 @@ export default class TreeNode extends React.Component<NodeProps> {
 
     const loader = this.props.isLoading ? (<div className="loader"><Spinner size={SpinnerSize.Small} /></div>) : undefined;
 
-    const checkbox = this.props.checkboxProps ?
-      <Checkbox
-        data-testid={this.createSubComponentTestId("checkbox")}
-        label=""
-        checked={this.props.checkboxProps.state === CheckBoxState.On}
-        disabled={this.props.checkboxProps.isDisabled}
-        onClick={this._onCheckboxClick}
-        onChange={this._onCheckboxChange}
-      /> :
-      undefined;
+    let checkbox: React.ReactNode;
+    if (this.props.checkboxProps) {
+      const props: CheckboxProps = {
+        label: "",
+        checked: this.props.checkboxProps.state === CheckBoxState.On,
+        disabled: this.props.checkboxProps.isDisabled,
+        onClick: this._onCheckboxClick,
+        onChange: this._onCheckboxChange,
+      };
+      if (this.props.renderOverrides && this.props.renderOverrides.renderCheckbox) {
+        checkbox = this.props.renderOverrides.renderCheckbox(props);
+      } else {
+        checkbox = (<Checkbox {...props} data-testid={this.createSubComponentTestId("checkbox")} />);
+      }
+    }
 
     const icon = this.props.icon ? (<div className="icon">{this.props.icon}</div>) : undefined;
 
