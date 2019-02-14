@@ -18,7 +18,7 @@ import { Tree, FilteringInput, TreeNodeItem, PageOptions, DelayLoadedTreeNodeIte
 import "./ModelSelector.scss";
 import { PresentationTreeDataProvider, treeWithFilteringSupport, IPresentationTreeDataProvider } from "@bentley/presentation-components";
 import { Presentation } from "@bentley/presentation-frontend";
-import { RegisteredRuleset, NodeKey, NodePathElement } from "@bentley/presentation-common";
+import { RegisteredRuleset, NodeKey, NodePathElement, isInstanceNodeKey } from "@bentley/presentation-common";
 import { CheckBoxState, LoadingSpinner, SpinnerSize } from "@bentley/ui-core";
 import { BeEvent } from "@bentley/bentleyjs-core";
 
@@ -1026,8 +1026,10 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
    */
   private _getNodeFromItem = async (item: ListItem, nodes: TreeNodeItem[]) => {
     for (const node of nodes) {
-      if (node.label === item.name)
+      const key = this.state.activeTree.dataProvider.getNodeKey(node);
+      if (isInstanceNodeKey(key) && key.instanceKey.id === item.key) {
         return node;
+      }
     }
     return;
   }
