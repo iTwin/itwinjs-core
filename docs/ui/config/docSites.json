@@ -11,6 +11,10 @@
     "docSiteId": 3,
     "displayName": "API Reference"
   },
+  "demo": {
+    "docSiteId": 4,
+    "displayName": "Demo"
+  },
   "metadata": {
     "home": "getting-started",
     "logo": "getting-started/assets/imodeljs-logo.svg",
@@ -19,12 +23,14 @@
     "docSiteOrder": [
       "getting-started",
       "learning",
-      "reference"
+      "reference",
+      "demo"
     ],
     "headerTabs": {
       "Getting Started": "getting-started",
       "Learning": "learning",
-      "API Reference": "reference"
+      "API Reference": "reference",
+      "Demo": "demo"
     },
     "packageAliases": {
       "components": "ui-components",

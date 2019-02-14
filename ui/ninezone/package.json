@@ -11,13 +11,14 @@
   "typings": "lib/ui-ninezone",
   "scripts": {
     "build": "node ./node_modules/@bentley/webpack-tools/bin/buildIModelJsModule.js",
-    "build:demo": "webpack --config ./demo/webpack.config.js",
     "clean": "rimraf lib out demo/lib package-deps.json",
     "cover": "nyc npm test",
-    "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/ui/ui-ninezone/file.json --tsIndexFile=./ui-ninezone.ts --onlyJson %TYPEDOC_THEME%",
+    "docs": "npm run docs:typedoc && npm run docs:demo",
+    "docs:typedoc": "node ./node_modules/@bentley/build-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/ui/ui-ninezone/file.json --tsIndexFile=./ui-ninezone.ts --onlyJson %TYPEDOC_THEME%",
+    "docs:demo": "webpack --config ./demo/webpack.prod.js",
     "lint": "tslint --project . 1>&2 && tslint --project ./demo/tsconfig.json 1>&2",
     "pack": "npm run build && node ../../scripts/pack.js",
-    "start": "webpack-dev-server --config ./demo/webpack.dev.config.js",
+    "start": "webpack-dev-server --config ./demo/webpack.dev.js",
     "test": "mocha --opts ../mocha.opts lib/test/**/*.test.js",
     "test:watch": "npm test -- --reporter min --watch-extensions ts,tsx --watch"
   },
@@ -116,7 +117,8 @@
     "url-loader": "^1.0.1",
     "webpack": "^4.20.2",
     "webpack-cli": "^3.1.0",
-    "webpack-dev-server": "^3.1.6"
+    "webpack-dev-server": "^3.1.6",
+    "webpack-merge": "^4.1.4"
   },
   "//dependencies": [
     "NOTE: these dependencies should be only for things that DO NOT APPEAR IN THE API",

@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import Zones from "./pages/Zones";
+import Demo from "./Demo";
 
 ReactDOM.render(
-  <Zones />,
+  <Demo />,
   document.getElementById("demo"),
 );

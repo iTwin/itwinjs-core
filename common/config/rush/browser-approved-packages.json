@@ -844,7 +844,7 @@
     },
     {
       "name": "webpack-merge",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [ "frontend", "tools" ]
     },
     {
       "name": "webpack-node-externals",
