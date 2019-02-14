@@ -3,27 +3,37 @@
   {{#each this.middleContent}}
   <div class="middle-content-group" style="order:{{addOne @index}}">
     {{#if_even @index}}
-    <img class="middle-content-image" src="{{../this.docSite}}/{{this.image}}" alt="{{this.imageAltText}}" style="order: 1;" />
+    <div class="middle-content-media" style="order:2;">
+      <devsite-youtube ds-is="youtube" autohide="1" showinfo="0" video-id="mWl45NkFBOc">
+        <iframe class='middle-content-youtube' src="{{this.video}}" frameborder="0"
+          allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+      </devsite-youtube>
+    </div>
     <div class="middle-content-text" style="order:2;">
       {{#if this.header}}
       <h4> {{{this.header}}} </h4>
       {{/if}}
       <span class="gradient"></span>
       {{#if this.content}}
-      {{{this.content}}}
+      <p>
+        {{{this.content}}}
+      </p>
       {{/if}}
     </div>
     {{else}}
     <div class="middle-content-text" style="order:1;">
       {{#if this.header}}
       <h4> {{{this.header}}} </h4>
-      {{/if}}
       <span class="gradient"></span>
+      {{/if}}
       {{#if this.content}}
-      {{{this.content}}}
+      <p>
+        {{{this.content}}}
+      </p>
       {{/if}}
     </div>
-    <img class="middle-content-image" src="{{../this.docSite}}/{{this.image}}" alt="{{this.imageAltText}}" style="order: 2;" />
+    <iframe class='middle-content-media' src="{{this.video}}" frameborder="0"
+      allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
     {{/if_even}}
   </div>
   {{/each}}

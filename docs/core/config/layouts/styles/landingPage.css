@@ -3,13 +3,50 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
+span.gradient {
+  background: linear-gradient(90deg, #038cd6 0%, #67b225 43%, #EFF8FF 100%) !important;
+  height: 3px;
+  display: block;
+  border: none;
+}
+
 #main-landing-wrapper {
   margin-bottom: 0em !important;
   background-color: #EFF8FF;
+  display: -ms-grid;
+  display: grid;
+  -ms-grid-columns: 1fr;
+  grid-template-columns: 1fr;
+  -ms-flex: auto;
+  flex: auto;
+  margin-bottom: 187px;
+}
+
+#main-landing-wrapper .documentation-main {
+  -ms-grid-column: 1;
+  grid-column: 1;
 }
 
 #main-landing-wrapper #middle-content-wrapper {
   margin: 2em 5% !important;
+}
+
+#main-landing-wrapper.full-width article#main {
+  padding-left: 15px;
+}
+
+#main-landing-wrapper.full-width p {
+  padding-left: 10px;
+}
+
+#middle-content-wrapper {
+  display: flex;
+  flex-wrap: wrap-reverse;
+  flex-flow: column;
+  justify-content: space-around;
+  margin: 2em 10%;
+  align-items: center;
+  align-content: center;
 }
 
 #navbar7 li:hover {
@@ -84,14 +121,27 @@ p.digital-twin {
 }
 
 .middle-content-group {
+  display: flex;
+  flex-direction: row;
   margin-bottom: 2em;
 }
 
-.middle-content-image {
-  width: 21%;
+.middle-content-media {
+  width: 40%;
   margin-bottom: 3em;
   min-width: 0;
   flex-shrink: 0;
+  max-height: 50vh;
+}
+
+.middle-content-text {
+  min-width: 250px;
+  margin: 0px 4vw;
+}
+
+.middle-content-youtube {
+  height: 101%;
+  width: 101%;
 }
 
 .feature-header {
@@ -102,23 +152,31 @@ ul.list-unstyled.list-inline {
   margin-bottom: 0;
 }
 
-.middle-content-text {
-  max-width: 900px;
-  min-width: 250px;
-  margin-bottom: 3em;
+body.layout-full-width #main-landing-wrapper {
+  display: grid;
+  grid-template-columns: 1fr;
+  -ms-grid-columns: 1fr;
 }
 
-span.gradient {
-  background: linear-gradient(90deg, #038cd6 0%, #67b225 43%, #EFF8FF 100%) !important;
+@media screen and (max-width: 1350px) {
+  #main-landing-wrapper #middle-content-wrapper {
+    margin: 2em 1% !important;
+  }
+  .middle-content-text {
+    margin: 0 1vw 0 4vw;
+  }
 }
 
-@media screen and (max-width: 767px) {
+@media screen and (max-width: 991px) {
   .nav-landing-container .navbar-nav {
     padding-right: 15px;
     max-width: 38%;
   }
-  .middle-content-image {
-    width: 40%;
+  #navbar7 li:hover {
+    height: 35px;
+    border-bottom: none;
+    font-weight: 700;
+    transition: none;
   }
   .iframe-viewer {
     width: 500px;
@@ -128,14 +186,12 @@ span.gradient {
     width: 500px;
     height: 313px;
   }
-  .nav-landing-container .navbar-toggler-icon {
-    background-image: url("data:image/svg+xml;charset=utf8,%3Csvg viewBox='0 0 32 32' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='#002A44' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 8h24M4 16h24M4 24h24'/%3E%3C/svg%3E") !important;
-  }
-  #navbar7 li:hover {
-    height: 35px;
-    border-bottom: none;
-    font-weight: 700;
-    transition: none;
+}
+
+@media screen and (max-width: 768px) {
+  .middle-content-media {
+    width: 75%;
+    height: 40vh;
   }
   .landing-bottom-content-item {
     min-width: 250px;
@@ -143,14 +199,11 @@ span.gradient {
     padding: 20px 5px 0px 5px;
     margin: 20px 5px 0px 5px;
   }
-}
-
-@media screen and (max-width: 600px) {
   .middle-content-group {
     flex-flow: column;
     align-items: center;
   }
-  .middle-content-image {
+  .middle-content-media {
     order: 1 !important;
   }
   .middle-content-text {
