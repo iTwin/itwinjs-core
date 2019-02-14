@@ -1,0 +1,48 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+@import "../style/index.scss";
+@import "../icons/variables.scss";
+
+.core-image-checkbox {
+  display: inline-block;
+  font-size: 16px;
+  position: relative;
+  height: 1em;
+  cursor: pointer;
+  
+  input[type="checkbox"]:not(:checked),
+  input[type="checkbox"]:checked {
+    position: absolute;
+    z-index: -1;
+    opacity: 0;
+  }
+
+  input[type="checkbox"]:checked + .image {
+    color: $uicore-blue;
+  }
+
+  input[type="checkbox"]:not(:checked) + .image {
+    color: $uicore-icons-dark;
+  }
+
+  input[type="checkbox"] + .image {
+    opacity: .85;
+
+    &:hover {
+      opacity: 1;
+    }
+  }
+
+  input[type="checkbox"]:disabled:not(:checked) + .image,
+  input[type="checkbox"]:disabled:checked + .image {
+    opacity: .25;
+  }
+
+  /* accessibility */
+  [type="checkbox"]:checked:focus + .image:before,
+  [type="checkbox"]:not(:checked):focus + .image:before {
+    outline: 1px dotted $uicore-blue;
+  }
+}

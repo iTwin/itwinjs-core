@@ -11,7 +11,7 @@ import { Transform } from "../geometry3d/Transform";
 import { Matrix3d } from "../geometry3d/Matrix3d";
 import { GeometryQuery } from "../curve/GeometryQuery";
 import { Geometry } from "../Geometry";
-import { GeometryHandler, UVSurface } from "../geometry3d/GeometryHandler";
+import { GeometryHandler, UVSurface, UVSurfaceIsoParametricDistance } from "../geometry3d/GeometryHandler";
 import { SolidPrimitive } from "./SolidPrimitive";
 import { StrokeOptions } from "../curve/StrokeOptions";
 import { Loop } from "../curve/Loop";
@@ -20,6 +20,7 @@ import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVecto
 
 import { Arc3d } from "../curve/Arc3d";
 import { LineString3d } from "../curve/LineString3d";
+import { Vector2d } from "../geometry3d/Point2dVector2d";
 /**
  * A cone with axis along the z axis of a (possibly skewed) local coordinate system.
  *
@@ -28,7 +29,7 @@ import { LineString3d } from "../curve/LineString3d";
  * * The stored matrix has unit vectors in the xy columns, and full-length z column.
  * *
  */
-export class Cone extends SolidPrimitive implements UVSurface {
+export class Cone extends SolidPrimitive implements UVSurface, UVSurfaceIsoParametricDistance {
   private _localToWorld: Transform;       // Transform from local to global.
   private _radiusA: number;    // nominal radius at z=0.  skewed axes may make it an ellipse
   private _radiusB: number;    // radius at z=1.  skewed axes may make it an ellipse
@@ -228,5 +229,22 @@ export class Cone extends SolidPrimitive implements UVSurface {
    */
   public get isClosedVolume(): boolean {
     return this.capped;
+  }
+  /**
+   * Directional distance query
+   * * u direction is around longitude circle at maximum distance from axis.
+   * * v direction is on a line of longitude between the latitude limits.
+   */
+  public maxIsoParametricDistance(): Vector2d {
+    const vectorX = this._localToWorld.matrix.columnX();
+    const vectorY = this._localToWorld.matrix.columnY();
+    const columnZ = this._localToWorld.matrix.columnZ();
+
+    const xyNormal = vectorX.unitCrossProduct(vectorY)!;
+    const hZ = xyNormal.dotProduct(columnZ);
+    const zSkewVector = columnZ.plusScaled(xyNormal, hZ);
+    const zSkewDistance = zSkewVector.magnitudeXY();
+    return Vector2d.create(Math.PI * 2 * Math.max(this._radiusA, this._radiusB),
+      Geometry.hypotenuseXY(Math.abs(this._radiusB - this._radiusA) + zSkewDistance, hZ));
   }
 }

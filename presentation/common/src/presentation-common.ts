@@ -38,11 +38,14 @@ export {
 } from "./content/Value";
 
 /** @module Hierarchies */
-export { NodeKey, NodeKeyPath, NodeKeyJSON, nodeKeyFromJSON, StandardNodeTypes } from "./hierarchy/Key";
+export {
+  NodeKey, NodeKeyPath, NodeKeyJSON, nodeKeyFromJSON, StandardNodeTypes,
+  isInstanceNodeKey, isClassGroupingNodeKey, isPropertyGroupingNodeKey,
+  isLabelGroupingNodeKey, isGroupingNodeKey,
+} from "./hierarchy/Key";
 export { BaseNodeKey, ECInstanceNodeKey, ECInstanceNodeKeyJSON, ECClassGroupingNodeKey, ECPropertyGroupingNodeKey, LabelGroupingNodeKey } from "./hierarchy/Key";
 export { default as Node, NodeJSON } from "./hierarchy/Node";
 export { default as NodePathElement } from "./hierarchy/NodePathElement";
-
 
 /** @module PresentationRules */
 export { RootNodeRule } from "./rules/hierarchy/RootNodeRule";

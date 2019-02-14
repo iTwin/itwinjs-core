@@ -12,10 +12,10 @@ import { IModel, IModelToken } from "../IModel";
 import { AxisAlignedBox3d } from "../geometry/Placement";
 import { IModelNotFoundResponse } from "./IModelReadRpcInterface";
 
-/**
- * The RPC interface for writing to an iModel.
+/** The RPC interface for writing to an iModel.
  * All operations require read+write access.
  * This interface is not normally used directly. See IModelConnection for higher-level and more convenient API for accessing iModels from a frontend.
+ * @alpha
  */
 export abstract class IModelWriteRpcInterface extends RpcInterface {
   /** The types that can be marshaled by the interface. */

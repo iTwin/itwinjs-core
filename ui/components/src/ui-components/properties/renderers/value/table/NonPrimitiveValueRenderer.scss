@@ -2,28 +2,10 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-@import "@bentley/ui-core/lib/ui-core/index";
+// @import "@bentley/ui-core/lib/ui-core/index";
 
-.components-table-value-button {
-  @include uicore-buttons-hollow;
-  margin: -8px 0 0 -8px; // Offset automatic padding for table cell content
-  width: calc(100% - 16px);
-  height: 100%;
-}
-
-.components-table-value-button, .components-table-value-button:active, .components-table-value-button:focus {
-  padding: 0px;
-  border: none;
-
-  > span {
-    border-bottom: solid;
-    border-width: 1px;
-    width: fit-content;
-  }
-}
-
-.components-table-value-popup {
-  background: $uicore-gray-c;
-  padding: 5px;
-  border-radius: 3px;
-}
+// .components-table-value-popup {
+//   background: $uicore-gray-c;
+//   padding: 5px;
+//   border-radius: 3px;
+// }

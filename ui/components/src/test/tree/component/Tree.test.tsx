@@ -7,6 +7,9 @@ import * as moq from "typemoq";
 import * as React from "react";
 import * as sinon from "sinon";
 import { RenderResult, render, within, fireEvent, cleanup, waitForElement } from "react-testing-library";
+import { BeEvent, BeDuration } from "@bentley/bentleyjs-core";
+import { PropertyRecord } from "@bentley/imodeljs-frontend";
+import { CheckBoxState } from "@bentley/ui-core";
 import { waitForUpdate, ResolvablePromise } from "../../test-helpers/misc";
 import TestUtils from "../../TestUtils";
 import {
@@ -16,10 +19,9 @@ import {
 import { SelectionMode, PageOptions, TreeDataProviderMethod, TreeNodeItem, TreeDataProviderRaw, DelayLoadedTreeNodeItem, ITreeDataProvider, TreeDataChangesListener, TreeCellUpdatedArgs } from "../../../ui-components";
 import { BeInspireTreeNode } from "../../../ui-components/tree/component/BeInspireTree";
 import HighlightingEngine, { HighlightableTreeProps } from "../../../ui-components/tree/HighlightingEngine";
-import { BeEvent, BeDuration } from "@bentley/bentleyjs-core";
 import { TreeNodeProps } from "../../../ui-components/tree/component/Node";
 import { PropertyValueRendererManager, PropertyValueRendererContext, PropertyContainerType } from "../../../ui-components/properties/ValueRendererManager";
-import { PropertyRecord } from "@bentley/imodeljs-frontend";
+import { ImmediatelyLoadedTreeNodeItem } from "../../../ui-components/tree/TreeDataProvider";
 
 describe("Tree", () => {
 
@@ -34,14 +36,19 @@ describe("Tree", () => {
     return true;
   };
 
-  type NodeElement = HTMLElement & { contentArea: HTMLElement, expansionToggle: HTMLElement | undefined };
+  type NodeElement = HTMLElement & {
+    contentArea: HTMLElement,
+    expansionToggle: HTMLElement | undefined,
+    checkbox: HTMLInputElement | undefined,
+  };
   const getNode = (label: string): NodeElement => {
-    const result = renderedTree.getAllByTestId(Tree.TestId.Node as any).reduce<NodeElement[]>((list: NodeElement[], node) => {
+    const result = renderedTree.getAllByTestId(Tree.TestId.Node).reduce<NodeElement[]>((list: NodeElement[], node) => {
       const nodeContents = within(node).getByTestId(Tree.TestId.NodeContents);
-      if (nodeContents.textContent === label || within(nodeContents).queryByText(label as any)) {
+      if (nodeContents.textContent === label || within(nodeContents).queryByText(label)) {
         list.push(Object.assign(node, {
           contentArea: nodeContents,
-          expansionToggle: within(node).queryByTestId(Tree.TestId.NodeExpansionToggle as any) || undefined,
+          expansionToggle: within(node).queryByTestId(Tree.TestId.NodeExpansionToggle) || undefined,
+          checkbox: within(node).queryByTestId(Tree.TestId.NodeCheckbox) as HTMLInputElement || undefined,
         }));
       }
       return list;
@@ -73,8 +80,12 @@ describe("Tree", () => {
   let renderNodesSpy: sinon.SinonSpy;
   let defaultProps: Partial<TreeProps>;
 
-  before(() => {
-    TestUtils.initializeUiComponents(); // tslint:disable-line:no-floating-promises
+  before(async () => {
+    await TestUtils.initializeUiComponents();
+  });
+
+  after(() => {
+    TestUtils.terminateUiComponents();
   });
 
   beforeEach(() => {
@@ -843,6 +854,130 @@ describe("Tree", () => {
 
   });
 
+  describe("checkboxes", () => {
+
+    let defaultCheckboxTestsProps: TreeProps;
+    const checkboxClickSpy = sinon.spy();
+
+    beforeEach(() => {
+      checkboxClickSpy.resetHistory();
+      defaultCheckboxTestsProps = {
+        ...defaultProps,
+        dataProvider: createDataProvider([]),
+        onCheckboxClick: checkboxClickSpy,
+      };
+    });
+
+    it("renders checkboxes when attributes are supplied through TreeNodeItem", async () => {
+      const dataProvider: TreeNodeItem[] = [{
+        id: "0",
+        label: "0",
+        isCheckboxVisible: true,
+        isCheckboxDisabled: true,
+        checkBoxState: CheckBoxState.On,
+      }];
+      await waitForUpdate(() => renderedTree = render(<Tree {...defaultCheckboxTestsProps} dataProvider={dataProvider} />), renderNodesSpy, 1);
+      const node = getNode("0");
+      expect(node.checkbox).to.not.be.undefined;
+      expect(node.checkbox!.disabled).to.not.be.undefined;
+      expect(node.checkbox!.checked).to.be.true;
+    });
+
+    it("renders checkboxes when attributes supplied through `checkboxInfo` callback", async () => {
+      const checkboxInfo = () => ({ isVisible: true, isDisabled: true, state: CheckBoxState.On });
+      await waitForUpdate(() => renderedTree = render(<Tree {...defaultCheckboxTestsProps} checkboxInfo={checkboxInfo} />), renderNodesSpy, 1);
+      const node = getNode("0");
+      expect(node.checkbox).to.not.be.undefined;
+      expect(node.checkbox!.disabled).to.be.true;
+      expect(node.checkbox!.checked).to.be.true;
+    });
+
+    it("renders checkboxes using callback when attributes supplied through both TreeNodeItem and `checkboxInfo` callback", async () => {
+      const dataProvider: TreeNodeItem[] = [{
+        id: "0",
+        label: "0",
+        isCheckboxVisible: true,
+        isCheckboxDisabled: true,
+        checkBoxState: CheckBoxState.On,
+      }];
+      const checkboxInfo = () => ({ isVisible: true, state: CheckBoxState.Off });
+      await waitForUpdate(() => renderedTree = render(<Tree {...defaultCheckboxTestsProps} dataProvider={dataProvider} checkboxInfo={checkboxInfo} />), renderNodesSpy, 1);
+      const node = getNode("0");
+      expect(node.checkbox).to.not.be.undefined;
+      expect(node.checkbox!.disabled).to.not.be.true;
+      expect(node.checkbox!.checked).to.be.false;
+    });
+
+    it("renders children checkboxes when parent is expanded with delay-loading data provider", async () => {
+      const checkboxInfo = (n: TreeNodeItem) => ({ isVisible: (n.id === "0-a") });
+      await waitForUpdate(() => renderedTree = render(<Tree {...defaultCheckboxTestsProps} checkboxInfo={checkboxInfo} />), renderNodesSpy, 1);
+      const parentNode = getNode("0");
+      await waitForUpdate(() => fireEvent.click(parentNode.expansionToggle!), renderNodesSpy, 1);
+      const childNodes = { a: getNode("0-a"), b: getNode("0-b") };
+      expect(childNodes.a.checkbox).to.not.be.undefined;
+      expect(childNodes.b.checkbox).to.be.undefined;
+    });
+
+    it("renders children checkboxes when parent is expanded with immediately-loading data provider", async () => {
+      const dataProvider: ImmediatelyLoadedTreeNodeItem[] = [{
+        id: "0",
+        label: "0",
+        children: [{
+          id: "0-a",
+          label: "0-a",
+        }, {
+          id: "0-b",
+          label: "0-b",
+        }],
+      }];
+      const checkboxInfo = (n: TreeNodeItem) => ({ isVisible: (n.id === "0-a") });
+      await waitForUpdate(() => renderedTree = render(<Tree {...defaultCheckboxTestsProps} dataProvider={dataProvider} checkboxInfo={checkboxInfo} />), renderNodesSpy, 1);
+      const parentNode = getNode("0");
+      await waitForUpdate(() => fireEvent.click(parentNode.expansionToggle!), renderNodesSpy, 1);
+      const childNodes = { a: getNode("0-a"), b: getNode("0-b") };
+      expect(childNodes.a.checkbox).to.not.be.undefined;
+      expect(childNodes.b.checkbox).to.be.undefined;
+    });
+
+    it("re-renders checkboxes when `checkboxInfo` callback changes", async () => {
+      const checkboxInfo1 = async () => ({ isVisible: true, isDisabled: true, state: CheckBoxState.On });
+      await waitForUpdate(() => renderedTree = render(<Tree {...defaultCheckboxTestsProps} checkboxInfo={checkboxInfo1} />), renderNodesSpy, 1);
+      let node = getNode("0");
+      expect(node.checkbox).to.not.be.undefined;
+      expect(node.checkbox!.disabled).to.be.true;
+      expect(node.checkbox!.checked).to.be.true;
+
+      const checkboxInfo2 = async () => ({ isVisible: true, isDisabled: false, state: CheckBoxState.Off });
+      await waitForUpdate(() => renderedTree.rerender(<Tree {...defaultCheckboxTestsProps} checkboxInfo={checkboxInfo2} />), renderNodesSpy, 2);
+      node = getNode("0");
+      expect(node.checkbox).to.not.be.undefined;
+      expect(node.checkbox!.disabled).to.be.false;
+      expect(node.checkbox!.checked).to.be.false;
+    });
+
+    it("checks and unchecks a node", async () => {
+      const checkboxInfo = (n: TreeNodeItem) => ({ isVisible: true, state: (n.id === "0") ? CheckBoxState.On : CheckBoxState.Off });
+      await waitForUpdate(() => renderedTree = render(<Tree {...defaultCheckboxTestsProps} checkboxInfo={checkboxInfo} />), renderNodesSpy, 1);
+
+      fireEvent.click(getNode("0").checkbox!);
+      expect(checkboxClickSpy).to.be.calledOnce;
+      expect(checkboxClickSpy.firstCall).to.be.calledWith(sinon.match({ id: "0" }), CheckBoxState.Off);
+
+      fireEvent.click(getNode("1").checkbox!);
+      expect(checkboxClickSpy).to.be.calledTwice;
+      expect(checkboxClickSpy.secondCall).to.be.calledWith(sinon.match({ id: "1" }), CheckBoxState.On);
+    });
+
+    it("doesn't fire check event if checkbox is disabled", async () => {
+      const checkboxInfo = () => ({ isVisible: true, isDisabled: true });
+      await waitForUpdate(() => renderedTree = render(<Tree {...defaultCheckboxTestsProps} checkboxInfo={checkboxInfo} />), renderNodesSpy, 1);
+
+      fireEvent.click(getNode("0").checkbox!);
+      expect(checkboxClickSpy).to.not.be.called;
+    });
+
+  });
+
   describe("expand & collapse", () => {
 
     let dataProvider: TreeDataProviderMethod = async (parent?: TreeNodeItem) => {
@@ -1011,7 +1146,7 @@ describe("Tree", () => {
       expect(getNode("0").getElementsByClassName("test-icon").length).to.eq(1);
     });
 
-    it("renders with custom renderer", async () => {
+    it("renders with custom node renderer", async () => {
       const renderMock = moq.Mock.ofInstance((node: BeInspireTreeNode<TreeNodeItem>, _props: TreeNodeProps): React.ReactNode => {
         return <div key={node.id}>{node.text}</div>;
       });
@@ -1020,7 +1155,7 @@ describe("Tree", () => {
         renderedTree = render(<Tree
           {...defaultProps}
           dataProvider={[{ id: "0", label: "0" }, { id: "1", label: "1" }]}
-          renderNode={renderMock.object}
+          renderOverrides={{ renderNode: renderMock.object }}
         />);
       }, renderSpy, 2);
       expect(renderedTree.getAllByText("0").length).to.eq(1);
@@ -1028,6 +1163,20 @@ describe("Tree", () => {
       // note: node renderer called only 2 times, because the first render doesn't render nodes
       // and the second one renders each node once
       renderMock.verify((x) => x(moq.It.isAny(), moq.It.isAny()), moq.Times.exactly(2));
+    });
+
+    it("renders with custom node checkbox renderer", async () => {
+      const checkboxRenderer = sinon.stub().returns(<div data-testid="custom-checkbox" />);
+      await waitForUpdate(() => {
+        renderedTree = render(<Tree
+          {...defaultProps}
+          dataProvider={[{ id: "0", label: "0", isCheckboxVisible: true }]}
+          renderOverrides={{ renderCheckbox: checkboxRenderer }}
+        />);
+      }, renderSpy, 2);
+      expect(renderedTree.getAllByText("0").length).to.eq(1);
+      expect(checkboxRenderer).to.be.calledOnce;
+      expect(() => renderedTree.getByTestId("custom-checkbox")).to.not.throw;
     });
 
     it("renders placeholder when node has no payload", async () => {

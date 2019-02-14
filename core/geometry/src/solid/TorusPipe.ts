@@ -13,13 +13,14 @@ import { GeometryQuery } from "../curve/GeometryQuery";
 import { Geometry } from "../Geometry";
 import { AngleSweep } from "../geometry3d/AngleSweep";
 import { Angle } from "../geometry3d/Angle";
-import { GeometryHandler, UVSurface } from "../geometry3d/GeometryHandler";
+import { GeometryHandler, UVSurface, UVSurfaceIsoParametricDistance } from "../geometry3d/GeometryHandler";
 import { SolidPrimitive } from "./SolidPrimitive";
 import { Loop } from "../curve/Loop";
 import { Path } from "../curve/Path";
 import { CurveCollection } from "../curve/CurveCollection";
 import { Arc3d } from "../curve/Arc3d";
 import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
+import { Vector2d } from "../geometry3d/Point2dVector2d";
 /**
  * the stored form of the torus pipe is oriented for positive volume:
  *
@@ -27,7 +28,7 @@ import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVecto
  * * The sweep is positive
  * * The coordinate system has positive determinant.
  */
-export class TorusPipe extends SolidPrimitive implements UVSurface {
+export class TorusPipe extends SolidPrimitive implements UVSurface, UVSurfaceIsoParametricDistance {
   private _localToWorld: Transform;
   private _radiusA: number;  // radius of (large) circle in xy plane
   private _radiusB: number;  // radius of (small) circle in xz plane.
@@ -248,6 +249,16 @@ export class TorusPipe extends SolidPrimitive implements UVSurface {
       this._localToWorld.multiplyVectorXYZ(-cosTheta * rSinPhi * fPhi, -sinTheta * rSinPhi * fPhi, rCosPhi * fPhi),
       this._localToWorld.multiplyVectorXYZ(-rxy * sinTheta * fTheta, rxy * cosTheta * fTheta, 0),
       result);
+  }
+  /**
+   * Directional distance query
+   * * u direction is around the (full) minor hoop
+   * * v direction is around the outer radius, sum of (absolute values of) major and minor radii.
+   */
+  public maxIsoParametricDistance(): Vector2d {
+    const a = Math.abs(this.getMajorRadius());
+    const b = Math.abs(this.getMinorRadius());
+    return Vector2d.create(b * Math.PI * 2.0, (a + b) * this._sweep.radians);
   }
   /**
    * @return true if this is a closed volume.

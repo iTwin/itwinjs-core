@@ -455,11 +455,12 @@ class IModelJsModuleBuilder {
     checkDefinition() {
         // check the type.
         if (!this._moduleDescription.type) {
-            console.log('iModelJs.buildModule.type must have a type property with value of "system", "application",  or "plugin"');
+            console.log('iModelJs.buildModule.type must have a type property with value of "system", "application", "plugin", or "webworker"');
             return true;
         }
-        if ((this._moduleDescription.type !== "system") && (this._moduleDescription.type !== "application") && (this._moduleDescription.type !== "plugin")) {
-            console.log('iModelJs.buildModule.type must be on of "system", "application",  or "plugin"');
+        if ((this._moduleDescription.type !== "system") && (this._moduleDescription.type !== "application") &&
+            (this._moduleDescription.type !== "plugin") && (this._moduleDescription.type != "webworker")) {
+            console.log('iModelJs.buildModule.type must be on of "system", "application", "plugin", or "webworker"');
             return true;
         }
         return false;
@@ -559,6 +560,8 @@ class IModelJsModuleBuilder {
             args.push("--env.stylesheets");
         if (isPlugin)
             args.push("--env.isplugin");
+        else if (this._moduleDescription.type === "webworker")
+            args.push("--env.webworker");
         if (!isDevelopment)
             args.push("--env.prod");
         if (htmlTemplate)

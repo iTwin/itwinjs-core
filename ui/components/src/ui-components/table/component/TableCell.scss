@@ -20,7 +20,7 @@
   &>* {
     padding: 8px 0 0 8px;
     height: 100%;
-    width: 100%;
+    width: calc(100% - 8px);
   }
 
   >span:empty:before {

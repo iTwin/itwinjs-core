@@ -9,16 +9,16 @@ import { XYZProps, Matrix4dProps } from "@bentley/geometry-core";
 import { GeometryStreamProps } from "./geometry/GeometryStream";
 import { GeometryClass } from "./Render";
 
-/**
- * Information required to request a *snap* to a pickable decoration from the front end to the back end.
+/** Information required to request a *snap* to a pickable decoration from the front end to the back end.
+ * @beta
  */
 export class DecorationGeometryProps {
   public constructor(public readonly id: Id64String, public readonly geometryStream: GeometryStreamProps) { }
 }
 
-/**
- * Information required to request a *snap* to an element from the front end to the back end.
+/** Information required to request a *snap* to an element from the front end to the back end.
  * Includes the viewing parameters so that snap can be relative to the view direction, viewing mode, etc.
+ * @beta
  */
 export interface SnapRequestProps {
   id: Id64String;
@@ -35,8 +35,8 @@ export interface SnapRequestProps {
   decorationGeometry?: DecorationGeometryProps[];
 }
 
-/**
- * Information returned from the back end to the front end holding the result of a *snap* operation.
+/** Information returned from the back end to the front end holding the result of a *snap* operation.
+ * @beta
  */
 export interface SnapResponseProps {
   status: number;

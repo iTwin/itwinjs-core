@@ -4,30 +4,20 @@ exports[`BeInspireTree pagination fires ChangesApplied event when child node is 
 Array [
   Object {
     "id": "0",
-    "isChecked": false,
     "isExpanded": true,
-    "isSelected": false,
     "level": 0,
   },
   Object {
     "id": "0-0",
-    "isChecked": false,
     "isExpanded": true,
-    "isSelected": false,
     "level": 1,
   },
   Object {
     "id": "0-0-0",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 2,
   },
   Object {
     "id": "0-0-1",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 2,
   },
   Object {
@@ -45,23 +35,15 @@ exports[`BeInspireTree pagination handles children disposal during page load 1`]
 Array [
   Object {
     "id": "0",
-    "isChecked": false,
     "isExpanded": true,
-    "isSelected": false,
     "level": 0,
   },
   Object {
     "id": "0-0",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 1,
   },
   Object {
     "id": "0-1",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 1,
   },
   Object {
@@ -78,9 +60,6 @@ Array [
   },
   Object {
     "id": "1",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 0,
   },
   Object {
@@ -102,23 +81,15 @@ exports[`BeInspireTree pagination immediately loads first page for child nodes 1
 Array [
   Object {
     "id": "0",
-    "isChecked": false,
     "isExpanded": true,
-    "isSelected": false,
     "level": 0,
   },
   Object {
     "id": "0-0",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 1,
   },
   Object {
     "id": "0-1",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 1,
   },
   Object {
@@ -135,9 +106,6 @@ Array [
   },
   Object {
     "id": "1",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 0,
   },
   Object {
@@ -159,16 +127,10 @@ exports[`BeInspireTree pagination immediately loads first page for root nodes 1`
 Array [
   Object {
     "id": "0",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 0,
   },
   Object {
     "id": "1",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 0,
   },
   Object {
@@ -190,51 +152,31 @@ exports[`BeInspireTree pagination loads additional pages when child nodes are lo
 Array [
   Object {
     "id": "0",
-    "isChecked": false,
     "isExpanded": true,
-    "isSelected": false,
     "level": 0,
   },
   Object {
     "id": "0-0",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 1,
   },
   Object {
     "id": "0-1",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 1,
   },
   Object {
     "id": "0-2",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 1,
   },
   Object {
     "id": "0-3",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 1,
   },
   Object {
     "id": "0-4",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 1,
   },
   Object {
     "id": "1",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 0,
   },
   Object {
@@ -256,51 +198,31 @@ exports[`BeInspireTree pagination loads additional pages when child nodes are lo
 Array [
   Object {
     "id": "0",
-    "isChecked": false,
     "isExpanded": true,
-    "isSelected": false,
     "level": 0,
   },
   Object {
     "id": "0-0",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 1,
   },
   Object {
     "id": "0-1",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 1,
   },
   Object {
     "id": "0-2",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 1,
   },
   Object {
     "id": "0-3",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 1,
   },
   Object {
     "id": "0-4",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 1,
   },
   Object {
     "id": "1",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 0,
   },
   Object {
@@ -322,37 +244,22 @@ exports[`BeInspireTree pagination loads additional pages when root nodes are loa
 Array [
   Object {
     "id": "0",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 0,
   },
   Object {
     "id": "1",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 0,
   },
   Object {
     "id": "2",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 0,
   },
   Object {
     "id": "3",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 0,
   },
   Object {
     "id": "4",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 0,
   },
 ]
@@ -362,37 +269,22 @@ exports[`BeInspireTree pagination loads necessary pages when root nodes are load
 Array [
   Object {
     "id": "0",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 0,
   },
   Object {
     "id": "1",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 0,
   },
   Object {
     "id": "2",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 0,
   },
   Object {
     "id": "3",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 0,
   },
   Object {
     "id": "4",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 0,
   },
 ]
@@ -402,100 +294,67 @@ exports[`BeInspireTree with interface data provider selectBetween selects nodes 
 Array [
   Object {
     "id": "0",
-    "isChecked": false,
     "isExpanded": true,
-    "isSelected": false,
     "level": 0,
   },
   Object {
     "id": "0-0",
-    "isChecked": false,
     "isExpanded": true,
     "isSelected": true,
     "level": 1,
   },
   Object {
     "id": "0-0-0",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 2,
   },
   Object {
     "id": "0-0-1",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 2,
   },
   Object {
     "id": "0-1",
-    "isChecked": false,
     "isExpanded": true,
-    "isSelected": false,
     "level": 1,
   },
   Object {
     "id": "0-1-0",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 2,
   },
   Object {
     "id": "0-1-1",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 2,
   },
   Object {
     "id": "1",
-    "isChecked": false,
     "isExpanded": true,
-    "isSelected": false,
     "level": 0,
   },
   Object {
     "id": "1-0",
-    "isChecked": false,
     "isExpanded": true,
-    "isSelected": false,
     "level": 1,
   },
   Object {
     "id": "1-0-0",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 2,
   },
   Object {
     "id": "1-0-1",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 2,
   },
   Object {
     "id": "1-1",
-    "isChecked": false,
     "isExpanded": true,
-    "isSelected": false,
     "level": 1,
   },
   Object {
     "id": "1-1-0",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 2,
   },
   Object {
     "id": "1-1-1",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 2,
   },
 ]
@@ -505,100 +364,77 @@ exports[`BeInspireTree with interface data provider selectBetween selects nodes 
 Array [
   Object {
     "id": "0",
-    "isChecked": false,
     "isExpanded": true,
     "isSelected": true,
     "level": 0,
   },
   Object {
     "id": "0-0",
-    "isChecked": false,
     "isExpanded": true,
     "isSelected": true,
     "level": 1,
   },
   Object {
     "id": "0-0-0",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 2,
   },
   Object {
     "id": "0-0-1",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 2,
   },
   Object {
     "id": "0-1",
-    "isChecked": false,
     "isExpanded": true,
     "isSelected": true,
     "level": 1,
   },
   Object {
     "id": "0-1-0",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 2,
   },
   Object {
     "id": "0-1-1",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 2,
   },
   Object {
     "id": "1",
-    "isChecked": false,
     "isExpanded": true,
     "isSelected": true,
     "level": 0,
   },
   Object {
     "id": "1-0",
-    "isChecked": false,
     "isExpanded": true,
     "isSelected": true,
     "level": 1,
   },
   Object {
     "id": "1-0-0",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 2,
   },
   Object {
     "id": "1-0-1",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 2,
   },
   Object {
     "id": "1-1",
-    "isChecked": false,
     "isExpanded": true,
     "isSelected": true,
     "level": 1,
   },
   Object {
     "id": "1-1-0",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 2,
   },
   Object {
     "id": "1-1-1",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 2,
   },
 ]
@@ -608,100 +444,66 @@ exports[`BeInspireTree with interface data provider selectBetween selects nodes 
 Array [
   Object {
     "id": "0",
-    "isChecked": false,
     "isExpanded": true,
-    "isSelected": false,
     "level": 0,
   },
   Object {
     "id": "0-0",
-    "isChecked": false,
     "isExpanded": true,
-    "isSelected": false,
     "level": 1,
   },
   Object {
     "id": "0-0-0",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 2,
   },
   Object {
     "id": "0-0-1",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 2,
   },
   Object {
     "id": "0-1",
-    "isChecked": false,
     "isExpanded": true,
-    "isSelected": false,
     "level": 1,
   },
   Object {
     "id": "0-1-0",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 2,
   },
   Object {
     "id": "0-1-1",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 2,
   },
   Object {
     "id": "1",
-    "isChecked": false,
     "isExpanded": true,
-    "isSelected": false,
     "level": 0,
   },
   Object {
     "id": "1-0",
-    "isChecked": false,
     "isExpanded": true,
-    "isSelected": false,
     "level": 1,
   },
   Object {
     "id": "1-0-0",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 2,
   },
   Object {
     "id": "1-0-1",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 2,
   },
   Object {
     "id": "1-1",
-    "isChecked": false,
     "isExpanded": true,
-    "isSelected": false,
     "level": 1,
   },
   Object {
     "id": "1-1-0",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 2,
   },
   Object {
     "id": "1-1-1",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 2,
   },
 ]
@@ -711,101 +513,257 @@ exports[`BeInspireTree with interface data provider selectBetween selects nodes 
 Array [
   Object {
     "id": "0",
-    "isChecked": false,
     "isExpanded": true,
     "isSelected": true,
     "level": 0,
   },
   Object {
     "id": "0-0",
-    "isChecked": false,
     "isExpanded": true,
     "isSelected": true,
     "level": 1,
   },
   Object {
     "id": "0-0-0",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 2,
   },
   Object {
     "id": "0-0-1",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 2,
   },
   Object {
     "id": "0-1",
-    "isChecked": false,
     "isExpanded": true,
-    "isSelected": false,
     "level": 1,
   },
   Object {
     "id": "0-1-0",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 2,
   },
   Object {
     "id": "0-1-1",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 2,
   },
   Object {
     "id": "1",
-    "isChecked": false,
     "isExpanded": true,
-    "isSelected": false,
     "level": 0,
   },
   Object {
     "id": "1-0",
-    "isChecked": false,
     "isExpanded": true,
-    "isSelected": false,
     "level": 1,
   },
   Object {
     "id": "1-0-0",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 2,
   },
   Object {
     "id": "1-0-1",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 2,
   },
   Object {
     "id": "1-1",
-    "isChecked": false,
     "isExpanded": true,
-    "isSelected": false,
     "level": 1,
   },
   Object {
     "id": "1-1-0",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 2,
   },
   Object {
     "id": "1-1-1",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 2,
+  },
+]
+`;
+
+exports[`BeInspireTree with interface data provider updateNodesCheckboxes with promise sets all node statuses to checked 1`] = `
+Array [
+  Object {
+    "id": "0",
+    "isExpanded": true,
+    "level": 0,
+  },
+  Object {
+    "id": "0-0",
+    "isChecked": true,
+    "level": 1,
+  },
+  Object {
+    "id": "0-1",
+    "isChecked": true,
+    "level": 1,
+  },
+  Object {
+    "id": "1",
+    "level": 0,
+  },
+]
+`;
+
+exports[`BeInspireTree with interface data provider updateNodesCheckboxes with promise sets all node statuses to disabled 1`] = `
+Array [
+  Object {
+    "id": "0",
+    "isExpanded": true,
+    "level": 0,
+  },
+  Object {
+    "id": "0-0",
+    "isCheckboxDisabled": true,
+    "level": 1,
+  },
+  Object {
+    "id": "0-1",
+    "isCheckboxDisabled": true,
+    "level": 1,
+  },
+  Object {
+    "id": "1",
+    "level": 0,
+  },
+]
+`;
+
+exports[`BeInspireTree with interface data provider updateNodesCheckboxes with promise sets all node statuses to unchecked 1`] = `
+Array [
+  Object {
+    "id": "0",
+    "isExpanded": true,
+    "level": 0,
+  },
+  Object {
+    "id": "0-0",
+    "level": 1,
+  },
+  Object {
+    "id": "0-1",
+    "level": 1,
+  },
+  Object {
+    "id": "1",
+    "level": 0,
+  },
+]
+`;
+
+exports[`BeInspireTree with interface data provider updateNodesCheckboxes with promise sets all node statuses to visible 1`] = `
+Array [
+  Object {
+    "id": "0",
+    "isExpanded": true,
+    "level": 0,
+  },
+  Object {
+    "id": "0-0",
+    "isCheckboxVisible": true,
+    "level": 1,
+  },
+  Object {
+    "id": "0-1",
+    "isCheckboxVisible": true,
+    "level": 1,
+  },
+  Object {
+    "id": "1",
+    "level": 0,
+  },
+]
+`;
+
+exports[`BeInspireTree with interface data provider updateNodesCheckboxes with result sets all node statuses to checked 1`] = `
+Array [
+  Object {
+    "id": "0",
+    "isExpanded": true,
+    "level": 0,
+  },
+  Object {
+    "id": "0-0",
+    "isChecked": true,
+    "level": 1,
+  },
+  Object {
+    "id": "0-1",
+    "isChecked": true,
+    "level": 1,
+  },
+  Object {
+    "id": "1",
+    "level": 0,
+  },
+]
+`;
+
+exports[`BeInspireTree with interface data provider updateNodesCheckboxes with result sets all node statuses to disabled 1`] = `
+Array [
+  Object {
+    "id": "0",
+    "isExpanded": true,
+    "level": 0,
+  },
+  Object {
+    "id": "0-0",
+    "isCheckboxDisabled": true,
+    "level": 1,
+  },
+  Object {
+    "id": "0-1",
+    "isCheckboxDisabled": true,
+    "level": 1,
+  },
+  Object {
+    "id": "1",
+    "level": 0,
+  },
+]
+`;
+
+exports[`BeInspireTree with interface data provider updateNodesCheckboxes with result sets all node statuses to unchecked 1`] = `
+Array [
+  Object {
+    "id": "0",
+    "isExpanded": true,
+    "level": 0,
+  },
+  Object {
+    "id": "0-0",
+    "level": 1,
+  },
+  Object {
+    "id": "0-1",
+    "level": 1,
+  },
+  Object {
+    "id": "1",
+    "level": 0,
+  },
+]
+`;
+
+exports[`BeInspireTree with interface data provider updateNodesCheckboxes with result sets all node statuses to visible 1`] = `
+Array [
+  Object {
+    "id": "0",
+    "isExpanded": true,
+    "level": 0,
+  },
+  Object {
+    "id": "0-0",
+    "isCheckboxVisible": true,
+    "level": 1,
+  },
+  Object {
+    "id": "0-1",
+    "isCheckboxVisible": true,
+    "level": 1,
+  },
+  Object {
+    "id": "1",
+    "level": 0,
   },
 ]
 `;
@@ -814,30 +772,19 @@ exports[`BeInspireTree with interface data provider updateNodesSelection does no
 Array [
   Object {
     "id": "0",
-    "isChecked": false,
     "isExpanded": true,
-    "isSelected": false,
     "level": 0,
   },
   Object {
     "id": "0-0",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 1,
   },
   Object {
     "id": "0-1",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 1,
   },
   Object {
     "id": "1",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 0,
   },
 ]
@@ -847,30 +794,21 @@ exports[`BeInspireTree with interface data provider updateNodesSelection with id
 Array [
   Object {
     "id": "0",
-    "isChecked": false,
     "isExpanded": true,
-    "isSelected": false,
     "level": 0,
   },
   Object {
     "id": "0-0",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 1,
   },
   Object {
     "id": "0-1",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 1,
   },
   Object {
     "id": "1",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 0,
   },
 ]
@@ -880,30 +818,21 @@ exports[`BeInspireTree with interface data provider updateNodesSelection with id
 Array [
   Object {
     "id": "0",
-    "isChecked": false,
     "isExpanded": true,
-    "isSelected": false,
     "level": 0,
   },
   Object {
     "id": "0-0",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 1,
   },
   Object {
     "id": "0-1",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 1,
   },
   Object {
     "id": "1",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 0,
   },
 ]
@@ -913,30 +842,21 @@ exports[`BeInspireTree with interface data provider updateNodesSelection with pr
 Array [
   Object {
     "id": "0",
-    "isChecked": false,
     "isExpanded": true,
-    "isSelected": false,
     "level": 0,
   },
   Object {
     "id": "0-0",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 1,
   },
   Object {
     "id": "0-1",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 1,
   },
   Object {
     "id": "1",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 0,
   },
 ]
@@ -946,30 +866,137 @@ exports[`BeInspireTree with interface data provider updateNodesSelection with pr
 Array [
   Object {
     "id": "0",
-    "isChecked": false,
     "isExpanded": true,
-    "isSelected": false,
     "level": 0,
   },
   Object {
     "id": "0-0",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 1,
   },
   Object {
     "id": "0-1",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 1,
   },
   Object {
     "id": "1",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
+    "level": 0,
+  },
+]
+`;
+
+exports[`BeInspireTree with interface data provider updateTreeCheckboxes with promise sets all node statuses to checked 1`] = `
+Array [
+  Object {
+    "id": "0",
+    "isChecked": true,
+    "level": 0,
+  },
+  Object {
+    "id": "1",
+    "isChecked": true,
+    "level": 0,
+  },
+]
+`;
+
+exports[`BeInspireTree with interface data provider updateTreeCheckboxes with promise sets all node statuses to disabled 1`] = `
+Array [
+  Object {
+    "id": "0",
+    "isCheckboxDisabled": true,
+    "level": 0,
+  },
+  Object {
+    "id": "1",
+    "isCheckboxDisabled": true,
+    "level": 0,
+  },
+]
+`;
+
+exports[`BeInspireTree with interface data provider updateTreeCheckboxes with promise sets all node statuses to unchecked 1`] = `
+Array [
+  Object {
+    "id": "0",
+    "level": 0,
+  },
+  Object {
+    "id": "1",
+    "level": 0,
+  },
+]
+`;
+
+exports[`BeInspireTree with interface data provider updateTreeCheckboxes with promise sets all node statuses to visible 1`] = `
+Array [
+  Object {
+    "id": "0",
+    "isCheckboxVisible": true,
+    "level": 0,
+  },
+  Object {
+    "id": "1",
+    "isCheckboxVisible": true,
+    "level": 0,
+  },
+]
+`;
+
+exports[`BeInspireTree with interface data provider updateTreeCheckboxes with result sets all node statuses to checked 1`] = `
+Array [
+  Object {
+    "id": "0",
+    "isChecked": true,
+    "level": 0,
+  },
+  Object {
+    "id": "1",
+    "isChecked": true,
+    "level": 0,
+  },
+]
+`;
+
+exports[`BeInspireTree with interface data provider updateTreeCheckboxes with result sets all node statuses to disabled 1`] = `
+Array [
+  Object {
+    "id": "0",
+    "isCheckboxDisabled": true,
+    "level": 0,
+  },
+  Object {
+    "id": "1",
+    "isCheckboxDisabled": true,
+    "level": 0,
+  },
+]
+`;
+
+exports[`BeInspireTree with interface data provider updateTreeCheckboxes with result sets all node statuses to unchecked 1`] = `
+Array [
+  Object {
+    "id": "0",
+    "level": 0,
+  },
+  Object {
+    "id": "1",
+    "level": 0,
+  },
+]
+`;
+
+exports[`BeInspireTree with interface data provider updateTreeCheckboxes with result sets all node statuses to visible 1`] = `
+Array [
+  Object {
+    "id": "0",
+    "isCheckboxVisible": true,
+    "level": 0,
+  },
+  Object {
+    "id": "1",
+    "isCheckboxVisible": true,
     "level": 0,
   },
 ]
@@ -979,16 +1006,10 @@ exports[`BeInspireTree with interface data provider updateTreeSelection does not
 Array [
   Object {
     "id": "0",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 0,
   },
   Object {
     "id": "1",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 0,
   },
 ]
@@ -998,15 +1019,10 @@ exports[`BeInspireTree with interface data provider updateTreeSelection with ids
 Array [
   Object {
     "id": "0",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 0,
   },
   Object {
     "id": "1",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 0,
   },
@@ -1017,15 +1033,11 @@ exports[`BeInspireTree with interface data provider updateTreeSelection with ids
 Array [
   Object {
     "id": "0",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 0,
   },
   Object {
     "id": "1",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 0,
   },
@@ -1036,15 +1048,10 @@ exports[`BeInspireTree with interface data provider updateTreeSelection with pre
 Array [
   Object {
     "id": "0",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 0,
   },
   Object {
     "id": "1",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 0,
   },
@@ -1055,15 +1062,11 @@ exports[`BeInspireTree with interface data provider updateTreeSelection with pre
 Array [
   Object {
     "id": "0",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 0,
   },
   Object {
     "id": "1",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 0,
   },
@@ -1074,100 +1077,67 @@ exports[`BeInspireTree with method data provider selectBetween selects nodes at 
 Array [
   Object {
     "id": "0",
-    "isChecked": false,
     "isExpanded": true,
-    "isSelected": false,
     "level": 0,
   },
   Object {
     "id": "0-0",
-    "isChecked": false,
     "isExpanded": true,
     "isSelected": true,
     "level": 1,
   },
   Object {
     "id": "0-0-0",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 2,
   },
   Object {
     "id": "0-0-1",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 2,
   },
   Object {
     "id": "0-1",
-    "isChecked": false,
     "isExpanded": true,
-    "isSelected": false,
     "level": 1,
   },
   Object {
     "id": "0-1-0",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 2,
   },
   Object {
     "id": "0-1-1",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 2,
   },
   Object {
     "id": "1",
-    "isChecked": false,
     "isExpanded": true,
-    "isSelected": false,
     "level": 0,
   },
   Object {
     "id": "1-0",
-    "isChecked": false,
     "isExpanded": true,
-    "isSelected": false,
     "level": 1,
   },
   Object {
     "id": "1-0-0",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 2,
   },
   Object {
     "id": "1-0-1",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 2,
   },
   Object {
     "id": "1-1",
-    "isChecked": false,
     "isExpanded": true,
-    "isSelected": false,
     "level": 1,
   },
   Object {
     "id": "1-1-0",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 2,
   },
   Object {
     "id": "1-1-1",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 2,
   },
 ]
@@ -1177,100 +1147,77 @@ exports[`BeInspireTree with method data provider selectBetween selects nodes at 
 Array [
   Object {
     "id": "0",
-    "isChecked": false,
     "isExpanded": true,
     "isSelected": true,
     "level": 0,
   },
   Object {
     "id": "0-0",
-    "isChecked": false,
     "isExpanded": true,
     "isSelected": true,
     "level": 1,
   },
   Object {
     "id": "0-0-0",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 2,
   },
   Object {
     "id": "0-0-1",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 2,
   },
   Object {
     "id": "0-1",
-    "isChecked": false,
     "isExpanded": true,
     "isSelected": true,
     "level": 1,
   },
   Object {
     "id": "0-1-0",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 2,
   },
   Object {
     "id": "0-1-1",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 2,
   },
   Object {
     "id": "1",
-    "isChecked": false,
     "isExpanded": true,
     "isSelected": true,
     "level": 0,
   },
   Object {
     "id": "1-0",
-    "isChecked": false,
     "isExpanded": true,
     "isSelected": true,
     "level": 1,
   },
   Object {
     "id": "1-0-0",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 2,
   },
   Object {
     "id": "1-0-1",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 2,
   },
   Object {
     "id": "1-1",
-    "isChecked": false,
     "isExpanded": true,
     "isSelected": true,
     "level": 1,
   },
   Object {
     "id": "1-1-0",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 2,
   },
   Object {
     "id": "1-1-1",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 2,
   },
 ]
@@ -1280,100 +1227,66 @@ exports[`BeInspireTree with method data provider selectBetween selects nodes at 
 Array [
   Object {
     "id": "0",
-    "isChecked": false,
     "isExpanded": true,
-    "isSelected": false,
     "level": 0,
   },
   Object {
     "id": "0-0",
-    "isChecked": false,
     "isExpanded": true,
-    "isSelected": false,
     "level": 1,
   },
   Object {
     "id": "0-0-0",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 2,
   },
   Object {
     "id": "0-0-1",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 2,
   },
   Object {
     "id": "0-1",
-    "isChecked": false,
     "isExpanded": true,
-    "isSelected": false,
     "level": 1,
   },
   Object {
     "id": "0-1-0",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 2,
   },
   Object {
     "id": "0-1-1",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 2,
   },
   Object {
     "id": "1",
-    "isChecked": false,
     "isExpanded": true,
-    "isSelected": false,
     "level": 0,
   },
   Object {
     "id": "1-0",
-    "isChecked": false,
     "isExpanded": true,
-    "isSelected": false,
     "level": 1,
   },
   Object {
     "id": "1-0-0",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 2,
   },
   Object {
     "id": "1-0-1",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 2,
   },
   Object {
     "id": "1-1",
-    "isChecked": false,
     "isExpanded": true,
-    "isSelected": false,
     "level": 1,
   },
   Object {
     "id": "1-1-0",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 2,
   },
   Object {
     "id": "1-1-1",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 2,
   },
 ]
@@ -1383,101 +1296,257 @@ exports[`BeInspireTree with method data provider selectBetween selects nodes in 
 Array [
   Object {
     "id": "0",
-    "isChecked": false,
     "isExpanded": true,
     "isSelected": true,
     "level": 0,
   },
   Object {
     "id": "0-0",
-    "isChecked": false,
     "isExpanded": true,
     "isSelected": true,
     "level": 1,
   },
   Object {
     "id": "0-0-0",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 2,
   },
   Object {
     "id": "0-0-1",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 2,
   },
   Object {
     "id": "0-1",
-    "isChecked": false,
     "isExpanded": true,
-    "isSelected": false,
     "level": 1,
   },
   Object {
     "id": "0-1-0",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 2,
   },
   Object {
     "id": "0-1-1",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 2,
   },
   Object {
     "id": "1",
-    "isChecked": false,
     "isExpanded": true,
-    "isSelected": false,
     "level": 0,
   },
   Object {
     "id": "1-0",
-    "isChecked": false,
     "isExpanded": true,
-    "isSelected": false,
     "level": 1,
   },
   Object {
     "id": "1-0-0",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 2,
   },
   Object {
     "id": "1-0-1",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 2,
   },
   Object {
     "id": "1-1",
-    "isChecked": false,
     "isExpanded": true,
-    "isSelected": false,
     "level": 1,
   },
   Object {
     "id": "1-1-0",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 2,
   },
   Object {
     "id": "1-1-1",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 2,
+  },
+]
+`;
+
+exports[`BeInspireTree with method data provider updateNodesCheckboxes with promise sets all node statuses to checked 1`] = `
+Array [
+  Object {
+    "id": "0",
+    "isExpanded": true,
+    "level": 0,
+  },
+  Object {
+    "id": "0-0",
+    "isChecked": true,
+    "level": 1,
+  },
+  Object {
+    "id": "0-1",
+    "isChecked": true,
+    "level": 1,
+  },
+  Object {
+    "id": "1",
+    "level": 0,
+  },
+]
+`;
+
+exports[`BeInspireTree with method data provider updateNodesCheckboxes with promise sets all node statuses to disabled 1`] = `
+Array [
+  Object {
+    "id": "0",
+    "isExpanded": true,
+    "level": 0,
+  },
+  Object {
+    "id": "0-0",
+    "isCheckboxDisabled": true,
+    "level": 1,
+  },
+  Object {
+    "id": "0-1",
+    "isCheckboxDisabled": true,
+    "level": 1,
+  },
+  Object {
+    "id": "1",
+    "level": 0,
+  },
+]
+`;
+
+exports[`BeInspireTree with method data provider updateNodesCheckboxes with promise sets all node statuses to unchecked 1`] = `
+Array [
+  Object {
+    "id": "0",
+    "isExpanded": true,
+    "level": 0,
+  },
+  Object {
+    "id": "0-0",
+    "level": 1,
+  },
+  Object {
+    "id": "0-1",
+    "level": 1,
+  },
+  Object {
+    "id": "1",
+    "level": 0,
+  },
+]
+`;
+
+exports[`BeInspireTree with method data provider updateNodesCheckboxes with promise sets all node statuses to visible 1`] = `
+Array [
+  Object {
+    "id": "0",
+    "isExpanded": true,
+    "level": 0,
+  },
+  Object {
+    "id": "0-0",
+    "isCheckboxVisible": true,
+    "level": 1,
+  },
+  Object {
+    "id": "0-1",
+    "isCheckboxVisible": true,
+    "level": 1,
+  },
+  Object {
+    "id": "1",
+    "level": 0,
+  },
+]
+`;
+
+exports[`BeInspireTree with method data provider updateNodesCheckboxes with result sets all node statuses to checked 1`] = `
+Array [
+  Object {
+    "id": "0",
+    "isExpanded": true,
+    "level": 0,
+  },
+  Object {
+    "id": "0-0",
+    "isChecked": true,
+    "level": 1,
+  },
+  Object {
+    "id": "0-1",
+    "isChecked": true,
+    "level": 1,
+  },
+  Object {
+    "id": "1",
+    "level": 0,
+  },
+]
+`;
+
+exports[`BeInspireTree with method data provider updateNodesCheckboxes with result sets all node statuses to disabled 1`] = `
+Array [
+  Object {
+    "id": "0",
+    "isExpanded": true,
+    "level": 0,
+  },
+  Object {
+    "id": "0-0",
+    "isCheckboxDisabled": true,
+    "level": 1,
+  },
+  Object {
+    "id": "0-1",
+    "isCheckboxDisabled": true,
+    "level": 1,
+  },
+  Object {
+    "id": "1",
+    "level": 0,
+  },
+]
+`;
+
+exports[`BeInspireTree with method data provider updateNodesCheckboxes with result sets all node statuses to unchecked 1`] = `
+Array [
+  Object {
+    "id": "0",
+    "isExpanded": true,
+    "level": 0,
+  },
+  Object {
+    "id": "0-0",
+    "level": 1,
+  },
+  Object {
+    "id": "0-1",
+    "level": 1,
+  },
+  Object {
+    "id": "1",
+    "level": 0,
+  },
+]
+`;
+
+exports[`BeInspireTree with method data provider updateNodesCheckboxes with result sets all node statuses to visible 1`] = `
+Array [
+  Object {
+    "id": "0",
+    "isExpanded": true,
+    "level": 0,
+  },
+  Object {
+    "id": "0-0",
+    "isCheckboxVisible": true,
+    "level": 1,
+  },
+  Object {
+    "id": "0-1",
+    "isCheckboxVisible": true,
+    "level": 1,
+  },
+  Object {
+    "id": "1",
+    "level": 0,
   },
 ]
 `;
@@ -1486,30 +1555,19 @@ exports[`BeInspireTree with method data provider updateNodesSelection does nothi
 Array [
   Object {
     "id": "0",
-    "isChecked": false,
     "isExpanded": true,
-    "isSelected": false,
     "level": 0,
   },
   Object {
     "id": "0-0",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 1,
   },
   Object {
     "id": "0-1",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 1,
   },
   Object {
     "id": "1",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 0,
   },
 ]
@@ -1519,30 +1577,21 @@ exports[`BeInspireTree with method data provider updateNodesSelection with ids d
 Array [
   Object {
     "id": "0",
-    "isChecked": false,
     "isExpanded": true,
-    "isSelected": false,
     "level": 0,
   },
   Object {
     "id": "0-0",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 1,
   },
   Object {
     "id": "0-1",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 1,
   },
   Object {
     "id": "1",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 0,
   },
 ]
@@ -1552,30 +1601,21 @@ exports[`BeInspireTree with method data provider updateNodesSelection with ids s
 Array [
   Object {
     "id": "0",
-    "isChecked": false,
     "isExpanded": true,
-    "isSelected": false,
     "level": 0,
   },
   Object {
     "id": "0-0",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 1,
   },
   Object {
     "id": "0-1",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 1,
   },
   Object {
     "id": "1",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 0,
   },
 ]
@@ -1585,30 +1625,21 @@ exports[`BeInspireTree with method data provider updateNodesSelection with predi
 Array [
   Object {
     "id": "0",
-    "isChecked": false,
     "isExpanded": true,
-    "isSelected": false,
     "level": 0,
   },
   Object {
     "id": "0-0",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 1,
   },
   Object {
     "id": "0-1",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 1,
   },
   Object {
     "id": "1",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 0,
   },
 ]
@@ -1618,30 +1649,137 @@ exports[`BeInspireTree with method data provider updateNodesSelection with predi
 Array [
   Object {
     "id": "0",
-    "isChecked": false,
     "isExpanded": true,
-    "isSelected": false,
     "level": 0,
   },
   Object {
     "id": "0-0",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 1,
   },
   Object {
     "id": "0-1",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 1,
   },
   Object {
     "id": "1",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
+    "level": 0,
+  },
+]
+`;
+
+exports[`BeInspireTree with method data provider updateTreeCheckboxes with promise sets all node statuses to checked 1`] = `
+Array [
+  Object {
+    "id": "0",
+    "isChecked": true,
+    "level": 0,
+  },
+  Object {
+    "id": "1",
+    "isChecked": true,
+    "level": 0,
+  },
+]
+`;
+
+exports[`BeInspireTree with method data provider updateTreeCheckboxes with promise sets all node statuses to disabled 1`] = `
+Array [
+  Object {
+    "id": "0",
+    "isCheckboxDisabled": true,
+    "level": 0,
+  },
+  Object {
+    "id": "1",
+    "isCheckboxDisabled": true,
+    "level": 0,
+  },
+]
+`;
+
+exports[`BeInspireTree with method data provider updateTreeCheckboxes with promise sets all node statuses to unchecked 1`] = `
+Array [
+  Object {
+    "id": "0",
+    "level": 0,
+  },
+  Object {
+    "id": "1",
+    "level": 0,
+  },
+]
+`;
+
+exports[`BeInspireTree with method data provider updateTreeCheckboxes with promise sets all node statuses to visible 1`] = `
+Array [
+  Object {
+    "id": "0",
+    "isCheckboxVisible": true,
+    "level": 0,
+  },
+  Object {
+    "id": "1",
+    "isCheckboxVisible": true,
+    "level": 0,
+  },
+]
+`;
+
+exports[`BeInspireTree with method data provider updateTreeCheckboxes with result sets all node statuses to checked 1`] = `
+Array [
+  Object {
+    "id": "0",
+    "isChecked": true,
+    "level": 0,
+  },
+  Object {
+    "id": "1",
+    "isChecked": true,
+    "level": 0,
+  },
+]
+`;
+
+exports[`BeInspireTree with method data provider updateTreeCheckboxes with result sets all node statuses to disabled 1`] = `
+Array [
+  Object {
+    "id": "0",
+    "isCheckboxDisabled": true,
+    "level": 0,
+  },
+  Object {
+    "id": "1",
+    "isCheckboxDisabled": true,
+    "level": 0,
+  },
+]
+`;
+
+exports[`BeInspireTree with method data provider updateTreeCheckboxes with result sets all node statuses to unchecked 1`] = `
+Array [
+  Object {
+    "id": "0",
+    "level": 0,
+  },
+  Object {
+    "id": "1",
+    "level": 0,
+  },
+]
+`;
+
+exports[`BeInspireTree with method data provider updateTreeCheckboxes with result sets all node statuses to visible 1`] = `
+Array [
+  Object {
+    "id": "0",
+    "isCheckboxVisible": true,
+    "level": 0,
+  },
+  Object {
+    "id": "1",
+    "isCheckboxVisible": true,
     "level": 0,
   },
 ]
@@ -1651,16 +1789,10 @@ exports[`BeInspireTree with method data provider updateTreeSelection does nothin
 Array [
   Object {
     "id": "0",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 0,
   },
   Object {
     "id": "1",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 0,
   },
 ]
@@ -1670,15 +1802,10 @@ exports[`BeInspireTree with method data provider updateTreeSelection with ids de
 Array [
   Object {
     "id": "0",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 0,
   },
   Object {
     "id": "1",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 0,
   },
@@ -1689,15 +1816,11 @@ exports[`BeInspireTree with method data provider updateTreeSelection with ids se
 Array [
   Object {
     "id": "0",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 0,
   },
   Object {
     "id": "1",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 0,
   },
@@ -1708,15 +1831,10 @@ exports[`BeInspireTree with method data provider updateTreeSelection with predic
 Array [
   Object {
     "id": "0",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 0,
   },
   Object {
     "id": "1",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 0,
   },
@@ -1727,15 +1845,11 @@ exports[`BeInspireTree with method data provider updateTreeSelection with predic
 Array [
   Object {
     "id": "0",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 0,
   },
   Object {
     "id": "1",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 0,
   },
@@ -1746,100 +1860,67 @@ exports[`BeInspireTree with promise data provider selectBetween selects nodes at
 Array [
   Object {
     "id": "0",
-    "isChecked": false,
     "isExpanded": true,
-    "isSelected": false,
     "level": 0,
   },
   Object {
     "id": "0-0",
-    "isChecked": false,
     "isExpanded": true,
     "isSelected": true,
     "level": 1,
   },
   Object {
     "id": "0-0-0",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 2,
   },
   Object {
     "id": "0-0-1",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 2,
   },
   Object {
     "id": "0-1",
-    "isChecked": false,
     "isExpanded": true,
-    "isSelected": false,
     "level": 1,
   },
   Object {
     "id": "0-1-0",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 2,
   },
   Object {
     "id": "0-1-1",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 2,
   },
   Object {
     "id": "1",
-    "isChecked": false,
     "isExpanded": true,
-    "isSelected": false,
     "level": 0,
   },
   Object {
     "id": "1-0",
-    "isChecked": false,
     "isExpanded": true,
-    "isSelected": false,
     "level": 1,
   },
   Object {
     "id": "1-0-0",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 2,
   },
   Object {
     "id": "1-0-1",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 2,
   },
   Object {
     "id": "1-1",
-    "isChecked": false,
     "isExpanded": true,
-    "isSelected": false,
     "level": 1,
   },
   Object {
     "id": "1-1-0",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 2,
   },
   Object {
     "id": "1-1-1",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 2,
   },
 ]
@@ -1849,100 +1930,77 @@ exports[`BeInspireTree with promise data provider selectBetween selects nodes at
 Array [
   Object {
     "id": "0",
-    "isChecked": false,
     "isExpanded": true,
     "isSelected": true,
     "level": 0,
   },
   Object {
     "id": "0-0",
-    "isChecked": false,
     "isExpanded": true,
     "isSelected": true,
     "level": 1,
   },
   Object {
     "id": "0-0-0",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 2,
   },
   Object {
     "id": "0-0-1",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 2,
   },
   Object {
     "id": "0-1",
-    "isChecked": false,
     "isExpanded": true,
     "isSelected": true,
     "level": 1,
   },
   Object {
     "id": "0-1-0",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 2,
   },
   Object {
     "id": "0-1-1",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 2,
   },
   Object {
     "id": "1",
-    "isChecked": false,
     "isExpanded": true,
     "isSelected": true,
     "level": 0,
   },
   Object {
     "id": "1-0",
-    "isChecked": false,
     "isExpanded": true,
     "isSelected": true,
     "level": 1,
   },
   Object {
     "id": "1-0-0",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 2,
   },
   Object {
     "id": "1-0-1",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 2,
   },
   Object {
     "id": "1-1",
-    "isChecked": false,
     "isExpanded": true,
     "isSelected": true,
     "level": 1,
   },
   Object {
     "id": "1-1-0",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 2,
   },
   Object {
     "id": "1-1-1",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 2,
   },
 ]
@@ -1952,100 +2010,66 @@ exports[`BeInspireTree with promise data provider selectBetween selects nodes at
 Array [
   Object {
     "id": "0",
-    "isChecked": false,
     "isExpanded": true,
-    "isSelected": false,
     "level": 0,
   },
   Object {
     "id": "0-0",
-    "isChecked": false,
     "isExpanded": true,
-    "isSelected": false,
     "level": 1,
   },
   Object {
     "id": "0-0-0",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 2,
   },
   Object {
     "id": "0-0-1",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 2,
   },
   Object {
     "id": "0-1",
-    "isChecked": false,
     "isExpanded": true,
-    "isSelected": false,
     "level": 1,
   },
   Object {
     "id": "0-1-0",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 2,
   },
   Object {
     "id": "0-1-1",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 2,
   },
   Object {
     "id": "1",
-    "isChecked": false,
     "isExpanded": true,
-    "isSelected": false,
     "level": 0,
   },
   Object {
     "id": "1-0",
-    "isChecked": false,
     "isExpanded": true,
-    "isSelected": false,
     "level": 1,
   },
   Object {
     "id": "1-0-0",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 2,
   },
   Object {
     "id": "1-0-1",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 2,
   },
   Object {
     "id": "1-1",
-    "isChecked": false,
     "isExpanded": true,
-    "isSelected": false,
     "level": 1,
   },
   Object {
     "id": "1-1-0",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 2,
   },
   Object {
     "id": "1-1-1",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 2,
   },
 ]
@@ -2055,101 +2079,257 @@ exports[`BeInspireTree with promise data provider selectBetween selects nodes in
 Array [
   Object {
     "id": "0",
-    "isChecked": false,
     "isExpanded": true,
     "isSelected": true,
     "level": 0,
   },
   Object {
     "id": "0-0",
-    "isChecked": false,
     "isExpanded": true,
     "isSelected": true,
     "level": 1,
   },
   Object {
     "id": "0-0-0",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 2,
   },
   Object {
     "id": "0-0-1",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 2,
   },
   Object {
     "id": "0-1",
-    "isChecked": false,
     "isExpanded": true,
-    "isSelected": false,
     "level": 1,
   },
   Object {
     "id": "0-1-0",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 2,
   },
   Object {
     "id": "0-1-1",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 2,
   },
   Object {
     "id": "1",
-    "isChecked": false,
     "isExpanded": true,
-    "isSelected": false,
     "level": 0,
   },
   Object {
     "id": "1-0",
-    "isChecked": false,
     "isExpanded": true,
-    "isSelected": false,
     "level": 1,
   },
   Object {
     "id": "1-0-0",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 2,
   },
   Object {
     "id": "1-0-1",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 2,
   },
   Object {
     "id": "1-1",
-    "isChecked": false,
     "isExpanded": true,
-    "isSelected": false,
     "level": 1,
   },
   Object {
     "id": "1-1-0",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 2,
   },
   Object {
     "id": "1-1-1",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 2,
+  },
+]
+`;
+
+exports[`BeInspireTree with promise data provider updateNodesCheckboxes with promise sets all node statuses to checked 1`] = `
+Array [
+  Object {
+    "id": "0",
+    "isExpanded": true,
+    "level": 0,
+  },
+  Object {
+    "id": "0-0",
+    "isChecked": true,
+    "level": 1,
+  },
+  Object {
+    "id": "0-1",
+    "isChecked": true,
+    "level": 1,
+  },
+  Object {
+    "id": "1",
+    "level": 0,
+  },
+]
+`;
+
+exports[`BeInspireTree with promise data provider updateNodesCheckboxes with promise sets all node statuses to disabled 1`] = `
+Array [
+  Object {
+    "id": "0",
+    "isExpanded": true,
+    "level": 0,
+  },
+  Object {
+    "id": "0-0",
+    "isCheckboxDisabled": true,
+    "level": 1,
+  },
+  Object {
+    "id": "0-1",
+    "isCheckboxDisabled": true,
+    "level": 1,
+  },
+  Object {
+    "id": "1",
+    "level": 0,
+  },
+]
+`;
+
+exports[`BeInspireTree with promise data provider updateNodesCheckboxes with promise sets all node statuses to unchecked 1`] = `
+Array [
+  Object {
+    "id": "0",
+    "isExpanded": true,
+    "level": 0,
+  },
+  Object {
+    "id": "0-0",
+    "level": 1,
+  },
+  Object {
+    "id": "0-1",
+    "level": 1,
+  },
+  Object {
+    "id": "1",
+    "level": 0,
+  },
+]
+`;
+
+exports[`BeInspireTree with promise data provider updateNodesCheckboxes with promise sets all node statuses to visible 1`] = `
+Array [
+  Object {
+    "id": "0",
+    "isExpanded": true,
+    "level": 0,
+  },
+  Object {
+    "id": "0-0",
+    "isCheckboxVisible": true,
+    "level": 1,
+  },
+  Object {
+    "id": "0-1",
+    "isCheckboxVisible": true,
+    "level": 1,
+  },
+  Object {
+    "id": "1",
+    "level": 0,
+  },
+]
+`;
+
+exports[`BeInspireTree with promise data provider updateNodesCheckboxes with result sets all node statuses to checked 1`] = `
+Array [
+  Object {
+    "id": "0",
+    "isExpanded": true,
+    "level": 0,
+  },
+  Object {
+    "id": "0-0",
+    "isChecked": true,
+    "level": 1,
+  },
+  Object {
+    "id": "0-1",
+    "isChecked": true,
+    "level": 1,
+  },
+  Object {
+    "id": "1",
+    "level": 0,
+  },
+]
+`;
+
+exports[`BeInspireTree with promise data provider updateNodesCheckboxes with result sets all node statuses to disabled 1`] = `
+Array [
+  Object {
+    "id": "0",
+    "isExpanded": true,
+    "level": 0,
+  },
+  Object {
+    "id": "0-0",
+    "isCheckboxDisabled": true,
+    "level": 1,
+  },
+  Object {
+    "id": "0-1",
+    "isCheckboxDisabled": true,
+    "level": 1,
+  },
+  Object {
+    "id": "1",
+    "level": 0,
+  },
+]
+`;
+
+exports[`BeInspireTree with promise data provider updateNodesCheckboxes with result sets all node statuses to unchecked 1`] = `
+Array [
+  Object {
+    "id": "0",
+    "isExpanded": true,
+    "level": 0,
+  },
+  Object {
+    "id": "0-0",
+    "level": 1,
+  },
+  Object {
+    "id": "0-1",
+    "level": 1,
+  },
+  Object {
+    "id": "1",
+    "level": 0,
+  },
+]
+`;
+
+exports[`BeInspireTree with promise data provider updateNodesCheckboxes with result sets all node statuses to visible 1`] = `
+Array [
+  Object {
+    "id": "0",
+    "isExpanded": true,
+    "level": 0,
+  },
+  Object {
+    "id": "0-0",
+    "isCheckboxVisible": true,
+    "level": 1,
+  },
+  Object {
+    "id": "0-1",
+    "isCheckboxVisible": true,
+    "level": 1,
+  },
+  Object {
+    "id": "1",
+    "level": 0,
   },
 ]
 `;
@@ -2158,30 +2338,19 @@ exports[`BeInspireTree with promise data provider updateNodesSelection does noth
 Array [
   Object {
     "id": "0",
-    "isChecked": false,
     "isExpanded": true,
-    "isSelected": false,
     "level": 0,
   },
   Object {
     "id": "0-0",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 1,
   },
   Object {
     "id": "0-1",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 1,
   },
   Object {
     "id": "1",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 0,
   },
 ]
@@ -2191,30 +2360,21 @@ exports[`BeInspireTree with promise data provider updateNodesSelection with ids 
 Array [
   Object {
     "id": "0",
-    "isChecked": false,
     "isExpanded": true,
-    "isSelected": false,
     "level": 0,
   },
   Object {
     "id": "0-0",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 1,
   },
   Object {
     "id": "0-1",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 1,
   },
   Object {
     "id": "1",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 0,
   },
 ]
@@ -2224,30 +2384,21 @@ exports[`BeInspireTree with promise data provider updateNodesSelection with ids 
 Array [
   Object {
     "id": "0",
-    "isChecked": false,
     "isExpanded": true,
-    "isSelected": false,
     "level": 0,
   },
   Object {
     "id": "0-0",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 1,
   },
   Object {
     "id": "0-1",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 1,
   },
   Object {
     "id": "1",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 0,
   },
 ]
@@ -2257,30 +2408,21 @@ exports[`BeInspireTree with promise data provider updateNodesSelection with pred
 Array [
   Object {
     "id": "0",
-    "isChecked": false,
     "isExpanded": true,
-    "isSelected": false,
     "level": 0,
   },
   Object {
     "id": "0-0",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 1,
   },
   Object {
     "id": "0-1",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 1,
   },
   Object {
     "id": "1",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 0,
   },
 ]
@@ -2290,30 +2432,137 @@ exports[`BeInspireTree with promise data provider updateNodesSelection with pred
 Array [
   Object {
     "id": "0",
-    "isChecked": false,
     "isExpanded": true,
-    "isSelected": false,
     "level": 0,
   },
   Object {
     "id": "0-0",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 1,
   },
   Object {
     "id": "0-1",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 1,
   },
   Object {
     "id": "1",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
+    "level": 0,
+  },
+]
+`;
+
+exports[`BeInspireTree with promise data provider updateTreeCheckboxes with promise sets all node statuses to checked 1`] = `
+Array [
+  Object {
+    "id": "0",
+    "isChecked": true,
+    "level": 0,
+  },
+  Object {
+    "id": "1",
+    "isChecked": true,
+    "level": 0,
+  },
+]
+`;
+
+exports[`BeInspireTree with promise data provider updateTreeCheckboxes with promise sets all node statuses to disabled 1`] = `
+Array [
+  Object {
+    "id": "0",
+    "isCheckboxDisabled": true,
+    "level": 0,
+  },
+  Object {
+    "id": "1",
+    "isCheckboxDisabled": true,
+    "level": 0,
+  },
+]
+`;
+
+exports[`BeInspireTree with promise data provider updateTreeCheckboxes with promise sets all node statuses to unchecked 1`] = `
+Array [
+  Object {
+    "id": "0",
+    "level": 0,
+  },
+  Object {
+    "id": "1",
+    "level": 0,
+  },
+]
+`;
+
+exports[`BeInspireTree with promise data provider updateTreeCheckboxes with promise sets all node statuses to visible 1`] = `
+Array [
+  Object {
+    "id": "0",
+    "isCheckboxVisible": true,
+    "level": 0,
+  },
+  Object {
+    "id": "1",
+    "isCheckboxVisible": true,
+    "level": 0,
+  },
+]
+`;
+
+exports[`BeInspireTree with promise data provider updateTreeCheckboxes with result sets all node statuses to checked 1`] = `
+Array [
+  Object {
+    "id": "0",
+    "isChecked": true,
+    "level": 0,
+  },
+  Object {
+    "id": "1",
+    "isChecked": true,
+    "level": 0,
+  },
+]
+`;
+
+exports[`BeInspireTree with promise data provider updateTreeCheckboxes with result sets all node statuses to disabled 1`] = `
+Array [
+  Object {
+    "id": "0",
+    "isCheckboxDisabled": true,
+    "level": 0,
+  },
+  Object {
+    "id": "1",
+    "isCheckboxDisabled": true,
+    "level": 0,
+  },
+]
+`;
+
+exports[`BeInspireTree with promise data provider updateTreeCheckboxes with result sets all node statuses to unchecked 1`] = `
+Array [
+  Object {
+    "id": "0",
+    "level": 0,
+  },
+  Object {
+    "id": "1",
+    "level": 0,
+  },
+]
+`;
+
+exports[`BeInspireTree with promise data provider updateTreeCheckboxes with result sets all node statuses to visible 1`] = `
+Array [
+  Object {
+    "id": "0",
+    "isCheckboxVisible": true,
+    "level": 0,
+  },
+  Object {
+    "id": "1",
+    "isCheckboxVisible": true,
     "level": 0,
   },
 ]
@@ -2323,16 +2572,10 @@ exports[`BeInspireTree with promise data provider updateTreeSelection does nothi
 Array [
   Object {
     "id": "0",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 0,
   },
   Object {
     "id": "1",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 0,
   },
 ]
@@ -2342,15 +2585,10 @@ exports[`BeInspireTree with promise data provider updateTreeSelection with ids d
 Array [
   Object {
     "id": "0",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 0,
   },
   Object {
     "id": "1",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 0,
   },
@@ -2361,15 +2599,11 @@ exports[`BeInspireTree with promise data provider updateTreeSelection with ids s
 Array [
   Object {
     "id": "0",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 0,
   },
   Object {
     "id": "1",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 0,
   },
@@ -2380,15 +2614,10 @@ exports[`BeInspireTree with promise data provider updateTreeSelection with predi
 Array [
   Object {
     "id": "0",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 0,
   },
   Object {
     "id": "1",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 0,
   },
@@ -2399,15 +2628,11 @@ exports[`BeInspireTree with promise data provider updateTreeSelection with predi
 Array [
   Object {
     "id": "0",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 0,
   },
   Object {
     "id": "1",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 0,
   },
@@ -2418,100 +2643,67 @@ exports[`BeInspireTree with raw data provider selectBetween selects nodes at dif
 Array [
   Object {
     "id": "0",
-    "isChecked": false,
     "isExpanded": true,
-    "isSelected": false,
     "level": 0,
   },
   Object {
     "id": "0-0",
-    "isChecked": false,
     "isExpanded": true,
     "isSelected": true,
     "level": 1,
   },
   Object {
     "id": "0-0-0",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 2,
   },
   Object {
     "id": "0-0-1",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 2,
   },
   Object {
     "id": "0-1",
-    "isChecked": false,
     "isExpanded": true,
-    "isSelected": false,
     "level": 1,
   },
   Object {
     "id": "0-1-0",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 2,
   },
   Object {
     "id": "0-1-1",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 2,
   },
   Object {
     "id": "1",
-    "isChecked": false,
     "isExpanded": true,
-    "isSelected": false,
     "level": 0,
   },
   Object {
     "id": "1-0",
-    "isChecked": false,
     "isExpanded": true,
-    "isSelected": false,
     "level": 1,
   },
   Object {
     "id": "1-0-0",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 2,
   },
   Object {
     "id": "1-0-1",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 2,
   },
   Object {
     "id": "1-1",
-    "isChecked": false,
     "isExpanded": true,
-    "isSelected": false,
     "level": 1,
   },
   Object {
     "id": "1-1-0",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 2,
   },
   Object {
     "id": "1-1-1",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 2,
   },
 ]
@@ -2521,100 +2713,77 @@ exports[`BeInspireTree with raw data provider selectBetween selects nodes at dif
 Array [
   Object {
     "id": "0",
-    "isChecked": false,
     "isExpanded": true,
     "isSelected": true,
     "level": 0,
   },
   Object {
     "id": "0-0",
-    "isChecked": false,
     "isExpanded": true,
     "isSelected": true,
     "level": 1,
   },
   Object {
     "id": "0-0-0",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 2,
   },
   Object {
     "id": "0-0-1",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 2,
   },
   Object {
     "id": "0-1",
-    "isChecked": false,
     "isExpanded": true,
     "isSelected": true,
     "level": 1,
   },
   Object {
     "id": "0-1-0",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 2,
   },
   Object {
     "id": "0-1-1",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 2,
   },
   Object {
     "id": "1",
-    "isChecked": false,
     "isExpanded": true,
     "isSelected": true,
     "level": 0,
   },
   Object {
     "id": "1-0",
-    "isChecked": false,
     "isExpanded": true,
     "isSelected": true,
     "level": 1,
   },
   Object {
     "id": "1-0-0",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 2,
   },
   Object {
     "id": "1-0-1",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 2,
   },
   Object {
     "id": "1-1",
-    "isChecked": false,
     "isExpanded": true,
     "isSelected": true,
     "level": 1,
   },
   Object {
     "id": "1-1-0",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 2,
   },
   Object {
     "id": "1-1-1",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 2,
   },
 ]
@@ -2624,100 +2793,66 @@ exports[`BeInspireTree with raw data provider selectBetween selects nodes at the
 Array [
   Object {
     "id": "0",
-    "isChecked": false,
     "isExpanded": true,
-    "isSelected": false,
     "level": 0,
   },
   Object {
     "id": "0-0",
-    "isChecked": false,
     "isExpanded": true,
-    "isSelected": false,
     "level": 1,
   },
   Object {
     "id": "0-0-0",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 2,
   },
   Object {
     "id": "0-0-1",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 2,
   },
   Object {
     "id": "0-1",
-    "isChecked": false,
     "isExpanded": true,
-    "isSelected": false,
     "level": 1,
   },
   Object {
     "id": "0-1-0",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 2,
   },
   Object {
     "id": "0-1-1",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 2,
   },
   Object {
     "id": "1",
-    "isChecked": false,
     "isExpanded": true,
-    "isSelected": false,
     "level": 0,
   },
   Object {
     "id": "1-0",
-    "isChecked": false,
     "isExpanded": true,
-    "isSelected": false,
     "level": 1,
   },
   Object {
     "id": "1-0-0",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 2,
   },
   Object {
     "id": "1-0-1",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 2,
   },
   Object {
     "id": "1-1",
-    "isChecked": false,
     "isExpanded": true,
-    "isSelected": false,
     "level": 1,
   },
   Object {
     "id": "1-1-0",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 2,
   },
   Object {
     "id": "1-1-1",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 2,
   },
 ]
@@ -2727,101 +2862,257 @@ exports[`BeInspireTree with raw data provider selectBetween selects nodes in rev
 Array [
   Object {
     "id": "0",
-    "isChecked": false,
     "isExpanded": true,
     "isSelected": true,
     "level": 0,
   },
   Object {
     "id": "0-0",
-    "isChecked": false,
     "isExpanded": true,
     "isSelected": true,
     "level": 1,
   },
   Object {
     "id": "0-0-0",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 2,
   },
   Object {
     "id": "0-0-1",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 2,
   },
   Object {
     "id": "0-1",
-    "isChecked": false,
     "isExpanded": true,
-    "isSelected": false,
     "level": 1,
   },
   Object {
     "id": "0-1-0",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 2,
   },
   Object {
     "id": "0-1-1",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 2,
   },
   Object {
     "id": "1",
-    "isChecked": false,
     "isExpanded": true,
-    "isSelected": false,
     "level": 0,
   },
   Object {
     "id": "1-0",
-    "isChecked": false,
     "isExpanded": true,
-    "isSelected": false,
     "level": 1,
   },
   Object {
     "id": "1-0-0",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 2,
   },
   Object {
     "id": "1-0-1",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 2,
   },
   Object {
     "id": "1-1",
-    "isChecked": false,
     "isExpanded": true,
-    "isSelected": false,
     "level": 1,
   },
   Object {
     "id": "1-1-0",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 2,
   },
   Object {
     "id": "1-1-1",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 2,
+  },
+]
+`;
+
+exports[`BeInspireTree with raw data provider updateNodesCheckboxes with promise sets all node statuses to checked 1`] = `
+Array [
+  Object {
+    "id": "0",
+    "isExpanded": true,
+    "level": 0,
+  },
+  Object {
+    "id": "0-0",
+    "isChecked": true,
+    "level": 1,
+  },
+  Object {
+    "id": "0-1",
+    "isChecked": true,
+    "level": 1,
+  },
+  Object {
+    "id": "1",
+    "level": 0,
+  },
+]
+`;
+
+exports[`BeInspireTree with raw data provider updateNodesCheckboxes with promise sets all node statuses to disabled 1`] = `
+Array [
+  Object {
+    "id": "0",
+    "isExpanded": true,
+    "level": 0,
+  },
+  Object {
+    "id": "0-0",
+    "isCheckboxDisabled": true,
+    "level": 1,
+  },
+  Object {
+    "id": "0-1",
+    "isCheckboxDisabled": true,
+    "level": 1,
+  },
+  Object {
+    "id": "1",
+    "level": 0,
+  },
+]
+`;
+
+exports[`BeInspireTree with raw data provider updateNodesCheckboxes with promise sets all node statuses to unchecked 1`] = `
+Array [
+  Object {
+    "id": "0",
+    "isExpanded": true,
+    "level": 0,
+  },
+  Object {
+    "id": "0-0",
+    "level": 1,
+  },
+  Object {
+    "id": "0-1",
+    "level": 1,
+  },
+  Object {
+    "id": "1",
+    "level": 0,
+  },
+]
+`;
+
+exports[`BeInspireTree with raw data provider updateNodesCheckboxes with promise sets all node statuses to visible 1`] = `
+Array [
+  Object {
+    "id": "0",
+    "isExpanded": true,
+    "level": 0,
+  },
+  Object {
+    "id": "0-0",
+    "isCheckboxVisible": true,
+    "level": 1,
+  },
+  Object {
+    "id": "0-1",
+    "isCheckboxVisible": true,
+    "level": 1,
+  },
+  Object {
+    "id": "1",
+    "level": 0,
+  },
+]
+`;
+
+exports[`BeInspireTree with raw data provider updateNodesCheckboxes with result sets all node statuses to checked 1`] = `
+Array [
+  Object {
+    "id": "0",
+    "isExpanded": true,
+    "level": 0,
+  },
+  Object {
+    "id": "0-0",
+    "isChecked": true,
+    "level": 1,
+  },
+  Object {
+    "id": "0-1",
+    "isChecked": true,
+    "level": 1,
+  },
+  Object {
+    "id": "1",
+    "level": 0,
+  },
+]
+`;
+
+exports[`BeInspireTree with raw data provider updateNodesCheckboxes with result sets all node statuses to disabled 1`] = `
+Array [
+  Object {
+    "id": "0",
+    "isExpanded": true,
+    "level": 0,
+  },
+  Object {
+    "id": "0-0",
+    "isCheckboxDisabled": true,
+    "level": 1,
+  },
+  Object {
+    "id": "0-1",
+    "isCheckboxDisabled": true,
+    "level": 1,
+  },
+  Object {
+    "id": "1",
+    "level": 0,
+  },
+]
+`;
+
+exports[`BeInspireTree with raw data provider updateNodesCheckboxes with result sets all node statuses to unchecked 1`] = `
+Array [
+  Object {
+    "id": "0",
+    "isExpanded": true,
+    "level": 0,
+  },
+  Object {
+    "id": "0-0",
+    "level": 1,
+  },
+  Object {
+    "id": "0-1",
+    "level": 1,
+  },
+  Object {
+    "id": "1",
+    "level": 0,
+  },
+]
+`;
+
+exports[`BeInspireTree with raw data provider updateNodesCheckboxes with result sets all node statuses to visible 1`] = `
+Array [
+  Object {
+    "id": "0",
+    "isExpanded": true,
+    "level": 0,
+  },
+  Object {
+    "id": "0-0",
+    "isCheckboxVisible": true,
+    "level": 1,
+  },
+  Object {
+    "id": "0-1",
+    "isCheckboxVisible": true,
+    "level": 1,
+  },
+  Object {
+    "id": "1",
+    "level": 0,
   },
 ]
 `;
@@ -2830,30 +3121,19 @@ exports[`BeInspireTree with raw data provider updateNodesSelection does nothing 
 Array [
   Object {
     "id": "0",
-    "isChecked": false,
     "isExpanded": true,
-    "isSelected": false,
     "level": 0,
   },
   Object {
     "id": "0-0",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 1,
   },
   Object {
     "id": "0-1",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 1,
   },
   Object {
     "id": "1",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 0,
   },
 ]
@@ -2863,30 +3143,21 @@ exports[`BeInspireTree with raw data provider updateNodesSelection with ids does
 Array [
   Object {
     "id": "0",
-    "isChecked": false,
     "isExpanded": true,
-    "isSelected": false,
     "level": 0,
   },
   Object {
     "id": "0-0",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 1,
   },
   Object {
     "id": "0-1",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 1,
   },
   Object {
     "id": "1",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 0,
   },
 ]
@@ -2896,30 +3167,21 @@ exports[`BeInspireTree with raw data provider updateNodesSelection with ids sele
 Array [
   Object {
     "id": "0",
-    "isChecked": false,
     "isExpanded": true,
-    "isSelected": false,
     "level": 0,
   },
   Object {
     "id": "0-0",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 1,
   },
   Object {
     "id": "0-1",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 1,
   },
   Object {
     "id": "1",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 0,
   },
 ]
@@ -2929,30 +3191,21 @@ exports[`BeInspireTree with raw data provider updateNodesSelection with predicat
 Array [
   Object {
     "id": "0",
-    "isChecked": false,
     "isExpanded": true,
-    "isSelected": false,
     "level": 0,
   },
   Object {
     "id": "0-0",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 1,
   },
   Object {
     "id": "0-1",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 1,
   },
   Object {
     "id": "1",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 0,
   },
 ]
@@ -2962,30 +3215,137 @@ exports[`BeInspireTree with raw data provider updateNodesSelection with predicat
 Array [
   Object {
     "id": "0",
-    "isChecked": false,
     "isExpanded": true,
-    "isSelected": false,
     "level": 0,
   },
   Object {
     "id": "0-0",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 1,
   },
   Object {
     "id": "0-1",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 1,
   },
   Object {
     "id": "1",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
+    "level": 0,
+  },
+]
+`;
+
+exports[`BeInspireTree with raw data provider updateTreeCheckboxes with promise sets all node statuses to checked 1`] = `
+Array [
+  Object {
+    "id": "0",
+    "isChecked": true,
+    "level": 0,
+  },
+  Object {
+    "id": "1",
+    "isChecked": true,
+    "level": 0,
+  },
+]
+`;
+
+exports[`BeInspireTree with raw data provider updateTreeCheckboxes with promise sets all node statuses to disabled 1`] = `
+Array [
+  Object {
+    "id": "0",
+    "isCheckboxDisabled": true,
+    "level": 0,
+  },
+  Object {
+    "id": "1",
+    "isCheckboxDisabled": true,
+    "level": 0,
+  },
+]
+`;
+
+exports[`BeInspireTree with raw data provider updateTreeCheckboxes with promise sets all node statuses to unchecked 1`] = `
+Array [
+  Object {
+    "id": "0",
+    "level": 0,
+  },
+  Object {
+    "id": "1",
+    "level": 0,
+  },
+]
+`;
+
+exports[`BeInspireTree with raw data provider updateTreeCheckboxes with promise sets all node statuses to visible 1`] = `
+Array [
+  Object {
+    "id": "0",
+    "isCheckboxVisible": true,
+    "level": 0,
+  },
+  Object {
+    "id": "1",
+    "isCheckboxVisible": true,
+    "level": 0,
+  },
+]
+`;
+
+exports[`BeInspireTree with raw data provider updateTreeCheckboxes with result sets all node statuses to checked 1`] = `
+Array [
+  Object {
+    "id": "0",
+    "isChecked": true,
+    "level": 0,
+  },
+  Object {
+    "id": "1",
+    "isChecked": true,
+    "level": 0,
+  },
+]
+`;
+
+exports[`BeInspireTree with raw data provider updateTreeCheckboxes with result sets all node statuses to disabled 1`] = `
+Array [
+  Object {
+    "id": "0",
+    "isCheckboxDisabled": true,
+    "level": 0,
+  },
+  Object {
+    "id": "1",
+    "isCheckboxDisabled": true,
+    "level": 0,
+  },
+]
+`;
+
+exports[`BeInspireTree with raw data provider updateTreeCheckboxes with result sets all node statuses to unchecked 1`] = `
+Array [
+  Object {
+    "id": "0",
+    "level": 0,
+  },
+  Object {
+    "id": "1",
+    "level": 0,
+  },
+]
+`;
+
+exports[`BeInspireTree with raw data provider updateTreeCheckboxes with result sets all node statuses to visible 1`] = `
+Array [
+  Object {
+    "id": "0",
+    "isCheckboxVisible": true,
+    "level": 0,
+  },
+  Object {
+    "id": "1",
+    "isCheckboxVisible": true,
     "level": 0,
   },
 ]
@@ -2995,16 +3355,10 @@ exports[`BeInspireTree with raw data provider updateTreeSelection does nothing w
 Array [
   Object {
     "id": "0",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 0,
   },
   Object {
     "id": "1",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 0,
   },
 ]
@@ -3014,15 +3368,10 @@ exports[`BeInspireTree with raw data provider updateTreeSelection with ids desel
 Array [
   Object {
     "id": "0",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 0,
   },
   Object {
     "id": "1",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 0,
   },
@@ -3033,15 +3382,11 @@ exports[`BeInspireTree with raw data provider updateTreeSelection with ids selec
 Array [
   Object {
     "id": "0",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 0,
   },
   Object {
     "id": "1",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 0,
   },
@@ -3052,15 +3397,10 @@ exports[`BeInspireTree with raw data provider updateTreeSelection with predicate
 Array [
   Object {
     "id": "0",
-    "isChecked": false,
-    "isExpanded": false,
-    "isSelected": false,
     "level": 0,
   },
   Object {
     "id": "1",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 0,
   },
@@ -3071,15 +3411,11 @@ exports[`BeInspireTree with raw data provider updateTreeSelection with predicate
 Array [
   Object {
     "id": "0",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 0,
   },
   Object {
     "id": "1",
-    "isChecked": false,
-    "isExpanded": false,
     "isSelected": true,
     "level": 0,
   },

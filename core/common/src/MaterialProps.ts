@@ -8,14 +8,22 @@ import { DefinitionElementProps } from "./ElementProps";
 import { TextureMapping } from "./Render";
 import { Id64String } from "@bentley/bentleyjs-core";
 
-/** Contains three array entries ordered as red, green, blue containing values 0 to 1 */
+/** Contains three array entries ordered as red, green, blue containing values 0 to 1
+ * @beta Is an additional type over those in ColorDef needed?
+ */
 export type RgbFactorProps = number[];
-/** Contains two array entries orders X, Y containing doubles */
+
+/** Contains two array entries orders X, Y containing doubles
+ * @beta Is an additional type over those in geometry-core needed?
+ */
 export type DPoint2dProps = number[];
 
+/** @beta */
 export enum TextureMapUnits { Relative = 0, Meters = 3, Millimeters = 4, Feet = 5, Inches = 6 }
 
-/** Properties that define how a texture is mapped to a material */
+/** Properties that define how a texture is mapped to a material
+ * @beta
+ */
 export interface TextureMapProps {
   /** Angle in degrees to rotate texture when applying; defaults to 0.0 if undefined */
   pattern_angle?: number;
@@ -37,7 +45,9 @@ export interface TextureMapProps {
   TextureId: Id64String;
 }
 
-/** Properties that define a RenderMaterial */
+/** Properties that define a RenderMaterial
+ * @beta
+ */
 export interface RenderMaterialProps extends DefinitionElementProps {
   /** The palette name which categorizes this RenderMaterial */
   paletteName: string;

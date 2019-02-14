@@ -25,7 +25,7 @@ const SpriteLoaderPlugin = require("svg-sprite-loader/plugin");
 const autoprefixer = require("autoprefixer");
 
 // NOTE: This was set up to return an array of configs, one for target: "web" and one for target: "node", but the node target didn't work, so I dropped it.
-module.exports = (env) => { return getConfig(env, false); };
+module.exports = (env) => { return getConfig(env); };
 
 function getIModelJsVersionsFromPackage(iModelJsVersions, packageContents, sourceDir, externalList, depth) {
   // we need the dependents and peer dependents. We care only about those that start with @bentley and are also in externalList.
@@ -77,7 +77,7 @@ function dropDashes(name) {
   return name.replace("-", "_");
 }
 
-function getConfig(env, nodeAsTarget) {
+function getConfig(env) {
   // sourceDir is always the current directory, which npm sets to that of the package file.
   const sourceDir = process.cwd();
 
@@ -108,7 +108,7 @@ function getConfig(env, nodeAsTarget) {
     context: contextDirectory,
     output: {
       path: bundleDirectory,
-      filename: nodeAsTarget ? '[name].node.js' : '[name].js',
+      filename: '[name].js',
       library: dropDashes(bundleName),
       libraryTarget: 'umd',
       umdNamedDefine: true,
@@ -116,7 +116,7 @@ function getConfig(env, nodeAsTarget) {
       globalObject: 'this',           // used only for web target.
       devtoolModuleFilenameTemplate: "file:///[absolute-resource-path]"
     },
-    target: nodeAsTarget ? 'node' : 'web',
+    target: env.webworker ? 'webworker' : 'web',
     externals: {
       '@bentley/bentleyjs-core': 'bentleyjs_core',
       '@bentley/geometry-core': 'geometry_core',
@@ -144,7 +144,6 @@ function getConfig(env, nodeAsTarget) {
     },
     optimization: {
       // create only one runtime chunk.
-      runtimeChunk: "single",
       moduleIds: "named",
     },
     node: {
@@ -154,6 +153,11 @@ function getConfig(env, nodeAsTarget) {
     },
     plugins: []
   };
+
+  // we want to separate out the runtimeChunk, except in the webworker case.
+  if (!env.webworker) {
+    webpackLib.optimization.runtimeChunk = "single";
+  }
 
   // Set up for the DefinePlugin. We always want the BUILD_SEMVER to be available in the webpacked module, will add more definitions as needed.
   definePluginDefinitions = { "BUILD_SEMVER": JSON.stringify(packageContents.version) };

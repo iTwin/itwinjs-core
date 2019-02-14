@@ -40,6 +40,8 @@ export { Popup, Position } from "./ui-core/popup/Popup";
 export * from "./ui-core/radialmenu/RadialMenu";
 export * from "./ui-core/radialmenu/Annulus";
 
+export * from "./ui-core/imagecheckbox/ImageCheckBox";
+
 export { SearchBox, SearchBoxProps } from "./ui-core/searchbox/SearchBox";
 
 export * from "./ui-core/splitbutton/SplitButton";
@@ -54,7 +56,7 @@ export * from "./ui-core/toggle/Toggle";
 
 export { default as ExpansionToggle, ExpansionToggleProps } from "./ui-core/tree/ExpansionToggle";
 export { default as TreeBranch, TreeBranchProps } from "./ui-core/tree/Branch";
-export { default as TreeNode, NodeProps, NodeCheckboxProps } from "./ui-core/tree/Node";
+export { default as TreeNode, NodeProps, NodeCheckboxProps, NodeCheckboxRenderer } from "./ui-core/tree/Node";
 export { default as Tree, TreeProps } from "./ui-core/tree/Tree";
 export { default as TreeNodePlaceholder, PlaceholderProps as TreeNodePlaceholderProps } from "./ui-core/tree/Placeholder";
 
@@ -66,8 +68,10 @@ export * from "./ui-core/utils/getDisplayName";
 export * from "./ui-core/utils/getUserColor";
 export * from "./ui-core/utils/shallowDiffers";
 export * from "./ui-core/utils/typeUtils";
+export * from "./ui-core/utils/isPromiseLike";
 
 export * from "./ui-core/button/Button";
+export * from "./ui-core/button/UnderlinedButton";
 
 export * from "./ui-core/inputs/Checkbox";
 export * from "./ui-core/inputs/Input";
@@ -140,6 +144,10 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
 /**
  * @docs-group-description Expandable
  * Classes for working with a ExpandableBlock or ExpandableList.
+ */
+/**
+ * @docs-group-description ImageCheckBox
+ * Component for working with two image states, checked and unchecked.
  */
 /**
  * @docs-group-description Inputs

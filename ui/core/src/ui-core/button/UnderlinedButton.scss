@@ -1,0 +1,18 @@
+$color: #0000ee;
+$hoverColor: #4d8bff;
+
+.core-underlined-button {
+  background: transparent;
+  color: $color;
+  border: 0px solid $color;
+  border-bottom-width: 1px;
+
+  width: fit-content;
+
+  cursor: pointer;
+
+  &:hover {
+    color: $hoverColor;
+    border-color: $hoverColor;
+  }
+}

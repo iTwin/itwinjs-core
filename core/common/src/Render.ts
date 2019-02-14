@@ -16,7 +16,9 @@ import { AreaPattern } from "./geometry/AreaPattern";
 import { Frustum } from "./Frustum";
 import { ImageBuffer, ImageBufferFormat } from "./Image";
 
-/** Flags indicating whether and how the interiors of closed planar regions is displayed within a view. */
+/** Flags indicating whether and how the interiors of closed planar regions is displayed within a view.
+ * @public
+ */
 export enum FillFlags {
   /** No fill */
   None = 0,
@@ -211,6 +213,7 @@ export class PolylineEdgeArgs {
 /** Represents a texture image applied to a surface during rendering.
  * A RenderTexture is typically - but not always - associated with a [[RenderMaterial]].
  * @see [[RenderSystem]] for functions used to create RenderTextures.
+ * @beta
  */
 export abstract class RenderTexture implements IDisposable {
   /** A string uniquely identifying this texture within the context of an [[IModelConnection]]. Typically this is the element Id of the corresponding Texture element in the [[IModelDb]].
@@ -244,6 +247,7 @@ export abstract class RenderTexture implements IDisposable {
 /** Represents a texture image applied to a surface during rendering.
  * A RenderTexture is typically - but not always - associated with a [[RenderMaterial]].
  * @see [[RenderSystem]] for functions used to create RenderTextures.
+ * @beta
  */
 export namespace RenderTexture {
   /** Enumerates the types of [[RenderTexture]]s. */
@@ -286,7 +290,9 @@ export namespace RenderTexture {
   }
 }
 
-/** Represents a material which can be applied to a surface to control aspects of its appearance such as color, reflectivity, texture, and so on. */
+/** Represents a material which can be applied to a surface to control aspects of its appearance such as color, reflectivity, texture, and so on.
+ * @beta
+ */
 export abstract class RenderMaterial {
   /** If the material originated from a Material element in the [[IModelDb]], the Id of that element. */
   public readonly key?: string;
@@ -301,7 +307,9 @@ export abstract class RenderMaterial {
   public get hasTexture(): boolean { return this.textureMapping !== undefined && this.textureMapping.texture !== undefined; }
 }
 
-/** Represents a material which can be applied to a surface to control aspects of its appearance such as color, reflectivity, and so on. */
+/** Represents a material which can be applied to a surface to control aspects of its appearance such as color, reflectivity, and so on.
+ * @beta
+ */
 export namespace RenderMaterial {
   /** Parameters used to construct a [[RenderMaterial]] */
   export class Params {
@@ -350,9 +358,9 @@ export namespace ImageLight {
   }
 }
 
-/**
- * The "cooked" material and symbology for a [[RenderGraphic]]. This determines the appearance
+/** The "cooked" material and symbology for a [[RenderGraphic]]. This determines the appearance
  * (e.g. texture, color, width, linestyle, etc.) used to draw Geometry.
+ * @beta
  */
 export class GraphicParams {
   public fillFlags = FillFlags.None;
@@ -401,8 +409,7 @@ export class GraphicParams {
 
 export const enum AntiAliasPref { Detect = 0, On = 1, Off = 2 }
 
-/**
- * Enumerates the available rendering modes. The rendering mode chiefly controls whether and how surfaces and their edges are drawn.
+/** Enumerates the available rendering modes. The rendering mode chiefly controls whether and how surfaces and their edges are drawn.
  * Generally speaking,
  *  - Wireframe draws only edges.
  *  - SmoothShade draws only surfaces.
@@ -412,6 +419,7 @@ export const enum AntiAliasPref { Detect = 0, On = 1, Off = 2 }
  * The [[FillFlags]] associated with planar regions controls whether and how the region's interior area is displayed in Wireframe mode.
  * [[ViewFlags]] has options for enabling display of visible and/or hidden edges in SmoothShade mode.
  * [[HiddenLine.Settings]] allow aspects of edge and surface symbology to be overridden within a view.
+ * @public
  */
 export const enum RenderMode {
   /** Render only edges, no surfaces, with exceptions for planar regions with [[FillFlags]] set up to render the surface in wireframe mode. */
@@ -424,8 +432,8 @@ export const enum RenderMode {
   SolidFill = 4,
 }
 
-/**
- * The current position (eyepoint), lens angle, and focus distance of a camera.
+/** The current position (eyepoint), lens angle, and focus distance of a camera.
+ * @public
  */
 export class Camera implements CameraProps {
   public readonly lens: Angle;
@@ -469,7 +477,9 @@ export class Camera implements CameraProps {
   }
 }
 
-/** Flags for controlling how graphics appear within a View. */
+/** Flags for controlling how graphics appear within a View.
+ * @public
+ */
 export class ViewFlags {
   /** The [[RenderMode]] of the view. */
   public renderMode: RenderMode = RenderMode.Wireframe;
@@ -713,8 +723,7 @@ export namespace ViewFlag {
     kBackgroundMap,
   }
 
-  /**
-   * Overrides a subset of ViewFlags.
+  /** Overrides a subset of ViewFlags.
    * @hidden
    */
   export class Overrides {
@@ -928,7 +937,9 @@ export namespace FrustumPlanes {
   }
 }
 
-/** Namespace containing types controlling how ambient occlusion should be drawn. */
+/** Namespace containing types controlling how ambient occlusion should be drawn.
+ * @beta
+ */
 export namespace AmbientOcclusion {
   /** Describes the properties with which ambient occlusion should be drawn. These properties correspond to a horizon-based ambient occlusion approach. */
   export interface Props {
@@ -997,7 +1008,9 @@ export namespace AmbientOcclusion {
   }
 }
 
-/** Namespace containing types controlling how edges and surfaces should be drawn in "hidden line" and "solid fill" [[RenderMode]]s. */
+/** Namespace containing types controlling how edges and surfaces should be drawn in "hidden line" and "solid fill" [[RenderMode]]s.
+ * @beta
+ */
 export namespace HiddenLine {
   /** Describes the symbology with which edges should be drawn. */
   export interface StyleProps {
@@ -1158,6 +1171,7 @@ export namespace HiddenLine {
   }
 }
 
+/** @beta */
 export namespace Gradient {
   /** Flags applied to a [[Gradient.Symb]]. */
   export const enum Flags {
@@ -1631,7 +1645,9 @@ export namespace Gradient {
   }
 }
 
-/** Whether a closed region should be drawn for wireframe display with its internal area filled or not. */
+/** Whether a closed region should be drawn for wireframe display with its internal area filled or not.
+ * @public
+ */
 export const enum FillDisplay {
   /** don't fill, even if fill attribute is on for the viewport */
   Never = 0,
@@ -1643,7 +1659,9 @@ export const enum FillDisplay {
   Blanking = 3,
 }
 
-/** Describes how a view's background color affects the interior area of a closed region. */
+/** Describes how a view's background color affects the interior area of a closed region.
+ * @public
+ */
 export const enum BackgroundFill {
   /** single color fill uses the fill color and line color to draw either a solid or outline fill */
   None = 0,
@@ -1657,6 +1675,7 @@ export const enum BackgroundFill {
  * within a view using [[ViewFlags]].
  * @see [[GeometryStreamProps]].
  * @see [[Feature]].
+ * @alpha Confusion with ECClass?
  */
 export const enum GeometryClass {
   /** Used to classify the "real" geometry within a model. Most geometry falls within this class. */
@@ -1681,6 +1700,7 @@ export class SceneLights {
 
 /** Describes the display properties of graphics in a persistent element's GeometryStream that aren't inherited from [[SubCategoryAppearance]].
  * @see [[GeometryStreamProps]].
+ * @public
  */
 export class GeometryParams {
   /** Optional render material to override [[SubCategoryAppearance.materialId]].
@@ -1864,7 +1884,9 @@ export class GeometryParams {
   }
 }
 
-/** Contains types related to display of hilited elements within a [[Viewport]]. */
+/** Contains types related to display of hilited elements within a [[Viewport]].
+ * @public
+ */
 export namespace Hilite {
   /**  Describes the width of the outline applied to hilited geometry. The outline is drawn around the union of all hilited geometry and is visible behind non-hilited geometry.
    * @see [[Hilite.Settings]]
@@ -1913,8 +1935,7 @@ export namespace Hilite {
   }
 }
 
-/**
- * Describes a "feature" within a batched [[RenderGraphic]]. A batched [[RenderGraphic]] can
+/** Describes a "feature" within a batched [[RenderGraphic]]. A batched [[RenderGraphic]] can
  * contain multiple features. Each feature is associated with a unique combination of
  * attributes (elementId, subcategory, geometry class). This allows geometry to be
  * more efficiently batched on the GPU, while enabling features to be re-symbolized
@@ -1927,6 +1948,7 @@ export namespace Hilite {
  * FeatureTable associated with the primitive.
  *
  * @see [[FeatureSymbology]] for mechanisms for controlling or overriding the symbology of individual features within a [[ViewState]].
+ * @beta Name?
  */
 export class Feature {
   public readonly elementId: string;
@@ -1959,10 +1981,10 @@ export class Feature {
   }
 }
 
-/**
- * Describes the type of a 'batch' of graphics representing multiple [[Feature]]s.
+/** Describes the type of a 'batch' of graphics representing multiple [[Feature]]s.
  * The most commonly-encountered batches are Tiles, which can be of either Primary or
  * Classifier type.
+ * @beta
  */
 export const enum BatchType {
   /** This batch contains graphics derived from a model's visible geometry. */
@@ -1975,13 +1997,13 @@ export const enum BatchType {
   Classifier,
 }
 
-/**
- * Defines a look-up table for [[Feature]]s within a batched [[RenderGraphic]]. Consecutive 32-bit
+/** Defines a look-up table for [[Feature]]s within a batched [[RenderGraphic]]. Consecutive 32-bit
  * indices are assigned to each unique Feature. Primitives within the [[RenderGraphic]] can
  * use per-vertex indices to specify the distribution of Features within the primitive.V
  * A FeatureTable can be shared amongst multiple primitives within a single [[RenderGraphic]], and
  * amongst multiple sub-Graphics of a [[RenderGraphic]].
  * @see [[FeatureSymbology]] for mechanisms for resymbolizing features within a [[ViewState]].
+ * @beta
  */
 export class FeatureTable extends IndexMap<Feature> {
   public readonly modelId: Id64String;
@@ -2029,6 +2051,7 @@ export class FeatureTable extends IndexMap<Feature> {
 
 /** Describes how to map a [[RenderTexture]] image onto a surface.
  * @see [[RenderMaterial]].
+ * @beta
  */
 export class TextureMapping {
   /** The texture to be mapped to the surface. */
@@ -2047,6 +2070,7 @@ export class TextureMapping {
   }
 }
 
+/** @beta */
 export namespace TextureMapping {
   /** Enumerates the possible texture mapping modes. */
   export const enum Mode {
@@ -2241,7 +2265,9 @@ export namespace TextureMapping {
   }
 }
 
-/** Properties for display of analysis data */
+/** Properties for display of analysis data
+ * @alpha
+ */
 export interface AnalysisStyleProps {
   inputName?: string;
   displacementChannelName?: string;
@@ -2253,6 +2279,7 @@ export interface AnalysisStyleProps {
   inputRange?: Range1d;
 }
 
+/** @alpha */
 export class AnalysisStyle implements AnalysisStyleProps {
   public inputName?: string;
   public displacementChannelName?: string;
@@ -2299,7 +2326,9 @@ export class AnalysisStyle implements AnalysisStyleProps {
   }
 }
 
-/** A circle drawn at a Z elevation, whose diameter is the the XY diagonal of the project extents, used to represent the ground as a reference point within a spatial view. */
+/** A circle drawn at a Z elevation, whose diameter is the the XY diagonal of the project extents, used to represent the ground as a reference point within a spatial view.
+ * @public
+ */
 export class GroundPlane implements GroundPlaneProps {
   /** Whether the ground plane should be displayed. */
   public display: boolean = false;
@@ -2329,8 +2358,7 @@ export class GroundPlane implements GroundPlaneProps {
     };
   }
 
-  /**
-   * Returns and locally stores gradient symbology for the ground plane texture depending on whether we are looking from above or below.
+  /** Returns and locally stores gradient symbology for the ground plane texture depending on whether we are looking from above or below.
    * Will store the ground colors used in the optional ColorDef array provided.
    * @hidden
    */

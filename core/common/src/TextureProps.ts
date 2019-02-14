@@ -7,9 +7,12 @@
 import { DefinitionElementProps } from "./ElementProps";
 import { ImageSourceFormat } from "./Image";
 
+/** @beta */
 export enum TextureFlags { None }
 
-/** Properties that define a Texture */
+/** Properties that define a Texture
+ * @beta
+ */
 export interface TextureProps extends DefinitionElementProps {
   /** Format of the image data. */
   format: ImageSourceFormat;

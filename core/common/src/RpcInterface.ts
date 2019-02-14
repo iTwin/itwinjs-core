@@ -14,6 +14,7 @@ export type RpcInterfaceImplementation<T extends RpcInterface = RpcInterface> = 
 
 /** An RPC interface is a set of operations exposed by a service that a client can call, using configurable protocols,
  * in a platform-independent way. TheRpcInterface class is the base class for RPC interface definitions and implementations.
+ * @public
  */
 export abstract class RpcInterface {
   /** Determines whether the backend version of an RPC interface is compatible (according to semantic versioning) with the frontend version of the interface. */

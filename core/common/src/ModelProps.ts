@@ -9,7 +9,9 @@ import { XYProps } from "@bentley/geometry-core";
 import { Id64String } from "@bentley/bentleyjs-core";
 import { RelatedElementProps } from "./ElementProps";
 
-/** Properties that define a [Model]($docs/bis/intro/model-fundamentals) */
+/** Properties that define a [Model]($docs/bis/intro/model-fundamentals)
+ * @public
+ */
 export interface ModelProps extends EntityProps {
   modeledElement: RelatedElementProps;
   name?: string;
@@ -19,13 +21,17 @@ export interface ModelProps extends EntityProps {
   jsonProperties?: any;
 }
 
-/** Interface for querying a set of [Model]($backend)s. */
+/** Interface for querying a set of [Model]($backend)s.
+ * @alpha Use ECSQL and IModelConnection.queryRows instead?
+ */
 export interface ModelQueryParams extends EntityQueryParams {
   wantTemplate?: boolean;
   wantPrivate?: boolean;
 }
 
-/** Properties that define a [GeometricModel2d]($backend) */
+/** Properties that define a [GeometricModel2d]($backend)
+ * @public
+ */
 export interface GeometricModel2dProps extends ModelProps {
   globalOrigin?: XYProps;
 }

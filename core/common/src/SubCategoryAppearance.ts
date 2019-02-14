@@ -10,6 +10,7 @@ import { ColorDef, ColorDefProps } from "./ColorDef";
 /** Parameters that define the way geometry on a [[SubCategory]] appears.
  * SubCategoryAppearance describes the intrinstic appearance of geometry belonging to that SubCategory, independent of a particular [[ViewState]].
  * Aspects of a SubCategory's appearance can be overridden in the context of a particular [[ViewState]] through the use of [[SubCategoryOverride]s.
+ * @public
  */
 export class SubCategoryAppearance {
   /** The color of the geometry.
@@ -104,6 +105,7 @@ export class SubCategoryAppearance {
   public static defaults = new SubCategoryAppearance();
 }
 
+/** @public */
 export namespace SubCategoryAppearance {
   /** Properties used to create a SubCategoryAppearance
    * @see [[SubCategoryAppearance]]
@@ -139,6 +141,7 @@ export namespace SubCategoryAppearance {
  *  3. Any aspects of the appearance overridden by the SubCategoryOverride are replaced with the values from the SubCategoryOverride.
  * An aspect is overridden by virtue of not being set to "undefined" in the SubCategoryOverride.
  * @see [[ViewState.overrideSubCategory]]
+ * @public
  */
 export class SubCategoryOverride {
   /** @see [[SubCategoryAppearance.color]] */
@@ -215,7 +218,9 @@ export class SubCategoryOverride {
   public static defaults = new SubCategoryOverride({});
 }
 
-/** The *rank* for a Category */
+/** The *rank* for a Category
+ * @public
+ */
 export const enum Rank {
   /** This category is predefined by the system */
   System = 0,

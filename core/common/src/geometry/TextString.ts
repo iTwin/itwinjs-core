@@ -8,6 +8,7 @@ import { XYZProps, Point3d, YawPitchRollAngles, YawPitchRollProps, Transform, Ve
 
 /** Properties for a TextString class.
  * @see [[GeometryStreamEntryProps]]
+ * @public
  */
 export interface TextStringProps {
   /** text string */
@@ -30,10 +31,10 @@ export interface TextStringProps {
   rotation?: YawPitchRollProps;
 }
 
-/**
- * A single line of text, all with the same font, styles (underline, bold, italic), and size.
+/** A single line of text, all with the same font, styles (underline, bold, italic), and size.
  * This class also holds the origin and direction for the text.
  * A paragraph is composed of one or more instances of TextStrings.
+ * @public
  */
 export class TextString {
   /** Text string */
