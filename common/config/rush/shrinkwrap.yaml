@@ -1,7 +1,7 @@
 dependencies:
   '@bentley/dev-cors-proxy-server': npm.bentley.com/@bentley/dev-cors-proxy-server/0.0.9
   '@bentley/icons-generic-webfont': npm.bentley.com/@bentley/icons-generic-webfont/0.0.9
-  '@bentley/imodeljs-native': npm.bentley.com/@bentley/imodeljs-native/0.94.0
+  '@bentley/imodeljs-native': npm.bentley.com/@bentley/imodeljs-native/0.95.0
   '@openid/appauth': 1.2.1
   '@rush-temp/agent-test-app': 'file:projects/agent-test-app.tgz'
   '@rush-temp/bentleyjs-core': 'file:projects/bentleyjs-core.tgz'
@@ -13747,7 +13747,7 @@ packages:
     version: 0.0.0
   'file:projects/imodeljs-backend.tgz':
     dependencies:
-      '@bentley/imodeljs-native': npm.bentley.com/@bentley/imodeljs-native/0.94.0
+      '@bentley/imodeljs-native': npm.bentley.com/@bentley/imodeljs-native/0.95.0
       '@types/body-parser': 1.17.0
       '@types/chai': 4.1.7
       '@types/express': 4.16.1
@@ -14737,22 +14737,22 @@ packages:
       registry: 'https://npm.bentley.com/npm/npm/'
       tarball: 'https://npm.bentley.com/npm/npm/@bentley/icons-generic-webfont/-/icons-generic-webfont-0.0.9.tgz'
     version: 0.0.9
-  npm.bentley.com/@bentley/imodeljs-native/0.94.0:
+  npm.bentley.com/@bentley/imodeljs-native/0.95.0:
     dev: false
     name: '@bentley/imodeljs-native'
     requiresBuild: true
     resolution:
-      integrity: sha1-I0A5uyTid0eZ0o8hTVJextCwTxQ=
+      integrity: sha1-J2sfPey/7JiZTmotFlnTYRpnF+Q=
       registry: 'https://npm.bentley.com/npm/npm/'
-      tarball: 'https://npm.bentley.com/npm/npm/@bentley/imodeljs-native/-/imodeljs-native-0.94.0.tgz'
-    version: 0.94.0
+      tarball: 'https://npm.bentley.com/npm/npm/@bentley/imodeljs-native/-/imodeljs-native-0.95.0.tgz'
+    version: 0.95.0
 registry: 'https://registry.npmjs.org/'
 shrinkwrapMinorVersion: 9
 shrinkwrapVersion: 3
 specifiers:
   '@bentley/dev-cors-proxy-server': 0.0.9
   '@bentley/icons-generic-webfont': ^0.0.9
-  '@bentley/imodeljs-native': ~0.94.0
+  '@bentley/imodeljs-native': ~0.95.0
   '@openid/appauth': ^1.1.1
   '@rush-temp/agent-test-app': 'file:./projects/agent-test-app.tgz'
   '@rush-temp/bentleyjs-core': 'file:./projects/bentleyjs-core.tgz'

@@ -41,7 +41,7 @@ describe("ECSqlStatement", () => {
         assert.equal(s, DbResult.BE_SQLITE_ROW);
       });
   });
-  it("Primary Key Binding through array", async () => {
+  it.only("Primary Key Binding through array", async () => {
     await using(ECDbTestHelper.createECDb(_outDir, "bindingTest.ecdb",
       `<ECSchema schemaName="Test" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
         <ECEntityClass typeName="Foo" modifier="Sealed">
@@ -49,7 +49,7 @@ describe("ECSqlStatement", () => {
         </ECEntityClass>
       </ECSchema>`), async (ecdb: ECDb) => {
         assert.isTrue(ecdb.isOpen);
-        const rowIds = ["0x1000000004c", "0x100000000ea", "0x200000000ff"];
+        const rowIds = ["0x1000000004c", "0x100000000ea", "0x200000000ff", "0x31", "0xffffffffffffff01"];
         for (const rowId of rowIds) {
           const r: ECSqlInsertResult = await ecdb.withPreparedStatement(`insert into ts.Foo(ECInstanceId) values(?)`, async (stmt: ECSqlStatement) => {
             stmt.bindId(1, rowId);
@@ -58,9 +58,13 @@ describe("ECSqlStatement", () => {
           assert.equal(r.status, DbResult.BE_SQLITE_DONE);
         }
         const args = new Array(rowIds.length).fill("?").join(",");
-        assert.equal(await ecdb.queryRowCount(`SELECT ECInstanceId FROM ts.Foo WHERE ECInstanceId IN (${args})`, rowIds), rowIds.length);
-        assert.equal(await ecdb.queryRowCount(`SELECT * FROM (SELECT ECInstanceId AS id FROM ts.Foo) WHERE id IN (${args})`, rowIds), rowIds.length);
-        assert.equal(await ecdb.queryRowCount(`SELECT * FROM (SELECT ECInstanceId AS sap FROM ts.Foo) WHERE sap IN (${args})`, rowIds), rowIds.length);
+        let row = await ecdb.queryPage(`SELECT * FROM ts.Foo WHERE ECInstanceId IN (${args})`, rowIds);
+        assert.equal(row.length, rowIds.length);
+        row = await ecdb.queryPage(`SELECT * FROM (SELECT ECInstanceId AS id FROM ts.Foo) WHERE id IN (${args})`, rowIds);
+        assert.equal(row.length, rowIds.length);
+        row = await ecdb.queryPage(`SELECT * FROM (SELECT ECInstanceId AS sap FROM ts.Foo) WHERE sap IN (${args})`, rowIds);
+        assert.equal(row.length, rowIds.length);
+
       });
   });
   it("Paging Resultset", async () => {

@@ -548,6 +548,7 @@ export class IModelDb extends IModel implements PagableECSql {
   }
 
   /** Execute a query against this IModelDb.
+   * @deprecated use withPreparedStatement or query or queryPage instead
    * The result of the query is returned as an array of JavaScript objects where every array element represents an
    * [ECSQL row]($docs/learning/ECSQLRowFormat).
    *
