@@ -41,7 +41,7 @@ describe("ECSqlStatement", () => {
         assert.equal(s, DbResult.BE_SQLITE_ROW);
       });
   });
-  it.only("Primary Key Binding through array", async () => {
+  it("Primary Key Binding through array", async () => {
     await using(ECDbTestHelper.createECDb(_outDir, "bindingTest.ecdb",
       `<ECSchema schemaName="Test" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
         <ECEntityClass typeName="Foo" modifier="Sealed">

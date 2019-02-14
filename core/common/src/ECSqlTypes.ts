@@ -151,10 +151,7 @@ export class ECJsNames {
         if (propName === "TargetECClassId")
           return ECJsNames.systemPropertyToJsName(ECSqlSystemProperty.TargetECClassId);
 
-        if (propTypeUnknown)
-          return ECJsNames.lowerFirstChar(propName);
-
-        throw new Error(`Property ${propName} is no ECSQL system property.`);
+        return ECJsNames.lowerFirstChar(propName);
       }
 
       return ECJsNames.lowerFirstChar(propName);
