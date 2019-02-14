@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Changes package.json to include api-extractor and adds api-extractor.json",
+      "packageName": "@bentley/ecschema-metadata",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ecschema-metadata",
+  "email": "akshay.madhukar@bentley.com"
+}

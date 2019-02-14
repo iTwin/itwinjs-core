@@ -16,6 +16,7 @@
     "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/test/assets",
     "cover": "nyc npm test",
     "cover:integration": "nyc npm run test-integration",
+    "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=imodeljs-backend",
     "lint": "tslint --project . 1>&2",
     "pretest": "cpx \"./src/test/logging.config.json\" ./lib/test",
     "test": "node ./node_modules/@bentley/build-tools/scripts/test.js --offline=\"mock\" --grep \"#integration|#WebGLPerformance\" --invert",
