@@ -60,10 +60,15 @@ describe("ECSqlStatement", () => {
         const args = new Array(rowIds.length).fill("?").join(",");
         let row = await ecdb.queryPage(`SELECT * FROM ts.Foo WHERE ECInstanceId IN (${args})`, rowIds);
         assert.equal(row.length, rowIds.length);
+        assert.isTrue(Reflect.has(row[0], "id"));
         row = await ecdb.queryPage(`SELECT * FROM (SELECT ECInstanceId AS id FROM ts.Foo) WHERE id IN (${args})`, rowIds);
         assert.equal(row.length, rowIds.length);
+        assert.isTrue(Reflect.has(row[0], "id"));
+        assert.isTrue(String(row[0].id).startsWith("0x"));
         row = await ecdb.queryPage(`SELECT * FROM (SELECT ECInstanceId AS sap FROM ts.Foo) WHERE sap IN (${args})`, rowIds);
+        assert.isTrue(Reflect.has(row[0], "sap"));
         assert.equal(row.length, rowIds.length);
+        assert.isTrue(String(row[0].sap).startsWith("0x"));
 
       });
   });
