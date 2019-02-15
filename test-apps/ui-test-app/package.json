@@ -44,11 +44,12 @@
         "styleSheets": true,
         "htmlTemplate": "./src/frontend/index.html"
       },
-      "plugins": [
+      "subModules": [
         {
           "dest": "./lib/webresources",
           "entry": "./lib/frontend/plugins/MeasurePoints.js",
-          "bundleName": "MeasurePoints"
+          "bundleName": "MeasurePoints",
+          "type": "plugin"
         }
       ],
       "makeConfig": {

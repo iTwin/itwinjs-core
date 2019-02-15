@@ -47,7 +47,7 @@ class Utils {
         const packageFileContents = fs.readFileSync(packageFileName, "utf8");
         return JSON.parse(packageFileContents);
     }
-    static symlinkFiles(cwd, source, dest, doCopy, detail) {
+    static symlinkFiles(cwd, source, dest, alwaysCopy, detail) {
         // first we must create the destination directory, if it isn't already there.
         const sourceSpecification = path.resolve(cwd, source);
         let sourceDirectory = path.dirname(sourceSpecification);
@@ -68,9 +68,9 @@ class Utils {
                 }
                 else {
                     if (detail > 3)
-                        console.log(doCopy ? "  Copying" : "  Symlinking", fileName, "to", outputPath);
+                        console.log(alwaysCopy ? "  Copying" : "  Symlinking", fileName, "to", outputPath);
                     Utils.makeDirectoryNoError(path.dirname(outputPath));
-                    if (doCopy)
+                    if (alwaysCopy)
                         fs.copyFileSync(fileName, outputPath);
                     else
                         fs.symlinkSync(fileName, outputPath);
@@ -78,9 +78,9 @@ class Utils {
             }
         }
         catch (error) {
-            return new Result("Symlink Source Resources", 1, error);
+            return new Result("Symlink or Copy Source Resources", 1, error);
         }
-        return new Result("Symlink Source Resources", 0);
+        return new Result("Symlink or Copy Source Resources", 0);
     }
     // we use this where there is a possible race condition where the compiler might be creating directories in parallel to our linking.
     static makeDirectoryNoError(outDirectory) {
@@ -131,13 +131,14 @@ class DependentInfo {
         this.version = version;
     }
 }
-// class that copies (actually symlinks) the external modules needed my iModel.js into the web resources directory.
+// class that copies (or symlinks) the external modules needed my iModel.js into the web resources directory.
 class ModuleCopier {
     // these are all modules that are listed as external in our webpack configuration, and therefore need to be copied to the web resources directory.
-    constructor(_nodeModulesDirectory, _isDevelopment, _detail) {
+    constructor(_nodeModulesDirectory, _isDevelopment, _detail, _alwaysCopy) {
         this._nodeModulesDirectory = _nodeModulesDirectory;
         this._isDevelopment = _isDevelopment;
         this._detail = _detail;
+        this._alwaysCopy = _alwaysCopy;
         this._dependentList = [];
         this._externalModules = [
             new ModuleInfo(_isDevelopment, true, "@bentley/bentleyjs-core", "bentleyjs-core.js", undefined),
@@ -165,26 +166,31 @@ class ModuleCopier {
         ];
     }
     // symlinks the public static files from a module into the output web resources directories.
-    symlinkPublicStaticFiles(sourcePublicDirectory, outputPublicDirectory) {
+    symlinkOrCopyPublicStaticFiles(sourcePublicDirectory, outputPublicDirectory) {
         const symlinkSource = `${sourcePublicDirectory}/**/*`;
-        Utils.symlinkFiles(process.cwd(), symlinkSource, outputPublicDirectory, false, this._detail);
+        Utils.symlinkFiles(process.cwd(), symlinkSource, outputPublicDirectory, this._alwaysCopy, this._detail);
     }
     // checks contents of existing symlink and replaces it if necessary
     ensureSymlink(sourceFile, outFilePath) {
         try {
             if (fs.existsSync(outFilePath)) {
-                const linkContents = fs.readlinkSync(outFilePath, { encoding: "utf8" });
-                if (linkContents === sourceFile) {
-                    if (this._detail > 3)
-                        console.log("  File", outFilePath, "already exists");
-                    return 0;
+                try {
+                    const linkContents = fs.readlinkSync(outFilePath, { encoding: "utf8" });
+                    if (linkContents === sourceFile) {
+                        if (this._detail > 3)
+                            console.log("  File", outFilePath, "already exists");
+                        return 0;
+                    }
+                }
+                catch (_error) {
+                    // It's not a link, do nothing and let it get deleted.
                 }
                 if (this._detail > 3)
                     console.log("  Removing existing symlink found in", outFilePath);
                 fs.unlinkSync(outFilePath);
             }
             if (this._detail > 3)
-                console.log("  Symlinking from", outFilePath, "to", sourceFile);
+                console.log("  Symlinking", sourceFile, "to", outFilePath);
             fs.symlinkSync(sourceFile, outFilePath);
         }
         catch (error) {
@@ -194,14 +200,36 @@ class ModuleCopier {
         return 0; // success
     }
     // symlinks the module file and source map file if available.
-    symlinkModuleFile(moduleSourceFile, outFilePath) {
-        // symlink the module file.
-        this.ensureSymlink(moduleSourceFile, outFilePath);
-        // if there's a source map file, link that, too.
-        const mapFile = moduleSourceFile + ".map";
-        const outMapFile = outFilePath + ".map";
-        if (fs.existsSync(mapFile))
-            this.ensureSymlink(mapFile, outMapFile);
+    symlinkOrCopyModuleFile(moduleSourceFile, outFilePath) {
+        if (this._alwaysCopy) {
+            // copy  the module file.
+            if (this._detail > 3)
+                console.log("  Copying file", moduleSourceFile, "to", outFilePath);
+            // if there is a symlink already there, copyFileSync fails, so check for that case.
+            if (fs.existsSync(outFilePath))
+                fs.unlinkSync(outFilePath);
+            fs.copyFileSync(moduleSourceFile, outFilePath);
+            // if there's a source map file, link that, too.
+            const mapFile = moduleSourceFile + ".map";
+            if (fs.existsSync(mapFile)) {
+                const outMapFile = outFilePath + ".map";
+                if (this._detail > 3)
+                    console.log("  Copying file", mapFile, "to", outMapFile);
+                // if there is a symlink already there, copyFileSync fails, so check for that case.
+                if (fs.existsSync(outMapFile))
+                    fs.unlinkSync(outMapFile);
+                fs.copyFileSync(mapFile, outMapFile);
+            }
+        }
+        else {
+            // symlink the module file.
+            this.ensureSymlink(moduleSourceFile, outFilePath);
+            // if there's a source map file, link that, too.
+            const mapFile = moduleSourceFile + ".map";
+            const outMapFile = outFilePath + ".map";
+            if (fs.existsSync(mapFile))
+                this.ensureSymlink(mapFile, outMapFile);
+        }
     }
     // this function adds the dependencies found in package.json that are external modules. Recurses, but only to depth 1.
     findExternalModuleDependents(parentPackageRoot, depth) {
@@ -264,9 +292,9 @@ class ModuleCopier {
         return undefined;
     }
     // finds dependents, symlinks them to destination directory.
-    symlinkExternalModules(outputDirectory) {
+    symlinkOrCopyExternalModules(outputDirectory) {
         if (this._detail > 0)
-            console.log("Starting symlink external modules");
+            console.log("Starting symlink or copy external modules");
         try {
             // create the output directory, if it doesn't exist.
             if (!fs.existsSync(outputDirectory)) {
@@ -276,7 +304,7 @@ class ModuleCopier {
             this.findExternalModuleDependents(process.cwd(), 0);
             const missingPeerDependencies = this.checkPeerDependencies();
             if (missingPeerDependencies.length > 0)
-                return new Result("Symlink External Modules", 1, undefined, undefined, "You are missing one or more dependencies in package.json: \n".concat(...missingPeerDependencies));
+                return new Result("Symlink or Copy External Modules", 1, undefined, undefined, "You are missing one or more dependencies in package.json: \n".concat(...missingPeerDependencies));
             let missingModule = false;
             const missingModuleList = [];
             for (const dependent of this._dependentList) {
@@ -298,25 +326,39 @@ class ModuleCopier {
                         }
                     }
                     const fullFilePath = path.resolve(outFilePath, externalModule.destFileName);
-                    this.symlinkModuleFile(moduleSourceFile, fullFilePath);
+                    this.symlinkOrCopyModuleFile(moduleSourceFile, fullFilePath);
+                    // symlink any subModules in the build.
+                    const packageFileContents = Utils.readPackageFileContents(dependent.packageRoot);
+                    if (packageFileContents.iModelJs && packageFileContents.iModelJs.buildModule && packageFileContents.iModelJs.buildModule.subModules && Array.isArray(packageFileContents.iModelJs.buildModule.subModules)) {
+                        for (const subModule of packageFileContents.iModelJs.buildModule.subModules) {
+                            if (subModule.bundleName) {
+                                const parsedPath = path.parse(moduleSourceFile);
+                                const thisDirectory = parsedPath.dir;
+                                const subModuleFileName = subModule.bundleName + ".js";
+                                const subModuleSourceFile = path.resolve(thisDirectory, subModuleFileName);
+                                const destFullFilePath = path.resolve(outFilePath, subModuleFileName);
+                                this.symlinkOrCopyModuleFile(subModuleSourceFile, destFullFilePath);
+                            }
+                        }
+                    }
                     // symlink the external modules resource files if necessary.
                     if (externalModule.publicResourceDirectory) {
                         const publicPath = path.resolve(dependent.packageRoot, externalModule.publicResourceDirectory);
-                        this.symlinkPublicStaticFiles(publicPath, outputDirectory);
+                        this.symlinkOrCopyPublicStaticFiles(publicPath, outputDirectory);
                     }
                 }
             }
             if (missingModule) {
-                return new Result("Symlink External Modules", 1, undefined, undefined, "Could not find one or more dependencies:\n".concat(...missingModuleList));
+                return new Result("Symlink or Copy External Modules", 1, undefined, undefined, "Could not find one or more dependencies:\n".concat(...missingModuleList));
             }
             // link the IModelJsLoader.js from imodeljs/frontend also. NOTE: imodeljs-frontend must always be in package.json's dependencies.
             const loaderFile = path.resolve(process.cwd(), "node_modules/@bentley/imodeljs-frontend", this._isDevelopment ? "lib/module/dev/IModelJsLoader.js" : "lib/module/prod/IModelJsLoader.js");
-            this.symlinkModuleFile(loaderFile, path.resolve(outputDirectory, "iModelJsLoader.js"));
+            this.symlinkOrCopyModuleFile(loaderFile, path.resolve(outputDirectory, "iModelJsLoader.js"));
         }
         catch (e) {
-            return new Result("Symlink External Modules", 1, e);
+            return new Result("Symlink or Copy External Modules", 1, e);
         }
-        return new Result("Symlink External Modules", 0);
+        return new Result("Symlink or Copy External Modules", 0);
     }
 }
 // this class creates pseudo-localized versions of all the locale .json files specified in the sourceDirectory.
@@ -450,6 +492,8 @@ class IModelJsModuleBuilder {
         this._detail = _detail;
         this._isDevelopment = _isDevelopment;
         this._webpackStats = _webpackStats;
+        this._alwaysCopy = process.env.BUILDIMODEL_SYMLINKS === undefined;
+        console.log("alwaysCopy is ", this._alwaysCopy);
     }
     // checks the iModelJs buildModule property.
     checkDefinition() {
@@ -460,7 +504,7 @@ class IModelJsModuleBuilder {
         }
         if ((this._moduleDescription.type !== "system") && (this._moduleDescription.type !== "application") &&
             (this._moduleDescription.type !== "plugin") && (this._moduleDescription.type != "webworker")) {
-            console.log('iModelJs.buildModule.type must be on of "system", "application", "plugin", or "webworker"');
+            console.log('iModelJs.buildModule.type must be one of "system", "application", "plugin", or "webworker"');
             return true;
         }
         return false;
@@ -497,34 +541,34 @@ class IModelJsModuleBuilder {
         if (!this._moduleDescription.sourceResources) {
             if (this._detail > 2)
                 console.log("Skipping Symlink Source Resource, no iModelJs.buildModule.sourceResources property");
-            return Promise.resolve(new Result("Symlink Source Resources", 0));
+            return Promise.resolve(new Result("Symlink Or Copy Source Resources", 0));
         }
         // otherwise this should be an array of {source, dest} objects.
         if (!Array.isArray(this._moduleDescription.sourceResources))
-            return Promise.resolve(new Result("Symlink Source Resources", 1, undefined, undefined, "iModelJs.buildModule.sourceResources must be an array of {source, dest} pairs"));
+            return Promise.resolve(new Result("Symlink Or Copy Source Resources", 1, undefined, undefined, "iModelJs.buildModule.sourceResources must be an array of {source, dest} pairs"));
         for (const resource of this._moduleDescription.sourceResources) {
             if (!resource.source || !resource.dest) {
-                return Promise.resolve(new Result("Symlink Source Resources", 1, undefined, undefined, "iModelJs.buildModule.sourceResources must be an array of {source, dest} pairs"));
+                return Promise.resolve(new Result("Symlink Or Copy Source Resources", 1, undefined, undefined, "iModelJs.buildModule.sourceResources must be an array of {source, dest} pairs"));
             }
             if (this._detail > 0)
-                console.log("Symlinking files from ", resource.source, "to", resource.dest);
-            const doCopy = resource.copy && resource.copy === true;
-            const result = Utils.symlinkFiles(process.cwd(), resource.source, resource.dest, doCopy, this._detail);
+                console.log(this._alwaysCopy ? "Copying files from" : "Symlinking files from", resource.source, "to", resource.dest);
+            const alwaysCopy = this._alwaysCopy || (resource.copy && resource.copy === true);
+            const result = Utils.symlinkFiles(process.cwd(), resource.source, resource.dest, alwaysCopy, this._detail);
             if (0 != result.exitCode)
                 return result;
         }
-        return Promise.resolve(new Result("Symlink Source Resources", 0));
+        return Promise.resolve(new Result("Symlink or Copy Source Resources", 0));
     }
     // If this is an application, symlink the external modules that the application uses into the web server's directory.
     symlinkRequiredExternalModules() {
         const nodeModulesDir = path.resolve(process.cwd(), "node_modules");
-        const moduleCopier = new ModuleCopier(nodeModulesDir, this._isDevelopment, this._detail);
+        const moduleCopier = new ModuleCopier(nodeModulesDir, this._isDevelopment, this._detail, this._alwaysCopy);
         if (this._moduleDescription.type !== "application")
-            return Promise.resolve(new Result("Symlink External Modules", 0));
+            return Promise.resolve(new Result("Symlink or Copy External Modules", 0));
         if (!this._moduleDescription.webpack || !this._moduleDescription.webpack.dest)
-            return Promise.resolve(new Result("Symlink External Modules", 0));
+            return Promise.resolve(new Result("Symlink Or Copy External Modules", 0));
         const outputDirectory = path.resolve(process.cwd(), this._moduleDescription.webpack.dest);
-        return Promise.resolve(moduleCopier.symlinkExternalModules(outputDirectory));
+        return Promise.resolve(moduleCopier.symlinkOrCopyExternalModules(outputDirectory));
     }
     makeConfig() {
         if (!this._moduleDescription.makeConfig)
@@ -546,7 +590,7 @@ class IModelJsModuleBuilder {
         });
     }
     // spawns a webpack process
-    startWebpack(operation, outputPath, entry, bundleName, styleSheets, isPlugin, isDevelopment, doStats, htmlTemplate) {
+    startWebpack(operation, outputPath, entry, bundleName, styleSheets, buildType, isDevelopment, doStats, htmlTemplate) {
         const webpackCommand = process.platform === "win32" ? "webpack.cmd" : "webpack";
         const webpackNodeModules = path.resolve(process.cwd(), "node_modules/@bentley/webpack-tools/node_modules");
         const webpackFullPath = path.resolve(process.cwd(), webpackNodeModules, ".bin", webpackCommand);
@@ -558,9 +602,9 @@ class IModelJsModuleBuilder {
         args.push(`--env.bundlename=${bundleName}`);
         if (styleSheets)
             args.push("--env.stylesheets");
-        if (isPlugin)
-            args.push("--env.isplugin");
-        else if (this._moduleDescription.type === "webworker")
+        if (buildType === "plugin")
+            args.push("--env.plugin");
+        else if (buildType === "webworker")
             args.push("--env.webworker");
         if (!isDevelopment)
             args.push("--env.prod");
@@ -601,37 +645,39 @@ class IModelJsModuleBuilder {
             outputPath = path.resolve(outputPath, this._isDevelopment ? "dev" : "prod");
         }
         // start the webpack process according to the arguments.
-        const isPlugin = this._moduleDescription.type == "plugin";
         const styleSheets = webpack.styleSheets ? true : false;
         if (this._detail > 0)
             console.log("Starting Webpack Module");
-        return this.startWebpack("Webpack Module", outputPath, webpack.entry, webpack.bundleName, styleSheets, isPlugin, this._isDevelopment, this._webpackStats, webpack.htmlTemplate);
+        return this.startWebpack("Webpack Module", outputPath, webpack.entry, webpack.bundleName, styleSheets, this._moduleDescription.type, this._isDevelopment, this._webpackStats, webpack.htmlTemplate);
     }
-    // build the array of plugins.
-    async buildPlugins() {
-        if (!this._moduleDescription.plugins) {
+    // build the array of subModules.
+    async buildSubModules() {
+        if (!this._moduleDescription.subModules) {
             if (this._detail > 2)
-                console.log("Skipping Build Plugins - No iModelJs.buildModule.plugins property");
-            return Promise.resolve([new Result("Build Plugins", 0)]);
+                console.log("Skipping Build SubModules - No iModelJs.buildModule.subModules property");
+            return Promise.resolve([new Result("Build SubModules", 0)]);
         }
-        if (!Array.isArray(this._moduleDescription.plugins)) {
-            return Promise.resolve([new Result("Build Plugins", 1, undefined, undefined, "iModelJs.buildModule.plugins must be an array of {dest, entry, bundleName} objects")]);
+        if (!Array.isArray(this._moduleDescription.subModules)) {
+            return Promise.resolve([new Result("Build SubModules", 1, undefined, undefined, "iModelJs.buildModule.subModules must be an array of {dest, entry, bundleName} objects")]);
         }
         const results = [];
-        for (const plugin of this._moduleDescription.plugins) {
-            if (!plugin.dest || !plugin.entry || !plugin.bundleName) {
-                results.push(new Result("Build Plugins", 1, undefined, undefined, 'Each plugin must have a "dest", "entry", and "bundleName" property'));
+        for (const subModule of this._moduleDescription.subModules) {
+            if (!subModule.dest || !subModule.entry || !subModule.bundleName) {
+                results.push(new Result("Build SubModules", 1, undefined, undefined, 'Each subModule must have a "dest", "entry", and "bundleName" property'));
                 return Promise.resolve(results);
             }
-            const styleSheets = plugin.styleSheets ? true : false;
-            // this is a special case for the iModelJsLoader - set plugin.system to true to avoid plugin treatment.
-            const isPlugin = plugin.system ? false : true;
-            let outputPath = path.resolve(process.cwd(), plugin.dest);
-            if (!isPlugin)
+            const styleSheets = subModule.styleSheets ? true : false;
+            // this is a special case for the iModelJsLoader - set plugin.type to "system" or "webworker" to avoid plugin treatment.
+            const subType = subModule.type || "plugin";
+            if ((subType !== "system") && (subType !== "plugin") && (subType != "webworker")) {
+                console.log('the "type" property for a subModule must be one of "system", "plugin", or "webworker"');
+            }
+            let outputPath = path.resolve(process.cwd(), subModule.dest);
+            if ((subType === "system") || (subType === "webworker"))
                 outputPath = path.resolve(outputPath, this._isDevelopment ? "dev" : "prod");
             if (this._detail > 0)
-                console.log("Starting webpack of", plugin.entry);
-            const pluginResult = await this.startWebpack(`Webpack Plugin ${plugin.entry}`, outputPath, plugin.entry, plugin.bundleName, styleSheets, isPlugin, this._isDevelopment, this._webpackStats);
+                console.log("Starting webpack of", subModule.entry);
+            const pluginResult = await this.startWebpack(`Webpack Plugin ${subModule.entry}`, outputPath, subModule.entry, subModule.bundleName, styleSheets, subType, this._isDevelopment, this._webpackStats);
             results.push(pluginResult);
             if (pluginResult.error || pluginResult.stderr) {
                 return Promise.resolve(results);
@@ -664,11 +710,19 @@ class IModelJsModuleBuilder {
             console.error("\n-------- Operation:", result.operation, "--------");
             console.error(result.error.toString());
             console.error(result.error);
+            if (result.stdout) {
+                console.error("Output:");
+                console.error(result.stdout);
+            }
         }
         if (result.stderr) {
             console.error("\n-------- Operation:", result.operation, "--------");
             console.error("Errors:");
             console.error(result.stderr);
+            if (result.stdout) {
+                console.error("Output:");
+                console.error(result.stdout);
+            }
             exitCode = 1;
         }
         if (result.stdout && (this._detail > 1)) {
@@ -689,15 +743,21 @@ class IModelJsModuleBuilder {
         }
         return exitCode;
     }
+    /* ----------------------
     // step one - parallel compile and symlink of source needed in webpack.
-    async compileAndSymlinkSources() {
-        // compile the .ts and .tsx files
-        const compileResult = this.compileSource();
-        // symlink the source resource ().scss and .svg files, public locale files, etc.) to the lib directory for inclusion in the webpack.
-        const symlinkSourceResourcesResult = this.symlinkSourceResources();
-        // wait for all of those operations to finish.
-        return Promise.all([compileResult, symlinkSourceResourcesResult]);
+    // Not currently used. Ran into problem where the two process would collide
+    // trying to create the output directories.
+    private async _compileAndSymlinkSources(): Promise<Result[]> {
+      // compile the .ts and .tsx files
+      const compileResult = this.compileSource();
+  
+      // symlink the source resource ().scss and .svg files, public locale files, etc.) to the lib directory for inclusion in the webpack.
+      const symlinkSourceResourcesResult = this.symlinkSourceResources();
+  
+      // wait for all of those operations to finish.
+      return Promise.all([compileResult, symlinkSourceResourcesResult])
     }
+    ------------------------ */
     // step two - parallel webpack and symlink of external modules needed for applications
     async webpackAndSymlinkExternalModules() {
         // webpack the module.
@@ -709,15 +769,19 @@ class IModelJsModuleBuilder {
     }
     // this is the method that sequences the build.
     async sequenceBuild() {
-        const stepOneResults = await this.compileAndSymlinkSources();
-        let exitCode = this.reportResults(stepOneResults);
+        const symlinkResults = await this.symlinkSourceResources();
+        let exitCode = this.reportResults([symlinkResults]);
+        if (0 !== exitCode)
+            return exitCode;
+        const compileResults = await this.compileSource();
+        exitCode = this.reportResults([compileResults]);
         if (0 !== exitCode)
             return exitCode;
         const stepTwoResults = await this.webpackAndSymlinkExternalModules();
         exitCode = this.reportResults(stepTwoResults);
         if (0 !== exitCode)
             return exitCode;
-        const pluginResults = await this.buildPlugins();
+        const pluginResults = await this.buildSubModules();
         exitCode = this.reportResults(pluginResults);
         if (0 !== exitCode)
             return exitCode;

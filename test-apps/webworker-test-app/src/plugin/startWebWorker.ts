@@ -5,6 +5,7 @@
  * Multiple requests can be made. They are processed serially in the order they are received.
  * A more sophisticated example could set up multiple WebWorkers and distribute the requests.
  * ------------------------ */
+// tslint:disable:no-console
 
 import { Plugin, PluginAdmin } from "@bentley/imodeljs-frontend";
 
@@ -12,17 +13,17 @@ type resolveFunc = ((arg: any) => void);
 type rejectFunc = ((arg: Error) => void);
 
 class RequestMessage {
-  constructor(public msgId: number, public operation: string, public operands: Array<any>) { }
+  constructor(public msgId: number, public operation: string, public operands: any[]) { }
 }
 
 // Subclass WorkerOperation for different request types.
 // Instantiate the subclass and then call the sendMessage method.
 abstract class WorkerOperation {
-  public _resolve: resolveFunc | undefined = undefined;
-  public _reject: rejectFunc | undefined = undefined;
+  private _resolve: resolveFunc | undefined = undefined;
+  private _reject: rejectFunc | undefined = undefined;
   public msgId: number;
 
-  constructor(private _worker: IMJsWorker, private _operation: string, private _operands: Array<any>) {
+  constructor(private _worker: IMJsWorker, private _operation: string, private _operands: any[]) {
     this.msgId = _worker.nextMsgId;
   }
 
@@ -39,7 +40,7 @@ abstract class WorkerOperation {
   }
 
   // This method puts together the request, sends it, and returns the Promise.
-  public sendMessage(): Promise<any> {
+  public async sendMessage(): Promise<any> {
     return new Promise(this.executor.bind(this));
   }
 
@@ -47,12 +48,12 @@ abstract class WorkerOperation {
   // This should be called only from the handleMessage method of IMJsWorker
   public doResolve(event: MessageEvent): void {
     // the return number is in event.data.result.
-    this._resolve!(event.data["result"]);
+    this._resolve!(event.data.result);
   }
 
   // This should be called only from the handleMessage method of IMJsWorker.
   public doReject(errorEvent: ErrorEvent): void {
-    this._reject!(new Error(`Error ${errorEvent.message} at file ${errorEvent.filename}, line number ${errorEvent.lineno} in worker`));
+    this._reject!(new Error(`Error ${errorEvent.message} at line number ${errorEvent.lineno} of file ${errorEvent.filename}, in the webworker thread`));
   }
 }
 
@@ -102,30 +103,40 @@ class IMJsWorker {
 
   // this is the method that gets responses from the webWorker.
   private handleMessage(event: MessageEvent) {
-    const msgId: number = event.data["msgId"];
+    const msgId: number = event.data.msgId;
     const wo = this._queue.get(msgId);
     if (wo) {
       wo.doResolve(event);
-      this._queue.delete(msgId)
+      this._queue.delete(msgId);
     }
   }
 
   // this is the method that gets errors from the webworker.
-  // We don't have any way of positively identifying which request caused the problem,
-  // so we find the one with the lowest msgId, since that's the order we're processing them.
+  // Try to get the msgId out of the error we got back. That doesn't always work, because
+  // sometimes we don't throw the error if it happens while the worker is loading. In that case
+  // we find the message with the lowest msgId, since that's the order we're processing them.
   private handleError(error: ErrorEvent) {
-    let lowest = Number.MAX_SAFE_INTEGER;
-    for (const msgId of this._queue.keys()) {
-      lowest = Math.min(msgId, lowest);
+    let errorMsgId = 0;
+    let rejectError = error;
+    if (error.hasOwnProperty("msgId") && error.hasOwnProperty("originalError")) {
+      errorMsgId = (error as any).msgId;
+      rejectError = (error as any).originalError;
+    } else {
+      // find the lowest number msgId.
+      errorMsgId = Number.MAX_SAFE_INTEGER;
+      for (const msgId of this._queue.keys()) {
+        errorMsgId = Math.min(msgId, errorMsgId);
+      }
     }
-    const wo = this._queue.get(lowest);
+    // reject the promise and remove the message from the queue.
+    const wo = this._queue.get(errorMsgId);
     if (wo) {
-      wo.doReject(error);
-      this._queue.delete(lowest)
+      wo.doReject(rejectError);
+      this._queue.delete(errorMsgId);
     }
   }
 
-  private queueOperation(wo: WorkerOperation): Promise<any> {
+  private async queueOperation(wo: WorkerOperation): Promise<any> {
     this._queue.set(wo.msgId, wo);
     return wo.sendMessage();
   }
@@ -136,28 +147,28 @@ class IMJsWorker {
   }
 
   // queue the add operation
-  public queueAddOperation(operand1: number, operand2: number): Promise<number> {
+  public async queueAddOperation(operand1: number, operand2: number): Promise<number> {
     const ao = new AddOperation(this, operand1, operand2);
     return this.queueOperation(ao);
   }
 
   // queue the factorial operation
-  public queueFactorialOperation(operand: number): Promise<number> {
+  public async queueFactorialOperation(operand: number): Promise<number> {
     const fo = new FactorialOperation(this, operand);
     return this.queueOperation(fo);
   }
 
-  public queueUrlToBitmapOperation(url: string): Promise<ImageBitmap> {
+  public async queueUrlToBitmapOperation(url: string): Promise<ImageBitmap> {
     const uToBo = new UrlToImageBitmapOperation(this, url);
     return this.queueOperation(uToBo);
   }
 
-/* ---------------- ifdef draco ----------------------
-  public queueDracoUrlDecodeOperation(url: string): Promise<any> {
-    const ddo = new DracoUrlDecodeOperation(this, url);
-    return this.queueOperation(ddo);
-  }
- * ----------------------------------------------- */
+  /* ---------------- ifdef draco ----------------------
+    public queueDracoUrlDecodeOperation(url: string): Promise<any> {
+      const ddo = new DracoUrlDecodeOperation(this, url);
+      return this.queueOperation(ddo);
+    }
+   * ----------------------------------------------- */
 }
 
 // The Plugin class that starts the web worker and sends it work each time it is invoked.

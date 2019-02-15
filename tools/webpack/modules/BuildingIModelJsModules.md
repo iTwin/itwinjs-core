@@ -10,7 +10,11 @@ There are three types of modules in the iModel.js frontend ecosystem :
 
 2. Application modules. An iModel.js application consists of a module that contains the code for its unique functionality, with calls into the iModel.js system modules that take advantage of the classes and methods provided by iModel.js. An application module is loaded by the browser (or Electron) at startup.
 
-3. Plugin modules. A Plugin is a module that is designed to be loaded into an iModel.js application in a browser or Electron application while it is already executing. The Plugin registers with the iModel.js system, and then has full access to the iModel.js API. A Plugin can be used in multiple iModel.js applications. See the [iModel.js Plugins](../../../docs/learning/Plugins.md) article for more information.
+3. SubModules. A submodule is a module whose source is in the same package as the main module. Most submodules are plugins, which are designed to be loaded into an iModel.js application in a browser or Electron application while it is already executing. The Plugin registers with the iModel.js system, and then has full access to the iModel.js API. A Plugin can be used in multiple iModel.js applications. See the [iModel.js Plugins](../../../docs/learning/Plugins.md) article for more information. Another type of submodule is a webworker, which are used to offload work from the javascript thread to a worker thread.
+
+## Copying vs Symlinking
+
+Applications need files that are built in other packages, including external modules, localization files, cursors, fonts, and other assets. These other files can be either copied or symlinked into the application's webresources directory. The default is to copy those files. However, if you are working on files within the iModel.js mono repository, symlinking is much better because you don't have to remember to rebuild the application after changing one of the modules that it uses. To use symolinking, set the configuration variable BUILDIMODEL_SYMLINKS to any value. 
 
 ## Building a Module
 
@@ -61,7 +65,7 @@ There are several steps in building a module, which are sequenced by the buildIM
 2. Copying any resources that are needed by the webpack step into the "lib" directory structure. Examples include style sheets, svg files, etc.
 3. Webpacking the module.
 4. For application modules, copying the external modules required into the directory from which the web server delivers files in response to HTTP requests.
-5. For applications, building any Plugins that are in the same package as the main application.
+5. For applications, building any Plugins or other submodules that are in the same package as the main application.
 6. For Bentley applications only, creating the configuration file that accompanies the system modules.
 7. For application localization testing, create pseudo-localized files to make it easy to spot strings that are not localizable.
 
@@ -71,7 +75,7 @@ Not all steps are required by every module. In particular, application modules a
 
 The build is controlled by the contents of an iModelJs.buildModule property in package.json. That property is an object with one required property and a number of optional properties.
 
-The required property is type, and it must have a string containing "application", "system", or "plugin". Here is an example of the start of an iModel.js module build specification in package.json:
+The required property is type, and it must have a string containing "application", "system", "plugin", or "webworker". Here is an example of the start of an iModel.js module build specification in package.json:
 
 ```json
 {
@@ -143,7 +147,7 @@ Frequently, some files from the source directory will have to be placed into the
   },
 ```
 
-This symlinks all the .scss files in all subdirectories of the src directory to parallel directories in the lib directory, and symlinks all of the files in all subdirectories of the public directory into the lib/webresources directory. In some cases, you might prefer that the resources be copied rather than linked. In that case, add a boolean "copy" property alongside the "source" and "dest" properties and set it to true. If the resource specified with a "copy" property would also be copied by a sourceResources entry with a glob specification, make sure it appears earlier in the array of sourceResources.
+This copies or symlinks all the .scss files in all subdirectories of the src directory to parallel directories in the lib directory, and copies or symlinks all of the files in all subdirectories of the public directory into the lib/webresources directory. In some cases, you might prefer that the resources be copied rather than linked. In that case, add a boolean "copy" property alongside the "source" and "dest" properties and set it to true. If the resource specified with a "copy" property would also be copied by a sourceResources entry with a glob specification, make sure it appears earlier in the array of sourceResources.
 
 ### Webpacking
 
@@ -221,9 +225,9 @@ As you can see from the comments in the file, the script tag that invokes IModel
 
 For application modules only, buildIModelJsModule symbolic links all the external modules that are needed into the "dest" directory of the webpack property. No further buildModule properties are needed for this step.
 
-### Building Plugins in the same package
+### Building Submodules in the same package
 
-Sometimes, it might be desirable to put certain Plugins in the same package as the application itself. The buildImodelJsModule script addresses this requirement through the use of a plugins property. It is an array of objects, each of which has "dest", "entry", and "bundleName properties. Optionally "styleSheets" can appear as in the "webpack" property above. For example, the following plugins property specifies that a MeasurePoints plugin is built alongside the application.
+Sometimes, it might be desirable to put certain submodules, such as Plugins or Webworkers, in the same package as the application itself. The buildImodelJsModule script addresses this requirement through the use of a subModules property. It is an array of objects, each of which has "dest", "entry",  and "bundleName" properties. Optionally, there can be a "type" property that can have the value "plugin" (the default), "webworker", or "system". Another optional property, "styleSheets", can appear as in the "webpack" property above. For example, the following plugins property specifies that a MeasurePoints plugin is built alongside the application.
 
 ```json
   "iModelJs": {
@@ -234,7 +238,8 @@ Sometimes, it might be desirable to put certain Plugins in the same package as t
         {
           "dest": "./lib/webresources",
           "entry": "./lib/frontend/plugins/MeasurePoints.js",
-          "bundleName": "MeasurePoints"
+          "bundleName": "MeasurePoints",
+          "type": "plugin"
         }
       ],
       ...
@@ -281,9 +286,9 @@ Options:
   --help                    Show help                                                            [boolean]
 ```
 
-Most of these options are self-explanatory. The "--production" argument tells the build script to create the production build of the module. The differences between a production build and the development build (which is the default) arise during the webpack step. Production builds are minified (eliminating comments and carriage returns, shortening variable names, etc.) and all the calls to the assert function imported from @bentleyjs-core are eliminated. Development builds of system modules are put into the "dev" subdirectory of the designated "dest" directory, while production builds are put into the "prod" subdirectory. Builds of application modules symlink the required system modules from the appropriate subdirectory based on build type.
+Most of these options are self-explanatory. The "--production" argument tells the build script to create the production build of the module. The differences between a production build and the development build (which is the default) arise during the webpack step. Production builds are minified (eliminating comments and carriage returns, shortening variable names, etc.) and all the calls to the assert function imported from @bentleyjs-core are eliminated. Development builds of system modules are put into the "dev" subdirectory of the designated "dest" directory, while production builds are put into the "prod" subdirectory. Builds of application modules copy or symlink the required system modules from the appropriate subdirectory based on build type.
 
-The "--detail" argument requires a number between 0 and 4, (e.g., --detail=2). Detail level 1 logs the start and end of each build step (although the output can be a little confusing because some steps are executed in parallel). Detail level 2 additionally shows the output of the webpack process, detail level 3 adds a report of skipped steps, and detail level 4 shows substeps such as the symlinking of individual files. Errors are always displayed, and cause the process exit code to be non-zero.
+The "--detail" argument requires a number between 0 and 4, (e.g., --detail=2). Detail level 1 logs the start and end of each build step (although the output can be a little confusing because some steps are executed in parallel). Detail level 2 additionally shows the output of the webpack process, detail level 3 adds a report of skipped steps, and detail level 4 shows substeps such as the copying or symlinking of individual files. Errors are always displayed, and cause the process exit code to be non-zero.
 
 The "--stats" argument affects the webpack step by passing the "--json" argument to it and directing webpack's output to a file called "webpackStats.json" in the same directory as the module. That can be useful for analyzing the packages used by the module as well as other webpack performance information. A downside to using that argument is that webpack also directs all errors to the webpackStats.json file, so if you encounter a webpack error with the --stats argument, look in webpackStat.json to get more information about the error.
 

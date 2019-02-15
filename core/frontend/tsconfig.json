@@ -10,6 +10,12 @@
   ],
   "exclude": [
     "lib",
-    "node_modules"
+    "node_modules",
+    "src/webworker/"
+  ],
+  "references": [
+    {
+      "path": "./src/webworker"
+    }
   ]
 }

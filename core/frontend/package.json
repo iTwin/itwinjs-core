@@ -17,6 +17,7 @@
   "iModelJs": {
     "buildModule": {
       "type": "system",
+      "tscOptions": "-build",
       "sourceResources": [
         {
           "source": "./src/public/**/*",
@@ -28,12 +29,18 @@
         "entry": "./lib/imodeljs-frontend.js",
         "bundleName": "imodeljs-frontend"
       },
-      "plugins": [
+      "subModules": [
         {
           "dest": "./lib/module",
           "entry": "./lib/loader/IModelJsLoader.js",
           "bundleName": "IModelJsLoader",
-          "system": "true"
+          "type": "system"
+        },
+        {
+          "dest": "./lib/module",
+          "entry": "./lib/webworker/WebWorker.js",
+          "bundleName": "frontend-webworker",
+          "type": "webworker"
         }
       ]
     }
