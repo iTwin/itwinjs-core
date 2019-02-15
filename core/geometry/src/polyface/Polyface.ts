@@ -66,7 +66,10 @@ export abstract class Polyface extends GeometryQuery {
         return false;
     return true;
   }
-
+  /**
+   * @returns true if this polyface has no contents.
+   */
+  public abstract get isEmpty(): boolean;
 }
 export class IndexedPolyface extends Polyface {
   public isSameGeometryClass(other: any): boolean { return other instanceof IndexedPolyface; }
@@ -78,6 +81,10 @@ export class IndexedPolyface extends Polyface {
     }
     return false;
   }
+  /**
+   * @returns true if either the point array or the point index array is empty.
+   */
+  public get isEmpty(): boolean { return this.data.pointCount === 0 || this.data.pointIndex.length === 0; }
   /**
    * * apply the transform to points
    * * apply the (inverse transpose of) the matrix part to normals
@@ -321,16 +328,22 @@ export class IndexedPolyface extends Polyface {
 
   public addNormal(normal: Vector3d, priorIndexA?: number, priorIndexB?: number): number {
     if (this.data.normal !== undefined) {
+      let distance;
+
       if (priorIndexA !== undefined) {
-        const distance = this.data.normal.distanceIndexToPoint(priorIndexA, normal);
+        distance = this.data.normal.distanceIndexToPoint(priorIndexA, normal);
         if (distance !== undefined && Geometry.isSmallMetricDistance(distance))
           return priorIndexA;
       }
       if (priorIndexB !== undefined) {
-        const distance = this.data.normal.distanceIndexToPoint(priorIndexB, normal);
+        distance = this.data.normal.distanceIndexToPoint(priorIndexB, normal);
         if (distance !== undefined && Geometry.isSmallMetricDistance(distance))
           return priorIndexB;
       }
+      const tailIndex = this.data.normal.length - 1;
+      distance = this.data.normal.distanceIndexToPoint(tailIndex, normal);
+      if (distance !== undefined && Geometry.isSmallMetricDistance(distance))
+        return tailIndex;
     }
 
     return this.addNormalXYZ(normal.x, normal.y, normal.z);

@@ -53,6 +53,7 @@ import { BezierCurve3d } from "../bspline/BezierCurve3d";
 import { BezierCurve3dH } from "../bspline/BezierCurve3dH";
 import { CurveChainWithDistanceIndex } from "../curve/CurveChainWithDistanceIndex";
 import { KnotVector, BSplineWrapMode } from "../bspline/KnotVector";
+import { SolidPrimitive } from "../solid/SolidPrimitive";
 
 /* tslint:disable:no-console */
 
@@ -1686,5 +1687,67 @@ export class Sample {
       LineSegment3d.create(corners[1], corners[5]),
       LineSegment3d.create(corners[2], corners[6]),
       LineSegment3d.create(corners[3], corners[7]));
+  }
+  /** Create swept "solids" that can be capped.
+   * * At least one of each solid type.
+   * * each is within 10 of the origin all directions.
+   */
+  public static createClosedSolidSampler(capped: boolean): SolidPrimitive[] {
+    const result = [];
+    result.push(Box.createRange(Range3d.createXYZXYZ(0, 0, 0, 3, 2, 5), capped)!);
+
+    result.push(Cone.createAxisPoints(Point3d.create(0, 0, 0), Point3d.create(0, 0, 5), 1.0, 1.0, capped)!);
+
+    result.push(Sphere.createCenterRadius(Point3d.create(0, 0, 0), 1.0)!);
+
+    result.push(TorusPipe.createInFrame(Transform.createIdentity(), 3.0, 1.0, Angle.create360(), capped)!);
+    const arcA = Arc3d.createXY(Point3d.create(6, 1, 0), 1.0, AngleSweep.createStartEndDegrees(-90, 0));
+    const point0 = arcA.fractionAndDistanceToPointOnTangent(0.0, -4);
+    const pointQ1 = arcA.fractionAndDistanceToPointOnTangent(1.0, 2);
+    const pointQ2 = arcA.fractionAndDistanceToPointOnTangent(1.0, 0.5);
+    const pointR1 = Point3d.create(point0.x, pointQ1.y);
+    const pointR2 = Point3d.create(point0.x, pointQ1.y);
+    const linestringQ1 = LineString3d.create(arcA.fractionToPoint(1.0), pointQ1, pointR1, point0);
+    const linestringQ2 = LineString3d.create(arcA.fractionToPoint(1.0), pointQ2, pointR2, point0);
+    const contourZ = Path.create(linestringQ1.clone());
+
+    const contourA = Loop.create(
+      LineSegment3d.create(point0, arcA.fractionToPoint(0)),
+      arcA.clone(),
+      linestringQ1.clone());
+    const contourB = Loop.create(
+      LineSegment3d.create(point0, arcA.fractionToPoint(0)),
+      arcA.clone(),
+      linestringQ2.clone());
+    contourB.tryTransformInPlace(Transform.createTranslationXYZ(1, 1, 3));
+
+    // const contourC = contourB.cloneTransformed(Transform.createTranslationXYZ(2, 1, 4))!;
+    result.push(LinearSweep.create(contourA, Vector3d.create(0, 0, 5), capped)!);
+    const axis = Ray3d.createXYZUVW(0, 8, 0, 1, 0, 0);
+    result.push(RotationalSweep.create(contourA.clone()!, axis.clone(), Angle.createDegrees(90), capped)!);
+
+    if (!capped)
+      result.push(RotationalSweep.create(contourZ.clone()!, axis.clone(), Angle.createDegrees(90), false)!);
+
+    result.push(RuledSweep.create([contourA.clone()!, contourB.clone()!], capped)!);
+
+    const transformC = Transform.createScaleAboutPoint(Point3d.create(0, 0, 8), 0.5);
+    const contourC = contourB.cloneTransformed(transformC)!;
+    result.push(RuledSweep.create([contourA.clone()!, contourB.clone()!, contourC.clone()!], capped)!);
+    return result;
+  }
+  /** Create a rotational sweep with segment, arc, and linestring in its contour.
+   */
+  public static createRotationalSweepLineSegment3dArc3dLineString3d(capped: boolean): SolidPrimitive[] {
+    const result = [];
+    const arcA = Arc3d.createXY(Point3d.create(6, 1, 0), 1.0, AngleSweep.createStartEndDegrees(-90, 0));
+    const point0 = arcA.fractionAndDistanceToPointOnTangent(0.0, -4);
+    const pointQ1 = arcA.fractionAndDistanceToPointOnTangent(1.0, 2);
+    const pointR1 = Point3d.create(point0.x, pointQ1.y);
+    const linestringQ1 = LineString3d.create(arcA.fractionToPoint(1.0), pointQ1, pointR1, point0);
+    const contourZ = Path.create(linestringQ1.clone());
+    const axis = Ray3d.createXYZUVW(0, 8, 0, 1, 0, 0);
+    result.push(RotationalSweep.create(contourZ.clone()!, axis.clone(), Angle.createDegrees(90), capped)!);
+    return result;
   }
 }

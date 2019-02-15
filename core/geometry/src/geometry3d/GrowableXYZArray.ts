@@ -314,7 +314,7 @@ export class GrowableXYZArray extends IndexedXYZCollection {
     let x = 0;
     let y = 0;
     let z = 0;
-    for (let i = 0; i + 3 <= nDouble; i += 3) {
+    for (let i = 0; i + 2 <= nDouble; i += 3) {
       x = data[i];
       y = data[i + 1];
       z = data[i + 2];
@@ -332,7 +332,7 @@ export class GrowableXYZArray extends IndexedXYZCollection {
     let x = 0;
     let y = 0;
     let z = 0;
-    for (let i = 0; i + 3 <= nDouble; i += 3) {
+    for (let i = 0; i + 2 <= nDouble; i += 3) {
       x = data[i];
       y = data[i + 1];
       z = data[i + 2];
@@ -360,7 +360,7 @@ export class GrowableXYZArray extends IndexedXYZCollection {
     let z1;
     let q;
     let a;
-    for (let i = 0; i + 3 <= nDouble; i += 3) {
+    for (let i = 0; i + 2 <= nDouble; i += 3) {
       x = data[i];
       y = data[i + 1];
       z = data[i + 2];
@@ -672,7 +672,7 @@ export class GrowableXYZArray extends IndexedXYZCollection {
     const range = Range1d.createNull();
     while (i < n) {
       k0 = 3 * i;
-      range.extendX(Geometry.hypotenuseXYZ(dataA[k0] - dataB[k0], dataA[k0 + 1] - dataB[k0 + 1], dataA[k0 + 1] - dataB[k0 + 1]));
+      range.extendX(Geometry.hypotenuseXYZ(dataA[k0] - dataB[k0], dataA[k0 + 1] - dataB[k0 + 1], dataA[k0 + 2] - dataB[k0 + 2]));
       i++;
     }
     return range;

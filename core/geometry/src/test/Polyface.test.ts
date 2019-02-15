@@ -303,11 +303,11 @@ function writeMeshes(geometry: GeometryQuery[], fileName: string, options?: Stro
 
     const gRange = g.range();
     const dyLocal = Math.max(20.0, 2.0 * gRange.yLength());
-    const dxLocal = Math.max(30.0, 2.0 * gRange.xLength());
+    const dxLocal = Math.max(10.0, 1.25 * gRange.xLength());
     const dyUSection = dyLocal;
     const dyVSection = 2.0 * dyLocal;
     const transformForPolyface = Transform.createTranslationXYZ(dx, dy0, 0);
-    const transformForPolyfaceRangeSticks = Transform.createTranslationXYZ(dx, dy0, 0);
+    const transformForPolyfaceRangeSticks = Transform.createTranslationXYZ(dx, dy0 + dyVSection, 0);
 
     if (!gRange.isNull) {
       const corners = gRange.corners();
@@ -321,19 +321,21 @@ function writeMeshes(geometry: GeometryQuery[], fileName: string, options?: Stro
         corners[2],
         corners[0],
         corners[4], corners[5], corners[7], corners[6], corners[4]);
-      ls.tryTransformInPlace(transformForPolyface);
+      ls.tryTransformInPlace(transformForPolyfaceRangeSticks);
       allMesh.push(ls);
     }
     builder.addGeometryQuery(g);
     const polyface = builder.claimPolyface();
     if (polyface) {
-      polyface.tryTransformInPlace(transformForPolyfaceRangeSticks);
+      polyface.tryTransformInPlace(transformForPolyface);
       allMesh.push(polyface);
     }
     if (g instanceof SolidPrimitive) {
       const isClosedMesh = PolyfaceQuery.isPolyfaceClosedByEdgePairing(polyface);
       const isClosedSolid = g.isClosedVolume;
-      if (isClosedMesh !== isClosedSolid)
+      if (polyface.isEmpty) {
+        console.log(fileName1, gCount + " of " + geometry.length + "is empty polyface");
+      } else if (isClosedMesh !== isClosedSolid)
         console.log(fileName1, gCount + " of " + geometry.length, { isClosedBySolid: isClosedSolid, isClosedByEdgePairing: isClosedMesh });
       for (const f of [0.0, 0.10, 0.20, 0.25, 0.50, 0.75, 1.0]) {
         const section = g.constantVSection(f);
@@ -395,14 +397,15 @@ describe("Polyface.Facets", () => {
 
   const bigYStep = 800.0;       // step between starts for different solid types
   const optionYStep = 100.0;    // steps between starts for option vairants of same solid type
-  const y0Box = 0.0;
+  const y0OpenSweeps = 0.0;
+  const y0ClosedSampler = y0OpenSweeps + bigYStep;
+  const y0Box = y0ClosedSampler + bigYStep;
   const y0Cone = y0Box + bigYStep;
   const y0Sphere = y0Cone + bigYStep;
   const y0TorusPipe = y0Sphere + bigYStep;
   const y0LinearSweep = y0TorusPipe + bigYStep;
   const y0RotationalSweep = y0LinearSweep + bigYStep;
   const y0RuledSweep = y0RotationalSweep + bigYStep;
-
   const allOptions = [options0, optionsN, optionsP, options0E, optionsPNE];
   // const allEOptions = [options0E, optionsPNE];
   it("Cones", () => {
@@ -444,6 +447,19 @@ describe("Polyface.Facets", () => {
     // const sweepA = Sample.createRuledSweeps(true);
     // writeMeshes(sweepA, "RuledSweep", optionsN, 0, y0RuledSweep + optionYStep);
   });
+  it("Samplers", () => {
+    const openSweeps = Sample.createClosedSolidSampler(false);
+    writeAllMeshes([openSweeps[4]], "Work", [optionsPNE, optionsPNE], y0OpenSweeps, optionYStep);
+    writeAllMeshes(openSweeps, "OpenSweeps", allOptions, y0OpenSweeps, optionYStep);
+    const closedSolids = Sample.createClosedSolidSampler(true);
+    writeAllMeshes(closedSolids, "ClosedSweeps", allOptions, y0ClosedSampler, optionYStep);
+  });
+  /*
+  it.only("SamplerA", () => {
+    const geometry = Sample.createRevolutionLsegArcLstr(false);
+    writeAllMeshes(geometry, "SamplerA", allOptions, 0, optionYStep);
+  });
+*/
 });
 
 describe("Polyface.Faces", () => {
@@ -526,7 +542,7 @@ describe("Polyface.Faces", () => {
     builder.addCoordinateFacets(grid, undefined, undefined, true);
     const polyface = builder.claimPolyface(false);
 
-    ck.testExactNumber(polyface.pointCount, polyface.normalCount, "Number of normals match point count");
+    // ck.testExactNumber(polyface.pointCount, polyface.normalCount, "Number of normals match point count");
     ck.testExactNumber(polyface.pointCount, polyface.paramCount, "Number of params matches point count");
 
     // Check params
@@ -544,27 +560,28 @@ describe("Polyface.Faces", () => {
       // else if (idx % 4 === 2)
       // else
     }
-
-    // Check normals
-    for (let idx = 0; idx < polyface.data.normalIndex!.length - 1; idx++) {
-      if (idx % 4 === 0) {
-        const pointA = polyface.data.point.getPoint3dAt(idx);
-        const pointB = polyface.data.point.getPoint3dAt(idx + 1);
-        const pointC = polyface.data.point.getPoint3dAt(idx + 2);
-        const vecAB = pointA.vectorTo(pointB);
-        const vecAC = pointA.vectorTo(pointC);
-        const normalArray = polyface.data.normal!;
-        ck.testCoordinate(normalArray.atVector3dIndex(idx)!.dotProduct(vecAB), 0, "Normal is perpendicular to grid surface");
-        ck.testCoordinate(normalArray.atVector3dIndex(idx)!.dotProduct(vecAC), 0, "Normal is perpendicular to grid surface");
-        ck.testCoordinate(normalArray.atVector3dIndex(idx + 1)!.dotProduct(vecAB), 0, "Normal is perpendicular to grid surface");
-        ck.testCoordinate(normalArray.atVector3dIndex(idx + 1)!.dotProduct(vecAC), 0, "Normal is perpendicular to grid surface");
-        ck.testCoordinate(normalArray.atVector3dIndex(idx + 2)!.dotProduct(vecAB), 0, "Normal is perpendicular to grid surface");
-        ck.testCoordinate(normalArray.atVector3dIndex(idx + 2)!.dotProduct(vecAC), 0, "Normal is perpendicular to grid surface");
-        ck.testCoordinate(normalArray.atVector3dIndex(idx + 3)!.dotProduct(vecAB), 0, "Normal is perpendicular to grid surface");
-        ck.testCoordinate(normalArray.atVector3dIndex(idx + 3)!.dotProduct(vecAC), 0, "Normal is perpendicular to grid surface");
-      }
-    }
-
+    /*  EDL -- this test makes assumptions about normal indices.
+        With recent (Feb 2019) optimizations of normal constructions, the normals cannot be accessed this way.
+        // Check normals
+        for (let idx = 0; idx < polyface.data.normalIndex!.length - 1; idx++) {
+          if (idx % 4 === 0) {
+            const pointA = polyface.data.point.getPoint3dAt(idx);
+            const pointB = polyface.data.point.getPoint3dAt(idx + 1);
+            const pointC = polyface.data.point.getPoint3dAt(idx + 2);
+            const vecAB = pointA.vectorTo(pointB);
+            const vecAC = pointA.vectorTo(pointC);
+            const normalArray = polyface.data.normal!;
+            ck.testCoordinate(normalArray.atVector3dIndex(idx)!.dotProduct(vecAB), 0, "Normal is perpendicular to grid surface");
+            ck.testCoordinate(normalArray.atVector3dIndex(idx)!.dotProduct(vecAC), 0, "Normal is perpendicular to grid surface");
+            ck.testCoordinate(normalArray.atVector3dIndex(idx + 1)!.dotProduct(vecAB), 0, "Normal is perpendicular to grid surface");
+            ck.testCoordinate(normalArray.atVector3dIndex(idx + 1)!.dotProduct(vecAC), 0, "Normal is perpendicular to grid surface");
+            ck.testCoordinate(normalArray.atVector3dIndex(idx + 2)!.dotProduct(vecAB), 0, "Normal is perpendicular to grid surface");
+            ck.testCoordinate(normalArray.atVector3dIndex(idx + 2)!.dotProduct(vecAC), 0, "Normal is perpendicular to grid surface");
+            ck.testCoordinate(normalArray.atVector3dIndex(idx + 3)!.dotProduct(vecAB), 0, "Normal is perpendicular to grid surface");
+            ck.testCoordinate(normalArray.atVector3dIndex(idx + 3)!.dotProduct(vecAC), 0, "Normal is perpendicular to grid surface");
+          }
+        }
+    */
     expect(ck.getNumErrors()).equals(0);
   });
 

@@ -297,7 +297,8 @@ export class StrokeCountSection {
     if (componentIndex === undefined) {
       // there are corresponding primitves directly at the section, chain, primitive index:
       for (let pass = 0; ; pass++) {
-        if (!callback.startPass(pass)) return false;
+        if (!callback.startPass(pass))
+          break;
         for (let sectionIndex = 0; sectionIndex < numSection; sectionIndex++)
           if (!callback.visit(pass, sections[sectionIndex].chains[chainIndex].maps[primitiveIndex]))
             return false;
@@ -308,7 +309,8 @@ export class StrokeCountSection {
       // there are corresponding primitves at the section, chain, primitive,componentIndex
       // there are corresponding primitves directly at the section, chain, primitive index:
       for (let pass = 0; ; pass++) {
-        if (!callback.startPass(pass)) break;
+        if (!callback.startPass(pass))
+          break;
         for (let sectionIndex = 0; sectionIndex < numSection; sectionIndex++)
           if (!callback.visit(pass, sections[sectionIndex].chains[chainIndex].maps[primitiveIndex].componentData![componentIndex]))
             return false;
