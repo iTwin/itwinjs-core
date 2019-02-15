@@ -10,77 +10,75 @@ import { Id64String } from "@bentley/bentleyjs-core";
 async function executeECSql_SampleMethod(iModel: IModelConnection): Promise<void> {
   {
     // __PUBLISH_EXTRACT_START__ ExecuteECSql_Binding_Positional
-    const rows: any[] = await iModel.executeQuery("SELECT ECInstanceId,ECClassId,Parent,LastMod FROM bis.Element WHERE CodeValue=? AND LastMod>=?",
-      ["MyCode", "2018-01-01T12:00:00Z"]);
-    // ...
+    for await (const row of iModel.query("SELECT ECInstanceId,ECClassId,Parent,LastMod FROM bis.Element WHERE CodeValue=? AND LastMod>=?",
+      ["MyCode", "2018-01-01T12:00:00Z"])) {
+      console.log(`${row.id}, ${row.className}, ${row.parent}, ${row.lastMod}`);
+    }
     // __PUBLISH_EXTRACT_END__
-    console.log(rows);
+
   }
 
   {
     // __PUBLISH_EXTRACT_START__ ExecuteECSql_Binding_Named
-    const rows: any[] = await iModel.executeQuery("SELECT ECInstanceId,ECClassId,Parent,LastMod FROM bis.Element WHERE CodeValue=:code AND LastMod>=:lastmod",
-      { code: "MyCode", lastmod: "2018-01-01T12:00:00Z" });
-
-    // ...
+    for await (const row of iModel.query("SELECT ECInstanceId,ECClassId,Parent,LastMod FROM bis.Element WHERE CodeValue=:code AND LastMod>=:lastmod",
+      { code: "MyCode", lastmod: "2018-01-01T12:00:00Z" })) {
+      console.log(`${row.id}, ${row.className}, ${row.parent}, ${row.lastMod}`);
+    }
     // __PUBLISH_EXTRACT_END__
-    console.log(rows);
   }
 
   {
     // __PUBLISH_EXTRACT_START__ ExecuteECSql_Binding_Navigation
-    const rows: any[] = await iModel.executeQuery("SELECT ECInstanceId FROM bis.Element WHERE Parent=?", [{ id: "0x132" }]);
-    // ...
+    for await (const row of iModel.query("SELECT ECInstanceId FROM bis.Element WHERE Parent=?", [{ id: "0x132" }])) {
+      console.log(`${row.id}`);
+    }
     // __PUBLISH_EXTRACT_END__
-    console.log(rows);
   }
 
   {
     // __PUBLISH_EXTRACT_START__ ExecuteECSql_Binding_NavigationId
-    const rows: any[] = await iModel.executeQuery("SELECT ECInstanceId FROM bis.Element WHERE Parent.Id=?", ["0x132"]);
-    // ...
+    for await (const row of iModel.query("SELECT ECInstanceId FROM bis.Element WHERE Parent.Id=?", ["0x132"])) {
+      console.log(`${row.id}`);
+    }
     // __PUBLISH_EXTRACT_END__
-    console.log(rows);
   }
 
   {
     // __PUBLISH_EXTRACT_START__ ExecuteECSql_Binding_Struct
-    const rows: any[] = await iModel.executeQuery("SELECT Name FROM myschema.Company WHERE Location=?", [{ street: "7123 Main Street", zip: 30211 }]);
-    // ...
+    for await (const row of iModel.query("SELECT Name FROM myschema.Company WHERE Location=?", [{ street: "7123 Main Street", zip: 30211 }])) {
+      console.log(`${row.name}`);
+    }
     // __PUBLISH_EXTRACT_END__
-    console.log(rows);
   }
 
   {
     // __PUBLISH_EXTRACT_START__ ExecuteECSql_Binding_StructMembers
-    const rows: any[] = await iModel.executeQuery("SELECT Name FROM myschema.Company WHERE Location.Street=? AND Location.Zip=?", ["7123 Main Street", 32443]);
-    // ...
+    for await (const row of iModel.query("SELECT Name FROM myschema.Company WHERE Location.Street=? AND Location.Zip=?", ["7123 Main Street", 32443])) {
+      console.log(`${row.name}`);
+    }
     // __PUBLISH_EXTRACT_END__
-    console.log(rows);
   }
 
   {
     // __PUBLISH_EXTRACT_START__ ExecuteECSql_Binding_Array
-    const rows: any[] = await iModel.executeQuery("SELECT Name FROM myschema.Company WHERE PhoneNumbers=?", [["+16134584201", "+16134584202", "+16134584222"]]);
-    // ...
+    for await (const row of iModel.query("SELECT Name FROM myschema.Company WHERE PhoneNumbers=?", [["+16134584201", "+16134584202", "+16134584222"]])) {
+      console.log(`${row.name}`);
+    }
     // __PUBLISH_EXTRACT_END__
-    console.log(rows);
   }
 
   {
     // __PUBLISH_EXTRACT_START__ ExecuteECSql_IllustrateRowFormat
-    const rows: any[] = await iModel.executeQuery("SELECT ECInstanceId,ECClassId,Parent,LastMod FROM bis.Element WHERE Model.Id=?", ["0x113"]);
-    for (const row of rows) {
-      console.log(JSON.stringify(row));
+    for await (const row of iModel.query("SELECT ECInstanceId,ECClassId,Parent,LastMod FROM bis.Element WHERE Model.Id=?", ["0x113"])) {
+      console.log(`${row.id}, ${row.className}, ${row.parent}, ${row.lastMod}`);
     }
     // __PUBLISH_EXTRACT_END__
   }
 
   {
     // __PUBLISH_EXTRACT_START__ ExecuteECSql_WorkingWithRowFormat
-    const rows: any[] = await iModel.executeQuery("SELECT ECInstanceId,ECClassId,Parent,LastMod FROM bis.Element WHERE Model.Id=?", ["0x113"]);
     console.log("ECInstanceId | ClassName | Parent Id | Parent RelClassName | LastMod");
-    for (const row of rows) {
+    for await (const row of iModel.query("SELECT ECInstanceId,ECClassId,Parent,LastMod FROM bis.Element WHERE Model.Id=?", ["0x113"])) {
       const id: Id64String = row.id;
       const className: string = row.className;
       const parent: NavigationValue = row.parent;

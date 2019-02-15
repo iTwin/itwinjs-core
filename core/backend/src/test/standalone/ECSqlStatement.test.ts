@@ -18,6 +18,129 @@ describe("ECSqlStatement", () => {
   const testRange = new Range3d(1.2, 2.3, 3.4, 4.5, 5.6, 6.7);
   const blobVal = new Uint8Array(testRange.toFloat64Array().buffer);
 
+  it("Asynchronous step and stepForInsert Methods", async () => {
+    await using(ECDbTestHelper.createECDb(_outDir, "asyncmethodtest.ecdb",
+      `<ECSchema schemaName="Test" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+        <ECEntityClass typeName="Foo" modifier="Sealed">
+          <ECProperty propertyName="n" typeName="int"/>
+          <ECProperty propertyName="dt" typeName="dateTime"/>
+          <ECProperty propertyName="fooId" typeName="long" extendedTypeName="Id"/>
+        </ECEntityClass>
+      </ECSchema>`), async (ecdb: ECDb) => {
+        assert.isTrue(ecdb.isOpen);
+
+        const r: ECSqlInsertResult = await ecdb.withPreparedStatement("INSERT INTO ts.Foo(n,dt,fooId) VALUES(20,TIMESTAMP '2018-10-18T12:00:00Z',20)", async (stmt: ECSqlStatement) => {
+          return stmt.stepForInsertAsync();
+        });
+        assert.equal(r.status, DbResult.BE_SQLITE_DONE);
+        assert.equal(r.id, "0x1");
+
+        const s: DbResult = await ecdb.withPreparedStatement("SELECT n, dt, fooId FROM ts.Foo", async (stmt: ECSqlStatement) => {
+          return stmt.stepAsync();
+        });
+        assert.equal(s, DbResult.BE_SQLITE_ROW);
+      });
+  });
+  it("Primary Key Binding through array", async () => {
+    await using(ECDbTestHelper.createECDb(_outDir, "bindingTest.ecdb",
+      `<ECSchema schemaName="Test" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+        <ECEntityClass typeName="Foo" modifier="Sealed">
+          <ECProperty propertyName="n" typeName="int"/>
+        </ECEntityClass>
+      </ECSchema>`), async (ecdb: ECDb) => {
+        assert.isTrue(ecdb.isOpen);
+        const rowIds = ["0x1000000004c", "0x100000000ea", "0x200000000ff", "0x31", "0xffffffffffffff01"];
+        for (const rowId of rowIds) {
+          const r: ECSqlInsertResult = await ecdb.withPreparedStatement(`insert into ts.Foo(ECInstanceId) values(?)`, async (stmt: ECSqlStatement) => {
+            stmt.bindId(1, rowId);
+            return stmt.stepForInsertAsync();
+          });
+          assert.equal(r.status, DbResult.BE_SQLITE_DONE);
+        }
+        const args = new Array(rowIds.length).fill("?").join(",");
+        let row = await ecdb.queryPage(`SELECT * FROM ts.Foo WHERE ECInstanceId IN (${args})`, rowIds);
+        assert.equal(row.length, rowIds.length);
+        assert.isTrue(Reflect.has(row[0], "id"));
+        row = await ecdb.queryPage(`SELECT * FROM (SELECT ECInstanceId AS id FROM ts.Foo) WHERE id IN (${args})`, rowIds);
+        assert.equal(row.length, rowIds.length);
+        assert.isTrue(Reflect.has(row[0], "id"));
+        assert.isTrue(String(row[0].id).startsWith("0x"));
+        row = await ecdb.queryPage(`SELECT * FROM (SELECT ECInstanceId AS sap FROM ts.Foo) WHERE sap IN (${args})`, rowIds);
+        assert.isTrue(Reflect.has(row[0], "sap"));
+        assert.equal(row.length, rowIds.length);
+        assert.isTrue(String(row[0].sap).startsWith("0x"));
+
+      });
+  });
+  it("Paging Resultset", async () => {
+    await using(ECDbTestHelper.createECDb(_outDir, "pagingresultset.ecdb",
+      `<ECSchema schemaName="Test" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+        <ECEntityClass typeName="Foo" modifier="Sealed">
+          <ECProperty propertyName="n" typeName="int"/>
+        </ECEntityClass>
+      </ECSchema>`), async (ecdb: ECDb) => {
+        assert.isTrue(ecdb.isOpen);
+        const ROW_COUNT = 27;
+        // insert test rows
+        for (let i = 1; i <= ROW_COUNT; i++) {
+          const r: ECSqlInsertResult = await ecdb.withPreparedStatement(`insert into ts.Foo(n) values(${i})`, async (stmt: ECSqlStatement) => {
+            return stmt.stepForInsertAsync();
+          });
+          assert.equal(r.status, DbResult.BE_SQLITE_DONE);
+        }
+        for (let i = 1; i < ROW_COUNT; i++) {
+          const rowCount = await ecdb.queryRowCount("SELECT ECInstanceId, ECClassId, n FROM ts.Foo WHERE n <= ?", [i]);
+          assert.equal(rowCount, i);
+        }
+
+        const temp = await ecdb.queryPage("SELECT ECInstanceId FROM ONLY ts.Foo");
+        assert.equal(temp.length, ROW_COUNT);
+        // query page by page
+        const PAGE_SIZE = 5;
+        const QUERY = "SELECT n FROM ts.Foo";
+        const EXPECTED_ROW_COUNT = [5, 5, 5, 5, 5, 2, 0];
+        const ready = [];
+        for (let i = 0; i < EXPECTED_ROW_COUNT.length; i++) {
+          ready.push(ecdb.queryPage(QUERY, undefined, { start: i, size: PAGE_SIZE }));
+        }
+        // verify if each page has right count of rows
+        const results = await Promise.all(ready);
+        for (let i = 0; i < EXPECTED_ROW_COUNT.length; i++) {
+          assert.equal(results[i].length, EXPECTED_ROW_COUNT[i]);
+        }
+      });
+  });
+  it("Paging use cache statement", async () => {
+    await using(ECDbTestHelper.createECDb(_outDir, "pagingresultset.ecdb",
+      `<ECSchema schemaName="Test" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+        <ECEntityClass typeName="Foo" modifier="Sealed">
+          <ECProperty propertyName="n" typeName="int"/>
+        </ECEntityClass>
+      </ECSchema>`), async (ecdb: ECDb) => {
+        assert.isTrue(ecdb.isOpen);
+        const ROW_COUNT = 27;
+        // insert test rows
+        for (let i = 1; i <= ROW_COUNT; i++) {
+          const r: ECSqlInsertResult = await ecdb.withPreparedStatement(`insert into ts.Foo(n) values(${i})`, async (stmt: ECSqlStatement) => {
+            return stmt.stepForInsertAsync();
+          });
+          assert.equal(r.status, DbResult.BE_SQLITE_DONE);
+        }
+
+        // check if varying page number does not require prepare new statements
+        ecdb.clearStatementCache();
+        for (const testPageSize of [1, 2, 4, 5, 6, 7, 10, ROW_COUNT]) {
+          let rowNo = 1;
+          for await (const row of ecdb.query("SELECT n FROM ts.Foo WHERE n != ? and ECInstanceId < ?", [123, 30], { size: testPageSize })) {
+            assert.equal(row.n, rowNo);
+            rowNo = rowNo + 1;
+          }
+          assert.equal(rowNo, 28); // expect all rows
+          assert.equal(1, ecdb.getCachedStatementCount()); // there must be single cached statement used with differetn size pages.
+        }
+      });
+  });
+
   it("Bind Ids", () => {
     using(ECDbTestHelper.createECDb(_outDir, "bindids.ecdb"), (ecdb: ECDb) => {
 

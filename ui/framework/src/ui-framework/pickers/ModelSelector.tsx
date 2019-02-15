@@ -663,7 +663,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
     let rows = [];
 
     if (this.props.iModelConnection)
-      rows = await this.props.iModelConnection.executeQuery(ecsql);
+      rows = await this.props.iModelConnection.queryPage(ecsql);
 
     const categories: ListItem[] = [];
     for (const row of rows) {
