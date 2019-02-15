@@ -37,8 +37,11 @@ export class EnumEditor extends React.PureComponent<PropertyEditorProps, EnumEdi
 
     // istanbul ignore else
     if (record && record.value.valueFormat === PropertyValueFormat.Primitive) {
-      propertyValue = record.value;
-      (record.value as PrimitiveValue).value = this.state.selectValue;
+      propertyValue = {
+        valueFormat: PropertyValueFormat.Primitive,
+        value: this.state.selectValue,
+        displayValue: "",
+      };
     }
 
     return propertyValue;
@@ -68,8 +71,9 @@ export class EnumEditor extends React.PureComponent<PropertyEditorProps, EnumEdi
         if (this.props.propertyRecord && this.props.onCommit) {
           const propertyValue = await this.getPropertyValue();
           // istanbul ignore else
-          if (propertyValue)
+          if (propertyValue) {
             this.props.onCommit({ propertyRecord: this.props.propertyRecord, newValue: propertyValue });
+          }
         }
       });
     }

@@ -7,7 +7,7 @@ import { expect } from "chai";
 import { render, cleanup } from "react-testing-library";
 
 import TestUtils from "../../TestUtils";
-import { ConfigurableUiManager, FrontstageManager, FrontstageProvider, Frontstage, Zone, Widget, FrontstageProps, CoreTools } from "../../../ui-framework";
+import { ConfigurableUiManager, FrontstageManager, FrontstageProvider, Frontstage, Zone, Widget, FrontstageProps, CoreTools, ToolUiManager } from "../../../ui-framework";
 import { ToolSettingsValue, ToolSettingsPropertyRecord, PrimitiveValue, PropertyDescription, PropertyEditorParamTypes, SuppressLabelEditorParams } from "@bentley/imodeljs-frontend";
 
 describe("DefaultToolUiSettingsProvider", () => {
@@ -19,7 +19,7 @@ describe("DefaultToolUiSettingsProvider", () => {
     displayLabel: "TEST-USELENGTH",
     typename: "boolean",
     editor: {
-      params: [{type: PropertyEditorParamTypes.SuppressEditorLabel} as SuppressLabelEditorParams],
+      params: [{ type: PropertyEditorParamTypes.SuppressEditorLabel } as SuppressLabelEditorParams],
     },
   };
 
@@ -71,7 +71,7 @@ describe("DefaultToolUiSettingsProvider", () => {
 
     const frontstageProvider = new Frontstage1();
     ConfigurableUiManager.addFrontstageProvider(frontstageProvider);
-    FrontstageManager.useDefaultToolSettings = false;
+    ToolUiManager.useDefaultToolSettingsProvider = false;
   });
 
   it("starting a tool with undefined tool settings", async () => {
@@ -80,8 +80,8 @@ describe("DefaultToolUiSettingsProvider", () => {
     if (frontstageDef) {
       await FrontstageManager.setActiveFrontstageDef(frontstageDef); // tslint:disable-line:no-floating-promises
 
-      // do not define FrontstageManager.toolsettingsProperties to test that case.
-      FrontstageManager.useDefaultToolSettings = true;
+      // do not define FrontstageManager.toolSettingsProperties to test that case.
+      ToolUiManager.useDefaultToolSettingsProvider = true;
 
       FrontstageManager.setActiveToolId(firstToolId);
       expect(FrontstageManager.activeToolId).to.eq(firstToolId);
@@ -107,15 +107,15 @@ describe("DefaultToolUiSettingsProvider", () => {
     if (frontstageDef) {
       await FrontstageManager.setActiveFrontstageDef(frontstageDef); // tslint:disable-line:no-floating-promises
 
-      const toolsettingsProperties = FrontstageManager.toolsettingsProperties;
+      const toolSettingsProperties = ToolUiManager.toolSettingsProperties;
       const useLengthValue = new ToolSettingsValue(false);
       const lengthValue = new ToolSettingsValue(1.2345, "1.2345");
       const enumValue = new ToolSettingsValue("1");
 
-      toolsettingsProperties.push(new ToolSettingsPropertyRecord(useLengthValue.clone() as PrimitiveValue, useLengthDescription, { rowPriority: 0, columnPriority: 0 }));
-      toolsettingsProperties.push(new ToolSettingsPropertyRecord(lengthValue.clone() as PrimitiveValue, lengthDescription, { rowPriority: 0, columnPriority: 1 }));
-      toolsettingsProperties.push(new ToolSettingsPropertyRecord(enumValue.clone() as PrimitiveValue, enumDescription, { rowPriority: 1, columnPriority: 0 }));
-      FrontstageManager.useDefaultToolSettings = true;
+      toolSettingsProperties.push(new ToolSettingsPropertyRecord(useLengthValue.clone() as PrimitiveValue, useLengthDescription, { rowPriority: 0, columnIndex: 1 }));
+      toolSettingsProperties.push(new ToolSettingsPropertyRecord(lengthValue.clone() as PrimitiveValue, lengthDescription, { rowPriority: 0, columnIndex: 3 }));
+      toolSettingsProperties.push(new ToolSettingsPropertyRecord(enumValue.clone() as PrimitiveValue, enumDescription, { rowPriority: 1, columnIndex: 3 }));
+      ToolUiManager.useDefaultToolSettingsProvider = true;
 
       FrontstageManager.setActiveToolId(testToolId);
       expect(FrontstageManager.activeToolId).to.eq(testToolId);
@@ -139,7 +139,7 @@ describe("DefaultToolUiSettingsProvider", () => {
       expect(renderedComponent).not.to.be.undefined;
       // renderedComponent.debug();
 
-      expect (renderedComponent.queryByText("TEST-USELENGTH:")).to.be.null;
+      expect(renderedComponent.queryByText("TEST-USELENGTH:")).to.be.null;
 
       const toggleEditor = renderedComponent.getByTestId("components-checkbox-editor");
       expect(toggleEditor).not.to.be.undefined;

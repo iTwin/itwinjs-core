@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Item */
 
-import { FrontstageManager } from "../../frontstage/FrontstageManager";
 import { ConfigurableUiManager } from "../../configurableui/ConfigurableUiManager";
 import { ConfigurableUiControlType } from "../../configurableui/ConfigurableUiControl";
 import { ToolUiProvider } from "./ToolUiProvider";
+import { ToolUiManager } from "./ToolUiManager";
 
 /** Provides information about a tool with a given id, including the ToolUiProvider. */
 export class ToolInformation {
@@ -24,7 +24,7 @@ export class ToolInformation {
       if (ConfigurableUiManager.isControlRegistered(this.toolId)) {
         toolUiProvider = ConfigurableUiManager.createControl(this.toolId, this.toolId) as ToolUiProvider;
       } else {
-        if (FrontstageManager.useDefaultToolSettings)
+        if (ToolUiManager.useDefaultToolSettingsProvider)
           toolUiProvider = ConfigurableUiManager.createControl("DefaultToolSettings", this.toolId) as ToolUiProvider;
       }
       // istanbul ignore else
@@ -38,7 +38,7 @@ export class ToolInformation {
       }
     } else {
       // if the tool settings are coming from tool, reinitialize provider so latest properties published from tool are displayed in UI
-      if (FrontstageManager.useDefaultToolSettings && this._toolUiProvider)
+      if (ToolUiManager.useDefaultToolSettingsProvider && this._toolUiProvider)
         this._toolUiProvider.initialize();
     }
     return this._toolUiProvider;

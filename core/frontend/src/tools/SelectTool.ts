@@ -570,6 +570,7 @@ export class SelectionTool extends PrimitiveTool {
       this._selectionOptionValue.value = SelectOptions.PickAndReplace;
       this.setSelectionMode(SelectionMode.Replace);
       this.setSelectionMethod(SelectionMethod.Pick);
+      this.initSelectTool();
     }
 
     const syncItem: ToolSettingsPropertySyncItem = { value: this._selectionOptionValue.clone(), propertyName: SelectionTool._optionsName };
@@ -649,9 +650,10 @@ export class SelectionTool extends PrimitiveTool {
     if (!this.wantToolSettings())
       return undefined;
     const toolSettings = new Array<ToolSettingsPropertyRecord>();
-    toolSettings.push(new ToolSettingsPropertyRecord(this._selectionOptionValue.clone() as PrimitiveValue, SelectionTool._getOptionsDescription(), { rowPriority: 0, columnPriority: 0 }));
+    // generate 2 columns - label will be placed in column 0 and editor in column 1.
+    toolSettings.push(new ToolSettingsPropertyRecord(this._selectionOptionValue.clone() as PrimitiveValue, SelectionTool._getOptionsDescription(), { rowPriority: 0, columnIndex: 1 }));
     if (this.wantSelectionScopeInToolSettings())
-      toolSettings.push(new ToolSettingsPropertyRecord(this._selectionScopeValue.clone() as PrimitiveValue, SelectionTool._getScopesDescription(), { rowPriority: 10, columnPriority: 0 }));
+      toolSettings.push(new ToolSettingsPropertyRecord(this._selectionScopeValue.clone() as PrimitiveValue, SelectionTool._getScopesDescription(), { rowPriority: 10, columnIndex: 1 }));
 
     return toolSettings;
   }

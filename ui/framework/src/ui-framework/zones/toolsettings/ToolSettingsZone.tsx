@@ -6,6 +6,7 @@
 
 import * as React from "react";
 import { FrontstageManager, ToolActivatedEventArgs } from "../../frontstage/FrontstageManager";
+import { ToolUiManager } from "../toolsettings/ToolUiManager";
 
 import { ToolSettingsWidget, ToolSettingsTab, ToolSettings, CommonProps, RectangleProps, TabIcon, ZoneComponent } from "@bentley/ui-ninezone";
 import { KeyboardShortcutManager } from "../../keyboardshortcut/KeyboardShortcut";
@@ -132,7 +133,7 @@ export class ToolSettingsZone extends React.Component<ToolSettingsZoneProps, Too
               tab={tab}
               content={
                 <ToolSettings style={settingsStyle} >
-                  <div className="nz-widget-toolSettings-title">{FrontstageManager.activeToolLabel}</div>
+                  <div className="nz-widget-toolSettings-title">{ToolUiManager.activeToolLabel}</div>
                   {FrontstageManager.activeToolSettingsNode}
                 </ToolSettings>
               }

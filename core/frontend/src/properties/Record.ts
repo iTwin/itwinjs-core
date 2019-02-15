@@ -28,6 +28,7 @@ export class PropertyRecord {
   public readonly property: PropertyDescription;
   public description?: string;
   public isReadonly?: boolean;
+  public isDisabled?: boolean;
   public isMerged?: boolean;
 
   /** Properties for link logic */

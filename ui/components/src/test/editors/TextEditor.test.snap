@@ -6,6 +6,7 @@ exports[`<TextEditor /> renders correctly 1`] = `
   data-testid="components-text-editor"
   defaultValue=""
   onChange={[Function]}
+  readOnly={false}
   type="text"
 />
 `;

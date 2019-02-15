@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": " Cleanup of DefaultToolSetting provider and EnumButtonGroup editor",
+      "packageName": "@bentley/ui-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "bill.steinbock@bentley.com"
+}

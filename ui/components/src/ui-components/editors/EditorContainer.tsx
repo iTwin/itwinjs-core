@@ -162,8 +162,9 @@ export class EditorContainer extends React.PureComponent<EditorContainerProps> {
             doCommit = false;
         }
 
-        if (doCommit)
+        if (doCommit) {
           this.props.onCommit({ propertyRecord: this.props.propertyRecord, newValue });
+        }
       }
     }
   }

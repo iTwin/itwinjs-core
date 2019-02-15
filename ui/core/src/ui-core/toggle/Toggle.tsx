@@ -61,6 +61,15 @@ export class Toggle extends React.Component<ToggleProps, ToggleState> {
     buttonType: ToggleButtonType.Blue,
   };
 
+  public componentDidUpdate(prevProps: ToggleProps) {
+    if (this.props.isOn !== prevProps.isOn) {
+      this.setState({ checked: this.props.isOn ? true : false });
+      return;
+    }
+    if (this.props.disabled !== prevProps.disabled)
+      this.forceUpdate();
+  }
+
   private _handleChange = () => {
     this.setState({ checked: !this.state.checked }, () => { this.props.onChange && this.props.onChange(this.state.checked); });
   }

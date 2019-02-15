@@ -17,7 +17,6 @@ import "./EnumButtonGroupEditor.scss";
 interface EnumEditorState {
   selectValue: string | number;
   valueIsNumber: boolean;
-  propertyRecord?: PropertyRecord;
 }
 
 /** EnumButtonGroupEditor React component that is a property editor with select input  */
@@ -75,10 +74,16 @@ export class EnumButtonGroupEditor extends React.Component<PropertyEditorProps, 
   public async getPropertyValue(): Promise<PropertyValue | undefined> {
     const record = this.props.propertyRecord;
     let propertyValue: PropertyValue | undefined;
+
+    // istanbul ignore else
     if (record && record.value.valueFormat === PropertyValueFormat.Primitive) {
-      propertyValue = record.value;
-      (record.value as PrimitiveValue).value = this.state.selectValue;
+      propertyValue = {
+        valueFormat: PropertyValueFormat.Primitive,
+        value: this.state.selectValue,
+        displayValue: "",
+      };
     }
+
     return propertyValue;
   }
 
@@ -98,11 +103,12 @@ export class EnumButtonGroupEditor extends React.Component<PropertyEditorProps, 
   }
 
   /** @hidden */
-  public componentDidUpdate() {
-    // required to ensure the state is kept in sync with props, since props may be updated from outside the type editor. For example from interactive tool.
-    const state = EnumButtonGroupEditor.getStateFromProps(this.props);
-    // istanbul ignore else
-    if (this.state.selectValue !== state!.selectValue) {
+  public componentDidUpdate(prevProps: PropertyEditorProps, _prevState: EnumEditorState) {
+    // if the props have changed then we need to update the state
+    const prevRecord = prevProps.propertyRecord;
+    const currentRecord = this.props.propertyRecord;
+    if (prevRecord !== currentRecord) {
+      const state = EnumButtonGroupEditor.getStateFromProps(this.props);
       this.setState(state);
       const button = this._btnRefs.get(state!.selectValue);
       // istanbul ignore else
@@ -126,10 +132,8 @@ export class EnumButtonGroupEditor extends React.Component<PropertyEditorProps, 
         selectValue = primitiveValue as number;
         valueIsNumber = true;
       }
-
-      return { selectValue, valueIsNumber, propertyRecord };
+      return { selectValue, valueIsNumber };
     }
-
     return null;
   }
 
@@ -147,12 +151,16 @@ export class EnumButtonGroupEditor extends React.Component<PropertyEditorProps, 
     if (this._isMounted && choices && choices.length > index) {
       const selectValue = choices[index].value;
 
-      this.setState({ selectValue }, async () => {
-        if (this.props.onCommit) {
+      this.setState({
+        selectValue,
+      }, async () => {
+        // istanbul ignore else
+        if (propertyRecord && this.props.onCommit) {
           const propertyValue = await this.getPropertyValue();
           // istanbul ignore else
-          if (propertyValue)
+          if (propertyValue) {
             this.props.onCommit({ propertyRecord, newValue: propertyValue });
+          }
         }
       });
     }

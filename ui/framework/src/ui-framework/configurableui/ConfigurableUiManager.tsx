@@ -18,6 +18,7 @@ import { SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
 import { StandardRotationNavigationAidControl } from "../navigationaids/StandardRotationNavigationAid";
 import { SheetNavigationAidControl } from "../navigationaids/SheetNavigationAid";
 import { CubeNavigationAidControl } from "../navigationaids/CubeNavigationAid";
+import { ToolUiManager } from "../zones/toolsettings/ToolUiManager";
 
 // -----------------------------------------------------------------------------
 // Configurable Ui Manager
@@ -41,6 +42,9 @@ export class ConfigurableUiManager {
 
     // Initialize the FrontstageManager
     FrontstageManager.initialize();
+
+    // Initialize the ToolUiManager that manages Tool Settings properties.
+    ToolUiManager.initialize();
   }
 
   /** Registers a control implementing the [[ConfigurableUiElement]] interface.

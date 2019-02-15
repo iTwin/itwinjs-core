@@ -14,9 +14,10 @@ import { WidgetDef, WidgetState } from "../widgets/WidgetDef";
 import { ContentViewManager } from "../content/ContentViewManager";
 
 import { DefaultStateManager as NineZoneStateManager } from "@bentley/ui-ninezone";
-import { IModelConnection, IModelApp, Tool, StartOrResume, InteractiveTool, ToolSettingsPropertyRecord, ToolSettingsPropertySyncItem } from "@bentley/imodeljs-frontend";
+import { IModelConnection, IModelApp, Tool, StartOrResume, InteractiveTool } from "@bentley/imodeljs-frontend";
 import { ToolInformation } from "../zones/toolsettings/ToolInformation";
 import { FrontstageProvider } from "./FrontstageProvider";
+import { ToolUiManager } from "../zones/toolsettings/ToolUiManager";
 
 // -----------------------------------------------------------------------------
 // Frontstage Events
@@ -117,17 +118,6 @@ export interface WidgetStateChangedEventArgs {
  */
 export class WidgetStateChangedEvent extends UiEvent<WidgetStateChangedEventArgs> { }
 
-/** Sync Tool Settings Properties Event Args interface.
- */
-export interface SyncToolSettingsPropertiesEventArgs {
-  toolId: string;
-  syncProperties: ToolSettingsPropertySyncItem[];
-}
-
-/** Sync Tool Settings Properties Event class.
- */
-export class SyncToolSettingsPropertiesEvent extends UiEvent<SyncToolSettingsPropertiesEventArgs> { }
-
 /** Modal Frontstage information interface.
  */
 export interface ModalFrontstageInfo {
@@ -144,8 +134,7 @@ export interface ModalFrontstageInfo {
  */
 export class FrontstageManager {
   private static _isLoading = true;
-  private static _useDefaultToolSettingsProvider = false;
-  private static _toolSettings: ToolSettingsPropertyRecord[] = [];
+  private static _activeToolId = "";
   private static _activeFrontstageDef: FrontstageDef | undefined;
   private static _frontstageDefs = new Map<string, FrontstageDef>();
   private static _modalFrontstages: ModalFrontstageInfo[] = new Array<ModalFrontstageInfo>();
@@ -153,53 +142,20 @@ export class FrontstageManager {
   private static _nestedFrontstages: FrontstageDef[] = new Array<FrontstageDef>();
   private static _activePrimaryFrontstageDef: FrontstageDef | undefined;
 
-  private static _activeToolId: string = "";
-  private static _activeToolLabel: string = "";
   private static _toolInformationMap: Map<string, ToolInformation> = new Map<string, ToolInformation>();
-
-  private static syncToolSettingsProperties(toolId: string, syncProperties: ToolSettingsPropertySyncItem[]): void {
-    if (toolId !== FrontstageManager._activeToolId) {
-      // tslint:disable-next-line:no-console
-      console.log(`Error = Sync tool with UI ${toolId} does not match active tool ${FrontstageManager._activeToolId}}`);
-      return;
-    }
-
-    FrontstageManager.onSyncToolSettingsProperties.emit({ toolId, syncProperties });
-  }
 
   /** Initializes the FrontstageManager */
   public static initialize() {
-
     if (IModelApp && IModelApp.toolAdmin) {
       IModelApp.toolAdmin.activeToolChanged.addListener((tool: Tool, _start: StartOrResume) => {
-        FrontstageManager._useDefaultToolSettingsProvider = false;
-        FrontstageManager._toolSettings = [];
-        IModelApp.toolAdmin.toolSettingsChangeHandler = FrontstageManager.syncToolSettingsProperties;
-
-        if (tool instanceof InteractiveTool) {
-          const toolsettingsProperties = tool.supplyToolSettingsProperties();
-          FrontstageManager._activeToolLabel = tool.flyover;
-          if (toolsettingsProperties && toolsettingsProperties.length > 0) {
-            FrontstageManager._useDefaultToolSettingsProvider = true;
-            FrontstageManager._toolSettings = toolsettingsProperties;
-          }
-        }
+        ToolUiManager.useDefaultToolSettingsProvider = false;
+        ToolUiManager.clearCachedProperties();
+        if (tool instanceof InteractiveTool)
+          ToolUiManager.cachePropertiesForTool(tool);
         FrontstageManager.setActiveToolId(tool.toolId);
       });
     }
   }
-
-  /** Returns the toolSettings properties that can be used to populate the tool settings widget. */
-  public static get toolsettingsProperties(): ToolSettingsPropertyRecord[] { return FrontstageManager._toolSettings; }
-
-  /** Returns true if the toolsettings are to be auto populated from the toolsettingsProperties. */
-  public static get useDefaultToolSettings(): boolean { return FrontstageManager._useDefaultToolSettingsProvider; }
-
-  /** @hidden for use only by testing  */
-  public static set useDefaultToolSettings(useDefaultToolSettings: boolean) { FrontstageManager._useDefaultToolSettingsProvider = useDefaultToolSettings; }
-
-  /** Returns the name label of the active tool. */
-  public static get activeToolLabel(): string { return FrontstageManager._activeToolLabel; }
 
   /** Returns true if Frontstage is loading its controls. If false the Frontstage content and controls have been created. */
   public static get isLoading(): boolean { return FrontstageManager._isLoading; }
@@ -230,9 +186,6 @@ export class FrontstageManager {
 
   /** Get Widget State Changed event. */
   public static readonly onWidgetStateChangedEvent = new WidgetStateChangedEvent();
-
-  /** Get ToolSettings Properties sync event. */
-  public static readonly onSyncToolSettingsProperties = new SyncToolSettingsPropertiesEvent();
 
   /** Get  Nine-zone State Manager. */
   public static get NineZoneStateManager() { return NineZoneStateManager; }
@@ -345,7 +298,7 @@ export class FrontstageManager {
   /** Sets the active tool id */
   public static setActiveToolId(toolId: string): void {
     // istanbul ignore else
-    if (FrontstageManager._activeToolId !== toolId) {
+    if (FrontstageManager.activeToolId !== toolId) {
       FrontstageManager._activeToolId = toolId;
 
       // istanbul ignore else
@@ -358,7 +311,7 @@ export class FrontstageManager {
 
   /** Gets the active tool's [[ToolInformation]] */
   public static get activeToolInformation(): ToolInformation | undefined {
-    return FrontstageManager._toolInformationMap.get(FrontstageManager._activeToolId);
+    return FrontstageManager._toolInformationMap.get(FrontstageManager.activeToolId);
   }
 
   /** Gets the Tool Setting React node of the active tool.
