@@ -275,6 +275,12 @@
       "projectFolder": "test-apps/agent-test-app",
       "reviewCategory": "internal",
       "shouldPublish": false
+    },
+    {
+      "packageName": "webworker-test-app",
+      "projectFolder": "test-apps/webworker-test-app",
+      "reviewCategory": "internal",
+      "shouldPublish": false
     }
   ]
 }

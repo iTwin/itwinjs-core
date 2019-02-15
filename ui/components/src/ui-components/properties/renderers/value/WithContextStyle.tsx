@@ -14,6 +14,7 @@ const internalWithContextStyle = (node: React.ReactNode, context?: PropertyValue
   return (<span style={context.style}>{node}</span>);
 };
 
+/** Wraps a React component with a span element with a given style attribute */
 export const withContextStyle = (value: React.ReactNode | Promise<React.ReactNode>, context?: PropertyValueRendererContext) => {
   if (isPromiseLike(value))
     return value.then((v) => internalWithContextStyle(v, context));

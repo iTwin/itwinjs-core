@@ -20,7 +20,7 @@ export interface ImageCheckBoxProps extends CommonProps  {
   /** Determine if the item is disabled or not */
   disabled?: boolean;
   /** Function called when item is clicked. */
-  onClick?: () => any;
+  onClick?: (checked: boolean) => any;
 }
 
 /**
@@ -29,13 +29,29 @@ export interface ImageCheckBoxProps extends CommonProps  {
  */
 export class ImageCheckBox extends React.Component<ImageCheckBoxProps> {
 
+  private _onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    e.stopPropagation();
+
+    if (this.props.onClick) {
+      this.props.onClick(e.target.checked);
+    }
+  }
+
+  private _onInputClick = (e: React.MouseEvent<HTMLInputElement>) => {
+    e.stopPropagation();
+  }
+
+  private _onLabelClick = (e: React.MouseEvent<HTMLLabelElement>) => {
+    e.stopPropagation();
+  }
+
   /** @hidden */
   public render() {
     const checkBoxClass = classnames ("core-image-checkbox", this.props.className);
     const imageClass = classnames ("image icon", this.props.checked ? this.props.imageOn : this.props.imageOff);
     return (
-      <label className={checkBoxClass}>
-        <input type="checkbox" checked={this.props.checked} disabled={this.props.disabled} onChange={this.props.onClick}/>
+      <label className={checkBoxClass} onClick={this._onLabelClick}>
+        <input type="checkbox" checked={this.props.checked} disabled={this.props.disabled} onChange={this._onChange} onClick={this._onInputClick}/>
         <span className={imageClass}/>
       </label>
     );

@@ -57,4 +57,11 @@ $text-font-color: $uicore-text-color;
 
 .components-property-record-value {
   @include record-cell;
+
+  .core-underlined-button {
+    // Offset by 2px, because value is centered vertically
+    // and the button has an underline which offsets it's content,
+    // which in turn makes it not in line with the rest of text
+    margin-top: 2px;
+  }
 }

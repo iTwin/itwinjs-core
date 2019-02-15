@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Primitive property value renderers now render links specified in property records.",
+      "packageName": "@bentley/ui-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "elonas.seviakovas@bentley.com"
+}

@@ -5,11 +5,11 @@
 /** @module Properties */
 
 import * as React from "react";
-import { Orientation } from "@bentley/ui-core";
-
-import "./NonPrimitiveValueRenderer.scss";
+import { Orientation, UnderlinedButton } from "@bentley/ui-core";
 import { PropertyRecord } from "@bentley/imodeljs-frontend";
 import { PropertyDialogState } from "../../../ValueRendererManager";
+
+import "./NonPrimitiveValueRenderer.scss";
 
 /** Properties for [[TableArrayValueRenderer]] and [[TableStructValueRenderer]] React component */
 export interface TableSpecificValueRendererProps extends SharedTableNonPrimitiveValueRendererProps {
@@ -44,7 +44,7 @@ export interface TableNonPrimitiveValueRendererProps extends SharedTableNonPrimi
  * When clicked, a dialog appears that shows the value in greater detail.
  */
 export class TableNonPrimitiveValueRenderer extends React.PureComponent<TableNonPrimitiveValueRendererProps> {
-  private _buttonRef = React.createRef<HTMLButtonElement>();
+  // private _buttonRef = React.createRef<HTMLButtonElement>();
 
   private _onClick = () => {
     if (!this.props.onDialogOpen)
@@ -90,20 +90,16 @@ export class TableNonPrimitiveValueRenderer extends React.PureComponent<TableNon
 
   public render() {
     return (
-      <>
-        <button
-          ref={this._buttonRef}
-          className="components-table-value-button"
-          onClick={this._onClick}
-          // onMouseEnter={this._showTooltip}
-          // onMouseLeave={this._hideTooltip}
-          title={`View ${this.props.buttonLabel} in more detail.`}
-        >
-          <span>
-            {this.props.buttonLabel}
-          </span>
-        </button>
-      </>
+      <UnderlinedButton
+        // ref={this._buttonRef}
+        className="components-table-value-button"
+        onClick={this._onClick}
+        // onMouseEnter={this._showTooltip}
+        // onMouseLeave={this._hideTooltip}
+        title={`View ${this.props.buttonLabel} in more detail.`}
+      >
+        {this.props.buttonLabel}
+      </UnderlinedButton>
     );
   }
 }

@@ -14,9 +14,9 @@ import { TreeNodeItem } from "../TreeDataProvider";
 import { CellEditingEngine } from "../CellEditingEngine";
 import { TreeNodePlaceholder, shallowDiffers, isPromiseLike } from "@bentley/ui-core";
 import { UiComponents } from "../../UiComponents";
+import { ItemStyleProvider, ItemStyle } from "../../properties/ItemStyle";
 
 import "./NodeContent.scss";
-import { ItemStyleProvider, ItemStyle } from "../../properties/ItemStyle";
 
 export interface TreeNodeContentProps {
   node: BeInspireTreeNode<TreeNodeItem>;

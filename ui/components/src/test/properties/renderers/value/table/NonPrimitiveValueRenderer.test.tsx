@@ -3,20 +3,24 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { mount } from "enzyme";
+import { render, fireEvent } from "react-testing-library";
 import * as React from "react";
 import sinon from "sinon";
 import { TableNonPrimitiveValueRenderer } from "../../../../../ui-components/properties/renderers/value/table/NonPrimitiveValueRenderer";
 
 describe("TableNonPrimitiveValueRenderer", () => {
+  const dialogContents = <div><p>Hello</p></div>;
+
   it("renders correctly", () => {
-    const rendererMount = mount(
+    const renderer = render(
       <TableNonPrimitiveValueRenderer
         buttonLabel="Open greeting"
-        dialogContents={<div><p>Hello</p></div>}
+        dialogContents={dialogContents}
         dialogTitle={"Greeting"}
       />);
-    expect(rendererMount.find("span").text()).to.be.eq("Open greeting");
+
+    // Verify that text "Open greeting" is renderer. Throws otherwise
+    renderer.getByText("Open greeting");
   });
 
   // TODO: Enable, when table gets refactored
@@ -49,9 +53,7 @@ describe("TableNonPrimitiveValueRenderer", () => {
   it("calls onDialogOpen when button gets clicked", () => {
     const onDialogOpen = sinon.spy();
 
-    const dialogContents = <div><p>Hello</p></div>;
-
-    const rendererMount = mount(
+    const renderer = render(
       <TableNonPrimitiveValueRenderer
         buttonLabel="Open greeting"
         dialogContents={dialogContents}
@@ -59,48 +61,47 @@ describe("TableNonPrimitiveValueRenderer", () => {
         onDialogOpen={onDialogOpen}
       />);
 
-    rendererMount.find("button").simulate("click");
+    const button = renderer.container.getElementsByClassName("core-underlined-button")[0];
+    fireEvent.click(button);
+
     expect(onDialogOpen.calledOnce).to.be.true;
     expect(onDialogOpen.args[0][0].content).to.be.eq(dialogContents);
     expect(onDialogOpen.args[0][0].title).to.be.eq("Greeting");
   });
 
   it("renders DOM exactly the same when hovered on without appropriate callbacks set", () => {
-    const dialogContents = <div><p>Hello</p></div>;
-
-    const rendererMount = mount(
+    const renderer = render(
       <TableNonPrimitiveValueRenderer
         buttonLabel="Open greeting"
         dialogContents={dialogContents}
         dialogTitle={"Greeting"}
       />);
 
-    const renderedDom = rendererMount.html();
+    const renderedDom = renderer.container.innerHTML;
 
-    const button = rendererMount.find("button");
+    const button = renderer.container.getElementsByClassName("core-underlined-button")[0];
 
-    button.simulate("mouseenter");
-    expect(rendererMount.html()).to.be.eq(renderedDom);
+    fireEvent.mouseEnter(button);
+    expect(renderer.container.innerHTML).to.be.eq(renderedDom);
 
-    button.simulate("mouseleave");
-    expect(rendererMount.html()).to.be.eq(renderedDom);
+    fireEvent.mouseLeave(button);
+    expect(renderer.container.innerHTML).to.be.eq(renderedDom);
   });
 
   it("renders DOM exactly the same when clicked on without appropriate callbacks set", () => {
-    const dialogContents = <div><p>Hello</p></div>;
-
-    const rendererMount = mount(
+    const renderer = render(
       <TableNonPrimitiveValueRenderer
         buttonLabel="Open greeting"
         dialogContents={dialogContents}
         dialogTitle={"Greeting"}
       />);
 
-    const renderedDom = rendererMount.html();
+    const renderedDom = renderer.container.innerHTML;
 
-    const button = rendererMount.find("button");
+    const button = renderer.container.getElementsByClassName("core-underlined-button")[0];
 
-    button.simulate("click");
-    expect(rendererMount.html()).to.be.eq(renderedDom);
+    fireEvent.click(button);
+
+    expect(renderer.container.innerHTML).to.be.eq(renderedDom);
   });
 });

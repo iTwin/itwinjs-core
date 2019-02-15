@@ -49,7 +49,7 @@ describe("ECSqlStatement", () => {
         </ECEntityClass>
       </ECSchema>`), async (ecdb: ECDb) => {
         assert.isTrue(ecdb.isOpen);
-        const rowIds = ["0x1000000004c", "0x100000000ea", "0x200000000ff"];
+        const rowIds = ["0x1000000004c", "0x100000000ea", "0x200000000ff", "0x31", "0xffffffffffffff01"];
         for (const rowId of rowIds) {
           const r: ECSqlInsertResult = await ecdb.withPreparedStatement(`insert into ts.Foo(ECInstanceId) values(?)`, async (stmt: ECSqlStatement) => {
             stmt.bindId(1, rowId);
@@ -58,9 +58,18 @@ describe("ECSqlStatement", () => {
           assert.equal(r.status, DbResult.BE_SQLITE_DONE);
         }
         const args = new Array(rowIds.length).fill("?").join(",");
-        assert.equal(await ecdb.queryRowCount(`SELECT ECInstanceId FROM ts.Foo WHERE ECInstanceId IN (${args})`, rowIds), rowIds.length);
-        assert.equal(await ecdb.queryRowCount(`SELECT * FROM (SELECT ECInstanceId AS id FROM ts.Foo) WHERE id IN (${args})`, rowIds), rowIds.length);
-        assert.equal(await ecdb.queryRowCount(`SELECT * FROM (SELECT ECInstanceId AS sap FROM ts.Foo) WHERE sap IN (${args})`, rowIds), rowIds.length);
+        let row = await ecdb.queryPage(`SELECT * FROM ts.Foo WHERE ECInstanceId IN (${args})`, rowIds);
+        assert.equal(row.length, rowIds.length);
+        assert.isTrue(Reflect.has(row[0], "id"));
+        row = await ecdb.queryPage(`SELECT * FROM (SELECT ECInstanceId AS id FROM ts.Foo) WHERE id IN (${args})`, rowIds);
+        assert.equal(row.length, rowIds.length);
+        assert.isTrue(Reflect.has(row[0], "id"));
+        assert.isTrue(String(row[0].id).startsWith("0x"));
+        row = await ecdb.queryPage(`SELECT * FROM (SELECT ECInstanceId AS sap FROM ts.Foo) WHERE sap IN (${args})`, rowIds);
+        assert.isTrue(Reflect.has(row[0], "sap"));
+        assert.equal(row.length, rowIds.length);
+        assert.isTrue(String(row[0].sap).startsWith("0x"));
+
       });
   });
   it("Paging Resultset", async () => {

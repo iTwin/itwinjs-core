@@ -83,6 +83,11 @@ class DebugTools extends ToolBarDropDown {
       click: async () => PluginAdmin.loadPlugin("MarkupPlugin.js"),
       tooltip: "Create Markup for View",
     }));
+    this._element.appendChild(createToolButton({
+      className: "bim-icon-work",
+      click: async () => PluginAdmin.loadPlugin("startWebWorkerPlugin.js"),
+      tooltip: "Start Web Worker Test",
+    }));
     parent.appendChild(this._element);
   }
 
