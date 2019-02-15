@@ -13,16 +13,16 @@
   },
   "repository": {},
   "dependencies": {
-    "@bentley/bentleyjs-core": "0.189.0-dev.29",
-    "@bentley/geometry-core": "0.189.0-dev.29",
-    "@bentley/imodeljs-clients": "0.189.0-dev.29",
-    "@bentley/imodeljs-common": "0.189.0-dev.29",
-    "@bentley/imodeljs-backend": "0.189.0-dev.29",
+    "@bentley/bentleyjs-core": "0.189.0-dev.30",
+    "@bentley/geometry-core": "0.189.0-dev.30",
+    "@bentley/imodeljs-clients": "0.189.0-dev.30",
+    "@bentley/imodeljs-common": "0.189.0-dev.30",
+    "@bentley/imodeljs-backend": "0.189.0-dev.30",
     "fs-extra": "^6.0.1",
     "yargs": "^12.0.0"
   },
   "devDependencies": {
-    "@bentley/build-tools": "0.189.0-dev.29",
+    "@bentley/build-tools": "0.189.0-dev.30",
     "@types/fs-extra": "^4.0.7",
     "@types/lodash": "^4.14.0",
     "@types/node": "10.12.18",
