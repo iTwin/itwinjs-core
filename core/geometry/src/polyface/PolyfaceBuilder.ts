@@ -384,7 +384,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   public findOrAddParamInGrowableXYArray(data: GrowableXYArray, index: number): number | undefined {
     if (!data)
       return undefined;
-    const q = data.getPoint2dAt(index, PolyfaceBuilder._workUVFindOrAdd);
+    const q = data.point2dAtUncheckedPointIndex(index, PolyfaceBuilder._workUVFindOrAdd);
     if (q) {
       return this._polyface.addParam(q);
     }

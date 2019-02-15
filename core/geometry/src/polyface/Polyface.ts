@@ -20,6 +20,7 @@ import { GeometryHandler } from "../geometry3d/GeometryHandler";
 import { PolyfaceData } from "./PolyfaceData";
 import { FacetFaceData } from "./FacetFaceData";
 import { Geometry } from "../Geometry";
+import { GrowableXYArray } from "../geometry3d/GrowableXYArray";
 
 function allDefined(valueA: any, valueB: any, valueC: any): boolean {
   return valueA !== undefined && valueB !== undefined && valueC !== undefined;
@@ -199,11 +200,10 @@ export class IndexedPolyface extends Polyface {
 
     // Add param and param index data
     if (copyParams) {
-      const startOfNewParams = this.data.param!.length;
-      for (const param of source.data.param!) {
-        const sourceParam = param.clone();
-        this.addParam(sourceParam);
-      }
+      const myParams = this.data.param!;
+
+      const startOfNewParams = myParams.length;
+      myParams.pushFromGrowableXYArray(source.data.param!);
       for (let i = 0; i < source._facetStart.length; i++) {  // Expect facet start and ends for points to match normals
         const i0 = source._facetStart[i];
         const i1 = source._facetStart[i + 1];
@@ -306,12 +306,12 @@ export class IndexedPolyface extends Polyface {
    */
   public addPointXYZ(x: number, y: number, z: number): number { this.data.point.push(Point3d.create(x, y, z)); return this.data.point.length - 1; }
   public addParam(param: Point2d): number {
-    if (!this.data.param) this.data.param = [];
-    this.data.param.push(param.clone());
+    if (!this.data.param) this.data.param = new GrowableXYArray();
+    this.data.param.push(param);
     return this.data.param.length - 1;
   }
   public addParamUV(u: number, v: number, priorIndexA?: number, priorIndexB?: number): number {
-    if (!this.data.param) this.data.param = [];
+    if (!this.data.param) this.data.param = new GrowableXYArray();
     if (priorIndexA !== undefined && this.data.isAlmostEqualParamIndexUV(priorIndexA, u, v))
       return priorIndexA;
     if (priorIndexB !== undefined && this.data.isAlmostEqualParamIndexUV(priorIndexB, u, v))
@@ -321,7 +321,7 @@ export class IndexedPolyface extends Polyface {
   }
 
   public addParamXY(x: number, y: number): number {
-    if (!this.data.param) this.data.param = [];
+    if (!this.data.param) this.data.param = new GrowableXYArray();
     this.data.param.push(Point2d.create(x, y));
     return this.data.param.length - 1;
   }
@@ -482,10 +482,8 @@ export class IndexedPolyface extends Polyface {
     const setParamRange: boolean = faceData.paramRange.isNull && paramDefined;
 
     do {
-      for (let i = 0; i < visitor.numEdgesThisFacet; i++) {
-        if (setParamRange && visitor.param !== undefined)
-          faceData.paramRange.extendPoint(visitor.param[i]);
-      }
+      if (setParamRange && visitor.param !== undefined)
+        visitor.param.extendRange(faceData.paramRange);
     } while (visitor.moveToNextFacet() && visitor.currentReadIndex() < endFacetIndex);
 
     if (paramDefined && !(this.data.param!.length === 0) && faceData.paramDistanceRange.isNull)
@@ -583,7 +581,7 @@ export class IndexedPolyfaceVisitor extends PolyfaceData implements PolyfaceVisi
     const faceData = this._polyface.tryGetFaceData(this._currentFacetIndex);
     if (!faceData)
       return undefined;
-    return faceData.convertParamToDistance(this.param[index], result);
+    return faceData.convertParamXYToDistance(this.param.xAtUncheckedPointIndex(index), this.param.yAtUncheckedPointIndex(index), result);
   }
 
   /**
@@ -600,7 +598,7 @@ export class IndexedPolyfaceVisitor extends PolyfaceData implements PolyfaceVisi
     const faceData = this._polyface.tryGetFaceData(this._currentFacetIndex);
     if (!faceData)
       return undefined;
-    return faceData.convertParamToNormalized(this.param[index], result);
+    return faceData.convertParamXYToNormalized(this.param.xAtUncheckedPointIndex(index), this.param.yAtUncheckedPointIndex(index), result);
   }
 
   public currentReadIndex(): number { return this._currentFacetIndex; }

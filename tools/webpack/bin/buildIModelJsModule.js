@@ -493,7 +493,6 @@ class IModelJsModuleBuilder {
         this._isDevelopment = _isDevelopment;
         this._webpackStats = _webpackStats;
         this._alwaysCopy = process.env.BUILDIMODEL_SYMLINKS === undefined;
-        console.log("alwaysCopy is ", this._alwaysCopy);
     }
     // checks the iModelJs buildModule property.
     checkDefinition() {

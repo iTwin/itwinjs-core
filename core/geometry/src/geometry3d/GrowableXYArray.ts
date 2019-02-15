@@ -168,9 +168,25 @@ export class GrowableXYArray extends IndexedXYCollection {
    * @param pointIndex index to access
    * @param result optional result
    */
-  public getPoint2dAt(pointIndex: number, result?: Point2d): Point2d {
+  public point2dAtUncheckedPointIndex(pointIndex: number, result?: Point2d): Point2d {
     const index = 2 * pointIndex;
     return Point2d.create(this._data[index], this._data[index + 1], result);
+  }
+
+  /**
+   * Get x coordinate by point index, with no index checking
+   * @param pointIndex index to access
+   */
+  public xAtUncheckedPointIndex(pointIndex: number): number {
+    return this._data[2 * pointIndex];
+  }
+
+  /**
+   * Get y coordinate by index, with no index checking
+   * @param pointIndex index to access
+   */
+  public yAtUncheckedPointIndex(pointIndex: number): number {
+    return this._data[2 * pointIndex + 1];
   }
 
   /**
@@ -225,16 +241,27 @@ export class GrowableXYArray extends IndexedXYCollection {
   /**
    * push coordinates from the source array to the end of this array.
    * @param source source array
-   * @param sourceIndex xyz index within the source
+   * @param sourceIndex xyz index within the source.  If undefined, push entire contents of source
    * @returns true if sourceIndex is valid.
    */
-  public pushFromGrowableXYArray(source: GrowableXYArray, sourceIndex: number) {
+  public pushFromGrowableXYArray(source: GrowableXYArray, sourceIndex?: number): number {
+    if (sourceIndex === undefined) {
+      const numPresent = this.length;
+      const numPush = source.length;
+      this.ensureCapacity(numPresent + numPush);
+      const numFloatPresent = 2 * numPresent;
+      const numFloatAdd = 2 * numPush;
+      for (let i = 0; i < numFloatAdd; i++)
+        this._data[numFloatPresent + i] = source._data[i];
+      this._xyInUse += numPush;
+      return numPush;
+    }
     if (source.isIndexValid(sourceIndex)) {
       const j = sourceIndex * 2;
       this.pushXY(source._data[j], source._data[j + 1]);
-      return true;
+      return 1;
     }
-    return false;
+    return 0;
   }
 
   /**
@@ -274,14 +301,14 @@ export class GrowableXYArray extends IndexedXYCollection {
    */
   public front(result?: Point2d): Point2d | undefined {
     if (this._xyInUse === 0) return undefined;
-    return this.getPoint2dAt(0, result);
+    return this.point2dAtUncheckedPointIndex(0, result);
   }
   /**
    * @returns Return the last point, or undefined if the array is empty.
    */
   public back(result?: Point2d): Point2d | undefined {
     if (this._xyInUse < 1) return undefined;
-    return this.getPoint2dAt(this._xyInUse - 1, result);
+    return this.point2dAtUncheckedPointIndex(this._xyInUse - 1, result);
   }
   /**
    * Set the coordinates of a single point.
@@ -520,7 +547,7 @@ export class GrowableXYArray extends IndexedXYCollection {
       if (dataA.length !== dataB.length)
         return false;
       for (let i = 0; i < dataA.length; i++)
-        if (!dataA.getPoint2dAt(i).isAlmostEqual(dataB.getPoint2dAt(i)))
+        if (!dataA.point2dAtUncheckedPointIndex(i).isAlmostEqual(dataB.point2dAtUncheckedPointIndex(i)))
           return false;
       return true;
     }

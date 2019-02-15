@@ -84,7 +84,8 @@ function exercisePolyface(ck: Checker, polyface: Polyface,
         const paramIndexA = visitor1.clientParamIndex(i);
         const paramY = polyface.data.getParam(paramIndexA);
         polyface.data.copyParamTo(paramIndexA, paramZ);
-        ck.testPoint2d(paramY, paramZ, "polyface getParam, copyParamTo");
+        if (ck.testPointer(paramY) && paramY)
+          ck.testPoint2d(paramY, paramZ, "polyface getParam, copyParamTo");
 
         const normalIndexA = visitor1.clientNormalIndex(i);
         const normalY = polyface.data.getNormal(normalIndexA);
@@ -172,11 +173,13 @@ describe("Polyface.HelloWorld", () => {
     // we know .. normal is 001, param is integers . .
     ck.testVector3d(Vector3d.unitZ(), polyface0.data.getNormal(0)!, "access normal");
     const point0 = polyface0.data.getPoint(0)!;
-    const param0 = polyface0.data.getParam(numX * numY - 1);
+    const param0 = polyface0.data.getParam(numX * numY - 1)!;
     const normal0 = polyface0.data.getNormal(0);
     ck.testPoint3d(origin, point0);
-    ck.testExactNumber(param0.x, numX - 1);
-    ck.testExactNumber(param0.y, numY - 1);
+    if (param0 && ck.testPointer(param0)) {
+      ck.testExactNumber(param0.x, numX - 1);
+      ck.testExactNumber(param0.y, numY - 1);
+    }
     ck.testVector3d(normal0!, Vector3d.unitZ());
     ck.testExactNumber(0, polyface0.numEdgeInFacet(100000), "numEdgeInFacet for bad index");
     ck.testExactNumber(3, polyface0.numEdgeInFacet(1), "numEdgeInFacet (triangulated)");
@@ -548,14 +551,14 @@ describe("Polyface.Faces", () => {
     // Check params
     for (let idx = 0; idx < polyface.data.paramIndex!.length; idx++) {
       const currentPoint = polyface.data.point.getPoint3dAt(idx);
-      const currentParam = polyface.data.param![idx];
+      const currentParam = polyface.data.param!.atPoint2dIndex(idx)!;
       if (idx % 4 === 0) {
         ck.testCoordinate(currentParam.x, 0);
         ck.testCoordinate(currentParam.y, 0);
       } else if (idx % 4 === 1) {
         const oldPoint = polyface.data.point.getPoint3dAt(idx - 1);
         ck.testCoordinate(currentParam.x, Math.hypot(currentPoint.x - oldPoint.x, currentPoint.y - oldPoint.y, currentPoint.z - oldPoint.z));
-        ck.testCoordinate(polyface.data.param![idx].y, 0);
+        ck.testCoordinate(polyface.data.param!.yAtUncheckedPointIndex(idx), 0);
       }
       // else if (idx % 4 === 2)
       // else
@@ -606,8 +609,8 @@ describe("Polyface.Faces", () => {
     const nativeParamIdx = nativePolyface.Group.Member[0].IndexedMesh.ParamIndex;
     ck.testExactNumber(jsParamsIdx!.length, nativeParamIdx!.length, "Number of params match");
     for (let i = 0; i < jsParams!.length; i++) {
-      ck.testCoordinate(jsParams![polyface.data.paramIndex![i]].x, nativeParams![nativeParamIdx![i]][0]);
-      ck.testCoordinate(jsParams![polyface.data.paramIndex![i]].y, nativeParams![nativeParamIdx![i]][1]);
+      ck.testCoordinate(jsParams!.xAtUncheckedPointIndex(polyface.data.paramIndex![i]), nativeParams![nativeParamIdx![i]][0]);
+      ck.testCoordinate(jsParams!.yAtUncheckedPointIndex(polyface.data.paramIndex![i]), nativeParams![nativeParamIdx![i]][1]);
     }
 
     const jsNormals = polyface.data.normal!;
