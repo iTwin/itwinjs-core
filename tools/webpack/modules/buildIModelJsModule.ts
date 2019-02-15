@@ -640,11 +640,28 @@ class IModelJsModuleBuilder {
     });
   }
 
+  // find webpack executable.
+  private findWebpack(): string | undefined {
+    // first look in node_modules/webpack
+    const webpackCommand: string = process.platform === "win32" ? "webpack.cmd" : "webpack";
+    const inLocalNodeModules = path.resolve (process.cwd(), "node_modules/.bin", webpackCommand);
+    if (fs.existsSync (inLocalNodeModules))
+      return inLocalNodeModules;
+
+    const inToolsWebpackNodeModules = path.resolve(process.cwd(), "node_modules/@bentley/webpack-tools/node_modules/.bin", webpackCommand);
+    if (fs.existsSync (inToolsWebpackNodeModules))
+      return inToolsWebpackNodeModules;
+
+    return undefined;
+  }
+
   // spawns a webpack process
   private startWebpack(operation: string, outputPath: string, entry: string, bundleName: string, styleSheets: boolean, buildType: string, isDevelopment: boolean, doStats: boolean, htmlTemplate?: string): Promise<Result> {
-    const webpackCommand: string = process.platform === "win32" ? "webpack.cmd" : "webpack";
-    const webpackNodeModules = path.resolve(process.cwd(), "node_modules/@bentley/webpack-tools/node_modules");
-    const webpackFullPath = path.resolve(process.cwd(), webpackNodeModules, ".bin", webpackCommand);
+    const webpackFullPath = this.findWebpack();
+    if (!webpackFullPath) {
+      return Promise.resolve(new Result(operation, 1, undefined, undefined, "Unable to locate webpack"));
+    }
+
     const args: string[] = [];
     const configPath = path.resolve(process.cwd(), "node_modules/@bentley/webpack-tools/modules/webpackModule.config.js");
     args.push(`--config=${configPath}`);

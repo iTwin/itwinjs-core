@@ -588,11 +588,24 @@ class IModelJsModuleBuilder {
             });
         });
     }
+    // find webpack executable.
+    findWebpack() {
+        // first look in node_modules/webpack
+        const webpackCommand = process.platform === "win32" ? "webpack.cmd" : "webpack";
+        const inLocalNodeModules = path.resolve(process.cwd(), "node_modules/.bin", webpackCommand);
+        if (fs.existsSync(inLocalNodeModules))
+            return inLocalNodeModules;
+        const inToolsWebpackNodeModules = path.resolve(process.cwd(), "node_modules/@bentley/webpack-tools/node_modules/.bin", webpackCommand);
+        if (fs.existsSync(inToolsWebpackNodeModules))
+            return inToolsWebpackNodeModules;
+        return undefined;
+    }
     // spawns a webpack process
     startWebpack(operation, outputPath, entry, bundleName, styleSheets, buildType, isDevelopment, doStats, htmlTemplate) {
-        const webpackCommand = process.platform === "win32" ? "webpack.cmd" : "webpack";
-        const webpackNodeModules = path.resolve(process.cwd(), "node_modules/@bentley/webpack-tools/node_modules");
-        const webpackFullPath = path.resolve(process.cwd(), webpackNodeModules, ".bin", webpackCommand);
+        const webpackFullPath = this.findWebpack();
+        if (!webpackFullPath) {
+            return Promise.resolve(new Result(operation, 1, undefined, undefined, "Unable to locate webpack"));
+        }
         const args = [];
         const configPath = path.resolve(process.cwd(), "node_modules/@bentley/webpack-tools/modules/webpackModule.config.js");
         args.push(`--config=${configPath}`);
