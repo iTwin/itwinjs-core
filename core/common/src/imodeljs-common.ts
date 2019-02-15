@@ -30,6 +30,7 @@ export * from "./TileProps";
 export * from "./Thumbnail";
 export * from "./ViewProps";
 export * from "./Render";
+export * from "./Paging";
 export * from "./RenderSchedule";
 export * from "./ChangedElements";
 export * from "./domains/FunctionalElementProps";

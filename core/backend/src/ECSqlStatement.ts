@@ -10,6 +10,7 @@ import { XAndY, XYAndZ, XYZ, LowAndHighXYZ, Range3d } from "@bentley/geometry-co
 import { ECDb } from "./ECDb";
 import { IModelJsNative } from "./IModelJsNative";
 import { IModelHost } from "./IModelHost";
+import { Config } from "@bentley/imodeljs-clients";
 
 /** @hidden */
 const loggingCategory = "imodeljs-backend.ECSqlStatement";
@@ -266,6 +267,30 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    */
   public step(): DbResult { return this._stmt!.step(); }
 
+  /** Asynchronous version of Step method.
+   *
+   *  For **ECSQL SELECT** statements the method returns
+   *  - [DbResult.BE_SQLITE_ROW]($bentleyjs-core) if the statement now points successfully to the next row.
+   *  - [DbResult.BE_SQLITE_DONE]($bentleyjs-core) if the statement has no more rows.
+   *  - Error status in case of errors.
+   *
+   *  For **ECSQL INSERT, UPDATE, DELETE** statements the method returns
+   *  - [DbResult.BE_SQLITE_DONE]($bentleyjs-core) if the statement has been executed successfully.
+   *  - Error status in case of errors.
+   *
+   *  >  Insert statements can be used with ECDb only, not with IModelDb.
+   *
+   * See also: [Code Samples]($docs/learning/backend/ECSQLCodeExamples)
+   */
+  public async stepAsync(): Promise<DbResult> {
+    return new Promise<DbResult>((resolve, reject) => {
+      if (!this._stmt)
+        reject();
+      else
+        this._stmt.stepAsync(resolve);
+    });
+  }
+
   /** Step this INSERT statement and returns status and the ECInstanceId of the newly
    * created instance.
    *
@@ -280,6 +305,29 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
       return new ECSqlInsertResult(r.status, r.id);
 
     return new ECSqlInsertResult(r.status);
+  }
+
+  /** Asynchronous version of stepForInsert method
+   * created instance.
+   *
+   * > Insert statements can be used with ECDb only, not with IModelDb.
+   *
+   * @returns Returns the generated ECInstanceId in case of success and the status of the step
+   * call. In case of error, the respective error code is returned.
+   */
+  public async stepForInsertAsync(): Promise<ECSqlInsertResult> {
+    return new Promise<ECSqlInsertResult>((resolve, reject) => {
+      if (!this._stmt)
+        reject();
+      else {
+        this._stmt.stepForInsertAsync((r: { status: DbResult, id: string }) => {
+          if (r.status === DbResult.BE_SQLITE_DONE)
+            resolve(new ECSqlInsertResult(r.status, r.id));
+          else
+            resolve(new ECSqlInsertResult(r.status));
+        });
+      }
+    });
   }
 
   /** Get the query result's column count (only for ECSQL SELECT statements). */
@@ -942,7 +990,6 @@ export class CachedECSqlStatement {
     this.useCount = 1;
   }
 }
-
 /** A cache for ECSqlStatements.
  *
  * Preparing [ECSqlStatement]($backend)s can be costly. This class provides a way to
@@ -955,7 +1002,7 @@ export class ECSqlStatementCache {
   private readonly _statements: Map<string, CachedECSqlStatement> = new Map<string, CachedECSqlStatement>();
   public readonly maxCount: number;
 
-  public constructor(maxCount = 20) { this.maxCount = maxCount; }
+  public constructor(maxCount = Config.App.getNumber("imjs_ecsql_cache_size", 40)) { this.maxCount = maxCount; }
 
   public add(str: string, stmt: ECSqlStatement): void {
     const existing = this._statements.get(str);
@@ -971,6 +1018,20 @@ export class ECSqlStatementCache {
 
   public find(str: string): CachedECSqlStatement | undefined {
     return this._statements.get(str);
+  }
+
+  public replace(str: string, stmt: ECSqlStatement) {
+    if (stmt.isShared) {
+      throw new Error("expecting a unshared statement");
+    }
+    const existingCS = this.find(str);
+    if (existingCS) {
+      existingCS.statement.setIsShared(false);
+      this._statements.delete(str);
+    }
+    const newCS = new CachedECSqlStatement(stmt);
+    newCS.statement.setIsShared(true);
+    this._statements.set(str, newCS);
   }
 
   public release(stmt: ECSqlStatement): void {
