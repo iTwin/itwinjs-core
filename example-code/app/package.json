@@ -34,7 +34,7 @@
     "fuse.js": "^3.3.0",
     "i18next": "^10.2.2",
     "i18next-browser-languagedetector": "^2.1.0",
-    "i18next-xhr-backend": "^2",
+    "i18next-xhr-backend": "^2.0.1",
     "js-base64": "^2.4.5",
     "save": "^2.3.3",
     "webpack": "^4.20.2"
