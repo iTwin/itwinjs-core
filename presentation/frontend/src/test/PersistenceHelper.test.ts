@@ -10,7 +10,7 @@ import { createRandomECInstanceNodeKey, createRandomId } from "@bentley/presenta
 import { Id64 } from "@bentley/bentleyjs-core";
 import { RelatedElementProps, ModelProps, ElementProps, Code } from "@bentley/imodeljs-common";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { PersistentKeysContainer, InstanceKey } from "@bentley/presentation-common";
+import { PersistentKeysContainer, InstanceKey, KeySet } from "@bentley/presentation-common";
 import { PersistenceHelper } from "../presentation-frontend";
 
 describe("PersistenceHelper", () => {
@@ -69,45 +69,51 @@ describe("PersistenceHelper", () => {
     });
 
   });
-  /*
-    describe("createPersistentKeysContainer", () => {
 
-      it("creates PersistentKeysContainer", async () => {
-        // set up test data
-        const modelKey: InstanceKey = {
-          className: "model:class_name",
-          id: createRandomId(),
-        };
-        const elementKey: InstanceKey = {
-          className: "element:class_name",
-          id: createRandomId(),
-        };
-        const nodeKey = createRandomECInstanceNodeKey();
-        // set up the mock
-        const imodelMock = moq.Mock.ofType<IModelConnection>();
-        imodelMock.setup((x) => x.executeQuery(moq.It.isAnyString(), [modelKey.className, elementKey.className]))
-          .returns(async () => [{ fullClassName: modelKey.className }])
-          .verifiable();
-        const imodel = imodelMock.object;
+  async function* createAsyncIterator(items: any[]) {
+    for (const item of items) {
+      yield item;
+    }
+  }
 
-        // create a keyset
-        const keyset = new KeySet();
-        keyset.add(modelKey).add(elementKey).add(nodeKey);
+  describe("createPersistentKeysContainer", () => {
 
-        // create the persistent container
-        const container = await PersistenceHelper.createPersistentKeysContainer(imodel, keyset);
+    it("creates PersistentKeysContainer", async () => {
+      // set up test data
+      const modelKey: InstanceKey = {
+        className: "model:class_name",
+        id: createRandomId(),
+      };
+      const elementKey: InstanceKey = {
+        className: "element:class_name",
+        id: createRandomId(),
+      };
+      const nodeKey = createRandomECInstanceNodeKey();
+      // set up the mock
+      const imodelMock = moq.Mock.ofType<IModelConnection>();
+      imodelMock.setup((x) => x.query(moq.It.isAnyString(), [modelKey.className, elementKey.className]))
+        .returns(() => {
+          return createAsyncIterator([{ fullClassName: modelKey.className }]);
+        })
+        .verifiable();
+      const imodel = imodelMock.object;
 
-        // verify mocks
-        imodelMock.verifyAll();
+      // create a keyset
+      const keyset = new KeySet();
+      keyset.add(modelKey).add(elementKey).add(nodeKey);
 
-        // validate result
-        expect(container).to.deep.eq({
-          models: [modelKey.id],
-          elements: [elementKey.id],
-          nodes: [nodeKey],
-        });
+      // create the persistent container
+      const container = await PersistenceHelper.createPersistentKeysContainer(imodel, keyset);
+
+      // verify mocks
+      imodelMock.verifyAll();
+
+      // validate result
+      expect(container).to.deep.eq({
+        models: [modelKey.id],
+        elements: [elementKey.id],
+        nodes: [nodeKey],
       });
-
     });
-  */
+  });
 });
