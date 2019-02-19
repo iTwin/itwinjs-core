@@ -42,6 +42,7 @@
     "@bentley/bentleyjs-core": "0.189.0-dev.32",
     "@bentley/geometry-core": "0.189.0-dev.32",
     "@bentley/imodeljs-clients": "0.189.0-dev.32",
+    "@bentley/imodeljs-clients-backend": "0.189.0-dev.32",
     "@bentley/imodeljs-common": "0.189.0-dev.32"
   },
   "//devDependencies": [
