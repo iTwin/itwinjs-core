@@ -20,7 +20,7 @@
   }
 
   > .nz-gradient {
-    background: linear-gradient(to bottom, rgba($gradient-dark, 0), rgba($gradient-dark, 0.22));
+    background: linear-gradient(to bottom, $buic-button-gradient1, $buic-button-gradient2);
     position: absolute;
     width: 100%;
     height: 100%;

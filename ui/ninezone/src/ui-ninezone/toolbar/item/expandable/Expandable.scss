@@ -34,7 +34,7 @@
     filter: $arrow-shadow;
     pointer-events: none;
 
-    @include triangle-bottom-right($width: $triangle-width, $height: $triangle-height, $color: rgba($text-dark, 0.88));
+    @include triangle-bottom-right($width: $triangle-width, $height: $triangle-height, $color: $buic-icon-color);
   }
 
   &:active > .nz-triangle {

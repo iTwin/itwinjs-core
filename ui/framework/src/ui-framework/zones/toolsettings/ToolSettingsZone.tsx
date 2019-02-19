@@ -10,6 +10,7 @@ import { ToolUiManager } from "../toolsettings/ToolUiManager";
 
 import { ToolSettingsWidget, ToolSettingsTab, ToolSettings, CommonProps, RectangleProps, TabIcon, ZoneComponent } from "@bentley/ui-ninezone";
 import { KeyboardShortcutManager } from "../../keyboardshortcut/KeyboardShortcut";
+import UiFramework from "../../UiFramework";
 
 /** State for the ToolSettingsZone content.
  */
@@ -36,6 +37,7 @@ export interface ToolSettingsZoneProps extends CommonProps {
 /** Tool Settings Zone React component.
  */
 export class ToolSettingsZone extends React.Component<ToolSettingsZoneProps, ToolSettingsZoneState> {
+  private _toolSettingsLabel: string;
 
   /** @hidden */
   public readonly state: Readonly<ToolSettingsZoneState> = {
@@ -47,6 +49,8 @@ export class ToolSettingsZone extends React.Component<ToolSettingsZoneProps, Too
 
   constructor(props: ToolSettingsZoneProps) {
     super(props);
+
+    this._toolSettingsLabel = UiFramework.i18n.translate("UiFramework:general.toolSettings");
   }
 
   public componentDidMount(): void {
@@ -103,11 +107,14 @@ export class ToolSettingsZone extends React.Component<ToolSettingsZoneProps, Too
   }
 
   private getToolSettingsWidget(): React.ReactNode {
+    const title = ToolUiManager.activeToolDescription + " " + this._toolSettingsLabel;
+
     const tab = (
       <ToolSettingsTab
         onClick={this._processClick}
         onKeyDown={this._handleKeyDown}
         isActive={this.state.toolSettingsZoneContent === ToolSettingsZoneContent.ToolSettings}
+        title={title}
       >
         {this.getToolSettingsButton()}
         {/*this.getToolAssistanceButton()*/}

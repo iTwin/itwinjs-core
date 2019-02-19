@@ -6,12 +6,12 @@
 @import "../../../../../_typography";
 
 .nz-toolbar-item-expandable-group-tool-item {
-  $label-color: rgba($text-light, 0.88);
-  $pressed-label-color: rgba($text-light, 0.88);
-  $hovered-label-color: $primary-tint;
-  $focused-label-color: $primary-tint;
-  $active-label-color: $primary-tint;
-  $disabled-label-color: rgba($text-light, 0.44);
+  $label-color: $buic-text-color;
+  $pressed-label-color: $buic-foreground-activehover;
+  $hovered-label-color: $primary-base;
+  $focused-label-color: $primary-base;
+  $active-label-color: $primary-base;
+  $disabled-label-color: $buic-text-color-disabled;
   $item-height: 32px;
   $item-border-width: 2px;
   $active-tool-stripe-height: 22px;
@@ -66,7 +66,7 @@
   }
 
   &:active:not(.nz-is-disabled) {
-    background: $primary-tone;
+    background: $buic-row-selection;
     color: $pressed-label-color;
 
     > .nz-icon, .nz-label {
@@ -76,7 +76,7 @@
 
   &.nz-is-focused:not(.nz-is-disabled) {
     color: $focused-label-color;
-    border-color: $primary-tint;
+    border-color: $primary-base;
     border-width: $item-border-width;
     border-style: solid;
 

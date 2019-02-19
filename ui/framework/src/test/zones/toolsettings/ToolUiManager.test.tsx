@@ -14,6 +14,7 @@ import {
 describe("ToolUiManager", () => {
   const testToolId = "ToolUiManager-TestTool";
   const testToolLabel = "TestTool";
+  const testToolDescription = "TestToolDescription";
   const useLengthName = "use-length";
 
   const useLengthDescription: PropertyDescription = {
@@ -64,13 +65,18 @@ describe("ToolUiManager", () => {
     toolSettingsProperties.push(new ToolSettingsPropertyRecord(useLengthValue.clone() as PrimitiveValue, useLengthDescription, { rowPriority: 0, columnIndex: 1 }));
     toolSettingsProperties.push(new ToolSettingsPropertyRecord(lengthValue.clone() as PrimitiveValue, lengthDescription, { rowPriority: 0, columnIndex: 3 }));
     toolSettingsProperties.push(new ToolSettingsPropertyRecord(enumValue.clone() as PrimitiveValue, enumDescription, { rowPriority: 1, columnIndex: 3 }));
-    ToolUiManager.cacheToolSettingsProperties(toolSettingsProperties, testToolId, testToolLabel);
+    ToolUiManager.cacheToolSettingsProperties(toolSettingsProperties, testToolId, testToolLabel, testToolDescription);
 
     expect(ToolUiManager.useDefaultToolSettingsProvider).to.be.true;
     expect(ToolUiManager.toolSettingsProperties.length).to.equal(toolSettingsProperties.length);
+    expect(ToolUiManager.activeToolLabel).to.eq(testToolLabel);
+    expect(ToolUiManager.activeToolDescription).to.eq(testToolDescription);
+
     ToolUiManager.clearCachedProperties();
     expect(ToolUiManager.useDefaultToolSettingsProvider).to.be.false;
     expect(ToolUiManager.toolSettingsProperties).to.be.empty;
+    expect(ToolUiManager.activeToolLabel).to.be.empty;
+    expect(ToolUiManager.activeToolDescription).to.be.empty;
   });
 
   it("handleSyncToolSettingsPropertiesEvent", () => {

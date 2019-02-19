@@ -157,6 +157,11 @@
         }
       }
     },
+    "AppSelect": {
+      "keyin": "Select",
+      "description": "Element Selection",
+      "flyover": "Select"
+    },
     "select": "Select",
     "fitView": "Fit View",
     "windowArea": "Window Area",

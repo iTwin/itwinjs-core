@@ -3,9 +3,8 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 @import "@bentley/ui-core/lib/ui-core/colors";
-@import "../../../theme/_theme";
 
-@include nz-style-component(nz-footer-message-content-progress) {
+.nz-footer-message-content-progress {
   $progress-tip-height: 7px;
   $progress-tip-width: 2px;
   $progress-height: 5px;
@@ -38,60 +37,30 @@
 
   &.nz-status-information {
     > .nz-progress {
-      background-color: $primary-tint;
+      background-color: $buic-accessory-primary-tint;
 
       > .nz-progress-bar {
-        background-color: $primary-base;
+        background-color: $buic-accessory-primary;
       }
     }
   }
 
   &.nz-status-success {
     > .nz-progress {
-      background-color: $accent-tint;
+      background-color: $buic-accessory-success-tint;
 
       > .nz-progress-bar {
-        background-color: $accent-base;
+        background-color: $buic-accessory-success;
       }
     }
   }
 
   &.nz-status-error {
     > .nz-progress {
-      background-color: $alert-tint;
+      background-color: $buic-accessory-alert-tint;
 
       > .nz-progress-bar {
-        background-color: $alert-base;
-      }
-    }
-  }
-}
-
-@include nz-dark-component {
-  > .nz-progress {
-    background-color: rgb(45, 55, 60);
-  }
-
-  &.nz-status-information {
-    > .nz-progress {
-      > .nz-progress-bar {
-        background-color: $primary-tint;
-      }
-    }
-  }
-
-  &.nz-status-success {
-    > .nz-progress {
-      > .nz-progress-bar {
-        background-color: $accent-tint;
-      }
-    }
-  }
-
-  &.nz-status-error {
-    > .nz-progress {
-      > .nz-progress-bar {
-        background-color: $alert-tint;
+        background-color: $buic-accessory-alert;
       }
     }
   }

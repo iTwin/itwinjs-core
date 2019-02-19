@@ -15,13 +15,13 @@
     font-size: 32px;
     font-weight: 600;
     margin-bottom: 10px;
-    color: rgba(black, 0.75);
+    color: $buic-foreground-body; /* rgba(black, 0.75); */
   }
 
   .message {
     font-size: 14px;
     margin-bottom: 1.75em;
-    color: rgba(black, 0.85);
+    color: $buic-foreground-body; /* rgba(black, 0.85); */
   }
 }
 

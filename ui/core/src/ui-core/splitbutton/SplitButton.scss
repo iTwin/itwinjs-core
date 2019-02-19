@@ -13,11 +13,12 @@
   cursor: pointer;
   margin: 0;
   display: flex;
-  background-color: $uicore-white;
+  color: $buic-foreground-body;
+  background-color: $buic-background-control;
 
   > .split-button-label {
     &:hover {
-      color: $uicore-blue;
+      color: $buic-foreground-primary;
     }
 
     @include uicore-text(body);
@@ -30,7 +31,7 @@
       outline: 0px;
 
       > .split-button-arrow-icon {
-        color: $uicore-blue;
+        color: $buic-foreground-primary;
       }
     }
 
@@ -38,7 +39,7 @@
       transition: transform .2s;
 
       &:hover {
-        color: $uicore-blue;
+        color: $buic-foreground-primary;
       }
 
       text-align: center;

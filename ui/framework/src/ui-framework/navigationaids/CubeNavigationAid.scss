@@ -2,20 +2,18 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-@import "@bentley/ui-core/lib/ui-core/style/index";
+@import "@bentley/ui-core/lib/ui-core/index";
 
 $cube-outer-width: 96px;
 $button-width: 14px;
 $nav-cube-width: 64px;
 $nav-cube-side-width: 12px;
 
+$grad-start: $background-1;
+$grad-end: $background-4;
 
-$grad-start: $uicore-gray-c;
-$grad-end: $uicore-gray-9;
-
-$grad-start-highlight: $uicore-gray-a;
-$grad-end-highlight: $uicore-gray-7;
-
+$grad-start-highlight: $background-2;
+$grad-end-highlight: $background-5;
 
 .cube-container {
   position: relative;
@@ -41,7 +39,7 @@ $grad-end-highlight: $uicore-gray-7;
         height: 100%;
         font-size: $uicore-cap-size;
         font-weight: $uicore-font-weight-bold;
-        color: $uicore-text-color;
+        color: $buic-text-color;
         box-shadow: 0px 0px .0px 1px #000;
         .face-row {
           display: flex;
@@ -61,10 +59,10 @@ $grad-end-highlight: $uicore-gray-7;
               flex-grow: 1;
             }
             &.hover {
-              background: $uicore-blue;
+              background: $buic-row-hover;
             }
             &.active {
-              background: $uicore-blue-highlight;
+              background: $buic-row-selection;
             }
           }
           &.center .face-cell.center {
@@ -106,7 +104,7 @@ $grad-end-highlight: $uicore-gray-7;
     height: $button-width;
     width: $button-width;
     font-size: $button-width;
-    color: $uicore-gray;
+    color: $background-3;
     text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
     cursor: pointer;
 
@@ -114,7 +112,7 @@ $grad-end-highlight: $uicore-gray-7;
       display: none;
     }
     &:hover {
-      color: $uicore-blue;
+      color: $buic-row-hover;
     }
     &.up {
       margin: 0 auto;

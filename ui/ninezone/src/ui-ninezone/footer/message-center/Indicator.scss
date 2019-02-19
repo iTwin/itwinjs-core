@@ -11,6 +11,7 @@
   align-items: center;
   padding-left: $nz-footer-indicator-horizontal-padding;
   padding-right: $nz-footer-indicator-horizontal-padding;
+  color: $buic-foreground-body;
 
   /* small devices (phones, 600px and down) */
   @media only screen and (max-width: 600px) {
@@ -67,7 +68,7 @@
 
       >.nz-content {
         position: relative;
-        color: #FFFFFF;
+        color: $buic-text-color-reverse;
         line-height: $min-balloon-height;
         font-size: 11px;
       }

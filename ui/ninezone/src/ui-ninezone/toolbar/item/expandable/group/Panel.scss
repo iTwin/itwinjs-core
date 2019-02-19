@@ -6,7 +6,7 @@
 @import "../../_variables";
 
 .nz-toolbar-item-expandable-group-panel {
-  $fill-color: rgba($background-5, 0.88);
+  $fill-color: $buic-background-panel;
 
   line-height: normal;
   background: $fill-color;
@@ -16,4 +16,5 @@
   padding-bottom: 12px;
   border-radius: 4px;
   pointer-events: auto;
+  border: 1px solid $buic-background-widget-stroke;
 }

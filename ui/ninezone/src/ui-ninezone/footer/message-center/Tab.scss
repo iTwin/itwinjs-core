@@ -17,6 +17,7 @@
   align-items: center;
   justify-content: center;
   position: relative;
+  color: $buic-foreground-muted;
 
   &:not(.nz-is-open) {
     border-bottom: 1px solid $background-5;
@@ -25,6 +26,8 @@
   }
 
   &.nz-is-open {
+    color: $primary-base;
+
     &:after {
       content: '';
       width: 100%;

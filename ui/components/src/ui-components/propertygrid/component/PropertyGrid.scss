@@ -19,6 +19,8 @@
   display: grid;
   grid-row-gap: 10px;
   user-select: none;
+  color: $buic-foreground-body;
+  background-color: $buic-background-control;
 }
 
 .components-property-grid-wrapper {
@@ -34,7 +36,7 @@
   width: 100%;
 
   .components--selected {
-    background-color: $uicore-blue-a;
+    background-color: $buic-row-selection;
   }
 
   .components--clickable {
@@ -42,11 +44,11 @@
   }
 
   .components--hoverable:hover {
-    background-color: $uicore-blue-highlight;
+    background-color: $buic-row-hover;
   }
 
   .components-cell-editor {
-    border: #c7ccd1 solid 1px;
+    border: $buic-foreground-primary solid 1px;
     border-radius: 3px;
     box-sizing: border-box;
   }

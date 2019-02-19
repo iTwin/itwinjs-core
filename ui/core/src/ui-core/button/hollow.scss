@@ -16,16 +16,16 @@
     &, &:active, &:focus {
 
         padding:            $uicore-inputs-padding-bordered $uicore-bordered-padding;
-        border:             1px solid $uicore-gray-6;
+        border:             1px solid $buic-text-color-muted;
         background-color:   transparent;
-        color:              $uicore-gray-3;
+        color:              $buic-text-color;
     }
 
     &:hover {
 
         background-color:   transparent;
-        border-color:       $uicore-gray-4;
-        color:              $uicore-gray-1;
+        border-color:       $buic-text-color;
+        color:              $buic-foreground-activehover;
     }
 
     &[disabled],

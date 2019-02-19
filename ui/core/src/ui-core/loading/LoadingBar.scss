@@ -2,9 +2,11 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-$light-background-5: #c7ccd1;
-$light-foreground-body: #000;
-$light-foreground-primary: #008be1;
+@import "../style/index.scss";
+
+$light-background-5: $buic-background-window; /* #c7ccd1; */
+$light-foreground-body: $buic-foreground-body; /* #000; */
+$light-foreground-primary: $buic-foreground-primary; /* #008be1; */
 
 .core-lb {
   display: flex;

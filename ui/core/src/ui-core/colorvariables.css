@@ -1,0 +1,51 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+
+:root {
+
+  --buic-accessory-hollow:        rgb(255, 255, 255);
+  --buic-accessory-primary:       rgb(000, 139, 225);
+  --buic-accessory-success:       rgb(086, 169, 028);
+  --buic-accessory-alert:         rgb(211, 010, 010);
+  --buic-accessory-warning:       rgb(241, 139, 018);
+  --buic-accessory-primary-tint:  rgb(165, 215, 245);
+  --buic-accessory-success-tint:  rgb(195, 225, 175);
+  --buic-accessory-alert-tint:    rgb(239, 169, 169);
+  --buic-accessory-warning-tint:  rgb(249, 215, 171);
+
+  --buic-foreground-mediumgray:   rgb(155, 165, 174);
+
+  /** background.5 */
+  --buic-background-titlebar:                 var(--buic-background-5);
+  --buic-background-toolbutton-stroke:        var(--buic-background-5);
+  --buic-background-dialog-stroke:            var(--buic-background-5);
+  --buic-background-widget-stroke:            var(--buic-background-5);
+  --buic-background-statusbar:                var(--buic-background-5);
+  --buic-background-control-stroke:           var(--buic-background-5);
+  --buic-background-panel-stroke:             var(--buic-background-5);
+
+  /** background.4 */
+  --buic-background-titlebar-outoffocus:      var(--buic-background-4);
+  --buic-background-divider:                  var(--buic-background-4);
+  --buic-background-widget-element-stroke:    var(--buic-background-4);
+  --buic-background-control-disabled:         var(--buic-background-4);
+
+  /** background.3 */
+  --buic-background-tab-inactive:             var(--buic-background-3);
+  --buic-background-toolbutton-inactive:      var(--buic-background-3);
+  --buic-background-context-menu:             var(--buic-background-3);
+  --buic-background-panel:                    var(--buic-background-3);
+
+  /** background.2 */
+  --buic-background-tab-active:               var(--buic-background-2);
+  --buic-background-dialog:                   var(--buic-background-2);
+  --buic-background-widget:                   var(--buic-background-2);
+  --buic-background-window:                   var(--buic-background-2);
+
+  /** background.1 */
+  --buic-background-card:                     var(--buic-background-1);
+  --buic-background-control:                  var(--buic-background-1);
+
+}

@@ -11,9 +11,10 @@
   align-items: center;
   font-size: $text-font-size;
   overflow: hidden;
+  color: $buic-foreground-body;
 
   .icon {
-    color: rgba($icon-color, $icon-opacity);
+    color: $icon-color;
     font-size: $icon-size;
     padding-right: 4px;
   }

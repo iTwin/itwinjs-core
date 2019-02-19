@@ -6,7 +6,8 @@ import "@bentley/icons-generic-webfont/dist/bentley-icons-generic-webfont.css";
 
 import {
   ConfigurableUiManager, FrontstageManager, WidgetState,
-  ContentGroupProps, ViewClass, TaskPropsList, WorkflowPropsList, ContentLayoutProps, KeyboardShortcutProps, CoreTools, FunctionKey, CommandItemDef, KeyboardShortcutManager,
+  ContentGroupProps, ViewClass, TaskPropsList, WorkflowPropsList, ContentLayoutProps,
+  KeyboardShortcutProps, FunctionKey, CommandItemDef, KeyboardShortcutManager,
 } from "@bentley/ui-framework";
 import { StandardViewId } from "@bentley/imodeljs-frontend";
 
@@ -372,7 +373,7 @@ export class AppUi {
           },
           {
             key: "s",
-            item: CoreTools.selectElementCommand,
+            item: AppTools.appSelectElementCommand,
           },
         ],
       },

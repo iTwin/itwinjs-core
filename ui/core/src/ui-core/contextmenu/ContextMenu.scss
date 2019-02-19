@@ -12,8 +12,10 @@
 }
 
 .context-menu {
+  color: $buic-foreground-body;
+
   &:hover {
-    color: $uicore-text-color;
+    color: $buic-foreground-activehover;
     cursor: auto;
   }
 
@@ -74,8 +76,8 @@
     visibility: hidden;
     transform: scaleY(0);
     display: table;
-    background-color: $uicore-white;
-    border: 1px solid $uicore-inputs-border-color;
+    background-color: $buic-background-panel;
+    border: 1px solid $buic-background-control-stroke;
     box-shadow: rgba($uicore-black, 0.25) 0px 1px 1px;
 
     .context-menu-item {
@@ -85,7 +87,7 @@
       width: calc(100% - 2 * #{$uicore-bordered-padding});
 
       &.is-selected {
-        background-color: $uicore-gray;
+        background-color: $buic-row-selection;
       }
 
       &:first-child {
@@ -97,7 +99,7 @@
       }
 
       &.disabled {
-        color: $uicore-gray;
+        color: $buic-foreground-disabled;
       }
 
       > .context-menu-icon {
@@ -124,7 +126,7 @@
 
       > .context-menu-item.is-selected,
       > .context-submenu > .context-menu-item.is-selected {
-        background-color: $uicore-blue;
+        background-color: $buic-row-selection;
       }
     }
 
@@ -185,7 +187,7 @@
   }
 
   .context-menu-divider {
-    border-bottom: 1px solid $uicore-inputs-border-color;
+    border-bottom: 1px solid $buic-background-divider;
     height: 0px;
   }
 }

@@ -9,12 +9,12 @@
   z-index: 2;
 
   .fill {
-    stroke: $uicore-gray-9;
+    stroke: $buic-background-control-stroke; /*$uicore-gray-9;*/
     animation: dash 1.5s ease-in-out infinite;
   }
 
   .shape {
-    stroke: $uicore-blue;
+    stroke: $buic-foreground-primary; /*$uicore-blue;*/
   }
 
   @keyframes rotate {

@@ -8,6 +8,8 @@
   height: 100%;
   width: 100%;
   user-select: none;
+  color: $buic-foreground-body;
+  background-color: $buic-background-control;
 
   .rdg-selected {
     border: none;
@@ -39,7 +41,7 @@
   .react-grid-Canvas,
   .react-grid-Row {
     border: none;
-    background: #F9F9F9;
+    background: $buic-background-control;
     outline: none;
     font-size: 14px;
   }
@@ -49,16 +51,18 @@
   }
 
   .is-hover-enabled .react-grid-Row:hover, .is-hover-enabled .react-grid-Row:hover * {
-    background: #e4f5fd !important;
+    background: $buic-row-hover !important;
   }
 
   .react-grid-Row.row-selected, .react-grid-Row.row-selected * {
-    background: #a6d7f5;
+    background: $buic-row-selection;
   }
 
   .react-grid-Cell {
     padding-left: 0px;
     padding-right: 0px;
+    color: $buic-foreground-body;
+    background: $buic-background-control;
   }
 
   .react-grid-Cell--locked:last-of-type {
@@ -71,19 +75,19 @@
   }
 
   .react-grid-Header {
-    background: #dce0e3;
+    background: $buic-background-titlebar-outoffocus;
   }
 
   .react-grid-HeaderCell {
     padding: 4px 0 0 8px;
     box-sizing: border-box;
-    background: #dce0e3;
+    background: $buic-background-titlebar-outoffocus;
     font-size: 14px;
     border: none;
   }
 
   .react-grid-HeaderCell__draggable {
-    background: #dce0e3;
+    background: $buic-background-titlebar-outoffocus;
     width: 8px !important;
     left: 100%;
     z-index: 2;
@@ -122,7 +126,7 @@
 
   .react-grid-Cell__value {
     &.is-hover-enabled:hover {
-      background: #e4f5fd !important;
+      background: $buic-row-hover !important;
     }
   }
 
@@ -137,8 +141,8 @@
   }
 
   .components-cell-editor {
-    border: $uicore-blue solid 1px;
-    background: #F9F9F9 !important;
+    border: $buic-foreground-primary solid 1px;
+    background: $buic-background-control !important;
     box-sizing: border-box;
     height: 100%;
   }

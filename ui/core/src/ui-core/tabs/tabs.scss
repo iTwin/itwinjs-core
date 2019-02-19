@@ -23,11 +23,11 @@
             display:        block;
             position:       relative;
             padding:        $uicore-bordered-padding ( $uicore-font-size - 1px ) $uicore-unbordered-padding;
-            border:         1px solid $uicore-gray-a;
+            border:         1px solid $buic-text-color-muted; // $uicore-gray-a;
             border-bottom:  0 none transparent;
             margin:         0;
             line-height:    $uicore-line-height;
-            color:          $uicore-text-color;
+            color:          $buic-text-color; // $uicore-text-color;
             cursor:         pointer;
 
             &::after {
@@ -40,14 +40,14 @@
                 height:             100%;
                 top:                0;
                 left:               0;
-                background:         $uicore-blue;
+                background:         $buic-foreground-primary; // $uicore-blue;
                 opacity:            0;
             }
 
             &:hover {
 
                 text-decoration:    none;
-                color:              $uicore-gray-4;
+                color:              $buic-foreground-activehover; // $uicore-gray-4;
 
                 &::after {
 
@@ -58,7 +58,7 @@
 
         &:last-child > a {
 
-            border-bottom:  1px solid $uicore-gray-a;
+            border-bottom:  1px solid $buic-text-color-muted; // $uicore-gray-a;
         }
 
         &.active {

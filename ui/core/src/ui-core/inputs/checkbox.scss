@@ -10,6 +10,7 @@
     position:               relative;
     padding:                0 0 0 $uicore-line-height;
     margin:                 $uicore-unbordered-padding 0;
+    background-color:       $buic-background-control;
     cursor:                 pointer;
 
     > input {
@@ -43,7 +44,7 @@
         text-align:         left;
         vertical-align:     initial;
         white-space:        normal;
-        color:              $uicore-text-color;
+        color:              $buic-text-color;
     }
 
     &.disabled {
@@ -51,10 +52,10 @@
         cursor:             not-allowed;
     }
 
-    &.success > .label {    color: $uicore-green; }
-    &.warning > .label {    color: $uicore-orange; }
-    &.error > .label {      color: $uicore-red; }
-    &.disabled > .label {   color: $uicore-gray-9; }
+    &.success > .label {    color: $buic-foreground-success; /*$uicore-green;*/ }
+    &.warning > .label {    color: $buic-foreground-warning; /*$uicore-orange;*/ }
+    &.error > .label {      color: $buic-foreground-alert; /*$uicore-red;*/ }
+    &.disabled > .label {   color: $buic-foreground-disabled; /*$uicore-gray-9;*/ }
 }
 
 .uicore-inputs-checkbox { @include uicore-inputs-checkbox; }

@@ -8,12 +8,12 @@ $desktop-tool-stripe-width: 2px;
 $desktop-tool-stripe-height: 22px;
 
 $icon-size: 16px;
-$icon-color: rgba($text-dark, 0.88);
+$icon-color: $buic-icon-color;
 $hovered-icon-color: $primary-tone;
-$pressed-icon-color: rgba($text-light, 0.88);
+$pressed-icon-color: $buic-icon-color-reverse;
 $active-icon-color: $primary-base;
-$disabled-icon-color: rgba($text-dark, 0.44);
-$icon-shadow-color: $text-light;
+$disabled-icon-color: $buic-icon-color-disabled;
+$icon-shadow-color: $buic-icon-color-reverse;
 $icon-shadow: drop-shadow(0 1px 0 $icon-shadow-color);
 $no-shadow: drop-shadow(0 0 0 transparent);
 
@@ -26,11 +26,11 @@ $components-enumbuttongroup-editor-space-between-toolbar-items: 1px;
 .components-enumbuttongroup-editor {
   font-family: $uicore-font-family;
   font-size: $uicore-font-size;
-  background: #fff;
+  background: $buic-background-control;
   width: 100%;
 
-  $divider-color: $background-4;
-  $border-color: $background-5;
+  $divider-color: $buic-background-divider;
+  $border-color: $buic-background-control-stroke;
   $border-radius: 3px;
 
   border-color: $border-color;
@@ -70,14 +70,14 @@ $components-enumbuttongroup-editor-space-between-toolbar-items: 1px;
 
 .components-enumbuttongroup-button {
   border-width: 0;
-  background: $background-1;
+  background: $buic-background-control;
   background-origin: border-box;
-  border-color: $background-5;
+  border-color: $buic-background-control-stroke;
   border-style: solid;
   cursor: pointer;
   transition: all 500ms ease;
   position: relative;
-  background: $background-1 linear-gradient(to bottom, rgba($gradient-dark, 0), rgba($gradient-dark, 0.22));
+  background: $buic-background-control linear-gradient(to bottom, $buic-button-gradient1, $buic-button-gradient2);
   height: $components-enumbuttongroup-editor-item-height;
   width: $components-enumbuttongroup-editor-item-width;
 
@@ -122,13 +122,13 @@ $components-enumbuttongroup-editor-space-between-toolbar-items: 1px;
 
   &:active:not(.nz-is-disabled) {
     background: $primary-tone;
-    color: rgba($text-light, 0.88);
+    color: $buic-foreground-body-reverse;
     transition-duration: 150ms;
     transition-timing-function: cubic-bezier(1, 0.1, 1, 0.5);
   }
 
   &.nz-is-active {
-    background: $background-1;
+    background: $buic-background-control;
 
     &:not(:active):not(.nz-is-disabled) {
       transition-duration: 0s;

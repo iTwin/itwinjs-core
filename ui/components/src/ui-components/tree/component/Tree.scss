@@ -16,6 +16,9 @@
 }
 
 .ui-components-tree {
+  color: $buic-foreground-body;
+  background-color: $buic-background-control;
+
   /**
    * Workaround for horizontal scroll issue.
    * based on https://github.com/bvaughn/react-virtualized/issues/1248
@@ -48,8 +51,8 @@
   }
 
   .components-cell-editor {
-    border: $uicore-blue solid 1px;
-    background: #F9F9F9 !important;
+    border: $buic-foreground-primary solid 1px;
+    background: $buic-background-control !important;
     box-sizing: border-box;
     height: 100%;
     width: 100%;

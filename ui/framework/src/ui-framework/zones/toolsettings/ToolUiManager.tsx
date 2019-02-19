@@ -33,6 +33,7 @@ export class ToolUiManager {
   private static _toolSettings: ToolSettingsPropertyRecord[] = [];
   private static _toolIdForCachedProperties: string = "";
   private static _activeToolLabel: string = "";
+  private static _activeToolDescription: string = "";
 
   private static syncToolSettingsProperties(toolId: string, syncProperties: ToolSettingsPropertySyncItem[]): void {
     if (toolId !== ToolUiManager._toolIdForCachedProperties) {
@@ -55,15 +56,19 @@ export class ToolUiManager {
   public static clearCachedProperties() {
     ToolUiManager._toolSettings = [];
     ToolUiManager.useDefaultToolSettingsProvider = false;
+    ToolUiManager._activeToolLabel = "";
+    ToolUiManager._activeToolDescription = "";
   }
 
   /** Cache Tool Settings properties */
-  public static cacheToolSettingsProperties(toolSettingsProperties: ToolSettingsPropertyRecord[] | undefined, toolId?: string, toolLabel?: string): boolean {
+  public static cacheToolSettingsProperties(toolSettingsProperties: ToolSettingsPropertyRecord[] | undefined, toolId?: string, toolLabel?: string, toolDescription?: string): boolean {
     ToolUiManager.clearCachedProperties();
-    if (toolLabel)
-      ToolUiManager._activeToolLabel = toolLabel;
     if (toolId)
       ToolUiManager._toolIdForCachedProperties = toolId;
+    if (toolLabel)
+      ToolUiManager._activeToolLabel = toolLabel;
+    if (toolDescription)
+      ToolUiManager._activeToolDescription = toolDescription;
 
     if (toolSettingsProperties && toolSettingsProperties.length > 0) {
       ToolUiManager._useDefaultToolSettingsProvider = true;
@@ -77,7 +82,7 @@ export class ToolUiManager {
    * the cache only ever contains the properties of one tool.
    */
   public static cachePropertiesForTool(tool: InteractiveTool) {
-    ToolUiManager.cacheToolSettingsProperties(tool.supplyToolSettingsProperties(), tool.toolId, tool.flyover);
+    ToolUiManager.cacheToolSettingsProperties(tool.supplyToolSettingsProperties(), tool.toolId, tool.flyover, tool.description);
   }
 
   /** Returns the toolSettings properties that can be used to populate the tool settings widget. */
@@ -94,6 +99,9 @@ export class ToolUiManager {
 
   /** Set the name of the active tool. This is typically the flyover text specified for the Tool. */
   public static set activeToolLabel(label: string) { ToolUiManager._activeToolLabel = label; }
+
+  /** Returns the description of the active tool. */
+  public static get activeToolDescription(): string { return ToolUiManager._activeToolDescription; }
 
   /** Get ToolSettings Properties sync event. */
   public static readonly onSyncToolSettingsProperties = new SyncToolSettingsPropertiesEvent();
