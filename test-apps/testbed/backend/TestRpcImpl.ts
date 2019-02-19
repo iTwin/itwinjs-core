@@ -32,6 +32,14 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
     RpcManager.registerImpl(TestRpcInterface, TestRpcImpl);
   }
 
+  public async interceptSendUnknownStatus(): Promise<void> {
+    throw new Error("Not intercepted.");
+  }
+
+  public async interceptSendTimeoutStatus(): Promise<void> {
+    throw new Error("Not intercepted.");
+  }
+
   public async op1(params: TestOp1Params): Promise<number> {
     const activityContext = ActivityLoggingContext.current; activityContext.enter();
     const sum = params.sum();

@@ -30,9 +30,9 @@ The application may be ran as an Electron app, Mobile app or within a browser. T
   npm run start:electron
   ```
 
-* To start the application in a browser, run the following command, and then navigate to the URL for display-test-app that prints to the console:
+* To start the application in a browser, run the following command, and then navigate to localhost:3000 in any supported browser (not Internet Explorer):
   ```
-  npm run start:web
+  npm run start:servers
   ```
 
 ## Using display-test-app

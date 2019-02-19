@@ -66,6 +66,10 @@ if (TestbedConfig.cloudRpc) {
     app.get(TestbedConfig.swaggerURI, (req, res) => TestbedConfig.cloudRpc.protocol.handleOpenApiDescriptionRequest(req, res));
 
     app.post("*", (req, res) => {
+      if (handleIntercept(req, res)) {
+        return;
+      }
+
       if (handlePending(req, res)) {
         return;
       }
@@ -74,6 +78,10 @@ if (TestbedConfig.cloudRpc) {
     });
 
     app.get(/\/imodel\//, (req, res) => {
+      if (handleIntercept(req, res)) {
+        return;
+      }
+
       TestbedConfig.cloudRpc.protocol.handleOperationGetRequest(req, res); // tslint:disable-line:no-floating-promises
     });
 
@@ -87,6 +95,10 @@ function handleHttp2Get(req2: http2.Http2ServerRequest, res2: http2.Http2ServerR
   if (req2.url.indexOf("/v3/swagger.json") === 0) {
     TestbedConfig.cloudRpc.protocol.handleOpenApiDescriptionRequest(req, res);
   } else if (req2.url.match(/\/imodel\//)) {
+    if (handleIntercept(req, res)) {
+      return;
+    }
+
     TestbedConfig.cloudRpc.protocol.handleOperationGetRequest(req, res); // tslint:disable-line:no-floating-promises
   } else {
     // serve static assets...
@@ -113,8 +125,26 @@ function handlePending(_req: HttpServerRequest, res: HttpServerResponse) {
   }
 }
 
+function handleIntercept(req: HttpServerRequest, res: HttpServerResponse) {
+  if (req.path.indexOf("interceptSendTimeoutStatus") !== -1) {
+    res.status(504).end("");
+    return true;
+  }
+
+  if (req.path.indexOf("interceptSendUnknownStatus") !== -1) {
+    res.status(567).end("");
+    return true;
+  }
+
+  return false;
+}
+
 async function handleHttp2Post(req2: http2.Http2ServerRequest, res2: http2.Http2ServerResponse) {
   const { req, res } = wrapHttp2API(req2, res2);
+
+  if (handleIntercept(req, res)) {
+    return;
+  }
 
   if (handlePending(req, res)) {
     return;

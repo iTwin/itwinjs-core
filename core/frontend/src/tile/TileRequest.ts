@@ -5,7 +5,7 @@
 /** @module Tile */
 
 import { assert, base64StringToUint8Array } from "@bentley/bentleyjs-core";
-import { ImageSource, ElementAlignedBox3d } from "@bentley/imodeljs-common";
+import { ImageSource, ElementAlignedBox3d, ServerTimeoutError } from "@bentley/imodeljs-common";
 import { RenderGraphic } from "../render/System";
 import { Tile, TileTree, TileLoader } from "./TileTree";
 import { TileAdmin } from "./TileAdmin";
@@ -57,7 +57,15 @@ export class TileRequest {
 
       return this.handleResponse(response);
     } catch (_err) {
-      this.setFailed();
+      if (_err instanceof ServerTimeoutError) {
+        // Invalidate scene - if tile is re-selected, it will be re-requested.
+        this.notifyAndClear();
+        this._state = TileRequest.State.Failed;
+      } else {
+        // Unknown error - not retryable.
+        this.setFailed();
+      }
+
       return Promise.resolve();
     }
   }
@@ -108,7 +116,7 @@ export class TileRequest {
     try {
       const graphic = await this.loader.loadTileGraphic(this.tile, data);
       if (this.isCanceled)
-          return Promise.resolve();
+        return Promise.resolve();
 
       this._state = TileRequest.State.Completed;
       this.tile.setGraphic(graphic.renderGraphic, graphic.isLeaf, graphic.contentRange, graphic.sizeMultiplier);

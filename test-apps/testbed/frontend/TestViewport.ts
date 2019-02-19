@@ -284,8 +284,7 @@ export async function createOnScreenTestViewport(viewId: Id64String, imodel: IMo
   return ScreenTestViewport.createTestViewport(viewId, imodel, width, height);
 }
 
-// Execute a test against both an off-screen and on-screen viewport.
-export async function testViewports(viewId: Id64String, imodel: IModelConnection, width: number, height: number, test: (vp: TestViewport) => Promise<void>): Promise<void> {
+export async function testOnScreenViewport(viewId: Id64String, imodel: IModelConnection, width: number, height: number, test: (vp: TestViewport) => Promise<void>): Promise<void> {
   if (!WebGLTestContext.isInitialized)
     return Promise.resolve();
 
@@ -298,6 +297,16 @@ export async function testViewports(viewId: Id64String, imodel: IModelConnection
     onscreen.continuousRendering = false;
     onscreen.dispose();
   }
+
+  return Promise.resolve();
+}
+
+// Execute a test against both an off-screen and on-screen viewport.
+export async function testViewports(viewId: Id64String, imodel: IModelConnection, width: number, height: number, test: (vp: TestViewport) => Promise<void>): Promise<void> {
+  if (!WebGLTestContext.isInitialized)
+    return Promise.resolve();
+
+  await testOnScreenViewport(viewId, imodel, width, height, test);
 
   const offscreen = await createOffScreenTestViewport(viewId, imodel, width, height);
   try {

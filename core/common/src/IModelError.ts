@@ -23,3 +23,10 @@ export class ServerError extends IModelError {
     this.name = "Server error (" + errorNumber + ")";
   }
 }
+
+export class ServerTimeoutError extends ServerError {
+  public constructor(errorNumber: number, message: string, log?: LogFunction) {
+    super(errorNumber, message, log);
+    this.name = "Server timeout error (" + errorNumber + ")";
+  }
+}

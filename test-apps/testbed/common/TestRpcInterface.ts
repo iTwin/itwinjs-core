@@ -67,6 +67,14 @@ export abstract class TestRpcInterface extends RpcInterface {
     return RpcManager.getClientForInterface(TestRpcInterface);
   }
 
+  public async interceptSendUnknownStatus(): Promise<void> {
+    return this.forward(arguments);
+  }
+
+  public async interceptSendTimeoutStatus(): Promise<void> {
+    return this.forward(arguments);
+  }
+
   public async op1(_params: TestOp1Params): Promise<number> {
     return this.forward(arguments);
   }

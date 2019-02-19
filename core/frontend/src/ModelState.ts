@@ -7,7 +7,7 @@
 import { Id64String, Id64, JsonUtils, dispose } from "@bentley/bentleyjs-core";
 import { EntityState } from "./EntityState";
 import { Point2d, Range3d } from "@bentley/geometry-core";
-import { ModelProps, GeometricModel2dProps, AxisAlignedBox3d, RelatedElement, TileTreeProps, BatchType } from "@bentley/imodeljs-common";
+import { ModelProps, GeometricModel2dProps, AxisAlignedBox3d, RelatedElement, TileTreeProps, BatchType, ServerTimeoutError } from "@bentley/imodeljs-common";
 import { IModelConnection } from "./IModelConnection";
 import { IModelApp } from "./IModelApp";
 import { TileTree, TileTreeState, IModelTileLoader } from "./tile/TileTree";
@@ -126,7 +126,13 @@ export abstract class GeometricModelState extends ModelState implements TileTree
       this._tileTreeState.edgesOmitted = !edgesRequired;
       IModelApp.viewManager.onNewTilesReady();
     }).catch((_err) => {
-      this._tileTreeState.loadStatus = TileTree.LoadStatus.NotFound; // on separate line because stupid chrome debugger.
+      // Retry in case of timeout; otherwise fail.
+      if (_err instanceof ServerTimeoutError)
+        this._tileTreeState.loadStatus = TileTree.LoadStatus.NotLoaded;
+      else
+        this._tileTreeState.loadStatus = TileTree.LoadStatus.NotFound;
+
+      IModelApp.viewManager.onNewTilesReady();
     });
 
     return tileTreeState.loadStatus;
