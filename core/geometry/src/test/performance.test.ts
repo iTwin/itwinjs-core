@@ -284,9 +284,9 @@ function arrayCheck(numTest: number, type: number) {
       console.time(name);
       for (let i = 0; i < numTest; i++) {
         // Fetch items
-        arr.atPoint3dIndex(0, result);
-        arr.atPoint3dIndex(1, result);
-        arr.atPoint3dIndex(2, result);
+        arr.getPoint3dAtUncheckedPointIndex(0, result);
+        arr.getPoint3dAtUncheckedPointIndex(1, result);
+        arr.getPoint3dAtUncheckedPointIndex(2, result);
         // Push items
         arr.push(toPush);
         arr.push(toPush);
@@ -300,9 +300,9 @@ function arrayCheck(numTest: number, type: number) {
         arr.length;
         arr.length;
         // Reassignment
-        arr.setCoordinates(1, 1, 3, 5);
-        arr.setCoordinates(0, 0, 3, 5);
-        arr.setCoordinates(2, 1, 3, 5);
+        arr.setXYZAtCheckedPointIndex(1, 1, 3, 5);
+        arr.setXYZAtCheckedPointIndex(0, 0, 3, 5);
+        arr.setXYZAtCheckedPointIndex(2, 1, 3, 5);
       }
       console.timeEnd(name);
       break;

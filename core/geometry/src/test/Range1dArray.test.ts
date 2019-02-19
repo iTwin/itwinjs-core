@@ -24,13 +24,13 @@ import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
 function constructGapPoints(data: GrowableFloat64Array, leftDelta: undefined | number, interiorFraction: undefined | number, rightDelta: undefined | number): GrowableFloat64Array {
   const result = new GrowableFloat64Array();
   if (data.length > 0) {
-    let a = data.at(0);
+    let a = data.atUncheckedIndex(0);
     let b;
     if (leftDelta !== undefined)
       result.push(a + leftDelta);
     if (interiorFraction !== undefined) {
       for (let i = 1; i < data.length; i++ , a = b) {
-        b = data.at(i);
+        b = data.atUncheckedIndex(i);
         result.push(Geometry.interpolate(a, interiorFraction, b));
       }
       if (rightDelta !== undefined)
@@ -58,7 +58,7 @@ function testUnionSimplify(ck: Checker, dataA: Range1d[]): void {
   for (const testPoints of [testPointsA, testPointsB])
     for (let i = 0; i < testPoints.length; i++) {
       {
-        const value = testPoints.at(i);
+        const value = testPoints.atUncheckedIndex(i);
         const inA = Range1dArray.testUnion(dataA, value);
         const inB = Range1dArray.testUnion(dataB, value);
         ck.testBoolean(inA, inB, "Union simplification agrees");
@@ -78,7 +78,7 @@ function testParitySimplify(ck: Checker, dataA: Range1d[]): void {
   for (const testPoints of [testPointsA, testPointsB])
     for (let i = 0; i < testPoints.length; i++) {
       {
-        const value = testPoints.at(i);
+        const value = testPoints.atUncheckedIndex(i);
         const inA = Range1dArray.testParity(dataA, value);
         const inB = Range1dArray.testParity(dataB, value);
         ck.testBoolean(inA, inB, "Union simplification agrees");

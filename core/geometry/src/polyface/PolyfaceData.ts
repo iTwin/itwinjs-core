@@ -114,26 +114,26 @@ export class PolyfaceData {
   public get faceCount() { return this.face.length; }
 
   /** return indexed point. This is a copy of the coordinates, not a reference. */
-  public getPoint(i: number): Point3d | undefined { return this.point.atPoint3dIndex(i); }
+  public getPoint(i: number): Point3d | undefined { return this.point.getPoint3dAtCheckedPointIndex(i); }
   /** return indexed normal. This is the COPY to the normal, not a reference. */
-  public getNormal(i: number): Vector3d | undefined { return this.normal ? this.normal.atVector3dIndex(i) : undefined; }
+  public getNormal(i: number): Vector3d | undefined { return this.normal ? this.normal.getVector3dAtCheckedVectorIndex(i) : undefined; }
   /** return indexed param. This is the COPY of the coordinates, not a reference. */
-  public getParam(i: number): Point2d | undefined { return this.param ? this.param.atPoint2dIndex(i) : undefined; }
+  public getParam(i: number): Point2d | undefined { return this.param ? this.param.getPoint2dAtCheckedPointIndex(i) : undefined; }
   /** return indexed color */
   public getColor(i: number): number { return this.color ? this.color[i] : 0; }
   /** return indexed visibility */
   public getEdgeVisible(i: number): boolean { return this.edgeVisible[i]; }
   /** Copy the contents (not pointer) of point[i] into dest. */
-  public copyPointTo(i: number, dest: Point3d): void { this.point.getPoint3dAt(i, dest); }
+  public copyPointTo(i: number, dest: Point3d): void { this.point.getPoint3dAtUncheckedPointIndex(i, dest); }
   /** Copy the contents (not pointer) of normal[i] into dest. */
-  public copyNormalTo(i: number, dest: Vector3d): void { if (this.normal) this.normal.atVector3dIndex(i, dest); }
+  public copyNormalTo(i: number, dest: Vector3d): void { if (this.normal) this.normal.getVector3dAtCheckedVectorIndex(i, dest); }
   /** Copy the contents (not pointer) of param[i] into dest. */
-  public copyParamTo(i: number, dest: Point2d): void { if (this.param) this.param.atPoint2dIndex(i, dest); }
+  public copyParamTo(i: number, dest: Point2d): void { if (this.param) this.param.getPoint2dAtCheckedPointIndex(i, dest); }
   /** test if normal at a specified index matches uv */
   public isAlmostEqualParamIndexUV(index: number, u: number, v: number): boolean {
     if (this.param !== undefined && index >= 0 && index < this.param.length)
-      return Geometry.isSameCoordinate(u, this.param.xAtUncheckedPointIndex(index))
-        && Geometry.isSameCoordinate(v, this.param.yAtUncheckedPointIndex(index));
+      return Geometry.isSameCoordinate(u, this.param.getXAtUncheckedPointIndex(index))
+        && Geometry.isSameCoordinate(v, this.param.getYAtUncheckedPointIndex(index));
     return false;
   }
   /**

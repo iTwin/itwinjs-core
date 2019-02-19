@@ -143,7 +143,7 @@ export class MeshBuilder {
     const vertices = [];
     for (let i = 0; i < 3; ++i) {
       const vertexIndex = 0 === i ? 0 : triangleIndex + i;
-      const position = QPoint3d.create(point.getPoint3dAt(vertexIndex), qPointParams);
+      const position = QPoint3d.create(point.getPoint3dAtUncheckedPointIndex(vertexIndex), qPointParams);
       const normal = requireNormals ? OctEncodedNormal.fromVector(visitor.getNormal(vertexIndex)!) : undefined;
       const uvParam: Point2d | undefined = params ? params[vertexIndex] : undefined;
       vertices[i] = { position, fillColor, normal, uvParam };

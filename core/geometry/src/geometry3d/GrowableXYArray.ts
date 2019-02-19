@@ -168,7 +168,7 @@ export class GrowableXYArray extends IndexedXYCollection {
    * @param pointIndex index to access
    * @param result optional result
    */
-  public point2dAtUncheckedPointIndex(pointIndex: number, result?: Point2d): Point2d {
+  public getPoint2dAtUncheckedPointIndex(pointIndex: number, result?: Point2d): Point2d {
     const index = 2 * pointIndex;
     return Point2d.create(this._data[index], this._data[index + 1], result);
   }
@@ -177,7 +177,7 @@ export class GrowableXYArray extends IndexedXYCollection {
    * Get x coordinate by point index, with no index checking
    * @param pointIndex index to access
    */
-  public xAtUncheckedPointIndex(pointIndex: number): number {
+  public getXAtUncheckedPointIndex(pointIndex: number): number {
     return this._data[2 * pointIndex];
   }
 
@@ -185,7 +185,7 @@ export class GrowableXYArray extends IndexedXYCollection {
    * Get y coordinate by index, with no index checking
    * @param pointIndex index to access
    */
-  public yAtUncheckedPointIndex(pointIndex: number): number {
+  public getYAtUncheckedPointIndex(pointIndex: number): number {
     return this._data[2 * pointIndex + 1];
   }
 
@@ -202,7 +202,7 @@ export class GrowableXYArray extends IndexedXYCollection {
   }
 
   /** copy xyz into strongly typed Point2d */
-  public atPoint2dIndex(pointIndex: number, result?: Point2d): Point2d | undefined {
+  public getPoint2dAtCheckedPointIndex(pointIndex: number, result?: Point2d): Point2d | undefined {
     const index = 2 * pointIndex;
     if (this.isIndexValid(pointIndex)) {
       return Point2d.create(this._data[index], this._data[index + 1], result);
@@ -211,7 +211,7 @@ export class GrowableXYArray extends IndexedXYCollection {
   }
 
   /** copy xyz into strongly typed Vector2d */
-  public atVector2dIndex(vectorIndex: number, result?: Vector2d): Vector2d | undefined {
+  public getVector2dAtCheckedVectorIndex(vectorIndex: number, result?: Vector2d): Vector2d | undefined {
     const index = 2 * vectorIndex;
     if (this.isIndexValid(vectorIndex)) {
       return Vector2d.create(this._data[index], this._data[index + 1], result);
@@ -301,21 +301,21 @@ export class GrowableXYArray extends IndexedXYCollection {
    */
   public front(result?: Point2d): Point2d | undefined {
     if (this._xyInUse === 0) return undefined;
-    return this.point2dAtUncheckedPointIndex(0, result);
+    return this.getPoint2dAtUncheckedPointIndex(0, result);
   }
   /**
    * @returns Return the last point, or undefined if the array is empty.
    */
   public back(result?: Point2d): Point2d | undefined {
     if (this._xyInUse < 1) return undefined;
-    return this.point2dAtUncheckedPointIndex(this._xyInUse - 1, result);
+    return this.getPoint2dAtUncheckedPointIndex(this._xyInUse - 1, result);
   }
   /**
    * Set the coordinates of a single point.
    * @param pointIndex index of point to set
    * @param value coordinates to set
    */
-  public setAt(pointIndex: number, value: XAndY): boolean {
+  public setAtCheckedPointIndex(pointIndex: number, value: XAndY): boolean {
     if (!this.isIndexValid(pointIndex))
       return false;
     const index = pointIndex * 2;
@@ -330,7 +330,7 @@ export class GrowableXYArray extends IndexedXYCollection {
    * @param y y coordinate
    * @param z z coordinate
    */
-  public setCoordinates(pointIndex: number, x: number, y: number): boolean {
+  public setXYZAtCheckedPointIndex(pointIndex: number, x: number, y: number): boolean {
     if (!this.isIndexValid(pointIndex))
       return false;
     const index = pointIndex * 2;
@@ -547,7 +547,7 @@ export class GrowableXYArray extends IndexedXYCollection {
       if (dataA.length !== dataB.length)
         return false;
       for (let i = 0; i < dataA.length; i++)
-        if (!dataA.point2dAtUncheckedPointIndex(i).isAlmostEqual(dataB.point2dAtUncheckedPointIndex(i)))
+        if (!dataA.getPoint2dAtUncheckedPointIndex(i).isAlmostEqual(dataB.getPoint2dAtUncheckedPointIndex(i)))
           return false;
       return true;
     }

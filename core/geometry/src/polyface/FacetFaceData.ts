@@ -101,8 +101,8 @@ export class FacetFaceData {
         if (k > 1) {
           visitorParams.vectorIndexIndex(triangleParamIndexes[1], triangleParamIndexes[0], dUV0);
           visitorParams.vectorIndexIndex(triangleParamIndexes[1], triangleParamIndexes[2], dUV1);
-          const delta0 = visitorPoints.getPoint3dAt(trianglePointIndexes[0]).minus(visitorPoints.getPoint3dAt(trianglePointIndexes[1]));
-          const delta1 = visitorPoints.getPoint3dAt(trianglePointIndexes[1]).minus(visitorPoints.getPoint3dAt(trianglePointIndexes[2]));
+          const delta0 = visitorPoints.getPoint3dAtUncheckedPointIndex(trianglePointIndexes[0]).minus(visitorPoints.getPoint3dAtUncheckedPointIndex(trianglePointIndexes[1]));
+          const delta1 = visitorPoints.getPoint3dAtUncheckedPointIndex(trianglePointIndexes[1]).minus(visitorPoints.getPoint3dAtUncheckedPointIndex(trianglePointIndexes[2]));
           const uvCross = Math.abs(dUV0.x * dUV1.y - dUV1.x * dUV0.y);
           if (uvCross) {
             const dwDu = Point3d.createFrom(delta0);

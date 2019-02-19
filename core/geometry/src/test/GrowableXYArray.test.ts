@@ -46,12 +46,12 @@ describe("GrowableXYArray", () => {
         ck.testPoint2d(pointB[0], pointA.front() as Point2d);
       }
       for (let i = 0; i < n; i++)
-        ck.testPoint2d(pointB[i], pointA.point2dAtUncheckedPointIndex(i) as Point2d);
+        ck.testPoint2d(pointB[i], pointA.getPoint2dAtUncheckedPointIndex(i) as Point2d);
       ck.testExactNumber(pointA.length, pointB.length, "array lengths");
 
       let lengthA = 0;
       for (let i = 0; i + 1 < n; i++) {
-        lengthA += pointA.point2dAtUncheckedPointIndex(i).distance(pointA.point2dAtUncheckedPointIndex(i + 1));
+        lengthA += pointA.getPoint2dAtUncheckedPointIndex(i).distance(pointA.getPoint2dAtUncheckedPointIndex(i + 1));
       }
       const lengthA1 = pointA.sumLengths();
       ck.testCoordinate(lengthA, lengthA1, "polyline length");
@@ -85,7 +85,7 @@ describe("GrowableXYArray", () => {
     const xyBuffer = pointAXY.float64Data();
     for (let i = 0; i < n; i++) {
       ck.testTrue(Geometry.isSamePoint2d(
-        pointAXY.point2dAtUncheckedPointIndex(i), Point2d.create(xyBuffer[2 * i], xyBuffer[2 * i + 1])));
+        pointAXY.getPoint2dAtUncheckedPointIndex(i), Point2d.create(xyBuffer[2 * i], xyBuffer[2 * i + 1])));
     }
 
     pointD.clear();
@@ -104,11 +104,11 @@ describe("GrowableXYArray", () => {
     const pointB = new GrowableXYArray(10);
     ck.testFalse(pointA.isAlmostEqual(pointB), "isAlmostEqual detects length");
     ck.testFalse(GrowableXYArray.isAlmostEqual(pointA, pointB), "static isAlmostEqual");
-    ck.testUndefined(pointA.atPoint2dIndex(-5));
+    ck.testUndefined(pointA.getPoint2dAtCheckedPointIndex(-5));
 
     for (let i = 0; i < pointA.length; i++) {
       pointB.pushXY(100, 100);
-      const xy = pointA.atPoint2dIndex(i)!;
+      const xy = pointA.getPoint2dAtCheckedPointIndex(i)!;
       pointB.transferFromGrowableXYArray(i, pointA, i);
       ck.testExactNumber(0, pointB.distanceIndexToPoint(i, xy)!);
     }
@@ -117,7 +117,7 @@ describe("GrowableXYArray", () => {
     const pointA3d = pointA.getPoint3dArray(z0);
     for (let i = 0; i < pointA3d.length; i++) {
       const xyz = pointA3d[i];
-      const xy = pointA.point2dAtUncheckedPointIndex(i);
+      const xy = pointA.getPoint2dAtUncheckedPointIndex(i);
       ck.testExactNumber(z0, xyz.z);
       ck.testExactNumber(xyz.x, xy.x);
       ck.testExactNumber(xyz.y, xy.y);
@@ -129,9 +129,9 @@ describe("GrowableXYArray", () => {
     const eps = 1.0e-16;
     const pointF = pointA.clone();
     for (let i = 0; i < pointE.length; i++) {
-      const xy = pointE.atPoint2dIndex(i)!.plus(vector);
-      pointE.setAt(i, xy);
-      pointF.setCoordinates(i, xy.x, xy.y);
+      const xy = pointE.getPoint2dAtCheckedPointIndex(i)!.plus(vector);
+      pointE.setAtCheckedPointIndex(i, xy);
+      pointF.setXYZAtCheckedPointIndex(i, xy.x, xy.y);
     }
     const pointG = pointA.clone();
     pointG.multiplyTransformInPlace(transform);
@@ -200,14 +200,14 @@ describe("GrowableXYArray", () => {
       pointA.pushWrap(numWrap);
       ck.testExactNumber(n + numWrap, pointA.length, "pushWrap increases length");
       for (let i = 0; i < numWrap; i++) {
-        ck.testPoint2d(pointA.point2dAtUncheckedPointIndex(i), pointA.point2dAtUncheckedPointIndex(n + i), "wrapped point");
+        ck.testPoint2d(pointA.getPoint2dAtUncheckedPointIndex(i), pointA.getPoint2dAtUncheckedPointIndex(n + i), "wrapped point");
       }
       let numDup = 0;
       const sortOrder = pointA.sortIndicesLexical();
       for (let i = 0; i + 1 < pointA.length; i++) {
         const k0 = sortOrder[i];
         const k1 = sortOrder[i + 1];
-        if (pointA.point2dAtUncheckedPointIndex(k0).isAlmostEqual(pointA.point2dAtUncheckedPointIndex(k1))) {
+        if (pointA.getPoint2dAtUncheckedPointIndex(k0).isAlmostEqual(pointA.getPoint2dAtUncheckedPointIndex(k1))) {
           ck.testLT(k0, k1, "lexical sort preserves order for duplicates");
           numDup++;
         } else {
@@ -235,8 +235,8 @@ describe("GrowableXYArray", () => {
     ck.testExactNumber(arr.length, 2);
     ck.testTrue(arr.compareLexicalBlock(0, 1) < 0 && arr.compareLexicalBlock(1, 0) > 0);
     const point = Point2d.create();
-    arr.atPoint2dIndex(1, point);
-    const vector = arr.atVector2dIndex(1)!;
+    arr.getPoint2dAtCheckedPointIndex(1, point);
+    const vector = arr.getVector2dAtCheckedVectorIndex(1)!;
     ck.testTrue(point.isAlmostEqual(vector));
     ck.testPoint2d(point, Point2d.create(4, 5));
 
@@ -253,7 +253,7 @@ describe("GrowableXYArray", () => {
 
     ck.testTrue(arr.tryTransformInverseInPlace(transform));
     ck.testFalse(arr.tryTransformInverseInPlace(noInverseTransform));
-    ck.testPoint2d(arr.point2dAtUncheckedPointIndex(0), Point2d.create(1, -1));
+    ck.testPoint2d(arr.getPoint2dAtUncheckedPointIndex(0), Point2d.create(1, -1));
 
     arr.resize(1);
 
@@ -274,15 +274,15 @@ describe("GrowableXYArray", () => {
     const gPoints = new GrowableXYArray();
     gPoints.pushAllXYAndZ(points);
     const iPoints = new Point2dArrayCarrier(points2d);
-    const iOrigin = iPoints.atPoint2dIndex(0)!;
-    const gOrigin = gPoints.atPoint2dIndex(0)!;
+    const iOrigin = iPoints.getPoint2dAtCheckedPointIndex(0)!;
+    const gOrigin = gPoints.getPoint2dAtCheckedPointIndex(0)!;
     ck.testPoint2d(iOrigin, gOrigin, "point 0 access");
     for (let i = 1; i + 1 < points.length; i++) {
       const j = i + 1;
-      const pointIA = iPoints.atPoint2dIndex(i)!;
-      const pointGA = gPoints.atPoint2dIndex(i)!;
-      const pointIB = iPoints.atPoint2dIndex(j)!;
-      const pointGB = gPoints.atPoint2dIndex(j)!;
+      const pointIA = iPoints.getPoint2dAtCheckedPointIndex(i)!;
+      const pointGA = gPoints.getPoint2dAtCheckedPointIndex(i)!;
+      const pointIB = iPoints.getPoint2dAtCheckedPointIndex(j)!;
+      const pointGB = gPoints.getPoint2dAtCheckedPointIndex(j)!;
       const vectorIA = iPoints.vectorIndexIndex(i, j)!;
       const vectorGA = gPoints.vectorIndexIndex(i, j)!;
 
@@ -301,8 +301,8 @@ describe("GrowableXYArray", () => {
         gPoints.crossProductXAndYIndexIndex(gOrigin, i, j)!);
 
       ck.testVector2d(
-        iPoints.atVector2dIndex(i)!,
-        gPoints.atVector2dIndex(i)!,
+        iPoints.getVector2dAtCheckedVectorIndex(i)!,
+        gPoints.getVector2dAtCheckedVectorIndex(i)!,
         "atVector2dIndex");
 
     }
@@ -333,8 +333,8 @@ describe("GrowableXYArray", () => {
     const n2 = n0 - deltaN;
     xyPoints.resize(n2);  // blow away some points.
 
-    ck.testUndefined(xyPoints.atVector2dIndex(-4));
-    ck.testUndefined(xyPoints.atVector2dIndex(n2));
+    ck.testUndefined(xyPoints.getVector2dAtCheckedVectorIndex(-4));
+    ck.testUndefined(xyPoints.getVector2dAtCheckedVectorIndex(n2));
 
     // verify duplicate methods ....
     for (let i0 = 3; i0 < n2; i0 += 5) {
@@ -351,7 +351,7 @@ describe("GrowableXYArray", () => {
     const spacePoint = Point2d.create(1, 4);
     for (let i0 = 2; i0 < n2; i0 += 6) {
       const distance0 = xyPoints.distanceIndexToPoint(i0, spacePoint);
-      const distance1 = xyPoints.atPoint2dIndex(i0)!.distance(spacePoint);
+      const distance1 = xyPoints.getPoint2dAtCheckedPointIndex(i0)!.distance(spacePoint);
       const vectorI0 = xyPoints.vectorXAndYIndex(spacePoint, i0);
       if (ck.testPointer(vectorI0) && vectorI0 && distance0 !== undefined) {
         ck.testCoordinate(vectorI0.magnitude(), distance0)!;
@@ -361,17 +361,17 @@ describe("GrowableXYArray", () => {
 
     ck.testUndefined(xyPoints.distance(-1, 0), "distance to invalid indexA");
     ck.testUndefined(xyPoints.distance(0, -1), "distance to invalid indexB");
-    const point0 = xyPoints.atPoint2dIndex(0)!;
+    const point0 = xyPoints.getPoint2dAtCheckedPointIndex(0)!;
     for (let i = 1; i < xyPoints.length; i++) {
       ck.testExactNumber(xyPoints.distance(0, i)!, xyPoints.distanceIndexToPoint(i, point0)!);
     }
     ck.testUndefined(xyPoints.distanceIndexToPoint(-1, spacePoint), "distance to invalid indexA");
 
-    ck.testFalse(xyPoints.setCoordinates(-5, 1, 2), "negative index for setCoordinates");
-    ck.testFalse(xyPoints.setCoordinates(100, 1, 2), "huge index for setCoordinates");
+    ck.testFalse(xyPoints.setXYZAtCheckedPointIndex(-5, 1, 2), "negative index for setCoordinates");
+    ck.testFalse(xyPoints.setXYZAtCheckedPointIndex(100, 1, 2), "huge index for setCoordinates");
 
-    ck.testFalse(xyPoints.setAt(-5, spacePoint), "negative index for setAt");
-    ck.testFalse(xyPoints.setAt(100, spacePoint), "huge index for setAt");
+    ck.testFalse(xyPoints.setAtCheckedPointIndex(-5, spacePoint), "negative index for setAt");
+    ck.testFalse(xyPoints.setAtCheckedPointIndex(100, spacePoint), "huge index for setAt");
     ck.testUndefined(xyPoints.vectorXAndYIndex(spacePoint, -5), "negative index for vectorXYAndZIndex");
 
     expect(ck.getNumErrors()).equals(0);
@@ -419,8 +419,8 @@ describe("GrowableXYArray", () => {
         && ck.testPointer(array0.interpolate(k, interpolationFraction, k1, resultA)))) {
         const k2 = (2 * k + 1) % n0;
 
-        const point0 = array0.point2dAtUncheckedPointIndex(k);
-        const point1 = array0.point2dAtUncheckedPointIndex(k1);
+        const point0 = array0.getPoint2dAtUncheckedPointIndex(k);
+        const point1 = array0.getPoint2dAtUncheckedPointIndex(k1);
         const resultB = point0.interpolate(interpolationFraction, point1);
         ck.testPoint2d(resultA, resultB, "compare interpolation paths");
         const crossA = array0.crossProductIndexIndexIndex(k, k1, k2);

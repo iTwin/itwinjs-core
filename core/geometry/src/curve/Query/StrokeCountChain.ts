@@ -425,8 +425,8 @@ export class StrokeCountSection {
         const allPointB = strokeB.packedPoints;
 
         for (let i = 0; i < n; i++) {
-          allPointA.atPoint3dIndex(i, pointA);
-          allPointB.atPoint3dIndex(i, pointB);
+          allPointA.getPoint3dAtCheckedPointIndex(i, pointA);
+          allPointB.getPoint3dAtCheckedPointIndex(i, pointB);
           rangeToExtend.extendX(pointA.distance(pointB));
         }
         return true;

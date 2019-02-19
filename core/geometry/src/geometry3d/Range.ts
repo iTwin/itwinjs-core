@@ -268,10 +268,10 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
     else  // growable array -- this should be implemented without point extraction !!!
       if (transform)
         for (let i = 0; i < points.length; i++)
-          this.extendTransformedXYZ(transform, points.getPoint3dAt(i).x, points.getPoint3dAt(i).y, points.getPoint3dAt(i).z);
+          this.extendTransformedXYZ(transform, points.getPoint3dAtUncheckedPointIndex(i).x, points.getPoint3dAtUncheckedPointIndex(i).y, points.getPoint3dAtUncheckedPointIndex(i).z);
       else
         for (let i = 0; i < points.length; i++)
-          this.extendXYZ(points.getPoint3dAt(i).x, points.getPoint3dAt(i).y, points.getPoint3dAt(i).z);
+          this.extendXYZ(points.getPoint3dAtUncheckedPointIndex(i).x, points.getPoint3dAtUncheckedPointIndex(i).y, points.getPoint3dAtUncheckedPointIndex(i).z);
   }
 
   /** extend a range around an array of points (optionally transformed) */
@@ -281,7 +281,7 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
         this.extendInverseTransformedXYZ(transform, point.x, point.y, point.z);
     else  // growable array -- this should be implemented without point extraction !!!
       for (let i = 0; i < points.length; i++)
-        this.extendInverseTransformedXYZ(transform, points.getPoint3dAt(i).x, points.getPoint3dAt(i).y, points.getPoint3dAt(i).z);
+        this.extendInverseTransformedXYZ(transform, points.getPoint3dAtUncheckedPointIndex(i).x, points.getPoint3dAtUncheckedPointIndex(i).y, points.getPoint3dAtUncheckedPointIndex(i).z);
   }
 
   /** multiply the point x,y,z by transform and use the coordinate to extend this range.
@@ -575,9 +575,9 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
       return Range3d.createNull(result);
     return Range3d.createXYZXYZOrCorrectToNull
       (
-      Math.max(this.low.x, other.low.x), Math.max(this.low.y, other.low.y), Math.max(this.low.z, other.low.z),
-      Math.min(this.high.x, other.high.x), Math.min(this.high.y, other.high.y), Math.min(this.high.z, other.high.z),
-      result);
+        Math.max(this.low.x, other.low.x), Math.max(this.low.y, other.low.y), Math.max(this.low.z, other.low.z),
+        Math.min(this.high.x, other.high.x), Math.min(this.high.y, other.high.y), Math.min(this.high.z, other.high.z),
+        result);
 
   }
 
@@ -590,9 +590,9 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
     // we trust null ranges have EXTREME values, so a null in either input leads to expected results.
     return Range3d.createXYZXYZOrCorrectToNull
       (
-      Math.min(this.low.x, other.low.x), Math.min(this.low.y, other.low.y), Math.min(this.low.z, other.low.z),
-      Math.max(this.high.x, other.high.x), Math.max(this.high.y, other.high.y), Math.max(this.high.z, other.high.z),
-      result);
+        Math.min(this.low.x, other.low.x), Math.min(this.low.y, other.low.y), Math.min(this.low.z, other.low.z),
+        Math.max(this.high.x, other.high.x), Math.max(this.high.y, other.high.y), Math.max(this.high.z, other.high.z),
+        result);
   }
   /**
    * move low and high points by scaleFactor around the center point.
@@ -913,9 +913,9 @@ export class Range1d extends RangeBase {
 
     return Range1d.createXXOrCorrectToNull
       (
-      Math.max(this.low, other.low),
-      Math.min(this.high, other.high),
-      result);
+        Math.max(this.low, other.low),
+        Math.min(this.high, other.high),
+        result);
 
   }
 
@@ -925,9 +925,9 @@ export class Range1d extends RangeBase {
     // we trust null ranges have EXTREME values, so a null in either input leads to expected results.
     return Range1d.createXX
       (
-      Math.min(this.low, other.low),
-      Math.max(this.high, other.high),
-      result);
+        Math.min(this.low, other.low),
+        Math.max(this.high, other.high),
+        result);
   }
   /**
    * move low and high points by scaleFactor around the center point.
@@ -1232,9 +1232,9 @@ export class Range2d extends RangeBase implements LowAndHighXY {
       return Range2d.createNull(result);
     return Range2d.createXYXY
       (
-      Math.max(this.low.x, other.low.x), Math.max(this.low.y, other.low.y),
-      Math.min(this.high.x, other.high.x), Math.min(this.high.y, other.high.y),
-      result);
+        Math.max(this.low.x, other.low.x), Math.max(this.low.y, other.low.y),
+        Math.min(this.high.x, other.high.x), Math.min(this.high.y, other.high.y),
+        result);
 
   }
 
@@ -1247,9 +1247,9 @@ export class Range2d extends RangeBase implements LowAndHighXY {
     // we trust null ranges have EXTREME values, so a null in either input leads to expected results.
     return Range2d.createXYXY
       (
-      Math.min(this.low.x, other.low.x), Math.min(this.low.y, other.low.y),
-      Math.max(this.high.x, other.high.x), Math.max(this.high.y, other.high.y),
-      result);
+        Math.min(this.low.x, other.low.x), Math.min(this.low.y, other.low.y),
+        Math.max(this.high.x, other.high.x), Math.max(this.high.y, other.high.y),
+        result);
   }
 
   /**

@@ -30,7 +30,7 @@ describe("AnalyticRoots.SolveLinear", () => {
         if (slope !== 0) {
           if (ck.testPointer(s) && s) {
             ck.testExactNumber(s.length, 1, "SolveLinear (root a, slope)", a, slope);
-            ck.testCoordinate(s.at(0), a, "SolveLinear", powerCoffs);
+            ck.testCoordinate(s.atUncheckedIndex(0), a, "SolveLinear", powerCoffs);
           }
         } else {
           ck.testExactNumber(s.length, 0, " Expect no roots for linear equation with zero slope.");
@@ -52,7 +52,7 @@ describe("AnalyticRoots.SolveQuadric", () => {
       if (ck.testPointer(roots) && roots) {
         roots.sort(compare);
         ck.testExactNumber(roots.length, 1, "SolveQuadric s = [" + i + ", " + i + "]");
-        ck.testCoordinate(roots.at(0), i, "Quadratic double root");
+        ck.testCoordinate(roots.atUncheckedIndex(0), i, "Quadratic double root");
       }
     }
     ck.checkpoint("DoubleRoot");
@@ -79,8 +79,8 @@ describe("AnalyticRoots.SolveQuadric", () => {
         if (ck.testPointer(roots) && roots) {
           roots.sort(compare);
           ck.testExactNumber(roots.length, 2, "appendQuadraticSolutions ", roots, root0, root1);
-          ck.testCoordinate(roots.at(0), Math.min(root0, root1), "Quadratic two roots");
-          ck.testCoordinate(roots.at(1), Math.max(root0, root1), "Quadratic two roots");
+          ck.testCoordinate(roots.atUncheckedIndex(0), Math.min(root0, root1), "Quadratic two roots");
+          ck.testCoordinate(roots.atUncheckedIndex(1), Math.max(root0, root1), "Quadratic two roots");
         }
       }
     }
@@ -166,7 +166,7 @@ function matchRoots(target: number[], actual: GrowableFloat64Array) {
     eMax = 0.0;
 
     for (let i = 0; i < target.length; i++) {
-      const e = target[i] - actual.at(i);
+      const e = target[i] - actual.atUncheckedIndex(i);
       eMax = NumberArray.maxAbsTwo(e, eMax);
     }
   }
@@ -177,7 +177,7 @@ function maxDiffMatchedArrays(target: number[], actual: GrowableFloat64Array) {
   if (target.length !== actual.length)
     return Number.MAX_VALUE;
   const tempArray: number[] = [];
-  for (let i = 0; i < actual.length; i++) { tempArray.push(actual.at(i)); }
+  for (let i = 0; i < actual.length; i++) { tempArray.push(actual.atUncheckedIndex(i)); }
   return NumberArray.maxAbsDiff(target, tempArray);
 }
 
@@ -259,9 +259,9 @@ describe("AnalyticRoots.SolveCubic", () => {
             console.log("Cubic root variances.  These may be expected behavior under extreme origin conditions");
             console.log("   (known roots " + target[0] + " " + target[1] + " " + target[2] +
               ") (emax " + eMax + ") (eSafe " + eSafe + ")");
-            console.log("   (computed roots " + actual.at(0) + " " + actual.at(1) + " " + actual.at(2) + ")");
-            console.log("   (correction by newton from computed root  " + NewtonStep(coffs, actual.at(0)) +
-              " " + NewtonStep(coffs, actual.at(1)) + " " + NewtonStep(coffs, actual.at(2)) + ")");
+            console.log("   (computed roots " + actual.atUncheckedIndex(0) + " " + actual.atUncheckedIndex(1) + " " + actual.atUncheckedIndex(2) + ")");
+            console.log("   (correction by newton from computed root  " + NewtonStep(coffs, actual.atUncheckedIndex(0)) +
+              " " + NewtonStep(coffs, actual.atUncheckedIndex(1)) + " " + NewtonStep(coffs, actual.atUncheckedIndex(2)) + ")");
             console.log("   (correction by newton from known root  " + NewtonStep(coffs, target[0]) +
               " " + NewtonStep(coffs, target[1]) + " " + NewtonStep(coffs, target[2]) + ")");
           }
@@ -367,7 +367,7 @@ function CheckQuartic(u0: number, u1: number, u2: number, u3: number, tolerance:
   const ok: boolean = ck.testTrue(eMax < tolerance, "quartic root tolerance", eMax, tolerance);
   // Accurate when compared to multiple of 1.0e-8... any higher negative power likely to fail
   if (Checker.noisy.quarticRoots) {
-    console.log("   (actual " + actual.at(0) + " " + actual.at(1) + " " + actual.at(2) + " " + actual.at(3) + ")");
+    console.log("   (actual " + actual.atUncheckedIndex(0) + " " + actual.atUncheckedIndex(1) + " " + actual.atUncheckedIndex(2) + " " + actual.atUncheckedIndex(3) + ")");
     console.log("   (target " + target[0] + " " + target[1] + " " + target[2] + " " + target[3] + ")");
 
   }
@@ -375,14 +375,14 @@ function CheckQuartic(u0: number, u1: number, u2: number, u3: number, tolerance:
   // Additional testing based on NewtonStep
   for (let step = 0; (step < 10) && (eMax > 1.0e-14); step++) {
     if (!ok || printAll) {
-      console.log("   (actualDX   " + NewtonStep4(coffs, actual.at(0)) + " " + NewtonStep4(coffs, actual.at(1)) + " " +
-        NewtonStep4(coffs, actual.at(2)) + " " + NewtonStep4(coffs, actual.at(3)) + ")");
+      console.log("   (actualDX   " + NewtonStep4(coffs, actual.atUncheckedIndex(0)) + " " + NewtonStep4(coffs, actual.atUncheckedIndex(1)) + " " +
+        NewtonStep4(coffs, actual.atUncheckedIndex(2)) + " " + NewtonStep4(coffs, actual.atUncheckedIndex(3)) + ")");
       for (let k = 0; k < actual.length; k++) {
-        actual.reassign(k, actual.at(k) - NewtonStep4(coffs, actual.at(k)));
+        actual.reassign(k, actual.atUncheckedIndex(k) - NewtonStep4(coffs, actual.atUncheckedIndex(k)));
       }
       eMax = matchRoots(target, actual) / uMax;
       if (!ok || printAll) {
-        console.log("   (actual " + actual.at(0) + " " + actual.at(1) + " " + actual.at(2) + " " + actual.at(3) + "   (emax " +
+        console.log("   (actual " + actual.atUncheckedIndex(0) + " " + actual.atUncheckedIndex(1) + " " + actual.atUncheckedIndex(2) + " " + actual.atUncheckedIndex(3) + "   (emax " +
           eMax + ")");
       }
     }
@@ -434,7 +434,7 @@ describe("AnalyticRoots.CheckQuartic", () => {
     const ff: number[] = [];
     const numRoots = roots.length;
     for (let i = 0; i < numRoots; i++) {
-      const r = roots.at(i);
+      const r = roots.atUncheckedIndex(i);
       const f = coff[0] + r * (coff[1] + r * (coff[2] + r * (coff[3] + r * coff[4])));
       maxF = Math.max(f, Math.abs(maxF));
       ff.push(f);

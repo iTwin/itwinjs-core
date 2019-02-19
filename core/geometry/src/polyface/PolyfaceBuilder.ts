@@ -95,14 +95,14 @@ class FacetSector {
    * * index fields for updated data are cleared to -1.
    */
   public loadIndexedPointAndDerivativeCoordinatesFromPackedArrays(i: number, packedXYZ: GrowableXYZArray, packedDerivatives?: GrowableXYZArray, fractions?: GrowableFloat64Array, v?: number) {
-    packedXYZ.atPoint3dIndex(i, this.xyz);
+    packedXYZ.getPoint3dAtCheckedPointIndex(i, this.xyz);
     if (fractions && v !== undefined)
-      this.uv = Point2d.create(fractions.at(i), v);
+      this.uv = Point2d.create(fractions.atUncheckedIndex(i), v);
     this.xyzIndex = -1;
     this.normalIndex = -1;
     this.uvIndex = -1;
     if (this.sectionDerivative !== undefined && packedDerivatives !== undefined)
-      packedDerivatives!.atVector3dIndex(i, this.sectionDerivative);
+      packedDerivatives!.getVector3dAtCheckedVectorIndex(i, this.sectionDerivative);
   }
   private static suppressSmallUnitVectorComponents(uvw: XYZ) {
     const tol = 1.0e-15;
@@ -384,7 +384,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   public findOrAddParamInGrowableXYArray(data: GrowableXYArray, index: number): number | undefined {
     if (!data)
       return undefined;
-    const q = data.point2dAtUncheckedPointIndex(index, PolyfaceBuilder._workUVFindOrAdd);
+    const q = data.getPoint2dAtUncheckedPointIndex(index, PolyfaceBuilder._workUVFindOrAdd);
     if (q) {
       return this._polyface.addParam(q);
     }
@@ -396,7 +396,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
    * @param index Index of the point in the linestring.
    */
   public findOrAddParamInLineString(ls: LineString3d, index: number, v: number, priorIndexA?: number, priorIndexB?: number): number | undefined {
-    const u = (ls.fractions && index < ls.fractions.length) ? ls.fractions.at(index) : index / ls.points.length;
+    const u = (ls.fractions && index < ls.fractions.length) ? ls.fractions.atUncheckedIndex(index) : index / ls.points.length;
     return this._polyface.addParamUV(u, v, priorIndexA, priorIndexB);
   }
 
@@ -409,7 +409,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   public findOrAddNormalnLineString(ls: LineString3d, index: number, transform?: Transform, priorIndexA?: number, priorIndexB?: number): number | undefined {
     const linestringNormals = ls.packedSurfaceNormals;
     if (linestringNormals) {
-      const q = linestringNormals.atVector3dIndex(index, PolyfaceBuilder._workVectorFindOrAdd);
+      const q = linestringNormals.getVector3dAtCheckedVectorIndex(index, PolyfaceBuilder._workVectorFindOrAdd);
       if (q) {
         if (transform)
           transform.multiplyVector(q, q);
@@ -769,12 +769,12 @@ export class PolyfaceBuilder extends NullGeometryHandler {
 
     const numPoints = pointA.length;
     for (let i = 1; i < numPoints; i++) {
-      if (pointA.at(i - 1) !== pointA.at(i) || pointB.at(i - 1) !== pointB.at(i)) {
-        this.addIndexedQuadPointIndexes(pointA.at(i - 1), pointA.at(i), pointB.at(i - 1), pointB.at(i));
+      if (pointA.atUncheckedIndex(i - 1) !== pointA.atUncheckedIndex(i) || pointB.atUncheckedIndex(i - 1) !== pointB.atUncheckedIndex(i)) {
+        this.addIndexedQuadPointIndexes(pointA.atUncheckedIndex(i - 1), pointA.atUncheckedIndex(i), pointB.atUncheckedIndex(i - 1), pointB.atUncheckedIndex(i));
         if (normalA && normalB)
-          this.addIndexedQuadNormalIndexes(normalA.at(i - 1), normalA.at(i), normalB.at(i - 1), normalB.at(i));
+          this.addIndexedQuadNormalIndexes(normalA.atUncheckedIndex(i - 1), normalA.atUncheckedIndex(i), normalB.atUncheckedIndex(i - 1), normalB.atUncheckedIndex(i));
         if (paramA && paramB)
-          this.addIndexedQuadParamIndexes(paramA.at(i - 1), paramA.at(i), paramB.at(i - 1), paramB.at(i));
+          this.addIndexedQuadParamIndexes(paramA.atUncheckedIndex(i - 1), paramA.atUncheckedIndex(i), paramB.atUncheckedIndex(i - 1), paramB.atUncheckedIndex(i));
         this._polyface.terminateFacet();
       }
     }
@@ -1404,16 +1404,16 @@ export class PolyfaceBuilder extends NullGeometryHandler {
       if (v > 0) {
         for (let u = 0; u < numU; u++) {
           this.addIndexedQuadPointIndexes(
-            xyzIndex0.at(u), xyzIndex0.at(u + 1),
-            xyzIndex1.at(u), xyzIndex1.at(u + 1), false);
+            xyzIndex0.atUncheckedIndex(u), xyzIndex0.atUncheckedIndex(u + 1),
+            xyzIndex1.atUncheckedIndex(u), xyzIndex1.atUncheckedIndex(u + 1), false);
           if (needNormals)
             this.addIndexedQuadNormalIndexes(
-              normalIndex0!.at(u), normalIndex0!.at(u + 1),
-              normalIndex1!.at(u), normalIndex1!.at(u + 1));
+              normalIndex0!.atUncheckedIndex(u), normalIndex0!.atUncheckedIndex(u + 1),
+              normalIndex1!.atUncheckedIndex(u), normalIndex1!.atUncheckedIndex(u + 1));
           if (needParams)
             this.addIndexedQuadParamIndexes(
-              paramIndex0!.at(u), paramIndex0!.at(u + 1),
-              paramIndex1!.at(u), paramIndex1!.at(u + 1));
+              paramIndex0!.atUncheckedIndex(u), paramIndex0!.atUncheckedIndex(u + 1),
+              paramIndex1!.atUncheckedIndex(u), paramIndex1!.atUncheckedIndex(u + 1));
           this._polyface.terminateFacet();
         }
       }

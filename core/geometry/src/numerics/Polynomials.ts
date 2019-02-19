@@ -482,11 +482,11 @@ export class AnalyticRoots {
   // Used in NewtonMethod for testing if a root has been adjusted past its bounding region
   private static checkRootProximity(roots: GrowableFloat64Array, i: number): boolean {
     if (i === 0) { // Case 1: Beginning Root (check root following it)
-      return roots.at(i) < roots.at(i + 1);
+      return roots.atUncheckedIndex(i) < roots.atUncheckedIndex(i + 1);
     } else if (i > 0 && i + 1 < roots.length) { // Case 2: Middle Root (check roots before and after)
-      return (roots.at(i) > roots.at(i - 1)) && (roots.at(i) < roots.at(i + 1));
+      return (roots.atUncheckedIndex(i) > roots.atUncheckedIndex(i - 1)) && (roots.atUncheckedIndex(i) < roots.atUncheckedIndex(i + 1));
     } else { // Case 3: End root (check preceding root)
-      return (roots.at(i) > roots.at(i - 1));
+      return (roots.atUncheckedIndex(i) > roots.atUncheckedIndex(i - 1));
     }
   }
   private static newtonMethodAdjustment(coffs: Float64Array | number[], root: number, order: number) {
@@ -507,23 +507,23 @@ export class AnalyticRoots {
 
     // Loop through each root
     for (let i = 0; i < roots.length; i++) {
-      let dx = this.newtonMethodAdjustment(coffs, roots.at(i), degree);
+      let dx = this.newtonMethodAdjustment(coffs, roots.atUncheckedIndex(i), degree);
       if (!dx) continue;  // skip if newton step had divide by zero.
-      const originalValue = roots.at(i);
+      const originalValue = roots.atUncheckedIndex(i);
       let counter = 0;
       let convergenceCounter = 0;
 
       // Loop through applying changes to found root until dx is diminished or counter is hit
       while (dx !== 0 && (counter < 10)) {
         // consider it converged if two successive iterations satisfy the (not too demanding) tolerance.
-        if (Math.abs(dx) < relTol * (1.0 + Math.abs(roots.at(i)))) {
+        if (Math.abs(dx) < relTol * (1.0 + Math.abs(roots.atUncheckedIndex(i)))) {
           if (++convergenceCounter > 1)
             break;
         } else {
           convergenceCounter = 0;
         }
 
-        const rootDX = roots.at(i) - dx;
+        const rootDX = roots.atUncheckedIndex(i) - dx;
         roots.reassign(i, rootDX);
 
         // If root is thrown past one of its neighboring roots, unstable condition is assumed.. revert
@@ -533,7 +533,7 @@ export class AnalyticRoots {
           break;
         }
 
-        dx = this.newtonMethodAdjustment(coffs, roots.at(i), degree);
+        dx = this.newtonMethodAdjustment(coffs, roots.atUncheckedIndex(i), degree);
         counter++;
       }
     }
@@ -572,15 +572,15 @@ export class AnalyticRoots {
   public static mostDistantFromMean(data: GrowableFloat64Array | undefined): number {
     if (!data || data.length === 0) return 0;
     let a = 0.0;  // to become the sum and finally the average.
-    for (let i = 0; i < data.length; i++) a += data.at(i);
+    for (let i = 0; i < data.length; i++) a += data.atUncheckedIndex(i);
     a /= data.length;
     let dMax = 0.0;
-    let result = data.at(0);
+    let result = data.atUncheckedIndex(0);
     for (let i = 0; i < data.length; i++) {
-      const d = Math.abs(data.at(i) - a);
+      const d = Math.abs(data.atUncheckedIndex(i) - a);
       if (d > dMax) {
         dMax = d;
-        result = data.at(i);
+        result = data.atUncheckedIndex(i);
       }
     }
     return result;
@@ -617,7 +617,7 @@ export class AnalyticRoots {
     return;
   }
   private static addConstant(value: number, data: GrowableFloat64Array) {
-    for (let i = 0; i < data.length; i++) data.reassign(i, data.at(i) + value);
+    for (let i = 0; i < data.length; i++) data.reassign(i, data.atUncheckedIndex(i) + value);
   }
   /** return roots of a cubic c0 + c1 *x + c2 * x^2 + c2 * x3.
    * In the usual case where c0 is non-zero, there are either 1 or 3 roots.
@@ -779,7 +779,7 @@ export class AnalyticRoots {
         v = Math.sqrt(v);
       } else {
         for (let i = 0; i < tempStack.length; i++) {
-          results.push(tempStack.at(i));
+          results.push(tempStack.atUncheckedIndex(i));
         }
         return;
       }
@@ -1048,8 +1048,8 @@ export class TrigPolynomial {
         //  Math.Cos(theta)=C(t)/W(t),  ,sin(theta)=S(t)/W(t)
         // Division by W has no effect on Atan2 calculations, so we just compute S(t),C(t)
         for (let i = 0; i < roots.length; i++) {
-          const ss = PowerPolynomial.evaluate(this.S, roots.at(i));
-          const cc = PowerPolynomial.evaluate(this.C, roots.at(i));
+          const ss = PowerPolynomial.evaluate(this.S, roots.atUncheckedIndex(i));
+          const cc = PowerPolynomial.evaluate(this.C, roots.atUncheckedIndex(i));
           radians.push(Math.atan2(ss, cc));
         }
 

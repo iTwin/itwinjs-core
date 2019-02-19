@@ -541,10 +541,10 @@ describe("Point3dArray", () => {
     const a = carrier.length;
     // These methdos should return undefined if any index is bad.
     // (we know the index tests happen in a single validation function -- "some" calls need to test both extremes of out-of-bounds, but any pariticular arg only has to be tested in one direction)
-    ck.testUndefined(carrier.atPoint3dIndex(-1));
-    ck.testUndefined(carrier.atPoint3dIndex(a));
-    ck.testUndefined(carrier.atVector3dIndex(-1));
-    ck.testUndefined(carrier.atVector3dIndex(a));
+    ck.testUndefined(carrier.getPoint3dAtCheckedPointIndex(-1));
+    ck.testUndefined(carrier.getPoint3dAtCheckedPointIndex(a));
+    ck.testUndefined(carrier.getVector3dAtCheckedVectorIndex(-1));
+    ck.testUndefined(carrier.getVector3dAtCheckedVectorIndex(a));
 
     const cross = Vector3d.create();
     ck.testUndefined(carrier.accumulateCrossProductIndexIndexIndex(-1, 1, 3, cross));

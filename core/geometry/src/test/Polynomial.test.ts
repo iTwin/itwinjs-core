@@ -414,12 +414,12 @@ describe("PowerPolynomials", () => {
       bezier.realRoots(0.0, false, bezierRoots);
       // make sure that each reported root is a root ... this does not confirm completeness
       for (let i = 0; i < powerRoots.length; i++) {
-        const r = powerRoots.at(i);
+        const r = powerRoots.atUncheckedIndex(i);
         const f = power.evaluate(r);
         ck.testCoordinate(0, f);
       }
       for (let i = 0; i < bezierRoots.length; i++) {
-        const r = bezierRoots.at(i);
+        const r = bezierRoots.atUncheckedIndex(i);
         const f = bezier.evaluate(r);
         ck.testCoordinate(0, f);
       }

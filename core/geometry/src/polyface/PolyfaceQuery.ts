@@ -66,11 +66,11 @@ export class PolyfaceQuery {
     visitor.reset();
     while (visitor.moveToNextFacet()) {
       if (myOrigin === undefined)
-        myOrigin = visitor.point.getPoint3dAt(0);
-      visitor.point.getPoint3dAt(0, facetOrigin);
+        myOrigin = visitor.point.getPoint3dAtUncheckedPointIndex(0);
+      visitor.point.getPoint3dAtUncheckedPointIndex(0, facetOrigin);
       for (let i = 1; i + 1 < visitor.point.length; i++) {
-        visitor.point.getPoint3dAt(i, targetA);
-        visitor.point.getPoint3dAt(i + 1, targetB);
+        visitor.point.getPoint3dAtUncheckedPointIndex(i, targetA);
+        visitor.point.getPoint3dAtUncheckedPointIndex(i + 1, targetB);
         s += myOrigin.tripleProductToPoints(facetOrigin, targetA, targetB);
       }
     }

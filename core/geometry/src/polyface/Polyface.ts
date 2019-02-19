@@ -173,7 +173,7 @@ export class IndexedPolyface extends Polyface {
     const sourcePoints = source.data.point;
     const xyz = Point3d.create();
     for (let i = 0, n = source.data.point.length; i < n; i++) {
-      sourcePoints.getPoint3dAt(i, xyz);
+      sourcePoints.getPoint3dAtUncheckedPointIndex(i, xyz);
       if (transform) {
         transform.multiplyPoint3d(xyz, xyz);
         sourceToDestPointIndex.push(this.addPoint(xyz));
@@ -188,11 +188,11 @@ export class IndexedPolyface extends Polyface {
       const i1 = source._facetStart[i + 1];
       if (reversed) {
         for (let j = i1; j-- > i0;) {
-          this.addPointIndex(sourceToDestPointIndex.at(source.data.pointIndex[j]), source.data.edgeVisible[j]);
+          this.addPointIndex(sourceToDestPointIndex.atUncheckedIndex(source.data.pointIndex[j]), source.data.edgeVisible[j]);
         }
       } else {
         for (let j = i0; j < i1; j++) {
-          this.addPointIndex(sourceToDestPointIndex.at(source.data.pointIndex[j]), source.data.edgeVisible[j]);
+          this.addPointIndex(sourceToDestPointIndex.atUncheckedIndex(source.data.pointIndex[j]), source.data.edgeVisible[j]);
         }
       }
       this.terminateFacet(false);
@@ -222,7 +222,7 @@ export class IndexedPolyface extends Polyface {
       const startOfNewNormals = this.data.normal!.length;
       const numNewNOrmals = source.data.normal.length;
       for (let i = 0; i < numNewNOrmals; i++) {
-        const sourceNormal = source.data.normal.atVector3dIndex(i)!;
+        const sourceNormal = source.data.normal.getVector3dAtCheckedVectorIndex(i)!;
         if (transform) {
           transform.multiplyVector(sourceNormal, sourceNormal);
           this.addNormal(sourceNormal);
@@ -581,7 +581,7 @@ export class IndexedPolyfaceVisitor extends PolyfaceData implements PolyfaceVisi
     const faceData = this._polyface.tryGetFaceData(this._currentFacetIndex);
     if (!faceData)
       return undefined;
-    return faceData.convertParamXYToDistance(this.param.xAtUncheckedPointIndex(index), this.param.yAtUncheckedPointIndex(index), result);
+    return faceData.convertParamXYToDistance(this.param.getXAtUncheckedPointIndex(index), this.param.getYAtUncheckedPointIndex(index), result);
   }
 
   /**
@@ -598,7 +598,7 @@ export class IndexedPolyfaceVisitor extends PolyfaceData implements PolyfaceVisi
     const faceData = this._polyface.tryGetFaceData(this._currentFacetIndex);
     if (!faceData)
       return undefined;
-    return faceData.convertParamXYToNormalized(this.param.xAtUncheckedPointIndex(index), this.param.yAtUncheckedPointIndex(index), result);
+    return faceData.convertParamXYToNormalized(this.param.getXAtUncheckedPointIndex(index), this.param.getYAtUncheckedPointIndex(index), result);
   }
 
   public currentReadIndex(): number { return this._currentFacetIndex; }

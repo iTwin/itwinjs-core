@@ -68,11 +68,11 @@ function exercisePolyface(ck: Checker, polyface: Polyface,
 
     for (let i = 0; i < numPoint1; i++) {
       const pointIndexA = visitor1.clientPointIndex(i);
-      const pointA = visitor1.point.getPoint3dAt(i);
+      const pointA = visitor1.point.getPoint3dAtUncheckedPointIndex(i);
       polyface.data.copyPointTo(pointIndexA, pointB);
       if (!ck.testPoint3d(pointA, pointB)) {
         const pointIndexQ = visitor1.clientPointIndex(i);
-        const pointQ = visitor1.point.getPoint3dAt(i);
+        const pointQ = visitor1.point.getPoint3dAtUncheckedPointIndex(i);
         polyface.data.copyPointTo(pointIndexQ, pointB);
         ck.testPoint3d(pointQ, pointB);
       } else {
@@ -99,10 +99,10 @@ function exercisePolyface(ck: Checker, polyface: Polyface,
     if (longEdgeIsHidden) {
       let perimeter = 0;
       for (let i = 0; i < numEdge; i++) {
-        perimeter += visitor1.point.getPoint3dAt(i).distance(visitor1.point.getPoint3dAt(i + 1));
+        perimeter += visitor1.point.getPoint3dAtUncheckedPointIndex(i).distance(visitor1.point.getPoint3dAtUncheckedPointIndex(i + 1));
       }
       for (let i = 0; i < numEdge; i++) {
-        const a = visitor1.point.getPoint3dAt(i).distance(visitor1.point.getPoint3dAt(i + 1));
+        const a = visitor1.point.getPoint3dAtUncheckedPointIndex(i).distance(visitor1.point.getPoint3dAtUncheckedPointIndex(i + 1));
         const v = visitor1.getEdgeVisible(i);
         if (!ck.testBoolean(a < perimeter / 3.0, v, "diagonals hidden")) {
           console.log({ faceCounter: facetIndex, edgeIndex: i, edgeLength: a, visibilityFlag: v });
@@ -550,15 +550,15 @@ describe("Polyface.Faces", () => {
 
     // Check params
     for (let idx = 0; idx < polyface.data.paramIndex!.length; idx++) {
-      const currentPoint = polyface.data.point.getPoint3dAt(idx);
-      const currentParam = polyface.data.param!.atPoint2dIndex(idx)!;
+      const currentPoint = polyface.data.point.getPoint3dAtUncheckedPointIndex(idx);
+      const currentParam = polyface.data.param!.getPoint2dAtCheckedPointIndex(idx)!;
       if (idx % 4 === 0) {
         ck.testCoordinate(currentParam.x, 0);
         ck.testCoordinate(currentParam.y, 0);
       } else if (idx % 4 === 1) {
-        const oldPoint = polyface.data.point.getPoint3dAt(idx - 1);
+        const oldPoint = polyface.data.point.getPoint3dAtUncheckedPointIndex(idx - 1);
         ck.testCoordinate(currentParam.x, Math.hypot(currentPoint.x - oldPoint.x, currentPoint.y - oldPoint.y, currentPoint.z - oldPoint.z));
-        ck.testCoordinate(polyface.data.param!.yAtUncheckedPointIndex(idx), 0);
+        ck.testCoordinate(polyface.data.param!.getYAtUncheckedPointIndex(idx), 0);
       }
       // else if (idx % 4 === 2)
       // else
@@ -609,8 +609,8 @@ describe("Polyface.Faces", () => {
     const nativeParamIdx = nativePolyface.Group.Member[0].IndexedMesh.ParamIndex;
     ck.testExactNumber(jsParamsIdx!.length, nativeParamIdx!.length, "Number of params match");
     for (let i = 0; i < jsParams!.length; i++) {
-      ck.testCoordinate(jsParams!.xAtUncheckedPointIndex(polyface.data.paramIndex![i]), nativeParams![nativeParamIdx![i]][0]);
-      ck.testCoordinate(jsParams!.yAtUncheckedPointIndex(polyface.data.paramIndex![i]), nativeParams![nativeParamIdx![i]][1]);
+      ck.testCoordinate(jsParams!.getXAtUncheckedPointIndex(polyface.data.paramIndex![i]), nativeParams![nativeParamIdx![i]][0]);
+      ck.testCoordinate(jsParams!.getYAtUncheckedPointIndex(polyface.data.paramIndex![i]), nativeParams![nativeParamIdx![i]][1]);
     }
 
     const jsNormals = polyface.data.normal!;
@@ -619,7 +619,7 @@ describe("Polyface.Faces", () => {
     const nativeNormalIdx = nativePolyface.Group.Member[0].IndexedMesh.NormalIndex;
     ck.testExactNumber(jsNormalIdx!.length, nativeNormalIdx!.length, "Number of params match");
     for (let i = 0; i < jsNormals!.length; i++) {
-      const normal = jsNormals.atVector3dIndex(i)!;
+      const normal = jsNormals.getVector3dAtCheckedVectorIndex(i)!;
       ck.testCoordinate(normal.x, nativeNormals![nativeNormalIdx![i]][0]);
       ck.testCoordinate(normal.y, nativeNormals![nativeNormalIdx![i]][1]);
       ck.testCoordinate(normal.z, nativeNormals![nativeNormalIdx![i]][2]);

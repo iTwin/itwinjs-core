@@ -332,7 +332,7 @@ export class ClusterableArray extends GrowableBlockedArray {
     const p = Point3d.create();
     const numSourcePoint = source.length;
     for (let i = 0; i < numSourcePoint; i++) {
-      source.getPoint3dAt(i, p);
+      source.getPoint3dAtUncheckedPointIndex(i, p);
       clusterArray.addDirect(p.x, p.y, p.z);
     }
     const order = clusterArray.clusterIndicesLexical(tolerance);

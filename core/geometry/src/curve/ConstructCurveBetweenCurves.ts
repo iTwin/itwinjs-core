@@ -69,7 +69,7 @@ export class ConstructCurveBetweenCurves extends NullGeometryHandler {
         }
         if (ls0.fractions && ls1.fractions) {
           for (let i = 0; i < numPoints; i++) {
-            ls.addFraction(Geometry.interpolate(ls0.fractions.at(i), fraction, ls1.fractions.at(i)));
+            ls.addFraction(Geometry.interpolate(ls0.fractions.atUncheckedIndex(i), fraction, ls1.fractions.atUncheckedIndex(i)));
           }
         }
         if (ls0.strokeData && ls1.strokeData) {
@@ -84,8 +84,8 @@ export class ConstructCurveBetweenCurves extends NullGeometryHandler {
           if (!workVector1)
             workVector1 = Vector3d.create();
           for (let i = 0; i < numPoints; i++) {
-            ls0.packedDerivatives.atVector3dIndex(i, workVector0);
-            ls1.packedDerivatives.atVector3dIndex(i, workVector1);
+            ls0.packedDerivatives.getVector3dAtCheckedVectorIndex(i, workVector0);
+            ls1.packedDerivatives.getVector3dAtCheckedVectorIndex(i, workVector1);
             ls.addDerivative(workVector0.interpolate(fraction, workVector1));
           }
 

@@ -103,13 +103,13 @@ export class CylindricalQuery extends RecurseToCurvesGeometryHandler {
         const xyz = Point3d.create();
         const n = points.length;
         for (let i = 0; i < n; i++) {
-          points.getPoint3dAt(i, xyz);
+          points.getPoint3dAtUncheckedPointIndex(i, xyz);
           axis.perpendicularPartOfVectorToTarget(xyz, vectorU);
           if (vectorU.isAlmostZero)
             axis.direction.crossProduct(defaultVectorFromAxis, vectorV);
           else
             axis.direction.crossProduct(vectorU, vectorV);
-          geometry.packedDerivatives!.atVector3dIndex(i, vectorU); // reuse vector U as curve derivative
+          geometry.packedDerivatives!.getVector3dAtCheckedVectorIndex(i, vectorU); // reuse vector U as curve derivative
           vectorU.crossProduct(vectorV, vectorV);  // reuse vector V as normal!
           vectorV.normalizeInPlace();
           normals.push(vectorV);

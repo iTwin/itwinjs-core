@@ -380,7 +380,7 @@ export class Point3dArray {
     const p = Point3d.create();
     if (points.length > 0) {
       for (let i = 0; i < points.length; i++) {
-        points.atPoint3dIndex(i, p);
+        points.getPoint3dAtCheckedPointIndex(i, p);
         result.x += p.x; result.y += p.y; result.z += p.z;
       }
       result.scaleInPlace(1.0 / points.length);
@@ -945,7 +945,7 @@ export class Point3dArrayCarrier extends IndexedXYZCollection {
    * @param result caller-allocated destination
    * @returns undefined if the index is out of bounds
    */
-  public atPoint3dIndex(index: number, result?: Point3d): Point3d | undefined {
+  public getPoint3dAtCheckedPointIndex(index: number, result?: Point3d): Point3d | undefined {
     if (this.isValidIndex(index)) {
       const source = this.data[index];
       return Point3d.create(source.x, source.y, source.z, result);
@@ -957,7 +957,7 @@ export class Point3dArrayCarrier extends IndexedXYZCollection {
    * @param result caller-allocated destination
    * @returns undefined if the index is out of bounds
    */
-  public atVector3dIndex(index: number, result?: Vector3d): Vector3d | undefined {
+  public getVector3dAtCheckedVectorIndex(index: number, result?: Vector3d): Vector3d | undefined {
     if (this.isValidIndex(index)) {
       const source = this.data[index];
       return Vector3d.create(source.x, source.y, source.z, result);

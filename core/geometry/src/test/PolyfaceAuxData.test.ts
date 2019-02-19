@@ -32,7 +32,7 @@ function createCantileverBeamPolyface(beamRadius: number = 10.0, beamLength: num
 
   const scratchPoint = Point3d.create();
   for (let i = 0; i < polyface.data.point.length; i++) {
-    const point = polyface.data.point.atPoint3dIndex(i, scratchPoint) as Point3d;
+    const point = polyface.data.point.getPoint3dAtCheckedPointIndex(i, scratchPoint) as Point3d;
     heightData.push(point.z * zScale);
   }
   const heightChannel = new AuxChannel([new AuxChannelData(0.0, heightData)], AuxChannelDataType.Distance, "Height", "");

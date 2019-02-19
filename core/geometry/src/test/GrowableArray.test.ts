@@ -32,16 +32,16 @@ describe("GrowableFloat64Array.HelloWorld", () => {
     arr.push(1);
     arr.push(c);
     const l = arr.length;
-    ck.testExactNumber(c, arr.at(l - 1));
-    arr.setAt(l - 1, b);
-    ck.testExactNumber(arr.at(l - 1), b);
+    ck.testExactNumber(c, arr.atUncheckedIndex(l - 1));
+    arr.setAtUncheckedIndex(l - 1, b);
+    ck.testExactNumber(arr.atUncheckedIndex(l - 1), b);
 
     arr.resize(1);
     ck.testExactNumber(arr.length, 1);
     arr.resize(5);
     ck.testExactNumber(arr.length, 5);
     ck.testExactNumber(arr.front(), 1);
-    ck.testExactNumber(arr.at(1), 0);
+    ck.testExactNumber(arr.atUncheckedIndex(1), 0);
     ck.testExactNumber(arr.back(), 0);
     const capacityB = 100;
     const lB = arr.length;
@@ -82,21 +82,21 @@ describe("GrowableFloat64Array.HelloWorld", () => {
     for (let i = 0, j = n - 1; i < j; i++ , j--) {
       // swap odd i by logic at this level.  others swap with single method call .swap
       if ((i % 2) === 1) {
-        const a = data.at(i);
+        const a = data.atUncheckedIndex(i);
         data.move(j, i);
-        data.setAt(j, a);
+        data.setAtUncheckedIndex(j, a);
       } else {
         data.swap(i, j);
       }
     }
     for (let i = 0; i < n; i++)
-      ck.testExactNumber(data0.at(i), data.at(n - 1 - i));
+      ck.testExactNumber(data0.atUncheckedIndex(i), data.atUncheckedIndex(n - 1 - i));
     // block copy a subset to the end ....
     const numCopy = n - 4;
     const c0 = 2;
     data.pushBlockCopy(2, numCopy);
     for (let i = 0; i < numCopy; i++)
-      ck.testExactNumber(data.at(c0 + i), data.at(n + i));
+      ck.testExactNumber(data.atUncheckedIndex(c0 + i), data.atUncheckedIndex(n + i));
 
     ck.checkpoint("GrowableArray.move");
     expect(ck.getNumErrors()).equals(0);
@@ -274,12 +274,12 @@ describe("GrowablePoint3dArray", () => {
         ck.testPoint3d(pointB[0], pointA.front() as Point3d);
       }
       for (let i = 0; i < n; i++)
-        ck.testPoint3d(pointB[i], pointA.getPoint3dAt(i) as Point3d);
+        ck.testPoint3d(pointB[i], pointA.getPoint3dAtUncheckedPointIndex(i) as Point3d);
       ck.testExactNumber(pointA.length, pointB.length, "array lengths");
 
       let lengthA = 0;
       for (let i = 0; i + 1 < n; i++) {
-        lengthA += pointA.getPoint3dAt(i).distance(pointA.getPoint3dAt(i + 1));
+        lengthA += pointA.getPoint3dAtUncheckedPointIndex(i).distance(pointA.getPoint3dAtUncheckedPointIndex(i + 1));
       }
       const lengthA1 = pointA.sumLengths();
       ck.testCoordinate(lengthA, lengthA1, "polyline length");
@@ -306,14 +306,14 @@ describe("GrowablePoint3dArray", () => {
       pointA.pushWrap(numWrap);
       ck.testExactNumber(n + numWrap, pointA.length, "pushWrap increases length");
       for (let i = 0; i < numWrap; i++) {
-        ck.testPoint3d(pointA.getPoint3dAt(i), pointA.getPoint3dAt(n + i), "wrapped point");
+        ck.testPoint3d(pointA.getPoint3dAtUncheckedPointIndex(i), pointA.getPoint3dAtUncheckedPointIndex(n + i), "wrapped point");
       }
       let numDup = 0;
       const sortOrder = pointA.sortIndicesLexical();
       for (let i = 0; i + 1 < pointA.length; i++) {
         const k0 = sortOrder[i];
         const k1 = sortOrder[i + 1];
-        if (pointA.getPoint3dAt(k0).isAlmostEqual(pointA.getPoint3dAt(k1))) {
+        if (pointA.getPoint3dAtUncheckedPointIndex(k0).isAlmostEqual(pointA.getPoint3dAtUncheckedPointIndex(k1))) {
           ck.testLT(k0, k1, "lexical sort preserves order for duplicates");
           numDup++;
         } else {
@@ -366,8 +366,8 @@ describe("GrowablePoint3dArray", () => {
     ck.testExactNumber(arr.length, 2);
     ck.testTrue(arr.compareLexicalBlock(0, 1) < 0 && arr.compareLexicalBlock(1, 0) > 0);
     const point = Point3d.create();
-    arr.atPoint3dIndex(1, point);
-    const vector = arr.atVector3dIndex(1)!;
+    arr.getPoint3dAtCheckedPointIndex(1, point);
+    const vector = arr.getVector3dAtCheckedVectorIndex(1)!;
     ck.testTrue(point.isAlmostEqual(vector));
     ck.testPoint3d(point, Point3d.create(4, 5, 6));
 
@@ -384,7 +384,7 @@ describe("GrowablePoint3dArray", () => {
 
     ck.testTrue(arr.tryTransformInverseInPlace(transform));
     ck.testFalse(arr.tryTransformInverseInPlace(noInverseTransform));
-    ck.testPoint3d(arr.getPoint3dAt(0), Point3d.create(1, -1, 1));
+    ck.testPoint3d(arr.getPoint3dAtUncheckedPointIndex(0), Point3d.create(1, -1, 1));
 
     arr.resize(1);
 
@@ -406,15 +406,15 @@ describe("GrowablePoint3dArray", () => {
     const gPoints = new GrowableXYZArray();
     gPoints.pushAll(points);
     const iPoints = new Point3dArrayCarrier(points);
-    const iOrigin = iPoints.atPoint3dIndex(0)!;
-    const gOrigin = gPoints.atPoint3dIndex(0)!;
+    const iOrigin = iPoints.getPoint3dAtCheckedPointIndex(0)!;
+    const gOrigin = gPoints.getPoint3dAtCheckedPointIndex(0)!;
     ck.testPoint3d(iOrigin, gOrigin, "point 0 access");
     for (let i = 1; i + 1 < points.length; i++) {
       const j = i + 1;
-      const pointIA = iPoints.atPoint3dIndex(i)!;
-      const pointGA = gPoints.atPoint3dIndex(i)!;
-      const pointIB = iPoints.atPoint3dIndex(j)!;
-      const pointGB = gPoints.atPoint3dIndex(j)!;
+      const pointIA = iPoints.getPoint3dAtCheckedPointIndex(i)!;
+      const pointGA = gPoints.getPoint3dAtCheckedPointIndex(i)!;
+      const pointIB = iPoints.getPoint3dAtCheckedPointIndex(j)!;
+      const pointGB = gPoints.getPoint3dAtCheckedPointIndex(j)!;
       const vectorIA = iPoints.vectorIndexIndex(i, j)!;
       const vectorGA = gPoints.vectorIndexIndex(i, j)!;
 
@@ -433,8 +433,8 @@ describe("GrowablePoint3dArray", () => {
         gPoints.crossProductXYAndZIndexIndex(gOrigin, i, j)!);
 
       ck.testVector3d(
-        iPoints.atVector3dIndex(i)!,
-        gPoints.atVector3dIndex(i)!,
+        iPoints.getVector3dAtCheckedVectorIndex(i)!,
+        gPoints.getVector3dAtCheckedVectorIndex(i)!,
         "atVector3dIndex");
 
       ck.testPoint3d(Point3dArray.centroid(iPoints), Point3dArray.centroid(gPoints), "centroid");
@@ -466,8 +466,8 @@ describe("GrowablePoint3dArray", () => {
     const n2 = n0 - deltaN;
     xyzPoints.resize(n2);  // blow away some points.
 
-    ck.testUndefined(xyzPoints.atVector3dIndex(-4));
-    ck.testUndefined(xyzPoints.atVector3dIndex(n2));
+    ck.testUndefined(xyzPoints.getVector3dAtCheckedVectorIndex(-4));
+    ck.testUndefined(xyzPoints.getVector3dAtCheckedVectorIndex(n2));
 
     // verify duplicate methods ....
     for (let i0 = 3; i0 < n2; i0 += 5) {
@@ -484,7 +484,7 @@ describe("GrowablePoint3dArray", () => {
     const spacePoint = Point3d.create(1, 4, 3);
     for (let i0 = 2; i0 < n2; i0 += 6) {
       const distance0 = xyzPoints.distanceIndexToPoint(i0, spacePoint);
-      const distance1 = xyzPoints.atPoint3dIndex(i0)!.distance(spacePoint);
+      const distance1 = xyzPoints.getPoint3dAtCheckedPointIndex(i0)!.distance(spacePoint);
       const vectorI0 = xyzPoints.vectorXYAndZIndex(spacePoint, i0);
       if (ck.testPointer(vectorI0) && vectorI0 && distance0 !== undefined) {
         ck.testCoordinate(vectorI0.magnitude(), distance0)!;
@@ -496,11 +496,11 @@ describe("GrowablePoint3dArray", () => {
     ck.testUndefined(xyzPoints.distance(0, -1), "distance to invalid indexB");
     ck.testUndefined(xyzPoints.distanceIndexToPoint(-1, spacePoint), "distance to invalid indexA");
 
-    ck.testFalse(xyzPoints.setCoordinates(-5, 1, 2, 3), "negative index for setCoordinates");
-    ck.testFalse(xyzPoints.setCoordinates(100, 1, 2, 3), "huge index for setCoordinates");
+    ck.testFalse(xyzPoints.setXYZAtCheckedPointIndex(-5, 1, 2, 3), "negative index for setCoordinates");
+    ck.testFalse(xyzPoints.setXYZAtCheckedPointIndex(100, 1, 2, 3), "huge index for setCoordinates");
 
-    ck.testFalse(xyzPoints.setAt(-5, spacePoint), "negative index for setAt");
-    ck.testFalse(xyzPoints.setAt(100, spacePoint), "huge index for setAt");
+    ck.testFalse(xyzPoints.setAtCheckedPointIndex(-5, spacePoint), "negative index for setAt");
+    ck.testFalse(xyzPoints.setAtCheckedPointIndex(100, spacePoint), "huge index for setAt");
     ck.testUndefined(xyzPoints.vectorXYAndZIndex(spacePoint, -5), "negative index for vectorXYAndZIndex");
 
     expect(ck.getNumErrors()).equals(0);
@@ -548,8 +548,8 @@ describe("GrowablePoint3dArray", () => {
         && ck.testPointer(array0.interpolate(k, interpolationFraction, k1, resultA)))) {
         const k2 = (2 * k + 1) % n0;
 
-        const point0 = array0.getPoint3dAt(k);
-        const point1 = array0.getPoint3dAt(k1);
+        const point0 = array0.getPoint3dAtUncheckedPointIndex(k);
+        const point1 = array0.getPoint3dAtUncheckedPointIndex(k1);
         const resultB = point0.interpolate(interpolationFraction, point1);
         ck.testPoint3d(resultA, resultB, "compare interpolation paths");
         const crossA = array0.crossProductIndexIndexIndex(k, k1, k2);
