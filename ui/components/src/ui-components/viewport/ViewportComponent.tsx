@@ -130,14 +130,14 @@ export class ViewportComponent extends React.Component<ViewportProps> {
     ViewportComponentEvents.setViewMatrix(vp);
 
     if (this._viewClassFullName !== vp.view.classFullName) {
-      setImmediate(() => {
+      setTimeout(() => {
         ViewportComponentEvents.onViewClassFullNameChangedEvent.emit({ viewport: vp, oldName: this._viewClassFullName, newName: vp.view.classFullName });
         this._viewClassFullName = vp.view.classFullName;
       });
     }
 
     if (this._viewId !== vp.view.id) {
-      setImmediate(() => {
+      setTimeout(() => {
         ViewportComponentEvents.onViewIdChangedEvent.emit({ viewport: vp, oldId: this._viewId, newId: vp.view.id });
         this._viewId = vp.view.id;
       });

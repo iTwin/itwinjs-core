@@ -139,7 +139,7 @@ export class KeyboardShortcut extends ItemDefBase {
     if (this._shortcuts.areKeyboardShortcutsAvailable()) {
       this._shortcuts.showShortcutsMenu();
     } else {
-      setImmediate(() => {
+      setTimeout(() => {
         // istanbul ignore else
         if (this._item)
           this._item.execute();
