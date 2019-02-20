@@ -119,7 +119,7 @@ export abstract class GeometricModelState extends ModelState implements TileTree
   }
 
   private loadIModelTileTree(tileTreeState: TileTreeState, edgesRequired: boolean, animationId?: Id64String, asClassifier?: boolean, classifierExpansion?: number): TileTree.LoadStatus {
-    const id = (asClassifier ? ("C:" + classifierExpansion as string + "_" + this.id) : "") + (animationId ? ("A:" + animationId + "_") : "") + this.id;
+    const id = (asClassifier ? ("C:" + classifierExpansion as string + "_") : "") + (animationId ? ("A:" + animationId + "_") : "") + this.id;
 
     this.iModel.tiles.getTileTreeProps(id).then((result: TileTreeProps) => {
       tileTreeState.setTileTree(result, new IModelTileLoader(this.iModel, asClassifier ? BatchType.Classifier : BatchType.Primary, edgesRequired));
