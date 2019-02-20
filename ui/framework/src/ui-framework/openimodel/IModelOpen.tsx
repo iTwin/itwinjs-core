@@ -22,6 +22,7 @@ import "./Common.scss";
 export interface IModelOpenProps {
   accessToken: AccessToken;
   onOpenIModel?: (iModelInfo: IModelInfo, views: ViewDefinitionProps[]) => void;
+  initialIModels?: IModelInfo[];
 }
 
 interface IModelOpenState {
@@ -51,6 +52,16 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
   }
 
   public componentDidMount() {
+    if (this.props.initialIModels && this.props.initialIModels.length > 0) {
+      this.setState(Object.assign({}, this.state, {
+        isLoadingProjects: false,
+        isLoadingiModels: false,
+        currentProject: this.props.initialIModels[0].projectInfo,
+        iModels: this.props.initialIModels,
+      }));
+      return;
+    }
+
     UiFramework.projectServices.getProjects(this.props.accessToken, ProjectScope.MostRecentlyUsed, 40, 0).then((projectInfos: ProjectInfo[]) => { // tslint:disable-line:no-floating-promises
       this.setState(Object.assign({}, this.state, {
         isLoadingProjects: false,
@@ -71,6 +82,8 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
       currentProject: project,
     }));
     const iModelInfos: IModelInfo[] = await UiFramework.iModelServices.getIModels(this.props.accessToken, project, 40, 0);
+    // tslint:disable-next-line:no-console
+    // console.log(JSON.stringify(iModelInfos));
     this.setState(Object.assign({}, this.state, {
       isLoadingiModels: false,
       iModels: iModelInfos,
