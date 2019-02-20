@@ -1,6 +1,6 @@
 {
   "name": "@bentley/bentleyjs-core",
-  "version": "0.189.0-dev.32",
+  "version": "0.189.0-dev.33",
   "description": "Bentley JavaScript core components",
   "main": "lib/bentleyjs-core.js",
   "typings": "lib/bentleyjs-core",
@@ -39,8 +39,8 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "@bentley/build-tools": "0.189.0-dev.32",
-    "@bentley/webpack-tools": "0.189.0-dev.32",
+    "@bentley/build-tools": "0.189.0-dev.33",
+    "@bentley/webpack-tools": "0.189.0-dev.33",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^5.2.5",
     "@types/node": "10.12.18",
