@@ -81,17 +81,14 @@ export class ContextRealityModelState implements TileTreeModelState {
     const availableRealityModels: ContextRealityModelProps[] = [];
 
     if (undefined !== IModelApp.accessToken) {
-      // ##TODO Alain Robert - This needs an instance of the RealityDataServicesClient which inherits from WSGClient that is by principle stateful
-      // ## though we only use a method that could be static except for the WSG states (the WSG version mainly). This seems to indicate
-      // ## instances of this class should be stateless (except for the WSG states which we can do nothing about). This is not currently the case.
       const client = new RealityDataServicesClient();
       const alctx = new ActivityLoggingContext(Guid.createValue());
 
       let realityData: RealityData[];
       if (modelCartographicRange) {
-        const polygon = modelCartographicRange.getLongitudeLatitudeBoundingBox();
+        const iModelRange = modelCartographicRange.getLongitudeLatitudeBoundingBox();
 
-        realityData = await client.getRealityDataInProjectOverlapping(alctx, IModelApp.accessToken, projectid, polygon);
+        realityData = await client.getRealityDataInProjectOverlapping(alctx, IModelApp.accessToken, projectid, iModelRange);
 
       } else {
         realityData = await client.getRealityDataInProject(alctx, IModelApp.accessToken, projectid);

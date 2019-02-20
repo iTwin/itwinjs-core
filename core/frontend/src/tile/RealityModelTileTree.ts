@@ -218,7 +218,6 @@ export class RealityModelTileClient {
   private _realityData?: RealityData;        // For reality data stored on PW Context Share only.
   private _baseUrl: string = "";             // For use by all Reality Data. For RD stored on PW Context Share, represents the portion from the root of the Azure Blob Container
   private readonly _token?: AccessToken;     // Only used for accessing PW Context Share.
-  // #TODO Alain Robert - The following member must be modified as it is not stateless and contains cache data to last accessed RD on PW Context Share (NOT Threadsafe!)
   private static _client = new RealityDataServicesClient();  // WSG Client for accessing Reality Data on PW Context Share
 
   // ###TODO we should be able to pass the projectId / tileId directly, instead of parsing the url
@@ -233,11 +232,9 @@ export class RealityModelTileClient {
       if (!this._realityData) {
         // TODO Temporary fix ... the root document may not be located at the root. We need to set the base URL even for RD stored on server
         // though this base URL is only the part relative to the root of the blob contining the data.
-        const realityDatas: RealityData[] = await RealityModelTileClient._client.getRealityData(alctx, this._token, this.rdsProps.projectId, this.rdsProps.tilesId);
+        this._realityData = await RealityModelTileClient._client.getRealityData(alctx, this._token, this.rdsProps.projectId, this.rdsProps.tilesId);
 
-        this._realityData = realityDatas[0];
-
-        // ###TODO Alain Robert... A reality data that has not root document set should not be considered.
+        // A reality data that has not root document set should not be considered.
         const rootDocument: string = (this._realityData!.rootDocument ? this._realityData!.rootDocument as string : "");
         this.setBaseUrl(rootDocument);
       }
@@ -282,8 +279,10 @@ export class RealityModelTileClient {
   // the construction of the instance.
   public async getRootDocument(url: string): Promise<any> {
     const alctx = new ActivityLoggingContext(Guid.createValue());
+    await this.initializeRDSRealityData(alctx); // Only needed for PW Context Share data ... return immediately otherwise.
+
     if (undefined !== this.rdsProps && undefined !== this._token)
-      return RealityModelTileClient._client.getRootDocumentJson(alctx, this._token, this.rdsProps.projectId, this.rdsProps.tilesId);
+      return this._realityData!.getRootDocumentJson(alctx, this._token);
 
     // The following is only if the reality data is not stored on PW Context Share.
     this.setBaseUrl(url);
@@ -303,7 +302,7 @@ export class RealityModelTileClient {
       tileUrl = this._baseUrl + url;
 
       if (undefined !== this.rdsProps && undefined !== this._token)
-        return RealityModelTileClient._client.getTileContent(alctx, this._token, this.rdsProps.projectId, this.rdsProps.tilesId, tileUrl);
+        return this._realityData!.getTileContent(alctx, this._token, tileUrl);
 
       return getArrayBuffer(alctx, tileUrl);
     }
@@ -323,7 +322,7 @@ export class RealityModelTileClient {
       tileUrl = this._baseUrl + url;
 
       if (undefined !== this.rdsProps && undefined !== this._token)
-        return RealityModelTileClient._client.getTileJson(alctx, this._token, this.rdsProps.projectId, this.rdsProps.tilesId, tileUrl);
+        return this._realityData!.getTileJson(alctx, this._token, tileUrl);
 
       return getJson(alctx, tileUrl);
     }
