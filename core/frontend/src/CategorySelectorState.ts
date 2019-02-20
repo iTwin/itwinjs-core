@@ -15,6 +15,7 @@ import { CategorySelectorProps } from "@bentley/imodeljs-common";
  * @note To change the set of categories visible in a [[ViewState]] currently associated with a [[Viewport]],
  * use [[ViewState.changeCategoryDisplay]] to ensure the view updates appropriately on screen.
  * @see [[Category]]
+ * @public
  */
 export class CategorySelectorState extends ElementState {
   public categories: Set<string> = new Set<string>();

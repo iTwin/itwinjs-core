@@ -11,8 +11,7 @@ import { CanvasDecoration } from "./render/System";
 import { DecorateContext } from "./ViewContext";
 import { ScreenViewport } from "./Viewport";
 
-/**
- * Sprites are small raster images that are drawn *on top* of Viewports by a ViewDecoration.
+/** Sprites are small raster images that are drawn *on top* of Viewports by a ViewDecoration.
  * Their purpose is to draw the user's attention to something of importance.
  *
  * There are two classes in the Sprites subsystem: Sprite (a Sprite image) and SpriteLocation.
@@ -24,6 +23,7 @@ import { ScreenViewport } from "./Viewport";
  * (an x,y point) and a Sprite to draw at that point. A Sprite
  * can be used many times by many SpriteLocations and a single SpriteLocation can
  * change both position and which Sprite is shown at that position over time.
+ * @public
  */
 export class Sprite {
   /** The image for this Sprite. If undefined, the Spite is not valid. */
@@ -71,11 +71,11 @@ export class IconSprites {
   public static emptyAll() { this._sprites.clear(); }
 }
 
-/**
- * A Sprite location. Sprites generally move around on the screen and this object holds the current location
+/** A Sprite location. Sprites generally move around on the screen and this object holds the current location
  * and current Sprite within a ScreenViewport. SpriteLocations can be either inactive (not visible) or active.
  *
  * A SpriteLocation can also specify that a Sprite should be drawn partially transparent.
+ * @public
  */
 export class SpriteLocation implements CanvasDecoration {
   private _viewport?: ScreenViewport;
@@ -87,8 +87,7 @@ export class SpriteLocation implements CanvasDecoration {
   public readonly position = new Point3d();
   public get isActive(): boolean { return this._viewport !== undefined; }
 
-  /**
-   * Activate this SpriteLocation to show a Sprite at a location in a single ScreenViewport.
+  /** Activate this SpriteLocation to show a Sprite at a location in a single ScreenViewport.
    * This call does not display the Sprite. Rather, subsequent calls to
    * [[decorate]] from  will show the Sprite.
    * This SpriteLocation remains active until [[deactivate]] is called.

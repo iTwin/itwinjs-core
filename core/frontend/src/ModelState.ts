@@ -13,7 +13,9 @@ import { IModelApp } from "./IModelApp";
 import { TileTree, TileTreeState, IModelTileLoader } from "./tile/TileTree";
 import { RealityModelTileTree } from "./tile/RealityModelTileTree";
 
-/** Represents the front-end state of a [Model]($backend). */
+/** Represents the front-end state of a [Model]($backend).
+ * @public
+ */
 export class ModelState extends EntityState implements ModelProps {
   public readonly modeledElement: RelatedElement;
   public readonly name: string;
@@ -64,8 +66,10 @@ export interface TileTreeModelState {
   readonly treeModelId: Id64String;    // Model Id, or transient Id if not a model (context reality model)
   loadTileTree(edgesRequired: boolean, animationId?: Id64String, asClassifier?: boolean, classifierExpansion?: number): TileTree.LoadStatus;
 }
+
 /** Represents the front-end state of a [GeometricModel]($backend).
  * The contents of a GeometricModelState can be rendered inside a [[Viewport]].
+ * @public
  */
 export abstract class GeometricModelState extends ModelState implements TileTreeModelState {
   /** @hidden */
@@ -145,7 +149,9 @@ export abstract class GeometricModelState extends ModelState implements TileTree
   }
 }
 
-/** Represents the front-end state of a [GeometricModel2d]($backend). */
+/** Represents the front-end state of a [GeometricModel2d]($backend).
+ * @public
+ */
 export class GeometricModel2dState extends GeometricModelState implements GeometricModel2dProps {
   public readonly globalOrigin: Point2d;
   constructor(props: GeometricModel2dProps, iModel: IModelConnection) {
@@ -165,7 +171,9 @@ export class GeometricModel2dState extends GeometricModelState implements Geomet
   }
 }
 
-/** Represents the front-end state of a [GeometricModel3d]($backend). */
+/** Represents the front-end state of a [GeometricModel3d]($backend).
+ * @public
+ */
 export class GeometricModel3dState extends GeometricModelState {
   /** Returns true. */
   public get is3d(): boolean { return true; }
@@ -173,14 +181,22 @@ export class GeometricModel3dState extends GeometricModelState {
   public get asGeometricModel3d(): GeometricModel3dState { return this; }
 }
 
-/** Represents the front-end state of a [SheetModel]($backend). */
+/** Represents the front-end state of a [SheetModel]($backend).
+ * @public
+ */
 export class SheetModelState extends GeometricModel2dState { }
 
-/** Represents the front-end state of a [SpatialModel]($backend). */
+/** Represents the front-end state of a [SpatialModel]($backend).
+ * @public
+ */
 export class SpatialModelState extends GeometricModel3dState { }
 
-/** Represents the front-end state of a [DrawingModel]($backend). */
+/** Represents the front-end state of a [DrawingModel]($backend).
+ * @public
+ */
 export class DrawingModelState extends GeometricModel2dState { }
 
-/** Represents the front-end state of a [SectionDrawingModel]($backend). */
+/** Represents the front-end state of a [SectionDrawingModel]($backend).
+ * @public
+ */
 export class SectionDrawingModelState extends DrawingModelState { }
