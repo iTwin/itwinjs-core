@@ -27,7 +27,7 @@
       "type": "system",
       "sourceResources": [
         {
-          "source": "./src/**/*.scss",
+          "source": "./src/**/*.*css",
           "dest": "./lib"
         },
         {

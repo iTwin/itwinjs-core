@@ -2,7 +2,7 @@
 *
 !lib/**/*.d.ts
 !lib/**/*.js
-!lib/**/*.scss
+!lib/**/*.*css
 !lib/public/**/*
 lib/test
 !*.md
