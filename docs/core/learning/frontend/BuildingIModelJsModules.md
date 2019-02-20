@@ -4,21 +4,23 @@ This article describes the tools provided by iModel.js to build frontend modules
 
 ## Types of Modules
 
-There are three types of modules in the iModel.js frontend ecosystem :
+There are four types of modules in the iModel.js frontend ecosystem :
 
 1. System modules. The iModel.js frontend system is composed of a set of modules that perform functions such as geometry calculations, user interface customization, and coordinating remote procedure calls to iModel.js backend functions. Each such module is built using the technique described here.
 
 2. Application modules. An iModel.js application consists of a module that contains the code for its unique functionality, with calls into the iModel.js system modules that take advantage of the classes and methods provided by iModel.js. An application module is loaded by the browser (or Electron) at startup.
 
-3. SubModules. A submodule is a module whose source is in the same package as the main module. Most submodules are plugins, which are designed to be loaded into an iModel.js application in a browser or Electron application while it is already executing. The Plugin registers with the iModel.js system, and then has full access to the iModel.js API. A Plugin can be used in multiple iModel.js applications. See the [iModel.js Plugins](../../../docs/learning/Plugins.md) article for more information. Another type of submodule is a webworker, which are used to offload work from the javascript thread to a worker thread.
+3. Plugins. A plugin is a module that is designed to be loaded into an iModel.js application in a browser or Electron application that is already executing. The Plugin registers with the iModel.js system, and then has full access to the iModel.js API. A Plugin can be used in multiple iModel.js applications. See the [iModel.js Plugins](./Plugins.md) article for more information.
+
+4. Web Workers. [Web Workers](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers) are also loaded at runtime, but they run in a separate JavaScript thread in the browser or Electron. Web Workers are used to offload computationally intensive tasks from the main JavaScript thread. They are restricted in the APIs that are available to them, and in particular, they are not allowed access to iModel.js APIs.
 
 ## Copying vs Symlinking
 
-Applications need files that are built in other packages, including external modules, localization files, cursors, fonts, and other assets. These other files can be either copied or symlinked into the application's webresources directory. The default is to copy those files. However, if you are working on files within the iModel.js mono repository, symlinking is much better because you don't have to remember to rebuild the application after changing one of the modules that it uses. To use symolinking, set the configuration variable BUILDIMODEL_SYMLINKS to any value. 
+Applications need files that are built in other packages, including external modules, localization files, cursors, fonts, and other assets. These other files can be either copied or symlinked into the application's webresources directory. The default is to copy those files. However, if you are working on files within the iModel.js mono repository, symlinking is much better because you don't have to remember to rebuild the application after changing one of the modules that it uses. To use symlinking, set the environment variable BUILDIMODEL_SYMLINKS to any value.
 
 ## Building a Module
 
-All three types of modules are built using the buildIModelJsModule script. The package.json file for your module is used to invoke the buildIModelJsModule script and to configure its operation.
+All three types of modules are built using the buildIModelJsModule script. The package.json file is used to invoke the buildIModelJsModule script and to configure its operation.
 
 ## Invoking the buildIModelJsModule script
 
@@ -122,11 +124,11 @@ package.json
 }
 ```
 
-could be used to specify that you want to compile the TypeScript ./src/test/tsconfig/json build project. Usually, all the options to the TypeScript transpiler are contained in tsconfig.json, and the tscOption option is not needed.
+could be used to specify that you want to compile the ./src/test/tsconfig.json project with the TypeScript "build" option. Most of the time, all the options to the TypeScript transpiler are contained in tsconfig.json, and the tscOption option is not needed.
 
 ### Copying Source Resources
 
-Frequently, some files from the source directory will have to be placed into the directory where the transpiled JavaScript files reside so that webpack can find them in the same relative path. For applications, files may need to be copied from source directories to the directory where web resources are staged. The "sourceResources" property specifies the source and destination for those files, which are symbolically linked from the source to the destination. The "sourceResources" property is an array of objects, each of which has a "source" and "dest" property. For example:
+Often, some files from the source directory will have to be placed into the directory where the transpiled JavaScript files reside so that webpack can find them in the same relative path. For applications, files may need to be copied from source directories to the directory where web resources are staged. The "sourceResources" property specifies the source and destination for those files, which are either copied or symbolically linked from the source to the destination. The "sourceResources" property is an array of objects, each of which has a "source" and "dest" property. For example:
 
 ```json
   "iModelJs": {
@@ -147,7 +149,7 @@ Frequently, some files from the source directory will have to be placed into the
   },
 ```
 
-This copies or symlinks all the .scss files in all subdirectories of the src directory to parallel directories in the lib directory, and copies or symlinks all of the files in all subdirectories of the public directory into the lib/webresources directory. In some cases, you might prefer that the resources be copied rather than linked. In that case, add a boolean "copy" property alongside the "source" and "dest" properties and set it to true. If the resource specified with a "copy" property would also be copied by a sourceResources entry with a glob specification, make sure it appears earlier in the array of sourceResources.
+This copies or symlinks all the .scss files in all subdirectories of the src directory to parallel directories in the lib directory, and copies or symlinks all of the files in all subdirectories of the public directory into the lib/webresources directory. In some cases, you might prefer that the resources be copied rather than linked even if the BUILDIMODEL_SYMLINKS environment variable is set. In that case, add a boolean "copy" property alongside the "source" and "dest" properties and set it to true. If the resource specified with a "copy" property would also be included in a sourceResources entry with a glob specification, make sure it appears earlier in the array of sourceResources.
 
 ### Webpacking
 
@@ -223,7 +225,7 @@ As you can see from the comments in the file, the script tag that invokes IModel
 
 ### Copying External Modules to the Web resources directory
 
-For application modules only, buildIModelJsModule symbolic links all the external modules that are needed into the "dest" directory of the webpack property. No further buildModule properties are needed for this step.
+For application modules only, buildIModelJsModule copies or symlinks all the external modules that are needed into the "dest" directory of the webpack property. No specific buildModule properties are needed for this step.
 
 ### Building Submodules in the same package
 
@@ -254,7 +256,7 @@ For Bentley applications only, the "makeConfig" property is specified to create 
 
 ### PseudoLocalizing json locale files
 
-For localization, iModel.js uses the popular i18next package. Localizable strings are defined in json files where the keys are the property names and the localizable strings are the values. See [Localization in iModel.js](../../docs/learning/core/frontend/Localization.md) for an explanation. While an application is under development, it is useful to be able to easily tell whether a string that appears in the user interface has been properly set up for localization before sending the localization json files out for translation. A way of doing that while somewhat preserving readability of the UI is called pseudoLocalization. In that process, a separate locale, "en-pseudo" is created and all the vowels in the original strings are replaced with various accented variations. The buildIModelJsModule script will perform that step if a "pseudoLocalize" property is provided. It should be an object with a "source" and "dest" property. For example:
+For localization, iModel.js uses the popular i18next package. Localizable strings are defined in json files where the keys are the property names and the localizable strings are the values. See [Localization in iModel.js](./Localization.md) for an explanation. While an application is under development, it is useful to be able to easily tell whether a string that appears in the user interface has been properly set up for localization before sending the localization json files out for translation. A way of doing that while somewhat preserving readability of the UI is called pseudoLocalization. In that process, a separate locale, "en-pseudo" is created and all the vowels in the original strings are replaced with various accented variations. The buildIModelJsModule script performs that step if a "pseudoLocalize" property is provided. It should be an object with a "source" and "dest" property. For example:
 
 ```html
   "iModelJs": {

@@ -119,9 +119,8 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
  * See [the learning articles]($docs/learning/frontend/index.md).
  */
 /**
- * @docs-group-description SelectionSet
- * Classes for working with the set of selected elements.
- * See [the learning articles]($docs/learning/frontend/index.md).
+ * @docs-group-description Plugins
+ * Classes for creating and managing runtime [Plugins]($docs/learning/frontend/Plugins.md)
  */
 /**
  * @docs-group-description Properties
@@ -130,6 +129,11 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
 /**
  * @docs-group-description Rendering
  * Classes for rendering the contents of views.
+ */
+/**
+ * @docs-group-description SelectionSet
+ * Classes for working with the set of selected elements.
+ * See [the learning articles]($docs/learning/frontend/index.md).
  */
 /**
  * @docs-group-description Tile
