@@ -15,8 +15,9 @@ html[data-theme="light"] {
   --buic-background-4:            rgb(220, 224, 227);
   --buic-background-5:            rgb(199, 204, 209);
 
-  --buic-background-tooltip:      rgba(199, 204, 209, 0.9);
+  --buic-background-tooltip:      rgba(199, 204, 209, 0.95);
   --buic-background-scrollbar:    rgb(155, 165, 174);
+  --buic-background-toolbutton-stroke:  rgb(155, 165, 174);
 
   --buic-foreground-body:         rgba(000, 000, 000, 0.88);
   --buic-foreground-body-reverse: rgba(255, 255, 255, 0.88);
@@ -53,8 +54,9 @@ html[data-theme="dark"] {
   --buic-background-4:            rgb(056, 068, 074);
   --buic-background-5:            rgb(045, 055, 060);
 
-  --buic-background-tooltip:      rgb(045, 055, 060, 0.9);
+  --buic-background-tooltip:      rgb(045, 055, 060, 0.95);
   --buic-background-scrollbar:    rgb(155, 165, 174);
+  --buic-background-toolbutton-stroke:  rgb(045, 055, 060);
 
   --buic-foreground-body:         rgba(255, 255, 255, 0.88);
   --buic-foreground-body-reverse: rgba(000, 000, 000, 0.88);

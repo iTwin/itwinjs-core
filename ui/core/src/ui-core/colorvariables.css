@@ -19,10 +19,8 @@
 
   /** background.5 */
   --buic-background-titlebar:                 var(--buic-background-5);
-  --buic-background-toolbutton-stroke:        var(--buic-background-5);
   --buic-background-dialog-stroke:            var(--buic-background-5);
   --buic-background-widget-stroke:            var(--buic-background-5);
-  --buic-background-statusbar:                var(--buic-background-5);
   --buic-background-control-stroke:           var(--buic-background-5);
   --buic-background-panel-stroke:             var(--buic-background-5);
 
@@ -31,6 +29,7 @@
   --buic-background-divider:                  var(--buic-background-4);
   --buic-background-widget-element-stroke:    var(--buic-background-4);
   --buic-background-control-disabled:         var(--buic-background-4);
+  --buic-background-statusbar:                var(--buic-background-4);
 
   /** background.3 */
   --buic-background-tab-inactive:             var(--buic-background-3);

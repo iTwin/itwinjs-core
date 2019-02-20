@@ -10,7 +10,7 @@
   min-width: $nz-footer-popover-min-width;
   min-height: 75px;
   transform: translateX(-50%);
-  color: $background-5;
+  color: $buic-background-dialog-stroke;
 
   @include uicore-z-index(status-popover);
 

@@ -20,7 +20,7 @@
   color: $buic-foreground-muted;
 
   &:not(.nz-is-open) {
-    border-bottom: 1px solid $background-5;
+    border-bottom: 1px solid $buic-background-dialog-stroke;
     background-color: $background-3;
     color: $text-dark;
   }
