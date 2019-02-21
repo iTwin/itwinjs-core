@@ -268,6 +268,8 @@ class Animator {
   public constructor(public totalTime: BeDuration, public viewport: Viewport, public startFrustum: Frustum, public endFrustum: Frustum) { }
 
   private interpolateFrustum(fraction: number): void {
+    // const context = SmoothTransformBetweenFrusta.create (this.startFrustum.points,this.endFrustum.points)!;
+    // this._currFrustum.points = context.fractionToWorldCorners (fraction);
     for (let i = 0; i < Npc.CORNER_COUNT; ++i)
       this.startFrustum.points[i].interpolate(fraction, this.endFrustum.points[i], this._currFrustum.points[i]);
     this.viewport.setupViewFromFrustum(this._currFrustum);

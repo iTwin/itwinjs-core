@@ -143,6 +143,7 @@ export * from "./geometry3d/Segment1d";
 export * from "./geometry3d/Transform";
 export * from "./geometry3d/XYZProps";
 export * from "./geometry3d/YawPitchRollAngles";
+export * from "./geometry3d/FrustumAnimation";
 
 export * from "./Geometry";
 export * from "./Constant";

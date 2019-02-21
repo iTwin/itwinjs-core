@@ -8,7 +8,7 @@ import { IModelTestUtils } from "./IModelTestUtils";
 import { ElementAspectProps, CodeSpec, CodeScopeSpec, IModel } from "@bentley/imodeljs-common";
 import { Id64, Id64String, ActivityLoggingContext, Logger } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
-import { Range3d } from "../../../../core/geometry/lib/geometry-core";
+import { Range3d } from "@bentley/geometry-core";
 
 /** Example code organized as tests to make sure that it builds and runs successfully. */
 describe("Example Code", () => {

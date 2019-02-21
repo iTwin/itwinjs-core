@@ -283,6 +283,112 @@ export class Point3dArray {
     }
     return result;
   }
+  /**
+   * Compute the 8 weights of trilinear mapping
+   * By appropriate choice of weights, this can be usef for both point and derivative mappints.
+   * @param weights preallocated array to recevie weights.
+   * @param u0 low u weight
+   * @param u1 high u weight
+   * @param v0 low v weight
+   * @param v1 high v weight
+   * @param w0 low w weight
+   * @param w1 high w weight
+   */
+  public static evaluateTrilinearWeights(weights: Float64Array, u0: number, u1: number, v0: number, v1: number, w0: number, w1: number) {
+
+    weights[0] = u0 * v0 * w0;
+    weights[1] = u1 * v0 * w0;
+    weights[2] = u0 * v1 * w0;
+    weights[3] = u1 * v1 * w0;
+    weights[4] = u0 * v0 * w1;
+    weights[5] = u1 * v0 * w1;
+    weights[6] = u0 * v1 * w1;
+    weights[7] = u1 * v1 * w1;
+  }
+  /**
+   * sum the weighted x components from a point array.
+   * * weights.length is the number of summed terms
+   * * points must have at least that length
+   * @param weights
+   * @param points
+   */
+  public static sumWeightedX(weights: Float64Array, points: Point3d[]): number {
+    let sum = 0.0;
+    const n = weights.length;
+    for (let i = 0; i < n; i++)
+      sum += weights[i] * points[i].x;
+    return sum;
+  }
+
+  /**
+   * sum the weighted x components from a point array.
+   * * weights.length is the number of summed terms
+   * * points must have at least that length
+   * @param weights
+   * @param points
+   */
+  public static sumWeightedY(weights: Float64Array, points: Point3d[]): number {
+    let sum = 0.0;
+    const n = weights.length;
+    for (let i = 0; i < n; i++)
+      sum += weights[i] * points[i].y;
+    return sum;
+  }
+
+  /**
+   * sum the weighted x components from a point array.
+   * * weights.length is the number of summed terms
+   * * points must have at least that length
+   * @param weights
+   * @param points
+   */
+  public static sumWeightedZ(weights: Float64Array, points: Point3d[]): number {
+    let sum = 0.0;
+    const n = weights.length;
+    for (let i = 0; i < n; i++)
+      sum += weights[i] * points[i].z;
+    return sum;
+  }
+
+  private static _weightUVW = new Float64Array(8);
+  private static _weightDU = new Float64Array(8);
+  private static _weightDV = new Float64Array(8);
+  private static _weightDW = new Float64Array(8);
+  /**
+   * Compute a point by trilinear mapping.
+   * @param points array of 8 points at corners, with x index varying fastest.
+   * @param result optional result point
+   */
+  public static evaluateTrilinearPoint(points: Point3d[], u: number, v: number, w: number, result?: Point3d): Point3d {
+    if (!result) result = Point3d.create(0, 0, 0);
+    this.evaluateTrilinearWeights(this._weightUVW, 1 - u, u, 1 - v, v, 1 - w, w);
+    let a;
+    for (let i = 0; i < 8; i++) {
+      a = this._weightUVW[i];
+      result.x += a * points[i].x;
+      result.y += a * points[i].y;
+      result.z += a * points[i].z;
+    }
+    return result;
+  }
+  /**
+   * Compute a point and derivatives wrt uvw by trilinear mapping.
+   * * evaluated point is the point part of the transform
+   * * u,v,w derivatives are the respective columns of the matrix part of the transform.
+   * @param points array of 8 points at corners, with x index varying fastest.
+   * @param result optional result transform
+   */
+  public static evaluateTrilinearDerivativeTransform(points: Point3d[], u: number, v: number, w: number, result?: Transform): Transform {
+    this.evaluateTrilinearWeights(this._weightUVW, 1 - u, u, 1 - v, v, 1 - w, w);
+    this.evaluateTrilinearWeights(this._weightDU, -1, 1, 1 - v, v, 1 - w, w);
+    this.evaluateTrilinearWeights(this._weightDV, 1 - u, u, -1, 1, 1 - w, w);
+    this.evaluateTrilinearWeights(this._weightDW, 1 - u, u, 1 - v, v, -1, 1);
+    return Transform.createRowValues(
+      this.sumWeightedX(this._weightDU, points), this.sumWeightedX(this._weightDV, points), this.sumWeightedX(this._weightDW, points), this.sumWeightedX(this._weightUVW, points),
+      this.sumWeightedY(this._weightDU, points), this.sumWeightedY(this._weightDV, points), this.sumWeightedY(this._weightDW, points), this.sumWeightedY(this._weightUVW, points),
+      this.sumWeightedZ(this._weightDU, points), this.sumWeightedZ(this._weightDV, points), this.sumWeightedZ(this._weightDW, points), this.sumWeightedZ(this._weightUVW, points),
+      result);
+  }
 
   public static unpackNumbersToPoint3dArray(data: Float64Array | number[]): Point3d[] {
     const result = [];
