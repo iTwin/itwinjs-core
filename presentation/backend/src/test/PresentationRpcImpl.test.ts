@@ -17,8 +17,8 @@ import {
   RpcRequestOptions, ContentRequestOptions, HierarchyRequestOptions,
   ClientStateSyncRequestOptions, SelectionScopeRequestOptions,
   HierarchyRpcRequestOptions, RulesetVariablesState,
-  Node, Descriptor, Content, PageOptions, KeySet, PresentationError, InstanceKey,
-  Paged, RulesetManagerState, VariableValueTypes, Omit,
+  Node, Descriptor, Content, PageOptions, KeySet, InstanceKey,
+  Paged, RulesetManagerState, VariableValueTypes, Omit, PresentationStatus,
 } from "@bentley/presentation-common";
 import RulesetVariablesManager from "../RulesetVariablesManager";
 import PresentationManager from "../PresentationManager";
@@ -73,13 +73,15 @@ describe("PresentationRpcImpl", () => {
       actx.enter();
     });
 
-    it("throws when using invalid imodel token", async () => {
+    it("returns invalid argument status code when using invalid imodel token", async () => {
       IModelDb.find = () => undefined as any;
       const options: Paged<HierarchyRpcRequestOptions> = {
         ...defaultRpcParams,
         rulesetId: testData.rulesetId,
       };
-      await expect(impl.getRootNodes(testData.imodelToken, options)).to.eventually.be.rejectedWith(PresentationError);
+
+      const response = await impl.getRootNodes(testData.imodelToken, options);
+      expect(response.statusCode).to.equal(PresentationStatus.InvalidArgument);
     });
 
     describe("verifyRequest", () => {
@@ -107,15 +109,15 @@ describe("PresentationRpcImpl", () => {
         await expect(impl.getRootNodesCount(testData.imodelToken, options)).to.eventually.be.fulfilled;
       });
 
-      it("throws if clientStateId in request doesn't match current client state id", async () => {
+      it("returns BackendOutOfSync status code if clientStateId in request doesn't match current client state id", async () => {
         const options: HierarchyRpcRequestOptions = {
           ...defaultRpcParams,
           clientStateId: undefined,
           rulesetId: testData.rulesetId,
         };
         await impl.getRootNodesCount(testData.imodelToken, options); // this sets current client state id
-        const request = impl.getRootNodesCount(testData.imodelToken, { ...options, clientStateId: faker.random.uuid() });
-        await expect(request).to.eventually.be.rejectedWith(PresentationError);
+        const response = await impl.getRootNodesCount(testData.imodelToken, { ...options, clientStateId: faker.random.uuid() });
+        expect(response.statusCode).to.equal(PresentationStatus.BackendOutOfSync);
       });
 
       it("handles undefined clientId", async () => {
@@ -145,7 +147,7 @@ describe("PresentationRpcImpl", () => {
         rulesets.forEach((ruleset) => rulesetsMock.verify((x) => x.add(ruleset), moq.Times.once()));
       });
 
-      it("throws if rulesets state object is not an array", async () => {
+      it("returns InvalidArgument status code if rulesets state object is not an array", async () => {
         const ruleset = await createRandomRuleset();
         const options: ClientStateSyncRequestOptions = {
           clientStateId: faker.random.uuid(),
@@ -153,7 +155,8 @@ describe("PresentationRpcImpl", () => {
             [RulesetManagerState.STATE_ID]: ruleset,
           },
         };
-        await expect(impl.syncClientState(testData.imodelToken, options)).to.eventually.be.rejectedWith(PresentationError);
+        const response = await impl.syncClientState(testData.imodelToken, options);
+        expect(response.statusCode).to.equal(PresentationStatus.InvalidArgument);
       });
 
       it("syncs ruleset vars", async () => {
@@ -180,21 +183,23 @@ describe("PresentationRpcImpl", () => {
         variablesMock.verify((x) => x.setValue(values.b[0][0], values.b[0][1], values.b[0][2]), moq.Times.once());
       });
 
-      it("throws if ruleset vars state object is not an object", async () => {
+      it("returns InvalidArgument status code if ruleset vars state object is not an object", async () => {
         const options: ClientStateSyncRequestOptions = {
           clientStateId: faker.random.uuid(),
           state: {
             [RulesetVariablesState.STATE_ID]: 456,
           },
         };
-        await expect(impl.syncClientState(testData.imodelToken, options)).to.eventually.be.rejectedWith(PresentationError);
+        const response = await impl.syncClientState(testData.imodelToken, options);
+        expect(response.statusCode).to.equal(PresentationStatus.InvalidArgument);
       });
 
-      it("throws if clientStateId is not specified", async () => {
+      it("returns InvalidArgument status code if clientStateId is not specified", async () => {
         const options: ClientStateSyncRequestOptions = {
           state: {},
         };
-        await expect(impl.syncClientState(testData.imodelToken, options)).to.eventually.be.rejectedWith(PresentationError);
+        const response = await impl.syncClientState(testData.imodelToken, options);
+        expect(response.statusCode).to.equal(PresentationStatus.InvalidArgument);
       });
 
     });
@@ -212,7 +217,7 @@ describe("PresentationRpcImpl", () => {
           .verifiable();
         const actualResult = await impl.getRootNodes(testData.imodelToken, { ...defaultRpcParams, ...options });
         presentationManagerMock.verifyAll();
-        expect(actualResult).to.deep.eq(result);
+        expect(actualResult.result).to.deep.eq(result);
       });
 
     });
@@ -229,7 +234,7 @@ describe("PresentationRpcImpl", () => {
           .verifiable();
         const actualResult = await impl.getRootNodesCount(testData.imodelToken, { ...defaultRpcParams, ...options });
         presentationManagerMock.verifyAll();
-        expect(actualResult).to.eq(result);
+        expect(actualResult.result).to.eq(result);
       });
 
     });
@@ -248,7 +253,7 @@ describe("PresentationRpcImpl", () => {
           .verifiable();
         const actualResult = await impl.getChildren(testData.imodelToken, { ...defaultRpcParams, ...options }, parentNodeKey);
         presentationManagerMock.verifyAll();
-        expect(actualResult).to.deep.eq(result);
+        expect(actualResult.result).to.deep.eq(result);
       });
 
     });
@@ -266,7 +271,7 @@ describe("PresentationRpcImpl", () => {
           .verifiable();
         const actualResult = await impl.getChildrenCount(testData.imodelToken, { ...defaultRpcParams, ...options }, parentNodeKey);
         presentationManagerMock.verifyAll();
-        expect(actualResult).to.eq(result);
+        expect(actualResult.result).to.eq(result);
       });
 
     });
@@ -283,7 +288,7 @@ describe("PresentationRpcImpl", () => {
           .verifiable();
         const actualResult = await impl.getFilteredNodePaths(testData.imodelToken, { ...defaultRpcParams, ...options }, "filter");
         presentationManagerMock.verifyAll();
-        expect(actualResult).to.deep.equal(result);
+        expect(actualResult.result).to.deep.equal(result);
       });
 
     });
@@ -301,7 +306,7 @@ describe("PresentationRpcImpl", () => {
           .verifiable();
         const actualResult = await impl.getNodePaths(testData.imodelToken, { ...defaultRpcParams, ...options }, keyArray, 1);
         presentationManagerMock.verifyAll();
-        expect(actualResult).to.deep.equal(result);
+        expect(actualResult.result).to.deep.equal(result);
       });
 
     });
@@ -326,7 +331,7 @@ describe("PresentationRpcImpl", () => {
           testData.displayType, testData.inputKeys, undefined);
         presentationManagerMock.verifyAll();
         descriptorMock.verifyAll();
-        expect(actualResult).to.eq(result);
+        expect(actualResult.result).to.eq(result);
       });
 
       it("handles undefined descriptor response", async () => {
@@ -339,7 +344,7 @@ describe("PresentationRpcImpl", () => {
         const actualResult = await impl.getContentDescriptor(testData.imodelToken, { ...defaultRpcParams, ...options },
           testData.displayType, testData.inputKeys, undefined);
         presentationManagerMock.verifyAll();
-        expect(actualResult).to.be.undefined;
+        expect(actualResult.result).to.be.undefined;
       });
 
     });
@@ -359,7 +364,7 @@ describe("PresentationRpcImpl", () => {
         const actualResult = await impl.getContentSetSize(testData.imodelToken, { ...defaultRpcParams, ...options },
           descriptor, testData.inputKeys);
         presentationManagerMock.verifyAll();
-        expect(actualResult).to.deep.eq(result);
+        expect(actualResult.result).to.deep.eq(result);
       });
 
     });
@@ -386,7 +391,7 @@ describe("PresentationRpcImpl", () => {
           descriptorMock.object, testData.inputKeys);
         presentationManagerMock.verifyAll();
         descriptorMock.verifyAll();
-        expect(actualResult).to.eq(contentMock.object);
+        expect(actualResult.result).to.eq(contentMock.object);
       });
 
     });
@@ -407,7 +412,7 @@ describe("PresentationRpcImpl", () => {
         const actualResult = await impl.getDistinctValues(testData.imodelToken, { ...defaultRpcParams, ...options }, descriptor,
           testData.inputKeys, fieldName, maximumValueCount);
         presentationManagerMock.verifyAll();
-        expect(actualResult).to.deep.eq(distinctValues);
+        expect(actualResult.result).to.deep.eq(distinctValues);
       });
 
     });
@@ -424,7 +429,7 @@ describe("PresentationRpcImpl", () => {
           .verifiable();
         const actualResult = await impl.getSelectionScopes(testData.imodelToken, { ...defaultRpcParams, ...options });
         presentationManagerMock.verifyAll();
-        expect(actualResult).to.deep.eq(result);
+        expect(actualResult.result).to.deep.eq(result);
       });
 
     });
@@ -443,7 +448,7 @@ describe("PresentationRpcImpl", () => {
           .verifiable();
         const actualResult = await impl.computeSelection(testData.imodelToken, { ...defaultRpcParams, ...options }, keys, scope.id);
         presentationManagerMock.verifyAll();
-        expect(actualResult).to.deep.eq(result);
+        expect(actualResult.result).to.deep.eq(result);
       });
 
     });

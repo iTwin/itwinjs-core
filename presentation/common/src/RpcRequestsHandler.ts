@@ -7,7 +7,7 @@
 import { Guid, BeEvent, IDisposable } from "@bentley/bentleyjs-core";
 import { IModelToken, RpcManager, EntityProps } from "@bentley/imodeljs-common";
 import KeySet from "./KeySet";
-import { PresentationStatus } from "./Error";
+import { PresentationStatus, PresentationError } from "./Error";
 import { InstanceKey } from "./EC";
 import { NodeKey } from "./hierarchy/Key";
 import { default as Node } from "./hierarchy/Node";
@@ -16,7 +16,7 @@ import { SelectionInfo, default as Descriptor } from "./content/Descriptor";
 import { default as Content } from "./content/Content";
 import { SelectionScope } from "./selection/SelectionScope";
 import { HierarchyRequestOptions, ContentRequestOptions, Paged, SelectionScopeRequestOptions } from "./PresentationManagerOptions";
-import PresentationRpcInterface, { RpcRequestOptions } from "./PresentationRpcInterface";
+import PresentationRpcInterface, { RpcRequestOptions, PresentationRpcResponse } from "./PresentationRpcInterface";
 import { Omit } from "./Utils";
 
 /**
@@ -119,19 +119,19 @@ export default class RpcRequestsHandler implements IDisposable {
     await this.rpcClient.syncClientState(token, this.createRequestOptions({ state: clientState }));
   }
 
-  private async requestRepeatedly<TResult, TOptions extends RpcRequestOptions>(func: (opts: TOptions) => Promise<TResult>, options: TOptions, imodelToken: IModelToken): Promise<TResult> {
-    try {
-      return await func(options);
-    } catch (e) {
-      if (e.errorNumber === PresentationStatus.BackendOutOfSync) {
-        options.clientStateId = this._clientStateId;
-        await this.sync(imodelToken);
-        return this.requestRepeatedly(func, options, imodelToken);
-      } else {
-        // unknown error - rethrow
-        throw e;
-      }
+  private async requestRepeatedly<TResult, TOptions extends RpcRequestOptions>(func: (opts: TOptions) => PresentationRpcResponse<TResult>, options: TOptions, imodelToken: IModelToken): Promise<TResult> {
+    const response = await func(options);
+
+    if (response.statusCode === PresentationStatus.Success)
+      return response.result!;
+
+    if (response.statusCode === PresentationStatus.BackendOutOfSync) {
+      options.clientStateId = this._clientStateId;
+      await this.sync(imodelToken);
+      return this.requestRepeatedly(func, options, imodelToken);
     }
+
+    throw new PresentationError(response.statusCode, response.errorMessage);
   }
 
   /**
@@ -142,9 +142,9 @@ export default class RpcRequestsHandler implements IDisposable {
    *
    * @hidden
    */
-  public async request<TResult, TOptions extends RpcRequestOptions & { imodel: IModelToken }, TArg>(
+  public async request<TResult, TOptions extends RpcRequestOptions & { imodel: IModelToken }, TArg = any>(
     context: any,
-    func: (token: IModelToken, options: Omit<TOptions, "imodel">, ...args: TArg[]) => Promise<TResult>,
+    func: (token: IModelToken, options: Omit<TOptions, "imodel">, ...args: TArg[]) => PresentationRpcResponse<TResult>,
     options: TOptions,
     ...args: TArg[]): Promise<TResult> {
     type TFuncOptions = Omit<TOptions, "imodel">;
@@ -154,53 +154,53 @@ export default class RpcRequestsHandler implements IDisposable {
   }
 
   public async getRootNodes(options: Paged<HierarchyRequestOptions<IModelToken>>): Promise<Node[]> {
-    return this.request<Node[], Paged<HierarchyRequestOptions<IModelToken>>, any>(
+    return this.request<Node[], Paged<HierarchyRequestOptions<IModelToken>>>(
       this.rpcClient, this.rpcClient.getRootNodes, this.createRequestOptions(options));
   }
   public async getRootNodesCount(options: HierarchyRequestOptions<IModelToken>): Promise<number> {
-    return this.request<number, HierarchyRequestOptions<IModelToken>, any>(
+    return this.request<number, HierarchyRequestOptions<IModelToken>>(
       this.rpcClient, this.rpcClient.getRootNodesCount, this.createRequestOptions(options));
   }
   public async getChildren(options: Paged<HierarchyRequestOptions<IModelToken>>, parentKey: Readonly<NodeKey>): Promise<Node[]> {
-    return this.request<Node[], Paged<HierarchyRequestOptions<IModelToken>>, any>(
+    return this.request<Node[], Paged<HierarchyRequestOptions<IModelToken>>>(
       this.rpcClient, this.rpcClient.getChildren, this.createRequestOptions(options), parentKey);
   }
   public async getChildrenCount(options: HierarchyRequestOptions<IModelToken>, parentKey: Readonly<NodeKey>): Promise<number> {
-    return this.request<number, HierarchyRequestOptions<IModelToken>, any>(
+    return this.request<number, HierarchyRequestOptions<IModelToken>>(
       this.rpcClient, this.rpcClient.getChildrenCount, this.createRequestOptions(options), parentKey);
   }
   public async getNodePaths(options: HierarchyRequestOptions<IModelToken>, paths: InstanceKey[][], markedIndex: number): Promise<NodePathElement[]> {
-    return this.request<NodePathElement[], HierarchyRequestOptions<IModelToken>, any>(
+    return this.request<NodePathElement[], HierarchyRequestOptions<IModelToken>>(
       this.rpcClient, this.rpcClient.getNodePaths, this.createRequestOptions(options), paths, markedIndex);
   }
   public async getFilteredNodePaths(options: HierarchyRequestOptions<IModelToken>, filterText: string): Promise<NodePathElement[]> {
-    return this.request<NodePathElement[], HierarchyRequestOptions<IModelToken>, any>(
+    return this.request<NodePathElement[], HierarchyRequestOptions<IModelToken>>(
       this.rpcClient, this.rpcClient.getFilteredNodePaths, this.createRequestOptions(options), filterText);
   }
 
   public async getContentDescriptor(options: ContentRequestOptions<IModelToken>, displayType: string, keys: Readonly<KeySet>, selection: Readonly<SelectionInfo> | undefined): Promise<Descriptor | undefined> {
-    return this.request<Descriptor | undefined, ContentRequestOptions<IModelToken>, any>(
+    return this.request<Descriptor | undefined, ContentRequestOptions<IModelToken>>(
       this.rpcClient, this.rpcClient.getContentDescriptor, this.createRequestOptions(options), displayType, keys, selection);
   }
   public async getContentSetSize(options: ContentRequestOptions<IModelToken>, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>): Promise<number> {
-    return this.request<number, ContentRequestOptions<IModelToken>, any>(
+    return this.request<number, ContentRequestOptions<IModelToken>>(
       this.rpcClient, this.rpcClient.getContentSetSize, this.createRequestOptions(options), descriptor, keys);
   }
   public async getContent(options: ContentRequestOptions<IModelToken>, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>): Promise<Content> {
-    return this.request<Content, ContentRequestOptions<IModelToken>, any>(
+    return this.request<Content, ContentRequestOptions<IModelToken>>(
       this.rpcClient, this.rpcClient.getContent, this.createRequestOptions(options), descriptor, keys);
   }
   public async getDistinctValues(options: ContentRequestOptions<IModelToken>, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>, fieldName: string, maximumValueCount: number): Promise<string[]> {
-    return this.request<string[], ContentRequestOptions<IModelToken>, any>(
+    return this.request<string[], ContentRequestOptions<IModelToken>>(
       this.rpcClient, this.rpcClient.getDistinctValues, this.createRequestOptions(options), descriptor, keys, fieldName, maximumValueCount);
   }
 
   public async getSelectionScopes(options: SelectionScopeRequestOptions<IModelToken>): Promise<SelectionScope[]> {
-    return this.request<SelectionScope[], SelectionScopeRequestOptions<IModelToken>, any>(
+    return this.request<SelectionScope[], SelectionScopeRequestOptions<IModelToken>>(
       this.rpcClient, this.rpcClient.getSelectionScopes, this.createRequestOptions(options));
   }
   public async computeSelection(options: SelectionScopeRequestOptions<IModelToken>, keys: EntityProps[], scopeId: string): Promise<KeySet> {
-    return this.request<KeySet, SelectionScopeRequestOptions<IModelToken>, any>(
+    return this.request<KeySet, SelectionScopeRequestOptions<IModelToken>>(
       this.rpcClient, this.rpcClient.computeSelection, this.createRequestOptions(options), keys, scopeId);
   }
 }

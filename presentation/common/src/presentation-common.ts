@@ -10,7 +10,12 @@ export { default as KeySet, Keys } from "./KeySet";
 export { default as PersistentKeysContainer } from "./PersistentKeysContainer";
 export * from "./content/Value";
 export * from "./PresentationManagerOptions";
-export { default as PresentationRpcInterface, RpcRequestOptions, HierarchyRpcRequestOptions, ClientStateSyncRequestOptions } from "./PresentationRpcInterface";
+export {
+  default as PresentationRpcInterface,
+  RpcRequestOptions, ClientStateSyncRequestOptions, ContentRpcRequestOptions,
+  HierarchyRpcRequestOptions, SelectionScopeRpcRequestOptions,
+  RpcResponse, PresentationRpcResponse,
+} from "./PresentationRpcInterface";
 export { default as RpcRequestsHandler, IClientStateHolder } from "./RpcRequestsHandler";
 export { RulesetVariablesState, VariableValueTypes, VariableValue } from "./RulesetVariables";
 export * from "./RegisteredRuleset";
