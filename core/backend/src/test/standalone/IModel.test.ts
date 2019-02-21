@@ -2,7 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { ActivityLoggingContext, BeEvent, DbResult, Guid, Id64, Id64String, OpenMode } from "@bentley/bentleyjs-core";
+import { ActivityLoggingContext, BeEvent, DbResult, Guid, Id64, Id64String, OpenMode, LogLevel, Logger } from "@bentley/bentleyjs-core";
 import {
   Angle,
   GeometryQuery,
@@ -34,6 +34,7 @@ import {
 } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
+import { HubUtility } from "../integration/HubUtility";
 
 let lastPushTimeMillis = 0;
 let lastAutoPushEventType: AutoPushEventType | undefined;
@@ -80,6 +81,13 @@ describe("iModel", () => {
     s2 = JSON.stringify(el2);
     assert.equal(s1, s2);
   };
+
+  it.skip("dump cs file", () => {
+    Logger.setLevel("DgnCore", LogLevel.Trace);
+    Logger.setLevel("Changeset", LogLevel.Trace);
+    const db = IModelDb.openStandalone("D:\\dgn\\problem\\83927\\EAP_TT_001\\seed\\EAP_TT_001.bim");
+    HubUtility.dumpChangeSetFile(db, "D:\\dgn\\problem\\83927\\EAP_TT_001", "9fd0e30f88e93bec72532f6f1e05688e2c2408cd");
+  });
 
   it("should be able to get properties of an iIModel", () => {
     expect(imodel1.name).equals("TBD"); // That's the name of the root subject!
