@@ -10,7 +10,7 @@ import { FluentdLoggerStream, IFluentdConfig } from "./FluentdLoggerStream";
 
 /** Helps to configure the bentleyjs-core Logger to use fluentd and seq.
  * Note: The app must depend on the bunyan, request and request-promise packages.
- * @alpha
+ * @beta
  */
 export class FluentdBunyanLoggerConfig {
   /** Create a bunyan logger that streams to fluentd

@@ -9,7 +9,7 @@ import * as seq from "bunyan-seq";
 import { BentleyError, IModelStatus } from "@bentley/bentleyjs-core";
 
 /** seq logging server configuration.
- * @alpha
+ * @beta
  */
 export interface SeqConfig {
   /** The URL of the seq server to connect to. Defaults to localhost. */
@@ -28,7 +28,7 @@ export interface SeqConfig {
 
 /** Helps to configure the bentleyjs-core Logger to use bunyan and seq.
  * Note: The app must depend on the bunyan and bunyan-seq packages.
- * @alpha
+ * @beta
  */
 export class SeqLoggerConfig {
 

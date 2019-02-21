@@ -10,13 +10,13 @@ import * as bunyan from "bunyan";
 // tslint:disable-next-line:no-var-requires
 const post = require("request-promise");
 
-/** @alpha */
+/** @beta */
 export interface GenericPost {
   postasync(config: any, jsonbody: any): Promise<number>;
 }
 
 /** fluentd logging server configuration.
- * @alpha
+ * @beta
  */
 export interface IFluentdConfig {
   /** The URL of the fluentd server to connect to. Defaults to localhost. */
@@ -33,7 +33,7 @@ export interface IFluentdConfig {
   seqApiKey?: string;
 }
 
-/** @alpha */
+/** @beta */
 export class PostFluentd implements GenericPost {
   private generateOptions(config: IFluentdConfig, jsonbody: any): any {
     const customHeaders: any = {};
@@ -56,7 +56,7 @@ export class PostFluentd implements GenericPost {
   }
 }
 
-/** @alpha */
+/** @beta */
 export class FluentdLoggerStream extends Writable {
   private _fluentdParams: IFluentdConfig;
   constructor(fluentdParams: IFluentdConfig) {
