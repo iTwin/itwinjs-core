@@ -4,21 +4,20 @@
 *--------------------------------------------------------------------------------------------*/
 @import "@bentley/ui-core/lib/ui-core/index";
 
-.ui-components-tree-loader {
+.components-tree-loader {
   position: relative;
   display: block;
   left: calc(50% - 24px);
   top: calc(50% - 24px);
 }
 
-.ui-components-tree-errormessage {
+.components-tree-errormessage {
   padding-left: "10px"
 }
 
-.ui-components-tree {
+.components-tree {
   color: $buic-foreground-body;
   background-color: $buic-background-control;
-
   /**
    * Workaround for horizontal scroll issue.
    * based on https://github.com/bvaughn/react-virtualized/issues/1248

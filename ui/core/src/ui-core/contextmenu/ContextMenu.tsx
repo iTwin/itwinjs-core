@@ -10,10 +10,9 @@ import * as classnames from "classnames";
 
 import "./ContextMenu.scss";
 import { withOnOutsideClick } from "../hocs/withOnOutsideClick";
-import { Div } from "../base/Div";
 import { Omit } from "../utils/typeUtils";
 
-const DivWithOutsideClick = withOnOutsideClick(Div); // tslint:disable-line:variable-name
+const DivWithOutsideClick = withOnOutsideClick((props) => (<div {...props} />)); // tslint:disable-line:variable-name
 
 /** Enum to specify where a [[ContextMenu]] should anchor to its parent element */
 export enum ContextMenuDirection {

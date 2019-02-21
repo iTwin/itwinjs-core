@@ -7,11 +7,11 @@ import * as React from "react";
 import * as sinon from "sinon";
 import { expect } from "chai";
 
-import { withOnOutsideClick, Div } from "../../ui-core";
+import { withOnOutsideClick } from "../../ui-core";
 
 describe("WithOnOutsideClick", () => {
 
-  const WithOnOutsideClickDiv = withOnOutsideClick(Div); // tslint:disable-line:variable-name
+  const WithOnOutsideClickDiv = withOnOutsideClick((props) => (<div {...props} />)); // tslint:disable-line:variable-name
 
   it("should render", () => {
     const wrapper = mount(<WithOnOutsideClickDiv />);

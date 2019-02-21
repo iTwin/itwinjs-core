@@ -8,9 +8,8 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import * as classnames from "classnames";
 import { withOnOutsideClick } from "../hocs/withOnOutsideClick";
-import { Div } from "../base/Div";
 
-const DivWithOutsideClick = withOnOutsideClick(Div); // tslint:disable-line:variable-name
+const DivWithOutsideClick = withOnOutsideClick((props) => (<div {...props} />)); // tslint:disable-line:variable-name
 
 import { UiCore } from "../UiCore";
 

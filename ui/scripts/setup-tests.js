@@ -8,6 +8,9 @@
 require('jsdom-global')();
 window.Date = Date;
 
+const { JSDOM } = require('jsdom');
+global.DOMParser = new JSDOM().window.DOMParser;
+
 const chai = require("chai");
 const sinonChai = require("sinon-chai");
 const chaiAsPromised = require("chai-as-promised");

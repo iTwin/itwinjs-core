@@ -22,6 +22,8 @@ import HighlightingEngine, { HighlightableTreeProps } from "../../../ui-componen
 import { TreeNodeProps } from "../../../ui-components/tree/component/Node";
 import { PropertyValueRendererManager, PropertyValueRendererContext, PropertyContainerType } from "../../../ui-components/properties/ValueRendererManager";
 import { ImmediatelyLoadedTreeNodeItem } from "../../../ui-components/tree/TreeDataProvider";
+import { ITreeImageLoader } from "../../../ui-components/tree/ImageLoader";
+import { LoadedImage } from "../../../ui-components/common/IImageLoader";
 
 describe("Tree", () => {
 
@@ -1138,12 +1140,34 @@ describe("Tree", () => {
 
     it("renders with icons", async () => {
       await waitForUpdate(() => {
-        renderedTree = render(<Tree
-          {...defaultProps}
-          dataProvider={[{ id: "0", label: "0", icon: "test-icon" }]}
-        />);
+        renderedTree = render(
+          <Tree
+            {...defaultProps}
+            dataProvider={[{ id: "0", label: "0", icon: "icon-placeholder" }]}
+            showIcons={true}
+          />);
       }, renderSpy, 2);
-      expect(getNode("0").getElementsByClassName("test-icon").length).to.eq(1);
+      expect(getNode("0").querySelector(".icon-placeholder")).to.not.be.null;
+    });
+
+    it("renders icons with custom image loader when provided", async () => {
+      class ImageLoader implements ITreeImageLoader {
+        public load = () => ({ sourceType: "core-icon", value: "icon-overriden" } as LoadedImage);
+        public loadPlaceholder = this.load;
+      }
+
+      const loader = new ImageLoader();
+
+      await waitForUpdate(() => {
+        renderedTree = render(
+          <Tree
+            {...defaultProps}
+            dataProvider={[{ id: "0", label: "0", icon: "icon-placeholder" }]}
+            showIcons={true}
+            imageLoader={loader}
+          />);
+      }, renderSpy, 2);
+      expect(getNode("0").querySelector(".icon-overriden")).to.not.be.null;
     });
 
     it("renders with custom node renderer", async () => {

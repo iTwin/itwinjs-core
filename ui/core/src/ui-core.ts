@@ -5,8 +5,7 @@
 export * from "./ui-core/UiCore";
 export { CommonProps } from "./ui-core/utils/Props";
 
-export * from "./ui-core/base/Div";
-export * from "./ui-core/base/WebFontIcon";
+export * from "./ui-core/icons/WebFontIcon";
 export * from "./ui-core/base/UiEvent";
 
 export { CheckListBox, CheckListBoxItem, CheckListBoxSeparator } from "./ui-core/checklistbox/CheckListBox";
@@ -144,6 +143,10 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
 /**
  * @docs-group-description Expandable
  * Classes for working with a ExpandableBlock or ExpandableList.
+ */
+/**
+ * @docs-group-description Icon
+ * Component that renders ui-core icon when given an icon name.
  */
 /**
  * @docs-group-description ImageCheckBox

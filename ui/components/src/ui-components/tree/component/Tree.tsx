@@ -38,6 +38,7 @@ import HighlightingEngine, { HighlightableTreeProps } from "../HighlightingEngin
 // misc
 import UiComponents from "../../UiComponents";
 import { CellEditingEngine, EditableTreeProps } from "../CellEditingEngine";
+import { ITreeImageLoader, TreeImageLoader } from "../ImageLoader";
 
 // css
 import "./Tree.scss";
@@ -173,6 +174,12 @@ export interface TreeProps {
 
   /** Turns on node description rendering when enabled */
   showDescriptions?: boolean;
+
+  /** Turns on icon rendering when enabled */
+  showIcons?: boolean;
+
+  /** Custom image loader. Default ImageLoader loads icons already bundled in the library */
+  imageLoader?: ITreeImageLoader;
 }
 
 /** State for the [[Tree]] component  */
@@ -224,6 +231,7 @@ export class Tree extends React.Component<TreeProps, TreeState> {
   private _nodesRenderInfo?: { total: number, rendered: number, renderId: string };
   /** Used to delay the automatic scrolling when stepping through highlighted text */
   private _shouldScrollToActiveNode = false;
+  private _defaultImageLoader = new TreeImageLoader();
 
   public static readonly defaultProps: Partial<TreeProps> = {
     selectionMode: SelectionMode.Single,
@@ -778,6 +786,7 @@ export class Tree extends React.Component<TreeProps, TreeState> {
       valueRendererManager: this.props.propertyValueRendererManager
         ? this.props.propertyValueRendererManager
         : PropertyValueRendererManager.defaultManager,
+      imageLoader: this.props.showIcons ? (this.props.imageLoader ? this.props.imageLoader : this._defaultImageLoader) : undefined,
       onClick: (e: React.MouseEvent) => {
         onNodeSelectionChanged(e.shiftKey, e.ctrlKey);
         if (this.state.cellEditingEngine)
@@ -792,7 +801,7 @@ export class Tree extends React.Component<TreeProps, TreeState> {
   public render() {
     if (!this.state.modelReady) {
       return (
-        <div className="ui-components-tree-loader">
+        <div className="components-tree-loader">
           <Spinner size={SpinnerSize.Large} />
         </div>
       );
@@ -801,7 +810,7 @@ export class Tree extends React.Component<TreeProps, TreeState> {
     const nodes = this.state.model.visible();
     if (nodes.length === 0) {
       return (
-        <p className="ui-components-tree-errormessage">
+        <p className="components-tree-errormessage">
           {this.props.nodeHighlightingProps ?
             UiComponents.i18n.translate("UiComponents:tree.noResultsForFilter", { searchText: this.props.nodeHighlightingProps.searchText }) :
             UiComponents.i18n.translate("UiComponents:general.noData")}
@@ -855,7 +864,7 @@ export class Tree extends React.Component<TreeProps, TreeState> {
     };
 
     return (
-      <TreeBase ref={this._treeRef} onMouseDown={this._onMouseDown} className="ui-components-tree">
+      <TreeBase ref={this._treeRef} onMouseDown={this._onMouseDown} className="components-tree">
         <AutoSizer>
           {({ width, height }: Size) => (
             <VirtualizedList

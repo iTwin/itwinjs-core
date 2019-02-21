@@ -93,7 +93,7 @@ export default class Tree extends React.PureComponent<TreeProps> {
 
   public render() {
     const className = classnames(
-      "core-tree-tree",
+      "core-tree",
       this.props.className);
 
     return (

@@ -29,7 +29,7 @@ describe("HighlightingEngine", () => {
       const treeComponent = enzyme.shallow(<div>{HighlightingEngine.renderNodeLabel(text, { searchText, activeMatchIndex: 0 })}</div>);
       const mark = treeComponent.render().find("mark");
       expect(mark.text()).to.equal(searchText);
-      expect(mark.hasClass("ui-components-activehighlight")).to.be.true;
+      expect(mark.hasClass("components-activehighlight")).to.be.true;
     });
 
   });

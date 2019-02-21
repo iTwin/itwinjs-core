@@ -2,17 +2,9 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+@import "./index";
 
-.bui-webfont-icon {
-  font-family: bentley-icons-generic-webfont !important;
-  speak: none;
-  font-style: normal;
-  font-weight: normal !important;
-  font-variant: normal;
-  text-transform: none;
-  line-height: 1;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-
+.core-icon-large { @include uicore-icons-large; }
+.core-icon-medium { @include uicore-icons-medium; }
+.core-icon-small { @include uicore-icons-small; }
+.core-icon-x-large { @include uicore-icons-x-large; }

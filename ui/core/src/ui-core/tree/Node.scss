@@ -43,15 +43,15 @@ $node-font-size: $uicore-font-size;
     margin-left: 5px;
     display: flex;
     align-items: center;
+  }
 
-    .icon {
-      width: 16px;
-      height: 24px;
-      display: inline-block;
-      box-sizing: border-box;
-      padding: 4px 0;
-      margin-right: 2px;
-    }
+  &-icon {
+    width: 16px;
+    height: 24px;
+    display: inline-block;
+    box-sizing: border-box;
+    padding: 4px 0;
+    margin-right: 5px;
   }
 
   > .expansion-toggle {

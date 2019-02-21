@@ -31,7 +31,7 @@ export interface HighlightableTreeNodeProps {
 export default class HighlightingEngine {
   private _searchText: string;
   private _activeMatch?: ActiveMatchInfo;
-  public static readonly ACTIVE_CLASS_NAME = "ui-components-activehighlight";
+  public static readonly ACTIVE_CLASS_NAME = "components-activehighlight";
 
   constructor(props: HighlightableTreeProps) {
     this._searchText = props.searchText;

@@ -100,7 +100,7 @@
     transition: .2s linear;
     background-color: $buic-background-widget;
 
-    .core-tree-tree .core-tree-node {
+    .core-tree .core-tree-node {
       @include uicore-text( leading );
       padding: 5px;
       background-color: $buic-background-control;
@@ -202,7 +202,7 @@
       height: 100%;
     }
 
-    .core-tree-tree  {
+    .core-tree  {
 
       .core-tree-node {
         @include uicore-text( leading );

@@ -2,6 +2,6 @@
 
 exports[`WithOnOutsideClick renders correctly 1`] = `
 <div>
-  <Div />
+  <Component />
 </div>
 `;
