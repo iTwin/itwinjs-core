@@ -67,7 +67,7 @@ class RealityModelTileTreeProps implements TileTreeProps {
     this.tilesetJson = json.root;
     this.rootTile = new RealityModelTileProps(json.root, "");
     this.location = tilesetTransform.toJSON();
-    if (json.asset.gltfUpAxis === undefined || json.asset.gltfUpAxis === "y")
+    if (json.asset.gltfUpAxis === undefined || json.asset.gltfUpAxis === "y" || json.asset.gltfUpAxis === "Y")
       this.yAxisUp = true;
   }
 }
@@ -135,6 +135,16 @@ class RealityModelTileLoader extends TileLoader {
 
     return this._tree.client.getTileContent(getUrl(foundChild.json.content));
   }
+  private addUrlPrefix(subTree: any, prefix: string) {
+    if (undefined === subTree)
+      return;
+    if (undefined !== subTree.content && undefined !== subTree.content.url)
+      subTree.content.url = prefix + subTree.content.url;
+
+    if (undefined !== subTree.children)
+      for (const child of subTree.children)
+        this.addUrlPrefix(child, prefix);
+  }
 
   private async findTileInJson(tilesetJson: any, id: string, parentId: string, transformToRoot?: Transform, isRoot: boolean = false): Promise<FindChildResult | undefined> {
     if (!isRoot && tilesetJson.transform) {   // Child tiles may have their own transform.
@@ -162,6 +172,9 @@ class RealityModelTileLoader extends TileLoader {
     const childUrl = getUrl(foundChild.content);
     if (undefined !== childUrl && childUrl.endsWith("json")) {    // A child may contain a subTree...
       const subTree = await this._tree.client.getTileJson(childUrl);
+      const prefixIndex = childUrl.lastIndexOf("/");
+      if (prefixIndex > 0)
+        this.addUrlPrefix(subTree.root, childUrl.substring(0, prefixIndex + 1));
       foundChild = subTree.root;
       tilesetJson.children[childIndex] = subTree.root;
     }

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Handle relative subpaths in reality model tile trees.  Handle Y for axis/ ",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "ray.bentley@bentley.com"
+}
