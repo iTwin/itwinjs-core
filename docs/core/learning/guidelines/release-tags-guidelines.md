@@ -11,8 +11,10 @@ The supported release tags are:
 * `@public`
 * `@beta`
 * `@alpha`
-* `@internal` / `@hidden`
+* `@internal`
 * `@deprecated`
+
+> Note: The `@hidden` release tag is also currently supported, but all uses should transition to `@internal` or `@alpha` so that it can be de-supported.
 
 Details about each tag are below.
 
@@ -37,23 +39,26 @@ Third parties should not use *alpha* APIs in production or otherwise as they are
 *Alpha* API items are not part of the *supported contract* and changes to these API items do not follow the normal semantic versioning rules.
 *Alpha* API items are intentionally hidden from the public SDK documentation.
 
-### @internal / @hidden
+### @internal
 
-> Note: The iModel.js tooling is transitioning from the former `@hidden` tag to the new/intended `@internal` release tag.
-The `@hidden` tag should still be used with the understanding that all occurrences will be renamed at some point in the near future.
-
-The `@internal` release tag indicates that an API item is meant only for usage by other NPM packages from the same maintainer.
+The `@internal` release tag indicates that an API item is **never** meant to be *public* and is meant only for usage by other NPM packages from the same maintainer.
 Third parties should never use *internal* APIs.
 *Internal* API items are intentionally hidden from the public SDK documentation.
 However, *internal* API items are effectively *public* from the maintainers perspective, so should follow the same evolution rules as *public* API items if at all possible.
 
 > Note: This definition of `@internal` requires us to set the `--stripInternal` [option of the TypeScript compiler](http://www.typescriptlang.org/docs/handbook/compiler-options.html) to `false`.
 
+### @hidden
+
+As mentioned above, all uses of the `@hidden` tag should transition to either `@internal` or `@alpha`.
+Both `@internal` and `@alpha` will cause the API item to be hidden from the public SDK documentation.
+The distinction is that *internal* indicates that the API item is never meant to be public, while *alpha* API items are not yet ready for public feedback but are intended to be public in the future.
+
 ### @deprecated
 
 The `@deprecated` release tags is used for API items that were formerly `@public` but are no longer optimal.
 Third parties should avoid *deprecated* API items if possible as they will likely be removed in the next major release.
-From the maintainer's perspective, *deprecated* API items follow the same rules as *public* API items within the current major release.
+From the maintainer perspective, *deprecated* API items follow the same rules as *public* API items within the current major release.
 *Deprecated* API items are included in the public SDK documentation.
 
 ### Release Tag Summary
@@ -83,10 +88,12 @@ An API Item is an **exported** TypeScript item that includes:
 
 Here are the guidelines for when a release tag is needed:
 
+> Note: Non-exported TypeScript items should not have release tags.
+
 Exported API Item | Release Tag Guidelines
 ------------------|-----------------------
 Class | Always. The presence of a release tag indicates some thought was given while the absence of a release tag is ambiguous.
-Class Member | Only if different than the containing class. |
+Class Member | Only if different than the containing class.
 Namespace | Always.
 Namespace Member | Only if different than the containing namespace.
 Interface | Always.
@@ -94,7 +101,33 @@ Type | Always.
 Enum | Always.
 Enum Member | Only if different than the containing enum.
 
-> Note: Non-exported TypeScript items should not have release tags.
+> Note: Members cannot *expand* the scope of their container.
+For example, it is invalid to have a `@public` member within an `@alpha` or `@beta` container.
+It is also invalid to have a `@public` member within a `@deprecated` container.
+
+## Release Tag Progression for API Items
+
+### Initial Development Workflow
+
+It is typical for a new API item to start with the `@alpha` release tag.
+This indicates that the API item is in prototype form and is not ready for public feedback.
+*Alpha* API items are hidden from the public SDK documentation since public feedback is not desired.
+However, private/targeted feedback can be obtained since *alpha* API items are actually included in the published package.
+
+Once the developer has more confidence in the API item, it can be marked with the `@beta` release tag.
+This indicates that public feedback is desired, but that changes may happen based on that feedback.
+
+Once the API item has been proven in the desired scenarios and the developer is willing to maintain compatibility long term (an absolute minimum of the current major release), the API item can be marked with `@public`.
+
+> Note: It is not recommended for API items to go straight to `@public` without public feedback. Even if the implementation is straightforward and meets all requirements, there is always the possibility that the wrong name was chosen.
+However, skipping the `@alpha` step is common when the level of uncertainty is low.
+
+### Deprecation Workflow
+
+Sometimes a better way of doing something is discovered after the initial approach was made public.
+This is when the deprecation workflow is applicable.
+In this case, the existing `@public` API item is marked `@deprecated` with documentation that specifies the new approach.
+The *deprecated* API item must be maintained for the current major release and can only be considered for removal in the next major release.
 
 ## Style Guidelines
 
