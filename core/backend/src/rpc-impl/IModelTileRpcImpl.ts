@@ -53,27 +53,27 @@ abstract class TileRequestMemoizer<Result, Props extends TileRequestProps> exten
     props.actx.enter();
     Logger.logTrace(this._loggingCategory, "Received backend " + this._operationName + " request", () => (props.iModelToken));
 
-    const tilePromise = this.memoize(props);
+    const tileQP = this.memoize(props);
     const waitPromise = BeDuration.wait(100);
-    await Promise.race([tilePromise, waitPromise]);
+    await Promise.race([tileQP.promise, waitPromise]);
 
     props.actx.enter();
 
-    if (tilePromise.isPending) {
+    if (tileQP.isPending) {
       Logger.logTrace(this._loggingCategory, "Issuing pending status for " + this._operationName + " request", () => (props.iModelToken));
       throw new RpcPendingResponse();
     }
 
     this.deleteMemoized(props);
 
-    if (tilePromise.isFulfilled) {
+    if (tileQP.isFulfilled) {
       Logger.logTrace(this._loggingCategory, "Completed " + this._operationName + " request", () => (props.iModelToken));
-      return tilePromise.result!;
+      return tileQP.result!;
     }
 
-    assert(tilePromise.isRejected);
+    assert(tileQP.isRejected);
     Logger.logTrace(this._loggingCategory, "Rejected " + this._operationName + " request", () => (props.iModelToken));
-    throw tilePromise.error!;
+    throw tileQP.error!;
   }
 }
 

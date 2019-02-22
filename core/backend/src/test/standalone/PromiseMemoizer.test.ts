@@ -9,12 +9,9 @@ import { assert } from "chai";
 import { OpenParams } from "../../imodeljs-backend";
 import { PromiseMemoizer, QueryablePromise } from "../../PromiseMemoizer";
 
-import { IModelTestUtils, TestUsers } from "../IModelTestUtils";
-
-// Require Dev envirnomet
-describe.skip("PromiseMemoizer", () => {
-  let accessTokenRegular: AccessToken;
-  let accessTokenManager: AccessToken;
+describe("PromiseMemoizer", () => {
+  let fakeAccessTokenRegular: AccessToken;
+  let fakeAccessTokenManager: AccessToken;
 
   const pause = async (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -32,44 +29,52 @@ describe.skip("PromiseMemoizer", () => {
   const { memoize: memoizeTest, deleteMemoized: deleteMemoizedTest } = new PromiseMemoizer<string>(testFunction, generateTestFunctionKey);
 
   before(async () => {
-    accessTokenRegular = await IModelTestUtils.getTestUserAccessToken(TestUsers.regular);
-    accessTokenManager = await IModelTestUtils.getTestUserAccessToken(TestUsers.manager);
+    fakeAccessTokenRegular = AccessToken.fromJsonWebTokenString("Regular", new Date(), new Date());
+    fakeAccessTokenManager = AccessToken.fromJsonWebTokenString("Manager", new Date(), new Date());
+  });
+
+  it("should be able to await memoized promise", async () => {
+    const startTime = Date.now();
+    const qp: QueryablePromise<string> = memoizeTest(fakeAccessTokenRegular, "contextId2", "iModelId2", OpenParams.fixedVersion(), IModelVersion.latest());
+    await qp.promise;
+    const endTime = Date.now();
+    assert.isAbove(endTime - startTime, 999); // at least 1000 milliseconds
   });
 
   it("should be able to memoize and deleteMemoized function calls", async () => {
     const qps = new Array<QueryablePromise<string>>(6);
     const expectedResults = new Array<string>(6);
 
-    qps[0] = memoizeTest(accessTokenRegular, "contextId", "iModelId1", OpenParams.fixedVersion(), IModelVersion.latest());
-    expectedResults[0] = generateTestFunctionKey(accessTokenRegular, "contextId", "iModelId1", OpenParams.fixedVersion(), IModelVersion.latest());
+    qps[0] = memoizeTest(fakeAccessTokenRegular, "contextId", "iModelId1", OpenParams.fixedVersion(), IModelVersion.latest());
+    expectedResults[0] = generateTestFunctionKey(fakeAccessTokenRegular, "contextId", "iModelId1", OpenParams.fixedVersion(), IModelVersion.latest());
 
-    qps[1] = memoizeTest(accessTokenRegular, "contextId", "iModelId1", OpenParams.fixedVersion(), IModelVersion.latest());
-    expectedResults[1] = generateTestFunctionKey(accessTokenRegular, "contextId", "iModelId1", OpenParams.fixedVersion(), IModelVersion.latest());
-    assert.strictEqual(qps[1], qps[0]);
+    qps[1] = memoizeTest(fakeAccessTokenRegular, "contextId", "iModelId1", OpenParams.fixedVersion(), IModelVersion.latest());
+    expectedResults[1] = generateTestFunctionKey(fakeAccessTokenRegular, "contextId", "iModelId1", OpenParams.fixedVersion(), IModelVersion.latest());
+    assert.strictEqual(qps[1], qps[0], "qps[1] === qps[0] fails");
 
-    qps[2] = memoizeTest(accessTokenManager, "contextId", "iModelId1", OpenParams.fixedVersion(), IModelVersion.latest());
-    expectedResults[2] = generateTestFunctionKey(accessTokenManager, "contextId", "iModelId1", OpenParams.fixedVersion(), IModelVersion.latest());
-    assert.notStrictEqual(qps[2], qps[0]);
+    qps[2] = memoizeTest(fakeAccessTokenManager, "contextId", "iModelId1", OpenParams.fixedVersion(), IModelVersion.latest());
+    expectedResults[2] = generateTestFunctionKey(fakeAccessTokenManager, "contextId", "iModelId1", OpenParams.fixedVersion(), IModelVersion.latest());
+    assert.notStrictEqual(qps[2], qps[0], "qps[2] === qps[0] fails");
 
-    qps[3] = memoizeTest(accessTokenRegular, "contextId", "iModelId2", OpenParams.fixedVersion(), IModelVersion.latest());
-    expectedResults[3] = generateTestFunctionKey(accessTokenRegular, "contextId", "iModelId2", OpenParams.fixedVersion(), IModelVersion.latest());
-    assert.notStrictEqual(qps[3], qps[0]);
+    qps[3] = memoizeTest(fakeAccessTokenRegular, "contextId", "iModelId2", OpenParams.fixedVersion(), IModelVersion.latest());
+    expectedResults[3] = generateTestFunctionKey(fakeAccessTokenRegular, "contextId", "iModelId2", OpenParams.fixedVersion(), IModelVersion.latest());
+    assert.notStrictEqual(qps[3], qps[0], "qps[3] === qps[0] fails");
 
-    qps[4] = memoizeTest(accessTokenRegular, "contextId", "iModelId1", OpenParams.pullOnly(), IModelVersion.latest());
-    expectedResults[4] = generateTestFunctionKey(accessTokenRegular, "contextId", "iModelId1", OpenParams.pullOnly(), IModelVersion.latest());
-    assert.notStrictEqual(qps[4], qps[0]);
+    qps[4] = memoizeTest(fakeAccessTokenRegular, "contextId", "iModelId1", OpenParams.pullOnly(), IModelVersion.latest());
+    expectedResults[4] = generateTestFunctionKey(fakeAccessTokenRegular, "contextId", "iModelId1", OpenParams.pullOnly(), IModelVersion.latest());
+    assert.notStrictEqual(qps[4], qps[0], "qps[4] === qps[0] fails");
 
-    qps[5] = memoizeTest(accessTokenRegular, "contextId", "iModelId1", OpenParams.fixedVersion(), IModelVersion.first());
-    expectedResults[5] = generateTestFunctionKey(accessTokenRegular, "contextId", "iModelId1", OpenParams.fixedVersion(), IModelVersion.first());
-    assert.notStrictEqual(qps[5], qps[0]);
+    qps[5] = memoizeTest(fakeAccessTokenRegular, "contextId", "iModelId1", OpenParams.fixedVersion(), IModelVersion.first());
+    expectedResults[5] = generateTestFunctionKey(fakeAccessTokenRegular, "contextId", "iModelId1", OpenParams.fixedVersion(), IModelVersion.first());
+    assert.notStrictEqual(qps[5], qps[0], "qps[5] === qps[0] fails");
 
-    const qpRej = memoizeTest(accessTokenRegular, "TestError", "iModelId1", OpenParams.fixedVersion(), IModelVersion.first());
-    assert.notStrictEqual(qps[6], qps[0]);
+    const qpRej = memoizeTest(fakeAccessTokenRegular, "TestError", "iModelId1", OpenParams.fixedVersion(), IModelVersion.first());
+    assert.notStrictEqual(qps[6], qps[0], "qps[6] === qps[0] fails");
 
     for (const qp of qps) {
-      assert.isTrue(qp.isPending);
+      assert.isTrue(qp.isPending, "qp.isPending check fails");
     }
-    assert.isTrue(qpRej.isPending);
+    assert.isTrue(qpRej.isPending, "qpRej.isPending check fails");
 
     await pause(1500);
 
@@ -80,8 +85,8 @@ describe.skip("PromiseMemoizer", () => {
     assert.isTrue(qpRej.isRejected);
     assert.strictEqual(qpRej.error.message, "TestError");
 
-    deleteMemoizedTest(accessTokenRegular, "contextId", "iModelId1", OpenParams.fixedVersion(), IModelVersion.latest());
-    const qp0 = memoizeTest(accessTokenRegular, "contextId", "iModelId1", OpenParams.fixedVersion(), IModelVersion.latest());
+    deleteMemoizedTest(fakeAccessTokenRegular, "contextId", "iModelId1", OpenParams.fixedVersion(), IModelVersion.latest());
+    const qp0 = memoizeTest(fakeAccessTokenRegular, "contextId", "iModelId1", OpenParams.fixedVersion(), IModelVersion.latest());
     assert.isTrue(qp0.isPending);
   });
 
