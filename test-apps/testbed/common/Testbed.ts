@@ -14,4 +14,5 @@ export const CONSTANTS = {
   RESTORE_COMPATIBLE_INTERFACE_VERSION: "restoreIncompatibleInterfaceVersion",
   RESTART_BACKEND: "restartBackend",
   RESET_OP8_INITIALIZER: "resetOp8Initializer",
+  SET_CHUNK_THRESHOLD: "setChunkThreshold",
 };

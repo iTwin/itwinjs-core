@@ -15,6 +15,7 @@ import {
   RpcManager,
   MobileRpcManager,
   WipRpcInterface,
+  ElectronRpcConfiguration,
 } from "@bentley/imodeljs-common";
 import { IModelUnitTestRpcInterface } from "./IModelUnitTestRpcInterface";
 import {
@@ -61,6 +62,7 @@ export class TestbedConfig {
   public static mobilePort = process.env.MOBILE_PORT ? parseInt(process.env.MOBILE_PORT, 10) : 4000;
   public static swaggerURI = "/v3/swagger.json";
   public static cloudRpc: BentleyCloudRpcConfiguration;
+  public static electronRpc: ElectronRpcConfiguration;
   public static get ipc(): any { return ___TESTBED_IPC_RENDERER___; }
   public static useHttp2 = false;
 
@@ -95,7 +97,7 @@ export class TestbedConfig {
       TestbedConfig.initializeBentleyCloudCommon();
     }
 
-    ElectronRpcManager.initializeClient({}, [TestRpcInterface3]);
+    TestbedConfig.electronRpc = ElectronRpcManager.initializeClient({}, [TestRpcInterface3]);
 
     // RPC transport testing
     window.location.hash = TestbedConfig.mobilePort.toString();
@@ -122,7 +124,7 @@ export class TestbedConfig {
       TestbedConfig.initializeBentleyCloudCommon();
     }
 
-    ElectronRpcManager.initializeImpl({}, [TestRpcInterface3]);
+    TestbedConfig.electronRpc = ElectronRpcManager.initializeImpl({}, [TestRpcInterface3]);
 
     // RPC transport testing
     RpcManager.registerImpl(RpcWebTransportTest, RpcTransportTestImpl);

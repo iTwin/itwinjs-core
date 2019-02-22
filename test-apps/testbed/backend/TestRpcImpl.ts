@@ -200,4 +200,16 @@ export class TestRpcImpl3 extends RpcInterface implements TestRpcInterface3 {
     const val = input;
     return val;
   }
+
+  public async op2(size: number, fill: boolean): Promise<Uint8Array> {
+    const data = new Uint8Array(size);
+
+    if (fill) {
+      for (let i = 0; i !== size; ++i) {
+        data[i] = i % 2;
+      }
+    }
+
+    return data;
+  }
 }

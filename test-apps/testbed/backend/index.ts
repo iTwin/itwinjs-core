@@ -230,6 +230,9 @@ function handleTestbedCommand(event: any, arg: any) {
   } else if (msg.name === CONSTANTS.RESET_OP8_INITIALIZER) {
     resetOp8Initializer();
     event.returnValue = true;
+  } else if (msg.name === CONSTANTS.SET_CHUNK_THRESHOLD) {
+    TestbedConfig.electronRpc.protocol.transferChunkThreshold = msg.value;
+    event.returnValue = true;
   }
 }
 

@@ -7,7 +7,8 @@
 import { RpcInterfaceDefinition } from "../../RpcInterface";
 import { RpcManager } from "../../RpcManager";
 import { RpcConfiguration } from "../core/RpcConfiguration";
-import { ElectronRpcProtocol, interop } from "./ElectronRpcProtocol";
+import { ElectronRpcProtocol } from "./ElectronRpcProtocol";
+import { interop } from "./ElectronIpcTransport";
 
 /** Initialization parameters for ElectronRpcConfiguration. */
 export interface ElectronRpcParams {

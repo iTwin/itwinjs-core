@@ -6,8 +6,9 @@
 
 import { RpcRequest } from "../core/RpcRequest";
 import { RpcRequestFulfillment } from "../core/RpcProtocol";
-import { ElectronRpcProtocol, CHANNEL, interop } from "./ElectronRpcProtocol";
+import { ElectronRpcProtocol } from "./ElectronRpcProtocol";
 import { RpcProtocolEvent } from "../core/RpcConstants";
+import { ipcTransport } from "./ElectronIpcTransport";
 
 export class ElectronRpcRequest extends RpcRequest {
   private _response: (value: number) => void = () => undefined;
@@ -21,7 +22,7 @@ export class ElectronRpcRequest extends RpcRequest {
     try {
       this.protocol.requests.set(this.id, this);
       const request = this.protocol.serialize(this);
-      interop.ipcRenderer.send(CHANNEL, request);
+      ipcTransport!.sendRequest(request);
     } catch (e) {
       this.protocol.events.raiseEvent(RpcProtocolEvent.ConnectionErrorReceived, this);
     }
