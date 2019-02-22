@@ -2184,7 +2184,9 @@ export class ViewToggleCameraTool extends ViewTool {
       else
         vp.turnCameraOn();
 
+      const startFrustum = vp.getFrustum();
       vp.synchWithView(true);
+      vp.animateFrustumChange(startFrustum, vp.getFrustum());
     }
     this.exitTool();
   }

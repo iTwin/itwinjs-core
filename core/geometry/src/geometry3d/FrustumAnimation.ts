@@ -72,8 +72,9 @@ export class SmoothTransformBetweenFrusta {
   }
 
   // interpolate local corner coordinates at fractional move from m_localFrustum0 to m_localFrustum1
-  public interpolateLocalCorners(fraction: number): Point3d[] {
-    const result = [];
+  public interpolateLocalCorners(fraction: number, result?: Point3d[]): Point3d[] {
+    result = result || [];
+    result.length = 0;
     const n = this._localCornerA.length;
     for (let i = 0; i < n; i++) {
       result.push(this._localCornerA[i].interpolate(fraction, this._localCornerB[i]));
@@ -84,8 +85,8 @@ export class SmoothTransformBetweenFrusta {
   * After initialization, call this for various intermediate fractions.
   * The returned corner points are in world coordinates "between" start and end positions.
   */
-  public fractionToWorldCorners(fraction: number): Point3d[] {
-    const corners = this.interpolateLocalCorners(fraction);
+  public fractionToWorldCorners(fraction: number, result?: Point3d[]): Point3d[] {
+    const corners = this.interpolateLocalCorners(fraction, result);
     const fractionalRotation = Matrix3d.createRotationAroundVector(this._rotationAxis,
       this._rotationAngle.cloneScaled(fraction))!;
     const axes0 = this._localToWorldA.matrix;

@@ -7,7 +7,7 @@
 import { assert, BeDuration, BeEvent, BeTimePoint, dispose, Id64, Id64Arg, IDisposable, StopWatch, Id64Set } from "@bentley/bentleyjs-core";
 import {
   Angle, AngleSweep, Arc3d, AxisOrder, Constant, Geometry, LowAndHighXY, LowAndHighXYZ, Map4d, Matrix3d,
-  Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point4d, Range3d, Ray3d, Transform, Vector3d, XAndY, XYAndZ, XYZ,
+  Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point4d, Range3d, Ray3d, Transform, Vector3d, XAndY, XYAndZ, XYZ, SmoothTransformBetweenFrusta,
 } from "@bentley/geometry-core";
 import {
   AnalysisStyle, AntiAliasPref, Camera, ColorDef, ElementProps, Frustum, Hilite, ImageBuffer, Npc, NpcCenter,
@@ -257,6 +257,7 @@ export const enum CoordSystem {
 class Animator {
   private readonly _currFrustum = new Frustum();
   private _startTime?: BeTimePoint;
+  private _interpolator?: SmoothTransformBetweenFrusta;
   private moveToTime(time: number) { this.interpolateFrustum(time / this.totalTime.milliseconds); }
 
   /** Construct a new Animator.
@@ -265,13 +266,12 @@ class Animator {
    * @param startFrustum The Viewport's starting Frustum at the beginning of the animation.
    * @param endFrustum The Viewport's ending Frustum after the animation.
    */
-  public constructor(public totalTime: BeDuration, public viewport: Viewport, public startFrustum: Frustum, public endFrustum: Frustum) { }
+  public constructor(public totalTime: BeDuration, public viewport: Viewport, public startFrustum: Frustum, public endFrustum: Frustum) {
+    this._interpolator = SmoothTransformBetweenFrusta.create(startFrustum.points, endFrustum.points);
+  }
 
   private interpolateFrustum(fraction: number): void {
-    // const context = SmoothTransformBetweenFrusta.create (this.startFrustum.points,this.endFrustum.points)!;
-    // this._currFrustum.points = context.fractionToWorldCorners (fraction);
-    for (let i = 0; i < Npc.CORNER_COUNT; ++i)
-      this.startFrustum.points[i].interpolate(fraction, this.endFrustum.points[i], this._currFrustum.points[i]);
+    this._interpolator!.fractionToWorldCorners(fraction, this._currFrustum.points);
     this.viewport.setupViewFromFrustum(this._currFrustum);
   }
 
@@ -280,6 +280,11 @@ class Animator {
    * @return true when finished to terminate the animation.
    */
   public animate(): boolean {
+    if (!this._interpolator) {
+      this.viewport.setupViewFromFrustum(this.endFrustum);
+      return true;
+    }
+
     const currTime = BeTimePoint.now();
     if (!this._startTime)
       this._startTime = currTime;
