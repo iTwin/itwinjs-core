@@ -3,11 +3,9 @@
 exports[`Rulesets Category generated iModel hierarchy matches snapshot 1`] = `
 Array [
   Object {
-    "isCheckboxVisible": true,
     "label": "Uncategorized",
   },
   Object {
-    "isCheckboxVisible": true,
     "label": "Uncategorized",
   },
 ]
@@ -16,7 +14,6 @@ Array [
 exports[`Rulesets Model generated iModel hierarchy matches snapshot 1`] = `
 Array [
   Object {
-    "isCheckboxVisible": true,
     "label": "Properties_60InstancesWithUrl2",
   },
 ]

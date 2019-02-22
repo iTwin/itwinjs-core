@@ -5,17 +5,20 @@
 import { expect } from "chai";
 import { HierarchyBuilder, initialize, terminate } from "@bentley/presentation-testing";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
+import TestUtils from "../TestUtils";
 
 describe("Rulesets", () => {
   let imodel: IModelConnection;
   const testIModelPath = "src/test/test-data/Properties_60InstancesWithUrl2.ibim";
 
-  before(() => {
+  before(async () => {
+    await TestUtils.initializeUiFramework();
     initialize();
   });
 
   after(() => {
     terminate();
+    TestUtils.terminateUiFramework();
   });
 
   beforeEach(async () => {
@@ -30,7 +33,6 @@ describe("Rulesets", () => {
     it("generated iModel hierarchy matches snapshot", async () => {
       const builder = new HierarchyBuilder(imodel);
       const hierarchy = await builder.createHierarchy(require("../../../rulesets/Models"));
-
       expect(hierarchy).to.not.be.undefined;
       expect(hierarchy).to.matchSnapshot();
     });
@@ -40,7 +42,6 @@ describe("Rulesets", () => {
     it("generated iModel hierarchy matches snapshot", async () => {
       const builder = new HierarchyBuilder(imodel);
       const hierarchy = await builder.createHierarchy(require("../../../rulesets/Categories"));
-
       expect(hierarchy).to.not.be.undefined;
       expect(hierarchy).to.matchSnapshot();
     });

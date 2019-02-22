@@ -48,8 +48,9 @@
       ]
     },
     {
-      "ruleType": "CheckBox",
-      "defaultValue": false
+      "ruleType": "LabelOverride",
+      "condition": "this.IsOfClass(\"Category\", \"BisCore\")",
+      "description": "this.Description"
     }
   ]
 }

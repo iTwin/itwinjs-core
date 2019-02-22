@@ -101,8 +101,6 @@
     background-color: $buic-background-widget;
 
     .core-tree .core-tree-node {
-      @include uicore-text( leading );
-      padding: 5px;
       background-color: $buic-background-control;
     }
 
@@ -202,13 +200,5 @@
       height: 100%;
     }
 
-    .core-tree  {
-
-      .core-tree-node {
-        @include uicore-text( leading );
-        padding: 5px 0;
-        background-color: $buic-background-control;
-      }
-    }
   }
 }
