@@ -1951,10 +1951,9 @@ export class DefaultViewTouchTool extends ViewManip {
   private _startTouchCount = 0;
   private _frustum = new Frustum();
 
-  constructor(startEv: BeTouchEvent, ev: BeTouchEvent) {
+  constructor(startEv: BeTouchEvent, _ev: BeTouchEvent) {
     super(startEv.viewport!, 0, true, false);
     this.onStart(startEv);
-    this.handleEvent(ev);
   }
 
   public onStart(ev: BeTouchEvent): void {

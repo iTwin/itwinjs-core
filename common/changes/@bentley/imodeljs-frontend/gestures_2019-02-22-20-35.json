@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "DefaultViewTouchTool should not call handleEvent until it's installed as the active ViewTool.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Brien.Bastings@bentley.com"
+}
