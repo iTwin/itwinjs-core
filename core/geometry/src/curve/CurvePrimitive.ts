@@ -98,6 +98,17 @@ export abstract class CurvePrimitive extends GeometryQuery {
       return Transform.createRefs(plane.origin, axes, result);
     return undefined;
   }
+
+  /**
+   * Construct a point extrapolated along tangent at fraction.
+   * @param fraction fractional position on the primitive
+   * @param distance (signed) distance to move on the tangent.
+   */
+  public fractionAndDistanceToPointOnTangent(fraction: number, distance: number): Point3d {
+    const ray = this.fractionToPointAndUnitTangent(fraction);
+    return ray.fractionToPoint(distance);
+  }
+
   /**
    *
    * * Curve length is always positive.

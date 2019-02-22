@@ -75,7 +75,7 @@ class MockSelectTool {
   /** Used to supply DefaultToolSettingProvider with a list of properties to use to generate ToolSettings.  If undefined then no ToolSettings will be displayed */
   public supplyToolSettingsProperties(): ToolSettingsPropertyRecord[] | undefined {
     const toolSettings = new Array<ToolSettingsPropertyRecord>();
-    toolSettings.push(new ToolSettingsPropertyRecord(this._selectionOptionValue.clone() as PrimitiveValue, selectionOptionDescription, { rowPriority: 0, columnPriority: 0, horizontalAlignment: TsHorizontalAlignment.Center }));
+    toolSettings.push(new ToolSettingsPropertyRecord(this._selectionOptionValue.clone() as PrimitiveValue, selectionOptionDescription, { rowPriority: 0, columnIndex: 0, horizontalAlignment: TsHorizontalAlignment.Center }));
     return toolSettings;
   }
 
@@ -176,10 +176,10 @@ class MockPlaceLineTool {
   /** Used to supply DefaultToolSettingProvider with a list of properties to use to generate ToolSettings.  If undefined then no ToolSettings will be displayed */
   public supplyToolSettingsProperties(): ToolSettingsPropertyRecord[] | undefined {
     const toolSettings = new Array<ToolSettingsPropertyRecord>();
-    toolSettings.push(new ToolSettingsPropertyRecord(this._useLengthValue.clone() as PrimitiveValue, useLengthDescription, { rowPriority: 0, columnPriority: 0 }));
-    toolSettings.push(new ToolSettingsPropertyRecord(this._lengthValue.clone() as PrimitiveValue, lengthDescription, { rowPriority: 0, columnPriority: 1 }));
-    toolSettings.push(new ToolSettingsPropertyRecord(this._useAngleValue.clone() as PrimitiveValue, useAngleDescription, { rowPriority: 1, columnPriority: 0 }));
-    toolSettings.push(new ToolSettingsPropertyRecord(this._angleValue.clone() as PrimitiveValue, angleDescription, { rowPriority: 1, columnPriority: 1 }));
+    toolSettings.push(new ToolSettingsPropertyRecord(this._useLengthValue.clone() as PrimitiveValue, useLengthDescription, { rowPriority: 0, columnIndex: 0 }));
+    toolSettings.push(new ToolSettingsPropertyRecord(this._lengthValue.clone() as PrimitiveValue, lengthDescription, { rowPriority: 0, columnIndex: 1 }));
+    toolSettings.push(new ToolSettingsPropertyRecord(this._useAngleValue.clone() as PrimitiveValue, useAngleDescription, { rowPriority: 1, columnIndex: 0 }));
+    toolSettings.push(new ToolSettingsPropertyRecord(this._angleValue.clone() as PrimitiveValue, angleDescription, { rowPriority: 1, columnIndex: 1 }));
     return toolSettings;
   }
 

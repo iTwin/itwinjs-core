@@ -2190,7 +2190,7 @@ export namespace TextureMapping {
         if (isRelativeUnits || !visitor.tryGetDistanceParameter(i, param)) {
           if (!visitor.tryGetNormalizedParameter(i, param)) {
             // If mesh does not have facetFaceData, we still want to use the texture coordinates if they are present
-            param = visitor.getParam(i);
+            param = visitor.getParam(i)!;
           }
         }
 

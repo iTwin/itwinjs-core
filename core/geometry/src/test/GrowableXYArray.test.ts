@@ -46,12 +46,12 @@ describe("GrowableXYArray", () => {
         ck.testPoint2d(pointB[0], pointA.front() as Point2d);
       }
       for (let i = 0; i < n; i++)
-        ck.testPoint2d(pointB[i], pointA.getPoint2dAt(i) as Point2d);
+        ck.testPoint2d(pointB[i], pointA.point2dAtUncheckedPointIndex(i) as Point2d);
       ck.testExactNumber(pointA.length, pointB.length, "array lengths");
 
       let lengthA = 0;
       for (let i = 0; i + 1 < n; i++) {
-        lengthA += pointA.getPoint2dAt(i).distance(pointA.getPoint2dAt(i + 1));
+        lengthA += pointA.point2dAtUncheckedPointIndex(i).distance(pointA.point2dAtUncheckedPointIndex(i + 1));
       }
       const lengthA1 = pointA.sumLengths();
       ck.testCoordinate(lengthA, lengthA1, "polyline length");
@@ -85,7 +85,7 @@ describe("GrowableXYArray", () => {
     const xyBuffer = pointAXY.float64Data();
     for (let i = 0; i < n; i++) {
       ck.testTrue(Geometry.isSamePoint2d(
-        pointAXY.getPoint2dAt(i), Point2d.create(xyBuffer[2 * i], xyBuffer[2 * i + 1])));
+        pointAXY.point2dAtUncheckedPointIndex(i), Point2d.create(xyBuffer[2 * i], xyBuffer[2 * i + 1])));
     }
 
     pointD.clear();
@@ -117,7 +117,7 @@ describe("GrowableXYArray", () => {
     const pointA3d = pointA.getPoint3dArray(z0);
     for (let i = 0; i < pointA3d.length; i++) {
       const xyz = pointA3d[i];
-      const xy = pointA.getPoint2dAt(i);
+      const xy = pointA.point2dAtUncheckedPointIndex(i);
       ck.testExactNumber(z0, xyz.z);
       ck.testExactNumber(xyz.x, xy.x);
       ck.testExactNumber(xyz.y, xy.y);
@@ -200,14 +200,14 @@ describe("GrowableXYArray", () => {
       pointA.pushWrap(numWrap);
       ck.testExactNumber(n + numWrap, pointA.length, "pushWrap increases length");
       for (let i = 0; i < numWrap; i++) {
-        ck.testPoint2d(pointA.getPoint2dAt(i), pointA.getPoint2dAt(n + i), "wrapped point");
+        ck.testPoint2d(pointA.point2dAtUncheckedPointIndex(i), pointA.point2dAtUncheckedPointIndex(n + i), "wrapped point");
       }
       let numDup = 0;
       const sortOrder = pointA.sortIndicesLexical();
       for (let i = 0; i + 1 < pointA.length; i++) {
         const k0 = sortOrder[i];
         const k1 = sortOrder[i + 1];
-        if (pointA.getPoint2dAt(k0).isAlmostEqual(pointA.getPoint2dAt(k1))) {
+        if (pointA.point2dAtUncheckedPointIndex(k0).isAlmostEqual(pointA.point2dAtUncheckedPointIndex(k1))) {
           ck.testLT(k0, k1, "lexical sort preserves order for duplicates");
           numDup++;
         } else {
@@ -253,7 +253,7 @@ describe("GrowableXYArray", () => {
 
     ck.testTrue(arr.tryTransformInverseInPlace(transform));
     ck.testFalse(arr.tryTransformInverseInPlace(noInverseTransform));
-    ck.testPoint2d(arr.getPoint2dAt(0), Point2d.create(1, -1));
+    ck.testPoint2d(arr.point2dAtUncheckedPointIndex(0), Point2d.create(1, -1));
 
     arr.resize(1);
 
@@ -388,8 +388,8 @@ describe("GrowableXYArray", () => {
 
     const array1 = new GrowableXYArray();
     // transfers with bad source index
-    ck.testFalse(array1.pushFromGrowableXYArray(array0, -1), "invalide source index for pushFromGrowable");
-    ck.testFalse(array1.pushFromGrowableXYArray(array0, n0 + 1), "invalide source index for pushFromGrowable");
+    ck.testExactNumber(0, array1.pushFromGrowableXYArray(array0, -1), "invalid source index for pushFromGrowable");
+    ck.testExactNumber(0, array1.pushFromGrowableXYArray(array0, n0 + 1), "invalid source index for pushFromGrowable");
     // Any trasnfer into empty array is bad . ..
     ck.testFalse(array1.transferFromGrowableXYArray(-1, array0, 1), "invalid source index transferFromGrowable");
     ck.testFalse(array1.transferFromGrowableXYArray(0, array0, 1), "invalid source index transferFromGrowable");
@@ -405,7 +405,7 @@ describe("GrowableXYArray", () => {
     const resultA = Point2d.create();
     const interpolationFraction = 0.321;
     for (let k = 1; k + 2 < n0; k++) {
-      ck.testTrue(array1.pushFromGrowableXYArray(array0, k), "transformFromGrowable");
+      ck.testExactNumber(1, array1.pushFromGrowableXYArray(array0, k), "transformFromGrowable");
 
       ck.testUndefined(array1.interpolate(-1, 0.3, k), "interpolate with bad index");
       ck.testUndefined(array1.interpolate(100, 0.3, k), "interpolate with bad index");
@@ -419,8 +419,8 @@ describe("GrowableXYArray", () => {
         && ck.testPointer(array0.interpolate(k, interpolationFraction, k1, resultA)))) {
         const k2 = (2 * k + 1) % n0;
 
-        const point0 = array0.getPoint2dAt(k);
-        const point1 = array0.getPoint2dAt(k1);
+        const point0 = array0.point2dAtUncheckedPointIndex(k);
+        const point1 = array0.point2dAtUncheckedPointIndex(k1);
         const resultB = point0.interpolate(interpolationFraction, point1);
         ck.testPoint2d(resultA, resultB, "compare interpolation paths");
         const crossA = array0.crossProductIndexIndexIndex(k, k1, k2);

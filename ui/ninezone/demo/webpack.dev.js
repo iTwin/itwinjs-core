@@ -3,17 +3,20 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 const path = require('path');
-const baseConfig = require('./webpack.config');
+const merge = require('webpack-merge');
+const common = require('./webpack.common.js');
 
-const config = {
-  ...baseConfig,
-  mode: 'development',
+module.exports = merge(common, {
   devServer: {
-    contentBase: path.join(__dirname, "lib"),
-    port: 7777,
-    open: true,
-    historyApiFallback: true,
+    open: true
   },
-};
-
-module.exports = config;
+  devtool: 'inline-source-map',
+  entry: {
+    entry: path.resolve(__dirname, 'src', 'App.tsx')
+  },
+  mode: 'development',
+  output: {
+    filename: 'demo.js',
+    path: path.resolve(__dirname, '..', 'lib', 'demo')
+  }
+});

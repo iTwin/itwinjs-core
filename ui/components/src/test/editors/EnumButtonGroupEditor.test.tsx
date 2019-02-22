@@ -50,9 +50,6 @@ describe("<EnumButtonGroupEditor />", () => {
     await TestUtils.flushAsyncOperations();
     expect(greenButton.classList.contains("nz-is-active")).to.be.true;
     expect(spyOnCommit.calledOnce).to.be.true;
-
-    const updatedValue = (record.value as PrimitiveValue).value as number;
-    expect(updatedValue).to.be.equal(2);
   });
 
   it("test support for enable/disable button states", async () => {

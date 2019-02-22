@@ -213,6 +213,15 @@ export class Transform implements BeJSONFunctions {
     const origin = Matrix3d.xyzMinusMatrixTimesXYZ(fixedPoint, matrix, fixedPoint);
     return Transform.createRefs(origin, matrix.clone(), result);
   }
+  /** Create a transform with the specified matrix, acting on any `pointX `via
+   * `pointY = matrix * (pointX - pointA) + pointB`
+   * so that the fixedPoint maps back to itself.
+   */
+  public static createMatrixPickupPutdown(matrix: Matrix3d, pointA: Point3d, pointB: Point3d, result?: Transform): Transform {
+    const origin = Matrix3d.xyzMinusMatrixTimesXYZ(pointB, matrix, pointA);
+    return Transform.createRefs(origin, matrix.clone(), result);
+  }
+
   /** Create a Transform which leaves the fixedPoint unchanged and
    * scales everything else around it by a single scale factor.
    */

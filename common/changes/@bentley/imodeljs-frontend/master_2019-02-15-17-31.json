@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "update for geometry GrowableXYArray usage.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Earlin.Lutz@bentley.com"
+}

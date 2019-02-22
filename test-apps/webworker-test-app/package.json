@@ -14,18 +14,19 @@
   },
   "iModelJs": {
     "buildModule": {
-      "tscOptions": "-build",
       "type": "webworker",
+      "tscOptions": "-build",
       "webpack": {
         "dest": "./lib/webresources",
         "entry": "./lib/webworker/webWorkerMain.js",
         "bundleName": "testWebWorker"
       },
-      "plugins": [
+      "subModules": [
         {
           "dest": "./lib/webresources",
           "entry": "./lib/plugin/startWebWorker.js",
-          "bundleName": "startWebWorkerPlugin"
+          "bundleName": "startWebWorkerPlugin",
+          "type": "plugin"
         }
       ]
     }
@@ -45,16 +46,16 @@
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/webpack-tools": "0.189.0-dev.28",
-    "@bentley/build-tools": "0.189.0-dev.28",
+    "@bentley/webpack-tools": "0.189.0-dev.32",
+    "@bentley/build-tools": "0.189.0-dev.32",
     "rimraf": "^2.6.2",
     "tsconfig-paths": "^3.3.2",
     "tslint": "^5.11.0",
     "typescript": "~3.2.2"
   },
   "dependencies": {
-    "@bentley/bentleyjs-core": "0.189.0-dev.28",
-    "@bentley/geometry-core": "0.189.0-dev.28",
-    "@bentley/imodeljs-frontend": "0.189.0-dev.28"
+    "@bentley/bentleyjs-core": "0.189.0-dev.32",
+    "@bentley/geometry-core": "0.189.0-dev.32",
+    "@bentley/imodeljs-frontend": "0.189.0-dev.32"
   }
 }

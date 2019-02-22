@@ -6,7 +6,7 @@
 import { XAndY } from "@bentley/geometry-core";
 import {
   AccuSnap, IModelApp, MessageBoxIconType, MessageBoxType, MessageBoxValue, NotificationManager, NotifyMessageDetails,
-  SnapMode, ToolTipOptions,
+  SnapMode, ToolTipOptions, TileAdmin,
 } from "@bentley/imodeljs-frontend";
 import ToolTip from "tooltip.js";
 import { DrawingAidTestTool } from "./DrawingAidTestTool";
@@ -113,6 +113,10 @@ export class DisplayTestApp extends IModelApp {
   protected static onStartup(): void {
     IModelApp.accuSnap = new DisplayTestAppAccuSnap();
     IModelApp.notifications = new Notifications();
+    IModelApp.tileAdmin = TileAdmin.create({
+      retryInterval: 50,
+    });
+
     const svtToolNamespace = IModelApp.i18n.registerNamespace("SVTTools");
     DrawingAidTestTool.register(svtToolNamespace);
   }

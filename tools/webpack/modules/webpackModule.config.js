@@ -15,7 +15,7 @@
 // env.prod : if specified, makes the production version of the module. (Optional. If not specified, builds the development version)
 // env.htmltemplate: if specified, reads the html template and substitutes the versions required into the lodash tempolate '<%= htmlWebpackPlugin.options.imjsVersions %>',
 //                   which should appear as the value for the data-imjsversions property of the IModelJsLoader script tag.
-// env.isplugin: if specified, saves the versions of the iModelJs modules required into the webpack output so that the plugin can verify their presence at runtime.
+// env.plugin: if specified, saves the versions of the iModelJs modules required into the webpack output so that the plugin can verify their presence at runtime.
 
 const path = require("path");
 const fs = require("fs-extra");
@@ -170,7 +170,7 @@ function getConfig(env) {
   // Loaders setup:
   // always use source-map-loader, use strip-assert-loader on production builds;
   const stripAssertLoader = path.resolve(__dirname, "../config/strip-assert-loader.js");
-  const sourceMapLoader = path.resolve(__dirname, "../node_modules", "source-map-loader");
+  const sourceMapLoader = require.resolve("source-map-loader");
   const jsLoaders = env.prod ? [sourceMapLoader, stripAssertLoader] : [sourceMapLoader];
   webpackLib.module = {};
   webpackLib.module.rules = [{
@@ -220,7 +220,7 @@ function getConfig(env) {
   // env.htmltemplate is passed to webpackModule.config.js only for applications that are creating an HtmlTemplate.
   // The reason for it is to set the version of the iModelJs modules that the application requires into index.html.
   // It gets that by reading the version of imodeljs-frontend listed in package.json.
-  if (env.htmltemplate || env.isplugin) {
+  if (env.htmltemplate || env.plugin) {
     const iModelJsVersions = getIModelJsVersions(sourceDir, packageContents, webpackLib.externals);
     const versionString = JSON.stringify(iModelJsVersions);
 
@@ -235,7 +235,7 @@ function getConfig(env) {
       }));
     }
 
-    if (env.isplugin) {
+    if (env.plugin) {
       definePluginDefinitions.IMODELJS_VERSIONS_REQUIRED = JSON.stringify(versionString);
       definePluginDefinitions.PLUGIN_NAME = JSON.stringify(bundleName);
     }

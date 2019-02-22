@@ -3,10 +3,18 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { BlueButton } from "@bentley/bwc";
+import { Button, ButtonType, ButtonProps, Omit } from "@bentley/ui-core";
 import { Backstage } from "@src/backstage/Backstage";
 import { BackstageItem } from "@src/backstage/Item";
 import { BackstageSeparator } from "@src/backstage/Separator";
+
+// tslint:disable-next-line:variable-name
+const BlueButton = (props: ButtonProps & Omit<ButtonProps, "type">) => (
+  <Button
+    type={ButtonType.Blue}
+    {...props}
+  />
+);
 
 export interface State {
   isOpen: boolean;

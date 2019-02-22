@@ -1,0 +1,15 @@
+{
+  "extends": "../../node_modules/@bentley/build-tools/tsconfig-base.json",
+  "compilerOptions": {
+    "skipLibCheck": true,
+    "outDir": "../../lib/webworker",
+    "composite": true,
+    "lib": [
+      "es2017",
+      "webworker"
+    ],
+  },
+  "include": [
+    "./**/*.ts",
+  ]
+}

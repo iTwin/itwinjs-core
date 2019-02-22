@@ -35,10 +35,12 @@ export class ToggleEditor extends React.PureComponent<PropertyEditorProps, Toggl
 
     // istanbul ignore else
     if (record && record.value.valueFormat === PropertyValueFormat.Primitive) {
-      propertyValue = record.value;
-      (record.value as PrimitiveValue).value = this.state.toggleValue;
+      propertyValue = {
+        valueFormat: PropertyValueFormat.Primitive,
+        value: this.state.toggleValue,
+        displayValue: "",
+      };
     }
-
     return propertyValue;
   }
 
@@ -56,8 +58,9 @@ export class ToggleEditor extends React.PureComponent<PropertyEditorProps, Toggl
         if (this.props.propertyRecord && this.props.onCommit) {
           const propertyValue = await this.getPropertyValue();
           // istanbul ignore else
-          if (propertyValue)
+          if (propertyValue) {
             this.props.onCommit({ propertyRecord: this.props.propertyRecord, newValue: propertyValue });
+          }
         }
       });
     }

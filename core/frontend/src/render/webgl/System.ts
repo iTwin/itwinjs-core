@@ -759,8 +759,8 @@ export class System extends RenderSystem {
         meshArgs.points.push(QPoint3d.create(point, meshArgs.points.params));
 
       const uvs: Point2d[] = [];  // temporary uv storage - will be rearranged below
-      for (const param of rawParams)
-        uvs.push(param.clone());
+      for (let i = 0; i < rawParams.length; i++)
+          uvs.push(rawParams.atPoint2dIndex (i)!);
 
       const pointIndices: number[] = [];
       const uvIndices: number[] = [];

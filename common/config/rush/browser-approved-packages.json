@@ -115,6 +115,10 @@
       "allowedCategories": [ "common", "frontend", "internal" ]
     },
     {
+      "name": "@microsoft/api-extractor",
+      "allowedCategories": [ "tools" ]
+    },
+    {
       "name": "@openid/appauth",
       "allowedCategories": [ "common" ]
     },
@@ -844,7 +848,7 @@
     },
     {
       "name": "webpack-merge",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [ "frontend", "tools" ]
     },
     {
       "name": "webpack-node-externals",

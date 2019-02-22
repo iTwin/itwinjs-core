@@ -33,6 +33,14 @@
       "ignoreMissingScript": false
     },
     {
+      "name": "extract-api",
+      "commandKind": "bulk",
+      "summary": "Run api-extractor to generate API signature files",
+      "description": "Iterates through each package in the monorepo and runs the 'extract-api' script",
+      "enableParallelism": true,
+      "ignoreMissingScript": true
+    },
+    {
       "name": "lint",
       "commandKind": "bulk",
       "summary": "Run lint rules on each package",

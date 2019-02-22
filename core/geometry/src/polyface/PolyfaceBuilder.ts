@@ -9,7 +9,7 @@
 import { IndexedPolyface } from "./Polyface";
 import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
 import { Point2d } from "../geometry3d/Point2dVector2d";
-import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
+import { Point3d, Vector3d, XYZ } from "../geometry3d/Point3dVector3d";
 import { Transform } from "../geometry3d/Transform";
 import { Matrix3d } from "../geometry3d/Matrix3d";
 import { BoxTopology } from "./BoxTopology";
@@ -40,6 +40,7 @@ import { CylindricalQuery } from "../curve/Query/CylindricalRange";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 import { Segment1d } from "../geometry3d/Segment1d";
 import { BilinearPatch } from "../geometry3d/BilinearPatch";
+
 /* tslint:disable:variable-name prefer-for-of*/
 
 /**
@@ -103,6 +104,12 @@ class FacetSector {
     if (this.sectionDerivative !== undefined && packedDerivatives !== undefined)
       packedDerivatives!.atVector3dIndex(i, this.sectionDerivative);
   }
+  private static suppressSmallUnitVectorComponents(uvw: XYZ) {
+    const tol = 1.0e-15;
+    if (Math.abs(uvw.x) < tol) uvw.x = 0.0;
+    if (Math.abs(uvw.y) < tol) uvw.y = 0.0;
+    if (Math.abs(uvw.z) < tol) uvw.z = 0.0;
+  }
   private static _edgeVector: Vector3d = Vector3d.create();
   /**
    * given two sectors with xyz and sectionDerivative (u derivative)
@@ -122,6 +129,8 @@ class FacetSector {
       sectorB.sectionDerivative!.crossProduct(vectorAB, sectorB.normal);
       sectorA.normal!.normalizeInPlace();
       sectorB.normal!.normalizeInPlace();
+      FacetSector.suppressSmallUnitVectorComponents(sectorA.normal!);
+      FacetSector.suppressSmallUnitVectorComponents(sectorB.normal!);
     }
   }
 }
@@ -337,85 +346,6 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   }
 
   /**
-   * resolve an index from a sequence of possible sources.
-   * * If source is a GrowableFLoat64Array, access at `source.at(index)` (if that is undefined, pass the undefined back)
-   * * If source is a number, return that number
-   * * If source is undefined, return `defaultIndex`
-   * @param indexArray optional array of indices
-   * @param defaultValue
-   * @param index
-   * @internal
-   */
-  public static resolveIndexFromArrayNumberOrDefault(source: GrowableFloat64Array | undefined | number, defaultValue: number, index: number): number | undefined {
-    if (source) {
-      if (source instanceof GrowableFloat64Array) return source.at(index);
-      if (Number.isFinite(source)) return source as number;
-    }
-    return defaultValue;
-  }
-  /** Add triangles for a polygon defined by point indices.
-   * * WARNING: If params are requested but param indices are not given the parameter triangles will use the same indexing as the coordinates.  i.e. caller must preestablish the uv data.
-   * * WARNING: If normals are requested but normal indices are not given the normal indexing will use the same indices as the coordinates, i.e. caller must preestablish the normals.
-   * * WARNING: Triangulation is by fan from index[0]
-   * * In most common use case where the coordinates are known to be coplanar, a single normal indexc can be sent.
-   * @param pointIndex array of indices.
-   * @param toggle if true, wrap the triangle creation in toggleReversedFacetFlag.
-   * @param needNormals if true, call addIndexedTriangleNormalInidces for each triangle.
-   * @param needParams if true, call addIndexedTriangleParamIndices for each triangle.
-   * @param paramIndex optional array of param indices.   If not given, point indices are used for param indices
-   * @param normalIndex optional array of normal indices, OR single index for all normals.   If not given, point indices are used for normal indices.
-   * @internal
-   */
-  public addTriangleFanFromIndex0(pointIndex: GrowableFloat64Array,
-    toggle: boolean,
-    needNormals: boolean = false,
-    needParams: boolean = false,
-    paramIndex?: GrowableFloat64Array,
-    normalIndex?: GrowableFloat64Array | number): void {
-    const n = pointIndex.length;
-    if (n > 2) {
-      if (toggle)
-        this.toggleReversedFacetFlag();
-      const index0 = pointIndex.at(0);
-      let index1 = pointIndex.at(1);
-      let index2 = 0;
-      let normalIndex0 = 0;
-      let normalIndex1 = 0;
-      let normalIndex2 = 0;
-      let paramIndex0 = 0;
-      let paramIndex1 = 0;
-      let paramIndex2 = 0;
-      // REAMRK: Hard cast param and normal indices to number !!!!
-      if (needNormals) {
-        normalIndex0 = PolyfaceBuilder.resolveIndexFromArrayNumberOrDefault(normalIndex, index0, 0) as number;
-        normalIndex1 = PolyfaceBuilder.resolveIndexFromArrayNumberOrDefault(normalIndex, index1, 1) as number;
-      }
-      if (needParams) {
-        paramIndex0 = PolyfaceBuilder.resolveIndexFromArrayNumberOrDefault(paramIndex, index0, 0) as number;
-        paramIndex1 = PolyfaceBuilder.resolveIndexFromArrayNumberOrDefault(paramIndex, index1, 1) as number;
-      }
-      for (let i = 2; i < n; i++) {
-        index2 = pointIndex.at(i);
-        this.addIndexedTrianglePointIndexes(index0, index1, index2);
-        if (needNormals) {
-          normalIndex2 = PolyfaceBuilder.resolveIndexFromArrayNumberOrDefault(normalIndex, index2, i) as number;
-          this.addIndexedTriangleNormalIndexes(normalIndex0, normalIndex1, normalIndex2);
-          normalIndex1 = normalIndex2;
-        }
-        if (needParams) {
-          paramIndex2 = PolyfaceBuilder.resolveIndexFromArrayNumberOrDefault(paramIndex, index2, i) as number;
-          this.addIndexedTriangleParamIndexes(paramIndex0, paramIndex1, paramIndex2);
-          paramIndex1 = paramIndex2;
-        }
-        index1 = index2;
-        this._polyface.terminateFacet();
-      }
-      if (toggle)
-        this.toggleReversedFacetFlag();
-    }
-  }
-
-  /**
    * Announce point coordinates.  The implemetation is free to either create a new point or (if known) return indxex of a prior point with the same coordinates.
    */
   public findOrAddPoint(xyz: Point3d): number {
@@ -454,7 +384,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   public findOrAddParamInGrowableXYArray(data: GrowableXYArray, index: number): number | undefined {
     if (!data)
       return undefined;
-    const q = data.getPoint2dAt(index, PolyfaceBuilder._workUVFindOrAdd);
+    const q = data.point2dAtUncheckedPointIndex(index, PolyfaceBuilder._workUVFindOrAdd);
     if (q) {
       return this._polyface.addParam(q);
     }
@@ -1044,23 +974,22 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     const maxPath = Math.abs(maxDistance * surface.getSweep().radians);
     let numStep = StrokeOptions.applyAngleTol(this._options, 1, surface.getSweep().radians, undefined);
     numStep = StrokeOptions.applyMaxEdgeLength(this._options, numStep, maxPath);
-    let transformB = Transform.createIdentity();
-    let transformA = Transform.createIdentity();
     for (let i = 1; i <= numStep; i++) {
-      surface.getFractionalRotationTransform(i / numStep, transformB);
+      const transformA = surface.getFractionalRotationTransform((i - 1) / numStep);
+      const transformB = surface.getFractionalRotationTransform(i / numStep);
       this.addBetweenRotatedStrokeSets(baseStrokes, transformA, i - 1, transformB, i);
-      const temp = transformA; transformA = transformB; transformB = temp;
     }
     if (surface.capped) {
       const capContour = surface.getSweepContourRef();
       capContour.purgeFacets();
       capContour.emitFacets(this, true, undefined);
       // final loop pass left transformA at end ..
-      capContour.emitFacets(this, false, transformA);
+      capContour.emitFacets(this, false, surface.getFractionalRotationTransform(1.0));
     }
   }
   /**
-   * Recursively visit all children of data.  Set the stroke count on each that is a primitive.
+   * * Recursively visit all children of data.
+   * * At each primitive, invoke the computeStrokeCountForOptions method, with options from the builder.
    * @param data
    */
   public applyStrokeCountsToCurvePrimitives(data: AnyCurve | GeometryQuery) {

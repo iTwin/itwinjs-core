@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Tile requests can optionally specify a retryInterval.",
+      "packageName": "@bentley/imodeljs-common",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-common",
+  "email": "Paul.Connelly@bentley.com"
+}

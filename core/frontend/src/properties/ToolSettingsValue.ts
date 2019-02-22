@@ -66,26 +66,29 @@ export const enum TsVerticalAlignment {
 
 /** Interface used to identify the location of the UI control to manipulate a ToolSettings property value. */
 export interface EditorPosition {
+  /** Determine the order the row is shown in UI */
   rowPriority: number;
-  columnPriority: number;
+  /** Determines the Column position for the type editor */
+  columnIndex: number;
   /** Defaults to left */
   horizontalAlignment?: TsHorizontalAlignment;
   /** Defaults to top */
   verticalAlignment?: TsVerticalAlignment;
   /** Number of columns to occupy. Defaults to 1 */
   columnSpan?: number;
-  /** Number of rows to occupy. Defaults to 1 */
-  rowSpan?: number;
 }
 
 /** Class used to identify a specific ToolSettings property value. */
 export class ToolSettingsPropertySyncItem {
   public value: ToolSettingsValue;
   public propertyName: string;
+  /** used to pass enable state to Ui from Tool so property record can be updated */
+  public isDisabled?: boolean;
 
-  public constructor(value: ToolSettingsValue, propertyName: string) {
+  public constructor(value: ToolSettingsValue, propertyName: string, isDisabled?: boolean) {
     this.value = value;
     this.propertyName = propertyName;
+    this.isDisabled = isDisabled;
   }
 }
 
@@ -93,8 +96,16 @@ export class ToolSettingsPropertySyncItem {
 export class ToolSettingsPropertyRecord extends PropertyRecord {
   public editorPosition: EditorPosition;
 
-  public constructor(value: PropertyValue, property: PropertyDescription, editorPosition: EditorPosition) {
+  public constructor(value: PropertyValue, property: PropertyDescription, editorPosition: EditorPosition, isReadonly = false) {
     super(value, property);
     this.editorPosition = editorPosition;
+    this.isReadonly = isReadonly;
+  }
+
+  public static clone(record: ToolSettingsPropertyRecord, newValue?: ToolSettingsValue): ToolSettingsPropertyRecord {
+    const value = Object.assign({}, newValue ? newValue : record.value);
+    const newRecord = new ToolSettingsPropertyRecord(value, record.property, record.editorPosition, record.isReadonly);
+    newRecord.isDisabled = record.isDisabled;
+    return newRecord;
   }
 }

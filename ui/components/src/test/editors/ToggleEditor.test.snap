@@ -8,6 +8,6 @@ exports[`<ToggleEditor /> renders correctly 1`] = `
   isOn={false}
   onChange={[Function]}
   rounded={true}
-  showCheckmark={true}
+  showCheckmark={false}
 />
 `;

@@ -99,9 +99,9 @@ async function main() {
     if (configuration.customOrchestratorUri)
       await initializeCustomCloudEnv(activeViewState, configuration.customOrchestratorUri);
   }
+
   // Start the app. (This tries to fetch a number of localization json files from the origin.)
   DisplayTestApp.startup();
-
   if (configuration.enableDiagnostics)
     DisplayTestApp.renderSystem.enableDiagnostics(RenderDiagnostics.All);
 

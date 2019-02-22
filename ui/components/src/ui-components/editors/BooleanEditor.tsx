@@ -35,8 +35,11 @@ export class BooleanEditor extends React.PureComponent<PropertyEditorProps, Bool
 
     // istanbul ignore else
     if (record && record.value.valueFormat === PropertyValueFormat.Primitive) {
-      propertyValue = record.value;
-      (record.value as PrimitiveValue).value = this.state.checkboxValue;
+      propertyValue = {
+        valueFormat: PropertyValueFormat.Primitive,
+        value: this.state.checkboxValue,
+        displayValue: "",
+      };
     }
 
     return propertyValue;
@@ -70,8 +73,9 @@ export class BooleanEditor extends React.PureComponent<PropertyEditorProps, Bool
         if (this.props.propertyRecord && this.props.onCommit) {
           const propertyValue = await this.getPropertyValue();
           // istanbul ignore else
-          if (propertyValue)
+          if (propertyValue) {
             this.props.onCommit({ propertyRecord: this.props.propertyRecord, newValue: propertyValue });
+          }
         }
       });
     }

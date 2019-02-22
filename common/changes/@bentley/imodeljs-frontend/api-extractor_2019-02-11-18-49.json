@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Changes package.json to include api-extractor and adds api-extractor.json",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "akshay.madhukar@bentley.com"
+}

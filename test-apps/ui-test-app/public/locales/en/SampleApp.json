@@ -119,7 +119,9 @@
         "Options": "Options",
         "Lock": "Lock",
         "City": "City",
-        "State": "State"
+        "State": "State",
+        "Coordinate": "Coordinate",
+        "Length": "Length"
       },
       "Options": {
         "Red": "Red",

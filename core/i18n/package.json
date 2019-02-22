@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-i18n",
-  "version": "0.189.0-dev.28",
+  "version": "0.189.0-dev.32",
   "description": "iModel.js localization code",
   "license": "MIT",
   "repository": {
@@ -13,6 +13,7 @@
     "build": "node ./node_modules/@bentley/webpack-tools/bin/buildIModelJsModule.js",
     "clean": "rimraf lib package-deps.json",
     "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-i18n/file.json --tsIndexFile=./imodeljs-i18n.ts --onlyJson %TYPEDOC_THEME%",
+    "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=imodeljs-i18n",
     "lint": "tslint --project . 1>&2",
     "test": "",
     "cover": ""
@@ -37,16 +38,16 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "0.189.0-dev.28"
+    "@bentley/bentleyjs-core": "0.189.0-dev.32"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/bentleyjs-core": "0.189.0-dev.28",
-    "@bentley/build-tools": "0.189.0-dev.28",
-    "@bentley/webpack-tools": "0.189.0-dev.28",
+    "@bentley/bentleyjs-core": "0.189.0-dev.32",
+    "@bentley/build-tools": "0.189.0-dev.32",
+    "@bentley/webpack-tools": "0.189.0-dev.32",
     "@types/i18next": "^8.4.2",
     "@types/i18next-browser-languagedetector": "^2.0.1",
     "@types/node": "10.12.18",
@@ -64,6 +65,6 @@
   "dependencies": {
     "i18next": "^10.2.2",
     "i18next-browser-languagedetector": "^2.1.0",
-    "i18next-xhr-backend": "^2"
+    "i18next-xhr-backend": "^2.0.1"
   }
 }

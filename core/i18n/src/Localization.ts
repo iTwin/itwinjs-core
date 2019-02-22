@@ -5,7 +5,7 @@
 /** @module AppAdministration */
 
 import * as i18next from "i18next";
-import * as i18nextXHRBackend from "i18next-xhr-backend";
+import XHR, { I18NextXhrBackend } from "i18next-xhr-backend";
 import * as i18nextBrowserLanguageDetector from "i18next-browser-languagedetector";
 import { BentleyError, Logger } from "@bentley/bentleyjs-core";
 
@@ -20,7 +20,7 @@ export class I18N {
   public constructor(nameSpaces: string[], defaultNameSpace: string, options?: I18NOptions, renderFunction?: i18next.Callback) {
     this._i18n = i18next.createInstance();
 
-    const backendOptions: i18nextXHRBackend.BackendOptions = {
+    const backendOptions: I18NextXhrBackend.BackendOptions = {
       loadPath: options && options.urlTemplate ? options.urlTemplate : "locales/{{lng}}/{{ns}}.json",
       crossDomain: true,
     };
@@ -42,7 +42,7 @@ export class I18N {
     }
 
     // call the changeLanguage method right away, before any calls to I18NNamespace.register. Otherwise, the call doesn't happen until the deferred load of the default namespace
-    this._i18n.use(i18nextXHRBackend)
+    this._i18n.use(XHR)
       .use(BentleyLogger)
       .init(initOptions, renderFunction)
       .changeLanguage(isDevelopment ? "en-pseudo" : undefined as any, undefined);

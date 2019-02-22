@@ -6,7 +6,7 @@
 
 import * as React from "react";
 import classnames from "classnames";
-import { PropertyValueFormat, PropertyValue, PrimitiveValue } from "@bentley/imodeljs-frontend";
+import { PropertyValueFormat, PropertyValue, PrimitiveValue, PropertyEditorParams, PropertyEditorParamTypes, InputEditorSizeParams } from "@bentley/imodeljs-frontend";
 import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
 import { TypeConverterManager } from "../converters/TypeConverterManager";
 
@@ -14,6 +14,10 @@ import "./TextEditor.scss";
 
 interface TextEditorState {
   inputValue: string;
+  readonly: boolean;
+  isDisabled?: boolean;
+  size?: number;
+  maxLength?: number;
 }
 
 /** TextEditor React component that is a property editor with text input  */
@@ -24,6 +28,7 @@ export class TextEditor extends React.PureComponent<PropertyEditorProps, TextEdi
   /** @hidden */
   public readonly state: Readonly<TextEditorState> = {
     inputValue: "",
+    readonly: false,
   };
 
   public getValue(): string {
@@ -45,7 +50,7 @@ export class TextEditor extends React.PureComponent<PropertyEditorProps, TextEdi
 
   private setFocus(): void {
     // istanbul ignore else
-    if (this._input) {
+    if (this._input && !this.state.isDisabled) {
       this._input.focus();
     }
   }
@@ -83,10 +88,29 @@ export class TextEditor extends React.PureComponent<PropertyEditorProps, TextEdi
       initialValue = await TypeConverterManager.getConverter(record.property.typename).convertPropertyToString(record.property, value);
     }
 
+    const readonly = record && undefined !== record.isReadonly ? record.isReadonly : false;
+    let size: number | undefined;
+    let maxLength: number | undefined;
+
+    const isDisabled = record ? record.isDisabled : undefined;
+
+    if (record && record.property && record.property.editor && record.property.editor.params) {
+      const editorSizeParams = record.property.editor.params.find((param: PropertyEditorParams) => param.type === PropertyEditorParamTypes.InputEditorSize) as InputEditorSizeParams;
+      // istanbul ignore else
+      if (editorSizeParams) {
+        // istanbul ignore else
+        if (editorSizeParams.size)
+          size = editorSizeParams.size;
+        // istanbul ignore else
+        if (editorSizeParams.maxLength)
+          maxLength = editorSizeParams.maxLength;
+      }
+    }
+
     // istanbul ignore else
     if (this._isMounted)
       this.setState(
-        { inputValue: initialValue },
+        { inputValue: initialValue, readonly, size, maxLength, isDisabled },
         () => {
           if (this.props.setFocus) {
             this.setFocus();
@@ -107,6 +131,10 @@ export class TextEditor extends React.PureComponent<PropertyEditorProps, TextEdi
         type="text"
         onBlur={this.props.onBlur}
         className={className}
+        readOnly={this.state.readonly}
+        disabled={this.state.isDisabled}
+        size={this.state.size}
+        maxLength={this.state.maxLength}
         defaultValue={this.state.inputValue}
         onChange={this._updateInputValue}
         data-testid="components-text-editor"

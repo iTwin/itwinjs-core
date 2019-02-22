@@ -8,7 +8,7 @@ import { ActivityLoggingContext, assert, BeEvent, BentleyStatus, Guid, Id64, Id6
 import { AccessToken } from "@bentley/imodeljs-clients";
 import {
   AxisAlignedBox3d, CodeSpec, ElementProps, EntityQueryParams, FontMap, ImageSourceFormat, IModel, IModelError, IModelNotFoundResponse,
-  IModelReadRpcInterface, IModelStatus, IModelTileRpcInterface, IModelToken, IModelVersion, IModelWriteRpcInterface,
+  IModelReadRpcInterface, IModelStatus, IModelToken, IModelVersion, IModelWriteRpcInterface,
   ModelProps, ModelQueryParams, RpcNotFoundResponse, RpcOperation, RpcRequest, RpcRequestEvent, SnapRequestProps, SnapResponseProps,
   StandaloneIModelRpcInterface, ThumbnailProps, TileTreeProps, ViewDefinitionProps, ViewQueryParams, WipRpcInterface, Cartographic, GeoCoordStatus, PageOptions, kPagingDefaultOptions,
 } from "@bentley/imodeljs-common";
@@ -761,7 +761,7 @@ export namespace IModelConnection {
     /** @hidden */
     constructor(iModel: IModelConnection) { this._iModel = iModel; }
 
-    public async getTileTreeProps(id: string): Promise<TileTreeProps> { return IModelTileRpcInterface.getClient().getTileTreeProps(this._iModel.iModelToken, id); }
-    public async getTileContent(treeId: string, contentId: string): Promise<Uint8Array> { return IModelTileRpcInterface.getClient().getTileContent(this._iModel.iModelToken, treeId, contentId); }
+    public async getTileTreeProps(id: string): Promise<TileTreeProps> { return IModelApp.tileAdmin.requestTileTreeProps(this._iModel, id); }
+    public async getTileContent(treeId: string, contentId: string): Promise<Uint8Array> { return IModelApp.tileAdmin.requestTileContent(this._iModel, treeId, contentId); }
   }
 }

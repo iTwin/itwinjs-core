@@ -2,7 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-/** @module Tools */
+/** @module ToolSettings */
 
 import * as React from "react";
 
@@ -11,48 +11,61 @@ import { ConfigurableCreateInfo } from "../../configurableui/ConfigurableUiContr
 import { ToolUiProvider } from "./ToolUiProvider";
 import "./DefaultToolSettingsProvider.scss";
 import { ConfigurableUiManager } from "../../configurableui/ConfigurableUiManager";
-import { FrontstageManager, SyncToolSettingsPropertiesEventArgs } from "../../frontstage/FrontstageManager";
+import { FrontstageManager } from "../../frontstage/FrontstageManager";
+import { ToolUiManager, SyncToolSettingsPropertiesEventArgs } from "../toolsettings/ToolUiManager";
 import { PropertyUpdatedArgs, EditorContainer } from "@bentley/ui-components";
 import {
   IModelApp, PropertyRecord, ToolSettingsPropertyRecord, ToolSettingsPropertySyncItem, ToolSettingsValue,
-  PropertyEditorParams, PropertyEditorParamTypes, PropertyDescription, PrimitiveValue, PropertyValueFormat, EditorPosition,
+  PropertyEditorParams, PropertyEditorParamTypes, SuppressLabelEditorParams, PrimitiveValue, PropertyValueFormat,
 } from "@bentley/imodeljs-frontend";
 
+class TsLabel {
+  constructor(public readonly label: string, public isDisabled?: boolean) { }
+}
+
+enum ColumnType {
+  Label,
+  Record,
+  RecordSpan,
+  Empty,
+}
+
 class TsCol {
-  constructor(public readonly priority: number, public record: ToolSettingsPropertyRecord, public columnSpan = 0) { }
+  public type: ColumnType = ColumnType.Empty;
+  public name: string = "";
+  public columnSpan = 1;
+  constructor(readonly columnIndex: number) { }
 }
 
 class TsRow {
   public priority = 0;
   public cols: TsCol[] = [];
-  constructor(priority: number) {
+  constructor(priority: number, numColumns: number) {
     this.priority = priority;
+    // seed columns and mark them all as empty
+    for (let i = 0; i < numColumns; i++) {
+      this.cols.push(new TsCol(i));
+    }
   }
 }
 
 interface TsProps {
   toolId: string;
-  rows: TsRow[] | undefined;
+  rows: TsRow[];
+  numCols: number;
+  valueMap: Map<string, ToolSettingsPropertyRecord>;
+  labelMap: Map<string, TsLabel>;
 }
-
-const handleCommit = (commit: PropertyUpdatedArgs): void => {
-  const activeTool = IModelApp.toolAdmin.activeTool;
-  if (activeTool) {
-    const syncItem: ToolSettingsPropertySyncItem = { value: commit.newValue as ToolSettingsValue, propertyName: commit.propertyRecord.property.name };
-    activeTool.applyToolSettingPropertyChange(syncItem);
-  }
-};
 
 interface TsState {
   toolId: string;
   numCols: number;
-  properties: Map<string, PropertyDescription>;
-  editors: Map<string, React.ReactNode>;
+  valueMap: Map<string, ToolSettingsPropertyRecord>;
+  labelMap: Map<string, TsLabel>;
 }
 
 /** Component to populate ToolSetting for ToolSettings properties */
 export class DefaultToolSettings extends React.Component<TsProps, TsState> {
-
   constructor(props: TsProps) {
     super(props);
 
@@ -62,142 +75,151 @@ export class DefaultToolSettings extends React.Component<TsProps, TsState> {
       this.state = state;
   }
 
+  /** Process Tool code's request to update one or more properties */
   private _handleSyncToolSettingsPropertiesEvent = (args: SyncToolSettingsPropertiesEventArgs): void => {
     let needToForceUpdate = false;
     args.syncProperties.forEach((syncItem: ToolSettingsPropertySyncItem) => {
-      // create a new property editor for each property to sync
-      const propertyDescription = this.state.properties.get(syncItem.propertyName);
-      if (propertyDescription) {
-        const updatedRecord = new PropertyRecord(syncItem.value, propertyDescription);
-        const editor = this.getEditor(updatedRecord);
-        if (editor) {
-          // tslint:disable-next-line:no-console
-          // console.log(`Default ToolSettings Provider - updating editor for ${updatedRecord.property.name} with new value ${JSON.stringify(updatedRecord.value)}`);
-          this.state.editors.set(updatedRecord.property.name, editor);
-          needToForceUpdate = true;
-        }
+      // tslint:disable-next-line:no-console
+      // (`[_handleSyncToolSettingsPropertiesEvent] Tool updating '${syncItem.propertyName}' to value of ${(syncItem.value as ToolSettingsValue).value}`);
+      const colValue = this.state.valueMap.get(syncItem.propertyName);
+      if (colValue) {
+        const updatedPropertyRecord = ToolSettingsPropertyRecord.clone(colValue, syncItem.value as ToolSettingsValue);
+        updatedPropertyRecord.isDisabled = syncItem.isDisabled;
+        this.state.valueMap.set(syncItem.propertyName, updatedPropertyRecord);
+
+        // keep label enable state in sync with property editor
+        const labelCol = this.state.labelMap.get(syncItem.propertyName);
+        if (labelCol)
+          labelCol.isDisabled = syncItem.isDisabled;
+        needToForceUpdate = true;
       }
     });
-    if (needToForceUpdate)
+
+    if (needToForceUpdate) {
       this.forceUpdate();
+    }
   }
 
   public componentDidMount() {
-    FrontstageManager.onSyncToolSettingsProperties.addListener(this._handleSyncToolSettingsPropertiesEvent);
+    ToolUiManager.onSyncToolSettingsProperties.addListener(this._handleSyncToolSettingsPropertiesEvent);
   }
 
   public componentWillUnmount() {
-    FrontstageManager.onSyncToolSettingsProperties.removeListener(this._handleSyncToolSettingsPropertiesEvent);
+    ToolUiManager.onSyncToolSettingsProperties.removeListener(this._handleSyncToolSettingsPropertiesEvent);
+  }
+
+  private _handleCommit = (commit: PropertyUpdatedArgs): void => {
+    const activeTool = IModelApp.toolAdmin.activeTool;
+    if (activeTool) {
+      const propertyName = commit.propertyRecord.property.name;
+
+      // ToolSettings supports only primitive property types
+      if (commit.newValue.valueFormat === PropertyValueFormat.Primitive && commit.propertyRecord.value.valueFormat === PropertyValueFormat.Primitive) {
+        const newPrimitiveValue = (commit.newValue as PrimitiveValue).value;
+        const currentPrimitiveValue = (commit.propertyRecord.value as PrimitiveValue).value;
+        if (newPrimitiveValue === currentPrimitiveValue) {
+          // tslint:disable-next-line:no-console
+          // console.log(`Ignore commit - value of '${propertyName}' has not changed`);
+          return;  // don't sync if no change occurred
+        }
+
+        const colValue = this.state.valueMap.get(propertyName);
+        if (colValue) {
+          const updatedPropertyRecord = ToolSettingsPropertyRecord.clone(colValue, commit.newValue as ToolSettingsValue);
+          this.state.valueMap.set(propertyName, updatedPropertyRecord);
+          // tslint:disable-next-line:no-console
+          // console.log(`Updating data in column - value=${(commit.newValue as PrimitiveValue).value} property='${propertyName}'`);
+        }
+
+        // if we updated state then force child components to update
+        this.forceUpdate(() => {
+          // send change to active tool
+          const syncItem: ToolSettingsPropertySyncItem = { value: commit.newValue as ToolSettingsValue, propertyName };
+          // tslint:disable-next-line:no-console
+          // console.log(`Sending new value of ${(commit.newValue as PrimitiveValue).value} for '${propertyName}' to tool`);
+          activeTool.applyToolSettingPropertyChange(syncItem);
+        });
+      }
+    }
   }
 
   /** @hidden */
-  public componentDidUpdate() {
-    // required to ensure the state is kept in sync with props, since props may be updated from outside the type editor. For example from interactive tool.
-    const state = DefaultToolSettings.getStateFromProps(this.props);
-    // istanbul ignore else
-    if (state && (this.state.toolId !== state.toolId || this.state.numCols !== state.numCols)) {
-      this.setState(state);
+  public componentDidUpdate(prevProps: TsProps, _prevState: TsState) {
+    // if the props have changed then we need to update the state
+    const prevRecord = prevProps.rows;
+    const currentRecord = this.props.rows;
+    let refreshRequired = false;
+    if (prevRecord !== currentRecord)
+      refreshRequired = true;
+
+    if (refreshRequired) {
+      const state = DefaultToolSettings.getStateFromProps(this.props);
+      if (state) {
+        this.setState(state);
+        return;
+      }
     }
   }
 
-  private static _placeholderCellName = "__";
-  private static _blankDescription: PropertyDescription = {
-    displayLabel: DefaultToolSettings._placeholderCellName,
-    name: DefaultToolSettings._placeholderCellName,
-    typename: "string",
-  };
-
-  private static _blankValue: PrimitiveValue = {
-    valueFormat: PropertyValueFormat.Primitive,
-  };
-
-  private static getStateFromProps(props: TsProps): TsState | null {
-    const toolId = props.toolId;
-    const properties = new Map<string, PropertyDescription>();
-    let numCols = 0;
-    const editors = new Map<string, React.ReactNode>();
-
-    const blankCellRecord = new ToolSettingsPropertyRecord(DefaultToolSettings._blankValue, DefaultToolSettings._blankDescription, { rowPriority: 0, columnPriority: 0 } as EditorPosition);
-
-    // sort rows and columns by priority.
-    /* istanbul ignore else */
-    if (props.rows) {
-      /* istanbul ignore else */
-      if (props.rows.length > 1)
-        props.rows.sort((a, b) => a.priority - b.priority);
-      props.rows.forEach((row) => {
-        if (row.cols.length > 1)
-          row.cols.sort((a, b) => a.priority - b.priority);
-        /* istanbul ignore else */
-        if (row.cols.length > numCols) numCols = row.cols.length; {
-          row.cols.forEach((col) => {
-            properties.set(col.record.property.name, col.record.property);
-          });
-        }
-      });
-
-      // add a placeholder entries so each cell in the grid has something defined
-      props.rows.forEach((row) => {
-        /* istanbul ignore else */
-        if (row.cols.length < numCols)
-          row.cols.push(new TsCol(-1, blankCellRecord));
-      });
-
-      return { properties, toolId, numCols, editors };
-    }
-
-    return null;
+  private static getStateFromProps(props: TsProps): TsState {
+    const { toolId, valueMap, labelMap, numCols } = props;
+    return { toolId, numCols, valueMap, labelMap };
   }
 
   private getEditor(record: PropertyRecord, setFocus = false): React.ReactNode {
-    return <EditorContainer propertyRecord={record} setFocus={setFocus} onCommit={handleCommit} onCancel={() => { }} />;
-  }
-
-  private hasSuppressEditorLabelParam(record: PropertyRecord) {
-    /* istanbul ignore else */
-    if (record.property.editor && record.property.editor.params)
-      return record.property.editor.params.find((param: PropertyEditorParams) => param.type === PropertyEditorParamTypes.SuppressEditorLabel);
-
-    return false;
+    return <EditorContainer propertyRecord={record} setFocus={setFocus} onCommit={this._handleCommit} onCancel={() => { }} />;
   }
 
   private getCol(col: TsCol, rowIndex: number, colIndex: number) {
-    if (col.record!.property.name === DefaultToolSettings._placeholderCellName) {
-      // build placeholder elements for label and editor
-      return (
+    if (col.type === ColumnType.Empty) {
+      return ( // return a <span> as a placeholder elements
         <React.Fragment key={`${rowIndex.toString()}-${colIndex.toString()}`}>
-          <span></span>
-          <span></span>
+          <span key={`${rowIndex.toString()}-${colIndex.toString()}`}></span>
         </React.Fragment>
       );
     }
 
-    const label = !this.hasSuppressEditorLabelParam(col.record) ? col.record.property.displayLabel + ":" : <span></span>;
-    let editor = this.state.editors.get(col.record.property.name);
-    if (!editor) {
-      editor = this.getEditor(col.record);
-      this.state.editors.set(col.record.property.name, editor);
-      // tslint:disable-next-line:no-console
-      // console.log(`Created new editor for ${col.record.property.name}`);
-    } else {
-      // tslint:disable-next-line:no-console
-      // console.log(`Using cached  editor for ${col.record.property.name}`);
-    }
     const labelStyle: React.CSSProperties = {
       display: "flex",
       alignItems: "center",
       justifyContent: "flex-end",
     };
-    return (
-      <React.Fragment key={col.record.property.name}>
-        <div style={labelStyle} key={col.record.property.name + "-label"}>
-          {label}
-        </div>
-        <div key={col.record.property.name + "-editor"}>
-          {editor}
-        </div>
-      </React.Fragment>
-    );
+
+    if (col.type === ColumnType.Label) {
+      const labelData = this.state.labelMap.get(col.name);
+      if (labelData) {
+        const className = labelData.isDisabled ? "toolSettings-label-disabled" : undefined;
+        return ( // return a <span> containing a label
+          <span style={labelStyle} className={className} key={`${rowIndex.toString()}-${colIndex.toString()}`}>
+            {labelData.label}:
+          </span>
+        );
+      }
+    }
+
+    if (col.type === ColumnType.RecordSpan)
+      return null;
+
+    if (col.type === ColumnType.Record) {
+      const record = this.state.valueMap.get(col.name);
+      if (record) {
+        const editor = this.getEditor(record);
+        let spanStyle: React.CSSProperties | undefined;
+        if (record.editorPosition.columnSpan && record.editorPosition.columnSpan > 1) {
+          spanStyle = {
+            gridColumn: `span ${record.editorPosition.columnSpan}`,
+          } as React.CSSProperties;
+        }
+
+        return (
+          <div key={col.name} style={spanStyle}>
+            {editor}
+          </div>
+        );
+      }
+    }
+
+    return null;
   }
 
   private getRow(row: TsRow, rowIndex: number) {
@@ -217,7 +239,7 @@ export class DefaultToolSettings extends React.Component<TsProps, TsState> {
     if (!rows) {
       return null;
     } else {
-      const autoColArray = new Array<string>(this.state.numCols * 2); // * 2 because optional label for each editor
+      const autoColArray = new Array<string>(this.state.numCols);
       autoColArray.fill("auto");
       const gridStyle: React.CSSProperties = {
         display: "grid",
@@ -238,27 +260,106 @@ export class DefaultToolSettings extends React.Component<TsProps, TsState> {
 /** ToolUiProvider class that informs ConfigurableUi that Tool Settings are provided for the specified tool. */
 export class DefaultToolSettingsProvider extends ToolUiProvider {
   public rows: TsRow[] = [];
+  public valueMap = new Map<string, ToolSettingsPropertyRecord>();
+  public labelMap = new Map<string, TsLabel>();
+  private _numCols = 0;
 
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
 
-    const hasProperties = this.getGridSpecsFromToolSettingProperties();
-    if (hasProperties)
-      this.toolSettingsNode = <DefaultToolSettings rows={this.rows} toolId={FrontstageManager.activeToolId} />;
+    if (this.getGridSpecsFromToolSettingProperties())
+      this.toolSettingsNode = <DefaultToolSettings rows={this.rows} numCols={this._numCols} valueMap={this.valueMap} labelMap={this.labelMap} toolId={FrontstageManager.activeToolId} />;
     else
       this.toolSettingsNode = null;
   }
 
+  // assumes columns are sorted by index.
+  private getRequiredNumberOfColumns(records: ToolSettingsPropertyRecord[]): number {
+    if (!records || records.length < 1)
+      return 0;
+
+    let maxIndex = 0;
+    records.forEach((record) => {
+      const colIndex = record.editorPosition.columnIndex + (record.editorPosition.columnSpan ? record.editorPosition.columnSpan : 1) - 1;
+      if (maxIndex < colIndex)
+        maxIndex = colIndex;
+    });
+    return maxIndex + 1;
+  }
+
+  private hasSuppressEditorLabelParam(record: ToolSettingsPropertyRecord): SuppressLabelEditorParams | undefined {
+    /* istanbul ignore else */
+    if (record.property.editor && record.property.editor.params)
+      return record.property.editor.params.find((param: PropertyEditorParams) => param.type === PropertyEditorParamTypes.SuppressEditorLabel) as SuppressLabelEditorParams;
+    return undefined;
+  }
+
+  private setEditorLabel(row: TsRow, record: ToolSettingsPropertyRecord, propertyName: string): void {
+
+    const suppressLabelEditorParams = this.hasSuppressEditorLabelParam(record);
+    if (suppressLabelEditorParams && suppressLabelEditorParams.suppressLabelPlaceholder)
+      return;
+
+    const labelCol = record.editorPosition.columnIndex - 1;
+    const label = (undefined === suppressLabelEditorParams) ? record.property.displayLabel : "";
+    if (labelCol < 0) {
+      // tslint:disable-next-line:no-console
+      console.log(`Default ToolSettings Provider - invalid label column for ${propertyName}`);
+      return;
+    }
+
+    if (row.cols[labelCol].type !== ColumnType.Empty) {
+      // tslint:disable-next-line:no-console
+      console.log(`Default ToolSettings Provider - label column for ${propertyName} is already in use`);
+      return;
+    }
+
+    row.cols[labelCol].name = propertyName;
+    this.labelMap.set(propertyName, new TsLabel(label, record.isDisabled));
+    row.cols[labelCol].type = ColumnType.Label;
+  }
+
+  private setPropertyRecord(row: TsRow, record: ToolSettingsPropertyRecord): void {
+    const editCol = record.editorPosition.columnIndex;
+
+    if (row.cols[editCol].type !== ColumnType.Empty) {
+      // tslint:disable-next-line:no-console
+      console.log(`Default ToolSettings Provider - label column for ${record.property.name} is already in use`);
+      return;
+    }
+
+    const recordName = record.property.name;
+    row.cols[editCol].type = ColumnType.Record;
+    row.cols[editCol].name = recordName;
+    this.valueMap.set(recordName, record);
+
+    let columnSpan = 1;
+    if (record.editorPosition.columnSpan)
+      columnSpan = record.editorPosition.columnSpan;
+
+    for (let i = 1; i < columnSpan; i++)
+      row.cols[editCol + i].type = ColumnType.RecordSpan;
+
+    this.setEditorLabel(row, record, recordName);
+  }
+
   private getGridSpecsFromToolSettingProperties(): boolean {
-    FrontstageManager.toolsettingsProperties.forEach((record) => {
+    const toolSettingsProperties = ToolUiManager.toolSettingsProperties;
+
+    this._numCols = this.getRequiredNumberOfColumns(toolSettingsProperties);
+    if (this._numCols < 1)
+      return false;
+
+    toolSettingsProperties.forEach((record) => {
       let row = this.rows.find((value) => value.priority === record.editorPosition.rowPriority);
       if (!row) {
-        row = new TsRow(record.editorPosition.rowPriority);
+        row = new TsRow(record.editorPosition.rowPriority, this._numCols);
         this.rows.push(row);
       }
 
-      row.cols.push(new TsCol(record.editorPosition.columnPriority, record));
+      this.setPropertyRecord(row, record);
     });
+
     return this.rows.length > 0;
   }
 

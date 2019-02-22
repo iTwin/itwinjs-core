@@ -1,0 +1,86 @@
+{{>header}}
+
+<iframe id="demo-app" src="{{site.siteRoot}}assets/ui-ninezone/index.html" frameBorder="0"></iframe>
+<div class="header demo-app-overlay"></div>
+<div class="footer demo-app-overlay"></div>
+
+<style>
+  #main-header {
+    z-index: 10;
+    position: relative;
+  }
+
+  #main-header .nav-main-header {
+    transition: all 1.5s ease-out;
+    transition-delay: unset;
+  }
+
+  #main-header.hidden .nav-main-header {
+    transform: translateY(-100%);
+    transition-delay: 0.5s;
+  }
+
+  #demo-app {
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    z-index: 5;
+    position: fixed;
+  }
+
+  .page-footer {
+    z-index: 10;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    transition: all 1.5s ease-out;
+    transition-delay: unset;
+  }
+
+  .page-footer.hidden {
+    transition-delay: 0.5s;
+    transform: translateY(100%);
+  }
+
+  .demo-app-overlay {
+    z-index: 7;
+    position: fixed;
+    height: 10px;
+    width: 100%;
+    left: 0;
+  }
+
+  .demo-app-overlay.header {
+    top: 0;
+  }
+
+  .demo-app-overlay.footer {
+    bottom: 0;
+  }
+</style>
+<script>
+
+  $(() => {
+    var header = $("#main-header");
+    var demo = $("#demo-app");
+    var footer = $(".page-footer");
+
+    var showNavigation = () => {
+      header.removeClass("hidden");
+      footer.removeClass("hidden");
+    };
+    var hideNavigation = () => {
+      header.addClass("hidden");
+      footer.addClass("hidden");
+    };
+
+    demo.mouseenter(hideNavigation);
+    demo.mouseleave(showNavigation);
+    demo[0].onload = hideNavigation;
+  });
+
+</script>
+
+{{>footer}}

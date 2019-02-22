@@ -1,6 +1,6 @@
 {
   "name": "@bentley/presentation-common",
-  "version": "0.189.0-dev.28",
+  "version": "0.189.0-dev.32",
   "description": "Common pieces for iModel.js presentation packages",
   "license": "MIT",
   "repository": {
@@ -28,6 +28,7 @@
     "docs:changelog": "cpx \"./CHANGELOG.md\" ../../generated-docs/presentation/presentation-common",
     "docs:reference": "node ./node_modules/@bentley/build-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/presentation/presentation-common/json/file.json --tsIndexFile=presentation-common.ts --onlyJson %TYPEDOC_THEME%",
     "extract": "node ./node_modules/@bentley/build-tools/scripts/extract.js --fileExt=ts --extractFrom=./src/test --recursive --out=../../generated-docs/extract",
+    "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=presentation-common --isPresentation=true",
     "ruleset-json-schema": "npm run ruleset-json-schema:generate && npm run ruleset-json-schema:post-process",
     "ruleset-json-schema:generate": "typescript-json-schema --noExtraProps --required --strictNullChecks --include ./src/rules/**/*.ts --include ./src/rules/*.ts -- ./src/tsconfig.json Ruleset > ./Ruleset.schema.json",
     "ruleset-json-schema:post-process": "node ./scripts/post-process-json-schema.js --path ./Ruleset.schema.json",
@@ -48,14 +49,14 @@
     }
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "0.189.0-dev.28",
-    "@bentley/imodeljs-common": "0.189.0-dev.28"
+    "@bentley/bentleyjs-core": "0.189.0-dev.32",
+    "@bentley/imodeljs-common": "0.189.0-dev.32"
   },
   "devDependencies": {
-    "@bentley/build-tools": "0.189.0-dev.28",
-    "@bentley/bentleyjs-core": "0.189.0-dev.28",
-    "@bentley/imodeljs-common": "0.189.0-dev.28",
-    "@bentley/webpack-tools": "0.189.0-dev.28",
+    "@bentley/build-tools": "0.189.0-dev.32",
+    "@bentley/bentleyjs-core": "0.189.0-dev.32",
+    "@bentley/imodeljs-common": "0.189.0-dev.32",
+    "@bentley/webpack-tools": "0.189.0-dev.32",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
     "@types/chai-jest-snapshot": "^1.3.0",

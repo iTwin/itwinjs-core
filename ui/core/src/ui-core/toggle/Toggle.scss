@@ -2,12 +2,12 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
- @import "../style/index.scss";
- @import "../colors";
+@import "../style/index.scss";
+@import "../colors";
 
- //$toggle-handle-inset: 2px;
+//$toggle-handle-inset: 2px;
 
- .toggle {
+.toggle {
   width: 64px;
   height: 34px;
   position: relative;
@@ -37,12 +37,12 @@
 }
 
 /* Blue (default) */
-.toggle-input:checked ~ .toggle-label {
+.toggle-input:checked+.toggle-label {
   background: $uicore-blue;
 }
 
 /* Green (primary) */
-.toggle-primary > .toggle-input:checked ~ .toggle-label {
+.toggle-primary>.toggle-input:checked~.toggle-label {
   background: $uicore-green;
 }
 
@@ -78,7 +78,7 @@
   transition: left .2s ease-out;
 }
 
-.toggle-input:checked ~ .toggle-checkmark.visible {
+.toggle-input:checked~.toggle-checkmark.visible {
   opacity: 1;
   color: $uicore-white;
   font-size: inherit;

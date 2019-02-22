@@ -8,15 +8,16 @@
  * Enumeration for Property Editor Param Types
  */
 export enum PropertyEditorParamTypes {
+  ButtonGroupData,
+  CheckBoxIcons,
+  Icon,
+  InputEditorSize,
   JSON,
+  MultilineText,
   Range,
   Slider,
-  MultilineText,
-  Icon,
-  CheckBoxIcons,
   SuppressUnitLabel,
   SuppressEditorLabel,
-  ButtonGroupData,
 }
 
 /**
@@ -43,6 +44,17 @@ export interface RangeEditorParams extends BasePropertyEditorParams {
   minimum?: number;
   /** Optionally define the maximum value. */
   maximum?: number;
+}
+
+/**
+ * Parameters used by PropertyEditors that use HTML <input> element.
+ */
+export interface InputEditorSizeParams extends BasePropertyEditorParams {
+  type: PropertyEditorParamTypes.InputEditorSize;
+  /** Optionally define the width in characters. */
+  size?: number;
+  /** Optionally define the maximum number of characters allowed. */
+  maxLength?: number;
 }
 
 /**
@@ -109,7 +121,7 @@ export interface CheckBoxIconsEditorParams extends BasePropertyEditorParams {
 }
 
 /**
- * Parameters used to suppress Unit labels
+ * Parameter used to suppress Unit labels
  */
 export interface SuppressUnitLabelEditorParams extends BasePropertyEditorParams {
   type: PropertyEditorParamTypes.SuppressUnitLabel;
@@ -120,10 +132,13 @@ export interface SuppressUnitLabelEditorParams extends BasePropertyEditorParams 
  */
 export interface SuppressLabelEditorParams extends BasePropertyEditorParams {
   type: PropertyEditorParamTypes.SuppressEditorLabel;
+  /** if false then an empty placeholder label is created. This is sometimes necessary to align editor in proper column */
+  suppressLabelPlaceholder?: boolean;
 }
 
 /**
  * Type definition for all Property Editor params
  */
 export type PropertyEditorParams = JsonEditorParams | RangeEditorParams | SliderEditorParams | ButtonGroupEditorParams
-  | MultilineTextEditorParams | IconEditorParams | CheckBoxIconsEditorParams | SuppressUnitLabelEditorParams | SuppressLabelEditorParams;
+  | MultilineTextEditorParams | IconEditorParams | CheckBoxIconsEditorParams | SuppressUnitLabelEditorParams
+  | SuppressLabelEditorParams | InputEditorSizeParams;

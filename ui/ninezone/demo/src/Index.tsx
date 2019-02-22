@@ -4,10 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import Demo from "./Demo";
-import "@bentley/bwc/lib/classes.scss";
+import Zones from "./pages/Zones";
 
 ReactDOM.render(
-  <Demo />,
-  document.getElementById("demo") as HTMLElement,
+  <Zones />,
+  document.getElementById("demo"),
 );
