@@ -301,6 +301,7 @@ class FrontstageToolWidget extends React.Component {
           <ActionItemButton actionItem={AppTools.appSelectElementCommand} />
           <ToolButton toolId="Measure.Points" iconSpec="icon-measure-distance" labelKey="SampleApp:tools.Measure.Points.flyover"
             execute={this.executeMeasureByPoints} stateSyncIds={[SyncUiEventId.ActiveContentChanged]} stateFunc={this._measureStateFunc} />
+          <ActionItemButton actionItem={AppTools.tool1} />
           <BooleanSyncUiListener eventIds={[SampleAppUiActionId.setTestProperty]} boolFunc={(): boolean => SampleAppIModelApp.getTestProperty() !== "HIDE"}>
             {(enabled: boolean, otherProps: any) => <ActionItemButton actionItem={AppTools.tool2} isEnabled={enabled} {...otherProps} />}
           </BooleanSyncUiListener>

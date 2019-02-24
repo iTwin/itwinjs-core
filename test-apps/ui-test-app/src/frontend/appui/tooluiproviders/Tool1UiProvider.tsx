@@ -5,7 +5,9 @@
 import * as React from "react";
 
 import { ConfigurableUiManager, ConfigurableCreateInfo, ToolUiProvider } from "@bentley/ui-framework";
+import { IModelApp, NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
 
+import { ColorSwatch } from "@bentley/ui-components";
 import { ToolAssistanceItem, ToolAssistanceSeparator } from "@bentley/ui-ninezone";
 import { SampleAppIModelApp } from "../..";
 
@@ -22,6 +24,11 @@ class Tool1UiProvider extends ToolUiProvider {
 }
 
 class Tool1Settings extends React.Component {
+  private _handleColorChange = (color: string) => {
+    const msg = `Color set to ${color}`;
+    IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
+  }
+
   public render(): React.ReactNode {
     return (
       <div>
@@ -50,6 +57,26 @@ class Tool1Settings extends React.Component {
             <tr>
               <td>{SampleAppIModelApp.i18n.translate("SampleApp:tool1.range")}</td>
               <td> <input type="range" /> </td>
+            </tr>
+            <tr>
+              <td>Red</td>
+              <td> <ColorSwatch color="rgba(255,0,0,255)" onColorPick={this._handleColorChange} /> </td>
+            </tr>
+            <tr>
+              <td>Green</td>
+              <td> <ColorSwatch color="rgb(0%,100%,0%)" onColorPick={this._handleColorChange} /> </td>
+            </tr>
+            <tr>
+              <td>Blue</td>
+              <td> <ColorSwatch color="#0000ff" onColorPick={this._handleColorChange} /> </td>
+            </tr>
+            <tr>
+              <td>Purple</td>
+              <td> <ColorSwatch color="#800080ff" onColorPick={this._handleColorChange} round={true} /> </td>
+            </tr>
+            <tr>
+              <td>Brown</td>
+              <td> <ColorSwatch color="hsl(59,67%,30%)" onColorPick={this._handleColorChange} round={true} /> </td>
             </tr>
           </tbody>
         </table>

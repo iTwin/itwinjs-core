@@ -64,7 +64,8 @@
     "number": "Number",
     "password": "Password",
     "radio": "Radio",
-    "range": "Range"
+    "range": "Range",
+    "color": "Color"
   },
   "tool2": {
     "month": "Month2",

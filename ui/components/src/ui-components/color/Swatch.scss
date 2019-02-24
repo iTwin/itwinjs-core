@@ -1,0 +1,18 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+@import "@bentley/ui-core/lib/ui-core/index";
+
+$color-swatch-size: $uicore-font-size * 1.2;
+
+.components-color-swatch {
+  height: $color-swatch-size;
+  width: $color-swatch-size;
+  margin-left: 0px;
+  border-width: 0px;
+}
+
+.components-color-swatch-round {
+  border-radius: 50%;
+}

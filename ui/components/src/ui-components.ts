@@ -72,6 +72,7 @@ export * from "./ui-components/propertygrid/PropertyDataProvider";
 export * from "./ui-components/propertygrid/SimplePropertyDataProvider";
 export * from "./ui-components/propertygrid/component/PropertyGrid";
 export * from "./ui-components/propertygrid/component/PropertyCategoryBlock";
+export * from "./ui-components/color/Swatch";
 
 export * from "./ui-components/table/TableDataProvider";
 export * from "./ui-components/table/SimpleTableDataProvider";
@@ -108,6 +109,10 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
 /**
  * @docs-group-description Breadcrumb
  * Classes for working with a Breadcrumb.
+ */
+/**
+ * @docs-group-description Color
+ * Classes for working with and picking a Color.
  */
 /**
  * @docs-group-description DragDrop
