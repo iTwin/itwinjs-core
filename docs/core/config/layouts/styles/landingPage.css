@@ -42,7 +42,9 @@ span.gradient {
 #middle-content-wrapper {
   display: flex;
   flex-wrap: wrap-reverse;
+  -ms-flex-wrap: wrap-reverse;
   flex-flow: column;
+  -ms-flex-flow: row wrap;
   justify-content: space-around;
   margin: 2em 10%;
   align-items: center;
@@ -61,7 +63,7 @@ span.gradient {
   text-align: center;
   line-height: 1em;
   margin: 3em auto;
-  background: #002A44C0;
+  background: rgba(0, 42, 68, 0.753);
 }
 
 .imodeljs-header-tagline p {
@@ -92,6 +94,7 @@ p.digital-twin {
   position: relative;
   margin-bottom: 1em;
   flex-direction: column;
+  -ms-flex-direction: column;
 }
 
 .example-view-demonstrator {
@@ -116,22 +119,25 @@ p.digital-twin {
 }
 
 .nav-landing-container .navbar-nav {
-  background: #002A44C0;
+  background: rgba(0, 42, 68, 0.753);
   border-radius: 10px;
 }
 
 .middle-content-group {
   display: flex;
   flex-direction: row;
+  -ms-flex-direction: row;
   margin-bottom: 2em;
 }
 
 .middle-content-media {
-  width: 40%;
+  width: 50%;
   margin-bottom: 3em;
   min-width: 0;
   flex-shrink: 0;
-  max-height: 50vh;
+  -ms-flex-shrink: 0;
+  max-height: 25vw;
+  max-width: 45vw;
 }
 
 .middle-content-text {
@@ -158,7 +164,12 @@ body.layout-full-width #main-landing-wrapper {
   -ms-grid-columns: 1fr;
 }
 
-@media screen and (max-width: 1350px) {
+#bottom-content-container {
+  -ms-flex-direction: row;
+  flex-direction: row;
+}
+
+@media screen and (max-width: 1650px) {
   #main-landing-wrapper #middle-content-wrapper {
     margin: 2em 1% !important;
   }
@@ -167,7 +178,10 @@ body.layout-full-width #main-landing-wrapper {
   }
 }
 
-@media screen and (max-width: 991px) {
+@media screen and (max-width: 768px) {
+  #bottom-content-container {
+    -ms-flex-direction: column !important;
+  }
   .nav-landing-container .navbar-nav {
     padding-right: 15px;
     max-width: 38%;
@@ -186,12 +200,13 @@ body.layout-full-width #main-landing-wrapper {
     width: 500px;
     height: 313px;
   }
-}
-
-@media screen and (max-width: 768px) {
   .middle-content-media {
-    width: 75%;
-    height: 40vh;
+    width: 75vw;
+    height: 42vw;
+    max-width: 75vw;
+    max-height: 42vw;
+    margin: 0 10% 3em 10%;
+    order: 1 !important;
   }
   .landing-bottom-content-item {
     min-width: 250px;
@@ -201,10 +216,8 @@ body.layout-full-width #main-landing-wrapper {
   }
   .middle-content-group {
     flex-flow: column;
+    -ms-flex-flow: row wrap;
     align-items: center;
-  }
-  .middle-content-media {
-    order: 1 !important;
   }
   .middle-content-text {
     order: 2 !important;
