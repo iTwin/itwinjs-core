@@ -583,20 +583,29 @@ export class BlurGeometry extends TexturedViewportQuadGeometry {
 
 // Geometry used during the 'composite' pass to apply transparency and/or hilite effects.
 export class CompositeGeometry extends TexturedViewportQuadGeometry {
-  public static createGeometry(opaque: WebGLTexture, accum: WebGLTexture, reveal: WebGLTexture, hilite: WebGLTexture, occlusion: WebGLTexture) {
+  public static createGeometry(opaque: WebGLTexture, accum: WebGLTexture, reveal: WebGLTexture, hilite: WebGLTexture) {
     const params = ViewportQuad.getInstance().createParams();
-    if (undefined === params) {
+    if (undefined === params)
       return undefined;
-    }
 
-    return new CompositeGeometry(params, [opaque, accum, reveal, hilite, occlusion]);
+    const textures = [opaque, accum, reveal, hilite];
+    return new CompositeGeometry(params, textures);
   }
 
   public get opaque() { return this._textures[0]; }
   public get accum() { return this._textures[1]; }
   public get reveal() { return this._textures[2]; }
   public get hilite() { return this._textures[3]; }
-  public get occlusion() { return this._textures[4]; }
+  public get occlusion(): WebGLTexture | undefined {
+    return this._textures.length > 4 ? this._textures[4] : undefined;
+   }
+  public set occlusion(occlusion: WebGLTexture | undefined) {
+    assert((undefined === occlusion) === (undefined !== this.occlusion));
+    if (undefined !== occlusion)
+      this._textures[4] = occlusion;
+    else
+      this._textures.length = 4;
+  }
 
   // Invoked each frame to determine the appropriate Technique to use.
   public update(flags: CompositeFlags): void { this._techniqueId = this.determineTechnique(flags); }
@@ -607,7 +616,7 @@ export class CompositeGeometry extends TexturedViewportQuadGeometry {
 
   private constructor(params: IndexedGeometryParams, textures: WebGLTexture[]) {
     super(params, TechniqueId.CompositeHilite, textures);
-    assert(5 === this._textures.length);
+    assert(4 <= this._textures.length);
   }
 }
 
