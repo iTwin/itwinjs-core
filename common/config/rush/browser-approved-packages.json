@@ -352,7 +352,7 @@
     },
     {
       "name": "highlight.js",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "frontend", "tools" ]
     },
     {
       "name": "html-webpack-plugin",
