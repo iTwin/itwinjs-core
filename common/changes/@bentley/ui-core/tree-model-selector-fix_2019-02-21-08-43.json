@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Made tree node checkbox container background transparent.",
+      "packageName": "@bentley/ui-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-core",
+  "email": "elonas.seviakovas@bentley.com"
+}

@@ -180,6 +180,9 @@ export interface TreeProps {
 
   /** Custom image loader. Default ImageLoader loads icons already bundled in the library */
   imageLoader?: ITreeImageLoader;
+
+  /** A constant value for row height, or a function that calculates row height based on rendered node */
+  rowHeight?: ((node?: TreeNodeItem, index?: number) => number) | number;
 }
 
 /** State for the [[Tree]] component  */
@@ -664,6 +667,13 @@ export class Tree extends React.Component<TreeProps, TreeState> {
     return this._nodesSelectionHandlers;
   }
 
+  private _getNodeHeight = (node?: TreeNodeItem) => {
+    if (this.props.showDescriptions && node && node.description)
+      return 44;
+
+    return 24;
+  }
+
   /** map TreeNodeItem into an InspireNode */
   public static inspireNodeFromTreeNodeItem(item: TreeNodeItem, remapper: MapPayloadToInspireNodeCallback<TreeNodeItem>, base?: BeInspireTreeNodeConfig): BeInspireTreeNodeConfig {
     base = base || { text: "" };
@@ -681,12 +691,24 @@ export class Tree extends React.Component<TreeProps, TreeState> {
 
     if (item.isCheckboxVisible)
       node.itree!.state!.checkboxVisible = true;
+    else
+      delete node.itree!.state!.checkboxVisible;
+
     if (item.isCheckboxDisabled)
       node.itree!.state!.checkboxDisabled = true;
-    if (item.checkBoxState === CheckBoxState.Partial)
+    else
+      delete node.itree!.state!.checkboxDisabled;
+
+    if (item.checkBoxState === CheckBoxState.Partial) {
       node.itree!.state!.indeterminate = true;
-    else if (item.checkBoxState === CheckBoxState.On)
+      delete node.itree!.state!.checked;
+    } else if (item.checkBoxState === CheckBoxState.On) {
       node.itree!.state!.checked = true;
+      delete node.itree!.state!.indeterminate;
+    } else {
+      delete node.itree!.state!.checked;
+      delete node.itree!.state!.indeterminate;
+    }
 
     if (item.icon)
       node.itree!.icon = item.icon;
@@ -856,11 +878,13 @@ export class Tree extends React.Component<TreeProps, TreeState> {
       );
     };
 
-    const getNodeHeight = ({ index }: { index: number }) => {
-      if (this.props.showDescriptions && nodes[index].payload && nodes[index].payload!.description)
-        return 44;
+    const getRowHeight = ({ index }: { index: number }) => {
+      if (this.props.rowHeight && typeof (this.props.rowHeight) === "number")
+        return this.props.rowHeight;
 
-      return 24;
+      const getHeight = this.props.rowHeight && typeof (this.props.rowHeight) === "function" ? this.props.rowHeight : this._getNodeHeight;
+
+      return getHeight(nodes[index].payload, index);
     };
 
     return (
@@ -872,7 +896,7 @@ export class Tree extends React.Component<TreeProps, TreeState> {
               width={width} height={height}
               rowCount={nodes.length}
               overscanRowCount={10}
-              rowHeight={getNodeHeight}
+              rowHeight={getRowHeight}
               rowRenderer={renderNode}
               autoContainerWidth={false}
             />

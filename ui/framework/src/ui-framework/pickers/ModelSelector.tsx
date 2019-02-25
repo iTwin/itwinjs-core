@@ -448,7 +448,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
     await Promise.all(promises).then((enabledNodes) => {
       enabledNodes.forEach((node) => {
         if (node) {
-          this.changeNodeItemSelection(node, false);
+          this.changeNodeItemSelection(node, true);
           selectedNodes.push(node.id);
         }
       });
@@ -1107,6 +1107,12 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
     );
   }
 
+  private _getRowHeight = (node?: TreeNodeItem) => {
+    if (node && node.description)
+      return 58;
+    return 32;
+  }
+
   private _getActiveContent = () => {
     return (
       <div className="modelselector-content">
@@ -1124,6 +1130,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
             onNodesDeselected={this._onNodesDeselected}
             onNodeExpanded={this._onNodeExpanded}
             onCheckboxClick={this._onCheckboxClick}
+            rowHeight={this._getRowHeight}
           />
         }
       </div >

@@ -100,8 +100,12 @@
     transition: .2s linear;
     background-color: $buic-background-widget;
 
-    .core-tree .core-tree-node {
-      background-color: $buic-background-control;
+    .core-tree  {
+      .core-tree-node {
+        &:not(:hover):not(.is-selected) {
+          background-color: $buic-background-control;
+        }
+      }
     }
 
     &.show {
