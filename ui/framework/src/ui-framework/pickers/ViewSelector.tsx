@@ -132,11 +132,13 @@ export class ViewSelector extends React.Component<ViewSelectorProps, ViewSelecto
         enabled: false,
         type: ListItemType.Item,
       };
-      if (ViewUtilities.isSpatial(viewProp.bisBaseClass!))
+      const className = ViewUtilities.getBisBaseClass(viewProp.classFullName!);
+
+      if (ViewUtilities.isSpatial(className))
         views3d.push(viewItem);
-      else if (ViewUtilities.isDrawing(viewProp.bisBaseClass!))
+      else if (ViewUtilities.isDrawing(className))
         views2d.push(viewItem);
-      else if (ViewUtilities.isSheet(viewProp.bisBaseClass!))
+      else if (ViewUtilities.isSheet(className))
         sheets.push(viewItem);
       else
         unknown.push(viewItem);

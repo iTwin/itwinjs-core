@@ -114,6 +114,8 @@ export * from "./ui-framework/statusfields/SelectionInfo";
 
 export * from "./ui-framework/tools/AnalysisAnimation";
 export * from "./ui-framework/tools/AnalysisAnimationToolSettings";
+export * from "./ui-framework/tools/ScheduleAnimation";
+export * from "./ui-framework/tools/ScheduleAnimationToolSettings";
 
 export * from "./ui-framework/utils/ViewUtilities";
 export * from "./ui-framework/utils/redux-ts";

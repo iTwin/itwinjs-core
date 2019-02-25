@@ -226,7 +226,7 @@ exports[`CoreToolDefinitions ToolWidget should render correctly with Core Tool D
                 "stateSyncIds": Array [
                   "activecontentchanged",
                 ],
-                "toolId": "AnalysisAnimationTool",
+                "toolId": "AnalysisAnimation",
               }
             }
           />

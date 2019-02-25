@@ -306,6 +306,7 @@ class FrontstageToolWidget extends React.Component {
             {(enabled: boolean, otherProps: any) => <ActionItemButton actionItem={AppTools.tool2} isEnabled={enabled} {...otherProps} />}
           </BooleanSyncUiListener>
           <ActionItemButton actionItem={CoreTools.analysisAnimationCommand} />
+          <ActionItemButton actionItem={CoreTools.scheduleAnimationCommand} />
           <ActionItemButton actionItem={AppTools.toolWithSettings} />
           <ActionItemButton actionItem={AppTools.toggleHideShowItemsCommand} />
           <BooleanSyncUiListener eventIds={[SampleAppUiActionId.setTestProperty]} boolFunc={(): boolean => SampleAppIModelApp.getTestProperty() !== "HIDE"}>

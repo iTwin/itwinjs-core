@@ -9,11 +9,11 @@
 import { Point3d } from "@bentley/geometry-core";
 import { BeButtonEvent, EventHandled, IModelApp, PrimitiveTool, Viewport } from "@bentley/imodeljs-frontend";
 import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager";
-import { AnalysisAnimationToolSettingsProvider } from "./AnalysisAnimationToolSettings";
+import { ScheduleAnimationToolSettingsProvider } from "./ScheduleAnimationToolSettings";
 
 /** Tool that shows animation of Analysis information store as a 'special' property in the display style. */
-export class AnalysisAnimationTool extends PrimitiveTool {
-  public static toolId = "AnalysisAnimation";  // used to look up labels and to register this tool
+export class ScheduleAnimationTool extends PrimitiveTool {
+  public static toolId = "ScheduleAnimation";  // used to look up labels and to register this tool
   public readonly points: Point3d[] = [];
 
   /** Allow tool to run on ready only iModels. */
@@ -22,7 +22,7 @@ export class AnalysisAnimationTool extends PrimitiveTool {
 
   /** Show tool prompt. */
   public setupAndPromptForNextAction(): void {
-    IModelApp.notifications.outputPromptByKey("UiFramework:tools.AnalysisAnimation.Prompts.SelectView");
+    IModelApp.notifications.outputPromptByKey("UiFramework:tools.ScheduleAnimation.Prompts.SelectView");
   }
 
   /** Handle user pressing left mouse button. */
@@ -40,7 +40,7 @@ export class AnalysisAnimationTool extends PrimitiveTool {
 
   /** Process request to restart the tool. */
   public onRestartTool(): void {
-    const tool = new AnalysisAnimationTool();
+    const tool = new ScheduleAnimationTool();
     if (!tool.run())
       this.exitTool();
   }
@@ -52,4 +52,4 @@ export class AnalysisAnimationTool extends PrimitiveTool {
   }
 }
 
-ConfigurableUiManager.registerControl(AnalysisAnimationTool.toolId, AnalysisAnimationToolSettingsProvider);
+ConfigurableUiManager.registerControl(ScheduleAnimationTool.toolId, ScheduleAnimationToolSettingsProvider);
