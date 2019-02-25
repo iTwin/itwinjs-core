@@ -174,7 +174,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
       return;
     const vp = IModelApp.viewManager.getFirstOpenView();
 
-    Presentation.presentation.rulesets().add(require("../../../rulesets/Models")) // tslint:disable-line:no-floating-promises
+    Presentation.presentation.rulesets().add(require("../../../rulesets/Models.json")) // tslint:disable-line:no-floating-promises
       .then((ruleset: RegisteredRuleset) => {
         if (!this._isMounted)
           return;
@@ -215,7 +215,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
       return;
     const vp = IModelApp.viewManager.getFirstOpenView();
 
-    Presentation.presentation.rulesets().add(require("../../../rulesets/Categories")) // tslint:disable-line:no-floating-promises
+    Presentation.presentation.rulesets().add(require("../../../rulesets/Categories.json")) // tslint:disable-line:no-floating-promises
       .then((ruleset: RegisteredRuleset) => {
         if (!this._isMounted)
           return;

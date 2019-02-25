@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "OIDC changes needed for Angular client",
+      "packageName": "@bentley/imodeljs-clients",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-clients",
+  "email": "dan.east@bentley.com"
+}
