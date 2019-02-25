@@ -25,13 +25,20 @@ import { Sample } from "../../serialization/GeometrySamples";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { Loop } from "../../curve/Loop";
 import { GeometryQuery } from "../../curve/GeometryQuery";
+import { Geometry } from "../../Geometry";
+import { AngleSweep } from "../../geometry3d/AngleSweep";
 
 function exportGraph(graph: HalfEdgeGraph, filename: string) {
   const toExport = PolyfaceBuilder.graphToPolyface(graph);
   GeometryCoreTestIO.saveGeometry([toExport], "Graph", filename);
 }
 
-function exportAnnotatedGraph(graph: HalfEdgeGraph, filename: string) {
+function rotateArray(data: Point3d[], index0: number) {
+  const out = [];
+  for (let i = 0; i < data.length; i++) out.push(data[(index0 + i) % data.length].clone());
+  return out;
+}
+function captureAnnotatedGraph(data: GeometryQuery[], graph: HalfEdgeGraph, dx: number = 0, dy: number = 0) {
   const maxTick = 0.01;
   const numTick = 20;
   const allNodes = graph.allHalfEdges;
@@ -42,7 +49,8 @@ function exportAnnotatedGraph(graph: HalfEdgeGraph, filename: string) {
   const perpAB = Vector3d.create();
   const perpAC = Vector3d.create();
   const vectorAC = Vector3d.create();
-  const data = [];
+  const count0 = data.length;
+
   for (const nodeA of allNodes) {
     const nodeB = nodeA.faceSuccessor;
     const nodeC = nodeA.vertexSuccessor;
@@ -90,7 +98,9 @@ function exportAnnotatedGraph(graph: HalfEdgeGraph, filename: string) {
       }
     }
   }
-  GeometryCoreTestIO.saveGeometry(data, "Graph", filename);
+  const transform = Transform.createTranslationXYZ(dx, dy, 0);
+  for (let i = count0; i < data.length; i++)
+    data[i].tryTransformInPlace(transform);
 }
 const printToConsole = false;
 function dumpGraph(graph: HalfEdgeGraph) {
@@ -412,7 +422,8 @@ describe("VUGraph", () => {
     verifyGraphCounts(ck, graph,
       numEdge, 2 * numEdge, undefined);
     ck.testExactNumber(2 * numEdge, graph.countNodes(), "dangling nodes");
-    exportAnnotatedGraph(graph, "VUGrid.1");
+    const geometry: GeometryQuery[] = [];
+    captureAnnotatedGraph(geometry, graph, 0, 0);
 
     GraphMerge.clusterAndMergeXYTheta(graph);
     // after merge, there are interior faces and a single exterior face . .
@@ -420,10 +431,10 @@ describe("VUGraph", () => {
     const numFaces = numInteriorFaces + 1;
     verifyGraphCounts(ck, graph, numFaces, (numX + 1) * (numY + 1) - 1, undefined);
     dumpGraph(graph);
-    exportAnnotatedGraph(graph, "VUGrid.2");
+    captureAnnotatedGraph(geometry, graph, 0, 10);
     const segments = graph.collectSegments();
     ck.testExactNumber(numEdge, segments.length, "segmentCount");
-
+    GeometryCoreTestIO.saveGeometry(geometry, "Graph", "GridFixup");
     const componentsB = HalfEdgeGraphSearch.collectConnectedComponents(graph, HalfEdgeMask.EXTERIOR);
     ck.testTrue(HalfEdgeMaskValidation.isMaskConsistentAroundAllFaces(graph, HalfEdgeMask.EXTERIOR), "ParitySearch makes valid exterior Masks");
     if (ck.testExactNumber(1, componentsB.length, "Expect single component")) {
@@ -470,24 +481,119 @@ describe("VUGraph", () => {
   });
 
   it("LargeCountTriangulation", () => {
-    const numRecursion = 2;
     const baseVectorA = Vector3d.create(0, 0, 0);
     const allGeometry = [];
-    for (const perpendicularFactor of [1.0, -1.0, -0.5]) {
+    // REMARK
+    // EDL Feb 20 2019
+    // Triangulation introduces a search zheap (not understood by me at this time) for very large polygons.
+    // With original trigger of 80 edges, some invalid triangulations occur for numRecursion = 2 (the original limit)
+    // Raise the trigger to 200 and all is fine.
+    // But the statement coverage drops significantly -- 94% to 93.37
+    // numRecursion = 3 generates larger polygons (around 400) and again there are some failures.
+    // so we conclude the zheap is large chunk of code with some bugs.
+    // This is an unlikely use case at this time.  So
+    //   1) the heap trigger is left at 200 (see Triangulation.ts)
+    //   2) add a method `Triangulation.setAndReturnHeapTrigger (number): number`
+    // Someday debug that ....
+    for (const numRecursion of [1, 2, 3]) {
+      for (const perpendicularFactor of [0.85, -1.0, -0.5]) {
+        let yMax = 0.0;
+        const baseVectorB = baseVectorA.clone();
+        for (const generatorFunction of [
+          Sample.createFractalSquareReversingPattern,
+          Sample.createFractalDiamonConvexPattern,
+          Sample.createFractalLReversingPatterh,
+          Sample.createFractalHatReversingPattern,
+          Sample.createFractalLMildConcavePatter]) {
+          const points = generatorFunction(numRecursion, perpendicularFactor);
+          const range = Range3d.createArray(points);
+          const dy = range.yLength();
+          yMax = Math.max(yMax, dy);
+          const transform = Transform.createTranslation(baseVectorB);
+          transform.multiplyPoint3dArray(points, points);
+          baseVectorB.addInPlace(Vector3d.create(2 * range.xLength(), 0, 0));
+          allGeometry.push(Loop.create(LineString3d.create(points)));
+          const graph = Triangulator.earcutSingleLoop(points);
+          if (graph) {
+            const pfA = PolyfaceBuilder.graphToPolyface(graph);
+            pfA.tryTranslateInPlace(0, 2.0 * dy, 0);
+            allGeometry.push(pfA);
+            Triangulator.cleanupTriangulation(graph);
+            const pfB = PolyfaceBuilder.graphToPolyface(graph);
+            pfB.tryTranslateInPlace(0, 4.0 * dy, 0);
+            allGeometry.push(pfB);
+          }
+        }
+        baseVectorA.addInPlace(Vector3d.create(0, 8.0 * yMax, 0));
+      }
+      baseVectorA.x += 100;
+      baseVectorA.y = 0.0;
+    }
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Graph", "LargeCountTriangulation");
+  });
+  /* These cases had problems -- but maybe only due to bad input?
+    it.only("ProblemTriangulation", () => {
+      Triangulator.setAndReturnHeapTrigger(80);
+      const baseVectorA = Vector3d.create(0, 0, 0);
+      const allGeometry = [];
+      for (let maxCut = 50; maxCut < 91; maxCut++) {
+        const numRecursion = 2;
+        const perpendicularFactor = 0.8;
+        let yMax = 0.0;
+        let xStep = 0.0;
+        const baseVectorB = baseVectorA.clone();
+        for (const generatorFunction of [
+          Sample.createFractalLMildConcavePatter,
+        ]) {
+          const points = generatorFunction(numRecursion, perpendicularFactor);
+          const range = Range3d.createArray(points);
+          const dy = range.yLength();
+          yMax = Math.max(yMax, dy);
+          xStep += 2.0 * range.xLength();
+          const transform = Transform.createTranslation(baseVectorB);
+          transform.multiplyPoint3dArray(points, points);
+          baseVectorB.addInPlace(Vector3d.create(2 * range.xLength(), 0, 0));
+          allGeometry.push(Loop.create(LineString3d.create(points)));
+          const graph = Triangulator.earcutSingleLoop(points);
+          if (graph) {
+            const pfA = PolyfaceBuilder.graphToPolyface(graph);
+            pfA.tryTranslateInPlace(0, 2.0 * dy, 0);
+            allGeometry.push(pfA);
+            Triangulator.cleanupTriangulation(graph);
+            const pfB = PolyfaceBuilder.graphToPolyface(graph);
+            pfB.tryTranslateInPlace(0, 4.0 * dy, 0);
+            allGeometry.push(pfB);
+          }
+        }
+        baseVectorA.x += 2.0 * xStep;
+      }
+      Triangulator.setAndReturnHeapTrigger(undefined);
+      GeometryCoreTestIO.saveGeometry(allGeometry, "Graph", "ProblemTriangulation");
+    });
+    it("ProblemTriangulationB", () => {
+      Triangulator.setAndReturnHeapTrigger(5);
+
+      const baseVectorA = Vector3d.create(0, 0, 0);
+      const allGeometry = [];
       let yMax = 0.0;
-      const baseVectorB = baseVectorA.clone();
-      for (const generatorFunction of [
-        Sample.createFractalDiamonConvexPattern,
-        Sample.createFractalSquareReversingPattern,
-        Sample.createFractalLReversingPatterh,
-        Sample.createFractalLMildConcavePatter]) {
-        const points = generatorFunction(numRecursion, perpendicularFactor);
+      let xStep = 0.0;
+      const basePoints = [
+        Point3d.create(0.250, -0.100, 0.000),
+        Point3d.create(0.750, -0.100, 0.000),
+        Point3d.create(1.000, 1.000, 0.000),
+        Point3d.create(1.350, 1.150, 0.000),
+        Point3d.create(2.000, 2.000, 0.000),
+        Point3d.create(2.100, 2.250, 0.000),
+        Point3d.create(2.100, 2.750, 0.000)];
+      for (const rotateIndex of [0, 1, 2, 3, 4, 5, 6]) {
+        const points = rotateArray(basePoints, rotateIndex);
         const range = Range3d.createArray(points);
         const dy = range.yLength();
         yMax = Math.max(yMax, dy);
-        const transform = Transform.createTranslation(baseVectorB);
+        xStep = 2.0 * range.xLength();
+        const transform = Transform.createTranslation(baseVectorA);
         transform.multiplyPoint3dArray(points, points);
-        baseVectorB.addInPlace(Vector3d.create(2 * range.xLength(), 0, 0));
         allGeometry.push(Loop.create(LineString3d.create(points)));
         const graph = Triangulator.earcutSingleLoop(points);
         if (graph) {
@@ -499,10 +605,94 @@ describe("VUGraph", () => {
           pfB.tryTranslateInPlace(0, 4.0 * dy, 0);
           allGeometry.push(pfB);
         }
+        baseVectorA.x += xStep;
       }
-      baseVectorA.addInPlace(Vector3d.create(0, 8.0 * yMax, 0));
-    }
+      // get back to base heap trigger ...
+      Triangulator.setAndReturnHeapTrigger(undefined);
 
-    GeometryCoreTestIO.saveGeometry(allGeometry, "Graph", "LargeCountTriangulation");
+      GeometryCoreTestIO.saveGeometry(allGeometry, "Graph", "ProblemTriangulationB");
+    });
+  */
+  it("TriangulationWithColinearVertices", () => {
+    const numTheta = 5;
+    const numThetaSkip = 1;
+    const allGeometry = [];
+    const r = 1.0;
+    let x0 = 0.0;
+    const dy = 2.0;
+    for (const numColinear of [1, 3, 7]) {
+      const points = [Point3d.create(-r, 0, 0)];
+      for (let i = 0; i <= numColinear; i++)
+        points.push(Point3d.create(Geometry.interpolate(-r, i / numColinear, r), 0, 0));
+      for (let i = 1; i < numTheta; i++) {
+        const theta = Angle.createDegrees(i * 180 / numTheta);
+        points.push(Point3d.create(r * theta.cos(), r * theta.sin(), 0));
+      }
+      // run the triangulator with the array rotated to each x-axis point, and one of every numThetaSkip points around the arc.
+      let y0 = 0.0;
+      for (let rotation = 0; rotation < points.length; rotation += (rotation < numColinear ? 1 : numThetaSkip)) {
+        const pointsB = rotateArray(points, rotation);
+        const graph = Triangulator.earcutSingleLoop(pointsB);
+        if (graph) {
+          const pfA = PolyfaceBuilder.graphToPolyface(graph);
+          pfA.tryTranslateInPlace(x0, y0 + 2.0 * dy, 0);
+          allGeometry.push(pfA);
+          Triangulator.cleanupTriangulation(graph);
+          const pfB = PolyfaceBuilder.graphToPolyface(graph);
+          pfB.tryTranslateInPlace(x0, y0 + 4.0 * dy, 0);
+          allGeometry.push(pfB);
+          y0 += 10.0;
+        }
+      }
+      x0 += 4.0;
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Graph", "TriangulationWithColinearVertices");
+  });
+  // public static createCutPie(x0: number, y0: number, radius: number, sweep: AngleSweep, numRadialEdges: number, numArcEdges: number, addClosure = false) {
+  it("PieCuts", () => {
+
+    const numThetaSkip = 3;
+    const allGeometry = [];
+    const r = 1.0;
+    let x0 = 0.0;
+    // proimise: all x above x0 is free space.
+    for (const points of [
+      Sample.createCutPie(0, 0, r, AngleSweep.createStartEndDegrees(0, 180), 1, 4, false),
+      Sample.createCutPie(0, 0, r, AngleSweep.createStartEndDegrees(0, 180), 5, 12, false),
+      Sample.createCutPie(0, 0, r, AngleSweep.createStartEndDegrees(0, 90), 2, 5, false),
+      Sample.createCutPie(0, 0, r, AngleSweep.createStartEndDegrees(0, 180), 3, 9, false),
+      Sample.createCutPie(0, 0, r, AngleSweep.createStartEndDegrees(0, 90), 3, 4, false),
+      Sample.createCutPie(0, 0, r, AngleSweep.createStartEndDegrees(0, 180), 5, 12, false),
+      Sample.createCutPie(0, 0, r, AngleSweep.createStartEndDegrees(0, 270), 2, 8, false),
+      Sample.createCutPie(0, 0, r, AngleSweep.createStartEndDegrees(0, 270), 5, 12, false),
+      Sample.createCutPie(0, 0, 100 * r, AngleSweep.createStartEndDegrees(0, 180), 5, 12, false),
+    ]) {
+      // run the triangulator with the array rotated to each x-axis point, and one of every numThetaSkip points around the arc.
+      let y0 = 0.0;
+      const range = Range3d.createArray(points);
+      const dx = range.xLength();
+      const dy = range.yLength();
+      const ex = x0 - range.low.x;
+      x0 += r;
+      for (let rotation = 0; rotation < points.length; rotation += (rotation < 4 ? 1 : numThetaSkip)) {
+        const pointsB = rotateArray(points, rotation);
+        const graph = Triangulator.earcutSingleLoop(pointsB);
+        const ls = LineString3d.create(points);
+        ls.tryTranslateInPlace(ex, 0);
+        allGeometry.push(ls);
+        if (graph) {
+          const pfA = PolyfaceBuilder.graphToPolyface(graph);
+          pfA.tryTranslateInPlace(ex, y0 + 1.5 * dy, 0);
+          allGeometry.push(pfA);
+          Triangulator.cleanupTriangulation(graph);
+          const pfB = PolyfaceBuilder.graphToPolyface(graph);
+          pfB.tryTranslateInPlace(ex, y0 + 3.0 * dy, 0);
+          allGeometry.push(pfB);
+          y0 += 8.0 * dy;
+        }
+      }
+      x0 += 2.0 * dx;
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Graph", "PieCuts");
   });
 });

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Improve polygon triangulations quality by early flipping behind the earcut front",
+      "packageName": "@bentley/geometry-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/geometry-core",
+  "email": "Earlin.Lutz@bentley.com"
+}
