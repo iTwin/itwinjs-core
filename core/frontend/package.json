@@ -35,12 +35,6 @@
           "entry": "./lib/loader/IModelJsLoader.js",
           "bundleName": "IModelJsLoader",
           "type": "system"
-        },
-        {
-          "dest": "./lib/module",
-          "entry": "./lib/webworker/WebWorker.js",
-          "bundleName": "frontend-webworker",
-          "type": "webworker"
         }
       ]
     }

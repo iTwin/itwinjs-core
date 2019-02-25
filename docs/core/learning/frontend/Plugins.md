@@ -5,7 +5,7 @@ A [Plugin]($frontend) is a separately webpacked JavaScript module that is loaded
 A [Plugin]($frontend) is typically written in Typescript. It has access to all classes in the iModel.js host environment. In all such hosts, that will always include
 bentleyjs-core, geometry-core, imodeljs-i18n, imodeljs-clients, imodeljs-common, imodeljs-quantity, and imodeljs-frontend. In hosts that use the iModel.js user interface
 classes, it will also include ui-core, ui-components, ui-ninezone, and ui-framework. In hosts that are designed to format and display EC data, the presentation-common,
-presentation-components, and presentation-frontend modules will be available as well. An example host is Navigator, which includes all of the modules above.
+presentation-components, and presentation-frontend modules will be available as well. An example host is Design Review, which includes all of the modules above.
 
 ## Loading Plugins
 
