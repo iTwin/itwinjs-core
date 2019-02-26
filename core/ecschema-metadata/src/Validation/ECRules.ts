@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
@@ -132,7 +132,7 @@ export const ECRuleSet: IRuleSet = {
 };
 
 /** EC Rule: Sealed classes cannot be a base class. */
-export async function* baseClassIsSealed(ecClass: AnyClass): AsyncIterable<Diagnostic.ClassDiagnostic<any []>> {
+export async function* baseClassIsSealed(ecClass: AnyClass): AsyncIterable<Diagnostic.ClassDiagnostic<any[]>> {
   if (!ecClass.baseClass)
     return;
 
@@ -145,7 +145,7 @@ export async function* baseClassIsSealed(ecClass: AnyClass): AsyncIterable<Diagn
 }
 
 /** EC Rule: Base and child class must be of the same type (i.e. Entity, Mixin, Relationship, etc.)  */
-export async function* baseClassIsOfDifferentType(ecClass: AnyClass): AsyncIterable<Diagnostic.ClassDiagnostic<any []>>  {
+export async function* baseClassIsOfDifferentType(ecClass: AnyClass): AsyncIterable<Diagnostic.ClassDiagnostic<any[]>> {
   if (!ecClass.baseClass)
     return;
 
@@ -159,9 +159,9 @@ export async function* baseClassIsOfDifferentType(ecClass: AnyClass): AsyncItera
 }
 
 /** EC Rule: When overriding a class primitive property, the child and base property must be of the same type (string, number, etc...). */
-export async function* incompatibleValueTypePropertyOverride(property: AnyProperty): AsyncIterable<Diagnostic.PropertyDiagnostic<any []>> {
+export async function* incompatibleValueTypePropertyOverride(property: AnyProperty): AsyncIterable<Diagnostic.PropertyDiagnostic<any[]>> {
   if (!property.class.baseClass)
-      return;
+    return;
 
   const primitiveType = getPrimitiveType(property);
   if (!primitiveType)
@@ -194,7 +194,7 @@ export async function* incompatibleValueTypePropertyOverride(property: AnyProper
 }
 
 /** EC Rule: When overriding a class property, the child and base property must be of the same property type (primitive, struct, enumeration, etc...). */
-export async function* incompatibleTypePropertyOverride(property: AnyProperty): AsyncIterable<Diagnostic.PropertyDiagnostic<any []>> {
+export async function* incompatibleTypePropertyOverride(property: AnyProperty): AsyncIterable<Diagnostic.PropertyDiagnostic<any[]>> {
   if (!property.class.baseClass)
     return;
 
@@ -218,7 +218,7 @@ export async function* incompatibleTypePropertyOverride(property: AnyProperty): 
 }
 
 /** EC Rule: When overriding a kindOfQuantity property, the child and base property units must be the same. */
-export async function* incompatibleUnitPropertyOverride(property: AnyProperty): AsyncIterable<Diagnostic.PropertyDiagnostic<any []>> {
+export async function* incompatibleUnitPropertyOverride(property: AnyProperty): AsyncIterable<Diagnostic.PropertyDiagnostic<any[]>> {
   if (!property.kindOfQuantity || !property.class.baseClass)
     return;
 
@@ -248,7 +248,7 @@ export async function* incompatibleUnitPropertyOverride(property: AnyProperty): 
       return;
 
     return new Diagnostics.IncompatibleUnitPropertyOverride(property, [property.class.fullName, property.name, baseClass.fullName,
-      baseKoq.fullName, baseUnit.fullName, unit.fullName, koq.fullName]);
+    baseKoq.fullName, baseUnit.fullName, unit.fullName, koq.fullName]);
   }
 
   for await (const baseClass of property.class.getAllBaseClasses()) {
@@ -259,7 +259,7 @@ export async function* incompatibleUnitPropertyOverride(property: AnyProperty): 
 }
 
 /** EC Rule: When overriding a RelationshipClass, the derived abstract constraint must narrow the base constraint classes. */
-export async function* abstractConstraintMustNarrowBaseConstraints(ecClass: RelationshipClass): AsyncIterable<Diagnostic.SchemaItemDiagnostic<RelationshipClass, any []>> {
+export async function* abstractConstraintMustNarrowBaseConstraints(ecClass: RelationshipClass): AsyncIterable<Diagnostic.SchemaItemDiagnostic<RelationshipClass, any[]>> {
   if (!ecClass.baseClass)
     return;
 
@@ -274,7 +274,7 @@ export async function* abstractConstraintMustNarrowBaseConstraints(ecClass: Rela
 }
 
 /** EC Rule: When overriding a RelationshipClass, derived constraint classes must narrow base constraint classes. */
-export async function* derivedConstraintsMustNarrowBaseConstraints(ecClass: RelationshipClass): AsyncIterable<Diagnostic.SchemaItemDiagnostic<RelationshipClass, any []>> {
+export async function* derivedConstraintsMustNarrowBaseConstraints(ecClass: RelationshipClass): AsyncIterable<Diagnostic.SchemaItemDiagnostic<RelationshipClass, any[]>> {
   if (!ecClass.baseClass)
     return;
 
@@ -289,7 +289,7 @@ export async function* derivedConstraintsMustNarrowBaseConstraints(ecClass: Rela
 }
 
 /** EC Rule: All constraint classes must have a common base class specified in the abstract constraint. */
-export async function* constraintClassesDeriveFromAbstractContraint(ecClass: RelationshipClass): AsyncIterable<Diagnostic.SchemaItemDiagnostic<RelationshipClass, any []>> {
+export async function* constraintClassesDeriveFromAbstractContraint(ecClass: RelationshipClass): AsyncIterable<Diagnostic.SchemaItemDiagnostic<RelationshipClass, any[]>> {
   const sourceResult = await applyConstraintClassesDeriveFromAbstractContraint(ecClass, ecClass.source);
   if (sourceResult)
     yield sourceResult;
@@ -299,7 +299,7 @@ export async function* constraintClassesDeriveFromAbstractContraint(ecClass: Rel
 }
 
 /** EC Rule: At least on concrete constraint class must be defined in the list of constraint classes. */
-export async function* atLeastOneConstraintClassDefined(constraint: RelationshipConstraint): AsyncIterable<Diagnostic.RelationshipConstraintDiagnostic<any []>> {
+export async function* atLeastOneConstraintClassDefined(constraint: RelationshipConstraint): AsyncIterable<Diagnostic.RelationshipConstraintDiagnostic<any[]>> {
   if (!constraint.constraintClasses || constraint.constraintClasses.length === 0) {
     const constraintType = constraint.isSource ? ECStringConstants.RELATIONSHIP_END_SOURCE : ECStringConstants.RELATIONSHIP_END_TARGET;
     yield new Diagnostics.AtLeastOneConstraintClassDefined(constraint, [constraintType, constraint.relationshipClass.fullName]);
@@ -307,7 +307,7 @@ export async function* atLeastOneConstraintClassDefined(constraint: Relationship
 }
 
 /** EC Rule: If multiple constraints exist, an abstract constraint must be defined. */
-export async function* abstractConstraintMustExistWithMultipleConstraints(constraint: RelationshipConstraint): AsyncIterable<Diagnostic.RelationshipConstraintDiagnostic<any []>> {
+export async function* abstractConstraintMustExistWithMultipleConstraints(constraint: RelationshipConstraint): AsyncIterable<Diagnostic.RelationshipConstraintDiagnostic<any[]>> {
   if (!constraint.constraintClasses || constraint.constraintClasses.length <= 1) {
     return;
   }
@@ -332,7 +332,7 @@ function getPrimitiveType(property: Property): PrimitiveType | undefined {
 }
 
 /** EC Rule: Enumeration type must be a string or integer */
-export async function* enumerationTypeUnsupported(enumeration: Enumeration): AsyncIterable<Diagnostic.SchemaItemDiagnostic<Enumeration, any []>> {
+export async function* enumerationTypeUnsupported(enumeration: Enumeration): AsyncIterable<Diagnostic.SchemaItemDiagnostic<Enumeration, any[]>> {
   const type = enumeration.type;
   if (type === PrimitiveType.Integer || type === PrimitiveType.String)
     return;
@@ -341,7 +341,7 @@ export async function* enumerationTypeUnsupported(enumeration: Enumeration): Asy
 }
 
 /** EC Rule: Mixin applied to class must derived from the Mixin appliesTo constraint. */
-export async function* mixinAppliedToClassMustDeriveFromConstraint(entityClass: EntityClass): AsyncIterable<Diagnostic.SchemaItemDiagnostic<EntityClass, any []>>  {
+export async function* mixinAppliedToClassMustDeriveFromConstraint(entityClass: EntityClass): AsyncIterable<Diagnostic.SchemaItemDiagnostic<EntityClass, any[]>> {
   for (const lazyMixin of entityClass.mixins) {
     const mixin = await lazyMixin;
     if (!mixin.appliesTo)
@@ -355,7 +355,7 @@ export async function* mixinAppliedToClassMustDeriveFromConstraint(entityClass: 
 }
 
 /** EC Rule: CustomAttribute instance must be of a concrete CustomAttributeClass. */
-export async function* customAttributeNotOfConcreteClass(container: CustomAttributeContainerProps, customAttribute: CustomAttribute): AsyncIterable<Diagnostic.SchemaItemDiagnostic<CustomAttributeContainerProps, any []>> {
+export async function* customAttributeNotOfConcreteClass(container: CustomAttributeContainerProps, customAttribute: CustomAttribute): AsyncIterable<Diagnostic.SchemaItemDiagnostic<CustomAttributeContainerProps, any[]>> {
   const schema = container.schema;
   const caClass = await schema.lookupItem(customAttribute.className) as ECClass;
   if (!caClass)
@@ -367,7 +367,7 @@ export async function* customAttributeNotOfConcreteClass(container: CustomAttrib
   yield new Diagnostics.CustomAttributeNotOfConcreteClass(container, [container.fullName, caClass.fullName]);
 }
 
-async function applyAbstractConstraintMustNarrowBaseConstraints(ecClass: RelationshipClass, constraint: RelationshipConstraint, baseRelationship: RelationshipClass): Promise<Diagnostic.SchemaItemDiagnostic<RelationshipClass, any []> | undefined> {
+async function applyAbstractConstraintMustNarrowBaseConstraints(ecClass: RelationshipClass, constraint: RelationshipConstraint, baseRelationship: RelationshipClass): Promise<Diagnostic.SchemaItemDiagnostic<RelationshipClass, any[]> | undefined> {
   const baseConstraint = constraint.isSource ? baseRelationship.source : baseRelationship.target;
   const abstractConstraint = await constraint.abstractConstraint;
   if (!abstractConstraint)
@@ -380,7 +380,7 @@ async function applyAbstractConstraintMustNarrowBaseConstraints(ecClass: Relatio
   return new Diagnostics.AbstractConstraintMustNarrowBaseConstraints(ecClass, [abstractConstraint.fullName, constraintType, constraint.relationshipClass.fullName, baseRelationship.fullName]);
 }
 
-async function applyDerivedConstraintsMustNarrowBaseConstraints(ecClass: RelationshipClass, constraint: RelationshipConstraint, baseRelationship: RelationshipClass): Promise<Diagnostic.SchemaItemDiagnostic<RelationshipClass, any []> | undefined> {
+async function applyDerivedConstraintsMustNarrowBaseConstraints(ecClass: RelationshipClass, constraint: RelationshipConstraint, baseRelationship: RelationshipClass): Promise<Diagnostic.SchemaItemDiagnostic<RelationshipClass, any[]> | undefined> {
   const baseConstraint = constraint.isSource ? baseRelationship.source : baseRelationship.target;
 
   if (!constraint.constraintClasses)
@@ -399,10 +399,10 @@ async function applyDerivedConstraintsMustNarrowBaseConstraints(ecClass: Relatio
   return;
 }
 
-async function applyConstraintClassesDeriveFromAbstractContraint(ecClass: RelationshipClass, constraint: RelationshipConstraint): Promise<Diagnostic.SchemaItemDiagnostic<RelationshipClass, any []> | undefined> {
+async function applyConstraintClassesDeriveFromAbstractContraint(ecClass: RelationshipClass, constraint: RelationshipConstraint): Promise<Diagnostic.SchemaItemDiagnostic<RelationshipClass, any[]> | undefined> {
   const abstractConstraint = await getAbstractConstraint(constraint);
   if (!abstractConstraint)
-      return;
+    return;
 
   if (!constraint.constraintClasses)
     return;
@@ -411,7 +411,7 @@ async function applyConstraintClassesDeriveFromAbstractContraint(ecClass: Relati
     const constraintClass = await classPromise;
 
     if (constraintClass.schemaItemType === SchemaItemType.Mixin && abstractConstraint.schemaItemType === SchemaItemType.EntityClass) {
-      if (!await(constraintClass as Mixin).applicableTo(abstractConstraint as EntityClass)) {
+      if (!await (constraintClass as Mixin).applicableTo(abstractConstraint as EntityClass)) {
         const constraintType = constraint.isSource ? ECStringConstants.RELATIONSHIP_END_SOURCE : ECStringConstants.RELATIONSHIP_END_TARGET;
         return new Diagnostics.ConstraintClassesDeriveFromAbstractContraint(ecClass, [constraintClass.fullName, constraintType, constraint.relationshipClass.fullName, abstractConstraint.fullName]);
       }

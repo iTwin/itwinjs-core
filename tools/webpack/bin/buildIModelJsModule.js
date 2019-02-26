@@ -1,4 +1,10 @@
 #!/usr/bin/env node
+
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const path = require("path");
@@ -762,10 +768,10 @@ class IModelJsModuleBuilder {
     private async _compileAndSymlinkSources(): Promise<Result[]> {
       // compile the .ts and .tsx files
       const compileResult = this.compileSource();
-  
+
       // symlink the source resource ().scss and .svg files, public locale files, etc.) to the lib directory for inclusion in the webpack.
       const symlinkSourceResourcesResult = this.symlinkSourceResources();
-  
+
       // wait for all of those operations to finish.
       return Promise.all([compileResult, symlinkSourceResourcesResult])
     }
