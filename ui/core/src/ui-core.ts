@@ -72,7 +72,7 @@ export * from "./ui-core/utils/isPromiseLike";
 export * from "./ui-core/button/Button";
 export * from "./ui-core/button/UnderlinedButton";
 
-export * from "./ui-core/inputs/Checkbox";
+export * from "./ui-core/inputs/checkbox/Checkbox";
 export * from "./ui-core/inputs/Input";
 export * from "./ui-core/inputs/InputStatus";
 export * from "./ui-core/inputs/LabeledInput";

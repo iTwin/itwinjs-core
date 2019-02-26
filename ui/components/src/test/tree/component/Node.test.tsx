@@ -63,12 +63,12 @@ describe("Node", () => {
         }}
       />);
 
-    const checkbox = renderedNode.baseElement.querySelector(".uicore-inputs-checkbox");
+    const checkbox = renderedNode.container.querySelector(".core-checkbox > input");
 
     expect(checkbox).to.not.be.null;
     fireEvent.click(checkbox!);
 
-    expect(checkboxSpy.called).to.be.true;
+    expect(checkboxSpy).to.have.been.called;
   });
 
   it("renders checkbox using custom renderer", () => {
