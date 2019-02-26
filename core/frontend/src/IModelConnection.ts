@@ -4,21 +4,21 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module IModelConnection */
 
-import { ActivityLoggingContext, assert, BeEvent, BentleyStatus, Guid, Id64, Id64Arg, Id64Set, Id64String, Logger, OpenMode, TransientIdSequence, DbResult } from "@bentley/bentleyjs-core";
+import { ActivityLoggingContext, assert, BeEvent, BentleyStatus, DbResult, Guid, Id64, Id64Arg, Id64Set, Id64String, Logger, OpenMode, TransientIdSequence } from "@bentley/bentleyjs-core";
+import { Angle, Point3d, Range3dProps, XYAndZ } from "@bentley/geometry-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import {
-  AxisAlignedBox3d, CodeSpec, ElementProps, EntityQueryParams, FontMap, ImageSourceFormat, IModel, IModelError, IModelNotFoundResponse,
-  IModelReadRpcInterface, IModelStatus, IModelToken, IModelVersion, IModelWriteRpcInterface,
-  ModelProps, ModelQueryParams, RpcNotFoundResponse, RpcOperation, RpcRequest, RpcRequestEvent, SnapRequestProps, SnapResponseProps,
-  StandaloneIModelRpcInterface, ThumbnailProps, TileTreeProps, ViewDefinitionProps, ViewQueryParams, WipRpcInterface, Cartographic, GeoCoordStatus, PageOptions, kPagingDefaultOptions,
+  AxisAlignedBox3d, Cartographic, CodeSpec, ElementProps, EntityQueryParams, FontMap, GeoCoordStatus, ImageSourceFormat, IModel, IModelError,
+  IModelNotFoundResponse, IModelReadRpcInterface, IModelStatus, IModelToken, IModelVersion, IModelWriteRpcInterface, kPagingDefaultOptions,
+  ModelProps, ModelQueryParams, PageOptions, RpcNotFoundResponse, RpcOperation, RpcRequest, RpcRequestEvent, SnapRequestProps, SnapResponseProps,
+  StandaloneIModelRpcInterface, ThumbnailProps, TileTreeProps, ViewDefinitionProps, ViewQueryParams, WipRpcInterface,
 } from "@bentley/imodeljs-common";
 import { EntityState } from "./EntityState";
+import { GeoServices } from "./GeoServices";
 import { IModelApp } from "./IModelApp";
 import { ModelState } from "./ModelState";
 import { HilitedSet, SelectionSet } from "./SelectionSet";
-import { GeoServices } from "./GeoServices";
 import { ViewState } from "./ViewState";
-import { XYAndZ, Point3d, Angle } from "@bentley/geometry-core";
 
 const loggingCategory = "imodeljs-frontend.IModelConnection";
 
@@ -193,7 +193,7 @@ export class IModelConnection extends IModel {
     IModelApp.accessToken = accessToken; // ###TODO to be refactored later...
 
     Logger.logTrace(loggingCategory, "Completed open request in IModelConnection.open", () => ({ ...iModelToken, openMode }));
-    return openResponse;
+    return openResponse!;
   }
 
   private _reopenConnectionHandler = async (request: RpcRequest<RpcNotFoundResponse>, response: IModelNotFoundResponse, resubmit: () => void, reject: (reason: any) => void) => {
@@ -550,6 +550,11 @@ export namespace IModelConnection {
           this.loaded.set(modelState.id, modelState as ModelState); // save it in loaded set
         }
       } catch (err) { }  // ignore error, we had nothing to do.
+    }
+
+    /** Query for a set of model ranges by ModelIds. */
+    public async queryModelRanges(modelIds: Id64Arg): Promise<Range3dProps[]> {
+      return IModelReadRpcInterface.getClient().queryModelRanges(this._iModel.iModelToken, Id64.toIdSet(modelIds));
     }
 
     /** Query for a set of ModelProps of the specified ModelQueryParams. */
