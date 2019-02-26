@@ -40,7 +40,7 @@ export class Schema implements CustomAttributeContainerProps {
   protected _label?: string;
   protected _description?: string;
   public readonly references: Schema[];
-  private readonly _items: SchemaItem[];
+  private readonly _items: Map<string, SchemaItem>;
   private _customAttributes?: Map<string, CustomAttribute>;
   /**
    * Constructs an empty Schema with the given name and version in the provided context.
@@ -68,7 +68,7 @@ export class Schema implements CustomAttributeContainerProps {
     this._schemaKey = (typeof (nameOrKey) === "string") ? new SchemaKey(nameOrKey, new ECVersion(readVer as number, writeVer, minorVer)) : nameOrKey;
     this._context = context;
     this.references = [];
-    this._items = [];
+    this._items = new Map<string, SchemaItem>();
   }
 
   get schemaKey() {
@@ -314,7 +314,7 @@ export class Schema implements CustomAttributeContainerProps {
    */
   public getItemSync<T extends SchemaItem>(name: string): T | undefined {
     // Case-insensitive search
-    return this._items.find((item) => item.name.toUpperCase() === name.toUpperCase()) as T;
+    return this._items.get(name.toUpperCase()) as T;
   }
 
   /**
@@ -369,26 +369,21 @@ export class Schema implements CustomAttributeContainerProps {
     if (undefined !== this.getItemSync(item.name))
       throw new ECObjectsError(ECObjectsStatus.DuplicateItem, `The SchemaItem ${item.name} cannot be added to the schema ${this.name} because it already exists`);
 
-    this._items.push(item);
+    this._items.set(item.name.toUpperCase(), item);
   }
 
-  public getItems<T extends AnySchemaItem>(): T[] {
+  public getItems<T extends AnySchemaItem>(): IterableIterator<T> {
     if (!this._items)
-      return [];
+      return new Map<string, SchemaItem>().values() as IterableIterator<T>;
 
-    return this._items as T[];
+    return this._items.values() as IterableIterator<T>;
   }
 
-  public getClasses(): ECClass[] {
-    if (!this._items)
-      return [];
-
-    const classList = this._items.filter((item) => item instanceof ECClass);
-
-    if (!classList)
-      return [];
-
-    return classList as ECClass[];
+  public *getClasses(): IterableIterator<ECClass> {
+    for (const [, value] of this._items) {
+      if (value instanceof ECClass)
+        yield value;
+    }
   }
 
   /**
@@ -434,7 +429,7 @@ export class Schema implements CustomAttributeContainerProps {
     const customAttributes = serializeCustomAttributes(this.customAttributes);
     if (undefined !== customAttributes)
       schemaJson.customAttributes = customAttributes;
-    if (this._items.length > 0) {
+    if (this._items.size > 0) {
       schemaJson.items = {};
       this._items.forEach((schemaItem: SchemaItem) => {
         schemaJson.items[schemaItem.name] = schemaItem.toJson(false, true);
