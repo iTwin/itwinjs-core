@@ -11,9 +11,13 @@ import { ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl"
 import { ToolUiProvider } from "../zones/toolsettings/ToolUiProvider";
 import { ContentViewManager } from "../content/ContentViewManager";
 import { Item, Direction, Toolbar } from "@bentley/ui-ninezone";
+import { Range1d } from "@bentley/geometry-core";
 import { Icon } from "../shared/IconComponent";
 import { UiFramework } from "../UiFramework";
+import { ScreenViewport } from "@bentley/imodeljs-frontend";
+
 import "./ScheduleAnimationToolSettings.scss";
+import { FrontstageManager, ContentControlActivatedEventArgs } from "../frontstage/FrontstageManager";
 
 /** State for [[ScheduleAnimationToolSettings]] */
 interface AnimationState {
@@ -23,6 +27,9 @@ interface AnimationState {
   isAnimating: boolean;
   isLooping: boolean;
   animationSliderValue: string;
+  startDate?: Date;
+  endDate?: Date;
+  timeRange?: Range1d;
 }
 
 /** ToolSetting for ScheduleAnimationTool */
@@ -34,7 +41,7 @@ export class ScheduleAnimationToolSettings extends React.Component<{}, Animation
   constructor(props: {}) {
     super(props);
     this.state = {
-      animationDuration: 3000,  // 3 seconds
+      animationDuration: 20000,  // 20 seconds
       elapsedTime: 0,
       animationSliderValue: "0",
       isAnimating: false,
@@ -43,7 +50,33 @@ export class ScheduleAnimationToolSettings extends React.Component<{}, Animation
     };
   }
 
+  private _setStateForContentControl(viewport: ScreenViewport | undefined) {
+    if (undefined === viewport || undefined === viewport.view || undefined === viewport.view.scheduleScript) {
+      this.setState(() => ({ isAnimating: false }));
+      return;
+    }
+
+    const timeRange = viewport.view.scheduleScript.duration;  // in seconds since 1/1/1970
+    const startDate = new Date(timeRange.low * 1000);
+    const endDate = new Date(timeRange.high * 1000);
+    this.setState(() => ({ timeRange, startDate, endDate }));
+  }
+
+  private _handleContentControlActivatedEvent = (args: ContentControlActivatedEventArgs) => {
+    if (args.activeContentControl !== args.oldContentControl || undefined === this.state.startDate) {
+      this._setStateForContentControl(args.activeContentControl ? args.activeContentControl.viewport : undefined);
+    }
+  }
+
+  public componentDidMount() {
+    FrontstageManager.onContentControlActivatedEvent.addListener(this._handleContentControlActivatedEvent);
+    const activeContentControl = ContentViewManager.getActiveContentControl();
+    this._setStateForContentControl(activeContentControl ? activeContentControl.viewport : undefined);
+  }
+
   public componentWillUnmount() {
+    FrontstageManager.onContentControlActivatedEvent.removeListener(this._handleContentControlActivatedEvent);
+
     const activeContentControl = ContentViewManager.getActiveContentControl();
     if (activeContentControl && activeContentControl.viewport) {
       activeContentControl.viewport.animationFraction = 0;
@@ -77,7 +110,6 @@ export class ScheduleAnimationToolSettings extends React.Component<{}, Animation
           this.setState({ elapsedTime, isAnimating: false, isAnimationPaused: false });
           activeContentControl.viewport.animationFraction = 0;
           window.cancelAnimationFrame(this._requestFrame);
-
           return;
         }
 
@@ -143,23 +175,34 @@ export class ScheduleAnimationToolSettings extends React.Component<{}, Animation
   private _handleDurationChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const target = event.target;
     const value = parseInt(target.value, undefined);
-    // min 1 sec, max 30 seconds
-    const animationDuration = (value <= 1) ? 1000 : (value >= 30) ? 30000 : value * 1000;
+    // min 1 sec, max 180 seconds
+    const animationDuration = (value <= 1) ? 1000 : (value >= 180) ? 180000 : value * 1000;
     this.setState({ animationDuration });
   }
 
   public render(): React.ReactNode {
+    if (undefined === this.state.startDate || undefined === this.state.endDate || undefined === this.state.timeRange)
+      return null;
+
+    const animationFraction = this.state.elapsedTime / this.state.animationDuration;
+    const currentTime = this.state.timeRange.fractionToPoint(animationFraction);
+    const currentDate = new Date(currentTime * 1000).toLocaleDateString();
+
+    const dateLabel = `${currentDate}`;
     return (
       <div>
         <div className="toolSettingsRow">
           {UiFramework.i18n.translate("UiFramework:tools.ScheduleAnimation.ToolSettings.duration")}
-          <input type="number" min="1" max="30" step="1" value={(this.state.animationDuration / 1000).toString()}
+          <input type="number" min="1" max="180" step="1" value={(this.state.animationDuration / 1000).toString()}
             className="toolSettings-animationDuration" id="animationDuration" onChange={this._handleDurationChange} />
           {UiFramework.i18n.translate("UiFramework:tools.ScheduleAnimation.ToolSettings.seconds")}
         </div>
         <div className="toolSettingsRow">
           <input id="animationLoop" type="checkbox" checked={this.state.isLooping} onChange={this._handleLoopChange} />
           {UiFramework.i18n.translate("UiFramework:tools.ScheduleAnimation.ToolSettings.loop")}
+        </div>
+        <div className="toolSettingsRow toolSettings-stretch">
+          {dateLabel}
         </div>
         <div className="toolSettingsRow toolSettings-stretch">
           <input type="range" min="0" max={this.state.animationDuration.toString()} value={this.state.elapsedTime.toString()}
