@@ -829,6 +829,21 @@ export const enum LinePixels {
   Invalid = -1,
 }
 
+/** Represents a bounding sphere.  Optional optimization for FrustumPlane containment test.
+ * @hidden
+ */
+export class BoundingSphere {
+  public center: Point3d;
+  public radius: number;
+  constructor(center?: Point3d, radius?: number) { this.center = center ? center : Point3d.createZero(); this.radius = undefined === radius ? 0.0 : radius; }
+  public init(center: Point3d, radius: number) { this.center = center; this.radius = radius; }
+  public transformBy(transform: Transform, result: BoundingSphere) {
+    transform.multiplyPoint3d(this.center, result.center);
+    result.radius = this.radius * Math.max(transform.matrix.columnXMagnitude(), Math.max(transform.matrix.columnYMagnitude(), (transform.matrix.columnZMagnitude())));
+    return result;
+  }
+}
+
 /** Represents a frustum as 6 planes and provides containment and intersection testing
  * @hidden
  */
@@ -858,11 +873,11 @@ export class FrustumPlanes {
     FrustumPlanes.addPlaneFromPoints(this._planes, frustum.points, 4, 5, 6);  // front
   }
 
-  public computeFrustumContainment(box: Frustum): FrustumPlanes.Containment { return this.computeContainment(box.points); }
+  public computeFrustumContainment(box: Frustum, sphere?: BoundingSphere): FrustumPlanes.Containment { return this.computeContainment(box.points, sphere); }
   public intersectsFrustum(box: Frustum): boolean { return FrustumPlanes.Containment.Outside !== this.computeFrustumContainment(box); }
-  public containsPoint(point: Point3d, tolerance: number = 1.0e-8): boolean { return FrustumPlanes.Containment.Outside !== this.computeContainment([point], tolerance); }
+  public containsPoint(point: Point3d, tolerance: number = 1.0e-8): boolean { return FrustumPlanes.Containment.Outside !== this.computeContainment([point], undefined, tolerance); }
 
-  public computeContainment(points: Point3d[], tolerance: number = 1.0e-8): FrustumPlanes.Containment {
+  public computeContainment(points: Point3d[], sphere?: BoundingSphere, tolerance: number = 1.0e-8): FrustumPlanes.Containment {
     assert(this.isValid);
     if (undefined === this._planes) {
       return FrustumPlanes.Containment.Outside;
@@ -870,6 +885,14 @@ export class FrustumPlanes {
 
     let allInside = true;
     for (const plane of this._planes) {
+      if (sphere) { // if sphere provide detect total inside and outside without using corners.
+        const centerDistance = plane.evaluatePoint(sphere.center);
+        const tolerancePlusRadius = tolerance + sphere.radius;
+        if (centerDistance < -tolerancePlusRadius)
+          return FrustumPlanes.Containment.Outside;
+        if (centerDistance > tolerancePlusRadius)
+          continue;
+      }
       let nOutside = 0;
       for (const point of points) {
         if (plane.evaluatePoint(point) + tolerance < 0.0) {

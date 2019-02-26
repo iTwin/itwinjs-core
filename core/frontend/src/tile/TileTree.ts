@@ -6,7 +6,7 @@
 
 import { assert, BeDuration, BeTimePoint, dispose, Id64, Id64String, IDisposable, JsonUtils } from "@bentley/bentleyjs-core";
 import { ClipPlaneContainment, ClipVector, Point3d, Range3d, Transform } from "@bentley/geometry-core";
-import { BatchType, ColorDef, ElementAlignedBox3d, Frustum, FrustumPlanes, RenderMode, TileProps, TileTreeProps, ViewFlag, ViewFlags } from "@bentley/imodeljs-common";
+import { BatchType, ColorDef, ElementAlignedBox3d, Frustum, FrustumPlanes, RenderMode, TileProps, TileTreeProps, ViewFlag, ViewFlags, BoundingSphere } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { GraphicBranch, RenderGraphic, RenderMemory } from "../render/System";
@@ -198,7 +198,7 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
   public get loader(): TileLoader { return this.root.loader; }
 
   public get hasContentRange(): boolean { return undefined !== this._contentRange; }
-  public isRegionCulled(args: Tile.DrawArgs): boolean { return this.isCulled(this.range, args); }
+  public isRegionCulled(args: Tile.DrawArgs): boolean { return Tile._scratchRootSphere.init(this.center, this.radius), this.isCulled(this.range, args, Tile._scratchRootSphere); }
   public isContentCulled(args: Tile.DrawArgs): boolean { return this.isCulled(this.contentRange, args); }
 
   private getRangeGraphic(context: SceneContext): RenderGraphic | undefined {
@@ -397,10 +397,13 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
 
   private static _scratchWorldFrustum = new Frustum();
   private static _scratchRootFrustum = new Frustum();
-  private isCulled(range: ElementAlignedBox3d, args: Tile.DrawArgs) {
+  private static _scratchWorldSphere = new BoundingSphere();
+  private static _scratchRootSphere = new BoundingSphere();
+  private isCulled(range: ElementAlignedBox3d, args: Tile.DrawArgs, sphere?: BoundingSphere) {
     const box = Frustum.fromRange(range, Tile._scratchRootFrustum);
     const worldBox = box.transformBy(args.location, Tile._scratchWorldFrustum);
-    const isOutside = FrustumPlanes.Containment.Outside === args.frustumPlanes.computeFrustumContainment(worldBox);
+    const worldSphere = sphere ? sphere.transformBy(args.location, Tile._scratchWorldSphere) : undefined;
+    const isOutside = FrustumPlanes.Containment.Outside === args.frustumPlanes.computeFrustumContainment(worldBox, worldSphere);
     const isClipped = !isOutside && undefined !== args.clip && ClipPlaneContainment.StronglyOutside === args.clip.classifyPointContainment(box.points);
     const isCulled = isOutside || isClipped;
     return isCulled;
