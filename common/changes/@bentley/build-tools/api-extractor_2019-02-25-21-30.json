@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Changes error hadling in extract-api",
+      "packageName": "@bentley/build-tools",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/build-tools",
+  "email": "akshay.madhukar@bentley.com"
+}
