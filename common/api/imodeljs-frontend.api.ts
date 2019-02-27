@@ -2174,7 +2174,6 @@ class GraphicBuilder {
   abstract addArc2d(ellipse: Arc3d, isEllipse: boolean, filled: boolean, zDepth: number): void;
   abstract addLineString(points: Point3d[]): void;
   abstract addLineString2d(points: Point2d[], zDepth: number): void;
-  addLineStrings(...lines: Array<[number, Point3d[]]>): void;
   abstract addLoop(loop: Loop): void;
   abstract addPath(path: Path): void;
   abstract addPointString(points: Point3d[]): void;

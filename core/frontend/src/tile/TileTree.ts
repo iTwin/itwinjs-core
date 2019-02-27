@@ -210,10 +210,20 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
     this._rangeGraphic = dispose(this._rangeGraphic);
     if (Tile.DebugBoundingBoxes.None !== type) {
       const builder = context.createSceneGraphicBuilder();
-      const color = this.hasSizeMultiplier ? ColorDef.red : (this.isLeaf ? ColorDef.blue : ColorDef.green);
-      builder.setSymbology(color, color, 1);
-      const range = Tile.DebugBoundingBoxes.Content === type ? this.contentRange : this.range;
-      builder.addRangeBox(range);
+      if (Tile.DebugBoundingBoxes.Both === type) {
+        builder.setSymbology(ColorDef.blue, ColorDef.blue, 1);
+        builder.addRangeBox(this.range);
+        if (this.hasContentRange) {
+          builder.setSymbology(ColorDef.red, ColorDef.red, 1);
+          builder.addRangeBox(this.contentRange);
+        }
+      } else {
+        const color = this.hasSizeMultiplier ? ColorDef.red : (this.isLeaf ? ColorDef.blue : ColorDef.green);
+        builder.setSymbology(color, color, 1);
+        const range = Tile.DebugBoundingBoxes.Content === type ? this.contentRange : this.range;
+        builder.addRangeBox(range);
+      }
+
       this._rangeGraphic = builder.finish();
     }
 
@@ -533,6 +543,8 @@ export namespace Tile {
     Volume,
     /** Display boxes representing the range of the tile's contents, which may be tighter than (but never larger than) the tile's full volume. */
     Content,
+    /** Display both volume and content boxes. */
+    Both,
   }
 
   /**

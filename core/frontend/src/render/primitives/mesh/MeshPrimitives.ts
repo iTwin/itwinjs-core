@@ -210,7 +210,7 @@ export class Mesh {
   public readonly normals: OctEncodedNormal[] = [];
   public readonly uvParams: Point2d[] = [];
   public readonly colorMap: ColorMap = new ColorMap(); // used to be called ColorTable
-  public colors: Uint16Array = new Uint16Array();
+  public colors: number[] = [];
   public edges?: MeshEdges;
   public readonly features?: Mesh.Features;
   public readonly type: Mesh.PrimitiveType;
@@ -288,10 +288,22 @@ export class Mesh {
     if (undefined !== uvParam)
       this.uvParams.push(uvParam);
 
-    this.colorMap.insert(fillColor);
+    // Don't allocate color indices until we have non-uniform colors
+    if (0 === this.colorMap.length) {
+      this.colorMap.insert(fillColor);
+      assert(this.colorMap.isUniform);
+      assert(0 === this.colorMap.indexOf(fillColor));
+    } else if (!this.colorMap.isUniform || !this.colorMap.hasColor(fillColor)) {
+      // Back-fill uniform value (index=0) for existing vertices if previously uniform
+      if (0 === this.colors.length)
+        this.colors.length = this.points.length - 1;
+
+      this.colors.push(this.colorMap.insert(fillColor));
+      assert(!this.colorMap.isUniform);
+    }
+
     return this.points.length - 1;
   }
-
 }
 
 export namespace Mesh {
