@@ -63,6 +63,9 @@ const args = [
     "--mode", "modules",
     "--readme", readmeOption,
     "--module", "commonjs",
+    "--plugin", "typedoc-plugin-external-module-name,typedoc-plugin-internal-external",
+    "--external-aliases", "alpha,internal",
+    "--internal-aliases", "UNUSED",
     ...baseUrlOptions,
     ...includeOptions
 ]
