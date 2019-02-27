@@ -38,6 +38,18 @@ export type SelectionScopeRpcRequestOptions = RpcRequestOptions & Omit<Selection
 export type RulesetVariableRpcRequestOptions = RpcRequestOptions & { rulesetId: string };
 export type ClientStateSyncRequestOptions = RpcRequestOptions & { state: { [id: string]: unknown } };
 
+/** Interface used for receiving nodes and nodes count */
+export interface NodesResponse {
+  nodes: ReadonlyArray<Node>;
+  count: number;
+}
+
+/** Interface used for receiving content and content set size */
+export interface ContentResponse {
+  content: Readonly<Content>;
+  size: number;
+}
+
 /** Interface used for communication between Presentation backend and frontend. */
 export default class PresentationRpcInterface extends RpcInterface {
   // developer note: It's called an interface but actually it's a real implemented
@@ -55,21 +67,19 @@ export default class PresentationRpcInterface extends RpcInterface {
   ]
 
   /** The semantic version of the interface. */
-  public static version = "0.1.0";
+  public static version = "0.2.0";
 
   /*===========================================================================================
     NOTE: Any add/remove/change to the methods below requires an update of the interface version.
     NOTE: Please consult the README in core/common/src/rpc for the semantic versioning rules.
   ===========================================================================================*/
 
-  /** See [[PresentationManager.getRootNodes]] */
-  public async getRootNodes(_token: IModelToken, _options: Paged<HierarchyRpcRequestOptions>): PresentationRpcResponse<Node[]> { return this.forward(arguments); }
-  /** See [[PresentationManager.getRootNodesCount]] */
-  public async getRootNodesCount(_token: IModelToken, _options: HierarchyRpcRequestOptions): PresentationRpcResponse<number> { return this.forward(arguments); }
-  /** See [[PresentationManager.getChildren]] */
-  public async getChildren(_token: IModelToken, _options: Paged<HierarchyRpcRequestOptions>, _parentKey: Readonly<NodeKey>): PresentationRpcResponse<Node[]> { return this.forward(arguments); }
-  /** See [[PresentationManager.getChildrenCount]] */
-  public async getChildrenCount(_token: IModelToken, _options: HierarchyRpcRequestOptions, _parentKey: Readonly<NodeKey>): PresentationRpcResponse<number> { return this.forward(arguments); }
+  /** See [[PresentationManager.getNodes]] */
+  public async getNodesAndCount(_token: IModelToken, _options: Paged<HierarchyRpcRequestOptions>, _parentKey?: Readonly<NodeKey>): PresentationRpcResponse<NodesResponse> { return this.forward(arguments); }
+  /** See [[PresentationManager.getNodes]] */
+  public async getNodes(_token: IModelToken, _options: Paged<HierarchyRpcRequestOptions>, _parentKey?: Readonly<NodeKey>): PresentationRpcResponse<Node[]> { return this.forward(arguments); }
+  /** See [[PresentationManager.getNodesCount]] */
+  public async getNodesCount(_token: IModelToken, _options: HierarchyRpcRequestOptions, _parentKey?: Readonly<NodeKey>): PresentationRpcResponse<number> { return this.forward(arguments); }
   /** See [[PresentationManager.getNodePaths]] */
   public async getNodePaths(_token: IModelToken, _options: HierarchyRpcRequestOptions, _paths: InstanceKey[][], _markedIndex: number): PresentationRpcResponse<NodePathElement[]> { return this.forward(arguments); }
   /** See [[PresentationManager.getFilteredNodePaths]] */
@@ -78,9 +88,11 @@ export default class PresentationRpcInterface extends RpcInterface {
   /** See [[PresentationManager.getContentDescriptor]] */
   public async getContentDescriptor(_token: IModelToken, _options: ContentRpcRequestOptions, _displayType: string, _keys: Readonly<KeySet>, _selection: Readonly<SelectionInfo> | undefined): PresentationRpcResponse<Descriptor | undefined> { return this.forward(arguments); }
   /** See [[PresentationManager.getContentSetSize]] */
-  public async getContentSetSize(_token: IModelToken, _options: ContentRpcRequestOptions, _descriptor: Readonly<Descriptor>, _keys: Readonly<KeySet>): PresentationRpcResponse<number> { return this.forward(arguments); }
+  public async getContentSetSize(_token: IModelToken, _options: ContentRpcRequestOptions, _descriptorOrDisplayType: Readonly<Descriptor> | string, _keys: Readonly<KeySet>): PresentationRpcResponse<number> { return this.forward(arguments); }
   /** See [[PresentationManager.getContent]] */
-  public async getContent(_token: IModelToken, _options: ContentRpcRequestOptions, _descriptor: Readonly<Descriptor>, _keys: Readonly<KeySet>): PresentationRpcResponse<Content> { return this.forward(arguments); }
+  public async getContent(_token: IModelToken, _options: ContentRpcRequestOptions, _descriptorOrDisplayType: Readonly<Descriptor> | string, _keys: Readonly<KeySet>): PresentationRpcResponse<Content> { return this.forward(arguments); }
+  /** See [[PresentationManager.getContentAndContentSize]] */
+  public async getContentAndSize(_token: IModelToken, _options: ContentRpcRequestOptions, _descriptorOrDisplayType: Readonly<Descriptor> | string, _keys: Readonly<KeySet>): PresentationRpcResponse<ContentResponse> { return this.forward(arguments); }
   /** See [[PresentationManager.getDistinctValues]] */
   public async getDistinctValues(_token: IModelToken, _options: ContentRpcRequestOptions, _descriptor: Readonly<Descriptor>, _keys: Readonly<KeySet>, _fieldName: string, _maximumValueCount: number): PresentationRpcResponse<string[]> { return this.forward(arguments); }
 

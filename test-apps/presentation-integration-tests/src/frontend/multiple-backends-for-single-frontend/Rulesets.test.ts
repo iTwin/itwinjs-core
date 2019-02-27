@@ -38,13 +38,13 @@ describe("Multiple backends for one frontend", async () => {
       const spec = ((ruleset.rules![0] as RootNodeRule).specifications![0] as CustomNodeSpecification);
 
       await using<RegisteredRuleset, Promise<void>>(await frontend.rulesets().add(ruleset), async () => {
-        const rootNodes1 = await frontend.getRootNodes(props);
+        const rootNodes1 = await frontend.getNodes(props);
         expect(rootNodes1.length).to.be.equal(1);
         expect(rootNodes1[0].label).to.be.equal(spec.label);
 
         resetBackend();
 
-        const rootNodes2 = await frontend.getRootNodes(props);
+        const rootNodes2 = await frontend.getNodes(props);
         expect(rootNodes2.length).to.be.equal(1);
         expect(rootNodes2[0].label).to.be.equal(spec.label);
         expect(rootNodes2).to.deep.eq(rootNodes1);

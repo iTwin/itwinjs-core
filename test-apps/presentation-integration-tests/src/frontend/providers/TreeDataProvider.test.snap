@@ -20,7 +20,57 @@ Array [
 ]
 `;
 
+exports[`TreeDataProvider returns child nodes with paging 1`] = `
+Array [
+  Object {
+    "description": "child description",
+    "extendedData": Object {
+      "key": Object {
+        "pathFromRoot": Array [
+          "64e31cdc690e6d628b36f761e4074754",
+          "8ca7a2f0af9eb677d127a4d2d299bc9b",
+        ],
+        "type": "child",
+      },
+    },
+    "id": "8ca7a2f0af9eb677d127a4d2d299bc9b/64e31cdc690e6d628b36f761e4074754",
+    "label": "child label",
+    "parentId": "64e31cdc690e6d628b36f761e4074754",
+  },
+]
+`;
+
 exports[`TreeDataProvider returns root nodes 1`] = `
+Array [
+  Object {
+    "checkBoxState": 1,
+    "description": "root description",
+    "extendedData": Object {
+      "key": Object {
+        "pathFromRoot": Array [
+          "64e31cdc690e6d628b36f761e4074754",
+        ],
+        "type": "root",
+      },
+    },
+    "hasChildren": true,
+    "id": "64e31cdc690e6d628b36f761e4074754",
+    "isCheckboxDisabled": true,
+    "isCheckboxVisible": true,
+    "label": "root label",
+    "style": Object {
+      "colorOverrides": Object {
+        "backgroundColor": 8388863,
+        "color": 4278190335,
+      },
+      "isBold": true,
+      "isItalic": true,
+    },
+  },
+]
+`;
+
+exports[`TreeDataProvider returns root nodes with paging 1`] = `
 Array [
   Object {
     "checkBoxState": 1,

@@ -80,14 +80,14 @@ describe("PresentationRpcImpl", () => {
         rulesetId: testData.rulesetId,
       };
 
-      const response = await impl.getRootNodes(testData.imodelToken, options);
+      const response = await impl.getNodes(testData.imodelToken, options);
       expect(response.statusCode).to.equal(PresentationStatus.InvalidArgument);
     });
 
     describe("verifyRequest", () => {
 
       beforeEach(() => {
-        presentationManagerMock.setup((x) => x.getRootNodesCount(ActivityLoggingContext.current, moq.It.isAny())).returns(async () => faker.random.number());
+        presentationManagerMock.setup((x) => x.getNodesCount(ActivityLoggingContext.current, moq.It.isAny())).returns(async () => faker.random.number());
       });
 
       it("succeeds if request doesn't specify clientStateId", async () => {
@@ -96,7 +96,7 @@ describe("PresentationRpcImpl", () => {
           clientStateId: undefined,
           rulesetId: testData.rulesetId,
         };
-        await expect(impl.getRootNodesCount(testData.imodelToken, options)).to.eventually.be.fulfilled;
+        await expect(impl.getNodesCount(testData.imodelToken, options)).to.eventually.be.fulfilled;
       });
 
       it("succeeds if clientStateId in request matches current client state id", async () => {
@@ -106,7 +106,7 @@ describe("PresentationRpcImpl", () => {
           rulesetId: testData.rulesetId,
         };
         await impl.syncClientState(testData.imodelToken, { ...defaultRpcParams, clientStateId: options.clientStateId, state: {} });
-        await expect(impl.getRootNodesCount(testData.imodelToken, options)).to.eventually.be.fulfilled;
+        await expect(impl.getNodesCount(testData.imodelToken, options)).to.eventually.be.fulfilled;
       });
 
       it("returns BackendOutOfSync status code if clientStateId in request doesn't match current client state id", async () => {
@@ -115,8 +115,8 @@ describe("PresentationRpcImpl", () => {
           clientStateId: undefined,
           rulesetId: testData.rulesetId,
         };
-        await impl.getRootNodesCount(testData.imodelToken, options); // this sets current client state id
-        const response = await impl.getRootNodesCount(testData.imodelToken, { ...options, clientStateId: faker.random.uuid() });
+        await impl.getNodesCount(testData.imodelToken, options); // this sets current client state id
+        const response = await impl.getNodesCount(testData.imodelToken, { ...options, clientStateId: faker.random.uuid() });
         expect(response.statusCode).to.equal(PresentationStatus.BackendOutOfSync);
       });
 
@@ -127,7 +127,7 @@ describe("PresentationRpcImpl", () => {
           rulesetId: testData.rulesetId,
         };
         await impl.syncClientState(testData.imodelToken, { clientId: "", clientStateId: options.clientStateId, state: {} });
-        await expect(impl.getRootNodesCount(testData.imodelToken, options)).to.eventually.be.fulfilled;
+        await expect(impl.getNodesCount(testData.imodelToken, options)).to.eventually.be.fulfilled;
       });
 
     });
@@ -204,72 +204,104 @@ describe("PresentationRpcImpl", () => {
 
     });
 
-    describe("getRootNodes", () => {
+    describe("getNodesAndCount", () => {
 
-      it("calls manager", async () => {
+      it("calls manager for root nodes", async () => {
+        const getRootNodesResult: Node[] = [createRandomECInstanceNode(), createRandomECInstanceNode(), createRandomECInstanceNode()];
+        const getRootNodesCountResult = 999;
+        const options: Paged<Omit<HierarchyRequestOptions<IModelToken>, "imodel">> = {
+          rulesetId: testData.rulesetId,
+          paging: testData.pageOptions,
+        };
+
+        presentationManagerMock.setup((x) => x.getNodesAndCount(ActivityLoggingContext.current, { ...options, imodel: testData.imodelMock.object }, undefined))
+          .returns(async () => ({ nodes: getRootNodesResult, count: getRootNodesCountResult }))
+          .verifiable();
+        const actualResult = await impl.getNodesAndCount(testData.imodelToken, { ...defaultRpcParams, ...options });
+
+        presentationManagerMock.verifyAll();
+        expect(actualResult.result!.nodes).to.deep.eq(getRootNodesResult);
+        expect(actualResult.result!.count).to.eq(getRootNodesCountResult);
+      });
+
+      it("calls manager for child nodes", async () => {
+        const getChildNodeResult: Node[] = [createRandomECInstanceNode(), createRandomECInstanceNode(), createRandomECInstanceNode()];
+        const getChildNodesCountResult = 999;
+        const parentNodeKey = createRandomECInstanceNodeKey();
+        const options: Paged<Omit<HierarchyRequestOptions<IModelToken>, "imodel">> = {
+          rulesetId: testData.rulesetId,
+          paging: testData.pageOptions,
+        };
+
+        presentationManagerMock.setup((x) => x.getNodesAndCount(ActivityLoggingContext.current, { ...options, imodel: testData.imodelMock.object }, parentNodeKey))
+          .returns(async () => ({ nodes: getChildNodeResult, count: getChildNodesCountResult }))
+          .verifiable();
+        const actualResult = await impl.getNodesAndCount(testData.imodelToken, { ...defaultRpcParams, ...options }, parentNodeKey);
+
+        presentationManagerMock.verifyAll();
+        expect(actualResult.result!.nodes).to.deep.eq(getChildNodeResult);
+        expect(actualResult.result!.count).to.eq(getChildNodesCountResult);
+      });
+    });
+
+    describe("getNodes", () => {
+
+      it("calls manager for root nodes", async () => {
         const result: Node[] = [createRandomECInstanceNode(), createRandomECInstanceNode(), createRandomECInstanceNode()];
         const options: Paged<Omit<HierarchyRequestOptions<IModelToken>, "imodel">> = {
           rulesetId: testData.rulesetId,
           paging: testData.pageOptions,
         };
-        presentationManagerMock.setup((x) => x.getRootNodes(ActivityLoggingContext.current, { ...options, imodel: testData.imodelMock.object }))
+        presentationManagerMock.setup((x) => x.getNodes(ActivityLoggingContext.current, { ...options, imodel: testData.imodelMock.object }, undefined))
           .returns(async () => result)
           .verifiable();
-        const actualResult = await impl.getRootNodes(testData.imodelToken, { ...defaultRpcParams, ...options });
+        const actualResult = await impl.getNodes(testData.imodelToken, { ...defaultRpcParams, ...options });
+        presentationManagerMock.verifyAll();
+        expect(actualResult.result).to.deep.eq(result);
+      });
+
+      it("calls manager for child nodes", async () => {
+        const result: Node[] = [createRandomECInstanceNode(), createRandomECInstanceNode(), createRandomECInstanceNode()];
+        const parentNodeKey = createRandomECInstanceNodeKey();
+        const options: Paged<Omit<HierarchyRequestOptions<IModelToken>, "imodel">> = {
+          rulesetId: testData.rulesetId,
+          paging: testData.pageOptions,
+        };
+        presentationManagerMock.setup((x) => x.getNodes(ActivityLoggingContext.current, { ...options, imodel: testData.imodelMock.object }, parentNodeKey))
+          .returns(() => Promise.resolve(result))
+          .verifiable();
+        const actualResult = await impl.getNodes(testData.imodelToken, { ...defaultRpcParams, ...options }, parentNodeKey);
         presentationManagerMock.verifyAll();
         expect(actualResult.result).to.deep.eq(result);
       });
 
     });
 
-    describe("getRootNodesCount", () => {
+    describe("getNodesCount", () => {
 
-      it("calls manager", async () => {
+      it("calls manager for root nodes count", async () => {
         const result = 999;
         const options: Omit<HierarchyRequestOptions<IModelToken>, "imodel"> = {
           rulesetId: testData.rulesetId,
         };
-        presentationManagerMock.setup((x) => x.getRootNodesCount(ActivityLoggingContext.current, { ...options, imodel: testData.imodelMock.object }))
+        presentationManagerMock.setup((x) => x.getNodesCount(ActivityLoggingContext.current, { ...options, imodel: testData.imodelMock.object }, undefined))
           .returns(() => Promise.resolve(result))
           .verifiable();
-        const actualResult = await impl.getRootNodesCount(testData.imodelToken, { ...defaultRpcParams, ...options });
+        const actualResult = await impl.getNodesCount(testData.imodelToken, { ...defaultRpcParams, ...options });
         presentationManagerMock.verifyAll();
         expect(actualResult.result).to.eq(result);
       });
 
-    });
-
-    describe("getChildren", () => {
-
-      it("calls manager", async () => {
-        const result: Node[] = [createRandomECInstanceNode(), createRandomECInstanceNode(), createRandomECInstanceNode()];
-        const parentNodeKey = createRandomECInstanceNodeKey();
-        const options: Paged<Omit<HierarchyRequestOptions<IModelToken>, "imodel">> = {
-          rulesetId: testData.rulesetId,
-          paging: testData.pageOptions,
-        };
-        presentationManagerMock.setup((x) => x.getChildren(ActivityLoggingContext.current, { ...options, imodel: testData.imodelMock.object }, parentNodeKey))
-          .returns(() => Promise.resolve(result))
-          .verifiable();
-        const actualResult = await impl.getChildren(testData.imodelToken, { ...defaultRpcParams, ...options }, parentNodeKey);
-        presentationManagerMock.verifyAll();
-        expect(actualResult.result).to.deep.eq(result);
-      });
-
-    });
-
-    describe("getChildrenCount", () => {
-
-      it("calls manager", async () => {
+      it("calls manager for child nodes count", async () => {
         const result = 999;
         const parentNodeKey = createRandomECInstanceNodeKey();
         const options: Omit<HierarchyRequestOptions<IModelToken>, "imodel"> = {
           rulesetId: testData.rulesetId,
         };
-        presentationManagerMock.setup((x) => x.getChildrenCount(ActivityLoggingContext.current, { ...options, imodel: testData.imodelMock.object }, parentNodeKey))
+        presentationManagerMock.setup((x) => x.getNodesCount(ActivityLoggingContext.current, { ...options, imodel: testData.imodelMock.object }, parentNodeKey))
           .returns(() => Promise.resolve(result))
           .verifiable();
-        const actualResult = await impl.getChildrenCount(testData.imodelToken, { ...defaultRpcParams, ...options }, parentNodeKey);
+        const actualResult = await impl.getNodesCount(testData.imodelToken, { ...defaultRpcParams, ...options }, parentNodeKey);
         presentationManagerMock.verifyAll();
         expect(actualResult.result).to.eq(result);
       });
@@ -347,6 +379,39 @@ describe("PresentationRpcImpl", () => {
         expect(actualResult.result).to.be.undefined;
       });
 
+    });
+
+    describe("getContentAndContentSize", () => {
+
+      it("calls manager", async () => {
+        const contentSizeResult = 789;
+
+        const descriptorMock = moq.Mock.ofType<Descriptor>();
+        descriptorMock.setup((x) => x.resetParentship).verifiable();
+
+        const contentMock = moq.Mock.ofType<Content>();
+        moq.configureForPromiseResult(contentMock);
+        contentMock.setup((x) => x.descriptor).returns(() => descriptorMock.object);
+        contentMock.setup((x) => x.contentSet).returns(() => []);
+
+        const options: Paged<Omit<ContentRequestOptions<IModelToken>, "imodel">> = {
+          rulesetId: testData.rulesetId,
+          paging: testData.pageOptions,
+        };
+
+        presentationManagerMock.setup(async (x) => x.getContentAndSize(ActivityLoggingContext.current, { ...options, imodel: testData.imodelMock.object }, descriptorMock.object, testData.inputKeys))
+          .returns(async () => ({ content: contentMock.object, size: contentSizeResult }))
+          .verifiable();
+
+        const actualResult = await impl.getContentAndSize(testData.imodelToken, { ...defaultRpcParams, ...options },
+          descriptorMock.object, testData.inputKeys);
+
+        presentationManagerMock.verifyAll();
+        descriptorMock.verifyAll();
+
+        expect(actualResult.result!.content).to.eq(contentMock.object);
+        expect(actualResult.result!.size).to.deep.eq(contentSizeResult);
+      });
     });
 
     describe("getContentSetSize", () => {

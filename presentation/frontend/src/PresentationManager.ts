@@ -10,7 +10,7 @@ import {
   RpcRequestsHandler,
   HierarchyRequestOptions, Node, NodeKey, NodePathElement,
   ContentRequestOptions, Content, Descriptor, SelectionInfo,
-  Paged, RequestOptions, KeySet, InstanceKey,
+  Paged, RequestOptions, KeySet, InstanceKey, NodesResponse, ContentResponse,
 } from "@bentley/presentation-common";
 import RulesetVariablesManager from "./RulesetVariablesManager";
 import RulesetManager from "./RulesetManager";
@@ -107,41 +107,33 @@ export default class PresentationManager implements IDisposable {
   }
 
   /**
-   * Retrieves root nodes.
-   * @param requestOptions options for the request
-   * @return A promise object that returns either an array of nodes on success or an error string on error.
-   */
-  public async getRootNodes(requestOptions: Paged<HierarchyRequestOptions<IModelConnection>>): Promise<ReadonlyArray<Readonly<Node>>> {
-    return this._requestsHandler.getRootNodes(this.toIModelTokenOptions(requestOptions));
-  }
-
-  /**
-   * Retrieves root nodes count.
-   * @param requestOptions options for the request
-   * @return A promise object that returns the number of root nodes.
-   */
-  public async getRootNodesCount(requestOptions: HierarchyRequestOptions<IModelConnection>): Promise<number> {
-    return this._requestsHandler.getRootNodesCount(this.toIModelTokenOptions(requestOptions));
-  }
-
-  /**
-   * Retrieves children of the specified parent node.
+   * Retrieves nodes.
    * @param requestOptions options for the request
    * @param parentKey    Key of the parent node.
-   * @return A promise object that returns either an array of nodes on success or an error string on error.
+   * @return A promise object that returns either a nodes response object with nodes and nodes count on success or an error string on error.
    */
-  public async getChildren(requestOptions: Paged<HierarchyRequestOptions<IModelConnection>>, parentKey: Readonly<NodeKey>): Promise<ReadonlyArray<Readonly<Node>>> {
-    return this._requestsHandler.getChildren(this.toIModelTokenOptions(requestOptions), parentKey);
+  public async getNodesAndCount(requestOptions: Paged<HierarchyRequestOptions<IModelConnection>>, parentKey?: Readonly<NodeKey>): Promise<Readonly<NodesResponse>> {
+    return this._requestsHandler.getNodesAndCount(this.toIModelTokenOptions(requestOptions), parentKey);
   }
 
   /**
-   * Retrieves children count for the specified parent node.
+   * Retrieves nodes
    * @param requestOptions options for the request
-   * @param parentKey Key of the parent node.
-   * @return A promise object that returns the number of child nodes.
+   * @param parentKey    Key of the parent node if requesting for child nodes
+   * @return A promise object that returns either an array of nodes on success or an error string on error.
    */
-  public async getChildrenCount(requestOptions: HierarchyRequestOptions<IModelConnection>, parentKey: Readonly<NodeKey>): Promise<number> {
-    return this._requestsHandler.getChildrenCount(this.toIModelTokenOptions(requestOptions), parentKey);
+  public async getNodes(requestOptions: Paged<HierarchyRequestOptions<IModelConnection>>, parentKey?: Readonly<NodeKey>): Promise<ReadonlyArray<Readonly<Node>>> {
+    return this._requestsHandler.getNodes(this.toIModelTokenOptions(requestOptions), parentKey);
+  }
+
+  /**
+   * Retrieves nodes count.
+   * @param requestOptions options for the request
+   * @param parentKey Key of the parent node if requesting for child nodes count.
+   * @return A promise object that returns the number of nodes.
+   */
+  public async getNodesCount(requestOptions: HierarchyRequestOptions<IModelConnection>, parentKey?: Readonly<NodeKey>): Promise<number> {
+    return this._requestsHandler.getNodesCount(this.toIModelTokenOptions(requestOptions), parentKey);
   }
 
   /**
@@ -182,28 +174,44 @@ export default class PresentationManager implements IDisposable {
 
   /**
    * Retrieves the content set size based on the supplied content descriptor override.
-   * @param requestOptions options for the request
-   * @param descriptor           Content descriptor which specifies how the content should be returned.
-   * @param keys                 Keys of ECInstances to get the content for.
+   * @param requestOptions          options for the request
+   * @param descriptorOrDisplayType Content descriptor which specifies how the content should be returned or preferred display type of the content
+   * @param keys                    Keys of ECInstances to get the content for.
    * @return A promise object that returns either a number on success or an error string on error.
    * Even if concrete implementation returns content in pages, this function returns the total
    * number of records in the content set.
    */
-  public async getContentSetSize(requestOptions: ContentRequestOptions<IModelConnection>, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>): Promise<number> {
-    return this._requestsHandler.getContentSetSize(this.toIModelTokenOptions(requestOptions), descriptor.createStrippedDescriptor(), keys);
+  public async getContentSetSize(requestOptions: ContentRequestOptions<IModelConnection>, descriptorOrDisplayType: Readonly<Descriptor> | string, keys: Readonly<KeySet>): Promise<number> {
+    const descriptorParam = (typeof descriptorOrDisplayType === "string") ? descriptorOrDisplayType : descriptorOrDisplayType.createStrippedDescriptor();
+    return this._requestsHandler.getContentSetSize(this.toIModelTokenOptions(requestOptions), descriptorParam, keys);
   }
 
   /**
    * Retrieves the content based on the supplied content descriptor override.
-   * @param requestOptions options for the request
-   * @param descriptor           Content descriptor which specifies how the content should be returned.
-   * @param keys                 Keys of ECInstances to get the content for.
+   * @param requestOptions          options for the request
+   * @param descriptorOrDisplayType Content descriptor which specifies how the content should be returned or preferred display type of the content
+   * @param keys                    Keys of ECInstances to get the content for.
    * @return A promise object that returns either content on success or an error string on error.
    */
-  public async getContent(requestOptions: Paged<ContentRequestOptions<IModelConnection>>, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>): Promise<Readonly<Content>> {
-    const content = await this._requestsHandler.getContent(this.toIModelTokenOptions(requestOptions), descriptor.createStrippedDescriptor(), keys);
+  public async getContent(requestOptions: Paged<ContentRequestOptions<IModelConnection>>, descriptorOrDisplayType: Readonly<Descriptor> | string, keys: Readonly<KeySet>): Promise<Readonly<Content>> {
+    const descriptorParam = (typeof descriptorOrDisplayType === "string") ? descriptorOrDisplayType : descriptorOrDisplayType.createStrippedDescriptor();
+    const content = await this._requestsHandler.getContent(this.toIModelTokenOptions(requestOptions), descriptorParam, keys);
     content.descriptor.rebuildParentship();
     return content;
+  }
+
+  /**
+   * Retrieves the content and content set size based on the supplied content descriptor override.
+   * @param requestOptions          Options for the request.
+   * @param descriptorOrDisplayType Content descriptor which specifies how the content should be returned or preferred display type of the content
+   * @param keys                    Keys of ECInstances to get the content for.
+   * @returns A promise object that returns either content and content set size on success or an error string on error.
+   */
+  public async getContentAndSize(requestOptions: Paged<ContentRequestOptions<IModelConnection>>, descriptorOrDisplayType: Readonly<Descriptor> | string, keys: Readonly<KeySet>): Promise<Readonly<ContentResponse>> {
+    const descriptorParam = (typeof descriptorOrDisplayType === "string") ? descriptorOrDisplayType : descriptorOrDisplayType.createStrippedDescriptor();
+    const contentResponse = await this._requestsHandler.getContentAndSize(this.toIModelTokenOptions(requestOptions), descriptorParam, keys);
+    contentResponse.content.descriptor.rebuildParentship();
+    return contentResponse;
   }
 
   /**

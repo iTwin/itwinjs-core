@@ -33,9 +33,9 @@ describe("PresentationRpcInterface", () => {
     ];
     RpcRegistry.instance.initializeRpcInterface(PresentationRpcInterface);
     const client = RpcRegistry.instance.getClientForInterface(PresentationRpcInterface);
-    const operation = RpcOperation.lookup(PresentationRpcInterface, "getRootNodesCount");
+    const operation = RpcOperation.lookup(PresentationRpcInterface, "getNodesCount");
     const disposableRequest = {
-      request: new TestRpcRequest(client, "getRootNodesCount", parameters),
+      request: new TestRpcRequest(client, "getNodesCount", parameters),
       dispose: () => {
         // no way to properly destroy the created request...
         (disposableRequest.request as any).dispose();
@@ -63,41 +63,50 @@ describe("PresentationRpcInterface", () => {
       rpcInterface.forward = mock.object;
     });
 
-    it("forwards getRootNodes call", async () => {
+    it("forwards getNodesAndCount call", async () => {
       const options: Paged<HierarchyRpcRequestOptions> = {
         ...defaultRpcOptions,
         rulesetId: faker.random.word(),
       };
-      await rpcInterface.getRootNodes(token, options);
+      await rpcInterface.getNodesAndCount(token, options);
       mock.verify(async (x) => x(toArguments(token, options)), moq.Times.once());
     });
 
-    it("forwards getRootNodesCount call", async () => {
-      const options: HierarchyRpcRequestOptions = {
+    it("forwards getNodes call for root nodes", async () => {
+      const options: Paged<HierarchyRpcRequestOptions> = {
         ...defaultRpcOptions,
         rulesetId: faker.random.word(),
       };
-      await rpcInterface.getRootNodesCount(token, options);
+      await rpcInterface.getNodes(token, options);
       mock.verify(async (x) => x(toArguments(token, options)), moq.Times.once());
     });
 
-    it("forwards getChildren call", async () => {
+    it("forwards getNodes call for child nodes", async () => {
       const options: Paged<HierarchyRpcRequestOptions> = {
         ...defaultRpcOptions,
         rulesetId: faker.random.word(),
       };
       const parentKey = createRandomECInstanceNodeKey();
-      await rpcInterface.getChildren(token, options, parentKey);
+      await rpcInterface.getNodes(token, options, parentKey);
       mock.verify(async (x) => x(toArguments(token, options, parentKey)), moq.Times.once());
     });
 
-    it("forwards getChildrenCount call", async () => {
+    it("forwards getNodesCount call for root nodes", async () => {
+      const options: HierarchyRpcRequestOptions = {
+        ...defaultRpcOptions,
+        rulesetId: faker.random.word(),
+      };
+      await rpcInterface.getNodesCount(token, options);
+      mock.verify(async (x) => x(toArguments(token, options)), moq.Times.once());
+    });
+
+    it("forwards getNodesCount call for child nodes", async () => {
       const options: HierarchyRpcRequestOptions = {
         ...defaultRpcOptions,
         rulesetId: faker.random.word(),
       };
       const parentKey = createRandomECInstanceNodeKey();
-      await rpcInterface.getChildrenCount(token, options, parentKey);
+      await rpcInterface.getNodesCount(token, options, parentKey);
       mock.verify(async (x) => x(toArguments(token, options, parentKey)), moq.Times.once());
     });
 
@@ -149,6 +158,17 @@ describe("PresentationRpcInterface", () => {
       const descriptor = createRandomDescriptor();
       const keys = new KeySet();
       await rpcInterface.getContent(token, options, descriptor, keys);
+      mock.verify(async (x) => x(toArguments(token, options, descriptor, keys)), moq.Times.once());
+    });
+
+    it("forwards getContentAndSize call", async () => {
+      const options: Paged<ContentRpcRequestOptions> = {
+        ...defaultRpcOptions,
+        rulesetId: faker.random.word(),
+      };
+      const descriptor = createRandomDescriptor();
+      const keys = new KeySet();
+      await rpcInterface.getContentAndSize(token, options, descriptor, keys);
       mock.verify(async (x) => x(toArguments(token, options, descriptor, keys)), moq.Times.once());
     });
 

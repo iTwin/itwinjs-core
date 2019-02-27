@@ -13,10 +13,13 @@ import { PageOptions } from "@bentley/presentation-common";
 // tslint:disable-next-line:variable-name naming-convention
 const SampleTree = treeWithFilteringSupport(treeWithUnifiedSelection(Tree));
 
+const pagingSize = 5;
+
 class SampleDataProvider implements IPresentationTreeDataProvider {
   private _wrapped: PresentationTreeDataProvider;
   public constructor(imodel: IModelConnection, rulesetId: string) {
     this._wrapped = new PresentationTreeDataProvider(imodel, rulesetId);
+    this._wrapped.pagingSize = pagingSize;
   }
   public get imodel() { return this._wrapped.imodel; }
   public get rulesetId() { return this._wrapped.rulesetId; }
@@ -133,7 +136,7 @@ export default class TreeWidget extends React.Component<Props, State> {
             }} />
         </div>
         <SampleTree dataProvider={this.state.dataProvider}
-          pageSize={5} disposeChildrenOnCollapse={true}
+          pageSize={pagingSize} disposeChildrenOnCollapse={true}
           showDescriptions={true}
           filter={this.state.filter}
           onFilterApplied={this.onFilterApplied}

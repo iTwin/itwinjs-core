@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "RPC Interface changes to optimize getting first page of nodes/content",
+      "packageName": "@bentley/presentation-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-components",
+  "email": "haroldas.vitunskas@bentley.com"
+}
