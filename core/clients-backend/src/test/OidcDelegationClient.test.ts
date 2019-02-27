@@ -47,7 +47,6 @@ describe("OidcDelegationClient (#integration)", () => {
     const delegationClient = new OidcDelegationClient(delegationConfiguration);
     const saml = await delegationClient.getSamlFromJwt(actx, jwt);
     await validator.validateConnectAccess(saml);
-    await validator.validateRbacAccess(saml);
     await validator.validateIModelHubAccess(saml);
   });
 
@@ -61,7 +60,6 @@ describe("OidcDelegationClient (#integration)", () => {
     const delegationClient = new OidcDelegationClient(delegationConfiguration);
     const delegationJwt = await delegationClient.getJwtFromJwt(actx, jwt);
     await validator.validateConnectAccess(delegationJwt);
-    await validator.validateRbacAccess(delegationJwt);
     await validator.validateIModelHubAccess(delegationJwt);
   });
 

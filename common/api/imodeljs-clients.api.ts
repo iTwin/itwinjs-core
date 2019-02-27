@@ -730,22 +730,6 @@ class IModelHubGlobalEvent extends IModelHubBaseEvent {
   projectId?: string;
 }
 
-// @public (undocumented)
-enum IModelHubPermissions {
-  // (undocumented)
-  CreateIModel = 1,
-  // (undocumented)
-  ManageResources = 8,
-  // (undocumented)
-  ManageVersions = 16,
-  // (undocumented)
-  ModifyIModel = 4,
-  // (undocumented)
-  None = 0,
-  // (undocumented)
-  ReadIModel = 2
-}
-
 // @public
 class IModelQuery extends InstanceIdQuery {
   byName(name: string): this;
@@ -1054,19 +1038,6 @@ class Query {
   top(n: number): this;
 }
 
-// WARNING: configRelyingPartyUri has incomplete type information
-// @public
-class RbacClient extends WsgClient {
-  constructor();
-  getIModelHubPermissions(alctx: ActivityLoggingContext, token: AccessToken, projectId: string): Promise<IModelHubPermissions>;
-  getProjects(alctx: ActivityLoggingContext, token: AccessToken, queryOptions?: RbacRequestQueryOptions): Promise<RbacProject[]>;
-  protected getRelyingPartyUrl(): string;
-  protected getUrlSearchKey(): string;
-  getUsers(alctx: ActivityLoggingContext, token: AccessToken, projectId: string, queryOptions?: RbacRequestQueryOptions): Promise<RbacUser[]>;
-  // (undocumented)
-  static readonly searchKey: string;
-}
-
 // @public
 class RbacProject extends WsgInstance {
 }
@@ -1218,9 +1189,9 @@ interface RequestOptions {
   stream?: any;
   // (undocumented)
   timeout?: number | {
-          deadline?: number;
-          response?: number;
-      };
+    deadline?: number;
+    response?: number;
+  };
   // (undocumented)
   useCorsProxy?: boolean;
 }
@@ -1488,46 +1459,46 @@ interface UsageUserInfo {
 // @public
 class UserInfo {
   constructor(
-      id: string, 
-      email?: {
-          id: string;
-          isVerified?: boolean | undefined;
-      } | undefined, 
-      profile?: {
-          firstName: string;
-          lastName: string;
-          name?: string | undefined;
-          preferredUserName?: string | undefined;
-      } | undefined, 
-      organization?: {
-          id: string;
-          name: string;
-      } | undefined, 
-      featureTracking?: {
-          ultimateSite: string;
-          usageCountryIso: string;
-      } | undefined);
+    id: string,
+    email?: {
+      id: string;
+      isVerified?: boolean | undefined;
+    } | undefined,
+    profile?: {
+      firstName: string;
+      lastName: string;
+      name?: string | undefined;
+      preferredUserName?: string | undefined;
+    } | undefined,
+    organization?: {
+      id: string;
+      name: string;
+    } | undefined,
+    featureTracking?: {
+      ultimateSite: string;
+      usageCountryIso: string;
+    } | undefined);
   email?: {
-          id: string;
-          isVerified?: boolean | undefined;
-      } | undefined;
+    id: string;
+    isVerified?: boolean | undefined;
+  } | undefined;
   featureTracking?: {
-          ultimateSite: string;
-          usageCountryIso: string;
-      } | undefined;
+    ultimateSite: string;
+    usageCountryIso: string;
+  } | undefined;
   // (undocumented)
   static fromJson(jsonObj: any): UserInfo;
   id: string;
   organization?: {
-          id: string;
-          name: string;
-      } | undefined;
+    id: string;
+    name: string;
+  } | undefined;
   profile?: {
-          firstName: string;
-          lastName: string;
-          name?: string | undefined;
-          preferredUserName?: string | undefined;
-      } | undefined;
+    firstName: string;
+    lastName: string;
+    name?: string | undefined;
+    preferredUserName?: string | undefined;
+  } | undefined;
 }
 
 // @public

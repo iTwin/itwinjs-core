@@ -4,8 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as chai from "chai";
-import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
-import { AccessToken, RbacClient, RbacUser } from "@bentley/imodeljs-clients";
+import { AccessToken } from "@bentley/imodeljs-clients";
 import { TestConfig, TestUsers } from "./TestConfig";
 
 chai.should();
@@ -35,13 +34,6 @@ export class HubAccessTestValidator {
   public async validateConnectAccess(accessToken: AccessToken) {
     const projectId = await TestConfig.queryProjectId(accessToken, this._testProjectName);
     chai.expect(projectId).to.be.equal(this._testProjectId);
-  }
-
-  public async validateRbacAccess(accessToken: AccessToken) {
-    const rbacClient = new RbacClient();
-    const actx = new ActivityLoggingContext("");
-    const users: RbacUser[] = await rbacClient.getUsers(actx, accessToken, this._testProjectId);
-    chai.expect(users.length !== 0);
   }
 
   public async validateIModelHubAccess(accessToken: AccessToken) {

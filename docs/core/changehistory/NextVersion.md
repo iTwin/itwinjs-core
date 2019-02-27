@@ -65,3 +65,14 @@ Fixes to OidcDelegationClient-s. Backend applications can now exchange -
 ## Logger Configuration Changes
 
 The BunyanLoggerConfig, FluentdBunyanLoggerConfig, FluentdLoggerStream, and SeqLoggerConfig classes have been moved out of @bentley/bentleyjs-core and into the new @bentley/logger-config package.
+
+## Removed RbacClient
+
+The RBAC API is considered internal and has been removed from the iModel.js stack. More comments on the individual methods that have been removed below.
+
+```
+RbacClient.getProjects() // Use ConnectClient.getProjects() instead
+RbacClient.getIModelHubPermissions() // The plan is for iModelHub to support this API.
+RbacClient.getUsers() // This method is little used. Bentley internal clients can make the necessary REST API calls directly.
+
+```
