@@ -6,13 +6,13 @@
 
 // Common
 $button-stroke-width: 2px;
-$button-stroke-color: $background-5;
+$button-stroke-color: $buic-background-toolbutton-stroke;
 $button-stroke-radius: 3px;
 
-$icon-color: rgba($text-dark, 0.88);
-$pressed-icon-color: rgba($text-light, 0.88);
+$icon-color: $buic-icon-color;
+$pressed-icon-color: $buic-icon-color-reverse;
 $hovered-icon-color: $primary-tone;
-$icon-shadow: drop-shadow(0 1px 0 $text-light);
+$icon-shadow: drop-shadow(0 1px 0 $buic-icon-color-reverse);
 $no-shadow: drop-shadow(0 0 0 transparent);
 
 $bar-width: 8px;

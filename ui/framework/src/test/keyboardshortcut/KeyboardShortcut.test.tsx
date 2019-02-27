@@ -54,7 +54,7 @@ describe("KeyboardShortcut", () => {
       expect(() => KeyboardShortcutManager.loadKeyboardShortcut({ key: "a" })).to.throw(Error);
     });
 
-    it("Should provide and execute item", () => {
+    it("Should provide and execute item", async () => {
       KeyboardShortcutManager.loadKeyboardShortcut({
         key: "b",
         item: testCommand,
@@ -66,9 +66,9 @@ describe("KeyboardShortcut", () => {
         expect(shortcut.item).to.eq(testCommand);
 
         shortcut.itemPicked();
-        setImmediate(() => {
-          expect(testSpyMethod.calledOnce).to.be.true;
-        });
+
+        await TestUtils.flushAsyncOperations();
+        expect(testSpyMethod.calledOnce).to.be.true;
       }
     });
 
@@ -188,7 +188,7 @@ describe("KeyboardShortcut", () => {
       remove();
     });
 
-    it("processKey should invoke item", () => {
+    it("processKey should invoke item", async () => {
       KeyboardShortcutManager.loadKeyboardShortcut({
         key: "f",
         item: testCommand,
@@ -199,9 +199,9 @@ describe("KeyboardShortcut", () => {
 
       const processed = KeyboardShortcutManager.processKey("f");
       expect(processed).to.be.true;
-      setImmediate(() => {
-        expect(testSpyMethod.calledOnce).to.be.true;
-      });
+
+      await TestUtils.flushAsyncOperations();
+      expect(testSpyMethod.calledOnce).to.be.true;
 
       const processedG = KeyboardShortcutManager.processKey("g");
       expect(processedG).to.be.false;

@@ -5,9 +5,12 @@
 @import "@bentley/ui-core/lib/ui-core/index";
 
 .components-text-editor {
-  font-family: $uicore-font-family;
-  font-size: $uicore-font-size;
-  background: #fff;
-  width: 100%;
-  /* height: 100%; causes text input field to be larger than container - usually only in last row of ToolSetting.*/
+  font-family:      $uicore-font-family;
+  font-size:        $uicore-font-size;
+  color:            $buic-foreground-body;
+  background:       $buic-background-control;
+  border:           1px solid $buic-inputs-border;
+  box-sizing:       border-box;
+  width:            100%;
+  height:           100%;
 }

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Support for sending large RPC binary payloads in configurable chunks.",
+      "packageName": "@bentley/imodeljs-common",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-common",
+  "email": "steve.wilson@bentley.com"
+}

@@ -10,21 +10,20 @@
   align-items: center;
   padding-left: 10px;
   cursor: pointer;
-  color: $text-light;
+  color: $buic-text-color;
   position: relative;
   >.nz-icon {
     grid-row: 1;
-    color: $text-dark;
-    background-color: $text-light;
+    color: $buic-icon-color;
   }
   >.nz-label {
     grid-row: 1;
   }
   &.nz-is-active {
-    color: $primary-tint;
+    color: $primary-base;
   }
   &:hover {
-    color: $primary-hover;
+    color: $primary-tone;
   }
 }
 
@@ -32,7 +31,7 @@
   content: '';
   display: block;
   position: absolute;
-  background-color: #008be1;
+  background-color: $primary-base;
   left: 0;
   top: 0;
   bottom: 0;

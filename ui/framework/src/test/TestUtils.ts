@@ -173,4 +173,10 @@ export default class TestUtils {
     contentGroups.push(testContentGroup1);
     ConfigurableUiManager.loadContentGroups(contentGroups);
   }
+
+  /** Waits until all async operations finish */
+  public static async flushAsyncOperations() {
+    return new Promise((resolve) => setTimeout(resolve));
+  }
+
 }

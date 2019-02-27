@@ -3,9 +3,8 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 @import "@bentley/ui-core/lib/ui-core/colors";
-@import "../../../../theme/_theme";
 
-@include nz-style-component(nz-footer-message-content-status-message) {
+.nz-footer-message-content-status-message {
   $min-width: 370px;
   $min-height: 40px;
   $border-width: 1px;
@@ -23,7 +22,7 @@
   };
 
   > .nz-icon {
-    color: $text-light;
+    color: $buic-foreground-accessory;
     width: $icon-width;
     display: flex;
     align-items: center;
@@ -31,46 +30,26 @@
   }
 
   &.nz-status-information {
-    border-color: $primary-base;
+    border-color: $buic-accessory-primary;
 
     > .nz-icon {
-      background-color: $primary-base;
+      background-color: $buic-accessory-primary;
     }
   }
 
   &.nz-status-success {
-    border-color: $accent-base;
+    border-color: $buic-accessory-success;
 
     > .nz-icon {
-      background-color: $accent-base;
+      background-color: $buic-accessory-success;
     }
   }
 
   &.nz-status-error {
-    border-color: $alert-base;
+    border-color: $buic-accessory-alert;
 
     > .nz-icon {
-      background-color: $alert-base;
+      background-color: $buic-accessory-alert;
     }
   }
-}
-
-@include nz-dark-component() {
-  background-color: rgb(90, 105, 115);
-
-  &.nz-status-information {
-    border-color: $primary-tint;
-  }
-
-  &.nz-status-success {
-    border-color: $accent-tint;
-  }
-
-  &.nz-status-error {
-    border-color: $alert-tint;
-  }
-}
-
-@include nz-light-component() {
-  background-color: rgb(255, 255, 255);
 }

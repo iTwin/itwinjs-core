@@ -303,7 +303,7 @@ export class Point3d extends XYZ {
     return Geometry.crossProductXYXY(pointA.x - this.x, pointA.y - this.y, pointB.x - this.x, pointB.y - this.y);
   }
   /** Return a point interpolated between this point and the right param. */
-  public interpolate(fraction: number, other: Point3d, result?: Point3d): Point3d {
+  public interpolate(fraction: number, other: XYAndZ, result?: Point3d): Point3d {
     if (fraction <= 0.5)
       return Point3d.create(this.x + fraction * (other.x - this.x), this.y + fraction * (other.y - this.y), this.z + fraction * (other.z - this.z), result);
     const t: number = fraction - 1.0;

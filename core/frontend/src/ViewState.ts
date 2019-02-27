@@ -30,7 +30,9 @@ import { TileTree } from "./tile/TileTree";
 import { DecorateContext, SceneContext } from "./ViewContext";
 import { Viewport } from "./Viewport";
 
-/** Describes the orientation of the grid displayed within a [[Viewport]]. */
+/** Describes the orientation of the grid displayed within a [[Viewport]].
+ * @public
+ */
 export const enum GridOrientationType {
   /** Oriented with the view. */
   View = 0,
@@ -44,7 +46,9 @@ export const enum GridOrientationType {
   AuxCoord = 4,
 }
 
-/** Describes the result of a viewing operation such as those exposed by [[ViewState]] and [[Viewport]]. */
+/** Describes the result of a viewing operation such as those exposed by [[ViewState]] and [[Viewport]].
+ * @public
+ */
 export const enum ViewStatus {
   Success = 0,
   ViewNotInitialized,
@@ -64,9 +68,9 @@ export const enum ViewStatus {
   InvalidViewport,
 }
 
-/**
- * Margins for white space to be left around view volumes for [[ViewState.lookAtVolume]].
+/** Margins for white space to be left around view volumes for [[ViewState.lookAtVolume]].
  * Values mean "fraction of view size" and must be between 0 and .25.
+ * @public
  */
 export class MarginPercent {
   constructor(public left: number, public top: number, public right: number, public bottom: number) {
@@ -78,8 +82,7 @@ export class MarginPercent {
   }
 }
 
-/**
- * A cancelable paginated request for subcategory information.
+/** A cancelable paginated request for subcategory information.
  * @see ViewSubCategories
  * @hidden
  */
@@ -151,8 +154,7 @@ export class SubCategoriesRequest {
   }
 }
 
-/**
- * Stores information about sub-categories specific to a ViewState. Functions as a lazily-populated cache.
+/** Stores information about sub-categories specific to a ViewState. Functions as a lazily-populated cache.
  * @hidden
  */
 export class ViewSubCategories {
@@ -232,10 +234,10 @@ export class ViewSubCategories {
   }
 }
 
-/**
- * The front-end state of a [[ViewDefinition]] element.
+/** The front-end state of a [[ViewDefinition]] element.
  * A ViewState is typically associated with a [[Viewport]] to display the contents of the view on the screen.
  * * @see [Views]($docs/learning/frontend/Views.md)
+ * @public
  */
 export abstract class ViewState extends ElementState {
   protected _featureOverridesDirty = true;
@@ -265,8 +267,7 @@ export abstract class ViewState extends ElementState {
     }
   }
 
-  /**
-   * Create a new ViewState object from a set of properties. Generally this is called internally by [[IModelConnection.Views.load]] after the properties
+  /** Create a new ViewState object from a set of properties. Generally this is called internally by [[IModelConnection.Views.load]] after the properties
    * have been read from an iModel. But, it can also be used to create a ViewState in memory, from scratch or from properties stored elsewhere.
    */
   public static createFromProps(_props: ViewStateProps, _iModel: IModelConnection): ViewState | undefined { return undefined; }
@@ -426,8 +427,7 @@ public cancelAllTileLoads(): void {
       return !ovr.invisible;
   }
 
-  /**
-   * Enable or disable display of elements belonging to a set of categories specified by Id.
+  /** Enable or disable display of elements belonging to a set of categories specified by Id.
    * Visibility of individual subcategories belonging to a category can be controlled separately through the use of [[SubCategoryOverride]]s.
    * By default, enabling display of a category does not affect display of subcategories thereof which have been overridden to be invisible.
    * @param categories The Id(s) of the categories to which the change should be applied. No other categories will be affected.
@@ -670,8 +670,7 @@ public cancelAllTileLoads(): void {
     return { map: Map4d.createVectorFrustum(origin, xExtent, yExtent, zExtent, frustFraction), frustFraction };
   }
 
-  /**
-   * Calculate the world coordinate Frustum from the parameters of this ViewState.
+  /** Calculate the world coordinate Frustum from the parameters of this ViewState.
    * @param result Optional Frustum to hold result. If undefined a new Frustum is created.
    * @returns The 8-point Frustum with the corners of this ViewState, or undefined if the parameters are invalid.
    */
@@ -685,8 +684,7 @@ public cancelAllTileLoads(): void {
     return box;
   }
 
-  /**
-   * Initialize the origin, extents, and rotation from an existing Frustum
+  /** Initialize the origin, extents, and rotation from an existing Frustum
    * This function is commonly used in the implementation of [[ViewTool]]s as follows:
    *  1. Obtain the ViewState's initial frustum.
    *  2. Modify the frustum based on user input.
@@ -980,8 +978,8 @@ public cancelAllTileLoads(): void {
     const x = JsonUtils.asInt(this.getDetail("gridSpaceX"), 1.0);
     return { x, y: JsonUtils.asInt(this.getDetail("gridSpaceY"), x) };
   }
-  /**
-   * Change the volume that this view displays, keeping its current rotation.
+
+  /** Change the volume that this view displays, keeping its current rotation.
    * @param volume The new volume, in world-coordinates, for the view. The resulting view will show all of worldVolume, by fitting a
    * view-axis-aligned bounding box around it. For views that are not aligned with the world coordinate system, this will sometimes
    * result in a much larger volume than worldVolume.
@@ -997,8 +995,7 @@ public cancelAllTileLoads(): void {
     return this.lookAtViewAlignedVolume(Range3d.createArray(rangeBox), aspect, margin);
   }
 
-  /**
-   * look at a volume of space defined by a range in view local coordinates, keeping its current rotation.
+  /** Look at a volume of space defined by a range in view local coordinates, keeping its current rotation.
    * @param volume The new volume, in view-coordinates, for the view. The resulting view will show all of volume.
    * @param aspect The X/Y aspect ratio of the view into which the result will be displayed. If the aspect ratio of the volume does not
    * match aspect, the shorter axis is lengthened and the volume is centered. If aspect is undefined, no adjustment is made.
@@ -1101,7 +1098,7 @@ public cancelAllTileLoads(): void {
       if (classifier.isActive) {
         const classifierModel = this.iModel.models.getLoaded(classifier.modelId) as GeometricModelState;
         if (undefined !== classifierModel) {
-          classifierModel.loadTileTree(true, classifier.expand);
+          classifierModel.loadTileTree(false, undefined, true, classifier.expand);
           if (undefined !== classifierModel.classifierTileTree)
             classifierModel.classifierTileTree.drawScene(context);
         }
@@ -1109,8 +1106,7 @@ public cancelAllTileLoads(): void {
     }
   }
 
-  /**
-   * Set the rotation of this ViewState to the supplied rotation, by rotating it about a point.
+  /** Set the rotation of this ViewState to the supplied rotation, by rotating it about a point.
    * @param rotation The new rotation matrix for this ViewState.
    * @param point The point to rotate about. If undefined, use the [[getTargetPoint]].
    */
@@ -1134,6 +1130,7 @@ public cancelAllTileLoads(): void {
 
 /** Defines the state of a view of 3d models.
  * @see [ViewState Parameters]($docs/learning/frontend/views#viewstate-parameters)
+ * @public
  */
 export abstract class ViewState3d extends ViewState {
   /** True if the camera is valid. */
@@ -1255,8 +1252,7 @@ export abstract class ViewState3d extends ViewState {
 
   public getDisplayStyle3d() { return this.displayStyle as DisplayStyle3dState; }
 
-  /**
-   * Turn the camera off for this view. After this call, the camera parameters in this view definition are ignored and views that use it will
+  /** Turn the camera off for this view. After this call, the camera parameters in this view definition are ignored and views that use it will
    * display with an orthographic (infinite focal length) projection of the view volume from the view direction.
    * @note To turn the camera back on, call #lookAt
    */
@@ -1280,8 +1276,7 @@ export abstract class ViewState3d extends ViewState {
     return this.getEyePoint().plusScaled(viewZ, -1.0 * this.getFocusDistance(), result);
   }
 
-  /**
-   * Position the camera for this view and point it at a new target point.
+  /** Position the camera for this view and point it at a new target point.
    * @param eyePoint The new location of the camera.
    * @param targetPoint The new location to which the camera should point. This becomes the center of the view on the focus plane.
    * @param upVector A vector that orients the camera's "up" (view y). This vector must not be parallel to the vector from eye to target.
@@ -1357,8 +1352,7 @@ export abstract class ViewState3d extends ViewState {
     return ViewStatus.Success;
   }
 
-  /**
-   * Position the camera for this view and point it at a new target point, using a specified lens angle.
+  /** Position the camera for this view and point it at a new target point, using a specified lens angle.
    * @param eyePoint The new location of the camera.
    * @param targetPoint The new location to which the camera should point. This becomes the center of the view on the focus plane.
    * @param upVector A vector that orients the camera's "up" (view y). This vector must not be parallel to the vector from eye to target.
@@ -1385,8 +1379,7 @@ export abstract class ViewState3d extends ViewState {
     return this.lookAt(eyePoint, targetPoint, upVector, delta, frontDistance, backDistance);
   }
 
-  /**
-   * Move the camera relative to its current location by a distance in camera coordinates.
+  /** Move the camera relative to its current location by a distance in camera coordinates.
    * @param distance to move camera. Length is in world units, direction relative to current camera orientation.
    * @returns Status indicating whether the camera was successfully positioned. See values at [[ViewStatus]] for possible errors.
    */
@@ -1395,8 +1388,7 @@ export abstract class ViewState3d extends ViewState {
     return this.moveCameraWorld(distWorld);
   }
 
-  /**
-   * Move the camera relative to its current location by a distance in world coordinates.
+  /** Move the camera relative to its current location by a distance in world coordinates.
    * @param distance in world units.
    * @returns Status indicating whether the camera was successfully positioned. See values at [[ViewStatus]] for possible errors.
    */
@@ -1411,8 +1403,7 @@ export abstract class ViewState3d extends ViewState {
     return this.lookAt(newEyePt, newTarget, this.getYVector());
   }
 
-  /**
-   * Rotate the camera from its current location about an axis relative to its current orientation.
+  /** Rotate the camera from its current location about an axis relative to its current orientation.
    * @param angle The angle to rotate the camera.
    * @param axis The axis about which to rotate the camera. The axis is a direction relative to the current camera orientation.
    * @param aboutPt The point, in world coordinates, about which the camera is rotated. If aboutPt is undefined, the camera rotates in place
@@ -1425,8 +1416,7 @@ export abstract class ViewState3d extends ViewState {
     return this.rotateCameraWorld(angle, axisWorld, aboutPt);
   }
 
-  /**
-   * Rotate the camera from its current location about an axis in world coordinates.
+  /** Rotate the camera from its current location about an axis in world coordinates.
    * @param angle The angle to rotate the camera.
    * @param axis The world-based axis (direction) about which to rotate the camera.
    * @param aboutPt The point, in world coordinates, about which the camera is rotated. If aboutPt is undefined, the camera rotates in place
@@ -1455,8 +1445,7 @@ export abstract class ViewState3d extends ViewState {
     return eyeOrg.z;
   }
 
-  /**
-   * Place the eyepoint of the camera so it is aligned with the center of the view. This removes any 1-point perspective skewing that may be
+  /** Place the eyepoint of the camera so it is aligned with the center of the view. This removes any 1-point perspective skewing that may be
    * present in the current view.
    * @param backDistance If defined, the new the distance from the eyepoint to the back plane. Otherwise the distance from the
    * current eyepoint is used.
@@ -1669,6 +1658,7 @@ export abstract class ViewState3d extends ViewState {
 
 /** Defines a view of one or more SpatialModels.
  * The list of viewed models is stored by the ModelSelector.
+ * @public
  */
 export class SpatialViewState extends ViewState3d {
   public modelSelector: ModelSelectorState;
@@ -1760,7 +1750,9 @@ export class SpatialViewState extends ViewState3d {
   }
 }
 
-/** Defines a spatial view that displays geometry on the image plane using a parallel orthographic projection. */
+/** Defines a spatial view that displays geometry on the image plane using a parallel orthographic projection.
+ * @public
+ */
 export class OrthographicViewState extends SpatialViewState {
   public static get className() { return "OrthographicViewDefinition"; }
 
@@ -1769,7 +1761,9 @@ export class OrthographicViewState extends SpatialViewState {
   public supportsCamera(): boolean { return false; }
 }
 
-/** Defines the state of a view of a single 2d model. */
+/** Defines the state of a view of a single 2d model.
+ * @public
+ */
 export abstract class ViewState2d extends ViewState {
   public readonly origin: Point2d;
   public readonly delta: Point2d;
@@ -1851,7 +1845,9 @@ export abstract class ViewState2d extends ViewState {
   public createAuxCoordSystem(acsName: string): AuxCoordSystemState { return AuxCoordSystem2dState.createNew(acsName, this.iModel); }
 }
 
-/** A view of a DrawingModel */
+/** A view of a DrawingModel
+ * @public
+ */
 export class DrawingViewState extends ViewState2d {
   public static createFromProps(props: ViewStateProps, iModel: IModelConnection): ViewState | undefined {
     const cat = new CategorySelectorState(props.categorySelectorProps, iModel);

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Wrapped PresentationRpcImpl method response values in PresentationRpcInterface object.",
+      "packageName": "@bentley/presentation-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-backend",
+  "email": "elonas.seviakovas@bentley.com"
+}

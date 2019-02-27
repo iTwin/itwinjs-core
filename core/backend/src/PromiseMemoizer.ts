@@ -12,8 +12,8 @@ export class QueryablePromise<T> {
   public get isPending(): boolean { return !this.isFulfilled && !this.isRejected; }
   public get isFulfilled(): boolean { return !!this.result; }
   public get isRejected(): boolean { return !!this.error; }
-  public constructor(private readonly _promise: Promise<T>) {
-    this._promise
+  public constructor(public readonly promise: Promise<T>) {
+    this.promise
       .then((res: T) => this.result = res)
       .catch((err: any) => this.error = err);
   }

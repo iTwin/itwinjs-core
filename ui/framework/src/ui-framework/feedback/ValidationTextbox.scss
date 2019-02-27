@@ -24,7 +24,7 @@
     border-width: 1px;
   }
   .ValidationTextbox-invalid {
-    border: 2px solid $alert-tint;
+    border: 2px solid $alert-base;
   }
   .ValidationTextbox-icon {
     position: absolute;
@@ -37,9 +37,9 @@
     top: 0px;
     right: 0px;
     text-align: center;
-    color: black;
+    color: $buic-icon-color;
     &:hover {
-      color: $uicore-icons-blue;
+      color: $buic-foreground-primary;
     }
   }
 }

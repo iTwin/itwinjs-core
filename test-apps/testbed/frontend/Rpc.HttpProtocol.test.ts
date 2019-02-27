@@ -2,7 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { RpcRequestEvent, RpcRequest, RpcOperation } from "@bentley/imodeljs-common";
+import { RpcRequestEvent, RpcRequest, RpcOperation, ServerError, ServerTimeoutError } from "@bentley/imodeljs-common";
 import { TestRpcInterface, TestOp1Params } from "../common/TestRpcInterface";
 import { assert } from "chai";
 import { TestbedConfig } from "../common/TestbedConfig";
@@ -43,6 +43,22 @@ if (TestbedConfig.cloudRpc) {
 
       assert.equal(pendingsReceived, expectedPendings);
       assert.equal(remoteSum, params.sum());
+    });
+
+    it("should reject an unknown status code", async () => {
+      try {
+        await TestRpcInterface.getClient().interceptSendTimeoutStatus();
+        assert(false);
+      } catch (err) {
+        assert(err instanceof ServerTimeoutError && err.errorNumber === 504);
+      }
+
+      try {
+        await TestRpcInterface.getClient().interceptSendUnknownStatus();
+        assert(false);
+      } catch (err) {
+        assert(err instanceof ServerError && err.errorNumber === 567);
+      }
     });
   });
 }

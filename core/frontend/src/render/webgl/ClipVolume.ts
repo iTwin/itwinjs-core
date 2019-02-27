@@ -248,7 +248,7 @@ export class ClipMaskVolume extends RenderClipVolume implements RenderMemory.Con
     assert(nPoints !== 0);
 
     for (let i = 0; i < nPoints; i++)
-      vertices.add(pPoints.getPoint3dAt(i));
+      vertices.add(pPoints.getPoint3dAtUncheckedPointIndex(i));
 
     const visitor = IndexedPolyfaceVisitor.create(polyface, 0);
     while (visitor.moveToNextFacet())

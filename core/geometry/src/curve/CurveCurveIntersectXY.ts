@@ -320,8 +320,8 @@ class CurveCurveIntersectXY extends NullGeometryHandler {
       const radians = new GrowableFloat64Array(2);
       const numRoots = AnalyticRoots.appendImplicitLineUnitCircleIntersections(alpha, beta, gamma, cosines, sines, radians);
       for (let i = 0; i < numRoots; i++) {
-        const arcPoint = data.center.plus2Scaled(data.vector0, cosines.at(i), data.vector90, sines.at(i));
-        const arcFraction = data.sweep.radiansToSignedPeriodicFraction(radians.at(i));
+        const arcPoint = data.center.plus2Scaled(data.vector0, cosines.atUncheckedIndex(i), data.vector90, sines.atUncheckedIndex(i));
+        const arcFraction = data.sweep.radiansToSignedPeriodicFraction(radians.atUncheckedIndex(i));
         const lineFraction = SmallSystem.lineSegment3dHXYClosestPointUnbounded(pointA0H, pointA1H, arcPoint);
         if (lineFraction !== undefined && this.acceptFraction(extendA0, lineFraction, extendA1) && this.acceptFraction(extendB0, arcFraction, extendB1)) {
           this.recordPointWithLocalFractions(lineFraction, cpA, fractionA0, fractionA1,
@@ -344,8 +344,8 @@ class CurveCurveIntersectXY extends NullGeometryHandler {
       const radians = new GrowableFloat64Array(2);
       const numRoots = AnalyticRoots.appendImplicitLineUnitCircleIntersections(alpha, beta, gamma, cosines, sines, radians);
       for (let i = 0; i < numRoots; i++) {
-        const arcPoint = data.center.plus2Scaled(data.vector0, cosines.at(i), data.vector90, sines.at(i));
-        const arcFraction = data.sweep.radiansToSignedPeriodicFraction(radians.at(i));
+        const arcPoint = data.center.plus2Scaled(data.vector0, cosines.atUncheckedIndex(i), data.vector90, sines.atUncheckedIndex(i));
+        const arcFraction = data.sweep.radiansToSignedPeriodicFraction(radians.atUncheckedIndex(i));
         const lineFraction = SmallSystem.lineSegment3dXYClosestPointUnbounded(pointA0Local, pointA1Local, arcPoint);
         if (lineFraction !== undefined && this.acceptFraction(extendA0, lineFraction, extendA1) && this.acceptFraction(extendB0, arcFraction, extendB1)) {
           this.recordPointWithLocalFractions(lineFraction, cpA, fractionA0, fractionA1,

@@ -18,6 +18,7 @@ import { SheetViewState } from "./Sheet";
 
 /** Interface for drawing "decorations" into, or on top of, the active [[Viewport]]s.
  * Decorators generate [[Decorations]].
+ * @public
  */
 export interface Decorator {
   /** Implement this method to add Decorations into the supplied DecorateContext. */
@@ -57,13 +58,13 @@ export interface SelectedViewportChangedArgs {
   previous?: ScreenViewport;
 }
 
-/**
- * The ViewManager holds the list of opened views, plus the *selected view*. It also provides notifications of view open/close and suspend/resume.
+/** The ViewManager holds the list of opened views, plus the *selected view*. It also provides notifications of view open/close and suspend/resume.
  * Applications must call [[addViewport]] when new Viewports that should be associated with user events are created.
  *
  * A single ViewManager is created when [[IModelApp.startup]] is called. It can be accessed via the static member [[IModelApp.viewManager]].
  *
  * The ViewManager controls the render loop, which causes the contents of each registered [[Viewport]] to update on the screen.
+ * @public
  */
 export class ViewManager {
   public inDynamicsMode = false;
@@ -118,22 +119,19 @@ export class ViewManager {
    */
   public readonly onViewSuspend = new BeUiEvent<ScreenViewport>();
 
-  /**
-   * Called after a suspended view is resumed. This can happen when a minimized application is restored
+  /** Called after a suspended view is resumed. This can happen when a minimized application is restored
    * or, on a tablet, when the application is moved to the foreground.
    */
   public readonly onViewResume = new BeUiEvent<ScreenViewport>();
 
-  /**
-   * Called at the beginning of each tick of the render loop, before any viewports have been updated.
+  /** Called at the beginning of each tick of the render loop, before any viewports have been updated.
    * The render loop is typically invoked by a requestAnimationFrame() callback. It will not be invoked if the ViewManager is tracking no viewports.
    * @note Due to the frequency of this event, avoid performing expensive work inside event listeners.
    * @see [[ViewManager.onFinishRender]]
    */
   public readonly onBeginRender = new BeEvent<() => void>();
 
-  /**
-   * Called at the end of each tick of the render loop, after all viewports have been updated.
+  /** Called at the end of each tick of the render loop, after all viewports have been updated.
    * The render loop is typically invoked by a requestAnimationFrame() callback. It will not be invoked if the ViewManager is tracking no viewports.
    * @note Due to the frequency of this event, avoid performing expensive work inside event listeners.
    * @see [[ViewManager.onBeginRender]]
@@ -205,8 +203,7 @@ export class ViewManager {
   /** Get the first opened view. */
   public getFirstOpenView(): ScreenViewport | undefined { return this._viewports.length > 0 ? this._viewports[0] : undefined; }
 
-  /**
-   * Add a new Viewport to the list of opened views and create an EventController for it.
+  /** Add a new Viewport to the list of opened views and create an EventController for it.
    * @param newVp the Viewport to add
    * @returns SUCCESS if vp was successfully added, ERROR if it was already present.
    * @note raises onViewOpen event with newVp.
@@ -229,8 +226,7 @@ export class ViewManager {
     return BentleyStatus.SUCCESS;
   }
 
-  /**
-   * Remove a Viewport from the list of opened views, and optionally dispose of it.
+  /** Remove a Viewport from the list of opened views, and optionally dispose of it.
    * Typically a Viewport is dropped when it is no longer of any use to the application, in which case it should also be
    * disposed of as it may hold significant GPU resources.
    * However in some cases a Viewport may be temporarily dropped to suspend rendering; and subsequently re-added to
@@ -325,7 +321,6 @@ export class ViewManager {
   /** Drop (remove) a [[Decorator]] so it is no longer active.
    * @param decorator The Decorator to drop.
    * @note Does nothing if decorator is not currently active.
-   *
    */
   public dropDecorator(decorator: Decorator) {
     const index = this.decorators.indexOf(decorator);
@@ -335,7 +330,7 @@ export class ViewManager {
   }
 
   /** Get the tooltip for a pickable decoration.
-   *  @hidden
+   * @hidden
    */
   public async getDecorationToolTip(hit: HitDetail): Promise<HTMLElement | string> {
     for (const decorator of this.decorators) {
@@ -346,7 +341,7 @@ export class ViewManager {
   }
 
   /** Allow a pickable decoration to handle a button event that identified it for the SelectTool.
-   *  @hidden
+   * @hidden
    */
   public async onDecorationButtonEvent(hit: HitDetail, ev: BeButtonEvent): Promise<EventHandled> {
     for (const decorator of IModelApp.viewManager.decorators) {
@@ -357,7 +352,7 @@ export class ViewManager {
   }
 
   /** Allow a pickable decoration to be snapped to by AccuSnap or TentativePoint.
-   *  @hidden
+   * @hidden
    */
   public getDecorationGeometry(hit: HitDetail): GeometryStreamProps | undefined {
     for (const decorator of IModelApp.viewManager.decorators) {
@@ -383,6 +378,5 @@ export class ViewManager {
     if (undefined !== this.selectedView) {
       this.selectedView.setCursor(cursor);
     }
-
   }
 }

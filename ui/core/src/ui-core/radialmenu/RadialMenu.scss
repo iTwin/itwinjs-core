@@ -19,12 +19,12 @@
     margin-top: -50%;
 
     .radial-menu-sector {
-      stroke: $uicore-inputs-border-color;
-      fill: $uicore-white;
+      stroke: $buic-background-panel-stroke;
+      fill: $buic-background-control;
       stroke-width: 1px;
 
       &.selected {
-        fill: $uicore-blue;
+        fill: $buic-row-selection;
       }
     }
 
@@ -42,7 +42,7 @@
 
         .radial-menu-button-content {
           cursor: default;
-          color: $uicore-text-color;
+          color: $buic-text-color;
           font-size: $uicore-font-size-small;
           user-select: none;
         }

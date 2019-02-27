@@ -60,7 +60,7 @@ export class GrowableFloat64Array {
    * @param index index of entry to set
    * @param value value to set
    */
-  public setAt(index: number, value: number) {
+  public setAtUncheckedIndex(index: number, value: number) {
     this._data[index] = value;
   }
 
@@ -166,7 +166,7 @@ export class GrowableFloat64Array {
     }
   }
 
-  public at(index: number): number {
+  public atUncheckedIndex(index: number): number {
     return this._data[index];
   }
 

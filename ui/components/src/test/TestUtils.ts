@@ -39,7 +39,7 @@ export default class TestUtils {
 
   /** Waits until all async operations finish */
   public static async flushAsyncOperations() {
-    return new Promise((resolve) => setImmediate(resolve));
+    return new Promise((resolve) => setTimeout(resolve));
   }
 
   public static createPrimitiveStringProperty(name: string, rawValue: string, displayValue: string = rawValue.toString()) {

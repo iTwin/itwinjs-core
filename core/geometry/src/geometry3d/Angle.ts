@@ -33,6 +33,12 @@ export class Angle implements BeJSONFunctions {
      */
     public static createRadians(radians: number) { return new Angle(radians); }
     /**
+     * Return a (new) Angle object, with angle scaled from existing angle.
+     * @param scale scale factor to apply to angle.
+     */
+    public cloneScaled(scale: number) { return new Angle(this.radians * scale); }
+
+    /**
      * Set this angle to a value given in radians.
      * @param radians angle given in radians
      */

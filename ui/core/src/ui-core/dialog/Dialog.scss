@@ -92,16 +92,17 @@
       display: flex;
       flex-grow: 1;
       flex-direction: column;
-      border: 1px solid $uicore-gray-3;
+      border: 1px solid $buic-background-dialog-stroke;
       border-radius: $uicore-border-radius;
-      background-color: $uicore-gray-c;
+      background-color: $buic-background-dialog;
+      color: $buic-text-color;
       padding: 0;
 
       > .dialog-head {
         flex-shrink: 0;
         align-items: center;
-        background-color: $uicore-blue;
-        color: $uicore-blue-highlight;
+        background-color: $buic-background-titlebar;
+        color: $buic-text-color;
         display: flex;
         padding: 6px;
 
@@ -126,9 +127,10 @@
           line-height: $uicore-font-size-title;
           flex: 0 0 $uicore-icons-medium;
           text-align: center;
+          color: $buic-text-color-muted;
 
           &:hover {
-            color: $uicore-white;
+            color: $buic-foreground-activehover;
           }
         }
       }

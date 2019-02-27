@@ -24,9 +24,11 @@ import {
   OverallContent,
   AppNotificationManager,
   IModelInfo,
+  ProjectInfo,
   FrontstageManager,
   createAction, ActionsUnion, DeepReadonly, SyncUiEventDispatcher,
 } from "@bentley/ui-framework";
+
 import { Id64String } from "@bentley/bentleyjs-core";
 
 import getSupportedRpcs from "../common/rpcs";
@@ -250,15 +252,44 @@ SampleAppIModelApp.initialize().then(() => { // tslint:disable-line:no-floating-
     color: "red",
     marginLeft: "10px",
   };
+
   const applicationIcon = React.createElement(WebFontIcon, { iconName: "icon-construction-worker", style: applicationIconStyle });
+  let defaultImodel: IModelInfo | undefined;
+  let viewId: string | undefined;
+
+  if (Config.App.has("imjs_uitestapp_imodel_viewId"))
+    viewId = Config.App.get("imjs_uitestapp_imodel_viewId");
+
+  if (Config.App.has("imjs_uitestapp_imodel_name") &&
+    Config.App.has("imjs_uitestapp_imodel_wsgId") &&
+    Config.App.has("imjs_uitestapp_imodel_project_name") &&
+    Config.App.has("imjs_uitestapp_imodel_project_projectNumber") &&
+    Config.App.has("imjs_uitestapp_imodel_project_wsgId")) {
+    const defaultProject = {
+      name: Config.App.get("imjs_uitestapp_imodel_project_name"),
+      projectNumber: Config.App.get("imjs_uitestapp_imodel_project_projectNumber"),
+      wsgId: Config.App.get("imjs_uitestapp_imodel_project_wsgId"),
+      readStatus: 0,
+    } as ProjectInfo;
+
+    defaultImodel = {
+      name: Config.App.get("imjs_uitestapp_imodel_name"),
+      description: Config.App.get("imjs_uitestapp_imodel_name"),
+      wsgId: Config.App.get("imjs_uitestapp_imodel_wsgId"),
+      projectInfo: defaultProject,
+      status: "",
+    } as IModelInfo;
+  }
+
   const overallContentProps = {
     appHeaderIcon: applicationIcon,
     appHeaderMessage: SampleAppIModelApp.i18n.translate("SampleApp:Header.welcome"),
     appBackstage: <AppBackstage />,
     onIModelViewsSelected: SampleAppIModelApp.handleIModelViewsSelected,
     onWorkOffline: SampleAppIModelApp.handleWorkOffline,
+    initialIModels: defaultImodel ? [defaultImodel] : undefined,
+    initialViewIds: viewId ? [viewId] : undefined,
   };
-
   AppUi.initialize();
 
   // tslint:disable-next-line:no-console

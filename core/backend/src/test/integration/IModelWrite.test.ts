@@ -4,13 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect, assert } from "chai";
-import { Id64String, DbOpcode, DbResult, ActivityLoggingContext } from "@bentley/bentleyjs-core";
-import { IModelVersion, SubCategoryAppearance, IModel } from "@bentley/imodeljs-common";
+import { Id64String, DbOpcode, DbResult, ActivityLoggingContext, Id64 } from "@bentley/bentleyjs-core";
+import { IModelVersion, SubCategoryAppearance, IModel, CodeSpec, CodeScopeSpec } from "@bentley/imodeljs-common";
 import { IModelTestUtils, TestUsers, Timer, TestIModelInfo } from "../IModelTestUtils";
 import { IModelJsFs } from "../../IModelJsFs";
 import { KeepBriefcase, IModelDb, OpenParams, Element, DictionaryModel, BriefcaseManager, SpatialCategory, SqliteStatement, SqliteValue, SqliteValueType, BriefcaseEntry } from "../../imodeljs-backend";
 import { ConcurrencyControl } from "../../ConcurrencyControl";
-import { AccessToken, CodeState, HubIModel, HubCode, IModelQuery, MultiCode } from "@bentley/imodeljs-clients";
+import { AccessToken, CodeState, HubIModel, HubCode, IModelQuery, MultiCode, Lock, LockType, LockLevel } from "@bentley/imodeljs-clients";
 import { HubUtility } from "./HubUtility";
 import * as os from "os";
 
@@ -93,6 +93,40 @@ describe("IModelWriteTest (#integration)", () => {
       await HubUtility.deleteIModel(accessToken, "iModelJsIntegrationTest", readWriteTestIModelName);
     } catch (err) {
     }
+  });
+
+  it("acquire codespec lock", async () => {
+    const loggingContext = new ActivityLoggingContext("");
+    const userAccessToken = await IModelTestUtils.getTestUserAccessToken(TestUsers.super);
+    const iModel: IModelDb = await IModelDb.open(actx, userAccessToken, testProjectId, readWriteTestIModel.id, OpenParams.pullAndPush());
+    const code1 = new CodeSpec(iModel, Id64.invalid, "MyCode", CodeScopeSpec.Type.Model);
+
+    iModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
+    const locks = await iModel.concurrencyControl.lockCodeSpecs(actx, userAccessToken);
+    assert.equal(locks.length, 1);
+    iModel.insertCodeSpec(code1);
+    await iModel.close(loggingContext, userAccessToken, KeepBriefcase.No);
+  });
+
+  it("acquire codespec lock - example", async () => {
+    const loggingContext = new ActivityLoggingContext("");
+    const userAccessToken = await IModelTestUtils.getTestUserAccessToken(TestUsers.super);
+    const model: IModelDb = await IModelDb.open(actx, userAccessToken, testProjectId, readWriteTestIModel.id, OpenParams.pullAndPush());
+    const code1 = new CodeSpec(model, Id64.invalid, "MyCode", CodeScopeSpec.Type.Model);
+
+    model.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());  // needed for writing to iModels
+
+    const codeSpecsLock = new Lock();
+    codeSpecsLock.briefcaseId = model.briefcase.briefcaseId;
+    codeSpecsLock.lockLevel = LockLevel.Exclusive;
+    codeSpecsLock.lockType = LockType.CodeSpecs;
+    codeSpecsLock.objectId = "0x1";
+    codeSpecsLock.seedFileId = model.briefcase.fileId;
+
+    const locks = await BriefcaseManager.imodelClient.locks.update(loggingContext, userAccessToken, model.briefcase.iModelId, [codeSpecsLock]);
+    assert.equal(locks.length, 1);
+    model.insertCodeSpec(code1);
+    await model.close(loggingContext, userAccessToken, KeepBriefcase.No);
   });
 
   it("test change-merging scenarios in optimistic concurrency mode (#integration)", async () => {

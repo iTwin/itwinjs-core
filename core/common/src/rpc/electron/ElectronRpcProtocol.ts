@@ -7,66 +7,32 @@
 import { BentleyStatus } from "@bentley/bentleyjs-core";
 import { IModelError } from "../../IModelError";
 import { RpcInterface, RpcInterfaceDefinition } from "../../RpcInterface";
-import { RpcProtocol, SerializedRpcRequest, RpcRequestFulfillment } from "../core/RpcProtocol";
+import { RpcProtocol, SerializedRpcRequest } from "../core/RpcProtocol";
 import { RpcRegistry } from "../core/RpcRegistry";
 import { ElectronRpcConfiguration } from "./ElectronRpcManager";
 import { ElectronRpcRequest } from "./ElectronRpcRequest";
 
-const instances: Map<string, ElectronRpcProtocol> = new Map();
-
-const lookupInstance = (request: SerializedRpcRequest) => {
-  const interfaceName = request.operation.interfaceDefinition;
-
-  let protocol = instances.get(interfaceName) as ElectronRpcProtocol;
-  if (!protocol) {
-    RpcRegistry.instance.lookupImpl(interfaceName);
-    protocol = instances.get(interfaceName) as ElectronRpcProtocol;
-  }
-
-  return protocol;
-};
-
-/** @hidden */
-export const CHANNEL = "@bentley/imodeljs-common/ElectronRpcProtocol";
-
-/** @hidden */
-export const interop = (() => {
-  let electron = null;
-  if (typeof (global) !== "undefined" && global && global.process && (global.process as any).type) {
-    // tslint:disable-next-line:no-eval
-    electron = eval("require")("electron");
-  }
-
-  return electron;
-})();
-
-if (interop) {
-  if (interop.ipcMain) {
-    interop.ipcMain.on(CHANNEL, async (evt: any, request: SerializedRpcRequest) => {
-      let response: RpcRequestFulfillment;
-      try {
-        const protocol = lookupInstance(request);
-        response = await protocol.fulfill(request);
-      } catch (err) {
-        response = RpcRequestFulfillment.forUnknownError(request, err);
-      }
-
-      evt.sender.send(CHANNEL, response);
-    });
-  } else if (interop.ipcRenderer) {
-    interop.ipcRenderer.on(CHANNEL, (_evt: any, fulfillment: RpcRequestFulfillment) => {
-      const protocol = instances.get(fulfillment.interfaceName) as ElectronRpcProtocol;
-      const request = protocol.requests.get(fulfillment.id) as ElectronRpcRequest;
-      protocol.requests.delete(fulfillment.id);
-      request.notifyResponse(fulfillment);
-    });
-  }
-}
-
 /** RPC interface protocol for an Electron-based application. */
 export class ElectronRpcProtocol extends RpcProtocol {
+  public static instances: Map<string, ElectronRpcProtocol> = new Map();
+
+  public static obtainInstance(request: SerializedRpcRequest) {
+    const interfaceName = request.operation.interfaceDefinition;
+
+    let protocol = ElectronRpcProtocol.instances.get(interfaceName) as ElectronRpcProtocol;
+    if (!protocol) {
+      RpcRegistry.instance.lookupImpl(interfaceName);
+      protocol = ElectronRpcProtocol.instances.get(interfaceName) as ElectronRpcProtocol;
+    }
+
+    return protocol;
+  }
+
   /** The RPC request class for this protocol. */
   public readonly requestType = ElectronRpcRequest;
+
+  /** Specifies where to break large binary request payloads. */
+  public transferChunkThreshold = 48 * 1024 * 1024;
 
   /** @hidden */
   public requests: Map<string, ElectronRpcRequest> = new Map();
@@ -97,13 +63,13 @@ export class ElectronRpcProtocol extends RpcProtocol {
   }
 
   private registerInterface(definition: RpcInterfaceDefinition) {
-    if (instances.has(definition.name))
+    if (ElectronRpcProtocol.instances.has(definition.name))
       throw new IModelError(BentleyStatus.ERROR, `RPC interface "${definition.name}"" is already associated with a protocol.`);
 
-    instances.set(definition.name, this);
+    ElectronRpcProtocol.instances.set(definition.name, this);
   }
 
   private purgeInterface(definition: RpcInterfaceDefinition) {
-    instances.delete(definition.name);
+    ElectronRpcProtocol.instances.delete(definition.name);
   }
 }

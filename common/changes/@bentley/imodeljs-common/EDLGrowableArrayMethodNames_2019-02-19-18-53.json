@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Consistent naming of \"get\" methods in Growable arrays.",
+      "packageName": "@bentley/imodeljs-common",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-common",
+  "email": "Earlin.Lutz@bentley.com"
+}

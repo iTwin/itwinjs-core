@@ -453,9 +453,9 @@ export class System extends RenderSystem {
 
   // NB: Increase the size of these arrays when the maximum number of attributes used by any one shader increases.
   private readonly _curVertexAttribStates: VertexAttribState[] = [VertexAttribState.Disabled, VertexAttribState.Disabled, VertexAttribState.Disabled, VertexAttribState.Disabled,
-    VertexAttribState.Disabled, VertexAttribState.Disabled, VertexAttribState.Disabled, VertexAttribState.Disabled];
+  VertexAttribState.Disabled, VertexAttribState.Disabled, VertexAttribState.Disabled, VertexAttribState.Disabled];
   private readonly _nextVertexAttribStates: VertexAttribState[] = [VertexAttribState.Disabled, VertexAttribState.Disabled, VertexAttribState.Disabled, VertexAttribState.Disabled,
-    VertexAttribState.Disabled, VertexAttribState.Disabled, VertexAttribState.Disabled, VertexAttribState.Disabled];
+  VertexAttribState.Disabled, VertexAttribState.Disabled, VertexAttribState.Disabled, VertexAttribState.Disabled];
 
   // The following are initialized immediately after the System is constructed.
   private _lineCodeTexture?: TextureHandle;
@@ -758,9 +758,7 @@ export class System extends RenderSystem {
       for (const point of pts)
         meshArgs.points.push(QPoint3d.create(point, meshArgs.points.params));
 
-      const uvs: Point2d[] = [];  // temporary uv storage - will be rearranged below
-      for (let i = 0; i < rawParams.length; i++)
-          uvs.push(rawParams.atPoint2dIndex (i)!);
+      const uvs: Point2d[] = rawParams.getPoint2dArray();
 
       const pointIndices: number[] = [];
       const uvIndices: number[] = [];

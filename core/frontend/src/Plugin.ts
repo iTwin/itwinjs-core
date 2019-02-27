@@ -2,6 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+/** @module Plugins */
 import * as semver from "semver";
 import { IModelApp } from "./IModelApp";
 import { NotifyMessageDetails, OutputMessageAlert, OutputMessagePriority, OutputMessageType } from "./NotificationManager";
@@ -11,7 +12,18 @@ import { NotifyMessageDetails, OutputMessageAlert, OutputMessagePriority, Output
  * @see [[PluginAdmin]] for a description of how Plugins are loaded.
  * @see [Plugins]($docs/learning/frontend/plugins.md)
  */
-export class Plugin {
+export abstract class Plugin {
+  /**
+   * Constructor for base Plugin class
+   * @param name - the name of the plugin. When you use the buildIModelJsModule build script, this argument is filled in as the PLUGIN_NAME constant by webpack
+   * @param versionsRequired - the versions of iModel.js system modules that this Plugin requires. When you use the buildIModelJsModule build script, this argument
+   * is filled in as the IMODELJS_VERSIONS_REQUIRED constant by webpack.
+   * @note Typically, a Plugin subclass is instantiated and registered with top-level JavaScript statements like these:
+   * ```ts
+   *  const myPlugin = new MyPlugin(PLUGIN_NAME, IMODELJS_VERSIONS_REQUIRED);
+   *  PluginAdmin.register(myPlugin);
+   * ```
+   */
   public constructor(public name: string, public versionsRequired: string) {
   }
 
@@ -27,8 +39,7 @@ export class Plugin {
    * each additional call to PluginAdmin.loadPlugin for the same Plugin.
    * @param _args arguments that were passed to PluginAdmin.loadPlugin. The first argument is the plugin name.
    */
-  public onExecute(_args: string[]): void {
-  }
+  public abstract onExecute(_args: string[]): void;
 }
 
 /**
@@ -92,8 +103,8 @@ export class PluginAdmin {
 
   /**
    * Loads a Plugin
-   * @param packageName the name of the package. Typically <pluginName>.js
-   * @param args arguments that will be passed to PluginAdmin.loadPlugin. If the first argument is not the plugin name, the plugin name will be prepended to the args array.
+   * @param packageName the name of the JavaScript file to be loaded from the web server.
+   * @param args arguments that will be passed to the Plugin.onLoaded and Plugin.onExecute methods. If the first argument is not the plugin name, the plugin name will be prepended to the args array.
    */
   public static async loadPlugin(packageName: string, args?: string[]): Promise<void> {
     // see if it is already loaded.

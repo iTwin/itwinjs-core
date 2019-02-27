@@ -99,7 +99,7 @@ exports[`<Node /> renders icon correctly 1`] = `
     className="contents"
   >
     <div
-      className="icon"
+      className="core-tree-node-icon"
     >
       <img
         src="testIcon"

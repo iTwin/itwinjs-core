@@ -10,7 +10,7 @@
   $border: solid $back-arrow-thickness currentColor;
   $size: sqrt($back-arrow-size-val * $back-arrow-size-val * 8) / 2 + px;
 
-  color: $text-light;
+  color: $buic-foreground-body;
   width: $size;
   height: $size;
   border-top: $border;

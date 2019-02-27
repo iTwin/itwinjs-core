@@ -44,6 +44,15 @@ export class IModelHostConfiguration {
 
   /** The kind of iModel server to use. Defaults to iModelHubClient */
   public imodelClient?: IModelClient;
+
+  /** The time, in milliseconds, for which [IModelTileRpcInterface.requestTileTreeProps]($common) should wait before returning a "pending" status. */
+  public tileTreeRequestTimeout = IModelHostConfiguration.defaultTileRequestTimeout;
+  /** The time, in milliseconds, for which [IModelTileRpcInterface.requestTileContent]($common) should wait before returning a "pending" status. */
+  public tileContentRequestTimeout = IModelHostConfiguration.defaultTileRequestTimeout;
+  /** The default time, in milliseconds, used for [[tileTreeRequestTimeout]] and [[tileContentRequestTimeout]]. To change this, override one or both of those properties. */
+  public static defaultTileRequestTimeout = 20 * 1000;
+  /** If true, requests for tile content will execute on a separate thread pool in order to avoid blocking other, less expensive asynchronous requests such as ECSql queries. */
+  public useTileContentThreadPool = false;
 }
 
 /**
@@ -156,6 +165,18 @@ export class IModelHost {
   public static get appAssetsDir(): string | undefined {
     return (IModelHost.configuration === undefined) ? undefined : IModelHost.configuration.appAssetsDir;
   }
+
+  /** The time, in milliseconds, for which [IModelTileRpcInterface.requestTileTreeProps]($common) should wait before returning a "pending" status. */
+  public static get tileTreeRequestTimeout(): number {
+    return undefined !== IModelHost.configuration ? IModelHost.configuration.tileTreeRequestTimeout : IModelHostConfiguration.defaultTileRequestTimeout;
+  }
+  /** The time, in milliseconds, for which [IModelTileRpcInterface.requestTileContent]($common) should wait before returning a "pending" status. */
+  public static get tileContentRequestTimeout(): number {
+    return undefined !== IModelHost.configuration ? IModelHost.configuration.tileContentRequestTimeout : IModelHostConfiguration.defaultTileRequestTimeout;
+  }
+
+  /** If true, requests for tile content will execute on a separate thread pool in order to avoid blocking other, less expensive asynchronous requests such as ECSql queries. */
+  public static get useTileContentThreadPool(): boolean { return undefined !== IModelHost.configuration && IModelHost.configuration.useTileContentThreadPool; }
 }
 
 /** Information about the platform on which the app is running. Also see [[KnownLocations]] and [[IModelJsFs]]. */

@@ -65,7 +65,7 @@ export class RealityModelContextIModelCreator {
     }
     private realityModelFromJson(json: any, worldRange: AxisAlignedBox3d): { realityModel: ContextRealityModelProps | undefined, geoLocated: boolean } {
         let geoLocated = true;
-        if (undefined === json.root.boundingVolume.box) {
+        if (undefined !== json.root.boundingVolume.region) {
             const region = JsonUtils.asArray(json.root.boundingVolume.region);
             if (undefined === region)
                 throw new TypeError("Unable to determine GeoLocation - no root Transform or Region on root.");
@@ -84,7 +84,7 @@ export class RealityModelContextIModelCreator {
                 rootTransform = Transform.createIdentity();
 
             const tileRange = rootTransform.multiplyRange(range);
-            if (rootTransform.matrix.isIdentity) {
+            if (rootTransform.matrix.isIdentity && range.center.magnitude() < 1.0E5) {
                 geoLocated = false;
                 worldRange.extendRange(Range3d.fromJSON(tileRange));
             } else {

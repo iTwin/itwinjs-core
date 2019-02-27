@@ -9,7 +9,7 @@
 .nz-footer-messageCenter-messageCenter {
   min-width: 400px;
   transform: translateX(-50%);
-  color: $background-5;
+  color: $buic-background-control-stroke;
 
   @include uicore-z-index(status-popover);
 }

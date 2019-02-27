@@ -22,7 +22,7 @@
             padding:                7px 14px;
             /// there is a 1px border
             margin:                 6px 0 0;
-            background:             $uicore-gray-c;
+            background:             $buic-background-tab-inactive; // $uicore-gray-c;
 
             &::after {
 
@@ -34,8 +34,8 @@
         &.active {
             > a {
 
-                border-bottom:      1px solid $uicore-white;
-                background:         $uicore-white;
+                border-bottom:      1px solid $buic-background-tab-active; // $uicore-white;
+                background:         $buic-background-tab-active; // $uicore-white;
             }
         }
     }

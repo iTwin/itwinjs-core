@@ -8,7 +8,9 @@ import { Id64, Id64String, GuidString } from "@bentley/bentleyjs-core";
 import { EntityProps, Code, ElementProps, RelatedElement } from "@bentley/imodeljs-common";
 import { IModelConnection } from "./IModelConnection";
 
-/** The "state" of an Entity as represented in a web browser. */
+/** The "state" of an Entity as represented in a web browser.
+ * @public
+ */
 export class EntityState implements EntityProps {
   public readonly id: Id64String;
   public readonly iModel: IModelConnection;
@@ -16,8 +18,7 @@ export class EntityState implements EntityProps {
   public readonly jsonProperties: { [key: string]: any };
   public static schemaName = "BisCore";
 
-  /**
-   * constructor for EntityState
+  /** Constructor for EntityState
    * @param props the properties of the Entity for this EntityState
    * @param iModel the iModel from which this EntityState is to be constructed
    * @param _state source EntityState for clone
@@ -44,23 +45,23 @@ export class EntityState implements EntityProps {
   /** Make an independent copy of this EntityState */
   public clone(iModel?: IModelConnection): this { return new (this.constructor as typeof EntityState)(this.toJSON(), iModel ? iModel : this.iModel, this) as this; }
 
-  /**
-   * Get full class name of this Entity in the form "SchemaName:ClassName".
+  /** Get full class name of this Entity in the form "SchemaName:ClassName".
    * @note Subclasses from other than the BisCore domain should override their static member "schemaName" with their schema name.
    */
   public static getClassFullName(): string { return this.schemaName + ":" + this.className; }
 
   public static get sqlName(): string { return this.schemaName + "." + this.className; }
 
-  /**
-   * Get the ECClass name for this EntityState.
+  /** Get the ECClass name for this EntityState.
    * @note This default implementation relies on all EntityState subclasses using their ECClass name as their JavaScript class name, <em>with "State" appended to the end </em>.
    * If this is not true, you must override this method.
    */
   public static get className(): string { return this.name.slice(0, this.name.lastIndexOf("State")); }
 }
 
-/** The "state" of an Element as represented in a web browser. */
+/** The "state" of an Element as represented in a web browser.
+ * @public
+ */
 export class ElementState extends EntityState implements ElementProps {
   public readonly model: Id64String;
   public readonly code: Code;

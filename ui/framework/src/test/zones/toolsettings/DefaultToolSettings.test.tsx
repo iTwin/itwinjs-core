@@ -7,7 +7,7 @@
 import { expect } from "chai";
 import {
   QuantityType, PropertyDescription, PrimitiveValue, ToolSettingsValue, PropertyEditorParamTypes,
-  ToolSettingsPropertySyncItem, ToolSettingsPropertyRecord, TsHorizontalAlignment,
+  ToolSettingsPropertySyncItem, ToolSettingsPropertyRecord,
 } from "@bentley/imodeljs-frontend";
 
 // import TestUtils from "../../TestUtils";
@@ -75,7 +75,7 @@ class MockSelectTool {
   /** Used to supply DefaultToolSettingProvider with a list of properties to use to generate ToolSettings.  If undefined then no ToolSettings will be displayed */
   public supplyToolSettingsProperties(): ToolSettingsPropertyRecord[] | undefined {
     const toolSettings = new Array<ToolSettingsPropertyRecord>();
-    toolSettings.push(new ToolSettingsPropertyRecord(this._selectionOptionValue.clone() as PrimitiveValue, selectionOptionDescription, { rowPriority: 0, columnIndex: 0, horizontalAlignment: TsHorizontalAlignment.Center }));
+    toolSettings.push(new ToolSettingsPropertyRecord(this._selectionOptionValue.clone() as PrimitiveValue, selectionOptionDescription, { rowPriority: 0, columnIndex: 0 }));
     return toolSettings;
   }
 

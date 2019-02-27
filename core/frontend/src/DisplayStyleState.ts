@@ -35,6 +35,7 @@ import { RenderScheduleState } from "./RenderScheduleState";
  * @note If the DisplayStyle is associated with a [[ViewState]] which is being rendered inside a [[Viewport]], modifying
  * the DisplayStyle directly will generally not result in immediately visible changes on the screen.
  * [[ViewState]] provides APIs which forward to the DisplayStyle API and also ensure the screen is updated promptly.
+ * @public
  */
 export abstract class DisplayStyleState extends ElementState implements DisplayStyleProps {
   private _backgroundMap: BackgroundMapState;
@@ -168,7 +169,9 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   public getSubCategoryOverride(id: Id64String): SubCategoryOverride | undefined { return this.settings.getSubCategoryOverride(id); }
 }
 
-/** A DisplayStyle for 2d views */
+/** A DisplayStyle for 2d views
+ * @public
+ */
 export class DisplayStyle2dState extends DisplayStyleState {
   private readonly _settings: DisplayStyleSettings;
 
@@ -185,6 +188,7 @@ export class DisplayStyle2dState extends DisplayStyleState {
  *  - A cube with a texture image mapped to each face;
  *  - A sphere with a single texture image mapped to its surface;
  *  - A sphere with a [[Gradient]] mapped to its surface.
+ * @public
  */
 export abstract class SkyBox implements SkyBoxProps {
   /** Whether or not the skybox should be displayed. */
@@ -228,6 +232,7 @@ export abstract class SkyBox implements SkyBoxProps {
  *  - A cube with a texture image mapped to each face;
  *  - A sphere with a single texture image mapped to its surface;
  *  - A sphere with a [[Gradient]] mapped to its surface.
+ * @hidden
  */
 export namespace SkyBox {
   /** @hidden */
@@ -255,7 +260,8 @@ export namespace SkyBox {
   }
 }
 
-/** ###TODO Document me... */
+// ###TODO Document me...
+/** @beta Needs documentation before moving to public */
 export class SkyGradient extends SkyBox {
   public readonly twoColor: boolean = false;
   public readonly zenithColor: ColorDef;         // the color of the zenith part of the sky gradient (shown when looking straight up.)
@@ -300,6 +306,7 @@ export class SkyGradient extends SkyBox {
 
 /** A [[SkyBox]] drawn as a sphere with an image mapped to its interior surface.
  * @see [[SkyBox.createFromJSON]]
+ * @public
  */
 export class SkySphere extends SkyBox {
   /** The ID of the texture element which supplies the skybox image. */
@@ -339,6 +346,7 @@ export class SkySphere extends SkyBox {
 /** A [[SkyBox]] drawn as a cube with an image mapped to each of its interior faces.
  * Each member specifies the ID of a texture element from which the image mapped to the corresponding face is obtained.
  * @see [[SkyBox.createFromJSON]].
+ * @public
  */
 export class SkyCube extends SkyBox implements SkyCubeProps {
   public readonly front: Id64String;
@@ -447,7 +455,9 @@ export class Environment implements EnvironmentProps {
   }
 }
 
-/** A {{DisplayStyle]] for 3d views */
+/** A [[DisplayStyle]] for 3d views
+ * @public
+ */
 export class DisplayStyle3dState extends DisplayStyleState {
   /** @hidden */
   public skyboxMaterial: RenderMaterial | undefined;

@@ -6,7 +6,7 @@ import { expect } from "chai";
 import * as moq from "typemoq";
 import * as React from "react";
 import * as sinon from "sinon";
-import { RenderResult, render, within, fireEvent, cleanup, waitForElement } from "react-testing-library";
+import { RenderResult, render, within, fireEvent, cleanup, waitForElement, wait } from "react-testing-library";
 import { BeEvent, BeDuration } from "@bentley/bentleyjs-core";
 import { PropertyRecord } from "@bentley/imodeljs-frontend";
 import { CheckBoxState } from "@bentley/ui-core";
@@ -17,11 +17,13 @@ import {
   NodesSelectedCallback, NodesDeselectedCallback,
 } from "../../../ui-components/tree/component/Tree";
 import { SelectionMode, PageOptions, TreeDataProviderMethod, TreeNodeItem, TreeDataProviderRaw, DelayLoadedTreeNodeItem, ITreeDataProvider, TreeDataChangesListener, TreeCellUpdatedArgs } from "../../../ui-components";
-import { BeInspireTreeNode } from "../../../ui-components/tree/component/BeInspireTree";
+import { BeInspireTreeNode, BeInspireTreeNodeConfig } from "../../../ui-components/tree/component/BeInspireTree";
 import HighlightingEngine, { HighlightableTreeProps } from "../../../ui-components/tree/HighlightingEngine";
 import { TreeNodeProps } from "../../../ui-components/tree/component/Node";
 import { PropertyValueRendererManager, PropertyValueRendererContext, PropertyContainerType } from "../../../ui-components/properties/ValueRendererManager";
 import { ImmediatelyLoadedTreeNodeItem } from "../../../ui-components/tree/TreeDataProvider";
+import { ITreeImageLoader } from "../../../ui-components/tree/ImageLoader";
+import { LoadedImage } from "../../../ui-components/common/IImageLoader";
 
 describe("Tree", () => {
 
@@ -976,6 +978,51 @@ describe("Tree", () => {
       expect(checkboxClickSpy).to.not.be.called;
     });
 
+    it("renders checkbox state change", async () => {
+      const nodes: TreeNodeItem[] = [{
+        id: "0",
+        label: "0",
+        isCheckboxVisible: true,
+        checkBoxState: CheckBoxState.Off,
+      }];
+
+      class TestDataProvider implements ITreeDataProvider {
+        public onTreeNodeChanged = new BeEvent<TreeDataChangesListener>();
+
+        public getNodes = async () => nodes;
+        public getNodesCount = async () => 1;
+      }
+
+      const dataProvider = new TestDataProvider();
+
+      const onClick = (node: TreeNodeItem) => {
+        if (node.checkBoxState === CheckBoxState.Off)
+          node.checkBoxState = CheckBoxState.On;
+        else
+          node.checkBoxState = CheckBoxState.Off;
+
+        dataProvider.onTreeNodeChanged.raiseEvent(nodes);
+      };
+
+      const onRender = sinon.spy();
+
+      await waitForUpdate(() => renderedTree = render(<Tree {...defaultCheckboxTestsProps} dataProvider={dataProvider} onCheckboxClick={onClick} onRender={onRender} />), renderNodesSpy);
+
+      const checkbox = getNode("0").checkbox;
+      onRender.resetHistory();
+
+      expect(checkbox).to.not.be.undefined;
+      expect(checkbox!.checked, "Initial checkbox state is wrong").to.be.false;
+
+      fireEvent.click(getNode("0").checkbox!);
+      await wait(() => expect(onRender.called).to.be.true);
+      expect(checkbox!.checked, "Checkbox did not get checked").to.be.true;
+      onRender.resetHistory();
+
+      fireEvent.click(getNode("0").checkbox!);
+      await wait(() => expect(onRender.called).to.be.true);
+      expect(checkbox!.checked, "Checkbox did not get unchecked").to.be.false;
+    });
   });
 
   describe("expand & collapse", () => {
@@ -1138,12 +1185,34 @@ describe("Tree", () => {
 
     it("renders with icons", async () => {
       await waitForUpdate(() => {
-        renderedTree = render(<Tree
-          {...defaultProps}
-          dataProvider={[{ id: "0", label: "0", icon: "test-icon" }]}
-        />);
+        renderedTree = render(
+          <Tree
+            {...defaultProps}
+            dataProvider={[{ id: "0", label: "0", icon: "icon-placeholder" }]}
+            showIcons={true}
+          />);
       }, renderSpy, 2);
-      expect(getNode("0").getElementsByClassName("test-icon").length).to.eq(1);
+      expect(getNode("0").querySelector(".icon-placeholder")).to.not.be.null;
+    });
+
+    it("renders icons with custom image loader when provided", async () => {
+      class ImageLoader implements ITreeImageLoader {
+        public load = () => ({ sourceType: "core-icon", value: "icon-overriden" } as LoadedImage);
+        public loadPlaceholder = this.load;
+      }
+
+      const loader = new ImageLoader();
+
+      await waitForUpdate(() => {
+        renderedTree = render(
+          <Tree
+            {...defaultProps}
+            dataProvider={[{ id: "0", label: "0", icon: "icon-placeholder" }]}
+            showIcons={true}
+            imageLoader={loader}
+          />);
+      }, renderSpy, 2);
+      expect(getNode("0").querySelector(".icon-overriden")).to.not.be.null;
     });
 
     it("renders with custom node renderer", async () => {
@@ -1199,6 +1268,81 @@ describe("Tree", () => {
 
       expect(renderedTree.baseElement.getElementsByClassName("core-tree-node").length).to.eq(1);
       expect(renderedTree.baseElement.getElementsByClassName("core-tree-placeholder").length).to.eq(1);
+    });
+
+    it("renders rows with a different height when rowHeight prop is set to number", async () => {
+      const provider: ITreeDataProvider = {
+        getNodesCount: async () => 2,
+        getNodes: async () => [{ id: "0", label: "0" }],
+      };
+
+      await waitForUpdate(() => {
+        renderedTree = render(<Tree
+          {...defaultProps}
+          dataProvider={provider}
+          rowHeight={76}
+        />);
+      }, renderSpy, 2);
+
+      const node = renderedTree.container.getElementsByClassName("node-wrapper")[0] as HTMLElement;
+
+      expect(node.style.height).is.not.null;
+
+      expect(+node.style.height!.replace("px", "")).to.equal(76);
+    });
+
+    it("renders rows with a different height when rowHeight prop is set to function", async () => {
+      const provider: ITreeDataProvider = {
+        getNodesCount: async () => 2,
+        getNodes: async () => [{ id: "0", label: "without-description" }, { id: "1", label: "with-description", description: "desc" }],
+      };
+
+      const rowHeight = (n?: TreeNodeItem) => n && n.description ? 40 : 20;
+
+      await waitForUpdate(() => {
+        renderedTree = render(<Tree
+          {...defaultProps}
+          dataProvider={provider}
+          rowHeight={rowHeight}
+        />);
+      }, renderSpy, 2);
+
+      const nodes = renderedTree.container.getElementsByClassName("node-wrapper") as HTMLCollectionOf<HTMLDivElement>;
+
+      expect(nodes[0].style.height).is.not.null;
+      expect(nodes[0].innerHTML.includes("without-description")).is.not.null;
+
+      expect(nodes[1].style.height).is.not.null;
+      expect(nodes[1].innerHTML.includes("with-description")).is.not.null;
+
+      expect(+nodes[0].style.height!.replace("px", "")).to.equal(20);
+      expect(+nodes[1].style.height!.replace("px", "")).to.equal(40);
+    });
+
+    it("renders row heights with default funtion if rowHeight prop is not provided", async () => {
+      const provider: ITreeDataProvider = {
+        getNodesCount: async () => 2,
+        getNodes: async () => [{ id: "0", label: "without-description" }, { id: "1", label: "with-description", description: "desc" }],
+      };
+
+      await waitForUpdate(() => {
+        renderedTree = render(<Tree
+          {...defaultProps}
+          dataProvider={provider}
+          showDescriptions={true}
+        />);
+      }, renderSpy, 2);
+
+      const nodes = renderedTree.container.getElementsByClassName("node-wrapper") as HTMLCollectionOf<HTMLDivElement>;
+
+      expect(nodes[0].style.height).is.not.null;
+      expect(nodes[0].innerHTML.includes("without-description")).is.not.null;
+
+      expect(nodes[1].style.height).is.not.null;
+      expect(nodes[1].innerHTML.includes("with-description")).is.not.null;
+
+      expect(+nodes[0].style.height!.replace("px", "")).to.equal(24);
+      expect(+nodes[1].style.height!.replace("px", "")).to.equal(44);
     });
   });
 
@@ -1711,4 +1855,88 @@ describe("Tree", () => {
     expect(spy.secondCall.calledWith(rootNode, childNodes)).to.be.true;
   });
 
+  describe("inspireNodeFromTreeNodeItem", () => {
+    let item: TreeNodeItem;
+    let nodeConfig: BeInspireTreeNodeConfig;
+
+    beforeEach(async () => {
+      item = {
+        id: "0",
+        label: "0",
+      };
+
+      nodeConfig = {
+        text: "",
+        itree: {
+          state: {},
+        },
+      };
+    });
+
+    it("changes checkbox state from on to off", () => {
+      // Old state
+      nodeConfig.itree!.state!.checked = true;
+      // New state
+      item.checkBoxState = CheckBoxState.Off;
+
+      const newConfig = Tree.inspireNodeFromTreeNodeItem(item, Tree.inspireNodeFromTreeNodeItem, nodeConfig);
+
+      expect(newConfig.itree!.state!).to.not.have.key("checked");
+    });
+
+    it("changes checkbox state from on to partial", () => {
+      // Old state
+      nodeConfig.itree!.state!.checked = true;
+      // New state
+      item.checkBoxState = CheckBoxState.Partial;
+
+      const newConfig = Tree.inspireNodeFromTreeNodeItem(item, Tree.inspireNodeFromTreeNodeItem, nodeConfig);
+
+      expect(newConfig.itree!.state!).to.not.have.key("checked");
+      expect(newConfig.itree!.state!.indeterminate).to.be.true;
+    });
+
+    it("changes checkbox state from partial to off", () => {
+      // Old state
+      nodeConfig.itree!.state!.indeterminate = true;
+      // New state
+      item.checkBoxState = CheckBoxState.Off;
+
+      const newConfig = Tree.inspireNodeFromTreeNodeItem(item, Tree.inspireNodeFromTreeNodeItem, nodeConfig);
+
+      expect(newConfig.itree!.state!).to.not.have.key("indeterminate");
+    });
+
+    it("changes checkbox state from partial to on", () => {
+      // Old state
+      nodeConfig.itree!.state!.indeterminate = true;
+      // New state
+      item.checkBoxState = CheckBoxState.On;
+
+      const newConfig = Tree.inspireNodeFromTreeNodeItem(item, Tree.inspireNodeFromTreeNodeItem, nodeConfig);
+
+      expect(newConfig.itree!.state!).to.not.have.key("indeterminate");
+      expect(newConfig.itree!.state!.checked).to.be.true;
+    });
+
+    it("changes checkbox state from off to partial", () => {
+      // New state
+      item.checkBoxState = CheckBoxState.Partial;
+
+      const newConfig = Tree.inspireNodeFromTreeNodeItem(item, Tree.inspireNodeFromTreeNodeItem, nodeConfig);
+
+      expect(newConfig.itree!.state!).to.not.have.key("checked");
+      expect(newConfig.itree!.state!.indeterminate).to.be.true;
+    });
+
+    it("changes checkbox state from off to on", () => {
+      // New state
+      item.checkBoxState = CheckBoxState.On;
+
+      const newConfig = Tree.inspireNodeFromTreeNodeItem(item, Tree.inspireNodeFromTreeNodeItem, nodeConfig);
+
+      expect(newConfig.itree!.state!).to.not.have.key("indeterminate");
+      expect(newConfig.itree!.state!.checked).to.be.true;
+    });
+  });
 });

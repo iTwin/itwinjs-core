@@ -17,7 +17,7 @@
 
   > .chk-listboxseparator {
     height: 1px;
-    background :#ccc;
+    background: $buic-background-divider; /* #ccc; */
     margin: 4px 0;
     pointer-events: none;
   }

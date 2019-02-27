@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Support for including CSS files in published UI packages",
+      "packageName": "@bentley/ui-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "dan.east@bentley.com"
+}

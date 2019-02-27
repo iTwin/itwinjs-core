@@ -1470,14 +1470,14 @@ export namespace IModelJson {
       const colors = [];
       {
         const p = Point3d.create();
-        for (let i = 0; pf.data.point.atPoint3dIndex(i, p); i++)
+        for (let i = 0; pf.data.point.getPoint3dAtCheckedPointIndex(i, p); i++)
           points.push(p.toJSON());
       }
       if (pf.data.normal) {
         const numNormal = pf.data.normal.length;
         const normal = Vector3d.create();
         for (let i = 0; i < numNormal; i++) {
-          pf.data.normal.atVector3dIndex(i, normal);
+          pf.data.normal.getVector3dAtCheckedVectorIndex(i, normal);
           normals.push(normal.toJSON());
         }
 
@@ -1485,7 +1485,7 @@ export namespace IModelJson {
 
       if (pf.data.param) {
         const uv = Point2d.create();
-        for (let i = 0; pf.data.param.atPoint2dIndex(i, uv); i++)
+        for (let i = 0; pf.data.param.getPoint2dAtCheckedPointIndex(i, uv); i++)
           params.push(uv.toJSON());
       }
 

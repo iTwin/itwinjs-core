@@ -13,7 +13,7 @@
   height: 34px;
   width: 12em;
   font-size: $uicore-font-size;
-  color: $uicore-text-color;
+  color: $buic-text-color;
 
   input {
     @include uicore-inputs-input;
@@ -38,6 +38,6 @@
   }
 
   div:hover span {
-    color: $uicore-icons-blue;
+    color: $buic-foreground-primary; /*$uicore-icons-blue;*/
   }
 }

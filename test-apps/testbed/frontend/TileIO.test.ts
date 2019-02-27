@@ -6,7 +6,7 @@ import { expect } from "chai";
 import { TileIO, IModelTileIO, IModelTileLoader, TileTree, TileRequest } from "@bentley/imodeljs-frontend/lib/tile";
 import { SurfaceType } from "@bentley/imodeljs-frontend/lib/rendering";
 import { Batch, MeshGraphic, GraphicsArray, Primitive, PolylineGeometry } from "@bentley/imodeljs-frontend/lib/webgl";
-import { ModelProps, RelatedElementProps, FeatureIndexType, BatchType } from "@bentley/imodeljs-common";
+import { ModelProps, RelatedElementProps, FeatureIndexType, BatchType, ServerTimeoutError } from "@bentley/imodeljs-common";
 import { Id64, Id64String } from "@bentley/bentleyjs-core";
 import * as path from "path";
 import { CONSTANTS } from "../common/Testbed";
@@ -18,6 +18,7 @@ import { TILE_DATA_1_2 } from "./TileIO.data.1.2";
 import { TILE_DATA_1_3 } from "./TileIO.data.1.3";
 import { TILE_DATA_1_4 } from "./TileIO.data.1.4";
 import { changeMinorVersion, changeMajorVersion, changeHeaderLength } from "./TileIO.data.fake";
+import { testOnScreenViewport } from "./TestViewport";
 
 const iModelLocation = path.join(CONSTANTS.IMODELJS_CORE_DIRNAME, "core/backend/lib/test/assets/test.bim");
 
@@ -597,5 +598,37 @@ describe("mirukuru TileTree", () => {
     expect(projExt.xLength()).to.equal(header.contentRange.xLength());
     expect(projExt.yLength()).to.equal(header.contentRange.yLength());
     expect(header.contentRange.zLength()).to.equal(0); // project extents are chubbed up; content range is tight.
+  });
+
+  it("should retry tile requests on server timeout error", async () => {
+    let treeCounter = 0;
+    let tileCounter = 0;
+    const numRetries = 3;
+
+    const getTileTreeProps = imodel.tiles.getTileTreeProps;
+    imodel.tiles.getTileTreeProps = async () => {
+      ++treeCounter;
+      if (treeCounter >= numRetries)
+        imodel.tiles.getTileTreeProps = getTileTreeProps;
+
+      throw new ServerTimeoutError(504, "fake timeout");
+    };
+
+    const getTileContent = imodel.tiles.getTileContent;
+    imodel.tiles.getTileContent = async () => {
+      ++tileCounter;
+      if (tileCounter >= numRetries)
+        imodel.tiles.getTileContent = getTileContent;
+
+      throw new ServerTimeoutError(504, "fake timeout");
+    };
+
+    await testOnScreenViewport("0x24", imodel, 100, 100, async (vp) => {
+      await vp.waitForAllTilesToRender();
+      expect(tileCounter).to.equal(numRetries);
+      expect(vp.numRequestedTiles).to.equal(0);
+      expect(vp.numSelectedTiles).to.equal(1);
+      expect(treeCounter).to.equal(numRetries);
+    });
   });
 });

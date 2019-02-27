@@ -67,6 +67,14 @@ export abstract class TestRpcInterface extends RpcInterface {
     return RpcManager.getClientForInterface(TestRpcInterface);
   }
 
+  public async interceptSendUnknownStatus(): Promise<void> {
+    return this.forward(arguments);
+  }
+
+  public async interceptSendTimeoutStatus(): Promise<void> {
+    return this.forward(arguments);
+  }
+
   public async op1(_params: TestOp1Params): Promise<number> {
     return this.forward(arguments);
   }
@@ -158,6 +166,10 @@ export abstract class TestRpcInterface3 extends RpcInterface {
   }
 
   public async op1(_input: number): Promise<number> {
+    return this.forward(arguments);
+  }
+
+  public async op2(_size: number, _fill: boolean): Promise<Uint8Array> {
     return this.forward(arguments);
   }
 }

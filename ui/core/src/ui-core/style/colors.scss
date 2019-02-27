@@ -2,6 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+@import "./themecolors";
 
 /// Variables ------------------------------------------------------------------
 
@@ -9,7 +10,6 @@
 
 $uicore-green:                 #56aa1c;
 $uicore-blue:                  #008be1;
-$uicore-dark-navy:             #002a44;
 $uicore-gray:                  #9ba5ae;
 $uicore-text-color:            #2a2f34;
 
@@ -20,26 +20,20 @@ $uicore-white:                 #fff;
 $uicore-yellow:                #ffcf00;
 $uicore-orange:                #ff6600;
 $uicore-red:                   #cc0000;
-$uicore-teal:                  #2b9b7f;
 
 /// Highlights:
 
 $uicore-blue-highlight:        #e5f5fd;
-$uicore-blue-highlight-alt:    #d9eefb;
 $uicore-green-highlight:       #eef6e8;
-$uicore-green-highlight-alt:   #ecf5e6;
 $uicore-red-highlight:         #fae5e5;
-$uicore-red-highlight-alt:     #f7d9d9;
 
 /// Gray:
 
 $uicore-gray-1:                #070809;
-$uicore-gray-2:                $uicore-text-color;
 $uicore-gray-3:                #3c434a;
 $uicore-gray-4:                #4d575f;
 $uicore-gray-5:                #677480;
 $uicore-gray-6:                #85929d;
-$uicore-gray-7:                $uicore-gray;
 $uicore-gray-8:                #a6afb7;
 $uicore-gray-9:                #c7ccd1;
 $uicore-gray-a:                #dce0e3;
@@ -48,49 +42,15 @@ $uicore-gray-c:                #f8f9fb;
 
 /// Blue:
 
-$uicore-blue-1:                #00121d;
-$uicore-blue-2:                $uicore-dark-navy;
-$uicore-blue-3:                #00426b;
 $uicore-blue-4:                #005a92;
 $uicore-blue-5:                #0073ba;
-$uicore-blue-6:                $uicore-blue;
-$uicore-blue-7:                #30b0ff;
 $uicore-blue-8:                #58bfff;
-$uicore-blue-9:                #7fceff;
 $uicore-blue-a:                #a6ddff;
-$uicore-blue-b:                #cdecff;
-$uicore-blue-c:                $uicore-blue-highlight;
 
 /// Green:
 
-$uicore-green-1:               #010200;
-$uicore-green-2:               #122306;
-$uicore-green-3:               #23450b;
-$uicore-green-4:               #346711;
 $uicore-green-5:               #458816;
-$uicore-green-6:               $uicore-green;
-$uicore-green-7:               #5fbb1f;
-$uicore-green-8:               #67cc22;
-$uicore-green-9:               #91e458;
-$uicore-green-a:               #b2ec8b;
-$uicore-green-b:               #d4f4bd;
-$uicore-green-c:               $uicore-green-highlight;
 
 /// Teal:
 
-$uicore-teal-0:                $uicore-green;
-$uicore-teal-1:                #2b9b1b;
-$uicore-teal-2:                #2b9b2f;
-$uicore-teal-3:                #2b9b43;
-$uicore-teal-4:                #2b9b57;
-$uicore-teal-5:                #2b9b6b;
-$uicore-teal-6:                $uicore-teal;
-$uicore-teal-7:                #2b9b93;
-$uicore-teal-8:                #2b9ba7;
-$uicore-teal-9:                #2b9bbb;
-$uicore-teal-a:                #2b9bcf;
 $uicore-teal-b:                #2b9be3;
-$uicore-teal-c:                $uicore-blue-6;
-$uicore-teal-d:                $uicore-blue-5;
-$uicore-teal-e:                $uicore-blue-4;
-$uicore-teal-f:                $uicore-blue-3;

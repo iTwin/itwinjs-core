@@ -9,6 +9,6 @@ exports[`withIsPressed renders correctly 1`] = `
   onTouchEnd={[Function]}
   onTouchStart={[Function]}
 >
-  <Div />
+  <Component />
 </div>
 `;

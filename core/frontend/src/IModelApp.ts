@@ -26,14 +26,14 @@ import * as pluginTool from "./tools/PluginTool";
 import * as viewTool from "./tools/ViewTool";
 import * as measureTool from "./tools/MeasureTool";
 
-/**
- * Creates an *Application* to show an iModel in a web browser.
+/** Creates an *Application* to show an iModel in a web browser.
  * It connects the user interface with the iModel.js services. There can be only one IModelApp active in a session.
  *
  * Applications may customize the behavior of their application by subclassing this class and supplying different
  * implementations of the members.
  *
  * Before any interactive operations may be performed, [[IModelApp.startup]] must be called (typically on a subclass of IModelApp)
+ * @public
  */
 export class IModelApp {
   /** @hidden */
@@ -91,8 +91,7 @@ export class IModelApp {
   /** @hidden This is to be refactored...for now it holds the AccessToken for the current session. Must be set by the application. */
   public static accessToken?: AccessToken;
 
-  /**
-   * This method must be called before any iModel.js frontend services are used. Typically, an application will make a subclass of IModelApp
+  /** This method must be called before any iModel.js frontend services are used. Typically, an application will make a subclass of IModelApp
    * and call this method on that subclass. E.g:
    * ``` ts
    * MyApp extends IModelApp {
@@ -158,8 +157,7 @@ export class IModelApp {
     IModelApp._initialized = false;
   }
 
-  /**
-   * Implement this method to register your app's tools, override implementation of managers, and initialize your app-specific members.
+  /** Implement this method to register your app's tools, override implementation of managers, and initialize your app-specific members.
    * @note The default tools will already be registered, so if you register tools with the same toolId, your tools will override the defaults.
    */
   protected static onStartup(): void { }

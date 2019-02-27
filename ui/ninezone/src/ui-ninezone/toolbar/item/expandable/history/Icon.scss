@@ -11,7 +11,7 @@
   $desktop-icon-height: $desktop-icon-width;
   $desktop-icon-left-margin: ($desktop-item-width - $desktop-icon-width) / 2; //to center icon
   $desktop-icon-top-margin: ($desktop-item-height - $desktop-icon-height) / 2; //to center icon
-  $icon-shadow: drop-shadow(0 1px 0 $text-dark);
+  $icon-shadow: drop-shadow(0 1px 0 $buic-foreground-body-reverse);
   $no-shadow: drop-shadow(0 0 0 transparent);
 
   > * {

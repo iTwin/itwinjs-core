@@ -8,11 +8,13 @@ import { render, fireEvent } from "react-testing-library";
 import { expect } from "chai";
 import { Tree } from "../../../ui-components/tree/component/Tree";
 import { BeInspireTree, BeInspireTreeNode } from "../../../ui-components/tree/component/BeInspireTree";
-import { TreeNode } from "../../../ui-components/tree/component/Node";
+import { TreeNode, TreeNodeIcon } from "../../../ui-components/tree/component/Node";
 import { TreeNodeItem } from "../../../ui-components/tree/TreeDataProvider";
 import { CheckBoxState } from "@bentley/ui-core";
 import { PropertyValueRendererManager } from "../../../ui-components/properties/ValueRendererManager";
 import TestUtils from "../../TestUtils";
+import { ITreeImageLoader, TreeImageLoader } from "../../../ui-components/tree/ImageLoader";
+import { LoadedImage } from "../../../ui-components/common/IImageLoader";
 
 describe("Node", () => {
   let tree: BeInspireTree<TreeNodeItem>;
@@ -63,7 +65,7 @@ describe("Node", () => {
 
     const checkbox = renderedNode.baseElement.querySelector(".uicore-inputs-checkbox");
 
-    expect(checkbox).to.not.be.empty;
+    expect(checkbox).to.not.be.null;
     fireEvent.click(checkbox!);
 
     expect(checkboxSpy.called).to.be.true;
@@ -85,18 +87,69 @@ describe("Node", () => {
       />);
     const checkbox = renderedNode.baseElement.querySelector(".custom-checkbox");
     expect(renderOverride).to.be.calledOnce;
-    expect(checkbox).to.not.be.undefined;
+    expect(checkbox).to.not.be.null;
   });
 
   it("renders icon", () => {
-    node.itree = { icon: "test-icon", state: {} };
+    node.itree = { icon: "icon-test", state: {} };
 
     const renderedNode = render(
       <TreeNode
         node={node}
         valueRendererManager={valueRendererManager}
+        imageLoader={new TreeImageLoader()}
       />);
 
-    expect(renderedNode.baseElement.querySelector(".test-icon")).to.not.be.empty;
+    expect(renderedNode.baseElement.querySelector(".icon-test")).to.not.be.null;
+  });
+});
+
+describe("TreeNodeIcon", () => {
+  let tree: BeInspireTree<TreeNodeItem>;
+  let node: BeInspireTreeNode<TreeNodeItem>;
+
+  class ImageLoader implements ITreeImageLoader {
+    public load = (): LoadedImage => ({ sourceType: "url", value: "test-location/image.png" });
+  }
+
+  const imageLoader = new ImageLoader();
+
+  beforeEach(async () => {
+    tree = new BeInspireTree<TreeNodeItem>({
+      dataProvider: [{ id: "0", label: "0", icon: "icon-test-image" }],
+      mapPayloadToInspireNodeConfig: Tree.inspireNodeFromTreeNodeItem,
+    });
+    await tree.ready;
+    node = tree.nodes()[0];
+  });
+
+  it("renders", () => {
+    const icon = render(<TreeNodeIcon node={node} imageLoader={new TreeImageLoader()} />);
+
+    expect(icon.container.querySelector(".icon-test-image")).to.not.be.null;
+  });
+
+  it("renders from payload if itree has no icon", () => {
+    node.itree!.icon = undefined;
+
+    const icon = render(<TreeNodeIcon node={node} imageLoader={new TreeImageLoader()} />);
+
+    expect(icon.container.querySelector(".icon-test-image")).to.not.be.null;
+  });
+
+  it("does not render anything if node has no icon", () => {
+    node.payload!.icon = undefined;
+    node.itree!.icon = undefined;
+
+    const icon = render(<TreeNodeIcon node={node} imageLoader={new TreeImageLoader()} />);
+
+    expect(icon.container.innerHTML).to.be.empty;
+  });
+
+  it("renders with custom loader", () => {
+    const icon = render(<TreeNodeIcon node={node} imageLoader={imageLoader} />);
+
+    const imgElement = icon.container.children[0] as HTMLImageElement;
+    expect(imgElement.src).to.equal("test-location/image.png");
   });
 });

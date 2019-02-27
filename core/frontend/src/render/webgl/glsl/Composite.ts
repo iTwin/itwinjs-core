@@ -142,7 +142,7 @@ export function createCompositeProgram(flags: CompositeFlags, context: WebGLRend
   if (wantOcclusion) {
     frag.addUniform("u_occlusion", VariableType.Sampler2D, (prog) => {
       prog.addGraphicUniform("u_occlusion", (uniform, params) => {
-        Texture2DHandle.bindSampler(uniform, (params.geometry as CompositeGeometry).occlusion, TextureUnit.Four);
+        Texture2DHandle.bindSampler(uniform, (params.geometry as CompositeGeometry).occlusion!, TextureUnit.Four);
       });
     });
 

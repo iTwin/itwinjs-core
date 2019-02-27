@@ -11,7 +11,7 @@
       "scripthost"
     ],
     "module": "commonjs",
-    "stripInternal": true,
+    "stripInternal": false,
     "declaration": true,
     "strict": true, /* Enable all strict type-checking options. */
     "noImplicitAny": true, /* Raise error on expressions and declarations with an implied "any" type. */

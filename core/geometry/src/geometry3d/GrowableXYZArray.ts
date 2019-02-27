@@ -155,27 +155,27 @@ export class GrowableXYZArray extends IndexedXYZCollection {
     this._xyzInUse = 0;
   }
   /**
-   * Get a point by index, strongly typed as a Point3d.  This is unchecked.  Use atPoint3dIndex to have validity test.
+   * Get a point by index, strongly typed as a Point3d.  This is unchecked.  Use getPoint3dAtCheckedPointIndex to have validity test.
    * @param pointIndex index to access
    * @param result optional result
    */
-  public getPoint3dAt(pointIndex: number, result?: Point3d): Point3d {
+  public getPoint3dAtUncheckedPointIndex(pointIndex: number, result?: Point3d): Point3d {
     const index = 3 * pointIndex;
     return Point3d.create(this._data[index], this._data[index + 1], this._data[index + 2], result);
   }
 
   /**
-   * Get a point by index, strongly typed as a Point2d.  This is unchecked.  Use atPoint2dIndex to have validity test.
+   * Get a point by index, strongly typed as a Point2d.  This is unchecked.  Use getPoint2dAtCheckedPointIndex to have validity test.
    * @param pointIndex index to access
    * @param result optional result
    */
-  public getPoint2dAt(pointIndex: number, result?: Point2d): Point2d {
+  public getPoint2dAtUncheckedPointIndex(pointIndex: number, result?: Point2d): Point2d {
     const index = 3 * pointIndex;
     return Point2d.create(this._data[index], this._data[index + 1], result);
   }
 
   /** copy xyz into strongly typed Point3d */
-  public atPoint3dIndex(pointIndex: number, result?: Point3d): Point3d | undefined {
+  public getPoint3dAtCheckedPointIndex(pointIndex: number, result?: Point3d): Point3d | undefined {
     const index = 3 * pointIndex;
     if (this.isIndexValid(pointIndex)) {
       if (!result) result = Point3d.create();
@@ -188,7 +188,7 @@ export class GrowableXYZArray extends IndexedXYZCollection {
   }
 
   /** copy xy into strongly typed Point2d */
-  public atPoint2dIndex(pointIndex: number, result?: Point2d): Point2d | undefined {
+  public getPoint2dAtCheckedPointIndex(pointIndex: number, result?: Point2d): Point2d | undefined {
     const index = 3 * pointIndex;
     if (this.isIndexValid(pointIndex)) {
       if (!result) result = Point2d.create();
@@ -199,7 +199,7 @@ export class GrowableXYZArray extends IndexedXYZCollection {
     return undefined;
   }
   /** copy xyz into strongly typed Vector3d */
-  public atVector3dIndex(vectorIndex: number, result?: Vector3d): Vector3d | undefined {
+  public getVector3dAtCheckedVectorIndex(vectorIndex: number, result?: Vector3d): Vector3d | undefined {
     const index = 3 * vectorIndex;
     if (vectorIndex >= 0 && vectorIndex < this._xyzInUse) {
       if (!result) result = Vector3d.create();
@@ -250,21 +250,21 @@ export class GrowableXYZArray extends IndexedXYZCollection {
    */
   public front(result?: Point3d): Point3d | undefined {
     if (this._xyzInUse === 0) return undefined;
-    return this.getPoint3dAt(0, result);
+    return this.getPoint3dAtUncheckedPointIndex(0, result);
   }
   /**
    * @returns Return the last point, or undefined if the array is empty.
    */
   public back(result?: Point3d): Point3d | undefined {
     if (this._xyzInUse < 1) return undefined;
-    return this.getPoint3dAt(this._xyzInUse - 1, result);
+    return this.getPoint3dAtUncheckedPointIndex(this._xyzInUse - 1, result);
   }
   /**
    * Set the coordinates of a single point.
    * @param pointIndex index of point to set
    * @param value coordinates to set
    */
-  public setAt(pointIndex: number, value: XYAndZ): boolean {
+  public setAtCheckedPointIndex(pointIndex: number, value: XYAndZ): boolean {
     if (!this.isIndexValid(pointIndex))
       return false;
     let index = pointIndex * 3;
@@ -280,7 +280,7 @@ export class GrowableXYZArray extends IndexedXYZCollection {
    * @param y y coordinate
    * @param z z coordinate
    */
-  public setCoordinates(pointIndex: number, x: number, y: number, z: number): boolean {
+  public setXYZAtCheckedPointIndex(pointIndex: number, x: number, y: number, z: number): boolean {
     if (!this.isIndexValid(pointIndex))
       return false;
     let index = pointIndex * 3;
@@ -599,7 +599,7 @@ export class GrowableXYZArray extends IndexedXYZCollection {
       if (dataA.length !== dataB.length)
         return false;
       for (let i = 0; i < dataA.length; i++)
-        if (!dataA.getPoint3dAt(i).isAlmostEqual(dataB.getPoint3dAt(i)))
+        if (!dataA.getPoint3dAtUncheckedPointIndex(i).isAlmostEqual(dataB.getPoint3dAtUncheckedPointIndex(i)))
           return false;
       return true;
     }

@@ -7,13 +7,15 @@
 import { Id64String, Id64, JsonUtils, dispose } from "@bentley/bentleyjs-core";
 import { EntityState } from "./EntityState";
 import { Point2d, Range3d } from "@bentley/geometry-core";
-import { ModelProps, GeometricModel2dProps, AxisAlignedBox3d, RelatedElement, TileTreeProps, BatchType } from "@bentley/imodeljs-common";
+import { ModelProps, GeometricModel2dProps, AxisAlignedBox3d, RelatedElement, TileTreeProps, BatchType, ServerTimeoutError } from "@bentley/imodeljs-common";
 import { IModelConnection } from "./IModelConnection";
 import { IModelApp } from "./IModelApp";
 import { TileTree, TileTreeState, IModelTileLoader } from "./tile/TileTree";
 import { RealityModelTileTree } from "./tile/RealityModelTileTree";
 
-/** Represents the front-end state of a [Model]($backend). */
+/** Represents the front-end state of a [Model]($backend).
+ * @public
+ */
 export class ModelState extends EntityState implements ModelProps {
   public readonly modeledElement: RelatedElement;
   public readonly name: string;
@@ -64,8 +66,10 @@ export interface TileTreeModelState {
   readonly treeModelId: Id64String;    // Model Id, or transient Id if not a model (context reality model)
   loadTileTree(edgesRequired: boolean, animationId?: Id64String, asClassifier?: boolean, classifierExpansion?: number): TileTree.LoadStatus;
 }
+
 /** Represents the front-end state of a [GeometricModel]($backend).
  * The contents of a GeometricModelState can be rendered inside a [[Viewport]].
+ * @public
  */
 export abstract class GeometricModelState extends ModelState implements TileTreeModelState {
   /** @hidden */
@@ -119,14 +123,20 @@ export abstract class GeometricModelState extends ModelState implements TileTree
   }
 
   private loadIModelTileTree(tileTreeState: TileTreeState, edgesRequired: boolean, animationId?: Id64String, asClassifier?: boolean, classifierExpansion?: number): TileTree.LoadStatus {
-    const id = (asClassifier ? ("C:" + classifierExpansion as string + "_" + this.id) : "") + (animationId ? ("A:" + animationId + "_") : "") + this.id;
+    const id = (asClassifier ? ("C:" + classifierExpansion as string + "_") : "") + (animationId ? ("A:" + animationId + "_") : "") + this.id;
 
     this.iModel.tiles.getTileTreeProps(id).then((result: TileTreeProps) => {
       tileTreeState.setTileTree(result, new IModelTileLoader(this.iModel, asClassifier ? BatchType.Classifier : BatchType.Primary, edgesRequired));
       this._tileTreeState.edgesOmitted = !edgesRequired;
       IModelApp.viewManager.onNewTilesReady();
     }).catch((_err) => {
-      this._tileTreeState.loadStatus = TileTree.LoadStatus.NotFound; // on separate line because stupid chrome debugger.
+      // Retry in case of timeout; otherwise fail.
+      if (_err instanceof ServerTimeoutError)
+        this._tileTreeState.loadStatus = TileTree.LoadStatus.NotLoaded;
+      else
+        this._tileTreeState.loadStatus = TileTree.LoadStatus.NotFound;
+
+      IModelApp.viewManager.onNewTilesReady();
     });
 
     return tileTreeState.loadStatus;
@@ -139,7 +149,9 @@ export abstract class GeometricModelState extends ModelState implements TileTree
   }
 }
 
-/** Represents the front-end state of a [GeometricModel2d]($backend). */
+/** Represents the front-end state of a [GeometricModel2d]($backend).
+ * @public
+ */
 export class GeometricModel2dState extends GeometricModelState implements GeometricModel2dProps {
   public readonly globalOrigin: Point2d;
   constructor(props: GeometricModel2dProps, iModel: IModelConnection) {
@@ -159,7 +171,9 @@ export class GeometricModel2dState extends GeometricModelState implements Geomet
   }
 }
 
-/** Represents the front-end state of a [GeometricModel3d]($backend). */
+/** Represents the front-end state of a [GeometricModel3d]($backend).
+ * @public
+ */
 export class GeometricModel3dState extends GeometricModelState {
   /** Returns true. */
   public get is3d(): boolean { return true; }
@@ -167,14 +181,22 @@ export class GeometricModel3dState extends GeometricModelState {
   public get asGeometricModel3d(): GeometricModel3dState { return this; }
 }
 
-/** Represents the front-end state of a [SheetModel]($backend). */
+/** Represents the front-end state of a [SheetModel]($backend).
+ * @public
+ */
 export class SheetModelState extends GeometricModel2dState { }
 
-/** Represents the front-end state of a [SpatialModel]($backend). */
+/** Represents the front-end state of a [SpatialModel]($backend).
+ * @public
+ */
 export class SpatialModelState extends GeometricModel3dState { }
 
-/** Represents the front-end state of a [DrawingModel]($backend). */
+/** Represents the front-end state of a [DrawingModel]($backend).
+ * @public
+ */
 export class DrawingModelState extends GeometricModel2dState { }
 
-/** Represents the front-end state of a [SectionDrawingModel]($backend). */
+/** Represents the front-end state of a [SectionDrawingModel]($backend).
+ * @public
+ */
 export class SectionDrawingModelState extends DrawingModelState { }

@@ -10,7 +10,7 @@ import { CommonProps } from "../utils/Props";
 import "./ImageCheckBox.scss";
 
 /** Properties for the [[ImageCheckBox]] component */
-export interface ImageCheckBoxProps extends CommonProps  {
+export interface ImageCheckBoxProps extends CommonProps {
   /** Image for the "checked" state */
   imageOn: string;
   /** Image for the "unchecked" (default) state */
@@ -29,30 +29,31 @@ export interface ImageCheckBoxProps extends CommonProps  {
  */
 export class ImageCheckBox extends React.Component<ImageCheckBoxProps> {
 
-  private _onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    e.stopPropagation();
+  private _onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.stopPropagation)
+      e.stopPropagation();
 
     if (this.props.onClick) {
       this.props.onClick(e.target.checked);
     }
   }
 
-  private _onInputClick = (e: React.MouseEvent<HTMLInputElement>) => {
+  private _onInputClick = (e: React.MouseEvent<HTMLInputElement>) => {
     e.stopPropagation();
   }
 
-  private _onLabelClick = (e: React.MouseEvent<HTMLLabelElement>) => {
+  private _onLabelClick = (e: React.MouseEvent<HTMLLabelElement>) => {
     e.stopPropagation();
   }
 
   /** @hidden */
   public render() {
-    const checkBoxClass = classnames ("core-image-checkbox", this.props.className);
-    const imageClass = classnames ("image icon", this.props.checked ? this.props.imageOn : this.props.imageOff);
+    const checkBoxClass = classnames("core-image-checkbox", this.props.className);
+    const imageClass = classnames("image icon", this.props.checked ? this.props.imageOn : this.props.imageOff);
     return (
       <label className={checkBoxClass} onClick={this._onLabelClick}>
-        <input type="checkbox" checked={this.props.checked} disabled={this.props.disabled} onChange={this._onChange} onClick={this._onInputClick}/>
-        <span className={imageClass}/>
+        <input type="checkbox" checked={this.props.checked} disabled={this.props.disabled} onChange={this._onChange} onClick={this._onInputClick} />
+        <span className={imageClass} />
       </label>
     );
   }

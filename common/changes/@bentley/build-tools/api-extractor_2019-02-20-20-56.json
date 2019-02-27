@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Changes extract-api script to remove tsdoc-metadata.json files",
+      "packageName": "@bentley/build-tools",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/build-tools",
+  "email": "akshay.madhukar@bentley.com"
+}

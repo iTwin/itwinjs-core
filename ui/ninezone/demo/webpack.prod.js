@@ -11,6 +11,6 @@ module.exports = merge(common, {
   mode: 'production',
   output: {
     filename: 'demo.js',
-    path: path.resolve(__dirname, '..', '..', '..', 'generated-docs', 'assets', 'ui-ninezone')
+    path: path.resolve(__dirname, '..', '..', '..', 'generated-docs', 'ui', 'assets', 'ui-ninezone')
   }
 });

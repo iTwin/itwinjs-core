@@ -34,7 +34,7 @@
          cursor: pointer;
 
          &:hover {
-           color: $uicore-blue;
+           color: $buic-foreground-primary;
          }
        }
 
@@ -56,7 +56,7 @@
 
        display: flex;
        width: calc(100% - #{$breadcrumb-edge});
-       background-color: white;
+       background-color: $buic-background-control;
 
        > .breadcrumb-up-dir {
          height: $uicore-line-height;
@@ -64,20 +64,20 @@
          flex-shrink: 0;
          flex-grow: 0;
          font-size: $uicore-icons-small;
-         border-right: 1px solid $uicore-inputs-border-color;
+         border-right: 1px solid $buic-background-control-stroke;
          margin-right: $uicore-bordered-padding;
          cursor: pointer;
 
          &:hover {
-           color: $uicore-blue;
+           color: $buic-foreground-primary;
          }
 
          &.root {
-           color: $uicore-gray;
+           color: $buic-foreground-mediumgray;
            cursor: default;
 
            &:hover {
-             color: $uicore-gray;
+             color: $buic-foreground-mediumgray;
            }
          }
        }
@@ -114,10 +114,10 @@
        .breadcrumb-drop-target {
          border-radius: $uicore-border-radius;
          &.hover {
-           background-color: $uicore-blue-8;
+           background-color: $buic-row-hover;
          }
          &.dragging {
-           color: $uicore-gray;
+           color: $buic-foreground-disabled;
          }
        }
 
@@ -133,7 +133,7 @@
           user-select: none;
           cursor: pointer;
           &:hover {
-            color: $uicore-blue;
+            color: $buic-foreground-primary;
           }
          }
        }
@@ -163,7 +163,7 @@
 
   height: calc(100% - (#{2 * $uicore-inputs-margin + $uicore-inputs-height} ));
   overflow: auto;
-  background-color: $uicore-white;
-  border: 1px solid $uicore-inputs-border-color;
+  background-color: $buic-background-control;
+  border: 1px solid $buic-background-control-stroke;
 
 }

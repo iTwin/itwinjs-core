@@ -180,7 +180,7 @@ export class AnalysisImporter {
             const linearHeightData = [], linearSlopeData = [], linearDisplacementData = [];
 
             for (let j = 0; j < polyface.data.point.length; j++) {
-                const point = polyface.data.point.getPoint3dAt(j);
+                const point = polyface.data.point.getPoint3dAtUncheckedPointIndex(j);
                 const theta = Angle.pi2Radians * (point.x - waveCenter) / waveLength;
                 const height = waveHeight * Math.sin(theta);
                 const slope = Math.abs(Math.cos(theta));

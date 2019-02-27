@@ -12,19 +12,20 @@
   }
 
   > li > a {
-    background-color: $background-2;
+    color: $buic-text-color;
+    background-color: $buic-background-tab-inactive;
     text-align: center;
   }
 
   > li.active > a {
     color: $primary-base;
-    background-color: $background-1;
+    background-color: $buic-background-tab-active;
     border-bottom: none;
   }
 }
 
 .widget-picker {
-  background-color: $background-1;
+  background-color: $buic-background-widget;
   margin: 0 5px;
   position: relative;
   overflow: hidden;
@@ -60,15 +61,15 @@
       display: flex;
       align-items: center;
       font-size: 16px;
-      color: $uicore-text-color;
+      color: $buic-text-color;
       border-bottom: 1px solid #ccc;
       cursor: pointer;
 
       &:hover {
-        color: $uicore-blue;
+        color: $buic-foreground-primary;
 
         > .icon {
-          color: $uicore-blue;
+          color: $buic-foreground-primary;
         }
       }
 
@@ -81,7 +82,7 @@
         background: #ccc;
         margin-left: auto;
         margin-right: 5px;
-        color: black;
+        color: $buic-text-color;
       }
 
       > .icon {
@@ -97,12 +98,14 @@
     flex-direction: column;
     opacity: 0;
     transition: .2s linear;
-    background-color: $background-2;
+    background-color: $buic-background-widget;
 
-    .core-tree-tree .core-tree-node {
-      @include uicore-text( leading );
-      padding: 5px;
-      background-color: $background-1;
+    .core-tree  {
+      .core-tree-node {
+        &:not(:hover):not(.is-selected) {
+          background-color: $buic-background-control;
+        }
+      }
     }
 
     &.show {
@@ -123,10 +126,10 @@
         align-items: center;
         margin-right: auto;
         width: 100%;
-        color: $uicore-text-color;
+        color: $buic-text-color;
 
         &:hover {
-          color: $uicore-blue;
+          color: $buic-foreground-primary;
           cursor: pointer;
         }
 
@@ -151,7 +154,7 @@
             display: flex;
             align-items: center;
             padding: .25em 1em;
-            color: $uicore-text-color;
+            color: $buic-text-color;
             white-space: nowrap;
             cursor: pointer;
 
@@ -168,7 +171,7 @@
     }
 
     > .modelselector-toolbar {
-      background-color: $background-1;
+      background-color: $buic-background-widget;
 
       > .searchbox {
         width: 95%;
@@ -183,16 +186,15 @@
           padding: 7px;
           border: 1px solid #ccc;
           font-size: 18px;
-          color: $uicore-icons-light;
+          color: $buic-icon-color;
           cursor: pointer;
           -webkit-transition: color .2s ease;
           -moz-transition: color .2s ease;
           -o-transition: color .2s ease;
           transition: color .2s ease;
-          color: $uicore-icons-dark;
 
           &:hover {
-          color: $uicore-icons-dark;
+          color: $buic-foreground-activehover;
           }
         }
       }
@@ -202,13 +204,5 @@
       height: 100%;
     }
 
-    .core-tree-tree  {
-
-      .core-tree-node {
-        @include uicore-text( leading );
-        padding: 5px 0;
-        background-color: $background-1;
-      }
-    }
   }
 }

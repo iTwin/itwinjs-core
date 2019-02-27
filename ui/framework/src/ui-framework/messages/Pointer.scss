@@ -6,31 +6,39 @@
 @import "@bentley/ui-core/lib/ui-core/index";
 
 .nz-popup-message-pointer {
-  background-color: $background-1;
+  background-color: $buic-background-window;
   padding: 5px 15px;
   border-radius: 15px;
-  box-shadow: 1px 1px 5px 1px $background-5;
-  color: $text-dark;
+  box-shadow: 1px 1px 5px 1px $buic-foreground-body-reverse;
+  color: $buic-foreground-body;
 }
 
-.tooltip {
-  text-decoration:none;
-  position:relative;
-}
+// .tooltip {
+//   text-decoration:none;
+//   position:relative;
+// }
 
-.tooltip span {
-  display:none;
-}
+// .tooltip span {
+//   display:none;
+// }
 
-.tooltip:hover span {
-  display:block;
-  position:fixed;
-  overflow:visible;
-}
+// .tooltip:hover span {
+//   display:block;
+//   position:fixed;
+//   overflow:visible;
+// }
 
 .nz-popup-message-pointer {
   .icon {
     margin: 0 5px 0 0;
+  }
+
+  .icon-status-warning {
+    color: $buic-foreground-warning;
+  }
+
+  .icon-status-error {
+    color: $buic-foreground-alert;
   }
 
   .popup-message-brief {

@@ -12,11 +12,17 @@ import { BentleyError, Logger } from "@bentley/bentleyjs-core";
 export interface I18NOptions {
   urlTemplate?: string;
 }
-/** Supplies Internationalization services. Internally, this class uses the [i18next](https://www.i18next.com/) package. */
+/**
+ * Supplies Internationalization services.
+ * @note
+ * Internally, this class uses the [i18next](https://www.i18next.com/) package.
+ * @public
+ */
 export class I18N {
   private _i18n: i18next.i18n;
   private _namespaceRegistry: Map<string, I18NNamespace> = new Map<string, I18NNamespace>();
 
+  /** @internal */
   public constructor(nameSpaces: string[], defaultNameSpace: string, options?: I18NOptions, renderFunction?: i18next.Callback) {
     this._i18n = i18next.createInstance();
 
@@ -63,16 +69,37 @@ export class I18N {
    * ```
    * @param line The input line, potentially containing %{keys}.
    * @returns The line with all %{keys} translated
+   * @public
    */
   public translateKeys(line: string): string { return line.replace(/\%\{(.+?)\}/g, (_match, tag) => this.translate(tag)); }
 
-  /** Return the translated value of a key. */
+  /** Return the translated value of a key.
+   * @param key - the key that matches a property in the JSON localization file.
+   * @note The key includes the namespace, which identifies the particular localization file that contains the property,
+   * followed by a colon, followed by the property in the JSON file.
+   * For example:
+   * ``` ts
+   * const dataString: string = IModelApp.i18n.translate("iModelJs:BackgroundMap.BingDataAttribution");
+   *  ```
+   * assigns to dataString the string with property BackgroundMap.BingDataAttribution from the iModelJs.json localization file.
+   * @public
+   */
   public translate(key: string | string[], options?: i18next.TranslationOptions): any { return this._i18n.t(key, options); }
 
+  /** @internal */
   public loadNamespace(name: string, i18nCallback: any) { this._i18n.loadNamespaces(name, i18nCallback); }
+
+  /** @internal */
   public languageList(): string[] { return this._i18n.languages; }
 
-  // register a new Namespace. Must be unique in the system.
+  /** Register a new Namespace. The Namespace name must be unique in the system.
+   * @param name - the name of the namespace, which is the base name of the JSON file that contains the localization properties.
+   * @note - The registerNamespace method starts fetching the appropriate version of the JSON localization file from the server,
+   * based on the current locale. To make sure that fetch is complete before performing translations from this namespace, await
+   * fulfillment of the readPromise Promise property of the returned I18NNamespace.
+   * @see [Localization in iModel.js]($docs/learning/frontend/Localization.md)
+   * @public
+   */
   public registerNamespace(name: string): I18NNamespace {
     if (this._namespaceRegistry.get(name))
       throw new BentleyError(-1, "namespace '" + name + "' is not unique");
@@ -107,6 +134,10 @@ export class I18N {
     return thisNamespace;
   }
 
+  /**
+   * Waits for the Promises for all the registered namespaces to be fulfilled.
+   * @internal
+   */
   public async waitForAllRead(): Promise<void[]> {
     const namespacePromises = new Array<Promise<void>>();
     for (const thisNamespace of this._namespaceRegistry.values()) {
@@ -115,13 +146,17 @@ export class I18N {
     return Promise.all(namespacePromises);
   }
 
-  /** @hidden */
+  /** @internal */
   public unregisterNamespace(name: string): void {
     this._namespaceRegistry.delete(name);
   }
 
 }
 
+/** The class that represents a registered I18N Namespace
+ * @note
+ * The readFinished member is a Promise that is resolved when the JSON file for the namespace has been retrieved from the server, or rejected if an error occurs.
+ */
 export class I18NNamespace {
   public constructor(public name: string, public readFinished: Promise<void>) { }
 }

@@ -241,7 +241,7 @@ export class Triangulator {
     let baseNode: HalfEdge | undefined;
     const xyz = Point3d.create();
     for (i = 0; i < data.length; i++) {
-      data.atPoint3dIndex(i, xyz);
+      data.getPoint3dAtCheckedPointIndex(i, xyz);
       baseNode = Triangulator.interiorEdgeSplit(graph, baseNode, xyz);
     }
     return baseNode;

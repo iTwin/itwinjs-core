@@ -15,7 +15,7 @@
     grid-auto-columns: 1fr;
 
     > *:not(:first-child) {
-      border-left: 1px solid $background-5;
+      border-left: 1px solid $buic-background-dialog-stroke;
     }
   }
 
@@ -24,7 +24,7 @@
     min-height: $nz-message-horizontal-padding;
     overflow: auto;
 
-    @include nz-scrollbar($color: $background-4);
+    @include nz-scrollbar($color: $buic-background-scrollbar);
 
     > *:not(:first-child) {
       border-top: 1px solid $background-4;
@@ -54,6 +54,7 @@
     text-align: center;
     margin: 30px 15px;
     font-style: italic;
+    color: $buic-text-color-disabled;
   }
 
   & .nz-messages:empty ~ .nz-message-prompt {

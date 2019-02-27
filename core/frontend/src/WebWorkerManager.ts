@@ -2,7 +2,6 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-/** @module WebWorker */
 
 // This file contains the code that manages a pool of WebWorkers, starting and dispatching work to them.
 // All the WebWorkers are the same, running the core/frontend/WebWorker code and capable of handling
@@ -11,6 +10,9 @@
 type resolveFunc = ((arg: any) => void);
 type rejectFunc = ((arg: Error) => void);
 
+/** Class that manages WebWorkers
+ * @alpha
+ */
 export class WebWorkerManager {
   private _workerProxys: WebWorkerProxy[];
   private _maxWebWorkers: number;

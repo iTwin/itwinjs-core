@@ -10,8 +10,8 @@
   position: absolute;
   left: 0;
   top: 0;
-  background-color: rgba(#333, 0.9);
-  color: $text-light;
+  background-color: $buic-background-tooltip;
+  color: $buic-text-color;
 
   @include uicore-z-index(tooltip);
 }

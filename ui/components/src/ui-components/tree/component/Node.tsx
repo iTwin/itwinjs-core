@@ -16,6 +16,9 @@ import { TreeNodeContent } from "./NodeContent";
 import { CellEditingEngine } from "../CellEditingEngine";
 import { HighlightableTreeNodeProps } from "../HighlightingEngine";
 import { PropertyValueRendererManager } from "../../properties/ValueRendererManager";
+import { ITreeImageLoader } from "../ImageLoader";
+import { Image } from "../../common/IImageLoader";
+import { ImageRenderer } from "../../common/ImageRenderer";
 
 /**
  * Properties for Checkbox in [[TreeNode]]
@@ -41,6 +44,9 @@ export interface TreeNodeProps {
   highlightProps?: HighlightableTreeNodeProps;
   showDescription?: boolean;
   valueRendererManager: PropertyValueRendererManager;
+
+  /** If specified, icon from node will be loaded by provided ImageLoader */
+  imageLoader?: ITreeImageLoader;
 
   renderOverrides?: {
     renderCheckbox?: NodeCheckboxRenderer;
@@ -106,7 +112,7 @@ export class TreeNode extends React.Component<TreeNodeProps> {
         isLoading={this.props.node.loading()}
         isLeaf={!this.props.node.hasOrWillHaveChildren()}
         label={label}
-        icon={this.props.node.itree && this.props.node.itree.icon ? <span className={this.props.node.itree.icon} /> : undefined}
+        icon={this.props.imageLoader ? <TreeNodeIcon node={this.props.node} imageLoader={this.props.imageLoader} /> : undefined}
         checkboxProps={checkboxProps}
         level={this.props.node.getParents().length}
         renderOverrides={{ renderCheckbox: this.props.renderOverrides ? this.props.renderOverrides.renderCheckbox : undefined }}
@@ -130,5 +136,28 @@ function doPropsDiffer(props1: TreeNodeProps, props2: TreeNodeProps) {
     || props1.valueRendererManager !== props2.valueRendererManager
     || props1.cellEditing !== props2.cellEditing
     || props1.showDescription !== props2.showDescription
-    || shallowDiffers(props1.checkboxProps, props2.checkboxProps);
+    || shallowDiffers(props1.checkboxProps, props2.checkboxProps)
+    || props1.imageLoader !== props2.imageLoader;
 }
+
+/** Properties for [[TreeNodeIcon]] React component */
+export interface TreeNodeIconProps extends React.Attributes {
+  node: BeInspireTreeNode<TreeNodeItem>;
+  imageLoader: ITreeImageLoader;
+}
+
+/** React component that renders tree node icons */
+export const TreeNodeIcon: React.FunctionComponent<TreeNodeIconProps> = ({ imageLoader, node }) => { // tslint:disable-line:variable-name
+  let image: Image | undefined;
+
+  if (node.itree && node.itree.icon)
+    image = imageLoader.load(node.itree);
+  else if (node.payload && node.payload.icon)
+    image = imageLoader.load(node.payload);
+
+  if (!image)
+    return null;
+
+  const renderer = new ImageRenderer();
+  return <>{renderer.render(image)}</>;
+};

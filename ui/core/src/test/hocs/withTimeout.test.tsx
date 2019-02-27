@@ -4,11 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-import { withTimeout, Div } from "../../ui-core";
+import { withTimeout } from "../../ui-core";
 
 describe("withTimeout", () => {
 
-  const WithTimeoutDiv = withTimeout(Div); // tslint:disable-line:variable-name
+  const WithTimeoutDiv = withTimeout((props) => (<div {...props} />)); // tslint:disable-line:variable-name
 
   it("should render", () => {
     const wrapper = mount(<WithTimeoutDiv timeout={1} onTimeout={() => { }} />);

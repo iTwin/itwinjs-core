@@ -93,17 +93,25 @@ class Textures implements IDisposable {
     this.featureId = TextureHandle.createForAttachment(width, height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
     this.depthAndOrder = TextureHandle.createForAttachment(width, height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
 
-    this.occlusion = TextureHandle.createForAttachment(width, height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
-    this.occlusionBlur = TextureHandle.createForAttachment(width, height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
-
     return undefined !== this.accumulation
       && undefined !== this.revealage
       && undefined !== this.color
       && undefined !== this.featureId
       && undefined !== this.depthAndOrder
-      && undefined !== this.hilite
-      && undefined !== this.occlusion
-      && undefined !== this.occlusionBlur;
+      && undefined !== this.hilite;
+  }
+
+  public enableOcclusion(width: number, height: number): boolean {
+    assert(undefined === this.occlusion && undefined === this.occlusionBlur);
+    this.occlusion = TextureHandle.createForAttachment(width, height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
+    this.occlusionBlur = TextureHandle.createForAttachment(width, height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
+    return undefined !== this.occlusion && undefined !== this.occlusionBlur;
+  }
+
+  public disableOcclusion(): void {
+    assert(undefined !== this.occlusion && undefined !== this.occlusionBlur);
+    this.occlusion = dispose(this.occlusion);
+    this.occlusionBlur = dispose(this.occlusionBlur);
   }
 }
 
@@ -128,19 +136,27 @@ class FrameBuffers implements IDisposable {
     this.depthAndOrder = FrameBuffer.create([textures.depthAndOrder!], depth);
     this.hilite = FrameBuffer.create([textures.hilite!]);
     this.hiliteUsingStencil = FrameBuffer.create([textures.hilite!], depth);
-    if (DepthType.TextureUnsignedInt24Stencil8 === System.instance.capabilities.maxDepthType) {
+
+    if (DepthType.TextureUnsignedInt24Stencil8 === System.instance.capabilities.maxDepthType)
       this.stencilSet = FrameBuffer.create([], depth);
-    }
-    this.occlusion = FrameBuffer.create([textures.occlusion!]);
-    this.occlusionBlur = FrameBuffer.create([textures.occlusionBlur!]);
 
     return undefined !== this.opaqueColor
       && undefined !== this.opaqueAndCompositeColor
       && undefined !== this.depthAndOrder
       && undefined !== this.hilite
-      && undefined !== this.hiliteUsingStencil
-      && undefined !== this.occlusion
-      && undefined !== this.occlusionBlur;
+      && undefined !== this.hiliteUsingStencil;
+  }
+
+  public toggleOcclusion(textures: Textures): void {
+    if (undefined !== textures.occlusion) {
+      assert(undefined !== textures.occlusionBlur);
+      this.occlusion = FrameBuffer.create([textures.occlusion]);
+      this.occlusionBlur = FrameBuffer.create([textures.occlusionBlur!]);
+    } else {
+      assert(undefined === textures.occlusionBlur);
+      this.occlusion = dispose(this.occlusion);
+      this.occlusionBlur = dispose(this.occlusionBlur);
+    }
   }
 
   public dispose() {
@@ -165,13 +181,30 @@ class Geometry implements IDisposable {
 
   public init(textures: Textures): boolean {
     assert(undefined === this.composite);
-    this.composite = CompositeGeometry.createGeometry(textures.color!.getHandle()!, textures.accumulation!.getHandle()!, textures.revealage!.getHandle()!, textures.hilite!.getHandle()!, textures.occlusion!.getHandle()!);
+    this.composite = CompositeGeometry.createGeometry(
+      textures.color!.getHandle()!,
+      textures.accumulation!.getHandle()!,
+      textures.revealage!.getHandle()!, textures.hilite!.getHandle()!);
+
     this.stencilCopy = ViewportQuadGeometry.create(TechniqueId.CopyStencil);
-    assert(textures.depthAndOrder !== undefined);
-    this.occlusion = AmbientOcclusionGeometry.createGeometry(textures.depthAndOrder!.getHandle()!);
-    this.occlusionXBlur = BlurGeometry.createGeometry(textures.occlusion!.getHandle()!, textures.depthAndOrder!.getHandle()!, new Vector2d(1.0, 0.0));
-    this.occlusionYBlur = BlurGeometry.createGeometry(textures.occlusionBlur!.getHandle()!, textures.depthAndOrder!.getHandle()!, new Vector2d(0.0, 1.0));
+
     return undefined !== this.composite;
+  }
+
+  public toggleOcclusion(textures: Textures): void {
+    if (undefined !== textures.occlusion) {
+      assert(undefined !== textures.occlusionBlur);
+      this.composite!.occlusion = textures.occlusion.getHandle();
+      this.occlusion = AmbientOcclusionGeometry.createGeometry(textures.depthAndOrder!.getHandle()!);
+      this.occlusionXBlur = BlurGeometry.createGeometry(textures.occlusion!.getHandle()!, textures.depthAndOrder!.getHandle()!, new Vector2d(1.0, 0.0));
+      this.occlusionYBlur = BlurGeometry.createGeometry(textures.occlusionBlur!.getHandle()!, textures.depthAndOrder!.getHandle()!, new Vector2d(0.0, 1.0));
+    } else {
+      assert(undefined === textures.occlusionBlur);
+      this.composite!.occlusion = undefined;
+      this.occlusion = dispose(this.occlusion);
+      this.occlusionXBlur = dispose(this.occlusionXBlur);
+      this.occlusionYBlur = dispose(this.occlusionYBlur);
+    }
   }
 
   public dispose() {
@@ -369,6 +402,7 @@ export abstract class SceneCompositor implements IDisposable {
 abstract class Compositor extends SceneCompositor {
   protected _width: number = -1;
   protected _height: number = -1;
+  protected _includeOcclusion: boolean = false;
   protected _textures = new Textures();
   protected _depth?: DepthBuffer;
   protected _frameBuffers: FrameBuffers;
@@ -486,17 +520,37 @@ abstract class Compositor extends SceneCompositor {
     const rect = this.target.viewRect;
     const width = rect.width;
     const height = rect.height;
+    const includeOcclusion = this.target.wantAmbientOcclusion;
 
-    if (this._textures.accumulation !== undefined && width === this._width && height === this._height) {
-      return true;
+    // If not yet initialized, or dimensions changed, initialize.
+    if (undefined === this._textures.accumulation || width !== this._width || height !== this._height) {
+      this._width = width;
+      this._height = height;
+
+      // init() first calls dispose(), which releases all of our fbos, textures, etc, and resets the _includeOcclusion flag.
+      if (!this.init()) {
+        assert(false, "Failed to initialize scene compositor");
+        return false;
+      }
     }
 
-    this._width = width;
-    this._height = height;
+    // Allocate or free ambient occlusion-related resources if necessary
+    if (includeOcclusion !== this._includeOcclusion) {
+      this._includeOcclusion = includeOcclusion;
+      if (includeOcclusion) {
+        if (!this._textures.enableOcclusion(width, height)) {
+          assert(false, "Failed to initialize occlusion textures");
+          return false;
+        }
+      } else {
+        this._textures.disableOcclusion();
+      }
 
-    const result = this.init();
-    assert(result);
-    return result;
+      this._frameBuffers.toggleOcclusion(this._textures);
+      this._geom.toggleOcclusion(this._textures);
+    }
+
+    return true;
   }
 
   public draw(commands: RenderCommands) {
@@ -632,6 +686,7 @@ abstract class Compositor extends SceneCompositor {
 
   public dispose() {
     this._depth = dispose(this._depth);
+    this._includeOcclusion = false;
     dispose(this._textures);
     dispose(this._frameBuffers);
     dispose(this._geom);
@@ -641,7 +696,9 @@ abstract class Compositor extends SceneCompositor {
     this.dispose();
     this._depth = System.instance.createDepthBuffer(this._width, this._height);
     if (this._depth !== undefined) {
-      return this._textures.init(this._width, this._height) && this._frameBuffers.init(this._textures, this._depth) && this._geom.init(this._textures);
+      return this._textures.init(this._width, this._height)
+        && this._frameBuffers.init(this._textures, this._depth)
+        && this._geom.init(this._textures);
     }
     return false;
   }

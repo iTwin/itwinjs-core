@@ -5,14 +5,14 @@
 @import "../index.scss";
 
 .uicore-expandable-blocks-block {
-  background-color: $background-1;
-  border: solid 1px $uicore-gray-9;
+  background-color: $buic-background-control;
+  border: solid 1px $buic-background-control-stroke;
   border-radius: 3px;
   position: relative;
 
   > .header {
     padding: $uicore-xs;
-    background: $uicore-white;
+    background: $buic-background-control;
     transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out;
     cursor: pointer;
 
@@ -23,7 +23,7 @@
       float: left;
       margin-right: 6px;
       text-align: center;
-      color: $uicore-gray-5;
+      color: $buic-foreground-body;
       transition: 0.15s ease-in-out;
     }
 
@@ -31,7 +31,7 @@
       @include no-link;
       @include uicore-text( small );
       display: block;
-      color: $uicore-gray-4;
+      color: $buic-foreground-muted;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -44,7 +44,7 @@
       line-height: 23px;
       display: block;
       margin: 0;
-      color: $uicore-gray-4;
+      color: $buic-foreground-body;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -76,12 +76,12 @@
   &:hover {
     > .header {
       > .icon-container {
-        color: $uicore-gray-2;
+        color: $buic-foreground-activehover;
       }
 
       > .caption,
       > .title {
-        color: $uicore-gray-1;
+        color: $buic-foreground-activehover;
       }
     }
   }
@@ -96,7 +96,7 @@
       > .icon-container,
       > .caption,
       > .title {
-        color: rgba($uicore-blue,.85);
+        color: $buic-foreground-primary;
       }
 
       > .icon-container {
@@ -113,13 +113,13 @@
     &:hover > .header {
       > .icon-container,
       > .title {
-        color: rgba($uicore-blue,1);
+        color: $buic-foreground-primary;
       }
     }
 
     > .content {
       padding: 11px 9px 11px 34px;
-      background-color: $uicore-white;
+      background-color: $buic-background-control;
       border-style: none;
     }
 
@@ -129,7 +129,7 @@
       top: 0;
       height: 2px;
       width: 100%;
-      background: $uicore-blue;
+      background: $buic-foreground-primary;
       z-index: 1;
     }
   }

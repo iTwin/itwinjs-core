@@ -22,7 +22,9 @@ import { XYAndZ, Point3d, Angle } from "@bentley/geometry-core";
 
 const loggingCategory = "imodeljs-frontend.IModelConnection";
 
-/** A connection to an iModel database hosted on the backend. */
+/** A connection to an iModel database hosted on the backend.
+ * @public
+ */
 export class IModelConnection extends IModel {
   /** The [[OpenMode]] used for this IModelConnection. */
   public readonly openMode: OpenMode;
@@ -54,8 +56,7 @@ export class IModelConnection extends IModel {
   /** Check the [[openMode]] of this IModelConnection to see if it was opened read-only. */
   public get isReadonly(): boolean { return this.openMode === OpenMode.Readonly; }
 
-  /**
-   * Event called immediately before an IModelConnection is closed.
+  /** Event called immediately before an IModelConnection is closed.
    * @note Be careful not to perform any asynchronous operations on the IModelConnection because it will close before they are processed.
    */
   public static readonly onClose = new BeEvent<(_imodel: IModelConnection) => void>();
@@ -63,8 +64,7 @@ export class IModelConnection extends IModel {
   /** The font map for this IModelConnection. Only valid after calling #loadFontMap and waiting for the returned promise to be fulfilled. */
   public fontMap?: FontMap;
 
-  /**
-   * Load the FontMap for this IModelConnection.
+  /** Load the FontMap for this IModelConnection.
    * @returns Returns a Promise<FontMap> that is fulfilled when the FontMap member of this IModelConnection is valid.
    */
   public async loadFontMap(): Promise<FontMap> {
@@ -78,8 +78,7 @@ export class IModelConnection extends IModel {
   public static registerClass(className: string, classType: typeof EntityState) { this._registry.set(className.toLowerCase(), classType); }
   private static lookupClass(className: string) { return this._registry.get(className.toLowerCase()); }
 
-  /**
-   * Find the first registered base class of the given EntityState className. This class will "handle" the State for the supplied className.
+  /** Find the first registered base class of the given EntityState className. This class will "handle" the State for the supplied className.
    * @param className The full name of the class of interest.
    * @param defaultClass If no base class of the className is registered, return this value.
    * @note this method is async since it may have to query the server to get the class hierarchy.
@@ -136,9 +135,8 @@ export class IModelConnection extends IModel {
   }
 
   private static async callOpen(accessToken: AccessToken, iModelToken: IModelToken, openMode: OpenMode): Promise<IModel> {
-    /* Try opening the iModel repeatedly accommodating any pending responses from the backend.
-     * Waits for an increasing amount of time (but within a range) before checking on the pending request again.
-     */
+    // Try opening the iModel repeatedly accommodating any pending responses from the backend.
+    // Waits for an increasing amount of time (but within a range) before checking on the pending request again.
     const connectionRetryIntervalRange = { min: 100, max: 5000 }; // in milliseconds
     let connectionRetryInterval = Math.min(connectionRetryIntervalRange.min, IModelConnection.connectionTimeout);
 
@@ -238,8 +236,7 @@ export class IModelConnection extends IModel {
     }
   }
 
-  /**
-   * Open an IModelConnection to a standalone iModel (not managed by iModelHub) from a file name that is resolved by the backend.
+  /** Open an IModelConnection to a standalone iModel (not managed by iModelHub) from a file name that is resolved by the backend.
    * This method is intended for desktop or mobile applications and should not be used for web applications.
    */
   public static async openStandalone(fileName: string, openMode = OpenMode.Readonly): Promise<IModelConnection> {
@@ -356,8 +353,7 @@ export class IModelConnection extends IModel {
   /** Query for a set of element ids that satisfy the supplied query params  */
   public async queryEntityIds(params: EntityQueryParams): Promise<Id64Set> { return IModelReadRpcInterface.getClient().queryEntityIds(this.iModelToken, params); }
 
-  /**
-   * Update the project extents of this iModel.
+  /** Update the project extents of this iModel.
    * @param newExtents The new project extents as an AxisAlignedBox3d
    * @throws [[IModelError]] if the IModelConnection is read-only or there is a problem updating the extents.
    */
@@ -368,8 +364,7 @@ export class IModelConnection extends IModel {
     return IModelWriteRpcInterface.getClient().updateProjectExtents(this.iModelToken, newExtents);
   }
 
-  /**
-   * Commit pending changes to this iModel
+  /** Commit pending changes to this iModel
    * @param description Optional description of the changes
    * @throws [[IModelError]] if the IModelConnection is read-only or there is a problem saving changes.
    */
@@ -380,16 +375,14 @@ export class IModelConnection extends IModel {
     return IModelWriteRpcInterface.getClient().saveChanges(this.iModelToken, description);
   }
 
-  /**
-   * WIP - Determines whether the *Change Cache file* is attached to this iModel or not.
+  /** WIP - Determines whether the *Change Cache file* is attached to this iModel or not.
    * See also [Change Summary Overview]($docs/learning/ChangeSummaries)
    * @returns Returns true if the *Change Cache file* is attached to the iModel. false otherwise
    * @hidden
    */
   public async changeCacheAttached(): Promise<boolean> { return WipRpcInterface.getClient().isChangeCacheAttached(this.iModelToken); }
 
-  /**
-   * WIP - Attaches the *Change Cache file* to this iModel if it hasn't been attached yet.
+  /** WIP - Attaches the *Change Cache file* to this iModel if it hasn't been attached yet.
    * A new *Change Cache file* will be created for the iModel if it hasn't existed before.
    * See also [Change Summary Overview]($docs/learning/ChangeSummaries)
    * @throws [IModelError]($common) if a Change Cache file has already been attached before.
@@ -397,8 +390,7 @@ export class IModelConnection extends IModel {
    */
   public async attachChangeCache(): Promise<void> { return WipRpcInterface.getClient().attachChangeCache(this.iModelToken); }
 
-  /**
-   * WIP - Detaches the *Change Cache file* to this iModel if it had been attached before.
+  /** WIP - Detaches the *Change Cache file* to this iModel if it had been attached before.
    * > You do not have to check whether a Change Cache file had been attached before. The
    * > method does not do anything, if no Change Cache is attached.
    * See also [Change Summary Overview]($docs/learning/ChangeSummaries)
@@ -412,8 +404,7 @@ export class IModelConnection extends IModel {
   /** Request a tooltip from the backend.  */
   public async getToolTipMessage(id: string): Promise<string[]> { return IModelReadRpcInterface.getClient().getToolTipMessage(this.iModelToken, id); }
 
-  /**
-   * Convert a point in this iModel's Spatial coordinates to a [[Cartographic]] using the Geographic location services for this IModelConnection.
+  /** Convert a point in this iModel's Spatial coordinates to a [[Cartographic]] using the Geographic location services for this IModelConnection.
    * @param spatial A point in the iModel's spatial coordinates
    * @param result If defined, use this for output
    * @returns A Cartographic location
@@ -439,8 +430,7 @@ export class IModelConnection extends IModel {
     return Cartographic.fromDegrees(longLatHeight.x, longLatHeight.y, longLatHeight.z, result);
   }
 
-  /**
-   * Convert a point in this iModel's Spatial coordinates to a [[Cartographic]] using the Geographic location services for this IModelConnection or [[IModel.ecefLocation]].
+  /** Convert a point in this iModel's Spatial coordinates to a [[Cartographic]] using the Geographic location services for this IModelConnection or [[IModel.ecefLocation]].
    * @param spatial A point in the iModel's spatial coordinates
    * @param result If defined, use this for output
    * @returns A Cartographic location
@@ -460,8 +450,7 @@ export class IModelConnection extends IModel {
     return (this._noGcsDefined ? this.spatialToCartographicFromEcef(spatial, result) : this.spatialToCartographicFromGcs(spatial, result));
   }
 
-  /**
-   * Convert a [[Cartographic]] to a point in this iModel's Spatial coordinates using the Geographic location services for this IModelConnection.
+  /** Convert a [[Cartographic]] to a point in this iModel's Spatial coordinates using the Geographic location services for this IModelConnection.
    * @param cartographic A cartographic location
    * @param result If defined, use this for output
    * @returns A point in this iModel's spatial coordinates
@@ -489,8 +478,7 @@ export class IModelConnection extends IModel {
     return result;
   }
 
-  /**
-   * Convert a [[Cartographic]] to a point in this iModel's Spatial coordinates using the Geographic location services for this IModelConnection or [[IModel.ecefLocation]].
+  /** Convert a [[Cartographic]] to a point in this iModel's Spatial coordinates using the Geographic location services for this IModelConnection or [[IModel.ecefLocation]].
    * @param cartographic A cartographic location
    * @param result If defined, use this for output
    * @returns A point in this iModel's spatial coordinates
@@ -511,6 +499,7 @@ export class IModelConnection extends IModel {
   }
 }
 
+/** @public */
 export namespace IModelConnection {
 
   /** The id/name/class of a ViewDefinition. Returned by [[IModelConnection.Views.getViewList]] */
@@ -665,8 +654,7 @@ export namespace IModelConnection {
     /** @hidden */
     constructor(private _iModel: IModelConnection) { }
 
-    /**
-     * Query for an array of ViewDefinitionProps
+    /** Query for an array of ViewDefinitionProps
      * @param queryParams Query parameters specifying the views to return
      */
     public async queryProps(queryParams: ViewQueryParams): Promise<ViewDefinitionProps[]> {
@@ -682,8 +670,7 @@ export namespace IModelConnection {
       return viewProps as ViewDefinitionProps[];
     }
 
-    /**
-     * Get an array of the ViewSpecs for all views in this IModel that satisfy a ViewQueryParams.
+    /** Get an array of the ViewSpecs for all views in this IModel that satisfy a ViewQueryParams.
      *
      * This is typically used to create a list for UI.
      *
@@ -700,8 +687,7 @@ export namespace IModelConnection {
       return views;
     }
 
-    /**
-     * Query the ID of the default view associated with this iModel. Applications can choose to use this as the default view to which to open a viewport upon startup, or the initial selection
+    /** Query the ID of the default view associated with this iModel. Applications can choose to use this as the default view to which to open a viewport upon startup, or the initial selection
      * within a view selection dialog, or similar purposes.
      * @returns the ID of the default view, or an invalid ID if no default view is defined.
      */

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Added a property to provide rowHeight value or function that calculates it.",
+      "packageName": "@bentley/ui-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "elonas.seviakovas@bentley.com"
+}

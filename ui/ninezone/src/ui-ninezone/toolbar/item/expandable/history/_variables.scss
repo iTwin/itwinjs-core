@@ -9,10 +9,10 @@ $desktop-item-height: 40px;
 $desktop-tool-stripe-height: 30px;
 $desktop-tool-stripe-width: 2px;
 
-$icon-color: rgba($text-light, 0.88);
-$hovered-icon-color: $primary-tint;
-$pressed-icon-color: rgba($text-light, 0.88);
-$active-icon-color: $primary-tint;
-$disabled-icon-color: rgba($text-light, 0.44);
+$icon-color: $buic-icon-color;
+$hovered-icon-color: $primary-base;
+$pressed-icon-color: $buic-icon-color;
+$active-icon-color: $primary-base;
+$disabled-icon-color: $buic-icon-color-disabled;
 
 $active-item-bg-color: $active-icon-color;

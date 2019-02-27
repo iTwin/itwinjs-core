@@ -1604,9 +1604,9 @@ export class Sample {
     if (structure === 1) {
       const pointA = Point3d.create();
       const pointB = Point3d.create();
-      allPoints.getPoint3dAt(0, pointA);
+      allPoints.getPoint3dAtUncheckedPointIndex(0, pointA);
       for (let i1 = 0; i1 + 1 < numPoints; i1++) {
-        allPoints.getPoint3dAt(i1, pointB);
+        allPoints.getPoint3dAtUncheckedPointIndex(i1, pointB);
         path.tryAddChild(LineSegment3d.create(pointA, pointB));
         pointA.setFromPoint3d(pointB);
       }

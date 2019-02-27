@@ -91,7 +91,7 @@ export default class TreeNode extends React.Component<NodeProps> {
       }
     }
 
-    const icon = this.props.icon ? (<div className="icon">{this.props.icon}</div>) : undefined;
+    const icon = this.props.icon ? (<div className="core-tree-node-icon">{this.props.icon}</div>) : undefined;
 
     const toggle = (this.props.isLoading || this.props.isLeaf) ? undefined : (
       <ExpansionToggle

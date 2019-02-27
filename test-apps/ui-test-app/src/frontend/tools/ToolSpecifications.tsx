@@ -26,8 +26,8 @@ export class AppTools {
     return new ToolItemDef({
       toolId: AppSelectTool.toolId,
       iconSpec: "icon-cursor",
-      label: () => AppSelectTool.flyover,
-      tooltip: () => AppSelectTool.description,
+      labelKey: "SampleApp:tools.AppSelect.flyover",
+      tooltipKey: "SampleApp:tools.AppSelect.description",
       execute: () => { IModelApp.tools.run(AppSelectTool.toolId); },
     });
   }
@@ -36,8 +36,8 @@ export class AppTools {
     return new ToolItemDef({
       toolId: Tool1.toolId,
       iconSpec: "icon-placeholder",
-      labelKey: "SampleApp:tools.Tool1.flyover",
-      tooltipKey: "SampleApp:tools.Tool1.description",
+      label: () => Tool1.flyover,
+      tooltip: () => Tool1.description,
       execute: () => { IModelApp.tools.run(Tool1.toolId); },
     });
   }

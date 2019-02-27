@@ -2,7 +2,6 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-
 import * as React from "react";
 import { Id64String } from "@bentley/bentleyjs-core";
 import { ViewQueryParams } from "@bentley/imodeljs-common";
@@ -18,7 +17,9 @@ import FindSimilarWidget from "../find-similar-widget/FindSimilarWidget";
 import TreeWidget from "../tree-widget/TreeWidget";
 import RulesetSelector from "../ruleset-selector/RulesetSelector";
 import ViewportContentControl from "../viewport/ViewportContentControl";
+
 import "./App.css";
+import "@bentley/icons-generic-webfont/dist/bentley-icons-generic-webfont.css";
 
 export interface State {
   imodel?: IModelConnection;

@@ -2206,9 +2206,9 @@ export namespace TextureMapping {
       let normal: Vector3d;
 
       if (visitor.normal === undefined)
-        normal = points.getPoint3dAt(0).crossProductToPoints(points.getPoint3dAt(1), points.getPoint3dAt(2));
+        normal = points.getPoint3dAtUncheckedPointIndex(0).crossProductToPoints(points.getPoint3dAtUncheckedPointIndex(1), points.getPoint3dAtUncheckedPointIndex(2));
       else
-        normal = visitor.normal.atVector3dIndex(0)!;
+        normal = visitor.normal.getVector3dAtCheckedVectorIndex(0)!;
 
       if (!normal.normalize(normal))
         return undefined;
@@ -2239,7 +2239,7 @@ export namespace TextureMapping {
 
       const numEdges = visitor.numEdgesThisFacet;
       for (let i = 0; i < numEdges; i++) {
-        const vector = Vector3d.createFrom(points.getPoint3dAt(i));
+        const vector = Vector3d.createFrom(points.getPoint3dAtUncheckedPointIndex(i));
 
         params.push(Point2d.create(vector.dotProduct(sideVector), vector.dotProduct(upVector)));
         uvTransform.multiplyPoint2d(params[i], params[i]);
@@ -2252,7 +2252,7 @@ export namespace TextureMapping {
       const params: Point2d[] = [];
       const numEdges = visitor.numEdgesThisFacet;
       for (let i = 0; i < numEdges; i++) {
-        const point = visitor.point.getPoint3dAt(i);
+        const point = visitor.point.getPoint3dAtUncheckedPointIndex(i);
 
         if (transformToIModel !== undefined)
           transformToIModel.multiplyPoint3d(point, point);

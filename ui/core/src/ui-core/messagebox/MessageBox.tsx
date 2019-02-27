@@ -91,7 +91,7 @@ export interface MessageContainerProps {
  */
 export class MessageContainer extends React.Component<MessageContainerProps> {
   public static getIconClassName(severity: MessageSeverity, hollow?: boolean): string {
-    let iconClassName = "icon-info";
+    let iconClassName = "";
 
     switch (severity) {
       case MessageSeverity.Information:

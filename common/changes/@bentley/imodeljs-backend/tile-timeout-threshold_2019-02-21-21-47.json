@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Improve tile request logging and make timeout configurable.",
+      "packageName": "@bentley/imodeljs-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-backend",
+  "email": "Paul.Connelly@bentley.com"
+}

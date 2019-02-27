@@ -24,13 +24,13 @@ export abstract class IndexedXYCollection {
    * @param result caller-allocated destination
    * @returns undefined if the index is out of bounds
    */
-  public abstract atPoint2dIndex(index: number, result?: Point2d): Point2d | undefined;
+  public abstract getPoint2dAtCheckedPointIndex(index: number, result?: Point2d): Point2d | undefined;
   /**
    * @param index index of point within the array
    * @param result caller-allocated destination
    * @returns undefined if the index is out of bounds
    */
-  public abstract atVector2dIndex(index: number, result?: Vector2d): Vector2d | undefined;
+  public abstract getVector2dAtCheckedVectorIndex(index: number, result?: Vector2d): Vector2d | undefined;
   /**
    * @param indexA index of point within the array
    * @param indexB index of point within the array

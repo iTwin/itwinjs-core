@@ -13,7 +13,7 @@
   height: 100%;
   font-size: $nz-backstage-item-font-size;
   font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  color: rgba($nz-backstage-item-color, 0.85);
+  color: $nz-backstage-item-color;
   background-color: $nz-backstage-background;
   transform: translateX(-100%);
   @include uicore-z-index(backstage);
@@ -67,6 +67,6 @@
   }
 
   &.nz-show {
-    background-color: rgba($nz-backstage-overlay-background, 0.6);
+    background-color: $nz-backstage-overlay-background;
   }
 }

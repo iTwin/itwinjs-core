@@ -18,6 +18,7 @@
   position: relative;
   padding-left: $nz-footer-indicator-horizontal-padding;
   padding-right: $nz-footer-indicator-horizontal-padding;
+  color: $buic-foreground-body;
 
   /* small devices (phones, 600px and down) */
   @media only screen and (max-width: 600px) {
@@ -33,7 +34,7 @@
 
   >.nz-indicator {
     height: $indicator-height;
-    border: 2px solid black;
+    border: 2px solid $buic-foreground-body;
     min-width: 20px;
     position: relative;
     padding-left: $padding-ltb;
@@ -44,9 +45,10 @@
     align-items: center;
     cursor: pointer;
     box-sizing: border-box;
+    color: $buic-foreground-body;
 
     >.nz-icons {
-      color: rgba($icon-color, $icon-opacity);
+      color: $icon-color;
       font-size: $icon-size;
       filter: $icon-shadow;
     }

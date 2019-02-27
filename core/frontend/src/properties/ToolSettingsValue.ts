@@ -45,35 +45,12 @@ export class ToolSettingsValue implements PrimitiveValue {
   }
 }
 
-/**
- * Enumeration for horizontal alignment.
- */
-export const enum TsHorizontalAlignment {
-  Left = 1,
-  Center = 2,
-  Right = 3,
-  Justify = 4,
-}
-
-/**
- * Enumeration for vertical alignment.
- */
-export const enum TsVerticalAlignment {
-  Top = 1,
-  Middle = 2,
-  Bottom = 3,
-}
-
 /** Interface used to identify the location of the UI control to manipulate a ToolSettings property value. */
 export interface EditorPosition {
   /** Determine the order the row is shown in UI */
   rowPriority: number;
-  /** Determines the Column position for the type editor */
+  /** Determines the column position for the type editor */
   columnIndex: number;
-  /** Defaults to left */
-  horizontalAlignment?: TsHorizontalAlignment;
-  /** Defaults to top */
-  verticalAlignment?: TsVerticalAlignment;
   /** Number of columns to occupy. Defaults to 1 */
   columnSpan?: number;
 }

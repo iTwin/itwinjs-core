@@ -8,6 +8,7 @@ import { ViewportComponentEvents } from "../../ui-components";
 import { Matrix3d } from "@bentley/geometry-core";
 import { IModelApp, Viewport, StandardViewId, ViewManager, SelectedViewportChangedArgs } from "@bentley/imodeljs-frontend";
 import { BeUiEvent } from "@bentley/bentleyjs-core";
+import TestUtils from "../TestUtils";
 
 describe("ViewportComponentEvents", () => {
   const onSelectedViewportChanged = new BeUiEvent();
@@ -22,48 +23,43 @@ describe("ViewportComponentEvents", () => {
   it("should return early in initialization when already initialized", () => {
     ViewportComponentEvents.initialize();
   });
-  it("should setCubeMatrix", () => {
+  it("should setCubeMatrix", async () => {
     const cubeListener = sinon.spy();
     ViewportComponentEvents.onCubeRotationChangeEvent.addListener(cubeListener);
     const rotMatrix = Matrix3d.createIdentity();
     ViewportComponentEvents.setCubeMatrix(rotMatrix, undefined);
-    setImmediate(() => {
-      expect(cubeListener.calledOnce).to.be.true;
-    });
+    await TestUtils.flushAsyncOperations();
+    expect(cubeListener.calledOnce).to.be.true;
   });
-  it("should setStandardRotation", () => {
+  it("should setStandardRotation", async () => {
     const standardRotationListener = sinon.spy();
     ViewportComponentEvents.onStandardRotationChangeEvent.addListener(standardRotationListener);
     const standardRotation = StandardViewId.Front;
     ViewportComponentEvents.setStandardRotation(standardRotation);
-    setImmediate(() => {
-      expect(standardRotationListener.calledOnce).to.be.true;
-    });
+    await TestUtils.flushAsyncOperations();
+    expect(standardRotationListener.calledOnce).to.be.true;
   });
-  it("should setViewMatrix", () => {
+  it("should setViewMatrix", async () => {
     const viewRotationListener = sinon.spy();
     ViewportComponentEvents.onViewRotationChangeEvent.addListener(viewRotationListener);
     const viewport = { rotation: Matrix3d.createIdentity() } as Viewport;
     ViewportComponentEvents.setViewMatrix(viewport, undefined);
-    setImmediate(() => {
-      expect(viewRotationListener.calledOnce).to.be.true;
-    });
+    await TestUtils.flushAsyncOperations();
+    expect(viewRotationListener.calledOnce).to.be.true;
   });
-  it("should setViewMatrix when onSelectedViewportChanged event is emitted", () => {
+  it("should setViewMatrix when onSelectedViewportChanged event is emitted", async () => {
     const viewRotationListener = sinon.spy();
     ViewportComponentEvents.onViewRotationChangeEvent.addListener(viewRotationListener);
     const current = { rotation: Matrix3d.createIdentity() } as Viewport;
     onSelectedViewportChanged.emit({ current } as SelectedViewportChangedArgs);
-    setImmediate(() => {
-      expect(viewRotationListener.calledOnce).to.be.true;
-    });
+    await TestUtils.flushAsyncOperations();
+    expect(viewRotationListener.calledOnce).to.be.true;
   });
-  it("should not setViewMatrix when onSelectedViewportChanged event is emitted with unset current", () => {
+  it("should not setViewMatrix when onSelectedViewportChanged event is emitted with unset current", async () => {
     const viewRotationListener = sinon.spy();
     ViewportComponentEvents.onViewRotationChangeEvent.addListener(viewRotationListener);
     onSelectedViewportChanged.emit({} as SelectedViewportChangedArgs);
-    setImmediate(() => {
-      expect(viewRotationListener.calledOnce).to.be.false;
-    });
+    await TestUtils.flushAsyncOperations();
+    expect(viewRotationListener.calledOnce).to.be.false;
   });
 });

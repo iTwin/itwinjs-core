@@ -1,6 +1,6 @@
 {
   "name": "@bentley/ui-framework",
-  "version": "0.189.0-dev.32",
+  "version": "0.189.0-dev.37",
   "description": "UI framework",
   "license": "MIT",
   "repository": {
@@ -24,7 +24,7 @@
       "type": "system",
       "sourceResources": [
         {
-          "source": "./src/**/*.scss",
+          "source": "./src/**/*.*css",
           "dest": "./lib"
         },
         {
@@ -50,38 +50,38 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "0.189.0-dev.32",
-    "@bentley/geometry-core": "0.189.0-dev.32",
-    "@bentley/imodeljs-i18n": "0.189.0-dev.32",
-    "@bentley/imodeljs-frontend": "0.189.0-dev.32",
-    "@bentley/imodeljs-common": "0.189.0-dev.32",
-    "@bentley/imodeljs-clients": "0.189.0-dev.32",
-    "@bentley/presentation-common": "0.189.0-dev.32",
-    "@bentley/presentation-frontend": "0.189.0-dev.32",
-    "@bentley/ui-core": "0.189.0-dev.32",
-    "@bentley/ui-components": "0.189.0-dev.32",
-    "@bentley/ui-ninezone": "0.189.0-dev.32"
+    "@bentley/bentleyjs-core": "0.189.0-dev.37",
+    "@bentley/geometry-core": "0.189.0-dev.37",
+    "@bentley/imodeljs-i18n": "0.189.0-dev.37",
+    "@bentley/imodeljs-frontend": "0.189.0-dev.37",
+    "@bentley/imodeljs-common": "0.189.0-dev.37",
+    "@bentley/imodeljs-clients": "0.189.0-dev.37",
+    "@bentley/presentation-common": "0.189.0-dev.37",
+    "@bentley/presentation-frontend": "0.189.0-dev.37",
+    "@bentley/ui-core": "0.189.0-dev.37",
+    "@bentley/ui-components": "0.189.0-dev.37",
+    "@bentley/ui-ninezone": "0.189.0-dev.37"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/config-loader": "0.189.0-dev.32",
-    "@bentley/build-tools": "0.189.0-dev.32",
-    "@bentley/bentleyjs-core": "0.189.0-dev.32",
-    "@bentley/geometry-core": "0.189.0-dev.32",
-    "@bentley/imodeljs-i18n": "0.189.0-dev.32",
-    "@bentley/imodeljs-frontend": "0.189.0-dev.32",
-    "@bentley/imodeljs-common": "0.189.0-dev.32",
-    "@bentley/imodeljs-clients": "0.189.0-dev.32",
-    "@bentley/presentation-common": "0.189.0-dev.32",
-    "@bentley/presentation-frontend": "0.189.0-dev.32",
-    "@bentley/presentation-testing": "0.189.0-dev.32",
-    "@bentley/ui-core": "0.189.0-dev.32",
-    "@bentley/ui-components": "0.189.0-dev.32",
-    "@bentley/ui-ninezone": "0.189.0-dev.32",
-    "@bentley/webpack-tools": "0.189.0-dev.32",
+    "@bentley/config-loader": "0.189.0-dev.37",
+    "@bentley/build-tools": "0.189.0-dev.37",
+    "@bentley/bentleyjs-core": "0.189.0-dev.37",
+    "@bentley/geometry-core": "0.189.0-dev.37",
+    "@bentley/imodeljs-i18n": "0.189.0-dev.37",
+    "@bentley/imodeljs-frontend": "0.189.0-dev.37",
+    "@bentley/imodeljs-common": "0.189.0-dev.37",
+    "@bentley/imodeljs-clients": "0.189.0-dev.37",
+    "@bentley/presentation-common": "0.189.0-dev.37",
+    "@bentley/presentation-frontend": "0.189.0-dev.37",
+    "@bentley/presentation-testing": "0.189.0-dev.37",
+    "@bentley/ui-core": "0.189.0-dev.37",
+    "@bentley/ui-components": "0.189.0-dev.37",
+    "@bentley/ui-ninezone": "0.189.0-dev.37",
+    "@bentley/webpack-tools": "0.189.0-dev.37",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
     "@types/chai-jest-snapshot": "^1.3.0",
@@ -129,7 +129,7 @@
   ],
   "dependencies": {
     "@bentley/icons-generic-webfont": "^0.0.9",
-    "@bentley/presentation-components": "0.189.0-dev.32",
+    "@bentley/presentation-components": "0.189.0-dev.37",
     "classnames": "^2.2.5",
     "immutable": "^3.8.2",
     "lodash": "^4.17.10",

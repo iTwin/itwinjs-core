@@ -9,7 +9,7 @@ middleContent: [
 iModel.js is a library for creating, accessing, leveraging and integrating infrastructure digital twins. An Infrastructure digital twin is a digital representation of an asset or system and the context and controls of its surrounding environment. Infrastructure owners and operators are embracing digital twins for better planning, delivery, operation and maintenance of their assets.
 <br/>
 <br/>
-Infrastructure digital twins can be based upon a relational database—known as an iModel—that contains components that comprise a digital twin. Changes to an iModel can be managed by iModelHub and synchronized with distributed copies—creating a distributed database. The iModel.js library can be used integrate your infrastructure digital twin into your digital workflows, and contains tools for creating, visualizing, querying, mining, synchronizing, aligning, and securing your digital twin.
+Infrastructure digital twins can be based upon a relational database—known as an iModel—that contains components that comprise a digital twin. Changes to an iModel can be managed by iModelHub and synchronized with distributed copies—creating a distributed database. The iModel.js library can be used to integrate your infrastructure digital twin into your digital workflows, and contains tools for creating, visualizing, querying, mining, synchronizing, aligning, and securing your digital twin.
 <br/>
 <br/>
 <b>Open for Business and Innovation</b>

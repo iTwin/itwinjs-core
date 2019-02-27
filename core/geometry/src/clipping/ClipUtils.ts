@@ -51,13 +51,13 @@ export class ClipUtilities {
     unsortedFractions.push(0);
     unsortedFractions.push(1);
     unsortedFractions.sort();
-    let f0 = unsortedFractions.at(0);
+    let f0 = unsortedFractions.atUncheckedIndex(0);
     let f1;
     let fMid;
     const testPoint = ClipUtilities._selectIntervals01TestPoint;
     const n = unsortedFractions.length;
     for (let i = 1; i < n; i++ , f0 = f1) {
-      f1 = unsortedFractions.at(i);
+      f1 = unsortedFractions.atUncheckedIndex(i);
       fMid = 0.5 * (f0 + f1);
       if (f1 > f0 && (fMid >= 0.0 && fMid <= 1.0)) {
         curve.fractionToPoint(fMid, testPoint);
@@ -128,7 +128,7 @@ export class ClipUtilities {
         const currPt = Point3d.create();
         const currVec = Vector3d.create();
         for (let i = 0; i < points.length; i++) {
-          points.getPoint3dAt(i, currPt);
+          points.getPoint3dAtUncheckedPointIndex(i, currPt);
           currVec.setFrom(currPt);
           currVec.dotProduct(plane.inwardNormalRef) > planeDistance ? numInside++ : numOutside++;
         }

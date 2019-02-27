@@ -19,6 +19,7 @@ import {
   Logger,
 } from "@bentley/bentleyjs-core";
 import { IModelDb } from "../IModelDb";
+import { IModelHost } from "../IModelHost";
 import { PromiseMemoizer, QueryablePromise } from "../PromiseMemoizer";
 
 interface TileRequestProps {
@@ -34,6 +35,15 @@ function generateTileRequestKey(props: TileRequestProps): string {
 abstract class TileRequestMemoizer<Result, Props extends TileRequestProps> extends PromiseMemoizer<Result> {
   private readonly _loggingCategory = "imodeljs-backend.IModelTileRequestRpc";
   protected abstract get _operationName(): string;
+  protected abstract addMetadata(metadata: any, props: Props): void;
+  protected abstract stringify(props: Props): string;
+  protected abstract get _timeoutMilliseconds(): number;
+
+  private makeMetadata(props: Props): any {
+    const meta = { ...props.iModelToken };
+    this.addMetadata(meta, props);
+    return meta;
+  }
 
   protected constructor(memoizeFn: (props: Props) => Promise<Result>, generateKeyFn: (props: Props) => string) {
     super(memoizeFn, generateKeyFn);
@@ -49,31 +59,36 @@ abstract class TileRequestMemoizer<Result, Props extends TileRequestProps> exten
     this._superDeleteMemoized(props);
   }
 
+  private log(status: string, props: Props): void {
+    const descr = this._operationName + "(" + this.stringify(props) + ")";
+    Logger.logTrace(this._loggingCategory, "Backend " + status + " " + descr, () => this.makeMetadata(props));
+  }
+
   protected async perform(props: Props): Promise<Result> {
     props.actx.enter();
-    Logger.logTrace(this._loggingCategory, "Received backend " + this._operationName + " request", () => (props.iModelToken));
+    this.log("received", props);
 
-    const tilePromise = this.memoize(props);
-    const waitPromise = BeDuration.wait(100);
-    await Promise.race([tilePromise, waitPromise]);
+    const tileQP = this.memoize(props);
+    const waitPromise = BeDuration.wait(this._timeoutMilliseconds);
+    await Promise.race([tileQP.promise, waitPromise]);
 
     props.actx.enter();
 
-    if (tilePromise.isPending) {
-      Logger.logTrace(this._loggingCategory, "Issuing pending status for " + this._operationName + " request", () => (props.iModelToken));
+    if (tileQP.isPending) {
+      this.log("issuing pending status for", props);
       throw new RpcPendingResponse();
     }
 
     this.deleteMemoized(props);
 
-    if (tilePromise.isFulfilled) {
-      Logger.logTrace(this._loggingCategory, "Completed " + this._operationName + " request", () => (props.iModelToken));
-      return tilePromise.result!;
+    if (tileQP.isFulfilled) {
+      this.log("completed", props);
+      return tileQP.result!;
     }
 
-    assert(tilePromise.isRejected);
-    Logger.logTrace(this._loggingCategory, "Rejected " + this._operationName + " request", () => (props.iModelToken));
-    throw tilePromise.error!;
+    assert(tileQP.isRejected);
+    this.log("rejected", props);
+    throw tileQP.error!;
   }
 }
 
@@ -83,7 +98,12 @@ async function getTileTreeProps(props: TileRequestProps): Promise<TileTreeProps>
 }
 
 class RequestTileTreePropsMemoizer extends TileRequestMemoizer<TileTreeProps, TileRequestProps> {
+  protected get _timeoutMilliseconds() { return IModelHost.tileTreeRequestTimeout; }
   protected get _operationName() { return "requestTileTreeProps"; }
+  protected stringify(props: TileRequestProps): string { return props.treeId; }
+  protected addMetadata(meta: any, props: TileRequestProps): void {
+    meta.treeId = props.treeId;
+  }
 
   private static _instance?: RequestTileTreePropsMemoizer;
 
@@ -113,7 +133,13 @@ function generateTileContentKey(props: TileContentRequestProps): string {
 }
 
 class RequestTileContentMemoizer extends TileRequestMemoizer<Uint8Array, TileContentRequestProps> {
+  protected get _timeoutMilliseconds() { return IModelHost.tileContentRequestTimeout; }
   protected get _operationName() { return "requestTileContent"; }
+  protected stringify(props: TileContentRequestProps): string { return props.treeId + ":" + props.contentId; }
+  protected addMetadata(meta: any, props: TileContentRequestProps): void {
+    meta.treeId = props.treeId;
+    meta.contentId = props.contentId;
+  }
 
   private static _instance?: RequestTileContentMemoizer;
 

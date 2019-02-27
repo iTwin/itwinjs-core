@@ -2,7 +2,18 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { ActivityLoggingContext, BeEvent, DbResult, Guid, Id64, Id64String, OpenMode } from "@bentley/bentleyjs-core";
+import {
+  ActivityLoggingContext,
+  BeEvent,
+  DbResult,
+  Guid,
+  Id64,
+  Id64String,
+  OpenMode,
+  LogLevel,
+  Logger,
+  using,
+} from "@bentley/bentleyjs-core";
 import {
   Angle,
   GeometryQuery,
@@ -32,13 +43,29 @@ import {
   LightLocation, LinkPartition, Model, PhysicalModel, PhysicalPartition, RenderMaterial, SpatialCategory, SqliteStatement, SqliteValue,
   SqliteValueType, SubCategory, Subject, Texture, ViewDefinition, DisplayStyle3d, ElementDrivesElement, PhysicalObject,
 } from "../../imodeljs-backend";
-import { IModelTestUtils } from "../IModelTestUtils";
+import { DisableNativeAssertions, IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
+import { HubUtility } from "../integration/HubUtility";
 
 let lastPushTimeMillis = 0;
 let lastAutoPushEventType: AutoPushEventType | undefined;
 
 // spell-checker: disable
+
+async function getIModelError<T>(promise: Promise<T>): Promise<IModelError | undefined> {
+  try {
+    await promise;
+    return undefined;
+  } catch (err) {
+    return err instanceof IModelError ? err : undefined;
+  }
+}
+
+function expectIModelError(expectedErrorNumber: IModelStatus, error: IModelError | undefined): void {
+  expect(error).not.to.be.undefined;
+  expect(error).instanceof(IModelError);
+  expect(error!.errorNumber).to.equal(expectedErrorNumber);
+}
 
 describe("iModel", () => {
   let imodel1: IModelDb;
@@ -80,6 +107,13 @@ describe("iModel", () => {
     s2 = JSON.stringify(el2);
     assert.equal(s1, s2);
   };
+
+  it.skip("dump cs file", () => {
+    Logger.setLevel("DgnCore", LogLevel.Trace);
+    Logger.setLevel("Changeset", LogLevel.Trace);
+    const db = IModelDb.openStandalone("D:\\dgn\\problem\\83927\\EAP_TT_001\\seed\\EAP_TT_001.bim");
+    HubUtility.dumpChangeSetFile(db, "D:\\dgn\\problem\\83927\\EAP_TT_001", "9fd0e30f88e93bec72532f6f1e05688e2c2408cd");
+  });
 
   it("should be able to get properties of an iIModel", () => {
     expect(imodel1.name).equals("TBD"); // That's the name of the root subject!
@@ -544,6 +578,29 @@ describe("iModel", () => {
     expect(tree.rootTile.maximumSize).to.equal(0.0); // empty model => undisplayable root tile => size = 0.0
     expect(tree.rootTile.isLeaf).to.be.true; // empty model => empty tile
     expect(tree.rootTile.contentRange).to.be.undefined;
+  });
+
+  it("should throw on invalid tile requests", async () => {
+    const logCtx = new ActivityLoggingContext("invalidTileRequests");
+    await using(new DisableNativeAssertions(), async (_r) => {
+      let error = await getIModelError(imodel1.tiles.requestTileTreeProps(logCtx, "0x12345"));
+      expectIModelError(IModelStatus.MissingId, error);
+
+      error = await getIModelError(imodel1.tiles.requestTileTreeProps(logCtx, "NotAValidId"));
+      expectIModelError(IModelStatus.InvalidId, error);
+
+      error = await getIModelError(imodel1.tiles.requestTileContent(logCtx, "0x1c", "0/0/0/0"));
+      expectIModelError(IModelStatus.InvalidId, error);
+
+      error = await getIModelError(imodel1.tiles.requestTileContent(logCtx, "0x12345", "0/0/0/0/1"));
+      expectIModelError(IModelStatus.MissingId, error);
+
+      error = await getIModelError(imodel1.tiles.requestTileContent(logCtx, "0x1c", "V/W/X/Y/Z"));
+      expectIModelError(IModelStatus.InvalidId, error);
+
+      error = await getIModelError(imodel1.tiles.requestTileContent(logCtx, "0x1c", "NotAValidId"));
+      expectIModelError(IModelStatus.InvalidId, error);
+    });
   });
 
   it("should produce an array of rows", () => {

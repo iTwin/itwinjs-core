@@ -35,6 +35,7 @@
 
 - [Breadcrumb]($components:Breadcrumb)
 - [Common]($components:Common)
+- [Color]($components:Color)
 - [DragDrop]($components:DragDrop)
 - [Filtering]($components:Filtering)
 - [Properties]($components:Properties)

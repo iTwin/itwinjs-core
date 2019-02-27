@@ -38,6 +38,7 @@ import HighlightingEngine, { HighlightableTreeProps } from "../HighlightingEngin
 // misc
 import UiComponents from "../../UiComponents";
 import { CellEditingEngine, EditableTreeProps } from "../CellEditingEngine";
+import { ITreeImageLoader, TreeImageLoader } from "../ImageLoader";
 
 // css
 import "./Tree.scss";
@@ -173,6 +174,15 @@ export interface TreeProps {
 
   /** Turns on node description rendering when enabled */
   showDescriptions?: boolean;
+
+  /** Turns on icon rendering when enabled */
+  showIcons?: boolean;
+
+  /** Custom image loader. Default ImageLoader loads icons already bundled in the library */
+  imageLoader?: ITreeImageLoader;
+
+  /** A constant value for row height, or a function that calculates row height based on rendered node */
+  rowHeight?: ((node?: TreeNodeItem, index?: number) => number) | number;
 }
 
 /** State for the [[Tree]] component  */
@@ -224,6 +234,7 @@ export class Tree extends React.Component<TreeProps, TreeState> {
   private _nodesRenderInfo?: { total: number, rendered: number, renderId: string };
   /** Used to delay the automatic scrolling when stepping through highlighted text */
   private _shouldScrollToActiveNode = false;
+  private _defaultImageLoader = new TreeImageLoader();
 
   public static readonly defaultProps: Partial<TreeProps> = {
     selectionMode: SelectionMode.Single,
@@ -656,6 +667,13 @@ export class Tree extends React.Component<TreeProps, TreeState> {
     return this._nodesSelectionHandlers;
   }
 
+  private _getNodeHeight = (node?: TreeNodeItem) => {
+    if (this.props.showDescriptions && node && node.description)
+      return 44;
+
+    return 24;
+  }
+
   /** map TreeNodeItem into an InspireNode */
   public static inspireNodeFromTreeNodeItem(item: TreeNodeItem, remapper: MapPayloadToInspireNodeCallback<TreeNodeItem>, base?: BeInspireTreeNodeConfig): BeInspireTreeNodeConfig {
     base = base || { text: "" };
@@ -673,12 +691,24 @@ export class Tree extends React.Component<TreeProps, TreeState> {
 
     if (item.isCheckboxVisible)
       node.itree!.state!.checkboxVisible = true;
+    else
+      delete node.itree!.state!.checkboxVisible;
+
     if (item.isCheckboxDisabled)
       node.itree!.state!.checkboxDisabled = true;
-    if (item.checkBoxState === CheckBoxState.Partial)
+    else
+      delete node.itree!.state!.checkboxDisabled;
+
+    if (item.checkBoxState === CheckBoxState.Partial) {
       node.itree!.state!.indeterminate = true;
-    else if (item.checkBoxState === CheckBoxState.On)
+      delete node.itree!.state!.checked;
+    } else if (item.checkBoxState === CheckBoxState.On) {
       node.itree!.state!.checked = true;
+      delete node.itree!.state!.indeterminate;
+    } else {
+      delete node.itree!.state!.checked;
+      delete node.itree!.state!.indeterminate;
+    }
 
     if (item.icon)
       node.itree!.icon = item.icon;
@@ -778,6 +808,7 @@ export class Tree extends React.Component<TreeProps, TreeState> {
       valueRendererManager: this.props.propertyValueRendererManager
         ? this.props.propertyValueRendererManager
         : PropertyValueRendererManager.defaultManager,
+      imageLoader: this.props.showIcons ? (this.props.imageLoader ? this.props.imageLoader : this._defaultImageLoader) : undefined,
       onClick: (e: React.MouseEvent) => {
         onNodeSelectionChanged(e.shiftKey, e.ctrlKey);
         if (this.state.cellEditingEngine)
@@ -792,7 +823,7 @@ export class Tree extends React.Component<TreeProps, TreeState> {
   public render() {
     if (!this.state.modelReady) {
       return (
-        <div className="ui-components-tree-loader">
+        <div className="components-tree-loader">
           <Spinner size={SpinnerSize.Large} />
         </div>
       );
@@ -801,7 +832,7 @@ export class Tree extends React.Component<TreeProps, TreeState> {
     const nodes = this.state.model.visible();
     if (nodes.length === 0) {
       return (
-        <p className="ui-components-tree-errormessage">
+        <p className="components-tree-errormessage">
           {this.props.nodeHighlightingProps ?
             UiComponents.i18n.translate("UiComponents:tree.noResultsForFilter", { searchText: this.props.nodeHighlightingProps.searchText }) :
             UiComponents.i18n.translate("UiComponents:general.noData")}
@@ -847,15 +878,17 @@ export class Tree extends React.Component<TreeProps, TreeState> {
       );
     };
 
-    const getNodeHeight = ({ index }: { index: number }) => {
-      if (this.props.showDescriptions && nodes[index].payload && nodes[index].payload!.description)
-        return 44;
+    const getRowHeight = ({ index }: { index: number }) => {
+      if (this.props.rowHeight && typeof (this.props.rowHeight) === "number")
+        return this.props.rowHeight;
 
-      return 24;
+      const getHeight = this.props.rowHeight && typeof (this.props.rowHeight) === "function" ? this.props.rowHeight : this._getNodeHeight;
+
+      return getHeight(nodes[index].payload, index);
     };
 
     return (
-      <TreeBase ref={this._treeRef} onMouseDown={this._onMouseDown} className="ui-components-tree">
+      <TreeBase ref={this._treeRef} onMouseDown={this._onMouseDown} className="components-tree">
         <AutoSizer>
           {({ width, height }: Size) => (
             <VirtualizedList
@@ -863,7 +896,7 @@ export class Tree extends React.Component<TreeProps, TreeState> {
               width={width} height={height}
               rowCount={nodes.length}
               overscanRowCount={10}
-              rowHeight={getNodeHeight}
+              rowHeight={getRowHeight}
               rowRenderer={renderNode}
               autoContainerWidth={false}
             />

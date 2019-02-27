@@ -173,7 +173,7 @@ export class JsonParser extends AbstractParser<UnknownObject> {
       if (!Array.isArray(properties))
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECClass ${this._currentItemFullName} has an invalid 'properties' attribute. It should be of type 'object[]'.`);
 
-      for (const property of properties as Array<unknown>) {
+      for (const property of properties as unknown[]) {
         if (!isObject(property))
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `An ECProperty in ${this._currentItemFullName} is an invalid JSON object.`);
 

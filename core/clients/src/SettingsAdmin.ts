@@ -32,7 +32,8 @@ export const enum SettingsStatus {
  *  These are constructed by the SettingsAdmin methods and examined by applications.
  */
 export class SettingsResult {
-  /** Construct a new SettingsResult
+  /** Construct a new SettingsResult. SettingsResult objects are created by the SettingsAdmin methods.
+   * @internal
    * @param status The result of the settings method.
    * @param errorMessage An error message that is sometimes returned by the server.
    * @param setting The object returned by the Settings method. Used only in the "get" methods.

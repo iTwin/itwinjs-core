@@ -1,0 +1,26 @@
+{
+  "changes": [
+    {
+      "comment": "Added Image component.",
+      "packageName": "@bentley/ui-core",
+      "type": "none"
+    },
+    {
+      "comment": "Renamed core-tree-tree to core-tree.",
+      "packageName": "@bentley/ui-core",
+      "type": "none"
+    },
+    {
+      "comment": "Removed Div component.",
+      "packageName": "@bentley/ui-core",
+      "type": "none"
+    },
+    {
+      "comment": "Renamed icon container class in tree node to core-tree-node-icon.",
+      "packageName": "@bentley/ui-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-core",
+  "email": "elonas.seviakovas@bentley.com"
+}

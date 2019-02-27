@@ -1,0 +1,84 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+
+/* Backgrounds and strokes */
+$buic-background-scrollbar:               var(--buic-background-scrollbar);
+
+$buic-background-titlebar:                var(--buic-background-titlebar);
+$buic-background-toolbutton-stroke:       var(--buic-background-toolbutton-stroke);
+$buic-background-dialog-stroke:           var(--buic-background-dialog-stroke);
+$buic-background-widget-stroke:           var(--buic-background-widget-stroke);
+$buic-background-panel-stroke:            var(--buic-background-panel-stroke);
+$buic-background-tooltip:                 var(--buic-background-tooltip);
+$buic-background-statusbar:               var(--buic-background-statusbar);
+$buic-background-control-stroke:          var(--buic-background-control-stroke);
+
+$buic-background-titlebar-outoffocus:     var(--buic-background-titlebar-outoffocus);
+$buic-background-divider:                 var(--buic-background-divider);
+$buic-background-widget-element-stroke:   var(--buic-background-widget-element-stroke);
+$buic-background-control-disabled:        var(--buic-background-control-disabled);
+
+$buic-background-tab-inactive:            var(--buic-background-tab-inactive);
+$buic-background-toolbutton-inactive:     var(--buic-background-toolbutton-inactive);
+$buic-background-context-menu:            var(--buic-background-context-menu);
+$buic-background-panel:                   var(--buic-background-panel);
+
+$buic-background-tab-active:              var(--buic-background-tab-active);
+$buic-background-dialog:                  var(--buic-background-dialog);
+$buic-background-widget:                  var(--buic-background-widget);
+$buic-background-window:                  var(--buic-background-window);
+
+$buic-background-card:                    var(--buic-background-card);
+$buic-background-control:                 var(--buic-background-control);
+
+/** Text and icons */
+$buic-foreground-body:                    var(--buic-foreground-body);
+$buic-foreground-body-reverse:            var(--buic-foreground-body-reverse);
+$buic-foreground-disabled:                var(--buic-foreground-disabled);
+$buic-foreground-muted:                   var(--buic-foreground-muted);
+$buic-foreground-activehover:             var(--buic-foreground-activehover);
+
+$buic-text-color:                         var(--buic-foreground-body);
+$buic-text-color-disabled:                var(--buic-foreground-disabled);
+$buic-text-color-muted:                   var(--buic-foreground-muted);
+$buic-text-color-reverse:                 var(--buic-foreground-body-reverse);
+
+$buic-icon-color:                         var(--buic-foreground-body);
+$buic-icon-color-disabled:                var(--buic-foreground-disabled);
+$buic-icon-color-reverse:                 var(--buic-foreground-body-reverse);
+
+$buic-row-selection:                      var(--buic-row-selection);
+$buic-row-hover:                          var(--buic-row-hover);
+
+$buic-button-gradient1:                   var(--buic-button-gradient1);
+$buic-button-gradient2:                   var(--buic-button-gradient2);
+
+$buic-inputs-border:                      var(--buic-inputs-border);
+$buic-inputs-focus-boxshadow-gradient1:   var(--buic-inputs-focus-boxshadow-gradient1);
+$buic-inputs-focus-boxshadow-gradient2:   var(--buic-inputs-focus-boxshadow-gradient2);
+
+/** Themed colors */
+$buic-foreground-accessory:               var(--buic-foreground-accessory);
+$buic-foreground-primary:                 var(--buic-foreground-primary);
+$buic-foreground-primary-tone:            var(--buic-foreground-primary-tone);
+$buic-foreground-primary-tint:            var(--buic-foreground-primary-tint);
+$buic-foreground-success:                 var(--buic-foreground-success);
+$buic-foreground-success-tint:            var(--buic-foreground-success-tint);
+$buic-foreground-alert:                   var(--buic-foreground-alert);
+$buic-foreground-alert-tint:              var(--buic-foreground-alert-tint);
+$buic-foreground-warning:                 var(--buic-foreground-warning);
+$buic-foreground-warning-tint:            var(--buic-foreground-warning-tint);
+
+/** Static colors */
+$buic-accessory-hollow:                   var(--buic-accessory-hollow);
+$buic-accessory-primary:                  var(--buic-accessory-primary);
+$buic-accessory-success:                  var(--buic-accessory-success);
+$buic-accessory-alert:                    var(--buic-accessory-alert);
+$buic-accessory-warning:                  var(--buic-accessory-warning);
+$buic-accessory-primary-tint:             var(--buic-accessory-primary-tint);
+$buic-accessory-success-tint:             var(--buic-accessory-success-tint);
+$buic-accessory-alert-tint:               var(--buic-accessory-alert-tint);
+$buic-accessory-warning-tint:             var(--buic-accessory-warning-tint);
+$buic-foreground-mediumgray:              var(--buic-foreground-mediumgray);

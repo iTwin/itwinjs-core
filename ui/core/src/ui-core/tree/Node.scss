@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 
 @import "../index.scss";
-@import "../colors.scss";
 
 $node-font-size: $uicore-font-size;
 
@@ -16,7 +15,7 @@ $node-font-size: $uicore-font-size;
   min-width: 100%;
   font-family: $uicore-sans;
   font-size: $node-font-size;
-  color: $text-dark;
+  color: $buic-text-color;
   white-space: nowrap;
   text-overflow: ellipsis;
   cursor: default;
@@ -31,6 +30,7 @@ $node-font-size: $uicore-font-size;
     padding: 0;
     margin: 0;
     margin-right: 5px;
+    background: transparent;
 
     > input {
       position: relative;
@@ -44,15 +44,15 @@ $node-font-size: $uicore-font-size;
     margin-left: 5px;
     display: flex;
     align-items: center;
+  }
 
-    .icon {
-      width: 16px;
-      height: 24px;
-      display: inline-block;
-      box-sizing: border-box;
-      padding: 4px 0;
-      margin-right: 2px;
-    }
+  &-icon {
+    width: 16px;
+    height: 24px;
+    display: inline-block;
+    box-sizing: border-box;
+    padding: 4px 0;
+    margin-right: 5px;
   }
 
   > .expansion-toggle {
@@ -68,13 +68,13 @@ $node-font-size: $uicore-font-size;
   &:not(.is-hover-disabled) {
     &:not(.is-selected) {
       &:hover{
-        background: $uicore-blue-highlight;
+        background: $buic-row-hover;
       }
     }
   }
 
   &.is-selected {
-    background: $uicore-blue-a;
+    background: $buic-row-selection;
     outline: none;
   }
 }

@@ -7,7 +7,7 @@
 
 .nz-widget-rectangular-tab-group {
   @mixin nz-handle-gradient($direction) {
-    background: linear-gradient($direction, $background-5, rgba($background-4, 0.5));
+    background: linear-gradient($direction, $background-5, $background-4);
   }
 
   $border-radius: 2px;

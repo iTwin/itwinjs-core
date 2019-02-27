@@ -2,17 +2,18 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+@import "@bentley/ui-core/lib/ui-core/colors";
+
 $footer-height: 48px;
 
 $text-font-size: 14px;
 $text-font-size-medium: 12px;
 $text-font-size-small: 12px;
-$text-font-color: #000000;
+$text-font-color: $buic-text-color;
 
 $icon-size: 16px;
-$icon-color: #000000;
-$icon-opacity: 0.88;
-$icon-shadow: drop-shadow(0 1px #FFFFFF);
+$icon-color: $buic-icon-color;
+$icon-shadow: drop-shadow(0 1px $buic-icon-color-reverse);
 
 $space-between-text-and-icon: 10px;
 $space-between-icons: 20px;

@@ -158,7 +158,6 @@ class GeoTransformChildCreator implements ChildCreator {
     // send to the backend to get the XY coordinates.
     const response: IModelCoordinatesResponseProps = await this._converter.getIModelCoordinatesFromGeoCoordinates(requestProps);
 
-    // tslint:disable:no-console
     // get the tileProps now that we have their geoCoords.
     const tileProps: WebMercatorTileProps[] = [];
     const level = parentLevel + 1;
@@ -740,8 +739,10 @@ export class BackgroundMapState {
     requestProps[0] = { x: 0, y: 0, z: 0 };
     converter.getIModelCoordinatesFromGeoCoordinates(requestProps).then((responseProps) => {
       this._gcsConverterStatus = (responseProps.iModelCoords.length !== 1 || responseProps.iModelCoords[0].s === GeoCoordStatus.NoGCSDefined) ? GcsConverterStatus.NotAvailable : GcsConverterStatus.Available;
+      IModelApp.viewManager.onNewTilesReady();
     }).catch((_) => {
       this._gcsConverterStatus = GcsConverterStatus.NotAvailable;
+      IModelApp.viewManager.onNewTilesReady();
     });
   }
 

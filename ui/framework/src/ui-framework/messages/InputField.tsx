@@ -8,12 +8,12 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import * as classnames from "classnames";
 import "./InputField.scss";
-import { Div, withOnOutsideClick } from "@bentley/ui-core";
+import { withOnOutsideClick } from "@bentley/ui-core";
 
 import { CommonProps, MessageButton, Status, StatusMessage, MessageLayout as StatusMessageLayout } from "@bentley/ui-ninezone";
 
 // tslint:disable-next-line:variable-name
-const DivWithOnOutsideClick = withOnOutsideClick(Div);
+const DivWithOnOutsideClick = withOnOutsideClick((props: React.HTMLProps<HTMLDivElement>) => (<div {...props} />));
 
 /** Properties of [[InputFieldMessage]] component. */
 export interface InputFieldMessageProps extends CommonProps {

@@ -42,20 +42,23 @@ export interface BeInspireTreeNodeConfig {
   children?: BeInspireTreeNodeConfig[] | true;
   id?: string;
   text: string;
-  itree?: {
-    icon?: string;
-    state?: {
-      checkboxVisible?: boolean;
-      checkboxDisabled?: boolean;
-      checked?: boolean;
-      collapsed?: boolean;
-      editable?: boolean;
-      focused?: boolean;
-      indeterminate?: boolean;
-      loading?: boolean;
-      selectable?: boolean;
-      selected?: boolean;
-    };
+  itree?: BeInspireTreeNodeITree;
+}
+
+/** Be alias for Inspire.NodeConfig.ITree */
+export interface BeInspireTreeNodeITree {
+  icon?: string;
+  state?: {
+    checkboxVisible?: boolean;
+    checkboxDisabled?: boolean;
+    checked?: boolean;
+    collapsed?: boolean;
+    editable?: boolean;
+    focused?: boolean;
+    indeterminate?: boolean;
+    loading?: boolean;
+    selectable?: boolean;
+    selected?: boolean;
   };
 }
 

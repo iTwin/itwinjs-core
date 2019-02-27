@@ -5,12 +5,11 @@
 /** @module Views */
 import { Matrix3d } from "@bentley/geometry-core";
 
-/**
- * Describes a set of commonly-used view rotations.
+/** Describes a set of commonly-used view rotations.
+ * @public
  */
 export const enum StandardViewId {
-  /**
-   * Any rotation which does not match one of the standard rotations.
+  /** Any rotation which does not match one of the standard rotations.
    * Invalid as an argument to StandardView.getStandardRotation() - used as a return value only.
    */
   NotStandard = -1,
@@ -51,8 +50,8 @@ function getMatrices(): Matrix3d[] {
   return standardViewMatrices;
 }
 
-/**
- * Supplies access to a set of commonly-used view rotations.
+/** Supplies access to a set of commonly-used view rotations.
+ * @public
  */
 export class StandardView {
   public static get top(): Matrix3d { return this.getStandardRotation(StandardViewId.Top); }
@@ -64,8 +63,7 @@ export class StandardView {
   public static get iso(): Matrix3d { return this.getStandardRotation(StandardViewId.Iso); }
   public static get rightIso(): Matrix3d { return this.getStandardRotation(StandardViewId.RightIso); }
 
-  /**
-   * Obtain a [[Matrix3d]] corresponding to the specified [[StandardViewId]].
+  /** Obtain a [[Matrix3d]] corresponding to the specified [[StandardViewId]].
    * @param id The ID of the desired rotation.
    * @return A rotation matrix corresponding to the requested standard view ID, or a "top" view rotation if the input does not correspond to a standard rotation.
    */
@@ -76,8 +74,7 @@ export class StandardView {
     return getMatrices()[id];
   }
 
-  /**
-   * Attempts to adjust the supplied rotation matrix to match the standard view rotation it most closely matches.
+  /** Attempts to adjust the supplied rotation matrix to match the standard view rotation it most closely matches.
    * If a matching standard rotation exists, the input matrix will be modified in-place to precisely match it.
    * Otherwise, the input matrix will be unmodified.
    * @param matrix The rotation matrix to adjust.
