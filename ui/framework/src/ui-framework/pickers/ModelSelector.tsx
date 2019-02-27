@@ -277,12 +277,13 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
           selectedNodes.push(node!.id);
         }
       });
+      this.state.activeTree.dataProvider.onTreeNodeChanged.raiseEvent(enabledNodes);
     });
 
     this.setState({
       activeTree: {
         ...this.state.activeTree,
-        selectedNodes: this.state.activeTree!.selectedNodes!.concat(selectedNodes),
+        selectedNodes: this.state.activeTree.selectedNodes!.concat(selectedNodes),
       },
     });
   }
@@ -310,6 +311,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
           selectedNodes.push(node!.id);
         }
       });
+      this.state.activeTree.dataProvider.onTreeNodeChanged.raiseEvent(enabledNodes);
     });
 
     this.setState({
@@ -475,6 +477,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
           selectedNodes.push(node.id);
         }
       });
+      this.state.activeTree.dataProvider.onTreeNodeChanged.raiseEvent(enabledNodes);
     });
 
     return selectedNodes;
