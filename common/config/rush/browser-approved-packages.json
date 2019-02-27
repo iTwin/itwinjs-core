@@ -776,7 +776,11 @@
     },
     {
       "name": "typedoc-plugin-external-module-name",
-      "allowedCategories": [ "backend", "common", "frontend" ]
+      "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "typedoc-plugin-internal-external",
+      "allowedCategories": [ "tools" ]
     },
     {
       "name": "typemoq",
