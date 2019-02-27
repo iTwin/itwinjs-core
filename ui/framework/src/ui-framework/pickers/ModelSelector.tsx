@@ -416,18 +416,41 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
    * Sets initial state as tab expands
    * @param group ModelGroup to initialize state on
    */
-  private _setInitialExpandedState = async (group: ModelGroup) => {
+  private _setInitialExpandedState = (group: ModelGroup) => {
     const activeTree = this._getActiveTree(group);
+    this._setActiveTab(activeTree, group);
+    this._setActiveSelectedNodes(activeTree, group.items); // tslint:disable-line:no-floating-promises
+  }
+
+  /**
+   * Sets active tab data in widget
+   * @param activeTree  Tree to set as active
+   * @param group       Tab to set as active
+   */
+  private _setActiveTab = (activeTree: ModelSelectorTree, group: ModelGroup) => {
+    this.setState({
+      activeTree: {
+        ...activeTree,
+      },
+      activeGroup: group,
+      expand: true,
+    });
+  }
+
+  /**
+   * Sets active selectedNodes in widget
+   * @param activeTree  Tree to fetch selectedNodes from
+   * @param items       Items to select if enabled
+   */
+  private _setActiveSelectedNodes = async (activeTree: ModelSelectorTree, items: ListItem[]) => {
     const nodes = await activeTree.dataProvider.getNodes();
-    const selectedNodes = await this._selectInitialEnabledItems(group.items, nodes);
+    const selectedNodes = await this._selectInitialEnabledItems(items, nodes);
 
     this.setState({
       activeTree: {
         ...activeTree,
         selectedNodes,
       },
-      activeGroup: group,
-      expand: true,
     });
   }
 
