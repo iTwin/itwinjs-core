@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Updated view query in ViewSelector to exclude private views",
+      "packageName": "@bentley/ui-framework",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-framework",
+  "email": "dan.east@bentley.com"
+}
