@@ -1526,6 +1526,16 @@ export namespace IModelDb {
     }
   }
 
+  /** Represents the current state of a pollable tile content request.
+   * Note: lack of a "completed" state because polling a completed request returns the content as a Uint8Array.
+   * @hidden
+   */
+  export const enum TileContentState {
+    New, // Request was just created and enqueued.
+    Pending, // Request is enqueued but not yet being processed.
+    Loading, // Request is being actively processed.
+  }
+
   /** @hidden */
   export class Tiles {
     /** @hidden */
@@ -1548,21 +1558,45 @@ export namespace IModelDb {
       });
     }
 
+    private pollTileContent(resolve: (arg0: Uint8Array) => void, reject: (err: Error) => void, treeId: string, tileId: string, activity: ActivityLoggingContext) {
+      activity.enter();
+      if (!this._iModel.briefcase) {
+        reject(this._iModel.newNotOpenError());
+        return;
+      }
+
+      const ret = this._iModel.nativeDb.pollTileContent(treeId, tileId);
+      if (undefined !== ret.error) {
+        reject(new IModelError(ret.error.status, "TreeId=" + treeId + " TileId=" + tileId));
+      } else if (ret.result instanceof Uint8Array) {
+        resolve(ret.result);
+      } else {
+        // ###TODO: Decide appropriate timeout interval. May want to switch on state (new vs loading vs pending)
+        setTimeout(() => this.pollTileContent(resolve, reject, treeId, tileId, activity), 10);
+      }
+    }
+
     /** @hidden */
     public async requestTileContent(activity: ActivityLoggingContext, treeId: string, tileId: string): Promise<Uint8Array> {
       activity.enter();
       if (!this._iModel.briefcase)
         throw this._iModel.newNotOpenError();
 
-      return new Promise<Uint8Array>((resolve, reject) => {
-        activity.enter();
-        this._iModel.nativeDb.getTileContent(treeId, tileId, (ret: IModelJsNative.ErrorStatusOrResult<IModelStatus, Uint8Array>) => {
-          if (undefined !== ret.error)
-            reject(new IModelError(ret.error.status, "TreeId=" + treeId + " TileId=" + tileId));
-          else
-            resolve(ret.result!);
+      if (IModelHost.useTileContentThreadPool) {
+        return new Promise<Uint8Array>((resolve, reject) => {
+          this.pollTileContent(resolve, reject, treeId, tileId, activity);
         });
-      });
+      } else {
+        return new Promise<Uint8Array>((resolve, reject) => {
+          activity.enter();
+          this._iModel.nativeDb.getTileContent(treeId, tileId, (ret: IModelJsNative.ErrorStatusOrResult<IModelStatus, Uint8Array>) => {
+            if (undefined !== ret.error)
+              reject(new IModelError(ret.error.status, "TreeId=" + treeId + " TileId=" + tileId));
+            else
+              resolve(ret.result!);
+          });
+        });
+      }
     }
   }
 }

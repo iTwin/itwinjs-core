@@ -12,7 +12,7 @@ import * as WebSocket from "ws";
 const mobilePort = process.env.MOBILE_PORT ? parseInt(process.env.MOBILE_PORT, 10) : 4000;
 setupMobileMock();
 
-import { IModelHost } from "@bentley/imodeljs-backend";
+import { IModelHost, IModelHostConfiguration } from "@bentley/imodeljs-backend";
 import { IModelUnitTestRpcImpl } from "./IModelUnitTestRpcImpl";
 import { TestbedConfig, TestbedIpcMessage } from "../common/TestbedConfig";
 import { TestRpcImpl, TestRpcImpl2, TestRpcImpl3, resetOp8Initializer, TestZeroMajorRpcImpl } from "./TestRpcImpl";
@@ -35,7 +35,9 @@ const { ipcMain } = require("electron");
 ipcMain.on("testbed", handleTestbedCommand);
 
 // Start the backend
-IModelHost.startup();
+const hostConfig = new IModelHostConfiguration();
+hostConfig.useTileContentThreadPool = true;
+IModelHost.startup(hostConfig);
 
 IModelUnitTestRpcImpl.register();
 TestRpcImpl.register();

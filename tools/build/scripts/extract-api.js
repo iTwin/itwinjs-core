@@ -70,6 +70,8 @@ child.stderr.on('data', (data) => {
     //Filter out these errors
   } else {
     process.stderr.write(data);
+    if (isCI) {
+      errorCode = 1;
   }
 
 })

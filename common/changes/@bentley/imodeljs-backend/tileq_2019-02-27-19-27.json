@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Prevent tile generation from interfering with other asynchronous requests.",
+      "packageName": "@bentley/imodeljs-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-backend",
+  "email": "Paul.Connelly@bentley.com"
+}
