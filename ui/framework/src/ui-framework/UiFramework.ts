@@ -13,6 +13,7 @@ import { DefaultIModelServices } from "./clientservices/DefaultIModelServices";
 import { Store } from "redux";
 import { OidcClientWrapper, SnapMode } from "@bentley/imodeljs-frontend";
 import { AnalysisAnimationTool } from "./tools/AnalysisAnimation";
+import { ScheduleAnimationTool } from "./tools/ScheduleAnimation";
 import { SyncUiEventDispatcher } from "./syncui/SyncUiEventDispatcher";
 import { FrameworkState } from "./FrameworkState";
 import { ConfigurableUiActionId } from "./configurableui/state";
@@ -48,6 +49,7 @@ export class UiFramework {
 
     // register UiFramework provided tools
     AnalysisAnimationTool.register(frameworkNamespace);
+    ScheduleAnimationTool.register(frameworkNamespace);
 
     UiFramework._projectServices = projectServices ? projectServices : new DefaultProjectServices();
     UiFramework._iModelServices = iModelServices ? iModelServices : new DefaultIModelServices();

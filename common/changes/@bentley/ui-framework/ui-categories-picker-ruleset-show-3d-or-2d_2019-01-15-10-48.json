@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Change 'Categories' ruleset to return either spatial or drawing categories based on ruleset variable",
+      "packageName": "@bentley/ui-framework",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-framework",
+  "email": "grigas.petraitis@bentley.com"
+}

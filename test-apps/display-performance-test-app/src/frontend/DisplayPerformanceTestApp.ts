@@ -402,10 +402,8 @@ async function openView(state: SimpleViewState, viewSize: ViewSize) {
 
 async function initializeOidc(actx: ActivityLoggingContext) {
   actx.enter();
-  // const clientId = Config.App.get((ElectronRpcConfiguration.isElectron) ? "imjs_electron_test_client_id" : "imjs_browser_test_client_id");
-  // const redirectUri = Config.App.get((ElectronRpcConfiguration.isElectron) ? "imjs_electron_test_redirect_uri" : "imjs_browser_test_redirect_uri");
-  const clientId = (ElectronRpcConfiguration.isElectron) ? "spa-5lgQRridBuvb8dUm6EVmaQmZL" : Config.App.get("imjs_browser_test_client_id"); // imjs_electron_test_client_id => "spa-5lgQRridBuvb8dUm6EVmaQmZL"
-  const redirectUri = (ElectronRpcConfiguration.isElectron) ? "electron://frontend/signin-callback" : Config.App.get("imjs_browser_test_redirect_uri"); // imjs_electron_test_redirect_uri => "electron://frontend/signin-callback"
+  const clientId = Config.App.get((ElectronRpcConfiguration.isElectron) ? "imjs_electron_test_client_id" : "imjs_browser_test_client_id");
+  const redirectUri = Config.App.get((ElectronRpcConfiguration.isElectron) ? "imjs_electron_test_redirect_uri" : "imjs_browser_test_redirect_uri");
   const oidcConfig: OidcFrontendClientConfiguration = { clientId, redirectUri, scope: "openid email profile organization imodelhub context-registry-service imodeljs-router reality-data:read" };
 
   await OidcClientWrapper.initialize(actx, oidcConfig);

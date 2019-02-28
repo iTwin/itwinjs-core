@@ -3,7 +3,31 @@
 exports[`ViewSelector should render correctly 1`] = `
 <ListPicker
   iconSpec="icon-saved-view"
-  items={Array []}
+  items={
+    Array [
+      Object {
+        "children": Array [],
+        "enabled": false,
+        "key": "views3dContainer",
+        "name": "savedViews.spatialViews",
+        "type": 2,
+      },
+      Object {
+        "children": Array [],
+        "enabled": false,
+        "key": "views2dContainer",
+        "name": "savedViews.drawings",
+        "type": 2,
+      },
+      Object {
+        "children": Array [],
+        "enabled": false,
+        "key": "sheetContainer",
+        "name": "savedViews.sheets",
+        "type": 2,
+      },
+    ]
+  }
   onExpanded={[Function]}
   setEnabled={[Function]}
   title="savedViews.views"

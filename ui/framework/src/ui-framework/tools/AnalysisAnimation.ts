@@ -13,7 +13,7 @@ import { AnalysisAnimationToolSettingsProvider } from "./AnalysisAnimationToolSe
 
 /** Tool that shows animation of Analysis information store as a 'special' property in the display style. */
 export class AnalysisAnimationTool extends PrimitiveTool {
-  public static toolId = "AnalysisAnimationTool";
+  public static toolId = "AnalysisAnimation";  // used to look up labels and to register this tool
   public readonly points: Point3d[] = [];
 
   /** Allow tool to run on ready only iModels. */

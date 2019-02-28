@@ -18,8 +18,10 @@ import {
 } from "@bentley/geometry-core";
 import {
   ColorDef,
+  Frustum,
   GraphicParams,
   LinePixels,
+  Npc,
 } from "@bentley/imodeljs-common";
 import { Viewport } from "../Viewport";
 import { RenderGraphic } from "./System";
@@ -157,16 +159,6 @@ export abstract class GraphicBuilder {
    */
   public abstract addLineString(points: Point3d[]): void;
 
-  /** Helper for adding a series of line strings
-   * @hidden
-   */
-  public addLineStrings(...lines: Array<[number, Point3d[]]>): void { this.convertToLineStringParams(...lines).forEach((l) => this.addLineString(l.points)); }
-
-  /** Helper for converting an array of string param data each of which are stored as array into an array of line string params.
-   * @hidden
-   */
-  public convertToLineStringParams(...lines: Array<[number, Point3d[]]>): Array<{ numPoints: number, points: Point3d[] }> { return lines.map((l) => ({ numPoints: l[0], points: l[1] })); }
-
   /**
    * Appends a 2d line string to the builder.
    * @param points Array of vertices in the line string.
@@ -233,22 +225,25 @@ export abstract class GraphicBuilder {
    * @hidden
    */
   public addRangeBox(range: Range3d) {
-    const p: Point3d[] = [];
-    for (let i = 0; i < 8; ++i) p[i] = new Point3d();
+    const frustum = Frustum.fromRange(range);
+    const p = frustum.points;
 
-    p[0].x = p[3].x = p[4].x = p[5].x = range.low.x;
-    p[1].x = p[2].x = p[6].x = p[7].x = range.high.x;
-    p[0].y = p[1].y = p[4].y = p[7].y = range.low.y;
-    p[2].y = p[3].y = p[5].y = p[6].y = range.high.y;
-    p[0].z = p[1].z = p[2].z = p[3].z = range.low.z;
-    p[4].z = p[5].z = p[6].z = p[7].z = range.high.z;
+    this.addLineString([
+      p[Npc.LeftBottomFront],
+      p[Npc.LeftTopFront],
+      p[Npc.RightTopFront],
+      p[Npc.RightBottomFront],
+      p[Npc.RightBottomRear],
+      p[Npc.RightTopRear],
+      p[Npc.LeftTopRear],
+      p[Npc.LeftBottomRear],
+      p[Npc.LeftBottomFront],
+      p[Npc.RightBottomFront],
+    ]);
 
-    const tmpPts: Point3d[] = [];
-    tmpPts[0] = p[0]; tmpPts[1] = p[1]; tmpPts[2] = p[2];
-    tmpPts[3] = p[3]; tmpPts[4] = p[5]; tmpPts[5] = p[6];
-    tmpPts[6] = p[7]; tmpPts[7] = p[4]; tmpPts[8] = p[0];
-
-    this.addLineStrings([9, tmpPts], [2, [p[0], p[3]]], [2, [p[4], p[5]]], [2, [p[1], p[7]]], [2, [p[2], p[6]]]);
+    this.addLineString([p[Npc.LeftTopFront], p[Npc.LeftTopRear]]);
+    this.addLineString([p[Npc.RightTopFront], p[Npc.RightTopRear]]);
+    this.addLineString([p[Npc.LeftBottomRear], p[Npc.RightBottomRear]]);
   }
 
   /** Sets the current active symbology for this builder. Any new geometry subsequently added will be drawn using the specified symbology.

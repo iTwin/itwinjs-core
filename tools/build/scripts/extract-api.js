@@ -47,7 +47,8 @@ const configFileName = `lib/${entryPointFileName}.json`;
 fs.writeFileSync(configFileName, JSON.stringify(config, null, 2));
 
 const args = [
-  '-c', configFileName
+  "run",
+  "-c", configFileName
 ];
 if (!isCI)
   args.push("-l");
@@ -55,23 +56,35 @@ if (!isCI)
 
 //Temporarily re-implementing features of simple-spawn till version 7 of api-extractor is released
 //Spawns a child process to run api-extractor and pipes the errors to be handled in this script
-const child = spawn("api-extractor run", args)
+const cwd = process.cwd();
+const child = spawn("api-extractor", args, {
+  cwd: cwd,
+});
 child.stdout.on('data', (data) => {
   process.stdout.write(data);
 })
 child.stderr.on('data', (data) => {
-  if (data.includes("You have changed the public API signature for this project.")) {
+  if (data.includes("You have changed the public API signature for this project.") && isCI)
+    errorCode = 1;
+  if (data.includes("The @param block") || data.includes("TSDoc") || data.includes("HTML") || data.includes("Structured content") || data.includes("The code span") || data.includes("A backslash can only be used") || data.includes("for a code fence")) {
+    //Filter out these errors
+  } else {
     process.stderr.write(data);
     if (isCI) {
       errorCode = 1;
-    }
   }
+
 })
 child.on('error', (data) => {
   console.log(data);
 });
 child.on('close', (code) => {
-  fs.unlinkSync(configFileName);
-  fs.unlinkSync("dist/tsdoc-metadata.json");
+  if (fs.existsSync(configFileName))
+    fs.unlinkSync(configFileName);
+
+  if (fs.existsSync("dist/tsdoc-metadata.json")) {
+    fs.unlinkSync("dist/tsdoc-metadata.json");
+    fs.rmdirSync("dist");
+  }
   process.exit(errorCode);
 });

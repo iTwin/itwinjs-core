@@ -83,18 +83,20 @@ Note that it is a good idea to `rush install` after each `git pull` as dependenc
 
 ## Source Code Edit Workflow
 
-1. Make source code changes
-2. Ensure unit tests pass when run locally: `npm test -s`
+1. Make source code changes on a new Git branch
+2. Ensure unit tests pass when run locally: `rush test`
 3. Locally commit changes: `git commit` (or use the Visual Studio Code user interface)
 4. Repeat steps 1-3 until ready to push changes
 5. Add changelog entry (which could potentially cover several commits): `rush change`
 6. Follow prompts to enter a change description or press ENTER if the change does not warrant a changelog entry. If multiple packages have changed, multiple sets of prompts will be presented. If the changes are only to non-published packages (like **testbed**), then `rush change` will indicate that a changelog entry is not needed.
 7. Completing the `rush change` prompts will cause new changelog entry JSON files to be created.
-8. To keep the Git history clean, amend the prior commit using the **Commit Staged (Amend)** menu item in Visual Studio Code or use the command line: `git commit --amend --no-edit`
-9. Push changes
+8. Check for API signature changes: `rush extract-api`.  This will update the signature files, located in `common/api`.
+9. Review any diffs to the API signature files in the `common/api` directory to ensure they are compatible with the intended release of the package
+10. Commit the changelog JSON files and any API signature updates.
+11. Publish changes on the branch and open a pull request.
 
-If using the command line, steps 5 through 9 above can be completed in one step by running `rushchange.bat` from the imodeljs-core root directory.
-> Note: The CI build will break if changes are pushed without running `rush change`. The fix will be to run `rush change` (as above) and push those changes as a separate commit.
+If using the command line, steps 5 through 7 above can be completed in one step by running `rushchange.bat` from the imodeljs-core root directory.
+> Note: The CI build will break if changes are pushed without running `rush change` and `rush extract-api` (if the API was changed). The fix will be to complete steps 5 through 10.
 
 Here is a sample [changelog](https://github.com/Microsoft/web-build-tools/blob/master/apps/rush/CHANGELOG.md) to demonstrate the level of detail expected.
 

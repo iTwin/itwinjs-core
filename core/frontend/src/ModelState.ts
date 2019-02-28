@@ -4,14 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module ModelState */
 
-import { Id64String, Id64, JsonUtils, dispose } from "@bentley/bentleyjs-core";
-import { EntityState } from "./EntityState";
+import { dispose, Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import { Point2d, Range3d } from "@bentley/geometry-core";
-import { ModelProps, GeometricModel2dProps, AxisAlignedBox3d, RelatedElement, TileTreeProps, BatchType, ServerTimeoutError } from "@bentley/imodeljs-common";
-import { IModelConnection } from "./IModelConnection";
+import { AxisAlignedBox3d, BatchType, GeometricModel2dProps, ModelProps, RelatedElement, ServerTimeoutError, TileTreeProps } from "@bentley/imodeljs-common";
+import { EntityState } from "./EntityState";
 import { IModelApp } from "./IModelApp";
-import { TileTree, TileTreeState, IModelTileLoader } from "./tile/TileTree";
+import { IModelConnection } from "./IModelConnection";
 import { RealityModelTileTree } from "./tile/RealityModelTileTree";
+import { IModelTileLoader, TileTree, TileTreeState } from "./tile/TileTree";
 
 /** Represents the front-end state of a [Model]($backend).
  * @public
@@ -72,6 +72,7 @@ export interface TileTreeModelState {
  * @public
  */
 export abstract class GeometricModelState extends ModelState implements TileTreeModelState {
+  private _modelRange?: Range3d;
   /** @hidden */
   protected _tileTreeState: TileTreeState = new TileTreeState(this.iModel, !this.is2d, this.id);
   /** @hidden */
@@ -146,6 +147,15 @@ export abstract class GeometricModelState extends ModelState implements TileTree
   public onIModelConnectionClose() {
     dispose(this._tileTreeState.tileTree);  // we do not track if we are disposed...catch this at the tiletree level
     super.onIModelConnectionClose();
+  }
+
+  /** Query for the union of the ranges of all the elements in this GeometricModel. */
+  public async queryModelRange(): Promise<Range3d> {
+    if (undefined === this._modelRange) {
+      const ranges = await this.iModel.models.queryModelRanges(this.id);
+      this._modelRange = Range3d.fromJSON(ranges[0]);
+    }
+    return this._modelRange!;
   }
 }
 

@@ -38,7 +38,8 @@ describe("ColorIndex", () => {
 
     const numColors: number = 10;
     const colors: Uint32Array = new Uint32Array(numColors);
-    const indices: Uint16Array = new Uint16Array(numColors);
+    const indices: number[] = [];
+    indices.length = numColors;
     for (let i = 0; i < numColors; ++i) {
       colors[i] = ColorDef.from(i, i * 2, i * 4, 63).tbgr;
       indices[i] = i;

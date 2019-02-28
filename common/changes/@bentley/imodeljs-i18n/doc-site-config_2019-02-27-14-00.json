@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Remove uneeded typedoc plugin depedency",
+      "packageName": "@bentley/imodeljs-i18n",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-i18n",
+  "email": "will.bentley@bentley.com"
+}

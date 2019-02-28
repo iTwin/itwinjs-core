@@ -1,6 +1,6 @@
 {
   "name": "@bentley/electron-manager",
-  "version": "0.189.0-dev.37",
+  "version": "0.189.0-dev.41",
   "description": "iModel.js electron utilities",
   "main": "lib/ElectronManager.js",
   "typings": "lib/ElectronManager",
@@ -38,13 +38,12 @@
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/build-tools": "0.189.0-dev.37",
+    "@bentley/build-tools": "0.189.0-dev.41",
     "@types/node": "10.12.18",
     "electron": "^4.0.1",
     "rimraf": "^2.6.2",
     "tslint": "^5.11.0",
     "typedoc": "^0.11.1",
-    "typedoc-plugin-external-module-name": "^1.1.1",
     "typescript": "~3.2.2"
   },
   "dependencies": {}

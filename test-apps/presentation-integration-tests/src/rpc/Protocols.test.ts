@@ -21,10 +21,10 @@ describe("PresentationRpcInterface usage with RPC protocols", () => {
       token = new IModelToken(faker.random.uuid(), faker.random.uuid(), faker.random.uuid());
     });
 
-    it("creates valid request for getRootNodesCount", () => {
+    it("creates valid request for getNodesCount", () => {
       const request = () => {
         const params = [{ imodel: token, knownBackendIds: [], rulesetId: faker.random.word() }];
-        const r = new WebAppRpcRequest(client, "getRootNodesCount", params);
+        const r = new WebAppRpcRequest(client, "getNodesCount", params);
         (r as any).dispose(); // no way to properly destroy the created request...
       };
       expect(request).to.not.throw();

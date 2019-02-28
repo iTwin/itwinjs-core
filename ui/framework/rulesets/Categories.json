@@ -4,46 +4,68 @@
   "rules": [
     {
       "ruleType": "RootNodes",
-      "specifications": [
+      "subConditions": [
         {
-          "specType": "InstanceNodesOfSpecificClasses",
-          "classes": [
+          "condition": "GetVariableStringValue(\"ViewType\") = \"3d\"",
+          "specifications": [
             {
-              "schemaName": "BisCore",
-              "classNames": [
-                "Category"
-              ]
-            }
-          ],
-          "arePolymorphic": true,
-          "groupByClass": false,
-          "groupByLabel": false,
-          "nestedRules": [
-            {
-              "ruleType": "ChildNodes",
-              "condition": "ParentNode.ECInstance.GetRelatedInstancesCount(\"BisCore:CategoryOwnsSubCategories\", \"Forward\", \"BisCore:SubCategory\") > 1",
-              "specifications": [
+              "specType": "InstanceNodesOfSpecificClasses",
+              "classes": [
                 {
-                  "specType": "RelatedInstanceNodes",
-                  "relationships": {
-                    "schemaName": "BisCore",
-                    "classNames": [
-                      "CategoryOwnsSubCategories"
-                    ]
-                  },
-                  "relatedClasses": {
-                    "schemaName": "BisCore",
-                    "classNames": [
-                      "SubCategory"
-                    ]
-                  },
-                  "requiredDirection": "Forward",
-                  "groupByClass": false,
-                  "groupByLabel": false
+                  "schemaName": "BisCore",
+                  "classNames": [
+                    "SpatialCategory"
+                  ]
                 }
-              ]
+              ],
+              "arePolymorphic": true,
+              "groupByClass": false,
+              "groupByLabel": false
             }
           ]
+        },
+        {
+          "condition": "GetVariableStringValue(\"ViewType\") = \"2d\"",
+          "specifications": [
+            {
+              "specType": "InstanceNodesOfSpecificClasses",
+              "classes": [
+                {
+                  "schemaName": "BisCore",
+                  "classNames": [
+                    "DrawingCategory"
+                  ]
+                }
+              ],
+              "arePolymorphic": true,
+              "groupByClass": false,
+              "groupByLabel": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "ruleType": "ChildNodes",
+      "condition": "ParentNode.IsOfClass(\"Category\", \"BisCore\") ANDALSO ParentNode.ECInstance.GetRelatedInstancesCount(\"BisCore:CategoryOwnsSubCategories\", \"Forward\", \"BisCore:SubCategory\") > 1",
+      "specifications": [
+        {
+          "specType": "RelatedInstanceNodes",
+          "relationships": {
+            "schemaName": "BisCore",
+            "classNames": [
+              "CategoryOwnsSubCategories"
+            ]
+          },
+          "relatedClasses": {
+            "schemaName": "BisCore",
+            "classNames": [
+              "SubCategory"
+            ]
+          },
+          "requiredDirection": "Forward",
+          "groupByClass": false,
+          "groupByLabel": false
         }
       ]
     },

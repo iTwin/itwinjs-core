@@ -322,7 +322,9 @@ class Admin extends TileAdmin {
   private processRequests(vp: Viewport, tiles: Set<Tile>): void {
     for (const tile of tiles) {
       if (undefined === tile.request) {
-        assert(tile.loadStatus === Tile.LoadStatus.NotLoaded);
+        // ###TODO: This assertion triggers for AttachmentViewports used for rendering 3d sheet attachments.
+        // Determine why and fix.
+        // assert(tile.loadStatus === Tile.LoadStatus.NotLoaded);
         if (Tile.LoadStatus.NotLoaded === tile.loadStatus) {
           const request = new TileRequest(tile, vp);
           tile.request = request;

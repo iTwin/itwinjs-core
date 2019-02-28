@@ -129,7 +129,7 @@ describe("PresentationManager", () => {
       const rulesetId = faker.random.word();
       const locale = faker.random.locale();
       using(new PresentationManager({ addon: addonMock.object, activeLocale: locale }), async (manager) => {
-        await manager.getRootNodesCount(ActivityLoggingContext.current, { imodel: imodelMock.object, rulesetId });
+        await manager.getNodesCount(ActivityLoggingContext.current, { imodel: imodelMock.object, rulesetId });
         addonMock.verify((x) => x.handleRequest(ActivityLoggingContext.current, moq.It.isAny(), moq.It.is((serializedRequest: string): boolean => {
           const request = JSON.parse(serializedRequest);
           return request.params.locale === locale;
@@ -143,7 +143,7 @@ describe("PresentationManager", () => {
       const locale = faker.random.locale();
       using(new PresentationManager({ addon: addonMock.object, activeLocale: faker.random.locale() }), async (manager) => {
         expect(manager.activeLocale).to.not.eq(locale);
-        await manager.getRootNodesCount(ActivityLoggingContext.current, { imodel: imodelMock.object, rulesetId, locale });
+        await manager.getNodesCount(ActivityLoggingContext.current, { imodel: imodelMock.object, rulesetId, locale });
         addonMock.verify((x) => x.handleRequest(ActivityLoggingContext.current, moq.It.isAny(), moq.It.is((serializedRequest: string): boolean => {
           const request = JSON.parse(serializedRequest);
           return request.params.locale === locale;
@@ -310,7 +310,7 @@ describe("PresentationManager", () => {
         rulesetId: testData.rulesetId,
         paging: testData.pageOptions,
       };
-      const result = await manager.getRootNodes(ActivityLoggingContext.current, options);
+      const result = await manager.getNodes(ActivityLoggingContext.current, options);
       verifyWithSnapshot(result, expectedParams);
     });
 
@@ -332,8 +332,87 @@ describe("PresentationManager", () => {
         imodel: imodelMock.object,
         rulesetId: testData.rulesetId,
       };
-      const result = await manager.getRootNodesCount(ActivityLoggingContext.current, options);
+      const result = await manager.getNodesCount(ActivityLoggingContext.current, options);
       verifyWithExpectedResult(result, addonResponse, expectedParams);
+    });
+
+    it("returns root nodes and root nodes count when requesting first page", async () => {
+      // what the addon receives
+      const pageOptions = { start: 0, size: 2 };
+      const expectedGetRootNodesParams = {
+        requestId: NativePlatformRequestTypes.GetRootNodes,
+        params: {
+          paging: pageOptions,
+          rulesetId: testData.rulesetId,
+        },
+      };
+      const expectedGetRootNodesCountParams = {
+        requestId: NativePlatformRequestTypes.GetRootNodesCount,
+        params: {
+          rulesetId: testData.rulesetId,
+          paging: pageOptions,
+        },
+      };
+
+      // what the addon returns
+      const addonGetRootNodesResponse: NodeJSON[] = [{
+        key: {
+          type: "type1",
+          pathFromRoot: ["p1", "p2", "p3"],
+        } as NodeKeyJSON,
+        label: "test1",
+        description: "description1",
+        imageId: "img_1",
+        foreColor: "foreColor1",
+        backColor: "backColor1",
+        fontStyle: "fontStyle1",
+        hasChildren: true,
+        isSelectionDisabled: true,
+        isEditable: true,
+        isChecked: true,
+        isCheckboxVisible: true,
+        isCheckboxEnabled: true,
+        isExpanded: true,
+      }, {
+        key: {
+          type: "ECInstanceNode",
+          pathFromRoot: ["p1"],
+          instanceKey: createRandomECInstanceKeyJSON(),
+        } as ECInstanceNodeKeyJSON,
+        label: "test2",
+        description: "description2",
+        imageId: "",
+        foreColor: "",
+        backColor: "",
+        fontStyle: "",
+        hasChildren: false,
+        isSelectionDisabled: false,
+        isEditable: false,
+        isChecked: false,
+        isCheckboxVisible: false,
+        isCheckboxEnabled: false,
+        isExpanded: false,
+      }, {
+        key: {
+          type: "some node",
+          pathFromRoot: ["p1", "p3"],
+        } as NodeKeyJSON,
+        label: "test2",
+      }];
+      const addonGetRootNodesCountResponse = 456;
+
+      setup(addonGetRootNodesCountResponse);
+      setup(addonGetRootNodesResponse);
+
+      const options: Paged<HierarchyRequestOptions<IModelDb>> = {
+        imodel: imodelMock.object,
+        rulesetId: testData.rulesetId,
+        paging: pageOptions,
+      };
+      const result = await manager.getNodesAndCount(ActivityLoggingContext.current, options);
+
+      verifyWithSnapshot(result.nodes, expectedGetRootNodesParams);
+      verifyWithExpectedResult(result.count, addonGetRootNodesCountResponse, expectedGetRootNodesCountParams);
     });
 
     it("returns child nodes", async () => {
@@ -371,7 +450,7 @@ describe("PresentationManager", () => {
         rulesetId: testData.rulesetId,
         paging: testData.pageOptions,
       };
-      const result = await manager.getChildren(ActivityLoggingContext.current, options, nodeKeyFromJSON(parentNodeKeyJSON));
+      const result = await manager.getNodes(ActivityLoggingContext.current, options, nodeKeyFromJSON(parentNodeKeyJSON));
       verifyWithSnapshot(result, expectedParams);
     });
 
@@ -395,8 +474,61 @@ describe("PresentationManager", () => {
         imodel: imodelMock.object,
         rulesetId: testData.rulesetId,
       };
-      const result = await manager.getChildrenCount(ActivityLoggingContext.current, options, nodeKeyFromJSON(parentNodeKeyJSON));
+      const result = await manager.getNodesCount(ActivityLoggingContext.current, options, nodeKeyFromJSON(parentNodeKeyJSON));
       verifyWithExpectedResult(result, addonResponse, expectedParams);
+    });
+
+    it("returns child nodes and child node count when requesting first page", async () => {
+      // what the addon receives
+      const pageOptions = { start: 0, size: 2 };
+      const parentNodeKeyJSON = createRandomECInstanceNodeKeyJSON();
+      const expectedGetChildNodesParams = {
+        requestId: NativePlatformRequestTypes.GetChildren,
+        params: {
+          nodeKey: parentNodeKeyJSON,
+          rulesetId: testData.rulesetId,
+          paging: pageOptions,
+        },
+      };
+      const expectedGetChildNodeCountParams = {
+        requestId: NativePlatformRequestTypes.GetChildrenCount,
+        params: {
+          nodeKey: parentNodeKeyJSON,
+          rulesetId: testData.rulesetId,
+          paging: pageOptions,
+        },
+      };
+
+      // what the addon returns
+      const addonGetChildNodesResponse: NodeJSON[] = [{
+        key: {
+          type: "ECInstanceNode",
+          pathFromRoot: ["p1"],
+          instanceKey: createRandomECInstanceKeyJSON(),
+        } as ECInstanceNodeKeyJSON,
+        label: "test2",
+      }, {
+        key: {
+          type: "type 2",
+          pathFromRoot: ["p1", "p3"],
+        } as NodeKeyJSON,
+        label: "test3",
+      }];
+      const addonGetChildNodeCountResponse = 789;
+
+      setup(addonGetChildNodeCountResponse);
+      setup(addonGetChildNodesResponse);
+
+      // test
+      const options: Paged<HierarchyRequestOptions<IModelDb>> = {
+        imodel: imodelMock.object,
+        rulesetId: testData.rulesetId,
+        paging: pageOptions,
+      };
+      const result = await manager.getNodesAndCount(ActivityLoggingContext.current, options, nodeKeyFromJSON(parentNodeKeyJSON));
+
+      verifyWithSnapshot(result.nodes, expectedGetChildNodesParams);
+      verifyWithExpectedResult(result.count, addonGetChildNodeCountResponse, expectedGetChildNodeCountParams);
     });
 
     it("returns filtered node paths", async () => {
@@ -627,6 +759,36 @@ describe("PresentationManager", () => {
       verifyWithExpectedResult(result, addonResponse, expectedParams);
     });
 
+    it("returns content set size when display type is passed in stead of descriptor", async () => {
+      // what the addon receives
+      const keys = new KeySet([createRandomECInstanceNodeKey(), createRandomECInstanceKey()]);
+      const descriptor = createRandomDescriptor();
+      const expectedParams = {
+        requestId: NativePlatformRequestTypes.GetContentSetSize,
+        params: {
+          keys: keys.toJSON(),
+          descriptorOverrides: {
+            displayType: descriptor.displayType,
+            hiddenFieldNames: [],
+            contentFlags: 0,
+          },
+          rulesetId: testData.rulesetId,
+        },
+      };
+
+      // what the addon returns
+      const addonResponse = faker.random.number();
+      setup(addonResponse);
+
+      // test
+      const options: ContentRequestOptions<IModelDb> = {
+        imodel: imodelMock.object,
+        rulesetId: testData.rulesetId,
+      };
+      const result = await manager.getContentSetSize(ActivityLoggingContext.current, options, descriptor.displayType, keys);
+      verifyWithExpectedResult(result, addonResponse, expectedParams);
+    });
+
     it("returns content", async () => {
       // what the addon receives
       const keys = new KeySet([createRandomECInstanceNodeKey(), createRandomECInstanceKey()]);
@@ -699,6 +861,169 @@ describe("PresentationManager", () => {
       verifyWithSnapshot(result, expectedParams);
     });
 
+    it("returns content when display types is passed in stead of descriptor", async () => {
+      // what the addon receives
+      const keys = new KeySet([createRandomECInstanceNodeKey(), createRandomECInstanceKey()]);
+      const descriptor = createRandomDescriptor();
+      const expectedParams = {
+        requestId: NativePlatformRequestTypes.GetContent,
+        params: {
+          keys: keys.toJSON(),
+          descriptorOverrides: {
+            displayType: descriptor.displayType,
+            hiddenFieldNames: [],
+            contentFlags: 0,
+          },
+          paging: testData.pageOptions,
+          rulesetId: testData.rulesetId,
+        },
+      };
+
+      // what the addon returns
+      const fieldName = faker.random.word();
+      const addonResponse = {
+        descriptor: {
+          displayType: descriptor.displayType,
+          selectClasses: [{
+            selectClassInfo: createRandomECClassInfoJSON(),
+            isSelectPolymorphic: true,
+            pathToPrimaryClass: [],
+            relatedPropertyPaths: [],
+          } as SelectClassInfoJSON],
+          fields: [{
+            name: fieldName,
+            category: createRandomCategory(),
+            label: faker.random.words(),
+            type: {
+              typeName: "string",
+              valueFormat: "Primitive",
+            } as PrimitiveTypeDescription,
+            isReadonly: faker.random.boolean(),
+            priority: faker.random.number(),
+            properties: [{
+              property: {
+                classInfo: createRandomECClassInfoJSON(),
+                name: faker.random.word(),
+                type: "string",
+              } as PropertyInfoJSON,
+              relatedClassPath: [],
+            } as PropertyJSON],
+          } as PropertiesFieldJSON],
+          contentFlags: 0,
+        } as DescriptorJSON,
+        contentSet: [{
+          primaryKeys: [createRandomECInstanceKeyJSON()],
+          classInfo: createRandomECClassInfoJSON(),
+          label: faker.random.words(),
+          imageId: faker.random.uuid(),
+          values: {
+            [fieldName]: faker.random.words(),
+          },
+          displayValues: {
+            [fieldName]: faker.random.words(),
+          },
+          mergedFieldNames: [],
+        } as ItemJSON],
+      } as ContentJSON;
+      setup(addonResponse);
+
+      // test
+      const options: Paged<ContentRequestOptions<IModelDb>> = {
+        imodel: imodelMock.object,
+        rulesetId: testData.rulesetId,
+        paging: testData.pageOptions,
+      };
+      const result = await manager.getContent(ActivityLoggingContext.current, options, descriptor.displayType, keys);
+      verifyWithSnapshot(result, expectedParams);
+    });
+
+    it("returns content and content set size when requesting first page", async () => {
+      // what the addon receives
+      const pageOptions = { start: 0, size: 2 };
+      const keys = new KeySet([createRandomECInstanceNodeKey(), createRandomECInstanceKey()]);
+      const descriptor = createRandomDescriptor();
+      const expectedGetContentParams = {
+        requestId: NativePlatformRequestTypes.GetContent,
+        params: {
+          keys: keys.toJSON(),
+          descriptorOverrides: descriptor.createDescriptorOverrides(),
+          paging: pageOptions,
+          rulesetId: testData.rulesetId,
+        },
+      };
+      const expectedGetContentSetSizeParams = {
+        requestId: NativePlatformRequestTypes.GetContentSetSize,
+        params: {
+          keys: keys.toJSON(),
+          descriptorOverrides: descriptor.createDescriptorOverrides(),
+          rulesetId: testData.rulesetId,
+          paging: pageOptions,
+        },
+      };
+
+      // what the addon returns
+      const fieldName = faker.random.word();
+      const addonGetContentResponse = {
+        descriptor: {
+          displayType: descriptor.displayType,
+          selectClasses: [{
+            selectClassInfo: createRandomECClassInfoJSON(),
+            isSelectPolymorphic: true,
+            pathToPrimaryClass: [],
+            relatedPropertyPaths: [],
+          } as SelectClassInfoJSON],
+          fields: [{
+            name: fieldName,
+            category: createRandomCategory(),
+            label: faker.random.words(),
+            type: {
+              typeName: "string",
+              valueFormat: "Primitive",
+            } as PrimitiveTypeDescription,
+            isReadonly: faker.random.boolean(),
+            priority: faker.random.number(),
+            properties: [{
+              property: {
+                classInfo: createRandomECClassInfoJSON(),
+                name: faker.random.word(),
+                type: "string",
+              } as PropertyInfoJSON,
+              relatedClassPath: [],
+            } as PropertyJSON],
+          } as PropertiesFieldJSON],
+          contentFlags: 0,
+        } as DescriptorJSON,
+        contentSet: [{
+          primaryKeys: [createRandomECInstanceKeyJSON()],
+          classInfo: createRandomECClassInfoJSON(),
+          label: faker.random.words(),
+          imageId: faker.random.uuid(),
+          values: {
+            [fieldName]: faker.random.words(),
+          },
+          displayValues: {
+            [fieldName]: faker.random.words(),
+          },
+          mergedFieldNames: [],
+        } as ItemJSON],
+      } as ContentJSON;
+      const addonGetContentSetSizeResponse = faker.random.number();
+
+      setup(addonGetContentSetSizeResponse);
+      setup(addonGetContentResponse);
+
+      // test
+      const options: Paged<ContentRequestOptions<IModelDb>> = {
+        imodel: imodelMock.object,
+        rulesetId: testData.rulesetId,
+        paging: pageOptions,
+      };
+      const result = await manager.getContentAndSize(ActivityLoggingContext.current, options, descriptor, keys);
+
+      verifyWithSnapshot(result.content, expectedGetContentParams);
+      verifyWithExpectedResult(result.size, addonGetContentSetSizeResponse, expectedGetContentSetSizeParams);
+    });
+
     describe("getDistinctValues", () => {
 
       it("returns distinct values", async () => {
@@ -767,7 +1092,7 @@ describe("PresentationManager", () => {
         imodel: imodelMock.object,
         rulesetId: testData.rulesetId,
       };
-      return expect(manager.getRootNodesCount(ActivityLoggingContext.current, options)).to.eventually.be.rejectedWith(Error);
+      return expect(manager.getNodesCount(ActivityLoggingContext.current, options)).to.eventually.be.rejectedWith(Error);
     });
 
   });

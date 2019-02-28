@@ -1340,9 +1340,9 @@ export class Sample {
   public static createFractalDiamonConvexPattern(numRecursion: number, perpendicularFactor: number): Point3d[] {
     const pattern: Point2d[] = [
       Point2d.create(),
-      Point2d.create(0.3, 0.1),
-      Point2d.create(0.5, 0.15),
-      Point2d.create(0.7, 0.1),
+      Point2d.create(0.3, 0.05),
+      Point2d.create(0.5, 0.10),
+      Point2d.create(0.7, 0.04),
       Point2d.create(1.0, 0.0),
     ];
     const poles: Point3d[] = [
@@ -1361,6 +1361,27 @@ export class Sample {
       Point2d.create(0.25, 0),
       Point2d.create(0.5, 0.2),
       Point2d.create(0.75, -0.1),
+      Point2d.create(1.0, 0.0),
+    ];
+    const poles: Point3d[] = [
+      Point3d.create(),
+      Point3d.create(1, 0, 0),
+      Point3d.create(1, 1, 0),
+      Point3d.create(0, 1, 0),
+      Point3d.create(0, 0, 0),
+    ];
+    return Sample.createRecursvieFractalPolygon(poles, pattern, numRecursion, perpendicularFactor);
+  }
+
+  public static createFractalHatReversingPattern(numRecursion: number, perpendicularFactor: number): Point3d[] {
+    const pattern: Point2d[] = [
+      Point2d.create(),
+      Point2d.create(0.25, 0),
+      Point2d.create(0.25, 0.1),
+      Point2d.create(0.50, 0.1),
+      Point2d.create(0.50, -0.1),
+      Point2d.create(0.75, -0.1),
+      Point2d.create(0.75, 0),
       Point2d.create(1.0, 0.0),
     ];
     const poles: Point3d[] = [
@@ -1397,9 +1418,9 @@ export class Sample {
   public static createFractalLMildConcavePatter(numRecursion: number, perpendicularFactor: number): Point3d[] {
     const pattern: Point2d[] = [
       Point2d.create(),
-      Point2d.create(0.25, 0.1),
+      Point2d.create(0.25, 0.05),
       Point2d.create(0.5, 0.15),
-      Point2d.create(0.75, 0.1),
+      Point2d.create(0.75, 0.05),
       Point2d.create(1.0, 0.0),
     ];
     const poles: Point3d[] = [
@@ -1407,7 +1428,7 @@ export class Sample {
       Point3d.create(1, 0, 0),
       Point3d.create(1, 1, 0),
       Point3d.create(2, 2, 0),
-      Point3d.create(2, 3, 0),
+      Point3d.create(1.5, 3, 0),
       Point3d.create(0, 3, 0),
       Point3d.create(),
     ];
@@ -1749,5 +1770,40 @@ export class Sample {
     const axis = Ray3d.createXYZUVW(0, 8, 0, 1, 0, 0);
     result.push(RotationalSweep.create(contourZ.clone()!, axis.clone(), Angle.createDegrees(90), capped)!);
     return result;
+  }
+  /**
+   * Create points:
+   * *  `numRadialEdges` radially from origin to polar point (r,sweep.start)
+   * * `numArcEdges` along arc from (r,sweep.start) to (r,sweep.end)
+   * * `numRadialEdges` returning to origin.
+   * * optionally include closure point at origin.
+   * @param x0 center x
+   * @param y0 center y
+   * @param radius radius of circle.
+   * @param sweep start and end angles of sweep.
+   * @param numRadialEdges number of edges from center to arc
+   * @param numArcEdges number of edges along arc
+   * @param addCLosure true to repeat center as closure point
+   */
+  public static createCutPie(x0: number, y0: number, radius: number, sweep: AngleSweep, numRadialEdges: number, numArcEdges: number, addClosure = false): Point3d[] {
+
+    const points = [];
+    const center = Point3d.create(x0, y0);
+    points.push(center);
+    const pointA = Point3d.create(x0 + radius * Math.cos(sweep.startRadians), y0 + radius * Math.sin(sweep.startRadians));
+    const pointB = Point3d.create(x0 + radius * Math.cos(sweep.endRadians), y0 + radius * Math.sin(sweep.endRadians));
+    for (let i = 1; i < numRadialEdges; i++)
+      points.push(center.interpolate(i / numRadialEdges, pointA));
+    points.push(pointA);
+    for (let i = 1; i < numArcEdges; i++) {
+      const radians = sweep.fractionToRadians(i / numArcEdges);
+      points.push(Point3d.create(x0 + radius * Math.cos(radians), y0 + radius * Math.sin(radians)));
+    }
+    points.push(pointB);
+    for (let i = 1; i < numRadialEdges; i++)
+      points.push(pointB.interpolate(i / numRadialEdges, center));
+    if (addClosure)
+      points.push(center.clone());
+    return points;
   }
 }

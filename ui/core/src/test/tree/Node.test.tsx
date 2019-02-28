@@ -8,7 +8,7 @@ import * as React from "react";
 import * as sinon from "sinon";
 import ExpansionToggle from "../../ui-core/tree/ExpansionToggle";
 import Node from "../../ui-core/tree/Node";
-import { Checkbox } from "../../ui-core/inputs/Checkbox";
+import { Checkbox } from "../../ui-core/inputs/checkbox/Checkbox";
 import { CheckBoxState } from "../../ui-core/enums/CheckBoxState";
 
 describe("<Node />", () => {

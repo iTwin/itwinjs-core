@@ -6,7 +6,7 @@
 
 import { Id64String, Id64Set } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
-import { Point2d, Point3d, Vector2d, Vector3d } from "@bentley/geometry-core";
+import { Point2d, Point3d, Vector2d, Vector3d, Range3dProps } from "@bentley/geometry-core";
 import { Code } from "../Code";
 import { RpcInterface } from "../RpcInterface";
 import { RpcManager } from "../RpcManager";
@@ -52,7 +52,7 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
   public static getClient(): IModelReadRpcInterface { return RpcManager.getClientForInterface(IModelReadRpcInterface); }
 
   /** The semantic version of the interface. */
-  public static version = "0.2.0";
+  public static version = "0.2.1";
 
   /*===========================================================================================
     NOTE: Any add/remove/change to the methods below requires an update of the interface version.
@@ -63,6 +63,7 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
   public async queryPage(_iModelToken: IModelToken, _ecsql: string, _bindings?: any[] | object, _options?: PageOptions): Promise<any[]> { return this.forward(arguments); }
   public async queryRowCount(_iModelToken: IModelToken, _ecsql: string, _bindings?: any[] | object): Promise<number> { return this.forward(arguments); }
   public async getModelProps(_iModelToken: IModelToken, _modelIds: Id64Set): Promise<ModelProps[]> { return this.forward(arguments); }
+  public async queryModelRanges(_iModelToken: IModelToken, _modelIds: Id64Set): Promise<Range3dProps[]> { return this.forward(arguments); }
   public async queryModelProps(_iModelToken: IModelToken, _params: EntityQueryParams): Promise<ModelProps[]> { return this.forward(arguments); }
   public async getElementProps(_iModelToken: IModelToken, _elementIds: Id64Set): Promise<ElementProps[]> { return this.forward(arguments); }
   public async queryElementProps(_iModelToken: IModelToken, _params: EntityQueryParams): Promise<ElementProps[]> { return this.forward(arguments); }

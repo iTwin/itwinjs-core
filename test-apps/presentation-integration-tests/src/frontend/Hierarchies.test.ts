@@ -92,7 +92,7 @@ describe("Hierarchies", () => {
         }],
       };
       await using<RegisteredRuleset, Promise<void>>(await Presentation.presentation.rulesets().add(ruleset), async () => {
-        const rootNodes = await Presentation.presentation.getRootNodes({ imodel, rulesetId: ruleset.id });
+        const rootNodes = await Presentation.presentation.getNodes({ imodel, rulesetId: ruleset.id });
         expect(rootNodes).to.matchSnapshot();
         /*
         The result should look like this (all grouping nodes):
@@ -112,9 +112,9 @@ describe("Hierarchies", () => {
         the result should be 1 + 1 + 2 = 4
         */
 
-        const definitionModelNodes = await Presentation.presentation.getChildren(
+        const definitionModelNodes = await Presentation.presentation.getNodes(
           { imodel, rulesetId: ruleset.id }, rootNodes[0].key);
-        const dictionaryModelNodes = await Presentation.presentation.getChildren(
+        const dictionaryModelNodes = await Presentation.presentation.getNodes(
           { imodel, rulesetId: ruleset.id }, rootNodes[1].key);
 
         const keys = new KeySet([

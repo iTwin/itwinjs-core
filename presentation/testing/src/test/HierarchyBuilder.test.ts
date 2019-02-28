@@ -55,7 +55,7 @@ describe("HierarchyBuilder", () => {
     context("without data", () => {
       beforeEach(() => {
         Presentation.presentation = presentationManagerMock.object;
-        presentationManagerMock.setup(async (manager) => manager.getRootNodes(moq.It.isAny())).returns(async () => []);
+        presentationManagerMock.setup(async (manager) => manager.getNodes(moq.It.isAny(), undefined)).returns(async () => []);
       });
 
       it("returns empty list when rulesetId is given", async () => {
@@ -73,8 +73,8 @@ describe("HierarchyBuilder", () => {
 
     context("with data", () => {
       beforeEach(() => {
-        presentationManagerMock.setup(async (manager) => manager.getRootNodes(moq.It.isAny())).returns(getRootNodes);
-        presentationManagerMock.setup(async (manager) => manager.getChildren(moq.It.isAny(), moq.It.isAny())).returns(getChildrenNodes);
+        presentationManagerMock.setup(async (manager) => manager.getNodes(moq.It.isAny(), undefined)).returns(getRootNodes);
+        presentationManagerMock.setup(async (manager) => manager.getNodes(moq.It.isAny(), moq.It.isAny())).returns(getChildrenNodes);
         Presentation.presentation = presentationManagerMock.object;
       });
 

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Utilities */
 
-import "./colorthemes.css";
+import "./colorthemes.scss";
 
 import { I18N } from "@bentley/imodeljs-i18n";
 

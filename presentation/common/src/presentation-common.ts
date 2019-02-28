@@ -14,7 +14,7 @@ export {
   default as PresentationRpcInterface,
   RpcRequestOptions, ClientStateSyncRequestOptions, ContentRpcRequestOptions,
   HierarchyRpcRequestOptions, SelectionScopeRpcRequestOptions,
-  RpcResponse, PresentationRpcResponse,
+  RpcResponse, PresentationRpcResponse, NodesResponse, ContentResponse,
 } from "./PresentationRpcInterface";
 export { default as RpcRequestsHandler, IClientStateHolder } from "./RpcRequestsHandler";
 export { RulesetVariablesState, VariableValueTypes, VariableValue } from "./RulesetVariables";

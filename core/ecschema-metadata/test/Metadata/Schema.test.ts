@@ -13,6 +13,12 @@ import { EntityClass } from "./../../src/Metadata/EntityClass";
 import { Mixin } from "./../../src/Metadata/Mixin";
 import { MutableSchema, Schema } from "./../../src/Metadata/Schema";
 import { SchemaKey } from "./../../src/SchemaKey";
+import { AnySchemaItem } from "../../src/Interfaces";
+import { Enumeration } from "./../../src/Metadata/Enumeration";
+import { Format } from "./../../src/Metadata/Format";
+import { KindOfQuantity } from "./../../src/Metadata/KindOfQuantity";
+import { PropertyCategory } from "./../../src/Metadata/PropertyCategory";
+import { Unit } from "./../../src/Metadata/Unit";
 
 describe("Schema", () => {
   describe("api creation of schema", () => {
@@ -57,6 +63,24 @@ describe("Schema", () => {
       expect(await testSchema.getItem<StructClass>("TestStruct")).instanceof(StructClass);
     });
 
+    it("should succeed for non-class schema items", async () => {
+      const testSchema = new Schema(new SchemaContext(), "TestSchema", 1, 2, 3);
+      await (testSchema as MutableSchema).createKindOfQuantity("TestKindOfQuantity");
+      await (testSchema as MutableSchema).createEnumeration("TestEnumeration");
+      await (testSchema as MutableSchema).createUnit("TestUnit");
+      await (testSchema as MutableSchema).createPropertyCategory("TestPropertyCategory");
+      await (testSchema as MutableSchema).createFormat("TestFormat");
+
+      const schemaItems = testSchema.getItems();
+
+      expect(schemaItems.next().value).instanceOf(KindOfQuantity);
+      expect(schemaItems.next().value).instanceOf(Enumeration);
+      expect(schemaItems.next().value).instanceOf(Unit);
+      expect(schemaItems.next().value).instanceOf(PropertyCategory);
+      expect(schemaItems.next().value).instanceOf(Format);
+      expect(schemaItems.next().done).to.eql(true);
+    });
+
     it("should succeed with case-insensitive search", async () => {
       const testSchema = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);
       await (testSchema as MutableSchema).createEntityClass("testEntity");
@@ -64,6 +88,63 @@ describe("Schema", () => {
       expect(await testSchema.getItem("TESTENTITY")).not.undefined;
       expect(await testSchema.getItem("TestEntity")).not.undefined;
       expect(await testSchema.getItem("testEntity")).not.undefined;
+    });
+  });
+
+  describe("bulk get methods for schema items", () => {
+    let testSchema: Schema;
+
+    before(async () => {
+      testSchema = new Schema(new SchemaContext(), "TestSchema", 1, 2, 3);
+      await (testSchema as MutableSchema).createEntityClass("TestEntity");
+      await (testSchema as MutableSchema).createMixinClass("TestMixin");
+      await (testSchema as MutableSchema).createStructClass("TestStruct");
+      await (testSchema as MutableSchema).createKindOfQuantity("TestKindOfQuantity");
+      await (testSchema as MutableSchema).createEnumeration("TestEnumeration");
+      await (testSchema as MutableSchema).createUnit("TestUnit");
+      await (testSchema as MutableSchema).createPropertyCategory("TestPropertyCategory");
+      await (testSchema as MutableSchema).createFormat("TestFormat");
+    });
+
+    describe("getItems", () => {
+      let schemaItems: IterableIterator<AnySchemaItem>;
+
+      before(() => {
+        schemaItems = testSchema.getItems();
+      });
+
+      it("should return all schema items in schema", () => {
+        const itemArray = Array.from(testSchema.getItems());
+        expect(itemArray.length).to.eql(8);
+
+        expect(schemaItems.next().value).instanceOf(EntityClass);
+        expect(schemaItems.next().value).instanceOf(Mixin);
+        expect(schemaItems.next().value).instanceOf(StructClass);
+        expect(schemaItems.next().value).instanceOf(KindOfQuantity);
+        expect(schemaItems.next().value).instanceOf(Enumeration);
+        expect(schemaItems.next().value).instanceOf(Unit);
+        expect(schemaItems.next().value).instanceOf(PropertyCategory);
+        expect(schemaItems.next().value).instanceOf(Format);
+        expect(schemaItems.next().done).to.eql(true);
+      });
+    });
+
+    describe("getClasses", () => {
+      let schemaClasses: IterableIterator<ECClass>;
+
+      before(() => {
+        schemaClasses = testSchema.getClasses();
+      });
+
+      it("should return only class items in schema", async () => {
+        const classArray = Array.from(testSchema.getClasses());
+        expect(classArray.length).to.eql(3);
+
+        expect(schemaClasses.next().value).instanceOf(EntityClass);
+        expect(schemaClasses.next().value).instanceOf(Mixin);
+        expect(schemaClasses.next().value).instanceOf(StructClass);
+        expect(schemaClasses.next().done).to.eql(true);
+      });
     });
   });
 

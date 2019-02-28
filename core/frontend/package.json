@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-frontend",
-  "version": "0.189.0-dev.37",
+  "version": "0.189.0-dev.41",
   "description": "iModel.js frontend components",
   "main": "lib/imodeljs-frontend.js",
   "typings": "lib/imodeljs-frontend",
@@ -35,12 +35,6 @@
           "entry": "./lib/loader/IModelJsLoader.js",
           "bundleName": "IModelJsLoader",
           "type": "system"
-        },
-        {
-          "dest": "./lib/module",
-          "entry": "./lib/webworker/WebWorker.js",
-          "bundleName": "frontend-webworker",
-          "type": "webworker"
         }
       ]
     }
@@ -59,33 +53,32 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "0.189.0-dev.37",
-    "@bentley/geometry-core": "0.189.0-dev.37",
-    "@bentley/imodeljs-clients": "0.189.0-dev.37",
-    "@bentley/imodeljs-common": "0.189.0-dev.37",
-    "@bentley/imodeljs-i18n": "0.189.0-dev.37",
-    "@bentley/imodeljs-quantity": "0.189.0-dev.37"
+    "@bentley/bentleyjs-core": "0.189.0-dev.41",
+    "@bentley/geometry-core": "0.189.0-dev.41",
+    "@bentley/imodeljs-clients": "0.189.0-dev.41",
+    "@bentley/imodeljs-common": "0.189.0-dev.41",
+    "@bentley/imodeljs-i18n": "0.189.0-dev.41",
+    "@bentley/imodeljs-quantity": "0.189.0-dev.41"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/bentleyjs-core": "0.189.0-dev.37",
-    "@bentley/build-tools": "0.189.0-dev.37",
-    "@bentley/geometry-core": "0.189.0-dev.37",
-    "@bentley/imodeljs-clients": "0.189.0-dev.37",
-    "@bentley/imodeljs-common": "0.189.0-dev.37",
-    "@bentley/imodeljs-i18n": "0.189.0-dev.37",
-    "@bentley/imodeljs-quantity": "0.189.0-dev.37",
-    "@bentley/webpack-tools": "0.189.0-dev.37",
+    "@bentley/bentleyjs-core": "0.189.0-dev.41",
+    "@bentley/build-tools": "0.189.0-dev.41",
+    "@bentley/geometry-core": "0.189.0-dev.41",
+    "@bentley/imodeljs-clients": "0.189.0-dev.41",
+    "@bentley/imodeljs-common": "0.189.0-dev.41",
+    "@bentley/imodeljs-i18n": "0.189.0-dev.41",
+    "@bentley/imodeljs-quantity": "0.189.0-dev.41",
+    "@bentley/webpack-tools": "0.189.0-dev.41",
     "@types/js-base64": "^2.3.1",
     "@types/node": "10.12.18",
     "@types/semver": "^5.5.0",
     "rimraf": "^2.6.2",
     "tslint": "^5.11.0",
     "typedoc": "^0.11.1",
-    "typedoc-plugin-external-module-name": "^1.1.1",
     "typescript": "~3.2.2"
   },
   "//dependencies": [

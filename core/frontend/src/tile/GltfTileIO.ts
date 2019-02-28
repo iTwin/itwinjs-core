@@ -31,6 +31,11 @@ import { Range3d, Point2d, Point3d, Vector3d, Transform, Matrix3d, Angle } from 
 import { InstancedGraphicParams, RenderSystem, RenderGraphic, GraphicBranch, PackedFeatureTable } from "../render/System";
 import { imageElementFromImageSource, getImageSourceFormatForMimeType } from "../ImageUtil";
 import { IModelConnection } from "../IModelConnection";
+/* -----------------------------------
+ * To restore the use of web workers to decode jpeg, locate and uncomment the three sections by searching for "webworker".
+  import { WorkerOperation, WebWorkerManager } from "../WebWorkerManager";
+  ------------------------------------ */
+
 // Defer Draco for now.   import { DracoDecoder } from "./DracoDecoder";
 
 /** Provides facilities for deserializing tiles in the [glTF tile format](https://www.khronos.org/gltf/). */
@@ -284,6 +289,19 @@ export namespace GltfTileIO {
   /** A function that returns true if Reader.read() should abort because the tile data is no longer needed. */
   export type IsCanceled = (reader: Reader) => boolean;
 
+  /* -----------------------------------
+     This is part of the webworker option.
+
+    // input is Uint8Array, the result is an ImageBitMap.
+    class ImageDecodeWorkerOperation extends WorkerOperation {
+      constructor(imageBytes: ArrayBuffer, imageMimeType: string) {
+        super("imageBytesToImageBitmap", [imageBytes, imageMimeType], [imageBytes]);
+      }
+    }
+
+    declare var BUILD_SEMVER: string;
+  -------------------------------------- */
+
   /** Deserializes [(glTF tile data](https://www.khronos.org/gltf/). */
   export abstract class Reader {
     /** @hidden */
@@ -330,7 +348,19 @@ export namespace GltfTileIO {
     protected readonly _yAxisUp: boolean;
     /** @hidden */
     protected readonly _type: BatchType;
+
     private readonly _canceled?: IsCanceled;
+
+    /* -----------------------------------
+    private static _webWorkerManager: WebWorkerManager;
+
+    private static get webWorkerManager() {
+      if (!Reader._webWorkerManager) {
+        Reader._webWorkerManager = new WebWorkerManager("v" + BUILD_SEMVER + "/frontend-webworker.js", 4);
+      }
+      return Reader._webWorkerManager;
+    }
+    ------------------------------------- */
 
     /** Asynchronously deserialize the tile data and return the result. */
     public async abstract read(): Promise<ReaderResult>;
@@ -928,15 +958,24 @@ export namespace GltfTileIO {
         if (undefined === format)
           return undefined;
 
-        const offset = bufferView.byteOffset;
-        const bytes = this._binaryData.subarray(offset, offset + bufferView.byteLength);
-        const imageSource = new ImageSource(bytes, format);
         let textureType = RenderTexture.Type.Normal;
         if (undefined !== samplerJson &&
           (undefined !== samplerJson.wrapS || undefined !== samplerJson.wrapS))
           textureType = RenderTexture.Type.TileSection;
-
         const textureParams = new RenderTexture.Params(undefined, textureType);
+        const offset = bufferView.byteOffset;
+
+        /* -----------------------------------
+            const jpegArray = this._binaryData.slice(offset, offset + bufferView.byteLength);
+            const jpegArrayBuffer = jpegArray.buffer;
+            const workerOp = new ImageDecodeWorkerOperation(jpegArrayBuffer, mimeType);
+            return Reader.webWorkerManager.queueOperation(workerOp)
+              .then((imageBitmap) => this._isCanceled ? undefined : this._system.createTextureFromImage(imageBitmap, isTransparent && ImageSourceFormat.Png === format, this._iModel, textureParams))
+              .catch((_) => undefined);
+          ------------------------------------- */
+
+        const bytes = this._binaryData.subarray(offset, offset + bufferView.byteLength);
+        const imageSource = new ImageSource(bytes, format);
         return imageElementFromImageSource(imageSource)
           .then((image) => this._isCanceled ? undefined : this._system.createTextureFromImage(image, isTransparent && ImageSourceFormat.Png === format, this._iModel, textureParams))
           .catch((_) => undefined);

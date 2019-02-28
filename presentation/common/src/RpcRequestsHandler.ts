@@ -16,7 +16,7 @@ import { SelectionInfo, default as Descriptor } from "./content/Descriptor";
 import { default as Content } from "./content/Content";
 import { SelectionScope } from "./selection/SelectionScope";
 import { HierarchyRequestOptions, ContentRequestOptions, Paged, SelectionScopeRequestOptions } from "./PresentationManagerOptions";
-import PresentationRpcInterface, { RpcRequestOptions, PresentationRpcResponse } from "./PresentationRpcInterface";
+import PresentationRpcInterface, { RpcRequestOptions, NodesResponse, ContentResponse, PresentationRpcResponse } from "./PresentationRpcInterface";
 import { Omit } from "./Utils";
 
 /**
@@ -152,22 +152,17 @@ export default class RpcRequestsHandler implements IDisposable {
     const doRequest = async (funcOptions: TFuncOptions) => func.apply(context, [imodel, funcOptions, ...args]);
     return this.requestRepeatedly(doRequest, rpcOptions as TFuncOptions, options.imodel);
   }
-
-  public async getRootNodes(options: Paged<HierarchyRequestOptions<IModelToken>>): Promise<Node[]> {
+  public async getNodesAndCount(options: Paged<HierarchyRequestOptions<IModelToken>>, parentKey?: Readonly<NodeKey>): Promise<NodesResponse> {
+    return this.request<NodesResponse, Paged<HierarchyRequestOptions<IModelToken>>, any>(
+      this.rpcClient, this.rpcClient.getNodesAndCount, this.createRequestOptions(options), parentKey);
+  }
+  public async getNodes(options: Paged<HierarchyRequestOptions<IModelToken>>, parentKey?: Readonly<NodeKey>): Promise<Node[]> {
     return this.request<Node[], Paged<HierarchyRequestOptions<IModelToken>>>(
-      this.rpcClient, this.rpcClient.getRootNodes, this.createRequestOptions(options));
+      this.rpcClient, this.rpcClient.getNodes, this.createRequestOptions(options), parentKey);
   }
-  public async getRootNodesCount(options: HierarchyRequestOptions<IModelToken>): Promise<number> {
+  public async getNodesCount(options: HierarchyRequestOptions<IModelToken>, parentKey?: Readonly<NodeKey>): Promise<number> {
     return this.request<number, HierarchyRequestOptions<IModelToken>>(
-      this.rpcClient, this.rpcClient.getRootNodesCount, this.createRequestOptions(options));
-  }
-  public async getChildren(options: Paged<HierarchyRequestOptions<IModelToken>>, parentKey: Readonly<NodeKey>): Promise<Node[]> {
-    return this.request<Node[], Paged<HierarchyRequestOptions<IModelToken>>>(
-      this.rpcClient, this.rpcClient.getChildren, this.createRequestOptions(options), parentKey);
-  }
-  public async getChildrenCount(options: HierarchyRequestOptions<IModelToken>, parentKey: Readonly<NodeKey>): Promise<number> {
-    return this.request<number, HierarchyRequestOptions<IModelToken>>(
-      this.rpcClient, this.rpcClient.getChildrenCount, this.createRequestOptions(options), parentKey);
+      this.rpcClient, this.rpcClient.getNodesCount, this.createRequestOptions(options), parentKey);
   }
   public async getNodePaths(options: HierarchyRequestOptions<IModelToken>, paths: InstanceKey[][], markedIndex: number): Promise<NodePathElement[]> {
     return this.request<NodePathElement[], HierarchyRequestOptions<IModelToken>>(
@@ -182,13 +177,17 @@ export default class RpcRequestsHandler implements IDisposable {
     return this.request<Descriptor | undefined, ContentRequestOptions<IModelToken>>(
       this.rpcClient, this.rpcClient.getContentDescriptor, this.createRequestOptions(options), displayType, keys, selection);
   }
-  public async getContentSetSize(options: ContentRequestOptions<IModelToken>, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>): Promise<number> {
+  public async getContentSetSize(options: ContentRequestOptions<IModelToken>, descriptorOrDisplayType: Readonly<Descriptor> | string, keys: Readonly<KeySet>): Promise<number> {
     return this.request<number, ContentRequestOptions<IModelToken>>(
-      this.rpcClient, this.rpcClient.getContentSetSize, this.createRequestOptions(options), descriptor, keys);
+      this.rpcClient, this.rpcClient.getContentSetSize, this.createRequestOptions(options), descriptorOrDisplayType, keys);
   }
-  public async getContent(options: ContentRequestOptions<IModelToken>, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>): Promise<Content> {
+  public async getContent(options: ContentRequestOptions<IModelToken>, descriptorOrDisplayType: Readonly<Descriptor> | string, keys: Readonly<KeySet>): Promise<Content> {
     return this.request<Content, ContentRequestOptions<IModelToken>>(
-      this.rpcClient, this.rpcClient.getContent, this.createRequestOptions(options), descriptor, keys);
+      this.rpcClient, this.rpcClient.getContent, this.createRequestOptions(options), descriptorOrDisplayType, keys);
+  }
+  public async getContentAndSize(options: ContentRequestOptions<IModelToken>, descriptorOrDisplayType: Readonly<Descriptor> | string, keys: Readonly<KeySet>): Promise<ContentResponse> {
+    return this.request<ContentResponse, ContentRequestOptions<IModelToken>, any>(
+      this.rpcClient, this.rpcClient.getContentAndSize, this.createRequestOptions(options), descriptorOrDisplayType, keys);
   }
   public async getDistinctValues(options: ContentRequestOptions<IModelToken>, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>, fieldName: string, maximumValueCount: number): Promise<string[]> {
     return this.request<string[], ContentRequestOptions<IModelToken>>(

@@ -3,22 +3,27 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-// This file contains the code that manages a pool of WebWorkers, starting and dispatching work to them.
-// All the WebWorkers are the same, running the core/frontend/WebWorker code and capable of handling
-// any of the requests that this manager
+// This file contains the code that manages a pool of We bWorkers, starting and dispatching work to them.
+// All the WebWorkers for a given instance of WebWorkerManager are the same, running the specified javascript
+// code. The Web Worker javascript  must be set up to handle the set of WorkerOperation's that are sent by
+// calls to queueOperation on WebWorkerManager.
 
 type resolveFunc = ((arg: any) => void);
 type rejectFunc = ((arg: Error) => void);
 
-/** Class that manages WebWorkers
+/** Class that manages Web Workers. The number of Web Worker threads can be specified.
+ * Each Web Worker maintains a queue of requests, and queueOperation method selects
+ * the thread with the fewest entries in the queue. Operations are represented as
+ * subclasses of the abstract class WorkerOperation.
  * @alpha
+ * @hidden
  */
 export class WebWorkerManager {
   private _workerProxys: WebWorkerProxy[];
   private _maxWebWorkers: number;
   private _workerJsFile: string;
 
-  private constructor(workerJsFile: string, maxWebWorkers?: number) {
+  public constructor(workerJsFile: string, maxWebWorkers?: number) {
     this._workerJsFile = workerJsFile;
     this._maxWebWorkers = maxWebWorkers ? maxWebWorkers : 3;
     this._workerProxys = new Array<WebWorkerProxy>();
@@ -42,6 +47,8 @@ export class WebWorkerManager {
           selectedProxy = proxy;
           selectedLength = proxy.queueLength;
           shortestExisting = selectedLength;
+          if (selectedLength === 0)
+            break;
         }
       }
     }
@@ -57,18 +64,25 @@ export class WebWorkerManager {
 
 // the message sent to the webWorker.
 class RequestMessage {
-  constructor(public msgId: number, public operation: string, public operand: any) { }
+  constructor(public msgId: number, public operation: string, public operands: any) { }
 }
 
-// Subclass WorkerOperation for different request types.
-// Instantiate the subclass and then call the sendMessage method.
-abstract class WorkerOperation {
+/**
+ * Abstract base class for requests handled by a Web Worker.
+ * @note - To direct a request to a Web Worker, create a subclass of WorkerOperation in the main thread,
+ * instantiate that subclass, and then call the queueOperation method of the corresponding WebWorkerManager.
+ * The javascript loaded by the WebWorkerManager must be configured to handle the request by implementing
+ * a method equal to the operation argument of the WorkerOperation constructor.
+ * @alpha
+ * @hidden
+ */
+export abstract class WorkerOperation {
   private _resolve: resolveFunc | undefined = undefined;
   private _reject: rejectFunc | undefined = undefined;
   private _proxy: WebWorkerProxy | undefined = undefined;
   public msgId: number = 0;
 
-  constructor(private _operation: string, private _operand: any, private _transferable: [] | undefined) {
+  constructor(public operation: string, public operands: any[], public transferable?: any[]) {
   }
 
   // This is the executor method that is called immediately when you instantiate a Promise.
@@ -77,15 +91,13 @@ abstract class WorkerOperation {
     // save the resolve and reject functions to dispatch when we get reply back from the web worker.
     this._resolve = resolve;
     this._reject = reject;
-    const message = new RequestMessage(this.msgId, this._operation, this._operand);
 
     // start the operation in the web worker.
-    this._proxy!.webWorker.postMessage(message, this._transferable);
+    this._proxy!.enqueue(this);
   }
 
   // This method puts together the request, sends it, and returns the Promise.
   public async sendMessage(proxy: WebWorkerProxy): Promise<any> {
-    this.msgId = proxy.nextMsgId;
     this._proxy = proxy;
     return new Promise(this.executor.bind(this));
   }
@@ -110,8 +122,8 @@ class WebWorkerProxy {
 
   public constructor(workerFile: string) {
     this._worker = new Worker(workerFile);
-    this.webWorker.onmessage = this.handleMessage.bind(this);
-    this.webWorker.onerror = this.handleError.bind(this);
+    this._worker.onmessage = this.handleMessage.bind(this);
+    this._worker.onerror = this.handleError.bind(this);
     this._queue = new Map<number, WorkerOperation>();
     this._nextMsgId = 1;
   }
@@ -151,17 +163,15 @@ class WebWorkerProxy {
     }
   }
 
+  public enqueue(wo: WorkerOperation): void {
+    wo.msgId = this._nextMsgId++;
+    const message = new RequestMessage(wo.msgId, wo.operation, wo.operands);
+    this._queue.set(wo.msgId, wo);
+    this._worker.postMessage(message, wo.transferable);
+  }
+
   // gets the queue size.
   public get queueLength(): number {
     return this._queue.size;
-  }
-
-  // returns the nextMsgId. Used only from the WorkerOperation class
-  public get nextMsgId(): number {
-    return this._nextMsgId++;
-  }
-
-  public get webWorker(): Worker {
-    return this._worker;
   }
 }

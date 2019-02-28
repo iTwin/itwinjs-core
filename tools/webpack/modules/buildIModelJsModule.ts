@@ -1,5 +1,10 @@
 #!/usr/bin/env node
 
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+
 // ------------------------------- NOTE -----------------------------------
 // Do not edit buildIModelJsModule.js !!!
 // It is compiled from buildIModelJsModule.ts and is under source code control

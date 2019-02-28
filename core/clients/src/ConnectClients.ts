@@ -5,7 +5,7 @@
 /** @module ConnectServices */
 import { WsgClient } from "./WsgClient";
 import { AccessToken } from "./Token";
-import { request, RequestQueryOptions, Response, RequestOptions } from "./Request";
+import { RequestQueryOptions, RequestOptions } from "./Request";
 import { ECJsonTypeMap, WsgInstance } from "./ECJsonTypeMap";
 import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { Config } from "./Config";
@@ -105,140 +105,6 @@ export interface ConnectRequestQueryOptions extends RequestQueryOptions {
 
 export interface RbacRequestQueryOptions extends RequestQueryOptions {
   rbacOnly?: boolean;
-}
-
-export enum IModelHubPermissions {
-  None = 0,
-  CreateIModel = 1 << 0,
-  ReadIModel = 1 << 1,
-  ModifyIModel = 1 << 2,
-  ManageResources = 1 << 3,
-  ManageVersions = 1 << 4,
-}
-
-/** Client API to access the connect services. */
-export class RbacClient extends WsgClient {
-  public static readonly searchKey: string = "RBAC.URL";
-  public static readonly configRelyingPartyUri = "imjs_rbac_relying_party_uri";
-
-  public constructor() {
-    super("v2.4");
-  }
-
-  /**
-   * Gets name/key to query the service URLs from the URL Discovery Service ("Buddi")
-   * @returns Search key for the URL.
-   */
-  protected getUrlSearchKey(): string {
-    return RbacClient.searchKey;
-  }
-
-  /**
-   * Gets theRelyingPartyUrl for the service.
-   * @returns RelyingPartyUrl for the service.
-   */
-  protected getRelyingPartyUrl(): string {
-    if (Config.App.has(RbacClient.configRelyingPartyUri))
-      return Config.App.get(RbacClient.configRelyingPartyUri) + "/";
-
-    if (Config.App.getBoolean(WsgClient.configUseHostRelyingPartyUriAsFallback, true)) {
-      if (Config.App.has(WsgClient.configHostRelyingPartyUri))
-        return Config.App.get(WsgClient.configHostRelyingPartyUri) + "/";
-    }
-
-    throw new Error(`RelyingPartyUrl not set. Set it in Config.App using key ${RbacClient.configRelyingPartyUri}`);
-  }
-
-  /**
-   * Gets connect projects accessible to the authorized user.
-   * @param token Delegation token of the authorized user.
-   * @param queryOptions Query options. Use the mapped EC property names in the query strings and not the TypeScript property names.
-   * @returns Resolves to an array of projects.
-   */
-  public async getProjects(alctx: ActivityLoggingContext, token: AccessToken, queryOptions?: RbacRequestQueryOptions): Promise<RbacProject[]> {
-    const userInfo = token.getUserInfo();
-    if (!userInfo)
-      return Promise.reject(new Error("Invalid access token"));
-
-    const url: string = "/Repositories/BentleyCONNECT--Main/RBAC/User/" + userInfo.id + "/Project";
-    return this.getInstances<RbacProject>(alctx, RbacProject, token, url, queryOptions);
-  }
-
-  /**
-   * Gets all users in a project
-   * @param token Delegation token of the authorized user
-   * @param projectId Id of the project we want to get users for
-   * @param queryOptions Query options. Use the mapped EC property names in the query strings and not TypeScript property names.
-   * @returns Resolves to an array of users
-   */
-  public async getUsers(alctx: ActivityLoggingContext, token: AccessToken, projectId: string, queryOptions?: RbacRequestQueryOptions) {
-    const url: string = "/Repositories/BentleyCONNECT--Main/RBAC/Project/" + projectId + "/User";
-    return this.getInstances<RbacUser>(alctx, RbacUser, token, url, queryOptions);
-  }
-
-  /**
-   * Get the permissions relevant to the iModelHubService for a specified project
-   * @param token Delegation token of the authorized user.
-   * @param projectId Id of the specified project.
-   */
-  public async getIModelHubPermissions(alctx: ActivityLoggingContext, token: AccessToken, projectId: string): Promise<IModelHubPermissions> {
-    alctx.enter();
-    const userInfo = token.getUserInfo();
-    if (!userInfo)
-      return Promise.reject(new Error("Invalid access token"));
-
-    const relativeUrlPath: string = "/Repositories/BentleyCONNECT--Main/RBAC/User/" + userInfo.id + "/Project";
-    const url: string = await this.getUrl(alctx) + relativeUrlPath;
-    alctx.enter();
-
-    const iModelHubServiceGPRId = 2485;
-    const filterStr = `$id+eq+'${projectId}'+and+Permission.ServiceGPRId+eq+${iModelHubServiceGPRId}`;
-    const options: any = {
-      method: "GET",
-      headers: { authorization: token.toTokenString() },
-      qs: {
-        $select: "Permission.$id",
-        $filter: filterStr,
-      },
-    };
-
-    await this.setupOptionDefaults(options);
-
-    const res: Response = await request(alctx, url, options);
-    alctx.enter();
-
-    if (!res.body || !res.body.hasOwnProperty("instances"))
-      return Promise.reject(new Error("Expected an array of instances to be returned"));
-
-    const instances = res.body.instances;
-    if (!instances || instances.length !== 1)
-      return Promise.reject(new Error("Project with specified id was not found"));
-
-    let permissions: IModelHubPermissions = IModelHubPermissions.None;
-    for (const relationshipInstance of instances[0].relationshipInstances) {
-      switch (relationshipInstance.relatedInstance.instanceId) {
-        case "IMHS_Create_iModel":
-          permissions = permissions | IModelHubPermissions.CreateIModel;
-          break;
-        case "IMHS_Read_iModel":
-          permissions = permissions | IModelHubPermissions.ReadIModel;
-          break;
-        case "IMHS_Modify_iModel":
-          permissions = permissions | IModelHubPermissions.ModifyIModel;
-          break;
-        case "IMHS_ManageResources":
-          permissions = permissions | IModelHubPermissions.ManageResources;
-          break;
-        case "IMHS_Manage_Versions":
-          permissions = permissions | IModelHubPermissions.ManageVersions;
-          break;
-        default:
-      }
-    }
-
-    return permissions;
-  }
-
 }
 
 /** Client API to access the connect services. */

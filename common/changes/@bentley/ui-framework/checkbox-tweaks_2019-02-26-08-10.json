@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Removed rowHeight function from ModelSelector, because heights changed to default.",
+      "packageName": "@bentley/ui-framework",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-framework",
+  "email": "elonas.seviakovas@bentley.com"
+}

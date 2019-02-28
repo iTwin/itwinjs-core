@@ -4,18 +4,19 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module RpcInterface */
 
-import { Logger, Id64String, Id64Set, Id64, assert, ActivityLoggingContext, OpenMode } from "@bentley/bentleyjs-core";
+import { ActivityLoggingContext, assert, Id64, Id64Set, Id64String, Logger, OpenMode, IModelStatus } from "@bentley/bentleyjs-core";
+import { Range3dProps, Range3d } from "@bentley/geometry-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import {
-  EntityQueryParams, RpcInterface, RpcManager, IModel, IModelReadRpcInterface, IModelToken,
-  ModelProps, ElementProps, SnapRequestProps, SnapResponseProps, EntityMetaData, ViewStateProps, ImageSourceFormat,
-  IModelCoordinatesResponseProps, GeoCoordinatesResponseProps, PageOptions,
+  ElementProps, EntityMetaData, EntityQueryParams, GeoCoordinatesResponseProps, ImageSourceFormat, IModel,
+  IModelCoordinatesResponseProps, IModelReadRpcInterface, IModelToken, ModelProps, PageOptions, RpcInterface, RpcManager,
+  SnapRequestProps, SnapResponseProps, ViewStateProps,
 } from "@bentley/imodeljs-common";
-import { IModelDb, OpenParams } from "../IModelDb";
-import { OpenIModelDbMemoizer } from "./OpenIModelDbMemoizer";
-import { SpatialCategory } from "../Category";
-import { DictionaryModel } from "../Model";
 import { KeepBriefcase } from "../BriefcaseManager";
+import { SpatialCategory } from "../Category";
+import { IModelDb, OpenParams } from "../IModelDb";
+import { DictionaryModel } from "../Model";
+import { OpenIModelDbMemoizer } from "./OpenIModelDbMemoizer";
 
 const loggingCategory = "imodeljs-backend.IModelReadRpcImpl";
 
@@ -51,6 +52,29 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     const rowCount: number = await iModelDb.queryRowCount(ecsql, bindings);
     Logger.logTrace(loggingCategory, "IModelDbRemoting.getRowCount", () => ({ ecsql, count: rowCount }));
     return rowCount;
+  }
+
+  public async queryModelRanges(iModelToken: IModelToken, modelIds: Id64Set): Promise<Range3dProps[]> {
+    const activityContext = ActivityLoggingContext.current; activityContext.enter();
+    const iModelDb: IModelDb = IModelDb.find(iModelToken);
+    const ranges: Range3dProps[] = [];
+    for (const id of modelIds) {
+      const val = iModelDb.nativeDb.queryModelExtents(JSON.stringify({ id: id.toString() }));
+      if (val.error) {
+        if (val.error.status === IModelStatus.NoGeometry) { // if there was no geometry, just return null range
+          ranges.push(new Range3d());
+          continue;
+        }
+
+        if (modelIds.size === 1)
+          throw val.error; // if they're asking for more than one model, don't throw on error.
+      }
+      const range = JSON.parse(val.result!);
+      if (range.modelExtents) {
+        ranges.push(range.modelExtents);
+      }
+    }
+    return ranges;
   }
 
   public async getModelProps(iModelToken: IModelToken, modelIds: Id64Set): Promise<ModelProps[]> {

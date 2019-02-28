@@ -50,7 +50,7 @@ export class OidcBrowserClient extends OidcClient implements IOidcFrontendClient
    * The application should use this method whenever a redirection happens - redirection typically causes
    * the re-initialization of a Single Page Application.
    */
-  private async handleRedirectCallback(): Promise<boolean> {
+  public async handleRedirectCallback(): Promise<boolean> {
     if (window.location.pathname !== this._redirectPath)
       return false;
 

@@ -118,9 +118,7 @@ describe("VertexLUT", () => {
     colors[0] = 0xffeeddcc;
     colors[1] = 0x00010203;
     colors[2] = 0x7f00ff00;
-    const colorIndices = new Uint16Array(3);
-    colorIndices[1] = 0x0001;
-    colorIndices[2] = 0xffee;
+    const colorIndices = [0, 0x0001, 0xffee];
     args.colors.initNonUniform(colors, colorIndices, true);
 
     expected[0][6] = 0x00; expected[0][7] = 0x00;

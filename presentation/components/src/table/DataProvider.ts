@@ -72,6 +72,7 @@ export class PresentationTableDataProvider extends ContentDataProvider implement
     super(props.imodel, props.ruleset, props.displayType || DefaultContentDisplayTypes.GRID);
     this._pages = new PageContainer(props.pageSize || TABLE_DATA_PROVIDER_DEFAULT_PAGE_SIZE,
       props.cachedPagesCount || TABLE_DATA_PROVIDER_DEFAULT_CACHED_PAGES_COUNT);
+    this.pagingSize = props.pageSize || TABLE_DATA_PROVIDER_DEFAULT_PAGE_SIZE;
   }
   /**
    * `ECExpression` for filtering data in the table.
