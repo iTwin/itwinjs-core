@@ -9,6 +9,7 @@ import {
   Viewport,
 } from "@bentley/imodeljs-frontend";
 import { createCheckBox } from "./CheckBox";
+import { createNumericInput } from "./NumericInput";
 
 const enum StatIndex {
   Active,
@@ -94,28 +95,21 @@ export class StatsTracker {
     label.innerText = "Max Active Requests: ";
     div.appendChild(label);
 
-    const input = document.createElement("input") as HTMLInputElement;
-    input.style.display = "inline";
-    input.type = "number";
-    input.min = "0";
-    input.id = "maxActiveRequests";
-    input.step = "1";
-    input.value = IModelApp.tileAdmin.maxActiveRequests.toString();
-    input.onchange = () => this.updateMaxActive(input);
-    div.appendChild(input);
+    createNumericInput({
+      parent: div,
+      id: "maxActiveRequests",
+      display: "inline",
+      min: 0,
+      step: 1,
+      value: IModelApp.tileAdmin.maxActiveRequests,
+      handler: (value, _input) => this.updateMaxActive(value),
+    });
 
     parent.appendChild(div);
   }
 
-  private updateMaxActive(input: HTMLInputElement): void {
-    const admin = IModelApp.tileAdmin;
-    try {
-      admin.maxActiveRequests = Number.parseInt(input.value, 10);
-    } catch (_ex) {
-      //
-    }
-
-    input.value = admin.maxActiveRequests.toString();
+  private updateMaxActive(value: number): void {
+    IModelApp.tileAdmin.maxActiveRequests = value;
   }
 
   private clearInterval(): void {

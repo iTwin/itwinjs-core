@@ -81,6 +81,7 @@ export class ViewAttributes {
     this.addViewFlagAttribute(flagsDiv, "Clip Volume", "clipVolume", true);
 
     this.addLightingToggle(flagsDiv);
+    this.addCameraToggle(flagsDiv);
 
     this.addEnvAttribute(flagsDiv, "Sky Box", "sky");
     this.addEnvAttribute(flagsDiv, "Ground Plane", "ground");
@@ -135,8 +136,29 @@ export class ViewAttributes {
     const update = (view: ViewState) => {
       const vf = view.viewFlags;
       const visible = view.is3d() && RenderMode.SmoothShade === vf.renderMode;
+      elems.div.style.display = visible ? "block" : "none";
       if (visible)
         elems.checkbox.checked = vf.solarLight || vf.cameraLights || vf.sourceLights;
+    };
+
+    this._updates.push(update);
+  }
+
+  private addCameraToggle(parent: HTMLElement): void {
+    const elems = this.addCheckbox("Camera", (enabled: boolean) => {
+      if (enabled)
+        this._vp.turnCameraOn();
+      else
+        (this._vp.view as ViewState3d).turnCameraOff();
+
+      this.sync();
+    }, parent);
+
+    const update = (view: ViewState) => {
+      const visible = view.is3d() && view.allow3dManipulations();
+      elems.div.style.display = visible ? "block" : "none";
+      if (visible)
+        elems.checkbox.checked = this._vp.isCameraOn;
     };
 
     this._updates.push(update);
