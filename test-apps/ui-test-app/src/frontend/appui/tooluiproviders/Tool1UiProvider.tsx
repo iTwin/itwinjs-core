@@ -7,7 +7,7 @@ import * as React from "react";
 import { ConfigurableUiManager, ConfigurableCreateInfo, ToolUiProvider } from "@bentley/ui-framework";
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
 
-import { ColorSwatch } from "@bentley/ui-components";
+import { ColorSwatch, HueSlider, HSLAColor } from "@bentley/ui-components";
 import { ToolAssistanceItem, ToolAssistanceSeparator } from "@bentley/ui-ninezone";
 import { SampleAppIModelApp } from "../..";
 
@@ -23,13 +23,32 @@ class Tool1UiProvider extends ToolUiProvider {
   }
 }
 
-class Tool1Settings extends React.Component {
+interface State {
+  hsl: HSLAColor;
+}
+
+class Tool1Settings extends React.Component<{}, State> {
+  constructor(props: any) {
+    super(props);
+    this.state = { hsl: new HSLAColor(59, 1.0, .50, 1) };
+  }
+
   private _handleColorChange = (color: string) => {
     const msg = `Color set to ${color}`;
     IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
   }
 
+  private _handleHueChange = (hue: HSLAColor) => {
+    const msg = `Hue set to ${JSON.stringify(hue)}`;
+    IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
+    this.setState({ hsl: hue });
+  }
+
   public render(): React.ReactNode {
+    // const hueDivStyle: React.CSSProperties = {
+    //   height: `120px`,
+    // };
+
     return (
       <div>
         <table>
@@ -78,13 +97,20 @@ class Tool1Settings extends React.Component {
               <td>Brown</td>
               <td> <ColorSwatch color="hsl(59,67%,30%)" onColorPick={this._handleColorChange} round={true} /> </td>
             </tr>
+            <tr>
+              <td>Hue</td>
+              <td> <HueSlider hsl={this.state.hsl} onHueChange={this._handleHueChange} isHorizontal={true} /> </td>
+            </tr>
           </tbody>
         </table>
-      </div>
+      </div >
     );
   }
 }
 
+/*
+              <td> <div style={hueDivStyle}><HueSlider hsl={this.state.hsl} onHueChange={this._handleHueChange} isHorizontal={false} /></div> </td>
+*/
 class Tool1Assistance extends React.Component {
   public render(): React.ReactNode {
     return (
