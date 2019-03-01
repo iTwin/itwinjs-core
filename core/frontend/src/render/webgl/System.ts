@@ -808,11 +808,7 @@ export class System extends RenderSystem {
 
   // Ensure *something* is bound to suppress 'no texture assigned to unit x' warnings.
   public ensureSamplerBound(uniform: UniformHandle, unit: TextureUnit): void {
-    const index = unit - TextureUnit.Zero;
-    if (undefined === this._textureBindings[index])
-      this.lineCodeTexture!.bindSampler(uniform, unit);
-    else
-      uniform.setUniform1i(index); // use whatever's already bound - it won't actually be sampled.
+    this.lineCodeTexture!.bindSampler(uniform, unit);
   }
 
   public disposeTexture(texture: WebGLTexture) {
