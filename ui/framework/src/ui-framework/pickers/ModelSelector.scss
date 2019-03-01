@@ -202,7 +202,9 @@
 
     .modelselector-content {
       height: 100%;
+      margin-bottom: 10px;
+      border: 1px solid #ccc;
+      overflow: hidden;
     }
-
   }
 }
