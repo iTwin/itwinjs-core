@@ -5,32 +5,49 @@
 
 import * as React from "react";
 import { IModelApp } from "@bentley/imodeljs-frontend";
+import { MyAppFrontend } from "../../api/MyAppFrontend";
 
 import "./RulesetSelector.css";
 
 export interface RulesetSelectorProps {
-  availableRulesets: string[];
-  onRulesetSelected?: (rulesetId: string) => void;
+  onRulesetSelected?: (rulesetId?: string) => void;
 }
-export default class RulesetSelector extends React.Component<RulesetSelectorProps> {
+export interface RulesetSelectorState {
+  availableRulesets?: string[];
+  activeRulesetId?: string;
+}
+export default class RulesetSelector extends React.Component<RulesetSelectorProps, RulesetSelectorState> {
   constructor(props: RulesetSelectorProps) {
     super(props);
-    if (props.onRulesetSelected && props.availableRulesets.length > 0)
-      props.onRulesetSelected(props.availableRulesets[0]);
+    this.state = {};
+  }
+  public componentDidMount() {
+    // tslint:disable-next-line: no-floating-promises
+    this.initAvailableRulesets();
+  }
+  private async initAvailableRulesets() {
+    const rulesetIds = await MyAppFrontend.getAvailableRulesets();
+    const activeRulesetId = rulesetIds.length > 0 ? rulesetIds[0] : undefined;
+    this.setState({ availableRulesets: rulesetIds, activeRulesetId });
+  }
+  public componentDidUpdate(_prevProps: RulesetSelectorProps, prevState: RulesetSelectorState) {
+    if (this.props.onRulesetSelected && this.state.activeRulesetId !== prevState.activeRulesetId)
+      this.props.onRulesetSelected(this.state.activeRulesetId);
   }
   // tslint:disable-next-line:naming-convention
   private onSelectedRulesetIdChanged = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    if (this.props.onRulesetSelected)
-      this.props.onRulesetSelected(e.target.value);
+    this.setState({ activeRulesetId: e.target.value });
   }
   public render() {
-    if (0 === this.props.availableRulesets.length)
+    if (!this.state.availableRulesets)
+      return (<div className="RulesetSelector">{IModelApp.i18n.translate("Sample:controls.notifications.loading")}</div>);
+    if (0 === this.state.availableRulesets.length)
       return (<div className="RulesetSelector">{IModelApp.i18n.translate("Sample:controls.notifications.no-available-rulesets")}</div>);
     return (
       <div className="RulesetSelector">
         {IModelApp.i18n.translate("Sample:controls.notifications.select-ruleset")}:
         <select onChange={this.onSelectedRulesetIdChanged}>
-          {this.props.availableRulesets.map((rulesetId: string) => (
+          {this.state.availableRulesets.map((rulesetId: string) => (
             <option value={rulesetId} key={rulesetId}>{rulesetId}</option>
           ))}
         </select>

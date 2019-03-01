@@ -182,7 +182,7 @@ export default class App extends React.Component<{}, State> {
           <h2>{IModelApp.i18n.translate("Sample:welcome-message")}</h2>
         </div>
         <IModelSelector onIModelSelected={this.onIModelSelected} />
-        <RulesetSelector availableRulesets={["Items", "Classes"]} onRulesetSelected={this.onRulesetSelected} />
+        <RulesetSelector onRulesetSelected={this.onRulesetSelected} />
         {imodelComponents}
       </div>
     );

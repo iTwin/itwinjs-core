@@ -6,10 +6,6 @@
       "additionalProperties": false,
       "description": "Returns all available instance nodes filtered only by the\n`supportedSchemas` properties of the specification or the ruleset.",
       "properties": {
-        "alwaysReturnsChildren": {
-          "description": "This tells the rules engine that specification always returns nodes.\n\nNote: setting this flag to `true` improves performance.",
-          "type": "boolean"
-        },
         "doNotSort": {
           "description": "Set this flag to `true` to suppress default sorting of ECInstances returned by this specification.\n\nNote: setting this flag to `true` improves performance.",
           "type": "boolean"
@@ -21,6 +17,15 @@
         "groupByLabel": {
           "description": "Group instances by label. Defaults to `true`.",
           "type": "boolean"
+        },
+        "hasChildren": {
+          "description": "This tells the rules engine that nodes produced using this\nspecification always or never have children. Defaults to `Unknown`.\n\nNote: setting this flag to `Always` or `Never` improves performance.",
+          "enum": [
+            "Always",
+            "Never",
+            "Unknown"
+          ],
+          "type": "string"
         },
         "hideIfNoChildren": {
           "description": "Hide nodes if they don't have children.",
@@ -69,10 +74,6 @@
       "additionalProperties": false,
       "description": "Returns all related instance nodes for parent ECInstance node.\n\nPrecondition: can be used only if parent node is ECInstance node. If there is\nno immediate parent instance node it will go up until it finds one.",
       "properties": {
-        "alwaysReturnsChildren": {
-          "description": "This tells the rules engine that specification always returns nodes.\n\nNote: setting this flag to `true` improves performance.",
-          "type": "boolean"
-        },
         "doNotSort": {
           "description": "Set this flag to `true` to suppress default sorting of ECInstances returned by this specification.\n\nNote: setting this flag to `true` improves performance.",
           "type": "boolean"
@@ -84,6 +85,15 @@
         "groupByLabel": {
           "description": "Group instances by label. Defaults to `true`.",
           "type": "boolean"
+        },
+        "hasChildren": {
+          "description": "This tells the rules engine that nodes produced using this\nspecification always or never have children. Defaults to `Unknown`.\n\nNote: setting this flag to `Always` or `Never` improves performance.",
+          "enum": [
+            "Always",
+            "Never",
+            "Unknown"
+          ],
+          "type": "string"
         },
         "hideIfNoChildren": {
           "description": "Hide nodes if they don't have children.",
@@ -174,11 +184,11 @@
           "type": "string"
         },
         "defaultValue": {
-          "description": "Default value to use for the check box state",
+          "description": "Default value to use for the check box state\n\nNote: Only makes sense when *not* bound to an ECProperty.",
           "type": "boolean"
         },
         "isEnabled": {
-          "description": "Indicates whether check box is enabled or disabled.\n\nNote: Only makes sense when not bound to an ECProperty.",
+          "description": "Indicates whether check box is enabled or disabled.",
           "type": [
             "string",
             "boolean"
@@ -205,7 +215,7 @@
           "type": "string"
         },
         "useInversedPropertyValue": {
-          "description": "Should property value be inversed for the check box state.",
+          "description": "Should property value be inversed for the check box state.\n\nNote: Only makes sense when bound to an ECProperty.",
           "type": "boolean"
         }
       },
@@ -638,10 +648,6 @@
       "additionalProperties": false,
       "description": "Returns a custom-defined node.",
       "properties": {
-        "alwaysReturnsChildren": {
-          "description": "This tells the rules engine that specification always returns nodes.\n\nNote: setting this flag to `true` improves performance.",
-          "type": "boolean"
-        },
         "description": {
           "description": "Description of the node. May be localized.",
           "type": "string"
@@ -649,6 +655,15 @@
         "doNotSort": {
           "description": "Set this flag to `true` to suppress default sorting of ECInstances returned by this specification.\n\nNote: setting this flag to `true` improves performance.",
           "type": "boolean"
+        },
+        "hasChildren": {
+          "description": "This tells the rules engine that nodes produced using this\nspecification always or never have children. Defaults to `Unknown`.\n\nNote: setting this flag to `Always` or `Never` improves performance.",
+          "enum": [
+            "Always",
+            "Never",
+            "Unknown"
+          ],
+          "type": "string"
         },
         "hideIfNoChildren": {
           "description": "Hide nodes if they don't have children.",
@@ -707,10 +722,6 @@
       "additionalProperties": false,
       "description": "Returns nodes for instances which are returned by an ECSQL query.\n\nNote: this specification is formerly known as `SearchResultInstanceNodesSpecification`.",
       "properties": {
-        "alwaysReturnsChildren": {
-          "description": "This tells the rules engine that specification always returns nodes.\n\nNote: setting this flag to `true` improves performance.",
-          "type": "boolean"
-        },
         "doNotSort": {
           "description": "Set this flag to `true` to suppress default sorting of ECInstances returned by this specification.\n\nNote: setting this flag to `true` improves performance.",
           "type": "boolean"
@@ -722,6 +733,15 @@
         "groupByLabel": {
           "description": "Group instances by label. Defaults to `true`.",
           "type": "boolean"
+        },
+        "hasChildren": {
+          "description": "This tells the rules engine that nodes produced using this\nspecification always or never have children. Defaults to `Unknown`.\n\nNote: setting this flag to `Always` or `Never` improves performance.",
+          "enum": [
+            "Always",
+            "Never",
+            "Unknown"
+          ],
+          "type": "string"
         },
         "hideIfNoChildren": {
           "description": "Hide nodes if they don't have children.",
@@ -853,7 +873,7 @@
           "type": "string"
         },
         "groups": {
-          "description": "Specifications of grouping which should be applied to maching ECInstances",
+          "description": "Specifications of grouping which should be applied to matching ECInstances",
           "items": {
             "anyOf": [
               {
@@ -969,10 +989,6 @@
       "additionalProperties": false,
       "description": "Returns all instance nodes of specified ECClasses.",
       "properties": {
-        "alwaysReturnsChildren": {
-          "description": "This tells the rules engine that specification always returns nodes.\n\nNote: setting this flag to `true` improves performance.",
-          "type": "boolean"
-        },
         "arePolymorphic": {
           "description": "Should all `classes` be handled polymorphically.",
           "type": "boolean"
@@ -1002,6 +1018,15 @@
         "groupByLabel": {
           "description": "Group instances by label. Defaults to `true`.",
           "type": "boolean"
+        },
+        "hasChildren": {
+          "description": "This tells the rules engine that nodes produced using this\nspecification always or never have children. Defaults to `Unknown`.\n\nNote: setting this flag to `Always` or `Never` improves performance.",
+          "enum": [
+            "Always",
+            "Never",
+            "Unknown"
+          ],
+          "type": "string"
         },
         "hideIfNoChildren": {
           "description": "Hide nodes if they don't have children.",
@@ -1419,10 +1444,6 @@
       "additionalProperties": false,
       "description": "Returns related instance nodes of specified related ECClasses.\n\nPrecondition: can be used only if parent node is ECInstance\nnode. If there is no immediate parent instance node it will go up until it finds one.",
       "properties": {
-        "alwaysReturnsChildren": {
-          "description": "This tells the rules engine that specification always returns nodes.\n\nNote: setting this flag to `true` improves performance.",
-          "type": "boolean"
-        },
         "doNotSort": {
           "description": "Set this flag to `true` to suppress default sorting of ECInstances returned by this specification.\n\nNote: setting this flag to `true` improves performance.",
           "type": "boolean"
@@ -1434,6 +1455,15 @@
         "groupByLabel": {
           "description": "Group instances by label. Defaults to `true`.",
           "type": "boolean"
+        },
+        "hasChildren": {
+          "description": "This tells the rules engine that nodes produced using this\nspecification always or never have children. Defaults to `Unknown`.\n\nNote: setting this flag to `Always` or `Never` improves performance.",
+          "enum": [
+            "Always",
+            "Never",
+            "Unknown"
+          ],
+          "type": "string"
         },
         "hideIfNoChildren": {
           "description": "Hide nodes if they don't have children.",
@@ -1787,8 +1817,10 @@
       "properties": {
         "acceptableClassNames": {
           "description": "Filter selected nodes by specified class names. All classes are\naccepted if not specified.",
-          "pattern": "^[\\w\\d]+$",
-          "type": "string"
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
         },
         "acceptablePolymorphically": {
           "description": "Should `acceptableClassNames` property be checked polymorphically. If true, all derived\nclasses are accepted as well.",
@@ -1807,7 +1839,7 @@
           "type": "array"
         },
         "onlyIfNotHandled": {
-          "description": "Identifies whether we should ignore this specification if there is already existing specification\nwith higher `priority` that already provides content.",
+          "description": "Identifies whether we should ignore this specification if there is already an existing specification\nwith higher `priority` that already provides content.",
           "type": "boolean"
         },
         "priority": {
@@ -1912,8 +1944,7 @@
       "description": "Rule to override default node style and dynamically define a foreground/background\ncolors and a font style for a particular nodes.",
       "properties": {
         "backColor": {
-          "description": "Background color that should be used for node. Supports on of the following formats:\n- color name (`Red`, `Blue`, etc.)\n- `rgb(255, 255, 255)`\n- `#0F0F0F`",
-          "pattern": "^(\\w+|rgb\\(\\d{1,3}, *\\d{1,3}, *\\d{1,3}\\)|#[0-9a-fA-F]{6})$",
+          "description": "Background color that should be used for node. The value should be an ECExpression\nwhose result would evaluate to one the following formats:\n- color name (`Red`, `Blue`, etc.)\n- `rgb(255, 255, 255)`\n- `#0F0F0F`",
           "type": "string"
         },
         "condition": {
@@ -1921,18 +1952,11 @@
           "type": "string"
         },
         "fontStyle": {
-          "description": "Font style that should be used for nodes that meet the condition.\nDefaults to `FontStyle.Regular`.",
-          "enum": [
-            "Bold",
-            "Italic",
-            "Italic,Bold",
-            "Regular"
-          ],
+          "description": "Font style that should be used for node. The value should be an ECExpression\nwhose result would evaluate to one the following values:\n- `\"Bold\"`\n- `\"Italic\"`\n- `\"Italic,Bold\"`\n- `\"Regular\"`\n\nDefaults to `\"FontStyle.Regular\"`.",
           "type": "string"
         },
         "foreColor": {
-          "description": "Foreground color that should be used for node. Supports on of the following formats:\n- color name (`Red`, `Blue`, etc.)\n- `rgb(255, 255, 255)`\n- `#0F0F0F`",
-          "pattern": "^(\\w+|rgb\\(\\d{1,3}, *\\d{1,3}, *\\d{1,3}\\)|#[0-9a-fA-F]{6})$",
+          "description": "Foreground color that should be used for node. The value should be an ECExpression\nwhose result would evaluate to one the following formats:\n- color name (`Red`, `Blue`, etc.)\n- `rgb(255, 255, 255)`\n- `#0F0F0F`",
           "type": "string"
         },
         "onlyIfNotHandled": {

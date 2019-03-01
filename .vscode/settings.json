@@ -193,5 +193,10 @@
     "typescriptreact",
     "xml",
     "yml"
-  ]
+  ],
+  "markdownlint.config": {
+    "MD024": {
+      "allow_different_nesting": true
+    }
+  }
 }

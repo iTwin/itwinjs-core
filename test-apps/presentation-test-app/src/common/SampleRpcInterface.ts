@@ -15,4 +15,5 @@ export default abstract class SampleRpcInterface extends RpcInterface {
   public static getClient(): SampleRpcInterface { return RpcManager.getClientForInterface(SampleRpcInterface); }
 
   public async getSampleImodels(): Promise<string[]> { return this.forward(arguments); }
+  public async getAvailableRulesets(): Promise<string[]> { return this.forward(arguments); }
 }
