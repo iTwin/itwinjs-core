@@ -8,19 +8,22 @@ import * as React from "react";
 import * as _ from "lodash";
 import classnames from "classnames";
 import { ListItem, ListItemType } from "./ListPicker";
-import { IModelApp, Viewport, SpatialViewState, SpatialModelState, SelectedViewportChangedArgs, IModelConnection } from "@bentley/imodeljs-frontend";
-import { ModelQueryParams, ModelProps } from "@bentley/imodeljs-common";
-import { UiFramework } from "../UiFramework";
+import "./ModelSelector.scss";
 import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager";
 import { ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl";
+import { UiFramework } from "../UiFramework";
 import { WidgetControl } from "../widgets/WidgetControl";
-import { Tree, FilteringInput, TreeNodeItem, PageOptions, DelayLoadedTreeNodeItem, TreeDataChangesListener, SelectionMode } from "@bentley/ui-components";
-import "./ModelSelector.scss";
-import { PresentationTreeDataProvider, treeWithFilteringSupport, IPresentationTreeDataProvider } from "@bentley/presentation-components";
-import { Presentation } from "@bentley/presentation-frontend";
-import { RegisteredRuleset, NodeKey, NodePathElement, isInstanceNodeKey } from "@bentley/presentation-common";
+import { ModelQueryParams, ModelProps } from "@bentley/imodeljs-common";
+import { BeEvent, Id64String } from "@bentley/bentleyjs-core";
+import { IModelApp, Viewport, ViewState, SpatialViewState, SpatialModelState, SelectedViewportChangedArgs, IModelConnection } from "@bentley/imodeljs-frontend";
+import { Tree, FilteringInput, TreeNodeItem, PageOptions, DelayLoadedTreeNodeItem, SelectionMode, TreeDataChangesListener } from "@bentley/ui-components";
 import { CheckBoxState, LoadingSpinner, SpinnerSize } from "@bentley/ui-core";
-import { BeEvent } from "@bentley/bentleyjs-core";
+import { RegisteredRuleset, NodeKey, NodePathElement, isInstanceNodeKey } from "@bentley/presentation-common";
+import { treeWithFilteringSupport, PresentationTreeDataProvider, IPresentationTreeDataProvider } from "@bentley/presentation-components";
+import { Presentation } from "@bentley/presentation-frontend";
+
+export type TreeNodePromise = Promise<DelayLoadedTreeNodeItem | undefined>;
+export type TreeNodeArrayPromise = Promise<DelayLoadedTreeNodeItem[]>;
 
 /** Model Group used by [[ModelSelectorWidget]] */
 export interface ModelGroup {
@@ -30,20 +33,6 @@ export interface ModelGroup {
   initialized: boolean;
   updateState: () => void;
   setEnabled: (item: ListItem[], enabled: boolean) => void;
-}
-
-/** Properties for the [[ModelSelectorWidget]] component */
-export interface ModelSelectorWidgetProps {
-  iModelConnection: IModelConnection;
-  allViewports?: boolean;
-}
-
-/** State for the [[ModelSelectorWidget]] component */
-export interface ModelSelectorWidgetState {
-  expand: boolean;
-  activeGroup: ModelGroup;
-  showOptions: boolean;
-  activeTree: ModelSelectorTree;
 }
 
 /** Tree information used in the [[ModelSelectorWidget]] component */
@@ -112,7 +101,7 @@ class ModelSelectorDataProvider implements IPresentationTreeDataProvider {
    * @param pageOptions Paging options
    * @returns TreeNodeItems to be displayed
    */
-  public getNodes = _.memoize(async (parentNode?: TreeNodeItem, pageOptions?: PageOptions): Promise<DelayLoadedTreeNodeItem[]> => {
+  public getNodes = _.memoize(async (parentNode?: TreeNodeItem, pageOptions?: PageOptions): TreeNodeArrayPromise => {
     const nodes = await this._baseProvider.getNodes(parentNode, pageOptions);
     nodes.forEach((node: DelayLoadedTreeNodeItem) => {
       node.isCheckboxVisible = true;
@@ -127,6 +116,22 @@ class ModelSelectorDataProvider implements IPresentationTreeDataProvider {
     });
     return nodes;
   });
+}
+
+/** Properties for the [[ModelSelectorWidget]] component */
+export interface ModelSelectorWidgetProps {
+  iModelConnection: IModelConnection;
+  allViewports?: boolean;
+  activeView?: Viewport;
+}
+
+/** State for the [[ModelSelectorWidget]] component */
+export interface ModelSelectorWidgetState {
+  expand: boolean;
+  activeGroup: ModelGroup;
+  showOptions: boolean;
+  activeTree: ModelSelectorTree;
+  activeView: Viewport;
 }
 
 /** Model Selector [[WidgetControl]] */
@@ -146,23 +151,48 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
   private _isMounted = false;
   private _modelTree?: ModelSelectorTree;
   private _categoryTree?: ModelSelectorTree;
+  private _currentSelectorsState: ViewSelectorsState;
 
   /** Creates a ModelSelectorWidget */
   constructor(props: ModelSelectorWidgetProps) {
     super(props);
 
     this._initGroups();
-    this.state = { expand: false, activeGroup: this._groups[0], showOptions: false, activeTree: this._modelTree! };
+    this._initState();
     this.updateState(); // tslint:disable-line:no-floating-promises
+    this._currentSelectorsState = new ViewSelectorsState(this.state.activeView);
   }
 
   /** Initialize listeners and category/model rulesets */
   public componentDidMount() {
     this._isMounted = true;
     this._initialize(); // tslint:disable-line:no-floating-promises
+    this.state.activeView.onViewChanged.addListener(this._onViewChanged);
     this._removeSelectedViewportChanged = IModelApp.viewManager.onSelectedViewportChanged.addListener(this._handleSelectedViewportChanged);
   }
 
+  /** Update listener when viewport syncs with viewstate */
+  public componentDidUpdate(_prevProps: ModelSelectorWidgetProps, prevState: ModelSelectorWidgetState) {
+    if (this.state.activeView !== prevState.activeView) {
+      if (prevState.activeView)
+        prevState.activeView.onViewChanged.removeListener(this._onViewChanged);
+      if (this.state.activeView)
+        this.state.activeView.onViewChanged.addListener(this._onViewChanged);
+    }
+  }
+
+  /** Reload selected models and categories */
+  private _onViewChanged = () => {
+    const newSelectorsState = new ViewSelectorsState(this.state.activeView);
+    if (newSelectorsState.equals(this._currentSelectorsState))
+      return;
+
+    this._currentSelectorsState = newSelectorsState;
+    this._setModelsFromViewState(); // tslint:disable-line:no-floating-promises
+    this._setCategoriesFromViewState(); // tslint:disable-line:no-floating-promises
+  }
+
+  /** Initialize model and category states */
   private _initialize = async () => {
     this._initModelState();
     this._initCategoryState();
@@ -245,6 +275,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
       });
   }
 
+  /** Update node styling in tree */
   private changeNodeItemSelection(node: TreeNodeItem, isSelected: boolean) {
     if (!node.style) {
       node.style = {};
@@ -254,31 +285,25 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
     node.checkBoxState = isSelected ? CheckBoxState.On : CheckBoxState.Off;
   }
 
-  /** Set initial model selection state based on ViewState */
+  /** Set model selection state based on ViewState */
   private _setModelsFromViewState = async () => {
     if (!IModelApp.viewManager)
       return;
 
-    const vp = IModelApp.viewManager.getFirstOpenView();
-    const view = vp!.view as SpatialViewState;
+    const view = this.state.activeView.view as SpatialViewState;
 
     const nodes = await this._modelTree!.dataProvider.getNodes();
-    const promises: Array<Promise<DelayLoadedTreeNodeItem | undefined>> = [];
+    const selectedNodePromises: TreeNodePromise[] = [];
+    const deselectedNodePromises: TreeNodePromise[] = [];
     this._groups[0].items.forEach((item: ListItem) => {
       if (view.modelSelector.models.has(item.key))
-        promises.push(this._getNodeFromItem(item, nodes));
+        selectedNodePromises.push(this._getNodeFromItem(item, nodes));
+      else
+        deselectedNodePromises.push(this._getNodeFromItem(item, nodes));
     });
 
-    const selectedNodes: string[] = [];
-    await Promise.all(promises).then((enabledNodes: Array<DelayLoadedTreeNodeItem | undefined>) => {
-      enabledNodes.forEach((node) => {
-        if (node) {
-          this.changeNodeItemSelection(node, true);
-          selectedNodes.push(node!.id);
-        }
-      });
-      this.state.activeTree.dataProvider.onTreeNodeChanged.raiseEvent(enabledNodes);
-    });
+    const selectedNodes = await this._enablePromisedNodes(selectedNodePromises);
+    this._disablePromisedNodes(deselectedNodePromises); // tslint:disable-line:no-floating-promises
 
     this.setState({
       activeTree: {
@@ -288,31 +313,25 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
     });
   }
 
-  /** Set initial category selection state based on ViewState */
+  /** Set category selection state based on ViewState */
   private _setCategoriesFromViewState = async () => {
     if (!IModelApp.viewManager)
       return;
 
-    const vp = IModelApp.viewManager.getFirstOpenView();
-    const view = vp!.view as SpatialViewState;
+    const view = this.state.activeView.view as SpatialViewState;
 
     const nodes = await this._categoryTree!.dataProvider.getNodes();
-    const promises: Array<Promise<DelayLoadedTreeNodeItem | undefined>> = [];
+    const selectedNodePromises: TreeNodePromise[] = [];
+    const deselectedNodePromises: TreeNodePromise[] = [];
     this._groups[0].items.forEach((item: ListItem) => {
       if (view.categorySelector.categories.has(item.key))
-        promises.push(this._getNodeFromItem(item, nodes));
+        selectedNodePromises.push(this._getNodeFromItem(item, nodes));
+      else
+        deselectedNodePromises.push(this._getNodeFromItem(item, nodes));
     });
 
-    const selectedNodes: string[] = [];
-    await Promise.all(promises).then((enabledNodes: Array<DelayLoadedTreeNodeItem | undefined>) => {
-      enabledNodes.forEach((node) => {
-        if (node) {
-          this.changeNodeItemSelection(node, true);
-          selectedNodes.push(node!.id);
-        }
-      });
-      this.state.activeTree.dataProvider.onTreeNodeChanged.raiseEvent(enabledNodes);
-    });
+    const selectedNodes = await this._enablePromisedNodes(selectedNodePromises);
+    this._disablePromisedNodes(deselectedNodePromises); // tslint:disable-line:no-floating-promises
 
     this.setState({
       activeTree: {
@@ -323,6 +342,40 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
   }
 
   /**
+   * Fetch deselected nodes and disable them.
+   * @param deselectedNodePromises  Promises to execute in order to fetch deselected nodes
+   */
+  private _disablePromisedNodes = async (deselectedNodePromises: TreeNodePromise[]) => {
+    await Promise.all(deselectedNodePromises).then((enabledNodes: Array<DelayLoadedTreeNodeItem | undefined>) => {
+      const childrenPromises: TreeNodeArrayPromise[] = [];
+      enabledNodes.forEach((node) => {
+        childrenPromises.push(this.state.activeTree.dataProvider.getNodes(node));
+        if (node) {
+          this.changeNodeItemSelection(node, false);
+        }
+      });
+    });
+  }
+
+  /**
+   * Fetch selected nodes and enable them.
+   * @param selectedNodePromises  Promises to execute in order to fetch selected nodes
+   * @returns Promise of selectedNode IDs
+   */
+  private _enablePromisedNodes = async (selectedNodePromises: TreeNodePromise[]): Promise<string[]> => {
+    const selectedNodes: string[] = [];
+    await Promise.all(selectedNodePromises).then((enabledNodes: Array<DelayLoadedTreeNodeItem | undefined>) => {
+      enabledNodes.forEach((node) => {
+        if (node) {
+          this.changeNodeItemSelection(node, true);
+          selectedNodes.push(node.id);
+        }
+      });
+    });
+    return selectedNodes;
+  }
+
+  /**
    * Sets provided ruleset as new ruleset for tree.
    * @param activeRuleset Ruleset to provide to tree.
    */
@@ -330,9 +383,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
     if (!IModelApp.viewManager)
       return;
 
-    const vp = IModelApp.viewManager.getFirstOpenView();
-    const view = vp!.view as SpatialViewState;
-
+    const view = this.state.activeView.view as SpatialViewState;
     const viewType = view.is3d() ? "3d" : "2d";
     await Presentation.presentation.vars(ruleset.id).setString("ViewType", viewType); // tslint:disable-line:no-floating-promises
   }
@@ -348,10 +399,16 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
   }
 
   /** Initializes category/model groups and contents */
-  private _initGroups() {
+  private _initGroups = () => {
     this._groups = [];
     this._groups.push(this._getDefaultModelGroup());
     this._groups.push(this._getDefaultCategoryGroup());
+  }
+
+  /** Initializes state to default values */
+  private _initState = () => {
+    const view = this.props.activeView! || IModelApp.viewManager.getFirstOpenView()!;
+    this.state = { expand: false, activeGroup: this._groups[0], showOptions: false, activeTree: this._modelTree!, activeView: view };
   }
 
   /**
@@ -463,23 +520,13 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
    * @returns Nodes that have been selected
    */
   private _selectInitialEnabledItems = async (items: ListItem[], nodes: TreeNodeItem[]) => {
-    const selectedNodes = Array<string>();
-    const promises = Array<Promise<DelayLoadedTreeNodeItem | undefined>>();
+    const promises: TreeNodePromise[] = [];
     for (const item of items) {
       if (item.enabled)
         promises.push(this._getNodeFromItem(item, nodes));
     }
 
-    await Promise.all(promises).then((enabledNodes) => {
-      enabledNodes.forEach((node) => {
-        if (node) {
-          this.changeNodeItemSelection(node, true);
-          selectedNodes.push(node.id);
-        }
-      });
-      this.state.activeTree.dataProvider.onTreeNodeChanged.raiseEvent(enabledNodes);
-    });
-
+    const selectedNodes = await this._enablePromisedNodes(promises);
     return selectedNodes;
   }
 
@@ -499,7 +546,6 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
   private _setEnableAllItems = (enable: boolean) => {
     this.state.activeGroup.items.forEach((item) => {
       item.enabled = enable;
-      // this.state.activeGroup.setEnabled(item, enable);
     });
     this.state.activeGroup.setEnabled(this.state.activeGroup.items, enable);
     this.state.activeGroup.updateState();
@@ -531,11 +577,11 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
    */
   private _deselectAllNodes = async () => {
     const parents: TreeNodeItem[] = await this.state.activeTree!.dataProvider.getNodes();
-    const promises: Array<Promise<DelayLoadedTreeNodeItem[]>> = [];
+    const promises: TreeNodeArrayPromise[] = [];
 
     parents.forEach((parent) => {
       this.changeNodeItemSelection(parent, false);
-      promises.push(this.state.activeTree!.dataProvider.getNodes(parent));
+      promises.push(this.state.activeTree.dataProvider.getNodes(parent));
     });
     this.state.activeTree!.dataProvider.onTreeNodeChanged.raiseEvent(parents);
 
@@ -550,7 +596,6 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
 
     this._setEnableAllItems(false); // tslint:disable-line:no-floating-promises
   }
-
   /**
    * Asynchronously adds selection styling (checkbox, bold) to
    * every node and sets visibility of all items to display.
@@ -559,7 +604,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
   private _selectAllNodes = async (): Promise<string[]> => {
     const parents: TreeNodeItem[] = await this.state.activeTree!.dataProvider.getNodes();
     const nodeIds: string[] = [];
-    const promises: Array<Promise<DelayLoadedTreeNodeItem[]>> = [];
+    const promises: TreeNodeArrayPromise[] = [];
 
     parents.forEach((parent) => {
       if (!nodeIds.includes(parent.id)) {
@@ -624,7 +669,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
   private _invertAllNodes = async (): Promise<string[]> => {
     const parents: TreeNodeItem[] = await this.state.activeTree!.dataProvider.getNodes();
     const nodeIds: string[] = [];
-    const promises: Array<Promise<DelayLoadedTreeNodeItem[]>> = [];
+    const promises: TreeNodeArrayPromise[] = [];
 
     parents.forEach((parent) => {
       if (parent.checkBoxState === CheckBoxState.On) {
@@ -1162,6 +1207,37 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
       </div >
     );
   }
+}
+
+class ViewSelectorsState {
+  public readonly categorySelector: Set<Id64String>;
+  public readonly modelSelector: Set<Id64String>;
+
+  public constructor(vp?: Viewport) {
+    this.categorySelector = new Set(vp ? vp.view.categorySelector.categories : []);
+    this.modelSelector = vp ? getViewedModelIds(vp.view) : new Set();
+  }
+
+  public equals(other: ViewSelectorsState) {
+    return areSetsEqual(this.categorySelector, other.categorySelector)
+      && areSetsEqual(this.modelSelector, other.modelSelector);
+  }
+}
+
+function getViewedModelIds(viewState: ViewState): Set<Id64String> {
+  const ids = new Set<Id64String>();
+  viewState.forEachModel((m) => ids.add(m.id));
+  return ids;
+}
+
+function areSetsEqual<TValue>(lhs: Set<TValue>, rhs: Set<TValue>) {
+  if (lhs.size !== rhs.size)
+    return false;
+  for (const value of lhs) {
+    if (!rhs.has(value))
+      return false;
+  }
+  return true;
 }
 
 // tslint:disable-next-line:variable-name

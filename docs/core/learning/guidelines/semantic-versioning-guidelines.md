@@ -19,9 +19,13 @@ Given a `MAJOR.MINOR.PATCH` version number, a package producer must increment th
 - `MINOR` version when the public API has changed in a backwards-compatible way
 - `PATCH` version when you make backwards-compatible bug fixes
 
+> Note: A `MAJOR` version of `0` is for initial development and indicates that the API is not yet stable.
+The rules below only apply when the `MAJOR` version is >= 1.
+
 ### When to increment the MAJOR version
 
 Examples of incompatible changes that require incrementing the `MAJOR` version include:
+
 - Renaming a class or method
 - Removing a class or method
 - Changing the signature of a method
@@ -33,6 +37,7 @@ Note that incrementing the `MAJOR` version should reset the `MINOR` and `PATCH` 
 ### When to increment the MINOR version
 
 Examples of backwards-compatible changes that require incrementing the `MINOR` version include:
+
 - Adding a new class
 - Adding a new method
 - Adding a new optional parameter to a method
@@ -42,6 +47,7 @@ Note that incrementing the `MINOR` version should reset the `PATCH` version to `
 ### When to increment the PATCH version
 
 Examples of backwards-compatible changes that require incrementing the `PATCH` version include:
+
 - Making a bug fix
 - Updating documentation
 - Adding a static resource to the published package
@@ -58,6 +64,6 @@ These dependencies are maintained in the `package.json` of the consumer.
 
 | Dependency Type       | Example                        | Meaning |
 |-----------------------|--------------------------------|---------|
-| MINOR and PATCH range | "example-dependency": "^1.2.3" | Accept version 1.2.3 or greater with a matching `MAJOR` version. | 
-| PATCH range           | "example-dependency": "~1.2.3" | Accept version 1.2.3 or greater with matching `MAJOR` and `MINOR` versions. | 
+| MINOR and PATCH range | "example-dependency": "^1.2.3" | Accept version 1.2.3 or greater with a matching `MAJOR` version. |
+| PATCH range           | "example-dependency": "~1.2.3" | Accept version 1.2.3 or greater with matching `MAJOR` and `MINOR` versions. |
 | Exact                 | "example-dependency": "1.2.3"  | Accept only version 1.2.3 |

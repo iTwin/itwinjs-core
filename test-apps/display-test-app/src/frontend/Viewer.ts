@@ -16,7 +16,7 @@ import { RealityModelPicker } from "./RealityModelPicker";
 import { addSnapModes } from "./SnapModes";
 import { StandardRotations } from "./StandardRotations";
 import { TileLoadIndicator } from "./TileLoadIndicator";
-import { emphasizeSelectedElements } from "./FeatureOverrides";
+import { FeatureOverridesPanel, emphasizeSelectedElements } from "./FeatureOverrides";
 import { ToolBar, ToolBarDropDown, createImageButton, createToolButton } from "./ToolBar";
 import { ViewList, ViewPicker } from "./ViewPicker";
 import { ViewAttributesPanel } from "./ViewAttributes";
@@ -55,28 +55,35 @@ class DebugTools extends ToolBarDropDown {
     this._element.appendChild(createImageButton({
       src: "Warning_sign.svg",
       click: () => IncidentMarkerDemo.toggle(IModelApp.viewManager.selectedView!.iModel.projectExtents),
+      tooltip: "Test incident markers",
     }));
 
     this._element.appendChild(createToolButton({
       className: "bim-icon-viewbottom",
       click: () => toggleProjectExtents(IModelApp.viewManager.selectedView!.iModel),
+      tooltip: "Toggle project extents",
     }));
 
     this._element.appendChild(createToolButton({
       className: "bim-icon-savedview",
       click: () => saveImage(IModelApp.viewManager.selectedView!),
+      tooltip: "Save view as image",
     }));
 
     this._element.appendChild(createToolButton({
       className: "rd-icon-measure-distance",
       click: () => IModelApp.tools.run("DrawingAidTest.Points", IModelApp.viewManager.selectedView!), // ###TODO Fix the drop-down...
+      tooltip: "Test drawing aid tools",
     }));
 
-    this._element.appendChild(createToolButton({
-      className: "bim-icon-cancel",
-      click: () => emphasizeSelectedElements(IModelApp.viewManager.selectedView!),
-      tooltip: "Emphasize selected elements",
-    }));
+    const wantEmphasize = false;
+    if (wantEmphasize) {
+      this._element.appendChild(createToolButton({
+        className: "bim-icon-cancel",
+        click: () => emphasizeSelectedElements(IModelApp.viewManager.selectedView!),
+        tooltip: "Emphasize selected elements",
+      }));
+    }
 
     this._element.appendChild(createImageButton({
       src: "Markup.svg",
@@ -221,13 +228,6 @@ export class Viewer {
       createDropDown: async (container: HTMLElement) => Promise.resolve(new ViewAttributesPanel(this.viewport, container)),
     });
 
-    const toggleCamera = createImageButton({
-      src: "toggle-camera.svg",
-      click: () => IModelApp.tools.run("View.ToggleCamera", this.viewport),
-    });
-    this._3dOnly.push(toggleCamera);
-    this.toolBar.addItem(toggleCamera);
-
     this.toolBar.addItem(createImageButton({
       src: "fit-to-view.svg",
       click: () => IModelApp.tools.run("View.Fit", this.viewport, true),
@@ -268,6 +268,11 @@ export class Viewer {
     this.toolBar.addDropDown({
       className: "bim-icon-animation",
       createDropDown: async (container: HTMLElement) => new AnimationPanel(this.viewport, container),
+    });
+
+    this.toolBar.addDropDown({
+      className: "bim-icon-isolate",
+      createDropDown: async (container: HTMLElement) => new FeatureOverridesPanel(this.viewport, container),
     });
 
     this.toolBar.addDropDown({

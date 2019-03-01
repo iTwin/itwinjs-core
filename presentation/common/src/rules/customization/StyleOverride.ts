@@ -6,14 +6,6 @@
 
 import { RuleTypes, RuleBase, ConditionContainer } from "../Rule";
 
-/** Available font styles */
-export const enum FontStyle {
-  Bold = "Bold",
-  Italic = "Italic",
-  ItalicBold = "Italic,Bold",
-  Regular = "Regular",
-}
-
 /**
  * Rule to override default node style and dynamically define a foreground/background
  * colors and a font style for a particular nodes.
@@ -30,28 +22,32 @@ export interface StyleOverride extends RuleBase, ConditionContainer {
   condition?: string;
 
   /**
-   * Foreground color that should be used for node. Supports on of the following formats:
+   * Foreground color that should be used for node. The value should be an [ECExpression]($docs/learning/ECExpressions.md)
+   * whose result would evaluate to one the following formats:
    * - color name (`Red`, `Blue`, etc.)
    * - `rgb(255, 255, 255)`
    * - `#0F0F0F`
-   *
-   * @pattern ^(\w+|rgb\(\d{1,3}, *\d{1,3}, *\d{1,3}\)|#[0-9a-fA-F]{6})$
    */
   foreColor?: string;
 
   /**
-   * Background color that should be used for node. Supports on of the following formats:
+   * Background color that should be used for node. The value should be an [ECExpression]($docs/learning/ECExpressions.md)
+   * whose result would evaluate to one the following formats:
    * - color name (`Red`, `Blue`, etc.)
    * - `rgb(255, 255, 255)`
    * - `#0F0F0F`
-   *
-   * @pattern ^(\w+|rgb\(\d{1,3}, *\d{1,3}, *\d{1,3}\)|#[0-9a-fA-F]{6})$
    */
   backColor?: string;
 
   /**
-   * Font style that should be used for nodes that meet the condition.
-   * Defaults to [[FontStyle.Regular]].
+   * Font style that should be used for node. The value should be an [ECExpression]($docs/learning/ECExpressions.md)
+   * whose result would evaluate to one the following values:
+   * - `"Bold"`
+   * - `"Italic"`
+   * - `"Italic,Bold"`
+   * - `"Regular"`
+   *
+   * Defaults to `"FontStyle.Regular"`.
    */
-  fontStyle?: FontStyle;
+  fontStyle?: string;
 }

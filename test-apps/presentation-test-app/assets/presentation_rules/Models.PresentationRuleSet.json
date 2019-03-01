@@ -1,0 +1,100 @@
+{
+  "$schema": "../../node_modules/@bentley/presentation-common/Ruleset.schema.json",
+  "id": "Models",
+  "rules": [
+    {
+      "ruleType": "RootNodes",
+      "specifications": [
+        {
+          "specType": "InstanceNodesOfSpecificClasses",
+          "classes": [
+            {
+              "schemaName": "BisCore",
+              "classNames": [
+                "Subject"
+              ]
+            }
+          ],
+          "instanceFilter": "this.Parent = NULL",
+          "groupByClass": false,
+          "groupByLabel": false,
+          "hideNodesInHierarchy": true
+        }
+      ]
+    },
+    {
+      "ruleType": "ChildNodes",
+      "condition": "ParentNode.IsOfClass(\"Subject\", \"BisCore\")",
+      "specifications": [
+        {
+          "specType": "RelatedInstanceNodes",
+          "relationships": {
+            "schemaName": "BisCore",
+            "classNames": [
+              "ElementOwnsChildElements"
+            ]
+          },
+          "relatedClasses": {
+            "schemaName": "BisCore",
+            "classNames": [
+              "Subject",
+              "InformationPartitionElement"
+            ]
+          },
+          "requiredDirection": "Forward",
+          "groupByClass": false,
+          "groupByLabel": false,
+          "hideNodesInHierarchy": true
+        }
+      ]
+    },
+    {
+      "ruleType": "ChildNodes",
+      "condition": "ParentNode.IsOfClass(\"InformationPartitionElement\", \"BisCore\")",
+      "specifications": [
+        {
+          "specType": "RelatedInstanceNodes",
+          "relationships": {
+            "schemaName": "BisCore",
+            "classNames": [
+              "ModelModelsElement"
+            ]
+          },
+          "relatedClasses": {
+            "schemaName": "BisCore",
+            "classNames": [
+              "Model"
+            ]
+          },
+          "requiredDirection": "Backward",
+          "groupByClass": false,
+          "groupByLabel": false
+        }
+      ]
+    },
+    {
+      "ruleType": "ChildNodes",
+      "condition": "ParentNode.IsOfClass(\"Model\", \"BisCore\")",
+      "specifications": [
+        {
+          "specType": "RelatedInstanceNodes",
+          "relationships": {
+            "schemaName": "BisCore",
+            "classNames": [
+              "ModelOwnsSubModel"
+            ]
+          },
+          "relatedClasses": {
+            "schemaName": "BisCore",
+            "classNames": [
+              "Model"
+            ]
+          },
+          "requiredDirection": "Forward",
+          "groupByClass": false,
+          "groupByLabel": false
+        }
+      ]
+    }
+  ]
+}

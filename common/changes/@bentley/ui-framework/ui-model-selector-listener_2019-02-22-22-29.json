@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Update ModelSelector when changes are made to ViewState",
+      "packageName": "@bentley/ui-framework",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-framework",
+  "email": "Allison.Macdonald@bentley.com"
+}

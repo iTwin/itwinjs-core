@@ -30,7 +30,7 @@ The `@beta` release tag indicates that an API item has been released in an exper
 Third parties are encouraged to try it and provide feedback.
 However, *beta* API items should **NOT** be used in production as they still may change going forward.
 *Beta* API items are not part of the *supported contract* and changes to these API items do not follow the normal semantic versioning rules.
-*Beta* API items are included in the public SDK documentation.
+*Beta* API items and the comment after the `@beta` tag are included in the public SDK documentation.
 
 ### @alpha
 
@@ -59,7 +59,7 @@ The distinction is that *internal* indicates that the API item is never meant to
 The `@deprecated` release tags is used for API items that were formerly `@public` but are no longer optimal.
 Third parties should avoid *deprecated* API items if possible as they will likely be removed in the next major release.
 From the maintainer perspective, *deprecated* API items follow the same rules as *public* API items within the current major release.
-*Deprecated* API items are included in the public SDK documentation.
+*Deprecated* API items and the comment after the `@deprecated` tag are included in the public SDK documentation.
 
 ### Release Tag Summary
 
@@ -142,29 +142,29 @@ The release tag should be on its own line:
 *Internal* API items should include documentation that indicates why it is not *public* and what third parties should use instead.
 
 ```ts
-/** Explanation of why the API item is marked internal.
+/** Private explanation of why the API item is marked internal as a reminder to the maintainer or notice to someone perusing the source code.
  * @see Other public API item that third parties should use instead.
- * @internal
+ * @internal Comments can also go here.
  */
 ```
 
 Likewise, *deprecated* API items should include documentation that indicates what third parties should use instead.
 
 ```ts
-/** Explanation of why the API item has been marked deprecated.
+/** Original documentation comment is typically maintained here.
  * @see Other public API item that third parties should use instead.
- * @deprecated
+ * @deprecated Comment describing reason API item is deprecated and what should be done instead.
  */
 ```
 
 *Beta* and *alpha* API items should include a short reason for that classification.
 
 ```ts
-/** Sample description of an exported API item.
- * @beta Waiting for feedback from...
+/** Sample description of a beta API item.
+ * @beta Comment describing reason API item is beta that will be included in the public SDK documentation.
  */
 ```
 
 ```ts
- /** @alpha Prototype code. Not sure if this is the right approach or not. */
+ /** @alpha Private comment reminding maintainer why API item was marked alpha. */
 ```
