@@ -11,7 +11,7 @@
   cursor: pointer;
   position: relative;
   overflow: hidden;
-  background: $background-1;
+  background: $buic-background-control;
   border: {
     width: $button-stroke-width;
     color: $button-stroke-color;
@@ -29,7 +29,7 @@
   }
 
   &:active {
-    background: $primary-tone;
+    background: $buic-foreground-primary-tone;
 
     > .nz-gradient {
       width: 0;

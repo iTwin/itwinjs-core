@@ -4,14 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 @import "./style/index";
 
+@import "./_scrollbar";
+@import "./_z-index";
+
+@import "./inputs/index";
 @import "./button/index";
 @import "./expandable/index";
 @import "./icons/index";
-@import "./inputs/index";
-@import "./table/index";
 @import "./tabs/index";
 @import "./text/index";
-
-@import "./colors";
-@import "./_scrollbar";
-@import "./_z-index";

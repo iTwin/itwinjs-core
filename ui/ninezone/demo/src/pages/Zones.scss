@@ -2,7 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-@import "@bentley/ui-core/lib/ui-core/colors";
+@import "@bentley/ui-core/lib/ui-core/style/themecolors";
 @import "_customTheme";
 
 .nzdemo-pages-zones {
@@ -10,19 +10,19 @@
   font-size: 14px;
 
   .nzdemo-success {
-    color: $accent-base;
+    color: $buic-foreground-success;
   }
 
   .nzdemo-progress {
-    color: $primary-base;
+    color: $buic-foreground-primary;
   }
 
   .nzdemo-error {
-    color: $alert-base;
+    color: $buic-foreground-alert;
   }
 
   .nzdemo-warning {
-    color: rgb(241, 39, 18);
+    color: $buic-foreground-warning;
   }
 
   .nzdemo-favorite {

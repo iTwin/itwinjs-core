@@ -2,7 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-@import "@bentley/ui-core/lib/ui-core/colors";
+@import "@bentley/ui-core/lib/ui-core/style/themecolors";
 @import "_variables";
 
 .nz-footer-messageCenter-message {
@@ -22,5 +22,5 @@
   align-items: center;
   grid-template-columns: minmax(0, auto) 1fr;
   line-height: 16px;
-  color: $text-dark;
+  color: $buic-text-color;
 }

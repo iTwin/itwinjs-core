@@ -7,7 +7,6 @@
 import * as React from "react";
 import * as classnames from "classnames";
 import { TextProps } from "./TextProps";
-import "./index.scss";
 
 /** Styled title text */
 export class Title2 extends React.Component<TextProps> {

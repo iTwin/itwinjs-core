@@ -251,7 +251,8 @@ function getConfig(env) {
       use: {
         loader: require.resolve("sass-loader"),
         options: {
-          includePaths: [path.resolve(contextDirectory, "node_modules")]
+          includePaths: [path.resolve(contextDirectory, "node_modules")],
+          outputStyle: "compressed",
         },
       },
       enforce: "pre",

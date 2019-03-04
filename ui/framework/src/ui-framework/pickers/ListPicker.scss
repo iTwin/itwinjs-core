@@ -2,10 +2,9 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-@import "@bentley/ui-ninezone/lib/ui-ninezone/_scrollbar";
 @import "@bentley/ui-ninezone/lib/ui-ninezone/_typography";
 @import "@bentley/ui-ninezone/lib/ui-ninezone/footer/_variables";
-@import "@bentley/ui-core/lib/ui-core/colors";
+@import "@bentley/ui-core/lib/ui-core/index";
 
 $no-shadow: none;
 $shadow: drop-shadow(0 1px 0 $buic-text-color-reverse);
@@ -22,7 +21,7 @@ $item-height: 32px;
 }
 
 .ListPicker-column {
-  @include nz-scrollbar($buic-background-scrollbar);
+  @include uicore-scrollbar();
   overflow: auto;
   height: 40vh;
   width: 30vh;
@@ -82,9 +81,9 @@ $item-height: 32px;
 .ListPicker-item {
   $label-color: $buic-text-color;
   $pressed-label-color: $buic-foreground-activehover;
-  $hovered-label-color: $primary-tone;
-  $focused-label-color: $primary-tone;
-  $active-label-color: $primary-tone;
+  $hovered-label-color: $buic-foreground-primary-tone;
+  $focused-label-color: $buic-foreground-primary-tone;
+  $active-label-color: $buic-foreground-primary-tone;
   $item-height: 32px;
   $item-border-width: 2px;
   $active-tool-stripe-height: 22px;
@@ -139,7 +138,7 @@ $item-height: 32px;
 
   &.is-focused {
     color: $focused-label-color;
-    border-color: $primary-base;
+    border-color: $buic-foreground-primary;
     border-width: $item-border-width;
     border-style: solid;
 
@@ -176,9 +175,9 @@ $item-height: 32px;
 .ListPickerWidget-item {
   $label-color: $buic-text-color;
   $pressed-label-color: $buic-foreground-activehover;
-  $hovered-label-color: $primary-base;
-  $focused-label-color: $primary-base;
-  $active-label-color: $primary-base;
+  $hovered-label-color: $buic-foreground-primary;
+  $focused-label-color: $buic-foreground-primary;
+  $active-label-color: $buic-foreground-primary;
   $item-height: 32px;
   $item-border-width: 2px;
   $active-tool-stripe-height: 22px;
@@ -199,7 +198,7 @@ $item-height: 32px;
     margin-right: $space-after-label;
     margin-left: $space-before-label;
     line-height: $item-height;
-    filter: drop-shadow(0 1px 0 $text-light);
+    filter: drop-shadow(0 1px 0 $buic-text-color-reverse);
 
     &:after {
       display: block;
@@ -218,29 +217,29 @@ $item-height: 32px;
     @include body1;
 
     > .icon, .label {
-      filter: drop-shadow(0 1px 0 $text-light);
+      filter: drop-shadow(0 1px 0 $buic-text-color-reverse);
     }
   }
 
   &:active {
-    background: $primary-tone;
+    background: $buic-foreground-primary-tone;
     color: $pressed-label-color;
 
     > .icon, .label {
-      filter: drop-shadow(0 1px 0 $text-light);
+      filter: drop-shadow(0 1px 0 $buic-text-color-reverse);
     }
   }
 
   &.is-focused {
     color: $focused-label-color;
-    border-color: $primary-base;
+    border-color: $buic-foreground-primary;
     border-width: $item-border-width;
     border-style: solid;
 
     @include body1;
 
     > .icon, .label {
-      filter: drop-shadow(0 1px 0 $text-light);
+      filter: drop-shadow(0 1px 0 $buic-text-color-reverse);
     }
   }
 
@@ -272,8 +271,8 @@ $item-height: 32px;
 
   white-space: nowrap;
   text-align: center;
-  color: $text-dark;
-  filter: drop-shadow(0 1px 0 $text-light);
+  color: $buic-text-color;
+  filter: drop-shadow(0 1px 0 $buic-text-color-reverse);
   margin-bottom: 9px;
   margin-left: $horizontal-margin;
   margin-right: $horizontal-margin;

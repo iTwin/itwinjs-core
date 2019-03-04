@@ -2,7 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-@import "@bentley/ui-core/lib/ui-core/colors";
+@import "@bentley/ui-core/lib/ui-core/style/themecolors";
 @import "../../_geometry";
 
 .nz-footer-messageCenter-tab {
@@ -21,12 +21,12 @@
 
   &:not(.nz-is-open) {
     border-bottom: 1px solid $buic-background-dialog-stroke;
-    background-color: $background-3;
-    color: $text-dark;
+    background-color: $buic-background-tab-inactive;
+    color: $buic-text-color;
   }
 
   &.nz-is-open {
-    color: $primary-base;
+    color: $buic-foreground-primary;
 
     &:after {
       content: '';
@@ -35,7 +35,7 @@
       position: absolute;
       top: $bar-size;
       left: 0;
-      background: $primary-base;
+      background: $buic-foreground-primary;
       padding-left: $bar-size;
       padding-right: $bar-size;
       box-sizing: border-box;

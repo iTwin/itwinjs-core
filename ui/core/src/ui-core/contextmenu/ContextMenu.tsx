@@ -421,6 +421,7 @@ export interface ContextMenuItemProps extends React.AllHTMLAttributes<HTMLDivEle
   parentMenu?: ContextMenu;
 }
 
+/** @hidden */
 export interface ContextMenuItemState {
   hotKey?: string;
 }
@@ -688,6 +689,7 @@ export class ContextSubMenu extends React.Component<ContextSubMenuProps, Context
   }
 }
 
+/** Finds a tilde character in ContextMenu item label for hot key support */
 export class TildeFinder {
   public static findAfterTilde = (node: React.ReactNode): { character: string | undefined, node: React.ReactNode } => {
     if (typeof node === "string") {

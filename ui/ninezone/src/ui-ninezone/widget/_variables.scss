@@ -2,7 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-@import "@bentley/ui-core/lib/ui-core/colors";
+@import "@bentley/ui-core/lib/ui-core/style/themecolors";
 
 $nz-tab-height: 60px;
 $nz-tab-width: 32px;
@@ -18,9 +18,9 @@ $nz-widget-border-width: 1px;
 $nz-widget-border-radius: 3px;
 
 $icon-color: $buic-icon-color;
-$hovered-icon-color: $primary-tone;
+$hovered-icon-color: $buic-foreground-primary-tone;
 $pressed-icon-color: $buic-background-control;
-$active-icon-color: $primary-base;
+$active-icon-color: $buic-foreground-primary;
 $disabled-icon-color: $buic-icon-color-disabled;
 $icon-shadow-color: $buic-background-control;
 $icon-shadow: drop-shadow(0 1px 0 $icon-shadow-color);

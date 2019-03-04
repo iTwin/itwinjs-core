@@ -1,0 +1,16 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+@import "./index";
+
+.uicore-inputs-checkbox { @include uicore-inputs-checkbox; }
+.core-checkbox { @include uicore-inputs-checkbox; }
+
+.uicore-inputs-input { @include uicore-inputs-input; }
+.uicore-inputs-labeled-input { @include uicore-inputs-labeled-input; }
+.uicore-inputs-labeled-select { @include uicore-inputs-labeled-select; }
+.uicore-inputs-labeled-textarea { @include uicore-inputs-labeled-textarea; }
+.uicore-inputs-radio { @include uicore-inputs-radio; }
+.uicore-inputs-select { @include uicore-inputs-select; }
+.uicore-inputs-textarea { @include uicore-inputs-textarea; }

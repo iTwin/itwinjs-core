@@ -75,13 +75,13 @@ $signin-hyperlink-hover-color: $uicore-blue-5;
 
 /* sign in button */
 .signin2 .signin-button {
-  @extend .uicore-buttons-primary;
+  @include uicore-buttons-primary;
   margin-top: auto;
 }
 
 /* sign in button disabled */
 .signin2 .signin-button-disabled {
-  @extend .uicore-buttons-disabled;
+  @include uicore-buttons-disabled;
 }
 
 /* "Register" container */

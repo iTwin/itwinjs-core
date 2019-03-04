@@ -9,8 +9,6 @@ import * as classnames from "classnames";
 import { InputStatus } from "../InputStatus";
 import { Omit } from "../../utils/typeUtils";
 
-import "./checkbox.scss";
-
 /** Properties for [[Checkbox]] React component */
 export interface CheckboxProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "type"> {
   /** Text that will be shown next to the checkbox. */

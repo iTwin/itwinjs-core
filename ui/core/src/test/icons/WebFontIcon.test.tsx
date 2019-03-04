@@ -16,6 +16,6 @@ describe("WebFontIcon", () => {
   it("renders specified size", () => {
     const icon = render(<WebFontIcon iconName="icon-test" iconSize="medium" />);
 
-    expect(icon.container.getElementsByClassName("core-icon-medium")).to.not.be.empty;
+    expect(icon.container.getElementsByClassName("uicore-icons-medium")).to.not.be.empty;
   });
 });

@@ -7,7 +7,6 @@
 import * as React from "react";
 import * as classnames from "classnames";
 import { InputStatus } from "./InputStatus";
-import "./index.scss";
 
 /** Properties for [[Radio]] component */
 export interface RadioProps extends React.InputHTMLAttributes<HTMLInputElement> {

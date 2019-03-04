@@ -5,24 +5,24 @@
 @import "@bentley/ui-core/lib/ui-core/index";
 
 .column-drag-layer {
-  border: 1px solid rgba($uicore-black, 0.5);
+  border: 1px solid $buic-foreground-disabled;
   border-radius: $uicore-border-radius;
   padding: 0px;
   margin: 0px;
   line-height: $uicore-line-height;
-  color: rgba($uicore-text-color, 0.5);
+  color: $buic-foreground-disabled;
   font-weight: bold;
 }
 
 .table-header-drag-drop {
   &.dragging .react-grid-HeaderCell {
-    background: $uicore-gray;
+    background: $buic-background-table-header;
   }
   &.left .react-grid-HeaderCell {
-    border-left: solid black 2px;
+    border-left: solid $buic-foreground-activehover 2px;
   }
   &.right .react-grid-HeaderCell {
-    border-right: solid black 2px;
+    border-right: solid $buic-foreground-activehover 2px;
   }
 }
 
@@ -31,23 +31,23 @@
   border-bottom: solid transparent 1px;
 
   &.above {
-    border-top: solid black 1px;
+    border-top: solid $buic-foreground-activehover 1px;
   }
 
   &.on {
     .react-grid-Row * {
       /* !important used because react-data-grid did. only way to override */
-      background-color: $uicore-blue-8 !important;
+      background-color: $buic-foreground-primary !important;
     }
   }
 
   &.below {
-    border-bottom: solid black 1px;
+    border-bottom: solid $buic-foreground-activehover 1px;
   }
 
   &.dragging {
     .react-grid-Row * {
-      color: $uicore-gray;
+      color: $buic-foreground-muted;
     }
   }
 }

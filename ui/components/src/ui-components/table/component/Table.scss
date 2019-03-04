@@ -19,7 +19,7 @@
     height: calc(100% - 25px) !important;
 
     @include uicore-touch-scrolling;
-    @include uicore-scrollbar;
+    @include uicore-scrollbar();
   }
 
   .react-grid-Container,
@@ -75,19 +75,19 @@
   }
 
   .react-grid-Header {
-    background: $buic-background-titlebar-outoffocus;
+    background: $buic-background-table-header;
   }
 
   .react-grid-HeaderCell {
     padding: 4px 0 0 8px;
     box-sizing: border-box;
-    background: $buic-background-titlebar-outoffocus;
+    background: $buic-background-table-header;
     font-size: 14px;
     border: none;
   }
 
   .react-grid-HeaderCell__draggable {
-    background: $buic-background-titlebar-outoffocus;
+    background: $buic-background-table-header;
     width: 8px !important;
     left: 100%;
     z-index: 2;

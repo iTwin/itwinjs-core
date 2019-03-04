@@ -9,7 +9,6 @@ import * as classnames from "classnames";
 
 import Select, { SelectProps } from "./Select";
 import InputStatus from "./InputStatus";
-import "./index.scss";
 
 /** Properties for [[LabeledSelect]] components */
 export interface LabeledSelectProps extends SelectProps {

@@ -18,6 +18,9 @@ import { ItemStyleProvider, ItemStyle } from "../../properties/ItemStyle";
 
 import "./NodeContent.scss";
 
+/** Properties for [[TreeNodeContent]] component
+ * @hidden
+ */
 export interface TreeNodeContentProps {
   node: BeInspireTreeNode<TreeNodeItem>;
   showDescription?: boolean;
@@ -40,10 +43,14 @@ export interface TreeNodeContentProps {
   renderId?: string;
 }
 
+/** @hidden */
 export interface TreeNodeContentState {
   label: React.ReactNode;
 }
 
+/** React component for displaying [[TreeNode]] label
+ * @hidden
+ */
 export class TreeNodeContent extends React.Component<TreeNodeContentProps, TreeNodeContentState> {
   public readonly state: TreeNodeContentState = {
     label: <TreeNodePlaceholder level={0} data-testid={"node-label-placeholder"} />,

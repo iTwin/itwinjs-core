@@ -6,6 +6,7 @@
 
 import * as React from "react";
 import * as classnames from "classnames";
+
 import "./WebFontIcon.scss";
 import "@bentley/icons-generic-webfont/dist/bentley-icons-generic-webfont.css";
 
@@ -31,7 +32,7 @@ export const WebFontIcon: React.FunctionComponent<WebFontIconProps> = (props) =>
   const className = classnames(
     "bui-webfont-icon",
     props.iconName,
-    props.iconSize ? `core-icon-${props.iconSize}` : undefined,
+    props.iconSize ? `uicore-icons-${props.iconSize}` : undefined,
     props.className,
   );
 

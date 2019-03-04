@@ -94,7 +94,7 @@
   border-collapse: collapse;
 
   th, td {
-    border-bottom: 1px solid $uicore-tables-border-color;
+    border-bottom: 1px solid $buic-background-control-stroke;
     cursor: pointer;
   }
 
@@ -104,7 +104,7 @@
     padding: .75em;
     font-size: $uicore-font-size-leading;
     color: dimgray;
-    background: $uicore-tables-head-light;
+    background: $buic-background-table-header;
   }
 
   td {

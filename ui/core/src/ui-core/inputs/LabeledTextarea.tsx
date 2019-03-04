@@ -9,7 +9,6 @@ import * as classnames from "classnames";
 
 import Textarea, { TextareaProps } from "./Textarea";
 import InputStatus from "./InputStatus";
-import "./index.scss";
 
 /** Properties for [[LabeledTextarea]] component */
 export interface LabeledTextareaProps extends TextareaProps {

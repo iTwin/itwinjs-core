@@ -7,8 +7,6 @@
 import * as React from "react";
 import * as classnames from "classnames";
 
-import "./index.scss";
-
 /** Sizes for [[Button]] component */
 export enum ButtonSize {
   Default = "",

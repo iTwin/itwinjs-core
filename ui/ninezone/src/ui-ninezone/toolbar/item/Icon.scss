@@ -15,7 +15,7 @@
   cursor: pointer;
   transition: all 500ms ease;
   position: relative;
-  background: $background-1 linear-gradient(to bottom, $buic-button-gradient1, $buic-button-gradient2);
+  background: $buic-background-control linear-gradient(to bottom, $buic-button-gradient1, $buic-button-gradient2);
 
   height: $nz-desktop-item-height;
   width: $nz-desktop-item-width;
@@ -60,20 +60,20 @@
   }
 
   &:active:not(.nz-is-disabled) {
-    background: $primary-tone;
-    color: $text-light;
+    background: $buic-foreground-primary-tone;
+    color: $buic-text-color-reverse;
     transition-duration: 150ms;
     transition-timing-function: cubic-bezier(1, 0.1, 1, 0.5);
   }
 
   &.nz-is-active {
-    background: $background-1;
+    background: $buic-background-control;
 
     &:not(:active):not(.nz-is-disabled) {
       transition-duration: 0s;
 
       >.nz-icon {
-        color: $primary-base;
+        color: $buic-foreground-primary;
         filter: $no-shadow;
         transition-duration: 150ms;
         transition-timing-function: cubic-bezier(1, 0.1, 1, 0.5);
@@ -87,7 +87,7 @@
         content: '';
         display: block;
         position: absolute;
-        background: $primary-base;
+        background: $buic-foreground-primary;
         left: 3px;
         top: ($nz-desktop-item-height - $desktop-tool-stripe-height) / 2;
         border-radius: 2px;

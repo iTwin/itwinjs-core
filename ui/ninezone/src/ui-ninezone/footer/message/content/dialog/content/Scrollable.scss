@@ -2,7 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-@import "@bentley/ui-core/lib/ui-core/colors";
+@import "@bentley/ui-core/lib/ui-core/style/themecolors";
 @import "../../../../../_scrollbar";
 @import "../_variables";
 
@@ -19,6 +19,6 @@
     box-sizing: border-box;
     overflow: auto;
 
-    @include nz-scrollbar($color: $buic-background-scrollbar);
+    @include nz-scrollbar();
   }
 }

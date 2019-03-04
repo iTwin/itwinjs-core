@@ -9,11 +9,11 @@ $button-width: 14px;
 $nav-cube-width: 64px;
 $nav-cube-side-width: 12px;
 
-$grad-start: $background-1;
-$grad-end: $background-4;
+$grad-start: $buic-background-1;
+$grad-end: $buic-background-4;
 
-$grad-start-highlight: $background-2;
-$grad-end-highlight: $background-5;
+$grad-start-highlight: $buic-background-2;
+$grad-end-highlight: $buic-background-5;
 
 .cube-container {
   position: relative;
@@ -104,7 +104,7 @@ $grad-end-highlight: $background-5;
     height: $button-width;
     width: $button-width;
     font-size: $button-width;
-    color: $background-3;
+    color: $buic-background-3;
     text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
     cursor: pointer;
 

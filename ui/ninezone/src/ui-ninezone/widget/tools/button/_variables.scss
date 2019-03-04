@@ -2,7 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-@import "@bentley/ui-core/lib/ui-core/colors";
+@import "@bentley/ui-core/lib/ui-core/style/themecolors";
 
 // Common
 $button-stroke-width: 2px;
@@ -11,7 +11,7 @@ $button-stroke-radius: 3px;
 
 $icon-color: $buic-icon-color;
 $pressed-icon-color: $buic-icon-color-reverse;
-$hovered-icon-color: $primary-tone;
+$hovered-icon-color: $buic-foreground-primary-tone;
 $icon-shadow: drop-shadow(0 1px 0 $buic-icon-color-reverse);
 $no-shadow: drop-shadow(0 0 0 transparent);
 
