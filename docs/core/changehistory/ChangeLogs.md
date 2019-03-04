@@ -1,15 +1,5 @@
-## Change History
----
+## Change Logs
 
-### Versions
-- [0.187.0](./0.187.0.md)
-
-- [0.171.0](./0.171.0.md)
-
-- [0.163.0](./0.163.0.md)
-
----
-### [link_to changelogs docSite=changehistory text="Change Logs"]
 - [imodeljs-backend](../reference/imodeljs-backend/changelog)
 
 - [imodeljs-frontend](../reference/imodeljs-frontend/changelog)
