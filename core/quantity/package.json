@@ -61,6 +61,7 @@
     "@bentley/bentleyjs-core": "0.190.0-dev.2"
   },
   "nyc": {
-    "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc"
+    "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc",
+    "sourceMap": false
   }
 }
