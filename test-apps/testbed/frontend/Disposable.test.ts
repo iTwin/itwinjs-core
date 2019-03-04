@@ -211,7 +211,7 @@ describe("Disposal of WebGL Resources (#integration)", () => {
     const reader = IModelTileIO.Reader.create(stream, model.iModel, model.id, model.is3d, system);
     expect(reader).not.to.be.undefined;
     const readerRes = await reader!.read();
-    const tileGraphic = readerRes.renderGraphic!;
+    const tileGraphic = readerRes.graphic!;
     assert.isDefined(tileGraphic);
 
     // Pre-disposal

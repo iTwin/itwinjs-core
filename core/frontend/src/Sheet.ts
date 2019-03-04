@@ -505,8 +505,9 @@ export namespace Attachments {
             if (viewport.texture === undefined) {
               this.setNotFound();
             } else {
-              const graphic = system.createGraphicList(system.createSheetTile(viewport.texture, this._tilePolyfaces, this._rootAsTree3d.tileColor));
-              this.setGraphic(system.createBatch(graphic, this._rootAsTree3d.featureTable, this.contentRange));
+              let graphic = system.createGraphicList(system.createSheetTile(viewport.texture, this._tilePolyfaces, this._rootAsTree3d.tileColor));
+              graphic = system.createBatch(graphic, this._rootAsTree3d.featureTable, this.contentRange);
+              this.setContent({ graphic, contentRange: this.contentRange });
             }
 
             // restore frustum

@@ -12,7 +12,12 @@ import {
   VertexShaderComponent,
   FragmentShaderBuilder,
 } from "../ShaderBuilder";
-import { addModelViewMatrix, addProjectionMatrix, GLSLVertex } from "./Vertex";
+import {
+  addModelViewMatrix,
+  addProjectionMatrix,
+  addLineWeight,
+  addLineCode as addLineCodeUniform,
+} from "./Vertex";
 import { addFrustum, addShaderFlags } from "./Common";
 import { addViewport, addModelToWindowCoordinates } from "./Viewport";
 import { GL } from "../GL";
@@ -51,7 +56,7 @@ const applyLineCode = `
 const computeTextureCoord = `
 vec2 computeLineCodeTextureCoords(vec2 windowDir, vec4 projPos, float adjust) {
   vec2 texc;
-  float lineCode = ComputeLineCode();
+  float lineCode = computeLineCode();
   if (0.0 == lineCode) {
     // Solid line - tell frag shader not to bother.
     texc = vec2(-1.0, -1.0);
@@ -140,13 +145,7 @@ export function addLineCode(prog: ProgramBuilder, args: string) {
   const vert = prog.vert;
   const frag = prog.frag;
 
-  vert.addUniform("u_lineCode", VariableType.Float, (shaderProg) => {
-    shaderProg.addGraphicUniform("u_lineCode", (uniform, params) => {
-      uniform.setUniform1f(params.geometry.getLineCode(params.programParams));
-    });
-  });
-
-  vert.addFunction(GLSLVertex.computeLineCode);
+  addLineCodeUniform(vert);
 
   const funcCall: string = "computeLineCodeTextureCoords(" + args + ")";
 
@@ -170,7 +169,6 @@ function addCommon(prog: ProgramBuilder) {
   addModelToWindowCoordinates(vert); // adds u_mvp, u_viewportTransformation
   addProjectionMatrix(vert);
   addModelViewMatrix(vert);
-  vert.addFunction(GLSLVertex.computeLineWeight);
   addViewport(vert);
 
   vert.addGlobal("g_windowPos", VariableType.Vec4);
@@ -204,11 +202,8 @@ function addCommon(prog: ProgramBuilder) {
         attr.enableArray(buffs.nextIndicesAndParams, 1, GL.DataType.UnsignedByte, false, 4, 3);
     });
   });
-  vert.addUniform("u_lineWeight", VariableType.Float, (shaderProg) => {
-    shaderProg.addGraphicUniform("u_lineWeight", (attr, params) => {
-      attr.setUniform1f(params.geometry.getLineWeight(params.programParams));
-    });
-  });
+
+  addLineWeight(vert);
 
   vert.addGlobal("miterAdjust", VariableType.Float, "0.0");
   vert.set(VertexShaderComponent.ComputePosition, computePosition);
@@ -260,7 +255,7 @@ const computePosition = `
     return g_windowPos;
 
   float param = a_param;
-  float weight = ComputeLineWeight();
+  float weight = computeLineWeight();
   float scale = 1.0, directionScale = 1.0;
 
   if (param >= kNoneAdjWt)

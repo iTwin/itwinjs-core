@@ -5,7 +5,7 @@
 /** @module WebGL */
 
 import { addHiliter } from "./FeatureSymbology";
-import { addModelViewProjectionMatrix, GLSLVertex } from "./Vertex";
+import { addModelViewProjectionMatrix, addLineWeight } from "./Vertex";
 import { addShaderFlags } from "./Common";
 import { addColor } from "./Color";
 import { addWhiteOnWhiteReversal } from "./Fragment";
@@ -13,7 +13,7 @@ import { ShaderBuilderFlags, ProgramBuilder, VertexShaderComponent, VariableType
 import { IsInstanced } from "../TechniqueFlags";
 
 const computePosition = `
-  float lineWeight = ComputeLineWeight();
+  float lineWeight = computeLineWeight();
   lineWeight += 0.5 * float(lineWeight > 4.0); // fudge factor for rounding fat points...
   gl_PointSize = lineWeight;
   return MAT_MVP * rawPos;
@@ -37,12 +37,7 @@ function createBase(instanced: IsInstanced): ProgramBuilder {
   vert.set(VertexShaderComponent.ComputePosition, computePosition);
   addModelViewProjectionMatrix(vert);
 
-  vert.addFunction(GLSLVertex.computeLineWeight);
-  vert.addUniform("u_lineWeight", VariableType.Float, (prog) => {
-    prog.addGraphicUniform("u_lineWeight", (uniform, params) => {
-      uniform.setUniform1f(params.geometry.getLineWeight(params.programParams));
-    });
-  });
+  addLineWeight(vert);
   builder.addInlineComputedVarying("v_roundCorners", VariableType.Float, computeRoundCorners);
   builder.frag.set(FragmentShaderComponent.CheckForEarlyDiscard, roundCorners);
 

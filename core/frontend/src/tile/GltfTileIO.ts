@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Tile */
 
+import { Tile } from "./TileTree";
 import { TileIO } from "./TileIO";
 import { DisplayParams } from "../render/primitives/DisplayParams";
 import { Triangle } from "../render/primitives/Primitives";
@@ -52,12 +53,8 @@ export namespace GltfTileIO {
     Binary = 0x004E4942,
   }
   /** The result of [[GltfTileIO.Reader.read]]. */
-  export interface ReaderResult {
+  export interface ReaderResult extends Tile.Content {
     readStatus: TileIO.ReadStatus;
-    isLeaf: boolean;
-    contentRange?: ElementAlignedBox3d;
-    renderGraphic?: RenderGraphic;
-    sizeMultiplier?: number;
   }
 
   /** Header preceding glTF tile data. */
@@ -414,7 +411,7 @@ export namespace GltfTileIO {
         isLeaf,
         sizeMultiplier,
         contentRange,
-        renderGraphic,
+        graphic: renderGraphic,
       };
     }
     private readNodeAndCreateGraphics(renderGraphicList: RenderGraphic[], node: any, featureTable: FeatureTable, parentTransform: Transform | undefined, instances?: InstancedGraphicParams): TileIO.ReadStatus {

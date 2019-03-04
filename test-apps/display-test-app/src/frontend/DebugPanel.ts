@@ -77,6 +77,7 @@ export class DebugPanel extends ToolBarDropDown {
         { name: "Volume", value: Tile.DebugBoundingBoxes.Volume },
         { name: "Content", value: Tile.DebugBoundingBoxes.Content },
         { name: "Both", value: Tile.DebugBoundingBoxes.Both },
+        { name: "Children", value: Tile.DebugBoundingBoxes.ChildVolumes },
       ],
     });
   }

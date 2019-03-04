@@ -10,7 +10,7 @@ import {
   VariableType,
   VertexShaderComponent,
 } from "../ShaderBuilder";
-import { addModelViewMatrix, addProjectionMatrix, GLSLVertex, addNormalMatrix } from "./Vertex";
+import { addModelViewMatrix, addProjectionMatrix, addLineWeight, addNormalMatrix } from "./Vertex";
 import { addAnimation } from "./Animation";
 import { addViewport, addModelToWindowCoordinates } from "./Viewport";
 import { GL } from "../GL";
@@ -67,7 +67,7 @@ const computePosition = `
   vec4  other = g_otherPos;
   vec3  modelDir = other.xyz - pos.xyz;
   float miterAdjust = 0.0;
-  float weight = ComputeLineWeight();
+  float weight = computeLineWeight();
 
   g_windowPos = modelToWindowCoordinates(rawPos, other);
 
@@ -119,7 +119,6 @@ function createBase(isSilhouette: boolean, instanced: IsInstanced, isAnimated: I
   addProjectionMatrix(vert);
   addLineCode(builder, lineCodeArgs);
   vert.set(VertexShaderComponent.ComputePosition, computePosition);
-  vert.addFunction(GLSLVertex.computeLineWeight);
   builder.addVarying("v_lnInfo", VariableType.Vec4);
   vert.addFunction(adjustWidth);
 
@@ -138,11 +137,7 @@ function createBase(isSilhouette: boolean, instanced: IsInstanced, isAnimated: I
     });
   });
 
-  vert.addUniform("u_lineWeight", VariableType.Float, (shaderProg) => {
-    shaderProg.addGraphicUniform("u_lineWeight", (attr, params) => {
-      attr.setUniform1f(params.geometry.getLineWeight(params.programParams));
-    });
-  });
+  addLineWeight(vert);
 
   if (isSilhouette) {
     addNormalMatrix(vert);
