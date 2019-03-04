@@ -1806,4 +1806,44 @@ export class Sample {
       points.push(center.clone());
     return points;
   }
+  /**
+   * * let ay = 4
+   * * base polygon has vertices (0,0), (ax,0), (2*ax,0), (2* ax,ay), (ax,ay), (0,ay), (0,0).
+   * * shift the x coordinates of vertices 1,4 by indicated amounts (0-based numbering)
+   * * shift the y coordinates for points 1,2,3,4 by indicated amounts (in 0-based numbering)
+   * * This is useful for testing non-y-monootonic face situations.
+   * * Return as points.
+   * @param dy1
+   * @param dy2
+   * @param dy3
+   * @param dy4
+   */
+  public static creatVerticalStaggerPolygon(dy1: number, dy2: number, dy3: number, dy4: number,
+    ax: number,
+    ay: number,
+    dx1: number,
+    dx4: number): Point3d[] {
+    return [Point3d.create(0, 0),
+    Point3d.create(ax + dx1, dy1),
+    Point3d.create(2 * ax, dy2),
+    Point3d.create(2 * ax, ay + dy3),
+    Point3d.create(ax + dx4, ay + dy4),
+    Point3d.create(0.0, ay),
+    Point3d.create(0, 0)];
+  }
+  /**
+   * make line segments for each pair of adjacent points.
+   * @param points array of points
+   * @param forceClosure if true, inspect coordinates to determine if a closure edge is needed.
+   */
+  public static convertPointsToSegments(points: Point3d[], forceClosure: boolean = false): LineSegment3d[] {
+    const segments = [];
+    const n = points.length;
+    for (let i = 0; i + 1 < n; i++) {
+      segments.push(LineSegment3d.create(points[i], points[i + 1]));
+    }
+    if (forceClosure && n > 1 && !points[0].isAlmostEqual(points[n - 1]))
+      segments.push(LineSegment3d.create(points[n - 1], points[0]));
+    return segments;
+  }
 }

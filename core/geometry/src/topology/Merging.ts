@@ -12,46 +12,35 @@ import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "./Graph";
 import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
 import { ClusterableArray } from "../numerics/ClusterableArray";
 
-class SweepEvent {
-  // Node from segment array
-  public node0: HalfEdge;
-  public node1: HalfEdge;
-
-  public leftEvent: SweepEvent | undefined;   // The top-most node of the segment paired left (node0)
-  public rightEvent: SweepEvent | undefined;   // The bottom-most node of the segment paired right (node1)
-  // Alternates, if left or right pairs at a face vertex
-  public leftAlt: SweepEvent | undefined;
-  public rightAlt: SweepEvent | undefined;
-
-  public constructor(node0: HalfEdge, node1: HalfEdge) {
-    this.node0 = node0;
-    this.node1 = node1;
-  }
-}
-
-export class Merger {
+/**
+ * * Assorted methods used in algorithms on HalfEdgeGraph.
+ * @internal
+ */
+export class HalfEdgeGraphOps {
 
   // SORTING FUNCTIONS (compare methods used by sort() in larger algorithms) -----------------------------------------------------------
 
-  /** Compare function for sorting X, Y, and theta componenets stored in a Point3d, useful for forming a graph from an array of segments */
-  private static xyThetaCompare(a: any, b: any) {
+  /** Compare function for sorting X, Y, and sortAngle components of ndoes. */
+  public static compareNodeXYTheta(a: HalfEdge, b: HalfEdge) {
     // Check x's
-    if (!Geometry.isSameCoordinate(a.xyTheta.x, b.xyTheta.x))
-      if (a.xyTheta.x < b.xyTheta.x)
+    if (!Geometry.isSameCoordinate(a.x, b.x))
+      if (a.x < b.x)
         return -1;
-      else if (a.xyTheta.x > b.xyTheta.x)
+      else if (a.x > b.x)
         return 1;
     // Check y's
-    if (!Geometry.isSameCoordinate(a.xyTheta.y, b.xyTheta.y))
-      if (a.xyTheta.y < b.xyTheta.y)
+    if (!Geometry.isSameCoordinate(a.y, b.y))
+      if (a.y < b.y)
         return -1;
-      else if (a.xyTheta.y > b.xyTheta.y)
+      else if (a.y > b.y)
         return 1;
-    // Check theta
-    if (a.xyTheta.z < b.xyTheta.z)
-      return -1;
-    else if (a.xyTheta.z > b.xyTheta.z)
-      return 1;
+    if (a.sortAngle !== undefined && b.sortAngle !== undefined) {
+      // Check theta
+      if (a.sortAngle < b.sortAngle)
+        return -1;
+      else if (a.z > b.z)
+        return 1;
+    }
     return 0;
   }
 
@@ -60,15 +49,6 @@ export class Merger {
     if (a.leftPoint.x < b.leftPoint.x)
       return -1;
     else if (a.leftPoint.x > b.leftPoint.x)
-      return 1;
-    return 0;
-  }
-
-  /** Compare function for sorting the "event queue" when sweeping a polygon forming trapezoid sections (y increasing) */
-  private static eventCompareTrapezoidation(a: SweepEvent, b: SweepEvent): number {
-    if (a.node0.y > b.node0.y)
-      return -1;
-    else if (a.node0.y < b.node0.y)
       return 1;
     return 0;
   }
@@ -137,33 +117,29 @@ export class Merger {
 
   // ----------------------------------------------------------------------------------------------------------------------
 
-  /** Returns an array of a Point3d holding x, y, and theta values for a point, and a corresponding node. Useful for organizing/sorting nodes */
-  private static segmentsToXYThetaNode(segments: LineSegment3d[], returnGraph: HalfEdgeGraph): Array<{ xyTheta: Point3d, node: HalfEdge }> {
-    const arr = [];
+  /** Returns an array of a all nodes (both ends) of edges created from segments. */
+  public static segmentArrayToGraphEdges(segments: LineSegment3d[], returnGraph: HalfEdgeGraph, mask: HalfEdgeMask): HalfEdge[] {
+    const result = [];
     let idxCounter = 0;
 
     // Push the endpoints of each segment onto arr[] in the form {(x, y, theta), Node}
     for (const segment of segments) {
-      // Endpoint 0
-      let theta0 = Math.atan2((segment.point1Ref.y - segment.point0Ref.y), (segment.point1Ref.x - segment.point0Ref.x));
-      if (theta0 < 0) theta0 = theta0 + 2 * Math.PI;
-      const point0 = Point3d.create(segment.point0Ref.x, segment.point0Ref.y, theta0);
 
-      let theta1 = Math.atan2(-(segment.point1Ref.y - segment.point0Ref.y), -(segment.point1Ref.x - segment.point0Ref.x));
-      if (theta1 < 0) theta1 = theta1 + 2 * Math.PI;
-      const point1 = Point3d.create(segment.point1Ref.x, segment.point1Ref.y, theta1);
+      const node0 = returnGraph.createEdgeXYZXYZ(
+        segment.point0Ref.x, segment.point0Ref.y, segment.point0Ref.z,
+        idxCounter,
+        segment.point1Ref.x, segment.point1Ref.y, segment.point1Ref.z,
+        idxCounter + 1);
 
-      const node0 = returnGraph.createEdgeXYZXYZ(point0.x, point0.y, point0.z, idxCounter, point1.x, point1.y, point1.z, idxCounter + 1);
       const node1 = node0.edgeMate;
       idxCounter += 2;
 
-      node0.setMaskAroundFace(HalfEdgeMask.BOUNDARY);   // Original given coordinates must be part of boundary
-      arr.push({ xyTheta: point0, node: node0 });
-      arr.push({ xyTheta: point1, node: node1 });
-      returnGraph.allHalfEdges.push(node0);
+      node0.setMaskAroundFace(mask);   // Original given coordinates must be part of boundary
+      result.push(node0);
+      result.push(node1);
     }
 
-    return arr;
+    return result;
   }
 
   /** Given two segments, uses the equations of the two representative lines and the determinant to give a point of intersection;
@@ -190,10 +166,10 @@ export class Merger {
 
     if (checkInBounds) {
       // Ensure the point is within bounds of both segments
-      if ((intersection.x >= Merger.getLeftValueOfSegment(seg1) && intersection.x <= Merger.getRightValueOfSegment(seg1) &&
-        intersection.y >= Merger.getLowValueOfSegment(seg1) && intersection.y <= Merger.getHighValueOfSegment(seg1))) {
-        if (intersection.x >= Merger.getLeftValueOfSegment(seg2) && intersection.x <= Merger.getRightValueOfSegment(seg2) &&
-          intersection.y >= Merger.getLowValueOfSegment(seg2) && intersection.y <= Merger.getHighValueOfSegment(seg2)) {
+      if ((intersection.x >= HalfEdgeGraphOps.getLeftValueOfSegment(seg1) && intersection.x <= HalfEdgeGraphOps.getRightValueOfSegment(seg1) &&
+        intersection.y >= HalfEdgeGraphOps.getLowValueOfSegment(seg1) && intersection.y <= HalfEdgeGraphOps.getHighValueOfSegment(seg1))) {
+        if (intersection.x >= HalfEdgeGraphOps.getLeftValueOfSegment(seg2) && intersection.x <= HalfEdgeGraphOps.getRightValueOfSegment(seg2) &&
+          intersection.y >= HalfEdgeGraphOps.getLowValueOfSegment(seg2) && intersection.y <= HalfEdgeGraphOps.getHighValueOfSegment(seg2)) {
           return intersection;
         } else {
           return undefined;
@@ -207,7 +183,7 @@ export class Merger {
    * sorts a number array and filters out 0's, 1's, and duplicates...
    * useful when trying to simplify the found intersections of each segment in an array
    */
-  private static sortAndFilterCrossings(arr: number[]) {
+  public static sortAndFilterCrossings(arr: number[]) {
     if (arr.length === 0) return arr;
     arr.sort(GrowableFloat64Array.compare);
     let r = 0;
@@ -227,20 +203,20 @@ export class Merger {
    * *  For each 'event' in the queue, check its corresponding segment for intersections with segments whose left-most points
    *      appear before this event's right-most point
    */
-  private static findCrossings(segments: LineSegment3d[]): number[][] {
+  public static findCrossings(segments: LineSegment3d[]): number[][] {
     const queue: Array<{ leftPoint: Point3d, rightPoint: Point3d, segIdx: number }> = [];
     const crossings: number[][] = [];
 
     for (let i = 0; i < segments.length; i++) {
       queue.push({
-        leftPoint: Merger.getLeftmostPointOfSegment(segments[i]),
-        rightPoint: Merger.getRightmostPointOfSegment(segments[i]),
+        leftPoint: HalfEdgeGraphOps.getLeftmostPointOfSegment(segments[i]),
+        rightPoint: HalfEdgeGraphOps.getRightmostPointOfSegment(segments[i]),
         segIdx: i,
       });
     }
 
     // Sort the eQueue of points from left to right
-    queue.sort(Merger.eventCompareCrossings);
+    queue.sort(HalfEdgeGraphOps.eventCompareCrossings);
 
     for (let i = 0; i < queue.length; i++) {
       const iSegIdx = queue[i].segIdx;
@@ -257,7 +233,7 @@ export class Merger {
         const jSegIdx = queue[j].segIdx;
         const iSeg = segments[iSegIdx];
         const jSeg = segments[jSegIdx];
-        const intersection = Merger.getIntersectionOfSegments(iSeg, jSeg, true);
+        const intersection = HalfEdgeGraphOps.getIntersectionOfSegments(iSeg, jSeg, true);
 
         if (intersection !== undefined) {
           const fractionForISeg = iSeg.point0Ref.distance(intersection) / iSeg.curveLength();
@@ -276,313 +252,46 @@ export class Merger {
   }
 
   /**
-   * Returns a graph structure formed from the given LineSegment array
+   * * For each face with positive area . . . add edges as needed so that each face has one definitely lower node and one definite upper node.
+   * * Hence tracing edges from the low node, there is a sequence of upward edges, reaching the upper,  then a sequence of downward edges reaching the low node.
+   * * This is an essential step for subsequent triangulation.
    *
-   * *  Find all intersections of each segment, and split them if necessary
-   * *  Record endpoints of every segment in the form X, Y, Theta; This information is stored as a new node and sorted to match up
-   *      vertices.
-   * *  For vertices that match up, pinch the nodes to create vertex loops, which in closed objects, will also eventually form face
-   *      loops
+   * @param graph
    */
-  public static formGraphFromSegments(lineSegments: LineSegment3d[]): HalfEdgeGraph {
-    // Structure of an index of the array: { xyTheta: Point3d, node: Node }
-    const returnGraph = new HalfEdgeGraph();
-    const segments: LineSegment3d[] = [];
-
-    // Obtain an array of all of the fractional intersections for each segment... remove duplicates and endpoints
-    const intersectArray = Merger.findCrossings(lineSegments);
-    for (const item of intersectArray) {
-      // Get rid of duplicate intersection findings
-      Merger.sortAndFilterCrossings(item);
-    }
-
-    // Create new segment array that contains the split segments
-    for (let i = 0; i < intersectArray.length; i++) {
-      if (intersectArray[i].length === 0) {
-        segments.push(lineSegments[i]);
-        continue;
-      }
-
-      let newStart = 0;
-      for (const f of intersectArray[i]) {
-        segments.push(LineSegment3d.create(lineSegments[i].fractionToPoint(newStart),
-          lineSegments[i].fractionToPoint(f)));
-        newStart = f;
-      }
-      // Add last segment, which is from last element of break array to end of original segment
-      segments.push(LineSegment3d.create(lineSegments[i].fractionToPoint(newStart),
-        lineSegments[i].fractionToPoint(1)));
-    }
-
-    const arr = Merger.segmentsToXYThetaNode(segments, returnGraph);
-
-    // Sort lexically
-    arr.sort(Merger.xyThetaCompare);
-    let lastNode = 0;
-
-    // Connect nodes at vertices
-    for (let i = 1; i <= arr.length; i++) {
-      if (i === arr.length || !Geometry.isSameCoordinate(arr[i].node.x, arr[lastNode].node.x) ||
-        !Geometry.isSameCoordinate(arr[i].node.y, arr[lastNode].node.y)) {
-        // pinch matching vertices
-        for (let j = lastNode; j < i - 1; j++) {
-          HalfEdge.pinch(arr[j].node, arr[j + 1].node);
-        }
-        lastNode = i;
-      }
-    }
-
-    return returnGraph;
-  }
-
-  // TODO: IMPROVE PERFORMANCE FROM N^2, N BEING THE # OF NODES IN THE FACE
-  /** For every event, pair it with other events of the closest segments that this event's horizontal would hit on the left and right */
-  private static setQueuePairings(queue: SweepEvent[]) {
-    // Segment to be reused when testing intersections
-    const unitSegment = LineSegment3d.createXYXY(0, 0, 0, 0);
-    for (const event of queue) {
-      // Segment to be reused when testing intersections
-      const segToCheck = LineSegment3d.createXYXY(0, 0, 0, 0);
-
-      // Left pairing
-      LineSegment3d.createXYXY(event.node0.x, event.node0.y, event.node0.x - 1, event.node0.y, undefined, unitSegment);
-      let closestDistance = Number.MAX_VALUE;
-      let lastIntersection: Point3d | undefined;
-      for (const toCheck of queue) {
-        if (event.node0 === toCheck.node0)
-          continue;
-
-        LineSegment3d.createXYXY(toCheck.node0.x, toCheck.node0.y, toCheck.node1.x, toCheck.node1.y, undefined, segToCheck);
-        const intersection = Merger.getIntersectionOfSegments(
-          unitSegment, segToCheck, false);
-        if (intersection) {  // found possible match
-
-          if ((segToCheck.point0Ref.y <= event.node0.y && segToCheck.point1Ref.y >= event.node0.y) ||
-            (segToCheck.point0Ref.y >= event.node0.y && segToCheck.point1Ref.y <= event.node0.y)) { // Check that segment is of correct height
-
-            if (intersection.x < event.node0.x) {  // Is to left of point
-
-              if (!(Geometry.isSameCoordinate(intersection.x, event.node0.x))) { // Intersection does not occur at same coord as endpoint
-                const distanceToSegment = Geometry.distanceXYXY(intersection.x, intersection.y, event.node0.x, event.node0.y);
-
-                if (lastIntersection && Geometry.isSamePoint3d(lastIntersection, intersection)) {   // For pairing at vertice, save alt.
-                  event.leftAlt = toCheck;
-                  lastIntersection = intersection;
-                } else if (distanceToSegment < closestDistance) {
-                  event.leftEvent = toCheck;
-                  event.leftAlt = undefined;
-                  lastIntersection = intersection;
-                  closestDistance = distanceToSegment;
-                }
-              }
-            }
-          }
-        }
-      }
-
-      // Right pairing
-      LineSegment3d.createXYXY(event.node0.x, event.node0.y, event.node0.x + 1, event.node0.y, undefined, unitSegment);
-      closestDistance = Number.MAX_VALUE;
-      lastIntersection = undefined;
-      for (const toCheck of queue) {
-        if (event.node0 === toCheck.node0)
-          continue;
-
-        LineSegment3d.createXYXY(toCheck.node0.x, toCheck.node0.y, toCheck.node1.x, toCheck.node1.y, undefined, segToCheck);
-        const intersection = Merger.getIntersectionOfSegments(unitSegment, segToCheck, false);
-        if (intersection) {  // found possible match
-
-          if ((segToCheck.point0Ref.y <= event.node0.y && segToCheck.point1Ref.y >= event.node0.y) ||
-            (segToCheck.point0Ref.y >= event.node0.y && segToCheck.point1Ref.y <= event.node0.y)) { // Check that segment is of correct height
-
-            if (intersection.x > event.node0.x) {  // Is to right of point
-
-              if (!(Geometry.isSameCoordinate(intersection.x, event.node0.x))) {   // Intersection does not occur at same coord as endpoint
-                const distanceToSegment = Geometry.distanceXYXY(intersection.x, intersection.y, event.node0.x, event.node0.y);
-
-                if (lastIntersection && Geometry.isSamePoint3d(lastIntersection, intersection)) {   // For pairing at vertice, save alt.
-                  event.rightAlt = toCheck;
-                  lastIntersection = intersection;
-                } else if (distanceToSegment < closestDistance) {
-                  event.rightEvent = toCheck;
-                  event.rightAlt = undefined;
-                  lastIntersection = intersection;
-                  closestDistance = distanceToSegment;
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-
-  /**
-   * Form a new connection between two nodes, patching up pointers in the creation of new face loops
-   * * !! mark both new half edges visited!!! (This is strange)
-   */
-  private static join(node0: HalfEdge, node1: HalfEdge, graph: HalfEdgeGraph) {
-    const alpha = graph.createEdgeXYZXYZ(
-      node0.x, node0.y, node0.z, node0.i,
-      node1.x, node1.y, node1.z, node1.i);
-    const beta = alpha.edgeMate;
-    HalfEdge.pinch(node0, alpha);
-    HalfEdge.pinch(node1, beta);
-    alpha.setMask(HalfEdgeMask.VISITED);
-    beta.setMask(HalfEdgeMask.VISITED);
-  }
-
-  private static getNodeToJoin(eventNode: HalfEdge, toCheckNode: HalfEdge): HalfEdge | undefined {
-    // Check if there already exists some form of connection between these two points in space
-    // (Otherwise, duplicates will not be recognized due to previous connections that cause the node to split)
-    for (const item1 of toCheckNode.collectAroundVertex())
-      for (const item2 of eventNode.collectAroundVertex())
-        if (item1.faceSuccessor === item2)
-          return undefined;
-
-    // If node toCheck already formed a connection, possible to have > 2 nodes at vertex (find out)
-    const possibleConnections = toCheckNode.collectAroundVertex();
-    if (possibleConnections.length <= 2)
-      return toCheckNode;
-    else {
-      let currNode;
-      // Only make a connection to the node in the same face loop
-      for (const node of possibleConnections) {
-        // Loop around face and return the node that is part of the face the eventNode is in
-        currNode = node;
-        do {
-          if (currNode === eventNode)
-            return node;
-          currNode = currNode.faceSuccessor;
-        } while (currNode !== node);
-      }
-
-      // Not in same face loop
-      return undefined;
-    }
-  }
-
-  /** Check a variety of cases by which adding a diagonal is allowed. If one is found, link nodes and return. */
-  private static checkAndAddDiagonal(event: SweepEvent, toCheck: SweepEvent, graph: HalfEdgeGraph) {
-    if (!event.leftEvent && !event.rightEvent) // No side of trapezoid.. continue to next event
-      return;
-
-    if (event.node0.facePredecessor === toCheck.node0 || event.node0.faceSuccessor === toCheck.node0)   // Can't join two neighbors
-      return;
-
-    // Case 1: Both left and right pairings of events are equal
-    if (event.leftEvent && toCheck.leftEvent && event.rightEvent && toCheck.rightEvent) {
-      if (event.leftEvent.node0 === toCheck.leftEvent.node0 && event.rightEvent.node0 === toCheck.rightEvent.node0) {
-        const toJoin = Merger.getNodeToJoin(event.node0, toCheck.node0);
-        if (toJoin)
-          Merger.join(event.node0, toJoin!, graph);
-        return;
-      }
-    }
-    // Case 2: Event(1) left pairing is event(2) who's right pairing is event(1)
-    if (event.leftEvent && toCheck.rightEvent) {
-      if (event.node0 === toCheck.rightEvent.node0 && toCheck.node0 === event.leftEvent.node0) {
-        const toJoin = Merger.getNodeToJoin(event.node0, toCheck.node0);
-        if (toJoin)
-          Merger.join(event.node0, toJoin!, graph);
-        return;
-      }
-    }
-    // Case 3: Event(1) right pairing is event(2) who's left pairing is event(1)
-    if (event.rightEvent && toCheck.leftEvent) {
-      if (event.node0 === toCheck.leftEvent.node0 && toCheck.node0 === event.rightEvent.node0) {
-        const toJoin = Merger.getNodeToJoin(event.node0, toCheck.node0);
-        if (toJoin)
-          Merger.join(event.node0, toJoin!, graph);
-        return;
-      }
-    }
-    // Case 4: Event(1) has a left pairing of event(2), and both events have same right pairing
-    if (toCheck.leftEvent && toCheck.rightEvent && event.rightEvent) {
-      if (event.node0 === toCheck.leftEvent.node0 && event.rightEvent.node0 === toCheck.rightEvent.node0) {
-        const toJoin = Merger.getNodeToJoin(event.node0, toCheck.node0);
-        if (toJoin)
-          Merger.join(event.node0, toJoin!, graph);
-        return;
-      }
-    }
-    // Case 5: Event(1) has a right pairing of event(2), and both events have same left pairing
-    if (toCheck.leftEvent && toCheck.rightEvent && event.leftEvent) {
-      if (event.node0 === toCheck.rightEvent.node0 && event.leftEvent.node0 === toCheck.leftEvent.node0) {
-        const toJoin = Merger.getNodeToJoin(event.node0, toCheck.node0);
-        if (toJoin)
-          Merger.join(event.node0, toJoin!, graph);
-        return;
-      }
-    }
-  }
-
-  /** Sweep over an event queue, adding new diagonal segments where possible in the formation of monotone faces */
-  private static sweepDownUp(queue: SweepEvent[], graph: HalfEdgeGraph) {
-    // Sweep going down...
-    for (let i = 0; i < queue.length; i++) {
-      for (let j = i + 1; j < queue.length; j++) {
-        if (queue[i].node0 === queue[j].node0)
-          continue;
-
-        const event = queue[i];
-        const toCheck = queue[j];
-
-        Merger.checkAndAddDiagonal(event, toCheck, graph);
-
-      }
-    }
-    // Sweep going up...
-    for (let i = queue.length - 1; i >= 0; i--) {
-      for (let j = i - 1; j >= 0; j--) {
-        if (queue[i].node0 === queue[j].node0)
-          continue;
-
-        const event = queue[i];
-        const toCheck = queue[j];
-
-        Merger.checkAndAddDiagonal(event, toCheck, graph);
-
-      }
-    }
-  }
-
   public static formMonotoneFaces(graph: HalfEdgeGraph) {
-    graph.clearMask(HalfEdgeMask.VISITED);
 
+    const allFaces = graph.collectFaceLoops();
+    graph.clearMask(HalfEdgeMask.VISITED);
     // For every face, break the face down into monotone sections
-    for (const node of graph.allHalfEdges) {
+    for (const node of allFaces) {
       if (node.isMaskSet(HalfEdgeMask.VISITED))
         continue;
-
-      const queue: SweepEvent[] = [];
-      let currNode = node;
-      // Push face nodes onto the queue
-      do {
-        queue.push(new SweepEvent(currNode, currNode.faceSuccessor));
-        currNode.setMask(HalfEdgeMask.VISITED);
-        currNode = currNode.faceSuccessor;
-      } while (currNode !== node);
-
-      queue.sort(Merger.eventCompareTrapezoidation);  // Sort top to bottom by node0
-      Merger.setQueuePairings(queue);   // Pair every event to a left and right "segment" (node connection)
-
-      Merger.sweepDownUp(queue, graph);   // Sweep adding diagonals
-
-      // Swap in alternates
-      for (const event of queue) {
-        if (event.leftAlt)
-          event.leftEvent = event.leftAlt;
-        if (event.rightAlt)
-          event.rightEvent = event.rightAlt;
+      const area = node.signedFaceArea();
+      if (area <= 0.0) {
+        node.setMaskAroundFace(HalfEdgeMask.VISITED);
+        continue;
       }
 
-      Merger.sweepDownUp(queue, graph);   // Sweep adding diagonals with alternates
     }
   }
-
+  /**
+   * Compute and save sort angle in all nodes of the graph.
+   * * the sort angle is the atan2 of the vector to face successor.
+   * * Hence the sort angle range is -PI to PI
+   * @param graph graph to update.
+   */
+  public static setXYSortAnglesInGraph(graph: HalfEdgeGraph) {
+    let node1;
+    for (const node0 of graph.allHalfEdges) {
+      node1 = node0.faceSuccessor;
+      node0.sortAngle = Math.atan2((node1.y - node0.y), (node1.x - node0.x));
+    }
+  }
 }
-export class GraphMerge {
+/**
+ * @internal
+ */
+export class HalfEdgeGraphMerge {
   /** Simplest merge algorithm:
    * * collect array of (x,y,theta) at all nodes
    * * lexical sort of the array.
@@ -654,6 +363,67 @@ export class GraphMerge {
       }
     }
 
+  }
+
+  /**
+   * Returns a graph structure formed from the given LineSegment array
+   *
+   * *  Find all intersections among segments, and split them if necessary
+   * *  Record endpoints of every segment in the form X, Y, Theta; This information is stored as a new node and sorted to match up
+   *      vertices.
+   * *  For vertices that match up, pinch the nodes to create vertex loops, which in closed objects, will also eventually form face
+   *      loops
+   */
+  public static formGraphFromSegments(lineSegments: LineSegment3d[]): HalfEdgeGraph {
+    // Structure of an index of the array: { xyTheta: Point3d, node: Node }
+    const graph = new HalfEdgeGraph();
+    const segments: LineSegment3d[] = [];
+
+    // Obtain an array of all of the fractional intersections for each segment... remove duplicates and endpoints
+    const intersectArray = HalfEdgeGraphOps.findCrossings(lineSegments);
+    for (const item of intersectArray) {
+      // Get rid of duplicate intersection findings
+      HalfEdgeGraphOps.sortAndFilterCrossings(item);
+    }
+
+    // Create new segment array that contains the split segments
+    for (let i = 0; i < intersectArray.length; i++) {
+      if (intersectArray[i].length === 0) {
+        segments.push(lineSegments[i]);
+        continue;
+      }
+
+      let newStart = 0;
+      for (const f of intersectArray[i]) {
+        segments.push(LineSegment3d.create(lineSegments[i].fractionToPoint(newStart),
+          lineSegments[i].fractionToPoint(f)));
+        newStart = f;
+      }
+      // Add last segment, which is from last element of break array to end of original segment
+      segments.push(LineSegment3d.create(lineSegments[i].fractionToPoint(newStart),
+        lineSegments[i].fractionToPoint(1)));
+    }
+
+    const arr = HalfEdgeGraphOps.segmentArrayToGraphEdges(segments, graph, HalfEdgeMask.BOUNDARY);
+    HalfEdgeGraphOps.setXYSortAnglesInGraph(graph);
+
+    // Sort lexically
+    arr.sort(HalfEdgeGraphOps.compareNodeXYTheta);
+    let lastNode = 0;
+
+    // Connect nodes at vertices
+    for (let i = 1; i <= arr.length; i++) {
+      if (i === arr.length || !Geometry.isSameCoordinate(arr[i].x, arr[lastNode].x) ||
+        !Geometry.isSameCoordinate(arr[i].y, arr[lastNode].y)) {
+        // pinch matching vertices
+        for (let j = lastNode; j < i - 1; j++) {
+          HalfEdge.pinch(arr[j], arr[j + 1]);
+        }
+        lastNode = i;
+      }
+    }
+
+    return graph;
   }
 
 }

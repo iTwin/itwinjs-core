@@ -716,8 +716,8 @@ export class System extends RenderSystem {
       } else {
         // ### TODO: There are a lot of inefficiencies here (what if it is a simple convex polygon... we must adjust UV params ourselves afterwards, a PolyfaceVisitor....)
         // We are also assuming that when we use the polyface visitor, it will iterate over the points in order of the entire array
-        const triangulatedPolygon = Triangulator.earcutSingleLoop(polygon);
-        Triangulator.cleanupTriangulation(triangulatedPolygon);
+        const triangulatedPolygon = Triangulator.createTriangulatedGraphFromSingleLoop(polygon);
+        Triangulator.flipTriangles(triangulatedPolygon);
 
         triangulatedPolygon.announceFaceLoops((_graph: HalfEdgeGraph, edge: HalfEdge): boolean => {
           if (!edge.isMaskSet(HalfEdgeMask.EXTERIOR)) {

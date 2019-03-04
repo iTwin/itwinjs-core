@@ -27,11 +27,16 @@ export class GeometryCoreTestIO {
     const imjs = IModelJson.Writer.toIModelJson(geometry);
     fs.writeFileSync(fullPath, prettyPrint(imjs));
   }
-  public static captureGeometry(collection: GeometryQuery[], newGeometry: GeometryQuery, dx: number = 0, dy: number = 0, dz: number = 0) {
-    if (newGeometry) {
+  public static captureGeometry(collection: GeometryQuery[], newGeometry: GeometryQuery | GeometryQuery[], dx: number = 0, dy: number = 0, dz: number = 0) {
+    if (newGeometry instanceof GeometryQuery) {
       if (Geometry.hypotenuseSquaredXYZ(dx, dy, dz) !== 0)
         newGeometry.tryTranslateInPlace(dx, dy, dz);
       collection.push(newGeometry);
+      return;
+    }
+    if (Array.isArray(newGeometry)) {
+      for (const g of newGeometry)
+        this.captureGeometry(collection, g, dx, dy, dz);
     }
   }
   /**
