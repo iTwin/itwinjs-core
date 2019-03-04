@@ -2368,8 +2368,6 @@ class IModelReadRpcInterface extends RpcInterface {
   // (undocumented)
   close(_accessToken: AccessToken, _iModelToken: IModelToken): Promise<boolean>;
   // (undocumented)
-  executeQuery(_iModelToken: IModelToken, _ecsql: string, _bindings?: any[] | object): Promise<any[]>;
-  // (undocumented)
   getAllCodeSpecs(_iModelToken: IModelToken): Promise<any[]>;
   // (undocumented)
   getClassHierarchy(_iModelToken: IModelToken, _startClassName: string): Promise<string[]>;
@@ -2398,6 +2396,10 @@ class IModelReadRpcInterface extends RpcInterface {
   queryEntityIds(_iModelToken: IModelToken, _params: EntityQueryParams): Promise<Id64Set>;
   // (undocumented)
   queryModelProps(_iModelToken: IModelToken, _params: EntityQueryParams): Promise<ModelProps[]>;
+  // (undocumented)
+  queryPage(_iModelToken: IModelToken, _ecsql: string, _bindings?: any[] | object, _options?: PageOptions): Promise<any[]>;
+  // (undocumented)
+  queryRowCount(_iModelToken: IModelToken, _ecsql: string, _bindings?: any[] | object): Promise<number>;
   // (undocumented)
   readFontJson(_iModelToken: IModelToken): Promise<any>;
   // (undocumented)
@@ -2554,6 +2556,10 @@ class IModelTileRpcInterface extends RpcInterface {
   getTileContent(_iModelToken: IModelToken, _treeId: string, _contentId: string): Promise<Uint8Array>;
   // (undocumented)
   getTileTreeProps(_iModelToken: IModelToken, _id: string): Promise<TileTreeProps>;
+  // (undocumented)
+  requestTileContent(_iModelToken: IModelToken, _treeId: string, _contentId: string): Promise<Uint8Array>;
+  // (undocumented)
+  requestTileTreeProps(_iModelToken: IModelToken, _id: string): Promise<TileTreeProps>;
   // (undocumented)
   static types: () => (typeof IModelToken)[];
   static version: string;
@@ -2988,6 +2994,20 @@ class OctEncodedNormalPair {
   first: OctEncodedNormal;
   // (undocumented)
   second: OctEncodedNormal;
+}
+
+// @public (undocumented)
+interface PagableECSql {
+  query(ecsql: string, bindings?: any[] | object, options?: PageOptions): AsyncIterableIterator<any>;
+  queryPage(ecsql: string, bindings?: any[] | object, options?: PageOptions): Promise<any[]>;
+  queryRowCount(ecsql: string, bindings?: any[] | object): Promise<number>;
+}
+
+// @public
+interface PageOptions {
+  retries?: number;
+  size?: number;
+  start?: number;
 }
 
 // @public
@@ -3744,8 +3764,8 @@ class RpcManager {
 
 // @public (undocumented)
 class RpcMarshaling {
-  static deserialize(_operation: RpcOperation, _protocol: RpcProtocol | undefined, value: RpcSerializedValue): any;
-  static serialize(operation: RpcOperation | string, _protocol: RpcProtocol | undefined, value: any): RpcSerializedValue;
+  static deserialize(_operation: RpcOperation, protocol: RpcProtocol | undefined, value: RpcSerializedValue): any;
+  static serialize(operation: RpcOperation | string, protocol: RpcProtocol | undefined, value: any): RpcSerializedValue;
 }
 
 // @public
@@ -3859,6 +3879,7 @@ class RpcProtocol {
   readonly requestType: typeof RpcRequest;
   serialize(request: RpcRequest): SerializedRpcRequest;
   supplyPathForOperation(operation: RpcOperation, _request: RpcRequest | undefined): string;
+  transferChunkThreshold: number;
   readonly versionHeaderName: string;
 }
 
@@ -3947,6 +3968,8 @@ class RpcRequest<TResponse = any> {
   findParameterOfType<T>(requestConstructor: {
           new (...args: any[]): T;
       }): T | undefined;
+  // (undocumented)
+  protected handleUnknownResponse(code: number): void;
   readonly id: string;
   readonly lastSubmitted: number;
   readonly lastUpdated: number;
@@ -3958,6 +3981,8 @@ class RpcRequest<TResponse = any> {
   path: string;
   readonly pending: boolean;
   readonly protocol: RpcProtocol;
+  // (undocumented)
+  protected reject(reason: any): void;
   readonly response: Promise<TResponse>;
   retryInterval: number;
   protected abstract send(): Promise<number>;
@@ -4069,6 +4094,11 @@ interface SerializedRpcRequest {
 
 // @public (undocumented)
 class ServerError extends IModelError {
+  constructor(errorNumber: number, message: string, log?: LogFunction);
+}
+
+// @public (undocumented)
+class ServerTimeoutError extends ServerError {
   constructor(errorNumber: number, message: string, log?: LogFunction);
 }
 
@@ -4691,6 +4721,7 @@ class WebAppRpcProtocol extends RpcProtocol {
   handleOperationPostRequest(req: HttpServerRequest, res: HttpServerResponse): Promise<void>;
   // WARNING: The type "OpenAPIInfo" needs to be exported by the package (e.g. added to index.ts)
   info: OpenAPIInfo;
+  isTimeout(code: number): boolean;
   // WARNING: The type "RpcOpenAPIDescription" needs to be exported by the package (e.g. added to index.ts)
   readonly openAPIDescription: RpcOpenAPIDescription;
   pathPrefix: string;
@@ -4703,6 +4734,8 @@ class WebAppRpcProtocol extends RpcProtocol {
 class WebAppRpcRequest extends RpcRequest {
   constructor(client: RpcInterface, operation: string, parameters: any[]);
   protected static computeTransportType(value: RpcSerializedValue, source: any): RpcContentType;
+  // (undocumented)
+  protected handleUnknownResponse(code: number): void;
   // (undocumented)
   protected load(): Promise<RpcSerializedValue>;
   static maxUrlComponentSize: number;
@@ -4749,6 +4782,7 @@ class WipRpcInterface extends RpcInterface {
 // WARNING: Unsupported export: LogFunction
 // WARNING: Unsupported export: RgbFactorProps
 // WARNING: Unsupported export: DPoint2dProps
+// WARNING: Unsupported export: kPagingDefaultOptions
 // WARNING: Unsupported export: GeometryStreamProps
 // WARNING: Unsupported export: AxisAlignedBox3d
 // WARNING: Unsupported export: ElementAlignedBox3d

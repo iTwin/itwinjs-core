@@ -514,12 +514,14 @@ class DriverBundleElement extends InformationContentElement {
 }
 
 // @public
-class ECDb implements IDisposable {
+class ECDb implements IDisposable, PagableECSql {
   constructor();
   abandonChanges(): void;
+  clearStatementCache(): void;
   closeDb(): void;
   createDb(pathName: string): void;
   dispose(): void;
+  getCachedStatementCount(): number;
   importSchema(pathName: string): void;
   readonly isOpen: boolean;
   // WARNING: The type "IModelJsNative.ECDb" needs to be exported by the package (e.g. added to index.ts)
@@ -528,6 +530,9 @@ class ECDb implements IDisposable {
   openDb(pathName: string, openMode?: ECDbOpenMode): void;
   prepareSqliteStatement(sql: string): SqliteStatement;
   prepareStatement(ecsql: string): ECSqlStatement;
+  query(ecsql: string, bindings?: any[] | object, options?: PageOptions): AsyncIterableIterator<any>;
+  queryPage(ecsql: string, bindings?: any[] | object, options?: PageOptions): Promise<any[]>;
+  queryRowCount(ecsql: string, bindings?: any[] | object): Promise<number>;
   saveChanges(changeSetName?: string): void;
   withPreparedSqliteStatement<T>(sql: string, cb: (stmt: SqliteStatement) => T): T;
   withPreparedStatement<T>(ecsql: string, cb: (stmt: ECSqlStatement) => T): T;
@@ -648,7 +653,9 @@ class ECSqlStatement implements IterableIterator<any>, IDisposable {
   reset(): void;
   setIsShared(b: boolean): void;
   step(): DbResult;
+  stepAsync(): Promise<DbResult>;
   stepForInsert(): ECSqlInsertResult;
+  stepForInsertAsync(): Promise<ECSqlInsertResult>;
 }
 
 // @public
@@ -668,6 +675,8 @@ class ECSqlStatementCache {
   release(stmt: ECSqlStatement): void;
   // (undocumented)
   removeUnusedStatementsIfNecessary(): void;
+  // (undocumented)
+  replace(str: string, stmt: ECSqlStatement): void;
 }
 
 // @public
@@ -1052,14 +1061,19 @@ class IModelHost {
   static readonly platform: typeof IModelJsNative;
   static shutdown(): void;
   static startup(configuration?: IModelHostConfiguration): void;
+  static readonly tileContentRequestTimeout: number;
+  static readonly tileTreeRequestTimeout: number;
 }
 
 // @public
 class IModelHostConfiguration {
   appAssetsDir?: string;
   briefcaseCacheDir: string;
+  static defaultTileRequestTimeout: number;
   imodelClient?: IModelClient;
   nativePlatform?: any;
+  tileContentRequestTimeout: number;
+  tileTreeRequestTimeout: number;
 }
 
 // @public (undocumented)
@@ -1634,10 +1648,17 @@ module IModelJsNative {
     // (undocumented)
     step(): DbResult;
     // (undocumented)
+    stepAsync(callback: (result: DbResult) => void): void;
+    // (undocumented)
     stepForInsert: {
       id: string;
       status: DbResult;
     }
+    // (undocumented)
+    stepForInsertAsync(callback: (result: {
+                status: DbResult;
+                id: string;
+            }) => void): void;
   }
 
   // (undocumented)
@@ -1804,6 +1825,8 @@ module IModelJsNative {
     reset(): DbResult;
     // (undocumented)
     step(): DbResult;
+    // (undocumented)
+    stepAsync(callback: (result: DbResult) => void): void;
   }
 
 }
@@ -2458,6 +2481,7 @@ class SqliteStatement implements IterableIterator<any>, IDisposable {
   reset(): void;
   setIsShared(b: boolean): void;
   step(): DbResult;
+  stepAsync(): Promise<DbResult>;
 }
 
 // @public
@@ -2477,6 +2501,8 @@ class SqliteStatementCache {
   release(stmt: SqliteStatement): void;
   // (undocumented)
   removeUnusedStatementsIfNecessary(): void;
+  // (undocumented)
+  replace(str: string, stmt: SqliteStatement): void;
 }
 
 // @public

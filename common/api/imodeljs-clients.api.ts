@@ -335,7 +335,8 @@ interface ConnectRequestQueryOptions extends RequestQueryOptions {
   isMRU?: boolean;
 }
 
-// @public
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal
 class ConnectSettingsClient extends Client, implements SettingsAdmin {
   constructor(applicationId: string);
   // (undocumented)
@@ -347,6 +348,7 @@ class ConnectSettingsClient extends Client, implements SettingsAdmin {
   getAccessToken(alctx: ActivityLoggingContext, authSamlToken: AuthorizationToken): Promise<AccessToken>;
   // (undocumented)
   getSetting(alctx: ActivityLoggingContext, settingNamespace: string, settingName: string, accessToken: AccessToken, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
+  // (undocumented)
   protected getUrlSearchKey(): string;
   // (undocumented)
   getUserSetting(alctx: ActivityLoggingContext, settingNamespace: string, settingName: string, accessToken: AccessToken, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
@@ -481,7 +483,7 @@ class FeatureStartedLogEntry extends FeatureLogEntry {
   readonly entryId: GuidString;
 }
 
-// @public (undocumented)
+// @public
 class FileAccessKey extends WsgInstance {
   // (undocumented)
   permissions?: string;
@@ -578,6 +580,12 @@ class HubUserInfo extends WsgInstance {
 // @public
 interface IAccessTokenManager {
   getAccessToken(actx: ActivityLoggingContext): Promise<AccessToken>;
+}
+
+// @public
+interface IAngularOidcFrontendClient extends IOidcFrontendClient {
+  // (undocumented)
+  handleRedirectCallback(): Promise<boolean>;
 }
 
 // @public (undocumented)
@@ -728,6 +736,22 @@ class IModelHubGlobalEvent extends IModelHubBaseEvent {
   fromJson(obj: any): void;
   iModelId?: GuidString;
   projectId?: string;
+}
+
+// @public (undocumented)
+enum IModelHubPermissions {
+  // (undocumented)
+  CreateIModel = 1,
+  // (undocumented)
+  ManageResources = 8,
+  // (undocumented)
+  ManageVersions = 16,
+  // (undocumented)
+  ModifyIModel = 4,
+  // (undocumented)
+  None = 0,
+  // (undocumented)
+  ReadIModel = 2
 }
 
 // @public
@@ -1038,6 +1062,19 @@ class Query {
   top(n: number): this;
 }
 
+// WARNING: configRelyingPartyUri has incomplete type information
+// @public
+class RbacClient extends WsgClient {
+  constructor();
+  getIModelHubPermissions(alctx: ActivityLoggingContext, token: AccessToken, projectId: string): Promise<IModelHubPermissions>;
+  getProjects(alctx: ActivityLoggingContext, token: AccessToken, queryOptions?: RbacRequestQueryOptions): Promise<RbacProject[]>;
+  protected getRelyingPartyUrl(): string;
+  protected getUrlSearchKey(): string;
+  getUsers(alctx: ActivityLoggingContext, token: AccessToken, projectId: string, queryOptions?: RbacRequestQueryOptions): Promise<RbacUser[]>;
+  // (undocumented)
+  static readonly searchKey: string;
+}
+
 // @public
 class RbacProject extends WsgInstance {
 }
@@ -1058,6 +1095,8 @@ class RealityData extends WsgInstance {
   accuracyInMeters?: string;
   // (undocumented)
   classification?: string;
+  // (undocumented)
+  client: undefined | RealityDataServicesClient;
   containerName?: string;
   // (undocumented)
   copyright?: string;
@@ -1073,6 +1112,12 @@ class RealityData extends WsgInstance {
   description?: string;
   // (undocumented)
   footprint?: string;
+  getBlobStringUrl(alctx: ActivityLoggingContext, token: AccessToken, name: string, nameRelativeToRootDocumentPath?: boolean): Promise<string>;
+  getBlobUrl(alctx: ActivityLoggingContext, token: AccessToken): Promise<URL>;
+  getModelData(alctx: ActivityLoggingContext, token: AccessToken, name: string, nameRelativeToRootDocumentPath?: boolean): Promise<any>;
+  getRootDocumentJson(alctx: ActivityLoggingContext, token: AccessToken): Promise<any>;
+  getTileContent(alctx: ActivityLoggingContext, token: AccessToken, name: string, nameRelativeToRootDocumentPath?: boolean): Promise<any>;
+  getTileJson(alctx: ActivityLoggingContext, token: AccessToken, name: string, nameRelativeToRootDocumentPath?: boolean): Promise<any>;
   // (undocumented)
   group?: number;
   // (undocumented)
@@ -1089,6 +1134,8 @@ class RealityData extends WsgInstance {
   organizationId?: string;
   // (undocumented)
   ownedBy?: string;
+  // (undocumented)
+  projectId: undefined | string;
   // (undocumented)
   resolutionInMeters?: string;
   // (undocumented)
@@ -1115,20 +1162,12 @@ class RealityData extends WsgInstance {
 // @public
 class RealityDataServicesClient extends WsgClient {
   constructor();
-  cleanTilesetUrl(url: string): string;
-  getBlobStringUrl(alctx: ActivityLoggingContext, token: AccessToken, projectId: string, tilesId: string, name: string): Promise<string>;
-  getBlobUrl(alctx: ActivityLoggingContext, token: AccessToken, projectId: string, tilesId: string): Promise<URL>;
-  getFileAccessKey(alctx: ActivityLoggingContext, token: AccessToken, projectId: string, tilesId: string, name: string): Promise<FileAccessKey[]>;
-  getModelData(alctx: ActivityLoggingContext, token: AccessToken, projectId: string, tilesId: string, name: string): Promise<any>;
-  getRealityData(alctx: ActivityLoggingContext, token: AccessToken, projectId: string, tilesId: string): Promise<RealityData[]>;
+  getFileAccessKey(alctx: ActivityLoggingContext, token: AccessToken, projectId: string, tilesId: string): Promise<FileAccessKey[]>;
+  getRealityData(alctx: ActivityLoggingContext, token: AccessToken, projectId: string, tilesId: string): Promise<RealityData>;
   getRealityDataInProject(alctx: ActivityLoggingContext, token: AccessToken, projectId: string): Promise<RealityData[]>;
   getRealityDataInProjectOverlapping(alctx: ActivityLoggingContext, token: AccessToken, projectId: string, range: Range2d): Promise<RealityData[]>;
   getRealityDataUrl(alctx: ActivityLoggingContext, projectId: string, tilesId: string): Promise<string>;
   protected getRelyingPartyUrl(): string;
-  getRootDocumentJson(alctx: ActivityLoggingContext, token: AccessToken, projectId: string, tilesId: string): Promise<any>;
-  getTileContent(alctx: ActivityLoggingContext, token: AccessToken, projectId: string, tilesId: string, name: string): Promise<any>;
-  getTileDataBlobUrl(alctx: ActivityLoggingContext, token: AccessToken, projectId: string, tilesId: string): Promise<string>;
-  getTileJson(alctx: ActivityLoggingContext, token: AccessToken, projectId: string, tilesId: string, name: string): Promise<any>;
   protected getUrlSearchKey(): string;
   // (undocumented)
   static readonly searchKey: string;
@@ -1189,9 +1228,9 @@ interface RequestOptions {
   stream?: any;
   // (undocumented)
   timeout?: number | {
-    deadline?: number;
-    response?: number;
-  };
+          deadline?: number;
+          response?: number;
+      };
   // (undocumented)
   useCorsProxy?: boolean;
 }
@@ -1289,6 +1328,7 @@ interface SettingsAdmin {
 
 // @public
 class SettingsResult {
+  // @internal
   constructor(status: SettingsStatus, errorMessage?: string | undefined, setting?: any);
   // (undocumented)
   errorMessage?: string | undefined;
@@ -1459,46 +1499,46 @@ interface UsageUserInfo {
 // @public
 class UserInfo {
   constructor(
-    id: string,
-    email?: {
-      id: string;
-      isVerified?: boolean | undefined;
-    } | undefined,
-    profile?: {
-      firstName: string;
-      lastName: string;
-      name?: string | undefined;
-      preferredUserName?: string | undefined;
-    } | undefined,
-    organization?: {
-      id: string;
-      name: string;
-    } | undefined,
-    featureTracking?: {
-      ultimateSite: string;
-      usageCountryIso: string;
-    } | undefined);
+      id: string, 
+      email?: {
+          id: string;
+          isVerified?: boolean | undefined;
+      } | undefined, 
+      profile?: {
+          firstName: string;
+          lastName: string;
+          name?: string | undefined;
+          preferredUserName?: string | undefined;
+      } | undefined, 
+      organization?: {
+          id: string;
+          name: string;
+      } | undefined, 
+      featureTracking?: {
+          ultimateSite: string;
+          usageCountryIso: string;
+      } | undefined);
   email?: {
-    id: string;
-    isVerified?: boolean | undefined;
-  } | undefined;
+          id: string;
+          isVerified?: boolean | undefined;
+      } | undefined;
   featureTracking?: {
-    ultimateSite: string;
-    usageCountryIso: string;
-  } | undefined;
+          ultimateSite: string;
+          usageCountryIso: string;
+      } | undefined;
   // (undocumented)
   static fromJson(jsonObj: any): UserInfo;
   id: string;
   organization?: {
-    id: string;
-    name: string;
-  } | undefined;
+          id: string;
+          name: string;
+      } | undefined;
   profile?: {
-    firstName: string;
-    lastName: string;
-    name?: string | undefined;
-    preferredUserName?: string | undefined;
-  } | undefined;
+          firstName: string;
+          lastName: string;
+          name?: string | undefined;
+          preferredUserName?: string | undefined;
+      } | undefined;
 }
 
 // @public

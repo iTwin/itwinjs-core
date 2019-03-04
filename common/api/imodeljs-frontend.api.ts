@@ -1287,7 +1287,7 @@ interface Decorator {
 
 // @public (undocumented)
 class DefaultViewTouchTool extends ViewManip {
-  constructor(startEv: BeTouchEvent, ev: BeTouchEvent);
+  constructor(startEv: BeTouchEvent, _ev: BeTouchEvent);
   // (undocumented)
   onDataButtonDown(_ev: BeButtonEvent): Promise<EventHandled>;
   // (undocumented)
@@ -1493,14 +1493,9 @@ module EditManipulator {
 
 // @public
 interface EditorPosition {
-  // (undocumented)
-  columnPriority: number;
+  columnIndex: number;
   columnSpan?: number;
-  horizontalAlignment?: TsHorizontalAlignment;
-  // (undocumented)
   rowPriority: number;
-  rowSpan?: number;
-  verticalAlignment?: TsVerticalAlignment;
 }
 
 // @public (undocumented)
@@ -2069,7 +2064,8 @@ class FuzzySearchResults<T> implements Iterable<T> {
   results: any[];
 }
 
-// @public (undocumented)
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal
 class GeoConverter {
   constructor(iModel: IModelConnection, datum: string);
   // (undocumented)
@@ -2127,7 +2123,8 @@ class GeometricModelState extends ModelState, implements TileTreeModelState {
   readonly treeModelId: Id64String;
 }
 
-// @public
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal
 class GeoServices {
   constructor(iModel: IModelConnection);
   // (undocumented)
@@ -2174,6 +2171,7 @@ class GraphicBuilder {
   abstract addArc2d(ellipse: Arc3d, isEllipse: boolean, filled: boolean, zDepth: number): void;
   abstract addLineString(points: Point3d[]): void;
   abstract addLineString2d(points: Point2d[], zDepth: number): void;
+  addLineStrings(...lines: Array<[number, Point3d[]]>): void;
   abstract addLoop(loop: Loop): void;
   abstract addPath(path: Path): void;
   abstract addPointString(points: Point3d[]): void;
@@ -2544,6 +2542,14 @@ class InputCollector extends InteractiveTool {
 }
 
 // @public
+interface InputEditorSizeParams extends BasePropertyEditorParams {
+  maxLength?: number;
+  size?: number;
+  // (undocumented)
+  type: PropertyEditorParamTypes.InputEditorSize;
+}
+
+// @public
 enum InputSource {
   Mouse = 1,
   Touch = 2,
@@ -2657,6 +2663,15 @@ enum KeyinStatus {
 
 // @public (undocumented)
 export function linePlaneIntersect(outP: Point3d, linePt: Point3d, lineNormal: Vector3d | undefined, planePt: Point3d, planeNormal: Vector3d, perpendicular: boolean): void;
+
+// @public
+interface LinkElementsInfo {
+  matcher?: (displayValue: string) => Array<{
+          start: number;
+          end: number;
+      }>;
+  onClick: (record: PropertyRecord, text: string) => void;
+}
 
 // @public
 enum LocateAction {
@@ -3354,6 +3369,7 @@ class OidcBrowserClient extends OidcClient, implements IOidcFrontendClient {
   constructor(_configuration: OidcFrontendClientConfiguration);
   dispose(): void;
   getAccessToken(_actx: ActivityLoggingContext): Promise<AccessToken>;
+  handleRedirectCallback(): Promise<boolean>;
   initialize(actx: ActivityLoggingContext): Promise<void>;
   readonly onUserStateChanged: BeEvent<(token: AccessToken | undefined) => void>;
   signIn(_actx: ActivityLoggingContext): void;
@@ -3595,7 +3611,7 @@ class Plugin {
   constructor(name: string, versionsRequired: string);
   // (undocumented)
   name: string;
-  onExecute(_args: string[]): void;
+  abstract onExecute(_args: string[]): void;
   onLoad(_args: string[]): void;
   // (undocumented)
   versionsRequired: string;
@@ -3690,23 +3706,25 @@ interface PropertyEditorInfo {
 // @public
 enum PropertyEditorParamTypes {
   // (undocumented)
-  ButtonGroupData = 8,
+  ButtonGroupData = 0,
   // (undocumented)
-  CheckBoxIcons = 5,
+  CheckBoxIcons = 1,
   // (undocumented)
-  Icon = 4,
+  Icon = 2,
   // (undocumented)
-  JSON = 0,
+  InputEditorSize = 3,
   // (undocumented)
-  MultilineText = 3,
+  JSON = 4,
   // (undocumented)
-  Range = 1,
+  MultilineText = 5,
   // (undocumented)
-  Slider = 2,
+  Range = 6,
   // (undocumented)
-  SuppressEditorLabel = 7,
+  Slider = 7,
   // (undocumented)
-  SuppressUnitLabel = 6
+  SuppressEditorLabel = 9,
+  // (undocumented)
+  SuppressUnitLabel = 8
 }
 
 // @public
@@ -3716,9 +3734,12 @@ class PropertyRecord {
   // (undocumented)
   description?: string;
   // (undocumented)
+  isDisabled?: boolean;
+  // (undocumented)
   isMerged?: boolean;
   // (undocumented)
   isReadonly?: boolean;
+  links?: LinkElementsInfo;
   // (undocumented)
   readonly property: PropertyDescription;
   // (undocumented)
@@ -4566,7 +4587,7 @@ class SkyCube extends SkyBox, implements SkyCubeProps {
   readonly top: Id64String;
 }
 
-// @public
+// @beta
 class SkyGradient extends SkyBox {
   constructor(sky?: SkyBoxProps);
   // (undocumented)
@@ -4837,6 +4858,7 @@ class SubCategoriesRequest {
 
 // @public
 interface SuppressLabelEditorParams extends BasePropertyEditorParams {
+  suppressLabelPlaceholder?: boolean;
   // (undocumented)
   type: PropertyEditorParamTypes.SuppressEditorLabel;
 }
@@ -5447,14 +5469,17 @@ class ToolSettings {
 
 // @public
 class ToolSettingsPropertyRecord extends PropertyRecord {
-  constructor(value: PropertyValue, property: PropertyDescription, editorPosition: EditorPosition);
+  constructor(value: PropertyValue, property: PropertyDescription, editorPosition: EditorPosition, isReadonly?: boolean);
+  // (undocumented)
+  static clone(record: ToolSettingsPropertyRecord, newValue?: ToolSettingsValue): ToolSettingsPropertyRecord;
   // (undocumented)
   editorPosition: EditorPosition;
 }
 
 // @public
 class ToolSettingsPropertySyncItem {
-  constructor(value: ToolSettingsValue, propertyName: string);
+  constructor(value: ToolSettingsValue, propertyName: string, isDisabled?: boolean);
+  isDisabled?: boolean;
   // (undocumented)
   propertyName: string;
   // (undocumented)
@@ -5540,28 +5565,6 @@ class TouchCursor implements CanvasDecoration {
   position: Point3d;
   // (undocumented)
   protected setPosition(vp: Viewport, worldLocation: Point3d): boolean;
-}
-
-// @public
-enum TsHorizontalAlignment {
-  // (undocumented)
-  Center = 2,
-  // (undocumented)
-  Justify = 4,
-  // (undocumented)
-  Left = 1,
-  // (undocumented)
-  Right = 3
-}
-
-// @public
-enum TsVerticalAlignment {
-  // (undocumented)
-  Bottom = 3,
-  // (undocumented)
-  Middle = 2,
-  // (undocumented)
-  Top = 1
 }
 
 // @public

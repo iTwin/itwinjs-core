@@ -696,28 +696,22 @@ class PresentationError extends BentleyError {
 
 // @public
 class PresentationRpcInterface extends RpcInterface {
-  // WARNING: The type "SelectionScopeRpcRequestOptions" needs to be exported by the package (e.g. added to index.ts)
   // (undocumented)
-  computeSelection(_token: IModelToken, _options: SelectionScopeRpcRequestOptions, _keys: Readonly<EntityProps[]>, _scopeId: string): Promise<KeySet>;
-  getChildren(_token: IModelToken, _options: Paged<HierarchyRpcRequestOptions>, _parentKey: Readonly<NodeKey>): Promise<Node[]>;
-  getChildrenCount(_token: IModelToken, _options: HierarchyRpcRequestOptions, _parentKey: Readonly<NodeKey>): Promise<number>;
-  // WARNING: The type "ContentRpcRequestOptions" needs to be exported by the package (e.g. added to index.ts)
-  getContent(_token: IModelToken, _options: ContentRpcRequestOptions, _descriptor: Readonly<Descriptor>, _keys: Readonly<KeySet>): Promise<Content>;
-  // WARNING: The type "ContentRpcRequestOptions" needs to be exported by the package (e.g. added to index.ts)
-  getContentDescriptor(_token: IModelToken, _options: ContentRpcRequestOptions, _displayType: string, _keys: Readonly<KeySet>, _selection: Readonly<SelectionInfo> | undefined): Promise<Descriptor | undefined>;
-  // WARNING: The type "ContentRpcRequestOptions" needs to be exported by the package (e.g. added to index.ts)
-  getContentSetSize(_token: IModelToken, _options: ContentRpcRequestOptions, _descriptor: Readonly<Descriptor>, _keys: Readonly<KeySet>): Promise<number>;
-  // WARNING: The type "ContentRpcRequestOptions" needs to be exported by the package (e.g. added to index.ts)
-  getDistinctValues(_token: IModelToken, _options: ContentRpcRequestOptions, _descriptor: Readonly<Descriptor>, _keys: Readonly<KeySet>, _fieldName: string, _maximumValueCount: number): Promise<string[]>;
-  getFilteredNodePaths(_token: IModelToken, _options: HierarchyRpcRequestOptions, _filterText: string): Promise<NodePathElement[]>;
-  getNodePaths(_token: IModelToken, _options: HierarchyRpcRequestOptions, _paths: InstanceKey[][], _markedIndex: number): Promise<NodePathElement[]>;
-  getRootNodes(_token: IModelToken, _options: Paged<HierarchyRpcRequestOptions>): Promise<Node[]>;
-  getRootNodesCount(_token: IModelToken, _options: HierarchyRpcRequestOptions): Promise<number>;
-  // WARNING: The type "SelectionScopeRpcRequestOptions" needs to be exported by the package (e.g. added to index.ts)
+  computeSelection(_token: IModelToken, _options: SelectionScopeRpcRequestOptions, _keys: Readonly<EntityProps[]>, _scopeId: string): PresentationRpcResponse<KeySet>;
+  getChildren(_token: IModelToken, _options: Paged<HierarchyRpcRequestOptions>, _parentKey: Readonly<NodeKey>): PresentationRpcResponse<Node[]>;
+  getChildrenCount(_token: IModelToken, _options: HierarchyRpcRequestOptions, _parentKey: Readonly<NodeKey>): PresentationRpcResponse<number>;
+  getContent(_token: IModelToken, _options: ContentRpcRequestOptions, _descriptor: Readonly<Descriptor>, _keys: Readonly<KeySet>): PresentationRpcResponse<Content>;
+  getContentDescriptor(_token: IModelToken, _options: ContentRpcRequestOptions, _displayType: string, _keys: Readonly<KeySet>, _selection: Readonly<SelectionInfo> | undefined): PresentationRpcResponse<Descriptor | undefined>;
+  getContentSetSize(_token: IModelToken, _options: ContentRpcRequestOptions, _descriptor: Readonly<Descriptor>, _keys: Readonly<KeySet>): PresentationRpcResponse<number>;
+  getDistinctValues(_token: IModelToken, _options: ContentRpcRequestOptions, _descriptor: Readonly<Descriptor>, _keys: Readonly<KeySet>, _fieldName: string, _maximumValueCount: number): PresentationRpcResponse<string[]>;
+  getFilteredNodePaths(_token: IModelToken, _options: HierarchyRpcRequestOptions, _filterText: string): PresentationRpcResponse<NodePathElement[]>;
+  getNodePaths(_token: IModelToken, _options: HierarchyRpcRequestOptions, _paths: InstanceKey[][], _markedIndex: number): PresentationRpcResponse<NodePathElement[]>;
+  getRootNodes(_token: IModelToken, _options: Paged<HierarchyRpcRequestOptions>): PresentationRpcResponse<Node[]>;
+  getRootNodesCount(_token: IModelToken, _options: HierarchyRpcRequestOptions): PresentationRpcResponse<number>;
   // (undocumented)
-  getSelectionScopes(_token: IModelToken, _options: SelectionScopeRpcRequestOptions): Promise<SelectionScope[]>;
+  getSelectionScopes(_token: IModelToken, _options: SelectionScopeRpcRequestOptions): PresentationRpcResponse<SelectionScope[]>;
   // (undocumented)
-  syncClientState(_token: IModelToken, _options: ClientStateSyncRequestOptions): Promise<void>;
+  syncClientState(_token: IModelToken, _options: ClientStateSyncRequestOptions): PresentationRpcResponse;
   static types: () => (typeof Field | typeof PropertiesField | typeof NestedContentField | typeof Descriptor | typeof Item | typeof Content)[];
   static version: string;
 }
@@ -1046,10 +1040,20 @@ class RpcRequestsHandler implements IDisposable {
   registerClientStateHolder(holder: IClientStateHolder<any>): void;
   request<TResult, TOptions extends RpcRequestOptions & {
           imodel: IModelToken;
-      }, TArg>(context: any, func: (token: IModelToken, options: Omit<TOptions, "imodel">, ...args: TArg[]) => Promise<TResult>, options: TOptions, ...args: TArg[]): Promise<TResult>;
+      }, TArg = any>(context: any, func: (token: IModelToken, options: Omit<TOptions, "imodel">, ...args: TArg[]) => PresentationRpcResponse<TResult>, options: TOptions, ...args: TArg[]): Promise<TResult>;
   sync(token: IModelToken): Promise<void>;
   // (undocumented)
   unregisterClientStateHolder(holder: IClientStateHolder<any>): void;
+}
+
+// @public (undocumented)
+interface RpcResponse<TResult = undefined> {
+  // (undocumented)
+  errorMessage?: string;
+  // (undocumented)
+  result: TResult;
+  // (undocumented)
+  statusCode: PresentationStatus;
 }
 
 // @public
@@ -1318,8 +1322,11 @@ enum VariableValueTypes {
 }
 
 // WARNING: Unsupported export: Keys
-// WARNING: Unsupported export: HierarchyRpcRequestOptions
 // WARNING: Unsupported export: ClientStateSyncRequestOptions
+// WARNING: Unsupported export: ContentRpcRequestOptions
+// WARNING: Unsupported export: HierarchyRpcRequestOptions
+// WARNING: Unsupported export: SelectionScopeRpcRequestOptions
+// WARNING: Unsupported export: PresentationRpcResponse
 // WARNING: Unsupported export: VariableValue
 // WARNING: Unsupported export: FieldJSON
 // WARNING: Unsupported export: TypeDescription

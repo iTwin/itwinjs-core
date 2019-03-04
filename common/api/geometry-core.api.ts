@@ -58,6 +58,7 @@ class Angle implements BeJSONFunctions {
   static cleanupTrigValue(value: number, tolerance?: number): number;
   // (undocumented)
   clone(): Angle;
+  cloneScaled(scale: number): Angle;
   // (undocumented)
   cos(): number;
   static create360(): Angle;
@@ -1647,6 +1648,7 @@ class CurvePrimitive extends GeometryQuery {
   abstract emitStrokes(dest: LineString3d, options?: StrokeOptions): void;
   // (undocumented)
   endPoint(result?: Point3d): Point3d;
+  fractionAndDistanceToPointOnTangent(fraction: number, distance: number): Point3d;
   fractionToFrenetFrame(fraction: number, result?: Transform): Transform | undefined;
   abstract fractionToPoint(fraction: number, result?: Point3d): Point3d;
   abstract fractionToPointAnd2Derivatives(fraction: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors | undefined;
@@ -1759,6 +1761,8 @@ class FacetFaceData {
   clone(result?: FacetFaceData): FacetFaceData;
   convertParamToDistance(param: Point2d, result?: Point2d): Point2d;
   convertParamToNormalized(param: Point2d, result?: Point2d): Point2d;
+  convertParamXYToDistance(x: number, y: number, result?: Point2d): Point2d;
+  convertParamXYToNormalized(x: number, y: number, result?: Point2d): Point2d;
   static createNull(): FacetFaceData;
   // (undocumented)
   readonly paramDistanceRange: Range2d;
@@ -2000,7 +2004,7 @@ class GrowableBlockedArray {
 class GrowableFloat64Array {
   constructor(initialCapacity?: number);
   // (undocumented)
-  at(index: number): number;
+  atUncheckedIndex(index: number): number;
   // (undocumented)
   back(): number;
   // (undocumented)
@@ -2024,7 +2028,7 @@ class GrowableFloat64Array {
   reassign(index: number, value: number): void;
   resize(newLength: number, padValue?: number): void;
   restrictToInterval(a: number, b: number): void;
-  setAt(index: number, value: number): void;
+  setAtUncheckedIndex(index: number, value: number): void;
   sort(compareMethod?: (a: any, b: any) => number): void;
   swap(i: number, j: number): void;
 }
@@ -2033,8 +2037,6 @@ class GrowableFloat64Array {
 class GrowableXYArray extends IndexedXYCollection {
   constructor(numPoints?: number);
   areaXY(): number;
-  atPoint2dIndex(pointIndex: number, result?: Point2d): Point2d | undefined;
-  atVector2dIndex(vectorIndex: number, result?: Vector2d): Vector2d | undefined;
   // (undocumented)
   back(result?: Point2d): Point2d | undefined;
   clear(): void;
@@ -2057,9 +2059,13 @@ class GrowableXYArray extends IndexedXYCollection {
   // (undocumented)
   front(result?: Point2d): Point2d | undefined;
   getPoint2dArray(): Point2d[];
-  getPoint2dAt(pointIndex: number, result?: Point2d): Point2d;
+  getPoint2dAtCheckedPointIndex(pointIndex: number, result?: Point2d): Point2d | undefined;
+  getPoint2dAtUncheckedPointIndex(pointIndex: number, result?: Point2d): Point2d;
   // (undocumented)
   getPoint3dArray(z?: number): Point3d[];
+  getVector2dAtCheckedVectorIndex(vectorIndex: number, result?: Vector2d): Vector2d | undefined;
+  getXAtUncheckedPointIndex(pointIndex: number): number;
+  getYAtUncheckedPointIndex(pointIndex: number): number;
   interpolate(i: number, fraction: number, j: number, result?: Point2d): Point2d | undefined;
   // (undocumented)
   static isAlmostEqual(dataA: GrowableXYArray | undefined, dataB: GrowableXYArray | undefined): boolean;
@@ -2072,14 +2078,14 @@ class GrowableXYArray extends IndexedXYCollection {
   push(toPush: XAndY): void;
   pushAll(points: XAndY[]): void;
   pushAllXYAndZ(points: XYAndZ[] | GrowableXYZArray): void;
-  pushFromGrowableXYArray(source: GrowableXYArray, sourceIndex: number): boolean;
+  pushFromGrowableXYArray(source: GrowableXYArray, sourceIndex?: number): number;
   pushWrap(numWrap: number): void;
   // (undocumented)
   pushXY(x: number, y: number): void;
   resize(pointCount: number): void;
   scaleInPlace(factor: number): void;
-  setAt(pointIndex: number, value: XAndY): boolean;
-  setCoordinates(pointIndex: number, x: number, y: number): boolean;
+  setAtCheckedPointIndex(pointIndex: number, value: XAndY): boolean;
+  setXYZAtCheckedPointIndex(pointIndex: number, x: number, y: number): boolean;
   sortIndicesLexical(): Uint32Array;
   // (undocumented)
   sumLengths(): number;
@@ -2095,9 +2101,6 @@ class GrowableXYZArray extends IndexedXYZCollection {
   accumulateCrossProductIndexIndexIndex(originIndex: number, targetAIndex: number, targetBIndex: number, result: Vector3d): void;
   addSteppedPoints(other: GrowableXYZArray, pointIndex0: number, step: number, numAdd: number): void;
   areaXY(): number;
-  atPoint2dIndex(pointIndex: number, result?: Point2d): Point2d | undefined;
-  atPoint3dIndex(pointIndex: number, result?: Point3d): Point3d | undefined;
-  atVector3dIndex(vectorIndex: number, result?: Vector3d): Vector3d | undefined;
   // (undocumented)
   back(result?: Point3d): Point3d | undefined;
   clear(): void;
@@ -2120,10 +2123,13 @@ class GrowableXYZArray extends IndexedXYZCollection {
   readonly float64Length: number;
   // (undocumented)
   front(result?: Point3d): Point3d | undefined;
-  getPoint2dAt(pointIndex: number, result?: Point2d): Point2d;
+  getPoint2dAtCheckedPointIndex(pointIndex: number, result?: Point2d): Point2d | undefined;
+  getPoint2dAtUncheckedPointIndex(pointIndex: number, result?: Point2d): Point2d;
   // (undocumented)
   getPoint3dArray(): Point3d[];
-  getPoint3dAt(pointIndex: number, result?: Point3d): Point3d;
+  getPoint3dAtCheckedPointIndex(pointIndex: number, result?: Point3d): Point3d | undefined;
+  getPoint3dAtUncheckedPointIndex(pointIndex: number, result?: Point3d): Point3d;
+  getVector3dAtCheckedVectorIndex(vectorIndex: number, result?: Vector3d): Vector3d | undefined;
   interpolate(i: number, fraction: number, j: number, result?: Point3d): Point3d | undefined;
   // (undocumented)
   static isAlmostEqual(dataA: GrowableXYZArray | undefined, dataB: GrowableXYZArray | undefined): boolean;
@@ -2144,8 +2150,8 @@ class GrowableXYZArray extends IndexedXYZCollection {
   pushXYZ(x: number, y: number, z: number): void;
   resize(pointCount: number): void;
   scaleInPlace(factor: number): void;
-  setAt(pointIndex: number, value: XYAndZ): boolean;
-  setCoordinates(pointIndex: number, x: number, y: number, z: number): boolean;
+  setAtCheckedPointIndex(pointIndex: number, value: XYAndZ): boolean;
+  setXYZAtCheckedPointIndex(pointIndex: number, x: number, y: number, z: number): boolean;
   sortIndicesLexical(): Uint32Array;
   // (undocumented)
   sumLengths(): number;
@@ -2667,6 +2673,8 @@ class IndexedPolyface extends Polyface {
   getFaceDataByFacetIndex(facetIndex: number): FacetFaceData;
   isAlmostEqual(other: any): boolean;
   // (undocumented)
+  readonly isEmpty: boolean;
+  // (undocumented)
   isSameGeometryClass(other: any): boolean;
   // (undocumented)
   isValidFacetIndex(index: number): boolean;
@@ -2720,13 +2728,13 @@ class IndexedPolyfaceVisitor extends PolyfaceData, implements PolyfaceVisitor {
 // @public
 class IndexedXYCollection {
   // (undocumented)
-  abstract atPoint2dIndex(index: number, result?: Point2d): Point2d | undefined;
-  // (undocumented)
-  abstract atVector2dIndex(index: number, result?: Vector2d): Vector2d | undefined;
-  // (undocumented)
   abstract crossProductIndexIndexIndex(origin: number, indexA: number, indexB: number): number | undefined;
   // (undocumented)
   abstract crossProductXAndYIndexIndex(origin: XAndY, indexA: number, indexB: number): number | undefined;
+  // (undocumented)
+  abstract getPoint2dAtCheckedPointIndex(index: number, result?: Point2d): Point2d | undefined;
+  // (undocumented)
+  abstract getVector2dAtCheckedVectorIndex(index: number, result?: Vector2d): Vector2d | undefined;
   readonly length: number;
   // (undocumented)
   abstract vectorIndexIndex(indexA: number, indexB: number, result?: Vector2d): Vector2d | undefined;
@@ -2739,13 +2747,13 @@ class IndexedXYZCollection {
   // (undocumented)
   abstract accumulateCrossProductIndexIndexIndex(origin: number, indexA: number, indexB: number, result: Vector3d): void;
   // (undocumented)
-  abstract atPoint3dIndex(index: number, result?: Point3d): Point3d | undefined;
-  // (undocumented)
-  abstract atVector3dIndex(index: number, result?: Vector3d): Vector3d | undefined;
-  // (undocumented)
   abstract crossProductIndexIndexIndex(origin: number, indexA: number, indexB: number, result?: Vector3d): Vector3d | undefined;
   // (undocumented)
   abstract crossProductXYAndZIndexIndex(origin: XYAndZ, indexA: number, indexB: number, result?: Vector3d): Vector3d | undefined;
+  // (undocumented)
+  abstract getPoint3dAtCheckedPointIndex(index: number, result?: Point3d): Point3d | undefined;
+  // (undocumented)
+  abstract getVector3dAtCheckedVectorIndex(index: number, result?: Vector3d): Vector3d | undefined;
   readonly length: number;
   // (undocumented)
   abstract vectorIndexIndex(indexA: number, indexB: number, result?: Vector3d): Vector3d | undefined;
@@ -3237,6 +3245,7 @@ class Matrix3d implements BeJSONFunctions {
   multiplyInverseXYZAsPoint3d(x: number, y: number, z: number, result?: Point3d): Point3d | undefined;
   multiplyInverseXYZAsVector3d(x: number, y: number, z: number, result?: Vector3d): Vector3d | undefined;
   multiplyMatrixMatrix(other: Matrix3d, result?: Matrix3d): Matrix3d;
+  multiplyMatrixMatrixInverse(other: Matrix3d, result?: Matrix3d): Matrix3d | undefined;
   multiplyMatrixMatrixTranspose(other: Matrix3d, result?: Matrix3d): Matrix3d;
   multiplyMatrixTransform(other: Transform, result?: Transform): Transform;
   multiplyMatrixTransposeMatrix(other: Matrix3d, result?: Matrix3d): Matrix3d;
@@ -3911,15 +3920,15 @@ class Point2dArray {
 class Point2dArrayCarrier extends IndexedXYCollection {
   constructor(data: Point2d[]);
   // (undocumented)
-  atPoint2dIndex(index: number, result?: Point2d): Point2d | undefined;
-  // (undocumented)
-  atVector2dIndex(index: number, result?: Vector2d): Vector2d | undefined;
-  // (undocumented)
   crossProductIndexIndexIndex(originIndex: number, indexA: number, indexB: number): number | undefined;
   // (undocumented)
   crossProductXAndYIndexIndex(origin: XAndY, indexA: number, indexB: number): number | undefined;
   // (undocumented)
   data: Point2d[];
+  // (undocumented)
+  getPoint2dAtCheckedPointIndex(index: number, result?: Point2d): Point2d | undefined;
+  // (undocumented)
+  getVector2dAtCheckedVectorIndex(index: number, result?: Vector2d): Vector2d | undefined;
   // (undocumented)
   isValidIndex(index: number): boolean;
   readonly length: number;
@@ -3947,7 +3956,7 @@ class Point3d extends XYZ {
   fractionOfProjectionToLine(startPoint: Point3d, endPoint: Point3d, defaultFraction?: number): number;
   // (undocumented)
   static fromJSON(json?: XYZProps): Point3d;
-  interpolate(fraction: number, other: Point3d, result?: Point3d): Point3d;
+  interpolate(fraction: number, other: XYAndZ, result?: Point3d): Point3d;
   interpolatePerpendicularXY(fraction: number, pointB: Point3d, fractionXYPerp: number, result?: Point3d): Point3d;
   interpolatePointAndTangent(fraction: number, other: Point3d, tangentScale: number, result?: Ray3d): Ray3d;
   interpolateXYZ(fractionX: number, fractionY: number, fractionZ: number, other: Point3d, result?: Point3d): Point3d;
@@ -3968,6 +3977,9 @@ class Point3dArray {
   // (undocumented)
   static clonePoint3dArray(data: XYAndZ[]): Point3d[];
   static closestPointIndex(data: XYAndZ[], spacePoint: XYAndZ): number;
+  static evaluateTrilinearDerivativeTransform(points: Point3d[], u: number, v: number, w: number, result?: Transform): Transform;
+  static evaluateTrilinearPoint(points: Point3d[], u: number, v: number, w: number, result?: Point3d): Point3d;
+  static evaluateTrilinearWeights(weights: Float64Array, u0: number, u1: number, v0: number, v1: number, w0: number, w1: number): void;
   static indexOfMostDistantPoint(points: Point3d[], spacePoint: XYZ, farVector: Vector3d): number | undefined;
   static indexOfPointWithMaxCrossProductMagnitude(points: Point3d[], spacePoint: Point3d, vector: Vector3d, farVector: Vector3d): number | undefined;
   // (undocumented)
@@ -3978,6 +3990,9 @@ class Point3dArray {
   // (undocumented)
   static packToFloat64Array(data: Point3d[]): Float64Array;
   static sumEdgeLengths(data: Point3d[] | Float64Array, addClosureEdge?: boolean): number;
+  static sumWeightedX(weights: Float64Array, points: Point3d[]): number;
+  static sumWeightedY(weights: Float64Array, points: Point3d[]): number;
+  static sumWeightedZ(weights: Float64Array, points: Point3d[]): number;
   static unpackNumbersToNestedArrays(data: Float64Array, numPerBlock: number): any[];
   static unpackNumbersToNestedArraysIJK(data: Float64Array, numPerBlock: number, numPerRow: number): any[];
   // (undocumented)
@@ -3990,15 +4005,15 @@ class Point3dArrayCarrier extends IndexedXYZCollection {
   // (undocumented)
   accumulateCrossProductIndexIndexIndex(originIndex: number, indexA: number, indexB: number, result: Vector3d): void;
   // (undocumented)
-  atPoint3dIndex(index: number, result?: Point3d): Point3d | undefined;
-  // (undocumented)
-  atVector3dIndex(index: number, result?: Vector3d): Vector3d | undefined;
-  // (undocumented)
   crossProductIndexIndexIndex(originIndex: number, indexA: number, indexB: number, result?: Vector3d): Vector3d | undefined;
   // (undocumented)
   crossProductXYAndZIndexIndex(origin: XYAndZ, indexA: number, indexB: number, result?: Vector3d): Vector3d | undefined;
   // (undocumented)
   data: Point3d[];
+  // (undocumented)
+  getPoint3dAtCheckedPointIndex(index: number, result?: Point3d): Point3d | undefined;
+  // (undocumented)
+  getVector3dAtCheckedVectorIndex(index: number, result?: Vector3d): Vector3d | undefined;
   // (undocumented)
   isValidIndex(index: number): boolean;
   readonly length: number;
@@ -4158,6 +4173,8 @@ class Polyface extends GeometryQuery {
   // (undocumented)
   data: PolyfaceData;
   // (undocumented)
+  readonly isEmpty: boolean;
+  // (undocumented)
   twoSided: boolean;
 }
 
@@ -4270,7 +4287,7 @@ class PolyfaceData {
   getColor(i: number): number;
   getEdgeVisible(i: number): boolean;
   getNormal(i: number): Vector3d | undefined;
-  getParam(i: number): Point2d;
+  getParam(i: number): Point2d | undefined;
   getPoint(i: number): Point3d | undefined;
   // (undocumented)
   readonly indexCount: number;
@@ -4285,7 +4302,7 @@ class PolyfaceData {
   // (undocumented)
   normalIndex: number[] | undefined;
   // (undocumented)
-  param: Point2d[] | undefined;
+  param?: GrowableXYArray;
   // (undocumented)
   readonly paramCount: number;
   // (undocumented)
@@ -4949,6 +4966,15 @@ class SmallSystem {
   static lineSegment3dXYTransverseIntersectionUnbounded(a0: Point3d, a1: Point3d, b0: Point3d, b1: Point3d, result: Vector2d): boolean;
 }
 
+// @public (undocumented)
+class SmoothTransformBetweenFrusta {
+  static create(cornerA: Point3d[], cornerB: Point3d[]): SmoothTransformBetweenFrusta | undefined;
+  // (undocumented)
+  fractionToWorldCorners(fraction: number, result?: Point3d[]): Point3d[];
+  // (undocumented)
+  interpolateLocalCorners(fraction: number, result?: Point3d[]): Point3d[];
+}
+
 // @public
 class SolidPrimitive extends GeometryQuery {
   protected constructor(capped: boolean);
@@ -5193,6 +5219,7 @@ class Transform implements BeJSONFunctions {
   cloneRigid(axisOrder?: AxisOrder): Transform | undefined;
   static createFixedPointAndMatrix(fixedPoint: Point3d, matrix: Matrix3d, result?: Transform): Transform;
   static createIdentity(result?: Transform): Transform;
+  static createMatrixPickupPutdown(matrix: Matrix3d, pointA: Point3d, pointB: Point3d, result?: Transform): Transform;
   static createOriginAndMatrix(origin: XYZ | undefined, matrix: Matrix3d | undefined, result?: Transform): Transform;
   static createOriginAndMatrixColumns(origin: XYZ, vectorX: Vector3d, vectorY: Vector3d, vectorZ: Vector3d, result?: Transform): Transform;
   static createRefs(origin: XYZ, matrix: Matrix3d, result?: Transform): Transform;
