@@ -33,6 +33,8 @@ export const createTreeNodeItem = (node: Readonly<Node>, parentId?: string): Del
     item.description = node.description;
   if (node.hasChildren)
     item.hasChildren = true;
+  if (node.imageId)
+    item.icon = node.imageId;
   if (StyleHelper.isBold(node))
     style.isBold = true;
   if (StyleHelper.isItalic(node))

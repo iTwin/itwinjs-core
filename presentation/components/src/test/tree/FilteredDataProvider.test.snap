@@ -8,25 +8,26 @@ Array [
     "extendedData": Object {
       "key": Object {
         "instanceKey": Object {
-          "className": "Minnesota",
-          "id": "0xcfbe0000007bf8",
+          "className": "internet solution",
+          "id": "0x2ab5000001822d",
         },
         "pathFromRoot": Array [
-          "dcb68625-021e-40e1-839b-08a0214f5943",
-          "142b23f9-5f0d-4b34-b39f-de2c0a107d9c",
+          "b6862502-1e0e-41c3-9b08-a0214f594314",
+          "2b23f95f-0db3-4473-9fde-2c0a107d9c97",
         ],
         "type": "ECInstanceNode",
       },
     },
     "hasChildren": false,
-    "id": "142b23f9-5f0d-4b34-b39f-de2c0a107d9c/dcb68625-021e-40e1-839b-08a0214f5943",
+    "icon": "deposit",
+    "id": "2b23f95f-0db3-4473-9fde-2c0a107d9c97/b6862502-1e0e-41c3-9b08-a0214f594314",
     "isCheckboxVisible": true,
     "label": "A-2-1",
-    "parentId": "fb7680c8-0a28-4cf0-9ee8-272ec6682ae5/e14e4128-01ae-43e4-8790-9992f94b3186",
+    "parentId": "80c80a28-cf09-4ee8-a72e-c6682ae559ca/412801ae-3e44-4790-9992-f94b3186fb76",
     "style": Object {
       "colorOverrides": Object {
-        "backgroundColor": 1531058431,
-        "color": -1590574337,
+        "backgroundColor": -836488705,
+        "color": 471946495,
       },
     },
   },
@@ -35,20 +36,25 @@ Array [
     "extendedData": Object {
       "key": Object {
         "instanceKey": Object {
-          "className": "Incredible",
-          "id": "0x332b000000c483",
+          "className": "Fresh",
+          "id": "0xd0bd0000013c35",
         },
         "pathFromRoot": Array [
-          "9451bb8c-be2e-4a06-bb9c-f6fe83e0ae64",
-          "729087ec-e569-4f02-9212-b8007ffd5072",
+          "1bb8cbe2-ea06-43b9-8f6f-e83e0ae64729",
+          "087ece56-9f02-4521-ab80-07ffd5072158",
         ],
         "type": "ECInstanceNode",
       },
     },
     "hasChildren": true,
-    "id": "729087ec-e569-4f02-9212-b8007ffd5072/9451bb8c-be2e-4a06-bb9c-f6fe83e0ae64",
+    "id": "087ece56-9f02-4521-ab80-07ffd5072158/1bb8cbe2-ea06-43b9-8f6f-e83e0ae64729",
     "label": "A-2-2",
-    "parentId": "fb7680c8-0a28-4cf0-9ee8-272ec6682ae5/e14e4128-01ae-43e4-8790-9992f94b3186",
+    "parentId": "80c80a28-cf09-4ee8-a72e-c6682ae559ca/412801ae-3e44-4790-9992-f94b3186fb76",
+    "style": Object {
+      "colorOverrides": Object {
+        "color": -789612801,
+      },
+    },
   },
 ]
 `;
@@ -73,31 +79,38 @@ Array [
     },
     "hasChildren": true,
     "id": "e67862f3-ccbf-4c51-b8ed-ed1d0420ea19/6fbe024f-2316-4265-a6e8-d65a837e308a",
+    "isCheckboxDisabled": true,
+    "isCheckboxVisible": true,
     "label": "A-1",
+    "style": Object {
+      "colorOverrides": Object {
+        "backgroundColor": 1198705407,
+      },
+    },
   },
   Object {
     "autoExpand": true,
-    "description": "Voluptas enim ex eveniet facere.",
     "extendedData": Object {
       "key": Object {
         "instanceKey": Object {
-          "className": "front-end",
-          "id": "0xf9270000012549",
+          "className": "panel",
+          "id": "0x10d9c000001590a",
         },
         "pathFromRoot": Array [
-          "e14e4128-01ae-43e4-8790-9992f94b3186",
-          "fb7680c8-0a28-4cf0-9ee8-272ec6682ae5",
+          "412801ae-3e44-4790-9992-f94b3186fb76",
+          "80c80a28-cf09-4ee8-a72e-c6682ae559ca",
         ],
         "type": "ECInstanceNode",
       },
     },
     "hasChildren": true,
-    "id": "fb7680c8-0a28-4cf0-9ee8-272ec6682ae5/e14e4128-01ae-43e4-8790-9992f94b3186",
+    "icon": "customized",
+    "id": "80c80a28-cf09-4ee8-a72e-c6682ae559ca/412801ae-3e44-4790-9992-f94b3186fb76",
+    "isCheckboxVisible": true,
     "label": "A-2",
     "style": Object {
       "colorOverrides": Object {
-        "backgroundColor": 499774463,
-        "color": -284526081,
+        "backgroundColor": -503971073,
       },
     },
   },

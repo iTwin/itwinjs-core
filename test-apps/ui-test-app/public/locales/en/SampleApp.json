@@ -175,6 +175,7 @@
   },
   "widgets": {
     "NavigationTree": "Navigation Tree",
+    "VisibilityTree": "Visibility Tree",
     "BreadcrumbDemo": "Breadcrumb Demo",
     "ModelSelector": "Model Selector",
     "StatusBar": "Status Bar",

@@ -1,0 +1,468 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`VisibilityTree #integration renders component with real data and no active viewport 1`] = `
+<div>
+  <div
+    class="fw-visibility-tree"
+  >
+    <div
+      class="core-tree components-tree"
+    >
+      <div
+        style="overflow: visible; height: 0px; width: 0px;"
+      >
+        <div
+          aria-label="grid"
+          aria-readonly="true"
+          class="ReactVirtualized__Grid ReactVirtualized__List"
+          role="grid"
+          style="box-sizing: border-box; direction: ltr; height: 200px; position: relative; width: 200px; will-change: transform; overflow-x: hidden; overflow-y: hidden;"
+          tabindex="0"
+        >
+          <div
+            class="ReactVirtualized__Grid__innerScrollContainer"
+            role="rowgroup"
+            style="width: auto; height: 24px; max-width: 200px; max-height: 24px; overflow: hidden; position: relative;"
+          >
+            <div
+              class="node-wrapper"
+              style="height: 24px; left: 0px; position: absolute; top: 0px; width: 100%;"
+            >
+              <div
+                class="core-tree-node"
+                data-testid="tree-node"
+              >
+                <div
+                  class="contents"
+                  data-testid="tree-node-contents"
+                  style="margin-left: 0px;"
+                >
+                  <div
+                    class="core-tree-expansionToggle expansion-toggle"
+                    data-testid="tree-node-expansion-toggle"
+                  >
+                    <i
+                      class="toggle icon icon-chevron-right"
+                    />
+                  </div>
+                  <label
+                    class="core-image-checkbox"
+                  >
+                    <input
+                      disabled=""
+                      type="checkbox"
+                    />
+                    <span
+                      class="image icon icon-visibility-hide-2"
+                    />
+                  </label>
+                  <div
+                    class="core-tree-node-icon"
+                  >
+                    <span
+                      class="bui-webfont-icon icon-archived"
+                    />
+                  </div>
+                  <div
+                    class="components-tree-node-content"
+                  >
+                    <span>
+                      DgnV8Bridge
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div
+        class="resize-triggers"
+      >
+        <div
+          class="expand-trigger"
+        >
+          <div
+            style="width: 201px; height: 201px;"
+          />
+        </div>
+        <div
+          class="contract-trigger"
+        />
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`VisibilityTree #integration shows correct hierarchy 1`] = `
+Array [
+  Object {
+    "children": Array [
+      Object {
+        "children": Array [
+          Object {
+            "children": Array [
+              Object {
+                "children": Array [
+                  Object {
+                    "children": Array [
+                      Object {
+                        "icon": "icon-image",
+                        "label": "Physical Object-0-38",
+                      },
+                      Object {
+                        "icon": "icon-image",
+                        "label": "Physical Object-0-39",
+                      },
+                      Object {
+                        "icon": "icon-image",
+                        "label": "TestClass",
+                      },
+                      Object {
+                        "icon": "icon-image",
+                        "label": "TestClass",
+                      },
+                      Object {
+                        "icon": "icon-image",
+                        "label": "TestClass",
+                      },
+                      Object {
+                        "icon": "icon-image",
+                        "label": "TestClass",
+                      },
+                      Object {
+                        "icon": "icon-image",
+                        "label": "TestClass",
+                      },
+                      Object {
+                        "icon": "icon-image",
+                        "label": "TestClass",
+                      },
+                      Object {
+                        "icon": "icon-image",
+                        "label": "TestClass",
+                      },
+                      Object {
+                        "icon": "icon-image",
+                        "label": "TestClass",
+                      },
+                      Object {
+                        "icon": "icon-image",
+                        "label": "TestClass",
+                      },
+                      Object {
+                        "icon": "icon-image",
+                        "label": "TestClass",
+                      },
+                      Object {
+                        "icon": "icon-image",
+                        "label": "TestClass",
+                      },
+                      Object {
+                        "icon": "icon-image",
+                        "label": "TestClass",
+                      },
+                      Object {
+                        "icon": "icon-image",
+                        "label": "TestClass",
+                      },
+                      Object {
+                        "icon": "icon-image",
+                        "label": "TestClass",
+                      },
+                      Object {
+                        "icon": "icon-image",
+                        "label": "TestClass",
+                      },
+                      Object {
+                        "icon": "icon-image",
+                        "label": "TestClass",
+                      },
+                      Object {
+                        "icon": "icon-image",
+                        "label": "TestClass",
+                      },
+                      Object {
+                        "icon": "icon-image",
+                        "label": "TestClass",
+                      },
+                      Object {
+                        "icon": "icon-image",
+                        "label": "TestClass",
+                      },
+                      Object {
+                        "icon": "icon-image",
+                        "label": "TestClass",
+                      },
+                      Object {
+                        "icon": "icon-image",
+                        "label": "TestClass",
+                      },
+                      Object {
+                        "icon": "icon-image",
+                        "label": "TestClass",
+                      },
+                      Object {
+                        "icon": "icon-image",
+                        "label": "TestClass",
+                      },
+                      Object {
+                        "icon": "icon-image",
+                        "label": "TestClass",
+                      },
+                      Object {
+                        "icon": "icon-image",
+                        "label": "TestClass",
+                      },
+                      Object {
+                        "icon": "icon-image",
+                        "label": "TestClass",
+                      },
+                      Object {
+                        "icon": "icon-image",
+                        "label": "TestClass",
+                      },
+                      Object {
+                        "icon": "icon-image",
+                        "label": "TestClass",
+                      },
+                      Object {
+                        "icon": "icon-image",
+                        "label": "TestClass",
+                      },
+                      Object {
+                        "icon": "icon-image",
+                        "label": "TestClass",
+                      },
+                      Object {
+                        "icon": "icon-image",
+                        "label": "TestClass",
+                      },
+                      Object {
+                        "icon": "icon-image",
+                        "label": "TestClass",
+                      },
+                      Object {
+                        "icon": "icon-image",
+                        "label": "TestClass",
+                      },
+                      Object {
+                        "icon": "icon-image",
+                        "label": "TestClass",
+                      },
+                      Object {
+                        "icon": "icon-image",
+                        "label": "TestClass",
+                      },
+                      Object {
+                        "icon": "icon-image",
+                        "label": "TestClass",
+                      },
+                      Object {
+                        "icon": "icon-image",
+                        "label": "TestClass",
+                      },
+                      Object {
+                        "icon": "icon-image",
+                        "label": "TestClass",
+                      },
+                      Object {
+                        "icon": "icon-image",
+                        "label": "TestClass",
+                      },
+                      Object {
+                        "icon": "icon-image",
+                        "label": "TestClass",
+                      },
+                      Object {
+                        "icon": "icon-image",
+                        "label": "TestClass",
+                      },
+                      Object {
+                        "icon": "icon-image",
+                        "label": "TestClass",
+                      },
+                      Object {
+                        "icon": "icon-image",
+                        "label": "TestClass",
+                      },
+                      Object {
+                        "icon": "icon-image",
+                        "label": "TestClass",
+                      },
+                      Object {
+                        "icon": "icon-image",
+                        "label": "TestClass",
+                      },
+                      Object {
+                        "icon": "icon-image",
+                        "label": "TestClass",
+                      },
+                      Object {
+                        "icon": "icon-image",
+                        "label": "TestClass",
+                      },
+                      Object {
+                        "icon": "icon-image",
+                        "label": "TestClass",
+                      },
+                      Object {
+                        "icon": "icon-image",
+                        "label": "TestClass",
+                      },
+                      Object {
+                        "icon": "icon-image",
+                        "label": "TestClass",
+                      },
+                      Object {
+                        "icon": "icon-image",
+                        "label": "TestClass",
+                      },
+                      Object {
+                        "icon": "icon-image",
+                        "label": "TestClass",
+                      },
+                      Object {
+                        "icon": "icon-image",
+                        "label": "TestClass",
+                      },
+                      Object {
+                        "icon": "icon-image",
+                        "label": "TestClass",
+                      },
+                      Object {
+                        "icon": "icon-image",
+                        "label": "TestClass",
+                      },
+                      Object {
+                        "icon": "icon-image",
+                        "label": "TestClass",
+                      },
+                      Object {
+                        "icon": "icon-image",
+                        "label": "TestClass",
+                      },
+                      Object {
+                        "icon": "icon-image",
+                        "label": "TestClass",
+                      },
+                      Object {
+                        "icon": "icon-image",
+                        "label": "TestClass",
+                      },
+                      Object {
+                        "icon": "icon-image",
+                        "label": "TestClass",
+                      },
+                    ],
+                    "hasChildren": true,
+                    "icon": "icon-layers",
+                    "label": "Uncategorized",
+                  },
+                ],
+                "hasChildren": true,
+                "icon": "icon-3d",
+                "label": "Properties_60InstancesWithUrl2",
+              },
+            ],
+            "hasChildren": true,
+            "icon": "icon-archived",
+            "label": "Properties_60InstancesWithUrl2",
+          },
+        ],
+        "hasChildren": true,
+        "icon": "icon-archived",
+        "label": "DgnV8Bridge:D:\\\\Temp\\\\Properties_60InstancesWithUrl2.dgn, Default",
+      },
+    ],
+    "hasChildren": true,
+    "icon": "icon-archived",
+    "label": "DgnV8Bridge",
+  },
+]
+`;
+
+exports[`VisibilityTree #unit <VisibilityTree /> should match snapshot 1`] = `
+<body>
+  <div>
+    <div
+      class="fw-visibility-tree"
+    >
+      <div
+        class="core-tree components-tree"
+      >
+        <div
+          style="overflow: visible; height: 0px; width: 0px;"
+        >
+          <div
+            aria-label="grid"
+            aria-readonly="true"
+            class="ReactVirtualized__Grid ReactVirtualized__List"
+            role="grid"
+            style="box-sizing: border-box; direction: ltr; height: 200px; position: relative; width: 200px; will-change: transform; overflow-x: hidden; overflow-y: hidden;"
+            tabindex="0"
+          >
+            <div
+              class="ReactVirtualized__Grid__innerScrollContainer"
+              role="rowgroup"
+              style="width: auto; height: 24px; max-width: 200px; max-height: 24px; overflow: hidden; position: relative;"
+            >
+              <div
+                class="node-wrapper"
+                style="height: 24px; left: 0px; position: absolute; top: 0px; width: 100%;"
+              >
+                <div
+                  class="core-tree-node"
+                  data-testid="tree-node"
+                >
+                  <div
+                    class="contents"
+                    data-testid="tree-node-contents"
+                    style="margin-left: 24px;"
+                  >
+                    <label
+                      class="core-image-checkbox"
+                    >
+                      <input
+                        type="checkbox"
+                      />
+                      <span
+                        class="image icon icon-visibility-hide-2"
+                      />
+                    </label>
+                    <div
+                      class="core-tree-node-icon"
+                    />
+                    <div
+                      class="components-tree-node-content"
+                    >
+                      <span>
+                        test-node
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div
+          class="resize-triggers"
+        >
+          <div
+            class="expand-trigger"
+          >
+            <div
+              style="width: 201px; height: 201px;"
+            />
+          </div>
+          <div
+            class="contract-trigger"
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+`;

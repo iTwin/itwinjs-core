@@ -2,14 +2,11 @@
 
 exports[`Node fromJSON creates valid Node from JSON 1`] = `
 Object {
-  "backColor": "rgb(
-    123,
-    111,
-    168
-  )",
+  "backColor": undefined,
   "description": undefined,
-  "foreColor": "#5E480E",
+  "foreColor": "#80E076",
   "hasChildren": true,
+  "imageId": "customized",
   "isCheckboxEnabled": true,
   "isCheckboxVisible": false,
   "isChecked": true,
@@ -33,22 +30,27 @@ Object {
 
 exports[`Node fromJSON creates valid Node from serialized JSON 1`] = `
 Object {
+  "backColor": "rgb(
+    62,
+    40,
+    232
+  )",
   "description": "Rerum eius fugiat dolores repellat ut excepturi.",
   "hasChildren": false,
-  "isCheckboxEnabled": false,
-  "isCheckboxVisible": false,
-  "isChecked": true,
+  "isCheckboxEnabled": true,
+  "isCheckboxVisible": true,
+  "isChecked": false,
   "isEditable": false,
   "isExpanded": false,
   "isSelectionDisabled": false,
   "key": Object {
     "instanceKey": Object {
-      "className": "24/7",
-      "id": "0x13072000000c8dc",
+      "className": "website",
+      "id": "0x5e58000000b378",
     },
     "pathFromRoot": Array [
-      "41ce5242-abda-42a7-96dd-f8d9fe71dab8",
-      "e4358d78-e06d-4c62-8f5a-02b9ecb87afe",
+      "5242abda-2a79-46dd-b8d9-fe71dab8e435",
+      "8d78e06d-c620-4f5a-82b9-ecb87afe9470",
     ],
     "type": "ECInstanceNode",
   },
@@ -61,22 +63,23 @@ Array [
   Object {
     "backColor": undefined,
     "description": undefined,
-    "foreColor": "#7645E6",
+    "foreColor": "#5E6F81",
     "hasChildren": true,
+    "imageId": "Lakes",
     "isCheckboxEnabled": false,
     "isCheckboxVisible": true,
-    "isChecked": true,
+    "isChecked": false,
     "isEditable": true,
     "isExpanded": true,
-    "isSelectionDisabled": false,
+    "isSelectionDisabled": true,
     "key": Object {
       "instanceKey": Object {
-        "className": "Pizza",
-        "id": "0x147a9000000496b",
+        "className": "transmitting",
+        "id": "0x8e74000000d40f",
       },
       "pathFromRoot": Array [
-        "ba3c99a6-80fd-447b-a427-6684f1292101",
-        "320e47fd-2d0a-494a-8e7c-668f8e80df18",
+        "c99a680f-d47b-4e42-b668-4f1292101320",
+        "e47fd2d0-a94a-4ce7-8668-f8e80df18df8",
       ],
       "type": "ECInstanceNode",
     },
@@ -91,6 +94,7 @@ Array [
     "description": undefined,
     "foreColor": "#3761D6",
     "hasChildren": false,
+    "imageId": undefined,
     "isCheckboxEnabled": true,
     "isCheckboxVisible": false,
     "isChecked": false,
@@ -108,7 +112,7 @@ Array [
       ],
       "type": "ECInstanceNode",
     },
-    "label": "Corporate Cheese Wyoming",
+    "label": "multi-byte",
   },
 ]
 `;
@@ -117,51 +121,54 @@ exports[`Node[] fromJSON creates valid Node[] from serialized JSON 1`] = `
 Array [
   Object {
     "backColor": "rgb(
-    121,
-    204,
-    227
+    214,
+    106,
+    164
   )",
-    "foreColor": "#0B734D",
+    "foreColor": "#D67CE8",
     "hasChildren": true,
-    "isCheckboxEnabled": true,
-    "isCheckboxVisible": true,
+    "imageId": "Handcrafted Granite Bike",
+    "isCheckboxEnabled": false,
+    "isCheckboxVisible": false,
     "isChecked": false,
-    "isEditable": true,
+    "isEditable": false,
     "isExpanded": true,
-    "isSelectionDisabled": false,
+    "isSelectionDisabled": true,
     "key": Object {
       "instanceKey": Object {
-        "className": "lavender",
-        "id": "0x16d52000000095e",
+        "className": "Lead",
+        "id": "0x39350000007c1b",
       },
       "pathFromRoot": Array [
-        "12c14d39-3c8e-4ac6-bf8b-c2a0ea5a67f5",
-        "74125f60-e3df-4722-8643-7c9a682a872f",
+        "d393c8ea-c63f-48bc-aa0e-a5a67f574125",
+        "f60e3df7-2246-4437-89a6-82a872f1a833",
       ],
       "type": "ECInstanceNode",
     },
     "label": "exuding",
   },
   Object {
+    "foreColor": "#CA2B2F",
     "hasChildren": true,
-    "isCheckboxEnabled": true,
-    "isCheckboxVisible": false,
+    "imageId": "Global",
+    "isCheckboxEnabled": false,
+    "isCheckboxVisible": true,
     "isChecked": true,
-    "isEditable": false,
+    "isEditable": true,
     "isExpanded": false,
-    "isSelectionDisabled": false,
+    "isSelectionDisabled": true,
     "key": Object {
       "instanceKey": Object {
-        "className": "frictionless",
-        "id": "0x1537000000027a3",
+        "className": "invoice",
+        "id": "0xb186000000601f",
       },
       "pathFromRoot": Array [
-        "0e84ca2b-2f9f-4d9d-ac4b-2663b915980e",
-        "5ebefd53-da59-48ea-aa61-7fd897152559",
+        "b2663b91-5980-4e5e-befd-53da598eaaa6",
+        "17fd8971-5255-495f-a055-1d8de08102d3",
       ],
       "type": "ECInstanceNode",
     },
-    "label": "Place",
+    "label": "Savings Account fuchsia global",
   },
 ]
 `;

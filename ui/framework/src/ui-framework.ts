@@ -32,6 +32,8 @@ export * from "./ui-framework/openimodel/ProjectDialog";
 export * from "./ui-framework/openimodel/ProjectDropdown";
 export * from "./ui-framework/openimodel/ProjectTabs";
 
+export * from "./ui-framework/imodel-components/visibility-tree/VisibilityTree";
+
 export * from "./ui-framework/overallcontent/OverallContent";
 export * from "./ui-framework/overallcontent/state";
 

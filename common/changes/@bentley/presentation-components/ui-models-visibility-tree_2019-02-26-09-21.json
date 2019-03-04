@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Set `TreeNodeItem.icon` when initializing it from presentation `Node` object",
+      "packageName": "@bentley/presentation-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-components",
+  "email": "grigas.p@gmail.com"
+}

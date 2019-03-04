@@ -267,6 +267,10 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "dom-testing-library",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "dotenv",
       "allowedCategories": [ "tools" ]
     },

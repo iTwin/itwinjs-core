@@ -21,29 +21,34 @@ $node-font-size: $uicore-font-size;
   cursor: default;
   min-height: 24px;
 
-  > .loader {
-    margin: auto 4px;
-  }
-
-  .core-checkbox {
-    display: inline-block;
-    padding: 0;
-    margin: 0;
-    margin-right: 5px;
-    background: transparent;
-
-    > input {
-      position: relative;
-      left: 0px;
-      height: auto;
-      line-height: unset;
-    }
-  }
-
   > .contents {
-    margin-left: 5px;
     display: flex;
     align-items: center;
+
+    > .loader {
+      margin: auto 4px;
+    }
+
+    > .expansion-toggle {
+      display: inline-block;
+      margin-top: auto;
+      margin-bottom: auto;
+    }
+
+    .core-checkbox {
+      display: inline-block;
+      padding: 0;
+      margin: 0;
+      margin-right: 5px;
+      background: transparent;
+
+      > input {
+        position: relative;
+        left: 0px;
+        height: auto;
+        line-height: unset;
+      }
+    }
   }
 
   &-icon {
@@ -51,14 +56,8 @@ $node-font-size: $uicore-font-size;
     height: 24px;
     display: inline-block;
     box-sizing: border-box;
-    padding: 4px 0;
+    padding: 5px 0;
     margin-right: 5px;
-  }
-
-  > .expansion-toggle {
-    display: inline-block;
-    margin-top: auto;
-    margin-bottom: auto;
   }
 
   &.is-focused, &:focus {

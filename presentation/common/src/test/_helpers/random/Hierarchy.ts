@@ -78,6 +78,7 @@ export const createRandomECInstanceNode = (): Node => {
     key: createRandomECInstanceNodeKey(),
     label: faker.random.words(),
     description: nullable<string>(faker.lorem.sentence),
+    imageId: nullable<string>(faker.random.word),
     foreColor: nullable<string>(createRandomHexColor),
     backColor: nullable<string>(createRandomRgbColor),
     hasChildren: faker.random.boolean(),

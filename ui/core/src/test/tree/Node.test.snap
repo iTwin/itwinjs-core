@@ -4,19 +4,19 @@ exports[`<Node /> renders correctly 1`] = `
 <div
   className="core-tree-node"
   onClick={[Function]}
-  style={
-    Object {
-      "paddingLeft": 0,
-    }
-  }
 >
-  <ExpansionToggle
-    className="expansion-toggle"
-    onClick={[Function]}
-  />
   <div
     className="contents"
+    style={
+      Object {
+        "marginLeft": 0,
+      }
+    }
   >
+    <ExpansionToggle
+      className="expansion-toggle"
+      onClick={[Function]}
+    />
     a
   </div>
 </div>
@@ -26,14 +26,14 @@ exports[`<Node /> renders expander correctly 1`] = `
 <div
   className="core-tree-node"
   onClick={[Function]}
-  style={
-    Object {
-      "paddingLeft": 24,
-    }
-  }
 >
   <div
     className="contents"
+    style={
+      Object {
+        "marginLeft": 24,
+      }
+    }
   >
     a
   </div>
@@ -44,20 +44,20 @@ exports[`<Node /> renders expander correctly 2`] = `
 <div
   className="core-tree-node"
   onClick={[Function]}
-  style={
-    Object {
-      "paddingLeft": 0,
-    }
-  }
 >
-  <ExpansionToggle
-    className="expansion-toggle"
-    isExpanded={true}
-    onClick={[Function]}
-  />
   <div
     className="contents"
+    style={
+      Object {
+        "marginLeft": 0,
+      }
+    }
   >
+    <ExpansionToggle
+      className="expansion-toggle"
+      isExpanded={true}
+      onClick={[Function]}
+    />
     a
   </div>
 </div>
@@ -67,14 +67,14 @@ exports[`<Node /> renders expander correctly 3`] = `
 <div
   className="core-tree-node"
   onClick={[Function]}
-  style={
-    Object {
-      "paddingLeft": 24,
-    }
-  }
 >
   <div
     className="contents"
+    style={
+      Object {
+        "marginLeft": 24,
+      }
+    }
   >
     a
   </div>
@@ -85,19 +85,19 @@ exports[`<Node /> renders icon correctly 1`] = `
 <div
   className="core-tree-node"
   onClick={[Function]}
-  style={
-    Object {
-      "paddingLeft": 0,
-    }
-  }
 >
-  <ExpansionToggle
-    className="expansion-toggle"
-    onClick={[Function]}
-  />
   <div
     className="contents"
+    style={
+      Object {
+        "marginLeft": 0,
+      }
+    }
   >
+    <ExpansionToggle
+      className="expansion-toggle"
+      onClick={[Function]}
+    />
     <div
       className="core-tree-node-icon"
     >
@@ -114,19 +114,19 @@ exports[`<Node /> renders label correctly 1`] = `
 <div
   className="core-tree-node"
   onClick={[Function]}
-  style={
-    Object {
-      "paddingLeft": 0,
-    }
-  }
 >
-  <ExpansionToggle
-    className="expansion-toggle"
-    onClick={[Function]}
-  />
   <div
     className="contents"
+    style={
+      Object {
+        "marginLeft": 0,
+      }
+    }
   >
+    <ExpansionToggle
+      className="expansion-toggle"
+      onClick={[Function]}
+    />
     <span
       id="test"
     >
@@ -140,22 +140,22 @@ exports[`<Node /> renders loader correctly 1`] = `
 <div
   className="core-tree-node"
   onClick={[Function]}
-  style={
-    Object {
-      "paddingLeft": 0,
-    }
-  }
 >
   <div
-    className="loader"
-  >
-    <Spinner
-      size={0}
-    />
-  </div>
-  <div
     className="contents"
+    style={
+      Object {
+        "marginLeft": 0,
+      }
+    }
   >
+    <div
+      className="loader"
+    >
+      <Spinner
+        size={0}
+      />
+    </div>
     a
   </div>
 </div>
@@ -165,19 +165,19 @@ exports[`<Node /> should set is-focused class 1`] = `
 <div
   className="core-tree-node is-focused"
   onClick={[Function]}
-  style={
-    Object {
-      "paddingLeft": 0,
-    }
-  }
 >
-  <ExpansionToggle
-    className="expansion-toggle"
-    onClick={[Function]}
-  />
   <div
     className="contents"
+    style={
+      Object {
+        "marginLeft": 0,
+      }
+    }
   >
+    <ExpansionToggle
+      className="expansion-toggle"
+      onClick={[Function]}
+    />
     a
   </div>
 </div>
@@ -187,19 +187,19 @@ exports[`<Node /> should set is-hover-disabled class 1`] = `
 <div
   className="core-tree-node is-hover-disabled"
   onClick={[Function]}
-  style={
-    Object {
-      "paddingLeft": 0,
-    }
-  }
 >
-  <ExpansionToggle
-    className="expansion-toggle"
-    onClick={[Function]}
-  />
   <div
     className="contents"
+    style={
+      Object {
+        "marginLeft": 0,
+      }
+    }
   >
+    <ExpansionToggle
+      className="expansion-toggle"
+      onClick={[Function]}
+    />
     a
   </div>
 </div>
@@ -209,19 +209,19 @@ exports[`<Node /> should set is-selected class 1`] = `
 <div
   className="core-tree-node is-selected"
   onClick={[Function]}
-  style={
-    Object {
-      "paddingLeft": 0,
-    }
-  }
 >
-  <ExpansionToggle
-    className="expansion-toggle"
-    onClick={[Function]}
-  />
   <div
     className="contents"
+    style={
+      Object {
+        "marginLeft": 0,
+      }
+    }
   >
+    <ExpansionToggle
+      className="expansion-toggle"
+      onClick={[Function]}
+    />
     a
   </div>
 </div>

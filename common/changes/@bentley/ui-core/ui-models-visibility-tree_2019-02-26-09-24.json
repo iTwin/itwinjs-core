@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Restructure `Node` component to allow more flexible layout",
+      "packageName": "@bentley/ui-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-core",
+  "email": "grigas.p@gmail.com"
+}
