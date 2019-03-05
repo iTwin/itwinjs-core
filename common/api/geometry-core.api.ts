@@ -2188,7 +2188,9 @@ class HalfEdge {
   readonly faceSuccessor: HalfEdge;
   static filterIsMaskOff(node: HalfEdge, mask: HalfEdgeMask): boolean;
   static filterIsMaskOn(node: HalfEdge, mask: HalfEdgeMask): boolean;
+  fractionToPoint2d(fraction: number, result?: Point2d): Point2d;
   getMask(mask: HalfEdgeMask): number;
+  static horizontalScanFraction(node0: HalfEdge, y: number): number | undefined | HalfEdge;
   // (undocumented)
   i: number;
   // (undocumented)
@@ -2197,8 +2199,6 @@ class HalfEdge {
   isMaskSet(mask: HalfEdgeMask): boolean;
   // (undocumented)
   maskBits: number;
-  // (undocumented)
-  nextZ: HalfEdge;
   // (undocumented)
   static nodeToId(node: HalfEdge): any;
   // (undocumented)
@@ -2218,14 +2218,14 @@ class HalfEdge {
   // (undocumented)
   static nodeToXY(node: HalfEdge): number[];
   static pinch(nodeA: HalfEdge, nodeB: HalfEdge): void;
-  // (undocumented)
-  prevZ: HalfEdge;
   setMask(mask: HalfEdgeMask): void;
   // (undocumented)
   setMaskAroundFace(mask: HalfEdgeMask): void;
   // (undocumented)
   setMaskAroundVertex(mask: HalfEdgeMask): void;
   signedFaceArea(): number;
+  // (undocumented)
+  sortAngle?: number;
   static splitEdge(base: undefined | HalfEdge, xA: number | undefined, yA: number | undefined, zA: number | undefined, iA: number | undefined, heArray: HalfEdge[] | undefined): HalfEdge;
   // (undocumented)
   steiner: boolean;
@@ -2235,6 +2235,7 @@ class HalfEdge {
   testAndSetMask(mask: HalfEdgeMask): number;
   // (undocumented)
   static testNodeMaskNotExterior(node: HalfEdge): boolean;
+  static transverseIntersectionFractions(nodeA0: HalfEdge, nodeB0: HalfEdge, result?: Vector2d): Vector2d | undefined;
   // (undocumented)
   vectorToFaceSuccessor(result?: Vector3d): Vector3d;
   // (undocumented)
@@ -5373,12 +5374,10 @@ class TransitionSpiral3d extends CurvePrimitive {
 
 // @public (undocumented)
 class Triangulator {
-  static cleanupTriangulation(graph: HalfEdgeGraph): void;
-  static createFaceLoopFromIndexedXYZCollection(data: GrowableXYZArray, returnPositiveAreaLoop: boolean, markExterior: boolean): HalfEdge | undefined;
-  static earcutOuterAndInnerLoops(loops: XAndY[][]): HalfEdgeGraph;
-  static earcutSingleLoop(data: XAndY[]): HalfEdgeGraph;
-  // (undocumented)
-  static triangulateStrokedLoops(strokedLoops: GrowableXYZArray[]): HalfEdgeGraph | undefined;
+  static createTriangulatedGraphFromLoops(loops: GrowableXYZArray[] | XAndY[][]): HalfEdgeGraph | undefined;
+  static createTriangulatedGraphFromSingleLoop(data: XAndY[]): HalfEdgeGraph;
+  static flipTriangles(graph: HalfEdgeGraph): void;
+  triangulateAllPositiveAreaFaces(graph: HalfEdgeGraph): void;
 }
 
 // @public (undocumented)

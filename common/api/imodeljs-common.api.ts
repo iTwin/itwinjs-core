@@ -370,6 +370,19 @@ enum BisCodeSpec {
   viewDefinition = "bis:ViewDefinition"
 }
 
+// @public
+class BoundingSphere {
+  constructor(center?: Point3d, radius?: number);
+  // (undocumented)
+  center: Point3d;
+  // (undocumented)
+  init(center: Point3d, radius: number): void;
+  // (undocumented)
+  radius: number;
+  // (undocumented)
+  transformBy(transform: Transform, result: BoundingSphere): BoundingSphere;
+}
+
 // @beta (undocumented)
 module BRepEntity {
   interface DataProps {
@@ -991,7 +1004,7 @@ class ColorIndex {
   // (undocumented)
   readonly hasAlpha: boolean;
   // (undocumented)
-  initNonUniform(colors: Uint32Array, indices: Uint16Array, hasAlpha: boolean): void;
+  initNonUniform(colors: Uint32Array, indices: number[], hasAlpha: boolean): void;
   // (undocumented)
   initUniform(color: ColorDef | number): void;
   // (undocumented)
@@ -2397,6 +2410,8 @@ class IModelReadRpcInterface extends RpcInterface {
   // (undocumented)
   queryModelProps(_iModelToken: IModelToken, _params: EntityQueryParams): Promise<ModelProps[]>;
   // (undocumented)
+  queryModelRanges(_iModelToken: IModelToken, _modelIds: Id64Set): Promise<Range3dProps[]>;
+  // (undocumented)
   queryPage(_iModelToken: IModelToken, _ecsql: string, _bindings?: any[] | object, _options?: PageOptions): Promise<any[]>;
   // (undocumented)
   queryRowCount(_iModelToken: IModelToken, _ecsql: string, _bindings?: any[] | object): Promise<number>;
@@ -2938,7 +2953,7 @@ export function nextHighestPowerOfTwo(num: number): number;
 
 // @public (undocumented)
 class NonUniformColor {
-  constructor(colors: Uint32Array, indices: Uint16Array, hasAlpha: boolean);
+  constructor(colors: Uint32Array, indices: number[], hasAlpha: boolean);
   // (undocumented)
   readonly colors: Uint32Array;
   // (undocumented)

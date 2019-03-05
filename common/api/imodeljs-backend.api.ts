@@ -1063,6 +1063,7 @@ class IModelHost {
   static startup(configuration?: IModelHostConfiguration): void;
   static readonly tileContentRequestTimeout: number;
   static readonly tileTreeRequestTimeout: number;
+  static readonly useTileContentThreadPool: boolean;
 }
 
 // @public
@@ -1074,6 +1075,7 @@ class IModelHostConfiguration {
   nativePlatform?: any;
   tileContentRequestTimeout: number;
   tileTreeRequestTimeout: number;
+  useTileContentThreadPool: boolean;
 }
 
 // @public (undocumented)
@@ -1406,6 +1408,10 @@ module IModelJsNative {
     openIModel(accessToken: string, appVersion: string, projectId: GuidString, dbName: string, mode: OpenMode): DbResult;
     // (undocumented)
     openIModelFile(dbName: string, mode: OpenMode): DbResult;
+    // WARNING: The type "ErrorStatusOrResult" needs to be exported by the package (e.g. added to index.ts)
+    // WARNING: The type "IModelDb.TileContentState" needs to be exported by the package (e.g. added to index.ts)
+    // (undocumented)
+    pollTileContent(treeId: string, tileId: string): ErrorStatusOrResult<IModelStatus, IModelDb.TileContentState | Uint8Array>;
     // (undocumented)
     queryFileProperty(props: string, wantString: boolean): string | Uint8Array | undefined;
     // WARNING: The type "TxnIdString" needs to be exported by the package (e.g. added to index.ts)

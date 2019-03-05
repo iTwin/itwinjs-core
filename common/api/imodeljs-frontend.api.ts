@@ -2117,6 +2117,7 @@ class GeometricModelState extends ModelState, implements TileTreeModelState {
   loadTileTree(edgesRequired: boolean, animationId?: Id64String, asClassifier?: boolean, classifierExpansion?: number): TileTree.LoadStatus;
   // (undocumented)
   onIModelConnectionClose(): void;
+  queryModelRange(): Promise<Range3d>;
   // (undocumented)
   readonly tileTree: TileTree | undefined;
   // (undocumented)
@@ -2171,7 +2172,6 @@ class GraphicBuilder {
   abstract addArc2d(ellipse: Arc3d, isEllipse: boolean, filled: boolean, zDepth: number): void;
   abstract addLineString(points: Point3d[]): void;
   abstract addLineString2d(points: Point2d[], zDepth: number): void;
-  addLineStrings(...lines: Array<[number, Point3d[]]>): void;
   abstract addLoop(loop: Loop): void;
   abstract addPath(path: Path): void;
   abstract addPointString(points: Point3d[]): void;
@@ -2180,10 +2180,6 @@ class GraphicBuilder {
   addRangeBox(range: Range3d): void;
   abstract addShape(points: Point3d[]): void;
   abstract addShape2d(points: Point2d[], zDepth: number): void;
-  convertToLineStringParams(...lines: Array<[number, Point3d[]]>): Array<{
-          numPoints: number;
-          points: Point3d[];
-      }>;
   abstract finish(): RenderGraphic;
   // (undocumented)
   readonly iModel: IModelConnection;
