@@ -4,13 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { ShaderProgram } from "./ShaderProgram";
-import { GLSLVertex, addPosition, addInstancedModelMatrix } from "./glsl/Vertex";
-import { System } from "./System";
-import { addClipping } from "./glsl/Clipping";
-import { ClipDef } from "./TechniqueFlags";
-import { ClippingType } from "../System";
 import { assert } from "@bentley/bentleyjs-core";
+import { ClippingType } from "../System";
+import { ShaderProgram } from "./ShaderProgram";
+import { System } from "./System";
+import { ClipDef } from "./TechniqueFlags";
+import { GLSLVertex, addPosition } from "./glsl/Vertex";
+import { addInstancedModelMatrix } from "./glsl/Instancing";
+import { addClipping } from "./glsl/Clipping";
 
 /** Describes the data type of a shader program variable. */
 export const enum VariableType {

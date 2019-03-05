@@ -302,21 +302,21 @@ class WebMercatorTileLoader extends TileLoader {
     return this._imageryProvider.loadTile(quadId.row, quadId.column, quadId.level);
   }
 
-  public async loadTileGraphic(tile: Tile, data: TileRequest.ResponseData, isCanceled?: () => boolean): Promise<TileRequest.Graphic> {
+  public async loadTileContent(tile: Tile, data: TileRequest.ResponseData, isCanceled?: () => boolean): Promise<Tile.Content> {
     if (undefined === isCanceled)
       isCanceled = () => !tile.isLoading;
 
     assert(data instanceof ImageSource);
-    const graphic: TileRequest.Graphic = {};
+    const content: Tile.Content = {};
     const system = IModelApp.renderSystem;
     const texture = await this.loadTextureImage(data as ImageSource, this._iModel, system, isCanceled);
     if (undefined !== texture) {
       // we put the corners property on WebMercatorTiles
       const corners = (tile as any).corners;
-      graphic.renderGraphic = system.createTile(texture, corners);
+      content.graphic = system.createTile(texture, corners);
     }
 
-    return graphic;
+    return content;
   }
 
   private async loadTextureImage(imageSource: ImageSource, iModel: IModelConnection, system: RenderSystem, isCanceled: () => boolean): Promise<RenderTexture | undefined> {

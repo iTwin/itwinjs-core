@@ -4442,8 +4442,10 @@ interface TileProps {
   transformToRoot?: TransformProps;
 }
 
-// @public (undocumented)
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal (undocumented)
 interface TileTreeProps {
+  formatVersion?: number;
   id: string;
   isTerrain?: boolean;
   location: TransformProps;

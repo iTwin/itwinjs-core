@@ -2501,32 +2501,6 @@ class IModelApp {
 class IModelConnection {
 }
 
-// @public (undocumented)
-class IModelTileLoader extends TileLoader {
-  constructor(iModel: IModelConnection, batchType: BatchType, edgesRequired?: boolean);
-  // (undocumented)
-  protected readonly _batchType: BatchType;
-  // (undocumented)
-  protected readonly _loadEdges: boolean;
-  // (undocumented)
-  protected static _viewFlagOverrides: ViewFlag.Overrides;
-  // (undocumented)
-  getChildrenProps(parent: Tile): Promise<TileProps[]>;
-  // (undocumented)
-  readonly maxDepth: number;
-  // WARNING: The type "Tile.LoadPriority" needs to be exported by the package (e.g. added to index.ts)
-  // (undocumented)
-  readonly priority: Tile.LoadPriority;
-  // WARNING: The type "TileRequest.Response" needs to be exported by the package (e.g. added to index.ts)
-  // (undocumented)
-  requestTileContent(tile: Tile): Promise<TileRequest.Response>;
-  // WARNING: The type "Tile.Params" needs to be exported by the package (e.g. added to index.ts)
-  // (undocumented)
-  tileRequiresLoading(params: Tile.Params): boolean;
-  // (undocumented)
-  readonly viewFlagOverrides: ViewFlag.Overrides;
-}
-
 // @public
 class InputCollector extends InteractiveTool {
   // (undocumented)
@@ -2556,6 +2530,9 @@ enum InputSource {
 interface InstancedGraphicParams {
   readonly count: number;
   readonly featureIds?: Uint8Array;
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal
+  readonly symbologyOverrides?: Uint8Array;
   readonly transforms: Float32Array;
 }
 
@@ -5227,23 +5204,26 @@ class Tile {
 class TileAdmin {
 }
 
-// @public (undocumented)
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal (undocumented)
 class TileLoader {
   // (undocumented)
   protected readonly _batchType: BatchType;
   // (undocumented)
   protected readonly _loadEdges: boolean;
+  // (undocumented)
+  adjustContentIdSizeMultiplier(contentId: string, _sizeMultipler: number): string;
   compareTilePriorities(lhs: Tile, rhs: Tile): number;
   // (undocumented)
   abstract getChildrenProps(parent: Tile): Promise<TileProps[]>;
   // WARNING: The type "TileRequest.ResponseData" needs to be exported by the package (e.g. added to index.ts)
-  // WARNING: The type "TileRequest.Graphic" needs to be exported by the package (e.g. added to index.ts)
+  // WARNING: The type "Tile.Content" needs to be exported by the package (e.g. added to index.ts)
   // (undocumented)
-  loadTileGraphic(tile: Tile, data: TileRequest.ResponseData, isCanceled?: () => boolean): Promise<TileRequest.Graphic>;
+  loadTileContent(tile: Tile, data: TileRequest.ResponseData, isCanceled?: () => boolean): Promise<Tile.Content>;
   // WARNING: The type "TileIO.StreamBuffer" needs to be exported by the package (e.g. added to index.ts)
-  // WARNING: The type "TileRequest.Graphic" needs to be exported by the package (e.g. added to index.ts)
+  // WARNING: The type "Tile.Content" needs to be exported by the package (e.g. added to index.ts)
   // (undocumented)
-  loadTileGraphicFromStream(tile: Tile, streamBuffer: TileIO.StreamBuffer, isCanceled?: () => boolean): Promise<TileRequest.Graphic>;
+  loadTileContentFromStream(tile: Tile, streamBuffer: TileIO.StreamBuffer, isCanceled?: () => boolean): Promise<Tile.Content>;
   // (undocumented)
   readonly maxDepth: number;
   // (undocumented)

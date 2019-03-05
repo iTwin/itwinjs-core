@@ -10,8 +10,9 @@ import { AxisAlignedBox3d, BatchType, GeometricModel2dProps, ModelProps, Related
 import { EntityState } from "./EntityState";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
+import { IModelTile } from "./tile/IModelTile";
 import { RealityModelTileTree } from "./tile/RealityModelTileTree";
-import { IModelTileLoader, TileTree, TileTreeState } from "./tile/TileTree";
+import { TileTree, TileTreeState } from "./tile/TileTree";
 
 /** Represents the front-end state of a [Model]($backend).
  * @public
@@ -127,7 +128,12 @@ export abstract class GeometricModelState extends ModelState implements TileTree
     const id = (asClassifier ? ("C:" + classifierExpansion as string + "_") : "") + (animationId ? ("A:" + animationId + "_") : "") + this.id;
 
     this.iModel.tiles.getTileTreeProps(id).then((result: TileTreeProps) => {
-      tileTreeState.setTileTree(result, new IModelTileLoader(this.iModel, asClassifier ? BatchType.Classifier : BatchType.Primary, edgesRequired));
+      // NB: Make sure root content ID matches that expected by tile format major version...
+      // back-end uses old format ("0/0/0/0/1") to support older front-ends.
+      const loader = new IModelTile.Loader(this.iModel, result.formatVersion, asClassifier ? BatchType.Classifier : BatchType.Primary, edgesRequired);
+      result.rootTile.contentId = loader.rootContentId;
+      tileTreeState.setTileTree(result, loader);
+
       this._tileTreeState.edgesOmitted = !edgesRequired;
       IModelApp.viewManager.onNewTilesReady();
     }).catch((_err) => {

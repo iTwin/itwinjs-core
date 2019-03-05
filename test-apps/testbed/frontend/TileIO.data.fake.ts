@@ -30,7 +30,7 @@ function changeTestCaseVersion(src: TileTestCase, majorVersion?: number, minorVe
 }
 
 function changeVersion(src: TileTestData, versionMajor?: number, versionMinor?: number): TileTestData {
-  const dst: TileTestData = {
+  let dst: TileTestData = {
     versionMajor: undefined !== versionMajor ? versionMajor : src.versionMajor,
     versionMinor: undefined !== versionMinor ? versionMinor : src.versionMinor,
     headerLength: src.headerLength,
@@ -42,6 +42,12 @@ function changeVersion(src: TileTestData, versionMajor?: number, versionMinor?: 
   };
 
   dst.unreadable = (dst.versionMajor > IModelTileIO.CurrentVersion.Major) ? true : undefined;
+
+  if (undefined !== versionMajor && versionMajor > 1 && 1 === src.versionMajor) {
+    // Added 4 bytes in v02.00 for empty sub-range bitmask
+    dst = changeHeaderLength(dst, dst.versionMinor, 4);
+  }
+
   return dst;
 }
 
@@ -98,6 +104,7 @@ export function changeHeaderLength(src: TileTestData, versionMinor: number, numP
     versionMajor: src.versionMajor,
     versionMinor,
     headerLength: src.headerLength + numPaddingBytes,
+    unreadable: src.unreadable,
     rectangle: padTestCaseHeader(src, "rectangle", versionMinor, numPaddingBytes),
     triangles: padTestCaseHeader(src, "triangles", versionMinor, numPaddingBytes),
     lineString: padTestCaseHeader(src, "lineString", versionMinor, numPaddingBytes),
