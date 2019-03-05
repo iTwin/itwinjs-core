@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Rename PagableECSql interface to PageableECSql to fix spelling error",
+      "packageName": "@bentley/imodeljs-common",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-common",
+  "email": "shaun.sewall@bentley.com"
+}

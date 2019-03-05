@@ -10,7 +10,7 @@ import {
   ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontMap, FontMapProps, FontProps,
   IModel, IModelError, IModelNotFoundResponse, IModelProps, IModelStatus, IModelToken, IModelVersion, ModelProps, ModelSelectorProps,
   PropertyCallback, SheetProps, SnapRequestProps, SnapResponseProps, ThumbnailProps, TileTreeProps, ViewDefinitionProps, ViewQueryParams,
-  ViewStateProps, IModelCoordinatesResponseProps, GeoCoordinatesResponseProps, PageOptions, kPagingDefaultOptions, PagableECSql,
+  ViewStateProps, IModelCoordinatesResponseProps, GeoCoordinatesResponseProps, PageOptions, kPagingDefaultOptions, PageableECSql,
 } from "@bentley/imodeljs-common";
 import * as path from "path";
 import * as os from "os";
@@ -114,7 +114,7 @@ export class OpenParams {
  * IModelDb raises a set of events to allow apps and subsystems to track IModelDb object life cycle, including [[onOpen]] and [[onOpened]].
  * @see [learning about IModelDb]($docs/learning/backend/IModelDb.md)
  */
-export class IModelDb extends IModel implements PagableECSql {
+export class IModelDb extends IModel implements PageableECSql {
   public static readonly defaultLimit = 1000; // default limit for batching queries
   public static readonly maxLimit = 10000; // maximum limit for batching queries
   /** Event called after a changeset is applied to this IModelDb. */
@@ -500,7 +500,7 @@ export class IModelDb extends IModel implements PagableECSql {
     });
   }
 
-  /** Execute a pagable query.
+  /** Execute a pageable query.
    * The result of the query is async iterator over the rows. The iterator will get next page automatically once rows in current page has been read.
    * [ECSQL row]($docs/learning/ECSQLRowFormat).
    *

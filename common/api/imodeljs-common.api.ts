@@ -3012,7 +3012,7 @@ class OctEncodedNormalPair {
 }
 
 // @public (undocumented)
-interface PagableECSql {
+interface PageableECSql {
   query(ecsql: string, bindings?: any[] | object, options?: PageOptions): AsyncIterableIterator<any>;
   queryPage(ecsql: string, bindings?: any[] | object, options?: PageOptions): Promise<any[]>;
   queryRowCount(ecsql: string, bindings?: any[] | object): Promise<number>;

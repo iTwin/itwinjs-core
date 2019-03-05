@@ -514,7 +514,7 @@ class DriverBundleElement extends InformationContentElement {
 }
 
 // @public
-class ECDb implements IDisposable, PagableECSql {
+class ECDb implements IDisposable, PageableECSql {
   constructor();
   abandonChanges(): void;
   clearStatementCache(): void;

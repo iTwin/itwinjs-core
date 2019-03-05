@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module ECDb */
 
-import { IModelError, IModelStatus, PageOptions, kPagingDefaultOptions, PagableECSql } from "@bentley/imodeljs-common";
+import { IModelError, IModelStatus, PageOptions, kPagingDefaultOptions, PageableECSql } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "./IModelJsNative";
 import { ECSqlStatement, ECSqlStatementCache } from "./ECSqlStatement";
 import { SqliteStatement, SqliteStatementCache, CachedSqliteStatement } from "./SqliteStatement";
@@ -21,7 +21,7 @@ export enum ECDbOpenMode {
 }
 
 /** An ECDb file */
-export class ECDb implements IDisposable, PagableECSql {
+export class ECDb implements IDisposable, PageableECSql {
   private _nativeDb?: IModelJsNative.ECDb;
   private readonly _statementCache: ECSqlStatementCache = new ECSqlStatementCache();
   private readonly _sqliteStatementCache: SqliteStatementCache = new SqliteStatementCache();
@@ -107,7 +107,7 @@ export class ECDb implements IDisposable, PagableECSql {
     });
   }
 
-  /** Execute a pagable query.
+  /** Execute a pageable query.
    * The result of the query is async iterator over the rows. The iterator will get next page automatically once rows in current page has been read.
    * [ECSQL row]($docs/learning/ECSQLRowFormat).
    *
