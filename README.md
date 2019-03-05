@@ -39,9 +39,9 @@ See [rush.json](./rush.json) for the list of packages. These packages are descri
 * `test-apps/display-test-app/package.json`
   * Private, not published
   * Test application for graphics visualization
-* `test-apps/testbed/package.json`
+* `integration-tests/core/package.json`
   * Private, not published
-  * Test application for frontend/backend interaction
+  * Integration tests for frontend/backend interaction using standard RPC interfaces
 
 Each package will have its own **node_modules** directory which will contain symbolic links to *common* dependencies managed by Rush.
 

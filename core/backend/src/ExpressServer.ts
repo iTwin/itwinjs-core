@@ -28,6 +28,7 @@ export class IModelJsExpressServer {
 
   protected _configureMiddleware() {
     this._app.use(bodyParser.text());
+    this._app.use(bodyParser.raw());
   }
 
   protected _configureHeaders() {

@@ -174,7 +174,8 @@
   "typescript.tsdk": "node_modules\\typescript\\lib",
   "files.associations": {
     "*.snap": "javascript",
-    ".nycrc": "json"
+    ".nycrc": "json",
+    "certa.json": "jsonc"
   },
   "cSpell.enabledLanguageIds": [
     "c",
@@ -194,6 +195,14 @@
     "typescriptreact",
     "xml",
     "yml"
+  ],
+  "json.schemas": [
+    {
+      "fileMatch": [
+        "certa.json"
+      ],
+      "url": "./tools/certa/certa.schema.json"
+    },
   ],
   "markdownlint.config": {
     "MD024": {

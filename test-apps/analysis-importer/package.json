@@ -31,7 +31,6 @@
     "cpx": "^1.5.0",
     "child_process": "^1.0.2",
     "express": "^4.16.3",
-    "node-glob": "^1.2.0",
     "null-loader": "^0.1.1",
     "popper.js": "^1.14.4",
     "rimraf": "^2.6.2",
