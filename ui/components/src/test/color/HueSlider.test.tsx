@@ -32,8 +32,8 @@ describe("<HueSlider />", () => {
     let index = 0;
 
     // starting value is 60
-    const keys = ["ArrowLeft", "ArrowDown", "ArrowRight", "ArrowUp", "Home", "End"];
-    const values = [59, 59, 61, 61, 0, 360];
+    const keys = ["ArrowLeft", "ArrowDown", "ArrowRight", "ArrowUp", "Home", "End", "PageDown", "PageUp"];
+    const values = [59, 59, 61, 61, 0, 360, 0, 120];
 
     const spyOnPick = sinon.spy();
     function handleHueChange(_hsl: HSLAColor): void {

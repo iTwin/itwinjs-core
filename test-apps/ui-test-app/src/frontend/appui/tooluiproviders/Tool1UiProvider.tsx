@@ -7,7 +7,7 @@ import * as React from "react";
 import { ConfigurableUiManager, ConfigurableCreateInfo, ToolUiProvider } from "@bentley/ui-framework";
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
 
-import { ColorSwatch, HueSlider, HSLAColor } from "@bentley/ui-components";
+import { ColorSwatch, HueSlider, HSLAColor, TransparencySlider } from "@bentley/ui-components";
 import { ToolAssistanceItem, ToolAssistanceSeparator } from "@bentley/ui-ninezone";
 import { SampleAppIModelApp } from "../..";
 
@@ -25,12 +25,13 @@ class Tool1UiProvider extends ToolUiProvider {
 
 interface State {
   hsl: HSLAColor;
+  transparency: number;
 }
 
 class Tool1Settings extends React.Component<{}, State> {
   constructor(props: any) {
     super(props);
-    this.state = { hsl: new HSLAColor(59, 1.0, .50, 1) };
+    this.state = { hsl: new HSLAColor(59, 1.0, .50, 1), transparency: .5 };
   }
 
   private _handleColorChange = (color: string) => {
@@ -44,10 +45,23 @@ class Tool1Settings extends React.Component<{}, State> {
     this.setState({ hsl: hue });
   }
 
+  private _handleTransparencyChange = (transparency: number) => {
+    const msg = `Transparency set to ${JSON.stringify(transparency * 100)}%`;
+    IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
+    this.setState({ transparency });
+  }
+
   public render(): React.ReactNode {
-    // const hueDivStyle: React.CSSProperties = {
-    //   height: `120px`,
-    // };
+    //   const vertDivStyle: React.CSSProperties = {
+    //     height: `120px`,
+    //   };
+
+    /*
+    <tr>
+      <td>Green</td>
+      <td> <ColorSwatch color="rgb(0%,100%,0%)" onColorPick={this._handleColorChange} /> </td>
+    </tr>
+    */
 
     return (
       <div>
@@ -82,10 +96,6 @@ class Tool1Settings extends React.Component<{}, State> {
               <td> <ColorSwatch color="rgba(255,0,0,255)" onColorPick={this._handleColorChange} /> </td>
             </tr>
             <tr>
-              <td>Green</td>
-              <td> <ColorSwatch color="rgb(0%,100%,0%)" onColorPick={this._handleColorChange} /> </td>
-            </tr>
-            <tr>
               <td>Blue</td>
               <td> <ColorSwatch color="#0000ff" onColorPick={this._handleColorChange} /> </td>
             </tr>
@@ -101,6 +111,10 @@ class Tool1Settings extends React.Component<{}, State> {
               <td>Hue</td>
               <td> <HueSlider hsl={this.state.hsl} onHueChange={this._handleHueChange} isHorizontal={true} /> </td>
             </tr>
+            <tr>
+              <td>Transparency</td>
+              <td> <TransparencySlider transparency={this.state.transparency} onTransparencyChange={this._handleTransparencyChange} isHorizontal={true} /> </td>
+            </tr>
           </tbody>
         </table>
       </div >
@@ -109,7 +123,9 @@ class Tool1Settings extends React.Component<{}, State> {
 }
 
 /*
-              <td> <div style={hueDivStyle}><HueSlider hsl={this.state.hsl} onHueChange={this._handleHueChange} isHorizontal={false} /></div> </td>
+   <td> <TransparencySlider transparency={this.state.transparency} onTransparencyChange={this._handleTransparencyChange} isHorizontal={true} /> </td>
+    <td> <div style={vertDivStyle}><TransparencySlider transparency={this.state.transparency} onTransparencyChange={this._handleTransparencyChange} isHorizontal={false} /></div> </td>
+    <td> <div style={vertDivStyle}><HueSlider hsl={this.state.hsl} onHueChange={this._handleHueChange} isHorizontal={false} /></div> </td>
 */
 class Tool1Assistance extends React.Component {
   public render(): React.ReactNode {
