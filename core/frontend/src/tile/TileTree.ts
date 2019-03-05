@@ -765,7 +765,7 @@ const defaultViewFlagOverrides = new ViewFlag.Overrides(ViewFlags.fromJSON({
   noSolarLight: true,
 }));
 
-/** @hidden */
+/** @internal */
 export abstract class TileLoader {
   public abstract async getChildrenProps(parent: Tile): Promise<TileProps[]>;
   public abstract async requestTileContent(tile: Tile): Promise<TileRequest.Response>;

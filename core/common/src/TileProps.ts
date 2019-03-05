@@ -24,7 +24,7 @@ export interface TileProps {
   transformToRoot?: TransformProps;
 }
 
-/** @hidden */
+/** @internal */
 export interface TileTreeProps {
   /** The unique identifier of this TileTree within the iModel */
   id: string;
