@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { TileIO, IModelTileIO, IModelTileLoader, TileTree, TileRequest } from "@bentley/imodeljs-frontend/lib/tile";
+import { TileIO, IModelTileIO, IModelTile, TileTree, TileRequest } from "@bentley/imodeljs-frontend/lib/tile";
 import { SurfaceType } from "@bentley/imodeljs-frontend/lib/rendering";
 import { Batch, MeshGraphic, GraphicsArray, Primitive, PolylineGeometry } from "@bentley/imodeljs-frontend/lib/webgl";
 import { ModelProps, RelatedElementProps, FeatureIndexType, BatchType, ServerTimeoutError } from "@bentley/imodeljs-common";
@@ -104,8 +104,8 @@ async function processRectangle(data: TileTestData, imodel: IModelConnection, pr
     expect(delta(high.y, 5.0)).to.be.lessThan(0.0005);
     expect(delta(high.z, 0.0)).to.be.lessThan(0.0005);
 
-    expect(result.renderGraphic).not.to.be.undefined;
-    processGraphic(result.renderGraphic!);
+    expect(result.graphic).not.to.be.undefined;
+    processGraphic(result.graphic!);
   }
 }
 
@@ -134,8 +134,8 @@ async function processTriangles(data: TileTestData, imodel: IModelConnection, pr
     expect(delta(high.y, 10.0)).to.be.lessThan(0.00051);
     expect(delta(high.z, 0.0)).to.be.lessThan(0.0005);
 
-    expect(result.renderGraphic).not.to.be.undefined;
-    processGraphic(result.renderGraphic!);
+    expect(result.graphic).not.to.be.undefined;
+    processGraphic(result.graphic!);
   }
 }
 
@@ -164,8 +164,8 @@ async function processLineString(data: TileTestData, imodel: IModelConnection, p
     expect(delta(high.y, 10.0)).to.be.lessThan(0.00051);
     expect(delta(high.z, 0.0)).to.be.lessThan(0.0005);
 
-    expect(result.renderGraphic).not.to.be.undefined;
-    processGraphic(result.renderGraphic!);
+    expect(result.graphic).not.to.be.undefined;
+    processGraphic(result.graphic!);
   }
 }
 
@@ -194,8 +194,8 @@ async function processLineStrings(data: TileTestData, imodel: IModelConnection, 
     expect(delta(high.y, 30.0)).to.be.lessThan(0.0016);
     expect(delta(high.z, 0.0)).to.be.lessThan(0.0005);
 
-    expect(result.renderGraphic).not.to.be.undefined;
-    processGraphic(result.renderGraphic!);
+    expect(result.graphic).not.to.be.undefined;
+    processGraphic(result.graphic!);
   }
 }
 
@@ -224,8 +224,8 @@ async function processCylinder(data: TileTestData, imodel: IModelConnection, pro
     expect(delta(high.y, 2.0)).to.be.lessThan(0.0005);
     expect(delta(high.z, 3.0)).to.be.lessThan(0.0005);
 
-    expect(result.renderGraphic).not.to.be.undefined;
-    processGraphic(result.renderGraphic!);
+    expect(result.graphic).not.to.be.undefined;
+    processGraphic(result.graphic!);
   }
 }
 
@@ -552,7 +552,7 @@ describe("mirukuru TileTree", () => {
     const rootTile = treeProps.rootTile;
     expect(rootTile.isLeaf).not.to.be.true; // the backend will only set this to true if the tile range contains no elements.
 
-    const loader = new IModelTileLoader(imodel, BatchType.Primary);
+    const loader = new IModelTile.Loader(imodel, treeProps.formatVersion, BatchType.Primary);
     const tree = new TileTree(TileTree.Params.fromJSON(treeProps, imodel, true, loader, "0x1c"));
 
     const response: TileRequest.Response = await loader.requestTileContent(tree.rootTile);
@@ -560,9 +560,9 @@ describe("mirukuru TileTree", () => {
     expect(response).instanceof(Uint8Array);
 
     const isCanceled = () => false; // Our tile has no Request, therefore not considered in "loading" state, so would be immediately treated as "canceled" during loading...
-    const gfx = await loader.loadTileGraphic(tree.rootTile, response as Uint8Array, isCanceled);
+    const gfx = await loader.loadTileContent(tree.rootTile, response as Uint8Array, isCanceled);
     expect(gfx).not.to.be.undefined;
-    expect(gfx.renderGraphic).not.to.be.undefined;
+    expect(gfx.graphic).not.to.be.undefined;
     expect(gfx.isLeaf).to.be.true;
     expect(gfx.contentRange).not.to.be.undefined;
     expect(gfx.contentRange!.isNull).to.be.false;

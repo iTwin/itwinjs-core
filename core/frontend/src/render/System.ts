@@ -746,12 +746,18 @@ export interface InstancedGraphicParams {
    * Must be greater than zero.
    * Must be equal to (transforms.length / 12)
    * If featureIds is defined, must be equal to (featureIds.length / 3)
+   * If symbologyOverrides is defined, must be equal to (symbologyOverrides.length / 8)
    */
   readonly count: number;
   /** An array of instance-to-model transforms. Each transform consists of 3 rows of 4 columns where the 4th column holds the translation. */
   readonly transforms: Float32Array;
   /** If defined, an array of little-endian 24-bit unsigned integers containing the feature ID of each instance. */
   readonly featureIds?: Uint8Array;
+  /**
+   * If defined, as array of bytes (8 per instance) encoding the symbology overrides for each instance. The encoding matches that used by FeatureOverrides, though only the RGB, alpha, line weight, and line code are used.
+   * @internal
+   */
+  readonly symbologyOverrides?: Uint8Array;
 }
 
 /** A RenderSystem provides access to resources used by the internal WebGL-based rendering system.

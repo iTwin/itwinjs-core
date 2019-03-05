@@ -33,8 +33,10 @@ export abstract class TileAdmin {
   public abstract set maxActiveRequests(max: number);
   public abstract get maxActiveRequests(): number;
 
-  /** @internal */
+  /** @hidden */
   public abstract get enableInstancing(): boolean;
+  /** @hidden */
+  public abstract get elideEmptyChildContentRequests(): boolean;
 
   /** Returns the union of the input set and the input viewport. */
   public abstract getViewportSet(vp: Viewport, vps?: TileAdmin.ViewportSet): TileAdmin.ViewportSet;
@@ -59,6 +61,10 @@ export abstract class TileAdmin {
   public static create(props?: TileAdmin.Props): TileAdmin {
     return new Admin(props);
   }
+
+  public abstract onTileCompleted(): void;
+  public abstract onTileTimedOut(): void;
+  public abstract onTileFailed(): void;
 }
 
 /** @hidden */
@@ -70,6 +76,12 @@ export namespace TileAdmin {
     numActiveRequests: number;
     /** The number of requests canceled during the most recent update. */
     numCanceled: number;
+    /** The total number of completed requests during this session. */
+    totalCompletedRequests: number;
+    /** The total number of failed requests during this session. */
+    totalFailedRequests: number;
+    /** The total number of timed-out requests during this session. */
+    totalTimedOutRequests: number;
   }
 
   /** Describes configuration of a [[TileAdmin]].
@@ -99,6 +111,13 @@ export namespace TileAdmin {
 
     /** If defined, requests for tile content or tile tree properties will be memoized and retried at the specified interval in milliseconds */
     retryInterval?: number;
+
+    /** If true, requests for content of a child tile will be elided if the child tile's range can be determined to be empty
+     * based on metadata embedded in the parent's content.
+     *
+     * Default value: false
+     */
+    elideEmptyChildContentRequests?: boolean;
   }
 
   /** A set of [[Viewport]]s.
@@ -232,12 +251,16 @@ class Admin extends TileAdmin {
   private readonly _throttle: boolean;
   private readonly _retryInterval: number;
   private readonly _enableInstancing: boolean;
+  private readonly _elideEmptyChildContentRequests: boolean;
   private readonly _removeIModelConnectionOnCloseListener: () => void;
   private _activeRequests = new Set<TileRequest>();
   private _swapActiveRequests = new Set<TileRequest>();
   private _pendingRequests = new Queue();
   private _swapPendingRequests = new Queue();
   private _numCanceled = 0;
+  private _totalCompleted = 0;
+  private _totalFailed = 0;
+  private _totalTimedOut = 0;
   private _retryIntervalInitialized = false;
   private get _memoizeRequests() { return this._retryInterval > 0; }
 
@@ -247,6 +270,9 @@ class Admin extends TileAdmin {
       numPendingRequests: this._pendingRequests.length,
       numActiveRequests: this._activeRequests.size,
       numCanceled: this._numCanceled,
+      totalCompletedRequests: this._totalCompleted,
+      totalFailedRequests: this._totalFailed,
+      totalTimedOutRequests: this._totalTimedOut,
     };
   }
 
@@ -260,11 +286,13 @@ class Admin extends TileAdmin {
     this._maxActiveRequests = undefined !== options.maxActiveRequests ? options.maxActiveRequests : 10;
     this._retryInterval = undefined !== options.retryInterval ? options.retryInterval : 0;
     this._enableInstancing = !!options.enableInstancing;
+    this._elideEmptyChildContentRequests = !!options.elideEmptyChildContentRequests;
 
     this._removeIModelConnectionOnCloseListener = IModelConnection.onClose.addListener((iModel) => this.onIModelClosed(iModel));
   }
 
   public get enableInstancing() { return this._enableInstancing; }
+  public get elideEmptyChildContentRequests() { return this._elideEmptyChildContentRequests; }
 
   public get maxActiveRequests() { return this._maxActiveRequests; }
   public set maxActiveRequests(max: number) {
@@ -437,4 +465,8 @@ class Admin extends TileAdmin {
       }
     }
   }
+
+  public onTileCompleted() { ++this._totalCompleted; }
+  public onTileFailed() { ++this._totalFailed; }
+  public onTileTimedOut() { ++this._totalTimedOut; }
 }

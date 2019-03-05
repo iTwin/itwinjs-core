@@ -128,6 +128,7 @@ export abstract class MeshGeometry extends LUTGeometry {
   protected readonly _numIndices: number;
 
   public get asMesh() { return this; }
+  protected _getLineWeight(params: ShaderProgramParams): number { return this.computeEdgeWeight(params); }
 
   // Convenience accessors...
   public get edgeWidth() { return this.mesh.edgeWidth; }
@@ -197,7 +198,6 @@ export class EdgeGeometry extends MeshGeometry {
   }
 
   protected _wantWoWReversal(_target: Target): boolean { return true; }
-  protected _getLineWeight(params: ShaderProgramParams): number { return this.computeEdgeWeight(params); }
   protected _getLineCode(params: ShaderProgramParams): number { return this.computeEdgeLineCode(params); }
   public getTechniqueId(_target: Target): TechniqueId { return TechniqueId.Edge; }
   public getRenderPass(target: Target): RenderPass { return this.computeEdgePass(target); }

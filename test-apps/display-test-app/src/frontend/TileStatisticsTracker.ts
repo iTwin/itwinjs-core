@@ -19,6 +19,9 @@ const enum StatIndex {
   Selected,
   Ready,
   Progress,
+  Completed,
+  TimedOut,
+  Failed,
 
   COUNT,
 }
@@ -31,6 +34,9 @@ const statLabels = [
   "Selected Tiles",
   "Ready Tiles",
   "Progress",
+  "Completed",
+  "Timed Out",
+  "Failed",
 ];
 
 type GetStat = (stats: TileAdmin.Statistics, vp: Viewport) => number;
@@ -49,6 +55,9 @@ const getStat: GetStat[] = [
     const ratio = (total > 0) ? (ready / total) : 1.0;
     return Math.round(ratio * 100);
   },
+  (stats, _vp) => stats.totalCompletedRequests,
+  (stats, _vp) => stats.totalTimedOutRequests,
+  (stats, _vp) => stats.totalFailedRequests,
 ];
 
 export class StatsTracker {

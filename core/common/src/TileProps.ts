@@ -38,4 +38,6 @@ export interface TileTreeProps {
   yAxisUp?: boolean;
   /** Optional - if defined and true, this TileTree contains only terrain tiles. */
   isTerrain?: boolean;
+  /** Optionally specifies the maximum tile format version supported. */
+  formatVersion?: number;
 }

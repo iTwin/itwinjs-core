@@ -5,8 +5,7 @@
 /** @module Tile */
 
 import { assert, base64StringToUint8Array } from "@bentley/bentleyjs-core";
-import { ImageSource, ElementAlignedBox3d, ServerTimeoutError } from "@bentley/imodeljs-common";
-import { RenderGraphic } from "../render/System";
+import { ImageSource, ServerTimeoutError } from "@bentley/imodeljs-common";
 import { Tile, TileTree, TileLoader } from "./TileTree";
 import { TileAdmin } from "./TileAdmin";
 import { Viewport } from "../Viewport";
@@ -61,6 +60,7 @@ export class TileRequest {
         // Invalidate scene - if tile is re-selected, it will be re-requested.
         this.notifyAndClear();
         this._state = TileRequest.State.Failed;
+        IModelApp.tileAdmin.onTileTimedOut();
       } else {
         // Unknown error - not retryable.
         this.setFailed();
@@ -92,6 +92,7 @@ export class TileRequest {
     this.notifyAndClear();
     this._state = TileRequest.State.Failed;
     this.tile.setNotFound();
+    IModelApp.tileAdmin.onTileFailed();
   }
 
   /** Invoked when the raw tile content becomes available, to convert it into a tile graphic. */
@@ -114,13 +115,14 @@ export class TileRequest {
     this._state = TileRequest.State.Loading;
 
     try {
-      const graphic = await this.loader.loadTileGraphic(this.tile, data);
+      const content = await this.loader.loadTileContent(this.tile, data);
       if (this.isCanceled)
         return Promise.resolve();
 
       this._state = TileRequest.State.Completed;
-      this.tile.setGraphic(graphic.renderGraphic, graphic.isLeaf, graphic.contentRange, graphic.sizeMultiplier);
+      this.tile.setContent(content);
       this.notifyAndClear();
+      IModelApp.tileAdmin.onTileCompleted();
     } catch (_err) {
       this.setFailed();
     }
@@ -133,7 +135,7 @@ export class TileRequest {
 export namespace TileRequest {
   /** The type of a raw response to a request for tile content. Processed upon receipt into a [[TileRequest.Response]] type. */
   export type Response = Uint8Array | ArrayBuffer | string | ImageSource | undefined;
-  /** The input to [[TileLoader.loadTileGraphic]], to be converted into a [[TileRequest.Graphic]]. */
+  /** The input to [[TileLoader.loadTileContent]], to be converted into a [[Tile.Content]]. */
   export type ResponseData = Uint8Array | ImageSource;
 
   /** The states through which a TileRequest proceeds. During the first 3 states, the [[Tile]]'s `request` member is defined, and its [[Tile.LoadStatus]] is computed based on the state of its request. */
@@ -148,13 +150,5 @@ export namespace TileRequest {
     Completed,
     /** Follows any state in which an error prevents progression, or during which the request was canceled. */
     Failed,
-  }
-
-  /** The result of [[TileLoader.loadTileGraphic]]. */
-  export interface Graphic {
-    renderGraphic?: RenderGraphic;
-    isLeaf?: boolean;
-    contentRange?: ElementAlignedBox3d;
-    sizeMultiplier?: number;
   }
 }

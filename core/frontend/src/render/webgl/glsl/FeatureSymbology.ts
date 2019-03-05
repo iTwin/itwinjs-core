@@ -18,7 +18,7 @@ import { Hilite } from "@bentley/imodeljs-common";
 import { TextureUnit, OvrFlags } from "../RenderFlags";
 import { FloatRgba } from "../FloatRGBA";
 import { FeatureMode } from "../TechniqueFlags";
-import { GLSLVertex, addAlpha } from "./Vertex";
+import { addLineWeight, replaceLineWeight, replaceLineCode, addAlpha } from "./Vertex";
 import { GLSLFragment, addWindowToTexCoords } from "./Fragment";
 import { GLSLCommon, addEyeSpace, addUInt32s } from "./Common";
 import { GLSLDecode } from "./Decode";
@@ -42,7 +42,7 @@ export const enum FeatureSymbologyOptions {
   Linear = HasOverrides | Color | Weight | LineCode | Alpha,
 }
 
-function addFlagConstants(builder: ShaderBuilder): void {
+export function addOvrFlagConstants(builder: ShaderBuilder): void {
   // NB: These are the bit positions of each flag in OvrFlags enum - not the flag values
   builder.addConstant("kOvrBit_Visibility", VariableType.Float, "0.0");
   builder.addConstant("kOvrBit_Rgb", VariableType.Float, "1.0");
@@ -94,14 +94,14 @@ vec4 getSecondFeatureRgba() {
 `;
 
 const computeLineWeight = `
-float ComputeLineWeight() {
-  return mix(u_lineWeight, linear_feature_overrides.y, linear_feature_overrides.x);
+float computeLineWeight() {
+  return mix(g_lineWeight, linear_feature_overrides.y, linear_feature_overrides.x);
 }
 `;
 
 const computeLineCode = `
-float ComputeLineCode() {
-  return mix(u_lineCode, linear_feature_overrides.w, linear_feature_overrides.z);
+float computeLineCode() {
+  return mix(g_lineCode, linear_feature_overrides.w, linear_feature_overrides.z);
 }
 `;
 
@@ -163,7 +163,7 @@ function addCommon(builder: ProgramBuilder, mode: FeatureMode, opts: FeatureSymb
 
   vert.addGlobal("feature_invisible", VariableType.Boolean, "false");
   vert.addFunction(GLSLCommon.extractNthBit);
-  addFlagConstants(vert);
+  addOvrFlagConstants(vert);
 
   vert.addGlobal("linear_feature_overrides", VariableType.Vec4, "vec4(0.0)");
   vert.addGlobal("feature_ignore_material", VariableType.Boolean, "false");
@@ -171,10 +171,10 @@ function addCommon(builder: ProgramBuilder, mode: FeatureMode, opts: FeatureSymb
   vert.addFunction(extractNthFeatureBit);
   if (wantWeight || wantLineCode) {
     if (wantLineCode)
-      vert.replaceFunction(GLSLVertex.computeLineCode, computeLineCode);
+      replaceLineCode(vert, computeLineCode);
 
     if (wantWeight) {
-      vert.replaceFunction(GLSLVertex.computeLineWeight, computeLineWeight);
+      replaceLineWeight(vert, computeLineWeight);
       vert.addUniform("u_globalOvrFlags", VariableType.Float, (prog) => {
         prog.addGraphicUniform("u_globalOvrFlags", (uniform, params) => {
           let flags = 0.0;
@@ -393,16 +393,6 @@ const checkForEarlySurfaceDiscardWithFeatureID = `
   return alwaysDiscard || (!neverDiscard && discardByOrder && withinDepthTolerance && (isSameFeature || ((depthAndOrder.x > kRenderOrder_PlanarSurface) || ((depthAndOrder.x == kRenderOrder_PlanarSurface) && (depthDelta <= 4.0e-5)))));
 `;
 
-function addEdgeWidth(builder: ShaderBuilder) {
-  builder.addUniform("u_lineWeight", VariableType.Float, (prog) => {
-    prog.addGraphicUniform("u_lineWeight", (uniform, params) => {
-      const mesh = params.geometry.asSurface!;
-      const width = params.target.getEdgeWeight(params.programParams, mesh.edgeWidth);
-      uniform.setUniform1f(width < 1.0 ? 1.0 : width);
-    });
-  });
-}
-
 export const computeFeatureId = `v_feature_id = addUInt32s(u_batch_id, g_featureIndex) / 255.0;`;
 
 function addRenderOrderConstants(builder: ShaderBuilder) {
@@ -514,8 +504,7 @@ export function addSurfaceDiscard(builder: ProgramBuilder, feat: FeatureMode) {
     frag.set(FragmentShaderComponent.CheckForEarlyDiscard, checkForEarlySurfaceDiscard);
   } else {
     addFeatureIndex(vert);
-    addEdgeWidth(vert);
-    vert.addFunction(GLSLVertex.computeLineWeight);
+    addLineWeight(vert);
 
     addSamplers(frag, true);
     addRenderOrderConstants(frag);
@@ -526,7 +515,7 @@ export function addSurfaceDiscard(builder: ProgramBuilder, feat: FeatureMode) {
     frag.set(FragmentShaderComponent.CheckForEarlyDiscard, checkForEarlySurfaceDiscardWithFeatureID);
 
     addEyeSpace(builder);
-    builder.addInlineComputedVarying("v_lineWeight", VariableType.Float, "v_lineWeight = ComputeLineWeight();");
+    builder.addInlineComputedVarying("v_lineWeight", VariableType.Float, "v_lineWeight = computeLineWeight();");
     addFeatureId(builder);
   }
 

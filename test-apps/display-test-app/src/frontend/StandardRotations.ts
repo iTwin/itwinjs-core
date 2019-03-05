@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import { IModelApp } from "@bentley/imodeljs-frontend";
+import { IModelApp, Viewport } from "@bentley/imodeljs-frontend";
 import { ToolBarDropDown, createToolButton } from "./ToolBar";
 
 // Indexed by StandardViewId enum
@@ -12,10 +12,12 @@ const entries = ["top", "bottom", "left", "right", "front", "back", "isoleft", "
 export class StandardRotations extends ToolBarDropDown {
   private readonly _element: HTMLElement;
   private readonly _parent: HTMLElement;
+  private readonly _vp: Viewport;
 
-  public constructor(parent: HTMLElement) {
+  public constructor(parent: HTMLElement, vp: Viewport) {
     super();
     this._parent = parent;
+    this._vp = vp;
 
     this._element = document.createElement("div");
     this._element.className = "toolMenu";
@@ -46,7 +48,7 @@ export class StandardRotations extends ToolBarDropDown {
   protected _close() { this._element.style.display = "none"; }
 
   public get onViewChanged(): Promise<void> {
-    this._parent.style.display = IModelApp.viewManager.selectedView!.view.allow3dManipulations() ? "block" : "none";
+    this._parent.style.display = this._vp.view.allow3dManipulations() ? "block" : "none";
     return Promise.resolve();
   }
 }

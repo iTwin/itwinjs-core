@@ -252,7 +252,7 @@ export class Viewer {
 
     this.toolBar.addDropDown({
       className: "bim-icon-gyroscope",
-      createDropDown: async (container: HTMLElement) => Promise.resolve(new StandardRotations(container)),
+      createDropDown: async (container: HTMLElement) => Promise.resolve(new StandardRotations(container, this.viewport)),
     });
 
     this.toolBar.addItem(createToolButton({
