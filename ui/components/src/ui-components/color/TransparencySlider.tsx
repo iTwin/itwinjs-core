@@ -5,39 +5,33 @@
 /** @module Color */
 
 import * as React from "react";
-import "./HueSlider.scss";
+import "./TransparencySlider.scss";
 import classnames from "classnames";
 
-/** Hue (h), Saturation (s), Lightness (l), Alpha (a), Source (source)
- * Value limits h: 0-360, s,l,a: 0-1
- */
-export class HSLAColor {
-  constructor(public h = 0, public s = 0, public l = 0, public a = 1, public source = "rgb") { }
-  public clone(): HSLAColor { const out = new HSLAColor(); out.h = this.h; out.s = this.s; out.l = this.l; out.a = this.a; out.source = this.source; return out; }
-}
-
-/** Properties for the [[HueSlider]] React component */
-export interface HueSliderProps extends React.HTMLAttributes<HTMLDivElement> {
+/** Properties for the [[TransparencySlider]] React component */
+export interface TransparencySliderProps extends React.HTMLAttributes<HTMLDivElement> {
   /** true if slider is oriented horizontal, else vertical orientation is assumed */
   isHorizontal?: boolean;
   /** function to run when user selects color swatch */
-  onHueChange?: ((hue: HSLAColor) => void) | undefined;
-  /** HSL with Alpha Color value */
-  hsl: HSLAColor;
+  onTransparencyChange?: ((transparency: number) => void) | undefined;
+  /** Transparency value between 0 and 1 */
+  transparency: number;
 }
 
-/** HueSlider component used to set the hue value. */
-export class HueSlider extends React.PureComponent<HueSliderProps> {
+/** TransparencySlider component used to set the transparency value. */
+export class TransparencySlider extends React.PureComponent<TransparencySliderProps> {
   private _container: HTMLDivElement | null = null;
 
-  constructor(props: HueSliderProps) {
+  constructor(props: TransparencySliderProps) {
     super(props);
   }
 
-  private _calculateChange = (e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>, isHorizontal: boolean, hsl: HSLAColor, container: HTMLDivElement): HSLAColor | undefined => {
+  private _calculateChange = (e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>, isHorizontal: boolean, transparency: number, container: HTMLDivElement): number | undefined => {
     e.preventDefault();
     const containerWidth = container.clientWidth;
     const containerHeight = container.clientHeight;
+    // tslint:disable-next-line:no-console
+    console.log(`containerWidth=${containerWidth} containerHeight=${containerHeight} `);
 
     let x = 0;
     if ("pageX" in e) {
@@ -64,36 +58,32 @@ export class HueSlider extends React.PureComponent<HueSliderProps> {
     const left = x - (container.getBoundingClientRect().left + window.pageXOffset);
     const top = y - (container.getBoundingClientRect().top + window.pageYOffset);
 
-    if (!isHorizontal) {
-      let h;
-      if (top < 0) {
-        h = 360;
-      } else if (top > containerHeight) {
-        h = 0;
-      } else {
-        const percent = -((top * 100) / containerHeight) + 100;
-        h = ((360 * percent) / 100);
-      }
+    // tslint:disable-next-line:no-console
+    console.log(`x=${x}, y=${y} left=${left}  top=${top} clientRect.left=${container.getBoundingClientRect().left} clientRect.top=${container.getBoundingClientRect().top}`);
 
-      if (hsl.h !== h) {
-        return new HSLAColor(h, hsl.s, hsl.l, hsl.a, "rgb");
+    let t = transparency;
+
+    if (!isHorizontal) {
+      if (top < 0) {
+        t = 1;
+      } else if (top > containerHeight) {
+        t = 0;
+      } else {
+        t = 1 - (top / containerHeight);
       }
     } else {  // horizontal
-      let h;
       if (left < 0) {
-        h = 0;
+        t = 0;
       } else if (left > containerWidth) {
-        h = 360;
+        t = 1;
       } else {
-        const percent = (left * 100) / containerWidth;
-        h = ((360 * percent) / 100);
-      }
-
-      if (hsl.h !== h) {
-        return new HSLAColor(h, hsl.s, hsl.l, hsl.a, "rgb");
+        t = left / containerWidth;
       }
     }
-    return undefined;
+
+    if (t < 0) t = 0;
+    if (t > 1) t = 1;
+    return (transparency !== t) ? t : undefined;
   }
 
   public componentWillUnmount() {
@@ -101,9 +91,9 @@ export class HueSlider extends React.PureComponent<HueSliderProps> {
   }
 
   private _onChange = (e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
-    if (this._container && this.props.onHueChange) {
-      const change = this._calculateChange(e, this.props.isHorizontal ? this.props.isHorizontal : false, this.props.hsl, this._container);
-      change && typeof this.props.onHueChange === "function" && this.props.onHueChange(change);
+    if (this._container && this.props.onTransparencyChange) {
+      const change = this._calculateChange(e, this.props.isHorizontal ? this.props.isHorizontal : false, this.props.transparency, this._container);
+      undefined !== change && typeof this.props.onTransparencyChange === "function" && this.props.onTransparencyChange(change);
     }
   }
 
@@ -116,29 +106,26 @@ export class HueSlider extends React.PureComponent<HueSliderProps> {
   }
 
   private _onKeyDown = (evt: React.KeyboardEvent<HTMLDivElement>) => {
-    let newHue: number | undefined;
-    const hueValue = this.props.hsl.clone();
+    let newTransparency: number | undefined;
     if (evt.key === "ArrowLeft" || evt.key === "ArrowDown") {
-      newHue = hueValue.h - (evt.ctrlKey ? 10 : 1);
+      newTransparency = this.props.transparency - (evt.ctrlKey ? .1 : .05);
     } else if (evt.key === "ArrowRight" || evt.key === "ArrowUp") {
-      newHue = hueValue.h + (evt.ctrlKey ? 10 : 1);
+      newTransparency = this.props.transparency + (evt.ctrlKey ? .1 : .05);
     } else if (evt.key === "PageDown") {
-      newHue = hueValue.h - (evt.ctrlKey ? 180 : 60);
+      newTransparency = this.props.transparency - (evt.ctrlKey ? .5 : .25);
     } else if (evt.key === "PageUp") {
-      newHue = hueValue.h + (evt.ctrlKey ? 180 : 60);
+      newTransparency = this.props.transparency + (evt.ctrlKey ? .5 : .25);
     } else if (evt.key === "Home") {
-      newHue = 0;
+      newTransparency = 0;
     } else if (evt.key === "End") {
-      newHue = 360;
+      newTransparency = 1;
     }
 
-    if (undefined !== newHue) {
-      const newValue = this.props.hsl.clone();
-      if (newHue > 360) newHue = 360;
-      if (newHue < 0) newHue = 0;
-      newValue.h = newHue;
-      if (this.props.onHueChange)
-        this.props.onHueChange(newValue);
+    if (undefined !== newTransparency) {
+      if (newTransparency > 1) newTransparency = 1;
+      if (newTransparency < 0) newTransparency = 0;
+      if (this.props.onTransparencyChange)
+        this.props.onTransparencyChange(newTransparency);
     }
   }
 
@@ -153,23 +140,23 @@ export class HueSlider extends React.PureComponent<HueSliderProps> {
 
   public render(): React.ReactNode {
     const containerClasses = classnames(
-      this.props.isHorizontal ? "components-hue-container-horizontal" : "components-hue-container-vertical",
+      this.props.isHorizontal ? "components-transparency-container-horizontal" : "components-transparency-container-vertical",
     );
 
     const pointerStyle: React.CSSProperties = this.props.isHorizontal ? {
-      left: `${(this.props.hsl.h * 100) / 360}%`,
+      left: `${(this.props.transparency * 100)}%`,
     } : {
         left: `0px`,
-        top: `${-((this.props.hsl.h * 100) / 360) + 100}%`,
+        top: `${-(this.props.transparency * 100) + 100}%`,
       };
 
     return (
-      <div className={containerClasses} data-testid="hue-container">
+      <div className={containerClasses} data-testid="transparency-container">
         <div
-          data-testid="hue-slider"
-          role="slider" aria-label="Hue"
-          aria-valuemin={0} aria-valuemax={360} aria-valuenow={this.props.hsl.h}
-          className="components-hue-slider"
+          data-testid="transparency-slider"
+          role="slider" aria-label="Transparency"
+          aria-valuemin={0} aria-valuemax={1} aria-valuenow={this.props.transparency}
+          className="components-transparency-slider"
           ref={(container) => this._container = container}
           onMouseDown={this._onMouseDown}
           onTouchMove={this._onChange}
@@ -177,7 +164,7 @@ export class HueSlider extends React.PureComponent<HueSliderProps> {
           tabIndex={0}
           onKeyDown={this._onKeyDown}
         >
-          <div style={pointerStyle} className="components-hue-pointer" data-testid="hue-pointer" />
+          <div style={pointerStyle} className="components-transparency-pointer" data-testid="transparency-pointer" />
         </div>
       </div>
     );
