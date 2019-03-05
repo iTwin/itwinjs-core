@@ -3,6 +3,7 @@
 !lib/**/*.d.ts
 !lib/**/*.js
 !lib/**/*.*css
+!lib/**/*.json
 !lib/public/**/*
 lib/test
 !*.md
