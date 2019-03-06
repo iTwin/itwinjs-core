@@ -526,6 +526,16 @@ export abstract class ViewManip extends ViewTool {
     const aspect = viewport.viewRect.aspect;
     const before = viewport.getWorldFrustum();
 
+    const clip = viewport.view.getViewClip();
+    if (undefined !== clip) {
+      const clipRange = clip.getRange();
+      if (undefined !== clipRange) {
+        range.intersect(clipRange, clipRange);
+        if (!clipRange.isNull)
+          range.setFrom(clipRange);
+      }
+    }
+
     if (this._useViewAlignedVolume)
       viewport.view.lookAtViewAlignedVolume(range, aspect, marginPercent);
     else
@@ -537,6 +547,13 @@ export abstract class ViewManip extends ViewTool {
       viewport.animateFrustumChange(before, viewport.getFrustum());
 
     viewport.synchWithView(true);
+  }
+
+  public static async zoomToAlwaysDrawnExclusive(viewport: ScreenViewport, doAnimate: boolean, marginPercent?: MarginPercent): Promise<boolean> {
+    if (!viewport.isAlwaysDrawnExclusive || undefined === viewport.alwaysDrawn || 0 === viewport.alwaysDrawn.size)
+      return false;
+    await viewport.zoomToElements(viewport.alwaysDrawn, { animateFrustumChange: doAnimate, marginPercent });
+    return true;
   }
 
   public setCameraLensAngle(lensAngle: Angle, retainEyePoint: boolean): ViewStatus {
@@ -1686,16 +1703,18 @@ export class FitViewTool extends ViewTool {
   public static toolId = "View.Fit";
   public oneShot: boolean;
   public doAnimate: boolean;
-  constructor(viewport: ScreenViewport, oneShot: boolean, doAnimate = true) {
+  public isolatedOnly: boolean;
+  constructor(viewport: ScreenViewport, oneShot: boolean, doAnimate = true, isolatedOnly = true) {
     super(viewport);
     this.viewport = viewport;
     this.oneShot = oneShot;
     this.doAnimate = doAnimate;
+    this.isolatedOnly = isolatedOnly;
   }
 
-  public async onDataButtonDown(_ev: BeButtonEvent): Promise<EventHandled> {
-    if (_ev.viewport)
-      return this.doFit(_ev.viewport, false, this.doAnimate) ? EventHandled.Yes : EventHandled.No;
+  public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
+    if (ev.viewport)
+      return await this.doFit(ev.viewport, this.oneShot, this.doAnimate, this.isolatedOnly) ? EventHandled.Yes : EventHandled.No;
 
     return EventHandled.No;
   }
@@ -1706,11 +1725,12 @@ export class FitViewTool extends ViewTool {
       ViewTool.showPrompt("Fit.Prompts.FirstPoint");
 
     if (this.viewport)
-      this.doFit(this.viewport, this.oneShot, this.doAnimate);
+      this.doFit(this.viewport, this.oneShot, this.doAnimate, this.isolatedOnly); // tslint:disable-line:no-floating-promises
   }
 
-  public doFit(viewport: ScreenViewport, oneShot: boolean, doAnimate = true): boolean {
-    ViewManip.fitView(viewport, doAnimate);
+  public async doFit(viewport: ScreenViewport, oneShot: boolean, doAnimate = true, isolatedOnly = true): Promise<boolean> {
+    if (!isolatedOnly || !await ViewManip.zoomToAlwaysDrawnExclusive(viewport, doAnimate))
+      ViewManip.fitView(viewport, doAnimate);
     if (oneShot)
       this.exitTool();
     return oneShot;

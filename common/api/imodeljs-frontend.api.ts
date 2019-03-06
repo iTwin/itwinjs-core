@@ -1939,13 +1939,15 @@ class FenceParams {
 
 // @public
 class FitViewTool extends ViewTool {
-  constructor(viewport: ScreenViewport, oneShot: boolean, doAnimate?: boolean);
+  constructor(viewport: ScreenViewport, oneShot: boolean, doAnimate?: boolean, isolatedOnly?: boolean);
   // (undocumented)
   doAnimate: boolean;
   // (undocumented)
-  doFit(viewport: ScreenViewport, oneShot: boolean, doAnimate?: boolean): boolean;
+  doFit(viewport: ScreenViewport, oneShot: boolean, doAnimate?: boolean, isolatedOnly?: boolean): Promise<boolean>;
   // (undocumented)
-  onDataButtonDown(_ev: BeButtonEvent): Promise<EventHandled>;
+  isolatedOnly: boolean;
+  // (undocumented)
+  onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
   // (undocumented)
   oneShot: boolean;
   // (undocumented)
@@ -5907,6 +5909,8 @@ class ViewManip extends ViewTool {
   updateTargetCenter(): void;
   // (undocumented)
   viewHandles: ViewHandleArray;
+  // (undocumented)
+  static zoomToAlwaysDrawnExclusive(viewport: ScreenViewport, doAnimate: boolean, marginPercent?: MarginPercent): Promise<boolean>;
 }
 
 // @public (undocumented)
