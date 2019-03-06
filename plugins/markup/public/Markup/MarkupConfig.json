@@ -1,0 +1,44 @@
+{
+  "hilite": {
+    "color": "magenta",
+    "flash": "cyan"
+  },
+  "handles": {
+    "size": 9,
+    "color": "white",
+    "stretch": {
+      "fill-opacity": 0.85,
+      "stroke": "grey",
+      "fill": "white"
+    },
+    "rotateLine": {
+      "stroke": "grey",
+      "fill-opacity": 0.85
+    },
+    "rotate": {
+      "cursor": "url(Markup/rotate.png) 12 12, auto",
+      "fill-opacity": 0.85,
+      "stroke": "black",
+      "fill": "lightBlue"
+    },
+    "move": {
+      "cursor": "move",
+      "stroke-dasharray": "6,6",
+      "fill": "lightGrey",
+      "fill-opacity": 0.1,
+      "stroke-opacity": 0.85,
+      "stroke": "white"
+    }
+  },
+  "activeStyle": {
+    "width": 3,
+    "stroke": {
+      "color": "red",
+      "opacity": 0.8
+    },
+    "fill": {
+      "color": "blue",
+      "opacity": 0.2
+    }
+  }
+}

@@ -6,6 +6,9 @@
 import * as semver from "semver";
 import { IModelApp } from "./IModelApp";
 import { NotifyMessageDetails, OutputMessageAlert, OutputMessagePriority, OutputMessageType } from "./NotificationManager";
+import { Logger } from "@bentley/bentleyjs-core";
+
+const loggerCategory = "imodeljs-frontend.Plugin";
 
 /**
  * Base Plugin class for writing a demand-loaded module.
@@ -174,15 +177,16 @@ export class PluginAdmin {
         allDetails = allDetails.concat(thisMessage, "\n");
       }
       const briefMessage = IModelApp.i18n.translate("iModelJs:PluginErrors.VersionErrors", { pluginName: plugin.name });
-      const errorDetails: NotifyMessageDetails = new NotifyMessageDetails(OutputMessagePriority.Info, briefMessage, allDetails, OutputMessageType.Alert, OutputMessageAlert.Balloon);
+      const errorDetails = new NotifyMessageDetails(OutputMessagePriority.Info, briefMessage, allDetails, OutputMessageType.Alert, OutputMessageAlert.Balloon);
       IModelApp.notifications.outputMessage(errorDetails);
+
+      Logger.logError(loggerCategory, plugin.name + " failed to load. Error=" + allDetails);
       return errorMessages;
     }
     PluginAdmin._registeredPlugins.set(plugin.name, plugin);
 
-    // announce successful load after plugin is registered.
-    const messageDetail: NotifyMessageDetails = new NotifyMessageDetails(OutputMessagePriority.Info, IModelApp.i18n.translate("iModelJs:PluginErrors.Success", { pluginName: plugin.name }));
-    IModelApp.notifications.outputMessage(messageDetail);
+    // log successful load after plugin is registered.
+    Logger.logInfo(loggerCategory, plugin.name + " loaded");
 
     // retrieve the args we saved in the promise.
     let args: string[] | undefined;

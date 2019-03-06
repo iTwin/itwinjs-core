@@ -5590,7 +5590,7 @@ class UVSurfaceOps {
 // @public
 class Vector2d extends XY, implements BeJSONFunctions {
   constructor(x?: number, y?: number);
-  angleTo(vectorB: Vector2d): Angle;
+  angleTo(vectorB: XAndY): Angle;
   // (undocumented)
   clone(): Vector2d;
   // (undocumented)
@@ -5603,8 +5603,8 @@ class Vector2d extends XY, implements BeJSONFunctions {
   static createStartEnd(point0: XAndY, point1: XAndY, result?: Vector2d): Vector2d;
   // (undocumented)
   static createZero(result?: Vector2d): Vector2d;
-  crossProduct(vectorB: Vector2d): number;
-  dotProduct(vectorB: Vector2d): number;
+  crossProduct(vectorB: XAndY): number;
+  dotProduct(vectorB: XAndY): number;
   dotProductStartEnd(pointA: XAndY, pointB: XAndY): number;
   fractionOfProjectionToVector(target: Vector2d, defaultFraction?: number): number;
   // (undocumented)

@@ -2,7 +2,9 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { MarkupElement, markupApp } from "./Markup";
+import { assert } from "@bentley/bentleyjs-core";
+import { Element as MarkupElement } from "@svgdotjs/svg.js";
+import { markupApp } from "./Markup";
 
 abstract class UndoAction {
   public cmdId: number = 0;
@@ -16,10 +18,11 @@ class AddAction extends UndoAction {
   constructor(private _elem: MarkupElement) {
     super();
     this._parent = _elem.parent() as MarkupElement;
-    this._index = this._elem.position();
+    assert(this._parent !== undefined);
+    this._index = _elem.position();
   }
-  public reinstate() { (this._parent as any).add(this._elem, this._index); }
-  public reverse() { this._elem.remove(); }
+  public reinstate() { this._parent.add(this._elem, this._index); }
+  public reverse() { markupApp.markup!.selected.drop(this._elem); this._elem.remove(); }
 }
 
 class DeleteAction extends UndoAction {
@@ -28,9 +31,10 @@ class DeleteAction extends UndoAction {
   constructor(private _elem: MarkupElement) {
     super();
     this._parent = _elem.parent() as MarkupElement;
-    this._index = this._elem.position();
+    assert(this._parent !== undefined);
+    this._index = _elem.position();
   }
-  public reverse() { (this._parent as any).add(this._elem, this._index); }
+  public reverse() { this._parent.add(this._elem, this._index); }
   public reinstate() { markupApp.markup!.selected.drop(this._elem); this._elem.remove(); }
 }
 
@@ -40,17 +44,23 @@ class RepositionAction extends UndoAction {
 
   constructor(private _elem: MarkupElement, private _oldIndex: number, private _oldParent: MarkupElement) {
     super();
-    this._newIndex = this._elem.position();
     this._newParent = _elem.parent() as MarkupElement;
+    assert(this._newParent !== undefined);
+    this._newIndex = _elem.position();
   }
-  public reinstate() { (this._newParent as any).add(this._elem, this._newIndex); }
-  public reverse() { (this._oldParent as any).add(this._elem, this._oldIndex); }
+  public reinstate() { this._newParent.add(this._elem, this._newIndex); }
+  public reverse() { this._oldParent.add(this._elem, this._oldIndex); if (this._elem.inSelection) markupApp.markup!.selected.drop(this._elem); }
 }
 
 class ModifyAction extends UndoAction {
-  constructor(private _newElem: MarkupElement, private _oldElement: MarkupElement) { super(); }
-  public reinstate() { this._oldElement.replace(this._newElem); }
-  public reverse() { this._newElem.replace(this._oldElement); }
+  constructor(private _newElem: MarkupElement, private _oldElement: MarkupElement) {
+    super();
+    assert(_newElem !== undefined && _oldElement !== undefined);
+    _newElem.id(_oldElement.id());
+    markupApp.markup!.selected.replace(_oldElement, _newElem);
+  }
+  public reinstate() { this._oldElement.replace(this._newElem); markupApp.markup!.selected.replace(this._oldElement, this._newElem); }
+  public reverse() { this._newElem.replace(this._oldElement); markupApp.markup!.selected.replace(this._newElem, this._oldElement); }
 }
 
 export class UndoManager {
@@ -67,9 +77,9 @@ export class UndoManager {
   }
 
   public get size() { return this._stack.length; }
+  private startCommand() { if (0 === this._grouped)++this._currentCmd; }
   public startGroup() { this.startCommand(); ++this._grouped; }
   public endGroup() { --this._grouped; }
-  public startCommand() { if (0 === this._grouped)++this._currentCmd; }
   public doGroup(fn: VoidFunction) { this.startGroup(); fn(); this.endGroup(); }
   public onAdded(elem: MarkupElement) { this.addAction(new AddAction(elem)); }
   public onDelete(elem: MarkupElement) { this.addAction(new DeleteAction(elem)); }

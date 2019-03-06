@@ -12,13 +12,27 @@ function linkFile(srcpath, destpath, filename) {
     console.log(filename + " is already linked");
   }
 }
+function linkDir(srcpath, destpath, dirName) {
+  try {
+    fs.symlinkSync(path.join(srcpath, dirName), path.join(destpath, dirName), "dir");
+  } catch (e) {
+    console.log(dirName + " is already linked");
+  }
+}
 
 // create a symbolic link to the Markup.js plugin, simulating how the plugin will be delivered in production
 const dest = path.resolve("lib", "webresources");
 
-let  src = path.resolve("..", "..", "plugins", "markup", "lib", "webresources");
+let src = path.resolve("..", "..", "plugins", "markup", "lib", "webresources");
 linkFile(src, dest, "MarkupPlugin.js");
 linkFile(src, dest, "MarkupPlugin.js.map");
+
+src = path.resolve("..", "..", "plugins", "markup", "public");
+linkDir(src, dest, "Markup");
+
+const enLocaleDest = path.resolve(dest, "locales", "en");
+const enLocaleSrc = path.resolve(src, "locales", "en");
+linkFile(enLocaleSrc, enLocaleDest, "MarkupTools.json");
 
 // create a symbolic link to the Markup.js plugin, simulating how the plugin will be delivered in production
 src = path.resolve("..", "webworker-test-app", "lib", "webresources");

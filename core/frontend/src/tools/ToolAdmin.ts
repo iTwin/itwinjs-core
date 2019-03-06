@@ -389,8 +389,8 @@ export class ToolAdmin {
     this._idleTool = IModelApp.tools.create("Idle") as IdleTool;
 
     ["keydown", "keyup"].forEach((type) => {
-      document.addEventListener(type, ToolAdmin._keyEventHandler as EventListener, true);
-      ToolAdmin._removals.push(() => { document.removeEventListener(type, ToolAdmin._keyEventHandler as EventListener, true); });
+      document.addEventListener(type, ToolAdmin._keyEventHandler as EventListener, false);
+      ToolAdmin._removals.push(() => { document.removeEventListener(type, ToolAdmin._keyEventHandler as EventListener, false); });
     });
 
     // the list of currently down keys can get out of sync if a key goes down and then we lose focus. Clear the list every time we get focus.
@@ -440,10 +440,10 @@ export class ToolAdmin {
       this._toolEvents.push(event); // otherwise put it at the end of the queue.
   }
 
-  private getMousePosition(event: ToolEvent): Point2d {
+  private getMousePosition(event: ToolEvent): XAndY {
     const ev = event.ev as MouseEvent;
     const rect = event.vp!.getClientRect();
-    return Point2d.createFrom({ x: ev.clientX - rect.left, y: ev.clientY - rect.top });
+    return { x: ev.clientX - rect.left, y: ev.clientY - rect.top };
   }
 
   private getMouseButton(button: number) {
@@ -1150,8 +1150,10 @@ export class ToolAdmin {
     if (wentDown && keyEvent.ctrlKey) {
       switch (keyEvent.key) {
         case "z":
+        case "Z":
           return this.doUndoOperation();
         case "y":
+        case "Y":
           return this.doRedoOperation();
       }
     }
