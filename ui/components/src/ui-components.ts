@@ -75,6 +75,7 @@ export * from "./ui-components/propertygrid/component/PropertyCategoryBlock";
 export * from "./ui-components/color/Swatch";
 export * from "./ui-components/color/HueSlider";
 export * from "./ui-components/color/TransparencySlider";
+export * from "./ui-components/color/SaturationPicker";
 
 export * from "./ui-components/table/TableDataProvider";
 export * from "./ui-components/table/SimpleTableDataProvider";

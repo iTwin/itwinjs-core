@@ -6,8 +6,9 @@ import * as React from "react";
 
 import { ConfigurableUiManager, ConfigurableCreateInfo, ToolUiProvider } from "@bentley/ui-framework";
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
+import { HSVColor } from "@bentley/imodeljs-common";
 
-import { ColorSwatch, HueSlider, HSLAColor, TransparencySlider } from "@bentley/ui-components";
+import { ColorSwatch, HueSlider, HSLAColor, TransparencySlider, SaturationPicker } from "@bentley/ui-components";
 import { ToolAssistanceItem, ToolAssistanceSeparator } from "@bentley/ui-ninezone";
 import { SampleAppIModelApp } from "../..";
 
@@ -26,12 +27,18 @@ class Tool1UiProvider extends ToolUiProvider {
 interface State {
   hsl: HSLAColor;
   transparency: number;
+  hsv: HSVColor;
 }
 
 class Tool1Settings extends React.Component<{}, State> {
   constructor(props: any) {
     super(props);
-    this.state = { hsl: new HSLAColor(59, 1.0, .50, 1), transparency: .5 };
+    const hsl = new HSLAColor(59, 1.0, .50, 1);
+    const hsv = new HSVColor();
+    hsv.h = 30;
+    hsv.s = 30;
+    hsv.v = 30;
+    this.state = { hsl, transparency: .5, hsv };
   }
 
   private _handleColorChange = (color: string) => {
@@ -45,6 +52,12 @@ class Tool1Settings extends React.Component<{}, State> {
     this.setState({ hsl: hue });
   }
 
+  private _handleSaturationChange = (saturation: HSVColor) => {
+    const msg = `Saturation set to ${JSON.stringify(saturation)}`;
+    IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
+    this.setState({ hsv: saturation });
+  }
+
   private _handleTransparencyChange = (transparency: number) => {
     const msg = `Transparency set to ${JSON.stringify(transparency * 100)}%`;
     IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
@@ -52,9 +65,14 @@ class Tool1Settings extends React.Component<{}, State> {
   }
 
   public render(): React.ReactNode {
-    //   const vertDivStyle: React.CSSProperties = {
-    //     height: `120px`,
-    //   };
+    // const vertDivStyle: React.CSSProperties = {
+    //  height: `120px`,
+    // };
+
+    const satDivStyle: React.CSSProperties = {
+      width: `200px`,
+      height: `200px`,
+    };
 
     /*
     <tr>
@@ -114,6 +132,10 @@ class Tool1Settings extends React.Component<{}, State> {
             <tr>
               <td>Transparency</td>
               <td> <TransparencySlider transparency={this.state.transparency} onTransparencyChange={this._handleTransparencyChange} isHorizontal={true} /> </td>
+            </tr>
+            <tr>
+              <td>Saturation</td>
+              <td> <div style={satDivStyle}><SaturationPicker hsv={this.state.hsv} onSaturationChange={this._handleSaturationChange} /></div> </td>
             </tr>
           </tbody>
         </table>
