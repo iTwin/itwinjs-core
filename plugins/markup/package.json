@@ -40,23 +40,23 @@
     "NOTE: these dependencies should be only for things that DO NOT APPEAR IN THE API"
   ],
   "dependencies": {
-    "@bentley/imodeljs-frontend": "0.190.0-dev.6",
+    "@bentley/imodeljs-frontend": "0.191.0-dev.0",
     "svg.js": "~2.7.1"
   },
   "//peerDependencies": [
     "NOTE: peerDependencies are a standard way for npm to perform a module compatibility check"
   ],
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "0.190.0-dev.6"
+    "@bentley/bentleyjs-core": "0.191.0-dev.0"
   },
   "//devDependencies": [
     "NOTE: Must include modules mentioned in peerDependencies since those are not auto-installed",
     "NOTE: Must include modules used by the scripts section of package.json"
   ],
   "devDependencies": {
-    "@bentley/bentleyjs-core": "0.190.0-dev.6",
-    "@bentley/build-tools": "0.190.0-dev.6",
-    "@bentley/webpack-tools": "0.190.0-dev.6",
+    "@bentley/bentleyjs-core": "0.191.0-dev.0",
+    "@bentley/build-tools": "0.191.0-dev.0",
+    "@bentley/webpack-tools": "0.191.0-dev.0",
     "@types/node": "10.12.18",
     "chai": "^4.1.2",
     "mocha": "^5.2.0",
