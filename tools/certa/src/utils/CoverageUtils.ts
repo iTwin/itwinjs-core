@@ -18,7 +18,7 @@ export async function relaunchForCoverage(): Promise<number> {
     nyc,
     "--silent",
     "--",
-    ...process.argv.slice(1),
+    ...process.argv,
   ];
 
   // By splitting "instrument/runTests" and "report coverage" into two steps, we allow test runners the option of
