@@ -32,7 +32,7 @@
     "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=presentation-frontend --isPresentation=true",
     "lint": "echo Disabled until https://github.com/palantir/tslint/issues/4148 is fixed",
     "//lint": "tslint -p ./src 1>&2",
-    "test": "mocha -r jsdom-global/register --opts ../mocha.opts lib/test/**/*.js",
+    "test": "mocha -r jsdom-global/register --opts ../mocha.opts \"./lib/test/**/*.js\"",
     "test:watch": "npm test -- --reporter min --watch-extensions ts --watch"
   },
   "iModelJs": {
