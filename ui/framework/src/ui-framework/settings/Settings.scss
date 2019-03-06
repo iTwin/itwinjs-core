@@ -7,7 +7,7 @@
 $settings-leftpanel-width: 225px;
 $settings-rightpanel-width: 200px;
 
-.settings {
+.uifw-settings {
   background: $buic-background-dialog;
   color: $buic-text-color;
   width: auto;
@@ -23,7 +23,7 @@ $settings-rightpanel-width: 200px;
   flex-direction: column;
 }
 
-.settings-item {
+.uifw-settings-item {
   display: flex;
 
   >.panel {

@@ -123,7 +123,7 @@ export class StandardRotationNavigationAid extends React.Component<{}, StandardR
 
   public render(): React.ReactNode {
     const className = classnames(
-      "standard-rotation-navigation",
+      "uifw-standard-rotation-navigation",
     );
     return (
       <div className={className}>

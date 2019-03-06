@@ -2,7 +2,7 @@
 
 exports[`CubeNavigationAid <CubeNavigationAid /> renders correctly 1`] = `
 <div
-  className="cube-container"
+  className="uifw-cube-container"
   onMouseDown={[Function]}
 >
   <div

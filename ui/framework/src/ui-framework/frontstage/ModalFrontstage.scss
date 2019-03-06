@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 @import "@bentley/ui-core/lib/ui-core/index";
 
- .modal-frontstage {
+ .uifw-modal-frontstage {
   height: 100%;
   width: 100%;
   position: absolute;
@@ -21,9 +21,59 @@
   align-items: stretch;
 
   @include uicore-z-index(backstage);
+
+  .app-bar {
+    transition: transform .125s;
+    padding: 10px;
+    background: #16191b;
+    height: 60px;
+    transform: translateY(-100%);
+
+
+    .uicore-text-headline {
+      display: inline-block;
+      color: #FFF;
+      line-height: 60px;
+      vertical-align: top;
+      padding: 0 15px;
+      margin: 0;
+      font-size: 28px;
+    }
+
+    .app-bar-right {
+      color: #FFF;
+      line-height: 60px;
+      vertical-align: center;
+      float: right;
+      margin-right: 20px;
+    }
+
+    > :first-child  {
+      display: inline-block;
+      border-radius: 0;   // Turn off circular border from Back.scss in ui-ninezone
+    }
+
+  }
+
+  .modal-content {
+    overflow: hidden;
+    height: 100%;
+  }
+
+  &.open {
+    visibility: visible;
+    pointer-events: unset;
+    transition: background .25s ease;
+
+    .app-bar {
+      transform: translateY(0%);
+      transition: transform .125s ease;
+    }
+  }
+
 }
 
-.modal-frontstage-overlay {
+.uifw-modal-frontstage-overlay {
   position: absolute;
   left: 0px;
   width: 100%;
@@ -33,53 +83,4 @@
   background: #111111;
 
   @include uicore-z-index(backstage-overlay);
-}
-
-.modal-frontstage.open {
-  // background: #f9f9f9;
-  // filter: opacity(100%);
-  visibility: visible;
-  pointer-events: unset;
-  transition: background .25s ease;
-}
-
-.modal-frontstage .app-bar {
-  transition: transform .125s;
-  padding: 10px;
-  background: #16191b;
-  height: 60px;
-  transform: translateY(-100%);
-}
-
-.modal-frontstage .modal-content {
-  overflow: hidden;
-  height: 100%;
-}
-
-.modal-frontstage.open .app-bar {
-  transform: translateY(0%);
-  transition: transform .125s ease;
-}
-
-.modal-frontstage .app-bar .uicore-text-headline {
-  display: inline-block;
-  color: #FFF;
-  line-height: 60px;
-  vertical-align: top;
-  padding: 0 15px;
-  margin: 0;
-  font-size: 28px;
-}
-
-.modal-frontstage .app-bar .app-bar-right {
-  color: #FFF;
-  line-height: 60px;
-  vertical-align: center;
-  float: right;
-  margin-right: 20px;
-}
-
-.modal-frontstage .app-bar > :first-child  {
-  display: inline-block;
-  border-radius: 0;   // Turn off circular border from Back.scss in ui-ninezone
 }

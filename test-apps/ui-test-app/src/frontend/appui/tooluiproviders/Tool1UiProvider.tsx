@@ -84,12 +84,12 @@ class Tool1Settings extends React.Component<{}, State> {
               <td> <input type="password" /> </td>
             </tr>
             <tr>
-              <td>{SampleAppIModelApp.i18n.translate("SampleApp:tool1.radio")}</td>
-              <td> <input type="radio" /> </td>
+              <td><label htmlFor="radio">{SampleAppIModelApp.i18n.translate("SampleApp:tool1.radio")}</label></td>
+              <td> <input name="radio" type="radio" /> </td>
             </tr>
             <tr>
-              <td>{SampleAppIModelApp.i18n.translate("SampleApp:tool1.range")}</td>
-              <td> <input type="range" /> </td>
+              <td><label htmlFor="range">{SampleAppIModelApp.i18n.translate("SampleApp:tool1.range")}</label></td>
+              <td> <input name="range" type="range" min="1" max="100" step="5" /> </td>
             </tr>
             <tr>
               <td>Red</td>

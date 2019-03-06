@@ -132,17 +132,23 @@ export class MessageCenterField extends React.Component<MessageCenterProps, Mess
       if (this.state.activeTab === MessageCenterActiveTab.AllMessages || this.isProblemStatus(details.priority)) {
 
         const iconClassName = MessageManager.getIconClassName(details);
-
-        let message = details.briefMessage;
-        /* istanbul ignore else */
-        if (details.detailedMessage)
-          message = message + "<br><br>" + details.detailedMessage;
+        const message = details.briefMessage;
 
         tabRows.push(
           <MessageCenterMessage
             key={index.toString()}
             icon={<i className={iconClassName} />}
-            content={<span dangerouslySetInnerHTML={{ __html: message }} />}
+            content={
+              <>
+                <span dangerouslySetInnerHTML={{ __html: message }} />
+                {details.detailedMessage &&
+                  <>
+                    <br />
+                    <span className="uicore-text-small" dangerouslySetInnerHTML={{ __html: details.detailedMessage }} />
+                  </>
+                }
+              </>
+            }
           />,
         );
       }

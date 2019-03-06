@@ -1108,7 +1108,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
   /** @hidden */
   public render() {
     return (
-      <div className="widget-picker">
+      <div className="uifw-widget-picker">
         {!this.state.activeTree &&
           <LoadingSpinner size={SpinnerSize.Medium} />
         }
@@ -1126,7 +1126,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
     const activeClassName = classnames(this.state.activeGroup.label && "active");
     return (
       <div>
-        <ul className="category-model-horizontal-tabs">
+        <ul className="uifw-category-model-horizontal-tabs">
           {
             this._groups.map((group: any) =>
               (
@@ -1144,7 +1144,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
   }
 
   private _getTabContent = () => {
-    const listClassName = classnames("fw-modelselector", this.state.expand && "show");
+    const listClassName = classnames("uifw-modelselector", this.state.expand && "show");
     return (
       <div className={listClassName}>
         {this._getToolbar()}

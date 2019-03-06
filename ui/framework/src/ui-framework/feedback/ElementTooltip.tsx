@@ -85,7 +85,7 @@ export class ElementTooltip extends React.Component<ElementTooltipProps, Element
       return null;
 
     const className = classnames(
-      "element-tooltip",
+      "uifw-element-tooltip",
       this.props.className);
 
     let message: React.ReactNode;

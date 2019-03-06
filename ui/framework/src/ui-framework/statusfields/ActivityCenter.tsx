@@ -78,7 +78,7 @@ export class ActivityCenterField extends React.Component<ActivityCenterProps, Ac
       const tooltip = this.state.title + " - " + moreDetails;
 
       footerMessages = (
-        <div className="centered open-activity-message" onClick={this._openActivityMessage} title={tooltip}>
+        <div className="uifw-centered open-activity-message" onClick={this._openActivityMessage} title={tooltip}>
           <MessageLayout
             progress={
               <Progress

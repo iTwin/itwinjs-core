@@ -25,7 +25,7 @@ export const Icon: React.FunctionComponent<IconProps> = (props) => {
     return (<i className={className} />);
   }
   return (
-    <i className="icon item-svg-icon">
+    <i className="icon uifw-item-svg-icon">
       {props.iconSpec}
     </i>
   );

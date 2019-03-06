@@ -10,22 +10,24 @@ import { InputStatus } from "./InputStatus";
 
 /** Properties for [[Radio]] component */
 export interface RadioProps extends React.InputHTMLAttributes<HTMLInputElement> {
-  label: string;
+  label?: string;
   status?: InputStatus;
 }
 
 /** Basic radio input component */
 export class Radio extends React.Component<RadioProps> {
   public render(): JSX.Element {
+    const { label, disabled, status, className } = this.props;
+
     return (
       <label className={classnames(
         "uicore-inputs-radio",
-        { disabled: this.props.disabled },
-        this.props.status,
-        this.props.className,
+        disabled && "disabled",
+        status,
+        className,
       )}>
         <input {...this.props} disabled={this.props.disabled} type={"radio"} />
-        <span className={"label"}> {this.props.label} </span>
+        {label && <span className={"label"}> {this.props.label} </span>}
       </label>
     );
   }

@@ -58,7 +58,7 @@ export class ValidationTextbox extends React.Component<ValidationTextboxProps> {
 
     return (
       <div
-        className={"ValidationTextbox"}
+        className="uifw-ValidationTextbox"
         style={sizeStyle}>
         <input
           className={this._isValid ? validClassNames : invalidClassNames}

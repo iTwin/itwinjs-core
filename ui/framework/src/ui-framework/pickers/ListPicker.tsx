@@ -176,7 +176,7 @@ export class ListPickerBase extends React.Component<ListPickerProps, ListPickerS
   /** Renders ListPickerBase */
   public render() {
     const icon = this.props.iconSpec ? (typeof this.props.iconSpec === "string" ? <i className={"icon " + (this.props.iconSpec)} /> :
-      <i className="icon item-svg-icon">{this.props.iconSpec}</i>) : <i className="icon icon-list" />;
+      <i className="icon uifw-item-svg-icon">{this.props.iconSpec}</i>) : <i className="icon icon-list" />;
 
     return (
       <ExpandableItem

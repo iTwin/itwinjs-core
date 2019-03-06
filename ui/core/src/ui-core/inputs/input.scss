@@ -22,9 +22,9 @@
     box-shadow:             $buic-inputs-boxshadow 0px 1px 1px inset;
     transition:             border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 
-    &:-ms-input-placeholder {       color: $uicore-gray-9; }
-    &::-webkit-input-placeholder {  color: $uicore-gray-9; }
-    &::placeholder {                color: $buic-foreground-muted; /* $uicore-gray-9;*/ }
+    &:-ms-input-placeholder {       color: $buic-foreground-disabled; /* $uicore-gray-9;*/ }
+    &::-webkit-input-placeholder {  color: $buic-foreground-disabled; /* $uicore-gray-9;*/ }
+    &::placeholder {                color: $buic-foreground-disabled; /* $uicore-gray-9;*/ }
 
     &[disabled],
     &[readonly] {

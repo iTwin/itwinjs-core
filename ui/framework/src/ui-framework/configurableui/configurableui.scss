@@ -5,7 +5,7 @@
 @import "@bentley/ui-core/lib/ui-core/style/index";
 @import "@bentley/ui-ninezone/lib/ui-ninezone/footer/_variables";
 
-.unselectable {
+.uifw-unselectable {
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
@@ -13,13 +13,13 @@
   user-select: none;
 }
 
-.centered {
+.uifw-centered {
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
-.dragdrop-layer {
+.uifw-dragdrop-layer {
   cursor: grabbing;
   position: fixed;
   pointer-events: none;
@@ -30,18 +30,18 @@
   width: 100%;
 }
 
-.element-tooltip {
+.uifw-element-tooltip {
   width: max-content;
   font-size: $uicore-font-size;
   pointer-events: none;
 }
 
-.item-svg-icon {
+.uifw-item-svg-icon {
   width: $icon-size;
   height: $icon-size;
 }
 
-#frontstage-composer {
+#uifw-frontstage-composer {
   width: 100%;
   height: 100%;
 }

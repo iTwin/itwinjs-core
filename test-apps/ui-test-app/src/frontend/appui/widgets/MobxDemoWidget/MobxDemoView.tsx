@@ -28,7 +28,7 @@ export class MobxDemoView extends React.Component<MobxDemoViewProps> {
     } = this.props;
 
     return (
-      <div>
+      <div className="mobx-demo-view">
         <h2>Bird Store</h2>
         <h3>You have {birdCount} birds.</h3>
 
