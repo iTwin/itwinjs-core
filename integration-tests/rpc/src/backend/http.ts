@@ -17,7 +17,7 @@ async function init() {
   const rpcConfig = BentleyCloudRpcManager.initializeImpl({ info: { title: "rpc-integration-test", version: "v1.0" } }, rpcInterfaces);
 
   // create a basic express web server
-  const port = Number(process.env.PORT || 3021);
+  const port = Number(process.env.CERTA_PORT || 3021) + 2000;
   const app = express();
   const server = new IModelJsExpressServer(app, rpcConfig.protocol);
   await server.initialize(port);

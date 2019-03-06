@@ -5,6 +5,7 @@
 import * as path from "path";
 import * as fs from "fs";
 import * as puppeteer from "puppeteer";
+import * as detect from "detect-port";
 import { spawnChildProcess } from "../../utils/SpawnUtils";
 import { executeRegisteredCallback } from "../../utils/CallbackUtils";
 import { CertaConfig } from "../../CertaConfig";
@@ -19,15 +20,23 @@ type ConsoleMethodName = keyof typeof console;
 
 export class ChromeTestRunner {
   public static readonly supportsCoverage = true;
+  public static async initialize(config: CertaConfig): Promise<void> {
+    const openPort = await detect(config.ports.frontend);
+    if (openPort !== config.ports.frontend)
+      console.warn(`CERTA: Port ${config.ports.frontend} is already in use, so serving test resources on port ${openPort}`);
+
+    process.env.CERTA_PORT = String(openPort);
+  }
+
   public static async runTests(config: CertaConfig): Promise<void> {
     const webserverEnv = {
-      CERTA_PORT: String(config.ports.frontend),
+      CERTA_PORT: process.env.CERTA_PORT,
       CERTA_PATH: this.generateHtml(config),
       CERTA_PUBLIC_DIRS: JSON.stringify(config.chromeOptions.publicDirs),
     };
     const webserverProcess = spawnChildProcess("node", [require.resolve("./webserver")], webserverEnv);
 
-    const { failures, coverage } = await runTestsInPuppeteer(config);
+    const { failures, coverage } = await runTestsInPuppeteer(config, process.env.CERTA_PORT!);
     webserverProcess.kill();
 
     // Save nyc/istanbul coverage file.
@@ -81,7 +90,7 @@ async function loadScriptAndTemporarilyBreak(page: puppeteer.Page, scriptPath: s
   return loadedPromise;
 }
 
-async function runTestsInPuppeteer(config: CertaConfig) {
+async function runTestsInPuppeteer(config: CertaConfig, port: string) {
   return new Promise<ChromeTestResults>(async (resolve, reject) => {
     try {
       const options = {
@@ -114,7 +123,7 @@ async function runTestsInPuppeteer(config: CertaConfig) {
 
       // Now load the page (and requisite scripts)...
       const testBundle = (config.cover && config.instrumentedTestBundle) || config.testBundle;
-      await page.goto(`http://localhost:${config.ports.frontend}`);
+      await page.goto(`http://localhost:${port}`);
       await loadScript(page, require.resolve("mocha/mocha.js"));
       await loadScript(page, require.resolve("source-map-support/browser-source-map-support.js"));
       await loadScript(page, require.resolve("../../utils/initSourceMaps.js"));

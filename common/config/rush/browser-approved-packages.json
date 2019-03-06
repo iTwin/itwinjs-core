@@ -271,6 +271,10 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "detect-port",
+      "allowedCategories": [ "tools" ]
+    },
+    {
       "name": "dom-testing-library",
       "allowedCategories": [ "frontend" ]
     },

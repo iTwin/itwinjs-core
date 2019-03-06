@@ -10,7 +10,7 @@ import { rpcInterfaces } from "../common/TestRpcInterface";
 
 function initializeCloud(protocol: string) {
   const config = BentleyCloudRpcManager.initializeClient({ info: { title: "rpc-integration-test", version: "v1.0" } }, rpcInterfaces);
-  config.protocol.pathPrefix = `${protocol}://localhost:3021`;
+  config.protocol.pathPrefix = `${protocol}://${window.location.hostname}:${Number(window.location.port) + 2000}`;
 
   for (const definition of rpcInterfaces) {
     RpcOperation.forEach(definition, (operation) => operation.policy.token = (_request) => new IModelToken("test", "test", "test", "test", OpenMode.Readonly));
