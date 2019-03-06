@@ -22,6 +22,9 @@ export abstract class TileAdmin {
   public abstract get emptyViewportSet(): TileAdmin.ViewportSet;
   /** Returns basic statistics about the TileAdmin's current state. */
   public abstract get statistics(): TileAdmin.Statistics;
+  /** Resets the cumulative (per-session) statistics like totalCompletedRequests, totalEmptyTiles, etc. */
+  public abstract resetStatistics(): void;
+
   /** Controls the maximum number of simultaneously-active requests allowed.
    * If the maximum is reduced below the current size of the active set, no active requests will be canceled - but no more will be dispatched until the
    * size of the active set falls below the new maximum.
@@ -62,9 +65,10 @@ export abstract class TileAdmin {
     return new Admin(props);
   }
 
-  public abstract onTileCompleted(): void;
-  public abstract onTileTimedOut(): void;
-  public abstract onTileFailed(): void;
+  public abstract onTileCompleted(tile: Tile): void;
+  public abstract onTileTimedOut(tile: Tile): void;
+  public abstract onTileFailed(tile: Tile): void;
+  public abstract onTileElided(): void;
 }
 
 /** @hidden */
@@ -82,6 +86,12 @@ export namespace TileAdmin {
     totalFailedRequests: number;
     /** The total number of timed-out requests during this session. */
     totalTimedOutRequests: number;
+    /** The total number of completed requests during this session which produced an empty tile. These tiles also contribute to totalCompletedRequests, but not to totalUndisplayableTiles. */
+    totalEmptyTiles: number;
+    /** The total number of completed requests during this session which produced an undisplayable tile. These tiles also contribute to totalCompletedRequests, but not to totalEmptyTiles. */
+    totalUndisplayableTiles: number;
+    /** The total number of tiles whose contents were not requested during this session because their volumes were determined to be empty. */
+    totalElidedTiles: number;
   }
 
   /** Describes configuration of a [[TileAdmin]].
@@ -261,6 +271,9 @@ class Admin extends TileAdmin {
   private _totalCompleted = 0;
   private _totalFailed = 0;
   private _totalTimedOut = 0;
+  private _totalEmpty = 0;
+  private _totalUndisplayable = 0;
+  private _totalElided = 0;
   private _retryIntervalInitialized = false;
   private get _memoizeRequests() { return this._retryInterval > 0; }
 
@@ -273,7 +286,14 @@ class Admin extends TileAdmin {
       totalCompletedRequests: this._totalCompleted,
       totalFailedRequests: this._totalFailed,
       totalTimedOutRequests: this._totalTimedOut,
+      totalEmptyTiles: this._totalEmpty,
+      totalUndisplayableTiles: this._totalUndisplayable,
+      totalElidedTiles: this._totalElided,
     };
+  }
+
+  public resetStatistics(): void {
+    this._totalCompleted = this._totalFailed = this._totalTimedOut = this._totalEmpty = this._totalUndisplayable = this._totalElided = 0;
   }
 
   public constructor(options?: TileAdmin.Props) {
@@ -466,7 +486,14 @@ class Admin extends TileAdmin {
     }
   }
 
-  public onTileCompleted() { ++this._totalCompleted; }
-  public onTileFailed() { ++this._totalFailed; }
-  public onTileTimedOut() { ++this._totalTimedOut; }
+  public onTileFailed(_tile: Tile) { ++this._totalFailed; }
+  public onTileTimedOut(_tile: Tile) { ++this._totalTimedOut; }
+  public onTileElided() { ++this._totalElided; }
+  public onTileCompleted(tile: Tile) {
+    ++this._totalCompleted;
+    if (tile.isEmpty)
+      ++this._totalEmpty;
+    else if (!tile.isDisplayable)
+      ++this._totalUndisplayable;
+  }
 }

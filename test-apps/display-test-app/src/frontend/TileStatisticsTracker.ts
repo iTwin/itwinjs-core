@@ -10,54 +10,36 @@ import {
 } from "@bentley/imodeljs-frontend";
 import { createCheckBox } from "./CheckBox";
 import { createNumericInput } from "./NumericInput";
+import { createButton } from "./Button";
 
-const enum StatIndex {
-  Active,
-  Pending,
-  Canceled,
-  Total,
-  Selected,
-  Ready,
-  Progress,
-  Completed,
-  TimedOut,
-  Failed,
-
-  COUNT,
+type GetStatValue = (stats: TileAdmin.Statistics, vp: Viewport) => number;
+interface StatEntry {
+  label: string;
+  getValue: GetStatValue;
 }
 
-const statLabels = [
-  "Active Requests",
-  "Pending Requests",
-  "Canceled",
-  "Total Requests",
-  "Selected Tiles",
-  "Ready Tiles",
-  "Progress",
-  "Completed",
-  "Timed Out",
-  "Failed",
-];
-
-type GetStat = (stats: TileAdmin.Statistics, vp: Viewport) => number;
-
-const getStat: GetStat[] = [
-  (stats, _vp) => stats.numActiveRequests,
-  (stats, _vp) => stats.numPendingRequests,
-  (stats, _vp) => stats.numCanceled,
-  (stats, _vp) => stats.numActiveRequests + stats.numPendingRequests,
-  (_stats, vp) => vp.numSelectedTiles,
-  (_stats, vp) => vp.numReadyTiles,
-  (_stats, vp) => {
+function computeProgress(vp: Viewport): number {
     const ready = vp.numReadyTiles;
     const requested = vp.numRequestedTiles;
     const total = ready + requested;
     const ratio = (total > 0) ? (ready / total) : 1.0;
     return Math.round(ratio * 100);
-  },
-  (stats, _vp) => stats.totalCompletedRequests,
-  (stats, _vp) => stats.totalTimedOutRequests,
-  (stats, _vp) => stats.totalFailedRequests,
+}
+
+const statEntries: StatEntry[] = [
+  { getValue: (stats, _vp) => stats.numActiveRequests, label: "Active" },
+  { getValue: (stats, _vp) => stats.numPendingRequests, label: "Pending" },
+  { getValue: (stats, _vp) => stats.numCanceled, label: "Canceled" },
+  { getValue: (stats, _vp) => stats.numActiveRequests + stats.numPendingRequests, label: "Total" },
+  { getValue: (_stats, vp) => vp.numSelectedTiles, label: "Selected" },
+  { getValue: (_stats, vp) => vp.numReadyTiles, label: "Ready" },
+  { getValue: (_stats, vp) => computeProgress(vp), label: "Progress" },
+  { getValue: (stats, _vp) => stats.totalCompletedRequests, label: "Completed" },
+  { getValue: (stats, _vp) => stats.totalTimedOutRequests, label: "Timed Out" },
+  { getValue: (stats, _vp) => stats.totalFailedRequests, label: "Failed" },
+  { getValue: (stats, _vp) => stats.totalEmptyTiles, label: "Empty" },
+  { getValue: (stats, _vp) => stats.totalUndisplayableTiles, label: "Undisplayable" },
+  { getValue: (stats, _vp) => stats.totalElidedTiles, label: "Elided" },
 ];
 
 export class StatsTracker {
@@ -80,13 +62,20 @@ export class StatsTracker {
     this._div.style.display = "none";
     this._div.style.textAlign = "right";
 
-    for (let i = 0; i < StatIndex.COUNT; i++) {
+    for (let i = 0; i < statEntries.length; i++) {
       const div = document.createElement("div");
       const elem = document.createElement("text");
       this._statElements[i] = elem;
       div.appendChild(elem);
       this._div.appendChild(div);
     }
+
+    createButton({
+      parent: this._div,
+      value: "Reset",
+      tooltip: "Reset all cumulative statistics",
+      handler: () => this.reset(),
+    });
 
     parent.appendChild(this._div);
   }
@@ -143,9 +132,15 @@ export class StatsTracker {
 
   private update(): void {
     const stats = IModelApp.tileAdmin.statistics;
-    for (let i = 0; i < StatIndex.COUNT; i++) {
-      const label = statLabels[i] + ": " + getStat[i](stats, this._vp);
+    for (let i = 0; i < statEntries.length; i++) {
+      const stat = statEntries[i];
+      const label = stat.label + ": " + stat.getValue(stats, this._vp);
       this._statElements[i].innerText = label;
     }
+  }
+
+  private reset(): void {
+    IModelApp.tileAdmin.resetStatistics();
+    this.update();
   }
 }

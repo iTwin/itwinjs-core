@@ -202,7 +202,8 @@ export namespace IModelTile {
 
       // This mask is a bitfield in which an 'on' bit indicates sub-volume containing no geometry.
       // Don't bother creating children or requesting content for such empty volumes.
-      const emptyMask = IModelApp.tileAdmin.elideEmptyChildContentRequests ? parent.emptySubRangeMask : 0;
+      const admin = IModelApp.tileAdmin;
+      const emptyMask = admin.elideEmptyChildContentRequests ? parent.emptySubRangeMask : 0;
 
       const is2d = parent.root.is2d;
       const bisectRange = is2d ? bisectRange2d : bisectRange3d;
@@ -210,8 +211,10 @@ export namespace IModelTile {
         for (let j = 0; j < 2; j++) {
           for (let k = 0; k < (is2d ? 1 : 2); k++) {
             const emptyBit = 1 << (i + j * 2 + k * 4);
-            if (0 !== (emptyMask & emptyBit))
+            if (0 !== (emptyMask & emptyBit)) {
+              admin.onTileElided();
               continue; // volume is known to contain no geometry.
+            }
 
             const range = parent.range.clone();
             bisectRange(range, 0 === i);
