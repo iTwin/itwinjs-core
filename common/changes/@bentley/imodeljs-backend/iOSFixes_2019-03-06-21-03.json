@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "fix issue for ios",
+      "packageName": "@bentley/imodeljs-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-backend",
+  "email": "khanaffan@gmail.com"
+}

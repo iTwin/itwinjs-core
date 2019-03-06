@@ -96,11 +96,9 @@ async function initializeOidc(actx: ActivityLoggingContext) {
 async function main() {
   const actx = new ActivityLoggingContext(Guid.createValue());
   actx.enter();
-  if (!MobileRpcConfiguration.isMobileFrontend) {
-    // retrieve, set, and output the global configuration variable
-    await retrieveConfiguration(); // (does a fetch)
-    console.log("Configuration", JSON.stringify(configuration)); // tslint:disable-line:no-console
-  }
+  // retrieve, set, and output the global configuration variable
+  await retrieveConfiguration(); // (does a fetch)
+  console.log("Configuration", JSON.stringify(configuration)); // tslint:disable-line:no-console
   // Start the app. (This tries to fetch a number of localization json files from the origin.)
   DisplayTestApp.startup();
   if (configuration.enableDiagnostics)
