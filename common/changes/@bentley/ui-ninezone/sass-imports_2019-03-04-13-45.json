@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Cleaned up index.scss for variables & mixins in ui-core and added classes.scss that generates CSS",
+      "packageName": "@bentley/ui-ninezone",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-ninezone",
+  "email": "dan.east@bentley.com"
+}
