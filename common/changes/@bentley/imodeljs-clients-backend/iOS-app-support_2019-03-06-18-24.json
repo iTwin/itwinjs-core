@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Allow mobile webpack to skip node dependent module",
+      "packageName": "@bentley/imodeljs-clients-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-clients-backend",
+  "email": "khanaffan@gmail.com"
+}

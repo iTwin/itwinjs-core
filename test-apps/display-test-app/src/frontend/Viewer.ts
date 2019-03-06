@@ -3,11 +3,10 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { Id64String, OpenMode } from "@bentley/bentleyjs-core";
-import { ElectronRpcConfiguration, MobileRpcConfiguration } from "@bentley/imodeljs-common";
+import { ElectronRpcConfiguration } from "@bentley/imodeljs-common";
 import { imageBufferToPngDataUrl, IModelApp, IModelConnection, ScreenViewport, Viewport, ViewState, PluginAdmin } from "@bentley/imodeljs-frontend";
 import { AnimationPanel } from "./AnimationPanel";
 import { CategoryPicker } from "./CategoryPicker";
-import { createComboBox } from "./ComboBox";
 import { DebugPanel } from "./DebugPanel";
 import { IncidentMarkerDemo } from "./IncidentMarkerDemo";
 import { ModelPicker } from "./ModelPicker";
@@ -153,37 +152,10 @@ export class Viewer {
       createDropDown: async (container: HTMLElement) => Promise.resolve(new DebugPanel(this.viewport, container)),
     });
 
-    // iOS uses a combo box of predetermined iModels instead of a file picker.
-    if (MobileRpcConfiguration.isMobileFrontend) {
-      const cbx = createComboBox({
-        id: "imodelList",
-        entries: [
-          { name: "04_Plant.i.ibim'", value: "04_Plant" },
-          { name: "almostopaque.ibim'", value: "almostopaque" },
-          { name: "mesh_widget_piece.ibim'", value: "mesh_widget_piece" },
-          { name: "PhotoRealisticRendering.ibim'", value: "PhotoRealisticRendering" },
-          { name: "PSolidNewTransparent.ibim'", value: "PSolidNewTransparent" },
-          { name: "rectangle.ibim'", value: "rectangle" },
-          { name: "scattergories.ibim'", value: "scattergories" },
-          { name: "SketchOnSurface.ibim'", value: "SketchOnSurface" },
-          { name: "slabs.ibim'", value: "slabs" },
-          { name: "small_building_2.ibim'", value: "small_building_2" },
-          { name: "tr_blk.ibim'", value: "tr_blk" },
-        ],
-      });
-
-      cbx.select.onchange = async (ev: any) => {
-        const iModelName = ev.target.selectedOptions["0"].value;
-        await this.resetIModel("sample_documents/" + iModelName);
-      };
-
-      this.toolBar.addItem(cbx.div);
-    } else {
-      this.toolBar.addItem(createToolButton({
-        className: "bim-icon-briefcases",
-        click: () => { this.selectIModel(); }, // tslint:disable-line:no-floating-promises
-      }));
-    }
+    this.toolBar.addItem(createToolButton({
+      className: "bim-icon-briefcases",
+      click: () => { this.selectIModel(); }, // tslint:disable-line:no-floating-promises
+    }));
 
     this._viewPicker = new ViewPicker(this.toolBar.element, this.views);
     this._viewPicker.onSelectedViewChanged.addListener(async (id) => this.changeView(id));

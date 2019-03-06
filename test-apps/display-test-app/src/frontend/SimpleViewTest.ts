@@ -28,7 +28,6 @@ import { showStatus } from "./Utils";
 import { SVTConfiguration } from "../common/SVTConfiguration";
 import { DisplayTestApp } from "./App";
 import { Viewer } from "./Viewer";
-import { initializeCustomCloudEnv } from "./CustomCloudEnv";
 
 const activeViewState: SimpleViewState = new SimpleViewState();
 const configuration = {} as SVTConfiguration;
@@ -36,19 +35,25 @@ const configuration = {} as SVTConfiguration;
 // Retrieves the configuration for starting SVT from configuration.json file located in the built public folder
 async function retrieveConfiguration(): Promise<void> {
   return new Promise<void>((resolve, _reject) => {
-    const request: XMLHttpRequest = new XMLHttpRequest();
-    request.open("GET", "configuration.json", false);
-    request.setRequestHeader("Cache-Control", "no-cache");
-    request.onreadystatechange = ((_event: Event) => {
-      if (request.readyState === XMLHttpRequest.DONE) {
-        if (request.status === 200) {
-          const newConfigurationInfo: any = JSON.parse(request.responseText);
-          Object.assign(configuration, newConfigurationInfo);
-          resolve();
+    if (MobileRpcConfiguration.isMobileFrontend) {
+      const newConfigurationInfo = JSON.parse(window.localStorage.getItem("imodeljs:env")!);
+      Object.assign(configuration, newConfigurationInfo);
+      resolve();
+    } else {
+      const request: XMLHttpRequest = new XMLHttpRequest();
+      request.open("GET", "configuration.json", false);
+      request.setRequestHeader("Cache-Control", "no-cache");
+      request.onreadystatechange = ((_event: Event) => {
+        if (request.readyState === XMLHttpRequest.DONE) {
+          if (request.status === 200) {
+            const newConfigurationInfo: any = JSON.parse(request.responseText);
+            Object.assign(configuration, newConfigurationInfo);
+            resolve();
+          }
         }
-      }
-    });
-    request.send();
+      });
+      request.send();
+    }
   });
 }
 
@@ -91,15 +96,11 @@ async function initializeOidc(actx: ActivityLoggingContext) {
 async function main() {
   const actx = new ActivityLoggingContext(Guid.createValue());
   actx.enter();
-
   if (!MobileRpcConfiguration.isMobileFrontend) {
     // retrieve, set, and output the global configuration variable
     await retrieveConfiguration(); // (does a fetch)
     console.log("Configuration", JSON.stringify(configuration)); // tslint:disable-line:no-console
-    if (configuration.customOrchestratorUri)
-      await initializeCustomCloudEnv(activeViewState, configuration.customOrchestratorUri);
   }
-
   // Start the app. (This tries to fetch a number of localization json files from the origin.)
   DisplayTestApp.startup();
   if (configuration.enableDiagnostics)
@@ -110,7 +111,6 @@ async function main() {
   if (ElectronRpcConfiguration.isElectron) {
     rpcConfiguration = ElectronRpcManager.initializeClient({}, [IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface]);
   } else if (MobileRpcConfiguration.isMobileFrontend) {
-    Object.assign(configuration, { standalone: true, iModelName: "sample_documents/04_Plant.i.ibim" });
     rpcConfiguration = MobileRpcManager.initializeClient([IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface]);
   } else {
     const uriPrefix = configuration.customOrchestratorUri || "http://localhost:3001";
@@ -137,15 +137,17 @@ async function main() {
       return;
     }
 
-    await initializeOidc(actx);
-    actx.enter();
+    if (!MobileRpcConfiguration.isMobileFrontend) {
+      await initializeOidc(actx);
+      actx.enter();
 
-    if (!activeViewState.accessToken)
-      OidcClientWrapper.oidcClient.signIn(actx);
-    else {
-      await openStandaloneIModel(activeViewState, configuration.iModelName!);
-      await uiReady; // Now, wait for the HTML UI to finish loading.
-      await initView();
+      if (!activeViewState.accessToken)
+        OidcClientWrapper.oidcClient.signIn(actx);
+      else {
+        await openStandaloneIModel(activeViewState, configuration.iModelName!);
+        await uiReady; // Now, wait for the HTML UI to finish loading.
+        await initView();
+      }
     }
   } catch (reason) {
     alert(reason);

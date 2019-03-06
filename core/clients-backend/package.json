@@ -3,6 +3,9 @@
   "version": "0.190.0-dev.6",
   "description": "Clients for various Bentley Services used by iModel.js at the backend",
   "main": "lib/imodeljs-clients-backend.js",
+  "browser": {
+    "./lib/imodeljs-clients-backend.js": "./lib/imodeljs-clients-backend-mobile.js"
+  },
   "typings": "lib/imodeljs-clients-backend",
   "license": "MIT",
   "engines": {
