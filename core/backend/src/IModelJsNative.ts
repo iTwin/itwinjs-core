@@ -7,6 +7,7 @@ import {
   IDisposable, IModelStatus, Logger, OpenMode, RepositoryStatus, StatusCodeWithMessage,
 } from "@bentley/bentleyjs-core";
 import { ElementProps, ChangedElements } from "@bentley/imodeljs-common";
+import { ExportGraphicsProps } from "./ExportGraphics";
 import { IModelDb } from "./IModelDb";
 
 // tslint:disable:prefer-get
@@ -84,6 +85,7 @@ export declare namespace IModelJsNative {
     public enableTxnTesting(): void;
     public endMultiTxnOperation(): DbResult;
     public executeTest(testName: string, params: string): string;
+    public exportGraphics(exportProps: ExportGraphicsProps): DbResult;
     public extractBriefcaseManagerResourcesRequest(reqOut: BriefcaseManagerResourcesRequest, reqIn: BriefcaseManagerResourcesRequest, locks: boolean, codes: boolean): void;
     public extractBulkResourcesRequest(req: BriefcaseManagerResourcesRequest, locks: boolean, codes: boolean): void;
     public extractChangeSummary(changeCacheFile: ECDb, changesetFilePath: string): ErrorStatusOrResult<DbResult, string>;

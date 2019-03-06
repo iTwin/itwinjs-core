@@ -16,6 +16,7 @@ export * from "./Element";
 export * from "./ElementAspect";
 export * from "./ElementPropertyFormatter";
 export * from "./Entity";
+export * from "./ExportGraphics";
 export * from "./ExpressServer";
 export * from "./IModelJsFs";
 export * from "./IModelHost";

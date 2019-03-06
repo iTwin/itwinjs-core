@@ -870,6 +870,30 @@ enum ExclusiveAccessOption {
   TryReuseOpenBriefcase = 2
 }
 
+// @beta
+interface ExportGraphicsInfo {
+  color: number;
+  elementId: Id64String;
+  mesh: ExportGraphicsMesh;
+}
+
+// @beta
+interface ExportGraphicsMesh {
+  indices: Int32Array;
+  normals: Float32Array;
+  params: Float32Array;
+  points: Float64Array;
+}
+
+// @beta
+interface ExportGraphicsProps {
+  angleTol?: number;
+  chordTol?: number;
+  elementIdArray: Id64Array;
+  maxEdgeLength?: number;
+  onGraphics: ExportGraphicsFunction;
+}
+
 // @public (undocumented)
 class Functional extends Schema {
   // (undocumented)
@@ -1293,6 +1317,8 @@ module IModelJsNative {
     endMultiTxnOperation(): DbResult;
     // (undocumented)
     executeTest(testName: string, params: string): string;
+    // (undocumented)
+    exportGraphics(exportProps: ExportGraphicsProps): DbResult;
     // WARNING: The type "BriefcaseManagerResourcesRequest" needs to be exported by the package (e.g. added to index.ts)
     // WARNING: The type "BriefcaseManagerResourcesRequest" needs to be exported by the package (e.g. added to index.ts)
     // (undocumented)
@@ -2814,5 +2840,6 @@ class WebMercatorModel extends SpatialModel {
 // WARNING: Unsupported export: AutoPushEventHandler
 // WARNING: Unsupported export: SchemaKey
 // WARNING: Unsupported export: SchemaMatchType
+// WARNING: Unsupported export: ExportGraphicsFunction
 // WARNING: Unsupported export: ChangeSetDescriber
 // (No @packagedocumentation comment for this package)
