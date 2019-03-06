@@ -224,6 +224,12 @@
       "shouldPublish": false
     },
     {
+      "packageName": "export-obj",
+      "projectFolder": "test-apps/export-obj",
+      "reviewCategory": "internal",
+      "shouldPublish": false
+    },
+    {
       "packageName": "imodel-from-geojson",
       "projectFolder": "test-apps/imodel-from-geojson",
       "reviewCategory": "internal",
