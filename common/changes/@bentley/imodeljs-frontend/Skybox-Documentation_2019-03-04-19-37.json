@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Documentation for Skybox",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Marc.Neely@bentley.com"
+}

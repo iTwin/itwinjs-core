@@ -260,16 +260,25 @@ export namespace SkyBox {
   }
 }
 
-// ###TODO Document me...
-/** @beta Needs documentation before moving to public */
+/** A [[SkyBox]] drawn as a sphere with a gradient mapped to its interior surface.
+ * @see [[SkyBox.createFromJSON]]
+ * @public
+ */
 export class SkyGradient extends SkyBox {
+  /** If true, a 2-color gradient is used (ground & sky colors only), if false a 4-color gradient is used, defaults to false. */
   public readonly twoColor: boolean = false;
-  public readonly zenithColor: ColorDef;         // the color of the zenith part of the sky gradient (shown when looking straight up.)
-  public readonly nadirColor: ColorDef;          // the color of the nadir part of the ground gradient (shown when looking straight down.)
-  public readonly groundColor: ColorDef;         // the color of the ground part of the ground gradient
-  public readonly skyColor: ColorDef;            // the color of the sky part of the sky gradient
-  public readonly groundExponent: number = 4.0;  // the cutoff between ground and nadir
-  public readonly skyExponent: number = 4.0;     // the cutoff between sky and zenith
+  /** The color of the sky (for 4-color gradient is sky color at horizon), defaults to (143, 205, 255). */
+  public readonly skyColor: ColorDef;
+  /** The color of the ground (for 4-color gradient is ground color at horizon), defaults to (120, 143, 125). */
+  public readonly groundColor: ColorDef;
+  /** For 4-color gradient is color of sky at zenith (shown when looking straight up), defaults to (54, 117, 255). */
+  public readonly zenithColor: ColorDef;
+  /** For 4-color gradient is color of ground at nadir (shown when looking straight down), defaults to (40, 15, 0). */
+  public readonly nadirColor: ColorDef;
+  /** Controls speed of gradient change from skyColor to zenithColor (4-color SkyGradient only), defaults to 4.0. */
+  public readonly skyExponent: number = 4.0;
+  /** Controls speed of gradient change from groundColor to nadirColor (4-color SkyGradient only), defaults to 4.0. */
+  public readonly groundExponent: number = 4.0;
 
   public constructor(sky?: SkyBoxProps) {
     super(sky);
@@ -299,6 +308,7 @@ export class SkyGradient extends SkyBox {
     return val;
   }
 
+  /** @hidden */
   public async loadParams(_system: RenderSystem, iModel: IModelConnection): Promise<SkyBox.CreateParams> {
     return Promise.resolve(SkyBox.CreateParams.createForGradient(this, iModel.globalOrigin.z));
   }
@@ -309,7 +319,7 @@ export class SkyGradient extends SkyBox {
  * @public
  */
 export class SkySphere extends SkyBox {
-  /** The ID of the texture element which supplies the skybox image. */
+  /** The Id of a persistent texture element stored in the iModel which supplies the skybox image. */
   public textureId: Id64String;
 
   private constructor(textureId: Id64String, display?: boolean) {
@@ -344,16 +354,23 @@ export class SkySphere extends SkyBox {
 }
 
 /** A [[SkyBox]] drawn as a cube with an image mapped to each of its interior faces.
- * Each member specifies the ID of a texture element from which the image mapped to the corresponding face is obtained.
+ * Each member specifies the Id of a persistent texture element stored in the iModel
+ * from which the image mapped to the corresponding face is obtained.
  * @see [[SkyBox.createFromJSON]].
  * @public
  */
 export class SkyCube extends SkyBox implements SkyCubeProps {
+  /** Id of a persistent texture element stored in the iModel to use for the front side of the skybox cube. */
   public readonly front: Id64String;
+  /** Id of a persistent texture element stored in the iModel to use for the back side of the skybox cube. */
   public readonly back: Id64String;
+  /** Id of a persistent texture element stored in the iModel to use for the top of the skybox cube. */
   public readonly top: Id64String;
+  /** Id of a persistent texture element stored in the iModel to use for the bottom of the skybox cube. */
   public readonly bottom: Id64String;
+  /** Id of a persistent texture element stored in the iModel to use for the front right of the skybox cube. */
   public readonly right: Id64String;
+  /** Id of a persistent texture element stored in the iModel to use for the left side of the skybox cube. */
   public readonly left: Id64String;
 
   private constructor(front: Id64String, back: Id64String, top: Id64String, bottom: Id64String, right: Id64String, left: Id64String, display?: boolean) {
@@ -393,7 +410,15 @@ export class SkyCube extends SkyBox implements SkyCubeProps {
     return val;
   }
 
-  /** @hidden */
+  /** Create and return a SkyCube.  (Calls the SkyCube constructor after validating the Ids passed in for the images.)
+   * @param front The Id of the image to use for the front side of the sky cube.
+   * @param back The Id of the image to use for the back side of the sky cube.
+   * @param top The Id of the image to use for the top side of the sky cube.
+   * @param bottom The Id of the image to use for the bottom side of the sky cube.
+   * @param right The Id of the image to use for the right side of the sky cube.
+   * @param left The Id of the image to use for the left side of the sky cube.
+   * @note All Ids must refer to a persistent texture element stored in the iModel.
+   */
   public static create(front: Id64String, back: Id64String, top: Id64String, bottom: Id64String, right: Id64String, left: Id64String, display?: boolean): SkyCube | undefined {
     if (!Id64.isValid(front) || !Id64.isValid(back) || !Id64.isValid(top) || !Id64.isValid(bottom) || !Id64.isValid(right) || !Id64.isValid(left))
       return undefined;
@@ -412,7 +437,7 @@ export class SkyCube extends SkyBox implements SkyCubeProps {
     try {
       const images = await Promise.all(promises);
 
-      // ###TODO there's gotta be a simpler way to map the unique images back to their texture IDs...
+      // ###TODO there's gotta be a simpler way to map the unique images back to their texture Ids...
       const idToImage = new Map<string, HTMLImageElement>();
       let index = 0;
       for (const textureId of textureIds) {

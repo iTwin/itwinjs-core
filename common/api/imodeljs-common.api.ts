@@ -4190,17 +4190,11 @@ interface SkyBoxProps {
 
 // @public
 interface SkyCubeProps {
-  // (undocumented)
   back?: Id64String;
-  // (undocumented)
   bottom?: Id64String;
-  // (undocumented)
   front?: Id64String;
-  // (undocumented)
   left?: Id64String;
-  // (undocumented)
   right?: Id64String;
-  // (undocumented)
   top?: Id64String;
 }
 

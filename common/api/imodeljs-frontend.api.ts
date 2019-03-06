@@ -4539,50 +4539,36 @@ class SkyBox {
 
 // @public
 class SkyCube extends SkyBox, implements SkyCubeProps {
-  // (undocumented)
   readonly back: Id64String;
-  // (undocumented)
   readonly bottom: Id64String;
-  // (undocumented)
   static create(front: Id64String, back: Id64String, top: Id64String, bottom: Id64String, right: Id64String, left: Id64String, display?: boolean): SkyCube | undefined;
   // (undocumented)
   static fromJSON(skyboxJson: SkyBoxProps): SkyCube | undefined;
-  // (undocumented)
   readonly front: Id64String;
-  // (undocumented)
   readonly left: Id64String;
   // WARNING: The type "SkyBox.CreateParams" needs to be exported by the package (e.g. added to index.ts)
   // (undocumented)
   loadParams(system: RenderSystem, iModel: IModelConnection): Promise<SkyBox.CreateParams | undefined>;
-  // (undocumented)
   readonly right: Id64String;
   // (undocumented)
   toJSON(): SkyBoxProps;
-  // (undocumented)
   readonly top: Id64String;
 }
 
-// @beta
+// @public
 class SkyGradient extends SkyBox {
   constructor(sky?: SkyBoxProps);
-  // (undocumented)
   readonly groundColor: ColorDef;
-  // (undocumented)
   readonly groundExponent: number;
   // WARNING: The type "SkyBox.CreateParams" needs to be exported by the package (e.g. added to index.ts)
   // (undocumented)
   loadParams(_system: RenderSystem, iModel: IModelConnection): Promise<SkyBox.CreateParams>;
-  // (undocumented)
   readonly nadirColor: ColorDef;
-  // (undocumented)
   readonly skyColor: ColorDef;
-  // (undocumented)
   readonly skyExponent: number;
   // (undocumented)
   toJSON(): SkyBoxProps;
-  // (undocumented)
   readonly twoColor: boolean;
-  // (undocumented)
   readonly zenithColor: ColorDef;
 }
 

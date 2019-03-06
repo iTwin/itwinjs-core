@@ -496,9 +496,8 @@ export class DecorateContext extends RenderContext {
     }
   }
 
-  /** Display skyBox (cube) graphic that encompasses entire scene and rotates with camera.
+  /** Display skyBox graphic that encompasses entire scene and rotates with camera.
    * @see [[RenderSystem.createSkyBox]].
-   * @hidden
    */
   public setSkyBox(graphic: RenderGraphic) { this._decorations.skyBox = graphic; }
 

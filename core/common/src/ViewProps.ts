@@ -173,11 +173,17 @@ export const enum SkyBoxImageType {
  * @public
  */
 export interface SkyCubeProps {
+  /** Id of a persistent texture element stored in the iModel to use for the front side of the skybox cube. */
   front?: Id64String;
+  /** Id of a persistent texture element stored in the iModel to use for the back side of the skybox cube. */
   back?: Id64String;
+  /** Id of a persistent texture element stored in the iModel to use for the top of the skybox cube. */
   top?: Id64String;
+  /** Id of a persistent texture element stored in the iModel to use for the bottom of the skybox cube. */
   bottom?: Id64String;
+  /** Id of a persistent texture element stored in the iModel to use for the right side of the skybox cube. */
   right?: Id64String;
+  /** Id of a persistent texture element stored in the iModel to use for the left side of the skybox cube. */
   left?: Id64String;
 }
 
@@ -187,9 +193,9 @@ export interface SkyCubeProps {
 export interface SkyBoxImageProps {
   /** The type of skybox image. */
   type?: SkyBoxImageType;
-  /** For [[SkyBoxImageType.Spherical]], the element ID of the texture to be drawn as the "sky". */
+  /** For [[SkyBoxImageType.Spherical]], the Id of a persistent texture element stored in the iModel to be drawn as the "sky". */
   texture?: Id64String;
-  /** For [[SkyBoxImageType.Cube]], the IDs of the texture elements drawn on each face of the cube. */
+  /** For [[SkyBoxImageType.Cube]], the Ids of persistent texture elements stored in the iModel drawn on each face of the cube. */
   textures?: SkyCubeProps;
 }
 
@@ -199,20 +205,20 @@ export interface SkyBoxImageProps {
 export interface SkyBoxProps {
   /** Whether or not the skybox should be displayed. Defaults to false. */
   display?: boolean;
-  /** @hidden ###TODO Figure out how this is used... */
+  /** For a [[SkyGradient]], if true, a 2-color gradient skybox is used instead of a 4-color. Defaults to false. */
   twoColor?: boolean;
-  /** @hidden ###TODO Figure out how this is used... */
-  groundExponent?: number;
-  /** @hidden ###TODO Figure out how this is used... */
-  skyExponent?: number;
-  /** For a [[SkyGradient]], the color of the ground. */
-  groundColor?: ColorDefProps;
-  /** @hidden ###TODO Figure out how this is used... */
-  zenithColor?: ColorDefProps;
-  /** @hidden ###TODO Figure out how this is used... */
-  nadirColor?: ColorDefProps;
-  /** For a [[SkyGradient]], the color of the sky. */
+  /** For a 4-color [[SkyGradient]], the color of the sky at the horizon. For a 2-color [[SkyGradient]], the color of the sky. */
   skyColor?: ColorDefProps;
+  /** For a 4-color [[SkyGradient]], the color of the ground at the horizon. For a 2-color [[SkyGradient]], the color of the ground. */
+  groundColor?: ColorDefProps;
+  /** For a 4-color [[SkyGradient]], the color of the sky when looking straight up. */
+  zenithColor?: ColorDefProps;
+  /** For a 4-color [[SkyGradient]], the color of the ground when looking straight down. */
+  nadirColor?: ColorDefProps;
+  /** For a 4-color [[SkyGradient]], controls speed of change from sky color to zenith color. */
+  skyExponent?: number;
+  /** For a 4-color [[SkyGradient]], controls speed of change from ground color to nadir color. */
+  groundExponent?: number;
   /** For a [[SkySphere]] or [[SkyCube]], the skybox image(s). */
   image?: SkyBoxImageProps;
 }
