@@ -12,6 +12,7 @@ import { RealityModelTileTree, RealityModelTileClient, RealityModelTileUtils } f
 import { RealityDataServicesClient, RealityData } from "@bentley/imodeljs-clients";
 import { ActivityLoggingContext, Guid, Id64String } from "@bentley/bentleyjs-core";
 
+/** @internal */
 export class ContextRealityModelState implements TileTreeModelState {
   protected _tilesetUrl: string;
   protected _name: string;

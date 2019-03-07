@@ -36,10 +36,10 @@ import { Id64String, dispose } from "@bentley/bentleyjs-core";
  *  (1) If overriding anything in the implementation supplied herein, pass a SystemFactory function to MockRender.App.systemFactory.
  *  (2) Call MockRender.App.startup() instead of IModelApp.startup() or MaybeRenderApp.startup() before tests begin.
  *  (3) Likewise call MockRender.App.shutdown() when finished. This resets the SystemFactory to its default.
- * @hidden
+ * @internal
  */
 export namespace MockRender {
-  /** @hidden */
+  /** @internal */
   export abstract class Target extends RenderTarget {
     protected constructor(private readonly _system: System) { super(); }
 
@@ -58,7 +58,7 @@ export namespace MockRender {
     public readPixels(_rect: ViewRect, _selector: Pixel.Selector, receiver: Pixel.Receiver, _excludeNonLocatable: boolean) { receiver(undefined); }
   }
 
-  /** @hidden */
+  /** @internal */
   export class OnScreenTarget extends Target {
     public constructor(system: System, private readonly _canvas: HTMLCanvasElement) { super(system); }
 
@@ -66,7 +66,7 @@ export namespace MockRender {
     public setViewRect(_rect: ViewRect, _temp: boolean) { }
   }
 
-  /** @hidden */
+  /** @internal */
   export class OffScreenTarget extends Target {
     public constructor(system: System, private readonly _viewRect: ViewRect) { super(system); }
 
@@ -74,14 +74,14 @@ export namespace MockRender {
     public setViewRect(rect: ViewRect, _temp: boolean) { this._viewRect.setFrom(rect); }
   }
 
-  /** @hidden */
+  /** @internal */
   export class Builder extends PrimitiveBuilder {
     public constructor(system: System, placement: Transform = Transform.identity, type: GraphicType, viewport: Viewport, pickId?: Id64String) {
       super(system, type, viewport, placement, pickId);
     }
   }
 
-  /** @hidden */
+  /** @internal */
   export class Graphic extends RenderGraphic {
     public constructor() { super(); }
 
@@ -89,7 +89,7 @@ export namespace MockRender {
     public collectStatistics(_stats: RenderMemory.Statistics): void { }
   }
 
-  /** @hidden */
+  /** @internal */
   export class List extends Graphic {
     public constructor(public readonly graphics: RenderGraphic[]) { super(); }
 
@@ -101,14 +101,14 @@ export namespace MockRender {
     }
   }
 
-  /** @hidden */
+  /** @internal */
   export class Branch extends Graphic {
     public constructor(public readonly branch: GraphicBranch, public readonly transform: Transform, public readonly clips?: RenderClipVolume) { super(); }
 
     public dispose() { this.branch.dispose(); }
   }
 
-  /** @hidden */
+  /** @internal */
   export class Batch extends Graphic {
     public constructor(public readonly graphic: RenderGraphic, public readonly featureTable: PackedFeatureTable, public readonly range: ElementAlignedBox3d) { super(); }
 
@@ -117,7 +117,7 @@ export namespace MockRender {
     }
   }
 
-  /** @hidden */
+  /** @internal */
   export class System extends RenderSystem {
     public get isValid() { return true; }
     public dispose(): void { }
@@ -137,11 +137,11 @@ export namespace MockRender {
     public createPointCloud(_args: PointCloudArgs, _imodel: IModelConnection) { return new Graphic(); }
   }
 
-  /** @hidden */
+  /** @internal */
   export type SystemFactory = () => RenderSystem;
 
   /** An implementation of IModelApp which uses a MockRender.System by default.
-   * @hidden
+   * @internal
    */
   export class App extends IModelApp {
     public static systemFactory: SystemFactory = () => App.createDefaultRenderSystem();

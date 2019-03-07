@@ -35,7 +35,7 @@ import { RenderGraphic } from "./System";
  */
 export const enum GraphicType {
   /**
-   * Renders behind all other graphics. For example, the [[SheetBorder]] of a [[SheetViewState]] is of this type.
+   * Renders behind all other graphics. For example, the border of a [[SheetViewState]] is of this type.
    * Coordinates: [[CoordSystem.View]].
    * [[RenderMode]]: [[RenderMode.SmoothShade]].
    * Lighting: none.
@@ -119,20 +119,20 @@ export abstract class GraphicBuilder {
   public get placement(): Transform { return this._placement; }
   public set placement(tf: Transform) { this._placement.setFrom(tf); }
 
-  /** @hidden */
+  /** @internal */
   public get isViewCoordinates(): boolean { return this.type === GraphicType.ViewBackground || this.type === GraphicType.ViewOverlay; }
-  /** @hidden */
+  /** @internal */
   public get isWorldCoordinates(): boolean { return !this.isViewCoordinates; }
-  /** @hidden */
+  /** @internal */
   public get isSceneGraphic(): boolean { return this.type === GraphicType.Scene; }
-  /** @hidden */
+  /** @internal */
   public get isViewBackground(): boolean { return this.type === GraphicType.ViewBackground; }
-  /** @hidden */
+  /** @internal */
   public get isOverlay(): boolean { return this.type === GraphicType.ViewOverlay || this.type === GraphicType.WorldOverlay; }
-  /** @hidden */
+  /** @internal */
   public get iModel(): IModelConnection { return this.viewport.iModel; }
 
-  /** @hidden */
+  /** @internal */
   protected constructor(placement: Transform = Transform.identity, type: GraphicType, viewport: Viewport, pickId?: Id64String) {
     this._placement = placement;
     this.type = type;
@@ -221,8 +221,8 @@ export abstract class GraphicBuilder {
    */
   public abstract addPolyface(meshData: Polyface, filled: boolean): void;
 
-  /** Add Range3d edges
-   * @hidden
+  /** Add Range3d edges. Useful for debugging.
+   * @public
    */
   public addRangeBox(range: Range3d) {
     const frustum = Frustum.fromRange(range);
@@ -258,7 +258,7 @@ export abstract class GraphicBuilder {
   }
 
   /** Set blanking fill symbology for decoration.
-   * @hidden
+   * @internal
    */
   public setBlankingFill(fillColor: ColorDef) { this.activateGraphicParams(GraphicParams.fromBlankingFill(fillColor)); }
 }

@@ -6,7 +6,7 @@
 
 import { dispose, Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import { Point2d, Range3d } from "@bentley/geometry-core";
-import { AxisAlignedBox3d, BatchType, GeometricModel2dProps, ModelProps, RelatedElement, ServerTimeoutError, TileTreeProps } from "@bentley/imodeljs-common";
+import { BatchType, GeometricModel2dProps, ModelProps, RelatedElement, ServerTimeoutError, TileTreeProps } from "@bentley/imodeljs-common";
 import { EntityState } from "./EntityState";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
@@ -45,26 +45,38 @@ export class ModelState extends EntityState implements ModelProps {
       val.isTemplate = this.isTemplate;
     return val;
   }
-  public getExtents(): AxisAlignedBox3d { return new Range3d(); } // NEEDS_WORK
 
   /** Determine whether this is a GeometricModel */
   public get isGeometricModel(): boolean { return false; }
 
-  /** @hidden */
+  /** Attempts to cast this model to a geometric model. */
   public get asGeometricModel(): GeometricModelState | undefined { return undefined; }
-  /** @hidden */
+  /** Attempts to cast this model to a 3d geometric model. */
   public get asGeometricModel3d(): GeometricModel3dState | undefined { return undefined; }
-  /** @hidden */
+  /** Attempts to cast this model to a 2d geometric model. */
   public get asGeometricModel2d(): GeometricModel2dState | undefined { return undefined; }
 
-  /** Runs when the iModel of this iModelState closes. */
+  /** Executes just before the containing IModelConnection is closed to perform any necessary cleanup.
+   * @internal
+   */
   public onIModelConnectionClose() { }
 }
 
+/** Interface adopted by an object which can supply a tile tree for display within a [[ViewState]].
+ * Typically tile trees are obtained from geometric models, but they may also originate from display style settings
+ * such as a background map provider or a set of "context" reality models not directly embedded into the iModel.
+ * An application typically does not interact directly with tile trees; instead it interacts with a [[ViewState]] or [[Viewport]] which
+ * coordinates with tile trees on its behalf.
+ * @beta
+ */
 export interface TileTreeModelState {
+  /** @internal */
   readonly tileTree: TileTree | undefined;
+  /** @internal */
   readonly loadStatus: TileTree.LoadStatus;
+  /** @internal */
   readonly treeModelId: Id64String;    // Model Id, or transient Id if not a model (context reality model)
+  /** @internal */
   loadTileTree(edgesRequired: boolean, animationId?: Id64String, asClassifier?: boolean, classifierExpansion?: number): TileTree.LoadStatus;
 }
 
@@ -74,30 +86,43 @@ export interface TileTreeModelState {
  */
 export abstract class GeometricModelState extends ModelState implements TileTreeModelState {
   private _modelRange?: Range3d;
-  /** @hidden */
+  /** @internal */
   protected _tileTreeState: TileTreeState = new TileTreeState(this.iModel, !this.is2d, this.id);
-  /** @hidden */
+  /** @internal */
   protected _classifierTileTreeState: TileTreeState = new TileTreeState(this.iModel, !this.is2d, this.id);
 
   /** Returns true if this is a 3d model (a [[GeometricModel3dState]]). */
   public abstract get is3d(): boolean;
-  /** @hidden */
+  /** @internal */
   public get asGeometricModel(): GeometricModelState { return this; }
   /** Returns true if this is a 2d model (a [[GeometricModel2dState]]). */
   public get is2d(): boolean { return !this.is3d; }
-  /** @hidden */
+
+  /** If this model's tile tree is loaded, returns it.
+   * @see [[loadTileTree]]
+   * @internal
+   */
   public get tileTree(): TileTree | undefined { return this._tileTreeState.tileTree; }
-  /** @hidden */
+  /** @internal */
   public get classifierTileTree(): TileTree | undefined { return this._classifierTileTreeState.tileTree; }
-  /** @hidden */
+
+  /** The current status of this model's asynchronously-loaded tile tree.
+   * @internal
+   */
   public get loadStatus(): TileTree.LoadStatus { return this._tileTreeState.loadStatus; }
-  /** @hidden */
   public set loadStatus(status: TileTree.LoadStatus) { this._tileTreeState.loadStatus = status; }
-  /** @hidden */
+  /** @internal */
   public get isGeometricModel(): boolean { return true; }
-  /** @hidden */
+  /** @internal */
   public get treeModelId(): Id64String { return this.id; }
-  /** @hidden  */
+
+  /** Attempt to obtain this model's tile tree, enqueueing it for asynchronous loading if necessary.
+   * @param edgesRequired If true, the loaded tile tree will include graphics for edges of surfaces.
+   * @returns The tile tree if it is loaded, or undefined if it is currently loading or has failed to load.
+   * @note This function is *not* asynchronous, but may trigger an internal asynchronous operation.
+   * @see [[GeometricModelState.loadStatus]] to query the current state of the tile tree's loading operation.
+   * @internal
+   */
   public getOrLoadTileTree(edgesRequired: boolean): TileTree | undefined {
     if (undefined === this.tileTree)
       this.loadTileTree(edgesRequired);
@@ -105,7 +130,9 @@ export abstract class GeometricModelState extends ModelState implements TileTree
     return this.tileTree;
   }
 
-  /** @hidden */
+  /** @see [[getOrLoadTileTree]]
+   * @internal
+   */
   public loadTileTree(edgesRequired: boolean, animationId?: Id64String, asClassifier?: boolean, classifierExpansion?: number): TileTree.LoadStatus {
     const tileTreeState = asClassifier ? this._classifierTileTreeState : this._tileTreeState;
     if (tileTreeState.edgesOmitted && edgesRequired)
@@ -149,7 +176,7 @@ export abstract class GeometricModelState extends ModelState implements TileTree
     return tileTreeState.loadStatus;
   }
 
-  /** @hidden */
+  /** @internal */
   public onIModelConnectionClose() {
     dispose(this._tileTreeState.tileTree);  // we do not track if we are disposed...catch this at the tiletree level
     super.onIModelConnectionClose();
@@ -169,15 +196,17 @@ export abstract class GeometricModelState extends ModelState implements TileTree
  * @public
  */
 export class GeometricModel2dState extends GeometricModelState implements GeometricModel2dProps {
+  /** @internal */
   public readonly globalOrigin: Point2d;
+
   constructor(props: GeometricModel2dProps, iModel: IModelConnection) {
     super(props, iModel);
     this.globalOrigin = Point2d.fromJSON(props.globalOrigin);
   }
 
-  /** Returns false. */
+  /** @internal */
   public get is3d(): boolean { return false; }
-  /** @hidden */
+  /** @internal */
   public get asGeometricModel2d(): GeometricModel2dState { return this; }
 
   public toJSON(): GeometricModel2dProps {
@@ -191,9 +220,9 @@ export class GeometricModel2dState extends GeometricModelState implements Geomet
  * @public
  */
 export class GeometricModel3dState extends GeometricModelState {
-  /** Returns true. */
+  /** @internal */
   public get is3d(): boolean { return true; }
-  /** @hidden */
+  /** @internal */
   public get asGeometricModel3d(): GeometricModel3dState { return this; }
 }
 

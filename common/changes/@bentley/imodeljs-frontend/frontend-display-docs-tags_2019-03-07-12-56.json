@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Cleaned up documentation related to the display system.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Paul.Connelly@bentley.com"
+}

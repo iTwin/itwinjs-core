@@ -697,7 +697,8 @@ class MapBoxProvider extends ImageryProvider {
 }
 
 const enum GcsConverterStatus { Uninitialized, Pending, NotAvailable, Available }
-/** @hidden */
+
+/** @internal */
 export class BackgroundMapState {
   private _tileTree?: TileTree;
   private _loadStatus: TileTree.LoadStatus = TileTree.LoadStatus.NotLoaded;

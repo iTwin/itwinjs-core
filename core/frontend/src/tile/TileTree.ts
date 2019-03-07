@@ -4,8 +4,25 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Tile */
 
-import { assert, BeDuration, BeTimePoint, dispose, Id64, Id64String, IDisposable, JsonUtils } from "@bentley/bentleyjs-core";
-import { ClipPlaneContainment, ClipVector, Point3d, Range3d, Transform } from "@bentley/geometry-core";
+import {
+  assert,
+  BeDuration,
+  BeTimePoint,
+  dispose,
+  Id64,
+  Id64String,
+  IDisposable,
+  JsonUtils,
+} from "@bentley/bentleyjs-core";
+import {
+  Arc3d,
+  ClipPlaneContainment,
+  ClipVector,
+  Point3d,
+  Range3d,
+  Transform,
+  Vector3d,
+} from "@bentley/geometry-core";
 import {
   BatchType,
   BoundingSphere,
@@ -34,7 +51,9 @@ import { PntsTileIO } from "./PntsTileIO";
 import { TileIO } from "./TileIO";
 import { TileRequest } from "./TileRequest";
 
-/** @hidden */
+/** A 3d tile within a [[TileTree]].
+ * @internal
+ */
 export class Tile implements IDisposable, RenderMemory.Consumer {
   public readonly root: TileTree;
   public readonly range: ElementAlignedBox3d;
@@ -243,6 +262,15 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
           builder.setSymbology(color, color, 1);
           builder.addRangeBox(range.range);
         }
+      } else if (Tile.DebugBoundingBoxes.Sphere === type) {
+        builder.setSymbology(ColorDef.green, ColorDef.green, 1);
+
+        const x = new Vector3d(this.radius, 0, 0);
+        const y = new Vector3d(0, this.radius, 0);
+        const z = new Vector3d(0, 0, this.radius);
+        builder.addArc(Arc3d.create(this.center, x, y), false, false);
+        builder.addArc(Arc3d.create(this.center, x, z), false, false);
+        builder.addArc(Arc3d.create(this.center, y, z), false, false);
       } else {
         const color = this.hasSizeMultiplier ? ColorDef.red : (this.isLeaf ? ColorDef.blue : ColorDef.green);
         builder.setSymbology(color, color, 1);
@@ -507,11 +535,11 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
   }
 }
 
-/** @hidden */
+/** @internal */
 export namespace Tile {
   /**
    * Describes the current status of a Tile. Tiles are loaded by making asynchronous requests to the backend.
-   * @hidden
+   * @internal
    */
   export const enum LoadStatus {
     NotLoaded = 0, // No attempt to load the tile has been made, or the tile has since been unloaded. It currently has no graphics.
@@ -524,7 +552,7 @@ export namespace Tile {
 
   /**
    * Describes the visibility of a tile based on its size and a view frustum.
-   * @hidden
+   * @internal
    */
   export const enum Visibility {
     OutsideFrustum, // this tile is entirely outside of the viewing frustum
@@ -534,7 +562,7 @@ export namespace Tile {
 
   /**
    * Returned by Tile.selectTiles() to indicate whether a parent tile should be drawn in place of a child tile.
-   * @hidden
+   * @internal
    */
   export const enum SelectParent {
     No,
@@ -544,12 +572,16 @@ export namespace Tile {
   /**
    * Loosely describes the "importance" of a tile. Requests for tiles of more "importance" are prioritized for loading.
    * @note A lower LoadPriority value indicates higher importance.
-   * @hidden
+   * @internal
    */
   export const enum LoadPriority {
+    /** Typically, tiles generated from the contents of geometric models. */
     Primary = 0,
+    /** Typically, context reality models. */
     Context = 1,
+    /** Supplementary tiles used to classify the contents of geometric or reality models. */
     Classifier = 2,
+    /** Typically, map tiles. */
     Background = 3,
   }
 
@@ -561,6 +593,7 @@ export namespace Tile {
    *  - Green: An ordinary tile (sub-divides into 4 or 8 child tiles).
    *  - Red: A tile which refines to a single higher-resolution child occupying the same volume.
    * @see [[Viewport.debugBoundingBoxes]]
+   * @internal
    */
   export const enum DebugBoundingBoxes {
     /** Display no bounding boxes */
@@ -573,11 +606,13 @@ export namespace Tile {
     Both,
     /** Display boxes for direct children, where blue boxes indicate empty volumes. */
     ChildVolumes,
+    /** Display bounding sphere. */
+    Sphere,
   }
 
   /**
    * Arguments used when selecting and drawing tiles
-   * @hidden
+   * @internal
    */
   export class DrawArgs {
     public readonly location: Transform;
@@ -639,7 +674,7 @@ export namespace Tile {
 
   /**
    * Parameters used to construct a Tile.
-   * @hidden
+   * @internal
    */
   export class Params {
     public constructor(
@@ -662,7 +697,7 @@ export namespace Tile {
 
   /**
    * Describes the contents of a Tile.
-   * @hidden
+   * @internal
    */
   export interface Content {
     /** Graphical representation of the tile's geometry. */
@@ -686,7 +721,9 @@ const enum TileState {
   Abandoned = Tile.LoadStatus.Abandoned, // tile was abandoned.
 }
 
-/** @hidden */
+/** A hierarchical level-of-detail tree of 3d [[Tile]]s to be rendered in a [[Viewport]].
+ * @internal
+ */
 export class TileTree implements IDisposable, RenderMemory.Consumer {
   public readonly iModel: IModelConnection;
   public readonly is3d: boolean;
@@ -765,7 +802,9 @@ const defaultViewFlagOverrides = new ViewFlag.Overrides(ViewFlags.fromJSON({
   noSolarLight: true,
 }));
 
-/** @internal */
+/** Serves as a "handler" for a specific type of [[TileTree]]. Its primary responsibilities involve loading tile content.
+ * @internal
+ */
 export abstract class TileLoader {
   public abstract async getChildrenProps(parent: Tile): Promise<TileProps[]>;
   public abstract async requestTileContent(tile: Tile): Promise<TileRequest.Response>;
@@ -776,7 +815,6 @@ export abstract class TileLoader {
   public abstract tileRequiresLoading(params: Tile.Params): boolean;
   /** Given two tiles of the same [[Tile.LoadPriority]], determine which should be prioritized.
    * A negative value indicates lhs should load first, positive indicates rhs should load first, and zero indicates no distinction in priority.
-   * @hidden
    */
   public compareTilePriorities(lhs: Tile, rhs: Tile): number { return lhs.depth - rhs.depth; }
   public get parentsAndChildrenExclusive(): boolean { return true; }
@@ -851,11 +889,13 @@ export abstract class TileLoader {
   public adjustContentIdSizeMultiplier(contentId: string, _sizeMultipler: number): string { return contentId; }
 }
 
-/** @hidden */
+/** A hierarchical level-of-detail tree of 3d [[Tile]]s to be rendered in a [[Viewport]].
+ * @internal
+ */
 export namespace TileTree {
   /**
    * Parameters used to construct a TileTree
-   * @hidden
+   * @internal
    */
   export class Params {
     public constructor(
@@ -876,7 +916,7 @@ export namespace TileTree {
     }
   }
 
-  /** @hidden */
+  /** @internal */
   export enum LoadStatus {
     NotLoaded,
     Loading,
@@ -885,7 +925,7 @@ export namespace TileTree {
   }
 }
 
-/** @hidden */
+/** @internal */
 export class TileTreeState {
   public tileTree?: TileTree;
   public loadStatus: TileTree.LoadStatus = TileTree.LoadStatus.NotLoaded;

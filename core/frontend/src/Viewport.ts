@@ -38,7 +38,7 @@ export interface FeatureOverrideProvider {
 }
 
 /** Viewport synchronization flags. Synchronization is handled internally - do not use directly.
- * @hidden
+ * @internal
  */
 export class SyncFlags {
   private _decorations = false;
@@ -396,14 +396,14 @@ export interface ZoomToOptions {
 }
 
 /** Supplies facilities for interacting with a [[Viewport]]'s frustum.
- * @hidden
+ * @internal
  */
 export class ViewFrustum {
   private static get2dFrustumDepth() { return Constant.oneMeter; }
 
   private readonly _viewCorners: Range3d = new Range3d();
   private readonly _aspectRatioLocked: boolean;
-  /** @hidden */
+  /** @internal */
   public frustFraction: number = 1.0;
   /** Maximum ratio of frontplane to backplane distance for 24 bit zbuffer */
   public static nearScale24 = 0.0003;
@@ -418,14 +418,14 @@ export class ViewFrustum {
   public readonly viewDeltaUnexpanded = new Vector3d();
   /** View rotation matrix (copied from ViewState) */
   public readonly rotation = new Matrix3d();
-  /** @hidden */
+  /** @internal */
   public readonly worldToViewMap = Map4d.createIdentity();
-  /** @hidden */
+  /** @internal */
   public readonly worldToNpcMap = Map4d.createIdentity();
 
-  /** @hidden */
+  /** @internal */
   public readonly zClipAdjusted: boolean = false;    // were the view z clip planes adjusted due to front/back clipping off?
-  /** @hidden */
+  /** @internal */
   public readonly invalidFrustum: boolean = false;
 
   private _view: ViewState;
@@ -446,14 +446,14 @@ export class ViewFrustum {
 
   private static _copyOutput(from: XYZ, to?: XYZ) { let pt = from; if (to) { to.setFrom(from); pt = to; } return pt; }
 
-  /** @hidden */
+  /** @internal */
   public toView(from: XYZ, to?: XYZ) { this.rotation.multiplyVectorInPlace(ViewFrustum._copyOutput(from, to)); }
-  /** @hidden */
+  /** @internal */
   public fromView(from: XYZ, to?: XYZ) { this.rotation.multiplyTransposeVectorInPlace(ViewFrustum._copyOutput(from, to)); }
 
   /** adjust the aspect ratio of the view volume to match the aspect ratio of the window of this Viewport.
    *  modifies the point and vector given
-   *  @hidden
+   *  @internal
    */
   protected adjustAspectRatio(origin: Point3d, delta: Vector3d) {
     if (this._aspectRatioLocked)
@@ -714,12 +714,12 @@ export class ViewFrustum {
     this.worldToViewMap.setFrom(this.calcNpcToView().multiplyMapMap(this.worldToNpcMap));
   }
 
-  /** @hidden */
+  /** @internal */
   public static createFromViewport(vp: Viewport, view?: ViewState): ViewFrustum | undefined {
     return new ViewFrustum(view !== undefined ? view : vp.view, vp.viewRect.width, vp.viewRect.height, vp.isAspectRatioLocked);
   }
 
-  /** @hidden */
+  /** @internal */
   public static createFromViewportAndPlane(vp: Viewport, plane: Plane3dByOriginAndUnitNormal): ViewFrustum | undefined {
     const vf = new ViewFrustum(vp.view, vp.viewRect.width, vp.viewRect.height, vp.isAspectRatioLocked, plane);
     return vf.invalidFrustum ? undefined : vf;
@@ -883,24 +883,24 @@ export abstract class Viewport implements IDisposable {
   private _doContinuousRendering = false;
   private _animator?: Animator;
   /** Time the current flash started.
-   * @hidden
+   * @internal
    */
   public flashUpdateTime?: BeTimePoint;
   /** Current flash intensity from [0..1]
-   * @hidden
+   * @internal
    */
   public flashIntensity = 0;
   /** The length of time that the flash intensity will increase (in seconds)
-   * @hidden
+   * @internal
    */
   public flashDuration = 0;
   private _flashedElem?: string;         // id of currently flashed element
   /** Id of last flashed element.
-   * @hidden
+   * @internal
    */
   public lastFlashedElem?: string;
   /** Maximum ratio of frontplane to backplane distance for 24 bit zbuffer.
-   * @hidden
+   * @internal
    */
   public static nearScale24 = 0.0003;
 
@@ -937,7 +937,7 @@ export abstract class Viewport implements IDisposable {
   private _alwaysDrawnExclusive: boolean = false;
   private _featureOverrideProvider?: FeatureOverrideProvider;
 
-  /** @hidden */
+  /** @internal */
   public get viewFrustum(): ViewFrustum { return this._viewFrustum; }
 
   /** This viewport's rotation matrix. */
@@ -946,29 +946,29 @@ export abstract class Viewport implements IDisposable {
   public get viewDelta(): Vector3d { return this._viewFrustum.viewDelta; }
   /** Provides conversions between world and view coordinates. */
   public get worldToViewMap(): Map4d { return this._viewFrustum.worldToViewMap; }
-  /** @hidden */
+  /** @internal */
   public get frustFraction(): number { return this._viewFrustum.frustFraction; }
 
-  /** @hidden */
+  /** @internal */
   public get animationFraction(): number { return this._animationFraction; }
-  /** @hidden */
+  /** @internal */
   public set animationFraction(fraction: number) { this._animationFraction = fraction; this.sync.invalidateAnimationFraction(); }
 
-  /** @hidden */
+  /** @internal */
   protected readonly _viewRange: ViewRect = new ViewRect();
 
   /** Get the rectangle of this Viewport in [[CoordSystem.View]] coordinates. */
   public abstract get viewRect(): ViewRect;
-  /** @hidden */
+  /** @internal */
   public get isAspectRatioLocked(): boolean { return false; }
 
-  /** @hidden */
+  /** @internal */
   public get target(): RenderTarget {
     assert(undefined !== this._target, "Accessing RenderTarget of a disposed Viewport");
     return this._target!;
   }
 
-  /** @hidden */
+  /** @internal */
   public readonly sync = new SyncFlags();
   /** The settings that control how elements are hilited in this Viewport. */
   public hilite = new Hilite.Settings();
@@ -979,9 +979,9 @@ export abstract class Viewport implements IDisposable {
   public get isGridOn(): boolean { return this.viewFlags.grid; }
   /** The [ViewFlags]($common) that determine how the contents of this Viewport are rendered.  */
   public get viewFlags(): ViewFlags { return this.view.viewFlags; }
-  /** @hidden */
+  /** @internal */
   public get wantAntiAliasLines(): AntiAliasPref { return AntiAliasPref.Off; }
-  /** @hidden */
+  /** @internal */
   public get wantAntiAliasText(): AntiAliasPref { return AntiAliasPref.Detect; }
 
   /** Determines what type (if any) of debug graphics will be displayed to visualize [[Tile]] volumes.
@@ -995,7 +995,7 @@ export abstract class Viewport implements IDisposable {
     }
   }
   /** When true, the scene will never be recreated. Chiefly for debugging purposes.
-   * @hidden
+   * @internal
    */
   public set freezeScene(freeze: boolean) {
     if (freeze !== this._freezeScene) {
@@ -1005,15 +1005,15 @@ export abstract class Viewport implements IDisposable {
     }
   }
 
-  /** @hidden */
+  /** @internal */
   public get analysisStyle(): AnalysisStyle | undefined { return this.view.analysisStyle; }
   /** The iModel of this Viewport */
   public get iModel(): IModelConnection { return this.view.iModel; }
-  /** @hidden */
+  /** @internal */
   public get isPointAdjustmentRequired(): boolean { return this.view.is3d(); }
-  /** @hidden */
+  /** @internal */
   public get isSnapAdjustmentRequired(): boolean { return IModelApp.toolAdmin.acsPlaneSnapLock && this.view.is3d(); }
-  /** @hidden */
+  /** @internal */
   public get isContextRotationRequired(): boolean { return IModelApp.toolAdmin.acsContextLock; }
 
   /** Enables or disables "fade-out" mode. When this mode is enabled, transparent graphics are rendered with a flat alpha weight,
@@ -1028,7 +1028,7 @@ export abstract class Viewport implements IDisposable {
     }
   }
 
-  /** @hidden */
+  /** @internal */
   protected constructor(target: RenderTarget) {
     this._target = target;
     this._viewportId = Viewport._nextViewportId++;
@@ -1040,20 +1040,28 @@ export abstract class Viewport implements IDisposable {
     IModelApp.tileAdmin.forgetViewport(this);
   }
 
-  /** @hidden */
+  /** Enables or disables continuous rendering. Ideally, during each render frame a Viewport will do as little work as possible.
+   * To make that possible, the viewport keeps track of what has changed about its internal state from one frame to the next.
+   * For example, if the view frustum has not changed since the previous frame, it is likely that the viewport does not need to be
+   * re-rendered at all.
+   *
+   * In some circumstances, it is desirable to bypass the logic that limits the amount of work performed each frame. A primary example
+   * is a viewport that has some animations applied to it, or when diagnostic information like frames-per-second is being monitored.
+   *
+   * @note An application which enables continuous rendering should disable it as soon as it is no longer needed.
+   */
   public get continuousRendering(): boolean { return this._doContinuousRendering; }
-  /** @hidden */
   public set continuousRendering(contRend: boolean) { this._doContinuousRendering = contRend; }
   /** This gives each Viewport a unique ID, which can be used for comparing and sorting Viewport objects inside collections.
-   * @hidden
+   * @internal
    */
   public get viewportId(): number { return this._viewportId; }
 
   /** The ViewState for this Viewport */
   public get view(): ViewState { return this._viewFrustum.view; }
-  /** @hidden */
+  /** @internal */
   public get pixelsPerInch() { /* ###TODO: This is apparently unobtainable information in a browser... */ return 96; }
-  /** @hidden */
+  /** @internal */
   public get backgroundMapPlane() { return this.view.displayStyle.backgroundMapPlane; }
 
   /** IDs of a set of elements which should not be rendered within this view.
@@ -1138,11 +1146,11 @@ export abstract class Viewport implements IDisposable {
 
   /** True if this is a 3d view with the camera turned on. */
   public get isCameraOn(): boolean { return this.view.is3d() && this.view.isCameraOn; }
-  /** @hidden */
+  /** @internal */
   public invalidateDecorations() { this.sync.invalidateDecorations(); }
-  /** @hidden */
+  /** @internal */
   public invalidateRenderPlan() { this.sync.invalidateRenderPlan(); }
-  /** @hidden */
+  /** @internal */
   public changeDynamics(dynamics: GraphicList | undefined): void {
     this.target.changeDynamics(dynamics);
     this.invalidateDecorations();
@@ -1151,7 +1159,7 @@ export abstract class Viewport implements IDisposable {
   /** Set or clear the currently *flashed* element.
    * @param id The Id of the element to flash. If undefined, remove (un-flash) the currently flashed element
    * @param duration The amount of time, in seconds, the flash intensity will increase (see [[flashDuration]])
-   * @hidden
+   * @internal
    */
   public setFlashed(id: string | undefined, duration: number): void {
     if (id !== this._flashedElem) {
@@ -1170,9 +1178,9 @@ export abstract class Viewport implements IDisposable {
    */
   public get numRequestedTiles(): number { return IModelApp.tileAdmin.getNumRequestsForViewport(this); }
 
-  /** @hidden */
+  /** @internal */
   public toView(from: XYZ, to?: XYZ) { this._viewFrustum.toView(from, to); }
-  /** @hidden */
+  /** @internal */
   public fromView(from: XYZ, to?: XYZ) { this._viewFrustum.fromView(from, to); }
 
   /** Change the ViewState of this Viewport
@@ -1185,7 +1193,7 @@ export abstract class Viewport implements IDisposable {
     this.target.reset();
   }
 
-  /** @hidden */
+  /** @internal */
   public invalidateScene(): void { this.sync.invalidateScene(); }
 
   /** Computes the range of npc depth values for a region of the screen
@@ -1560,19 +1568,19 @@ export abstract class Viewport implements IDisposable {
     return (ViewStatus.Success === this.setupFromView() && ViewStatus.Success === validSize);
   }
 
-  /** @hidden */
+  /** @internal */
   public computeViewRange(): Range3d {
     this.setupFromView(); // can't proceed if viewport isn't valid (not active)
     return this.view.computeFitRange();
   }
 
-  /** @hidden */
+  /** @internal */
   public animate() {
     if (this._animator && this._animator.animate())
       this._animator = undefined;
   }
 
-  /** @hidden */
+  /** @internal */
   public removeAnimator() { this.setAnimator(undefined); }
   private setAnimator(animator: Animator | undefined) {
     if (this._animator)
@@ -1580,7 +1588,7 @@ export abstract class Viewport implements IDisposable {
     this._animator = animator;
   }
 
-  /** @hidden */
+  /** @internal */
   public animateFrustumChange(start: Frustum, end: Frustum, animationTime?: BeDuration) {
     if (!animationTime || 0.0 >= animationTime.milliseconds)
       animationTime = ToolSettings.animationTime;
@@ -1588,7 +1596,7 @@ export abstract class Viewport implements IDisposable {
     this.setAnimator(new Animator(animationTime, this, start, end));
   }
 
-  /** @hidden */
+  /** @internal */
   public applyViewState(val: ViewState, animationTime?: BeDuration) {
     const startFrust = this.getFrustum();
     this._viewFrustum.view = val.clone(this.view.iModel); // preserve our iModel in case val is coming from a different connection
@@ -1668,7 +1676,7 @@ export abstract class Viewport implements IDisposable {
     point.setFrom(pointView);
   }
 
-  /** @hidden */
+  /** @internal */
   public pointToGrid(point: Point3d): void {
     if (GridOrientationType.AuxCoord === this.view.getGridOrientation()) {
       this.pointToStandardGrid(point, this.getAuxCoordRotation(), this.getAuxCoordOrigin());
@@ -1733,7 +1741,7 @@ export abstract class Viewport implements IDisposable {
     return needsFlashUpdate;
   }
 
-  /** @hidden */
+  /** @internal */
   public createSceneContext(): SceneContext { return new SceneContext(this); }
 
   /** Called when the visible contents of the viewport are redrawn.
@@ -1741,7 +1749,7 @@ export abstract class Viewport implements IDisposable {
    */
   public readonly onRender = new BeEvent<(vp: Viewport) => void>();
 
-  /** @hidden */
+  /** @internal */
   public renderFrame(): boolean {
     const sync = this.sync;
     const view = this.view;
@@ -1850,7 +1858,7 @@ export abstract class Viewport implements IDisposable {
     return true;
   }
 
-  /** @hidden */
+  /** @internal */
   public addDecorations(_decorations: Decorations): void { }
 
   /** Read selected data about each pixel within a rectangular region of this Viewport.
@@ -1969,14 +1977,14 @@ export class ScreenViewport extends Viewport {
   }
 
   /** Remove all of the children of an HTMLDivElement.
-   * @hidden
+   * @internal
    */
   public static removeAllChildren(el: HTMLDivElement) {
     while (el.lastChild)
       el.removeChild(el.lastChild);
   }
   /**  add a child element to this.parentDiv and set its size and position the same as the parent.
-   * @hidden
+   * @internal
    */
   public addChildDiv(element: HTMLElement, zIndex: number) {
     // get the (computed) z-index value of the parent, as an integer.
@@ -1991,7 +1999,7 @@ export class ScreenViewport extends Viewport {
     this.parentDiv.appendChild(element);
   }
 
-  /** @hidden */
+  /** @internal */
   public addNewDiv(className: string, overflowHidden: boolean, z: number): HTMLDivElement {
     const div = document.createElement("div");
     div.className = className;
@@ -2001,7 +2009,7 @@ export class ScreenViewport extends Viewport {
     return div;
   }
 
-  /** @hidden */
+  /** @internal */
   constructor(canvas: HTMLCanvasElement, parentDiv: HTMLDivElement, target: RenderTarget) {
     super(target);
     this.canvas = canvas;
@@ -2068,7 +2076,7 @@ export class ScreenViewport extends Viewport {
     return mapResult;
   }
 
-  /** @hidden */
+  /** @internal */
   public pickCanvasDecoration(pt: XAndY) { return this.target.pickOverlayDecoration(pt); }
 
   /** Get the ClientRect of the canvas for this Viewport. */
@@ -2077,7 +2085,7 @@ export class ScreenViewport extends Viewport {
   /** The ViewRect for this ScreenViewport. Left and top will be 0, right will be the width, and bottom will be the height. */
   public get viewRect(): ViewRect { this._viewRange.init(0, 0, this.canvas.clientWidth, this.canvas.clientHeight); return this._viewRange; }
 
-  /** @hidden */
+  /** @internal */
   public addDecorations(decorations: Decorations): void {
     ScreenViewport.removeAllChildren(this.decorationDiv);
     const context = new DecorateContext(this, decorations);
@@ -2092,7 +2100,7 @@ export class ScreenViewport extends Viewport {
   /** Change the cursor for this Viewport */
   public setCursor(cursor: string = "default"): void { this.canvas.style.cursor = cursor; }
 
-  /** @hidden */
+  /** @internal */
   public synchWithView(saveInUndo: boolean): void {
     super.setupFromView();
     if (saveInUndo)
@@ -2108,9 +2116,9 @@ export class ScreenViewport extends Viewport {
     this.saveViewUndo();
   }
 
-  /** @hidden */
+  /** @internal */
   public get viewCmdTargetCenter(): Point3d | undefined { return this._viewCmdTargetCenter; }
-  /** @hidden */
+  /** @internal */
   public set viewCmdTargetCenter(center: Point3d | undefined) { this._viewCmdTargetCenter = center ? center.clone() : undefined; }
   /** True if an undoable viewing operation exists on the stack */
   public get isUndoPossible(): boolean { return 0 < this._backStack.length; }
@@ -2219,7 +2227,7 @@ export class ScreenViewport extends Viewport {
     context.addDecorationFromBuilder(builder);
   }
 
-  /** @hidden */
+  /** @internal */
   public drawLocateCursor(context: DecorateContext, pt: Point3d, aperture: number, isLocateCircleOn: boolean, hit?: HitDetail): void {
     if (hit)
       ScreenViewport.drawLocateHitDetail(context, aperture, hit);
@@ -2275,7 +2283,10 @@ export class TwoWayViewportSync {
   public disconnect() { this._removals.forEach((removal) => removal()); }
 }
 
-/** @hidden */
+/** An off-screen viewport is not rendered to the screen. It is never added to the [[ViewManager]], therefore does not participate in
+ * the render loop. It must be initialized with an explicit height and width, and its renderFrame function must be manually invoked.
+ * @internal
+ */
 export class OffScreenViewport extends Viewport {
   public static create(view: ViewState, viewRect?: ViewRect) {
     const rect = new ViewRect(0, 0, 1, 1);
@@ -2296,7 +2307,7 @@ export class OffScreenViewport extends Viewport {
   }
 }
 
-/** @hidden */
+/** @internal */
 export function linePlaneIntersect(outP: Point3d, linePt: Point3d, lineNormal: Vector3d | undefined, planePt: Point3d, planeNormal: Vector3d, perpendicular: boolean): void {
   let dot = 0;
   if (lineNormal)

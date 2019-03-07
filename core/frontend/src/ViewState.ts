@@ -84,7 +84,7 @@ export class MarginPercent {
 
 /** A cancelable paginated request for subcategory information.
  * @see ViewSubCategories
- * @hidden
+ * @internal
  */
 export class SubCategoriesRequest {
   private static readonly _LIMIT = 1000;
@@ -155,7 +155,7 @@ export class SubCategoriesRequest {
 }
 
 /** Stores information about sub-categories specific to a ViewState. Functions as a lazily-populated cache.
- * @hidden
+ * @internal
  */
 export class ViewSubCategories {
   private readonly _byCategoryId = new Map<string, Id64Set>();
@@ -250,12 +250,12 @@ export abstract class ViewState extends ElementState {
   public undoTime?: BeTimePoint;
   /** A cache of information about subcategories belonging to categories present in this view's [[CategorySelectorState]].
    * It is populated on-demand as new categories are added to the selector.
-   * @hidden
+   * @internal
    */
   public readonly subCategories = new ViewSubCategories();
   public static get className() { return "ViewDefinition"; }
 
-  /** @hidden */
+  /** @internal */
   protected constructor(props: ViewDefinitionProps, iModel: IModelConnection, public categorySelector: CategorySelectorState, public displayStyle: DisplayStyleState) {
     super(props, iModel);
     this.description = props.description;
@@ -344,18 +344,7 @@ export abstract class ViewState extends ElementState {
     return this.subCategories.load(this.categorySelector.categories, this.iModel);
   }
 
-  /** @hidden */
-  /* ###TODO
-public cancelAllTileLoads(): void {
-  this.forEachTileTreeModel((model) => {
-    const tileTree = model.tileTree;
-    if (tileTree !== undefined)
-      tileTree.rootTile.cancelAllLoads();
-  });
-}
-  */
-
-  /** @hidden */
+  /** @internal */
   public get areAllTileTreesLoaded(): boolean {
     let allLoaded = true;
     this.forEachTileTreeModel((model) => {
@@ -414,7 +403,7 @@ public cancelAllTileLoads(): void {
     return undefined !== ovr ? ovr.override(app) : app;
   }
 
-  /** @hidden */
+  /** @internal */
   public isSubCategoryVisible(id: Id64String): boolean {
     const app = this.subCategories.getSubCategoryAppearance(id.toString());
     if (undefined === app)
@@ -474,9 +463,9 @@ public cancelAllTileLoads(): void {
     this.overrideSubCategory(subCategoryId, SubCategoryOverride.fromJSON(json));
   }
 
-  /** Returns true if the set of elements returned by GetAlwaysDrawn() are the *only* elements rendered by this view */
+  /** @internal */
   public get areFeatureOverridesDirty(): boolean { return this._featureOverridesDirty; }
-  /** @hidden */
+  /** @internal */
   public get isSelectionSetDirty(): boolean { return this._selectionSetDirty; }
 
   /** Mark the [[FeatureSymbology.Overrides]] associated with this view as "dirty".
@@ -488,13 +477,13 @@ public cancelAllTileLoads(): void {
    * The next time the [[Viewport]] associated with this [[ViewState]] is rendered, the symbology overrides will be regenerated if they have been marked "dirty".
    */
   public setFeatureOverridesDirty(dirty: boolean = true): void { this._featureOverridesDirty = dirty; }
-  /** @hidden */
+  /** @internal */
   public setSelectionSetDirty(dirty: boolean = true): void { this._selectionSetDirty = dirty; }
   public is3d(): this is ViewState3d { return this instanceof ViewState3d; }
   public isSpatialView(): this is SpatialViewState { return this instanceof SpatialViewState; }
   /** Returns true if [[ViewTool]]s are allowed to operate in three dimensions on this view. */
   public abstract allow3dManipulations(): boolean;
-  /** @hidden */
+  /** @internal */
   public abstract createAuxCoordSystem(acsName: string): AuxCoordSystemState;
   /** Get the extents of this view in [[CoordSystem.World]] coordinates. */
   public abstract getViewedExtents(): AxisAlignedBox3d;
@@ -504,7 +493,7 @@ public cancelAllTileLoads(): void {
   public abstract computeFitRange(): Range3d;
 
   /** Override this if you want to perform some logic on each iteration of the render loop.
-   * @hidden
+   * @internal
    */
   public abstract onRenderFrame(_viewport: Viewport): void;
 
@@ -536,23 +525,23 @@ public cancelAllTileLoads(): void {
 
   /** Execute a function on each viewed model */
   public forEachTileTreeModel(func: (model: TileTreeModelState) => void): void { this.forEachModel((model: GeometricModelState) => func(model)); }
-  /** @hidden */
+  /** @internal */
   public createScene(context: SceneContext): void {
     this.forEachTileTreeModel((model: TileTreeModelState) => this.addModelToScene(model, context));
 
   }
 
-  /** @hidden */
+  /** @internal */
   public createTerrain(context: SceneContext): void {
     if (undefined !== this.displayStyle.backgroundMapPlane)
       this.displayStyle.backgroundMap.addToScene(context);
   }
 
-  /** @hidden */
+  /** @internal */
   public createClassification(context: SceneContext): void { this.forEachModel((model: GeometricModelState) => this.addModelClassifierToScene(model, context)); }
 
   /** Add view-specific decorations. The base implementation draws the grid. Subclasses must invoke super.decorate()
-   * @hidden
+   * @internal
    */
   public decorate(context: DecorateContext): void {
     this.drawGrid(context);
@@ -560,7 +549,7 @@ public cancelAllTileLoads(): void {
       this.displayStyle.backgroundMap.decorate(context);
   }
 
-  /** @hidden */
+  /** @internal */
   public static getStandardViewMatrix(id: StandardViewId): Matrix3d { return StandardView.getStandardRotation(id); }
 
   /** Orient this view to one of the [[StandardView]] rotations. */
@@ -575,7 +564,7 @@ public cancelAllTileLoads(): void {
     return this.getOrigin().plusScaled(delta, 0.5, result);
   }
 
-  /** @hidden */
+  /** @internal */
   public drawGrid(context: DecorateContext): void {
     const vp = context.viewport;
     if (!vp.isGridOn)
@@ -601,7 +590,7 @@ public cancelAllTileLoads(): void {
     context.drawStandardGrid(origin, matrix, spacing, gridsPerRef, isoGrid, orientation !== GridOrientationType.View ? fixedRepsAuto : undefined);
   }
 
-  /** @hidden */
+  /** @internal */
   public computeWorldToNpc(viewRot?: Matrix3d, inOrigin?: Point3d, delta?: Vector3d): { map: Map4d | undefined, frustFraction: number } {
     if (viewRot === undefined) viewRot = this.getRotation();
     const xVector = viewRot.rowX();
@@ -749,7 +738,7 @@ public cancelAllTileLoads(): void {
   public setDisplayStyle(style: DisplayStyleState) { this.displayStyle = style; }
   public getDetails(): any { if (!this.jsonProperties.viewDetails) this.jsonProperties.viewDetails = new Object(); return this.jsonProperties.viewDetails; }
 
-  /** @hidden */
+  /** @internal */
   protected adjustAspectRatio(windowAspect: number): void {
     const extents = this.getExtents();
     const viewAspect = extents.x / extents.y;
@@ -776,7 +765,7 @@ public cancelAllTileLoads(): void {
     this.setExtents(extents);
   }
 
-  /** @hidden */
+  /** @internal */
   public showFrustumErrorMessage(status: ViewStatus): void {
     let key: string;
     switch (status) {
@@ -790,7 +779,7 @@ public cancelAllTileLoads(): void {
     IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, IModelApp.i18n.translate("Viewing." + key)));
   }
 
-  /** @hidden */
+  /** @internal */
   public validateViewDelta(delta: Vector3d, messageNeeded?: boolean): ViewStatus {
     const limit = this.getExtentLimits();
     let error = ViewStatus.Success;
@@ -819,22 +808,22 @@ public cancelAllTileLoads(): void {
   }
 
   /** Returns the view detail associated with the specified name, or undefined if none such exists.
-   * @hidden
+   * @internal
    */
   public peekDetail(name: string): any { return this.getDetails()[name]; }
 
   /** Get the current value of a view detail. If not present, returns an empty object.
-   * @hidden
+   * @internal
    */
   public getDetail(name: string): any { const v = this.getDetails()[name]; return v ? v : {}; }
 
   /** Change the value of a view detail.
-   * @hidden
+   * @internal
    */
   public setDetail(name: string, value: any) { this.getDetails()[name] = value; }
 
   /** Remove a view detail.
-   * @hidden
+   * @internal
    */
   public removeDetail(name: string) { delete this.getDetails()[name]; }
 
@@ -1145,7 +1134,7 @@ export abstract class ViewState3d extends ViewState {
   public readonly camera: Camera;
   /** Minimum distance for front plane */
   public forceMinFrontDist = 0.0;
-  /** @hidden */
+  /** @internal */
   public static get className() { return "ViewDefinition3d"; }
   public onRenderFrame(_viewport: Viewport): void { }
   public allow3dManipulations(): boolean { return true; }
@@ -1244,7 +1233,7 @@ export abstract class ViewState3d extends ViewState {
   public setOrigin(origin: XYAndZ) { this.origin.setFrom(origin); }
   public setExtents(extents: XYAndZ) { this.extents.setFrom(extents); }
   public setRotation(rot: Matrix3d) { this.rotation.setFrom(rot); }
-  /** @hidden */
+  /** @internal */
   protected enableCamera(): void { if (this.supportsCamera()) this._cameraOn = true; }
   public supportsCamera(): boolean { return true; }
   public minimumFrontDistance() { return Math.max(15.2 * Constant.oneCentimeter, this.forceMinFrontDist); }
@@ -1540,7 +1529,7 @@ export abstract class ViewState3d extends ViewState {
     this.drawGroundPlane(context);
   }
 
-  /** @hidden */
+  /** @internal */
   protected drawSkyBox(context: DecorateContext): void {
     const style3d = this.getDisplayStyle3d();
     if (!style3d.environment.sky.display)
@@ -1598,7 +1587,7 @@ export abstract class ViewState3d extends ViewState {
     return extents;
   }
 
-  /** @hidden */
+  /** @internal */
   protected drawGroundPlane(context: DecorateContext): void {
     const extents = this.getGroundExtents(context.viewport);
     if (extents.isNull)

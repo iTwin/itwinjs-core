@@ -156,7 +156,7 @@ export interface GroundPlaneProps {
   belowColor?: ColorDefProps;
 }
 
-/** Enumerates the supported types of [[SkyBox]] images.
+/** Enumerates the supported types of [SkyBox]($frontend) images.
  * @public
  */
 export const enum SkyBoxImageType {
@@ -199,7 +199,7 @@ export interface SkyBoxImageProps {
   textures?: SkyCubeProps;
 }
 
-/** JSON representation of a [[SkyBox]].
+/** JSON representation of a [SkyBox]($frontend).
  * @public
  */
 export interface SkyBoxProps {

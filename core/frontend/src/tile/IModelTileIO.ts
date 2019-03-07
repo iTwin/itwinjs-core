@@ -49,11 +49,11 @@ import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 import { Range2d, Point3d, Range3d, Transform } from "@bentley/geometry-core";
 
 /** Provides facilities for deserializing tiles in 'imodel' format. These tiles contain element geometry encoded into a format optimized for the imodeljs webgl renderer.
- * @hidden
+ * @internal
  */
 export namespace IModelTileIO {
   /** Flags describing the geometry contained within a tile.
-   * @hidden
+   * @internal
    */
   export const enum Flags {
     /** No special flags */
@@ -64,7 +64,9 @@ export namespace IModelTileIO {
     Incomplete = 1 << 2,
   }
 
-  /** Describes the maximum major and minor version of the tile format supported by this front-end package. */
+  /** Describes the maximum major and minor version of the tile format supported by this front-end package.
+   * @internal
+   */
   export const enum CurrentVersion {
     /** The unsigned 16-bit major version number. If the major version specified in the tile header is greater than this value, then this
      * front-end is not capable of reading the tile content. Otherwise, this front-end can read the tile content even if the header specifies a
@@ -80,7 +82,7 @@ export namespace IModelTileIO {
   }
 
   /** Header embedded at the beginning of the binary tile data describing its contents.
-   * @hidden
+   * @internal
    */
   export class Header extends TileIO.Header {
     /** The size of this header in bytes. */
@@ -138,7 +140,7 @@ export namespace IModelTileIO {
     }
   }
 
-  /** @hidden */
+  /** @internal */
   class FeatureTableHeader {
     public static readFrom(stream: TileIO.StreamBuffer) {
       const length = stream.nextUint32;
@@ -158,7 +160,7 @@ export namespace IModelTileIO {
   const minElementsPerTile = 100;
 
   /** Deserializes an iModel tile.
-   * @hidden
+   * @internal
    */
   export class Reader extends GltfTileIO.Reader {
     private readonly _sizeMultiplier?: number;

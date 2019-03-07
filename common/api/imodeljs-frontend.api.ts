@@ -479,7 +479,8 @@ enum ActivityMessageEndReason {
   Completed = 0
 }
 
-// @public
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal
 class AnimationBranchState {
   // WARNING: The type "ClipPlanesVolume" needs to be exported by the package (e.g. added to index.ts)
   constructor(transform?: Transform, clip?: ClipPlanesVolume, omit?: boolean);
@@ -512,9 +513,11 @@ interface ArrayValue extends BasePropertyValue {
   valueFormat: PropertyValueFormat.Array;
 }
 
-// @public (undocumented)
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal (undocumented)
 module Attachments {
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   class Attachment {
     protected constructor(props: ViewAttachmentProps, view: ViewState);
     // WARNING: The type "Tree" needs to be exported by the package (e.g. added to index.ts)
@@ -544,7 +547,8 @@ module Attachments {
     readonly view: ViewState;
   }
 
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   class Attachment2d extends Attachment {
     constructor(props: ViewAttachmentProps, view: ViewState2d);
     // (undocumented)
@@ -554,7 +558,8 @@ module Attachments {
     load(_sheetView: SheetViewState, _sceneContext: SceneContext): State;
   }
 
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   class Attachment3d extends Attachment {
     constructor(props: ViewAttachmentProps, view: ViewState3d);
     // WARNING: The type "State" needs to be exported by the package (e.g. added to index.ts)
@@ -568,7 +573,8 @@ module Attachments {
     setState(depth: number, state: State): void;
   }
 
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   class AttachmentList {
     constructor();
     // WARNING: The type "Attachment" needs to be exported by the package (e.g. added to index.ts)
@@ -585,7 +591,8 @@ module Attachments {
     load(idx: number, sheetView: SheetViewState, sceneContext: SceneContext): State;
   }
 
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   class AttachmentTileLoader extends TileLoader {
     // (undocumented)
     getChildrenProps(_parent: Tile): Promise<TileProps[]>;
@@ -602,7 +609,8 @@ module Attachments {
     tileRequiresLoading(_params: Tile.Params): boolean;
   }
 
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   class AttachmentViewport extends OffScreenViewport {
     // WARNING: The type "State" needs to be exported by the package (e.g. added to index.ts)
     // WARNING: The type "State" needs to be exported by the package (e.g. added to index.ts)
@@ -625,6 +633,8 @@ module Attachments {
     toParent: Transform;
   }
 
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal
   enum State {
     // (undocumented)
     Empty = 1,
@@ -636,7 +646,8 @@ module Attachments {
     Ready = 3
   }
 
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   class Tile2d extends Tile {
     // WARNING: The type "Tree2d" needs to be exported by the package (e.g. added to index.ts)
     constructor(root: Tree2d, range: ElementAlignedBox2d);
@@ -649,7 +660,8 @@ module Attachments {
     readonly hasGraphics: boolean;
   }
 
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   class Tile3d extends Tile {
     // WARNING: The type "Tree3d" needs to be exported by the package (e.g. added to index.ts)
     // WARNING: The type "Tile3d" needs to be exported by the package (e.g. added to index.ts)
@@ -676,6 +688,8 @@ module Attachments {
     selectTiles(selected: Tile[], args: Tile.DrawArgs, _numSkipped?: number): Tile.SelectParent;
   }
 
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal
   enum Tile3dPlacement {
     // (undocumented)
     LowerLeft = 2,
@@ -689,7 +703,8 @@ module Attachments {
     UpperRight = 1
   }
 
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   class Tree extends TileTree {
     // WARNING: The type "AttachmentTileLoader" needs to be exported by the package (e.g. added to index.ts)
     constructor(loader: AttachmentTileLoader, iModel: IModelConnection, modelId: Id64String);
@@ -697,7 +712,8 @@ module Attachments {
     graphicsClip?: ClipVector;
   }
 
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   class Tree2d extends Tree {
     // WARNING: The type "Attachment2d" needs to be exported by the package (e.g. added to index.ts)
     // WARNING: The type "State" needs to be exported by the package (e.g. added to index.ts)
@@ -713,7 +729,8 @@ module Attachments {
     readonly viewRoot: TileTree;
   }
 
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   class Tree3d extends Tree {
     // WARNING: The type "Attachment3d" needs to be exported by the package (e.g. added to index.ts)
     // (undocumented)
@@ -987,7 +1004,6 @@ class CategorySelectorState extends ElementState {
   categories: Set<string>;
   changeCategoryDisplay(arg: Id64Arg, add: boolean): void;
   dropCategories(arg: Id64Arg): void;
-  // (undocumented)
   equalState(other: CategorySelectorState): boolean;
   has(id: Id64String): boolean;
   isCategoryViewed(categoryId: Id64String): boolean;
@@ -1071,7 +1087,8 @@ enum ContextMode {
   ZAxis = 3
 }
 
-// @public (undocumented)
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal (undocumented)
 class ContextRealityModelState implements TileTreeModelState {
   constructor(props: ContextRealityModelProps, iModel: IModelConnection);
   // (undocumented)
@@ -1228,6 +1245,7 @@ enum CurrentState {
 
 // @public
 class DecorateContext extends RenderContext {
+  // @internal
   constructor(vp: ScreenViewport, _decorations: Decorations);
   addCanvasDecoration(decoration: CanvasDecoration, atFront?: boolean): void;
   addDecoration(type: GraphicType, decoration: RenderGraphic): void;
@@ -1235,16 +1253,20 @@ class DecorateContext extends RenderContext {
   addHtmlDecoration(decoration: HTMLElement): void;
   createGraphicBuilder(type: GraphicType, transform?: Transform, id?: Id64String): GraphicBuilder;
   decorationDiv: HTMLDivElement;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   static drawGrid(graphic: GraphicBuilder, doIsogrid: boolean, drawDots: boolean, gridOrigin: Point3d, xVec: Vector3d, yVec: Vector3d, gridsPerRef: number, repetitions: Point2d, vp: Viewport): void;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   drawStandardGrid(gridOrigin: Point3d, rMatrix: Matrix3d, spacing: XAndY, gridsPerRef: number, isoGrid?: boolean, fixedRepetitions?: Point2d): void;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   static getGridDimension(props: {
           nRepetitions: number;
           min: number;
       }, gridSize: number, org: Point3d, dir: Point3d, points: Point3d[]): boolean;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   static getGridPlaneViewIntersections(planePoint: Point3d, planeNormal: Vector3d, vp: Viewport, useProjectExtents: boolean): Point3d[];
   readonly screenViewport: ScreenViewport;
   setSkyBox(graphic: RenderGraphic): void;
@@ -1268,7 +1290,6 @@ class Decorations implements IDisposable {
   // (undocumented)
   dispose(): void;
   normal: GraphicList | undefined;
-  // (undocumented)
   skyBox: RenderGraphic | undefined;
   viewBackground: RenderGraphic | undefined;
   viewOverlay: GraphicList | undefined;
@@ -1325,11 +1346,14 @@ class DisplayStyle2dState extends DisplayStyleState {
 class DisplayStyle3dState extends DisplayStyleState {
   constructor(props: DisplayStyleProps, iModel: IModelConnection);
   environment: Environment;
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
   // WARNING: The type "SkyBox.CreateParams" needs to be exported by the package (e.g. added to index.ts)
+  // @internal
   loadSkyBoxParams(system: RenderSystem): SkyBox.CreateParams | undefined;
   // (undocumented)
   readonly settings: DisplayStyle3dSettings;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   skyboxMaterial: RenderMaterial | undefined;
 }
 
@@ -1338,35 +1362,38 @@ class DisplayStyleState extends ElementState, implements DisplayStyleProps {
   constructor(props: DisplayStyleProps, iModel: IModelConnection);
   analysisStyle: AnalysisStyle | undefined;
   backgroundColor: ColorDef;
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
   // WARNING: The type "BackgroundMapState" needs to be exported by the package (e.g. added to index.ts)
-  // (undocumented)
+  // @internal (undocumented)
   readonly backgroundMap: BackgroundMapState;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   readonly backgroundMapPlane: Plane3dByOriginAndUnitNormal | undefined;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   containsContextRealityModel(contextRealityModel: ContextRealityModelState): boolean;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   contextRealityModels: ContextRealityModelState[];
   dropSubCategoryOverride(id: Id64String): void;
-  // (undocumented)
   equalState(other: DisplayStyleState): boolean;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   forEachContextRealityModel(func: (model: TileTreeModelState) => void): void;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   getAnimationBranches(scheduleTime: number): AnimationBranchStates | undefined;
   getSubCategoryOverride(id: Id64String): SubCategoryOverride | undefined;
   readonly hasSubCategoryOverride: boolean;
-  // (undocumented)
   is3d(): this is DisplayStyle3dState;
   monochromeColor: ColorDef;
   readonly name: string;
   overrideSubCategory(id: Id64String, ovr: SubCategoryOverride): void;
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
   // WARNING: The type "RenderScheduleState.Script" needs to be exported by the package (e.g. added to index.ts)
-  // (undocumented)
+  // @internal (undocumented)
   readonly scheduleScript: RenderScheduleState.Script | undefined;
-  // (undocumented)
   setBackgroundMap(mapProps: BackgroundMapProps): void;
-  // (undocumented)
   readonly settings: DisplayStyleSettings;
   viewFlags: ViewFlags;
 }
@@ -1391,7 +1418,8 @@ class DrawingViewState extends ViewState2d {
 // @public
 class DynamicsContext extends RenderContext {
   addGraphic(graphic: RenderGraphic): void;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   changeDynamics(): void;
 }
 
@@ -1839,58 +1867,87 @@ module FeatureSymbology {
 
   class Overrides {
     constructor(view?: ViewState);
+    // @internal
     protected readonly _alwaysDrawn: Id64.Uint32Set;
+    // @internal
     protected _constructions: boolean;
     // WARNING: The type "Appearance" needs to be exported by the package (e.g. added to index.ts)
+    // @internal
     protected _defaultOverrides: Appearance;
+    // @internal
     protected _dimensions: boolean;
     // WARNING: The type "Appearance" needs to be exported by the package (e.g. added to index.ts)
+    // @internal
     protected readonly _elementOverrides: Id64.Uint32Map<Appearance>;
+    // @internal
     protected _lineWeights: boolean;
     // WARNING: The type "Appearance" needs to be exported by the package (e.g. added to index.ts)
+    // @internal
     protected readonly _modelOverrides: Id64.Uint32Map<Appearance>;
+    // @internal
     protected readonly _neverDrawn: Id64.Uint32Set;
+    // @internal
     protected _patterns: boolean;
     // WARNING: The type "Appearance" needs to be exported by the package (e.g. added to index.ts)
+    // @internal
     protected readonly _subCategoryOverrides: Id64.Uint32Map<Appearance>;
+    // @internal
     protected readonly _visibleSubCategories: Id64.Uint32Set;
+    // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
     // WARNING: The type "Appearance" needs to be exported by the package (e.g. added to index.ts)
+    // @internal
     readonly animationNodeOverrides: Map<number, Appearance>;
     // WARNING: The type "Appearance" needs to be exported by the package (e.g. added to index.ts)
     readonly defaultOverrides: Appearance;
+    // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
     // WARNING: The type "Appearance" needs to be exported by the package (e.g. added to index.ts)
+    // @internal
     getAppearance(elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, geomClass: GeometryClass, modelLo: number, modelHi: number, type: BatchType, animationNodeId: number): Appearance | undefined;
+    // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
     // WARNING: The type "Appearance" needs to be exported by the package (e.g. added to index.ts)
+    // @internal
     protected getClassifierAppearance(elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, modelLo: number, modelHi: number): Appearance | undefined;
+    // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
     // WARNING: The type "Appearance" needs to be exported by the package (e.g. added to index.ts)
-    // (undocumented)
+    // @internal (undocumented)
     protected getElementOverrides(idLo: number, idHi: number, animationNodeId: number): Appearance | undefined;
     // WARNING: The type "Appearance" needs to be exported by the package (e.g. added to index.ts)
     getElementOverridesById(id: Id64String): Appearance | undefined;
     // WARNING: The type "Appearance" needs to be exported by the package (e.g. added to index.ts)
     getFeatureAppearance(feature: Feature, modelId: Id64String, type?: BatchType): Appearance | undefined;
+    // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
     // WARNING: The type "Appearance" needs to be exported by the package (e.g. added to index.ts)
-    // (undocumented)
+    // @internal (undocumented)
     protected getModelOverrides(idLo: number, idHi: number): Appearance | undefined;
     // WARNING: The type "Appearance" needs to be exported by the package (e.g. added to index.ts)
     getModelOverridesById(id: Id64String): Appearance | undefined;
+    // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
     // WARNING: The type "Appearance" needs to be exported by the package (e.g. added to index.ts)
-    // (undocumented)
+    // @internal (undocumented)
     protected getSubCategoryOverrides(idLo: number, idHi: number): Appearance | undefined;
     // WARNING: The type "Appearance" needs to be exported by the package (e.g. added to index.ts)
     getSubCategoryOverridesById(id: Id64String): Appearance | undefined;
+    // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+    // @internal
     initFromView(view: ViewState): void;
-    // (undocumented)
+    // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+    // @internal (undocumented)
     protected isAlwaysDrawn(idLo: number, idHi: number): boolean;
     isAlwaysDrawnExclusive: boolean;
-    // (undocumented)
+    // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+    // @internal (undocumented)
     isClassVisible(geomClass: GeometryClass): boolean;
     isFeatureVisible(feature: Feature): boolean;
-    // (undocumented)
+    // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+    // @internal (undocumented)
     protected isNeverDrawn(elemIdLo: number, elemIdHi: number, animationNodeId: number): boolean;
     isSubCategoryIdVisible(id: Id64String): boolean;
+    // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+    // @internal
     protected isSubCategoryVisible(idLo: number, idHi: number): boolean;
     readonly lineWeights: boolean;
+    // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+    // @internal
     readonly neverDrawnAnimationNodes: Set<number>;
     // WARNING: The type "Appearance" needs to be exported by the package (e.g. added to index.ts)
     overrideAnimationNode(id: number, app: Appearance): void;
@@ -2079,10 +2136,14 @@ class GeoConverter {
 // @public
 class GeometricModel2dState extends GeometricModelState, implements GeometricModel2dProps {
   constructor(props: GeometricModel2dProps, iModel: IModelConnection);
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   readonly asGeometricModel2d: GeometricModel2dState;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   readonly globalOrigin: Point2d;
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   readonly is3d: boolean;
   // (undocumented)
   toJSON(): GeometricModel2dProps;
@@ -2090,39 +2151,51 @@ class GeometricModel2dState extends GeometricModelState, implements GeometricMod
 
 // @public
 class GeometricModel3dState extends GeometricModelState {
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   readonly asGeometricModel3d: GeometricModel3dState;
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   readonly is3d: boolean;
 }
 
 // @public
 class GeometricModelState extends ModelState, implements TileTreeModelState {
-  // (undocumented)
+  // @internal (undocumented)
   protected _classifierTileTreeState: TileTreeState;
-  // (undocumented)
+  // @internal (undocumented)
   protected _tileTreeState: TileTreeState;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   readonly asGeometricModel: GeometricModelState;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   readonly classifierTileTree: TileTree | undefined;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal
   getOrLoadTileTree(edgesRequired: boolean): TileTree | undefined;
   readonly is2d: boolean;
   readonly is3d: boolean;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   readonly isGeometricModel: boolean;
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
   // WARNING: The type "TileTree.LoadStatus" needs to be exported by the package (e.g. added to index.ts)
-  // (undocumented)
+  // @internal
   loadStatus: TileTree.LoadStatus;
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
   // WARNING: The type "TileTree.LoadStatus" needs to be exported by the package (e.g. added to index.ts)
-  // (undocumented)
+  // @internal
   loadTileTree(edgesRequired: boolean, animationId?: Id64String, asClassifier?: boolean, classifierExpansion?: number): TileTree.LoadStatus;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   onIModelConnectionClose(): void;
   queryModelRange(): Promise<Range3d>;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal
   readonly tileTree: TileTree | undefined;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   readonly treeModelId: Id64String;
 }
 
@@ -2143,24 +2216,29 @@ export function getImageSourceMimeType(format: ImageSourceFormat): string;
 // @public
 class GraphicBranch implements IDisposable, RenderMemory.Consumer {
   constructor(ownsEntries?: boolean);
-  // (undocumented)
   add(graphic: RenderGraphic): void;
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal
   animationId?: string;
   clear(): void;
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
   // WARNING: The type "RenderMemory.Statistics" needs to be exported by the package (e.g. added to index.ts)
-  // (undocumented)
+  // @internal (undocumented)
   collectStatistics(stats: RenderMemory.Statistics): void;
   // (undocumented)
   dispose(): void;
   readonly entries: RenderGraphic[];
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   getViewFlags(flags: ViewFlags, out?: ViewFlags): ViewFlags;
   // (undocumented)
   readonly isEmpty: boolean;
   readonly ownsEntries: boolean;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   setViewFlagOverrides(ovr: ViewFlag.Overrides): void;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   setViewFlags(flags: ViewFlags): void;
   // WARNING: The type "FeatureSymbology.Overrides" needs to be exported by the package (e.g. added to index.ts)
   symbologyOverrides?: FeatureSymbology.Overrides;
@@ -2168,6 +2246,7 @@ class GraphicBranch implements IDisposable, RenderMemory.Consumer {
 
 // @public
 class GraphicBuilder {
+  // @internal
   protected constructor(placement: Transform | undefined, type: GraphicType, viewport: Viewport, pickId?: Id64String);
   abstract activateGraphicParams(graphicParams: GraphicParams): void;
   abstract addArc(arc: Arc3d, isEllipse: boolean, filled: boolean): void;
@@ -2179,25 +2258,34 @@ class GraphicBuilder {
   abstract addPointString(points: Point3d[]): void;
   abstract addPointString2d(points: Point2d[], zDepth: number): void;
   abstract addPolyface(meshData: Polyface, filled: boolean): void;
+  // @public
   addRangeBox(range: Range3d): void;
   abstract addShape(points: Point3d[]): void;
   abstract addShape2d(points: Point2d[], zDepth: number): void;
   abstract finish(): RenderGraphic;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   readonly iModel: IModelConnection;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   readonly isOverlay: boolean;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   readonly isSceneGraphic: boolean;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   readonly isViewBackground: boolean;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   readonly isViewCoordinates: boolean;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   readonly isWorldCoordinates: boolean;
   // (undocumented)
   pickId?: string;
   placement: Transform;
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal
   setBlankingFill(fillColor: ColorDef): void;
   setSymbology(lineColor: ColorDef, fillColor: ColorDef, lineWidth: number, linePixels?: LinePixels): void;
   readonly type: GraphicType;
@@ -2457,7 +2545,7 @@ export function imageBufferToPngDataUrl(buffer: ImageBuffer): string | undefined
 // @public
 export function imageElementFromImageSource(source: ImageSource): Promise<HTMLImageElement>;
 
-// @public (undocumented)
+// @public
 export function imageElementFromUrl(url: string): Promise<HTMLImageElement>;
 
 // @public
@@ -2636,7 +2724,8 @@ enum KeyinStatus {
   Partial = 1
 }
 
-// @public (undocumented)
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal (undocumented)
 export function linePlaneIntersect(outP: Point3d, linePt: Point3d, lineNormal: Vector3d | undefined, planePt: Point3d, planeNormal: Vector3d, perpendicular: boolean): void;
 
 // @public
@@ -2965,8 +3054,11 @@ enum MessageBoxValue {
 }
 
 // WARNING: Unsupported export: SystemFactory
-// @public
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal
 module MockRender {
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal
   class App extends IModelApp {
     // WARNING: The type "System" needs to be exported by the package (e.g. added to index.ts)
     // (undocumented)
@@ -2980,7 +3072,8 @@ module MockRender {
     static systemFactory: SystemFactory;
   }
 
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   class Batch extends Graphic {
     constructor(graphic: RenderGraphic, featureTable: PackedFeatureTable, range: ElementAlignedBox3d);
     // (undocumented)
@@ -2993,7 +3086,8 @@ module MockRender {
     readonly range: ElementAlignedBox3d;
   }
 
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   class Branch extends Graphic {
     constructor(branch: GraphicBranch, transform: Transform, clips?: RenderClipVolume | undefined);
     // (undocumented)
@@ -3006,13 +3100,15 @@ module MockRender {
     readonly transform: Transform;
   }
 
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   class Builder extends PrimitiveBuilder {
     // WARNING: The type "System" needs to be exported by the package (e.g. added to index.ts)
     constructor(system: System, placement: Transform | undefined, type: GraphicType, viewport: Viewport, pickId?: Id64String);
   }
 
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   class Graphic extends RenderGraphic {
     constructor();
     // WARNING: The type "RenderMemory.Statistics" needs to be exported by the package (e.g. added to index.ts)
@@ -3022,7 +3118,8 @@ module MockRender {
     dispose(): void;
   }
 
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   class List extends Graphic {
     constructor(graphics: RenderGraphic[]);
     // (undocumented)
@@ -3031,7 +3128,8 @@ module MockRender {
     readonly graphics: RenderGraphic[];
   }
 
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   class OffScreenTarget extends Target {
     // WARNING: The type "System" needs to be exported by the package (e.g. added to index.ts)
     constructor(system: System, _viewRect: ViewRect);
@@ -3041,7 +3139,8 @@ module MockRender {
     readonly viewRect: ViewRect;
   }
 
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   class OnScreenTarget extends Target {
     // WARNING: The type "System" needs to be exported by the package (e.g. added to index.ts)
     constructor(system: System, _canvas: HTMLCanvasElement);
@@ -3051,7 +3150,8 @@ module MockRender {
     readonly viewRect: ViewRect;
   }
 
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   class System extends RenderSystem {
     // WARNING: The type "Batch" needs to be exported by the package (e.g. added to index.ts)
     // (undocumented)
@@ -3094,7 +3194,8 @@ module MockRender {
     readonly maxTextureSize: number;
   }
 
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   class Target extends RenderTarget {
     // WARNING: The type "System" needs to be exported by the package (e.g. added to index.ts)
     protected constructor(_system: System);
@@ -3134,7 +3235,7 @@ class ModelSelectorState extends ElementState {
   addModels(arg: Id64Arg): void;
   containsModel(modelId: Id64String): boolean;
   dropModels(arg: Id64Arg): void;
-  // (undocumented)
+  // @public
   equalState(other: ModelSelectorState): boolean;
   has(id: string): boolean;
   load(): Promise<void>;
@@ -3147,14 +3248,9 @@ class ModelSelectorState extends ElementState {
 // @public
 class ModelState extends EntityState, implements ModelProps {
   constructor(props: ModelProps, iModel: IModelConnection);
-  // (undocumented)
   readonly asGeometricModel: GeometricModelState | undefined;
-  // (undocumented)
   readonly asGeometricModel2d: GeometricModel2dState | undefined;
-  // (undocumented)
   readonly asGeometricModel3d: GeometricModel3dState | undefined;
-  // (undocumented)
-  getExtents(): AxisAlignedBox3d;
   readonly isGeometricModel: boolean;
   // (undocumented)
   readonly isPrivate: boolean;
@@ -3164,6 +3260,8 @@ class ModelState extends EntityState, implements ModelProps {
   readonly modeledElement: RelatedElement;
   // (undocumented)
   readonly name: string;
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal
   onIModelConnectionClose(): void;
   // (undocumented)
   parentModel: Id64String;
@@ -3188,7 +3286,8 @@ interface MultilineTextEditorParams extends BasePropertyEditorParams {
   type: PropertyEditorParamTypes.MultilineText;
 }
 
-// @public
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal
 class NoRenderApp extends IModelApp {
   // (undocumented)
   protected static supplyRenderSystem(): RenderSystem;
@@ -3237,7 +3336,8 @@ class NotifyMessageDetails {
   viewport?: HTMLElement;
 }
 
-// @public
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal
 class NullRenderSystem extends RenderSystem {
   constructor();
   // (undocumented)
@@ -3258,7 +3358,8 @@ class NullRenderSystem extends RenderSystem {
   readonly isValid: boolean;
 }
 
-// @public
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal
 class NullTarget extends RenderTarget {
   // (undocumented)
   animationBranches: AnimationBranchStates | undefined;
@@ -3329,7 +3430,8 @@ class OffScreenTarget extends Target {
   readonly viewRect: ViewRect;
 }
 
-// @public (undocumented)
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal
 class OffScreenViewport extends Viewport {
   // (undocumented)
   static create(view: ViewState, viewRect?: ViewRect): OffScreenViewport;
@@ -3449,6 +3551,7 @@ interface PackedFeature {
 
 // @public
 class PackedFeatureTable {
+  // @internal
   constructor(data: Uint32Array, modelId: Id64String, numFeatures: number, maxFeatures: number, type: BatchType, animationNodeIds?: Uint8Array | Uint16Array | Uint32Array);
   // (undocumented)
   readonly anyDefined: boolean;
@@ -3456,12 +3559,15 @@ class PackedFeatureTable {
   readonly byteLength: number;
   findElementId(featureIndex: number): Id64String | undefined;
   findFeature(featureIndex: number): Feature | undefined;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   getAnimationNodeId(featureIndex: number): number;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   getElementIdPair(featureIndex: number): Id64.Uint32Pair;
   getFeature(featureIndex: number): Feature;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   getPackedFeature(featureIndex: number): PackedFeature;
   // (undocumented)
   readonly isClassifier: boolean;
@@ -3830,20 +3936,22 @@ class RenderClipVolume implements IDisposable {
 // @public
 class RenderContext {
   constructor(vp: Viewport);
-  // (undocumented)
+  // @internal (undocumented)
   protected _createGraphicBuilder(type: GraphicType, transform?: Transform, id?: Id64String): GraphicBuilder;
   createBranch(branch: GraphicBranch, location: Transform, clip?: RenderClipVolume): RenderGraphic;
   createSceneGraphicBuilder(transform?: Transform): GraphicBuilder;
   readonly frustum: Frustum;
   readonly frustumPlanes: FrustumPlanes;
   getPixelSizeAtPoint(inPoint?: Point3d): number;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   readonly target: RenderTarget;
   readonly viewFlags: ViewFlags;
   readonly viewport: Viewport;
 }
 
-// @public (undocumented)
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal (undocumented)
 enum RenderDiagnostics {
   All = 6,
   DebugOutput = 2,
@@ -3853,15 +3961,19 @@ enum RenderDiagnostics {
 
 // @public
 class RenderGraphic implements IDisposable, RenderMemory.Consumer {
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
   // WARNING: The type "RenderMemory.Statistics" needs to be exported by the package (e.g. added to index.ts)
-  // (undocumented)
+  // @internal (undocumented)
   abstract collectStatistics(stats: RenderMemory.Statistics): void;
   // (undocumented)
   abstract dispose(): void;
 }
 
-// @public
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal
 module RenderMemory {
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal
   class Buffers extends Consumers {
     constructor();
     // WARNING: The type "BufferType" needs to be exported by the package (e.g. added to index.ts)
@@ -3898,7 +4010,8 @@ module RenderMemory {
     readonly visibleEdges: Consumers;
   }
 
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   enum BufferType {
     // (undocumented)
     COUNT = 8,
@@ -3920,13 +4033,16 @@ module RenderMemory {
     VisibleEdges = 1
   }
 
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   interface Consumer {
     // WARNING: The type "Statistics" needs to be exported by the package (e.g. added to index.ts)
     // (undocumented)
     collectStatistics(stats: Statistics): void;
   }
 
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal
   class Consumers {
     // (undocumented)
     addConsumer(numBytes: number): void;
@@ -3940,7 +4056,8 @@ module RenderMemory {
     totalBytes: number;
   }
 
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   enum ConsumerType {
     // (undocumented)
     ClipVolumes = 4,
@@ -3956,7 +4073,8 @@ module RenderMemory {
     VertexTables = 1
   }
 
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   class Statistics {
     constructor();
     // WARNING: The type "BufferType" needs to be exported by the package (e.g. added to index.ts)
@@ -4068,65 +4186,87 @@ class RenderPlan {
 
 // @public
 class RenderSystem implements IDisposable {
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal
   abstract createBatch(graphic: RenderGraphic, features: PackedFeatureTable, range: ElementAlignedBox3d): RenderGraphic;
   abstract createBranch(branch: GraphicBranch, transform: Transform, clips?: RenderClipVolume): RenderGraphic;
   abstract createGraphicBuilder(placement: Transform, type: GraphicType, viewport: Viewport, pickableId?: Id64String): GraphicBuilder;
   abstract createGraphicList(primitives: RenderGraphic[]): RenderGraphic;
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
   // WARNING: The type "PolylineArgs" needs to be exported by the package (e.g. added to index.ts)
-  // (undocumented)
+  // @internal (undocumented)
   createIndexedPolylines(args: PolylineArgs, instances?: InstancedGraphicParams): RenderGraphic | undefined;
   createMaterial(_params: RenderMaterial.Params, _imodel: IModelConnection): RenderMaterial | undefined;
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
   // WARNING: The type "MeshParams" needs to be exported by the package (e.g. added to index.ts)
-  // (undocumented)
+  // @internal (undocumented)
   createMesh(_params: MeshParams, _instances?: InstancedGraphicParams): RenderGraphic | undefined;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   abstract createOffscreenTarget(rect: ViewRect): RenderTarget;
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
   // WARNING: The type "PointCloudArgs" needs to be exported by the package (e.g. added to index.ts)
-  // (undocumented)
+  // @internal (undocumented)
   createPointCloud(_args: PointCloudArgs, _imodel: IModelConnection): RenderGraphic | undefined;
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
   // WARNING: The type "PointStringParams" needs to be exported by the package (e.g. added to index.ts)
-  // (undocumented)
+  // @internal (undocumented)
   createPointString(_params: PointStringParams, _instances?: InstancedGraphicParams): RenderGraphic | undefined;
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
   // WARNING: The type "PolylineParams" needs to be exported by the package (e.g. added to index.ts)
-  // (undocumented)
+  // @internal (undocumented)
   createPolyline(_params: PolylineParams, _instances?: InstancedGraphicParams): RenderGraphic | undefined;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   createSheetTile(_tile: RenderTexture, _polyfaces: IndexedPolyface[], _tileColor: ColorDef): GraphicList;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   createSheetTilePolyfaces(_corners: Point3d[], _clip?: ClipVector): IndexedPolyface[];
   // WARNING: The type "SkyBox.CreateParams" needs to be exported by the package (e.g. added to index.ts)
   createSkyBox(_params: SkyBox.CreateParams): RenderGraphic | undefined;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   abstract createTarget(canvas: HTMLCanvasElement): RenderTarget;
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal
   createTextureFromCubeImages(_posX: HTMLImageElement, _negX: HTMLImageElement, _posY: HTMLImageElement, _negY: HTMLImageElement, _posZ: HTMLImageElement, _negZ: HTMLImageElement, _imodel: IModelConnection, _params: RenderTexture.Params): RenderTexture | undefined;
   createTextureFromImage(_image: HTMLImageElement, _hasAlpha: boolean, _imodel: IModelConnection | undefined, _params: RenderTexture.Params): RenderTexture | undefined;
   createTextureFromImageBuffer(_image: ImageBuffer, _imodel: IModelConnection, _params: RenderTexture.Params): RenderTexture | undefined;
   createTextureFromImageSource(source: ImageSource, imodel: IModelConnection | undefined, params: RenderTexture.Params): Promise<RenderTexture | undefined>;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   createTile(tileTexture: RenderTexture, corners: Point3d[]): RenderGraphic | undefined;
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
   // WARNING: The type "MeshArgs" needs to be exported by the package (e.g. added to index.ts)
-  // (undocumented)
+  // @internal (undocumented)
   createTriMesh(args: MeshArgs, instances?: InstancedGraphicParams): RenderGraphic | undefined;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   abstract dispose(): void;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   enableDiagnostics(_enable: RenderDiagnostics): void;
   findMaterial(_key: string, _imodel: IModelConnection): RenderMaterial | undefined;
   findTexture(_key: string, _imodel: IModelConnection): RenderTexture | undefined;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   getClipVolume(_clipVector: ClipVector, _imodel: IModelConnection): RenderClipVolume | undefined;
   getGradientTexture(_symb: Gradient.Symb, _imodel: IModelConnection): RenderTexture | undefined;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   readonly isValid: boolean;
   loadTexture(id: Id64String, iModel: IModelConnection): Promise<RenderTexture | undefined>;
   loadTextureImage(id: Id64String, iModel: IModelConnection): Promise<TextureImage | undefined>;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   readonly maxTextureSize: number;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   onInitialized(): void;
 }
 
-// @public
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal
 class RenderTarget implements IDisposable {
   // (undocumented)
   animationBranches: AnimationBranchStates | undefined;
@@ -4245,7 +4385,8 @@ class SavedState {
   state: CurrentState;
 }
 
-// @public (undocumented)
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal
 class SceneContext extends RenderContext {
   constructor(vp: Viewport);
   // (undocumented)
@@ -4269,11 +4410,16 @@ class SceneContext extends RenderContext {
 
 // @public
 class ScreenViewport extends Viewport {
+  // @internal
   constructor(canvas: HTMLCanvasElement, parentDiv: HTMLDivElement, target: RenderTarget);
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal
   addChildDiv(element: HTMLElement, zIndex: number): void;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   addDecorations(decorations: Decorations): void;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   addNewDiv(className: string, overflowHidden: boolean, z: number): HTMLDivElement;
   readonly canvas: HTMLCanvasElement;
   changeView(view: ViewState): void;
@@ -4282,7 +4428,8 @@ class ScreenViewport extends Viewport {
   readonly decorationDiv: HTMLDivElement;
   doRedo(animationTime?: BeDuration): void;
   doUndo(animationTime?: BeDuration): void;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   drawLocateCursor(context: DecorateContext, pt: Point3d, aperture: number, isLocateCircleOn: boolean, hit?: HitDetail): void;
   getClientRect(): ClientRect;
   readonly isRedoPossible: boolean;
@@ -4290,18 +4437,23 @@ class ScreenViewport extends Viewport {
   maxUndoSteps: number;
   openToolTip(message: HTMLElement | string, location?: XAndY, options?: ToolTipOptions): void;
   readonly parentDiv: HTMLDivElement;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   pickCanvasDecoration(pt: XAndY): import("./render/System").CanvasDecoration | undefined;
   pickNearestVisibleGeometry(pickPoint: Point3d, radius: number, allowNonLocatable?: boolean, out?: Point3d): Point3d | undefined;
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal
   static removeAllChildren(el: HTMLDivElement): void;
   resetUndo(): void;
   saveViewUndo(): void;
   setCursor(cursor?: string): void;
   setEventController(controller: EventController | undefined): void;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   synchWithView(saveInUndo: boolean): void;
   readonly toolTipDiv: HTMLDivElement;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   viewCmdTargetCenter: Point3d | undefined;
   readonly viewRect: ViewRect;
 }
@@ -4498,7 +4650,8 @@ enum SelectOptions {
   PickAndReplace = 0
 }
 
-// @public
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal
 class SheetBorder {
   addToBuilder(builder: GraphicBuilder): void;
   static create(width: number, height: number, context?: DecorateContext): SheetBorder;
@@ -4515,22 +4668,32 @@ class SheetViewState extends ViewState2d {
   constructor(props: ViewDefinition2dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle2dState, sheetProps: SheetProps, attachments: Id64Array);
   // (undocumented)
   static readonly className: string;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   computeFitRange(): Range3d;
   // (undocumented)
   static createFromProps(viewStateData: ViewStateProps, iModel: IModelConnection): ViewState | undefined;
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal
   createScene(context: SceneContext): void;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   decorate(context: DecorateContext): void;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   getExtentLimits: {
     max: number;
     min: number;
   }
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal
   load(): Promise<void>;
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal
   markAttachment3dSceneIncomplete(): void;
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal
   onRenderFrame(_viewport: Viewport): void;
-  // (undocumented)
   readonly sheetSize: Point2d;
 }
 
@@ -4543,12 +4706,14 @@ class SkyCube extends SkyBox, implements SkyCubeProps {
   readonly back: Id64String;
   readonly bottom: Id64String;
   static create(front: Id64String, back: Id64String, top: Id64String, bottom: Id64String, right: Id64String, left: Id64String, display?: boolean): SkyCube | undefined;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal
   static fromJSON(skyboxJson: SkyBoxProps): SkyCube | undefined;
   readonly front: Id64String;
   readonly left: Id64String;
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
   // WARNING: The type "SkyBox.CreateParams" needs to be exported by the package (e.g. added to index.ts)
-  // (undocumented)
+  // @internal (undocumented)
   loadParams(system: RenderSystem, iModel: IModelConnection): Promise<SkyBox.CreateParams | undefined>;
   readonly right: Id64String;
   // (undocumented)
@@ -4561,8 +4726,9 @@ class SkyGradient extends SkyBox {
   constructor(sky?: SkyBoxProps);
   readonly groundColor: ColorDef;
   readonly groundExponent: number;
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
   // WARNING: The type "SkyBox.CreateParams" needs to be exported by the package (e.g. added to index.ts)
-  // (undocumented)
+  // @internal (undocumented)
   loadParams(_system: RenderSystem, iModel: IModelConnection): Promise<SkyBox.CreateParams>;
   readonly nadirColor: ColorDef;
   readonly skyColor: ColorDef;
@@ -4575,10 +4741,10 @@ class SkyGradient extends SkyBox {
 
 // @public
 class SkySphere extends SkyBox {
-  // (undocumented)
   static fromJSON(json: SkyBoxProps): SkySphere | undefined;
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
   // WARNING: The type "SkyBox.CreateParams" needs to be exported by the package (e.g. added to index.ts)
-  // (undocumented)
+  // @internal (undocumented)
   loadParams(system: RenderSystem, iModel: IModelConnection): Promise<SkyBox.CreateParams | undefined>;
   textureId: Id64String;
   // (undocumented)
@@ -4809,7 +4975,8 @@ interface StructValue extends BasePropertyValue {
   valueFormat: PropertyValueFormat.Struct;
 }
 
-// @public
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal
 class SubCategoriesRequest {
   constructor(subcategories: ViewSubCategories, categoryIds: Set<string>, imodel: IModelConnection);
   // (undocumented)
@@ -4838,7 +5005,8 @@ class SuspendedToolState {
   stop(): void;
 }
 
-// @public
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal
 class SyncFlags {
   // (undocumented)
   initFrom(other: SyncFlags): void;
@@ -5185,16 +5353,17 @@ class ThreeAxes {
   readonly z: Vector3d;
 }
 
-// @public (undocumented)
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal (undocumented)
 class Tile {
 }
 
-// @public (undocumented)
+// @alpha (undocumented)
 class TileAdmin {
 }
 
 // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
-// @internal (undocumented)
+// @internal
 class TileLoader {
   // (undocumented)
   protected readonly _batchType: BatchType;
@@ -5233,24 +5402,30 @@ class TileLoader {
   readonly viewFlagOverrides: ViewFlag.Overrides;
 }
 
-// @public (undocumented)
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal
 class TileTree {
 }
 
-// @public (undocumented)
+// @beta
 interface TileTreeModelState {
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   readonly loadStatus: TileTree.LoadStatus;
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
   // WARNING: The type "TileTree.LoadStatus" needs to be exported by the package (e.g. added to index.ts)
-  // (undocumented)
+  // @internal (undocumented)
   loadTileTree(edgesRequired: boolean, animationId?: Id64String, asClassifier?: boolean, classifierExpansion?: number): TileTree.LoadStatus;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   readonly tileTree: TileTree | undefined;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   readonly treeModelId: Id64String;
 }
 
-// @public (undocumented)
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal (undocumented)
 class TileTreeState {
   constructor(_iModel: IModelConnection, _is3d: boolean, _modelId: Id64String);
   // (undocumented)
@@ -5580,23 +5755,31 @@ interface ViewChangeOptions {
   saveInUndo?: boolean;
 }
 
-// @public
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal
 class ViewFrustum {
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal
   protected adjustAspectRatio(origin: Point3d, delta: Vector3d): void;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   static createFromViewport(vp: Viewport, view?: ViewState): ViewFrustum | undefined;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   static createFromViewportAndPlane(vp: Viewport, plane: Plane3dByOriginAndUnitNormal): ViewFrustum | undefined;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   fromView(from: XYZ, to?: XYZ): void;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   frustFraction: number;
   getFrustum(sys?: CoordSystem, adjustedBox?: boolean, box?: Frustum): Frustum;
   // (undocumented)
   getPixelSizeAtPoint(inPoint?: Point3d): number;
   // (undocumented)
   getViewCorners(): Range3d;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   readonly invalidFrustum: boolean;
   static nearScale24: number;
   npcToView(pt: Point3d, out?: Point3d): Point3d;
@@ -5604,7 +5787,8 @@ class ViewFrustum {
   npcToWorld(pt: XYAndZ, out?: Point3d): Point3d;
   npcToWorldArray(pts: Point3d[]): void;
   readonly rotation: Matrix3d;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   toView(from: XYZ, to?: XYZ): void;
   view: ViewState;
   view4dToWorld(input: Point4d, out?: Point3d): Point3d;
@@ -5619,15 +5803,18 @@ class ViewFrustum {
   viewToWorldArray(pts: Point3d[]): void;
   worldToNpc(pt: XYAndZ, out?: Point3d): Point3d;
   worldToNpcArray(pts: Point3d[]): void;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   readonly worldToNpcMap: Map4d;
   worldToView(input: XYAndZ, out?: Point3d): Point3d;
   worldToView4d(input: XYAndZ, out?: Point4d): Point4d;
   worldToView4dArray(worldPts: Point3d[], viewPts: Point4d[]): void;
   worldToViewArray(pts: Point3d[]): void;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   readonly worldToViewMap: Map4d;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   readonly zClipAdjusted: boolean;
 }
 
@@ -5747,7 +5934,8 @@ class ViewingToolHandle {
 class ViewManager {
   addDecorator(decorator: Decorator): () => void;
   addViewport(newVp: ScreenViewport): BentleyStatus;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   beginDynamicsMode(): void;
   clearSelectedView(): void;
   // (undocumented)
@@ -5756,16 +5944,22 @@ class ViewManager {
   cursor: string;
   // (undocumented)
   readonly decorators: Decorator[];
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   readonly doesHostHaveFocus: boolean;
   dropDecorator(decorator: Decorator): void;
   dropViewport(vp: ScreenViewport, disposeOfViewport?: boolean): BentleyStatus;
   // (undocumented)
   readonly dynamicsCursor: string;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   endDynamicsMode(): void;
   forEachViewport(func: (vp: ScreenViewport) => void): void;
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal
   getDecorationGeometry(hit: HitDetail): GeometryStreamProps | undefined;
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal
   getDecorationToolTip(hit: HitDetail): Promise<HTMLElement | string>;
   getFirstOpenView(): ScreenViewport | undefined;
   // (undocumented)
@@ -5775,35 +5969,48 @@ class ViewManager {
   // (undocumented)
   inDynamicsMode: boolean;
   invalidateDecorationsAllViews(): void;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   invalidateScenes(): void;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   invalidateViewportScenes(): void;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   notifySelectedViewportChanged(previous: ScreenViewport | undefined, current: ScreenViewport | undefined): void;
   readonly onBeginRender: BeEvent<() => void>;
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal
   onDecorationButtonEvent(hit: HitDetail, ev: BeButtonEvent): Promise<EventHandled>;
   readonly onFinishRender: BeEvent<() => void>;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   onInitialized(): void;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   onNewTilesReady(): void;
   readonly onSelectedViewportChanged: BeUiEvent<SelectedViewportChangedArgs>;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   onSelectionSetChanged(_iModel: IModelConnection): void;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   onShutDown(): void;
   readonly onViewClose: BeUiEvent<ScreenViewport>;
   readonly onViewOpen: BeUiEvent<ScreenViewport>;
   readonly onViewResume: BeUiEvent<ScreenViewport>;
   readonly onViewSuspend: BeUiEvent<ScreenViewport>;
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal
   renderLoop(): void;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   readonly sceneInvalidated: boolean;
   readonly selectedView: ScreenViewport | undefined;
   setSelectedView(vp: ScreenViewport | undefined): BentleyStatus;
   setViewCursor(cursor?: string): void;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   validateViewportScenes(): void;
 }
 
@@ -5914,36 +6121,46 @@ enum ViewManipPriority {
 
 // @public
 class Viewport implements IDisposable {
+  // @internal
   protected constructor(target: RenderTarget);
-  // (undocumented)
+  // @internal (undocumented)
   protected readonly _viewRange: ViewRect;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   addDecorations(_decorations: Decorations): void;
   readonly alwaysDrawn: Id64Set | undefined;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   readonly analysisStyle: AnalysisStyle | undefined;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   animate(): void;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   animateFrustumChange(start: Frustum, end: Frustum, animationTime?: BeDuration): void;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   animationFraction: number;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   applyViewState(val: ViewState, animationTime?: BeDuration): void;
   // (undocumented)
   readonly auxCoordSystem: AuxCoordSystemState;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   readonly backgroundMapPlane: Plane3dByOriginAndUnitNormal | undefined;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   changeDynamics(dynamics: GraphicList | undefined): void;
   changeView(view: ViewState): void;
   clearAlwaysDrawn(): void;
   clearNeverDrawn(): void;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   computeViewRange(): Range3d;
-  // (undocumented)
   continuousRendering: boolean;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   createSceneContext(): SceneContext;
   // WARNING: The type "Tile.DebugBoundingBoxes" needs to be exported by the package (e.g. added to index.ts)
   debugBoundingBoxes: Tile.DebugBoundingBoxes;
@@ -5951,13 +6168,23 @@ class Viewport implements IDisposable {
   // (undocumented)
   dispose(): void;
   featureOverrideProvider: FeatureOverrideProvider | undefined;
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal
   flashDuration: number;
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal
   flashIntensity: number;
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal
   flashUpdateTime?: BeTimePoint;
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal
   freezeScene: boolean;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   fromView(from: XYZ, to?: XYZ): void;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   readonly frustFraction: number;
   // (undocumented)
   getAuxCoordOrigin(result?: Point3d): Point3d;
@@ -5973,25 +6200,36 @@ class Viewport implements IDisposable {
   getWorldFrustum(box?: Frustum): Frustum;
   hilite: Hilite.Settings;
   readonly iModel: IModelConnection;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   invalidateDecorations(): void;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   invalidateRenderPlan(): void;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   invalidateScene(): void;
   readonly isAlwaysDrawnExclusive: boolean;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   readonly isAspectRatioLocked: boolean;
   readonly isCameraOn: boolean;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   readonly isContextRotationRequired: boolean;
   isFadeOutActive: boolean;
   readonly isGridOn: boolean;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   readonly isPointAdjustmentRequired: boolean;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   readonly isSnapAdjustmentRequired: boolean;
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal
   lastFlashedElem?: string;
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal
   static nearScale24: number;
   readonly neverDrawn: Id64Set | undefined;
   npcToView(pt: Point3d, out?: Point3d): Point3d;
@@ -6006,32 +6244,41 @@ class Viewport implements IDisposable {
   readonly onRender: BeEvent<(vp: Viewport) => void>;
   readonly onViewChanged: BeEvent<(vp: Viewport) => void>;
   pixelsFromInches(inches: number): number;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   readonly pixelsPerInch: number;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   pointToGrid(point: Point3d): void;
   readImage(rect?: ViewRect, targetSize?: Point2d, flipVertically?: boolean): ImageBuffer | undefined;
   // WARNING: The type "Pixel.Selector" needs to be exported by the package (e.g. added to index.ts)
   // WARNING: The type "Pixel.Receiver" needs to be exported by the package (e.g. added to index.ts)
   readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable?: boolean): void;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   removeAnimator(): void;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   renderFrame(): boolean;
   readonly rotation: Matrix3d;
   scroll(screenDist: Point2d, options?: ViewChangeOptions): void;
   setAlwaysDrawn(ids: Id64Set, exclusive?: boolean): void;
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal
   setFlashed(id: string | undefined, duration: number): void;
   setNeverDrawn(ids: Id64Set): void;
   setStandardRotation(id: StandardViewId): void;
   setupFromView(): ViewStatus;
   setupViewFromFrustum(inFrustum: Frustum): boolean;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   readonly sync: SyncFlags;
   synchWithView(_saveInUndo: boolean): void;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   readonly target: RenderTarget;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   toView(from: XYZ, to?: XYZ): void;
   turnCameraOn(lensAngle?: Angle): ViewStatus;
   static undoDelay: BeDuration;
@@ -6040,17 +6287,22 @@ class Viewport implements IDisposable {
   view4dToWorldArray(viewPts: Point4d[], worldPts: Point3d[]): void;
   readonly viewDelta: Vector3d;
   readonly viewFlags: ViewFlags;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   readonly viewFrustum: ViewFrustum;
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal
   readonly viewportId: number;
   readonly viewRect: ViewRect;
   viewToNpc(pt: Point3d, out?: Point3d): Point3d;
   viewToNpcArray(pts: Point3d[]): void;
   viewToWorld(input: XYAndZ, out?: Point3d): Point3d;
   viewToWorldArray(pts: Point3d[]): void;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   readonly wantAntiAliasLines: AntiAliasPref;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   readonly wantAntiAliasText: AntiAliasPref;
   worldToNpc(pt: XYAndZ, out?: Point3d): Point3d;
   worldToNpcArray(pts: Point3d[]): void;
@@ -6113,17 +6365,22 @@ class ViewRedoTool extends ViewTool {
 
 // @public
 class ViewState extends ElementState {
+  // @internal
   protected constructor(props: ViewDefinitionProps, iModel: IModelConnection, categorySelector: CategorySelectorState, displayStyle: DisplayStyleState);
   // (undocumented)
   protected _featureOverridesDirty: boolean;
   // (undocumented)
   protected _selectionSetDirty: boolean;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   protected adjustAspectRatio(windowAspect: number): void;
   abstract allow3dManipulations(): boolean;
   readonly analysisStyle: AnalysisStyle | undefined;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   readonly areAllTileTreesLoaded: boolean;
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   readonly areFeatureOverridesDirty: boolean;
   readonly auxiliaryCoordinateSystem: AuxCoordSystemState;
   readonly backgroundColor: ColorDef;
@@ -6134,26 +6391,34 @@ class ViewState extends ElementState {
   // (undocumented)
   static readonly className: string;
   abstract computeFitRange(): Range3d;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   computeWorldToNpc: {
     frustFraction: number;
     map: Map4d | undefined;
   }
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   abstract createAuxCoordSystem(acsName: string): AuxCoordSystemState;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   createClassification(context: SceneContext): void;
   static createFromProps(_props: ViewStateProps, _iModel: IModelConnection): ViewState | undefined;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   createScene(context: SceneContext): void;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   createTerrain(context: SceneContext): void;
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal
   decorate(context: DecorateContext): void;
   // (undocumented)
   description?: string;
   // (undocumented)
   displayStyle: DisplayStyleState;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   drawGrid(context: DecorateContext): void;
   dropSubCategoryOverride(id: Id64String): void;
   equals(other: this): boolean;
@@ -6164,6 +6429,8 @@ class ViewState extends ElementState {
   getAspectRatioSkew(): number;
   getAuxiliaryCoordinateSystemId(): Id64String;
   getCenter(result?: Point3d): Point3d;
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal
   getDetail(name: string): any;
   // (undocumented)
   getDetails(): any;
@@ -6180,7 +6447,8 @@ class ViewState extends ElementState {
   getGridsPerRef(): number;
   abstract getOrigin(): Point3d;
   abstract getRotation(): Matrix3d;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   static getStandardViewMatrix(id: StandardViewId): Matrix3d;
   getSubCategoryAppearance(id: Id64String): SubCategoryAppearance;
   getSubCategoryOverride(id: Id64String): SubCategoryOverride | undefined;
@@ -6194,19 +6462,27 @@ class ViewState extends ElementState {
   is3d(): this is ViewState3d;
   // (undocumented)
   isPrivate?: boolean;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   readonly isSelectionSetDirty: boolean;
   // (undocumented)
   isSpatialView(): this is SpatialViewState;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   isSubCategoryVisible(id: Id64String): boolean;
   load(): Promise<void>;
   lookAtViewAlignedVolume(volume: Range3d, aspect?: number, margin?: MarginPercent): void;
   lookAtVolume(volume: LowAndHighXYZ | LowAndHighXY, aspect?: number, margin?: MarginPercent): void;
   readonly name: string;
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal
   abstract onRenderFrame(_viewport: Viewport): void;
   overrideSubCategory(id: Id64String, ovr: SubCategoryOverride): void;
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal
   peekDetail(name: string): any;
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal
   removeDetail(name: string): void;
   // WARNING: The type "RenderScheduleState.Script" needs to be exported by the package (e.g. added to index.ts)
   readonly scheduleScript: RenderScheduleState.Script | undefined;
@@ -6215,6 +6491,8 @@ class ViewState extends ElementState {
   setAspectRatioSkew(val: number): void;
   setAuxiliaryCoordinateSystem(acs?: AuxCoordSystemState): void;
   setCategorySelector(categories: CategorySelectorState): void;
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal
   setDetail(name: string, value: any): void;
   // (undocumented)
   setDisplayStyle(style: DisplayStyleState): void;
@@ -6224,18 +6502,23 @@ class ViewState extends ElementState {
   abstract setOrigin(viewOrg: Point3d): void;
   abstract setRotation(viewRot: Matrix3d): void;
   setRotationAboutPoint(rotation: Matrix3d, point?: Point3d): void;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   setSelectionSetDirty(dirty?: boolean): void;
   setStandardRotation(id: StandardViewId): void;
   setupFromFrustum(inFrustum: Frustum): ViewStatus;
   setViewClip(clip?: ClipVector): void;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   showFrustumErrorMessage(status: ViewStatus): void;
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal
   readonly subCategories: ViewSubCategories;
   // (undocumented)
   toJSON(): ViewDefinitionProps;
   undoTime?: BeTimePoint;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   validateViewDelta(delta: Vector3d, messageNeeded?: boolean): ViewStatus;
   viewFlags: ViewFlags;
   viewsCategory(id: Id64String): boolean;
@@ -6302,17 +6585,21 @@ class ViewState3d extends ViewState {
   readonly camera: Camera;
   centerEyePoint(backDistance?: number): void;
   centerFocusDistance(): void;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   static readonly className: string;
   // (undocumented)
   createAuxCoordSystem(acsName: string): AuxCoordSystemState;
   // (undocumented)
   decorate(context: DecorateContext): void;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   protected drawGroundPlane(context: DecorateContext): void;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   protected drawSkyBox(context: DecorateContext): void;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   protected enableCamera(): void;
   // (undocumented)
   equalState(other: ViewState3d): boolean;
@@ -6406,7 +6693,8 @@ enum ViewStatus {
   ViewNotInitialized = 1
 }
 
-// @public
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal
 class ViewSubCategories {
   getSubCategories(categoryId: string): Id64Set | undefined;
   getSubCategoryAppearance(subCategoryId: Id64String): SubCategoryAppearance | undefined;

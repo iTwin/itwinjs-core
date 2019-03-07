@@ -42,9 +42,10 @@ function setTransform(transforms: Float32Array, index: number, rotation: Matrix3
 
 /**
  * Provides facilities for deserializing Batched 3D Model (B3dm) tiles.
- * @hidden
+ * @internal
  */
 export namespace I3dmTileIO {
+  /** @internal */
   export class Header extends TileIO.Header {
     public readonly length: number;
     public readonly featureTableJsonPosition: number;
@@ -76,7 +77,7 @@ export namespace I3dmTileIO {
 
   /**
    * Deserializes a I3DM tile.
-   * @hidden
+   * @internal
    */
   export class Reader extends GltfTileIO.Reader {
     public static create(stream: TileIO.StreamBuffer, iModel: IModelConnection, modelId: Id64String, is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem, yAxisUp: boolean, isLeaf: boolean, isCanceled?: GltfTileIO.IsCanceled): Reader | undefined {
