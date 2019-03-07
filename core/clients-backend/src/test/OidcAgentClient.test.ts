@@ -8,7 +8,7 @@ import { Issuer } from "openid-client";
 import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { AccessToken, Config } from "@bentley/imodeljs-clients";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
-import { OidcAgentClient, OidcAgentClientConfiguration, OidcAgentClientV2, OidcAgentClientConfigurationV2 } from "../imodeljs-clients-backend";
+import { OidcAgentClient, OidcAgentClientConfiguration } from "../imodeljs-clients-backend";
 import { HubAccessTestValidator } from "./HubAccessTestValidator";
 
 IModelJsConfig.init(true /* suppress exception */, false /* suppress error message */, Config.App);
@@ -28,7 +28,6 @@ describe("OidcAgentClient (#integration)", () => {
   const actx = new ActivityLoggingContext("");
 
   let agentConfiguration: OidcAgentClientConfiguration;
-  let agentConfigurationV2: OidcAgentClientConfigurationV2;
 
   before(async () => {
     validator = await HubAccessTestValidator.getInstance();
@@ -36,14 +35,6 @@ describe("OidcAgentClient (#integration)", () => {
     agentConfiguration = {
       clientId: Config.App.getString("imjs_agent_test_client_id"),
       clientSecret: Config.App.getString("imjs_agent_test_client_secret"),
-      serviceUserEmail: Config.App.getString("imjs_agent_test_service_user_email"),
-      serviceUserPassword: Config.App.getString("imjs_agent_test_service_user_password"),
-      scope: "openid email profile organization context-registry-service imodelhub",
-    };
-
-    agentConfigurationV2 = {
-      clientId: Config.App.getString("imjs_agent_test_client_id_v2"),
-      clientSecret: Config.App.getString("imjs_agent_test_client_secret_v2"),
       scope: "context-registry-service imodelhub",
     };
 
@@ -57,35 +48,18 @@ describe("OidcAgentClient (#integration)", () => {
     chai.expect(issuer.token_endpoint).equals(`${url}/connect/token`);
     chai.expect(issuer.authorization_endpoint).equals(`${url}/connect/authorize`);
     chai.expect(issuer.introspection_endpoint).equals(`${url}/connect/introspect`);
-    chai.expect(issuer.userinfo_endpoint).equals(`${url}/connect/userinfo`);
   });
 
   it("should get valid OIDC tokens for agent applications", async () => {
     const agentClient = new OidcAgentClient(agentConfiguration);
     const jwt: AccessToken = await agentClient.getToken(actx);
     await validator.validateConnectAccess(jwt);
-    await validator.validateIModelHubAccess(jwt);
-  });
-
-  it("should discover token end points correctly (V2)", async () => {
-    const client = new OidcAgentClientV2(agentConfigurationV2);
-    const url: string = await client.getUrl(actx);
-
-    const issuer: Issuer = await client.discoverEndpoints(actx);
-    chai.expect(issuer.token_endpoint).equals(`${url}/connect/token`);
-    chai.expect(issuer.authorization_endpoint).equals(`${url}/connect/authorize`);
-    chai.expect(issuer.introspection_endpoint).equals(`${url}/connect/introspect`);
-  });
-
-  // @todo: see note above. waiting for Connect support
-  it.skip("should get valid OIDC tokens for agent applications (V2)", async () => {
-    const agentClient = new OidcAgentClientV2(agentConfigurationV2);
-    const jwt: AccessToken = await agentClient.getToken(actx);
-    await validator.validateConnectAccess(jwt);
+    // await validator.validateRbacAccess(jwt);
     await validator.validateIModelHubAccess(jwt);
 
     const refreshJwt: AccessToken = await agentClient.refreshToken(actx, jwt);
     await validator.validateConnectAccess(refreshJwt);
+    // await validator.validateRbacAccess(jwt);
     await validator.validateIModelHubAccess(refreshJwt);
   });
 

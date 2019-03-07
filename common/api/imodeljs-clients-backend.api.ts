@@ -28,25 +28,7 @@ class IOSAzureFileHandler implements FileHandler {
 
 // @public
 class OidcAgentClient extends OidcBackendClient {
-  constructor(_agentConfiguration: OidcAgentClientConfiguration);
-  // (undocumented)
-  getToken(actx: ActivityLoggingContext): Promise<AccessToken>;
-  // (undocumented)
-  refreshToken(actx: ActivityLoggingContext, jwt: AccessToken): Promise<AccessToken>;
-}
-
-// @public
-interface OidcAgentClientConfiguration extends OidcBackendClientConfiguration {
-  // (undocumented)
-  serviceUserEmail: string;
-  // (undocumented)
-  serviceUserPassword: string;
-}
-
-// @public
-class OidcAgentClientV2 extends OidcBackendClient {
-  constructor(agentConfiguration: OidcAgentClientConfigurationV2);
-  // (undocumented)
+  constructor(agentConfiguration: OidcAgentClientConfiguration);
   getToken(actx: ActivityLoggingContext): Promise<AccessToken>;
   refreshToken(actx: ActivityLoggingContext, jwt: AccessToken): Promise<AccessToken>;
 }
@@ -116,5 +98,5 @@ class UrlFileHandler implements FileHandler {
 }
 
 // WARNING: Unsupported export: OidcDelegationClientConfiguration
-// WARNING: Unsupported export: OidcAgentClientConfigurationV2
+// WARNING: Unsupported export: OidcAgentClientConfiguration
 // (No @packagedocumentation comment for this package)

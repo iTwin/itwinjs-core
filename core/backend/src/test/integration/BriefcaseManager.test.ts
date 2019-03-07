@@ -9,7 +9,8 @@ import { OpenMode, ActivityLoggingContext, GuidString, Logger, LogLevel } from "
 import { IModelVersion } from "@bentley/imodeljs-common";
 import { IModelTestUtils, TestUsers, TestIModelInfo } from "../IModelTestUtils";
 import { KeepBriefcase, IModelDb, OpenParams, AccessMode, ExclusiveAccessOption, Element, IModelHost, IModelHostConfiguration, BriefcaseManager, BriefcaseEntry } from "../../imodeljs-backend";
-import { AccessToken, BriefcaseQuery, Briefcase as HubBriefcase } from "@bentley/imodeljs-clients";
+import { AccessToken, BriefcaseQuery, Briefcase as HubBriefcase, Config } from "@bentley/imodeljs-clients";
+import { OidcAgentClientConfiguration, OidcAgentClient } from "@bentley/imodeljs-clients-backend";
 import { HubUtility } from "./HubUtility";
 
 describe("BriefcaseManager (#integration)", () => {
@@ -48,8 +49,14 @@ describe("BriefcaseManager (#integration)", () => {
   before(async () => {
     IModelTestUtils.setupLogging();
     // IModelTestUtils.setupDebugLogLevels();
+    const agentConfiguration: OidcAgentClientConfiguration = {
+      clientId: Config.App.getString("imjs_agent_test_client_id"),
+      clientSecret: Config.App.getString("imjs_agent_test_client_secret"),
+      scope: "context-registry-service imodelhub",
+    };
 
-    accessToken = await HubUtility.login(TestUsers.regular);
+    const agentClient = new OidcAgentClient(agentConfiguration);
+    accessToken = await agentClient.getToken(actx);
 
     testProjectId = await HubUtility.queryProjectIdByName(accessToken, "iModelJsIntegrationTest");
     readOnlyTestIModel = await IModelTestUtils.getTestModelInfo(accessToken, testProjectId, "ReadOnlyTest");

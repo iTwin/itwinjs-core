@@ -443,6 +443,10 @@
       "allowedCategories": [ "tools" ]
     },
     {
+      "name": "jsonwebtoken",
+      "allowedCategories": [ "common" ]
+    },
+    {
       "name": "license-webpack-plugin",
       "allowedCategories": [ "tools" ]
     },
