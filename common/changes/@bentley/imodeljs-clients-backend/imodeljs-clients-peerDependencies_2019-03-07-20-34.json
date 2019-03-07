@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Add missing peerDependencies on @bentley/geometry-core and @bentley/imodeljs-clients",
+      "packageName": "@bentley/imodeljs-clients-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-clients-backend",
+  "email": "shaun.sewall@bentley.com"
+}
