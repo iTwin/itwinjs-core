@@ -23,14 +23,18 @@ export interface ColorPickerProps extends React.ButtonHTMLAttributes<HTMLButtonE
   round?: boolean;
   /** Title to show at top of DropDown */
   dropDownTitle?: string;
+  /** Show Arrow */
+  showArrow?: boolean;
+  /** Show Shadow around Popup */
+  showShadow?: boolean;
+  /** Use StatusBar colors */
+  showStatusBarColors?: boolean;
+  /** Open popup on hover */
+  onHover?: boolean;
 }
 
 interface ColorPickerState {
   showPopup: boolean;
-  showArrow: boolean;
-  showShadow: boolean;
-  showStatusBarColors: boolean;
-  onHover: boolean;
 }
 
 /** DropDownColorPicker component */
@@ -45,9 +49,7 @@ export class DropDownColorPicker extends React.PureComponent<ColorPickerProps, C
     } else {
       DropDownColorPicker.defaultColors.forEach((color: ColorDef) => { this._colors.push(color.clone()); });
     }
-    this.state = {
-      showPopup: false, showArrow: false, showStatusBarColors: false, showShadow: true, onHover: false,
-    };
+    this.state = { showPopup: false };
   }
 
   public static get defaultColors(): ColorDef[] {
@@ -103,13 +105,13 @@ export class DropDownColorPicker extends React.PureComponent<ColorPickerProps, C
     const rgbaString = `rgb(${r},${g},${b},${(255 - t) / 255})`;
     const colorStyle = { backgroundColor: rgbaString } as React.CSSProperties;
 
-    const className = classnames("popupcolors", this.state.showStatusBarColors && "statusbarcolors");
+    const className = classnames("popupcolors", this.props.showStatusBarColors && "statusbarcolors");
     return (
       <div className="components-colorpicker-container" >
         <button onClick={this._togglePopup} className="components-colorpicker-button" style={colorStyle} />
         <Popup className={className} isShown={this.state.showPopup} position={Position.BottomLeft}
-          onClose={this._closePopup} showArrow={this.state.showArrow} showShadow={this.state.showShadow}
-          showOnHover={this.state.onHover}>
+          onClose={this._closePopup} showArrow={this.props.showArrow ? this.props.showArrow : false} showShadow={this.props.showShadow ? this.props.showShadow : false}
+          showOnHover={this.props.onHover ? this.props.onHover : false}>
           {this.renderPopup(this.props.dropDownTitle)}
         </Popup>
       </div>
