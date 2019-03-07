@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-clients-backend",
-  "version": "0.190.0-dev.6",
+  "version": "0.190.0-dev.7",
   "description": "Clients for various Bentley Services used by iModel.js at the backend",
   "main": "lib/imodeljs-clients-backend.js",
   "browser": {
@@ -38,16 +38,16 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "0.190.0-dev.6"
+    "@bentley/bentleyjs-core": "0.190.0-dev.7"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/config-loader": "0.190.0-dev.6",
-    "@bentley/bentleyjs-core": "0.190.0-dev.6",
-    "@bentley/build-tools": "0.190.0-dev.6",
+    "@bentley/config-loader": "0.190.0-dev.7",
+    "@bentley/bentleyjs-core": "0.190.0-dev.7",
+    "@bentley/build-tools": "0.190.0-dev.7",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^5.2.5",
     "@types/nock": "^9.1.2",
@@ -68,7 +68,7 @@
     "typescript": "~3.2.2"
   },
   "dependencies": {
-    "@bentley/imodeljs-clients": "0.190.0-dev.6",
+    "@bentley/imodeljs-clients": "0.190.0-dev.7",
     "openid-client": "^2.3.1",
     "@openid/appauth": "^1.1.1",
     "https-proxy-agent": "^2.2.1",
