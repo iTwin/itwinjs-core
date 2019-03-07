@@ -44,6 +44,7 @@ export class NavigationWidgetDef extends ToolbarWidgetDefBase {
   }
 
   public renderCornerItem(): React.ReactNode {
+    // istanbul ignore if
     if (FrontstageManager.isLoading)
       return null;
 
@@ -121,13 +122,13 @@ export class NavigationWidget extends React.Component<NavigationWidgetPropsEx, N
 
   private _handleContentControlActivated = (args: ContentControlActivatedEventArgs): void => {
     const navigationAidId = args.activeContentControl.navigationAidControl;
-    setImmediate(() => {
+    setTimeout(() => {
       FrontstageManager.setActiveNavigationAid(navigationAidId, this.props.iModelConnection!);
     });
   }
 
   private _handleViewClassFullNameChange = (args: ViewClassFullNameChangedEventArgs): void => {
-    setImmediate(() => {
+    setTimeout(() => {
       const activeContentControl = ContentViewManager.getActiveContentControl();
 
       if (activeContentControl && args.viewport === activeContentControl.viewport) {

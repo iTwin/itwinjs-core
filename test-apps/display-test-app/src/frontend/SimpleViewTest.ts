@@ -21,12 +21,14 @@ import {
   IModelApp,
   IModelConnection,
   OidcClientWrapper,
+  RenderDiagnostics,
 } from "@bentley/imodeljs-frontend";
 import { SimpleViewState } from "./SimpleViewState";
 import { showStatus } from "./Utils";
 import { SVTConfiguration } from "../common/SVTConfiguration";
 import { DisplayTestApp } from "./App";
 import { Viewer } from "./Viewer";
+import { initializeCustomCloudEnv } from "./CustomCloudEnv";
 
 const activeViewState: SimpleViewState = new SimpleViewState();
 const configuration = {} as SVTConfiguration;
@@ -94,9 +96,14 @@ async function main() {
     // retrieve, set, and output the global configuration variable
     await retrieveConfiguration(); // (does a fetch)
     console.log("Configuration", JSON.stringify(configuration)); // tslint:disable-line:no-console
+    if (configuration.customOrchestratorUri)
+      await initializeCustomCloudEnv(activeViewState, configuration.customOrchestratorUri);
   }
+
   // Start the app. (This tries to fetch a number of localization json files from the origin.)
   DisplayTestApp.startup();
+  if (configuration.enableDiagnostics)
+    DisplayTestApp.renderSystem.enableDiagnostics(RenderDiagnostics.All);
 
   // Choose RpcConfiguration based on whether we are in electron or browser
   let rpcConfiguration: RpcConfiguration;
@@ -114,7 +121,7 @@ async function main() {
       RpcOperation.forEach(definition, (operation) => operation.policy.token = (_request) => new IModelToken("test", "test", "test", "test", OpenMode.Readonly));
   }
 
-  if (!configuration.standalone) {
+  if (!configuration.standalone && !configuration.customOrchestratorUri) {
     alert("Standalone iModel required. Set SVT_STANDALONE_FILENAME in environment");
     return;
   }

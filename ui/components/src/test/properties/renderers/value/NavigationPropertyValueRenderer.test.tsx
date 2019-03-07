@@ -3,15 +3,15 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { mount } from "enzyme";
+import { render } from "react-testing-library";
 import * as React from "react";
+import * as sinon from "sinon";
 import { Id64 } from "@bentley/bentleyjs-core";
 import TestUtils from "../../../TestUtils";
 import { NavigationPropertyValueRenderer } from "../../../../ui-components/properties/renderers/value/NavigationPropertyValueRenderer";
-import { PrimitiveValue } from "../../../../ui-components/properties/Value";
-import { Hexadecimal } from "../../../../ui-components/converters/valuetypes/PrimitiveTypes";
+import { PrimitiveValue, Primitives } from "@bentley/imodeljs-frontend";
 
-function createNavigationProperty(value: Hexadecimal, displayValue?: string) {
+function createNavigationProperty(value: Primitives.Hexadecimal, displayValue?: string) {
   const property = TestUtils.createPrimitiveStringProperty("Category", "", displayValue);
   property.property.typename = "navigation";
   (property.value as PrimitiveValue).value = value;
@@ -23,17 +23,34 @@ describe("NavigationPropertyValueRenderer", () => {
     it("renders navigation property from display value", () => {
       const renderer = new NavigationPropertyValueRenderer();
       const property = createNavigationProperty(Id64.fromUint32Pair(1, 0), "Rod");
+
       const element = renderer.render(property);
-      const elementMount = mount(<div>{element}</div>);
-      expect(elementMount.text()).to.eq("Rod");
+      const elementRender = render(<>{element}</>);
+
+      elementRender.getByText("Rod");
     });
 
     it("renders navigation property from raw value", () => {
       const renderer = new NavigationPropertyValueRenderer();
       const property = createNavigationProperty(Id64.fromUint32Pair(1, 0), "");
+
       const element = renderer.render(property);
-      const elementMount = mount(<div>{element}</div>);
-      expect(elementMount.text()).to.eq("Category");
+      const elementRender = render(<>{element}</>);
+
+      elementRender.getByText("Category");
+    });
+
+    it("renders navigation property wrapped in an anchored tag when property record has it", () => {
+      const renderer = new NavigationPropertyValueRenderer();
+      const stringProperty = TestUtils.createPrimitiveStringProperty("Label", "Test property");
+      stringProperty.links = { onClick: sinon.spy() };
+
+      const element = renderer.render(stringProperty);
+      const renderedElement = render(<>{element}</>);
+
+      renderedElement.getByText("Test property");
+
+      expect(renderedElement.container.getElementsByClassName("core-underlined-button")).to.not.be.empty;
     });
 
     it("throws when trying to render array property", () => {

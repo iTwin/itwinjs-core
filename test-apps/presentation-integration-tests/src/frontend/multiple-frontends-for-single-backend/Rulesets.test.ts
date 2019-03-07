@@ -63,7 +63,7 @@ describe("Multiple frontends for one backend", async () => {
 
       const registeredRulesets = await Promise.all(frontends.map(async (f, i) => f.rulesets().add(rulesets[i])));
 
-      const nodes = await Promise.all(frontends.map(async (f) => f.getRootNodes({ imodel, rulesetId: "test" })));
+      const nodes = await Promise.all(frontends.map(async (f) => f.getNodes({ imodel, rulesetId: "test" })));
       frontends.forEach((_f, i) => {
         expect(nodes[i][0].label).to.eq(`label ${i}`);
       });

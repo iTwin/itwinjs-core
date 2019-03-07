@@ -9,6 +9,7 @@ import { ContentLayoutDef, ContentLayout } from "../content/ContentLayout";
 import { ContentGroup } from "../content/ContentGroup";
 import { FrontstageRuntimeProps } from "./FrontstageComposer";
 import { FrontstageDef } from "./FrontstageDef";
+import { ToolItemDef } from "../shared/Item";
 import { ZoneDef } from "../zones/ZoneDef";
 import { Zone, ZoneProps, ZoneRuntimeProps } from "../zones/Zone";
 
@@ -32,8 +33,8 @@ export enum ZoneLocation {
 export interface FrontstageProps {
   /** Id for the Frontstage */
   id: string;
-  /** ToolId that is started once the Frontstage is activated */
-  defaultToolId: string;
+  /** Tool that is started once the Frontstage is activated */
+  defaultTool: ToolItemDef;
   /** The default Content Layout used */
   defaultLayout: string | ContentLayoutDef;
   /** The Content Group providing the Content Views */
@@ -77,7 +78,7 @@ export class Frontstage extends React.Component<FrontstageProps> {
   public static initializeFrontstageDef(frontstageDef: FrontstageDef, props: FrontstageProps): void {
     frontstageDef.id = props.id;
 
-    frontstageDef.defaultToolId = props.defaultToolId;
+    frontstageDef.defaultTool = props.defaultTool;
 
     if (props.defaultContentId !== undefined)
       frontstageDef.defaultContentId = props.defaultContentId;
@@ -111,6 +112,8 @@ export class Frontstage extends React.Component<FrontstageProps> {
     if (zoneNode) {
       const zoneDef = new ZoneDef();
       const zoneElement = Frontstage.getZoneElement(zoneLocation, props);
+
+      // istanbul ignore else
       if (zoneElement && React.isValidElement(zoneElement)) {
         Zone.initializeZoneDef(zoneDef, zoneElement.props);
         return zoneDef;
@@ -148,6 +151,7 @@ export class Frontstage extends React.Component<FrontstageProps> {
       case ZoneLocation.BottomRight:
         zoneElement = props.bottomRight;
         break;
+      // istanbul ignore default
       default:
         throw new RangeError();
     }
@@ -159,6 +163,7 @@ export class Frontstage extends React.Component<FrontstageProps> {
 
   // This uses ConfigurableUi to render the content
   private doContentLayoutRender(): any {
+    // istanbul ignore else
     if (this.props.runtimeProps && this.props.runtimeProps.frontstageDef) {
       const frontstageDef = this.props.runtimeProps.frontstageDef;
       return (
@@ -216,6 +221,8 @@ export class Frontstage extends React.Component<FrontstageProps> {
                 return null;
 
               const zoneDef = runtimeProps.zoneDefProvider.getZoneDef(zoneId);
+
+              // istanbul ignore if
               if (!zoneDef)
                 return null;
 
@@ -239,6 +246,7 @@ export class Frontstage extends React.Component<FrontstageProps> {
                 lastPosition,
                 isUnmergeDrag,
               };
+
               return React.cloneElement(zoneElement, { key: zoneId, runtimeProps: zoneRuntimeProps });
             })
           }

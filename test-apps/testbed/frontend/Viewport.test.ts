@@ -2,19 +2,19 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
+import { assert, expect } from "chai";
 import { Point3d, Angle } from "@bentley/geometry-core";
 import { Cartographic, FontType, FontMap, ColorDef } from "@bentley/imodeljs-common";
 import * as path from "path";
-import { SpatialViewState, StandardViewId, IModelConnection, ScreenViewport, IModelApp, PanViewTool, CompassMode, TwoWayViewportSync } from "@bentley/imodeljs-frontend";
+import { MockRender, SpatialViewState, StandardViewId, IModelConnection, ScreenViewport, IModelApp, PanViewTool, CompassMode, TwoWayViewportSync } from "@bentley/imodeljs-frontend";
 import { CONSTANTS } from "../common/Testbed";
 import { RenderPlan } from "@bentley/imodeljs-frontend/lib/rendering";
-import { MockRender } from "./MockRender";
 
-const iModelLocation = path.join(CONSTANTS.IMODELJS_CORE_DIRNAME, "core/backend/lib/test/assets/test.bim");
+const iModelDir = path.join(CONSTANTS.IMODELJS_CORE_DIRNAME, "core/backend/lib/test/assets");
 
 describe("Viewport", () => {
   let imodel: IModelConnection;
+  let imodel2: IModelConnection;
   let spatialView: SpatialViewState;
 
   const createViewDiv = () => {
@@ -30,7 +30,8 @@ describe("Viewport", () => {
 
   before(async () => {   // Create a ViewState to load into a Viewport
     MockRender.App.startup();
-    imodel = await IModelConnection.openStandalone(iModelLocation);
+    imodel = await IModelConnection.openStandalone(path.join(iModelDir, "test.bim"));
+    imodel2 = await IModelConnection.openStandalone(path.join(iModelDir, "test2.bim"));
     spatialView = await imodel.views.load("0x34") as SpatialViewState;
     spatialView.setStandardRotation(StandardViewId.RightIso);
   });
@@ -41,19 +42,19 @@ describe("Viewport", () => {
   });
 
   it("Viewport", async () => {
-    const vpView = spatialView.clone<SpatialViewState>();
+    const vpView = spatialView.clone();
     const vp = ScreenViewport.create(viewDiv!, vpView);
     assert.isFalse(vp.isRedoPossible, "no redo");
     assert.isFalse(vp.isUndoPossible, "no undo");
     assert.isFalse(vp.isCameraOn, "camera is off");
 
-    const saveView = vpView.clone<SpatialViewState>();
+    const saveView = vpView.clone();
     assert.notEqual(saveView.modelSelector, vpView.modelSelector, "clone should copy modelSelector");
     assert.notEqual(saveView.categorySelector, vpView.categorySelector, "clone should copy categorySelector");
     assert.notEqual(saveView.displayStyle, vpView.displayStyle, "clone should copy displayStyle");
     const frustSave = vp.getFrustum();
 
-    const vpView2 = spatialView.clone<SpatialViewState>();
+    const vpView2 = spatialView.clone(imodel2);
     vpView2.setStandardRotation(StandardViewId.Top);
     const vp2 = ScreenViewport.create(viewDiv2!, vpView2);
     assert.isFalse(vp2.getFrustum().isSame(vp.getFrustum()), "frustums should start out different");
@@ -62,18 +63,12 @@ describe("Viewport", () => {
     const vpConnection = new TwoWayViewportSync();
     vpConnection.connect(vp, vp2); // wire them together
     assert.isTrue(vp2.getFrustum().isSame(frustSave), "vp2 frustum should be same as vp1 after connect");
-
-    // const clientRect = vp.getClientRect();
-    vpView.camera.validateLens();
-
-    // currently the range test for visible elements doesn't match native code, so we get a different result.
-    // re-enable this test when models hold their ranges.
-    // const testParams: any = { view: vpView, rect: { left: clientRect.left, bottom: clientRect.bottom, right: clientRect.right, top: clientRect.top } };
-    // const cppView = await imodel.executeTest("turnCameraOn", testParams);
     vp.turnCameraOn();
-    // compareView(vpView, cppView, "turnCameraOn 3");
 
     vp.synchWithView(true);
+    assert.equal(vp.iModel, imodel);
+    assert.equal(vp2.iModel, imodel2);
+
     assert.isTrue(vp.isCameraOn, "camera should be on");
     assert.isTrue(vp2.isCameraOn, "camera should be synched");
     assert.isTrue(vp2.getFrustum().isSame(vp.getFrustum()), "frustum should be synched");
@@ -99,10 +94,65 @@ describe("Viewport", () => {
     const pan = IModelApp.tools.create("View.Pan", vp) as PanViewTool;
     assert.instanceOf(pan, PanViewTool);
     assert.equal(pan.viewport, vp);
+
+    let neverDrawnChanged = 0;
+    let alwaysDrawnChanged = 0;
+    const removeNeverDrawnListener = vp.onNeverDrawnChanged.addListener((_) => ++neverDrawnChanged);
+    const removeAlwaysDrawnListener = vp.onAlwaysDrawnChanged.addListener((_) => ++alwaysDrawnChanged);
+
+    // No event if the set is already empty when we clear it.
+    vp.clearNeverDrawn();
+    expect(neverDrawnChanged).to.equal(0);
+    vp.clearAlwaysDrawn();
+    expect(alwaysDrawnChanged).to.equal(0);
+
+    // Assigning the set always raises an event.
+    const idSet = new Set<string>();
+    idSet.add("0x123");
+    vp.setNeverDrawn(idSet);
+    expect(neverDrawnChanged).to.equal(1);
+    vp.setAlwaysDrawn(idSet, false);
+    expect(alwaysDrawnChanged).to.equal(1);
+    vp.setAlwaysDrawn(idSet, true);
+    expect(alwaysDrawnChanged).to.equal(2);
+
+    // Clearing raises event if set was assigned.
+    vp.clearNeverDrawn();
+    expect(neverDrawnChanged).to.equal(2);
+    vp.clearAlwaysDrawn();
+    expect(alwaysDrawnChanged).to.equal(3);
+
+    // Clearing again will not re-raise because already cleared.
+    vp.clearNeverDrawn();
+    expect(neverDrawnChanged).to.equal(2);
+    vp.clearAlwaysDrawn();
+    expect(alwaysDrawnChanged).to.equal(3);
+
+    // Setting repeatedly to same set raises each time, because we're not going to compare to previous set every time it changes.
+    vp.setAlwaysDrawn(idSet, true);
+    vp.setAlwaysDrawn(idSet, true);
+    vp.setAlwaysDrawn(idSet, true);
+    expect(alwaysDrawnChanged).to.equal(6);
+
+    // Setting to an empty set, and also setting the 'exclusive' flags - effectively means no elements should draw.
+    idSet.clear();
+    vp.setAlwaysDrawn(idSet, true);
+    expect(alwaysDrawnChanged).to.equal(7);
+    vp.clearAlwaysDrawn();
+
+    // Raises even though set was already empty, because this resets the 'exclusive' flag.
+    expect(alwaysDrawnChanged).to.equal(8);
+
+    // Exclusive flag no longer set and set is empty, so no event.
+    vp.clearAlwaysDrawn();
+    expect(alwaysDrawnChanged).to.equal(8);
+
+    removeNeverDrawnListener();
+    removeAlwaysDrawnListener();
   });
 
   it("AccuDraw", () => {
-    const vpView = spatialView.clone<SpatialViewState>();
+    const vpView = spatialView.clone();
     const viewport = ScreenViewport.create(viewDiv!, vpView);
     const accudraw = IModelApp.accuDraw;
     assert.isTrue(accudraw.isEnabled, "Accudraw should be enabled");
@@ -137,7 +187,7 @@ describe("Viewport", () => {
   });
 
   it("creates a RenderPlan from a viewport", () => {
-    const vpView = spatialView.clone<SpatialViewState>();
+    const vpView = spatialView.clone();
     const vp = ScreenViewport.create(viewDiv!, vpView);
     let plan: RenderPlan | undefined;
     try {

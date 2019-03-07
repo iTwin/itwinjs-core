@@ -3,7 +3,8 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { I18N } from "@bentley/imodeljs-i18n";
-import { UiComponents, PropertyRecord, PrimitiveValue, PropertyValueFormat, PropertyDescription, ArrayValue, StructValue } from "../ui-components";
+import { PropertyRecord, PrimitiveValue, PropertyValueFormat, PropertyDescription, ArrayValue, StructValue, PropertyEditorParamTypes } from "@bentley/imodeljs-frontend";
+import { UiComponents } from "../ui-components";
 import { UiCore } from "@bentley/ui-core";
 
 export default class TestUtils {
@@ -38,7 +39,7 @@ export default class TestUtils {
 
   /** Waits until all async operations finish */
   public static async flushAsyncOperations() {
-    return new Promise((resolve) => setImmediate(resolve));
+    return new Promise((resolve) => setTimeout(resolve));
   }
 
   public static createPrimitiveStringProperty(name: string, rawValue: string, displayValue: string = rawValue.toString()) {
@@ -97,4 +98,73 @@ export default class TestUtils {
     property.isReadonly = false;
     return property;
   }
+
+  public static createEnumProperty(name: string, index: string | number) {
+    const value: PrimitiveValue = {
+      displayValue: "",
+      value: index,
+      valueFormat: PropertyValueFormat.Primitive,
+    };
+
+    const description: PropertyDescription = {
+      displayLabel: name,
+      name,
+      typename: "enum",
+    };
+
+    const propertyRecord = new PropertyRecord(value, description);
+    propertyRecord.isReadonly = false;
+    propertyRecord.property.enum = { choices: [], isStrict: false };
+    propertyRecord.property.enum.choices = [
+      { label: "Yellow", value: 0 },
+      { label: "Red", value: 1 },
+      { label: "Green", value: 2 },
+      { label: "Blue", value: 3 },
+    ];
+
+    return propertyRecord;
+  }
+
+  public static blueEnumValueIsEnabled = true;
+  public static toggleBlueEnumValueEnabled() { TestUtils.blueEnumValueIsEnabled = !TestUtils.blueEnumValueIsEnabled; }
+  public static addEnumButtonGroupEditorSpecification(propertyRecord: PropertyRecord) {
+    propertyRecord.property.editor = {
+      name: "enum-buttongroup",
+      params: [
+        {
+          type: PropertyEditorParamTypes.ButtonGroupData,
+          buttons: [
+            { iconClass: "icon-yellow" },
+            { iconClass: "icon-red" },
+            { iconClass: "icon-green" },
+            {
+              iconClass: "icon-blue",
+              isEnabledFunction: () => TestUtils.blueEnumValueIsEnabled,
+            },
+          ],
+        },
+      ],
+    };
+  }
+
+  public static createBooleanProperty(name: string, booleanValue: boolean, editor?: string) {
+    const value: PrimitiveValue = {
+      displayValue: "",
+      value: booleanValue,
+      valueFormat: PropertyValueFormat.Primitive,
+    };
+
+    const description: PropertyDescription = {
+      displayLabel: name,
+      name,
+      typename: "boolean",
+      editor: editor ? { name: editor } : undefined,
+    };
+
+    const propertyRecord = new PropertyRecord(value, description);
+    propertyRecord.isReadonly = false;
+
+    return propertyRecord;
+  }
+
 }

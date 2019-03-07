@@ -45,13 +45,6 @@ export class Task extends ItemDefBase {
     return this.taskId;
   }
 
-  public execute(): void {
-  }
-
-  public toolbarReactNode(_index: number): React.ReactNode {
-    return null;
-  }
-
   public get isActive(): boolean {
     let isActive = false;
 

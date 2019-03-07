@@ -4,11 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect, assert } from "chai";
 import * as path from "path";
-import { ModelSelectorState, IModelConnection, DrawingModelState, SheetModelState, SpatialModelState, GeometricModelState } from "@bentley/imodeljs-frontend";
+import { MockRender, ModelSelectorState, IModelConnection, DrawingModelState, SheetModelState, SpatialModelState, GeometricModelState } from "@bentley/imodeljs-frontend";
 import { Id64 } from "@bentley/bentleyjs-core";
 import { Code, ModelSelectorProps } from "@bentley/imodeljs-common";
 import { CONSTANTS } from "../common/Testbed";
-import { MockRender } from "./MockRender";
 
 const iModelLocation = path.join(CONSTANTS.IMODELJS_CORE_DIRNAME, "core/backend/lib/test/assets/");
 
@@ -67,6 +66,16 @@ describe("ModelState", () => {
     await imodel.models.load(["0x24", "0x28", "0x2c", "0x11", "0x34", "0x24", "nonsense"]);
     assert.equal(models.size, 5);
 
+    const testDrawing = models.get("0x24") as DrawingModelState;
+    let testSpatial = models.get("0x11") as SpatialModelState;
+
+    let range = await testDrawing.queryModelRange();
+    assert.isTrue(range.low.isAlmostEqual({ x: 0, y: 0, z: -1 }));
+    assert.isTrue(range.high.isAlmostEqual({ x: 5, y: 5, z: 1 }));
+
+    range = await testSpatial.queryModelRange();
+    assert.isTrue(range.isNull);
+
     const modelProps = await imodel.models.queryProps({ from: SpatialModelState.sqlName });
     assert.isAtLeast(modelProps.length, 2);
 
@@ -75,6 +84,11 @@ describe("ModelState", () => {
     const scalableMesh = imodel2.models.getLoaded("0x28");
     assert.instanceOf(scalableMesh, SpatialModelState, "ScalableMeshModel should be SpatialModel");
     assert.equal(scalableMesh!.classFullName, "ScalableMesh:ScalableMeshModel");
+
+    testSpatial = imodel2.models.getLoaded("0x1c") as SpatialModelState;
+    range = await testSpatial.queryModelRange();
+    assert.isTrue(range.low.isAlmostEqual({ x: 288874.1174466432, y: 3803761.1888925503, z: -0.0005 }));
+    assert.isTrue(range.high.isAlmostEqual({ x: 289160.8417204395, y: 3803959.118535, z: 0.0005 }));
   });
 
   it("view thumbnails", async () => {

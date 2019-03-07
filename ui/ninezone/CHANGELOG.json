@@ -2,6 +2,60 @@
   "name": "@bentley/ui-ninezone",
   "entries": [
     {
+      "version": "0.189.0",
+      "tag": "@bentley/ui-ninezone_v0.189.0",
+      "date": "Wed, 06 Mar 2019 15:41:22 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "UI documentation fixes"
+          },
+          {
+            "comment": "Use new buildIModelJsBuild script"
+          },
+          {
+            "comment": "Remove uneeded typedoc plugin depedency"
+          },
+          {
+            "comment": "Minor UI Color Theme changes"
+          },
+          {
+            "comment": "Support for including CSS files in published UI packages"
+          },
+          {
+            "comment": "Added styling capability ot messages"
+          },
+          {
+            "comment": "Removed dependency on BWC. Parts of BWC copied into ui-core in preparation for theming support."
+          },
+          {
+            "comment": "Added ToggleEditor. Support for defaultTool in Frontstage."
+          },
+          {
+            "comment": "Save BUILD_SEMVER to globally accessible map"
+          },
+          {
+            "comment": "Added support for UI color themes"
+          },
+          {
+            "comment": "Display status message above status indicator popup."
+          },
+          {
+            "comment": "Update to use newer generic-icons-webfont package."
+          },
+          {
+            "comment": "upgrade to TypeScript 3.2.2"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.188.0",
+      "tag": "@bentley/ui-ninezone_v0.188.0",
+      "date": "Wed, 16 Jan 2019 16:36:09 GMT",
+      "comments": {}
+    },
+    {
       "version": "0.187.0",
       "tag": "@bentley/ui-ninezone_v0.187.0",
       "date": "Tue, 15 Jan 2019 15:18:59 GMT",

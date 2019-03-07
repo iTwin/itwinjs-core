@@ -136,9 +136,9 @@ export abstract class RpcRequest<TResponse = any> {
   public method: string;
 
   /** Finds the first parameter of a given type if present. */
-  public findParameterOfType<T>(constructor: { new(...args: any[]): T }): T | undefined {
+  public findParameterOfType<T>(requestConstructor: { new(...args: any[]): T }): T | undefined {
     for (const param of this.parameters) {
-      if (param instanceof constructor)
+      if (param instanceof requestConstructor)
         return param;
     }
 
@@ -194,6 +194,14 @@ export abstract class RpcRequest<TResponse = any> {
       this.operation.policy.sentCallback(this);
       const response = await sent;
       this.protocol.events.raiseEvent(RpcProtocolEvent.ResponseLoading, this);
+
+      const status = this.protocol.getStatus(response);
+      if (status === RpcRequestStatus.Unknown) {
+        this._connecting = false;
+        this.handleUnknownResponse(response);
+        return;
+      }
+
       const value = await this.load();
       this.protocol.events.raiseEvent(RpcProtocolEvent.ResponseLoaded, this);
       this._connecting = false;
@@ -203,6 +211,10 @@ export abstract class RpcRequest<TResponse = any> {
       this._connecting = false;
       this.reject(err);
     }
+  }
+
+  protected handleUnknownResponse(code: number) {
+    this.reject(new IModelError(BentleyStatus.ERROR, `Unknown response ${code}.`));
   }
 
   private handleResponse(code: number, value: RpcSerializedValue) {
@@ -281,7 +293,7 @@ export abstract class RpcRequest<TResponse = any> {
     this.dispose();
   }
 
-  private reject(reason: any): void {
+  protected reject(reason: any): void {
     if (!this._active)
       return;
 

@@ -5,9 +5,14 @@
 import { SyncUiEventDispatcher, SyncUiEventArgs } from "../../ui-framework";
 import { expect } from "chai";
 import * as sinon from "sinon";
-
-// if you use describe.only the test will run with no errors. If you don't they will not work.
-// For now setting all timer test to skip.
+import {
+  FrontstageManager, ContentControlActivatedEventArgs, ContentLayoutActivatedEventArgs,
+  FrontstageActivatedEventArgs, FrontstageReadyEventArgs, ModalFrontstageChangedEventArgs,
+  NavigationAidActivatedEventArgs, ToolActivatedEventArgs, WidgetStateChangedEventArgs,
+} from "../../ui-framework/frontstage/FrontstageManager";
+import { Backstage, BackstageCloseEventArgs } from "../../ui-framework/backstage/Backstage";
+import { WorkflowManager, TaskActivatedEventArgs, WorkflowActivatedEventArgs } from "../../ui-framework/workflow/Workflow";
+import { ContentViewManager, ActiveContentChangedEventArgs } from "../../ui-framework/content/ContentViewManager";
 
 describe("SyncUiEventDispatcher", () => {
   let clock = sinon.useFakeTimers(Date.now());
@@ -19,6 +24,21 @@ describe("SyncUiEventDispatcher", () => {
 
   afterEach(() => {
     clock.restore();
+  });
+
+  it("test hasEventOfInterest", () => {
+    const eventIds = new Set<string>();
+    eventIds.add("dog");
+    eventIds.add("cat");
+    eventIds.add("rabbit");
+
+    expect(SyncUiEventDispatcher.hasEventOfInterest(eventIds, ["dog", "cat", "rabbit"])).to.be.true;
+    expect(SyncUiEventDispatcher.hasEventOfInterest(eventIds, ["dog", "cat"])).to.be.true;
+    expect(SyncUiEventDispatcher.hasEventOfInterest(eventIds, ["dog"])).to.be.true;
+    expect(SyncUiEventDispatcher.hasEventOfInterest(eventIds, ["cat", "rabbit"])).to.be.true;
+    expect(SyncUiEventDispatcher.hasEventOfInterest(eventIds, ["rabbit"])).to.be.true;
+    // test is case sensitive
+    expect(SyncUiEventDispatcher.hasEventOfInterest(eventIds, ["Rabbit"])).to.be.false;
   });
 
   it("test immediate sync event", () => {
@@ -103,4 +123,72 @@ describe("SyncUiEventDispatcher", () => {
     SyncUiEventDispatcher.onSyncUiEvent.removeListener(handleSyncUiEvent);
   });
 
+  it("Test event handlers", () => {
+    const handleSyncUiEvent = sinon.spy();
+
+    SyncUiEventDispatcher.initialize();
+    SyncUiEventDispatcher.onSyncUiEvent.addListener(handleSyncUiEvent);
+
+    handleSyncUiEvent.resetHistory();
+    FrontstageManager.onContentControlActivatedEvent.emit({} as ContentControlActivatedEventArgs);
+    clock.tick(20); // timer expiration will see new event id(s) so it should delay onSyncUiEvent processing until next cycle
+    expect(handleSyncUiEvent.calledOnce).to.be.true;
+
+    handleSyncUiEvent.resetHistory();
+    FrontstageManager.onContentLayoutActivatedEvent.emit({} as ContentLayoutActivatedEventArgs);
+    clock.tick(20); // timer expiration will see new event id(s) so it should delay onSyncUiEvent processing until next cycle
+    expect(handleSyncUiEvent.calledOnce).to.be.true;
+
+    handleSyncUiEvent.resetHistory();
+    FrontstageManager.onFrontstageActivatedEvent.emit({} as FrontstageActivatedEventArgs);
+    clock.tick(20); // timer expiration will see new event id(s) so it should delay onSyncUiEvent processing until next cycle
+    expect(handleSyncUiEvent.calledOnce).to.be.true;
+
+    handleSyncUiEvent.resetHistory();
+    FrontstageManager.onFrontstageReadyEvent.emit({} as FrontstageReadyEventArgs);
+    clock.tick(20); // timer expiration will see new event id(s) so it should delay onSyncUiEvent processing until next cycle
+    expect(handleSyncUiEvent.calledOnce).to.be.true;
+
+    handleSyncUiEvent.resetHistory();
+    FrontstageManager.onModalFrontstageChangedEvent.emit({} as ModalFrontstageChangedEventArgs);
+    clock.tick(20); // timer expiration will see new event id(s) so it should delay onSyncUiEvent processing until next cycle
+    expect(handleSyncUiEvent.calledOnce).to.be.true;
+
+    handleSyncUiEvent.resetHistory();
+    FrontstageManager.onNavigationAidActivatedEvent.emit({} as NavigationAidActivatedEventArgs);
+    clock.tick(20); // timer expiration will see new event id(s) so it should delay onSyncUiEvent processing until next cycle
+    expect(handleSyncUiEvent.calledOnce).to.be.true;
+
+    handleSyncUiEvent.resetHistory();
+    FrontstageManager.onToolActivatedEvent.emit({} as ToolActivatedEventArgs);
+    clock.tick(20); // timer expiration will see new event id(s) so it should delay onSyncUiEvent processing until next cycle
+    expect(handleSyncUiEvent.calledOnce).to.be.true;
+
+    handleSyncUiEvent.resetHistory();
+    FrontstageManager.onWidgetStateChangedEvent.emit({} as WidgetStateChangedEventArgs);
+    clock.tick(20); // timer expiration will see new event id(s) so it should delay onSyncUiEvent processing until next cycle
+    expect(handleSyncUiEvent.calledOnce).to.be.true;
+
+    handleSyncUiEvent.resetHistory();
+    Backstage.onBackstageCloseEventEvent.emit({} as BackstageCloseEventArgs);
+    clock.tick(20); // timer expiration will see new event id(s) so it should delay onSyncUiEvent processing until next cycle
+    expect(handleSyncUiEvent.calledOnce).to.be.true;
+
+    handleSyncUiEvent.resetHistory();
+    WorkflowManager.onTaskActivatedEvent.emit({} as TaskActivatedEventArgs);
+    clock.tick(20); // timer expiration will see new event id(s) so it should delay onSyncUiEvent processing until next cycle
+    expect(handleSyncUiEvent.calledOnce).to.be.true;
+
+    handleSyncUiEvent.resetHistory();
+    WorkflowManager.onWorkflowActivatedEvent.emit({} as WorkflowActivatedEventArgs);
+    clock.tick(20); // timer expiration will see new event id(s) so it should delay onSyncUiEvent processing until next cycle
+    expect(handleSyncUiEvent.calledOnce).to.be.true;
+
+    handleSyncUiEvent.resetHistory();
+    ContentViewManager.onActiveContentChangedEvent.emit({} as ActiveContentChangedEventArgs);
+    clock.tick(20); // timer expiration will see new event id(s) so it should delay onSyncUiEvent processing until next cycle
+    expect(handleSyncUiEvent.calledOnce).to.be.true;
+
+    SyncUiEventDispatcher.onSyncUiEvent.removeListener(handleSyncUiEvent);
+  });
 });

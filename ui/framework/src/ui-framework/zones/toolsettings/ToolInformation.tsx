@@ -7,6 +7,7 @@
 import { ConfigurableUiManager } from "../../configurableui/ConfigurableUiManager";
 import { ConfigurableUiControlType } from "../../configurableui/ConfigurableUiControl";
 import { ToolUiProvider } from "./ToolUiProvider";
+import { ToolUiManager } from "./ToolUiManager";
 
 /** Provides information about a tool with a given id, including the ToolUiProvider. */
 export class ToolInformation {
@@ -17,8 +18,16 @@ export class ToolInformation {
 
   /** Get the ToolUiProvider registered for this tool */
   public get toolUiProvider(): ToolUiProvider | undefined {
-    if (!this._toolUiProvider && ConfigurableUiManager.isControlRegistered(this.toolId)) {
-      const toolUiProvider = ConfigurableUiManager.createControl(this.toolId, this.toolId) as ToolUiProvider;
+    if (!this._toolUiProvider) {
+      let toolUiProvider: ToolUiProvider | undefined;
+
+      if (ConfigurableUiManager.isControlRegistered(this.toolId)) {
+        toolUiProvider = ConfigurableUiManager.createControl(this.toolId, this.toolId) as ToolUiProvider;
+      } else {
+        if (ToolUiManager.useDefaultToolSettingsProvider)
+          toolUiProvider = ConfigurableUiManager.createControl("DefaultToolSettings", this.toolId) as ToolUiProvider;
+      }
+      // istanbul ignore else
       if (toolUiProvider) {
         if (toolUiProvider.getType() !== ConfigurableUiControlType.ToolUiProvider) {
           throw Error("ToolInformation.toolUiProvider error: toolId '" + this.toolId + "' is registered to a control that is NOT a ToolUiProvider");
@@ -27,8 +36,11 @@ export class ToolInformation {
         toolUiProvider.initialize();
         this._toolUiProvider = toolUiProvider;
       }
+    } else {
+      // if the tool settings are coming from tool, reinitialize provider so latest properties published from tool are displayed in UI
+      if (ToolUiManager.useDefaultToolSettingsProvider && this._toolUiProvider)
+        this._toolUiProvider.initialize();
     }
-
     return this._toolUiProvider;
   }
 }

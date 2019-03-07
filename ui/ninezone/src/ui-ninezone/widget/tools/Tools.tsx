@@ -25,7 +25,7 @@ export interface ToolsProps extends CommonProps, NoChildrenProps {
   isNavigation?: boolean;
   /** Vertical toolbar. See [[Toolbar]] */
   verticalToolbar?: React.ReactNode;
-  /** Pass true to reduce the distance between toolbars when [[Toolsthis.props.button]] is not provided. */
+  /** Pass true to reduce the distance between toolbars when [[ToolsProps.button]] is not provided. */
   preserveSpace?: boolean;
 }
 

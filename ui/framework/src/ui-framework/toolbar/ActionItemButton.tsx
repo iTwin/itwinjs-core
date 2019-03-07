@@ -48,7 +48,9 @@ export class ActionItemButton extends React.Component<ActionItemButtonProps, Bas
   }
 
   private _handleSyncUiEvent = (args: SyncUiEventArgs): void => {
-    if (this._componentUnmounting) return;
+    // istanbul ignore if
+    if (this._componentUnmounting)
+      return;
 
     let refreshState = false;
     let newState: BaseItemState = { ...this.state };
@@ -66,8 +68,10 @@ export class ActionItemButton extends React.Component<ActionItemButtonProps, Bas
         newState = this.props.actionItem.stateFunc(newState);
       if ((this.state.isActive !== newState.isActive) || (this.state.isEnabled !== newState.isEnabled) || (this.state.isVisible !== newState.isVisible)) {
         // update actionItem as it hold the 'truth' for all state
+        /* istanbul ignore else */
         if (undefined !== newState.isVisible)
           this.props.actionItem.isVisible = newState.isVisible;
+        /* istanbul ignore else */
         if (undefined !== newState.isActive)
           this.props.actionItem.isActive = newState.isActive;
 
@@ -78,6 +82,7 @@ export class ActionItemButton extends React.Component<ActionItemButtonProps, Bas
 
   public componentWillReceiveProps(nextProps: ActionItemButtonProps) {
     const updatedState = getItemStateFromProps(nextProps);
+    // istanbul ignore else
     if (!PropsHelper.isShallowEqual(updatedState, this.state))
       this.setState((_prevState) => updatedState);
   }
@@ -92,12 +97,14 @@ export class ActionItemButton extends React.Component<ActionItemButtonProps, Bas
   }
 
   private _execute = () => {
+    // istanbul ignore else
     if (this.props.actionItem.execute) {
       this.props.actionItem.execute();
     }
   }
 
   private _handleKeyDown = (e: React.KeyboardEvent): void => {
+    // istanbul ignore else
     if (e.key === "Escape") {
       KeyboardShortcutManager.setFocusToHome();
     }

@@ -47,7 +47,7 @@ export class ModalFrontstage extends React.Component<ModalFrontstageProps> {
                 <i className="icon icon-progress-backward" />
               }
             />
-            <span className="bwc-text-headline">{this.props.title}</span>
+            <span className="uicore-text-headline">{this.props.title}</span>
             {this.props.appBarRight &&
               <span className="app-bar-right">{this.props.appBarRight}</span>
             }

@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
@@ -11,6 +11,8 @@ import { PresentationRpcInterface } from "@bentley/presentation-common";
 import { IModelHost, KnownLocations } from "@bentley/imodeljs-backend";
 import { Presentation as PresentationBackend } from "@bentley/presentation-backend";
 import { Props as PresentationBackendProps } from "@bentley/presentation-backend/lib/Presentation";
+// tslint:disable-next-line:no-direct-imports
+import { Props as PresentationFrontendProps } from "@bentley/presentation-frontend/lib/PresentationManager";
 // frontend includes
 import {
   StandaloneIModelRpcInterface,
@@ -42,7 +44,7 @@ function initializeRpcInterfaces(interfaces: RpcInterfaceDefinition[]) {
 
 let isInitialized = false;
 
-export const initialize = (backendProps?: PresentationBackendProps, frontendApp = NoRenderApp) => {
+export const initialize = (backendProps?: PresentationBackendProps, frontendProps?: PresentationFrontendProps, frontendApp = NoRenderApp) => {
   if (isInitialized)
     return;
 
@@ -58,9 +60,11 @@ export const initialize = (backendProps?: PresentationBackendProps, frontendApp 
 
   // init frontend
   frontendApp.startup();
-  PresentationFrontend.initialize({
+
+  const defaultFrontendProps: PresentationFrontendProps = {
     activeLocale: frontendApp.i18n.languageList()[0],
-  });
+  };
+  PresentationFrontend.initialize({ ...defaultFrontendProps, ...frontendProps });
 
   isInitialized = true;
 };

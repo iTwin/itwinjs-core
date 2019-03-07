@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-i18n",
-  "version": "0.187.0",
+  "version": "0.189.0",
   "description": "iModel.js localization code",
   "license": "MIT",
   "repository": {
@@ -10,14 +10,23 @@
   "main": "lib/imodeljs-i18n",
   "typings": "lib/imodeljs-i18n",
   "scripts": {
-    "build": "tsc 1>&2 && npm run webpackModule-dev",
+    "build": "node ./node_modules/@bentley/webpack-tools/bin/buildIModelJsModule.js",
     "clean": "rimraf lib package-deps.json",
     "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-i18n/file.json --tsIndexFile=./imodeljs-i18n.ts --onlyJson %TYPEDOC_THEME%",
+    "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=imodeljs-i18n",
     "lint": "tslint --project . 1>&2",
     "test": "",
-    "cover": "",
-    "webpackModule-dev": "make-dir ./lib/module/dev/ && webpack --config ./node_modules/@bentley/webpack-tools/modules/webpackModule.config.js --env.entry=./lib/imodeljs-i18n.js --env.bundlename=imodeljs-i18n --json >./lib/module/dev/webpackStats.json",
-    "webpackModule-prod": "webpack --config ./node_modules/@bentley/webpack-tools/modules/webpackModule.config.js --env.entry=./lib/imodeljs-i18n.js --env.bundlename=imodeljs-i18n --env.prod"
+    "cover": ""
+  },
+  "iModelJs": {
+    "buildModule": {
+      "type": "system",
+      "webpack": {
+        "dest": "./lib/module",
+        "entry": "./lib/imodeljs-i18n.js",
+        "bundleName": "imodeljs-i18n"
+      }
+    }
   },
   "keywords": [
     "Bentley",
@@ -29,29 +38,23 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "0.187.0"
+    "@bentley/bentleyjs-core": "0.189.0"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/bentleyjs-core": "0.187.0",
-    "@bentley/build-tools": "0.187.0",
-    "@bentley/webpack-tools": "0.187.0",
+    "@bentley/bentleyjs-core": "0.189.0",
+    "@bentley/build-tools": "0.189.0",
+    "@bentley/webpack-tools": "0.189.0",
     "@types/i18next": "^8.4.2",
     "@types/i18next-browser-languagedetector": "^2.0.1",
-    "@types/i18next-xhr-backend": "^1.4.1",
-    "@types/node": "10.10.3",
-    "make-dir-cli": "^1.0.0",
+    "@types/node": "10.12.18",
     "rimraf": "^2.6.2",
-    "source-map-loader": "^0.2.3",
     "tslint": "^5.11.0",
     "typedoc": "^0.11.1",
-    "typedoc-plugin-external-module-name": "^1.1.1",
-    "typescript": "~3.1.0",
-    "webpack": "^4.20.2",
-    "webpack-cli": "^3.1.0"
+    "typescript": "~3.2.2"
   },
   "//dependencies": [
     "NOTE: these dependencies are specific to imodeljs-i18n",
@@ -61,6 +64,6 @@
   "dependencies": {
     "i18next": "^10.2.2",
     "i18next-browser-languagedetector": "^2.1.0",
-    "i18next-xhr-backend": "^1.5.1"
+    "i18next-xhr-backend": "^2.0.1"
   }
 }

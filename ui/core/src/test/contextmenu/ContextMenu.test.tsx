@@ -7,7 +7,7 @@ import * as React from "react";
 import * as sinon from "sinon";
 import { expect } from "chai";
 import { ContextMenu, GlobalContextMenu, ContextMenuItem, ContextSubMenu, ContextMenuDivider } from "../../ui-core";
-import { ContextMenuDirection } from "../../ui-core/contextmenu/ContextMenu";
+import { ContextMenuDirection, TildeFinder } from "../../ui-core/contextmenu/ContextMenu";
 
 describe("ContextMenu", () => {
 
@@ -142,6 +142,89 @@ describe("ContextMenu", () => {
         root1.dispatchEvent(createBubbledEvent("keyup", { keyCode: 13 /* <Return> */ }));
         expect(handleSelect).to.be.calledOnce;
       });
+      it("should select list item of hotkey", () => {
+        const onSelectFake = sinon.fake();
+        const component = render(
+          <ContextMenu opened={true}>
+            <ContextMenuItem onSelect={onSelectFake}>~First item</ContextMenuItem>
+            <ContextMenuItem>~Second item</ContextMenuItem>
+          </ContextMenu>);
+        const root = component.getAllByTestId("context-menu-root")[0];
+        root.dispatchEvent(createBubbledEvent("keyup", { key: "f" }));
+        expect(onSelectFake).to.have.been.calledOnce;
+      });
+      it("should select sub menu list item of hotkey", () => {
+        const onSelectFake = sinon.fake();
+        const component = render(
+          <ContextMenu opened={true}>
+            <ContextSubMenu label="~First item" onSelect={onSelectFake}>
+              <ContextMenuItem>~First first item</ContextMenuItem>
+              <ContextMenuItem>~Second first item</ContextMenuItem>
+            </ContextSubMenu>
+            <ContextMenuItem>~Second item</ContextMenuItem>
+          </ContextMenu>);
+        const root = component.getAllByTestId("context-menu-root")[0];
+        root.dispatchEvent(createBubbledEvent("keyup", { key: "f" }));
+        expect(onSelectFake).to.have.been.calledOnce;
+      });
+      it("should find list item of hotkey", () => {
+        const component = render(
+          <ContextMenu opened={true} hotkeySelect={false}>
+            <ContextMenuItem>~First item</ContextMenuItem>
+            <ContextMenuItem>~Second item</ContextMenuItem>
+          </ContextMenu>);
+        const root = component.getAllByTestId("context-menu-root")[0];
+        root.dispatchEvent(createBubbledEvent("keyup", { key: "s" }));
+        const items = component.getAllByTestId("context-menu-item");
+        const idx = items.findIndex((value) => value.className.indexOf("is-selected") !== -1);
+        expect(idx).to.equal(1);
+      });
+      it("should find sub menu list item of hotkey", () => {
+        const component = render(
+          <ContextMenu opened={true} hotkeySelect={false}>
+            <ContextSubMenu label="~First item">
+              <ContextMenuItem>~First first item</ContextMenuItem>
+              <ContextMenuItem>~Second first item</ContextMenuItem>
+            </ContextSubMenu>
+            <ContextMenuItem>~Second item</ContextMenuItem>
+          </ContextMenu>);
+        const root = component.getAllByTestId("context-menu-root")[0];
+        root.dispatchEvent(createBubbledEvent("keyup", { key: "f" }));
+        const items = component.getAllByTestId("context-menu-item");
+        const idx = items.findIndex((value) => value.className.indexOf("is-selected") !== -1);
+        expect(idx).to.equal(0);
+      });
+      it("should find next list item of hotkey", () => {
+        const component = render(
+          <ContextMenu opened={true} hotkeySelect={false}>
+            <ContextMenuItem>~First item</ContextMenuItem>
+            <ContextMenuItem>~Second item</ContextMenuItem>
+            <ContextMenuItem>~Third item</ContextMenuItem>
+            <ContextMenuItem>~Fourth item</ContextMenuItem>
+          </ContextMenu>);
+        const root = component.getAllByTestId("context-menu-root")[0];
+        root.dispatchEvent(createBubbledEvent("keyup", { key: "f" }));
+        root.dispatchEvent(createBubbledEvent("keyup", { key: "f" }));
+        const items = component.getAllByTestId("context-menu-item");
+        const idx = items.findIndex((value) => value.className.indexOf("is-selected") !== -1);
+        expect(idx).to.equal(3);
+      });
+      it("should wrap back to beginning to find next list item of hotkey", () => {
+        const component = render(
+          <ContextMenu opened={true} hotkeySelect={false}>
+            <ContextMenuItem>~First item</ContextMenuItem>
+            <ContextMenuItem>~Second item</ContextMenuItem>
+            <ContextMenuItem>~Third item</ContextMenuItem>
+            <ContextMenuItem>~Fourth item</ContextMenuItem>
+          </ContextMenu>);
+        const root = component.getAllByTestId("context-menu-root")[0];
+        root.dispatchEvent(createBubbledEvent("keyup", { key: "f" }));
+        root.dispatchEvent(createBubbledEvent("keyup", { key: "f" }));
+        root.dispatchEvent(createBubbledEvent("keyup", { key: "s" }));
+        const items = component.getAllByTestId("context-menu-item");
+        const idx = items.findIndex((value) => value.className.indexOf("is-selected") !== -1);
+        expect(idx).to.equal(1);
+      });
     });
   });
   // TODO: tests for hover/current active menu item
@@ -247,6 +330,67 @@ describe("ContextMenu", () => {
     it("should handle rect overflowing bottom right side of window", () => {
       expect(ContextMenu.autoFlip(ContextMenuDirection.BottomRight, { left: 51, top: 51, right: 101, bottom: 101, height: 50, width: 50 }, 100, 100))
         .to.equal(ContextMenuDirection.TopLeft);
+    });
+  });
+  describe("TildeFinder", () => {
+    it("should not find character in string when there is no tilde", () => {
+      const tildeFindRet = TildeFinder.findAfterTilde("s");
+      expect(tildeFindRet.character).to.be.undefined;
+    });
+    it("should find character after tilde in string", () => {
+      const tildeFindRet = TildeFinder.findAfterTilde("~s");
+      expect(tildeFindRet.character).to.equal("S");
+    });
+    it("should find remove tilde and add underline in string", () => {
+      const tildeFindRet = TildeFinder.findAfterTilde("~s");
+      const node = (tildeFindRet.node as Array<React.ReactElement<any>>)[1];
+      expect(node.type).to.equal("u");
+      expect(node.props.children).to.equal("s");
+    });
+    it("should not find character after array when there is no tilde", () => {
+      const tildeFindRet = TildeFinder.findAfterTilde(["te", "s", "t"]);
+      expect(tildeFindRet.character).to.be.undefined;
+    });
+    it("should find character after tilde in array", () => {
+      const tildeFindRet = TildeFinder.findAfterTilde(["te", "~s", "t"]);
+      expect(tildeFindRet.character).to.equal("S");
+    });
+    it("should find remove tilde and add underline in array", () => {
+      const tildeFindRet = TildeFinder.findAfterTilde(["te", "~s", "t"]);
+      const node = (tildeFindRet.node as Array<Array<React.ReactElement<any>>>)[1][1];
+      expect(node.type).to.equal("u");
+      expect(node.props.children).to.equal("s");
+    });
+    it("should find character after tilde in node", () => {
+      const tildeFindRet = TildeFinder.findAfterTilde(<span>~s</span>);
+      expect(tildeFindRet.character).to.equal("S");
+    });
+    it("should not find character in node when there is no tilde", () => {
+      const tildeFindRet = TildeFinder.findAfterTilde(<span>s</span>);
+      expect(tildeFindRet.character).to.be.undefined;
+    });
+    it("should remove tilde and add underline in node", () => {
+      const tildeFindRet = TildeFinder.findAfterTilde(<span>~s</span>);
+      const node = ((tildeFindRet.node as React.ReactElement<any>).props.children as React.ReactNode[])[1] as React.ReactElement<any>;
+      expect(node.type).to.equal("u");
+      expect(node.props.children).to.equal("s");
+    });
+    it("should fallback to undefined character when node passed is undefined", () => {
+      const tildeFindRet = TildeFinder.findAfterTilde(undefined);
+      expect(tildeFindRet.character).to.equal(undefined);
+    });
+    it("should fallback to undefined character when node passed is not string, array, or node", () => {
+      const tildeFindRet = TildeFinder.findAfterTilde(true);
+      expect(tildeFindRet.character).to.equal(undefined);
+    });
+    it("should fallback to undefined character when node passed is an empty object", () => {
+      const tildeFindRet = TildeFinder.findAfterTilde({});
+      expect(tildeFindRet.character).to.equal(undefined);
+    });
+    it("should pass node value through when node passed is not string, array, or node", () => {
+      const node = true;
+      const tildeFindRet = TildeFinder.findAfterTilde(node);
+      expect(tildeFindRet.node).to.equal(node);
     });
   });
 });

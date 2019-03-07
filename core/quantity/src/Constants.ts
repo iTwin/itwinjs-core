@@ -3,6 +3,9 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
+/** Constants used internally for both formatting and parsing.
+ * @internal
+ */
 export class QuantityConstants {
   public static readonly CHAR_COMMA = 44;
   public static readonly CHAR_SPACE = 32;

@@ -24,9 +24,11 @@ import {
   OverallContent,
   AppNotificationManager,
   IModelInfo,
+  ProjectInfo,
   FrontstageManager,
   createAction, ActionsUnion, DeepReadonly, SyncUiEventDispatcher,
 } from "@bentley/ui-framework";
+
 import { Id64String } from "@bentley/bentleyjs-core";
 
 import getSupportedRpcs from "../common/rpcs";
@@ -35,6 +37,8 @@ import AppBackstage, { BackstageShow, BackstageHide } from "./appui/AppBackstage
 import { ViewsFrontstage } from "./appui/frontstages/ViewsFrontstage";
 import { Tool1 } from "./tools/Tool1";
 import { Tool2 } from "./tools/Tool2";
+import { AppSelectTool } from "./tools/AppSelectTool";
+import { ToolWithSettings } from "./tools/ToolWithSettings";
 
 // Mobx demo
 import { configure as mobxConfigure } from "mobx";
@@ -190,6 +194,9 @@ export class SampleAppIModelApp extends IModelApp {
     BackstageHide.register(this.sampleAppNamespace);
     Tool1.register(this.sampleAppNamespace);
     Tool2.register(this.sampleAppNamespace);
+    ToolWithSettings.register(this.sampleAppNamespace);
+    AppSelectTool.register();
+    IModelApp.toolAdmin.defaultToolId = AppSelectTool.toolId;
   }
 
   public static async handleIModelViewsSelected(iModelInfo: IModelInfo, viewIdsSelected: Id64String[]) {
@@ -245,16 +252,48 @@ SampleAppIModelApp.initialize().then(() => { // tslint:disable-line:no-floating-
     color: "red",
     marginLeft: "10px",
   };
+
   const applicationIcon = React.createElement(WebFontIcon, { iconName: "icon-construction-worker", style: applicationIconStyle });
+  let defaultImodel: IModelInfo | undefined;
+  let viewId: string | undefined;
+
+  if (Config.App.has("imjs_uitestapp_imodel_viewId"))
+    viewId = Config.App.get("imjs_uitestapp_imodel_viewId");
+
+  if (Config.App.has("imjs_uitestapp_imodel_name") &&
+    Config.App.has("imjs_uitestapp_imodel_wsgId") &&
+    Config.App.has("imjs_uitestapp_imodel_project_name") &&
+    Config.App.has("imjs_uitestapp_imodel_project_projectNumber") &&
+    Config.App.has("imjs_uitestapp_imodel_project_wsgId")) {
+    const defaultProject = {
+      name: Config.App.get("imjs_uitestapp_imodel_project_name"),
+      projectNumber: Config.App.get("imjs_uitestapp_imodel_project_projectNumber"),
+      wsgId: Config.App.get("imjs_uitestapp_imodel_project_wsgId"),
+      readStatus: 0,
+    } as ProjectInfo;
+
+    defaultImodel = {
+      name: Config.App.get("imjs_uitestapp_imodel_name"),
+      description: Config.App.get("imjs_uitestapp_imodel_name"),
+      wsgId: Config.App.get("imjs_uitestapp_imodel_wsgId"),
+      projectInfo: defaultProject,
+      status: "",
+    } as IModelInfo;
+  }
+
   const overallContentProps = {
     appHeaderIcon: applicationIcon,
     appHeaderMessage: SampleAppIModelApp.i18n.translate("SampleApp:Header.welcome"),
     appBackstage: <AppBackstage />,
     onIModelViewsSelected: SampleAppIModelApp.handleIModelViewsSelected,
     onWorkOffline: SampleAppIModelApp.handleWorkOffline,
+    initialIModels: defaultImodel ? [defaultImodel] : undefined,
+    initialViewIds: viewId ? [viewId] : undefined,
   };
-
   AppUi.initialize();
+
+  // tslint:disable-next-line:no-console
+  console.log("Versions:", (window as any).iModelJsVersions);
 
   ReactDOM.render(
     <Provider store={SampleAppIModelApp.store} >

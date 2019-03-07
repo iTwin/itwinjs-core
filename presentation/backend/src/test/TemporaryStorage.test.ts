@@ -23,21 +23,21 @@ describe("TemporaryStorage", () => {
 
     it("doesn't set up timer callback when interval is not set", () => {
       const s = sinon.spy(clock, "setInterval");
-      using(new TemporaryStorage<string>({ factory: () => "" }), () => {
+      using(new TemporaryStorage<string>({ factory: () => "" }), (_r) => {
         expect(s).to.not.be.called;
       });
     });
 
     it("doesn't set up timer callback when interval is set to 0", () => {
       const s = sinon.spy(clock, "setInterval");
-      using(new TemporaryStorage<string>({ factory: () => "", cleanupInterval: 0 }), () => {
+      using(new TemporaryStorage<string>({ factory: () => "", cleanupInterval: 0 }), (_r) => {
         expect(s).to.not.be.called;
       });
     });
 
     it("sets up timer callback when interval is set to more than 0", () => {
       const s = sinon.spy(clock, "setInterval");
-      using(new TemporaryStorage<string>({ factory: () => "", cleanupInterval: 1 }), () => {
+      using(new TemporaryStorage<string>({ factory: () => "", cleanupInterval: 1 }), (_r) => {
         expect(s).to.be.calledOnce;
       });
     });

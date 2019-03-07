@@ -7,12 +7,12 @@
 
 .nz-footer-message-content-dialog-dialog {
   border: {
-    color: $background-5;
+    color: $buic-background-dialog-stroke;
     style: solid;
     width: $nz-dialog-border-width;
     radius: 3px;
   };
-  background-color: $background-2;
+  background-color: $buic-background-dialog;
   overflow: hidden;
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);

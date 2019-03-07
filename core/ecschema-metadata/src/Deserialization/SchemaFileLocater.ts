@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { SchemaMatchType } from "./../ECObjects";
+import { SchemaContext } from "./../Context";
 import { Schema } from "./../Metadata/Schema";
 import { SchemaKey } from "./../SchemaKey";
 import * as fs from "fs";
@@ -231,7 +232,7 @@ export abstract class SchemaFileLocater {
     return foundFiles;
   }
 
-  public abstract getSchema<T extends Schema>(key: SchemaKey, matchType: SchemaMatchType): Promise<T | undefined>;
+  public abstract getSchema<T extends Schema>(key: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<T | undefined>;
 
   /**
    * Compares two Schema versions.  If the left-hand version is greater, 1 is returned. If the

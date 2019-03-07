@@ -23,11 +23,11 @@ import { GLSLFragment, addWindowToTexCoords } from "./Fragment";
 import { GLSLCommon, addEyeSpace, addUInt32s } from "./Common";
 import { GLSLDecode } from "./Decode";
 import { addLookupTable } from "./LookupTable";
-import { assert } from "@bentley/bentleyjs-core";
 import { addRenderPass } from "./RenderPass";
-import { SurfaceGeometry } from "../Surface";
 import { UniformHandle } from "../Handle";
+import { GL } from "../GL";
 import { DrawParams } from "../DrawCommand";
+import { assert } from "@bentley/bentleyjs-core";
 
 export const enum FeatureSymbologyOptions {
   None = 0,
@@ -54,16 +54,18 @@ function addFlagConstants(builder: ShaderBuilder): void {
   builder.addConstant("kOvrBit_IgnoreMaterial", VariableType.Float, "7.0");
 }
 
-const computeFeatureIndex = `
-  g_featureIndex = floor(TEXTURE(u_vertLUT, g_featureIndexCoords) * 255.0 + 0.5);
-`;
-
-const getFeatureIndex = `
-float getFeatureIndex() {
-` + computeFeatureIndex + `
-  return decodeUInt32(g_featureIndex.xyz);
+const computeLUTFeatureIndex = `floor(TEXTURE(u_vertLUT, g_featureIndexCoords) * 255.0 + 0.5)`;
+const computeInstanceFeatureIndex = `vec4(a_featureId, 0.0)`;
+function computeFeatureIndex(instanced: boolean): string {
+  return `g_featureIndex = ` + (instanced ? computeInstanceFeatureIndex : computeLUTFeatureIndex) + `;`;
 }
-`;
+function getFeatureIndex(instanced: boolean): string {
+  return `
+  float getFeatureIndex() {
+    g_featureIndex = ` + computeFeatureIndex(instanced) + `;
+    return decodeUInt32(g_featureIndex.xyz);
+  }`;
+}
 
 // Returns 1.0 if the specified flag is not globally overridden and is set in flags
 const extractNthFeatureBit = `
@@ -105,7 +107,18 @@ float ComputeLineCode() {
 
 function addFeatureIndex(vert: VertexShaderBuilder): void {
   vert.addGlobal("g_featureIndex", VariableType.Vec4);
-  vert.addFunction(getFeatureIndex);
+  vert.addFunction(getFeatureIndex(vert.usesInstancedGeometry));
+  if (vert.usesInstancedGeometry) {
+    vert.addAttribute("a_featureId", VariableType.Vec3, (prog) => {
+      prog.addAttribute("a_featureId", (attr, params) => {
+        const geom = params.geometry.asInstanced!;
+        assert(undefined !== geom);
+        assert(undefined !== geom.featureIds, "Cannot use feature shaders if no features");
+        if (undefined !== geom.featureIds)
+          attr.enableArray(geom.featureIds, 3, GL.DataType.UnsignedByte, false, 0, 0, true);
+      });
+    });
+  }
 }
 
 // Discards vertex if feature is invisible; or rendering opaque during translucent pass or vice-versa
@@ -137,7 +150,7 @@ function addCommon(builder: ProgramBuilder, mode: FeatureMode, opts: FeatureSymb
   if (!haveOverrides) {
     // For pick output we must compute g_featureIndex...
     if (FeatureMode.Pick === mode)
-      vert.set(VertexShaderComponent.ComputeFeatureOverrides, computeFeatureIndex);
+      vert.set(VertexShaderComponent.ComputeFeatureOverrides, computeFeatureIndex(vert.usesInstancedGeometry));
 
     return true;
   }
@@ -383,7 +396,7 @@ const checkForEarlySurfaceDiscardWithFeatureID = `
 function addEdgeWidth(builder: ShaderBuilder) {
   builder.addUniform("u_lineWeight", VariableType.Float, (prog) => {
     prog.addGraphicUniform("u_lineWeight", (uniform, params) => {
-      const mesh = params.geometry as SurfaceGeometry;
+      const mesh = params.geometry.asSurface!;
       const width = params.target.getEdgeWeight(params.programParams, mesh.edgeWidth);
       uniform.setUniform1f(width < 1.0 ? 1.0 : width);
     });
@@ -531,13 +544,15 @@ const computeFeatureOverrides = `
   v_feature_alpha_flashed = vec2(-1.0, 0.0);
   vec4 value = getFirstFeatureRgba();
 
-  // 2 RGBA values per feature - first R is override flags mask
-  if (0.0 == value.r) {
+  // 2 RGBA values per feature - first R is override flags mask, first A is 1.0 for non-locatable feature.
+  // The latter makes the feature invisible only if the "ignore non-locatable" shader flag is set.
+  float nonLocatable = value.a * extractShaderBit(kShaderBit_IgnoreNonLocatable);
+  if (0.0 == value.r + nonLocatable)
     return; // nothing overridden for this feature
-  }
 
   float flags = value.r * 256.0;
-  feature_invisible = 1.0 == extractNthFeatureBit(flags, kOvrBit_Visibility);
+  float invisible = extractNthFeatureBit(flags, kOvrBit_Visibility);
+  feature_invisible = 0.0 != (invisible + nonLocatable);
   if (feature_invisible)
     return;
 

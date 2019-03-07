@@ -4,7 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Events */
 
-/** A function invoked when a BeEvent is raised. */
+/** A function invoked when a BeEvent is raised.
+ * @public
+ */
 export type Listener = (...arg: any[]) => void;
 
 class EventContext {
@@ -15,6 +17,7 @@ class EventContext {
  * Manages a set of *listeners* for a particular event and notifies them when the event is raised.
  * This class is usually instantiated inside of a container class and
  * exposed as a property for others to *subscribe* via [[BeEvent.addListener]].
+ * @public
  */
 export class BeEvent<T extends Listener> {
   private _listeners: EventContext[] = [];
@@ -78,7 +81,7 @@ export class BeEvent<T extends Listener> {
    * @param args This method takes any number of parameters and passes them through to the listeners.
    * @see [[BeEvent.removeListener]], [[BeEvent.addListener]]
    */
-  public raiseEvent(..._args: any[]) {
+  public raiseEvent(...args: any[]) {
     this._insideRaiseEvent = true;
 
     const listeners = this._listeners;
@@ -90,7 +93,7 @@ export class BeEvent<T extends Listener> {
       if (!context.listener) {
         dropped = true;
       } else {
-        context.listener.apply(context.scope, arguments);
+        context.listener.apply(context.scope, args);
         if (context.once) {
           context.listener = undefined;
           dropped = true;
@@ -123,7 +126,9 @@ export class BeEvent<T extends Listener> {
   public clear(): void { this._listeners.length = 0; }
 }
 
-/** Specialization of BeEvent for Ui events that take a single strongly typed argument. */
+/** Specialization of BeEvent for Ui events that take a single strongly typed argument.
+ * @beta Right name? Right package?
+ */
 export class BeUiEvent<TEventArgs> extends BeEvent<(args: TEventArgs) => void> {
 
   /** Raises event with single strongly typed argument. */
@@ -133,6 +138,7 @@ export class BeUiEvent<TEventArgs> extends BeEvent<(args: TEventArgs) => void> {
 /**
  * A list of BeEvent objects, accessible by an event name.
  * This class may be used instead of explicitly declaring each BeEvent as a member of a containing class.
+ * @beta Is this class used?
  */
 export class BeEventList<T extends Listener> {
   private _events: { [name: string]: BeEvent<T> | undefined; } = {};

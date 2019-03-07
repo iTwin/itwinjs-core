@@ -17,6 +17,7 @@
  *
  * Implementations of IDisposable tend to be more "low-level" types. The disposal of such types is often handled on your behalf by imodel.js.
  * However, always consult the documentation for an IDisposable type to determine under what circumstances you are expected to explicitly dispose of it.
+ * @public
  */
 export interface IDisposable {
   /** Disposes of any resources owned by this object.
@@ -41,6 +42,7 @@ export interface IDisposable {
  * ```
  * @param disposable The object to be disposed of.
  * @returns undefined
+ * @public
  */
 export function dispose(disposable?: IDisposable): undefined {
   if (undefined !== disposable)
@@ -51,6 +53,7 @@ export function dispose(disposable?: IDisposable): undefined {
 /** Disposes of and empties a list of disposable objects.
  * @param list The list of disposable obejcts.
  * @returns undefined
+ * @public
  */
 export function disposeArray(list?: IDisposable[]): undefined {
   if (undefined === list)
@@ -67,8 +70,9 @@ export function disposeArray(list?: IDisposable[]): undefined {
  * is called on the resource no matter if the func returns or throws. If func returns, the return value
  * of this function is equal to return value of func. If func throws, this function also throws (after
  * disposing the resource).
+ * @public
  */
-export function using<TDisposable extends IDisposable, TResult, TArg = TDisposable>(resources: TDisposable | TDisposable[], func: (...resources: TArg[]) => TResult): TResult {
+export function using<T extends IDisposable, TResult>(resources: T | T[], func: (...r: T[]) => TResult): TResult {
   if (!Array.isArray(resources))
     return using([resources], func);
 
@@ -76,8 +80,8 @@ export function using<TDisposable extends IDisposable, TResult, TArg = TDisposab
   let shouldDisposeImmediately = true;
 
   try {
-    const result = func.apply(undefined, resources);
-    if (result && result.then) {
+    const result = func(...resources);
+    if (result instanceof Promise) {
       shouldDisposeImmediately = false;
       result.then(doDispose, doDispose);
     }
@@ -88,7 +92,9 @@ export function using<TDisposable extends IDisposable, TResult, TArg = TDisposab
   }
 }
 
-/** A definition of function which may be called to dispose an object */
+/** A definition of function which may be called to dispose an object
+ * @public
+ */
 export type DisposeFunc = () => void;
 
 class FuncDisposable implements IDisposable {
@@ -97,7 +103,9 @@ class FuncDisposable implements IDisposable {
   public dispose() { this._disposeFunc(); }
 }
 
-/** A disposable container of disposable objects. */
+/** A disposable container of disposable objects.
+ * @public
+ */
 export class DisposableList implements IDisposable {
   private _disposables: IDisposable[];
 

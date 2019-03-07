@@ -57,7 +57,7 @@ export interface ChangeSummaryExtractOptions {
   currentVersionOnly?: boolean;
 }
 
-class ChangeSummaryExtractContext {
+export class ChangeSummaryExtractContext {
   public constructor(public readonly accessToken: AccessToken, public readonly iModel: IModelDb) { }
 
   public get iModelId(): GuidString { assert(!!this.iModel.briefcase); return this.iModel.briefcase!.iModelId; }
@@ -239,7 +239,7 @@ export class ChangeSummaryManager {
     }
   }
 
-  private static async downloadChangeSets(actx: ActivityLoggingContext, ctx: ChangeSummaryExtractContext, startChangeSetId: GuidString, endChangeSetId: GuidString): Promise<ChangeSet[]> {
+  public static async downloadChangeSets(actx: ActivityLoggingContext, ctx: ChangeSummaryExtractContext, startChangeSetId: GuidString, endChangeSetId: GuidString): Promise<ChangeSet[]> {
     actx.enter();
     // Get the change set before the startChangeSet so that startChangeSet is included in the download and processing
     let beforeStartChangeSetId: GuidString;

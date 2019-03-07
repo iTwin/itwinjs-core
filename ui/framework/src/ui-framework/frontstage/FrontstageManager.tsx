@@ -14,9 +14,10 @@ import { WidgetDef, WidgetState } from "../widgets/WidgetDef";
 import { ContentViewManager } from "../content/ContentViewManager";
 
 import { DefaultStateManager as NineZoneStateManager } from "@bentley/ui-ninezone";
-import { IModelConnection, IModelApp, Tool, StartOrResume } from "@bentley/imodeljs-frontend";
+import { IModelConnection, IModelApp, Tool, StartOrResume, InteractiveTool } from "@bentley/imodeljs-frontend";
 import { ToolInformation } from "../zones/toolsettings/ToolInformation";
 import { FrontstageProvider } from "./FrontstageProvider";
+import { ToolUiManager } from "../zones/toolsettings/ToolUiManager";
 
 // -----------------------------------------------------------------------------
 // Frontstage Events
@@ -133,7 +134,7 @@ export interface ModalFrontstageInfo {
  */
 export class FrontstageManager {
   private static _isLoading = true;
-
+  private static _activeToolId = "";
   private static _activeFrontstageDef: FrontstageDef | undefined;
   private static _frontstageDefs = new Map<string, FrontstageDef>();
   private static _modalFrontstages: ModalFrontstageInfo[] = new Array<ModalFrontstageInfo>();
@@ -141,21 +142,23 @@ export class FrontstageManager {
   private static _nestedFrontstages: FrontstageDef[] = new Array<FrontstageDef>();
   private static _activePrimaryFrontstageDef: FrontstageDef | undefined;
 
-  private static _activeToolId: string = "";
   private static _toolInformationMap: Map<string, ToolInformation> = new Map<string, ToolInformation>();
 
   /** Initializes the FrontstageManager */
   public static initialize() {
-
     if (IModelApp && IModelApp.toolAdmin) {
       IModelApp.toolAdmin.activeToolChanged.addListener((tool: Tool, _start: StartOrResume) => {
+        ToolUiManager.useDefaultToolSettingsProvider = false;
+        ToolUiManager.clearCachedProperties();
+        if (tool instanceof InteractiveTool)
+          ToolUiManager.cachePropertiesForTool(tool);
         FrontstageManager.setActiveToolId(tool.toolId);
       });
     }
   }
 
   /** Returns true if Frontstage is loading its controls. If false the Frontstage content and controls have been created. */
-  public static get isLoading(): boolean { return this._isLoading; }
+  public static get isLoading(): boolean { return FrontstageManager._isLoading; }
 
   /** Get Frontstage Deactivated event. */
   public static readonly onFrontstageDeactivatedEvent = new FrontstageDeactivatedEvent();
@@ -190,21 +193,21 @@ export class FrontstageManager {
   /** Clears the Frontstage map.
    */
   public static clearFrontstageDefs(): void {
-    this._frontstageDefs.clear();
+    FrontstageManager._frontstageDefs.clear();
   }
 
   /** Add a Frontstage via a definition.
    * @param frontstageDef  Definition of the Frontstage to add
    */
   private static addFrontstageDef(frontstageDef: FrontstageDef): void {
-    this._frontstageDefs.set(frontstageDef.id, frontstageDef);
+    FrontstageManager._frontstageDefs.set(frontstageDef.id, frontstageDef);
   }
 
   /** Add a Frontstage via a [[FrontstageProvider]].
    * @param frontstageProvider  FrontstageProvider representing the Frontstage to add
    */
   public static addFrontstageProvider(frontstageProvider: FrontstageProvider): void {
-    this.addFrontstageDef(frontstageProvider.initializeDef());
+    FrontstageManager.addFrontstageDef(frontstageProvider.initializeDef());
   }
 
   /** Find a loaded Frontstage with a given id. If the id is not provided, the active Frontstage is returned.
@@ -213,8 +216,8 @@ export class FrontstageManager {
    */
   public static findFrontstageDef(id?: string): FrontstageDef | undefined {
     if (!id)
-      return this.activeFrontstageDef;
-    const frontstageDef = this._frontstageDefs.get(id);
+      return FrontstageManager.activeFrontstageDef;
+    const frontstageDef = FrontstageManager._frontstageDefs.get(id);
     if (frontstageDef instanceof FrontstageDef)
       return frontstageDef;
     return undefined;
@@ -224,14 +227,14 @@ export class FrontstageManager {
    * @return  Active FrontstageDef, or undefined if one is not active.
    */
   public static get activeFrontstageDef(): FrontstageDef | undefined {
-    return this._activeFrontstageDef;
+    return FrontstageManager._activeFrontstageDef;
   }
 
   /** Gets the Id of the active FrontstageDef. If a Frontstage is not active, blank is returned.
    * @return  Id of the active FrontstageDef, or blank if one is not active.
    */
   public static get activeFrontstageId(): string {
-    const activeFrontstage = this._activeFrontstageDef;
+    const activeFrontstage = FrontstageManager._activeFrontstageDef;
     return (activeFrontstage) ? activeFrontstage.id : "";
   }
 
@@ -253,24 +256,26 @@ export class FrontstageManager {
    * @returns A Promise that is fulfilled when the [[FrontstageDef]] is ready.
    */
   public static async setActiveFrontstageDef(frontstageDef: FrontstageDef | undefined): Promise<void> {
-    this._isLoading = true;
+    FrontstageManager._isLoading = true;
 
-    const deactivatedFrontstageDef = this._activeFrontstageDef;
+    const deactivatedFrontstageDef = FrontstageManager._activeFrontstageDef;
     if (deactivatedFrontstageDef) {
       deactivatedFrontstageDef.onDeactivated();
-      this.onFrontstageDeactivatedEvent.emit({ deactivatedFrontstageDef, activatedFrontstageDef: frontstageDef });
+      FrontstageManager.onFrontstageDeactivatedEvent.emit({ deactivatedFrontstageDef, activatedFrontstageDef: frontstageDef });
     }
 
-    this._activeFrontstageDef = frontstageDef;
+    FrontstageManager._activeFrontstageDef = frontstageDef;
 
     if (frontstageDef) {
       frontstageDef.onActivated();
-      this.onFrontstageActivatedEvent.emit({ activatedFrontstageDef: frontstageDef, deactivatedFrontstageDef });
+      FrontstageManager.onFrontstageActivatedEvent.emit({ activatedFrontstageDef: frontstageDef, deactivatedFrontstageDef });
 
       await frontstageDef.waitUntilReady();
-      this._isLoading = false;
+      FrontstageManager._isLoading = false;
       frontstageDef.onFrontstageReady();
-      this.onFrontstageReadyEvent.emit({ frontstageDef });
+      FrontstageManager.onFrontstageReadyEvent.emit({ frontstageDef });
+
+      frontstageDef.startDefaultTool();
 
       // istanbul ignore else
       if (frontstageDef.contentControls.length >= 0) {
@@ -280,25 +285,25 @@ export class FrontstageManager {
           ContentViewManager.setActiveContent(contentControl.reactElement, true);
       }
     }
-    this._isLoading = false;
+    FrontstageManager._isLoading = false;
   }
 
   /** Gets the Id of the active tool. If a tool is not active, blank is returned.
    * @return  Id of the active tool, or blank if one is not active.
    */
   public static get activeToolId(): string {
-    return this._activeToolId;
+    return FrontstageManager._activeToolId;
   }
 
   /** Sets the active tool id */
   public static setActiveToolId(toolId: string): void {
     // istanbul ignore else
-    if (this._activeToolId !== toolId) {
-      this._activeToolId = toolId;
+    if (FrontstageManager.activeToolId !== toolId) {
+      FrontstageManager._activeToolId = toolId;
 
       // istanbul ignore else
-      if (!this._toolInformationMap.get(toolId))
-        this._toolInformationMap.set(toolId, new ToolInformation(toolId));
+      if (!FrontstageManager._toolInformationMap.get(toolId))
+        FrontstageManager._toolInformationMap.set(toolId, new ToolInformation(toolId));
 
       FrontstageManager.onToolActivatedEvent.emit({ toolId });
     }
@@ -306,14 +311,14 @@ export class FrontstageManager {
 
   /** Gets the active tool's [[ToolInformation]] */
   public static get activeToolInformation(): ToolInformation | undefined {
-    return this._toolInformationMap.get(this._activeToolId);
+    return FrontstageManager._toolInformationMap.get(FrontstageManager.activeToolId);
   }
 
   /** Gets the Tool Setting React node of the active tool.
    * @return  Tool Setting React node of the active tool, or undefined if there is no active tool or Tool Settings for the active tool.
    */
   public static get activeToolSettingsNode(): React.ReactNode | undefined {
-    const activeToolInformation = this.activeToolInformation;
+    const activeToolInformation = FrontstageManager.activeToolInformation;
     const toolUiProvider = (activeToolInformation) ? activeToolInformation.toolUiProvider : undefined;
 
     if (toolUiProvider && toolUiProvider.toolSettingsNode)
@@ -326,7 +331,7 @@ export class FrontstageManager {
    * @return  Tool Assistance React node of the active tool, or undefined if there is no active tool or Tool Assistance for the active tool.
    */
   public static get activeToolAssistanceNode(): React.ReactNode | undefined {
-    const activeToolInformation = this.activeToolInformation;
+    const activeToolInformation = FrontstageManager.activeToolInformation;
     const toolUiProvider = (activeToolInformation) ? activeToolInformation.toolUiProvider : undefined;
 
     if (toolUiProvider && toolUiProvider.toolAssistanceNode)
@@ -339,41 +344,41 @@ export class FrontstageManager {
    * @param modalFrontstage  Information about the modal Frontstage
    */
   public static openModalFrontstage(modalFrontstage: ModalFrontstageInfo): void {
-    this.pushModalFrontstage(modalFrontstage);
+    FrontstageManager.pushModalFrontstage(modalFrontstage);
   }
 
   private static pushModalFrontstage(modalFrontstage: ModalFrontstageInfo): void {
-    this._modalFrontstages.push(modalFrontstage);
-    this.emitModalFrontstageChangedEvent();
+    FrontstageManager._modalFrontstages.push(modalFrontstage);
+    FrontstageManager.emitModalFrontstageChangedEvent();
   }
 
   /** Closes the top-most modal Frontstage.
    */
   public static closeModalFrontstage(): void {
-    this.popModalFrontstage();
+    FrontstageManager.popModalFrontstage();
   }
 
   private static popModalFrontstage(): void {
-    this._modalFrontstages.pop();
-    this.emitModalFrontstageChangedEvent();
+    FrontstageManager._modalFrontstages.pop();
+    FrontstageManager.emitModalFrontstageChangedEvent();
   }
 
   private static emitModalFrontstageChangedEvent(): void {
-    this.onModalFrontstageChangedEvent.emit({ modalFrontstageCount: this.modalFrontstageCount });
+    FrontstageManager.onModalFrontstageChangedEvent.emit({ modalFrontstageCount: FrontstageManager.modalFrontstageCount });
   }
 
   /** Updates the top-most modal Frontstage.
    */
   public static updateModalFrontstage(): void {
-    this.emitModalFrontstageChangedEvent();
+    FrontstageManager.emitModalFrontstageChangedEvent();
   }
 
   /** Gets the top-most modal Frontstage.
    * @returns Top-most modal Frontstage, or undefined if there is none.
    */
   public static get activeModalFrontstage(): ModalFrontstageInfo | undefined {
-    if (this._modalFrontstages.length > 0)
-      return this._modalFrontstages[this._modalFrontstages.length - 1];
+    if (FrontstageManager._modalFrontstages.length > 0)
+      return FrontstageManager._modalFrontstages[FrontstageManager._modalFrontstages.length - 1];
 
     return undefined;
   }
@@ -382,7 +387,7 @@ export class FrontstageManager {
    * @returns Modal Frontstage count
    */
   public static get modalFrontstageCount(): number {
-    return this._modalFrontstages.length;
+    return FrontstageManager._modalFrontstages.length;
   }
 
   /** Sets the active Navigation Aid via its Id.
@@ -390,7 +395,7 @@ export class FrontstageManager {
    * @param iModelConnection IModelConnection to query for view data
    */
   public static setActiveNavigationAid(navigationAidId: string, iModelConnection: IModelConnection) {
-    this.onNavigationAidActivatedEvent.emit({ navigationAidId, iModelConnection });
+    FrontstageManager.onNavigationAidActivatedEvent.emit({ navigationAidId, iModelConnection });
   }
 
   /** Sets the state of the widget with the given id
@@ -426,33 +431,33 @@ export class FrontstageManager {
    * @param nestedFrontstage  Information about the nested Frontstage
    */
   public static async openNestedFrontstage(nestedFrontstage: FrontstageDef): Promise<void> {
-    if (this.nestedFrontstageCount === 0)
-      this._activePrimaryFrontstageDef = this._activeFrontstageDef;
+    if (FrontstageManager.nestedFrontstageCount === 0)
+      FrontstageManager._activePrimaryFrontstageDef = FrontstageManager._activeFrontstageDef;
 
-    this.pushNestedFrontstage(nestedFrontstage);
+    FrontstageManager.pushNestedFrontstage(nestedFrontstage);
 
-    await this.setActiveFrontstageDef(nestedFrontstage);
+    await FrontstageManager.setActiveFrontstageDef(nestedFrontstage);
   }
 
   private static pushNestedFrontstage(nestedFrontstage: FrontstageDef): void {
-    this._nestedFrontstages.push(nestedFrontstage);
+    FrontstageManager._nestedFrontstages.push(nestedFrontstage);
   }
 
   /** Closes the top-most nested Frontstage.
    */
   public static async closeNestedFrontstage(): Promise<void> {
-    this.popNestedFrontstage();
+    FrontstageManager.popNestedFrontstage();
 
-    if (this.nestedFrontstageCount > 0) {
-      await this.setActiveFrontstageDef(this.activeNestedFrontstage);
+    if (FrontstageManager.nestedFrontstageCount > 0) {
+      await FrontstageManager.setActiveFrontstageDef(FrontstageManager.activeNestedFrontstage);
     } else {
-      await this.setActiveFrontstageDef(this._activePrimaryFrontstageDef);
-      this._activePrimaryFrontstageDef = undefined;
+      await FrontstageManager.setActiveFrontstageDef(FrontstageManager._activePrimaryFrontstageDef);
+      FrontstageManager._activePrimaryFrontstageDef = undefined;
     }
   }
 
   private static popNestedFrontstage(): void {
-    this._nestedFrontstages.pop();
+    FrontstageManager._nestedFrontstages.pop();
   }
 
   /** Gets the top-most nested Frontstage.
@@ -460,8 +465,8 @@ export class FrontstageManager {
    */
   public static get activeNestedFrontstage(): FrontstageDef | undefined {
     // istanbul ignore else
-    if (this._nestedFrontstages.length > 0)
-      return this._nestedFrontstages[this._nestedFrontstages.length - 1];
+    if (FrontstageManager._nestedFrontstages.length > 0)
+      return FrontstageManager._nestedFrontstages[FrontstageManager._nestedFrontstages.length - 1];
 
     return undefined;
   }
@@ -470,7 +475,7 @@ export class FrontstageManager {
    * @returns Nested Frontstage count
    */
   public static get nestedFrontstageCount(): number {
-    return this._nestedFrontstages.length;
+    return FrontstageManager._nestedFrontstages.length;
   }
 
 }

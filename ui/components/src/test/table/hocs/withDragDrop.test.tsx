@@ -11,9 +11,7 @@ import { Table } from "../../../ui-components";
 import withDragDrop from "../../../ui-components/table/hocs/withDragDrop";
 import { DropTargetProps, DragSourceProps, DragSourceArguments, DropEffects, DropStatus, DropTargetArguments } from "../../../ui-components/dragdrop/DragDropDef";
 import { TableDataProvider, ColumnDescription, RowItem, CellItem, TableDataChangeEvent } from "../../../ui-components/table/TableDataProvider";
-import { PropertyValue, PropertyValueFormat } from "../../../ui-components/properties/Value";
-import { PropertyDescription } from "../../../ui-components/properties/Description";
-import { PropertyRecord } from "../../../ui-components/properties/Record";
+import { PropertyValue, PropertyValueFormat, PropertyDescription, PropertyRecord } from "@bentley/imodeljs-frontend";
 
 describe("Table withDragDrop HOC", () => {
 

@@ -6,8 +6,8 @@
 
 import * as React from "react";
 import * as classnames from "classnames";
-import { Checkbox } from "@bentley/bwc";
-import { CommonProps } from "../Props";
+import { Checkbox } from "../inputs/checkbox/Checkbox";
+import { CommonProps } from "../utils/Props";
 import "./CheckListBox.scss";
 
 /** Properties for the [[CheckListBoxItem]] component */
@@ -30,6 +30,7 @@ export class CheckListBoxItem extends React.Component<CheckListBoxItemProps> {
   }
 
   private _onClick = () => {
+    // istanbul ignore else
     if (this.props.onClick) {
       this.props.onClick();
     }

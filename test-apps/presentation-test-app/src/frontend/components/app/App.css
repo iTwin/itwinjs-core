@@ -44,3 +44,12 @@
 .app-content-left-top {
   position: relative; /* Because viewport component is absolute */
 }
+
+.app-content-left-bottom {
+  display: flex;
+  flex-direction: row;
+}
+
+.app-content-left-bottom > * {
+  flex: 1 1;
+}

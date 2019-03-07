@@ -2,6 +2,117 @@
   "name": "@bentley/ui-core",
   "entries": [
     {
+      "version": "0.189.0",
+      "tag": "@bentley/ui-core_v0.189.0",
+      "date": "Wed, 06 Mar 2019 15:41:22 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Renamed CSS files to SCSS"
+          },
+          {
+            "comment": "UI documentation fixes"
+          },
+          {
+            "comment": "Added ToggleEditor. Support for defaultTool in Frontstage. Fixed BooleanEditor sizing."
+          },
+          {
+            "comment": "Added testing props to SplitButton"
+          },
+          {
+            "comment": "Added tilde-prefixed hotkey support to ContextMenu"
+          },
+          {
+            "comment": "Use new buildIModelJsBuild script"
+          },
+          {
+            "comment": "Changed Checkbox container from <label> to <span>, because the former caused weird visual glitch when clicked on."
+          },
+          {
+            "comment": "Color tweaks"
+          },
+          {
+            "comment": "Fixed submenus, added default autoselect for hotkeys"
+          },
+          {
+            "comment": "Added tests for Dialog and Context Menu"
+          },
+          {
+            "comment": "Remove uneeded typedoc plugin depedency"
+          },
+          {
+            "comment": "Minor UI Color Theme changes"
+          },
+          {
+            "comment": "Support for including CSS files in published UI packages"
+          },
+          {
+            "comment": "Added styling capability to messages"
+          },
+          {
+            "comment": "Removed dependency on BWC. Parts of BWC copied into ui-core in preparation for theming support."
+          },
+          {
+            "comment": "Save BUILD_SEMVER to globally accessible map"
+          },
+          {
+            "comment": "Added UnderlinedButton"
+          },
+          {
+            "comment": "Cleanup of DefaultToolSetting provider and EnumButtonGroup editor"
+          },
+          {
+            "comment": "Move property definitions to imodeljs-frontend so they could be used by tools to define properties for tool settings."
+          },
+          {
+            "comment": "Added Image component."
+          },
+          {
+            "comment": "Renamed core-tree-tree to core-tree."
+          },
+          {
+            "comment": "Removed Div component."
+          },
+          {
+            "comment": "Renamed icon container class in tree node to core-tree-node-icon."
+          },
+          {
+            "comment": "Made tree node checkbox container background transparent."
+          },
+          {
+            "comment": "Tree node checkbox css fix"
+          },
+          {
+            "comment": "Tree node now accepts one checkbox prop object instead of multiple props."
+          },
+          {
+            "comment": "Changed tree node styling."
+          },
+          {
+            "comment": "Added support for UI color themes"
+          },
+          {
+            "comment": "Add a way to specify custom Node checkbox renderer"
+          },
+          {
+            "comment": "Keyboard Shortcut keys in context menu. ui-core unit test branches."
+          },
+          {
+            "comment": "Update to use newer generic-icons-webfont package."
+          },
+          {
+            "comment": "upgrade to TypeScript 3.2.2"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.188.0",
+      "tag": "@bentley/ui-core_v0.188.0",
+      "date": "Wed, 16 Jan 2019 16:36:09 GMT",
+      "comments": {}
+    },
+    {
       "version": "0.187.0",
       "tag": "@bentley/ui-core_v0.187.0",
       "date": "Tue, 15 Jan 2019 15:18:59 GMT",

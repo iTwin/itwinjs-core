@@ -4,7 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as moq from "typemoq";
-import { TypeConverter, PropertyDescription, PrimitiveValue } from "../../ui-components";
+import { PropertyDescription, PrimitiveValue } from "@bentley/imodeljs-frontend";
+import { TypeConverter } from "../../ui-components";
 import TestUtils from "../TestUtils";
 
 describe("TypeConverter", () => {

@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { assert } from "@bentley/bentleyjs-core";
 import { VariableType, FragmentShaderComponent, ShaderType } from "../ShaderBuilder";
 import { ShaderProgram } from "../ShaderProgram";
 import { GLSLFragment } from "./Fragment";
@@ -17,6 +16,7 @@ import { GL } from "../GL";
 import { Texture } from "../Texture";
 import { TextureUnit } from "../RenderFlags";
 import { System } from "../System";
+import { assert } from "@bentley/bentleyjs-core";
 
 const computeGradientValue = `
   // For the gradient sky it's good enough to calculate these in the vertex shader.

@@ -3,35 +3,44 @@
   {{#each this.middleContent}}
   <div class="middle-content-group" style="order:{{addOne @index}}">
     {{#if_even @index}}
-    <img class="middle-content-image" src="{{../this.docSite}}/{{this.image}}" alt="{{this.imageAltText}}" style="order: 1;" />
+
     <div class="middle-content-text" style="order:2;">
       {{#if this.header}}
-      <h4> {{{this.header}}} </h4>
+      <h4 style="font-size:24px;"> {{{this.header}}} </h4>
       {{/if}}
       <span class="gradient"></span>
       {{#if this.content}}
-      {{{this.content}}}
+      <p>
+        {{{this.content}}}
+      </p>
       {{/if}}
+    </div>
+    <div class="middle-content-media" style="order:2;">
+      <iframe class='middle-content-youtube' src="{{this.video}}" frameborder="0"
+        allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
     </div>
     {{else}}
     <div class="middle-content-text" style="order:1;">
       {{#if this.header}}
       <h4> {{{this.header}}} </h4>
-      {{/if}}
       <span class="gradient"></span>
+      {{/if}}
       {{#if this.content}}
-      {{{this.content}}}
+      <p>
+        {{{this.content}}}
+      </p>
       {{/if}}
     </div>
-    <img class="middle-content-image" src="{{../this.docSite}}/{{this.image}}" alt="{{this.imageAltText}}" style="order: 2;" />
+    <iframe class='middle-content-media' src="{{this.video}}" frameborder="0"
+      allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
     {{/if_even}}
   </div>
   {{/each}}
 </div>
-<div class="try-imodeljs-text">
-  <h4> Try iModel.js now </h4>
-</div>
 <div id="demo-container">
+  <div class="try-imodeljs-text">
+    <h4> Try iModel.js now </h4>
+  </div>
   <img src="landing-page/assets/placeholder_viewer_690x431.png" class="example-view-demonstrator">
   <div class="overlay">
     <script>
@@ -78,12 +87,19 @@
 <script>
   // LaunchDarkly script for turning off the viewer.
   $(document).ready(function () {
-    ldclient.on('ready', function () {
-      var shouldShow = ldclient.variation(featureFlags.LandingPageViewer, false);
-      if (!shouldShow) {
-        $('#viewiModelBtn').html('Under Construction').addClass('disabled').removeAttr('href').removeAttr('onclick');
-        $('.try-imodeljs-text').html('<h4> We are working on it. Check back later. </h4>');
-      }
-    });
-  })
+    var shouldShow = ldclient.variation(featureFlags.LandingPageViewer);
+    if (shouldShow === undefined) {
+      ldclient.on('ready', function () {
+        shouldShow = ldclient.variation(featureFlags.LandingPageViewer);
+        if (!shouldShow) {
+          $('#viewiModelBtn').html('Under Construction').addClass('disabled').removeAttr('href').removeAttr('onclick');
+          $('.try-imodeljs-text').html('<h4> We are working on it. Check back later. </h4>');
+        }
+      });
+    }
+    else if (!shouldShow) {
+      $('#viewiModelBtn').html('Under Construction').addClass('disabled').removeAttr('href').removeAttr('onclick');
+      $('.try-imodeljs-text').html('<h4> We are working on it. Check back later. </h4>');
+    }
+  });
 </script>

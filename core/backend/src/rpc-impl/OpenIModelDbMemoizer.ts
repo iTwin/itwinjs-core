@@ -47,25 +47,25 @@ export class OpenIModelDbMemoizer extends PromiseMemoizer<IModelDb> {
       OpenIModelDbMemoizer._openIModelDbMemoizer = new OpenIModelDbMemoizer();
     const { memoize: memoizeOpenIModelDb, deleteMemoized: deleteMemoizedOpenIModelDb } = OpenIModelDbMemoizer._openIModelDbMemoizer;
 
-    const openPromise = memoizeOpenIModelDb(actx, accessTokenObj!, iModelToken.contextId!, iModelToken.iModelId!, openParams, iModelVersion);
+    const openQP = memoizeOpenIModelDb(actx, accessTokenObj!, iModelToken.contextId!, iModelToken.iModelId!, openParams, iModelVersion);
 
     const waitPromise = BeDuration.wait(100); // Wait a little before issuing a pending response - this avoids a potentially expensive round trip for the case a briefcase was already downloaded.
-    await Promise.race([openPromise, waitPromise]); // This resolves as soon as either the open is completed or the wait time has expired. Prevents waiting un-necessarily if the open has already completed.
+    await Promise.race([openQP.promise, waitPromise]); // This resolves as soon as either the open is completed or the wait time has expired. Prevents waiting un-necessarily if the open has already completed.
 
-    if (openPromise.isPending) {
+    if (openQP.isPending) {
       Logger.logTrace(loggingCategory, "Issuing pending status in OpenIModelDbMemoizer.openIModelDb", () => (iModelToken));
       throw new RpcPendingResponse();
     }
 
     deleteMemoizedOpenIModelDb(actx, accessTokenObj!, iModelToken.contextId!, iModelToken.iModelId!, openParams, iModelVersion);
 
-    if (openPromise.isFulfilled) {
+    if (openQP.isFulfilled) {
       Logger.logTrace(loggingCategory, "Completed open request in OpenIModelDbMemoizer.openIModelDb", () => (iModelToken));
-      return openPromise.result!;
+      return openQP.result!;
     }
 
-    assert(openPromise.isRejected);
+    assert(openQP.isRejected);
     Logger.logTrace(loggingCategory, "Rejected open request in OpenIModelDbMemoizer.openIModelDb", () => (iModelToken));
-    throw openPromise.error!;
+    throw openQP.error!;
   }
 }

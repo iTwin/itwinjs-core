@@ -7,7 +7,8 @@
     "InvalidWindow": "Invalid window",
     "MinWindow": "Minimum window",
     "MaxWindow": "Maximum window",
-    "MaxZoom": "Maximum Zoom"
+    "MaxZoom": "Maximum Zoom",
+    "NotDuringMarkup": "Cannot change view during markup"
   },
   "ElementUndo": {
     "NothingToUndo": "No actions to undo",
@@ -39,5 +40,17 @@
     "BingDataClickTarget": "Data Attribution",
     "MapBoxCopyright": "(c) Mapbox, (c) OpenStreetMap contributors",
     "BingDataAttribution": "Data Provided by: "
+  },
+  "PluginErrors": {
+    "Success": "Plugin '{{pluginName}}' loaded",
+    "VersionErrors": "Plugin '{{pluginName}}' version problems encountered",
+    "FrontendOnly": "Plugins can be loaded in a browser or Electron only",
+    "NoVersionsLoaded": "iModel.js versions loaded not found",
+    "ModuleNotLoaded": "Module {{moduleName}} is not loaded",
+    "WebpackedIncorrectly": "The Plugin has not been webpacked correctly",
+    "NoVersionSpecified": "No version specified for module {{moduleName}}",
+    "NotLoaded": "Required module {{moduleName}} is not loaded",
+    "VersionMismatch": "Version {{versionLoaded}} of {{moduleName}} is not compatible with {{versionRequired}}",
+    "UnableToLoad": "Unable to load Plugin {{pluginName}}"
   }
 }

@@ -118,9 +118,6 @@ describe("Matrix4", () => {
     assert.isTrue(mat4.data[15] === 1, "(3,3) --> 1");
   });
   it("toTransform works as expected", () => {
-    const invalidMat = Matrix4.fromValues(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1);
-    // throws error when (3,0) !== 0 && (3,1) !== 0 && (3,2) !== 0 && (3,3) !== 1
-    assert.throw(invalidMat.toTransform.bind(invalidMat));
     const validMat = Matrix4.fromValues(1, 2, 3, 10, 4, 5, 6, 11, 7, 8, 9, 12, 0, 0, 0, 1);
     const tran = validMat.toTransform();
     const mat = tran.matrix;

@@ -31,8 +31,9 @@ export class SchemaXmlFileLocater extends SchemaFileLocater implements ISchemaLo
    * their keys populated.
    * @param key The SchemaKey of the Schema to retrieve.
    * @param matchType The SchemaMatchType.
+   * @param context The SchemaContext that will control the lifetime of the schema.
    */
-  public async getSchema<T extends Schema>(key: SchemaKey, matchType: SchemaMatchType, context?: SchemaContext): Promise<T | undefined> {
+  public async getSchema<T extends Schema>(key: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<T | undefined> {
     const candidates: FileSchemaKey[] = this.findEligibleSchemaKeys(key, matchType, "xml");
 
     if (!candidates || candidates.length === 0)
@@ -50,9 +51,8 @@ export class SchemaXmlFileLocater extends SchemaFileLocater implements ISchemaLo
     });
     */
 
-    const schema = new Schema(maxCandidate) as T;
-    if (context)
-      await context.addSchema(schema);
+    const schema = new Schema(context, maxCandidate) as T;
+    await context.addSchema(schema);
     await this.addSchemaReferences(schema, context);
     return schema;
   }
@@ -63,17 +63,17 @@ export class SchemaXmlFileLocater extends SchemaFileLocater implements ISchemaLo
    * their keys populated.
    * @param key The SchemaKey of the Schema to retrieve.
    * @param matchType The SchemaMatchType.
+   * @param context The SchemaContext that will control the lifetime of the schema.
    */
-  public getSchemaSync<T extends Schema>(key: SchemaKey, matchType: SchemaMatchType, context?: SchemaContext): T | undefined {
+  public getSchemaSync<T extends Schema>(key: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): T | undefined {
     const candidates: FileSchemaKey[] = this.findEligibleSchemaKeys(key, matchType, "xml");
 
     if (!candidates || candidates.length === 0)
       return undefined;
 
     const maxCandidate = candidates.sort(this.compareSchemaKeyByVersion)[candidates.length - 1];
-    const schema = new Schema(maxCandidate) as T;
-    if (context)
-      context.addSchemaSync(schema);
+    const schema = new Schema(context, maxCandidate) as T;
+    context.addSchemaSync(schema);
 
     this.addSchemaReferencesSync(schema, context);
     return schema;
@@ -134,8 +134,9 @@ export class SchemaXmlFileLocater extends SchemaFileLocater implements ISchemaLo
   /**
    * Loads a Schema from disk as a Promise.
    * @param schemaPath The path to the Schema file.
+   * @param context The SchemaContext that will control the lifetime of the schema.
    */
-  public async loadSchema<T extends Schema>(schemaPath: string): Promise<T | undefined> {
+  public async loadSchema<T extends Schema>(schemaPath: string, context: SchemaContext): Promise<T | undefined> {
     // Load the file
     const schemaText = await this.readUtf8FileToString(schemaPath);
 
@@ -149,7 +150,7 @@ export class SchemaXmlFileLocater extends SchemaFileLocater implements ISchemaLo
 
     // TODO - bad path
     // Load the schema and return it
-    const schema = new Schema(new FileSchemaKey(key, schemaPath, schemaText));
+    const schema = new Schema(context, new FileSchemaKey(key, schemaPath, schemaText));
     await this.addSchemaReferences(schema);
     return schema as T;
   }

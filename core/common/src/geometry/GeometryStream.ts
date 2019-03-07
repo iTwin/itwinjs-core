@@ -21,6 +21,7 @@ import { IModelError } from "../IModelError";
 /** Establish a non-default [[SubCategory]] or to override [[SubCategoryAppearance]] for the geometry that follows.
  * A GeometryAppearanceProps always signifies a reset to the [[SubCategoryAppearance]] for subsequent [[GeometryStreamProps]] entries for undefined values.
  * @see [[GeometryStreamEntryProps]]
+ * @public
  */
 export interface GeometryAppearanceProps {
   /** Optional [[SubCategory]] id for subsequent geometry. Use to create a GeometryStream with geometry that is not on the default [[SubCategory]] for the element's [[Category]] or is has geometry on multiple subCategories. */
@@ -42,6 +43,7 @@ export interface GeometryAppearanceProps {
 /** Add a [[gradient]], [[backgroundFill]], or solid [[color]] fill to subsequent planar regions (or meshes).
  * Only one value among [[gradient]], [[backgroundFill]], and [[color]] should be set.
  * @see [[GeometryStreamEntryProps]]
+ * @public
  */
 export interface AreaFillProps {
   /** Fill display type, must be set to something other than [[FillDisplay.Never]] to display fill */
@@ -58,6 +60,7 @@ export interface AreaFillProps {
 
 /** Override [[SubCategoryAppearance.materialId]] for subsequent surface and solid geometry.
  * @see [[GeometryStreamEntryProps]]
+ * @public
  */
 export interface MaterialProps {
   /** Material id to use, specify an invalid [[Id64]] to override [[SubCategoryAppearance.materialId]] with no material. */
@@ -70,6 +73,7 @@ export interface MaterialProps {
   rotation?: YawPitchRollProps;
 }
 
+/** @beta */
 export namespace BRepEntity {
   /** Enum for type of solid kernel entity this represents */
   export const enum Type {
@@ -91,11 +95,11 @@ export namespace BRepEntity {
     materialId?: Id64String;
   }
 
-  /** Geometry entry representing raw brep data. Must be specifically requested using [[ElementLoadProps.wantBRepData]].
+  /** Geometry entry representing raw brep data.
    * @see [[GeometryStreamEntryProps]]
    */
   export interface DataProps {
-    /** data as Base64 encoded string */
+    /** data as Base64 encoded string. Must be specifically requested using [[ElementLoadProps.wantBRepData]]. */
     data?: string;
     /** body type, default is Solid */
     type?: Type;
@@ -108,6 +112,7 @@ export namespace BRepEntity {
 
 /** Add a reference to a [[GeometryPart]] from the GeometryStream of a [[GeometricElement]].
  * @see [[GeometryStreamEntryProps]]
+ * @public
  */
 export interface GeometryPartInstanceProps {
   /** GeometryPart id */
@@ -122,6 +127,7 @@ export interface GeometryPartInstanceProps {
 
 /** Allowed GeometryStream entries - should only set one value.
  * @see [GeometryStream]($docs/learning/common/geometrystream.md)
+ * @public
  */
 export interface GeometryStreamEntryProps extends GeomJson.GeometryProps {
   appearance?: GeometryAppearanceProps;
@@ -135,10 +141,14 @@ export interface GeometryStreamEntryProps extends GeomJson.GeometryProps {
   subRange?: LowAndHighXYZ;
 }
 
-/** A [[GeometricElement]]'s GeometryStream is represented by an array of [[GeometryStreamEntryProps]]. */
+/** A [[GeometricElement]]'s GeometryStream is represented by an array of [[GeometryStreamEntryProps]].
+ * @public
+ */
 export type GeometryStreamProps = GeometryStreamEntryProps[];
 
-/** GeometryStreamBuilder is a helper class for populating the [[GeometryStreamProps]] array needed to create a [[GeometricElement]] or [[GeometryPart]]. */
+/** GeometryStreamBuilder is a helper class for populating the [[GeometryStreamProps]] array needed to create a [[GeometricElement]] or [[GeometryPart]].
+ * @public
+ */
 export class GeometryStreamBuilder {
   /** Current inverse placement transform, used for converting world coordinate input to be placement relative */
   private _worldToLocal?: Transform;
@@ -313,7 +323,9 @@ export class GeometryStreamBuilder {
   }
 }
 
-/** Hold current state information for [[GeometryStreamIterator]] */
+/** Hold current state information for [[GeometryStreamIterator]]
+ * @public
+ */
 export class GeometryStreamIteratorEntry {
   /** A [[GeometryParams]] representing the appearance of the current geometric entry */
   public geomParams: GeometryParams;
@@ -339,6 +351,7 @@ export class GeometryStreamIteratorEntry {
 
 /** GeometryStreamIterator is a helper class for iterating a [[GeometryStreamProps]].
  * A [[GeometricElement]]'s GeometryStream must be specifically requested using [[ElementLoadProps.wantGeometry]].
+ * @public
  */
 export class GeometryStreamIterator implements IterableIterator<GeometryStreamIteratorEntry> {
   /** GeometryStream entries */

@@ -24,7 +24,7 @@ describe("<Backstage />", () => {
     const handler = sinon.spy();
     const component = mount(<Backstage onClose={handler} />);
 
-    component.simulate("click");
+    component.find(".nz-backstage-backstage_Overlay").simulate("click");
 
     handler.calledOnce.should.true;
   });

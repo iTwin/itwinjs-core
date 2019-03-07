@@ -2,20 +2,23 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+@import "../colors.scss";
 
-.nz-tree-expansionToggle {
+.core-tree-expansionToggle {
   > .toggle {
 
     display: block;
     width: 24px;
     height: 24px;
     padding: 7px;
+    font-size: 12px;
     box-sizing: border-box;
     transform: rotate(0);
     transition: transform 100ms ease;
+    color: $buic-foreground-body;
   }
 
   &.is-expanded > .toggle {
-    transform: rotate(0.25turn)
+    transform: rotate( 90deg );
   }
 }

@@ -1,6 +1,6 @@
 {
   "rushVersion": "5.5.4",
-  "pnpmVersion": "2.17.3",
+  "pnpmVersion": "2.25.6",
   "nodeSupportedVersionRange": ">=10.6.0 <11.0.0",
   "projectFolderMinDepth": 2,
   "ensureConsistentVersions": true,
@@ -98,6 +98,13 @@
       "packageName": "@bentley/imodeljs-i18n",
       "projectFolder": "core/i18n",
       "reviewCategory": "frontend",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
+      "packageName": "@bentley/logger-config",
+      "projectFolder": "core/logger-config",
+      "reviewCategory": "backend",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
@@ -258,8 +265,20 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@bentley/plugin-markup",
+      "projectFolder": "plugins/markup",
+      "reviewCategory": "frontend",
+      "shouldPublish": false
+    },
+    {
       "packageName": "agent-test-app",
       "projectFolder": "test-apps/agent-test-app",
+      "reviewCategory": "internal",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "webworker-test-app",
+      "projectFolder": "test-apps/webworker-test-app",
       "reviewCategory": "internal",
       "shouldPublish": false
     }

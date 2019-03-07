@@ -7,7 +7,9 @@
 import { RpcInterface, RpcInterfaceDefinition, RpcInterfaceImplementation } from "./RpcInterface";
 import { RpcRegistry } from "./rpc/core/RpcRegistry";
 
-/** Describes the endpoints of an RPC interface. */
+/** Describes the endpoints of an RPC interface.
+ * @public
+ */
 export interface RpcInterfaceEndpoints {
   interfaceName: string;
   interfaceVersion: string;
@@ -15,10 +17,11 @@ export interface RpcInterfaceEndpoints {
   compatible: boolean;
 }
 
-/** RPC interface management is concerned with coordination of access and configuration for RPC interfaces. */
+/** RPC interface management is concerned with coordination of access and configuration for RPC interfaces.
+ * @public
+ */
 export class RpcManager {
-  /**
-   * Initializes an RPC interface class.
+  /** Initializes an RPC interface class.
    * @note This function must be called on the frontend and on the backend for each RPC interface class used by an application.
    */
   public static initializeInterface<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>): void {
@@ -50,8 +53,7 @@ export class RpcManager {
     RpcRegistry.instance.unregisterImpl(definition);
   }
 
-  /**
-   * Describes the RPC interfaces and endpoints that are currently available from the backend.
+  /** Describes the RPC interfaces and endpoints that are currently available from the backend.
    * @note Some endpoints may be marked incompatible if the frontend expected a different interface declaration than the backend supplied. RPC operations against an incompatible interface will fail.
    */
   public static async describeAvailableEndpoints(): Promise<RpcInterfaceEndpoints[]> {

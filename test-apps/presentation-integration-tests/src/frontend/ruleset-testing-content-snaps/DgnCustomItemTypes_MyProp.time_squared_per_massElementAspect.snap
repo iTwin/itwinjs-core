@@ -1,0 +1,19 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`RulesetTesting generates correct content for 'Items' ruleset. ClassName: 'DgnCustomItemTypes_MyProp:time__x0020__squared__x0020__per__x0020__massElementAspect' 1`] = `
+Array [
+  PropertyRecord {
+    "description": "1.2345999999999999",
+    "property": Object {
+      "displayLabel": "1/Btu",
+      "name": "time__x0020__squared__x0020__per__x0020__massElementAspect___x0031____x002F__Btu",
+      "typename": "double",
+    },
+    "value": Object {
+      "displayValue": "1.2345999999999999",
+      "value": 1.2346,
+      "valueFormat": 0,
+    },
+  },
+]
+`;

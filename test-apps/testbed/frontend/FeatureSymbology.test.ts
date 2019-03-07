@@ -93,14 +93,6 @@ describe("FeatureSymbology.Overrides", () => {
   });
 
   it("constructor with ViewState parameter works as expected", () => {
-    // load viewState Special Elements
-    const neverDrawn = new Set<string>();
-    const alwaysDrawn = new Set<string>();
-    neverDrawn.add("0x123");
-    alwaysDrawn.add("0x124");
-    viewState.setNeverDrawn(neverDrawn);
-    viewState.setAlwaysDrawn(alwaysDrawn);
-
     // init overrides from ViewState
     overrides = new Overrides(viewState);
 
@@ -108,8 +100,6 @@ describe("FeatureSymbology.Overrides", () => {
     expect(overrides.isClassVisible(GeometryClass.Dimension)).to.equal(viewState.viewFlags.dimensions);
     expect(overrides.isClassVisible(GeometryClass.Pattern)).to.equal(viewState.viewFlags.patterns);
     expect(overrides.lineWeights).to.equal(viewState.viewFlags.weights);
-    expect(overrides.neverDrawn.toId64Array()).to.deep.equals(Array.from(viewState.neverDrawn!));
-    expect(overrides.alwaysDrawn.toId64Array()).to.deep.equals(Array.from(viewState.alwaysDrawn!));
   });
 
   it("isClassVisible works as expected", () => {
@@ -186,7 +176,7 @@ describe("FeatureSymbology.Overrides", () => {
     viewState.displayStyle.viewFlags = vf;
     overrides = new Overrides(viewState);
     overrides.setVisibleSubCategory(subCategoryId);
-    assert.isFalse(overrides.isFeatureVisible(feature), "if geometryClass and subCategory are visible, feature is visible");
+    assert.isTrue(overrides.isFeatureVisible(feature), "if geometryClass and subCategory are visible, feature is visible");
   });
 
   it("getFeatureAppearance works as expected", () => {

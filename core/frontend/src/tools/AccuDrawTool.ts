@@ -760,7 +760,7 @@ export class AccuDrawShortcuts {
         accudraw.flags.auxRotationPlane = RotationMode.Top;
 
         const currentACS = vp.view.auxiliaryCoordinateSystem;
-        const acs = currentACS.clone<AuxCoordSystemState>();
+        const acs = currentACS.clone();
 
         acs.setRotation(accudraw.getRotation());
         AccuDraw.updateAuxCoordinateSystem(acs, vp);
@@ -926,7 +926,7 @@ export class AccuDrawShortcuts {
       accudraw.axes.setFrom(axes);
 
       if (RotationMode.ACS === accudraw.flags.baseRotation) {
-        const acs = currentACS.clone<AuxCoordSystemState>();
+        const acs = currentACS.clone();
 
         const rMatrix = accudraw.getRotation();
         acs.setRotation(rMatrix);
@@ -1103,7 +1103,7 @@ class RotateElementTool extends AccuDrawTool {
       AccuDrawShortcuts.processPendingHints();
 
       const currentACS = vp.view.auxiliaryCoordinateSystem;
-      const acs = currentACS.clone<AuxCoordSystemState>();
+      const acs = currentACS.clone();
 
       acs.setOrigin(accudraw.origin);
       acs.setRotation(accudraw.getRotation());
@@ -1123,7 +1123,7 @@ class RotateElementTool extends AccuDrawTool {
     const accudraw = IModelApp.accuDraw;
     const origin = accudraw.origin;
     const rMatrix = accudraw.getRotation();
-    const acs = context.viewport!.view.auxiliaryCoordinateSystem.clone<AuxCoordSystemState>();
+    const acs = context.viewport!.view.auxiliaryCoordinateSystem.clone();
     acs.setOrigin(origin);
     acs.setRotation(rMatrix);
     acs.display(context, ACSDisplayOptions.Active | ACSDisplayOptions.Dynamics);
@@ -1166,7 +1166,7 @@ class DefineACSByPointsTool extends AccuDrawTool {
 
     const vp = ev.viewport;
     if (!this._acs)
-      this._acs = vp.view.auxiliaryCoordinateSystem.clone<AuxCoordSystemState>();
+      this._acs = vp.view.auxiliaryCoordinateSystem.clone();
 
     if (AccuDrawShortcuts.updateACSByPoints(this._acs, vp, this._points, false)) {
       AccuDraw.updateAuxCoordinateSystem(this._acs, vp);
@@ -1188,7 +1188,7 @@ class DefineACSByPointsTool extends AccuDrawTool {
 
     const vp = context.viewport!;
     if (!this._acs)
-      this._acs = vp.view.auxiliaryCoordinateSystem.clone<AuxCoordSystemState>();
+      this._acs = vp.view.auxiliaryCoordinateSystem.clone();
 
     AccuDrawShortcuts.updateACSByPoints(this._acs, vp, tmpPoints, true);
     this._acs.display(context, ACSDisplayOptions.Active | ACSDisplayOptions.Dynamics);

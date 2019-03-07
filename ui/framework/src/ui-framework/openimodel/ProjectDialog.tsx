@@ -10,7 +10,7 @@ import { ProjectInfo, ProjectScope } from "../clientservices/ProjectServices";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { UiFramework } from "../UiFramework";
 import { ProjectTabs, ProjectTab } from "./ProjectTabs";
-import { SearchBox } from "@bentley/ui-core";
+import { SearchBox, Spinner, SpinnerSize } from "@bentley/ui-core";
 import "./Common.scss";
 import "./ProjectDialog.scss";
 
@@ -169,7 +169,11 @@ export class ProjectDialog extends React.Component<ProjectDialogProps, ProjectDi
                   {(this.state.projects && this.state.projects.length > 0) && this.state.projects.map((project: ProjectInfo) => (this.renderProject(project)))}
                 </tbody>
               </table>
-              {this.state.isLoading && <div className="projects-loading"><div><i /><i /><i /><i /><i /><i /></div></div>}
+              {this.state.isLoading &&
+                <div className="projects-loading">
+                  <Spinner size={SpinnerSize.Large} />
+                </div>
+              }
               {(!this.state.isLoading && (!this.state.projects || this.state.projects.length === 0)) && <div className="projects-none">{this.getNoProjectsPrompt()}</div>}
             </div>
           </div>

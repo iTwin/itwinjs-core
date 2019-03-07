@@ -1,0 +1,19 @@
+{
+  "extends": "./node_modules/@bentley/build-tools/tsconfig-base.json",
+  "compilerOptions": {
+    "outDir": "./lib",
+    "rootDir": "./src"
+  },
+  "include": [
+    "./**/*.ts",
+  ],
+  "exclude": [
+    "./src/webworker/**/*",
+    "./lib/."
+  ],
+  "references": [
+    {
+      "path": "./src/webworker"
+    }
+  ]
+}

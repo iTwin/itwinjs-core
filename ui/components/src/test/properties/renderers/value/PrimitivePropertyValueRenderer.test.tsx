@@ -3,8 +3,9 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { mount } from "enzyme";
+import { render } from "react-testing-library";
 import * as React from "react";
+import * as sinon from "sinon";
 import TestUtils from "../../../TestUtils";
 import { PrimitivePropertyValueRenderer } from "../../../../ui-components";
 
@@ -15,9 +16,21 @@ describe("PrimitivePropertyValueRenderer", () => {
       const stringProperty = TestUtils.createPrimitiveStringProperty("Label", "Test property");
 
       const element = renderer.render(stringProperty);
-      const elementMount = mount(<div>{element}</div>);
+      const renderedElement = render(<>{element}</>);
+      renderedElement.getByText("Test property");
+    });
 
-      expect(elementMount.text()).to.be.eq("Test property");
+    it("renders primitive property wrapped in an anchored tag when property record has it", () => {
+      const renderer = new PrimitivePropertyValueRenderer();
+      const stringProperty = TestUtils.createPrimitiveStringProperty("Label", "Test property");
+      stringProperty.links = { onClick: sinon.spy() };
+
+      const element = renderer.render(stringProperty);
+      const renderedElement = render(<>{element}</>);
+
+      renderedElement.getByText("Test property");
+
+      expect(renderedElement.container.getElementsByClassName("core-underlined-button")).to.not.be.empty;
     });
 
     it("throws when trying to render array property", () => {

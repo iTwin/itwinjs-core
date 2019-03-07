@@ -12,6 +12,7 @@
  * @throws Error containing the specified message if condition is false.
  * @note This function should be used to validate conditions that should never realistically occur, or
  * which indicate a misuse of the API which should be eliminated during development.
+ * @beta Need strategy for removing assert in production builds
  */
 export function assert(condition: boolean, msg?: string): void {
   if (!condition)

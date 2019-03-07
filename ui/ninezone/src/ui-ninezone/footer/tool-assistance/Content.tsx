@@ -9,9 +9,9 @@ import * as React from "react";
 import { CommonProps } from "../../utilities/Props";
 import "./Content.scss";
 
-/** Properties of [[TabSeparator]] component. */
+/** Properties of [[ToolAssistanceContent]] component. */
 export interface ToolAssistanceContentProps extends CommonProps {
-  /** Assistance items and separators. I.e.: [[AssistanceItem]], [[Separator]] */
+  /** Assistance items and separators. I.e.: [[ToolAssistanceItem]], [[ToolAssistanceSeparator]] */
   children?: React.ReactNode;
 }
 

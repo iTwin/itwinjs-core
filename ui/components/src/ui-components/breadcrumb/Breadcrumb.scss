@@ -2,9 +2,9 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
- @import "@bentley/bwc/lib/mixins";
+ @import "@bentley/ui-core/lib/ui-core/index";
 
- $breadcrumb-edge: 2 * ($bwc-inputs-padding-bordered + $bwc-inputs-margin);
+ $breadcrumb-edge: 2 * ($uicore-inputs-padding-bordered + $uicore-inputs-margin);
  .breadcrumb {
    flex-shrink: 0;
    display: flex;
@@ -14,32 +14,32 @@
      position: relative;
      .breadcrumb-input-root {
        > .breadcrumb-input {
-         @include bwc-inputs-input;
+         @include uicore-inputs-input;
 
          width: calc(100% - #{$breadcrumb-edge});
-         height: $bwc-line-height;
+         height: $uicore-line-height;
        }
 
        > .breadcrumb-close {
          position: absolute;
          top: 0px;
          right: 0px;
-         padding: $bwc-inputs-padding-bordered - 1px;
-         margin: $bwc-inputs-margin 0;
-         height: $bwc-line-height;
-         width: $bwc-line-height;
-         font-size: $bwc-icons-small;
-         line-height: $bwc-line-height;
+         padding: $uicore-inputs-padding-bordered - 1px;
+         margin: $uicore-inputs-margin 0;
+         height: $uicore-line-height;
+         width: $uicore-line-height;
+         font-size: $uicore-icons-small;
+         line-height: $uicore-line-height;
          text-align: center;
          cursor: pointer;
 
          &:hover {
-           color: $bwc-blue;
+           color: $buic-foreground-primary;
          }
        }
 
        > .context-menu .context-menu-item {
-         padding: $bwc-bordered-padding;
+         padding: $uicore-bordered-padding;
          transform: rotate(180deg);
 
          > .context-menu-icon {
@@ -52,32 +52,32 @@
        }
      }
      .breadcrumb-dropdown {
-       @include bwc-inputs-input;
+       @include uicore-inputs-input;
 
        display: flex;
        width: calc(100% - #{$breadcrumb-edge});
-       background-color: white;
+       background-color: $buic-background-control;
 
        > .breadcrumb-up-dir {
-         height: $bwc-line-height;
-         width: $bwc-line-height;
+         height: $uicore-line-height;
+         width: $uicore-line-height;
          flex-shrink: 0;
          flex-grow: 0;
-         font-size: $bwc-icons-small;
-         border-right: 1px solid $bwc-inputs-border-color;
-         margin-right: $bwc-bordered-padding;
+         font-size: $uicore-icons-small;
+         border-right: 1px solid $buic-background-control-stroke;
+         margin-right: $uicore-bordered-padding;
          cursor: pointer;
 
          &:hover {
-           color: $bwc-blue;
+           color: $buic-foreground-primary;
          }
 
          &.root {
-           color: $bwc-gray;
+           color: $buic-foreground-mediumgray;
            cursor: default;
 
            &:hover {
-             color: $bwc-gray;
+             color: $buic-foreground-mediumgray;
            }
          }
        }
@@ -88,12 +88,12 @@
            display: flex;
            .split-button-arrow-icon {
              font-size: 10px;
-             line-height: $bwc-line-height;
+             line-height: $uicore-line-height;
              transform: rotate(-90deg);
            }
 
            .split-button-label {
-             min-width: $bwc-line-height;
+             min-width: $uicore-line-height;
              text-align: center;
            }
 
@@ -103,37 +103,37 @@
            > .static-arrow-icon {
               text-align: center;
               font-size: 10px;
-              line-height: $bwc-line-height;
-              width: $bwc-line-height;
-              height: $bwc-line-height;
+              line-height: $uicore-line-height;
+              width: $uicore-line-height;
+              height: $uicore-line-height;
               margin-left: 4px;
            }
          }
        }
 
        .breadcrumb-drop-target {
-         border-radius: $bwc-border-radius;
+         border-radius: $uicore-border-radius;
          &.hover {
-           background-color: $bwc-blue-8;
+           background-color: $buic-row-hover;
          }
          &.dragging {
-           color: $bwc-gray;
+           color: $buic-foreground-disabled;
          }
        }
 
        .breadcrumb-end-node {
-         @include bwc-text-block;
+         @include uicore-text-block;
 
          margin: 0;
-         min-width: $bwc-line-height;
+         min-width: $uicore-line-height;
          text-align: center;
-         border-radius: $bwc-border-radius;
+         border-radius: $uicore-border-radius;
 
          &:not(.static) {
           user-select: none;
           cursor: pointer;
           &:hover {
-            color: $bwc-blue;
+            color: $buic-foreground-primary;
           }
          }
        }
@@ -161,9 +161,9 @@
     outline: 0;
   }
 
-  height: calc(100% - (#{2 * $bwc-inputs-margin + $bwc-inputs-height} ));
+  height: calc(100% - (#{2 * $uicore-inputs-margin + $uicore-inputs-height} ));
   overflow: auto;
-  background-color: $bwc-white;
-  border: 1px solid $bwc-inputs-border-color;
+  background-color: $buic-background-control;
+  border: 1px solid $buic-background-control-stroke;
 
 }

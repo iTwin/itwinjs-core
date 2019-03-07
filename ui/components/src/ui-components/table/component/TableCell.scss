@@ -1,0 +1,31 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+@import "@bentley/ui-core/lib/ui-core/index";
+
+.components-table-cell {
+  user-select: none;
+  display: flex;
+  align-items: center;
+  color: $buic-foreground-body;
+  background-color: $buic-background-control;
+
+  &.is-selected {
+    background-color: $buic-row-selection;
+  }
+
+  &:focus {
+    outline: none;
+  }
+
+  &>* {
+    padding: 8px 0 0 8px;
+    height: 100%;
+    width: calc(100% - 8px);
+  }
+
+  >span:empty:before {
+    content: "\200b"; // unicode zero width space character
+  }
+}

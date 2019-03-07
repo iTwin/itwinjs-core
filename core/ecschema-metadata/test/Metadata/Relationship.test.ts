@@ -4,16 +4,18 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import { Schema } from "../../src/Metadata/Schema";
-import { EntityClass } from "../../src/Metadata/EntityClass";
-import { RelationshipClass, RelationshipMultiplicity, RelationshipConstraint } from "../../src/Metadata/RelationshipClass";
-import { StrengthType, StrengthDirection, RelationshipEnd } from "../../src/ECObjects";
-import { ECObjectsError } from "../../src/Exception";
-import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
 import sinon = require("sinon");
-import { CustomAttributeClass } from "../../src/Metadata/CustomAttributeClass";
-import { Mixin } from "../../src/Metadata/Mixin";
+
+import { SchemaContext } from "../../src/Context";
 import { DelayedPromiseWithProps } from "../../src/DelayedPromise";
+import { RelationshipEnd, StrengthDirection, StrengthType } from "../../src/ECObjects";
+import { ECObjectsError } from "../../src/Exception";
+import { CustomAttributeClass } from "../../src/Metadata/CustomAttributeClass";
+import { EntityClass } from "../../src/Metadata/EntityClass";
+import { Mixin } from "../../src/Metadata/Mixin";
+import { RelationshipClass, RelationshipConstraint, RelationshipMultiplicity } from "../../src/Metadata/RelationshipClass";
+import { Schema } from "../../src/Metadata/Schema";
+import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
 
 describe("RelationshipMultiplicity", () => {
   describe("fromString", () => {
@@ -58,7 +60,7 @@ describe("RelationshipClass", () => {
 
     function createSchemaJson(relClassJson: any): any {
       return {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
         name: "TestSchema",
         version: "1.2.3",
         items: {
@@ -109,7 +111,7 @@ describe("RelationshipClass", () => {
         },
       });
 
-      const schema = await Schema.fromJson(schemaJson);
+      const schema = await Schema.fromJson(schemaJson, new SchemaContext());
       assert.isDefined(schema);
 
       const sourceBaseEntity = await schema.getItem<EntityClass>("SourceBaseEntity");
@@ -178,7 +180,7 @@ describe("RelationshipClass", () => {
           },
         ],
       });
-      const schema = await Schema.fromJson(json);
+      const schema = await Schema.fromJson(json, new SchemaContext());
       assert.isDefined(schema);
 
       const relClass = await schema.getItem<RelationshipClass>("TestRelationship");
@@ -224,7 +226,7 @@ describe("RelationshipClass", () => {
           },
         ],
       });
-      const schema = Schema.fromJsonSync(json);
+      const schema = Schema.fromJsonSync(json, new SchemaContext());
       assert.isDefined(schema);
 
       const relClass = schema.getItemSync<RelationshipClass>("TestRelationship");
@@ -254,7 +256,7 @@ describe("RelationshipClass", () => {
         strengthDirection: "backward",
         target: validConstraint,
       });
-      await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The RelationshipClass TestSchema.TestRelationship is missing the required source constraint.`);
+      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The RelationshipClass TestSchema.TestRelationship is missing the required source constraint.`);
     });
 
     it("should throw for missing target constraint", async () => {
@@ -263,7 +265,7 @@ describe("RelationshipClass", () => {
         strengthDirection: "forward",
         source: validConstraint,
       });
-      await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The RelationshipClass TestSchema.TestRelationship is missing the required target constraint.`);
+      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The RelationshipClass TestSchema.TestRelationship is missing the required target constraint.`);
     });
 
     it("should throw for invalid source constraint", async () => {
@@ -273,7 +275,7 @@ describe("RelationshipClass", () => {
         source: 0,
         target: validConstraint,
       });
-      await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The RelationshipClass TestSchema.TestRelationship has an invalid source constraint. It should be of type 'object'.`);
+      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The RelationshipClass TestSchema.TestRelationship has an invalid source constraint. It should be of type 'object'.`);
     });
 
     it("should throw for invalid target constraint", async () => {
@@ -283,7 +285,7 @@ describe("RelationshipClass", () => {
         source: validConstraint,
         target: 0,
       });
-      await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The RelationshipClass TestSchema.TestRelationship has an invalid target constraint. It should be of type 'object'.`);
+      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The RelationshipClass TestSchema.TestRelationship has an invalid target constraint. It should be of type 'object'.`);
     });
 
     it("should throw for invalid abstractConstraint", async () => {
@@ -301,7 +303,7 @@ describe("RelationshipClass", () => {
         },
         target: {},
       });
-      await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Source Constraint of TestSchema.TestRelationship has an invalid 'abstractConstraint' attribute. It should be of type 'string'.`);
+      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The Source Constraint of TestSchema.TestRelationship has an invalid 'abstractConstraint' attribute. It should be of type 'string'.`);
     });
 
     it("should throw for invalid constraintClasses", async () => {
@@ -316,7 +318,7 @@ describe("RelationshipClass", () => {
         },
         target: {},
       });
-      await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Source Constraint of TestSchema.TestRelationship has an invalid 'constraintClasses' attribute. It should be of type 'string[]'.`);
+      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The Source Constraint of TestSchema.TestRelationship has an invalid 'constraintClasses' attribute. It should be of type 'string[]'.`);
     });
   });
 
@@ -329,7 +331,7 @@ describe("RelationshipClass", () => {
 
     function createSchemaJson(relClassJson: any): any {
       return {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
         name: "TestSchema",
         version: "1.2.3",
         items: {
@@ -355,95 +357,156 @@ describe("RelationshipClass", () => {
       };
     }
 
+    const validRelationshipJson = {
+      strength: "Embedding",
+      strengthDirection: "Backward",
+      modifier: "Sealed",
+      source: {
+        polymorphic: true,
+        multiplicity: "(0..*)",
+        roleLabel: "Source RoleLabel",
+        abstractConstraint: "TestSchema.SourceBaseEntity",
+        constraintClasses: [
+          "TestSchema.TestSourceEntity",
+        ],
+      },
+      target: {
+        polymorphic: true,
+        multiplicity: "(0..*)",
+        roleLabel: "Target RoleLabel",
+        abstractConstraint: "TestSchema.TargetBaseEntity",
+        constraintClasses: [
+          "TestSchema.TestTargetEntity",
+        ],
+      },
+    };
+
     it("async - Serialization of fully defined relationship", async () => {
-      const schemaJson = createSchemaJson({
-        strength: "Embedding",
-        strengthDirection: "Backward",
-        modifier: "Sealed",
-        source: {
-          polymorphic: true,
-          multiplicity: "(0..*)",
-          roleLabel: "Source RoleLabel",
-          abstractConstraint: "TestSchema.SourceBaseEntity",
-          constraintClasses: [
-            "TestSchema.TestSourceEntity",
-          ],
-        },
-        target: {
-          polymorphic: true,
-          multiplicity: "(0..*)",
-          roleLabel: "Target RoleLabel",
-          abstractConstraint: "TestSchema.TargetBaseEntity",
-          constraintClasses: [
-            "TestSchema.TestTargetEntity",
-          ],
-        },
-      });
-
-      const schema = await Schema.fromJson(schemaJson);
-      assert.isDefined(schema);
+      const schema = await Schema.fromJson(createSchemaJson(validRelationshipJson), new SchemaContext());
       const relClass = await schema.getItem<RelationshipClass>("TestRelationship");
-      assert.isDefined(relClass);
-      const relClassJson = relClass!.toJson(true, true);
-      assert.isDefined(relClassJson);
-      assert(relClassJson.strength, "Embedding");
-      assert(relClassJson.strengthDirection, "Backward");
-      assert(relClassJson.modifier, "Sealed");
-      assert(relClassJson.source.polymorphic === true);
-      assert(relClassJson.source.multiplicity, "(0..*)");
-      assert(relClassJson.source.roleLabel, "Source RoleLabel");
-      assert(relClassJson.source.abstractConstraint, "TestSchema.SourceBaseEntity");
-      assert(relClassJson.source.constraintClasses[0], "TestSchema.TestSourceEntity");
-      assert(relClassJson.target.polymorphic === true);
-      assert(relClassJson.target.multiplicity, "(0..*)");
-      assert(relClassJson.target.roleLabel, "Target RoleLabel");
-      assert(relClassJson.target.abstractConstraint, "TestSchema.TargetBaseEntity");
-      assert(relClassJson.target.constraintClasses[0], "TestSchema.TestTargetEntity");
+      const expectedJson = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem",
+        name: "TestRelationship",
+        schema: "TestSchema",
+        schemaVersion: "01.02.03",
+        schemaItemType: "RelationshipClass",
+        ...validRelationshipJson,
+      };
+      expect(relClass).to.exist;
+      expect(relClass!.toJson(true, true)).to.deep.equal(expectedJson);
     });
-    it("sync - Serialization of fully defined relationship", async () => {
-      const schemaJson = createSchemaJson({
-        strength: "Embedding",
-        strengthDirection: "Backward",
-        modifier: "Sealed",
+
+    it("should include modifier if 'None'", async () => {
+      const schema = await Schema.fromJson(createSchemaJson({ ...validRelationshipJson, modifier: "None" }), new SchemaContext());
+      const relClass = await schema.getItem<RelationshipClass>("TestRelationship");
+      expect(relClass).to.exist;
+      expect(relClass!.toJson(true, true)).to.include({ modifier: "None" });
+    });
+
+    it("should include modifier if 'Abstract'", async () => {
+      const schema = await Schema.fromJson(createSchemaJson({ ...validRelationshipJson, modifier: "Abstract" }), new SchemaContext());
+      const relClass = await schema.getItem<RelationshipClass>("TestRelationship");
+      expect(relClass).to.exist;
+      expect(relClass!.toJson(true, true)).to.include({ modifier: "Abstract" });
+    });
+
+    it("should include modifier if 'Sealed'", async () => {
+      const schema = await Schema.fromJson(createSchemaJson({ ...validRelationshipJson, modifier: "Sealed" }), new SchemaContext());
+      const relClass = await schema.getItem<RelationshipClass>("TestRelationship");
+      expect(relClass).to.exist;
+      expect(relClass!.toJson(true, true)).to.include({ modifier: "Sealed" });
+    });
+
+    it("should omit customAttributes if empty", async () => {
+      const schema = await Schema.fromJson(createSchemaJson({ ...validRelationshipJson, customAttributes: [] }), new SchemaContext());
+      const relClass = await schema.getItem<RelationshipClass>("TestRelationship");
+      expect(relClass).to.exist;
+      expect(relClass!.toJson(true, true)).to.not.have.property("customAttributes");
+    });
+
+    it("should omit constraint customAttributes if empty", async () => {
+      const relClassJson = {
+        ...validRelationshipJson,
+        customAttributes: [],
+        source: {
+          ...validRelationshipJson.source,
+          customAttributes: [],
+        },
+        target: {
+          ...validRelationshipJson.target,
+          customAttributes: [],
+        },
+      };
+      const schema = await Schema.fromJson(createSchemaJson(relClassJson), new SchemaContext());
+      const relClass = await schema.getItem<RelationshipClass>("TestRelationship");
+      expect(relClass).to.exist;
+      const actualJson = relClass!.toJson(true, true);
+      expect(actualJson).to.not.have.property("customAttributes");
+      expect(actualJson.source).to.not.have.property("customAttributes");
+      expect(actualJson.target).to.not.have.property("customAttributes");
+    });
+
+    it("should omit implicit abstractConstraint", async () => {
+      const relClassJson = {
+        ...validRelationshipJson,
         source: {
           polymorphic: true,
           multiplicity: "(0..*)",
           roleLabel: "Source RoleLabel",
-          abstractConstraint: "TestSchema.SourceBaseEntity",
           constraintClasses: [
             "TestSchema.TestSourceEntity",
           ],
         },
-        target: {
+      };
+      const schema = await Schema.fromJson(createSchemaJson(relClassJson), new SchemaContext());
+      const relClass = await schema.getItem<RelationshipClass>("TestRelationship");
+      expect(relClass).to.exist;
+      const actualJson = relClass!.toJson(true, true);
+      expect(actualJson.source).to.not.have.property("abstractConstraint");
+    });
+
+    it("should include explicit abstractConstraint", async () => {
+      const relClassJson = {
+        ...validRelationshipJson,
+        source: {
           polymorphic: true,
           multiplicity: "(0..*)",
-          roleLabel: "Target RoleLabel",
-          abstractConstraint: "TestSchema.TargetBaseEntity",
+          roleLabel: "Source RoleLabel",
+          abstractConstraint: "TestSchema.TestSourceEntity",
           constraintClasses: [
-            "TestSchema.TestTargetEntity",
+            "TestSchema.TestSourceEntity",
           ],
         },
-      });
+      };
+      const schema = await Schema.fromJson(createSchemaJson(relClassJson), new SchemaContext());
+      const relClass = await schema.getItem<RelationshipClass>("TestRelationship");
+      expect(relClass).to.exist;
+      const actualJson = relClass!.toJson(true, true);
+      expect(actualJson.source).to.include({ abstractConstraint: "TestSchema.TestSourceEntity" });
+    });
 
-      const schema = Schema.fromJsonSync(schemaJson);
+    it("sync - Serialization of fully defined relationship", async () => {
+      const schemaJson = createSchemaJson(validRelationshipJson);
+
+      const schema = Schema.fromJsonSync(schemaJson, new SchemaContext());
       assert.isDefined(schema);
       const relClass = schema.getItemSync<RelationshipClass>("TestRelationship");
       assert.isDefined(relClass);
       const relClassJson = relClass!.toJson(true, true);
       assert.isDefined(relClassJson);
-      assert(relClassJson.strength, "Embedding");
-      assert(relClassJson.strengthDirection, "Backward");
-      assert(relClassJson.modifier, "Sealed");
-      assert(relClassJson.source.polymorphic === true);
-      assert(relClassJson.source.multiplicity, "(0..*)");
-      assert(relClassJson.source.roleLabel, "Source RoleLabel");
-      assert(relClassJson.source.abstractConstraint, "TestSchema.SourceBaseEntity");
-      assert(relClassJson.source.constraintClasses[0], "TestSchema.TestSourceEntity");
-      assert(relClassJson.target.polymorphic === true);
-      assert(relClassJson.target.multiplicity, "(0..*)");
-      assert(relClassJson.target.roleLabel, "Target RoleLabel");
-      assert(relClassJson.target.abstractConstraint, "TestSchema.TargetBaseEntity");
-      assert(relClassJson.target.constraintClasses[0], "TestSchema.TestTargetEntity");
+      assert.strictEqual(relClassJson.strength, "Embedding");
+      assert.strictEqual(relClassJson.strengthDirection, "Backward");
+      assert.strictEqual(relClassJson.modifier, "Sealed");
+      assert.isTrue(relClassJson.source.polymorphic);
+      assert.strictEqual(relClassJson.source.multiplicity, "(0..*)");
+      assert.strictEqual(relClassJson.source.roleLabel, "Source RoleLabel");
+      assert.strictEqual(relClassJson.source.abstractConstraint, "TestSchema.SourceBaseEntity");
+      assert.strictEqual(relClassJson.source.constraintClasses[0], "TestSchema.TestSourceEntity");
+      assert.isTrue(relClassJson.target.polymorphic);
+      assert.strictEqual(relClassJson.target.multiplicity, "(0..*)");
+      assert.strictEqual(relClassJson.target.roleLabel, "Target RoleLabel");
+      assert.strictEqual(relClassJson.target.abstractConstraint, "TestSchema.TargetBaseEntity");
+      assert.strictEqual(relClassJson.target.constraintClasses[0], "TestSchema.TestTargetEntity");
     });
   });
 
@@ -569,7 +632,7 @@ describe("RelationshipClass", () => {
       }
 
       before(async () => {
-        schema = await Schema.fromJson(createSchemaJson());
+        schema = await Schema.fromJson(createSchemaJson(), new SchemaContext());
         assert.isDefined(schema);
         vehicleOwner = schema.getItemSync("VehicleOwner") as RelationshipClass;
         childVehicleOwner = schema.getItemSync("ChildVehicleOwner") as RelationshipClass;

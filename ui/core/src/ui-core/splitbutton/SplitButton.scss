@@ -2,25 +2,26 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-@import "@bentley/bwc/lib/mixins";
+@import "../index.scss";
 
 .split-button {
   flex-shrink: 1;
 
-  @include bwc-font-family;
-  @include bwc-buttons-button;
+  @include uicore-font-family;
+  @include uicore-buttons-button;
 
   cursor: pointer;
   margin: 0;
   display: flex;
-  background-color: $bwc-white;
+  color: $buic-foreground-body;
+  background-color: $buic-background-control;
 
   > .split-button-label {
     &:hover {
-      color: $bwc-blue;
+      color: $buic-foreground-primary;
     }
 
-    @include bwc-text(body);
+    @include uicore-text(body);
   }
 
   > .split-button-arrow {
@@ -30,7 +31,7 @@
       outline: 0px;
 
       > .split-button-arrow-icon {
-        color: $bwc-blue;
+        color: $buic-foreground-primary;
       }
     }
 
@@ -38,20 +39,20 @@
       transition: transform .2s;
 
       &:hover {
-        color: $bwc-blue;
+        color: $buic-foreground-primary;
       }
 
       text-align: center;
-      font-size: $bwc-icons-small;
-      line-height: $bwc-line-height;
+      font-size: $uicore-icons-small;
+      line-height: $uicore-line-height;
     }
 
-    width: $bwc-line-height;
-    height: $bwc-line-height;
+    width: $uicore-line-height;
+    height: $uicore-line-height;
     margin-left: 4px;
 
     > .context-menu {
-      top: $bwc-inputs-padding-bordered;
+      top: $uicore-inputs-padding-bordered;
     }
   }
 

@@ -5,7 +5,7 @@
 
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import { Logger } from "@bentley/bentleyjs-core";
+import { Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { IModelApp } from "@bentley/imodeljs-frontend";
 import { Config } from "@bentley/imodeljs-clients";
 import {
@@ -25,6 +25,7 @@ import "./index.css";
 
 // initialize logging
 Logger.initializeToConsole();
+Logger.setLevelDefault(LogLevel.Warning);
 
 // initialize RPC
 (function initRpc() {

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { assert, dispose } from "@bentley/bentleyjs-core";
+import { dispose, assert } from "@bentley/bentleyjs-core";
 import { ClipVector, Point3d, ClipUtilities, Triangulator, PolyfaceBuilder, IndexedPolyfaceVisitor, UnionOfConvexClipPlaneSets, Vector3d, StrokeOptions } from "@bentley/geometry-core";
 import { QPoint3dList, Frustum, QParams3d } from "@bentley/imodeljs-common";
 import { ShaderProgramExecutor } from "./ShaderProgram";
@@ -248,7 +248,7 @@ export class ClipMaskVolume extends RenderClipVolume implements RenderMemory.Con
     assert(nPoints !== 0);
 
     for (let i = 0; i < nPoints; i++)
-      vertices.add(pPoints.getPoint3dAt(i));
+      vertices.add(pPoints.getPoint3dAtUncheckedPointIndex(i));
 
     const visitor = IndexedPolyfaceVisitor.create(polyface, 0);
     while (visitor.moveToNextFacet())

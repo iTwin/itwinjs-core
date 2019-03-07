@@ -3,9 +3,10 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
+import * as faker from "faker";
 import * as moq from "typemoq";
-import { createRandomDescriptorJSON, createRandomDescriptor } from "../_helpers/random";
-import { Descriptor, Field } from "../../presentation-common";
+import { createRandomDescriptorJSON, createRandomDescriptor, createRandomPrimitiveField, createRandomCategory, createRandomECClassInfo, createRandomRelationshipPath } from "../_helpers/random";
+import { Descriptor, Field, NestedContentField, StructTypeDescription, PropertyValueFormat } from "../../presentation-common";
 import { DescriptorJSON } from "../../content/Descriptor";
 
 describe("Descriptor", () => {
@@ -45,13 +46,51 @@ describe("Descriptor", () => {
     it("returns undefined when field is not found", () => {
       const descriptor = createRandomDescriptor();
       const name = descriptor.fields.map((f) => f.name).join();
-      expect(descriptor.getFieldByName(name)).to.be.undefined;
+      expect(descriptor.getFieldByName(name, true)).to.be.undefined;
     });
 
     it("returns a field", () => {
       const descriptor = createRandomDescriptor();
       const field = descriptor.fields[0];
       expect(descriptor.getFieldByName(field.name)).to.eq(field);
+    });
+
+    it("returns undefined when descriptor contains nested fields but field is not found", () => {
+      const descriptor = createRandomDescriptor();
+      const primitiveField = createRandomPrimitiveField();
+      const descr: StructTypeDescription = {
+        valueFormat: PropertyValueFormat.Struct,
+        typeName: faker.random.word(),
+        members: [{
+          type: primitiveField.type,
+          label: primitiveField.label,
+          name: primitiveField.name,
+        }],
+      };
+      const nestedField = new NestedContentField(createRandomCategory(), faker.random.word(),
+        faker.random.words(), descr, faker.random.boolean(), faker.random.number(),
+        createRandomECClassInfo(), createRandomRelationshipPath(), [primitiveField]);
+      descriptor.fields.push(nestedField);
+      expect(descriptor.getFieldByName("does not exist", true)).to.be.undefined;
+    });
+
+    it("returns a nested field", () => {
+      const descriptor = createRandomDescriptor();
+      const primitiveField = createRandomPrimitiveField();
+      const descr: StructTypeDescription = {
+        valueFormat: PropertyValueFormat.Struct,
+        typeName: faker.random.word(),
+        members: [{
+          type: primitiveField.type,
+          label: primitiveField.label,
+          name: primitiveField.name,
+        }],
+      };
+      const nestedField = new NestedContentField(createRandomCategory(), faker.random.word(),
+        faker.random.words(), descr, faker.random.boolean(), faker.random.number(),
+        createRandomECClassInfo(), createRandomRelationshipPath(), [primitiveField]);
+      descriptor.fields.push(nestedField);
+      expect(descriptor.getFieldByName(primitiveField.name, true)).to.eq(primitiveField);
     });
 
   });

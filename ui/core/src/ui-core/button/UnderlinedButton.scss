@@ -1,0 +1,23 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+
+$color: #0000ee;
+$hoverColor: #4d8bff;
+
+.core-underlined-button {
+  background: transparent;
+  color: $color;
+  border: 0px solid $color;
+  border-bottom-width: 1px;
+
+  width: fit-content;
+
+  cursor: pointer;
+
+  &:hover {
+    color: $hoverColor;
+    border-color: $hoverColor;
+  }
+}

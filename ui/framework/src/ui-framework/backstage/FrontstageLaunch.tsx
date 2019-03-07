@@ -13,13 +13,14 @@ import { Backstage, BackstageItemProps, BackstageItemState, getBackstageItemStat
 
 import { BackstageItem as NZ_BackstageItem } from "@bentley/ui-ninezone";
 
-/** Properties for a Frontstage launch Backstage item.
+/** Properties for a [[FrontstageLaunchBackstageItem]] component
  */
 export interface FrontstageLaunchBackstageItemProps extends BackstageItemProps {
   /** id of the frontstage */
   frontstageId: string;
 }
 
+/** Backstage item that activates a Frontstage */
 export class FrontstageLaunchBackstageItem extends React.PureComponent<FrontstageLaunchBackstageItemProps, BackstageItemState> {
 
   /** @hidden */
@@ -43,37 +44,39 @@ export class FrontstageLaunchBackstageItem extends React.PureComponent<Frontstag
 
   public componentWillUnmount() {
     this._componentUnmounting = true;
+    /* istanbul ignore else */
     if (this.props.stateFunc && this._stateSyncIds.length > 0)
       SyncUiEventDispatcher.onSyncUiEvent.removeListener(this._handleSyncUiEvent);
   }
 
   private _handleSyncUiEvent = (args: SyncUiEventArgs): void => {
+    /* istanbul ignore next */
     if (this._componentUnmounting)
       return;
 
+    /* istanbul ignore else */
     if (SyncUiEventDispatcher.hasEventOfInterest(args.eventIds, this._stateSyncIds))
+      /* istanbul ignore else */
       if (this.props.stateFunc) {
         const newState = this.props.stateFunc(this.state);
+        /* istanbul ignore else */
         if (!PropsHelper.isShallowEqual(newState, this.state))
           this.setState((_prevState) => newState);
       }
-  }
-
-  public get isActive(): boolean {
-    return FrontstageManager.activeFrontstageId === this.props.frontstageId;
   }
 
   public execute = (): void => {
     Backstage.hide();
 
     const frontstageDef = FrontstageManager.findFrontstageDef(this.props.frontstageId);
+    /* istanbul ignore else */
     if (frontstageDef)
       FrontstageManager.setActiveFrontstageDef(frontstageDef); // tslint:disable-line:no-floating-promises
   }
 
   public componentWillReceiveProps(nextProps: FrontstageLaunchBackstageItemProps) {
     const updatedState = getBackstageItemStateFromProps(nextProps);
-    updatedState.isActive = this.isActive;
+    updatedState.isActive = FrontstageManager.activeFrontstageId === this.props.frontstageId;
     if (!PropsHelper.isShallowEqual(updatedState, this.state))
       this.setState((_prevState) => updatedState);
   }

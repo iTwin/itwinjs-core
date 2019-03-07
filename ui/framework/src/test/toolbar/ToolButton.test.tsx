@@ -11,6 +11,8 @@ import {
   ToolButton,
   FrontstageManager,
   KeyboardShortcutManager,
+  SyncUiEventDispatcher,
+  BaseItemState,
 } from "../../ui-framework";
 import { SelectionTool } from "@bentley/imodeljs-frontend";
 import TestUtils from "../TestUtils";
@@ -67,4 +69,21 @@ describe("ToolButton", () => {
     mount(<ToolButton toolId="tool1" label={() => "test"} />);
   });
 
+  it("sync event should trigger stateFunc", () => {
+    const testEventId = "test-buttonstate";
+    let stateFunctionCalled = false;
+    const testStateFunc = (state: Readonly<BaseItemState>): BaseItemState => { stateFunctionCalled = true; return state; };
+
+    const wrapper = mount(<ToolButton toolId="tool1" iconSpec="icon-placeholder" labelKey="UiFramework:tests.label" stateSyncIds={[testEventId]} stateFunc={testStateFunc} />);
+    const element = wrapper.find(".nz-toolbar-item-icon");
+    element.simulate("focus");
+    element.simulate("keyDown", { key: "Escape", keyCode: 27 });
+    expect(KeyboardShortcutManager.isFocusOnHome).to.be.true;
+
+    expect(stateFunctionCalled).to.eq(false);
+    SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(testEventId);
+    expect(stateFunctionCalled).to.eq(true);
+
+    wrapper.unmount();
+  });
 });

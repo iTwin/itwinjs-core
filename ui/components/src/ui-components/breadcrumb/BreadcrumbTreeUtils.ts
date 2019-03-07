@@ -5,12 +5,65 @@
 /** @module Breadcrumb */
 import { TreeNodeItem, ImmediatelyLoadedTreeNodeItem, DelayLoadedTreeNodeItem, TreeDataProvider, hasChildren } from "../tree/TreeDataProvider";
 import { TableDataProvider, TableDataChangeEvent, RowItem, CellItem, ColumnDescription } from "../table/TableDataProvider";
-import { PropertyRecord, PropertyValueFormat } from "../../ui-components";
+import { PropertyRecord, PropertyValueFormat } from "@bentley/imodeljs-frontend";
+import UiComponents from "../UiComponents";
 
 /**
  * Utility class for tree searching and manipulation in the Breadcrumb component.
  */
 export class BreadcrumbTreeUtils {
+
+  private static createIcon(node: TreeNodeItem): CellItem {
+    return {
+      key: "icon", record:
+        new PropertyRecord(
+          {
+            value: hasChildren(node) ? "icon-folder" : node.icon,
+            valueFormat: PropertyValueFormat.Primitive,
+            displayValue: hasChildren(node) ? "icon-folder" : node.icon!,
+          },
+          {
+            name: "icon",
+            displayLabel: UiComponents.i18n.translate("UiComponents:breadcrumb.icon"),
+            typename: "icon",
+          }),
+    };
+  }
+
+  private static createLabel(node: TreeNodeItem): CellItem {
+    return {
+      key: "label",
+      record: new PropertyRecord(
+        {
+          value: node.label,
+          valueFormat: PropertyValueFormat.Primitive,
+          displayValue: node.label,
+        },
+        {
+          name: "label",
+          displayLabel: UiComponents.i18n.translate("UiComponents:breadcrumb.name"),
+          typename: "text",
+        }),
+    };
+  }
+
+  private static createDescription(node: TreeNodeItem): CellItem {
+    return {
+      key: "description",
+      record: new PropertyRecord(
+        {
+          value: node.description || "",
+          valueFormat: PropertyValueFormat.Primitive,
+          displayValue: node.description || "",
+        },
+        {
+          name: "description",
+          displayLabel: UiComponents.i18n.translate("UiComponents:breadcrumb.description"),
+          typename: "text",
+        }),
+    };
+  }
+
   /**
    * Transforms a list of children from a tree node into a [[TableDataProvider]], given a list of column descriptions.
    * @param nodes Node list to use as a basis for the [[TableDataProvider]].
@@ -24,99 +77,70 @@ export class BreadcrumbTreeUtils {
       getColumns: async () => columns,
       getRowsCount: async () => nodes.length,
       getRow: async (rowIndex: number, _unfiltered?: boolean): Promise<DataRowItem> => {
-        if (rowIndex > nodes.length) return { _node: {} as DelayLoadedTreeNodeItem, key: "", cells: [] };
-        const n = nodes[rowIndex];
-        if (!n) return { _node: {} as DelayLoadedTreeNodeItem, key: "", cells: [] };
-        const colorOverrides = {
-          foreColor: n.labelForeColor,
-          backColor: n.labelBackColor,
-        };
+        if (rowIndex < 0 || rowIndex > nodes.length)
+          return { _node: {} as TreeNodeItem, key: "", cells: [] };
+
+        const node = nodes[rowIndex];
+
         const cells: CellItem[] = [
-          {
-            key: "icon", record:
-              new PropertyRecord(
+          BreadcrumbTreeUtils.createIcon(node),
+          BreadcrumbTreeUtils.createLabel(node),
+          BreadcrumbTreeUtils.createDescription(node),
+        ];
+
+        for (const key in node.extendedData) {
+          // only add string values to table cell list
+          if (node.extendedData.hasOwnProperty(key) && node.extendedData[key] instanceof PropertyRecord) {
+            cells.push({
+              key,
+              record: node.extendedData[key],
+              style: node.style,
+            });
+          } else if (node.extendedData.hasOwnProperty(key) && (typeof node.extendedData[key] === "string" || typeof node.extendedData[key] === "boolean" || typeof node.extendedData[key] === "number")) {
+            cells.push({
+              key,
+              record: new PropertyRecord(
                 {
-                  value: hasChildren(n) ? "icon-folder" : n.icon,
+                  value: node.extendedData[key].toString(),
                   valueFormat: PropertyValueFormat.Primitive,
-                  displayValue: hasChildren(n) ? "icon-folder" : n.icon!,
+                  displayValue: node.extendedData[key].toString(),
                 },
                 {
-                  name: "icon",
-                  displayLabel: "icon",
-                  typename: "icon",
+                  name: key,
+                  displayLabel: key,
+                  typename: "text",
                 }),
-          },
-          {
-            key: "label",
-            record: new PropertyRecord(
-              {
-                value: n.label,
-                valueFormat: PropertyValueFormat.Primitive,
-                displayValue: n.label,
-              },
-              {
-                name: "label",
-                displayLabel: "label",
-                typename: "text",
-              }),
-          },
-          {
-            key: "description",
-            record: new PropertyRecord(
-              {
-                value: n.description || "",
-                valueFormat: PropertyValueFormat.Primitive,
-                displayValue: n.description || "",
-              },
-              {
-                name: "description",
-                displayLabel: "description",
-                typename: "text",
-              }),
-          },
-        ];
-        for (const k in n.extendedData) {
-          // only add string values to table cell list
-          if (n.extendedData.hasOwnProperty(k) && typeof n.extendedData[k] === "string") {
-            cells.push({
-              key: k,
-              record: n.extendedData[k],
-              isBold: n.labelBold,
-              isItalic: n.labelItalic,
-              colorOverrides,
+              style: node.style,
             });
           }
         }
-        n.extendedData = n.extendedData || {};
-        n.extendedData.id = n.id;
-        n.extendedData.label = n.label;
-        n.extendedData.description = n.description;
-        if ((n as DelayLoadedTreeNodeItem).hasChildren !== undefined)
-          n.extendedData.hasChildren = (n as DelayLoadedTreeNodeItem).hasChildren;
-        if ((n as ImmediatelyLoadedTreeNodeItem).children !== undefined)
-          n.extendedData.hasChildren = (n as DelayLoadedTreeNodeItem).hasChildren;
-        n.extendedData.dataProvider = treeDataProvider;
-        n.extendedData.icon = n.icon;
+        node.extendedData = node.extendedData || {};
+        node.extendedData.id = node.id;
+        node.extendedData.label = node.label;
+        node.extendedData.description = node.description;
+        if ((node as DelayLoadedTreeNodeItem).hasChildren !== undefined)
+          node.extendedData.hasChildren = (node as DelayLoadedTreeNodeItem).hasChildren;
+        if ((node as ImmediatelyLoadedTreeNodeItem).children !== undefined)
+          node.extendedData.children = (node as ImmediatelyLoadedTreeNodeItem).children;
+        node.extendedData.dataProvider = treeDataProvider;
+        node.extendedData.icon = node.icon;
         const row: DataRowItem = {
-          _node: n,
-          key: n.id,
-          extendedData: n.extendedData,
+          _node: node,
+          key: node.id,
+          extendedData: node.extendedData,
           isDisabled: false,
-          colorOverrides: {
-            foreColor: n.labelForeColor,
-            backColor: n.labelBackColor,
-          },
+          colorOverrides: node.style ? node.style.colorOverrides : undefined,
           cells,
         };
         return row;
       },
       // TODO: implement sorting function
-      sort: async () => { },
+      sort: /* istanbul ignore next */ async () => { },
     };
   }
 }
 
 /** @hidden */
 export interface DataRowItem extends RowItem {
-  _node?: DelayLoadedTreeNodeItem;
+  _node?: TreeNodeItem;
 }

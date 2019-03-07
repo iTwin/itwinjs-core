@@ -20,7 +20,7 @@ export interface TreeBranchProps {
 export default class TreeBranch extends React.PureComponent<TreeBranchProps> {
   public render() {
     const className = classnames(
-      "nz-tree-branch",
+      "core-tree-branch",
       this.props.className);
 
     return (

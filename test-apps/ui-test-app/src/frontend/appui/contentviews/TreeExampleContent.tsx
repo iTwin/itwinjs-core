@@ -8,7 +8,7 @@ import { ConfigurableUiManager, ConfigurableCreateInfo, ContentControl } from "@
 import {
   SelectionMode, DelayLoadedTreeNodeItem,
   SimpleTreeDataProvider, SimpleTreeDataProviderHierarchy,
-  Tree, TreeCellEditorState, TreeCellUpdatedArgs, TreeNodeItem, EditableTreeDataProvider,
+  Tree, TreeCellUpdatedArgs, TreeNodeItem, EditableTreeDataProvider,
 } from "@bentley/ui-components";
 
 // import { demoMutableTreeDataProvider } from "../widgets/demodataproviders/demoTreeDataProvider";
@@ -87,12 +87,13 @@ class TreeExampleContent extends React.Component<{}, TreeExampleState> {
     this.setState({ selectionMode });
   }
 
-  private _onCellEditing = (_cellEditorState: TreeCellEditorState): void => {
+  private _onCellEditing = (): void => {
   }
 
   private _onCellUpdated = async (args: TreeCellUpdatedArgs): Promise<boolean> => {
     const nodeItem: TreeNodeItem = args.node.payload!;
-    this.state.dataProvider.updateLabel(nodeItem, args.newValue);
+    const newLabel = args.newValue;
+    this.state.dataProvider.updateLabel(nodeItem, newLabel);
     return true;
   }
 
@@ -108,7 +109,14 @@ class TreeExampleContent extends React.Component<{}, TreeExampleState> {
           </select>
         </div>
         <div style={{ flex: "1", height: "calc(100% - 22px)" }}>
-          <Tree dataProvider={this.state.dataProvider} selectionMode={this.state.selectionMode} onCellEditing={this._onCellEditing} onCellUpdated={this._onCellUpdated} />
+          <Tree
+            dataProvider={this.state.dataProvider}
+            selectionMode={this.state.selectionMode}
+            cellEditing={{
+              onCellEditing: this._onCellEditing,
+              onCellUpdated: this._onCellUpdated,
+            }}
+          />
         </div>
       </div >
     );

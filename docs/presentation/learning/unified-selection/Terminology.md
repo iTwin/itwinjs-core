@@ -1,5 +1,10 @@
 # Unified Selection -related Terminology
 
+## Selection Scope
+
+Selection scopes allow decoupling of what gets picked and what gets selected. For example,
+a *model* selection scope selects all elements in a model when you pick only one of them.
+
 ## Selection Level
 
 Unified selection API allows having multiple nested selection levels. In all

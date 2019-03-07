@@ -12,11 +12,12 @@ import {
   NestedContentValue, NestedContentField,
   TypeDescription, StructTypeDescription, ArrayTypeDescription,
 } from "@bentley/presentation-common";
+import { Omit } from "@bentley/ui-core";
 import {
   PropertyRecord, PropertyValue, PropertyValueFormat as UiPropertyValueFormat,
   ArrayValue, StructValue, PrimitiveValue,
   PropertyDescription, PropertyEditorInfo, EnumerationChoicesInfo,
-} from "@bentley/ui-components";
+} from "@bentley/imodeljs-frontend";
 
 const createArrayValue = (propertyDescription: PropertyDescription, arrayDescription: ArrayTypeDescription, values: Value[], displayValues: DisplayValue[]): ArrayValue => {
   const records = new Array<PropertyRecord>();
@@ -87,21 +88,24 @@ const createValue = (propertyDescription: PropertyDescription, typeDescription: 
   return createPrimitiveValue(value, displayValue);
 };
 
-const createRecordDescription = (typeDescription: TypeDescription, displayValue: DisplayValue): string | undefined => {
+const createRecordDescription = (typeDescription: TypeDescription, displayValue: Omit<DisplayValue, "undefined">): string | undefined => {
   if (PropertyValueFormat.Array === typeDescription.valueFormat || PropertyValueFormat.Struct === typeDescription.valueFormat)
     return undefined;
   if (PropertyValueFormat.Primitive !== typeDescription.valueFormat || !isPrimitive(displayValue))
     throw new PresentationError(PresentationStatus.InvalidArgument, "displayValue is of wrong type");
-  return (undefined !== displayValue) ? displayValue.toString() : undefined;
+  return displayValue.toString();
 };
 
 const createRecord = (propertyDescription: PropertyDescription, typeDescription: TypeDescription,
   value: Value, displayValue: DisplayValue, isReadOnly: boolean, isMerged: boolean): PropertyRecord => {
   const valueObj = createValue(propertyDescription, typeDescription, isMerged, value, displayValue);
   const record = new PropertyRecord(valueObj, propertyDescription);
-  record.description = createRecordDescription(typeDescription, displayValue);
-  record.isMerged = isMerged;
-  record.isReadonly = isReadOnly;
+  if (displayValue)
+    record.description = createRecordDescription(typeDescription, displayValue);
+  if (isMerged)
+    record.isMerged = true;
+  if (isReadOnly)
+    record.isReadonly = true;
   return record;
 };
 
@@ -162,8 +166,10 @@ const createNestedContentRecord = (field: NestedContentField, item: Item, path?:
   }
 
   const record = new PropertyRecord(value, ContentBuilder.createPropertyDescription(field));
-  record.isMerged = isMerged;
-  record.isReadonly = field.isReadonly || isMerged;
+  if (isMerged)
+    record.isMerged = true;
+  if (field.isReadonly || isMerged)
+    record.isReadonly = true;
   return record;
 };
 

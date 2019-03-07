@@ -8,6 +8,7 @@ import InspireTree, * as Inspire from "inspire-tree";
 import { isArrayLike } from "lodash";
 import { CallableInstance } from "callable-instance2/import";
 import { IDisposable, using } from "@bentley/bentleyjs-core";
+import { CheckBoxInfo, CheckBoxState, isPromiseLike } from "@bentley/ui-core";
 import { PageOptions } from "../../common/PageOptions";
 
 /**
@@ -37,10 +38,32 @@ export enum BeInspireTreeEvent {
 }
 
 /** Be alias for Inspire.NodeConfig */
-export type BeInspireTreeNodeConfig = Inspire.NodeConfig;
+export interface BeInspireTreeNodeConfig {
+  children?: BeInspireTreeNodeConfig[] | true;
+  id?: string;
+  text: string;
+  itree?: BeInspireTreeNodeITree;
+}
+
+/** Be alias for Inspire.NodeConfig.ITree */
+export interface BeInspireTreeNodeITree {
+  icon?: string;
+  state?: {
+    checkboxVisible?: boolean;
+    checkboxDisabled?: boolean;
+    checked?: boolean;
+    collapsed?: boolean;
+    editable?: boolean;
+    focused?: boolean;
+    indeterminate?: boolean;
+    loading?: boolean;
+    selectable?: boolean;
+    selected?: boolean;
+  };
+}
 
 /** Data structure for [[BeInspireTreeNodeConfig]] with our injected props */
-export interface BeInspireTreeNodePayloadConfig<TPayload> extends Inspire.NodeConfig {
+export interface BeInspireTreeNodePayloadConfig<TPayload> extends BeInspireTreeNodeConfig {
   /** Node's data. May be `undefined` if this is placeholder node. */
   payload?: TPayload;
   /** Index of the node at the parent level. Only set if this is a placeholder node. */
@@ -165,7 +188,7 @@ interface DeferredLoadingHandler<TPayload> {
 /**
  * Configuration properties for [[BeInspireTree]]
  */
-export interface Props<TNodePayload> {
+export interface BeInspireTreeProps<TNodePayload> {
   dataProvider: BeInspireTreeDataProvider<TNodePayload>;
   mapPayloadToInspireNodeConfig: MapPayloadToInspireNodeCallback<TNodePayload>;
   pageSize?: number;
@@ -183,9 +206,9 @@ export class BeInspireTree<TNodePayload> {
   private _deferredLoadingHandler?: DeferredLoadingHandler<TNodePayload>;
   private _visibleCached?: BeInspireTreeNodes<TNodePayload>;
   private _suspendedRendering?: EventsMuteContext;
-  public props: Props<TNodePayload>;
+  public props: BeInspireTreeProps<TNodePayload>;
 
-  constructor(props: Props<TNodePayload>) {
+  constructor(props: BeInspireTreeProps<TNodePayload>) {
     this.props = props;
     this._eventMutes = new Map();
 
@@ -232,7 +255,7 @@ export class BeInspireTree<TNodePayload> {
     const baseTreeLoad = this._tree.load;
     this._tree.load = async (loader): Promise<Inspire.TreeNodes> => {
       const result = await baseTreeLoad.call(this._tree, loader);
-      await using(this.pauseRendering(), async () => {
+      await using(this.pauseRendering(), async (_r) => {
         await ensureNodesAutoExpanded(result);
       });
       return result;
@@ -259,7 +282,7 @@ export class BeInspireTree<TNodePayload> {
     }).then(async () => {
       // note: the following is only needed for the initial load of the tree
       // when our `load` override isn't assigned yet
-      await using(this.pauseRendering(), async () => {
+      await using(this.pauseRendering(), async (_r) => {
         await ensureNodesAutoExpanded(this._tree.nodes());
       });
     });
@@ -304,7 +327,7 @@ export class BeInspireTree<TNodePayload> {
 
   // tslint:disable-next-line:naming-convention
   private doEmit = (events: BeInspireTreeEvent[]) => {
-    this._tree.emit(events);
+    events.forEach((e) => this._tree.emit(e));
   }
 
   /**
@@ -411,7 +434,7 @@ export class BeInspireTree<TNodePayload> {
 
   /** Reload the tree */
   public async reload() {
-    await using(this.pauseRendering(), async () => {
+    await using(this.pauseRendering(), async (_r) => {
       const rootNodes = await this._tree.reload();
       rootNodes.forEach((n) => toNode(n).setDirty(true));
     });
@@ -421,7 +444,7 @@ export class BeInspireTree<TNodePayload> {
    * Deselects all nodes
    */
   public deselectAll(muteEvents = true) {
-    using(this.mute((muteEvents) ? [BeInspireTreeEvent.NodeDeselected] : []), () => {
+    using(this.mute((muteEvents) ? [BeInspireTreeEvent.NodeDeselected] : []), (_r) => {
       this._tree.deselectDeep();
     });
   }
@@ -432,7 +455,7 @@ export class BeInspireTree<TNodePayload> {
    * Note: order of supplied nodes is not important
    */
   public selectBetween(node1: BeInspireTreeNode<TNodePayload>, node2: BeInspireTreeNode<TNodePayload>, muteEvents = true): Array<BeInspireTreeNode<TNodePayload>> {
-    return using(this.mute((muteEvents) ? [BeInspireTreeEvent.NodeSelected] : []), () => {
+    return using(this.mute((muteEvents) ? [BeInspireTreeEvent.NodeSelected] : []), (_r) => {
       let start, end: BeInspireTreeNode<TNodePayload>;
       if (node1.indexPath() <= node2.indexPath()) {
         start = node1;
@@ -478,7 +501,7 @@ export class BeInspireTree<TNodePayload> {
     if (!predicate)
       return;
 
-    using(this.mute((muteEvents) ? [BeInspireTreeEvent.NodeSelected, BeInspireTreeEvent.NodeDeselected] : []), () => {
+    using(this.mute((muteEvents) ? [BeInspireTreeEvent.NodeSelected, BeInspireTreeEvent.NodeDeselected] : []), (_r) => {
       this._tree.disableDeselection();
       selectHandler(predicate);
       this._tree.enableDeselection();
@@ -509,6 +532,63 @@ export class BeInspireTree<TNodePayload> {
       filtered.forEach((node) => node.select());
     };
     return this.updateSelection(selectFunc, nodesToSelect, muteEvents);
+  }
+
+  private updateNodeCheckboxInfo(node: BeInspireTreeNode<TNodePayload>, status: CheckBoxInfo) {
+    let hasChanges = false;
+    if (node.itree!.state!.checkboxVisible !== status.isVisible) {
+      node.itree!.state!.checkboxVisible = status.isVisible;
+      hasChanges = true;
+    }
+    if (node.itree!.state!.checkboxDisabled !== status.isDisabled) {
+      node.itree!.state!.checkboxDisabled = status.isDisabled;
+      hasChanges = true;
+    }
+    // note: can't use `check()` & `uncheck()` because they also fiddle with
+    // parent node which we don't want
+    if (status.state === CheckBoxState.On && !node.itree!.state!.checked) {
+      node.itree!.state!.checked = true;
+      this._tree.emit(BeInspireTreeEvent.NodeChecked, node);
+      hasChanges = true;
+    } else if (status.state === CheckBoxState.Off && node.itree!.state!.checked) {
+      node.itree!.state!.checked = false;
+      this._tree.emit(BeInspireTreeEvent.NodeUnchecked, node);
+      hasChanges = true;
+    }
+    if (hasChanges) {
+      node.setDirty(true);
+      this.applyChanges();
+    }
+  }
+
+  /**
+   * Updates checkbox states of the whole tree using the `checkboxInfo` callback function
+   */
+  public async updateTreeCheckboxes(checkboxInfo: ((payload: TNodePayload) => CheckBoxInfo | Promise<CheckBoxInfo>), muteEvents = true) {
+    await this.updateNodesCheckboxes(this.flatten(), checkboxInfo, muteEvents);
+  }
+
+  /**
+   * Updates checkbox states of provided `nodes` based on `checkboxInfo` callback function
+   */
+  public async updateNodesCheckboxes(nodes: BeInspireTreeNodes<TNodePayload>, checkboxInfo: ((payload: TNodePayload) => CheckBoxInfo | Promise<CheckBoxInfo>), muteEvents = true) {
+    await using(this.pauseRendering(), async (_r1) => {
+      await using(this.mute((muteEvents) ? [BeInspireTreeEvent.NodeChecked, BeInspireTreeEvent.NodeUnchecked] : []), async (_r2) => {
+        const promises = new Array<Promise<void>>();
+        nodes.forEach((n) => {
+          if (!n.payload)
+            return;
+
+          const status = checkboxInfo(n.payload);
+          if (isPromiseLike(status))
+            promises.push(status.then((s) => this.updateNodeCheckboxInfo(n, s)));
+          else
+            this.updateNodeCheckboxInfo(n, status);
+        });
+        if (promises.length !== 0)
+          await Promise.all(promises);
+      });
+    });
   }
 
   /** @hidden */
@@ -780,7 +860,7 @@ class WrappedInterfaceProvider<TPayload> extends CallableInstance implements Def
       // merge current nodes with stash), there's no point to show the
       // `loading` state and then re-render with `completed` state + nodes.
       // instead, just pause rendering until we have the nodes
-      await using(this._tree.pauseRendering(), async () => {
+      await using(this._tree.pauseRendering(), async (_r) => {
         // request children for `parent` to reload - the load handler
         // will merge the current children with stash (see `inspireLoad`)
         if (parentId)
@@ -823,7 +903,7 @@ class WrappedInterfaceProvider<TPayload> extends CallableInstance implements Def
   }
 
   /** Called by inspire-tree */
-  private async inspireLoad(parent: BeInspireTreeNode<TPayload> | undefined, resolve: (nodes: Array<BeInspireTreeNodePayloadConfig<TPayload>>, totalCount: number) => any) {
+  private inspireLoad(parent: BeInspireTreeNode<TPayload> | undefined, resolve: (nodes: Array<BeInspireTreeNodePayloadConfig<TPayload>>, totalCount: number) => any) {
     if (!this._paginationHelper) {
       // pagination is disabled - just load all nodes for the parent
       const payload = parent ? parent.payload : undefined;
@@ -838,18 +918,22 @@ class WrappedInterfaceProvider<TPayload> extends CallableInstance implements Def
 
     // paginated behavior
     const parentId = parent ? parent.id : undefined;
+    const complete = () => {
+      const pagedNodes = this.createPagedNodesResult(parent);
+      if (parent && isArrayLike(parent.children)) {
+        // reset so concat doesn't duplicate nodes
+        parent.children = true;
+      }
+      onNodesDelayLoaded(parent, pagedNodes);
+      resolve(pagedNodes, pagedNodes.length);
+    };
     if (!this._paginationHelper.hasOrWillHaveLoadedPages(parentId)) {
       // parent has no children yet - initiate a request and wait
       this._initialRequests.add(parentId);
-      await this.requestNodeLoad(parent, 0);
+      this.requestNodeLoad(parent, 0).then(complete); // tslint:disable-line: no-floating-promises
+    } else {
+      complete();
     }
-    const pagedNodes = this.createPagedNodesResult(parent);
-    if (parent && isArrayLike(parent.children)) {
-      // reset so concat doesn't duplicate nodes
-      parent.children = true;
-    }
-    onNodesDelayLoaded(parent, pagedNodes);
-    resolve(pagedNodes, pagedNodes.length);
   }
 }
 interface WrappedInterfaceProvider<TPayload> {

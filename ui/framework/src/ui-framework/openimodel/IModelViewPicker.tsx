@@ -11,6 +11,7 @@ import { ViewQueryParams, ViewDefinitionProps } from "@bentley/imodeljs-common";
 import { IModelInfo } from "../clientservices/IModelServices";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { Spinner, SpinnerSize } from "@bentley/ui-core";
 import "./Common.scss";
 import "./IModelViewPicker.scss";
 
@@ -132,7 +133,9 @@ export class IModelViewPicker extends React.Component<ViewsProps, ViewsState> {
   private renderViews() {
     if (this.state.waitingForViews) {
       return (
-        <div className="loading"><div><i /><i /><i /><i /><i /><i /></div></div>
+        <div className="loading">
+          <Spinner size={SpinnerSize.Large} />
+        </div>
       );
     } else if (this.state.views && this.state.views.length > 0) {
       return (

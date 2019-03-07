@@ -152,6 +152,14 @@ export * from "./ui-ninezone/zones/target/Container";
 export * from "./ui-ninezone/zones/target/Merge";
 export * from "./ui-ninezone/zones/target/Target";
 
+// Set the version number so it can be found at runtime. BUILD_SEMVER is replaced at build time by the webpack DefinePlugin.
+declare var BUILD_SEMVER: string;
+if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") && window) {
+  if (!(window as any).iModelJsVersions)
+    (window as any).iModelJsVersions = new Map<string, string>();
+  (window as any).iModelJsVersions.set("ui-ninezone", BUILD_SEMVER);
+}
+
 /** @docs-package-description
  * The ui-ninezone package contains React components for application user interface layouts following the Bentley 9-Zone pattern.
  * For more information, see [learning about ui-ninezone]($docs/learning/ninezone/index.md).

@@ -31,7 +31,7 @@ import {
 } from "@bentley/imodeljs-common";
 import { DisplayParams } from "../DisplayParams";
 import { ColorMap } from "../ColorMap";
-import { RenderGraphic, RenderSystem } from "../../System";
+import { InstancedGraphicParams, RenderGraphic, RenderSystem } from "../../System";
 import { Triangle, TriangleList } from "../Primitives";
 import { VertexKeyProps } from "../VertexKey";
 
@@ -210,7 +210,7 @@ export class Mesh {
   public readonly normals: OctEncodedNormal[] = [];
   public readonly uvParams: Point2d[] = [];
   public readonly colorMap: ColorMap = new ColorMap(); // used to be called ColorTable
-  public colors: Uint16Array = new Uint16Array();
+  public colors: number[] = [];
   public edges?: MeshEdges;
   public readonly features?: Mesh.Features;
   public readonly type: Mesh.PrimitiveType;
@@ -243,12 +243,12 @@ export class Mesh {
       this.features.toFeatureIndex(index);
   }
 
-  public getGraphics(args: MeshGraphicArgs, system: RenderSystem): RenderGraphic | undefined {
+  public getGraphics(args: MeshGraphicArgs, system: RenderSystem, instances?: InstancedGraphicParams): RenderGraphic | undefined {
     if (undefined !== this.triangles && this.triangles.length !== 0) {
       if (args.meshArgs.init(this))
-        return system.createTriMesh(args.meshArgs);
+        return system.createTriMesh(args.meshArgs, instances);
     } else if (undefined !== this.polylines && this.polylines.length !== 0 && args.polylineArgs.init(this)) {
-      return system.createIndexedPolylines(args.polylineArgs);
+      return system.createIndexedPolylines(args.polylineArgs, instances);
     }
 
     return undefined;
@@ -288,10 +288,22 @@ export class Mesh {
     if (undefined !== uvParam)
       this.uvParams.push(uvParam);
 
-    this.colorMap.insert(fillColor);
+    // Don't allocate color indices until we have non-uniform colors
+    if (0 === this.colorMap.length) {
+      this.colorMap.insert(fillColor);
+      assert(this.colorMap.isUniform);
+      assert(0 === this.colorMap.indexOf(fillColor));
+    } else if (!this.colorMap.isUniform || !this.colorMap.hasColor(fillColor)) {
+      // Back-fill uniform value (index=0) for existing vertices if previously uniform
+      if (0 === this.colors.length)
+        this.colors.length = this.points.length - 1;
+
+      this.colors.push(this.colorMap.insert(fillColor));
+      assert(!this.colorMap.isUniform);
+    }
+
     return this.points.length - 1;
   }
-
 }
 
 export namespace Mesh {

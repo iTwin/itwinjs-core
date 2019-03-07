@@ -218,6 +218,27 @@ export class ConcurrencyControl {
     return res;
   }
 
+  /** Obtain the CodeSpec lock. This is always an immediate request, never deferred. */
+  public async lockCodeSpecs(actx: ActivityLoggingContext, accessToken: AccessToken): Promise<Lock[]> {
+    actx.enter();
+    const locks: Lock[] = [
+      {
+        wsgId: "what-is-this",
+        ecId: "and-what-is-this",
+        lockLevel: LockLevel.Exclusive,
+        lockType: LockType.CodeSpecs,
+        objectId: Id64.fromString("0x1"),
+        briefcaseId: this._iModel.briefcase.briefcaseId,
+        seedFileId: this._iModel.briefcase.fileId,
+        releasedWithChangeSet: this._iModel.briefcase.changeSetId,
+      },
+    ];
+    assert(this.inBulkOperation(), "should always be in bulk mode");
+    const res = BriefcaseManager.imodelClient.locks.update(actx, accessToken, this._iModel.iModelToken.iModelId!, locks);
+    assert(this.inBulkOperation(), "should always be in bulk mode");
+    return res;
+  }
+
   private buildLockRequests(briefcaseInfo: BriefcaseEntry, req: ConcurrencyControl.Request): Lock[] | undefined {
     const reqAny: any = ConcurrencyControl.convertRequestToAny(req);
 

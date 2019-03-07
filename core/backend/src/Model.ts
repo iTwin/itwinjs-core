@@ -6,7 +6,7 @@
 
 import { Id64String, Id64, DbOpcode, JsonUtils, IModelStatus } from "@bentley/bentleyjs-core";
 import { AxisAlignedBox3d, GeometricModel2dProps, IModel, IModelError, InformationPartitionElementProps, ModelProps, RelatedElement } from "@bentley/imodeljs-common";
-import { Point2d } from "@bentley/geometry-core";
+import { Point2d, Range3d } from "@bentley/geometry-core";
 import { DefinitionPartition, DocumentPartition, PhysicalPartition } from "./Element";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
@@ -92,7 +92,7 @@ export class GeometricModel extends Model {
     const { error, result } = this.iModel.nativeDb.queryModelExtents(JSON.stringify({ id: this.id.toString() }));
     if (error)
       throw new IModelError(error.status, "Error querying model extents");
-    return AxisAlignedBox3d.fromJSON(JSON.parse(result!).modelExtents);
+    return Range3d.fromJSON(JSON.parse(result!).modelExtents);
   }
 }
 

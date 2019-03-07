@@ -3,6 +3,7 @@
 exports[`<EditorContainer /> renders correctly 1`] = `
 <span
   className="components-editor-container"
+  data-testid="editor-container"
   onBlur={[Function]}
   onClick={[Function]}
   onContextMenu={[Function]}
@@ -11,7 +12,9 @@ exports[`<EditorContainer /> renders correctly 1`] = `
 >
   <TextEditor
     onBlur={[Function]}
-    value={
+    onCancel={[Function]}
+    onCommit={[Function]}
+    propertyRecord={
       PropertyRecord {
         "isReadonly": false,
         "property": Object {
@@ -26,6 +29,7 @@ exports[`<EditorContainer /> renders correctly 1`] = `
         },
       }
     }
+    setFocus={true}
   />
 </span>
 `;

@@ -5,10 +5,10 @@
 /** @module Properties */
 
 import { IPropertyValueRenderer, PropertyValueRendererContext, PropertyContainerType } from "../../ValueRendererManager";
-import { PropertyRecord } from "../../Record";
-import { PropertyValueFormat, PrimitiveValue } from "../../Value";
+import { PropertyRecord, PropertyValueFormat, PrimitiveValue } from "@bentley/imodeljs-frontend";
 import { TypeConverterManager } from "../../../converters/TypeConverterManager";
 import { withContextStyle } from "./WithContextStyle";
+import { withLinks } from "../../LinkHandler";
 
 /** Default Primitive Property Renderer */
 export class PrimitivePropertyValueRenderer implements IPropertyValueRenderer {
@@ -22,9 +22,12 @@ export class PrimitivePropertyValueRenderer implements IPropertyValueRenderer {
       return withContextStyle(context.decoratedTextElement, context);
 
     const value = (record.value as PrimitiveValue).value;
-    if (value !== undefined)
-      return withContextStyle(TypeConverterManager.getConverter(record.property.typename).convertPropertyToString(record.property, value), context);
 
-    return "";
+    if (value === undefined)
+      return withContextStyle("", context);
+
+    const stringValue = TypeConverterManager.getConverter(record.property.typename).convertPropertyToString(record.property, value);
+
+    return withContextStyle(withLinks(record, stringValue), context);
   }
 }

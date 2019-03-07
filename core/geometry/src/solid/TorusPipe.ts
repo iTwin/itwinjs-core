@@ -13,13 +13,14 @@ import { GeometryQuery } from "../curve/GeometryQuery";
 import { Geometry } from "../Geometry";
 import { AngleSweep } from "../geometry3d/AngleSweep";
 import { Angle } from "../geometry3d/Angle";
-import { GeometryHandler, UVSurface } from "../geometry3d/GeometryHandler";
+import { GeometryHandler, UVSurface, UVSurfaceIsoParametricDistance } from "../geometry3d/GeometryHandler";
 import { SolidPrimitive } from "./SolidPrimitive";
 import { Loop } from "../curve/Loop";
 import { Path } from "../curve/Path";
 import { CurveCollection } from "../curve/CurveCollection";
 import { Arc3d } from "../curve/Arc3d";
 import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
+import { Vector2d } from "../geometry3d/Point2dVector2d";
 /**
  * the stored form of the torus pipe is oriented for positive volume:
  *
@@ -27,7 +28,7 @@ import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVecto
  * * The sweep is positive
  * * The coordinate system has positive determinant.
  */
-export class TorusPipe extends SolidPrimitive implements UVSurface {
+export class TorusPipe extends SolidPrimitive implements UVSurface, UVSurfaceIsoParametricDistance {
   private _localToWorld: Transform;
   private _radiusA: number;  // radius of (large) circle in xy plane
   private _radiusB: number;  // radius of (small) circle in xz plane.
@@ -125,6 +126,9 @@ export class TorusPipe extends SolidPrimitive implements UVSurface {
     }
     return false;
   }
+  /** Return the angle (in radians) for given fractional position around the major hoop.
+   */
+  public vFractionToRadians(v: number): number { return this._sweep.radians * v; }
   public dispatchToGeometryHandler(handler: GeometryHandler): any {
     return handler.handleTorusPipe(this);
   }
@@ -133,8 +137,8 @@ export class TorusPipe extends SolidPrimitive implements UVSurface {
    * @returns Return the Arc3d section at vFraction.  For the TorusPipe, this is a minor circle.
    * @param vFraction fractional position along the sweep direction
    */
-  public constantVSection(vFraction: number): CurveCollection | undefined {
-    const thetaRadians = this._sweep.radians * vFraction;
+  public constantVSection(v: number): CurveCollection | undefined {
+    const thetaRadians = this.vFractionToRadians(v);
     const c0 = Math.cos(thetaRadians);
     const s0 = Math.sin(thetaRadians);
     const majorRadius = this.getMajorRadius();
@@ -214,7 +218,7 @@ export class TorusPipe extends SolidPrimitive implements UVSurface {
    * @param u fractional position in minor (phi)
    * @param v fractional position on major (theta) arc
    */
-  public UVFractionToPoint(u: number, v: number, result?: Point3d): Point3d {
+  public uvFractionToPoint(u: number, v: number, result?: Point3d): Point3d {
     const thetaRadians = v * this._sweep.radians;
     const phiRadians = u * Math.PI * 2.0;
     const cosTheta = Math.cos(thetaRadians);
@@ -227,7 +231,7 @@ export class TorusPipe extends SolidPrimitive implements UVSurface {
    * @param u fractional position in minor (phi)
    * @param v fractional position on major (theta) arc
    */
-  public UVFractionToPointAndTangents(u: number, v: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors {
+  public uvFractionToPointAndTangents(u: number, v: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors {
     const thetaRadians = v * this._sweep.radians;
     const phiRadians = u * Math.PI * 2.0;
     const fTheta = this._sweep.radians;
@@ -245,6 +249,22 @@ export class TorusPipe extends SolidPrimitive implements UVSurface {
       this._localToWorld.multiplyVectorXYZ(-cosTheta * rSinPhi * fPhi, -sinTheta * rSinPhi * fPhi, rCosPhi * fPhi),
       this._localToWorld.multiplyVectorXYZ(-rxy * sinTheta * fTheta, rxy * cosTheta * fTheta, 0),
       result);
+  }
+  /**
+   * Directional distance query
+   * * u direction is around the (full) minor hoop
+   * * v direction is around the outer radius, sum of (absolute values of) major and minor radii.
+   */
+  public maxIsoParametricDistance(): Vector2d {
+    const a = Math.abs(this.getMajorRadius());
+    const b = Math.abs(this.getMinorRadius());
+    return Vector2d.create(b * Math.PI * 2.0, (a + b) * this._sweep.radians);
+  }
+  /**
+   * @return true if this is a closed volume.
+   */
+  public get isClosedVolume(): boolean {
+    return this.capped || this._sweep.isFullCircle;
   }
 
 }

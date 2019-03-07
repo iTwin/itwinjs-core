@@ -4,10 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import * as sinon from "sinon";
 import { TestSchemaLocater } from "../TestUtils/FormatTestHelper";
 import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
-
 import { Schema, MutableSchema } from "./../../src/Metadata/Schema";
 import { Format } from "./../../src/Metadata/Format";
 import { ShowSignOption, FormatType, FormatTraits, DecimalPrecision } from "./../../src/utils/FormatEnums";
@@ -37,31 +35,12 @@ function createSchemaJson(koq: any) {
 describe("Format", () => {
   let schema: Schema;
   let testFormat: Format;
-  describe("accept", () => {
-    beforeEach(() => {
-      schema = new Schema("TestSchema", 1, 0, 0);
-      testFormat = new Format(schema, "TestFormat");
-    });
-
-    it("should call visitFormat on a SchemaItemVisitor object", async () => {
-      expect(testFormat).to.exist;
-      const mockVisitor = { visitFormat: sinon.spy() };
-      await testFormat.accept(mockVisitor);
-      expect(mockVisitor.visitFormat.calledOnce).to.be.true;
-      expect(mockVisitor.visitFormat.calledWithExactly(testFormat)).to.be.true;
-    });
-
-    it("should safely handle a SchemaItemVisitor without visitFormat defined", async () => {
-      expect(testFormat).to.exist;
-      await testFormat.accept({});
-    });
-  });
 
   describe("type checking json", () => {
     let jsonParser: JsonParser; // This is an easy way to test the logic directly in the parser without having to go through deserialization every time.
 
     const rawSchema = {
-      $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
+      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
       name: "TestSchema",
       version: "1.2.3",
       items: {
@@ -214,7 +193,7 @@ describe("Format", () => {
 
   describe("deserialize formatted ECJSON", () => {
     beforeEach(() => {
-      schema = new Schema("TestSchema", 1, 0, 0);
+      schema = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);
       testFormat = (schema as MutableSchema).createFormatSync("TestFormat");
     });
 
@@ -320,28 +299,28 @@ describe("Format", () => {
     };
     it("sync - precision value is valid with different format types", () => {
       testFormat.deserializeSync(validPrecisionDecimal);
-      assert(testFormat.precision === 3);
+      assert.strictEqual(testFormat.precision, 3);
 
       testFormat = (schema as MutableSchema).createFormatSync("TestFormatA");
       testFormat.deserializeSync(validPrecisionScientific);
-      assert(testFormat.precision === 0);
+      assert.strictEqual(testFormat.precision, 0);
 
       testFormat = (schema as MutableSchema).createFormatSync("TestFormatB");
       testFormat.deserializeSync(validPrecisionStation);
-      assert(testFormat.precision === 12);
+      assert.strictEqual(testFormat.precision, 12);
     });
 
     it("async - precision value is valid with different format types", async () => {
       await testFormat.deserialize(validPrecisionDecimal);
-      assert(testFormat.precision === 3);
+      assert.strictEqual(testFormat.precision, 3);
 
       testFormat = (schema as MutableSchema).createFormatSync("TestFormatA");
       await testFormat.deserialize(validPrecisionScientific);
-      assert(testFormat.precision === 0);
+      assert.strictEqual(testFormat.precision, 0);
 
       testFormat = (schema as MutableSchema).createFormatSync("TestFormatB");
       await testFormat.deserialize(validPrecisionStation);
-      assert(testFormat.precision === 12);
+      assert.strictEqual(testFormat.precision, 12);
     });
 
     const invalidMinWidth: Mutable<FormatProps> = {

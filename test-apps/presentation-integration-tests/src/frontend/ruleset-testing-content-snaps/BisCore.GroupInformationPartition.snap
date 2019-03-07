@@ -1,0 +1,57 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`RulesetTesting generates correct content for 'Items' ruleset. ClassName: 'BisCore:GroupInformationPartition' 1`] = `
+Array [
+  PropertyRecord {
+    "property": Object {
+      "displayLabel": "User Label",
+      "name": "GroupInformationPartition_UserLabel",
+      "typename": "string",
+    },
+    "value": Object {
+      "displayValue": "",
+      "value": undefined,
+      "valueFormat": 0,
+    },
+  },
+  PropertyRecord {
+    "description": "DgnV8Bridge",
+    "isReadonly": true,
+    "property": Object {
+      "displayLabel": "Model",
+      "name": "GroupInformationPartition_Model",
+      "typename": "navigation",
+    },
+    "value": Object {
+      "displayValue": "DgnV8Bridge",
+      "value": 1,
+      "valueFormat": 0,
+    },
+  },
+  PropertyRecord {
+    "property": Object {
+      "displayLabel": "Description",
+      "name": "GroupInformationPartition_Description",
+      "typename": "string",
+    },
+    "value": Object {
+      "displayValue": "",
+      "value": undefined,
+      "valueFormat": 0,
+    },
+  },
+  PropertyRecord {
+    "description": "Converted Groups",
+    "property": Object {
+      "displayLabel": "Code",
+      "name": "GroupInformationPartition_CodeValue",
+      "typename": "string",
+    },
+    "value": Object {
+      "displayValue": "Converted Groups",
+      "value": "Converted Groups",
+      "valueFormat": 0,
+    },
+  },
+]
+`;

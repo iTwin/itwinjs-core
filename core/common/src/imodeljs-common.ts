@@ -20,6 +20,7 @@ export * from "./IModel";
 export * from "./IModelError";
 export * from "./IModelVersion";
 export * from "./Lighting";
+export * from "./MaterialProps";
 export * from "./ModelProps";
 export * from "./OctEncodedNormal";
 export * from "./QPoint";
@@ -29,14 +30,16 @@ export * from "./TileProps";
 export * from "./Thumbnail";
 export * from "./ViewProps";
 export * from "./Render";
+export * from "./Paging";
 export * from "./RenderSchedule";
+export * from "./ChangedElements";
 export * from "./domains/FunctionalElementProps";
 export * from "./domains/GenericElementProps";
 export * from "./geometry/AreaPattern";
 export * from "./geometry/Cartographic";
 export * from "./geometry/GeometryStream";
 export * from "./geometry/LineStyle";
-export * from "./geometry/Primitives";
+export * from "./geometry/Placement";
 export * from "./geometry/TextString";
 export * from "./rpc/TestRpcManager";
 export * from "./rpc/WipRpcInterface";
@@ -61,7 +64,14 @@ export * from "./rpc/IModelReadRpcInterface";
 export * from "./rpc/IModelTileRpcInterface";
 export * from "./rpc/IModelWriteRpcInterface";
 export * from "./rpc/StandaloneIModelRpcInterface";
-export * from "./rpc/IModelUnitTestRpcInterface";
+
+// Set the version number so it can be found at runtime. BUILD_SEMVER is replaced at build time by the webpack DefinePlugin.
+declare var BUILD_SEMVER: string;
+if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") && window) {
+  if (!(window as any).iModelJsVersions)
+    (window as any).iModelJsVersions = new Map<string, string>();
+  (window as any).iModelJsVersions.set("imodeljs-common", BUILD_SEMVER);
+}
 
 /** @docs-package-description
  * The imodeljs-common package contains classes for working with iModels that can be used in both [frontend]($docs/learning/frontend/index.md) and [backend]($docs/learning/backend/index.md).

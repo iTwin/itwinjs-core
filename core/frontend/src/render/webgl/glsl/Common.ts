@@ -7,11 +7,9 @@
 import { ShaderBuilder, ProgramBuilder, VariableType, ShaderType } from "../ShaderBuilder";
 import { UniformHandle } from "../Handle";
 import { DrawParams } from "../DrawCommand";
-import { LUTGeometry } from "../CachedGeometry";
 import { ShaderFlags } from "../ShaderProgram";
 import { System, RenderType } from "../System";
 import { assert } from "@bentley/bentleyjs-core";
-import { SurfaceGeometry } from "../Surface";
 
 const extractShaderBit = `
   float extractShaderBit(float flag) { return extractNthBit(floor(u_shaderFlags + 0.5), flag); }
@@ -25,6 +23,7 @@ function addShaderFlagsLookup(shader: ShaderBuilder) {
   shader.addConstant("kShaderBit_NonUniformColor", VariableType.Float, "1.0");
   shader.addConstant("kShaderBit_OITFlatAlphaWeight", VariableType.Float, "2.0");
   shader.addConstant("kShaderBit_OITScaleOutput", VariableType.Float, "3.0");
+  shader.addConstant("kShaderBit_IgnoreNonLocatable", VariableType.Float, "4.0");
 
   shader.addFunction(GLSLCommon.extractNthBit);
   shader.addFunction(extractShaderBit);
@@ -40,8 +39,8 @@ export function addViewMatrix(vert: ShaderBuilder): void {
 }
 
 function setShaderFlags(uniform: UniformHandle, params: DrawParams) {
-  assert(params.geometry instanceof LUTGeometry);
-  const geom = params.geometry as LUTGeometry;
+  assert(params.geometry.asLUT !== undefined);
+  const geom = params.geometry.asLUT!;
   let flags = params.target.currentShaderFlags;
 
   const color = geom.getColor(params.target);
@@ -56,15 +55,25 @@ function setShaderFlags(uniform: UniformHandle, params: DrawParams) {
   // Otherwise, the very tiny Z range makes things fade to black as the precision limit is encountered.  This workaround disregards Z
   // in calculating the color, so it means that transparency is less accurate based on Z-ordering, but it is the best we can do with
   // this algorithm on low-end hardware.
+
+  // Finally, the application can put the viewport into "fadeout mode", which explicitly enables flat alpha weight in order to de-emphasize transparent geometry.
   const maxRenderType = System.instance.capabilities.maxRenderType;
-  const surface = params.geometry instanceof SurfaceGeometry ? params.geometry as SurfaceGeometry : undefined;
-  if ((undefined !== surface && (surface.isGlyph || surface.isTileSection)) || RenderType.TextureUnsignedByte === maxRenderType)
+  let flatAlphaWeight = RenderType.TextureUnsignedByte === maxRenderType || params.target.isFadeOutActive;
+  if (!flatAlphaWeight) {
+    const surface = params.geometry.asSurface;
+    flatAlphaWeight = undefined !== surface && (surface.isGlyph || surface.isTileSection);
+  }
+
+  if (flatAlphaWeight)
     flags |= ShaderFlags.OITFlatAlphaWeight;
 
   // If Cesium-style transparency is being used with non-float texture targets, we must scale the output in the shaders to 0-1 range.
   // Otherwise, it will get implicitly clamped to that range and we'll lose any semblance our desired precision (even though it is low).
   if (maxRenderType < RenderType.TextureHalfFloat)
     flags |= ShaderFlags.OITScaleOutput;
+
+  if (!params.target.drawNonLocatable)
+    flags |= ShaderFlags.IgnoreNonLocatable;
 
   uniform.setUniform1f(flags);
 }
@@ -90,7 +99,7 @@ export function addFrustum(builder: ProgramBuilder) {
   builder.addGlobal("kFrustumType_Perspective", VariableType.Float, ShaderType.Both, "2.0", true);
 }
 
-const computeEyeSpace = "v_eyeSpace = (u_mv * rawPosition);";
+const computeEyeSpace = "v_eyeSpace = (MAT_MV * rawPosition);";
 
 export function addEyeSpace(builder: ProgramBuilder) {
   builder.addInlineComputedVarying("v_eyeSpace", VariableType.Vec4, computeEyeSpace);

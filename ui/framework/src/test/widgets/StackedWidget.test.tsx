@@ -21,6 +21,7 @@ import {
   Frontstage,
   Zone,
   Widget,
+  CoreTools,
 } from "../../ui-framework";
 
 describe("StackedWidget", () => {
@@ -71,7 +72,7 @@ describe("StackedWidget", () => {
         return (
           <Frontstage
             id="StackedWidget-Frontstage"
-            defaultToolId="PlaceLine"
+            defaultTool={CoreTools.selectElementCommand}
             defaultLayout={myContentLayout}
             contentGroup={myContentGroup}
             centerRight={

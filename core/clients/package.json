@@ -1,28 +1,37 @@
 {
   "name": "@bentley/imodeljs-clients",
-  "version": "0.187.0",
+  "version": "0.189.0",
   "description": "Clients for various Bentley Services used by iModel.js",
   "main": "lib/imodeljs-clients.js",
   "typings": "lib/imodeljs-clients",
   "license": "MIT",
   "engines": {
-    "node": ">=8.9.0 <9.0"
+    "node": ">=10.14.0 <11.0"
   },
   "scripts": {
-    "build": "tsc 1>&2 && npm run webpackModule-dev",
+    "build": "node ./node_modules/@bentley/webpack-tools/bin/buildIModelJsModule.js",
     "clean": "rimraf lib package-deps.json",
     "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/test/assets",
     "cover": "npm run copy:test-assets && nyc npm test",
     "cover:integration": "npm run copy:test-assets && nyc --report-dir ./lib/test/coverage/integration npm run test-integration",
+    "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=imodeljs-clients",
     "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-clients/file.json --tsIndexFile=imodeljs-clients.ts --onlyJson %TYPEDOC_THEME%",
     "lint": "tslint --project . 1>&2",
     "pretest": "rimraf \"./lib/test/*.log\" && npm run copy:test-assets",
-    "test": "npm run pretest && node ./node_modules/@bentley/build-tools/scripts/test.js --offline=\"mock\" --grep=\"#integration|iModelHub URL Whitelist Validator\" --invert",
+    "test": "npm run pretest && node ./node_modules/@bentley/build-tools/scripts/test.js --offline=\"mock\" --grep=\"#integration\" --invert",
     "test-integration": "npm run pretest && node ./node_modules/@bentley/build-tools/scripts/test.js",
     "test:settings": "npm run pretest && node ./node_modules/@bentley/build-tools/scripts/test.js --grep Setting",
-    "watch": "npm run docs && bmsWatch --src ./lib/docs/json --destination ./public",
-    "webpackModule-dev": "make-dir ./lib/module/dev/ && webpack --config ./node_modules/@bentley/webpack-tools/modules/webpackModule.config.js --env.entry=./lib/imodeljs-clients.js --env.bundlename=imodeljs-clients --json >./lib/module/dev/webpackStats.json",
-    "webpackModule-prod": "webpack --config ./node_modules/@bentley/webpack-tools/modules/webpackModule.config.js --env.entry=./lib/imodeljs-clients.js --env.bundlename=imodeljs-clients --env.prod"
+    "watch": "npm run docs && bmsWatch --src ./lib/docs/json --destination ./public"
+  },
+  "iModelJs": {
+    "buildModule": {
+      "type": "system",
+      "webpack": {
+        "dest": "./lib/module",
+        "entry": "./lib/imodeljs-clients.js",
+        "bundleName": "imodeljs-clients"
+      }
+    }
   },
   "repository": {
     "type": "git",
@@ -39,47 +48,40 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "0.187.0"
+    "@bentley/bentleyjs-core": "0.189.0"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/config-loader": "0.187.0",
-    "@bentley/bentleyjs-core": "0.187.0",
-    "@bentley/build-tools": "0.187.0",
-    "@bentley/webpack-tools": "0.187.0",
+    "@bentley/config-loader": "0.189.0",
+    "@bentley/bentleyjs-core": "0.189.0",
+    "@bentley/build-tools": "0.189.0",
+    "@bentley/webpack-tools": "0.189.0",
+    "@bentley/geometry-core": "0.189.0",
     "@types/chai": "^4.1.4",
     "@types/deep-assign": "^0.1.0",
-    "@types/fs-extra": "^4.0.7",
     "@types/js-base64": "^2.3.1",
     "@types/mocha": "^5.2.5",
     "@types/nock": "^9.1.2",
-    "@types/node": "10.10.3",
+    "@types/node": "10.12.18",
     "@types/qs": "^6.5.0",
     "@types/superagent": "^3.5.6",
     "@types/xmldom": "^0.1.29",
     "chai": "^4.1.2",
     "cpx": "^1.5.0",
-    "make-dir-cli": "^1.0.0",
     "mocha": "^5.2.0",
     "nock": "^9.2.3",
     "nyc": "^13.0.1",
     "rimraf": "^2.6.2",
-    "source-map-loader": "^0.2.3",
-    "source-map-support": "^0.5.6",
     "ts-node": "^7.0.1",
     "tslint": "^5.11.0",
     "typedoc": "^0.11.1",
-    "typedoc-plugin-external-module-name": "^1.1.1",
-    "typescript": "~3.1.0",
-    "webpack": "^4.20.2",
-    "webpack-cli": "^3.1.0"
+    "typescript": "~3.2.2"
   },
   "dependencies": {
     "deep-assign": "^2.0.0",
-    "fs-extra": "^6.0.1",
     "js-base64": "^2.4.5",
     "qs": "^6.5.1",
     "superagent": "^3.7.0",

@@ -12,6 +12,7 @@ import { DecorateContext } from "./ViewContext";
 import { GraphicType } from "./render/GraphicBuilder";
 import { LinePixels, GeometryClass } from "@bentley/imodeljs-common";
 
+/** @public */
 export const enum SnapMode {
   Nearest = 1,
   NearestKeypoint = 1 << 1,
@@ -22,13 +23,16 @@ export const enum SnapMode {
   Intersection = 1 << 6,
 }
 
+/** @public */
 export const enum SnapHeat {
   None = 0,
   NotInRange = 1,   // "of interest", but out of range
   InRange = 2,
 }
 
-/** The procedure that generated this Hit. */
+/** The procedure that generated this Hit.
+ * @public
+ */
 export const enum HitSource {
   None = 0,
   FromUser = 1,
@@ -41,10 +45,9 @@ export const enum HitSource {
   EditActionSS = 8,
 }
 
-/**
- * What was being tested to generate this hit. This is not the element or
- * GeometricPrimitive that generated the Hit, it is an indication of whether it is an
- * edge or interior hit.
+/** What was being tested to generate this hit. This is not the element or
+ * GeometricPrimitive that generated the Hit, it is an indication of whether it is an edge or interior hit.
+ * @public
  */
 export const enum HitGeomType {
   None = 0,
@@ -55,8 +58,8 @@ export const enum HitGeomType {
   Surface = 5,
 }
 
-/**
- * Classification of GeometricPrimitive that generated the Hit.
+/** Classification of GeometricPrimitive that generated the Hit.
+ * @public
  */
 export const enum HitParentGeomType {
   None = 0,
@@ -67,6 +70,7 @@ export const enum HitParentGeomType {
   Text = 5,
 }
 
+/** @public */
 export const enum HitPriority {
   WireEdge = 0,
   PlanarEdge = 1,
@@ -77,19 +81,19 @@ export const enum HitPriority {
   Unknown = 6,
 }
 
+/** @public */
 export const enum HitDetailType {
   Hit = 1,
   Snap = 2,
   Intersection = 3,
 }
 
-/**
- * A HitDetail stores the result when locating geometry displayed in a view.
+/** A HitDetail stores the result when locating geometry displayed in a view.
  * It holds an approximate location on an element (or decoration) from a *pick*.
+ * @public
  */
 export class HitDetail {
-  /**
-   * Create a new HitDetail from the inputs to and results of a locate operation.
+  /** Create a new HitDetail from the inputs to and results of a locate operation.
    * @param testPoint The world coordinate space point that was used as the locate point.
    * @param viewport The view the locate operation was performed in.
    * @param hitSource The procedure that requested the locate operation.
@@ -127,8 +131,7 @@ export class HitDetail {
   /** Draw this HitDetail as a Decoration. Causes the picked element to *flash* */
   public draw(_context: DecorateContext) { this.viewport.setFlashed(this.sourceId, 0.25); }
 
-  /**
-   * Get the tooltip content for this HitDetail.
+  /** Get the tooltip content for this HitDetail.
    * Calls the backend method [Element.getToolTipMessage]($backend), and replaces all instances of `${localizeTag}` with localized string from IModelApp.i18n.
    */
   public async getToolTip(): Promise<HTMLElement | string> {
@@ -146,6 +149,7 @@ export class HitDetail {
 
 /** A SnapDetail is generated from the result of [IModelDb.requestSnap]($backend) call. In addition to the HitDetail about the reason the element was *picked*,
  * it holds the *exact* point on the element from the snapping logic, plus additional information that varies with the type of element and snap mode.
+ * @public
  */
 export class SnapDetail extends HitDetail {
   /** A sprite to show the user the type of snap performed */
@@ -284,7 +288,6 @@ export class SnapDetail extends HitDetail {
     super.draw(context);
   }
 
-  /**  */
   private static getSnapSpriteUrl(snapType: SnapMode): string {
     switch (snapType) {
       case SnapMode.Nearest: return "sprites/SnapPointOn.png";
@@ -299,6 +302,7 @@ export class SnapDetail extends HitDetail {
   }
 }
 
+/** @public */
 export class IntersectDetail extends SnapDetail {
   public constructor(from: SnapDetail, heat: SnapHeat = SnapHeat.None, snapPoint: XYZProps, public readonly otherPrimitive: CurvePrimitive, public readonly otherId: string) {
     super(from, SnapMode.Intersection, heat, snapPoint);
@@ -330,9 +334,9 @@ export class IntersectDetail extends SnapDetail {
   }
 }
 
-/**
- * The result of a "locate" is a sorted list of objects that satisfied the search criteria (a HitList). Earlier hits in the list
- *  are somehow *better* than those later on.
+/** The result of a "locate" is a sorted list of objects that satisfied the search criteria (a HitList). Earlier hits in the list
+ * are somehow *better* than those later on.
+ * @public
  */
 export class HitList<T extends HitDetail> {
   public hits: T[] = [];
@@ -341,8 +345,7 @@ export class HitList<T extends HitDetail> {
   public empty(): void { this.hits.length = 0; this.currHit = -1; }
   public resetCurrentHit(): void { this.currHit = -1; }
 
-  /**
-   * get a hit from a particular index into a HitList
+  /** Get a hit from a particular index into a HitList
    * return the requested hit from the HitList or undefined
    */
   public getHit(hitNum: number): T | undefined {

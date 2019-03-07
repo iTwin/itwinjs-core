@@ -4,9 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { AccessToken, IncludePrefix } from "@bentley/imodeljs-clients";
-import { GrantParams, TokenSet, UserInfo as OpenIdUserInfo } from "openid-client";
+import { GrantParams, TokenSet } from "openid-client";
 import { ActivityLoggingContext, BentleyStatus, BentleyError } from "@bentley/bentleyjs-core";
 import { OidcBackendClientConfiguration, OidcBackendClient } from "./OidcBackendClient";
+
+export type OidcDelegationClientConfiguration = OidcBackendClientConfiguration;
 
 /** Utility to generate delegation OAuth or legacy SAML tokens for backend applications */
 export class OidcDelegationClient extends OidcBackendClient {
@@ -14,27 +16,22 @@ export class OidcDelegationClient extends OidcBackendClient {
    * Creates an instance of OidcBackendClient.
    * @param deploymentEnv Deployment environment.
    */
-  public constructor(configuration: OidcBackendClientConfiguration) {
+  public constructor(configuration: OidcDelegationClientConfiguration) {
     super(configuration);
   }
 
   private async exchangeToJwtToken(actx: ActivityLoggingContext, accessToken: AccessToken, grantType: string): Promise<AccessToken> {
     actx.enter();
 
-    const scope = this._configuration.scope;
-    if (!scope.includes("openid") || !scope.includes("email") || !scope.includes("profile") || !scope.includes("organization"))
-      throw new BentleyError(BentleyStatus.ERROR, "Scopes when fetching a JWT token must include 'openid email profile organization'");
-
     const grantParams: GrantParams = {
       grant_type: grantType,
-      scope,
+      scope: this._configuration.scope,
       assertion: accessToken.toTokenString(IncludePrefix.No),
     };
 
     const client = await this.getClient(actx);
     const tokenSet: TokenSet = await client.grant(grantParams);
-    const userInfo: OpenIdUserInfo = await client.userinfo(tokenSet.access_token);
-    return this.createToken(tokenSet, userInfo);
+    return this.createToken(tokenSet, accessToken.getUserInfo());
   }
 
   /** Get a JWT for the specified scope from a SAML token */

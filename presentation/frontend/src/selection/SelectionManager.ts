@@ -4,25 +4,37 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module UnifiedSelection */
 
+import { EntityProps } from "@bentley/imodeljs-common";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { KeySet, Keys } from "@bentley/presentation-common";
+import { KeySet, Keys, SelectionScope } from "@bentley/presentation-common";
 import ISelectionProvider from "./ISelectionProvider";
 import SelectionChangeEvent, { SelectionChangeEventArgs, SelectionChangeType } from "./SelectionChangeEvent";
+import { SelectionScopesManager } from "./SelectionScopesManager";
+
+/** Properties for creating [[SelectionManager]] */
+export interface SelectionManagerProps {
+  /** A manager for [selection scopes]($docs/learning/unified-selection/Terminology#selection-scope) */
+  scopes: SelectionScopesManager;
+}
 
 /**
  * The selection manager which stores the overall selection
  */
-export default class SelectionManager implements ISelectionProvider {
+export class SelectionManager implements ISelectionProvider {
   private _selectionContainerMap = new Map<IModelConnection, SelectionContainer>();
 
   /** An event which gets broadcasted on selection changes */
-  public selectionChange: SelectionChangeEvent;
+  public readonly selectionChange: SelectionChangeEvent;
+
+  /** Manager for [selection scopes]($docs/learning/unified-selection/Terminology#selection-scope) */
+  public readonly scopes: SelectionScopesManager;
 
   /**
    * Creates an instance of SelectionManager.
    */
-  constructor() {
+  constructor(props: SelectionManagerProps) {
     this.selectionChange = new SelectionChangeEvent();
+    this.scopes = props.scopes;
     IModelConnection.onClose.addListener((imodel: IModelConnection) => {
       this.onConnectionClose(imodel);
     });
@@ -163,6 +175,48 @@ export default class SelectionManager implements ISelectionProvider {
       rulesetId,
     };
     this.handleEvent(evt);
+  }
+
+  /**
+   * Add keys to selection after applying [selection scope]($docs/learning/unified-selection/Terminology#selection-scope) on them.
+   * @param source Name of the selection source
+   * @param imodel iModel associated with the selection
+   * @param keys Keys to add
+   * @param scope Selection scope to apply
+   * @param level Selection level (see [Selection levels]($docs/learning/unified-selection/Terminology#selection-level))
+   * @param rulesetId ID of the ruleset in case the selection was changed from a rules-driven control
+   */
+  public async addToSelectionWithScope(source: string, imodel: IModelConnection, keys: EntityProps | EntityProps[], scope: SelectionScope | string, level: number = 0, rulesetId?: string): Promise<void> {
+    const scopedKeys = await this.scopes.computeSelection(imodel, keys, scope);
+    this.addToSelection(source, imodel, scopedKeys, level, rulesetId);
+  }
+
+  /**
+   * Remove keys from current selection after applying [selection scope]($docs/learning/unified-selection/Terminology#selection-scope) on them.
+   * @param source Name of the selection source
+   * @param imodel iModel associated with the selection
+   * @param keys Keys to remove
+   * @param scope Selection scope to apply
+   * @param level Selection level (see [Selection levels]($docs/learning/unified-selection/Terminology#selection-level))
+   * @param rulesetId ID of the ruleset in case the selection was changed from a rules-driven control
+   */
+  public async removeFromSelectionWithScope(source: string, imodel: IModelConnection, keys: EntityProps | EntityProps[], scope: SelectionScope | string, level: number = 0, rulesetId?: string): Promise<void> {
+    const scopedKeys = await this.scopes.computeSelection(imodel, keys, scope);
+    this.removeFromSelection(source, imodel, scopedKeys, level, rulesetId);
+  }
+
+  /**
+   * Replace current selection with keys after applying [selection scope]($docs/learning/unified-selection/Terminology#selection-scope) on them.
+   * @param source Name of the selection source
+   * @param imodel iModel associated with the selection
+   * @param keys Keys to add
+   * @param scope Selection scope to apply
+   * @param level Selection level (see [Selection levels]($docs/learning/unified-selection/Terminology#selection-level))
+   * @param rulesetId ID of the ruleset in case the selection was changed from a rules-driven control
+   */
+  public async replaceSelectionWithScope(source: string, imodel: IModelConnection, keys: EntityProps | EntityProps[], scope: SelectionScope | string, level: number = 0, rulesetId?: string): Promise<void> {
+    const scopedKeys = await this.scopes.computeSelection(imodel, keys, scope);
+    this.replaceSelection(source, imodel, scopedKeys, level, rulesetId);
   }
 }
 

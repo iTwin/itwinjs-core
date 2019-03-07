@@ -29,6 +29,7 @@ import {
 import { ViewportComponent } from "@bentley/ui-components";
 import { IUnifiedSelectionComponent } from "../../common/IUnifiedSelectionComponent";
 import { viewWithUnifiedSelection, ViewportSelectionHandler } from "../../viewport/WithUnifiedSelection";
+import { SelectionScopesManager } from "@bentley/presentation-frontend/lib/selection/SelectionScopesManager";
 
 // tslint:disable-next-line:variable-name naming-convention
 const PresentationViewport = viewWithUnifiedSelection(ViewportComponent);
@@ -295,17 +296,15 @@ describe("ViewportSelectionHandler", () => {
       presentationManagerMock.setup((x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetId },
         DefaultContentDisplayTypes.VIEWPORT, keys, descriptor.selectionInfo)).returns(async () => descriptor);
 
-      const content: Content = {
+      const expectedContent: Content = {
         descriptor,
         contentSet: [
           new Item([createRandomECInstanceKey(), createRandomECInstanceKey()], "", "", undefined, {}, {}, []),
           new Item([createRandomECInstanceKey()], "", "", undefined, {}, {}, []),
         ],
       };
-      presentationManagerMock.setup((x) => x.getContentSetSize({ imodel: imodelMock.object, rulesetId }, descriptor, keys))
-        .returns(async () => content.contentSet.length);
       presentationManagerMock.setup((x) => x.getContent({ imodel: imodelMock.object, rulesetId, paging: undefined }, descriptor, keys))
-        .returns(async () => content);
+        .returns(async () => expectedContent);
 
       // trigger the selection change
       const selectionChangeArgs: SelectionChangeEventArgs = {
@@ -323,9 +322,9 @@ describe("ViewportSelectionHandler", () => {
 
       // verify viewport selection was changed with expected ids
       const ids = [
-        content.contentSet[0].primaryKeys[0].id,
-        content.contentSet[0].primaryKeys[1].id,
-        content.contentSet[1].primaryKeys[0].id,
+        expectedContent.contentSet[0].primaryKeys[0].id,
+        expectedContent.contentSet[0].primaryKeys[1].id,
+        expectedContent.contentSet[1].primaryKeys[0].id,
       ];
       expect(replaceSpy).to.be.calledWith(ids);
     });
@@ -552,7 +551,7 @@ describe("Integration: ViewportSelectionHandler", () => {
 
   let rulesetId: string;
   let key: InstanceKey;
-  let selectionManager = new SelectionManager();
+  let selectionManager = new SelectionManager({ scopes: moq.Mock.ofType<SelectionScopesManager>().object });
   const presentationManagerMock = moq.Mock.ofType<PresentationManager>();
   const imodelMock = moq.Mock.ofType<IModelConnection>();
 
@@ -571,7 +570,7 @@ describe("Integration: ViewportSelectionHandler", () => {
   beforeEach(() => {
     presentationManagerMock.reset();
     mockIModel(imodelMock);
-    Presentation.selection = selectionManager = new SelectionManager();
+    Presentation.selection = selectionManager = new SelectionManager({ scopes: moq.Mock.ofType<SelectionScopesManager>().object });
   });
 
   describe("multiple ViewportSelectionHandlers", () => {
@@ -592,14 +591,14 @@ describe("Integration: ViewportSelectionHandler", () => {
         level: 0,
       };
       const descriptor = createRandomDescriptor();
-      const content: Content = {
+      const expectedContent: Content = {
         descriptor,
         contentSet: [new Item([key], "", "", undefined, {}, {}, [])],
       };
       presentationManagerMock.setup((x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetId },
         DefaultContentDisplayTypes.VIEWPORT, moq.It.isAny(), moq.It.isAny())).returns(async () => descriptor);
       presentationManagerMock.setup((x) => x.getContent({ imodel: imodelMock.object, rulesetId, paging: undefined },
-        moq.It.isAny(), moq.It.isAny())).returns(async () => content);
+        moq.It.isAny(), moq.It.isAny())).returns(async () => expectedContent);
     };
 
     const setupViewportSelection = () => {

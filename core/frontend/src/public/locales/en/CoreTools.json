@@ -85,8 +85,13 @@
           "description": "Fit all graphics in the chosen model"
         }
       },
-      "SelectView": "Select view"
+      "Standard": {
+        "keyin": "Rotate to Standard View",
+        "description": "align view with standard rotation",
+        "flyover": "Standard View"
+      }
     },
+    "SelectView": "Select view",
     "Select": {
       "keyin": "Select Elements",
       "description": "Selects Element for inspection or manipulation",
@@ -138,7 +143,9 @@
         "IdentifyLineRemove": "Identify elements to remove by crossing line",
         "IdentifyBoxRemove": "Identify elements to remove by box corner points",
         "AcceptSelection": "Accept/Reject Selection",
-        "AcceptFence": "Accept/Reject Fence Contents"
+        "AcceptFence": "Accept/Reject Fence Contents",
+        "Mode": "Mode",
+        "Scope": "Scope"
       },
       "Error": {
         "NoFence": "No fence defined",
@@ -147,6 +154,17 @@
         "NoSSElems": "No elements selected.",
         "NotSuportedElmType": "Element type not valid for this tool",
         "ProjectExtents": "Invalid location. All elements must fit within the volume defined by the project extents."
+      },
+      "SelectionOptions": {
+        "Pick": "Select single",
+        "Line": "Select all crossing line",
+        "Box": "Select by range",
+        "Add": "Add to selection",
+        "Remove": "Remove from selection"
+      },
+      "SelectionScope": {
+        "Element": "Element",
+        "Assembly": "Assembly"
       }
     },
     "Plugin": {

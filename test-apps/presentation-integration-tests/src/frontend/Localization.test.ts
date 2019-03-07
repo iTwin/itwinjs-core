@@ -25,7 +25,7 @@ describe("Localization", async () => {
   });
 
   it("localizes using app/test supplied localized strings", async () => {
-    const nodes = await Presentation.presentation.getRootNodes({ imodel, rulesetId: "LocalizationTest" });
+    const nodes = await Presentation.presentation.getNodes({ imodel, rulesetId: "LocalizationTest" });
     expect(nodes.length).to.eq(1);
     expect(nodes[0].label).to.eq("test value");
     expect(nodes[0].description).to.eq("test nested value");

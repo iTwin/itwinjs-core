@@ -18,28 +18,20 @@ describe("<TextEditor />", () => {
     shallow(<TextEditor />).should.matchSnapshot();
   });
 
-  it("getValue returns proper value after componentDidMount & setState", (done) => {
+  it("getValue returns proper value after componentDidMount & setState", async () => {
     const record = TestUtils.createPrimitiveStringProperty("Test", "MyValue");
-    const wrapper = mount(<TextEditor value={record} />);
-    setImmediate(() => {
-      const textEditor = wrapper.instance() as TextEditor;
-      expect(textEditor.getValue()).to.equal("MyValue");
+    const wrapper = mount(<TextEditor propertyRecord={record} />);
 
-      wrapper.unmount();
-      done();
-    }, 0);
-  });
-
-  it("getInputNode returns HTML input node", () => {
-    const wrapper = mount(<TextEditor />);
+    await TestUtils.flushAsyncOperations();
     const textEditor = wrapper.instance() as TextEditor;
-    expect(textEditor.getInputNode()).to.not.be.null;
+    expect(textEditor.getValue()).to.equal("MyValue");
+
     wrapper.unmount();
   });
 
   it("HTML input onChange updates value", () => {
     const record = TestUtils.createPrimitiveStringProperty("Test1", "MyValue");
-    const wrapper = mount(<TextEditor value={record} />);
+    const wrapper = mount(<TextEditor propertyRecord={record} />);
     const textEditor = wrapper.instance() as TextEditor;
     const inputNode = wrapper.find("input");
 
@@ -50,5 +42,22 @@ describe("<TextEditor />", () => {
       wrapper.update();
       expect(textEditor.getValue()).to.equal(testValue);
     }
+  });
+
+  it("componentDidUpdate updates the value", async () => {
+    const record = TestUtils.createPrimitiveStringProperty("Test", "MyValue");
+    const wrapper = mount(<TextEditor propertyRecord={record} />);
+
+    await TestUtils.flushAsyncOperations();
+    const textEditor = wrapper.instance() as TextEditor;
+    expect(textEditor.getValue()).to.equal("MyValue");
+
+    const testValue = "MyNewValue";
+    const newRecord = TestUtils.createPrimitiveStringProperty("Test", testValue);
+    wrapper.setProps({ propertyRecord: newRecord });
+    await TestUtils.flushAsyncOperations();
+    expect(textEditor.getValue()).to.equal(testValue);
+
+    wrapper.unmount();
   });
 });

@@ -6,11 +6,8 @@
 
 import { SortDirection } from "@bentley/ui-core";
 import { MutableTableDataProvider, ColumnDescription, RowItem, TableDataChangeEvent } from "./TableDataProvider";
-import { PropertyRecord } from "../properties/Record";
-import { PropertyValueFormat } from "../properties/Value";
 import { TypeConverterManager } from "../converters/TypeConverterManager";
-import * as Primitives from "../converters/valuetypes/PrimitiveTypes";
-
+import { Primitives, PropertyRecord, PropertyValueFormat } from "@bentley/imodeljs-frontend";
 /**
  * A Table Data Provider using an array of items.
  */

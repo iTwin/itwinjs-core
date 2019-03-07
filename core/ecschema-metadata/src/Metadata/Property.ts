@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { ECClass, StructClass } from "./Class";
-import { CustomAttributeSet, serializeCustomAttributes, CustomAttribute } from "./CustomAttribute";
+import { CustomAttributeSet, serializeCustomAttributes, CustomAttribute, CustomAttributeContainerProps } from "./CustomAttribute";
 import { Enumeration } from "./Enumeration";
 import { KindOfQuantity } from "./KindOfQuantity";
 import { PropertyCategory } from "./PropertyCategory";
@@ -19,19 +19,20 @@ import { ECObjectsError, ECObjectsStatus } from "./../Exception";
 import { AnyClass, LazyLoadedEnumeration, LazyLoadedKindOfQuantity, LazyLoadedPropertyCategory, LazyLoadedRelationshipClass } from "./../Interfaces";
 import { PropertyType, propertyTypeToString, PropertyTypeUtils } from "./../PropertyTypes";
 import { ECName, SchemaItemKey } from "./../SchemaKey";
+import { Schema } from "./Schema";
 
 /**
  * A common abstract class for all ECProperty types.
  */
-export abstract class Property {
+export abstract class Property implements CustomAttributeContainerProps {
   protected _name: ECName;
   protected _type: PropertyType;
 
   protected _class: AnyClass; // TODO: class seems to be unused?
   protected _description?: string;
   protected _label?: string;
-  protected _isReadOnly: boolean;
-  protected _priority: number;
+  protected _isReadOnly?: boolean;
+  protected _priority?: number;
   protected _category?: LazyLoadedPropertyCategory;
   protected _kindOfQuantity?: LazyLoadedKindOfQuantity;
   private _customAttributes?: Map<string, CustomAttribute>;
@@ -40,8 +41,6 @@ export abstract class Property {
     this._class = ecClass as AnyClass;
     this._name = new ECName(name);
     this._type = type;
-    this._isReadOnly = false;
-    this._priority = 0;
   }
 
   public isArray(): this is AnyArrayProperty { return PropertyTypeUtils.isArray(this._type); }
@@ -58,15 +57,21 @@ export abstract class Property {
 
   get description() { return this._description; }
 
-  get isReadOnly() { return this._isReadOnly; }
+  get isReadOnly() { return this._isReadOnly || false; }
 
-  get priority() { return this._priority; }
+  get priority() { return this._priority || 0; }
 
   get category(): LazyLoadedPropertyCategory | undefined { return this._category; }
 
   get kindOfQuantity(): LazyLoadedKindOfQuantity | undefined { return this._kindOfQuantity; }
 
   get customAttributes(): CustomAttributeSet | undefined { return this._customAttributes; }
+
+  /** Returns the name in the format 'ClassName.PropertyName'. */
+  get fullName(): string { return this._class.name + "." + name; }
+
+  /** Returns the schema of the class holding the property. */
+  get schema(): Schema { return this._class.schema; }
 
   public getCategorySync(): PropertyCategory | undefined {
     if (!this._category)
@@ -90,11 +95,14 @@ export abstract class Property {
       schemaJson.description = this.description;
     if (this.label !== undefined)
       schemaJson.label = this.label;
-    schemaJson.isReadOnly = this.isReadOnly;
+    if (this._isReadOnly !== undefined)
+      schemaJson.isReadOnly = this._isReadOnly;
     if (this.category !== undefined)
       schemaJson.category = this.category.fullName; // needs to be fully qualified name
-    if (this.priority !== undefined)
-      schemaJson.priority = this.priority;
+    if (this._priority !== undefined)
+      schemaJson.priority = this._priority;
+    if (this.kindOfQuantity !== undefined)
+      schemaJson.kindOfQuantity = this.kindOfQuantity.fullName;
     const customAttributes = serializeCustomAttributes(this.customAttributes);
     if (customAttributes !== undefined)
       schemaJson.customAttributes = customAttributes;

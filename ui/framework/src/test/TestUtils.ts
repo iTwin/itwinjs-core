@@ -18,6 +18,7 @@ import { UiComponents } from "@bentley/ui-components";
 import { UiCore } from "@bentley/ui-core";
 import { Store, createStore, combineReducers } from "redux";
 import { TestContentControl } from "./frontstage/FrontstageTestUtils";
+import { ToolUiManager } from "../ui-framework/zones/toolsettings/ToolUiManager";
 
 export interface SampleAppState {
   placeHolder?: boolean;
@@ -100,6 +101,7 @@ export default class TestUtils {
       await UiCore.initialize(TestUtils.i18n);
       TestUtils._uiFrameworkInitialized = true;
     }
+    ToolUiManager.clearCachedProperties();
   }
 
   public static terminateUiFramework() {
@@ -171,4 +173,10 @@ export default class TestUtils {
     contentGroups.push(testContentGroup1);
     ConfigurableUiManager.loadContentGroups(contentGroups);
   }
+
+  /** Waits until all async operations finish */
+  public static async flushAsyncOperations() {
+    return new Promise((resolve) => setTimeout(resolve));
+  }
+
 }

@@ -3,6 +3,6 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 export * from "./OidcBackendClient";
-export * from "./OidcAgentClient";
 export * from "./OidcDelegationClient";
 export * from "./OidcDeviceClient";
+export * from "./OidcAgentClient";

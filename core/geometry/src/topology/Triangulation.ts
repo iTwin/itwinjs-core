@@ -17,7 +17,11 @@ export class Triangulator {
   // HalfEdgeGraph that is used by many of the private methods inside of the Triangulator class, until being returned at the end of triangulation
   private static _returnGraph: HalfEdgeGraph;
 
-  /** Given the six nodes that make up two bordering triangles, "pinch" and relocate the nodes to flip them */
+  /** Given the six nodes that make up two bordering triangles, "pinch" and relocate the nodes to flip them
+   * The shared edge mates are a and d.
+   * (abc) are a triangle in CCW order
+   * (dfe) are a triangle in CCW order. (!! node dfe instead of def.)
+   */
   private static flipTriangles(a: any, b: any, c: any, d: any, e: any, f: any) {
     // Reassign all of the pointers
     HalfEdge.pinch(a, e);
@@ -48,9 +52,10 @@ export class Triangulator {
    * * (wx,wy): nodeA to nodeB2
    * * this determinant is positive if nodeA is "in the circle" of nodeB2, nodeA1, nodeA2
    * @param nodeA node on the diagonal edge of candidate for edge flip.
+   * @param if true, divide the determinant by the sum of absolute values of the cubic terms of the determinant.
    * @return the determinant (but undefined if the faces are not triangles as expected.)
    */
-  private static computeInCircleDeterminant(nodeA: HalfEdge): number | undefined {
+  private static computeInCircleDeterminant(nodeA: HalfEdge, normalize: boolean): number | undefined {
     const nodeA1 = nodeA.faceSuccessor;
     const nodeA2 = nodeA1.faceSuccessor;
     if (nodeA2.faceSuccessor !== nodeA)
@@ -64,13 +69,22 @@ export class Triangulator {
     const uy = nodeA1.y - nodeA.y;
     const vx = nodeA2.x - nodeA.x;
     const vy = nodeA2.y - nodeA.y;
+    if (Geometry.crossProductXYXY(ux, uy, vx, vy) < 0)
+      return undefined;
     // we assume identical coordinates in pairs (nodeA, nodeB1)  and (nodeA1, nodeB)
     const wx = nodeB2.x - nodeA.x;
     const wy = nodeB2.y - nodeA.y;
-    return Geometry.tripleProduct(
-      wx, wy, wx * wx + wy * wy,
-      vx, vy, vx * vx + vy * vy,
-      ux, uy, ux * ux + uy * uy);
+    const tx = wx * wx + wy * wy;
+    const ty = vx * vx + vy * vy;
+    const tz = ux * ux + uy * uy;
+    const q = Geometry.tripleProduct(
+      wx, wy, tx,
+      vx, vy, ty,
+      ux, uy, tz);
+    if (!normalize) return q;
+    const denom = Math.abs(wx * vy * tz) + Math.abs(wx * ty * ux) + Math.abs(tx * vx * uy)
+      + Math.abs(wx * ty * uy) + Math.abs(wy * vx * tz) + Math.abs(tx * vy * ux);
+    return q / denom;   // divide by zero?  only if collapsed to a point.
   }
   /**
    *  *  Visit each node of the graph array
@@ -95,7 +109,7 @@ export class Triangulator {
         continue;
 
       foundNonVisited = true;
-      const incircle = Triangulator.computeInCircleDeterminant(node);
+      const incircle = Triangulator.computeInCircleDeterminant(node, false);
       if (incircle !== undefined && incircle > 0.0) {
         // Mark all nodes involved in flip as needing to be buffer (other than alpha and beta node we started with)
         node.facePredecessor.clearMask(HalfEdgeMask.VISITED);
@@ -150,6 +164,30 @@ export class Triangulator {
     Triangulator.earcutLinked(startingNode);
     return Triangulator._returnGraph;
   }
+  private static _heapTrigger = 200;
+  /**
+   * * Triangulation has a trigger value for using a sort heap for earcut searches.
+   * * Some polygons have had triangulation errors with the heap logic.
+   * * the default is set at 200
+   * * if a user thinks (a) their polygons are safe and (b) they might get performance benefit, they can reset it here.
+   * * Sending undefined, 0 or negative resets to the default.
+   * * minimum trigger of 5 is enforced.
+   * @param trigger new value.
+   * @returns prior trigger value (for user to reset at end of their triangulation.)
+   */
+  public static setAndReturnHeapTrigger(trigger: number | undefined): number {
+    const a = this._heapTrigger;
+    if (trigger === undefined || trigger <= 0) {
+      this._heapTrigger = 200;
+      return this._heapTrigger;
+    } else {
+      this._heapTrigger = trigger;
+      // this._heapTrigger = 200;
+      if (this._heapTrigger < 5)
+        this._heapTrigger = 5;
+    }
+    return a;
+  }
   /**
    * Triangulate the polygon made up of by a series of points.
    * * To triangulate a polygon with holes, use earcutFromOuterAndInnerLoops
@@ -170,7 +208,9 @@ export class Triangulator {
     let size;
 
     // if the shape is not too simple, we'll use z-order curve hash later; calculate polygon bbox
-    if (data.length > 80) {
+    // EDL Feb 2019 When hashing was on at 80, a very long earcut created invalid triangulation.
+    // Leave it on for 200 . . .. it will be a problem someday.
+    if (data.length > Triangulator._heapTrigger) {
       minX = maxX = data[0].x;
       minY = maxY = data[0].y;
       const n = data.length;
@@ -187,7 +227,7 @@ export class Triangulator {
       size = Math.max(maxX - minX, maxY - minY);
     }
 
-    Triangulator.earcutLinked(startingNode, minX, minY, size);
+    Triangulator.earcutLinked(startingNode, minX, minY, size, undefined);
     return Triangulator._returnGraph;
   }
   /**
@@ -241,7 +281,7 @@ export class Triangulator {
     let baseNode: HalfEdge | undefined;
     const xyz = Point3d.create();
     for (i = 0; i < data.length; i++) {
-      data.atPoint3dIndex(i, xyz);
+      data.getPoint3dAtCheckedPointIndex(i, xyz);
       baseNode = Triangulator.interiorEdgeSplit(graph, baseNode, xyz);
     }
     return baseNode;
@@ -348,6 +388,62 @@ export class Triangulator {
     HalfEdge.pinch(ear.facePredecessor, alpha);
     ear.setMaskAroundFace(HalfEdgeMask.TRIANGULATED_NODE_MASK);
   }
+  private static isInteriorTriangle(a: HalfEdge) {
+    if (!a.isMaskSet(HalfEdgeMask.TRIANGULATED_NODE_MASK))
+      return false;
+    const b = a.faceSuccessor;
+    if (!b.isMaskSet(HalfEdgeMask.TRIANGULATED_NODE_MASK))
+      return false;
+    const c = b.faceSuccessor;
+    if (!c.isMaskSet(HalfEdgeMask.TRIANGULATED_NODE_MASK))
+      return false;
+    return c.faceSuccessor === a;
+  }
+
+  /**
+   * Perform 0, 1, or more edge flips to improve aspect ratio just behind an that was just cut.
+   * @param ear the triangle corner which just served as the ear node.
+   * @returns the node at the back corner after flipping."appropriately positioned" node for the usual advance to ear.faceSuccessor.edgeMate.faceSuccessor.
+   */
+  private static doPostCutFlips(ear: HalfEdge) {
+    //    B is the ear -- inside a (probably newly created) triangle ABC
+    //    CA is the recently added cut edge.
+    //    AB is the candidate to be flipped.
+    //    triangle B1 A1 D is on the other side of AB
+    //    The condition for flipping is:
+    //           ! both triangles must be TRIANGULATED_NODE_MASK
+    //           ! incircle condition flags D as in the circle of ABC
+    //     after flip, node A moves to the vertex of D, and is the effective "ear",  with the cap edge C A1
+    //      after flip, consider the A1 D (whose nodes are A1 and flipped A!!!)
+    //
+    //
+    //                                   . C0|
+    //                              .        |
+    //                           .           |
+    //                       .              ^|
+    //                   .  A0 ---->       B0|
+    //               *=======================*
+    //                 \ A1     <----   B1/
+    //                   \             /
+    //                     \         /
+    //                       \  D1 /
+    //                          *
+    let b0 = ear;
+    let a0 = b0.facePredecessor;
+    let b1 = a0.edgeMate;
+    while (Triangulator.isInteriorTriangle(a0) && Triangulator.isInteriorTriangle(b1)) {
+      const detA = Triangulator.computeInCircleDeterminant(a0, true);
+      if (detA === undefined || detA < 1.0e-10)
+        break;
+      // Flip the triangles
+      const a1 = b1.faceSuccessor;
+      Triangulator.flipTriangles(a1, a1.faceSuccessor, a1.facePredecessor, b0, b0.facePredecessor, b0.faceSuccessor);
+      b0 = a0;
+      a0 = b0.facePredecessor;
+      b1 = a0.edgeMate;
+    }
+    return b0;
+  }
 
   /**
    * main ear slicing loop which triangulates a polygon (given as a linked list)
@@ -363,35 +459,38 @@ export class Triangulator {
     // interlink polygon nodes in z-order
     if (!pass && size) Triangulator.indexCurve(ear, minX, minY, size);
 
-    let stop = ear;
     let next;
-
+    let numFail = 0;
+    let maxFail = (ear as HalfEdge).countEdgesAroundFace();
     // iterate through ears, slicing them one by one
     while (!ear.isMaskSet(HalfEdgeMask.TRIANGULATED_NODE_MASK)) {
       next = ear.faceSuccessor;
 
       if (size ? Triangulator.isEarHashed(ear, minX, minY, size) : Triangulator.isEar(ear)) {
         // skipping the next vertice leads to less sliver triangles
-        stop = next.faceSuccessor;
 
         // If we already have a seperated triangle, do not join
         if (ear.faceSuccessor.faceSuccessor !== ear.facePredecessor) {
           Triangulator.joinNeighborsOfEar(ear);
-          ear = ear.faceSuccessor.edgeMate.faceSuccessor.faceSuccessor;
+          ear = Triangulator.doPostCutFlips(ear);
+          ear = ear.faceSuccessor.edgeMate.faceSuccessor;
+          // another step?   Nate's 2017 code went one more.
         } else {
           ear.setMask(HalfEdgeMask.TRIANGULATED_NODE_MASK);
           ear.faceSuccessor.setMask(HalfEdgeMask.TRIANGULATED_NODE_MASK);
           ear.facePredecessor.setMask(HalfEdgeMask.TRIANGULATED_NODE_MASK);
           ear = next.faceSuccessor;
         }
-
+        numFail = 0;
+        maxFail--;
         continue;
       }
-
+      numFail++;
       ear = next;
 
       // if we looped through the whole remaining polygon and can't find any more ears
-      if (ear === stop) {
+      if (numFail >= maxFail) {
+        numFail = 0;
         // try filtering points and slicing again
         // if (!pass) {
         //  Triangulator.earcutLinked(Triangulator.filterPoints(ear), minX, minY, size, 1);

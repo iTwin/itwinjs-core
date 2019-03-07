@@ -10,10 +10,7 @@ import { WidgetType, WidgetDef, WidgetState } from "../widgets/WidgetDef";
 import { WidgetChangeHandler, TargetChangeHandler, ZoneDefProvider } from "../frontstage/FrontstageComposer";
 import { StackedWidget, EachWidgetProps } from "../widgets/StackedWidget";
 import { ZoneTargets } from "../dragdrop/ZoneTargets";
-import { StatusBar } from "../widgets/StatusBar";
 import { FrontstageManager, WidgetStateChangedEventArgs } from "../frontstage/FrontstageManager";
-import { StatusBarWidgetControl } from "../widgets/StatusBarWidgetControl";
-import { ConfigurableUiControlType } from "../configurableui/ConfigurableUiControl";
 
 import {
   ZonePropsBase, DropTarget, WidgetProps as NZ_WidgetProps, ZoneComponent as NZ_Zone, RectangleProps,
@@ -123,6 +120,7 @@ export class FrameworkZone extends React.Component<FrameworkZoneProps, Framework
   private _getWidget = () => {
     if (this.props.zoneProps.widgets.length === 1) {
       const zoneDef = this.props.zoneDefProvider.getZoneDef(this.props.zoneProps.widgets[0].id);
+      // istanbul ignore if
       if (!zoneDef)
         return null;
 
@@ -138,6 +136,7 @@ export class FrameworkZone extends React.Component<FrameworkZoneProps, Framework
 
     this.props.zoneProps.widgets.forEach((nzWidgetProps: NZ_WidgetProps) => {
       const zoneDef = this.props.zoneDefProvider.getZoneDef(nzWidgetProps.id);
+      // istanbul ignore if
       if (!zoneDef)
         return;
 
@@ -195,17 +194,6 @@ export class FrameworkZone extends React.Component<FrameworkZoneProps, Framework
     let content: React.ReactNode;
     if (widgetDefToActivate) {
       content = widgetDefToActivate.reactElement;
-
-      if (widgetDefToActivate.isStatusBar) {
-        const widgetControl = widgetDefToActivate.getWidgetControl(ConfigurableUiControlType.StatusBarWidget) as StatusBarWidgetControl;
-
-        content = (
-          <StatusBar
-            widgetControl={widgetControl}
-            isInFooterMode={false}
-          />
-        );
-      }
     }
 
     if (widgets.length === 0)

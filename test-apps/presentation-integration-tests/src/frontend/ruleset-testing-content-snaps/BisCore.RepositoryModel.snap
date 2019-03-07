@@ -1,0 +1,20 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`RulesetTesting generates correct content for 'Items' ruleset. ClassName: 'BisCore:RepositoryModel' 1`] = `
+Array [
+  PropertyRecord {
+    "description": "Ñót spêçìfíêd",
+    "isReadonly": true,
+    "property": Object {
+      "displayLabel": "Modeled Element",
+      "name": "RepositoryModel_ModeledElement",
+      "typename": "navigation",
+    },
+    "value": Object {
+      "displayValue": "Ñót spêçìfíêd",
+      "value": undefined,
+      "valueFormat": 0,
+    },
+  },
+]
+`;

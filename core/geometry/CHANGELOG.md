@@ -1,6 +1,38 @@
 # Change Log - @bentley/geometry-core
 
-This log was last generated on Tue, 15 Jan 2019 15:18:59 GMT and should not be manually modified.
+This log was last generated on Wed, 06 Mar 2019 15:41:22 GMT and should not be manually modified.
+
+## 0.189.0
+Wed, 06 Mar 2019 15:41:22 GMT
+
+### Updates
+
+-  geometry-core camel case
+- allow subclasses of Range to use static methods
+- Changes package.json to include api-extractor and adds api-extractor.json
+- Use new buildIModelJsBuild script
+- AxisAlignedBox and ElementAlignedBox are now typed to Range3d rather than classes
+- clone methods are no longer generic
+- Remove uneeded typedoc plugin depedency
+- PolyfaceBuilder solid primitive improvements
+- PolyfaceBuilder improvements.  Construct normals for sweeps.  Mesh pairing closure test.
+- PolyfaceBuilder creates params and normals for all Solid types
+- Mesh Normal bugs, some @internal markup
+- Consistent naming of "get" methods in Growable arrays.
+- Distribute .test.ts files to subdirectories
+- Improve polygon triangulations quality by early flipping behind the earcut front
+- added freeze methods to Angle and Point2d
+- bug fixes in PolyfaceBuilder
+- update for geometry GrowableXYArray usage
+- New class SmoothTransformBetweenFrusta for smooth frustum animation
+- Save BUILD_SEMVER to globally accessible map
+- add optional argument to SmoothTransformBetweenFrusta
+- upgrade to TypeScript 3.2.2
+
+## 0.188.0
+Wed, 16 Jan 2019 16:36:09 GMT
+
+*Version update only*
 
 ## 0.187.0
 Tue, 15 Jan 2019 15:18:59 GMT

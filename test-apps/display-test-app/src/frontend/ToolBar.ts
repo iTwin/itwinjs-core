@@ -8,6 +8,7 @@ import { assert } from "@bentley/bentleyjs-core";
 export interface ToolButtonProps {
   className: string;
   click: (ev: Event) => void;
+  tooltip?: string;
 }
 
 export function createToolButton(props: ToolButtonProps): HTMLElement {
@@ -17,6 +18,8 @@ export function createToolButton(props: ToolButtonProps): HTMLElement {
   const div = document.createElement("div");
   div.className = "simpleicon";
   div.addEventListener("click", (ev: Event) => props.click(ev));
+  if (undefined !== props.tooltip)
+    div.title = props.tooltip;
 
   div.appendChild(img);
   return div;
@@ -24,6 +27,7 @@ export function createToolButton(props: ToolButtonProps): HTMLElement {
 
 export interface ImageButtonProps {
   src: string;
+  tooltip?: string;
   click: (ev: Event) => void;
 }
 
@@ -31,6 +35,8 @@ export function createImageButton(props: ImageButtonProps): HTMLElement {
   const img = document.createElement("img");
   img.className = "simpleicon";
   img.src = props.src;
+  if (undefined !== props.tooltip)
+    img.title = props.tooltip;
   img.addEventListener("click", (ev: Event) => props.click(ev));
   return img;
 }

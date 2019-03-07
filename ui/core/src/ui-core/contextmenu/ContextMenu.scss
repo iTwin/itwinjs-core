@@ -2,7 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-@import "@bentley/bwc/lib/mixins";
+@import "../index.scss";
 
 .context-menu-global {
   position: fixed;
@@ -12,8 +12,10 @@
 }
 
 .context-menu {
+  color: $buic-foreground-body;
+
   &:hover {
-    color: $bwc-text-color;
+    color: $buic-foreground-activehover;
     cursor: auto;
   }
 
@@ -74,41 +76,41 @@
     visibility: hidden;
     transform: scaleY(0);
     display: table;
-    background-color: $bwc-white;
-    border: 1px solid $bwc-inputs-border-color;
-    box-shadow: rgba($bwc-black, 0.25) 0px 1px 1px;
+    background-color: $buic-background-panel;
+    border: 1px solid $buic-background-control-stroke;
+    box-shadow: rgba($uicore-black, 0.25) 0px 1px 1px;
 
     .context-menu-item {
       display: flex;
       cursor: default;
-      padding: ($bwc-unbordered-padding / 2) $bwc-bordered-padding;
-      width: calc(100% - 2 * #{$bwc-bordered-padding});
+      padding: ($uicore-unbordered-padding / 2) $uicore-bordered-padding;
+      width: calc(100% - 2 * #{$uicore-bordered-padding});
 
       &.is-selected {
-        background-color: $bwc-gray;
+        background-color: $buic-row-selection;
       }
 
       &:first-child {
-        padding-top: $bwc-bordered-padding;
+        padding-top: $uicore-bordered-padding;
       }
 
       &:last-child {
-        padding-bottom: $bwc-bordered-padding;
+        padding-bottom: $uicore-bordered-padding;
       }
 
       &.disabled {
-        color: $bwc-gray;
+        color: $buic-foreground-disabled;
       }
 
       > .context-menu-icon {
         flex-shrink: 0;
         flex-grow: 0;
-        width: $bwc-icons-small;
-        height: $bwc-line-height;
-        font-size: $bwc-icons-small;
-        line-height: $bwc-line-height;
+        width: $uicore-icons-small;
+        height: $uicore-line-height;
+        font-size: $uicore-icons-small;
+        line-height: $uicore-line-height;
         text-align: center;
-        margin-right: $bwc-unbordered-padding;
+        margin-right: $uicore-unbordered-padding;
       }
 
       > .context-menu-content {
@@ -118,13 +120,13 @@
     }
 
     &:focus {
-      border: 1px solid $bwc-inputs-border-color;
-      box-shadow: rgba($bwc-black, 0.25) 0px 1px 1px;
+      border: 1px solid $uicore-inputs-border-color;
+      box-shadow: rgba($uicore-black, 0.25) 0px 1px 1px;
       outline: 0px;
 
       > .context-menu-item.is-selected,
       > .context-submenu > .context-menu-item.is-selected {
-        background-color: $bwc-blue;
+        background-color: $buic-row-selection;
       }
     }
 
@@ -174,18 +176,18 @@
       .context-submenu-container .context-submenu-arrow {
         flex-shrink: 0;
         flex-grow: 0;
-        margin-left: $bwc-unbordered-padding;
-        width: $bwc-icons-small;
-        height: $bwc-line-height;
-        font-size: $bwc-icons-small / 2;
-        line-height: $bwc-line-height;
+        margin-left: $uicore-unbordered-padding;
+        width: $uicore-icons-small;
+        height: $uicore-line-height;
+        font-size: $uicore-icons-small / 2;
+        line-height: $uicore-line-height;
         text-align: center;
       }
     }
   }
 
   .context-menu-divider {
-    border-bottom: 1px solid $bwc-inputs-border-color;
+    border-bottom: 1px solid $buic-background-divider;
     height: 0px;
   }
 }

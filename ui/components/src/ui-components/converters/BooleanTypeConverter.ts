@@ -7,7 +7,7 @@
 import UiComponents from "../UiComponents";
 import { TypeConverter } from "./TypeConverter";
 import { TypeConverterManager } from "./TypeConverterManager";
-import * as Primitives from "./valuetypes/PrimitiveTypes";
+import { Primitives } from "@bentley/imodeljs-frontend";
 
 let sl10nTrue: string = "";
 let sl10nFalse: string = "";

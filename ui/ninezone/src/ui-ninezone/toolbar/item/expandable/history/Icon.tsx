@@ -10,7 +10,7 @@ import { HistoryItem, HistoryItemProps } from "./Item";
 import "./Icon.scss";
 
 /**
- * History item with icon. Used in [[Tray]] component.
+ * History item with icon. Used in [[HistoryTray]] component.
  * @note See [[HistoryItem]] for basic history item.
  */
 export class HistoryIcon extends React.PureComponent<HistoryItemProps> {

@@ -12,6 +12,7 @@
   position: relative;
   padding-left: $nz-footer-indicator-horizontal-padding;
   padding-right: $nz-footer-indicator-horizontal-padding;
+  color: $buic-foreground-body;
 
   /* small devices (phones, 600px and down) */
   @media only screen and (max-width: 600px) {
@@ -50,6 +51,6 @@
 }
 
 .nz-footer-snapMode-indicator:hover {
-  background-color: $primary-hover;
+  background-color: $primary-base;
   cursor: pointer;
 }

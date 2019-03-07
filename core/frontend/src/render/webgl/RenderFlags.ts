@@ -52,6 +52,7 @@ export enum TextureUnit {
     PickDepthAndOrder = Four,
 
     VertexLUT = Five,
+    AuxChannelLUT = Six,
 }
 
 /**
@@ -112,11 +113,6 @@ export const enum SurfaceFlags {
     // For textured meshes, the color index in the vertex LUT is unused - we place the normal there instead.
     // For untextured lit meshes, the normal is placed after the feature ID.
     HasColorAndNormal = 1 << 6,
-
-    // For materials with reflectivity.
-    EnvironmentMap = 1 << 7,
-
-    // NB: No more available unless we increase size of SurfaceFlags
 }
 
 export const enum OvrFlags {

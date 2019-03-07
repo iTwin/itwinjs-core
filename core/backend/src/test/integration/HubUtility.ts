@@ -205,6 +205,19 @@ export class HubUtility {
     await BriefcaseManager.imodelClient.iModels.delete(actx, accessToken, projectId, iModelId);
   }
 
+  public static dumpChangeSetFile(iModel: IModelDb, dir: string, whichCs: string): void {
+    const changeSets: ChangeSetToken[] = HubUtility.readChangeSets(dir);
+
+    changeSets.forEach((changeSet) => {
+      if (changeSet.id === whichCs) {
+        BriefcaseManager.dumpChangeSet(iModel.briefcase, changeSet);
+        return;
+      }
+    });
+
+    throw new Error(whichCs + " - .cs file not found in directory " + dir);
+  }
+
   /** Validate all change set operations by downloading seed files & change sets, creating a standalone iModel,
    * merging the change sets, reversing them, and finally reinstating them. The method also logs the necessary performance
    * metrics with these operations.

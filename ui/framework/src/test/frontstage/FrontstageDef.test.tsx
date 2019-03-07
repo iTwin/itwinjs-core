@@ -5,7 +5,7 @@
 import * as React from "react";
 import { expect } from "chai";
 import TestUtils from "../TestUtils";
-import { FrontstageProvider, Frontstage, FrontstageManager, ContentLayoutDef, FrontstageProps } from "../../ui-framework";
+import { FrontstageProvider, Frontstage, FrontstageManager, ContentLayoutDef, FrontstageProps, CoreTools } from "../../ui-framework";
 
 describe("FrontstageDef", () => {
 
@@ -20,7 +20,7 @@ describe("FrontstageDef", () => {
       return (
         <Frontstage
           id="BadLayout"
-          defaultToolId="Select"
+          defaultTool={CoreTools.selectElementCommand}
           defaultLayout="abc"
           contentGroup="def"
         />
@@ -42,7 +42,7 @@ describe("FrontstageDef", () => {
       return (
         <Frontstage
           id="BadGroup"
-          defaultToolId="Select"
+          defaultTool={CoreTools.selectElementCommand}
           defaultLayout={contentLayoutDef}
           contentGroup="def"
         />

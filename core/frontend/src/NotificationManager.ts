@@ -192,7 +192,7 @@ export class NotificationManager {
    */
   public endActivityMessage(_reason: ActivityMessageEndReason) { return true; }
 
-  /** Return true if _showTooltip has an implemention and will display a tooltip. */
+  /** Return true if _showTooltip has an implementation and will display a tooltip. */
   public get isToolTipSupported(): boolean { return false; }
 
   /** Return true if the tooltip is currently open. */

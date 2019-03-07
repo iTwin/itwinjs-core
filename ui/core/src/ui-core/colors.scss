@@ -2,31 +2,24 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+@import "./style/themecolors";
 
-$background-1: #f9f9f9;
-$background-2: #eef0f3;
-$background-3: #dce0e3;
-$background-4: #85929d;
-$background-5: #4d575f;
+$background-1: var(--buic-background-1);  // #f9f9f9;
+$background-2: var(--buic-background-2);  // #eef0f3;
+$background-3: var(--buic-background-3);  // #dce0e3;
+$background-4: var(--buic-background-4);  // #85929d;
+$background-5: var(--buic-background-5);  // #4d575f;
 
-$primary-base: #008be1;
-$primary-shade: #00314f;
-$primary-tone: #0072b8;
-$primary-tint: #a6d7f5;
-$primary-hover: #c9e9fc;
+$primary-base: $buic-foreground-primary; // #008be1;
+$primary-tone: $buic-foreground-primary-tone; // #0072b8;
+$primary-tint: $buic-foreground-primary-tint; // #a6d7f5;
+$primary-hover: $buic-row-hover;  // #c9e9fc;
 
-$accent-base: #56aa1c;
-$accent-shade: #1e3b0a;
-$accent-tone: #468b17;
-$accent-tint: #c4e1b0;
+$accent-base: $buic-foreground-success; // #56aa1c;
+$accent-tint: $buic-foreground-success-tint; // #c4e1b0;
 
-$alert-base: #d30a0a;
-$alert-shade: #4a0303;
-$alert-tone: #ad0808;
-$alert-tint: #f0a9a9;
+$alert-base: $buic-foreground-alert; // #d30a0a;
+$alert-tint: $buic-foreground-alert-tint; // #f0a9a9;
 
-$text-dark: #000000;
-$text-light: #ffffff;
-
-$gradient-dark: $text-dark;
-$gradient-light: $text-light;
+$text-dark: $buic-foreground-body;            // #000000;
+$text-light: $buic-foreground-body-reverse;   // #ffffff;

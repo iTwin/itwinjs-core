@@ -966,7 +966,7 @@ export namespace IModelJson {
       const axes = Reader.parseOrientation(json, true)!;
 
       if (baseOrigin && !topOrigin)
-        topOrigin = Matrix3d.XYZMinusMatrixTimesXYZ(baseOrigin, axes, Vector3d.create(0, 0, height));
+        topOrigin = Matrix3d.xyzMinusMatrixTimesXYZ(baseOrigin, axes, Vector3d.create(0, 0, height));
 
       if (capped !== undefined
         && baseX !== undefined
@@ -1468,22 +1468,25 @@ export namespace IModelJson {
       const normals = [];
       const params = [];
       const colors = [];
-      const p = Point3d.create();
-      for (let i = 0; pf.data.point.atPoint3dIndex(i, p); i++)
-        points.push(p.toJSON());
-
+      {
+        const p = Point3d.create();
+        for (let i = 0; pf.data.point.getPoint3dAtCheckedPointIndex(i, p); i++)
+          points.push(p.toJSON());
+      }
       if (pf.data.normal) {
         const numNormal = pf.data.normal.length;
         const normal = Vector3d.create();
         for (let i = 0; i < numNormal; i++) {
-          pf.data.normal.atVector3dIndex(i, normal);
+          pf.data.normal.getVector3dAtCheckedVectorIndex(i, normal);
           normals.push(normal.toJSON());
         }
 
       }
 
       if (pf.data.param) {
-        for (const value of pf.data.param) params.push(value.toJSON());
+        const uv = Point2d.create();
+        for (let i = 0; pf.data.param.getPoint2dAtCheckedPointIndex(i, uv); i++)
+          params.push(uv.toJSON());
       }
 
       if (pf.data.color) {

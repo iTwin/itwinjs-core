@@ -2,7 +2,6 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-/** @module ModuleLoader */
 
 // The purpose of this file (which is standalone, and not webpacked into the imodeljs-frontend module)
 // is to load all of the iModelJs modules. The application's main entry point should be webpacked
@@ -67,23 +66,51 @@ class ScriptLoader {
   }
 }
 
-// Load Options. Loading the UiComponents and UiFramework are optiona.
+// Load Options. Loading the UiComponents and UiFramework are optional.
 class IModelJsLoadOptions {
-  public iModelJsVersion: string;
+  private _iModelJsVersions: any;
   public loadUiComponents: boolean;
   public loadUiFramework: boolean;
+  public loadECPresentation: boolean;
 
-  constructor(iModelJsVersion: string, loadUiComponents: boolean, loadUiFramework: boolean) {
-    this.iModelJsVersion = "v".concat(iModelJsVersion, "/");
-    this.loadUiComponents = loadUiComponents || loadUiFramework;
-    this.loadUiFramework = loadUiFramework;
+  // IModelJsVersionString is a JSON string. The object properties are the module names, and the values are the versions.
+  constructor(iModelJsVersionString: string | null) {
+    this.loadUiComponents = true;
+    this.loadUiFramework = true;
+    this.loadECPresentation = true;
+
+    if (iModelJsVersionString) {
+      this._iModelJsVersions = JSON.parse(iModelJsVersionString);
+      this.loadUiComponents = (undefined !== this._iModelJsVersions["ui-core"]) || (undefined !== this._iModelJsVersions["ui-components"]);
+      this.loadUiFramework = (undefined !== this._iModelJsVersions["ui-ninezone"]) || (undefined !== this._iModelJsVersions["ui-framework"]);
+      this.loadECPresentation = (undefined !== this._iModelJsVersions["presentation-common"]) || (undefined !== this._iModelJsVersions["presentation-frontend"]) || (undefined !== this._iModelJsVersions["presentation-components"]);
+
+      // we need the uiComponents for either ECPresentation or uiFramework.
+      if (this.loadECPresentation || this.loadUiFramework) {
+        this.loadUiComponents = true;
+      }
+    } else {
+      this._iModelJsVersions = {};
+    }
   }
+
   public prefixVersion(packageName: string): string {
-    return this.iModelJsVersion.concat(packageName);
+    // find the version from the package name.
+    let versionNumberString: string;
+    // remove the ".js" from the packageName to get the key
+    const key = packageName.substr(0, packageName.length - 3);
+    if (undefined === (versionNumberString = this._iModelJsVersions[key])) {
+      // tslint:disable-next-line:no-console
+      console.log("No version specified for ", packageName);
+      return "v-latest".concat("/", packageName);
+    }
+    return "v".concat(versionNumberString, "/", packageName);
   }
 }
 
 // loads the iModelJs modules, and the external modules that they depend on.
+/** @internal */
+/** @hidden */
 export async function loadIModelJs(options: IModelJsLoadOptions): Promise<void> {
   // if we are going to load the ui modules, get the third party stuff started now. They don't depend on any of our modules so can be loaded at any time.
   let thirdPartyRootPromise;
@@ -100,37 +127,29 @@ export async function loadIModelJs(options: IModelJsLoadOptions): Promise<void> 
   if (options.loadUiComponents) {
     await thirdPartyRootPromise;
     // load the rest of the third party modules that depend on react and redux.
-    await ScriptLoader.loadPackagesParallel(["bwc.js", "react-dom.js", "inspire-tree.js", "react-dnd.js", "react-dnd-html5-backend.js", "react-redux.js"]);
+    await ScriptLoader.loadPackagesParallel(["react-dom.js", "inspire-tree.js", "react-dnd.js", "react-dnd-html5-backend.js", "react-redux.js"]);
     await ScriptLoader.loadPackage(options.prefixVersion("ui-core.js"));
     await ScriptLoader.loadPackage(options.prefixVersion("ui-components.js"));
-    if (options.loadUiFramework) {
-      await ScriptLoader.loadPackage(options.prefixVersion("ui-ninezone.js"));
+    if (options.loadECPresentation) {
       await ScriptLoader.loadPackage(options.prefixVersion("presentation-common.js"));
       await ScriptLoader.loadPackage(options.prefixVersion("presentation-frontend.js"));
       await ScriptLoader.loadPackage(options.prefixVersion("presentation-components.js"));
+    }
+    if (options.loadUiFramework) {
+      await ScriptLoader.loadPackage(options.prefixVersion("ui-ninezone.js"));
       await ScriptLoader.loadPackage(options.prefixVersion("ui-framework.js"));
     }
   }
   await ScriptLoader.loadPackage("main.js");
 }
 
-// interprets string from options specification
-function stringToBoolean(value: string | null, defaultValue: boolean): boolean {
-  if (!value)
-    return defaultValue;
-  return (value !== "false") && (value !== "FALSE") && (value !== "0");
-}
-
-// retrieves the options from the script tag, using the "data-" attribute capability.
 function getOptions(): IModelJsLoadOptions {
   const loaderScriptElement: HTMLScriptElement | SVGScriptElement | null = document.currentScript;
   if (!loaderScriptElement)
-    return new IModelJsLoadOptions("-latest", true, true);
+    return new IModelJsLoadOptions(null);
 
-  const iModelJsVersion = loaderScriptElement.getAttribute("data-imjsversion");
-  const loadComponentsString = loaderScriptElement.getAttribute("data-uicomponents");
-  const loadFrameworkString = loaderScriptElement.getAttribute("data-uiframework");
-  return new IModelJsLoadOptions(iModelJsVersion ? iModelJsVersion : "-latest", stringToBoolean(loadComponentsString, true), stringToBoolean(loadFrameworkString, true));
+  const iModelJsVersionString = loaderScriptElement.getAttribute("data-imjsversions");
+  return new IModelJsLoadOptions(iModelJsVersionString);
 }
 
 // execute the loader

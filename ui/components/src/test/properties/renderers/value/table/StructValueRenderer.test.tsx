@@ -2,8 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
-import { mount } from "enzyme";
+import { render } from "react-testing-library";
 import * as React from "react";
 import { TableStructValueRenderer } from "../../../../../ui-components/properties/renderers/value/table/StructValueRenderer";
 import { Orientation } from "@bentley/ui-core";
@@ -14,13 +13,14 @@ describe("StructValueRenderer", () => {
     const record = TestUtils.createStructProperty("Pipe");
     record.property.typename = "map";
 
-    const rendererMount = mount(
+    const renderer = render(
       <TableStructValueRenderer
         onDialogOpen={() => { }}
         orientation={Orientation.Horizontal}
         propertyRecord={record}
       />);
 
-    expect(rendererMount.find("button").html().indexOf("{map}")).to.be.greaterThan(-1);
+    // Verify that text "{map}" gets rendered. Throws otherwise
+    renderer.getByText("{map}");
   });
 });

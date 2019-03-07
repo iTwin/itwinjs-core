@@ -109,6 +109,11 @@ export abstract class WebAppRpcProtocol extends RpcProtocol {
     }
   }
 
+  /** Whether an HTTP status code indicates a request timeout. */
+  public isTimeout(code: number): boolean {
+    return code === 504;
+  }
+
   /** An OpenAPI-compatible description of this protocol. */
   public get openAPIDescription() { return new RpcOpenAPIDescription(this); }
 

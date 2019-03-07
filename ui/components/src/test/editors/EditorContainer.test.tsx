@@ -27,7 +27,7 @@ describe("<EditorContainer />", () => {
     expect(wrapper.find(".components-text-editor").length).to.eq(1);
   });
 
-  it("calls onCommit for Enter", () => {
+  it("calls onCommit for Enter", async () => {
     const propertyRecord = TestUtils.createPrimitiveStringProperty("Test1", "my value");
     const spyOnCommit = sinon.spy();
     function handleCommit(_commit: PropertyUpdatedArgs): void {
@@ -38,10 +38,11 @@ describe("<EditorContainer />", () => {
     expect(inputNode.length).to.eq(1);
 
     inputNode.simulate("keyDown", { key: "Enter" });
+    await TestUtils.flushAsyncOperations();
     expect(spyOnCommit.calledOnce).to.be.true;
   });
 
-  it("calls onCancel for Escape", () => {
+  it("calls onCancel for Escape", async () => {
     const propertyRecord = TestUtils.createPrimitiveStringProperty("Test1", "my value");
     const spyonCancel = sinon.spy();
     const wrapper = mount(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={() => { }} onCancel={spyonCancel} />);
@@ -52,7 +53,7 @@ describe("<EditorContainer />", () => {
     expect(spyonCancel.calledOnce).to.be.true;
   });
 
-  it("calls onCommit for Tab", () => {
+  it("calls onCommit for Tab", async () => {
     const propertyRecord = TestUtils.createPrimitiveStringProperty("Test1", "my value");
     const spyOnCommit = sinon.spy();
     function handleCommit(_commit: PropertyUpdatedArgs): void {
@@ -63,6 +64,7 @@ describe("<EditorContainer />", () => {
     expect(inputNode.length).to.eq(1);
 
     inputNode.simulate("keyDown", { key: "Tab" });
+    await TestUtils.flushAsyncOperations();
     expect(spyOnCommit.calledOnce).to.be.true;
   });
 

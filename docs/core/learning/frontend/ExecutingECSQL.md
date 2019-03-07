@@ -2,7 +2,7 @@
 
 ECSQL by itself is described in detail here: [ECSQL](../ECSQL)
 
-A frontend ECSQL query is executed by calling [IModelConnection.executeQuery]($imodeljs-frontend).
+A frontend ECSQL query is executed by calling [IModelConnection.query]($imodeljs-frontend).
 
 > On the frontend, only ECSQL SELECT statements can be executed. Data modification must be done through the API.
 

@@ -6,8 +6,11 @@
 
 import * as React from "react";
 import { FrontstageManager, ToolActivatedEventArgs } from "../../frontstage/FrontstageManager";
+import { ToolUiManager } from "../toolsettings/ToolUiManager";
 
 import { ToolSettingsWidget, ToolSettingsTab, ToolSettings, CommonProps, RectangleProps, TabIcon, ZoneComponent } from "@bentley/ui-ninezone";
+import { KeyboardShortcutManager } from "../../keyboardshortcut/KeyboardShortcut";
+import UiFramework from "../../UiFramework";
 
 /** State for the ToolSettingsZone content.
  */
@@ -34,10 +37,11 @@ export interface ToolSettingsZoneProps extends CommonProps {
 /** Tool Settings Zone React component.
  */
 export class ToolSettingsZone extends React.Component<ToolSettingsZoneProps, ToolSettingsZoneState> {
+  private _toolSettingsLabel: string;
 
   /** @hidden */
   public readonly state: Readonly<ToolSettingsZoneState> = {
-    toolSettingsZoneContent: ToolSettingsZoneContent.Closed,
+    toolSettingsZoneContent: ToolSettingsZoneContent.ToolSettings,
     isPopoverOpen: false,
     isNestedPopoverOpen: false,
     toolId: "",
@@ -45,6 +49,8 @@ export class ToolSettingsZone extends React.Component<ToolSettingsZoneProps, Too
 
   constructor(props: ToolSettingsZoneProps) {
     super(props);
+
+    this._toolSettingsLabel = UiFramework.i18n.translate("UiFramework:general.toolSettings");
   }
 
   public componentDidMount(): void {
@@ -93,18 +99,33 @@ export class ToolSettingsZone extends React.Component<ToolSettingsZoneProps, Too
     });
   }
 
-  private getToolSettingsWidget() {
+  private _handleKeyDown = (e: React.KeyboardEvent): void => {
+    // istanbul ignore else
+    if (e.key === "Escape") {
+      KeyboardShortcutManager.setFocusToHome();
+    }
+  }
+
+  private getToolSettingsWidget(): React.ReactNode {
+    const title = ToolUiManager.activeToolDescription + " " + this._toolSettingsLabel;
+
     const tab = (
       <ToolSettingsTab
         onClick={this._processClick}
+        onKeyDown={this._handleKeyDown}
         isActive={this.state.toolSettingsZoneContent === ToolSettingsZoneContent.ToolSettings}
+        title={title}
       >
         {this.getToolSettingsButton()}
         {/*this.getToolAssistanceButton()*/}
       </ToolSettingsTab>
     );
+
+    let widget: React.ReactNode;
+
     switch (this.state.toolSettingsZoneContent) {
       case ToolSettingsZoneContent.ToolSettings: {
+        // istanbul ignore else
         if (FrontstageManager.activeToolSettingsNode) {
           const settingsStyle: React.CSSProperties = {
             borderWidth: "thin",
@@ -114,11 +135,12 @@ export class ToolSettingsZone extends React.Component<ToolSettingsZoneProps, Too
             paddingRight: "10px",
           };
 
-          return (
+          widget = (
             <ToolSettingsWidget
               tab={tab}
               content={
                 <ToolSettings style={settingsStyle} >
+                  <div className="nz-widget-toolSettings-title">{ToolUiManager.activeToolLabel}</div>
                   {FrontstageManager.activeToolSettingsNode}
                 </ToolSettings>
               }
@@ -128,7 +150,7 @@ export class ToolSettingsZone extends React.Component<ToolSettingsZoneProps, Too
         break;
       }
       case ToolSettingsZoneContent.Closed: {
-        return (
+        widget = (
           <ToolSettingsWidget
             tab={tab}
           />
@@ -136,7 +158,7 @@ export class ToolSettingsZone extends React.Component<ToolSettingsZoneProps, Too
       }
     }
 
-    return undefined;
+    return widget;
   }
 
   // private getToolAssistanceButton() {
@@ -169,13 +191,16 @@ export class ToolSettingsZone extends React.Component<ToolSettingsZoneProps, Too
   //   return null;
   // }
 
-  private getToolSettingsButton() {
+  private getToolSettingsButton(): React.ReactNode {
+    let button: React.ReactNode;
+
+    // istanbul ignore else
     if (FrontstageManager.activeToolSettingsNode) {
-      return (
+      button = (
         <TabIcon iconSpec="icon-settings" isActive={this.state.toolSettingsZoneContent === ToolSettingsZoneContent.ToolSettings} />
       );
     }
 
-    return null;
+    return button;
   }
 }

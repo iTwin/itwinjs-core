@@ -2,7 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { Point2d } from "../geometry3d/Point2dVector2d";
+import { Point2d, Vector2d } from "../geometry3d/Point2dVector2d";
 import { Point3d } from "../geometry3d/Point3dVector3d";
 import { Range2d } from "../geometry3d/Range";
 import { IndexedPolyface, IndexedPolyfaceVisitor } from "./Polyface";
@@ -39,22 +39,30 @@ export class FacetFaceData {
     this._paramRange.setNull();
   }
   /** Return distance-based parameter from stored parameter value. */
-  public convertParamToDistance(param: Point2d, result?: Point2d): Point2d {
+  public convertParamXYToDistance(x: number, y: number, result?: Point2d): Point2d {
     result = result ? result : Point2d.create();
     const paramDelta = this._paramRange.high.minus(this._paramRange.low);
-    result.x = (0 === paramDelta.x) ? param.x : (this._paramDistanceRange.low.x + (param.x - this._paramRange.low.x)
+    result.x = (0 === paramDelta.x) ? x : (this._paramDistanceRange.low.x + (x - this._paramRange.low.x)
       * (this._paramDistanceRange.high.x - this._paramDistanceRange.low.x) / paramDelta.x);
-    result.y = (0.0 === paramDelta.y) ? param.y : (this.paramDistanceRange.low.y + (param.y - this._paramRange.low.y)
+    result.y = (0.0 === paramDelta.y) ? y : (this.paramDistanceRange.low.y + (y - this._paramRange.low.y)
       * (this._paramDistanceRange.high.y - this._paramDistanceRange.low.y) / paramDelta.y);
     return result;
   }
   /** Return normalized (0-1) parameter from stored parameter value. */
-  public convertParamToNormalized(param: Point2d, result?: Point2d): Point2d {
+  public convertParamXYToNormalized(x: number, y: number, result?: Point2d): Point2d {
     result = result ? result : Point2d.create();
     const paramDelta = this._paramRange.high.minus(this._paramRange.low);
-    result.x = (0.0 === paramDelta.x) ? param.x : ((param.x - this._paramRange.low.x) / paramDelta.x);
-    result.y = (0.0 === paramDelta.y) ? param.y : ((param.y - this._paramRange.low.y) / paramDelta.y);
+    result.x = (0.0 === paramDelta.x) ? x : ((x - this._paramRange.low.x) / paramDelta.x);
+    result.y = (0.0 === paramDelta.y) ? y : ((y - this._paramRange.low.y) / paramDelta.y);
     return result;
+  }
+  /** Return distance-based parameter from stored parameter value. */
+  public convertParamToDistance(param: Point2d, result?: Point2d): Point2d {
+    return this.convertParamXYToDistance(param.x, param.y, result);
+  }
+  /** Return normalized (0-1) parameter from stored parameter value. */
+  public convertParamToNormalized(param: Point2d, result?: Point2d): Point2d {
+    return this.convertParamXYToNormalized(param.x, param.y, result);
   }
   /** Scale distance paramaters. */
   public scaleDistances(distanceScale: number) {
@@ -84,15 +92,17 @@ export class FacetFaceData {
       const triangleParamIndexes: number[] = [];
       if (!visitorParams)
         return false;
+      visitorParams.extendRange(this._paramRange);
+      const dUV0 = Vector2d.create();
+      const dUV1 = Vector2d.create();
       for (let k = 0; k < numPointsInFacet; k++) {
-        this._paramRange.extendPoint(visitorParams[k]);
         trianglePointIndexes[2] = k;
         triangleParamIndexes[2] = k;
         if (k > 1) {
-          const dUV0 = visitorParams[triangleParamIndexes[0]].minus(visitorParams[triangleParamIndexes[1]]);
-          const dUV1 = visitorParams[triangleParamIndexes[1]].minus(visitorParams[triangleParamIndexes[2]]);
-          const delta0 = visitorPoints.getPoint3dAt(trianglePointIndexes[0]).minus(visitorPoints.getPoint3dAt(trianglePointIndexes[1]));
-          const delta1 = visitorPoints.getPoint3dAt(trianglePointIndexes[1]).minus(visitorPoints.getPoint3dAt(trianglePointIndexes[2]));
+          visitorParams.vectorIndexIndex(triangleParamIndexes[1], triangleParamIndexes[0], dUV0);
+          visitorParams.vectorIndexIndex(triangleParamIndexes[1], triangleParamIndexes[2], dUV1);
+          const delta0 = visitorPoints.getPoint3dAtUncheckedPointIndex(trianglePointIndexes[0]).minus(visitorPoints.getPoint3dAtUncheckedPointIndex(trianglePointIndexes[1]));
+          const delta1 = visitorPoints.getPoint3dAtUncheckedPointIndex(trianglePointIndexes[1]).minus(visitorPoints.getPoint3dAtUncheckedPointIndex(trianglePointIndexes[2]));
           const uvCross = Math.abs(dUV0.x * dUV1.y - dUV1.x * dUV0.y);
           if (uvCross) {
             const dwDu = Point3d.createFrom(delta0);

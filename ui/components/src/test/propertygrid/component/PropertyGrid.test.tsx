@@ -12,8 +12,7 @@ import { Orientation } from "@bentley/ui-core";
 import { PropertyCategoryBlock } from "../../../ui-components";
 import { PropertyGrid, PropertyGridCategory } from "../../../ui-components/propertygrid/component/PropertyGrid";
 import { IPropertyDataProvider, PropertyDataChangeEvent, PropertyCategory, PropertyData } from "../../../ui-components/propertygrid/PropertyDataProvider";
-import { PropertyRecord } from "../../../ui-components/properties/Record";
-import { PropertyValueFormat } from "../../../ui-components/properties/Value";
+import { PropertyRecord, PropertyValueFormat } from "@bentley/imodeljs-frontend";
 import { ResolvablePromise } from "../../test-helpers/misc";
 import TestUtils from "../../TestUtils";
 
@@ -298,7 +297,7 @@ describe("PropertyGrid", () => {
 
   describe("property editing", () => {
 
-    it("starts editor on click", async () => {
+    it("starts editor on click & commits on Enter", async () => {
       const spyMethod = sinon.spy();
       const wrapper = mount(
         <PropertyGrid
@@ -324,6 +323,7 @@ describe("PropertyGrid", () => {
       expect(inputNode.length).to.eq(1);
 
       inputNode.simulate("keyDown", { key: "Enter" });
+      await TestUtils.flushAsyncOperations();
       expect(spyMethod.calledOnce).to.be.true;
     });
 

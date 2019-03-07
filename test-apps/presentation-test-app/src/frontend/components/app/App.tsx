@@ -2,20 +2,24 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-
 import * as React from "react";
 import { Id64String } from "@bentley/bentleyjs-core";
 import { ViewQueryParams } from "@bentley/imodeljs-common";
-import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
+import { IModelApp, IModelConnection, PropertyRecord } from "@bentley/imodeljs-frontend";
+import { DefaultContentDisplayTypes } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
+import { ElementSeparator, Orientation } from "@bentley/ui-core";
+import { IPresentationTableDataProvider, IPresentationPropertyDataProvider, DataProvidersFactory } from "@bentley/presentation-components";
 import IModelSelector from "../imodel-selector/IModelSelector";
 import PropertiesWidget from "../properties-widget/PropertiesWidget";
 import GridWidget from "../grid-widget/GridWidget";
+import FindSimilarWidget from "../find-similar-widget/FindSimilarWidget";
 import TreeWidget from "../tree-widget/TreeWidget";
 import RulesetSelector from "../ruleset-selector/RulesetSelector";
 import ViewportContentControl from "../viewport/ViewportContentControl";
+
 import "./App.css";
-import { ElementSeparator, Orientation } from "@bentley/ui-core";
+import "@bentley/icons-generic-webfont/dist/bentley-icons-generic-webfont.css";
 
 export interface State {
   imodel?: IModelConnection;
@@ -25,6 +29,7 @@ export interface State {
   rightPaneHeight?: number;
   contentRatio: number;
   contentWidth?: number;
+  similarInstancesProvider?: IPresentationTableDataProvider;
 }
 
 export default class App extends React.Component<{}, State> {
@@ -76,6 +81,23 @@ export default class App extends React.Component<{}, State> {
     this.setState({ contentRatio: ratio });
   }
 
+  private _onFindSimilar = async (provider: IPresentationPropertyDataProvider, record: PropertyRecord) => {
+    try {
+      const factory = new DataProvidersFactory();
+      const similarInstancesProvider = await factory.createSimilarInstancesTableDataProvider(provider,
+        record, { displayType: DefaultContentDisplayTypes.LIST });
+      this.setState({ similarInstancesProvider });
+    } catch (e) {
+      console.log(e); // tslint:disable-line:no-console
+      alert(`Can't find similar instances for the selected property`);
+      this.setState({ similarInstancesProvider: undefined });
+    }
+  }
+
+  private _onSimilarInstancesResultsDismissed = () => {
+    this.setState({ similarInstancesProvider: undefined });
+  }
+
   private renderIModelComponents(imodel: IModelConnection, rulesetId: string, viewDefinitionId: Id64String) {
     return (
       <div
@@ -88,8 +110,16 @@ export default class App extends React.Component<{}, State> {
           <div className="app-content-left-top">
             <ViewportContentControl imodel={imodel} rulesetId={rulesetId} viewDefinitionId={viewDefinitionId} />
           </div>
-          <div>
-            <GridWidget imodel={imodel} rulesetId={rulesetId} />
+          <div className="app-content-left-bottom">
+            {
+              <GridWidget imodel={imodel} rulesetId={rulesetId} />
+            }
+            <div />
+            {
+              this.state.similarInstancesProvider ?
+                <FindSimilarWidget dataProvider={this.state.similarInstancesProvider} onDismissed={this._onSimilarInstancesResultsDismissed} />
+                : undefined
+            }
           </div>
         </div>
         <ElementSeparator
@@ -114,7 +144,7 @@ export default class App extends React.Component<{}, State> {
               movableArea={this.state.rightPaneHeight}
               onRatioChanged={this._onTreePaneRatioChanged} />
           </div>
-          <PropertiesWidget imodel={imodel} rulesetId={rulesetId} />
+          <PropertiesWidget imodel={imodel} rulesetId={rulesetId} onFindSimilar={this._onFindSimilar} />
         </div>
       </div>
     );

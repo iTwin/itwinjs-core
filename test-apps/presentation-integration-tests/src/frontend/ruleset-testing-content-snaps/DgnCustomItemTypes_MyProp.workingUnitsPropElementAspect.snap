@@ -1,0 +1,58 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`RulesetTesting generates correct content for 'Items' ruleset. ClassName: 'DgnCustomItemTypes_MyProp:workingUnitsPropElementAspect' 1`] = `
+Array [
+  PropertyRecord {
+    "description": "150.123456",
+    "property": Object {
+      "displayLabel": "Volume",
+      "name": "workingUnitsPropElementAspect_Volume",
+      "typename": "double",
+    },
+    "value": Object {
+      "displayValue": "150.123456",
+      "value": 150.123456,
+      "valueFormat": 0,
+    },
+  },
+  PropertyRecord {
+    "description": "150.123456",
+    "property": Object {
+      "displayLabel": "Distance",
+      "name": "workingUnitsPropElementAspect_Distance",
+      "typename": "double",
+    },
+    "value": Object {
+      "displayValue": "150.123456",
+      "value": 150.123456,
+      "valueFormat": 0,
+    },
+  },
+  PropertyRecord {
+    "description": "150.123456",
+    "property": Object {
+      "displayLabel": "Area",
+      "name": "workingUnitsPropElementAspect_Area",
+      "typename": "double",
+    },
+    "value": Object {
+      "displayValue": "150.123456",
+      "value": 150.123456,
+      "valueFormat": 0,
+    },
+  },
+  PropertyRecord {
+    "description": "2.62014859167284",
+    "property": Object {
+      "displayLabel": "Angle",
+      "name": "workingUnitsPropElementAspect_Angle",
+      "typename": "double",
+    },
+    "value": Object {
+      "displayValue": "2.62014859167284",
+      "value": 2.62014859167284,
+      "valueFormat": 0,
+    },
+  },
+]
+`;

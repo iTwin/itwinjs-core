@@ -22,6 +22,7 @@ import { CurveCollection } from "../curve/CurveCollection";
 import { Arc3d } from "../curve/Arc3d";
 import { LineString3d } from "../curve/LineString3d";
 import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
+import { Vector2d } from "../geometry3d/Point2dVector2d";
 /**
  * A Sphere is
  *
@@ -68,7 +69,8 @@ export class Sphere extends SolidPrimitive implements UVSurface {
   public getConstructiveFrame(): Transform | undefined {
     return this._localToWorld.cloneRigid();
   }
-
+  /** Return the latitude sweep as fraction of south pole to north pole. */
+  public get latitudeSweepFraction(): number { return this._latitudeSweep.sweepRadians / Math.PI; }
   public static createCenterRadius(center: Point3d, radius: number, latitudeSweep?: AngleSweep): Sphere {
     const localToWorld = Transform.createOriginAndMatrix(center, Matrix3d.createUniformScale(radius));
     return new Sphere(localToWorld,
@@ -139,30 +141,56 @@ export class Sphere extends SolidPrimitive implements UVSurface {
    * @param v fractional position along the cone axis
    * @param strokes stroke count or options.
    */
-  public strokeConstantVSection(v: number, strokes: number | StrokeOptions | undefined): LineString3d {
+  public strokeConstantVSection(v: number, fixedStrokeCount: number | undefined,
+    options?: StrokeOptions): LineString3d {
     let strokeCount = 16;
-    if (strokes === undefined) {
-      // accept the default above.
-    } else if (Number.isFinite(strokes as number)) {
-      strokeCount = strokes as number;
-    } else if (strokes instanceof StrokeOptions) {
-      strokeCount = strokes.applyTolerancesToArc(Geometry.maxXY(this._localToWorld.matrix.columnXMagnitude(), this._localToWorld.matrix.columnYMagnitude()));
+    if (fixedStrokeCount !== undefined && Number.isFinite(fixedStrokeCount)) {
+      strokeCount = fixedStrokeCount as number;
+    } else if (options instanceof StrokeOptions) {
+      strokeCount = options.applyTolerancesToArc(Geometry.maxXY(this._localToWorld.matrix.columnXMagnitude(), this._localToWorld.matrix.columnYMagnitude()));
     }
     strokeCount = Geometry.clampToStartEnd(strokeCount, 4, 64);
     const transform = this._localToWorld;
     const phi = this.vFractionToRadians(v);
     const c1 = Math.cos(phi);
     const s1 = Math.sin(phi);
-    const result = LineString3d.create();
+    let c0, s0;
+    const result = LineString3d.createForStrokes(fixedStrokeCount, options);
     const deltaRadians = Math.PI * 2.0 / strokeCount;
+    const fractions = result.fractions;     // possibly undefined !!!
+    const derivatives = result.packedDerivatives; // possibly undefined !!!
+    const uvParams = result.packedUVParams; // possibly undefined !!
+    const surfaceNormals = result.packedSurfaceNormals;
+    const dXdu = Vector3d.create();
+    const dXdv = Vector3d.create();
+    const normal = Vector3d.create();
     let radians = 0;
     for (let i = 0; i <= strokeCount; i++) {
       if (i * 2 <= strokeCount)
         radians = i * deltaRadians;
       else
         radians = (i - strokeCount) * deltaRadians;
-      const xyz = transform.multiplyXYZ(c1 * Math.cos(radians), c1 * Math.sin(radians), s1);
+      c0 = Math.cos(radians);
+      s0 = Math.sin(radians);
+      const xyz = transform.multiplyXYZ(c1 * c0, c1 * s0, s1);
       result.addPoint(xyz);
+
+      if (fractions)
+        fractions.push(i / strokeCount);
+
+      if (derivatives) {
+        transform.matrix.multiplyXYZ(-c1 * s0, c1 * c0, 0.0, dXdu);
+        derivatives.push(dXdu);
+      }
+      if (uvParams) {
+        uvParams.pushXY(i / strokeCount, v);
+      }
+      if (surfaceNormals) {
+        transform.matrix.multiplyXYZ(-s0, c0, 0, dXdu);
+        transform.matrix.multiplyXYZ(-s1 * c0, -s1 * s0, c1, dXdv);
+        dXdu.unitCrossProduct(dXdv, normal);
+        surfaceNormals.push(normal);
+      }
     }
     return result;
   }
@@ -206,7 +234,7 @@ export class Sphere extends SolidPrimitive implements UVSurface {
    * @param uFraction fractional position in minor (phi)
    * @param vFraction fractional position on major (theta) arc
    */
-  public UVFractionToPoint(uFraction: number, vFraction: number, result?: Point3d): Point3d {
+  public uvFractionToPoint(uFraction: number, vFraction: number, result?: Point3d): Point3d {
     // sphere with radius 1 . . .
     const thetaRadians = this.uFractionToRadians(uFraction);
     const phiRadians = this.vFractionToRadians(vFraction);
@@ -220,7 +248,7 @@ export class Sphere extends SolidPrimitive implements UVSurface {
    * @param u fractional position in minor (phi)
    * @param v fractional position on major (theta) arc
    */
-  public UVFractionToPointAndTangents(uFraction: number, vFraction: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors {
+  public uvFractionToPointAndTangents(uFraction: number, vFraction: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors {
     const thetaRadians = this.uFractionToRadians(uFraction);
     const phiRadians = this.vFractionToRadians(vFraction);
     const fTheta = Math.PI * 2.0;
@@ -231,8 +259,35 @@ export class Sphere extends SolidPrimitive implements UVSurface {
     const cosPhi = Math.cos(phiRadians);
     return Plane3dByOriginAndVectors.createOriginAndVectors(
       this._localToWorld.multiplyXYZ(cosTheta * cosPhi, sinTheta * cosPhi, sinPhi),
-      this._localToWorld.multiplyVectorXYZ(-fTheta * sinTheta * cosPhi, fTheta * cosTheta * cosPhi, 0),
-      this._localToWorld.multiplyVectorXYZ(-fPhi * cosTheta * sinPhi, -fPhi * sinTheta * sinPhi, fPhi * cosPhi),
+      this._localToWorld.matrix.multiplyXYZ(-fTheta * sinTheta, fTheta * cosTheta, 0),   // !!! note cosTheta term is omitted -- scale is wrong, but remains non-zero at poles.
+      this._localToWorld.matrix.multiplyXYZ(-fPhi * cosTheta * sinPhi, -fPhi * sinTheta * sinPhi, fPhi * cosPhi),
       result);
+  }
+  /**
+   * * A sphere is can be closed two ways:
+   *   * full sphere (no caps needed for closure)
+   *   * incomplete but with caps
+   * @return true if this is a closed volume.
+   */
+  public get isClosedVolume(): boolean {
+    return this.capped || this._latitudeSweep.isFullLatitudeSweep;
+  }
+  /**
+   * Directional distance query
+   * * u direction is around longitude circle at maximum distance from axis.
+   * * v direction is on a line of longitude between the latitude limits.
+   */
+  public maxIsoParametricDistance(): Vector2d {
+    // approximate radius at equator .. if elliptic, this is not exact . . .
+    const rX = this._localToWorld.matrix.columnXMagnitude();
+    const rY = this._localToWorld.matrix.columnYMagnitude();
+    const rZ = this._localToWorld.matrix.columnZMagnitude();
+    const rMaxU = Math.max(rX, rY);
+    let dMaxU = Math.PI * 2.0 * rMaxU;
+    if (!this._latitudeSweep.isRadiansInSweep(0.0))
+      dMaxU *= Math.max(Math.cos(Math.abs(this._latitudeSweep.startRadians)), Math.cos(Math.abs(this._latitudeSweep.endRadians)));
+    const dMaxV = Math.max(rMaxU, rZ) * Math.abs(this._latitudeSweep.sweepRadians);
+
+    return Vector2d.create(dMaxU, dMaxV);
   }
 }

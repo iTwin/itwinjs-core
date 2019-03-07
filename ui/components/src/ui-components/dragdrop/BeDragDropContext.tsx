@@ -6,7 +6,7 @@
 
 import * as React from "react";
 import HTML5Backend from "react-dnd-html5-backend";
-import { DragDropContext } from "react-dnd";
+import { DragDropContext, ContextComponent } from "react-dnd";
 
 class BeDragDropContextComponent extends React.Component {
   public render(): React.ReactNode {
@@ -21,4 +21,4 @@ class BeDragDropContextComponent extends React.Component {
 /**
  * Context component for DragDrop API. All DragSources and DropTargets used in the application must be contained in this component.
  */
-export const BeDragDropContext = DragDropContext(HTML5Backend)(BeDragDropContextComponent); // tslint:disable-line:variable-name
+export const BeDragDropContext: typeof BeDragDropContextComponent & ContextComponent<any> = DragDropContext(HTML5Backend)(BeDragDropContextComponent); // tslint:disable-line:variable-name

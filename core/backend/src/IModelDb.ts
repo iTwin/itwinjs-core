@@ -4,15 +4,16 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module iModels */
 import { ActivityLoggingContext, BeEvent, BentleyStatus, DbResult, AuthStatus, GuidString, Id64, Id64Arg, Id64Set, Id64String, JsonUtils, Logger, OpenMode } from "@bentley/bentleyjs-core";
-import { AccessToken } from "@bentley/imodeljs-clients";
+import { AccessToken, UlasClient, UsageLogEntry, UsageType, LogPostingResponse } from "@bentley/imodeljs-clients";
 import {
   AxisAlignedBox3d, CategorySelectorProps, Code, CodeSpec, CreateIModelProps, DisplayStyleProps, EcefLocation, ElementAspectProps,
   ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontMap, FontMapProps, FontProps,
   IModel, IModelError, IModelNotFoundResponse, IModelProps, IModelStatus, IModelToken, IModelVersion, ModelProps, ModelSelectorProps,
   PropertyCallback, SheetProps, SnapRequestProps, SnapResponseProps, ThumbnailProps, TileTreeProps, ViewDefinitionProps, ViewQueryParams,
-  ViewStateProps, IModelCoordinatesResponseProps, GeoCoordinatesResponseProps,
+  ViewStateProps, IModelCoordinatesResponseProps, GeoCoordinatesResponseProps, PageOptions, kPagingDefaultOptions, PagableECSql,
 } from "@bentley/imodeljs-common";
 import * as path from "path";
+import * as os from "os";
 import { BriefcaseEntry, BriefcaseId, BriefcaseManager, KeepBriefcase } from "./BriefcaseManager";
 import { ClassRegistry, MetaDataRegistry } from "./ClassRegistry";
 import { CodeSpecs } from "./CodeSpecs";
@@ -22,12 +23,11 @@ import { Element, Subject } from "./Element";
 import { ElementAspect } from "./ElementAspect";
 import { Entity } from "./Entity";
 import { IModelJsNative } from "./IModelJsNative";
-import { IModelJsFs } from "./IModelJsFs";
 import { Model } from "./Model";
 import { Relationship, RelationshipProps, Relationships } from "./Relationship";
 import { CachedSqliteStatement, SqliteStatement, SqliteStatementCache } from "./SqliteStatement";
 import { SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
-import { IModelHost, KnownLocations } from "./IModelHost";
+import { IModelHost } from "./IModelHost";
 
 /** @hidden */
 const loggingCategory = "imodeljs-backend.IModelDb";
@@ -114,7 +114,7 @@ export class OpenParams {
  * IModelDb raises a set of events to allow apps and subsystems to track IModelDb object life cycle, including [[onOpen]] and [[onOpened]].
  * @see [learning about IModelDb]($docs/learning/backend/IModelDb.md)
  */
-export class IModelDb extends IModel {
+export class IModelDb extends IModel implements PagableECSql {
   public static readonly defaultLimit = 1000; // default limit for batching queries
   public static readonly maxLimit = 10000; // maximum limit for batching queries
   /** Event called after a changeset is applied to this IModelDb. */
@@ -203,10 +203,10 @@ export class IModelDb extends IModel {
   }
 
   /** Create an iModel on iModelHub */
-  public static async create(activity: ActivityLoggingContext, accessToken: AccessToken, contextId: string, fileName: string, args: CreateIModelProps): Promise<IModelDb> {
+  public static async create(activity: ActivityLoggingContext, accessToken: AccessToken, contextId: string, iModelName: string, args: CreateIModelProps): Promise<IModelDb> {
     activity.enter();
     IModelDb.onCreate.raiseEvent(accessToken, contextId, args);
-    const iModelId: string = await BriefcaseManager.create(activity, accessToken, contextId, fileName, args);
+    const iModelId: string = await BriefcaseManager.create(activity, accessToken, contextId, iModelName, args);
     return IModelDb.open(activity, accessToken, contextId, iModelId);
   }
 
@@ -236,10 +236,46 @@ export class IModelDb extends IModel {
     IModelDb.onOpen.raiseEvent(accessToken, contextId, iModelId, openParams, version, activity);
     const briefcaseEntry: BriefcaseEntry = await BriefcaseManager.open(activity, accessToken, contextId, iModelId, openParams, version);
     activity.enter();
+
     const imodelDb = IModelDb.constructIModelDb(briefcaseEntry, openParams, contextId);
+    await imodelDb.logUsage(activity, accessToken, contextId);
     IModelDb.onOpened.raiseEvent(imodelDb, activity);
     Logger.logTrace(loggingCategory, "IModelDb.open", () => ({ ...imodelDb._token, ...openParams }));
     return imodelDb;
+  }
+
+  private static createUsageLogEntry(accessToken: AccessToken, contextId: GuidString): UsageLogEntry {
+    const entry: UsageLogEntry = new UsageLogEntry(os.hostname(), UsageType.Trial);
+    const userInfo = accessToken.getUserInfo();
+    const featureTrackingInfo = userInfo ? userInfo.featureTracking : undefined;
+
+    entry.userInfo = {
+      imsId: userInfo ? userInfo.id : "",
+      ultimateSite: !featureTrackingInfo ? 0 : parseInt(featureTrackingInfo.ultimateSite, 10),
+      usageCountryIso: !featureTrackingInfo ? "" : featureTrackingInfo.usageCountryIso,
+    };
+
+    entry.projectId = contextId;
+    entry.productId = 2686; // todo: needs to be passed in from frontend
+    entry.productVersion = { major: 1, minor: 0 }; // todo: needs to be passed in from frontend
+
+    return entry;
+  }
+
+  private async logUsage(actx: ActivityLoggingContext, accessToken: AccessToken, contextId: GuidString): Promise<void> {
+    const client = new UlasClient();
+    let status: BentleyStatus;
+    try {
+      const entry: UsageLogEntry = IModelDb.createUsageLogEntry(accessToken, contextId);
+      const resp: LogPostingResponse = await client.logUsage(actx, accessToken, entry);
+      status = resp ? resp.status : BentleyStatus.ERROR;
+    } catch (error) {
+      status = BentleyStatus.ERROR;
+    }
+
+    if (status !== BentleyStatus.SUCCESS) {
+      Logger.logError(loggingCategory, "Could not log usage information", () => this.iModelToken);
+    }
   }
 
   /**
@@ -313,7 +349,9 @@ export class IModelDb extends IModel {
   /** Event called when the iModel is about to be closed */
   public readonly onBeforeClose = new BeEvent<() => void>();
 
-  /** Get the in-memory handle of the native Db */
+  /** Get the in-memory handle of the native Db
+   * @hidden
+   */
   public get nativeDb(): IModelJsNative.DgnDb { return this.briefcase.nativeDb; }
 
   /** Get the briefcase Id of this iModel */
@@ -340,7 +378,11 @@ export class IModelDb extends IModel {
 
     this._statementCache.removeUnusedStatementsIfNecessary();
     const stmt = this.prepareStatement(ecsql);
-    this._statementCache.add(ecsql, stmt);
+    if (cachedStatement)
+      this._statementCache.replace(ecsql, stmt);
+    else
+      this._statementCache.add(ecsql, stmt);
+
     return stmt;
   }
 
@@ -359,18 +401,154 @@ export class IModelDb extends IModel {
    */
   public withPreparedStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T): T {
     const stmt = this.getPreparedStatement(ecsql);
+    const release = () => {
+      if (stmt.isShared)
+        this._statementCache.release(stmt);
+      else
+        stmt.dispose();
+    };
+
     try {
-      const val = callback(stmt);
-      this._statementCache.release(stmt);
+      const val: T = callback(stmt);
+      if (val instanceof Promise) {
+        val.then(release, release);
+      } else {
+        release();
+      }
       return val;
     } catch (err) {
-      this._statementCache.release(stmt); // always release statement
+      release();
       Logger.logError(loggingCategory, err.toString());
       throw err;
     }
   }
+  /** Compute number of rows that would be returned by the ECSQL.
+   *
+   * See also:
+   * - [ECSQL Overview]($docs/learning/backend/ExecutingECSQL)
+   * - [Code Examples]($docs/learning/backend/ECSQLCodeExamples)
+   *
+   * @param ecsql The ECSQL statement to execute
+   * @param bindings The values to bind to the parameters (if the ECSQL has any).
+   * Pass an *array* of values if the parameters are *positional*.
+   * Pass an *object of the values keyed on the parameter name* for *named parameters*.
+   * The values in either the array or object must match the respective types of the parameters.
+   * See "[iModel.js Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" for details.
+   * @returns Return row count.
+   * @throws [IModelError]($common) If the statement is invalid
+   */
+  public async queryRowCount(ecsql: string, bindings?: any[] | object): Promise<number> {
+    return this.withPreparedStatement(`select count(*) from (${ecsql})`, async (stmt: ECSqlStatement) => {
+      if (bindings)
+        stmt.bindValues(bindings);
+      const ret = await stmt.stepAsync();
+      if (ret === DbResult.BE_SQLITE_ROW) {
+        return stmt.getValue(0).getInteger();
+      }
+      throw new IModelError(ret, "Fail to compute row count");
+    });
+  }
+
+  /** Execute a query agaisnt this ECDb
+   * The result of the query is returned as an array of JavaScript objects where every array element represents an
+   * [ECSQL row]($docs/learning/ECSQLRowFormat).
+   *
+   * See also:
+   * - [ECSQL Overview]($docs/learning/backend/ExecutingECSQL)
+   * - [Code Examples]($docs/learning/backend/ECSQLCodeExamples)
+   *
+   * @param ecsql The ECSQL statement to execute
+   * @param bindings The values to bind to the parameters (if the ECSQL has any).
+   * Pass an *array* of values if the parameters are *positional*.
+   * Pass an *object of the values keyed on the parameter name* for *named parameters*.
+   * The values in either the array or object must match the respective types of the parameters.
+   * See "[iModel.js Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" for details.
+   * @param options Provide paging option. This allow set page size and page number from which to grab rows from.
+   * @returns Returns the query result as an array of the resulting rows or an empty array if the query has returned no rows.
+   * See [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned rows.
+   * @throws [IModelError]($common) If the statement is invalid
+   */
+  public async queryPage(ecsql: string, bindings?: any[] | object, options?: PageOptions): Promise<any[]> {
+    if (!options) {
+      options = kPagingDefaultOptions;
+    }
+
+    const pageNo = options.start || kPagingDefaultOptions.start;
+    const pageSize = options.size || kPagingDefaultOptions.size;
+
+    // verify if correct options was provided.
+    if (pageNo! < 0)
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, "options.start must be positive integer");
+
+    if (pageSize! < 0)
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, "options.size must be positive integer starting from 1");
+
+    const pageParams = { sys_page_size: pageSize!, sys_page_offset: pageNo! * pageSize! };
+    return this.withPreparedStatement(`select * from (${ecsql}) limit :sys_page_size offset :sys_page_offset`, async (stmt: ECSqlStatement) => {
+      if (bindings)
+        stmt.bindValues(bindings);
+
+      stmt.bindValues(pageParams);
+      const rows: any[] = [];
+
+      let ret = await stmt.stepAsync();
+      while (ret === DbResult.BE_SQLITE_ROW) {
+        rows.push(stmt.getRow());
+        ret = await stmt.stepAsync();
+      }
+      return rows;
+    });
+  }
+
+  /** Execute a pagable query.
+   * The result of the query is async iterator over the rows. The iterator will get next page automatically once rows in current page has been read.
+   * [ECSQL row]($docs/learning/ECSQLRowFormat).
+   *
+   * See also:
+   * - [ECSQL Overview]($docs/learning/backend/ExecutingECSQL)
+   * - [Code Examples]($docs/learning/backend/ECSQLCodeExamples)
+   *
+   * @param ecsql The ECSQL statement to execute
+   * @param bindings The values to bind to the parameters (if the ECSQL has any).
+   * Pass an *array* of values if the parameters are *positional*.
+   * Pass an *object of the values keyed on the parameter name* for *named parameters*.
+   * The values in either the array or object must match the respective types of the parameters.
+   * See "[iModel.js Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" for details.
+   * @param options Provide paging option. Which allow page to start iterating from and also size of the page to use.
+   * @returns Returns the query result as an array of the resulting rows or an empty array if the query has returned no rows.
+   * See [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned rows.
+   * @throws [IModelError]($common) If the statement is invalid
+   */
+  public async * query(ecsql: string, bindings?: any[] | object, options?: PageOptions): AsyncIterableIterator<any> {
+    if (!options) {
+      options = kPagingDefaultOptions;
+    }
+
+    let pageNo = options.start || kPagingDefaultOptions.start!;
+    const pageSize = options.size || kPagingDefaultOptions.size!;
+
+    // verify if correct options was provided.
+    if (pageNo < 0)
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, "options.start must be positive integer");
+
+    if (pageSize < 0)
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, "options.size must be positive integer starting from 1");
+
+    do {
+      const page = await this.queryPage(ecsql, bindings, { start: pageNo, size: pageSize });
+      if (page.length > 0) {
+        for (const row of page) {
+          yield row;
+        }
+        pageNo = pageNo + 1;
+      } else {
+        pageNo = -1;
+      }
+    } while (pageNo >= 0);
+  }
 
   /** Execute a query against this IModelDb.
+   * @deprecated use withPreparedStatement or query or queryPage instead
    * The result of the query is returned as an array of JavaScript objects where every array element represents an
    * [ECSQL row]($docs/learning/ECSQLRowFormat).
    *
@@ -413,12 +591,22 @@ export class IModelDb extends IModel {
    */
   public withPreparedSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T): T {
     const stmt = this.getPreparedSqlStatement(sql);
+    const release = () => {
+      if (stmt.isShared)
+        this._sqliteStatementCache.release(stmt);
+      else
+        stmt.dispose();
+    };
     try {
-      const val = callback(stmt);
-      this._sqliteStatementCache.release(stmt);
+      const val: T = callback(stmt);
+      if (val instanceof Promise) {
+        val.then(release, release);
+      } else {
+        release();
+      }
       return val;
     } catch (err) {
-      this._sqliteStatementCache.release(stmt); // always release statement
+      release();
       Logger.logError(loggingCategory, err.toString());
       throw err;
     }
@@ -446,9 +634,12 @@ export class IModelDb extends IModel {
       return cachedStatement.statement;
     }
 
-    this._statementCache.removeUnusedStatementsIfNecessary();
+    this._sqliteStatementCache.removeUnusedStatementsIfNecessary();
     const stmt: SqliteStatement = this.prepareSqliteStatement(sql);
-    this._sqliteStatementCache.add(sql, stmt);
+    if (cachedStatement)
+      this._sqliteStatementCache.replace(sql, stmt);
+    else
+      this._sqliteStatementCache.add(sql, stmt);
     return stmt;
   }
 
@@ -825,18 +1016,18 @@ export class IModelDb extends IModel {
    */
   public queryNextAvailableFileProperty(prop: FilePropertyProps) { return this.nativeDb.queryNextAvailableFileProperty(JSON.stringify(prop)); }
 
-  public async requestSnap(activity: ActivityLoggingContext, connectionId: string, props: SnapRequestProps): Promise<SnapResponseProps> {
+  public async requestSnap(activity: ActivityLoggingContext, sessionId: string, props: SnapRequestProps): Promise<SnapResponseProps> {
     activity.enter();
-    let request = this._snaps.get(connectionId);
+    let request = this._snaps.get(sessionId);
     if (undefined === request) {
       request = new IModelHost.platform.SnapRequest();
-      this._snaps.set(connectionId, request);
+      this._snaps.set(sessionId, request);
     } else
       request.cancelSnap();
 
     return new Promise<SnapResponseProps>((resolve, reject) => {
       request!.doSnap(this.nativeDb, JsonUtils.toObject(props), (ret: IModelJsNative.ErrorStatusOrResult<IModelStatus, SnapResponseProps>) => {
-        this._snaps.delete(connectionId);
+        this._snaps.delete(sessionId);
         if (ret.error !== undefined)
           reject(new Error(ret.error.message));
         else
@@ -846,28 +1037,13 @@ export class IModelDb extends IModel {
   }
 
   /** Cancel a previously requested snap. */
-  public cancelSnap(connectionId: string): void {
-    const request = this._snaps.get(connectionId);
+  public cancelSnap(sessionId: string): void {
+    const request = this._snaps.get(sessionId);
     if (undefined !== request) {
       request.cancelSnap();
-      this._snaps.delete(connectionId);
+      this._snaps.delete(sessionId);
     }
   }
-
-  /** Load a file from the *Assets* directory of imodeljs-native
-   * @param assetName The asset file name with path relative to the *Assets* directory.
-   */
-  public static loadNativeAsset(assetName: string): Uint8Array {
-    const fileName = path.join(KnownLocations.nativeAssetsDir, assetName);
-    return IModelJsFs.readFileSync(fileName) as Buffer;
-  }
-
-  /** Execute a test from native code
-   * @param testName The name of the test
-   * @param params parameters for the test
-   * @hidden
-   */
-  public executeTest(testName: string, params: any): any { return JSON.parse(this.nativeDb.executeTest(testName, JSON.stringify(params))); }
 
   /** Get the IModel coordinate corresponding to each GeoCoordinate point in the input */
   public async getIModelCoordinatesFromGeoCoordinates(activity: ActivityLoggingContext, props: string): Promise<IModelCoordinatesResponseProps> {
@@ -1350,6 +1526,16 @@ export namespace IModelDb {
     }
   }
 
+  /** Represents the current state of a pollable tile content request.
+   * Note: lack of a "completed" state because polling a completed request returns the content as a Uint8Array.
+   * @hidden
+   */
+  export const enum TileContentState {
+    New, // Request was just created and enqueued.
+    Pending, // Request is enqueued but not yet being processed.
+    Loading, // Request is being actively processed.
+  }
+
   /** @hidden */
   export class Tiles {
     /** @hidden */
@@ -1372,21 +1558,45 @@ export namespace IModelDb {
       });
     }
 
+    private pollTileContent(resolve: (arg0: Uint8Array) => void, reject: (err: Error) => void, treeId: string, tileId: string, activity: ActivityLoggingContext) {
+      activity.enter();
+      if (!this._iModel.briefcase) {
+        reject(this._iModel.newNotOpenError());
+        return;
+      }
+
+      const ret = this._iModel.nativeDb.pollTileContent(treeId, tileId);
+      if (undefined !== ret.error) {
+        reject(new IModelError(ret.error.status, "TreeId=" + treeId + " TileId=" + tileId));
+      } else if (ret.result instanceof Uint8Array) {
+        resolve(ret.result);
+      } else {
+        // ###TODO: Decide appropriate timeout interval. May want to switch on state (new vs loading vs pending)
+        setTimeout(() => this.pollTileContent(resolve, reject, treeId, tileId, activity), 10);
+      }
+    }
+
     /** @hidden */
     public async requestTileContent(activity: ActivityLoggingContext, treeId: string, tileId: string): Promise<Uint8Array> {
       activity.enter();
       if (!this._iModel.briefcase)
         throw this._iModel.newNotOpenError();
 
-      return new Promise<Uint8Array>((resolve, reject) => {
-        activity.enter();
-        this._iModel.nativeDb.getTileContent(treeId, tileId, (ret: IModelJsNative.ErrorStatusOrResult<IModelStatus, Uint8Array>) => {
-          if (undefined !== ret.error)
-            reject(new IModelError(ret.error.status, "TreeId=" + treeId + " TileId=" + tileId));
-          else
-            resolve(ret.result!);
+      if (IModelHost.useTileContentThreadPool) {
+        return new Promise<Uint8Array>((resolve, reject) => {
+          this.pollTileContent(resolve, reject, treeId, tileId, activity);
         });
-      });
+      } else {
+        return new Promise<Uint8Array>((resolve, reject) => {
+          activity.enter();
+          this._iModel.nativeDb.getTileContent(treeId, tileId, (ret: IModelJsNative.ErrorStatusOrResult<IModelStatus, Uint8Array>) => {
+            if (undefined !== ret.error)
+              reject(new IModelError(ret.error.status, "TreeId=" + treeId + " TileId=" + tileId));
+            else
+              resolve(ret.result!);
+          });
+        });
+      }
     }
   }
 }

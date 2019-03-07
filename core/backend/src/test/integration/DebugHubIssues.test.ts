@@ -73,6 +73,10 @@ describe.skip("DebugHubIssues (#integration)", () => {
     iModelName = "ConnectionReadTest";
     iModelDir = path.join(iModelRootDir, iModelName);
     await HubUtility.downloadIModelByName(accessToken, projectName, iModelName, iModelDir);
+
+    iModelName = "PushTest";
+    iModelDir = path.join(iModelRootDir, iModelName);
+    await HubUtility.downloadIModelByName(accessToken, projectName, iModelName, iModelDir);
   });
 
   it.skip("should be able to open ReadOnlyTest model", async () => {

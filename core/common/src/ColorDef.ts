@@ -2,14 +2,15 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-// spell-checker: disable
-
 /** @module Symbology */
 
-/**
- * A set of known colors by name, as a 32-bit integer in the form 0xBBGGRR (red is the low byte).
+import { Geometry } from "@bentley/geometry-core";
+
+// spell-checker: disable
+/** A set of known colors by name, as a 32-bit integer in the form 0xBBGGRR (red is the low byte).
  * This is different than color values in #RRGGBB format for HTML pages (red and blue are swapped).
- * If your colors don't look right, likely you're using 0xRRGGBB where ColorDef expects 0xBBGGRR.
+ * @note If your colors don't look right, likely you're using 0xRRGGBB where ColorDef expects 0xBBGGRR.
+ * @public
  */
 export enum ColorByName {
   aliceBlue = 0xFFF8F0,
@@ -164,6 +165,7 @@ export enum ColorByName {
   yellowGreen = 0x32CD9A,
 }
 
+/** @public */
 const enum HsvConstants {
   VISIBILITY_GOAL = 40,
   HSV_SATURATION_WEIGHT = 4,
@@ -172,6 +174,7 @@ const enum HsvConstants {
 
 /** A color defined by Hue, Saturation, and Lightness.
  * @see [here](https://en.wikipedia.org/wiki/HSL_and_HSV) for difference between HSL and HSV
+ * @public
  */
 export class HSLColor {
   /** Hue */
@@ -185,9 +188,9 @@ export class HSLColor {
   public static fromColorDef(val: ColorDef, out?: HSLColor) { return val.toHSL(out); }
 }
 
-/**
- * A color defined by Hue, Saturation, and Value
+/** A color defined by Hue, Saturation, and Value
  * @see [here](https://en.wikipedia.org/wiki/HSL_and_HSV) for difference between HSL and HSV
+ * @public
  */
 export class HSVColor {
   /** Hue */
@@ -229,11 +232,12 @@ export class HSVColor {
 const scratchBytes = new Uint8Array(4);
 const scratchUInt32 = new Uint32Array(scratchBytes.buffer);
 
-/** A number in 0xTTBBGGRR format */
+/** A number in 0xTTBBGGRR format
+ * @public
+ */
 export type ColorDefProps = number | ColorDef;
 
-/**
- * An integer representation of a color.
+/** An integer representation of a color.
  *
  * Colors are stored as 4 components: Red, Blue, Green, and Transparency (0=fully opaque). Each is an 8-bit integer between 0-255.
  *
@@ -246,6 +250,7 @@ export type ColorDefProps = number | ColorDef;
  * to convert to `0xRRGGBB` (see [[getRgb]]) and `0xAABBGGRR` (red in the low byte, 0==fully transparent in high byte. see [[getAbgr]]).
  *
  * The constructor also accepts strings in the common HTML formats.
+ * @public
  */
 export class ColorDef {
   private _tbgr: number;
@@ -437,12 +442,11 @@ export class ColorDef {
     };
     const hue2rgb = (p1: number, q1: number, t: number) => Math.round(torgb(p1, q1, t) * 255);
     const modulo = (n: number, m: number) => ((n % m) + m) % m;
-    const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value));
 
     // h,s,l ranges are in 0.0 - 1.0
     h = modulo(h, 1);
-    s = clamp(s, 0, 1);
-    l = clamp(l, 0, 1);
+    s = Geometry.clamp(s, 0, 1);
+    l = Geometry.clamp(l, 0, 1);
 
     if (s === 0)
       return ColorDef.from(l, l, l, 0, out);
@@ -640,7 +644,9 @@ Object.freeze(ColorDef.red);
 Object.freeze(ColorDef.green);
 Object.freeze(ColorDef.blue);
 
-/** An immutable representation of a color with red, green, and blue components each in the integer range [0, 255]. */
+/** An immutable representation of a color with red, green, and blue components each in the integer range [0, 255].
+ * @public
+ */
 export class RgbColor {
   /** Constructs from red, green, and blue components.
    * @param r Red

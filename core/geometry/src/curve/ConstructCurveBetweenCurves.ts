@@ -10,8 +10,9 @@ import { NullGeometryHandler } from "../geometry3d/GeometryHandler";
 
 import { LineSegment3d } from "./LineSegment3d";
 import { Arc3d } from "./Arc3d";
-import { Point3d } from "../geometry3d/Point3dVector3d";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { LineString3d } from "./LineString3d";
+import { Geometry } from "../Geometry";
 
 /**
  * Context for constructing a curve that is interpolated between two other curves.
@@ -52,15 +53,42 @@ export class ConstructCurveBetweenCurves extends NullGeometryHandler {
     if (this._geometry1 instanceof LineString3d) {
       const ls1 = this._geometry1 as LineString3d;
       if (ls0.numPoints() === ls1.numPoints()) {
+        const numPoints = ls0.numPoints();
         const ls = LineString3d.create();
         const workPoint = Point3d.create();
         const workPoint0 = Point3d.create();
         const workPoint1 = Point3d.create();
-        for (let i = 0; i < ls0.numPoints(); i++) {
+        let workVector0;
+        let workVector1;
+        const fraction = this._fraction;
+        for (let i = 0; i < numPoints; i++) {
           ls0.pointAt(i, workPoint0);
           ls1.pointAt(i, workPoint1);
-          workPoint0.interpolate(this._fraction, workPoint1, workPoint);
+          workPoint0.interpolate(fraction, workPoint1, workPoint);
           ls.addPoint(workPoint);
+        }
+        if (ls0.fractions && ls1.fractions) {
+          for (let i = 0; i < numPoints; i++) {
+            ls.addFraction(Geometry.interpolate(ls0.fractions.atUncheckedIndex(i), fraction, ls1.fractions.atUncheckedIndex(i)));
+          }
+        }
+        if (ls0.strokeData && ls1.strokeData) {
+          // Policy: simple clone of stroke count map from ls0.
+          // The curveLength will not match.
+          // But we expect to be called at a time compatible count and a0,a1 are the important thing.
+          ls.strokeData = ls0.strokeData.clone();
+        }
+        if (ls0.packedDerivatives && ls1.packedDerivatives) {
+          if (!workVector0)
+            workVector0 = Vector3d.create();
+          if (!workVector1)
+            workVector1 = Vector3d.create();
+          for (let i = 0; i < numPoints; i++) {
+            ls0.packedDerivatives.getVector3dAtCheckedVectorIndex(i, workVector0);
+            ls1.packedDerivatives.getVector3dAtCheckedVectorIndex(i, workVector1);
+            ls.addDerivative(workVector0.interpolate(fraction, workVector1));
+          }
+
         }
         return ls;
       }
@@ -94,7 +122,7 @@ export class ConstructCurveBetweenCurves extends NullGeometryHandler {
    * @param fraction  fractional positon
    * @param geometry1 geometry "at fraction 1"
    */
-  public static InterpolateBetween(geometry0: GeometryQuery, fraction: number, geometry1: GeometryQuery): GeometryQuery | undefined {
+  public static interpolateBetween(geometry0: GeometryQuery, fraction: number, geometry1: GeometryQuery): GeometryQuery | undefined {
     const handler = new ConstructCurveBetweenCurves(geometry0, fraction, geometry1);
     return geometry0.dispatchToGeometryHandler(handler);
   }

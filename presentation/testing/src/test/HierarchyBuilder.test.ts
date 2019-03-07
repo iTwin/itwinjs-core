@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as moq from "typemoq";
@@ -55,7 +55,7 @@ describe("HierarchyBuilder", () => {
     context("without data", () => {
       beforeEach(() => {
         Presentation.presentation = presentationManagerMock.object;
-        presentationManagerMock.setup(async (manager) => manager.getRootNodes(moq.It.isAny())).returns(async () => []);
+        presentationManagerMock.setup(async (manager) => manager.getNodes(moq.It.isAny(), undefined)).returns(async () => []);
       });
 
       it("returns empty list when rulesetId is given", async () => {
@@ -73,8 +73,8 @@ describe("HierarchyBuilder", () => {
 
     context("with data", () => {
       beforeEach(() => {
-        presentationManagerMock.setup(async (manager) => manager.getRootNodes(moq.It.isAny())).returns(getRootNodes);
-        presentationManagerMock.setup(async (manager) => manager.getChildren(moq.It.isAny(), moq.It.isAny())).returns(getChildrenNodes);
+        presentationManagerMock.setup(async (manager) => manager.getNodes(moq.It.isAny(), undefined)).returns(getRootNodes);
+        presentationManagerMock.setup(async (manager) => manager.getNodes(moq.It.isAny(), moq.It.isAny())).returns(getChildrenNodes);
         Presentation.presentation = presentationManagerMock.object;
       });
 

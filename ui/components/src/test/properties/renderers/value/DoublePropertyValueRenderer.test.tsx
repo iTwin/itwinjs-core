@@ -3,11 +3,12 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { mount } from "enzyme";
+import { render } from "react-testing-library";
 import * as React from "react";
+import * as sinon from "sinon";
 import TestUtils from "../../../TestUtils";
 import { DoublePropertyValueRenderer } from "../../../../ui-components/properties/renderers/value/DoublePropertyValueRenderer";
-import { PrimitiveValue } from "../../../../ui-components/properties/Value";
+import { PrimitiveValue } from "@bentley/imodeljs-frontend";
 
 function createDoubleProperty(value: number, displayValue?: string) {
   const property = TestUtils.createPrimitiveStringProperty("Length", "", displayValue);
@@ -21,17 +22,34 @@ describe("DoublePropertyValueRenderer", () => {
     it("renders double property from display value", () => {
       const renderer = new DoublePropertyValueRenderer();
       const property = createDoubleProperty(0.45, "zero point forty five meters");
+
       const element = renderer.render(property);
-      const elementMount = mount(<div>{element}</div>);
-      expect(elementMount.text()).to.eq("zero point forty five meters");
+      const elementRender = render(<>{element}</>);
+
+      elementRender.getByText("zero point forty five meters");
     });
 
     it("renders double property from raw value", () => {
       const renderer = new DoublePropertyValueRenderer();
       const property = createDoubleProperty(0.45, "");
+
       const element = renderer.render(property);
-      const elementMount = mount(<div>{element}</div>);
-      expect(elementMount.text()).to.eq("0.45");
+      const elementRender = render(<>{element}</>);
+
+      elementRender.getByText("0.45");
+    });
+
+    it("renders navigation property wrapped in an anchored tag when property record has it", () => {
+      const renderer = new DoublePropertyValueRenderer();
+      const stringProperty = TestUtils.createPrimitiveStringProperty("Label", "Test property");
+      stringProperty.links = { onClick: sinon.spy() };
+
+      const element = renderer.render(stringProperty);
+      const renderedElement = render(<>{element}</>);
+
+      renderedElement.getByText("Test property");
+
+      expect(renderedElement.container.getElementsByClassName("core-underlined-button")).to.not.be.empty;
     });
 
     it("throws when trying to render array property", () => {

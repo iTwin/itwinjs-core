@@ -8,6 +8,7 @@ import { Point2d, Point3d, YawPitchRollAngles, Matrix3d, Transform, YawPitchRoll
 import { ColorDef, ColorDefProps } from "../ColorDef";
 import { Id64, Id64String } from "@bentley/bentleyjs-core";
 
+/** @public */
 export namespace AreaPattern {
   /** Single hatch line definition */
   export interface HatchDefLineProps {

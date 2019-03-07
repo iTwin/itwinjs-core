@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { assert } from "@bentley/bentleyjs-core";
 import { TextureUnit, CompositeFlags } from "../RenderFlags";
 import { VariableType, FragmentShaderComponent } from "../ShaderBuilder";
 import { ShaderProgram } from "../ShaderProgram";
@@ -13,6 +12,7 @@ import { Texture2DHandle } from "../Texture";
 import { createViewportQuadBuilder } from "./ViewportQuad";
 import { GLSLFragment, addWindowToTexCoords } from "./Fragment";
 import { addHiliteSettings } from "./FeatureSymbology";
+import { assert } from "@bentley/bentleyjs-core";
 
 const isEdgePixel = `
 bool isEdgePixel(float xOffset, float yOffset) {
@@ -142,7 +142,7 @@ export function createCompositeProgram(flags: CompositeFlags, context: WebGLRend
   if (wantOcclusion) {
     frag.addUniform("u_occlusion", VariableType.Sampler2D, (prog) => {
       prog.addGraphicUniform("u_occlusion", (uniform, params) => {
-        Texture2DHandle.bindSampler(uniform, (params.geometry as CompositeGeometry).occlusion, TextureUnit.Four);
+        Texture2DHandle.bindSampler(uniform, (params.geometry as CompositeGeometry).occlusion!, TextureUnit.Four);
       });
     });
 

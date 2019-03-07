@@ -75,7 +75,7 @@ export const withContainIn = <ComponentProps extends {}>(
       const { noVerticalContainment, noHorizontalContainment, container, ...props } = this.props as WithContainInProps;
       return (
         <Component
-          {...props}
+          {...props as ComponentProps}
           {...this.state}
         />
       );

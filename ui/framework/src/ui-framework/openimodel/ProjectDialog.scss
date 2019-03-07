@@ -2,7 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
- @import "@bentley/bwc/lib/mixins";
+@import "@bentley/ui-core/lib/ui-core/index";
 
 /* The Modal (background) */
 .modal-background {
@@ -39,21 +39,21 @@
   padding: 1em;
   display: flex;
   align-items: center;
-  color: $bwc-text-color;
+  color: $uicore-text-color;
   border-bottom: 1px solid #eee;
 }
 
 /* title */
 .projects .header h3 {
   margin: 0;
-  color: $bwc-text-color;
+  color: $uicore-text-color;
 }
 
 /* close button */
 .projects .header .icon {
   margin-left: auto;
   font-size: 1em;
-  color: $bwc-icons-dark;
+  color: $uicore-icons-dark;
   cursor: pointer;
   -webkit-transition: color 0.3s;
 	transition: color 0.3s;
@@ -67,7 +67,7 @@
 /* content */
 .projects .projects-content {
   height: 100%;
-  color: $bwc-gray;
+  color: $uicore-gray;
   padding: .5em 1.5em 1.5em 1.5em;
   display: flex;
   flex-direction: column;
@@ -94,7 +94,7 @@
   border-collapse: collapse;
 
   th, td {
-    border-bottom: 1px solid $bwc-tables-border-color;
+    border-bottom: 1px solid $uicore-tables-border-color;
     cursor: pointer;
   }
 
@@ -102,15 +102,15 @@
     font-weight: 500;
     text-align: left;
     padding: .75em;
-    font-size: $bwc-font-size-leading;
+    font-size: $uicore-font-size-leading;
     color: dimgray;
-    background: $bwc-tables-head-light;
+    background: $uicore-tables-head-light;
   }
 
   td {
     text-align: left;
     padding: .75em;
-    font-size: $bwc-font-size;
+    font-size: $uicore-font-size;
     color: dimgray;
   }
 
@@ -138,10 +138,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
-
-  > div {
-    @include bwc-loaders-large;
-  }
 }
 
 /* no projects prompt */

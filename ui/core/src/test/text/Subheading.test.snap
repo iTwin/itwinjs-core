@@ -1,0 +1,15 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<Subheading /> content renders correctly 1`] = `
+<span
+  className="uicore-text-subheading"
+>
+  Test content
+</span>
+`;
+
+exports[`<Subheading /> renders correctly 1`] = `
+<span
+  className="uicore-text-subheading"
+/>
+`;

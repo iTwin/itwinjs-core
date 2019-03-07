@@ -45,9 +45,10 @@ export class SchemaJsonFileLocater extends SchemaFileLocater implements ISchemaL
    * Attempts to retrieve a Schema with the given SchemaKey by using the configured
    * search paths to locate the JSON schema file from the file system.
    * @param key The SchemaKey of the Schema to retrieve.
-   * @param matchType The SchemaMatchType
+   * @param matchType The SchemaMatchType.
+   * @param context The SchemaContext that will control the lifetime of the schema and holds the schema's references, if they exist.
    */
-  public async getSchema<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context?: SchemaContext): Promise<T | undefined> {
+  public async getSchema<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<T | undefined> {
     // Grab all schema files that match the schema key
     const candidates: FileSchemaKey[] = this.findEligibleSchemaKeys(schemaKey, matchType, "json");
     if (!candidates || candidates.length === 0)
@@ -75,8 +76,9 @@ export class SchemaJsonFileLocater extends SchemaFileLocater implements ISchemaL
    * search paths to locate the JSON schema file from the file system.
    * @param key The SchemaKey of the Schema to retrieve.
    * @param matchType The SchemaMatchType
+   * @param context The SchemaContext that will control the lifetime of the schema.
    */
-  public getSchemaSync<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context?: SchemaContext): T | undefined {
+  public getSchemaSync<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): T | undefined {
     // Grab all schema files that match the schema key
     const candidates: FileSchemaKey[] = this.findEligibleSchemaKeys(schemaKey, matchType, "json");
     if (!candidates || candidates.length === 0)

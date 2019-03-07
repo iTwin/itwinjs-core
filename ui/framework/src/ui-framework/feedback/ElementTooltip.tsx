@@ -117,11 +117,9 @@ export class ElementTooltip extends React.Component<ElementTooltipProps, Element
   private _handleElementTooltipChangedEvent = (args: ElementTooltipChangedEventArgs) => {
     this._element = args.el;
     this._position = args.pt;
-    this.setState(() => {
-      return {
-        isVisible: args.isTooltipVisible,
-        message: args.message,
-      };
+    this.setState({
+      isVisible: args.isTooltipVisible,
+      message: args.message,
     });
     this.updatePosition();
   }

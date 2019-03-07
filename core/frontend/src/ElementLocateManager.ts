@@ -12,21 +12,24 @@ import { Pixel } from "./rendering";
 import { InputSource, InteractiveTool } from "./tools/Tool";
 import { Id64 } from "@bentley/bentleyjs-core";
 
-/** The possible actions for which a locate filter can be called. */
+/** The possible actions for which a locate filter can be called.
+ * @public
+ */
 export const enum LocateAction {
   Identify = 0,
   AutoLocate = 1,
 }
 
-/**
- * Values to return from a locate filter.
+/** Values to return from a locate filter.
  * Return `Reject` to indicate the element is unacceptable.
+ * @public
  */
 export const enum LocateFilterStatus {
   Accept = 0,
   Reject = 1,
 }
 
+/** @public */
 export const enum SnapStatus {
   Success = 0,
   Aborted = 1,
@@ -38,10 +41,14 @@ export const enum SnapStatus {
   FilteredByAppQuietly = 700,
 }
 
-/** Options that customize the way element location (i.e. *picking*) works. */
+/** Options that customize the way element location (i.e. *picking*) works.
+ * @public
+ */
 export class LocateOptions {
   /** If true, also test graphics from view decorations. */
   public allowDecorations = false;
+  /** If true, also test graphics with non-locatable flag set. */
+  public allowNonLocatable = false;
   /** Maximum number of hits to return. */
   public maxHits = 20;
   /** The [[HitSource]] identifying the caller. */
@@ -50,11 +57,12 @@ export class LocateOptions {
   public clone(): LocateOptions {
     const other = new LocateOptions();
     other.allowDecorations = this.allowDecorations;
+    other.allowNonLocatable = this.allowNonLocatable;
     other.maxHits = this.maxHits;
     other.hitSource = this.hitSource;
     return other;
   }
-  public init() { this.allowDecorations = false; this.maxHits = 20; this.hitSource = HitSource.DataPoint; }
+  public init() { this.allowDecorations = this.allowNonLocatable = false; this.maxHits = 20; this.hitSource = HitSource.DataPoint; }
 }
 
 export class LocateResponse {
@@ -180,7 +188,7 @@ export class ElementPicker {
           this.hitList!.hits.length = options.maxHits; // truncate array...
       }
       result = this.hitList!.length;
-    });
+    }, !options.allowNonLocatable);
 
     return result;
   }

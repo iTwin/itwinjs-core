@@ -7,6 +7,7 @@
 import { Vector3d, XYZProps, YawPitchRollProps, YawPitchRollAngles, Transform } from "@bentley/geometry-core";
 import { Id64String } from "@bentley/bentleyjs-core";
 
+/** @public */
 export namespace LineStyle {
 
   /** Modify the line style appearance without changing the line style definition.

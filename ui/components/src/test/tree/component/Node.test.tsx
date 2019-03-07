@@ -2,111 +2,154 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
-import { render } from "react-testing-library";
+import { render, fireEvent } from "react-testing-library";
+import { expect } from "chai";
 import { Tree } from "../../../ui-components/tree/component/Tree";
 import { BeInspireTree, BeInspireTreeNode } from "../../../ui-components/tree/component/BeInspireTree";
-import { TreeNode } from "../../../ui-components/tree/component/Node";
-import { waitForSpy } from "../../test-helpers/misc";
+import { TreeNode, TreeNodeIcon } from "../../../ui-components/tree/component/Node";
 import { TreeNodeItem } from "../../../ui-components/tree/TreeDataProvider";
+import { CheckBoxState } from "@bentley/ui-core";
+import { PropertyValueRendererManager } from "../../../ui-components/properties/ValueRendererManager";
+import TestUtils from "../../TestUtils";
+import { ITreeImageLoader, TreeImageLoader } from "../../../ui-components/tree/ImageLoader";
+import { LoadedImage } from "../../../ui-components/common/IImageLoader";
 
 describe("Node", () => {
-
   let tree: BeInspireTree<TreeNodeItem>;
   let node: BeInspireTreeNode<TreeNodeItem>;
+  const valueRendererManager = PropertyValueRendererManager.defaultManager;
 
-  beforeEach(() => {
+  before(async () => {
+    await TestUtils.initializeUiComponents();
+  });
+
+  after(() => {
+    TestUtils.terminateUiComponents();
+  });
+
+  beforeEach(async () => {
     tree = new BeInspireTree<TreeNodeItem>({
       dataProvider: [{ id: "0", label: "0" }],
       mapPayloadToInspireNodeConfig: Tree.inspireNodeFromTreeNodeItem,
     });
+    await tree.ready;
     node = tree.nodes()[0];
   });
 
-  it("renders label with synchronous function", async () => {
-    const renderLabelSpy = sinon.spy(() => "Test label");
+  it("renders content", () => {
+    node.text = "Test text";
     const renderedNode = render(
       <TreeNode
-        renderLabel={renderLabelSpy}
-        renderId=""
         node={node}
+        valueRendererManager={valueRendererManager}
       />);
 
-    expect(renderLabelSpy.called).to.be.true;
-    renderedNode.getByText("Test label");
+    renderedNode.getByText("Test text");
   });
 
-  it("renders label with asynchronous function", async () => {
-    const onRenderSpy = sinon.spy();
-    const renderLabelSpy = sinon.spy(async () => "Test label");
+  it("renders checkbox", () => {
+    const checkboxSpy = sinon.spy();
+
     const renderedNode = render(
       <TreeNode
-        onFinalRenderComplete={onRenderSpy}
-        renderLabel={renderLabelSpy}
-        renderId=""
         node={node}
+        valueRendererManager={valueRendererManager}
+        checkboxProps={{
+          isDisabled: false,
+          onClick: checkboxSpy,
+          state: CheckBoxState.On,
+        }}
       />);
 
-    renderedNode.getByTestId("node-label-placeholder");
+    const checkbox = renderedNode.container.querySelector(".core-checkbox > input");
 
-    await waitForSpy(onRenderSpy);
+    expect(checkbox).to.not.be.null;
+    fireEvent.click(checkbox!);
 
-    expect(renderLabelSpy.called).to.be.true;
-    renderedNode.getByText("Test label");
-    expect(() => renderedNode.getByTestId("node-label-placeholder")).to.throw;
+    expect(checkboxSpy).to.have.been.called;
   });
 
-  it("renders label when it's updated with asynchronous function", async () => {
-    const renderLabelSpy = sinon.spy(() => "Test label");
+  it("renders checkbox using custom renderer", () => {
+    const renderOverride = sinon.stub().returns(<div className="custom-checkbox" />);
     const renderedNode = render(
       <TreeNode
-        renderLabel={renderLabelSpy}
-        renderId="1"
         node={node}
+        valueRendererManager={valueRendererManager}
+        checkboxProps={{
+          onClick: sinon.spy(),
+          state: CheckBoxState.On,
+        }}
+        renderOverrides={{
+          renderCheckbox: renderOverride,
+        }}
       />);
-
-    expect(renderLabelSpy.called).to.be.true;
-    renderedNode.getByText("Test label");
-
-    const asyncRenderLabelSpy = sinon.spy(async () => "Different test label");
-    const onRenderSpy = sinon.spy();
-    node.setDirty(true);
-    renderedNode.rerender(
-      <TreeNode
-        onFinalRenderComplete={onRenderSpy}
-        renderLabel={asyncRenderLabelSpy}
-        renderId="2"
-        node={node}
-      />);
-
-    await waitForSpy(onRenderSpy);
-
-    renderedNode.getByText("Different test label");
+    const checkbox = renderedNode.baseElement.querySelector(".custom-checkbox");
+    expect(renderOverride).to.be.calledOnce;
+    expect(checkbox).to.not.be.null;
   });
 
-  it("calls onFullyRendered even if shouldComponentUpdate returns false", async () => {
-    const renderLabelSpy = sinon.spy(() => "Test label");
-    const onRenderedSpy = sinon.spy();
+  it("renders icon", () => {
+    node.itree = { icon: "icon-test", state: {} };
+
     const renderedNode = render(
       <TreeNode
-        onFinalRenderComplete={onRenderedSpy}
-        renderLabel={renderLabelSpy}
-        renderId="1"
         node={node}
+        valueRendererManager={valueRendererManager}
+        imageLoader={new TreeImageLoader()}
       />);
 
-    expect(renderLabelSpy.called).to.be.true;
-    expect(onRenderedSpy.calledOnce);
+    expect(renderedNode.baseElement.querySelector(".icon-test")).to.not.be.null;
+  });
+});
 
-    renderedNode.rerender(
-      <TreeNode
-        renderLabel={renderLabelSpy}
-        renderId="2"
-        node={node}
-      />);
+describe("TreeNodeIcon", () => {
+  let tree: BeInspireTree<TreeNodeItem>;
+  let node: BeInspireTreeNode<TreeNodeItem>;
 
-    expect(onRenderedSpy.calledTwice);
+  class ImageLoader implements ITreeImageLoader {
+    public load = (): LoadedImage => ({ sourceType: "url", value: "test-location/image.png" });
+  }
+
+  const imageLoader = new ImageLoader();
+
+  beforeEach(async () => {
+    tree = new BeInspireTree<TreeNodeItem>({
+      dataProvider: [{ id: "0", label: "0", icon: "icon-test-image" }],
+      mapPayloadToInspireNodeConfig: Tree.inspireNodeFromTreeNodeItem,
+    });
+    await tree.ready;
+    node = tree.nodes()[0];
+  });
+
+  it("renders", () => {
+    const icon = render(<TreeNodeIcon node={node} imageLoader={new TreeImageLoader()} />);
+
+    expect(icon.container.querySelector(".icon-test-image")).to.not.be.null;
+  });
+
+  it("renders from payload if itree has no icon", () => {
+    node.itree!.icon = undefined;
+
+    const icon = render(<TreeNodeIcon node={node} imageLoader={new TreeImageLoader()} />);
+
+    expect(icon.container.querySelector(".icon-test-image")).to.not.be.null;
+  });
+
+  it("does not render anything if node has no icon", () => {
+    node.payload!.icon = undefined;
+    node.itree!.icon = undefined;
+
+    const icon = render(<TreeNodeIcon node={node} imageLoader={new TreeImageLoader()} />);
+
+    expect(icon.container.innerHTML).to.be.empty;
+  });
+
+  it("renders with custom loader", () => {
+    const icon = render(<TreeNodeIcon node={node} imageLoader={imageLoader} />);
+
+    const imgElement = icon.container.children[0] as HTMLImageElement;
+    expect(imgElement.src).to.equal("test-location/image.png");
   });
 });

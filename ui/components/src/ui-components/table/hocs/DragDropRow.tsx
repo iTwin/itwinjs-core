@@ -40,13 +40,14 @@ interface RowWrapperState {
   hoverMode: HoverMode;
 }
 
+/** @hidden */
 export class DragDropRowWrapper extends React.Component<RowWrapperProps, RowWrapperState> {
   private _root: HTMLDivElement | null = null;
   public readonly state: RowWrapperState = {
     hoverMode: HoverMode.Above,
   };
   public render(): React.ReactElement<any> {
-    const { isDragging, isOver, canDrag, canDrop, canDropOn, onRender, children, ...props } = this.props as RowWrapperProps;
+    const { isDragging, isOver, canDrop, children } = this.props as RowWrapperProps;
     const mode = this.state.hoverMode;
     const classes = classnames("table-drop-target", {
       above: canDrop && isOver && mode === HoverMode.Above,
@@ -55,7 +56,7 @@ export class DragDropRowWrapper extends React.Component<RowWrapperProps, RowWrap
       dragging: isDragging,
     });
     return (
-      <div {...props}
+      <div
         className={classes} data-testid="table-drop-target"
         ref={(el) => { this._root = el; }}
         onDragOver={this._handleDragOver}>

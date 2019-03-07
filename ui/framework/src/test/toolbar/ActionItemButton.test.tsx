@@ -11,6 +11,7 @@ import {
   ActionItemButton,
   CommandItemDef,
   KeyboardShortcutManager,
+  BaseItemState, SyncUiEventDispatcher,
 } from "../../ui-framework";
 import TestUtils from "../TestUtils";
 
@@ -72,4 +73,39 @@ describe("ActionItemButton", () => {
     wrapper.unmount();
   });
 
+  it("sync event should trigger stateFunc", () => {
+    const states: BaseItemState[] = [{ isVisible: true, isActive: false }, { isVisible: false, isActive: false }, { isVisible: true, isActive: true }];
+    let count = -1;
+    const testEventId = "test-buttonstate";
+    let stateFunctionCalled = false;
+    const testStateFunc = (): BaseItemState => { count += 1; stateFunctionCalled = true; return states[count]; };
+    const testSyncStateCommand =
+      new CommandItemDef({
+        commandId: "command",
+        iconSpec: "icon-placeholder",
+        labelKey: "UiFramework:tests.label",
+        isEnabled: false,
+        stateSyncIds: [testEventId],
+        stateFunc: testStateFunc,
+        execute: () => { },
+      });
+
+    const wrapper = mount(<ActionItemButton actionItem={testSyncStateCommand} />);
+    expect(stateFunctionCalled).to.eq(false);
+    // force to state[0]
+    SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(testEventId);
+    expect(stateFunctionCalled).to.eq(true);
+    wrapper.update();
+    // force to state[1]
+    stateFunctionCalled = false;
+    SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(testEventId);
+    expect(stateFunctionCalled).to.eq(true);
+    wrapper.update();
+    // force to state[2]
+    stateFunctionCalled = false;
+    SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(testEventId);
+    expect(stateFunctionCalled).to.eq(true);
+    wrapper.update();
+    wrapper.unmount();
+  });
 });

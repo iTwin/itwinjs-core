@@ -79,20 +79,17 @@ export class ViewportComponentEvents {
   }
 
   public static setCubeMatrix(rotMatrix: Matrix3d, animationTime?: number): void {
-    setImmediate(() => {
-      this.rMatrix.setFrom(rotMatrix);
-      this.onCubeRotationChangeEvent.emit({ rotMatrix, animationTime });
-    });
+    this.rMatrix.setFrom(rotMatrix);
+    this.onCubeRotationChangeEvent.emit({ rotMatrix, animationTime });
   }
 
   public static setStandardRotation(standardRotation: StandardViewId): void {
-    setImmediate(() => {
-      this.onStandardRotationChangeEvent.emit({ standardRotation });
-    });
+    this.onStandardRotationChangeEvent.emit({ standardRotation });
   }
 
   public static setViewMatrix(viewport: Viewport, animationTime?: number): void {
-    setImmediate(() => {
+    // When handling onViewChanged, use setTimeout
+    setTimeout(() => {
       this.rMatrix.setFrom(viewport.rotation);
       this.onViewRotationChangeEvent.emit({ viewport, animationTime });
     });

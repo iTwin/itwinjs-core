@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-@import "@bentley/bwc/lib/mixins";
+@import "@bentley/ui-core/lib/ui-core/index";
 
 .components-nonprimitive-property{
   padding: 10px;
@@ -11,7 +11,7 @@
   grid-row-gap: 10px;
 
   border-radius: 3px;
-  border: solid 1px $bwc-gray-9;
+  border: solid 1px $uicore-gray-9;
 
   background-color: #ffffff;
 }

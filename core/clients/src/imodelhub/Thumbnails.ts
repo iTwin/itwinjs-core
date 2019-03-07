@@ -126,7 +126,7 @@ export class ThumbnailHandler {
       return Promise.reject(new Error("Expected an image to be returned from the query"));
     }
 
-    const base64Data = Base64.btoa(String.fromCharCode.apply(null, byteArray));
+    const base64Data = Base64.btoa(String.fromCharCode(...byteArray));
     return "data:image/png;base64," + base64Data;
   }
 

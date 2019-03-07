@@ -1,0 +1,15 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<SmallText /> content renders correctly 1`] = `
+<span
+  className="uicore-text-small"
+>
+  Test content
+</span>
+`;
+
+exports[`<SmallText /> renders correctly 1`] = `
+<span
+  className="uicore-text-small"
+/>
+`;

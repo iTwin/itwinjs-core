@@ -1,6 +1,99 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Tue, 15 Jan 2019 15:18:59 GMT and should not be manually modified.
+This log was last generated on Wed, 06 Mar 2019 15:41:22 GMT and should not be manually modified.
+
+## 0.189.0
+Wed, 06 Mar 2019 15:41:22 GMT
+
+### Updates
+
+- add ios oidc client
+- geometry-core camel case
+- Add Selection Scope toolsettings to SelectTool.
+- allow subclasses of Range to use static methods
+- Raise events when a Viewport's always- or never-drawn element sets change.
+- OIDC changes needed for Angular client
+- Changes package.json to include api-extractor and adds api-extractor.json
+- #66826 Default SelectTool to select all members of the selected element's assembly.
+- Default scope to element.
+- Use new buildIModelJsBuild script
+- Generalize support for reading tiles to include tiles generated for Bimium.
+- AxisAlignedBox and ElementAlignedBox are now typed to Range3d rather than classes
+- clone methods are no longer generic
+- Optimize renderer to elide debug-only code paths unless explicitly enabled.
+- Generalize 3d tile support.   Handle transform on child nodes.
+- Avoid using cutting planes while animating if not displayed, completely hidden or completely visible.
+- Started work on webworker to decode jpeg files for GLTF
+- Defer Draco support until moved to web worker
+- Reduce memory consumption when ambient occlusion is disabled.
+- Fix incorrect colors for some decoration graphics.
+- Remove uneeded typedoc plugin depedency
+- Add support for Draco compressed meshes
+- Change drag select to exclude non locatable
+- noMotion doesn't need to call beginDynamicUpdate
+- example code (in comments) for frustum interpolator
+- Consistent naming of "get" methods in Growable arrays.
+- Add EmphasizeElements to/from wire format methods
+- Draw non-emphasized elements in "fade-out", non-locatable mode.
+- Move neverDrawn/alwaysDrawn to Viewport they are not part of the persistent ViewState. Change Viewport.addFeatureOverrides to an interface.
+- Rework and simplify ecef transform for reality models.
+- Correct ID for loading classifier trees.
+- Fix clipping volume being inconsistently applied to view.
+- Dont make textures transparent unless technique enables it.
+- Fix incorrect "fit view" behavior when empty tiles exist.
+- Handle relative subpaths in reality model tile trees.  Handle Y for axis/ 
+- Fix handling of null animation visibility - should be 100% not 0.
+- Added spatial <-> cartographic methods that check/use the geographic coordinate system before using ecef location.
+- DefaultViewTouchTool should not call handleEvent until it's installed as the active ViewTool.
+- Traverse GLTF node structure rather than meshes so that node transforms are used correctly.
+- Ensure viewport updates immediately when background map settings are changed.
+- Add a test to determine if GCS is present before using GCS converter.
+- Documentation improvements
+- Support instanced rendering of .i3dm 3D tiles.
+- Preliminary support for drawing instanced geometry.
+- Fix branch transform for animation correctly - back out incorrect fix to BranchState.
+- Implemented, then commented out, doing jpeg decompression in a web worker
+- added markup mode
+- events are now on ScreenViewport.parentDiv rather than canvas
+- update for geometry GrowableXYArray usage.
+- Measure Distance - change selected segment hilite. Measure Location - WIP use ecef transform.
+- More ui-framework unit tests
+- Make it possible to define editor params for default Type Editors not explicitly specified by name.
+- Fixed a bug which caused non-locatable geometry to be rendered when no other symbology was overridden.
+- Defer loading of edges until needed
+- Omit animation branches that are not visible.
+- Improve efficiency and completeness of SubCategory loading for ViewStates.
+- Save BUILD_SEMVER to globally accessible map. PluginAdmin and Plugin classes defined. IModelJsLoader improved.
+- add optional iModel argument to EntityState.clone 
+- added GeometricModelState.queryModelRange
+- Added creatorId, new method to list RD per project, identified numerous area for changes WIP
+- IModelConnection.close() always disposes the briefcase held at the backend in the case of ReadWrite connections. 
+- Implemented spatial criterai when searching through all reality data associated to a project.
+- Problem with root document of reality data not in root of blob. Tiles could not be fetched. Root path is added to tiles names.
+- Threading issue accessing Reality Data, RealityData class was transformed to be the main data access object instead of the client that was used by most/all reality data causing cache data clash and mix between many reality data.
+- Optimze containment test with spheres.
+- Move the IModelUnitTestRpcInterface into the testbed and out of the public AP
+- Retry tile requests on time-out.
+- Remove loadNativeAsset and formatElements RPC calls from the IModelReadRpcInterface
+- Removed IModelConnection.connectionId, added IModelApp.sessionId
+- make view transition animations smoother
+- Optimizations to tile format and schedule animation.
+- Tile requests can optionally specify a retryInterval.
+-  Cleanup of DefaultToolSetting provider and EnumButtonGroup editor including new EditorParams.
+- Move property definitions to imodeljs-frontend so they could be used by tools to define properties for tool settings. Add toolsettings to Select Tool.
+- Added a new property to PropertyRecord - links.
+- IModelConnection.connectionTimeout is public to allow application customization.
+- upgrade to TypeScript 3.2.2
+
+## 0.188.0
+Wed, 16 Jan 2019 16:36:09 GMT
+
+### Updates
+
+- Report unsigned measure distance deltas.
+- Add batch id to schedule scripts
+- Add batchID to schedule scripts
+- Handle wider variety of GLTF bounding boxes etc.
 
 ## 0.187.0
 Tue, 15 Jan 2019 15:18:59 GMT

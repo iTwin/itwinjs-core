@@ -10,12 +10,21 @@ export { default as KeySet, Keys } from "./KeySet";
 export { default as PersistentKeysContainer } from "./PersistentKeysContainer";
 export * from "./content/Value";
 export * from "./PresentationManagerOptions";
-export { default as PresentationRpcInterface, RpcRequestOptions, HierarchyRpcRequestOptions, ClientStateSyncRequestOptions } from "./PresentationRpcInterface";
+export {
+  default as PresentationRpcInterface,
+  RpcRequestOptions, ClientStateSyncRequestOptions, ContentRpcRequestOptions,
+  HierarchyRpcRequestOptions, SelectionScopeRpcRequestOptions,
+  RpcResponse, PresentationRpcResponse, NodesResponse, ContentResponse,
+} from "./PresentationRpcInterface";
 export { default as RpcRequestsHandler, IClientStateHolder } from "./RpcRequestsHandler";
 export { RulesetVariablesState, VariableValueTypes, VariableValue } from "./RulesetVariables";
 export * from "./RegisteredRuleset";
+export * from "./RulesetsFactory";
 export * from "./Logging";
 export * from "./Utils";
+
+/** @module UnifiedSelection */
+export * from "./selection/SelectionScope";
 
 /** @module Content */
 export { default as CategoryDescription } from "./content/Category";
@@ -34,11 +43,14 @@ export {
 } from "./content/Value";
 
 /** @module Hierarchies */
-export { NodeKey, NodeKeyPath, NodeKeyJSON, nodeKeyFromJSON, StandardNodeTypes } from "./hierarchy/Key";
+export {
+  NodeKey, NodeKeyPath, NodeKeyJSON, nodeKeyFromJSON, StandardNodeTypes,
+  isInstanceNodeKey, isClassGroupingNodeKey, isPropertyGroupingNodeKey,
+  isLabelGroupingNodeKey, isGroupingNodeKey,
+} from "./hierarchy/Key";
 export { BaseNodeKey, ECInstanceNodeKey, ECInstanceNodeKeyJSON, ECClassGroupingNodeKey, ECPropertyGroupingNodeKey, LabelGroupingNodeKey } from "./hierarchy/Key";
 export { default as Node, NodeJSON } from "./hierarchy/Node";
 export { default as NodePathElement } from "./hierarchy/NodePathElement";
-
 
 /** @module PresentationRules */
 export { RootNodeRule } from "./rules/hierarchy/RootNodeRule";
@@ -89,3 +101,12 @@ export { RelatedInstanceSpecification } from "./rules/RelatedInstanceSpecificati
 export { RelationshipDirection } from "./rules/RelationshipDirection";
 export * from "./rules/ClassSpecifications";
 export * from "./rules/SchemasSpecification";
+
+// Set the version number so it can be found at runtime. BUILD_SEMVER is replaced at build time by the webpack DefinePlugin.
+declare var BUILD_SEMVER: string;
+/* istanbul ignore next */
+if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") && window) {
+  if (!(window as any).iModelJsVersions)
+    (window as any).iModelJsVersions = new Map<string, string>();
+  (window as any).iModelJsVersions.set("presentation-common", BUILD_SEMVER);
+}

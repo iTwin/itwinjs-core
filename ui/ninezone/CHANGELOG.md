@@ -1,6 +1,30 @@
 # Change Log - @bentley/ui-ninezone
 
-This log was last generated on Tue, 15 Jan 2019 15:18:59 GMT and should not be manually modified.
+This log was last generated on Wed, 06 Mar 2019 15:41:22 GMT and should not be manually modified.
+
+## 0.189.0
+Wed, 06 Mar 2019 15:41:22 GMT
+
+### Updates
+
+- UI documentation fixes
+- Use new buildIModelJsBuild script
+- Remove uneeded typedoc plugin depedency
+- Minor UI Color Theme changes
+- Support for including CSS files in published UI packages
+- Added styling capability ot messages
+- Removed dependency on BWC. Parts of BWC copied into ui-core in preparation for theming support.
+- Added ToggleEditor. Support for defaultTool in Frontstage.
+- Save BUILD_SEMVER to globally accessible map
+- Added support for UI color themes
+- Display status message above status indicator popup.
+- Update to use newer generic-icons-webfont package.
+- upgrade to TypeScript 3.2.2
+
+## 0.188.0
+Wed, 16 Jan 2019 16:36:09 GMT
+
+*Version update only*
 
 ## 0.187.0
 Tue, 15 Jan 2019 15:18:59 GMT

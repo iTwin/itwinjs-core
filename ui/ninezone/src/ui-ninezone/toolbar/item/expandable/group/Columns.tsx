@@ -11,7 +11,7 @@ import "./Columns.scss";
 
 /** Properties of [[Columns]] component. */
 export interface ColumnsProps extends CommonProps {
-  /** Actual columns. I.e. [[Column]] */
+  /** Actual columns. I.e. [[GroupColumn]] */
   children?: React.ReactNode;
 }
 

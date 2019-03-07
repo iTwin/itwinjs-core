@@ -12,7 +12,7 @@
     },
     {
       "name": "@bentley/bwc",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "@bentley/config-loader",
@@ -71,6 +71,10 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "@bentley/logger-config",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "@bentley/presentation-backend",
       "allowedCategories": [ "internal", "tools" ]
     },
@@ -111,8 +115,16 @@
       "allowedCategories": [ "common", "frontend", "internal" ]
     },
     {
+      "name": "@microsoft/api-extractor",
+      "allowedCategories": [ "tools" ]
+    },
+    {
       "name": "@openid/appauth",
       "allowedCategories": [ "common" ]
+    },
+    {
+      "name": "@svgdotjs/svg.js",
+      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "app-root-path",
@@ -127,16 +139,20 @@
       "allowedCategories": [ "internal", "tools" ]
     },
     {
+      "name": "benchmark",
+      "allowedCategories": [ "common" ]
+    },
+    {
       "name": "body-parser",
       "allowedCategories": [ "backend", "internal" ]
     },
     {
       "name": "bunyan",
-      "allowedCategories": [ "common", "internal" ]
+      "allowedCategories": [ "backend", "common", "internal" ]
     },
     {
       "name": "bunyan-seq",
-      "allowedCategories": [ "common" ]
+      "allowedCategories": [ "backend", "common" ]
     },
     {
       "name": "cache-require-paths",
@@ -156,7 +172,7 @@
     },
     {
       "name": "chai-as-promised",
-      "allowedCategories": [ "backend", "common", "frontend", "internal" ]
+      "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
     },
     {
       "name": "chai-jest-snapshot",
@@ -181,6 +197,10 @@
     {
       "name": "chokidar",
       "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "chrome-launcher",
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "chromedriver",
@@ -251,6 +271,10 @@
       "allowedCategories": [ "tools" ]
     },
     {
+      "name": "draco3d",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "electron",
       "allowedCategories": [ "backend", "internal" ]
     },
@@ -315,12 +339,20 @@
       "allowedCategories": [ "backend", "common", "internal", "tools" ]
     },
     {
+      "name": "fs-write-stream-atomic",
+      "allowedCategories": [ "common" ]
+    },
+    {
       "name": "fuse.js",
       "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "glob",
       "allowedCategories": [ "backend", "common", "internal", "tools" ]
+    },
+    {
+      "name": "highlight.js",
+      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "html-webpack-plugin",
@@ -652,7 +684,7 @@
     },
     {
       "name": "semver",
-      "allowedCategories": [ "backend", "common", "internal" ]
+      "allowedCategories": [ "backend", "common", "frontend", "internal" ]
     },
     {
       "name": "sinon",
@@ -668,7 +700,7 @@
     },
     {
       "name": "source-map-support",
-      "allowedCategories": [ "backend", "common" ]
+      "allowedCategories": [ "backend", "common", "frontend" ]
     },
     {
       "name": "style-loader",
@@ -684,7 +716,11 @@
     },
     {
       "name": "svg-sprite-loader",
-      "allowedCategories": [ "internal", "tools" ]
+      "allowedCategories": [ "frontend", "internal", "tools" ]
+    },
+    {
+      "name": "svg.js",
+      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "sw-precache-webpack-plugin",
@@ -740,7 +776,11 @@
     },
     {
       "name": "typedoc-plugin-external-module-name",
-      "allowedCategories": [ "backend", "common", "frontend" ]
+      "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "typedoc-plugin-internal-external",
+      "allowedCategories": [ "tools" ]
     },
     {
       "name": "typemoq",
@@ -756,7 +796,7 @@
     },
     {
       "name": "uglifyjs-webpack-plugin",
-      "allowedCategories": [ "internal", "tools" ]
+      "allowedCategories": [ "frontend", "internal", "tools" ]
     },
     {
       "name": "url-loader",
@@ -812,7 +852,7 @@
     },
     {
       "name": "webpack-merge",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [ "frontend", "tools" ]
     },
     {
       "name": "webpack-node-externals",

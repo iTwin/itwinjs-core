@@ -8,7 +8,6 @@ import { TileIO } from "./TileIO";
 import { DisplayParams } from "../render/primitives/DisplayParams";
 import { Triangle } from "../render/primitives/Primitives";
 import { Mesh, MeshList, MeshGraphicArgs } from "../render/primitives/mesh/MeshPrimitives";
-import { ColorMap } from "../render/primitives/ColorMap";
 import {
   FeatureTable,
   QPoint3d,
@@ -17,21 +16,27 @@ import {
   OctEncodedNormal,
   MeshPolyline,
   MeshPolylineList,
-  MeshEdges,
-  MeshEdge,
-  OctEncodedNormalPair,
   ElementAlignedBox3d,
   TextureMapping,
   ImageSource,
   ImageSourceFormat,
   RenderTexture,
   BatchType,
+  ColorDef,
+  LinePixels,
+  FillFlags,
 } from "@bentley/imodeljs-common";
 import { Id64String, assert, JsonUtils, utf8ToString } from "@bentley/bentleyjs-core";
 import { Range3d, Point2d, Point3d, Vector3d, Transform, Matrix3d, Angle } from "@bentley/geometry-core";
-import { RenderSystem, RenderGraphic, GraphicBranch, PackedFeatureTable } from "../render/System";
+import { InstancedGraphicParams, RenderSystem, RenderGraphic, GraphicBranch, PackedFeatureTable } from "../render/System";
 import { imageElementFromImageSource, getImageSourceFormatForMimeType } from "../ImageUtil";
 import { IModelConnection } from "../IModelConnection";
+/* -----------------------------------
+ * To restore the use of web workers to decode jpeg, locate and uncomment the three sections by searching for "webworker".
+  import { WorkerOperation, WebWorkerManager } from "../WebWorkerManager";
+  ------------------------------------ */
+
+// Defer Draco for now.   import { DracoDecoder } from "./DracoDecoder";
 
 /** Provides facilities for deserializing tiles in the [glTF tile format](https://www.khronos.org/gltf/). */
 export namespace GltfTileIO {
@@ -40,7 +45,11 @@ export namespace GltfTileIO {
     Version1 = 1,
     Version2 = 2,
     CurrentVersion = Version1,
-    SceneFormat = 0,
+    Gltf1SceneFormat = 0,
+  }
+  export const enum V2ChunkTypes {
+    JSON = 0x4E4F534a,
+    Binary = 0x004E4942,
   }
   /** The result of [[GltfTileIO.Reader.read]]. */
   export interface ReaderResult {
@@ -54,23 +63,49 @@ export namespace GltfTileIO {
   /** Header preceding glTF tile data. */
   export class Header extends TileIO.Header {
     public readonly gltfLength: number;
-    public readonly sceneStrLength: number;
-    public readonly gltfSceneFormat: number;
+    public readonly scenePosition: number = 0;
+    public readonly sceneStrLength: number = 0;
+    public readonly binaryPosition: number = 0;
     public get isValid(): boolean { return TileIO.Format.Gltf === this.format; }
 
     public constructor(stream: TileIO.StreamBuffer) {
       super(stream);
       this.gltfLength = stream.nextUint32;
       this.sceneStrLength = stream.nextUint32;
-      this.gltfSceneFormat = stream.nextUint32;
+      const value5 = stream.nextUint32;
 
-      if ((Versions.Version1 !== this.version && Versions.Version2 !== this.version) || Versions.SceneFormat !== this.gltfSceneFormat)
+      // Early versions of the reality data tile publisher incorrectly put version 2 into header - handle these old tiles
+      // validating the chunk type.
+      if (this.version === Versions.Version2 && value5 === Versions.Gltf1SceneFormat)
+        this.version = Versions.Version1;
+
+      if (this.version === Versions.Version1) {
+        const gltfSceneFormat = value5;
+        if (Versions.Gltf1SceneFormat !== gltfSceneFormat) {
+          this.invalidate();
+          return;
+        }
+        this.scenePosition = stream.curPos;
+        this.binaryPosition = stream.curPos + this.sceneStrLength;
+      } else if (this.version === Versions.Version2) {
+        const sceneChunkType = value5;
+        this.scenePosition = stream.curPos;
+        stream.curPos = stream.curPos + this.sceneStrLength;
+        const binaryLength = stream.nextUint32;
+        const binaryChunkType = stream.nextUint32;
+        if (V2ChunkTypes.JSON !== sceneChunkType || V2ChunkTypes.Binary !== binaryChunkType || 0 === binaryLength) {
+          this.invalidate();
+          return;
+        }
+        this.binaryPosition = stream.curPos;
+      } else {
         this.invalidate();
+      }
     }
   }
 
   /** @hidden */
-  export const enum PrimitiveType {
+  export const enum MeshMode {
     Lines = 1,
     LineStrip = 3,
     Triangles = 4,
@@ -214,6 +249,7 @@ export namespace GltfTileIO {
       public readonly materials: any,
       public readonly extensions: any,
       public readonly samplers: any,
+      public readonly techniques: any,
       public readonly yAxisUp: boolean) { }
 
     /** Attempt to construct a new ReaderProps from the binary data beginning at the supplied stream's current read position. */
@@ -222,8 +258,8 @@ export namespace GltfTileIO {
       if (!header.isValid)
         return undefined;
 
-      const binaryData = new Uint8Array(buffer.arrayBuffer, buffer.curPos + header.sceneStrLength);
-
+      const binaryData = new Uint8Array(buffer.arrayBuffer, header.binaryPosition);
+      buffer.curPos = header.scenePosition;
       const sceneStrData = buffer.nextBytes(header.sceneStrLength);
       const sceneStr = utf8ToString(sceneStrData);
       if (undefined === sceneStr)
@@ -238,11 +274,12 @@ export namespace GltfTileIO {
         const bufferViews = JsonUtils.asObject(sceneValue.bufferViews);
         const extensions = JsonUtils.asObject(sceneValue.extensions);
         const samplers = JsonUtils.asObject(sceneValue.samplers);
+        const techniques = JsonUtils.asObject(sceneValue.techniques);
 
         if (undefined === meshes)
           return undefined;
 
-        return new ReaderProps(buffer, binaryData, accessors, bufferViews, sceneValue, nodes, meshes, materialValues, extensions, samplers, yAxisUp);
+        return new ReaderProps(buffer, binaryData, accessors, bufferViews, sceneValue, nodes, meshes, materialValues, extensions, samplers, techniques, yAxisUp);
       } catch (e) {
         return undefined;
       }
@@ -252,10 +289,25 @@ export namespace GltfTileIO {
   /** A function that returns true if Reader.read() should abort because the tile data is no longer needed. */
   export type IsCanceled = (reader: Reader) => boolean;
 
+  /* -----------------------------------
+     This is part of the webworker option.
+
+    // input is Uint8Array, the result is an ImageBitMap.
+    class ImageDecodeWorkerOperation extends WorkerOperation {
+      constructor(imageBytes: ArrayBuffer, imageMimeType: string) {
+        super("imageBytesToImageBitmap", [imageBytes, imageMimeType], [imageBytes]);
+      }
+    }
+
+    declare var BUILD_SEMVER: string;
+  -------------------------------------- */
+
   /** Deserializes [(glTF tile data](https://www.khronos.org/gltf/). */
   export abstract class Reader {
     /** @hidden */
     protected readonly _buffer: TileIO.StreamBuffer;
+    /** @hidden */
+    protected readonly _scene: any;
     /** @hidden */
     protected readonly _accessors: any;
     /** @hidden */
@@ -278,6 +330,8 @@ export namespace GltfTileIO {
     protected readonly _images: any;
     /** @hidden */
     protected readonly _samplers: any;
+    /** @hidden  */
+    protected readonly _techniques: any;
     /** @hidden */
     protected readonly _binaryData: Uint8Array;
     /** @hidden */
@@ -294,7 +348,19 @@ export namespace GltfTileIO {
     protected readonly _yAxisUp: boolean;
     /** @hidden */
     protected readonly _type: BatchType;
+
     private readonly _canceled?: IsCanceled;
+
+    /* -----------------------------------
+    private static _webWorkerManager: WebWorkerManager;
+
+    private static get webWorkerManager() {
+      if (!Reader._webWorkerManager) {
+        Reader._webWorkerManager = new WebWorkerManager("v" + BUILD_SEMVER + "/frontend-webworker.js", 4);
+      }
+      return Reader._webWorkerManager;
+    }
+    ------------------------------------- */
 
     /** Asynchronously deserialize the tile data and return the result. */
     public async abstract read(): Promise<ReaderResult>;
@@ -305,37 +371,42 @@ export namespace GltfTileIO {
     protected get _isClassifier(): boolean { return BatchType.Classifier === this._type; }
 
     /** @hidden */
-    protected readGltfAndCreateGraphics(isLeaf: boolean, isCurved: boolean, isComplete: boolean, featureTable: FeatureTable, contentRange: ElementAlignedBox3d, sizeMultiplier?: number): GltfTileIO.ReaderResult {
+    protected readGltfAndCreateGraphics(isLeaf: boolean, featureTable: FeatureTable, contentRange: ElementAlignedBox3d, transformToRoot?: Transform, sizeMultiplier?: number, instances?: InstancedGraphicParams): GltfTileIO.ReaderResult {
       if (this._isCanceled)
         return { readStatus: TileIO.ReadStatus.Canceled, isLeaf, sizeMultiplier };
 
-      const geometry = new TileIO.GeometryCollection(new MeshList(featureTable), isComplete, isCurved);
-      const readStatus = this.readGltf(geometry);
+      const childNodes = new Set<string>();
+      for (const key of Object.keys(this._nodes)) {
+        const node = this._nodes[key];
+        if (node.children)
+          for (const child of node.children)
+            childNodes.add(child.toString());
+      }
+
+      const renderGraphicList: RenderGraphic[] = [];
+      let readStatus: TileIO.ReadStatus = TileIO.ReadStatus.InvalidTileData;
+      for (const nodeKey of Object.keys(this._nodes))
+        if (!childNodes.has(nodeKey))
+          if (TileIO.ReadStatus.Success !== (readStatus = this.readNodeAndCreateGraphics(renderGraphicList, this._nodes[nodeKey], featureTable, undefined, instances)))
+            return { readStatus, isLeaf };
+
+      if (0 === renderGraphicList.length)
+        return { readStatus: TileIO.ReadStatus.InvalidTileData, isLeaf };
 
       let renderGraphic: RenderGraphic | undefined;
-      if (!geometry.isEmpty) {
-        const meshGraphicArgs = new MeshGraphicArgs();
-        if (1 === geometry.meshes.length) {
-          renderGraphic = geometry.meshes[0].getGraphics(meshGraphicArgs, this._system);
-        } else {
-          const renderGraphicList: RenderGraphic[] = [];
-          for (const mesh of geometry.meshes) {
-            renderGraphic = mesh.getGraphics(meshGraphicArgs, this._system);
-            if (undefined !== renderGraphic)
-              renderGraphicList.push(renderGraphic);
-          }
-          renderGraphic = this._system.createGraphicList(renderGraphicList);
-        }
-        if (undefined !== renderGraphic) {
-          renderGraphic = this._system.createBatch(renderGraphic, PackedFeatureTable.pack(featureTable), contentRange);
-          if (undefined !== this._returnToCenter || this._yAxisUp) {
-            const branch = new GraphicBranch();
-            branch.add(renderGraphic);
-            let transform = (undefined === this._returnToCenter) ? Transform.createIdentity() : Transform.createTranslationXYZ(this._returnToCenter[0], this._returnToCenter[1], this._returnToCenter[2]);
-            if (this._yAxisUp) transform = transform.multiplyTransformMatrix3d(Matrix3d.createRotationAroundVector(Vector3d.create(1.0, 0.0, 0.0), Angle.createRadians(Angle.piOver2Radians)) as Matrix3d);
-            renderGraphic = this._system.createBranch(branch, transform);
-          }
-        }
+      if (1 === renderGraphicList.length)
+        renderGraphic = renderGraphicList[0];
+      else
+        renderGraphic = this._system.createGraphicList(renderGraphicList);
+
+      renderGraphic = this._system.createBatch(renderGraphic, PackedFeatureTable.pack(featureTable), contentRange);
+      if (undefined !== this._returnToCenter || this._yAxisUp || undefined !== transformToRoot) {
+        const branch = new GraphicBranch();
+        branch.add(renderGraphic);
+        let transform = (undefined === this._returnToCenter) ? Transform.createIdentity() : Transform.createTranslationXYZ(this._returnToCenter[0], this._returnToCenter[1], this._returnToCenter[2]);
+        if (this._yAxisUp) transform = transform.multiplyTransformMatrix3d(Matrix3d.createRotationAroundVector(Vector3d.create(1.0, 0.0, 0.0), Angle.createRadians(Angle.piOver2Radians)) as Matrix3d);
+        if (undefined !== transformToRoot) transform = transformToRoot.multiplyTransformTransform(transform);
+        renderGraphic = this._system.createBranch(branch, transform);
       }
 
       return {
@@ -346,6 +417,59 @@ export namespace GltfTileIO {
         renderGraphic,
       };
     }
+    private readNodeAndCreateGraphics(renderGraphicList: RenderGraphic[], node: any, featureTable: FeatureTable, parentTransform: Transform | undefined, instances?: InstancedGraphicParams): TileIO.ReadStatus {
+      if (undefined === node)
+        return TileIO.ReadStatus.InvalidTileData;
+
+      let thisTransform = parentTransform;
+      if (Array.isArray(node.matrix)) {
+        const jTrans = node.matrix;
+        const nodeTransform = Transform.createOriginAndMatrix(Point3d.create(jTrans[12], jTrans[13], jTrans[14]), Matrix3d.createRowValues(jTrans[0], jTrans[4], jTrans[8], jTrans[1], jTrans[5], jTrans[9], jTrans[2], jTrans[6], jTrans[10]));
+        thisTransform = thisTransform ? thisTransform.multiplyTransformTransform(nodeTransform) : nodeTransform;
+      }
+      const meshKey = node.meshes ? node.meshes : node.mesh;
+      if (undefined !== meshKey) {
+        const nodeMesh = this._meshes[meshKey];
+        if (nodeMesh) {
+          const meshGraphicArgs = new MeshGraphicArgs();
+          const geometryCollection = new TileIO.GeometryCollection(new MeshList(featureTable), true, false);
+          for (const primitive of nodeMesh.primitives) {
+            const geometry = this.readMeshPrimitive(primitive, featureTable);
+            if (undefined !== geometry)
+              geometryCollection.meshes.push(geometry);
+          }
+
+          let renderGraphic: RenderGraphic | undefined;
+          if (!geometryCollection.isEmpty) {
+            if (1 === geometryCollection.meshes.length) {
+              renderGraphic = geometryCollection.meshes[0].getGraphics(meshGraphicArgs, this._system, instances);
+            } else {
+              const thisList: RenderGraphic[] = [];
+              for (const mesh of geometryCollection.meshes) {
+                renderGraphic = mesh.getGraphics(meshGraphicArgs, this._system, instances);
+                if (undefined !== renderGraphic)
+                  thisList.push(renderGraphic!);
+              }
+              if (0 !== thisList.length)
+                renderGraphic = this._system.createGraphicList(thisList);
+            }
+            if (renderGraphic) {
+              if (thisTransform && !thisTransform.isIdentity) {
+                const branch = new GraphicBranch();
+                branch.add(renderGraphic);
+                renderGraphic = this._system.createBranch(branch, thisTransform);
+              }
+              renderGraphicList.push(renderGraphic);
+            }
+          }
+        }
+      }
+      if (node.children) {
+        for (const child of node.children)
+          this.readNodeAndCreateGraphics(renderGraphicList, this._nodes[child], featureTable, thisTransform, instances);
+      }
+      return TileIO.ReadStatus.Success;
+    }
 
     /** @hidden */
     public getBufferView(json: any, accessorName: string): BufferView | undefined {
@@ -355,7 +479,7 @@ export namespace GltfTileIO {
         const bufferViewAccessorValue = undefined !== accessor ? JsonUtils.asString(accessor.bufferView) : "";
         const bufferView = 0 < bufferViewAccessorValue.length ? JsonUtils.asObject(this._bufferViews[bufferViewAccessorValue]) : undefined;
 
-        if (undefined === bufferView || undefined === accessor)
+        if (undefined === accessor)
           return undefined;
 
         const type = accessor.componentType as DataType;
@@ -374,11 +498,21 @@ export namespace GltfTileIO {
           default:
             return undefined;
         }
+        let componentCount = 1;
+        switch (accessor.type) {
+          case "VEC3":
+            componentCount = 3;
+            break;
+          case "VEC2":
+            componentCount = 2;
+            break;
+        }
 
-        const offset = bufferView.byteOffset + accessor.byteOffset;
+        const offset = ((bufferView && bufferView.byteOffset) ? bufferView.byteOffset : 0) + (accessor.byteOffset ? accessor.byteOffset : 0);
+        const length = componentCount * dataSize * accessor.count;
         // If the data is misaligned (Scalable mesh tile publisher) use slice to copy -- else use subarray.
         // assert(0 === offset % dataSize);
-        const bytes = (0 === (this._binaryData.byteOffset + offset) % dataSize) ? this._binaryData.subarray(offset, offset + bufferView.byteLength) : this._binaryData.slice(offset, offset + bufferView.byteLength);
+        const bytes = (0 === (this._binaryData.byteOffset + offset) % dataSize) ? this._binaryData.subarray(offset, offset + length) : this._binaryData.slice(offset, offset + length);
         return new BufferView(bytes, accessor.count as number, type, accessor);
       } catch (e) {
         return undefined;
@@ -397,6 +531,7 @@ export namespace GltfTileIO {
     /** @hidden */
     protected constructor(props: ReaderProps, iModel: IModelConnection, modelId: Id64String, is3d: boolean, system: RenderSystem, type: BatchType = BatchType.Classifier, isCanceled?: IsCanceled) {
       this._buffer = props.buffer;
+      this._scene = props.scene;
       this._binaryData = props.binaryData;
       this._accessors = props.accessors;
       this._bufferViews = props.bufferViews;
@@ -404,6 +539,7 @@ export namespace GltfTileIO {
       this._nodes = props.nodes;
       this._materialValues = props.materials;
       this._samplers = props.samplers;
+      this._techniques = props.techniques;
       this._yAxisUp = props.yAxisUp;
       this._returnToCenter = this.extractReturnToCenter(props.extensions);
       this._textures = props.scene.textures;
@@ -428,30 +564,44 @@ export namespace GltfTileIO {
 
     /** @hidden */
     protected readFeatureIndices(_json: any): number[] | undefined { return undefined; }
-    /** @hidden */
-    protected abstract readColorTable(_colorTable: ColorMap, _json: any): boolean | undefined;
-    /** @hidden */
-    protected abstract createDisplayParams(_json: any, hasBakedLighting: boolean): DisplayParams | undefined;
-    /** @hidden */
-    protected abstract extractReturnToCenter(extensions: any): number[] | undefined;
 
-    /** @hidden */
-    protected readGltf(geometry: TileIO.GeometryCollection): TileIO.ReadStatus {
-      for (const meshKey of Object.keys(this._meshes)) {
-        const meshValue = this._meshes[meshKey];
-        const primitives = JsonUtils.asArray(meshValue.primitives);
-        if (undefined === primitives)
-          continue;
+    private colorFromJson(values: number[]): ColorDef { return ColorDef.from(values[0] * 255, values[1] * 255, values[2] * 255, (1.0 - values[3]) * 255); }
 
-        for (const primitive of primitives) {
-          const mesh = this.readMeshPrimitive(primitive, geometry.meshes.features);
-          assert(undefined !== mesh);
-          if (undefined !== mesh)
-            geometry.meshes.push(mesh);
-        }
+    private colorFromMaterial(materialJson: any): ColorDef {
+      if (materialJson) {
+        if (materialJson.values && Array.isArray(materialJson.values.color))
+          return this.colorFromJson(materialJson.values.color);
+        else if (materialJson.pbrMetallicRoughness && Array.isArray(materialJson.pbrMetallicRoughness.baseColorFactor))
+          return this.colorFromJson(materialJson.pbrMetallicRoughness.baseColorFactor);
+        else if (materialJson.extensions && materialJson.extensions.KHR_techniques_webgl && materialJson.extensions.KHR_techniques_webgl.values && materialJson.extensions.KHR_techniques_webgl.values.u_color)
+          return this.colorFromJson(materialJson.extensions.KHR_techniques_webgl.values.u_color);
+      }
+      return ColorDef.white.clone();
+    }
+
+    protected createDisplayParams(materialJson: any, hasBakedLighting: boolean): DisplayParams | undefined {
+      let textureMapping: TextureMapping | undefined;
+
+      if (undefined !== materialJson) {
+        if (materialJson.values && materialJson.values.tex)
+          textureMapping = this.findTextureMapping(materialJson.values.tex);    // Bimiums shader value.
+        else if (materialJson.extensions && materialJson.extensions.KHR_techniques_webgl && materialJson.extensions.KHR_techniques_webgl.values && materialJson.extensions.KHR_techniques_webgl.values.u_tex)
+          textureMapping = this.findTextureMapping(materialJson.extensions.KHR_techniques_webgl.values.u_tex.index);    // Bimiums colorIndex.
+        else if (materialJson.diffuseTexture)
+          textureMapping = this.findTextureMapping(materialJson.diffuseTexture.index);        // TBD -- real map support with PBR
+        else if (materialJson.emissiveTexture)
+          textureMapping = this.findTextureMapping(materialJson.emissiveTexture.index);      // TBD -- real map support with PBR
       }
 
-      return TileIO.ReadStatus.Success;
+      const color = this.colorFromMaterial(materialJson);
+      return new DisplayParams(DisplayParams.Type.Mesh, color, color, 1, LinePixels.Solid, FillFlags.Always, undefined, undefined, hasBakedLighting, textureMapping);
+    }
+    protected extractReturnToCenter(extensions: any): number[] | undefined {
+      if (extensions === undefined) { return undefined; }
+      const cesiumRtc = JsonUtils.asObject(extensions.CESIUM_RTC);
+      if (cesiumRtc === undefined) return undefined;
+      const rtc = JsonUtils.asArray(cesiumRtc.center);
+      return (rtc[0] === 0.0 && rtc[1] === 0.0 && rtc[2] === 0.0) ? undefined : rtc;
     }
 
     /** @hidden */
@@ -463,7 +613,20 @@ export namespace GltfTileIO {
       if (undefined === displayParams)
         return undefined;
 
-      const primitiveType = JsonUtils.asInt(primitive.type, Mesh.PrimitiveType.Mesh);
+      let primitiveType: number = -1;
+      const meshMode = JsonUtils.asInt(primitive.mode, GltfTileIO.MeshMode.Triangles);
+      switch (meshMode) {
+        case GltfTileIO.MeshMode.Lines:
+          primitiveType = Mesh.PrimitiveType.Polyline;
+          return undefined; // Needs work...
+          break;
+        case GltfTileIO.MeshMode.Triangles:
+          primitiveType = Mesh.PrimitiveType.Mesh;
+          break;
+        default:
+          assert(false);
+          return undefined;
+      }
       const isPlanar = JsonUtils.asBool(primitive.isPlanar);
 
       const asClassifier = this._isClassifier;
@@ -477,20 +640,37 @@ export namespace GltfTileIO {
         hasBakedLighting,
         asClassifier,
       });
+      // We don't have real colormap - just load material color.  This will be used if non-Bentley
+      // tile or fit the color table is uniform. For a non-Bentley, non-Uniform, we'll set the
+      // uv parameters to pick the colors out of the color map texture.
+      mesh.colorMap.insert(displayParams.fillColor.tbgr);   // White...
 
-      if (!this.readVertices(mesh.points, primitive))
-        return undefined;
+      const colorIndices = this.readBufferData16(primitive.attributes, "_COLORINDEX");
+      if (undefined !== colorIndices) {
+        let texStep;
+        if (materialValue.values !== undefined && Array.isArray(materialValue.values.texStep))
+          texStep = materialValue.values.texStep;
+        else if (materialValue.extensions && materialValue.extensions.KHR_techniques_webgl && materialValue.extensions.KHR_techniques_webgl.values && Array.isArray(materialValue.extensions.KHR_techniques_webgl.values.u_texStep))
+          texStep = materialValue.extensions.KHR_techniques_webgl.values.u_texStep;
 
-      if (!this.readColorTable(mesh.colorMap, primitive))
-        return undefined;
-
-      const colorIndices = this.readColorIndices(primitive);
-      if (undefined !== colorIndices)
-        mesh.colors = colorIndices;
-      else if (mesh.colorMap.length !== 1)
-        return undefined;
+        if (texStep)
+          for (let i = 0; i < colorIndices.count; i++)
+            mesh.uvParams.push(new Point2d(texStep[1] + texStep[0] * colorIndices.buffer[i], .5));
+      }
 
       if (undefined !== mesh.features && !this.readFeatures(mesh.features, primitive))
+        return undefined;
+      if (primitive.extensions && primitive.extensions.KHR_draco_mesh_compression) {
+        return undefined;     // Defer Draco support until moved to web worker.
+        /*
+        const dracoExtension = primitive.extensions.KHR_draco_mesh_compression;
+        const bufferView = this._bufferViews[dracoExtension.bufferView];
+        if (undefined === bufferView) return undefined;
+        const bufferData = this._binaryData.subarray(bufferView.byteOffset, bufferView.byteOffset + bufferView.byteLength);
+
+        return  DracoDecoder.readDracoMesh(mesh, primitive, bufferData); */
+      }
+      if (!this.readVertices(mesh.points, primitive))
         return undefined;
 
       switch (primitiveType) {
@@ -501,10 +681,11 @@ export namespace GltfTileIO {
           if (!displayParams.ignoreLighting && !this.readNormals(mesh.normals, primitive.attributes, "NORMAL"))
             return undefined;
 
-          this.readUVParams(mesh.uvParams, primitive.attributes, "TEXCOORD_0");
-          this.readMeshEdges(mesh, primitive.edges);
+          if (0 === mesh.uvParams.length)
+            this.readUVParams(mesh.uvParams, primitive.attributes, "TEXCOORD_0");
           break;
         }
+
         case Mesh.PrimitiveType.Polyline:
         case Mesh.PrimitiveType.Point: {
           if (undefined !== mesh.polylines && !this.readPolylines(mesh.polylines, primitive, "indices", Mesh.PrimitiveType.Point === primitiveType))
@@ -516,6 +697,8 @@ export namespace GltfTileIO {
           return undefined;
         }
       }
+      if (displayParams.textureMapping && 0 === mesh.uvParams.length)
+        return undefined;
 
       return mesh;
     }
@@ -591,19 +774,6 @@ export namespace GltfTileIO {
 
       features.setIndices(indices);
       return true;
-    }
-
-    /** @hidden */
-    protected readColorIndices(json: any): Uint16Array | undefined {
-      const data = this.readBufferData16(json.attributes, "_COLORINDEX");
-      if (undefined === data)
-        return undefined;
-
-      const colors = new Uint16Array(data.count);
-      for (let i = 0; i < data.count; i++)
-        colors[i] = data.buffer[i];
-
-      return colors;
     }
 
     /** @hidden */
@@ -705,64 +875,6 @@ export namespace GltfTileIO {
     }
 
     /** @hidden */
-    protected readMeshEdges(mesh: Mesh, json: any): boolean {
-      if (undefined === json || undefined === mesh)
-        return false;
-
-      mesh.edges = new MeshEdges();
-      const visEdges = this.readEdgeIndices(json, "visibles");
-      if (undefined !== visEdges)
-        mesh.edges.visible = visEdges;
-
-      if (undefined !== json.silhouettes) {
-        const normPairs = this.readNormalPairs(json.silhouettes, "normalPairs");
-        if (undefined !== normPairs)
-          mesh.edges.silhouetteNormals = normPairs;
-        const silEdges = this.readEdgeIndices(json.silhouettes, "indices");
-        if (undefined !== silEdges)
-          mesh.edges.silhouette = silEdges;
-      }
-
-      mesh.edges.polylines = new MeshPolylineList();
-      return this.readPolylines(mesh.edges.polylines, json, "polylines", false);
-    }
-
-    /** @hidden */
-    protected readEdgeIndices(json: any, accessorName: string): MeshEdge[] | undefined {
-      const data = this.readBufferData32(json, accessorName);
-      if (undefined === data)
-        return undefined;
-
-      const edges = new Array<MeshEdge>(data.count / 2);
-
-      let e = 0;
-      for (let i = 0; i < data.count; i += 2)
-        edges[e++] = new MeshEdge(data.buffer[i], data.buffer[i + 1]);
-
-      return edges;
-    }
-
-    /** @hidden */
-    protected readNormalPairs(json: any, accessorName: string): OctEncodedNormalPair[] | undefined {
-      const data = this.readBufferData8(json, accessorName);
-      if (undefined === data)
-        return undefined;
-
-      const normPairs = new Array<OctEncodedNormalPair>(data.count);
-
-      // ###TODO: we shouldn't have to allocate OctEncodedNormal objects...just use uint16s / numbers...
-      for (let i = 0; i < data.count; i++) {
-        // ###TODO? not clear why ray writes these as pairs of uint8...
-        const index = i * 4;
-        const normal0 = data.buffer[index] | (data.buffer[index + 1] << 8);
-        const normal1 = data.buffer[index + 2] | (data.buffer[index + 3] << 8);
-        normPairs[i] = new OctEncodedNormalPair(new OctEncodedNormal(normal0), new OctEncodedNormal(normal1));
-      }
-
-      return normPairs;
-    }
-
-    /** @hidden */
     protected readPolylines(polylines: MeshPolylineList, json: any, accessorName: string, disjoint: boolean): boolean {
       const view = this.getBufferView(json, accessorName);
       if (undefined === view)
@@ -813,34 +925,59 @@ export namespace GltfTileIO {
       if (undefined === this._textures)
         return Promise.resolve();
 
+      const transparentTextures: Set<string> = new Set<string>();
+      for (const name of Object.keys(this._materialValues)) {
+        const materialValue = this._materialValues[name];
+        let technique;
+        if (undefined !== materialValue.values &&
+          undefined !== materialValue.values.tex &&
+          undefined !== materialValue.technique &&
+          undefined !== (technique = this._techniques[materialValue.technique]) &&
+          undefined !== technique.states &&
+          Array.isArray(technique.states.enable)) {
+          for (const enable of technique.states.enable)
+            if (enable === 3042)
+              transparentTextures.add(materialValue.values.tex);
+        }
+      }
+
       const promises = new Array<Promise<void>>();
       for (const name of Object.keys(this._textures))
-        promises.push(this.loadTexture(name));
+        promises.push(this.loadTexture(name, transparentTextures.has(name)));
 
       return promises.length > 0 ? Promise.all(promises).then((_) => undefined) : Promise.resolve();
     }
 
     /** @hidden */
-    protected async loadTextureImage(imageJson: any, samplerJson: any): Promise<RenderTexture | undefined> {
+    protected async loadTextureImage(imageJson: any, samplerJson: any, isTransparent: boolean): Promise<RenderTexture | undefined> {
       try {
-        const binaryImageJson = JsonUtils.asObject(imageJson.extensions.KHR_binary_glTF);
+        const binaryImageJson = (imageJson.extensions && imageJson.extensions.KHR_binary_glTF) ? JsonUtils.asObject(imageJson.extensions.KHR_binary_glTF) : imageJson;
         const bufferView = this._bufferViews[binaryImageJson.bufferView];
         const mimeType = JsonUtils.asString(binaryImageJson.mimeType);
         const format = getImageSourceFormatForMimeType(mimeType);
         if (undefined === format)
           return undefined;
 
-        const offset = bufferView.byteOffset;
-        const bytes = this._binaryData.subarray(offset, offset + bufferView.byteLength);
-        const imageSource = new ImageSource(bytes, format);
         let textureType = RenderTexture.Type.Normal;
         if (undefined !== samplerJson &&
           (undefined !== samplerJson.wrapS || undefined !== samplerJson.wrapS))
           textureType = RenderTexture.Type.TileSection;
-
         const textureParams = new RenderTexture.Params(undefined, textureType);
+        const offset = bufferView.byteOffset;
+
+        /* -----------------------------------
+            const jpegArray = this._binaryData.slice(offset, offset + bufferView.byteLength);
+            const jpegArrayBuffer = jpegArray.buffer;
+            const workerOp = new ImageDecodeWorkerOperation(jpegArrayBuffer, mimeType);
+            return Reader.webWorkerManager.queueOperation(workerOp)
+              .then((imageBitmap) => this._isCanceled ? undefined : this._system.createTextureFromImage(imageBitmap, isTransparent && ImageSourceFormat.Png === format, this._iModel, textureParams))
+              .catch((_) => undefined);
+          ------------------------------------- */
+
+        const bytes = this._binaryData.subarray(offset, offset + bufferView.byteLength);
+        const imageSource = new ImageSource(bytes, format);
         return imageElementFromImageSource(imageSource)
-          .then((image) => this._isCanceled ? undefined : this._system.createTextureFromImage(image, ImageSourceFormat.Png === format, this._iModel, textureParams))
+          .then((image) => this._isCanceled ? undefined : this._system.createTextureFromImage(image, isTransparent && ImageSourceFormat.Png === format, this._iModel, textureParams))
           .catch((_) => undefined);
       } catch (e) {
         return undefined;
@@ -848,12 +985,12 @@ export namespace GltfTileIO {
     }
 
     /** @hidden */
-    protected async loadTexture(textureId: string): Promise<void> {
+    protected async loadTexture(textureId: string, isTransparent: boolean): Promise<void> {
       const textureJson = JsonUtils.asObject(this._textures[textureId]);
       if (undefined === textureJson)
         return Promise.resolve();
 
-      return this.loadTextureImage(this._images[textureJson.source], undefined === this._samplers ? undefined : this._samplers[textureJson.sampler]).then((texture) => {
+      return this.loadTextureImage(this._images[textureJson.source], undefined === this._samplers ? undefined : this._samplers[textureJson.sampler], isTransparent).then((texture) => {
         textureJson.renderTexture = texture;
       });
     }

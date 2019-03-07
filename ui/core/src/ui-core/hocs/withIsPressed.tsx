@@ -40,7 +40,7 @@ export const withIsPressed = <ComponentProps extends {}>(
     }
 
     public render() {
-      const { isPressed, onIsPressedChange, ...props } = this.props as WithIsPressedProps; // todo: better solution to rest object of intersected type
+      const { isPressed, onIsPressedChange, ...props } = this.props; // todo: better solution to rest object of intersected type
       return (
         <div className="withispressed-wrapper"
           onMouseDown={this.handleOnPointerDown}
@@ -49,7 +49,7 @@ export const withIsPressed = <ComponentProps extends {}>(
           onTouchEnd={this.handleOnPointerUp}
           onMouseLeave={this.handleOnMouseLeave}
         >
-          <Component {...props} {...this.state} />
+          <Component {...props as ComponentProps} {...this.state} />
         </div>
       );
     }

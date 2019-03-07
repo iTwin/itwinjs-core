@@ -21,6 +21,7 @@ export const enum ShaderFlags {
   NonUniformColor = 1 << 1,
   OITFlatAlphaWeight = 1 << 2,
   OITScaleOutput = 1 << 3,
+  IgnoreNonLocatable = 1 << 4,
 }
 
 /** Describes the location of a uniform variable within a shader program. */
@@ -152,7 +153,7 @@ export class ShaderProgram implements IDisposable {
     const glProgram = gl.createProgram();
     this._glProgram = (null === glProgram) ? undefined : glProgram;
 
-    // ###TODO: Silencing 'unused variable' warnings temporarily...
+    // Silencing 'unused variable' warnings temporarily...
     assert(undefined !== this._description);
   }
 

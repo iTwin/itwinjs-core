@@ -5,11 +5,12 @@
 /** @module Expandable */
 
 import * as React from "react";
-import { ExpandableBlock as BwcExpandableBlock } from "@bentley/bwc";
+import * as classnames from "classnames";
+import { CommonProps } from "../utils/Props";
 import "./ExpandableBlock.scss";
 
 /** Properties for the [[ExpandableBlock]] React component */
-export interface ExpandableBlockProps {
+export interface ExpandableBlockProps extends CommonProps {
   /** Label */
   title: string;
   /** Indicates whether the ExpandableBlock is expanded */
@@ -20,26 +21,40 @@ export interface ExpandableBlockProps {
   onKeyPress?: React.KeyboardEventHandler<HTMLDivElement>;
   /** Additional text displayed in the block below the label and in a smaller font size */
   caption?: string;
-  /** CSS class name */
-  className?: string;
-  /** CSS style properties */
-  style?: React.CSSProperties;
 }
 
 /** ExpandableBlock is a React component that shows and hides child content. */
 export class ExpandableBlock extends React.Component<ExpandableBlockProps> {
+
   public render() {
+    const cName = classnames(
+      "uicore-expandable-blocks-block",
+      this.props.caption && "with-caption",
+      this.props.isExpanded ? "is-expanded" : "is-collapsed",
+      this.props.className,
+    );
+    const ariaExpanded = this.props.isExpanded ? "true" : "false";
+
     return (
-      <BwcExpandableBlock
-        className={"core-expandable-block" + (this.props.className ? " " + this.props.className : "")}
-        isExpanded={this.props.isExpanded}
-        onClick={this.props.onClick}
-        onKeyPress={this.props.onKeyPress}
-        title={this.props.title}
-        caption={this.props.caption}
-      >
-        {this.props.children}
-      </BwcExpandableBlock>
+      <div className={cName} style={this.props.style}>
+        <div aria-expanded={ariaExpanded} className="header" onClick={this.props.onClick}
+          onKeyPress={this.props.onKeyPress} tabIndex={this.props.onKeyPress ? 0 : undefined}>
+          <div className="icon-container">
+            <i className="icon icon-chevron-right" />
+          </div>
+          {this.props.caption &&
+            <div className="caption" title={this.props.caption}>
+              {this.props.caption}
+            </div>
+          }
+          <div className="title" title={this.props.title}>
+            {this.props.title}
+          </div>
+        </div>
+        <div className="content">
+          {this.props.isExpanded && this.props.children}
+        </div>
+      </div>
     );
   }
 }

@@ -16,13 +16,15 @@ import { IModelJsFs } from "./IModelJsFs";
 import { IModelJsNative } from "./IModelJsNative";
 import { IModelReadRpcImpl } from "./rpc-impl/IModelReadRpcImpl";
 import { IModelTileRpcImpl } from "./rpc-impl/IModelTileRpcImpl";
-import { IModelUnitTestRpcImpl } from "./rpc-impl/IModelUnitTestRpcImpl";
 import { IModelWriteRpcImpl } from "./rpc-impl/IModelWriteRpcImpl";
 import { StandaloneIModelRpcImpl } from "./rpc-impl/StandaloneIModelRpcImpl";
 import { WipRpcImpl } from "./rpc-impl/WipRpcImpl";
 import { initializeRpcBackend } from "./RpcBackend";
 import * as os from "os";
 import * as semver from "semver";
+
+/** @hidden */
+const loggingCategory = "imodeljs-backend.IModelHost";
 
 /**
  * Configuration of imodeljs-backend.
@@ -42,6 +44,15 @@ export class IModelHostConfiguration {
 
   /** The kind of iModel server to use. Defaults to iModelHubClient */
   public imodelClient?: IModelClient;
+
+  /** The time, in milliseconds, for which [IModelTileRpcInterface.requestTileTreeProps]($common) should wait before returning a "pending" status. */
+  public tileTreeRequestTimeout = IModelHostConfiguration.defaultTileRequestTimeout;
+  /** The time, in milliseconds, for which [IModelTileRpcInterface.requestTileContent]($common) should wait before returning a "pending" status. */
+  public tileContentRequestTimeout = IModelHostConfiguration.defaultTileRequestTimeout;
+  /** The default time, in milliseconds, used for [[tileTreeRequestTimeout]] and [[tileContentRequestTimeout]]. To change this, override one or both of those properties. */
+  public static defaultTileRequestTimeout = 20 * 1000;
+  /** If true, requests for tile content will execute on a separate thread pool in order to avoid blocking other, less expensive asynchronous requests such as ECSql queries. */
+  public useTileContentThreadPool = false;
 }
 
 /**
@@ -68,22 +79,31 @@ export class IModelHost {
       return;
 
     if (!Platform.isMobile)
-      this.checkVersion();
+      this.validateNativePlatformVersion();
 
     platform.logger = Logger;
     platform.initializeRegion(region);
   }
 
-  private static checkVersion(): void {
+  private static validateNativePlatformVersion(): void {
     const requiredVersion = require("../package.json").dependencies["@bentley/imodeljs-native"];
-    if (semver.satisfies(this.platform.version, requiredVersion))
+    const thisVersion = this.platform.version;
+    if (semver.satisfies(thisVersion, requiredVersion))
       return;
     if (IModelJsFs.existsSync(path.join(__dirname, "DevBuild.txt"))) {
       console.log("Bypassing version checks for development build"); // tslint:disable-line:no-console
       return;
     }
     this._platform = undefined;
-    throw new IModelError(IModelStatus.BadRequest, "imodeljs-native version is (" + this.platform.version + "). imodeljs-backend requires version (" + requiredVersion + ")");
+    throw new IModelError(IModelStatus.BadRequest, "imodeljs-native version is (" + thisVersion + "). imodeljs-backend requires version (" + requiredVersion + ")");
+  }
+
+  private static validateNodeJsVersion(): void {
+    const requiredVersion = require("../package.json").engines.node;
+    if (!semver.satisfies(process.version, requiredVersion)) {
+      throw new IModelError(IModelStatus.BadRequest, `Node.js version ${process.version} is not within the range acceptable to imodeljs-backend: (${requiredVersion})`);
+    }
+    return;
   }
 
   /** @hidden */
@@ -96,17 +116,24 @@ export class IModelHost {
    */
   public static startup(configuration: IModelHostConfiguration = new IModelHostConfiguration()) {
     if (IModelHost.configuration)
-      throw new IModelError(BentleyStatus.ERROR, "startup may only be called once");
+      throw new IModelError(BentleyStatus.ERROR, "startup may only be called once", Logger.logError, loggingCategory, () => (configuration));
+
+    this.validateNodeJsVersion();
 
     this.backendVersion = require("../package.json").version;
     initializeRpcBackend();
 
     const region: number = Config.App.getNumber(UrlDiscoveryClient.configResolveUrlUsingRegion, 0);
     if (!this._isNativePlatformLoaded) {
-      if (configuration.nativePlatform !== undefined)
-        this.registerPlatform(configuration.nativePlatform, region);
-      else
-        this.loadNative(region);
+      try {
+        if (configuration.nativePlatform !== undefined)
+          this.registerPlatform(configuration.nativePlatform, region);
+        else
+          this.loadNative(region);
+      } catch (error) {
+        Logger.logError(loggingCategory, "Error registering/loading the native platform API", () => (configuration));
+        throw error;
+      }
     }
 
     if (configuration.imodelClient)
@@ -116,7 +143,6 @@ export class IModelHost {
     IModelTileRpcImpl.register();
     IModelWriteRpcImpl.register();
     StandaloneIModelRpcImpl.register();
-    IModelUnitTestRpcImpl.register();
     WipRpcImpl.register();
 
     BisCore.registerSchema();
@@ -139,6 +165,18 @@ export class IModelHost {
   public static get appAssetsDir(): string | undefined {
     return (IModelHost.configuration === undefined) ? undefined : IModelHost.configuration.appAssetsDir;
   }
+
+  /** The time, in milliseconds, for which [IModelTileRpcInterface.requestTileTreeProps]($common) should wait before returning a "pending" status. */
+  public static get tileTreeRequestTimeout(): number {
+    return undefined !== IModelHost.configuration ? IModelHost.configuration.tileTreeRequestTimeout : IModelHostConfiguration.defaultTileRequestTimeout;
+  }
+  /** The time, in milliseconds, for which [IModelTileRpcInterface.requestTileContent]($common) should wait before returning a "pending" status. */
+  public static get tileContentRequestTimeout(): number {
+    return undefined !== IModelHost.configuration ? IModelHost.configuration.tileContentRequestTimeout : IModelHostConfiguration.defaultTileRequestTimeout;
+  }
+
+  /** If true, requests for tile content will execute on a separate thread pool in order to avoid blocking other, less expensive asynchronous requests such as ECSql queries. */
+  public static get useTileContentThreadPool(): boolean { return undefined !== IModelHost.configuration && IModelHost.configuration.useTileContentThreadPool; }
 }
 
 /** Information about the platform on which the app is running. Also see [[KnownLocations]] and [[IModelJsFs]]. */

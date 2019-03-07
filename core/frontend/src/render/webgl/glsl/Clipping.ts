@@ -38,9 +38,9 @@ const unpackFloat = `
   }
 `;
 
+// ###TODO: oct-encode the normal to reduce # of samples from 4 to 2
 const unpackClipPlane = `
   vec4 getClipPlane(int index) {
-    // ###TODO: oct-encode the normal to reduce # of samples from 4 to 2
     float y = (float(index) + 0.5) / float(u_numClips);
     float sx = 0.25;
     vec2 tc = vec2(0.125, y);

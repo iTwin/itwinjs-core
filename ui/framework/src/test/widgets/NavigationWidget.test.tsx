@@ -5,6 +5,7 @@
 import * as React from "react";
 import { expect } from "chai";
 import { mount, shallow } from "enzyme";
+import * as moq from "typemoq";
 import TestUtils from "../TestUtils";
 import {
   AnyWidgetProps,
@@ -13,8 +14,15 @@ import {
   NavigationWidgetDef,
   ToolButton,
   NavigationWidget,
+  ContentControl,
+  ConfigurableCreateInfo,
+  FrontstageManager,
 } from "../../ui-framework";
 import { Toolbar, Direction } from "@bentley/ui-ninezone";
+import ConfigurableUiManager from "../../ui-framework/configurableui/ConfigurableUiManager";
+import { NavigationAidControl } from "../../ui-framework/navigationaids/NavigationAidControl";
+import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { CoreTools } from "../../ui-framework/CoreToolDefinitions";
 
 describe("NavigationWidget", () => {
 
@@ -88,6 +96,51 @@ describe("NavigationWidget", () => {
         verticalToolbar={verticalToolbar}
       />,
     ).should.matchSnapshot();
+  });
+
+  class TestContentControl extends ContentControl {
+    constructor(info: ConfigurableCreateInfo, options: any) {
+      super(info, options);
+
+      this.reactElement = <div />;
+    }
+  }
+
+  class TestNavigationAidControl extends NavigationAidControl {
+    constructor(info: ConfigurableCreateInfo, options: any) {
+      super(info, options);
+
+      this.reactElement = <div>Test Navigation Aid</div>;
+    }
+  }
+
+  it("NavigationWidgetDef with invalid navigation aid should throw Error", () => {
+    const def = new NavigationWidgetDef({
+      navigationAidId: "Aid1",
+    });
+    ConfigurableUiManager.registerControl("Aid1", TestContentControl);
+    expect(() => def.renderCornerItem()).to.throw(Error);
+    ConfigurableUiManager.unregisterControl("Aid1");
+  });
+
+  it("NavigationWidgetDef should handle updateNavigationAid", () => {
+    const def = new NavigationWidgetDef({
+      navigationAidId: "Aid1",
+    });
+    ConfigurableUiManager.registerControl("Aid1", TestNavigationAidControl);
+
+    const element = def.reactElement;
+    expect(def.reactElement).to.eq(element);
+    const wrapper = mount(element as React.ReactElement<any>);
+
+    const connection = moq.Mock.ofType<IModelConnection>();
+    FrontstageManager.setActiveNavigationAid("Aid1", connection.object);
+    wrapper.update();
+
+    FrontstageManager.setActiveToolId(CoreTools.selectElementCommand.toolId);
+
+    ConfigurableUiManager.unregisterControl("Aid1");
+    wrapper.unmount();
   });
 
 });

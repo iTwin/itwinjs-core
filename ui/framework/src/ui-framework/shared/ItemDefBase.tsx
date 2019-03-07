@@ -54,10 +54,8 @@ export abstract class ItemDefBase {
       me.stateSyncIds = itemProps.stateSyncIds.map((value) => value.toLowerCase());
   }
 
-  constructor(itemProps?: ItemProps) {
-    if (itemProps) {
-      ItemDefBase.initializeDef(this, itemProps);
-    }
+  constructor(itemProps: ItemProps) {
+    ItemDefBase.initializeDef(this, itemProps);
   }
 
   public get trayId() { return undefined; }

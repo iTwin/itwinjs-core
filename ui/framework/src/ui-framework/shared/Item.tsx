@@ -17,7 +17,7 @@ export abstract class ActionButtonItemDef extends ItemDefBase {
   protected _commandHandler?: CommandHandler;
   public parameters?: any;
 
-  constructor(itemProps?: ItemProps) {
+  constructor(itemProps: ItemProps) {
     super(itemProps);
 
     this.execute = this.execute.bind(this);
@@ -55,6 +55,7 @@ export abstract class ActionButtonItemDef extends ItemDefBase {
  */
 export class CommandItemDef extends ActionButtonItemDef {
   private static _sId = 0;
+  public static commandIdPrefix = "Command-";
   public commandId: string = "";
 
   constructor(commandItemProps: CommandItemProps) {
@@ -68,12 +69,8 @@ export class CommandItemDef extends ActionButtonItemDef {
       this.commandId = commandItemProps.commandId;
     else {
       CommandItemDef._sId++;
-      this.commandId = "Command-" + CommandItemDef._sId;
+      this.commandId = CommandItemDef.commandIdPrefix + CommandItemDef._sId;
     }
-  }
-
-  public get isToolId(): boolean {
-    return false;
   }
 
   public get id(): string {
@@ -94,10 +91,6 @@ export class ToolItemDef extends ActionButtonItemDef {
     }
 
     this.toolId = commandItemProps.toolId;
-  }
-
-  public get isToolId(): boolean {
-    return false;
   }
 
   public get id(): string {

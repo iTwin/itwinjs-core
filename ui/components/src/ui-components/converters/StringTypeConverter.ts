@@ -6,7 +6,7 @@
 
 import { TypeConverter } from "./TypeConverter";
 import { TypeConverterManager } from "./TypeConverterManager";
-import * as Primitives from "./valuetypes/PrimitiveTypes";
+import { Primitives } from "@bentley/imodeljs-frontend";
 
 /** Operators for string types */
 export interface StringOperatorProcessor {
@@ -103,3 +103,4 @@ export class StringTypeConverter extends TypeConverter implements StringOperator
 }
 
 TypeConverterManager.registerConverter("text", StringTypeConverter);
+TypeConverterManager.registerConverter("string", StringTypeConverter);

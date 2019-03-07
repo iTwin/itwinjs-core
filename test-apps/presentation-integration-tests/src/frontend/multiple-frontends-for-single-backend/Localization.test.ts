@@ -34,8 +34,8 @@ describe("Multiple frontends for one backend", async () => {
     it("Handles multiple simultaneous requests from different frontends with different locales", async () => {
       for (let i = 0; i < 100; ++i) {
         const nodes = {
-          en: await frontends[0].getRootNodes({ imodel, rulesetId: "Localization" }),
-          test: await frontends[1].getRootNodes({ imodel, rulesetId: "Localization" }),
+          en: await frontends[0].getNodes({ imodel, rulesetId: "Localization" }),
+          test: await frontends[1].getNodes({ imodel, rulesetId: "Localization" }),
         };
 
         expect(nodes.en[0].label).to.eq("test value");

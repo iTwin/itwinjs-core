@@ -5,6 +5,7 @@
 
 import {
   ContextRealityModelProps,
+  CartographicRange,
 } from "@bentley/imodeljs-common";
 import {
   ContextRealityModelState,
@@ -20,7 +21,7 @@ export class RealityModelPicker extends ToolBarDropDown {
   private readonly _element: HTMLElement;
   private readonly _parent: HTMLElement;
   private readonly _models: ContextRealityModelState[] = [];
-  private readonly _availableModels: ContextRealityModelProps[] = [];
+  private readonly _availableModels: Promise<ContextRealityModelProps[]>;
 
   public constructor(vp: Viewport, parent: HTMLElement) {
     super();
@@ -28,7 +29,13 @@ export class RealityModelPicker extends ToolBarDropDown {
     this._vp = vp;
     this._parent = parent;
 
-    this._availableModels = ContextRealityModelState.findAvailableRealityModels();
+    if (this._vp.iModel.ecefLocation) {
+      const modelCartographicRange = new CartographicRange(this._vp.iModel.projectExtents, this._vp.iModel.ecefLocation.getTransform());
+
+      this._availableModels = ContextRealityModelState.findAvailableRealityModels("fb1696c8-c074-4c76-a539-a5546e048cc6", modelCartographicRange);
+    } else {
+      this._availableModels = ContextRealityModelState.findAvailableRealityModels("fb1696c8-c074-4c76-a539-a5546e048cc6", undefined);
+    }
 
     this._element = document.createElement("div");
     this._element.className = "scrollingToolMenu";
@@ -47,7 +54,7 @@ export class RealityModelPicker extends ToolBarDropDown {
     while (this._element.hasChildNodes())
       this._element.removeChild(this._element.firstChild!);
 
-    let visible = this._vp.view.isSpatialView() && this._availableModels.length > 0;
+    let visible = this._vp.view.isSpatialView() && (await this._availableModels).length > 0;
     if (visible) {
       await this.populateModels();
       visible = this._models.length > 0;
@@ -70,10 +77,13 @@ export class RealityModelPicker extends ToolBarDropDown {
   }
 
   private async populateModels(): Promise<void> {
-    for (const props of this._availableModels) {
-      const model = new ContextRealityModelState(props, this._vp.iModel);
-      if (await model.intersectsProjectExtents())
-        this._models.push(model);
+    for (const props of await this._availableModels) {
+      try {
+        const model = new ContextRealityModelState(props, this._vp.iModel);
+        if (await model.intersectsProjectExtents())
+          this._models.push(model);
+      } catch (e) {
+      }
     }
   }
 

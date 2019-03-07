@@ -320,16 +320,16 @@ export class ChangeSetHandler {
    * This method creates the directory containing the ChangeSets if necessary. If there is an error in downloading some of the ChangeSets, all partially downloaded ChangeSets are deleted from disk.
    * @param alctx The activity logging context
    * @param changeSets ChangeSets to download. These need to include a download link. See [[ChangeSetQuery.selectDownloadUrl]].
-   * @param downloadToPath Directory where the ChangeSets should be downloaded.
+   * @param path Path of directory where the ChangeSets should be downloaded.
    * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley), if one of the required arguments is undefined or empty.
    * @param progressCallback Callback for tracking progress.
    * @throws [[ResponseError]] if the download fails.
    */
-  public async download(alctx: ActivityLoggingContext, changeSets: ChangeSet[], downloadToPath: string, progressCallback?: (progress: ProgressInfo) => void): Promise<void> {
+  public async download(alctx: ActivityLoggingContext, changeSets: ChangeSet[], path: string, progressCallback?: (progress: ProgressInfo) => void): Promise<void> {
     alctx.enter();
     Logger.logInfo(loggingCategory, `Downloading ${changeSets.length} changesets`);
     ArgumentCheck.nonEmptyArray("changeSets", changeSets);
-    ArgumentCheck.defined("downloadToPath", downloadToPath);
+    ArgumentCheck.defined("path", path);
 
     if (typeof window !== "undefined")
       return Promise.reject(IModelHubClientError.browser());
@@ -351,7 +351,7 @@ export class ChangeSetHandler {
     changeSets.forEach((changeSet) =>
       queue.push(async () => {
         const downloadUrl: string = changeSet.downloadUrl!;
-        const downloadToPathname: string = fileHandler.join(downloadToPath, changeSet.fileName!);
+        const downloadPath: string = fileHandler.join(path, changeSet.fileName!);
 
         let previouslyDownloaded = 0;
         const callback = (progress: ProgressInfo) => {
@@ -359,7 +359,7 @@ export class ChangeSetHandler {
           previouslyDownloaded = progress.loaded;
           progressCallback!({ loaded: downloadedSize, total: totalSize, percent: downloadedSize / totalSize });
         };
-        return fileHandler.downloadFile(alctx, downloadUrl, downloadToPathname, parseInt(changeSet.fileSize!, 10), progressCallback ? callback : undefined);
+        return fileHandler.downloadFile(alctx, downloadUrl, downloadPath, parseInt(changeSet.fileSize!, 10), progressCallback ? callback : undefined);
       }));
 
     await queue.waitAll();
@@ -374,7 +374,7 @@ export class ChangeSetHandler {
    * @param token Delegation token of the authorized user.
    * @param imodelId Id of the iModel. See [[HubIModel]].
    * @param changeSet Information of the ChangeSet to be uploaded.
-   * @param changeSetPathname Pathname of the ChangeSet file to be uploaded.
+   * @param path Path of the ChangeSet file to be uploaded.
    * @param progressCallback Callback for tracking upload progress.
    * @throws [IModelHubStatus.BriefcaseDoesNotBelongToUser]($bentley) if Briefcase specified by changeSet.briefcaseId belongs to another user.
    * @throws [IModelHubStatus.AnotherUserPushing]($bentley) if another user is currently uploading a ChangeSet.
@@ -383,13 +383,13 @@ export class ChangeSetHandler {
    * @throws [IModelHubStatus.ChangeSetPointsToBadSeed]($bentley) if changeSet.seedFileId is not set to the correct file id. That file id should match to the value written to the Briefcase file. See [IModelDb.setGuid]($backend).
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async create(alctx: ActivityLoggingContext, token: AccessToken, imodelId: GuidString, changeSet: ChangeSet, changeSetPathname: string, progressCallback?: (progress: ProgressInfo) => void): Promise<ChangeSet> {
+  public async create(alctx: ActivityLoggingContext, token: AccessToken, imodelId: GuidString, changeSet: ChangeSet, path: string, progressCallback?: (progress: ProgressInfo) => void): Promise<ChangeSet> {
     alctx.enter();
     Logger.logInfo(loggingCategory, `Uploading changeset ${changeSet.id} to iModel ${imodelId}`);
     ArgumentCheck.defined("token", token);
     ArgumentCheck.validGuid("imodelId", imodelId);
     ArgumentCheck.defined("changeSet", changeSet);
-    ArgumentCheck.defined("changeSetPathname", changeSetPathname);
+    ArgumentCheck.defined("path", path);
 
     if (typeof window !== "undefined")
       return Promise.reject(IModelHubClientError.browser());
@@ -397,12 +397,12 @@ export class ChangeSetHandler {
     if (!this._fileHandler)
       return Promise.reject(IModelHubClientError.fileHandler());
 
-    if (!this._fileHandler.exists(changeSetPathname) || this._fileHandler.isDirectory(changeSetPathname))
+    if (!this._fileHandler.exists(path) || this._fileHandler.isDirectory(path))
       return Promise.reject(IModelHubClientError.fileNotFound());
 
     const postChangeSet = await this._handler.postInstance<ChangeSet>(alctx, ChangeSet, token, this.getRelativeUrl(imodelId), changeSet);
 
-    await this._fileHandler.uploadFile(alctx, postChangeSet.uploadUrl!, changeSetPathname, progressCallback);
+    await this._fileHandler.uploadFile(alctx, postChangeSet.uploadUrl!, path, progressCallback);
     alctx.enter();
 
     postChangeSet.uploadUrl = undefined;

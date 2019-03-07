@@ -4,10 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Properties */
 
-import React from "react";
+import * as React from "react";
 import { IPropertyValueRenderer, PropertyValueRendererContext, PropertyContainerType } from "../../ValueRendererManager";
-import { PropertyRecord } from "../../Record";
-import { PropertyValueFormat, ArrayValue } from "../../Value";
+import { PropertyRecord, PropertyValueFormat, ArrayValue } from "@bentley/imodeljs-frontend";
 import { Orientation } from "@bentley/ui-core";
 import { TableArrayValueRenderer } from "./table/ArrayValueRenderer";
 import { withContextStyle } from "./WithContextStyle";
@@ -33,7 +32,7 @@ export class ArrayPropertyValueRenderer implements IPropertyValueRenderer {
     }
 
     if (context && context.containerType === PropertyContainerType.PropertyPane) {
-      return "";
+      return withContextStyle("", context);
     }
 
     return withContextStyle(

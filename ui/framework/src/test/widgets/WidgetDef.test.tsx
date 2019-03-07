@@ -4,8 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { expect } from "chai";
+import * as sinon from "sinon";
+
 import TestUtils from "../TestUtils";
-import { WidgetState, WidgetProps, WidgetDef, ConfigurableUiManager, WidgetControl, ConfigurableCreateInfo, ConfigurableUiControlType } from "../../ui-framework";
+import { WidgetState, WidgetProps, WidgetDef, ConfigurableUiManager, WidgetControl, ConfigurableCreateInfo, ConfigurableUiControlType, SyncUiEventId } from "../../ui-framework";
+import { SyncUiEventDispatcher } from "../../ui-framework/syncui/SyncUiEventDispatcher";
 
 describe("WidgetDef", () => {
 
@@ -28,8 +31,8 @@ describe("WidgetDef", () => {
       priority: 100,
       isFreeform: true,
       iconSpec: "icon-home",
-      labelKey: "SampleApp:Test.my-label",
-      tooltipKey: "SampleApp:Test.my-tooltip",
+      label: () => "label",
+      tooltip: () => "tooltip",
       isToolSettings: true,
       isStatusBar: true,
       fillZone: true,
@@ -38,6 +41,8 @@ describe("WidgetDef", () => {
       isFloatingStateWindowResizable: false,
       applicationData: "AppData",
       element: <div />,
+      syncEventIds: [SyncUiEventId.FrontstageReady],
+      stateFunc: sinon.spy(),
     };
     const widgetDef: WidgetDef = new WidgetDef(widgetProps);
 
@@ -54,8 +59,8 @@ describe("WidgetDef", () => {
     expect(widgetDef.fillZone).to.eq(true);
     expect(widgetDef.applicationData).to.eq("AppData");
 
-    expect(widgetDef.label).to.eq("Test.my-label");
-    expect(widgetDef.tooltip).to.eq("Test.my-tooltip");
+    expect(widgetDef.label).to.eq("label");
+    expect(widgetDef.tooltip).to.eq("tooltip");
     expect(widgetDef.iconSpec).to.eq("icon-home");
   });
 
@@ -92,6 +97,25 @@ describe("WidgetDef", () => {
     expect(widgetDef.isVisible).to.eq(true);
     expect(widgetDef.isActive).to.eq(true);
     expect(widgetDef.canOpen()).to.be.true;
+  });
+
+  it("setWidgetState using state function", () => {
+    const testEventId = "test-widgetstate";
+    const widgetProps: WidgetProps = {
+      classId: "WidgetDefTest",
+      syncEventIds: [testEventId],
+      stateFunc: (): WidgetState => WidgetState.Hidden,
+    };
+
+    const widgetDef: WidgetDef = new WidgetDef(widgetProps);
+    widgetDef.setWidgetState(WidgetState.Open);
+
+    expect(widgetDef.isVisible).to.eq(true);
+    expect(widgetDef.isActive).to.eq(true);
+    expect(widgetDef.canOpen()).to.be.true;
+    // firing sync event should trigger state function and set state to Hidden.
+    SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(testEventId);
+    expect(widgetDef.isVisible).to.eq(false);
   });
 
   it("getWidgetControl throws an Error when type is incorrect", () => {

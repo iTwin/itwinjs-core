@@ -14,9 +14,6 @@ Object {
   "records": Object {
     "Inverse": Array [
       PropertyRecord {
-        "description": undefined,
-        "isMerged": false,
-        "isReadonly": false,
         "property": Object {
           "displayLabel": "Manager quantifying",
           "editor": Object {
@@ -56,8 +53,6 @@ Object {
   "records": Object {
     "Favorite": Array [
       PropertyRecord {
-        "isMerged": false,
-        "isReadonly": false,
         "property": Object {
           "displayLabel": "Afghani",
           "name": "International",
@@ -76,8 +71,6 @@ Object {
               "value": Object {
                 "members": Object {
                   "Implementation": PropertyRecord {
-                    "isMerged": false,
-                    "isReadonly": false,
                     "property": Object {
                       "displayLabel": "wireless",
                       "name": "Implementation",
@@ -87,7 +80,6 @@ Object {
                       "members": Object {
                         "Iran": PropertyRecord {
                           "description": "Tasty",
-                          "isMerged": false,
                           "isReadonly": true,
                           "property": Object {
                             "displayLabel": "Garden Ball Towels",
@@ -123,8 +115,6 @@ Object {
               "value": Object {
                 "members": Object {
                   "Implementation": PropertyRecord {
-                    "isMerged": false,
-                    "isReadonly": false,
                     "property": Object {
                       "displayLabel": "wireless",
                       "name": "Implementation",
@@ -134,7 +124,6 @@ Object {
                       "members": Object {
                         "Iran": PropertyRecord {
                           "description": "Accounts envisioneer circuit",
-                          "isMerged": false,
                           "isReadonly": true,
                           "property": Object {
                             "displayLabel": "Garden Ball Towels",
@@ -168,7 +157,6 @@ Object {
     "functionalities": Array [
       PropertyRecord {
         "description": "Indiana Mobility",
-        "isMerged": false,
         "isReadonly": true,
         "property": Object {
           "displayLabel": "Movies Coordinator",
@@ -182,8 +170,6 @@ Object {
         },
       },
       PropertyRecord {
-        "isMerged": false,
-        "isReadonly": false,
         "property": Object {
           "displayLabel": "Afghani",
           "name": "International",
@@ -202,8 +188,6 @@ Object {
               "value": Object {
                 "members": Object {
                   "Implementation": PropertyRecord {
-                    "isMerged": false,
-                    "isReadonly": false,
                     "property": Object {
                       "displayLabel": "wireless",
                       "name": "Implementation",
@@ -213,7 +197,6 @@ Object {
                       "members": Object {
                         "Iran": PropertyRecord {
                           "description": "Tasty",
-                          "isMerged": false,
                           "isReadonly": true,
                           "property": Object {
                             "displayLabel": "Garden Ball Towels",
@@ -232,8 +215,6 @@ Object {
                         },
                         "synthesize": PropertyRecord {
                           "description": "Bedfordshire plum",
-                          "isMerged": false,
-                          "isReadonly": false,
                           "property": Object {
                             "displayLabel": "El Salvador Colon US Dollar",
                             "name": "synthesize",
@@ -251,8 +232,6 @@ Object {
                   },
                   "black": PropertyRecord {
                     "description": "Paradigm",
-                    "isMerged": false,
-                    "isReadonly": false,
                     "property": Object {
                       "displayLabel": "Computer markets",
                       "editor": Object {
@@ -283,8 +262,6 @@ Object {
               "value": Object {
                 "members": Object {
                   "Implementation": PropertyRecord {
-                    "isMerged": false,
-                    "isReadonly": false,
                     "property": Object {
                       "displayLabel": "wireless",
                       "name": "Implementation",
@@ -294,7 +271,6 @@ Object {
                       "members": Object {
                         "Iran": PropertyRecord {
                           "description": "Accounts envisioneer circuit",
-                          "isMerged": false,
                           "isReadonly": true,
                           "property": Object {
                             "displayLabel": "Garden Ball Towels",
@@ -313,8 +289,6 @@ Object {
                         },
                         "synthesize": PropertyRecord {
                           "description": "California",
-                          "isMerged": false,
-                          "isReadonly": false,
                           "property": Object {
                             "displayLabel": "El Salvador Colon US Dollar",
                             "name": "synthesize",
@@ -332,8 +306,6 @@ Object {
                   },
                   "black": PropertyRecord {
                     "description": "Beauty",
-                    "isMerged": false,
-                    "isReadonly": false,
                     "property": Object {
                       "displayLabel": "Computer markets",
                       "editor": Object {
@@ -377,8 +349,6 @@ Object {
   "records": Object {
     "Adaptive": Array [
       PropertyRecord {
-        "isMerged": false,
-        "isReadonly": false,
         "property": Object {
           "displayLabel": "Lead Investment Account Re-contextualized",
           "name": "overriding",
@@ -392,8 +362,6 @@ Object {
       },
       PropertyRecord {
         "description": "Money Market Account innovate deposit",
-        "isMerged": false,
-        "isReadonly": false,
         "property": Object {
           "displayLabel": "Chair Suriname",
           "editor": Object {
@@ -428,7 +396,6 @@ Object {
   "records": Object {
     "lime": Array [
       PropertyRecord {
-        "isMerged": false,
         "isReadonly": true,
         "property": Object {
           "displayLabel": "1080p copying Persevering",
@@ -449,7 +416,6 @@ Object {
                 "members": Object {
                   "National": PropertyRecord {
                     "description": "Concrete Sausages Assurance",
-                    "isMerged": false,
                     "isReadonly": true,
                     "property": Object {
                       "displayLabel": "Shoes AI",
@@ -463,9 +429,6 @@ Object {
                     },
                   },
                   "firewall": PropertyRecord {
-                    "description": undefined,
-                    "isMerged": false,
-                    "isReadonly": false,
                     "property": Object {
                       "displayLabel": "Paradigm",
                       "editor": Object {
@@ -497,7 +460,6 @@ Object {
                 "members": Object {
                   "National": PropertyRecord {
                     "description": "Mauritius Rupee",
-                    "isMerged": false,
                     "isReadonly": true,
                     "property": Object {
                       "displayLabel": "Shoes AI",
@@ -511,9 +473,6 @@ Object {
                     },
                   },
                   "firewall": PropertyRecord {
-                    "description": undefined,
-                    "isMerged": false,
-                    "isReadonly": false,
                     "property": Object {
                       "displayLabel": "Paradigm",
                       "editor": Object {
@@ -540,8 +499,6 @@ Object {
       },
       PropertyRecord {
         "description": "synergies Internal scalable",
-        "isMerged": false,
-        "isReadonly": false,
         "property": Object {
           "displayLabel": "Fantastic embrace functionalities",
           "name": "redundant",
@@ -572,8 +529,6 @@ Object {
   "records": Object {
     "Garden": Array [
       PropertyRecord {
-        "isMerged": false,
-        "isReadonly": false,
         "property": Object {
           "displayLabel": "Thailand",
           "name": "Principal",
@@ -593,7 +548,6 @@ Object {
                 "members": Object {
                   "Books": PropertyRecord {
                     "description": "Fantastic Shirt",
-                    "isMerged": false,
                     "isReadonly": true,
                     "property": Object {
                       "displayLabel": "Investment Account SCSI",
@@ -611,9 +565,6 @@ Object {
                     },
                   },
                   "circuit": PropertyRecord {
-                    "description": undefined,
-                    "isMerged": false,
-                    "isReadonly": false,
                     "property": Object {
                       "displayLabel": "Cambridgeshire Islands",
                       "name": "circuit",
@@ -641,7 +592,6 @@ Object {
                 "members": Object {
                   "Books": PropertyRecord {
                     "description": "Manager calculating",
-                    "isMerged": false,
                     "isReadonly": true,
                     "property": Object {
                       "displayLabel": "Investment Account SCSI",
@@ -659,9 +609,6 @@ Object {
                     },
                   },
                   "circuit": PropertyRecord {
-                    "description": undefined,
-                    "isMerged": false,
-                    "isReadonly": false,
                     "property": Object {
                       "displayLabel": "Cambridgeshire Islands",
                       "name": "circuit",
@@ -702,7 +649,6 @@ Object {
     "solid state": Array [
       PropertyRecord {
         "description": "Singapore Dollar Plastic",
-        "isMerged": false,
         "isReadonly": true,
         "property": Object {
           "displayLabel": "XML Designer",
@@ -720,8 +666,6 @@ Object {
         },
       },
       PropertyRecord {
-        "isMerged": false,
-        "isReadonly": false,
         "property": Object {
           "displayLabel": "Missouri Montana ADP",
           "name": "Pound Sterling",
@@ -731,8 +675,6 @@ Object {
           "members": Object {
             "Mountains": PropertyRecord {
               "description": "disintermediate withdrawal",
-              "isMerged": false,
-              "isReadonly": false,
               "property": Object {
                 "displayLabel": "Officer Forest CSS",
                 "name": "Mountains",
@@ -745,9 +687,6 @@ Object {
               },
             },
             "Yemen": PropertyRecord {
-              "description": undefined,
-              "isMerged": false,
-              "isReadonly": false,
               "property": Object {
                 "displayLabel": "Squares",
                 "editor": Object {
@@ -787,8 +726,6 @@ Object {
     "Computers": Array [
       PropertyRecord {
         "description": "architecture Malagasy Ariary",
-        "isMerged": false,
-        "isReadonly": false,
         "property": Object {
           "displayLabel": "Corner",
           "editor": Object {
@@ -805,9 +742,6 @@ Object {
         },
       },
       PropertyRecord {
-        "description": undefined,
-        "isMerged": false,
-        "isReadonly": false,
         "property": Object {
           "displayLabel": "Investor",
           "name": "Steel",
@@ -839,8 +773,6 @@ Object {
     "ability": Array [
       PropertyRecord {
         "description": "Switzerland",
-        "isMerged": false,
-        "isReadonly": false,
         "property": Object {
           "displayLabel": "Home Loan Account",
           "name": "Tools",
@@ -853,8 +785,6 @@ Object {
         },
       },
       PropertyRecord {
-        "description": undefined,
-        "isMerged": false,
         "isReadonly": true,
         "property": Object {
           "displayLabel": "Intelligent Soft",
@@ -900,8 +830,6 @@ Object {
     "needs-based": Array [
       PropertyRecord {
         "description": undefined,
-        "isMerged": false,
-        "isReadonly": false,
         "property": Object {
           "displayLabel": "Singapore Dollar forecast utilize",
           "name": "Metrics",
@@ -911,7 +839,6 @@ Object {
           "items": Array [
             PropertyRecord {
               "description": "some display value 1",
-              "isMerged": false,
               "isReadonly": true,
               "property": Object {
                 "displayLabel": "Singapore Dollar forecast utilize",
@@ -926,7 +853,6 @@ Object {
             },
             PropertyRecord {
               "description": "some display value 2",
-              "isMerged": false,
               "isReadonly": true,
               "property": Object {
                 "displayLabel": "Singapore Dollar forecast utilize",
@@ -964,8 +890,6 @@ Object {
     "back-end": Array [
       PropertyRecord {
         "description": "Clothing",
-        "isMerged": false,
-        "isReadonly": false,
         "property": Object {
           "displayLabel": "Awesome approach",
           "editor": Object {
@@ -1001,7 +925,6 @@ Object {
     "Identity": Array [
       PropertyRecord {
         "description": undefined,
-        "isMerged": false,
         "isReadonly": true,
         "property": Object {
           "displayLabel": "SQL Pants Nebraska",
@@ -1012,7 +935,6 @@ Object {
           "members": Object {
             "JBOD": PropertyRecord {
               "description": "some display value",
-              "isMerged": false,
               "isReadonly": true,
               "property": Object {
                 "displayLabel": "Fantastic Concrete Chicken backing up",

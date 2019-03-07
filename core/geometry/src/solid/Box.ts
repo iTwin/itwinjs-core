@@ -161,6 +161,24 @@ export class Box extends SolidPrimitive {
     result.addPoint(workPoint);
     return result;
   }
+  /**
+   * @returns the 8 corners in x fastest, then y, finally z lexical order.
+   */
+  public getCorners(): Point3d[] {
+    const transform = this._localToWorld;
+    const ax = this._baseX;
+    const ay = this._baseY;
+    const bx = this._topX;
+    const by = this._topY;
+    return [transform.multiplyXYZ(0, 0, 0),
+    transform.multiplyXYZ(ax, 0, 0),
+    transform.multiplyXYZ(0, ay, 0),
+    transform.multiplyXYZ(ax, ay, 0),
+    transform.multiplyXYZ(0, 0, 1),
+    transform.multiplyXYZ(bx, 0, 1),
+    transform.multiplyXYZ(0, by, 1),
+    transform.multiplyXYZ(bx, by, 1)];
+  }
 
   public constantVSection(zFraction: number): CurveCollection {
     const ls = this.strokeConstantVSection(zFraction);
@@ -191,5 +209,11 @@ export class Box extends SolidPrimitive {
       range.extendTransformedXYZ(boxTransform, 0, by, 1);
       range.extendTransformedXYZ(boxTransform, bx, by, 1);
     }
+  }
+  /**
+   * @return true if this is a closed volume.
+   */
+  public get isClosedVolume(): boolean {
+    return this.capped;
   }
 }

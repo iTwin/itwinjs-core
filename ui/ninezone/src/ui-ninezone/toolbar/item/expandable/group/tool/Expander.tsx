@@ -11,12 +11,12 @@ import { NoChildrenProps } from "../../../../../utilities/Props";
 import { GroupTool, GroupToolProps } from "./Tool";
 import "./Expander.scss";
 
-/** Properties of [[Expander]] component. */
+/** Properties of [[GroupToolExpander]] component. */
 
 export interface GroupToolExpanderProps extends Omit<GroupToolProps, "isActive" | "children">, NoChildrenProps {
 }
 
-/** Expandable entry of tool group panel. Used in [[Column]] hosted in [[NestedGroup]] component. */
+/** Expandable entry of tool group panel. Used in [[GroupColumn]] hosted in [[NestedGroup]] component. */
 export class GroupToolExpander extends React.PureComponent<GroupToolExpanderProps> {
   public render() {
     const { className, ...props } = this.props;

@@ -4,23 +4,16 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { XAndY } from "@bentley/geometry-core";
-import ToolTip from "tooltip.js";
 import {
-  AccuSnap,
-  IModelApp,
-  MessageBoxIconType,
-  MessageBoxType,
-  MessageBoxValue,
-  NotificationManager,
-  NotifyMessageDetails,
-  SnapMode,
-  ToolTipOptions,
+  AccuSnap, IModelApp, MessageBoxIconType, MessageBoxType, MessageBoxValue, NotificationManager, NotifyMessageDetails,
+  SnapMode, ToolTipOptions, TileAdmin,
 } from "@bentley/imodeljs-frontend";
+import ToolTip from "tooltip.js";
 import { DrawingAidTestTool } from "./DrawingAidTestTool";
-import { showStatus, showError } from "./Utils";
+import { showError, showStatus } from "./Utils";
 
 class DisplayTestAppAccuSnap extends AccuSnap {
-  private readonly _activeSnaps: SnapMode[] =  [SnapMode.NearestKeypoint];
+  private readonly _activeSnaps: SnapMode[] = [SnapMode.NearestKeypoint];
 
   public get keypointDivisor() { return 2; }
   public getActiveSnapModes(): SnapMode[] { return this._activeSnaps; }
@@ -76,8 +69,8 @@ class Notifications extends NotificationManager {
     return Promise.resolve(MessageBoxValue.Ok);
   }
 
-  public get isToolTipSupported(): boolean { return true; }
-  public get isToolTipOpen(): boolean { return undefined !== this._toolTip; }
+  public get isToolTipSupported() { return true; }
+  public get isToolTipOpen() { return undefined !== this._toolTip; }
 
   public clearToolTip(): void {
     if (!this.isToolTipOpen)
@@ -93,9 +86,10 @@ class Notifications extends NotificationManager {
   protected _showToolTip(el: HTMLElement, message: HTMLElement | string, pt?: XAndY, options?: ToolTipOptions): void {
     this.clearToolTip();
 
-    const rect = el.getBoundingClientRect();
-    if (undefined === pt)
+    if (undefined === pt) {
+      const rect = el.getBoundingClientRect();
       pt = { x: rect.width / 2, y: rect.height / 2 };
+    }
 
     const location = document.createElement("div");
     const height = 20;
@@ -119,6 +113,10 @@ export class DisplayTestApp extends IModelApp {
   protected static onStartup(): void {
     IModelApp.accuSnap = new DisplayTestAppAccuSnap();
     IModelApp.notifications = new Notifications();
+    IModelApp.tileAdmin = TileAdmin.create({
+      retryInterval: 50,
+    });
+
     const svtToolNamespace = IModelApp.i18n.registerNamespace("SVTTools");
     DrawingAidTestTool.register(svtToolNamespace);
   }

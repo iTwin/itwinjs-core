@@ -7,7 +7,7 @@ import * as React from "react";
 import { expect } from "chai";
 import { PropertyEditorManager, BasicPropertyEditor, PropertyEditorBase, DataControllerBase } from "../../ui-components/editors/PropertyEditorManager";
 import { TextEditor } from "../../ui-components/editors/TextEditor";
-import { PropertyValue, PropertyValueFormat, PropertyDescription, PropertyRecord, PropertyEditorParams, PropertyEditorParamTypes } from "../../ui-components";
+import { PropertyValue, PropertyValueFormat, PropertyDescription, PropertyRecord, PropertyEditorParams, PropertyEditorParamTypes } from "@bentley/imodeljs-frontend";
 import { AsyncValueProcessingResult } from "../../ui-components/converters/TypeConverter";
 
 describe("PropertyEditorManager", () => {
@@ -47,24 +47,28 @@ describe("PropertyEditorManager", () => {
     expect(() => PropertyEditorManager.registerEditor("mine2", MinePropertyEditor)).to.throw(Error);
   });
 
-  it("createEditor should create a MinePropertyEditor for a registered 'mine' type and 'myeditor' editor", () => {
-    PropertyEditorManager.registerEditor("mine3", MinePropertyEditor, "myeditor");
-    expect(PropertyEditorManager.hasCustomEditor("mine3", "myeditor")).to.be.true;
-    const propertyEditor = PropertyEditorManager.createEditor("mine3", "myeditor");
+  it("createEditor should create a MinePropertyEditor for a registered 'mine' type and 'myEditor' editor", () => {
+    PropertyEditorManager.registerEditor("mine3", MinePropertyEditor, "myEditor");
+    expect(PropertyEditorManager.hasCustomEditor("mine3", "myEditor")).to.be.true;
+    const propertyEditor = PropertyEditorManager.createEditor("mine3", "myEditor");
     expect(propertyEditor).to.be.instanceof(MinePropertyEditor);
   });
 
   class MineDataController extends DataControllerBase { }
 
   it("createEditor should create a MinePropertyEditor with a dataController of MineDataController", () => {
-    PropertyEditorManager.registerEditor("mine4", MinePropertyEditor, "myeditor");
-    PropertyEditorManager.registerDataController("mydata", MineDataController);
-    const propertyEditor = PropertyEditorManager.createEditor("mine4", "myeditor", "mydata");
+    PropertyEditorManager.registerEditor("mine4", MinePropertyEditor, "myEditor");
+    PropertyEditorManager.registerDataController("myData", MineDataController);
+    const propertyEditor = PropertyEditorManager.createEditor("mine4", "myEditor", "myData");
     expect(propertyEditor).to.not.be.null;
     if (propertyEditor) {
       expect(propertyEditor).to.be.instanceof(MinePropertyEditor);
       expect(propertyEditor.customDataController).to.be.instanceof(MineDataController);
     }
+  });
+
+  it("createEditor should throw an Error when unregistered dataController passed", () => {
+    expect(() => PropertyEditorManager.createEditor("mine4", "myEditor", "invalid")).to.throw(Error);
   });
 
   it("createEditor should create a MinePropertyEditor even when passed a bad editor name", () => {
@@ -77,8 +81,8 @@ describe("PropertyEditorManager", () => {
   });
 
   it("registerDataController should throw an exception if already registered", () => {
-    PropertyEditorManager.registerDataController("mydata2", MineDataController);
-    expect(() => PropertyEditorManager.registerDataController("mydata2", MineDataController)).to.throw(Error);
+    PropertyEditorManager.registerDataController("myData2", MineDataController);
+    expect(() => PropertyEditorManager.registerDataController("myData2", MineDataController)).to.throw(Error);
   });
 
   const createPropertyValue = (value?: string): PropertyValue => {
@@ -119,8 +123,8 @@ describe("PropertyEditorManager", () => {
 
   it("calling validateValue & commitResult on PropertyEditor with a dataController should encounter no error", async () => {
     PropertyEditorManager.registerEditor("mine8", MinePropertyEditor);
-    PropertyEditorManager.registerDataController("mydata3", MineDataController);
-    const propertyEditor = PropertyEditorManager.createEditor("mine8", undefined, "mydata3");
+    PropertyEditorManager.registerDataController("myData3", MineDataController);
+    const propertyEditor = PropertyEditorManager.createEditor("mine8", undefined, "myData3");
     expect(propertyEditor).to.not.be.null;
     if (propertyEditor) {
       const validateResult = await propertyEditor.validateValue(createPropertyValue("newvalue"), createPropertyRecord("value"));
@@ -142,8 +146,8 @@ describe("PropertyEditorManager", () => {
 
   it("calling validateValue & commitResult on PropertyEditor with a dataController returning errors should report errors", async () => {
     PropertyEditorManager.registerEditor("mine9", MinePropertyEditor);
-    PropertyEditorManager.registerDataController("mydata4", ErrorDataController);
-    const propertyEditor = PropertyEditorManager.createEditor("mine9", undefined, "mydata4");
+    PropertyEditorManager.registerDataController("myData4", ErrorDataController);
+    const propertyEditor = PropertyEditorManager.createEditor("mine9", undefined, "myData4");
     expect(propertyEditor).to.not.be.null;
     if (propertyEditor) {
       const validateResult = await propertyEditor.validateValue(createPropertyValue("newvalue"), createPropertyRecord("value"));
@@ -162,7 +166,7 @@ describe("PropertyEditorManager", () => {
       if (property.editor && property.editor.params) {
         property.editor.params.forEach((params: PropertyEditorParams) => {
           if (params.type === PropertyEditorParamTypes.Icon) {
-            if (params.definition.iconPath === "cool")
+            if (params.definition.iconClass === "cool")
               (record as any).iconParamsWorked = true;
           }
         });
@@ -181,7 +185,7 @@ describe("PropertyEditorManager", () => {
         params: [
           {
             type: PropertyEditorParamTypes.Icon,
-            definition: { iconPath: "cool", iconColor: 0 },
+            definition: { iconClass: "cool" },
           },
         ],
       };

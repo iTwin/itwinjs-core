@@ -9,9 +9,11 @@ import { IModelConnection } from "@bentley/imodeljs-frontend";
 import {
   KeySet, PageOptions, SelectionInfo,
   ContentRequestOptions, Content, Descriptor, Field,
+  Ruleset, RegisteredRuleset,
 } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
 import { IPresentationDataProvider } from "./IPresentationDataProvider";
+import { IDisposable } from "@bentley/bentleyjs-core";
 
 /**
  * Properties for invalidating content cache.
@@ -58,42 +60,90 @@ namespace CacheInvalidationProps {
 /**
  * Interface for all presentation-driven content providers.
  */
-export interface IContentDataProvider extends IPresentationDataProvider {
+export interface IContentDataProvider extends IPresentationDataProvider, IDisposable {
   /** Display type used to format content */
   readonly displayType: string;
   /** Keys defining what to request content for */
   keys: Readonly<KeySet>;
   /** Information about selection event that results in content change */
   selectionInfo: Readonly<SelectionInfo> | undefined;
+
+  /**
+   * Get the content descriptor.
+   */
+  getContentDescriptor: () => Promise<Readonly<Descriptor> | undefined>;
+
+  /**
+   * Get the number of content records.
+   */
+  getContentSetSize: () => Promise<number>;
+
+  /**
+   * Get the content.
+   * @param pageOptions Paging options.
+   */
+  getContent: (pageOptions?: PageOptions) => Promise<Readonly<Content> | undefined>;
 }
 
 /**
  * Base class for all presentation-driven content providers.
  */
-export abstract class ContentDataProvider implements IContentDataProvider {
+export class ContentDataProvider implements IContentDataProvider {
   private _imodel: IModelConnection;
   private _rulesetId: string;
   private _displayType: string;
   private _keys: Readonly<KeySet>;
   private _selectionInfo?: Readonly<SelectionInfo>;
+  private _registeredRuleset?: RegisteredRuleset;
+  private _isDisposed?: boolean;
+  private _pagingSize?: number;
 
   /**
    * Constructor.
    * @param imodel IModel to pull data from.
-   * @param rulesetId Id of the ruleset to use when requesting content.
+   * @param ruleset Id of the ruleset to use when requesting content or a ruleset itself.
    * @param displayType The content display type which this provider is going to
    * load data for.
    */
-  constructor(imodel: IModelConnection, rulesetId: string, displayType: string) {
-    this._rulesetId = rulesetId;
+  constructor(imodel: IModelConnection, ruleset: string | Ruleset, displayType: string) {
+    this._rulesetId = (typeof ruleset === "string") ? ruleset : ruleset.id;
     this._displayType = displayType;
     this._imodel = imodel;
     this._keys = new KeySet();
     this.invalidateCache(CacheInvalidationProps.full());
+    if (typeof ruleset === "object") {
+      this.registerRuleset(ruleset); // tslint:disable-line: no-floating-promises
+    }
+  }
+
+  public dispose() {
+    this._isDisposed = true;
+    this.disposeRegisteredRuleset();
+  }
+
+  private disposeRegisteredRuleset() {
+    if (!this._registeredRuleset)
+      return;
+
+    this._registeredRuleset.dispose();
+    this._registeredRuleset = undefined;
+  }
+
+  private async registerRuleset(ruleset: Ruleset) {
+    this._registeredRuleset = await Presentation.presentation.rulesets().add(ruleset);
+    if (this._isDisposed) {
+      // ensure we don't keep a hanging registered ruleset if the data provider
+      // gets destroyed before the ruleset finishes registration
+      this.disposeRegisteredRuleset();
+    }
   }
 
   /** Display type used to format content */
   public get displayType(): string { return this._displayType; }
+
+  /** Paging options for obtaining content */
+  public get pagingSize(): number | undefined { return this._pagingSize; }
+  public set pagingSize(value: number | undefined) { this._pagingSize = value; }
 
   /** IModel to pull data from */
   public get imodel(): IModelConnection { return this._imodel; }
@@ -137,10 +187,8 @@ export abstract class ContentDataProvider implements IContentDataProvider {
       this.getDefaultContentDescriptor.cache.clear!();
     if (props.descriptorConfiguration && this.getContentDescriptor)
       this.getContentDescriptor.cache.clear!();
-    if (props.size && this.getContentSetSize)
-      this.getContentSetSize.cache.clear!();
-    if (props.content && this.getContent)
-      this.getContent.cache.clear!();
+    if ((props.content || props.size) && this._getContentAndSize)
+      this._getContentAndSize.cache.clear!();
   }
 
   private createRequestOptions(): ContentRequestOptions<IModelConnection> {
@@ -171,6 +219,12 @@ export abstract class ContentDataProvider implements IContentDataProvider {
     });
   }
 
+  /**
+   * Called to check whether the content descriptor should be configured.
+   * Not configuring content descriptor saves a backend request.
+   */
+  protected shouldConfigureContentDescriptor(): boolean { return true; }
+
   /** Called to check whether the field should be excluded from the descriptor. */
   protected shouldExcludeFromDescriptor(field: Field): boolean { return this.isFieldHidden(field); }
 
@@ -186,7 +240,7 @@ export abstract class ContentDataProvider implements IContentDataProvider {
   /**
    * Get the content descriptor.
    */
-  protected getContentDescriptor = _.memoize(async (): Promise<Readonly<Descriptor> | undefined> => {
+  public getContentDescriptor = _.memoize(async (): Promise<Readonly<Descriptor> | undefined> => {
     const descriptor = await this.getDefaultContentDescriptor();
     if (!descriptor)
       return undefined;
@@ -196,22 +250,43 @@ export abstract class ContentDataProvider implements IContentDataProvider {
   /**
    * Get the number of content records.
    */
-  protected getContentSetSize = _.memoize(async (): Promise<number> => {
-    const descriptor = await this.getContentDescriptor();
-    if (!descriptor)
-      return 0;
-    return Presentation.presentation.getContentSetSize(this.createRequestOptions(), descriptor, this.keys);
-  });
+  public async getContentSetSize(): Promise<number> {
+    const paging = undefined !== this.pagingSize ? { start: 0, size: this.pagingSize } : undefined;
+    const contentAndSize = await this._getContentAndSize(paging);
+    if (undefined !== contentAndSize)
+      return contentAndSize.size!;
+    return 0;
+  }
 
   /**
    * Get the content.
    * @param pageOptions Paging options.
    */
-  protected getContent = _.memoize(async (pageOptions?: PageOptions): Promise<Readonly<Content> | undefined> => {
-    const descriptor = await this.getContentDescriptor();
-    if (!descriptor)
-      return undefined;
-    return Presentation.presentation.getContent({ ...this.createRequestOptions(), paging: pageOptions }, descriptor, this.keys);
+  public async getContent(pageOptions?: PageOptions): Promise<Readonly<Content> | undefined> {
+    const contentAndSize = await this._getContentAndSize(pageOptions);
+    if (undefined !== contentAndSize)
+      return contentAndSize.content;
+    return undefined;
+  }
+
+  private _getContentAndSize = _.memoize(async (pageOptions?: PageOptions) => {
+    let descriptorOrDisplayType;
+    if (this.shouldConfigureContentDescriptor()) {
+      descriptorOrDisplayType = await this.getContentDescriptor();
+      if (!descriptorOrDisplayType)
+        return undefined;
+    } else {
+      descriptorOrDisplayType = this.displayType;
+    }
+
+    const requestSize = undefined !== pageOptions && 0 === pageOptions.start && undefined !== pageOptions.size;
+    const options = { ...this.createRequestOptions(), paging: pageOptions };
+    if (requestSize)
+      return Presentation.presentation.getContentAndSize(options, descriptorOrDisplayType, this.keys);
+
+    const responseContent: Content = await Presentation.presentation.getContent(options, descriptorOrDisplayType, this.keys);
+    const contentSize = undefined === pageOptions || undefined === pageOptions.size ? responseContent.contentSet.length : undefined;
+    return { content: responseContent, size: contentSize };
   }, createKeyForPageOptions);
 }
 

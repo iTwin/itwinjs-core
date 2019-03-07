@@ -2,45 +2,44 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
- @import "@bentley/bwc/lib/mixins";
- @import "@bentley/ui-core/lib/ui-core/colors";
+@import "@bentley/ui-core/lib/ui-core/index";
 
 .ValidationTextbox {
-  @include bwc-font-family;
+  @include uicore-font-family;
   position: relative;
-  padding: $bwc-unbordered-padding;
+  padding: $uicore-unbordered-padding;
   width: 12em;
-  height: $bwc-line-height;
-  line-height: $bwc-line-height;
-  font-size: $bwc-font-size;
+  height: $uicore-line-height;
+  line-height: $uicore-line-height;
+  font-size: $uicore-font-size;
   .ValidationTextbox-input {
     position: absolute;
-    font-size: $bwc-font-size;
-    @include bwc-inputs-input;
+    font-size: $uicore-font-size;
+    @include uicore-inputs-input;
     width: 12em;
-    height: $bwc-line-height;
-    line-height: $bwc-line-height;
+    height: $uicore-line-height;
+    line-height: $uicore-line-height;
     left: 0px;
     top: 0px;
     border-width: 1px;
   }
   .ValidationTextbox-invalid {
-    border: 2px solid $alert-tint;
+    border: 2px solid $alert-base;
   }
   .ValidationTextbox-icon {
     position: absolute;
-    padding: $bwc-bordered-padding;
-    width: $bwc-line-height;
-    height: $bwc-line-height;
-    line-height: $bwc-line-height;
-    font-size: $bwc-icons-small;
+    padding: $uicore-bordered-padding;
+    width: $uicore-line-height;
+    height: $uicore-line-height;
+    line-height: $uicore-line-height;
+    font-size: $uicore-icons-small;
     cursor: pointer;
     top: 0px;
     right: 0px;
     text-align: center;
-    color: black;
+    color: $buic-icon-color;
     &:hover {
-      color: $bwc-icons-blue;
+      color: $buic-foreground-primary;
     }
   }
 }

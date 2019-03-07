@@ -11,10 +11,12 @@ import { DefaultProjectServices } from "./clientservices/DefaultProjectServices"
 import { IModelServices } from "./clientservices/IModelServices";
 import { DefaultIModelServices } from "./clientservices/DefaultIModelServices";
 import { Store } from "redux";
-import { OidcClientWrapper } from "@bentley/imodeljs-frontend";
+import { OidcClientWrapper, SnapMode } from "@bentley/imodeljs-frontend";
 import { AnalysisAnimationTool } from "./tools/AnalysisAnimation";
+import { ScheduleAnimationTool } from "./tools/ScheduleAnimation";
 import { SyncUiEventDispatcher } from "./syncui/SyncUiEventDispatcher";
 import { FrameworkState } from "./FrameworkState";
+import { ConfigurableUiActionId } from "./configurableui/state";
 
 /**
  * Manages the Redux store, I18N service and iModel, Project and Login services for the ui-framework package.
@@ -47,6 +49,7 @@ export class UiFramework {
 
     // register UiFramework provided tools
     AnalysisAnimationTool.register(frameworkNamespace);
+    ScheduleAnimationTool.register(frameworkNamespace);
 
     UiFramework._projectServices = projectServices ? projectServices : new DefaultProjectServices();
     UiFramework._iModelServices = iModelServices ? iModelServices : new DefaultIModelServices();
@@ -108,6 +111,14 @@ export class UiFramework {
       SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(type);
     else
       SyncUiEventDispatcher.dispatchSyncUiEvent(type);
+  }
+
+  public static setAccudrawSnapMode(snapMode: SnapMode) {
+    UiFramework.store.dispatch({ type: ConfigurableUiActionId.SetSnapMode, payload: snapMode });
+  }
+
+  public static getAccudrawSnapMode(): SnapMode {
+    return UiFramework.frameworkState ? UiFramework.frameworkState.configurableUiState.snapMode : SnapMode.NearestKeypoint;
   }
 }
 

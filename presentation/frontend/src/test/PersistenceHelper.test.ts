@@ -10,7 +10,7 @@ import { createRandomECInstanceNodeKey, createRandomId } from "@bentley/presenta
 import { Id64 } from "@bentley/bentleyjs-core";
 import { RelatedElementProps, ModelProps, ElementProps, Code } from "@bentley/imodeljs-common";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { KeySet, PersistentKeysContainer, InstanceKey } from "@bentley/presentation-common";
+import { PersistentKeysContainer, InstanceKey, KeySet } from "@bentley/presentation-common";
 import { PersistenceHelper } from "../presentation-frontend";
 
 describe("PersistenceHelper", () => {
@@ -70,6 +70,12 @@ describe("PersistenceHelper", () => {
 
   });
 
+  async function* createAsyncIterator(items: any[]) {
+    for (const item of items) {
+      yield item;
+    }
+  }
+
   describe("createPersistentKeysContainer", () => {
 
     it("creates PersistentKeysContainer", async () => {
@@ -85,8 +91,10 @@ describe("PersistenceHelper", () => {
       const nodeKey = createRandomECInstanceNodeKey();
       // set up the mock
       const imodelMock = moq.Mock.ofType<IModelConnection>();
-      imodelMock.setup((x) => x.executeQuery(moq.It.isAnyString(), [modelKey.className, elementKey.className]))
-        .returns(async () => [{ fullClassName: modelKey.className }])
+      imodelMock.setup((x) => x.query(moq.It.isAnyString(), [modelKey.className, elementKey.className]))
+        .returns(() => {
+          return createAsyncIterator([{ fullClassName: modelKey.className }]);
+        })
         .verifiable();
       const imodel = imodelMock.object;
 
@@ -107,7 +115,5 @@ describe("PersistenceHelper", () => {
         nodes: [nodeKey],
       });
     });
-
   });
-
 });

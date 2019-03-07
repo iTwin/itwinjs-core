@@ -4,42 +4,22 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Tile */
 
-import {
-  assert,
-  Id64,
-  Id64String,
-  BeTimePoint,
-  BeDuration,
-  JsonUtils,
-  dispose,
-  IDisposable,
-  base64StringToUint8Array,
-} from "@bentley/bentleyjs-core";
-import {
-  ElementAlignedBox3d,
-  ViewFlag,
-  ViewFlags,
-  RenderMode,
-  Frustum,
-  FrustumPlanes,
-  TileProps,
-  TileTreeProps,
-  ColorDef,
-  BatchType,
-} from "@bentley/imodeljs-common";
-import { Range3d, Point3d, Transform, ClipVector, ClipPlaneContainment } from "@bentley/geometry-core";
-import { SceneContext } from "../ViewContext";
-import { RenderGraphic, GraphicBranch, RenderMemory } from "../render/System";
-import { IModelConnection } from "../IModelConnection";
+import { assert, BeDuration, BeTimePoint, dispose, Id64, Id64String, IDisposable, JsonUtils } from "@bentley/bentleyjs-core";
+import { ClipPlaneContainment, ClipVector, Point3d, Range3d, Transform } from "@bentley/geometry-core";
+import { BatchType, ColorDef, ElementAlignedBox3d, Frustum, FrustumPlanes, RenderMode, TileProps, TileTreeProps, ViewFlag, ViewFlags, BoundingSphere } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
+import { IModelConnection } from "../IModelConnection";
+import { GraphicBranch, RenderGraphic, RenderMemory } from "../render/System";
+import { SceneContext } from "../ViewContext";
+import { ViewFrustum } from "../Viewport";
+import { B3dmTileIO } from "./B3dmTileIO";
+import { CompositeTileIO } from "./CompositeTileIO";
+import { GltfTileIO } from "./GltfTileIO";
+import { I3dmTileIO } from "./I3dmTileIO";
+import { IModelTileIO } from "./IModelTileIO";
+import { PntsTileIO } from "./PntsTileIO";
 import { TileIO } from "./TileIO";
 import { TileRequest } from "./TileRequest";
-import { GltfTileIO } from "./GltfTileIO";
-import { B3dmTileIO } from "./B3dmTileIO";
-import { PntsTileIO } from "./PntsTileIO";
-import { DgnTileIO } from "./DgnTileIO";
-import { IModelTileIO } from "./IModelTileIO";
-import { ViewFrustum } from "../Viewport";
 
 /** @hidden */
 export class Tile implements IDisposable, RenderMemory.Consumer {
@@ -50,6 +30,7 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
   public contentId: string;
   public readonly center: Point3d;
   public readonly radius: number;
+  public readonly transformToRoot?: Transform;
   protected _maximumSize: number;
   protected _isLeaf: boolean;
   protected _childrenLastUsed: BeTimePoint;
@@ -61,6 +42,9 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
   protected _rangeGraphicType: Tile.DebugBoundingBoxes = Tile.DebugBoundingBoxes.None;
   protected _sizeMultiplier?: number;
   protected _request?: TileRequest;
+  protected _transformToRoot?: Transform;
+  protected _localRange?: ElementAlignedBox3d;
+  protected _localContentRange?: ElementAlignedBox3d;
   private _state: TileState;
 
   public constructor(props: Tile.Params) {
@@ -75,7 +59,14 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
     this._childrenLastUsed = BeTimePoint.now();
     this._contentRange = props.contentRange;
     this._sizeMultiplier = props.sizeMultiplier;
-
+    if (undefined !== (this.transformToRoot = props.transformToRoot)) {
+      this.transformToRoot.multiplyRange(props.range, this.range);
+      this._localRange = this.range;
+      if (undefined !== props.contentRange) {
+        this.transformToRoot.multiplyRange(props.contentRange, this._contentRange);
+        this._localContentRange = props.contentRange;
+      }
+    }
     if (!this.root.loader.tileRequiresLoading(props)) {
       this.setIsReady();    // If no contents, this node is for structure only and no content loading is required.
     }
@@ -126,11 +117,11 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
         if (undefined === this.request)
           return Tile.LoadStatus.NotLoaded;
         else if (TileRequest.State.Loading === this.request.state)
-            return Tile.LoadStatus.Loading;
+          return Tile.LoadStatus.Loading;
 
         assert(TileRequest.State.Completed !== this.request.state && TileRequest.State.Failed !== this.request.state); // this.request should be undefined in these cases...
         return Tile.LoadStatus.Queued;
-        }
+      }
       case TileState.Ready: {
         assert(undefined === this.request);
         return Tile.LoadStatus.Ready;
@@ -207,7 +198,7 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
   public get loader(): TileLoader { return this.root.loader; }
 
   public get hasContentRange(): boolean { return undefined !== this._contentRange; }
-  public isRegionCulled(args: Tile.DrawArgs): boolean { return this.isCulled(this.range, args); }
+  public isRegionCulled(args: Tile.DrawArgs): boolean { return Tile._scratchRootSphere.init(this.center, this.radius), this.isCulled(this.range, args, Tile._scratchRootSphere); }
   public isContentCulled(args: Tile.DrawArgs): boolean { return this.isCulled(this.contentRange, args); }
 
   private getRangeGraphic(context: SceneContext): RenderGraphic | undefined {
@@ -219,10 +210,20 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
     this._rangeGraphic = dispose(this._rangeGraphic);
     if (Tile.DebugBoundingBoxes.None !== type) {
       const builder = context.createSceneGraphicBuilder();
-      const color = this.hasSizeMultiplier ? ColorDef.red : (this.isLeaf ? ColorDef.blue : ColorDef.green);
-      builder.setSymbology(color, color, 1);
-      const range = Tile.DebugBoundingBoxes.Content === type ? this.contentRange : this.range;
-      builder.addRangeBox(range);
+      if (Tile.DebugBoundingBoxes.Both === type) {
+        builder.setSymbology(ColorDef.blue, ColorDef.blue, 1);
+        builder.addRangeBox(this.range);
+        if (this.hasContentRange) {
+          builder.setSymbology(ColorDef.red, ColorDef.red, 1);
+          builder.addRangeBox(this.contentRange);
+        }
+      } else {
+        const color = this.hasSizeMultiplier ? ColorDef.red : (this.isLeaf ? ColorDef.blue : ColorDef.green);
+        builder.setSymbology(color, color, 1);
+        const range = Tile.DebugBoundingBoxes.Content === type ? this.contentRange : this.range;
+        builder.addRangeBox(range);
+      }
+
       this._rangeGraphic = builder.finish();
     }
 
@@ -231,7 +232,7 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
 
   /** Returns the range of this tile's contents in world coordinates. */
   public computeWorldContentRange(): ElementAlignedBox3d {
-    const range = new ElementAlignedBox3d();
+    const range = new Range3d();
     if (!this.contentRange.isNull)
       this.root.location.multiplyRange(this.contentRange, range);
 
@@ -406,10 +407,13 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
 
   private static _scratchWorldFrustum = new Frustum();
   private static _scratchRootFrustum = new Frustum();
-  private isCulled(range: ElementAlignedBox3d, args: Tile.DrawArgs) {
+  private static _scratchWorldSphere = new BoundingSphere();
+  private static _scratchRootSphere = new BoundingSphere();
+  private isCulled(range: ElementAlignedBox3d, args: Tile.DrawArgs, sphere?: BoundingSphere) {
     const box = Frustum.fromRange(range, Tile._scratchRootFrustum);
     const worldBox = box.transformBy(args.location, Tile._scratchWorldFrustum);
-    const isOutside = FrustumPlanes.Containment.Outside === args.frustumPlanes.computeFrustumContainment(worldBox);
+    const worldSphere = sphere ? sphere.transformBy(args.location, Tile._scratchWorldSphere) : undefined;
+    const isOutside = FrustumPlanes.Containment.Outside === args.frustumPlanes.computeFrustumContainment(worldBox, worldSphere);
     const isClipped = !isOutside && undefined !== args.clip && ClipPlaneContainment.StronglyOutside === args.clip.classifyPointContainment(box.points);
     const isCulled = isOutside || isClipped;
     return isCulled;
@@ -423,9 +427,8 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
         this._childrenLoadStatus = TileTree.LoadStatus.Loaded;
         if (undefined !== props) {
           // If this tile is undisplayable, update its content range based on children's content ranges.
-          const parentRange = this.hasContentRange ? undefined : new ElementAlignedBox3d();
+          const parentRange = this.hasContentRange ? undefined : new Range3d();
           for (const prop of props) {
-            // ###TODO if child is empty don't bother adding it to list...
             const child = new Tile(Tile.Params.fromJSON(prop, this.root, this));
 
             // stick the corners on the Tile (used only by WebMercator Tiles)
@@ -540,6 +543,8 @@ export namespace Tile {
     Volume,
     /** Display boxes representing the range of the tile's contents, which may be tighter than (but never larger than) the tile's full volume. */
     Content,
+    /** Display both volume and content boxes. */
+    Both,
   }
 
   /**
@@ -583,7 +588,7 @@ export namespace Tile {
 
     private static _scratchRange = new Range3d();
     public getTileRadius(tile: Tile): number {
-      let range = tile.range.clone(DrawArgs._scratchRange);
+      let range: Range3d = tile.range.clone(DrawArgs._scratchRange);
       range = this.location.multiplyRange(range, range);
       return 0.5 * (tile.root.is3d ? range.low.distance(range.high) : range.low.distanceXY(range.high));
     }
@@ -617,11 +622,13 @@ export namespace Tile {
       public readonly isLeaf?: boolean,
       public readonly parent?: Tile,
       public readonly contentRange?: ElementAlignedBox3d,
+      public readonly transformToRoot?: Transform,
       public readonly sizeMultiplier?: number) { }
 
     public static fromJSON(props: TileProps, root: TileTree, parent?: Tile) {
-      const contentRange = undefined !== props.contentRange ? ElementAlignedBox3d.fromJSON(props.contentRange) : undefined;
-      return new Params(root, props.contentId, ElementAlignedBox3d.fromJSON(props.range), props.maximumSize, props.isLeaf, parent, contentRange, props.sizeMultiplier);
+      const contentRange = undefined !== props.contentRange ? Range3d.fromJSON<ElementAlignedBox3d>(props.contentRange) : undefined;
+      const transformToRoot = undefined !== props.transformToRoot ? Transform.fromJSON(props.transformToRoot) : undefined;
+      return new Params(root, props.contentId, Range3d.fromJSON(props.range), props.maximumSize, props.isLeaf, parent, contentRange, transformToRoot, props.sizeMultiplier);
     }
   }
 }
@@ -675,7 +682,7 @@ export class TileTree implements IDisposable, RenderMemory.Consumer {
   }
 
   public get is2d(): boolean { return !this.is3d; }
-  public get range(): ElementAlignedBox3d { return this._rootTile !== undefined ? this._rootTile.range : new ElementAlignedBox3d(); }
+  public get range(): ElementAlignedBox3d { return this._rootTile !== undefined ? this._rootTile.range : new Range3d(); }
 
   public selectTilesForScene(context: SceneContext): Tile[] { return this.selectTiles(this.createDrawArgs(context)); }
   public selectTiles(args: Tile.DrawArgs): Tile[] {
@@ -720,6 +727,7 @@ export abstract class TileLoader {
   public abstract get maxDepth(): number;
   public abstract get priority(): Tile.LoadPriority;
   protected get _batchType(): BatchType { return BatchType.Primary; }
+  protected get _loadEdges(): boolean { return true; }
   public abstract tileRequiresLoading(params: Tile.Params): boolean;
   /** Given two tiles of the same [[Tile.LoadPriority]], determine which should be prioritized.
    * A negative value indicates lhs should load first, positive indicates rhs should load first, and zero indicates no distinction in priority.
@@ -734,10 +742,14 @@ export abstract class TileLoader {
   public async loadTileGraphic(tile: Tile, data: TileRequest.ResponseData, isCanceled?: () => boolean): Promise<TileRequest.Graphic> {
     assert(data instanceof Uint8Array);
     const blob = data as Uint8Array;
-
     const streamBuffer: TileIO.StreamBuffer = new TileIO.StreamBuffer(blob.buffer);
+    return this.loadTileGraphicFromStream(tile, streamBuffer, isCanceled);
+  }
+  public async loadTileGraphicFromStream(tile: Tile, streamBuffer: TileIO.StreamBuffer, isCanceled?: () => boolean): Promise<TileRequest.Graphic> {
+
+    const position = streamBuffer.curPos;
     const format = streamBuffer.nextUint32;
-    streamBuffer.rewind(4);
+    streamBuffer.curPos = position;
 
     if (undefined === isCanceled)
       isCanceled = () => !tile.isLoading;
@@ -748,16 +760,29 @@ export abstract class TileLoader {
         return { renderGraphic: PntsTileIO.readPointCloud(streamBuffer, tile.root.iModel, tile.root.modelId, tile.root.is3d, tile.range, IModelApp.renderSystem, tile.yAxisUp) };
 
       case TileIO.Format.B3dm:
-        reader = B3dmTileIO.Reader.create(streamBuffer, tile.root.iModel, tile.root.modelId, tile.root.is3d, tile.range, IModelApp.renderSystem, tile.yAxisUp, tile.isLeaf, isCanceled);
+        reader = B3dmTileIO.Reader.create(streamBuffer, tile.root.iModel, tile.root.modelId, tile.root.is3d, tile.range, IModelApp.renderSystem, tile.yAxisUp, tile.isLeaf, tile.transformToRoot, isCanceled);
         break;
-
-      case TileIO.Format.Dgn:
-        reader = DgnTileIO.Reader.create(streamBuffer, tile.root.iModel, tile.root.modelId, tile.root.is3d, IModelApp.renderSystem, this._batchType, isCanceled);
-        break;
-
       case TileIO.Format.IModel:
-        reader = IModelTileIO.Reader.create(streamBuffer, tile.root.iModel, tile.root.modelId, tile.root.is3d, IModelApp.renderSystem, this._batchType, isCanceled, tile.hasSizeMultiplier ? tile.sizeMultiplier : undefined);
+        reader = IModelTileIO.Reader.create(streamBuffer, tile.root.iModel, tile.root.modelId, tile.root.is3d, IModelApp.renderSystem, this._batchType, this._loadEdges, isCanceled, tile.hasSizeMultiplier ? tile.sizeMultiplier : undefined);
         break;
+      case TileIO.Format.I3dm:
+        reader = I3dmTileIO.Reader.create(streamBuffer, tile.root.iModel, tile.root.modelId, tile.root.is3d, tile.range, IModelApp.renderSystem, tile.yAxisUp, tile.isLeaf, isCanceled);
+        break;
+      case TileIO.Format.Cmpt:
+        const header = new CompositeTileIO.Header(streamBuffer);
+        if (!header.isValid) return {};
+        const branch = new GraphicBranch();
+        for (let i = 0; i < header.tileCount; i++) {
+          const tilePosition = streamBuffer.curPos;
+          streamBuffer.advance(8);    // Skip magic and version.
+          const tileBytes = streamBuffer.nextUint32;
+          streamBuffer.curPos = tilePosition;
+          const result = await this.loadTileGraphicFromStream(tile, streamBuffer, isCanceled);
+          if (result.renderGraphic)
+            branch.add(result.renderGraphic);
+          streamBuffer.curPos = tilePosition + tileBytes;
+        }
+        return { renderGraphic: branch.isEmpty ? undefined : IModelApp.renderSystem.createBranch(branch, Transform.createIdentity()), isLeaf: tile.isLeaf, sizeMultiplier: tile.sizeMultiplier };
 
       default:
         assert(false, "unknown tile format " + format);
@@ -774,61 +799,6 @@ export abstract class TileLoader {
     }
 
     return graphic;
-  }
-  public loadGraphics(tile: Tile, geometry: any): void {
-    let blob: Uint8Array | undefined;
-    if (typeof geometry === "string") {
-      blob = base64StringToUint8Array(geometry as string);
-    } else if (geometry instanceof Uint8Array) {
-      blob = geometry;
-    } else if (geometry instanceof ArrayBuffer) {
-      blob = new Uint8Array(geometry as ArrayBuffer);
-    } else {
-      tile.setIsReady();
-      return;
-    }
-
-    const streamBuffer: TileIO.StreamBuffer = new TileIO.StreamBuffer(blob.buffer);
-    const format = streamBuffer.nextUint32;
-    const isCanceled = () => !tile.isLoading;
-    let reader: GltfTileIO.Reader | undefined;
-    streamBuffer.rewind(4);
-    switch (format) {
-      case TileIO.Format.B3dm:
-        reader = B3dmTileIO.Reader.create(streamBuffer, tile.root.iModel, tile.root.modelId, tile.root.is3d, tile.range, IModelApp.renderSystem, tile.yAxisUp, tile.isLeaf, isCanceled);
-        break;
-
-      case TileIO.Format.Dgn:
-        reader = DgnTileIO.Reader.create(streamBuffer, tile.root.iModel, tile.root.modelId, tile.root.is3d, IModelApp.renderSystem, this._batchType, isCanceled);
-        break;
-
-      case TileIO.Format.IModel:
-        reader = IModelTileIO.Reader.create(streamBuffer, tile.root.iModel, tile.root.modelId, tile.root.is3d, IModelApp.renderSystem, this._batchType, isCanceled, tile.hasSizeMultiplier ? tile.sizeMultiplier : undefined);
-        break;
-
-      case TileIO.Format.Pnts:
-        tile.setGraphic(PntsTileIO.readPointCloud(streamBuffer, tile.root.iModel, tile.root.modelId, tile.root.is3d, tile.range, IModelApp.renderSystem, tile.yAxisUp));
-        return;
-
-      default:
-        assert(false, "unknown tile format " + format);
-        break;
-    }
-
-    if (undefined === reader) {
-      tile.setNotFound();
-      return;
-    }
-
-    const read = reader.read();
-    read.catch((_err) => tile.setNotFound());
-    read.then((result) => { // tslint:disable-line:no-floating-promises
-      // Make sure we still want this tile - may been unloaded, imodel may have been closed, IModelApp may have shut down taking render system with it, etc.
-      if (tile.isLoading) {
-        tile.setGraphic(result.renderGraphic, result.isLeaf, result.contentRange, result.sizeMultiplier);
-        IModelApp.viewManager.onNewTilesReady();
-      }
-    });
   }
 
   public get viewFlagOverrides(): ViewFlag.Overrides { return defaultViewFlagOverrides; }
@@ -858,12 +828,15 @@ function bisectRange2d(range: Range3d, takeUpper: boolean): void {
 export class IModelTileLoader extends TileLoader {
   private _iModel: IModelConnection;
   private _type: BatchType;
+  private _edgesRequired: boolean;
   protected get _batchType() { return this._type; }
+  protected get _loadEdges(): boolean { return this._edgesRequired; }
 
-  public constructor(iModel: IModelConnection, batchType: BatchType) {
+  public constructor(iModel: IModelConnection, batchType: BatchType, edgesRequired: boolean = true) {
     super();
     this._iModel = iModel;
     this._type = batchType;
+    this._edgesRequired = edgesRequired;
   }
 
   public get maxDepth(): number { return 32; }  // Can be removed when element tile selector is working.
@@ -976,11 +949,25 @@ export namespace TileTree {
 export class TileTreeState {
   public tileTree?: TileTree;
   public loadStatus: TileTree.LoadStatus = TileTree.LoadStatus.NotLoaded;
+  public edgesOmitted: boolean = false;
   public get iModel() { return this._iModel; }
 
   constructor(private _iModel: IModelConnection, private _is3d: boolean, private _modelId: Id64String) { }
   public setTileTree(props: TileTreeProps, loader: TileLoader) {
-    this.tileTree = new TileTree(TileTree.Params.fromJSON(props, this._iModel, this._is3d, loader, this._modelId));
-    this.loadStatus = TileTree.LoadStatus.Loaded;
+    const tileTree = new TileTree(TileTree.Params.fromJSON(props, this._iModel, this._is3d, loader, this._modelId));
+    if (tileTree.rootTile.contentRange.isNull) {
+      // No elements within model's range - don't create a TileTree for this model.
+      assert(tileTree.rootTile.isLeaf);
+      this.loadStatus = TileTree.LoadStatus.NotFound;
+    } else {
+      this.tileTree = tileTree;
+      this.loadStatus = TileTree.LoadStatus.Loaded;
+    }
+
+  }
+  public clearTileTree() {
+    dispose(this.tileTree);
+    this.tileTree = undefined;
+    this.loadStatus = TileTree.LoadStatus.NotLoaded;
   }
 }

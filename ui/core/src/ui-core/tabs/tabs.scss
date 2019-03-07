@@ -1,0 +1,82 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+@import "../style/index";
+
+@mixin uicore-tabs {
+
+    display:            block;
+    list-style:         none;
+    padding:            0;
+    margin:             0;
+
+    > li {
+
+        display:        block;
+        position:       relative;
+        padding:        0;
+        margin:         0;
+
+        > a {
+
+            display:        block;
+            position:       relative;
+            padding:        $uicore-bordered-padding ( $uicore-font-size - 1px ) $uicore-unbordered-padding;
+            border:         1px solid $buic-text-color-muted; // $uicore-gray-a;
+            border-bottom:  0 none transparent;
+            margin:         0;
+            line-height:    $uicore-line-height;
+            color:          $buic-text-color; // $uicore-text-color;
+            cursor:         pointer;
+
+            &::after {
+
+                content:            "";
+                position:           absolute;
+                z-index:            1;
+                transition:         all 0.5s;
+                width:              2px;
+                height:             100%;
+                top:                0;
+                left:               0;
+                background:         $buic-foreground-primary; // $uicore-blue;
+                opacity:            0;
+            }
+
+            &:hover {
+
+                text-decoration:    none;
+                color:              $buic-foreground-activehover; // $uicore-gray-4;
+
+                &::after {
+
+                    opacity:        1;
+                }
+            }
+        }
+
+        &:last-child > a {
+
+            border-bottom:  1px solid $buic-text-color-muted; // $uicore-gray-a;
+        }
+
+        &.active {
+
+            > a {
+
+                font-weight:        $uicore-font-weight-bold;
+
+                &::after {
+
+                    opacity:        1;
+                }
+            }
+        }
+    }
+
+    &.green > li > a::after {
+
+        background:     $uicore-green;
+    }
+}

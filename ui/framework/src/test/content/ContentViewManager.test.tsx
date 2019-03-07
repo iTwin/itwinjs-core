@@ -81,4 +81,16 @@ describe("ContentViewManager", () => {
     expect(ContentViewManager.contentSupportsCamera(contentControlMock.object)).to.be.false;
   });
 
+  it("Viewport is not set in Content", () => {
+    const localContentMock = moq.Mock.ofType<ViewportContentControl>();
+    localContentMock.setup((control) => control.viewport).returns(() => undefined);
+
+    expect(ContentViewManager.isContentSheetView(localContentMock.object)).to.be.false;
+    expect(ContentViewManager.isContentDrawingView(localContentMock.object)).to.be.false;
+    expect(ContentViewManager.isContentSpatialView(localContentMock.object)).to.be.false;
+    expect(ContentViewManager.isContentOrthographicView(localContentMock.object)).to.be.false;
+    expect(ContentViewManager.isContent3dView(localContentMock.object)).to.be.false;
+    expect(ContentViewManager.contentSupportsCamera(localContentMock.object)).to.be.false;
+  });
+
 });

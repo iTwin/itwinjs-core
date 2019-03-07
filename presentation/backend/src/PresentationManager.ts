@@ -6,12 +6,15 @@
 
 import * as path from "path";
 import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
-import { IModelDb } from "@bentley/imodeljs-backend";
+import { EntityProps } from "@bentley/imodeljs-common";
+import { IModelDb, GeometricElement } from "@bentley/imodeljs-backend";
 import {
   PresentationError, PresentationStatus,
   HierarchyRequestOptions, NodeKey, Node, NodePathElement,
   ContentRequestOptions, SelectionInfo, Content, Descriptor,
   RequestOptions, Paged, KeySet, InstanceKey,
+  SelectionScopeRequestOptions, SelectionScope,
+  NodesResponse, ContentResponse,
 } from "@bentley/presentation-common";
 import { listReviver as nodesListReviver } from "@bentley/presentation-common/lib/hierarchy/Node";
 import { listReviver as nodePathElementReviver } from "@bentley/presentation-common/lib/hierarchy/NodePathElement";
@@ -127,56 +130,55 @@ export default class PresentationManager {
   }
 
   /**
-   * Retrieves root nodes.
+   * Retrieves nodes and node count
+   * @param activityLoggingContext Logging context holding request's ActivityId
+   * @param requestOptions Options for the request
+   * @param parentKey Key of the parentNode
+   * @return A promise object that returns either a node response containing nodes and node count on success or an error string on error
+   */
+  public async getNodesAndCount(activityLoggingContext: ActivityLoggingContext, requestOptions: Paged<HierarchyRequestOptions<IModelDb>>, parentKey?: Readonly<NodeKey>): Promise<Readonly<NodesResponse>> {
+    activityLoggingContext.enter();
+
+    const nodesCount = await this.getNodesCount(activityLoggingContext, requestOptions, parentKey);
+    activityLoggingContext.enter();
+
+    const nodesList = await this.getNodes(activityLoggingContext, requestOptions, parentKey);
+    activityLoggingContext.enter();
+
+    return { nodes: nodesList, count: nodesCount };
+  }
+
+  /**
+   * Retrieves nodes
    * @param activityLoggingContext Logging context holding request's ActivityId
    * @param requestOptions options for the request
+   * @param parentKey    Key of the parent node if requesting for child nodes.
    * @return A promise object that returns either an array of nodes on success or an error string on error.
    */
-  public async getRootNodes(activityLoggingContext: ActivityLoggingContext, requestOptions: Paged<HierarchyRequestOptions<IModelDb>>): Promise<ReadonlyArray<Readonly<Node>>> {
+  public async getNodes(activityLoggingContext: ActivityLoggingContext, requestOptions: Paged<HierarchyRequestOptions<IModelDb>>, parentKey?: Readonly<NodeKey>): Promise<ReadonlyArray<Readonly<Node>>> {
     activityLoggingContext.enter();
-    const params = this.createRequestParams(NativePlatformRequestTypes.GetRootNodes, requestOptions);
+    let params;
+    if (parentKey)
+      params = this.createRequestParams(NativePlatformRequestTypes.GetChildren, requestOptions, { nodeKey: parentKey });
+    else
+      params = this.createRequestParams(NativePlatformRequestTypes.GetRootNodes, requestOptions);
     return this.request<Node[]>(activityLoggingContext, requestOptions.imodel, params, nodesListReviver);
   }
 
   /**
-   * Retrieves root nodes count.
+   * Retrieves nodes count
    * @param activityLoggingContext Logging context holding request's ActivityId
    * @param requestOptions options for the request
-   * @return A promise object that returns the number of root nodes.
+   * @param parentKey Key of the parent node if requesting for child nodes.
+   * @return A promise object that returns the number of nodes.
    */
-  public async getRootNodesCount(activityLoggingContext: ActivityLoggingContext, requestOptions: HierarchyRequestOptions<IModelDb>): Promise<number> {
+  public async getNodesCount(activityLoggingContext: ActivityLoggingContext, requestOptions: HierarchyRequestOptions<IModelDb>, parentKey?: Readonly<NodeKey>): Promise<number> {
     activityLoggingContext.enter();
-    const params = this.createRequestParams(NativePlatformRequestTypes.GetRootNodesCount, requestOptions);
-    return this.request<number>(activityLoggingContext, requestOptions.imodel, params);
-  }
-
-  /**
-   * Retrieves children of the specified parent node.
-   * @param activityLoggingContext Logging context holding request's ActivityId
-   * @param requestOptions options for the request
-   * @param parentKey    Key of the parent node.
-   * @return A promise object that returns either an array of nodes on success or an error string on error.
-   */
-  public async getChildren(activityLoggingContext: ActivityLoggingContext, requestOptions: Paged<HierarchyRequestOptions<IModelDb>>, parentKey: Readonly<NodeKey>): Promise<ReadonlyArray<Readonly<Node>>> {
-    activityLoggingContext.enter();
-    const params = this.createRequestParams(NativePlatformRequestTypes.GetChildren, requestOptions, {
-      nodeKey: parentKey,
-    });
-    return this.request<Node[]>(activityLoggingContext, requestOptions.imodel, params, nodesListReviver);
-  }
-
-  /**
-   * Retrieves children count for the specified parent node.
-   * @param activityLoggingContext Logging context holding request's ActivityId
-   * @param requestOptions options for the request
-   * @param parentKey Key of the parent node.
-   * @return A promise object that returns the number of child nodes.
-   */
-  public async getChildrenCount(activityLoggingContext: ActivityLoggingContext, requestOptions: HierarchyRequestOptions<IModelDb>, parentKey: Readonly<NodeKey>): Promise<number> {
-    activityLoggingContext.enter();
-    const params = this.createRequestParams(NativePlatformRequestTypes.GetChildrenCount, requestOptions, {
-      nodeKey: parentKey,
-    });
+    let params;
+    if (parentKey)
+      params = this.createRequestParams(NativePlatformRequestTypes.GetChildrenCount, requestOptions, { nodeKey: parentKey });
+    else
+      params = this.createRequestParams(NativePlatformRequestTypes.GetRootNodesCount, requestOptions);
     return this.request<number>(activityLoggingContext, requestOptions.imodel, params);
   }
 
@@ -233,38 +235,55 @@ export default class PresentationManager {
 
   /**
    * Retrieves the content set size based on the supplied content descriptor override.
-   * @param activityLoggingContext Logging context holding request's ActivityId
-   * @param requestOptions options for the request
-   * @param descriptor           Content descriptor which specifies how the content should be returned.
-   * @param keys                 Keys of ECInstances to get the content for.
+   * @param activityLoggingContext  Logging context holding request's ActivityId
+   * @param requestOptions          options for the request
+   * @param descriptorOrDisplayType Content descriptor which specifies how the content should be returned or preferred display type of the content
+   * @param keys                    Keys of ECInstances to get the content for.
    * @return A promise object that returns either a number on success or an error string on error.
    * Even if concrete implementation returns content in pages, this function returns the total
    * number of records in the content set.
    */
-  public async getContentSetSize(activityLoggingContext: ActivityLoggingContext, requestOptions: ContentRequestOptions<IModelDb>, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>): Promise<number> {
+  public async getContentSetSize(activityLoggingContext: ActivityLoggingContext, requestOptions: ContentRequestOptions<IModelDb>, descriptorOrDisplayType: Readonly<Descriptor> | string, keys: Readonly<KeySet>): Promise<number> {
     activityLoggingContext.enter();
     const params = this.createRequestParams(NativePlatformRequestTypes.GetContentSetSize, requestOptions, {
       keys,
-      descriptorOverrides: descriptor.createDescriptorOverrides(),
+      descriptorOverrides: this.createContentDescriptorOverrides(descriptorOrDisplayType),
     });
     return this.request<number>(activityLoggingContext, requestOptions.imodel, params);
   }
 
   /**
    * Retrieves the content based on the supplied content descriptor override.
-   * @param activityLoggingContext Logging context holding request's ActivityId
-   * @param requestOptions options for the request
-   * @param descriptor           Content descriptor which specifies how the content should be returned.
-   * @param keys                 Keys of ECInstances to get the content for.
+   * @param activityLoggingContext  Logging context holding request's ActivityId
+   * @param requestOptions          options for the request
+   * @param descriptorOrDisplayType Content descriptor which specifies how the content should be returned or preferred display type of the content
+   * @param keys                    Keys of ECInstances to get the content for.
    * @return A promise object that returns either content on success or an error string on error.
    */
-  public async getContent(activityLoggingContext: ActivityLoggingContext, requestOptions: Paged<ContentRequestOptions<IModelDb>>, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>): Promise<Readonly<Content>> {
+  public async getContent(activityLoggingContext: ActivityLoggingContext, requestOptions: Paged<ContentRequestOptions<IModelDb>>, descriptorOrDisplayType: Readonly<Descriptor> | string, keys: Readonly<KeySet>): Promise<Readonly<Content>> {
     activityLoggingContext.enter();
     const params = this.createRequestParams(NativePlatformRequestTypes.GetContent, requestOptions, {
       keys,
-      descriptorOverrides: descriptor.createDescriptorOverrides(),
+      descriptorOverrides: this.createContentDescriptorOverrides(descriptorOrDisplayType),
     });
     return this.request<Content>(activityLoggingContext, requestOptions.imodel, params, Content.reviver);
+  }
+
+  /**
+   * Retrieves the content and content size based on supplied content descriptor override.
+   * @param activityLoggingContext  Logging context holding request's ActivityId.
+   * @param requestOptions          Options for thr request.
+   * @param descriptorOrDisplayType Content descriptor which specifies how the content should be returned or preferred display type of the content
+   * @param keys                    Keys of ECInstances to get the content for
+   * @return A promise object that returns either content and content set size on success or an error string on error.
+   */
+  public async getContentAndSize(activityLoggingContext: ActivityLoggingContext, requestOptions: Paged<ContentRequestOptions<IModelDb>>, descriptorOrDisplayType: Readonly<Descriptor> | string, keys: Readonly<KeySet>): Promise<Readonly<ContentResponse>> {
+    activityLoggingContext.enter();
+    const contentSetSize = await this.getContentSetSize(activityLoggingContext, requestOptions, descriptorOrDisplayType, keys);
+    activityLoggingContext.enter();
+    const contentResult = await this.getContent(activityLoggingContext, requestOptions, descriptorOrDisplayType, keys);
+    activityLoggingContext.enter();
+    return { content: contentResult, size: contentSetSize };
   }
 
   /**
@@ -288,6 +307,119 @@ export default class PresentationManager {
     return this.request<string[]>(activityLoggingContext, requestOptions.imodel, params);
   }
 
+  /**
+   * Retrieves available selection scopes.
+   * @param activityLoggingContext Logging context holding request's ActivityId
+   * @param requestOptions options for the request
+   */
+  public async getSelectionScopes(activityLoggingContext: ActivityLoggingContext, requestOptions: SelectionScopeRequestOptions<IModelDb>): Promise<SelectionScope[]> {
+    activityLoggingContext.enter();
+    (requestOptions as any);
+
+    const createSelectionScope = (scopeId: string, label: string, description: string): SelectionScope => ({
+      id: scopeId,
+      label,
+      description,
+    });
+
+    return [
+      createSelectionScope("element", "Element", "Select the picked element"),
+      createSelectionScope("assembly", "Assembly", "Select parent of the picked element"),
+      createSelectionScope("top-assembly", "Top Assembly", "Select the topmost parent of the picked element"),
+      createSelectionScope("category", "Category", "Select all elements in the picked element's category"),
+      createSelectionScope("model", "Model", "Select all elements in the picked element's model"),
+    ];
+  }
+
+  private createContentDescriptorOverrides(descriptorOrDisplayType: Readonly<Descriptor> | string) {
+    if (typeof descriptorOrDisplayType === "string")
+      return {
+        displayType: descriptorOrDisplayType,
+        hiddenFieldNames: [],
+        contentFlags: 0,
+      };
+
+    return descriptorOrDisplayType.createDescriptorOverrides();
+  }
+
+  private getParentInstanceKey(imodel: IModelDb, key: InstanceKey): InstanceKey | undefined {
+    const parentElementProps = imodel.elements.getElement(key.id!).parent;
+    if (!parentElementProps)
+      return undefined;
+    return {
+      className: parentElementProps.relClassName!,
+      id: parentElementProps.id,
+    };
+  }
+
+  private computeAssemblySelection(requestOptions: SelectionScopeRequestOptions<IModelDb>, keys: EntityProps[]) {
+    const parentKeys = new KeySet();
+    keys.forEach((key) => {
+      const thisKey = { className: key.classFullName, id: key.id! };
+      const parentKey = this.getParentInstanceKey(requestOptions.imodel, thisKey);
+      if (parentKey)
+        parentKeys.add(parentKey);
+      else
+        parentKeys.add(thisKey);
+    });
+    return parentKeys;
+  }
+
+  private computeTopAssemblySelection(requestOptions: SelectionScopeRequestOptions<IModelDb>, keys: EntityProps[]) {
+    const parentKeys = new KeySet();
+    keys.forEach((key) => {
+      let curr = { className: key.classFullName, id: key.id! };
+      let parent = this.getParentInstanceKey(requestOptions.imodel, curr);
+      while (parent) {
+        curr = parent;
+        parent = this.getParentInstanceKey(requestOptions.imodel, curr);
+      }
+      parentKeys.add(curr);
+    });
+    return parentKeys;
+  }
+
+  private computeCategorySelection(requestOptions: SelectionScopeRequestOptions<IModelDb>, keys: EntityProps[]) {
+    const categoryKeys = new KeySet();
+    keys.forEach((key) => {
+      const el = requestOptions.imodel.elements.getElement(key.id!);
+      if (el instanceof GeometricElement)
+        categoryKeys.add({ className: "BisCore:Category", id: el.category });
+    });
+    return categoryKeys;
+  }
+
+  private computeModelSelection(requestOptions: SelectionScopeRequestOptions<IModelDb>, keys: EntityProps[]) {
+    const modelKeys = new KeySet();
+    keys.forEach((key) => {
+      const el = requestOptions.imodel.elements.getElement(key.id!);
+      modelKeys.add({ className: "BisCore:Model", id: el.model });
+    });
+    return modelKeys;
+  }
+
+  /**
+   * Computes selection set based on provided selection scope.
+   * @param activityLoggingContext Logging context holding request's ActivityId
+   * @param requestOptions Options for the request
+   * @param keys Keys of elements to get the content for.
+   * @param scopeId ID of selection scope to use for computing selection
+   */
+  public async computeSelection(activityLoggingContext: ActivityLoggingContext, requestOptions: SelectionScopeRequestOptions<IModelDb>, keys: EntityProps[], scopeId: string): Promise<KeySet> {
+    activityLoggingContext.enter();
+    (requestOptions as any);
+
+    switch (scopeId) {
+      case "element": return new KeySet(keys);
+      case "assembly": return this.computeAssemblySelection(requestOptions, keys);
+      case "top-assembly": return this.computeTopAssemblySelection(requestOptions, keys);
+      case "category": return this.computeCategorySelection(requestOptions, keys);
+      case "model": return this.computeModelSelection(requestOptions, keys);
+    }
+
+    throw new PresentationError(PresentationStatus.InvalidArgument, "scopeId");
+  }
+
   private async request<T>(activityLoggingContext: ActivityLoggingContext, imodel: IModelDb, params: string, reviver?: (key: string, value: any) => any): Promise<T> {
     activityLoggingContext.enter();
     const imodelAddon = this.getNativePlatform().getImodelAddon(imodel);
@@ -300,10 +432,15 @@ export default class PresentationManager {
 
   private createRequestParams(requestId: string, genericOptions: Paged<RequestOptions<IModelDb>>, additionalOptions?: object): string {
     const { imodel, locale, ...genericOptionsStripped } = genericOptions;
+
+    let lowerCaseLocale = locale ? locale : this.activeLocale;
+    if (lowerCaseLocale)
+      lowerCaseLocale = lowerCaseLocale.toLowerCase();
+
     const request = {
       requestId,
       params: {
-        locale: locale ? locale : this.activeLocale,
+        locale: lowerCaseLocale,
         ...genericOptionsStripped,
         ...additionalOptions,
       },

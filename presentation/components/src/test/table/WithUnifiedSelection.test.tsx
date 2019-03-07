@@ -30,7 +30,7 @@ describe("Table withUnifiedSelection", () => {
 
   let testRulesetId: string;
   const imodelMock = moq.Mock.ofType<IModelConnection>();
-  const dataProviderMock = moq.Mock.ofType(PresentationTableDataProvider);
+  const dataProviderMock = moq.Mock.ofType(PresentationTableDataProvider, undefined, undefined, imodelMock.object, "ruleset_id");
   const selectionHandlerMock = moq.Mock.ofType<SelectionHandler>();
   before(() => {
     // https://github.com/Microsoft/TypeScript/issues/14151#issuecomment-280812617
@@ -58,11 +58,11 @@ describe("Table withUnifiedSelection", () => {
       rows = [];
     providerMock.reset();
     providerMock.setup((x) => x.keys).returns(() => new KeySet());
-    providerMock.setup((x) => x.getColumns()).returns(async () => columns!);
+    providerMock.setup(async (x) => x.getColumns()).returns(async () => columns!);
     providerMock.setup((x) => x.imodel).returns(() => imodel!);
     providerMock.setup((x) => x.rulesetId).returns(() => rulesetId!);
-    providerMock.setup((x) => x.getRowsCount()).returns(async () => rows!.length);
-    providerMock.setup((x) => x.getRow(moq.It.isAnyNumber())).returns(async (i: number) => rows![i]);
+    providerMock.setup(async (x) => x.getRowsCount()).returns(async () => rows!.length);
+    providerMock.setup(async (x) => x.getRow(moq.It.isAnyNumber())).returns(async (i: number) => rows![i]);
     providerMock.setup((x) => x.onColumnsChanged).returns(() => new TableDataChangeEvent());
     providerMock.setup((x) => x.onRowsChanged).returns(() => new TableDataChangeEvent());
   };
@@ -111,7 +111,7 @@ describe("Table withUnifiedSelection", () => {
 
     const presentationManagerMock = moq.Mock.ofType<PresentationManager>();
     presentationManagerMock
-      .setup((x) => x.getContentDescriptor(moq.It.isAny(), moq.It.isAnyString(), moq.It.isAny(), moq.It.isAny()))
+      .setup(async (x) => x.getContentDescriptor(moq.It.isAny(), moq.It.isAnyString(), moq.It.isAny(), moq.It.isAny()))
       .returns(async () => undefined);
     Presentation.presentation = presentationManagerMock.object;
 
@@ -301,7 +301,7 @@ describe("Table withUnifiedSelection", () => {
         const rows = [createRandomRowItem(), createRandomRowItem()];
         const rowsIter = createAsyncIterator(rows);
         const callback = moq.Mock.ofType<(rowIterator: AsyncIterableIterator<RowItem>, replace: boolean) => Promise<boolean>>();
-        callback.setup((x) => x(rowsIter, true)).returns(async () => false).verifiable();
+        callback.setup(async (x) => x(rowsIter, true)).returns(async () => false).verifiable();
 
         const table = shallow(<PresentationTable
           dataProvider={dataProviderMock.object}
@@ -320,7 +320,7 @@ describe("Table withUnifiedSelection", () => {
         const rows = [createRandomRowItem(), createRandomRowItem()];
         const rowsIter = createAsyncIterator(rows);
         const callback = moq.Mock.ofType<(rowIterator: AsyncIterableIterator<RowItem>, replace: boolean) => Promise<boolean>>();
-        callback.setup((x) => x(rowsIter, false)).returns(async () => true).verifiable();
+        callback.setup(async (x) => x(rowsIter, false)).returns(async () => true).verifiable();
 
         const table = shallow(<PresentationTable
           dataProvider={dataProviderMock.object}
@@ -376,7 +376,7 @@ describe("Table withUnifiedSelection", () => {
         const rows = [createRandomRowItem(), createRandomRowItem()];
         const rowsIter = createAsyncIterator(rows);
         const callback = moq.Mock.ofType<(rowIterator: AsyncIterableIterator<RowItem>) => Promise<boolean>>();
-        callback.setup((x) => x(rowsIter)).returns(async () => true).verifiable();
+        callback.setup(async (x) => x(rowsIter)).returns(async () => true).verifiable();
 
         const table = shallow(<PresentationTable
           dataProvider={dataProviderMock.object}
@@ -394,7 +394,7 @@ describe("Table withUnifiedSelection", () => {
         const rows = [createRandomRowItem(), createRandomRowItem()];
         const rowsIter = createAsyncIterator(rows);
         const callback = moq.Mock.ofType<(rowIterator: AsyncIterableIterator<RowItem>) => Promise<boolean>>();
-        callback.setup((x) => x(rowsIter)).returns(async () => false).verifiable();
+        callback.setup(async (x) => x(rowsIter)).returns(async () => false).verifiable();
 
         const table = shallow(<PresentationTable
           dataProvider={dataProviderMock.object}
@@ -455,17 +455,6 @@ describe("Table withUnifiedSelection", () => {
           selectionLevel={2}
         />);
         triggerSelectionChange(keys, 1);
-        dataProviderMock.verify((x) => x.keys = keys, moq.Times.once());
-      });
-
-      it("sets data provider keys to overall selection on selection changes when selection level of table and event is 0", () => {
-        const keys = new KeySet([createRandomECInstanceKey(), createRandomECInstanceKey()]);
-        shallow(<PresentationTable
-          dataProvider={dataProviderMock.object}
-          selectionHandler={selectionHandlerMock.object}
-          selectionLevel={0}
-        />);
-        triggerSelectionChange(keys, 0);
         dataProviderMock.verify((x) => x.keys = keys, moq.Times.once());
       });
 

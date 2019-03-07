@@ -2,6 +2,267 @@
   "name": "@bentley/imodeljs-frontend",
   "entries": [
     {
+      "version": "0.189.0",
+      "tag": "@bentley/imodeljs-frontend_v0.189.0",
+      "date": "Wed, 06 Mar 2019 15:41:22 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "add ios oidc client"
+          },
+          {
+            "comment": "geometry-core camel case"
+          },
+          {
+            "comment": "Add Selection Scope toolsettings to SelectTool."
+          },
+          {
+            "comment": "allow subclasses of Range to use static methods"
+          },
+          {
+            "comment": "Raise events when a Viewport's always- or never-drawn element sets change."
+          },
+          {
+            "comment": "OIDC changes needed for Angular client"
+          },
+          {
+            "comment": "Changes package.json to include api-extractor and adds api-extractor.json"
+          },
+          {
+            "comment": "#66826 Default SelectTool to select all members of the selected element's assembly."
+          },
+          {
+            "comment": "Default scope to element."
+          },
+          {
+            "comment": "Use new buildIModelJsBuild script"
+          },
+          {
+            "comment": "Generalize support for reading tiles to include tiles generated for Bimium."
+          },
+          {
+            "comment": "AxisAlignedBox and ElementAlignedBox are now typed to Range3d rather than classes"
+          },
+          {
+            "comment": "clone methods are no longer generic"
+          },
+          {
+            "comment": "Optimize renderer to elide debug-only code paths unless explicitly enabled."
+          },
+          {
+            "comment": "Generalize 3d tile support.   Handle transform on child nodes."
+          },
+          {
+            "comment": "Avoid using cutting planes while animating if not displayed, completely hidden or completely visible."
+          },
+          {
+            "comment": "Started work on webworker to decode jpeg files for GLTF"
+          },
+          {
+            "comment": "Defer Draco support until moved to web worker"
+          },
+          {
+            "comment": "Reduce memory consumption when ambient occlusion is disabled."
+          },
+          {
+            "comment": "Fix incorrect colors for some decoration graphics."
+          },
+          {
+            "comment": "Remove uneeded typedoc plugin depedency"
+          },
+          {
+            "comment": "Add support for Draco compressed meshes"
+          },
+          {
+            "comment": "Change drag select to exclude non locatable"
+          },
+          {
+            "comment": "noMotion doesn't need to call beginDynamicUpdate"
+          },
+          {
+            "comment": "example code (in comments) for frustum interpolator"
+          },
+          {
+            "comment": "Consistent naming of \"get\" methods in Growable arrays."
+          },
+          {
+            "comment": "Add EmphasizeElements to/from wire format methods"
+          },
+          {
+            "comment": "Draw non-emphasized elements in \"fade-out\", non-locatable mode."
+          },
+          {
+            "comment": "Move neverDrawn/alwaysDrawn to Viewport they are not part of the persistent ViewState. Change Viewport.addFeatureOverrides to an interface."
+          },
+          {
+            "comment": "Rework and simplify ecef transform for reality models."
+          },
+          {
+            "comment": "Correct ID for loading classifier trees."
+          },
+          {
+            "comment": "Fix clipping volume being inconsistently applied to view."
+          },
+          {
+            "comment": "Dont make textures transparent unless technique enables it."
+          },
+          {
+            "comment": "Fix incorrect \"fit view\" behavior when empty tiles exist."
+          },
+          {
+            "comment": "Handle relative subpaths in reality model tile trees.  Handle Y for axis/ "
+          },
+          {
+            "comment": "Fix handling of null animation visibility - should be 100% not 0."
+          },
+          {
+            "comment": "Added spatial <-> cartographic methods that check/use the geographic coordinate system before using ecef location."
+          },
+          {
+            "comment": "DefaultViewTouchTool should not call handleEvent until it's installed as the active ViewTool."
+          },
+          {
+            "comment": "Traverse GLTF node structure rather than meshes so that node transforms are used correctly."
+          },
+          {
+            "comment": "Ensure viewport updates immediately when background map settings are changed."
+          },
+          {
+            "comment": "Add a test to determine if GCS is present before using GCS converter."
+          },
+          {
+            "comment": "Documentation improvements"
+          },
+          {
+            "comment": "Support instanced rendering of .i3dm 3D tiles."
+          },
+          {
+            "comment": "Preliminary support for drawing instanced geometry."
+          },
+          {
+            "comment": "Fix branch transform for animation correctly - back out incorrect fix to BranchState."
+          },
+          {
+            "comment": "Implemented, then commented out, doing jpeg decompression in a web worker"
+          },
+          {
+            "comment": "added markup mode"
+          },
+          {
+            "comment": "events are now on ScreenViewport.parentDiv rather than canvas"
+          },
+          {
+            "comment": "update for geometry GrowableXYArray usage."
+          },
+          {
+            "comment": "Measure Distance - change selected segment hilite. Measure Location - WIP use ecef transform."
+          },
+          {
+            "comment": "More ui-framework unit tests"
+          },
+          {
+            "comment": "Make it possible to define editor params for default Type Editors not explicitly specified by name."
+          },
+          {
+            "comment": "Fixed a bug which caused non-locatable geometry to be rendered when no other symbology was overridden."
+          },
+          {
+            "comment": "Defer loading of edges until needed"
+          },
+          {
+            "comment": "Omit animation branches that are not visible."
+          },
+          {
+            "comment": "Improve efficiency and completeness of SubCategory loading for ViewStates."
+          },
+          {
+            "comment": "Save BUILD_SEMVER to globally accessible map. PluginAdmin and Plugin classes defined. IModelJsLoader improved."
+          },
+          {
+            "comment": "add optional iModel argument to EntityState.clone "
+          },
+          {
+            "comment": "added GeometricModelState.queryModelRange"
+          },
+          {
+            "comment": "Added creatorId, new method to list RD per project, identified numerous area for changes WIP"
+          },
+          {
+            "comment": "IModelConnection.close() always disposes the briefcase held at the backend in the case of ReadWrite connections. "
+          },
+          {
+            "comment": "Implemented spatial criterai when searching through all reality data associated to a project."
+          },
+          {
+            "comment": "Problem with root document of reality data not in root of blob. Tiles could not be fetched. Root path is added to tiles names."
+          },
+          {
+            "comment": "Threading issue accessing Reality Data, RealityData class was transformed to be the main data access object instead of the client that was used by most/all reality data causing cache data clash and mix between many reality data."
+          },
+          {
+            "comment": "Optimze containment test with spheres."
+          },
+          {
+            "comment": "Move the IModelUnitTestRpcInterface into the testbed and out of the public AP"
+          },
+          {
+            "comment": "Retry tile requests on time-out."
+          },
+          {
+            "comment": "Remove loadNativeAsset and formatElements RPC calls from the IModelReadRpcInterface"
+          },
+          {
+            "comment": "Removed IModelConnection.connectionId, added IModelApp.sessionId"
+          },
+          {
+            "comment": "make view transition animations smoother"
+          },
+          {
+            "comment": "Optimizations to tile format and schedule animation."
+          },
+          {
+            "comment": "Tile requests can optionally specify a retryInterval."
+          },
+          {
+            "comment": " Cleanup of DefaultToolSetting provider and EnumButtonGroup editor including new EditorParams."
+          },
+          {
+            "comment": "Move property definitions to imodeljs-frontend so they could be used by tools to define properties for tool settings. Add toolsettings to Select Tool."
+          },
+          {
+            "comment": "Added a new property to PropertyRecord - links."
+          },
+          {
+            "comment": "IModelConnection.connectionTimeout is public to allow application customization."
+          },
+          {
+            "comment": "upgrade to TypeScript 3.2.2"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.188.0",
+      "tag": "@bentley/imodeljs-frontend_v0.188.0",
+      "date": "Wed, 16 Jan 2019 16:36:09 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Report unsigned measure distance deltas."
+          },
+          {
+            "comment": "Add batch id to schedule scripts"
+          },
+          {
+            "comment": "Add batchID to schedule scripts"
+          },
+          {
+            "comment": "Handle wider variety of GLTF bounding boxes etc."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.187.0",
       "tag": "@bentley/imodeljs-frontend_v0.187.0",
       "date": "Tue, 15 Jan 2019 15:18:59 GMT",

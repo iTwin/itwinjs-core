@@ -6,8 +6,9 @@ import * as React from "react";
 import { expect } from "chai";
 
 import TestUtils from "../../TestUtils";
-import { ConfigurableUiManager, FrontstageManager, FrontstageProvider, Frontstage, Zone, Widget, FrontstageProps, ConfigurableCreateInfo, ToolUiProvider } from "../../../ui-framework";
+import { ConfigurableUiManager, FrontstageManager, FrontstageProvider, Frontstage, Zone, Widget, FrontstageProps, ConfigurableCreateInfo, ToolUiProvider, ContentControl, CoreTools } from "../../../ui-framework";
 import { ToolAssistanceItem } from "@bentley/ui-ninezone";
+import { ToolInformation } from "../../../ui-framework/zones/toolsettings/ToolInformation";
 
 describe("ToolUiProvider", () => {
 
@@ -67,7 +68,7 @@ describe("ToolUiProvider", () => {
         return (
           <Frontstage
             id="ToolUiProvider-TestFrontstage"
-            defaultToolId="PlaceLine"
+            defaultTool={CoreTools.selectElementCommand}
             defaultLayout="FourQuadrants"
             contentGroup="TestContentGroup1"
             topCenter={
@@ -116,6 +117,21 @@ describe("ToolUiProvider", () => {
       const toolAssistanceNode = FrontstageManager.activeToolAssistanceNode;
       expect(toolAssistanceNode).to.not.be.undefined;
     }
+  });
+
+  class TestContentControl extends ContentControl {
+    constructor(info: ConfigurableCreateInfo, options: any) {
+      super(info, options);
+
+      this.reactElement = <div />;
+    }
+  }
+
+  it("ToolInformation with invalid ToolUiProvider should throw Error", () => {
+    ConfigurableUiManager.registerControl("ToolTest1", TestContentControl);
+    const toolInfo = new ToolInformation("ToolTest1");
+    expect(() => toolInfo.toolUiProvider).to.throw(Error);
+    ConfigurableUiManager.unregisterControl("ToolTest1");
   });
 
 });

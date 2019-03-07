@@ -19,6 +19,7 @@ import { ViewDefinitionProps } from "@bentley/imodeljs-common";
 import { IModelInfo } from "../clientservices/IModelServices";
 import { Id64String, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { UiFramework } from "../UiFramework";
+import { ThemeManager } from "../theme/ThemeManager";
 
 type IModelViewsSelectedFunc = (iModelInfo: IModelInfo, viewIdsSelected: Id64String[]) => void;
 
@@ -36,6 +37,8 @@ export interface OverallContentProps {
   setOverallPage: (page: OverallContentPage | number) => any;
   setAccessToken: (accessToken: AccessToken) => any;
   clearAccessToken: () => any;
+  initialIModels?: IModelInfo[];
+  initialViewIds?: string[];
 }
 
 function mapStateToProps(state: any) {
@@ -60,9 +63,17 @@ const mapDispatch = {
  * or one of the children components depending on the currentPage property.
  */
 class OverallContentComponent extends React.Component<OverallContentProps> {
+  private _imodelAndViewSpecified = false;
 
   public constructor(props: OverallContentProps) {
     super(props);
+  }
+
+  private onOpenIModel(iModelInfo: IModelInfo, viewIds: Id64String[]) {
+    // open the imodel and set the page
+    // Note: this should be refactored, just seems like hack!
+    this.props.onIModelViewsSelected(iModelInfo, viewIds);
+    this.props.setOverallPage(OverallContentPage.ConfigurableUiPage);
   }
 
   // called when an imodel (and views) have been selected on the IModelOpen
@@ -74,10 +85,7 @@ class OverallContentComponent extends React.Component<OverallContentProps> {
       viewIds.push(view.id!);
     }
 
-    // open the imodel and set the page
-    // Note: this should be refactored, just seems like hack!
-    this.props.onIModelViewsSelected(iModelInfo, viewIds);
-    this.props.setOverallPage(OverallContentPage.ConfigurableUiPage);
+    this.onOpenIModel(iModelInfo, viewIds);
   }
 
   // called when the "Offline" is clicked on the Sign In.
@@ -88,6 +96,9 @@ class OverallContentComponent extends React.Component<OverallContentProps> {
   }
 
   public componentDidMount() {
+    if (this.props.initialIModels && 1 === this.props.initialIModels.length && this.props.initialViewIds)
+      this._imodelAndViewSpecified = true;
+
     OidcClientWrapper.oidcClient.getAccessToken(new ActivityLoggingContext("")) // tslint:disable-line:no-floating-promises
       .then((accessToken: AccessToken | undefined) => this._setOrClearAccessToken(accessToken));
     OidcClientWrapper.oidcClient.onUserStateChanged.addListener(this._setOrClearAccessToken);
@@ -120,7 +131,14 @@ class OverallContentComponent extends React.Component<OverallContentProps> {
         </React.Fragment>
       );
     } else if (navigator.onLine && OverallContentPage.SelectIModelPage === currentPage) {
-      element = <IModelOpen accessToken={this.props.accessToken} onOpenIModel={this._onOpenIModel} />;
+      if (this._imodelAndViewSpecified) {
+        setImmediate(() => {
+          // if accessToken has been set and the imodel and view are specified call onOpenIModel to trigger going directly into file.
+          this.onOpenIModel(this.props.initialIModels![0], this.props.initialViewIds!);
+        });
+      } else {
+        element = <IModelOpen accessToken={this.props.accessToken} onOpenIModel={this._onOpenIModel} initialIModels={this.props.initialIModels} />;
+      }
     } else if (OverallContentPage.ConfigurableUiPage === currentPage || OverallContentPage.OfflinePage === currentPage) {
       const configurableUiContentProps = {
         appBackstage: this.props.appBackstage,
@@ -131,10 +149,12 @@ class OverallContentComponent extends React.Component<OverallContentProps> {
     }
 
     return (
-      <BeDragDropContext>
-        {element}
-        <DragDropLayerRenderer />
-      </BeDragDropContext>
+      <ThemeManager>
+        <BeDragDropContext>
+          {element}
+          <DragDropLayerRenderer />
+        </BeDragDropContext>
+      </ThemeManager>
     );
   }
 }

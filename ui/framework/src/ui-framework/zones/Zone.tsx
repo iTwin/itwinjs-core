@@ -73,9 +73,11 @@ export class Zone extends React.Component<ZoneProps> {
     if (props.mergeWithZone !== undefined)
       zoneDef.mergeWithZone = props.mergeWithZone;
 
+    // istanbul ignore else
     if (props.widgets) {
       props.widgets.forEach((widgetNode: React.ReactElement<WidgetProps>) => {
         const widgetDef = Zone.createWidgetDef(widgetNode);
+        // istanbul ignore else
         if (widgetDef) {
           zoneDef.addWidgetDef(widgetDef);
         }
@@ -84,11 +86,13 @@ export class Zone extends React.Component<ZoneProps> {
   }
 
   private static createWidgetDef(widgetNode: React.ReactElement<WidgetProps>): WidgetDef | undefined {
-    if (widgetNode && React.isValidElement(widgetNode)) {
-      return new WidgetDef(widgetNode.props);
-    }
+    let widgetDef: WidgetDef | undefined;
 
-    return undefined;
+    // istanbul ignore else
+    if (React.isValidElement(widgetNode))
+      widgetDef = new WidgetDef(widgetNode.props);
+
+    return widgetDef;
   }
 
   public render(): React.ReactNode {
@@ -99,6 +103,7 @@ export class Zone extends React.Component<ZoneProps> {
 
     const { zoneDef } = runtimeProps;
 
+    // istanbul ignore else
     if (runtimeProps.zoneProps.widgets.length === 1) {
       if (zoneDef.isToolSettings) {
         return (
@@ -111,6 +116,8 @@ export class Zone extends React.Component<ZoneProps> {
 
         let widgetControl: StatusBarWidgetControl | undefined;
         const widgetDef = zoneDef.getOnlyWidgetDef();
+
+        // istanbul ignore else
         if (widgetDef)
           widgetControl = widgetDef.getWidgetControl(ConfigurableUiControlType.StatusBarWidget) as StatusBarWidgetControl;
 

@@ -1,6 +1,17 @@
 {
   "Diagnostics": {
-    "BaseClassIsSealed": "Class '{0}' cannot derive from sealed base class '{1}'.",
-    "BaseClassOfDifferentType": "Class '{0}' cannot derive from base class '{1}' of type '{2}'."
+    "ECObjects:100": "Class '{0}' cannot derive from sealed base class '{1}'.",
+    "ECObjects:101": "Class '{0}' cannot derive from base class '{1}' of type '{2}'.",
+    "ECObjects:102": "The ECProperty '{0}:{1}' has a base property '{2}:{1}' with a value type of {3} which is incompatible with the value type of {4}.",
+    "ECObjects:103": "The ECProperty '{0}:{1}' has a base property '{2}:{1}' with a type of {3} which is incompatible with the type of {4}.",
+    "ECObjects:104": "The ECProperty '{0}:{1}' has a base property '{2}:{1}' with KindOfQuantity '{3}' with persistence unit '{4}' which is not the same as the persistence unit '{5}' of the provided KindOfQuantity '{6}'.",
+    "ECObjects:109": "The {0}-Constraint of '{1}' does not contain any constraint classes.",
+    "ECObjects:110": "The {0}-Constraint of '{1}' has multiple constraint classes which requires an abstract constraint to be defined.",
+    "ECObjects:112": "Enumeration '{0}' has invalid primitive type.",
+    "ECObjects:105": "Mixin '{0}' cannot be applied to the class '{1}' because it does not satisfy the applies to constraint '{2}'.",
+    "ECObjects:111": "The CustomAttribute container '{0}' has a CustomAttribute with the class '{1}' which is not a concrete class.",
+    "ECObjects:106": "The abstract constraint class '{0}' on the {1}-Constraint of '{2}' is not supported by the base class constraint in '{3}'.",
+    "ECObjects:107": "The constraint class '{0}' on the {1}-Constraint of '{2}' is not supported by the base class constraint in '{3}'.",
+    "ECObjects:108": "The constraint class '{0}' on the {1}-Constraint of '{2}' is not derived from the abstract constraint class '{3}'."
   }
 }

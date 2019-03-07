@@ -1,22 +1,24 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Rulesets Category generated iModel hierarchy matches snapshot 1`] = `
+exports[`ModelSelector Category generates correct drawing categories' hierarchy 1`] = `
 Array [
   Object {
-    "isCheckboxVisible": true,
-    "label": "Uncategorized",
-  },
-  Object {
-    "isCheckboxVisible": true,
     "label": "Uncategorized",
   },
 ]
 `;
 
-exports[`Rulesets Model generated iModel hierarchy matches snapshot 1`] = `
+exports[`ModelSelector Category generates correct spatial categories' hierarchy 1`] = `
 Array [
   Object {
-    "isCheckboxVisible": true,
+    "label": "Uncategorized",
+  },
+]
+`;
+
+exports[`ModelSelector Model generates correct models' hierarchy 1`] = `
+Array [
+  Object {
     "label": "Properties_60InstancesWithUrl2",
   },
 ]

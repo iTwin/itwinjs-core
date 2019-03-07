@@ -22,16 +22,19 @@ export * from "./IModelHost";
 export * from "./Relationship";
 export * from "./Texture";
 export * from "./LineStyle";
+export * from "./Material";
 export * from "./Model";
 export * from "./NavigationRelationship";
 export * from "./Schema";
 export * from "./SqliteStatement";
 export * from "./ViewDefinition";
 export * from "./BisCore";
+export * from "./ChangedElementsDb";
 export * from "./domains/Functional";
 export * from "./domains/FunctionalElements";
 export * from "./domains/Generic";
 export * from "./domains/GenericElements";
+export * from "./IModelImporter";
 export * from "./IModelJsNative";
 export * from "./IModelDb"; // must be last
 

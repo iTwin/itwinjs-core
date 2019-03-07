@@ -12,6 +12,8 @@ import {
   ContentControl,
   ConfigurableCreateInfo,
   ContentViewManager,
+  ContentLayoutProps,
+  ContentLayoutManager,
 } from "../../ui-framework";
 import TestUtils from "../TestUtils";
 
@@ -30,7 +32,7 @@ describe("ContentLayout", () => {
   });
 
   const myContentGroup: ContentGroup = new ContentGroup({
-    contents: [{ classId: TestContentControl }],
+    contents: [{ id: "myContent", classId: TestContentControl }],
   });
 
   const myContentLayout: ContentLayoutDef = new ContentLayoutDef({
@@ -165,13 +167,33 @@ describe("ContentLayout", () => {
         <ContentLayout contentGroup={contentGroup2} contentLayout={contentLayout2} isInFooterMode={true} />
       </div>);
 
-    const splitPane = wrapper.find("SplitPane");
-    expect(splitPane.length).to.eq(1);
+    const resizer = wrapper.find("span.Resizer");
+    expect(resizer.length).to.eq(1);
 
-    splitPane.simulate("change", { target: { size: 40 } });
-    wrapper.update();
+    const top = document.documentElement;
+    expect(top).to.not.be.null;
+
+    // TODO: This is not triggering onChange as expected
+    if (top) {
+      resizer.simulate("mousedown");
+
+      const mouseMove = new Event("mousemove");  // creates a new event
+      top.dispatchEvent(mouseMove);              // dispatches it
+      const mouseUp = new Event("mouseup");
+      top.dispatchEvent(mouseUp);
+
+      wrapper.update();
+    }
 
     wrapper.unmount();
+  });
+
+  it("ContentLayoutManager.loadLayout should throw Error if ContentLayoutProps does not have an id", () => {
+    const layoutProps: ContentLayoutProps = {
+      descriptionKey: "UiFramework:tests.singleContent",
+      priority: 100,
+    };
+    expect(() => ContentLayoutManager.loadLayout(layoutProps)).to.throw(Error);
   });
 
 });

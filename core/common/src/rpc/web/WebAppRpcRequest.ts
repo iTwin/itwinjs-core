@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module RpcInterface */
 
-import { IModelError, ServerError } from "../../IModelError";
+import { IModelError, ServerError, ServerTimeoutError } from "../../IModelError";
 import { BentleyStatus } from "@bentley/bentleyjs-core";
 import { RpcInterface } from "../../RpcInterface";
 import { SerializedRpcRequest, RpcRequestFulfillment, SerializedRpcOperation } from "../core/RpcProtocol";
@@ -117,6 +117,14 @@ export class WebAppRpcRequest extends RpcRequest {
         reject(new ServerError(-1, reason || "Server connection error."));
       }
     });
+  }
+
+  protected handleUnknownResponse(code: number) {
+    if (this.protocol.isTimeout(code)) {
+      this.reject(new ServerTimeoutError(code, "Request timeout."));
+    } else {
+      this.reject(new ServerError(code, "Unknown server response code."));
+    }
   }
 
   protected async load(): Promise<RpcSerializedValue> {

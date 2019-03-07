@@ -1,6 +1,6 @@
 {
   "name": "@bentley/build-tools",
-  "version": "0.187.0",
+  "version": "0.189.0",
   "description": "Bentley build tools",
   "license": "MIT",
   "repository": {
@@ -9,7 +9,7 @@
   },
   "scripts": {
     "copy:rules": "cpx \"./node_modules/tslint-consistent-codestyle/rules/**/*\" ./tslint-rules/tslint-consistent-codestyle/rules && cpx \"./node_modules/tslint-consistent-codestyle/src/**/*\" ./tslint-rules/tslint-consistent-codestyle/src",
-    "build": "tsc 1>&2 && npm run copy:rules",
+    "build": "tsc 1>&2 && npm run copy:rules && node ./scripts/ignoreargs.js 1>&2",
     "clean": "rimraf tslint-rules ../../modules",
     "docs": "",
     "lint": "",
@@ -26,6 +26,7 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
+    "@microsoft/api-extractor": "^6.3.0",
     "cache-require-paths": "^0.3.0",
     "chai": "^4.1.2",
     "chalk": "^2.4.1",
@@ -59,7 +60,9 @@
     "tsutils": "^3.6.0",
     "tslint-consistent-codestyle": "^1.11.0",
     "typedoc": "^0.11.1",
-    "typescript": "~3.1.0",
+    "typedoc-plugin-external-module-name": "1.1.1",
+    "typedoc-plugin-internal-external": "1.0.10",
+    "typescript": "~3.2.2",
     "uglifyjs-webpack-plugin": "^1.2.5",
     "url-loader": "^1.0.1",
     "webpack-node-externals": "^1.7.2",

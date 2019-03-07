@@ -1,6 +1,36 @@
 # Change Log - @bentley/imodeljs-clients
 
-This log was last generated on Tue, 15 Jan 2019 15:18:59 GMT and should not be manually modified.
+This log was last generated on Wed, 06 Mar 2019 15:41:22 GMT and should not be manually modified.
+
+## 0.189.0
+Wed, 06 Mar 2019 15:41:22 GMT
+
+### Updates
+
+- Added OidcAgentClientV2. This will replace OidcAgentClient after some fixes from IMS+Connect.
+- OIDC changes needed for Angular client
+- Changes package.json to include api-extractor and adds api-extractor.json
+- Use new buildIModelJsBuild script
+- Moved AzureFileHandler, IOSAzureFileHandler, UrlFileHandler and the iModelHub tests to the imodeljs-clients-backend package. This removes the dependency of imodeljs-clients on the "fs" module, and turns it into a browser only package. 
+- Fixed expansion of config variables. 
+- Remove uneeded typedoc plugin depedency
+- Fix error parsing
+- Documentation improvements
+- Create iModel from empty template if seed file path not defined.
+- Save BUILD_SEMVER to globally accessible map
+- fix for cache member mix and preserve full root document
+- Added creatorId, new method to list RD per project, identified numerous area for changes WIP
+- Implemented spatial criterai when searching through all reality data associated to a project.
+- Threading issue accessing Reality Data, RealityData class was transformed to be the main data access object instead of the client that was used by most/all reality data causing cache data clash and mix between many reality data.
+- Removed RBAC client - the RBAC service is considered internal. 
+- Handled error with fetching host information on deployed machines.
+- WIP fixes to Usage Logging. 
+- upgrade to TypeScript 3.2.2
+
+## 0.188.0
+Wed, 16 Jan 2019 16:36:09 GMT
+
+*Version update only*
 
 ## 0.187.0
 Tue, 15 Jan 2019 15:18:59 GMT

@@ -140,61 +140,7 @@ export type ActionsUnion<A extends ActionCreatorsObject> = ReturnType<A[keyof A]
  *   type X = "BANANA" | "APPLE" | "ORANGE";
  * ```
  */
-export type ActionTypes<A extends Action<any>> = A["type"] extends infer X ? X : never;
-
-/**
- * A helper function for defining a type-safe Redux [Reducer](https://redux.js.org/basics/reducers).
- * **You do not need this to define a type-safe reducer** - this just helps avoid boilerplate and tries to deduce as many types as possible.
- *
- * Here's an example:
- * ```
- * // given:
- * type MyActions = Action<"BANANA">
- *                  | ActionWithPayload<"APPLE", boolean>
- *                  | ActionWithPayload<"ORANGE", number>;
- * // you could write:
- * const myReducer = (state: string = "", action: MyActions) => {
- *  switch(action.type) {
- *    case "BANANA": return state + "a banana ";
- *    case "APPLE": return state + `a ${action.payload} apple `;
- *    case "ORANGE": return state + `${action.payload} oranges `;
- *  }
- *  return state;
- * };
- * // *OR*, you write this as:
- * const myReducer = createReducer<Actions, string>("", {
- *  "BANANA": (state, action) => state + "a banana ",
- *  "APPLE": (state, action) => state + `a ${action.payload} apple `,
- *  "ORANGE": (state, action) => state + `${action.payload} oranges `,
- * });
- * ```
- * Note that the generic type parameters to `createReducer` **are always required**.
- *
- * //@template TActions The union type of all actions potentially handled by this reducer
- * //@template TState The type of the state that this reducer will accept / return.
- * @param initialState The initial state, to be used when the current state is undefined
- * @param handlers An object which is basically a map of action types to "mini-reducer" functions.
- * Each property of this object should:
- *   - Have a name that matches the `type` property of one of the Actions handled by this reducer
- *   - Define a "mini-reducer" function, which will be only be called when the action's `type` matches the property name.
- *     - Because the exact action type is know for each of these "mini-reducer" functions, you can omit parameter type annotations.
- */
-export function createReducer<TActions extends Action<any>, TState>(initialState: DeepReadonly<TState>, handlers: ReducerHandler<DeepReadonly<TState>, TActions>) {
-  return function reducer(state = initialState as DeepReadonly<TState>, action: TActions): DeepReadonly<TState> {
-    const type: ActionTypes<typeof action> = action.type;
-    if (handlers.hasOwnProperty(type))
-      return handlers[type]!(state, action as any);
-
-    return state;
-  };
-}
-
-/**
- * A type alias used in the "handlers" parameter of `createReducer` (see above).
- */
-export type ReducerHandler<S, A extends Action<any>> = {
-  [actionType in ActionTypes<A>]?: (state: S, action: Extract<A, Action<actionType>>) => S;
-};
+export type ActionTypes<A extends Action<any>> = A["type"] extends infer X ? (X extends string ? X : never) : never;
 
 /**
  * A Redux [Reducer](https://redux.js.org/basics/reducers).

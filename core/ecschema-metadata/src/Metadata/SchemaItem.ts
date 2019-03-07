@@ -7,8 +7,7 @@ import { Schema } from "./Schema";
 import { SchemaItemProps } from "./../Deserialization/JsonProps";
 import { SchemaItemType, schemaItemTypeToString } from "./../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "./../Exception";
-import { SchemaItemVisitor } from "./../Interfaces";
-import { SchemaItemKey } from "./../SchemaKey";
+import { SchemaItemKey, ECVersion } from "./../SchemaKey";
 
 const SCHEMAURL3_2 = "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem";
 
@@ -55,38 +54,36 @@ export abstract class SchemaItem {
   }
 
   public deserializeSync(schemaItemProps: SchemaItemProps) {
-    if (undefined !== schemaItemProps.label) {
+    if (undefined !== schemaItemProps.label)
       this._label = schemaItemProps.label;
-    }
 
     this._description = schemaItemProps.description;
 
     if (undefined !== schemaItemProps.schema) {
       if (schemaItemProps.schema.toLowerCase() !== this.schema.name.toLowerCase())
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to deserialize the SchemaItem '${this.fullName}' with a different schema name, ${schemaItemProps.schema}, than the current Schema of this SchemaItem, ${this.schema.fullName}.`);
     }
 
     if (undefined !== schemaItemProps.schemaVersion) {
-      if (schemaItemProps.schemaVersion !== this.key.schemaKey.version.toString())
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
+      if (this.key.schemaKey.version.compare(ECVersion.fromString(schemaItemProps.schemaVersion)))
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to deserialize the SchemaItem '${this.fullName}' with a different schema version, ${schemaItemProps.schemaVersion}, than the current Schema version of this SchemaItem, ${this.key.schemaKey.version}.`);
     }
   }
 
   public async deserialize(schemaItemProps: SchemaItemProps) {
-    if (undefined !== schemaItemProps.label) {
+    if (undefined !== schemaItemProps.label)
       this._label = schemaItemProps.label;
-    }
 
     this._description = schemaItemProps.description;
 
     if (undefined !== schemaItemProps.schema) {
       if (schemaItemProps.schema.toLowerCase() !== this.schema.name.toLowerCase())
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to deserialize the SchemaItem ${this.fullName}' with a different schema name, ${schemaItemProps.schema}, than the current Schema of this SchemaItem, ${this.schema.fullName}`);
     }
 
     if (undefined !== schemaItemProps.schemaVersion) {
-      if (schemaItemProps.schemaVersion !== this.key.schemaKey.version.toString())
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
+      if (this.key.schemaKey.version.compare(ECVersion.fromString(schemaItemProps.schemaVersion)))
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to deserialize the SchemaItem '${this.fullName}' with a different schema version, ${schemaItemProps.schemaVersion}, than the current Schema version of this SchemaItem, ${this.key.schemaKey.version}.`);
     }
   }
 
@@ -108,15 +105,13 @@ export abstract class SchemaItem {
   /**
    * Indicates if the two SchemaItem objects are equal by comparing their respective [[key]] properties.
    * @param thisSchemaItem The first SchemaItem.
-   * @param thatSchemaItem The second SchemaItem.
+   * @param thatSchemaItemOrKey The second SchemaItem or SchemaItemKey.
    */
-  public static equalByKey(thisSchemaItem: SchemaItem, thatSchemaItem?: SchemaItem) {
-    if (!thatSchemaItem)
+  public static equalByKey(thisSchemaItem: SchemaItem, thatSchemaItemOrKey?: SchemaItem | SchemaItemKey) {
+    if (!thatSchemaItemOrKey)
       return true;
 
-    return thisSchemaItem.key.matches(thatSchemaItem.key);
+    const key = thatSchemaItemOrKey instanceof SchemaItem ? thatSchemaItemOrKey.key : thatSchemaItemOrKey;
+    return thisSchemaItem.key.matches(key);
   }
-
-  public abstract async accept(visitor: SchemaItemVisitor): Promise<void>;
-  public abstract acceptSync(visitor: SchemaItemVisitor): void;
 }

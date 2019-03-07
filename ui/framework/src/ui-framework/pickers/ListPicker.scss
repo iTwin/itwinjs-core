@@ -2,28 +2,27 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-@import "@bentley/bwc/lib/index.scss";
 @import "@bentley/ui-ninezone/lib/ui-ninezone/_scrollbar";
 @import "@bentley/ui-ninezone/lib/ui-ninezone/_typography";
 @import "@bentley/ui-ninezone/lib/ui-ninezone/footer/_variables";
 @import "@bentley/ui-core/lib/ui-core/colors";
 
 $no-shadow: none;
-$shadow: drop-shadow(0 1px 0 $text-dark);
+$shadow: drop-shadow(0 1px 0 $buic-text-color-reverse);
 $space-after-label: 16px;
 $space-before-label: 16px;
-$label-color: rgba($text-light, 0.88);
-$border-color: rgba($text-light, 0.44);
+$label-color: $buic-text-color;
+$border-color: $buic-background-control-stroke;
 $item-height: 32px;
 
 .ListPicker-separator {
   height:1px;
-  background:#717171;
-  border-bottom:1px solid #a0a0a0;
+  background:$buic-background-divider;
+  border-bottom:1px solid $buic-background-control-stroke;
 }
 
 .ListPicker-column {
-  @include nz-scrollbar(#c4c4c4);
+  @include nz-scrollbar($buic-background-scrollbar);
   overflow: auto;
   height: 40vh;
   width: 30vh;
@@ -38,6 +37,7 @@ $item-height: 32px;
   padding-right: 0px;
   padding-bottom: 0px;
   padding-top: 0px;
+  background-color: $buic-background-window;
 }
 
 .ListPickerInnerContainer-expander {
@@ -80,11 +80,11 @@ $item-height: 32px;
 
 
 .ListPicker-item {
-  $label-color: rgba($text-light, 0.88);
-  $pressed-label-color: rgba($text-light, 0.88);
-  $hovered-label-color: $primary-tint;
-  $focused-label-color: $primary-tint;
-  $active-label-color: $primary-tint;
+  $label-color: $buic-text-color;
+  $pressed-label-color: $buic-foreground-activehover;
+  $hovered-label-color: $primary-tone;
+  $focused-label-color: $primary-tone;
+  $active-label-color: $primary-tone;
   $item-height: 32px;
   $item-border-width: 2px;
   $active-tool-stripe-height: 22px;
@@ -129,7 +129,7 @@ $item-height: 32px;
   }
 
   &:active {
-    background: $primary-tone;
+    background: $buic-row-selection;
     color: $pressed-label-color;
 
     > .icon, .label {
@@ -139,7 +139,7 @@ $item-height: 32px;
 
   &.is-focused {
     color: $focused-label-color;
-    border-color: $primary-tint;
+    border-color: $primary-base;
     border-width: $item-border-width;
     border-style: solid;
 
@@ -174,8 +174,8 @@ $item-height: 32px;
 }
 
 .ListPickerWidget-item {
-  $label-color: rgba($text-dark, 0.88);
-  $pressed-label-color: rgba($text-dark, 0.88);
+  $label-color: $buic-text-color;
+  $pressed-label-color: $buic-foreground-activehover;
   $hovered-label-color: $primary-base;
   $focused-label-color: $primary-base;
   $active-label-color: $primary-base;

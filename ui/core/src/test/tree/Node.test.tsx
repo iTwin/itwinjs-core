@@ -6,9 +6,10 @@ import { expect } from "chai";
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { Checkbox } from "@bentley/bwc";
 import ExpansionToggle from "../../ui-core/tree/ExpansionToggle";
 import Node from "../../ui-core/tree/Node";
+import { Checkbox } from "../../ui-core/inputs/checkbox/Checkbox";
+import { CheckBoxState } from "../../ui-core/enums/CheckBoxState";
 
 describe("<Node />", () => {
   it("should render", () => {
@@ -56,6 +57,18 @@ describe("<Node />", () => {
     wrapper.find(".unique").should.have.lengthOf(1);
   });
 
+  it("renders checkbox correctly", () => {
+    const wrapper = mount(<Node label="a" level={0} checkboxProps={{ state: CheckBoxState.On }} />);
+    wrapper.find(`input[type="checkbox"]`).should.have.lengthOf(1);
+  });
+
+  it("renders checkbox using render override if specified", () => {
+    const ovr = sinon.stub().returns(<div className="custom-checkbox" />);
+    const wrapper = mount(<Node label="a" level={0} checkboxProps={{ state: CheckBoxState.On }} renderOverrides={{ renderCheckbox: ovr }} />);
+    ovr.should.be.calledOnce;
+    wrapper.find(`div.custom-checkbox`).should.have.lengthOf(1);
+  });
+
   it("should call onClick callback when node is clicked", () => {
     const callback = sinon.spy();
     const wrapper = mount(<Node label="a" level={0} onClick={callback} />);
@@ -80,17 +93,17 @@ describe("<Node />", () => {
     expect(callback).to.not.be.called;
   });
 
-  it("should call onCheckboxClick callback when checkbox state changes", () => {
+  it("should call checkboxProps.onClick callback when checkbox state changes", () => {
     const callback = sinon.spy();
-    const wrapper = mount(<Node label="a" level={0} isCheckboxVisible={true} onCheckboxClick={callback} />);
+    const wrapper = mount(<Node label="a" level={0} checkboxProps={{ onClick: callback }} />);
     const checkbox = wrapper.find(Checkbox).find("input");
     checkbox.simulate("change");
     expect(callback).to.be.calledOnce;
   });
 
-  it("should not call onClick callback when checkbox is clicked", () => {
+  it("should not call checkboxProps.onClick callback when checkbox is clicked", () => {
     const callback = sinon.spy();
-    const wrapper = mount(<Node label="a" level={0} isCheckboxVisible={true} onClick={callback} />);
+    const wrapper = mount(<Node label="a" level={0} checkboxProps={{ onClick: callback }} />);
     const checkbox = wrapper.find(Checkbox).find("input");
     checkbox.simulate("click");
     expect(callback).to.not.be.called;

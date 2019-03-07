@@ -7,7 +7,7 @@ import { initialize, terminate } from "../../IntegrationTests";
 import { resetBackend } from "./Helpers";
 import { OpenMode, using } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { Ruleset, RootNodeRule, CustomNodeSpecification } from "@bentley/presentation-common";
+import { Ruleset, RootNodeRule, CustomNodeSpecification, RegisteredRuleset } from "@bentley/presentation-common";
 import { PresentationManager } from "@bentley/presentation-frontend";
 
 describe("Multiple backends for one frontend", async () => {
@@ -37,14 +37,14 @@ describe("Multiple backends for one frontend", async () => {
       const props = { imodel, rulesetId: ruleset.id };
       const spec = ((ruleset.rules![0] as RootNodeRule).specifications![0] as CustomNodeSpecification);
 
-      await using(await frontend.rulesets().add(ruleset), async () => {
-        const rootNodes1 = await frontend.getRootNodes(props);
+      await using<RegisteredRuleset, Promise<void>>(await frontend.rulesets().add(ruleset), async () => {
+        const rootNodes1 = await frontend.getNodes(props);
         expect(rootNodes1.length).to.be.equal(1);
         expect(rootNodes1[0].label).to.be.equal(spec.label);
 
         resetBackend();
 
-        const rootNodes2 = await frontend.getRootNodes(props);
+        const rootNodes2 = await frontend.getNodes(props);
         expect(rootNodes2.length).to.be.equal(1);
         expect(rootNodes2[0].label).to.be.equal(spec.label);
         expect(rootNodes2).to.deep.eq(rootNodes1);

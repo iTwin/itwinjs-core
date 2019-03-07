@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import { Format, IFormat } from "./Format";
+import { Format } from "./Format";
 import { InvertedUnit } from "./InvertedUnit";
 import { OverrideFormat } from "./OverrideFormat";
 import { Schema } from "./Schema";
@@ -13,7 +13,7 @@ import { DelayedPromiseWithProps } from "./../DelayedPromise";
 import { KindOfQuantityProps } from "./../Deserialization/JsonProps";
 import { SchemaItemType } from "./../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "./../Exception";
-import { LazyLoadedInvertedUnit, LazyLoadedUnit, SchemaItemVisitor } from "./../Interfaces";
+import { LazyLoadedInvertedUnit, LazyLoadedUnit } from "./../Interfaces";
 import { formatStringRgx } from "./../utils/FormatEnums";
 
 /**
@@ -215,12 +215,8 @@ export class KindOfQuantity extends SchemaItem {
     const schemaJson = super.toJson(standalone, includeSchemaVersion);
     schemaJson.relativeError = this.relativeError;
     schemaJson.persistenceUnit = this.persistenceUnit!.fullName;
-    if (this.presentationUnits !== undefined) {
-      schemaJson.presentationUnits = [];
-      this.presentationUnits.forEach((unit: IFormat) => {
-        schemaJson.presentationUnits.push(unit.name);
-      });
-    }
+    if (this.presentationUnits !== undefined && this.presentationUnits.length > 0)
+      schemaJson.presentationUnits = this.presentationUnits.map((unit) => unit.fullName);
     return schemaJson;
   }
 
@@ -250,14 +246,5 @@ export class KindOfQuantity extends SchemaItem {
 
     if (kindOfQuantityProps.presentationUnits)
       await this.processPresentationUnits(kindOfQuantityProps.presentationUnits);
-  }
-
-  public async accept(visitor: SchemaItemVisitor) {
-    if (visitor.visitKindOfQuantity)
-      await visitor.visitKindOfQuantity((this as any) as KindOfQuantity);
-  }
-  public acceptSync(visitor: SchemaItemVisitor) {
-    if (visitor.visitKindOfQuantitySync)
-      visitor.visitKindOfQuantitySync((this as any) as KindOfQuantity);
   }
 }

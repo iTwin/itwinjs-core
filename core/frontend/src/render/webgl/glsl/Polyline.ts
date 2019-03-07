@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { assert } from "@bentley/bentleyjs-core";
 import {
   ProgramBuilder,
+  ShaderBuilderFlags,
   VariableType,
   FragmentShaderComponent,
   VertexShaderComponent,
@@ -22,6 +22,8 @@ import { addWhiteOnWhiteReversal } from "./Fragment";
 import { System } from "../System";
 import { TextureUnit } from "../RenderFlags";
 import { addHiliter } from "./FeatureSymbology";
+import { assert } from "@bentley/bentleyjs-core";
+import { IsInstanced } from "../TechniqueFlags";
 
 const checkForDiscard = "return discardByLineCode;";
 
@@ -249,7 +251,7 @@ const computePosition = `
 
   v_lnInfo = vec4(0.0, 0.0, 0.0, 0.0);  // init and set flag to false
 
-  vec4 pos = u_mvp * rawPos;
+  vec4 pos = MAT_MVP * rawPos;
 
   vec4 next = g_nextPos;
   g_windowPos = modelToWindowCoordinates(rawPos, next);
@@ -347,8 +349,8 @@ const computePosition = `
 
 const lineCodeArgs = "g_windowDir, g_windowPos, miterAdjust";
 
-export function createPolylineBuilder(): ProgramBuilder {
-  const builder = new ProgramBuilder(true);
+export function createPolylineBuilder(instanced: IsInstanced): ProgramBuilder {
+  const builder = new ProgramBuilder(instanced ? ShaderBuilderFlags.InstancedVertexTable : ShaderBuilderFlags.VertexTable);
   addShaderFlags(builder);
 
   addCommon(builder);
@@ -361,8 +363,8 @@ export function createPolylineBuilder(): ProgramBuilder {
   return builder;
 }
 
-export function createPolylineHiliter(): ProgramBuilder {
-  const builder = new ProgramBuilder(true);
+export function createPolylineHiliter(instanced: IsInstanced): ProgramBuilder {
+  const builder = new ProgramBuilder(instanced ? ShaderBuilderFlags.InstancedVertexTable : ShaderBuilderFlags.VertexTable);
   addCommon(builder);
   addFrustum(builder);
   addHiliter(builder);

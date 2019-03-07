@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="theme-color" content="#000000">
+  <link rel="shortcut icon" href="/favicon.ico">
+  <title>Display Test App</title>
+  <style>
+    html,
+    body {
+      height: 100%;
+      width: 100%;
+      margin: 0;
+      position: relative;
+    }
+
+    #root {
+      height: 100%;
+    }
+  </style>
+  <link rel="stylesheet" type="text/css" href="index.css">
+  <!-- get the IModelJs loader to load the system -->
+  <script type="text/javascript" src="runtime.js"></script>
+  <script type="text/javascript" src="IModelJsLoader.js" data-imjsversions='<%= htmlWebpackPlugin.options.imjsVersions %>'></script>
+</head>
+
+<body>
+  <noscript>
+    You need to enable JavaScript to run this app.
+  </noscript>
+  <div id="root">
+    <!-- Browser file selector only used when we are running in browser and were given a base path for all standalone files -->
+    <input type="file" id="browserFileSelector" />
+    <div class=topdiv id="toolBar">
+    </div>
+    <div id="spinner" class="bim-spinner-container">
+      <div class="bim-spinner"></div>
+    </div>
+    <div class="imodel-viewport-wrap">
+      <div class="imodel-viewport-container">
+        <div class="imodel-viewport" id="imodel-viewport">
+        </div>
+      </div>
+    </div>
+    <div class="bottomdiv">
+      <span class="statusspan" id="showstatus"></span>
+      <span class="statusspan" id="showerror"></span>
+      <span id="tileLoadIndicatorContainer"></span>
+      <span id="snapModesContainer"></span>
+    </div>
+</body>
+
+</html>

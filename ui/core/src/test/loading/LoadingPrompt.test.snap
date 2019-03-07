@@ -1,0 +1,180 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<LoadingBar /> renders correctly 1`] = `
+<div
+  className="core-loadingprompt"
+>
+  <span
+    className="title"
+  />
+  <span
+    className="message"
+  />
+  <LoadingSpinner
+    messageOnTop={false}
+  />
+</div>
+`;
+
+exports[`<LoadingBar /> renders with text and message correctly 1`] = `
+<div
+  className="core-loadingprompt"
+>
+  <span
+    className="title"
+  >
+    title
+  </span>
+  <span
+    className="message"
+  >
+    description
+  </span>
+  <LoadingSpinner
+    messageOnTop={false}
+  />
+</div>
+`;
+
+exports[`<LoadingBar /> renders with text and message, and deterministic 1`] = `
+<div
+  className="core-loadingprompt"
+>
+  <span
+    className="title"
+  >
+    title
+  </span>
+  <span
+    className="message"
+  >
+    description
+  </span>
+  <LoadingBar
+    barHeight={4}
+    percent={0}
+    showPercentage={false}
+    style={
+      Object {
+        "width": "100%",
+      }
+    }
+  />
+</div>
+`;
+
+exports[`<LoadingBar /> renders with text and message, and deterministic 2`] = `
+<div
+  className="core-loadingprompt"
+>
+  <span
+    className="title"
+  >
+    title
+  </span>
+  <span
+    className="message"
+  >
+    description
+  </span>
+  <LoadingBar
+    barHeight={4}
+    percent={50}
+    showPercentage={false}
+    style={
+      Object {
+        "width": "100%",
+      }
+    }
+  />
+</div>
+`;
+
+exports[`<LoadingBar /> renders with text and message, and deterministic 3`] = `
+<div
+  className="core-loadingprompt"
+>
+  <span
+    className="title"
+  >
+    title
+  </span>
+  <span
+    className="message"
+  >
+    description
+  </span>
+  <LoadingBar
+    barHeight={4}
+    percent={50}
+    showPercentage={false}
+    style={
+      Object {
+        "width": "100%",
+      }
+    }
+  />
+  <button
+    className="loading-prompt-cancel"
+    type="button"
+  >
+    Cancel
+  </button>
+</div>
+`;
+
+exports[`<LoadingBar /> renders with text and message, and deterministic 4`] = `
+<div
+  className="core-loadingprompt"
+>
+  <span
+    className="title"
+  >
+    title
+  </span>
+  <span
+    className="message"
+  >
+    description
+  </span>
+  <LoadingBar
+    barHeight={4}
+    percent={50}
+    showPercentage={false}
+    style={
+      Object {
+        "width": "100%",
+      }
+    }
+  />
+  <LoadingStatus
+    message="description"
+    percent={50}
+    style={
+      Object {
+        "fontSize": ".75em",
+        "marginTop": ".5em",
+        "width": "100%",
+      }
+    }
+  />
+</div>
+`;
+
+exports[`<LoadingBar /> renders with text correctly 1`] = `
+<div
+  className="core-loadingprompt"
+>
+  <span
+    className="title"
+  >
+    title
+  </span>
+  <span
+    className="message"
+  />
+  <LoadingSpinner
+    messageOnTop={false}
+  />
+</div>
+`;

@@ -14,7 +14,7 @@ import { IModelConnection } from "@bentley/imodeljs-frontend";
 import {
   PresentationError, PresentationStatus,
   DefaultContentDisplayTypes, Descriptor, SortDirection,
-  Content, Field, PropertyValueFormat, Item,
+  Content, Field, PropertyValueFormat, Item, Ruleset,
 } from "@bentley/presentation-common";
 import { ContentDataProvider, CacheInvalidationProps, IContentDataProvider } from "../common/ContentDataProvider";
 import { ContentBuilder } from "../common/ContentBuilder";
@@ -25,10 +25,36 @@ interface PromisedPage<TItem> extends Page<TItem> {
   promise?: Promise<void>;
 }
 
+/** The default number of rows in a single page requested by [[PresentationTableDataProvider]] */
+export const TABLE_DATA_PROVIDER_DEFAULT_PAGE_SIZE = 20;
+
+/** The default number of pages cached by [[PresentationTableDataProvider]] */
+export const TABLE_DATA_PROVIDER_DEFAULT_CACHED_PAGES_COUNT = 5;
+
 /**
  * Interface for presentation rules-driven property data provider.
  */
 export type IPresentationTableDataProvider = ITableDataProvider & IContentDataProvider;
+
+/**
+ * Initialization properties for [[PresentationTableDataProvider]]
+ */
+export interface PresentationTableDataProviderProps {
+  /** IModel to pull data from */
+  imodel: IModelConnection;
+
+  /** Ruleset or it's ID to be used for creating the content */
+  ruleset: string | Ruleset;
+
+  /** Number of rows in a single page requested from the backend. Defaults to [[TABLE_DATA_PROVIDER_DEFAULT_PAGE_SIZE]] */
+  pageSize?: number;
+
+  /** Number of pages cached in the data provider. Defaults to [[TABLE_DATA_PROVIDER_DEFAULT_CACHED_PAGES_COUNT]] */
+  cachedPagesCount?: number;
+
+  /** Display type to use when requesting data from the backend. Defaults to [[DefaultContentDisplayTypes.GRID]] */
+  displayType?: string;
+}
 
 /**
  * Presentation Rules-driven table data provider.
@@ -42,11 +68,12 @@ export class PresentationTableDataProvider extends ContentDataProvider implement
   public onRowsChanged = new TableDataChangeEvent();
 
   /** Constructor. */
-  constructor(imodel: IModelConnection, rulesetId: string, pageSize: number = 20, cachedPagesCount: number = 5) {
-    super(imodel, rulesetId, DefaultContentDisplayTypes.GRID);
-    this._pages = new PageContainer(pageSize, cachedPagesCount);
+  constructor(props: PresentationTableDataProviderProps) {
+    super(props.imodel, props.ruleset, props.displayType || DefaultContentDisplayTypes.GRID);
+    this._pages = new PageContainer(props.pageSize || TABLE_DATA_PROVIDER_DEFAULT_PAGE_SIZE,
+      props.cachedPagesCount || TABLE_DATA_PROVIDER_DEFAULT_CACHED_PAGES_COUNT);
+    this.pagingSize = props.pageSize || TABLE_DATA_PROVIDER_DEFAULT_PAGE_SIZE;
   }
-
   /**
    * `ECExpression` for filtering data in the table.
    */

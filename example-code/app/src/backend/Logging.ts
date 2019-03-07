@@ -4,8 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 // __PUBLISH_EXTRACT_START__ Logging-configureLoggingAndStreams.example-code
 import { Logger, LoggerLevelsConfig, EnvMacroSubst, BentleyError, IModelStatus } from "@bentley/bentleyjs-core";
-import { BunyanLoggerConfig } from "@bentley/bentleyjs-core/lib/BunyanLoggerConfig";
-import { SeqLoggerConfig, SeqConfig } from "@bentley/bentleyjs-core/lib/SeqLoggerConfig";
+import { BunyanLoggerConfig, SeqConfig, SeqLoggerConfig } from "@bentley/logger-config";
 
 export function initializeLogging(): void {
   // Read the configuration parameters for my service. Some config

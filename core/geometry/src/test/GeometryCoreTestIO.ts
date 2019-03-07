@@ -9,6 +9,8 @@ import * as fs from "fs";
 import { IModelJson } from "../serialization/IModelJsonSchema";
 import { Arc3d } from "../curve/Arc3d";
 import { Point3d } from "../geometry3d/Point3dVector3d";
+/* tslint:disable:no-console */
+
 // Methods (called from other files in the test suite) for doing I/O of tests files.
 export class GeometryCoreTestIO {
   public static outputRootDirectory = "./src/test/output";
@@ -19,9 +21,11 @@ export class GeometryCoreTestIO {
       if (!fs.existsSync(path))
         fs.mkdirSync(path);
     }
-    const filename = path + "/" + fileName + ".imjs";
+    const fullPath = path + "/" + fileName + ".imjs";
+    // console.log("saveGeometry::    " + fullPath);
+
     const imjs = IModelJson.Writer.toIModelJson(geometry);
-    fs.writeFileSync(filename, prettyPrint(imjs));
+    fs.writeFileSync(fullPath, prettyPrint(imjs));
   }
   public static captureGeometry(collection: GeometryQuery[], newGeometry: GeometryQuery, dx: number = 0, dy: number = 0, dz: number = 0) {
     if (newGeometry) {

@@ -6,24 +6,38 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-
-import ExpansionToggle from "./ExpansionToggle";
-import "./Node.scss";
-import { Checkbox } from "@bentley/bwc";
+import { Checkbox, CheckboxProps } from "../inputs/checkbox/Checkbox";
 import { CheckBoxState } from "../enums/CheckBoxState";
+import ExpansionToggle from "./ExpansionToggle";
+import { Spinner, SpinnerSize } from "../loading/Spinner";
+
+import "./Node.scss";
+
+/** Type for node checkbox renderer */
+export type NodeCheckboxRenderer = (props: CheckboxProps) => React.ReactNode;
 
 /** Number of pixels the node gets offset per each hierarchy level */
 export const LEVEL_OFFSET = 20;
+
+const EXPANSION_TOGGLE_WIDTH = 24;
+
+/** Properties for [[TreeNode]] checkbox */
+export interface NodeCheckboxProps {
+  /** State of the checkbox */
+  state?: CheckBoxState;
+  /** Click event callback */
+  onClick?: (newState: CheckBoxState) => void;
+  /** Indicates whether checkbox is disabled */
+  isDisabled?: boolean;
+}
 
 /** Properties for the [[TreeNode]] React component */
 export interface NodeProps {
   label: React.ReactNode;
   level: number;
   icon?: React.ReactChild;
-  isCheckboxVisible?: boolean;
-  isCheckboxDisabled?: boolean;
-  checkboxState?: CheckBoxState;
-  onCheckboxClick?: () => void;
+  /** Properties for the checkbox */
+  checkboxProps?: NodeCheckboxProps;
   isLeaf?: boolean;
   isLoading?: boolean;
   isExpanded?: boolean;
@@ -35,35 +49,50 @@ export interface NodeProps {
   onMouseDown?: (e: React.MouseEvent) => void;
   onMouseUp?: (e: React.MouseEvent) => void;
   onClickExpansionToggle?: () => void;
-
   children?: React.ReactNode;
   className?: string;
   style?: React.CSSProperties;
-
+  /** Contains render overrides for different pieces of the node component */
+  renderOverrides?: {
+    /** Callback to render a checkbox. Only called when checkbox is displayed */
+    renderCheckbox?: NodeCheckboxRenderer;
+  };
   ["data-testid"]?: string;
 }
 
 /** Presentation React component for a Tree node  */
-export default class TreeNode extends React.PureComponent<NodeProps> {
+export default class TreeNode extends React.Component<NodeProps> {
   public render() {
     const className = classnames(
-      "nz-tree-node",
+      "core-tree-node",
       this.props.isFocused && "is-focused",
       this.props.isSelected && "is-selected",
       this.props.isHoverDisabled && "is-hover-disabled",
       this.props.className);
-    const offset = this.props.level * LEVEL_OFFSET;
-    const loader = this.props.isLoading ? (<div className="loader"><i></i><i></i><i></i><i></i><i></i><i></i></div>) : undefined;
-    const checkbox = this.props.isCheckboxVisible ?
-      <Checkbox
-        label=""
-        checked={this.props.checkboxState === CheckBoxState.On ? true : false}
-        disabled={this.props.isCheckboxDisabled}
-        onClick={this._onCheckboxClick}
-        onChange={this._onCheckboxChange}
-      /> :
-      undefined;
-    const icon = this.props.icon ? (<div className="icon">{this.props.icon}</div>) : undefined;
+    let offset = this.props.level * LEVEL_OFFSET;
+    if (!this.props.isLoading && this.props.isLeaf)
+      offset += EXPANSION_TOGGLE_WIDTH; // Add expansion toggle/loader width if they're not rendered
+
+    const loader = this.props.isLoading ? (<div className="loader"><Spinner size={SpinnerSize.Small} /></div>) : undefined;
+
+    let checkbox: React.ReactNode;
+    if (this.props.checkboxProps) {
+      const props: CheckboxProps = {
+        label: "",
+        checked: this.props.checkboxProps.state === CheckBoxState.On,
+        disabled: this.props.checkboxProps.isDisabled,
+        onClick: this._onCheckboxClick,
+        onChange: this._onCheckboxChange,
+      };
+      if (this.props.renderOverrides && this.props.renderOverrides.renderCheckbox) {
+        checkbox = this.props.renderOverrides.renderCheckbox(props);
+      } else {
+        checkbox = (<Checkbox {...props} data-testid={this.createSubComponentTestId("checkbox")} />);
+      }
+    }
+
+    const icon = this.props.icon ? (<div className="core-tree-node-icon">{this.props.icon}</div>) : undefined;
+
     const toggle = (this.props.isLoading || this.props.isLeaf) ? undefined : (
       <ExpansionToggle
         className="expansion-toggle"
@@ -72,6 +101,7 @@ export default class TreeNode extends React.PureComponent<NodeProps> {
         isExpanded={this.props.isExpanded}
       />
     );
+
     const style = { ...this.props.style, paddingLeft: offset };
 
     return (
@@ -79,21 +109,21 @@ export default class TreeNode extends React.PureComponent<NodeProps> {
         className={className}
         style={style}
         data-testid={this.props["data-testid"]}
+        onClick={this._onClick}
+        onMouseDown={this.props.onMouseDown}
+        onMouseUp={this.props.onMouseUp}
+        onMouseMove={this.props.onMouseMove}
       >
         {loader}
         {toggle}
         <div
           className="contents"
           data-testid={this.createSubComponentTestId("contents")}
-          onClick={this._onClick}
-          onMouseDown={this.props.onMouseDown}
-          onMouseUp={this.props.onMouseUp}
-          onMouseMove={this.props.onMouseMove}>
+        >
           {checkbox}
           {icon}
           {this.props.label}
         </div>
-        <div className="whole-row" ></div>
         {this.props.children}
       </div>
     );
@@ -105,9 +135,9 @@ export default class TreeNode extends React.PureComponent<NodeProps> {
     return `${this.props["data-testid"]}-${subId}`;
   }
 
-  private _onCheckboxChange = (_e: React.ChangeEvent<HTMLInputElement>) => {
-    if (this.props.onCheckboxClick)
-      this.props.onCheckboxClick();
+  private _onCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (this.props.checkboxProps && this.props.checkboxProps.onClick && !this.props.checkboxProps.isDisabled)
+      this.props.checkboxProps.onClick(e.target.indeterminate ? CheckBoxState.Partial : e.target.checked ? CheckBoxState.On : CheckBoxState.Off);
   }
 
   private _onCheckboxClick = (e: React.MouseEvent<HTMLInputElement>) => {

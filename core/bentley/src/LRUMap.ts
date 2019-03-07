@@ -10,7 +10,9 @@
  * See README.md at https://github.com/rsms/js-lru for details.
  */
 
-/** An entry holds the key and value, and pointers to any older and newer entries. */
+/** An entry holds the key and value, and pointers to any older and newer entries.
+ * @public
+ */
 export class Entry<K, V> {
   public newer?: Entry<K, V>;
   public older?: Entry<K, V>;
@@ -78,6 +80,7 @@ class ValueIterator<K, V> implements Iterator<V | undefined> {
  *
  *  removed  <--  <--  <--  <--  <--  <--  <--  <--  <--  <--  <--  added
  * ```
+ * @public
  */
 export class LRUMap<K, V> {
   private _keymap: Map<K, Entry<K, V>>;

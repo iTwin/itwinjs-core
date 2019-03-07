@@ -1,0 +1,58 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`RulesetTesting generates correct content for 'Items' ruleset. ClassName: 'BisCore:CategorySelector' 1`] = `
+Array [
+  PropertyRecord {
+    "property": Object {
+      "displayLabel": "User Label",
+      "name": "CategorySelector_UserLabel",
+      "typename": "string",
+    },
+    "value": Object {
+      "displayValue": "",
+      "value": undefined,
+      "valueFormat": 0,
+    },
+  },
+  PropertyRecord {
+    "description": "Definition Model For DgnV8Bridge:D:\\\\Temp\\\\Properties_60InstancesWithUrl2.dgn, Default",
+    "isReadonly": true,
+    "property": Object {
+      "displayLabel": "Model",
+      "name": "CategorySelector_Model",
+      "typename": "navigation",
+    },
+    "value": Object {
+      "displayValue": "Definition Model For DgnV8Bridge:D:\\\\Temp\\\\Properties_60InstancesWithUrl2.dgn, Default",
+      "value": 22,
+      "valueFormat": 0,
+    },
+  },
+  PropertyRecord {
+    "description": "False",
+    "property": Object {
+      "displayLabel": "Is Private",
+      "name": "CategorySelector_IsPrivate",
+      "typename": "boolean",
+    },
+    "value": Object {
+      "displayValue": "False",
+      "value": false,
+      "valueFormat": 0,
+    },
+  },
+  PropertyRecord {
+    "description": "Default - View 1",
+    "property": Object {
+      "displayLabel": "Code",
+      "name": "CategorySelector_CodeValue",
+      "typename": "string",
+    },
+    "value": Object {
+      "displayValue": "Default - View 1",
+      "value": "Default - View 1",
+      "valueFormat": 0,
+    },
+  },
+]
+`;

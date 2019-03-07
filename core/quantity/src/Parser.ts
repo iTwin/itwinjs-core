@@ -8,7 +8,9 @@ import { Quantity } from "./Quantity";
 import { Format } from "./Formatter/Format";
 import { FormatType, FormatTraits } from "./Formatter/FormatEnums";
 
-/** A ParseToken holds either a numeric or string toke extracted from a string that represents a quantity value. */
+/** A ParseToken holds either a numeric or string token extracted from a string that represents a quantity value.
+ * @alpha
+ */
 class ParseToken {
   public value: number | string;
 
@@ -21,6 +23,9 @@ class ParseToken {
   public get isNumber(): boolean { return typeof this.value === "number"; }
 }
 
+/** A ScientificToken holds an index and string representing the exponent.
+ * @alpha
+ */
 class ScientificToken {
   public index: number;
   public exponent = "";
@@ -31,6 +36,9 @@ class ScientificToken {
   }
 }
 
+/** A FractionToken holds an index and the fraction value of numerator / denominator.
+ * @alpha
+ */
 class FractionToken {
   public index: number;
   public fraction = 0.0;
@@ -42,7 +50,9 @@ class FractionToken {
   }
 }
 
-/** A Parser class that is used to break a string that represents a quantity value into tokens. */
+/** A Parser class that is used to break a string that represents a quantity value into tokens.
+ * @alpha
+ */
 export class Parser {
   private static checkForScientificNotation(index: number, stringToParse: string, uomSeparatorToIgnore: number): ScientificToken {
     let exponentString = "";

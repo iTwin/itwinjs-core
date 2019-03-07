@@ -8,8 +8,6 @@ import * as React from "react";
 import { ExpandableBlock } from "@bentley/ui-core";
 import { PropertyCategory } from "../PropertyDataProvider";
 
-import "./PropertyCategoryBlock.scss";
-
 /**
  * Properties for the [[PropertyCategoryBlock]] React component
  */
@@ -51,7 +49,6 @@ export class PropertyCategoryBlock extends React.Component<PropertyCategoryBlock
         onClick={this._onClick}
         onKeyPress={this._onKeyPress}
         title={this.props.category.label}
-        className={"components-property-category-block"}
       >
         {this.props.children}
       </ExpandableBlock>

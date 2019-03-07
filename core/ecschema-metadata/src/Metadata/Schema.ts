@@ -28,46 +28,47 @@ import { ECObjectsError, ECObjectsStatus } from "./../Exception";
 import { AnyClass, AnySchemaItem } from "./../Interfaces";
 import { SchemaKey, ECVersion, SchemaItemKey } from "./../SchemaKey";
 
-const SCHEMAURL3_2 = "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema";
+const SCHEMAURL3_2 = "https://dev.bentley.com/json_schemas/ec/32/ecschema";
 
 /**
  *
  */
 export class Schema implements CustomAttributeContainerProps {
-  // private _context?: SchemaContext; unused currently, but in the future we may use it for item lookup
+  private _context: SchemaContext;
   protected _schemaKey?: SchemaKey;
   protected _alias?: string;
   protected _label?: string;
   protected _description?: string;
   public readonly references: Schema[];
-  private readonly _items: SchemaItem[];
+  private readonly _items: Map<string, SchemaItem>;
   private _customAttributes?: Map<string, CustomAttribute>;
   /**
-   * Constructs an empty Schema with the given name and version, (optionally) in a given context.
+   * Constructs an empty Schema with the given name and version in the provided context.
+   * @param context The SchemaContext that will control the lifetime of the schema
    * @param name The schema's name
    * @param readVersion The integer read (major) version of the schema
    * @param writeVersion The integer write version of the schema
    * @param minorVersion The integer minor version of the schema
+   */
+  constructor(context: SchemaContext, name: string, readVersion: number, writeVersion: number, minorVersion: number);
+  /**
+   * Constructs an empty Schema with the given key in the provided context.
    * @param context The SchemaContext that will control the lifetime of the schema
-   */
-  constructor(name: string, readVersion: number, writeVersion: number, minorVersion: number, context?: SchemaContext);
-  /**
-   * Constructs an empty Schema with the given key, (optionally) in a given context.
    * @param key A SchemaKey that uniquely identifies the schema
-   * @param context The SchemaContext that will control the lifetime of the schema.
    */
-  constructor(key: SchemaKey, context?: SchemaContext);  // tslint:disable-line:unified-signatures
+  constructor(context: SchemaContext, key: SchemaKey);  // tslint:disable-line:unified-signatures
   /**
-   * Constructs an empty Schema (without a SchemaKey).
+   * Constructs an empty Schema (without a SchemaKey) in the provided context.
    * This should only be used when the schema name and version will be deserialized (via `fromJson()`) immediately after this Schema is instantiated.
+   * @param context The SchemaContext that will control the lifetime of the schema
    * @hidden
    */
-  constructor();
-  constructor(nameOrKey?: SchemaKey | string, readVerOrCtx?: SchemaContext | number, writeVer?: number, minorVer?: number, _otherCtx?: SchemaContext) {
-    this._schemaKey = (typeof (nameOrKey) === "string") ? new SchemaKey(nameOrKey, new ECVersion(readVerOrCtx as number, writeVer, minorVer)) : nameOrKey;
-    // this._context = (typeof(readVerOrCtx) === "number") ? otherCtx : readVerOrCtx;
+  constructor(context: SchemaContext);
+  constructor(context: SchemaContext, nameOrKey?: SchemaKey | string, readVer?: SchemaContext | number, writeVer?: number, minorVer?: number) {
+    this._schemaKey = (typeof (nameOrKey) === "string") ? new SchemaKey(nameOrKey, new ECVersion(readVer as number, writeVer, minorVer)) : nameOrKey;
+    this._context = context;
     this.references = [];
-    this._items = [];
+    this._items = new Map<string, SchemaItem>();
   }
 
   get schemaKey() {
@@ -89,6 +90,15 @@ export class Schema implements CustomAttributeContainerProps {
   get description() { return this._description; }
 
   get customAttributes(): CustomAttributeSet | undefined { return this._customAttributes; }
+
+  /** Returns the schema name. */
+  get fullName() { return this.schemaKey.name; }
+
+  /** Returns the schema. */
+  get schema(): Schema { return this; }
+
+  /** Returns the schema context. */
+  get context(): SchemaContext { return this._context; }
 
   /**
    * Returns a SchemaItemKey given the item name and the schema it belongs to
@@ -295,7 +305,7 @@ export class Schema implements CustomAttributeContainerProps {
    */
   public async getItem<T extends SchemaItem>(name: string): Promise<T | undefined> {
     // this method exists so we can rewire it later when we load partial schemas, for now it is identical to the sync version
-    return this.getItemSync(name);
+    return this.getItemSync<T>(name);
   }
 
   /**
@@ -304,7 +314,7 @@ export class Schema implements CustomAttributeContainerProps {
    */
   public getItemSync<T extends SchemaItem>(name: string): T | undefined {
     // Case-insensitive search
-    return this._items.find((item) => item.name.toUpperCase() === name.toUpperCase()) as T;
+    return this._items.get(name.toUpperCase()) as T;
   }
 
   /**
@@ -322,14 +332,12 @@ export class Schema implements CustomAttributeContainerProps {
 
     if (!schemaName || schemaName.toUpperCase() === this.name.toUpperCase()) {
       return this.getItem<T>(itemName);
-      // this._context.
     }
 
     const refSchema = await this.getReference(schemaName);
     if (!refSchema)
       return undefined;
 
-    // TODO: use the context and not get the full schema here
     return refSchema.getItem<T>(itemName);
   }
 
@@ -348,14 +356,12 @@ export class Schema implements CustomAttributeContainerProps {
 
     if (!schemaName || schemaName.toUpperCase() === this.name.toUpperCase()) {
       return this.getItemSync<T>(itemName);
-      // this._context.
     }
 
     const refSchema = this.getReferenceSync(schemaName);
     if (!refSchema)
       return undefined;
 
-    // TODO: use the context and not get the full schema here
     return refSchema.getItemSync<T>(itemName);
   }
 
@@ -363,26 +369,21 @@ export class Schema implements CustomAttributeContainerProps {
     if (undefined !== this.getItemSync(item.name))
       throw new ECObjectsError(ECObjectsStatus.DuplicateItem, `The SchemaItem ${item.name} cannot be added to the schema ${this.name} because it already exists`);
 
-    this._items.push(item);
+    this._items.set(item.name.toUpperCase(), item);
   }
 
-  public getItems<T extends AnySchemaItem>(): T[] {
+  public getItems<T extends AnySchemaItem>(): IterableIterator<T> {
     if (!this._items)
-      return [];
+      return new Map<string, SchemaItem>().values() as IterableIterator<T>;
 
-    return this._items as T[];
+    return this._items.values() as IterableIterator<T>;
   }
 
-  public getClasses(): ECClass[] {
-    if (!this._items)
-      return [];
-
-    const classList = this._items.filter((item) => item instanceof ECClass);
-
-    if (!classList)
-      return [];
-
-    return classList as ECClass[];
+  public *getClasses(): IterableIterator<ECClass> {
+    for (const [, value] of this._items) {
+      if (value instanceof ECClass)
+        yield value;
+    }
   }
 
   /**
@@ -422,19 +423,13 @@ export class Schema implements CustomAttributeContainerProps {
       schemaJson.label = this.label;
     if (undefined !== this.description) // description is optional
       schemaJson.description = this.description;
-    if (undefined !== this.references && this.references.length > 0) { // references is optional
-      schemaJson.references = [];
-      this.references.forEach((refSchema: Schema) => {
-        schemaJson.references.push({
-          name: refSchema.name,
-          version: refSchema.schemaKey.version.toString(true),
-        });
-      });
-    }
+    if (undefined !== this.references && this.references.length > 0) // references is optional
+      schemaJson.references = this.references.map(({ name, schemaKey }) => ({ name, version: schemaKey.version.toString() }));
+
     const customAttributes = serializeCustomAttributes(this.customAttributes);
     if (undefined !== customAttributes)
       schemaJson.customAttributes = customAttributes;
-    if (this._items.length > 0) {
+    if (this._items.size > 0) {
       schemaJson.items = {};
       this._items.forEach((schemaItem: SchemaItem) => {
         schemaJson.items[schemaItem.name] = schemaItem.toJson(false, true);
@@ -444,9 +439,6 @@ export class Schema implements CustomAttributeContainerProps {
   }
 
   public deserializeSync(schemaProps: SchemaProps) {
-    if (SCHEMAURL3_2 !== schemaProps.$schema) // TODO: Allow for 3.x URI versions to allow the API to read newer specs. (Start at 3.2 though)
-      throw new ECObjectsError(ECObjectsStatus.MissingSchemaUrl, `The Schema ${this.name} has an unsupported namespace '${schemaProps.$schema}'.`);
-
     if (undefined === this._schemaKey) {
       const schemaName = schemaProps.name;
       const version = ECVersion.fromString(schemaProps.version);
@@ -454,9 +446,12 @@ export class Schema implements CustomAttributeContainerProps {
     } else {
       if (schemaProps.name.toLowerCase() !== this.name.toLowerCase())
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Schema ${this.name} does not match the provided name, '${schemaProps.name}'.`);
-      if (schemaProps.version !== this.schemaKey.version.toString())
+      if (this.schemaKey.version.compare(ECVersion.fromString(schemaProps.version)))
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Schema ${this.name} has the version '${this.schemaKey.version}' that does not match the provided version '${schemaProps.version}'.`);
     }
+
+    if (SCHEMAURL3_2 !== schemaProps.$schema) // TODO: Allow for 3.x URI versions to allow the API to read newer specs. (Start at 3.2 though)
+      throw new ECObjectsError(ECObjectsStatus.MissingSchemaUrl, `The Schema ${this.name} has an unsupported namespace '${schemaProps.$schema}'.`);
 
     if (undefined !== schemaProps.alias)
       this._alias = schemaProps.alias;
@@ -479,8 +474,8 @@ export class Schema implements CustomAttributeContainerProps {
     this._customAttributes.set(customAttribute.className, customAttribute);
   }
 
-  public static async fromJson(jsonObj: object | string, context?: SchemaContext): Promise<Schema> {
-    let schema: Schema = new Schema();
+  public static async fromJson(jsonObj: object | string, context: SchemaContext): Promise<Schema> {
+    let schema: Schema = new Schema(context);
 
     const reader = new SchemaReadHelper(JsonParser, context);
     const rawSchema = typeof jsonObj === "string" ? JSON.parse(jsonObj) : jsonObj;
@@ -489,8 +484,8 @@ export class Schema implements CustomAttributeContainerProps {
     return schema;
   }
 
-  public static fromJsonSync(jsonObj: object | string, context?: SchemaContext): Schema {
-    let schema: Schema = new Schema();
+  public static fromJsonSync(jsonObj: object | string, context: SchemaContext): Schema {
+    let schema: Schema = new Schema(context);
 
     const reader = new SchemaReadHelper(JsonParser, context);
     const rawSchema = typeof jsonObj === "string" ? JSON.parse(jsonObj) : jsonObj;
@@ -539,4 +534,5 @@ export abstract class MutableSchema extends Schema {
   public abstract addItem<T extends SchemaItem>(item: T): void;
   public abstract async addReference(refSchema: Schema): Promise<void>;
   public abstract addReferenceSync(refSchema: Schema): void;
+  public abstract setContext(schemaContext: SchemaContext): void;
 }

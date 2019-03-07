@@ -28,9 +28,13 @@ export class XY implements XAndY {
       this.x = 0; this.y = 0;
     }
   }
+  public freeze() { Object.freeze(this); }
 
   /** Returns true if this and other have equal x,y parts within Geometry.smallMetricDistance. */
   public isAlmostEqual(other: XAndY, tol?: number): boolean { return Geometry.isSameCoordinate(this.x, other.x, tol) && Geometry.isSameCoordinate(this.y, other.y, tol); }
+
+  /** Returns true if this and other have equal x,y parts within Geometry.smallMetricDistance. */
+  public isAlmostEqualXY(x: number, y: number, tol?: number): boolean { return Geometry.isSameCoordinate(this.x, x, tol) && Geometry.isSameCoordinate(this.y, y, tol); }
 
   /** return a json array or object with the [x,y] data.  */
   public toJSON(): XYProps { return [this.x, this.y]; }

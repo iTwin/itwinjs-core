@@ -1,0 +1,90 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`RulesetTesting generates correct content for 'Items' ruleset. ClassName: 'BisCore:SpatialIndex' 1`] = `
+Array [
+  PropertyRecord {
+    "description": "-0.53096020221710205",
+    "isReadonly": true,
+    "property": Object {
+      "displayLabel": "Min Z",
+      "name": "SpatialIndex_MinZ",
+      "typename": "double",
+    },
+    "value": Object {
+      "displayValue": "-0.53096020221710205",
+      "value": -0.530960202217102,
+      "valueFormat": 0,
+    },
+  },
+  PropertyRecord {
+    "description": "1.3836752176284799",
+    "isReadonly": true,
+    "property": Object {
+      "displayLabel": "Min Y",
+      "name": "SpatialIndex_MinY",
+      "typename": "double",
+    },
+    "value": Object {
+      "displayValue": "1.3836752176284799",
+      "value": 1.38367521762848,
+      "valueFormat": 0,
+    },
+  },
+  PropertyRecord {
+    "description": "-2.8011031150817902",
+    "isReadonly": true,
+    "property": Object {
+      "displayLabel": "Min X",
+      "name": "SpatialIndex_MinX",
+      "typename": "double",
+    },
+    "value": Object {
+      "displayValue": "-2.8011031150817902",
+      "value": -2.80110311508179,
+      "valueFormat": 0,
+    },
+  },
+  PropertyRecord {
+    "description": "0.53096020221710205",
+    "isReadonly": true,
+    "property": Object {
+      "displayLabel": "Max Z",
+      "name": "SpatialIndex_MaxZ",
+      "typename": "double",
+    },
+    "value": Object {
+      "displayValue": "0.53096020221710205",
+      "value": 0.530960202217102,
+      "valueFormat": 0,
+    },
+  },
+  PropertyRecord {
+    "description": "2.44559597969055",
+    "isReadonly": true,
+    "property": Object {
+      "displayLabel": "Max Y",
+      "name": "SpatialIndex_MaxY",
+      "typename": "double",
+    },
+    "value": Object {
+      "displayValue": "2.44559597969055",
+      "value": 2.44559597969055,
+      "valueFormat": 0,
+    },
+  },
+  PropertyRecord {
+    "description": "-1.7391824722289999",
+    "isReadonly": true,
+    "property": Object {
+      "displayLabel": "Max X",
+      "name": "SpatialIndex_MaxX",
+      "typename": "double",
+    },
+    "value": Object {
+      "displayValue": "-1.7391824722289999",
+      "value": -1.739182472229,
+      "valueFormat": 0,
+    },
+  },
+]
+`;

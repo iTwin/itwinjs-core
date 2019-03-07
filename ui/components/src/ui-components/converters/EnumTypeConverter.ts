@@ -4,10 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module TypeConverters */
 
-import { PropertyDescription, EnumerationChoice } from "../properties/Description";
+import { PropertyDescription, EnumerationChoice, Primitives } from "@bentley/imodeljs-frontend";
 import { TypeConverter } from "./TypeConverter";
 import { TypeConverterManager } from "./TypeConverterManager";
-import * as Primitives from "./valuetypes/PrimitiveTypes";
 
 /**
  * Enum Type Converter.

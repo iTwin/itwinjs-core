@@ -15,17 +15,29 @@ import {
 import { SampleAppIModelApp, RootState, SampleAppUiActionId } from "../";
 import { Tool1 } from "../tools/Tool1";
 import { Tool2 } from "../tools/Tool2";
+import { ToolWithSettings } from "../tools/ToolWithSettings";
+import { AppSelectTool } from "../tools/AppSelectTool";
 // cSpell:ignore appui
 import { TestMessageBox } from "../appui/dialogs/TestMessageBox";
 import { AppUi } from "../appui/AppUi";
 
 export class AppTools {
+  public static get appSelectElementCommand() {
+    return new ToolItemDef({
+      toolId: AppSelectTool.toolId,
+      iconSpec: "icon-cursor",
+      labelKey: "SampleApp:tools.AppSelect.flyover",
+      tooltipKey: "SampleApp:tools.AppSelect.description",
+      execute: () => { IModelApp.tools.run(AppSelectTool.toolId); },
+    });
+  }
+
   public static get tool1() {
     return new ToolItemDef({
       toolId: Tool1.toolId,
       iconSpec: "icon-placeholder",
-      labelKey: "SampleApp:tools.Tool1.flyover",
-      tooltipKey: "SampleApp:tools.Tool1.description",
+      label: () => Tool1.flyover,
+      tooltip: () => Tool1.description,
       execute: () => { IModelApp.tools.run(Tool1.toolId); },
     });
   }
@@ -37,6 +49,16 @@ export class AppTools {
       labelKey: "SampleApp:tools.Tool2.flyover",
       tooltipKey: "SampleApp:tools.Tool2.description",
       execute: () => { IModelApp.tools.run(Tool2.toolId); },
+    });
+  }
+
+  public static get toolWithSettings() {
+    return new ToolItemDef({
+      toolId: ToolWithSettings.toolId,
+      iconSpec: "icon-placeholder",
+      labelKey: "SampleApp:tools.ToolWithSettings.flyover",
+      tooltipKey: "SampleApp:tools.ToolWithSettings.description",
+      execute: () => { IModelApp.tools.run(ToolWithSettings.toolId); },
     });
   }
 
@@ -206,12 +228,14 @@ export class AppTools {
     });
   }
 
+  private static _detailedMessage = "This is a detailed message with a line<br>break and <b>bold</b>, <i>italic</i> and <span class='red-text'>red</span> text.";
+
   public static get infoMessageCommand() {
     return new CommandItemDef({
       commandId: "infoMessage",
       iconSpec: "icon-info",
       labelKey: "SampleApp:buttons.informationMessageBox",
-      execute: () => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "This is an info message")),
+      execute: () => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "This is an info message", this._detailedMessage)),
     });
   }
 
@@ -220,7 +244,7 @@ export class AppTools {
       commandId: "warningMessage",
       iconSpec: "icon-status-warning",
       labelKey: "SampleApp:buttons.warningMessageBox",
-      execute: () => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Warning, "This is a warning message", undefined, OutputMessageType.Sticky)),
+      execute: () => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Warning, "This is a warning message", this._detailedMessage, OutputMessageType.Sticky)),
     });
   }
 
@@ -229,7 +253,10 @@ export class AppTools {
       commandId: "errorMessage",
       iconSpec: "icon-status-rejected",
       labelKey: "SampleApp:buttons.errorMessageBox",
-      execute: () => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, "This is an error message", undefined, OutputMessageType.Alert)),
+      execute: () => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, "This is an error message",
+        "1. " + this._detailedMessage + "<br>" +
+        "2. " + this._detailedMessage + "<br>" +
+        "For more details, <a href='https://www.google.com/' target='_blank'>Google it!</a>", OutputMessageType.Alert)),
     });
   }
 
@@ -259,7 +286,7 @@ export class AppTools {
     });
   }
 
-  private static _detailMsg = "This is a description of the alert with lots and lots of words that explains what the user did & what they can do to remedy the situation."; // <br />Hello <a href=\"http://www.google.com\">Google!</a>
+  private static _detailMsg = "This is a description of the alert with lots and lots of words that explains what the user did & what they can do to remedy the situation. <br />For more info, <a href='http://www.google.com' target='_blank'>Google it!</a>";
   public static get warningMessageStickyCommand() {
     return new CommandItemDef({
       commandId: "warningMessage",

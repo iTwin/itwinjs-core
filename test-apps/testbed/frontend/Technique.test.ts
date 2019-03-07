@@ -21,7 +21,7 @@ import {
 } from "@bentley/imodeljs-frontend/lib/webgl";
 
 function createPurpleQuadTechnique(target: Target): TechniqueId {
-  const builder = new ProgramBuilder(false);
+  const builder = new ProgramBuilder();
   builder.vert.set(VertexShaderComponent.ComputePosition, "return rawPos;");
   builder.frag.set(FragmentShaderComponent.ComputeBaseColor, "return vec4(1.0, 0.0, 0.5, 1.0);");
   builder.frag.set(FragmentShaderComponent.AssignFragData, "FragColor = baseColor;");
@@ -85,7 +85,7 @@ describe("Technique tests", () => {
   // NEEDS_WORK: Paul to look into making a fix for Linux failures
   // Clipping planes add an extra varying vec4 which was causing surface shaders to exceed max varying vectors (capped at min guaranteed by spec, primarily because iOS).
   // Verify this no longer occurs.
-  it.skip("should successfully compile surface shader with clipping planes", () => {
+  it("should successfully compile surface shader with clipping planes", () => {
     if (!WebGLTestContext.isInitialized)
       return;
 
@@ -96,6 +96,31 @@ describe("Technique tests", () => {
 
     const tech = System.instance.techniques.getTechnique(TechniqueId.Surface);
     const prog = tech.getShader(flags);
+    expect(prog.compile()).to.be.true;
+  });
+
+  it("should successfully compile animation shaders", () => {
+    if (!WebGLTestContext.isInitialized)
+      return;
+
+    const flags = new TechniqueFlags();
+    flags.setAnimated(true);
+    let tech = System.instance.techniques.getTechnique(TechniqueId.Edge);
+    let prog = tech.getShader(flags);
+    expect(prog.compile()).to.be.true;
+
+    tech = System.instance.techniques.getTechnique(TechniqueId.Surface);
+    prog = tech.getShader(flags);
+    expect(prog.compile()).to.be.true;
+
+    flags.isTranslucent = true;
+    flags.featureMode = FeatureMode.Overrides;
+    prog = tech.getShader(flags);
+    expect(prog.compile()).to.be.true;
+
+    flags.clip.type = ClippingType.Planes;
+    flags.clip.numberOfPlanes = 6;
+    prog = tech.getShader(flags);
     expect(prog.compile()).to.be.true;
   });
 });

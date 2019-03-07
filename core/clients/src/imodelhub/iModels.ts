@@ -14,6 +14,7 @@ import { ProgressInfo } from "../Request";
 import { IModelBaseHandler } from "./BaseHandler";
 
 const loggingCategory = "imodeljs-clients.imodelhub";
+const iModelTemplateEmpty = "Empty";
 
 /**
  * HubIModel represents an iModel on iModelHub. Getting a valid HubIModel instance from iModelHub is required for majority of iModelHub method calls, as wsgId of this object needs to be passed as imodelId argument to those methods.
@@ -45,6 +46,10 @@ export class HubIModel extends WsgInstance {
     /** Set to true, when iModel is ready to be used. See [[IModelHandler.create]]. */
     @ECJsonTypeMap.propertyToJson("wsg", "properties.Initialized")
     public initialized?: boolean;
+
+    /** @hidden - internal property, set when creating iModel from empty seed file */
+    @ECJsonTypeMap.propertyToJson("wsg", "properties.iModelTemplate")
+    public iModelTemplate?: string;
 }
 
 /** Initialization state of seed file. Can be queried with [[IModelHandler.getInitializationState]]. See [iModel creation]($docs/learning/iModelHub/iModels/CreateiModel.md). */
@@ -193,22 +198,22 @@ class SeedFileHandler {
      * @param token Delegation token of the authorized user.
      * @param imodelId Id of the iModel. See [[HubIModel]].
      * @param seedFile Information of the SeedFile to be uploaded.
-     * @param seedPathname Pathname of the SeedFile to be uploaded.
+     * @param seedPath Path of the SeedFile to be uploaded.
      * @param progressCallback Callback for tracking progress.
      */
-    public async uploadSeedFile(alctx: ActivityLoggingContext, token: AccessToken, imodelId: GuidString, seedPathname: string, seedFileDescription?: string, progressCallback?: (progress: ProgressInfo) => void): Promise<SeedFile> {
+    public async uploadSeedFile(alctx: ActivityLoggingContext, token: AccessToken, imodelId: GuidString, seedPath: string, seedFileDescription?: string, progressCallback?: (progress: ProgressInfo) => void): Promise<SeedFile> {
         alctx.enter();
         Logger.logInfo(loggingCategory, `Uploading seed file to iModel ${imodelId}`);
 
         const seedFile = new SeedFile();
-        seedFile.fileName = this._fileHandler!.basename(seedPathname);
-        seedFile.fileSize = this._fileHandler!.getFileSize(seedPathname).toString();
+        seedFile.fileName = this._fileHandler!.basename(seedPath);
+        seedFile.fileSize = this._fileHandler!.getFileSize(seedPath).toString();
         if (seedFileDescription)
             seedFile.fileDescription = seedFileDescription;
 
         const createdSeedFile: SeedFile = await this._handler.postInstance<SeedFile>(alctx, SeedFile, token, this.getRelativeUrl(imodelId), seedFile);
         alctx.enter();
-        await this._fileHandler!.uploadFile(alctx, createdSeedFile.uploadUrl!, seedPathname, progressCallback);
+        await this._fileHandler!.uploadFile(alctx, createdSeedFile.uploadUrl!, seedPath, progressCallback);
         alctx.enter();
         createdSeedFile.uploadUrl = undefined;
         createdSeedFile.downloadUrl = undefined;
@@ -328,8 +333,9 @@ export class IModelsHandler {
      * @param projectId Id of the connect [[Project]].
      * @param iModelName Name of the iModel on the Hub.
      * @param description Description of the iModel on the Hub.
+     * @param iModelTemplate iModel template.
      */
-    private async createIModelInstance(alctx: ActivityLoggingContext, token: AccessToken, projectId: string, iModelName: string, description?: string): Promise<HubIModel> {
+    private async createIModelInstance(alctx: ActivityLoggingContext, token: AccessToken, projectId: string, iModelName: string, description?: string, iModelTemplate?: string): Promise<HubIModel> {
         alctx.enter();
         Logger.logInfo(loggingCategory, `Creating iModel with name ${iModelName} in project ${projectId}`);
 
@@ -338,6 +344,8 @@ export class IModelsHandler {
         iModel.name = iModelName;
         if (description)
             iModel.description = description;
+        if (iModelTemplate)
+            iModel.iModelTemplate = iModelTemplate;
 
         try {
             imodel = await this._handler.postInstance<HubIModel>(alctx, HubIModel, token, this.getRelativeUrl(projectId), iModel);
@@ -400,13 +408,14 @@ export class IModelsHandler {
      * @param token Delegation token of the authorized user.
      * @param contextId Id for the iModel's context. For iModelHub it should be the id of the connect [[Project]].
      * @param name Name of the iModel on the Hub.
+     * @param path iModel seed file path. If not defined, iModel will be created from an empty file.
      * @param description Description of the iModel on the Hub.
      * @param progressCallback Callback for tracking progress.
      * @param timeOutInMiliseconds Time to wait for iModel initialization.
      * @throws [[IModelHubError]] with [IModelHubStatus.UserDoesNotHavePermission]($bentley) if the user does not have CreateiModel permission.
      * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
      */
-    public async create(alctx: ActivityLoggingContext, token: AccessToken, contextId: string, name: string, pathName: string,
+    public async create(alctx: ActivityLoggingContext, token: AccessToken, contextId: string, name: string, path?: string,
         description?: string, progressCallback?: (progress: ProgressInfo) => void,
         timeOutInMilliseconds: number = 120000): Promise<HubIModel> {
         alctx.enter();
@@ -414,7 +423,8 @@ export class IModelsHandler {
         ArgumentCheck.defined("token", token);
         ArgumentCheck.validGuid("contextId", contextId);
         ArgumentCheck.defined("name", name);
-        ArgumentCheck.defined("pathName", pathName);
+
+        const imodelFromTemplate = !path;
 
         if (typeof window !== "undefined")
             return Promise.reject(IModelHubClientError.browser());
@@ -422,21 +432,26 @@ export class IModelsHandler {
         if (!this._fileHandler)
             return Promise.reject(IModelHubClientError.fileHandler());
 
-        if (!this._fileHandler.exists(pathName) || this._fileHandler.isDirectory(pathName))
+        if (!!path && (!this._fileHandler.exists(path) || this._fileHandler.isDirectory(path)))
             return Promise.reject(IModelHubClientError.fileNotFound());
 
-        const imodel = await this.createIModelInstance(alctx, token, contextId, name, description);
+        const imodelTemplate = imodelFromTemplate ? iModelTemplateEmpty : undefined;
+        const imodel = await this.createIModelInstance(alctx, token, contextId, name, description, imodelTemplate);
         alctx.enter();
 
+        if (imodelFromTemplate) {
+            return imodel;
+        }
+
         try {
-            await this._seedFileHandler.uploadSeedFile(alctx, token, imodel.id!, pathName, description, progressCallback);
+            await this._seedFileHandler.uploadSeedFile(alctx, token, imodel.id!, path!, description, progressCallback);
         } catch (err) {
             await this.delete(alctx, token, contextId, imodel.id!);
             return Promise.reject(err);
         }
         alctx.enter();
 
-        const errorMessage = "Cannot upload SeedFile " + pathName;
+        const errorMessage = "Cannot upload SeedFile " + path;
         const retryDelay = timeOutInMilliseconds / 10;
         for (let retries = 10; retries > 0; --retries) {
             try {
@@ -495,16 +510,16 @@ export class IModelsHandler {
      * Method to download the seed file for iModel. This will download the original seed file, that was uploaded when creating iModel. To download a file that was updated with ChangeSets on iModelHub, see [[BriefcaseHandler.download]].
      * @param token Delegation token of the authorized user.
      * @param imodelId Id of the iModel. See [[HubIModel]].
-     * @param downloadToPathname Directory where the seed file should be downloaded.
+     * @param path Path to download the seed file to, including file name.
      * @param progressCallback Callback for tracking progress.
      * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
      */
-    public async download(alctx: ActivityLoggingContext, token: AccessToken, imodelId: GuidString, downloadToPathname: string, progressCallback?: (progress: ProgressInfo) => void): Promise<void> {
+    public async download(alctx: ActivityLoggingContext, token: AccessToken, imodelId: GuidString, path: string, progressCallback?: (progress: ProgressInfo) => void): Promise<void> {
         alctx.enter();
         Logger.logInfo(loggingCategory, `Downloading seed file for iModel ${imodelId}`);
         ArgumentCheck.defined("token", token);
         ArgumentCheck.validGuid("imodelId", imodelId);
-        ArgumentCheck.defined("downloadToPathname", downloadToPathname);
+        ArgumentCheck.defined("path", path);
 
         if (typeof window !== "undefined")
             return Promise.reject(IModelHubClientError.browser());
@@ -518,7 +533,7 @@ export class IModelsHandler {
         if (!seedFiles || !seedFiles[0] || !seedFiles[0].downloadUrl)
             return Promise.reject(IModelHubError.fromId(IModelHubStatus.FileDoesNotExist, "Failed to get seed file."));
 
-        await this._fileHandler.downloadFile(alctx, seedFiles[0].downloadUrl!, downloadToPathname, parseInt(seedFiles[0].fileSize!, 10), progressCallback);
+        await this._fileHandler.downloadFile(alctx, seedFiles[0].downloadUrl!, path, parseInt(seedFiles[0].fileSize!, 10), progressCallback);
         alctx.enter();
         Logger.logTrace(loggingCategory, `Downloading seed file for iModel ${imodelId}`);
     }
@@ -600,13 +615,14 @@ export class IModelHandler {
      * @param token Delegation token of the authorized user.
      * @param contextId Id for the iModel's context. For iModelHub it should be the id of the connect [[Project]].
      * @param name Name of the iModel on the Hub.
+     * @param path iModel seed file path. If not defined, iModel will be created from an empty file.
      * @param description Description of the iModel on the Hub.
      * @param progressCallback Callback for tracking progress.
      * @param timeOutInMiliseconds Time to wait for iModel initialization.
      * @throws [[IModelHubError]] with [IModelHubStatus.UserDoesNotHavePermission]($bentley) if the user does not have CreateiModel permission.
      * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
      */
-    public async create(alctx: ActivityLoggingContext, token: AccessToken, contextId: string, name: string, pathName: string,
+    public async create(alctx: ActivityLoggingContext, token: AccessToken, contextId: string, name: string, path?: string,
         description?: string, progressCallback?: (progress: ProgressInfo) => void,
         timeOutInMilliseconds: number = 120000): Promise<HubIModel> {
         let imodelExists = true;
@@ -622,7 +638,7 @@ export class IModelHandler {
         if (imodelExists)
             return Promise.reject(new IModelHubError(IModelHubStatus.iModelAlreadyExists));
 
-        return this._handler.create(alctx, token, contextId, name, pathName, description, progressCallback, timeOutInMilliseconds);
+        return this._handler.create(alctx, token, contextId, name, path, description, progressCallback, timeOutInMilliseconds);
     }
 
     /**
@@ -646,13 +662,13 @@ export class IModelHandler {
      * @param alctx Activity logging context
      * @param token Delegation token of the authorized user.
      * @param contextId Id for the iModel's context. For iModelHub it should be the id of the connect [[Project]].
-     * @param downloadToPathname Directory where the seed file should be downloaded.
+     * @param path Path where seed file should be downloaded, including filename.
      * @param progressCallback Callback for tracking progress.
      * @throws [[IModelHubError]] with [IModelHubStatus.iModelDoesNotExist]$(bentley) if iModel does not exist.
      * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
      */
-    public async download(alctx: ActivityLoggingContext, token: AccessToken, contextId: string, downloadToPathname: string, progressCallback?: (progress: ProgressInfo) => void): Promise<void> {
+    public async download(alctx: ActivityLoggingContext, token: AccessToken, contextId: string, path: string, progressCallback?: (progress: ProgressInfo) => void): Promise<void> {
         const imodel = await this.get(alctx, token, contextId);
-        await this._handler.download(alctx, token, imodel.id!, downloadToPathname, progressCallback);
+        await this._handler.download(alctx, token, imodel.id!, path, progressCallback);
     }
 }

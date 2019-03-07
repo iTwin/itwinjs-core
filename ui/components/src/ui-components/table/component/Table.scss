@@ -1,0 +1,153 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+@import "@bentley/ui-core/lib/ui-core/index";
+
+.components-table {
+  height: 100%;
+  width: 100%;
+  user-select: none;
+  color: $buic-foreground-body;
+  background-color: $buic-background-control;
+
+  .rdg-selected {
+    border: none;
+  }
+
+  .react-grid-Canvas {
+    height: calc(100% - 25px) !important;
+
+    @include uicore-touch-scrolling;
+    @include uicore-scrollbar;
+  }
+
+  .react-grid-Container,
+  .react-grid-Grid,
+  .react-grid-Main,
+  .react-grid-Viewport {
+    min-height: 100% !important;
+    height: 100% !important;
+  }
+
+  .react-grid-Container,
+  .react-grid-Canvas {
+    width: 100% !important;
+  }
+
+  .react-grid-Main,
+  .react-grid-Grid,
+  .react-grid-Viewport,
+  .react-grid-Canvas,
+  .react-grid-Row {
+    border: none;
+    background: $buic-background-control;
+    outline: none;
+    font-size: 14px;
+  }
+
+  .react-grid-Row {
+    width: fit-content;
+  }
+
+  .is-hover-enabled .react-grid-Row:hover, .is-hover-enabled .react-grid-Row:hover * {
+    background: $buic-row-hover !important;
+  }
+
+  .react-grid-Row.row-selected, .react-grid-Row.row-selected * {
+    background: $buic-row-selection;
+  }
+
+  .react-grid-Cell {
+    padding-left: 0px;
+    padding-right: 0px;
+    color: $buic-foreground-body;
+    background: $buic-background-control;
+  }
+
+  .react-grid-Cell--locked:last-of-type {
+    border: none;
+    box-sizing: border-box;
+  }
+
+  .react-grid-Cell:focus {
+    outline: none !important;
+  }
+
+  .react-grid-Header {
+    background: $buic-background-titlebar-outoffocus;
+  }
+
+  .react-grid-HeaderCell {
+    padding: 4px 0 0 8px;
+    box-sizing: border-box;
+    background: $buic-background-titlebar-outoffocus;
+    font-size: 14px;
+    border: none;
+  }
+
+  .react-grid-HeaderCell__draggable {
+    background: $buic-background-titlebar-outoffocus;
+    width: 8px !important;
+    left: 100%;
+    z-index: 2;
+  }
+
+  .react-grid-HeaderCell__draggable::after {
+    content: ' ';
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%225%22 height=%2225%22%3E %3Cg fill=%22#909ba6%22 fill-rule=%22evenodd%22%3E %3Ccircle cx=%222.5%22 cy=%222.5%22 r=%222.5%22/%3E %3Ccircle cx=%222.5%22 cy=%222.5%22 r=%222.5%22 transform=%22translate(0 20)%22/%3E %3Ccircle cx=%222.5%22 cy=%222.5%22 r=%222.5%22 transform=%22translate(0 10)%22/%3E %3C/g%3E %3C/svg%3E");
+    height: 10px;
+    width: 2px;
+    position: relative;
+    display: block;
+    position: relative;
+    background-size: contain;
+    top: calc(50% - 5px);
+    left: calc(50% - 1px);
+    pointer-events: none;
+  }
+
+  .property-name-cell span {
+    height: 100%;
+    display: inline-block;
+    vertical-align: text-bottom;
+    padding: 0 0 2px 6px;
+  }
+
+  .property-name-cell be-svg-icon {
+    width: 24px;
+    height: 16px;
+    margin-top: 4px;
+  }
+
+  .react-grid-HeaderCell--locked {
+    z-index: 3;
+  }
+
+  .react-grid-Cell__value {
+    &.is-hover-enabled:hover {
+      background: $buic-row-hover !important;
+    }
+  }
+
+  .icon {
+    padding-left: 0px;
+    background: inherit;
+  }
+
+  .components-editor-container {
+    margin-left: 6px;
+    margin-right: 6px;
+  }
+
+  .components-cell-editor {
+    border: $buic-foreground-primary solid 1px;
+    background: $buic-background-control !important;
+    box-sizing: border-box;
+    height: 100%;
+  }
+}
+
+.table-header-drag-drop .react-grid-HeaderCell {
+  height: 100%;
+}

@@ -7,8 +7,15 @@ import { OpenMode, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { TestData } from "./TestData";
 import { TestRpcInterface } from "../common/TestRpcInterface";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { MockRender } from "./MockRender";
+import { IModelConnection, MockRender } from "@bentley/imodeljs-frontend";
+
+async function executeQuery(iModel: IModelConnection, ecsql: string, bindings?: any[] | object): Promise<any[]> {
+  const rows: any[] = [];
+  for await (const row of iModel.query(ecsql, bindings)) {
+    rows.push(row);
+  }
+  return rows;
+}
 
 describe("ChangeSummary (#integration)", () => {
   let iModel: IModelConnection;
@@ -39,10 +46,10 @@ describe("ChangeSummary (#integration)", () => {
     assert.exists(iModel);
     await TestRpcInterface.getClient().deleteChangeCache(iModel.iModelToken);
     await iModel.attachChangeCache();
-    const changeSummaryRows: any[] = await iModel.executeQuery("SELECT count(*) cnt FROM change.ChangeSummary");
+    const changeSummaryRows: any[] = await executeQuery(iModel, "SELECT count(*) cnt FROM change.ChangeSummary");
     assert.equal(changeSummaryRows.length, 1);
     assert.equal(changeSummaryRows[0].cnt, 0);
-    const changeSetRows = await iModel.executeQuery("SELECT count(*) cnt FROM imodelchange.ChangeSet");
+    const changeSetRows = await executeQuery(iModel, "SELECT count(*) cnt FROM imodelchange.ChangeSet");
     assert.equal(changeSetRows.length, 1);
     assert.equal(changeSetRows[0].cnt, 0);
   }).timeout(99999);
@@ -58,9 +65,9 @@ describe("ChangeSummary (#integration)", () => {
       await TestRpcInterface.getClient().extractChangeSummaries(accessToken, testIModel.iModelToken, { currentChangeSetOnly: true });
       await testIModel.attachChangeCache();
 
-      const changeSummaryRows: any[] = await testIModel.executeQuery("SELECT count(*) cnt FROM change.ChangeSummary");
+      const changeSummaryRows: any[] = await executeQuery(testIModel, "SELECT count(*) cnt FROM change.ChangeSummary");
       assert.equal(changeSummaryRows.length, 1);
-      const changeSetRows = await testIModel.executeQuery("SELECT count(*) cnt FROM imodelchange.ChangeSet");
+      const changeSetRows = await executeQuery(testIModel, "SELECT count(*) cnt FROM imodelchange.ChangeSet");
       assert.equal(changeSetRows.length, 1);
       assert.equal(changeSetRows[0].cnt, changeSummaryRows[0].cnt);
     } finally {

@@ -10,10 +10,9 @@ import * as classnames from "classnames";
 
 import "./ContextMenu.scss";
 import { withOnOutsideClick } from "../hocs/withOnOutsideClick";
-import { Div } from "../base/Div";
 import { Omit } from "../utils/typeUtils";
 
-const DivWithOutsideClick = withOnOutsideClick(Div); // tslint:disable-line:variable-name
+const DivWithOutsideClick = withOnOutsideClick((props) => (<div {...props} />)); // tslint:disable-line:variable-name
 
 /** Enum to specify where a [[ContextMenu]] should anchor to its parent element */
 export enum ContextMenuDirection {
@@ -39,6 +38,8 @@ export interface ContextMenuProps extends React.AllHTMLAttributes<HTMLDivElement
   autoflip?: boolean;
   /** Whether menu hugs screen edge when autoflip is off. Default: true */
   edgeLimit?: boolean;
+  /** Whether Hotkey press selects item, or just highlights item. Default: true */
+  hotkeySelect?: boolean;
   /** starting menu item selected index Default: -1 */
   selectedIndex?: number;
   /** whether menu floats on the viewport, or the page. When false, container elements can clip menu with overflow: hidden; Default: true */
@@ -64,11 +65,18 @@ export class ContextMenu extends React.Component<ContextMenuProps, ContextMenuSt
   private _menuElement: HTMLElement | null = null;
   private _selectedElement: ContextMenuItem | ContextSubMenu | null = null;
   private _length: number = 0;
+  private _hotKeyMap: Map<number, string> = new Map();
+
+  private _lastChildren: React.ReactNode;
+  private _lastDir: ContextMenuDirection | undefined = ContextMenuDirection.BottomRight;
+  private _lastSelectedIndex: number = 0;
+  private _injectedChildren: React.ReactNode;
 
   public static defaultProps: Partial<ContextMenuProps> = {
     direction: ContextMenuDirection.BottomRight,
     autoflip: true,
     edgeLimit: true,
+    hotkeySelect: true,
     selectedIndex: -1,
     floating: true,
   };
@@ -140,8 +148,12 @@ export class ContextMenu extends React.Component<ContextMenuProps, ContextMenuSt
     return dir;
   }
 
+  private _handleHotKeyParsed = (index: number, hotKey: string) => {
+    this._hotKeyMap.set(index, hotKey);
+  }
+
   public render(): JSX.Element {
-    const { opened, direction, onOutsideClick, onSelect, onEsc, autoflip, edgeLimit, selectedIndex, floating, parentMenu, parentSubmenu, children, ...props } = this.props;
+    const { opened, direction, onOutsideClick, onSelect, onEsc, autoflip, edgeLimit, hotkeySelect, selectedIndex, floating, parentMenu, parentSubmenu, children, ...props } = this.props;
     let dir = parentMenu === undefined ? this.state.direction : direction;
     // check if menu should flip
     if (autoflip && parentMenu === undefined) {
@@ -151,44 +163,12 @@ export class ContextMenu extends React.Component<ContextMenuProps, ContextMenuSt
         this.setState({ direction: dir });
     }
 
-    let index = 0;
-    // add inheritance data to submenu children
-    const ch = React.Children.map(children, (child) => {
-      if (typeof child === "string" || typeof child === "number" || child.props.disabled)
-        return child;
-
-      const id = index;
-      const onHover = () => {
-        this.setState({ selectedIndex: id });
-        this.focus();
-      };
-      const selected = this.state.selectedIndex === index;
-      const ref = (el: any) => {
-        if (selected)
-          this._selectedElement = el;
-      };
-      if (child.type === ContextSubMenu) {
-        index++;
-        return React.cloneElement(child, {
-          direction: child.props.direction || dir,
-          parentMenu: this,
-          ref,
-          onHover,
-          isSelected: selected,
-        });
-      }
-      if (child.type === ContextMenuItem) {
-        index++;
-        return React.cloneElement(child, {
-          parentMenu: this,
-          ref,
-          onHover,
-          isSelected: selected,
-        });
-      }
-      return child;
-    });
-    this._length = index;
+    if (this._lastChildren !== children || this._lastDir !== dir || this._lastSelectedIndex !== this.state.selectedIndex) {
+      this._injectedChildren = this._injectMenuItemProps(children, dir, this.state.selectedIndex);
+      this._lastChildren = children;
+      this._lastDir = dir;
+      this._lastSelectedIndex = this.state.selectedIndex;
+    }
     return (
       <div
         className={classnames("context-menu", this.props.className)}
@@ -197,17 +177,51 @@ export class ContextMenu extends React.Component<ContextMenuProps, ContextMenuSt
         data-testid="context-menu-root"
         {...props}
         ref={this._rootRef}>
-        <DivWithOutsideClick onOutsideClick={this.props.onOutsideClick}>
+        <DivWithOutsideClick onOutsideClick={onOutsideClick}>
           <div
             ref={this._menuRef}
             tabIndex={0}
             data-testid="context-menu-container"
             className={classnames("context-menu-container", { opened, floating }, dir)}>
-            {ch}
+            {this._injectedChildren}
           </div>
         </DivWithOutsideClick>
       </div>
     );
+  }
+
+  private _injectMenuItemProps = (children: React.ReactNode, direction: ContextMenuDirection | undefined, selectedIndex: number) => {
+    let index = 0;
+    // add inheritance data to submenu children
+    const ch = React.Children.map(children, (child: React.ReactNode) => {
+      // Capture only ContextSubMenus and ContextMenuItems.
+      if (child && typeof child === "object" && "props" in child && !child.props.disabled && (child.type === ContextSubMenu || child.type === ContextMenuItem)) {
+        const id = index; // get separate id variable so value stays the same when onHover is called later.
+        const onHover = () => {
+          this.setState({ selectedIndex: id });
+          this.focus();
+        };
+        const ref = (el: ContextSubMenu | ContextMenuItem | null) => {
+          if (selectedIndex === id) // only save to this._selectedElement if previously captured bool is true
+            this._selectedElement = el;
+        };
+        const boundHandleHotKeyParse = this._handleHotKeyParsed.bind(this, id); // bind local callback for specific index
+        const childProps: Partial<ContextSubMenuProps & ContextMenuItemProps & { ref: typeof ref }> = {
+          parentMenu: this,
+          ref,
+          onHover,
+          isSelected: selectedIndex === id,
+          onHotKeyParsed: boundHandleHotKeyParse,
+        };
+        if (child.type === ContextSubMenu) { // add direction only to sub-menus
+          childProps.direction = child.props.direction || direction;
+        }
+        index++;
+        return React.cloneElement(child, childProps);
+      } else return child; // Else, pass through unmodified
+    });
+    this._length = index;
+    return ch;
   }
 
   private _rootRef = (el: HTMLDivElement | null) => {
@@ -259,6 +273,26 @@ export class ContextMenu extends React.Component<ContextMenuProps, ContextMenuSt
       this.props.onSelect(event);
   }
   private _handleKeyUp = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (event.key) {
+      for (const [key, value] of this._hotKeyMap) {
+        if (!this.props.hotkeySelect! && key > this.state.selectedIndex) { // Start search at current index.
+          if (event.key.toUpperCase() === value) {
+            this.setState({ selectedIndex: key });
+            return;
+          }
+        }
+      }
+      for (const [key, value] of this._hotKeyMap) {
+        if (event.key.toUpperCase() === value) {
+          this.setState({ selectedIndex: key }, () => {
+            if (this.props.hotkeySelect && this._selectedElement) {
+              this._selectedElement.select();
+            }
+          });
+          return;
+        }
+      }
+    }
     if (event.keyCode === 37) /*<Left>*/ {
       event.stopPropagation();
       if (this.props.parentMenu && this.props.parentSubmenu) {
@@ -299,7 +333,7 @@ export class ContextMenu extends React.Component<ContextMenuProps, ContextMenuSt
         }
       }
     }
-    this.setState((_prevState) => ({ selectedIndex }));
+    this.setState({ selectedIndex });
   }
 
   public componentDidUpdate(prevProps: ContextMenuProps) {
@@ -373,6 +407,8 @@ export class GlobalContextMenu extends React.Component<GlobalContextMenuProps> {
 /** Properties for the [[ContextMenuItem]] component */
 export interface ContextMenuItemProps extends React.AllHTMLAttributes<HTMLDivElement> {
   onSelect?: (event: any) => any;
+  /** @hidden */
+  onHotKeyParsed?: (hotKey: string) => void;
   /** Icon to display in the left margin. */
   icon?: string | React.ReactNode;
   /** Disables any onSelect calls, hover/keyboard highlighting, and grays item. */
@@ -385,11 +421,17 @@ export interface ContextMenuItemProps extends React.AllHTMLAttributes<HTMLDivEle
   parentMenu?: ContextMenu;
 }
 
+export interface ContextMenuItemState {
+  hotKey?: string;
+}
+
 /**
  * Menu Item class for use within a [[ContextMenu]] component.
  */
-export class ContextMenuItem extends React.Component<ContextMenuItemProps> {
+export class ContextMenuItem extends React.Component<ContextMenuItemProps, ContextMenuItemState> {
   private _root: HTMLElement | null = null;
+  private _lastChildren: React.ReactNode;
+  private _parsedChildren: React.ReactNode;
   public static defaultProps: Partial<ContextMenuItemProps> = {
     disabled: false,
     isSelected: false,
@@ -397,8 +439,14 @@ export class ContextMenuItem extends React.Component<ContextMenuItemProps> {
   constructor(props: ContextMenuItemProps) {
     super(props);
   }
+  /** @hidden */
+  public readonly state: Readonly<ContextMenuItemState> = {};
   public render(): JSX.Element {
-    const { onClick, className, style, onSelect, icon, disabled, onHover, isSelected, parentMenu, ...props } = this.props;
+    const { onClick, className, style, onSelect, icon, disabled, onHover, isSelected, parentMenu, onHotKeyParsed, ...props } = this.props;
+    if (this._lastChildren !== this.props.children) {
+      this._parsedChildren = TildeFinder.findAfterTilde(this.props.children).node;
+      this._lastChildren = this.props.children;
+    }
     return (
       <div
         {...props}
@@ -413,9 +461,29 @@ export class ContextMenuItem extends React.Component<ContextMenuItemProps> {
         <div className={classnames("context-menu-icon", "icon", typeof icon === "string" ? icon : undefined)}>
           {typeof icon !== "string" ? icon : undefined}
         </div>
-        <div className={"context-menu-content"}>{this.props.children}</div>
+        <div className={"context-menu-content"}>
+          {this._parsedChildren}
+        </div>
       </div>
     );
+  }
+
+  public componentDidMount() {
+    this._updateHotkey(this.props.children);
+  }
+
+  public componentDidUpdate(prevProps: ContextMenuItemProps) {
+    if (this.props.children !== prevProps.children) {
+      this._updateHotkey(this.props.children);
+    }
+  }
+
+  private _updateHotkey = (node: React.ReactNode) => {
+    const hotKey = TildeFinder.findAfterTilde(node).character;
+    if (hotKey && hotKey !== this.state.hotKey) {
+      this.setState({ hotKey });
+      this.props.onHotKeyParsed!(hotKey);
+    }
   }
 
   private _handleFocus = (event: React.FocusEvent<HTMLDivElement>) => {
@@ -465,12 +533,15 @@ export class ContextMenuDivider extends React.Component {
 export interface ContextSubMenuProps extends Omit<ContextMenuItemProps, "label">, Omit<ContextMenuProps, "label"> {
   /** Text/jsx to display in the list item */
   label: string | JSX.Element;
+  /** @hidden */
+  onHotKeyParsed?: (hotKey: string) => void;
 }
 
 /** @hidden */
 export interface ContextSubMenuState {
   opened: boolean;
   direction: ContextMenuDirection;
+  hotKey?: string;
 }
 
 /**
@@ -480,6 +551,9 @@ export class ContextSubMenu extends React.Component<ContextSubMenuProps, Context
   private _menuElement: ContextMenu | null = null;
   private _subMenuElement: HTMLElement | null = null;
   private _menuButtonElement: HTMLElement | null = null;
+
+  private _lastLabel: React.ReactNode;
+  private _parsedLabel: React.ReactNode;
 
   public static defaultProps: Partial<ContextSubMenuProps> = {
     direction: ContextMenuDirection.BottomRight,
@@ -503,7 +577,7 @@ export class ContextSubMenu extends React.Component<ContextSubMenuProps, Context
     const {
       label,
       opened, direction, onOutsideClick, onEsc, autoflip, edgeLimit, selectedIndex, floating, parentMenu, parentSubmenu,
-      onSelect, icon, disabled, onHover, isSelected,
+      onSelect, icon, disabled, onHover, isSelected, onHotKeyParsed,
       children, onClick, className, ...props } = this.props;
     const contextMenuProps = { onOutsideClick, onSelect, onEsc, autoflip, edgeLimit, selectedIndex, floating, parentMenu };
 
@@ -513,6 +587,11 @@ export class ContextSubMenu extends React.Component<ContextSubMenuProps, Context
       dir = ContextMenu.autoFlip(dir, menuRect, window.innerWidth, window.innerHeight);
       if (dir !== this.state.direction)
         this.setState({ direction: dir });
+    }
+
+    if (this._lastLabel !== label) {
+      this._parsedLabel = TildeFinder.findAfterTilde(label).node;
+      this._lastLabel = label;
     }
     return (
       <div className={classnames("context-submenu", dir, className)}
@@ -525,7 +604,7 @@ export class ContextSubMenu extends React.Component<ContextSubMenuProps, Context
           className={classnames("context-menu-item context-submenu-container", { disabled, "is-selected": isSelected })}
         >
           <div className={classnames("context-menu-icon", "icon", icon)} />
-          <div className={"context-menu-content"}>{label}</div>
+          <div className={"context-menu-content"}>{this._parsedLabel}</div>
           <div className={classnames("context-submenu-arrow", "icon", "icon-caret-right")} />
         </div>
         <ContextMenu
@@ -542,6 +621,7 @@ export class ContextSubMenu extends React.Component<ContextSubMenuProps, Context
   }
   public componentDidMount() {
     document.addEventListener("click", this._handleClickGlobal);
+    this._updateHotkey(this.props.label);
   }
 
   public componentWillUnmount() {
@@ -552,12 +632,25 @@ export class ContextSubMenu extends React.Component<ContextSubMenuProps, Context
     const direction = this.props.direction!;
     if ((this.state.opened !== prevState.opened && direction !== this.state.direction) || prevProps.direction !== direction)
       this.setState({ direction });
+    if (this.props.children !== prevProps.children) {
+      this._updateHotkey(this.props.label);
+    }
+  }
+
+  private _updateHotkey = (node: React.ReactNode) => {
+    const hotKey = TildeFinder.findAfterTilde(node).character;
+    if (hotKey && hotKey !== this.state.hotKey) {
+      this.setState({ hotKey });
+      this.props.onHotKeyParsed!(hotKey);
+    }
   }
 
   public select = () => {
     this.setState({ opened: true }, () => {
       if (this._menuElement)
         this._menuElement.focus();
+      if (this.props.onSelect !== undefined)
+        this.props.onSelect(undefined);
     });
   }
 
@@ -582,12 +675,64 @@ export class ContextSubMenu extends React.Component<ContextSubMenuProps, Context
     if (!this.props.disabled) {
       if (this.props.onClick !== undefined)
         this.props.onClick(event);
-      this.setState((prevState) => ({ opened: !prevState.opened }));
+      if (this.props.opened)
+        this.close();
+      else
+        this.select();
     }
   }
 
   private _handleClickGlobal = (event: any) => {
     if (this._subMenuElement && !this._subMenuElement.contains(event.target))
       this.setState((_prevState) => ({ opened: false }));
+  }
+}
+
+export class TildeFinder {
+  public static findAfterTilde = (node: React.ReactNode): { character: string | undefined, node: React.ReactNode } => {
+    if (typeof node === "string") {
+      // String
+      const tildeIndex = node.indexOf("~");
+      if (tildeIndex !== -1 && tildeIndex <= node.length - 2) {
+        const ch = node.charAt(tildeIndex + 1);
+        const s1 = node.substring(0, tildeIndex);
+        const n = <u key="hotkey">{ch}</u>;
+        const s2 = node.substring(tildeIndex + 2);
+        return { character: ch.toUpperCase(), node: [s1, n, s2] };
+      }
+    } else if (node && typeof node === "object") {
+      if (Array.isArray(node)) {
+        // Array
+        let ret: { character: string | undefined, node: React.ReactNode } = { character: undefined, node };
+        node = node.map((child) => {
+          const r = TildeFinder.findAfterTilde(child);
+          if (r.character) { // if character is found, modify node instead of returning unmodified child.
+            ret = r;
+            return r.node;
+          }
+          return child;
+        });
+        if (ret.character) {
+          return { character: ret.character, node };
+        }
+      } else if ("props" in node) {
+        // React Node
+        const ret: { character: string | undefined, node: React.ReactNode } = { character: undefined, node };
+        ret.node = React.cloneElement(node, {
+          children: React.Children.map(node.props.children as React.ReactNode, (child: React.ReactNode) => {
+            const r = TildeFinder.findAfterTilde(child);
+            if (r.character) { // if character is found, modify node instead of returning unmodified child.
+              ret.character = r.character;
+              return r.node;
+            }
+            return child;
+          }),
+        });
+        if (ret.character) {
+          return ret;
+        }
+      }
+    }
+    return { character: undefined, node };
   }
 }

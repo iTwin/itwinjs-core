@@ -12,7 +12,7 @@ import { ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl"
 import { FrontstageManager, ModalFrontstageInfo } from "../frontstage/FrontstageManager";
 import { SheetsModalFrontstage, CardContainer, CardSelectedEventArgs } from "./SheetsModalFrontstage";
 import { IModelConnection, IModelApp, ScreenViewport, SelectedViewportChangedArgs } from "@bentley/imodeljs-frontend";
-import { SmallLoader } from "@bentley/bwc";
+import { Spinner, SpinnerSize } from "@bentley/ui-core";
 import { ViewportComponentEvents, ViewIdChangedEventArgs } from "@bentley/ui-components";
 
 import "./SheetNavigationAid.scss";
@@ -135,7 +135,7 @@ export class SheetNavigationAid extends React.Component<SheetNavigationProps, Sh
         </>
       );
     } else {
-      content = <SmallLoader />;
+      content = <Spinner size={SpinnerSize.Small} />;
     }
 
     return (

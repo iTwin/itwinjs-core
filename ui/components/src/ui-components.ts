@@ -29,9 +29,8 @@ export * from "./ui-components/converters/NumericTypeConverter";
 export * from "./ui-components/converters/PointTypeConverter";
 export * from "./ui-components/converters/StringTypeConverter";
 
-import * as Primitives from "./ui-components/converters/valuetypes/PrimitiveTypes";
 import * as ConvertedPrimitives from "./ui-components/converters/valuetypes/ConvertedTypes";
-export { Primitives, ConvertedPrimitives };
+export { ConvertedPrimitives };
 
 export * from "./ui-components/dragdrop/DragDropDef";
 export * from "./ui-components/dragdrop/withDragSource";
@@ -41,14 +40,14 @@ export * from "./ui-components/dragdrop/BeDragDropContext";
 export * from "./ui-components/editors/EditorContainer";
 export * from "./ui-components/editors/PropertyEditorManager";
 export * from "./ui-components/editors/TextEditor";
+export * from "./ui-components/editors/EnumEditor";
+export * from "./ui-components/editors/EnumButtonGroupEditor";
+export * from "./ui-components/editors/BooleanEditor";
+export * from "./ui-components/editors/ToggleEditor";
 
 export * from "./ui-components/filtering/FilteringInput";
 export * from "./ui-components/filtering/ResultSelector";
 
-export * from "./ui-components/properties/Description";
-export * from "./ui-components/properties/EditorParams";
-export * from "./ui-components/properties/Record";
-export * from "./ui-components/properties/Value";
 export * from "./ui-components/properties/ValueRendererManager";
 
 export * from "./ui-components/properties/renderers/NonPrimitivePropertyRenderer";
@@ -67,15 +66,16 @@ export * from "./ui-components/properties/renderers/value/NavigationPropertyValu
 export * from "./ui-components/properties/renderers/value/table/ArrayValueRenderer";
 export * from "./ui-components/properties/renderers/value/table/StructValueRenderer";
 export * from "./ui-components/properties/renderers/value/table/NonPrimitiveValueRenderer";
+export * from "./ui-components/properties/ItemStyle";
 
 export * from "./ui-components/propertygrid/PropertyDataProvider";
 export * from "./ui-components/propertygrid/SimplePropertyDataProvider";
 export * from "./ui-components/propertygrid/component/PropertyGrid";
 export * from "./ui-components/propertygrid/component/PropertyCategoryBlock";
+export * from "./ui-components/color/Swatch";
 
 export * from "./ui-components/table/TableDataProvider";
 export * from "./ui-components/table/SimpleTableDataProvider";
-export { Grid, GridProps } from "./ui-components/table/component/Grid";
 export { Table, TableProps, TableSelectionTarget } from "./ui-components/table/component/Table";
 export { TableCellEditorState, TableCellUpdatedArgs } from "./ui-components/table/component/Table";
 export { TableDragDropType, TableDropTargetProps, TableDragDropProps, withTableDragDrop } from "./ui-components/table/hocs/withDragDrop";
@@ -83,12 +83,20 @@ export { TableDragDropType, TableDropTargetProps, TableDragDropProps, withTableD
 export * from "./ui-components/tree/TreeDataProvider";
 export * from "./ui-components/tree/HighlightingEngine";
 export { Tree, TreeProps } from "./ui-components/tree/component/Tree";
-export { TreeCellEditorState, TreeCellUpdatedArgs } from "./ui-components/tree/component/Tree";
+export { TreeCellUpdatedArgs } from "./ui-components/tree/CellEditingEngine";
 export { TreeDragDropType, TreeDragDropProps, withTreeDragDrop } from "./ui-components/tree/hocs/withDragDrop";
 export { SimpleTreeDataProvider, SimpleTreeDataProviderHierarchy } from "./ui-components/tree/SimpleTreeDataProvider";
 
 export * from "./ui-components/viewport/ViewportComponent";
 export * from "./ui-components/viewport/ViewportComponentEvents";
+
+// Set the version number so it can be found at runtime. BUILD_SEMVER is replaced at build time by the webpack DefinePlugin.
+declare var BUILD_SEMVER: string;
+if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") && window) {
+  if (!(window as any).iModelJsVersions)
+    (window as any).iModelJsVersions = new Map<string, string>();
+  (window as any).iModelJsVersions.set("ui-components", BUILD_SEMVER);
+}
 
 /** @docs-package-description
  * The ui-components package contains React components that are data-oriented, such as PropertyGrid, Table, Tree and Breadcrumb.
@@ -101,6 +109,10 @@ export * from "./ui-components/viewport/ViewportComponentEvents";
 /**
  * @docs-group-description Breadcrumb
  * Classes for working with a Breadcrumb.
+ */
+/**
+ * @docs-group-description Color
+ * Classes for working with and picking a Color.
  */
 /**
  * @docs-group-description DragDrop

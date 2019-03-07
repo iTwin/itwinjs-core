@@ -40,7 +40,7 @@ The top layer is for the App schemas. These schemas are intended to be very smal
 
 ## BIS Compatibility Grades for Schemas
 
-The conversion of products to use BIS Domain Schemas can occur incrementally, but an ecosystem of BIS-based infrastructure (including iModelHub and Navigator) is rapidly expanding. This creates a short-term need for BIS-based “compatibility” schemas that have not been as rigorously designed as true BIS schemas but allow usage and some level of interoperability with the BIS ecosystem. For this reason, a grading level for BIS schemas has been created:
+The conversion of products to use BIS Domain Schemas can occur incrementally, but an ecosystem of BIS-based infrastructure (including iModelHub and Design Review) is rapidly expanding. This creates a short-term need for BIS-based “compatibility” schemas that have not been as rigorously designed as true BIS schemas but allow usage and some level of interoperability with the BIS ecosystem. For this reason, a grading level for BIS schemas has been created:
 
 - *Grade A*: True BIS schemas carefully designed for editing and interoperability
 - *Grade B*: Either:

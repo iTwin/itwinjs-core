@@ -8,6 +8,7 @@ import * as React from "react";
 import { GlobalContextMenu, ContextMenuItem, UiEvent, ContextSubMenu } from "@bentley/ui-core";
 import { KeyboardShortcut } from "./KeyboardShortcut";
 
+/** State for a [[KeyboardShortcutMenuEvent]] and [[KeyboardShortcutMenu]] component */
 export interface KeyboardShortcutMenuState {
   menuVisible: boolean;
   menuX: number;
@@ -50,6 +51,8 @@ export class KeyboardShortcutMenu extends React.Component<{}, KeyboardShortcutMe
     const onClose = this._hideContextMenu;
 
     if (menuVisible) {
+      const items = this.getShortcutMenuItems(shortcuts);
+
       return (
         <GlobalContextMenu
           identifier="keyboard-shortcut-menu"
@@ -61,9 +64,7 @@ export class KeyboardShortcutMenu extends React.Component<{}, KeyboardShortcutMe
           edgeLimit={false}
           autoflip={true}
         >
-          {shortcuts && shortcuts.map((shortcut: KeyboardShortcut, index: number) => {
-            return this.getShortcutMenuItem(shortcut, index);
-          })}
+          {items}
         </GlobalContextMenu>
       );
     }
@@ -71,19 +72,40 @@ export class KeyboardShortcutMenu extends React.Component<{}, KeyboardShortcutMe
     return null;
   }
 
+  private getShortcutMenuItems(shortcuts?: KeyboardShortcut[]): React.ReactNode[] {
+    const items: React.ReactNode[] = [];
+
+    if (shortcuts) {
+      shortcuts.forEach((shortcut: KeyboardShortcut, index: number) => {
+        const item = this.getShortcutMenuItem(shortcut, index);
+        if (item)
+          items.push(item);
+      });
+    }
+
+    return items;
+  }
+
   private getShortcutMenuItem(shortcut: KeyboardShortcut, index: number): React.ReactNode {
+    const shortcutKey = shortcut.key;
+
+    // Only pure characters go into the context menu
+    if (shortcutKey !== shortcut.keyMapKey || shortcut.isFunctionKey || shortcut.isSpecialKey)
+      return null;
+
     let node: React.ReactNode = null;
-    const label = shortcut.label;
+    let label = shortcut.label;
     const iconSpec = shortcut.iconSpec;
-    // const shortcutKey = item.key;
+
+    label = "~" + shortcutKey + " " + label;
 
     if (shortcut.shortcutContainer.areKeyboardShortcutsAvailable()) {
       const shortcuts = shortcut.shortcutContainer.getAvailableKeyboardShortcuts();
+      const items = this.getShortcutMenuItems(shortcuts);
+
       node = (
         <ContextSubMenu key={index} icon={iconSpec} label={label}>
-          {shortcuts && shortcuts.map((childShortcut: KeyboardShortcut, childIndex: number) => {
-            return this.getShortcutMenuItem(childShortcut, childIndex);
-          })}
+          {items}
         </ContextSubMenu>
       );
     } else {

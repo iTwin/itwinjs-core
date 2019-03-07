@@ -5,9 +5,10 @@
 import * as React from "react";
 
 import { ConfigurableUiManager, ConfigurableCreateInfo, ContentControl } from "@bentley/ui-framework";
+import { PropertyRecord, PropertyValueFormat, PropertyValue, PropertyDescription } from "@bentley/imodeljs-frontend";
 import {
   Table, ColumnDescription, RowItem, TableDataProvider,
-  SimpleTableDataProvider, TableSelectionTarget, SelectionMode, PropertyRecord, PropertyValueFormat, PropertyValue, PropertyDescription,
+  SimpleTableDataProvider, TableSelectionTarget, SelectionMode,
   PropertyUpdatedArgs, TableCellUpdatedArgs,
 } from "@bentley/ui-components";
 
@@ -41,6 +42,30 @@ const createPropertyRecord = (value: any, column: ColumnDescription, typename: s
   return new PropertyRecord(v, pd);
 };
 
+const createEnumPropertyRecord = (rowIndex: number, column: ColumnDescription) => {
+  const value = rowIndex % 4;
+  const v: PropertyValue = {
+    valueFormat: PropertyValueFormat.Primitive,
+    value,
+    displayValue: value.toString(),
+  };
+  const pd: PropertyDescription = {
+    typename: "enum",
+    name: column.key,
+    displayLabel: column.label,
+  };
+  column.propertyDescription = pd;
+  const enumPropertyRecord = new PropertyRecord(v, pd);
+  enumPropertyRecord.property.enum = { choices: [], isStrict: false };
+  enumPropertyRecord.property.enum.choices = [
+    { label: "Yellow", value: 0 },
+    { label: "Red", value: 1 },
+    { label: "Green", value: 2 },
+    { label: "Blue", value: 3 },
+  ];
+  return enumPropertyRecord;
+};
+
 class TableExampleContent extends React.Component<{}, TableExampleState>  {
   public readonly state: Readonly<TableExampleState>;
 
@@ -59,10 +84,11 @@ class TableExampleContent extends React.Component<{}, TableExampleState>  {
         label: "Title",
         sortable: true,
         resizable: true,
+        editable: true,
       },
       {
-        key: "more",
-        label: "More Data",
+        key: "color",
+        label: "Color",
         sortable: true,
         resizable: false,
         editable: true,
@@ -81,8 +107,8 @@ class TableExampleContent extends React.Component<{}, TableExampleState>  {
         record: createPropertyRecord("Title " + i, columns[1], "text"),
       });
       row.cells.push({
-        key: "more",
-        record: createPropertyRecord("More Data - " + i, columns[2], "text"),
+        key: "color",
+        record: createEnumPropertyRecord(i, columns[2]),
       });
       rows.push(row);
     }
@@ -123,13 +149,8 @@ class TableExampleContent extends React.Component<{}, TableExampleState>  {
     this.setState({ tableSelectionTarget: TableSelectionTarget.Cell });
   }
 
-  private _updatePropertyRecord(record: PropertyRecord, newValue: string): PropertyRecord {
-    const propertyValue: PropertyValue = {
-      valueFormat: PropertyValueFormat.Primitive,
-      value: newValue,
-      displayValue: newValue,
-    };
-    return record.copyWithNewValue(propertyValue);
+  private _updatePropertyRecord(record: PropertyRecord, newValue: PropertyValue): PropertyRecord {
+    return record.copyWithNewValue(newValue);
   }
 
   private _handlePropertyUpdated = async (propertyArgs: PropertyUpdatedArgs, cellArgs: TableCellUpdatedArgs): Promise<boolean> => {

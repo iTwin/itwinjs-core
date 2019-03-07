@@ -8,7 +8,7 @@ import * as React from "react";
 import * as classnames from "classnames";
 
 import "./MessageBox.scss";
-import { Dialog, ButtonCluster } from "../dialog/Dialog";
+import { Dialog, DialogButton } from "../dialog/Dialog";
 
 /** Message Severity enum.
  */
@@ -27,8 +27,8 @@ export interface MessageBoxProps {
   severity: MessageSeverity;
   /** whether to show dialog or not */
   opened: boolean;
-  /** List of ButtonCluster objects specifying buttons and associated onClick events */
-  buttonCluster: ButtonCluster[];
+  /** List of [[DialogButton]] objects specifying buttons and associated onClick events */
+  buttonCluster: DialogButton[];
   /** Title to show in titlebar of dialog  */
   title?: string | JSX.Element;
   /** List of ButtonCluster objects specifying buttons, and onClick events to display in footer. */
@@ -91,19 +91,27 @@ export interface MessageContainerProps {
  */
 export class MessageContainer extends React.Component<MessageContainerProps> {
   public static getIconClassName(severity: MessageSeverity, hollow?: boolean): string {
+    let iconClassName = "";
+
     switch (severity) {
       case MessageSeverity.Information:
-        return hollow ? "icon-info-hollow" : "icon-info" + " message-box-information";
+        iconClassName = hollow ? "icon-info-hollow" : "icon-info" + " message-box-information";
+        break;
       case MessageSeverity.Question:
-        return hollow ? "icon-help-hollow" : "icon-help" + " message-box-question";
+        iconClassName = hollow ? "icon-help-hollow" : "icon-help" + " message-box-question";
+        break;
       case MessageSeverity.Warning:
-        return hollow ? "icon-status-warning" : "icon-status-warning" + " message-box-warning";  // TODO - need icon-status-warning-hollow icon
+        iconClassName = hollow ? "icon-status-warning" : "icon-status-warning" + " message-box-warning";  // TODO - need icon-status-warning-hollow icon
+        break;
       case MessageSeverity.Error:
-        return hollow ? "icon-status-error-hollow" : "icon-status-error" + " message-box-error";
+        iconClassName = hollow ? "icon-status-error-hollow" : "icon-status-error" + " message-box-error";
+        break;
       case MessageSeverity.Fatal:
-        return hollow ? "icon-status-rejected" : "icon-status-rejected" + " message-box-fatal"; // TODO - need icon-status-rejected-hollow icon
+        iconClassName = hollow ? "icon-status-rejected" : "icon-status-rejected" + " message-box-fatal"; // TODO - need icon-status-rejected-hollow icon
+        break;
     }
-    return "icon-info";
+
+    return iconClassName;
   }
 
   public render(): JSX.Element {

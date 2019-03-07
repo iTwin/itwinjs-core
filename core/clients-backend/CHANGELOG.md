@@ -1,6 +1,27 @@
 # Change Log - @bentley/imodeljs-clients-backend
 
-This log was last generated on Tue, 15 Jan 2019 15:18:59 GMT and should not be manually modified.
+This log was last generated on Wed, 06 Mar 2019 15:41:22 GMT and should not be manually modified.
+
+## 0.189.0
+Wed, 06 Mar 2019 15:41:22 GMT
+
+### Updates
+
+- Added OidcAgentClientV2. This will replace OidcAgentClient after some fixes from IMS+Connect. 
+- ChangeSet and Briefcase downloads are atomic (i.e., will not be partially downloaded) and can simultaneously happen in multiple machines. 
+- Changes package.json to include api-extractor and adds api-extractor.json
+- Use new buildIModelJsBuild script
+- Moved AzureFileHandler, IOSAzureFileHandler, UrlFileHandler and the iModelHub tests to the imodeljs-clients-backend package. This removes the dependency of imodeljs-clients on the "fs" module, and turns it into a browser only package. 
+- Fixes to OidcDelegationClient-s. 
+- Remove uneeded typedoc plugin depedency
+- Create iModel from empty template if seed file path not defined.
+- Removed RBAC client - the RBAC service is considered internal. 
+- upgrade to TypeScript 3.2.2
+
+## 0.188.0
+Wed, 16 Jan 2019 16:36:09 GMT
+
+*Version update only*
 
 ## 0.187.0
 Tue, 15 Jan 2019 15:18:59 GMT

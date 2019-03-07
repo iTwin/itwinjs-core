@@ -74,47 +74,57 @@ Array [
 exports[`TreeDataProvider getNodes children returns presentation manager result 1`] = `
 Array [
   Object {
-    "description": "Ratione voluptatem repellendus sint rerum quod.",
+    "checkBoxState": 1,
+    "description": "Voluptatem repellendus sint rerum.",
     "extendedData": Object {
       "key": Object {
         "instanceKey": Object {
-          "className": "Agent",
-          "id": "0x39e000000e397",
+          "className": "Wisconsin",
+          "id": "0xe3970000015b4a",
         },
         "pathFromRoot": Array [
-          "a8879663-af4c-4647-a5e6-6399295a54e2",
-          "1ab590b3-34ae-4253-b592-8504ca89d679",
+          "5a887966-3af4-4c64-be5e-66399295a54e",
+          "21ab590b-334a-4e25-bb59-28504ca89d67",
         ],
         "type": "ECInstanceNode",
       },
     },
-    "hasChildren": true,
-    "id": "1ab590b3-34ae-4253-b592-8504ca89d679/a8879663-af4c-4647-a5e6-6399295a54e2",
-    "label": "Executive",
-    "labelForeColor": 2050433535,
+    "id": "21ab590b-334a-4e25-bb59-28504ca89d67/5a887966-3af4-4c64-be5e-66399295a54e",
+    "isCheckboxDisabled": true,
+    "isCheckboxVisible": true,
+    "label": "Tasty Wooden Mouse",
     "parentId": "cfa5b4da-3271-4b2d-a97b-279993a4436c",
+    "style": Object {
+      "colorOverrides": Object {
+        "backgroundColor": 1940403455,
+      },
+    },
   },
   Object {
     "checkBoxState": 1,
     "extendedData": Object {
       "key": Object {
         "instanceKey": Object {
-          "className": "Practical Plastic Fish",
-          "id": "0x17dfb0000004a94",
+          "className": "sky blue",
+          "id": "0x12ef20000006ff8",
         },
         "pathFromRoot": Array [
-          "53634882-9809-4817-bdb7-62e5377376d7",
-          "efbbdf5e-70a4-4764-860c-82aebaa5384c",
+          "4a1d5363-4882-4980-9817-3db762e53773",
+          "76d7efbb-df5e-470a-8764-c60c82aebaa5",
         ],
         "type": "ECInstanceNode",
       },
     },
     "hasChildren": true,
-    "id": "efbbdf5e-70a4-4764-860c-82aebaa5384c/53634882-9809-4817-bdb7-62e5377376d7",
+    "id": "76d7efbb-df5e-470a-8764-c60c82aebaa5/4a1d5363-4882-4980-9817-3db762e53773",
     "isCheckboxVisible": true,
-    "label": "Cambridgeshire reboot",
-    "labelBackColor": 1592423167,
+    "label": "action-items",
     "parentId": "cfa5b4da-3271-4b2d-a97b-279993a4436c",
+    "style": Object {
+      "colorOverrides": Object {
+        "color": -142622977,
+      },
+    },
   },
 ]
 `;
@@ -122,47 +132,55 @@ Array [
 exports[`TreeDataProvider getNodes root returns presentation manager result 1`] = `
 Array [
   Object {
-    "checkBoxState": 1,
     "extendedData": Object {
       "key": Object {
         "instanceKey": Object {
-          "className": "benchmark",
-          "id": "0xb4930000007f5e",
+          "className": "grey",
+          "id": "0x7f5e000000f4a6",
         },
         "pathFromRoot": Array [
-          "4689e684-8ae5-4ef5-8f6e-931fa4685cc1",
-          "4189a138-287e-4887-8294-0a6f4fc635a3",
+          "44689e68-48ae-45ef-90f6-e931fa4685cc",
+          "14189a13-8287-4e88-b429-40a6f4fc635a",
         ],
         "type": "ECInstanceNode",
       },
     },
     "hasChildren": true,
-    "id": "4189a138-287e-4887-8294-0a6f4fc635a3/4689e684-8ae5-4ef5-8f6e-931fa4685cc1",
+    "id": "14189a13-8287-4e88-b429-40a6f4fc635a/44689e68-48ae-45ef-90f6-e931fa4685cc",
+    "isCheckboxDisabled": true,
     "isCheckboxVisible": true,
-    "label": "multi-state payment",
-    "labelBackColor": 81687551,
-    "labelForeColor": -1776365569,
+    "label": "Fiji payment",
+    "style": Object {
+      "colorOverrides": Object {
+        "backgroundColor": -1872553985,
+      },
+    },
   },
   Object {
-    "description": "Eum quidem reiciendis veniam sunt sunt.",
+    "checkBoxState": 1,
+    "description": "Quo fuga nihil corrupti nihil eum quidem reiciendis veniam sunt.",
     "extendedData": Object {
       "key": Object {
         "instanceKey": Object {
-          "className": "national",
-          "id": "0x37190000000e92",
+          "className": "disintermediate",
+          "id": "0x74cc0000003e36",
         },
         "pathFromRoot": Array [
-          "c0ad3c15-e225-48d9-9174-cf691c86639b",
-          "762a6c71-77b4-413a-a82a-1d6b76624dbc",
+          "979d0b9c-0ad3-4c15-a225-8d91174cf691",
+          "c86639b7-62a6-4c71-b7b4-13aa82a1d6b7",
         ],
         "type": "ECInstanceNode",
       },
     },
     "hasChildren": true,
-    "id": "762a6c71-77b4-413a-a82a-1d6b76624dbc/c0ad3c15-e225-48d9-9174-cf691c86639b",
+    "id": "c86639b7-62a6-4c71-b7b4-13aa82a1d6b7/979d0b9c-0ad3-4c15-a225-8d91174cf691",
     "isCheckboxVisible": true,
-    "label": "Assimilated International Investment Account",
-    "labelForeColor": 633948927,
+    "label": "application national Rustic Frozen Bike",
+    "style": Object {
+      "colorOverrides": Object {
+        "backgroundColor": 793823743,
+      },
+    },
   },
 ]
 `;

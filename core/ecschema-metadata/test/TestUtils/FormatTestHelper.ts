@@ -11,14 +11,14 @@ import { Schema } from "../../src/Metadata/Schema";
 const formatsKey = new SchemaKey("Formats", 1, 0, 0);
 
 export class TestSchemaLocater implements ISchemaLocater {
-  public async getSchema<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context?: SchemaContext): Promise<T | undefined> {
+  public async getSchema<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<T | undefined> {
     if (!schemaKey.matches(formatsKey, matchType))
       return undefined;
 
     return (await Schema.fromJson(testFormatSchema, context)) as T;
   }
 
-  public getSchemaSync<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context?: SchemaContext): T | undefined {
+  public getSchemaSync<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): T | undefined {
     if (!schemaKey.matches(formatsKey, matchType))
       return undefined;
 
@@ -27,7 +27,7 @@ export class TestSchemaLocater implements ISchemaLocater {
 }
 
 const testFormatSchema = {
-  $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
+  $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
   name: "Formats",
   version: "1.0.0",
   items: {
@@ -35,8 +35,22 @@ const testFormatSchema = {
       schemaItemType: "Phenomenon",
       definition: "LENGTH(1)",
     },
+    PERCENTAGE: {
+      schemaItemType: "Phenomenon",
+      definition: "NUMBER",
+    },
     USCustom: {
       schemaItemType: "UnitSystem",
+    },
+    SI: {
+      schemaItemType: "UnitSystem",
+    },
+    M: {
+      schemaItemType: "Unit",
+      label: "m",
+      phenomenon: "Formats.Length",
+      unitSystem: "Formats.SI",
+      definition: "M",
     },
     MILE: {
       schemaItemType: "Unit",
@@ -76,6 +90,13 @@ const testFormatSchema = {
       phenomenon: "Formats.Length",
       unitSystem: "Formats.USCustom",
       definition: "[MILLI]*IN",
+    },
+    PERCENT: {
+      schemaItemType: "Unit",
+      label: "%",
+      phenomenon: "Formats.PERCENTAGE",
+      unitSystem: "Formats.USCustom",
+      definition: "ONE",
     },
     DefaultReal: {
       schemaItemType: "Format",

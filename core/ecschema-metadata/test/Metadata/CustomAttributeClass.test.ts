@@ -6,11 +6,11 @@
 import { assert, expect } from "chai";
 import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
 
-import { Schema } from "../../src/Metadata/Schema";
+import { SchemaContext } from "../../src/Context";
+import { CustomAttributeContainerType, ECClassModifier } from "../../src/ECObjects";
 import { ECObjectsError } from "../../src/Exception";
 import { CustomAttributeClass } from "../../src/Metadata/CustomAttributeClass";
-import { ECClassModifier } from "../../src/ECObjects";
-import { CustomAttributeContainerType } from "../../src/ECObjects";
+import { Schema } from "../../src/Metadata/Schema";
 
 describe("CustomAttributeClass", () => {
   describe("deserialization", () => {
@@ -31,7 +31,7 @@ describe("CustomAttributeClass", () => {
         appliesTo: "AnyClass",
       });
 
-      const ecschema = await Schema.fromJson(schemaJson);
+      const ecschema = await Schema.fromJson(schemaJson, new SchemaContext());
 
       const testCAClass = await ecschema.getItem<CustomAttributeClass>("TestCAClass");
       expect(testCAClass).to.exist;
@@ -48,7 +48,7 @@ describe("CustomAttributeClass", () => {
         appliesTo: "Schema",
         properties: [{ name: "navProp", type: "NavigationProperty" }],
       });
-      await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Navigation Property TestCAClass.navProp is invalid, because only EntityClasses, Mixins, and RelationshipClasses can have NavigationProperties.`);
+      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The Navigation Property TestCAClass.navProp is invalid, because only EntityClasses, Mixins, and RelationshipClasses can have NavigationProperties.`);
     });
   });
 
@@ -62,13 +62,13 @@ describe("CustomAttributeClass", () => {
     let testClass: CustomAttributeClass;
 
     beforeEach(() => {
-      const schema = new Schema("TestSchema", 1, 0, 0);
+      const schema = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);
       testClass = new CustomAttributeClass(schema, "TestCustomAttribute");
     });
 
     it("async - should succeed with fully defined standalone", async () => {
       const schemaJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/schemaitem",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem",
         schema: "TestSchema",
         schemaVersion: "1.0.0",
         schemaItemType: "CustomAttributeClass",
@@ -79,17 +79,17 @@ describe("CustomAttributeClass", () => {
 
       await testClass.deserialize(schemaJson);
       const caJson = testClass!.toJson(true, true);
-      assert(caJson.$schema, "https://dev.bentley.com/json_schemas/ec/31/draft-01/schemaitem");
-      assert(caJson.appliesTo, "Schema,AnyProperty");
-      assert(caJson.modifier, "Sealed");
-      assert(caJson.name, "TestCustomAttribute");
-      assert(caJson.schema, "TestSchema");
-      assert(caJson.schemaItemType, "CustomAttributeClass");
-      assert(caJson.schemaVersion, "1.0.0");
+      assert.strictEqual(caJson.$schema, "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem");
+      assert.strictEqual(caJson.appliesTo, "Schema, AnyProperty");
+      assert.strictEqual(caJson.modifier, "Sealed");
+      assert.strictEqual(caJson.name, "TestCustomAttribute");
+      assert.strictEqual(caJson.schema, "TestSchema");
+      assert.strictEqual(caJson.schemaItemType, "CustomAttributeClass");
+      assert.strictEqual(caJson.schemaVersion, "01.00.00");
     });
     it("sync - should succeed with fully defined standalone", () => {
       const schemaJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/schemaitem",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem",
         schema: "TestSchema",
         schemaVersion: "1.0.0",
         schemaItemType: "CustomAttributeClass",
@@ -100,13 +100,13 @@ describe("CustomAttributeClass", () => {
 
       testClass.deserializeSync(schemaJson);
       const caJson = testClass!.toJson(true, true);
-      assert(caJson.$schema, "https://dev.bentley.com/json_schemas/ec/31/draft-01/schemaitem");
-      assert(caJson.appliesTo, "Schema,AnyProperty");
-      assert(caJson.modifier, "Sealed");
-      assert(caJson.name, "TestCustomAttribute");
-      assert(caJson.schema, "TestSchema");
-      assert(caJson.schemaItemType, "CustomAttributeClass");
-      assert(caJson.schemaVersion, "1.0.0");
+      assert.strictEqual(caJson.$schema, "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem");
+      assert.strictEqual(caJson.appliesTo, "Schema, AnyProperty");
+      assert.strictEqual(caJson.modifier, "Sealed");
+      assert.strictEqual(caJson.name, "TestCustomAttribute");
+      assert.strictEqual(caJson.schema, "TestSchema");
+      assert.strictEqual(caJson.schemaItemType, "CustomAttributeClass");
+      assert.strictEqual(caJson.schemaVersion, "01.00.00");
     });
     it("async - should succeed with fully defined without standalone", async () => {
       const schemaJson = createSchemaJsonWithItems({
@@ -124,7 +124,7 @@ describe("CustomAttributeClass", () => {
           appliesTo: "Schema, AnyProperty",
         },
       });
-      const ecschema = await Schema.fromJson(schemaJson);
+      const ecschema = await Schema.fromJson(schemaJson, new SchemaContext());
       assert.isDefined(ecschema);
 
       const testCustomAttribute = await ecschema.getItem("testCustomAttribute");
@@ -152,7 +152,7 @@ describe("CustomAttributeClass", () => {
           appliesTo: "Schema, AnyProperty",
         },
       });
-      const ecschema = Schema.fromJsonSync(schemaJson);
+      const ecschema = Schema.fromJsonSync(schemaJson, new SchemaContext());
       assert.isDefined(ecschema);
 
       const testCustomAttribute = ecschema.getItemSync("testCustomAttribute");

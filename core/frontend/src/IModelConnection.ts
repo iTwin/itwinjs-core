@@ -4,24 +4,27 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module IModelConnection */
 
-import { ActivityLoggingContext, assert, BeEvent, BentleyStatus, Guid, Id64, Id64Arg, Id64Set, Id64String, Logger, OpenMode, TransientIdSequence } from "@bentley/bentleyjs-core";
+import { ActivityLoggingContext, assert, BeEvent, BentleyStatus, DbResult, Guid, Id64, Id64Arg, Id64Set, Id64String, Logger, OpenMode, TransientIdSequence } from "@bentley/bentleyjs-core";
+import { Angle, Point3d, Range3dProps, XYAndZ } from "@bentley/geometry-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import {
-  AxisAlignedBox3d, CodeSpec, ElementProps, EntityQueryParams, FontMap, ImageSourceFormat, IModel, IModelError, IModelNotFoundResponse,
-  IModelReadRpcInterface, IModelStatus, IModelTileRpcInterface, IModelToken, IModelUnitTestRpcInterface, IModelVersion, IModelWriteRpcInterface,
-  ModelProps, ModelQueryParams, RpcNotFoundResponse, RpcOperation, RpcRequest, RpcRequestEvent, SnapRequestProps, SnapResponseProps,
+  AxisAlignedBox3d, Cartographic, CodeSpec, ElementProps, EntityQueryParams, FontMap, GeoCoordStatus, ImageSourceFormat, IModel, IModelError,
+  IModelNotFoundResponse, IModelReadRpcInterface, IModelStatus, IModelToken, IModelVersion, IModelWriteRpcInterface, kPagingDefaultOptions,
+  ModelProps, ModelQueryParams, PageOptions, RpcNotFoundResponse, RpcOperation, RpcRequest, RpcRequestEvent, SnapRequestProps, SnapResponseProps,
   StandaloneIModelRpcInterface, ThumbnailProps, TileTreeProps, ViewDefinitionProps, ViewQueryParams, WipRpcInterface,
 } from "@bentley/imodeljs-common";
 import { EntityState } from "./EntityState";
+import { GeoServices } from "./GeoServices";
 import { IModelApp } from "./IModelApp";
 import { ModelState } from "./ModelState";
 import { HilitedSet, SelectionSet } from "./SelectionSet";
-import { GeoServices } from "./GeoServices";
 import { ViewState } from "./ViewState";
 
 const loggingCategory = "imodeljs-frontend.IModelConnection";
 
-/** A connection to an iModel database hosted on the backend. */
+/** A connection to an iModel database hosted on the backend.
+ * @public
+ */
 export class IModelConnection extends IModel {
   /** The [[OpenMode]] used for this IModelConnection. */
   public readonly openMode: OpenMode;
@@ -43,18 +46,17 @@ export class IModelConnection extends IModel {
   public readonly tiles: IModelConnection.Tiles;
   /** Generator for unique Ids of transient graphics for this IModelConnection. */
   public readonly transientIds = new TransientIdSequence();
-  /** A unique Id of this IModelConnection. */
-  public readonly connectionId = Guid.createValue();
   /** The Geographic location services available for this iModelConnection */
   public readonly geoServices: GeoServices;
+  /** @hidden Whether it has already been determined that this iModelConnection does not have a map projection. */
+  protected _noGcsDefined?: boolean;
   /** The maximum time (in milliseconds) to wait before timing out the request to open a connection to a new iModel */
-  private static _connectionTimeout: number = 10 * 60 * 1000;
+  public static connectionTimeout: number = 10 * 60 * 1000;
 
   /** Check the [[openMode]] of this IModelConnection to see if it was opened read-only. */
   public get isReadonly(): boolean { return this.openMode === OpenMode.Readonly; }
 
-  /**
-   * Event called immediately before an IModelConnection is closed.
+  /** Event called immediately before an IModelConnection is closed.
    * @note Be careful not to perform any asynchronous operations on the IModelConnection because it will close before they are processed.
    */
   public static readonly onClose = new BeEvent<(_imodel: IModelConnection) => void>();
@@ -62,8 +64,7 @@ export class IModelConnection extends IModel {
   /** The font map for this IModelConnection. Only valid after calling #loadFontMap and waiting for the returned promise to be fulfilled. */
   public fontMap?: FontMap;
 
-  /**
-   * Load the FontMap for this IModelConnection.
+  /** Load the FontMap for this IModelConnection.
    * @returns Returns a Promise<FontMap> that is fulfilled when the FontMap member of this IModelConnection is valid.
    */
   public async loadFontMap(): Promise<FontMap> {
@@ -77,8 +78,7 @@ export class IModelConnection extends IModel {
   public static registerClass(className: string, classType: typeof EntityState) { this._registry.set(className.toLowerCase(), classType); }
   private static lookupClass(className: string) { return this._registry.get(className.toLowerCase()); }
 
-  /**
-   * Find the first registered base class of the given EntityState className. This class will "handle" the State for the supplied className.
+  /** Find the first registered base class of the given EntityState className. This class will "handle" the State for the supplied className.
    * @param className The full name of the class of interest.
    * @param defaultClass If no base class of the className is registered, return this value.
    * @note this method is async since it may have to query the server to get the class hierarchy.
@@ -135,11 +135,10 @@ export class IModelConnection extends IModel {
   }
 
   private static async callOpen(accessToken: AccessToken, iModelToken: IModelToken, openMode: OpenMode): Promise<IModel> {
-    /* Try opening the iModel repeatedly accommodating any pending responses from the backend.
-     * Waits for an increasing amount of time (but within a range) before checking on the pending request again.
-     */
+    // Try opening the iModel repeatedly accommodating any pending responses from the backend.
+    // Waits for an increasing amount of time (but within a range) before checking on the pending request again.
     const connectionRetryIntervalRange = { min: 100, max: 5000 }; // in milliseconds
-    let connectionRetryInterval = Math.min(connectionRetryIntervalRange.min, IModelConnection._connectionTimeout);
+    let connectionRetryInterval = Math.min(connectionRetryIntervalRange.min, IModelConnection.connectionTimeout);
 
     let openForReadOperation: RpcOperation | undefined;
     let openForWriteOperation: RpcOperation | undefined;
@@ -169,12 +168,12 @@ export class IModelConnection extends IModel {
       Logger.logTrace(loggingCategory, "Received pending open notification in IModelConnection.open", () => ({ ...iModelToken, openMode }));
 
       const connectionTimeElapsed = Date.now() - startTime;
-      if (connectionTimeElapsed > IModelConnection._connectionTimeout) {
-        Logger.logError(loggingCategory, `Timed out opening connection in IModelConnection.open (took longer than ${IModelConnection._connectionTimeout} milliseconds)`, () => ({ ...iModelToken, openMode }));
+      if (connectionTimeElapsed > IModelConnection.connectionTimeout) {
+        Logger.logError(loggingCategory, `Timed out opening connection in IModelConnection.open (took longer than ${IModelConnection.connectionTimeout} milliseconds)`, () => ({ ...iModelToken, openMode }));
         throw new IModelError(BentleyStatus.ERROR, "Opening a connection was timed out"); // NEEDS_WORK: More specific error status
       }
 
-      connectionRetryInterval = Math.min(connectionRetryIntervalRange.max, connectionRetryInterval * 2, IModelConnection._connectionTimeout - connectionTimeElapsed);
+      connectionRetryInterval = Math.min(connectionRetryIntervalRange.max, connectionRetryInterval * 2, IModelConnection.connectionTimeout - connectionTimeElapsed);
       if (request.retryInterval !== connectionRetryInterval) {
         request.retryInterval = connectionRetryInterval;
         Logger.logTrace(loggingCategory, `Adjusted open connection retry interval to ${request.retryInterval} milliseconds in IModelConnection.open`, () => ({ ...iModelToken, openMode }));
@@ -194,7 +193,7 @@ export class IModelConnection extends IModel {
     IModelApp.accessToken = accessToken; // ###TODO to be refactored later...
 
     Logger.logTrace(loggingCategory, "Completed open request in IModelConnection.open", () => ({ ...iModelToken, openMode }));
-    return openResponse;
+    return openResponse!;
   }
 
   private _reopenConnectionHandler = async (request: RpcRequest<RpcNotFoundResponse>, response: IModelNotFoundResponse, resubmit: () => void, reject: (reason: any) => void) => {
@@ -220,7 +219,10 @@ export class IModelConnection extends IModel {
     resubmit();
   }
 
-  /** Close this IModelConnection */
+  /** Close this IModelConnection
+   * In the case of ReadWrite connections ensure all changes are pushed to the iModelHub before making this call -
+   * any un-pushed changes are lost after the close.
+   */
   public async close(accessToken: AccessToken): Promise<void> {
     if (!this.iModelToken)
       return;
@@ -234,8 +236,7 @@ export class IModelConnection extends IModel {
     }
   }
 
-  /**
-   * Open an IModelConnection to a standalone iModel (not managed by iModelHub) from a file name that is resolved by the backend.
+  /** Open an IModelConnection to a standalone iModel (not managed by iModelHub) from a file name that is resolved by the backend.
    * This method is intended for desktop or mobile applications and should not be used for web applications.
    */
   public static async openStandalone(fileName: string, openMode = OpenMode.Readonly): Promise<IModelConnection> {
@@ -258,40 +259,101 @@ export class IModelConnection extends IModel {
     }
   }
 
-  /** Load a file from the native asset directory of the backend.
-   * @param assetName Name of the asset file, with path relative to the *Assets* directory
+  /** Compute number of rows that would be returned by the ECSQL.
+   *
+   * See also:
+   * - [ECSQL Overview]($docs/learning/backend/ExecutingECSQL)
+   * - [Code Examples]($docs/learning/backend/ECSQLCodeExamples)
+   *
+   * @param ecsql The ECSQL statement to execute
+   * @param bindings The values to bind to the parameters (if the ECSQL has any).
+   * Pass an *array* of values if the parameters are *positional*.
+   * Pass an *object of the values keyed on the parameter name* for *named parameters*.
+   * The values in either the array or object must match the respective types of the parameters.
+   * See "[iModel.js Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" for details.
+   * @returns Return row count.
+   * @throws [IModelError]($common) If the statement is invalid
    */
-  public async loadNativeAsset(assetName: string): Promise<Uint8Array> { return IModelReadRpcInterface.getClient().loadNativeAsset(this.iModelToken, assetName); }
+  public async queryRowCount(ecsql: string, bindings?: any[] | object): Promise<number> {
+    Logger.logTrace(loggingCategory, "IModelConnection.queryRowCount", () => ({ iModelId: this.iModelToken.iModelId, ecsql, bindings }));
+    return IModelReadRpcInterface.getClient().queryRowCount(this.iModelToken, ecsql, bindings);
+  }
 
-  /**
-   * Execute an ECSQL query against the iModel.
+  /** Execute a query agaisnt this ECDb
    * The result of the query is returned as an array of JavaScript objects where every array element represents an
    * [ECSQL row]($docs/learning/ECSQLRowFormat).
    *
    * See also:
-   * - [ECSQL Overview]($docs/learning/frontend/ExecutingECSQL)
-   * - [Code Examples]($docs/learning/frontend/ECSQLCodeExamples)
+   * - [ECSQL Overview]($docs/learning/backend/ExecutingECSQL)
+   * - [Code Examples]($docs/learning/backend/ECSQLCodeExamples)
    *
-   * @param ecsql The ECSQL to execute
+   * @param ecsql The ECSQL statement to execute
    * @param bindings The values to bind to the parameters (if the ECSQL has any).
-   * The section "[iModel.js Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" describes the
-   * iModel.js types to be used for the different ECSQL parameter types.
    * Pass an *array* of values if the parameters are *positional*.
    * Pass an *object of the values keyed on the parameter name* for *named parameters*.
    * The values in either the array or object must match the respective types of the parameters.
-   * @returns Returns the query result as an array of the resulting rows or an empty array if the query has returned no rows
-   * @throws [IModelError]($common) if the ECSQL is invalid
+   * See "[iModel.js Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" for details.
+   * @param options Provide paging option. This allow set page size and page number from which to grab rows from.
+   * @returns Returns the query result as an array of the resulting rows or an empty array if the query has returned no rows.
+   * See [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned rows.
+   * @throws [IModelError]($common) If the statement is invalid
    */
-  public async executeQuery(ecsql: string, bindings?: any[] | object): Promise<any[]> {
-    Logger.logTrace(loggingCategory, "IModelConnection.executeQuery", () => ({ iModelId: this.iModelToken.iModelId, ecsql, bindings }));
-    return IModelReadRpcInterface.getClient().executeQuery(this.iModelToken, ecsql, bindings);
+  public async queryPage(ecsql: string, bindings?: any[] | object, options?: PageOptions): Promise<any[]> {
+    Logger.logTrace(loggingCategory, "IModelConnection.queryPage", () => ({ iModelId: this.iModelToken.iModelId, ecsql, options, bindings }));
+    return IModelReadRpcInterface.getClient().queryPage(this.iModelToken, ecsql, bindings, options);
+  }
+
+  /** Execute a pagable query.
+   * The result of the query is async iterator over the rows. The iterator will get next page automatically once rows in current page has been read.
+   * [ECSQL row]($docs/learning/ECSQLRowFormat).
+   *
+   * See also:
+   * - [ECSQL Overview]($docs/learning/backend/ExecutingECSQL)
+   * - [Code Examples]($docs/learning/backend/ECSQLCodeExamples)
+   *
+   * @param ecsql The ECSQL statement to execute
+   * @param bindings The values to bind to the parameters (if the ECSQL has any).
+   * Pass an *array* of values if the parameters are *positional*.
+   * Pass an *object of the values keyed on the parameter name* for *named parameters*.
+   * The values in either the array or object must match the respective types of the parameters.
+   * See "[iModel.js Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" for details.
+   * @param options Provide paging option. Which allow page to start iterating from and also size of the page to use.
+   * @returns Returns the query result as an array of the resulting rows or an empty array if the query has returned no rows.
+   * See [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned rows.
+   * @throws [IModelError]($common) If the statement is invalid
+   */
+  public async * query(ecsql: string, bindings?: any[] | object, options?: PageOptions): AsyncIterableIterator<any> {
+    if (!options) {
+      options = kPagingDefaultOptions;
+    }
+
+    let pageNo = options.start || kPagingDefaultOptions.start!;
+    const pageSize = options.size || kPagingDefaultOptions.size!;
+
+    // verify if correct options was provided.
+    if (pageNo < 0)
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, "options.start must be positive integer");
+
+    if (pageSize < 0)
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, "options.size must be positive integer starting from 1");
+
+    do {
+      const page = await this.queryPage(ecsql, bindings, { start: pageNo, size: pageSize });
+      if (page.length > 0) {
+        for (const row of page) {
+          yield row;
+        }
+        pageNo = pageNo + 1;
+      } else {
+        pageNo = -1;
+      }
+    } while (pageNo >= 0);
   }
 
   /** Query for a set of element ids that satisfy the supplied query params  */
   public async queryEntityIds(params: EntityQueryParams): Promise<Id64Set> { return IModelReadRpcInterface.getClient().queryEntityIds(this.iModelToken, params); }
 
-  /**
-   * Update the project extents of this iModel.
+  /** Update the project extents of this iModel.
    * @param newExtents The new project extents as an AxisAlignedBox3d
    * @throws [[IModelError]] if the IModelConnection is read-only or there is a problem updating the extents.
    */
@@ -302,8 +364,7 @@ export class IModelConnection extends IModel {
     return IModelWriteRpcInterface.getClient().updateProjectExtents(this.iModelToken, newExtents);
   }
 
-  /**
-   * Commit pending changes to this iModel
+  /** Commit pending changes to this iModel
    * @param description Optional description of the changes
    * @throws [[IModelError]] if the IModelConnection is read-only or there is a problem saving changes.
    */
@@ -314,16 +375,14 @@ export class IModelConnection extends IModel {
     return IModelWriteRpcInterface.getClient().saveChanges(this.iModelToken, description);
   }
 
-  /**
-   * WIP - Determines whether the *Change Cache file* is attached to this iModel or not.
+  /** WIP - Determines whether the *Change Cache file* is attached to this iModel or not.
    * See also [Change Summary Overview]($docs/learning/ChangeSummaries)
    * @returns Returns true if the *Change Cache file* is attached to the iModel. false otherwise
    * @hidden
    */
   public async changeCacheAttached(): Promise<boolean> { return WipRpcInterface.getClient().isChangeCacheAttached(this.iModelToken); }
 
-  /**
-   * WIP - Attaches the *Change Cache file* to this iModel if it hasn't been attached yet.
+  /** WIP - Attaches the *Change Cache file* to this iModel if it hasn't been attached yet.
    * A new *Change Cache file* will be created for the iModel if it hasn't existed before.
    * See also [Change Summary Overview]($docs/learning/ChangeSummaries)
    * @throws [IModelError]($common) if a Change Cache file has already been attached before.
@@ -331,8 +390,7 @@ export class IModelConnection extends IModel {
    */
   public async attachChangeCache(): Promise<void> { return WipRpcInterface.getClient().attachChangeCache(this.iModelToken); }
 
-  /**
-   * WIP - Detaches the *Change Cache file* to this iModel if it had been attached before.
+  /** WIP - Detaches the *Change Cache file* to this iModel if it had been attached before.
    * > You do not have to check whether a Change Cache file had been attached before. The
    * > method does not do anything, if no Change Cache is attached.
    * See also [Change Summary Overview]($docs/learning/ChangeSummaries)
@@ -340,21 +398,108 @@ export class IModelConnection extends IModel {
    */
   public async detachChangeCache(): Promise<void> { return WipRpcInterface.getClient().detachChangeCache(this.iModelToken); }
 
-  /**
-   * Execute a test by name
-   * @param testName The name of the test to execute
-   * @param params A JSON string containing all parameters the test requires
-   * @hidden
-   */
-  public async executeTest(testName: string, params: any): Promise<any> { return IModelUnitTestRpcInterface.getClient().executeTest(this.iModelToken, testName, params); }
-
   /** Request a snap from the backend. */
-  public async requestSnap(props: SnapRequestProps): Promise<SnapResponseProps> { return IModelReadRpcInterface.getClient().requestSnap(this.iModelToken, this.connectionId, props); }
+  public async requestSnap(props: SnapRequestProps): Promise<SnapResponseProps> { return IModelReadRpcInterface.getClient().requestSnap(this.iModelToken, IModelApp.sessionId, props); }
 
   /** Request a tooltip from the backend.  */
   public async getToolTipMessage(id: string): Promise<string[]> { return IModelReadRpcInterface.getClient().getToolTipMessage(this.iModelToken, id); }
+
+  /** Convert a point in this iModel's Spatial coordinates to a [[Cartographic]] using the Geographic location services for this IModelConnection.
+   * @param spatial A point in the iModel's spatial coordinates
+   * @param result If defined, use this for output
+   * @returns A Cartographic location
+   * @throws IModelError if [[isGeoLocated]] is false or point could not be converted.
+   */
+  public async spatialToCartographicFromGcs(spatial: XYAndZ, result?: Cartographic): Promise<Cartographic> {
+    if (undefined === this._noGcsDefined && !this.isGeoLocated)
+      this._noGcsDefined = true;
+
+    if (this._noGcsDefined)
+      throw new IModelError(IModelStatus.NoGeoLocation, "iModel does not have a Geographic Coordinate system. It may be Geolocated with an EcefTransform");
+
+    const geoConverter = this.geoServices.getConverter();
+    const coordResponse = await geoConverter.getGeoCoordinatesFromIModelCoordinates([spatial]);
+
+    if (this._noGcsDefined = (1 !== coordResponse.geoCoords.length || GeoCoordStatus.NoGCSDefined === coordResponse.geoCoords[0].s))
+      throw new IModelError(IModelStatus.NoGeoLocation, "iModel does not have a Geographic Coordinate system. It may be Geolocated with an EcefTransform");
+
+    if (GeoCoordStatus.Success !== coordResponse.geoCoords[0].s)
+      throw new IModelError(IModelStatus.BadRequest, "Error converting spatial to cartographic");
+
+    const longLatHeight = Point3d.fromJSON(coordResponse.geoCoords[0].p); // x is longitude in degrees, y is latitude in degrees, z is height in meters...
+    return Cartographic.fromDegrees(longLatHeight.x, longLatHeight.y, longLatHeight.z, result);
+  }
+
+  /** Convert a point in this iModel's Spatial coordinates to a [[Cartographic]] using the Geographic location services for this IModelConnection or [[IModel.ecefLocation]].
+   * @param spatial A point in the iModel's spatial coordinates
+   * @param result If defined, use this for output
+   * @returns A Cartographic location
+   * @throws IModelError if [[isGeoLocated]] is false or point could not be converted.
+   * @see [[spatialToCartographicFromGcs]]
+   * @see [[spatialToCartographicFromEcef]]
+   */
+  public async spatialToCartographic(spatial: XYAndZ, result?: Cartographic): Promise<Cartographic> {
+    if (undefined === this._noGcsDefined) {
+      try {
+        return await this.spatialToCartographicFromGcs(spatial, result);
+      } catch (error) {
+        if (!this._noGcsDefined)
+          throw error;
+      }
+    }
+    return (this._noGcsDefined ? this.spatialToCartographicFromEcef(spatial, result) : this.spatialToCartographicFromGcs(spatial, result));
+  }
+
+  /** Convert a [[Cartographic]] to a point in this iModel's Spatial coordinates using the Geographic location services for this IModelConnection.
+   * @param cartographic A cartographic location
+   * @param result If defined, use this for output
+   * @returns A point in this iModel's spatial coordinates
+   * @throws IModelError if [[isGeoLocated]] is false or cartographic location could not be converted.
+   */
+  public async cartographicToSpatialFromGcs(cartographic: Cartographic, result?: Point3d): Promise<Point3d> {
+    if (undefined === this._noGcsDefined && !this.isGeoLocated)
+      this._noGcsDefined = true;
+
+    if (this._noGcsDefined)
+      throw new IModelError(IModelStatus.NoGeoLocation, "iModel does not have a Geographic Coordinate system. It may be Geolocated with an EcefTransform");
+
+    const geoConverter = this.geoServices.getConverter();
+    const geoCoord = Point3d.create(Angle.radiansToDegrees(cartographic.longitude), Angle.radiansToDegrees(cartographic.latitude), cartographic.height); // x is longitude in degrees, y is latitude in degrees, z is height in meters...
+    const coordResponse = await geoConverter.getIModelCoordinatesFromGeoCoordinates([geoCoord]);
+
+    if (this._noGcsDefined = (1 !== coordResponse.iModelCoords.length || GeoCoordStatus.NoGCSDefined === coordResponse.iModelCoords[0].s))
+      throw new IModelError(IModelStatus.NoGeoLocation, "iModel does not have a Geographic Coordinate system. It may be Geolocated with an EcefTransform");
+
+    if (GeoCoordStatus.Success !== coordResponse.iModelCoords[0].s)
+      throw new IModelError(IModelStatus.BadRequest, "Error converting cartographic to spatial");
+
+    result = result ? result : Point3d.createZero();
+    result.setFromJSON(coordResponse.iModelCoords[0].p);
+    return result;
+  }
+
+  /** Convert a [[Cartographic]] to a point in this iModel's Spatial coordinates using the Geographic location services for this IModelConnection or [[IModel.ecefLocation]].
+   * @param cartographic A cartographic location
+   * @param result If defined, use this for output
+   * @returns A point in this iModel's spatial coordinates
+   * @throws IModelError if [[isGeoLocated]] is false or cartographic location could not be converted.
+   * @see [[cartographicToSpatialFromGcs]]
+   * @see [[cartographicToSpatialFromEcef]]
+   */
+  public async cartographicToSpatial(cartographic: Cartographic, result?: Point3d): Promise<Point3d> {
+    if (undefined === this._noGcsDefined) {
+      try {
+        return await this.cartographicToSpatialFromGcs(cartographic, result);
+      } catch (error) {
+        if (!this._noGcsDefined)
+          throw error;
+      }
+    }
+    return (this._noGcsDefined ? this.cartographicToSpatialFromEcef(cartographic, result) : this.cartographicToSpatialFromGcs(cartographic, result));
+  }
 }
 
+/** @public */
 export namespace IModelConnection {
 
   /** The id/name/class of a ViewDefinition. Returned by [[IModelConnection.Views.getViewList]] */
@@ -407,6 +552,11 @@ export namespace IModelConnection {
       } catch (err) { }  // ignore error, we had nothing to do.
     }
 
+    /** Query for a set of model ranges by ModelIds. */
+    public async queryModelRanges(modelIds: Id64Arg): Promise<Range3dProps[]> {
+      return IModelReadRpcInterface.getClient().queryModelRanges(this._iModel.iModelToken, Id64.toIdSet(modelIds));
+    }
+
     /** Query for a set of ModelProps of the specified ModelQueryParams. */
     public async queryProps(queryParams: ModelQueryParams): Promise<ModelProps[]> {
       const params: ModelQueryParams = Object.assign({}, queryParams); // make a copy
@@ -450,11 +600,6 @@ export namespace IModelConnection {
     /** Get an array  of [[ElementProps]] that satisfy a query */
     public async queryProps(params: EntityQueryParams): Promise<ElementProps[]> {
       return IModelReadRpcInterface.getClient().queryElementProps(this._iModel.iModelToken, params);
-    }
-
-    /** Ask the backend to format (for presentation) the specified list of element ids. */
-    public async formatElements(elementIds: Id64Arg): Promise<any[]> {
-      return IModelReadRpcInterface.getClient().formatElements(this._iModel.iModelToken, Id64.toIdSet(elementIds));
     }
   }
 
@@ -514,8 +659,7 @@ export namespace IModelConnection {
     /** @hidden */
     constructor(private _iModel: IModelConnection) { }
 
-    /**
-     * Query for an array of ViewDefinitionProps
+    /** Query for an array of ViewDefinitionProps
      * @param queryParams Query parameters specifying the views to return
      */
     public async queryProps(queryParams: ViewQueryParams): Promise<ViewDefinitionProps[]> {
@@ -531,8 +675,7 @@ export namespace IModelConnection {
       return viewProps as ViewDefinitionProps[];
     }
 
-    /**
-     * Get an array of the ViewSpecs for all views in this IModel that satisfy a ViewQueryParams.
+    /** Get an array of the ViewSpecs for all views in this IModel that satisfy a ViewQueryParams.
      *
      * This is typically used to create a list for UI.
      *
@@ -549,8 +692,7 @@ export namespace IModelConnection {
       return views;
     }
 
-    /**
-     * Query the ID of the default view associated with this iModel. Applications can choose to use this as the default view to which to open a viewport upon startup, or the initial selection
+    /** Query the ID of the default view associated with this iModel. Applications can choose to use this as the default view to which to open a viewport upon startup, or the initial selection
      * within a view selection dialog, or similar purposes.
      * @returns the ID of the default view, or an invalid ID if no default view is defined.
      */
@@ -610,7 +752,7 @@ export namespace IModelConnection {
     /** @hidden */
     constructor(iModel: IModelConnection) { this._iModel = iModel; }
 
-    public async getTileTreeProps(id: string): Promise<TileTreeProps> { return IModelTileRpcInterface.getClient().getTileTreeProps(this._iModel.iModelToken, id); }
-    public async getTileContent(treeId: string, contentId: string): Promise<Uint8Array> { return IModelTileRpcInterface.getClient().getTileContent(this._iModel.iModelToken, treeId, contentId); }
+    public async getTileTreeProps(id: string): Promise<TileTreeProps> { return IModelApp.tileAdmin.requestTileTreeProps(this._iModel, id); }
+    public async getTileContent(treeId: string, contentId: string): Promise<Uint8Array> { return IModelApp.tileAdmin.requestTileContent(this._iModel, treeId, contentId); }
   }
 }

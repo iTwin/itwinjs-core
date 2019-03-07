@@ -52,8 +52,8 @@ export class SplitButton extends React.Component<SplitButtonProps, SplitButtonSt
       );
     }
     return (
-      <div className={classnames("split-button", this.props.className, { expanded: this.state.expanded })}>
-        <div onClick={this.props.onClick} className={"split-button-label"}>{icon} {this.props.label}</div>
+      <div data-testid="split-button-root" className={classnames("split-button", this.props.className, { expanded: this.state.expanded })}>
+        <div data-testid="split-button-label" onClick={this.props.onClick} className={"split-button-label"}>{icon} {this.props.label}</div>
         <div className={"split-button-arrow"} ref={(el) => { this._arrowElement = el; }} onClick={this._handleClick} tabIndex={0} onKeyUp={this._handleKeyUp}>
           <div className={classnames("split-button-arrow-icon", "icon", "icon-chevron-down")} >
           </div>

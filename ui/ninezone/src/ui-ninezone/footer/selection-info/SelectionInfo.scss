@@ -11,6 +11,13 @@
   align-items: center;
   font-size: $text-font-size;
   overflow: hidden;
+  color: $buic-foreground-body;
+
+  .icon {
+    color: $icon-color;
+    font-size: $icon-size;
+    padding-right: 4px;
+  }
 
   &.nz-is-in-footer-mode {
     padding-left: $nz-footer-horizontal-padding;

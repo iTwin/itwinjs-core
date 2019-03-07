@@ -191,12 +191,12 @@ export class AttributeHandle {
     System.instance.context.vertexAttribPointer(this._glId, size, type, normalized, stride, offset);
   }
 
-  public enableVertexAttribArray(): void { System.instance.enableVertexAttribArray(this._glId); }
+  public enableVertexAttribArray(instanced = false): void { System.instance.enableVertexAttribArray(this._glId, instanced); }
 
-  public enableArray(buffer: BufferHandle, size: number, type: GL.DataType, normalized: boolean, stride: number, offset: number): void {
+  public enableArray(buffer: BufferHandle, size: number, type: GL.DataType, normalized: boolean, stride: number, offset: number, instanced = false): void {
     buffer.bind(GL.Buffer.Target.ArrayBuffer);
     this.setVertexAttribPointer(size, type, normalized, stride, offset);
-    this.enableVertexAttribArray();
+    this.enableVertexAttribArray(instanced);
     BufferHandle.unbind(GL.Buffer.Target.ArrayBuffer);
   }
 }

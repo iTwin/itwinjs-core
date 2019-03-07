@@ -16,8 +16,8 @@
   transition: .2s ease;
 
   &:hover {
-    background: rgba($nz-backstage-item-active-background, 1);
-    color: rgba($nz-backstage-item-color, 1);
+    background: $nz-backstage-item-hover-background;
+    color: $nz-backstage-item-color;
   }
 
   &.nz-is-active {
@@ -25,7 +25,7 @@
   }
 
   &.nz-is-disabled {
-    color: rgba($nz-backstage-item-color, 0.45);
+    color: $nz-backstage-item-color-disabled;
     pointer-events: none;
   }
 
@@ -48,7 +48,7 @@
   > div {
     display: flex;
     flex-direction: column;
-    padding-right: $bwc-sm;
+    padding-right: $uicore-sm;
     overflow: hidden;
 
     > span {
@@ -62,9 +62,9 @@
     }
 
     > span:nth-child(2) {
-      margin-top: $bwc-s;
-      font-size: $bwc-font-size;
-      color: $bwc-gray;
+      margin-top: $uicore-s;
+      font-size: $uicore-font-size;
+      color: $buic-foreground-muted;
     }
   }
 }

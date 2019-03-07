@@ -9,7 +9,7 @@ import { OpenMode, Id64, using } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import {
   InstanceKey, Ruleset, RuleTypes, RuleSpecificationTypes,
-  KeySet, ECInstanceNodeKey, getInstancesCount,
+  KeySet, ECInstanceNodeKey, getInstancesCount, RegisteredRuleset,
 } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
 
@@ -44,7 +44,7 @@ describe("Hierarchies", () => {
         other ch5
         filter ch6
       */
-      await using(await Presentation.presentation.rulesets().add(ruleset), async () => {
+      await using(await Presentation.presentation.rulesets().add(ruleset), async (_r) => {
         const result = await Presentation.presentation.getFilteredNodePaths({ imodel, rulesetId: ruleset.id }, "filter");
         expect(result).to.matchSnapshot();
       });
@@ -60,7 +60,7 @@ describe("Hierarchies", () => {
           [BisCore:LinkPartition] ECClassGroupingNode
             [BisCore:LinkPartition] 0xe
       */
-      await using(await Presentation.presentation.rulesets().add(ruleset), async () => {
+      await using<RegisteredRuleset, Promise<void>>(await Presentation.presentation.rulesets().add(ruleset), async () => {
         const key1: InstanceKey = { id: Id64.fromString("0x1"), className: "BisCore:RepositoryModel" };
         const key2: InstanceKey = { id: Id64.fromString("0x1"), className: "BisCore:Subject" };
         const key3: InstanceKey = { id: Id64.fromString("0x10"), className: "BisCore:DefinitionPartition" };
@@ -91,8 +91,8 @@ describe("Hierarchies", () => {
           }],
         }],
       };
-      await using(await Presentation.presentation.rulesets().add(ruleset), async () => {
-        const rootNodes = await Presentation.presentation.getRootNodes({ imodel, rulesetId: ruleset.id });
+      await using<RegisteredRuleset, Promise<void>>(await Presentation.presentation.rulesets().add(ruleset), async () => {
+        const rootNodes = await Presentation.presentation.getNodes({ imodel, rulesetId: ruleset.id });
         expect(rootNodes).to.matchSnapshot();
         /*
         The result should look like this (all grouping nodes):
@@ -112,9 +112,9 @@ describe("Hierarchies", () => {
         the result should be 1 + 1 + 2 = 4
         */
 
-        const definitionModelNodes = await Presentation.presentation.getChildren(
+        const definitionModelNodes = await Presentation.presentation.getNodes(
           { imodel, rulesetId: ruleset.id }, rootNodes[0].key);
-        const dictionaryModelNodes = await Presentation.presentation.getChildren(
+        const dictionaryModelNodes = await Presentation.presentation.getNodes(
           { imodel, rulesetId: ruleset.id }, rootNodes[1].key);
 
         const keys = new KeySet([

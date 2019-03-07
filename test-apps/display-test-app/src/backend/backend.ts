@@ -9,7 +9,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
 import { IModelBankClient, Config } from "@bentley/imodeljs-clients";
-import { UrlFileHandler } from "@bentley/imodeljs-clients/lib/UrlFileHandler";
+import { UrlFileHandler } from "@bentley/imodeljs-clients-backend";
 import { SVTConfiguration } from "../common/SVTConfiguration";
 
 IModelJsConfig.init(true /* suppress exception */, true /* suppress error message */, Config.App);
@@ -27,6 +27,7 @@ function setupStandaloneConfiguration() {
     configuration.standalonePath = process.env.SVT_STANDALONE_FILEPATH; // optional (browser-use only)
     configuration.viewName = process.env.SVT_STANDALONE_VIEWNAME; // optional
     configuration.iModelName = filename;
+    configuration.enableDiagnostics = undefined === process.env.SVT_DISABLE_DIAGNOSTICS;
     if (undefined !== process.env.SVT_STANDALONE_SIGNIN)
       configuration.signInForStandalone = true;
 
@@ -39,6 +40,8 @@ export function initializeBackend() {
   setupStandaloneConfiguration();
 
   const hostConfig = new IModelHostConfiguration();
+  hostConfig.useTileContentThreadPool = true;
+
   // tslint:disable-next-line:no-var-requires
   const configPathname = path.normalize(path.join(__dirname, "../webresources", "configuration.json"));
   const svtConfig: SVTConfiguration = require(configPathname);

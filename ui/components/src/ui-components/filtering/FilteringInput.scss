@@ -2,7 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-@import "@bentley/bwc/lib/mixins";
+@import "@bentley/ui-core/lib/ui-core/index";
 
 .filtering-input {
   display: flex;
@@ -18,7 +18,7 @@
 
   // The input itself
   input{
-    @include bwc-inputs-input;
+    @include uicore-inputs-input;
     box-sizing:border-box;
   }
 
@@ -36,7 +36,7 @@
 }
 
 @mixin filtering-button-base {
-  @include bwc-buttons-hollow;
+  @include uicore-buttons-hollow;
   margin-left: 6px;
 }
 
@@ -46,12 +46,11 @@
 
 .filtering-input-clear{
   @include filtering-button-base;
-  color: $bwc-gray-5;
+  color: $uicore-gray-5;
   font-size: "12px";
 }
 
 .filtering-input-loader {
-  @include bwc-loaders-medium;
   margin-bottom: auto;
   margin-top: auto;
 }

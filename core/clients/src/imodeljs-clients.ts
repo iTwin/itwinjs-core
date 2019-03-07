@@ -22,9 +22,6 @@ export * from "./IModelBank/IModelBankClient";
 export * from "./IModelBank/IModelBankHandler";
 export * from "./IModelBank/IModelBankFileSystemContextClient";
 
-// NOTE: Classes with backend-specific dependencies (like "fs") must be kept out of the "barrel" to avoid unacceptable webpack trickery on the frontend.
-// NOTE: Do not export UrlFileHandler - "fs" dependency
-
 export * from "./imodelhub/BaseHandler";
 export * from "./imodelhub/Client";
 export * from "./imodelhub/Query";
@@ -39,13 +36,21 @@ export * from "./imodelhub/Locks";
 export * from "./imodelhub/Users";
 export * from "./imodelhub/Versions";
 export * from "./imodelhub/Thumbnails";
-export * from "./imodelhub/AzureFileHandler";
-
-// NOTE: Classes with backend-specific dependencies (like "fs") must be kept out of the "barrel" to avoid unacceptable webpack trickery on the frontend.
-// NOTE: Do not export AzureFileHandler - "fs" dependency
 
 export * from "./oidc/OidcClient";
 export * from "./oidc/OidcFrontendClient";
+export * from "./oidc/AngularOidcFrontendClient";
+
+export * from "./ulas/LogEntryConverter";
+export * from "./ulas/UlasClient";
+
+// Set the version number so it can be found at runtime. BUILD_SEMVER is replaced at build time by the webpack DefinePlugin.
+declare var BUILD_SEMVER: string;
+if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") && window) {
+  if (!(window as any).iModelJsVersions)
+    (window as any).iModelJsVersions = new Map<string, string>();
+  (window as any).iModelJsVersions.set("imodeljs-clients", BUILD_SEMVER);
+}
 
 /** @docs-package-description
  * The imodeljs-clients package allows sending requests to various CONNECT services.
@@ -79,6 +84,10 @@ export * from "./oidc/OidcFrontendClient";
 /**
  * @docs-group-description iModels
  * Classes for abstracting access to [iModelHub]($docs/learning/iModelHub/index.md). See [iModelBank]($docs/reference/imodeljs-clients/imodelbank).
+ */
+/**
+ * @docs-group-description Settings
+ * Classes for saving and retrieving application-, project-, and iModel- specific [Settings]($docs/learning/frontend/Settings.md)
  */
 /**
  * @docs-group-description OtherServices

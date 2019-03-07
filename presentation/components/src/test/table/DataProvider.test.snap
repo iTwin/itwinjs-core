@@ -33,7 +33,6 @@ Object {
       "key": "deposit",
       "record": PropertyRecord {
         "description": "aggregate",
-        "isMerged": false,
         "isReadonly": true,
         "property": Object {
           "displayLabel": "multi-byte",
@@ -51,7 +50,6 @@ Object {
       "key": "product",
       "record": PropertyRecord {
         "description": "Cayman Islands",
-        "isMerged": false,
         "isReadonly": true,
         "property": Object {
           "displayLabel": "functionalities Intelligent Tasty",
@@ -73,8 +71,6 @@ Object {
       "key": "plum",
       "record": PropertyRecord {
         "description": "Mauritius Rupee",
-        "isMerged": false,
-        "isReadonly": false,
         "property": Object {
           "displayLabel": "bleeding-edge Auto Loan Account",
           "name": "plum",

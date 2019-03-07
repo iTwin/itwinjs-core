@@ -91,7 +91,8 @@ export class ViewsFrontstage extends FrontstageProvider {
 
     return (
       <Frontstage id="ViewsFrontstage"
-        defaultToolId="Select" defaultLayout={contentLayoutDef} contentGroup={myContentGroup}
+        defaultTool={AppTools.appSelectElementCommand}
+        defaultLayout={contentLayoutDef} contentGroup={myContentGroup}
         isInFooterMode={true} applicationData={{ key: "value" }}
         topLeft={
           <Zone
@@ -220,7 +221,7 @@ class FrontstageToolWidget extends React.Component {
   /** Tool that will display a pointer message on keyboard presses.
    */
   private _tool4 = () => {
-    const details = new NotifyMessageDetails(OutputMessagePriority.Info, "Press an arrow", "Press an arrow and move mouse to dismiss", OutputMessageType.Pointer);
+    const details = new NotifyMessageDetails(OutputMessagePriority.Error, "Press an arrow", "Press an arrow and move mouse to dismiss", OutputMessageType.Pointer);
     details.setPointerTypeDetails(IModelApp.viewManager.selectedView!.parentDiv,
       {
         x: window.innerWidth / 2,
@@ -232,7 +233,7 @@ class FrontstageToolWidget extends React.Component {
   }
 
   private _handleTool4Keypress = (event: any) => {
-    const details = new NotifyMessageDetails(OutputMessagePriority.Info, "", "", OutputMessageType.Pointer);
+    const details = new NotifyMessageDetails(OutputMessagePriority.Warning, "", "", OutputMessageType.Pointer);
     const viewport = IModelApp.viewManager.selectedView!.parentDiv;
     const midX = window.innerWidth / 2;
     const midY = window.innerHeight / 2;
@@ -290,9 +291,6 @@ class FrontstageToolWidget extends React.Component {
   private executeMeasureByPoints() {
     // first load the plugin
     IModelApp.tools.run("Plugin", ["MeasurePoints.js"]);
-    // then wait one second and run the newly installed Plugin tool.
-    BeDuration.wait(1000).then(() => { IModelApp.tools.run("Measure.Points"); })
-      .catch();
   }
 
   private _horizontalToolbar =
@@ -300,13 +298,16 @@ class FrontstageToolWidget extends React.Component {
       expandsTo={Direction.Bottom}
       items={
         <>
-          <ActionItemButton actionItem={CoreTools.selectElementCommand} />
+          <ActionItemButton actionItem={AppTools.appSelectElementCommand} />
           <ToolButton toolId="Measure.Points" iconSpec="icon-measure-distance" labelKey="SampleApp:tools.Measure.Points.flyover"
             execute={this.executeMeasureByPoints} stateSyncIds={[SyncUiEventId.ActiveContentChanged]} stateFunc={this._measureStateFunc} />
+          <ActionItemButton actionItem={AppTools.tool1} />
           <BooleanSyncUiListener eventIds={[SampleAppUiActionId.setTestProperty]} boolFunc={(): boolean => SampleAppIModelApp.getTestProperty() !== "HIDE"}>
             {(enabled: boolean, otherProps: any) => <ActionItemButton actionItem={AppTools.tool2} isEnabled={enabled} {...otherProps} />}
           </BooleanSyncUiListener>
           <ActionItemButton actionItem={CoreTools.analysisAnimationCommand} />
+          <ActionItemButton actionItem={CoreTools.scheduleAnimationCommand} />
+          <ActionItemButton actionItem={AppTools.toolWithSettings} />
           <ActionItemButton actionItem={AppTools.toggleHideShowItemsCommand} />
           <BooleanSyncUiListener eventIds={[SampleAppUiActionId.setTestProperty]} boolFunc={(): boolean => SampleAppIModelApp.getTestProperty() !== "HIDE"}>
             {(isVisible: boolean, otherProps: any) => {

@@ -2,7 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-@import "@bentley/bwc/lib/mixins";
+@import "../inputs/index.scss";
 
 .chk-listbox {
   margin: 0;
@@ -11,13 +11,13 @@
   position: relative;
 
   > li > .chk-listboxitem-checkbox {
-    @include bwc-inputs-checkbox;
+    @include uicore-inputs-checkbox;
     margin: 4px 0;
   }
 
   > .chk-listboxseparator {
     height: 1px;
-    background :#ccc;
+    background: $buic-background-divider; /* #ccc; */
     margin: 4px 0;
     pointer-events: none;
   }

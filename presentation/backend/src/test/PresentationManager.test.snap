@@ -28,6 +28,62 @@ Array [
 ]
 `;
 
+exports[`PresentationManager addon results conversion to Presentation objects returns child nodes and child node count when requesting first page 1`] = `
+Array [
+  Object {
+    "key": Object {
+      "instanceKey": Object {
+        "className": "sky blue",
+        "id": "0x32b90000008f73",
+      },
+      "pathFromRoot": Array [
+        "p1",
+      ],
+      "type": "ECInstanceNode",
+    },
+    "label": "test2",
+  },
+  Object {
+    "key": Object {
+      "pathFromRoot": Array [
+        "p1",
+        "p3",
+      ],
+      "type": "type 2",
+    },
+    "label": "test3",
+  },
+]
+`;
+
+exports[`PresentationManager addon results conversion to Presentation objects returns child nodes without child node count when requesting non-first page 1`] = `
+Array [
+  Object {
+    "key": Object {
+      "instanceKey": Object {
+        "className": "generating",
+        "id": "0x1051d00000143b5",
+      },
+      "pathFromRoot": Array [
+        "p1",
+      ],
+      "type": "ECInstanceNode",
+    },
+    "label": "test2",
+  },
+  Object {
+    "key": Object {
+      "pathFromRoot": Array [
+        "p1",
+        "p3",
+      ],
+      "type": "type 2",
+    },
+    "label": "test3",
+  },
+]
+`;
+
 exports[`PresentationManager addon results conversion to Presentation objects returns content 1`] = `
 Content {
   "contentSet": Array [
@@ -99,6 +155,84 @@ Content {
           "id": "0x12fb4000000b658",
           "label": "enable integrate",
           "name": "Sausages",
+        },
+      },
+    ],
+  },
+}
+`;
+
+exports[`PresentationManager addon results conversion to Presentation objects returns content and content set size when requesting first page 1`] = `
+Content {
+  "contentSet": Array [
+    Item {
+      "classInfo": Object {
+        "id": "0x1078000000b2f3",
+        "label": "Self-enabling Berkshire generate",
+        "name": "hacking",
+      },
+      "displayValues": Object {
+        "American Samoa": "Square Orchard transmitter",
+      },
+      "imageId": "abd3d999-d7fc-432f-80b0-433c5521c5e5",
+      "label": "Road invoice",
+      "mergedFieldNames": Array [],
+      "primaryKeys": Array [
+        Object {
+          "className": "copying",
+          "id": "0xa5170000012d70",
+        },
+      ],
+      "values": Object {
+        "American Samoa": "Buckinghamshire aggregate",
+      },
+    },
+  ],
+  "descriptor": Descriptor {
+    "contentFlags": 0,
+    "displayType": "voluptatibus neque dolor",
+    "fields": Array [
+      PropertiesField {
+        "category": Object {
+          "description": "Consequatur atque architecto.",
+          "expand": false,
+          "label": "Functionality USB",
+          "name": "visualize",
+          "priority": 94970,
+        },
+        "isReadonly": false,
+        "label": "Toys Product connecting",
+        "name": "American Samoa",
+        "priority": 74427,
+        "properties": Array [
+          Object {
+            "property": Object {
+              "classInfo": Object {
+                "id": "0x16cb60000003d1f",
+                "label": "Credit Card Account Bedfordshire Senior",
+                "name": "Forward",
+              },
+              "name": "hardware",
+              "type": "string",
+            },
+            "relatedClassPath": Array [],
+          },
+        ],
+        "type": Object {
+          "typeName": "string",
+          "valueFormat": "Primitive",
+        },
+      },
+    ],
+    "selectClasses": Array [
+      Object {
+        "isSelectPolymorphic": true,
+        "pathToPrimaryClass": Array [],
+        "relatedPropertyPaths": Array [],
+        "selectClassInfo": Object {
+          "id": "0x5790000000fdbb",
+          "label": "grey SMTP",
+          "name": "Home",
         },
       },
     ],
@@ -357,6 +491,162 @@ Descriptor {
 }
 `;
 
+exports[`PresentationManager addon results conversion to Presentation objects returns content when display types is passed in stead of descriptor 1`] = `
+Content {
+  "contentSet": Array [
+    Item {
+      "classInfo": Object {
+        "id": "0x149c20000003d04",
+        "label": "Handcrafted Soft Computer Small Metal Keyboard",
+        "name": "Soft",
+      },
+      "displayValues": Object {
+        "Qatar": "North Dakota methodologies",
+      },
+      "imageId": "a5d7cbc0-aba1-4795-8f38-7f091502b73b",
+      "label": "Rustic purple",
+      "mergedFieldNames": Array [],
+      "primaryKeys": Array [
+        Object {
+          "className": "wireless",
+          "id": "0x74310000016e96",
+        },
+      ],
+      "values": Object {
+        "Qatar": "monetize",
+      },
+    },
+  ],
+  "descriptor": Descriptor {
+    "contentFlags": 0,
+    "displayType": "et ut veritatis",
+    "fields": Array [
+      PropertiesField {
+        "category": Object {
+          "description": "Modi odio et ratione earum nesciunt excepturi tempora.",
+          "expand": true,
+          "label": "open architecture green",
+          "name": "Architect",
+          "priority": 64996,
+        },
+        "isReadonly": true,
+        "label": "user-centric Chief Metal",
+        "name": "Qatar",
+        "priority": 39335,
+        "properties": Array [
+          Object {
+            "property": Object {
+              "classInfo": Object {
+                "id": "0x748300000056d0",
+                "label": "Markets deposit",
+                "name": "invoice",
+              },
+              "name": "maximize",
+              "type": "string",
+            },
+            "relatedClassPath": Array [],
+          },
+        ],
+        "type": Object {
+          "typeName": "string",
+          "valueFormat": "Primitive",
+        },
+      },
+    ],
+    "selectClasses": Array [
+      Object {
+        "isSelectPolymorphic": true,
+        "pathToPrimaryClass": Array [],
+        "relatedPropertyPaths": Array [],
+        "selectClassInfo": Object {
+          "id": "0x9ec80000002ca6",
+          "label": "Borders monitor static",
+          "name": "embrace",
+        },
+      },
+    ],
+  },
+}
+`;
+
+exports[`PresentationManager addon results conversion to Presentation objects returns content without content set size when requesting non-first page 1`] = `
+Content {
+  "contentSet": Array [
+    Item {
+      "classInfo": Object {
+        "id": "0x75c6000000ccc4",
+        "label": "Money Market Account Marketing",
+        "name": "Salad",
+      },
+      "displayValues": Object {
+        "matrix": "lavender Associate",
+      },
+      "imageId": "b9636150-5306-4c7b-b513-10dba199d813",
+      "label": "Refined Generic Cotton Salad",
+      "mergedFieldNames": Array [],
+      "primaryKeys": Array [
+        Object {
+          "className": "Lead",
+          "id": "0x13b6a000000e575",
+        },
+      ],
+      "values": Object {
+        "matrix": "override",
+      },
+    },
+  ],
+  "descriptor": Descriptor {
+    "contentFlags": 0,
+    "displayType": "blanditiis dolor similique",
+    "fields": Array [
+      PropertiesField {
+        "category": Object {
+          "description": "Blanditiis et deserunt.",
+          "expand": false,
+          "label": "Alabama",
+          "name": "withdrawal",
+          "priority": 21980,
+        },
+        "isReadonly": false,
+        "label": "deposit THX",
+        "name": "matrix",
+        "priority": 92094,
+        "properties": Array [
+          Object {
+            "property": Object {
+              "classInfo": Object {
+                "id": "0x10494000000edb9",
+                "label": "discrete Jamaica impactful",
+                "name": "Latvian Lats",
+              },
+              "name": "backing up",
+              "type": "string",
+            },
+            "relatedClassPath": Array [],
+          },
+        ],
+        "type": Object {
+          "typeName": "string",
+          "valueFormat": "Primitive",
+        },
+      },
+    ],
+    "selectClasses": Array [
+      Object {
+        "isSelectPolymorphic": true,
+        "pathToPrimaryClass": Array [],
+        "relatedPropertyPaths": Array [],
+        "selectClassInfo": Object {
+          "id": "0x1698e00000077e3",
+          "label": "synergistic COM Assistant",
+          "name": "Money Market Account",
+        },
+      },
+    ],
+  },
+}
+`;
+
 exports[`PresentationManager addon results conversion to Presentation objects returns filtered node paths 1`] = `
 Array [
   Object {
@@ -476,6 +766,132 @@ Array [
       "instanceKey": Object {
         "className": "Factors",
         "id": "0x14b720000013a65",
+      },
+      "pathFromRoot": Array [
+        "p1",
+      ],
+      "type": "ECInstanceNode",
+    },
+    "label": "test2",
+  },
+  Object {
+    "key": Object {
+      "pathFromRoot": Array [
+        "p1",
+        "p3",
+      ],
+      "type": "some node",
+    },
+    "label": "test2",
+  },
+]
+`;
+
+exports[`PresentationManager addon results conversion to Presentation objects returns root nodes and root nodes count when requesting first page 1`] = `
+Array [
+  Object {
+    "backColor": "backColor1",
+    "description": "description1",
+    "fontStyle": "fontStyle1",
+    "foreColor": "foreColor1",
+    "hasChildren": true,
+    "imageId": "img_1",
+    "isCheckboxEnabled": true,
+    "isCheckboxVisible": true,
+    "isChecked": true,
+    "isEditable": true,
+    "isExpanded": true,
+    "isSelectionDisabled": true,
+    "key": Object {
+      "pathFromRoot": Array [
+        "p1",
+        "p2",
+        "p3",
+      ],
+      "type": "type1",
+    },
+    "label": "test1",
+  },
+  Object {
+    "backColor": "",
+    "description": "description2",
+    "fontStyle": "",
+    "foreColor": "",
+    "hasChildren": false,
+    "imageId": "",
+    "isCheckboxEnabled": false,
+    "isCheckboxVisible": false,
+    "isChecked": false,
+    "isEditable": false,
+    "isExpanded": false,
+    "isSelectionDisabled": false,
+    "key": Object {
+      "instanceKey": Object {
+        "className": "deposit",
+        "id": "0xe93600000142ea",
+      },
+      "pathFromRoot": Array [
+        "p1",
+      ],
+      "type": "ECInstanceNode",
+    },
+    "label": "test2",
+  },
+  Object {
+    "key": Object {
+      "pathFromRoot": Array [
+        "p1",
+        "p3",
+      ],
+      "type": "some node",
+    },
+    "label": "test2",
+  },
+]
+`;
+
+exports[`PresentationManager addon results conversion to Presentation objects returns root nodes without nodes count when requesting non-first page 1`] = `
+Array [
+  Object {
+    "backColor": "backColor1",
+    "description": "description1",
+    "fontStyle": "fontStyle1",
+    "foreColor": "foreColor1",
+    "hasChildren": true,
+    "imageId": "img_1",
+    "isCheckboxEnabled": true,
+    "isCheckboxVisible": true,
+    "isChecked": true,
+    "isEditable": true,
+    "isExpanded": true,
+    "isSelectionDisabled": true,
+    "key": Object {
+      "pathFromRoot": Array [
+        "p1",
+        "p2",
+        "p3",
+      ],
+      "type": "type1",
+    },
+    "label": "test1",
+  },
+  Object {
+    "backColor": "",
+    "description": "description2",
+    "fontStyle": "",
+    "foreColor": "",
+    "hasChildren": false,
+    "imageId": "",
+    "isCheckboxEnabled": false,
+    "isCheckboxVisible": false,
+    "isChecked": false,
+    "isEditable": false,
+    "isExpanded": false,
+    "isSelectionDisabled": false,
+    "key": Object {
+      "instanceKey": Object {
+        "className": "Refined Wooden Car",
+        "id": "0x8f6d000000cfde",
       },
       "pathFromRoot": Array [
         "p1",

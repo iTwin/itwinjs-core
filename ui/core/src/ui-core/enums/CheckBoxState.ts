@@ -10,3 +10,10 @@ export enum CheckBoxState {
   On,
   Partial,
 }
+
+/** A data type that holds all the checkbox display attributes */
+export interface CheckBoxInfo {
+  isVisible?: boolean;
+  isDisabled?: boolean;
+  state?: CheckBoxState;
+}

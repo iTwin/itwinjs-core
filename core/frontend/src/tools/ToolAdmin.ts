@@ -19,6 +19,7 @@ import { IdleTool } from "./IdleTool";
 import { PrimitiveTool } from "./PrimitiveTool";
 import { BeButton, BeButtonEvent, BeButtonState, BeModifierKeys, BeTouchEvent, BeWheelEvent, CoordSource, EventHandled, InputCollector, InputSource, InteractiveTool, Tool } from "./Tool";
 import { ViewTool } from "./ViewTool";
+import { ToolSettingsPropertySyncItem } from "../properties/ToolSettingsValue";
 
 export const enum CoordinateLockOverrides {
   None = 0,
@@ -43,7 +44,7 @@ export class ToolSettings {
   /** Number of screen inches of movement allowed between clicks to still qualify as a double-click.  */
   public static doubleClickToleranceInches = 0.05;
   /** Duration without movement before a no-motion event is generated. */
-  public static noMotionTimeout = BeDuration.fromMilliseconds(50);
+  public static noMotionTimeout = BeDuration.fromMilliseconds(10);
   /** If true, view rotation tool keeps the up vector (worldZ) aligned with screenY. */
   public static preserveWorldUp = true;
   /** Delay with a touch on the surface before a move operation begins. */
@@ -294,6 +295,7 @@ interface ToolEvent {
 
 /** Controls operation of Tools. Administers the current view, primitive, and idle tools. Forwards events to the appropriate tool. */
 export class ToolAdmin {
+  public markupView?: ScreenViewport;
   /** @hidden */
   public readonly currentInputState = new CurrentInputState();
   /** @hidden */
@@ -308,12 +310,30 @@ export class ToolAdmin {
   private _saveCursor?: string;
   private _saveLocateCircle = false;
   private _modifierKeyWentDown = false;
+  private _defaultToolId = "Select";
+  private _defaultToolArgs?: any[];
   private _modifierKey = BeModifierKeys.None;
   /** Return the name of the [[PrimitiveTool]] to use as the default tool, if any.
    * @see [[startDefaultTool]]
    * @hidden
    */
-  public get defaultToolId(): string { return "Select"; }
+  public get defaultToolId(): string { return this._defaultToolId; }
+  /** Set the name of the [[PrimitiveTool]] to use as the default tool, if any.
+   * @see [[startDefaultTool]]
+   * @hidden
+   */
+  public set defaultToolId(toolId: string) { this._defaultToolId = toolId; }
+  /** Return the default arguments to pass in when starting the default tool, if any.
+   * @see [[startDefaultTool]]
+   * @hidden
+   */
+  public get defaultToolArgs(): any[] | undefined { return this._defaultToolArgs; }
+
+  /** Set the default arguments to pass in when starting the default tool, if any.
+   * @see [[startDefaultTool]]
+   * @hidden
+   */
+  public set defaultToolArgs(args: any[] | undefined) { this._defaultToolArgs = args; }
   /** Apply operations such as transform, copy or delete to all members of an assembly. */
   public assemblyLock = false;
   /** If Grid Lock is on, project data points to grid. */
@@ -328,6 +348,20 @@ export class ToolAdmin {
 
   // Workaround for Edge Bug.
   private static _keysCurrentlyDown = new Set<string>(); // The (small) set of keys that are currently pressed.
+
+  /** Handler that wants to process synching latest tool setting properties with UI.
+   *  @hidden
+   */
+  private _toolSettingsChangeHandler: ((toolId: string, syncProperties: ToolSettingsPropertySyncItem[]) => void) | undefined = undefined;
+
+  /** @hidden */
+  /** Set by object that will be provide UI for tool settings properties. */
+  public set toolSettingsChangeHandler(handler: ((toolId: string, syncProperties: ToolSettingsPropertySyncItem[]) => void) | undefined) {
+    this._toolSettingsChangeHandler = handler;
+  }
+
+  /** @hidden */
+  public get toolSettingsChangeHandler() { return this._toolSettingsChangeHandler; }
 
   /** Handler for keyboard events. */
   private static _keyEventHandler = (ev: KeyboardEvent) => {
@@ -465,7 +499,7 @@ export class ToolAdmin {
       return EventHandled.Yes;
 
     const tool = this.activeTool;
-    if (undefined === tool || EventHandled.Yes !== await tool.onMouseWheel(wheelEvent))
+    if (undefined === tool || EventHandled.Yes !== await tool.onMouseWheel(wheelEvent) && vp !== this.markupView)
       return this.idleTool.onMouseWheel(wheelEvent);
     return EventHandled.Yes;
   }
@@ -1113,8 +1147,14 @@ export class ToolAdmin {
     if (BeModifierKeys.None !== modifierKey)
       return this.onModifierKeyTransition(wentDown, modifierKey, keyEvent);
 
-    if (wentDown && keyEvent.ctrlKey && "z" === keyEvent.key.toLowerCase())
-      return this.doUndoOperation();
+    if (wentDown && keyEvent.ctrlKey) {
+      switch (keyEvent.key) {
+        case "z":
+          return this.doUndoOperation();
+        case "y":
+          return this.doRedoOperation();
+      }
+    }
 
     return activeTool.onKeyTransition(wentDown, keyEvent);
   }
@@ -1125,6 +1165,18 @@ export class ToolAdmin {
     if (activeTool instanceof PrimitiveTool) {
       // ### TODO Add method so UI can be showing string to inform user that undo of last data point is available...
       if (await activeTool.undoPreviousStep())
+        return true;
+    }
+    // ### TODO Request TxnManager undo and restart this.primitiveTool...
+    return false;
+  }
+
+  /** Called to redo previous data button for primitive tools or undo last write operation. */
+  public async doRedoOperation(): Promise<boolean> {
+    const activeTool = this.activeTool;
+    if (activeTool instanceof PrimitiveTool) {
+      // ### TODO Add method so UI can be showing string to inform user that undo of last data point is available...
+      if (await activeTool.redoPreviousStep())
         return true;
     }
     // ### TODO Request TxnManager undo and restart this.primitiveTool...
@@ -1220,6 +1272,7 @@ export class ToolAdmin {
 
   /** @hidden */
   public startViewTool(newTool: ViewTool) {
+
     IModelApp.notifications.outputPrompt("");
     IModelApp.accuDraw.onViewToolInstall();
 
@@ -1283,6 +1336,12 @@ export class ToolAdmin {
     this.setPrimitiveTool(newTool);
   }
 
+  /** Method used by interactive tools to send updated values to UI components, typically showing tool settings. */
+  public syncToolSettingsProperties(toolId: string, syncProperties: ToolSettingsPropertySyncItem[]): void {
+    if (this.toolSettingsChangeHandler)
+      this.toolSettingsChangeHandler(toolId, syncProperties);
+  }
+
   /**
    * Starts the default tool, if any. Generally invoked automatically when other tools exit, so shouldn't be called directly.
    * @note The default tool is expected to be a subclass of [[PrimitiveTool]]. A call to startDefaultTool is required to terminate
@@ -1290,7 +1349,7 @@ export class ToolAdmin {
    * @hidden
    */
   public startDefaultTool() {
-    if (!IModelApp.tools.run(this.defaultToolId))
+    if (!IModelApp.tools.run(this.defaultToolId, this.defaultToolArgs))
       this.startPrimitiveTool(undefined);
   }
 
@@ -1511,7 +1570,7 @@ export class WheelEventProcessor {
           vp.worldToNpc(lastEvent.point, newTarget);
           targetNpc.z = newTarget.z;
           lastEventWasValid = true;
-        } else if (undefined !== vp.pickNearestVisibleGeometry(target, vp.pixelsFromInches(ToolSettings.viewToolPickRadiusInches), newTarget)) {
+        } else if (undefined !== vp.pickNearestVisibleGeometry(target, vp.pixelsFromInches(ToolSettings.viewToolPickRadiusInches), true, newTarget)) {
           vp.worldToNpc(newTarget, newTarget);
           targetNpc.z = newTarget.z;
         } else {
@@ -1522,7 +1581,7 @@ export class WheelEventProcessor {
         vp.npcToWorld(targetNpc, target);
       }
 
-      const cameraView = vp.view as ViewState3d;
+      const cameraView: ViewState3d = vp.view;
       const transform = Transform.createFixedPointAndMatrix(target, Matrix3d.createScale(zoomRatio, zoomRatio, zoomRatio));
       const oldCameraPos = cameraView.getEyePoint();
       const newCameraPos = transform.multiplyPoint3d(oldCameraPos);

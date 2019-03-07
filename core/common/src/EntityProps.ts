@@ -8,7 +8,9 @@ import { Id64String, Id64 } from "@bentley/bentleyjs-core";
 import { Point2d, Point3d } from "@bentley/geometry-core";
 import { RelatedElement } from "./ElementProps";
 
-/** The properties of an [Entity]($backend) as they are read/stored from/to the iModel. */
+/** The properties of an [Entity]($backend) as they are read/stored from/to the iModel.
+ * @public
+ */
 export interface EntityProps {
   /** The full name of the [ECClass]($docs/bis/intro/glossary/#ecclass) for this entity, in the form "Schema:ClassName" */
   classFullName: string;
@@ -18,7 +20,9 @@ export interface EntityProps {
   [propName: string]: any;
 }
 
-/** Parameters for performing an ECSQL SELECT query on [Entity]($backend) classes. */
+/** Parameters for performing an ECSQL SELECT query on [Entity]($backend) classes.
+ * @alpha Use ECSQL and IModelConnection.queryRows instead?
+ */
 export interface EntityQueryParams {
   /** The sql className, in the form "Schema.ClassName", of the class to search. */
   from?: string;
@@ -34,7 +38,9 @@ export interface EntityQueryParams {
   offset?: number;
 }
 
-/** The primitive types of an Entity property. */
+/** The primitive types of an Entity property.
+ * @beta
+ */
 export const enum PrimitiveTypeCode {
   Uninitialized = 0x00,
   Binary = 0x101,
@@ -48,10 +54,14 @@ export const enum PrimitiveTypeCode {
   String = 0x901,
 }
 
-/** a callback function to process properties of an Entity */
+/** a callback function to process properties of an Entity
+ * @beta
+ */
 export type PropertyCallback = (name: string, meta: PropertyMetaData) => void;
 
-/** A custom attribute instance */
+/** A custom attribute instance
+ * @beta
+ */
 export interface CustomAttribute {
   /** The class of the CustomAttribute */
   ecclass: string;
@@ -61,6 +71,7 @@ export interface CustomAttribute {
 
 type FactoryFunc = (jsonObj: any) => any;
 
+/** @beta */
 export interface PropertyMetaDataProps {
   primitiveType?: number;
   structName?: string;
@@ -82,7 +93,9 @@ export interface PropertyMetaDataProps {
   customAttributes?: CustomAttribute[];
 }
 
-/** Metadata for a property. */
+/** Metadata for a property.
+ * @beta
+ */
 export class PropertyMetaData implements PropertyMetaDataProps {
   public primitiveType?: PrimitiveTypeCode;
   public structName?: string;
@@ -166,6 +179,8 @@ export class PropertyMetaData implements PropertyMetaDataProps {
     return jsonObj;
   }
 }
+
+/** @beta */
 export interface EntityMetaDataProps {
   ecclass: string;
   description?: string;
@@ -179,7 +194,9 @@ export interface EntityMetaDataProps {
   properties: { [propName: string]: PropertyMetaData };
 }
 
-/** Metadata for an Entity. */
+/** Metadata for an Entity.
+ * @beta
+ */
 export class EntityMetaData implements EntityMetaDataProps {
   /** The Entity name */
   public readonly ecclass: string;

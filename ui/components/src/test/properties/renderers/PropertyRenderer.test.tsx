@@ -11,7 +11,7 @@ import { PropertyRenderer } from "../../../ui-components/properties/renderers/Pr
 import TestUtils from "../../TestUtils";
 import { PropertyValueRendererManager } from "../../../ui-components/properties/ValueRendererManager";
 import { PrimitivePropertyRenderer } from "../../../ui-components/properties/renderers/PrimitivePropertyRenderer";
-import { PropertyRecord } from "../../../ui-components";
+import { PropertyRecord } from "@bentley/imodeljs-frontend";
 import { NonPrimitivePropertyRenderer } from "../../../ui-components/properties/renderers/NonPrimitivePropertyRenderer";
 
 describe("PropertyRenderer", () => {
@@ -127,7 +127,7 @@ describe("PropertyRenderer", () => {
     expect(propertyRenderer.find(".components-text-editor").length).to.eq(1);
   });
 
-  it("calls onEditCommit on Enter key when editing", () => {
+  it("calls onEditCommit on Enter key when editing", async () => {
     const spyMethod = sinon.spy();
     const propertyRenderer = mount(
       <PropertyRenderer
@@ -141,6 +141,7 @@ describe("PropertyRenderer", () => {
     expect(inputNode.length).to.eq(1);
 
     inputNode.simulate("keyDown", { key: "Enter" });
+    await TestUtils.flushAsyncOperations();
     expect(spyMethod.calledOnce).to.be.true;
   });
 

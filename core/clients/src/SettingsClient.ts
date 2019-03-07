@@ -11,7 +11,11 @@ import { SettingsAdmin, SettingsStatus, SettingsResult } from "./SettingsAdmin";
 import { BentleyError, BentleyStatus, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { ImsDelegationSecureTokenClient } from "./ImsClients";
 
-/** Client API for the CONNECT ProductSettingsService - implements the SettingsAdmin interface when settings are stored by CONNECT. */
+/**
+ * Client API for the CONNECT ProductSettingsService - implements the SettingsAdmin interface when settings are stored by CONNECT.
+ * This class is not accessed directly from applications, they should use IModelApp.SettingsAdmin.
+ * @internal
+ */
 export class ConnectSettingsClient extends Client implements SettingsAdmin {
   public static readonly searchKey: string = "ProductSettingsService.RP";
   /**
@@ -32,10 +36,6 @@ export class ConnectSettingsClient extends Client implements SettingsAdmin {
     return imsClient.getToken(alctx, authSamlToken, baseUrl);
   }
 
-  /**
-   * Gets name/key to query the service URLs from the URL Discovery Service ("Buddi")
-   * @returns Search key for the URL.
-   */
   protected getUrlSearchKey(): string { return ConnectSettingsClient.searchKey; }
 
   // gets the portion of the Url that encapsulates the type of setting requested.
@@ -165,7 +165,6 @@ export class ConnectSettingsClient extends Client implements SettingsAdmin {
     });
   }
 
-  // Saves user settings
   public async saveUserSetting(alctx: ActivityLoggingContext, settings: any, settingNamespace: string, settingName: string, accessToken: AccessToken, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult> {
     return this.saveAnySetting(alctx, true, settings, settingNamespace, settingName, accessToken, applicationSpecific, projectId, iModelId);
   }

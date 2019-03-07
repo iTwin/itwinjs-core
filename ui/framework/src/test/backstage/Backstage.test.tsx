@@ -23,8 +23,12 @@ import {
 } from "../../ui-framework";
 import TestUtils from "../TestUtils";
 import { BackstageItem as NZ_BackstageItem } from "@bentley/ui-ninezone";
+import { CoreTools } from "../../ui-framework/CoreToolDefinitions";
+import { SyncUiEventDispatcher } from "../../ui-framework/syncui/SyncUiEventDispatcher";
+import { BackstageItemState } from "../../ui-framework/backstage/Backstage";
 
 describe("Backstage", () => {
+  const testEventId = "test-state-function-event";
 
   before(async () => {
     await TestUtils.initializeUiFramework();
@@ -72,10 +76,41 @@ describe("Backstage", () => {
 
     it("CommandLaunchBackstageItem should render & execute", () => {
       const spyMethod = sinon.stub();
-      const wrapper = mount(<CommandLaunchBackstageItem commandId="my-command-id" labelKey="UiFramework:tests.label" descriptionKey="UiFramework:tests.subtitle" iconSpec="icon-placeholder" execute={spyMethod} />);
+      let stateFuncRun = false;
+      const stateFunc = (state: Readonly<BackstageItemState>): BackstageItemState => {
+        stateFuncRun = true;
+        return { ...state, isEnabled: false } as BackstageItemState;
+      };
+      const wrapper = mount(
+        <CommandLaunchBackstageItem commandId="my-command-id" labelKey="UiFramework:tests.label"
+          descriptionKey="UiFramework:tests.subtitle" iconSpec="icon-placeholder" execute={spyMethod}
+          stateSyncIds={[testEventId]} stateFunc={stateFunc} />,
+      );
+
+      expect(stateFuncRun).to.be.false;
+      SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(testEventId);
+      expect(stateFuncRun).to.be.true;
+
       const backstageItem = wrapper.find(NZ_BackstageItem);
       backstageItem.find(".nz-backstage-item").simulate("click");
       expect(spyMethod.calledOnce).to.be.true;
+      wrapper.unmount();
+    });
+
+    it("CommandLaunchBackstageItem should render & execute with args", () => {
+      let argsPassed = false;
+      const testExecute = (args: any) => { if (args) argsPassed = true; };
+      const wrapper = mount(
+        <CommandLaunchBackstageItem commandId="my-command-id" labelKey="UiFramework:tests.label"
+          descriptionKey="UiFramework:tests.subtitle" iconSpec="icon-placeholder" execute={testExecute}
+          getCommandArgs={() => (["arg1", "arg2"])}
+        />,
+      );
+
+      expect(argsPassed).to.be.false;
+      const backstageItem = wrapper.find(NZ_BackstageItem);
+      backstageItem.find(".nz-backstage-item").simulate("click");
+      expect(argsPassed).to.be.true;
       wrapper.unmount();
     });
 
@@ -86,13 +121,18 @@ describe("Backstage", () => {
 
     it("FrontstageLaunchBackstageItem should render & execute", () => {
       const spyMethod = sinon.stub();
+      let stateFuncRun = false;
+      const stateFunc = (state: Readonly<BackstageItemState>): BackstageItemState => {
+        stateFuncRun = true;
+        return { ...state, isActive: true } as BackstageItemState;
+      };
 
       class Frontstage1 extends FrontstageProvider {
         public get frontstage(): React.ReactElement<FrontstageProps> {
           return (
             <Frontstage
               id="Test1"
-              defaultToolId="PlaceLine"
+              defaultTool={CoreTools.selectElementCommand}
               defaultLayout="FourQuadrants"
               contentGroup="TestContentGroup1"
             />
@@ -102,7 +142,16 @@ describe("Backstage", () => {
       ConfigurableUiManager.addFrontstageProvider(new Frontstage1());
 
       const remove = FrontstageManager.onFrontstageActivatedEvent.addListener((_args: FrontstageActivatedEventArgs) => spyMethod());
-      const wrapper = mount(<FrontstageLaunchBackstageItem frontstageId="Test1" labelKey="UiFramework:tests.label" iconSpec="icon-placeholder" />);
+      const wrapper = mount(
+        <FrontstageLaunchBackstageItem frontstageId="Test1" labelKey="UiFramework:tests.label" iconSpec="icon-placeholder"
+          stateSyncIds={[testEventId]} stateFunc={stateFunc} />,
+      );
+
+      expect(stateFuncRun).to.be.false;
+      SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(testEventId);
+      expect(stateFuncRun).to.be.true;
+      wrapper.update();
+
       const backstageItem = wrapper.find(NZ_BackstageItem);
       backstageItem.find(".nz-backstage-item").simulate("click");
       setImmediate(() => {
@@ -122,7 +171,7 @@ describe("Backstage", () => {
           return (
             <Frontstage
               id="Test1"
-              defaultToolId="PlaceLine"
+              defaultTool={CoreTools.selectElementCommand}
               defaultLayout="FourQuadrants"
               contentGroup="TestContentGroup1"
             />
@@ -148,11 +197,6 @@ describe("Backstage", () => {
       // Test Workflows
       const workflowPropsList: WorkflowPropsList = {
         defaultWorkflowId: "default-workflow",
-        taskPicker: {
-          classId: "taskpicker-class",
-          iconSpec: "taskpicker-icon",
-          labelKey: "taskpicker-label",
-        },
         workflows: [
           {
             id: "ExampleWorkflow",
@@ -167,9 +211,18 @@ describe("Backstage", () => {
       ConfigurableUiManager.loadWorkflows(workflowPropsList);
 
       const spyMethod = sinon.stub();
+      const stateFunc = sinon.stub();
       const remove = FrontstageManager.onFrontstageActivatedEvent.addListener((_args: FrontstageActivatedEventArgs) => spyMethod());
-      const wrapper = mount(<TaskLaunchBackstageItem taskId="Task1" workflowId="ExampleWorkflow" labelKey="UiFramework:tests.label" iconSpec="icon-placeholder" />);
+      const wrapper = mount(
+        <TaskLaunchBackstageItem taskId="Task1" workflowId="ExampleWorkflow" labelKey="UiFramework:tests.label" iconSpec="icon-placeholder"
+          stateSyncIds={[testEventId]} stateFunc={stateFunc} />,
+      );
       const backstageItem = wrapper.find(NZ_BackstageItem);
+
+      expect(stateFunc.calledOnce).to.be.false;
+      SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(testEventId);
+      expect(stateFunc.calledOnce).to.be.true;
+
       backstageItem.find(".nz-backstage-item").simulate("click");
       setImmediate(() => {
         expect(spyMethod.calledOnce).to.be.true;

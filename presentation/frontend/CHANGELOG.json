@@ -2,6 +2,45 @@
   "name": "@bentley/presentation-frontend",
   "entries": [
     {
+      "version": "0.189.0",
+      "tag": "@bentley/presentation-frontend_v0.189.0",
+      "date": "Wed, 06 Mar 2019 15:41:22 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Changes package.json to include api-extractor and adds api-extractor.json"
+          },
+          {
+            "comment": "Use new buildIModelJsBuild script"
+          },
+          {
+            "comment": "Remove uneeded typedoc plugin depedency"
+          },
+          {
+            "comment": "Uncomment and fixed test"
+          },
+          {
+            "comment": "Save BUILD_SEMVER to globally accessible map"
+          },
+          {
+            "comment": "Add an API for getting selection scopes and computing selection based on a selection scope."
+          },
+          {
+            "comment": "RPC Interface changes to optimize getting first page of nodes/content"
+          },
+          {
+            "comment": "upgrade to TypeScript 3.2.2"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.188.0",
+      "tag": "@bentley/presentation-frontend_v0.188.0",
+      "date": "Wed, 16 Jan 2019 16:36:09 GMT",
+      "comments": {}
+    },
+    {
       "version": "0.187.0",
       "tag": "@bentley/presentation-frontend_v0.187.0",
       "date": "Tue, 15 Jan 2019 15:18:59 GMT",

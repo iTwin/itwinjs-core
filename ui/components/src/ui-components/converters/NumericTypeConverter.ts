@@ -6,7 +6,7 @@
 
 import { TypeConverter, LessGreaterOperatorProcessor } from "./TypeConverter";
 import { TypeConverterManager } from "./TypeConverterManager";
-import * as Primitives from "./valuetypes/PrimitiveTypes";
+import { Primitives } from "@bentley/imodeljs-frontend";
 
 /**
  * Base Numeric Type Converter.
@@ -52,7 +52,7 @@ export class FloatTypeConverter extends NumericTypeConverterBase {
     return stringValue;
   }
 
-  public convertFromString(value: string) {
+  public convertFromString(value: string): number {
     return parseFloat(value);
   }
 }
@@ -74,7 +74,7 @@ export class IntTypeConverter extends NumericTypeConverterBase {
     return stringValue;
   }
 
-  public convertFromString(value: string) {
+  public convertFromString(value: string): number {
     return parseInt(value, 10);
   }
 }

@@ -5,10 +5,11 @@
 /** @module Breadcrumb */
 
 import * as React from "react";
+import { DndComponentClass } from "react-dnd";
 import classnames from "classnames";
 import { TreeDragDropType } from "../../tree/hocs/withDragDrop";
 import { withDragSource, WithDragSourceProps } from "../../dragdrop/withDragSource";
-import { withDropTarget } from "../../dragdrop/withDropTarget";
+import { withDropTarget, WithDropTargetProps } from "../../dragdrop/withDropTarget";
 
 /** @hidden */
 export interface DragDropBreadcrumbNodeProps extends React.AllHTMLAttributes<HTMLSpanElement> {
@@ -38,7 +39,7 @@ export class DragDropBreadcrumbNodeComponent extends React.Component<DragDropBre
 }
 
 /** @hidden */
-export function DragDropBreadcrumbNode<DragDropObject extends TreeDragDropType>() {
+export function DragDropBreadcrumbNode<DragDropObject extends TreeDragDropType>(): DndComponentClass<DragDropBreadcrumbNodeProps & WithDragSourceProps<DragDropObject> & WithDropTargetProps<DragDropObject>> {
   return withDropTarget<DragDropBreadcrumbNodeProps & WithDragSourceProps<DragDropObject>, DragDropObject>(
     withDragSource<DragDropBreadcrumbNodeProps, DragDropObject>(DragDropBreadcrumbNodeComponent));
 }

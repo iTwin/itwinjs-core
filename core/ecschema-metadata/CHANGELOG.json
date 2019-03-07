@@ -2,6 +2,48 @@
   "name": "@bentley/ecschema-metadata",
   "entries": [
     {
+      "version": "0.189.0",
+      "tag": "@bentley/ecschema-metadata_v0.189.0",
+      "date": "Wed, 06 Mar 2019 15:41:22 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Changes package.json to include api-extractor and adds api-extractor.json"
+          },
+          {
+            "comment": "Implemented BIS rules for schema validation."
+          },
+          {
+            "comment": "Use new buildIModelJsBuild script"
+          },
+          {
+            "comment": "Change the default version pattern to be padded with zeroes to match 'RR.ww.mm'."
+          },
+          {
+            "comment": "Convert Schema._items from Array to Map and return IterableIterator instead of Array in Schema.getItems/getClasses"
+          },
+          {
+            "comment": "Removing BIS Rules from ecschema-metadata"
+          },
+          {
+            "comment": "SchemaContext is now required when constructing a Schema instance."
+          },
+          {
+            "comment": "Added schema validation support via the configuration of rule sets that can be applied during schema traversal"
+          },
+          {
+            "comment": "upgrade to TypeScript 3.2.2"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.188.0",
+      "tag": "@bentley/ecschema-metadata_v0.188.0",
+      "date": "Wed, 16 Jan 2019 16:36:09 GMT",
+      "comments": {}
+    },
+    {
       "version": "0.187.0",
       "tag": "@bentley/ecschema-metadata_v0.187.0",
       "date": "Tue, 15 Jan 2019 15:18:59 GMT",

@@ -2,34 +2,42 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-@import "@bentley/bwc/lib/mixins";
-@import "@bentley/ui-core/lib/ui-core/colors";
+@import "@bentley/ui-core/lib/ui-core/index";
 
 .category-model-horizontal-tabs {
-  @include bwc-tabs-horizontal;
+  @include uicore-tabs-horizontal;
 
   > li {
     width: 50%;
   }
 
   > li > a {
-    background-color: $background-2;
+    color: $buic-text-color;
+    background-color: $buic-background-tab-inactive;
     text-align: center;
   }
 
   > li.active > a {
     color: $primary-base;
-    background-color: $background-1;
+    background-color: $buic-background-tab-active;
     border-bottom: none;
   }
 }
 
 .widget-picker {
-  background-color: $background-1;
+  background-color: $buic-background-widget;
   margin: 0 5px;
   position: relative;
   overflow: hidden;
   height: 100%;
+  position: relative;
+
+  .core-ls {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
 
   > .widget-groups {
     height: 100%;
@@ -53,15 +61,15 @@
       display: flex;
       align-items: center;
       font-size: 16px;
-      color: $bwc-text-color;
+      color: $buic-text-color;
       border-bottom: 1px solid #ccc;
       cursor: pointer;
 
       &:hover {
-        color: $bwc-blue;
+        color: $buic-foreground-primary;
 
         > .icon {
-          color: $bwc-blue;
+          color: $buic-foreground-primary;
         }
       }
 
@@ -74,7 +82,7 @@
         background: #ccc;
         margin-left: auto;
         margin-right: 5px;
-        color: black;
+        color: $buic-text-color;
       }
 
       > .icon {
@@ -84,21 +92,20 @@
   }
 
   .fw-modelselector {
-    top: 0;
-    left: 0;
     width: 100%;
     height: calc(100% - 44px);
     display: flex;
     flex-direction: column;
     opacity: 0;
-    transform: translateX(100%);
     transition: .2s linear;
-    background-color: $background-2;
+    background-color: $buic-background-widget;
 
-    .nz-tree-tree .nz-tree-node {
-      @include bwc-text( leading );
-      padding: 5px;
-      background-color: $background-1;
+    .core-tree  {
+      .core-tree-node {
+        &:not(:hover):not(.is-selected) {
+          background-color: $buic-background-control;
+        }
+      }
     }
 
     &.show {
@@ -119,10 +126,10 @@
         align-items: center;
         margin-right: auto;
         width: 100%;
-        color: $bwc-text-color;
+        color: $buic-text-color;
 
         &:hover {
-          color: $bwc-blue;
+          color: $buic-foreground-primary;
           cursor: pointer;
         }
 
@@ -139,15 +146,15 @@
         ul {
           margin: 0;
           padding: .5em 0;
-          font-size: $bwc-font-size;
+          font-size: $uicore-font-size;
           list-style: none;
-          background-color: $bwc-white;
+          background-color: $uicore-white;
 
           > li {
             display: flex;
             align-items: center;
             padding: .25em 1em;
-            color: $bwc-text-color;
+            color: $buic-text-color;
             white-space: nowrap;
             cursor: pointer;
 
@@ -164,7 +171,7 @@
     }
 
     > .modelselector-toolbar {
-      background-color: $background-1;
+      background-color: $buic-background-widget;
 
       > .searchbox {
         width: 95%;
@@ -179,7 +186,7 @@
           padding: 7px;
           border: 1px solid #ccc;
           font-size: 18px;
-          color: $bwc-icons-light;
+          color: $buic-icon-color;
           cursor: pointer;
           -webkit-transition: color .2s ease;
           -moz-transition: color .2s ease;
@@ -187,32 +194,15 @@
           transition: color .2s ease;
 
           &:hover {
-          color: $bwc-icons-dark;
+          color: $buic-foreground-activehover;
           }
         }
       }
     }
 
-    > .fw-modelselector-listbox {
-      flex: 1;
-      margin: 8px 0 4px 0;
-      overflow: auto;
+    .modelselector-content {
+      height: 100%;
     }
-
-    .nz-tree-tree  {
-
-      .nz-tree-node {
-        @include bwc-text( leading );
-        padding: 5px 0;
-        background-color: $background-1;
-
-        // > .contents {
-        //  margin: 11px 0;
-        // }
-      }
-    }
-
-
 
   }
 }

@@ -13,7 +13,7 @@ import { ModalFrontstageInfo, FrontstageManager, ModalFrontstage } from "../../u
 const navigationBackSpy = sinon.spy();
 const closeModalSpy = sinon.spy();
 
-function renderModalFrontstage(): React.ReactElement<any> {
+function renderModalFrontstage(isOpen: boolean): React.ReactElement<any> {
   const activeModalFrontstage: ModalFrontstageInfo | undefined = FrontstageManager.activeModalFrontstage;
   if (!activeModalFrontstage) {
     throw (Error);
@@ -23,7 +23,7 @@ function renderModalFrontstage(): React.ReactElement<any> {
 
   return (
     <ModalFrontstage
-      isOpen={true}
+      isOpen={isOpen}
       title={title}
       navigateBack={navigationBackSpy}
       closeModal={closeModalSpy}
@@ -65,7 +65,9 @@ describe("ModalFrontstage", () => {
     FrontstageManager.openModalFrontstage(modalFrontstage);
     expect(changedEventSpy.calledOnce).to.be.true;
 
-    const wrapper = mount(renderModalFrontstage());
+    mount(renderModalFrontstage(false));
+
+    const wrapper = mount(renderModalFrontstage(true));
     expect(wrapper.find("div.modal-frontstage").length).to.eq(1);
 
     const backButton = wrapper.find("div.nz-toolbar-button-back");

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module PropertyGrid */
 
-import { PropertyRecord } from "../properties/Record";
+import { PropertyRecord } from "@bentley/imodeljs-frontend";
 import { IPropertyDataProvider, PropertyData, PropertyCategory, PropertyDataChangeEvent } from "./PropertyDataProvider";
 
 /**
@@ -54,7 +54,6 @@ export class SimplePropertyDataProvider implements IPropertyDataProvider, Proper
     });
     if (index >= 0) {
       this.records[this.categories[categoryIdx].name].splice(index, 1, newRecord);
-      this.onDataChanged.raiseEvent();
       return true;
     }
     return false;

@@ -97,7 +97,10 @@ export class AppNotificationManager extends NotificationManager {
   /** Hides the Pointer message. */
   public closePointerMessage(): void { this._hidePointerMessage(); }
 
+  /** Return true if _showTooltip has an implementation and will display a tooltip. */
   public get isToolTipSupported(): boolean { return true; }
+
+  /** Return true if the tooltip is currently open. */
   public get isToolTipOpen(): boolean { return ElementTooltip.isTooltipVisible; }
 
   /** Clear the ToolTip if it is currently open. If not open, does nothing. */

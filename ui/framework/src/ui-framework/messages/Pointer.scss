@@ -3,36 +3,49 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-@import "@bentley/ui-core/lib/ui-core/colors";
-@import "@bentley/bwc/lib/mixins";
+@import "@bentley/ui-core/lib/ui-core/index";
 
 .nz-popup-message-pointer {
-  background-color: $background-1;
+  background-color: $buic-background-window;
   padding: 5px 15px;
   border-radius: 15px;
-  box-shadow: 1px 1px 5px 1px $background-5;
-  color: $text-dark;
+  box-shadow: 1px 1px 5px 1px $buic-foreground-body-reverse;
+  color: $buic-foreground-body;
 }
 
-.tooltip {
-  text-decoration:none;
-  position:relative;
-}
+// .tooltip {
+//   text-decoration:none;
+//   position:relative;
+// }
 
-.tooltip span {
-  display:none;
-}
+// .tooltip span {
+//   display:none;
+// }
 
-.tooltip:hover span {
-  display:block;
-  position:fixed;
-  overflow:visible;
-}
+// .tooltip:hover span {
+//   display:block;
+//   position:fixed;
+//   overflow:visible;
+// }
 
-.popup-message-brief {
-  @include bwc-text(body);
-}
+.nz-popup-message-pointer {
+  .icon {
+    margin: 0 5px 0 0;
+  }
 
-.popup-message-detailed {
-  @include bwc-text(small);
+  .icon-status-warning {
+    color: $buic-foreground-warning;
+  }
+
+  .icon-status-error {
+    color: $buic-foreground-alert;
+  }
+
+  .popup-message-brief {
+    @include uicore-text(body);
+  }
+
+  .popup-message-detailed {
+    @include uicore-text(small);
+  }
 }

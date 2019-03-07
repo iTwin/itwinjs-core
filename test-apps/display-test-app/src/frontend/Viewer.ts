@@ -2,37 +2,24 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-
-import {
-  Id64String,
-  OpenMode,
-} from "@bentley/bentleyjs-core";
-import {
-  ElectronRpcConfiguration,
-  MobileRpcConfiguration,
-} from "@bentley/imodeljs-common";
-import {
-  imageBufferToPngDataUrl,
-  IModelApp,
-  IModelConnection,
-  ScreenViewport,
-  Viewport,
-  ViewState,
-} from "@bentley/imodeljs-frontend";
-import { ViewList, ViewPicker } from "./ViewPicker";
-import { ToolBar, ToolBarDropDown, createImageButton, createToolButton } from "./ToolBar";
-import { DebugPanel } from "./DebugPanel";
-import { ModelPicker } from "./ModelPicker";
-import { RealityModelPicker } from "./RealityModelPicker";
+import { Id64String, OpenMode } from "@bentley/bentleyjs-core";
+import { ElectronRpcConfiguration, MobileRpcConfiguration } from "@bentley/imodeljs-common";
+import { imageBufferToPngDataUrl, IModelApp, IModelConnection, ScreenViewport, Viewport, ViewState, PluginAdmin } from "@bentley/imodeljs-frontend";
+import { AnimationPanel } from "./AnimationPanel";
 import { CategoryPicker } from "./CategoryPicker";
-import { ViewAttributesPanel } from "./ViewAttributes";
+import { createComboBox } from "./ComboBox";
+import { DebugPanel } from "./DebugPanel";
+import { IncidentMarkerDemo } from "./IncidentMarkerDemo";
+import { ModelPicker } from "./ModelPicker";
+import { toggleProjectExtents } from "./ProjectExtents";
+import { RealityModelPicker } from "./RealityModelPicker";
+import { addSnapModes } from "./SnapModes";
 import { StandardRotations } from "./StandardRotations";
 import { TileLoadIndicator } from "./TileLoadIndicator";
-import { addSnapModes } from "./SnapModes";
-import { createComboBox } from "./ComboBox";
-import { toggleIncidentMarkers } from "./IncidentMarkerDemo";
-import { toggleProjectExtents } from "./ProjectExtents";
-import { AnimationPanel } from "./AnimationPanel";
+import { FeatureOverridesPanel, emphasizeSelectedElements } from "./FeatureOverrides";
+import { ToolBar, ToolBarDropDown, createImageButton, createToolButton } from "./ToolBar";
+import { ViewList, ViewPicker } from "./ViewPicker";
+import { ViewAttributesPanel } from "./ViewAttributes";
 
 // ###TODO: I think the picker populates correctly, but I have no way to test - and if no reality models are available,
 // the button doesn't disappear until you click on it. Revisit when Alain has something useful for us.
@@ -57,7 +44,7 @@ function saveImage(vp: Viewport) {
 class DebugTools extends ToolBarDropDown {
   private readonly _element: HTMLElement;
 
-  public constructor(vp: Viewport, parent: HTMLElement) {
+  public constructor(parent: HTMLElement) {
     super();
 
     this._element = document.createElement("div");
@@ -67,24 +54,47 @@ class DebugTools extends ToolBarDropDown {
 
     this._element.appendChild(createImageButton({
       src: "Warning_sign.svg",
-      click: () => toggleIncidentMarkers(vp.iModel.projectExtents),
+      click: () => IncidentMarkerDemo.toggle(IModelApp.viewManager.selectedView!.iModel.projectExtents),
+      tooltip: "Test incident markers",
     }));
 
     this._element.appendChild(createToolButton({
       className: "bim-icon-viewbottom",
-      click: () => toggleProjectExtents(vp.iModel),
+      click: () => toggleProjectExtents(IModelApp.viewManager.selectedView!.iModel),
+      tooltip: "Toggle project extents",
     }));
 
     this._element.appendChild(createToolButton({
       className: "bim-icon-savedview",
-      click: () => saveImage(vp),
+      click: () => saveImage(IModelApp.viewManager.selectedView!),
+      tooltip: "Save view as image",
     }));
 
     this._element.appendChild(createToolButton({
       className: "rd-icon-measure-distance",
-      click: () => IModelApp.tools.run("DrawingAidTest.Points", vp), // ###TODO Fix the drop-down...
+      click: () => IModelApp.tools.run("DrawingAidTest.Points", IModelApp.viewManager.selectedView!), // ###TODO Fix the drop-down...
+      tooltip: "Test drawing aid tools",
     }));
 
+    const wantEmphasize = false;
+    if (wantEmphasize) {
+      this._element.appendChild(createToolButton({
+        className: "bim-icon-cancel",
+        click: () => emphasizeSelectedElements(IModelApp.viewManager.selectedView!),
+        tooltip: "Emphasize selected elements",
+      }));
+    }
+
+    this._element.appendChild(createImageButton({
+      src: "Markup.svg",
+      click: async () => PluginAdmin.loadPlugin("MarkupPlugin.js"),
+      tooltip: "Create Markup for View",
+    }));
+    this._element.appendChild(createToolButton({
+      className: "bim-icon-work",
+      click: async () => PluginAdmin.loadPlugin("startWebWorkerPlugin.js"),
+      tooltip: "Start Web Worker Test",
+    }));
     parent.appendChild(this._element);
   }
 
@@ -218,13 +228,6 @@ export class Viewer {
       createDropDown: async (container: HTMLElement) => Promise.resolve(new ViewAttributesPanel(this.viewport, container)),
     });
 
-    const toggleCamera = createImageButton({
-      src: "toggle-camera.svg",
-      click: () => IModelApp.tools.run("View.ToggleCamera", this.viewport),
-    });
-    this._3dOnly.push(toggleCamera);
-    this.toolBar.addItem(toggleCamera);
-
     this.toolBar.addItem(createImageButton({
       src: "fit-to-view.svg",
       click: () => IModelApp.tools.run("View.Fit", this.viewport, true),
@@ -249,7 +252,7 @@ export class Viewer {
 
     this.toolBar.addDropDown({
       className: "bim-icon-gyroscope",
-      createDropDown: async (container: HTMLElement) => Promise.resolve(new StandardRotations(this.viewport, container)),
+      createDropDown: async (container: HTMLElement) => Promise.resolve(new StandardRotations(container)),
     });
 
     this.toolBar.addItem(createToolButton({
@@ -268,8 +271,13 @@ export class Viewer {
     });
 
     this.toolBar.addDropDown({
+      className: "bim-icon-isolate",
+      createDropDown: async (container: HTMLElement) => new FeatureOverridesPanel(this.viewport, container),
+    });
+
+    this.toolBar.addDropDown({
       className: "bim-icon-appicon",
-      createDropDown: async (container: HTMLElement) => new DebugTools(this.viewport, container),
+      createDropDown: async (container: HTMLElement) => new DebugTools(container),
     });
 
     const fileSelector = document.getElementById("browserFileSelector") as HTMLInputElement;

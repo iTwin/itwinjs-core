@@ -2,14 +2,14 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
- @import "@bentley/bwc/lib/mixins";
+ @import "../inputs/variables.scss";
 
  .popup {
   display: block;
   box-sizing: border-box;
   position: absolute;
   border-radius: 4px;
-  border: 1px solid $bwc-inputs-border-color;
+  border: 1px solid $buic-background-panel-stroke;
   visibility: hidden;
   z-index: 100;
   animation-duration: 250ms;

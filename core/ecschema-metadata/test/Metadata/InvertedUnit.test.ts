@@ -4,55 +4,35 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import * as sinon from "sinon";
-
 import { Schema } from "../../src/Metadata/Schema";
 import { InvertedUnit } from "../../src/Metadata/InvertedUnit";
 import { ECObjectsError } from "../../src/Exception";
 import { UnitSystem } from "../../src/Metadata/UnitSystem";
 import { Unit } from "../../src/Metadata/Unit";
 import { schemaItemTypeToString, SchemaItemType } from "../../src/ECObjects";
+import { SchemaContext } from "../../src/Context";
 
 describe("Inverted Unit tests", () => {
   let testUnit: InvertedUnit;
-  describe("accept", () => {
-    beforeEach(() => {
-      const schema = new Schema("TestSchema", 1, 0, 0);
-      testUnit = new InvertedUnit(schema, "TestInvertedUnit");
-    });
-
-    it("should call visitInvertedUnit on a SchemaItemVisitor object", async () => {
-      expect(testUnit).to.exist;
-      const mockVisitor = { visitInvertedUnit: sinon.spy() };
-      await testUnit.accept(mockVisitor);
-      expect(mockVisitor.visitInvertedUnit.calledOnce).to.be.true;
-      expect(mockVisitor.visitInvertedUnit.calledWithExactly(testUnit)).to.be.true;
-    });
-
-    it("should safely handle a SchemaItemVisitor without visitInvertedUnit defined", async () => {
-      expect(testUnit).to.exist;
-      await testUnit.accept({});
-    });
-  });
 
   describe("SchemaItemType", () => {
-    const schema = new Schema("TestSchema", 1, 0, 0);
+    const schema = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);
     testUnit = new InvertedUnit(schema, "Test");
     it("should return correct item type and string", () => {
-      assert.equal(testUnit.schemaItemType, SchemaItemType.InvertedUnit);
-      assert.equal(schemaItemTypeToString(testUnit.schemaItemType), "InvertedUnit");
+      assert.strictEqual(testUnit.schemaItemType, SchemaItemType.InvertedUnit);
+      assert.strictEqual(schemaItemTypeToString(testUnit.schemaItemType), "InvertedUnit");
     });
   });
 
   describe("Async fromJson", () => {
     beforeEach(() => {
-      const schema = new Schema("TestSchema", 1, 0, 0);
+      const schema = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);
       testUnit = new InvertedUnit(schema, "HORIZONTAL_PER_VERTICAL");
     });
 
     it("Basic test for label", async () => {
       const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
         version: "1.0.0",
         name: "TestSchema",
         items: {
@@ -79,18 +59,18 @@ describe("Inverted Unit tests", () => {
           },
         },
       };
-      const ecSchema = await Schema.fromJson(json);
+      const ecSchema = await Schema.fromJson(json, new SchemaContext());
       assert.isDefined(ecSchema);
       const testItem = await ecSchema.getItem("HORIZONTAL_PER_VERTICAL");
       assert.isDefined(testItem);
       assert.isTrue(testItem instanceof InvertedUnit);
       const testInvertedUnit: InvertedUnit = testItem as InvertedUnit;
       assert.isDefined(testInvertedUnit);
-      assert(testInvertedUnit.label, "Horizontal/Vertical");
+      assert.strictEqual(testInvertedUnit.label, "Horizontal/Vertical");
     });
     it("Label and description are optional", async () => {
       const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
         version: "1.0.0",
         name: "TestSchema",
         items: {
@@ -117,19 +97,19 @@ describe("Inverted Unit tests", () => {
           },
         },
       };
-      const ecSchema = await Schema.fromJson(json);
+      const ecSchema = await Schema.fromJson(json, new SchemaContext());
       assert.isDefined(ecSchema);
       const testItem = await ecSchema.getItem("HORIZONTAL_PER_VERTICAL");
       assert.isDefined(testItem);
       assert.isTrue(testItem instanceof InvertedUnit);
       const testInvertedUnit: InvertedUnit = testItem as InvertedUnit;
       assert.isDefined(testInvertedUnit);
-      assert(testInvertedUnit.unitSystem, "TestSchema.INTERNATIONAL");
-      assert(testInvertedUnit.invertsUnit, "TestSchema.VERTICAL_PER_HORIZONTAL");
+      assert.strictEqual(testInvertedUnit.unitSystem!.fullName, "TestSchema.INTERNATIONAL");
+      assert.strictEqual(testInvertedUnit.invertsUnit!.fullName, "TestSchema.VERTICAL_PER_HORIZONTAL");
     });
     it("unitSystem is required", async () => {
       const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
         version: "1.0.0",
         name: "TestSchema",
         items: {
@@ -155,11 +135,11 @@ describe("Inverted Unit tests", () => {
           },
         },
       };
-      await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The InvertedUnit TestSchema.HORIZONTAL_PER_VERTICAL does not have the required 'unitSystem' attribute.`);
+      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The InvertedUnit TestSchema.HORIZONTAL_PER_VERTICAL does not have the required 'unitSystem' attribute.`);
     });
     it("Resolve all dependencies for inverts unit and unit system", async () => {
       const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
         version: "1.0.0",
         name: "TestSchema",
         items: {
@@ -185,7 +165,7 @@ describe("Inverted Unit tests", () => {
           },
         },
       };
-      const ecSchema = await Schema.fromJson(json);
+      const ecSchema = await Schema.fromJson(json, new SchemaContext());
       assert.isDefined(ecSchema);
       const testItem = await ecSchema.getItem("HORIZONTAL_PER_VERTICAL");
       assert.isDefined(testItem);
@@ -200,24 +180,24 @@ describe("Inverted Unit tests", () => {
       assert.isDefined(testUnitSys);
       assert.isTrue(testUnitSys instanceof UnitSystem);
       const testUnitSysItem: UnitSystem = testUnitSys as UnitSystem;
-      assert(unitSysFromInvertedUnit!.description, testUnitSysItem!.description);
+      assert.strictEqual(unitSysFromInvertedUnit!.description, testUnitSysItem!.description);
 
       const testInvertsUnit = await ecSchema.getItem("VERTICAL_PER_HORIZONTAL");
       assert.isDefined(testInvertsUnit);
       assert.isTrue(testInvertsUnit instanceof Unit);
       const testInvertsUnitItem: Unit = testInvertsUnit as Unit;
-      assert(invertsUnitFromInvertedUnit!.definition, testInvertsUnitItem!.definition);
+      assert.strictEqual(invertsUnitFromInvertedUnit!.definition, testInvertsUnitItem!.definition);
     });
   });
   describe("Sync fromJson", () => {
     beforeEach(() => {
-      const schema = new Schema("TestSchema", 1, 0, 0);
+      const schema = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);
       testUnit = new InvertedUnit(schema, "HORIZONTAL_PER_VERTICAL");
     });
 
     it("Basic test for label", () => {
       const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
         version: "1.0.0",
         name: "TestSchema",
         items: {
@@ -244,18 +224,18 @@ describe("Inverted Unit tests", () => {
           },
         },
       };
-      const ecSchema = Schema.fromJsonSync(json);
+      const ecSchema = Schema.fromJsonSync(json, new SchemaContext());
       assert.isDefined(ecSchema);
       const testItem = ecSchema.getItemSync("HORIZONTAL_PER_VERTICAL");
       assert.isDefined(testItem);
       assert.isTrue(testItem instanceof InvertedUnit);
       const testInvertedUnit: InvertedUnit = testItem as InvertedUnit;
       assert.isDefined(testInvertedUnit);
-      assert(testInvertedUnit.label, "Horizontal/Vertical");
+      assert.strictEqual(testInvertedUnit.label, "Horizontal/Vertical");
     });
     it("Label and description are optional", () => {
       const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
         version: "1.0.0",
         name: "TestSchema",
         items: {
@@ -282,19 +262,19 @@ describe("Inverted Unit tests", () => {
           },
         },
       };
-      const ecSchema = Schema.fromJsonSync(json);
+      const ecSchema = Schema.fromJsonSync(json, new SchemaContext());
       assert.isDefined(ecSchema);
       const testItem = ecSchema.getItemSync("HORIZONTAL_PER_VERTICAL");
       assert.isDefined(testItem);
       assert.isTrue(testItem instanceof InvertedUnit);
       const testInvertedUnit: InvertedUnit = testItem as InvertedUnit;
       assert.isDefined(testInvertedUnit);
-      assert(testInvertedUnit.unitSystem, "TestSchema.INTERNATIONAL");
-      assert(testInvertedUnit.invertsUnit, "TestSchema.VERTICAL_PER_HORIZONTAL");
+      assert.strictEqual(testInvertedUnit.unitSystem!.fullName, "TestSchema.INTERNATIONAL");
+      assert.strictEqual(testInvertedUnit.invertsUnit!.fullName, "TestSchema.VERTICAL_PER_HORIZONTAL");
     });
     it("Resolve all dependencies for inverts unit and unit system", async () => {
       const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
         version: "1.0.0",
         name: "TestSchema",
         items: {
@@ -320,7 +300,7 @@ describe("Inverted Unit tests", () => {
           },
         },
       };
-      const ecSchema = Schema.fromJsonSync(json);
+      const ecSchema = Schema.fromJsonSync(json, new SchemaContext());
       assert.isDefined(ecSchema);
       const testItem = ecSchema.getItemSync("HORIZONTAL_PER_VERTICAL");
       assert.isDefined(testItem);
@@ -335,23 +315,23 @@ describe("Inverted Unit tests", () => {
       assert.isDefined(testUnitSys);
       assert.isTrue(testUnitSys instanceof UnitSystem);
       const testUnitSysItem: UnitSystem = testUnitSys as UnitSystem;
-      assert(unitSysFromInvertedUnit!.description, testUnitSysItem!.description);
+      assert.strictEqual(unitSysFromInvertedUnit!.description, testUnitSysItem!.description);
 
       const testInvertsUnit = await ecSchema.getItem("VERTICAL_PER_HORIZONTAL");
       assert.isDefined(testInvertsUnit);
       assert.isTrue(testInvertsUnit instanceof Unit);
       const testInvertsUnitItem: Unit = testInvertsUnit as Unit;
-      assert(invertsUnitFromInvertedUnit!.definition, testInvertsUnitItem!.definition);
+      assert.strictEqual(invertsUnitFromInvertedUnit!.definition, testInvertsUnitItem!.definition);
     });
   });
   describe("toJson", () => {
     beforeEach(() => {
-      const schema = new Schema("TestSchema", 1, 0, 0);
+      const schema = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);
       testUnit = new InvertedUnit(schema, "HORIZONTAL_PER_VERTICAL");
     });
 
     const jsonOne = {
-      $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
+      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
       version: "1.0.0",
       name: "TestSchema",
       items: {
@@ -378,7 +358,7 @@ describe("Inverted Unit tests", () => {
       },
     };
     it("async- Serialization of fully defined inverted unit", async () => {
-      const ecSchema = await Schema.fromJson(jsonOne);
+      const ecSchema = await Schema.fromJson(jsonOne, new SchemaContext());
       assert.isDefined(ecSchema);
       const testItem = await ecSchema.getItem("HORIZONTAL_PER_VERTICAL");
       assert.isTrue(testItem instanceof InvertedUnit);
@@ -389,7 +369,7 @@ describe("Inverted Unit tests", () => {
       expect(invertedUnitSerialization.invertsUnit).to.eql("VERTICAL_PER_HORIZONTAL");
     });
     it("sync- Serialization of fully defined inverted unit", () => {
-      const ecSchema = Schema.fromJsonSync(jsonOne);
+      const ecSchema = Schema.fromJsonSync(jsonOne, new SchemaContext());
       assert.isDefined(ecSchema);
       const testItem = ecSchema.getItemSync("HORIZONTAL_PER_VERTICAL");
       assert.isTrue(testItem instanceof InvertedUnit);

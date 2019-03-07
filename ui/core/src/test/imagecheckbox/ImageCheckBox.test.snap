@@ -1,0 +1,34 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<ImageCheckBox /> disabled renders correctly 1`] = `
+<label
+  className="core-image-checkbox"
+  onClick={[Function]}
+>
+  <input
+    disabled={true}
+    onChange={[Function]}
+    onClick={[Function]}
+    type="checkbox"
+  />
+  <span
+    className="image icon icon-visibility-hide-2"
+  />
+</label>
+`;
+
+exports[`<ImageCheckBox /> renders correctly 1`] = `
+<label
+  className="core-image-checkbox"
+  onClick={[Function]}
+>
+  <input
+    onChange={[Function]}
+    onClick={[Function]}
+    type="checkbox"
+  />
+  <span
+    className="image icon icon-visibility-hide-2"
+  />
+</label>
+`;

@@ -12,7 +12,6 @@ import { WidgetControl } from "./WidgetControl";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { ConfigurableUiControlType, ConfigurableUiControlConstructor, ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl";
 import { CommandItemDef } from "../shared/Item";
-import { BaseItemState } from "../shared/ItemDefBase";
 import { SyncUiEventDispatcher, SyncUiEventArgs } from "../syncui/SyncUiEventDispatcher";
 import { StringGetter } from "../shared/ItemProps";
 
@@ -63,11 +62,6 @@ export interface ToolWidgetProps extends ToolbarWidgetProps {
  */
 export interface NavigationWidgetProps extends ToolbarWidgetProps {
   navigationAidId?: string;
-}
-
-export interface WidgetDefState extends BaseItemState {
-  widgetState?: number;
-  isFloating?: boolean;
 }
 
 /** Union of all Widget properties.
@@ -129,9 +123,6 @@ export class WidgetDef {
   }
 
   public static initializeFromWidgetProps(widgetProps: WidgetProps, me: WidgetDef) {
-    if (!widgetProps)
-      return;
-
     if (widgetProps.label)
       me.setLabel(widgetProps.label);
     else if (widgetProps.labelKey)

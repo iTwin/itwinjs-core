@@ -30,7 +30,7 @@ export class Point2dArrayCarrier extends IndexedXYCollection {
    * @param result caller-allocated destination
    * @returns undefined if the index is out of bounds
    */
-  public atPoint2dIndex(index: number, result?: Point2d): Point2d | undefined {
+  public getPoint2dAtCheckedPointIndex(index: number, result?: Point2d): Point2d | undefined {
     if (this.isValidIndex(index)) {
       const source = this.data[index];
       return Point2d.create(source.x, source.y, result);
@@ -42,7 +42,7 @@ export class Point2dArrayCarrier extends IndexedXYCollection {
    * @param result caller-allocated destination
    * @returns undefined if the index is out of bounds
    */
-  public atVector2dIndex(index: number, result?: Vector2d): Vector2d | undefined {
+  public getVector2dAtCheckedVectorIndex(index: number, result?: Vector2d): Vector2d | undefined {
     if (this.isValidIndex(index)) {
       const source = this.data[index];
       return Vector2d.create(source.x, source.y, result);

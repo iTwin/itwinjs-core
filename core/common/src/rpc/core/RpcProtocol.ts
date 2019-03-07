@@ -95,6 +95,9 @@ export abstract class RpcProtocol {
   /** The name of the authorization header. */
   public get authorizationHeaderName() { return this.configuration.applicationAuthorizationKey; }
 
+  /** If greater than zero, specifies where to break large binary request payloads. */
+  public transferChunkThreshold: number = 0;
+
   /** Override to supply the status corresponding to a protocol-specific code value. */
   public getStatus(code: number): RpcRequestStatus {
     return code;

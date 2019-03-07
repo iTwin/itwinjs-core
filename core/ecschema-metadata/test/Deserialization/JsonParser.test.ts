@@ -665,7 +665,7 @@ describe("JsonParser", () => {
 
     it("should throw for invalid version", () => {
       const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
         name: "BadSchema",
         version: 0,
       };
@@ -675,7 +675,7 @@ describe("JsonParser", () => {
 
     it("should throw for missing version", () => {
       const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
         name: "BadSchema",
       };
       parser = new JsonParser(json);
@@ -684,7 +684,7 @@ describe("JsonParser", () => {
 
     function testInvalidAttribute(attributeName: string, expectedType: string, value: any) {
       const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         name: "TestSchema",
         version: "1.2.3",
         [attributeName]: value,

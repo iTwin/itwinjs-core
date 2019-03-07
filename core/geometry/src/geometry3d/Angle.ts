@@ -20,6 +20,8 @@ export class Angle implements BeJSONFunctions {
     private _degrees?: number;
     private constructor(radians = 0, degrees?: number) { this._radians = radians; this._degrees = degrees; }
     public clone(): Angle { return new Angle(this._radians, this._degrees); }
+    public freeze() { Object.freeze(this); }
+
     /**
      * Return a new Angle object for angle given in degrees.
      * @param degrees angle in degrees
@@ -30,6 +32,12 @@ export class Angle implements BeJSONFunctions {
      * @param radians angle in radians
      */
     public static createRadians(radians: number) { return new Angle(radians); }
+    /**
+     * Return a (new) Angle object, with angle scaled from existing angle.
+     * @param scale scale factor to apply to angle.
+     */
+    public cloneScaled(scale: number) { return new Angle(this.radians * scale); }
+
     /**
      * Set this angle to a value given in radians.
      * @param radians angle given in radians
@@ -135,7 +143,12 @@ export class Angle implements BeJSONFunctions {
      */
     public tan(): number { return Math.tan(this._radians); }
     public static isFullCircleRadians(radians: number) { return Math.abs(radians) >= Geometry.fullCircleRadiansMinusSmallAngle; }
+    /** Test if the radians value  is a cmoplete circle */
+    public static isHalfCircleRadians(radians: number) { return (Math.abs(Math.abs(radians)) - Math.PI) <= Geometry.smallAngleRadians; }
+    /** test if the angle is aa full circle */
     public get isFullCircle(): boolean { return Angle.isFullCircleRadians(this._radians); }
+    /** test if the angle is a half circle (in either direction) */
+    public get isHalfCircle(): boolean { return Angle.isHalfCircleRadians(this._radians); }
     /** Adjust a radians value so it is positive in 0..360 */
     public static adjustDegrees0To360(degrees: number): number {
         if (degrees >= 0) {

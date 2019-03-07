@@ -10,7 +10,7 @@ import { Range2d } from "@bentley/geometry-core";
 
 import "./Tree.scss";
 
-/** Properties for the [[Tree]] presentational React component */
+/** Properties for the [[Tree]] presentation React component */
 export interface TreeProps {
   children?: React.ReactNode;
   className?: string;
@@ -93,7 +93,7 @@ export default class Tree extends React.PureComponent<TreeProps> {
 
   public render() {
     const className = classnames(
-      "nz-tree-tree",
+      "core-tree",
       this.props.className);
 
     return (

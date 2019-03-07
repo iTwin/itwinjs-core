@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 @import "./colors";
 
-$uicore-scrollbar-width: 10px;
+$uicore-scrollbar-width: 12px;
 $uicore-scrollbar-padding: 2px;
 
-@mixin uicore-scrollbar($color: $background-4, $width: $uicore-scrollbar-width, $padding: $uicore-scrollbar-padding) {
+@mixin uicore-scrollbar($color: $buic-background-scrollbar, $width: $uicore-scrollbar-width, $padding: $uicore-scrollbar-padding) {
   &::-webkit-scrollbar {
     width: $width;
     height: $width;

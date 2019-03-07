@@ -3,6 +3,8 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
+import { Schema } from "./Schema";
+
 export interface CustomAttribute {
   className: string;
   [propName: string]: any;
@@ -16,6 +18,8 @@ export interface CustomAttributeSet {
 
 export interface CustomAttributeContainerProps {
   customAttributes?: CustomAttributeSet;
+  fullName: string;
+  schema: Schema;
 }
 
 export function serializeCustomAttributes(customAttributes: CustomAttributeSet | undefined): any[] | undefined {
@@ -29,7 +33,7 @@ export function serializeCustomAttributes(customAttributes: CustomAttributeSet |
       });
       attributes.push(attribute);
     }
-    return attributes;
+    return (attributes.length > 0) ? attributes : undefined;
   }
   return undefined;
 }

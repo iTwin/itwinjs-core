@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { assert } from "@bentley/bentleyjs-core";
 import { FeatureIndexType } from "@bentley/imodeljs-common";
 import { System } from "./System";
+import { assert } from "@bentley/bentleyjs-core";
 
 /** Describes the dimensionality of a texture used as a look-up table. */
 export const enum LUTDimension {

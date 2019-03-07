@@ -10,8 +10,8 @@ import { IModelDb, OpenParams, BriefcaseManager, ChangeSummaryManager, ECSqlStat
 import { ConcurrencyControl } from "../../ConcurrencyControl";
 import { HubIModel, IModelQuery, AccessToken, ChangeSetPostPushEvent, NamedVersionCreatedEvent } from "@bentley/imodeljs-clients";
 import { HubUtility } from "./HubUtility";
-import * as utils from "./../../../../clients/lib/test/imodelhub/TestUtils";
-import { ResponseBuilder, RequestType, ScopeType } from "./../../../../clients/lib/test/ResponseBuilder";
+import * as utils from "./../../../../clients-backend/lib/test/imodelhub/TestUtils";
+import { ResponseBuilder, RequestType, ScopeType } from "./../../../../clients-backend/lib/test/ResponseBuilder";
 import { createNewModelAndCategory } from "./IModelWrite.test";
 import { TestConfig } from "../TestConfig";
 import { TestPushUtility } from "./TestPushUtility";

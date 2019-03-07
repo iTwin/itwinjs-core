@@ -49,7 +49,7 @@ export class Frontstage4 extends FrontstageProvider {
     return (
       <Frontstage
         id="Test4"
-        defaultToolId="PlaceLine"
+        defaultTool={AppTools.appSelectElementCommand}
         defaultLayout="SingleContent"
         contentGroup={myContentGroup}
         defaultContentId="TestContent1"

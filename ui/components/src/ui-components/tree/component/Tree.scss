@@ -2,33 +2,22 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-@import "@bentley/bwc/lib/mixins";
-@import "@bentley/ui-core/lib/ui-core/_scrollbar";
+@import "@bentley/ui-core/lib/ui-core/index";
 
-.ui-components-tree-loader {
-  @include bwc-loaders-large;
+.components-tree-loader {
   position: relative;
   display: block;
   left: calc(50% - 24px);
   top: calc(50% - 24px);
 }
 
-.ui-components-tree-errormessage {
+.components-tree-errormessage {
   padding-left: "10px"
 }
 
-.ui-components-tree {
-
-  .components-cell-editor {
-    border: $bwc-blue solid 1px;
-    background: #F9F9F9 !important;
-    box-sizing: border-box;
-    height: 100%;
-    width: 100%;
-    padding-top: 1px;
-    padding-bottom: 3px;
-  }
-
+.components-tree {
+  color: $buic-foreground-body;
+  background-color: $buic-background-control;
   /**
    * Workaround for horizontal scroll issue.
    * based on https://github.com/bvaughn/react-virtualized/issues/1248
@@ -59,4 +48,15 @@
       }
     }
   }
+
+  .components-cell-editor {
+    border: $buic-foreground-primary solid 1px;
+    background: $buic-background-control !important;
+    box-sizing: border-box;
+    height: 100%;
+    width: 100%;
+    padding-top: 1px;
+    padding-bottom: 3px;
+  }
+
 }

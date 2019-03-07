@@ -30,7 +30,9 @@ import { TileTree } from "./tile/TileTree";
 import { DecorateContext, SceneContext } from "./ViewContext";
 import { Viewport } from "./Viewport";
 
-/** Describes the orientation of the grid displayed within a [[Viewport]]. */
+/** Describes the orientation of the grid displayed within a [[Viewport]].
+ * @public
+ */
 export const enum GridOrientationType {
   /** Oriented with the view. */
   View = 0,
@@ -44,7 +46,9 @@ export const enum GridOrientationType {
   AuxCoord = 4,
 }
 
-/** Describes the result of a viewing operation such as those exposed by [[ViewState]] and [[Viewport]]. */
+/** Describes the result of a viewing operation such as those exposed by [[ViewState]] and [[Viewport]].
+ * @public
+ */
 export const enum ViewStatus {
   Success = 0,
   ViewNotInitialized,
@@ -64,13 +68,13 @@ export const enum ViewStatus {
   InvalidViewport,
 }
 
-/**
- * Margins for white space to be left around view volumes for [[ViewState.lookAtVolume]].
+/** Margins for white space to be left around view volumes for [[ViewState.lookAtVolume]].
  * Values mean "fraction of view size" and must be between 0 and .25.
+ * @public
  */
 export class MarginPercent {
   constructor(public left: number, public top: number, public right: number, public bottom: number) {
-    const limitMargin = (val: number) => (val < 0.0) ? 0.0 : (val > .25) ? .25 : val;
+    const limitMargin = (val: number) => Geometry.clamp(val, 0.0, 0.25);
     this.left = limitMargin(left);
     this.top = limitMargin(top);
     this.right = limitMargin(right);
@@ -78,12 +82,85 @@ export class MarginPercent {
   }
 }
 
-/**
- * Stores information about sub-categories specific to a ViewState. Functions as a lazily-populated cache.
+/** A cancelable paginated request for subcategory information.
+ * @see ViewSubCategories
+ * @hidden
+ */
+export class SubCategoriesRequest {
+  private static readonly _LIMIT = 1000;
+
+  private readonly _imodel: IModelConnection;
+  private readonly _subcategories: ViewSubCategories;
+  private readonly _ecsql: string;
+  private readonly _pages: any[][] = [];
+  private _canceled = false;
+
+  public constructor(subcategories: ViewSubCategories, categoryIds: Set<string>, imodel: IModelConnection) {
+    this._imodel = imodel;
+    this._subcategories = subcategories;
+
+    const where = [...categoryIds].join(",");
+    this._ecsql = "SELECT ECInstanceId as id, Parent.Id as parentId, Properties as appearance FROM BisCore.SubCategory WHERE Parent.Id IN (" + where + ")";
+  }
+
+  public cancel() { this._canceled = true; }
+
+  public async dispatch(): Promise<void> {
+    if (this._canceled)
+      return Promise.resolve();
+
+    let rows: any[] | undefined;
+    try {
+      const pageToGet = this._pages.length;
+      const pageSize = SubCategoriesRequest._LIMIT;
+      // we can actully use following async iterator here which would grab pages and iterator over rows automatically.
+      // at any time inside the loop user can break and cancel or stop reading the results. With catch that async iterator work on all browser except ie/edge and starting of safari 12/ ios 12
+      // rows = [];
+      // for await (const row of this._imodel.query(this._ecsql)) {
+      //   if (this._canceled)
+      //     return Promise.resolve();
+      //   else
+      //     rows.push(row);
+      // }
+      rows = Array.from(await this._imodel.queryPage(this._ecsql, undefined, { start: pageToGet, size: pageSize }));
+    } catch (_) {
+      // ###TODO: detect cases in which retry is warranted
+      // Note that currently, if we succeed in obtaining some pages of results and fail to retrieve another page, we will end up processing the
+      // incomplete results. Since we're not retrying, that's the best we can do.
+      rows = undefined;
+    }
+
+    if (undefined !== rows && rows.length > 0) {
+      this._pages.push(rows);
+      // More rows exist. If we're canceled, we can't process the partial results we've obtained thus far.
+      if (this._canceled)
+        return Promise.resolve();
+
+      // Query the next page of results.
+      return this.dispatch();
+    }
+
+    // Even if we were canceled, we've retrieved all the rows. Might as well process them to prevent another request for some of the same rows from being enqueued.
+    this.processResults();
+    return Promise.resolve();
+  }
+
+  // Because this request can be canceled before all rows are obtained and processed, we must wait to populate the ViewSubCategories until we have all of the data.
+  private processResults(): void {
+    for (const rows of this._pages)
+      this._subcategories.loadFromRows(rows);
+
+    this._pages.length = 0;
+  }
+}
+
+/** Stores information about sub-categories specific to a ViewState. Functions as a lazily-populated cache.
+ * @hidden
  */
 export class ViewSubCategories {
   private readonly _byCategoryId = new Map<string, Id64Set>();
   private readonly _appearances = new Map<string, SubCategoryAppearance>();
+  private _request?: SubCategoriesRequest;
 
   /** Get the Ids of all subcategories belonging to the category with the specified Id, or undefined if no such information is present. */
   public getSubCategories(categoryId: string): Id64Set | undefined { return this._byCategoryId.get(categoryId); }
@@ -97,12 +174,7 @@ export class ViewSubCategories {
    * categories in the ViewState's [[CategorySelector]].
    */
   public async load(categoryIds: Set<string>, iModel: IModelConnection): Promise<void> {
-    const where = [...categoryIds].join(",");
-    if (0 === where.length)
-      return Promise.resolve();
-
-    const ecsql = "SELECT ECInstanceId as id, Parent.Id as parentId, Properties as appearance FROM BisCore.SubCategory WHERE Parent.Id IN (" + where + ")";
-    return iModel.executeQuery(ecsql).then((rows: any[]) => this.loadFromRows(rows));
+    return 0 < categoryIds.size ? this.request(categoryIds, iModel) : Promise.resolve();
   }
 
   /**
@@ -111,6 +183,8 @@ export class ViewSubCategories {
    * categories.
    */
   public async update(addedCategoryIds: Set<string>, iModel: IModelConnection): Promise<void> {
+    this.cancelRequest(); // Just in case current request has obtained (some of) the data we want
+
     let missing: Set<string> | undefined;
     for (const catId of addedCategoryIds) {
       if (undefined === this._byCategoryId.get(catId)) {
@@ -121,10 +195,20 @@ export class ViewSubCategories {
       }
     }
 
-    if (undefined !== missing)
-      return this.load(missing, iModel);
-    else
-      return Promise.resolve();
+    return undefined !== missing ? this.request(missing, iModel) : Promise.resolve();
+  }
+
+  private async request(categoryIds: Set<string>, iModel: IModelConnection): Promise<void> {
+    this.cancelRequest();
+    this._request = new SubCategoriesRequest(this, categoryIds, iModel);
+    return this._request.dispatch();
+  }
+
+  private cancelRequest(): void {
+    if (undefined !== this._request) {
+      this._request.cancel();
+      this._request = undefined;
+    }
   }
 
   private static createSubCategoryAppearance(json?: any) {
@@ -135,7 +219,7 @@ export class ViewSubCategories {
     return new SubCategoryAppearance(props);
   }
 
-  private loadFromRows(rows: any[]): void {
+  public loadFromRows(rows: any[]): void {
     for (const row of rows)
       this.add(row.parentId as string, row.id as string, ViewSubCategories.createSubCategoryAppearance(row.appearance));
   }
@@ -150,10 +234,10 @@ export class ViewSubCategories {
   }
 }
 
-/**
- * The front-end state of a [[ViewDefinition]] element.
+/** The front-end state of a [[ViewDefinition]] element.
  * A ViewState is typically associated with a [[Viewport]] to display the contents of the view on the screen.
  * * @see [Views]($docs/learning/frontend/Views.md)
+ * @public
  */
 export abstract class ViewState extends ElementState {
   protected _featureOverridesDirty = true;
@@ -166,6 +250,7 @@ export abstract class ViewState extends ElementState {
   public undoTime?: BeTimePoint;
   /** A cache of information about subcategories belonging to categories present in this view's [[CategorySelectorState]].
    * It is populated on-demand as new categories are added to the selector.
+   * @hidden
    */
   public readonly subCategories = new ViewSubCategories();
   public static get className() { return "ViewDefinition"; }
@@ -182,8 +267,7 @@ export abstract class ViewState extends ElementState {
     }
   }
 
-  /**
-   * Create a new ViewState object from a set of properties. Generally this is called internally by [[IModelConnection.Views.load]] after the properties
+  /** Create a new ViewState object from a set of properties. Generally this is called internally by [[IModelConnection.Views.load]] after the properties
    * have been read from an iModel. But, it can also be used to create a ViewState in memory, from scratch or from properties stored elsewhere.
    */
   public static createFromProps(_props: ViewStateProps, _iModel: IModelConnection): ViewState | undefined { return undefined; }
@@ -206,9 +290,9 @@ export abstract class ViewState extends ElementState {
     }
   }
   /** Get the AnalysisDisplayProperties from the displayStyle of this ViewState. */
-  public get AnalysisStyle(): AnalysisStyle | undefined { return this.displayStyle.analysisStyle; }
+  public get analysisStyle(): AnalysisStyle | undefined { return this.displayStyle.analysisStyle; }
 
-  /** Get the RenderSchedule.Script from the displayStyle ofthis viewState */
+  /** Get the RenderSchedule.Script from the displayStyle of this viewState */
   public get scheduleScript(): RenderScheduleState.Script | undefined { return this.displayStyle.scheduleScript; }
   public get scheduleTime() { return this._scheduleTime; }
   public set scheduleTime(time: number) {
@@ -222,7 +306,7 @@ export abstract class ViewState extends ElementState {
   /** Determine whether this ViewState exactly matches another.
    * @see [[ViewState.equalState]] for determining broader equivalence of two ViewStates.
    */
-  public equals(other: ViewState): boolean { return super.equals(other) && this.categorySelector.equals(other.categorySelector) && this.displayStyle.equals(other.displayStyle); }
+  public equals(other: this): boolean { return super.equals(other) && this.categorySelector.equals(other.categorySelector) && this.displayStyle.equals(other.displayStyle); }
 
   /** Determine whether this ViewState is equivalent to another for the purposes of display.
    * @see [[ViewState.equals]] for determining exact equality.
@@ -275,8 +359,8 @@ public cancelAllTileLoads(): void {
   public get areAllTileTreesLoaded(): boolean {
     let allLoaded = true;
     this.forEachTileTreeModel((model) => {
-      const loadStatus = model.loadStatus;
-      if (loadStatus !== TileTree.LoadStatus.Loaded)
+      // Loaded or NotFound qualify as "loaded" - either the load succeeded or failed.
+      if (model.loadStatus < TileTree.LoadStatus.Loaded)
         allLoaded = false;
     });
     return allLoaded;
@@ -288,68 +372,8 @@ public cancelAllTileLoads(): void {
   /** Get this view's background color. */
   public get backgroundColor(): ColorDef { return this.displayStyle.backgroundColor; }
 
-  private _neverDrawn?: Id64Set;
-  private _alwaysDrawn?: Id64Set;
-  private _alwaysDrawnExclusive: boolean = false;
-
-  /**
-   * IDs of a set of elements which should not be rendered within this view.
-   * @note Do not modify this set directly - use [[setNeverDrawn]] or [[clearNeverDrawn]] instead.
-   * @note This set takes precedence over the [[alwaysDrawn]] set - if an element is present in both sets, it is never drawn.
-   */
-  public get neverDrawn(): Id64Set | undefined { return this._neverDrawn; }
-
-  /**
-   * IDs of a set of elements which should always be rendered within this view, regardless of category and subcategory visibility.
-   * If the [[isAlwaysDrawnExclusive]] flag is also set, *only* those elements in this set will be drawn.
-   * @note Do not modify this set directly - use [[setAlwaysDrawn]] or [[clearAlwaysDrawn]] instead.
-   * @note The [[neverDrawn]] set takes precedence - if an element is present in both sets, it is never drawn.
-   */
-  public get alwaysDrawn(): Id64Set | undefined { return this._alwaysDrawn; }
-
-  /** Clear the set of always-drawn elements.
-   * @see [[alwaysDrawn]]
-   */
-  public clearAlwaysDrawn(): void {
-    if (undefined !== this.alwaysDrawn && 0 < this.alwaysDrawn.size) {
-      this.alwaysDrawn.clear();
-      this._alwaysDrawnExclusive = false;
-      this.setFeatureOverridesDirty();
-    }
-  }
-
-  /** Clear the set of never-drawn elements.
-   * @see [[neverDrawn]]
-   */
-  public clearNeverDrawn(): void {
-    if (undefined !== this.neverDrawn && 0 < this.neverDrawn.size) {
-      this.neverDrawn.clear();
-      this.setFeatureOverridesDirty();
-    }
-  }
-
-  /** Specify the IDs of a set of elements which should never be rendered within this view.
-   * @see [[neverDrawn]].
-   */
-  public setNeverDrawn(ids: Id64Set): void {
-    this._neverDrawn = ids;
-    this.setFeatureOverridesDirty();
-  }
-
-  /** Specify the IDs of a set of elements which should always be rendered within this view, regardless of category and subcategory visibility.
-   * @param ids The IDs of the elements to always draw.
-   * @param exclusive If true, *only* the specified elements will be drawn.
-   * @see [[alwaysDrawn]]
-   * @see [[isAlwaysDrawnExclusive]]
-   */
-  public setAlwaysDrawn(ids: Id64Set, exclusive: boolean = false): void {
-    this._alwaysDrawn = ids;
-    this._alwaysDrawnExclusive = exclusive;
-    this.setFeatureOverridesDirty();
-  }
-
   /** Remove any [[SubCategoryOverride]] for the specified subcategory.
-   * @param id The ID of the subcategory.
+   * @param id The Id of the subcategory.
    * @see [[overrideSubCategory]]
    */
   public dropSubCategoryOverride(id: Id64String) {
@@ -358,7 +382,7 @@ public cancelAllTileLoads(): void {
   }
 
   /** Override the symbology of geometry belonging to a specific subcategory when rendered within this view.
-   * @param id The ID of the subcategory.
+   * @param id The Id of the subcategory.
    * @param ovr The symbology overrides to apply to all geometry belonging to the specified subcategory.
    * @see [[dropSubCategoryOverride]]
    */
@@ -368,7 +392,7 @@ public cancelAllTileLoads(): void {
   }
 
   /** Query the symbology overrides applied to geometry belonging to a specific subcategory when rendered within this view.
-   * @param id The ID of the subcategory.
+   * @param id The Id of the subcategory.
    * @return The symbology overrides applied to all geometry belonging to the specified subcategory, or undefined if no such overrides exist.
    * @see [[overrideSubCategory]]
    */
@@ -377,7 +401,7 @@ public cancelAllTileLoads(): void {
   /** Query the symbology with which geometry belonging to a specific subcategory is rendered within this view.
    * Every [[SubCategory]] defines a base symbology independent of any [[ViewState]].
    * If a [[SubCategoryOverride]] has been applied to the subcategory within the context of this [[ViewState]], it will be applied to the subcategory's base symbology.
-   * @param id The ID of the subcategory.
+   * @param id The Id of the subcategory.
    * @return The symbology of the subcategory within this view, including any overrides.
    * @see [[overrideSubCategory]]
    */
@@ -403,14 +427,10 @@ public cancelAllTileLoads(): void {
       return !ovr.invisible;
   }
 
-  /** Returns true if the set of elements in the [[alwaysDrawn]] set are the *only* elements rendered within this view. */
-  public get isAlwaysDrawnExclusive(): boolean { return this._alwaysDrawnExclusive; }
-
-  /**
-   * Enable or disable display of elements belonging to a set of categories specified by ID.
+  /** Enable or disable display of elements belonging to a set of categories specified by Id.
    * Visibility of individual subcategories belonging to a category can be controlled separately through the use of [[SubCategoryOverride]]s.
    * By default, enabling display of a category does not affect display of subcategories thereof which have been overridden to be invisible.
-   * @param categories The ID(s) of the categories to which the change should be applied. No other categories will be affected.
+   * @param categories The Id(s) of the categories to which the change should be applied. No other categories will be affected.
    * @param display Whether or not elements on the specified categories should be displayed in the view.
    * @param enableAllSubCategories Specifies that when enabling display for a category, all of its subcategories should also be displayed even if they are overridden to be invisible.
    */
@@ -418,6 +438,7 @@ public cancelAllTileLoads(): void {
     if (display) {
       this.categorySelector.addCategories(categories);
       const categoryIds = Id64.toIdSet(categories);
+
       this.subCategories.update(categoryIds, this.iModel).then(() => { // tslint:disable-line:no-floating-promises
         this.setFeatureOverridesDirty();
         if (enableAllSubCategories) {
@@ -487,7 +508,7 @@ public cancelAllTileLoads(): void {
    */
   public abstract onRenderFrame(_viewport: Viewport): void;
 
-  /** Returns true if this view displays the contents of a [[Model]] specified by ID. */
+  /** Returns true if this view displays the contents of a [[Model]] specified by Id. */
   public abstract viewsModel(modelId: Id64String): boolean;
 
   /** Get the origin of this view in [[CoordSystem.World]] coordinates. */
@@ -649,8 +670,7 @@ public cancelAllTileLoads(): void {
     return { map: Map4d.createVectorFrustum(origin, xExtent, yExtent, zExtent, frustFraction), frustFraction };
   }
 
-  /**
-   * Calculate the world coordinate Frustum from the parameters of this ViewState.
+  /** Calculate the world coordinate Frustum from the parameters of this ViewState.
    * @param result Optional Frustum to hold result. If undefined a new Frustum is created.
    * @returns The 8-point Frustum with the corners of this ViewState, or undefined if the parameters are invalid.
    */
@@ -664,8 +684,7 @@ public cancelAllTileLoads(): void {
     return box;
   }
 
-  /**
-   * Initialize the origin, extents, and rotation from an existing Frustum
+  /** Initialize the origin, extents, and rotation from an existing Frustum
    * This function is commonly used in the implementation of [[ViewTool]]s as follows:
    *  1. Obtain the ViewState's initial frustum.
    *  2. Modify the frustum based on user input.
@@ -829,7 +848,7 @@ public cancelAllTileLoads(): void {
     return this._auxCoordSystem;
   }
 
-  /** Get the ID of the auxiliary coordinate system for this ViewState */
+  /** Get the Id of the auxiliary coordinate system for this ViewState */
   public getAuxiliaryCoordinateSystemId(): Id64String { return Id64.fromJSON(this.getDetail("acs")); }
 
   /** Set or clear the AuxiliaryCoordinateSystem for this view.
@@ -959,8 +978,8 @@ public cancelAllTileLoads(): void {
     const x = JsonUtils.asInt(this.getDetail("gridSpaceX"), 1.0);
     return { x, y: JsonUtils.asInt(this.getDetail("gridSpaceY"), x) };
   }
-  /**
-   * Change the volume that this view displays, keeping its current rotation.
+
+  /** Change the volume that this view displays, keeping its current rotation.
    * @param volume The new volume, in world-coordinates, for the view. The resulting view will show all of worldVolume, by fitting a
    * view-axis-aligned bounding box around it. For views that are not aligned with the world coordinate system, this will sometimes
    * result in a much larger volume than worldVolume.
@@ -976,8 +995,7 @@ public cancelAllTileLoads(): void {
     return this.lookAtViewAlignedVolume(Range3d.createArray(rangeBox), aspect, margin);
   }
 
-  /**
-   * look at a volume of space defined by a range in view local coordinates, keeping its current rotation.
+  /** Look at a volume of space defined by a range in view local coordinates, keeping its current rotation.
    * @param volume The new volume, in view-coordinates, for the view. The resulting view will show all of volume.
    * @param aspect The X/Y aspect ratio of the view into which the result will be displayed. If the aspect ratio of the volume does not
    * match aspect, the shorter axis is lengthened and the volume is centered. If aspect is undefined, no adjustment is made.
@@ -1067,7 +1085,7 @@ public cancelAllTileLoads(): void {
   }
 
   private addModelToScene(model: TileTreeModelState, context: SceneContext): void {
-    model.loadTileTree();
+    model.loadTileTree(context.viewFlags.edgesRequired(), this.scheduleScript ? this.scheduleScript.getModelAnimationId(model.treeModelId) : undefined);
     const tileTree = model.tileTree;
     if (undefined !== tileTree) {
       tileTree.drawScene(context);
@@ -1080,7 +1098,7 @@ public cancelAllTileLoads(): void {
       if (classifier.isActive) {
         const classifierModel = this.iModel.models.getLoaded(classifier.modelId) as GeometricModelState;
         if (undefined !== classifierModel) {
-          classifierModel.loadTileTree(true, classifier.expand);
+          classifierModel.loadTileTree(false, undefined, true, classifier.expand);
           if (undefined !== classifierModel.classifierTileTree)
             classifierModel.classifierTileTree.drawScene(context);
         }
@@ -1088,8 +1106,7 @@ public cancelAllTileLoads(): void {
     }
   }
 
-  /**
-   * Set the rotation of this ViewState to the supplied rotation, by rotating it about a point.
+  /** Set the rotation of this ViewState to the supplied rotation, by rotating it about a point.
    * @param rotation The new rotation matrix for this ViewState.
    * @param point The point to rotate about. If undefined, use the [[getTargetPoint]].
    */
@@ -1113,6 +1130,7 @@ public cancelAllTileLoads(): void {
 
 /** Defines the state of a view of 3d models.
  * @see [ViewState Parameters]($docs/learning/frontend/views#viewstate-parameters)
+ * @public
  */
 export abstract class ViewState3d extends ViewState {
   /** True if the camera is valid. */
@@ -1234,8 +1252,7 @@ export abstract class ViewState3d extends ViewState {
 
   public getDisplayStyle3d() { return this.displayStyle as DisplayStyle3dState; }
 
-  /**
-   * Turn the camera off for this view. After this call, the camera parameters in this view definition are ignored and views that use it will
+  /** Turn the camera off for this view. After this call, the camera parameters in this view definition are ignored and views that use it will
    * display with an orthographic (infinite focal length) projection of the view volume from the view direction.
    * @note To turn the camera back on, call #lookAt
    */
@@ -1259,8 +1276,7 @@ export abstract class ViewState3d extends ViewState {
     return this.getEyePoint().plusScaled(viewZ, -1.0 * this.getFocusDistance(), result);
   }
 
-  /**
-   * Position the camera for this view and point it at a new target point.
+  /** Position the camera for this view and point it at a new target point.
    * @param eyePoint The new location of the camera.
    * @param targetPoint The new location to which the camera should point. This becomes the center of the view on the focus plane.
    * @param upVector A vector that orients the camera's "up" (view y). This vector must not be parallel to the vector from eye to target.
@@ -1336,15 +1352,14 @@ export abstract class ViewState3d extends ViewState {
     return ViewStatus.Success;
   }
 
-  /**
-   * Position the camera for this view and point it at a new target point, using a specified lens angle.
+  /** Position the camera for this view and point it at a new target point, using a specified lens angle.
    * @param eyePoint The new location of the camera.
    * @param targetPoint The new location to which the camera should point. This becomes the center of the view on the focus plane.
    * @param upVector A vector that orients the camera's "up" (view y). This vector must not be parallel to the vector from eye to target.
    * @param fov The angle, in radians, that defines the field-of-view for the camera. Must be between .0001 and pi.
    * @param frontDistance The distance from the eyePoint to the front plane. If undefined, the existing front distance is used.
    * @param backDistance The distance from the eyePoint to the back plane. If undefined, the existing back distance is used.
-   * @returns Status indicating whether the camera was successfully positioned. See values at [[ViewStatus]] for possible errors.
+   * @returns [[ViewStatus]] indicating whether the camera was successfully positioned.
    * @note The aspect ratio of the view remains unchanged.
    */
   public lookAtUsingLensAngle(eyePoint: Point3d, targetPoint: Point3d, upVector: Vector3d, fov: Angle, frontDistance?: number, backDistance?: number): ViewStatus {
@@ -1364,8 +1379,7 @@ export abstract class ViewState3d extends ViewState {
     return this.lookAt(eyePoint, targetPoint, upVector, delta, frontDistance, backDistance);
   }
 
-  /**
-   * Move the camera relative to its current location by a distance in camera coordinates.
+  /** Move the camera relative to its current location by a distance in camera coordinates.
    * @param distance to move camera. Length is in world units, direction relative to current camera orientation.
    * @returns Status indicating whether the camera was successfully positioned. See values at [[ViewStatus]] for possible errors.
    */
@@ -1374,8 +1388,7 @@ export abstract class ViewState3d extends ViewState {
     return this.moveCameraWorld(distWorld);
   }
 
-  /**
-   * Move the camera relative to its current location by a distance in world coordinates.
+  /** Move the camera relative to its current location by a distance in world coordinates.
    * @param distance in world units.
    * @returns Status indicating whether the camera was successfully positioned. See values at [[ViewStatus]] for possible errors.
    */
@@ -1390,8 +1403,7 @@ export abstract class ViewState3d extends ViewState {
     return this.lookAt(newEyePt, newTarget, this.getYVector());
   }
 
-  /**
-   * Rotate the camera from its current location about an axis relative to its current orientation.
+  /** Rotate the camera from its current location about an axis relative to its current orientation.
    * @param angle The angle to rotate the camera.
    * @param axis The axis about which to rotate the camera. The axis is a direction relative to the current camera orientation.
    * @param aboutPt The point, in world coordinates, about which the camera is rotated. If aboutPt is undefined, the camera rotates in place
@@ -1404,8 +1416,7 @@ export abstract class ViewState3d extends ViewState {
     return this.rotateCameraWorld(angle, axisWorld, aboutPt);
   }
 
-  /**
-   * Rotate the camera from its current location about an axis in world coordinates.
+  /** Rotate the camera from its current location about an axis in world coordinates.
    * @param angle The angle to rotate the camera.
    * @param axis The world-based axis (direction) about which to rotate the camera.
    * @param aboutPt The point, in world coordinates, about which the camera is rotated. If aboutPt is undefined, the camera rotates in place
@@ -1434,8 +1445,7 @@ export abstract class ViewState3d extends ViewState {
     return eyeOrg.z;
   }
 
-  /**
-   * Place the eyepoint of the camera so it is aligned with the center of the view. This removes any 1-point perspective skewing that may be
+  /** Place the eyepoint of the camera so it is aligned with the center of the view. This removes any 1-point perspective skewing that may be
    * present in the current view.
    * @param backDistance If defined, the new the distance from the eyepoint to the back plane. Otherwise the distance from the
    * current eyepoint is used.
@@ -1553,7 +1563,7 @@ export abstract class ViewState3d extends ViewState {
   /** Return the ground extents, which will originate either from the viewport frustum or the extents of the imodel. */
   public getGroundExtents(vp?: Viewport): AxisAlignedBox3d {
     const displayStyle = this.getDisplayStyle3d();
-    const extents = new AxisAlignedBox3d();
+    const extents = new Range3d();
     if (!displayStyle.environment.ground.display)
       return extents; // Ground plane is not enabled
 
@@ -1591,9 +1601,8 @@ export abstract class ViewState3d extends ViewState {
   /** @hidden */
   protected drawGroundPlane(context: DecorateContext): void {
     const extents = this.getGroundExtents(context.viewport);
-    if (extents.isNull) {
+    if (extents.isNull)
       return;
-    }
 
     const ground = this.getDisplayStyle3d().environment.ground;
     if (!ground.display)
@@ -1649,6 +1658,7 @@ export abstract class ViewState3d extends ViewState {
 
 /** Defines a view of one or more SpatialModels.
  * The list of viewed models is stored by the ModelSelector.
+ * @public
  */
 export class SpatialViewState extends ViewState3d {
   public modelSelector: ModelSelectorState;
@@ -1669,7 +1679,7 @@ export class SpatialViewState extends ViewState3d {
       this.modelSelector = arg3.modelSelector.clone();
     }
   }
-  public equals(other: SpatialViewState): boolean { return super.equals(other) && this.modelSelector.equals(other.modelSelector); }
+  public equals(other: this): boolean { return super.equals(other) && this.modelSelector.equals(other.modelSelector); }
 
   public equalState(other: SpatialViewState): boolean {
     if (!super.equalState(other))
@@ -1687,11 +1697,16 @@ export class SpatialViewState extends ViewState3d {
 
   public computeFitRange(): AxisAlignedBox3d {
     // Loop over the current models in the model selector with loaded tile trees and union their ranges
-    const range = new AxisAlignedBox3d();
+    const range = new Range3d();
     this.forEachTileTreeModel((model: TileTreeModelState) => {   // ...if we don't want to fit context reality mdoels this should cal forEachSpatialTileTreeModel...
       const tileTree = model.tileTree;
-      if (tileTree !== undefined && tileTree.rootTile !== undefined) {   // can we assume that a loaded model
-        range.extendRange(tileTree.rootTile.computeWorldContentRange());
+      if (tileTree !== undefined && tileTree.rootTile !== undefined) {
+        const contentRange = tileTree.rootTile.computeWorldContentRange();
+        assert(!contentRange.isNull);
+        assert(contentRange.intersectsRange(this.iModel.projectExtents));
+
+        range.extendRange(contentRange);
+
       }
     });
 
@@ -1704,7 +1719,7 @@ export class SpatialViewState extends ViewState3d {
   }
 
   public getViewedExtents(): AxisAlignedBox3d {
-    const extents = AxisAlignedBox3d.fromJSON(this.iModel.projectExtents);
+    const extents = Range3d.fromJSON<AxisAlignedBox3d>(this.iModel.projectExtents);
     extents.scaleAboutCenterInPlace(1.0001); // projectExtents. lying smack up against the extents is not excluded by frustum...
     extents.extendRange(this.getGroundExtents());
     return extents;
@@ -1731,18 +1746,13 @@ export class SpatialViewState extends ViewState3d {
   }
   public forEachTileTreeModel(func: (model: TileTreeModelState) => void): void {
     this.displayStyle.forEachContextRealityModel((model: TileTreeModelState) => func(model));
-    this.forEachSpatialTileTreeModel((model: TileTreeModelState) => func(model));
-  }
-
-  public forEachSpatialTileTreeModel(func: (model: TileTreeModelState) => void): void {
-    if (this.scheduleScript && this.scheduleScript.containsAnimation)
-      this.scheduleScript.forEachAnimationModel((model: TileTreeModelState) => func(model));
-    else
-      this.forEachModel((model: GeometricModelState) => func(model));
+    this.forEachModel((model: TileTreeModelState) => func(model));
   }
 }
 
-/** Defines a spatial view that displays geometry on the image plane using a parallel orthographic projection. */
+/** Defines a spatial view that displays geometry on the image plane using a parallel orthographic projection.
+ * @public
+ */
 export class OrthographicViewState extends SpatialViewState {
   public static get className() { return "OrthographicViewDefinition"; }
 
@@ -1751,7 +1761,9 @@ export class OrthographicViewState extends SpatialViewState {
   public supportsCamera(): boolean { return false; }
 }
 
-/** Defines the state of a view of a single 2d model. */
+/** Defines the state of a view of a single 2d model.
+ * @public
+ */
 export abstract class ViewState2d extends ViewState {
   public readonly origin: Point2d;
   public readonly delta: Point2d;
@@ -1799,15 +1811,15 @@ export abstract class ViewState2d extends ViewState {
     if (undefined === this._viewedExtents) {
       const model = this.iModel.models.getLoaded(this.baseModelId);
       if (undefined !== model && model.isGeometricModel) {
-        const tree = (model as GeometricModelState).getOrLoadTileTree();
+        const tree = (model as GeometricModelState).getOrLoadTileTree(true);
         if (undefined !== tree) {
-          this._viewedExtents = new AxisAlignedBox3d(tree.range.low, tree.range.high);
+          this._viewedExtents = Range3d.create(tree.range.low, tree.range.high);
           tree.location.multiplyRange(this._viewedExtents, this._viewedExtents);
         }
       }
     }
 
-    return undefined !== this._viewedExtents ? this._viewedExtents : new AxisAlignedBox3d();
+    return undefined !== this._viewedExtents ? this._viewedExtents : new Range3d();
   }
 
   public onRenderFrame(_viewport: Viewport): void { }
@@ -1833,7 +1845,9 @@ export abstract class ViewState2d extends ViewState {
   public createAuxCoordSystem(acsName: string): AuxCoordSystemState { return AuxCoordSystem2dState.createNew(acsName, this.iModel); }
 }
 
-/** A view of a DrawingModel */
+/** A view of a DrawingModel
+ * @public
+ */
 export class DrawingViewState extends ViewState2d {
   public static createFromProps(props: ViewStateProps, iModel: IModelConnection): ViewState | undefined {
     const cat = new CategorySelectorState(props.categorySelectorProps, iModel);

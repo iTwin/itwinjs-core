@@ -67,10 +67,10 @@ export class Frontstage3 extends FrontstageProvider {
     return (
       <Frontstage
         id="Test3"
-        defaultToolId="Select"
+        defaultTool={AppTools.appSelectElementCommand}
         defaultLayout={contentLayoutDef}
         contentGroup={myContentGroup}
-        isInFooterMode={false}
+        isInFooterMode={true}
         applicationData={{ key: "value" }}
         topLeft={
           <Zone
@@ -140,10 +140,10 @@ export class Frontstage3 extends FrontstageProvider {
             <GroupButton
               labelKey="SampleApp:buttons.toolGroup"
               iconSpec="icon-placeholder"
-              items={[AppTools.tool1, AppTools.tool2, AppTools.item1, AppTools.item2, AppTools.item3, AppTools.item4, AppTools.item5,
+              items={[AppTools.tool1, AppTools.tool2, AppTools.infoMessageCommand, AppTools.warningMessageCommand, AppTools.errorMessageCommand,
               AppTools.item6, AppTools.item7, AppTools.item8]}
               direction={Direction.Bottom}
-              itemsInColumn={7}
+              itemsInColumn={4}
             />
           </>
         }
@@ -157,10 +157,12 @@ export class Frontstage3 extends FrontstageProvider {
             <ToolButton toolId={AppTools.tool1.id} iconSpec={AppTools.tool1.iconSpec!} labelKey={AppTools.tool1.label} execute={AppTools.tool1.execute} />
             <ToolButton toolId={AppTools.tool2.id} iconSpec={AppTools.tool2.iconSpec!} labelKey={AppTools.tool2.label} execute={AppTools.tool2.execute} />
             <GroupButton
-              labelKey="SampleApp:buttons.anotherGroup"
+              labelKey="SampleApp:buttons.toolGroup"
               iconSpec="icon-placeholder"
-              items={[AppTools.tool1, AppTools.tool2, AppTools.item1, AppTools.item2, AppTools.item3, AppTools.item4, AppTools.item5,
-              AppTools.item6, AppTools.item7, AppTools.item8]}
+              items={[AppTools.successMessageBoxCommand, AppTools.informationMessageBoxCommand, AppTools.questionMessageBoxCommand,
+              AppTools.warningMessageBoxCommand, AppTools.errorMessageBoxCommand, AppTools.openMessageBoxCommand, AppTools.openMessageBoxCommand2]}
+              direction={Direction.Left}
+              itemsInColumn={7}
             />
           </>
         }
@@ -188,7 +190,7 @@ export class Frontstage3 extends FrontstageProvider {
             <ToolButton toolId={AppTools.item6.id} iconSpec={AppTools.item6.iconSpec!} labelKey={AppTools.item6.label} execute={AppTools.item6.execute} />
             <GroupButton
               labelKey="SampleApp:buttons.toolGroup"
-              iconSpec="icon-attach"
+              iconSpec="icon-placeholder"
               items={[AppTools.infoMessageCommand, AppTools.warningMessageCommand, AppTools.errorMessageCommand]}
               direction={Direction.Bottom}
               itemsInColumn={4}

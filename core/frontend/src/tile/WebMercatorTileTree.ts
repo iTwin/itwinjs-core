@@ -7,7 +7,7 @@
 import { assert, ActivityLoggingContext, BentleyError, IModelStatus, JsonUtils } from "@bentley/bentleyjs-core";
 import {
   TileTreeProps, TileProps, Cartographic, ImageSource, ImageSourceFormat, RenderTexture, EcefLocation,
-  BackgroundMapType, BackgroundMapProps, IModelCoordinatesResponseProps,
+  BackgroundMapType, BackgroundMapProps, IModelCoordinatesResponseProps, GeoCoordStatus,
 } from "@bentley/imodeljs-common";
 import { Range3dProps, Range3d, TransformProps, Transform, Point3d, Point2d, Range2d, Vector3d, Angle, Plane3dByOriginAndUnitNormal, XYZProps } from "@bentley/geometry-core";
 import { TileLoader, TileTree, Tile } from "./TileTree";
@@ -158,7 +158,6 @@ class GeoTransformChildCreator implements ChildCreator {
     // send to the backend to get the XY coordinates.
     const response: IModelCoordinatesResponseProps = await this._converter.getIModelCoordinatesFromGeoCoordinates(requestProps);
 
-    // tslint:disable:no-console
     // get the tileProps now that we have their geoCoords.
     const tileProps: WebMercatorTileProps[] = [];
     const level = parentLevel + 1;
@@ -265,9 +264,9 @@ class WebMercatorTileLoader extends TileLoader {
   private _providerInitialized: boolean = false;
   private _childTileCreator: ChildCreator;
 
-  constructor(private _imageryProvider: ImageryProvider, private _iModel: IModelConnection, groundBias: number) {
+  constructor(private _imageryProvider: ImageryProvider, private _iModel: IModelConnection, groundBias: number, gcsConverterAvailable: boolean) {
     super();
-    const useLinearTransform: boolean = WebMercatorTileLoader.selectChildCreator(_iModel);
+    const useLinearTransform: boolean = !gcsConverterAvailable || WebMercatorTileLoader.selectLinearChildCreator(_iModel);
     if (useLinearTransform) {
       this._childTileCreator = new LinearTransformChildCreator(_iModel, groundBias);
     } else {
@@ -275,7 +274,7 @@ class WebMercatorTileLoader extends TileLoader {
     }
   }
 
-  private static selectChildCreator(_iModel: IModelConnection) {
+  private static selectLinearChildCreator(_iModel: IModelConnection) {
     const linearRangeSquared: number = _iModel.projectExtents.diagonal().magnitudeSquared();
     return linearRangeSquared < 1000.0 * 1000.00;  // if the range is greater than a kilometer, use the more exact but slower GCS method of generating the WebMercator tile corners.
   }
@@ -697,6 +696,7 @@ class MapBoxProvider extends ImageryProvider {
   public async initialize(): Promise<void> { }
 }
 
+const enum GcsConverterStatus { Uninitialized, Pending, NotAvailable, Available }
 /** @hidden */
 export class BackgroundMapState {
   private _tileTree?: TileTree;
@@ -705,6 +705,7 @@ export class BackgroundMapState {
   public providerName: string;
   private _groundBias: number;
   public mapType: BackgroundMapType;
+  private _gcsConverterStatus: GcsConverterStatus = GcsConverterStatus.Uninitialized;
 
   public setTileTree(props: TileTreeProps, loader: TileLoader) {
     this._tileTree = new TileTree(TileTree.Params.fromJSON(props, this._iModel, true, loader, ""));
@@ -731,6 +732,20 @@ export class BackgroundMapState {
     this.mapType = json.providerData ? JsonUtils.asInt(json.providerData.mapType, BackgroundMapType.Hybrid) : BackgroundMapType.Hybrid;
   }
 
+  private testGcsConverter() {
+    this._gcsConverterStatus = GcsConverterStatus.Pending;
+    const converter = this._iModel.geoServices.getConverter("WGS84");
+    const requestProps = new Array<XYZProps>(1);
+    requestProps[0] = { x: 0, y: 0, z: 0 };
+    converter.getIModelCoordinatesFromGeoCoordinates(requestProps).then((responseProps) => {
+      this._gcsConverterStatus = (responseProps.iModelCoords.length !== 1 || responseProps.iModelCoords[0].s === GeoCoordStatus.NoGCSDefined) ? GcsConverterStatus.NotAvailable : GcsConverterStatus.Available;
+      IModelApp.viewManager.onNewTilesReady();
+    }).catch((_) => {
+      this._gcsConverterStatus = GcsConverterStatus.NotAvailable;
+      IModelApp.viewManager.onNewTilesReady();
+    });
+  }
+
   private loadTileTree(): TileTree.LoadStatus {
     if (TileTree.LoadStatus.NotLoaded !== this._loadStatus)
       return this._loadStatus;
@@ -738,6 +753,11 @@ export class BackgroundMapState {
     if (this._iModel.ecefLocation === undefined) {
       return this._loadStatus;
     }
+    if (GcsConverterStatus.Uninitialized === this._gcsConverterStatus)
+      this.testGcsConverter();
+
+    if (GcsConverterStatus.Pending === this._gcsConverterStatus)
+      return this._loadStatus;
 
     if ("BingProvider" === this.providerName) {
       this._provider = new BingMapProvider(this.mapType);
@@ -747,7 +767,7 @@ export class BackgroundMapState {
     if (this._provider === undefined)
       throw new BentleyError(IModelStatus.BadModel, "WebMercator provider invalid");
 
-    const loader = new WebMercatorTileLoader(this._provider, this._iModel, this._groundBias);
+    const loader = new WebMercatorTileLoader(this._provider, this._iModel, this._groundBias, this._gcsConverterStatus === GcsConverterStatus.Available);
     const tileTreeProps = new WebMercatorTileTreeProps();
     this.setTileTree(tileTreeProps, loader);
     return this._loadStatus;

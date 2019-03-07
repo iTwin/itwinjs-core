@@ -3,43 +3,20 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import * as sinon from "sinon";
 import { assert, expect } from "chai";
-
 import { Schema } from "../../src/Metadata/Schema";
 import { Enumeration, MutableEnumeration } from "./../../src/Metadata/Enumeration";
 import { ECObjectsError } from "./../../src/Exception";
 import { PrimitiveType } from "./../../src/ECObjects";
+import { SchemaContext } from "../../src/Context";
 
 describe("Enumeration", () => {
-  describe("accept", () => {
-    let testEnum: Enumeration;
-
-    beforeEach(() => {
-      const schema = new Schema("TestSchema", 1, 0, 0);
-      testEnum = new Enumeration(schema, "TestEnumeration", PrimitiveType.Integer);
-    });
-
-    it("should call visitEnumeration on a SchemaItemVisitor object", async () => {
-      expect(testEnum).to.exist;
-      const mockVisitor = { visitEnumeration: sinon.spy() };
-      await testEnum.accept(mockVisitor);
-      expect(mockVisitor.visitEnumeration.calledOnce).to.be.true;
-      expect(mockVisitor.visitEnumeration.calledWithExactly(testEnum)).to.be.true;
-    });
-
-    it("should safely handle a SchemaItemVisitor without visitEnumeration defined", async () => {
-      expect(testEnum).to.exist;
-      await testEnum.accept({});
-    });
-  });
-
   describe("addEnumerator tests", () => {
     let testEnum: Enumeration;
     let testStringEnum: Enumeration;
 
     beforeEach(() => {
-      const schema = new Schema("TestSchema", 1, 0, 0);
+      const schema = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);
       testEnum = new Enumeration(schema, "TestEnumeration", PrimitiveType.Integer);
       testStringEnum = new Enumeration(schema, "TestEnumeration", PrimitiveType.String);
     });
@@ -48,14 +25,14 @@ describe("Enumeration", () => {
       (testStringEnum as MutableEnumeration).addEnumerator(testStringEnum.createEnumerator("Enum2", "Val2"));
       (testStringEnum as MutableEnumeration).addEnumerator(testStringEnum.createEnumerator("Enum3", "Val3"));
       (testStringEnum as MutableEnumeration).addEnumerator(testStringEnum.createEnumerator("Enum4", "Val4"));
-      assert(testStringEnum.enumerators.length === 4);
+      assert.strictEqual(testStringEnum.enumerators.length, 4);
     });
     it("Basic Integer Enumeration Test", async () => {
       (testEnum as MutableEnumeration).addEnumerator(testEnum.createEnumerator("Enum1", 1));
       (testEnum as MutableEnumeration).addEnumerator(testEnum.createEnumerator("Enum2", 2));
       (testEnum as MutableEnumeration).addEnumerator(testEnum.createEnumerator("Enum3", 3));
       (testEnum as MutableEnumeration).addEnumerator(testEnum.createEnumerator("Enum4", 4));
-      assert(testEnum.enumerators.length === 4);
+      assert.strictEqual(testEnum.enumerators.length, 4);
     });
     it("Add duplicate enumerator", async () => {
       const newEnum = testStringEnum.createEnumerator("Enum1", "Val1");
@@ -73,7 +50,7 @@ describe("Enumeration", () => {
   describe("deserialization", () => {
     it("minimum values", async () => {
       const testSchema = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
         name: "TestSchema",
         version: "1.2.3",
         items: {
@@ -93,7 +70,7 @@ describe("Enumeration", () => {
         },
       };
 
-      const ecSchema = await Schema.fromJson(testSchema);
+      const ecSchema = await Schema.fromJson(testSchema, new SchemaContext());
       const testEnum = await ecSchema.getItem<Enumeration>("testEnum");
       assert.isDefined(testEnum);
 
@@ -107,7 +84,7 @@ describe("Enumeration", () => {
 
     it("with enumerators", async () => {
       const testSchema = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
         name: "TestSchema",
         version: "1.2.3",
         items: {
@@ -125,7 +102,7 @@ describe("Enumeration", () => {
         },
       };
 
-      const ecSchema = await Schema.fromJson(testSchema);
+      const ecSchema = await Schema.fromJson(testSchema, new SchemaContext());
       const testEnum = await ecSchema.getItem<Enumeration>("testEnum");
       assert.isDefined(testEnum);
     });
@@ -138,7 +115,7 @@ describe("Enumeration", () => {
     const baseJson = { schemaItemType: "Enumeration" };
 
     beforeEach(() => {
-      const schema = new Schema("TestSchema", 1, 0, 0);
+      const schema = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);
       testEnum = new Enumeration(schema, "TestEnumeration", PrimitiveType.Integer);
       testStringEnum = new Enumeration(schema, "TestEnumeration", PrimitiveType.String);
       testEnumSansPrimType = new Enumeration(schema, "TestEnumeration");
@@ -348,7 +325,7 @@ describe("Enumeration", () => {
   describe("toJson", () => {
     let testEnumSansPrimType: Enumeration;
     const baseJson = {
-      $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/schemaitem",
+      $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem",
       schemaItemType: "Enumeration",
       name: "TestEnumeration",
       schema: "TestSchema",
@@ -356,7 +333,7 @@ describe("Enumeration", () => {
     };
 
     beforeEach(() => {
-      const schema = new Schema("TestSchema", 1, 0, 0);
+      const schema = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);
       testEnumSansPrimType = new Enumeration(schema, "TestEnumeration");
     });
     describe("Basic serialization tests", () => {

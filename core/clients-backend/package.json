@@ -1,23 +1,26 @@
 {
   "name": "@bentley/imodeljs-clients-backend",
-  "version": "0.187.0",
+  "version": "0.189.0",
   "description": "Clients for various Bentley Services used by iModel.js at the backend",
   "main": "lib/imodeljs-clients-backend.js",
   "typings": "lib/imodeljs-clients-backend",
   "license": "MIT",
   "engines": {
-    "node": ">=8.9.0 <9.0"
+    "node": ">=10.14.0 <11.0"
   },
   "scripts": {
-    "build": "tsc 1>&2 && npm run copy:typedefs",
+    "build": "tsc 1>&2 && npm run copy:typedefs && node ./node_modules/@bentley/build-tools/scripts/ignoreargs.js 1>&2",
     "copy:typedefs": "cpx \"./src/openid-client.d.ts\" ./lib/",
+    "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/test/assets",
     "clean": "rimraf lib package-deps.json",
-    "cover": "nyc npm test",
-    "cover:integration": "nyc --report-dir ./lib/test/coverage/integration npm run test-integration",
+    "cover": "npm run copy:test-assets && nyc npm test",
+    "cover:integration": "npm run copy:test-assets && nyc --report-dir ./lib/test/coverage/integration npm run test-integration",
     "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-clients-backend/file.json --tsIndexFile=imodeljs-clients-backend.ts --onlyJson %TYPEDOC_THEME%",
+    "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=imodeljs-clients-backend",
     "lint": "tslint --project . 1>&2",
-    "test": "node ./node_modules/@bentley/build-tools/scripts/test.js --grep=\"integration\" --invert",
-    "test-integration": "node ./node_modules/@bentley/build-tools/scripts/test.js",
+    "pretest": "rimraf \"./lib/test/*.log\" && npm run copy:test-assets",
+    "test": "npm run pretest && node ./node_modules/@bentley/build-tools/scripts/test.js --offline=\"mock\" --grep=\"#integration|iModelHub URL Whitelist Validator\" --invert",
+    "test-integration": "npm run pretest && node ./node_modules/@bentley/build-tools/scripts/test.js",
     "watch": "npm run docs && bmsWatch --src ./lib/docs/json --destination ./public"
   },
   "repository": {
@@ -32,37 +35,44 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "0.187.0"
+    "@bentley/bentleyjs-core": "0.189.0"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/config-loader": "0.187.0",
-    "@bentley/bentleyjs-core": "0.187.0",
-    "@bentley/build-tools": "0.187.0",
+    "@bentley/config-loader": "0.189.0",
+    "@bentley/bentleyjs-core": "0.189.0",
+    "@bentley/build-tools": "0.189.0",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^5.2.5",
     "@types/nock": "^9.1.2",
-    "@types/node": "10.10.3",
+    "@types/node": "10.12.18",
+    "@types/deep-assign": "^0.1.0",
+    "@types/fs-extra": "^4.0.7",
+    "@types/js-base64": "^2.3.1",
     "chai": "^4.1.2",
     "cpx": "^1.5.0",
     "nock": "^9.2.3",
     "nyc": "^13.0.1",
     "mocha": "^5.2.0",
+    "rimraf": "^2.6.2",
     "source-map-support": "^0.5.6",
     "ts-node": "^7.0.1",
     "tslint": "^5.11.0",
     "typedoc": "^0.11.1",
-    "typedoc-plugin-external-module-name": "^1.1.1",
-    "typescript": "~3.1.0"
+    "typescript": "~3.2.2"
   },
   "dependencies": {
-    "@bentley/imodeljs-clients": "0.187.0",
+    "@bentley/imodeljs-clients": "0.189.0",
     "openid-client": "^2.3.1",
     "@openid/appauth": "^1.1.1",
-    "https-proxy-agent": "^2.2.1"
+    "https-proxy-agent": "^2.2.1",
+    "deep-assign": "^2.0.0",
+    "fs-extra": "^6.0.1",
+    "js-base64": "^2.4.5",
+    "fs-write-stream-atomic": "^1.0.10"
   },
   "nyc": {
     "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc"

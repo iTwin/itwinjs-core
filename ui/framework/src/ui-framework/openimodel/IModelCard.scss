@@ -2,7 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
- @import "@bentley/bwc/lib/mixins";
+@import "@bentley/ui-core/lib/ui-core/index";
 
  $iModel-card-width: 275px;
  $iModel-thumbnail-height: 200px;
@@ -91,7 +91,7 @@
   transition: all 0.3s ease-in;
   opacity: 0;
   filter: alpha(opacity=0);
-  color: $bwc-white;
+  color: $uicore-white;
   text-transform: uppercase;
 }
 
@@ -109,9 +109,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  span {
-    @include bwc-loaders-large;
-  }
 }
 
 .imodel-card:hover,
@@ -146,7 +143,7 @@
 // iModel name
 .imodel-card .imodel-card-name {
   padding: .8em 14px;
-  font-size: $bwc-font-size;
+  font-size: $uicore-font-size;
   display: flex;
   align-items: center;
   box-sizing: border-box;
@@ -174,22 +171,22 @@
 }
 
 .imodel-card .imodel-card-name .icon:hover {
-  background: $bwc-gray-a;
+  background: $uicore-gray-a;
 }
 
 .imodel-card .options-dropdown {
   margin: 0;
   padding: .5em 0;
-  font-size: $bwc-font-size;
+  font-size: $uicore-font-size;
   list-style: none;
-  background-color: $bwc-white;
+  background-color: $uicore-white;
 }
 
 .imodel-card .options-dropdown li {
   display: flex;
   align-items: center;
   padding: .25em 2em .25em .75em;
-  color: $bwc-text-color;
+  color: $uicore-text-color;
   white-space: nowrap;
   cursor: pointer;
 
@@ -206,7 +203,7 @@
 .imodel-card .imodel-card-description {
   height: 48px;
   line-height: 16px;
-  color: $bwc-gray;
+  color: $uicore-gray;
   display: block;
   padding: 0 14px;
   margin-bottom: .5em;
@@ -214,6 +211,6 @@
   white-space: wrap;
   overflow: hidden;
   box-sizing: border-box;
-  font-size: $bwc-font-size-small;
-  font-weight: $bwc-font-weight-light;
+  font-size: $uicore-font-size-small;
+  font-weight: $uicore-font-weight-light;
 }

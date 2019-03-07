@@ -8,7 +8,8 @@ import { I18N } from "@bentley/imodeljs-i18n";
 import { IModelApp } from "@bentley/imodeljs-frontend";
 import { PresentationError, PresentationStatus } from "@bentley/presentation-common";
 import PresentationManager, { Props as PresentationManagerProps } from "./PresentationManager";
-import SelectionManager from "./selection/SelectionManager";
+import { SelectionManager } from "./selection/SelectionManager";
+import { SelectionScopesManager } from "./selection/SelectionScopesManager";
 
 let presentationManager: PresentationManager | undefined;
 let selectionManager: SelectionManager | undefined;
@@ -57,7 +58,13 @@ export default class Presentation {
       presentationManager = PresentationManager.create(props);
     }
     if (!selectionManager) {
-      selectionManager = new SelectionManager();
+      const scopesManager = new SelectionScopesManager({
+        rpcRequestsHandler: presentationManager.rpcRequestsHandler,
+        localeProvider: () => this.presentation.activeLocale,
+      });
+      selectionManager = new SelectionManager({
+        scopes: scopesManager,
+      });
     }
   }
 

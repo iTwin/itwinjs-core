@@ -3,11 +3,10 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { IModelApp, Tool, AccuDraw, IdleTool, RotateViewTool, PanViewTool, SelectionTool } from "@bentley/imodeljs-frontend";
+import { IModelApp, MockRender, Tool, AccuDraw, IdleTool, RotateViewTool, PanViewTool, SelectionTool } from "@bentley/imodeljs-frontend";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
 import { TestbedConfig } from "../common/TestbedConfig";
 import { WebGLTestContext } from "./WebGLTestContext";
-import { MockRender } from "./MockRender";
 
 /** class to simulate overriding the default AccuDraw */
 class TestAccuDraw extends AccuDraw { }

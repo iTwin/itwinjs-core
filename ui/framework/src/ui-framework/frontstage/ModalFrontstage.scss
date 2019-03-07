@@ -2,8 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
- @import "@bentley/bwc/lib/mixins";
- @import "@bentley/ui-core/lib/ui-core/_z-index";
+@import "@bentley/ui-core/lib/ui-core/index";
 
  .modal-frontstage {
   height: 100%;
@@ -62,7 +61,7 @@
   transition: transform .125s ease;
 }
 
-.modal-frontstage .app-bar .bwc-text-headline {
+.modal-frontstage .app-bar .uicore-text-headline {
   display: inline-block;
   color: #FFF;
   line-height: 60px;

@@ -5,13 +5,12 @@
 /** @module Tile */
 import { TileIO } from "./TileIO";
 import { GltfTileIO } from "./GltfTileIO";
-import { DisplayParams } from "../render/primitives/DisplayParams";
-import { ElementAlignedBox3d, ColorDef, LinePixels, FillFlags, FeatureTable, Feature, TextureMapping, BatchType } from "@bentley/imodeljs-common";
-import { Id64String, JsonUtils } from "@bentley/bentleyjs-core";
+import { ElementAlignedBox3d, FeatureTable, Feature, BatchType } from "@bentley/imodeljs-common";
+import { Id64String, utf8ToString } from "@bentley/bentleyjs-core";
 import { RenderSystem } from "../render/System";
-import { ColorMap } from "../render/primitives/ColorMap";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 import { IModelConnection } from "../IModelConnection";
+import { Transform } from "@bentley/geometry-core";
 
 /**
  * Provides facilities for deserializing Batched 3D Model (B3dm) tiles.
@@ -24,6 +23,7 @@ export namespace B3dmTileIO {
     public readonly featureTableBinaryLength: number;
     public readonly batchTableJsonLength: number;
     public readonly batchTableBinaryLength: number;
+    public readonly featureTableJson: any;
     public get isValid(): boolean { return TileIO.Format.B3dm === this.format; }
 
     public constructor(stream: TileIO.StreamBuffer) {
@@ -33,7 +33,35 @@ export namespace B3dmTileIO {
       this.featureTableBinaryLength = stream.nextUint32;
       this.batchTableJsonLength = stream.nextUint32;
       this.batchTableBinaryLength = stream.nextUint32;
-      stream.advance(this.featureTableJsonLength);
+
+      // Keep this legacy check in for now since a lot of tilesets are still using the old header.
+      // Legacy header #1: [batchLength] [batchTableByteLength]
+      // Legacy header #2: [batchTableJsonByteLength] [batchTableBinaryByteLength] [batchLength]
+      // Current header: [featureTableJsonByteLength] [featureTableBinaryByteLength] [batchTableJsonByteLength] [batchTableBinaryByteLength]
+      // If the header is in the first legacy format 'batchTableJsonByteLength' will be the start of the JSON string (a quotation mark) or the glTF magic.
+      // Accordingly its first byte will be either 0x22 or 0x67, and so the minimum uint32 expected is 0x22000000 = 570425344 = 570MB. It is unlikely that the feature table Json will exceed this length.
+      // The check for the second legacy format is similar, except it checks 'batchTableBinaryByteLength' instead
+      if (this.batchTableJsonLength >= 570425344) {
+        // First legacy check
+        stream.curPos = 20;
+        // batchLength = this.featureTableJsonLength;
+        this.batchTableJsonLength = this.featureTableBinaryLength;
+        this.batchTableBinaryLength = 0;
+        this.featureTableJsonLength = 0;
+        this.featureTableBinaryLength = 0;
+      } else if (this.batchTableBinaryLength >= 570425344) {
+        // Second legacy check
+        stream.curPos = 24;
+        this.batchTableJsonLength = this.featureTableJsonLength;
+        this.batchTableBinaryLength = this.featureTableBinaryLength;
+        this.featureTableJsonLength = 0;
+        this.featureTableBinaryLength = 0;
+      }
+      if (0 !== this.featureTableJsonLength) {
+        const sceneStrData = stream.nextBytes(this.featureTableJsonLength);
+        const sceneStr = utf8ToString(sceneStrData);
+        if (sceneStr) this.featureTableJson = JSON.parse(sceneStr);
+      }
       stream.advance(this.featureTableBinaryLength);
       stream.advance(this.batchTableJsonLength);
       stream.advance(this.batchTableBinaryLength);
@@ -48,15 +76,20 @@ export namespace B3dmTileIO {
    * @hidden
    */
   export class Reader extends GltfTileIO.Reader {
-    public static create(stream: TileIO.StreamBuffer, iModel: IModelConnection, modelId: Id64String, is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem, yAxisUp: boolean, isLeaf: boolean, isCanceled?: GltfTileIO.IsCanceled): Reader | undefined {
+    public static create(stream: TileIO.StreamBuffer, iModel: IModelConnection, modelId: Id64String, is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem, yAxisUp: boolean, isLeaf: boolean, transformToRoot?: Transform, isCanceled?: GltfTileIO.IsCanceled): Reader | undefined {
       const header = new Header(stream);
       if (!header.isValid)
         return undefined;
 
+      if (header.featureTableJson && Array.isArray(header.featureTableJson.RTC_CENTER)) {
+        const returnToCenterTransform = Transform.createTranslationXYZ(header.featureTableJson.RTC_CENTER[0], header.featureTableJson.RTC_CENTER[1], header.featureTableJson.RTC_CENTER[2]);
+        transformToRoot = transformToRoot ? transformToRoot.multiplyTransformTransform(returnToCenterTransform) : returnToCenterTransform;
+      }
+
       const props = GltfTileIO.ReaderProps.create(stream, yAxisUp);
-      return undefined !== props ? new Reader(props, iModel, modelId, is3d, system, range, isLeaf, isCanceled) : undefined;
+      return undefined !== props ? new Reader(props, iModel, modelId, is3d, system, range, isLeaf, transformToRoot, isCanceled) : undefined;
     }
-    private constructor(props: GltfTileIO.ReaderProps, iModel: IModelConnection, modelId: Id64String, is3d: boolean, system: RenderSystem, private _range: ElementAlignedBox3d, private _isLeaf: boolean, isCanceled?: GltfTileIO.IsCanceled) {
+    private constructor(props: GltfTileIO.ReaderProps, iModel: IModelConnection, modelId: Id64String, is3d: boolean, system: RenderSystem, private _range: ElementAlignedBox3d, private _isLeaf: boolean, private _transformToRoot?: Transform, isCanceled?: GltfTileIO.IsCanceled) {
       super(props, iModel, modelId, is3d, system, BatchType.Primary, isCanceled);
     }
     public async read(): Promise<GltfTileIO.ReaderResult> {
@@ -71,7 +104,7 @@ export namespace B3dmTileIO {
       if (this._isCanceled)
         return Promise.resolve({ readStatus: TileIO.ReadStatus.Canceled, isLeaf: this._isLeaf });
 
-      return Promise.resolve(this.readGltfAndCreateGraphics(this._isLeaf, false, true, featureTable, this._range));
+      return Promise.resolve(this.readGltfAndCreateGraphics(this._isLeaf, featureTable, this._range, this._transformToRoot));
     }
     protected readFeatures(features: Mesh.Features, _json: any): boolean {
       const feature = new Feature(this._modelId);
@@ -79,25 +112,5 @@ export namespace B3dmTileIO {
       features.add(feature, 1);
       return true;
     }
-    protected readColorTable(colorTable: ColorMap, _json: any): boolean | undefined {
-      colorTable.insert(0x777777);
-      return true;
-    }
-    protected createDisplayParams(materialJson: any, hasBakedLighting: boolean): DisplayParams | undefined {
-      let textureMapping: TextureMapping | undefined;
-      if (undefined !== materialJson &&
-        undefined !== materialJson.values.tex) {
-        textureMapping = this.findTextureMapping(materialJson.values.tex);
-      }
-      const grey: ColorDef = new ColorDef(0x77777777);
-      return new DisplayParams(DisplayParams.Type.Mesh, grey, grey, 1, LinePixels.Solid, FillFlags.Always, undefined, undefined, hasBakedLighting, textureMapping);
-    }
-    protected extractReturnToCenter(extensions: any): number[] | undefined {
-      if (extensions === undefined) { return undefined; }
-      const cesiumRtc = JsonUtils.asObject(extensions.CESIUM_RTC);
-      return (cesiumRtc === undefined) ? undefined : JsonUtils.asArray(cesiumRtc.center);
-    }
-
-    protected get _hasBakedLighting(): boolean { return true; } // ###TODO? currently always desired (3mx, 3sm) - may change in future.
   }
 }

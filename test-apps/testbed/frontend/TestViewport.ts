@@ -104,7 +104,7 @@ export class ColorSet extends SortedArray<Color> {
 }
 
   // Read depth, geometry type, and feature for each pixel. Return only the unique ones.
-function readUniquePixelData(vp: Viewport, readRect?: ViewRect): PixelDataSet {
+function readUniquePixelData(vp: Viewport, readRect?: ViewRect, excludeNonLocatable = false): PixelDataSet {
   const rect = undefined !== readRect ? readRect : vp.viewRect;
   const set = new PixelDataSet();
   vp.readPixels(rect, Pixel.Selector.All, (pixels: Pixel.Buffer | undefined) => {
@@ -114,7 +114,7 @@ function readUniquePixelData(vp: Viewport, readRect?: ViewRect): PixelDataSet {
     for (let x = rect.left; x < rect.right; x++)
       for (let y = rect.top; y < rect.bottom; y++)
         set.insert(pixels.getPixel(x, y));
-  });
+  }, excludeNonLocatable);
 
   return set;
 }
@@ -132,12 +132,12 @@ function readUniqueColors(vp: Viewport, readRect?: ViewRect): ColorSet {
   return colors;
 }
 
-function readPixel(vp: Viewport, x: number, y: number): Pixel.Data {
+function readPixel(vp: Viewport, x: number, y: number, excludeNonLocatable = false): Pixel.Data {
   let pixel = new Pixel.Data();
   vp.readPixels(new ViewRect(x, y, x + 1, y + 1), Pixel.Selector.All, (pixels: Pixel.Buffer | undefined) => {
     if (undefined !== pixels)
       pixel = pixels.getPixel(x, y);
-  });
+  }, excludeNonLocatable);
 
   return pixel;
 }
@@ -159,7 +159,7 @@ export interface TestableViewport {
   // Asynchronously draw one frame. In the case of an on-screen viewport, this blocks until the next tick of the ViewManager's render loop.
   drawFrame(): Promise<void>;
   // Read pixel data within rectangular region and return unique pixels.
-  readUniquePixelData(readRect?: ViewRect): PixelDataSet;
+  readUniquePixelData(readRect?: ViewRect, excludeNonLocatable?: boolean): PixelDataSet;
   // Read pixel colors within rectangular region and return unique colors.
   readUniqueColors(readRect?: ViewRect): ColorSet;
   // Return the data associated with the pixel at (x, y).
@@ -171,7 +171,7 @@ export interface TestableViewport {
 }
 
 class OffScreenTestViewport extends OffScreenViewport implements TestableViewport {
-  public readUniquePixelData(readRect?: ViewRect): PixelDataSet { return readUniquePixelData(this, readRect); }
+  public readUniquePixelData(readRect?: ViewRect, excludeNonLocatable = false): PixelDataSet { return readUniquePixelData(this, readRect, excludeNonLocatable); }
   public readUniqueColors(readRect?: ViewRect): ColorSet { return readUniqueColors(this, readRect); }
   public readPixel(x: number, y: number): Pixel.Data { return readPixel(this, x, y); }
   public readColor(x: number, y: number): Color { return readColor(this, x, y); }
@@ -210,7 +210,7 @@ class OffScreenTestViewport extends OffScreenViewport implements TestableViewpor
 class ScreenTestViewport extends ScreenViewport implements TestableViewport {
   private _frameRendered: boolean = false;
 
-  public readUniquePixelData(readRect?: ViewRect): PixelDataSet { return readUniquePixelData(this, readRect); }
+  public readUniquePixelData(readRect?: ViewRect, excludeNonLocatable = false): PixelDataSet { return readUniquePixelData(this, readRect, excludeNonLocatable); }
   public readUniqueColors(readRect?: ViewRect): ColorSet { return readUniqueColors(this, readRect); }
   public readPixel(x: number, y: number): Pixel.Data { return readPixel(this, x, y); }
   public readColor(x: number, y: number): Color { return readColor(this, x, y); }
@@ -284,8 +284,7 @@ export async function createOnScreenTestViewport(viewId: Id64String, imodel: IMo
   return ScreenTestViewport.createTestViewport(viewId, imodel, width, height);
 }
 
-// Execute a test against both an off-screen and on-screen viewport.
-export async function testViewports(viewId: Id64String, imodel: IModelConnection, width: number, height: number, test: (vp: TestViewport) => Promise<void>): Promise<void> {
+export async function testOnScreenViewport(viewId: Id64String, imodel: IModelConnection, width: number, height: number, test: (vp: TestViewport) => Promise<void>): Promise<void> {
   if (!WebGLTestContext.isInitialized)
     return Promise.resolve();
 
@@ -298,6 +297,16 @@ export async function testViewports(viewId: Id64String, imodel: IModelConnection
     onscreen.continuousRendering = false;
     onscreen.dispose();
   }
+
+  return Promise.resolve();
+}
+
+// Execute a test against both an off-screen and on-screen viewport.
+export async function testViewports(viewId: Id64String, imodel: IModelConnection, width: number, height: number, test: (vp: TestViewport) => Promise<void>): Promise<void> {
+  if (!WebGLTestContext.isInitialized)
+    return Promise.resolve();
+
+  await testOnScreenViewport(viewId, imodel, width, height, test);
 
   const offscreen = await createOffScreenTestViewport(viewId, imodel, width, height);
   try {

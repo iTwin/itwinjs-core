@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { IModelApp, NullRenderSystem } from "@bentley/imodeljs-frontend";
-import { RenderSystem } from "@bentley/imodeljs-frontend/lib/rendering";
+import { RenderSystem, RenderDiagnostics } from "@bentley/imodeljs-frontend/lib/rendering";
 
 // Electron running inside a Windows VM fails to acquire a WebGLRenderingContext.
 // This prevents us from creating a "real" RenderSystem during CI jobs.
@@ -27,9 +27,11 @@ export namespace WebGLTestContext {
   export function startup() {
     MaybeRenderApp.startup();
     isInitialized = MaybeRenderApp.hasRenderSystem;
+    MaybeRenderApp.renderSystem.enableDiagnostics(RenderDiagnostics.All);
   }
 
   export function shutdown() {
+    MaybeRenderApp.renderSystem.enableDiagnostics(RenderDiagnostics.None);
     MaybeRenderApp.shutdown();
     isInitialized = false;
   }

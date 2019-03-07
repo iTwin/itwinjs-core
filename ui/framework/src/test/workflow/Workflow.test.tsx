@@ -43,12 +43,7 @@ describe("Workflow & WorkflowManager", () => {
     ConfigurableUiManager.loadTasks(taskPropsList);
 
     const workflowPropsList: WorkflowPropsList = {
-      defaultWorkflowId: "default-workflow",
-      taskPicker: {
-        classId: "taskpicker-class",
-        iconSpec: "taskpicker-icon",
-        labelKey: "taskpicker-label",
-      },
+      defaultWorkflowId: "ExampleWorkflow",
       workflows: [
         {
           id: "ExampleWorkflow3",
@@ -126,12 +121,7 @@ describe("Workflow & WorkflowManager", () => {
 
   describe("WorkflowManager", () => {
     it("Default Workflow Id", () => {
-      expect(WorkflowManager.defaultWorkflowId).to.eq("default-workflow");
-    });
-
-    it("Task Picker", () => {
-      const taskPickerProps = WorkflowManager.taskPickerProps;
-      expect(taskPickerProps.classId).to.eq("taskpicker-class");
+      expect(WorkflowManager.defaultWorkflowId).to.eq("ExampleWorkflow");
     });
 
     it("setActiveWorkflowAndTask & isActive", () => {

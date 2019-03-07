@@ -4,15 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
+import { assert } from "@bentley/bentleyjs-core";
 import { VertexShaderBuilder, VariableType } from "../ShaderBuilder";
 import { Matrix3, Matrix4 } from "../Matrix";
-import { LUTGeometry } from "../CachedGeometry";
-import { MeshGeometry } from "../Mesh";
 import { TextureUnit, RenderPass } from "../RenderFlags";
+import { GL } from "../GL";
 import { GLSLDecode } from "./Decode";
 import { addLookupTable } from "./LookupTable";
-import { octDecodeNormal } from "./Surface";
-import { Gradient } from "@bentley/imodeljs-common";
 
 const initializeVertLUTCoords = `
   g_vertexLUTIndex = decodeUInt32(a_pos);
@@ -27,93 +25,42 @@ const unquantizeVertexPosition = `
 vec4 unquantizeVertexPosition(vec3 pos, vec3 origin, vec3 scale) { return unquantizePosition(pos, origin, scale); }
 `;
 
-const unquantizeVertexPositionFromLUT = `
+const unquantizeVertexPositionFromLUTPrelude = `
 vec4 unquantizeVertexPosition(vec3 encodedIndex, vec3 origin, vec3 scale) {
   // Need to read 2 rgba values to obtain 6 16-bit integers for position
   vec2 tc = g_vertexBaseCoords;
   vec4 enc1 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
   tc.x += g_vert_stepX;
   vec4 enc2 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
+`;
+const computeFeatureIndexCoords = `
   tc.x += g_vert_stepX;
   g_featureIndexCoords = tc;
-
+`;
+const unquantizeVertexPositionFromLUTPostlude = `
   vec3 qpos = vec3(decodeUInt16(enc1.xy), decodeUInt16(enc1.zw), decodeUInt16(enc2.xy));
-
-  // Might as well decode the color index since we already read it...may not end up being used.
-  // (NOTE = If this is a textured mesh, the normal is stored where the color index would otherwise be...)
   g_vertexData2 = enc2.zw;
-
   return unquantizePosition(qpos, origin, scale);
 }
 `;
 
-const computeAnimationFrameDisplacement = `
-vec3 computeAnimationFrameDisplacement(float vertexLUTIndex, float frameIndex, vec3 origin, vec3 scale) {
-  vec2 tc = computeLUTCoords(frameIndex + g_vertexLUTIndex * 2.0, u_vertParams.xy, g_vert_center, 1.0);
-  vec4 enc1 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
-  tc.x += g_vert_stepX;
-  vec4 enc2 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
-  vec3 qpos = vec3(decodeUInt16(enc1.xy), decodeUInt16(enc1.zw), decodeUInt16(enc2.xy));
-  return unquantizePosition(qpos, origin, scale).xyz;
-}`;
-
-const computeAnimationDisplacement = `
-vec3 computeAnimationDisplacement(float vertexLUTIndex, float frameIndex0, float frameIndex1, float fraction, vec3 origin, vec3 scale) {
-if (frameIndex0 < 0.0)
-  return vec3(0.0, 0.0, 0.0);
-vec3 displacement = computeAnimationFrameDisplacement(vertexLUTIndex, frameIndex0, origin, scale);
-if (fraction > 0.0) {
-  vec3 displacement1 = computeAnimationFrameDisplacement(vertexLUTIndex, frameIndex1, origin, scale);
-  displacement += fraction * (displacement1 - displacement);
-  }
-return displacement;
-}`;
-const computeAnimationFrameNormal = `
-vec3 computeAnimationFrameNormal(float frameIndex) {
-  float vertexIndex = floor(g_vertexLUTIndex/2.0);
-  vec2 tc = computeLUTCoords(frameIndex + vertexIndex, u_vertParams.xy, g_vert_center, 1.0);
-  vec4 enc = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
-  vec2 param = (vertexIndex * 2.0 == g_vertexLUTIndex) ? enc.xy : enc.zw;
-  return octDecodeNormal(param);
-}`;
-const computeAnimationNormal = `
-vec3 computeAnimationNormal(float frameIndex0, float frameIndex1, float fraction) {
-vec3 normal = computeAnimationFrameNormal(frameIndex0);
-if (fraction > 0.0) {
-  vec3 normal1 = computeAnimationFrameNormal(frameIndex1);
-  normal += fraction * (normal1 - normal);
-  }
-return normal;
-}`;
-const computeAnimationFrameParam = `
-float computeAnimationFrameParam(float frameIndex, float origin, float scale) {
-  float vertexIndex = floor(g_vertexLUTIndex/2.0);
-  vec2 tc = computeLUTCoords(frameIndex + vertexIndex, u_vertParams.xy, g_vert_center, 1.0);
-  vec4 enc = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
-  vec2 param = (vertexIndex * 2.0 == g_vertexLUTIndex) ? enc.xy : enc.zw;
-  return clamp((origin + scale * decodeUInt16(param)), 0.0, 1.0);
-}`;
-
-const computeAnimationParam = `
-vec2 computeAnimationParam(float frameIndex0, float frameIndex1, float fraction, float origin, float scale) {
-float param = computeAnimationFrameParam(frameIndex0, origin, scale);
-if (fraction > 0.0) {
-  float param1 = computeAnimationFrameParam(frameIndex1, origin, scale);
-  param += fraction * (param1 - param);
-  }
-return vec2(.5, param);
-}`;
-
 const scratchMVPMatrix = new Matrix4();
 
 export function addModelViewProjectionMatrix(vert: VertexShaderBuilder): void {
-  vert.addUniform("u_mvp", VariableType.Mat4, (prog) => {
-    prog.addGraphicUniform("u_mvp", (uniform, params) => {
-      const mvp = params.projectionMatrix.clone(scratchMVPMatrix);
-      mvp.multiplyBy(params.modelViewMatrix);
-      uniform.setMatrix4(mvp);
+  if (vert.usesInstancedGeometry) {
+    addModelViewMatrix(vert);
+    addProjectionMatrix(vert);
+    vert.addGlobal("g_mvp", VariableType.Mat4);
+    vert.addInitializer("g_mvp = u_proj * g_mv;");
+  } else {
+    vert.addUniform("u_mvp", VariableType.Mat4, (prog) => {
+      prog.addGraphicUniform("u_mvp", (uniform, params) => {
+        const mvp = params.projectionMatrix.clone(scratchMVPMatrix);
+        mvp.multiplyBy(params.modelViewMatrix);
+        uniform.setMatrix4(mvp);
+      });
     });
-  });
+  }
 }
 
 export function addProjectionMatrix(vert: VertexShaderBuilder): void {
@@ -125,140 +72,82 @@ export function addProjectionMatrix(vert: VertexShaderBuilder): void {
 }
 
 export function addModelViewMatrix(vert: VertexShaderBuilder): void {
-  vert.addUniform("u_mv", VariableType.Mat4, (prog) => {
-    prog.addGraphicUniform("u_mv", (uniform, params) => {
-      uniform.setMatrix4(params.modelViewMatrix);
+  if (vert.usesInstancedGeometry) {
+    // ###TODO_INSTANCING: We only need 3 rows, not 4...
+    vert.addUniform("u_viewMatrix", VariableType.Mat4, (prog) => {
+      prog.addProgramUniform("u_viewMatrix", (uniform, params) => {
+        uniform.setMatrix4(params.viewMatrix);
+      });
     });
-  });
+
+    vert.addGlobal("g_mv", VariableType.Mat4);
+    vert.addInitializer("g_mv = u_viewMatrix * g_modelMatrix;");
+  } else {
+    vert.addUniform("u_mv", VariableType.Mat4, (prog) => {
+      // ###TODO: We only need 3 rows, not 4...
+      prog.addGraphicUniform("u_mv", (uniform, params) => {
+        uniform.setMatrix4(params.modelViewMatrix);
+      });
+    });
+  }
 }
 
 export function addNormalMatrix(vert: VertexShaderBuilder) {
-  vert.addUniform("u_nmx", VariableType.Mat3, (prog) => {
-    prog.addGraphicUniform("u_nmx", (uniform, params) => {
-      const rotMat: Matrix3 | undefined = params.modelViewMatrix.getRotation();
-      if (undefined !== rotMat)
-        uniform.setMatrix3(rotMat);
+  if (vert.usesInstancedGeometry) {
+    vert.addGlobal("g_nmx", VariableType.Mat3);
+    vert.addInitializer("g_nmx = mat3(MAT_MV);");
+  } else {
+    vert.addUniform("u_nmx", VariableType.Mat3, (prog) => {
+      prog.addGraphicUniform("u_nmx", (uniform, params) => {
+        const rotMat: Matrix3 | undefined = params.modelViewMatrix.getRotation();
+        if (undefined !== rotMat)
+          uniform.setMatrix3(rotMat);
+      });
+    });
+  }
+}
+
+function addInstanceMatrixRow(vert: VertexShaderBuilder, row: number) {
+  // 3 rows per instance; 4 floats per row; 4 bytes per float.
+  const floatsPerRow = 4;
+  const bytesPerVertex = floatsPerRow * 4;
+  const offset = row * bytesPerVertex;
+  const stride = 3 * bytesPerVertex;
+  const name = "a_instanceMatrixRow" + row;
+  vert.addAttribute(name, VariableType.Vec4, (prog) => {
+    prog.addAttribute(name, (attr, params) => {
+      const geom = params.geometry.asInstanced!;
+      assert(undefined !== geom);
+      attr.enableArray(geom.transforms, floatsPerRow, GL.DataType.Float, false, stride, offset, true);
     });
   });
 }
 
-const scratchAnimDisplacementParams = new Float32Array(3);  // index0, index1, fraction.
-const scratchAnimScalarParams = new Float32Array(3);        // index0, index1, fraction.
-const scratchAnimNormalParams = new Float32Array(3);        // index0, index1, fraction.
-const scratchAnimScalarQParams = new Float32Array(2);       // origin, scale.
+const computeInstancedModelMatrix = `
+  mat4 instanceMatrix = mat4(
+    a_instanceMatrixRow0.x, a_instanceMatrixRow1.x, a_instanceMatrixRow2.x, 0.0,
+    a_instanceMatrixRow0.y, a_instanceMatrixRow1.y, a_instanceMatrixRow2.y, 0.0,
+    a_instanceMatrixRow0.z, a_instanceMatrixRow1.z, a_instanceMatrixRow2.z, 0.0,
+    a_instanceMatrixRow0.w, a_instanceMatrixRow1.w, a_instanceMatrixRow2.w, 1.0);
+  g_modelMatrix = instanceMatrix * u_rootModelMatrix;
+`;
 
-function computeAnimParams(params: Float32Array, inputs: number[], indices: number[], fraction: number): void {
-  const inputValue = fraction * inputs[inputs.length - 1];
-  for (let i = 0; i < inputs.length - 1; i++) {
-    if (inputValue >= inputs[i] && inputValue < inputs[i + 1]) {
-      params[0] = indices[i];
-      params[1] = indices[i + 1];
-      params[2] = inputValue - inputs[i] / (inputs[i + 1] - inputs[i]);
-      return;
-    }
-  }
-  params[0] = params[1] = indices[inputs.length - 1];
-  params[2] = 0.0;
-}
-export function addAnimation(vert: VertexShaderBuilder, includeTexture: boolean, includeNormal: boolean): void {
-  scratchAnimDisplacementParams[0] = scratchAnimDisplacementParams[1] = scratchAnimDisplacementParams[2] = -1.0;
-  vert.addFunction(computeAnimationFrameDisplacement);
-  vert.addFunction(computeAnimationDisplacement);
-  if (includeNormal) {
-    vert.addFunction(octDecodeNormal);
-    vert.addFunction(computeAnimationFrameNormal);
-    vert.addFunction(computeAnimationNormal);
-  }
-  if (includeTexture) {
-    vert.addFunction(computeAnimationFrameParam);
-    vert.addFunction(computeAnimationParam);
-  }
-
-  vert.addUniform("u_animDispParams", VariableType.Vec3, (prog) => {
-    prog.addGraphicUniform("u_animDispParams", (uniform, params) => {
-      scratchAnimDisplacementParams[0] = scratchAnimDisplacementParams[1] = scratchAnimDisplacementParams[2] = 0.0;
-      const lutGeom: LUTGeometry = params.geometry as LUTGeometry;
-      const analysisStyle = params.target.analysisStyle;
-      let channel: any;
-      if (lutGeom.lut.auxDisplacements && analysisStyle && analysisStyle.displacementChannelName && undefined !== (channel = lutGeom.lut.auxDisplacements.get(analysisStyle.displacementChannelName)))
-        computeAnimParams(scratchAnimDisplacementParams, channel.inputs, channel.indices, params.target.animationFraction);
-
-      uniform.setUniform3fv(scratchAnimDisplacementParams);
+export function addInstancedModelMatrix(vert: VertexShaderBuilder) {
+  // ###TODO_INSTANCING: We can make this more efficient, reduce amount of data sent as uniforms and attributes, and reduce computation on the GPU.
+  // Get it working the straightforward way first.
+  vert.addUniform("u_rootModelMatrix", VariableType.Mat4, (prog) => {
+    // ###TODO_INSTANCING: We only need 3 rows, not 4...
+    prog.addGraphicUniform("u_rootModelMatrix", (uniform, params) => {
+      uniform.setMatrix4(params.modelMatrix);
     });
   });
-  vert.addUniform("u_qAnimDispScale", VariableType.Vec3, (prog) => {
-    prog.addGraphicUniform("u_qAnimDispScale", (uniform, params) => {
-      const lutGeom: LUTGeometry = params.geometry as LUTGeometry;
-      const analysisStyle = params.target.analysisStyle;
-      let channel: any;
-      scratchAnimDisplacementParams[0] = scratchAnimDisplacementParams[1] = scratchAnimDisplacementParams[2] = 0.0;
-      if (lutGeom.lut.auxDisplacements && analysisStyle && analysisStyle.displacementChannelName && undefined !== (channel = lutGeom.lut.auxDisplacements.get(analysisStyle.displacementChannelName))) {
-        const displacementScale = analysisStyle.displacementScale ? analysisStyle.displacementScale : 1.0;
-        for (let i = 0; i < 3; i++)
-          scratchAnimDisplacementParams[i] = channel.qScale[i] * displacementScale; // Apply displacement scale.
-      }
-      uniform.setUniform3fv(scratchAnimDisplacementParams);
-    });
-  });
-  vert.addUniform("u_qAnimDispOrigin", VariableType.Vec3, (prog) => {
-    prog.addGraphicUniform("u_qAnimDispOrigin", (uniform, params) => {
-      const lutGeom: LUTGeometry = params.geometry as LUTGeometry;
-      const analysisStyle = params.target.analysisStyle;
-      scratchAnimDisplacementParams[0] = scratchAnimDisplacementParams[1] = scratchAnimDisplacementParams[2] = 0.0;
-      let channel: any;
-      if (lutGeom.lut.auxDisplacements && analysisStyle && analysisStyle.displacementChannelName && undefined !== (channel = lutGeom.lut.auxDisplacements.get(analysisStyle.displacementChannelName))) {
-        const displacementScale = analysisStyle.displacementScale ? analysisStyle.displacementScale : 1.0;
-        for (let i = 0; i < 3; i++)
-          scratchAnimDisplacementParams[i] = channel.qOrigin[i] * displacementScale;   // Apply displacement scale
-      }
-      uniform.setUniform3fv(scratchAnimDisplacementParams);
-    });
-  });
-  if (includeNormal) {
-    vert.addUniform("u_animNormalParams", VariableType.Vec3, (prog) => {
-      prog.addGraphicUniform("u_animNormalParams", (uniform, params) => {
-        scratchAnimNormalParams[0] = scratchAnimNormalParams[1] = scratchAnimNormalParams[2] = -1.0;
-        const lutGeom: LUTGeometry = params.geometry as LUTGeometry;
-        const analysisStyle = params.target.analysisStyle;
-        let channel: any;
-        if (lutGeom.lut.auxNormals && analysisStyle && analysisStyle.normalChannelName && undefined !== (channel = lutGeom.lut.auxNormals.get(analysisStyle.normalChannelName)))
-          computeAnimParams(scratchAnimNormalParams, channel.inputs, channel.indices, params.target.animationFraction);
-        uniform.setUniform3fv(scratchAnimNormalParams);
-      });
-    });
-  }
 
-  if (includeTexture) {
-    vert.addUniform("u_animScalarParams", VariableType.Vec3, (prog) => {
-      prog.addGraphicUniform("u_animScalarParams", (uniform, params) => {
-        const meshGeom: MeshGeometry = params.geometry as MeshGeometry;
-        const analysisStyle = params.target.analysisStyle;
-        scratchAnimScalarParams[0] = scratchAnimScalarParams[1] = scratchAnimScalarParams[2] = -1.0;
-        let channel: any;
-        if (meshGeom.lut.auxParams !== undefined &&
-          analysisStyle !== undefined &&
-          analysisStyle.scalarChannelName !== undefined &&
-          (channel = meshGeom.lut.auxParams.get(analysisStyle.scalarChannelName)) !== undefined)
-          computeAnimParams(scratchAnimScalarParams, channel.inputs, channel.indices, params.target.animationFraction);
-        uniform.setUniform3fv(scratchAnimScalarParams);
-      });
-    });
-    vert.addUniform("u_animScalarQParams", VariableType.Vec2, (prog) => {
-      prog.addGraphicUniform("u_animScalarQParams", (uniform, params) => {
-        const meshGeom: MeshGeometry = params.geometry as MeshGeometry;
-        const analysisStyle = params.target.analysisStyle;
-        scratchAnimScalarQParams[0] = scratchAnimScalarQParams[1] = -1.0;
-        let channel: any;
-        if (meshGeom.lut.auxParams && analysisStyle && analysisStyle.scalarChannelName && analysisStyle.scalarRange &&
-          (channel = meshGeom.lut.auxParams.get(analysisStyle.scalarChannelName)) !== undefined) {
-          const rangeScale = analysisStyle.scalarRange.high - analysisStyle.scalarRange.low;
-          scratchAnimScalarQParams[0] = Gradient.ThematicSettings.margin + (channel.qOrigin - analysisStyle.scalarRange.low) / rangeScale;
-          scratchAnimScalarQParams[1] = Gradient.ThematicSettings.contentRange * channel.qScale / rangeScale;
-        }
-        uniform.setUniform2fv(scratchAnimScalarQParams);
-      });
-    });
-  }
+  addInstanceMatrixRow(vert, 0);
+  addInstanceMatrixRow(vert, 1);
+  addInstanceMatrixRow(vert, 2);
+
+  vert.addGlobal("g_modelMatrix", VariableType.Mat4);
+  vert.addInitializer(computeInstancedModelMatrix);
 }
 
 const scratchLutParams = new Float32Array(4);
@@ -266,22 +155,26 @@ function addPositionFromLUT(vert: VertexShaderBuilder) {
   vert.addGlobal("g_vertexLUTIndex", VariableType.Float);
   vert.addGlobal("g_vertexBaseCoords", VariableType.Vec2);
   vert.addGlobal("g_vertexData2", VariableType.Vec2);
-  vert.addGlobal("g_featureIndexCoords", VariableType.Vec2);
 
   vert.addFunction(GLSLDecode.uint32);
   vert.addFunction(GLSLDecode.uint16);
-  vert.addFunction(unquantizeVertexPositionFromLUT);
+  if (vert.usesInstancedGeometry) {
+    vert.addFunction(unquantizeVertexPositionFromLUTPrelude + unquantizeVertexPositionFromLUTPostlude);
+  } else {
+    vert.addGlobal("g_featureIndexCoords", VariableType.Vec2);
+    vert.addFunction(unquantizeVertexPositionFromLUTPrelude + computeFeatureIndexCoords + unquantizeVertexPositionFromLUTPostlude);
+  }
 
   vert.addUniform("u_vertLUT", VariableType.Sampler2D, (prog) => {
     prog.addGraphicUniform("u_vertLUT", (uniform, params) => {
-      (params.geometry as LUTGeometry).lut.texture.bindSampler(uniform, TextureUnit.VertexLUT);
+      (params.geometry.asLUT!).lut.texture.bindSampler(uniform, TextureUnit.VertexLUT);
     });
   });
 
   vert.addUniform("u_vertParams", VariableType.Vec4, (prog) => {
     prog.addGraphicUniform("u_vertParams", (uniform, params) => {
-      const lutGeom: LUTGeometry = params.geometry as LUTGeometry;
-      const lut = lutGeom.lut;
+      assert(undefined !== params.geometry.asLUT);
+      const lut = params.geometry.asLUT!.lut;
       const lutParams = scratchLutParams;
       lutParams[0] = lut.texture.width;
       lutParams[1] = lut.texture.height;

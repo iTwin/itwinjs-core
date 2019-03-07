@@ -2,6 +2,141 @@
   "name": "@bentley/ui-framework",
   "entries": [
     {
+      "version": "0.189.0",
+      "tag": "@bentley/ui-framework_v0.189.0",
+      "date": "Wed, 06 Mar 2019 15:41:22 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "OIDC changes needed for Angular client"
+          },
+          {
+            "comment": "Renamed CSS files to SCSS"
+          },
+          {
+            "comment": "UI documentation fixes"
+          },
+          {
+            "comment": "Added ToggleEditor. Support for defaultTool in Frontstage. Fixed BooleanEditor sizing."
+          },
+          {
+            "comment": "Use new buildIModelJsBuild script"
+          },
+          {
+            "comment": "Removed rowHeight function from ModelSelector, because heights changed to default."
+          },
+          {
+            "comment": "Updated view query in ViewSelector to exclude private views"
+          },
+          {
+            "comment": "Remove uneeded typedoc plugin depedency"
+          },
+          {
+            "comment": "Support for including CSS files in published UI packages"
+          },
+          {
+            "comment": "Include descriptions (if any) in category and model picker"
+          },
+          {
+            "comment": "Added styling capability to messages"
+          },
+          {
+            "comment": "More ui-framework unit tests"
+          },
+          {
+            "comment": "Removed dependency on BWC. Parts of BWC copied into ui-core in preparation for theming support."
+          },
+          {
+            "comment": "Added ToggleEditor. Support for defaultTool in Frontstage."
+          },
+          {
+            "comment": "Save BUILD_SEMVER to globally accessible map"
+          },
+          {
+            "comment": "Change setImmediate to setTimeout. Fixed cube rotation issue."
+          },
+          {
+            "comment": "Cleanup of DefaultToolSetting provider"
+          },
+          {
+            "comment": "Move property definitions to imodeljs-frontend so they could be used by tools to define properties for tool settings."
+          },
+          {
+            "comment": "Fixed ModelSelector highlighting when hovered or clicked on node."
+          },
+          {
+            "comment": "Fixed ModelSelector row height."
+          },
+          {
+            "comment": "Added priority support for pointer messages"
+          },
+          {
+            "comment": "Change 'Categories' ruleset to return either spatial or drawing categories based on ruleset variable"
+          },
+          {
+            "comment": "Changed node style processing in model selector"
+          },
+          {
+            "comment": "Set initial ModelSelector selection based on ViewState"
+          },
+          {
+            "comment": "Load models when selected in picker"
+          },
+          {
+            "comment": "Force scene invalidation when toggling items in model selector"
+          },
+          {
+            "comment": "Render unique filter in model/category widget when changing tabs"
+          },
+          {
+            "comment": "Add spinner to model/category widget"
+          },
+          {
+            "comment": "Cache model/category tree"
+          },
+          {
+            "comment": "Make one call to update viewport"
+          },
+          {
+            "comment": "Enabled descriptions in model selector"
+          },
+          {
+            "comment": "Map model/category nodes to items with unique id"
+          },
+          {
+            "comment": "Show spinner while waiting to load category list"
+          },
+          {
+            "comment": "Added strings for reality data picker"
+          },
+          {
+            "comment": "Added support for UI color themes"
+          },
+          {
+            "comment": "Keyboard Shortcut keys in context menu. ui-core unit test branches."
+          },
+          {
+            "comment": "Fix dependencies"
+          },
+          {
+            "comment": "Update to use newer generic-icons-webfont package."
+          },
+          {
+            "comment": "upgrade to TypeScript 3.2.2"
+          },
+          {
+            "comment": "WIP: ViewportComponent unit tests. Removed imodeljs-clients-backend dependency from ui-framework"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.188.0",
+      "tag": "@bentley/ui-framework_v0.188.0",
+      "date": "Wed, 16 Jan 2019 16:36:09 GMT",
+      "comments": {}
+    },
+    {
       "version": "0.187.0",
       "tag": "@bentley/ui-framework_v0.187.0",
       "date": "Tue, 15 Jan 2019 15:18:59 GMT",

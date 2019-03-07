@@ -18,6 +18,7 @@ import {
   Widget,
   FrontstageManager,
   FrontstageComposer,
+  CoreTools,
 } from "../../../ui-framework";
 import { Tool1 } from "../../tools/Tool1";
 
@@ -65,7 +66,7 @@ describe("ToolSettingsZone", () => {
         return (
           <Frontstage
             id="ToolSettingsZone-TestFrontstage"
-            defaultToolId="PlaceLine"
+            defaultTool={CoreTools.selectElementCommand}
             defaultLayout="FourQuadrants"
             contentGroup="TestContentGroup1"
             topCenter={
@@ -84,7 +85,8 @@ describe("ToolSettingsZone", () => {
     ConfigurableUiManager.registerControl(testToolId, Tool1UiProvider);
   });
 
-  it("clicking on the Tool Settings tab opens & closes it", () => {
+  it("clicking on the Tool Settings tab close & opens it", () => {
+    // ToolSetting should open by default if a ToolUiProvider is specified for tool.
     FrontstageManager.setActiveFrontstageDef(undefined); // tslint:disable-line:no-floating-promises
 
     const wrapper = mount(<FrontstageComposer />);
@@ -99,18 +101,21 @@ describe("ToolSettingsZone", () => {
       expect(FrontstageManager.activeToolId).to.eq(testToolId);
 
       wrapper.update();
+      // it should be open by default
+      expect(wrapper.find(".nz-widget-toolSettings-settings").length).to.eq(1);
+      expect(wrapper.find(".nz-is-active").length).to.eq(1);
+
+      // simulate click to close it
+      wrapper.find(".nz-widget-toolSettings-tab").simulate("click");
+      wrapper.update();
       expect(wrapper.find(".nz-widget-toolSettings-settings").length).to.eq(0);
       expect(wrapper.find(".nz-is-active").length).to.eq(0);
 
+      // simulate click to open it
       wrapper.find(".nz-widget-toolSettings-tab").simulate("click");
       wrapper.update();
       expect(wrapper.find(".nz-widget-toolSettings-settings").length).to.eq(1);
       expect(wrapper.find(".nz-is-active").length).to.eq(1);
-
-      wrapper.find(".nz-widget-toolSettings-tab").simulate("click");
-      wrapper.update();
-      expect(wrapper.find(".nz-widget-toolSettings-settings").length).to.eq(0);
-      expect(wrapper.find(".nz-is-active").length).to.eq(0);
     }
 
     wrapper.unmount();

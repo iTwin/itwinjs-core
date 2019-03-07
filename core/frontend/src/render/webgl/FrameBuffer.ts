@@ -4,12 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { assert, IDisposable } from "@bentley/bentleyjs-core";
+import { IDisposable, assert } from "@bentley/bentleyjs-core";
 import { TextureHandle } from "./Texture";
 import { RenderBuffer } from "./RenderBuffer";
 import { GL } from "./GL";
 import { System } from "./System";
-import { debugPrint } from "./debugPrint";
 
 export type DepthBuffer = RenderBuffer | TextureHandle;
 
@@ -29,7 +28,6 @@ export class FrameBuffer implements IDisposable {
 
   public get isDisposed(): boolean { return this._fbo === undefined; }
 
-  public get isValid(): boolean { return System.instance.context.FRAMEBUFFER_COMPLETE === this.checkStatus(); }
   public get isBound(): boolean { return FrameBufferBindState.Bound === this._bindState || FrameBufferBindState.BoundWithAttachments === this._bindState; }
   public get isSuspended(): boolean { return FrameBufferBindState.Suspended === this._bindState; }
   public getColor(ndx: number): TextureHandle {
@@ -87,14 +85,6 @@ export class FrameBuffer implements IDisposable {
     }
   }
 
-  private getDebugAttachmentsString(): string {
-    let str = "[";
-    for (const tx of this._colorTextures)
-      str += " " + (tx.getHandle()! as any)._debugId;
-
-    return str + " ]";
-  }
-
   public bind(bindAttachments: boolean = false): boolean {
     assert(undefined !== this._fbo);
     assert(!this.isBound);
@@ -109,9 +99,6 @@ export class FrameBuffer implements IDisposable {
     if (bindAttachments) {
       System.instance.setDrawBuffers(this._colorAttachments);
       this._bindState = FrameBufferBindState.BoundWithAttachments;
-
-      if (TextureHandle.wantDebugIds)
-        debugPrint("Bound attachments " + this.getDebugAttachmentsString());
     } else {
       this._bindState = FrameBufferBindState.Bound;
     }
@@ -122,15 +109,9 @@ export class FrameBuffer implements IDisposable {
     assert(this.isBound);
     System.instance.context.bindFramebuffer(GL.FrameBuffer.TARGET, null);
     this._bindState = FrameBufferBindState.Unbound;
-    if (TextureHandle.wantDebugIds)
-      debugPrint("Unbound attachments " + this.getDebugAttachmentsString());
   }
 
   public suspend() { assert(this.isBound); this._bindState = FrameBufferBindState.Suspended; }
-  public checkStatus(): GLenum {
-    const status: GLenum = System.instance.context.checkFramebufferStatus(GL.FrameBuffer.TARGET);
-    return status;
-  }
 
   // Chiefly for debugging currently - assumes RGBA, unsigned byte, want all pixels.
   public get debugPixels(): Uint8Array | undefined {

@@ -9,7 +9,7 @@ import { Ruleset } from "../../../presentation-common";
 const hasIndexSignature = (o: any): o is { [key: string]: string } => {
   return typeof o === "object";
 };
-const fixEmptyStrings = <T extends { [key: string]: any }>(obj: T) => {
+const fixEmptyStrings = <T extends { [key: string]: unknown }>(obj: T) => {
   if (Array.isArray(obj) || hasIndexSignature(obj)) {
     for (const key in obj) {
       if (!obj.hasOwnProperty(key))

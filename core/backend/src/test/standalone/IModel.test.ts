@@ -2,13 +2,37 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { ActivityLoggingContext, BeEvent, DbResult, Guid, Id64, Id64String, OpenMode } from "@bentley/bentleyjs-core";
-import { Angle, Matrix4d, Point3d, Range3d, Transform } from "@bentley/geometry-core";
+import {
+  ActivityLoggingContext,
+  BeEvent,
+  DbResult,
+  Guid,
+  Id64,
+  Id64String,
+  OpenMode,
+  LogLevel,
+  Logger,
+  using,
+} from "@bentley/bentleyjs-core";
+import {
+  Angle,
+  GeometryQuery,
+  LineString3d,
+  Loop,
+  Matrix4d,
+  Point3d,
+  Range3d,
+  Transform,
+  StrokeOptions,
+  PolyfaceBuilder,
+  YawPitchRollAngles,
+} from "@bentley/geometry-core";
 import { AccessToken, IAccessTokenManager } from "@bentley/imodeljs-clients";
 import {
   AxisAlignedBox3d, Code, CodeScopeSpec, CodeSpec, ColorByName, EntityMetaData, EntityProps, FilePropertyProps, FontMap,
   FontType, GeometricElementProps, IModel, IModelError, IModelStatus, PrimitiveTypeCode, RelatedElement, SubCategoryAppearance,
-  ViewDefinitionProps, DisplayStyleSettingsProps, ColorDef, ViewFlags, RenderMode, DisplayStyleProps, BisCodeSpec, ImageSourceFormat, TextureFlags,
+  ViewDefinitionProps, DisplayStyleSettingsProps, ColorDef, ViewFlags, RenderMode, DisplayStyleProps, BisCodeSpec, ImageSourceFormat,
+  TextureFlags, TextureMapping, TextureMapProps, TextureMapUnits, GeometryStreamBuilder, GeometricElement3dProps, GeometryParams,
 } from "@bentley/imodeljs-common";
 import { assert, expect } from "chai";
 import * as path from "path";
@@ -16,16 +40,32 @@ import {
   AutoPush, AutoPushParams, AutoPushEventHandler, AutoPushEventType, AutoPushState, BisCore, Category, ClassRegistry, DefinitionPartition,
   DictionaryModel, DocumentPartition, ECSqlStatement, Element, ElementGroupsMembers, ElementPropertyFormatter, Entity,
   GeometricElement2d, GeometricElement3d, GeometricModel, GroupInformationPartition, IModelDb, InformationPartitionElement,
-  LightLocation, LinkPartition, Model, PhysicalModel, PhysicalPartition, SpatialCategory, SqliteStatement, SqliteValue,
+  LightLocation, LinkPartition, Model, PhysicalModel, PhysicalPartition, RenderMaterial, SpatialCategory, SqliteStatement, SqliteValue,
   SqliteValueType, SubCategory, Subject, Texture, ViewDefinition, DisplayStyle3d, ElementDrivesElement, PhysicalObject,
 } from "../../imodeljs-backend";
-import { IModelTestUtils } from "../IModelTestUtils";
+import { DisableNativeAssertions, IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
+import { HubUtility } from "../integration/HubUtility";
 
 let lastPushTimeMillis = 0;
 let lastAutoPushEventType: AutoPushEventType | undefined;
 
 // spell-checker: disable
+
+async function getIModelError<T>(promise: Promise<T>): Promise<IModelError | undefined> {
+  try {
+    await promise;
+    return undefined;
+  } catch (err) {
+    return err instanceof IModelError ? err : undefined;
+  }
+}
+
+function expectIModelError(expectedErrorNumber: IModelStatus, error: IModelError | undefined): void {
+  expect(error).not.to.be.undefined;
+  expect(error).instanceof(IModelError);
+  expect(error!.errorNumber).to.equal(expectedErrorNumber);
+}
 
 describe("iModel", () => {
   let imodel1: IModelDb;
@@ -67,6 +107,13 @@ describe("iModel", () => {
     s2 = JSON.stringify(el2);
     assert.equal(s1, s2);
   };
+
+  it.skip("dump cs file", () => {
+    Logger.setLevel("DgnCore", LogLevel.Trace);
+    Logger.setLevel("Changeset", LogLevel.Trace);
+    const db = IModelDb.openStandalone("D:\\dgn\\problem\\83927\\EAP_TT_001\\seed\\EAP_TT_001.bim");
+    HubUtility.dumpChangeSetFile(db, "D:\\dgn\\problem\\83927\\EAP_TT_001", "9fd0e30f88e93bec72532f6f1e05688e2c2408cd");
+  });
 
   it("should be able to get properties of an iIModel", () => {
     expect(imodel1.name).equals("TBD"); // That's the name of the root subject!
@@ -206,11 +253,11 @@ describe("iModel", () => {
 
     // This is an encoded png containing a 3x3 square with white in top left pixel, blue in middle pixel, and green in
     // bottom right pixel.  The rest of the square is red.
-    const pngData: Uint8Array = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 3, 0, 0, 0, 3, 8, 2, 0, 0, 0, 217, 74, 34, 232, 0, 0, 0, 1, 115, 82, 71, 66, 0, 174, 206, 28, 233, 0, 0, 0, 4, 103, 65, 77, 65, 0, 0, 177, 143, 11, 252, 97, 5, 0, 0, 0, 9, 112, 72, 89, 115, 0, 0, 14, 195, 0, 0, 14, 195, 1, 199, 111, 168, 100, 0, 0, 0, 24, 73, 68, 65, 84, 24, 87, 99, 248, 15, 4, 12, 12, 64, 4, 198, 64, 46, 132, 5, 162, 254, 51, 0, 0, 195, 90, 10, 246, 127, 175, 154, 145, 0, 0, 0, 0, 73, 69, 78, 68, 174, 66, 96, 130]);
+    const pngData = [137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 3, 0, 0, 0, 3, 8, 2, 0, 0, 0, 217, 74, 34, 232, 0, 0, 0, 1, 115, 82, 71, 66, 0, 174, 206, 28, 233, 0, 0, 0, 4, 103, 65, 77, 65, 0, 0, 177, 143, 11, 252, 97, 5, 0, 0, 0, 9, 112, 72, 89, 115, 0, 0, 14, 195, 0, 0, 14, 195, 1, 199, 111, 168, 100, 0, 0, 0, 24, 73, 68, 65, 84, 24, 87, 99, 248, 15, 4, 12, 12, 64, 4, 198, 64, 46, 132, 5, 162, 254, 51, 0, 0, 195, 90, 10, 246, 127, 175, 154, 145, 0, 0, 0, 0, 73, 69, 78, 68, 174, 66, 96, 130];
 
     const testTextureName = "fake texture name";
     const testTextureFormat = ImageSourceFormat.Png;
-    const testTextureData = Base64.btoa(String.fromCharCode.apply(null, pngData));
+    const testTextureData = Base64.btoa(String.fromCharCode(...pngData));
     const testTextureWidth = 3;
     const testTextureHeight = 3;
     const testTextureDescription = "empty description";
@@ -226,6 +273,162 @@ describe("iModel", () => {
     expect(texture.height).to.equal(testTextureHeight);
     expect(texture.description).to.equal(testTextureDescription);
     expect(texture.flags).to.equal(testTextureFlags);
+  });
+
+  it("should insert a RenderMaterial", () => {
+    const model = imodel2.models.getModel(IModel.dictionaryId) as DictionaryModel;
+    expect(model).not.to.be.undefined;
+
+    const testMaterialName = "test material name";
+    const testPaletteName = "test palette name";
+    const testDescription = "test description";
+    const color = [25, 32, 9];
+    const specularColor = [99, 255, 1];
+    const finish = 0.4;
+    const transmit = 0.1;
+    const diffuse = 0.24;
+    const specular = 0.9;
+    const reflect = 0.3;
+    const reflectColor = [255, 0, 127];
+    const textureMapProps: TextureMapProps = {
+      pattern_angle: 3.0,
+      pattern_u_flip: false,
+      pattern_flip: false,
+      pattern_scale: [1.0, 1.0],
+      pattern_offset: [0.0, 0.0],
+      pattern_scalemode: TextureMapUnits.Inches,
+      pattern_mapping: TextureMapping.Mode.Planar,
+      pattern_weight: 0.5,
+      TextureId: "test_textureid",
+    };
+
+    const renderMaterialParams = new RenderMaterial.Params(testPaletteName);
+    renderMaterialParams.description = testDescription;
+    renderMaterialParams.color = color;
+    renderMaterialParams.specularColor = specularColor;
+    renderMaterialParams.finish = finish;
+    renderMaterialParams.transmit = transmit;
+    renderMaterialParams.diffuse = diffuse;
+    renderMaterialParams.specular = specular;
+    renderMaterialParams.reflect = reflect;
+    renderMaterialParams.reflectColor = reflectColor;
+    renderMaterialParams.patternMap = textureMapProps;
+    const renderMaterialId = RenderMaterial.insert(imodel2, IModel.dictionaryId, testMaterialName, renderMaterialParams);
+
+    const renderMaterial = imodel2.elements.getElement<RenderMaterial>(renderMaterialId);
+    assert((renderMaterial instanceof RenderMaterial) === true, "did not retrieve an instance of RenderMaterial");
+    expect(renderMaterial.paletteName).to.equal(testPaletteName);
+    expect(renderMaterial.description).to.equal(testDescription);
+    expect(renderMaterial.jsonProperties.materialAssets.renderMaterial.HasBaseColor).to.equal(true);
+    expect(JSON.stringify(renderMaterial.jsonProperties.materialAssets.renderMaterial.color)).to.equal(JSON.stringify(color));
+    expect(renderMaterial.jsonProperties.materialAssets.renderMaterial.HasSpecularColor).to.equal(true);
+    expect(JSON.stringify(renderMaterial.jsonProperties.materialAssets.renderMaterial.specular_color)).to.equal(JSON.stringify(specularColor));
+    expect(renderMaterial.jsonProperties.materialAssets.renderMaterial.HasFinish).to.equal(true);
+    expect(renderMaterial.jsonProperties.materialAssets.renderMaterial.finish).to.equal(finish);
+    expect(renderMaterial.jsonProperties.materialAssets.renderMaterial.HasTransmit).to.equal(true);
+    expect(renderMaterial.jsonProperties.materialAssets.renderMaterial.transmit).to.equal(transmit);
+    expect(renderMaterial.jsonProperties.materialAssets.renderMaterial.HasDiffuse).to.equal(true);
+    expect(renderMaterial.jsonProperties.materialAssets.renderMaterial.diffuse).to.equal(diffuse);
+    expect(renderMaterial.jsonProperties.materialAssets.renderMaterial.HasSpecular).to.equal(true);
+    expect(renderMaterial.jsonProperties.materialAssets.renderMaterial.specular).to.equal(specular);
+    expect(renderMaterial.jsonProperties.materialAssets.renderMaterial.HasReflect).to.equal(true);
+    expect(renderMaterial.jsonProperties.materialAssets.renderMaterial.reflect).to.equal(reflect);
+    expect(renderMaterial.jsonProperties.materialAssets.renderMaterial.HasReflectColor).to.equal(true);
+    expect(JSON.stringify(renderMaterial.jsonProperties.materialAssets.renderMaterial.reflect_color)).to.equal(JSON.stringify(reflectColor));
+    expect(renderMaterial.jsonProperties.materialAssets.renderMaterial.Map).not.to.be.undefined;
+
+    const patternMap = renderMaterial.jsonProperties.materialAssets.renderMaterial.Map.Pattern;
+    expect(patternMap).not.to.be.undefined;
+    expect(patternMap.pattern_angle).to.equal(textureMapProps.pattern_angle);
+    expect(patternMap.pattern_u_flip).to.equal(textureMapProps.pattern_u_flip);
+    expect(patternMap.pattern_flip).to.equal(textureMapProps.pattern_flip);
+    expect(JSON.stringify(patternMap.pattern_scale)).to.equal(JSON.stringify(textureMapProps.pattern_scale));
+    expect(JSON.stringify(patternMap.pattern_offset)).to.equal(JSON.stringify(textureMapProps.pattern_offset));
+    expect(patternMap.pattern_scalemode).to.equal(textureMapProps.pattern_scalemode);
+    expect(patternMap.pattern_mapping).to.equal(textureMapProps.pattern_mapping);
+    expect(patternMap.pattern_weight).to.equal(textureMapProps.pattern_weight);
+    expect(patternMap.TextureId).to.equal(textureMapProps.TextureId);
+  });
+
+  it.skip("attempt to apply material to new element in imodel5", () => {
+    // This is an encoded png containing a 3x3 square with white in top left pixel, blue in middle pixel, and green in
+    // bottom right pixel.  The rest of the square is red.
+    const pngData = [137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 3, 0, 0, 0, 3, 8, 2, 0, 0, 0, 217, 74, 34, 232, 0, 0, 0, 1, 115, 82, 71, 66, 0, 174, 206, 28, 233, 0, 0, 0, 4, 103, 65, 77, 65, 0, 0, 177, 143, 11, 252, 97, 5, 0, 0, 0, 9, 112, 72, 89, 115, 0, 0, 14, 195, 0, 0, 14, 195, 1, 199, 111, 168, 100, 0, 0, 0, 24, 73, 68, 65, 84, 24, 87, 99, 248, 15, 4, 12, 12, 64, 4, 198, 64, 46, 132, 5, 162, 254, 51, 0, 0, 195, 90, 10, 246, 127, 175, 154, 145, 0, 0, 0, 0, 73, 69, 78, 68, 174, 66, 96, 130];
+
+    const testTextureName = "fake texture name";
+    const testTextureFormat = ImageSourceFormat.Png;
+    const testTextureData = Base64.btoa(String.fromCharCode(...pngData));
+    const testTextureWidth = 3;
+    const testTextureHeight = 3;
+    const testTextureDescription = "empty description";
+    const testTextureFlags = TextureFlags.None;
+
+    const texId = Texture.insert(imodel5, IModel.dictionaryId, testTextureName, testTextureFormat, testTextureData, testTextureWidth, testTextureHeight, testTextureDescription, testTextureFlags);
+
+    const matId = RenderMaterial.insert(imodel5, IModel.dictionaryId, "test material name",
+      {
+        paletteName: "TestPaletteName",
+        patternMap: {
+          TextureId: texId,
+          pattern_offset: [0, 0],
+          pattern_scale: [1, 1],
+          pattern_scalemode: TextureMapUnits.Relative,
+        },
+      });
+
+    /** Create a simple flat mesh with 4 points (2x2) */
+    const width = imodel5.projectExtents.width * 0.2;
+    const height = imodel5.projectExtents.depth * 0.2;
+    let shape: GeometryQuery;
+    const doPolyface = true;
+    if (doPolyface) {
+      const options = StrokeOptions.createForFacets();
+      options.shouldTriangulate = false;
+      const builder = PolyfaceBuilder.create(options);
+
+      const quad = [
+        Point3d.create(0.0, 0.0, 0.0),
+        Point3d.create(width, 0.0, 0.0),
+        Point3d.create(width, height, 0.0),
+        Point3d.create(0.0, height, 0.0),
+      ];
+
+      builder.addQuadFacet(quad);
+      shape = builder.claimPolyface();
+    } else {
+      shape = Loop.create(LineString3d.create([
+        Point3d.create(0, 0, 0),
+        Point3d.create(width, 0, 0),
+        Point3d.create(width, height, 0),
+        Point3d.create(0, height, 0),
+        Point3d.create(0, 0, 0),
+      ]));
+    }
+
+    const modelId = PhysicalModel.insert(imodel5, IModelDb.rootSubjectId, "test_render_material_model_name");
+
+    const categoryId = SpatialCategory.insert(imodel5, IModel.dictionaryId, "GeoJSON Feature", { color: ColorDef.white });
+
+    /** generate a geometry stream containing the polyface */
+    const gsBuilder = new GeometryStreamBuilder();
+    const params = new GeometryParams(categoryId);
+    params.materialId = matId;
+    gsBuilder.appendGeometryParamsChange(params);
+    gsBuilder.appendGeometry(shape);
+    const geometry = gsBuilder.geometryStream;
+    // geometry[0].material = { materialId: matId };
+
+    /** The [[GeometricElement3dProps]]  */
+    const props: GeometricElement3dProps = {
+      placement: { origin: imodel5.projectExtents.center, angles: new YawPitchRollAngles() },
+      model: modelId,
+      code: Code.createEmpty(),
+      classFullName: "Generic:PhysicalObject",
+      category: categoryId,
+      geom: geometry,
+    };
+    imodel5.elements.insertElement(props);
+    imodel5.saveChanges();
   });
 
   it("should insert a DisplayStyle", () => {
@@ -375,6 +578,29 @@ describe("iModel", () => {
     expect(tree.rootTile.maximumSize).to.equal(0.0); // empty model => undisplayable root tile => size = 0.0
     expect(tree.rootTile.isLeaf).to.be.true; // empty model => empty tile
     expect(tree.rootTile.contentRange).to.be.undefined;
+  });
+
+  it("should throw on invalid tile requests", async () => {
+    const logCtx = new ActivityLoggingContext("invalidTileRequests");
+    await using(new DisableNativeAssertions(), async (_r) => {
+      let error = await getIModelError(imodel1.tiles.requestTileTreeProps(logCtx, "0x12345"));
+      expectIModelError(IModelStatus.MissingId, error);
+
+      error = await getIModelError(imodel1.tiles.requestTileTreeProps(logCtx, "NotAValidId"));
+      expectIModelError(IModelStatus.InvalidId, error);
+
+      error = await getIModelError(imodel1.tiles.requestTileContent(logCtx, "0x1c", "0/0/0/0"));
+      expectIModelError(IModelStatus.InvalidId, error);
+
+      error = await getIModelError(imodel1.tiles.requestTileContent(logCtx, "0x12345", "0/0/0/0/1"));
+      expectIModelError(IModelStatus.MissingId, error);
+
+      error = await getIModelError(imodel1.tiles.requestTileContent(logCtx, "0x1c", "V/W/X/Y/Z"));
+      expectIModelError(IModelStatus.InvalidId, error);
+
+      error = await getIModelError(imodel1.tiles.requestTileContent(logCtx, "0x1c", "NotAValidId"));
+      expectIModelError(IModelStatus.InvalidId, error);
+    });
   });
 
   it("should produce an array of rows", () => {
@@ -562,7 +788,7 @@ describe("iModel", () => {
     assert.equal(testElem.classFullName, "DgnPlatformTest:TestElementWithNoHandler");
     assert.isUndefined(testElem.integerProperty1);
 
-    const newTestElem = testElem.clone<Element>();
+    const newTestElem = testElem.clone();
     assert.equal(newTestElem.classFullName, testElem.classFullName);
     newTestElem.integerProperty1 = 999;
     assert.isTrue(testElem.arrayOfPoint3d[0].isAlmostEqual(newTestElem.arrayOfPoint3d[0]));
@@ -607,6 +833,23 @@ describe("iModel", () => {
     assert.deepEqual(afterUpdateElemFetched.id, editElem.id, " the id should not have changed.");
     assert.deepEqual(afterUpdateElemFetched.p3d, wasp3d, " p3d property should not have changed");
 
+    // Make array shorter
+    assert.equal(afterUpdateElemFetched.arrayOfInt.length, 300);
+
+    afterUpdateElemFetched.arrayOfInt = [99, 3];
+    imodel4.elements.updateElement(afterUpdateElemFetched);
+
+    const afterShortenArray = imodel4.elements.getElement(afterUpdateElemFetched.id);
+    assert.equal(afterUpdateElemFetched.arrayOfInt.length, 2);
+    assert.deepEqual(afterShortenArray.arrayOfInt, [99, 3]);
+
+    // Make array longer
+    afterShortenArray.arrayOfInt = [1, 2, 3];
+    imodel4.elements.updateElement(afterShortenArray);
+    const afterLengthenArray = imodel4.elements.getElement(afterShortenArray.id);
+    assert.equal(afterLengthenArray.arrayOfInt.length, 3);
+    assert.deepEqual(afterLengthenArray.arrayOfInt, [1, 2, 3]);
+
     // ------------ delete -----------------
     const elid = afterUpdateElemFetched.id;
     imodel4.elements.deleteElement(elid);
@@ -650,14 +893,14 @@ describe("iModel", () => {
 
   it("update the project extents", async () => {
     const originalExtents = imodel1.projectExtents;
-    const newExtents = new AxisAlignedBox3d(originalExtents.low, originalExtents.high);
+    const newExtents = Range3d.create(originalExtents.low, originalExtents.high);
     newExtents.low.x -= 50; newExtents.low.y -= 25; newExtents.low.z -= 189;
     newExtents.high.x += 1087; newExtents.high.y += 19; newExtents.high.z += .001;
     imodel1.updateProjectExtents(newExtents);
 
     const updatedProps = JSON.parse(imodel1.briefcase!.nativeDb.getIModelProps());
     assert.isTrue(updatedProps.hasOwnProperty("projectExtents"), "Returned property JSON object has project extents");
-    const updatedExtents = AxisAlignedBox3d.fromJSON(updatedProps.projectExtents);
+    const updatedExtents = Range3d.fromJSON(updatedProps.projectExtents);
     assert.isTrue(newExtents.isAlmostEqual(updatedExtents), "Project extents successfully updated in database");
   });
 
@@ -700,13 +943,13 @@ describe("iModel", () => {
     const z2 = imodel5.ecefToSpatial(ecefPt);
     assert.isTrue(z2.isAlmostEqual(center), "ecefToSpatial");
 
-    const carto = imodel5.spatialToCartographic(center);
+    const carto = imodel5.spatialToCartographicFromEcef(center);
     assert.approximately(Angle.radiansToDegrees(carto.longitude), 132.70599650539427, .1); // this data is in Japan
     assert.approximately(Angle.radiansToDegrees(carto.latitude), 34.35461328445589, .1);
     const c2 = { longitude: 2.316156576159219, latitude: 0.5996011150631385, height: 10 };
     assert.isTrue(carto.equalsEpsilon(c2, .001), "spatialToCartographic");
 
-    imodel5.cartographicToSpatial(carto, z2);
+    imodel5.cartographicToSpatialFromEcef(carto, z2);
     assert.isTrue(z2.isAlmostEqual(center, .001), "cartographicToSpatial");
   });
 

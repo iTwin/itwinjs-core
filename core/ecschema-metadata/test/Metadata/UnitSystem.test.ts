@@ -3,46 +3,28 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, expect } from "chai";
-import * as sinon from "sinon";
+import { expect } from "chai";
+
+import { SchemaContext } from "../../src/Context";
+import { SchemaItemType, schemaItemTypeToString } from "../../src/ECObjects";
 import { Schema } from "../../src/Metadata/Schema";
 import { UnitSystem } from "../../src/Metadata/UnitSystem";
-import { schemaItemTypeToString, SchemaItemType } from "../../src/ECObjects";
 
 describe("UnitSystem tests", () => {
   let testUnitSystem: UnitSystem;
-  describe("accept", () => {
-    beforeEach(() => {
-      const schema = new Schema("TestSchema", 1, 0, 0);
-      testUnitSystem = new UnitSystem(schema, "TestEnumeration");
-    });
-
-    it("should call visitUnitSystem on a SchemaItemVisitor object", async () => {
-      expect(testUnitSystem).to.exist;
-      const mockVisitor = { visitUnitSystem: sinon.spy() };
-      await testUnitSystem.accept(mockVisitor);
-      expect(mockVisitor.visitUnitSystem.calledOnce).to.be.true;
-      expect(mockVisitor.visitUnitSystem.calledWithExactly(testUnitSystem)).to.be.true;
-    });
-
-    it("should safely handle a SchemaItemVisitor without visitUnitSystem defined", async () => {
-      expect(testUnitSystem).to.exist;
-      await testUnitSystem.accept({});
-    });
-  });
 
   describe("SchemaItemType", () => {
-    const schema = new Schema("TestSchema", 1, 0, 0);
+    const schema = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);
     testUnitSystem = new UnitSystem(schema, "Test");
     it("should return correct item type and string", () => {
-      assert.equal(testUnitSystem.schemaItemType, SchemaItemType.UnitSystem);
-      assert.equal(schemaItemTypeToString(testUnitSystem.schemaItemType), "UnitSystem");
+      expect(testUnitSystem.schemaItemType).to.equal(SchemaItemType.UnitSystem);
+      expect(schemaItemTypeToString(testUnitSystem.schemaItemType)).to.equal("UnitSystem");
     });
   });
 
   describe("Async fromJson", () => {
     beforeEach(() => {
-      const schema = new Schema("ExampleSchema", 1, 0, 0);
+      const schema = new Schema(new SchemaContext(), "ExampleSchema", 1, 0, 0);
       testUnitSystem = new UnitSystem(schema, "IMPERIAL");
     });
     it("Basic test", async () => {
@@ -53,13 +35,13 @@ describe("UnitSystem tests", () => {
         label: "Imperial",
       };
       await testUnitSystem.deserialize(json);
-      assert(testUnitSystem.label, "Imperial");
-      assert(testUnitSystem.description === undefined);
+      expect(testUnitSystem.label).to.equal("Imperial");
+      expect(testUnitSystem.description).to.be.undefined;
     });
 
     describe("Sync fromJson", () => {
       beforeEach(() => {
-        const schema = new Schema("ExampleSchema", 1, 0, 0);
+        const schema = new Schema(new SchemaContext(), "ExampleSchema", 1, 0, 0);
         testUnitSystem = new UnitSystem(schema, "IMPERIAL");
       });
       it("Basic test", () => {
@@ -70,8 +52,8 @@ describe("UnitSystem tests", () => {
           label: "Imperial",
         };
         testUnitSystem.deserializeSync(json);
-        assert(testUnitSystem.label, "Imperial");
-        assert(testUnitSystem.description === undefined);
+        expect(testUnitSystem.label).to.equal("Imperial");
+        expect(testUnitSystem.description).to.be.undefined;
       });
     });
   });

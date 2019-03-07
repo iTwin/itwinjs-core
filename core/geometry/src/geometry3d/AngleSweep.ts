@@ -168,7 +168,7 @@ export class AngleSweep implements BeJSONFunctions {
     public radiansArraytoPositivePeriodicFractions(data: GrowableFloat64Array) {
         const n = data.length;
         for (let i = 0; i < n; i++) {
-            data.reassign(i, this.radiansToPositivePeriodicFraction(data.at(i)));
+            data.reassign(i, this.radiansToPositivePeriodicFraction(data.atUncheckedIndex(i)));
         }
     }
     public radiansToPositivePeriodicFraction(radians: number): number {

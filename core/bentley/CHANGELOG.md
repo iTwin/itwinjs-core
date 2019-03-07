@@ -1,6 +1,23 @@
 # Change Log - @bentley/bentleyjs-core
 
-This log was last generated on Tue, 15 Jan 2019 15:18:59 GMT and should not be manually modified.
+This log was last generated on Wed, 06 Mar 2019 15:41:22 GMT and should not be manually modified.
+
+## 0.189.0
+Wed, 06 Mar 2019 15:41:22 GMT
+
+### Updates
+
+- Changes package.json to include api-extractor and adds api-extractor.json
+- Use new buildIModelJsBuild script
+- Add release tags to indicate API stability
+- Remove uneeded typedoc plugin depedency
+- Save BUILD_SEMVER to globally accessible map
+- upgrade to TypeScript 3.2.2
+
+## 0.188.0
+Wed, 16 Jan 2019 16:36:09 GMT
+
+*Version update only*
 
 ## 0.187.0
 Tue, 15 Jan 2019 15:18:59 GMT

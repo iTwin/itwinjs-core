@@ -2,10 +2,10 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-@import "@bentley/bwc/lib/mixins";
+@import "@bentley/ui-core/lib/ui-core/index";
 
-$text-font-size: $bwc-font-size;
-$text-font-color: $bwc-text-color;
+$text-font-size: $uicore-font-size;
+$text-font-color: $buic-text-color;
 
 .components-property-record--horizontal {
   min-height: 24px;
@@ -57,4 +57,11 @@ $text-font-color: $bwc-text-color;
 
 .components-property-record-value {
   @include record-cell;
+
+  .core-underlined-button {
+    // Offset by 2px, because value is centered vertically
+    // and the button has an underline which offsets it's content,
+    // which in turn makes it not in line with the rest of text
+    margin-top: 2px;
+  }
 }

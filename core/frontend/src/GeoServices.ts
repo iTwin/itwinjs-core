@@ -2,8 +2,6 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-/** @module GeoServices */
-
 import { IModelConnection } from "./IModelConnection";
 import {
   IModelReadRpcInterface,
@@ -153,6 +151,11 @@ class IMCtoGCResultCache {
   }
 }
 
+/**
+ * The GeoConverter class communicates with the backend to convert longitude/latitude coordinates to iModel coordinates and vice-versa
+ * @internal
+ * @hidden
+ */
 export class GeoConverter {
   private _datum: string;
   private _gCtoIMCResultCache: GCtoIMCResultCache;
@@ -174,12 +177,14 @@ export class GeoConverter {
   }
 }
 
-/** The Geographic Services available for an [[IModelConnection]]. */
+/**
+ * The Geographic Services available for an [[IModelConnection]].
+ * @internal
+ * @hidden
+ */
 export class GeoServices {
-  /** @hidden */
   private _iModel: IModelConnection;
 
-  /** @hidden */
   constructor(iModel: IModelConnection) {
     this._iModel = iModel;
   }

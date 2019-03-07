@@ -328,6 +328,7 @@ export class IModelTestUtils {
   public static startBackend() {
     IModelJsConfig.init(true /* suppress exception */, false /* suppress error message */, Config.App);
     const config = new IModelHostConfiguration();
+    config.useTileContentThreadPool = true;
     IModelHost.startup(config);
   }
 
@@ -374,6 +375,8 @@ export class IModelTestUtils {
     Logger.setLevel("imodeljs-clients.Url", LogLevel.Trace);
     Logger.setLevel("DgnCore", LogLevel.Error);
     Logger.setLevel("BeSQLite", LogLevel.Error);
+    Logger.setLevel("Bentley.LICENSING", LogLevel.Error);
+    Logger.setLevel("imodeljs-addon", LogLevel.Error);
   }
 }
 

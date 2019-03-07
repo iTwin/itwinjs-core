@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="theme-color" content="#000000">
+  <!--
+      manifest.json provides metadata used when your web app is added to the
+      homescreen on Android. See https://developers.google.com/web/fundamentals/engage-and-retain/web-app-manifest/
+    -->
+  <link rel="shortcut icon" href="favicon.ico">
+  <link rel="manifest" href="manifest.json">
+  <title>iModel.js UI Test App</title>
+  <style>
+    html,
+    body {
+      height: 100%;
+      width: 100%;
+      margin: 0;
+    }
+
+    #root {
+      height: 100%;
+    }
+  </style>
+  <!-- we use one webpack-generated runtime.js to get our modules to share dependencies. -->
+  <script type="text/javascript" src="runtime.js"></script>
+  <!-- Use the IModelJs loader to load the system modules in the correct order -->
+  <!-- The lodash template in the next line is replaced by webpack with the name and versions of imodeljs frontend packages -->
+  <script type="text/javascript" src="IModelJsLoader.js"
+    data-imjsversions='<%= htmlWebpackPlugin.options.imjsVersions %>'></script>
+</head>
+
+<body>
+  <noscript>
+    You need to enable JavaScript to run this app.
+  </noscript>
+  <div id="root"></div>
+  <!--
+      This HTML file is a template.
+      If you open it directly in the browser, you will see an empty page.
+
+      You can add webfonts, meta tags, or analytics to this file.
+    -->
+</body>
+
+</html>

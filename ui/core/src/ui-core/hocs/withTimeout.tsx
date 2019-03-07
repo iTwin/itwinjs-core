@@ -37,9 +37,9 @@ export const withTimeout = <ComponentProps extends {}>(
     }
 
     public render() {
-      const { timeout, onTimeout, ...props } = this.props as WithTimeoutProps;
+      const { timeout, onTimeout, ...props } = this.props;
       return (
-        <Component {...props} {...this.state} />
+        <Component {...props as ComponentProps} {...this.state} />
       );
     }
 

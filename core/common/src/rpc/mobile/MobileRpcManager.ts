@@ -41,6 +41,8 @@ export abstract class MobileRpcConfiguration extends RpcConfiguration {
   /** Check if running backend running on mobile */
   public static get isMobileFrontend() { return MobileRpcConfiguration.platform !== RpcMobilePlatform.Unknown; }
 
+  /** Check if running backend running on wkwebview on ios */
+  public static get isIOSFrontend() { return MobileRpcConfiguration.isMobileFrontend && (window as any).webkit && (window as any).webkit.messageHandlers; }
 }
 
 /** Coordinates usage of RPC interfaces for an Mobile-based application. */
@@ -68,5 +70,5 @@ export class MobileRpcManager {
   /** Initializes MobileRpcManager for the backend of an application. */
   public static initializeImpl(interfaces: RpcInterfaceDefinition[]): MobileRpcConfiguration {
     return MobileRpcManager.performInitialization(interfaces, RpcEndpoint.Backend);
-  }
+    }
 }

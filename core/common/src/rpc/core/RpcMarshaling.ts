@@ -15,23 +15,26 @@ import { RpcMarshalingDirective } from "./RpcConstants";
 
 let marshalingScope = "";
 let marshalingTarget: RpcSerializedValue;
+let chunkThreshold = 0;
 
 interface MarshalingBinaryMarker {
   [RpcMarshalingDirective.Binary]: true;
   type: number;
   index: number;
   size: number;
+  chunks: number;
 }
 
 export namespace MarshalingBinaryMarker {
   export function createDefault(): MarshalingBinaryMarker {
-    return { [RpcMarshalingDirective.Binary]: true, type: 0, index: 0, size: -1 };
+    return { [RpcMarshalingDirective.Binary]: true, type: 0, index: 0, size: -1, chunks: 1 };
   }
 }
 
 export interface RpcSerializedValue {
   objects: string;
   data: Uint8Array[];
+  chunks?: number;
 }
 
 export namespace RpcSerializedValue {
@@ -45,7 +48,7 @@ export class RpcMarshaling {
   private constructor() { }
 
   /** Serializes a value. */
-  public static serialize(operation: RpcOperation | string, _protocol: RpcProtocol | undefined, value: any): RpcSerializedValue {
+  public static serialize(operation: RpcOperation | string, protocol: RpcProtocol | undefined, value: any): RpcSerializedValue {
     const serialized = RpcSerializedValue.create();
 
     if (typeof (value) === "undefined") {
@@ -54,21 +57,25 @@ export class RpcMarshaling {
 
     marshalingTarget = serialized;
     marshalingScope = typeof (operation) === "string" ? operation : operation.interfaceDefinition.name;
+    chunkThreshold = protocol ? protocol.transferChunkThreshold : 0;
     serialized.objects = JSON.stringify(value, WireFormat.marshal);
     marshalingTarget = undefined as any;
+    chunkThreshold = 0;
 
     return serialized;
   }
 
   /** Deserializes a value. */
-  public static deserialize(_operation: RpcOperation, _protocol: RpcProtocol | undefined, value: RpcSerializedValue): any {
+  public static deserialize(_operation: RpcOperation, protocol: RpcProtocol | undefined, value: RpcSerializedValue): any {
     if (value.objects === "") {
       return undefined;
     }
 
     marshalingTarget = value;
+    chunkThreshold = protocol ? protocol.transferChunkThreshold : 0;
     const result = JSON.parse(value.objects, WireFormat.unmarshal);
     marshalingTarget = undefined as any;
+    chunkThreshold = 0;
 
     return result;
   }
@@ -134,7 +141,7 @@ class WireFormat {
 
   private static marshalBinary(value: any): any {
     if (ArrayBuffer.isView(value) || Buffer.isBuffer(value)) {
-      const marker: MarshalingBinaryMarker = { [RpcMarshalingDirective.Binary]: true, type: -1, index: -1, size: -1 };
+      const marker: MarshalingBinaryMarker = { [RpcMarshalingDirective.Binary]: true, type: -1, index: -1, size: -1, chunks: 1 };
 
       let i = -1;
       if (Buffer.isBuffer(value)) {
@@ -151,8 +158,32 @@ class WireFormat {
         throw new IModelError(BentleyStatus.ERROR, `Cannot marshal binary type "${value.constructor.name}".`);
       } else {
         marker.type = i;
-        marker.index = marshalingTarget.data.push(value as Uint8Array) - 1;
         marker.size = value.byteLength;
+
+        if (chunkThreshold && value.byteLength > chunkThreshold) {
+          marker.index = marshalingTarget.data.length;
+          marker.chunks = 0;
+
+          let cursor = value.byteOffset;
+          const end = cursor + value.byteLength;
+          let chunk = chunkThreshold;
+
+          for (; ;) {
+            if (cursor >= end) {
+              break;
+            }
+
+            marshalingTarget.data.push(new Uint8Array(value.buffer, cursor, chunk));
+            ++marker.chunks;
+            cursor += chunk;
+
+            const consumed = cursor - value.byteOffset;
+            const remaining = value.byteLength - consumed;
+            chunk = Math.min(chunkThreshold, remaining);
+          }
+        } else {
+          marker.index = marshalingTarget.data.push(value as Uint8Array) - 1;
+        }
       }
 
       return marker;
@@ -170,7 +201,24 @@ class WireFormat {
       throw new IModelError(BentleyStatus.ERROR, `Cannot unmarshal missing binary value.`);
     }
 
-    return new WireFormat.binaryTypes[value.type](marshalingTarget.data[value.index]);
+    const type = WireFormat.binaryTypes[value.type];
+    if (value.chunks === 0) {
+      return new type();
+    } else if (value.chunks === 1) {
+      return new type(marshalingTarget.data[value.index]);
+    } else {
+      const buffer = new ArrayBuffer(value.size);
+      const view = new type(buffer);
+
+      let cursor = 0;
+      for (let c = 0; c !== value.chunks; ++c) {
+        const chunk = marshalingTarget.data[value.index + c];
+        view.set(chunk, cursor);
+        cursor += chunk.byteLength;
+      }
+
+      return view;
+    }
   }
 
   private static marshalCustom(name: string, value: any, unregistered: boolean) {

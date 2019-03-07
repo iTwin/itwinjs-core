@@ -3,12 +3,14 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
+import * as sinon from "sinon";
 import { initialize, terminate } from "../../IntegrationTests";
 import { OpenMode, Id64 } from "@bentley/bentleyjs-core";
 import { ModelProps } from "@bentley/imodeljs-common";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { KeySet, instanceKeyFromJSON } from "@bentley/presentation-common";
 import { PresentationTableDataProvider } from "@bentley/presentation-components";
+import { Presentation } from "@bentley/presentation-frontend";
 import { SortDirection } from "@bentley/ui-core";
 
 interface MeaningfulInstances {
@@ -35,7 +37,10 @@ describe("TableDataProvider", async () => {
     const testIModelName: string = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
     imodel = await IModelConnection.openStandalone(testIModelName, OpenMode.Readonly);
     instances = await createMeaningfulInstances(imodel);
-    provider = new PresentationTableDataProvider(imodel, "SimpleContent", 10);
+  });
+
+  beforeEach(async () => {
+    provider = new PresentationTableDataProvider({ imodel, ruleset: "SimpleContent", pageSize: 10 });
   });
 
   after(async () => {
@@ -90,6 +95,20 @@ describe("TableDataProvider", async () => {
       expect(row).to.be.undefined;
     });
 
+  });
+
+  it("requests backend only once to get first page", async () => {
+    const getContentAndContentSizeSpy = sinon.spy(Presentation.presentation.rpcRequestsHandler, "getContentAndSize");
+    provider.keys = new KeySet([instances.physicalModel]);
+    provider.pagingSize = 10;
+
+    // request count and first page
+    const count = await provider.getRowsCount();
+    const row = await provider.getRow(0);
+
+    expect(count).to.not.eq(0);
+    expect(row).to.not.be.undefined;
+    expect(getContentAndContentSizeSpy.calledOnce).to.be.true;
   });
 
   describe("sorting", () => {

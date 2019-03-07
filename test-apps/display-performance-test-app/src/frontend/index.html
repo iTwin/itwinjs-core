@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <title>Display Performance Test App</title>
+  <style>
+    html,
+    body {
+      height: 100%;
+      min-height: 100%;
+      width: 100%;
+      margin: 0px;
+    }
+
+    .root {
+    position: relative;
+    height: 100%;
+    width: 100%;
+    top: 0;
+    left: 0;
+    }
+
+    .topdiv {
+      display: none;
+      position: relative;
+      top: 0;
+      left: 0;
+    }
+
+    .imodel-viewport {
+      position: relative;
+      top: auto;
+      left: auto;
+      bottom: auto;
+      display: block;
+      height: 1000px;
+      width: auto;
+    }
+
+  </style>
+  <script type="text/javascript" src="runtime.js"></script>
+  <script type="text/javascript" src="IModelJsLoader.js" data-imjsversions='<%= htmlWebpackPlugin.options.imjsVersions %>'></script>
+</head>
+
+<body>
+  <div class="root" id="root">
+    <div class=topdiv id="topdiv">
+    </div>
+    <div class="imodel-viewport" id="imodel-viewport">
+    </div>
+  </div>
+</body>
+
+</html>

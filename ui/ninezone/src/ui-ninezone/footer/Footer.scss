@@ -7,10 +7,10 @@
 @import "_variables";
 
 .nz-footer-footer {
-  background-color: $background-2;
+  background-color: $buic-background-statusbar;
   border-width: 0;
   border-top-width: 1px;
-  border-color: $background-4;
+  border-color: $buic-background-widget-stroke;
   border-style: solid;
   pointer-events: auto;
   position: relative;
@@ -21,7 +21,7 @@
     left: 50%;
     transform: translateX(-50%) translateY(-100%);
 
-    @include uicore-z-index(message);
+    @include uicore-z-index(status-message);
   }
 
   >.nz-indicators {
@@ -38,7 +38,7 @@
         content: '';
         width: $separator-width;
         height: 100%;
-        background-color: $background-3;
+        background-color: $buic-background-divider;
         border-right: $separator-width solid #ffffff;
         position: absolute;
         right: 0;

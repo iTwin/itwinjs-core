@@ -2,15 +2,17 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+// tslint:disable:no-direct-imports
 import * as fs from "fs";
 import * as path from "path";
 import * as cpx from "cpx";
-// tslint:disable-next-line:no-direct-imports
 import "@bentley/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment";
 // common includes
 import { I18NOptions } from "@bentley/imodeljs-i18n";
 import { Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { LoggingNamespaces } from "@bentley/presentation-common";
+import { Props as PresentationBackendProps } from "@bentley/presentation-backend/lib/Presentation";
+import { Props as PresentationFrontendProps } from "@bentley/presentation-frontend/lib/PresentationManager";
 import { NoRenderApp } from "@bentley/imodeljs-frontend";
 import { initialize as initializeTesting, terminate as terminateTesting } from "@bentley/presentation-testing";
 
@@ -42,7 +44,7 @@ const copyBentleyFrontendAssets = (outputDir: string) => {
 
 class IntegrationTestsApp extends NoRenderApp {
   protected static supplyI18NOptions(): I18NOptions {
-    const urlTemplate = `file://${path.resolve("lib/public/locales")}/{{lng}}/{{ns}}.json`;
+    const urlTemplate = "file://" + path.join(path.resolve("lib/public/locales"), "{{lng}}/{{ns}}.json").replace(/\\/g, "/");
     return { urlTemplate };
   }
   protected static onStartup(): void {
@@ -58,9 +60,15 @@ export const initialize = () => {
   Logger.setLevel(LoggingNamespaces.ECObjects_ECExpressions, LogLevel.None);
   Logger.setLevel(LoggingNamespaces.ECPresentation, LogLevel.None);
 
-  initializeTesting(
-    { rulesetDirectories: ["lib/assets/rulesets"], localeDirectories: ["lib/assets/locales"] },
-    IntegrationTestsApp);
+  const backendInitProps: PresentationBackendProps = {
+    rulesetDirectories: ["lib/assets/rulesets"],
+    localeDirectories: ["lib/assets/locales"],
+    activeLocale: "en-PSEUDO",
+  };
+  const frontendInitProps: PresentationFrontendProps = {
+    activeLocale: "en-PSEUDO",
+  };
+  initializeTesting(backendInitProps, frontendInitProps, IntegrationTestsApp);
 };
 
 export const terminate = () => {

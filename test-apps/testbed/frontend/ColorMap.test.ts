@@ -126,11 +126,11 @@ describe("ColorMap", () => {
   it("test toColorIndex function", () => {
     /** Test toColorIndex function */
     let a: ColorMap = new ColorMap();
-    const uint16: Uint16Array = new Uint16Array(2);
+    const indices = [0, 0];
     let colorIndex = new ColorIndex();
 
     a.insert(0xFFFFFF);
-    a.toColorIndex(colorIndex, uint16);
+    a.toColorIndex(colorIndex, indices);
     expect(colorIndex.uniform!.tbgr).to.equal(0xFFFFFF);
     assert.isTrue(colorIndex.numColors === 1);
 
@@ -139,7 +139,7 @@ describe("ColorMap", () => {
     expect(colorIndex.uniform!.tbgr).to.equal(ColorDef.white.tbgr);
     assert.isTrue(colorIndex.numColors === 1);
     a.insert(0x0000FFFF);
-    a.toColorIndex(colorIndex, uint16);
+    a.toColorIndex(colorIndex, indices);
     expect(colorIndex.isUniform).to.equal(true);
     assert.isTrue(colorIndex.uniform!.tbgr === 0x0000FFFF);
     assert.isTrue(colorIndex.numColors === 1);
@@ -150,7 +150,7 @@ describe("ColorMap", () => {
     colorIndex = new ColorIndex();
     colorIndex.initUniform(0x00FF00FF);
     assert.isTrue(colorIndex.numColors === 1);
-    a.toColorIndex(colorIndex, uint16);
+    a.toColorIndex(colorIndex, indices);
     assert.isFalse(colorIndex.isUniform);
     assert.isTrue(colorIndex.nonUniform && colorIndex.nonUniform.colors.length === 2);
     let values = colorIndex.nonUniform ? colorIndex.nonUniform.colors.values() : undefined;
@@ -165,7 +165,7 @@ describe("ColorMap", () => {
     a.insert(0x000000FF);
     colorIndex = new ColorIndex();
     assert.isTrue(colorIndex.numColors === 1);
-    a.toColorIndex(colorIndex, uint16);
+    a.toColorIndex(colorIndex, indices);
     assert.isFalse(colorIndex.isUniform);
     assert.isTrue(colorIndex.nonUniform && colorIndex.nonUniform.colors.length === 3);
     values = colorIndex.nonUniform ? colorIndex.nonUniform.colors.values() : undefined;

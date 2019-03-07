@@ -10,7 +10,6 @@ import { GL } from "./GL";
 import { System } from "./System";
 import { UniformHandle } from "./Handle";
 import { TextureUnit, OvrFlags } from "./RenderFlags";
-import { debugPrint } from "./debugPrint";
 
 type CanvasOrImage = HTMLCanvasElement | HTMLImageElement;
 
@@ -306,17 +305,8 @@ export abstract class TextureHandle implements IDisposable {
     return TextureCubeHandle.createForCubeImages(posX, negX, posY, negY, posZ, negZ);
   }
 
-  // Set following to true to assign sequential numeric identifiers to WebGLTexture objects.
-  // This helps in debugging issues in which e.g. the same texture is bound as an input and output.
-  public static wantDebugIds: boolean = false;
-  private static _debugId: number = 0;
-  private static readonly _maxDebugId = 0xffffff;
   protected constructor(glTexture: WebGLTexture) {
     this._glTexture = glTexture;
-    if (TextureHandle.wantDebugIds) {
-      (glTexture as any)._debugId = ++TextureHandle._debugId;
-      TextureHandle._debugId %= TextureHandle._maxDebugId;
-    }
   }
 }
 
@@ -337,8 +327,6 @@ export class Texture2DHandle extends TextureHandle {
   public static bindTexture(texUnit: TextureUnit, glTex: WebGLTexture | undefined) {
     assert(!(glTex instanceof TextureHandle));
     System.instance.bindTexture2d(texUnit, glTex);
-    if (this.wantDebugIds)
-      debugPrint("Texture Unit " + (texUnit - TextureUnit.Zero) + " = " + (glTex ? (glTex as any)._debugId : "null"));
   }
 
   /** Bind the specified texture to a uniform sampler2D */
@@ -443,8 +431,6 @@ export class TextureCubeHandle extends TextureHandle {
   public static bindTexture(texUnit: TextureUnit, glTex: WebGLTexture | undefined) {
     assert(!(glTex instanceof TextureHandle));
     System.instance.bindTextureCubeMap(texUnit, glTex);
-    if (this.wantDebugIds)
-      debugPrint("Texture Unit " + (texUnit - TextureUnit.Zero) + " = " + (glTex ? (glTex as any)._debugId : "null"));
   }
 
   /** Bind the specified texture to a uniform sampler2D */

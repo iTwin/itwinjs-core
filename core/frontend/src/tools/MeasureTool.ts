@@ -12,7 +12,7 @@ import { Marker } from "../Marker";
 import { PrimitiveTool } from "./PrimitiveTool";
 import { IModelApp } from "../IModelApp";
 import { HitDetail, HitGeomType } from "../HitDetail";
-import { GeometryStreamProps, ColorDef, GeoCoordStatus, Cartographic } from "@bentley/imodeljs-common";
+import { GeometryStreamProps, ColorDef } from "@bentley/imodeljs-common";
 import { QuantityType } from "../QuantityFormatter";
 import { BeButtonEvent, EventHandled } from "./Tool";
 import { NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "../NotificationManager";
@@ -69,9 +69,10 @@ class MeasureMarker extends Marker {
     const markerDrawFunc = (ctx: CanvasRenderingContext2D) => {
       ctx.beginPath();
       ctx.arc(0, 0, this.size.x * 0.5, 0, 2 * Math.PI);
-      ctx.lineWidth = 1;
+      ctx.lineWidth = 2;
       ctx.strokeStyle = "black";
-      ctx.fillStyle = this.isSelected ? "rgba(255,200,200,.5)" : "rgba(255,255,255,.5)";
+      const hilite = this.isSelected && this._hiliteColor ? this._hiliteColor.colors : undefined;
+      ctx.fillStyle = undefined !== hilite ? "rgba(" + (hilite.r | 0) + "," + (hilite.g | 0) + "," + (hilite.b | 0) + ", 0.5)" : "rgba(255,255,255,.5)";
       ctx.fill();
       ctx.stroke();
     };
@@ -189,6 +190,10 @@ export class MeasureDistanceTool extends PrimitiveTool {
       builderAxes.addLineString(segPoints);
     }
 
+    const segGlow = context.viewport.hilite.color.clone(); segGlow.setAlpha(50);
+    builderAxes.setSymbology(segGlow, ColorDef.black, 8);
+    builderAxes.addLineString([seg.start, seg.end]);
+
     context.addDecorationFromBuilder(builderAxes);
   }
 
@@ -266,6 +271,14 @@ export class MeasureDistanceTool extends PrimitiveTool {
 
   public async onMouseMotion(ev: BeButtonEvent): Promise<void> { if (this._locationData.length > 0 && undefined !== ev.viewport) ev.viewport.invalidateDecorations(); }
 
+  protected reportMeasurements(): void {
+    if (undefined === this._totalDistanceMarker)
+      return;
+    const briefMsg = IModelApp.i18n.translateKeys(this._acceptedSegments.length > 1 ? "%{CoreTools:tools.Measure.Labels.CumulativeDistance}: " : "%{CoreTools:tools.Measure.Labels.Distance}: ") + this._totalDistanceMarker.label;
+    const msgDetail = new NotifyMessageDetails(OutputMessagePriority.Info, briefMsg, undefined, OutputMessageType.InputField);
+    IModelApp.notifications.outputMessage(msgDetail);
+  }
+
   protected async updateTotals(): Promise<void> {
     this._totalDistance = 0.0;
     this._totalDistanceMarker = undefined;
@@ -280,10 +293,7 @@ export class MeasureDistanceTool extends PrimitiveTool {
 
     const formattedTotalDistance = IModelApp.quantityFormatter.formatQuantity(this._totalDistance, formatterSpec);
     this._totalDistanceMarker = new MeasureLabel(this._acceptedSegments[this._acceptedSegments.length - 1].end, formattedTotalDistance);
-
-    const briefMsg = IModelApp.i18n.translateKeys(this._acceptedSegments.length > 1 ? "%{CoreTools:tools.Measure.Labels.CumulativeDistance}: " : "%{CoreTools:tools.Measure.Labels.Distance}: ") + formattedTotalDistance;
-    const msgDetail = new NotifyMessageDetails(OutputMessagePriority.Info, briefMsg, undefined, OutputMessageType.InputField);
-    IModelApp.notifications.outputMessage(msgDetail);
+    this.reportMeasurements();
   }
 
   protected async getMarkerToolTip(distance: number, slope: number, start: Point3d, end: Point3d, delta?: Vector3d): Promise<string> {
@@ -324,9 +334,9 @@ export class MeasureDistanceTool extends PrimitiveTool {
     }
 
     if (undefined !== delta) {
-      const formattedDeltaX = IModelApp.quantityFormatter.formatQuantity(delta.x, distanceFormatterSpec);
-      const formattedDeltaY = IModelApp.quantityFormatter.formatQuantity(delta.y, distanceFormatterSpec);
-      const formattedDeltaZ = IModelApp.quantityFormatter.formatQuantity(delta.z, distanceFormatterSpec);
+      const formattedDeltaX = IModelApp.quantityFormatter.formatQuantity(Math.abs(delta.x), distanceFormatterSpec);
+      const formattedDeltaY = IModelApp.quantityFormatter.formatQuantity(Math.abs(delta.y), distanceFormatterSpec);
+      const formattedDeltaZ = IModelApp.quantityFormatter.formatQuantity(Math.abs(delta.z), distanceFormatterSpec);
       toolTip += IModelApp.i18n.translateKeys("<b>%{CoreTools:tools.Measure.Labels.Delta}:</b> ") + formattedDeltaX + ", " + formattedDeltaY + ", " + formattedDeltaZ + "<br>";
     }
 
@@ -512,14 +522,11 @@ export class MeasureLocationTool extends PrimitiveTool {
         toolTip += IModelApp.i18n.translateKeys("<b>%{CoreTools:tools.Measure.Labels.Coordinate}:</b> ") + formattedPointX + ", " + formattedPointY + ", " + formattedPointZ + "<br>";
     }
 
-    if (undefined !== this.targetView && this.targetView.view.isSpatialView() && undefined !== this.iModel.ecefLocation) {
+    if (undefined !== this.targetView && this.targetView.view.isSpatialView()) {
       const latLongFormatterSpec = await IModelApp.quantityFormatter.getFormatterSpecByQuantityType(QuantityType.LatLong);
       if (undefined !== latLongFormatterSpec && undefined !== coordFormatterSpec) {
-        const geoConverter = this.iModel.geoServices.getConverter();
-        const coordResponse = await geoConverter.getGeoCoordinatesFromIModelCoordinates([point]);
-        if (1 === coordResponse.geoCoords.length && GeoCoordStatus.Success === coordResponse.geoCoords[0].s) {
-          const longLatHeight = Point3d.fromJSON(coordResponse.geoCoords[0].p); // x is longitude in degrees, y is latitude in degrees, z is height in meters...
-          const cartographic = Cartographic.fromDegrees(longLatHeight.x, longLatHeight.y, longLatHeight.z);
+        try {
+          const cartographic = await this.iModel.spatialToCartographic(point);
           const formattedLat = IModelApp.quantityFormatter.formatQuantity(Math.abs(cartographic.latitude), latLongFormatterSpec);
           const formattedLong = IModelApp.quantityFormatter.formatQuantity(Math.abs(cartographic.longitude), latLongFormatterSpec);
           const formattedHeight = IModelApp.quantityFormatter.formatQuantity(cartographic.height, coordFormatterSpec);
@@ -527,7 +534,7 @@ export class MeasureLocationTool extends PrimitiveTool {
           const longDir = IModelApp.i18n.translateKeys(cartographic.longitude < 0 ? "%{CoreTools:tools.Measure.Labels.W}" : "%{CoreTools:tools.Measure.Labels.E}");
           toolTip += IModelApp.i18n.translateKeys("<b>%{CoreTools:tools.Measure.Labels.LatLong}:</b> ") + formattedLat + latDir + ", " + formattedLong + longDir + "<br>";
           toolTip += IModelApp.i18n.translateKeys("<b>%{CoreTools:tools.Measure.Labels.Altitude}:</b> ") + formattedHeight + "<br>";
-        }
+        } catch { }
       }
     }
 
@@ -536,6 +543,8 @@ export class MeasureLocationTool extends PrimitiveTool {
 
   public decorate(context: DecorateContext): void { if (!context.viewport.view.isSpatialView()) return; this._acceptedLocations.forEach((marker) => marker.addDecoration(context)); }
   public decorateSuspended(context: DecorateContext): void { this.decorate(context); }
+
+  protected reportMeasurements(): void { }
 
   public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
     const point = ev.point.clone();
@@ -546,6 +555,7 @@ export class MeasureLocationTool extends PrimitiveTool {
     marker.onMouseButton = noOpButtonFunc;
 
     this._acceptedLocations.push(marker);
+    this.reportMeasurements();
     this.setupAndPromptForNextAction();
     if (undefined !== ev.viewport)
       ev.viewport.invalidateDecorations();
@@ -562,10 +572,12 @@ export class MeasureLocationTool extends PrimitiveTool {
       return false;
 
     this._acceptedLocations.pop();
-    if (0 === this._acceptedLocations.length)
+    if (0 === this._acceptedLocations.length) {
       this.onReinitialize();
-    else
+    } else {
+      this.reportMeasurements();
       this.setupAndPromptForNextAction();
+    }
     return true;
   }
 

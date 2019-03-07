@@ -24,13 +24,13 @@ export abstract class IndexedXYZCollection {
    * @param result caller-allocated destination
    * @returns undefined if the index is out of bounds
    */
-  public abstract atPoint3dIndex(index: number, result?: Point3d): Point3d | undefined;
+  public abstract getPoint3dAtCheckedPointIndex(index: number, result?: Point3d): Point3d | undefined;
   /**
    * @param index index of point within the array
    * @param result caller-allocated destination
    * @returns undefined if the index is out of bounds
    */
-  public abstract atVector3dIndex(index: number, result?: Vector3d): Vector3d | undefined;
+  public abstract getVector3dAtCheckedVectorIndex(index: number, result?: Vector3d): Vector3d | undefined;
   /**
    * @param indexA index of point within the array
    * @param indexB index of point within the array

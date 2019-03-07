@@ -22,7 +22,19 @@ export interface Props {
   /**
    * Boundary level of selection used by the table. The table requests
    * data for selection changes whose level is less than `level` and changes
-   * selection at this `level`. Defaults to `1`.
+   * selection at this `level`.
+   *
+   * Examples:
+   * - `selectionLevel = 0`
+   *   - selection change happens at level `0` - selected rows are adjusted based on new selection at level `0`.
+   *   - selection change happens at level `1` or higher - nothing happens.
+   * - `selectionLevel = 1`
+   *   - selection change happens at level `0` - `dataProvider.keys` is set to current selection. This
+   *     reloads the data in the table.
+   *   - selection change happens at level `1` - selected rows are adjusted based on new selection at level `1`.
+   *   - selection change happens at level `2` or higher - nothing happens.
+   *
+   * Defaults to `1`.
    */
   selectionLevel?: number;
 
@@ -50,7 +62,7 @@ export function tableWithUnifiedSelection<P extends TableProps>(TableComponent: 
     constructor(props: CombinedProps) {
       super(props);
       this._base = React.createRef<BaseTable>();
-      this._boundarySelectionLevel = getSelectionLevelFromProps(props);
+      this._boundarySelectionLevel = getBoundarySelectionLevelFromProps(props);
     }
 
     /** Returns the display name of this component */
@@ -82,7 +94,7 @@ export function tableWithUnifiedSelection<P extends TableProps>(TableComponent: 
     }
 
     public componentDidUpdate() {
-      this._boundarySelectionLevel = getSelectionLevelFromProps(this.props);
+      this._boundarySelectionLevel = getBoundarySelectionLevelFromProps(this.props);
       if (this._selectionHandler) {
         this._selectionHandler.imodel = this.props.dataProvider.imodel;
         this._selectionHandler.rulesetId = this.props.dataProvider.rulesetId;
@@ -126,7 +138,7 @@ export function tableWithUnifiedSelection<P extends TableProps>(TableComponent: 
       if (undefined === selectionLevel)
         return;
 
-      if (selectionLevel < this._boundarySelectionLevel || selectionLevel === 0) {
+      if (selectionLevel < this._boundarySelectionLevel) {
         // we get here when table should react to selection change by reloading the data
         // based on the new selection
         this.loadDataForSelection(selectionLevel);
@@ -218,6 +230,6 @@ export function tableWithUnifiedSelection<P extends TableProps>(TableComponent: 
 
 let counter = 1;
 
-function getSelectionLevelFromProps(props: Props): number {
+function getBoundarySelectionLevelFromProps(props: Props): number {
   return (undefined !== props.selectionLevel) ? props.selectionLevel : 1;
 }

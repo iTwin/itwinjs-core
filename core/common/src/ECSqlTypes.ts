@@ -7,8 +7,8 @@
 import { assert, Id64String } from "@bentley/bentleyjs-core";
 
 /** Describes the different data types an ECSQL value can be of.
- *
  * See also [ECSQL]($docs/learning/ECSQL).
+ * @public
  */
 export enum ECSqlValueType {
   // do not change the values of the enum as it must match its counterpart in the addon
@@ -31,10 +31,9 @@ export enum ECSqlValueType {
 }
 
 /** An ECSQL Navigation value.
- *
  * It is returned from ECSQL SELECT statements for navigation properties.
- *
  * See also [ECSQL]($docs/learning/ECSQL).
+ * @public
  */
 export interface NavigationValue {
   /** ECInstanceId of the related instance */
@@ -44,8 +43,8 @@ export interface NavigationValue {
 }
 
 /** An ECSQL Navigation value which can be bound to a navigation property ECSQL parameter
- *
  * See also [ECSQL]($docs/learning/ECSQL).
+ * @public
  */
 export interface NavigationBindingValue {
   /** ECInstanceId of the related instance */
@@ -60,12 +59,12 @@ export interface NavigationBindingValue {
 }
 
 /** Equivalent of the ECEnumeration OpCode in the **ECDbChange** ECSchema.
- *
  * The enum can be used when programmatically binding values to the InstanceChange.OpCode property of
  * the ECDbChange ECSchema.
  *
- *  See also
- *  - [ChangeSummary Overview]($docs/learning/ChangeSummaries)
+ * See also
+ * - [ChangeSummary Overview]($docs/learning/ChangeSummaries)
+ * @public
  */
 export enum ChangeOpCode {
   Insert = 1,
@@ -73,14 +72,13 @@ export enum ChangeOpCode {
   Delete = 4,
 }
 
-/** The enum represents the values for the ChangedValueState argument of the ECSQL function
- *  **Changes**.
- *
+/** The enum represents the values for the ChangedValueState argument of the ECSQL function **Changes**.
  * The enum can be used when programmatically binding values to the ChangedValueState argument
  * in an ECSQL using the **Changes** ECSQL function.
  *
- *  See also
- *  - [ChangeSummary Overview]($docs/learning/ChangeSummaries)
+ * See also
+ * - [ChangeSummary Overview]($docs/learning/ChangeSummaries)
+ * @public
  */
 export enum ChangedValueState {
   AfterInsert = 1,
@@ -90,8 +88,8 @@ export enum ChangedValueState {
 }
 
 /** Defines the ECSQL system properties.
- *
  * See also [ECSQL]($docs/learning/ECSQL).
+ * @public
  */
 export enum ECSqlSystemProperty {
   ECInstanceId,
@@ -108,8 +106,8 @@ export enum ECSqlSystemProperty {
 }
 
 /** Utility to format ECProperty names according to the iModel.js formatting rules.
- *
- *  See also [ECSQL Row Format]($docs/learning/ECSQLRowFormat).
+ * See also [ECSQL Row Format]($docs/learning/ECSQLRowFormat).
+ * @public
  */
 export class ECJsNames {
 
@@ -153,10 +151,7 @@ export class ECJsNames {
         if (propName === "TargetECClassId")
           return ECJsNames.systemPropertyToJsName(ECSqlSystemProperty.TargetECClassId);
 
-        if (propTypeUnknown)
-          return ECJsNames.lowerFirstChar(propName);
-
-        throw new Error(`Property ${propName} is no ECSQL system property.`);
+        return ECJsNames.lowerFirstChar(propName);
       }
 
       return ECJsNames.lowerFirstChar(propName);

@@ -4,17 +4,19 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module RpcInterface */
 
-import { Logger, Id64String, Id64Set, Id64, assert, ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { ActivityLoggingContext, assert, Id64, Id64Set, Id64String, Logger, OpenMode, IModelStatus } from "@bentley/bentleyjs-core";
+import { Range3dProps, Range3d } from "@bentley/geometry-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import {
-  EntityQueryParams, RpcInterface, RpcManager, IModel, IModelReadRpcInterface, IModelToken,
-  ModelProps, ElementProps, SnapRequestProps, SnapResponseProps, EntityMetaData, ViewStateProps, ImageSourceFormat,
-  IModelCoordinatesResponseProps, GeoCoordinatesResponseProps,
+  ElementProps, EntityMetaData, EntityQueryParams, GeoCoordinatesResponseProps, ImageSourceFormat, IModel,
+  IModelCoordinatesResponseProps, IModelReadRpcInterface, IModelToken, ModelProps, PageOptions, RpcInterface, RpcManager,
+  SnapRequestProps, SnapResponseProps, ViewStateProps,
 } from "@bentley/imodeljs-common";
-import { IModelDb, OpenParams } from "../IModelDb";
-import { OpenIModelDbMemoizer } from "./OpenIModelDbMemoizer";
+import { KeepBriefcase } from "../BriefcaseManager";
 import { SpatialCategory } from "../Category";
+import { IModelDb, OpenParams } from "../IModelDb";
 import { DictionaryModel } from "../Model";
+import { OpenIModelDbMemoizer } from "./OpenIModelDbMemoizer";
 
 const loggingCategory = "imodeljs-backend.IModelReadRpcImpl";
 
@@ -32,16 +34,47 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
 
   public async close(accessToken: AccessToken, iModelToken: IModelToken): Promise<boolean> {
     const activityContext = ActivityLoggingContext.current; activityContext.enter();
-    await IModelDb.find(iModelToken).close(activityContext, AccessToken.fromJson(accessToken)!);
+    await IModelDb.find(iModelToken).close(activityContext, AccessToken.fromJson(accessToken)!, iModelToken.openMode === OpenMode.Readonly ? KeepBriefcase.Yes : KeepBriefcase.No);
     return Promise.resolve(true);
   }
 
-  public async executeQuery(iModelToken: IModelToken, sql: string, bindings?: any[] | object): Promise<string[]> {
+  public async queryPage(iModelToken: IModelToken, ecsql: string, bindings?: any[] | object, options?: PageOptions): Promise<any[]> {
     const activityContext = ActivityLoggingContext.current; activityContext.enter();
     const iModelDb: IModelDb = IModelDb.find(iModelToken);
-    const rows: any[] = iModelDb.executeQuery(sql, bindings);
-    Logger.logTrace(loggingCategory, "IModelDbRemoting.executeQuery", () => ({ sql, numRows: rows.length }));
+    const rows = iModelDb.queryPage(ecsql, bindings, options);
+    Logger.logTrace(loggingCategory, "IModelDbRemoting.getRows", () => ({ ecsql }));
     return rows;
+  }
+
+  public async queryRowCount(iModelToken: IModelToken, ecsql: string, bindings?: any[] | object): Promise<number> {
+    const activityContext = ActivityLoggingContext.current; activityContext.enter();
+    const iModelDb: IModelDb = IModelDb.find(iModelToken);
+    const rowCount: number = await iModelDb.queryRowCount(ecsql, bindings);
+    Logger.logTrace(loggingCategory, "IModelDbRemoting.getRowCount", () => ({ ecsql, count: rowCount }));
+    return rowCount;
+  }
+
+  public async queryModelRanges(iModelToken: IModelToken, modelIds: Id64Set): Promise<Range3dProps[]> {
+    const activityContext = ActivityLoggingContext.current; activityContext.enter();
+    const iModelDb: IModelDb = IModelDb.find(iModelToken);
+    const ranges: Range3dProps[] = [];
+    for (const id of modelIds) {
+      const val = iModelDb.nativeDb.queryModelExtents(JSON.stringify({ id: id.toString() }));
+      if (val.error) {
+        if (val.error.status === IModelStatus.NoGeometry) { // if there was no geometry, just return null range
+          ranges.push(new Range3d());
+          continue;
+        }
+
+        if (modelIds.size === 1)
+          throw val.error; // if they're asking for more than one model, don't throw on error.
+      }
+      const range = JSON.parse(val.result!);
+      if (range.modelExtents) {
+        ranges.push(range.modelExtents);
+      }
+    }
+    return ranges;
   }
 
   public async getModelProps(iModelToken: IModelToken, modelIds: Id64Set): Promise<ModelProps[]> {
@@ -98,17 +131,6 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     return res;
   }
 
-  public async formatElements(iModelToken: IModelToken, elementIds: Id64Set): Promise<any[]> {
-    const activityContext = ActivityLoggingContext.current; activityContext.enter();
-    const iModelDb: IModelDb = IModelDb.find(iModelToken);
-    const formatArray: any[] = [];
-    for (const elementId of elementIds) {
-      const formatString: string = iModelDb.getElementPropertiesForDisplay(elementId);
-      formatArray.push(JSON.parse(formatString));
-    }
-    return formatArray;
-  }
-
   public async getClassHierarchy(iModelToken: IModelToken, classFullName: string): Promise<string[]> {
     const activityContext = ActivityLoggingContext.current; activityContext.enter();
     const iModelDb: IModelDb = IModelDb.find(iModelToken);
@@ -146,19 +168,14 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     return IModelDb.find(iModelToken).readFontJson();
   }
 
-  public async requestSnap(iModelToken: IModelToken, connectionId: string, props: SnapRequestProps): Promise<SnapResponseProps> {
+  public async requestSnap(iModelToken: IModelToken, sessionId: string, props: SnapRequestProps): Promise<SnapResponseProps> {
     const activityContext = ActivityLoggingContext.current; activityContext.enter();
-    return IModelDb.find(iModelToken).requestSnap(activityContext, connectionId, props);
+    return IModelDb.find(iModelToken).requestSnap(activityContext, sessionId, props);
   }
 
-  public async cancelSnap(iModelToken: IModelToken, connectionId: string): Promise<void> {
+  public async cancelSnap(iModelToken: IModelToken, sessionId: string): Promise<void> {
     const activityContext = ActivityLoggingContext.current; activityContext.enter();
-    return IModelDb.find(iModelToken).cancelSnap(connectionId);
-  }
-
-  public async loadNativeAsset(_iModelToken: IModelToken, assetName: string): Promise<Uint8Array> {
-    const activityContext = ActivityLoggingContext.current; activityContext.enter();
-    return IModelDb.loadNativeAsset(assetName);
+    return IModelDb.find(iModelToken).cancelSnap(sessionId);
   }
 
   public async getToolTipMessage(iModelToken: IModelToken, id: string): Promise<string[]> {

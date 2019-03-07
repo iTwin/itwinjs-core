@@ -80,7 +80,7 @@ export class RpcInvocation {
 
         const backend = this.operation.interfaceVersion;
         const frontend = this.request.operation.interfaceVersion;
-        if (!RpcInterface.isVersionCompatible(frontend, backend)) {
+        if (!RpcInterface.isVersionCompatible(backend, frontend)) {
           throw new IModelError(RpcInterfaceStatus.IncompatibleVersion, `Backend version ${backend} does not match frontend version ${frontend} for RPC interface ${this.operation.operationName}.`);
         }
       } catch (error) {

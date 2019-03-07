@@ -9,11 +9,13 @@ import { Point2d } from "../geometry3d/Point2dVector2d";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { Range3d } from "../geometry3d/Range";
 import { Transform } from "../geometry3d/Transform";
-import { NumberArray, Point2dArray } from "../geometry3d/PointHelpers";
+import { NumberArray } from "../geometry3d/PointHelpers";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 import { ClusterableArray } from "../numerics/ClusterableArray";
 import { PolyfaceAuxData } from "./AuxData";
 import { FacetFaceData } from "./FacetFaceData";
+import { GrowableXYArray } from "../geometry3d/GrowableXYArray";
+import { Geometry } from "../Geometry";
 
 /**
  * PolyfaceData carries data arrays for point, normal, param, color and their indices.
@@ -41,7 +43,7 @@ export class PolyfaceData {
 
   public normal: GrowableXYZArray | undefined;
   public normalIndex: number[] | undefined;
-  public param: Point2d[] | undefined;
+  public param?: GrowableXYArray;
   public paramIndex: number[] | undefined;
   public color: number[] | undefined;
   public colorIndex: number[] | undefined;
@@ -54,7 +56,7 @@ export class PolyfaceData {
     this.pointIndex = []; this.edgeVisible = [];
     this.face = [];
     if (needNormals) { this.normal = new GrowableXYZArray(); this.normalIndex = []; }
-    if (needParams) { this.param = []; this.paramIndex = []; }
+    if (needParams) { this.param = new GrowableXYArray(); this.paramIndex = []; }
     if (needColors) { this.color = []; this.colorIndex = []; }
   }
 
@@ -68,7 +70,7 @@ export class PolyfaceData {
     if (this.normal)
       result.normal = this.normal.clone();
     if (this.param)
-      result.param = Point2dArray.clonePoint2dArray(this.param);
+      result.param = this.param.clone();
     if (this.color)
       result.color = this.color.slice();
 
@@ -92,7 +94,7 @@ export class PolyfaceData {
     if (!GrowableXYZArray.isAlmostEqual(this.normal, other.normal)) return false;
     if (!NumberArray.isExactEqual(this.normalIndex, other.normalIndex)) return false;
 
-    if (!Point2dArray.isAlmostEqual(this.param, other.param)) return false;
+    if (!GrowableXYArray.isAlmostEqual(this.param, other.param)) return false;
     if (!NumberArray.isExactEqual(this.paramIndex, other.paramIndex)) return false;
 
     if (!NumberArray.isExactEqual(this.color, other.color)) return false;
@@ -112,21 +114,28 @@ export class PolyfaceData {
   public get faceCount() { return this.face.length; }
 
   /** return indexed point. This is a copy of the coordinates, not a reference. */
-  public getPoint(i: number): Point3d | undefined { return this.point.atPoint3dIndex(i); }
-  /** return indexed normal. This is the REFERENCE to the normal, not a copy. */
-  public getNormal(i: number): Vector3d | undefined { return this.normal ? this.normal.atVector3dIndex(i) : undefined; }
-  /** return indexed param. This is the REFERENCE to the param, not a copy. */
-  public getParam(i: number): Point2d { return this.param ? this.param[i] : Point2d.create(); }
+  public getPoint(i: number): Point3d | undefined { return this.point.getPoint3dAtCheckedPointIndex(i); }
+  /** return indexed normal. This is the COPY to the normal, not a reference. */
+  public getNormal(i: number): Vector3d | undefined { return this.normal ? this.normal.getVector3dAtCheckedVectorIndex(i) : undefined; }
+  /** return indexed param. This is the COPY of the coordinates, not a reference. */
+  public getParam(i: number): Point2d | undefined { return this.param ? this.param.getPoint2dAtCheckedPointIndex(i) : undefined; }
   /** return indexed color */
   public getColor(i: number): number { return this.color ? this.color[i] : 0; }
   /** return indexed visibility */
   public getEdgeVisible(i: number): boolean { return this.edgeVisible[i]; }
   /** Copy the contents (not pointer) of point[i] into dest. */
-  public copyPointTo(i: number, dest: Point3d): void { this.point.getPoint3dAt(i, dest); }
+  public copyPointTo(i: number, dest: Point3d): void { this.point.getPoint3dAtUncheckedPointIndex(i, dest); }
   /** Copy the contents (not pointer) of normal[i] into dest. */
-  public copyNormalTo(i: number, dest: Vector3d): void { if (this.normal) this.normal.atVector3dIndex(i, dest); }
+  public copyNormalTo(i: number, dest: Vector3d): void { if (this.normal) this.normal.getVector3dAtCheckedVectorIndex(i, dest); }
   /** Copy the contents (not pointer) of param[i] into dest. */
-  public copyParamTo(i: number, dest: Point2d): void { if (this.param) dest.setFrom(this.param[i]); }
+  public copyParamTo(i: number, dest: Point2d): void { if (this.param) this.param.getPoint2dAtCheckedPointIndex(i, dest); }
+  /** test if normal at a specified index matches uv */
+  public isAlmostEqualParamIndexUV(index: number, u: number, v: number): boolean {
+    if (this.param !== undefined && index >= 0 && index < this.param.length)
+      return Geometry.isSameCoordinate(u, this.param.getXAtUncheckedPointIndex(index))
+        && Geometry.isSameCoordinate(v, this.param.getYAtUncheckedPointIndex(index));
+    return false;
+  }
   /**
    * * Copy data from other to this.
    * * This is the essense of transfering coordinates spread throughout a large polyface into a visitor's single facet.
@@ -173,9 +182,9 @@ export class PolyfaceData {
 
     if (this.param && this.paramIndex && other.param && other.paramIndex) {
       for (let i = 0; i < numEdge; i++)
-        this.param[i].setFrom(other.param[other.paramIndex[index0 + i]]);
+        this.param.transferFromGrowableXYArray(i, other.param, other.paramIndex[index0 + i]);
       for (let i = 0; i < numWrap; i++)
-        this.param[numEdge + i].setFrom(this.param[i]);
+        this.param.transferFromGrowableXYArray(numEdge + i, this.param, i);
 
       for (let i = 0; i < numEdge; i++)
         this.paramIndex[i] = other.paramIndex[index0 + i];
@@ -256,7 +265,7 @@ export class PolyfaceData {
       this.edgeVisible.length = length;
       this.pointIndex.length = length;
       if (this.normal) this.normal.resize(length);
-      if (this.param) this.param.length = length;
+      if (this.param) this.param.resize(length);
       if (this.color) this.color.length = length;
       if (this.auxData) {
         for (const channel of this.auxData.channels) {

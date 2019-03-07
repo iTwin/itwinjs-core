@@ -6,7 +6,7 @@ import {
   BentleyStatus, ChangeSetApplyOption, ChangeSetStatus, DbOpcode, DbResult, GuidString, Id64String,
   IDisposable, IModelStatus, Logger, OpenMode, RepositoryStatus, StatusCodeWithMessage,
 } from "@bentley/bentleyjs-core";
-import { ElementProps } from "@bentley/imodeljs-common";
+import { ElementProps, ChangedElements } from "@bentley/imodeljs-common";
 import { IModelDb } from "./IModelDb";
 
 // tslint:disable:prefer-get
@@ -108,6 +108,7 @@ export declare namespace IModelJsNative {
     public getSchema(name: string): ErrorStatusOrResult<IModelStatus, string>;
     public getSchemaItem(schemaName: string, itemName: string): ErrorStatusOrResult<IModelStatus, string>;
     public getTileContent(treeId: string, tileId: string, callback: (result: ErrorStatusOrResult<IModelStatus, Uint8Array>) => void): void;
+    public pollTileContent(treeId: string, tileId: string): ErrorStatusOrResult<IModelStatus, IModelDb.TileContentState | Uint8Array>;
     public getTileTree(id: string, callback: (result: ErrorStatusOrResult<IModelStatus, any>) => void): void;
     public getTxnDescription(txnId: TxnIdString): string;
     public getUndoString(): string;
@@ -170,6 +171,18 @@ export declare namespace IModelJsNative {
     public importSchema(schemaPathName: string): DbResult;
   }
 
+  export class ChangedElementsECDb implements IDisposable {
+    constructor();
+    public dispose(): void;
+    public createDb(db: DgnDb, dbName: string): DbResult;
+    public openDb(dbName: string, mode: OpenMode, upgradeProfiles?: boolean): DbResult;
+    public isOpen(): boolean;
+    public closeDb(): void;
+    public processChangesets(db: DgnDb, changesets: string, rulesetId: string, filterSpatial: boolean): DbResult;
+    public getChangedElements(startChangesetId: string, endChangesetId: string): ErrorStatusOrResult<IModelStatus, ChangedElements>;
+    public isProcessed(changesetId: string): boolean;
+  }
+
   export class ECSqlStatement implements IDisposable {
     constructor();
     public prepare(db: DgnDb | ECDb, ecsql: string): StatusCodeWithMessage<DbResult>;
@@ -178,7 +191,9 @@ export declare namespace IModelJsNative {
     public getBinder(param: number | string): ECSqlBinder;
     public clearBindings(): DbResult;
     public step(): DbResult;
+    public stepAsync(callback: (result: DbResult) => void): void;
     public stepForInsert(): { status: DbResult, id: string };
+    public stepForInsertAsync(callback: (result: { status: DbResult, id: string }) => void): void;
     public getValue(columnIndex: number): ECSqlValue;
     public getColumnCount(): number;
   }
@@ -258,6 +273,7 @@ export declare namespace IModelJsNative {
     public bindGuid(param: number | string, guidStr: GuidString): DbResult;
     public clearBindings(): DbResult;
     public step(): DbResult;
+    public stepAsync(callback: (result: DbResult) => void): void;
     public getColumnCount(): number;
     public getColumnType(columnIndex: number): number;
     public getColumnName(columnIndex: number): string;
@@ -325,5 +341,18 @@ export declare namespace IModelJsNative {
   export class DisableNativeAssertions implements IDisposable {
     constructor();
     public dispose(): void;
+  }
+
+  /** @hidden */
+  export class ImportContext implements IDisposable {
+    constructor(sourceDb: DgnDb, targetDb: DgnDb);
+    public dispose(): void;
+    public addCodeSpecId(sourceId: Id64String, targetId: Id64String): BentleyStatus;
+    public addElementId(sourceId: Id64String, targetId: Id64String): BentleyStatus;
+    public findCodeSpecId(sourceId: Id64String): Id64String;
+    public findElementId(sourceId: Id64String): Id64String;
+    public cloneElement(sourceId: Id64String): ElementProps;
+    public importCodeSpec(sourceId: Id64String): Id64String;
+    public importFont(sourceId: number): number;
   }
 }

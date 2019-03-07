@@ -7,6 +7,7 @@
 /** A notion of the logging context in which a backend operation is performed, used to correlate
  * a frontend request with all of the backend operations that it requests.
  * See [ActivityLoggingContext rules]($docs/learning/backend/managingactivityloggingcontext.md).
+ * @beta ActivityLoggingContext is scheduled to be renamed before the 1.0 release.
  */
 export class ActivityLoggingContext {
   /** The current activity context. */
@@ -33,5 +34,4 @@ export class ActivityLoggingContext {
     ActivityLoggingContext._current = this;
     return this;
   }
-
 }

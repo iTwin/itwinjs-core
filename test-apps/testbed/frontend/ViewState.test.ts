@@ -8,10 +8,11 @@ import { AmbientOcclusion, BackgroundMapType, ColorDef, HiddenLine, RenderMode, 
 import * as path from "path";
 import {
   SpatialViewState, ViewStatus, ViewState3d, StandardView, StandardViewId, MarginPercent, AuxCoordSystemSpatialState, CategorySelectorState,
-  ModelSelectorState, IModelConnection, DisplayStyle3dState, SheetModelState, SpatialModelState, DrawingModelState,
+  ModelSelectorState, IModelConnection, DisplayStyle3dState, SheetModelState, SpatialModelState, DrawingModelState, MockRender,
 } from "@bentley/imodeljs-frontend";
 import { CONSTANTS } from "../common/Testbed";
-import { MockRender } from "./MockRender";
+import { IModelUnitTestRpcInterface } from "../common/IModelUnitTestRpcInterface";
+import { IModelUnitTestRpcImpl } from "../backend/IModelUnitTestRpcImpl";
 
 const iModelLocation = path.join(CONSTANTS.IMODELJS_CORE_DIRNAME, "core/backend/lib/test/assets/test.bim");
 const iModelLocation2 = path.join(CONSTANTS.IMODELJS_CORE_DIRNAME, "core/backend/lib/test/assets/CompatibilityTestSeed.bim");
@@ -20,6 +21,7 @@ describe("ViewState", () => {
   let imodel: IModelConnection;
   let imodel2: IModelConnection;
   let viewState: SpatialViewState;
+  let unitTestRpcImp: IModelUnitTestRpcImpl;
 
   before(async () => {
     MockRender.App.startup();
@@ -29,6 +31,8 @@ describe("ViewState", () => {
     viewState = await imodel.views.load(viewRows[0].id!) as SpatialViewState;
 
     imodel2 = await IModelConnection.openStandalone(iModelLocation2);
+
+    unitTestRpcImp = IModelUnitTestRpcInterface.getClient();
   });
 
   after(async () => {
@@ -64,7 +68,7 @@ describe("ViewState", () => {
     assert.equal(viewState.modelSelector.models.size, 5);
     assert.isTrue(viewState.origin.isAlmostEqual(new Point3d(-87.73958171815832, -108.96514044887601, -0.0853709702222105)), "View origin as expected");
 
-    const v2 = viewState.clone<SpatialViewState>();
+    const v2 = viewState.clone();
     compareView(viewState, v2.toJSON(), "v2 clone");
 
     assert.notEqual(v2.origin, viewState.origin); // make sure we're really looking at a copy
@@ -86,7 +90,7 @@ describe("ViewState", () => {
   });
 
   it("should be able to propagate viewFlags and displayStyle changes when cloning ViewState", async () => {
-    const vs0 = viewState.clone<SpatialViewState>();
+    const vs0 = viewState.clone();
 
     assert.isTrue(vs0.is3d(), "viewState should be 3d");
 
@@ -168,7 +172,7 @@ describe("ViewState", () => {
 
     // clone the state and check if the changes persisted
 
-    const vs1 = vs0.clone<SpatialViewState>();
+    const vs1 = vs0.clone();
     const vs1DisplayStyle3d = (vs1 as ViewState3d).getDisplayStyle3d();
 
     const vs1AOSettings = vs1DisplayStyle3d.settings.ambientOcclusionSettings;
@@ -238,7 +242,7 @@ describe("ViewState", () => {
     viewState.setFocusDistance(49);
     viewState.setEyePoint(Point3d.create(5, 5, 50));
 
-    let cppView: SpatialViewDefinitionProps = await imodel.executeTest("lookAtVolume", testParams);
+    let cppView: SpatialViewDefinitionProps = await unitTestRpcImp.executeTest(imodel.iModelToken, "lookAtVolume", testParams);
     viewState.lookAtVolume(testParams.volume, testParams.aspectRatio, testParams.margin);
     compareView(viewState, cppView, "LookAtVolume 1");
 
@@ -252,7 +256,7 @@ describe("ViewState", () => {
     testParams.volume = Range3d.createXYZXYZ(1000, -10, 6, -5, 0, 0);
     testParams.margin = new MarginPercent(.01, .02, .03, .04);
     testParams.aspectRatio = 1.2;
-    cppView = await imodel.executeTest("lookAtVolume", testParams);
+    cppView = await unitTestRpcImp.executeTest(imodel.iModelToken, "lookAtVolume", testParams);
     viewState.lookAtVolume(testParams.volume, testParams.aspectRatio, testParams.margin);
     compareView(viewState, cppView, "LookAtVolume 3");
 
@@ -266,7 +270,7 @@ describe("ViewState", () => {
     testParams.volume = Range3d.createXYZXYZ(10, 20, 0.5, 35, 21, 2);
     testParams.aspectRatio = 1.0;
     testParams.margin = new MarginPercent(0, 0, 0, 0);
-    cppView = await imodel.executeTest("lookAtVolume", testParams);
+    cppView = await unitTestRpcImp.executeTest(imodel.iModelToken, "lookAtVolume", testParams);
     viewState.lookAtVolume(testParams.volume, testParams.aspectRatio, testParams.margin);
     compareView(viewState, cppView, "LookAtVolume 2");
   });
@@ -285,7 +289,7 @@ describe("ViewState", () => {
     viewState.setLensAngle(Angle.createDegrees(50));
     viewState.setFocusDistance(49);
     viewState.setEyePoint(Point3d.create(5, 5, 50));
-    let cppView: SpatialViewDefinitionProps = await imodel.executeTest("rotateCameraLocal", testParams);
+    let cppView: SpatialViewDefinitionProps = await unitTestRpcImp.executeTest(imodel.iModelToken, "rotateCameraLocal", testParams);
     viewState.rotateCameraLocal(Angle.createRadians(testParams.angle), testParams.axis, testParams.about);
     compareView(viewState, cppView, "RotateCameraLocal 1");
 
@@ -298,7 +302,7 @@ describe("ViewState", () => {
     testParams.angle = 1.6788888;
     testParams.axis = Vector3d.create(-1, 6, 3);
     testParams.about = Point3d.create(1, 2, 3);
-    cppView = await imodel.executeTest("rotateCameraLocal", testParams);
+    cppView = await unitTestRpcImp.executeTest(imodel.iModelToken, "rotateCameraLocal", testParams);
     viewState.rotateCameraLocal(Angle.createRadians(testParams.angle), testParams.axis, testParams.about);
     compareView(viewState, cppView, "RotateCameraLocal 2");
   });
@@ -320,7 +324,7 @@ describe("ViewState", () => {
     viewState.setLensAngle(Angle.createDegrees(11));
     viewState.setFocusDistance(191);
     viewState.setEyePoint(Point3d.create(-64, 120, 500));
-    const cppView: SpatialViewDefinitionProps = await imodel.executeTest("lookAtUsingLensAngle", testParams);
+    const cppView: SpatialViewDefinitionProps = await unitTestRpcImp.executeTest(imodel.iModelToken, "lookAtUsingLensAngle", testParams);
     viewState.lookAtUsingLensAngle(testParams.eye, testParams.target, testParams.up, testParams.lens, testParams.front, testParams.back);
     compareView(viewState, cppView, "lookAtUsingLensAngle");
   });

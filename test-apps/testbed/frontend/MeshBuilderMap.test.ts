@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { expect, assert } from "chai";
-import { IModelConnection, ScreenViewport, SpatialViewState, StandardViewId } from "@bentley/imodeljs-frontend";
+import { MockRender, IModelConnection, ScreenViewport, SpatialViewState, StandardViewId } from "@bentley/imodeljs-frontend";
 import { Range3d, Point3d, Arc3d, LineString3d, Loop, Transform } from "@bentley/geometry-core";
 import * as path from "path";
 import {
@@ -22,7 +22,6 @@ import {
 import { System } from "@bentley/imodeljs-frontend/lib/webgl";
 import { FakeDisplayParams } from "./DisplayParams.test";
 import { CONSTANTS } from "../common/Testbed";
-import { MockRender } from "./MockRender";
 import { ColorDef, GraphicParams } from "@bentley/imodeljs-common";
 
 const iModelLocation = path.join(CONSTANTS.IMODELJS_CORE_DIRNAME, "core/backend/lib/test/assets/test.bim");

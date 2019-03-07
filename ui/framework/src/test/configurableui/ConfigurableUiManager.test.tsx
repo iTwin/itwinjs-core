@@ -22,6 +22,7 @@ import {
   Frontstage,
   FrontstageProvider,
   FrontstageProps,
+  CoreTools,
 } from "../../ui-framework";
 
 describe("ConfigurableUiManager", () => {
@@ -42,7 +43,7 @@ describe("ConfigurableUiManager", () => {
         return (
           <Frontstage
             id="TestFrontstage2"
-            defaultToolId="PlaceLine"
+            defaultTool={CoreTools.selectElementCommand}
             defaultLayout="FourQuadrants"
             contentGroup="TestContentGroup1"
           />
@@ -71,6 +72,11 @@ describe("ConfigurableUiManager", () => {
 
   it("registerControl trying to register a classId already registered", () => {
     expect(() => ConfigurableUiManager.registerControl("TestWidget", TestWidget)).to.throw(Error);
+  });
+
+  it("unregisterControl removes a registered control", () => {
+    ConfigurableUiManager.unregisterControl("TestWidget");
+    expect(ConfigurableUiManager.isControlRegistered("TestWidget")).to.be.false;
   });
 
   it("createConfigurable trying to create an unregistered control", () => {
@@ -165,12 +171,7 @@ describe("ConfigurableUiManager", () => {
 
   it("loadWorkflows", () => {
     const workflowPropsList: WorkflowPropsList = {
-      defaultWorkflowId: "default-workflow",
-      taskPicker: {
-        classId: "taskpicker-class",
-        iconSpec: "taskpicker-icon",
-        labelKey: "taskpicker-label",
-      },
+      defaultWorkflowId: "ExampleWorkflow",
       workflows: [
         {
           id: "ExampleWorkflow",

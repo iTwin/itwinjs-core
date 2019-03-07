@@ -6,8 +6,7 @@
 
 import * as React from "react";
 import { Orientation } from "@bentley/ui-core";
-import { PropertyRecord } from "../../properties/Record";
-import { PropertyValueFormat } from "../../properties/Value";
+import { PropertyRecord, PropertyValueFormat } from "@bentley/imodeljs-frontend";
 import { PropertyRenderer } from "../../properties/renderers/PropertyRenderer";
 import { PropertyCategory } from "../PropertyDataProvider";
 import { PropertyValueRendererManager } from "../../properties/ValueRendererManager";

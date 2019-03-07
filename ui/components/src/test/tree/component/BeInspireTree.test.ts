@@ -7,12 +7,12 @@ import * as moq from "typemoq";
 import * as sinon from "sinon";
 import * as inspire from "inspire-tree";
 import { using } from "@bentley/bentleyjs-core";
+import { CheckBoxState, CheckBoxInfo } from "@bentley/ui-core";
 import {
   BeInspireTree, BeInspireTreeNodes, BeInspireTreeNode,
   BeInspireTreeDataProviderMethod, BeInspireTreeNodeConfig,
   MapPayloadToInspireNodeCallback, BeInspireTreeEvent, BeInspireTreeDataProviderInterface,
-  toNode,
-  BeInspireTreeDataProvider,
+  BeInspireTreeDataProvider, toNode,
 } from "../../../ui-components/tree/component/BeInspireTree";
 import { PageOptions } from "../../../ui-components/common/PageOptions";
 
@@ -28,6 +28,8 @@ interface RenderedNode {
   isExpanded?: boolean;
   isSelected?: boolean;
   isChecked?: boolean;
+  isCheckboxVisible?: boolean;
+  isCheckboxDisabled?: boolean;
 }
 
 describe("BeInspireTree", () => {
@@ -99,13 +101,21 @@ describe("BeInspireTree", () => {
     if (node.available()) {
       if (node.payload) {
         const { autoExpand, children, ...nodeProps } = node.payload;
-        renderList.push({
+        const renderNode: RenderedNode = {
           level: node.getParents().length,
           ...nodeProps,
-          isChecked: node.checked(),
-          isSelected: node.selected(),
-          isExpanded: node.expanded(),
-        });
+        };
+        if (node.selected())
+          renderNode.isSelected = true;
+        if (node.expanded())
+          renderNode.isExpanded = true;
+        if (node.checked())
+          renderNode.isChecked = true;
+        if (node.itree!.state!.checkboxVisible)
+          renderNode.isCheckboxVisible = true;
+        if (node.itree!.state!.checkboxDisabled)
+          renderNode.isCheckboxDisabled = true;
+        renderList.push(renderNode);
       } else {
         renderList.push({
           level: node.getParents().length,
@@ -125,7 +135,7 @@ describe("BeInspireTree", () => {
   const asText = (n: BeInspireTreeNode<Node>) => n.text;
 
   const loadHierarchy = async (h: inspire.TreeNode[] | inspire.TreeNodes) => {
-    await using(tree.pauseRendering(), async () => {
+    await using(tree.pauseRendering(), async (_r) => {
       await Promise.all(h.map(async (n) => {
         if (!n.hasOrWillHaveChildren())
           return;
@@ -685,6 +695,129 @@ describe("BeInspireTree", () => {
 
       });
 
+      describe("updateTreeCheckboxes", () => {
+
+        beforeEach(() => {
+          renderer.resetHistory();
+        });
+
+        const callbacks = [
+          { name: "promise", createResult: async (r: CheckBoxInfo) => r },
+          { name: "result", createResult: (r: CheckBoxInfo) => r },
+        ];
+        callbacks.forEach((cb) => describe(`with ${cb.name}`, () => {
+
+          it("sets all node statuses to visible", async () => {
+            const ids = flatten(hierarchy).map((n) => n.id);
+            await tree.updateTreeCheckboxes(() => cb.createResult({ isVisible: true }));
+            tree.nodes(ids).forEach((n) => expect(n.itree!.state!.checkboxVisible).to.be.true);
+            expect(renderer).to.be.calledOnce;
+            expect(renderedTree).to.matchSnapshot();
+          });
+
+          it("sets all node statuses to disabled", async () => {
+            const ids = flatten(hierarchy).map((n) => n.id);
+            await tree.updateTreeCheckboxes(() => cb.createResult({ isDisabled: true }));
+            tree.nodes(ids).forEach((n) => expect(n.itree!.state!.checkboxDisabled).to.be.true);
+            expect(renderer).to.be.calledOnce;
+            expect(renderedTree).to.matchSnapshot();
+          });
+
+          it("sets all node statuses to checked", async () => {
+            const ids = flatten(hierarchy).map((n) => n.id);
+            await tree.updateTreeCheckboxes(() => cb.createResult({ state: CheckBoxState.On }));
+            tree.nodes(ids).forEach((n) => expect(n.checked()).to.be.true);
+            expect(renderer).to.be.calledOnce;
+            expect(renderedTree).to.matchSnapshot();
+          });
+
+          it("fires NodeChecked and NodeUnchecked events when not muted", async () => {
+            const uncheckedListener = moq.Mock.ofInstance((_node: BeInspireTreeNode<Node>) => { });
+            tree.on(BeInspireTreeEvent.NodeUnchecked, uncheckedListener.object);
+            const checkedListener = moq.Mock.ofInstance((_node: BeInspireTreeNode<Node>) => { });
+            tree.on(BeInspireTreeEvent.NodeChecked, checkedListener.object);
+            await tree.updateTreeCheckboxes((n) => cb.createResult({ state: (n.id === "0") ? CheckBoxState.On : CheckBoxState.Off }), false);
+            checkedListener.verify((x) => x(moq.It.is((n: BeInspireTreeNode<Node>) => n.id === "0")), moq.Times.once());
+            uncheckedListener.verify((x) => x(moq.It.is((n: BeInspireTreeNode<Node>) => n.id === "1")), moq.Times.never());
+          });
+
+          it("doesn't fire NodeDeselected and NodeSelected events by default", async () => {
+            const uncheckedListener = moq.Mock.ofInstance((_node: BeInspireTreeNode<Node>) => { });
+            tree.on(BeInspireTreeEvent.NodeUnchecked, uncheckedListener.object);
+            const checkedListener = moq.Mock.ofInstance((_node: BeInspireTreeNode<Node>) => { });
+            tree.on(BeInspireTreeEvent.NodeChecked, checkedListener.object);
+            await tree.updateTreeCheckboxes((n) => cb.createResult({ state: (n.id === "0") ? CheckBoxState.On : CheckBoxState.Off }));
+            uncheckedListener.verify((x) => x(moq.It.isAny()), moq.Times.never());
+            checkedListener.verify((x) => x(moq.It.isAny()), moq.Times.never());
+          });
+
+        }));
+
+      });
+
+      describe("updateNodesCheckboxes", () => {
+
+        let nodeIds: string[];
+        let nodes: BeInspireTreeNodes<Node>;
+
+        beforeEach(async () => {
+          await tree.node("0")!.expand();
+          nodeIds = flatten(hierarchy[0].children).map((n) => n.id);
+          nodes = tree.nodes(nodeIds);
+          renderer.resetHistory();
+        });
+
+        const callbacks = [
+          { name: "promise", createResult: async (r: CheckBoxInfo) => r },
+          { name: "result", createResult: (r: CheckBoxInfo) => r },
+        ];
+        callbacks.forEach((cb) => describe(`with ${cb.name}`, () => {
+
+          it("sets all node statuses to visible", async () => {
+            await tree.updateNodesCheckboxes(nodes, () => cb.createResult({ isVisible: true }));
+            nodes.forEach((n) => expect(n.itree!.state!.checkboxVisible).to.be.true);
+            expect(renderer).to.be.calledOnce;
+            expect(renderedTree).to.matchSnapshot();
+          });
+
+          it("sets all node statuses to disabled", async () => {
+            await tree.updateNodesCheckboxes(nodes, () => cb.createResult({ isDisabled: true }));
+            nodes.forEach((n) => expect(n.itree!.state!.checkboxDisabled).to.be.true);
+            expect(renderer).to.be.calledOnce;
+            expect(renderedTree).to.matchSnapshot();
+          });
+
+          it("sets all node statuses to checked", async () => {
+            await tree.updateNodesCheckboxes(nodes, () => cb.createResult({ state: CheckBoxState.On }));
+            nodes.forEach((n) => expect(n.checked()).to.be.true);
+            expect(renderer).to.be.calledOnce;
+            expect(renderedTree).to.matchSnapshot();
+          });
+
+          it("fires NodeChecked and NodeUnchecked events when not muted", async () => {
+            const uncheckedListener = moq.Mock.ofInstance((_node: BeInspireTreeNode<Node>) => { });
+            tree.on(BeInspireTreeEvent.NodeUnchecked, uncheckedListener.object);
+            const checkedListener = moq.Mock.ofInstance((_node: BeInspireTreeNode<Node>) => { });
+            tree.on(BeInspireTreeEvent.NodeChecked, checkedListener.object);
+            await tree.updateNodesCheckboxes(nodes, (n) => cb.createResult({ state: (n.id === "0-0") ? CheckBoxState.On : CheckBoxState.Off }), false);
+            checkedListener.verify((x) => x(moq.It.is((n: BeInspireTreeNode<Node>) => n.id === "0-0")), moq.Times.once());
+            uncheckedListener.verify((x) => x(moq.It.is((n: BeInspireTreeNode<Node>) => n.id === "0-1")), moq.Times.never());
+          });
+
+          it("doesn't fire NodeDeselected and NodeSelected events by default", async () => {
+            const uncheckedListener = moq.Mock.ofInstance((_node: BeInspireTreeNode<Node>, _noIdeaWhatThisMeans: boolean) => { });
+            tree.on(BeInspireTreeEvent.NodeUnchecked, uncheckedListener.object);
+            const checkedListener = moq.Mock.ofInstance((_node: BeInspireTreeNode<Node>, _noIdeaWhatThisMeans: boolean) => { });
+            tree.on(BeInspireTreeEvent.NodeChecked, checkedListener.object);
+            await tree.updateNodesCheckboxes(nodes, (n) => cb.createResult({ state: (n.id === "0-0") ? CheckBoxState.On : CheckBoxState.Off }));
+            uncheckedListener.verify((x) => x(moq.It.isAny(), moq.It.isAny()), moq.Times.never());
+            checkedListener.verify((x) => x(moq.It.isAny(), moq.It.isAny()), moq.Times.never());
+          });
+
+        }));
+
+      });
+
       describe("disposeChildrenOnCollapse", () => {
 
         if (entry.isDelayLoaded) {
@@ -783,6 +916,13 @@ describe("BeInspireTree", () => {
       listener.verify((x) => x(), moq.Times.once());
     });
 
+    it("fires ChangesApplied event when applyChanges is called but rendering is muted", () => {
+      const listener = moq.Mock.ofInstance(() => { });
+      tree.on(BeInspireTreeEvent.ChangesApplied, listener.object);
+      using(tree.pauseRendering(), (_r) => tree.applyChanges());
+      listener.verify((x) => x(), moq.Times.never());
+    });
+
     it("fires NodeSelected event when node is selected", () => {
       const listener = moq.Mock.ofInstance((_node: BeInspireTreeNode<Node>, _noIdeaWhatThisMeans: boolean) => { });
       tree.on(BeInspireTreeEvent.NodeSelected, listener.object);
@@ -795,7 +935,7 @@ describe("BeInspireTree", () => {
       const listener = moq.Mock.ofInstance((_node: BeInspireTreeNode<Node>, _noIdeaWhatThisMeans: boolean) => { });
       tree.on(BeInspireTreeEvent.NodeSelected, listener.object);
       const node = tree.node("0")!;
-      using(tree.mute([BeInspireTreeEvent.NodeSelected]), () => {
+      using(tree.mute([BeInspireTreeEvent.NodeSelected]), (_r) => {
         node.select();
       });
       listener.verify((x) => x(moq.It.isAny(), false), moq.Times.never());
@@ -827,7 +967,7 @@ describe("BeInspireTree", () => {
 
     it("fires ChangesApplied event only after rendering is resumed when node is selected and rendering is paused", () => {
       const node = tree.node("0")!;
-      using(tree.pauseRendering(2), () => {
+      using(tree.pauseRendering(2), (_r) => {
         node.select();
         expect(renderer).to.be.calledOnce;
         node.deselect();
@@ -849,8 +989,8 @@ describe("BeInspireTree", () => {
 
     it("nested pause context with `allowedRendersBeforePause` doesn't unmute wrapped pause context", () => {
       const node = tree.node("0")!;
-      using(tree.pauseRendering(), () => {
-        using(tree.pauseRendering(1), () => {
+      using(tree.pauseRendering(), (_r) => {
+        using(tree.pauseRendering(1), (_r1) => {
         });
         node.select();
         expect(renderer).to.not.be.called;
@@ -861,8 +1001,8 @@ describe("BeInspireTree", () => {
 
     it("fires ChangesApplied event only after outer `pauseRendering` context is disposed", () => {
       const node = tree.node("0")!;
-      using(tree.pauseRendering(), () => {
-        using(tree.pauseRendering(), () => {
+      using(tree.pauseRendering(), (_r) => {
+        using(tree.pauseRendering(), (_r1) => {
           node.select();
           expect(renderer).to.not.be.called;
         });
@@ -872,7 +1012,7 @@ describe("BeInspireTree", () => {
     });
 
     it("doesn't fire ChangesApplied event if no changes done in the hierarchy", () => {
-      using(tree.pauseRendering(), () => {
+      using(tree.pauseRendering(), (_r) => {
       });
       expect(renderer).to.not.be.called;
     });

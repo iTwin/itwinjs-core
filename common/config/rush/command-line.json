@@ -1,6 +1,7 @@
 {
   "$schema": "https://dev.office.com/json-schemas/rush/command-line.schema.json",
-  "commands": [{
+  "commands": [
+    {
       "name": "audit",
       "commandKind": "global",
       "summary": "Runs npm audit for the entire monorepo",
@@ -20,7 +21,7 @@
       "commandKind": "bulk",
       "summary": "Run cover script for each package",
       "description": "Iterates through each package in the monorepo and runs the 'cover' script",
-      "enableParallelism": false,
+      "enableParallelism": true,
       "ignoreMissingScript": false
     },
     {
@@ -30,6 +31,14 @@
       "description": "Iterates through each package in the monorepo and runs the 'docs' script",
       "enableParallelism": true,
       "ignoreMissingScript": false
+    },
+    {
+      "name": "extract-api",
+      "commandKind": "bulk",
+      "summary": "Run api-extractor to generate API signature files",
+      "description": "Iterates through each package in the monorepo and runs the 'extract-api' script",
+      "enableParallelism": true,
+      "ignoreMissingScript": true
     },
     {
       "name": "lint",
@@ -54,22 +63,60 @@
       "description": "Iterates through each package in the monorepo and runs the 'test:integration' script",
       "enableParallelism": true,
       "ignoreMissingScript": true
+    }
+  ],
+  "parameters": [
+    {
+      "parameterKind": "flag",
+      "longName": "--production",
+      "description": "Sets production build for iModelJs modules",
+      "associatedCommands": [
+        "build",
+        "rebuild"
+      ]
     },
     {
-      "name": "webpacklib-dev",
-      "commandKind": "bulk",
-      "summary": "Create the module for every iModelJs library package",
-      "description": "Iterates through each package in the monorepo and runs the 'webpacklib:dev' script",
-      "enableParallelism": true,
-      "ignoreMissingScript": true
+      "parameterKind": "flag",
+      "longName": "--stats",
+      "shortName": "-s",
+      "description": "Stores the webpack json stats for iModelJs system modules",
+      "associatedCommands": [
+        "build",
+        "rebuild"
+      ]
     },
     {
-      "name": "webpacklib-prod",
-      "commandKind": "bulk",
-      "summary": "Create the module for every iModelJs library package",
-      "description": "Iterates through each package in the monorepo and runs the 'webpacklib:dev' script",
-      "enableParallelism": true,
-      "ignoreMissingScript": true
+      "parameterKind": "choice",
+      "longName": "--detail",
+      "shortName": "-d",
+      "description": "Selects the level of output when building iModelJs modules",
+      "alternatives": [
+        {
+          "name": "0",
+          "description": "silent except for errors"
+        },
+        {
+          "name": "1",
+          "description": "reports steps"
+        },
+        {
+          "name": "2",
+          "description": "shows webpack stats"
+        },
+        {
+          "name": "3",
+          "description": "reports skipped steps"
+        },
+        {
+          "name": "4",
+          "description": "reports sub-steps"
+        }
+      ],
+      "defaultValue": "0",
+      "associatedCommands": [
+        "build",
+        "rebuild"
+      ]
     }
   ]
 }

@@ -11,8 +11,9 @@ exports[`<Toggle /> renders correctly 1`] = `
   }
 >
   <input
+    checked={false}
     className="toggle-input"
-    defaultChecked={false}
+    onBlur={[Function]}
     onChange={[Function]}
     type="checkbox"
   />
@@ -20,7 +21,7 @@ exports[`<Toggle /> renders correctly 1`] = `
     className="toggle-label"
   />
   <span
-    className="toggle-checkmark icon icon-checkmark visible"
+    className="toggle-checkmark icon icon-checkmark"
   />
   <span
     className="toggle-handle"

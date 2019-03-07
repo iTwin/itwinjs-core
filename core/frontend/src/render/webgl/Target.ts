@@ -5,9 +5,9 @@
 /** @module WebGL */
 
 import { Transform, Vector3d, Point3d, Matrix4d, Point2d, XAndY } from "@bentley/geometry-core";
-import { BeTimePoint, assert, Id64String, Id64, StopWatch, dispose, disposeArray } from "@bentley/bentleyjs-core";
+import { assert, BeTimePoint, Id64String, Id64, StopWatch, dispose, disposeArray } from "@bentley/bentleyjs-core";
 import { RenderTarget, RenderSystem, Decorations, GraphicList, RenderPlan, ClippingType, CanvasDecoration, Pixel, AnimationBranchStates } from "../System";
-import { ViewFlags, Frustum, Hilite, ColorDef, Npc, RenderMode, ImageLight, ImageBuffer, ImageBufferFormat, AnalysisStyle, RenderTexture, AmbientOcclusion } from "@bentley/imodeljs-common";
+import { ViewFlags, Frustum, Hilite, ColorDef, Npc, RenderMode, ImageBuffer, ImageBufferFormat, AnalysisStyle, RenderTexture, AmbientOcclusion } from "@bentley/imodeljs-common";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { Techniques } from "./Technique";
 import { TechniqueId } from "./TechniqueId";
@@ -207,9 +207,6 @@ export abstract class Target extends RenderTarget {
   public readonly nearPlaneCenter = new Point3d();
   public readonly viewMatrix = Transform.createIdentity();
   public readonly projectionMatrix = Matrix4d.createIdentity();
-  private _environmentMap?: TextureHandle; // ###TODO: for IBL
-  private _diffuseMap?: TextureHandle; // ###TODO: for IBL
-  public readonly imageSolar?: ImageLight.Solar; // ###TODO: for IBL
   private readonly _visibleEdgeOverrides = new EdgeOverrides();
   private readonly _hiddenEdgeOverrides = new EdgeOverrides();
   public analysisStyle?: AnalysisStyle;
@@ -221,6 +218,8 @@ export abstract class Target extends RenderTarget {
   public plan?: RenderPlan;
   private _animationBranches?: AnimationBranchStates;
   private _isReadPixelsInProgress = false;
+  private _drawNonLocatable = true;
+  public isFadeOutActive = false;
 
   protected constructor(rect?: ViewRect) {
     super();
@@ -234,9 +233,9 @@ export abstract class Target extends RenderTarget {
   }
 
   public get isReadPixelsInProgress(): boolean { return this._isReadPixelsInProgress; }
+  public get drawNonLocatable(): boolean { return this._drawNonLocatable; }
 
   public get currentOverrides(): FeatureOverrides | undefined { return this._currentOverrides; }
-  // public get currentOverrides(): FeatureOverrides | undefined { return this._currentOverrides ? undefined : undefined; } // ###TODO remove this - for testing purposes only (forces overrides off)
   public set currentOverrides(ovr: FeatureOverrides | undefined) {
     // Don't bother setting up overrides if they don't actually override anything - wastes time doing texture lookups in shaders.
     this._currentOverrides = (undefined !== ovr && ovr.anyOverridden) ? ovr : undefined;
@@ -306,9 +305,6 @@ export abstract class Target extends RenderTarget {
     this._clipMask = mask;
   }
 
-  public get environmentMap(): TextureHandle | undefined { return this._environmentMap; }
-  public get diffuseMap(): TextureHandle | undefined { return this._diffuseMap; }
-
   public get is2d(): boolean { return this.frustumUniforms.is2d; }
   public get is3d(): boolean { return !this.is2d; }
 
@@ -316,8 +312,6 @@ export abstract class Target extends RenderTarget {
     this.reset();
 
     dispose(this.compositor);
-    this._environmentMap = dispose(this._environmentMap);
-    this._diffuseMap = dispose(this._diffuseMap);
 
     this._dcAssigned = false;   // necessary to reassign to OnScreenTarget fbo member when re-validating render plan
   }
@@ -390,9 +384,8 @@ export abstract class Target extends RenderTarget {
     this._decorations = dispose(this._decorations);
     this._decorations = decs;
   }
-  public changeScene(scene: GraphicList, _activeVolume: ClipPlanesVolume | ClipMaskVolume) {
+  public changeScene(scene: GraphicList) {
     this._scene = scene;
-    this._activeClipVolume = _activeVolume;
   }
   public changeTerrain(terrain: GraphicList) {
     this._terrain = terrain;
@@ -522,6 +515,7 @@ export abstract class Target extends RenderTarget {
     this.bgColor.setFrom(plan.bgColor);
     this.monoColor.setFrom(plan.monoColor);
     this.hiliteSettings = plan.hiliteSettings;
+    this.isFadeOutActive = plan.isFadeOutActive;
     this._transparencyThreshold = 0.0;
     this.analysisStyle = plan.analysisStyle === undefined ? undefined : plan.analysisStyle.clone();
     this.analysisTexture = plan.analysisTexture;
@@ -646,7 +640,7 @@ export abstract class Target extends RenderTarget {
 
     this._batches = [];
 
-    // ###TODO this._activeVolume = undefined;
+    dispose(this._activeClipVolume);
   }
 
   public get wantInvertBlackBackground(): boolean { return false; }
@@ -690,6 +684,11 @@ export abstract class Target extends RenderTarget {
   private _doDebugPaint: boolean = false;
   protected debugPaint(): void { }
 
+  public recordPerformanceMetric(operation: string): void {
+    if (this.performanceMetrics)
+      this.performanceMetrics.recordTime(operation);
+  }
+
   private paintScene(sceneMilSecElapsed?: number): void {
     if (this._doDebugPaint) {
       this.debugPaint();
@@ -712,7 +711,7 @@ export abstract class Target extends RenderTarget {
     if (drawForReadPixels) {
       this._isReadPixelsInProgress = true;
 
-      if (this.performanceMetrics) this.performanceMetrics.recordTime("Begin Paint");
+      this.recordPerformanceMetric("Begin Paint");
       const vf = this.currentViewFlags.clone(this._scratchViewFlags);
       vf.transparency = false;
       vf.textures = false;
@@ -730,18 +729,18 @@ export abstract class Target extends RenderTarget {
       this.pushState(state);
 
       this._renderCommands.init(this._scene, this._terrain, this._decorations, this._dynamics, true);
-      if (this.performanceMetrics) this.performanceMetrics.recordTime("Init Commands");
+      this.recordPerformanceMetric("Init Commands");
       this.compositor.drawForReadPixels(this._renderCommands);
-      if (this.performanceMetrics) this.performanceMetrics.recordTime("Draw Read Pixels");
+      this.recordPerformanceMetric("Draw Read Pixels");
 
       this._stack.pop();
 
       this._isReadPixelsInProgress = false;
     } else {
-      if (this.performanceMetrics) this.performanceMetrics.recordTime("Begin Paint");
+      this.recordPerformanceMetric("Begin Paint");
       this._renderCommands.init(this._scene, this._terrain, this._decorations, this._dynamics);
 
-      if (this.performanceMetrics) this.performanceMetrics.recordTime("Init Commands");
+      this.recordPerformanceMetric("Init Commands");
       this.compositor.draw(this._renderCommands); // scene compositor gets disposed and then re-initialized... target remains undisposed
 
       this._stack.pushState(this.decorationState);
@@ -749,14 +748,14 @@ export abstract class Target extends RenderTarget {
       this.drawPass(RenderPass.ViewOverlay);
       this._stack.pop();
 
-      if (this.performanceMetrics) this.performanceMetrics.recordTime("Overlay Draws");
+      this.recordPerformanceMetric("Overlay Draws");
     }
 
     // Reset the batch IDs in all batches drawn for this call.
     this._batchState.reset();
 
     this._endPaint();
-    if (this.performanceMetrics) this.performanceMetrics.recordTime("End Paint");
+    this.recordPerformanceMetric("End Paint");
 
     if (this.performanceMetrics) {
       if (this.performanceMetrics.gatherCurPerformanceMetrics) {
@@ -814,7 +813,7 @@ export abstract class Target extends RenderTarget {
     return this._dcAssigned;
   }
 
-  public readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver): void {
+  public readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable: boolean): void {
     // We can't reuse the previous frame's data for a variety of reasons, chief among them that some types of geometry (surfaces, translucent stuff) don't write
     // to the pick buffers and others we don't want - such as non-pickable decorations - do.
     // Render to an offscreen buffer so that we don't destroy the current color buffer.
@@ -828,7 +827,9 @@ export abstract class Target extends RenderTarget {
     const fbo = FrameBuffer.create([texture]);
     if (undefined !== fbo) {
       System.instance.frameBufferStack.execute(fbo, true, () => {
+        this._drawNonLocatable = !excludeNonLocatable;
         result = this.readPixelsFromFbo(rect, selector);
+        this._drawNonLocatable = true;
       });
 
       dispose(fbo);

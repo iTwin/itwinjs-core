@@ -55,6 +55,7 @@ export namespace RenderMemory {
     Polylines,
     PointStrings,
     PointClouds,
+    Instances,
 
     COUNT,
   }
@@ -79,6 +80,7 @@ export namespace RenderMemory {
     public get polylines() { return this.consumers[BufferType.Polylines]; }
     public get pointStrings() { return this.consumers[BufferType.PointStrings]; }
     public get pointClouds() { return this.consumers[BufferType.PointClouds]; }
+    public get instances() { return this.consumers[BufferType.Instances]; }
 
     public clear(): void {
       for (const consumer of this.consumers)
@@ -152,6 +154,7 @@ export namespace RenderMemory {
     public addPolyline(numBytes: number) { this.addBuffer(BufferType.Polylines, numBytes); }
     public addPointString(numBytes: number) { this.addBuffer(BufferType.PointStrings, numBytes); }
     public addPointCloud(numBytes: number) { this.addBuffer(BufferType.PointClouds, numBytes); }
+    public addInstances(numBytes: number) { this.addBuffer(BufferType.Instances, numBytes); }
   }
 
   /** @hidden */
@@ -178,6 +181,7 @@ export class RenderPlan {
   public readonly lights?: SceneLights;
   public readonly analysisStyle?: AnalysisStyle;
   public readonly ao?: AmbientOcclusion.Settings;
+  public readonly isFadeOutActive: boolean;
   public analysisTexture?: RenderTexture;
   private _curFrustum: ViewFrustum;
 
@@ -187,7 +191,7 @@ export class RenderPlan {
   public selectTerrainFrustum() { if (undefined !== this.terrainFrustum) this._curFrustum = this.terrainFrustum; }
   public selectViewFrustum() { this._curFrustum = this.viewFrustum; }
 
-  private constructor(is3d: boolean, viewFlags: ViewFlags, bgColor: ColorDef, monoColor: ColorDef, hiliteSettings: Hilite.Settings, aaLines: AntiAliasPref, aaText: AntiAliasPref, viewFrustum: ViewFrustum, terrainFrustum: ViewFrustum | undefined, activeVolume?: RenderClipVolume, hline?: HiddenLine.Settings, lights?: SceneLights, analysisStyle?: AnalysisStyle, ao?: AmbientOcclusion.Settings) {
+  private constructor(is3d: boolean, viewFlags: ViewFlags, bgColor: ColorDef, monoColor: ColorDef, hiliteSettings: Hilite.Settings, aaLines: AntiAliasPref, aaText: AntiAliasPref, viewFrustum: ViewFrustum, isFadeOutActive: boolean, terrainFrustum: ViewFrustum | undefined, activeVolume?: RenderClipVolume, hline?: HiddenLine.Settings, lights?: SceneLights, analysisStyle?: AnalysisStyle, ao?: AmbientOcclusion.Settings) {
     this.is3d = is3d;
     this.viewFlags = viewFlags;
     this.bgColor = bgColor;
@@ -202,6 +206,7 @@ export class RenderPlan {
     this.terrainFrustum = terrainFrustum;
     this.analysisStyle = analysisStyle;
     this.ao = ao;
+    this.isFadeOutActive = isFadeOutActive;
   }
 
   public static createFromViewport(vp: Viewport): RenderPlan {
@@ -214,7 +219,7 @@ export class RenderPlan {
     const clipVec = view.getViewClip();
     const activeVolume = clipVec !== undefined ? IModelApp.renderSystem.getClipVolume(clipVec, view.iModel) : undefined;
     const terrainFrustum = (undefined === vp.backgroundMapPlane) ? undefined : ViewFrustum.createFromViewportAndPlane(vp, vp.backgroundMapPlane as Plane3dByOriginAndUnitNormal);
-    const rp = new RenderPlan(view.is3d(), style.viewFlags, view.backgroundColor, style.monochromeColor, vp.hilite, vp.wantAntiAliasLines, vp.wantAntiAliasText, vp.viewFrustum, terrainFrustum!, activeVolume, hline, lights, style.analysisStyle, ao);
+    const rp = new RenderPlan(view.is3d(), style.viewFlags, view.backgroundColor, style.monochromeColor, vp.hilite, vp.wantAntiAliasLines, vp.wantAntiAliasText, vp.viewFrustum, vp.isFadeOutActive, terrainFrustum!, activeVolume, hline, lights, style.analysisStyle, ao);
     if (rp.analysisStyle !== undefined && rp.analysisStyle.scalarThematicSettings !== undefined)
       rp.analysisTexture = vp.target.renderSystem.getGradientTexture(Gradient.Symb.createThematic(rp.analysisStyle.scalarThematicSettings), vp.iModel);
 
@@ -469,6 +474,7 @@ export interface PackedFeature {
   elementId: Id64.Uint32Pair;
   subCategoryId: Id64.Uint32Pair;
   geometryClass: GeometryClass;
+  animationNodeId: number;
 }
 
 /**
@@ -482,6 +488,7 @@ export class PackedFeatureTable {
   public readonly numFeatures: number;
   public readonly anyDefined: boolean;
   public readonly type: BatchType;
+  private readonly _animationNodeIds?: Uint8Array | Uint16Array | Uint32Array;
 
   public get byteLength(): number { return this._data.byteLength; }
 
@@ -489,12 +496,13 @@ export class PackedFeatureTable {
    * This is used internally when deserializing Tiles in iMdl format.
    * @hidden
    */
-  public constructor(data: Uint32Array, modelId: Id64String, numFeatures: number, maxFeatures: number, type: BatchType) {
+  public constructor(data: Uint32Array, modelId: Id64String, numFeatures: number, maxFeatures: number, type: BatchType, animationNodeIds?: Uint8Array | Uint16Array | Uint32Array) {
     this._data = data;
     this.modelId = modelId;
     this.maxFeatures = maxFeatures;
     this.numFeatures = numFeatures;
     this.type = type;
+    this._animationNodeIds = animationNodeIds;
 
     switch (this.numFeatures) {
       case 0:
@@ -510,6 +518,7 @@ export class PackedFeatureTable {
 
     assert(this._data.length >= this._subCategoriesOffset);
     assert(this.maxFeatures >= this.numFeatures);
+    assert(undefined === this._animationNodeIds || this._animationNodeIds.length === this.numFeatures);
   }
 
   /** Create a packed feature table from a [[FeatureTable]]. */
@@ -576,6 +585,11 @@ export class PackedFeatureTable {
   }
 
   /** @hidden */
+  public getAnimationNodeId(featureIndex: number): number {
+    return undefined !== this._animationNodeIds ? this._animationNodeIds[featureIndex] : 0;
+  }
+
+  /** @hidden */
   public getPackedFeature(featureIndex: number): PackedFeature {
     assert(featureIndex < this.numFeatures);
 
@@ -589,7 +603,8 @@ export class PackedFeatureTable {
     subCatIndex = subCatIndex * 2 + this._subCategoriesOffset;
     const subCategoryId = { lower: this._data[subCatIndex], upper: this._data[subCatIndex + 1] };
 
-    return { elementId, subCategoryId, geometryClass };
+    const animationNodeId = this.getAnimationNodeId(featureIndex);
+    return { elementId, subCategoryId, geometryClass, animationNodeId };
   }
 
   /** Returns the element ID of the Feature associated with the specified index, or undefined if the index is out of range. */
@@ -674,7 +689,7 @@ export abstract class RenderTarget implements IDisposable {
   /** @hidden */
   public reset(): void { }
   /** @hidden */
-  public abstract changeScene(scene: GraphicList, activeVolume?: RenderClipVolume): void;
+  public abstract changeScene(scene: GraphicList): void;
   /** @hidden */
   public abstract changeTerrain(_scene: GraphicList): void;
   /** @hidden */
@@ -698,7 +713,7 @@ export abstract class RenderTarget implements IDisposable {
   /** @hidden */
   public abstract updateViewRect(): boolean; // force a RenderTarget viewRect to resize if necessary since last draw
   /** @hidden */
-  public abstract readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver): void;
+  public abstract readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable: boolean): void;
   /** @hidden */
   public readImage(_rect: ViewRect, _targetSize: Point2d, _flipVertically: boolean): ImageBuffer | undefined { return undefined; }
 }
@@ -709,6 +724,34 @@ export interface TextureImage {
   image: HTMLImageElement | undefined;
   /** The format of the texture's image data */
   format: ImageSourceFormat | undefined;
+}
+
+/** @hidden */
+export const enum RenderDiagnostics {
+  /** No diagnostics enabled. */
+  None = 0,
+  /** Debugging output to browser console enabled. */
+  DebugOutput = 1 << 1,
+  /** Potentially expensive checks of WebGL state enabled. */
+  WebGL = 1 << 2,
+  /** All diagnostics enabled. */
+  All = DebugOutput | WebGL,
+}
+
+/** Parameters for creating a [[RenderGraphic]] representing a collection of instances of shared geometry.
+ * Each instance is drawn using the same graphics, but with its own transform and (optionally) [[Feature]] Id.
+ */
+export interface InstancedGraphicParams {
+  /** The number of instances.
+   * Must be greater than zero.
+   * Must be equal to (transforms.length / 12)
+   * If featureIds is defined, must be equal to (featureIds.length / 3)
+   */
+  readonly count: number;
+  /** An array of instance-to-model transforms. Each transform consists of 3 rows of 4 columns where the 4th column holds the translation. */
+  readonly transforms: Float32Array;
+  /** If defined, an array of little-endian 24-bit unsigned integers containing the feature ID of each instance. */
+  readonly featureIds?: Uint8Array;
 }
 
 /** A RenderSystem provides access to resources used by the internal WebGL-based rendering system.
@@ -758,28 +801,28 @@ export abstract class RenderSystem implements IDisposable {
   public abstract createGraphicBuilder(placement: Transform, type: GraphicType, viewport: Viewport, pickableId?: Id64String): GraphicBuilder;
 
   /** @hidden */
-  public createTriMesh(args: MeshArgs): RenderGraphic | undefined {
+  public createTriMesh(args: MeshArgs, instances?: InstancedGraphicParams): RenderGraphic | undefined {
     const params = MeshParams.create(args);
-    return this.createMesh(params);
+    return this.createMesh(params, instances);
   }
 
   /** @hidden */
-  public createIndexedPolylines(args: PolylineArgs): RenderGraphic | undefined {
+  public createIndexedPolylines(args: PolylineArgs, instances?: InstancedGraphicParams): RenderGraphic | undefined {
     if (args.flags.isDisjoint) {
       const pointStringParams = PointStringParams.create(args);
-      return undefined !== pointStringParams ? this.createPointString(pointStringParams) : undefined;
+      return undefined !== pointStringParams ? this.createPointString(pointStringParams, instances) : undefined;
     } else {
       const polylineParams = PolylineParams.create(args);
-      return undefined !== polylineParams ? this.createPolyline(polylineParams) : undefined;
+      return undefined !== polylineParams ? this.createPolyline(polylineParams, instances) : undefined;
     }
   }
 
   /** @hidden */
-  public createMesh(_params: MeshParams): RenderGraphic | undefined { return undefined; }
+  public createMesh(_params: MeshParams, _instances?: InstancedGraphicParams): RenderGraphic | undefined { return undefined; }
   /** @hidden */
-  public createPolyline(_params: PolylineParams): RenderGraphic | undefined { return undefined; }
+  public createPolyline(_params: PolylineParams, _instances?: InstancedGraphicParams): RenderGraphic | undefined { return undefined; }
   /** @hidden */
-  public createPointString(_params: PointStringParams): RenderGraphic | undefined { return undefined; }
+  public createPointString(_params: PointStringParams, _instances?: InstancedGraphicParams): RenderGraphic | undefined { return undefined; }
   /** @hidden */
   public createPointCloud(_args: PointCloudArgs, _imodel: IModelConnection): RenderGraphic | undefined { return undefined; }
   /** @hidden */
@@ -925,12 +968,18 @@ export abstract class RenderSystem implements IDisposable {
 
   /** @hidden */
   public onInitialized(): void { }
+
+  /** @hidden */
+  public enableDiagnostics(_enable: RenderDiagnostics): void { }
 }
+
 /** Clip/Transform for a branch that are varied over time. */
 export class AnimationBranchState {
+  public readonly omit?: boolean;
   public readonly transform?: Transform;
   public readonly clip?: ClipPlanesVolume;
-  constructor(transform?: Transform, clip?: ClipPlanesVolume) { this.transform = transform; this.clip = clip; }
+  constructor(transform?: Transform, clip?: ClipPlanesVolume, omit?: boolean) { this.transform = transform; this.clip = clip; this.omit = omit; }
 }
+
 /** Mapping from node/branch IDs to animation branch state  */
 export type AnimationBranchStates = Map<string, AnimationBranchState>;

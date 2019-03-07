@@ -16,20 +16,21 @@ import { Loop } from "../curve/Loop";
 import { LineString3d } from "../curve/LineString3d";
 import { PolygonOps } from "../geometry3d/PointHelpers";
 import { MomentData } from "../geometry4d/MomentData";
+import { IndexedEdgeMatcher, SortableEdgeCluster } from "./IndexedEdgeMatcher";
 
 /** PolyfaceQuery is a static class whose methods implement queries on a polyface or polyface visitor provided as a parameter to each mtehod. */
 export class PolyfaceQuery {
   /** copy the points from a visitor into a Linestring3d in a Loop object */
-  public static VisitorToLoop(visitor: PolyfaceVisitor) {
+  public static visitorToLoop(visitor: PolyfaceVisitor) {
     const ls = LineString3d.createPoints(visitor.point.getPoint3dArray());
     return Loop.create(ls);
   }
   /** Create a linestring loop for each facet of the polyface. */
-  public static IndexedPolyfaceToLoops(polyface: Polyface): BagOfCurves {
+  public static indexedPolyfaceToLoops(polyface: Polyface): BagOfCurves {
     const result = BagOfCurves.create();
     const visitor = polyface.createVisitor(1);
     while (visitor.moveToNextFacet()) {
-      const loop = PolyfaceQuery.VisitorToLoop(visitor);
+      const loop = PolyfaceQuery.visitorToLoop(visitor);
       result.tryAddChild(loop);
     }
     return result;
@@ -65,20 +66,20 @@ export class PolyfaceQuery {
     visitor.reset();
     while (visitor.moveToNextFacet()) {
       if (myOrigin === undefined)
-        myOrigin = visitor.point.getPoint3dAt(0);
-      visitor.point.getPoint3dAt(0, facetOrigin);
+        myOrigin = visitor.point.getPoint3dAtUncheckedPointIndex(0);
+      visitor.point.getPoint3dAtUncheckedPointIndex(0, facetOrigin);
       for (let i = 1; i + 1 < visitor.point.length; i++) {
-        visitor.point.getPoint3dAt(i, targetA);
-        visitor.point.getPoint3dAt(i + 1, targetB);
+        visitor.point.getPoint3dAtUncheckedPointIndex(i, targetA);
+        visitor.point.getPoint3dAtUncheckedPointIndex(i + 1, targetB);
         s += myOrigin.tripleProductToPoints(facetOrigin, targetA, targetB);
       }
     }
     return s / 6.0;
   }
   /** Return the inertia products [xx,xy,xz,xw, yw, etc] integrated over all facets. */
-  public static SumFacetSecondAreaMomentProducts(source: Polyface | PolyfaceVisitor, origin: Point3d): Matrix4d {
+  public static sumFacetSecondAreaMomentProducts(source: Polyface | PolyfaceVisitor, origin: Point3d): Matrix4d {
     if (source instanceof Polyface)
-      return PolyfaceQuery.SumFacetSecondAreaMomentProducts(source.createVisitor(0), origin);
+      return PolyfaceQuery.sumFacetSecondAreaMomentProducts(source.createVisitor(0), origin);
     const products = Matrix4d.createZero();
     const visitor = source as PolyfaceVisitor;
     visitor.reset();
@@ -95,8 +96,25 @@ export class PolyfaceQuery {
   public static computePrincipalAreaMoments(source: Polyface): MomentData | undefined {
     const origin = source.data.getPoint(0);
     if (!origin) return undefined;
-    const inertiaProducts = PolyfaceQuery.SumFacetSecondAreaMomentProducts(source, origin);
+    const inertiaProducts = PolyfaceQuery.sumFacetSecondAreaMomentProducts(source, origin);
     return MomentData.inertiaProductsToPrincipalAxes(origin, inertiaProducts);
   }
-
+  /**
+   * Test if the facets in `source` occur in perfectly mated pairs, as is required for a closed manifold volume.
+   * @param source
+   */
+  public static isPolyfaceClosedByEdgePairing(source: Polyface): boolean {
+    const edges = new IndexedEdgeMatcher();
+    const visitor = source.createVisitor(1) as PolyfaceVisitor;
+    visitor.reset();
+    while (visitor.moveToNextFacet()) {
+      const numEdges = visitor.pointCount - 1;
+      for (let i = 0; i < numEdges; i++) {
+        edges.addEdge(visitor.clientPointIndex(i), visitor.clientPointIndex(i + 1), visitor.currentReadIndex());
+      }
+    }
+    const badClusters: SortableEdgeCluster[] = [];
+    edges.sortAndcollectClusters(undefined, badClusters, undefined, badClusters);
+    return badClusters.length === 0;
+  }
 }

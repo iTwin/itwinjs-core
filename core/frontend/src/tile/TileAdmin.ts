@@ -7,6 +7,7 @@
 import { TileRequest } from "./TileRequest";
 import { Tile } from "./TileTree";
 import { Dictionary, SortedArray, PriorityQueue, assert } from "@bentley/bentleyjs-core";
+import { RpcOperation, IModelTileRpcInterface, TileTreeProps } from "@bentley/imodeljs-common";
 import { Viewport } from "../Viewport";
 import { IModelConnection } from "../IModelConnection";
 
@@ -32,6 +33,9 @@ export abstract class TileAdmin {
   public abstract set maxActiveRequests(max: number);
   public abstract get maxActiveRequests(): number;
 
+  /** @internal */
+  public abstract get enableInstancing(): boolean;
+
   /** Returns the union of the input set and the input viewport. */
   public abstract getViewportSet(vp: Viewport, vps?: TileAdmin.ViewportSet): TileAdmin.ViewportSet;
   /** Invoked from the [[ToolAdmin]] event loop to process any pending or active requests for tiles. */
@@ -48,6 +52,9 @@ export abstract class TileAdmin {
    */
   public abstract forgetViewport(vp: Viewport): void;
   public abstract onShutDown(): void;
+
+  public abstract async requestTileTreeProps(iModel: IModelConnection, treeId: string): Promise<TileTreeProps>;
+  public abstract async requestTileContent(iModel: IModelConnection, treeId: string, contentId: string): Promise<Uint8Array>;
 
   public static create(props?: TileAdmin.Props): TileAdmin {
     return new Admin(props);
@@ -83,6 +90,15 @@ export namespace TileAdmin {
      * @note If this is defined and true, `maxActiveRequests` is ignored.
      */
     disableThrottling?: boolean;
+
+    /** If true, tiles may represent repeated geometry as sets of instances. This can reduce tile size and tile generation time, and improve performance.
+     *
+     * Default value: false
+     */
+    enableInstancing?: boolean;
+
+    /** If defined, requests for tile content or tile tree properties will be memoized and retried at the specified interval in milliseconds */
+    retryInterval?: number;
   }
 
   /** A set of [[Viewport]]s.
@@ -214,12 +230,16 @@ class Admin extends TileAdmin {
   private readonly _uniqueViewportSets = new UniqueViewportSets();
   private _maxActiveRequests: number;
   private readonly _throttle: boolean;
+  private readonly _retryInterval: number;
+  private readonly _enableInstancing: boolean;
   private readonly _removeIModelConnectionOnCloseListener: () => void;
   private _activeRequests = new Set<TileRequest>();
   private _swapActiveRequests = new Set<TileRequest>();
   private _pendingRequests = new Queue();
   private _swapPendingRequests = new Queue();
   private _numCanceled = 0;
+  private _retryIntervalInitialized = false;
+  private get _memoizeRequests() { return this._retryInterval > 0; }
 
   public get emptyViewportSet(): TileAdmin.ViewportSet { return this._uniqueViewportSets.emptySet; }
   public get statistics(): TileAdmin.Statistics {
@@ -238,9 +258,13 @@ class Admin extends TileAdmin {
 
     this._throttle = !options.disableThrottling;
     this._maxActiveRequests = undefined !== options.maxActiveRequests ? options.maxActiveRequests : 10;
+    this._retryInterval = undefined !== options.retryInterval ? options.retryInterval : 0;
+    this._enableInstancing = !!options.enableInstancing;
 
     this._removeIModelConnectionOnCloseListener = IModelConnection.onClose.addListener((iModel) => this.onIModelClosed(iModel));
   }
+
+  public get enableInstancing() { return this._enableInstancing; }
 
   public get maxActiveRequests() { return this._maxActiveRequests; }
   public set maxActiveRequests(max: number) {
@@ -298,7 +322,9 @@ class Admin extends TileAdmin {
   private processRequests(vp: Viewport, tiles: Set<Tile>): void {
     for (const tile of tiles) {
       if (undefined === tile.request) {
-        assert(tile.loadStatus === Tile.LoadStatus.NotLoaded);
+        // ###TODO: This assertion triggers for AttachmentViewports used for rendering 3d sheet attachments.
+        // Determine why and fix.
+        // assert(tile.loadStatus === Tile.LoadStatus.NotLoaded);
         if (Tile.LoadStatus.NotLoaded === tile.loadStatus) {
           const request = new TileRequest(tile, vp);
           tile.request = request;
@@ -385,5 +411,30 @@ class Admin extends TileAdmin {
 
   public getViewportSet(vp: Viewport, vps?: TileAdmin.ViewportSet): TileAdmin.ViewportSet {
     return this._uniqueViewportSets.getViewportSet(vp, vps);
+  }
+
+  public async requestTileTreeProps(iModel: IModelConnection, treeId: string): Promise<TileTreeProps> {
+    this.initializeRetryInterval();
+    const intfc = IModelTileRpcInterface.getClient();
+    return this._memoizeRequests ? intfc.requestTileTreeProps(iModel.iModelToken, treeId) : intfc.getTileTreeProps(iModel.iModelToken, treeId);
+  }
+
+  public async requestTileContent(iModel: IModelConnection, treeId: string, contentId: string): Promise<Uint8Array> {
+    this.initializeRetryInterval();
+    const intfc = IModelTileRpcInterface.getClient();
+    return this._memoizeRequests ? intfc.requestTileContent(iModel.iModelToken, treeId, contentId) : intfc.getTileContent(iModel.iModelToken, treeId, contentId);
+  }
+
+  private initializeRetryInterval(): void {
+    // Would prefer to do this in constructor - but nothing enforces that the app initializes the rpc interfaces before it creates the TileAdmin (via IModelApp.startup()) - so do it on first request instead.
+    if (!this._retryIntervalInitialized) {
+      this._retryIntervalInitialized = true;
+
+      if (this._memoizeRequests) {
+        const retryInterval = this._retryInterval;
+        RpcOperation.lookup(IModelTileRpcInterface, "requestTileTreeProps").policy.retryInterval = () => retryInterval;
+        RpcOperation.lookup(IModelTileRpcInterface, "requestTileContent").policy.retryInterval = () => retryInterval;
+      }
+    }
   }
 }

@@ -11,7 +11,7 @@ import { Transform } from "../geometry3d/Transform";
 import { Matrix3d } from "../geometry3d/Matrix3d";
 import { GeometryQuery } from "../curve/GeometryQuery";
 import { Geometry } from "../Geometry";
-import { GeometryHandler, UVSurface } from "../geometry3d/GeometryHandler";
+import { GeometryHandler, UVSurface, UVSurfaceIsoParametricDistance } from "../geometry3d/GeometryHandler";
 import { SolidPrimitive } from "./SolidPrimitive";
 import { StrokeOptions } from "../curve/StrokeOptions";
 import { Loop } from "../curve/Loop";
@@ -20,6 +20,7 @@ import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVecto
 
 import { Arc3d } from "../curve/Arc3d";
 import { LineString3d } from "../curve/LineString3d";
+import { Vector2d } from "../geometry3d/Point2dVector2d";
 /**
  * A cone with axis along the z axis of a (possibly skewed) local coordinate system.
  *
@@ -28,7 +29,7 @@ import { LineString3d } from "../curve/LineString3d";
  * * The stored matrix has unit vectors in the xy columns, and full-length z column.
  * *
  */
-export class Cone extends SolidPrimitive implements UVSurface {
+export class Cone extends SolidPrimitive implements UVSurface, UVSurfaceIsoParametricDistance {
   private _localToWorld: Transform;       // Transform from local to global.
   private _radiusA: number;    // nominal radius at z=0.  skewed axes may make it an ellipse
   private _radiusB: number;    // radius at z=1.  skewed axes may make it an ellipse
@@ -146,27 +147,40 @@ export class Cone extends SolidPrimitive implements UVSurface {
     const fractions = result.fractions;     // possibly undefined !!!
     const derivatives = result.packedDerivatives; // possibly undefined !!!
     const uvParams = result.packedUVParams; // possibly undefined !!
+    const surfaceNormals = result.packedSurfaceNormals;
     const xyz = Point3d.create();
-    const uvw = Vector3d.create();
+    const dXdu = Vector3d.create();
+    const dXdv = Vector3d.create();
+    const normal = Vector3d.create();
     const transform = this._localToWorld;
-    let rc, rs;
+    let rc, rs, cc, ss;
     for (let i = 0; i <= strokeCount; i++) {
       if (i * 2 <= strokeCount)
         radians = i * deltaRadians;
       else
         radians = (i - strokeCount) * deltaRadians;
-      rc = r * Math.cos(radians);
-      rs = r * Math.sin(radians);
+      cc = Math.cos(radians);
+      ss = Math.sin(radians);
+      rc = r * cc;
+      rs = r * ss;
+
       transform.multiplyXYZ(rc, rs, v, xyz);
       result.addPoint(xyz);
       if (fractions)
         fractions.push(i / strokeCount);
       if (derivatives) {
-        transform.matrix.multiplyXYZ(-rs * twoPi, rc * twoPi, 0.0, uvw);
-        derivatives.push(uvw);
+        transform.matrix.multiplyXYZ(-rs * twoPi, rc * twoPi, 0.0, dXdu);
+        derivatives.push(dXdu);
+      }
+      if (surfaceNormals) {
+        // the along-hoop vector does not need to be scaled by radius -- just need the direction for a cross product.
+        transform.matrix.multiplyXYZ(-ss, cc, 0.0, dXdu);
+        transform.matrix.multiplyXYZ(0, 0, 1, dXdv);
+        dXdu.unitCrossProduct(dXdv, normal);
+        surfaceNormals.push(normal);
       }
       if (uvParams) {
-        uvParams.pushXY(rc, rs);
+        uvParams.pushXY(i / strokeCount, v);
       }
     }
     return result;
@@ -190,14 +204,14 @@ export class Cone extends SolidPrimitive implements UVSurface {
     arc1.extendRange(range, transform);
   }
 
-  public UVFractionToPoint(uFraction: number, vFraction: number, result?: Point3d): Point3d {
+  public uvFractionToPoint(uFraction: number, vFraction: number, result?: Point3d): Point3d {
     const theta = uFraction * Math.PI * 2.0;
     const r = Geometry.interpolate(this._radiusA, vFraction, this._radiusB);
     const cosTheta = Math.cos(theta);
     const sinTheta = Math.sin(theta);
     return this._localToWorld.multiplyXYZ(r * cosTheta, r * sinTheta, vFraction, result);
   }
-  public UVFractionToPointAndTangents(uFraction: number, vFraction: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors {
+  public uvFractionToPointAndTangents(uFraction: number, vFraction: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors {
     const theta = uFraction * Math.PI * 2.0;
     const r = Geometry.interpolate(this._radiusA, vFraction, this._radiusB);
     const drdv = this._radiusB - this._radiusA;
@@ -209,5 +223,28 @@ export class Cone extends SolidPrimitive implements UVSurface {
       this._localToWorld.multiplyVectorXYZ(-r * sinTheta * fTheta, r * cosTheta * fTheta, 0),
       this._localToWorld.multiplyVectorXYZ(drdv * cosTheta, drdv * sinTheta, 1.0),
       result);
+  }
+  /**
+   * @return true if this is a closed volume.
+   */
+  public get isClosedVolume(): boolean {
+    return this.capped;
+  }
+  /**
+   * Directional distance query
+   * * u direction is around longitude circle at maximum distance from axis.
+   * * v direction is on a line of longitude between the latitude limits.
+   */
+  public maxIsoParametricDistance(): Vector2d {
+    const vectorX = this._localToWorld.matrix.columnX();
+    const vectorY = this._localToWorld.matrix.columnY();
+    const columnZ = this._localToWorld.matrix.columnZ();
+
+    const xyNormal = vectorX.unitCrossProduct(vectorY)!;
+    const hZ = xyNormal.dotProduct(columnZ);
+    const zSkewVector = columnZ.plusScaled(xyNormal, hZ);
+    const zSkewDistance = zSkewVector.magnitudeXY();
+    return Vector2d.create(Math.PI * 2 * Math.max(this._radiusA, this._radiusB),
+      Geometry.hypotenuseXY(Math.abs(this._radiusB - this._radiusA) + zSkewDistance, hZ));
   }
 }

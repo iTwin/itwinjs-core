@@ -13,10 +13,13 @@ import { PageOptions } from "@bentley/presentation-common";
 // tslint:disable-next-line:variable-name naming-convention
 const SampleTree = treeWithFilteringSupport(treeWithUnifiedSelection(Tree));
 
+const pagingSize = 5;
+
 class SampleDataProvider implements IPresentationTreeDataProvider {
   private _wrapped: PresentationTreeDataProvider;
   public constructor(imodel: IModelConnection, rulesetId: string) {
     this._wrapped = new PresentationTreeDataProvider(imodel, rulesetId);
+    this._wrapped.pagingSize = pagingSize;
   }
   public get imodel() { return this._wrapped.imodel; }
   public get rulesetId() { return this._wrapped.rulesetId; }
@@ -28,8 +31,11 @@ class SampleDataProvider implements IPresentationTreeDataProvider {
   }
   public async getNodes(parentNode?: TreeNodeItem, page?: PageOptions) {
     const result = await this._wrapped.getNodes(parentNode, page);
-    result.forEach((n) => {
-      n.labelItalic = true;
+    result.forEach((node) => {
+      if (!node.style)
+        node.style = {};
+
+      node.style.isItalic = true;
     });
     return result;
   }
@@ -130,7 +136,8 @@ export default class TreeWidget extends React.Component<Props, State> {
             }} />
         </div>
         <SampleTree dataProvider={this.state.dataProvider}
-          pageSize={5} disposeChildrenOnCollapse={true}
+          pageSize={pagingSize} disposeChildrenOnCollapse={true}
+          showDescriptions={true}
           filter={this.state.filter}
           onFilterApplied={this.onFilterApplied}
           onMatchesCounted={this._onMatchesCounted}

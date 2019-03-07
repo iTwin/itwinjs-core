@@ -108,7 +108,8 @@ export class SweepContour {
       } else if (this.curves instanceof ParityRegion) {
         this._xyStrokes = this.curves.cloneStroked(options);
         if (this._xyStrokes instanceof (ParityRegion)) {
-          this._xyStrokes.tryTransformInPlace(this.localToWorld);
+          const worldToLocal = this.localToWorld.inverse()!;
+          this._xyStrokes.tryTransformInPlace(worldToLocal);
           const strokes = [];
           for (const childLoop of this._xyStrokes.children) {
             const loopCurves = childLoop.children;
@@ -128,6 +129,13 @@ export class SweepContour {
       }
     }
   }
+  /** delete existing facets.
+   * * This protects against PolyfaceBuilder reusing facets constructed with different options settings.
+   */
+  public purgeFacets() {
+    this._facets = undefined;
+  }
+
   /** Emit facets to a builder.
    * This method may cache and reuse facets over multiple calls.
    */

@@ -20,8 +20,12 @@ export async function initializeCustomCloudEnv(state: SimpleViewState, url: stri
   foreignAccessTokenWrapper[AccessToken.foreignProjectAccessTokenJsonProperty] = { userInfo };
   state.accessToken = AccessToken.fromForeignProjectAccessTokenJson(JSON.stringify(foreignAccessTokenWrapper));
 
+  let projectName = "iModelJsTest";
+  if (state.projectConfig !== undefined && state.projectConfig.projectName !== undefined)
+    projectName = state.projectConfig!.projectName;
+
   const bankContextClient = new IModelBankFileSystemContextClient(url);
-  state.project = await bankContextClient.queryContextByName(new ActivityLoggingContext(""), state.accessToken!, state.projectConfig!.projectName);
+  state.project = await bankContextClient.queryContextByName(new ActivityLoggingContext(""), state.accessToken!, projectName);
 
   IModelApp.iModelClient = new IModelBankClient(url, undefined);
 }

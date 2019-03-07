@@ -1,0 +1,19 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+@import "@bentley/ui-core/lib/ui-core/index";
+
+$checkbox-size: $uicore-font-size * 1.2;
+
+.components-boolean-editor {
+  height:      $checkbox-size;
+  width:       $checkbox-size;
+  margin-left: 0px;
+}
+
+.components-property-list--horizontal {
+  .components-boolean-editor {
+    margin-left: $uicore-font-size;    // Clear the resizer in the PropertyGrid
+  }
+}

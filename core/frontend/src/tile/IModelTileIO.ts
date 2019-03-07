@@ -20,11 +20,11 @@ import {
   SegmentEdgeParams,
   SilhouetteParams,
   EdgeParams,
-  AuxDisplacement,
-  AuxNormal,
-  AuxParam,
 } from "../render/primitives/VertexTable";
-import { ColorMap } from "../render/primitives/ColorMap";
+import {
+  AuxChannelTable,
+  AuxChannelTableProps,
+} from "../render/primitives/AuxChannelTable";
 import { Id64String, JsonUtils, assert } from "@bentley/bentleyjs-core";
 import { RenderSystem, RenderGraphic, PackedFeatureTable, GraphicBranch } from "../render/System";
 import { imageElementFromImageSource } from "../ImageUtil";
@@ -64,10 +64,27 @@ export namespace IModelTileIO {
     Incomplete = 1 << 2,
   }
 
+  /** Describes the major and minor version of the tile format supported by this front-end package. */
+  export const enum CurrentVersion {
+    /** The unsigned 16-bit major version number. If the major version specified in the tile header is greater than this value, then this
+     * front-end is not capable of reading the tile content. Otherwise, this front-end can read the tile content even if the header specifies a
+     * greater minor version than CurrentVersion.Minor, although some data may be skipped.
+     */
+    Major = 1,
+    /** The unsigned 16-bit minor version number. If the major version in the tile header is equal to CurrentVersion.Major, then this front-end can
+     * read the tile content even if the minor version in the tile header is greater than this value, although some data may be skipped.
+     */
+    Minor = 4,
+    /** The unsigned 32-bit version number derived from the 16-bit major and minor version numbers. */
+    Combined = (Major << 0x10) | Minor,
+  }
+
   /** Header embedded at the beginning of the binary tile data describing its contents.
    * @hidden
    */
   export class Header extends TileIO.Header {
+    /** The size of this header in bytes. */
+    public readonly headerLength: number;
     /** Flags describing the geometry contained within the tile */
     public readonly flags: Flags;
     /** A bounding box no larger than the tile's range, tightly enclosing the tile's geometry; or a null range if the tile is emtpy */
@@ -79,21 +96,37 @@ export namespace IModelTileIO {
     /** The number of elements within the tile range which contributed no geometry to the tile content */
     public readonly numElementsExcluded: number;
     /** The total number of bytes in the binary tile data, including this header */
-    public readonly length: number;
+    public readonly tileLength: number;
+
+    public get versionMajor(): number { return this.version >>> 0x10; }
+    public get versionMinor(): number { return (this.version & 0xffff) >>> 0; }
 
     public get isValid(): boolean { return TileIO.Format.IModel === this.format; }
+    public get isReadableVersion(): boolean { return this.versionMajor <= IModelTileIO.CurrentVersion.Major; }
 
     /** Deserialize a header from the binary data at the stream's current position.
      * If the binary data does not contain a valid header, the Header will be marked 'invalid'.
      */
     public constructor(stream: TileIO.StreamBuffer) {
       super(stream);
+      this.headerLength = stream.nextUint32;
       this.flags = stream.nextUint32;
-      this.contentRange = ElementAlignedBox3d.createFromPoints(stream.nextPoint3d64, stream.nextPoint3d64);
+
+      // NB: Cannot use any of the static create*() functions because they all want to compute a range to contain the supplied points.
+      // (If contentRange is null, this will produce maximum range).
+      this.contentRange = new Range3d();
+      this.contentRange.low = stream.nextPoint3d64;
+      this.contentRange.high = stream.nextPoint3d64;
+
       this.tolerance = stream.nextFloat64;
       this.numElementsIncluded = stream.nextUint32;
       this.numElementsExcluded = stream.nextUint32;
-      this.length = stream.nextUint32;
+      this.tileLength = stream.nextUint32;
+
+      // Skip any unprocessed bytes in header
+      const remainingHeaderBytes = this.headerLength - stream.curPos;
+      assert(remainingHeaderBytes >= 0);
+      stream.advance(remainingHeaderBytes);
 
       if (stream.isPastTheEnd)
         this.invalidate();
@@ -124,11 +157,12 @@ export namespace IModelTileIO {
    */
   export class Reader extends GltfTileIO.Reader {
     private readonly _sizeMultiplier?: number;
+    private readonly _loadEdges: boolean;
 
     /** Attempt to initialize a Reader to deserialize iModel tile data beginning at the stream's current position. */
-    public static create(stream: TileIO.StreamBuffer, iModel: IModelConnection, modelId: Id64String, is3d: boolean, system: RenderSystem, type: BatchType = BatchType.Primary, isCanceled?: GltfTileIO.IsCanceled, sizeMultiplier?: number): Reader | undefined {
+    public static create(stream: TileIO.StreamBuffer, iModel: IModelConnection, modelId: Id64String, is3d: boolean, system: RenderSystem, type: BatchType = BatchType.Primary, loadEdges: boolean = true, isCanceled?: GltfTileIO.IsCanceled, sizeMultiplier?: number): Reader | undefined {
       const header = new Header(stream);
-      if (!header.isValid)
+      if (!header.isValid || !header.isReadableVersion)
         return undefined;
 
       // The feature table follows the iMdl header
@@ -137,7 +171,7 @@ export namespace IModelTileIO {
 
       // A glTF header follows the feature table
       const props = GltfTileIO.ReaderProps.create(stream, false);
-      return undefined !== props ? new Reader(props, iModel, modelId, is3d, system, type, isCanceled, sizeMultiplier) : undefined;
+      return undefined !== props ? new Reader(props, iModel, modelId, is3d, system, type, loadEdges, isCanceled, sizeMultiplier) : undefined;
     }
 
     /** Attempt to deserialize the tile data */
@@ -147,6 +181,8 @@ export namespace IModelTileIO {
       let isLeaf = true;
       if (!header.isValid)
         return { readStatus: TileIO.ReadStatus.InvalidHeader, isLeaf };
+      else if (!header.isReadableVersion)
+        return { readStatus: TileIO.ReadStatus.NewerMajorVersion, isLeaf };
 
       const featureTable = this.readFeatureTable();
       if (undefined === featureTable)
@@ -184,9 +220,6 @@ export namespace IModelTileIO {
 
     /** @hidden */
     protected extractReturnToCenter(_extensions: any): number[] | undefined { return undefined; }
-
-    /** @hidden */
-    protected readColorTable(_colorTable: ColorMap, _json: any): boolean | undefined { assert(false); return false; }
 
     /** @hidden */
     protected createDisplayParams(json: any): DisplayParams | undefined {
@@ -363,14 +396,41 @@ export namespace IModelTileIO {
       if (this._buffer.isPastTheEnd)
         return undefined;
 
+      let animNodesArray: Uint8Array | Uint16Array | Uint32Array | undefined;
+      const animationNodes = JsonUtils.asObject(this._scene.animationNodes);
+      if (undefined !== animationNodes) {
+        const bytesPerId = JsonUtils.asInt(animationNodes.bytesPerId);
+        const bufferViewId = JsonUtils.asString(animationNodes.bufferView);
+        const bufferViewJson = this._bufferViews[bufferViewId];
+        if (undefined !== bufferViewJson) {
+          const byteOffset = JsonUtils.asInt(bufferViewJson.byteOffset);
+          const byteLength = JsonUtils.asInt(bufferViewJson.byteLength);
+          const bytes = this._binaryData.subarray(byteOffset, byteOffset + byteLength);
+          switch (bytesPerId) {
+            case 1:
+              animNodesArray = new Uint8Array(bytes);
+              break;
+            case 2:
+              // NB: A *copy* of the subarray.
+              animNodesArray = Uint16Array.from(new Uint16Array(bytes.buffer, bytes.byteOffset, bytes.byteLength / 2));
+              break;
+            case 4:
+              // NB: A *copy* of the subarray.
+              animNodesArray = Uint32Array.from(new Uint32Array(bytes.buffer, bytes.byteOffset, bytes.byteLength / 4));
+              break;
+          }
+        }
+      }
+
       this._buffer.curPos = startPos + header.length;
 
-      return new PackedFeatureTable(packedFeatureArray, this._modelId, header.count, header.maxFeatures, this._type);
+      return new PackedFeatureTable(packedFeatureArray, this._modelId, header.count, header.maxFeatures, this._type, animNodesArray);
     }
 
-    private constructor(props: GltfTileIO.ReaderProps, iModel: IModelConnection, modelId: Id64String, is3d: boolean, system: RenderSystem, type: BatchType, isCanceled?: GltfTileIO.IsCanceled, sizeMultiplier?: number) {
+    private constructor(props: GltfTileIO.ReaderProps, iModel: IModelConnection, modelId: Id64String, is3d: boolean, system: RenderSystem, type: BatchType, loadEdges: boolean, isCanceled?: GltfTileIO.IsCanceled, sizeMultiplier?: number) {
       super(props, iModel, modelId, is3d, system, type, isCanceled);
       this._sizeMultiplier = sizeMultiplier;
+      this._loadEdges = loadEdges;
     }
 
     private static skipFeatureTable(stream: TileIO.StreamBuffer): boolean {
@@ -399,7 +459,7 @@ export namespace IModelTileIO {
       const primitiveType = JsonUtils.asInt(primitive.type, Mesh.PrimitiveType.Mesh);
       switch (primitiveType) {
         case Mesh.PrimitiveType.Mesh:
-          return this.createMeshGraphic(primitive, displayParams, vertices, isPlanar);
+          return this.createMeshGraphic(primitive, displayParams, vertices, isPlanar, this.readAuxChannelTable(primitive));
         case Mesh.PrimitiveType.Polyline:
           return this.createPolylineGraphic(primitive, displayParams, vertices, isPlanar);
         case Mesh.PrimitiveType.Point:
@@ -455,43 +515,7 @@ export namespace IModelTileIO {
         const uvRange = new Range2d(uvMin[0], uvMin[1], uvMax[0], uvMax[1]);
         uvParams = QParams2d.fromRange(uvRange);
       }
-      let auxDisplacements: undefined | AuxDisplacement[];
-      if (undefined !== json.auxDisplacements) {
-        auxDisplacements = [];
-        for (const displacementJson of json.auxDisplacements) {
-          auxDisplacements.push(new AuxDisplacement({
-            name: displacementJson.name,
-            qOrigin: displacementJson.qOrigin,
-            qScale: displacementJson.qScale,
-            inputs: displacementJson.inputs,
-            indices: displacementJson.indices,
-          }));
-        }
-      }
-      let auxNormals: undefined | AuxNormal[];
-      if (undefined !== json.auxNormals) {
-        auxNormals = [];
-        for (const normalJson of json.auxNormals) {
-          auxNormals.push(new AuxNormal({
-            name: normalJson.name,
-            inputs: normalJson.inputs,
-            indices: normalJson.indices,
-          }));
-        }
-      }
-      let auxParams: undefined | AuxParam[];
-      if (undefined !== json.auxParams) {
-        auxParams = [];
-        for (const paramJson of json.auxParams) {
-          auxParams.push(new AuxParam({
-            name: paramJson.name,
-            qOrigin: paramJson.qOrigin,
-            qScale: paramJson.qScale,
-            inputs: paramJson.inputs,
-            indices: paramJson.indices,
-          }));
-        }
-      }
+
       return new VertexTable({
         data: bytes,
         qparams,
@@ -504,10 +528,30 @@ export namespace IModelTileIO {
         numVertices: json.count,
         numRgbaPerVertex: json.numRgbaPerVertex,
         uvParams,
-        auxDisplacements,
-        auxNormals,
-        auxParams,
       });
+    }
+
+    private readAuxChannelTable(primitive: any): AuxChannelTable | undefined {
+      const json = primitive.auxChannels;
+      if (undefined === json)
+        return undefined;
+
+      const bytes = this.findBuffer(JsonUtils.asString(json.bufferView));
+      if (undefined === bytes)
+        return undefined;
+
+      const props: AuxChannelTableProps = {
+        data: bytes,
+        width: json.width,
+        height: json.height,
+        count: json.count,
+        numBytesPerVertex: json.numBytesPerVertex,
+        displacements: json.displacements,
+        normals: json.normals,
+        params: json.params,
+      };
+
+      return AuxChannelTable.fromJSON(props);
     }
 
     private readVertexIndices(json: any): VertexIndices | undefined {
@@ -571,7 +615,7 @@ export namespace IModelTileIO {
         type,
         indices,
         fillFlags: displayParams.fillFlags,
-        hasBakedLighting: displayParams.ignoreLighting,
+        hasBakedLighting: false,
         material: displayParams.material,
         texture,
       };
@@ -601,8 +645,7 @@ export namespace IModelTileIO {
       if (undefined !== json.silhouettes && undefined === (silhouettes = this.readSilhouettes(json.silhouettes)))
         return { succeeded };
 
-      const ignorePolylineEdges = true; // ###TODO: Fix add-on - it duplicates these with the segment edges, and these waste tons of memory...
-      if (!ignorePolylineEdges && undefined !== json.polylines && undefined === (polylines = this.readTesselatedPolyline(json.polylines)))
+      if (undefined !== json.polylines && undefined === (polylines = this.readTesselatedPolyline(json.polylines)))
         return { succeeded };
 
       succeeded = true;
@@ -620,14 +663,14 @@ export namespace IModelTileIO {
       return { succeeded, params };
     }
 
-    private createMeshGraphic(primitive: any, displayParams: DisplayParams, vertices: VertexTable, isPlanar: boolean): RenderGraphic | undefined {
+    private createMeshGraphic(primitive: any, displayParams: DisplayParams, vertices: VertexTable, isPlanar: boolean, auxChannels: AuxChannelTable | undefined): RenderGraphic | undefined {
       const surface = this.readSurface(primitive, displayParams);
       if (undefined === surface)
         return undefined;
 
       // ###TODO: Tile generator shouldn't bother producing edges for classification meshes in the first place...
       let edgeParams: EdgeParams | undefined;
-      if (undefined !== primitive.edges && SurfaceType.Classifier !== surface.type) {
+      if (this._loadEdges && undefined !== primitive.edges && SurfaceType.Classifier !== surface.type) {
         const edgeResult = this.readEdges(primitive.edges, displayParams);
         if (!edgeResult.succeeded)
           return undefined;
@@ -635,7 +678,7 @@ export namespace IModelTileIO {
           edgeParams = edgeResult.params;
       }
 
-      const params = new MeshParams(vertices, surface, edgeParams, isPlanar);
+      const params = new MeshParams(vertices, surface, edgeParams, isPlanar, auxChannels);
       return this._system.createMesh(params);
     }
 

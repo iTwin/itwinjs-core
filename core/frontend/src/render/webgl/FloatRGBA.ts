@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { ColorDef } from "@bentley/imodeljs-common";
 import { assert } from "@bentley/bentleyjs-core";
+import { ColorDef } from "@bentley/imodeljs-common";
 import { UniformHandle } from "./Handle";
 
 function assertComponent(c: number) { assert(1.0 >= c && 0.0 <= c); }

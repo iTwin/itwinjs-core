@@ -216,6 +216,13 @@ export namespace GL {
 
   export namespace FrameBuffer {
     export const TARGET = WebGLRenderingContext.FRAMEBUFFER;
+    export enum Status {
+      Complete = WebGLRenderingContext.FRAMEBUFFER_COMPLETE,
+      IncompleteAttachment = WebGLRenderingContext.FRAMEBUFFER_INCOMPLETE_ATTACHMENT,
+      IncompleteMissingAttachment = WebGLRenderingContext.FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT,
+      IncompleteDimensions = WebGLRenderingContext.FRAMEBUFFER_INCOMPLETE_DIMENSIONS,
+      Unsupported = WebGLRenderingContext.FRAMEBUFFER_UNSUPPORTED,
+    }
   }
 
   export enum BufferBit {

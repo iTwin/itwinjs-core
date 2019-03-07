@@ -22,14 +22,15 @@ class LabelComponent extends React.PureComponent<LabelProps> {
       "nz-footer-message-content-label",
       this.props.className);
 
-    return (
-      <div
-        className={className}
-        style={this.props.style}
-      >
-        {this.props.text}
-      </div>
-    );
+    if (this.props.text)
+      return (
+        <div
+          className={className}
+          style={this.props.style}
+          dangerouslySetInnerHTML={{ __html: this.props.text }} />
+      );
+
+    return null;
   }
 }
 

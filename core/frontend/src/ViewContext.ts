@@ -17,7 +17,9 @@ import { IModelApp } from "./IModelApp";
 
 const gridConstants = { maxPoints: 50, maxRefs: 25, maxDotsInRow: 250, maxHorizon: 500, dotTransparency: 100, lineTransparency: 200, planeTransparency: 225 };
 
-/** Provides context for producing [[RenderGraphic]]s for drawing within a [[Viewport]]. */
+/** Provides context for producing [[RenderGraphic]]s for drawing within a [[Viewport]].
+ * @public
+ */
 export class RenderContext {
   /** ViewFlags extracted from the context's [[Viewport]]. */
   public readonly viewFlags: ViewFlags;
@@ -62,6 +64,7 @@ export class RenderContext {
 
 /** Provides context for an [[InteractiveTool]] to display decorations representing its current state.
  * @see [[InteractiveTool.onDynamicFrame]]
+ * @public
  */
 export class DynamicsContext extends RenderContext {
   private _dynamics?: GraphicList;
@@ -77,7 +80,9 @@ export class DynamicsContext extends RenderContext {
   public changeDynamics(): void { this.viewport!.changeDynamics(this._dynamics); }
 }
 
-/** Provides context for a [[Decorator]] to add [[Decorations]] to be rendered within a [[Viewport]]. */
+/** Provides context for a [[Decorator]] to add [[Decorations]] to be rendered within a [[Viewport]].
+ * @public
+ */
 export class DecorateContext extends RenderContext {
   /** The HTMLDivElement which overlays the [[Viewport]]'s HTMLCanvasElement, to which HTML decorations are added. */
   public decorationDiv: HTMLDivElement;

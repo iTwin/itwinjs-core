@@ -7,11 +7,11 @@ import * as React from "react";
 import * as sinon from "sinon";
 import { expect } from "chai";
 
-import { withIsPressed, Div } from "../../ui-core";
+import { withIsPressed } from "../../ui-core";
 
 describe("withIsPressed", () => {
 
-  const WithIsPressedDiv = withIsPressed(Div); // tslint:disable-line:variable-name
+  const WithIsPressedDiv = withIsPressed((props) => (<div {...props} />)); // tslint:disable-line:variable-name
 
   it("should render", () => {
     mount(<WithIsPressedDiv isPressed={false} />);

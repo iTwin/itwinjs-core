@@ -18,6 +18,7 @@ export namespace TileIO {
     InvalidBatchTable,
     InvalidScene,
     InvalidFeatureTable,
+    NewerMajorVersion,
     Canceled,
   }
 
@@ -26,9 +27,10 @@ export namespace TileIO {
     Unknown = 0,
     B3dm = 0x6d643362, // "b3dm"
     Gltf = 0x46546c67, // "glTF"
-    Dgn = 0x546e6764, // "dgnT"
     Pnts = 0x73746e70,  // "pnts"
     IModel = 0x6c644d69, // "iMdl"
+    Cmpt = 0x74706d63,  // cmpt
+    I3dm = 0x6d643369,  // i3dm
   }
 
   /** Given a magic number, return whether it identifies a known tile format. */
@@ -38,8 +40,9 @@ export namespace TileIO {
       case Format.B3dm:
       case Format.Gltf:
       case Format.IModel:
-      case Format.Dgn:
       case Format.Pnts:
+      case Format.Cmpt:
+      case Format.I3dm:
         return true;
       default:
         return false;
@@ -128,7 +131,7 @@ export namespace TileIO {
    */
   export abstract class Header {
     private _format: Format;
-    public readonly version: number;
+    public version: number;
 
     /** Construct a Header from the binary data at the supplied stream's current read position */
     public constructor(stream: StreamBuffer) {

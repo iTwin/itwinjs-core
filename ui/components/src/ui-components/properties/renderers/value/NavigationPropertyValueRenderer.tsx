@@ -5,10 +5,10 @@
 /** @module Properties */
 
 import { IPropertyValueRenderer, PropertyValueRendererContext } from "../../ValueRendererManager";
-import { PropertyRecord } from "../../Record";
-import { PropertyValueFormat, PrimitiveValue } from "../../Value";
+import { PropertyRecord, PropertyValueFormat, PrimitiveValue } from "@bentley/imodeljs-frontend";
 import { TypeConverterManager } from "../../../converters/TypeConverterManager";
 import { withContextStyle } from "./WithContextStyle";
+import { withLinks } from "../../LinkHandler";
 
 /** Default Navigation Property Renderer */
 export class NavigationPropertyValueRenderer implements IPropertyValueRenderer {
@@ -20,8 +20,15 @@ export class NavigationPropertyValueRenderer implements IPropertyValueRenderer {
 
   public render(record: PropertyRecord, context?: PropertyValueRendererContext) {
     const primitive = record.value as PrimitiveValue;
-    if (primitive.displayValue)
-      return primitive.displayValue;
-    return withContextStyle(TypeConverterManager.getConverter(record.property.typename).convertPropertyToString(record.property, primitive.value), context);
+
+    let stringValue: string | Promise<string>;
+
+    if (primitive.displayValue) {
+      stringValue = primitive.displayValue;
+    } else {
+      stringValue = TypeConverterManager.getConverter(record.property.typename).convertPropertyToString(record.property, primitive.value);
+    }
+
+    return withContextStyle(withLinks(record, stringValue), context);
   }
 }

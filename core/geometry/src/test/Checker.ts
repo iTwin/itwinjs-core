@@ -140,7 +140,7 @@ export class Checker {
     if (dataA && dataB) {
       let numError = 0;
       for (let i = 0; i < dataA.length; i++) {
-        if (!Geometry.isSameCoordinate(dataA[i], dataB.at(i)))
+        if (!Geometry.isSameCoordinate(dataA[i], dataB.atUncheckedIndex(i)))
           numError++;
       }
       if (numError !== 0)
@@ -159,7 +159,7 @@ export class Checker {
     if (dataA && dataB) {
       let numError = 0;
       for (let i = 0; i < dataA.length; i++) {
-        if (!Geometry.isSameCoordinate(dataA.at(i), dataB.at(i)))
+        if (!Geometry.isSameCoordinate(dataA.atUncheckedIndex(i), dataB.atUncheckedIndex(i)))
           numError++;
       }
       if (numError !== 0)
@@ -362,7 +362,7 @@ export class Checker {
   // return true if dataA is strictly before dataB as a signed toleranced coordinate value.
   public testContainsCoordinate(dataA: GrowableFloat64Array, dataB: number, ...params: any[]): boolean {
     for (let i = 0; i < dataA.length; i++)
-      if (Geometry.isSameCoordinate(dataA.at(i), dataB)) {
+      if (Geometry.isSameCoordinate(dataA.atUncheckedIndex(i), dataB)) {
         return this.announceOK();
       }
     return this.announceError("Expect containsCoordinate", dataA, dataB, params);

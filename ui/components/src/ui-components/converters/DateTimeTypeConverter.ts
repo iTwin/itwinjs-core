@@ -7,7 +7,7 @@
 import { TimeFormat } from "@bentley/ui-core";
 import { TypeConverter, LessGreaterOperatorProcessor } from "./TypeConverter";
 import { TypeConverterManager } from "./TypeConverterManager";
-import * as Primitives from "./valuetypes/PrimitiveTypes";
+import { Primitives } from "@bentley/imodeljs-frontend";
 
 /**
  * Short Date Type Converter.

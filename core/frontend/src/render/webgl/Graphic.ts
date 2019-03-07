@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { assert, Id64, Id64String, BeTimePoint, IDisposable, dispose } from "@bentley/bentleyjs-core";
+import { Id64, Id64String, BeTimePoint, IDisposable, dispose, assert } from "@bentley/bentleyjs-core";
 import { ViewFlags, ElementAlignedBox3d } from "@bentley/imodeljs-common";
 import { Transform } from "@bentley/geometry-core";
 import { Primitive } from "./Primitive";
@@ -85,7 +85,7 @@ export class FeatureOverrides implements IDisposable {
     //      R = override flags (see FeatureOverrides::Flags)
     //      G = line weight
     //      B = line code
-    //      A = unused
+    //      A = 1 if no-locatable
     //  [1]
     //      RGB = rgb
     //      A = alpha
@@ -97,7 +97,7 @@ export class FeatureOverrides implements IDisposable {
         feature.elementId.lower, feature.elementId.upper,
         feature.subCategoryId.lower, feature.subCategoryId.upper,
         feature.geometryClass,
-        modelIdParts.lower, modelIdParts.upper, map.type);
+        modelIdParts.lower, modelIdParts.upper, map.type, feature.animationNodeId);
 
       if (undefined === app || app.isFullyTransparent) {
         // The feature is not visible. We don't care about any of the other overrides, because we're not going to render it.
@@ -153,8 +153,10 @@ export class FeatureOverrides implements IDisposable {
       if (undefined !== flashedIdParts && feature.elementId.lower === flashedIdParts.lower && feature.elementId.upper === flashedIdParts.upper)
         flags |= OvrFlags.Flashed;
 
+      data.setByteAtIndex(dataIndex + 3, app.nonLocatable ? 1 : 0);
+
       data.setOvrFlagsAtIndex(dataIndex, flags);
-      if (OvrFlags.None !== flags)
+      if (OvrFlags.None !== flags || app.nonLocatable)
         nOverridden++;
     }
 
@@ -302,7 +304,6 @@ export class Batch extends Graphic {
       ret = FeatureOverrides.createFromTarget(target);
       this._overrides.push(ret);
       target.addBatch(this);
-      // ###TODO target.addBatch(*this);
       ret.initFromMap(this.featureTable);
     }
 

@@ -25,7 +25,7 @@ export abstract class IModelClient {
   private _fileHandler?: FileHandler;
   /**
    * Creates an instance of [[IModelClient]].
-   * @param fileHandler File handler to handle file upload/download and file system operations. See [[AzureFileHandler]].
+   * @param fileHandler File handler to handle file upload/download and file system operations.
    */
   public constructor(baseHandler: IModelBaseHandler, fileHandler?: FileHandler) {
     this._handler = baseHandler;
@@ -36,7 +36,7 @@ export abstract class IModelClient {
 
   /**
    * Sets file handler for file upload/download.
-   * @param fileHandler File handler to handle file upload/download and file system operations. See [[AzureFileHandler]].
+   * @param fileHandler File handler to handle file upload/download and file system operations.
    */
   public setFileHandler(fileHandler: FileHandler) {
     this._fileHandler = fileHandler;

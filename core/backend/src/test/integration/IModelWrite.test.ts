@@ -4,14 +4,15 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect, assert } from "chai";
-import { Id64String, DbOpcode, DbResult, ActivityLoggingContext } from "@bentley/bentleyjs-core";
-import { IModelVersion, SubCategoryAppearance, IModel } from "@bentley/imodeljs-common";
+import { Id64String, DbOpcode, DbResult, ActivityLoggingContext, Id64 } from "@bentley/bentleyjs-core";
+import { IModelVersion, SubCategoryAppearance, IModel, CodeSpec, CodeScopeSpec } from "@bentley/imodeljs-common";
 import { IModelTestUtils, TestUsers, Timer, TestIModelInfo } from "../IModelTestUtils";
 import { IModelJsFs } from "../../IModelJsFs";
 import { KeepBriefcase, IModelDb, OpenParams, Element, DictionaryModel, BriefcaseManager, SpatialCategory, SqliteStatement, SqliteValue, SqliteValueType, BriefcaseEntry } from "../../imodeljs-backend";
 import { ConcurrencyControl } from "../../ConcurrencyControl";
-import { AccessToken, CodeState, HubIModel, HubCode, IModelQuery, MultiCode } from "@bentley/imodeljs-clients";
+import { AccessToken, CodeState, HubIModel, HubCode, IModelQuery, MultiCode, Lock, LockType, LockLevel } from "@bentley/imodeljs-clients";
 import { HubUtility } from "./HubUtility";
+import * as os from "os";
 
 const actx = new ActivityLoggingContext("");
 
@@ -54,23 +55,78 @@ describe("IModelWriteTest (#integration)", () => {
     });
   };
 
+  let readWriteTestIModelName: string;
+
   before(async () => {
     accessToken = await HubUtility.login(TestUsers.manager);
 
     testProjectId = await HubUtility.queryProjectIdByName(accessToken, "iModelJsIntegrationTest");
     readOnlyTestIModel = await IModelTestUtils.getTestModelInfo(accessToken, testProjectId, "ReadOnlyTest");
-    readWriteTestIModel = await IModelTestUtils.getTestModelInfo(accessToken, testProjectId, "ReadWriteTest");
+
+    let username = "";
+    try {
+      username = os.userInfo().username;
+    } catch (err) {
+    }
+    readWriteTestIModelName = "ReadWriteTest".concat("_", username, "_", os.hostname() || "");
+
+    try {
+      await HubUtility.deleteIModel(accessToken, "iModelJsIntegrationTest", readWriteTestIModelName);
+    } catch (err) {
+    }
+    await BriefcaseManager.imodelClient.iModels.create(actx, accessToken, testProjectId, readWriteTestIModelName, undefined, "TestSubject", undefined, 2 * 60 * 1000);
+    readWriteTestIModel = await IModelTestUtils.getTestModelInfo(accessToken, testProjectId, readWriteTestIModelName);
 
     writeTestProjectId = await HubUtility.queryProjectIdByName(accessToken, "iModelJsTest");
 
     // Purge briefcases that are close to reaching the acquire limit
     const managerAccessToken: AccessToken = await HubUtility.login(TestUsers.manager);
     await HubUtility.purgeAcquiredBriefcases(managerAccessToken, "iModelJsIntegrationTest", "ReadOnlyTest");
-    await HubUtility.purgeAcquiredBriefcases(managerAccessToken, "iModelJsIntegrationTest", "ReadWriteTest");
   });
 
   afterEach(() => {
     validateBriefcaseCache();
+  });
+
+  after(async () => {
+    try {
+      await HubUtility.deleteIModel(accessToken, "iModelJsIntegrationTest", readWriteTestIModelName);
+    } catch (err) {
+    }
+  });
+
+  it("acquire codespec lock", async () => {
+    const loggingContext = new ActivityLoggingContext("");
+    const userAccessToken = await IModelTestUtils.getTestUserAccessToken(TestUsers.super);
+    const iModel: IModelDb = await IModelDb.open(actx, userAccessToken, testProjectId, readWriteTestIModel.id, OpenParams.pullAndPush());
+    const code1 = new CodeSpec(iModel, Id64.invalid, "MyCode", CodeScopeSpec.Type.Model);
+
+    iModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
+    const locks = await iModel.concurrencyControl.lockCodeSpecs(actx, userAccessToken);
+    assert.equal(locks.length, 1);
+    iModel.insertCodeSpec(code1);
+    await iModel.close(loggingContext, userAccessToken, KeepBriefcase.No);
+  });
+
+  it("acquire codespec lock - example", async () => {
+    const loggingContext = new ActivityLoggingContext("");
+    const userAccessToken = await IModelTestUtils.getTestUserAccessToken(TestUsers.super);
+    const model: IModelDb = await IModelDb.open(actx, userAccessToken, testProjectId, readWriteTestIModel.id, OpenParams.pullAndPush());
+    const code1 = new CodeSpec(model, Id64.invalid, "MyCode", CodeScopeSpec.Type.Model);
+
+    model.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());  // needed for writing to iModels
+
+    const codeSpecsLock = new Lock();
+    codeSpecsLock.briefcaseId = model.briefcase.briefcaseId;
+    codeSpecsLock.lockLevel = LockLevel.Exclusive;
+    codeSpecsLock.lockType = LockType.CodeSpecs;
+    codeSpecsLock.objectId = "0x1";
+    codeSpecsLock.seedFileId = model.briefcase.fileId;
+
+    const locks = await BriefcaseManager.imodelClient.locks.update(loggingContext, userAccessToken, model.briefcase.iModelId, [codeSpecsLock]);
+    assert.equal(locks.length, 1);
+    model.insertCodeSpec(code1);
+    await model.close(loggingContext, userAccessToken, KeepBriefcase.No);
   });
 
   it("test change-merging scenarios in optimistic concurrency mode (#integration)", async () => {
@@ -199,7 +255,7 @@ describe("IModelWriteTest (#integration)", () => {
       assert.equal(elobj.userLabel, expectedValueofEl1UserLabel);
       assert.equal(elobj.getUserProperties(secondUserPropNs)[secondUserPropName], expectedValueOfSecondUserProp);
     }
-*/
+  */
     // --- Test 3: Non-overlapping changes ---
 
   });
@@ -231,7 +287,7 @@ describe("IModelWriteTest (#integration)", () => {
     }
     timer.end();
 
-    // Create a new iModel on the Hub (by uploading a seed file)
+    // Create a new empty iModel on the Hub & obtain a briefcase
     timer = new Timer("create iModel");
     const rwIModel: IModelDb = await IModelDb.create(actx, adminAccessToken, writeTestProjectId, iModelName, { rootSubject: { name: "TestSubject" } });
     const rwIModelId = rwIModel.iModelToken.iModelId;
@@ -277,7 +333,7 @@ describe("IModelWriteTest (#integration)", () => {
     }
     timer.end();
 
-    // Create a new iModel on the Hub (by uploading a seed file)
+    // Create a new empty iModel on the Hub & obtain a briefcase
     timer = new Timer("create iModel");
     const rwIModel: IModelDb = await IModelDb.create(actx, adminAccessToken, writeTestProjectId, iModelName, { rootSubject: { name: "TestSubject" } });
     const rwIModelId = rwIModel.iModelToken.iModelId;
@@ -334,7 +390,7 @@ describe("IModelWriteTest (#integration)", () => {
     }
     timer.end();
 
-    // Create a new iModel on the Hub (by uploading a seed file)
+    // Create a new empty iModel on the Hub & obtain a briefcase
     timer = new Timer("create iModel");
     const rwIModel: IModelDb = await IModelDb.create(actx, adminAccessToken, writeTestProjectId, iModelName, { rootSubject: { name: "TestSubject" } });
     const rwIModelId = rwIModel.iModelToken.iModelId;

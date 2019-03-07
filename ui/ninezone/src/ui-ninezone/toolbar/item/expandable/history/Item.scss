@@ -7,7 +7,7 @@
 @import "_variables";
 
 .nz-toolbar-item-expandable-history-item {
-  $fill-color: rgba($background-5, 0.88);
+  $fill-color: $buic-background-toolbutton-inactive;
   $pressed-fill-color: $primary-tone;
 
   background-color: $fill-color;

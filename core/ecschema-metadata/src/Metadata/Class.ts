@@ -19,8 +19,9 @@ import {
   parseClassModifier, parsePrimitiveType, PrimitiveType, SchemaItemType,
 } from "./../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "./../Exception";
-import { AnyClass, LazyLoadedECClass, SchemaItemVisitor } from "./../Interfaces";
-import { SchemaItemKey } from "./../SchemaKey";
+import { AnyClass, LazyLoadedECClass } from "./../Interfaces";
+import { SchemaItemKey, SchemaKey } from "./../SchemaKey";
+import { assert } from "@bentley/bentleyjs-core";
 
 /**
  * A common abstract class for all of the ECClass types.
@@ -329,15 +330,15 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
 
   public toJson(standalone: boolean, includeSchemaVersion: boolean) {
     const schemaJson = super.toJson(standalone, includeSchemaVersion);
-    schemaJson.modifier = classModifierToString(this.modifier);
+    const isMixin = SchemaItemType.Mixin === this.schemaItemType;
+    const isRelationship = SchemaItemType.RelationshipClass === this.schemaItemType;
+    if (!isMixin && (ECClassModifier.None !== this.modifier || isRelationship))
+      schemaJson.modifier = classModifierToString(this.modifier);
     if (this.baseClass !== undefined)
       schemaJson.baseClass = this.baseClass.fullName;
-    if (this.properties !== undefined && this.properties.length > 0) {
-      schemaJson.properties = [];
-      this.properties.forEach((prop: Property) => {
-        schemaJson.properties.push(prop.toJson());
-      });
-    }
+    if (this.properties !== undefined && this.properties.length > 0)
+      schemaJson.properties = this.properties.map((prop) => prop.toJson());
+
     const customAttributes = serializeCustomAttributes(this.customAttributes);
     if (customAttributes !== undefined)
       schemaJson.customAttributes = customAttributes;
@@ -376,16 +377,6 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
       this._customAttributes = new Map<string, CustomAttribute>();
 
     this._customAttributes.set(customAttribute.className, customAttribute);
-  }
-
-  public async accept(visitor: SchemaItemVisitor) {
-    if (visitor.visitClass)
-      await visitor.visitClass(this as AnyClass);
-  }
-
-  public acceptSync(visitor: SchemaItemVisitor) {
-    if (visitor.visitClassSync)
-      visitor.visitClassSync(this as AnyClass);
   }
 
   /**
@@ -545,13 +536,28 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
 
   /**
    * Indicates if the targetClass is of this type.
-   * @param targetClass The class to check.
+   * @param targetClass The ECClass or ECClass name to check.
+   * @param schemaName The schema name. Required if targetClass is the ECClass name.
    */
-  public async is(targetClass: ECClass): Promise<boolean> {
-    if (SchemaItem.equalByKey(this, targetClass))
-      return true;
+  public async is(targetClass: string, schemaName: string): Promise<boolean>;
+  public async is(targetClass: ECClass): Promise<boolean>;
+  public async is(targetClass: ECClass | string, schemaName?: string): Promise<boolean> {
+    if (schemaName !== undefined) {
+      assert(typeof (targetClass) === "string", "Expected targetClass of type string because schemaName was specified");
 
-    return this.traverseBaseClasses(SchemaItem.equalByKey, targetClass);
+      const key = new SchemaItemKey(targetClass as string, new SchemaKey(schemaName));
+      if (SchemaItem.equalByKey(this, key))
+        return true;
+
+      return this.traverseBaseClasses(SchemaItem.equalByKey, key);
+    } else {
+      assert(targetClass instanceof ECClass, "Expected targetClass to be of type ECClass");
+
+      if (SchemaItem.equalByKey(this, targetClass as ECClass))
+        return true;
+
+      return this.traverseBaseClasses(SchemaItem.equalByKey, targetClass);
+    }
   }
 
   /**

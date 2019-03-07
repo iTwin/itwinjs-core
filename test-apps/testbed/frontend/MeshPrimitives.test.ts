@@ -3,13 +3,12 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { expect, assert } from "chai";
-import { IModelConnection, SpatialViewState, StandardViewId } from "@bentley/imodeljs-frontend";
+import { MockRender, IModelConnection, SpatialViewState, StandardViewId } from "@bentley/imodeljs-frontend";
 import { Range3d, Point3d, Point2d } from "@bentley/geometry-core";
 import * as path from "path";
 import { Mesh, Triangle } from "@bentley/imodeljs-frontend/lib/rendering";
 import { FakeDisplayParams } from "./DisplayParams.test";
 import { CONSTANTS } from "../common/Testbed";
-import { MockRender } from "./MockRender";
 import { MeshPolyline, QPoint3d, ColorDef, OctEncodedNormal } from "@bentley/imodeljs-common";
 
 const iModelLocation = path.join(CONSTANTS.IMODELJS_CORE_DIRNAME, "core/backend/lib/test/assets/test.bim");

@@ -4,3 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 export * from "./oidc";
 export * from "./RequestHost";
+export * from "./imodelhub/AzureFileHandler";
+export * from "./imodelhub/IOSAzureFileHandler";
+export * from "./UrlFileHandler";

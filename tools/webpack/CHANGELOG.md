@@ -1,6 +1,28 @@
 # Change Log - @bentley/webpack-tools
 
-This log was last generated on Tue, 15 Jan 2019 15:18:59 GMT and should not be manually modified.
+This log was last generated on Wed, 06 Mar 2019 15:41:22 GMT and should not be manually modified.
+
+## 0.189.0
+Wed, 06 Mar 2019 15:41:22 GMT
+
+### Updates
+
+- Fix BuildIModelJsModule for packages external to monorepository
+- Added buildIModelJsBuild script to sequence frontend module builds
+- Uglify Options changed to fix regex known problem.
+- Change default mode to copy rather than symlink files.
+- Webworker module type added
+- Fix for CopyExternalModules for indirect iModel.js dependent modules.
+- Provide a way to copy rather than symlink sourceResources
+- Convert IndexedPolyface params from array-of-points to GrowableXYArray.
+- Changes to define BUILD_SEMVER in modules, define SEMVERs required for iModelJs system modules for Plugins.
+- Rewrite of CopyExternalModules
+- upgrade to TypeScript 3.2.2
+
+## 0.188.0
+Wed, 16 Jan 2019 16:36:09 GMT
+
+*Version update only*
 
 ## 0.187.0
 Tue, 15 Jan 2019 15:18:59 GMT

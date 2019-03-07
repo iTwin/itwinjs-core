@@ -2,12 +2,13 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+@import "../index.scss";
 
 @function background-line($orientation) {
   @return linear-gradient(
     $orientation,
     transparent calc(50% - 3px),
-     #c7ccd1 /*background.5*/ calc(50%),
+    $buic-foreground-disabled calc(50%),
      transparent calc(50% + 3px));
 }
 

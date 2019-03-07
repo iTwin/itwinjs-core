@@ -4,6 +4,7 @@ exports[`InputFieldMessage should render correctly 1`] = `
 <Portal
   containerInfo={
     <body>
+      <button />
       <div
         id="context-menu-root"
       >

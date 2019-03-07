@@ -2,6 +2,48 @@
   "name": "@bentley/imodeljs-i18n",
   "entries": [
     {
+      "version": "0.189.0",
+      "tag": "@bentley/imodeljs-i18n_v0.189.0",
+      "date": "Wed, 06 Mar 2019 15:41:22 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Changes package.json to include api-extractor and adds api-extractor.json"
+          },
+          {
+            "comment": "Use new buildIModelJsBuild script"
+          },
+          {
+            "comment": "Fixed type definitions"
+          },
+          {
+            "comment": "Remove uneeded typedoc plugin depedency"
+          },
+          {
+            "comment": "fix imports of i18next-xhr-backend"
+          },
+          {
+            "comment": "Documentation improvements"
+          },
+          {
+            "comment": "Save BUILD_SEMVER to globally accessible map"
+          },
+          {
+            "comment": "Fix a broken build by upgrading 'i18next-xhr-backend' dependency to v2"
+          },
+          {
+            "comment": "upgrade to TypeScript 3.2.2"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.188.0",
+      "tag": "@bentley/imodeljs-i18n_v0.188.0",
+      "date": "Wed, 16 Jan 2019 16:36:09 GMT",
+      "comments": {}
+    },
+    {
       "version": "0.187.0",
       "tag": "@bentley/imodeljs-i18n_v0.187.0",
       "date": "Tue, 15 Jan 2019 15:18:59 GMT",

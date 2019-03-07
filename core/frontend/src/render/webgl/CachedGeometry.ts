@@ -23,9 +23,25 @@ import { VertexLUT } from "./VertexLUT";
 import { TextureHandle } from "./Texture";
 import { Material } from "./Material";
 import { SkyBox } from "../../DisplayStyleState";
+import { InstancedGeometry } from "./InstancedGeometry";
+import { SurfaceGeometry, MeshGeometry, EdgeGeometry, SilhouetteEdgeGeometry } from "./Mesh";
 
 /** Represents a geometric primitive ready to be submitted to the GPU for rendering. */
 export abstract class CachedGeometry implements IDisposable, RenderMemory.Consumer {
+  /**
+   * Functions for obtaining a subclass of CachedGeometry.
+   * IMPORTANT: Do NOT use code like `const surface = cachedGeom as SurfaceGeometry`.
+   * Instanced geometry holds a reference to the shared geometry rendered for each instance - such casts will fail,
+   * while the casting `functions` will forward to the shared geometry.
+   */
+  public get asLUT(): LUTGeometry | undefined { return undefined; }
+  public get asSurface(): SurfaceGeometry | undefined { return undefined; }
+  public get asMesh(): MeshGeometry | undefined { return undefined; }
+  public get asEdge(): EdgeGeometry | undefined { return undefined; }
+  public get asSilhouette(): SilhouetteEdgeGeometry | undefined { return undefined; }
+  public get asInstanced(): InstancedGeometry | undefined { return undefined; }
+  public get isInstanced() { return undefined !== this.asInstanced; }
+
   // Returns true if white portions of this geometry should render as black on white background
   protected abstract _wantWoWReversal(_target: Target): boolean;
   // Returns the edge/line weight used to render this geometry
@@ -60,9 +76,8 @@ export abstract class CachedGeometry implements IDisposable, RenderMemory.Consum
   // Intended to be overridden by specific subclasses
   public get material(): Material | undefined { return undefined; }
   public get polylineBuffers(): PolylineBuffers | undefined { return undefined; }
-  public set uniformFeatureIndices(value: number) { assert(undefined !== value); } // silence 'unused variable' warning...
+  public set uniformFeatureIndices(_value: number) { }
   public get featuresInfo(): FeaturesInfo | undefined { return undefined; }
-  public get debugString(): string { return ""; }
 
   public get isEdge(): boolean {
     switch (this.renderOrder) {
@@ -90,9 +105,9 @@ export abstract class CachedGeometry implements IDisposable, RenderMemory.Consum
     let weight = this._getLineWeight(params);
     weight = Math.max(weight, minWeight);
     weight = Math.min(weight, 31.0);
-    assert(Math.floor(weight) === weight);
     return weight;
   }
+
   // Returns true if flashing this geometry should mix its color with the hilite color. If not, the geometry color will be brightened instead.
   public wantMixHiliteColorForFlash(vf: ViewFlags, target: Target): boolean {
     // By default only surfaces rendered with lighting get brightened. Overridden for reality meshes since they have lighting baked-in.
@@ -113,13 +128,18 @@ export abstract class CachedGeometry implements IDisposable, RenderMemory.Consum
 export abstract class LUTGeometry extends CachedGeometry {
   // The texture containing the vertex data.
   public abstract get lut(): VertexLUT;
+  public get asLUT() { return this; }
+
+  protected abstract _draw(_numInstances: number): void;
+  public draw(): void { this._draw(0); }
+  public drawInstanced(numInstances: number): void { this._draw(numInstances); }
 
   // Override this if your color varies based on the target
   public getColor(_target: Target): ColorInfo { return this.lut.colorInfo; }
 
   public get qOrigin(): Float32Array { return this.lut.qOrigin; }
   public get qScale(): Float32Array { return this.lut.qScale; }
-  public get hasAnimation(): boolean { return undefined !== this.lut.auxDisplacements || undefined !== this.lut.auxParams || undefined !== this.lut.auxNormals; }
+  public get hasAnimation() { return this.lut.hasAnimation; }
 
   protected constructor() { super(); }
 }
@@ -139,12 +159,9 @@ export class IndexedGeometryParams implements IDisposable {
   public static create(positions: Uint16Array, qparams: QParams3d, indices: Uint32Array) {
     const posBuf = QBufferHandle3d.create(qparams, positions);
     const indBuf = BufferHandle.createBuffer(GL.Buffer.Target.ElementArrayBuffer, indices);
-    if (undefined === posBuf || undefined === indBuf) {
-      assert(false);
+    if (undefined === posBuf || undefined === indBuf)
       return undefined;
-    }
 
-    assert(!posBuf.isDisposed && !indBuf.isDisposed);
     return new IndexedGeometryParams(posBuf, indBuf, indices.length);
   }
   public static createFromList(positions: QPoint3dList, indices: Uint32Array) {
@@ -189,8 +206,7 @@ export class ClipMaskGeometry extends IndexedGeometry {
   }
 
   public collectStatistics(stats: RenderMemory.Statistics): void {
-    stats.addClipVolume(this._params.positions.bytesUsed);
-    stats.addClipVolume(this._params.indices.bytesUsed);
+    stats.addClipVolume(this._params.positions.bytesUsed + this._params.indices.bytesUsed);
   }
 
   public getTechniqueId(_target: Target): TechniqueId { return TechniqueId.ClipMask; }
@@ -280,12 +296,9 @@ export class SkyBoxGeometryParams implements IDisposable {
 
   public static create(positions: Uint16Array, qparams: QParams3d) {
     const posBuf = QBufferHandle3d.create(qparams, positions);
-    if (undefined === posBuf) {
-      assert(false);
+    if (undefined === posBuf)
       return undefined;
-    }
 
-    assert(!posBuf.isDisposed);
     return new SkyBoxGeometryParams(posBuf);
   }
 
@@ -324,7 +337,7 @@ export class SkyBoxQuadsGeometry extends CachedGeometry {
   }
 
   public collectStatistics(_stats: RenderMemory.Statistics): void {
-    // ###TODO, maybe.
+    // Not interested in tracking this.
   }
 
   public getTechniqueId(_target: Target) { return this._techniqueId; }
@@ -425,9 +438,7 @@ export class TexturedViewportQuadGeometry extends ViewportQuadGeometry {
 
     // TypeScript compiler will happily accept TextureHandle (or any other type) in place of WebGLTexture.
     // There is no such 'type' as WebGLTexture at run-time.
-    for (const texture of this._textures) {
-      assert(!(texture instanceof TextureHandle));
-    }
+    assert(this._textures.every((tx) => !(tx instanceof TextureHandle)));
   }
 }
 
@@ -572,20 +583,29 @@ export class BlurGeometry extends TexturedViewportQuadGeometry {
 
 // Geometry used during the 'composite' pass to apply transparency and/or hilite effects.
 export class CompositeGeometry extends TexturedViewportQuadGeometry {
-  public static createGeometry(opaque: WebGLTexture, accum: WebGLTexture, reveal: WebGLTexture, hilite: WebGLTexture, occlusion: WebGLTexture) {
+  public static createGeometry(opaque: WebGLTexture, accum: WebGLTexture, reveal: WebGLTexture, hilite: WebGLTexture) {
     const params = ViewportQuad.getInstance().createParams();
-    if (undefined === params) {
+    if (undefined === params)
       return undefined;
-    }
 
-    return new CompositeGeometry(params, [opaque, accum, reveal, hilite, occlusion]);
+    const textures = [opaque, accum, reveal, hilite];
+    return new CompositeGeometry(params, textures);
   }
 
   public get opaque() { return this._textures[0]; }
   public get accum() { return this._textures[1]; }
   public get reveal() { return this._textures[2]; }
   public get hilite() { return this._textures[3]; }
-  public get occlusion() { return this._textures[4]; }
+  public get occlusion(): WebGLTexture | undefined {
+    return this._textures.length > 4 ? this._textures[4] : undefined;
+   }
+  public set occlusion(occlusion: WebGLTexture | undefined) {
+    assert((undefined === occlusion) === (undefined !== this.occlusion));
+    if (undefined !== occlusion)
+      this._textures[4] = occlusion;
+    else
+      this._textures.length = 4;
+  }
 
   // Invoked each frame to determine the appropriate Technique to use.
   public update(flags: CompositeFlags): void { this._techniqueId = this.determineTechnique(flags); }
@@ -596,7 +616,7 @@ export class CompositeGeometry extends TexturedViewportQuadGeometry {
 
   private constructor(params: IndexedGeometryParams, textures: WebGLTexture[]) {
     super(params, TechniqueId.CompositeHilite, textures);
-    assert(5 === this._textures.length);
+    assert(4 <= this._textures.length);
   }
 }
 
@@ -656,9 +676,7 @@ export class PolylineBuffers implements IDisposable {
   }
 
   public collectStatistics(stats: RenderMemory.Statistics, type: RenderMemory.BufferType): void {
-    stats.addBuffer(type, this.indices.bytesUsed);
-    stats.addBuffer(type, this.prevIndices.bytesUsed);
-    stats.addBuffer(type, this.nextIndicesAndParams.bytesUsed);
+    stats.addBuffer(type, this.indices.bytesUsed + this.prevIndices.bytesUsed + this.nextIndicesAndParams.bytesUsed);
   }
 
   public dispose() {

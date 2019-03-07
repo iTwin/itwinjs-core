@@ -9,11 +9,18 @@ import { BisCodeSpec, CodeSpec, NavigationValue, RelatedElement, IModelVersion }
 import { TestData } from "./TestData";
 import {
   DrawingViewState, OrthographicViewState, ViewState, IModelConnection,
-  ModelSelectorState, DisplayStyle3dState, DisplayStyle2dState, CategorySelectorState,
+  ModelSelectorState, DisplayStyle3dState, DisplayStyle2dState, CategorySelectorState, MockRender,
 } from "@bentley/imodeljs-frontend";
 import { TestbedConfig } from "../common/TestbedConfig";
 import { CONSTANTS } from "../common/Testbed";
-import { MockRender } from "./MockRender";
+
+async function executeQuery(iModel: IModelConnection, ecsql: string, bindings?: any[] | object): Promise<any[]> {
+  const rows: any[] = [];
+  for await (const row of iModel.query(ecsql, bindings)) {
+    rows.push(row);
+  }
+  return rows;
+}
 
 describe("IModelConnection (#integration)", () => {
   let iModel: IModelConnection;
@@ -50,16 +57,13 @@ describe("IModelConnection (#integration)", () => {
     const queryElementIds = await iModel.elements.queryIds({ from: "BisCore.Category", limit: 20, offset: 0 });
     assert.isAtLeast(queryElementIds.size, 1);
 
-    const formatObjs: any[] = await iModel.elements.formatElements(queryElementIds);
-    assert.isAtLeast(formatObjs.length, 1);
-
     const modelProps = await iModel.models.getProps(iModel.models.repositoryModelId);
     assert.exists(modelProps);
     assert.equal(modelProps.length, 1);
     assert.equal(modelProps[0].id, iModel.models.repositoryModelId);
     assert.equal(iModel.models.repositoryModelId, modelProps[0].id);
 
-    const rows: any[] = await iModel.executeQuery("SELECT CodeValue AS code FROM BisCore.Category LIMIT 20");
+    const rows: any[] = await executeQuery(iModel, "SELECT CodeValue AS code FROM BisCore.Category LIMIT 20");
     assert.isAtLeast(rows.length, 1);
     assert.exists(rows[0].code);
     assert.equal(rows.length, queryElementIds.size);
@@ -201,7 +205,7 @@ describe("IModelConnection (#integration)", () => {
 
   it("ECSQL with BLOB", async () => {
     assert.exists(iModel);
-    let rows = await iModel.executeQuery("SELECT ECInstanceId,GeometryStream FROM bis.GeometricElement3d WHERE GeometryStream IS NOT NULL LIMIT 1");
+    let rows = await executeQuery(iModel, "SELECT ECInstanceId,GeometryStream FROM bis.GeometricElement3d WHERE GeometryStream IS NOT NULL LIMIT 1");
     assert.equal(rows.length, 1);
     const row: any = rows[0];
 
@@ -211,13 +215,13 @@ describe("IModelConnection (#integration)", () => {
     const geomStream: Uint8Array = row.geometryStream;
     assert.isAtLeast(geomStream.byteLength, 1);
 
-    rows = await iModel.executeQuery("SELECT 1 FROM bis.GeometricElement3d WHERE GeometryStream=?", [geomStream]);
+    rows = await executeQuery(iModel, "SELECT 1 FROM bis.GeometricElement3d WHERE GeometryStream=?", [geomStream]);
     assert.equal(rows.length, 1);
   });
 
   it("Parameterized ECSQL", async () => {
     assert.exists(iModel);
-    let rows = await iModel.executeQuery("SELECT ECInstanceId,Model,LastMod,CodeValue,FederationGuid,Origin FROM bis.GeometricElement3d LIMIT 1");
+    let rows = await executeQuery(iModel, "SELECT ECInstanceId,Model,LastMod,CodeValue,FederationGuid,Origin FROM bis.GeometricElement3d LIMIT 1");
     assert.equal(rows.length, 1);
     let expectedRow = rows[0];
     const expectedId = Id64.fromJSON(expectedRow.id);
@@ -228,11 +232,11 @@ describe("IModelConnection (#integration)", () => {
     const expectedFedGuid: string | undefined = !!expectedRow.federationGuid ? expectedRow.federationGuid : undefined;
     const expectedOrigin: XYAndZ = expectedRow.origin;
 
-    let actualRows = await iModel.executeQuery("SELECT 1 FROM bis.GeometricElement3d WHERE ECInstanceId=? AND Model=? OR (LastMod=? AND CodeValue=? AND FederationGuid=? AND Origin=?)",
+    let actualRows = await executeQuery(iModel, "SELECT 1 FROM bis.GeometricElement3d WHERE ECInstanceId=? AND Model=? OR (LastMod=? AND CodeValue=? AND FederationGuid=? AND Origin=?)",
       [expectedId, expectedModel, expectedLastMod, expectedRow.codeValue, expectedFedGuid, expectedOrigin]);
     assert.equal(actualRows.length, 1);
 
-    actualRows = await iModel.executeQuery("SELECT 1 FROM bis.GeometricElement3d WHERE ECInstanceId=:id AND Model=:model OR (LastMod=:lastmod AND CodeValue=:codevalue AND FederationGuid=:fedguid AND Origin=:origin)",
+    actualRows = await executeQuery(iModel, "SELECT 1 FROM bis.GeometricElement3d WHERE ECInstanceId=:id AND Model=:model OR (LastMod=:lastmod AND CodeValue=:codevalue AND FederationGuid=:fedguid AND Origin=:origin)",
       {
         id: expectedId, model: expectedModel, lastmod: expectedLastMod,
         codevalue: expectedRow.codeValue, fedguid: expectedFedGuid, origin: expectedOrigin,
@@ -240,22 +244,22 @@ describe("IModelConnection (#integration)", () => {
     assert.equal(actualRows.length, 1);
 
     // single parameter query
-    actualRows = await iModel.executeQuery("SELECT 1 FROM bis.Element WHERE LastMod=?", [expectedLastMod]);
+    actualRows = await executeQuery(iModel, "SELECT 1 FROM bis.Element WHERE LastMod=?", [expectedLastMod]);
     assert.isTrue(actualRows.length >= 1);
 
-    actualRows = await iModel.executeQuery("SELECT 1 FROM bis.Element WHERE LastMod=:lastmod", { lastmod: expectedLastMod });
+    actualRows = await executeQuery(iModel, "SELECT 1 FROM bis.Element WHERE LastMod=:lastmod", { lastmod: expectedLastMod });
     assert.isTrue(actualRows.length >= 1);
 
     // New query with point2d parameter
-    rows = await iModel.executeQuery("SELECT ECInstanceId,Origin FROM bis.GeometricElement2d LIMIT 1");
+    rows = await executeQuery(iModel, "SELECT ECInstanceId,Origin FROM bis.GeometricElement2d LIMIT 1");
     assert.equal(rows.length, 1);
 
     expectedRow = rows[0];
-    actualRows = await iModel.executeQuery("SELECT 1 FROM bis.GeometricElement2d WHERE ECInstanceId=? AND Origin=?",
+    actualRows = await executeQuery(iModel, "SELECT 1 FROM bis.GeometricElement2d WHERE ECInstanceId=? AND Origin=?",
       [Id64.fromJSON(expectedRow.id), expectedRow.origin]);
     assert.equal(actualRows.length, 1);
 
-    actualRows = await iModel.executeQuery("SELECT 1 FROM bis.GeometricElement2d WHERE ECInstanceId=:id AND Origin=:origin",
+    actualRows = await executeQuery(iModel, "SELECT 1 FROM bis.GeometricElement2d WHERE ECInstanceId=:id AND Origin=:origin",
       { id: expectedRow.id, origin: expectedRow.origin });
     assert.equal(actualRows.length, 1);
   }).timeout(99999);

@@ -19,10 +19,10 @@ export type MarkerFillStyle = string | CanvasGradient | CanvasPattern;
 export type MarkerTextAlign = "left" | "right" | "center" | "start" | "end";
 export type MarkerTextBaseline = "top" | "hanging" | "middle" | "alphabetic" | "ideographic" | "bottom";
 
-/**
- * A Marker is a [[CanvasDecoration]], whose position follows a fixed location in world space.
+/** A Marker is a [[CanvasDecoration]], whose position follows a fixed location in world space.
  * Markers draw on top of all scene graphics, and show visual cues about locations of interest.
  * @see [Markers]($docs/learning/frontend/Markers)
+ * @public
  */
 export class Marker implements CanvasDecoration {
   protected _scaleFactor?: Point2d;
@@ -108,8 +108,7 @@ export class Marker implements CanvasDecoration {
     this.position = new Point3d();
   }
 
-  /**
-   * Make a new Marker at the same position and size as this Marker.
+  /** Make a new Marker at the same position and size as this Marker.
    * Thew new Marker will share the world location and size objects, but will be otherwise blank.
    */
   public static makeFrom<T extends Marker>(other: Marker, ...args: any[]): T {
@@ -122,8 +121,7 @@ export class Marker implements CanvasDecoration {
     return out;
   }
 
-  /**
-   * When a Marker is displayed in its hilited state, this method is called first. If it returns true, no further action is taken.
+  /** When a Marker is displayed in its hilited state, this method is called first. If it returns true, no further action is taken.
    * Otherwise the Marker's normal drawing operations are also called. By default, this method adds a shadowBlur effect and increases
    * the size of the Marker by 25%.
    * @return true to stop drawing this Marker
@@ -228,9 +226,9 @@ export class Marker implements CanvasDecoration {
   }
 }
 
-/**
- * A cluster of one or more Markers that overlap one another in the view. The cluster's screen position is taken from its first entry.
+/** A cluster of one or more Markers that overlap one another in the view. The cluster's screen position is taken from its first entry.
  * Clusters also have a Marker themselves, that represents the whole group. The cluster marker isn't created until all entries have been added.
+ * @public
  */
 export class Cluster<T extends Marker> {
   public readonly rect: ViewRect;
@@ -244,6 +242,7 @@ export class Cluster<T extends Marker> {
 
 /** A *set* of Markers that are logically related, such that they *cluster* when they overlap. In that case, a *cluster marker*
  * is drawn instead of the overlapping Markers.
+ * @public
  */
 export abstract class MarkerSet<T extends Marker> {
   /** @hidden */
@@ -256,16 +255,14 @@ export abstract class MarkerSet<T extends Marker> {
   /** The set of Markers in this MarkerSet. Add your [[Marker]]s into this. */
   public readonly markers = new Set<T>();
 
-  /**
-   * Implement this method to create a new Marker that is shown as a *stand-in* for a Cluster of Markers that overlap one another.
+  /** Implement this method to create a new Marker that is shown as a *stand-in* for a Cluster of Markers that overlap one another.
    * @param cluster The [[Cluster]] that the new Marker will represent.
    * @returns The Marker that will be displayed to represent the Cluster.
    * @note You must create a new Marker each time this method is called.
    */
   protected abstract getClusterMarker(cluster: Cluster<T>): Marker;
 
-  /**
-   * This method should be called from [[Decorator.decorate]]. It will add this this MarkerSet to the supplied DecorateContext.
+  /** This method should be called from [[Decorator.decorate]]. It will add this this MarkerSet to the supplied DecorateContext.
    * This method implements the logic that turns overlapping Markers into a Cluster.
    * @param context The DecorateContext for the Markers
    */

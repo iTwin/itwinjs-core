@@ -6,7 +6,7 @@
 import { expect, assert } from "chai";
 import { WebGLTestContext } from "./WebGLTestContext";
 import { IModelApp } from "@bentley/imodeljs-frontend";
-import { Capabilities, System, RenderBuffer, TextureHandle, FrameBuffer, GL } from "@bentley/imodeljs-frontend/lib/webgl";
+import { Capabilities, System, RenderBuffer, TextureHandle, FrameBuffer, GL, Debug } from "@bentley/imodeljs-frontend/lib/webgl";
 
 describe("FrameBuffer tests", () => {
   before(() => WebGLTestContext.startup());
@@ -29,7 +29,7 @@ describe("FrameBuffer tests", () => {
     }
 
     expect(fb.bind()).to.be.true;
-    expect(fb.isValid).to.be.true;
+    expect(Debug.isValidFrameBuffer).to.be.true;
     fb.unbind();
   });
 
@@ -61,7 +61,7 @@ describe("FrameBuffer tests", () => {
     }
 
     expect(fb.bind()).to.be.true;
-    expect(fb.isValid).to.be.true;
+    expect(Debug.isValidFrameBuffer).to.be.true;
     fb.unbind();
   });
 
@@ -99,7 +99,7 @@ describe("FrameBuffer tests", () => {
     }
 
     expect(fb.bind()).to.be.true;
-    expect(fb.isValid).to.be.true;
+    expect(Debug.isValidFrameBuffer).to.be.true;
     fb.unbind();
   });
 });

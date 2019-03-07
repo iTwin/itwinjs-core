@@ -29,6 +29,7 @@
     "testFrontstage3": "Test 3 Frontstage",
     "testFrontstage4": "Test 4 Frontstage",
     "testFrontstage5": "Test 5 Frontstage",
+    "testFrontstage6": "Settings",
     "iModelStage": "Review iModel",
     "task1": "Task 1",
     "task2": "Task 2",
@@ -63,7 +64,8 @@
     "number": "Number",
     "password": "Password",
     "radio": "Radio",
-    "range": "Range"
+    "range": "Range",
+    "color": "Color"
   },
   "tool2": {
     "month": "Month2",
@@ -109,6 +111,26 @@
     "openNestedFrontstage1": "Open Nested Frontstage"
   },
   "tools": {
+    "ToolWithSettings": {
+      "keyin": "ToolWithSettings",
+      "description": "Demo Tool with Settings",
+      "flyover": "Tool with Settings",
+      "Prompts": {
+        "GetPoint": "Enter point/Reset to Exit",
+        "Options": "Options",
+        "Lock": "Lock",
+        "City": "City",
+        "State": "State",
+        "Coordinate": "Coordinate",
+        "Length": "Length"
+      },
+      "Options": {
+        "Red": "Red",
+        "White": "White",
+        "Blue": "Blue",
+        "Yellow": "Yellow"
+      }
+    },
     "Tool1": {
       "keyin": "Tool1",
       "description": "Test1 tool",
@@ -135,6 +157,11 @@
           "NextPoint": "Select next point / Reset"
         }
       }
+    },
+    "AppSelect": {
+      "keyin": "Select",
+      "description": "Element Selection",
+      "flyover": "Select"
     },
     "select": "Select",
     "fitView": "Fit View",

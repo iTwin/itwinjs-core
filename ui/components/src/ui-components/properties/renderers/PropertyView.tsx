@@ -9,7 +9,7 @@ import { Orientation, ElementSeparator } from "@bentley/ui-core";
 import { SharedRendererProps } from "./PropertyRenderer";
 
 import "./PropertyView.scss";
-import { PropertyValueFormat } from "../Value";
+import { PropertyValueFormat } from "@bentley/imodeljs-frontend";
 
 /** Properties of [[PropertyView]] React component */
 export interface PropertyViewProps extends SharedRendererProps {

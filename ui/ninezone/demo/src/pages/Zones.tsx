@@ -6,8 +6,7 @@ import "@bentley/icons-generic-webfont/dist/bentley-icons-generic-webfont.css";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import rafSchedule, { ScheduleFn } from "raf-schd";
-import { BlueButton, HollowButton } from "@bentley/bwc";
-import { Timer, withTimeout } from "@bentley/ui-core";
+import { Timer, withTimeout, Button, ButtonType, ButtonProps, Omit } from "@bentley/ui-core";
 import { App } from "@src/app/App";
 import { Content } from "@src/app/Content";
 import { AppButton } from "@src/widget/tools/button/App";
@@ -100,6 +99,22 @@ const TooltipWithTimeout = withTimeout(ToolSettingsTooltip);
 const ToolGroupContained = withContainInViewport(Group);
 // tslint:disable-next-line:variable-name
 const NestedToolGroupContained = withContainInViewport(NestedGroup);
+
+// tslint:disable-next-line:variable-name
+const BlueButton = (props: ButtonProps & Omit<ButtonProps, "type">) => (
+  <Button
+    type={ButtonType.Blue}
+    {...props}
+  />
+);
+
+// tslint:disable-next-line:variable-name
+const HollowButton = (props: ButtonProps & Omit<ButtonProps, "type">) => (
+  <Button
+    type={ButtonType.Hollow}
+    {...props}
+  />
+);
 
 interface State {
   isNestedPopoverOpen: boolean;
@@ -316,7 +331,7 @@ class ModalMessage extends React.PureComponent<ModalMessageProps> {
                       onClick={this.props.onHideMessage}
                     >
                       No
-                        </HollowButton>
+                    </HollowButton>
                   </>
                 }
                 content={
@@ -1828,7 +1843,7 @@ interface ToolZoneToolbarProps {
 class ToolZoneToolbar extends React.PureComponent<ToolZoneToolbarProps> {
   public static readonly defaultProps = {
     // tslint:disable-next-line:space-before-function-paren object-literal-shorthand
-    children: function (this: ToolZoneToolbarProps, items: React.ReactNode) {
+    children: function(this: ToolZoneToolbarProps, items: React.ReactNode) {
       return (
         <Toolbar
           expandsTo={this.expandsTo}
