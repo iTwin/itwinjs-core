@@ -10,6 +10,9 @@ import { Logger } from "@bentley/bentleyjs-core";
 
 const loggerCategory = "imodeljs-frontend.Plugin";
 
+type resolveFunc = ((arg: any) => void);
+type rejectFunc = ((arg: Error) => void);
+
 /**
  * Base Plugin class for writing a demand-loaded module.
  * @see [[PluginAdmin]] for a description of how Plugins are loaded.
@@ -45,12 +48,61 @@ export abstract class Plugin {
   public abstract onExecute(_args: string[]): void;
 }
 
+// this private class represents a Plugin that we are attempting to load.
+class PendingPlugin {
+  public resolve: resolveFunc | undefined = undefined;
+  public reject: rejectFunc | undefined = undefined;
+  public promise: Promise<Plugin>;
+
+  public constructor(private _packageName: string, public args?: string[]) {
+    this.promise = new Promise(this.executor.bind(this));
+  }
+
+  public executor(resolve: resolveFunc, reject: rejectFunc) {
+    this.resolve = resolve;
+    this.reject = reject;
+
+    const head = document.getElementsByTagName("head")[0];
+    if (!head)
+      reject(new Error("no head element found"));
+
+    // create the script element. handle onload and onerror.
+    const scriptElement = document.createElement("script");
+
+    scriptElement.onerror = (ev) => {
+      scriptElement.onload = null;
+      reject(new Error("can't load " + this._packageName + " : " + ev));
+    };
+
+    scriptElement.async = true;
+    scriptElement.src = this._packageName;
+    head.insertBefore(scriptElement, head.lastChild);
+  }
+}
+
 /**
  * Controls loading of Plugins and calls methods on newly loaded or reloaded Plugins
  */
 export class PluginAdmin {
-  private static _loadedPlugins: Map<string, Promise<void>> = new Map<string, Promise<void>>();
+  private static _pendingPlugins: Map<string, PendingPlugin> = new Map<string, PendingPlugin>();
   private static _registeredPlugins: Map<string, Plugin> = new Map<string, Plugin>();
+
+  /**
+   * Retrieves a previously loaded Plugin.
+   * @param pluginName
+   */
+  public static getPlugin(pluginName: string): Promise<Plugin> | undefined {
+    // strip off .js if necessary
+    pluginName = PluginAdmin.getPluginName(pluginName);
+    const plugin = PluginAdmin._registeredPlugins.get(pluginName);
+    if (plugin)
+      return Promise.resolve(plugin);
+    const pluginPromise = PluginAdmin._pendingPlugins.get(pluginName);
+    if (pluginPromise) {
+      return pluginPromise.promise;
+    }
+    return undefined;
+  }
 
   // returns an array of strings with version mismatch errors, or undefined if the versions of all modules are usable.
   private static checkIModelJsVersions(versionsRequired: string): string[] | undefined {
@@ -109,7 +161,7 @@ export class PluginAdmin {
    * @param packageName the name of the JavaScript file to be loaded from the web server.
    * @param args arguments that will be passed to the Plugin.onLoaded and Plugin.onExecute methods. If the first argument is not the plugin name, the plugin name will be prepended to the args array.
    */
-  public static async loadPlugin(packageName: string, args?: string[]): Promise<void> {
+  public static async loadPlugin(packageName: string, args?: string[]): Promise<Plugin> {
     // see if it is already loaded.
     const pluginName: string = PluginAdmin.getPluginName(packageName);
 
@@ -123,41 +175,22 @@ export class PluginAdmin {
       }
     }
 
-    const loadPromise = PluginAdmin._loadedPlugins.get(pluginName);
-    if (undefined !== loadPromise) {
+    const pendingPlugin = PluginAdmin._pendingPlugins.get(pluginName);
+    if (undefined !== pendingPlugin) {
       // it has been loaded (or at least we have started to load it) already. If it is registered, call its reload method. (Otherwise reload called when we're done the initial load)
       const registeredPlugin = PluginAdmin._registeredPlugins.get(pluginName);
       if (registeredPlugin) {
         registeredPlugin.onExecute(args);
       }
-      return loadPromise;
+      return pendingPlugin.promise;
     }
 
     // set it up to load.
-    const thisPromise: Promise<void> = new Promise<void>((resolve, reject) => {
-      const head = document.getElementsByTagName("head")[0];
-      if (!head)
-        reject(new Error("no head element found"));
-
-      // create the script element. handle onload and onerror.
-      const scriptElement = document.createElement("script");
-      scriptElement.onload = () => {
-        scriptElement.onload = null;
-        resolve();
-      };
-      scriptElement.onerror = (ev) => {
-        scriptElement.onload = null;
-        reject(new Error("can't load " + packageName + " : " + ev));
-      };
-      scriptElement.async = true;
-      scriptElement.src = packageName;
-      head.insertBefore(scriptElement, head.lastChild);
-    });
+    const newPendingPlugin: PendingPlugin = new PendingPlugin(packageName, args);
 
     // Javascript-ish saving of the arguments in the promise, so we can call reload with them.
-    (thisPromise as any).args = args;
-    PluginAdmin._loadedPlugins.set(pluginName, thisPromise);
-    return thisPromise;
+    PluginAdmin._pendingPlugins.set(pluginName, newPendingPlugin);
+    return newPendingPlugin.promise;
   }
 
   /**
@@ -188,11 +221,12 @@ export class PluginAdmin {
     // log successful load after plugin is registered.
     Logger.logInfo(loggerCategory, plugin.name + " loaded");
 
-    // retrieve the args we saved in the promise.
+    // retrieve the args we saved in the pendingPlugin.
     let args: string[] | undefined;
-    const loadedPluginPromise = PluginAdmin._loadedPlugins.get(plugin.name);
-    if (loadedPluginPromise) {
-      args = (loadedPluginPromise as any).args;
+    const pendingPlugin = PluginAdmin._pendingPlugins.get(plugin.name);
+    if (pendingPlugin) {
+      pendingPlugin.resolve!(plugin);
+      args = pendingPlugin.args;
     }
 
     if (!args)

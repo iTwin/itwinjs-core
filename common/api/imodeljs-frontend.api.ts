@@ -3594,7 +3594,8 @@ class Plugin {
 
 // @public
 class PluginAdmin {
-  static loadPlugin(packageName: string, args?: string[]): Promise<void>;
+  static getPlugin(pluginName: string): Promise<Plugin> | undefined;
+  static loadPlugin(packageName: string, args?: string[]): Promise<Plugin>;
   static register(plugin: Plugin): string[] | undefined;
 }
 
