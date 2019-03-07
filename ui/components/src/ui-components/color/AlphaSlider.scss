@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 @import "@bentley/ui-core/lib/ui-core/index";
 
-.components-transparency-pointer {
+.components-alpha-pointer {
   position: absolute;
   width: 1.2rem;
   height: 1.2rem;
@@ -18,14 +18,14 @@
   }
 }
 
-.components-transparency-container-horizontal {
+.components-alpha-container-horizontal {
   width: 100%;
   height: 1rem;
   display: flex;
   align-items: center;
   justify-content: center;
 
-  .components-transparency-slider {
+  .components-alpha-slider {
     position: relative;
     width: calc(100% - 1.2rem);
     height: 100%;
@@ -35,20 +35,20 @@
     background-size: 2rem 1rem, cover;
     background-repeat: repeat, no-repeat;
 
-    .components-transparency-pointer {
+    .components-alpha-pointer {
       transform: translate(-.6rem, -.1rem);
     }
   }
 }
 
-.components-transparency-container-vertical {
+.components-alpha-container-vertical {
   width: 1rem;
   display: flex;
   align-items: center;
   justify-content: center;
   height: 100%;
 
-  .components-transparency-slider {
+  .components-alpha-slider {
     position: relative;
     width: 100%;
     height: calc(100% - 1.2rem);
@@ -58,7 +58,7 @@
     background-size: 1rem 2rem, cover;
     background-repeat: repeat, no-repeat;
 
-    .components-transparency-pointer {
+    .components-alpha-pointer {
       transform: translate(-.1rem, -.6rem);
     }
   }

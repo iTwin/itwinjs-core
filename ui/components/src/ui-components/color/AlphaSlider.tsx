@@ -5,33 +5,31 @@
 /** @module Color */
 
 import * as React from "react";
-import "./TransparencySlider.scss";
+import "./AlphaSlider.scss";
 import classnames from "classnames";
 
-/** Properties for the [[TransparencySlider]] React component */
-export interface TransparencySliderProps extends React.HTMLAttributes<HTMLDivElement> {
+/** Properties for the [[AlphaSlider]] React component */
+export interface AlphaSliderProps extends React.HTMLAttributes<HTMLDivElement> {
   /** true if slider is oriented horizontal, else vertical orientation is assumed */
   isHorizontal?: boolean;
   /** function to run when user selects color swatch */
-  onTransparencyChange?: ((transparency: number) => void) | undefined;
-  /** Transparency value between 0 and 1 */
-  transparency: number;
+  onAlphaChange?: ((alpha: number) => void) | undefined;
+  /** Alpha value between 0 (transparent) and 1 (opaque) */
+  alpha: number;
 }
 
-/** TransparencySlider component used to set the transparency value. */
-export class TransparencySlider extends React.PureComponent<TransparencySliderProps> {
+/** AlphaSlider component used to set the alpha value. */
+export class AlphaSlider extends React.PureComponent<AlphaSliderProps> {
   private _container: HTMLDivElement | null = null;
 
-  constructor(props: TransparencySliderProps) {
+  constructor(props: AlphaSliderProps) {
     super(props);
   }
 
-  private _calculateChange = (e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>, isHorizontal: boolean, transparency: number, container: HTMLDivElement): number | undefined => {
+  private _calculateChange = (e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>, isHorizontal: boolean, alpha: number, container: HTMLDivElement): number | undefined => {
     e.preventDefault();
     const containerWidth = container.clientWidth;
     const containerHeight = container.clientHeight;
-    // tslint:disable-next-line:no-console
-    console.log(`containerWidth=${containerWidth} containerHeight=${containerHeight} `);
 
     let x = 0;
     if ("pageX" in e) {
@@ -58,10 +56,7 @@ export class TransparencySlider extends React.PureComponent<TransparencySliderPr
     const left = x - (container.getBoundingClientRect().left + window.pageXOffset);
     const top = y - (container.getBoundingClientRect().top + window.pageYOffset);
 
-    // tslint:disable-next-line:no-console
-    console.log(`x=${x}, y=${y} left=${left}  top=${top} clientRect.left=${container.getBoundingClientRect().left} clientRect.top=${container.getBoundingClientRect().top}`);
-
-    let t = transparency;
+    let t = alpha;
 
     if (!isHorizontal) {
       if (top < 0) {
@@ -83,7 +78,7 @@ export class TransparencySlider extends React.PureComponent<TransparencySliderPr
 
     if (t < 0) t = 0;
     if (t > 1) t = 1;
-    return (transparency !== t) ? t : undefined;
+    return (alpha !== t) ? t : undefined;
   }
 
   public componentWillUnmount() {
@@ -91,9 +86,9 @@ export class TransparencySlider extends React.PureComponent<TransparencySliderPr
   }
 
   private _onChange = (e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
-    if (this._container && this.props.onTransparencyChange) {
-      const change = this._calculateChange(e, this.props.isHorizontal ? this.props.isHorizontal : false, this.props.transparency, this._container);
-      undefined !== change && typeof this.props.onTransparencyChange === "function" && this.props.onTransparencyChange(change);
+    if (this._container && this.props.onAlphaChange) {
+      const change = this._calculateChange(e, this.props.isHorizontal ? this.props.isHorizontal : false, this.props.alpha, this._container);
+      undefined !== change && typeof this.props.onAlphaChange === "function" && this.props.onAlphaChange(change);
     }
   }
 
@@ -108,13 +103,13 @@ export class TransparencySlider extends React.PureComponent<TransparencySliderPr
   private _onKeyDown = (evt: React.KeyboardEvent<HTMLDivElement>) => {
     let newTransparency: number | undefined;
     if (evt.key === "ArrowLeft" || evt.key === "ArrowDown") {
-      newTransparency = this.props.transparency - (evt.ctrlKey ? .1 : .05);
+      newTransparency = this.props.alpha - (evt.ctrlKey ? .1 : .05);
     } else if (evt.key === "ArrowRight" || evt.key === "ArrowUp") {
-      newTransparency = this.props.transparency + (evt.ctrlKey ? .1 : .05);
+      newTransparency = this.props.alpha + (evt.ctrlKey ? .1 : .05);
     } else if (evt.key === "PageDown") {
-      newTransparency = this.props.transparency - (evt.ctrlKey ? .5 : .25);
+      newTransparency = this.props.alpha - (evt.ctrlKey ? .5 : .25);
     } else if (evt.key === "PageUp") {
-      newTransparency = this.props.transparency + (evt.ctrlKey ? .5 : .25);
+      newTransparency = this.props.alpha + (evt.ctrlKey ? .5 : .25);
     } else if (evt.key === "Home") {
       newTransparency = 0;
     } else if (evt.key === "End") {
@@ -124,8 +119,8 @@ export class TransparencySlider extends React.PureComponent<TransparencySliderPr
     if (undefined !== newTransparency) {
       if (newTransparency > 1) newTransparency = 1;
       if (newTransparency < 0) newTransparency = 0;
-      if (this.props.onTransparencyChange)
-        this.props.onTransparencyChange(newTransparency);
+      if (this.props.onAlphaChange)
+        this.props.onAlphaChange(newTransparency);
     }
   }
 
@@ -140,23 +135,23 @@ export class TransparencySlider extends React.PureComponent<TransparencySliderPr
 
   public render(): React.ReactNode {
     const containerClasses = classnames(
-      this.props.isHorizontal ? "components-transparency-container-horizontal" : "components-transparency-container-vertical",
+      this.props.isHorizontal ? "components-alpha-container-horizontal" : "components-alpha-container-vertical",
     );
 
     const pointerStyle: React.CSSProperties = this.props.isHorizontal ? {
-      left: `${(this.props.transparency * 100)}%`,
+      left: `${(this.props.alpha * 100)}%`,
     } : {
         left: `0px`,
-        top: `${-(this.props.transparency * 100) + 100}%`,
+        top: `${-(this.props.alpha * 100) + 100}%`,
       };
 
     return (
-      <div className={containerClasses} data-testid="transparency-container">
+      <div className={containerClasses} data-testid="alpha-container">
         <div
-          data-testid="transparency-slider"
+          data-testid="alpha-slider"
           role="slider" aria-label="Transparency"
-          aria-valuemin={0} aria-valuemax={1} aria-valuenow={this.props.transparency}
-          className="components-transparency-slider"
+          aria-valuemin={0} aria-valuemax={1} aria-valuenow={this.props.alpha}
+          className="components-alpha-slider"
           ref={(container) => this._container = container}
           onMouseDown={this._onMouseDown}
           onTouchMove={this._onChange}
@@ -164,7 +159,7 @@ export class TransparencySlider extends React.PureComponent<TransparencySliderPr
           tabIndex={0}
           onKeyDown={this._onKeyDown}
         >
-          <div style={pointerStyle} className="components-transparency-pointer" data-testid="transparency-pointer" />
+          <div style={pointerStyle} className="components-alpha-pointer" data-testid="alpha-pointer" />
         </div>
       </div>
     );

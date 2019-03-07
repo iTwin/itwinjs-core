@@ -7,23 +7,16 @@
 import * as React from "react";
 import "./HueSlider.scss";
 import classnames from "classnames";
-
-/** Hue (h), Saturation (s), Lightness (l), Alpha (a), Source (source)
- * Value limits h: 0-360, s,l,a: 0-1
- */
-export class HSLAColor {
-  constructor(public h = 0, public s = 0, public l = 0, public a = 1, public source = "rgb") { }
-  public clone(): HSLAColor { const out = new HSLAColor(); out.h = this.h; out.s = this.s; out.l = this.l; out.a = this.a; out.source = this.source; return out; }
-}
+import { HSVColor } from "@bentley/imodeljs-common";
 
 /** Properties for the [[HueSlider]] React component */
 export interface HueSliderProps extends React.HTMLAttributes<HTMLDivElement> {
   /** true if slider is oriented horizontal, else vertical orientation is assumed */
   isHorizontal?: boolean;
   /** function to run when user selects color swatch */
-  onHueChange?: ((hue: HSLAColor) => void) | undefined;
-  /** HSL with Alpha Color value */
-  hsl: HSLAColor;
+  onHueChange?: ((hue: HSVColor) => void) | undefined;
+  /** HSV Color Value */
+  hsv: HSVColor;
 }
 
 /** HueSlider component used to set the hue value. */
@@ -34,7 +27,7 @@ export class HueSlider extends React.PureComponent<HueSliderProps> {
     super(props);
   }
 
-  private _calculateChange = (e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>, isHorizontal: boolean, hsl: HSLAColor, container: HTMLDivElement): HSLAColor | undefined => {
+  private _calculateChange = (e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>, isHorizontal: boolean, hsv: HSVColor, container: HTMLDivElement): HSVColor | undefined => {
     e.preventDefault();
     const containerWidth = container.clientWidth;
     const containerHeight = container.clientHeight;
@@ -63,6 +56,7 @@ export class HueSlider extends React.PureComponent<HueSliderProps> {
 
     const left = x - (container.getBoundingClientRect().left + window.pageXOffset);
     const top = y - (container.getBoundingClientRect().top + window.pageYOffset);
+    const newColor = this.props.hsv.clone();
 
     if (!isHorizontal) {
       let h;
@@ -75,8 +69,9 @@ export class HueSlider extends React.PureComponent<HueSliderProps> {
         h = ((360 * percent) / 100);
       }
 
-      if (hsl.h !== h) {
-        return new HSLAColor(h, hsl.s, hsl.l, hsl.a, "rgb");
+      if (hsv.h !== h) {
+        newColor.h = h;
+        return newColor;
       }
     } else {  // horizontal
       let h;
@@ -89,8 +84,9 @@ export class HueSlider extends React.PureComponent<HueSliderProps> {
         h = ((360 * percent) / 100);
       }
 
-      if (hsl.h !== h) {
-        return new HSLAColor(h, hsl.s, hsl.l, hsl.a, "rgb");
+      if (hsv.h !== h) {
+        newColor.h = h;
+        return newColor;
       }
     }
     return undefined;
@@ -102,7 +98,7 @@ export class HueSlider extends React.PureComponent<HueSliderProps> {
 
   private _onChange = (e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
     if (this._container && this.props.onHueChange) {
-      const change = this._calculateChange(e, this.props.isHorizontal ? this.props.isHorizontal : false, this.props.hsl, this._container);
+      const change = this._calculateChange(e, this.props.isHorizontal ? this.props.isHorizontal : false, this.props.hsv, this._container);
       change && typeof this.props.onHueChange === "function" && this.props.onHueChange(change);
     }
   }
@@ -117,7 +113,7 @@ export class HueSlider extends React.PureComponent<HueSliderProps> {
 
   private _onKeyDown = (evt: React.KeyboardEvent<HTMLDivElement>) => {
     let newHue: number | undefined;
-    const hueValue = this.props.hsl.clone();
+    const hueValue = this.props.hsv.clone();
     if (evt.key === "ArrowLeft" || evt.key === "ArrowDown") {
       newHue = hueValue.h - (evt.ctrlKey ? 10 : 1);
     } else if (evt.key === "ArrowRight" || evt.key === "ArrowUp") {
@@ -133,12 +129,12 @@ export class HueSlider extends React.PureComponent<HueSliderProps> {
     }
 
     if (undefined !== newHue) {
-      const newValue = this.props.hsl.clone();
+      const newColor = this.props.hsv.clone();
       if (newHue > 360) newHue = 360;
       if (newHue < 0) newHue = 0;
-      newValue.h = newHue;
+      newColor.h = newHue;
       if (this.props.onHueChange)
-        this.props.onHueChange(newValue);
+        this.props.onHueChange(newColor);
     }
   }
 
@@ -157,10 +153,10 @@ export class HueSlider extends React.PureComponent<HueSliderProps> {
     );
 
     const pointerStyle: React.CSSProperties = this.props.isHorizontal ? {
-      left: `${(this.props.hsl.h * 100) / 360}%`,
+      left: `${(this.props.hsv.h * 100) / 360}%`,
     } : {
         left: `0px`,
-        top: `${-((this.props.hsl.h * 100) / 360) + 100}%`,
+        top: `${-((this.props.hsv.h * 100) / 360) + 100}%`,
       };
 
     return (
@@ -168,7 +164,7 @@ export class HueSlider extends React.PureComponent<HueSliderProps> {
         <div
           data-testid="hue-slider"
           role="slider" aria-label="Hue"
-          aria-valuemin={0} aria-valuemax={360} aria-valuenow={this.props.hsl.h}
+          aria-valuemin={0} aria-valuemax={360} aria-valuenow={this.props.hsv.h}
           className="components-hue-slider"
           ref={(container) => this._container = container}
           onMouseDown={this._onMouseDown}
