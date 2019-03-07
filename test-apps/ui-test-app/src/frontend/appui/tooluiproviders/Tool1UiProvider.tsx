@@ -8,7 +8,7 @@ import { ConfigurableUiManager, ConfigurableCreateInfo, ToolUiProvider } from "@
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
 import { HSVColor, ColorDef } from "@bentley/imodeljs-common";
 
-import { ColorSwatch, HueSlider, AlphaSlider, SaturationPicker } from "@bentley/ui-components";
+import { ColorSwatch, HueSlider, AlphaSlider, SaturationPicker, DropDownColorPicker } from "@bentley/ui-components";
 import { ToolAssistanceItem, ToolAssistanceSeparator } from "@bentley/ui-ninezone";
 import { SampleAppIModelApp } from "../..";
 
@@ -72,6 +72,12 @@ class Tool1Settings extends React.Component<{}, State> {
     this.setState({ alpha, userColor });
   }
 
+  private _onColorPick = (color: ColorDef) => {
+    const msg = `Color set to ${color.toRgbString()} alpha=${(color.getAlpha() / 255) * 100}%`;
+    IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
+    this.setState({ userColor: color });
+  }
+
   public render(): React.ReactNode {
     // const vertDivStyle: React.CSSProperties = {
     //  height: `120px`,
@@ -80,6 +86,11 @@ class Tool1Settings extends React.Component<{}, State> {
     const satDivStyle: React.CSSProperties = {
       width: `200px`,
       height: `200px`,
+    };
+
+    const colorPickerDivStyle: React.CSSProperties = {
+      width: `60px`,
+      height: `1rem`,
     };
 
     /*
@@ -154,6 +165,11 @@ class Tool1Settings extends React.Component<{}, State> {
               <td>Saturation</td>
               <td> <div style={satDivStyle}><SaturationPicker hsv={this.state.hsv} onSaturationChange={this._handleSaturationChange} /></div> </td>
             </tr>
+            <tr>
+              <td>Color Picker</td>
+              <td> <div style={colorPickerDivStyle}><DropDownColorPicker activeColor={this.state.userColor} onColorPick={this._onColorPick} /></div></td>
+            </tr>
+
           </tbody>
         </table>
       </div >
