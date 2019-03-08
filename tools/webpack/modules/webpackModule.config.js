@@ -61,19 +61,6 @@ function getIModelJsVersionsFromPackage(iModelJsVersions, packageContents, sourc
 function getIModelJsVersions(sourceDir, packageContents, externalList) {
   const iModelJsVersions = new Object();
   getIModelJsVersionsFromPackage(iModelJsVersions, packageContents, sourceDir, externalList, 0);
-  // correct the keys with something like 0.190.0-dev.8 to something like ">0.190.0.dev-0" otherwise the semver matching is too strict.
-  for (const key in iModelJsVersions) {
-    if (iModelJsVersions.hasOwnProperty(key)) {
-      const moduleVersion = iModelJsVersions[key];
-      const dashPosition = moduleVersion.indexOf("-");
-      if (-1 !== dashPosition) {
-        const lastNumPosition = moduleVersion.lastIndexOf('.');
-        if ((-1 !== lastNumPosition) && (lastNumPosition > dashPosition)) {
-          iModelJsVersions[key] = ">" + moduleVersion.slice(0, lastNumPosition+1) + "0";
-        }
-      }
-    }
-  }
   return iModelJsVersions;
 }
 
@@ -235,10 +222,10 @@ function getConfig(env) {
   // It gets that by reading the version of imodeljs-frontend listed in package.json.
   if (env.htmltemplate || env.plugin) {
     const iModelJsVersions = getIModelJsVersions(sourceDir, packageContents, webpackLib.externals);
-    const versionString = JSON.stringify(iModelJsVersions);
 
     if (env.htmltemplate) {
       const HtmlWebpackPlugin = require("html-webpack-plugin");
+      const versionString = JSON.stringify(iModelJsVersions);
       webpackLib.plugins.push(new HtmlWebpackPlugin({
         imjsVersions: versionString,
         template: env.htmltemplate,
@@ -249,6 +236,22 @@ function getConfig(env) {
     }
 
     if (env.plugin) {
+
+      // correct the keys with something like 0.190.0-dev.8 to something like ">0.190.0.dev-0" otherwise the semver matching is too strict.
+      for (const key in iModelJsVersions) {
+        if (iModelJsVersions.hasOwnProperty(key)) {
+          const moduleVersion = iModelJsVersions[key];
+          const dashPosition = moduleVersion.indexOf("-");
+          if (-1 !== dashPosition) {
+            const lastNumPosition = moduleVersion.lastIndexOf('.');
+            if ((-1 !== lastNumPosition) && (lastNumPosition > dashPosition)) {
+              iModelJsVersions[key] = ">" + moduleVersion.slice(0, lastNumPosition + 1) + "0";
+            }
+          }
+        }
+      }
+
+      const versionString = JSON.stringify(iModelJsVersions);
       definePluginDefinitions.IMODELJS_VERSIONS_REQUIRED = JSON.stringify(versionString);
       definePluginDefinitions.PLUGIN_NAME = JSON.stringify(bundleName);
     }

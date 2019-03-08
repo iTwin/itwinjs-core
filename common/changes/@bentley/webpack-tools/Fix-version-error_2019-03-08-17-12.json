@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Change to fix iModelJs version string was overly broad.",
+      "packageName": "@bentley/webpack-tools",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/webpack-tools",
+  "email": "Barry.Bentley@bentley.com"
+}
