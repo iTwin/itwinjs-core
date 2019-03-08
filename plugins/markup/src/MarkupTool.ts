@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { XAndY } from "@bentley/geometry-core";
-import { CoordinateLockOverrides, IModelApp, PrimitiveTool, Viewport } from "@bentley/imodeljs-frontend";
+import { CoordinateLockOverrides, IModelApp, PrimitiveTool, Viewport, BeTouchEvent, EventHandled, BeButton } from "@bentley/imodeljs-frontend";
 import { Element as MarkupElement, LinkedHTMLElement } from "@svgdotjs/svg.js";
 import { markupApp, Markup } from "./Markup";
 
@@ -23,6 +23,16 @@ export abstract class MarkupTool extends PrimitiveTool {
     this.showPrompt();
   }
   protected outputMarkupPrompt(msg: string) { IModelApp.notifications.outputPromptByKey(MarkupTool.toolKey + msg); }
+
+  public async onTouchMoveStart(ev: BeTouchEvent, startEv: BeTouchEvent): Promise<EventHandled> {
+    if (startEv.isSingleTouch)
+      await IModelApp.toolAdmin.convertTouchMoveStartToButtonDownAndMotion(startEv, ev);
+    return EventHandled.Yes; // View tools are not allowed during redlining; use touch events to create markup and don't pass event to IdleTool...
+  }
+
+  public async onTouchMove(ev: BeTouchEvent): Promise<void> { return IModelApp.toolAdmin.convertTouchMoveToMotion(ev); }
+  public async onTouchComplete(ev: BeTouchEvent): Promise<void> { return IModelApp.toolAdmin.convertTouchEndToButtonUp(ev); }
+  public async onTouchCancel(ev: BeTouchEvent): Promise<void> { return IModelApp.toolAdmin.convertTouchEndToButtonUp(ev, BeButton.Reset); }
 
   public async undoPreviousStep(): Promise<boolean> {
     if (await this.onUndoPreviousStep())

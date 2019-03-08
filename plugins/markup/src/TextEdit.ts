@@ -2,7 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { BeButtonEvent, EventHandled } from "@bentley/imodeljs-frontend";
+import { BeButtonEvent, EventHandled, InputSource } from "@bentley/imodeljs-frontend";
 import { Svg, Text as MarkupText } from "@svgdotjs/svg.js";
 import { MarkupTool } from "./MarkupTool";
 import { RedlineTool } from "./RedlineTool";
@@ -23,6 +23,8 @@ export class PlaceTextTool extends RedlineTool {
   protected showPrompt(): void { this.outputMarkupPrompt("Text.Place.Prompts.FirstPoint"); }
 
   protected createMarkup(svg: Svg, ev: BeButtonEvent, isDynamics: boolean): void {
+    if (isDynamics && InputSource.Touch === ev.inputSource)
+      return;
     const start = ev.viewPoint;
     const text = new MarkupText().plain(this._value);
     svg.put(text);

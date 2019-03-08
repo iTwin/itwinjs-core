@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { Point3d, Vector3d } from "@bentley/geometry-core";
-import { BeButton, BeButtonEvent, BeTouchEvent, EventHandled, IModelApp } from "@bentley/imodeljs-frontend";
+import { BeButtonEvent, EventHandled, IModelApp } from "@bentley/imodeljs-frontend";
 import { Element as MarkupElement, Marker, SVG, Svg } from "@svgdotjs/svg.js";
 import { MarkupTool } from "./MarkupTool";
 import { markupApp } from "./Markup";
@@ -55,16 +55,6 @@ export abstract class RedlineTool extends MarkupTool {
   public async onUndoPreviousStep(): Promise<boolean> {
     return (0 === this._points.length) ? false : (this.onReinitialize(), true);
   }
-
-  public async onTouchMoveStart(ev: BeTouchEvent, startEv: BeTouchEvent): Promise<EventHandled> {
-    if (startEv.isSingleTouch)
-      await IModelApp.toolAdmin.convertTouchMoveStartToButtonDownAndMotion(startEv, ev);
-    return EventHandled.Yes; // View tools are not allowed during redlining; use touch events to create markup and don't pass event to IdleTool...
-  }
-
-  public async onTouchMove(ev: BeTouchEvent): Promise<void> { return IModelApp.toolAdmin.convertTouchMoveToMotion(ev); }
-  public async onTouchComplete(ev: BeTouchEvent): Promise<void> { return IModelApp.toolAdmin.convertTouchEndToButtonUp(ev); }
-  public async onTouchCancel(ev: BeTouchEvent): Promise<void> { return IModelApp.toolAdmin.convertTouchEndToButtonUp(ev, BeButton.Reset); }
 
   public async onMouseMotion(ev: BeButtonEvent): Promise<void> {
     if (undefined === ev.viewport || this._points.length < this._minPoints)

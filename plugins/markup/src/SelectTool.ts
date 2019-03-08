@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { Point2d, Point3d, Transform, XAndY } from "@bentley/geometry-core";
-import { BeButtonEvent, BeModifierKeys, EventHandled, IModelApp } from "@bentley/imodeljs-frontend";
+import { BeButtonEvent, BeModifierKeys, EventHandled, IModelApp, InputSource } from "@bentley/imodeljs-frontend";
 import { ArrayXY, Box, Circle, Element as MarkupElement, G, Line, Matrix, Point, Polygon, Svg, Text as MarkupText } from "@svgdotjs/svg.js";
 import { markupApp } from "./Markup";
 import { MarkupTool } from "./MarkupTool";
@@ -539,6 +539,8 @@ export class SelectTool extends MarkupTool {
     }
 
     if (this._dragging.length === 0) {
+      if (InputSource.Touch === ev.inputSource)
+        return;
       this.flashedElement = this.pickElement(ev.viewPoint);  // if we're not dragging, try to find an element under the cursor
       return;
     }
