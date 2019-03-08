@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "changes path to config-loader from nested to sibling dependency in order to function in non-symlinked repos that use rush/pnpm",
+      "packageName": "@bentley/webpack-tools",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/webpack-tools",
+  "email": "kevin.krisfalusy@bentley.com"
+}

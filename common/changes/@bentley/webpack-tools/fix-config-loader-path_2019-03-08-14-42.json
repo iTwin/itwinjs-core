@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "First checks for nested dependency. Falls back to sibling",
+      "packageName": "@bentley/webpack-tools",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/webpack-tools",
+  "email": "kevin.krisfalusy@bentley.com"
+}

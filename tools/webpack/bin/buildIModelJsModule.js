@@ -574,19 +574,37 @@ class IModelJsModuleBuilder {
             return Promise.resolve(new Result("makeConfig", 0));
         if (!this._moduleDescription.makeConfig.dest)
             return Promise.resolve(new Result("makeConfig", 1, undefined, undefined, 'The iModelJs.buildModule.makeConfig must have a "dest" property'));
-        const makeConfigFullPath = path.resolve(process.cwd(), "node_modules/@bentley/webpack-tools/node_modules/@bentley/config-loader/scripts/write.js");
-        const args = [makeConfigFullPath, this._moduleDescription.makeConfig.dest];
-        if (this._moduleDescription.makeConfig.filter)
-            args.push(this._moduleDescription.makeConfig.filter);
-        if (this._detail > 0)
-            console.log("Starting makeConfig");
-        return new Promise((resolve, _reject) => {
-            child_process.execFile("node", args, { cwd: process.cwd() }, (error, stdout, stderr) => {
-                if (this._detail > 0)
-                    console.log("Finished makeConfig");
-                resolve(new Result("makeConfig", (null !== error) || (stderr && stderr.length) ? 1 : 0, error, stdout, stderr));
+        try {
+            // get the path to config-loader/scripts/write.js module
+            let makeConfigFullPath;
+            const nestedConfigLoaderPath = 'node_modules/@bentley/webpack-tools/node_modules/@bentley/config-loader/scripts/write.js';
+            if (fs.existsSync(nestedConfigLoaderPath)) {
+                // use the nested config-loader dependency
+                makeConfigFullPath = path.resolve(process.cwd(), nestedConfigLoaderPath);
+            }
+            else {
+                // attempt to use the sibling config-loader dependency. Would need to be explicitly declared as a dependency in a consumer's package.json
+                const siblingConfigLoaderPath = 'node_modules/@bentley/config-loader/scripts/write.js';
+                makeConfigFullPath = path.resolve(process.cwd(), siblingConfigLoaderPath);
+            }
+            const args = [makeConfigFullPath, this._moduleDescription.makeConfig.dest];
+            if (this._moduleDescription.makeConfig.filter)
+                args.push(this._moduleDescription.makeConfig.filter);
+            if (this._detail > 0)
+                console.log("Starting makeConfig");
+            return new Promise((resolve, _reject) => {
+                child_process.execFile("node", args, { cwd: process.cwd() }, (error, stdout, stderr) => {
+                    if (this._detail > 0)
+                        console.log("Finished makeConfig");
+                    resolve(new Result("makeConfig", (null !== error) || (stderr && stderr.length) ? 1 : 0, error, stdout, stderr));
+                });
             });
-        });
+        }
+        catch (e) {
+            return new Promise((resolve, _reject) => {
+                resolve(new Result("Make Config", 1, e));
+            });
+        }
     }
     // find webpack executable.
     findWebpack() {
