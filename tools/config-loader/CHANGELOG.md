@@ -1,6 +1,14 @@
 # Change Log - @bentley/config-loader
 
-This log was last generated on Wed, 16 Jan 2019 16:36:09 GMT and should not be manually modified.
+This log was last generated on Wed, 06 Mar 2019 15:41:22 GMT and should not be manually modified.
+
+## 0.189.0
+Wed, 06 Mar 2019 15:41:22 GMT
+
+### Updates
+
+- Use new buildIModelJsBuild script
+- upgrade to TypeScript 3.2.2
 
 ## 0.188.0
 Wed, 16 Jan 2019 16:36:09 GMT

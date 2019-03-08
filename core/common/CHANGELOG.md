@@ -1,6 +1,39 @@
 # Change Log - @bentley/imodeljs-common
 
-This log was last generated on Wed, 16 Jan 2019 16:36:09 GMT and should not be manually modified.
+This log was last generated on Wed, 06 Mar 2019 15:41:22 GMT and should not be manually modified.
+
+## 0.189.0
+Wed, 06 Mar 2019 15:41:22 GMT
+
+### Updates
+
+- allow to check if frontend is ios wkwebview
+- allow subclasses of Range to use static methods
+- Changes package.json to include api-extractor and adds api-extractor.json
+- Update docs for BRepEntity.DataProps
+- Use new buildIModelJsBuild script
+- AxisAlignedBox and ElementAlignedBox are now typed to Range3d rather than classes
+- clone methods are no longer generic
+- Add release tags to indicate API stability
+- Handle transforms on child tiles.
+- Optimize use of animation cutting planes.
+- Remove uneeded typedoc plugin depedency
+- Add support for draco compressed meshes.
+- Consistent naming of "get" methods in Growable arrays.
+- Added spatial <-> cartographic methods that check/use the geographic coordinate system before using ecef location.
+- update for geometry GrowableXYArray usage
+- Add material props classes
+- Defer loading of edges until needed
+- Save BUILD_SEMVER to globally accessible map
+- Implemented spatial criterai when searching through all reality data associated to a project.
+- Optimize containment test with spheres.
+- Move the IModelUnitTestRpcInterface into the testbed and out of the public AP
+- Renamed constructor variable in RpcConfiguration and RpcRequest
+- Support for sending large RPC binary payloads in configurable chunks.
+- Remove loadNativeAsset and formatElements RPC calls from the IModelReadRpcInterface
+- Removed IModelConnection.connectionId, added IModelApp.sessionId
+- Tile requests can optionally specify a retryInterval.
+- upgrade to TypeScript 3.2.2
 
 ## 0.188.0
 Wed, 16 Jan 2019 16:36:09 GMT

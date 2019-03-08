@@ -3,7 +3,6 @@ ignore: true
 ---
 # NextVersion
 
-
 ## Changes to OidcAgentClient
 
 OidcAgentClient now follows the typical OIDC client credentials authorization workflow. This implies the caller need not supply "serviceUserEmail" and "serviceUserPassword" as part of the configuration. For example:

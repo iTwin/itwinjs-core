@@ -1,6 +1,21 @@
 # Change Log - @bentley/ecschema-metadata
 
-This log was last generated on Wed, 16 Jan 2019 16:36:09 GMT and should not be manually modified.
+This log was last generated on Wed, 06 Mar 2019 15:41:22 GMT and should not be manually modified.
+
+## 0.189.0
+Wed, 06 Mar 2019 15:41:22 GMT
+
+### Updates
+
+- Changes package.json to include api-extractor and adds api-extractor.json
+- Implemented BIS rules for schema validation.
+- Use new buildIModelJsBuild script
+- Change the default version pattern to be padded with zeroes to match 'RR.ww.mm'.
+- Convert Schema._items from Array to Map and return IterableIterator instead of Array in Schema.getItems/getClasses
+- Removing BIS Rules from ecschema-metadata
+- SchemaContext is now required when constructing a Schema instance.
+- Added schema validation support via the configuration of rule sets that can be applied during schema traversal
+- upgrade to TypeScript 3.2.2
 
 ## 0.188.0
 Wed, 16 Jan 2019 16:36:09 GMT

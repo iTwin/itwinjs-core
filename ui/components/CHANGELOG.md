@@ -1,6 +1,49 @@
 # Change Log - @bentley/ui-components
 
-This log was last generated on Wed, 16 Jan 2019 16:36:09 GMT and should not be manually modified.
+This log was last generated on Wed, 06 Mar 2019 15:41:22 GMT and should not be manually modified.
+
+## 0.189.0
+Wed, 06 Mar 2019 15:41:22 GMT
+
+### Updates
+
+- UI documentation fixes
+- Added ToggleEditor. Support for defaultTool in Frontstage. Fixed BooleanEditor sizing.
+- Added 100% test coverage for Breadcrumb/BreadcrumbDetails
+- Use new buildIModelJsBuild script
+- Remove uneeded typedoc plugin depedency
+- Added EnumEditor & BooleanEditor type editors
+- Minor UI Color Theme changes
+- Support for including CSS files in published UI packages
+- Updated type editors to support updated PropertyRecord. Moved setFocus to props in type editors..
+- Removed dependency on BWC. Parts of BWC copied into ui-core in preparation for theming support.
+- Added ToggleEditor. Support for defaultTool in Frontstage.
+- Save BUILD_SEMVER to globally accessible map
+- Change setImmediate to setTimeout. Fixed cube rotation issue.
+- Added ItemStyle and ItemStyle provider.
+- CellItem and TreeNodeItem now have the same style property.
+- Added TableCell and TableCellContent React components.
+- Changed table css class names.
+- Changed CellItem interface property - 'alignment' type to be a restricted string instead of an enum.
+-  Cleanup of DefaultToolSetting provider and EnumButtonGroup editor
+- Add EnumButtonGroupEditor.
+- Primitive property value renderers now render links specified in property records.
+- Renamed class names that start with "ui-components-" to start with just "components-"
+- Added IImageLoader, ImageRenderer and TreeImageLoader.
+- Added showIcons and imageLoader props to Tree component.
+- Added a property to provide rowHeight value or function that calculates it.
+- Tree now accepts one checkbox prop object instead of multiple props.
+- Tree now accepts one cell editing prop object instead of multiple props.
+- Split tree node label and description rendering into a separate component - TreeNodeContent.
+- Added an ability to show node descriptions in the Tree component via showDescriptions property.
+- Fix tree failing to load nodes in special cases
+- Added support for UI color themes
+- Add a way to specify checkbox states asynchronously in Tree component
+- Breadcrumb fixes
+- Add a way to specify custom Tree checkbox renderer
+- Update to use newer generic-icons-webfont package.
+- upgrade to TypeScript 3.2.2
+- WIP: ViewportComponent unit tests. Removed imodeljs-clients-backend dependency from ui-framework
 
 ## 0.188.0
 Wed, 16 Jan 2019 16:36:09 GMT

@@ -1,6 +1,52 @@
 # Change Log - @bentley/ui-framework
 
-This log was last generated on Wed, 16 Jan 2019 16:36:09 GMT and should not be manually modified.
+This log was last generated on Wed, 06 Mar 2019 15:41:22 GMT and should not be manually modified.
+
+## 0.189.0
+Wed, 06 Mar 2019 15:41:22 GMT
+
+### Updates
+
+- OIDC changes needed for Angular client
+- Renamed CSS files to SCSS
+- UI documentation fixes
+- Added ToggleEditor. Support for defaultTool in Frontstage. Fixed BooleanEditor sizing.
+- Use new buildIModelJsBuild script
+- Removed rowHeight function from ModelSelector, because heights changed to default.
+- Updated view query in ViewSelector to exclude private views
+- Remove uneeded typedoc plugin depedency
+- Support for including CSS files in published UI packages
+- Include descriptions (if any) in category and model picker
+- Added styling capability to messages
+- More ui-framework unit tests
+- Removed dependency on BWC. Parts of BWC copied into ui-core in preparation for theming support.
+- Added ToggleEditor. Support for defaultTool in Frontstage.
+- Save BUILD_SEMVER to globally accessible map
+- Change setImmediate to setTimeout. Fixed cube rotation issue.
+- Cleanup of DefaultToolSetting provider
+- Move property definitions to imodeljs-frontend so they could be used by tools to define properties for tool settings.
+- Fixed ModelSelector highlighting when hovered or clicked on node.
+- Fixed ModelSelector row height.
+- Added priority support for pointer messages
+- Change 'Categories' ruleset to return either spatial or drawing categories based on ruleset variable
+- Changed node style processing in model selector
+- Set initial ModelSelector selection based on ViewState
+- Load models when selected in picker
+- Force scene invalidation when toggling items in model selector
+- Render unique filter in model/category widget when changing tabs
+- Add spinner to model/category widget
+- Cache model/category tree
+- Make one call to update viewport
+- Enabled descriptions in model selector
+- Map model/category nodes to items with unique id
+- Show spinner while waiting to load category list
+- Added strings for reality data picker
+- Added support for UI color themes
+- Keyboard Shortcut keys in context menu. ui-core unit test branches.
+- Fix dependencies
+- Update to use newer generic-icons-webfont package.
+- upgrade to TypeScript 3.2.2
+- WIP: ViewportComponent unit tests. Removed imodeljs-clients-backend dependency from ui-framework
 
 ## 0.188.0
 Wed, 16 Jan 2019 16:36:09 GMT

@@ -2,6 +2,30 @@
   "name": "@bentley/imodeljs-quantity",
   "entries": [
     {
+      "version": "0.189.0",
+      "tag": "@bentley/imodeljs-quantity_v0.189.0",
+      "date": "Wed, 06 Mar 2019 15:41:22 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add API tags to classes, interfaces, and enums as appropriate."
+          },
+          {
+            "comment": "Changes package.json to include api-extractor and adds api-extractor.json"
+          },
+          {
+            "comment": "Use new buildIModelJsBuild script"
+          },
+          {
+            "comment": "Save BUILD_SEMVER to globally accessible map"
+          },
+          {
+            "comment": "upgrade to TypeScript 3.2.2"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.188.0",
       "tag": "@bentley/imodeljs-quantity_v0.188.0",
       "date": "Wed, 16 Jan 2019 16:36:09 GMT",

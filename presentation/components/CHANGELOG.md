@@ -1,6 +1,26 @@
 # Change Log - @bentley/presentation-components
 
-This log was last generated on Wed, 16 Jan 2019 16:36:09 GMT and should not be manually modified.
+This log was last generated on Wed, 06 Mar 2019 15:41:22 GMT and should not be manually modified.
+
+## 0.189.0
+Wed, 06 Mar 2019 15:41:22 GMT
+
+### Updates
+
+- Changes package.json to include api-extractor and adds api-extractor.json
+- Use new buildIModelJsBuild script
+- Exported ContentBuilder and ContentDataProvider
+- Remove uneeded typedoc plugin depedency
+- Expose presentation-specific content request methods through IContentDataProvider so they're available for provider consumers
+- Save BUILD_SEMVER to globally accessible map
+- Change `DataProvidersFactory.createSimilarInstancesTableDataProvider` to return data provider that also has a description
+- Add DataProvidersFactory API for creating presentation data providers targeted towards specific use cases
+- (breaking) Change PresentationTableDataProvider's constructor to accept a props object instead of multiple arguments
+- Make all content data providers IDisposable. **Important:** providers must be disposed after use.
+- Changed the way `0` selection level is handled in unified selection tables. Previously we used to reload table data when selection changed with level below boundary __or level `0`__. Now the __underlined__ part is removed and we only reload data if selection changes with level below boundary (set through props).
+- RPC Interface changes to optimize getting first page of nodes/content
+- Move property definitions to imodeljs-frontend so they could be used by tools to define properties for tool settings.
+- upgrade to TypeScript 3.2.2
 
 ## 0.188.0
 Wed, 16 Jan 2019 16:36:09 GMT
