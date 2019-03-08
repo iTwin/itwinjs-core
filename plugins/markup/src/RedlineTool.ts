@@ -6,22 +6,18 @@ import { Point3d, Vector3d } from "@bentley/geometry-core";
 import { BeButton, BeButtonEvent, BeTouchEvent, EventHandled, IModelApp } from "@bentley/imodeljs-frontend";
 import { Element as MarkupElement, Marker, SVG, Svg } from "@svgdotjs/svg.js";
 import { MarkupTool } from "./MarkupTool";
-import { MarkupProps } from "./MarkupConfig";
-
-let markupId = 100; // serialized id for all new Markup elements
+import { markupApp } from "./Markup";
 
 export abstract class RedlineTool extends MarkupTool {
   protected _minPoints = 1;
   protected _nRequiredPoints = 2;
   protected readonly _points: Point3d[] = [];
 
-  protected onAdded(el: MarkupElement, putInSelection: boolean = true) {
-    el.id("markup" + (markupId++));
+  protected onAdded(el: MarkupElement) {
     const markup = this.markup;
     const undo = markup.undo;
     undo.doGroup(() => undo.onAdded(el));
-    if (putInSelection)
-      markup.selected.restart(el);
+    markup.selected.restart(el);
   }
   protected isComplete(_ev: BeButtonEvent) { return this._points.length >= this._nRequiredPoints; }
   protected setupAndPromptForNextAction(): void {
@@ -36,14 +32,14 @@ export abstract class RedlineTool extends MarkupTool {
   }
 
   protected setCurrentStyle(element: MarkupElement, canBeFilled: boolean): void {
-    const active = MarkupProps.active;
+    const active = markupApp.props.active;
     element.css(active.element);
     if (!canBeFilled)
       element.css({ fill: "none" });
   }
 
   protected setCurrentTextStyle(element: MarkupElement): void {
-    const active = MarkupProps.active;
+    const active = markupApp.props.active;
     element.css(active.text);
   }
 

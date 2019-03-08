@@ -3,8 +3,13 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { Transform } from "@bentley/geometry-core";
-import { Box, Element as MarkupElement, extend, G, Matrix, nodeOrNew, PointArray, Polygon, register, Svg, Text } from "@svgdotjs/svg.js";
-import { MarkupColor, MarkupProps } from "./MarkupConfig";
+import { Box, Element as MarkupElement, extend, G, Matrix, nodeOrNew, Rect, register, Svg, Text } from "@svgdotjs/svg.js";
+import { markupApp } from "./Markup";
+
+export interface MarkupColor {
+  fill: any;
+  stroke: any;
+}
 
 /** add methods and classes to svg.js library for Markup. */
 declare module "@svgdotjs/svg.js" {
@@ -38,7 +43,7 @@ declare module "@svgdotjs/svg.js" {
 
     forElementsOfGroup(fn: (child: MarkupElement) => void): void;
     getNpcToVp(): Matrix;
-    getOutline(): Polygon;
+    getOutline(): Rect;
   }
 
   interface Text {
@@ -94,9 +99,9 @@ extend(MarkupElement, {
       me.css(oldColor).data(OLDCOLOR, null); // change to old color and remove data object
     me.forElementsOfGroup((child) => child.resetColor());
   },
-  hilite() { const me = this as MarkupElement; if (!me.inSelection) { me.overrideColor(MarkupProps.hilite.color); me.inSelection = true; } },
+  hilite() { const me = this as MarkupElement; if (!me.inSelection) { me.overrideColor(markupApp.props.hilite.color); me.inSelection = true; } },
   unHilite() { const me = this as MarkupElement; if (me.inSelection) { me.resetColor(); me.inSelection = undefined; } },
-  flash() { const me = this as MarkupElement; if (!me.inSelection) me.overrideColor(MarkupProps.hilite.flash); },
+  flash() { const me = this as MarkupElement; if (!me.inSelection) me.overrideColor(markupApp.props.hilite.flash); },
   unFlash() { const me = this as MarkupElement; if (!me.inSelection) me.resetColor(); },
   markupStretch(w: number, h: number, x: number, y: number, _mtx: Matrix) { const me = this as MarkupElement; me.size(w, h).move(x, y); },
   isChildOf(svg: Svg) {
@@ -120,12 +125,10 @@ extend(MarkupElement, {
     const bb = me.bbox();
     return new Matrix().scaleO(bb.w, bb.h).translateO(bb.x, bb.y).lmultiplyO(me.ctm());
   },
-  getOutline(): Polygon {
+  getOutline(): Rect {
     const me = this as MarkupElement;
-    const outline = new Polygon();
-    const pts = new PointArray([[0, 0], [0, 1], [1, 1], [1, 0]]);
-    outline.plot(pts.transform(me.getNpcToVp()));
-    return outline;
+    const box = me.bbox();
+    return new Rect().move(box.x, box.y).size(box.w, box.h).transform(me.ctm());
   },
 });
 
@@ -163,6 +166,17 @@ extend(Text, {
     }
     me.build(false);
   },
+  getOutline(): Rect {
+    const me = this as Text;
+    const node = me.node;
+    const content = node.textContent;
+    if (content === null || content.trim() === "")
+      node.textContent = "M";
+    const outline = MarkupElement.prototype.getOutline.call(me);
+    node.textContent = content;
+    return outline;
+  },
+
 });
 
 extend(Matrix, {

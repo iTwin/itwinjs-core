@@ -82,7 +82,6 @@
     },
     "Text": {
       "Place": {
-        "startValue": "Note: ",
         "keyin": "Place Markup Text",
         "description": "Add text box",
         "flyover": "Markup Text",

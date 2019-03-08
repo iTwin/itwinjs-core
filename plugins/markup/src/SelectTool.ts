@@ -5,11 +5,10 @@
 import { Point2d, Point3d, Transform, XAndY } from "@bentley/geometry-core";
 import { BeButtonEvent, BeModifierKeys, EventHandled, IModelApp } from "@bentley/imodeljs-frontend";
 import { ArrayXY, Box, Circle, Element as MarkupElement, G, Line, Matrix, Polygon, Svg, Text as SvgText } from "@svgdotjs/svg.js";
-import { MarkupProps } from "./MarkupConfig";
 import { MarkupTool } from "./MarkupTool";
 import { EditTextTool } from "./TextEdit";
 import { UndoManager } from "./Undo";
-// tslint:disable:no-console
+import { markupApp } from "./Markup";
 
 /** A "modify handle" is a visible position on the screen that provides UI to modify a MarkupElement. */
 abstract class ModifyHandle {
@@ -62,8 +61,8 @@ class StretchHandle extends ModifyHandle {
   constructor(handles: Handles, xy: ArrayXY, cursor: string) {
     super(handles);
     this.posNpc = new Point2d(xy[0], xy[1]);
-    const props = MarkupProps.handles;
-    this._circle = handles.group!.circle(props.size) // the visible "circle" for this handle
+    const props = markupApp.props.handles;
+    this._circle = handles.group!.circle(props.size).addClass("markup-stretchHandle") // the visible "circle" for this handle
       .attr(props.stretch).attr("cursor", cursor + "-resize");
     this.setMouseHandler(this._circle);
   }
@@ -116,10 +115,10 @@ class RotateHandle extends ModifyHandle {
 
   constructor(public handles: Handles) {
     super(handles);
-    const props = MarkupProps.handles;
+    const props = markupApp.props.handles;
 
-    this._line = handles.group!.line(0, 0, 1, 1).attr(props.rotateLine);
-    this._circle = handles.group!.circle(props.size * 1.5).attr(props.rotate);
+    this._line = handles.group!.line(0, 0, 1, 1).attr(props.rotateLine).addClass("markup-rotateLine");
+    this._circle = handles.group!.circle(props.size * 1.5).attr(props.rotate).addClass("markup-rotateHandle");
     this.setMouseHandler(this._circle);
   }
   public get centerVp() { return this.handles.npcToVp({ x: .5, y: .5 }); }
@@ -127,7 +126,7 @@ class RotateHandle extends ModifyHandle {
   public setPosition(): void {
     const anchor = this.anchorVp;
     const dir = this.centerVp.vectorTo(anchor).normalize()!;
-    const loc = this.location = anchor.plusScaled(dir, MarkupProps.handles.size * 3);
+    const loc = this.location = anchor.plusScaled(dir, markupApp.props.handles.size * 3);
     this._line.plot(anchor.x, anchor.y, loc.x, loc.y);
     this._circle.center(loc.x, loc.y);
   }
@@ -145,9 +144,9 @@ class MoveHandle extends ModifyHandle {
   private _lastPos?: Point3d;
   constructor(public handles: Handles) {
     super(handles);
-    const props = MarkupProps.handles;
+    const props = markupApp.props.handles;
 
-    this._outline = handles.group.polygon().attr(props.move);
+    this._outline = handles.group.polygon().attr(props.move).addClass("markup-moveHandle");
     this.setMouseHandler(this._outline);
   }
   public onClick(_ev: BeButtonEvent) {

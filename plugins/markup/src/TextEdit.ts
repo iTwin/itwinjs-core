@@ -2,12 +2,13 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { BeButtonEvent, EventHandled, IModelApp } from "@bentley/imodeljs-frontend";
+import { BeButtonEvent, EventHandled } from "@bentley/imodeljs-frontend";
 import { Svg, Text as SvgText } from "@svgdotjs/svg.js";
-import { MarkupProps } from "./MarkupConfig";
 import { MarkupTool } from "./MarkupTool";
 import { RedlineTool } from "./RedlineTool";
+import { markupApp } from "./Markup";
 
+/** Tool to place new text notes on a Markup. */
 export class PlaceTextTool extends RedlineTool {
   public static toolId = "Markup.Text.Place";
   protected _nRequiredPoints = 1;
@@ -15,7 +16,7 @@ export class PlaceTextTool extends RedlineTool {
   protected _value!: string;
 
   public onPostInstall(): void {
-    this._value = IModelApp.i18n.translate(MarkupTool.toolKey + "Text.Place.startValue");
+    this._value = markupApp.props.text.startValue;
     super.onPostInstall();
   }
 
@@ -25,25 +26,23 @@ export class PlaceTextTool extends RedlineTool {
     const start = ev.viewPoint;
     const text = svg.plain(this._value);
     this.setCurrentTextStyle(text);
-    text.move(start.x, start.y);
-    const box = text.bbox();
-    if (isDynamics)
-      svg.rect(box.w, box.h).move(box.x, box.y).attr(MarkupProps.text.edit.box);
-    else {
-      this.onAdded(text, false);
+    text.translate(start.x, start.y);
+    if (isDynamics) {
+      svg.add(text.getOutline().attr(markupApp.props.text.edit.box).addClass("markup-editBox"));
+    } else {
       new EditTextTool(text, true).run();
     }
   }
   public onRestartTool(): void { }
   public async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> { this.exitTool(); return EventHandled.Yes; }
-
 }
 
 const lastSize = { width: "180px", height: "60px" };
 export class EditTextTool extends MarkupTool {
   public static toolId = "Markup.Text.Edit";
   public editor?: HTMLTextAreaElement;
-  constructor(public text?: SvgText, private _selectAll = false) { super(); }
+  public editDiv?: HTMLDivElement;
+  constructor(public text?: SvgText, private _fromPlaceTool = false) { super(); }
 
   public startEditor() {
     const text = this.text;
@@ -51,12 +50,24 @@ export class EditTextTool extends MarkupTool {
       return;
 
     const markupDiv = this.markup.markupDiv!;
+    const editDiv = this.editDiv = document.createElement("div");
+    let style = editDiv.style;
+    style.backgroundColor = "blanchedalmond";
+    style.top = style.left = "0";
+    style.right = style.bottom = "100%";
+
+    markupDiv.appendChild(editDiv);
+
     const divRect = markupDiv.getBoundingClientRect();
 
-    const rbox = text.rbox();
-    const bbox = text.bbox();
+    const outline = text.getOutline(); // use the outline rather than the text in case it's blank.
+    text.after(outline); // we have to add it to the DOM or the rbox call doesn't work.
+    const rbox = outline.rbox();
+    const bbox = outline.bbox();
+    outline.remove(); // take it out again.
     const editor = this.editor = document.createElement("textarea");
-    editor.className = "markup-textedit";
+    editDiv.appendChild(editor);
+    editor.className = "markup-textEditor";
     editor.contentEditable = "true";
     editor.spellcheck = true;
     editor.wrap = "off";
@@ -83,7 +94,7 @@ export class EditTextTool extends MarkupTool {
     };
     const textElStyle = window.getComputedStyle(text.node);
 
-    const style = editor.style;
+    style = editor.style;
     style.pointerEvents = "auto";
     style.position = "absolute";
     style.top = ((rbox.cy - (bbox.h / 2)) - divRect.top) + "px";
@@ -91,7 +102,6 @@ export class EditTextTool extends MarkupTool {
     style.height = lastSize.height;
     style.width = lastSize.width;
     style.resize = "both";
-    style.backgroundColor = "blanchedalmond";
     style.fontFamily = textElStyle.fontFamily;
     style.fontSize = "14pt";
     style.textAnchor = textElStyle.textAnchor;
@@ -99,26 +109,38 @@ export class EditTextTool extends MarkupTool {
     const parentZ = parseInt(window.getComputedStyle(markupDiv).zIndex || "0", 10);
     style.zIndex = (parentZ + 200).toString();
 
-    markupDiv.appendChild(editor);
     editor.innerHTML = text.getMarkup();
     this.editor.focus();
-    this.editor.setSelectionRange(this._selectAll ? 0 : editor.value.length, editor.value.length);
+    this.editor.setSelectionRange(this._fromPlaceTool ? 0 : editor.value.length, editor.value.length);
   }
 
   public onCleanup() {
-    if (this.editor) {
+    if (this.editDiv) {
       const text = this.text!;
       const undo = this.markup.undo;
       undo.doGroup(() => {
+        const newVal = this.editor!.value;
+        if (newVal.trim() === "") {
+          text.remove();
+          if (!this._fromPlaceTool)
+            undo.onDelete(text);
+          return;
+        }
+
         const newText = text.clone();
         const fontSize = parseFloat(window.getComputedStyle(text.node).fontSize!);
-        newText.createMarkup(this.editor!.value, fontSize);
+        newText.createMarkup(newVal, fontSize);
         text.replace(newText);
-        undo.onModified(newText, text);
+        if (this._fromPlaceTool) {
+          undo.onAdded(newText);
+        } else {
+          undo.onModified(newText, text);
+        }
       });
-      lastSize.height = this.editor.style.height!;
-      lastSize.width = this.editor.style.width!;
-      this.editor.remove();
+      lastSize.height = this.editor!.style.height!;
+      lastSize.width = this.editor!.style.width!;
+      this.editDiv.remove();
+      this.editDiv = undefined;
       this.editor = undefined;
     }
   }
@@ -130,13 +152,7 @@ export class EditTextTool extends MarkupTool {
     return true;
   }
 
-  public async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> {
-    this.exitTool(); return EventHandled.Yes;
-  }
-  public async onDataButtonUp(_ev: BeButtonEvent): Promise<EventHandled> {
-    this.exitTool(); return EventHandled.Yes;
-  }
-  public async onMouseStartDrag(_ev: BeButtonEvent): Promise<EventHandled> {
-    this.exitTool(); return EventHandled.Yes;
-  }
+  public async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> { this.exitTool(); return EventHandled.Yes; }
+  public async onDataButtonUp(_ev: BeButtonEvent): Promise<EventHandled> { this.exitTool(); return EventHandled.Yes; }
+  public async onMouseStartDrag(_ev: BeButtonEvent): Promise<EventHandled> { this.exitTool(); return EventHandled.Yes; }
 }

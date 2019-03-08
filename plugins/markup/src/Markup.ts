@@ -19,9 +19,43 @@ import { UndoManager } from "./Undo";
 //   return xhr.responseText;
 // }
 
-class MarkupApp extends Plugin {
+export class MarkupApp extends Plugin {
   public markup?: Markup;
   public markupNamespace: I18NNamespace;
+  public props = {
+    handles: {
+      size: 9,
+      stretch: { "fill-opacity": .85, "stroke": "grey", "fill": "white" },
+      rotateLine: { "stroke": "grey", "fill-opacity": .85 },
+      rotate: { "cursor": "url(Markup/rotate.png) 12 12, auto", "fill-opacity": .85, "stroke": "black", "fill": "lightBlue" },
+      move: { "cursor": "move", "stroke-dasharray": "6,6", "fill": "lightGrey", "fill-opacity": .1, "stroke-opacity": .85, "stroke": "white" },
+    },
+    hilite: {
+      color: "magenta",
+      flash: "cyan",
+    },
+    active: {
+      text: {
+        "font-family": "sans-serif",
+        "font-size": "30px",
+        "stroke": "red",
+        "fill": "red",
+      },
+      element: {
+        "stroke": "red",
+        "stroke-opacity": 0.8,
+        "stroke-width": 3,
+        "fill-opacity": 0.2,
+        "fill": "blue",
+      },
+    },
+    text: {
+      startValue: "Note: ",
+      edit: {
+        box: { "fill": "lightGrey", "fill-opacity": .1, "stroke-opacity": .85, "stroke": "lightBlue" },
+      },
+    },
+  };
   private _saveDefaultToolId = "";
   private _saveDefaultToolArgs?: any[];
 
@@ -83,11 +117,12 @@ export class Markup {
     this.markupDiv = vp.addNewDiv("overlay-markup", true, 20); // this div goes on top of the canvas, but behind UI layers
     const svgContainer = SVG().addTo(SVG(this.markupDiv)).id("markup-container").size("100%", "100%"); // SVG container to hold both Markup SVG and svg-based Markup decorators
     this.svgMarkup = svgContainer.nested().id("markup-svg");
-    if (svgData)
+    if (svgData) {
       this.svgMarkup.svg(svgData); // if supplied, add the SVG
+      this.svgMarkup.each(() => { }, true); // create an SVG.Element for each entry in the SVG file.
+    }
     this.svgDynamics = svgContainer.nested().id("markup-dynamics"); // only for tool dynamics of SVG graphics.
     this.svgDecorations = svgContainer.nested().id("markup-decorations"); // only for temporary decorations of SVG graphics.
-    this.svgMarkup.each(() => { }, true); // create an SVG.Element for each entry in the SVG file.
     this.selected = new SelectionSet(this.svgDecorations);
   }
 

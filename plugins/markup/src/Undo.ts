@@ -12,11 +12,14 @@ abstract class UndoAction {
   public abstract reinstate(): void;
 }
 
+let markupId = 100; // serialized id for all new Markup elements
+
 class AddAction extends UndoAction {
   private _parent: MarkupElement;
   private _index: number;
   constructor(private _elem: MarkupElement) {
     super();
+    _elem.id("markup" + (markupId++));
     this._parent = _elem.parent() as MarkupElement;
     assert(this._parent !== undefined);
     this._index = _elem.position();
