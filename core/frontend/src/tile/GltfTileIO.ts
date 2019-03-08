@@ -365,7 +365,7 @@ export namespace GltfTileIO {
     /** @hidden */
     protected get _isCanceled(): boolean { return undefined !== this._canceled && this._canceled(this); }
     /** @hidden */
-    protected get _isClassifier(): boolean { return BatchType.Classifier === this._type; }
+    protected get _isVolumeClassifier(): boolean { return BatchType.VolumeClassifier === this._type; }
 
     /** @hidden */
     protected readGltfAndCreateGraphics(isLeaf: boolean, featureTable: FeatureTable, contentRange: ElementAlignedBox3d, transformToRoot?: Transform, sizeMultiplier?: number, instances?: InstancedGraphicParams): GltfTileIO.ReaderResult {
@@ -526,7 +526,7 @@ export namespace GltfTileIO {
     public readBufferDataFloat(json: any, accessorName: string): BufferData | undefined { return this.readBufferData(json, accessorName, DataType.Float); }
 
     /** @hidden */
-    protected constructor(props: ReaderProps, iModel: IModelConnection, modelId: Id64String, is3d: boolean, system: RenderSystem, type: BatchType = BatchType.Classifier, isCanceled?: IsCanceled) {
+    protected constructor(props: ReaderProps, iModel: IModelConnection, modelId: Id64String, is3d: boolean, system: RenderSystem, type: BatchType = BatchType.Primary, isCanceled?: IsCanceled) {
       this._buffer = props.buffer;
       this._scene = props.scene;
       this._binaryData = props.binaryData;
@@ -626,7 +626,7 @@ export namespace GltfTileIO {
       }
       const isPlanar = JsonUtils.asBool(primitive.isPlanar);
 
-      const asClassifier = this._isClassifier;
+      const isVolumeClassifier = this._isVolumeClassifier;
       const mesh = Mesh.create({
         displayParams,
         features: undefined !== featureTable ? new Mesh.Features(featureTable) : undefined,
@@ -635,7 +635,7 @@ export namespace GltfTileIO {
         is2d: !this._is3d,
         isPlanar,
         hasBakedLighting,
-        asClassifier,
+        isVolumeClassifier,
       });
       // We don't have real colormap - just load material color.  This will be used if non-Bentley
       // tile or fit the color table is uniform. For a non-Bentley, non-Uniform, we'll set the

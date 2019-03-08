@@ -518,7 +518,7 @@ async function getTileTree(imodel: IModelConnection, modelId: Id64String): Promi
 
   let tree: TileTree | undefined;
   await waitUntil(() => {
-    tree = model.getOrLoadTileTree(true);
+    tree = model.getOrLoadTileTree(BatchType.Primary, true);
     return undefined !== tree;
   });
 

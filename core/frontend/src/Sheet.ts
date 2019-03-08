@@ -9,7 +9,7 @@ import { Angle, ClipVector, Constant, IndexedPolyface, IndexedPolyfaceVisitor, M
 import {
   ColorDef, ElementAlignedBox2d, ElementAlignedBox3d, Feature, FeatureTable, Gradient, GraphicParams, ImageBuffer,
   Placement2d, RenderMode, RenderTexture, SheetProps, TileProps, ViewAttachmentProps, ViewDefinition2dProps, ViewFlag,
-  ViewFlags, ViewStateProps,
+  ViewFlags, ViewStateProps, BatchType,
 } from "@bentley/imodeljs-common";
 import { CategorySelectorState } from "./CategorySelectorState";
 import { DisplayStyle2dState } from "./DisplayStyleState";
@@ -663,7 +663,7 @@ export namespace Attachments {
       if (!viewedModel)
         return State.Empty;
 
-      viewedModel.getOrLoadTileTree(true);
+      viewedModel.getOrLoadTileTree(BatchType.Primary, true);
       const loadStatus = viewedModel.loadStatus;
       if (loadStatus === TileTree.LoadStatus.Loaded) {
         attachment.tree = new Tree2d(viewedModel.iModel, attachment, view, viewedModel.tileTree!);

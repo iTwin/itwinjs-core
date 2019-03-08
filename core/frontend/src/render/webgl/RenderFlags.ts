@@ -21,6 +21,7 @@ export const enum RenderPass {
     Terrain,
     HiliteClassification,  // Secondary hilite pass for stencil volumes to process hilited classifiers for reality data
     ClassificationByIndex, // Stencil volumes for processing classification one cliassifier at a time (used for generating pick data Ids and flashing a single classifier).
+    HilitePlanarClassification,
     COUNT,
 }
 
@@ -53,6 +54,10 @@ export enum TextureUnit {
 
     VertexLUT = Five,
     AuxChannelLUT = Six,
+    PlanarClassificationColor = Six,        // classification or aux channel - not both.
+    PlanarClassificationHilite = Six,       // hilite or color, not both.
+    PlanarClassificationFeatureId = Seven,
+
 }
 
 /**

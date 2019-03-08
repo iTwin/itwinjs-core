@@ -36,7 +36,7 @@ export class StandardRotations extends ToolBarDropDown {
 
       div.appendChild(createToolButton({
         className: "bim-icon-view" + entries[i],
-        click: () => IModelApp.tools.run("View.Standard", IModelApp.viewManager.selectedView!, i),
+        click: () => IModelApp.tools.run("View.Standard", IModelApp.viewManager.selectedView, i),
       }));
     }
 

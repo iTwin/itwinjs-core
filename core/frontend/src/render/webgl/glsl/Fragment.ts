@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { FragmentShaderBuilder, VariableType, FragmentShaderComponent } from "../ShaderBuilder";
+import { FragmentShaderBuilder, VariableType, FragmentShaderComponent, SourceBuilder } from "../ShaderBuilder";
 import { ColorDef } from "@bentley/imodeljs-common";
 import { GLSLDecode } from "./Decode";
 import { System } from "../System";
@@ -65,13 +65,13 @@ const computePickBufferOutputs = `
   vec4 output2 = vec4(u_renderOrder * 0.0625, encodeDepthRgb(linearDepth)); // near=1, far=0
 `;
 
-const assignPickBufferOutputsMRT = computePickBufferOutputs + `
+const assignPickBufferOutputsMRT = `
   FragColor0 = output0;
   FragColor1 = output1;
   FragColor2 = output2;
 `;
 
-const assignPickBufferOutputsMP = computePickBufferOutputs + `
+const assignPickBufferOutputsMP = `
   if (0 == u_renderTargetIndex)
     FragColor = output0;
   else if (1 == u_renderTargetIndex)
@@ -79,16 +79,27 @@ const assignPickBufferOutputsMP = computePickBufferOutputs + `
   else
     FragColor = output2;
 `;
+const reassignFeatureId = "output1 = overrideFeatureId(output1);";
 
 export function addPickBufferOutputs(frag: FragmentShaderBuilder): void {
   frag.addFunction(GLSLDecode.encodeDepthRgb);
   frag.addFunction(GLSLFragment.computeLinearDepth);
+
+  const prelude = new SourceBuilder();
+  const overrideFeatureId = frag.get(FragmentShaderComponent.OverrideFeatureId);
+  if (undefined !== overrideFeatureId) {
+    frag.addFunction("vec4 overrideFeatureId(vec4 currentId)", overrideFeatureId);
+    prelude.add(computePickBufferOutputs);
+    prelude.addline(reassignFeatureId);
+  } else
+    prelude.add(computePickBufferOutputs);
+
   if (System.instance.capabilities.supportsMRTPickShaders) {
     frag.addDrawBuffersExtension();
-    frag.set(FragmentShaderComponent.AssignFragData, assignPickBufferOutputsMRT);
+    frag.set(FragmentShaderComponent.AssignFragData, prelude.source + assignPickBufferOutputsMRT);
   } else {
     addRenderTargetIndex(frag);
-    frag.set(FragmentShaderComponent.AssignFragData, assignPickBufferOutputsMP);
+    frag.set(FragmentShaderComponent.AssignFragData, prelude.source + assignPickBufferOutputsMP);
   }
 }
 

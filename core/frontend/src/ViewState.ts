@@ -12,7 +12,7 @@ import {
 import {
   AnalysisStyle, AxisAlignedBox3d, Camera, ColorDef, Frustum, GraphicParams, Npc, RenderMaterial, SpatialViewDefinitionProps,
   SubCategoryAppearance, SubCategoryOverride, TextureMapping, ViewDefinition2dProps, ViewDefinition3dProps, ViewDefinitionProps,
-  ViewFlags, ViewStateProps,
+  ViewFlags, ViewStateProps, BatchType,
 } from "@bentley/imodeljs-common";
 import { AuxCoordSystem2dState, AuxCoordSystem3dState, AuxCoordSystemSpatialState, AuxCoordSystemState } from "./AuxCoordSys";
 import { CategorySelectorState } from "./CategorySelectorState";
@@ -29,6 +29,7 @@ import { StandardView, StandardViewId } from "./StandardView";
 import { TileTree } from "./tile/TileTree";
 import { DecorateContext, SceneContext } from "./ViewContext";
 import { Viewport } from "./Viewport";
+import { Classification } from "./Classification";
 
 /** Describes the orientation of the grid displayed within a [[Viewport]].
  * @public
@@ -549,7 +550,7 @@ public cancelAllTileLoads(): void {
   }
 
   /** @hidden */
-  public createClassification(context: SceneContext): void { this.forEachModel((model: GeometricModelState) => this.addModelClassifierToScene(model, context)); }
+  public createClassification(context: SceneContext): void { this.forEachModel((model: GeometricModelState) => Classification.addModelClassifierToScene(model, context)); }
 
   /** Add view-specific decorations. The base implementation draws the grid. Subclasses must invoke super.decorate()
    * @hidden
@@ -1085,24 +1086,10 @@ public cancelAllTileLoads(): void {
   }
 
   private addModelToScene(model: TileTreeModelState, context: SceneContext): void {
-    model.loadTileTree(context.viewFlags.edgesRequired(), this.scheduleScript ? this.scheduleScript.getModelAnimationId(model.treeModelId) : undefined);
+    model.loadTileTree(BatchType.Primary, context.viewFlags.edgesRequired(), this.scheduleScript ? this.scheduleScript.getModelAnimationId(model.treeModelId) : undefined);
     const tileTree = model.tileTree;
     if (undefined !== tileTree) {
       tileTree.drawScene(context);
-    }
-  }
-  private addModelClassifierToScene(model: GeometricModelState, context: SceneContext): void {
-    if (model.jsonProperties.classifiers === undefined)
-      return;
-    for (const classifier of model.jsonProperties.classifiers) {
-      if (classifier.isActive) {
-        const classifierModel = this.iModel.models.getLoaded(classifier.modelId) as GeometricModelState;
-        if (undefined !== classifierModel) {
-          classifierModel.loadTileTree(false, undefined, true, classifier.expand);
-          if (undefined !== classifierModel.classifierTileTree)
-            classifierModel.classifierTileTree.drawScene(context);
-        }
-      }
     }
   }
 
@@ -1811,7 +1798,7 @@ export abstract class ViewState2d extends ViewState {
     if (undefined === this._viewedExtents) {
       const model = this.iModel.models.getLoaded(this.baseModelId);
       if (undefined !== model && model.isGeometricModel) {
-        const tree = (model as GeometricModelState).getOrLoadTileTree(true);
+        const tree = (model as GeometricModelState).getOrLoadTileTree(BatchType.Primary, false);
         if (undefined !== tree) {
           this._viewedExtents = Range3d.create(tree.range.low, tree.range.high);
           tree.location.multiplyRange(this._viewedExtents, this._viewedExtents);

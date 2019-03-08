@@ -23,6 +23,7 @@ import { MeshArgs, PolylineArgs } from "./primitives/mesh/MeshPrimitives";
 import { PointCloudArgs } from "./primitives/PointCloudPrimitive";
 import { MeshParams, PointStringParams, PolylineParams } from "./primitives/VertexTable";
 import { ClipPlanesVolume } from "./webgl/ClipVolume";
+import { PlanarClassifierMap } from "./webgl/PlanarClassifier";
 
 /** Contains metadata about memory consumed by the render system or aspect thereof.
  * @hidden
@@ -101,6 +102,7 @@ export namespace RenderMemory {
     FeatureTables,
     FeatureOverrides,
     ClipVolumes,
+    PlanarClassifiers,
 
     COUNT,
   }
@@ -123,6 +125,7 @@ export namespace RenderMemory {
     public get featureTables() { return this.consumers[ConsumerType.FeatureTables]; }
     public get featureOverrides() { return this.consumers[ConsumerType.FeatureOverrides]; }
     public get clipVolumes() { return this.consumers[ConsumerType.ClipVolumes]; }
+    public get planarClassifiers() { return this.consumers[ConsumerType.PlanarClassifiers]; }
 
     public addBuffer(type: BufferType, numBytes: number): void {
       this._totalBytes += numBytes;
@@ -146,6 +149,7 @@ export namespace RenderMemory {
     public addFeatureTable(numBytes: number) { this.addConsumer(ConsumerType.FeatureTables, numBytes); }
     public addFeatureOverrides(numBytes: number) { this.addConsumer(ConsumerType.FeatureOverrides, numBytes); }
     public addClipVolume(numBytes: number) { this.addConsumer(ConsumerType.ClipVolumes, numBytes); }
+    public addPlanarClassifier(numBytes: number) { this.addConsumer(ConsumerType.PlanarClassifiers, numBytes); }
 
     public addSurface(numBytes: number) { this.addBuffer(BufferType.Surfaces, numBytes); }
     public addVisibleEdges(numBytes: number) { this.addBuffer(BufferType.VisibleEdges, numBytes); }
@@ -183,6 +187,7 @@ export class RenderPlan {
   public readonly ao?: AmbientOcclusion.Settings;
   public readonly isFadeOutActive: boolean;
   public analysisTexture?: RenderTexture;
+  public classificationTextures?: Map<Id64String, RenderTexture>;
   private _curFrustum: ViewFrustum;
 
   public get frustum(): Frustum { return this._curFrustum.getFrustum(); }
@@ -225,6 +230,28 @@ export class RenderPlan {
 
     return rp;
   }
+  public static create(options: any, vp: Viewport) {
+    if (!options) options = {};
+
+    const view = vp.view;
+    const style = view.displayStyle;
+
+    const hline = options.hline ? options.hline : (style.is3d() ? style.settings.hiddenLineSettings : undefined);
+    const ao = options.ambientOcclusionSettings ? options.ambientOcclusionSettings : (style.is3d() ? style.settings.ambientOcclusionSettings : undefined);
+    const lights = undefined; // view.is3d() ? view.getLights() : undefined
+    const clipVec = options.clipVec ? options.clipVec : view.getViewClip();
+    const activeVolume = clipVec !== undefined ? IModelApp.renderSystem.getClipVolume(clipVec, view.iModel) : undefined;
+    const terrainFrustum = (undefined === vp.backgroundMapPlane) ? undefined : ViewFrustum.createFromViewportAndPlane(vp, vp.backgroundMapPlane as Plane3dByOriginAndUnitNormal);
+    return new RenderPlan(view.is3d(), options.viewFlags ? options.viewFlags : style.viewFlags,
+      options.backgroundColor ? options.backgroundColor : view.backgroundColor,
+      options.monochormeColor ? options.monochromeColor : style.monochromeColor,
+      options.hilite ? options.hilite : vp.hilite,
+      undefined !== options.wantAntialasLines ? options.wantAntialiasLines : vp.wantAntiAliasLines,
+      undefined !== options.wantAntiAliasText ? options.wantAntiAliasText : vp.wantAntiAliasText,
+      options.viewFrustum ? options.viewFrustum : vp.viewFrustum,
+      undefined !== options.isFadeOutActive ? options.isFadeOutActive : vp.isFadeOutActive, terrainFrustum!, activeVolume, hline, lights,
+      options.analysisStyle ? options.analysisStyle : style.analysisStyle, ao);
+  }
 }
 
 /** Abstract representation of an object which can be rendered by a [[RenderSystem]].
@@ -254,8 +281,22 @@ export const enum ClippingType {
 export abstract class RenderClipVolume implements IDisposable {
   /** Returns the type of this clipping volume. */
   public abstract get type(): ClippingType;
-
   public abstract dispose(): void;
+}
+
+/** An opaque representation of a planar classifier applied to geometry within a [[Viewport]]. */
+export abstract class RenderPlanarClassifier implements IDisposable {
+  public abstract dispose(): void;
+}
+/** Describes the type of a RenderClassifierModel  */
+export const enum ClassifierType {
+  Volume,
+  Planar,
+}
+
+/** Models that may be used as classifiers.  Detecting their type requires a range query... */
+export class RenderClassifierModel {
+  constructor(public readonly type: ClassifierType) { }
 }
 
 /** An array of [[RenderGraphic]]s. */
@@ -621,7 +662,9 @@ export class PackedFeatureTable {
   /** If this table contains exactly 1 feature, return it. */
   public get uniform(): Feature | undefined { return this.isUniform ? this.getFeature(0) : undefined; }
 
-  public get isClassifier(): boolean { return BatchType.Classifier === this.type; }
+  public get isVolumeClassifier(): boolean { return BatchType.VolumeClassifier === this.type; }
+  public get isPlanarClassifier(): boolean { return BatchType.VolumeClassifier === this.type; }
+  public get isClassifier(): boolean { return this.isVolumeClassifier || this.isPlanarClassifier; }
 
   /** Unpack the features into a [[FeatureTable]]. */
   public unpack(): FeatureTable {
@@ -692,6 +735,8 @@ export abstract class RenderTarget implements IDisposable {
   public abstract changeScene(scene: GraphicList): void;
   /** @hidden */
   public abstract changeTerrain(_scene: GraphicList): void;
+  /** @hidden */
+  public changePlanarClassifiers(_classifiers?: PlanarClassifierMap): void { }
   /** @hidden */
   public abstract changeDynamics(dynamics?: GraphicList): void;
   /** @hidden */
@@ -835,9 +880,10 @@ export abstract class RenderSystem implements IDisposable {
   public createSheetTilePolyfaces(_corners: Point3d[], _clip?: ClipVector): IndexedPolyface[] { return []; }
   /** @hidden */
   public createSheetTile(_tile: RenderTexture, _polyfaces: IndexedPolyface[], _tileColor: ColorDef): GraphicList { return []; }
-
   /** @hidden */
   public getClipVolume(_clipVector: ClipVector, _imodel: IModelConnection): RenderClipVolume | undefined { return undefined; }
+  /** @hidden */
+  public getClassifier(_classifierModelId: Id64String, _iModel: IModelConnection): RenderClassifierModel | undefined { return undefined; }
 
   /** @hidden */
   public createTile(tileTexture: RenderTexture, corners: Point3d[]): RenderGraphic | undefined {
@@ -887,7 +933,7 @@ export abstract class RenderSystem implements IDisposable {
   public abstract createGraphicList(primitives: RenderGraphic[]): RenderGraphic;
 
   /** Create a RenderGraphic consisting of a list of Graphics, with optional transform, clip, and symbology overrides applied to the list */
-  public abstract createBranch(branch: GraphicBranch, transform: Transform, clips?: RenderClipVolume): RenderGraphic;
+  public abstract createBranch(branch: GraphicBranch, transform: Transform, clips?: RenderClipVolume, planarClassifier?: RenderPlanarClassifier): RenderGraphic;
 
   /** Create a RenderGraphic consisting of batched [[Feature]]s.
    * @hidden

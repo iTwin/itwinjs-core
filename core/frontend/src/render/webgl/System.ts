@@ -17,6 +17,7 @@ import {
   RenderDiagnostics,
   RenderTarget,
   RenderClipVolume,
+  RenderClassifierModel,
   GraphicList,
   PackedFeatureTable,
 } from "../System";
@@ -50,6 +51,7 @@ import { ClipPlanesVolume, ClipMaskVolume } from "./ClipVolume";
 import { TextureUnit } from "./RenderFlags";
 import { UniformHandle } from "./Handle";
 import { Debug } from "./Diagnostics";
+import { PlanarClassifier } from "./PlanarClassifier";
 
 export const enum ContextState {
   Uninitialized,
@@ -271,12 +273,15 @@ export class IdMap implements IDisposable {
   public readonly gradients: Dictionary<Gradient.Symb, RenderTexture>;
   /** Mapping of ClipVectors to corresponding clipping volumes. */
   public readonly clipVolumes: Map<ClipVector, RenderClipVolume>;
+  /** Mapping of (planar) classification model ID to textures */
+  public readonly classifiers: Map<Id64String, RenderClassifierModel>;
 
   public constructor() {
     this.materials = new Map<string, RenderMaterial>();
     this.textures = new Map<string, RenderTexture>();
     this.gradients = new Dictionary<Gradient.Symb, RenderTexture>(Gradient.Symb.compareSymb);
     this.clipVolumes = new Map<ClipVector, RenderClipVolume>();
+    this.classifiers = new Map<Id64String, RenderClassifierModel>();
   }
 
   public dispose() {
@@ -404,6 +409,11 @@ export class IdMap implements IDisposable {
       this.clipVolumes.set(clipVector, clipVolume);
     return clipVolume;
   }
+  /** Get  */
+  public getClassifier(modelId: Id64String): RenderClassifierModel | undefined { return this.classifiers.get(modelId); }
+
+  /** Add a new classifier */
+  public addClassifier(modelId: Id64String, classifier: RenderClassifierModel) { this.classifiers.set(modelId, classifier); }
 }
 
 class TextureStats implements TextureMonitor {
@@ -540,7 +550,7 @@ export class System extends RenderSystem {
   public createPointCloud(args: PointCloudArgs): RenderGraphic | undefined { return Primitive.create(() => new PointCloudGeometry(args)); }
 
   public createGraphicList(primitives: RenderGraphic[]): RenderGraphic { return new GraphicsArray(primitives); }
-  public createBranch(branch: GraphicBranch, transform: Transform, clips?: ClipPlanesVolume | ClipMaskVolume): RenderGraphic { return new Branch(branch, transform, clips); }
+  public createBranch(branch: GraphicBranch, transform: Transform, clips?: ClipPlanesVolume | ClipMaskVolume, planarClassifier?: PlanarClassifier): RenderGraphic { return new Branch(branch, transform, clips, undefined, planarClassifier); }
   public createBatch(graphic: RenderGraphic, features: PackedFeatureTable, range: ElementAlignedBox3d): RenderGraphic { return new Batch(graphic, features, range); }
 
   public createSkyBox(params: SkyBox.CreateParams): RenderGraphic | undefined {
@@ -652,6 +662,8 @@ export class System extends RenderSystem {
     const idMap = this.getIdMap(imodel);
     return idMap.getClipVolume(clipVector);
   }
+  public getClassifier(modelId: Id64String, iModel: IModelConnection): RenderClassifierModel | undefined { return this.getIdMap(iModel).classifiers.get(modelId); }
+  public addClassifier(modelId: Id64String, classifier: RenderClassifierModel, iModel: IModelConnection) { this.getIdMap(iModel).classifiers.set(modelId, classifier); }
 
   private constructor(canvas: HTMLCanvasElement, context: WebGLRenderingContext, capabilities: Capabilities) {
     super();

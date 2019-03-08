@@ -7,7 +7,7 @@
 import { assert, using, IDisposable, dispose } from "@bentley/bentleyjs-core";
 import { ShaderProgram, ShaderProgramExecutor } from "./ShaderProgram";
 import { TechniqueId, computeCompositeTechniqueId } from "./TechniqueId";
-import { IsInstanced, IsAnimated, TechniqueFlags, FeatureMode, ClipDef } from "./TechniqueFlags";
+import { IsInstanced, IsAnimated, IsClassified, TechniqueFlags, FeatureMode, ClipDef } from "./TechniqueFlags";
 import { ProgramBuilder, FragmentShaderComponent, ClippingShaders } from "./ShaderBuilder";
 import { DrawParams, DrawCommands, OmitStatus } from "./DrawCommand";
 import { Target } from "./Target";
@@ -59,7 +59,7 @@ export class SingularTechnique implements Technique {
 }
 
 function numFeatureVariants(numBaseShaders: number) { return numBaseShaders * 3; }
-const numHiliteVariants = 2; // instanced and non-instanced
+const numHiliteVariants = 4; // instanced and non-instanced, classified or not.
 const featureModes = [FeatureMode.None, FeatureMode.Pick, FeatureMode.Overrides];
 const scratchTechniqueFlags = new TechniqueFlags();
 const scratchHiliteFlags = new TechniqueFlags();
@@ -118,9 +118,9 @@ export abstract class VariedTechnique implements Technique {
     this._basicPrograms[index] = program;
   }
 
-  protected addHiliteShader(gl: WebGLRenderingContext, instanced: IsInstanced, create: (instanced: IsInstanced) => ProgramBuilder): void {
-    const builder = create(instanced);
-    scratchHiliteFlags.initForHilite(new ClipDef(), instanced);
+  protected addHiliteShader(gl: WebGLRenderingContext, instanced: IsInstanced, classified: IsClassified, create: (instanced: IsInstanced, classified: IsClassified) => ProgramBuilder): void {
+    const builder = create(instanced, classified);
+    scratchHiliteFlags.initForHilite(new ClipDef(), instanced, classified);
     this.addShader(builder, scratchHiliteFlags, gl);
   }
 
@@ -146,7 +146,7 @@ export abstract class VariedTechnique implements Technique {
   }
 
   private getShaderIndex(flags: TechniqueFlags) {
-    assert(!flags.isHilite || (!flags.isTranslucent && flags.hasFeatures), "invalid technique flags");
+    assert(!flags.isHilite || (!flags.isTranslucent && (flags.isClassified === IsClassified.Yes || flags.hasFeatures)), "invalid technique flags");
     const index = this.computeShaderIndex(flags);
     assert(index < this._basicPrograms.length, "shader index out of bounds");
     return index;
@@ -173,29 +173,34 @@ class SurfaceTechnique extends VariedTechnique {
   private static readonly _kOpaque = 0;
   private static readonly _kTranslucent = 1;
   private static readonly _kAnimated = 2;
-  private static readonly _kInstanced = 4;
-  private static readonly _kFeature = 8;
+  private static readonly _kClassified = 4;
+  private static readonly _kInstanced = 8;
+  private static readonly _kFeature = 16;
   private static readonly _kHilite = numFeatureVariants(SurfaceTechnique._kFeature);
 
   public constructor(gl: WebGLRenderingContext) {
     super((SurfaceTechnique._kHilite + numHiliteVariants));
 
     const flags = scratchTechniqueFlags;
+
     for (let instanced = IsInstanced.No; instanced <= IsInstanced.Yes; instanced++) {
-      this.addHiliteShader(gl, instanced, createSurfaceHiliter);
-      for (let iAnimate = IsAnimated.No; iAnimate <= IsAnimated.Yes; iAnimate++) {
-        for (const featureMode of featureModes) {
-          flags.reset(featureMode, instanced);
-          flags.isAnimated = iAnimate;
-          const builder = createSurfaceBuilder(featureMode, flags.isInstanced, flags.isAnimated);
-          addMonochrome(builder.frag);
-          addMaterial(builder.frag);
+      for (let iClassified = IsClassified.No; iClassified <= IsClassified.Yes; iClassified++) {
+        this.addHiliteShader(gl, instanced, iClassified, createSurfaceHiliter);
+        for (let iAnimate = IsAnimated.No; iAnimate <= IsAnimated.Yes; iAnimate++) {
+          for (const featureMode of featureModes) {
+            flags.reset(featureMode, instanced);
+            flags.isAnimated = iAnimate;
+            flags.isClassified = iClassified;
+            const builder = createSurfaceBuilder(featureMode, flags.isInstanced, flags.isAnimated, flags.isClassified);
+            addMonochrome(builder.frag);
+            addMaterial(builder.frag);
 
-          addSurfaceDiscardByAlpha(builder.frag);
-          this.addShader(builder, flags, gl);
+            addSurfaceDiscardByAlpha(builder.frag);
+            this.addShader(builder, flags, gl);
 
-          builder.frag.unset(FragmentShaderComponent.DiscardByAlpha);
-          this.addTranslucentShader(builder, flags, gl);
+            builder.frag.unset(FragmentShaderComponent.DiscardByAlpha);
+            this.addTranslucentShader(builder, flags, gl);
+          }
         }
       }
     }
@@ -204,14 +209,16 @@ class SurfaceTechnique extends VariedTechnique {
 
   public computeShaderIndex(flags: TechniqueFlags): number {
     if (flags.isHilite) {
-      assert(flags.hasFeatures);
-      return SurfaceTechnique._kHilite + flags.isInstanced;
+      assert(flags.hasFeatures || flags.isClassified === IsClassified.Yes);
+      return SurfaceTechnique._kHilite + 2 * flags.isInstanced + flags.isClassified;
     }
 
     let index = flags.isTranslucent ? SurfaceTechnique._kTranslucent : SurfaceTechnique._kOpaque;
     index += SurfaceTechnique._kFeature * flags.featureMode;
     if (flags.isAnimated)
       index += SurfaceTechnique._kAnimated;
+    if (flags.isClassified)
+      index += SurfaceTechnique._kClassified;
     if (flags.isInstanced)
       index += SurfaceTechnique._kInstanced;
 
@@ -231,7 +238,7 @@ class PolylineTechnique extends VariedTechnique {
 
     const flags = scratchTechniqueFlags;
     for (let instanced = IsInstanced.No; instanced <= IsInstanced.Yes; instanced++) {
-      this.addHiliteShader(gl, instanced, createPolylineHiliter);
+      this.addHiliteShader(gl, instanced, IsClassified.No, createPolylineHiliter);
       for (const featureMode of featureModes) {
         flags.reset(featureMode, instanced);
         const builder = createPolylineBuilder(instanced);
@@ -339,7 +346,7 @@ class PointStringTechnique extends VariedTechnique {
 
     const flags = scratchTechniqueFlags;
     for (let instanced = IsInstanced.No; instanced <= IsInstanced.Yes; instanced++) {
-      this.addHiliteShader(gl, instanced, createPointStringHiliter);
+      this.addHiliteShader(gl, instanced, IsClassified.No, createPointStringHiliter);
       for (const featureMode of featureModes) {
         flags.reset(featureMode, instanced);
         const builder = createPointStringBuilder(instanced);
@@ -386,7 +393,7 @@ class PointCloudTechnique extends VariedTechnique {
   public constructor(gl: WebGLRenderingContext) {
     super(3);
 
-    this.addHiliteShader(gl, IsInstanced.No, () => createPointCloudHiliter());
+    this.addHiliteShader(gl, IsInstanced.No, IsClassified.No, () => createPointCloudHiliter());
 
     const flags = scratchTechniqueFlags;
     const pointCloudFeatureModes = [FeatureMode.None, FeatureMode.Overrides];
@@ -459,7 +466,7 @@ export class Techniques implements IDisposable {
         if (TechniqueId.Invalid !== techniqueId) {
           // A primitive command.
           assert(command.isPrimitiveCommand, "expected primitive command");
-          flags.init(target, renderPass, IsInstanced.No);
+          flags.init(target, renderPass, IsInstanced.No, IsAnimated.No, target.planarClassifiers.isValid ? IsClassified.Yes : IsClassified.No);
           flags.setAnimated(command.hasAnimation);
           flags.setInstanced(command.isInstanced);
           const tech = this.getTechnique(techniqueId);

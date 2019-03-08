@@ -1799,12 +1799,13 @@ export abstract class Viewport implements IDisposable {
       if (!this._freezeScene) {
         this.numSelectedTiles = this.numReadyTiles = 0;
         const context = this.createSceneContext();
-        view.createScene(context);
         view.createClassification(context);
+        view.createScene(context);
         view.createTerrain(context);
         context.requestMissingTiles();
         target.changeScene(context.graphics);
         target.changeTerrain(context.backgroundGraphics);
+        target.changePlanarClassifiers(context.planarClassifiers);
 
         isRedrawNeeded = true;
       }
