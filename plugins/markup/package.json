@@ -36,18 +36,18 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
-    "@bentley/imodeljs-frontend": "0.190.0-dev.7",
-    "@bentley/geometry-core": "0.190.0-dev.7",
-    "@bentley/imodeljs-i18n": "0.190.0-dev.7",
+    "@bentley/imodeljs-frontend": "0.190.0-dev.8",
+    "@bentley/geometry-core": "0.190.0-dev.8",
+    "@bentley/imodeljs-i18n": "0.190.0-dev.8",
     "@svgdotjs/svg.js": "~3.0.12"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "0.190.0-dev.7"
+    "@bentley/bentleyjs-core": "0.190.0-dev.8"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "0.190.0-dev.7",
-    "@bentley/build-tools": "0.190.0-dev.7",
-    "@bentley/webpack-tools": "0.190.0-dev.7",
+    "@bentley/bentleyjs-core": "0.190.0-dev.8",
+    "@bentley/build-tools": "0.190.0-dev.8",
+    "@bentley/webpack-tools": "0.190.0-dev.8",
     "@types/node": "10.12.18",
     "chai": "^4.1.2",
     "mocha": "^5.2.0",
