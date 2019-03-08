@@ -128,7 +128,7 @@ extend(MarkupElement, {
   getOutline(): Rect {
     const me = this as MarkupElement;
     const box = me.bbox();
-    return new Rect().move(box.x, box.y).size(box.w, box.h).transform(me.ctm());
+    return new Rect().move(box.x, box.y).size(box.w, box.h).transform(new Matrix(me));
   },
 });
 

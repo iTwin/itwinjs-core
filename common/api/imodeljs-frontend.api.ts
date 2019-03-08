@@ -2762,6 +2762,8 @@ class LocateOptions {
   // (undocumented)
   init(): void;
   maxHits: number;
+  // (undocumented)
+  setFrom(other: LocateOptions): void;
 }
 
 // @public (undocumented)

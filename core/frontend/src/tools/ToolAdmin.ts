@@ -20,6 +20,7 @@ import { PrimitiveTool } from "./PrimitiveTool";
 import { BeButton, BeButtonEvent, BeButtonState, BeModifierKeys, BeTouchEvent, BeWheelEvent, CoordSource, EventHandled, InputCollector, InputSource, InteractiveTool, Tool } from "./Tool";
 import { ViewTool } from "./ViewTool";
 import { ToolSettingsPropertySyncItem } from "../properties/ToolSettingsValue";
+import { LocateOptions } from "../ElementLocateManager";
 
 export const enum CoordinateLockOverrides {
   None = 0,
@@ -85,15 +86,17 @@ export class ToolState {
 export class SuspendedToolState {
   private readonly _toolState: ToolState;
   private readonly _accuSnapState: AccuSnap.ToolState;
+  private readonly _locateOptions: LocateOptions;
   private readonly _viewCursor?: string;
   private _inDynamics: boolean;
   private _shuttingDown = false;
 
   constructor() {
-    const { toolAdmin, viewManager, accuSnap } = IModelApp;
+    const { toolAdmin, viewManager, accuSnap, locateManager } = IModelApp;
     toolAdmin.setIncompatibleViewportCursor(true); // Don't save this
     this._toolState = toolAdmin.toolState.clone();
     this._accuSnapState = accuSnap.toolState.clone();
+    this._locateOptions = locateManager.options.clone();
     this._viewCursor = viewManager.cursor;
     this._inDynamics = viewManager.inDynamicsMode;
     if (this._inDynamics)
@@ -104,10 +107,11 @@ export class SuspendedToolState {
     if (this._shuttingDown)
       return;
 
-    const { toolAdmin, viewManager, accuSnap } = IModelApp;
+    const { toolAdmin, viewManager, accuSnap, locateManager } = IModelApp;
     toolAdmin.setIncompatibleViewportCursor(true); // Don't restore this
     toolAdmin.toolState.setFrom(this._toolState);
     accuSnap.toolState.setFrom(this._accuSnapState);
+    locateManager.options.setFrom(this._locateOptions);
     viewManager.setViewCursor(this._viewCursor);
     if (this._inDynamics)
       viewManager.beginDynamicsMode();

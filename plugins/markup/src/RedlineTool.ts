@@ -22,7 +22,8 @@ export abstract class RedlineTool extends MarkupTool {
   protected isComplete(_ev: BeButtonEvent) { return this._points.length >= this._nRequiredPoints; }
   protected setupAndPromptForNextAction(): void {
     super.setupAndPromptForNextAction();
-    this.markup.setCursor(0 === this._points.length ? IModelApp.viewManager.crossHairCursor : IModelApp.viewManager.dynamicsCursor);
+    this.markup.disablePick();
+    IModelApp.toolAdmin.setCursor(0 === this._points.length ? IModelApp.viewManager.crossHairCursor : IModelApp.viewManager.dynamicsCursor);
   }
 
   protected createMarkup(_svgMarkup: Svg, _ev: BeButtonEvent, _isDynamics: boolean): void { }

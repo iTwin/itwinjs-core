@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { Point2d, Point3d, Transform, XAndY } from "@bentley/geometry-core";
 import { BeButtonEvent, BeModifierKeys, EventHandled, IModelApp } from "@bentley/imodeljs-frontend";
-import { ArrayXY, Box, Circle, Element as MarkupElement, G, Line, Matrix, Polygon, Svg, Text as SvgText } from "@svgdotjs/svg.js";
+import { ArrayXY, Box, Circle, Element as MarkupElement, G, Line, Matrix, Point, Polygon, Svg, Text as SvgText } from "@svgdotjs/svg.js";
 import { MarkupTool } from "./MarkupTool";
 import { EditTextTool } from "./TextEdit";
 import { UndoManager } from "./Undo";
@@ -118,7 +118,7 @@ class RotateHandle extends ModifyHandle {
     const props = markupApp.props.handles;
 
     this._line = handles.group!.line(0, 0, 1, 1).attr(props.rotateLine).addClass("markup-rotateLine");
-    this._circle = handles.group!.circle(props.size * 1.5).attr(props.rotate).addClass("markup-rotateHandle");
+    this._circle = handles.group!.circle(props.size * 1.25).attr(props.rotate).addClass("markup-rotateHandle");
     this.setMouseHandler(this._circle);
   }
   public get centerVp() { return this.handles.npcToVp({ x: .5, y: .5 }); }
@@ -138,26 +138,77 @@ class RotateHandle extends ModifyHandle {
   }
 }
 
-/** A handle that moves an element. */
-class MoveHandle extends ModifyHandle {
-  private readonly _outline: Polygon;
-  private _lastPos?: Point3d;
-  constructor(public handles: Handles) {
+/** A VertexHandle to move a point */
+class VertexHandle extends ModifyHandle {
+  private readonly _circle: Circle;
+  private readonly _x: string;
+  private readonly _y: string;
+
+  constructor(public handles: Handles, index: number) {
     super(handles);
     const props = markupApp.props.handles;
+    this._circle = handles.group!.circle(props.size).attr(props.vertex).addClass("markup-vertexHandle");
+    this._x = "x" + (index + 1);
+    this._y = "y" + (index + 1);
+    this.setMouseHandler(this._circle);
+  }
+  public setPosition(): void {
+    let point = new Point(this.handles.el.attr(this._x), this.handles.el.attr(this._y));
+    const matrix = this.handles.el.ctm();
+    point = point.transform(matrix);
+    this._circle.center(point.x, point.y);
+  }
+  public startDrag(ev: BeButtonEvent) {
+    super.startDrag(ev);
+  }
+  public modify(ev: BeButtonEvent): void {
+    let point = new Point(ev.viewPoint.x, ev.viewPoint.y);
+    const matrix = this.handles.el.ctm().inverse();
+    point = point.transform(matrix);
+    this.handles.el.attr(this._x, point.x);
+    this.handles.el.attr(this._y, point.y);
+  }
+}
 
-    this._outline = handles.group.polygon().attr(props.move).addClass("markup-moveHandle");
-    this.setMouseHandler(this._outline);
+/** A handle that moves an element. */
+class MoveHandle extends ModifyHandle {
+  private readonly _shape: MarkupElement;
+  private readonly _outline?: Polygon;
+  private _lastPos?: Point3d;
+  constructor(public handles: Handles, showBBox: boolean) {
+    super(handles);
+    const props = markupApp.props.handles;
+    const clone = this.handles.el.cloneMarkup();
+    clone.css(props.move);
+    clone.forElementsOfGroup((child) => child.css(props.move));
+
+    if (showBBox) {
+      this._outline = handles.group.polygon().attr(props.moveOutline);
+      const rect = clone.getOutline().attr(props.move).attr({ fill: "none" });
+
+      const group = handles.group.group();
+      group.add(this._outline);
+      group.add(rect);
+      group.add(clone);
+      this._shape = group;
+    } else {
+      clone.addTo(handles.group);
+      this._shape = clone;
+    }
+
+    this._shape.addClass("markup-moveHandle");
+    this.setMouseHandler(this._shape);
   }
   public onClick(_ev: BeButtonEvent) {
     const el = this.handles.el;
     if (el instanceof SvgText)
       new EditTextTool(el).run();
   }
-
   public setPosition() {
-    const pts = [new Point2d(0, 0), new Point2d(0, 1), new Point2d(1, 1), new Point2d(1, 0)];
-    this._outline.plot(this.handles.npcToVpArray(pts).map((pt) => [pt.x, pt.y] as ArrayXY)); // draws the outline of the element's bbox
+    if (undefined !== this._outline) {
+      const pts = [new Point2d(0, 0), new Point2d(0, 1), new Point2d(1, 1), new Point2d(1, 0)];
+      this._outline.plot(this.handles.npcToVpArray(pts).map((pt) => [pt.x, pt.y] as ArrayXY)); // draws the outline of the element's bbox
+    }
   }
   public startDrag(ev: BeButtonEvent) {
     super.startDrag(ev, ev.isShiftKey);
@@ -183,8 +234,16 @@ class Handles {
   constructor(public ss: SelectionSet, public el: MarkupElement) {
     this.group = ss.svg.group();
 
+    if (el instanceof Line) {
+      this.handles.push(new MoveHandle(this, false));
+      this.handles.push(new VertexHandle(this, 0));
+      this.handles.push(new VertexHandle(this, 1));
+      this.draw(); // show starting state
+      return;
+    }
+
     // move box is in the back
-    this.handles.push(new MoveHandle(this));
+    this.handles.push(new MoveHandle(this, true));
     // then rotate handle
     this.handles.push(new RotateHandle(this));
 
@@ -194,7 +253,6 @@ class Handles {
     const angle = el.ctm().decompose().rotate || 0;
     const start = Math.round(-angle / 45); // so that we rotate the cursors for rotated elements
     pts.forEach((h, i) => this.handles.push(new StretchHandle(this, h as ArrayXY, cursors[(i + start + 8) % 8])));
-
     this.draw(); // show starting state
   }
 
@@ -222,6 +280,8 @@ class Handles {
     if (this.active) {
       this.active.startDrag(ev);
       this.dragging = true;
+      markupApp.markup!.disablePick();
+      IModelApp.toolAdmin.setCursor(IModelApp.viewManager.dynamicsCursor);
     }
   }
   public drag(ev: BeButtonEvent) {
@@ -247,6 +307,7 @@ class Handles {
     this.draw();
     this.dragging = false;
     this.active = undefined;
+    markupApp.markup!.enablePick();
   }
 
   /** called when the reset button is pressed. */
@@ -261,6 +322,7 @@ class Handles {
     }
     this.draw();
     this.active = undefined;
+    markupApp.markup!.enablePick();
   }
 }
 
@@ -372,7 +434,6 @@ export class SelectTool extends MarkupTool {
   private initSelect() {
     this.markup.setCursor("default");
     this.markup.enablePick();
-    this.markup.setCursor("default");
     this.flashedElement = undefined;
   }
   private clearSelect() {

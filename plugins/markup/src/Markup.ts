@@ -24,11 +24,13 @@ export class MarkupApp extends Plugin {
   public markupNamespace: I18NNamespace;
   public props = {
     handles: {
-      size: 9,
-      stretch: { "fill-opacity": .85, "stroke": "grey", "fill": "white" },
+      size: 12,
+      stretch: { "fill-opacity": .85, "stroke": "black", "fill": "white" },
       rotateLine: { "stroke": "grey", "fill-opacity": .85 },
       rotate: { "cursor": "url(Markup/rotate.png) 12 12, auto", "fill-opacity": .85, "stroke": "black", "fill": "lightBlue" },
-      move: { "cursor": "move", "stroke-dasharray": "6,6", "fill": "lightGrey", "fill-opacity": .1, "stroke-opacity": .85, "stroke": "white" },
+      moveOutline: { "cursor": "move", "stroke-dasharray": "6,6", "fill": "none", "stroke-opacity": .85, "stroke": "white" },
+      move: { "cursor": "move", "opacity": 0, "stroke-width": 6, "stroke": "white" },
+      vertex: { "cursor": "url(cursors/crosshair.cur), crosshair", "fill-opacity": .85, "stroke": "black", "fill": "white" },
     },
     hilite: {
       color: "magenta",
