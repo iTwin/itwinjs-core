@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Massage the version required stored in Plugins in the case of pre-release versions.",
+      "packageName": "@bentley/webpack-tools",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/webpack-tools",
+  "email": "Barry.Bentley@bentley.com"
+}
