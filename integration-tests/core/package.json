@@ -10,7 +10,7 @@
     "docs": "",
     "lint": "tslint --project . 1>&2",
     "webpack:frontend": "webpack --config webpack.config.js 1>&2",
-    "test": "npm run test:chrome && npm run test:electron",
+    "test": "npm run test:chrome",
     "test:chrome": "npm run test-integration:chrome -- --invert",
     "test:electron": "npm run test-integration:electron -- --invert",
     "test-integration": "npm run test-integration:chrome && npm run test-integration:electron",

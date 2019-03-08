@@ -10,7 +10,7 @@
     "docs": "",
     "lint": "tslint --project . 1>&2",
     "webpack:frontend": "webpack --config webpack.config.js 1>&2",
-    "test": "npm run test:electron && npm run test:chrome && npm run test:http2 && npm run test:direct",
+    "test": "npm run test:chrome && npm run test:http2 && npm run test:direct",
     "test:chrome": "node ./node_modules/@bentley/certa/bin/certa.js -r chrome -b ./lib/backend/http.js",
     "test:http2": "node ./node_modules/@bentley/certa/bin/certa.js -r chrome -b ./lib/backend/http2.js --invert --grep \"#FIXME-http2\"",
     "test:electron": "node ./node_modules/@bentley/certa/bin/certa.js -r electron -b ./lib/backend/electron.js",
