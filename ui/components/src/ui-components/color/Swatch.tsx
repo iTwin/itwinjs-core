@@ -25,8 +25,7 @@ export const ColorSwatch: React.FunctionComponent<ColorSwatchProps> = (props) =>
   const { b, g, r, t } = props.colorDef.colors as any;
 
   const rgbaString = `rgb(${r},${g},${b},${(255 - t) / 255})`;
-
-  const colorStyle = { backgroundColor: rgbaString } as React.CSSProperties;
+  const colorStyle: React.CSSProperties = { backgroundColor: rgbaString };
 
   const handleClick = (e: React.MouseEvent) => {
     if (props && props.onColorPick)

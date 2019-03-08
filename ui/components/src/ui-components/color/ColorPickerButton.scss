@@ -4,22 +4,22 @@
 *--------------------------------------------------------------------------------------------*/
 @import "@bentley/ui-core/lib/ui-core/index";
 
-/*   border: 1px solid $buic-inputs-border; */
-
 .components-colorpicker-button {
   font-family: $uicore-font-family;
   font-size: $uicore-font-size;
   color: $buic-foreground-body;
   background: $buic-background-control;
   box-sizing: border-box;
-  width: 100%;
-  height: 100%;
+  border: none;
+  border-radius: 3px;
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
 }
 
-/*
-border: 1px solid $buic-inputs-border;
-box-sizing: border-box;
-*/
+.components-colorpicker-popup {
+  border: 1px solid $buic-inputs-border;
+}
 
 .components-colorpicker-container {
   position: relative;
@@ -29,16 +29,27 @@ box-sizing: border-box;
   height: 100%;
 }
 
-components-colorpicker-popup-container {
+.components-colorpicker-popup-container {
   color: $buic-foreground-body;
   background: $buic-background-control;
-  width: 100px;
-  height: 100%;
-}
 
-.components-colorpicker-popup-colors {
-  display: flex;
-  align-content: flex-start;
-  justify-content: flex-start;
-  flex-wrap: wrap
+  > .components-colorpicker-popup-colors {
+    display: grid;
+    grid-gap: 8px;
+    padding: 8px;
+
+    > .components-colorpicker-swatch {
+      height: $uicore-font-size * 1.5;
+      width: $uicore-font-size * 1.5;
+      margin-left: 0px;
+      transition: scale 0.2s ease;
+      border: 1px solid #eee; // $buic-inputs-border
+      cursor: pointer;
+      outline: none;
+
+      &:hover {
+        transform: scale(1.20);
+      }
+    }
+  }
 }

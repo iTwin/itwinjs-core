@@ -11,6 +11,11 @@ $color-swatch-size: $uicore-font-size * 1.2;
   width: $color-swatch-size;
   margin-left: 0px;
   border-width: 0px;
+  border-radius: 3px;
+
+  &[disabled] {
+    opacity: .2;
+  }
 }
 
 .components-color-swatch-round {

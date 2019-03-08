@@ -8,7 +8,7 @@ import { ConfigurableUiManager, ConfigurableCreateInfo, ToolUiProvider } from "@
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
 import { HSVColor, ColorDef } from "@bentley/imodeljs-common";
 
-import { ColorSwatch, HueSlider, AlphaSlider, SaturationPicker, DropDownColorPicker } from "@bentley/ui-components";
+import { ColorSwatch, HueSlider, AlphaSlider, SaturationPicker, ColorPickerButton } from "@bentley/ui-components";
 import { ToolAssistanceItem, ToolAssistanceSeparator } from "@bentley/ui-ninezone";
 import { SampleAppIModelApp } from "../..";
 
@@ -167,7 +167,7 @@ class Tool1Settings extends React.Component<{}, State> {
             </tr>
             <tr>
               <td>Color Picker</td>
-              <td> <div style={colorPickerDivStyle}><DropDownColorPicker activeColor={this.state.userColor} onColorPick={this._onColorPick} /></div></td>
+              <td> <div style={colorPickerDivStyle}><ColorPickerButton activeColor={this.state.userColor} onColorPick={this._onColorPick} /></div></td>
             </tr>
 
           </tbody>

@@ -8,10 +8,10 @@ import * as React from "react";
 import classnames from "classnames";
 import { ColorDef, ColorByName } from "@bentley/imodeljs-common";
 import { Popup, Position } from "@bentley/ui-core";
-import "./DropDownColorPicker.scss";
 import { ColorSwatch } from "./Swatch";
+import "./ColorPickerButton.scss";
 
-/** Properties for the [[DropDownColorPicker]] React component */
+/** Properties for the [[ColorPickerButton]] React component */
 export interface ColorPickerProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   /** active color */
   activeColor: ColorDef;
@@ -21,25 +21,27 @@ export interface ColorPickerProps extends React.ButtonHTMLAttributes<HTMLButtonE
   onColorPick?: ((color: ColorDef) => void) | undefined;
   /** Show swatches as squares unless round is set to true */
   round?: boolean;
+  /** Disabled or not */
+  disabled?: boolean;
+  /** Readonly or not */
+  readonly?: boolean;
   /** Title to show at top of DropDown */
   dropDownTitle?: string;
-  /** Show Arrow */
-  showArrow?: boolean;
-  /** Show Shadow around Popup */
-  showShadow?: boolean;
-  /** Use StatusBar colors */
-  showStatusBarColors?: boolean;
-  /** Open popup on hover */
-  onHover?: boolean;
+  /** Number of columns */
+  numColumns: number;
 }
 
 interface ColorPickerState {
   showPopup: boolean;
 }
 
-/** DropDownColorPicker component */
-export class DropDownColorPicker extends React.PureComponent<ColorPickerProps, ColorPickerState> {
+/** ColorPickerButton component */
+export class ColorPickerButton extends React.PureComponent<ColorPickerProps, ColorPickerState> {
   private _colors: ColorDef[] = [];
+
+  public static defaultProps: Partial<ColorPickerProps> = {
+    numColumns: 4,
+  };
 
   constructor(props: ColorPickerProps) {
     super(props);
@@ -47,7 +49,7 @@ export class DropDownColorPicker extends React.PureComponent<ColorPickerProps, C
     if (props.colorDefs) {
       props.colorDefs.forEach((color: ColorDef) => { this._colors.push(color.clone()); });
     } else {
-      DropDownColorPicker.defaultColors.forEach((color: ColorDef) => { this._colors.push(color.clone()); });
+      ColorPickerButton.defaultColors.forEach((color: ColorDef) => { this._colors.push(color.clone()); });
     }
     this.state = { showPopup: false };
   }
@@ -74,6 +76,9 @@ export class DropDownColorPicker extends React.PureComponent<ColorPickerProps, C
   }
 
   private _togglePopup = () => {
+    if (this.props.readonly)
+      return;
+
     this.setState((_prevState) => ({ showPopup: !this.state.showPopup }));
   }
 
@@ -83,18 +88,18 @@ export class DropDownColorPicker extends React.PureComponent<ColorPickerProps, C
 
   private _handleColorPicked = (color: ColorDef) => {
     this._closePopup();
-    if (this.props.onColorPick) {
-      this.props.onColorPick(color);
-    }
+    if (this.props.onColorPick)
+      this.props.onColorPick (color);
   }
 
   private renderPopup(title: string | undefined) {
-    const header = title ? <h4>{title}</h4> : null;
+    const containerStyle: React.CSSProperties = {gridTemplateColumns: `repeat(${this.props.numColumns}, 1fr)`};
     return (
       <div className="components-colorpicker-popup-container">
-        {header}
-        <div className="components-colorpicker-popup-colors">
-          {this._colors.map((color, index) => <ColorSwatch key={index} colorDef={color} onColorPick={this._handleColorPicked} round={true} />)}
+        {title && <h4>{title}</h4>}
+        <div className="components-colorpicker-popup-colors" style={containerStyle}>
+          {this._colors.map((color, index) => <ColorSwatch className="components-colorpicker-swatch" key={index} colorDef={color}
+                  onColorPick={this._handleColorPicked} round={this.props.round} />)}
         </div>
       </div>
     );
@@ -104,14 +109,12 @@ export class DropDownColorPicker extends React.PureComponent<ColorPickerProps, C
     const { b, g, r, t } = this.props.activeColor.colors as any;
     const rgbaString = `rgb(${r},${g},${b},${(255 - t) / 255})`;
     const colorStyle = { backgroundColor: rgbaString } as React.CSSProperties;
+    const className = classnames("components-colorpicker-container", this.props.className);
 
-    const className = classnames("popupcolors", this.props.showStatusBarColors && "statusbarcolors");
     return (
-      <div className="components-colorpicker-container" >
-        <button onClick={this._togglePopup} className="components-colorpicker-button" style={colorStyle} />
-        <Popup className={className} isShown={this.state.showPopup} position={Position.BottomLeft}
-          onClose={this._closePopup} showArrow={this.props.showArrow ? this.props.showArrow : false} showShadow={this.props.showShadow ? this.props.showShadow : false}
-          showOnHover={this.props.onHover ? this.props.onHover : false}>
+      <div className={className} >
+        <button onClick={this._togglePopup} className="components-colorpicker-button" style={colorStyle} disabled={this.props.disabled} />
+        <Popup className="components-colorpicker-popup" isShown={this.state.showPopup} position={Position.BottomLeft} onClose={this._closePopup}>
           {this.renderPopup(this.props.dropDownTitle)}
         </Popup>
       </div>
