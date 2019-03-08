@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { BeButtonEvent, EventHandled } from "@bentley/imodeljs-frontend";
-import { Svg, Text as SvgText } from "@svgdotjs/svg.js";
+import { Svg, Text as MarkupText } from "@svgdotjs/svg.js";
 import { MarkupTool } from "./MarkupTool";
 import { RedlineTool } from "./RedlineTool";
 import { markupApp } from "./Markup";
@@ -24,7 +24,8 @@ export class PlaceTextTool extends RedlineTool {
 
   protected createMarkup(svg: Svg, ev: BeButtonEvent, isDynamics: boolean): void {
     const start = ev.viewPoint;
-    const text = svg.plain(this._value);
+    const text = new MarkupText().plain(this._value);
+    svg.put(text);
     this.setCurrentTextStyle(text);
     text.translate(start.x, start.y);
     if (isDynamics) {
@@ -42,7 +43,7 @@ export class EditTextTool extends MarkupTool {
   public static toolId = "Markup.Text.Edit";
   public editor?: HTMLTextAreaElement;
   public editDiv?: HTMLDivElement;
-  constructor(public text?: SvgText, private _fromPlaceTool = false) { super(); }
+  constructor(public text?: MarkupText, private _fromPlaceTool = false) { super(); }
 
   public startEditor() {
     const text = this.text;

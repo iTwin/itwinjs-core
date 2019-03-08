@@ -45,11 +45,11 @@ declare module "@svgdotjs/svg.js" {
     getNpcToVp(): Matrix;
     getOutline(): Rect;
   }
-
   interface Text {
     getMarkup(): string;
     createMarkup(val: string, spacing: number): void;
   }
+
   interface Matrix {
     /** convert this SVG.Matrix into an iModel Transform */
     toIModelTransform(): Transform;
@@ -76,6 +76,7 @@ extend(MarkupElement, {
   cloneMarkup(): MarkupElement {
     const me = this as MarkupElement;
     const cloned = me.clone();
+    cloned.node.removeAttribute("id");
     cloned.resetColor();
     return cloned;
   },
@@ -133,9 +134,8 @@ extend(MarkupElement, {
 });
 
 extend(G, {
-  markupStretch(_w: number, _h: number, _x: number, _y: number, mtx: Matrix) { (this as Text).attr("transform", mtx); },
+  markupStretch(_w: number, _h: number, _x: number, _y: number, mtx: Matrix) { (this as G).attr("transform", mtx); },
 });
-
 extend(Text, {
   markupStretch(_w: number, _h: number, _x: number, _y: number, mtx: Matrix) { (this as Text).attr("transform", mtx); },
   getMarkup() {
@@ -165,18 +165,28 @@ extend(Text, {
       tspan.x(x);
     }
     me.build(false);
+    me.dom = {};
   },
+  // override for Text so that empty text will return a size
   getOutline(): Rect {
     const me = this as Text;
     const node = me.node;
     const content = node.textContent;
-    if (content === null || content.trim() === "")
-      node.textContent = "M";
+    if (content !== null && content.length > 0)
+      return MarkupElement.prototype.getOutline.call(me);
+    node.textContent = "M";
     const outline = MarkupElement.prototype.getOutline.call(me);
     node.textContent = content;
     return outline;
   },
-
+  writeDataToDom() {
+    const me = this as Text;
+    const dom = me.dom; // strip off useless "leading" data
+    me.dom = {};
+    MarkupElement.prototype.writeDataToDom.call(me);
+    me.dom = dom;
+    return me;
+  },
 });
 
 extend(Matrix, {

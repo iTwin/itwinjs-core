@@ -59,7 +59,6 @@ class ModifyAction extends UndoAction {
   constructor(private _newElem: MarkupElement, private _oldElement: MarkupElement) {
     super();
     assert(_newElem !== undefined && _oldElement !== undefined);
-    _newElem.id(_oldElement.id());
     markupApp.markup!.selected.replace(_oldElement, _newElem);
   }
   public reinstate() { this._oldElement.replace(this._newElem); markupApp.markup!.selected.replace(this._oldElement, this._newElem); }

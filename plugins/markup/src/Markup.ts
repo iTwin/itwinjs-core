@@ -24,7 +24,7 @@ export class MarkupApp extends Plugin {
   public markupNamespace: I18NNamespace;
   public props = {
     handles: {
-      size: 12,
+      size: 10,
       stretch: { "fill-opacity": .85, "stroke": "black", "fill": "white" },
       rotateLine: { "stroke": "grey", "fill-opacity": .85 },
       rotate: { "cursor": "url(Markup/rotate.png) 12 12, auto", "fill-opacity": .85, "stroke": "black", "fill": "lightBlue" },
@@ -101,6 +101,24 @@ export class MarkupApp extends Plugin {
     IModelApp.tools.registerModule(redlineTool, this.markupNamespace);
     IModelApp.tools.registerModule(textTool, this.markupNamespace);
   }
+
+  private _withDecorationsRemoved(fn: () => void) {
+    const markup = this.markup!;
+    markup.svgDecorations!.remove();
+    markup.svgDynamics!.remove();
+    IModelApp.toolAdmin.startDefaultTool();
+    fn();
+    markup.svgContainer!.add(markup.svgDecorations!);
+    markup.svgContainer!.add(markup.svgDynamics!);
+
+  }
+  public readMarkupSvg(): string | undefined {
+    let svgData: string | undefined;
+    const markup = this.markup;
+    if (markup && markup.svgContainer)
+      this._withDecorationsRemoved(() => svgData = markup.svgContainer!.svg());
+    return svgData;
+  }
 }
 
 /**
@@ -111,20 +129,32 @@ export class Markup {
   public readonly markupDiv: HTMLDivElement;
   public readonly undo = new UndoManager();
   public readonly selected: SelectionSet;
+  public readonly svgContainer?: Svg;
   public readonly svgMarkup?: Svg;
   public readonly svgDynamics?: Svg;
   public readonly svgDecorations?: Svg;
 
+  private removeSvgNamespace(svg: Svg) { svg.node.removeAttribute("xmlns:svgjs"); return svg; }
+  private addSvg(className: string) {
+    const svg = SVG().addTo(this.markupDiv).addClass(className);
+    this.removeSvgNamespace(svg);
+    const style = svg.node.style;
+    style.position = "absolute";
+    style.top = style.left = "0";
+    style.height = style.width = "100%";
+    return svg;
+  }
+  private addNested(className: string): Svg { return this.removeSvgNamespace(this.svgContainer!.nested().addClass(className)); }
   public constructor(public vp: ScreenViewport, svgData?: string) {
     this.markupDiv = vp.addNewDiv("overlay-markup", true, 20); // this div goes on top of the canvas, but behind UI layers
-    const svgContainer = SVG().addTo(SVG(this.markupDiv)).id("markup-container").size("100%", "100%"); // SVG container to hold both Markup SVG and svg-based Markup decorators
-    this.svgMarkup = svgContainer.nested().id("markup-svg");
+    this.svgContainer = this.addSvg("markup-container");  // SVG container to hold both Markup SVG and svg-based Markup decorators
+    this.svgMarkup = this.addNested("markup-svg");
     if (svgData) {
       this.svgMarkup.svg(svgData); // if supplied, add the SVG
       this.svgMarkup.each(() => { }, true); // create an SVG.Element for each entry in the SVG file.
     }
-    this.svgDynamics = svgContainer.nested().id("markup-dynamics"); // only for tool dynamics of SVG graphics.
-    this.svgDecorations = svgContainer.nested().id("markup-decorations"); // only for temporary decorations of SVG graphics.
+    this.svgDynamics = this.addNested("markup-dynamics"); // only for tool dynamics of SVG graphics.
+    this.svgDecorations = this.addNested("markup-decorations"); // only for temporary decorations of SVG graphics.
     this.selected = new SelectionSet(this.svgDecorations);
   }
 

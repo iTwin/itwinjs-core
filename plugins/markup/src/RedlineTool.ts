@@ -288,7 +288,7 @@ export class ArrowTool extends RedlineTool {
     const arrowMarkerId = "ArrowMarker" + arrowLength + "x" + arrowWidth + "-" + color;
     let marker = SVG("#" + arrowMarkerId) as Marker;
     if (null === marker) {
-      marker = svgMarkup.marker(arrowLength, arrowWidth).id(arrowMarkerId);
+      marker = this.markup.svgContainer!.marker(arrowLength, arrowWidth).id(arrowMarkerId);
       marker.polygon([0, 0, arrowLength, arrowWidth * 0.5, 0, arrowWidth]);
       marker.attr("orient", "auto-start-reverse");
       marker.attr("overflow", "visible"); // Don't clip the stroke that is being applied to allow the specified start/end to be used directly while hiding the arrow tail fully under the arrow head...

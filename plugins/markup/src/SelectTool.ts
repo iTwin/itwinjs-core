@@ -4,11 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import { Point2d, Point3d, Transform, XAndY } from "@bentley/geometry-core";
 import { BeButtonEvent, BeModifierKeys, EventHandled, IModelApp } from "@bentley/imodeljs-frontend";
-import { ArrayXY, Box, Circle, Element as MarkupElement, G, Line, Matrix, Point, Polygon, Svg, Text as SvgText } from "@svgdotjs/svg.js";
+import { ArrayXY, Box, Circle, Element as MarkupElement, G, Line, Matrix, Point, Polygon, Svg, Text as MarkupText } from "@svgdotjs/svg.js";
+import { markupApp } from "./Markup";
 import { MarkupTool } from "./MarkupTool";
 import { EditTextTool } from "./TextEdit";
 import { UndoManager } from "./Undo";
-import { markupApp } from "./Markup";
 
 /** A "modify handle" is a visible position on the screen that provides UI to modify a MarkupElement. */
 abstract class ModifyHandle {
@@ -201,7 +201,7 @@ class MoveHandle extends ModifyHandle {
   }
   public onClick(_ev: BeButtonEvent) {
     const el = this.handles.el;
-    if (el instanceof SvgText)
+    if (el instanceof MarkupText)
       new EditTextTool(el).run();
   }
   public setPosition() {
