@@ -140,9 +140,10 @@ describe("ContentLayout", () => {
 
   it("ContentLayoutDiv mouse down and up", () => {
     const wrapper = mount(<ContentLayout contentGroup={myContentGroup} contentLayout={myContentLayout} isInFooterMode={true} />);
-    wrapper.find("#ContentLayoutDiv").simulate("mouseDown");
+    const layoutDiv = wrapper.find("#uifw-contentlayout-div");
+    layoutDiv.simulate("mouseDown");
     expect(ContentViewManager.isMouseDown).to.be.true;
-    wrapper.find("#ContentLayoutDiv").simulate("mouseUp");
+    layoutDiv.simulate("mouseUp");
     expect(ContentViewManager.isMouseDown).to.be.false;
     wrapper.unmount();
   });
@@ -150,13 +151,13 @@ describe("ContentLayout", () => {
   it("ContentWrapper mouse down", () => {
     const wrapper = mount(<ContentLayout contentGroup={contentGroup2} contentLayout={contentLayout2} isInFooterMode={true} />);
 
-    const layoutWrappers = wrapper.find("div.contentlayout-wrapper");
+    const layoutWrappers = wrapper.find("div.uifw-contentlayout-wrapper");
     expect(layoutWrappers.length).to.eq(2);
-    expect(wrapper.find("div.contentlayout-overlay-active").length).to.eq(0);
+    expect(wrapper.find("div.uifw-contentlayout-overlay-active").length).to.eq(0);
 
     layoutWrappers.at(0).simulate("mouseDown");
     wrapper.update();
-    expect(wrapper.find("div.contentlayout-overlay-active").length).to.eq(1);
+    expect(wrapper.find("div.uifw-contentlayout-overlay-active").length).to.eq(1);
 
     wrapper.unmount();
   });

@@ -9,7 +9,7 @@ import { SizeProps } from "../../../utilities/Size";
 
 /** @hidden */
 export class Root {
-  public static readonly FOOTER_HEIGHT = 48;
+  public static readonly FOOTER_HEIGHT = 40;  // Must match $footer-height in footer\_variables.scss
   private _isInFooterMode: boolean;
   private _bounds: Rectangle;
 

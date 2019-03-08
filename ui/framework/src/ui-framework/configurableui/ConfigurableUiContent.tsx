@@ -6,13 +6,16 @@
 
 import * as React from "react";
 import { connect } from "react-redux";
+
 import { ModalDialogRenderer } from "../ModalDialogManager";
 import { FrontstageComposer } from "../frontstage/FrontstageComposer";
 import { ElementTooltip } from "../feedback/ElementTooltip";
-import PointerMessage from "../messages/Pointer";
+import { PointerMessage } from "../messages/Pointer";
 import { UiFramework } from "../UiFramework";
 import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
 import { KeyboardShortcutMenu } from "../keyboardshortcut/KeyboardShortcutMenu";
+
+import "./configurableui.scss";
 
 /** Properties for [[ConfigurableUiContent]] */
 export interface ConfigurableUiContentProps {
@@ -50,17 +53,8 @@ class ConfigurableUiContentClass extends React.Component<ConfigurableUiContentPr
   }
 
   public render(): JSX.Element | undefined {
-    const wrapperStyle: React.CSSProperties = {
-      position: "relative" as "relative",
-      left: "0px",
-      width: "100%",
-      top: "0px",
-      height: "100%",
-      zIndex: 0,
-      overflow: "hidden",
-    };
     return (
-      <div id="configurableui-wrapper" style={wrapperStyle} onMouseMove={this._handleMouseMove} >
+      <div id="uifw-configurableui-wrapper" onMouseMove={this._handleMouseMove} >
         {this.props.appBackstage}
         <FrontstageComposer style={{ position: "relative", height: "100%" }} />
         <ModalDialogRenderer />

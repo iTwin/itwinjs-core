@@ -6,8 +6,6 @@
 
 import * as React from "react";
 
-import "../configurableui/configurableui.scss";
-
 import { StatusBarFieldId, IStatusBar } from "../widgets/StatusBarWidgetControl";
 
 import { Status, MessageLayout, Progress } from "@bentley/ui-ninezone";

@@ -8,8 +8,6 @@ import * as React from "react";
 
 import { NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
 
-import "../configurableui/configurableui.scss";
-
 import UiFramework from "../UiFramework";
 
 import { StatusBarFieldId, IStatusBar } from "../widgets/StatusBarWidgetControl";

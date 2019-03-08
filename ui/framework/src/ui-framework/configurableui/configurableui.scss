@@ -5,6 +5,21 @@
 @import "@bentley/ui-core/lib/ui-core/style/index";
 @import "@bentley/ui-ninezone/lib/ui-ninezone/footer/_variables";
 
+#uifw-configurableui-wrapper {
+  position: relative;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  overflow: hidden;
+}
+
+#uifw-frontstage-composer {
+  width: 100%;
+  height: 100%;
+}
+
 .uifw-unselectable {
   -webkit-user-select: none;
   -moz-user-select: none;
@@ -39,9 +54,4 @@
 .uifw-item-svg-icon {
   width: $icon-size;
   height: $icon-size;
-}
-
-#uifw-frontstage-composer {
-  width: 100%;
-  height: 100%;
 }

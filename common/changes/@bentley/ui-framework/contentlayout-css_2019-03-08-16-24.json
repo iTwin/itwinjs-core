@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Added 'uifw-' to ContentLayout CSS class names and others. Fixed Status Bar separators.",
+      "packageName": "@bentley/ui-framework",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-framework",
+  "email": "dan.east@bentley.com"
+}

@@ -72,7 +72,7 @@ export class Frontstage2 extends FrontstageProvider {
       <Frontstage id="Test2"
         defaultTool={AppTools.appSelectElementCommand}
         defaultLayout={contentLayoutDef} contentGroup={myContentGroup}
-        isInFooterMode={true} applicationData={{ key: "value" }}
+        isInFooterMode={false} applicationData={{ key: "value" }}
 
         topLeft={
           <Zone

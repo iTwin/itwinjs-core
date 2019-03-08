@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 @import "@bentley/ui-core/lib/ui-core/style/themecolors";
 
-$footer-height: 48px;
+$footer-height: 40px;   // Must match FOOTER_HEIGHT in zones\state\layout\Root.ts
 
 $text-font-size: 14px;
 $text-font-size-medium: 12px;
@@ -50,5 +50,7 @@ $nz-footer-prompt-width-small: 8em;
 $nz-footer-open-horizontal-padding-small: 2px;
 $nz-footer-open-prompt-width-small: 10em;
 
-
 $nz-footer-selectioncount-width: 4em;
+
+$nz-footer-vertical-padding: 3px;
+$nz-footer-vertical-padding-height: $nz-footer-vertical-padding * 2;
