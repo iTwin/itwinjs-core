@@ -91,8 +91,11 @@ export class ModelPicker extends ToolBarDropDown {
 
         const classifierCheckBoxes = [];
         for (const classifier of classifiers) {
-          const ccb = this.addCheckbox(classifier.name, "classifier_" + classifierIndex++, classifier.isActive, (enabled) => {
-            geometricModel.setActiveClassifier(classifier.modelId, enabled);
+          const prefix = "classifier_";
+          const ccb = this.addCheckbox(classifier.name, prefix + classifierIndex++, classifier.isActive, (enabled) => {
+            const indexString = ccb.checkbox.id.substring(prefix.length);
+            const index = parseInt(indexString, 10);
+            geometricModel.setActiveClassifier(index, enabled);
             this._vp.invalidateScene();
             for (const otherCb of this._modelClassifierCheckBoxes.get(geometricModel.id)!)
               if (otherCb !== ccb.checkbox) otherCb.checked = false;
@@ -102,7 +105,7 @@ export class ModelPicker extends ToolBarDropDown {
         const noneCb = this.addCheckbox("None", "classifierNone", false, (enabled) => {
           if (enabled) {
             this._vp.invalidateScene();
-            for (const classifier of classifiers) geometricModel.setActiveClassifier(classifier.modelId, false);
+            for (let index = 0; index < classifiers.length; index++) geometricModel.setActiveClassifier(index, false);
             for (const otherCb of this._modelClassifierCheckBoxes.get(geometricModel.id)!)
               if (otherCb !== noneCb.checkbox) otherCb.checked = false;
           }

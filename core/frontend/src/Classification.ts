@@ -13,10 +13,28 @@ import { System } from "./render/webgl/System";
 import { PlanarClassifier } from "./render/webgl/PlanarClassifier";
 
 export namespace Classification {
+  export const enum Display { Off = 0, On = 1, Dimmed = 2, Hilite = 3, ElementColor = 4 }
+  export interface FlagsProps {
+    inside: Display;
+    outside: Display;
+    selected: Display;
+    type: number;         // Not currently implemented
+  }
+  export class Flags implements FlagsProps {
+    public inside: Display = Display.ElementColor;
+    public outside: Display = Display.Dimmed;
+    public selected: Display = Display.Hilite;
+    public type: number = 0;         // Not currently implemented
+  }
   export class Properties {
     public id: Id64String;
     public expansion: number;
-    constructor(id: Id64String, expansion: number) { this.id = id; this.expansion = expansion; }
+    public flags: Flags;
+    constructor(id: Id64String, expansion: number, flags?: FlagsProps) {
+      this.id = id;
+      this.expansion = expansion;
+      this.flags = flags ? flags : new Flags();
+    }
   }
 
   async function usePlanar(model: GeometricModelState): Promise<boolean> {
@@ -38,7 +56,8 @@ export namespace Classification {
     if (model.jsonProperties.classifiers !== undefined) {
       for (const classifier of model.jsonProperties.classifiers) {
         if (classifier.isActive)
-          return new Properties(classifier.modelId, classifier.expand);
+          return new Properties(classifier.modelId, classifier.expand, classifier.flags);
+
       }
     }
     return undefined;

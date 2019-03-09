@@ -67,6 +67,8 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
   public get properties(): Classification.Properties { return this._classifierProperties; }
   public get baseBatchId(): number { return this._baseBatchId; }
   public get anyHilited(): boolean { return this._anyHilited; }
+  public get insideDisplay(): Classification.Display { return this._classifierProperties.flags.inside; }
+  public get outsideDisplay(): Classification.Display { return this._classifierProperties.flags.outside; }
   public addGraphic(graphic: RenderGraphic) { this._graphics.push(graphic); }
 
   public static create(properties: Classification.Properties, tileTree: TileTree, classifiedModel: GeometricModelState, sceneContext: SceneContext): PlanarClassifier {

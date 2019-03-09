@@ -10,12 +10,27 @@ import { addUInt32s } from "./Common";
 
 const applyPlanarClassificationColor = `
   vec4 colorTexel = TEXTURE(s_pClassColorSampler, v_pClassPos.xy);
-  return colorTexel.a < .5 ? baseColor * .6 : baseColor * colorTexel;
+  if (colorTexel.a < .5) {
+    if (s_pClassColorParams.y == 0.0)
+      return vec4(0);
+   else if (s_pClassColorParams.y == 1.0)
+      return baseColor;
+    else
+      return baseColor * .6;
+   } else {
+     if (s_pClassColorParams.x == 0.0)
+       return vec4(0);
+      else if (s_pClassColorParams.x == 2.0)
+        return baseColor * .6;
+      else
+        return baseColor * colorTexel;
+    // TBD -- mode 1.  Return baseColor unless flash or hilite
+   }
 `;
 
 const overrideFeatureId = `
   vec4 featureTexel = TEXTURE(s_pClassFeatureSampler, v_pClassPos.xy);
-  return (featureTexel == vec4(0.0, 0.0, 0.0, 0.0)) ? currentId : addUInt32s(u_batchBase, featureTexel * 255.0) / 255.0;
+  return (featureTexel == vec4(0)) ? currentId : addUInt32s(u_batchBase, featureTexel * 255.0) / 255.0;
   `;
 
 const computeClassifiedSurfaceHiliteColor = `
@@ -30,6 +45,7 @@ const computeClassifierPos = "v_pClassPos = (u_pClassProj * u_m * rawPosition).x
 const scratchBytes = new Uint8Array(4);
 const scratchBatchBaseId = new Uint32Array(scratchBytes.buffer);
 const scratchBatchBaseComponents = [0, 0, 0, 0];
+const scratchColorParams = new Float32Array(2);      // Unclassified scale, classified base scale, classified classifier scale.
 
 function addPlanarClassifierCommon(builder: ProgramBuilder) {
   const vert = builder.vert;
@@ -53,11 +69,21 @@ export function addColorPlanarClassifier(builder: ProgramBuilder) {
   addPlanarClassifierCommon(builder);
   const frag = builder.frag;
   const vert = builder.vert;
+
   frag.addUniform("s_pClassColorSampler", VariableType.Sampler2D, (prog) => {
     prog.addGraphicUniform("s_pClassColorSampler", (uniform, params) => {
       const classifier = params.target.planarClassifiers.classifier!;
       assert(undefined !== classifier && undefined !== classifier.colorTexture);
       classifier.colorTexture!.texture.bindSampler(uniform, TextureUnit.PlanarClassificationColor);
+    });
+  });
+  frag.addUniform("s_pClassColorParams", VariableType.Vec2, (prog) => {
+    prog.addGraphicUniform("s_pClassColorParams", (uniform, params) => {
+      const classifier = params.target.planarClassifiers.classifier!;
+      assert(undefined !== classifier);
+      scratchColorParams[0] = classifier.insideDisplay;
+      scratchColorParams[1] = classifier.outsideDisplay;
+      uniform.setUniform2fv(scratchColorParams);
     });
   });
 

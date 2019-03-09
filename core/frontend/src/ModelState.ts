@@ -178,11 +178,11 @@ export abstract class GeometricModelState extends ModelState implements TileTree
 
     return result;
   }
-  public async setActiveClassifier(classifierModelId: Id64String, active: boolean) {
+  public async setActiveClassifier(classifierIndex: number, active: boolean) {
     const classifiers = this.jsonProperties.classifiers;
     if (classifiers !== undefined)
-      for (const classifier of classifiers)
-        if (false !== (classifier.isActive = (classifier.modelId === classifierModelId && active)))
+      for (let index = 0; index < classifiers.length; index++)
+        if (false !== (classifiers[index].isActive = (classifierIndex === index && active)))
           Classification.loadModelClassifiers(this.id, this.iModel);
   }
 }
