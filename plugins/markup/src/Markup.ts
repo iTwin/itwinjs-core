@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { IModelApp, Plugin, PluginAdmin, ScreenViewport } from "@bentley/imodeljs-frontend";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
-import { Svg, SVG } from "@svgdotjs/svg.js";
+import { Svg, SVG, adopt, create } from "@svgdotjs/svg.js";
 import * as redlineTool from "./RedlineTool";
 import * as textTool from "./TextEdit";
 import { SelectionSet, SelectTool } from "./SelectTool";
@@ -35,6 +35,15 @@ export class MarkupApp extends Plugin {
     hilite: {
       color: "magenta",
       flash: "cyan",
+    },
+    dropShadow: {
+      enable: true,
+      attr: {
+        "stdDeviation": 2,
+        "dx": 0.8,
+        "dy": 1,
+        "flood-color": "#1B3838",
+      },
     },
     active: {
       text: {
@@ -121,6 +130,7 @@ export class MarkupApp extends Plugin {
   }
 }
 
+const dropShadowId = "markup-dropShadow";
 /**
  * The current markup being created/edited. Holds the SVG elements, plus the active MarkupTool.
  * When starting a Markup, a new Div is added  aa child of the ScreenViewport's parentDiv.
@@ -134,6 +144,17 @@ export class Markup {
   public readonly svgDynamics?: Svg;
   public readonly svgDecorations?: Svg;
 
+  private createDropShadow(svg: Svg) {
+    let filter = SVG("#" + dropShadowId);
+    if (filter)
+      filter.remove();
+    filter = adopt(create("filter")).id(dropShadowId);
+    const effect = adopt(create("feDropShadow"));
+    effect.attr(markupApp.props.dropShadow.attr);
+    filter.add(effect);
+    svg.defs().add(filter);
+    return filter;
+  }
   private removeSvgNamespace(svg: Svg) { svg.node.removeAttribute("xmlns:svgjs"); return svg; }
   private addSvg(className: string) {
     const svg = SVG().addTo(this.markupDiv).addClass(className);
@@ -149,6 +170,10 @@ export class Markup {
     this.markupDiv = vp.addNewDiv("overlay-markup", true, 20); // this div goes on top of the canvas, but behind UI layers
     this.svgContainer = this.addSvg("markup-container");  // SVG container to hold both Markup SVG and svg-based Markup decorators
     this.svgMarkup = this.addNested("markup-svg");
+    this.createDropShadow(this.svgContainer);
+    if (markupApp.props.dropShadow.enable)
+      this.svgMarkup.attr("filter", "url(#" + dropShadowId + ")");
+
     if (svgData) {
       this.svgMarkup.svg(svgData); // if supplied, add the SVG
       this.svgMarkup.each(() => { }, true); // create an SVG.Element for each entry in the SVG file.
