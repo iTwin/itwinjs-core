@@ -109,11 +109,12 @@ export class ColorPickerButton extends React.PureComponent<ColorPickerProps, Col
     const { b, g, r, t } = this.props.activeColor.colors as any;
     const rgbaString = `rgb(${r},${g},${b},${(255 - t) / 255})`;
     const colorStyle = { backgroundColor: rgbaString } as React.CSSProperties;
-    const className = classnames("components-colorpicker-container", this.props.className);
+    const className = classnames("components-colorpicker", this.props.className);
+    const buttonName = classnames("components-colorpicker-button", this.props.round && "round");
 
     return (
       <div className={className} >
-        <button onClick={this._togglePopup} className="components-colorpicker-button" style={colorStyle} disabled={this.props.disabled} />
+        <button onClick={this._togglePopup} className={buttonName} style={colorStyle} disabled={this.props.disabled} />
         <Popup className="components-colorpicker-popup" isShown={this.state.showPopup} position={Position.BottomLeft} onClose={this._closePopup}>
           {this.renderPopup(this.props.dropDownTitle)}
         </Popup>

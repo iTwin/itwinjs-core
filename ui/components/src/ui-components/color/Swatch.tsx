@@ -32,10 +32,7 @@ export const ColorSwatch: React.FunctionComponent<ColorSwatchProps> = (props) =>
       props.onColorPick(props.colorDef, e);
   };
 
-  const classes = classnames("components-color-swatch",
-    props.className,
-    props.round && "components-color-swatch-round",
-  );
+  const classes = classnames("components-color-swatch", props.className, props.round && "round" );
 
   const {
     onColorPick, colorDef, round, // do not pass on color swatch specific props
