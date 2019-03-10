@@ -16,7 +16,7 @@
   color: $buic-foreground-body;
   background: $buic-background-control;
   box-sizing: border-box;
-  border: none;
+  border: 1px solid $buic-inputs-border;
   border-radius: 3px;
   width: 1.25em;
   height: 1.25em;
@@ -30,26 +30,26 @@
 .components-colorpicker-popup {
   border: 1px solid $buic-inputs-border;
 
-  > .components-colorpicker-popup-container {
-      color: $buic-foreground-body;
-      background: $buic-background-control;
+  >.components-colorpicker-popup-container {
+    color: $buic-foreground-body;
+    background: $buic-background-control;
 
-      > .components-colorpicker-popup-colors {
-          display: grid;
-          grid-gap: 8px;
-          padding: 8px;
+    >.components-colorpicker-popup-colors {
+      display: grid;
+      grid-gap: 8px;
+      padding: 8px;
 
-          > .components-colorpicker-swatch {
-              height: 1.5em;
-              width: 1.5em;
-              transition: scale 0.2s ease;
-              cursor: pointer;
-              outline: none;
+      >.components-colorpicker-swatch {
+        height: 1.5em;
+        width: 1.5em;
+        transition: scale 0.2s ease;
+        cursor: pointer;
+        outline: none;
 
-              &:hover {
-                transform: scale(1.15);
-              }
-            }
+        &:hover {
+          transform: scale(1.15);
         }
+      }
     }
+  }
 }

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Add ColorEditor to list of available Type Editors",
+      "packageName": "@bentley/ui-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "bill.steinbock@bentley.com"
+}

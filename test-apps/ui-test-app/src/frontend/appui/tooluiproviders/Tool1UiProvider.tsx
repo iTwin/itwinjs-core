@@ -75,7 +75,8 @@ class Tool1Settings extends React.Component<{}, State> {
   private _onColorPick = (color: ColorDef) => {
     const msg = `Color set to ${color.toRgbString()} alpha=${(color.getAlpha() / 255) * 100}%`;
     IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
-    this.setState({ userColor: color });
+    const hsvColor = HSVColor.fromColorDef(color);
+    this.setState({ userColor: color, hsv: hsvColor });
   }
 
   public render(): React.ReactNode {
@@ -86,11 +87,6 @@ class Tool1Settings extends React.Component<{}, State> {
     const satDivStyle: React.CSSProperties = {
       width: `200px`,
       height: `200px`,
-    };
-
-    const colorPickerDivStyle: React.CSSProperties = {
-      width: `60px`,
-      height: `1rem`,
     };
 
     /*
@@ -167,9 +163,8 @@ class Tool1Settings extends React.Component<{}, State> {
             </tr>
             <tr>
               <td>Color Picker</td>
-              <td> <div style={colorPickerDivStyle}><ColorPickerButton activeColor={this.state.userColor} onColorPick={this._onColorPick} /></div></td>
+              <td> <ColorPickerButton activeColor={this.state.userColor} onColorPick={this._onColorPick} /></td>
             </tr>
-
           </tbody>
         </table>
       </div >

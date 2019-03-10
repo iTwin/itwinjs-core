@@ -1063,6 +1063,14 @@ class Cluster<T extends Marker> {
   readonly rect: ViewRect;
 }
 
+// @public
+interface ColorEditorParams extends BasePropertyEditorParams {
+  colorValues: number[];
+  numColumns?: number;
+  // (undocumented)
+  type: PropertyEditorParamTypes.ColorData;
+}
+
 // @public (undocumented)
 enum CompassMode {
   // (undocumented)
@@ -3793,6 +3801,8 @@ enum PropertyEditorParamTypes {
   ButtonGroupData = 0,
   // (undocumented)
   CheckBoxIcons = 1,
+  // (undocumented)
+  ColorData = 10,
   // (undocumented)
   Icon = 2,
   // (undocumented)

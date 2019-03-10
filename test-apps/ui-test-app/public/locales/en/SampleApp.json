@@ -120,6 +120,7 @@
         "Options": "Options",
         "Lock": "Lock",
         "City": "City",
+        "Color": "Color",
         "State": "State",
         "Coordinate": "Coordinate",
         "Length": "Length"
