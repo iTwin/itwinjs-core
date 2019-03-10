@@ -568,8 +568,9 @@ export class ContentLayoutManager {
 
   public static get activeLayout(): ContentLayoutDef | undefined { return this._activeLayout; }
 
-  public static setActiveLayout(layout: ContentLayoutDef | undefined) {
-    return this._activeLayout = layout;
+  public static setActiveLayout(contentLayout: ContentLayoutDef, contentGroup: ContentGroup) {
+    this._activeLayout = contentLayout;
+    FrontstageManager.onContentLayoutActivatedEvent.emit({ contentLayout, contentGroup });
   }
 
   public static createSplit(fragmentDef: LayoutFragmentProps): LayoutSplit | undefined {

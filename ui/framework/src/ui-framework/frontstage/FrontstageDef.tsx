@@ -67,8 +67,7 @@ export class FrontstageDef {
     }
 
     const activeLayout = this.defaultLayout!;
-    ContentLayoutManager.setActiveLayout(activeLayout);
-    FrontstageManager.onContentLayoutActivatedEvent.emit({ contentLayout: activeLayout, contentGroup: this.contentGroup! });
+    ContentLayoutManager.setActiveLayout(activeLayout, this.contentGroup);
   }
 
   /** Handles when the Frontstage becomes inactive */
