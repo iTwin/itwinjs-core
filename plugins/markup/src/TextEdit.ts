@@ -6,7 +6,7 @@ import { BeButtonEvent, EventHandled, InputSource } from "@bentley/imodeljs-fron
 import { Svg, Text as MarkupText } from "@svgdotjs/svg.js";
 import { MarkupTool } from "./MarkupTool";
 import { RedlineTool } from "./RedlineTool";
-import { markupApp } from "./Markup";
+import { markupPlugin } from "./Markup";
 
 /** Tool to place new text notes on a Markup. */
 export class PlaceTextTool extends RedlineTool {
@@ -16,7 +16,7 @@ export class PlaceTextTool extends RedlineTool {
   protected _value!: string;
 
   public onPostInstall(): void {
-    this._value = markupApp.props.text.startValue;
+    this._value = markupPlugin.props.text.startValue; // so applications can put a default string (e.g. user's initials) in the note
     super.onPostInstall();
   }
 
@@ -31,7 +31,7 @@ export class PlaceTextTool extends RedlineTool {
     this.setCurrentTextStyle(text);
     text.translate(start.x, start.y);
     if (isDynamics) {
-      svg.add(text.getOutline().attr(markupApp.props.text.edit.box).addClass("markup-editBox"));
+      svg.add(text.getOutline().attr(markupPlugin.props.text.edit.textBox).addClass("markup-editBox"));
     } else {
       new EditTextTool(text, true).run();
     }
@@ -40,7 +40,7 @@ export class PlaceTextTool extends RedlineTool {
   public async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> { this.exitTool(); return EventHandled.Yes; }
 }
 
-const lastSize = { width: "180px", height: "60px" };
+/** Tool for editing text. Started automatically by the place text tool and by clicking on text from the SelectTool */
 export class EditTextTool extends MarkupTool {
   public static toolId = "Markup.Text.Edit";
   public editor?: HTMLTextAreaElement;
@@ -54,6 +54,7 @@ export class EditTextTool extends MarkupTool {
 
     const markupDiv = this.markup.markupDiv!;
     const editDiv = this.editDiv = document.createElement("div");
+    const editProps = markupPlugin.props.text.edit;
     let style = editDiv.style;
     style.backgroundColor = "blanchedalmond";
     style.top = style.left = "0";
@@ -102,11 +103,11 @@ export class EditTextTool extends MarkupTool {
     style.position = "absolute";
     style.top = ((rbox.cy - (bbox.h / 2)) - divRect.top) + "px";
     style.left = ((rbox.cx - (bbox.w / 2)) - divRect.left) + "px";
-    style.height = lastSize.height;
-    style.width = lastSize.width;
+    style.height = editProps.size.height;
+    style.width = editProps.size.width;
     style.resize = "both";
     style.fontFamily = textElStyle.fontFamily;
-    style.fontSize = "14pt";
+    style.fontSize = editProps.fontSize;
     style.textAnchor = textElStyle.textAnchor;
 
     const parentZ = parseInt(window.getComputedStyle(markupDiv).zIndex || "0", 10);
@@ -114,16 +115,18 @@ export class EditTextTool extends MarkupTool {
 
     editor.innerHTML = text.getMarkup();
     this.editor.focus();
+    // if we're started from the place text tool, select the entire current value, otherwise place the cursor at the end.
     this.editor.setSelectionRange(this._fromPlaceTool ? 0 : editor.value.length, editor.value.length);
   }
 
+  /** Called when EditText exits, saves the edited value into the text element */
   public onCleanup() {
     if (this.editDiv) {
       const text = this.text!;
       const undo = this.markup.undo;
       undo.doGroup(() => {
         const newVal = this.editor!.value;
-        if (newVal.trim() === "") {
+        if (newVal.trim() === "") { // if the result of the editing is blank, just delete the text element
           text.remove();
           if (!this._fromPlaceTool)
             undo.onDelete(text);
@@ -131,7 +134,7 @@ export class EditTextTool extends MarkupTool {
         }
 
         const newText = text.clone();
-        const fontSize = parseFloat(window.getComputedStyle(text.node).fontSize!);
+        const fontSize = text.getFontSize();
         newText.createMarkup(newVal, fontSize);
         text.replace(newText);
         if (this._fromPlaceTool) {
@@ -140,8 +143,9 @@ export class EditTextTool extends MarkupTool {
           undo.onModified(newText, text);
         }
       });
-      lastSize.height = this.editor!.style.height!;
-      lastSize.width = this.editor!.style.width!;
+      const editProps = markupPlugin.props.text.edit;
+      editProps.size.height = this.editor!.style.height!;
+      editProps.size.width = this.editor!.style.width!;
       this.editDiv.remove();
       this.editDiv = undefined;
       this.editor = undefined;

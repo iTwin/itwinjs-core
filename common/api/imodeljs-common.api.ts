@@ -2302,15 +2302,16 @@ module ImageLight {
 
 // @public
 class ImageSource {
-  constructor(data: Uint8Array, format: ImageSourceFormat);
-  readonly data: Uint8Array;
+  constructor(data: Uint8Array | string, format: ImageSourceFormat);
+  readonly data: Uint8Array | string;
   readonly format: ImageSourceFormat;
 }
 
 // @public
 enum ImageSourceFormat {
   Jpeg = 0,
-  Png = 2
+  Png = 2,
+  Svg = 3
 }
 
 // @public

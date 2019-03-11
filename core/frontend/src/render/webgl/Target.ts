@@ -970,11 +970,9 @@ export abstract class Target extends RenderTarget {
 
     let captureRect = this.adjustRectForAspectRatio(wantRect, targetSize.x / targetSize.y);
 
-    // CLIPPING AND SCALING NOT AVAILABLE FOR D3D ----------------
     captureRect = wantRect.clone();
     targetSize.x = captureRect.width;
     targetSize.y = captureRect.height;
-    // -----------------------------------------------------------
 
     if (!actualViewRect.containsPoint(Point2d.create(wantRect.left, wantRect.top)) || !actualViewRect.containsPoint(lowerRight))
       return undefined; // ###TODO: additional logic to shrink requested rectangle to fit inside view

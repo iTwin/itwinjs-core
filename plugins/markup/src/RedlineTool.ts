@@ -6,7 +6,7 @@ import { Point3d, Vector3d } from "@bentley/geometry-core";
 import { BeButtonEvent, EventHandled, IModelApp } from "@bentley/imodeljs-frontend";
 import { Element as MarkupElement, Marker, SVG, Svg } from "@svgdotjs/svg.js";
 import { MarkupTool } from "./MarkupTool";
-import { markupApp } from "./Markup";
+import { markupPlugin } from "./Markup";
 
 export abstract class RedlineTool extends MarkupTool {
   protected _minPoints = 1;
@@ -33,14 +33,14 @@ export abstract class RedlineTool extends MarkupTool {
   }
 
   protected setCurrentStyle(element: MarkupElement, canBeFilled: boolean): void {
-    const active = markupApp.props.active;
+    const active = markupPlugin.props.active;
     element.css(active.element);
     if (!canBeFilled)
       element.css({ fill: "none" });
   }
 
   protected setCurrentTextStyle(element: MarkupElement): void {
-    const active = markupApp.props.active;
+    const active = markupPlugin.props.active;
     element.css(active.text);
   }
 

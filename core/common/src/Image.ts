@@ -100,6 +100,8 @@ export const enum ImageSourceFormat {
   Jpeg = 0,
   /** Image data is stored with PNG compression. */
   Png = 2,
+  /** Image is stored as an Svg stream. */
+  Svg = 3,
 }
 
 /** @hidden */
@@ -107,6 +109,7 @@ export function isValidImageSourceFormat(format: ImageSourceFormat): boolean {
   switch (format) {
     case ImageSourceFormat.Jpeg:
     case ImageSourceFormat.Png:
+    case ImageSourceFormat.Svg:
       return true;
     default:
       return false;
@@ -118,12 +121,12 @@ export function isValidImageSourceFormat(format: ImageSourceFormat): boolean {
  */
 export class ImageSource {
   /** The content of the image, compressed */
-  public readonly data: Uint8Array;
+  public readonly data: Uint8Array | string;
   /** The compression type. */
   public readonly format: ImageSourceFormat;
 
   /** Construct a new ImageSource, which takes ownership of the Uint8Array. */
-  public constructor(data: Uint8Array, format: ImageSourceFormat) {
+  public constructor(data: Uint8Array | string, format: ImageSourceFormat) {
     this.data = data;
     this.format = format;
   }

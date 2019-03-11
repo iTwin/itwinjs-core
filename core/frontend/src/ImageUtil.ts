@@ -72,7 +72,16 @@ function imageBufferToCanvas(buffer: ImageBuffer): HTMLCanvasElement | undefined
  * @public
  */
 export function getImageSourceMimeType(format: ImageSourceFormat): string {
-  return ImageSourceFormat.Jpeg === format ? "image/jpeg" : "image/png";
+
+  switch (format) {
+    case ImageSourceFormat.Jpeg:
+      return "image/jpeg";
+    case ImageSourceFormat.Png:
+      return "image/png";
+    case ImageSourceFormat.Svg:
+      return "image/svg+xml;charset=utf-8";
+  }
+  return "";
 }
 
 /** Get the ImageSourceFormat corresponding to the mime type string, or undefined if the string does not identify a supported ImageSourceFormat. */
@@ -80,6 +89,7 @@ export function getImageSourceFormatForMimeType(mimeType: string): ImageSourceFo
   switch (mimeType) {
     case "image/jpeg": return ImageSourceFormat.Jpeg;
     case "image/png": return ImageSourceFormat.Png;
+    case "image/svg+xml;charset=utf-8": return ImageSourceFormat.Svg;
     default: return undefined;
   }
 }

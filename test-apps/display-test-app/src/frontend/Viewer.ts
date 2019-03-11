@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { Id64String } from "@bentley/bentleyjs-core";
 import { ElectronRpcConfiguration } from "@bentley/imodeljs-common";
-import { imageBufferToPngDataUrl, IModelApp, IModelConnection, ScreenViewport, Viewport, ViewState, PluginAdmin } from "@bentley/imodeljs-frontend";
+import { imageBufferToPngDataUrl, IModelApp, IModelConnection, ScreenViewport, Viewport, ViewState, PluginAdmin, Plugin } from "@bentley/imodeljs-frontend";
 import { AnimationPanel } from "./AnimationPanel";
 import { CategoryPicker } from "./CategoryPicker";
 import { DebugPanel } from "./DebugPanel";
@@ -42,6 +42,7 @@ function saveImage(vp: Viewport) {
 
 class DebugTools extends ToolBarDropDown {
   private readonly _element: HTMLElement;
+  private _markupPlugin?: Promise<Plugin>;
 
   public constructor(parent: HTMLElement) {
     super();
@@ -86,7 +87,7 @@ class DebugTools extends ToolBarDropDown {
 
     this._element.appendChild(createImageButton({
       src: "Markup.svg",
-      click: async () => PluginAdmin.loadPlugin("MarkupPlugin.js"),
+      click: async () => this.doMarkup(),
       tooltip: "Create Markup for View",
     }));
     this._element.appendChild(createToolButton({
@@ -95,6 +96,21 @@ class DebugTools extends ToolBarDropDown {
       tooltip: "Start Web Worker Test",
     }));
     parent.appendChild(this._element);
+  }
+
+  private async doMarkup() {
+    if (!this._markupPlugin)
+      this._markupPlugin = PluginAdmin.loadPlugin("MarkupPlugin.js");
+    const markupPlugin = await this._markupPlugin as any;
+    if (markupPlugin.isActive) {
+      const markupData = await markupPlugin.readMarkup();
+      window.open(markupData.image, "Markup");
+      // tslint:disable-next-line:no-console
+      console.log(markupData.svg);
+      markupPlugin.stop();
+    } else {
+      markupPlugin.start();
+    }
   }
 
   public get isOpen(): boolean { return "none" !== this._element.style.display; }

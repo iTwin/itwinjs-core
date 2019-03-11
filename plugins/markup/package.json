@@ -1,6 +1,6 @@
 {
   "name": "@bentley/plugin-markup",
-  "version": "0.189.0-dev.6",
+  "version": "0.191.0-dev.0",
   "description": "iModel.js plugin for markup",
   "license": "MIT",
   "main": "lib/markup.js",
@@ -37,6 +37,7 @@
   },
   "dependencies": {
     "@bentley/imodeljs-frontend": "0.191.0-dev.0",
+    "@bentley/imodeljs-common": "0.191.0-dev.0",
     "@bentley/geometry-core": "0.191.0-dev.0",
     "@bentley/imodeljs-i18n": "0.191.0-dev.0",
     "@svgdotjs/svg.js": "~3.0.12"

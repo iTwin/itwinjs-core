@@ -2,26 +2,45 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { IModelApp, Plugin, PluginAdmin, ScreenViewport } from "@bentley/imodeljs-frontend";
+import { ImageSource, ImageSourceFormat } from "@bentley/imodeljs-common";
+import { imageElementFromImageSource, IModelApp, Plugin, PluginAdmin, ScreenViewport } from "@bentley/imodeljs-frontend";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
-import { Svg, SVG, adopt, create } from "@svgdotjs/svg.js";
+import { adopt, create, Svg, SVG } from "@svgdotjs/svg.js";
 import * as redlineTool from "./RedlineTool";
-import * as textTool from "./TextEdit";
 import { SelectionSet, SelectTool } from "./SelectTool";
 import { svgInit } from "./SvgJsExt";
+import * as textTool from "./TextEdit";
 import { UndoManager } from "./Undo";
 
-// temporary, for testing.
-// function getSvgFile(uri: string) {
-//   const xhr = new XMLHttpRequest();
-//   xhr.open("GET", uri, false);
-//   xhr.send();
-//   return xhr.responseText;
-// }
+/** Markup data returned by [[MarkupApp.readMarkup]] */
+export interface MarkupData {
+  /** a string holding the svg data for the markup. Will be undefined if readMarkup is called without an active Markup */
+  svg?: string;
+  /** a base64 encoded string with the image of the view that was marked up. */
+  image?: string;
+}
 
-export class MarkupApp extends Plugin {
+/** Options for [[MarkupApp.readMarkup]] */
+export interface MarkupRequestProps {
+  /** The format for the image data. */
+  imageFormat: "image/jpeg" | "image/png" | undefined;
+  /** If true, the markup graphics will be imprinted in the returned image. */
+  imprintSvgOnImage: boolean;
+}
+
+/**
+ * The plugin object for Markup. This object is returned by [PluginAdmin.loadPlugin]($frontend), so
+ * applications may customize and control the behavior of the Markup plugin.
+ * When the plugin loads, it registers a set of "Markup.xx" tools that may be invoked from Ui controls.
+ */
+export class MarkupPlugin extends Plugin {
+  /** the current Markup being created */
   public markup?: Markup;
+  /** The namespace for the Markup tools */
   public markupNamespace: I18NNamespace;
+  /** Properties of the Markup plugin. By setting members of this object, applications can control
+   * the appearance of various parts of the Markup plugin.
+   */
   public props = {
     handles: {
       size: 10,
@@ -63,33 +82,41 @@ export class MarkupApp extends Plugin {
     text: {
       startValue: "Note: ",
       edit: {
-        box: { "fill": "lightGrey", "fill-opacity": .1, "stroke-opacity": .85, "stroke": "lightBlue" },
+        size: { width: "180px", height: "60px" },
+        fontSize: "14pt",
+        textBox: { "fill": "lightGrey", "fill-opacity": .1, "stroke-opacity": .85, "stroke": "lightBlue" },
       },
     },
   };
   private _saveDefaultToolId = "";
   private _saveDefaultToolArgs?: any[];
 
-  /** called when the plugin is executed by its host */
-  public async onExecute(_args: string[]) {
-    if (this.markup) {
-      if (IModelApp.toolAdmin.defaultToolId === "Markup.Select" && (undefined === IModelApp.toolAdmin.activeTool || "Markup.Select" !== IModelApp.toolAdmin.activeTool.toolId)) {
-        IModelApp.toolAdmin.startDefaultTool();
-        return;
-      }
+  public onExecute(_args: string[]) { }
 
-      IModelApp.toolAdmin.markupView = undefined;
-      this.markup.destroy();
-      this.markup = undefined;
+  public get isActive() { return undefined !== this.markup; }
 
-      IModelApp.toolAdmin.defaultToolId = this._saveDefaultToolId;
-      IModelApp.toolAdmin.defaultToolArgs = this._saveDefaultToolArgs;
-      this._saveDefaultToolId = "";
-      this._saveDefaultToolArgs = undefined;
+  /** Stop markup session */
+  public stop() {
+    if (!this.markup)
+      return;
+
+    if (IModelApp.toolAdmin.defaultToolId === "Markup.Select" && (undefined === IModelApp.toolAdmin.activeTool || "Markup.Select" !== IModelApp.toolAdmin.activeTool.toolId)) {
       IModelApp.toolAdmin.startDefaultTool();
       return;
     }
 
+    IModelApp.toolAdmin.markupView = undefined;
+    this.markup.destroy();
+    this.markup = undefined;
+    IModelApp.toolAdmin.defaultToolId = this._saveDefaultToolId;
+    IModelApp.toolAdmin.defaultToolArgs = this._saveDefaultToolArgs;
+    this._saveDefaultToolId = "";
+    this._saveDefaultToolArgs = undefined;
+    IModelApp.toolAdmin.startDefaultTool();
+  }
+
+  /** Start a markup session */
+  public async start() {
     await this.markupNamespace.readFinished; // make sure our localized messages are ready.
     const view = IModelApp.toolAdmin.markupView = IModelApp.viewManager.selectedView;
     if (view) {
@@ -111,22 +138,28 @@ export class MarkupApp extends Plugin {
     IModelApp.tools.registerModule(textTool, this.markupNamespace);
   }
 
-  private _withDecorationsRemoved(fn: () => void) {
-    const markup = this.markup!;
-    markup.svgDecorations!.remove();
+  /** convert the current markup SVG into a string */
+  private readMarkupSvg() {
+    const markup = this.markup;
+    if (!markup || !markup.svgContainer)
+      return undefined;
+    markup.svgDecorations!.remove(); // we don't want the decorations or dynamics to be included
     markup.svgDynamics!.remove();
     IModelApp.toolAdmin.startDefaultTool();
-    fn();
-    markup.svgContainer!.add(markup.svgDecorations!);
+    const svgData = markup.svgContainer.svg(); // string-ize the SVG data
+    markup.svgContainer!.add(markup.svgDecorations!); // put them back in case the session isn't over
     markup.svgContainer!.add(markup.svgDynamics!);
-
-  }
-  public readMarkupSvg(): string | undefined {
-    let svgData: string | undefined;
-    const markup = this.markup;
-    if (markup && markup.svgContainer)
-      this._withDecorationsRemoved(() => svgData = markup.svgContainer!.svg());
     return svgData;
+  }
+
+  /** Read the result of a Markup session. */
+  public async readMarkup(request: MarkupRequestProps = { imageFormat: "image/png", imprintSvgOnImage: true }): Promise<MarkupData> {
+    const svg = this.readMarkupSvg(); // read the current svg data for the markup
+    if (svg && request.imprintSvgOnImage) {
+      const svgImage = await imageElementFromImageSource(new ImageSource(svg, ImageSourceFormat.Svg));
+      this.markup!.vp.canvas.getContext("2d")!.drawImage(svgImage, 0, 0); // draw markup onto view's canvas2d
+    }
+    return { svg, image: !request.imageFormat ? undefined : this.markup!.vp.canvas.toDataURL(request.imageFormat) };
   }
 }
 
@@ -150,7 +183,7 @@ export class Markup {
       filter.remove();
     filter = adopt(create("filter")).id(dropShadowId);
     const effect = adopt(create("feDropShadow"));
-    effect.attr(markupApp.props.dropShadow.attr);
+    effect.attr(markupPlugin.props.dropShadow.attr);
     filter.add(effect);
     svg.defs().add(filter);
     return filter;
@@ -171,7 +204,7 @@ export class Markup {
     this.svgContainer = this.addSvg("markup-container");  // SVG container to hold both Markup SVG and svg-based Markup decorators
     this.svgMarkup = this.addNested("markup-svg");
     this.createDropShadow(this.svgContainer);
-    if (markupApp.props.dropShadow.enable)
+    if (markupPlugin.props.dropShadow.enable)
       this.svgMarkup.attr("filter", "url(#" + dropShadowId + ")");
 
     if (svgData) {
@@ -205,5 +238,5 @@ svgInit(); // to ensure we load the SvgJsExt extensions
 
 declare var IMODELJS_VERSIONS_REQUIRED: string;
 declare var PLUGIN_NAME: string;
-export const markupApp = new MarkupApp(PLUGIN_NAME, IMODELJS_VERSIONS_REQUIRED);
-PluginAdmin.register(markupApp);
+export const markupPlugin = new MarkupPlugin(PLUGIN_NAME, IMODELJS_VERSIONS_REQUIRED);
+PluginAdmin.register(markupPlugin);
