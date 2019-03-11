@@ -183,7 +183,7 @@ export abstract class GeometricModelState extends ModelState implements TileTree
     if (classifiers !== undefined)
       for (let index = 0; index < classifiers.length; index++)
         if (false !== (classifiers[index].isActive = (classifierIndex === index && active)))
-          Classification.loadModelClassifiers(this.id, this.iModel);
+          await Classification.loadModelClassifiers(this.id, this.iModel);
   }
 }
 

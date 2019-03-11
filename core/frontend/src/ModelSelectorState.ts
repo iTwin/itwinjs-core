@@ -65,8 +65,6 @@ export class ModelSelectorState extends ElementState {
   /** Make sure all models referenced by this ModelSelectorState are loaded. */
   public async load(): Promise<void> {
 
-    // return this.iModel.models.load(this.models);
-
-    return this.iModel.models.load(this.models).then((_) => { Classification.loadModelClassifiers(this.models, this.iModel); });
+    return this.iModel.models.load(this.models).then(async (_) => Classification.loadModelClassifiers(this.models, this.iModel));
   }
 }

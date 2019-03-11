@@ -75,13 +75,13 @@ export namespace Classification {
         }
       }
     }
-    loadClassifiers(classifiersToLoad, iModel);
+    return loadClassifiers(classifiersToLoad, iModel);
   }
   export async function loadClassifiers(classifierIdArg: Id64Arg, iModel: IModelConnection): Promise<void> {
     const classifierIds = Id64.toIdSet(classifierIdArg);
-    iModel.models.load(classifierIds).then((_) => {
+    await iModel.models.load(classifierIds).then(async (_) => {
       for (const classifierId of classifierIds)
-        Classification.createClassifier(classifierId, iModel).then((classifier) => { if (classifier) System.instance.addClassifier(classifierId, classifier, iModel); });
+        await Classification.createClassifier(classifierId, iModel).then((classifier) => { if (classifier) System.instance.addClassifier(classifierId, classifier, iModel); });
     });
   }
   export function addModelClassifierToScene(model: GeometricModelState, context: SceneContext): void {
