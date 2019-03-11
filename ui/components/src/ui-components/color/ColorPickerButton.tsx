@@ -89,17 +89,17 @@ export class ColorPickerButton extends React.PureComponent<ColorPickerProps, Col
   private _handleColorPicked = (color: ColorDef) => {
     this._closePopup();
     if (this.props.onColorPick)
-      this.props.onColorPick (color);
+      this.props.onColorPick(color);
   }
 
   private renderPopup(title: string | undefined) {
-    const containerStyle: React.CSSProperties = {gridTemplateColumns: `repeat(${this.props.numColumns}, 1fr)`};
+    const containerStyle: React.CSSProperties = { gridTemplateColumns: `repeat(${this.props.numColumns}, 1fr)` };
     return (
       <div className="components-colorpicker-popup-container">
         {title && <h4>{title}</h4>}
-        <div className="components-colorpicker-popup-colors" style={containerStyle}>
+        <div className="components-colorpicker-popup-colors" style={containerStyle} data-testid="components-colorpicker-popup">
           {this._colors.map((color, index) => <ColorSwatch className="components-colorpicker-swatch" key={index} colorDef={color}
-                  onColorPick={this._handleColorPicked} round={this.props.round} />)}
+            onColorPick={this._handleColorPicked} round={this.props.round} />)}
         </div>
       </div>
     );
@@ -114,7 +114,7 @@ export class ColorPickerButton extends React.PureComponent<ColorPickerProps, Col
 
     return (
       <div className={className} >
-        <button onClick={this._togglePopup} className={buttonName} style={colorStyle} disabled={this.props.disabled} />
+        <button onClick={this._togglePopup} className={buttonName} style={colorStyle} disabled={this.props.disabled} data-testid="components-colorpicker-button" />
         <Popup className="components-colorpicker-popup" isShown={this.state.showPopup} position={Position.BottomLeft} onClose={this._closePopup}>
           {this.renderPopup(this.props.dropDownTitle)}
         </Popup>
