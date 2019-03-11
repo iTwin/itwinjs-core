@@ -237,7 +237,7 @@ function getConfig(env) {
 
     if (env.plugin) {
 
-      // correct the keys with something like 0.190.0-dev.8 to something like ">0.190.0.dev-0" otherwise the semver matching is too strict.
+      // correct the keys with something like 0.190.0-dev.8 to something like ">=0.190.0.dev-0" otherwise the semver matching is too strict.
       for (const key in iModelJsVersions) {
         if (iModelJsVersions.hasOwnProperty(key)) {
           const moduleVersion = iModelJsVersions[key];
@@ -245,7 +245,7 @@ function getConfig(env) {
           if (-1 !== dashPosition) {
             const lastNumPosition = moduleVersion.lastIndexOf('.');
             if ((-1 !== lastNumPosition) && (lastNumPosition > dashPosition)) {
-              iModelJsVersions[key] = ">" + moduleVersion.slice(0, lastNumPosition + 1) + "0";
+              iModelJsVersions[key] = ">=" + moduleVersion.slice(0, lastNumPosition + 1) + "0";
             }
           }
         }
