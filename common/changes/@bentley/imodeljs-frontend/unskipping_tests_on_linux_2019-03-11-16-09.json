@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fix errors on Linux caused by case-sensitivity and shader optimizations.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Nathan.Elrod@bentley.com"
+}

@@ -57,7 +57,7 @@ Each package will have its own **node_modules** directory which will contain sym
 
 You must install the following on a Linux computer before attempting to run imodeljs-backend:
 
-* libc++abi1
+* libc++-dev
 
 ## Build Instructions
 

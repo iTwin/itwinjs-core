@@ -219,7 +219,7 @@
       "env": {
         "SVT_LOG_LEVEL": "TRACE",
       },
-      "runtimeExecutable": "${workspaceFolder}\\test-apps\\display-test-app\\node_modules\\.bin\\electron",
+      "runtimeExecutable": "${workspaceFolder}/test-apps/display-test-app/node_modules/.bin/electron",
       "runtimeArgs": [
         "${workspaceFolder}/test-apps/display-test-app/lib/backend/ElectronMain.js",
         "--remote-debugging-port=9223"
