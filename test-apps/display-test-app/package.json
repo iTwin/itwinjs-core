@@ -64,6 +64,7 @@
     "@bentley/imodeljs-quantity": "0.191.0-dev.0",
     "@bentley/imodeljs-frontend": "0.191.0-dev.0",
     "@bentley/imodeljs-backend": "0.191.0-dev.0",
+    "@bentley/imodeljs-markup": "0.191.0-dev.0",
     "body-parser": "^1.18.2",
     "tooltip.js": "^1.2.0"
   },

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "@bentley/bentleyjs-core";
 import { Element as MarkupElement } from "@svgdotjs/svg.js";
-import { markupPlugin } from "./Markup";
+import { MarkupApp } from "./Markup";
 
 abstract class UndoAction {
   public cmdId: number = 0;
@@ -22,7 +22,7 @@ class AddAction extends UndoAction {
     this._index = _elem.position();
   }
   public reinstate() { this._parent.add(this._elem, this._index); }
-  public reverse() { markupPlugin.markup!.selected.drop(this._elem); this._elem.remove(); }
+  public reverse() { MarkupApp.markup!.selected.drop(this._elem); this._elem.remove(); }
 }
 
 class DeleteAction extends UndoAction {
@@ -35,7 +35,7 @@ class DeleteAction extends UndoAction {
     this._index = _elem.position();
   }
   public reverse() { this._parent.add(this._elem, this._index); }
-  public reinstate() { markupPlugin.markup!.selected.drop(this._elem); this._elem.remove(); }
+  public reinstate() { MarkupApp.markup!.selected.drop(this._elem); this._elem.remove(); }
 }
 
 class RepositionAction extends UndoAction {
@@ -49,17 +49,17 @@ class RepositionAction extends UndoAction {
     this._newIndex = _elem.position();
   }
   public reinstate() { this._newParent.add(this._elem, this._newIndex); }
-  public reverse() { this._oldParent.add(this._elem, this._oldIndex); if (this._elem.inSelection) markupPlugin.markup!.selected.drop(this._elem); }
+  public reverse() { this._oldParent.add(this._elem, this._oldIndex); if (this._elem.inSelection) MarkupApp.markup!.selected.drop(this._elem); }
 }
 
 class ModifyAction extends UndoAction {
   constructor(private _newElem: MarkupElement, private _oldElement: MarkupElement) {
     super();
     assert(_newElem !== undefined && _oldElement !== undefined);
-    markupPlugin.markup!.selected.replace(_oldElement, _newElem);
+    MarkupApp.markup!.selected.replace(_oldElement, _newElem);
   }
-  public reinstate() { this._oldElement.replace(this._newElem); markupPlugin.markup!.selected.replace(this._oldElement, this._newElem); }
-  public reverse() { this._newElem.replace(this._oldElement); markupPlugin.markup!.selected.replace(this._newElem, this._oldElement); }
+  public reinstate() { this._oldElement.replace(this._newElem); MarkupApp.markup!.selected.replace(this._oldElement, this._newElem); }
+  public reverse() { this._newElem.replace(this._oldElement); MarkupApp.markup!.selected.replace(this._newElem, this._oldElement); }
 }
 
 export class UndoManager {

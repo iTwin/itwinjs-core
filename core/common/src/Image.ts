@@ -100,7 +100,9 @@ export const enum ImageSourceFormat {
   Jpeg = 0,
   /** Image data is stored with PNG compression. */
   Png = 2,
-  /** Image is stored as an Svg stream. */
+  /** Image is stored as an Svg stream.
+   * @note SVG is only valid for ImageSources in JavaScript. It *may not* be used for persistent textures.
+   */
   Svg = 3,
 }
 

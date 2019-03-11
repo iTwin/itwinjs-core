@@ -3,4 +3,7 @@
   "compilerOptions": {
     "outDir": "./lib"
   },
+  "include": [
+    "./src/**/*.ts"
+  ],
 }

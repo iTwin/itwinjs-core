@@ -22,8 +22,8 @@
       "description": "Draw rectangle",
       "flyover": "Markup Rectangle",
       "Prompts": {
-        "FirstPoint": "Identify corner.",
-        "NextPoint": "Identify opposite corner."
+        "FirstPoint": "Identify corner of rectangle.",
+        "NextPoint": "Identify opposite corner of rectangle."
       }
     },
     "Polygon": {
@@ -31,7 +31,7 @@
       "description": "Draw polygon",
       "flyover": "Markup Polygon",
       "Prompts": {
-        "FirstPoint": "Identify center.",
+        "FirstPoint": "Identify center of polygon.",
         "NextPoint": "Identify point on edge."
       }
     },
@@ -49,8 +49,8 @@
       "description": "Draw ellipse",
       "flyover": "Markup Ellipse",
       "Prompts": {
-        "FirstPoint": "Identify corner",
-        "NextPoint": "Identify opposite corner"
+        "FirstPoint": "Identify corner for ellipse",
+        "NextPoint": "Identify opposite corner for ellipse"
       }
     },
     "Arrow": {
@@ -67,8 +67,8 @@
       "description": "Draw cloud",
       "flyover": "Markup Cloud",
       "Prompts": {
-        "FirstPoint": "Identify corner.",
-        "NextPoint": "Identify opposite corner"
+        "FirstPoint": "Identify corner of cloud.",
+        "NextPoint": "Identify opposite corner of cloud"
       }
     },
     "Sketch": {

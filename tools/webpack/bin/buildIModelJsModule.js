@@ -148,6 +148,7 @@ class ModuleCopier {
             new ModuleInfo(_isDevelopment, true, "@bentley/imodeljs-common", "imodeljs-common.js", undefined),
             new ModuleInfo(_isDevelopment, true, "@bentley/imodeljs-quantity", "imodeljs-quantity.js", undefined),
             new ModuleInfo(_isDevelopment, true, "@bentley/imodeljs-frontend", "imodeljs-frontend.js", undefined, "lib/public"),
+            new ModuleInfo(_isDevelopment, true, "@bentley/imodeljs-markup", "imodeljs-markup.js", undefined, "lib/public"),
             new ModuleInfo(_isDevelopment, true, "@bentley/ui-core", "ui-core.js", undefined, "lib/public"),
             new ModuleInfo(_isDevelopment, true, "@bentley/ui-components", "ui-components.js", undefined, "lib/public"),
             new ModuleInfo(_isDevelopment, true, "@bentley/ui-framework", "ui-framework.js", undefined, "lib/public"),

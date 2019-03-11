@@ -186,6 +186,12 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
+      "packageName": "@bentley/imodeljs-markup",
+      "projectFolder": "core/markup",
+      "reviewCategory": "frontend",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@bentley/electron-manager",
       "projectFolder": "core/electron-manager",
       "reviewCategory": "backend",
@@ -269,12 +275,6 @@
       "packageName": "ui-test-app",
       "projectFolder": "test-apps/ui-test-app",
       "reviewCategory": "internal",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@bentley/plugin-markup",
-      "projectFolder": "plugins/markup",
-      "reviewCategory": "frontend",
       "shouldPublish": false
     },
     {

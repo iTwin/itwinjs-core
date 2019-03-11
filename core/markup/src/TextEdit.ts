@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { BeButtonEvent, EventHandled, InputSource } from "@bentley/imodeljs-frontend";
 import { Svg, Text as MarkupText } from "@svgdotjs/svg.js";
-import { MarkupTool } from "./MarkupTool";
 import { RedlineTool } from "./RedlineTool";
-import { markupPlugin } from "./Markup";
+import { MarkupApp } from "./Markup";
+import { MarkupTool } from "./MarkupTool";
 
 /** Tool to place new text notes on a Markup. */
 export class PlaceTextTool extends RedlineTool {
@@ -16,7 +16,7 @@ export class PlaceTextTool extends RedlineTool {
   protected _value!: string;
 
   public onPostInstall(): void {
-    this._value = markupPlugin.props.text.startValue; // so applications can put a default string (e.g. user's initials) in the note
+    this._value = MarkupApp.props.text.startValue; // so applications can put a default string (e.g. user's initials) in the note
     super.onPostInstall();
   }
 
@@ -31,7 +31,7 @@ export class PlaceTextTool extends RedlineTool {
     this.setCurrentTextStyle(text);
     text.translate(start.x, start.y);
     if (isDynamics) {
-      svg.add(text.getOutline().attr(markupPlugin.props.text.edit.textBox).addClass("markup-editBox"));
+      svg.add(text.getOutline().attr(MarkupApp.props.text.edit.textBox).addClass("markup-editBox"));
     } else {
       new EditTextTool(text, true).run();
     }
@@ -54,7 +54,7 @@ export class EditTextTool extends MarkupTool {
 
     const markupDiv = this.markup.markupDiv!;
     const editDiv = this.editDiv = document.createElement("div");
-    const editProps = markupPlugin.props.text.edit;
+    const editProps = MarkupApp.props.text.edit;
     let style = editDiv.style;
     style.backgroundColor = "blanchedalmond";
     style.top = style.left = "0";
@@ -143,7 +143,7 @@ export class EditTextTool extends MarkupTool {
           undo.onModified(newText, text);
         }
       });
-      const editProps = markupPlugin.props.text.edit;
+      const editProps = MarkupApp.props.text.edit;
       editProps.size.height = this.editor!.style.height!;
       editProps.size.width = this.editor!.style.width!;
       this.editDiv.remove();

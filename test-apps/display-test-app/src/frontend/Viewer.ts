@@ -4,10 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 import { Id64String } from "@bentley/bentleyjs-core";
 import { ElectronRpcConfiguration } from "@bentley/imodeljs-common";
-import { imageBufferToPngDataUrl, IModelApp, IModelConnection, ScreenViewport, Viewport, ViewState, PluginAdmin, Plugin } from "@bentley/imodeljs-frontend";
+import { imageBufferToPngDataUrl, IModelApp, IModelConnection, PluginAdmin, ScreenViewport, Viewport, ViewState } from "@bentley/imodeljs-frontend";
+import { MarkupApp } from "@bentley/imodeljs-markup";
 import { AnimationPanel } from "./AnimationPanel";
 import { CategoryPicker } from "./CategoryPicker";
 import { DebugPanel } from "./DebugPanel";
+import { emphasizeSelectedElements, FeatureOverridesPanel } from "./FeatureOverrides";
 import { IncidentMarkerDemo } from "./IncidentMarkerDemo";
 import { ModelPicker } from "./ModelPicker";
 import { toggleProjectExtents } from "./ProjectExtents";
@@ -15,10 +17,9 @@ import { RealityModelPicker } from "./RealityModelPicker";
 import { addSnapModes } from "./SnapModes";
 import { StandardRotations } from "./StandardRotations";
 import { TileLoadIndicator } from "./TileLoadIndicator";
-import { FeatureOverridesPanel, emphasizeSelectedElements } from "./FeatureOverrides";
-import { ToolBar, ToolBarDropDown, createImageButton, createToolButton } from "./ToolBar";
-import { ViewList, ViewPicker } from "./ViewPicker";
+import { createImageButton, createToolButton, ToolBar, ToolBarDropDown } from "./ToolBar";
 import { ViewAttributesPanel } from "./ViewAttributes";
+import { ViewList, ViewPicker } from "./ViewPicker";
 
 // ###TODO: I think the picker populates correctly, but I have no way to test - and if no reality models are available,
 // the button doesn't disappear until you click on it. Revisit when Alain has something useful for us.
@@ -42,7 +43,6 @@ function saveImage(vp: Viewport) {
 
 class DebugTools extends ToolBarDropDown {
   private readonly _element: HTMLElement;
-  private _markupPlugin?: Promise<Plugin>;
 
   public constructor(parent: HTMLElement) {
     super();
@@ -99,17 +99,15 @@ class DebugTools extends ToolBarDropDown {
   }
 
   private async doMarkup() {
-    if (!this._markupPlugin)
-      this._markupPlugin = PluginAdmin.loadPlugin("MarkupPlugin.js");
-    const markupPlugin = await this._markupPlugin as any;
-    if (markupPlugin.isActive) {
-      const markupData = await markupPlugin.readMarkup();
-      window.open(markupData.image, "Markup");
+    if (MarkupApp.isActive) {
+      const markupData = await MarkupApp.readMarkup();
       // tslint:disable-next-line:no-console
       console.log(markupData.svg);
-      markupPlugin.stop();
+      window.open(markupData.image, "Markup");
+      MarkupApp.stop();
     } else {
-      markupPlugin.start();
+      MarkupApp.props.active.element.stroke = "white"; // override default color for elements
+      await MarkupApp.start();
     }
   }
 

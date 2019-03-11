@@ -5,10 +5,10 @@
 import { Point2d, Point3d, Transform, XAndY } from "@bentley/geometry-core";
 import { BeButtonEvent, BeModifierKeys, EventHandled, IModelApp, InputSource } from "@bentley/imodeljs-frontend";
 import { ArrayXY, Box, Circle, Element as MarkupElement, G, Line, Matrix, Point, Polygon, Svg, Text as MarkupText } from "@svgdotjs/svg.js";
-import { markupPlugin } from "./Markup";
-import { MarkupTool } from "./MarkupTool";
+import { MarkupApp } from "./Markup";
 import { EditTextTool } from "./TextEdit";
 import { UndoManager } from "./Undo";
+import { MarkupTool } from "./MarkupTool";
 
 /** A "modify handle" is a visible position on the screen that provides UI to modify a MarkupElement. */
 abstract class ModifyHandle {
@@ -61,7 +61,7 @@ class StretchHandle extends ModifyHandle {
   constructor(handles: Handles, xy: ArrayXY, cursor: string) {
     super(handles);
     this.posNpc = new Point2d(xy[0], xy[1]);
-    const props = markupPlugin.props.handles;
+    const props = MarkupApp.props.handles;
     this._circle = handles.group!.circle(props.size).addClass("markup-stretchHandle") // the visible "circle" for this handle
       .attr(props.stretch).attr("cursor", cursor + "-resize");
     this.setMouseHandler(this._circle);
@@ -115,7 +115,7 @@ class RotateHandle extends ModifyHandle {
 
   constructor(public handles: Handles) {
     super(handles);
-    const props = markupPlugin.props.handles;
+    const props = MarkupApp.props.handles;
 
     this._line = handles.group!.line(0, 0, 1, 1).attr(props.rotateLine).addClass("markup-rotateLine");
     this._circle = handles.group!.circle(props.size * 1.25).attr(props.rotate).addClass("markup-rotateHandle");
@@ -126,7 +126,7 @@ class RotateHandle extends ModifyHandle {
   public setPosition(): void {
     const anchor = this.anchorVp;
     const dir = this.centerVp.vectorTo(anchor).normalize()!;
-    const loc = this.location = anchor.plusScaled(dir, markupPlugin.props.handles.size * 3);
+    const loc = this.location = anchor.plusScaled(dir, MarkupApp.props.handles.size * 3);
     this._line.plot(anchor.x, anchor.y, loc.x, loc.y);
     this._circle.center(loc.x, loc.y);
   }
@@ -146,7 +146,7 @@ class VertexHandle extends ModifyHandle {
 
   constructor(public handles: Handles, index: number) {
     super(handles);
-    const props = markupPlugin.props.handles;
+    const props = MarkupApp.props.handles;
     this._circle = handles.group!.circle(props.size).attr(props.vertex).addClass("markup-vertexHandle");
     this._x = "x" + (index + 1);
     this._y = "y" + (index + 1);
@@ -177,7 +177,7 @@ class MoveHandle extends ModifyHandle {
   private _lastPos?: Point3d;
   constructor(public handles: Handles, showBBox: boolean) {
     super(handles);
-    const props = markupPlugin.props.handles;
+    const props = MarkupApp.props.handles;
     const clone = this.handles.el.cloneMarkup();
     clone.css(props.move);
     clone.forElementsOfGroup((child) => child.css(props.move));
@@ -280,7 +280,7 @@ class Handles {
     if (this.active) {
       this.active.startDrag(ev);
       this.dragging = true;
-      markupPlugin.markup!.disablePick();
+      MarkupApp.markup!.disablePick();
       IModelApp.toolAdmin.setCursor(IModelApp.viewManager.dynamicsCursor);
     }
   }
@@ -307,7 +307,7 @@ class Handles {
     this.draw();
     this.dragging = false;
     this.active = undefined;
-    markupPlugin.markup!.enablePick();
+    MarkupApp.markup!.enablePick();
   }
 
   /** called when the reset button is pressed. */
@@ -322,7 +322,7 @@ class Handles {
     }
     this.draw();
     this.active = undefined;
-    markupPlugin.markup!.enablePick();
+    MarkupApp.markup!.enablePick();
   }
 }
 

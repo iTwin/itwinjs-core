@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { Transform } from "@bentley/geometry-core";
 import { Box, Element as MarkupElement, extend, G, Matrix, nodeOrNew, Rect, register, Svg, Text } from "@svgdotjs/svg.js";
-import { markupPlugin } from "./Markup";
+import { MarkupApp } from "./Markup";
 
 export interface MarkupColor {
   fill: any;
@@ -101,9 +101,9 @@ extend(MarkupElement, {
       me.css(oldColor).data(OLDCOLOR, null); // change to old color and remove data object
     me.forElementsOfGroup((child) => child.resetColor());
   },
-  hilite() { const me = this as MarkupElement; if (!me.inSelection) { me.overrideColor(markupPlugin.props.hilite.color); me.inSelection = true; } },
+  hilite() { const me = this as MarkupElement; if (!me.inSelection) { me.overrideColor(MarkupApp.props.hilite.color); me.inSelection = true; } },
   unHilite() { const me = this as MarkupElement; if (me.inSelection) { me.resetColor(); me.inSelection = undefined; } },
-  flash() { const me = this as MarkupElement; if (!me.inSelection) me.overrideColor(markupPlugin.props.hilite.flash); },
+  flash() { const me = this as MarkupElement; if (!me.inSelection) me.overrideColor(MarkupApp.props.hilite.flash); },
   unFlash() { const me = this as MarkupElement; if (!me.inSelection) me.resetColor(); },
   markupStretch(w: number, h: number, x: number, y: number, _mtx: Matrix) { const me = this as MarkupElement; me.size(w, h).move(x, y); },
   isChildOf(svg: Svg) {

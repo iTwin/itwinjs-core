@@ -5,14 +5,14 @@
 import { XAndY } from "@bentley/geometry-core";
 import { CoordinateLockOverrides, IModelApp, PrimitiveTool, Viewport, BeTouchEvent, EventHandled, BeButton } from "@bentley/imodeljs-frontend";
 import { Element as MarkupElement, LinkedHTMLElement } from "@svgdotjs/svg.js";
-import { markupPlugin, Markup } from "./Markup";
+import { MarkupApp, Markup } from "./Markup";
 
 export abstract class MarkupTool extends PrimitiveTool {
   public markup!: Markup;
   public static toolKey = "MarkupTools:tools.";
   public requireWriteableTarget(): boolean { return false; }
   public isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean { return (super.isCompatibleViewport(vp, isSelectedViewChange) && undefined !== vp && vp === IModelApp.toolAdmin.markupView); }
-  public onInstall(): boolean { if (undefined === markupPlugin.markup) return false; this.markup = markupPlugin.markup; return super.onInstall(); }
+  public onInstall(): boolean { if (undefined === MarkupApp.markup) return false; this.markup = MarkupApp.markup; return super.onInstall(); }
   public onPostInstall() { super.onPostInstall(); this.setupAndPromptForNextAction(); }
   public onUnsuspend(): void { this.showPrompt(); }
   public onRestartTool(): void { this.exitTool(); }

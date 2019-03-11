@@ -3,14 +3,14 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { ImageSource, ImageSourceFormat } from "@bentley/imodeljs-common";
-import { imageElementFromImageSource, IModelApp, Plugin, PluginAdmin, ScreenViewport } from "@bentley/imodeljs-frontend";
+import { imageElementFromImageSource, IModelApp, ScreenViewport } from "@bentley/imodeljs-frontend";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
 import { adopt, create, Svg, SVG } from "@svgdotjs/svg.js";
-import * as redlineTool from "./RedlineTool";
 import { SelectionSet, SelectTool } from "./SelectTool";
 import { svgInit } from "./SvgJsExt";
-import * as textTool from "./TextEdit";
 import { UndoManager } from "./Undo";
+import * as redlineTool from "./RedlineTool";
+import * as textTool from "./TextEdit";
 
 /** Markup data returned by [[MarkupApp.readMarkup]] */
 export interface MarkupData {
@@ -33,15 +33,15 @@ export interface MarkupRequestProps {
  * applications may customize and control the behavior of the Markup plugin.
  * When the plugin loads, it registers a set of "Markup.xx" tools that may be invoked from Ui controls.
  */
-export class MarkupPlugin extends Plugin {
+export class MarkupApp {
   /** the current Markup being created */
-  public markup?: Markup;
+  public static markup?: Markup;
   /** The namespace for the Markup tools */
-  public markupNamespace: I18NNamespace;
+  public static markupNamespace: I18NNamespace;
   /** Properties of the Markup plugin. By setting members of this object, applications can control
    * the appearance of various parts of the Markup plugin.
    */
-  public props = {
+  public static props = {
     handles: {
       size: 10,
       stretch: { "fill-opacity": .85, "stroke": "black", "fill": "white" },
@@ -88,15 +88,13 @@ export class MarkupPlugin extends Plugin {
       },
     },
   };
-  private _saveDefaultToolId = "";
-  private _saveDefaultToolArgs?: any[];
+  private static _saveDefaultToolId = "";
+  private static _saveDefaultToolArgs?: any[];
 
-  public onExecute(_args: string[]) { }
-
-  public get isActive() { return undefined !== this.markup; }
+  public static get isActive() { return undefined !== this.markup; }
 
   /** Stop markup session */
-  public stop() {
+  public static stop() {
     if (!this.markup)
       return;
 
@@ -116,7 +114,8 @@ export class MarkupPlugin extends Plugin {
   }
 
   /** Start a markup session */
-  public async start() {
+  public static async start() {
+    this.init();
     await this.markupNamespace.readFinished; // make sure our localized messages are ready.
     const view = IModelApp.toolAdmin.markupView = IModelApp.viewManager.selectedView;
     if (view) {
@@ -130,8 +129,9 @@ export class MarkupPlugin extends Plugin {
     }
   }
 
-  public constructor(name: string, versions: string) {
-    super(name, versions);
+  public static init() {
+    if (this.markupNamespace)
+      return;
     this.markupNamespace = IModelApp.i18n.registerNamespace("MarkupTools");
     IModelApp.tools.register(SelectTool, this.markupNamespace);
     IModelApp.tools.registerModule(redlineTool, this.markupNamespace);
@@ -139,7 +139,7 @@ export class MarkupPlugin extends Plugin {
   }
 
   /** convert the current markup SVG into a string */
-  private readMarkupSvg() {
+  private static readMarkupSvg() {
     const markup = this.markup;
     if (!markup || !markup.svgContainer)
       return undefined;
@@ -153,7 +153,7 @@ export class MarkupPlugin extends Plugin {
   }
 
   /** Read the result of a Markup session. */
-  public async readMarkup(request: MarkupRequestProps = { imageFormat: "image/png", imprintSvgOnImage: true }): Promise<MarkupData> {
+  public static async readMarkup(request: MarkupRequestProps = { imageFormat: "image/png", imprintSvgOnImage: true }): Promise<MarkupData> {
     const svg = this.readMarkupSvg(); // read the current svg data for the markup
     if (svg && request.imprintSvgOnImage) {
       const svgImage = await imageElementFromImageSource(new ImageSource(svg, ImageSourceFormat.Svg));
@@ -183,7 +183,7 @@ export class Markup {
       filter.remove();
     filter = adopt(create("filter")).id(dropShadowId);
     const effect = adopt(create("feDropShadow"));
-    effect.attr(markupPlugin.props.dropShadow.attr);
+    effect.attr(MarkupApp.props.dropShadow.attr);
     filter.add(effect);
     svg.defs().add(filter);
     return filter;
@@ -201,10 +201,10 @@ export class Markup {
   private addNested(className: string): Svg { return this.removeSvgNamespace(this.svgContainer!.nested().addClass(className)); }
   public constructor(public vp: ScreenViewport, svgData?: string) {
     this.markupDiv = vp.addNewDiv("overlay-markup", true, 20); // this div goes on top of the canvas, but behind UI layers
-    this.svgContainer = this.addSvg("markup-container");  // SVG container to hold both Markup SVG and svg-based Markup decorators
+    this.svgContainer = this.addSvg("markup-container");  // container to hold both Markup SVG and svg-based Markup decorators
     this.svgMarkup = this.addNested("markup-svg");
     this.createDropShadow(this.svgContainer);
-    if (markupPlugin.props.dropShadow.enable)
+    if (MarkupApp.props.dropShadow.enable)
       this.svgMarkup.attr("filter", "url(#" + dropShadowId + ")");
 
     if (svgData) {
@@ -235,8 +235,3 @@ export class Markup {
 }
 
 svgInit(); // to ensure we load the SvgJsExt extensions
-
-declare var IMODELJS_VERSIONS_REQUIRED: string;
-declare var PLUGIN_NAME: string;
-export const markupPlugin = new MarkupPlugin(PLUGIN_NAME, IMODELJS_VERSIONS_REQUIRED);
-PluginAdmin.register(markupPlugin);

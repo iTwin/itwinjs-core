@@ -63,6 +63,10 @@
       "allowedCategories": [ "common", "frontend", "internal" ]
     },
     {
+      "name": "@bentley/imodeljs-markup",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "@bentley/imodeljs-native",
       "allowedCategories": [ "backend" ]
     },
