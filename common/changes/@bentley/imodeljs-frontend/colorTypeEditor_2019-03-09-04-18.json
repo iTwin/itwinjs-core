@@ -1,9 +1,0 @@
-{
-  "changes": [{
-    "comment": "Add ColorEditor to list of available Type Editors including new ColorParams to specify set of colors.",
-    "packageName": "@bentley/imodeljs-frontend",
-    "type": "none"
-  }],
-  "packageName": "@bentley/imodeljs-frontend",
-  "email": "bill.steinbock@bentley.com"
-}
