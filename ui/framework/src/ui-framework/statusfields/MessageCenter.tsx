@@ -65,10 +65,10 @@ export class MessageCenterField extends React.Component<MessageCenterProps, Mess
               title={UiFramework.i18n.translate("UiFramework:messageCenter.messages")}
               buttons={
                 <>
-                  <MessageCenterButton>
+                  <MessageCenterButton title={UiFramework.i18n.translate("UiFramework:messageCenter.export")}>
                     <i className={"icon icon-export"} />
                   </MessageCenterButton>
-                  <MessageCenterButton onClick={this._handleCloseMessageIndicatorClick}>
+                  <MessageCenterButton onClick={this._handleCloseMessageIndicatorClick} title={UiFramework.i18n.translate("UiCore:dialog.close")}>
                     <i className={"icon icon-close"} />
                   </MessageCenterButton>
                 </>

@@ -15,6 +15,8 @@ export interface DialogButtonProps extends CommonProps {
   children?: React.ReactNode;
   /** Function called when button is clicked. */
   onClick?: () => void;
+  /** Title for the button. */
+  title?: string;
 }
 
 /** Button used in [[TitleBar]] component. */
@@ -29,6 +31,7 @@ export class DialogButton extends React.PureComponent<DialogButtonProps> {
         className={className}
         style={this.props.style}
         onClick={this.props.onClick}
+        title={this.props.title}
       >
         {this.props.children}
       </div>

@@ -5,28 +5,8 @@
 @import "_variables";
 @import "@bentley/ui-core/lib/ui-core/index";
 
-div.nz-widget-toolSettings-title {
-  font-family: $uicore-font-family;
-  font-size: $uicore-font-size;
-  color: $buic-text-color;
-  text-overflow: ellipsis;
-  text-align: center;
-  white-space: nowrap;
-  overflow: hidden;
-  padding-bottom: 6px;
-}
-
 .nz-widget-toolSettings-settings {
-  $horizontal-padding: 5px;
-  $vertical-padding: $horizontal-padding;
-
-  padding-left: $horizontal-padding;
-  padding-right: $horizontal-padding;
-  padding-top: $vertical-padding;
-  padding-bottom: $vertical-padding;
   position: relative;
-  background-color: $nz-widget-background-color;
-  color: $buic-text-color;
   min-width: $nz-tab-width;
   pointer-events: auto;
 
@@ -36,4 +16,24 @@ div.nz-widget-toolSettings-title {
     color: $nz-widget-border-color;
     radius: 3px;
   }
+
+  opacity: 0.80;
+
+  &:hover {
+    opacity: 1;
+  }
+}
+
+.nz-widget-toolSettings-content {
+  $horizontal-padding: 5px;
+  $vertical-padding: $horizontal-padding;
+
+  padding-left: $horizontal-padding;
+  padding-right: $horizontal-padding;
+  padding-top: $vertical-padding;
+  padding-bottom: $vertical-padding;
+  background-color: $nz-widget-background-color;
+  color: $buic-text-color;
+  min-width: $nz-tab-width;
+  pointer-events: auto;
 }
