@@ -26,13 +26,13 @@ class TestDataManager {
     const createdOutputFile: string = path.join(outputDir, "TestIModelImporter-Source.bim");
     if (IModelJsFs.existsSync(createdOutputFile))
       IModelJsFs.removeSync(createdOutputFile);
-    this.sourceDb = IModelDb.createStandalone(createdOutputFile, { rootSubject: { name: "TestIModelImporter-Source" } });
+    this.sourceDb = IModelDb.createSnapshot(createdOutputFile, { rootSubject: { name: "TestIModelImporter-Source" } });
     assert.isTrue(IModelJsFs.existsSync(createdOutputFile));
     // Target IModelDb
     const importedOutputFile: string = path.join(outputDir, "TestIModelImporter-Target.bim");
     if (IModelJsFs.existsSync(importedOutputFile))
       IModelJsFs.removeSync(importedOutputFile);
-    this.targetDb = IModelDb.createStandalone(importedOutputFile, { rootSubject: { name: "TestIModelImporter-Target" } });
+    this.targetDb = IModelDb.createSnapshot(importedOutputFile, { rootSubject: { name: "TestIModelImporter-Target" } });
     assert.isTrue(IModelJsFs.existsSync(importedOutputFile));
     // insert some elements to avoid getting same IDs for sourceDb and targetDb
     const subjectId = Subject.insert(this.targetDb, IModel.rootSubjectId, "Only in Target");

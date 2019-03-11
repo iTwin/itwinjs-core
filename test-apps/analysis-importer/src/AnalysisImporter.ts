@@ -14,7 +14,7 @@ export class AnalysisImporter {
     public definitionModelId: Id64String = Id64.invalid;
 
     public constructor(iModelFileName: string) {
-        this.iModelDb = IModelDb.createStandalone(iModelFileName, { rootSubject: { name: "Analysis Example" } });
+        this.iModelDb = IModelDb.createSnapshot(iModelFileName, { rootSubject: { name: "Analysis Example" } });
     }
     /** Create a geometry stream from a Polyface. */
     private generateGeometryStreamFromPolyface(polyface: Polyface): GeometryStreamProps {

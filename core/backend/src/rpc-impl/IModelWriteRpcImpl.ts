@@ -11,7 +11,7 @@ import { OpenIModelDbMemoizer } from "./OpenIModelDbMemoizer";
 
 /**
  * The backend implementation of IModelWriteRpcInterface.
- * @hidden
+ * @internal
  */
 export class IModelWriteRpcImpl extends RpcInterface implements IModelWriteRpcInterface {
   public static register() { RpcManager.registerImpl(IModelWriteRpcInterface, IModelWriteRpcImpl); }

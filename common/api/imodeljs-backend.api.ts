@@ -1212,7 +1212,8 @@ class IModelJsFsStats {
 // WARNING: Unsupported export: version
 // WARNING: Unsupported export: logger
 // WARNING: Unsupported export: TxnIdString
-// @public
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal
 module IModelJsNative {
   interface BriefcaseManagerOnConflictPolicy {
     deleteVsUpdate: number;
@@ -2211,6 +2212,7 @@ class OpenParams {
   readonly openMode: OpenMode;
   static pullAndPush(exclusiveAccessOption?: ExclusiveAccessOption): OpenParams;
   static pullOnly(accessMode?: AccessMode, exclusiveAccessOption?: ExclusiveAccessOption): OpenParams;
+  // @deprecated
   static standalone(openMode: OpenMode): OpenParams;
   readonly syncMode?: SyncMode | undefined;
 }

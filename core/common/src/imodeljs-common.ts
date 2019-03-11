@@ -63,6 +63,7 @@ export * from "./rpc/mobile/MobileRpcManager";
 export * from "./rpc/IModelReadRpcInterface";
 export * from "./rpc/IModelTileRpcInterface";
 export * from "./rpc/IModelWriteRpcInterface";
+export * from "./rpc/SnapshotIModelRpcInterface";
 export * from "./rpc/StandaloneIModelRpcInterface";
 
 // Set the version number so it can be found at runtime. BUILD_SEMVER is replaced at build time by the webpack DefinePlugin.

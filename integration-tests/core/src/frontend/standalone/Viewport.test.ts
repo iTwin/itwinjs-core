@@ -29,14 +29,14 @@ describe("Viewport", () => {
 
   before(async () => {   // Create a ViewState to load into a Viewport
     MockRender.App.startup();
-    imodel = await IModelConnection.openStandalone(path.join(iModelDir, "test.bim"));
-    imodel2 = await IModelConnection.openStandalone(path.join(iModelDir, "test2.bim"));
+    imodel = await IModelConnection.openSnapshot(path.join(iModelDir, "test.bim"));
+    imodel2 = await IModelConnection.openSnapshot(path.join(iModelDir, "test2.bim"));
     spatialView = await imodel.views.load("0x34") as SpatialViewState;
     spatialView.setStandardRotation(StandardViewId.RightIso);
   });
 
   after(async () => {
-    if (imodel) await imodel.closeStandalone();
+    if (imodel) await imodel.closeSnapshot();
     MockRender.App.shutdown();
   });
 

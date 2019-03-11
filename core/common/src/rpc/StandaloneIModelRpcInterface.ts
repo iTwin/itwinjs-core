@@ -11,7 +11,7 @@ import { IModel, IModelToken } from "../IModel";
 
 /** The RPC interface for working with standalone iModels.
  * Products are generally discouraged from using standalone iModels and therefore registering this interface.
- * @alpha
+ * @deprecated Replaced by [[SnapshotIModelRpcInterface]]
  */
 export abstract class StandaloneIModelRpcInterface extends RpcInterface {
   /** The version of the interface. */

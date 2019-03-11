@@ -21,7 +21,7 @@ import { OpenIModelDbMemoizer } from "./OpenIModelDbMemoizer";
 const loggingCategory = "imodeljs-backend.IModelReadRpcImpl";
 
 /** The backend implementation of IModelReadRpcInterface.
- * @hidden
+ * @internal
  */
 export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInterface {
 

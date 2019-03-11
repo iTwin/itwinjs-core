@@ -413,8 +413,8 @@ describe("ChangeSummary (#integration)", () => {
       assert.equal(e.errorNumber, IModelStatus.BadArg);
     }
 
-    // extract on standalone iModel should fail
-    iModel = IModelTestUtils.openIModel("test.bim");
+    // extract on snapshot iModel should fail
+    iModel = IModelDb.openSnapshot(IModelTestUtils.resolveAssetFile("test.bim"));
     assert.exists(iModel);
     assert.exists(iModel.briefcase);
     assert.isTrue(iModel.briefcase!.isStandalone);
@@ -426,7 +426,7 @@ describe("ChangeSummary (#integration)", () => {
       assert.isDefined(e.errorNumber);
       assert.equal(e.errorNumber, IModelStatus.BadArg);
     } finally {
-      iModel.closeStandalone();
+      iModel.closeSnapshot();
     }
   });
 

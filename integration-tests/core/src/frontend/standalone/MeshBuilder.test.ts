@@ -50,7 +50,7 @@ describe("Mesh Builder Tests", () => {
   document.body.appendChild(viewDiv!);
 
   before(async () => {   // Create a ViewState to load into a Viewport
-    imodel = await IModelConnection.openStandalone(iModelLocation);
+    imodel = await IModelConnection.openSnapshot(iModelLocation);
     spatialView = await imodel.views.load("0x34") as SpatialViewState;
     spatialView.setStandardRotation(StandardViewId.RightIso);
     MockRender.App.startup();
@@ -58,7 +58,7 @@ describe("Mesh Builder Tests", () => {
 
   after(async () => {
     MockRender.App.shutdown();
-    if (imodel) await imodel.closeStandalone();
+    if (imodel) await imodel.closeSnapshot();
   });
 
   it("constructor", () => {

@@ -26,12 +26,12 @@ describe("ModelSelector", () => {
   });
 
   beforeEach(async () => {
-    imodel = await IModelConnection.openStandalone(testIModelPath);
+    imodel = await IModelConnection.openSnapshot(testIModelPath);
     hierarchyBuilder = new HierarchyBuilder(imodel);
   });
 
   afterEach(async () => {
-    await imodel.closeStandalone();
+    await imodel.closeSnapshot();
   });
 
   describe("Model", () => {

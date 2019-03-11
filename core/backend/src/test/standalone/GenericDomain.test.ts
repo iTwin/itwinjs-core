@@ -26,7 +26,7 @@ describe("Generic Domain", () => {
     assert.equal(Generic.name, "Generic");
     assert.isTrue(PhysicalObject.classFullName.startsWith(Generic.name));
 
-    const iModelDb: IModelDb = IModelTestUtils.createStandaloneIModel("GenericTest.bim", {
+    const iModelDb: IModelDb = IModelDb.createSnapshot(IModelTestUtils.prepareOutputFile("GenericDomain", "GenericTest.bim"), {
       rootSubject: { name: "GenericTest", description: "Test of the Generic domain schema." },
       client: "Generic",
       globalOrigin: { x: 0, y: 0 },
@@ -100,6 +100,6 @@ describe("Generic Domain", () => {
     }
 
     iModelDb.saveChanges("Insert Generic elements");
-    iModelDb.closeStandalone();
+    iModelDb.closeSnapshot();
   });
 });

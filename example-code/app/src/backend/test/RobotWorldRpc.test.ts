@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { IModelApp, IModelConnection, NoRenderApp } from "@bentley/imodeljs-frontend";
-import { PhysicalModel } from "@bentley/imodeljs-backend";
-import { StandaloneIModelRpcInterface, IModel, IModelToken, IModelReadRpcInterface, IModelWriteRpcInterface, TestRpcManager } from "@bentley/imodeljs-common";
+import { IModelDb, IModelJsFs, PhysicalModel } from "@bentley/imodeljs-backend";
+import { SnapshotIModelRpcInterface, StandaloneIModelRpcInterface, IModel, IModelToken, IModelReadRpcInterface, IModelWriteRpcInterface, TestRpcManager } from "@bentley/imodeljs-common";
 import { RobotWorldReadRpcInterface, RobotWorldWriteRpcInterface } from "../../common/RobotWorldRpcInterface";
 import { RobotWorldEngine } from "../RobotWorldEngine";
 import { KnownTestLocations } from "./KnownTestLocations";
@@ -24,18 +24,17 @@ function simulateBackendShutdown() {
   RobotWorldEngine.shutdown();
 }
 
-const bimName = "RobotWorldRpc.bim";
-
 async function setUpTest() {
   // Make a copy for the tests to work on
-  let cc = IModelTestUtils.openIModel("empty.bim", { copyFilename: bimName, deleteFirst: true, openMode: OpenMode.ReadWrite });
-  await RobotWorld.importSchema(actx, cc);
-  cc.saveChanges();
-  cc.closeStandalone();
-  cc = IModelTestUtils.openIModelFromOut(bimName, { openMode: OpenMode.ReadWrite });
-  PhysicalModel.insert(cc, IModel.rootSubjectId, "test");
-  cc.saveChanges();
-  cc.closeStandalone();
+  const iModelFile = IModelTestUtils.prepareOutputFile("RobotWorldRpc.bim");
+  const seedFile = IModelTestUtils.resolveAssetFile("empty.bim");
+  IModelJsFs.copySync(seedFile, iModelFile);
+  const iModel = IModelDb.openStandalone(iModelFile, OpenMode.ReadWrite);
+  await RobotWorld.importSchema(actx, iModel);
+  iModel.saveChanges();
+  PhysicalModel.insert(iModel, IModel.rootSubjectId, "test");
+  iModel.saveChanges();
+  iModel.closeStandalone();
 }
 
 describe("RobotWorldRpc", () => {
@@ -53,11 +52,11 @@ describe("RobotWorldRpc", () => {
     NoRenderApp.startup();
 
     // expose interfaces using a direct call mechanism
-    TestRpcManager.initialize([StandaloneIModelRpcInterface, IModelReadRpcInterface, IModelWriteRpcInterface, RobotWorldReadRpcInterface, RobotWorldWriteRpcInterface]);
+    TestRpcManager.initialize([SnapshotIModelRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface, IModelWriteRpcInterface, RobotWorldReadRpcInterface, RobotWorldWriteRpcInterface]);
     const roWrite = RobotWorldWriteRpcInterface.getClient();
     const roRead = RobotWorldReadRpcInterface.getClient();
 
-    const iModel: IModelConnection = await IModelConnection.openStandalone(KnownTestLocations.outputDir + "/" + bimName, OpenMode.ReadWrite);
+    const iModel: IModelConnection = await IModelConnection.openStandalone(KnownTestLocations.outputDir + "/" + "RobotWorldRpc.bim", OpenMode.ReadWrite);
     assert.isTrue(iModel !== undefined);
     const iToken: IModelToken = iModel.iModelToken;
 

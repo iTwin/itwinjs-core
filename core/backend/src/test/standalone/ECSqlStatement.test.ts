@@ -1220,7 +1220,7 @@ describe("ECSqlStatement", () => {
   });
 
   it("BindRange3d for parameter in spatial SQL function", () => {
-    const iModel: IModelDb = IModelTestUtils.createStandaloneIModel("bindrange3d.imodel", { rootSubject: { name: "test" } });
+    const iModel: IModelDb = IModelDb.createSnapshot(IModelTestUtils.prepareOutputFile("ECSqlStatement", "BindRange3d.bim"), { rootSubject: { name: "BindRange3d" } });
     try {
       iModel.withPreparedStatement("SELECT e.ECInstanceId FROM bis.Element e, bis.SpatialIndex rt WHERE rt.ECInstanceId MATCH DGN_spatial_overlap_aabb(?) AND e.ECInstanceId=rt.ECInstanceId",
         (stmt: ECSqlStatement) => {
@@ -1235,7 +1235,7 @@ describe("ECSqlStatement", () => {
         });
 
     } finally {
-      iModel.closeStandalone();
+      iModel.closeSnapshot();
     }
   });
 

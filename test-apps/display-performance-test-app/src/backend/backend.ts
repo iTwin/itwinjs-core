@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { IModelHost, IModelHostConfiguration } from "@bentley/imodeljs-backend";
 import { Logger } from "@bentley/bentleyjs-core";
-import { IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface } from "@bentley/imodeljs-common";
+import { IModelTileRpcInterface, SnapshotIModelRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface } from "@bentley/imodeljs-common";
 import * as fs from "fs";
 import * as path from "path";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
@@ -18,7 +18,7 @@ IModelJsConfig.init(true /* suppress exception */, true /* suppress error messag
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // (needed temporarily to use self-signed cert to communicate with iModelBank via https)
 
 export function getRpcInterfaces() {
-  return [DisplayPerfRpcInterface, IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface];
+  return [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface];
 }
 
 function setupStandaloneConfiguration() {

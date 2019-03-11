@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { initialize, terminate } from "../IntegrationTests";
-import { OpenMode } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { Presentation } from "@bentley/presentation-frontend";
 
@@ -15,12 +14,12 @@ describe("Localization", async () => {
   before(async () => {
     initialize();
     const testIModelName: string = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
-    imodel = await IModelConnection.openStandalone(testIModelName, OpenMode.Readonly);
+    imodel = await IModelConnection.openSnapshot(testIModelName);
     expect(imodel).is.not.null;
   });
 
   after(async () => {
-    await imodel.closeStandalone();
+    await imodel.closeSnapshot();
     terminate();
   });
 

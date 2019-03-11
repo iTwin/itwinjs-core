@@ -2,7 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { Id64String, OpenMode } from "@bentley/bentleyjs-core";
+import { Id64String } from "@bentley/bentleyjs-core";
 import { ElectronRpcConfiguration } from "@bentley/imodeljs-common";
 import { imageBufferToPngDataUrl, IModelApp, IModelConnection, ScreenViewport, Viewport, ViewState, PluginAdmin } from "@bentley/imodeljs-frontend";
 import { AnimationPanel } from "./AnimationPanel";
@@ -288,13 +288,12 @@ export class Viewer {
   }
 
   private async clearViews(): Promise<void> {
-    await this._imodel.closeStandalone();
-
+    await this._imodel.closeSnapshot();
     this.views.clear();
   }
 
   private async openIModel(filename: string): Promise<void> {
-    this._imodel = await IModelConnection.openStandalone(filename, OpenMode.Readonly);
+    this._imodel = await IModelConnection.openSnapshot(filename);
   }
 
   private async buildViewList(): Promise<void> {

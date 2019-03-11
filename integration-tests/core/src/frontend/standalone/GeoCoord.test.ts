@@ -22,7 +22,7 @@ describe("GeoCoord", () => {
   let wgs84GeoCoordsResponse: GeoCoordinatesResponseProps;
 
   before(async () => {
-    iModel = await IModelConnection.openStandalone(iModelLocation);
+    iModel = await IModelConnection.openSnapshot(iModelLocation);
     // make an array of 10x10 geoPoints in geoPointList.
     for (let iLatitude: number = 0; iLatitude < 10; iLatitude++) {
       for (let iLongitude: number = 0; iLongitude < 10; iLongitude++) {
@@ -35,7 +35,7 @@ describe("GeoCoord", () => {
   });
 
   after(async () => {
-    if (iModel) await iModel.closeStandalone();
+    if (iModel) await iModel.closeSnapshot();
   });
 
   it("should get different results for different datums", async () => {

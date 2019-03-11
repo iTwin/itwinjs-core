@@ -12,6 +12,7 @@ import {
   IModelToken,
   RpcConfiguration,
   RpcOperation,
+  SnapshotIModelRpcInterface,
   StandaloneIModelRpcInterface,
   MobileRpcConfiguration,
   MobileRpcManager,
@@ -58,9 +59,9 @@ async function retrieveConfiguration(): Promise<void> {
 }
 
 // opens the configured iModel from disk
-async function openStandaloneIModel(state: SimpleViewState, filename: string) {
+async function openSnapshotIModel(state: SimpleViewState, filename: string) {
   configuration.standalone = true;
-  state.iModelConnection = await IModelConnection.openStandalone(filename, OpenMode.Readonly);
+  state.iModelConnection = await IModelConnection.openSnapshot(filename);
   configuration.iModelName = state.iModelConnection.name;
   IModelApp.accessToken = state.accessToken;
 }
@@ -69,7 +70,7 @@ async function openStandaloneIModel(state: SimpleViewState, filename: string) {
 window.onbeforeunload = () => {
   if (activeViewState.iModelConnection !== undefined)
     if (configuration.standalone)
-      activeViewState.iModelConnection.closeStandalone(); // tslint:disable-line:no-floating-promises
+      activeViewState.iModelConnection.closeSnapshot(); // tslint:disable-line:no-floating-promises
     else
       activeViewState.iModelConnection.close(activeViewState.accessToken!); // tslint:disable-line:no-floating-promises
 };
@@ -107,12 +108,12 @@ async function main() {
   // Choose RpcConfiguration based on whether we are in electron or browser
   let rpcConfiguration: RpcConfiguration;
   if (ElectronRpcConfiguration.isElectron) {
-    rpcConfiguration = ElectronRpcManager.initializeClient({}, [IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface]);
+    rpcConfiguration = ElectronRpcManager.initializeClient({}, [IModelTileRpcInterface, SnapshotIModelRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface]);
   } else if (MobileRpcConfiguration.isMobileFrontend) {
-    rpcConfiguration = MobileRpcManager.initializeClient([IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface]);
+    rpcConfiguration = MobileRpcManager.initializeClient([IModelTileRpcInterface, SnapshotIModelRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface]);
   } else {
     const uriPrefix = configuration.customOrchestratorUri || "http://localhost:3001";
-    rpcConfiguration = BentleyCloudRpcManager.initializeClient({ info: { title: "SimpleViewApp", version: "v1.0" }, uriPrefix }, [IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface]);
+    rpcConfiguration = BentleyCloudRpcManager.initializeClient({ info: { title: "SimpleViewApp", version: "v1.0" }, uriPrefix }, [IModelTileRpcInterface, SnapshotIModelRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface]);
     // WIP: WebAppRpcProtocol seems to require an IModelToken for every RPC request. ECPresentation initialization tries to set active locale using
     // RPC without any imodel and fails...
     for (const definition of rpcConfiguration.interfaces())
@@ -129,7 +130,7 @@ async function main() {
   // while the browser is loading stuff, start work on logging in and downloading the imodel, etc.
   try {
     if (configuration.standalone && !configuration.signInForStandalone) {
-      await openStandaloneIModel(activeViewState, configuration.iModelName!);
+      await openSnapshotIModel(activeViewState, configuration.iModelName!);
       await uiReady; // Now wait for the HTML UI to finish loading.
       await initView();
       return;
@@ -142,7 +143,7 @@ async function main() {
       if (!activeViewState.accessToken)
         OidcClientWrapper.oidcClient.signIn(actx);
       else {
-        await openStandaloneIModel(activeViewState, configuration.iModelName!);
+        await openSnapshotIModel(activeViewState, configuration.iModelName!);
         await uiReady; // Now, wait for the HTML UI to finish loading.
         await initView();
       }

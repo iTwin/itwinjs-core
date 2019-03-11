@@ -816,11 +816,11 @@ describe("VisibilityTree", () => {
     });
 
     beforeEach(async () => {
-      imodel = await IModelConnection.openStandalone(testIModelPath);
+      imodel = await IModelConnection.openSnapshot(testIModelPath);
     });
 
     afterEach(async () => {
-      await imodel.closeStandalone();
+      await imodel.closeSnapshot();
     });
 
     it("shows correct hierarchy", async () => {

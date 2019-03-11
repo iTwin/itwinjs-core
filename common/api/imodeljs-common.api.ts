@@ -4252,6 +4252,17 @@ interface SnapResponseProps {
   status: number;
 }
 
+// @beta
+class SnapshotIModelRpcInterface extends RpcInterface {
+  // (undocumented)
+  closeSnapshot(_iModelToken: IModelToken): Promise<boolean>;
+  static getClient(): SnapshotIModelRpcInterface;
+  // (undocumented)
+  openSnapshot(_fileName: string): Promise<IModel>;
+  static types: () => (typeof IModelToken)[];
+  static version: string;
+}
+
 // @public
 interface SpatialViewDefinitionProps extends ViewDefinition3dProps {
   // (undocumented)
@@ -4275,7 +4286,7 @@ interface SpotProps extends LightProps {
   outer?: AngleProps;
 }
 
-// @alpha
+// @public @deprecated
 class StandaloneIModelRpcInterface extends RpcInterface {
   // (undocumented)
   closeStandalone(_iModelToken: IModelToken): Promise<boolean>;

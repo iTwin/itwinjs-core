@@ -5,10 +5,10 @@
 import { assert } from "chai";
 import { Logger, OpenMode, Id64, Id64String, IDisposable, ActivityLoggingContext, BeEvent, LogLevel } from "@bentley/bentleyjs-core";
 import { AccessToken, Config, ChangeSet } from "@bentley/imodeljs-clients";
-import { Code, CreateIModelProps, ElementProps, RpcManager, GeometricElementProps, IModel, IModelReadRpcInterface, RelatedElement, RpcConfiguration, CodeProps } from "@bentley/imodeljs-common";
+import { Code, ElementProps, RpcManager, GeometricElementProps, IModel, IModelReadRpcInterface, RelatedElement, RpcConfiguration, CodeProps } from "@bentley/imodeljs-common";
 import {
   IModelHostConfiguration, IModelHost, BriefcaseManager, IModelDb, Model, Element,
-  InformationPartitionElement, SpatialCategory, IModelJsFs, IModelJsFsStats, PhysicalPartition, PhysicalModel, SubjectOwnsPartitionElements,
+  InformationPartitionElement, SpatialCategory, IModelJsFs, PhysicalPartition, PhysicalModel, SubjectOwnsPartitionElements,
 } from "../imodeljs-backend";
 import { IModelJsNative } from "../IModelJsNative";
 import { KnownTestLocations } from "./KnownTestLocations";
@@ -179,76 +179,33 @@ export class IModelTestUtils {
     return HubUtility.login(userCredentials);
   }
 
-  private static getStat(name: string) {
-    let stat: IModelJsFsStats | undefined;
-    try {
-      stat = IModelJsFs.lstatSync(name);
-    } catch (err) {
-      stat = undefined;
-    }
-    return stat;
+  /** Prepare for an output file by:
+   * - Resolving the output file name under the known test output directory
+   * - Making directories as necessary
+   * - Removing a previous copy of the output file
+   * @param subDirName Sub-directory under known test output directory. Should match the name of the test file minus the .test.ts file extension.
+   * @param fileName Name of output fille
+   */
+  public static prepareOutputFile(subDirName: string, fileName: string): string {
+    if (!IModelJsFs.existsSync(KnownTestLocations.outputDir))
+      IModelJsFs.mkdirSync(KnownTestLocations.outputDir);
+
+    const outputDir = path.join(KnownTestLocations.outputDir, subDirName);
+    if (!IModelJsFs.existsSync(outputDir))
+      IModelJsFs.mkdirSync(outputDir);
+
+    const outputFile = path.join(outputDir, fileName);
+    if (IModelJsFs.existsSync(outputFile))
+      IModelJsFs.unlinkSync(outputFile);
+
+    return outputFile;
   }
 
-  public static createStandaloneIModel(fileName: string, args: CreateIModelProps): IModelDb {
-    const destPath = KnownTestLocations.outputDir;
-    if (!IModelJsFs.existsSync(destPath))
-      IModelJsFs.mkdirSync(destPath);
-
-    const pathname = path.join(destPath, fileName);
-    if (IModelJsFs.existsSync(pathname))
-      IModelJsFs.unlinkSync(pathname);
-
-    const iModel: IModelDb = IModelDb.createStandalone(pathname, args);
-
-    assert.isNotNull(iModel);
-    assert.isTrue(IModelJsFs.existsSync(pathname));
-    return iModel!;
-  }
-
-  public static openIModel(filename: string, opts?: IModelTestUtilsOpenOptions): IModelDb {
-    const destPath = KnownTestLocations.outputDir;
-    if (!IModelJsFs.existsSync(destPath))
-      IModelJsFs.mkdirSync(destPath);
-
-    if (opts === undefined)
-      opts = {};
-
-    const srcName = path.join(KnownTestLocations.assetsDir, filename);
-    const dbName = path.join(destPath, (opts.copyFilename ? opts.copyFilename! : filename));
-    const srcStat = IModelTestUtils.getStat(srcName);
-    const destStat = IModelTestUtils.getStat(dbName);
-    if (!srcStat || !destStat || srcStat.mtimeMs !== destStat.mtimeMs) {
-      IModelJsFs.copySync(srcName, dbName, { preserveTimestamps: true });
-    }
-
-    const iModel: IModelDb = IModelDb.openStandalone(dbName, opts.openMode, opts.enableTransactions); // could throw Error
-    assert.exists(iModel);
-    return iModel!;
-  }
-
-  public static openIModelFromOut(filename: string, opts?: IModelTestUtilsOpenOptions): IModelDb {
-    const destPath = KnownTestLocations.outputDir;
-    if (!IModelJsFs.existsSync(destPath))
-      IModelJsFs.mkdirSync(destPath);
-
-    if (opts === undefined)
-      opts = {};
-
-    const srcName = path.join(KnownTestLocations.outputDir, filename);
-    const dbName = path.join(destPath, (opts.copyFilename ? opts.copyFilename! : filename));
-    const srcStat = IModelTestUtils.getStat(srcName);
-    const destStat = IModelTestUtils.getStat(dbName);
-    if (!srcStat || !destStat || srcStat.mtimeMs !== destStat.mtimeMs) {
-      IModelJsFs.copySync(srcName, dbName, { preserveTimestamps: true });
-    }
-
-    const iModel: IModelDb = IModelDb.openStandalone(dbName, opts.openMode, opts.enableTransactions); // could throw Error
-    assert.exists(iModel);
-    return iModel!;
-  }
-
-  public static closeIModel(iModel: IModelDb) {
-    iModel.closeStandalone();
+  /** Resolve an asset file path from the asset name by looking in the known assets directory */
+  public static resolveAssetFile(assetName: string): string {
+    const assetFile = path.join(KnownTestLocations.assetsDir, assetName);
+    assert.isTrue(IModelJsFs.existsSync(assetFile));
+    return assetFile;
   }
 
   public static getUniqueModelCode(testIModel: IModelDb, newModelCodeBase: string): Code {
@@ -332,7 +289,7 @@ export class IModelTestUtils {
     IModelHost.startup(config);
   }
 
-  public static registerTestBim() {
+  public static registerTestBimSchema() {
     if (!Schemas.isRegistered(TestBim)) {
       Schemas.registerSchema(TestBim);
       ClassRegistry.register(TestPhysicalObject, TestBim);

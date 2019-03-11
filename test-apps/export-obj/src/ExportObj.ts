@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2019 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { ExportGraphicsInfo, IModelHost, IModelDb, ECSqlStatement } from "@bentley/imodeljs-backend";
-import { OpenMode, DbResult, Id64Array } from "@bentley/bentleyjs-core";
+import { DbResult, Id64Array } from "@bentley/bentleyjs-core";
 import { ColorDef } from "@bentley/imodeljs-common";
 import * as fs from "fs";
 import * as Yargs from "yargs";
@@ -11,7 +11,7 @@ import * as path from "path";
 function doExport(iModelName: string, objName: string, mtlName: string) {
   IModelHost.startup();
 
-  const iModel: IModelDb = IModelDb.openStandalone(iModelName, OpenMode.Readonly);
+  const iModel: IModelDb = IModelDb.openSnapshot(iModelName);
   process.stdout.write(`Opened ${iModelName} successfully.\n`);
 
   const objFile = fs.openSync(objName, "w");
@@ -88,8 +88,8 @@ interface ExportObjArgs {
 }
 
 try {
-  Yargs.usage("Export an OBJ from an existing IBIM file.");
-  Yargs.required("input", "The input IBIM");
+  Yargs.usage("Export an OBJ from an existing BIM file.");
+  Yargs.required("input", "The input BIM");
   Yargs.required("output", "The output OBJ file");
   const args = Yargs.parse() as Yargs.Arguments<ExportObjArgs>;
 

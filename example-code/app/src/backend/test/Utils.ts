@@ -3,20 +3,12 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { OpenMode, ActivityLoggingContext } from "@bentley/bentleyjs-core";
-import { IModelDb } from "@bentley/imodeljs-backend";
-import { IModelJsFs, IModelJsFsStats } from "@bentley/imodeljs-backend/lib/IModelJsFs";
+import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { IModelJsFs } from "@bentley/imodeljs-backend/lib/IModelJsFs";
 import * as path from "path";
 import { AuthorizationToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, AccessToken, Config } from "@bentley/imodeljs-clients";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
 IModelJsConfig.init(true /* suppress exception */, false /* suppress error message */, Config.App);
-
-export interface IModelTestUtilsOpenOptions {
-  copyFilename?: string;
-  enableTransactions?: boolean;
-  openMode?: OpenMode;
-  deleteFirst?: boolean;
-}
 
 /** Credentials for test users */
 export interface UserCredentials {
@@ -42,7 +34,6 @@ export class TestUsers {
 }
 
 export class KnownTestLocations {
-
   /** The directory where test assets are stored. Keep in mind that the test is playing the role of the app. */
   public static get assetsDir(): string {
     // Assume that we are running in nodejs
@@ -57,16 +48,6 @@ export class KnownTestLocations {
 }
 
 export class IModelTestUtils {
-  private static getStat(name: string) {
-    let stat: IModelJsFsStats | undefined;
-    try {
-      stat = IModelJsFs.lstatSync(name);
-    } catch (err) {
-      stat = undefined;
-    }
-    return stat;
-  }
-
   // __PUBLISH_EXTRACT_START__ Bridge.getAccessToken.example-code
   public static async getAccessToken(activityContext: ActivityLoggingContext, userCredentials: any): Promise<AccessToken> {
     const authToken: AuthorizationToken = await (new ImsActiveSecureTokenClient()).getToken(activityContext, userCredentials.email, userCredentials.password);
@@ -77,53 +58,28 @@ export class IModelTestUtils {
   }
   // __PUBLISH_EXTRACT_END__
 
-  public static openIModel(filename: string, opts?: IModelTestUtilsOpenOptions): IModelDb {
-    const destPath = KnownTestLocations.outputDir;
-    if (!IModelJsFs.existsSync(destPath))
-      IModelJsFs.mkdirSync(destPath);
+  /** Prepare for an output file by:
+   * - Resolving the output file name under the known test output directory
+   * - Making directories as necessary
+   * - Removing a previous copy of the output file
+   * @param fileName Name of output fille
+   * @returns The full path to the output file
+   */
+  public static prepareOutputFile(fileName: string): string {
+    if (!IModelJsFs.existsSync(KnownTestLocations.outputDir))
+      IModelJsFs.mkdirSync(KnownTestLocations.outputDir);
 
-    if (opts === undefined)
-      opts = {};
+    const outputFile = path.join(KnownTestLocations.outputDir, fileName);
+    if (IModelJsFs.existsSync(outputFile))
+      IModelJsFs.unlinkSync(outputFile);
 
-    const srcName = path.join(KnownTestLocations.assetsDir, filename);
-    const dbName = path.join(destPath, (opts.copyFilename ? opts.copyFilename! : filename));
-
-    if ("deleteFirst" in opts) {
-      try {
-        IModelJsFs.removeSync(dbName);
-      } catch (err) {
-      }
-    }
-
-    const srcStat = IModelTestUtils.getStat(srcName);
-    const destStat = IModelTestUtils.getStat(dbName);
-    if (!srcStat || !destStat || srcStat.mtimeMs !== destStat.mtimeMs) {
-      IModelJsFs.copySync(srcName, dbName, { preserveTimestamps: true });
-    }
-
-    const iModel: IModelDb = IModelDb.openStandalone(dbName, opts.openMode, opts.enableTransactions); // could throw Error
-    assert.exists(iModel);
-    return iModel!;
+    return outputFile;
   }
 
-  public static openIModelFromOut(filename: string, opts?: IModelTestUtilsOpenOptions): IModelDb {
-    const destPath = KnownTestLocations.outputDir;
-    if (!IModelJsFs.existsSync(destPath))
-      IModelJsFs.mkdirSync(destPath);
-
-    if (opts === undefined)
-      opts = {};
-
-    const srcName = path.join(KnownTestLocations.outputDir, filename);
-    const dbName = path.join(destPath, (opts.copyFilename ? opts.copyFilename! : filename));
-    const srcStat = IModelTestUtils.getStat(srcName);
-    const destStat = IModelTestUtils.getStat(dbName);
-    if (!srcStat || !destStat || srcStat.mtimeMs !== destStat.mtimeMs) {
-      IModelJsFs.copySync(srcName, dbName, { preserveTimestamps: true });
-    }
-
-    const iModel: IModelDb = IModelDb.openStandalone(dbName, opts.openMode, opts.enableTransactions); // could throw Error
-    assert.exists(iModel);
-    return iModel!;
+  /** Resolve an asset file path from the asset name by looking in the known assets directory */
+  public static resolveAssetFile(assetName: string): string {
+    const assetFile = path.join(KnownTestLocations.assetsDir, assetName);
+    assert.isTrue(IModelJsFs.existsSync(assetFile));
+    return assetFile;
   }
 }

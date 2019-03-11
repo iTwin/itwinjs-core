@@ -17,13 +17,12 @@ export class GeoJsonImporter {
   public featureClassFullName = "Generic:SpatialLocation";
   private readonly _geoJson: GeoJson;
 
-  /**
-   * Construct a new GeoJsonImporter
+  /** Construct a new GeoJsonImporter
    * @param iModelFileName the output iModel file name
    * @param geoJson the input GeoJson data
    */
   public constructor(iModelFileName: string, geoJson: GeoJson) {
-    this.iModelDb = IModelDb.createStandalone(iModelFileName, { rootSubject: { name: geoJson.title } });
+    this.iModelDb = IModelDb.createSnapshot(iModelFileName, { rootSubject: { name: geoJson.title } });
     this._geoJson = geoJson;
   }
 
@@ -51,6 +50,7 @@ export class GeoJsonImporter {
     this.iModelDb.updateProjectExtents(featureModelExtents);
     this.iModelDb.saveChanges();
   }
+
   /** Iterate through and accumulate the GeoJSON FeatureCollection range. */
   protected getFeatureRange(featureMin: Cartographic, featureMax: Cartographic) {
     featureMin.longitude = featureMin.latitude = Angle.pi2Radians;

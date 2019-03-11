@@ -121,12 +121,12 @@ describe("Disposal of System (#integration)", () => {
     WebGLTestContext.startup();
 
     await TestData.load();
-    imodel0 = await IModelConnection.openStandalone(iModelLocation);
+    imodel0 = await IModelConnection.openSnapshot(iModelLocation);
     imodel1 = await IModelConnection.open(TestData.accessToken, TestData.testProjectId, TestData.testIModelId);
   });
 
   after(async () => {
-    await imodel0.closeStandalone();
+    await imodel0.closeSnapshot();
     await imodel1.close(TestData.accessToken);
     WebGLTestContext.shutdown();
   });
@@ -175,12 +175,12 @@ describe("Disposal of WebGL Resources (#integration)", () => {
     WebGLTestContext.startup();
 
     await TestData.load();
-    imodel0 = await IModelConnection.openStandalone(iModelLocation);
+    imodel0 = await IModelConnection.openSnapshot(iModelLocation);
     imodel1 = await IModelConnection.open(TestData.accessToken, TestData.testProjectId, TestData.testIModelId);
   });
 
   after(async () => {
-    await imodel0.closeStandalone();
+    await imodel0.closeSnapshot();
     await imodel1.close(TestData.accessToken);
     WebGLTestContext.shutdown();
   });

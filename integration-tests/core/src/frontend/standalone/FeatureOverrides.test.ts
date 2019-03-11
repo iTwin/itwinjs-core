@@ -34,13 +34,13 @@ describe("FeatureOverrides tests", () => {
 
   before(async () => {   // Create a ViewState to load into a Viewport
     WebGLTestContext.startup();
-    imodel = await IModelConnection.openStandalone(iModelLocation);
+    imodel = await IModelConnection.openSnapshot(iModelLocation);
     spatialView = await imodel.views.load("0x34") as SpatialViewState;
     spatialView.setStandardRotation(StandardViewId.RightIso);
   });
 
   after(async () => {
-    if (imodel) await imodel.closeStandalone();
+    if (imodel) await imodel.closeSnapshot();
     WebGLTestContext.shutdown();
   });
 

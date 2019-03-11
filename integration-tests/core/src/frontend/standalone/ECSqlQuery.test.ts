@@ -16,19 +16,19 @@ describe("ECSql Query", () => {
   let imodel5: IModelConnection;
 
   before(async () => {
-    imodel1 = await IModelConnection.openStandalone(iModelLocation + "test.bim");
-    imodel2 = await IModelConnection.openStandalone(iModelLocation + "CompatibilityTestSeed.bim");
-    imodel3 = await IModelConnection.openStandalone(iModelLocation + "GetSetAutoHandledStructProperties.bim");
-    imodel4 = await IModelConnection.openStandalone(iModelLocation + "GetSetAutoHandledArrayProperties.bim");
-    imodel5 = await IModelConnection.openStandalone(iModelLocation + "mirukuru.ibim");
+    imodel1 = await IModelConnection.openSnapshot(iModelLocation + "test.bim");
+    imodel2 = await IModelConnection.openSnapshot(iModelLocation + "CompatibilityTestSeed.bim");
+    imodel3 = await IModelConnection.openSnapshot(iModelLocation + "GetSetAutoHandledStructProperties.bim");
+    imodel4 = await IModelConnection.openSnapshot(iModelLocation + "GetSetAutoHandledArrayProperties.bim");
+    imodel5 = await IModelConnection.openSnapshot(iModelLocation + "mirukuru.ibim");
   });
 
   after(async () => {
-    if (imodel1) await imodel1.closeStandalone();
-    if (imodel2) await imodel2.closeStandalone();
-    if (imodel3) await imodel3.closeStandalone();
-    if (imodel4) await imodel4.closeStandalone();
-    if (imodel5) await imodel5.closeStandalone();
+    if (imodel1) await imodel1.closeSnapshot();
+    if (imodel2) await imodel2.closeSnapshot();
+    if (imodel3) await imodel3.closeSnapshot();
+    if (imodel4) await imodel4.closeSnapshot();
+    if (imodel5) await imodel5.closeSnapshot();
 
   });
 

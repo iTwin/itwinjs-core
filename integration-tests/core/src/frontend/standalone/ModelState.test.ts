@@ -15,13 +15,13 @@ describe("ModelState", () => {
   let imodel2: IModelConnection;
   before(async () => {
     MockRender.App.startup();
-    imodel2 = await IModelConnection.openStandalone(iModelLocation + "mirukuru.ibim");
-    imodel = await IModelConnection.openStandalone(iModelLocation + "CompatibilityTestSeed.bim");
+    imodel2 = await IModelConnection.openSnapshot(iModelLocation + "mirukuru.ibim");
+    imodel = await IModelConnection.openSnapshot(iModelLocation + "CompatibilityTestSeed.bim");
   });
 
   after(async () => {
-    if (imodel) await imodel.closeStandalone();
-    if (imodel2) await imodel2.closeStandalone();
+    if (imodel) await imodel.closeSnapshot();
+    if (imodel2) await imodel2.closeSnapshot();
     MockRender.App.shutdown();
   });
 

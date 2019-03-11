@@ -13,7 +13,7 @@ const loggingCategory = "imodeljs-backend.OpenIModelDb";
 
 /** Utility to cache and retrieve results of long running open IModelDb requests
  * The cache is keyed on the input arguments passed to open
- * @hidden
+ * @internal
  */
 export class OpenIModelDbMemoizer extends PromiseMemoizer<IModelDb> {
 

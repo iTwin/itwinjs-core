@@ -14,19 +14,19 @@ describe("ECSql Query", () => {
   let imodel5: IModelDb;
 
   before(async () => {
-    imodel1 = IModelTestUtils.openIModel("test.bim");
-    imodel2 = IModelTestUtils.openIModel("CompatibilityTestSeed.bim");
-    imodel3 = IModelTestUtils.openIModel("GetSetAutoHandledStructProperties.bim");
-    imodel4 = IModelTestUtils.openIModel("GetSetAutoHandledArrayProperties.bim");
-    imodel5 = IModelTestUtils.openIModel("mirukuru.ibim");
+    imodel1 = IModelDb.openSnapshot(IModelTestUtils.resolveAssetFile("test.bim"));
+    imodel2 = IModelDb.openSnapshot(IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim"));
+    imodel3 = IModelDb.openSnapshot(IModelTestUtils.resolveAssetFile("GetSetAutoHandledStructProperties.bim"));
+    imodel4 = IModelDb.openSnapshot(IModelTestUtils.resolveAssetFile("GetSetAutoHandledArrayProperties.bim"));
+    imodel5 = IModelDb.openSnapshot(IModelTestUtils.resolveAssetFile("mirukuru.ibim"));
   });
 
   after(async () => {
-    IModelTestUtils.closeIModel(imodel1);
-    IModelTestUtils.closeIModel(imodel2);
-    IModelTestUtils.closeIModel(imodel3);
-    IModelTestUtils.closeIModel(imodel4);
-    IModelTestUtils.closeIModel(imodel5);
+    imodel1.closeSnapshot();
+    imodel2.closeSnapshot();
+    imodel3.closeSnapshot();
+    imodel4.closeSnapshot();
+    imodel5.closeSnapshot();
   });
 
   it("Paging Results", async () => {

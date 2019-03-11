@@ -54,7 +54,7 @@ describe("GeometryAccumulator tests", () => {
   document.body.appendChild(canvas!);
 
   before(async () => {   // Create a ViewState to load into a Viewport
-    iModel = await IModelConnection.openStandalone(iModelLocation);
+    iModel = await IModelConnection.openSnapshot(iModelLocation);
     spatialView = await iModel.views.load("0x34") as SpatialViewState;
     spatialView.setStandardRotation(StandardViewId.RightIso);
     WebGLTestContext.startup();
@@ -62,7 +62,7 @@ describe("GeometryAccumulator tests", () => {
 
   after(async () => {
     WebGLTestContext.shutdown();
-    if (iModel) await iModel.closeStandalone();
+    if (iModel) await iModel.closeSnapshot();
   });
 
   it("addPath works as expected", () => {

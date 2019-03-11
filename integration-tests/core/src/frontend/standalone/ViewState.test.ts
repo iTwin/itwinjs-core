@@ -23,19 +23,19 @@ describe("ViewState", () => {
 
   before(async () => {
     MockRender.App.startup();
-    imodel = await IModelConnection.openStandalone(iModelLocation);
+    imodel = await IModelConnection.openSnapshot(iModelLocation);
     const viewRows: ViewDefinitionProps[] = await imodel.views.queryProps({ from: SpatialViewState.sqlName });
     assert.exists(viewRows, "Should find some views");
     viewState = await imodel.views.load(viewRows[0].id!) as SpatialViewState;
 
-    imodel2 = await IModelConnection.openStandalone(iModelLocation2);
+    imodel2 = await IModelConnection.openSnapshot(iModelLocation2);
 
     unitTestRpcImp = TestRpcInterface.getClient();
   });
 
   after(async () => {
-    if (imodel) await imodel.closeStandalone();
-    if (imodel2) await imodel2.closeStandalone();
+    if (imodel) await imodel.closeSnapshot();
+    if (imodel2) await imodel2.closeSnapshot();
     MockRender.App.shutdown();
   });
 

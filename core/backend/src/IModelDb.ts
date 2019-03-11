@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module iModels */
-import { ActivityLoggingContext, BeEvent, BentleyStatus, DbResult, AuthStatus, GuidString, Id64, Id64Arg, Id64Set, Id64String, JsonUtils, Logger, OpenMode } from "@bentley/bentleyjs-core";
+import { ActivityLoggingContext, BeEvent, BentleyStatus, DbResult, AuthStatus, Guid, GuidString, Id64, Id64Arg, Id64Set, Id64String, JsonUtils, Logger, OpenMode } from "@bentley/bentleyjs-core";
 import { AccessToken, UlasClient, UsageLogEntry, UsageType, LogPostingResponse } from "@bentley/imodeljs-clients";
 import {
   AxisAlignedBox3d, CategorySelectorProps, Code, CodeSpec, CreateIModelProps, DisplayStyleProps, EcefLocation, ElementAspectProps,
@@ -23,6 +23,7 @@ import { Element, Subject } from "./Element";
 import { ElementAspect } from "./ElementAspect";
 import { Entity } from "./Entity";
 import { ExportGraphicsProps } from "./ExportGraphics";
+import { IModelJsFs } from "./IModelJsFs";
 import { IModelJsNative } from "./IModelJsNative";
 import { Model } from "./Model";
 import { Relationship, RelationshipProps, Relationships } from "./Relationship";
@@ -30,10 +31,11 @@ import { CachedSqliteStatement, SqliteStatement, SqliteStatementCache } from "./
 import { SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
 import { IModelHost } from "./IModelHost";
 
-/** @hidden */
 const loggingCategory = "imodeljs-backend.IModelDb";
 
-/** The signature of a function that can supply a description of local Txns in the specified briefcase up to and including the specified endTxnId. */
+/** The signature of a function that can supply a description of local Txns in the specified briefcase up to and including the specified endTxnId.
+ * @internal Uses the internal `IModelJsNative` type.
+ */
 export type ChangeSetDescriber = (endTxnId: IModelJsNative.TxnIdString) => string;
 
 /** Operations allowed when synchronizing changes between the IModelDb and the iModel Hub */
@@ -100,7 +102,9 @@ export class OpenParams {
   /** Create parameters to open the Db to make edits and push changes to the Hub */
   public static pullAndPush(exclusiveAccessOption: ExclusiveAccessOption = ExclusiveAccessOption.TryReuseOpenBriefcase): OpenParams { return new OpenParams(OpenMode.ReadWrite, AccessMode.Exclusive, SyncMode.PullAndPush, exclusiveAccessOption); }
 
-  /** Create parameters to open a standalone Db */
+  /** Create parameters to open a standalone Db
+   * @deprecated The confusing concept of *standalone* is being replaced by the more strict concept of a read-only iModel *snapshot*.
+   */
   public static standalone(openMode: OpenMode) { return new OpenParams(openMode); }
 
   /** Returns true if equal and false otherwise */
@@ -109,11 +113,11 @@ export class OpenParams {
   }
 }
 
-/**
- * Represents a physical copy (a briefcase) of an iModel that can be accessed as a file on the local computer.
+/** An iModel database file. The database file is either a local copy (briefcase) of an iModel managed by iModelHub or a read-only *snapshot* used for archival and data transfer purposes.
  *
  * IModelDb raises a set of events to allow apps and subsystems to track IModelDb object life cycle, including [[onOpen]] and [[onOpened]].
  * @see [learning about IModelDb]($docs/learning/backend/IModelDb.md)
+ * @public
  */
 export class IModelDb extends IModel implements PageableECSql {
   public static readonly defaultLimit = 1000; // default limit for batching queries
@@ -192,15 +196,42 @@ export class IModelDb extends IModel implements PageableECSql {
     return new IModelDb(briefcaseEntry, iModelToken, openParams);
   }
 
-  /**
-   * Create a standalone local Db.
+  /** Create a standalone local Db.
    * @param fileName The name for the iModel
    * @param args The parameters that define the new iModel
+   * @deprecated The confusing concept of *standalone* is being replaced by the more strict concept of a read-only iModel *snapshot*. Callers should migrate to [[createSnapshot]].
    */
   public static createStandalone(fileName: string, args: CreateIModelProps): IModelDb {
     const briefcaseEntry: BriefcaseEntry = BriefcaseManager.createStandalone(fileName, args);
     // Logger.logTrace(loggingCategory, "IModelDb.createStandalone", loggingCategory, () => ({ pathname }));
     return IModelDb.constructIModelDb(briefcaseEntry, OpenParams.standalone(briefcaseEntry.openParams!.openMode!));
+  }
+
+  /** Create a local iModel *snapshot* file. Snapshots are disconnected from iModelHub so do not have a change timeline. Snapshots are typically used for archival or data transfer purposes.
+   * > Note: A *snapshot* cannot be modified after [[closeSnapshot]] is called.
+   * @param filePath The file that will contain the new iModel *snapshot*
+   * @param args The parameters that define the new iModel *snapshot*
+   * @beta The *snapshot* concept is solid, but the concept name might change which would cause a function rename.
+   */
+  public static createSnapshot(filePath: string, args: CreateIModelProps): IModelDb {
+    return this.createStandalone(filePath, args);
+  }
+
+  /** Create a local iModel *snapshot* file using an existing iModel file as a *seed* or starting point.
+   * @beta The *snapshot* concept is solid, but the concept name might change which would cause a function rename.
+   */
+  public static createSnapshotFromSeed(snapshotFile: string, seedFile: string): IModelDb {
+    IModelJsFs.copySync(seedFile, snapshotFile);
+    const briefcaseEntry: BriefcaseEntry = BriefcaseManager.openStandalone(snapshotFile, OpenMode.ReadWrite, false);
+    briefcaseEntry.iModelId = Guid.createValue();
+    briefcaseEntry.briefcaseId = BriefcaseId.Standalone;
+    const snapshotDb: IModelDb = IModelDb.constructIModelDb(briefcaseEntry, OpenParams.standalone(OpenMode.ReadWrite));
+    // WIP: clean up copied file if error on open?
+    snapshotDb.setGuid(briefcaseEntry.iModelId);
+    if (snapshotDb.nativeDb.getBriefcaseId() !== briefcaseEntry.briefcaseId) {
+      snapshotDb.nativeDb.setBriefcaseId(briefcaseEntry.briefcaseId);
+    }
+    return snapshotDb;
   }
 
   /** Create an iModel on iModelHub */
@@ -216,14 +247,23 @@ export class IModelDb extends IModel implements PageableECSql {
    * @param openMode Open mode for database
    * @param enableTransactions Enable tracking of transactions in this standalone iModel
    * @throws [[IModelError]]
+   * @see [[open]], [[openSnapshot]]
+   * @deprecated iModelHub manages the change history of an iModel, so writing changes to a local/unmanaged file doesn't make sense. Callers should migrate to [[openSnapshot]] or [[open]] instead.
    */
   public static openStandalone(pathname: string, openMode: OpenMode = OpenMode.ReadWrite, enableTransactions: boolean = false): IModelDb {
     const briefcaseEntry: BriefcaseEntry = BriefcaseManager.openStandalone(pathname, openMode, enableTransactions);
     return IModelDb.constructIModelDb(briefcaseEntry, OpenParams.standalone(openMode));
   }
 
-  /**
-   * Open an iModel from iModelHub. IModelDb files are cached locally. The requested version may be downloaded from iModelHub to the
+  /** Open a local iModel *snapshot*. Once created, *snapshots* are read-only and are typically used for archival or data transfer purposes.
+   * @see [[open]]
+   * @beta The *snapshot* concept is solid, but the concept name might change which would cause a function rename.
+   */
+  public static openSnapshot(filePath: string): IModelDb {
+    return this.openStandalone(filePath, OpenMode.Readonly, false);
+  }
+
+  /** Open an iModel from iModelHub. IModelDb files are cached locally. The requested version may be downloaded from iModelHub to the
    * cache, or a previously downloaded version re-used from the cache - this behavior can optionally be configured through OpenParams.
    * Every open call must be matched with a call to close the IModelDb.
    * @param accessToken Delegation token of the authorized user.
@@ -279,15 +319,16 @@ export class IModelDb extends IModel implements PageableECSql {
     }
   }
 
-  /**
-   * Close this standalone iModel, if it is currently open
+  /** Close this standalone iModel, if it is currently open
    * @throws IModelError if the iModel is not open, or is not standalone
+   * @see [[closeSnapshot]]
+   * @deprecated The confusing concept of *standalone* is being replaced by the more strict concept of a read-only iModel *snapshot*. Callers should migrate to [[closeSnapshot]].
    */
   public closeStandalone(): void {
     if (!this.briefcase)
       throw this.newNotOpenError();
     if (!this.briefcase.isStandalone)
-      throw new IModelError(BentleyStatus.ERROR, "Cannot use IModelDb.closeStandalone() to close a non-standalone iModel. Use IModelDb.close() instead");
+      throw new IModelError(BentleyStatus.ERROR, "Cannot use to close a managed iModel. Use IModelDb.close() instead");
 
     try {
       BriefcaseManager.closeStandalone(this.briefcase);
@@ -298,8 +339,16 @@ export class IModelDb extends IModel implements PageableECSql {
     }
   }
 
-  /**
-   * Close this iModel, if it is currently open.
+  /** Close this local read-only iModel *snapshot*, if it is currently open.
+   * > Note: A *snapshot* cannot be modified after this function is called.
+   * @throws IModelError if the iModel is not open, or is not a *snapshot*.
+   * @beta The *snapshot* concept is solid, but the concept name might change which would cause a function rename.
+   */
+  public closeSnapshot(): void {
+    this.closeStandalone();
+  }
+
+  /** Close this iModel, if it is currently open.
    * @param accessToken Delegation token of the authorized user.
    * @param keepBriefcase Hint to discard or keep the briefcase for potential future use.
    * @throws IModelError if the iModel is not open, or is really a standalone iModel

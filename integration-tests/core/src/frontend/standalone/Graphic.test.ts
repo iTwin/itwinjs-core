@@ -20,13 +20,13 @@ const iModelLocation = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backe
 describe("createTriMesh", () => {
   let imodel: IModelConnection;
   before(async () => {
-    imodel = await IModelConnection.openStandalone(iModelLocation);
+    imodel = await IModelConnection.openSnapshot(iModelLocation);
     WebGLTestContext.startup();
   });
 
   after(async () => {
     WebGLTestContext.shutdown();
-    if (imodel) await imodel.closeStandalone();
+    if (imodel) await imodel.closeSnapshot();
   });
 
   it("should create a simple mesh graphic", () => {

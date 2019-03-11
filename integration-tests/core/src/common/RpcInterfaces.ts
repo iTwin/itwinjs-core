@@ -5,7 +5,7 @@
 import { AccessToken } from "@bentley/imodeljs-clients";
 import {
   IModelReadRpcInterface, IModelTileRpcInterface, IModelToken,
-  IModelWriteRpcInterface, RpcInterface, RpcManager, StandaloneIModelRpcInterface, WipRpcInterface,
+  IModelWriteRpcInterface, RpcInterface, RpcManager, SnapshotIModelRpcInterface, StandaloneIModelRpcInterface, WipRpcInterface,
 } from "@bentley/imodeljs-common";
 
 export abstract class TestRpcInterface extends RpcInterface {
@@ -41,6 +41,7 @@ export const rpcInterfaces = [
   IModelReadRpcInterface,
   IModelTileRpcInterface,
   IModelWriteRpcInterface,
+  SnapshotIModelRpcInterface,
   StandaloneIModelRpcInterface,
   TestRpcInterface,
   WipRpcInterface,

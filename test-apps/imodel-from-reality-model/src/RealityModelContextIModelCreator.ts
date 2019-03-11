@@ -60,7 +60,7 @@ export class RealityModelContextIModelCreator {
      */
     public constructor(iModelFileName: string, url: string) {
         fs.unlink(iModelFileName, ((_err) => { }));
-        this.iModelDb = IModelDb.createStandalone(iModelFileName, { rootSubject: { name: "Reality Model Context" } });
+        this.iModelDb = IModelDb.createSnapshot(iModelFileName, { rootSubject: { name: "Reality Model Context" } });
         this.url = url;
     }
     private realityModelFromJson(json: any, worldRange: AxisAlignedBox3d): { realityModel: ContextRealityModelProps | undefined, geoLocated: boolean } {

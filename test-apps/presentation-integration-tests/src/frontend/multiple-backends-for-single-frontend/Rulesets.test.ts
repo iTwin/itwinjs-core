@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import { initialize, terminate } from "../../IntegrationTests";
 import { resetBackend } from "./Helpers";
-import { OpenMode, using } from "@bentley/bentleyjs-core";
+import { using } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { Ruleset, RootNodeRule, CustomNodeSpecification, RegisteredRuleset } from "@bentley/presentation-common";
 import { PresentationManager } from "@bentley/presentation-frontend";
@@ -21,14 +21,14 @@ describe("Multiple backends for one frontend", async () => {
     before(async () => {
       initialize();
       const testIModelName: string = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
-      imodel = await IModelConnection.openStandalone(testIModelName, OpenMode.Readonly);
+      imodel = await IModelConnection.openSnapshot(testIModelName);
       expect(imodel).is.not.null;
       ruleset = require("../../../test-rulesets/Rulesets/default");
       frontend = PresentationManager.create();
     });
 
     after(async () => {
-      await imodel.closeStandalone();
+      await imodel.closeSnapshot();
       frontend.dispose();
       terminate();
     });

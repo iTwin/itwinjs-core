@@ -27,12 +27,12 @@ describe("Render mirukuru", () => {
 
   before(async () => {
     const imodelLocation = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/mirukuru.ibim");
-    imodel = await IModelConnection.openStandalone(imodelLocation);
+    imodel = await IModelConnection.openSnapshot(imodelLocation);
     WebGLTestContext.startup();
   });
 
   after(async () => {
-    if (imodel) await imodel.closeStandalone();
+    if (imodel) await imodel.closeSnapshot();
     WebGLTestContext.shutdown();
   });
 
