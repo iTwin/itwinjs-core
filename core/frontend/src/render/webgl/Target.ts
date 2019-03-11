@@ -1097,7 +1097,7 @@ export class OnScreenTarget extends Target {
     gl.clearColor(1, 0, 1, 1);
     gl.clear(gl.COLOR_BUFFER_BIT);
 
-    const context = this._canvas.getContext("2d");
+    const context = this._canvas.getContext("2d", { alpha: false });
     assert(null !== context);
     context!.drawImage(canvas, 0, 0);
   }
@@ -1149,7 +1149,7 @@ export class OnScreenTarget extends Target {
   }
 
   protected _endPaint(): void {
-    const onscreenContext = this._canvas.getContext("2d");
+    const onscreenContext = this._canvas.getContext("2d", { alpha: false });
     assert(null !== onscreenContext);
     assert(undefined !== this._blitGeom);
     if (undefined === this._blitGeom || null === onscreenContext) {
@@ -1164,15 +1164,17 @@ export class OnScreenTarget extends Target {
     const drawParams = OnScreenTarget.getDrawParams(this, this._blitGeom);
     system.techniques.draw(drawParams);
 
+    // NB: Very early on we found that we needed to do a clearRect() on the 2d context to prevent artifacts in final image...
+    // this turned out to be a significant performance issue in Firefox and removal produced no artifacts.
+    // onscreenContext.clearRect(0, 0, this._canvas.clientWidth, this._canvas.clientHeight);
+
     // Copy off-screen canvas contents to on-screen canvas
-    // ###TODO: Determine if clearRect() actually required...seems to leave some leftovers from prev image if not...
-    onscreenContext.clearRect(0, 0, this._canvas.clientWidth, this._canvas.clientHeight);
     onscreenContext.drawImage(system.canvas, 0, 0);
   }
 
   protected drawOverlayDecorations(): void {
     if (undefined !== this._decorations && undefined !== this._decorations.canvasDecorations) {
-      const ctx = this._canvas.getContext("2d")!;
+      const ctx = this._canvas.getContext("2d", { alpha: false })!;
       for (const overlay of this._decorations.canvasDecorations) {
         ctx.save();
         if (overlay.position)
