@@ -4500,9 +4500,6 @@ class ScreenViewport extends Viewport {
   // @internal
   constructor(canvas: HTMLCanvasElement, parentDiv: HTMLDivElement, target: RenderTarget);
   // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
-  // @internal
-  addChildDiv(element: HTMLElement, zIndex: number): void;
-  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
   // @internal (undocumented)
   addDecorations(decorations: Decorations): void;
   // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
@@ -4536,6 +4533,9 @@ class ScreenViewport extends Viewport {
   setCursor(cursor?: string): void;
   setEventController(controller: EventController | undefined): void;
   // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal
+  static setToParentSize(div: HTMLElement): void;
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
   // @internal (undocumented)
   synchWithView(saveInUndo: boolean): void;
   readonly toolTipDiv: HTMLDivElement;
@@ -4543,6 +4543,7 @@ class ScreenViewport extends Viewport {
   // @internal (undocumented)
   viewCmdTargetCenter: Point3d | undefined;
   readonly viewRect: ViewRect;
+  readonly vpDiv: HTMLDivElement;
 }
 
 // @public

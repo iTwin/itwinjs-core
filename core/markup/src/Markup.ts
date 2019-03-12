@@ -77,6 +77,7 @@ export class MarkupApp {
         "stroke-width": 3,
         "fill-opacity": 0.2,
         "fill": "blue",
+        "stroke-linecap": "round",
       },
     },
     text: {
@@ -86,6 +87,14 @@ export class MarkupApp {
         fontSize: "14pt",
         textBox: { "fill": "lightGrey", "fill-opacity": .1, "stroke-opacity": .85, "stroke": "lightBlue" },
       },
+    },
+    border: {
+      "stroke": "yellow",
+      "stroke-width": 7,
+      "rx": 7,
+      "ry": 7,
+      "stroke-opacity": 0.4,
+      "fill": "none",
     },
   };
   private static _saveDefaultToolId = "";
@@ -102,6 +111,8 @@ export class MarkupApp {
       IModelApp.toolAdmin.startDefaultTool();
       return;
     }
+    // restore original size for vp.
+    ScreenViewport.setToParentSize(this.markup.vp.vpDiv);
 
     IModelApp.toolAdmin.markupView = undefined;
     this.markup.destroy();
@@ -115,10 +126,15 @@ export class MarkupApp {
 
   /** Start a markup session */
   public static async start() {
-    this.init();
-    await this.markupNamespace.readFinished; // make sure our localized messages are ready.
+    await this.init();
     const view = IModelApp.toolAdmin.markupView = IModelApp.viewManager.selectedView;
     if (view) {
+      const parentDiv = view.vpDiv;
+      const rect = parentDiv.getBoundingClientRect();
+      const style = parentDiv.style;
+      style.width = rect.width + "px";
+      style.height = rect.height + "px";
+      style.position = "absolute";
       this.markup = new Markup(view);
 
       this._saveDefaultToolId = IModelApp.toolAdmin.defaultToolId;
@@ -129,13 +145,14 @@ export class MarkupApp {
     }
   }
 
-  public static init() {
+  public static async init() {
     if (this.markupNamespace)
       return;
     this.markupNamespace = IModelApp.i18n.registerNamespace("MarkupTools");
     IModelApp.tools.register(SelectTool, this.markupNamespace);
     IModelApp.tools.registerModule(redlineTool, this.markupNamespace);
     IModelApp.tools.registerModule(textTool, this.markupNamespace);
+    return this.markupNamespace.readFinished; // make sure our localized messages are ready.
   }
 
   /** convert the current markup SVG into a string */
@@ -213,6 +230,10 @@ export class Markup {
     }
     this.svgDynamics = this.addNested("markup-dynamics"); // only for tool dynamics of SVG graphics.
     this.svgDecorations = this.addNested("markup-decorations"); // only for temporary decorations of SVG graphics.
+
+    const rect = this.markupDiv.getBoundingClientRect();
+    const inset = MarkupApp.props.border["stroke-width"];
+    this.svgDecorations.rect(rect.width - inset, rect.height - inset).move(inset / 2, inset / 2).attr(MarkupApp.props.border);
     this.selected = new SelectionSet(this.svgDecorations);
   }
 

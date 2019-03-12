@@ -1956,6 +1956,8 @@ export class ScreenViewport extends Viewport {
 
   /** The parent HTMLDivElement of the canvas. */
   public readonly parentDiv: HTMLDivElement;
+  /** The div created to hold all viewport elements. */
+  public readonly vpDiv: HTMLDivElement;
   /** The canvas to display the view contents. */
   public readonly canvas: HTMLCanvasElement;
   /** The HTMLDivElement used for HTML decorations. May be referenced from the DOM by class "overlay-decorators". */
@@ -1984,20 +1986,22 @@ export class ScreenViewport extends Viewport {
     while (el.lastChild)
       el.removeChild(el.lastChild);
   }
-  /**  add a child element to this.parentDiv and set its size and position the same as the parent.
+  /** set Div style to absolute, {0,0,100%,100%}
    * @internal
    */
-  public addChildDiv(element: HTMLElement, zIndex: number) {
-    // get the (computed) z-index value of the parent, as an integer.
-    const parentZ = parseInt(window.getComputedStyle(this.parentDiv).zIndex || "0", 10);
-    const style = element.style;
+  public static setToParentSize(div: HTMLElement) {
+    const style = div.style;
     style.position = "absolute";
-    style.top = "0";
-    style.left = "0";
-    style.height = "100%";
-    style.width = "100%";
-    style.zIndex = (parentZ + zIndex).toString();
-    this.parentDiv.appendChild(element);
+    style.top = style.left = "0";
+    style.height = style.width = "100%";
+  }
+  /**  add a child element to this.vpDiv and set its size and position the same as the parent.  */
+  private addChildDiv(parent: HTMLElement, element: HTMLElement, zIndex: number) {
+    ScreenViewport.setToParentSize(element);
+    // get the (computed) z-index value of the parent, as an integer.
+    const parentZ = parseInt(window.getComputedStyle(this.vpDiv).zIndex || "0", 10);
+    element.style.zIndex = (parentZ + zIndex).toString();
+    parent.appendChild(element);
   }
 
   /** @internal */
@@ -2006,7 +2010,7 @@ export class ScreenViewport extends Viewport {
     div.className = className;
     div.style.pointerEvents = "none";
     div.style.overflow = overflowHidden ? "hidden" : "visible";
-    this.addChildDiv(div, z);
+    this.addChildDiv(this.vpDiv, div, z);
     return div;
   }
 
@@ -2019,7 +2023,11 @@ export class ScreenViewport extends Viewport {
     // first remove all children of the parent Div
     ScreenViewport.removeAllChildren(parentDiv);
 
-    this.addChildDiv(canvas, 10);
+    const div = this.vpDiv = document.createElement("div");
+    div.className = "imodeljs-vp";
+    this.addChildDiv(this.parentDiv, div, 0);
+
+    this.addChildDiv(this.vpDiv, canvas, 10);
     this.target.updateViewRect();
 
     this.decorationDiv = this.addNewDiv("overlay-decorators", true, 30);

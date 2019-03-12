@@ -106,7 +106,7 @@ class DebugTools extends ToolBarDropDown {
       window.open(markupData.image, "Markup");
       MarkupApp.stop();
     } else {
-      MarkupApp.props.active.element.stroke = "white"; // override default color for elements
+      MarkupApp.props.active.element.stroke = "white"; // as an example, set default color for elements
       await MarkupApp.start();
     }
   }
