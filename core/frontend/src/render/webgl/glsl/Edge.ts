@@ -109,8 +109,10 @@ function createBase(isSilhouette: boolean, instanced: IsInstanced, isAnimated: I
   vert.addGlobal("g_otherIndex", VariableType.Float);
 
   vert.addInitializer(decodeEndPointAndQuadIndices);
-  if (isAnimated)
+  if (isAnimated) {
+    addAnimation(vert, false);
     vert.addInitializer(animateEndPoint);
+  }
 
   vert.addGlobal("lineCodeEyePos", VariableType.Vec4);
   vert.addGlobal("lineCodeDist", VariableType.Float, "0.0");
@@ -124,9 +126,6 @@ function createBase(isSilhouette: boolean, instanced: IsInstanced, isAnimated: I
 
   addViewport(vert);
   addModelViewMatrix(vert);
-
-  if (isAnimated)
-    addAnimation(vert, false);
 
   vert.addAttribute("a_endPointAndQuadIndices", VariableType.Vec4, (shaderProg) => {
     shaderProg.addAttribute("a_endPointAndQuadIndices", (attr, params) => {
