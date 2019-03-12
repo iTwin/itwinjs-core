@@ -3023,9 +3023,9 @@ interface PageableECSql {
 
 // @public
 interface PageOptions {
-  retries?: number;
   size?: number;
   start?: number;
+  stepsPerTick?: number;
 }
 
 // @public

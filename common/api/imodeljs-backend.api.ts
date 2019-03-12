@@ -653,9 +653,7 @@ class ECSqlStatement implements IterableIterator<any>, IDisposable {
   reset(): void;
   setIsShared(b: boolean): void;
   step(): DbResult;
-  stepAsync(): Promise<DbResult>;
   stepForInsert(): ECSqlInsertResult;
-  stepForInsertAsync(): Promise<ECSqlInsertResult>;
 }
 
 // @public
@@ -2515,7 +2513,6 @@ class SqliteStatement implements IterableIterator<any>, IDisposable {
   reset(): void;
   setIsShared(b: boolean): void;
   step(): DbResult;
-  stepAsync(): Promise<DbResult>;
 }
 
 // @public
