@@ -8,8 +8,10 @@
   font-size: $uicore-font-size;
   height: 1em * 1.2;
   width: 1em * 1.2;
-  border-width: 0px;
+  border-width: 1px;
   border-radius: 3px;
+  border-style: solid;
+  border-color: rgba(0, 0, 0, 0.2);
 
   &.round {
     border-radius: 50%;
@@ -19,5 +21,3 @@
     opacity: .2;
   }
 }
-
-
