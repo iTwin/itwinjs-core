@@ -76,6 +76,7 @@ export class ColorPickerButton extends React.PureComponent<ColorPickerProps, Col
   }
 
   private _togglePopup = () => {
+    /* istanbul ignore else */
     if (this.props.readonly)
       return;
 
@@ -88,6 +89,7 @@ export class ColorPickerButton extends React.PureComponent<ColorPickerProps, Col
 
   private _handleColorPicked = (color: ColorDef) => {
     this._closePopup();
+    /* istanbul ignore else */
     if (this.props.onColorPick)
       this.props.onColorPick(color);
   }

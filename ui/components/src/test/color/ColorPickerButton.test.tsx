@@ -20,6 +20,11 @@ describe("<ColorPickerButton/>", () => {
     expect(renderedComponent).not.to.be.undefined;
   });
 
+  it("round swatches with title should render", () => {
+    const renderedComponent = render(<ColorPickerButton activeColor={colorDef} round={true} />);
+    expect(renderedComponent).not.to.be.undefined;
+  });
+
   it("button press should open popup and allow color selection", async () => {
     const spyOnColorPick = sinon.spy();
 
@@ -28,7 +33,7 @@ describe("<ColorPickerButton/>", () => {
       spyOnColorPick();
     }
 
-    const renderedComponent = render(<ColorPickerButton activeColor={colorDef} onColorPick={handleColorPick} />);
+    const renderedComponent = render(<ColorPickerButton activeColor={colorDef} onColorPick={handleColorPick} dropDownTitle="test-title" />);
     const pickerButton = renderedComponent.getByTestId("components-colorpicker-button");
     // renderedComponent.debug();
     expect(pickerButton.tagName).to.be.equal("BUTTON");
@@ -36,13 +41,28 @@ describe("<ColorPickerButton/>", () => {
 
     const popupDiv = await waitForElement(() => renderedComponent.getByTestId("components-colorpicker-popup"));
     expect(popupDiv).not.to.be.undefined;
+
     if (popupDiv) {
       const firstColorButton = popupDiv.firstChild as HTMLElement;
       expect(firstColorButton).not.to.be.undefined;
       fireEvent.click(firstColorButton);
 
       expect(spyOnColorPick).to.be.calledOnce;
+
+      const title = renderedComponent.getByText("test-title");
+      expect(title).not.to.be.undefined;
     }
   });
 
+  it("readonly - button press should not open popup", async () => {
+    const renderedComponent = render(<ColorPickerButton activeColor={colorDef} colorDefs={[ColorDef.blue, ColorDef.black, ColorDef.red]} readonly={true} />);
+    const pickerButton = renderedComponent.getByTestId("components-colorpicker-button");
+    expect(pickerButton.tagName).to.be.equal("BUTTON");
+    fireEvent.click(pickerButton);
+
+    const corePopupDiv = renderedComponent.queryByTestId("core-popup");
+    expect(corePopupDiv).not.to.be.undefined;
+    if (corePopupDiv)
+      expect(corePopupDiv.classList.contains("visible")).to.be.false;
+  });
 });
