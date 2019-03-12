@@ -1218,23 +1218,26 @@ class MPGeometry extends Geometry {
 // The chief use case is iOS.
 class MPCompositor extends Compositor {
   private _currentRenderTargetIndex: number = 0;
+  private _firstOfMultiPass: boolean = true;
   private readonly _opaqueRenderStateWithEqualDepthFunc = new RenderState();
+  private readonly _opaqueRenderStateWithEqualDepthFuncNoZWt = new RenderState();
 
   public constructor(target: Target) {
     super(target, new MPFrameBuffers(), new MPGeometry());
 
     this._opaqueRenderStateWithEqualDepthFunc.flags.depthTest = true;
     this._opaqueRenderStateWithEqualDepthFunc.depthFunc = GL.DepthFunc.LessOrEqual;
+    this._opaqueRenderStateWithEqualDepthFuncNoZWt.flags.depthTest = true;
+    this._opaqueRenderStateWithEqualDepthFuncNoZWt.depthFunc = GL.DepthFunc.LessOrEqual;
+    this._opaqueRenderStateWithEqualDepthFuncNoZWt.flags.depthMask = false;
   }
 
   protected getRenderState(pass: RenderPass): RenderState {
-    if (this._currentRenderTargetIndex > 0) {
-      switch (pass) {
-        case RenderPass.OpaqueLinear:
-        case RenderPass.OpaquePlanar:
-        case RenderPass.OpaqueGeneral:
-          return this._opaqueRenderStateWithEqualDepthFunc;
-      }
+    switch (pass) {
+      case RenderPass.OpaqueLinear:
+      case RenderPass.OpaquePlanar:
+      case RenderPass.OpaqueGeneral:
+        return this._firstOfMultiPass ? this._opaqueRenderStateWithEqualDepthFunc : this._opaqueRenderStateWithEqualDepthFuncNoZWt;
     }
 
     return super.getRenderState(pass);
@@ -1298,9 +1301,14 @@ class MPCompositor extends Compositor {
   // ###TODO: For readPixels(), could skip rendering color...also could skip rendering depth and/or element ID depending upon selector...
   private drawOpaquePass(colorFbo: FrameBuffer, commands: RenderCommands, pass: RenderPass, pingPong: boolean): void {
     const stack = System.instance.frameBufferStack;
-    stack.execute(colorFbo, true, () => this.drawPass(commands, pass, pingPong));
+    this._firstOfMultiPass = true;
+    if (!this.target.isReadPixelsInProgress) {
+      stack.execute(colorFbo, true, () => this.drawPass(commands, pass, pingPong));
+      this._firstOfMultiPass = false;
+    }
     this._currentRenderTargetIndex++;
-    stack.execute(this._fbos.featureId!, true, () => this.drawPass(commands, pass, false));
+    stack.execute(this._fbos.featureId!, true, () => this.drawPass(commands, pass, pingPong && this._firstOfMultiPass));
+    this._firstOfMultiPass = false;
     this._currentRenderTargetIndex++;
     stack.execute(this._fbos.depthAndOrder!, true, () => this.drawPass(commands, pass, false));
     this._currentRenderTargetIndex = 0;
