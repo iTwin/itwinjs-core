@@ -598,7 +598,7 @@ export class CompositeGeometry extends TexturedViewportQuadGeometry {
   public get hilite() { return this._textures[3]; }
   public get occlusion(): WebGLTexture | undefined {
     return this._textures.length > 4 ? this._textures[4] : undefined;
-   }
+  }
   public set occlusion(occlusion: WebGLTexture | undefined) {
     assert((undefined === occlusion) === (undefined !== this.occlusion));
     if (undefined !== occlusion)

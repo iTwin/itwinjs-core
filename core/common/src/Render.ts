@@ -2013,11 +2013,17 @@ export const enum BatchType {
   /** This batch contains graphics derived from a model's visible geometry. */
   Primary,
   /**
-   * This batch contains graphics which are used to classify a model's visible geometry.
+   * This batch contains colod volumes which are used to classify a model's visible geometry.
    * The graphics themselves are not rendered to the screen; instead they are rendered to the stencil buffer
    * to resymbolize the primary geometry.
    */
-  Classifier,
+  VolumeClassifier,
+  /**
+   * This batch contains planar graphics which are used to classify a model's visible geometry.
+   * The graphics themselves are not rendered to the screen; instead they are rendered to a texture buffer
+   * to resymbolize the primary geometry.
+   */
+  PlanarClassifier,
 }
 
 /** Defines a look-up table for [[Feature]]s within a batched [[RenderGraphic]]. Consecutive 32-bit
@@ -2047,8 +2053,10 @@ export class FeatureTable extends IndexMap<Feature> {
   public get isUniform(): boolean { return 1 === this.length; }
   /** If this FeatureTable contains exactly one [[Feature]], returns that Feature; otherwise returns undefined. */
   public get uniform(): Feature | undefined { return 1 === this.length ? this._array[0].value : undefined; }
-  /** Returns true if this FeatureTable is associated with [[BatchType.Classifier]] geometry. */
-  public get isClassifier(): boolean { return BatchType.Classifier === this.type; }
+  /** Returns true if this FeatureTable is associated with [[BatchType.VolumeClassifier]] geometry. */
+  public get isVolumeClassifier(): boolean { return BatchType.VolumeClassifier === this.type; }
+  /** Returns true if this FeatureTable is associated with [[BatchType.PlanarClassifier]] geometry. */
+  public get isPlanarClassifier(): boolean { return BatchType.PlanarClassifier === this.type; }
 
   /** Returns the Feature corresponding to the specified index, or undefined if the index is not present. */
   public findFeature(index: number): Feature | undefined {

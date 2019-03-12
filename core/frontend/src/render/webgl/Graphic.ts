@@ -18,6 +18,7 @@ import { OvrFlags, RenderPass } from "./RenderFlags";
 import { LineCode } from "./EdgeOverrides";
 import { GL } from "./GL";
 import { ClipPlanesVolume, ClipMaskVolume } from "./ClipVolume";
+import { PlanarClassifier } from "./PlanarClassifier";
 
 export class FeatureOverrides implements IDisposable {
   public lut?: TextureHandle;
@@ -334,13 +335,15 @@ export class Branch extends Graphic {
   public readonly branch: GraphicBranch;
   public localToWorldTransform: Transform;
   public clips?: ClipPlanesVolume | ClipMaskVolume;
+  public planarClassifier?: PlanarClassifier;
   public readonly animationId?: number;
 
-  public constructor(branch: GraphicBranch, localToWorld: Transform = Transform.createIdentity(), clips?: ClipMaskVolume | ClipPlanesVolume, viewFlags?: ViewFlags) {
+  public constructor(branch: GraphicBranch, localToWorld: Transform = Transform.createIdentity(), clips?: ClipMaskVolume | ClipPlanesVolume, viewFlags?: ViewFlags, planarClassifier?: PlanarClassifier) {
     super();
     this.branch = branch;
     this.localToWorldTransform = localToWorld;
     this.clips = clips;
+    this.planarClassifier = planarClassifier;
     if (undefined !== viewFlags)
       branch.setViewFlags(viewFlags);
   }

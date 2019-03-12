@@ -1,5 +1,35 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`Selection Scopes returns hard-coded selection scopes from the backend 1`] = `
+Array [
+  Object {
+    "description": "Select the picked element",
+    "id": "element",
+    "label": "Element",
+  },
+  Object {
+    "description": "Select parent of the picked element",
+    "id": "assembly",
+    "label": "Assembly",
+  },
+  Object {
+    "description": "Select the topmost parent of the picked element",
+    "id": "top-assembly",
+    "label": "Top Assembly",
+  },
+  Object {
+    "description": "Select all elements in the picked element's category",
+    "id": "category",
+    "label": "Category",
+  },
+  Object {
+    "description": "Select all elements in the picked element's model",
+    "id": "model",
+    "label": "Model",
+  },
+]
+`;
+
 exports[`Selection Scopes returns hardcoded selection scopes from the backend 1`] = `
 Array [
   Object {

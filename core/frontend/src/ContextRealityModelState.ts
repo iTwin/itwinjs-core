@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Views */
-import { ContextRealityModelProps, CartographicRange } from "@bentley/imodeljs-common";
+import { ContextRealityModelProps, CartographicRange, BatchType } from "@bentley/imodeljs-common";
 import { IModelConnection } from "./IModelConnection";
 import { IModelApp } from "./IModelApp";
 import { TileTreeModelState } from "./ModelState";
@@ -31,7 +31,7 @@ export class ContextRealityModelState implements TileTreeModelState {
   public get tileTree(): TileTree | undefined { return this._tileTreeState.tileTree; }
   public get loadStatus(): TileTree.LoadStatus { return this._tileTreeState.loadStatus; }
   public get treeModelId(): Id64String { return this._modelId; }
-  public loadTileTree(_edgesRequired: boolean, _animationId?: Id64String, _asClassifier?: boolean, _classifierExpansion?: number): TileTree.LoadStatus {
+  public loadTileTree(_batchType: BatchType, _edgesRequired: boolean, _animationId?: Id64String, _classifierExpansion?: number): TileTree.LoadStatus {
     const tileTreeState = this._tileTreeState;
     if (TileTree.LoadStatus.NotLoaded !== tileTreeState.loadStatus)
       return tileTreeState.loadStatus;

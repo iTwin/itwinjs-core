@@ -205,7 +205,7 @@ export namespace IModelTileIO {
       let sizeMultiplier = this._sizeMultiplier;
       const completeTile = 0 === (header.flags & IModelTileIO.Flags.Incomplete);
       const emptyTile = completeTile && 0 === header.numElementsIncluded && 0 === header.numElementsExcluded;
-      if (emptyTile || this._isClassifier) {    // Classifier algorithm currently supports only a single tile.
+      if (emptyTile || this._isVolumeClassifier) {    // Classifier algorithm currently supports only a single tile.
         isLeaf = true;
       } else {
         // Non-spatial (2d) models are of arbitrary scale and contain geometry like line work and especially text which
@@ -721,7 +721,7 @@ export namespace IModelTileIO {
 
       // ###TODO: Tile generator shouldn't bother producing edges for classification meshes in the first place...
       let edgeParams: EdgeParams | undefined;
-      if (this._loadEdges && undefined !== primitive.edges && SurfaceType.Classifier !== surface.type) {
+      if (this._loadEdges && undefined !== primitive.edges && SurfaceType.VolumeClassifier !== surface.type) {
         const edgeResult = this.readEdges(primitive.edges, displayParams);
         if (!edgeResult.succeeded)
           return undefined;

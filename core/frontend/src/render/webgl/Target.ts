@@ -25,6 +25,7 @@ import { GL } from "./GL";
 import { SceneCompositor } from "./SceneCompositor";
 import { FrameBuffer } from "./FrameBuffer";
 import { TextureHandle } from "./Texture";
+import { PlanarClassifier, PlanarClassifierMap } from "./PlanarClassifier";
 import { SingleTexturedViewportQuadGeometry } from "./CachedGeometry";
 import { ShaderLights } from "./Lighting";
 import { ClipDef } from "./TechniqueFlags";
@@ -117,6 +118,16 @@ export class Clips {
   }
 }
 
+/** Active classifiers - only the innermost is used. */
+export class PlanarClassifiers {
+  private _classifiers: PlanarClassifier[] = new Array<PlanarClassifier>();
+
+  public get classifier(): PlanarClassifier | undefined { return this._classifiers.length === 0 ? undefined : this._classifiers[this._classifiers.length - 1]; }
+  public get isValid(): boolean { return this._classifiers.length > 0; }
+
+  public push(texture: PlanarClassifier) { this._classifiers.push(texture); }
+  public pop() { this._classifiers.pop(); }
+}
 export class PerformanceMetrics {
   private _lastTimePoint = BeTimePoint.now();
   public frameTimings = new Map<string, number>();
@@ -175,6 +186,7 @@ export abstract class Target extends RenderTarget {
   private _batchState = new BatchState();
   private _scene: GraphicList = [];
   private _terrain: GraphicList = [];
+  private _planarClassifiers?: PlanarClassifierMap;
   private _dynamics?: GraphicList;
   private _worldDecorations?: WorldDecorations;
   private _overridesUpdateTime = BeTimePoint.now();
@@ -190,6 +202,7 @@ export abstract class Target extends RenderTarget {
   private _activeClipVolume?: ClipPlanesVolume | ClipMaskVolume;
   private _clipMask?: TextureHandle;
   public readonly clips = new Clips();
+  public readonly planarClassifiers = new PlanarClassifiers();
   protected _fbo?: FrameBuffer;
   private _fStop: number = 0;
   private _ambientLight: Float32Array = new Float32Array(3);
@@ -262,6 +275,7 @@ export abstract class Target extends RenderTarget {
 
   public get animationBranches(): AnimationBranchStates | undefined { return this._animationBranches; }
   public set animationBranches(branches: AnimationBranchStates | undefined) { this._animationBranches = branches; }
+  public get branchStack(): BranchStack { return this._stack; }
 
   public getWorldDecorations(decs: GraphicList): Branch {
     if (undefined === this._worldDecorations) {
@@ -322,6 +336,9 @@ export abstract class Target extends RenderTarget {
     if (undefined !== clip) {
       clip.pushToShaderExecutor(exec);
     }
+    const planarClassifier = this._stack.top.planarClassifier;
+    if (undefined !== planarClassifier)
+      planarClassifier.push(exec);
   }
   public pushState(state: BranchState) {
     assert(undefined === state.clipVolume);
@@ -332,6 +349,9 @@ export abstract class Target extends RenderTarget {
     if (undefined !== clip) {
       clip.pop(this);
     }
+    const planarClassifier = this._stack.top.planarClassifier;
+    if (undefined !== planarClassifier)
+      planarClassifier.pop(this);
 
     this._stack.pop();
   }
@@ -390,6 +410,10 @@ export abstract class Target extends RenderTarget {
   public changeTerrain(terrain: GraphicList) {
     this._terrain = terrain;
   }
+  public changePlanarClassifiers(planarClassifiers?: PlanarClassifierMap) {
+    this._planarClassifiers = planarClassifiers;
+  }
+
   public changeDynamics(dynamics?: GraphicList) {
     // ###TODO: set feature IDs into each graphic so that edge display works correctly...
     // See IModelConnection.transientIds
@@ -428,17 +452,17 @@ export abstract class Target extends RenderTarget {
     animationDisplay: undefined,
   };
 
-  public changeFrustum(plan: RenderPlan): void {
-    plan.frustum.clone(this.planFrustum);
+  public changeFrustum(newFrustum: Frustum, newFraction: number, is3d: boolean): void {
+    newFrustum.clone(this.planFrustum);
 
-    const farLowerLeft = plan.frustum.getCorner(Npc.LeftBottomRear);
-    const farLowerRight = plan.frustum.getCorner(Npc.RightBottomRear);
-    const farUpperLeft = plan.frustum.getCorner(Npc.LeftTopRear);
-    const farUpperRight = plan.frustum.getCorner(Npc.RightTopRear);
-    const nearLowerLeft = plan.frustum.getCorner(Npc.LeftBottomFront);
-    const nearLowerRight = plan.frustum.getCorner(Npc.RightBottomFront);
-    const nearUpperLeft = plan.frustum.getCorner(Npc.LeftTopFront);
-    const nearUpperRight = plan.frustum.getCorner(Npc.RightTopFront);
+    const farLowerLeft = newFrustum.getCorner(Npc.LeftBottomRear);
+    const farLowerRight = newFrustum.getCorner(Npc.RightBottomRear);
+    const farUpperLeft = newFrustum.getCorner(Npc.LeftTopRear);
+    const farUpperRight = newFrustum.getCorner(Npc.RightTopRear);
+    const nearLowerLeft = newFrustum.getCorner(Npc.LeftBottomFront);
+    const nearLowerRight = newFrustum.getCorner(Npc.RightBottomFront);
+    const nearUpperLeft = newFrustum.getCorner(Npc.LeftTopFront);
+    const nearUpperRight = newFrustum.getCorner(Npc.RightTopFront);
 
     const scratch = Target._scratch;
     const nearCenter = nearLowerLeft.interpolate(0.5, nearUpperRight, scratch.nearCenter);
@@ -447,9 +471,9 @@ export abstract class Target extends RenderTarget {
     const viewY = normalizedDifference(nearUpperLeft, nearLowerLeft, scratch.viewY);
     const viewZ = viewX.crossProduct(viewY, scratch.viewZ).normalize()!;
 
-    this._planFraction = plan.fraction;
+    this._planFraction = newFraction;
 
-    if (!plan.is3d) {
+    if (!is3d) {
       const halfWidth = Vector3d.createStartEnd(farLowerRight, farLowerLeft, scratch.vec3).magnitude() * 0.5;
       const halfHeight = Vector3d.createStartEnd(farLowerRight, farUpperRight).magnitude() * 0.5;
       const depth = 2 * RenderTarget.frustumDepth2d;
@@ -461,7 +485,7 @@ export abstract class Target extends RenderTarget {
 
       this.frustumUniforms.setPlanes(halfHeight, -halfHeight, -halfWidth, halfWidth);
       this.frustumUniforms.setFrustum(0, depth, FrustumUniformType.TwoDee);
-    } else if (plan.fraction > 0.999) { // ortho
+    } else if (newFraction > 0.999) { // ortho
       const halfWidth = Vector3d.createStartEnd(farLowerRight, farLowerLeft, scratch.vec3).magnitude() * 0.5;
       const halfHeight = Vector3d.createStartEnd(farLowerRight, farUpperRight).magnitude() * 0.5;
       const depth = Vector3d.createStartEnd(farLowerLeft, nearLowerLeft, scratch.vec3).magnitude();
@@ -475,14 +499,14 @@ export abstract class Target extends RenderTarget {
       this.frustumUniforms.setPlanes(halfHeight, -halfHeight, -halfWidth, halfWidth);
       this.frustumUniforms.setFrustum(0, depth, FrustumUniformType.Orthographic);
     } else { // perspective
-      const scale = 1.0 / (1.0 - plan.fraction);
+      const scale = 1.0 / (1.0 - newFraction);
       const zVec = Vector3d.createStartEnd(farLowerLeft, nearLowerLeft, scratch.vec3);
       const cameraPosition = fromSumOf(farLowerLeft, zVec, scale, scratch.point3);
 
-      const frustumLeft = dotDifference(farLowerLeft, cameraPosition, viewX) * plan.fraction;
-      const frustumRight = dotDifference(farLowerRight, cameraPosition, viewX) * plan.fraction;
-      const frustumBottom = dotDifference(farLowerLeft, cameraPosition, viewY) * plan.fraction;
-      const frustumTop = dotDifference(farUpperLeft, cameraPosition, viewY) * plan.fraction;
+      const frustumLeft = dotDifference(farLowerLeft, cameraPosition, viewX) * newFraction;
+      const frustumRight = dotDifference(farLowerRight, cameraPosition, viewX) * newFraction;
+      const frustumBottom = dotDifference(farLowerLeft, cameraPosition, viewY) * newFraction;
+      const frustumTop = dotDifference(farUpperLeft, cameraPosition, viewY) * newFraction;
       const frustumFront = -dotDifference(nearLowerLeft, cameraPosition, viewZ);
       const frustumBack = -dotDifference(farLowerLeft, cameraPosition, viewZ);
 
@@ -589,7 +613,7 @@ export abstract class Target extends RenderTarget {
 
     this._stack.setViewFlags(vf);
 
-    this.changeFrustum(plan);
+    this.changeFrustum(plan.frustum, plan.fraction, plan.is3d);
 
     // this.shaderlights.clear // ###TODO : Lighting
     this._fStop = 0.0;
@@ -732,11 +756,12 @@ export abstract class Target extends RenderTarget {
       this.recordPerformanceMetric("Init Commands");
       this.compositor.drawForReadPixels(this._renderCommands);
       this.recordPerformanceMetric("Draw Read Pixels");
-
       this._stack.pop();
 
       this._isReadPixelsInProgress = false;
     } else {
+      this.recordPerformanceMetric("Begin Draw Planar Classifierss");
+      this.drawPlanarClassifiers();
       this.recordPerformanceMetric("Begin Paint");
       this._renderCommands.init(this._scene, this._terrain, this._decorations, this._dynamics);
 
@@ -1026,6 +1051,11 @@ export abstract class Target extends RenderTarget {
     }
 
     return image;
+  }
+
+  public drawPlanarClassifiers() {
+    if (this._planarClassifiers)
+      this._planarClassifiers.forEach((classifier) => classifier.draw(this));
   }
 
   // ---- Methods expected to be overridden by subclasses ---- //

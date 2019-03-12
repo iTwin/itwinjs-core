@@ -615,13 +615,18 @@ export const enum FragmentShaderComponent {
   // (Optional) Apply flash hilite to lit base color
   // vec4 applyFlash(vec4 baseColor)
   ApplyFlash,
+  // (Optional) Apply planar classifier.
+  // vec4 applyPlanarClassification(vec4)
+  ApplyPlanarClassifier,
   // (Optional) Apply a debug color
   // vec4 applyDebugColor(vec4 baseColor)
   ApplyDebugColor,
   // (Required) Assign the final color to gl_FragColor or gl_FragData
   // void assignFragData(vec4 baseColor)
   AssignFragData,
-
+  // (Optional) Override current featureId
+  // vec4 overrideFeatureId(vec4 currentId)
+  OverrideFeatureId,
   COUNT,
 }
 
@@ -674,6 +679,11 @@ export class FragmentShaderBuilder extends ShaderBuilder {
       main.addline("  baseColor = applyMaterialOverrides(baseColor);");
     }
 
+    const applyPlanarClassifier = this.get(FragmentShaderComponent.ApplyPlanarClassifier);
+    if (undefined !== applyPlanarClassifier) {
+      prelude.addFunction("vec4 applyPlanarClassifications(vec4 baseColor)", applyPlanarClassifier);
+      main.addline("  baseColor = applyPlanarClassifications(baseColor);");
+    }
     const applyFeatureColor = this.get(FragmentShaderComponent.ApplyFeatureColor);
     if (undefined !== applyFeatureColor) {
       prelude.addFunction("vec4 applyFeatureColor(vec4 baseColor)", applyFeatureColor);

@@ -258,8 +258,9 @@ enum BackgroundMapType {
 
 // @beta
 enum BatchType {
-  Classifier = 1,
-  Primary = 0
+  PlanarClassifier = 2,
+  Primary = 0,
+  VolumeClassifier = 1
 }
 
 // @public
@@ -1542,8 +1543,9 @@ class FeatureTable extends IndexMap<Feature> {
   getArray(): Array<IndexedValue<Feature>>;
   // (undocumented)
   insertWithIndex(feature: Feature, index: number): void;
-  readonly isClassifier: boolean;
+  readonly isPlanarClassifier: boolean;
   readonly isUniform: boolean;
+  readonly isVolumeClassifier: boolean;
   readonly maxFeatures: number;
   // (undocumented)
   readonly modelId: Id64String;

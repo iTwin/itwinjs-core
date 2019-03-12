@@ -50,6 +50,7 @@ import { computeChildRanges } from "./IModelTile";
 import { PntsTileIO } from "./PntsTileIO";
 import { TileIO } from "./TileIO";
 import { TileRequest } from "./TileRequest";
+import { PlanarClassifier } from "../render/webgl/PlanarClassifier";
 
 /** A 3d tile within a [[TileTree]].
  * @internal
@@ -624,6 +625,7 @@ export namespace Tile {
     public readonly now: BeTimePoint;
     public readonly purgeOlderThan: BeTimePoint;
     private readonly _frustumPlanes?: FrustumPlanes;
+    public planarClassifier?: PlanarClassifier;
 
     public getPixelSizeAtPoint(inPoint?: Point3d): number {
       return this.viewFrustum !== undefined ? this.viewFrustum.getPixelSizeAtPoint(inPoint) : this.context.getPixelSizeAtPoint();
@@ -644,6 +646,7 @@ export namespace Tile {
       this.viewFrustum = (undefined !== context.backgroundMap) ? ViewFrustum.createFromViewportAndPlane(context.viewport, context.backgroundMap.getPlane()) : context.viewport.viewFrustum;
       if (this.viewFrustum !== undefined)
         this._frustumPlanes = new FrustumPlanes(this.viewFrustum.getFrustum());
+      this.planarClassifier = context.getPlanarClassifierForModel(root.modelId);
     }
 
     public get tileSizeModifier(): number { return 1.0; } // ###TODO? may adjust for performance, or device pixel density, etc
@@ -661,7 +664,8 @@ export namespace Tile {
         return;
 
       const clipVolume = this.clip !== undefined ? IModelApp.renderSystem.getClipVolume(this.clip, this.root.iModel) : undefined;
-      const branch = this.context.createBranch(this.graphics, this.location, clipVolume);
+      const branch = this.context.createBranch(this.graphics, this.location, clipVolume, this.planarClassifier);
+
       this.context.outputGraphic(branch);
     }
 
@@ -782,7 +786,6 @@ export class TileTree implements IDisposable, RenderMemory.Consumer {
       selectedTile.drawGraphics(args);
 
     args.drawGraphics();
-
     args.context.viewport.numSelectedTiles += selectedTiles.length;
   }
 
