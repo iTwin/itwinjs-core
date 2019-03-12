@@ -2,5 +2,6 @@
 *
 !/lib/**/*.d.ts
 !/lib/**/*.js
+!lib/module/dev/ui-ninezone.js.map
 !/lib/**/*.*css
 lib/test

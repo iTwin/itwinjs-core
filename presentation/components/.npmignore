@@ -3,6 +3,7 @@
 # then add back only the files we want
 !lib/**/*.d.ts
 !lib/**/*.js
+!lib/module/dev/presentation-components.js.map
 !lib/**/*.scss
 !lib/**/*.json
 !lib/public/**/*

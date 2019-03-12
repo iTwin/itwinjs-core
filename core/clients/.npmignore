@@ -2,6 +2,7 @@
 *
 !lib/**/*.d.ts
 !lib/**/*.js
+!lib/module/dev/imodeljs-clients.js.map
 !lib/assets/**
 assets/**
 test

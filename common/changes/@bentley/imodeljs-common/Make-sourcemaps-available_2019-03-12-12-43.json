@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Put sourcemap in npm package.",
+      "packageName": "@bentley/imodeljs-common",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-common",
+  "email": "Barry.Bentley@bentley.com"
+}
