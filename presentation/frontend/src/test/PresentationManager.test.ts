@@ -5,6 +5,7 @@
 /* tslint:disable:no-direct-imports */
 
 import { expect } from "chai";
+import * as sinon from "sinon";
 import * as faker from "faker";
 const deepEqual = require("deep-equal"); // tslint:disable-line:no-var-requires
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
@@ -343,19 +344,20 @@ describe("PresentationManager", () => {
       rpcRequestsHandlerMock.verifyAll();
     });
 
-    it("requests content set size from proxy when display type is passed in stead of descriptor", async () => {
+    it("requests content set size from proxy when descriptor overrides are passed instead of descriptor", async () => {
       const keyset = new KeySet();
       const descriptor = createRandomDescriptor();
+      const overrides = descriptor.createDescriptorOverrides();
       const result = faker.random.number();
       const options: ContentRequestOptions<IModelConnection> = {
         imodel: testData.imodelMock.object,
         rulesetId: testData.rulesetId,
       };
       rpcRequestsHandlerMock
-        .setup((x) => x.getContentSetSize(toIModelTokenOptions(options), descriptor.displayType, keyset))
+        .setup(async (x) => x.getContentSetSize(toIModelTokenOptions(options), overrides, keyset))
         .returns(async () => result)
         .verifiable();
-      const actualResult = await manager.getContentSetSize(options, descriptor.displayType, keyset);
+      const actualResult = await manager.getContentSetSize(options, overrides, keyset);
       expect(actualResult).to.eq(result);
       rpcRequestsHandlerMock.verifyAll();
     });
@@ -366,10 +368,10 @@ describe("PresentationManager", () => {
 
     it("requests content from proxy and rebuilds descriptor parentship", async () => {
       const keyset = new KeySet();
-      const descriptorMock = moq.Mock.ofInstance(createRandomDescriptor());
-      descriptorMock.callBase = true;
+      const descriptor = createRandomDescriptor();
+      const rebuildParentshipSpy = sinon.spy(descriptor, "rebuildParentship");
       const result: Content = {
-        descriptor: descriptorMock.object,
+        descriptor,
         contentSet: [],
       };
       const options: Paged<ContentRequestOptions<IModelConnection>> = {
@@ -378,20 +380,21 @@ describe("PresentationManager", () => {
         paging: testData.pageOptions,
       };
       rpcRequestsHandlerMock
-        .setup((x) => x.getContent(toIModelTokenOptions(options), moq.It.is((d) => deepEqual(d, descriptorMock.object.createStrippedDescriptor())), keyset))
+        .setup(async (x) => x.getContent(toIModelTokenOptions(options), moq.It.is((d) => deepEqual(d, descriptor.createStrippedDescriptor())), keyset))
         .returns(async () => result)
         .verifiable();
-      const actualResult = await manager.getContent(options, descriptorMock.object, keyset);
+      const actualResult = await manager.getContent(options, descriptor, keyset);
       expect(actualResult).to.eq(result);
       rpcRequestsHandlerMock.verifyAll();
-      descriptorMock.verify((x) => x.rebuildParentship(), moq.Times.once());
+      expect(rebuildParentshipSpy).to.be.calledOnce;
     });
 
-    it("requests content from proxy when display type is passed in stead of descriptor", async () => {
+    it("requests content from proxy when descriptor overrides are passed instead of descriptor", async () => {
       const keyset = new KeySet();
-      const randomDescriptor = createRandomDescriptor();
+      const descriptor = createRandomDescriptor();
+      const overrides = descriptor.createDescriptorOverrides();
       const result: Content = {
-        descriptor: randomDescriptor,
+        descriptor,
         contentSet: [],
       };
       const options: Paged<ContentRequestOptions<IModelConnection>> = {
@@ -400,11 +403,27 @@ describe("PresentationManager", () => {
         paging: testData.pageOptions,
       };
       rpcRequestsHandlerMock
-        .setup((x) => x.getContent(toIModelTokenOptions(options), randomDescriptor.displayType, keyset))
+        .setup(async (x) => x.getContent(toIModelTokenOptions(options), overrides, keyset))
         .returns(async () => result)
         .verifiable();
-      const actualResult = await manager.getContent(options, randomDescriptor.displayType, keyset);
+      const actualResult = await manager.getContent(options, overrides, keyset);
       expect(actualResult).to.eq(result);
+      rpcRequestsHandlerMock.verifyAll();
+    });
+
+    it("handles case when response has no content", async () => {
+      const keyset = new KeySet();
+      const descriptor = createRandomDescriptor();
+      const options: Paged<ContentRequestOptions<IModelConnection>> = {
+        imodel: testData.imodelMock.object,
+        rulesetId: testData.rulesetId,
+      };
+      rpcRequestsHandlerMock
+        .setup(async (x) => x.getContent(toIModelTokenOptions(options), moq.It.is((d) => deepEqual(d, descriptor.createStrippedDescriptor())), keyset))
+        .returns(async () => undefined)
+        .verifiable();
+      const actualResult = await manager.getContent(options, descriptor, keyset);
+      expect(actualResult).to.be.undefined;
       rpcRequestsHandlerMock.verifyAll();
     });
 
@@ -414,11 +433,11 @@ describe("PresentationManager", () => {
 
     it("requests content and contentSize from proxy and rebuilds descriptor parentship", async () => {
       const keyset = new KeySet();
-      const descriptorMock = moq.Mock.ofInstance(createRandomDescriptor());
-      descriptorMock.callBase = true;
+      const descriptor = createRandomDescriptor();
+      const rebuildParentshipSpy = sinon.spy(descriptor, "rebuildParentship");
       const result = {
         content: {
-          descriptor: descriptorMock.object,
+          descriptor,
           contentSet: [],
         },
         size: 0,
@@ -429,21 +448,22 @@ describe("PresentationManager", () => {
         paging: testData.pageOptions,
       };
       rpcRequestsHandlerMock
-        .setup((x) => x.getContentAndSize(toIModelTokenOptions(options), moq.It.is((d) => deepEqual(d, descriptorMock.object.createStrippedDescriptor())), keyset))
+        .setup(async (x) => x.getContentAndSize(toIModelTokenOptions(options), moq.It.is((d) => deepEqual(d, descriptor.createStrippedDescriptor())), keyset))
         .returns(async () => result)
         .verifiable();
-      const actualResult = await manager.getContentAndSize(options, descriptorMock.object, keyset);
+      const actualResult = await manager.getContentAndSize(options, descriptor, keyset);
       expect(actualResult).to.eq(result);
       rpcRequestsHandlerMock.verifyAll();
-      descriptorMock.verify((x) => x.rebuildParentship(), moq.Times.once());
+      expect(rebuildParentshipSpy).to.be.calledOnce;
     });
 
-    it("requests content and content set size from proxy when display type is passed in stead of descriptor", async () => {
+    it("requests content and content set size from proxy when descriptor overrides are passed instead of descriptor", async () => {
       const keyset = new KeySet();
-      const randomDescriptor = createRandomDescriptor();
+      const descriptor = createRandomDescriptor();
+      const overrides = descriptor.createDescriptorOverrides();
       const result = {
         content: {
-          descriptor: randomDescriptor,
+          descriptor,
           contentSet: [],
         },
         size: 0,
@@ -454,10 +474,30 @@ describe("PresentationManager", () => {
         paging: testData.pageOptions,
       };
       rpcRequestsHandlerMock
-        .setup((x) => x.getContentAndSize(toIModelTokenOptions(options), randomDescriptor.displayType, keyset))
+        .setup(async (x) => x.getContentAndSize(toIModelTokenOptions(options), overrides, keyset))
         .returns(async () => result)
         .verifiable();
-      const actualResult = await manager.getContentAndSize(options, randomDescriptor.displayType, keyset);
+      const actualResult = await manager.getContentAndSize(options, overrides, keyset);
+      expect(actualResult).to.eq(result);
+      rpcRequestsHandlerMock.verifyAll();
+    });
+
+    it("handles case when response has no content", async () => {
+      const keyset = new KeySet();
+      const descriptor = createRandomDescriptor();
+      const result = {
+        content: undefined,
+        size: 0,
+      };
+      const options: Paged<ContentRequestOptions<IModelConnection>> = {
+        imodel: testData.imodelMock.object,
+        rulesetId: testData.rulesetId,
+      };
+      rpcRequestsHandlerMock
+        .setup(async (x) => x.getContentAndSize(toIModelTokenOptions(options), moq.It.is((d) => deepEqual(d, descriptor.createStrippedDescriptor())), keyset))
+        .returns(async () => result)
+        .verifiable();
+      const actualResult = await manager.getContentAndSize(options, descriptor, keyset);
       expect(actualResult).to.eq(result);
       rpcRequestsHandlerMock.verifyAll();
     });

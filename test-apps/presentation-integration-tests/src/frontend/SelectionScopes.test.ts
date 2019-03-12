@@ -35,7 +35,7 @@ describe("Selection Scopes", () => {
 
   it("sets correct selection with 'element' selection scope", async () => {
     const elementProps = await imodel.elements.getProps(Id64.fromUint32Pair(116, 0));
-    await Presentation.selection.addToSelectionWithScope("", imodel, elementProps, "element");
+    await Presentation.selection.addToSelectionWithScope("", imodel, elementProps[0].id!, "element");
     const selection = Presentation.selection.getSelection(imodel);
     expect(selection.size).to.eq(1);
     expect(selection.has({ className: elementProps[0].classFullName, id: elementProps[0].id! }));
@@ -43,7 +43,7 @@ describe("Selection Scopes", () => {
 
   it("sets correct selection with 'assembly' selection scope", async () => {
     const elementProps = await imodel.elements.getProps(Id64.fromUint32Pair(28, 0));
-    await Presentation.selection.addToSelectionWithScope("", imodel, elementProps, "assembly");
+    await Presentation.selection.addToSelectionWithScope("", imodel, elementProps[0].id!, "assembly");
     const selection = Presentation.selection.getSelection(imodel);
     expect(selection.size).to.eq(1);
     expect(selection.has({ className: "BisCore:Subject", id: Id64.fromUint32Pair(27, 0) }));
@@ -51,7 +51,7 @@ describe("Selection Scopes", () => {
 
   it("sets correct selection with 'top-assembly' selection scope", async () => {
     const elementProps = await imodel.elements.getProps(Id64.fromUint32Pair(28, 0));
-    await Presentation.selection.addToSelectionWithScope("", imodel, elementProps, "top-assembly");
+    await Presentation.selection.addToSelectionWithScope("", imodel, elementProps[0].id!, "top-assembly");
     const selection = Presentation.selection.getSelection(imodel);
     expect(selection.size).to.eq(1);
     expect(selection.has({ className: "BisCore:Subject", id: Id64.fromUint32Pair(1, 0) }));
@@ -59,7 +59,7 @@ describe("Selection Scopes", () => {
 
   it("sets correct selection with 'category' selection scope", async () => {
     const elementProps = await imodel.elements.getProps(Id64.fromUint32Pair(116, 0));
-    await Presentation.selection.addToSelectionWithScope("", imodel, elementProps, "element");
+    await Presentation.selection.addToSelectionWithScope("", imodel, elementProps[0].id!, "element");
     const selection = Presentation.selection.getSelection(imodel);
     expect(selection.size).to.eq(1);
     expect(selection.has({ className: "BisCore:Category", id: Id64.fromUint32Pair(23, 0) }));
@@ -67,7 +67,7 @@ describe("Selection Scopes", () => {
 
   it("sets correct selection with 'model' selection scope", async () => {
     const elementProps = await imodel.elements.getProps(Id64.fromUint32Pair(116, 0));
-    await Presentation.selection.addToSelectionWithScope("", imodel, elementProps, "element");
+    await Presentation.selection.addToSelectionWithScope("", imodel, elementProps[0].id!, "element");
     const selection = Presentation.selection.getSelection(imodel);
     expect(selection.size).to.eq(1);
     expect(selection.has({ className: "BisCore:Model", id: Id64.fromUint32Pair(28, 0) }));

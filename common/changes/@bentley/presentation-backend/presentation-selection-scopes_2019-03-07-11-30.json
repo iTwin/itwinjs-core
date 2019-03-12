@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fixed `PresentationRpcImpl.computeSelection` for \"model\", \"category\" and \"element\" scope to return specific class names instead of \"BisCore:Model\", \"BisCore:Category\" or \"BisCore:Element\"",
+      "packageName": "@bentley/presentation-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-backend",
+  "email": "grigas.p@gmail.com"
+}

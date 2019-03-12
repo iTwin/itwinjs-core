@@ -7,7 +7,7 @@
 import { IDisposable } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import {
-  RpcRequestsHandler,
+  RpcRequestsHandler, DescriptorOverrides,
   HierarchyRequestOptions, Node, NodeKey, NodePathElement,
   ContentRequestOptions, Content, Descriptor, SelectionInfo,
   Paged, RequestOptions, KeySet, InstanceKey, NodesResponse, ContentResponse,
@@ -175,43 +175,48 @@ export default class PresentationManager implements IDisposable {
   /**
    * Retrieves the content set size based on the supplied content descriptor override.
    * @param requestOptions          options for the request
-   * @param descriptorOrDisplayType Content descriptor which specifies how the content should be returned or preferred display type of the content
+   * @param descriptorOrOverrides   Content descriptor or its overrides specifying how the content should be customized
    * @param keys                    Keys of ECInstances to get the content for.
    * @return A promise object that returns either a number on success or an error string on error.
    * Even if concrete implementation returns content in pages, this function returns the total
    * number of records in the content set.
    */
-  public async getContentSetSize(requestOptions: ContentRequestOptions<IModelConnection>, descriptorOrDisplayType: Readonly<Descriptor> | string, keys: Readonly<KeySet>): Promise<number> {
-    const descriptorParam = (typeof descriptorOrDisplayType === "string") ? descriptorOrDisplayType : descriptorOrDisplayType.createStrippedDescriptor();
-    return this._requestsHandler.getContentSetSize(this.toIModelTokenOptions(requestOptions), descriptorParam, keys);
+  public async getContentSetSize(requestOptions: ContentRequestOptions<IModelConnection>, descriptorOrOverrides: Readonly<Descriptor> | DescriptorOverrides, keys: Readonly<KeySet>): Promise<number> {
+    return this._requestsHandler.getContentSetSize(this.toIModelTokenOptions(requestOptions), this.createDescriptorParam(descriptorOrOverrides), keys);
   }
 
   /**
    * Retrieves the content based on the supplied content descriptor override.
    * @param requestOptions          options for the request
-   * @param descriptorOrDisplayType Content descriptor which specifies how the content should be returned or preferred display type of the content
+   * @param descriptorOrOverrides   Content descriptor or its overrides specifying how the content should be customized
    * @param keys                    Keys of ECInstances to get the content for.
    * @return A promise object that returns either content on success or an error string on error.
    */
-  public async getContent(requestOptions: Paged<ContentRequestOptions<IModelConnection>>, descriptorOrDisplayType: Readonly<Descriptor> | string, keys: Readonly<KeySet>): Promise<Readonly<Content>> {
-    const descriptorParam = (typeof descriptorOrDisplayType === "string") ? descriptorOrDisplayType : descriptorOrDisplayType.createStrippedDescriptor();
-    const content = await this._requestsHandler.getContent(this.toIModelTokenOptions(requestOptions), descriptorParam, keys);
-    content.descriptor.rebuildParentship();
+  public async getContent(requestOptions: Paged<ContentRequestOptions<IModelConnection>>, descriptorOrOverrides: Readonly<Descriptor> | DescriptorOverrides, keys: Readonly<KeySet>): Promise<Readonly<Content> | undefined> {
+    const content = await this._requestsHandler.getContent(this.toIModelTokenOptions(requestOptions), this.createDescriptorParam(descriptorOrOverrides), keys);
+    if (content)
+      content.descriptor.rebuildParentship();
     return content;
   }
 
   /**
    * Retrieves the content and content set size based on the supplied content descriptor override.
    * @param requestOptions          Options for the request.
-   * @param descriptorOrDisplayType Content descriptor which specifies how the content should be returned or preferred display type of the content
+   * @param descriptorOrOverrides   Content descriptor or its overrides specifying how the content should be customized
    * @param keys                    Keys of ECInstances to get the content for.
    * @returns A promise object that returns either content and content set size on success or an error string on error.
    */
-  public async getContentAndSize(requestOptions: Paged<ContentRequestOptions<IModelConnection>>, descriptorOrDisplayType: Readonly<Descriptor> | string, keys: Readonly<KeySet>): Promise<Readonly<ContentResponse>> {
-    const descriptorParam = (typeof descriptorOrDisplayType === "string") ? descriptorOrDisplayType : descriptorOrDisplayType.createStrippedDescriptor();
-    const contentResponse = await this._requestsHandler.getContentAndSize(this.toIModelTokenOptions(requestOptions), descriptorParam, keys);
-    contentResponse.content.descriptor.rebuildParentship();
-    return contentResponse;
+  public async getContentAndSize(requestOptions: Paged<ContentRequestOptions<IModelConnection>>, descriptorOrOverrides: Readonly<Descriptor> | DescriptorOverrides, keys: Readonly<KeySet>): Promise<Readonly<ContentResponse>> {
+    const response = await this._requestsHandler.getContentAndSize(this.toIModelTokenOptions(requestOptions), this.createDescriptorParam(descriptorOrOverrides), keys);
+    if (response.content)
+      response.content.descriptor.rebuildParentship();
+    return response;
+  }
+
+  private createDescriptorParam(descriptorOrOverrides: Readonly<Descriptor> | DescriptorOverrides) {
+    if (descriptorOrOverrides instanceof Descriptor)
+      return descriptorOrOverrides.createStrippedDescriptor();
+    return descriptorOrOverrides;
   }
 
   /**

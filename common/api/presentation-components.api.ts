@@ -14,6 +14,7 @@ class ContentDataProvider implements IContentDataProvider {
   getContent(pageOptions?: PageOptions): Promise<Readonly<Content> | undefined>;
   getContentDescriptor: (() => Promise<Readonly<Descriptor> | undefined>) & _.MemoizedFunction;
   getContentSetSize(): Promise<number>;
+  protected getDescriptorOverrides(): DescriptorOverrides;
   imodel: IModelConnection;
   // WARNING: The type "CacheInvalidationProps" needs to be exported by the package (e.g. added to index.ts)
   protected invalidateCache(props: CacheInvalidationProps): void;
@@ -50,18 +51,18 @@ interface IPresentationTreeDataProvider extends ITreeDataProvider, IPresentation
 // @public
 class PresentationPropertyDataProvider extends ContentDataProvider, implements IPresentationPropertyDataProvider {
   constructor(imodel: IModelConnection, rulesetId: string);
-  // (undocumented)
-  protected configureContentDescriptor(descriptor: Readonly<Descriptor>): Descriptor;
   getData(): Promise<PropertyData>;
+  protected getDescriptorOverrides(): DescriptorOverrides;
   protected getMemoizedData: (() => Promise<PropertyData>) & _.MemoizedFunction;
   includeFieldsWithNoValues: boolean;
   // WARNING: The type "CacheInvalidationProps" needs to be exported by the package (e.g. added to index.ts)
   // (undocumented)
   protected invalidateCache(props: CacheInvalidationProps): void;
   protected isFieldFavorite(_field: Field): boolean;
+  protected isFieldHidden(field: Field): boolean;
   // (undocumented)
   onDataChanged: PropertyDataChangeEvent;
-  protected shouldExcludeFromDescriptor(field: Field): boolean;
+  protected shouldConfigureContentDescriptor(): boolean;
   protected sortCategories(categories: CategoryDescription[]): void;
   protected sortFields(_category: CategoryDescription, fields: Field[]): void;
 }
@@ -114,7 +115,53 @@ export function treeWithFilteringSupport<P extends TreeProps>(TreeComponent: Rea
 export function treeWithUnifiedSelection<P extends TreeProps>(TreeComponent: React.ComponentType<P>): React.ComponentType<Subtract<Omit<P, "selectedNodes">, Props> & Props>;
 
 // @public
-export function viewWithUnifiedSelection<P extends ViewportProps>(ViewportComponent: React.ComponentType<P>): React.ComponentType<P & Props>;
+export function viewWithUnifiedSelection<P extends ViewportProps>(ViewportComponent: React.ComponentType<P>): {
+    new (props: Readonly<P & Props>): {
+        viewportSelectionHandler?: ViewportSelectionHandler | undefined;
+        readonly selectionHandler: SelectionHandler | undefined;
+        readonly imodel: (P & Props)["imodel"];
+        readonly rulesetId: string;
+        componentDidMount(): void;
+        componentWillUnmount(): void;
+        componentDidUpdate(): void;
+        render(): JSX.Element;
+        context: any;
+        setState<K extends never>(state: {} | ((prevState: Readonly<{}>, props: Readonly<P & Props>) => {} | Pick<{}, K> | null) | Pick<{}, K> | null, callback?: (() => void) | undefined): void;
+        forceUpdate(callBack?: (() => void) | undefined): void;
+        readonly props: Readonly<{
+            children?: React.ReactNode;
+        }> & Readonly<P & Props>;
+        state: Readonly<{}>;
+        refs: {
+            [key: string]: React.ReactInstance;
+        };
+    };
+    new (props: P & Props, context?: any): {
+        viewportSelectionHandler?: ViewportSelectionHandler | undefined;
+        readonly selectionHandler: SelectionHandler | undefined;
+        readonly imodel: (P & Props)["imodel"];
+        readonly rulesetId: string;
+        componentDidMount(): void;
+        componentWillUnmount(): void;
+        componentDidUpdate(): void;
+        render(): JSX.Element;
+        context: any;
+        setState<K extends never>(state: {} | ((prevState: Readonly<{}>, props: Readonly<P & Props>) => {} | Pick<{}, K> | null) | Pick<{}, K> | null, callback?: (() => void) | undefined): void;
+        forceUpdate(callBack?: (() => void) | undefined): void;
+        readonly props: Readonly<{
+            children?: React.ReactNode;
+        }> & Readonly<P & Props>;
+        state: Readonly<{}>;
+        refs: {
+            [key: string]: React.ReactInstance;
+        };
+    };
+    defaultProps: {
+        ruleset: Ruleset;
+    };
+    readonly displayName: string;
+    contextType?: React.Context<any> | undefined;
+};
 
 // WARNING: Unsupported export: IPresentationPropertyDataProvider
 // WARNING: Unsupported export: IPresentationTableDataProvider

@@ -30,7 +30,7 @@ export class IModelViewportControl extends ViewportContentControl {
 
     if (options.viewId) {
       this.reactElement = <UnifiedSelectionViewport viewportRef={(v: ScreenViewport) => { this.viewport = v; }}
-        viewDefinitionId={options.viewId} imodel={options.iModelConnection} rulesetId={options.rulesetId} />;
+        viewDefinitionId={options.viewId} imodel={options.iModelConnection} ruleset={options.ruleset} />;
     } else {
       this.reactElement = <MockIModelViewport bgColor={options.bgColor} />;
     }

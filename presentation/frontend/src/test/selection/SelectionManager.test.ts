@@ -8,14 +8,15 @@ import { expect } from "chai";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
 import {
-  createRandomECInstanceKey, createRandomSelectionScope,
-  createRandomEntityProps,
+  createRandomECInstanceKey, createRandomSelectionScope, createRandomId,
 } from "@bentley/presentation-common/lib/test/_helpers/random";
-import { EntityProps } from "@bentley/imodeljs-common";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { waitForPendingAsyncs } from "../_helpers/PendingAsyncsHelper";
+import { Id64String } from "@bentley/bentleyjs-core";
+import { IModelConnection, SelectionSet, IModelApp, ViewManager, SelectEventType } from "@bentley/imodeljs-frontend";
 import { KeySet, InstanceKey, SelectionScope } from "@bentley/presentation-common";
 import { SelectionManager } from "../../presentation-frontend";
 import { SelectionScopesManager } from "../../selection/SelectionScopesManager";
+import { ToolSelectionSyncHandler } from "../../selection/SelectionManager";
 
 const generateSelection = (): InstanceKey[] => {
   return [
@@ -347,11 +348,11 @@ describe("SelectionManager", () => {
   describe("addToSelectionWithSelectionScope", () => {
 
     let scope: SelectionScope;
-    let ids: EntityProps[];
+    let ids: Id64String[];
 
     beforeEach(() => {
       scope = createRandomSelectionScope();
-      ids = [createRandomEntityProps()];
+      ids = [createRandomId()];
       scopesMock.setup(async (x) => x.getSelectionScopes(imodelMock.object)).returns(async () => [scope]);
       scopesMock.setup(async (x) => x.computeSelection(imodelMock.object, ids, scope)).returns(async () => new KeySet(baseSelection)).verifiable();
     });
@@ -371,11 +372,11 @@ describe("SelectionManager", () => {
   describe("replaceSelectionWithSelectionScope", () => {
 
     let scope: SelectionScope;
-    let ids: EntityProps[];
+    let ids: Id64String[];
 
     beforeEach(() => {
       scope = createRandomSelectionScope();
-      ids = [createRandomEntityProps()];
+      ids = [createRandomId()];
       scopesMock.setup(async (x) => x.getSelectionScopes(imodelMock.object)).returns(async () => [scope]);
       scopesMock.setup(async (x) => x.computeSelection(imodelMock.object, ids, scope)).returns(async () => new KeySet(baseSelection)).verifiable();
     });
@@ -395,11 +396,11 @@ describe("SelectionManager", () => {
   describe("removeFromSelectionWithSelectionScope", () => {
 
     let scope: SelectionScope;
-    let ids: EntityProps[];
+    let ids: Id64String[];
 
     beforeEach(() => {
       scope = createRandomSelectionScope();
-      ids = [createRandomEntityProps()];
+      ids = [createRandomId()];
       scopesMock.setup(async (x) => x.getSelectionScopes(imodelMock.object)).returns(async () => [scope]);
       scopesMock.setup(async (x) => x.computeSelection(imodelMock.object, ids, scope)).returns(async () => new KeySet(baseSelection)).verifiable();
     });
@@ -434,6 +435,160 @@ describe("SelectionManager", () => {
       selectionManager.removeFromSelection(source, imodelMock.object, baseSelection);
       selectionManager.replaceSelection(source, imodelMock.object, []);
       expect(raiseEventSpy, "Expected selectionChange.raiseEvent to not be called").to.not.have.been.called;
+    });
+
+  });
+
+  describe("setSyncWithIModelToolSelection", () => {
+
+    let ss: SelectionSet;
+
+    beforeEach(() => {
+      ss = new SelectionSet(imodelMock.object);
+      imodelMock.setup((x) => x.selectionSet).returns(() => ss);
+    });
+
+    it("registers tool selection change listener once per imodel", () => {
+      const imodelMock2 = moq.Mock.ofType<IModelConnection>();
+      const ss2 = new SelectionSet(imodelMock2.object);
+      imodelMock2.setup((x) => x.selectionSet).returns(() => ss2);
+
+      selectionManager.setSyncWithIModelToolSelection(imodelMock.object);
+      expect(ss.onChanged.numberOfListeners).to.eq(1); // verify listener added
+
+      selectionManager.setSyncWithIModelToolSelection(imodelMock.object);
+      expect(ss.onChanged.numberOfListeners).to.eq(1); // verify listener _not_ added for the same imodel
+
+      selectionManager.setSyncWithIModelToolSelection(imodelMock2.object);
+      expect(ss2.onChanged.numberOfListeners).to.eq(1); // verify listener added for a different imodel
+
+      selectionManager.setSyncWithIModelToolSelection(imodelMock2.object, false);
+      expect(ss2.onChanged.numberOfListeners).to.eq(0); // verify listener removed
+
+      selectionManager.setSyncWithIModelToolSelection(imodelMock.object, false);
+      expect(ss.onChanged.numberOfListeners).to.eq(1); // verify listener _not_ removed as the imodel was registered to sync twice
+
+      selectionManager.setSyncWithIModelToolSelection(imodelMock.object, false);
+      expect(ss.onChanged.numberOfListeners).to.eq(0); // verify listener removed
+    });
+
+    describe("syncing with imodel tool selection", () => {
+
+      let syncer: ToolSelectionSyncHandler;
+
+      beforeEach(() => {
+        // core globals...
+        IModelApp.viewManager = new ViewManager();
+
+        syncer = new ToolSelectionSyncHandler(imodelMock.object, selectionManager);
+      });
+
+      describe("non-scoped", () => {
+
+        beforeEach(() => {
+          scopesMock.setup((x) => x.activeScope).returns(() => undefined);
+        });
+
+        it("ignores events with different imodel", async () => {
+          const imodelMock2 = moq.Mock.ofType<IModelConnection>();
+          ss.onChanged.raiseEvent(imodelMock2.object, SelectEventType.Add, [createRandomId()]);
+          await waitForPendingAsyncs(syncer);
+          const selection = selectionManager.getSelection(imodelMock.object);
+          expect(selection.size).to.eq(0);
+        });
+
+        it("adds elements to logical selection when tool selection changes", async () => {
+          const id = createRandomId();
+          ss.add(id);
+          await waitForPendingAsyncs(syncer);
+          const selection = selectionManager.getSelection(imodelMock.object);
+          expect(selection.size).to.eq(1);
+          expect(selection.has({ className: "BisCore:Element", id })).to.be.true;
+        });
+
+        it("replaces elements in logical selection when tool selection changes", async () => {
+          selectionManager.addToSelection("", imodelMock.object, [createRandomECInstanceKey()]);
+          const id = createRandomId();
+          ss.replace(id);
+          await waitForPendingAsyncs(syncer);
+          const selection = selectionManager.getSelection(imodelMock.object);
+          expect(selection.size).to.eq(1);
+          expect(selection.has({ className: "BisCore:Element", id })).to.be.true;
+        });
+
+        it("removes elements from logical selection when tool selection changes", async () => {
+          const id = createRandomId();
+          ss.add(id, false);
+          selectionManager.addToSelection("", imodelMock.object, [{ className: "BisCore:Element", id }]);
+          ss.remove(id);
+          await waitForPendingAsyncs(syncer);
+          const selection = selectionManager.getSelection(imodelMock.object);
+          expect(selection.size).to.eq(0);
+        });
+
+        it("clears elements from logical selection when tool selection is cleared", async () => {
+          const key = createRandomECInstanceKey();
+          ss.add(createRandomId(), false);
+          selectionManager.addToSelection("", imodelMock.object, [key]);
+          ss.emptyAll();
+          await waitForPendingAsyncs(syncer);
+          const selection = selectionManager.getSelection(imodelMock.object);
+          expect(selection.size).to.eq(0);
+        });
+
+      });
+
+      describe("scoped", () => {
+
+        let key: InstanceKey;
+
+        beforeEach(() => {
+          key = createRandomECInstanceKey();
+          scopesMock.setup((x) => x.activeScope).returns(() => "test scope");
+          scopesMock.setup(async (x) => x.computeSelection(imodelMock.object, moq.It.isAny(), "test scope"))
+            .returns(async () => new KeySet([key]));
+        });
+
+        it("adds elements to logical selection when tool selection changes", async () => {
+          const id = createRandomId();
+          ss.add(id);
+          await waitForPendingAsyncs(syncer);
+          const selection = selectionManager.getSelection(imodelMock.object);
+          expect(selection.size).to.eq(1);
+          expect(selection.has(key)).to.be.true;
+        });
+
+        it("replaces elements in logical selection when tool selection changes", async () => {
+          selectionManager.addToSelection("", imodelMock.object, [createRandomECInstanceKey()]);
+          const id = createRandomId();
+          ss.replace(id);
+          await waitForPendingAsyncs(syncer);
+          const selection = selectionManager.getSelection(imodelMock.object);
+          expect(selection.size).to.eq(1);
+          expect(selection.has(key)).to.be.true;
+        });
+
+        it("removes elements from logical selection when tool selection changes", async () => {
+          const id = createRandomId();
+          ss.add(id, false);
+          selectionManager.addToSelection("", imodelMock.object, [key]);
+          ss.remove(id);
+          await waitForPendingAsyncs(syncer);
+          const selection = selectionManager.getSelection(imodelMock.object);
+          expect(selection.size).to.eq(0);
+        });
+
+        it("clears elements from logical selection when tool selection is cleared", async () => {
+          ss.add(createRandomId(), false);
+          selectionManager.addToSelection("", imodelMock.object, [key]);
+          ss.emptyAll();
+          await waitForPendingAsyncs(syncer);
+          const selection = selectionManager.getSelection(imodelMock.object);
+          expect(selection.size).to.eq(0);
+        });
+
+      });
+
     });
 
   });

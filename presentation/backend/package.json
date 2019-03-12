@@ -34,7 +34,7 @@
     "lint": "echo Disabled until https://github.com/palantir/tslint/issues/4148 is fixed",
     "//lint": "tslint -p ./src 1>&2",
     "pseudolocalize": "node ./node_modules/@bentley/build-tools/scripts/pseudolocalize.js --englishDir ./assets/locales/en --out ./lib/assets/locales/en-pseudo",
-    "test": " mocha --opts ../mocha.opts \"./lib/test/**/*.js\"",
+    "test": "mocha --opts ../mocha.opts \"./lib/test/**/*.test.js\"",
     "test:watch": "npm test -- --reporter min --watch-extensions ts --watch"
   },
   "peerDependencies": {

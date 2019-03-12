@@ -4,6 +4,7 @@
 !lib/**/*.d.ts
 !lib/**/*.js
 !lib/**/*.scss
+!lib/**/*.json
 !lib/public/**/*
 !package.json
 !*.md

@@ -34,7 +34,7 @@
     "ruleset-json-schema:post-process": "node ./scripts/post-process-json-schema.js --path ./Ruleset.schema.json",
     "lint": "echo Disabled until https://github.com/palantir/tslint/issues/4148 is fixed",
     "//lint": "tslint -p ./src/tsconfig.json 1>&2",
-    "test": "mocha --opts ../mocha.opts \"./lib/test/**/*.js\"",
+    "test": "mocha --opts ../mocha.opts \"./lib/test/**/*.test.js\"",
     "test:watch": "npm test -- --reporter min --watch-extensions ts --watch"
   },
   "iModelJs": {

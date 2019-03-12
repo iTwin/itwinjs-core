@@ -22,7 +22,6 @@ export default class ViewportContentComponent extends React.Component<Props> {
     return (
       <SampleViewport
         imodel={this.props.imodel}
-        rulesetId={this.props.rulesetId}
         viewDefinitionId={this.props.viewDefinitionId}
       />
     );

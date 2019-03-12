@@ -4,11 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module RPC */
 
-import { RpcInterface, IModelToken, EntityProps } from "@bentley/imodeljs-common";
+import { Id64String } from "@bentley/bentleyjs-core";
+import { RpcInterface, IModelToken } from "@bentley/imodeljs-common";
 import { NodeKey } from "./hierarchy/Key";
 import { default as NodePathElement } from "./hierarchy/NodePathElement";
 import { default as Node } from "./hierarchy/Node";
-import { SelectionInfo, default as Descriptor } from "./content/Descriptor";
+import { SelectionInfo, default as Descriptor, DescriptorOverrides } from "./content/Descriptor";
 import { default as Content } from "./content/Content";
 import { Field, PropertiesField, NestedContentField } from "./content/Fields";
 import { default as Item } from "./content/Item";
@@ -46,8 +47,8 @@ export interface NodesResponse {
 
 /** Interface used for receiving content and content set size */
 export interface ContentResponse {
-  content: Readonly<Content>;
   size: number;
+  content: Readonly<Content> | undefined;
 }
 
 /** Interface used for communication between Presentation backend and frontend. */
@@ -67,7 +68,7 @@ export default class PresentationRpcInterface extends RpcInterface {
   ]
 
   /** The semantic version of the interface. */
-  public static version = "0.2.0";
+  public static version = "0.3.0";
 
   /*===========================================================================================
     NOTE: Any add/remove/change to the methods below requires an update of the interface version.
@@ -88,16 +89,16 @@ export default class PresentationRpcInterface extends RpcInterface {
   /** See [[PresentationManager.getContentDescriptor]] */
   public async getContentDescriptor(_token: IModelToken, _options: ContentRpcRequestOptions, _displayType: string, _keys: Readonly<KeySet>, _selection: Readonly<SelectionInfo> | undefined): PresentationRpcResponse<Descriptor | undefined> { return this.forward(arguments); }
   /** See [[PresentationManager.getContentSetSize]] */
-  public async getContentSetSize(_token: IModelToken, _options: ContentRpcRequestOptions, _descriptorOrDisplayType: Readonly<Descriptor> | string, _keys: Readonly<KeySet>): PresentationRpcResponse<number> { return this.forward(arguments); }
+  public async getContentSetSize(_token: IModelToken, _options: ContentRpcRequestOptions, _descriptorOrOverrides: Readonly<Descriptor> | DescriptorOverrides, _keys: Readonly<KeySet>): PresentationRpcResponse<number> { return this.forward(arguments); }
   /** See [[PresentationManager.getContent]] */
-  public async getContent(_token: IModelToken, _options: ContentRpcRequestOptions, _descriptorOrDisplayType: Readonly<Descriptor> | string, _keys: Readonly<KeySet>): PresentationRpcResponse<Content> { return this.forward(arguments); }
+  public async getContent(_token: IModelToken, _options: ContentRpcRequestOptions, _descriptorOrOverrides: Readonly<Descriptor> | DescriptorOverrides, _keys: Readonly<KeySet>): PresentationRpcResponse<Content | undefined> { return this.forward(arguments); }
   /** See [[PresentationManager.getContentAndContentSize]] */
-  public async getContentAndSize(_token: IModelToken, _options: ContentRpcRequestOptions, _descriptorOrDisplayType: Readonly<Descriptor> | string, _keys: Readonly<KeySet>): PresentationRpcResponse<ContentResponse> { return this.forward(arguments); }
+  public async getContentAndSize(_token: IModelToken, _options: ContentRpcRequestOptions, _descriptorOrOverrides: Readonly<Descriptor> | DescriptorOverrides, _keys: Readonly<KeySet>): PresentationRpcResponse<ContentResponse> { return this.forward(arguments); }
   /** See [[PresentationManager.getDistinctValues]] */
   public async getDistinctValues(_token: IModelToken, _options: ContentRpcRequestOptions, _descriptor: Readonly<Descriptor>, _keys: Readonly<KeySet>, _fieldName: string, _maximumValueCount: number): PresentationRpcResponse<string[]> { return this.forward(arguments); }
 
   public async getSelectionScopes(_token: IModelToken, _options: SelectionScopeRpcRequestOptions): PresentationRpcResponse<SelectionScope[]> { return this.forward(arguments); }
-  public async computeSelection(_token: IModelToken, _options: SelectionScopeRpcRequestOptions, _keys: Readonly<EntityProps[]>, _scopeId: string): PresentationRpcResponse<KeySet> { return this.forward(arguments); }
+  public async computeSelection(_token: IModelToken, _options: SelectionScopeRpcRequestOptions, _ids: Readonly<Id64String[]>, _scopeId: string): PresentationRpcResponse<KeySet> { return this.forward(arguments); }
 
   public async syncClientState(_token: IModelToken, _options: ClientStateSyncRequestOptions): PresentationRpcResponse { return this.forward(arguments); }
 }

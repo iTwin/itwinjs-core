@@ -30,10 +30,10 @@ class PresentationManager implements IDisposable {
   static create(props?: Props): PresentationManager;
   // (undocumented)
   dispose(): void;
-  getContent(requestOptions: Paged<ContentRequestOptions<IModelConnection>>, descriptorOrDisplayType: Readonly<Descriptor> | string, keys: Readonly<KeySet>): Promise<Readonly<Content>>;
-  getContentAndSize(requestOptions: Paged<ContentRequestOptions<IModelConnection>>, descriptorOrDisplayType: Readonly<Descriptor> | string, keys: Readonly<KeySet>): Promise<Readonly<ContentResponse>>;
+  getContent(requestOptions: Paged<ContentRequestOptions<IModelConnection>>, descriptorOrOverrides: Readonly<Descriptor> | DescriptorOverrides, keys: Readonly<KeySet>): Promise<Readonly<Content> | undefined>;
+  getContentAndSize(requestOptions: Paged<ContentRequestOptions<IModelConnection>>, descriptorOrOverrides: Readonly<Descriptor> | DescriptorOverrides, keys: Readonly<KeySet>): Promise<Readonly<ContentResponse>>;
   getContentDescriptor(requestOptions: ContentRequestOptions<IModelConnection>, displayType: string, keys: Readonly<KeySet>, selection: Readonly<SelectionInfo> | undefined): Promise<Readonly<Descriptor> | undefined>;
-  getContentSetSize(requestOptions: ContentRequestOptions<IModelConnection>, descriptorOrDisplayType: Readonly<Descriptor> | string, keys: Readonly<KeySet>): Promise<number>;
+  getContentSetSize(requestOptions: ContentRequestOptions<IModelConnection>, descriptorOrOverrides: Readonly<Descriptor> | DescriptorOverrides, keys: Readonly<KeySet>): Promise<number>;
   getDistinctValues(requestOptions: ContentRequestOptions<IModelConnection>, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>, fieldName: string, maximumValueCount?: number): Promise<string[]>;
   getFilteredNodePaths(requestOptions: HierarchyRequestOptions<IModelConnection>, filterText: string): Promise<NodePathElement[]>;
   getNodePaths(requestOptions: HierarchyRequestOptions<IModelConnection>, paths: InstanceKey[][], markedIndex: number): Promise<NodePathElement[]>;
@@ -104,6 +104,8 @@ class SelectionHandler implements IDisposable {
   // (undocumented)
   imodel: IModelConnection;
   // (undocumented)
+  readonly manager: SelectionManager;
+  // (undocumented)
   name: string;
   // (undocumented)
   onSelect?: SelectionChangesListener;
@@ -120,17 +122,18 @@ class SelectionManager implements ISelectionProvider {
   // WARNING: The type "SelectionManagerProps" needs to be exported by the package (e.g. added to index.ts)
   constructor(props: SelectionManagerProps);
   addToSelection(source: string, imodel: IModelConnection, keys: Keys, level?: number, rulesetId?: string): void;
-  addToSelectionWithScope(source: string, imodel: IModelConnection, keys: EntityProps | EntityProps[], scope: SelectionScope | string, level?: number, rulesetId?: string): Promise<void>;
+  addToSelectionWithScope(source: string, imodel: IModelConnection, ids: Id64Arg, scope: SelectionScope | string, level?: number, rulesetId?: string): Promise<void>;
   clearSelection(source: string, imodel: IModelConnection, level?: number, rulesetId?: string): void;
   getSelection(imodel: IModelConnection, level?: number): Readonly<KeySet>;
   getSelectionLevels(imodel: IModelConnection): number[];
   removeFromSelection(source: string, imodel: IModelConnection, keys: Keys, level?: number, rulesetId?: string): void;
-  removeFromSelectionWithScope(source: string, imodel: IModelConnection, keys: EntityProps | EntityProps[], scope: SelectionScope | string, level?: number, rulesetId?: string): Promise<void>;
+  removeFromSelectionWithScope(source: string, imodel: IModelConnection, ids: Id64Arg, scope: SelectionScope | string, level?: number, rulesetId?: string): Promise<void>;
   replaceSelection(source: string, imodel: IModelConnection, keys: Keys, level?: number, rulesetId?: string): void;
-  replaceSelectionWithScope(source: string, imodel: IModelConnection, keys: EntityProps | EntityProps[], scope: SelectionScope | string, level?: number, rulesetId?: string): Promise<void>;
+  replaceSelectionWithScope(source: string, imodel: IModelConnection, ids: Id64Arg, scope: SelectionScope | string, level?: number, rulesetId?: string): Promise<void>;
   // WARNING: The type "SelectionScopesManager" needs to be exported by the package (e.g. added to index.ts)
   readonly scopes: SelectionScopesManager;
   readonly selectionChange: SelectionChangeEvent;
+  setSyncWithIModelToolSelection(imodel: IModelConnection, sync?: boolean): void;
 }
 
 // WARNING: Unsupported export: SelectionChangesListener

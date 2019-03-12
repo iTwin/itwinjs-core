@@ -28,6 +28,12 @@ describe("PropertyDataProvider", async () => {
     terminate();
   });
 
+  it("creates empty result when properties requested for 0 instances", async () => {
+    provider.keys = new KeySet();
+    const properties = await provider.getData();
+    expect(properties).to.matchSnapshot();
+  });
+
   it("creates property data", async () => {
     provider.keys = new KeySet([physicalModelProps]);
     const properties = await provider.getData();

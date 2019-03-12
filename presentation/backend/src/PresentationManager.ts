@@ -5,8 +5,7 @@
 /** @module Core */
 
 import * as path from "path";
-import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
-import { EntityProps } from "@bentley/imodeljs-common";
+import { ActivityLoggingContext, Id64String } from "@bentley/bentleyjs-core";
 import { IModelDb, GeometricElement } from "@bentley/imodeljs-backend";
 import {
   PresentationError, PresentationStatus,
@@ -14,7 +13,7 @@ import {
   ContentRequestOptions, SelectionInfo, Content, Descriptor,
   RequestOptions, Paged, KeySet, InstanceKey,
   SelectionScopeRequestOptions, SelectionScope,
-  NodesResponse, ContentResponse,
+  NodesResponse, ContentResponse, DescriptorOverrides,
 } from "@bentley/presentation-common";
 import { listReviver as nodesListReviver } from "@bentley/presentation-common/lib/hierarchy/Node";
 import { listReviver as nodePathElementReviver } from "@bentley/presentation-common/lib/hierarchy/NodePathElement";
@@ -237,53 +236,77 @@ export default class PresentationManager {
    * Retrieves the content set size based on the supplied content descriptor override.
    * @param activityLoggingContext  Logging context holding request's ActivityId
    * @param requestOptions          options for the request
-   * @param descriptorOrDisplayType Content descriptor which specifies how the content should be returned or preferred display type of the content
+   * @param descriptorOrOverrides   Content descriptor or its overrides specifying how the content should be customized
    * @param keys                    Keys of ECInstances to get the content for.
    * @return A promise object that returns either a number on success or an error string on error.
    * Even if concrete implementation returns content in pages, this function returns the total
    * number of records in the content set.
    */
-  public async getContentSetSize(activityLoggingContext: ActivityLoggingContext, requestOptions: ContentRequestOptions<IModelDb>, descriptorOrDisplayType: Readonly<Descriptor> | string, keys: Readonly<KeySet>): Promise<number> {
+  public async getContentSetSize(activityLoggingContext: ActivityLoggingContext, requestOptions: ContentRequestOptions<IModelDb>, descriptorOrOverrides: Readonly<Descriptor> | DescriptorOverrides, keys: Readonly<KeySet>): Promise<number> {
     activityLoggingContext.enter();
     const params = this.createRequestParams(NativePlatformRequestTypes.GetContentSetSize, requestOptions, {
       keys,
-      descriptorOverrides: this.createContentDescriptorOverrides(descriptorOrDisplayType),
+      descriptorOverrides: this.createContentDescriptorOverrides(descriptorOrOverrides),
     });
-    return this.request<number>(activityLoggingContext, requestOptions.imodel, params);
+    // wip: the try/catch block is a temp workaround until native platform changes
+    // are available for the backend
+    try {
+      return await this.request<number>(activityLoggingContext, requestOptions.imodel, params);
+    } catch (e) {
+      return 0;
+    }
   }
 
   /**
    * Retrieves the content based on the supplied content descriptor override.
    * @param activityLoggingContext  Logging context holding request's ActivityId
    * @param requestOptions          options for the request
-   * @param descriptorOrDisplayType Content descriptor which specifies how the content should be returned or preferred display type of the content
+   * @param descriptorOrOverrides   Content descriptor or its overrides specifying how the content should be customized
    * @param keys                    Keys of ECInstances to get the content for.
    * @return A promise object that returns either content on success or an error string on error.
    */
-  public async getContent(activityLoggingContext: ActivityLoggingContext, requestOptions: Paged<ContentRequestOptions<IModelDb>>, descriptorOrDisplayType: Readonly<Descriptor> | string, keys: Readonly<KeySet>): Promise<Readonly<Content>> {
+  public async getContent(activityLoggingContext: ActivityLoggingContext, requestOptions: Paged<ContentRequestOptions<IModelDb>>, descriptorOrOverrides: Readonly<Descriptor> | DescriptorOverrides, keys: Readonly<KeySet>): Promise<Readonly<Content> | undefined> {
     activityLoggingContext.enter();
     const params = this.createRequestParams(NativePlatformRequestTypes.GetContent, requestOptions, {
       keys,
-      descriptorOverrides: this.createContentDescriptorOverrides(descriptorOrDisplayType),
+      descriptorOverrides: this.createContentDescriptorOverrides(descriptorOrOverrides),
     });
-    return this.request<Content>(activityLoggingContext, requestOptions.imodel, params, Content.reviver);
+    // wip: the try/catch block is a temp workaround until native platform changes
+    // are available for the backend
+    try {
+      return await this.request<Content | undefined>(activityLoggingContext, requestOptions.imodel, params, Content.reviver);
+    } catch (e) {
+      return undefined;
+    }
   }
 
   /**
    * Retrieves the content and content size based on supplied content descriptor override.
    * @param activityLoggingContext  Logging context holding request's ActivityId.
    * @param requestOptions          Options for thr request.
-   * @param descriptorOrDisplayType Content descriptor which specifies how the content should be returned or preferred display type of the content
+   * @param descriptorOrOverrides   Content descriptor or its overrides specifying how the content should be customized
    * @param keys                    Keys of ECInstances to get the content for
    * @return A promise object that returns either content and content set size on success or an error string on error.
    */
-  public async getContentAndSize(activityLoggingContext: ActivityLoggingContext, requestOptions: Paged<ContentRequestOptions<IModelDb>>, descriptorOrDisplayType: Readonly<Descriptor> | string, keys: Readonly<KeySet>): Promise<Readonly<ContentResponse>> {
+  public async getContentAndSize(activityLoggingContext: ActivityLoggingContext, requestOptions: Paged<ContentRequestOptions<IModelDb>>, descriptorOrOverrides: Readonly<Descriptor> | DescriptorOverrides, keys: Readonly<KeySet>): Promise<Readonly<ContentResponse>> {
     activityLoggingContext.enter();
-    const contentSetSize = await this.getContentSetSize(activityLoggingContext, requestOptions, descriptorOrDisplayType, keys);
-    activityLoggingContext.enter();
-    const contentResult = await this.getContent(activityLoggingContext, requestOptions, descriptorOrDisplayType, keys);
-    activityLoggingContext.enter();
-    return { content: contentResult, size: contentSetSize };
+    // wip: the try/catch block is a temp workaround until native platform changes
+    // are available for the backend
+    try {
+      const size = await this.getContentSetSize(activityLoggingContext, requestOptions, descriptorOrOverrides, keys);
+      activityLoggingContext.enter();
+      const content = await this.getContent(activityLoggingContext, requestOptions, descriptorOrOverrides, keys);
+      activityLoggingContext.enter();
+      return { content, size };
+    } catch (e) {
+      return { content: undefined, size: 0 };
+    }
+  }
+
+  private createContentDescriptorOverrides(descriptorOrOverrides: Readonly<Descriptor> | DescriptorOverrides) {
+    if (descriptorOrOverrides instanceof Descriptor)
+      return descriptorOrOverrides.createDescriptorOverrides();
+    return descriptorOrOverrides;
   }
 
   /**
@@ -331,69 +354,75 @@ export default class PresentationManager {
     ];
   }
 
-  private createContentDescriptorOverrides(descriptorOrDisplayType: Readonly<Descriptor> | string) {
-    if (typeof descriptorOrDisplayType === "string")
-      return {
-        displayType: descriptorOrDisplayType,
-        hiddenFieldNames: [],
-        contentFlags: 0,
-      };
-
-    return descriptorOrDisplayType.createDescriptorOverrides();
+  private getElementKey(imodel: IModelDb, id: Id64String): InstanceKey {
+    const props = imodel.elements.getElementProps(id);
+    return { className: props.classFullName, id: props.id! };
   }
 
-  private getParentInstanceKey(imodel: IModelDb, key: InstanceKey): InstanceKey | undefined {
-    const parentElementProps = imodel.elements.getElement(key.id!).parent;
-    if (!parentElementProps)
+  private computeElementSelection(requestOptions: SelectionScopeRequestOptions<IModelDb>, ids: Id64String[]) {
+    const keys = new KeySet();
+    ids.forEach((id) => {
+      keys.add(this.getElementKey(requestOptions.imodel, id));
+    });
+    return keys;
+  }
+
+  private getParentInstanceKey(imodel: IModelDb, id: Id64String): InstanceKey | undefined {
+    const parentRelProps = imodel.elements.getElementProps(id).parent;
+    if (!parentRelProps)
       return undefined;
+    const parentProps = imodel.elements.getElementProps(parentRelProps.id);
     return {
-      className: parentElementProps.relClassName!,
-      id: parentElementProps.id,
+      className: parentProps!.classFullName,
+      id: parentProps!.id!,
     };
   }
 
-  private computeAssemblySelection(requestOptions: SelectionScopeRequestOptions<IModelDb>, keys: EntityProps[]) {
+  private computeAssemblySelection(requestOptions: SelectionScopeRequestOptions<IModelDb>, ids: Id64String[]) {
     const parentKeys = new KeySet();
-    keys.forEach((key) => {
-      const thisKey = { className: key.classFullName, id: key.id! };
-      const parentKey = this.getParentInstanceKey(requestOptions.imodel, thisKey);
-      if (parentKey)
+    ids.forEach((id) => {
+      const parentKey = this.getParentInstanceKey(requestOptions.imodel, id);
+      if (parentKey) {
         parentKeys.add(parentKey);
-      else
-        parentKeys.add(thisKey);
+      } else {
+        parentKeys.add(this.getElementKey(requestOptions.imodel, id));
+      }
     });
     return parentKeys;
   }
 
-  private computeTopAssemblySelection(requestOptions: SelectionScopeRequestOptions<IModelDb>, keys: EntityProps[]) {
+  private computeTopAssemblySelection(requestOptions: SelectionScopeRequestOptions<IModelDb>, ids: Id64String[]) {
     const parentKeys = new KeySet();
-    keys.forEach((key) => {
-      let curr = { className: key.classFullName, id: key.id! };
-      let parent = this.getParentInstanceKey(requestOptions.imodel, curr);
+    ids.forEach((id) => {
+      let curr: InstanceKey | undefined;
+      let parent = this.getParentInstanceKey(requestOptions.imodel, id);
       while (parent) {
         curr = parent;
-        parent = this.getParentInstanceKey(requestOptions.imodel, curr);
+        parent = this.getParentInstanceKey(requestOptions.imodel, curr.id);
       }
-      parentKeys.add(curr);
+      parentKeys.add(curr ? curr : this.getElementKey(requestOptions.imodel, id));
     });
     return parentKeys;
   }
 
-  private computeCategorySelection(requestOptions: SelectionScopeRequestOptions<IModelDb>, keys: EntityProps[]) {
+  private computeCategorySelection(requestOptions: SelectionScopeRequestOptions<IModelDb>, ids: Id64String[]) {
     const categoryKeys = new KeySet();
-    keys.forEach((key) => {
-      const el = requestOptions.imodel.elements.getElement(key.id!);
-      if (el instanceof GeometricElement)
-        categoryKeys.add({ className: "BisCore:Category", id: el.category });
+    ids.forEach((id) => {
+      const el = requestOptions.imodel.elements.getElement(id);
+      if (el instanceof GeometricElement) {
+        const category = requestOptions.imodel.elements.getElementProps(el.category);
+        categoryKeys.add({ className: category.classFullName, id: category.id! });
+      }
     });
     return categoryKeys;
   }
 
-  private computeModelSelection(requestOptions: SelectionScopeRequestOptions<IModelDb>, keys: EntityProps[]) {
+  private computeModelSelection(requestOptions: SelectionScopeRequestOptions<IModelDb>, ids: Id64String[]) {
     const modelKeys = new KeySet();
-    keys.forEach((key) => {
-      const el = requestOptions.imodel.elements.getElement(key.id!);
-      modelKeys.add({ className: "BisCore:Model", id: el.model });
+    ids.forEach((id) => {
+      const el = requestOptions.imodel.elements.getElementProps(id);
+      const model = requestOptions.imodel.models.getModelProps(el.model);
+      modelKeys.add({ className: model.classFullName, id: model.id! });
     });
     return modelKeys;
   }
@@ -405,16 +434,16 @@ export default class PresentationManager {
    * @param keys Keys of elements to get the content for.
    * @param scopeId ID of selection scope to use for computing selection
    */
-  public async computeSelection(activityLoggingContext: ActivityLoggingContext, requestOptions: SelectionScopeRequestOptions<IModelDb>, keys: EntityProps[], scopeId: string): Promise<KeySet> {
+  public async computeSelection(activityLoggingContext: ActivityLoggingContext, requestOptions: SelectionScopeRequestOptions<IModelDb>, ids: Id64String[], scopeId: string): Promise<KeySet> {
     activityLoggingContext.enter();
     (requestOptions as any);
 
     switch (scopeId) {
-      case "element": return new KeySet(keys);
-      case "assembly": return this.computeAssemblySelection(requestOptions, keys);
-      case "top-assembly": return this.computeTopAssemblySelection(requestOptions, keys);
-      case "category": return this.computeCategorySelection(requestOptions, keys);
-      case "model": return this.computeModelSelection(requestOptions, keys);
+      case "element": return this.computeElementSelection(requestOptions, ids);
+      case "assembly": return this.computeAssemblySelection(requestOptions, ids);
+      case "top-assembly": return this.computeTopAssemblySelection(requestOptions, ids);
+      case "category": return this.computeCategorySelection(requestOptions, ids);
+      case "model": return this.computeModelSelection(requestOptions, ids);
     }
 
     throw new PresentationError(PresentationStatus.InvalidArgument, "scopeId");

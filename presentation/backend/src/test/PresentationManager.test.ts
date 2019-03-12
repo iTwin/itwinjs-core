@@ -12,24 +12,23 @@ import {
   createRandomECInstanceNodeKeyJSON,
   createRandomECClassInfoJSON, createRandomRelationshipPathJSON,
   createRandomECInstanceKeyJSON, createRandomECInstanceKey,
-  createRandomDescriptor, createRandomCategory, createRandomEntityProps, createRandomId,
+  createRandomDescriptor, createRandomCategory, createRandomId,
 } from "@bentley/presentation-common/lib/test/_helpers/random";
 import "@bentley/presentation-common/lib/test/_helpers/Promises";
 import "./IModelHostSetup";
 import { using, ActivityLoggingContext } from "@bentley/bentleyjs-core";
-import { RelatedElementProps, EntityMetaData } from "@bentley/imodeljs-common";
-import { IModelHost, IModelDb, Element, DrawingGraphic } from "@bentley/imodeljs-backend";
-import { PageOptions, SelectionInfo, KeySet, PresentationError, PropertyInfoJSON, HierarchyRequestOptions, Paged, ContentRequestOptions } from "@bentley/presentation-common";
-import { instanceKeyFromJSON } from "@bentley/presentation-common";
-import { NodeJSON } from "@bentley/presentation-common";
-import { ECInstanceNodeKeyJSON, NodeKeyJSON, nodeKeyFromJSON } from "@bentley/presentation-common";
-import { ContentJSON } from "@bentley/presentation-common";
-import { DescriptorJSON, SelectClassInfoJSON } from "@bentley/presentation-common";
-import { PrimitiveTypeDescription, ArrayTypeDescription, StructTypeDescription } from "@bentley/presentation-common";
-import { PropertiesFieldJSON, NestedContentFieldJSON, FieldJSON } from "@bentley/presentation-common";
-import { KindOfQuantityInfo } from "@bentley/presentation-common";
-import { PropertyJSON } from "@bentley/presentation-common";
-import { ItemJSON } from "@bentley/presentation-common";
+import { RelatedElementProps, EntityMetaData, ElementProps, ModelProps } from "@bentley/imodeljs-common";
+import { IModelHost, IModelDb, DrawingGraphic, Element } from "@bentley/imodeljs-backend";
+import {
+  PageOptions, SelectionInfo, KeySet, PresentationError, PropertyInfoJSON,
+  HierarchyRequestOptions, Paged, ContentRequestOptions,
+  instanceKeyFromJSON, NodeJSON,
+  ECInstanceNodeKeyJSON, NodeKeyJSON, nodeKeyFromJSON,
+  ContentJSON, DescriptorJSON, SelectClassInfoJSON,
+  PrimitiveTypeDescription, ArrayTypeDescription, StructTypeDescription,
+  PropertiesFieldJSON, NestedContentFieldJSON, FieldJSON,
+  KindOfQuantityInfo, PropertyJSON, ItemJSON,
+} from "@bentley/presentation-common";
 import { NativePlatformDefinition, NativePlatformRequestTypes } from "../NativePlatform";
 import PresentationManager from "../PresentationManager";
 import RulesetManager from "../RulesetManager";
@@ -124,30 +123,38 @@ describe("PresentationManager", () => {
       addonMock.reset();
     });
 
-    it("uses manager's activeLocale when not specified in request options", () => {
+    it("uses manager's activeLocale when not specified in request options", async () => {
       const imodelMock = moq.Mock.ofType<IModelDb>();
       const rulesetId = faker.random.word();
-      const locale = faker.random.locale();
-      using(new PresentationManager({ addon: addonMock.object, activeLocale: locale }), async (manager) => {
+      const locale = faker.random.locale().toLowerCase();
+      await using(new PresentationManager({ addon: addonMock.object, activeLocale: locale }), async (manager) => {
+        addonMock
+          .setup(async (x) => x.handleRequest(ActivityLoggingContext.current, moq.It.isAny(), moq.It.is((serializedRequest: string): boolean => {
+            const request = JSON.parse(serializedRequest);
+            return request.params.locale === locale;
+          })))
+          .returns(async () => "{}")
+          .verifiable(moq.Times.once());
         await manager.getNodesCount(ActivityLoggingContext.current, { imodel: imodelMock.object, rulesetId });
-        addonMock.verify((x) => x.handleRequest(ActivityLoggingContext.current, moq.It.isAny(), moq.It.is((serializedRequest: string): boolean => {
-          const request = JSON.parse(serializedRequest);
-          return request.params.locale === locale;
-        })), moq.Times.once());
+        addonMock.verifyAll();
       });
     });
 
-    it("ignores manager's activeLocale when locale is specified in request options", () => {
+    it("ignores manager's activeLocale when locale is specified in request options", async () => {
       const imodelMock = moq.Mock.ofType<IModelDb>();
       const rulesetId = faker.random.word();
-      const locale = faker.random.locale();
-      using(new PresentationManager({ addon: addonMock.object, activeLocale: faker.random.locale() }), async (manager) => {
+      const locale = faker.random.locale().toLowerCase();
+      await using(new PresentationManager({ addon: addonMock.object, activeLocale: faker.random.locale().toLowerCase() }), async (manager) => {
         expect(manager.activeLocale).to.not.eq(locale);
+        addonMock
+          .setup(async (x) => x.handleRequest(ActivityLoggingContext.current, moq.It.isAny(), moq.It.is((serializedRequest: string): boolean => {
+            const request = JSON.parse(serializedRequest);
+            return request.params.locale === locale;
+          })))
+          .returns(async () => "{}")
+          .verifiable(moq.Times.once());
         await manager.getNodesCount(ActivityLoggingContext.current, { imodel: imodelMock.object, rulesetId, locale });
-        addonMock.verify((x) => x.handleRequest(ActivityLoggingContext.current, moq.It.isAny(), moq.It.is((serializedRequest: string): boolean => {
-          const request = JSON.parse(serializedRequest);
-          return request.params.locale === locale;
-        })), moq.Times.once());
+        addonMock.verifyAll();
       });
     });
 
@@ -223,12 +230,12 @@ describe("PresentationManager", () => {
 
     const setup = (addonResponse: any) => {
       // nativePlatformMock the handleRequest function
-      nativePlatformMock.setup((x) => x.handleRequest(ActivityLoggingContext.current, moq.It.isAny(), moq.It.isAnyString()))
+      nativePlatformMock.setup(async (x) => x.handleRequest(ActivityLoggingContext.current, moq.It.isAny(), moq.It.isAnyString()))
         .returns(async () => JSON.stringify(addonResponse));
     };
     const verifyWithSnapshot = (result: any, expectedParams: any, recreateSnapshot: boolean = false) => {
       // verify the addon was called with correct params
-      nativePlatformMock.verify((x) => x.handleRequest(ActivityLoggingContext.current, moq.It.isAny(), moq.It.is((serializedParam: string): boolean => {
+      nativePlatformMock.verify(async (x) => x.handleRequest(ActivityLoggingContext.current, moq.It.isAny(), moq.It.is((serializedParam: string): boolean => {
         const param = JSON.parse(serializedParam);
         expectedParams = JSON.parse(JSON.stringify(expectedParams));
         return deepEqual(param, expectedParams);
@@ -238,7 +245,7 @@ describe("PresentationManager", () => {
     };
     const verifyWithExpectedResult = (actualResult: any, expectedResult: any, expectedParams: any) => {
       // verify the addon was called with correct params
-      nativePlatformMock.verify((x) => x.handleRequest(ActivityLoggingContext.current, moq.It.isAny(), moq.It.is((serializedParam: string): boolean => {
+      nativePlatformMock.verify(async (x) => x.handleRequest(ActivityLoggingContext.current, moq.It.isAny(), moq.It.is((serializedParam: string): boolean => {
         const param = JSON.parse(serializedParam);
         expectedParams = JSON.parse(JSON.stringify(expectedParams));
         return deepEqual(param, expectedParams);
@@ -759,7 +766,7 @@ describe("PresentationManager", () => {
       verifyWithExpectedResult(result, addonResponse, expectedParams);
     });
 
-    it("returns content set size when display type is passed in stead of descriptor", async () => {
+    it("returns content set size when descriptor overrides are passed instead of descriptor", async () => {
       // what the addon receives
       const keys = new KeySet([createRandomECInstanceNodeKey(), createRandomECInstanceKey()]);
       const descriptor = createRandomDescriptor();
@@ -785,7 +792,7 @@ describe("PresentationManager", () => {
         imodel: imodelMock.object,
         rulesetId: testData.rulesetId,
       };
-      const result = await manager.getContentSetSize(ActivityLoggingContext.current, options, descriptor.displayType, keys);
+      const result = await manager.getContentSetSize(ActivityLoggingContext.current, options, descriptor.createDescriptorOverrides(), keys);
       verifyWithExpectedResult(result, addonResponse, expectedParams);
     });
 
@@ -861,7 +868,7 @@ describe("PresentationManager", () => {
       verifyWithSnapshot(result, expectedParams);
     });
 
-    it("returns content when display types is passed in stead of descriptor", async () => {
+    it("returns content when descriptor overrides are passed instead of descriptor", async () => {
       // what the addon receives
       const keys = new KeySet([createRandomECInstanceNodeKey(), createRandomECInstanceKey()]);
       const descriptor = createRandomDescriptor();
@@ -933,7 +940,7 @@ describe("PresentationManager", () => {
         rulesetId: testData.rulesetId,
         paging: testData.pageOptions,
       };
-      const result = await manager.getContent(ActivityLoggingContext.current, options, descriptor.displayType, keys);
+      const result = await manager.getContent(ActivityLoggingContext.current, options, descriptor.createDescriptorOverrides(), keys);
       verifyWithSnapshot(result, expectedParams);
     });
 
@@ -1087,7 +1094,7 @@ describe("PresentationManager", () => {
     });
 
     it("throws on invalid addon response", async () => {
-      nativePlatformMock.setup((x) => x.handleRequest(ActivityLoggingContext.current, moq.It.isAny(), moq.It.isAnyString())).returns(() => (undefined as any));
+      nativePlatformMock.setup(async (x) => x.handleRequest(ActivityLoggingContext.current, moq.It.isAny(), moq.It.isAnyString())).returns(() => (undefined as any));
       const options: HierarchyRequestOptions<IModelDb> = {
         imodel: imodelMock.object,
         rulesetId: testData.rulesetId,
@@ -1097,7 +1104,7 @@ describe("PresentationManager", () => {
 
   });
 
-  describe("WIP", () => {
+  describe("WIP Selection Scopes", () => {
 
     // the below tests are temporary
 
@@ -1123,43 +1130,50 @@ describe("PresentationManager", () => {
     describe("computeSelection", () => {
 
       const elementsMock = moq.Mock.ofType<IModelDb.Elements>();
+      const modelsMock = moq.Mock.ofType<IModelDb.Models>();
 
-      const createRandomTopmostElement = (): Element => {
-        const mock = moq.Mock.ofType<Element>();
-        mock.setup((x) => x.parent).returns(() => undefined);
-        return mock.object;
+      const createRandomModelProps = (): ModelProps => {
+        const id = createRandomId();
+        const props: ModelProps = {
+          classFullName: faker.random.words(),
+          modeledElement: { relClassName: faker.random.word(), id },
+          id,
+        };
+        return props;
       };
 
-      const createRandomElement = (parentKey?: RelatedElementProps): Element => {
-        const mock = moq.Mock.ofType<Element>();
+      const createRandomTopmostElementProps = (): ElementProps => {
+        const props: ElementProps = {
+          classFullName: faker.random.words(),
+          code: {
+            scope: faker.random.word(),
+            spec: faker.random.word(),
+          },
+          model: createRandomId(),
+          id: createRandomId(),
+        };
+        return props;
+      };
+
+      const createRandomElementProps = (parentKey?: RelatedElementProps): ElementProps => {
         if (!parentKey)
           parentKey = { relClassName: faker.random.word(), id: createRandomId() };
-        mock.setup((x) => x.parent).returns(() => parentKey);
-        return mock.object;
+        return {
+          ...createRandomTopmostElementProps(),
+          parent: parentKey,
+        };
       };
 
       beforeEach(() => {
         elementsMock.reset();
+        modelsMock.reset();
         imodelMock.setup((x) => x.elements).returns(() => elementsMock.object);
+        imodelMock.setup((x) => x.models).returns(() => modelsMock.object);
         imodelMock.setup((x) => x.getMetaData(moq.It.isAnyString())).returns((className: string) => new EntityMetaData({
           baseClasses: [],
           properties: {},
           ecclass: className,
         }));
-
-        /*
-        const meta = iModel.getMetaData(classFullName); // will load if necessary
-        for (const propName in meta.properties) {
-          if (propName) {
-            const propMeta = meta.properties[propName];
-            if (includeCustom || !propMeta.isCustomHandled || propMeta.isCustomHandledOrphan)
-              func(propName, propMeta);
-          }
-        }
-
-        if (wantSuper && meta.baseClasses && meta.baseClasses.length > 0)
-          meta.baseClasses.forEach((baseClass) => this.forEachMetaData(iModel, baseClass, true, func, includeCustom));
-        */
       });
 
       it("throws on invalid scopeId", async () => {
@@ -1168,12 +1182,16 @@ describe("PresentationManager", () => {
 
       describe("scope: 'element'", () => {
 
-        it("returns entity keys", async () => {
-          const keys = [createRandomEntityProps(), createRandomEntityProps()];
-          const result = await manager.computeSelection(ActivityLoggingContext.current, { imodel: imodelMock.object }, keys, "element");
+        it("returns element keys", async () => {
+          const ids = [createRandomId(), createRandomId()];
+          const elementProps = [createRandomElementProps(), createRandomElementProps()];
+          elementsMock.setup((x) => x.getElementProps(ids[0])).returns(() => elementProps[0]);
+          elementsMock.setup((x) => x.getElementProps(ids[1])).returns(() => elementProps[1]);
+
+          const result = await manager.computeSelection(ActivityLoggingContext.current, { imodel: imodelMock.object }, ids, "element");
           expect(result.size).to.eq(2);
-          expect(result.has({ className: keys[0].classFullName, id: keys[0].id! })).to.be.true;
-          expect(result.has({ className: keys[1].classFullName, id: keys[1].id! })).to.be.true;
+          expect(result.has({ className: elementProps[0].classFullName, id: elementProps[0].id! })).to.be.true;
+          expect(result.has({ className: elementProps[1].classFullName, id: elementProps[1].id! })).to.be.true;
         });
 
       });
@@ -1181,36 +1199,38 @@ describe("PresentationManager", () => {
       describe("scope: 'assembly'", () => {
 
         it("returns parent keys", async () => {
-          const keys = [createRandomEntityProps(), createRandomEntityProps()];
-          const elements = [createRandomElement(), createRandomElement()];
-          elementsMock.setup((x) => x.getElement(keys[0].id!)).returns(() => elements[0]);
-          elementsMock.setup((x) => x.getElement(keys[1].id!)).returns(() => elements[1]);
-
-          const result = await manager.computeSelection(ActivityLoggingContext.current, { imodel: imodelMock.object }, keys, "assembly");
+          const parentProps = [createRandomElementProps(), createRandomElementProps()];
+          const elementProps = [createRandomElementProps(), createRandomElementProps()];
+          elementProps.forEach((p, index) => {
+            elementsMock.setup((x) => x.getElementProps(p.id!)).returns(() => p);
+            elementsMock.setup((x) => x.getElementProps(p.parent!.id)).returns(() => parentProps[index]);
+          });
+          const result = await manager.computeSelection(ActivityLoggingContext.current, { imodel: imodelMock.object }, elementProps.map((p) => p.id!), "assembly");
           expect(result.size).to.eq(2);
-          expect(result.has({ className: elements[0].parent!.relClassName!, id: elements[0].parent!.id! })).to.be.true;
-          expect(result.has({ className: elements[1].parent!.relClassName!, id: elements[1].parent!.id! })).to.be.true;
+          expect(result.has({ className: parentProps[0].classFullName, id: parentProps[0].id! })).to.be.true;
+          expect(result.has({ className: parentProps[1].classFullName, id: parentProps[1].id! })).to.be.true;
         });
 
         it("does not duplicate keys", async () => {
+          const parentProp = createRandomElementProps();
           const parentKey = { relClassName: faker.random.word(), id: createRandomId() };
-          const keys = [createRandomEntityProps(), createRandomEntityProps()];
-          const elements = [createRandomElement(parentKey), createRandomElement(parentKey)];
-          elementsMock.setup((x) => x.getElement(keys[0].id!)).returns(() => elements[0]);
-          elementsMock.setup((x) => x.getElement(keys[1].id!)).returns(() => elements[1]);
-
-          const result = await manager.computeSelection(ActivityLoggingContext.current, { imodel: imodelMock.object }, keys, "assembly");
+          const elementProps = [createRandomElementProps(parentKey), createRandomElementProps(parentKey)];
+          elementProps.forEach((p) => {
+            elementsMock.setup((x) => x.getElementProps(p.id!)).returns(() => p);
+            elementsMock.setup((x) => x.getElementProps(p.parent!.id)).returns(() => parentProp);
+          });
+          const result = await manager.computeSelection(ActivityLoggingContext.current, { imodel: imodelMock.object }, elementProps.map((p) => p.id!), "assembly");
           expect(result.size).to.eq(1);
-          expect(result.has({ className: parentKey.relClassName, id: parentKey.id })).to.be.true;
+          expect(result.has({ className: parentProp.classFullName, id: parentProp.id! })).to.be.true;
         });
 
         it("returns element key if it has no parent", async () => {
-          const keys = [createRandomEntityProps()];
-          const element = createRandomTopmostElement();
-          elementsMock.setup((x) => x.getElement(keys[0].id!)).returns(() => element);
-          const result = await manager.computeSelection(ActivityLoggingContext.current, { imodel: imodelMock.object }, keys, "assembly");
+          const id = createRandomId();
+          const elementProps = createRandomTopmostElementProps();
+          elementsMock.setup((x) => x.getElementProps(id)).returns(() => elementProps);
+          const result = await manager.computeSelection(ActivityLoggingContext.current, { imodel: imodelMock.object }, [id], "assembly");
           expect(result.size).to.eq(1);
-          expect(result.has({ className: keys[0].classFullName, id: keys[0].id! })).to.be.true;
+          expect(result.has({ className: elementProps.classFullName, id: elementProps.id! })).to.be.true;
         });
 
       });
@@ -1218,19 +1238,27 @@ describe("PresentationManager", () => {
       describe("scope: 'top-assembly'", () => {
 
         it("returns topmost parent key", async () => {
-          const grandparentKey = { relClassName: faker.random.word(), id: createRandomId() };
-          const parentKey = { relClassName: faker.random.word(), id: createRandomId() };
-          const elementProps = createRandomEntityProps();
-          const grandparent = createRandomTopmostElement();
-          const parent = createRandomElement(grandparentKey);
-          const element = createRandomElement(parentKey);
-          elementsMock.setup((x) => x.getElement(elementProps.id!)).returns(() => element);
-          elementsMock.setup((x) => x.getElement(parentKey.id!)).returns(() => parent);
-          elementsMock.setup((x) => x.getElement(grandparentKey.id!)).returns(() => grandparent);
+          const grandparent = createRandomTopmostElementProps();
+          const grandparentKey = { relClassName: faker.random.word(), id: grandparent.id! };
+          const parent = createRandomElementProps(grandparentKey);
+          const parentKey = { relClassName: faker.random.word(), id: parent.id! };
+          const element = createRandomElementProps(parentKey);
+          elementsMock.setup((x) => x.getElementProps(element.id!)).returns(() => element);
+          elementsMock.setup((x) => x.getElementProps(parent.id!)).returns(() => parent);
+          elementsMock.setup((x) => x.getElementProps(grandparent.id!)).returns(() => grandparent);
 
-          const result = await manager.computeSelection(ActivityLoggingContext.current, { imodel: imodelMock.object }, [elementProps], "top-assembly");
+          const result = await manager.computeSelection(ActivityLoggingContext.current, { imodel: imodelMock.object }, [element.id!], "top-assembly");
           expect(result.size).to.eq(1);
-          expect(result.has({ className: grandparentKey.relClassName!, id: grandparentKey.id! })).to.be.true;
+          expect(result.has({ className: grandparent.classFullName, id: grandparent.id! })).to.be.true;
+        });
+
+        it("returns element key if it has no parent", async () => {
+          const id = createRandomId();
+          const elementProps = createRandomTopmostElementProps();
+          elementsMock.setup((x) => x.getElementProps(id)).returns(() => elementProps);
+          const result = await manager.computeSelection(ActivityLoggingContext.current, { imodel: imodelMock.object }, [id], "top-assembly");
+          expect(result.size).to.eq(1);
+          expect(result.has({ className: elementProps.classFullName, id: elementProps.id! })).to.be.true;
         });
 
       });
@@ -1238,27 +1266,29 @@ describe("PresentationManager", () => {
       describe("scope: 'category'", () => {
 
         it("returns category key", async () => {
-          const elementProps = createRandomEntityProps();
+          const category = createRandomElementProps();
+          const elementId = createRandomId();
           const element = new DrawingGraphic({
-            id: createRandomId(),
+            id: elementId,
             classFullName: faker.random.word(),
             model: createRandomId(),
-            category: createRandomId(),
+            category: category.id!,
             code: { scope: faker.random.word(), spec: faker.random.word() },
           }, imodelMock.object);
-          elementsMock.setup((x) => x.getElement(elementProps.id!)).returns(() => element);
+          elementsMock.setup((x) => x.getElement(elementId)).returns(() => element);
+          elementsMock.setup((x) => x.getElementProps(category.id!)).returns(() => category);
 
-          const result = await manager.computeSelection(ActivityLoggingContext.current, { imodel: imodelMock.object }, [elementProps], "category");
+          const result = await manager.computeSelection(ActivityLoggingContext.current, { imodel: imodelMock.object }, [elementId], "category");
           expect(result.size).to.eq(1);
-          expect(result.has({ className: "BisCore:Category", id: element.category! })).to.be.true;
+          expect(result.has({ className: category.classFullName, id: element.category! })).to.be.true;
         });
 
-        it("skips non-geometric elements", async () => {
-          const elementProps = createRandomEntityProps();
-          const element = createRandomElement();
-          elementsMock.setup((x) => x.getElement(elementProps.id!)).returns(() => element);
+        it("skips non-geometric elementProps", async () => {
+          const elementId = createRandomId();
+          const element = moq.Mock.ofType<Element>();
+          elementsMock.setup((x) => x.getElement(elementId)).returns(() => element.object);
 
-          const result = await manager.computeSelection(ActivityLoggingContext.current, { imodel: imodelMock.object }, [elementProps], "category");
+          const result = await manager.computeSelection(ActivityLoggingContext.current, { imodel: imodelMock.object }, [elementId], "category");
           expect(result.isEmpty).to.be.true;
         });
 
@@ -1267,19 +1297,21 @@ describe("PresentationManager", () => {
       describe("scope: 'model'", () => {
 
         it("returns model key", async () => {
-          const elementProps = createRandomEntityProps();
+          const model = createRandomModelProps();
+          const elementId = createRandomId();
           const element = new DrawingGraphic({
-            id: createRandomId(),
+            id: elementId,
             classFullName: faker.random.word(),
-            model: createRandomId(),
+            model: model.id!,
             category: createRandomId(),
             code: { scope: faker.random.word(), spec: faker.random.word() },
           }, imodelMock.object);
-          elementsMock.setup((x) => x.getElement(elementProps.id!)).returns(() => element);
+          elementsMock.setup((x) => x.getElementProps(elementId)).returns(() => element);
+          modelsMock.setup((x) => x.getModelProps(model.id!)).returns(() => model);
 
-          const result = await manager.computeSelection(ActivityLoggingContext.current, { imodel: imodelMock.object }, [elementProps], "model");
+          const result = await manager.computeSelection(ActivityLoggingContext.current, { imodel: imodelMock.object }, [elementId], "model");
           expect(result.size).to.eq(1);
-          expect(result.has({ className: "BisCore:Model", id: element.model! })).to.be.true;
+          expect(result.has({ className: model.classFullName, id: model.id! })).to.be.true;
         });
 
       });

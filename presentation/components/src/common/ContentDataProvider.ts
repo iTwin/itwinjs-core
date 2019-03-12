@@ -9,7 +9,7 @@ import { IModelConnection } from "@bentley/imodeljs-frontend";
 import {
   KeySet, PageOptions, SelectionInfo,
   ContentRequestOptions, Content, Descriptor, Field,
-  Ruleset, RegisteredRuleset,
+  Ruleset, RegisteredRuleset, DescriptorOverrides,
 } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
 import { IPresentationDataProvider } from "./IPresentationDataProvider";
@@ -231,6 +231,21 @@ export class ContentDataProvider implements IContentDataProvider {
   /** Called to check whether the field should be hidden. */
   protected isFieldHidden(_field: Field): boolean { return false; }
 
+  /**
+   * Get the content descriptor overrides.
+   *
+   * **Note:** The method is only called if `shouldConfigureContentDescriptor` returns `false` -
+   * in that case when requesting content we skip requesting descriptor and instead just pass
+   * overrides.
+   */
+  protected getDescriptorOverrides(): DescriptorOverrides {
+    return {
+      displayType: this.displayType,
+      contentFlags: 0,
+      hiddenFieldNames: [],
+    };
+  }
+
   // tslint:disable-next-line:naming-convention
   private getDefaultContentDescriptor = _.memoize(async (): Promise<Readonly<Descriptor> | undefined> => {
     return Presentation.presentation.getContentDescriptor(this.createRequestOptions(),
@@ -270,23 +285,26 @@ export class ContentDataProvider implements IContentDataProvider {
   }
 
   private _getContentAndSize = _.memoize(async (pageOptions?: PageOptions) => {
-    let descriptorOrDisplayType;
+    let descriptorOrOverrides;
     if (this.shouldConfigureContentDescriptor()) {
-      descriptorOrDisplayType = await this.getContentDescriptor();
-      if (!descriptorOrDisplayType)
+      descriptorOrOverrides = await this.getContentDescriptor();
+      if (!descriptorOrOverrides)
         return undefined;
     } else {
-      descriptorOrDisplayType = this.displayType;
+      descriptorOrOverrides = this.getDescriptorOverrides();
     }
 
     const requestSize = undefined !== pageOptions && 0 === pageOptions.start && undefined !== pageOptions.size;
     const options = { ...this.createRequestOptions(), paging: pageOptions };
     if (requestSize)
-      return Presentation.presentation.getContentAndSize(options, descriptorOrDisplayType, this.keys);
+      return Presentation.presentation.getContentAndSize(options, descriptorOrOverrides, this.keys);
 
-    const responseContent: Content = await Presentation.presentation.getContent(options, descriptorOrDisplayType, this.keys);
-    const contentSize = undefined === pageOptions || undefined === pageOptions.size ? responseContent.contentSet.length : undefined;
-    return { content: responseContent, size: contentSize };
+    const content = await Presentation.presentation.getContent(options, descriptorOrOverrides, this.keys);
+    if (!content)
+      return undefined;
+
+    const size = (undefined === pageOptions || undefined === pageOptions.size) ? content.contentSet.length : undefined;
+    return { content, size };
   }, createKeyForPageOptions);
 }
 

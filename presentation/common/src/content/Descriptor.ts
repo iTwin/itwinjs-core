@@ -101,7 +101,10 @@ export interface DescriptorJSON {
   filterExpression?: string;
 }
 
-/** @hidden */
+/**
+ * Descriptor overrides that can be used to customize
+ * content.
+ */
 export interface DescriptorOverrides {
   displayType: string;
   hiddenFieldNames: string[];
