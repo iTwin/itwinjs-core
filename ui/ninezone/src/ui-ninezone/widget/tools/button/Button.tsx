@@ -20,19 +20,26 @@ export interface ToolbarButtonProps extends CommonProps {
 /** Basic toolbar button. Used in [[Toolbar]] component. */
 export class ToolbarButton extends React.PureComponent<ToolbarButtonProps> {
   public render() {
+    const onClick = (): void => {
+      // tslint:disable-next-line:no-console
+      console.log("got onClick");
+      if (this.props.onClick)
+        this.props.onClick();
+    };
+
     const className = classnames(
       "nz-toolbar-button-button",
       this.props.className);
 
     return (
-      <div
+      <button
         className={className}
         style={this.props.style}
-        onClick={this.props.onClick}
+        onClick={onClick}
       >
         <div className="nz-gradient" />
         {this.props.children}
-      </div>
+      </button>
     );
   }
 }

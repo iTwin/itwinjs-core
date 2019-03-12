@@ -70,7 +70,7 @@ describe("ModalFrontstage", () => {
     const wrapper = mount(renderModalFrontstage(true));
     expect(wrapper.find("div.uifw-modal-frontstage").length).to.eq(1);
 
-    const backButton = wrapper.find("div.nz-toolbar-button-back");
+    const backButton = wrapper.find("button.nz-toolbar-button-back");
     expect(backButton.length).to.eq(1);
 
     FrontstageManager.updateModalFrontstage();
