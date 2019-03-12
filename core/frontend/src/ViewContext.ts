@@ -8,12 +8,13 @@ import { Id64String } from "@bentley/bentleyjs-core";
 import { ConvexClipPlaneSet, CurveLocationDetail, Geometry, LineSegment3d, Matrix3d, Point2d, Point3d, Transform, Vector2d, Vector3d, XAndY, Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core";
 import { ColorDef, Frustum, FrustumPlanes, LinePixels, Npc, ViewFlags } from "@bentley/imodeljs-common";
 import { GraphicBuilder, GraphicType } from "./render/GraphicBuilder";
-import { CanvasDecoration, Decorations, GraphicBranch, GraphicList, RenderClipVolume, RenderGraphic, RenderTarget } from "./render/System";
+import { CanvasDecoration, Decorations, GraphicBranch, GraphicList, RenderClipVolume, RenderGraphic, RenderTarget, RenderPlanarClassifier } from "./render/System";
 import { BackgroundMapState } from "./tile/WebMercatorTileTree";
-import { ScreenViewport, Viewport } from "./Viewport";
+import { ScreenViewport, Viewport, ViewFrustum } from "./Viewport";
 import { ViewState3d } from "./ViewState";
 import { Tile } from "./tile/TileTree";
 import { IModelApp } from "./IModelApp";
+import { PlanarClassifier, PlanarClassifierMap } from "./render/webgl/PlanarClassifier";
 
 const gridConstants = { maxPoints: 50, maxRefs: 25, maxDotsInRow: 250, maxHorizon: 500, dotTransparency: 100, lineTransparency: 200, planeTransparency: 225 };
 
@@ -30,10 +31,10 @@ export class RenderContext {
   /** Frustum planes extracted from the context's [[Viewport]]. */
   public readonly frustumPlanes: FrustumPlanes;
 
-  constructor(vp: Viewport) {
+  constructor(vp: Viewport, frustum?: Frustum) {
     this.viewport = vp;
     this.viewFlags = vp.viewFlags.clone(); // viewFlags can diverge from viewport after attachment
-    this.frustum = vp.getFrustum();
+    this.frustum = frustum ? frustum : vp.getFrustum();
     this.frustumPlanes = new FrustumPlanes(this.frustum);
   }
 
@@ -59,7 +60,7 @@ export class RenderContext {
    * @returns A RenderGraphic suitable for drawing the scene graph node within this context's [[Viewport]].
    * @see [[RenderSystem.createBranch]]
    */
-  public createBranch(branch: GraphicBranch, location: Transform, clip?: RenderClipVolume): RenderGraphic { return this.target.renderSystem.createBranch(branch, location, clip); }
+  public createBranch(branch: GraphicBranch, location: Transform, clip?: RenderClipVolume, planarClassifier?: RenderPlanarClassifier): RenderGraphic { return this.target.renderSystem.createBranch(branch, location, clip, planarClassifier); }
 }
 
 /** Provides context for an [[InteractiveTool]] to display decorations representing its current state.
@@ -516,9 +517,14 @@ export class SceneContext extends RenderContext {
   public readonly missingTiles = new Set<Tile>();
   public hasMissingTiles = false; // ###TODO for asynchronous loading of child nodes...turn those into requests too.
   public backgroundMap?: BackgroundMapState;
+  public modelClassifiers = new Map<Id64String, Id64String>();    // Model id to classifier model Id.
+  public planarClassifiers?: PlanarClassifierMap;               // Classifier model id to planar classifier.
 
-  public constructor(vp: Viewport) {
-    super(vp);
+  public constructor(vp: Viewport, frustum?: Frustum) {
+    super(vp, frustum);
+  }
+  public get viewFrustum(): ViewFrustum | undefined {
+    return (undefined !== this.backgroundMap) ? ViewFrustum.createFromViewportAndPlane(this.viewport, this.backgroundMap.getPlane()) : this.viewport.viewFrustum;
   }
 
   public outputGraphic(graphic: RenderGraphic): void { this.backgroundMap ? this.backgroundGraphics.push(graphic) : this.graphics.push(graphic); }
@@ -535,5 +541,15 @@ export class SceneContext extends RenderContext {
 
   public requestMissingTiles(): void {
     IModelApp.tileAdmin.requestTiles(this.viewport, this.missingTiles);
+  }
+  public getPlanarClassifier(id: Id64String): PlanarClassifier | undefined { return this.planarClassifiers ? this.planarClassifiers.get(id) : undefined; }
+  public setPlanarClassifier(id: Id64String, planarClassifier: PlanarClassifier) {
+    if (!this.planarClassifiers)
+      this.planarClassifiers = new Map<Id64String, PlanarClassifier>();
+    this.planarClassifiers.set(id, planarClassifier);
+  }
+  public getPlanarClassifierForModel(modelId: Id64String) {
+    const classifierId = this.modelClassifiers.get(modelId);
+    return undefined === classifierId ? undefined : this.getPlanarClassifier(classifierId);
   }
 }

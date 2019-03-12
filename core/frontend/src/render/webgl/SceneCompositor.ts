@@ -26,7 +26,7 @@ import { Debug } from "./Diagnostics";
 let progParams: ShaderProgramParams | undefined;
 let drawParams: DrawParams | undefined;
 
-function getDrawParams(target: Target, geometry: CachedGeometry): DrawParams {
+export function getDrawParams(target: Target, geometry: CachedGeometry): DrawParams {
   if (undefined === progParams) {
     progParams = new ShaderProgramParams();
     drawParams = new DrawParams();
@@ -710,7 +710,7 @@ abstract class Compositor extends SceneCompositor {
     }
 
     this.target.plan!.selectTerrainFrustum();
-    this.target.changeFrustum(this.target.plan!);
+    this.target.changeFrustum(this.target.plan!.frustum, this.target.plan!.fraction, this.target.plan!.is3d);
 
     const fbStack = System.instance.frameBufferStack;
     const fbo = this.getBackgroundFbo(needComposite);
@@ -720,7 +720,7 @@ abstract class Compositor extends SceneCompositor {
     });
 
     this.target.plan!.selectViewFrustum();
-    this.target.changeFrustum(this.target.plan!);
+    this.target.changeFrustum(this.target.plan!.frustum, this.target.plan!.fraction, this.target.plan!.is3d);
   }
 
   private renderSkyBox(commands: RenderCommands, needComposite: boolean) {
@@ -906,6 +906,19 @@ abstract class Compositor extends SceneCompositor {
       // Draw the normal hilite geometry.
       this.drawPass(commands, RenderPass.Hilite);
     });
+    // Process planar classifiers
+    const planarClassifierCmds = commands.getCommands(RenderPass.HilitePlanarClassification);
+    if (0 !== planarClassifierCmds.length) {
+      system.frameBufferStack.execute(this._frameBuffers.hiliteUsingStencil!, true, () => {
+        system.applyRenderState(this._opaqueRenderState);
+        system.context.clearDepth(1.0);
+        system.context.clear(GL.BufferBit.Depth);
+        system.context.clearColor(0, 0, 0, 0);
+        system.context.clear(GL.BufferBit.Color);
+        this.target.techniques.execute(this.target, planarClassifierCmds, RenderPass.HilitePlanarClassification);
+      });
+    }
+
     // Process the hilite stencil volumes.
     const cmds = commands.getCommands(RenderPass.HiliteClassification);
     if (0 === cmds.length) {
@@ -937,6 +950,7 @@ abstract class Compositor extends SceneCompositor {
       case RenderPass.OpaqueLinear:
       case RenderPass.OpaquePlanar:
       case RenderPass.OpaqueGeneral:
+      case RenderPass.HilitePlanarClassification:
         return this._opaqueRenderState;
       case RenderPass.Translucent:
         return this._translucentRenderState;

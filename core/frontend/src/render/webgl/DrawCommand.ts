@@ -263,7 +263,7 @@ export class RenderCommands {
     if (this.hasCommands(RenderPass.Translucent))
       flags |= CompositeFlags.Translucent;
 
-    if (this.hasCommands(RenderPass.Hilite) || this.hasCommands(RenderPass.HiliteClassification))
+    if (this.hasCommands(RenderPass.Hilite) || this.hasCommands(RenderPass.HiliteClassification) || this.hasCommands(RenderPass.HilitePlanarClassification))
       flags |= CompositeFlags.Hilite;
 
     if (this.target.wantAmbientOcclusion)
@@ -453,6 +453,7 @@ export class RenderCommands {
     assert(RenderPass.None !== pass);
 
     this._stack.pushBranch(branch);
+    if (branch.planarClassifier) branch.planarClassifier.pushBatchState(this._batchState);
     const cmds = this.getCommands(pass);
     cmds.push(DrawCommand.createForBranch(branch, PushOrPop.Push));
 
@@ -467,6 +468,7 @@ export class RenderCommands {
 
   public pushAndPopBranch(branch: Branch, func: () => void): void {
     this._stack.pushBranch(branch);
+    if (branch.planarClassifier) branch.planarClassifier.pushBatchState(this._batchState);
 
     let cmds: DrawCommands;
     const emptyRenderPass = RenderPass.None === this._forcedRenderPass,
@@ -613,13 +615,13 @@ export class RenderCommands {
     let pass = RenderPass.Hilite;
     if (batch.graphic instanceof MeshGraphic) {
       const mg = batch.graphic as MeshGraphic;
-      if (SurfaceType.Classifier === mg.surfaceType)
+      if (SurfaceType.VolumeClassifier === mg.surfaceType)
         pass = RenderPass.HiliteClassification;
     } else if (batch.graphic instanceof GraphicsArray) {
       const ga = batch.graphic as GraphicsArray;
       if (ga.graphics[0] instanceof MeshGraphic) {
         const mg = ga.graphics[0] as MeshGraphic;
-        if (SurfaceType.Classifier === mg.surfaceType)
+        if (SurfaceType.VolumeClassifier === mg.surfaceType)
           pass = RenderPass.HiliteClassification;
       }
     }
@@ -659,9 +661,9 @@ export class RenderCommands {
 
     // If the batch contains hilited features, need to render them in the hilite pass
     const anyHilited = overrides.anyHilited;
-    if (anyHilited) {
-      (batch.graphic as Graphic).addHiliteCommands(this, batch, this.computeBatchHiliteRenderPass(batch));
-    }
+    const planarClassifierHilited = this._stack.top.planarClassifier && this._stack.top.planarClassifier.anyHilited;
+    if (anyHilited || planarClassifierHilited)
+      (batch.graphic as Graphic).addHiliteCommands(this, batch, planarClassifierHilited ? RenderPass.HilitePlanarClassification : this.computeBatchHiliteRenderPass(batch));
 
     this._opaqueOverrides = this._translucentOverrides = false;
   }

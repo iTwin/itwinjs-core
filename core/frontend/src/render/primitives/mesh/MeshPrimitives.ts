@@ -133,7 +133,7 @@ export class MeshArgs {
   public isPlanar = false;
   public is2d = false;
   public hasBakedLighting = false;
-  public asClassifier = false;
+  public isVolumeClassifier = false;
 
   public clear() {
     this.edges.clear();
@@ -146,7 +146,7 @@ export class MeshArgs {
     this.features.reset();
     this.material = undefined;
     this.fillFlags = FillFlags.None;
-    this.isPlanar = this.is2d = this.hasBakedLighting = this.asClassifier = false;
+    this.isPlanar = this.is2d = this.hasBakedLighting = this.isVolumeClassifier = false;
   }
   public init(mesh: Mesh): boolean {
     this.clear();
@@ -175,7 +175,7 @@ export class MeshArgs {
     this.isPlanar = mesh.isPlanar;
     this.is2d = mesh.is2d;
     this.hasBakedLighting = (true === mesh.hasBakedLighting);
-    this.asClassifier = (true === mesh.asClassifier);
+    this.isVolumeClassifier = (true === mesh.isVolumeClassifier);
 
     this.edges.width = mesh.displayParams.width;
     this.edges.linePixels = mesh.displayParams.linePixels;
@@ -217,7 +217,7 @@ export class Mesh {
   public readonly is2d: boolean;
   public readonly isPlanar: boolean;
   public readonly hasBakedLighting: boolean;
-  public readonly asClassifier: boolean;
+  public readonly isVolumeClassifier: boolean;
   public displayParams: DisplayParams;
 
   private constructor(props: Mesh.Props) {
@@ -229,7 +229,7 @@ export class Mesh {
     this.is2d = is2d;
     this.isPlanar = isPlanar;
     this.hasBakedLighting = (true === props.hasBakedLighting);
-    this.asClassifier = (true === props.asClassifier);
+    this.isVolumeClassifier = (true === props.isVolumeClassifier);
     this.points = new QPoint3dList(QParams3d.fromRange(range));
   }
 
@@ -372,7 +372,7 @@ export namespace Mesh {
     is2d: boolean;
     isPlanar: boolean;
     hasBakedLighting?: boolean;
-    asClassifier?: boolean;
+    isVolumeClassifier?: boolean;
   }
 }
 

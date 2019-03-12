@@ -13,6 +13,7 @@ import { IModelConnection } from "./IModelConnection";
 import { IModelTile } from "./tile/IModelTile";
 import { RealityModelTileTree } from "./tile/RealityModelTileTree";
 import { TileTree, TileTreeState } from "./tile/TileTree";
+import { Classification } from "./Classification";
 
 /** Represents the front-end state of a [Model]($backend).
  * @public
@@ -77,7 +78,7 @@ export interface TileTreeModelState {
   /** @internal */
   readonly treeModelId: Id64String;    // Model Id, or transient Id if not a model (context reality model)
   /** @internal */
-  loadTileTree(edgesRequired: boolean, animationId?: Id64String, asClassifier?: boolean, classifierExpansion?: number): TileTree.LoadStatus;
+  loadTileTree(batchType: BatchType, edgesRequired: boolean, animationId?: Id64String, classifierExpansion?: number): TileTree.LoadStatus;
 }
 
 /** Represents the front-end state of a [GeometricModel]($backend).
@@ -123,9 +124,9 @@ export abstract class GeometricModelState extends ModelState implements TileTree
    * @see [[GeometricModelState.loadStatus]] to query the current state of the tile tree's loading operation.
    * @internal
    */
-  public getOrLoadTileTree(edgesRequired: boolean): TileTree | undefined {
+  public getOrLoadTileTree(batchType: BatchType, edgesRequired: boolean): TileTree | undefined {
     if (undefined === this.tileTree)
-      this.loadTileTree(edgesRequired);
+      this.loadTileTree(batchType, edgesRequired);
 
     return this.tileTree;
   }
@@ -133,7 +134,8 @@ export abstract class GeometricModelState extends ModelState implements TileTree
   /** @see [[getOrLoadTileTree]]
    * @internal
    */
-  public loadTileTree(edgesRequired: boolean, animationId?: Id64String, asClassifier?: boolean, classifierExpansion?: number): TileTree.LoadStatus {
+  public loadTileTree(batchType: BatchType, edgesRequired: boolean, animationId?: Id64String, classifierExpansion?: number): TileTree.LoadStatus {
+    const asClassifier = (BatchType.VolumeClassifier === batchType || BatchType.PlanarClassifier === batchType);
     const tileTreeState = asClassifier ? this._classifierTileTreeState : this._tileTreeState;
     if (tileTreeState.edgesOmitted && edgesRequired)
       tileTreeState.clearTileTree();
@@ -147,17 +149,19 @@ export abstract class GeometricModelState extends ModelState implements TileTree
       RealityModelTileTree.loadRealityModelTileTree(this.jsonProperties.tilesetUrl, this.jsonProperties.tilesetToDbTransform, tileTreeState);
       return tileTreeState.loadStatus;
     }
-
-    return this.loadIModelTileTree(tileTreeState, edgesRequired, animationId, asClassifier, classifierExpansion);
+    return this.loadIModelTileTree(tileTreeState, batchType, edgesRequired, animationId, classifierExpansion);
   }
 
-  private loadIModelTileTree(tileTreeState: TileTreeState, edgesRequired: boolean, animationId?: Id64String, asClassifier?: boolean, classifierExpansion?: number): TileTree.LoadStatus {
-    const id = (asClassifier ? ("C:" + classifierExpansion as string + "_") : "") + (animationId ? ("A:" + animationId + "_") : "") + this.id;
+  private loadIModelTileTree(tileTreeState: TileTreeState, batchType: BatchType, edgesRequired: boolean, animationId?: Id64String, classifierExpansion?: number): TileTree.LoadStatus {
+    let classificationPrefix;
+    if (BatchType.VolumeClassifier === batchType || BatchType.PlanarClassifier === batchType)
+      classificationPrefix = (BatchType.PlanarClassifier === batchType ? "CP" : "C") + ":" + classifierExpansion as string + "_";
+    const id = (classificationPrefix ? classificationPrefix : "") + (animationId ? ("A:" + animationId + "_") : "") + this.id;
 
     this.iModel.tiles.getTileTreeProps(id).then((result: TileTreeProps) => {
       // NB: Make sure root content ID matches that expected by tile format major version...
       // back-end uses old format ("0/0/0/0/1") to support older front-ends.
-      const loader = new IModelTile.Loader(this.iModel, result.formatVersion, asClassifier ? BatchType.Classifier : BatchType.Primary, edgesRequired);
+      const loader = new IModelTile.Loader(this.iModel, result.formatVersion, batchType, edgesRequired);
       result.rootTile.contentId = loader.rootContentId;
       tileTreeState.setTileTree(result, loader);
 
@@ -189,6 +193,24 @@ export abstract class GeometricModelState extends ModelState implements TileTree
       this._modelRange = Range3d.fromJSON(ranges[0]);
     }
     return this._modelRange!;
+  }
+  /** Get the list of model classifiers */
+  public getClassifiers(): Id64String[] {
+    const result = new Array<Id64String>();
+    const classifiers = this.jsonProperties.classifiers;
+    if (classifiers !== undefined)
+      for (const classifier of classifiers)
+        if (undefined !== classifier.id)
+          result.push(classifier.id);
+
+    return result;
+  }
+  public async setActiveClassifier(classifierIndex: number, active: boolean) {
+    const classifiers = this.jsonProperties.classifiers;
+    if (classifiers !== undefined)
+      for (let index = 0; index < classifiers.length; index++)
+        if (false !== (classifiers[index].isActive = (classifierIndex === index && active)))
+          await Classification.loadModelClassifiers(this.id, this.iModel);
   }
 }
 

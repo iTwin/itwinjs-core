@@ -17,13 +17,14 @@ export interface CheckBoxProps {
   id: string;
   parent?: HTMLElement;
   isChecked?: boolean;
+  typeOverride?: string;
 }
 
 export function createCheckBox(props: CheckBoxProps): CheckBox {
   const div = document.createElement("div");
 
   const checkbox = document.createElement("input") as HTMLInputElement;
-  checkbox.type = "checkbox";
+  checkbox.type = props.typeOverride ? props.typeOverride : "checkbox";
   checkbox.id = props.id;
   checkbox.checked = !!props.isChecked;
   checkbox.addEventListener("click", () => props.handler(checkbox));

@@ -86,7 +86,7 @@ export class MeshGraphic extends Graphic {
     this.addPrimitive(() => SurfaceGeometry.create(this.meshData, params.surface.indices), instances);
 
     // Classifiers are surfaces only...no edges.
-    if (this.surfaceType === SurfaceType.Classifier || undefined === params.edges)
+    if (this.surfaceType === SurfaceType.VolumeClassifier || undefined === params.edges)
       return;
 
     const edges = params.edges;
@@ -307,7 +307,7 @@ export class SurfaceGeometry extends MeshGeometry {
   public get isTextured() { return SurfaceType.Textured === this.surfaceType || SurfaceType.TexturedLit === this.surfaceType; }
   public get isGlyph() { return undefined !== this.texture && this.texture.isGlyph; }
   public get isTileSection() { return undefined !== this.texture && this.texture.isTileSection; }
-  public get isClassifier() { return SurfaceType.Classifier === this.surfaceType; }
+  public get isClassifier() { return SurfaceType.VolumeClassifier === this.surfaceType; }
 
   public get asSurface() { return this; }
   public get asEdge() { return undefined; }

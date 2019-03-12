@@ -3,16 +3,17 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import { Viewport, SpatialViewState, SpatialModelState } from "@bentley/imodeljs-frontend";
+import { Viewport, SpatialViewState, SpatialModelState, GeometricModelState } from "@bentley/imodeljs-frontend";
 import { createCheckBox, CheckBox } from "./CheckBox";
 import { ToolBarDropDown } from "./ToolBar";
-import { compareStringsOrUndefined } from "@bentley/bentleyjs-core";
+import { compareStringsOrUndefined, Id64String } from "@bentley/bentleyjs-core";
 
 export class ModelPicker extends ToolBarDropDown {
   private readonly _vp: Viewport;
   private readonly _element: HTMLElement;
   private readonly _parent: HTMLElement;
   private readonly _modelCheckBoxes: HTMLInputElement[] = [];
+  private readonly _modelClassifierCheckBoxes = new Map<Id64String, HTMLInputElement[]>();
   private _toggleAll?: HTMLInputElement;
   private readonly _models = new Set<string>();
 
@@ -81,18 +82,36 @@ export class ModelPicker extends ToolBarDropDown {
       this._modelCheckBoxes.push(cb.checkbox);
       this._models.add(id);
 
+      const geometricModel = model as GeometricModelState;
       const classifiers = undefined !== model ? model.jsonProperties.classifiers : undefined;
-      if (undefined !== classifiers) {
+      if (undefined !== geometricModel && undefined !== classifiers) {
         const div = document.createElement("div");
         div.style.paddingLeft = "2em";
         cb.div.appendChild(div);
 
+        const classifierCheckBoxes = [];
         for (const classifier of classifiers) {
-          this.addCheckbox(classifier.name, "classifier_" + classifierIndex++, classifier.isActive, (enabled) => {
-            classifier.isActive = enabled;
+          const prefix = "classifier_";
+          const ccb = this.addCheckbox(classifier.name, prefix + classifierIndex++, classifier.isActive, async (enabled) => {
+            const indexString = ccb.checkbox.id.substring(prefix.length);
+            const index = parseInt(indexString, 10);
+            await geometricModel.setActiveClassifier(index, enabled);
             this._vp.invalidateScene();
-          }, div);
+            for (const otherCb of this._modelClassifierCheckBoxes.get(geometricModel.id)!)
+              if (otherCb !== ccb.checkbox) otherCb.checked = false;
+          }, div, "radio");
+          classifierCheckBoxes.push(ccb.checkbox);
         }
+        const noneCb = this.addCheckbox("None", "classifierNone", false, async (enabled) => {
+          if (enabled) {
+            this._vp.invalidateScene();
+            for (let index = 0; index < classifiers.length; index++) await geometricModel.setActiveClassifier(index, false);
+            for (const otherCb of this._modelClassifierCheckBoxes.get(geometricModel.id)!)
+              if (otherCb !== noneCb.checkbox) otherCb.checked = false;
+          }
+        }, div, "radio");
+        classifierCheckBoxes.push(noneCb.checkbox);
+        this._modelClassifierCheckBoxes.set(model!.id, classifierCheckBoxes);
       }
     }
 
@@ -114,7 +133,7 @@ export class ModelPicker extends ToolBarDropDown {
       checkbox.checked = enable;
   }
 
-  private addCheckbox(name: string, id: string, isChecked: boolean, handler: (enabled: boolean) => void, parent?: HTMLElement): CheckBox {
+  private addCheckbox(name: string, id: string, isChecked: boolean, handler: (enabled: boolean) => void, parent?: HTMLElement, typeOverride?: string): CheckBox {
     if (undefined === parent)
       parent = this._element;
 
@@ -123,6 +142,7 @@ export class ModelPicker extends ToolBarDropDown {
       id,
       parent,
       isChecked,
+      typeOverride,
       handler: (checkbox) => handler(checkbox.checked),
     });
   }

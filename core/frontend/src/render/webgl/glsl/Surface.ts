@@ -14,7 +14,7 @@ import {
   ShaderBuilder,
   ShaderBuilderFlags,
 } from "../ShaderBuilder";
-import { IsInstanced, IsAnimated, FeatureMode } from "../TechniqueFlags";
+import { IsInstanced, IsAnimated, IsClassified, FeatureMode } from "../TechniqueFlags";
 import { GLSLFragment, addWhiteOnWhiteReversal, addPickBufferOutputs } from "./Fragment";
 import { addProjectionMatrix, addModelViewMatrix, addNormalMatrix } from "./Vertex";
 import { addAnimation } from "./Animation";
@@ -29,6 +29,7 @@ import { Texture } from "../Texture";
 import { Material } from "../Material";
 import { System } from "../System";
 import { assert } from "@bentley/bentleyjs-core";
+import { addColorPlanarClassifier, addHilitePlanarClassifier, addFeaturePlanarClassifier } from "./PlanarClassification";
 
 const sampleSurfaceTexture = `
   vec4 sampleSurfaceTexture() {
@@ -81,12 +82,14 @@ const computePosition = `
   return u_proj * pos;
 `;
 
-function createCommon(instanced: IsInstanced, animated: IsAnimated): ProgramBuilder {
+function createCommon(instanced: IsInstanced, animated: IsAnimated, classified: IsClassified): ProgramBuilder {
   const builder = new ProgramBuilder(instanced ? ShaderBuilderFlags.InstancedVertexTable : ShaderBuilderFlags.VertexTable);
   const vert = builder.vert;
 
   if (animated)
     addAnimation(vert, true);
+  if (classified)
+    addColorPlanarClassifier(builder);
 
   addProjectionMatrix(vert);
   addModelViewMatrix(vert);
@@ -96,12 +99,18 @@ function createCommon(instanced: IsInstanced, animated: IsAnimated): ProgramBuil
   return builder;
 }
 
-export function createSurfaceHiliter(instanced: IsInstanced): ProgramBuilder {
-  const builder = createCommon(instanced, IsAnimated.No);
+export function createSurfaceHiliter(instanced: IsInstanced, classified: IsClassified): ProgramBuilder {
+  const builder = createCommon(instanced, IsAnimated.No, classified);
 
   addSurfaceFlags(builder, true);
   addTexture(builder, IsAnimated.No);
-  addSurfaceHiliter(builder);
+  if (classified) {
+    addHilitePlanarClassifier(builder);
+    builder.vert.addGlobal("feature_ignore_material", VariableType.Boolean, "false");
+    builder.frag.set(FragmentShaderComponent.AssignFragData, GLSLFragment.assignFragColor);
+  } else
+    addSurfaceHiliter(builder);
+
   return builder;
 }
 
@@ -277,8 +286,8 @@ function addTexture(builder: ProgramBuilder, animated: IsAnimated) {
   });
 }
 
-export function createSurfaceBuilder(feat: FeatureMode, isInstanced: IsInstanced, isAnimated: IsAnimated): ProgramBuilder {
-  const builder = createCommon(isInstanced, isAnimated);
+export function createSurfaceBuilder(feat: FeatureMode, isInstanced: IsInstanced, isAnimated: IsAnimated, isClassified: IsClassified): ProgramBuilder {
+  const builder = createCommon(isInstanced, isAnimated, isClassified);
   addShaderFlags(builder);
 
   addFeatureSymbology(builder, feat, FeatureMode.Overrides === feat ? FeatureSymbologyOptions.Surface : FeatureSymbologyOptions.None);
@@ -321,6 +330,8 @@ export function createSurfaceBuilder(feat: FeatureMode, isInstanced: IsInstanced
   if (FeatureMode.None === feat) {
     builder.frag.set(FragmentShaderComponent.AssignFragData, GLSLFragment.assignFragColor);
   } else {
+    if (isClassified)
+      addFeaturePlanarClassifier(builder);
     builder.frag.addFunction(GLSLDecode.depthRgb);
     addPickBufferOutputs(builder.frag);
   }

@@ -438,7 +438,7 @@ export const enum SurfaceType {
   Lit,
   Textured,
   TexturedLit,
-  Classifier,
+  VolumeClassifier,
 }
 
 export function isValidSurfaceType(value: number): boolean {
@@ -447,7 +447,7 @@ export function isValidSurfaceType(value: number): boolean {
     case SurfaceType.Lit:
     case SurfaceType.Textured:
     case SurfaceType.TexturedLit:
-    case SurfaceType.Classifier:
+    case SurfaceType.VolumeClassifier:
       return true;
     default:
       return false;
@@ -840,8 +840,8 @@ class MeshBuilder extends SimpleBuilder<MeshArgs> {
   }
 
   public static create(args: MeshArgs): MeshBuilder {
-    if (args.asClassifier)
-      return new MeshBuilder(args, SurfaceType.Classifier);
+    if (args.isVolumeClassifier)
+      return new MeshBuilder(args, SurfaceType.VolumeClassifier);
 
     const isLit = undefined !== args.normals && 0 < args.normals.length;
     const isTextured = undefined !== args.texture;

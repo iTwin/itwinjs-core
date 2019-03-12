@@ -191,7 +191,7 @@ export namespace IModelTile {
     }
 
     public get maxDepth(): number { return 32; }  // Can be removed when element tile selector is working.
-    public get priority(): Tile.LoadPriority { return BatchType.Classifier === this._batchType ? Tile.LoadPriority.Classifier : Tile.LoadPriority.Primary; }
+    public get priority(): Tile.LoadPriority { return (BatchType.VolumeClassifier === this._batchType || BatchType.PlanarClassifier === this._batchType) ? Tile.LoadPriority.Classifier : Tile.LoadPriority.Primary; }
     public tileRequiresLoading(params: Tile.Params): boolean { return 0 !== params.maximumSize; }
     public get rootContentId(): string { return this._contentIdProvider.rootContentId; }
 
