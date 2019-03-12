@@ -1023,6 +1023,14 @@ interface CheckBoxIconsEditorParams extends BasePropertyEditorParams {
 }
 
 // @public
+enum ClassifierType {
+  // (undocumented)
+  Planar = 1,
+  // (undocumented)
+  Volume = 0
+}
+
+// @public
 enum ClippingType {
   Mask = 1,
   None = 0,
@@ -1116,7 +1124,7 @@ class ContextRealityModelState implements TileTreeModelState {
   readonly loadStatus: TileTree.LoadStatus;
   // WARNING: The type "TileTree.LoadStatus" needs to be exported by the package (e.g. added to index.ts)
   // (undocumented)
-  loadTileTree(_edgesRequired: boolean, _animationId?: Id64String, _asClassifier?: boolean, _classifierExpansion?: number): TileTree.LoadStatus;
+  loadTileTree(_batchType: BatchType, _edgesRequired: boolean, _animationId?: Id64String, _classifierExpansion?: number): TileTree.LoadStatus;
   matches(other: ContextRealityModelState): boolean;
   // (undocumented)
   readonly name: string;
@@ -2179,9 +2187,10 @@ class GeometricModelState extends ModelState, implements TileTreeModelState {
   // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
   // @internal (undocumented)
   readonly classifierTileTree: TileTree | undefined;
+  getClassifiers(): Id64String[];
   // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
   // @internal
-  getOrLoadTileTree(edgesRequired: boolean): TileTree | undefined;
+  getOrLoadTileTree(batchType: BatchType, edgesRequired: boolean): TileTree | undefined;
   readonly is2d: boolean;
   readonly is3d: boolean;
   // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
@@ -2194,11 +2203,13 @@ class GeometricModelState extends ModelState, implements TileTreeModelState {
   // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
   // WARNING: The type "TileTree.LoadStatus" needs to be exported by the package (e.g. added to index.ts)
   // @internal
-  loadTileTree(edgesRequired: boolean, animationId?: Id64String, asClassifier?: boolean, classifierExpansion?: number): TileTree.LoadStatus;
+  loadTileTree(batchType: BatchType, edgesRequired: boolean, animationId?: Id64String, classifierExpansion?: number): TileTree.LoadStatus;
   // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
   // @internal (undocumented)
   onIModelConnectionClose(): void;
   queryModelRange(): Promise<Range3d>;
+  // (undocumented)
+  setActiveClassifier(classifierIndex: number, active: boolean): Promise<void>;
   // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
   // @internal
   readonly tileTree: TileTree | undefined;
@@ -3581,7 +3592,11 @@ class PackedFeatureTable {
   getPackedFeature(featureIndex: number): PackedFeature;
   // (undocumented)
   readonly isClassifier: boolean;
+  // (undocumented)
+  readonly isPlanarClassifier: boolean;
   readonly isUniform: boolean;
+  // (undocumented)
+  readonly isVolumeClassifier: boolean;
   // (undocumented)
   readonly maxFeatures: number;
   // (undocumented)
@@ -3695,6 +3710,20 @@ module Pixel {
     None = 0
   }
 
+}
+
+// @public
+class PlanarClassifiers {
+  // WARNING: The type "PlanarClassifier" needs to be exported by the package (e.g. added to index.ts)
+  // (undocumented)
+  readonly classifier: PlanarClassifier | undefined;
+  // (undocumented)
+  readonly isValid: boolean;
+  // (undocumented)
+  pop(): void;
+  // WARNING: The type "PlanarClassifier" needs to be exported by the package (e.g. added to index.ts)
+  // (undocumented)
+  push(texture: PlanarClassifier): void;
 }
 
 // @public
@@ -3939,6 +3968,13 @@ enum RemoveMe {
 }
 
 // @public
+class RenderClassifierModel {
+  constructor(type: ClassifierType);
+  // (undocumented)
+  readonly type: ClassifierType;
+}
+
+// @public
 class RenderClipVolume implements IDisposable {
   // (undocumented)
   abstract dispose(): void;
@@ -3947,10 +3983,10 @@ class RenderClipVolume implements IDisposable {
 
 // @public
 class RenderContext {
-  constructor(vp: Viewport);
+  constructor(vp: Viewport, frustum?: Frustum);
   // @internal (undocumented)
   protected _createGraphicBuilder(type: GraphicType, transform?: Transform, id?: Id64String): GraphicBuilder;
-  createBranch(branch: GraphicBranch, location: Transform, clip?: RenderClipVolume): RenderGraphic;
+  createBranch(branch: GraphicBranch, location: Transform, clip?: RenderClipVolume, planarClassifier?: RenderPlanarClassifier): RenderGraphic;
   createSceneGraphicBuilder(transform?: Transform): GraphicBuilder;
   readonly frustum: Frustum;
   readonly frustumPlanes: FrustumPlanes;
@@ -4074,11 +4110,13 @@ module RenderMemory {
     // (undocumented)
     ClipVolumes = 4,
     // (undocumented)
-    COUNT = 5,
+    COUNT = 6,
     // (undocumented)
     FeatureOverrides = 3,
     // (undocumented)
     FeatureTables = 2,
+    // (undocumented)
+    PlanarClassifiers = 5,
     // (undocumented)
     Textures = 0,
     // (undocumented)
@@ -4103,6 +4141,8 @@ module RenderMemory {
     addFeatureTable(numBytes: number): void;
     // (undocumented)
     addInstances(numBytes: number): void;
+    // (undocumented)
+    addPlanarClassifier(numBytes: number): void;
     // (undocumented)
     addPointCloud(numBytes: number): void;
     // (undocumented)
@@ -4140,6 +4180,9 @@ module RenderMemory {
     readonly featureTables: Consumers;
     // WARNING: The type "Consumers" needs to be exported by the package (e.g. added to index.ts)
     // (undocumented)
+    readonly planarClassifiers: Consumers;
+    // WARNING: The type "Consumers" needs to be exported by the package (e.g. added to index.ts)
+    // (undocumented)
     readonly textures: Consumers;
     // (undocumented)
     readonly totalBytes: number;
@@ -4166,6 +4209,10 @@ class RenderPlan {
   readonly ao?: AmbientOcclusion.Settings;
   // (undocumented)
   readonly bgColor: ColorDef;
+  // (undocumented)
+  classificationTextures?: Map<Id64String, RenderTexture>;
+  // (undocumented)
+  static create(options: any, vp: Viewport): RenderPlan;
   // (undocumented)
   static createFromViewport(vp: Viewport): RenderPlan;
   // (undocumented)
@@ -4197,11 +4244,17 @@ class RenderPlan {
 }
 
 // @public
+class RenderPlanarClassifier implements IDisposable {
+  // (undocumented)
+  abstract dispose(): void;
+}
+
+// @public
 class RenderSystem implements IDisposable {
   // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
   // @internal
   abstract createBatch(graphic: RenderGraphic, features: PackedFeatureTable, range: ElementAlignedBox3d): RenderGraphic;
-  abstract createBranch(branch: GraphicBranch, transform: Transform, clips?: RenderClipVolume): RenderGraphic;
+  abstract createBranch(branch: GraphicBranch, transform: Transform, clips?: RenderClipVolume, planarClassifier?: RenderPlanarClassifier): RenderGraphic;
   abstract createGraphicBuilder(placement: Transform, type: GraphicType, viewport: Viewport, pickableId?: Id64String): GraphicBuilder;
   abstract createGraphicList(primitives: RenderGraphic[]): RenderGraphic;
   // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
@@ -4262,6 +4315,9 @@ class RenderSystem implements IDisposable {
   findTexture(_key: string, _imodel: IModelConnection): RenderTexture | undefined;
   // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
   // @internal (undocumented)
+  getClassifier(_classifierModelId: Id64String, _iModel: IModelConnection): RenderClassifierModel | undefined;
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   getClipVolume(_clipVector: ClipVector, _imodel: IModelConnection): RenderClipVolume | undefined;
   getGradientTexture(_symb: Gradient.Symb, _imodel: IModelConnection): RenderTexture | undefined;
   // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
@@ -4290,6 +4346,9 @@ class RenderTarget implements IDisposable {
   abstract changeDecorations(decorations: Decorations): void;
   // (undocumented)
   abstract changeDynamics(dynamics?: GraphicList): void;
+  // WARNING: The type "PlanarClassifierMap" needs to be exported by the package (e.g. added to index.ts)
+  // (undocumented)
+  changePlanarClassifiers(_classifiers?: PlanarClassifierMap): void;
   // (undocumented)
   abstract changeRenderPlan(plan: RenderPlan): void;
   // (undocumented)
@@ -4400,12 +4459,18 @@ class SavedState {
 // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
 // @internal
 class SceneContext extends RenderContext {
-  constructor(vp: Viewport);
+  constructor(vp: Viewport, frustum?: Frustum);
   // (undocumented)
   readonly backgroundGraphics: RenderGraphic[];
   // WARNING: The type "BackgroundMapState" needs to be exported by the package (e.g. added to index.ts)
   // (undocumented)
   backgroundMap?: BackgroundMapState;
+  // WARNING: The type "PlanarClassifier" needs to be exported by the package (e.g. added to index.ts)
+  // (undocumented)
+  getPlanarClassifier(id: Id64String): PlanarClassifier | undefined;
+  // WARNING: The type "PlanarClassifier" needs to be exported by the package (e.g. added to index.ts)
+  // (undocumented)
+  getPlanarClassifierForModel(modelId: Id64String): PlanarClassifier | undefined;
   // (undocumented)
   readonly graphics: RenderGraphic[];
   // (undocumented)
@@ -4415,9 +4480,19 @@ class SceneContext extends RenderContext {
   // (undocumented)
   readonly missingTiles: Set<Tile>;
   // (undocumented)
+  modelClassifiers: Map<string, string>;
+  // (undocumented)
   outputGraphic(graphic: RenderGraphic): void;
+  // WARNING: The type "PlanarClassifierMap" needs to be exported by the package (e.g. added to index.ts)
+  // (undocumented)
+  planarClassifiers?: PlanarClassifierMap;
   // (undocumented)
   requestMissingTiles(): void;
+  // WARNING: The type "PlanarClassifier" needs to be exported by the package (e.g. added to index.ts)
+  // (undocumented)
+  setPlanarClassifier(id: Id64String, planarClassifier: PlanarClassifier): void;
+  // (undocumented)
+  readonly viewFrustum: ViewFrustum | undefined;
 }
 
 // @public
@@ -5100,6 +5175,9 @@ class Target extends RenderTarget {
   readonly batchState: BatchState;
   // (undocumented)
   readonly bgColor: ColorDef;
+  // WARNING: The type "BranchStack" needs to be exported by the package (e.g. added to index.ts)
+  // (undocumented)
+  readonly branchStack: BranchStack;
   // (undocumented)
   readonly cameraFrustumNearScaleLimit: number;
   // (undocumented)
@@ -5107,7 +5185,10 @@ class Target extends RenderTarget {
   // (undocumented)
   changeDynamics(dynamics?: GraphicList): void;
   // (undocumented)
-  changeFrustum(plan: RenderPlan): void;
+  changeFrustum(newFrustum: Frustum, newFraction: number, is3d: boolean): void;
+  // WARNING: The type "PlanarClassifierMap" needs to be exported by the package (e.g. added to index.ts)
+  // (undocumented)
+  changePlanarClassifiers(planarClassifiers?: PlanarClassifierMap): void;
   // (undocumented)
   changeRenderPlan(plan: RenderPlan): void;
   // (undocumented)
@@ -5153,6 +5234,8 @@ class Target extends RenderTarget {
   readonly drawNonLocatable: boolean;
   // (undocumented)
   protected drawOverlayDecorations(): void;
+  // (undocumented)
+  drawPlanarClassifiers(): void;
   // (undocumented)
   readonly dynamics: GraphicList | undefined;
   // WARNING: The type "ColorInfo" needs to be exported by the package (e.g. added to index.ts)
@@ -5222,6 +5305,8 @@ class Target extends RenderTarget {
   performanceMetrics?: PerformanceMetrics;
   // (undocumented)
   plan?: RenderPlan;
+  // (undocumented)
+  readonly planarClassifiers: PlanarClassifiers;
   // (undocumented)
   readonly planFraction: number;
   // (undocumented)
@@ -5427,7 +5512,7 @@ interface TileTreeModelState {
   // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
   // WARNING: The type "TileTree.LoadStatus" needs to be exported by the package (e.g. added to index.ts)
   // @internal (undocumented)
-  loadTileTree(edgesRequired: boolean, animationId?: Id64String, asClassifier?: boolean, classifierExpansion?: number): TileTree.LoadStatus;
+  loadTileTree(batchType: BatchType, edgesRequired: boolean, animationId?: Id64String, classifierExpansion?: number): TileTree.LoadStatus;
   // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
   // @internal (undocumented)
   readonly tileTree: TileTree | undefined;
