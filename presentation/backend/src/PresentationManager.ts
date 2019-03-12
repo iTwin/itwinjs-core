@@ -253,6 +253,8 @@ export default class PresentationManager {
     try {
       return await this.request<number>(activityLoggingContext, requestOptions.imodel, params);
     } catch (e) {
+      // wip: temporary code:
+      // istanbul ignore next
       return 0;
     }
   }
@@ -276,6 +278,8 @@ export default class PresentationManager {
     try {
       return await this.request<Content | undefined>(activityLoggingContext, requestOptions.imodel, params, Content.reviver);
     } catch (e) {
+      // wip: temporary code:
+      // istanbul ignore next
       return undefined;
     }
   }
@@ -299,6 +303,8 @@ export default class PresentationManager {
       activityLoggingContext.enter();
       return { content, size };
     } catch (e) {
+      // wip: temporary code:
+      // istanbul ignore next
       return { content: undefined, size: 0 };
     }
   }
