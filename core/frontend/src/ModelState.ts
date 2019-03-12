@@ -185,6 +185,12 @@ export abstract class GeometricModelState extends ModelState implements TileTree
         if (false !== (classifiers[index].isActive = (classifierIndex === index && active)))
           await Classification.loadModelClassifiers(this.id, this.iModel);
   }
+  public addClassifier(classifier: Classification.PropertiesProps) {
+    if (undefined === this.jsonProperties.classifiers)
+      this.jsonProperties.classifiers = [];
+
+    this.jsonProperties.classifiers.push(classifier);
+  }
 }
 
 /** Represents the front-end state of a [GeometricModel2d]($backend).

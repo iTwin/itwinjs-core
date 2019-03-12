@@ -10,6 +10,8 @@ import { ProgramBuilder, VertexShaderComponent, FragmentShaderComponent, Variabl
 import { PointCloudGeometry } from "../PointCloud";
 import { GL } from "../GL";
 import { assert } from "@bentley/bentleyjs-core";
+import { addColorPlanarClassifier, addHilitePlanarClassifier, addFeaturePlanarClassifier } from "./PlanarClassification";
+import { IsClassified, FeatureMode } from "../TechniqueFlags";
 
 const computePosition = "gl_PointSize = 1.0; return MAT_MVP * rawPos;";
 const computeColor = "return vec4(a_color, 1.0);";
@@ -24,7 +26,7 @@ function createBuilder(): ProgramBuilder {
   return builder;
 }
 
-export function createPointCloudBuilder(): ProgramBuilder {
+export function createPointCloudBuilder(classified: IsClassified, featureMode: FeatureMode): ProgramBuilder {
   const builder = createBuilder();
 
   builder.vert.addAttribute("a_color", VariableType.Vec3, (shaderProg) => {
@@ -38,12 +40,22 @@ export function createPointCloudBuilder(): ProgramBuilder {
 
   builder.addFunctionComputedVarying("v_color", VariableType.Vec4, "computeNonUniformColor", computeColor);
   builder.frag.set(FragmentShaderComponent.ComputeBaseColor, computeBaseColor);
+  if (classified) {
+    addColorPlanarClassifier(builder);
+    if (FeatureMode.None !== featureMode)
+      addFeaturePlanarClassifier(builder);
+  }
 
   return builder;
 }
 
-export function createPointCloudHiliter(): ProgramBuilder {
+export function createPointCloudHiliter(classified: IsClassified): ProgramBuilder {
   const builder = createBuilder();
   addUniformHiliter(builder);
+  if (classified) {
+    addColorPlanarClassifier(builder);
+    addHilitePlanarClassifier(builder, false);
+  }
+
   return builder;
 }

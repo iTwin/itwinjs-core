@@ -19,6 +19,7 @@ export * from "./AccuSnap";
 export * from "./AuxCoordSys";
 export * from "./CategorySelectorState";
 export * from "./ContextRealityModelState";
+export * from "./Classification";
 export * from "./DisplayStyleState";
 export * from "./ElementLocateManager";
 export * from "./EmphasizeElements";
