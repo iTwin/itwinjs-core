@@ -45,9 +45,12 @@ const options = [
 
 const watchOptions = argv.watch ? ["--watch", "--inline-diffs"] : [];
 
-const reporterOptions = [
+const reporterOptions = (!isCI) ? [
   "-R", "spec"
-];
+] : [
+    "--reporter", "mocha-junit-reporter",
+    "--reporter-options", `mochaFile=${paths.appJUnitTestResults}`,
+  ]
 
 const debugOptions = argv.debug ?
   [
