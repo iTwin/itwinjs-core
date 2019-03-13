@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-clients-backend",
-  "version": "0.191.0-dev.2",
+  "version": "0.191.0-dev.3",
   "description": "Clients for various Bentley Services used by iModel.js at the backend",
   "main": "lib/imodeljs-clients-backend.js",
   "browser": {
@@ -38,20 +38,20 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "0.191.0-dev.2",
-    "@bentley/geometry-core": "0.191.0-dev.2",
-    "@bentley/imodeljs-clients": "0.191.0-dev.2"
+    "@bentley/bentleyjs-core": "0.191.0-dev.3",
+    "@bentley/geometry-core": "0.191.0-dev.3",
+    "@bentley/imodeljs-clients": "0.191.0-dev.3"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/bentleyjs-core": "0.191.0-dev.2",
-    "@bentley/build-tools": "0.191.0-dev.2",
-    "@bentley/config-loader": "0.191.0-dev.2",
-    "@bentley/geometry-core": "0.191.0-dev.2",
-    "@bentley/imodeljs-clients": "0.191.0-dev.2",
+    "@bentley/bentleyjs-core": "0.191.0-dev.3",
+    "@bentley/build-tools": "0.191.0-dev.3",
+    "@bentley/config-loader": "0.191.0-dev.3",
+    "@bentley/geometry-core": "0.191.0-dev.3",
+    "@bentley/imodeljs-clients": "0.191.0-dev.3",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^5.2.5",
     "@types/nock": "^9.1.2",

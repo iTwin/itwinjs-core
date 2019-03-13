@@ -21,12 +21,12 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
-    "@bentley/bentleyjs-core": "0.191.0-dev.2",
-    "@bentley/geometry-core": "0.191.0-dev.2",
-    "@bentley/imodeljs-backend": "0.191.0-dev.2",
-    "@bentley/imodeljs-clients": "0.191.0-dev.2",
-    "@bentley/imodeljs-clients-backend": "0.191.0-dev.2",
-    "@bentley/imodeljs-common": "0.191.0-dev.2",
+    "@bentley/bentleyjs-core": "0.191.0-dev.3",
+    "@bentley/geometry-core": "0.191.0-dev.3",
+    "@bentley/imodeljs-backend": "0.191.0-dev.3",
+    "@bentley/imodeljs-clients": "0.191.0-dev.3",
+    "@bentley/imodeljs-clients-backend": "0.191.0-dev.3",
+    "@bentley/imodeljs-common": "0.191.0-dev.3",
     "body-parser": "^1.18.2",
     "cookie-parser": "^1.4.3",
     "express": "^4.16.3",
@@ -38,8 +38,8 @@
     "react": "^16.4.2"
   },
   "devDependencies": {
-    "@bentley/config-loader": "0.191.0-dev.2",
-    "@bentley/build-tools": "0.191.0-dev.2",
+    "@bentley/config-loader": "0.191.0-dev.3",
+    "@bentley/build-tools": "0.191.0-dev.3",
     "@types/body-parser": "^1.17.0",
     "@types/chai": "^4.1.4",
     "@types/express": "^4.16.1",
