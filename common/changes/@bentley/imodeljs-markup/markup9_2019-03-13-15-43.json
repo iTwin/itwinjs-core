@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodeljs-markup",
+      "comment": "publish markup package",
+      "type": "major"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-markup",
+  "email": "keith.bentley@bentley.com"
+}

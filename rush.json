@@ -189,7 +189,8 @@
       "packageName": "@bentley/imodeljs-markup",
       "projectFolder": "core/markup",
       "reviewCategory": "frontend",
-      "shouldPublish": false
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
       "packageName": "@bentley/electron-manager",

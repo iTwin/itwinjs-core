@@ -100,14 +100,16 @@ class DebugTools extends ToolBarDropDown {
 
   private async doMarkup() {
     if (MarkupApp.isActive) {
-      const markupData = await MarkupApp.readMarkup();
-      // tslint:disable-next-line:no-console
-      console.log(markupData.svg);
+      MarkupApp.props.result.maxWidth = 1500;
+      const markupData = await MarkupApp.stop();
+      // tslint:disable:no-console
+      console.log("rect: " + JSON.stringify(markupData.rect));
+      console.log("svg : " + markupData.svg);
+      console.log("size of image: " + markupData.image!.length);
       window.open(markupData.image, "Markup");
-      MarkupApp.stop();
     } else {
       MarkupApp.props.active.element.stroke = "white"; // as an example, set default color for elements
-      await MarkupApp.start();
+      await MarkupApp.start(IModelApp.viewManager.selectedView!);
     }
   }
 

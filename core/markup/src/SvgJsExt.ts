@@ -60,7 +60,6 @@ declare module "@svgdotjs/svg.js" {
   interface Container {
     foreignObject(width: number, height: number): ForeignObject;
   }
-
   class ForeignObject extends Container {
   }
 }
@@ -222,5 +221,3 @@ export class Title extends MarkupElement {
 
 }
 register(Title, "Title");
-
-export function svgInit() { }

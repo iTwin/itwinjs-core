@@ -7,3 +7,4 @@ export * from "./MarkupTool";
 export * from "./RedlineTool";
 export * from "./SelectTool";
 export * from "./TextEdit";
+export * from "./SvgJsExt";
