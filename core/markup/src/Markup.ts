@@ -86,14 +86,20 @@ export class MarkupApp {
         textBox: { "fill": "lightGrey", "fill-opacity": .1, "stroke-opacity": .85, "stroke": "lightBlue" },
       },
     },
-    /** Used to draw a border around the view while it is being marked up so the user can tell Markup is active */
-    border: {
-      "stroke": "yellow",
-      "stroke-width": 7,
-      "rx": 7,
-      "ry": 7,
-      "stroke-opacity": 0.4,
+    /** Used to draw a border outline around the view while it is being marked up so the user can tell Markup is active */
+    borderOutline: {
+      "stroke": "gold",
+      "stroke-width": 5,
+      "stroke-opacity": 0.5,
       "fill": "none",
+    },
+    /** Used to draw a border corner symbols the view while it is being marked up so the user can tell Markup is active */
+    borderCorners: {
+      "stroke": "black",
+      "stroke-width": 2,
+      "stroke-opacity": 0.8,
+      "fill": "gold",
+      "fill-opacity": 0.5,
     },
     /** Determines what is returned by MarkupApp.stop */
     result: {
@@ -109,6 +115,9 @@ export class MarkupApp {
 
   /** determine whether there's a markup session currently active */
   public static get isActive() { return undefined !== this.markup; }
+
+  /** The default tool to use when markup is active */
+  public static markupSelectToolId = "Markup.Select";
 
   /** Start a markup session */
   public static async start(view: ScreenViewport, svgData?: string) {
@@ -127,7 +136,7 @@ export class MarkupApp {
 
       // set the markup Select tool as the default tool and start it, saving current default tool
       this._saveDefaultToolId = IModelApp.toolAdmin.defaultToolId;
-      IModelApp.toolAdmin.defaultToolId = "Markup.Select";
+      IModelApp.toolAdmin.defaultToolId = this.markupSelectToolId;
       IModelApp.toolAdmin.startDefaultTool();
     }
   }
@@ -140,10 +149,6 @@ export class MarkupApp {
     if (!this.markup)
       return data;
 
-    if (IModelApp.toolAdmin.defaultToolId === "Markup.Select" && (undefined === IModelApp.toolAdmin.activeTool || "Markup.Select" !== IModelApp.toolAdmin.activeTool.toolId)) {
-      IModelApp.toolAdmin.startDefaultTool();
-      return data;
-    }
     // restore original size for vp.
     ScreenViewport.setToParentSize(this.markup.vp.vpDiv);
 
@@ -239,6 +244,19 @@ export class Markup {
     svg.viewbox(0, 0, rect.width, rect.height);
     return svg;
   }
+  private addBorder() {
+    const rect = this.markupDiv.getBoundingClientRect();
+    const inset = MarkupApp.props.borderOutline["stroke-width"];
+    const cornerSize = inset * 7;
+    const cornerPts = [0, 0, cornerSize, 0, cornerSize * .7, cornerSize * .3, cornerSize * .3, cornerSize * .3, cornerSize * .3, cornerSize * .7, 0, cornerSize];
+    const photoCorner = this.svgDecorations!.symbol().polygon(cornerPts).attr(MarkupApp.props.borderCorners);
+    const cornerGroup = this.svgDecorations!.group();
+    this.svgDecorations!.rect(rect.width - inset, rect.height - inset).move(inset / 2, inset / 2).attr(MarkupApp.props.borderOutline).addTo(cornerGroup);
+    this.svgDecorations!.use(photoCorner).addTo(cornerGroup);
+    this.svgDecorations!.use(photoCorner).rotate(90).translate(rect.width - cornerSize, 0).addTo(cornerGroup);
+    this.svgDecorations!.use(photoCorner).rotate(180).translate(rect.width - cornerSize, rect.height - cornerSize).addTo(cornerGroup);
+    this.svgDecorations!.use(photoCorner).rotate(270).translate(0, rect.height - cornerSize).addTo(cornerGroup);
+  }
   private addNested(className: string): Svg { return this.removeSvgNamespace(this.svgContainer!.nested().addClass(className)); }
   public constructor(public vp: ScreenViewport, svgData?: string) {
     this.markupDiv = vp.addNewDiv("overlay-markup", true, 20); // this div goes on top of the canvas, but behind UI layers
@@ -255,10 +273,7 @@ export class Markup {
     }
     this.svgDynamics = this.addNested("markup-dynamics"); // only for tool dynamics of SVG graphics.
     this.svgDecorations = this.addNested("markup-decorations"); // only for temporary decorations of SVG graphics.
-
-    const rect = this.markupDiv.getBoundingClientRect();
-    const inset = MarkupApp.props.border["stroke-width"];
-    this.svgDecorations.rect(rect.width - inset, rect.height - inset).move(inset / 2, inset / 2).attr(MarkupApp.props.border);
+    this.addBorder();
     this.selected = new SelectionSet(this.svgDecorations);
   }
 

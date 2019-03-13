@@ -321,3 +321,74 @@ export class SketchTool extends RedlineTool {
     super.onMouseMotion(ev); // tslint:disable-line:no-floating-promises
   }
 }
+
+export class SymbolTool extends RedlineTool {
+  public static toolId = "Markup.Symbol";
+  protected _symbol?: MarkupElement;
+
+  constructor(protected _symbolData?: string, protected _applyCurrentStyle?: boolean) { super(); }
+
+  public onInstall(): boolean { if (undefined === this._symbolData) return false; return super.onInstall(); }
+  protected showPrompt(): void { this.outputMarkupPrompt(0 === this._points.length ? "Symbol.Prompts.FirstPoint" : "Symbol.Prompts.NextPoint"); }
+
+  protected createMarkup(svgMarkup: Svg, ev: BeButtonEvent, isDynamics: boolean): void {
+    if (undefined === this._symbolData)
+      return;
+    if (this._points.length < this._minPoints)
+      return;
+    const start = this._points[0];
+    const end = isDynamics ? ev.viewPoint : this._points[this._points.length - 1];
+    const vec = start.vectorTo(end);
+    const width = Math.abs(vec.x);
+    const height = Math.abs(vec.y);
+    if ((width < 10 || height < 10) && (isDynamics || this._points.length !== this._minPoints))
+      return;
+    if (undefined === this._symbol) {
+      const symbol = svgMarkup.group().svg(this._symbolData); // creating group instead of using symbol because of inabilitiy to flash/hilite multi-color symbol instance...
+      if (0 === symbol.children().length) {
+        symbol.remove();
+        this._symbolData = undefined;
+      }
+      try { symbol.flatten(symbol); } catch { }
+      this._symbol = symbol;
+    } else if (!isDynamics) {
+      svgMarkup.add(this._symbol);
+    }
+    const offset = Point3d.create(vec.x < 0 ? end.x : start.x, vec.y < 0 ? end.y : start.y); // define location by corner points...
+    if (!isDynamics && this._points.length === this._minPoints)
+      this._symbol.size(ev.viewport!.viewRect.width * 0.1).center(offset.x, offset.y);
+    else if (!ev.isShiftKey)
+      this._symbol.size(width).move(offset.x, offset.y);
+    else
+      this._symbol.size(width, height).move(offset.x, offset.y);
+    if (this._applyCurrentStyle) {
+      const active = MarkupApp.props.active; // Apply color and transparency only; using active stroke-width, etc. for pre-defined symbols is likely undesirable...
+      this._symbol.forElementsOfGroup((child) => {
+        const css = window.getComputedStyle(child.node);
+        const toValue = (val: string | null, newVal: string) => (!val || val === "none") ? "none" : newVal;
+        child.css({ "fill": toValue(css.fill, active.element.fill), "stroke": toValue(css.stroke, active.element.stroke), "fill-opacity": active.element["fill-opacity"], "stroke-opacity": active.element["stroke-opacity"] });
+      });
+    }
+    if (!isDynamics)
+      this.onAdded(this._symbol);
+  }
+
+  public async onDataButtonUp(ev: BeButtonEvent): Promise<EventHandled> {
+    if (undefined === ev.viewport || this._points.length !== this._minPoints)
+      return EventHandled.No;
+
+    this.createMarkup(this.markup.svgMarkup!, ev, false);
+    this.onReinitialize();
+    return EventHandled.No;
+  }
+
+  public async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> {
+    this.onReinitialize();
+    return EventHandled.No;
+  }
+
+  protected clearDynamicsMarkup(isDynamics: boolean): void {
+    if (!isDynamics)
+      super.clearDynamicsMarkup(isDynamics); // For dynamics we don't create a new symbol each frame, we just set the width/height...
+  }
+}

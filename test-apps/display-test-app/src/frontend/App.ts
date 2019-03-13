@@ -11,6 +11,7 @@ import {
 import ToolTip from "tooltip.js";
 import { DrawingAidTestTool } from "./DrawingAidTestTool";
 import { showError, showStatus } from "./Utils";
+import { MarkupSelectTestTool } from "./MarkupSelectTestTool";
 
 class DisplayTestAppAccuSnap extends AccuSnap {
   private readonly _activeSnaps: SnapMode[] = [SnapMode.NearestKeypoint];
@@ -121,6 +122,7 @@ export class DisplayTestApp extends IModelApp {
 
     const svtToolNamespace = IModelApp.i18n.registerNamespace("SVTTools");
     DrawingAidTestTool.register(svtToolNamespace);
+    MarkupSelectTestTool.register(svtToolNamespace);
   }
 
   public static setActiveSnapModes(snaps: SnapMode[]): void {

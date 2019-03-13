@@ -184,7 +184,7 @@ class MoveHandle extends ModifyHandle {
 
     if (showBBox) {
       this._outline = handles.group.polygon().attr(props.moveOutline);
-      const rect = clone.getOutline().attr(props.move).attr({ fill: "none" });
+      const rect = this.handles.el.getOutline().attr(props.move).attr({ fill: "none" });
 
       const group = handles.group.group();
       group.add(this._outline);
@@ -610,8 +610,6 @@ export class SelectTool extends MarkupTool {
   public async onKeyTransition(wentDown: boolean, key: KeyboardEvent): Promise<EventHandled> {
     if (!wentDown)
       return EventHandled.No;
-
-    const tools = IModelApp.tools;
     const markup = this.markup;
     switch (key.key.toLowerCase()) {
       case "delete":
@@ -622,16 +620,14 @@ export class SelectTool extends MarkupTool {
         this.exitTool();
         return EventHandled.Yes;
       case "f":
+        if (!key.altKey || !key.shiftKey)
+          return EventHandled.No;
         markup.bringToFront();
         return EventHandled.Yes;
       case "b":
+        if (!key.altKey || !key.shiftKey)
+          return EventHandled.No;
         markup.sendToBack();
-        return EventHandled.Yes;
-      case "a":
-        tools.run("Markup.Arrow"); // ###TODO - Testing, Need stage w/tool icons...
-        return EventHandled.Yes;
-      case "c":
-        tools.run("Markup.Circle");
         return EventHandled.Yes;
       case "g":
         if (!key.ctrlKey)
@@ -642,27 +638,6 @@ export class SelectTool extends MarkupTool {
         if (!key.ctrlKey)
           return EventHandled.No;
         markup.ungroupSelected();
-        return EventHandled.Yes;
-      case "d":
-        tools.run("Markup.Cloud");
-        return EventHandled.Yes;
-      case "e":
-        tools.run("Markup.Ellipse");
-        return EventHandled.Yes;
-      case "l":
-        tools.run("Markup.Line");
-        return EventHandled.Yes;
-      case "p":
-        tools.run("Markup.Polygon");
-        return EventHandled.Yes;
-      case "r":
-        tools.run("Markup.Rectangle");
-        return EventHandled.Yes;
-      case "s":
-        tools.run("Markup.Sketch");
-        return EventHandled.Yes;
-      case "t":
-        tools.run("Markup.Text.Place");
         return EventHandled.Yes;
     }
     return EventHandled.No;

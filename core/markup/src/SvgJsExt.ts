@@ -82,6 +82,7 @@ extend(MarkupElement, {
   },
   overrideColor(color: string) {
     const me = this as MarkupElement;
+    me.forElementsOfGroup((child) => child.overrideColor(color)); // Do children first, getComputedStyle will inherit from group for unspecified values...
     let oldColor = me.data(OLDCOLOR) as MarkupColor | undefined;
     if (undefined === oldColor) {
       const css = window.getComputedStyle(me.node);
@@ -91,7 +92,6 @@ extend(MarkupElement, {
     }
     const toColor = (val: string | null) => (!val || val === "none") ? "none" : color;
     me.css({ fill: toColor(oldColor.fill), stroke: toColor(oldColor.stroke) });
-    me.forElementsOfGroup((child) => child.overrideColor(color));
   },
   resetColor() {
     const me = this as MarkupElement;

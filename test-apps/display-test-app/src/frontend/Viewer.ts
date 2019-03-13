@@ -100,6 +100,12 @@ class DebugTools extends ToolBarDropDown {
 
   private async doMarkup() {
     if (MarkupApp.isActive) {
+      // NOTE: Because we don't have separate START and STOP buttons in the test app, exit markup mode only when the Markup Select tool is active, otherwise start the Markup Select tool...
+      const startMarkupSelect = IModelApp.toolAdmin.defaultToolId === MarkupApp.markupSelectToolId && (undefined === IModelApp.toolAdmin.activeTool || MarkupApp.markupSelectToolId !== IModelApp.toolAdmin.activeTool.toolId);
+      if (startMarkupSelect) {
+        IModelApp.toolAdmin.startDefaultTool();
+        return;
+      }
       MarkupApp.props.result.maxWidth = 1500;
       const markupData = await MarkupApp.stop();
       // tslint:disable:no-console
@@ -109,6 +115,7 @@ class DebugTools extends ToolBarDropDown {
       window.open(markupData.image, "Markup");
     } else {
       MarkupApp.props.active.element.stroke = "white"; // as an example, set default color for elements
+      MarkupApp.markupSelectToolId = "Markup.TestSelect"; // as an example override the default markup select tool to launch redline tools using key events
       await MarkupApp.start(IModelApp.viewManager.selectedView!);
     }
   }

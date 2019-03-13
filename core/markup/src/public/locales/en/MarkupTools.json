@@ -49,8 +49,8 @@
       "description": "Draw ellipse",
       "flyover": "Markup Ellipse",
       "Prompts": {
-        "FirstPoint": "Identify corner for ellipse",
-        "NextPoint": "Identify opposite corner for ellipse"
+        "FirstPoint": "Identify corner for ellipse.",
+        "NextPoint": "Identify opposite corner for ellipse."
       }
     },
     "Arrow": {
@@ -58,8 +58,8 @@
       "description": "Draw arrow",
       "flyover": "Markup Arrow",
       "Prompts": {
-        "FirstPoint": "Identify start of arrow",
-        "NextPoint": "Identify end of arrow"
+        "FirstPoint": "Identify start of arrow.",
+        "NextPoint": "Identify end of arrow."
       }
     },
     "Cloud": {
@@ -68,7 +68,7 @@
       "flyover": "Markup Cloud",
       "Prompts": {
         "FirstPoint": "Identify corner of cloud.",
-        "NextPoint": "Identify opposite corner of cloud"
+        "NextPoint": "Identify opposite corner of cloud."
       }
     },
     "Sketch": {
@@ -76,8 +76,17 @@
       "description": "Draw freehand sketch",
       "flyover": "Markup Sketch",
       "Prompts": {
-        "FirstPoint": "Identify start of sketch",
-        "NextPoint": "Identify end of sketch"
+        "FirstPoint": "Identify start of sketch.",
+        "NextPoint": "Identify end of sketch."
+      }
+    },
+    "Symbol": {
+      "keyin": "Markup Symbol",
+      "description": "Place symbol",
+      "flyover": "Markup Symbol",
+      "Prompts": {
+        "FirstPoint": "Identity symbol center with click or tab, drag to identify symbol corner",
+        "NextPoint": "Identify opposite corner of symbol."
       }
     },
     "Text": {
@@ -94,7 +103,7 @@
         "description": "Edit text",
         "flyover": "Edit Text",
         "Prompts": {
-          "FirstPoint": "Identify text to edit"
+          "FirstPoint": "Identify text to edit."
         }
       }
     }
