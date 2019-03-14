@@ -15,11 +15,14 @@ describe("GeometryStream", () => {
   let imodel: IModelDb;
 
   before(() => {
-    imodel = IModelTestUtils.openIModel("CompatibilityTestSeed.bim");
+    imodel = IModelDb.createSnapshotFromSeed(
+      IModelTestUtils.prepareOutputFile("GeometryStream", "GeometryStreamTest.bim"),
+      IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim"),
+    );
   });
 
   after(() => {
-    IModelTestUtils.closeIModel(imodel);
+    imodel.closeStandalone();
   });
 
   it("create GeometricElement3d using line codes 1-7", async () => {

@@ -13,9 +13,11 @@ import { TileTree, TileTreeState, Tile, TileLoader } from "./TileTree";
 import { TileRequest } from "./TileRequest";
 import { IModelApp } from "../IModelApp";
 
-/** @hidden */
-function getUrl(content: any) { return content ? (content.url ? content.url : content.uri) : undefined; }
-/** @hidden */
+function getUrl(content: any) {
+  return content ? (content.url ? content.url : content.uri) : undefined;
+}
+
+/** @internal */
 export class RealityModelTileUtils {
   public static rangeFromBoundingVolume(boundingVolume: any): Range3d | undefined {
     if (undefined === boundingVolume)
@@ -56,7 +58,7 @@ export class RealityModelTileUtils {
   }
 }
 
-/** @hidden */
+/** @internal */
 class RealityModelTileTreeProps implements TileTreeProps {
   public id: string = "";
   public rootTile: TileProps;
@@ -72,7 +74,7 @@ class RealityModelTileTreeProps implements TileTreeProps {
   }
 }
 
-/** @hidden */
+/** @internal */
 class RealityModelTileProps implements TileProps {
   public readonly contentId: string;
   public readonly range: Range3dProps;
@@ -97,12 +99,12 @@ class RealityModelTileProps implements TileProps {
   }
 }
 
-/** @hidden */
+/** @internal */
 class FindChildResult {
   constructor(public id: string, public json: any, public transformToRoot?: Transform) { }
 }
 
-/** @hidden */
+/** @internal */
 class RealityModelTileLoader extends TileLoader {
   constructor(private _tree: RealityModelTileTreeProps) { super(); }
   public get maxDepth(): number { return 32; }  // Can be removed when element tile selector is working.
@@ -182,7 +184,7 @@ class RealityModelTileLoader extends TileLoader {
   }
 }
 
-/** @hidden */
+/** @internal */
 export class RealityModelTileTree {
   public static loadRealityModelTileTree(url: string, tilesetToDb: any, tileTreeState: TileTreeState): void {
 
@@ -220,7 +222,7 @@ interface RDSClientProps {
 
 /**
  * ###TODO temporarly here for testing, needs to be moved to the clients repo
- * @hidden
+ * @internal
  * This class encapsulates access to a reality data wether it be from local access, http or RDS
  * The url provided at the creation is parsed to determine if this is a RDS (ProjectWise Context Share) reference.
  * If not then it is considered local (ex: C:\temp\TileRoot.json) or plain http access (http://someserver.com/data/TileRoot.json)

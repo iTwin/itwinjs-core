@@ -14,3 +14,5 @@ containsMetadata: 'AvailableScopes'
 | context-registry-service | Required to access the Context Registry, the service that allows access to a CONNECT project |
 | imodelhub                | Required to access the iModelHub, the service that allows access to the iModels              |
 | reality-data:read        | Required for read access to reality data                                                     |
+| imodeljs-router          |                                                                                              |
+| visible-api-scope        |                                                                                              |

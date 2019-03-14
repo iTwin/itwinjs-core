@@ -1,8 +1,11 @@
 {
   "name": "@bentley/imodeljs-clients-backend",
-  "version": "0.190.0-dev.2",
+  "version": "0.191.0-dev.4",
   "description": "Clients for various Bentley Services used by iModel.js at the backend",
   "main": "lib/imodeljs-clients-backend.js",
+  "browser": {
+    "./lib/imodeljs-clients-backend.js": "./lib/imodeljs-clients-backend-mobile.js"
+  },
   "typings": "lib/imodeljs-clients-backend",
   "license": "MIT",
   "engines": {
@@ -35,16 +38,20 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "0.190.0-dev.2"
+    "@bentley/bentleyjs-core": "0.191.0-dev.4",
+    "@bentley/geometry-core": "0.191.0-dev.4",
+    "@bentley/imodeljs-clients": "0.191.0-dev.4"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/config-loader": "0.190.0-dev.2",
-    "@bentley/bentleyjs-core": "0.190.0-dev.2",
-    "@bentley/build-tools": "0.190.0-dev.2",
+    "@bentley/bentleyjs-core": "0.191.0-dev.4",
+    "@bentley/build-tools": "0.191.0-dev.4",
+    "@bentley/config-loader": "0.191.0-dev.4",
+    "@bentley/geometry-core": "0.191.0-dev.4",
+    "@bentley/imodeljs-clients": "0.191.0-dev.4",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^5.2.5",
     "@types/nock": "^9.1.2",
@@ -52,6 +59,7 @@
     "@types/deep-assign": "^0.1.0",
     "@types/fs-extra": "^4.0.7",
     "@types/js-base64": "^2.3.1",
+    "@types/jsonwebtoken": "^8.3.1",
     "chai": "^4.1.2",
     "cpx": "^1.5.0",
     "nock": "^9.2.3",
@@ -65,14 +73,14 @@
     "typescript": "~3.2.2"
   },
   "dependencies": {
-    "@bentley/imodeljs-clients": "0.190.0-dev.2",
     "openid-client": "^2.3.1",
     "@openid/appauth": "^1.1.1",
     "https-proxy-agent": "^2.2.1",
     "deep-assign": "^2.0.0",
     "fs-extra": "^6.0.1",
     "js-base64": "^2.4.5",
-    "fs-write-stream-atomic": "^1.0.10"
+    "fs-write-stream-atomic": "^1.0.10",
+    "jsonwebtoken": "^8.5.0"
   },
   "nyc": {
     "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc"

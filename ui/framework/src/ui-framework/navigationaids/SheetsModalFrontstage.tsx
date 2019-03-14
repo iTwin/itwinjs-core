@@ -97,8 +97,8 @@ export class CardContainer extends React.Component<CardContainerProps> {
   /** @hidden */
   public render() {
     return (
-      <div className="sheets-scrollview">
-        <div className="sheets-flex-container">
+      <div className="uifw-sheets-scrollview">
+        <div className="uifw-sheets-flex-container">
           {
             this.props.cards.map((card: CardInfo, _index: number) => {
               let includeCard = true;

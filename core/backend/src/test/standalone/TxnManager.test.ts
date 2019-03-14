@@ -2,13 +2,11 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { ActivityLoggingContext, BeDuration, IModelStatus } from "@bentley/bentleyjs-core";
+import { ActivityLoggingContext, BeDuration, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
 import { Code, ColorByName, IModel, IModelError, SubCategoryAppearance } from "@bentley/imodeljs-common";
 import { assert } from "chai";
-import * as path from "path";
-import { IModelDb, PhysicalModel, SpatialCategory, TxnAction } from "../../imodeljs-backend";
+import { IModelDb, IModelJsFs, PhysicalModel, SpatialCategory, TxnAction } from "../../imodeljs-backend";
 import { IModelTestUtils, TestElementDrivesElement, TestPhysicalObject, TestPhysicalObjectProps } from "../IModelTestUtils";
-import { KnownTestLocations } from "../KnownTestLocations";
 
 describe("TxnManager", () => {
   let imodel: IModelDb;
@@ -17,10 +15,13 @@ describe("TxnManager", () => {
   const actx = new ActivityLoggingContext("");
 
   before(async () => {
-    IModelTestUtils.registerTestBim();
-    imodel = IModelTestUtils.openIModel("test.bim", { copyFilename: "TxnManager_Test.bim" });
-    const schemaPathname = path.join(KnownTestLocations.assetsDir, "TestBim.ecschema.xml");
-    await imodel.importSchema(actx, schemaPathname); // will throw an exception if import fails
+    IModelTestUtils.registerTestBimSchema();
+    const testFileName = IModelTestUtils.prepareOutputFile("TxnManager", "TxnManagerTest.bim");
+    const seedFileName = IModelTestUtils.resolveAssetFile("test.bim");
+    const schemaFileName = IModelTestUtils.resolveAssetFile("TestBim.ecschema.xml");
+    IModelJsFs.copySync(seedFileName, testFileName);
+    imodel = IModelDb.openStandalone(testFileName, OpenMode.ReadWrite);
+    await imodel.importSchema(actx, schemaFileName); // will throw an exception if import fails
 
     props = {
       classFullName: "TestBim:TestPhysicalObject",
@@ -34,7 +35,7 @@ describe("TxnManager", () => {
     imodel.nativeDb.enableTxnTesting();
   });
 
-  after(() => IModelTestUtils.closeIModel(imodel));
+  after(() => imodel.closeStandalone());
 
   it("Undo/Redo", () => {
     assert.isDefined(imodel.getMetaData("TestBim:TestPhysicalObject"), "TestPhysicalObject is present");

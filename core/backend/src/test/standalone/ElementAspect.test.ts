@@ -14,12 +14,15 @@ describe("ElementAspect", () => {
   let iModel: IModelDb;
 
   before(() => {
-    // NOTE: see ElementAspectTests.PresentationRuleScenarios in DgnPlatform\Tests\DgnProject\NonPublished\ElementAspect_Test.cpp for how ElementAspectTest.bim was created
-    iModel = IModelTestUtils.openIModel("ElementAspectTest.bim");
+    iModel = IModelDb.createSnapshotFromSeed(
+      IModelTestUtils.prepareOutputFile("ElementAspect", "ElementAspectTest.bim"),
+      IModelTestUtils.resolveAssetFile("ElementAspectTest.bim"),
+      // NOTE: see ElementAspectTests.PresentationRuleScenarios in DgnPlatform\Tests\DgnProject\NonPublished\ElementAspect_Test.cpp for how ElementAspectTest.bim was created
+    );
   });
 
   after(() => {
-    IModelTestUtils.closeIModel(iModel);
+    iModel.closeSnapshot();
   });
 
   it("should be able to get aspects from test file", () => {

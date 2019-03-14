@@ -139,7 +139,7 @@ export class SheetNavigationAid extends React.Component<SheetNavigationProps, Sh
     }
 
     return (
-      <div className="sheet-navigation">
+      <div className="uifw-sheet-navigation">
         <div className="gradient"></div>
         {content}
       </div>

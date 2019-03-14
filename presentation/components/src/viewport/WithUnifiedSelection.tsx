@@ -5,21 +5,24 @@
 /** @module UnifiedSelection */
 
 import * as React from "react";
-import { Id64Set, Id64String, IDisposable, GuidString, Guid } from "@bentley/bentleyjs-core";
-import { IModelConnection, SelectEventType } from "@bentley/imodeljs-frontend";
-import { SelectionInfo, DefaultContentDisplayTypes, KeySet } from "@bentley/presentation-common";
+import { Id64String, IDisposable, GuidString, Guid } from "@bentley/bentleyjs-core";
+import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { SelectionInfo, DefaultContentDisplayTypes, KeySet, Ruleset, RegisteredRuleset, ContentFlags } from "@bentley/presentation-common";
 import { SelectionHandler, Presentation, SelectionChangeEventArgs, ISelectionProvider } from "@bentley/presentation-frontend";
 import { ViewportProps } from "@bentley/ui-components";
 import { getDisplayName } from "../common/Utils";
 import { IUnifiedSelectionComponent } from "../common/IUnifiedSelectionComponent";
 import { ContentDataProvider } from "../common/ContentDataProvider";
 
+// tslint:disable-next-line: no-var-requires
+const DEFAULT_RULESET: Ruleset = require("./HiliteRules.json");
+
 /**
  * Props that are injected to the HOC component.
  */
 export interface Props {
-  /** Id of the ruleset to use when determining viewport selection. */
-  rulesetId: string;
+  /** Ruleset or its ID to use when determining viewport selection. */
+  ruleset: Ruleset | string;
 
   /** @hidden */
   selectionHandler?: ViewportSelectionHandler;
@@ -30,50 +33,53 @@ export interface Props {
  * viewport component.
  */
 // tslint:disable-next-line: variable-name naming-convention
-export function viewWithUnifiedSelection<P extends ViewportProps>(ViewportComponent: React.ComponentType<P>): React.ComponentType<P & Props> {
+export function viewWithUnifiedSelection<P extends ViewportProps>(ViewportComponent: React.ComponentType<P>) {
 
   type CombinedProps = P & Props;
 
-  return class WithUnifiedSelection extends React.Component<CombinedProps> implements IUnifiedSelectionComponent {
+  return class WithUnifiedSelection extends React.PureComponent<CombinedProps> implements IUnifiedSelectionComponent {
 
-    private _selectionHandler?: ViewportSelectionHandler;
+    public static defaultProps = {
+      ruleset: DEFAULT_RULESET,
+    };
+
+    /** @hidden */
+    public viewportSelectionHandler?: ViewportSelectionHandler;
 
     /** Returns the display name of this component */
     public static get displayName() { return `WithUnifiedSelection(${getDisplayName(ViewportComponent)})`; }
 
     /** Get selection handler used by this viewport */
     public get selectionHandler(): SelectionHandler | undefined {
-      return this._selectionHandler ? this._selectionHandler.selectionHandler : undefined;
+      return this.viewportSelectionHandler ? this.viewportSelectionHandler.selectionHandler : undefined;
     }
 
     public get imodel() { return this.props.imodel; }
 
-    public get rulesetId() { return this.props.rulesetId; }
+    public get rulesetId() { return getRulesetId(this.props.ruleset); }
 
     public componentDidMount() {
-      const imodel = this.props.imodel;
-      const rulesetId = this.props.rulesetId;
-      this._selectionHandler = this.props.selectionHandler
-        ? this.props.selectionHandler : new ViewportSelectionHandler(imodel, rulesetId);
+      this.viewportSelectionHandler = this.props.selectionHandler
+        ? this.props.selectionHandler : new ViewportSelectionHandler(this.props.imodel, this.props.ruleset);
     }
 
     public componentWillUnmount() {
-      if (this._selectionHandler) {
-        this._selectionHandler.dispose();
-        this._selectionHandler = undefined;
+      if (this.viewportSelectionHandler) {
+        this.viewportSelectionHandler.dispose();
+        this.viewportSelectionHandler = undefined;
       }
     }
 
     public componentDidUpdate() {
-      if (this._selectionHandler) {
-        this._selectionHandler.imodel = this.props.imodel;
-        this._selectionHandler.rulesetId = this.props.rulesetId;
+      if (this.viewportSelectionHandler) {
+        this.viewportSelectionHandler.imodel = this.props.imodel;
+        this.viewportSelectionHandler.ruleset = this.props.ruleset;
       }
     }
 
     public render() {
       const {
-        rulesetId, selectionHandler, // do not bleed our props
+        ruleset, selectionHandler, // do not bleed our props
         ...props /* tslint:disable-line: trailing-comma */ // pass-through props
       } = this.props as any;
       return (
@@ -86,9 +92,9 @@ export function viewWithUnifiedSelection<P extends ViewportProps>(ViewportCompon
 
 /**
  * A handler that syncs selection between unified selection
- * manager (`Presentation.selection`) and a viewport (`imodel.selectionSet`).
+ * manager (`Presentation.selection`) and a viewport (`imodel.hilited`).
  * It has nothing to do with the viewport component itself - the
- * viewport updates its highlighted elements when `imodel.selectionSet`
+ * viewport updates its highlighted elements when `imodel.hilited`
  * changes.
  *
  * @hidden
@@ -96,25 +102,26 @@ export function viewWithUnifiedSelection<P extends ViewportProps>(ViewportCompon
 export class ViewportSelectionHandler implements IDisposable {
 
   private _imodel: IModelConnection;
-  private _rulesetId: string;
+  private _ruleset: Ruleset | string;
+  private _rulesetRegistration?: RegisteredRuleset;
   private _selectionHandler: SelectionHandler;
-  private _imodelSelectionListenerDisposeFunc: () => void;
   private _selectedElementsProvider: SelectedElementsProvider;
   private _lastPendingSelectionChange?: { info: SelectionInfo, selection: Readonly<KeySet> };
   private _isInSelectedElementsRequest = false;
-  private _isApplyingUnifiedSelection = false;
   private _asyncsInProgress = new Set<GuidString>();
 
-  public constructor(imodel: IModelConnection, rulesetId: string) {
+  public constructor(imodel: IModelConnection, ruleset: Ruleset | string) {
     this._imodel = imodel;
-    this._rulesetId = rulesetId;
+    this._ruleset = ruleset;
+    const rulesetId = getRulesetId(ruleset);
+
+    // tslint:disable-next-line: no-floating-promises
+    this.registerRuleset(ruleset);
 
     // handles changing and listening to unified selection
     this._selectionHandler = new SelectionHandler(Presentation.selection,
       `Viewport_${counter++}`, imodel, rulesetId, this.onUnifiedSelectionChanged);
-
-    // `imodel.selectionSet` handles changing and listening to viewport selection
-    this._imodelSelectionListenerDisposeFunc = imodel.selectionSet.onChanged.addListener(this.onViewportSelectionChanged);
+    this._selectionHandler.manager.setSyncWithIModelToolSelection(imodel, true);
 
     // handles querying for elements which should be selected in the viewport
     this._selectedElementsProvider = new SelectedElementsProvider(imodel, rulesetId);
@@ -122,25 +129,47 @@ export class ViewportSelectionHandler implements IDisposable {
 
   public dispose() {
     this._selectionHandler.dispose();
-    this._imodelSelectionListenerDisposeFunc();
+    this._selectionHandler.manager.setSyncWithIModelToolSelection(this._imodel, false);
+    if (this._rulesetRegistration)
+      this._rulesetRegistration.dispose();
+    this._ruleset = "";
+  }
+
+  private async registerRuleset(ruleset: Ruleset | string) {
+    if (typeof ruleset !== "object")
+      return;
+
+    const reg = await Presentation.presentation.rulesets().add(ruleset);
+    if (this._ruleset !== ruleset)
+      reg.dispose();
+    else
+      this._rulesetRegistration = reg;
   }
 
   public get selectionHandler() { return this._selectionHandler; }
 
   public get imodel() { return this._imodel; }
   public set imodel(value: IModelConnection) {
+    if (this._imodel === value)
+      return;
+
+    this._selectionHandler.manager.setSyncWithIModelToolSelection(this._imodel, false);
+    this._selectionHandler.manager.setSyncWithIModelToolSelection(value, true);
     this._imodel = value;
     this._selectionHandler.imodel = value;
     this._selectedElementsProvider.imodel = value;
-    this._imodelSelectionListenerDisposeFunc();
-    this._imodelSelectionListenerDisposeFunc = this._imodel.selectionSet.onChanged.addListener(this.onViewportSelectionChanged);
   }
 
-  public get rulesetId() { return this._rulesetId; }
-  public set rulesetId(value: string) {
-    this._rulesetId = value;
-    this._selectionHandler.rulesetId = value;
-    this._selectedElementsProvider.rulesetId = value;
+  public get rulesetId() { return getRulesetId(this._ruleset); }
+  public set ruleset(value: Ruleset | string) {
+    if (this._rulesetRegistration)
+      this._rulesetRegistration.dispose();
+    this.registerRuleset(value); // tslint:disable-line: no-floating-promises
+
+    const rulesetId = getRulesetId(value);
+    this._ruleset = value;
+    this._selectionHandler.rulesetId = rulesetId;
+    this._selectedElementsProvider.rulesetId = rulesetId;
   }
 
   /** note: used only it tests */
@@ -157,10 +186,9 @@ export class ViewportSelectionHandler implements IDisposable {
     this._isInSelectedElementsRequest = true;
     const ids = await this._selectedElementsProvider.getElementIds(selection, selectionInfo);
     try {
-      this._isApplyingUnifiedSelection = true;
-      imodel.selectionSet.replace(ids);
+      imodel.hilited.elements.clear(); // don't call clear on HilitedSet to avoid event firing
+      imodel.hilited.setHilite(ids, true);
     } finally {
-      this._isApplyingUnifiedSelection = false;
       this._isInSelectedElementsRequest = false;
       this._asyncsInProgress.delete(asyncId);
     }
@@ -190,55 +218,18 @@ export class ViewportSelectionHandler implements IDisposable {
     };
     await this.applyUnifiedSelection(args.imodel, info, selection);
   }
-
-  // tslint:disable-next-line:naming-convention
-  private onViewportSelectionChanged = async (imodel: IModelConnection, eventType: SelectEventType, ids?: Id64Set): Promise<void> => {
-    // don't handle the event if we got here due to us changing the selection
-    if (this._isApplyingUnifiedSelection)
-      return;
-
-    // this component only cares about its own imodel
-    if (imodel !== this._imodel)
-      return;
-
-    // determine the level of selection changes
-    // wip: may want to allow selecting at different levels?
-    const selectionLevel = 0;
-
-    // we know what to do immediately on `clear` events
-    if (eventType === SelectEventType.Clear) {
-      this._selectionHandler.clearSelection(selectionLevel);
-      return;
-    }
-
-    const asyncId = Guid.createValue();
-    this._asyncsInProgress.add(asyncId);
-    try {
-      // we only have element ids, but the library requires instance keys (with
-      // class names), so have to query
-      const elementProps = ids ? await imodel.elements.getProps(ids) : [];
-
-      // report the change
-      switch (eventType) {
-        case SelectEventType.Add:
-          this._selectionHandler.addToSelection(elementProps, selectionLevel);
-          break;
-        case SelectEventType.Replace:
-          this._selectionHandler.replaceSelection(elementProps, selectionLevel);
-          break;
-        case SelectEventType.Remove:
-          this._selectionHandler.removeFromSelection(elementProps, selectionLevel);
-          break;
-      }
-    } finally {
-      this._asyncsInProgress.delete(asyncId);
-    }
-  }
 }
 
 class SelectedElementsProvider extends ContentDataProvider {
   public constructor(imodel: IModelConnection, rulesetId: string) {
     super(imodel, rulesetId, DefaultContentDisplayTypes.VIEWPORT);
+  }
+  protected shouldConfigureContentDescriptor() { return false; }
+  protected getDescriptorOverrides() {
+    return {
+      ...super.getDescriptorOverrides(),
+      contentFlags: ContentFlags.KeysOnly,
+    };
   }
   public async getElementIds(keys: Readonly<KeySet>, info: SelectionInfo): Promise<Id64String[]> {
     this.keys = keys;
@@ -253,5 +244,11 @@ class SelectedElementsProvider extends ContentDataProvider {
     return ids;
   }
 }
+
+const getRulesetId = (ruleset: Ruleset | string): string => {
+  if (typeof ruleset === "string")
+    return ruleset;
+  return ruleset.id;
+};
 
 let counter = 1;

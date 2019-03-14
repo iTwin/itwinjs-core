@@ -17,11 +17,12 @@ import { SpatialCategory } from "../Category";
 import { IModelDb, OpenParams } from "../IModelDb";
 import { DictionaryModel } from "../Model";
 import { OpenIModelDbMemoizer } from "./OpenIModelDbMemoizer";
+import { QueryPageMemoizer } from "./QueryPageMemoizer";
 
 const loggingCategory = "imodeljs-backend.IModelReadRpcImpl";
 
 /** The backend implementation of IModelReadRpcInterface.
- * @hidden
+ * @internal
  */
 export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInterface {
 
@@ -39,11 +40,8 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
   }
 
   public async queryPage(iModelToken: IModelToken, ecsql: string, bindings?: any[] | object, options?: PageOptions): Promise<any[]> {
-    const activityContext = ActivityLoggingContext.current; activityContext.enter();
-    const iModelDb: IModelDb = IModelDb.find(iModelToken);
-    const rows = iModelDb.queryPage(ecsql, bindings, options);
-    Logger.logTrace(loggingCategory, "IModelDbRemoting.getRows", () => ({ ecsql }));
-    return rows;
+    const actx = ActivityLoggingContext.current; actx.enter();
+    return QueryPageMemoizer.perform({ actx, iModelToken, ecsql, bindings, options });
   }
 
   public async queryRowCount(iModelToken: IModelToken, ecsql: string, bindings?: any[] | object): Promise<number> {

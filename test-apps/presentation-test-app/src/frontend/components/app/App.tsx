@@ -16,6 +16,7 @@ import GridWidget from "../grid-widget/GridWidget";
 import FindSimilarWidget from "../find-similar-widget/FindSimilarWidget";
 import TreeWidget from "../tree-widget/TreeWidget";
 import RulesetSelector from "../ruleset-selector/RulesetSelector";
+import SelectionScopePicker from "../selection-scope-picker/SelectionScopePicker";
 import ViewportContentControl from "../viewport/ViewportContentControl";
 
 import "./App.css";
@@ -109,12 +110,12 @@ export default class App extends React.Component<{}, State> {
         <div className="app-content-left">
           <div className="app-content-left-top">
             <ViewportContentControl imodel={imodel} rulesetId={rulesetId} viewDefinitionId={viewDefinitionId} />
+            <SelectionScopePicker imodel={imodel} />
           </div>
           <div className="app-content-left-bottom">
             {
               <GridWidget imodel={imodel} rulesetId={rulesetId} />
             }
-            <div />
             {
               this.state.similarInstancesProvider ?
                 <FindSimilarWidget dataProvider={this.state.similarInstancesProvider} onDismissed={this._onSimilarInstancesResultsDismissed} />

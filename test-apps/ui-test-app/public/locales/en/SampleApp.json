@@ -108,7 +108,8 @@
     "closePropertyGrid": "Close Property Grid",
     "showShortcutsMenu": "Show Shortcuts Menu",
     "shortcutsSubMenu": "Shortcuts Submenu Sample",
-    "openNestedFrontstage1": "Open Nested Frontstage"
+    "openNestedFrontstage1": "Open Nested Frontstage",
+    "switchLayout": "Switch layouts"
   },
   "tools": {
     "ToolWithSettings": {
@@ -120,6 +121,7 @@
         "Options": "Options",
         "Lock": "Lock",
         "City": "City",
+        "Color": "Color",
         "State": "State",
         "Coordinate": "Coordinate",
         "Length": "Length"

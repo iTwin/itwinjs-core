@@ -4,11 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 @import "@bentley/ui-core/lib/ui-core/index";
 
-.toolSettingsContainer {
+.uifw-toolSettingsContainer {
   font-family: $uicore-font-family;
   font-size: $uicore-font-size;
 }
 
-span.toolSettings-label-disabled {
-  color: $uicore-gray;
+span.uifw-toolSettings-label-disabled {
+  color: $buic-text-color-disabled;
 }

@@ -258,8 +258,9 @@ enum BackgroundMapType {
 
 // @beta
 enum BatchType {
-  Classifier = 1,
-  Primary = 0
+  PlanarClassifier = 2,
+  Primary = 0,
+  VolumeClassifier = 1
 }
 
 // @public
@@ -368,6 +369,19 @@ enum BisCodeSpec {
   texture = "bis:Texture",
   // (undocumented)
   viewDefinition = "bis:ViewDefinition"
+}
+
+// @public
+class BoundingSphere {
+  constructor(center?: Point3d, radius?: number);
+  // (undocumented)
+  center: Point3d;
+  // (undocumented)
+  init(center: Point3d, radius: number): void;
+  // (undocumented)
+  radius: number;
+  // (undocumented)
+  transformBy(transform: Transform, result: BoundingSphere): BoundingSphere;
 }
 
 // @beta (undocumented)
@@ -991,7 +1005,7 @@ class ColorIndex {
   // (undocumented)
   readonly hasAlpha: boolean;
   // (undocumented)
-  initNonUniform(colors: Uint32Array, indices: Uint16Array, hasAlpha: boolean): void;
+  initNonUniform(colors: Uint32Array, indices: number[], hasAlpha: boolean): void;
   // (undocumented)
   initUniform(color: ColorDef | number): void;
   // (undocumented)
@@ -1529,8 +1543,9 @@ class FeatureTable extends IndexMap<Feature> {
   getArray(): Array<IndexedValue<Feature>>;
   // (undocumented)
   insertWithIndex(feature: Feature, index: number): void;
-  readonly isClassifier: boolean;
+  readonly isPlanarClassifier: boolean;
   readonly isUniform: boolean;
+  readonly isVolumeClassifier: boolean;
   readonly maxFeatures: number;
   // (undocumented)
   readonly modelId: Id64String;
@@ -2289,15 +2304,16 @@ module ImageLight {
 
 // @public
 class ImageSource {
-  constructor(data: Uint8Array, format: ImageSourceFormat);
-  readonly data: Uint8Array;
+  constructor(data: Uint8Array | string, format: ImageSourceFormat);
+  readonly data: Uint8Array | string;
   readonly format: ImageSourceFormat;
 }
 
 // @public
 enum ImageSourceFormat {
   Jpeg = 0,
-  Png = 2
+  Png = 2,
+  Svg = 3
 }
 
 // @public
@@ -2396,6 +2412,8 @@ class IModelReadRpcInterface extends RpcInterface {
   queryEntityIds(_iModelToken: IModelToken, _params: EntityQueryParams): Promise<Id64Set>;
   // (undocumented)
   queryModelProps(_iModelToken: IModelToken, _params: EntityQueryParams): Promise<ModelProps[]>;
+  // (undocumented)
+  queryModelRanges(_iModelToken: IModelToken, _modelIds: Id64Set): Promise<Range3dProps[]>;
   // (undocumented)
   queryPage(_iModelToken: IModelToken, _ecsql: string, _bindings?: any[] | object, _options?: PageOptions): Promise<any[]>;
   // (undocumented)
@@ -2938,7 +2956,7 @@ export function nextHighestPowerOfTwo(num: number): number;
 
 // @public (undocumented)
 class NonUniformColor {
-  constructor(colors: Uint32Array, indices: Uint16Array, hasAlpha: boolean);
+  constructor(colors: Uint32Array, indices: number[], hasAlpha: boolean);
   // (undocumented)
   readonly colors: Uint32Array;
   // (undocumented)
@@ -2997,7 +3015,7 @@ class OctEncodedNormalPair {
 }
 
 // @public (undocumented)
-interface PagableECSql {
+interface PageableECSql {
   query(ecsql: string, bindings?: any[] | object, options?: PageOptions): AsyncIterableIterator<any>;
   queryPage(ecsql: string, bindings?: any[] | object, options?: PageOptions): Promise<any[]>;
   queryRowCount(ecsql: string, bindings?: any[] | object): Promise<number>;
@@ -3005,9 +3023,9 @@ interface PagableECSql {
 
 // @public
 interface PageOptions {
-  retries?: number;
   size?: number;
   start?: number;
+  stepsPerTick?: number;
 }
 
 // @public
@@ -4175,17 +4193,11 @@ interface SkyBoxProps {
 
 // @public
 interface SkyCubeProps {
-  // (undocumented)
   back?: Id64String;
-  // (undocumented)
   bottom?: Id64String;
-  // (undocumented)
   front?: Id64String;
-  // (undocumented)
   left?: Id64String;
-  // (undocumented)
   right?: Id64String;
-  // (undocumented)
   top?: Id64String;
 }
 
@@ -4243,6 +4255,17 @@ interface SnapResponseProps {
   status: number;
 }
 
+// @beta
+class SnapshotIModelRpcInterface extends RpcInterface {
+  // (undocumented)
+  closeSnapshot(_iModelToken: IModelToken): Promise<boolean>;
+  static getClient(): SnapshotIModelRpcInterface;
+  // (undocumented)
+  openSnapshot(_fileName: string): Promise<IModel>;
+  static types: () => (typeof IModelToken)[];
+  static version: string;
+}
+
 // @public
 interface SpatialViewDefinitionProps extends ViewDefinition3dProps {
   // (undocumented)
@@ -4266,7 +4289,7 @@ interface SpotProps extends LightProps {
   outer?: AngleProps;
 }
 
-// @alpha
+// @public @deprecated
 class StandaloneIModelRpcInterface extends RpcInterface {
   // (undocumented)
   closeStandalone(_iModelToken: IModelToken): Promise<boolean>;
@@ -4427,8 +4450,10 @@ interface TileProps {
   transformToRoot?: TransformProps;
 }
 
-// @public (undocumented)
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal (undocumented)
 interface TileTreeProps {
+  formatVersion?: number;
   id: string;
   isTerrain?: boolean;
   location: TransformProps;

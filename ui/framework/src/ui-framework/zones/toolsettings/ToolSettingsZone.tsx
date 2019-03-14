@@ -8,7 +8,18 @@ import * as React from "react";
 import { FrontstageManager, ToolActivatedEventArgs } from "../../frontstage/FrontstageManager";
 import { ToolUiManager } from "../toolsettings/ToolUiManager";
 
-import { ToolSettingsWidget, ToolSettingsTab, ToolSettings, CommonProps, RectangleProps, TabIcon, ZoneComponent } from "@bentley/ui-ninezone";
+import {
+  ToolSettingsWidget,
+  ToolSettingsTab,
+  ToolSettings,
+  CommonProps,
+  RectangleProps,
+  TabIcon,
+  ZoneComponent,
+  TitleBar,
+  DialogTitle,
+  DialogButton,
+} from "@bentley/ui-ninezone";
 import { KeyboardShortcutManager } from "../../keyboardshortcut/KeyboardShortcut";
 import UiFramework from "../../UiFramework";
 
@@ -127,21 +138,23 @@ export class ToolSettingsZone extends React.Component<ToolSettingsZoneProps, Too
       case ToolSettingsZoneContent.ToolSettings: {
         // istanbul ignore else
         if (FrontstageManager.activeToolSettingsNode) {
-          const settingsStyle: React.CSSProperties = {
-            borderWidth: "thin",
-            borderStyle: "solid",
-            borderRadius: "3px",
-            paddingLeft: "10px",
-            paddingRight: "10px",
-          };
-
           widget = (
             <ToolSettingsWidget
-              tab={tab}
               content={
-                <ToolSettings style={settingsStyle} >
-                  <div className="nz-widget-toolSettings-title">{ToolUiManager.activeToolLabel}</div>
-                  {FrontstageManager.activeToolSettingsNode}
+                <ToolSettings>
+                  <TitleBar
+                    title={
+                      <DialogTitle text={ToolUiManager.activeToolLabel} />
+                    }
+                    buttons={[
+                      <DialogButton key="0" onClick={this._processClick} title={UiFramework.i18n.translate("UiFramework:general.minimize")}>
+                        <i className={"icon icon-chevron-up"} />
+                      </DialogButton>,
+                    ]}
+                  />
+                  <div className="nz-widget-toolSettings-content">
+                    {FrontstageManager.activeToolSettingsNode}
+                  </div>
                 </ToolSettings>
               }
             />

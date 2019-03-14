@@ -164,6 +164,14 @@ interface ContentRequestOptions<TIModel> extends RequestOptions<TIModel> {
 }
 
 // @public
+interface ContentResponse {
+  // (undocumented)
+  content: Readonly<Content> | undefined;
+  // (undocumented)
+  size: number;
+}
+
+// @public
 interface ContentRule extends RuleBase, ConditionContainer {
   condition?: string;
   ruleType: RuleTypes.Content;
@@ -199,7 +207,6 @@ class Descriptor {
   connectionId: string;
   contentFlags: number;
   contentOptions: any;
-  // WARNING: The type "DescriptorOverrides" needs to be exported by the package (e.g. added to index.ts)
   // (undocumented)
   createDescriptorOverrides(): DescriptorOverrides;
   // (undocumented)
@@ -241,6 +248,22 @@ interface DescriptorJSON {
   selectClasses: SelectClassInfoJSON[];
   // (undocumented)
   selectionInfo?: SelectionInfo;
+  // (undocumented)
+  sortDirection?: SortDirection;
+  // (undocumented)
+  sortingFieldName?: string;
+}
+
+// @public
+interface DescriptorOverrides {
+  // (undocumented)
+  contentFlags: number;
+  // (undocumented)
+  displayType: string;
+  // (undocumented)
+  filterExpression?: string;
+  // (undocumented)
+  hiddenFieldNames: string[];
   // (undocumented)
   sortDirection?: SortDirection;
   // (undocumented)
@@ -673,6 +696,14 @@ interface NodePathElement {
 }
 
 // @public
+interface NodesResponse {
+  // (undocumented)
+  count: number;
+  // (undocumented)
+  nodes: ReadonlyArray<Node>;
+}
+
+// @public
 interface PageOptions {
   size?: number;
   start?: number;
@@ -697,17 +728,17 @@ class PresentationError extends BentleyError {
 // @public
 class PresentationRpcInterface extends RpcInterface {
   // (undocumented)
-  computeSelection(_token: IModelToken, _options: SelectionScopeRpcRequestOptions, _keys: Readonly<EntityProps[]>, _scopeId: string): PresentationRpcResponse<KeySet>;
-  getChildren(_token: IModelToken, _options: Paged<HierarchyRpcRequestOptions>, _parentKey: Readonly<NodeKey>): PresentationRpcResponse<Node[]>;
-  getChildrenCount(_token: IModelToken, _options: HierarchyRpcRequestOptions, _parentKey: Readonly<NodeKey>): PresentationRpcResponse<number>;
-  getContent(_token: IModelToken, _options: ContentRpcRequestOptions, _descriptor: Readonly<Descriptor>, _keys: Readonly<KeySet>): PresentationRpcResponse<Content>;
+  computeSelection(_token: IModelToken, _options: SelectionScopeRpcRequestOptions, _ids: Readonly<Id64String[]>, _scopeId: string): PresentationRpcResponse<KeySet>;
+  getContent(_token: IModelToken, _options: ContentRpcRequestOptions, _descriptorOrOverrides: Readonly<Descriptor> | DescriptorOverrides, _keys: Readonly<KeySet>): PresentationRpcResponse<Content | undefined>;
+  getContentAndSize(_token: IModelToken, _options: ContentRpcRequestOptions, _descriptorOrOverrides: Readonly<Descriptor> | DescriptorOverrides, _keys: Readonly<KeySet>): PresentationRpcResponse<ContentResponse>;
   getContentDescriptor(_token: IModelToken, _options: ContentRpcRequestOptions, _displayType: string, _keys: Readonly<KeySet>, _selection: Readonly<SelectionInfo> | undefined): PresentationRpcResponse<Descriptor | undefined>;
-  getContentSetSize(_token: IModelToken, _options: ContentRpcRequestOptions, _descriptor: Readonly<Descriptor>, _keys: Readonly<KeySet>): PresentationRpcResponse<number>;
+  getContentSetSize(_token: IModelToken, _options: ContentRpcRequestOptions, _descriptorOrOverrides: Readonly<Descriptor> | DescriptorOverrides, _keys: Readonly<KeySet>): PresentationRpcResponse<number>;
   getDistinctValues(_token: IModelToken, _options: ContentRpcRequestOptions, _descriptor: Readonly<Descriptor>, _keys: Readonly<KeySet>, _fieldName: string, _maximumValueCount: number): PresentationRpcResponse<string[]>;
   getFilteredNodePaths(_token: IModelToken, _options: HierarchyRpcRequestOptions, _filterText: string): PresentationRpcResponse<NodePathElement[]>;
   getNodePaths(_token: IModelToken, _options: HierarchyRpcRequestOptions, _paths: InstanceKey[][], _markedIndex: number): PresentationRpcResponse<NodePathElement[]>;
-  getRootNodes(_token: IModelToken, _options: Paged<HierarchyRpcRequestOptions>): PresentationRpcResponse<Node[]>;
-  getRootNodesCount(_token: IModelToken, _options: HierarchyRpcRequestOptions): PresentationRpcResponse<number>;
+  getNodes(_token: IModelToken, _options: Paged<HierarchyRpcRequestOptions>, _parentKey?: Readonly<NodeKey>): PresentationRpcResponse<Node[]>;
+  getNodesAndCount(_token: IModelToken, _options: Paged<HierarchyRpcRequestOptions>, _parentKey?: Readonly<NodeKey>): PresentationRpcResponse<NodesResponse>;
+  getNodesCount(_token: IModelToken, _options: HierarchyRpcRequestOptions, _parentKey?: Readonly<NodeKey>): PresentationRpcResponse<number>;
   // (undocumented)
   getSelectionScopes(_token: IModelToken, _options: SelectionScopeRpcRequestOptions): PresentationRpcResponse<SelectionScope[]>;
   // (undocumented)
@@ -1011,19 +1042,17 @@ class RpcRequestsHandler implements IDisposable {
   readonly clientId: string;
   readonly clientStateId: string | undefined;
   // (undocumented)
-  computeSelection(options: SelectionScopeRequestOptions<IModelToken>, keys: EntityProps[], scopeId: string): Promise<KeySet>;
+  computeSelection(options: SelectionScopeRequestOptions<IModelToken>, ids: Id64String[], scopeId: string): Promise<KeySet>;
   // (undocumented)
   dispose(): void;
   // (undocumented)
-  getChildren(options: Paged<HierarchyRequestOptions<IModelToken>>, parentKey: Readonly<NodeKey>): Promise<Node[]>;
+  getContent(options: ContentRequestOptions<IModelToken>, descriptorOrOverrides: Readonly<Descriptor> | DescriptorOverrides, keys: Readonly<KeySet>): Promise<Content | undefined>;
   // (undocumented)
-  getChildrenCount(options: HierarchyRequestOptions<IModelToken>, parentKey: Readonly<NodeKey>): Promise<number>;
-  // (undocumented)
-  getContent(options: ContentRequestOptions<IModelToken>, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>): Promise<Content>;
+  getContentAndSize(options: ContentRequestOptions<IModelToken>, descriptorOrOverrides: Readonly<Descriptor> | DescriptorOverrides, keys: Readonly<KeySet>): Promise<ContentResponse>;
   // (undocumented)
   getContentDescriptor(options: ContentRequestOptions<IModelToken>, displayType: string, keys: Readonly<KeySet>, selection: Readonly<SelectionInfo> | undefined): Promise<Descriptor | undefined>;
   // (undocumented)
-  getContentSetSize(options: ContentRequestOptions<IModelToken>, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>): Promise<number>;
+  getContentSetSize(options: ContentRequestOptions<IModelToken>, descriptorOrOverrides: Readonly<Descriptor> | DescriptorOverrides, keys: Readonly<KeySet>): Promise<number>;
   // (undocumented)
   getDistinctValues(options: ContentRequestOptions<IModelToken>, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>, fieldName: string, maximumValueCount: number): Promise<string[]>;
   // (undocumented)
@@ -1031,9 +1060,11 @@ class RpcRequestsHandler implements IDisposable {
   // (undocumented)
   getNodePaths(options: HierarchyRequestOptions<IModelToken>, paths: InstanceKey[][], markedIndex: number): Promise<NodePathElement[]>;
   // (undocumented)
-  getRootNodes(options: Paged<HierarchyRequestOptions<IModelToken>>): Promise<Node[]>;
+  getNodes(options: Paged<HierarchyRequestOptions<IModelToken>>, parentKey?: Readonly<NodeKey>): Promise<Node[]>;
   // (undocumented)
-  getRootNodesCount(options: HierarchyRequestOptions<IModelToken>): Promise<number>;
+  getNodesAndCount(options: Paged<HierarchyRequestOptions<IModelToken>>, parentKey?: Readonly<NodeKey>): Promise<NodesResponse>;
+  // (undocumented)
+  getNodesCount(options: HierarchyRequestOptions<IModelToken>, parentKey?: Readonly<NodeKey>): Promise<number>;
   // (undocumented)
   getSelectionScopes(options: SelectionScopeRequestOptions<IModelToken>): Promise<SelectionScope[]>;
   // (undocumented)
@@ -1165,7 +1196,7 @@ interface SelectClassInfoJSON {
 
 // @public
 interface SelectedNodeInstancesSpecification extends ContentSpecificationBase {
-  acceptableClassNames?: string;
+  acceptableClassNames?: string[];
   acceptablePolymorphically?: boolean;
   acceptableSchemaName?: string;
   onlyIfNotHandled?: boolean;
@@ -1240,7 +1271,7 @@ interface StructTypeDescription extends BaseTypeDescription {
 interface StyleOverride extends RuleBase, ConditionContainer {
   backColor?: string;
   condition?: string;
-  fontStyle?: FontStyle;
+  fontStyle?: string;
   foreColor?: string;
   ruleType: RuleTypes.StyleOverride;
 }

@@ -11,6 +11,7 @@ import {
 } from "@bentley/imodeljs-frontend";
 
 import { Point3d } from "@bentley/geometry-core";
+import { ColorDef, ColorByName } from "@bentley/imodeljs-common";
 
 const enum ToolOptions {
   Red,
@@ -56,6 +57,53 @@ export class ToolWithSettings extends PrimitiveTool {
 
   public set option(option: ToolOptions) {
     this._optionsValue.value = option;
+  }
+
+  // ------------- Color ---------------
+  private static _colorName = "color";
+  private static _getColorDescription = (): PropertyDescription => {
+    return {
+      name: ToolWithSettings._colorName,
+      displayLabel: IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.Color"),
+      typename: "number",
+      editor: {
+        name: "color-picker",
+        params: [
+          {
+            type: PropertyEditorParamTypes.ColorData,
+            colorValues: [
+              ColorByName.blue as number,
+              ColorByName.red as number,
+              ColorByName.green as number,
+              ColorByName.yellow as number,
+              ColorByName.black as number,
+              ColorByName.gray as number,
+              ColorByName.purple as number,
+              ColorByName.pink as number,
+            ],
+            numColumns: 2,
+          },
+        ],
+      },
+    };
+  }
+
+  private _colorValue = new ToolSettingsValue(ColorByName.blue as number);
+
+  public get colorValue(): number {
+    return this._optionsValue.value as number;
+  }
+
+  public set colorValue(value: number) {
+    this._optionsValue.value = value;
+  }
+
+  public get colorDef(): ColorDef {
+    return new ColorDef(this._optionsValue.value as number);
+  }
+
+  public set colorDef(value: ColorDef) {
+    this._optionsValue.value = value.tbgr;
   }
 
   // ------------- boolean based toggle button ---------------
@@ -244,6 +292,7 @@ export class ToolWithSettings extends PrimitiveTool {
     const readonly = true;
     const toolSettings = new Array<ToolSettingsPropertyRecord>();
     toolSettings.push(new ToolSettingsPropertyRecord(this._optionsValue.clone() as PrimitiveValue, ToolWithSettings._getEnumAsPicklistDescription(), { rowPriority: 0, columnIndex: 2 }));
+    toolSettings.push(new ToolSettingsPropertyRecord(this._colorValue.clone() as PrimitiveValue, ToolWithSettings._getColorDescription(), { rowPriority: 2, columnIndex: 2 }));
     toolSettings.push(new ToolSettingsPropertyRecord(this._lockValue.clone() as PrimitiveValue, ToolWithSettings._getLockToggleDescription(), { rowPriority: 5, columnIndex: 2 }));
     toolSettings.push(new ToolSettingsPropertyRecord(this._cityValue.clone() as PrimitiveValue, ToolWithSettings._getCityDescription(), { rowPriority: 10, columnIndex: 2 }));
     toolSettings.push(new ToolSettingsPropertyRecord(this._stateValue.clone() as PrimitiveValue, ToolWithSettings._getStateDescription(), { rowPriority: 10, columnIndex: 4 }));
@@ -251,6 +300,11 @@ export class ToolWithSettings extends PrimitiveTool {
     toolSettings.push(new ToolSettingsPropertyRecord(this._useLengthValue.clone() as PrimitiveValue, ToolWithSettings._getUseLengthDescription(), { rowPriority: 20, columnIndex: 0 }));
     toolSettings.push(new ToolSettingsPropertyRecord(this._lengthValue.clone() as PrimitiveValue, ToolWithSettings._getLengthDescription(), { rowPriority: 20, columnIndex: 2 }));
     return toolSettings;
+  }
+
+  private showColorInfoFromUi(updatedValue: ToolSettingsPropertySyncItem) {
+    const msg = `Property '${updatedValue.propertyName}' updated to value ${this.colorDef.toRgbString()}`;
+    IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
   }
 
   private showInfoFromUi(updatedValue: ToolSettingsPropertySyncItem) {
@@ -287,6 +341,9 @@ export class ToolWithSettings extends PrimitiveTool {
     } else if (updatedValue.propertyName === ToolWithSettings._lengthName) {
       this.length = updatedValue.value.value as string;
       this.showInfoFromUi(updatedValue);
+    } else if (updatedValue.propertyName === ToolWithSettings._colorName) {
+      this.colorValue = updatedValue.value.value as number;
+      this.showColorInfoFromUi(updatedValue);
     }
 
     // return true is change is valid

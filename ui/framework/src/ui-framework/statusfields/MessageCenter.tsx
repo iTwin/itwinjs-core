@@ -8,8 +8,6 @@ import * as React from "react";
 
 import { NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
 
-import "../configurableui/configurableui.scss";
-
 import UiFramework from "../UiFramework";
 
 import { StatusBarFieldId, IStatusBar } from "../widgets/StatusBarWidgetControl";
@@ -67,10 +65,10 @@ export class MessageCenterField extends React.Component<MessageCenterProps, Mess
               title={UiFramework.i18n.translate("UiFramework:messageCenter.messages")}
               buttons={
                 <>
-                  <MessageCenterButton>
+                  <MessageCenterButton title={UiFramework.i18n.translate("UiFramework:messageCenter.export")}>
                     <i className={"icon icon-export"} />
                   </MessageCenterButton>
-                  <MessageCenterButton onClick={this._handleCloseMessageIndicatorClick}>
+                  <MessageCenterButton onClick={this._handleCloseMessageIndicatorClick} title={UiFramework.i18n.translate("UiCore:dialog.close")}>
                     <i className={"icon icon-close"} />
                   </MessageCenterButton>
                 </>
@@ -132,17 +130,23 @@ export class MessageCenterField extends React.Component<MessageCenterProps, Mess
       if (this.state.activeTab === MessageCenterActiveTab.AllMessages || this.isProblemStatus(details.priority)) {
 
         const iconClassName = MessageManager.getIconClassName(details);
-
-        let message = details.briefMessage;
-        /* istanbul ignore else */
-        if (details.detailedMessage)
-          message = message + "<br><br>" + details.detailedMessage;
+        const message = details.briefMessage;
 
         tabRows.push(
           <MessageCenterMessage
             key={index.toString()}
             icon={<i className={iconClassName} />}
-            content={<span dangerouslySetInnerHTML={{ __html: message }} />}
+            content={
+              <>
+                <span dangerouslySetInnerHTML={{ __html: message }} />
+                {details.detailedMessage &&
+                  <>
+                    <br />
+                    <span className="uicore-text-small" dangerouslySetInnerHTML={{ __html: details.detailedMessage }} />
+                  </>
+                }
+              </>
+            }
           />,
         );
       }

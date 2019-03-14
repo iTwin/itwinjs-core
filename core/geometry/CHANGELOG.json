@@ -2,6 +2,78 @@
   "name": "@bentley/geometry-core",
   "entries": [
     {
+      "version": "0.189.0",
+      "tag": "@bentley/geometry-core_v0.189.0",
+      "date": "Wed, 06 Mar 2019 15:41:22 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": " geometry-core camel case"
+          },
+          {
+            "comment": "allow subclasses of Range to use static methods"
+          },
+          {
+            "comment": "Changes package.json to include api-extractor and adds api-extractor.json"
+          },
+          {
+            "comment": "Use new buildIModelJsBuild script"
+          },
+          {
+            "comment": "AxisAlignedBox and ElementAlignedBox are now typed to Range3d rather than classes"
+          },
+          {
+            "comment": "clone methods are no longer generic"
+          },
+          {
+            "comment": "Remove uneeded typedoc plugin depedency"
+          },
+          {
+            "comment": "PolyfaceBuilder solid primitive improvements"
+          },
+          {
+            "comment": "PolyfaceBuilder improvements.  Construct normals for sweeps.  Mesh pairing closure test."
+          },
+          {
+            "comment": "PolyfaceBuilder creates params and normals for all Solid types"
+          },
+          {
+            "comment": "Mesh Normal bugs, some @internal markup"
+          },
+          {
+            "comment": "Consistent naming of \"get\" methods in Growable arrays."
+          },
+          {
+            "comment": "Distribute .test.ts files to subdirectories"
+          },
+          {
+            "comment": "Improve polygon triangulations quality by early flipping behind the earcut front"
+          },
+          {
+            "comment": "added freeze methods to Angle and Point2d"
+          },
+          {
+            "comment": "bug fixes in PolyfaceBuilder"
+          },
+          {
+            "comment": "update for geometry GrowableXYArray usage"
+          },
+          {
+            "comment": "New class SmoothTransformBetweenFrusta for smooth frustum animation"
+          },
+          {
+            "comment": "Save BUILD_SEMVER to globally accessible map"
+          },
+          {
+            "comment": "add optional argument to SmoothTransformBetweenFrusta"
+          },
+          {
+            "comment": "upgrade to TypeScript 3.2.2"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.188.0",
       "tag": "@bentley/geometry-core_v0.188.0",
       "date": "Wed, 16 Jan 2019 16:36:09 GMT",

@@ -30,7 +30,7 @@ export class IModelViewportControl extends ViewportContentControl {
 
     if (options.viewId) {
       this.reactElement = <UnifiedSelectionViewport viewportRef={(v: ScreenViewport) => { this.viewport = v; }}
-        viewDefinitionId={options.viewId} imodel={options.iModelConnection} rulesetId={options.rulesetId} />;
+        viewDefinitionId={options.viewId} imodel={options.iModelConnection} ruleset={options.ruleset} />;
     } else {
       this.reactElement = <MockIModelViewport bgColor={options.bgColor} />;
     }
@@ -71,6 +71,8 @@ class MockIModelViewport extends React.Component<MockIModelViewportProps> {
 
   public render(): React.ReactNode {
     const divStyle: React.CSSProperties = {
+      width: "100%",
+      height: "100%",
       backgroundColor: this.props.bgColor,
     };
     const canvasStyle: React.CSSProperties = {
@@ -79,8 +81,8 @@ class MockIModelViewport extends React.Component<MockIModelViewportProps> {
     };
 
     return (
-      <div className="ContentViewPane" style={divStyle}>
-        <canvas className="unselectable" style={canvasStyle} ref={(element: any) => { this._htmlCanvas = element; }}
+      <div style={divStyle}>
+        <canvas className="uifw-unselectable" style={canvasStyle} ref={(element: any) => { this._htmlCanvas = element; }}
           onMouseMove={this._onMouseMove}
           onMouseLeave={this._onMouseLeave}
           onMouseDown={this._onMouseDown}

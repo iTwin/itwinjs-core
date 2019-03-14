@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fix display of animated edges.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Paul.Connelly@bentley.com"
+}

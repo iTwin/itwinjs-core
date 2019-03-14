@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 @import "@bentley/ui-core/lib/ui-core/index";
 
-.category-model-horizontal-tabs {
+.uifw-category-model-horizontal-tabs {
   @include uicore-tabs-horizontal;
 
   > li {
@@ -24,7 +24,7 @@
   }
 }
 
-.widget-picker {
+.uifw-widget-picker {
   background-color: $buic-background-widget;
   margin: 0 5px;
   position: relative;
@@ -91,7 +91,7 @@
     }
   }
 
-  .fw-modelselector {
+  .uifw-modelselector {
     width: 100%;
     height: calc(100% - 44px);
     display: flex;
@@ -111,63 +111,6 @@
     &.show {
       opacity: 1;
       transform: translateX(0%);
-    }
-
-    > .fw-modelselector-header {
-      display: flex;
-      align-items: center;
-      justify-content: flex-end;
-      margin-top: 10px;
-      margin-bottom: 8px;
-      font-size: 14px;
-
-      > .fw-modelselector-back {
-        display: flex;
-        align-items: center;
-        margin-right: auto;
-        width: 100%;
-        color: $buic-text-color;
-
-        &:hover {
-          color: $buic-foreground-primary;
-          cursor: pointer;
-        }
-
-        > .ms-title {
-          margin-left: 5px;
-          font-size: 16px;
-        }
-      }
-
-      > .options {
-        position: relative;
-        cursor: pointer;
-
-        ul {
-          margin: 0;
-          padding: .5em 0;
-          font-size: $uicore-font-size;
-          list-style: none;
-          background-color: $uicore-white;
-
-          > li {
-            display: flex;
-            align-items: center;
-            padding: .25em 1em;
-            color: $buic-text-color;
-            white-space: nowrap;
-            cursor: pointer;
-
-            .icon {
-              margin-right: .5em;
-            }
-
-            &:hover{
-              background: #eee;
-            }
-          }
-        }
-      }
     }
 
     > .modelselector-toolbar {

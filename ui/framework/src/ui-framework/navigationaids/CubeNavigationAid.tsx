@@ -220,7 +220,7 @@ export class CubeNavigationAid extends React.Component<{}, CubeNavigationState> 
     }
 
     return (
-      <div className={"cube-container"}
+      <div className={"uifw-cube-container"}
         onMouseDown={this._handleBoxClick} >
         <div className={"cube-element-container"}>
           <Cube

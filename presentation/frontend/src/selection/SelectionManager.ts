@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module UnifiedSelection */
 
-import { EntityProps } from "@bentley/imodeljs-common";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { IDisposable, Id64Set, GuidString, Guid, Id64Arg } from "@bentley/bentleyjs-core";
+import { IModelConnection, SelectEventType } from "@bentley/imodeljs-frontend";
 import { KeySet, Keys, SelectionScope } from "@bentley/presentation-common";
 import ISelectionProvider from "./ISelectionProvider";
 import SelectionChangeEvent, { SelectionChangeEventArgs, SelectionChangeType } from "./SelectionChangeEvent";
@@ -22,6 +22,7 @@ export interface SelectionManagerProps {
  */
 export class SelectionManager implements ISelectionProvider {
   private _selectionContainerMap = new Map<IModelConnection, SelectionContainer>();
+  private _imodelToolSelectionSyncHandlers = new Map<IModelConnection, { requestorsCount: number, handler: ToolSelectionSyncHandler }>();
 
   /** An event which gets broadcasted on selection changes */
   public readonly selectionChange: SelectionChangeEvent;
@@ -52,6 +53,30 @@ export class SelectionManager implements ISelectionProvider {
       this._selectionContainerMap.set(imodel, selectionContainer);
     }
     return selectionContainer;
+  }
+
+  /**
+   * Request the manager to sync with imodel's tool selection (see `IModelConnection.selectionSet`).
+   */
+  public setSyncWithIModelToolSelection(imodel: IModelConnection, sync = true) {
+    const registration = this._imodelToolSelectionSyncHandlers.get(imodel);
+    if (sync) {
+      if (!registration || registration.requestorsCount === 0) {
+        this._imodelToolSelectionSyncHandlers.set(imodel, { requestorsCount: 1, handler: new ToolSelectionSyncHandler(imodel, this) });
+      } else {
+        this._imodelToolSelectionSyncHandlers.set(imodel, { ...registration, requestorsCount: registration.requestorsCount + 1 });
+      }
+    } else {
+      if (registration && registration.requestorsCount > 0) {
+        const requestorsCount = registration.requestorsCount - 1;
+        if (requestorsCount > 0) {
+          this._imodelToolSelectionSyncHandlers.set(imodel, { ...registration, requestorsCount });
+        } else {
+          this._imodelToolSelectionSyncHandlers.delete(imodel);
+          registration.handler.dispose();
+        }
+      }
+    }
   }
 
   /** Get the selection levels currently stored in this manager for the specified imodel */
@@ -181,13 +206,13 @@ export class SelectionManager implements ISelectionProvider {
    * Add keys to selection after applying [selection scope]($docs/learning/unified-selection/Terminology#selection-scope) on them.
    * @param source Name of the selection source
    * @param imodel iModel associated with the selection
-   * @param keys Keys to add
+   * @param ids Element IDs to add
    * @param scope Selection scope to apply
    * @param level Selection level (see [Selection levels]($docs/learning/unified-selection/Terminology#selection-level))
    * @param rulesetId ID of the ruleset in case the selection was changed from a rules-driven control
    */
-  public async addToSelectionWithScope(source: string, imodel: IModelConnection, keys: EntityProps | EntityProps[], scope: SelectionScope | string, level: number = 0, rulesetId?: string): Promise<void> {
-    const scopedKeys = await this.scopes.computeSelection(imodel, keys, scope);
+  public async addToSelectionWithScope(source: string, imodel: IModelConnection, ids: Id64Arg, scope: SelectionScope | string, level: number = 0, rulesetId?: string): Promise<void> {
+    const scopedKeys = await this.scopes.computeSelection(imodel, ids, scope);
     this.addToSelection(source, imodel, scopedKeys, level, rulesetId);
   }
 
@@ -195,13 +220,13 @@ export class SelectionManager implements ISelectionProvider {
    * Remove keys from current selection after applying [selection scope]($docs/learning/unified-selection/Terminology#selection-scope) on them.
    * @param source Name of the selection source
    * @param imodel iModel associated with the selection
-   * @param keys Keys to remove
+   * @param ids Element IDs to remove
    * @param scope Selection scope to apply
    * @param level Selection level (see [Selection levels]($docs/learning/unified-selection/Terminology#selection-level))
    * @param rulesetId ID of the ruleset in case the selection was changed from a rules-driven control
    */
-  public async removeFromSelectionWithScope(source: string, imodel: IModelConnection, keys: EntityProps | EntityProps[], scope: SelectionScope | string, level: number = 0, rulesetId?: string): Promise<void> {
-    const scopedKeys = await this.scopes.computeSelection(imodel, keys, scope);
+  public async removeFromSelectionWithScope(source: string, imodel: IModelConnection, ids: Id64Arg, scope: SelectionScope | string, level: number = 0, rulesetId?: string): Promise<void> {
+    const scopedKeys = await this.scopes.computeSelection(imodel, ids, scope);
     this.removeFromSelection(source, imodel, scopedKeys, level, rulesetId);
   }
 
@@ -209,17 +234,18 @@ export class SelectionManager implements ISelectionProvider {
    * Replace current selection with keys after applying [selection scope]($docs/learning/unified-selection/Terminology#selection-scope) on them.
    * @param source Name of the selection source
    * @param imodel iModel associated with the selection
-   * @param keys Keys to add
+   * @param ids Element IDs to replace with
    * @param scope Selection scope to apply
    * @param level Selection level (see [Selection levels]($docs/learning/unified-selection/Terminology#selection-level))
    * @param rulesetId ID of the ruleset in case the selection was changed from a rules-driven control
    */
-  public async replaceSelectionWithScope(source: string, imodel: IModelConnection, keys: EntityProps | EntityProps[], scope: SelectionScope | string, level: number = 0, rulesetId?: string): Promise<void> {
-    const scopedKeys = await this.scopes.computeSelection(imodel, keys, scope);
+  public async replaceSelectionWithScope(source: string, imodel: IModelConnection, ids: Id64Arg, scope: SelectionScope | string, level: number = 0, rulesetId?: string): Promise<void> {
+    const scopedKeys = await this.scopes.computeSelection(imodel, ids, scope);
     this.replaceSelection(source, imodel, scopedKeys, level, rulesetId);
   }
 }
 
+/** @hidden */
 class SelectionContainer {
   private readonly _selectedItemsSetMap: Map<number, KeySet>;
 
@@ -253,5 +279,116 @@ class SelectionContainer {
         selectedItemsSet.clear();
       }
     }
+  }
+}
+
+/** @hidden */
+export class ToolSelectionSyncHandler implements IDisposable {
+
+  private _selectionSourceName = "Tool";
+  private _logicalSelection: SelectionManager;
+  private _imodel: IModelConnection;
+  private _imodelToolSelectionListenerDisposeFunc: () => void;
+  private _asyncsInProgress = new Set<GuidString>();
+
+  public constructor(imodel: IModelConnection, logicalSelection: SelectionManager) {
+    this._imodel = imodel;
+    this._logicalSelection = logicalSelection;
+    this._imodelToolSelectionListenerDisposeFunc = imodel.selectionSet.onChanged.addListener(this.onToolSelectionChanged);
+  }
+
+  public dispose() {
+    this._imodelToolSelectionListenerDisposeFunc();
+  }
+
+  /** note: used only it tests */
+  public get pendingAsyncs() { return this._asyncsInProgress; }
+
+  // tslint:disable-next-line:naming-convention
+  private onToolSelectionChanged = async (imodel: IModelConnection, eventType: SelectEventType, ids?: Id64Set): Promise<void> => {
+    // this component only cares about its own imodel
+    if (imodel !== this._imodel)
+      return;
+
+    // determine the level of selection changes
+    // wip: may want to allow selecting at different levels?
+    const selectionLevel = 0;
+
+    const scope = this._logicalSelection.scopes.activeScope;
+    const changer = scope
+      ? new ScopedSelectionChanger(this._selectionSourceName, this._imodel, this._logicalSelection, scope)
+      : new SelectionChanger(this._selectionSourceName, this._imodel, this._logicalSelection);
+
+    // we know what to do immediately on `clear` events
+    if (eventType === SelectEventType.Clear) {
+      await changer.clear(selectionLevel);
+      return;
+    }
+
+    const asyncId = Guid.createValue();
+    this._asyncsInProgress.add(asyncId);
+    try {
+      switch (eventType) {
+        case SelectEventType.Add:
+          await changer.add(ids!, selectionLevel);
+          break;
+        case SelectEventType.Replace:
+          await changer.replace(ids!, selectionLevel);
+          break;
+        case SelectEventType.Remove:
+          await changer.remove(ids!, selectionLevel);
+          break;
+      }
+    } finally {
+      this._asyncsInProgress.delete(asyncId);
+    }
+  }
+}
+
+const createElementKeys = (ids: Id64Set): KeySet => {
+  const set = new KeySet();
+  ids.forEach((id) => set.add({ classFullName: "BisCore:Element", id }));
+  return set;
+};
+
+/** @hidden */
+class SelectionChanger {
+  public readonly name: string;
+  public readonly imodel: IModelConnection;
+  public readonly manager: SelectionManager;
+  public constructor(name: string, imodel: IModelConnection, manager: SelectionManager) {
+    this.name = name;
+    this.imodel = imodel;
+    this.manager = manager;
+  }
+  public async clear(level: number): Promise<void> {
+    this.manager.clearSelection(this.name, this.imodel, level);
+  }
+  public async add(ids: Id64Set, level: number): Promise<void> {
+    this.manager.addToSelection(this.name, this.imodel, createElementKeys(ids), level);
+  }
+  public async remove(ids: Id64Set, level: number): Promise<void> {
+    this.manager.removeFromSelection(this.name, this.imodel, createElementKeys(ids), level);
+  }
+  public async replace(ids: Id64Set, level: number): Promise<void> {
+    this.manager.replaceSelection(this.name, this.imodel, createElementKeys(ids), level);
+  }
+}
+
+/** @hidden */
+class ScopedSelectionChanger extends SelectionChanger {
+  public readonly scope: SelectionScope | string;
+  public constructor(name: string, imodel: IModelConnection, manager: SelectionManager, scope: SelectionScope | string) {
+    super(name, imodel, manager);
+    this.scope = scope;
+  }
+  public async add(ids: Id64Set, level: number): Promise<void> {
+    await this.manager.addToSelectionWithScope(this.name, this.imodel, ids, this.scope, level);
+  }
+  public async remove(ids: Id64Set, level: number): Promise<void> {
+    await this.manager.removeFromSelectionWithScope(this.name, this.imodel, ids, this.scope, level);
+  }
+  public async replace(ids: Id64Set, level: number): Promise<void> {
+    await this.manager.replaceSelectionWithScope(this.name, this.imodel, ids, this.scope, level);
   }
 }

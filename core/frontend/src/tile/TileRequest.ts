@@ -13,7 +13,7 @@ import { IModelApp } from "../IModelApp";
 
 /** Represents a pending or active request to load the contents of a [[Tile]]. The request coordinates with a [[TileLoader]] to execute the request for tile content and
  * convert the result into a renderable graphic.
- * @hidden
+ * @internal
  */
 export class TileRequest {
   /** The requested tile. While the request is pending or active, `tile.request` points back to this TileRequest. */
@@ -60,7 +60,7 @@ export class TileRequest {
         // Invalidate scene - if tile is re-selected, it will be re-requested.
         this.notifyAndClear();
         this._state = TileRequest.State.Failed;
-        IModelApp.tileAdmin.onTileTimedOut();
+        IModelApp.tileAdmin.onTileTimedOut(this.tile);
       } else {
         // Unknown error - not retryable.
         this.setFailed();
@@ -92,7 +92,7 @@ export class TileRequest {
     this.notifyAndClear();
     this._state = TileRequest.State.Failed;
     this.tile.setNotFound();
-    IModelApp.tileAdmin.onTileFailed();
+    IModelApp.tileAdmin.onTileFailed(this.tile);
   }
 
   /** Invoked when the raw tile content becomes available, to convert it into a tile graphic. */
@@ -122,7 +122,7 @@ export class TileRequest {
       this._state = TileRequest.State.Completed;
       this.tile.setContent(content);
       this.notifyAndClear();
-      IModelApp.tileAdmin.onTileCompleted();
+      IModelApp.tileAdmin.onTileCompleted(this.tile);
     } catch (_err) {
       this.setFailed();
     }
@@ -131,14 +131,20 @@ export class TileRequest {
   }
 }
 
-/** @hidden */
+/** @internal */
 export namespace TileRequest {
-  /** The type of a raw response to a request for tile content. Processed upon receipt into a [[TileRequest.Response]] type. */
+  /** The type of a raw response to a request for tile content. Processed upon receipt into a [[TileRequest.Response]] type.
+   * @internal
+   */
   export type Response = Uint8Array | ArrayBuffer | string | ImageSource | undefined;
-  /** The input to [[TileLoader.loadTileContent]], to be converted into a [[Tile.Content]]. */
+  /** The input to [[TileLoader.loadTileContent]], to be converted into a [[Tile.Content]].
+   * @internal
+   */
   export type ResponseData = Uint8Array | ImageSource;
 
-  /** The states through which a TileRequest proceeds. During the first 3 states, the [[Tile]]'s `request` member is defined, and its [[Tile.LoadStatus]] is computed based on the state of its request. */
+  /** The states through which a TileRequest proceeds. During the first 3 states, the [[Tile]]'s `request` member is defined, and its [[Tile.LoadStatus]] is computed based on the state of its request.
+   * @internal
+   */
   export const enum State {
     /** Initial state. Request is pending but not yet dispatched. */
     Queued,

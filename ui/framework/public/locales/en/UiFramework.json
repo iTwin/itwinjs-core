@@ -9,7 +9,8 @@
     "sheet": "Sheet",
     "of": "of",
     "alert": "Alert",
-    "toolSettings": "Tool Settings"
+    "toolSettings": "Tool Settings",
+    "minimize": "Minimize"
   },
   "rotations": {
     "top": "Top",
@@ -33,7 +34,8 @@
     "messages": "Messages",
     "all": "All",
     "problems": "Problems",
-    "prompt": "No messages."
+    "prompt": "No messages.",
+    "export": "Export"
   },
   "activityCenter": {
     "percentComplete": "% complete",

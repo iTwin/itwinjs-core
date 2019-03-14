@@ -614,7 +614,7 @@ class BingMapProvider extends ImageryProvider {
       // case, but we can't stop - the user might want to look at design data a closer zoom. So we intentionally load such
       // a tile, and then compare other tiles to it, rejecting them if they match.
       this.loadTile(0, 0, this._zoomMax - 1).then((tileData: ImageSource | undefined) => { // tslint:disable-line:no-floating-promises
-        if (tileData !== undefined) this._missingTileData = tileData.data;
+        if (tileData !== undefined) this._missingTileData = tileData.data as Uint8Array;
       });
     } catch (error) {
       throw new BentleyError(IModelStatus.BadModel, "Error in Bing Server communications");
@@ -697,7 +697,8 @@ class MapBoxProvider extends ImageryProvider {
 }
 
 const enum GcsConverterStatus { Uninitialized, Pending, NotAvailable, Available }
-/** @hidden */
+
+/** @internal */
 export class BackgroundMapState {
   private _tileTree?: TileTree;
   private _loadStatus: TileTree.LoadStatus = TileTree.LoadStatus.NotLoaded;

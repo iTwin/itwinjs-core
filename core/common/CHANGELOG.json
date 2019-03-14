@@ -2,6 +2,96 @@
   "name": "@bentley/imodeljs-common",
   "entries": [
     {
+      "version": "0.189.0",
+      "tag": "@bentley/imodeljs-common_v0.189.0",
+      "date": "Wed, 06 Mar 2019 15:41:22 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "allow to check if frontend is ios wkwebview"
+          },
+          {
+            "comment": "allow subclasses of Range to use static methods"
+          },
+          {
+            "comment": "Changes package.json to include api-extractor and adds api-extractor.json"
+          },
+          {
+            "comment": "Update docs for BRepEntity.DataProps"
+          },
+          {
+            "comment": "Use new buildIModelJsBuild script"
+          },
+          {
+            "comment": "AxisAlignedBox and ElementAlignedBox are now typed to Range3d rather than classes"
+          },
+          {
+            "comment": "clone methods are no longer generic"
+          },
+          {
+            "comment": "Add release tags to indicate API stability"
+          },
+          {
+            "comment": "Handle transforms on child tiles."
+          },
+          {
+            "comment": "Optimize use of animation cutting planes."
+          },
+          {
+            "comment": "Remove uneeded typedoc plugin depedency"
+          },
+          {
+            "comment": "Add support for draco compressed meshes."
+          },
+          {
+            "comment": "Consistent naming of \"get\" methods in Growable arrays."
+          },
+          {
+            "comment": "Added spatial <-> cartographic methods that check/use the geographic coordinate system before using ecef location."
+          },
+          {
+            "comment": "update for geometry GrowableXYArray usage"
+          },
+          {
+            "comment": "Add material props classes"
+          },
+          {
+            "comment": "Defer loading of edges until needed"
+          },
+          {
+            "comment": "Save BUILD_SEMVER to globally accessible map"
+          },
+          {
+            "comment": "Implemented spatial criterai when searching through all reality data associated to a project."
+          },
+          {
+            "comment": "Optimize containment test with spheres."
+          },
+          {
+            "comment": "Move the IModelUnitTestRpcInterface into the testbed and out of the public AP"
+          },
+          {
+            "comment": "Renamed constructor variable in RpcConfiguration and RpcRequest"
+          },
+          {
+            "comment": "Support for sending large RPC binary payloads in configurable chunks."
+          },
+          {
+            "comment": "Remove loadNativeAsset and formatElements RPC calls from the IModelReadRpcInterface"
+          },
+          {
+            "comment": "Removed IModelConnection.connectionId, added IModelApp.sessionId"
+          },
+          {
+            "comment": "Tile requests can optionally specify a retryInterval."
+          },
+          {
+            "comment": "upgrade to TypeScript 3.2.2"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.188.0",
       "tag": "@bentley/imodeljs-common_v0.188.0",
       "date": "Wed, 16 Jan 2019 16:36:09 GMT",

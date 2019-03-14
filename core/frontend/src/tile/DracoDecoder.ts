@@ -9,8 +9,9 @@ import { QPoint3dList/*, QParams3d, QParams2d, QPoint2dList */ } from "@bentley/
 import { Point2d, Point3d } from "@bentley/geometry-core";
 import { Triangle } from "../render/primitives/Primitives";
 
+/** @internal */
 export class DracoDecoder {
-  private static _dracoDecoderModule: any; /** @hidden */
+  private static _dracoDecoderModule: any;
 
   public static readDracoMesh(mesh: Mesh, _primitive: any, bufferData: Uint8Array): Mesh | undefined {
     if (!DracoDecoder._dracoDecoderModule)

@@ -6,7 +6,7 @@
 
 import { BeEvent, Logger, IModelStatus } from "@bentley/bentleyjs-core";
 import { Config, IModelClient, UrlDiscoveryClient } from "@bentley/imodeljs-clients";
-import { BentleyStatus, IModelError } from "@bentley/imodeljs-common";
+import { BentleyStatus, IModelError, MobileRpcConfiguration } from "@bentley/imodeljs-common";
 import * as path from "path";
 import { BisCore } from "./BisCore";
 import { BriefcaseManager } from "./BriefcaseManager";
@@ -17,6 +17,7 @@ import { IModelJsNative } from "./IModelJsNative";
 import { IModelReadRpcImpl } from "./rpc-impl/IModelReadRpcImpl";
 import { IModelTileRpcImpl } from "./rpc-impl/IModelTileRpcImpl";
 import { IModelWriteRpcImpl } from "./rpc-impl/IModelWriteRpcImpl";
+import { SnapshotIModelRpcImpl } from "./rpc-impl/SnapshotIModelRpcImpl";
 import { StandaloneIModelRpcImpl } from "./rpc-impl/StandaloneIModelRpcImpl";
 import { WipRpcImpl } from "./rpc-impl/WipRpcImpl";
 import { initializeRpcBackend } from "./RpcBackend";
@@ -118,8 +119,9 @@ export class IModelHost {
     if (IModelHost.configuration)
       throw new IModelError(BentleyStatus.ERROR, "startup may only be called once", Logger.logError, loggingCategory, () => (configuration));
 
-    this.validateNodeJsVersion();
-
+    if (!MobileRpcConfiguration.isMobileBackend) {
+      this.validateNodeJsVersion();
+    }
     this.backendVersion = require("../package.json").version;
     initializeRpcBackend();
 
@@ -142,6 +144,7 @@ export class IModelHost {
     IModelReadRpcImpl.register();
     IModelTileRpcImpl.register();
     IModelWriteRpcImpl.register();
+    SnapshotIModelRpcImpl.register();
     StandaloneIModelRpcImpl.register();
     WipRpcImpl.register();
 

@@ -41,10 +41,10 @@ export class RenderContext {
   /** Given a point in world coordinates, determine approximately how many pixels it occupies on screen based on this context's frustum. */
   public getPixelSizeAtPoint(inPoint?: Point3d): number { return this.viewport.viewFrustum.getPixelSizeAtPoint(inPoint); }
 
-  /** @hidden */
+  /** @internal */
   public get target(): RenderTarget { return this.viewport.target; }
 
-  /** @hidden */
+  /** @internal */
   protected _createGraphicBuilder(type: GraphicType, transform?: Transform, id?: Id64String): GraphicBuilder { return this.target.createGraphicBuilder(type, this.viewport, transform, id); }
 
   /** Create a builder for creating a [[GraphicType.Scene]] [[RenderGraphic]] for rendering within this context's [[Viewport]].
@@ -77,7 +77,7 @@ export class DynamicsContext extends RenderContext {
     this._dynamics.push(graphic);
   }
 
-  /** @hidden */
+  /** @internal */
   public changeDynamics(): void { this.viewport!.changeDynamics(this._dynamics); }
 }
 
@@ -89,13 +89,13 @@ export class DecorateContext extends RenderContext {
   public decorationDiv: HTMLDivElement;
   /** The [[ScreenViewport]] in which this context's [[Decorations]] will be drawn. */
   public get screenViewport(): ScreenViewport { return this.viewport as ScreenViewport; }
-  /** @hidden */
+  /** @internal */
   constructor(vp: ScreenViewport, private readonly _decorations: Decorations) {
     super(vp);
     this.decorationDiv = vp.decorationDiv;
   }
 
-  /** @hidden */
+  /** @internal */
   public static getGridDimension(props: { nRepetitions: number, min: number }, gridSize: number, org: Point3d, dir: Point3d, points: Point3d[]): boolean {
     // initialized only to avoid warning.
     let distLow = 0.0;
@@ -124,7 +124,7 @@ export class DecorateContext extends RenderContext {
     return true;
   }
 
-  /** @hidden */
+  /** @internal */
   public static getGridPlaneViewIntersections(planePoint: Point3d, planeNormal: Vector3d, vp: Viewport, useProjectExtents: boolean): Point3d[] {
     const plane = Plane3dByOriginAndUnitNormal.create(planePoint, planeNormal);
     if (undefined === plane)
@@ -237,7 +237,7 @@ export class DecorateContext extends RenderContext {
   /** Add an HTMLElement to be drawn as a decoration in this context's [[Viewport]]. */
   public addHtmlDecoration(decoration: HTMLElement) { this.decorationDiv.appendChild(decoration); }
 
-  /** @hidden */
+  /** @internal */
   public drawStandardGrid(gridOrigin: Point3d, rMatrix: Matrix3d, spacing: XAndY, gridsPerRef: number, isoGrid: boolean = false, fixedRepetitions?: Point2d): void {
     const vp = this.viewport;
 
@@ -315,7 +315,7 @@ export class DecorateContext extends RenderContext {
     this.addDecorationFromBuilder(builder);
   }
 
-  /** @hidden */
+  /** @internal */
   public static drawGrid(graphic: GraphicBuilder, doIsogrid: boolean, drawDots: boolean, gridOrigin: Point3d, xVec: Vector3d, yVec: Vector3d, gridsPerRef: number, repetitions: Point2d, vp: Viewport) {
     const eyePoint = vp.worldToViewMap.transform1.columnZ();
     const viewZ = Vector3d.createFrom(eyePoint);
@@ -497,16 +497,20 @@ export class DecorateContext extends RenderContext {
     }
   }
 
-  /** Display skyBox (cube) graphic that encompasses entire scene and rotates with camera.
+  /** Display skyBox graphic that encompasses entire scene and rotates with camera.
    * @see [[RenderSystem.createSkyBox]].
-   * @hidden
    */
   public setSkyBox(graphic: RenderGraphic) { this._decorations.skyBox = graphic; }
 
   /** Set the graphic to be displayed behind all other geometry as the background of this context's [[Viewport]]. */
   public setViewBackground(graphic: RenderGraphic) { this._decorations.viewBackground = graphic; }
 }
-/** @hidden */
+
+/** Context used to create the scene for a [[Viewport]]. The scene consists of a set of [[RenderGraphic]]s produced by the
+ * [[TileTree]]s visible within the viewport. Creating the scene may result in the enqueueing of [[TileRequest]]s for [[Tile]]s which
+ * should be displayed in the viewport but are not yet loaded.
+ * @internal
+ */
 export class SceneContext extends RenderContext {
   public readonly graphics: RenderGraphic[] = [];
   public readonly backgroundGraphics: RenderGraphic[] = [];

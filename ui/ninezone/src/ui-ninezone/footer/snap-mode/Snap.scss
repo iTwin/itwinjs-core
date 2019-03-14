@@ -3,6 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 @import "@bentley/ui-core/lib/ui-core/style/themecolors";
+
 .nz-footer-snapMode-snap {
   display: grid;
   grid-template-columns: auto 1fr;
@@ -12,6 +13,7 @@
   cursor: pointer;
   color: $buic-text-color;
   position: relative;
+
   >.nz-icon {
     grid-row: 1;
     color: $buic-icon-color;

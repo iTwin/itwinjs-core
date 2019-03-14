@@ -514,7 +514,7 @@ class DriverBundleElement extends InformationContentElement {
 }
 
 // @public
-class ECDb implements IDisposable, PagableECSql {
+class ECDb implements IDisposable, PageableECSql {
   constructor();
   abandonChanges(): void;
   clearStatementCache(): void;
@@ -653,9 +653,7 @@ class ECSqlStatement implements IterableIterator<any>, IDisposable {
   reset(): void;
   setIsShared(b: boolean): void;
   step(): DbResult;
-  stepAsync(): Promise<DbResult>;
   stepForInsert(): ECSqlInsertResult;
-  stepForInsertAsync(): Promise<ECSqlInsertResult>;
 }
 
 // @public
@@ -870,6 +868,30 @@ enum ExclusiveAccessOption {
   TryReuseOpenBriefcase = 2
 }
 
+// @beta
+interface ExportGraphicsInfo {
+  color: number;
+  elementId: Id64String;
+  mesh: ExportGraphicsMesh;
+}
+
+// @beta
+interface ExportGraphicsMesh {
+  indices: Int32Array;
+  normals: Float32Array;
+  params: Float32Array;
+  points: Float64Array;
+}
+
+// @beta
+interface ExportGraphicsProps {
+  angleTol?: number;
+  chordTol?: number;
+  elementIdArray: Id64Array;
+  maxEdgeLength?: number;
+  onGraphics: ExportGraphicsFunction;
+}
+
 // @public (undocumented)
 class Functional extends Schema {
   // (undocumented)
@@ -1063,6 +1085,7 @@ class IModelHost {
   static startup(configuration?: IModelHostConfiguration): void;
   static readonly tileContentRequestTimeout: number;
   static readonly tileTreeRequestTimeout: number;
+  static readonly useTileContentThreadPool: boolean;
 }
 
 // @public
@@ -1074,6 +1097,7 @@ class IModelHostConfiguration {
   nativePlatform?: any;
   tileContentRequestTimeout: number;
   tileTreeRequestTimeout: number;
+  useTileContentThreadPool: boolean;
 }
 
 // @public (undocumented)
@@ -1186,7 +1210,8 @@ class IModelJsFsStats {
 // WARNING: Unsupported export: version
 // WARNING: Unsupported export: logger
 // WARNING: Unsupported export: TxnIdString
-// @public
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal
 module IModelJsNative {
   interface BriefcaseManagerOnConflictPolicy {
     deleteVsUpdate: number;
@@ -1291,6 +1316,8 @@ module IModelJsNative {
     endMultiTxnOperation(): DbResult;
     // (undocumented)
     executeTest(testName: string, params: string): string;
+    // (undocumented)
+    exportGraphics(exportProps: ExportGraphicsProps): DbResult;
     // WARNING: The type "BriefcaseManagerResourcesRequest" needs to be exported by the package (e.g. added to index.ts)
     // WARNING: The type "BriefcaseManagerResourcesRequest" needs to be exported by the package (e.g. added to index.ts)
     // (undocumented)
@@ -1406,6 +1433,10 @@ module IModelJsNative {
     openIModel(accessToken: string, appVersion: string, projectId: GuidString, dbName: string, mode: OpenMode): DbResult;
     // (undocumented)
     openIModelFile(dbName: string, mode: OpenMode): DbResult;
+    // WARNING: The type "ErrorStatusOrResult" needs to be exported by the package (e.g. added to index.ts)
+    // WARNING: The type "IModelDb.TileContentState" needs to be exported by the package (e.g. added to index.ts)
+    // (undocumented)
+    pollTileContent(treeId: string, tileId: string): ErrorStatusOrResult<IModelStatus, IModelDb.TileContentState | Uint8Array>;
     // (undocumented)
     queryFileProperty(props: string, wantString: boolean): string | Uint8Array | undefined;
     // WARNING: The type "TxnIdString" needs to be exported by the package (e.g. added to index.ts)
@@ -2179,6 +2210,7 @@ class OpenParams {
   readonly openMode: OpenMode;
   static pullAndPush(exclusiveAccessOption?: ExclusiveAccessOption): OpenParams;
   static pullOnly(accessMode?: AccessMode, exclusiveAccessOption?: ExclusiveAccessOption): OpenParams;
+  // @deprecated
   static standalone(openMode: OpenMode): OpenParams;
   readonly syncMode?: SyncMode | undefined;
 }
@@ -2481,7 +2513,6 @@ class SqliteStatement implements IterableIterator<any>, IDisposable {
   reset(): void;
   setIsShared(b: boolean): void;
   step(): DbResult;
-  stepAsync(): Promise<DbResult>;
 }
 
 // @public
@@ -2808,5 +2839,6 @@ class WebMercatorModel extends SpatialModel {
 // WARNING: Unsupported export: AutoPushEventHandler
 // WARNING: Unsupported export: SchemaKey
 // WARNING: Unsupported export: SchemaMatchType
+// WARNING: Unsupported export: ExportGraphicsFunction
 // WARNING: Unsupported export: ChangeSetDescriber
 // (No @packagedocumentation comment for this package)

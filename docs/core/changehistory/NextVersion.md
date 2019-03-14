@@ -3,76 +3,37 @@ ignore: true
 ---
 # NextVersion
 
-## iModelHub file handlers have been moved to imodeljs-clients-backend
+## Changes to OidcAgentClient
 
-Moved AzureFileHandler, IOSAzureFileHandler, UrlFileHandler and the iModelHub tests to the imodeljs-clients-backend package. This removes the dependency of imodeljs-clients on the "fs" module, and turns it into a browser only package.
+OidcAgentClient now follows the typical OIDC client credentials authorization workflow. This implies the caller need not supply "serviceUserEmail" and "serviceUserPassword" as part of the configuration. For example:
 
-To fix related build errors, update imports for these utilities from
-```import {AzureFileHandler, IOSAzureFileHandler, UrlFileHandler} from "@bentley/imodels-clients";```
-to
-```import {AzureFileHandler, IOSAzureFileHandler, UrlFileHandler} from "@bentley/imodels-clients-backend";```
+```ts
+const agentConfiguration:  = {
+      clientId: "some-client-id-obtained-through-registration",
+      clientSecret: "some-client-secret-obtained-through-registration",
+      scope: "context-registry-service imodelhub",
+    };
 
-## Prevented partial downloads of ChangeSets and Briefcases
-
-Backend ChangeSet and Briefcase downloads are atomic - i.e., will not be partially downloaded, and can simultaneously happen in multiple machines.
-
-## Changes to IModelConnection
-
-* In the case of ReadWrite connections, IModelConnection.close() now always disposes the briefcase held at the backend. Applications must ensure that any changes are saved and pushed out to the iModelHub before making this call.
-* IModelConnection.connectionTimeout is now public, allowing applications to customize this in the case of slow networks.
-* Removed unique id per connection: IModelConnection.connectionId
-* Removed `executeQuery` which could not page the result and therefore cannot stream results from backend. This is now replaced with `query`. Code can be updated as following.
-
-```
-  const rows = await conn.executeQuery("SELECT ECInstanceId FROM bis.Element");
-```
-can be change to following async iterator call
-```
-  for await (const row of conn.query("SELECT ECInstanceId FROM bis.Element")) {
-    /* process row */
-  }
-```
-in case user want to control paging manually like in case of virtual grid
-```
-  const pageSize = 500; // Numer of rows per page
-  const pageNo = 20;    // Page of interest
-  const pageOptions = {size: noOfRowsPerPage, start: pageNo};
-  const rows = await conn.queryPage ("SELECT ECInstanceId FROM bis.Element", undefined, pageOptions);
-  // rows will contain 0 to pageSize rows.
-  if (rows.length > 0 ){
-    // process rows
-  } else {
-    // empty page mean there is no rows in that page and next page would also return no rows.
-  }
-```
-in addition to above following can get the maximum number of rows returned by the query
-```
-  const numberOfRows = await conn.queryRowCount("SELECT ECInstanceId FROM bis.Element");
-  // initialize grid scrollbar according to expected number of rows that can be returned by query.
+const agentClient = new OidcAgentClient(agentConfiguration);
 ```
 
-All above can also be used with `ECDb` and `IModelDb` on backend.
-## Changes to IModelApp
+Note that what was OidcAgentClientV2 has now become OidcAgentClient - i.e., the older OidcAgentClient has been entirely replaced.
 
-Added unique id per session: IModelApp.sessionId
+## Deprecation of *standalone* iModels
 
-## Authentication and Authorization related changes (OpenID Connect, OAuth)
+The confusing concept of *standalone* iModels is now deprecated and will be eliminated prior to the 1.0 release.
+All uses of the following *standalone* iModel functions must be migrated:
 
-Fixes to OidcDelegationClient-s. Backend applications can now exchange -
-* OIDC Jason Web Tokens (JWT) for other JWT tokens with additional scope.
-* JWT tokens for legacy SAML tokens for legacy applications.
+- [IModelDb.openStandalone]($backend)
+- [IModelDb.createStandalone]($backend)
+- [IModelConnection.openStandalone]($frontend)
 
-## Logger Configuration Changes
+Change history is essential for editing scenarios, so should use iModels managed by iModelHub. See:
 
-The BunyanLoggerConfig, FluentdBunyanLoggerConfig, FluentdLoggerStream, and SeqLoggerConfig classes have been moved out of @bentley/bentleyjs-core and into the new @bentley/logger-config package.
+- [IModelDb.open]($backend)
+- [IModelConnection.open]($frontend)
 
-## Removed RbacClient
+Archival scenarios can use *snapshot* iModels. Once created, a *snapshot* iModel is read-only. See:
 
-The RBAC API is considered internal and has been removed from the iModel.js stack. More comments on the individual methods that have been removed below.
-
-```
-RbacClient.getProjects() // Use ConnectClient.getProjects() instead
-RbacClient.getIModelHubPermissions() // The plan is for iModelHub to support this API.
-RbacClient.getUsers() // This method is little used. Bentley internal clients can make the necessary REST API calls directly.
-
-```
+- [IModelDb.createSnapshot]($backend)
+- [IModelDb.createSnapshotFromSeed]($backend)

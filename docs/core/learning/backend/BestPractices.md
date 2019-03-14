@@ -19,6 +19,7 @@ Use async functions when an operation is inherently asynchronous. Example: reque
 Break up a long-running synchronous operation into small increments, yielding back to the libuv event loop at regular intervals. You might say that your server must "come up for air" often to remain responsive. The operation becomes a series of asynchronous operations.
 
 Here is some pseudo-code to illustrate yielding.
+
 ``` ts
 const pause = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 

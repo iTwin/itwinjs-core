@@ -39,9 +39,9 @@ describe("FrontstageComposer", () => {
     FrontstageManager.openModalFrontstage(modalFrontstage);
     expect(FrontstageManager.modalFrontstageCount).to.eq(1);
     wrapper.update();
-    expect(wrapper.find("div.modal-frontstage").length).to.eq(1);
+    expect(wrapper.find("div.uifw-modal-frontstage").length).to.eq(1);
 
-    const backButton = wrapper.find("div.nz-toolbar-button-back");
+    const backButton = wrapper.find("button.nz-toolbar-button-back");
     expect(backButton.length).to.eq(1);
     backButton.simulate("click");
     expect(FrontstageManager.modalFrontstageCount).to.eq(0);

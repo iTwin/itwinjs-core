@@ -1,0 +1,16 @@
+{
+  "changes": [
+    {
+      "comment": "`SelectionScopesManager` now stores the active selection scope",
+      "packageName": "@bentley/presentation-frontend",
+      "type": "none"
+    },
+    {
+      "comment": "`SelectionManager` now has ability to sync itself with `IModelConnection.selectionSet`",
+      "packageName": "@bentley/presentation-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-frontend",
+  "email": "grigas.p@gmail.com"
+}

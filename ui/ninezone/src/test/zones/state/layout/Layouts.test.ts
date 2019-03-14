@@ -45,7 +45,7 @@ describe("WidgetZoneLayout", () => {
       const nineZoneMock = Moq.Mock.ofType<NineZone>();
       const nineZoneRootMock = Moq.Mock.ofType<NineZoneRoot>();
       nineZoneRootMock.setup((x) => x.isInFooterMode).returns(() => true);
-      nineZoneRootMock.setup((x) => x.bounds).returns(() => new Rectangle(0, 0, 999, 333));
+      nineZoneRootMock.setup((x) => x.bounds).returns(() => new Rectangle(0, 0, 999, 325));
       nineZoneMock.setup((x) => x.root).returns(() => nineZoneRootMock.object);
       zoneMock.setup((x) => x.nineZone).returns(() => nineZoneMock.object);
       zoneMock.setup((x) => x.cell).returns(() => new Cell(0, 2));

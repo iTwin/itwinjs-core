@@ -8,9 +8,13 @@ import { assert, Id64, Id64String } from "@bentley/bentleyjs-core";
 import { Point3d } from "@bentley/geometry-core";
 import { MeshList } from "../render/primitives/mesh/MeshPrimitives";
 
-/** Provides facilities for deserializing 3d tiles */
+/** Provides facilities for deserializing 3d tiles.
+ * @internal
+ */
 export namespace TileIO {
-  /** Status codes for tile reading operations */
+  /** Status codes for tile reading operations
+   * @internal
+   */
   export const enum ReadStatus {
     Success = 0,
     InvalidTileData,
@@ -22,7 +26,9 @@ export namespace TileIO {
     Canceled,
   }
 
-  /** Type codes for various tile formats. Often these are embedded as 'magic numbers' in a binary stream to indicate the format. */
+  /** Type codes for various tile formats. Often these are embedded as 'magic numbers' in a binary stream to indicate the format.
+   * @internal
+   */
   export const enum Format {
     Unknown = 0,
     B3dm = 0x6d643362, // "b3dm"
@@ -59,6 +65,7 @@ export namespace TileIO {
    * Wraps a binary stream along with a current read position. The position can be adjusted by the caller.
    * Methods and properties beginning with 'next' consume data at the current read position and advance it
    * by the size of the data read.
+   * @internal
    */
   export class StreamBuffer {
     private readonly _view: DataView;
@@ -128,6 +135,7 @@ export namespace TileIO {
    * The base header preceding tile data, identifying the tile format and version of that format.
    * Specific tile formats may define their own headers as sub-types of this Header, appending
    * additional format-specific data.
+   * @internal
    */
   export abstract class Header {
     private _format: Format;
@@ -148,7 +156,7 @@ export namespace TileIO {
     protected invalidate(): void { this._format = Format.Unknown; }
   }
 
-  /** @hidden */
+  /** @internal */
   export class GeometryCollection {
     public constructor(public readonly meshes: MeshList,
       public readonly isComplete: boolean,

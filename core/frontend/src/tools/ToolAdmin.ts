@@ -20,6 +20,7 @@ import { PrimitiveTool } from "./PrimitiveTool";
 import { BeButton, BeButtonEvent, BeButtonState, BeModifierKeys, BeTouchEvent, BeWheelEvent, CoordSource, EventHandled, InputCollector, InputSource, InteractiveTool, Tool } from "./Tool";
 import { ViewTool } from "./ViewTool";
 import { ToolSettingsPropertySyncItem } from "../properties/ToolSettingsValue";
+import { LocateOptions } from "../ElementLocateManager";
 
 export const enum CoordinateLockOverrides {
   None = 0,
@@ -85,15 +86,17 @@ export class ToolState {
 export class SuspendedToolState {
   private readonly _toolState: ToolState;
   private readonly _accuSnapState: AccuSnap.ToolState;
+  private readonly _locateOptions: LocateOptions;
   private readonly _viewCursor?: string;
   private _inDynamics: boolean;
   private _shuttingDown = false;
 
   constructor() {
-    const { toolAdmin, viewManager, accuSnap } = IModelApp;
+    const { toolAdmin, viewManager, accuSnap, locateManager } = IModelApp;
     toolAdmin.setIncompatibleViewportCursor(true); // Don't save this
     this._toolState = toolAdmin.toolState.clone();
     this._accuSnapState = accuSnap.toolState.clone();
+    this._locateOptions = locateManager.options.clone();
     this._viewCursor = viewManager.cursor;
     this._inDynamics = viewManager.inDynamicsMode;
     if (this._inDynamics)
@@ -104,10 +107,11 @@ export class SuspendedToolState {
     if (this._shuttingDown)
       return;
 
-    const { toolAdmin, viewManager, accuSnap } = IModelApp;
+    const { toolAdmin, viewManager, accuSnap, locateManager } = IModelApp;
     toolAdmin.setIncompatibleViewportCursor(true); // Don't restore this
     toolAdmin.toolState.setFrom(this._toolState);
     accuSnap.toolState.setFrom(this._accuSnapState);
+    locateManager.options.setFrom(this._locateOptions);
     viewManager.setViewCursor(this._viewCursor);
     if (this._inDynamics)
       viewManager.beginDynamicsMode();
@@ -389,8 +393,8 @@ export class ToolAdmin {
     this._idleTool = IModelApp.tools.create("Idle") as IdleTool;
 
     ["keydown", "keyup"].forEach((type) => {
-      document.addEventListener(type, ToolAdmin._keyEventHandler as EventListener, true);
-      ToolAdmin._removals.push(() => { document.removeEventListener(type, ToolAdmin._keyEventHandler as EventListener, true); });
+      document.addEventListener(type, ToolAdmin._keyEventHandler as EventListener, false);
+      ToolAdmin._removals.push(() => { document.removeEventListener(type, ToolAdmin._keyEventHandler as EventListener, false); });
     });
 
     // the list of currently down keys can get out of sync if a key goes down and then we lose focus. Clear the list every time we get focus.
@@ -440,10 +444,10 @@ export class ToolAdmin {
       this._toolEvents.push(event); // otherwise put it at the end of the queue.
   }
 
-  private getMousePosition(event: ToolEvent): Point2d {
+  private getMousePosition(event: ToolEvent): XAndY {
     const ev = event.ev as MouseEvent;
     const rect = event.vp!.getClientRect();
-    return Point2d.createFrom({ x: ev.clientX - rect.left, y: ev.clientY - rect.top });
+    return { x: ev.clientX - rect.left, y: ev.clientY - rect.top };
   }
 
   private getMouseButton(button: number) {
@@ -1150,8 +1154,10 @@ export class ToolAdmin {
     if (wentDown && keyEvent.ctrlKey) {
       switch (keyEvent.key) {
         case "z":
+        case "Z":
           return this.doUndoOperation();
         case "y":
+        case "Y":
           return this.doRedoOperation();
       }
     }

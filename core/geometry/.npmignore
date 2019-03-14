@@ -2,6 +2,7 @@
 *
 !lib/**/*.d.ts
 !lib/**/*.js
+!lib/module/dev/geometry-core.js.map
 test
 !package.json
 !LICENSE.md

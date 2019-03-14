@@ -7,12 +7,13 @@ import {
   IDisposable, IModelStatus, Logger, OpenMode, RepositoryStatus, StatusCodeWithMessage,
 } from "@bentley/bentleyjs-core";
 import { ElementProps, ChangedElements } from "@bentley/imodeljs-common";
+import { ExportGraphicsProps } from "./ExportGraphics";
 import { IModelDb } from "./IModelDb";
 
 // tslint:disable:prefer-get
 
 /** Module that declares the IModelJs native code.
- * @hidden
+ * @internal
  */
 export declare namespace IModelJsNative {
   export const version: string;
@@ -20,9 +21,7 @@ export declare namespace IModelJsNative {
   export function initializeRegion(region: number): void;
   export type TxnIdString = string;
 
-  /**
-   * The return type of synchronous functions that may return an error or a successful result.
-   */
+  /** The return type of synchronous functions that may return an error or a successful result. */
   export interface ErrorStatusOrResult<ErrorCodeType, ResultType> {
     /** Error from the operation. This property is defined if and only if the operation failed. */
     error?: StatusCodeWithMessage<ErrorCodeType>;
@@ -31,16 +30,13 @@ export declare namespace IModelJsNative {
     result?: ResultType;
   }
 
-  /**
-   */
   export class BriefcaseManagerResourcesRequest {
     public reset(): void;
     public isEmpty(): boolean;
     public toJSON(): string;
   }
 
-  /**
-   * The options for how conflicts are to be handled during change-merging in an OptimisticConcurrencyControlPolicy.
+  /** The options for how conflicts are to be handled during change-merging in an OptimisticConcurrencyControlPolicy.
    * The scenario is that the caller has made some changes to the *local* briefcase. Now, the caller is attempting to
    * merge in changes from iModelHub. The properties of this policy specify how to handle the *incoming* changes from iModelHub.
    */
@@ -84,6 +80,7 @@ export declare namespace IModelJsNative {
     public enableTxnTesting(): void;
     public endMultiTxnOperation(): DbResult;
     public executeTest(testName: string, params: string): string;
+    public exportGraphics(exportProps: ExportGraphicsProps): DbResult;
     public extractBriefcaseManagerResourcesRequest(reqOut: BriefcaseManagerResourcesRequest, reqIn: BriefcaseManagerResourcesRequest, locks: boolean, codes: boolean): void;
     public extractBulkResourcesRequest(req: BriefcaseManagerResourcesRequest, locks: boolean, codes: boolean): void;
     public extractChangeSummary(changeCacheFile: ECDb, changesetFilePath: string): ErrorStatusOrResult<DbResult, string>;
@@ -343,7 +340,6 @@ export declare namespace IModelJsNative {
     public dispose(): void;
   }
 
-  /** @hidden */
   export class ImportContext implements IDisposable {
     constructor(sourceDb: DgnDb, targetDb: DgnDb);
     public dispose(): void;

@@ -155,7 +155,7 @@ class RequestTileContentMemoizer extends TileRequestMemoizer<Uint8Array, TileCon
   }
 }
 
-/** @hidden */
+/** @internal */
 export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInterface {
   public static register() { RpcManager.registerImpl(IModelTileRpcInterface, IModelTileRpcImpl); }
 

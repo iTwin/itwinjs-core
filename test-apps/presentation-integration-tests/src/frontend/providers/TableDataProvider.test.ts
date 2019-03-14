@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import { initialize, terminate } from "../../IntegrationTests";
-import { OpenMode, Id64 } from "@bentley/bentleyjs-core";
+import { Id64 } from "@bentley/bentleyjs-core";
 import { ModelProps } from "@bentley/imodeljs-common";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { KeySet, instanceKeyFromJSON } from "@bentley/presentation-common";
@@ -35,7 +35,7 @@ describe("TableDataProvider", async () => {
   before(async () => {
     initialize();
     const testIModelName: string = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
-    imodel = await IModelConnection.openStandalone(testIModelName, OpenMode.Readonly);
+    imodel = await IModelConnection.openSnapshot(testIModelName);
     instances = await createMeaningfulInstances(imodel);
   });
 
@@ -44,7 +44,7 @@ describe("TableDataProvider", async () => {
   });
 
   after(async () => {
-    await imodel.closeStandalone();
+    await imodel.closeSnapshot();
     terminate();
   });
 

@@ -68,9 +68,20 @@ function imageBufferToCanvas(buffer: ImageBuffer): HTMLCanvasElement | undefined
   return canvas;
 }
 
-/** Get a string describing the mime type associated with an ImageSource format. */
+/** Get a string describing the mime type associated with an ImageSource format.
+ * @public
+ */
 export function getImageSourceMimeType(format: ImageSourceFormat): string {
-  return ImageSourceFormat.Jpeg === format ? "image/jpeg" : "image/png";
+
+  switch (format) {
+    case ImageSourceFormat.Jpeg:
+      return "image/jpeg";
+    case ImageSourceFormat.Png:
+      return "image/png";
+    case ImageSourceFormat.Svg:
+      return "image/svg+xml;charset=utf-8";
+  }
+  return "";
 }
 
 /** Get the ImageSourceFormat corresponding to the mime type string, or undefined if the string does not identify a supported ImageSourceFormat. */
@@ -78,6 +89,7 @@ export function getImageSourceFormatForMimeType(mimeType: string): ImageSourceFo
   switch (mimeType) {
     case "image/jpeg": return ImageSourceFormat.Jpeg;
     case "image/png": return ImageSourceFormat.Png;
+    case "image/svg+xml;charset=utf-8": return ImageSourceFormat.Svg;
     default: return undefined;
   }
 }
@@ -86,12 +98,18 @@ export function getImageSourceFormatForMimeType(mimeType: string): ImageSourceFo
  * Extract an html Image element from a binary jpeg or png.
  * @param source The ImageSource containing the binary jpeg or png data.
  * @returns a Promise which resolves to an HTMLImageElement containing the uncompressed bitmap image in RGBA format.
+ * @public
  */
 export async function imageElementFromImageSource(source: ImageSource): Promise<HTMLImageElement> {
   const blob = new Blob([source.data], { type: getImageSourceMimeType(source.format) });
   return imageElementFromUrl(URL.createObjectURL(blob));
 }
 
+/** Create an html Image element from a URL.
+ * @param url The URL pointing to the image data.
+ * @returns A Promise resolving to an HTMLImageElement when the image data has been loaded from the URL.
+ * @public
+ */
 export async function imageElementFromUrl(url: string): Promise<HTMLImageElement> {
   return new Promise((resolve: (image: HTMLImageElement) => void, reject) => {
     const image = new Image();
@@ -105,6 +123,7 @@ export async function imageElementFromUrl(url: string): Promise<HTMLImageElement
  * Extract the dimensions of the jpeg or png data encoded in an ImageSource.
  * @param source The ImageSource containing the binary jpeg or png data.
  * @returns a Promise resolving to a Point2d of which x corresponds to the integer width of the uncompressed bitmap and y to the height.
+ * @public
  */
 export async function extractImageSourceDimensions(source: ImageSource): Promise<Point2d> {
   return imageElementFromImageSource(source).then((image) => new Point2d(image.naturalWidth, image.naturalHeight));
@@ -114,6 +133,7 @@ export async function extractImageSourceDimensions(source: ImageSource): Promise
  * Produces a data url in "image/png" format from the contents of an ImageBuffer.
  * @param buffer The ImageBuffer, of any format.
  * @returns a data url as a string suitable for setting as the `src` property of an HTMLImageElement, or undefined if the url could not be created.
+ * @public
  */
 export function imageBufferToPngDataUrl(buffer: ImageBuffer): string | undefined {
   // The default format (and the only format required to be supported) for toDataUrl() is "image/png".
@@ -125,6 +145,7 @@ export function imageBufferToPngDataUrl(buffer: ImageBuffer): string | undefined
  * Converts the contents of an ImageBuffer to PNG format.
  * @param buffer The ImageBuffer, of any format.
  * @returns a base64-encoded string representing the image as a PNG, or undefined if the conversion failed.
+ * @public
  */
 export function imageBufferToBase64EncodedPng(buffer: ImageBuffer): string | undefined {
   const urlPrefix = "data:image/png;base64,";

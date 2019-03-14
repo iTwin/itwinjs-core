@@ -453,7 +453,7 @@ export class Vector2d extends XY implements BeJSONFunctions {
     return this.scale(length / mag, result);
   }
   /** return the dot product of this with vectorB */
-  public dotProduct(vectorB: Vector2d): number { return this.x * vectorB.x + this.y * vectorB.y; }
+  public dotProduct(vectorB: XAndY): number { return this.x * vectorB.x + this.y * vectorB.y; }
 
   /** dot product with vector from pointA to pointB */
   public dotProductStartEnd(pointA: XAndY, pointB: XAndY): number {
@@ -462,9 +462,9 @@ export class Vector2d extends XY implements BeJSONFunctions {
   }
 
   /** vector cross product {this CROSS vectorB} */
-  public crossProduct(vectorB: Vector2d): number { return this.x * vectorB.y - this.y * vectorB.x; }
+  public crossProduct(vectorB: XAndY): number { return this.x * vectorB.y - this.y * vectorB.x; }
   /** return the (signed) angle from this to vectorB.   This is positive if the shortest turn is counterclockwise, negative if clockwise. */
-  public angleTo(vectorB: Vector2d): Angle {
+  public angleTo(vectorB: XAndY): Angle {
     return Angle.createAtan2(this.crossProduct(vectorB), this.dotProduct(vectorB));
   }
 

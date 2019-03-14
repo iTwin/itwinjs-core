@@ -167,6 +167,7 @@ export class SampleAppIModelApp extends IModelApp {
 
   public static async initialize() {
     Presentation.initialize();
+    Presentation.selection.scopes.activeScope = "top-assembly";
     UiCore.initialize(SampleAppIModelApp.i18n); // tslint:disable-line:no-floating-promises
     UiComponents.initialize(SampleAppIModelApp.i18n); // tslint:disable-line:no-floating-promises
 

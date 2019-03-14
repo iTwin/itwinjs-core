@@ -6,7 +6,8 @@
 @import "../_variables";
 
 .nz-footer-snapMode-indicator {
-  height: 100%;
+  height: calc(100% - #{$nz-footer-vertical-padding-height});
+  top: $nz-footer-vertical-padding;
   display: flex;
   align-items: center;
   position: relative;
@@ -51,6 +52,6 @@
 }
 
 .nz-footer-snapMode-indicator:hover {
-  background-color: $buic-foreground-primary;
+  color: $buic-foreground-primary;
   cursor: pointer;
 }

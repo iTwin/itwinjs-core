@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module RPC */
 
-import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
-import { IModelToken, EntityProps } from "@bentley/imodeljs-common";
+import { ActivityLoggingContext, Id64String } from "@bentley/bentleyjs-core";
+import { IModelToken } from "@bentley/imodeljs-common";
 import { IModelDb } from "@bentley/imodeljs-backend";
 import {
   PresentationRpcInterface,
@@ -14,8 +14,7 @@ import {
   PresentationError, PresentationStatus,
   Paged, RequestOptions, InstanceKey, KeySet,
   RulesetManagerState, RulesetVariablesState,
-  Omit,
-  SelectionScope,
+  Omit, SelectionScope, DescriptorOverrides,
   NodesResponse, ContentResponse, RpcResponse,
   PresentationRpcResponse, RpcRequestOptions,
   HierarchyRpcRequestOptions, ContentRpcRequestOptions,
@@ -169,32 +168,31 @@ export default class PresentationRpcImpl extends PresentationRpcInterface {
     return this.makeRequest(token, requestOptions, contentGetter);
   }
 
-  public async getContentSetSize(token: IModelToken, requestOptions: ContentRpcRequestOptions, descriptorOrDisplayType: Readonly<Descriptor> | string, keys: Readonly<KeySet>): PresentationRpcResponse<number> {
-    const contentGetter: ContentGetter<Promise<number>> = (actx, options) =>
-      this.getManager(requestOptions.clientId).getContentSetSize(actx, options, descriptorOrDisplayType, keys);
-
+  public async getContentSetSize(token: IModelToken, requestOptions: ContentRpcRequestOptions, descriptorOrOverrides: Readonly<Descriptor> | DescriptorOverrides, keys: Readonly<KeySet>): PresentationRpcResponse<number> {
+    const contentGetter: ContentGetter<Promise<number>> = async (actx, options) =>
+      this.getManager(requestOptions.clientId).getContentSetSize(actx, options, descriptorOrOverrides, keys);
     return this.makeRequest(token, requestOptions, contentGetter);
   }
 
-  public async getContentAndSize(token: IModelToken, requestOptions: ContentRpcRequestOptions, descriptorOrDisplayType: Readonly<Descriptor> | string, keys: Readonly<KeySet>): PresentationRpcResponse<Readonly<ContentResponse>> {
+  public async getContentAndSize(token: IModelToken, requestOptions: ContentRpcRequestOptions, descriptorOrOverrides: Readonly<Descriptor> | DescriptorOverrides, keys: Readonly<KeySet>): PresentationRpcResponse<Readonly<ContentResponse>> {
     const contentGetter: ContentGetter<Promise<Readonly<ContentResponse>>> = async (actx, options) => {
-      const contentResult = await this.getManager(requestOptions.clientId).getContentAndSize(actx, options, descriptorOrDisplayType, keys);
+      const result = await this.getManager(requestOptions.clientId).getContentAndSize(actx, options, descriptorOrOverrides, keys);
       actx.enter();
-      contentResult.content.descriptor.resetParentship();
-      return contentResult;
+      if (result.content)
+        result.content.descriptor.resetParentship();
+      return result;
     };
-
     return this.makeRequest(token, requestOptions, contentGetter);
   }
 
-  public async getContent(token: IModelToken, requestOptions: Paged<ContentRpcRequestOptions>, descriptorOrDisplayType: Readonly<Descriptor> | string, keys: Readonly<KeySet>): PresentationRpcResponse<Readonly<Content>> {
-    const contentGetter: ContentGetter<Promise<Readonly<Content>>> = async (actx, options) => {
-      const content: Content = await this.getManager(requestOptions.clientId).getContent(actx, options, descriptorOrDisplayType, keys);
+  public async getContent(token: IModelToken, requestOptions: Paged<ContentRpcRequestOptions>, descriptorOrOverrides: Readonly<Descriptor> | DescriptorOverrides, keys: Readonly<KeySet>): PresentationRpcResponse<Readonly<Content> | undefined> {
+    const contentGetter: ContentGetter<Promise<Readonly<Content> | undefined>> = async (actx, options) => {
+      const content = await this.getManager(requestOptions.clientId).getContent(actx, options, descriptorOrOverrides, keys);
       actx.enter();
-      content.descriptor.resetParentship();
+      if (content)
+        content.descriptor.resetParentship();
       return content;
     };
-
     return this.makeRequest(token, requestOptions, contentGetter);
   }
 
@@ -212,9 +210,9 @@ export default class PresentationRpcImpl extends PresentationRpcInterface {
     return this.makeRequest(token, requestOptions, contentGetter);
   }
 
-  public async computeSelection(token: IModelToken, requestOptions: SelectionScopeRpcRequestOptions, keys: Readonly<EntityProps[]>, scopeId: string): PresentationRpcResponse<KeySet> {
+  public async computeSelection(token: IModelToken, requestOptions: SelectionScopeRpcRequestOptions, ids: Readonly<Id64String[]>, scopeId: string): PresentationRpcResponse<KeySet> {
     const contentGetter: ContentGetter<Promise<KeySet>> = (actx, options) =>
-      this.getManager(requestOptions.clientId).computeSelection(actx, options, keys, scopeId);
+      this.getManager(requestOptions.clientId).computeSelection(actx, options, ids, scopeId);
 
     return this.makeRequest(token, requestOptions, contentGetter);
   }

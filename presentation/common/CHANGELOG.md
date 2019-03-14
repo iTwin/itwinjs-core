@@ -1,6 +1,24 @@
 # Change Log - @bentley/presentation-common
 
-This log was last generated on Wed, 16 Jan 2019 16:36:09 GMT and should not be manually modified.
+This log was last generated on Wed, 06 Mar 2019 15:41:22 GMT and should not be manually modified.
+
+## 0.189.0
+Wed, 06 Mar 2019 15:41:22 GMT
+
+### Updates
+
+- Changes package.json to include api-extractor and adds api-extractor.json
+- Added RpcResponse and PresentationRpcResponse interfaces and changed PresentationRpcInterface to return PresentationRpcResponses instead of raw values.
+- Use new buildIModelJsBuild script
+- Remove uneeded typedoc plugin depedency
+- Create RulesetFactory API for creating presentation rulesets targeted towards specific cases, like 'find similar', etc.
+- Save BUILD_SEMVER to globally accessible map
+- Change `RulesetsFactory.createSimilarInstancesRuleset` return type from a `Ruleset` to `{ ruleset: Ruleset, description: string }`
+- Fix RPC requests handler to re-request data if frontend got out-of-sync while syncing with the backed.
+- Add selection scopes -related RPC handlers
+- RPC Interface changes to optimize getting first page of nodes/content
+- Expose node key type guards through index
+- upgrade to TypeScript 3.2.2
 
 ## 0.188.0
 Wed, 16 Jan 2019 16:36:09 GMT

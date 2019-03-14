@@ -738,22 +738,6 @@ class IModelHubGlobalEvent extends IModelHubBaseEvent {
   projectId?: string;
 }
 
-// @public (undocumented)
-enum IModelHubPermissions {
-  // (undocumented)
-  CreateIModel = 1,
-  // (undocumented)
-  ManageResources = 8,
-  // (undocumented)
-  ManageVersions = 16,
-  // (undocumented)
-  ModifyIModel = 4,
-  // (undocumented)
-  None = 0,
-  // (undocumented)
-  ReadIModel = 2
-}
-
 // @public
 class IModelQuery extends InstanceIdQuery {
   byName(name: string): this;
@@ -1060,19 +1044,6 @@ class Query {
   select(select: string): this;
   skip(n: number): this;
   top(n: number): this;
-}
-
-// WARNING: configRelyingPartyUri has incomplete type information
-// @public
-class RbacClient extends WsgClient {
-  constructor();
-  getIModelHubPermissions(alctx: ActivityLoggingContext, token: AccessToken, projectId: string): Promise<IModelHubPermissions>;
-  getProjects(alctx: ActivityLoggingContext, token: AccessToken, queryOptions?: RbacRequestQueryOptions): Promise<RbacProject[]>;
-  protected getRelyingPartyUrl(): string;
-  protected getUrlSearchKey(): string;
-  getUsers(alctx: ActivityLoggingContext, token: AccessToken, projectId: string, queryOptions?: RbacRequestQueryOptions): Promise<RbacUser[]>;
-  // (undocumented)
-  static readonly searchKey: string;
 }
 
 // @public

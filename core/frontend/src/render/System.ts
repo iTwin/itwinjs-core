@@ -26,11 +26,11 @@ import { ClipPlanesVolume } from "./webgl/ClipVolume";
 import { PlanarClassifierMap } from "./webgl/PlanarClassifier";
 
 /** Contains metadata about memory consumed by the render system or aspect thereof.
- * @hidden
+ * @internal
  */
 export namespace RenderMemory {
   /** Describes memory consumed by a particular type of resource.
-   * @hidden
+   * @internal
    */
   export class Consumers {
     public totalBytes = 0; // total number of bytes consumed by all consumers
@@ -48,6 +48,7 @@ export namespace RenderMemory {
     }
   }
 
+  /** @internal */
   export const enum BufferType {
     Surfaces = 0,
     VisibleEdges,
@@ -62,7 +63,7 @@ export namespace RenderMemory {
   }
 
   /** Describes memory consumed by GPU-allocated buffers.
-   * @hidden
+   * @internal
    */
   export class Buffers extends Consumers {
     public readonly consumers: Consumers[];
@@ -96,6 +97,7 @@ export namespace RenderMemory {
     }
   }
 
+  /** @internal */
   export const enum ConsumerType {
     Textures = 0,
     VertexTables,
@@ -107,7 +109,7 @@ export namespace RenderMemory {
     COUNT,
   }
 
-  /** @hidden */
+  /** @internal */
   export class Statistics {
     private _totalBytes = 0;
     public readonly consumers: Consumers[];
@@ -161,14 +163,14 @@ export namespace RenderMemory {
     public addInstances(numBytes: number) { this.addBuffer(BufferType.Instances, numBytes); }
   }
 
-  /** @hidden */
+  /** @internal */
   export interface Consumer {
     collectStatistics(stats: Statistics): void;
   }
 }
 
 /* A RenderPlan holds a Frustum and the render settings for displaying a RenderScene into a RenderTarget.
- * @hidden
+ * @internal
  */
 export class RenderPlan {
   public readonly is3d: boolean;
@@ -263,7 +265,7 @@ export class RenderPlan {
 export abstract class RenderGraphic implements IDisposable, RenderMemory.Consumer {
   public abstract dispose(): void;
 
-  /** @hidden */
+  /** @internal */
   public abstract collectStatistics(stats: RenderMemory.Statistics): void;
 }
 
@@ -363,9 +365,8 @@ export class Decorations implements IDisposable {
 
   public canvasDecorations?: CanvasDecorationList;
 
-  /** @hidden */
+  /** A view decoration created from a [[SkyBox]] rendered behind all other geometry to provide environmental context. */
   public get skyBox(): RenderGraphic | undefined { return this._skyBox; }
-  /** @hidden */
   public set skyBox(skyBox: RenderGraphic | undefined) { dispose(this._skyBox); this._skyBox = skyBox; }
   /** A view decoration drawn as the background of the view. @see [[GraphicType.ViewBackground]]. */
   public get viewBackground(): RenderGraphic | undefined { return this._viewBackground; }
@@ -407,17 +408,23 @@ export class GraphicBranch implements IDisposable, RenderMemory.Consumer {
   private _viewFlagOverrides = new ViewFlag.Overrides();
   /** Optional symbology overrides to be applied to all graphics in this branch */
   public symbologyOverrides?: FeatureSymbology.Overrides;
-  /** Optional animation branch Id. */
+  /** Optional animation branch Id.
+   * @internal
+   */
   public animationId?: string;
 
+  /** Constructor
+   * @param ownsEntries If true, when this branch is [[dispose]]d, all of the [[RenderGraphic]]s it contains will also be disposed.
+   */
   public constructor(ownsEntries: boolean = false) { this.ownsEntries = ownsEntries; }
 
+  /** Add a graphic to this branch. */
   public add(graphic: RenderGraphic): void { this.entries.push(graphic); }
-  /** @hidden */
+  /** @internal */
   public getViewFlags(flags: ViewFlags, out?: ViewFlags): ViewFlags { return this._viewFlagOverrides.apply(flags.clone(out)); }
-  /** @hidden */
+  /** @internal */
   public setViewFlags(flags: ViewFlags): void { this._viewFlagOverrides.overrideAll(flags); }
-  /** @hidden */
+  /** @internal */
   public setViewFlagOverrides(ovr: ViewFlag.Overrides): void { this._viewFlagOverrides.copyFrom(ovr); }
 
   public dispose() { this.clear(); }
@@ -431,7 +438,7 @@ export class GraphicBranch implements IDisposable, RenderMemory.Consumer {
       this.entries.length = 0;
   }
 
-  /** @hidden */
+  /** @internal */
   public collectStatistics(stats: RenderMemory.Statistics): void {
     for (const entry of this.entries)
       entry.collectStatistics(stats);
@@ -457,7 +464,7 @@ export namespace Pixel {
 
   /** Describes the foremost type of geometry which produced the [[Pixel.Data]]. */
   export const enum GeometryType {
-    /** [[Pixel.Selector.Geometry]] was not specified, or the type could not be determined. */
+    /** [[Pixel.Selector.GeometryAndDistance]] was not specified, or the type could not be determined. */
     Unknown, // Geometry was not selected, or type could not be determined
     /** No geometry was rendered to this pixel. */
     None,
@@ -473,7 +480,7 @@ export namespace Pixel {
 
   /** Describes the planarity of the foremost geometry which produced the pixel. */
   export const enum Planarity {
-    /** [[Pixel.Selector.Geometry]] was not specified, or the planarity could not be determined. */
+    /** [[Pixel.Selector.GeometryAndDistance]] was not specified, or the planarity could not be determined. */
     Unknown,
     /** No geometry was rendered to this pixel. */
     None,
@@ -535,7 +542,7 @@ export class PackedFeatureTable {
 
   /** Construct a PackedFeatureTable from the packed binary data.
    * This is used internally when deserializing Tiles in iMdl format.
-   * @hidden
+   * @internal
    */
   public constructor(data: Uint32Array, modelId: Id64String, numFeatures: number, maxFeatures: number, type: BatchType, animationNodeIds?: Uint8Array | Uint16Array | Uint32Array) {
     this._data = data;
@@ -615,7 +622,7 @@ export class PackedFeatureTable {
     return featureIndex < this.numFeatures ? this.getFeature(featureIndex) : undefined;
   }
 
-  /** @hidden */
+  /** @internal */
   public getElementIdPair(featureIndex: number): Id64.Uint32Pair {
     assert(featureIndex < this.numFeatures);
     const offset = 3 * featureIndex;
@@ -625,12 +632,12 @@ export class PackedFeatureTable {
     };
   }
 
-  /** @hidden */
+  /** @internal */
   public getAnimationNodeId(featureIndex: number): number {
     return undefined !== this._animationNodeIds ? this._animationNodeIds[featureIndex] : 0;
   }
 
-  /** @hidden */
+  /** @internal */
   public getPackedFeature(featureIndex: number): PackedFeature {
     assert(featureIndex < this.numFeatures);
 
@@ -687,79 +694,49 @@ export class PackedFeatureTable {
 /** A RenderTarget connects a [[Viewport]] to a WebGLRenderingContext to enable the viewport's contents to be displayed on the screen.
  * Application code rarely interacts directly with a RenderTarget - instead, it interacts with a Viewport which forwards requests to the implementation
  * of the RenderTarget.
+ * @internal
  */
 export abstract class RenderTarget implements IDisposable {
-  /** @hidden */
   public pickOverlayDecoration(_pt: XAndY): CanvasDecoration | undefined { return undefined; }
 
-  /** @hidden */
   public static get frustumDepth2d(): number { return 1.0; } // one meter
-  /** @hidden */
   public static get maxDisplayPriority(): number { return (1 << 23) - 32; }
-  /** @hidden */
   public static get minDisplayPriority(): number { return -this.maxDisplayPriority; }
 
-  /** Returns a transform mapping an object's display priority to a depth from 0 to frustumDepth2d.
-   * @hidden
-   */
+  /** Returns a transform mapping an object's display priority to a depth from 0 to frustumDepth2d. */
   public static depthFromDisplayPriority(priority: number): number {
     return (priority - this.minDisplayPriority) / (this.maxDisplayPriority - this.minDisplayPriority) * this.frustumDepth2d;
   }
 
-  /** @hidden */
   public abstract get renderSystem(): RenderSystem;
-  /** @hidden */
   public abstract get cameraFrustumNearScaleLimit(): number;
-  /** @hidden */
   public abstract get viewRect(): ViewRect;
-  /** @hidden */
   public abstract get wantInvertBlackBackground(): boolean;
 
-  /** @hidden */
   public abstract get animationFraction(): number;
-  /** @hidden */
   public abstract set animationFraction(fraction: number);
 
-  /** @hidden */
   public get animationBranches(): AnimationBranchStates | undefined { return undefined; }
-  /** @hidden */
   public set animationBranches(_transforms: AnimationBranchStates | undefined) { }
 
-  /** @hidden */
   public createGraphicBuilder(type: GraphicType, viewport: Viewport, placement: Transform = Transform.identity, pickableId?: Id64String) { return this.renderSystem.createGraphicBuilder(placement, type, viewport, pickableId); }
 
   public dispose(): void { }
-  /** @hidden */
   public reset(): void { }
-  /** @hidden */
   public abstract changeScene(scene: GraphicList): void;
-  /** @hidden */
   public abstract changeTerrain(_scene: GraphicList): void;
-  /** @hidden */
   public changePlanarClassifiers(_classifiers?: PlanarClassifierMap): void { }
-  /** @hidden */
   public abstract changeDynamics(dynamics?: GraphicList): void;
-  /** @hidden */
   public abstract changeDecorations(decorations: Decorations): void;
-  /** @hidden */
   public abstract changeRenderPlan(plan: RenderPlan): void;
-  /** @hidden */
   public abstract drawFrame(sceneMilSecElapsed?: number): void;
-  /** @hidden */
   public overrideFeatureSymbology(_ovr: FeatureSymbology.Overrides): void { }
-  /** @hidden */
   public setHiliteSet(_hilited: Set<string>): void { }
-  /** @hidden */
   public setFlashed(_elementId: Id64String, _intensity: number): void { }
-  /** @hidden */
   public abstract setViewRect(_rect: ViewRect, _temporary: boolean): void;
-  /** @hidden */
   public onResized(): void { }
-  /** @hidden */
   public abstract updateViewRect(): boolean; // force a RenderTarget viewRect to resize if necessary since last draw
-  /** @hidden */
   public abstract readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable: boolean): void;
-  /** @hidden */
   public readImage(_rect: ViewRect, _targetSize: Point2d, _flipVertically: boolean): ImageBuffer | undefined { return undefined; }
 }
 
@@ -771,7 +748,7 @@ export interface TextureImage {
   format: ImageSourceFormat | undefined;
 }
 
-/** @hidden */
+/** @internal */
 export const enum RenderDiagnostics {
   /** No diagnostics enabled. */
   None = 0,
@@ -806,21 +783,23 @@ export interface InstancedGraphicParams {
 }
 
 /** A RenderSystem provides access to resources used by the internal WebGL-based rendering system.
+ * An application rarely interacts directly with the RenderSystem; instead it interacts with types like [[Viewport]] which
+ * coordinate with the RenderSystem on the application's behalf.
  * @see [[IModelApp.renderSystem]].
  */
 export abstract class RenderSystem implements IDisposable {
-  /** @hidden */
+  /** @internal */
   public abstract get isValid(): boolean;
 
-  /** @hidden */
+  /** @internal */
   public abstract dispose(): void;
 
-  /** @hidden */
+  /** @internal */
   public get maxTextureSize(): number { return 0; }
 
-  /** @hidden */
+  /** @internal */
   public abstract createTarget(canvas: HTMLCanvasElement): RenderTarget;
-  /** @hidden */
+  /** @internal */
   public abstract createOffscreenTarget(rect: ViewRect): RenderTarget;
 
   /** Find a previously-created [[RenderMaterial]] by its ID.
@@ -851,13 +830,13 @@ export abstract class RenderSystem implements IDisposable {
    */
   public abstract createGraphicBuilder(placement: Transform, type: GraphicType, viewport: Viewport, pickableId?: Id64String): GraphicBuilder;
 
-  /** @hidden */
+  /** @internal */
   public createTriMesh(args: MeshArgs, instances?: InstancedGraphicParams): RenderGraphic | undefined {
     const params = MeshParams.create(args);
     return this.createMesh(params, instances);
   }
 
-  /** @hidden */
+  /** @internal */
   public createIndexedPolylines(args: PolylineArgs, instances?: InstancedGraphicParams): RenderGraphic | undefined {
     if (args.flags.isDisjoint) {
       const pointStringParams = PointStringParams.create(args);
@@ -868,24 +847,24 @@ export abstract class RenderSystem implements IDisposable {
     }
   }
 
-  /** @hidden */
+  /** @internal */
   public createMesh(_params: MeshParams, _instances?: InstancedGraphicParams): RenderGraphic | undefined { return undefined; }
-  /** @hidden */
+  /** @internal */
   public createPolyline(_params: PolylineParams, _instances?: InstancedGraphicParams): RenderGraphic | undefined { return undefined; }
-  /** @hidden */
+  /** @internal */
   public createPointString(_params: PointStringParams, _instances?: InstancedGraphicParams): RenderGraphic | undefined { return undefined; }
-  /** @hidden */
+  /** @internal */
   public createPointCloud(_args: PointCloudArgs, _imodel: IModelConnection): RenderGraphic | undefined { return undefined; }
-  /** @hidden */
+  /** @internal */
   public createSheetTilePolyfaces(_corners: Point3d[], _clip?: ClipVector): IndexedPolyface[] { return []; }
-  /** @hidden */
+  /** @internal */
   public createSheetTile(_tile: RenderTexture, _polyfaces: IndexedPolyface[], _tileColor: ColorDef): GraphicList { return []; }
-  /** @hidden */
+  /** @internal */
   public getClipVolume(_clipVector: ClipVector, _imodel: IModelConnection): RenderClipVolume | undefined { return undefined; }
-  /** @hidden */
+  /** @internal */
   public getClassifier(_classifierModelId: Id64String, _iModel: IModelConnection): RenderClassifierModel | undefined { return undefined; }
 
-  /** @hidden */
+  /** @internal */
   public createTile(tileTexture: RenderTexture, corners: Point3d[]): RenderGraphic | undefined {
     const rasterTile = new MeshArgs();
 
@@ -924,9 +903,7 @@ export abstract class RenderSystem implements IDisposable {
     return this.createBranch(branch, transform);
   }
 
-  /** Create a Graphic for a sky box which encompasses the entire scene, rotating with the camera.  See SkyBox.CreateParams.
-   * @hidden
-   */
+  /** Create a Graphic for a [[SkyBox]] which encompasses the entire scene, rotating with the camera. */
   public createSkyBox(_params: SkyBox.CreateParams): RenderGraphic | undefined { return undefined; }
 
   /** Create a RenderGraphic consisting of a list of Graphics to be drawn together. */
@@ -936,7 +913,7 @@ export abstract class RenderSystem implements IDisposable {
   public abstract createBranch(branch: GraphicBranch, transform: Transform, clips?: RenderClipVolume, planarClassifier?: RenderPlanarClassifier): RenderGraphic;
 
   /** Create a RenderGraphic consisting of batched [[Feature]]s.
-   * @hidden
+   * @internal
    */
   public abstract createBatch(graphic: RenderGraphic, features: PackedFeatureTable, range: ElementAlignedBox3d): RenderGraphic;
 
@@ -1014,18 +991,20 @@ export abstract class RenderSystem implements IDisposable {
   }
 
   /** Create a new texture from a cube of HTML images.
-   * @hidden
+   * @internal
    */
   public createTextureFromCubeImages(_posX: HTMLImageElement, _negX: HTMLImageElement, _posY: HTMLImageElement, _negY: HTMLImageElement, _posZ: HTMLImageElement, _negZ: HTMLImageElement, _imodel: IModelConnection, _params: RenderTexture.Params): RenderTexture | undefined { return undefined; }
 
-  /** @hidden */
+  /** @internal */
   public onInitialized(): void { }
 
-  /** @hidden */
+  /** @internal */
   public enableDiagnostics(_enable: RenderDiagnostics): void { }
 }
 
-/** Clip/Transform for a branch that are varied over time. */
+/** Clip/Transform for a branch that are varied over time.
+ * @internal
+ */
 export class AnimationBranchState {
   public readonly omit?: boolean;
   public readonly transform?: Transform;
@@ -1033,5 +1012,7 @@ export class AnimationBranchState {
   constructor(transform?: Transform, clip?: ClipPlanesVolume, omit?: boolean) { this.transform = transform; this.clip = clip; this.omit = omit; }
 }
 
-/** Mapping from node/branch IDs to animation branch state  */
+/** Mapping from node/branch IDs to animation branch state
+ * @internal
+ */
 export type AnimationBranchStates = Map<string, AnimationBranchState>;

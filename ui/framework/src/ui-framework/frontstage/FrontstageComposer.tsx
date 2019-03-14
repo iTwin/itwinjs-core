@@ -210,7 +210,7 @@ export class FrontstageComposer extends React.Component<FrontstageComposerProps,
     }
 
     return (
-      <div id="frontstage-composer">
+      <div id="uifw-frontstage-composer">
         {this.renderModalFrontstage()}
 
         {content}

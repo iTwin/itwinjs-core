@@ -6,6 +6,25 @@
 @import "@bentley/ui-core/lib/ui-core/_z-index";
 @import "_variables";
 
+@mixin nz-footer-separator {
+  >*:not(:last-child) {
+    $separator-width: 1px;
+
+    position: relative;
+
+    &:after {
+      content: '';
+      width: $separator-width;
+      height: calc(100% - #{$nz-footer-vertical-padding-height});
+      top: $nz-footer-vertical-padding;
+      background-color: $buic-foreground-disabled;
+      filter: drop-shadow(1px 0 $buic-foreground-body-reverse);
+      position: absolute;
+      right: 0;
+    }
+  }
+}
+
 .nz-footer-footer {
   background-color: $buic-background-statusbar;
   border-width: 0;
@@ -29,21 +48,7 @@
     display: flex;
     flex-direction: row;
 
-    >*:not(:last-child) {
-      $separator-width: 1px;
-
-      position: relative;
-
-      &:after {
-        content: '';
-        width: $separator-width;
-        height: 100%;
-        background-color: $buic-background-divider;
-        border-right: $separator-width solid #ffffff;
-        position: absolute;
-        right: 0;
-      }
-    }
+    @include nz-footer-separator;
   }
 
   &.nz-widget-mode {
@@ -62,22 +67,30 @@
   display: flex;
   flex-direction: row;
   justify-content: space-between;
+
+  @include nz-footer-separator;
 }
 
 .nz-statusbar-left {
   display: flex;
   flex-direction: row;
   justify-content: flex-start;
+
+  @include nz-footer-separator;
 }
 
 .nz-statusbar-center {
   display: flex;
   flex-direction: row;
   justify-content: center;
+
+  @include nz-footer-separator;
 }
 
 .nz-statusbar-right {
   display: flex;
   flex-direction: row;
   justify-content: flex-end;
+
+  @include nz-footer-separator;
 }

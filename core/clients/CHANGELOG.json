@@ -2,6 +2,72 @@
   "name": "@bentley/imodeljs-clients",
   "entries": [
     {
+      "version": "0.189.0",
+      "tag": "@bentley/imodeljs-clients_v0.189.0",
+      "date": "Wed, 06 Mar 2019 15:41:22 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added OidcAgentClientV2. This will replace OidcAgentClient after some fixes from IMS+Connect."
+          },
+          {
+            "comment": "OIDC changes needed for Angular client"
+          },
+          {
+            "comment": "Changes package.json to include api-extractor and adds api-extractor.json"
+          },
+          {
+            "comment": "Use new buildIModelJsBuild script"
+          },
+          {
+            "comment": "Moved AzureFileHandler, IOSAzureFileHandler, UrlFileHandler and the iModelHub tests to the imodeljs-clients-backend package. This removes the dependency of imodeljs-clients on the \"fs\" module, and turns it into a browser only package. "
+          },
+          {
+            "comment": "Fixed expansion of config variables. "
+          },
+          {
+            "comment": "Remove uneeded typedoc plugin depedency"
+          },
+          {
+            "comment": "Fix error parsing"
+          },
+          {
+            "comment": "Documentation improvements"
+          },
+          {
+            "comment": "Create iModel from empty template if seed file path not defined."
+          },
+          {
+            "comment": "Save BUILD_SEMVER to globally accessible map"
+          },
+          {
+            "comment": "fix for cache member mix and preserve full root document"
+          },
+          {
+            "comment": "Added creatorId, new method to list RD per project, identified numerous area for changes WIP"
+          },
+          {
+            "comment": "Implemented spatial criterai when searching through all reality data associated to a project."
+          },
+          {
+            "comment": "Threading issue accessing Reality Data, RealityData class was transformed to be the main data access object instead of the client that was used by most/all reality data causing cache data clash and mix between many reality data."
+          },
+          {
+            "comment": "Removed RBAC client - the RBAC service is considered internal. "
+          },
+          {
+            "comment": "Handled error with fetching host information on deployed machines."
+          },
+          {
+            "comment": "WIP fixes to Usage Logging. "
+          },
+          {
+            "comment": "upgrade to TypeScript 3.2.2"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.188.0",
       "tag": "@bentley/imodeljs-clients_v0.188.0",
       "date": "Wed, 16 Jan 2019 16:36:09 GMT",

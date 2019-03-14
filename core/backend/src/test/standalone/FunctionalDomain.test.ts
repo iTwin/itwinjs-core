@@ -24,7 +24,7 @@ describe("Functional Domain", () => {
   });
 
   it("should populate FunctionalModel", async () => {
-    const iModelDb: IModelDb = IModelTestUtils.createStandaloneIModel("FunctionalTest.bim", {
+    const iModelDb: IModelDb = IModelDb.createSnapshot(IModelTestUtils.prepareOutputFile("FunctionalDomain", "FunctionalTest.bim"), {
       rootSubject: { name: "FunctionalTest", description: "Test of the Functional domain schema." },
       client: "Functional",
       globalOrigin: { x: 0, y: 0 },
@@ -102,6 +102,6 @@ describe("Functional Domain", () => {
       }
     });
 
-    iModelDb.closeStandalone();
+    iModelDb.closeSnapshot();
   });
 });

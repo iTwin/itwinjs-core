@@ -15,13 +15,16 @@ describe("Class Registry", () => {
   const actx = new ActivityLoggingContext("");
 
   before(() => {
-    imodel = IModelTestUtils.openIModel("test.bim");
+    imodel = IModelDb.createSnapshotFromSeed(
+      IModelTestUtils.prepareOutputFile("ClassRegistry", "ClassRegistryTest.bim"),
+      IModelTestUtils.resolveAssetFile("test.bim"),
+    );
     assert.exists(imodel);
   });
 
   after(() => {
     if (imodel)
-      IModelTestUtils.closeIModel(imodel);
+      imodel.closeSnapshot();
   });
 
   it("should verify the Entity metadata of known element subclasses", () => {

@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { initialize, terminate } from "../../IntegrationTests";
-import { OpenMode } from "@bentley/bentleyjs-core";
 import { ModelProps } from "@bentley/imodeljs-common";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { KeySet } from "@bentley/presentation-common";
@@ -19,14 +18,20 @@ describe("PropertyDataProvider", async () => {
   before(async () => {
     initialize();
     const testIModelName: string = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
-    imodel = await IModelConnection.openStandalone(testIModelName, OpenMode.Readonly);
+    imodel = await IModelConnection.openSnapshot(testIModelName);
     physicalModelProps = (await imodel.models.queryProps({ from: "bis.PhysicalModel" }))[0];
     provider = new PresentationPropertyDataProvider(imodel, "SimpleContent");
   });
 
   after(async () => {
-    await imodel.closeStandalone();
+    await imodel.closeSnapshot();
     terminate();
+  });
+
+  it("creates empty result when properties requested for 0 instances", async () => {
+    provider.keys = new KeySet();
+    const properties = await provider.getData();
+    expect(properties).to.matchSnapshot();
   });
 
   it("creates property data", async () => {

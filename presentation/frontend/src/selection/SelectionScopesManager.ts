@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module UnifiedSelection */
 
-import { EntityProps } from "@bentley/imodeljs-common";
+import { Id64Arg } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { KeySet, SelectionScope, RpcRequestsHandler } from "@bentley/presentation-common";
 
@@ -19,19 +19,26 @@ export interface SelectionScopesManagerProps {
 
 /**
  * A manager that knows available [selection scopes]($docs/learning/unified-selection/Terminology#selection-scope)
- * and can compute selection based on [[ElementProps]] and [[SelectionScope]]
+ * and can compute logical selection based on element IDs and selection scope.
  */
 export class SelectionScopesManager {
 
   private _rpcRequestsHandler: RpcRequestsHandler;
   private _getLocale: () => string | undefined;
+  private _activeScope: SelectionScope | string | undefined;
 
   public constructor(props: SelectionScopesManagerProps) {
     this._rpcRequestsHandler = props.rpcRequestsHandler;
     this._getLocale = props.localeProvider ? props.localeProvider : (() => undefined);
   }
 
+  /** Get active locale */
   public get activeLocale() { return this._getLocale(); }
+
+  /** Get active selection scope or its id */
+  public get activeScope() { return this._activeScope; }
+  /** Set active selection scope or its id */
+  public set activeScope(scope: SelectionScope | string | undefined) { this._activeScope = scope; }
 
   /**
    * Get available selection scopes.
@@ -45,15 +52,16 @@ export class SelectionScopesManager {
   }
 
   /**
-   * Computes keys that need to be added to selection based on provided selection scope.
-   * @param keys Identifiers of elements to compute selection for
+   * Computes keys that need to be added to logical selection based on provided selection scope.
+   * @param ids Element IDs to compute selection for
    * @param scope Selection scope to apply
    */
-  public async computeSelection(imodel: IModelConnection, keys: EntityProps | EntityProps[], scope: SelectionScope | string): Promise<KeySet> {
+  public async computeSelection(imodel: IModelConnection, ids: Id64Arg, scope: SelectionScope | string): Promise<KeySet> {
     const scopeId = (typeof scope === "string") ? scope : scope.id;
-    if (!Array.isArray(keys))
-      keys = [keys];
-
-    return this._rpcRequestsHandler.computeSelection({ imodel: imodel.iModelToken }, keys, scopeId);
+    if (typeof ids === "string")
+      ids = [ids];
+    else if (ids instanceof Set)
+      ids = [...ids];
+    return this._rpcRequestsHandler.computeSelection({ imodel: imodel.iModelToken }, ids, scopeId);
   }
 }

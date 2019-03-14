@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { IModelDb, PhysicalModel } from "@bentley/imodeljs-backend";
+import { IModelDb, IModelJsFs, PhysicalModel } from "@bentley/imodeljs-backend";
 import { IModelTestUtils } from "./Utils";
 import { RobotWorldEngine } from "../RobotWorldEngine";
 import { RobotWorld } from "../RobotWorldSchema";
@@ -19,7 +19,10 @@ describe("RobotWorld", () => {
     it("should run robotworld", async () => {
         RobotWorldEngine.initialize(actx);
 
-        const iModel: IModelDb = IModelTestUtils.openIModel("empty.bim", { copyFilename: "should-run-robotworld.bim", deleteFirst: true, openMode: OpenMode.ReadWrite });
+        const iModelFile = IModelTestUtils.prepareOutputFile("should-run-robotworld.bim");
+        const seedFile = IModelTestUtils.resolveAssetFile("empty.bim");
+        IModelJsFs.copySync(seedFile, iModelFile);
+        const iModel: IModelDb = IModelDb.openStandalone(iModelFile, OpenMode.ReadWrite);
         assert.isTrue(iModel !== undefined);
 
         try {

@@ -15,6 +15,7 @@ import { Props as PresentationBackendProps } from "@bentley/presentation-backend
 import { Props as PresentationFrontendProps } from "@bentley/presentation-frontend/lib/PresentationManager";
 // frontend includes
 import {
+  SnapshotIModelRpcInterface,
   StandaloneIModelRpcInterface,
   IModelReadRpcInterface,
   RpcConfiguration,
@@ -56,7 +57,7 @@ export const initialize = (backendProps?: PresentationBackendProps, frontendProp
   PresentationBackend.initialize(backendProps);
 
   // set up rpc interfaces
-  initializeRpcInterfaces([StandaloneIModelRpcInterface, IModelReadRpcInterface, PresentationRpcInterface]);
+  initializeRpcInterfaces([SnapshotIModelRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface, PresentationRpcInterface]);
 
   // init frontend
   frontendApp.startup();

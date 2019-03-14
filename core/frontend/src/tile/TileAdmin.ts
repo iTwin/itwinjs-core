@@ -16,12 +16,16 @@ import { IModelConnection } from "../IModelConnection";
  * a set of active requests. On each update it identifies previously-requested tiles whose content no viewport is interested in any longer and
  * cancels them. It then pulls pending requests off the queue and dispatches them into the active set until either the maximum number of
  * simultaneously-active requests is reached or the queue becomes empty.
- * @hidden
+ * @alpha
  */
 export abstract class TileAdmin {
+  /** @internal */
   public abstract get emptyViewportSet(): TileAdmin.ViewportSet;
   /** Returns basic statistics about the TileAdmin's current state. */
   public abstract get statistics(): TileAdmin.Statistics;
+  /** Resets the cumulative (per-session) statistics like totalCompletedRequests, totalEmptyTiles, etc. */
+  public abstract resetStatistics(): void;
+
   /** Controls the maximum number of simultaneously-active requests allowed.
    * If the maximum is reduced below the current size of the active set, no active requests will be canceled - but no more will be dispatched until the
    * size of the active set falls below the new maximum.
@@ -29,46 +33,76 @@ export abstract class TileAdmin {
    * @note Browsers impose their own limitations on maximum number of total connections, and connections per-domain. These limitations are
    * especially strict when using HTTP1.1 instead of HTTP2. Increasing the maximum above the default may significantly affect performance as well as
    * bandwidth and memory consumption.
+   * @alpha
    */
   public abstract set maxActiveRequests(max: number);
   public abstract get maxActiveRequests(): number;
 
-  /** @hidden */
+  /** @internal */
   public abstract get enableInstancing(): boolean;
-  /** @hidden */
   public abstract get elideEmptyChildContentRequests(): boolean;
 
-  /** Returns the union of the input set and the input viewport. */
+  /** Returns the union of the input set and the input viewport.
+   * @internal
+   */
   public abstract getViewportSet(vp: Viewport, vps?: TileAdmin.ViewportSet): TileAdmin.ViewportSet;
-  /** Invoked from the [[ToolAdmin]] event loop to process any pending or active requests for tiles. */
+
+  /** Invoked from the [[ToolAdmin]] event loop to process any pending or active requests for tiles.
+   * @internal
+   */
   public abstract process(): void;
+
   /** Specifies the set of tiles currently requested for use by a viewport. This set replaces any previously specified for the same viewport.
    * The requests are not actually processed until the next call to [[TileAdmin.process].
    * This is typically invoked when the viewport recreates its scene, e.g. in response to camera movement.
+   * @internal
    */
   public abstract requestTiles(vp: Viewport, tiles: Set<Tile>): void;
-  /** Returns the number of pending and active requests associated with the specified viewport. */
+
+  /** Returns the number of pending and active requests associated with the specified viewport.
+   * @alpha
+   */
   public abstract getNumRequestsForViewport(vp: Viewport): number;
+
   /** Indicates that the TileAdmin should cease tracking the specified viewport, e.g. because it is about to be destroyed.
    * Any requests which are of interest only to the specified viewport will be canceled.
+   * @internal
    */
   public abstract forgetViewport(vp: Viewport): void;
+
+  /** @internal */
   public abstract onShutDown(): void;
 
+  /** @internal */
   public abstract async requestTileTreeProps(iModel: IModelConnection, treeId: string): Promise<TileTreeProps>;
+
+  /** @internal */
   public abstract async requestTileContent(iModel: IModelConnection, treeId: string, contentId: string): Promise<Uint8Array>;
 
+  /** Create a TileAdmin. Chiefly intended for use by subclasses of [[IModelApp]] to customize the behavior of the TileAdmin.
+   * @param props Options for customizing the behavior of the TileAdmin.
+   * @returns the TileAdmin
+   * @beta
+   */
   public static create(props?: TileAdmin.Props): TileAdmin {
     return new Admin(props);
   }
 
-  public abstract onTileCompleted(): void;
-  public abstract onTileTimedOut(): void;
-  public abstract onTileFailed(): void;
+  /** @internal */
+  public abstract onTileCompleted(tile: Tile): void;
+  /** @internal */
+  public abstract onTileTimedOut(tile: Tile): void;
+  /** @internal */
+  public abstract onTileFailed(tile: Tile): void;
+  /** @internal */
+  public abstract onTileElided(): void;
 }
 
-/** @hidden */
+/** @alpha */
 export namespace TileAdmin {
+  /** Statistics regarding the current and cumulative state of the [[TileAdmin]]. Useful for monitoring performance and diagnosing problems.
+   * @alpha
+   */
   export interface Statistics {
     /** The number of requests in the queue which have not yet been dispatched. */
     numPendingRequests: number;
@@ -82,10 +116,17 @@ export namespace TileAdmin {
     totalFailedRequests: number;
     /** The total number of timed-out requests during this session. */
     totalTimedOutRequests: number;
+    /** The total number of completed requests during this session which produced an empty tile. These tiles also contribute to totalCompletedRequests, but not to totalUndisplayableTiles. */
+    totalEmptyTiles: number;
+    /** The total number of completed requests during this session which produced an undisplayable tile. These tiles also contribute to totalCompletedRequests, but not to totalEmptyTiles. */
+    totalUndisplayableTiles: number;
+    /** The total number of tiles whose contents were not requested during this session because their volumes were determined to be empty. */
+    totalElidedTiles: number;
   }
 
   /** Describes configuration of a [[TileAdmin]].
    * @see [[TileAdmin.create]]
+   * @alpha
    */
   export interface Props {
     /** The maximum number of simultaneously-active requests. Any requests beyond this maximum are placed into a priority queue.
@@ -123,6 +164,7 @@ export namespace TileAdmin {
   /** A set of [[Viewport]]s.
    * ViewportSets are managed and cached by [[TileAdmin]] such that any number of [[TileRequest]]s associated with the same set of viewports will
    * use the same ViewportSet object.
+   * @internal
    */
   export class ViewportSet extends SortedArray<Viewport> {
     public constructor(vp?: Viewport) {
@@ -261,6 +303,9 @@ class Admin extends TileAdmin {
   private _totalCompleted = 0;
   private _totalFailed = 0;
   private _totalTimedOut = 0;
+  private _totalEmpty = 0;
+  private _totalUndisplayable = 0;
+  private _totalElided = 0;
   private _retryIntervalInitialized = false;
   private get _memoizeRequests() { return this._retryInterval > 0; }
 
@@ -273,7 +318,14 @@ class Admin extends TileAdmin {
       totalCompletedRequests: this._totalCompleted,
       totalFailedRequests: this._totalFailed,
       totalTimedOutRequests: this._totalTimedOut,
+      totalEmptyTiles: this._totalEmpty,
+      totalUndisplayableTiles: this._totalUndisplayable,
+      totalElidedTiles: this._totalElided,
     };
+  }
+
+  public resetStatistics(): void {
+    this._totalCompleted = this._totalFailed = this._totalTimedOut = this._totalEmpty = this._totalUndisplayable = this._totalElided = 0;
   }
 
   public constructor(options?: TileAdmin.Props) {
@@ -466,7 +518,14 @@ class Admin extends TileAdmin {
     }
   }
 
-  public onTileCompleted() { ++this._totalCompleted; }
-  public onTileFailed() { ++this._totalFailed; }
-  public onTileTimedOut() { ++this._totalTimedOut; }
+  public onTileFailed(_tile: Tile) { ++this._totalFailed; }
+  public onTileTimedOut(_tile: Tile) { ++this._totalTimedOut; }
+  public onTileElided() { ++this._totalElided; }
+  public onTileCompleted(tile: Tile) {
+    ++this._totalCompleted;
+    if (tile.isEmpty)
+      ++this._totalEmpty;
+    else if (!tile.isDisplayable)
+      ++this._totalUndisplayable;
+  }
 }

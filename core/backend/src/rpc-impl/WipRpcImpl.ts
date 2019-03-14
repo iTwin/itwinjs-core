@@ -11,9 +11,8 @@ import { IModelDb } from "../IModelDb";
 import { ChangeSummaryManager } from "../ChangeSummaryManager";
 import { ChangedElementsManager } from "../ChangedElementsManager";
 
-/**
- * The backend implementation of WipRpcInterface.
- * @hidden
+/** The backend implementation of WipRpcInterface.
+ * @internal
  */
 export class WipRpcImpl extends RpcInterface implements WipRpcInterface {
 

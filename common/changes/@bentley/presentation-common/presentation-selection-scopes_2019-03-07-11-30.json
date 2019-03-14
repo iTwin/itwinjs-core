@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Changed `PresentationRpcInterface.computeSelection` to take `Id64String[]` instead of `EntityProps[]`",
+      "packageName": "@bentley/presentation-common",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-common",
+  "email": "grigas.p@gmail.com"
+}

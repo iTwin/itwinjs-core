@@ -8,14 +8,14 @@ import * as https from "https";
 import * as bodyParser from "body-parser";
 import * as fs from "fs";
 
-import { BentleyCloudRpcManager, IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface } from "@bentley/imodeljs-common";
+import { BentleyCloudRpcManager, IModelTileRpcInterface, SnapshotIModelRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface } from "@bentley/imodeljs-common";
 import { Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { initializeBackend } from "./backend";
 
 // tslint:disable:no-console
 
 export function getRpcInterfaces() {
-  return [IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface];
+  return [IModelTileRpcInterface, SnapshotIModelRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface];
 }
 
 function setupStandaloneConfiguration() {

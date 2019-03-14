@@ -228,7 +228,7 @@ export class Popup extends React.Component<PopupProps, PopupState> {
     const targetRect = this._targetElement.getBoundingClientRect();
     const popupRect = popupElement.getBoundingClientRect();
     const containerStyle = window.getComputedStyle(this._targetElement);
-    const offset = (this.props.showArrow) ? 12 : 4;
+    const offset = (this.props.showArrow) ? 10 : 2;
 
     switch (this.props.position) {
       case Position.BottomRight: {
@@ -319,7 +319,7 @@ export class Popup extends React.Component<PopupProps, PopupState> {
     }
 
     return (
-      <div style={style} className={className} ref={this._popupRef}>
+      <div style={style} className={className} ref={this._popupRef} data-testid="core-popup">
         {this.props.children}
       </div>
     );

@@ -5,7 +5,6 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import { initialize, terminate } from "../../IntegrationTests";
-import { OpenMode } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { PresentationTreeDataProvider } from "@bentley/presentation-components";
 import { Presentation } from "@bentley/presentation-frontend";
@@ -18,13 +17,13 @@ describe("TreeDataProvider", async () => {
   before(async () => {
     initialize();
     const testIModelName: string = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
-    imodel = await IModelConnection.openStandalone(testIModelName, OpenMode.Readonly);
+    imodel = await IModelConnection.openSnapshot(testIModelName);
     expect(imodel).is.not.null;
     provider = new PresentationTreeDataProvider(imodel, "SimpleHierarchy");
   });
 
   after(async () => {
-    await imodel.closeStandalone();
+    await imodel.closeSnapshot();
     terminate();
   });
 

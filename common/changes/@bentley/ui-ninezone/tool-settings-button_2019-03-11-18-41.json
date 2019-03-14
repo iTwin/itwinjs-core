@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Tool Settings: removed minimize tab, added min to title bar, styled title",
+      "packageName": "@bentley/ui-ninezone",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-ninezone",
+  "email": "dan.east@bentley.com"
+}

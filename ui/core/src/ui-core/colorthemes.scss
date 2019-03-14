@@ -20,9 +20,9 @@ html[data-theme="light"] {
   --buic-background-scrollbar:    rgb(155, 165, 174);
   --buic-background-toolbutton-stroke:  rgb(155, 165, 174);
 
-  --buic-foreground-body:         rgba(000, 000, 000, 0.88);
-  --buic-foreground-body-reverse: rgba(255, 255, 255, 0.88);
-  --buic-foreground-muted:        rgba(000, 000, 000, 0.66);
+  --buic-foreground-body:         rgba(000, 000, 000, 0.85);
+  --buic-foreground-body-reverse: rgba(255, 255, 255, 0.85);
+  --buic-foreground-muted:        rgba(000, 000, 000, 0.55);
   --buic-foreground-disabled:     rgba(000, 000, 000, 0.44);
   --buic-foreground-activehover:  rgba(000, 000, 000, 1.00);
 
@@ -60,8 +60,8 @@ html[data-theme="dark"] {
   --buic-background-scrollbar:    rgb(155, 165, 174);
   --buic-background-toolbutton-stroke:  rgb(045, 055, 060);
 
-  --buic-foreground-body:         rgba(255, 255, 255, 0.88);
-  --buic-foreground-body-reverse: rgba(000, 000, 000, 0.88);
+  --buic-foreground-body:         rgba(255, 255, 255, 0.85);
+  --buic-foreground-body-reverse: rgba(000, 000, 000, 0.85);
   --buic-foreground-muted:        rgba(255, 255, 255, 0.66);
   --buic-foreground-disabled:     rgba(255, 255, 255, 0.44);
   --buic-foreground-activehover:  rgba(255, 255, 255, 1.00);
@@ -81,9 +81,9 @@ html[data-theme="dark"] {
   --buic-row-hover:               rgb(071, 150, 199);
 
   --buic-inputs-border:           rgb(199, 204, 209);
-  --buic-inputs-focus-boxshadow-gradient1:  rgba(000, 000, 000, 0);
+  --buic-inputs-focus-boxshadow-gradient1:  rgba(199, 204, 209, 0);
   --buic-inputs-focus-boxshadow-gradient2:  rgba(000, 139, 225, 0.1);
-  --buic-inputs-boxshadow:        rgba(000, 000, 000, 0.075 );
+  --buic-inputs-boxshadow:        rgba(199, 204, 209, 0.075 );
 
   --buic-button-gradient1:        rgba(000, 000, 000, 0);
   --buic-button-gradient2:        rgba(000, 000, 000, 0.22);

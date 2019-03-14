@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-webserver",
-  "version": "0.190.0-dev.2",
+  "version": "0.191.0-dev.4",
   "description": "Simple Express-based web server for iModel.js static files",
   "license": "MIT",
   "repository": {
@@ -32,7 +32,7 @@
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/build-tools": "0.190.0-dev.2",
+    "@bentley/build-tools": "0.191.0-dev.4",
     "@bentley/dev-cors-proxy-server": "0.0.9",
     "@types/express": "^4.16.1",
     "@types/node": "10.12.18",

@@ -5,31 +5,6 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Run Frontend Tests (performance)",
-      "type": "node",
-      "request": "launch",
-      "program": "${workspaceRoot}/test-apps/testbed/frontend/performance/testbed",
-      "protocol": "inspector",
-      "outputCapture": "std",
-      "args": [
-        "--testDir=${workspaceFolder}/test-apps/testbed/lib/frontend/performance",
-        // "--fgrep",
-        // "#WebGLPerformance",
-        "--debug"
-      ],
-      "outFiles": [
-        "${workspaceRoot}/simplefrontend/lib/{backend}/**/*.js",
-        "${workspaceRoot}/core/{backend,bentley,clients,common,frontend,geometry}/lib/**/*.js",
-        "${workspaceRoot}/test-apps/testbed/lib/{backend,common,frontend}/**/*.js",
-        "${workspaceRoot}/test-apps/testbed/lib/**/*.js",
-        "${workspaceRoot}/test-apps/testbed/lib/frontend/**/*.js",
-        "${workspaceRoot}/test-apps/testbed/lib/frontend/performance/*.js",
-        "${workspaceRoot}/test-apps/testbed/**/*.js",
-        "${workspaceRoot}/test-apps/testbed/node_modules/**/*.js"
-      ],
-      "cwd": "${workspaceFolder}/test-apps/testbed/"
-    },
-    {
       "type": "node",
       "request": "launch",
       "name": "LocalOrchestrator",
@@ -41,6 +16,19 @@
         "./assets/iModelBank.logging.config.json",
         "./assets/backend-registry.json",
       ]
+    },
+    {
+      "name": "Frontend Tests",
+      "type": "chrome",
+      "request": "attach",
+      "preLaunchTask": "start-debugging-frontend-tests",
+      "port": 9223, // NB: This must match ports.frontendDebugging in core/frontend/certa.json
+      "sourceMaps": true,
+      "timeout": 20000,
+      "smartStep": true,
+      "showAsyncStacks": true,
+      "webRoot": "${workspaceFolder}",
+      "internalConsoleOptions": "openOnSessionStart"
     },
     {
       "type": "node",
@@ -226,56 +214,12 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "_Testbed (backend)",
-      "cwd": "${workspaceFolder}/test-apps/testbed/",
-      "runtimeExecutable": "${workspaceFolder}\\test-apps\\testbed\\node_modules\\.bin\\electron",
-      "runtimeArgs": [
-        "${workspaceFolder}/test-apps/testbed/floss/electron/index.js",
-        "{\"debug\":true, \"noDevTools\":true, \"path\":\"bootstrap.js\", \"grep\":\"#integration\", \"invert\": true, \"fgrep\":\"\"}",
-        "--remote-debugging-port=9223"
-      ],
-      "protocol": "inspector",
-      "sourceMaps": true,
-      "outFiles": [
-        "${workspaceRoot}/test-apps/testbed/lib/{backend,common}/**/*.js",
-        "${workspaceRoot}/core/{backend,bentley,clients,common,frontend,geometry}/lib/**/*.js"
-      ]
-    },
-    {
-      "name": "_Testbed (frontend)",
-      "type": "chrome",
-      "request": "attach",
-      "port": 9223,
-      "webRoot": "${workspaceRoot}",
-      "sourceMaps": true
-    },
-    {
-      "type": "node",
-      "request": "launch",
-      "name": "_Testbed (backend-integration)",
-      "cwd": "${workspaceFolder}/test-apps/testbed/",
-      "runtimeExecutable": "${workspaceFolder}\\test-apps\\testbed\\node_modules\\.bin\\electron",
-      "runtimeArgs": [
-        "${workspaceFolder}/test-apps/testbed/floss/electron/index.js",
-        "{\"debug\":true, \"noDevTools\":true, \"path\":\"bootstrap.js\"}",
-        "--remote-debugging-port=9223"
-      ],
-      "protocol": "inspector",
-      "sourceMaps": true,
-      "outFiles": [
-        "${workspaceRoot}/test-apps/testbed/lib/{backend,common}/**/*.js",
-        "${workspaceRoot}/core/{backend,bentley,clients,common,frontend,geometry}/lib/**/*.js"
-      ]
-    },
-    {
-      "type": "node",
-      "request": "launch",
       "name": "display-test-app Electron (backend)",
       "cwd": "${workspaceFolder}/test-apps/display-test-app/",
       "env": {
         "SVT_LOG_LEVEL": "TRACE",
       },
-      "runtimeExecutable": "${workspaceFolder}\\test-apps\\display-test-app\\node_modules\\.bin\\electron",
+      "runtimeExecutable": "${workspaceFolder}/test-apps/display-test-app/node_modules/.bin/electron",
       "runtimeArgs": [
         "${workspaceFolder}/test-apps/display-test-app/lib/backend/ElectronMain.js",
         "--remote-debugging-port=9223"
@@ -593,8 +537,7 @@
       "outFiles": [
         "${workspaceRoot}/core/bentley/node_modules/@bentley/webpack-tools/lib/*.js",
       ],
-      "args": [
-      ],
+      "args": [],
     },
     {
       "type": "node",
@@ -626,20 +569,87 @@
       ],
       "protocol": "inspector"
     },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Integration Tests (backend)",
+      "cwd": "${workspaceRoot}/integration-tests/core/",
+      "program": "${workspaceRoot}/tools/certa/bin/certa.js",
+      "args": [
+        "--debug",
+        "-r",
+        "${input:integrationTestEnvironment}"
+      ],
+      "smartStep": true,
+      "sourceMaps": true,
+      "outFiles": [
+        "${workspaceRoot}/integration-tests/core/lib/**/*.js",
+        "${workspaceRoot}/core/*/lib/**/*.js",
+        "${workspaceRoot}/tools/certa/lib/**/*.js"
+      ],
+      "protocol": "inspector",
+      "outputCapture": "std",
+      "port": 5858 // NB: This must match ports.debugging in integration-tests/core/certa.json
+    },
+    {
+      "name": "Integration Tests (frontend)",
+      "type": "chrome",
+      "request": "attach",
+      "port": 9223, // NB: This must match ports.frontendDebugging in integration-tests/core/certa.json
+      "sourceMaps": true,
+      "timeout": 20000,
+      "smartStep": true,
+      "showAsyncStacks": true,
+      "webRoot": "${workspaceFolder}"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "RPC Integration Tests (backend)",
+      "cwd": "${workspaceRoot}/integration-tests/rpc/",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run-script",
+        "test:${input:rpcTestEnvironment}",
+        "--",
+        "--debug"
+      ],
+      "smartStep": true,
+      "sourceMaps": true,
+      "outFiles": [
+        "${workspaceRoot}/integration-tests/rpc/lib/**/*.js",
+        "${workspaceRoot}/core/*/lib/**/*.js",
+        "${workspaceRoot}/tools/certa/lib/**/*.js"
+      ],
+      "protocol": "inspector",
+      "outputCapture": "std",
+      "port": 5858 // NB: This must match ports.debugging in integration-tests/rpc/certa.json
+    },
+    {
+      "name": "RPC Integration Tests (frontend)",
+      "type": "chrome",
+      "request": "attach",
+      "port": 9223, // NB: This must match ports.frontendDebugging in integration-tests/rpc/certa.json
+      "sourceMaps": true,
+      "timeout": 20000,
+      "smartStep": true,
+      "showAsyncStacks": true,
+      "webRoot": "${workspaceFolder}"
+    },
   ],
   "compounds": [
     {
-      "name": "Run Testbed (all)",
+      "name": "Integration Tests",
       "configurations": [
-        "_Testbed (frontend)",
-        "_Testbed (backend)"
+        "Integration Tests (frontend)",
+        "Integration Tests (backend)"
       ]
     },
     {
-      "name": "Run Testbed (all-integration)",
+      "name": "RPC Tests",
       "configurations": [
-        "_Testbed (frontend)",
-        "_Testbed (backend-integration)"
+        "RPC Integration Tests (frontend)",
+        "RPC Integration Tests (backend)"
       ]
     },
     {
@@ -649,5 +659,35 @@
         "display-test-app (frontend)"
       ]
     }
+  ],
+  "inputs": [
+    {
+      "id": "integrationTestEnvironment",
+      "description": "Select test frontend environment",
+      "type": "pickString",
+      "default": "chrome",
+      "options": [
+        "chrome",
+        "electron"
+      ]
+    },
+    {
+      "id": "rpcTestEnvironment",
+      "description": "Select RPC integration test environment",
+      "type": "pickString",
+      "default": "chrome",
+      "options": [
+        "chrome",
+        "electron",
+        "http2",
+        "direct"
+      ]
+    },
+    {
+      "id": "test",
+      "type": "command",
+      "command": "workbench.action.tasks.runTask",
+      "args": "get-node-path"
+    },
   ]
 }

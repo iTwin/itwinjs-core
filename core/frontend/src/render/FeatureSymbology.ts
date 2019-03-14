@@ -16,7 +16,7 @@ function copyIdSetToUint32Set(dst: Id64.Uint32Set, src?: Set<string>): void {
   }
 }
 
-/** Contains types that enable an application to customize how [[Feature]]s are drawn within a [[Viewport]]. */
+/** Contains types that enable an application to customize how [Feature]($commmon)s are drawn within a [[Viewport]]. */
 export namespace FeatureSymbology {
   /** Properties used to initialize a [[FeatureSymbology.Appearance]]. */
   export interface AppearanceProps {
@@ -28,14 +28,14 @@ export namespace FeatureSymbology {
     transparency?: number;
     /** The pixel pattern used to draw lines. */
     linePixels?: LinePixels;
-    /** If true, ignore the [[RenderMaterial]] associated with surfaces. */
+    /** If true, ignore the [RenderMaterial]($frontend) associated with surfaces. */
     ignoresMaterial?: true | undefined;
-    /** If true, the associated [[Feature]]s will not be drawn when using [[Viewport.readPixels]]. */
+    /** If true, the associated [Feature]($common)s will not be drawn when using [[Viewport.readPixels]]. */
     nonLocatable?: true | undefined;
   }
 
-  /** Defines overrides for selected aspects of a [[Feature]]'s symbology.
-   * Any member defined in the Appearance overrides that aspect of symbology for all [[Feature]]s to which the Appearance is applied.
+  /** Defines overrides for selected aspects of a [Feature]($common)'s symbology.
+   * Any member defined in the Appearance overrides that aspect of symbology for all [Feature]($common)s to which the Appearance is applied.
    * @see [[FeatureSymbology.Overrides]]
    */
   export class Appearance implements AppearanceProps {
@@ -47,9 +47,9 @@ export namespace FeatureSymbology {
     public readonly transparency?: number;
     /** The pixel pattern used to draw lines. */
     public readonly linePixels?: LinePixels;
-    /** If true, ignore the [[RenderMaterial]] associated with surfaces. */
+    /** If true, ignore the [RenderMaterial]($frontend) associated with surfaces. */
     public readonly ignoresMaterial?: true | undefined;
-    /** If true, ignore the [[Feature]] when using [[Viewport.readPixels]]. */
+    /** If true, ignore the [Feature]($common) when using [[Viewport.readPixels]]. */
     public readonly nonLocatable?: true | undefined;
 
     /** An Appearance which overrides nothing. */
@@ -62,7 +62,7 @@ export namespace FeatureSymbology {
         return new Appearance(props);
     }
 
-    /** Create an Appearance that overrides only the RGB color of a [[Feature]].
+    /** Create an Appearance that overrides only the RGB color of a [Feature]($common).
      * @note The transparency component of the ColorDef is ignored.
      */
     public static fromRgb(color: ColorDef): Appearance { return this.fromJSON({ rgb: RgbColor.fromColorDef(color) }); }
@@ -152,12 +152,12 @@ export namespace FeatureSymbology {
     private rgbIsEqual(rgb?: RgbColor): boolean { return undefined === this.rgb ? undefined === rgb ? true : false : undefined === rgb ? false : this.rgb.equals(rgb); }
   }
 
-  /** Allows a [[ViewState]] to customize the appearance of individual [[Feature]]s within it.
+  /** Allows a [[ViewState]] to customize the appearance of individual [Feature]($common)s within it.
    *
    * The ViewState computes its base Overrides based on the following:
    *  - The set of categories enabled for display in its [[CategorySelectorState]]. Every [[SubCategory]] belonging to an enabled [[Category]] is added to the set of visible subcategories - all other subcategories are assumed to be invisible.
    *  - For the set of visible subcategories, any [[SubCategoryOverride]]s defined by the view's [[DisplayStyleState]] are applied. This may render some subcategories invisible, and change the symbology of others.
-   *  - The visibility of each [[GeometryClass]] is set based on the view's [[ViewFlags]].
+   *  - The visibility of each [GeometryClass]($common) is set based on the view's [[ViewFlags]].
    *  - The line weight is overridden to 1 pixel for all Features if line weight has been disabled by the view's [[ViewFlags]].
    *  - The sets of elements which are always drawn and never drawn are initialized from the [[ViewState]]'s sets.
    * An application can further customize the symbology of any Features by specifying an [[AddFeatureOverrides]] function on a [[Viewport]]. That function will be invoked
@@ -173,45 +173,45 @@ export namespace FeatureSymbology {
    * the color specified by the element override will take precedence over that specified for the subcategory, resulting in a green Feature.
    *
    * @see [[ViewState.setFeatureOverridesDirty]] for explicitly regenerating a view's Overrides.
-   * @see [[ViewState.alwaysDrawn]]
-   * @see [[ViewState.neverDrawn]]
+   * @see [[Viewport.alwaysDrawn]]
+   * @see [[Viewport.neverDrawn]]
    */
   export class Overrides {
-    /** Ids of elements which should never be drawn. This takes precedence over [[_alwaysDrawn]]. @hidden */
+    /** Ids of elements which should never be drawn. This takes precedence over [[_alwaysDrawn]]. @internal */
     protected readonly _neverDrawn = new Id64.Uint32Set();
-    /** Ids of elements which should always be drawn. [[_neverDrawn]] takes precedence over this set. @hidden */
+    /** Ids of elements which should always be drawn. [[_neverDrawn]] takes precedence over this set. @internal */
     protected readonly _alwaysDrawn = new Id64.Uint32Set();
     /** If true, no elements *except* those defined in the "always drawn" set will be drawn.
      * @see [[setAlwaysDrawn]]
      */
     public isAlwaysDrawnExclusive = false;
 
-    /** Overrides applied to any feature not explicitly overridden. @hidden */
+    /** Overrides applied to any feature not explicitly overridden. @internal */
     protected _defaultOverrides = Appearance.defaults;
-    /** Whether construction geometry should be drawn. @hidden */
+    /** Whether construction geometry should be drawn. @internal */
     protected _constructions = false;
-    /** Whether dimensions should be drawn. @hidden */
+    /** Whether dimensions should be drawn. @internal */
     protected _dimensions = false;
-    /** Whether area patterns should be drawn. @hidden */
+    /** Whether area patterns should be drawn. @internal */
     protected _patterns = false;
-    /** Whether line weights should be applied. If false, all lines are rendered 1-pixel wide. @hidden */
+    /** Whether line weights should be applied. If false, all lines are rendered 1-pixel wide. @internal */
     protected _lineWeights = true;
 
-    /** Overrides applied to all elements belonging to each model. @hidden */
+    /** Overrides applied to all elements belonging to each model. @internal */
     protected readonly _modelOverrides = new Id64.Uint32Map<Appearance>();
-    /** Overrides applied to specific elements. @hidden */
+    /** Overrides applied to specific elements. @internal */
     protected readonly _elementOverrides = new Id64.Uint32Map<Appearance>();
-    /** Overrides applied to geometry belonging to each subcategory. @hidden */
+    /** Overrides applied to geometry belonging to each subcategory. @internal */
     protected readonly _subCategoryOverrides = new Id64.Uint32Map<Appearance>();
-    /** The set of displayed subcategories. Geometry belonging to subcategories not included in this set will not be drawn. @hidden */
+    /** The set of displayed subcategories. Geometry belonging to subcategories not included in this set will not be drawn. @internal */
     protected readonly _visibleSubCategories = new Id64.Uint32Set();
 
     /**  IDs of animation nodes which should never be drawn.
-     * @hidden
+     * @internal
      */
     public readonly neverDrawnAnimationNodes = new Set<number>();
     /** Mapping of animation node IDS to overrides applied to the corresponding animation nodes.
-     * @hidden
+     * @internal
      */
     public readonly animationNodeOverrides = new Map<number, Appearance>();
 
@@ -220,21 +220,21 @@ export namespace FeatureSymbology {
     /** Whether or not line weights are applied. If false, all lines are drawn with a weight of 1. */
     public get lineWeights(): boolean { return this._lineWeights; }
 
-    /** @hidden */
+    /** @internal */
     protected isNeverDrawn(elemIdLo: number, elemIdHi: number, animationNodeId: number): boolean {
       if (this._neverDrawn.has(elemIdLo, elemIdHi))
         return true;
       else
         return 0 !== animationNodeId && this.neverDrawnAnimationNodes.has(animationNodeId);
     }
-    /** @hidden */
+    /** @internal */
     protected isAlwaysDrawn(idLo: number, idHi: number): boolean { return this._alwaysDrawn.has(idLo, idHi); }
-    /** Returns true if the [[SubCategory]] specified by ID is in the set of visible subcategories. @hidden */
+    /** Returns true if the [[SubCategory]] specified by ID is in the set of visible subcategories. @internal */
     protected isSubCategoryVisible(idLo: number, idHi: number): boolean { return this._visibleSubCategories.has(idLo, idHi); }
 
-    /** @hidden */
+    /** @internal */
     protected getModelOverrides(idLo: number, idHi: number): Appearance | undefined { return this._modelOverrides.get(idLo, idHi); }
-    /** @hidden */
+    /** @internal */
     protected getElementOverrides(idLo: number, idHi: number, animationNodeId: number): Appearance | undefined {
       const app = this._elementOverrides.get(idLo, idHi);
       if (app !== undefined || 0 === animationNodeId)
@@ -242,7 +242,7 @@ export namespace FeatureSymbology {
 
       return this.animationNodeOverrides.get(animationNodeId);
     }
-    /** @hidden */
+    /** @internal */
     protected getSubCategoryOverrides(idLo: number, idHi: number): Appearance | undefined { return this._subCategoryOverrides.get(idLo, idHi); }
 
     /** Add a [[SubCategory]] to the set of visible subcategories. */
@@ -273,7 +273,7 @@ export namespace FeatureSymbology {
     /** Returns a feature's Appearance overrides, or undefined if the feature is not visible.
      * Takes Id64s as pairs of unsigned 32-bit integers, because that is how they are stored by the PackedFeatureTable associated with each batch of graphics.
      * This API is much uglier but also much more efficient.
-     * @hidden
+     * @internal
      */
     public getAppearance(elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, geomClass: GeometryClass, modelLo: number, modelHi: number, type: BatchType, animationNodeId: number): Appearance | undefined {
       if (BatchType.VolumeClassifier === type)
@@ -321,7 +321,7 @@ export namespace FeatureSymbology {
     }
 
     /** Classifiers behave totally differently...in particular they are never invisible unless fully-transparent.
-     * @hidden
+     * @internal
      */
     protected getClassifierAppearance(elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, modelLo: number, modelHi: number): Appearance | undefined {
       let app = Appearance.defaults;
@@ -348,7 +348,7 @@ export namespace FeatureSymbology {
         return app;
     }
 
-    /** @hidden */
+    /** @internal */
     public isClassVisible(geomClass: GeometryClass): boolean {
       switch (geomClass) {
         case GeometryClass.Construction: return this._constructions;
@@ -414,7 +414,7 @@ export namespace FeatureSymbology {
      */
     public overrideAnimationNode(id: number, app: Appearance): void { this.animationNodeOverrides.set(id, app); }
 
-    /** Defines a default Appearance to be applied to any [[Feature]] *not* explicitly overridden.
+    /** Defines a default Appearance to be applied to any [Feature]($common) *not* explicitly overridden.
      * @param appearance The symbology overides.
      * @param replaceExisting Specifies whether to replace the current default overrides if they are already defined.
      */
@@ -424,7 +424,7 @@ export namespace FeatureSymbology {
     }
 
     /** Initialize these Overrides based on the [[ViewState]]'s settings.
-     * @hidden
+     * @internal
      */
     public initFromView(view: ViewState) {
       const { viewFlags } = view;

@@ -51,14 +51,23 @@ describe("ChangeMerging", () => {
   it("should merge changes so that two branches of an iModel converge", () => {
     // Make sure that the seed imodel has had all schema/profile upgrades applied, before we make copies of it.
     // (Otherwise, the upgrade Txn will appear to be in the changesets of the copies.)
-    const upgraded: IModelDb = IModelTestUtils.openIModel("testImodel.bim", { copyFilename: "upgraded.bim", openMode: OpenMode.ReadWrite, enableTransactions: true });
+    const testFileName = IModelTestUtils.prepareOutputFile("ChangeMerging", "upgraded.bim");
+    const seedFileName = IModelTestUtils.resolveAssetFile("testImodel.bim");
+    IModelJsFs.copySync(seedFileName, testFileName);
+    const upgraded: IModelDb = IModelDb.openStandalone(testFileName, OpenMode.ReadWrite, true);
     upgraded.saveChanges();
     createChangeSet(upgraded);
 
     // Open copies of the seed file.
-    const first: IModelDb = IModelTestUtils.openIModelFromOut("upgraded.bim", { copyFilename: "first.bim", openMode: OpenMode.ReadWrite, enableTransactions: true });
-    const second: IModelDb = IModelTestUtils.openIModelFromOut("upgraded.bim", { copyFilename: "second.bim", openMode: OpenMode.ReadWrite, enableTransactions: true });
-    const neutral: IModelDb = IModelTestUtils.openIModelFromOut("upgraded.bim", { copyFilename: "neutral.bim", openMode: OpenMode.ReadWrite, enableTransactions: true });
+    const firstFileName = IModelTestUtils.prepareOutputFile("ChangeMerging", "first.bim");
+    const secondFileName = IModelTestUtils.prepareOutputFile("ChangeMerging", "second.bim");
+    const neutralFileName = IModelTestUtils.prepareOutputFile("ChangeMerging", "neutral.bim");
+    IModelJsFs.copySync(testFileName, firstFileName);
+    IModelJsFs.copySync(testFileName, secondFileName);
+    IModelJsFs.copySync(testFileName, neutralFileName);
+    const first: IModelDb = IModelDb.openStandalone(firstFileName, OpenMode.ReadWrite, true);
+    const second: IModelDb = IModelDb.openStandalone(secondFileName, OpenMode.ReadWrite, true);
+    const neutral: IModelDb = IModelDb.openStandalone(neutralFileName, OpenMode.ReadWrite, true);
     assert.isTrue(first !== second);
 
     first.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());

@@ -23,7 +23,7 @@ export class ModelSelectorState extends ElementState {
       props.models.forEach((model) => this.models.add(model));
   }
 
-  /** Get the name of this ModelSelector */
+  /** The name of this ModelSelector */
   public get name(): string { return this.code.getValue(); }
 
   public toJSON(): ModelSelectorProps {
@@ -33,6 +33,12 @@ export class ModelSelectorState extends ElementState {
     return val;
   }
 
+  /** Determine if this model selector is logically equivalent to the specified model selector. Two model selectors are logically equivalent is
+   * they have the same name and contain the same set of models.
+   * @param other The model selector to which to compare.
+   * @returns true if the model selectors are logically equivalent.
+   * @public
+   */
   public equalState(other: ModelSelectorState): boolean {
     if (this.models.size !== other.models.size)
       return false;

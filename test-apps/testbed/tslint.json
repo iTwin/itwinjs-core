@@ -1,6 +1,0 @@
-{
-  "extends": "@bentley/build-tools/tslint.json",
-  "rules": {
-    "no-direct-imports": false // For this test package, this does not matter.
-  }
-}

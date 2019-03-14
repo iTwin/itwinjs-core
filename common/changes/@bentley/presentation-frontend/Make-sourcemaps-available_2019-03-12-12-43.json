@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Put sourcemap in npm package.",
+      "packageName": "@bentley/presentation-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-frontend",
+  "email": "Barry.Bentley@bentley.com"
+}

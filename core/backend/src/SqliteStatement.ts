@@ -197,26 +197,6 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
    */
   public step(): DbResult { return this._stmt!.step(); }
 
-  /** Asynchronous version of Step method.
-   *
-   *  For **SQL SELECT** statements the method returns
-   *  - [DbResult.BE_SQLITE_ROW]($bentleyjs-core) if the statement now points successfully to the next row.
-   *  - [DbResult.BE_SQLITE_DONE]($bentleyjs-core) if the statement has no more rows.
-   *  - Error status in case of errors.
-   *
-   *  For **SQL INSERT, UPDATE, DELETE** statements the method returns
-   *  - [DbResult.BE_SQLITE_DONE]($bentleyjs-core) if the statement has been executed successfully.
-   *  - Error status in case of errors.
-   */
-  public async stepAsync(): Promise<DbResult> {
-    return new Promise<DbResult>((resolve, reject) => {
-      if (!this._stmt)
-        reject();
-      else
-        this._stmt!.stepAsync(resolve);
-    });
-  }
-
   /** Get the query result's column count (only for SQL SELECT statements). */
   public getColumnCount(): number { return this._stmt!.getColumnCount(); }
 

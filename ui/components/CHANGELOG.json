@@ -2,6 +2,126 @@
   "name": "@bentley/ui-components",
   "entries": [
     {
+      "version": "0.189.0",
+      "tag": "@bentley/ui-components_v0.189.0",
+      "date": "Wed, 06 Mar 2019 15:41:22 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "UI documentation fixes"
+          },
+          {
+            "comment": "Added ToggleEditor. Support for defaultTool in Frontstage. Fixed BooleanEditor sizing."
+          },
+          {
+            "comment": "Added 100% test coverage for Breadcrumb/BreadcrumbDetails"
+          },
+          {
+            "comment": "Use new buildIModelJsBuild script"
+          },
+          {
+            "comment": "Remove uneeded typedoc plugin depedency"
+          },
+          {
+            "comment": "Added EnumEditor & BooleanEditor type editors"
+          },
+          {
+            "comment": "Minor UI Color Theme changes"
+          },
+          {
+            "comment": "Support for including CSS files in published UI packages"
+          },
+          {
+            "comment": "Updated type editors to support updated PropertyRecord. Moved setFocus to props in type editors.."
+          },
+          {
+            "comment": "Removed dependency on BWC. Parts of BWC copied into ui-core in preparation for theming support."
+          },
+          {
+            "comment": "Added ToggleEditor. Support for defaultTool in Frontstage."
+          },
+          {
+            "comment": "Save BUILD_SEMVER to globally accessible map"
+          },
+          {
+            "comment": "Change setImmediate to setTimeout. Fixed cube rotation issue."
+          },
+          {
+            "comment": "Added ItemStyle and ItemStyle provider."
+          },
+          {
+            "comment": "CellItem and TreeNodeItem now have the same style property."
+          },
+          {
+            "comment": "Added TableCell and TableCellContent React components."
+          },
+          {
+            "comment": "Changed table css class names."
+          },
+          {
+            "comment": "Changed CellItem interface property - 'alignment' type to be a restricted string instead of an enum."
+          },
+          {
+            "comment": " Cleanup of DefaultToolSetting provider and EnumButtonGroup editor"
+          },
+          {
+            "comment": "Add EnumButtonGroupEditor."
+          },
+          {
+            "comment": "Primitive property value renderers now render links specified in property records."
+          },
+          {
+            "comment": "Renamed class names that start with \"ui-components-\" to start with just \"components-\""
+          },
+          {
+            "comment": "Added IImageLoader, ImageRenderer and TreeImageLoader."
+          },
+          {
+            "comment": "Added showIcons and imageLoader props to Tree component."
+          },
+          {
+            "comment": "Added a property to provide rowHeight value or function that calculates it."
+          },
+          {
+            "comment": "Tree now accepts one checkbox prop object instead of multiple props."
+          },
+          {
+            "comment": "Tree now accepts one cell editing prop object instead of multiple props."
+          },
+          {
+            "comment": "Split tree node label and description rendering into a separate component - TreeNodeContent."
+          },
+          {
+            "comment": "Added an ability to show node descriptions in the Tree component via showDescriptions property."
+          },
+          {
+            "comment": "Fix tree failing to load nodes in special cases"
+          },
+          {
+            "comment": "Added support for UI color themes"
+          },
+          {
+            "comment": "Add a way to specify checkbox states asynchronously in Tree component"
+          },
+          {
+            "comment": "Breadcrumb fixes"
+          },
+          {
+            "comment": "Add a way to specify custom Tree checkbox renderer"
+          },
+          {
+            "comment": "Update to use newer generic-icons-webfont package."
+          },
+          {
+            "comment": "upgrade to TypeScript 3.2.2"
+          },
+          {
+            "comment": "WIP: ViewportComponent unit tests. Removed imodeljs-clients-backend dependency from ui-framework"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.188.0",
       "tag": "@bentley/ui-components_v0.188.0",
       "date": "Wed, 16 Jan 2019 16:36:09 GMT",

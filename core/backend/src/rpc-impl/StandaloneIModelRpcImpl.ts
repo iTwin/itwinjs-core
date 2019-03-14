@@ -8,9 +8,8 @@ import { OpenMode } from "@bentley/bentleyjs-core";
 import { RpcInterface, RpcManager, IModel, IModelToken, StandaloneIModelRpcInterface } from "@bentley/imodeljs-common";
 import { IModelDb } from "../IModelDb";
 
-/**
- * The backend implementation of StandaloneIModelRpcInterface.
- * @hidden
+/** The backend implementation of StandaloneIModelRpcInterface.
+ * @internal
  */
 export class StandaloneIModelRpcImpl extends RpcInterface implements StandaloneIModelRpcInterface {
   public static register() { RpcManager.registerImpl(StandaloneIModelRpcInterface, StandaloneIModelRpcImpl); }

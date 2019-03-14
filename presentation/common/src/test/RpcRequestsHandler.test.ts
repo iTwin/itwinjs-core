@@ -12,8 +12,8 @@ import {
   createRandomContent, createRandomDescriptor,
   createRandomSelectionScope,
 } from "./_helpers/random";
-import { BeEvent, using } from "@bentley/bentleyjs-core";
-import { IModelToken, RpcManager, RpcInterface, RpcInterfaceDefinition, EntityProps } from "@bentley/imodeljs-common";
+import { BeEvent, using, Id64String } from "@bentley/bentleyjs-core";
+import { IModelToken, RpcManager, RpcInterface, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
 import {
   RpcRequestsHandler, PresentationRpcInterface,
   KeySet, Paged, SelectionInfo,
@@ -511,11 +511,11 @@ describe("RpcRequestsHandler", () => {
         imodel: token,
       };
       const rpcOptions = { ...defaultRpcOptions, ...options };
-      const keys = new Array<EntityProps>();
+      const ids = new Array<Id64String>();
       const scopeId = faker.random.uuid();
       const result = new KeySet();
-      rpcInterfaceMock.setup(async (x) => x.computeSelection(token, rpcOptions, keys, scopeId)).returns(async () => successResponse(result)).verifiable();
-      expect(await handler.computeSelection(options, keys, scopeId)).to.eq(result);
+      rpcInterfaceMock.setup(async (x) => x.computeSelection(token, rpcOptions, ids, scopeId)).returns(async () => successResponse(result)).verifiable();
+      expect(await handler.computeSelection(options, ids, scopeId)).to.eq(result);
       rpcInterfaceMock.verifyAll();
     });
 

@@ -56,4 +56,5 @@
     font-size:          map-get( $sizes, $type );
     font-weight:        map-get( $weights, $type );
     line-height:        map-get( $line-heights, $type );
+    color:              $buic-text-color;
 }

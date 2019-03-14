@@ -4,15 +4,20 @@
 *--------------------------------------------------------------------------------------------*/
 @import "@bentley/ui-core/lib/ui-core/index";
 
-$color-swatch-size: $uicore-font-size * 1.2;
-
 .components-color-swatch {
-  height: $color-swatch-size;
-  width: $color-swatch-size;
-  margin-left: 0px;
-  border-width: 0px;
-}
+  font-size: $uicore-font-size;
+  height: 1em * 1.2;
+  width: 1em * 1.2;
+  border-width: 1px;
+  border-radius: 3px;
+  border-style: solid;
+  border-color: rgba(0, 0, 0, 0.2);
 
-.components-color-swatch-round {
-  border-radius: 50%;
+  &.round {
+    border-radius: 50%;
+  }
+
+  &[disabled] {
+    opacity: .2;
+  }
 }

@@ -4,15 +4,15 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module RPC */
 
-import { Guid, BeEvent, IDisposable } from "@bentley/bentleyjs-core";
-import { IModelToken, RpcManager, EntityProps } from "@bentley/imodeljs-common";
+import { Guid, BeEvent, IDisposable, Id64String } from "@bentley/bentleyjs-core";
+import { IModelToken, RpcManager } from "@bentley/imodeljs-common";
 import KeySet from "./KeySet";
 import { PresentationStatus, PresentationError } from "./Error";
 import { InstanceKey } from "./EC";
 import { NodeKey } from "./hierarchy/Key";
 import { default as Node } from "./hierarchy/Node";
 import { default as NodePathElement } from "./hierarchy/NodePathElement";
-import { SelectionInfo, default as Descriptor } from "./content/Descriptor";
+import { SelectionInfo, default as Descriptor, DescriptorOverrides } from "./content/Descriptor";
 import { default as Content } from "./content/Content";
 import { SelectionScope } from "./selection/SelectionScope";
 import { HierarchyRequestOptions, ContentRequestOptions, Paged, SelectionScopeRequestOptions } from "./PresentationManagerOptions";
@@ -177,17 +177,17 @@ export default class RpcRequestsHandler implements IDisposable {
     return this.request<Descriptor | undefined, ContentRequestOptions<IModelToken>>(
       this.rpcClient, this.rpcClient.getContentDescriptor, this.createRequestOptions(options), displayType, keys, selection);
   }
-  public async getContentSetSize(options: ContentRequestOptions<IModelToken>, descriptorOrDisplayType: Readonly<Descriptor> | string, keys: Readonly<KeySet>): Promise<number> {
+  public async getContentSetSize(options: ContentRequestOptions<IModelToken>, descriptorOrOverrides: Readonly<Descriptor> | DescriptorOverrides, keys: Readonly<KeySet>): Promise<number> {
     return this.request<number, ContentRequestOptions<IModelToken>>(
-      this.rpcClient, this.rpcClient.getContentSetSize, this.createRequestOptions(options), descriptorOrDisplayType, keys);
+      this.rpcClient, this.rpcClient.getContentSetSize, this.createRequestOptions(options), descriptorOrOverrides, keys);
   }
-  public async getContent(options: ContentRequestOptions<IModelToken>, descriptorOrDisplayType: Readonly<Descriptor> | string, keys: Readonly<KeySet>): Promise<Content> {
-    return this.request<Content, ContentRequestOptions<IModelToken>>(
-      this.rpcClient, this.rpcClient.getContent, this.createRequestOptions(options), descriptorOrDisplayType, keys);
+  public async getContent(options: ContentRequestOptions<IModelToken>, descriptorOrOverrides: Readonly<Descriptor> | DescriptorOverrides, keys: Readonly<KeySet>): Promise<Content | undefined> {
+    return this.request<Content | undefined, ContentRequestOptions<IModelToken>>(
+      this.rpcClient, this.rpcClient.getContent, this.createRequestOptions(options), descriptorOrOverrides, keys);
   }
-  public async getContentAndSize(options: ContentRequestOptions<IModelToken>, descriptorOrDisplayType: Readonly<Descriptor> | string, keys: Readonly<KeySet>): Promise<ContentResponse> {
+  public async getContentAndSize(options: ContentRequestOptions<IModelToken>, descriptorOrOverrides: Readonly<Descriptor> | DescriptorOverrides, keys: Readonly<KeySet>): Promise<ContentResponse> {
     return this.request<ContentResponse, ContentRequestOptions<IModelToken>, any>(
-      this.rpcClient, this.rpcClient.getContentAndSize, this.createRequestOptions(options), descriptorOrDisplayType, keys);
+      this.rpcClient, this.rpcClient.getContentAndSize, this.createRequestOptions(options), descriptorOrOverrides, keys);
   }
   public async getDistinctValues(options: ContentRequestOptions<IModelToken>, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>, fieldName: string, maximumValueCount: number): Promise<string[]> {
     return this.request<string[], ContentRequestOptions<IModelToken>>(
@@ -198,8 +198,8 @@ export default class RpcRequestsHandler implements IDisposable {
     return this.request<SelectionScope[], SelectionScopeRequestOptions<IModelToken>>(
       this.rpcClient, this.rpcClient.getSelectionScopes, this.createRequestOptions(options));
   }
-  public async computeSelection(options: SelectionScopeRequestOptions<IModelToken>, keys: EntityProps[], scopeId: string): Promise<KeySet> {
+  public async computeSelection(options: SelectionScopeRequestOptions<IModelToken>, ids: Id64String[], scopeId: string): Promise<KeySet> {
     return this.request<KeySet, SelectionScopeRequestOptions<IModelToken>>(
-      this.rpcClient, this.rpcClient.computeSelection, this.createRequestOptions(options), keys, scopeId);
+      this.rpcClient, this.rpcClient.computeSelection, this.createRequestOptions(options), ids, scopeId);
   }
 }

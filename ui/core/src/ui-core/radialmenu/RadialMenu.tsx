@@ -212,7 +212,7 @@ export class RadialButton extends React.Component<RadialButtonProps, RadialButto
         </path>
         <foreignObject transform={t} x={p.x - size / 2} y={p.y - 16} width={size} height={size} className={"radial-menu-button-svg"}>
           <div {...{ xmlns: "http://www.w3.org/1999/xhtml" }} className={"radial-menu-button-container"}>
-            <div className={classnames("radial-menu-icon", "icon", this.props.icon)} />
+            <div className={classnames("radial-menu-button-icon", "icon", this.props.icon)} />
             <div className={"radial-menu-button-content"}>
               {this.props.children}
             </div>

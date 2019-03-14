@@ -1,0 +1,16 @@
+{
+  // Comments are allowed here!
+  "testBundle": "./lib/dist/bundled-tests.js",
+  "instrumentedTestBundle": "./lib/dist/bundled-tests.instrumented.js",
+  "backendInitModule": "./lib/backend/backend.js",
+  "ports": {
+    "debugging": 5858,
+    "frontend": 3010,
+    "frontendDebugging": 9223
+  },
+  "chromeOptions": {
+    "args": [
+      "--disable-web-security"
+    ]
+  }
+}

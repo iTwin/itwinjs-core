@@ -9,7 +9,6 @@ import { expect } from "chai";
 import { StandardRotationNavigationAid } from "../../ui-framework";
 import TestUtils from "../TestUtils";
 
-// NEEDSWORK_MODULARIZATION needs work after modularization reorganization. Might just need snap update, might now be wrong.
 describe("StandardRotationNavigationAid", () => {
 
   before(async () => {
@@ -31,7 +30,7 @@ describe("StandardRotationNavigationAid", () => {
 
       expect(wrapper.find("span.icon-cube-faces-top").length).to.eq(1);
       expect(wrapper.find("div.nz-toolbar-item-expandable-group-tool-item").length).to.eq(0);
-      wrapper.find("div.icon-button").simulate("click");
+      wrapper.find("button.icon-button").simulate("click");
 
       expect(wrapper.find("div.nz-toolbar-item-expandable-group-tool-item").length).to.be.greaterThan(0);
       wrapper.find("div.nz-toolbar-item-expandable-group-tool-item").at(1).simulate("click");

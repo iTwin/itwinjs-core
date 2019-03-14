@@ -8,7 +8,7 @@ import { Config, AccessToken, HubIModel, Project, OidcFrontendClientConfiguratio
 import {
   BentleyCloudRpcManager, DisplayStyleProps, ElectronRpcConfiguration, ElectronRpcManager, IModelReadRpcInterface,
   IModelTileRpcInterface, IModelToken, RpcConfiguration, RpcOperation, RenderMode, StandaloneIModelRpcInterface,
-  ViewDefinitionProps, ViewFlag, MobileRpcConfiguration, MobileRpcManager,
+  ViewDefinitionProps, ViewFlag, MobileRpcConfiguration, MobileRpcManager, SnapshotIModelRpcInterface,
 } from "@bentley/imodeljs-common";
 import { ConnectProjectConfiguration, SVTConfiguration } from "../common/SVTConfiguration";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
@@ -442,9 +442,9 @@ async function loadIModel(testConfig: DefaultConfigs) {
   let openLocalIModel = (testConfig.iModelLocation !== undefined);
   if (openLocalIModel) {
     try {
-      activeViewState.iModelConnection = await IModelConnection.openStandalone(testConfig.iModelFile!);
+      activeViewState.iModelConnection = await IModelConnection.openSnapshot(testConfig.iModelFile!);
     } catch (err) {
-      debugPrint("openStandalone on local iModel failed: " + err.toString());
+      debugPrint("openSnapshot failed: " + err.toString());
       openLocalIModel = false;
     }
   }
@@ -498,11 +498,11 @@ async function loadIModel(testConfig: DefaultConfigs) {
   await waitForTilesToLoad(testConfig.iModelLocation);
 }
 
-async function closeIModel(standalone: boolean) {
+async function closeIModel(isSnapshot: boolean) {
   debugPrint("start closeIModel" + activeViewState.iModelConnection);
   if (activeViewState.iModelConnection) {
-    if (standalone)
-      await activeViewState.iModelConnection.closeStandalone();
+    if (isSnapshot)
+      await activeViewState.iModelConnection.closeSnapshot();
     else
       await activeViewState.iModelConnection!.close(activeViewState.accessToken!);
   }
@@ -617,12 +617,12 @@ window.onload = () => {
   // Choose RpcConfiguration based on whether we are in electron or browser
   let rpcConfiguration: RpcConfiguration;
   if (ElectronRpcConfiguration.isElectron) {
-    rpcConfiguration = ElectronRpcManager.initializeClient({}, [DisplayPerfRpcInterface, IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface]);
+    rpcConfiguration = ElectronRpcManager.initializeClient({}, [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface]);
   } else if (MobileRpcConfiguration.isMobileFrontend) {
-    rpcConfiguration = MobileRpcManager.initializeClient([DisplayPerfRpcInterface, IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface]);
+    rpcConfiguration = MobileRpcManager.initializeClient([DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface]);
   } else {
     const uriPrefix = configuration.customOrchestratorUri || "http://localhost:3001";
-    rpcConfiguration = BentleyCloudRpcManager.initializeClient({ info: { title: "DisplayPerformanceTestApp", version: "v1.0" }, uriPrefix }, [DisplayPerfRpcInterface, IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface]);
+    rpcConfiguration = BentleyCloudRpcManager.initializeClient({ info: { title: "DisplayPerformanceTestApp", version: "v1.0" }, uriPrefix }, [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface]);
 
     // WIP: WebAppRpcProtocol seems to require an IModelToken for every RPC request. ECPresentation initialization tries to set active locale using
     // RPC without any imodel and fails...

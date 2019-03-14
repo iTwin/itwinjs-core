@@ -34,10 +34,10 @@ const favoritesCategoryName = "Favorite";
  */
 class Provider extends PresentationPropertyDataProvider {
   public invalidateCache(props: CacheInvalidationProps) { super.invalidateCache(props); }
-  public configureContentDescriptor(descriptor: Descriptor) { return super.configureContentDescriptor(descriptor); }
-  public shouldExcludeFromDescriptor(field: Field) { return super.shouldExcludeFromDescriptor(field); }
+  public shouldConfigureContentDescriptor() { return super.shouldConfigureContentDescriptor(); }
   public isFieldHidden(field: Field) { return super.isFieldHidden(field); }
   public isFieldFavorite(field: Field) { return super.isFieldFavorite(field); }
+  public getDescriptorOverrides() { return super.getDescriptorOverrides(); }
   public sortCategories(categories: CategoryDescription[]) { return super.sortCategories(categories); }
   public sortFields(category: CategoryDescription, fields: Field[]) { return super.sortFields(category, fields); }
 }
@@ -95,45 +95,19 @@ describe("PropertyDataProvider", () => {
 
   });
 
-  describe("configureContentDescriptor", () => {
+  describe("shouldConfigureContentDescriptor", () => {
 
-    it("adds `showLabels` content flag", () => {
-      const source = createRandomDescriptor();
-      source.contentFlags = ContentFlags.DistinctValues;
-      const descriptor = provider.configureContentDescriptor(source);
-      expect(descriptor.contentFlags).to.eq(ContentFlags.DistinctValues | ContentFlags.ShowLabels);
+    it("return false", () => {
+      expect(provider.shouldConfigureContentDescriptor()).to.be.false;
     });
 
   });
 
-  describe("shouldExcludeFromDescriptor", () => {
+  describe("getDescriptorOverrides", () => {
 
-    it("returns false if field is not hidden and not favorite", () => {
-      provider.isFieldHidden = () => false;
-      provider.isFieldFavorite = () => false;
-      const field = createRandomPrimitiveField();
-      expect(provider.shouldExcludeFromDescriptor(field)).to.be.false;
-    });
-
-    it("returns false if field is hidden and favorite", () => {
-      provider.isFieldHidden = () => true;
-      provider.isFieldFavorite = () => true;
-      const field = createRandomPrimitiveField();
-      expect(provider.shouldExcludeFromDescriptor(field)).to.be.false;
-    });
-
-    it("returns false if field is not hidden and favorite", () => {
-      provider.isFieldHidden = () => false;
-      provider.isFieldFavorite = () => true;
-      const field = createRandomPrimitiveField();
-      expect(provider.shouldExcludeFromDescriptor(field)).to.be.false;
-    });
-
-    it("returns true if field is hidden and not favorite", () => {
-      provider.isFieldHidden = () => true;
-      provider.isFieldFavorite = () => false;
-      const field = createRandomPrimitiveField();
-      expect(provider.shouldExcludeFromDescriptor(field)).to.be.true;
+    it("should have `ShowLabels` and `MergeResults` flags", () => {
+      const flags = provider.getDescriptorOverrides().contentFlags;
+      expect(flags & (ContentFlags.MergeResults | ContentFlags.ShowLabels)).to.not.eq(0);
     });
 
   });

@@ -2,13 +2,14 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { Id64String, OpenMode } from "@bentley/bentleyjs-core";
-import { ElectronRpcConfiguration, MobileRpcConfiguration } from "@bentley/imodeljs-common";
-import { imageBufferToPngDataUrl, IModelApp, IModelConnection, ScreenViewport, Viewport, ViewState, PluginAdmin } from "@bentley/imodeljs-frontend";
+import { Id64String } from "@bentley/bentleyjs-core";
+import { ElectronRpcConfiguration } from "@bentley/imodeljs-common";
+import { imageBufferToPngDataUrl, IModelApp, IModelConnection, PluginAdmin, ScreenViewport, Viewport, ViewState } from "@bentley/imodeljs-frontend";
+import { MarkupApp } from "@bentley/imodeljs-markup";
 import { AnimationPanel } from "./AnimationPanel";
 import { CategoryPicker } from "./CategoryPicker";
-import { createComboBox } from "./ComboBox";
 import { DebugPanel } from "./DebugPanel";
+import { emphasizeSelectedElements, FeatureOverridesPanel } from "./FeatureOverrides";
 import { IncidentMarkerDemo } from "./IncidentMarkerDemo";
 import { ModelPicker } from "./ModelPicker";
 import { toggleProjectExtents } from "./ProjectExtents";
@@ -16,10 +17,9 @@ import { RealityModelPicker } from "./RealityModelPicker";
 import { addSnapModes } from "./SnapModes";
 import { StandardRotations } from "./StandardRotations";
 import { TileLoadIndicator } from "./TileLoadIndicator";
-import { FeatureOverridesPanel, emphasizeSelectedElements } from "./FeatureOverrides";
-import { ToolBar, ToolBarDropDown, createImageButton, createToolButton } from "./ToolBar";
-import { ViewList, ViewPicker } from "./ViewPicker";
+import { createImageButton, createToolButton, ToolBar, ToolBarDropDown } from "./ToolBar";
 import { ViewAttributesPanel } from "./ViewAttributes";
+import { ViewList, ViewPicker } from "./ViewPicker";
 
 // ###TODO: I think the picker populates correctly, but I have no way to test - and if no reality models are available,
 // the button doesn't disappear until you click on it. Revisit when Alain has something useful for us.
@@ -87,7 +87,7 @@ class DebugTools extends ToolBarDropDown {
 
     this._element.appendChild(createImageButton({
       src: "Markup.svg",
-      click: async () => PluginAdmin.loadPlugin("MarkupPlugin.js"),
+      click: async () => this.doMarkup(),
       tooltip: "Create Markup for View",
     }));
     this._element.appendChild(createToolButton({
@@ -96,6 +96,28 @@ class DebugTools extends ToolBarDropDown {
       tooltip: "Start Web Worker Test",
     }));
     parent.appendChild(this._element);
+  }
+
+  private async doMarkup() {
+    if (MarkupApp.isActive) {
+      // NOTE: Because we don't have separate START and STOP buttons in the test app, exit markup mode only when the Markup Select tool is active, otherwise start the Markup Select tool...
+      const startMarkupSelect = IModelApp.toolAdmin.defaultToolId === MarkupApp.markupSelectToolId && (undefined === IModelApp.toolAdmin.activeTool || MarkupApp.markupSelectToolId !== IModelApp.toolAdmin.activeTool.toolId);
+      if (startMarkupSelect) {
+        IModelApp.toolAdmin.startDefaultTool();
+        return;
+      }
+      MarkupApp.props.result.maxWidth = 1500;
+      const markupData = await MarkupApp.stop();
+      // tslint:disable:no-console
+      console.log("rect: " + JSON.stringify(markupData.rect));
+      console.log("svg : " + markupData.svg);
+      console.log("size of image: " + markupData.image!.length);
+      window.open(markupData.image, "Markup");
+    } else {
+      MarkupApp.props.active.element.stroke = "white"; // as an example, set default color for elements
+      MarkupApp.markupSelectToolId = "Markup.TestSelect"; // as an example override the default markup select tool to launch redline tools using key events
+      await MarkupApp.start(IModelApp.viewManager.selectedView!);
+    }
   }
 
   public get isOpen(): boolean { return "none" !== this._element.style.display; }
@@ -153,37 +175,10 @@ export class Viewer {
       createDropDown: async (container: HTMLElement) => Promise.resolve(new DebugPanel(this.viewport, container)),
     });
 
-    // iOS uses a combo box of predetermined iModels instead of a file picker.
-    if (MobileRpcConfiguration.isMobileFrontend) {
-      const cbx = createComboBox({
-        id: "imodelList",
-        entries: [
-          { name: "04_Plant.i.ibim'", value: "04_Plant" },
-          { name: "almostopaque.ibim'", value: "almostopaque" },
-          { name: "mesh_widget_piece.ibim'", value: "mesh_widget_piece" },
-          { name: "PhotoRealisticRendering.ibim'", value: "PhotoRealisticRendering" },
-          { name: "PSolidNewTransparent.ibim'", value: "PSolidNewTransparent" },
-          { name: "rectangle.ibim'", value: "rectangle" },
-          { name: "scattergories.ibim'", value: "scattergories" },
-          { name: "SketchOnSurface.ibim'", value: "SketchOnSurface" },
-          { name: "slabs.ibim'", value: "slabs" },
-          { name: "small_building_2.ibim'", value: "small_building_2" },
-          { name: "tr_blk.ibim'", value: "tr_blk" },
-        ],
-      });
-
-      cbx.select.onchange = async (ev: any) => {
-        const iModelName = ev.target.selectedOptions["0"].value;
-        await this.resetIModel("sample_documents/" + iModelName);
-      };
-
-      this.toolBar.addItem(cbx.div);
-    } else {
-      this.toolBar.addItem(createToolButton({
-        className: "bim-icon-briefcases",
-        click: () => { this.selectIModel(); }, // tslint:disable-line:no-floating-promises
-      }));
-    }
+    this.toolBar.addItem(createToolButton({
+      className: "bim-icon-briefcases",
+      click: () => { this.selectIModel(); }, // tslint:disable-line:no-floating-promises
+    }));
 
     this._viewPicker = new ViewPicker(this.toolBar.element, this.views);
     this._viewPicker.onSelectedViewChanged.addListener(async (id) => this.changeView(id));
@@ -316,13 +311,12 @@ export class Viewer {
   }
 
   private async clearViews(): Promise<void> {
-    await this._imodel.closeStandalone();
-
+    await this._imodel.closeSnapshot();
     this.views.clear();
   }
 
   private async openIModel(filename: string): Promise<void> {
-    this._imodel = await IModelConnection.openStandalone(filename, OpenMode.Readonly);
+    this._imodel = await IModelConnection.openSnapshot(filename);
   }
 
   private async buildViewList(): Promise<void> {

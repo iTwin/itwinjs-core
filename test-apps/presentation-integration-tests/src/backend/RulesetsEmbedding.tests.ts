@@ -5,7 +5,7 @@
 import { IModelDb } from "@bentley/imodeljs-backend/lib/IModelDb";
 import { initialize, terminate } from "../IntegrationTests";
 import RulesetEmbedder, { DuplicateHandlingStrategy } from "../../../../presentation/backend/lib/RulesetEmbedder";
-import { Id64, OpenMode, ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { Id64, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { expect } from "chai";
 import { tweakRuleset } from "./Helpers";
 import { Ruleset } from "@bentley/presentation-common/lib/rules/Ruleset";
@@ -34,19 +34,13 @@ describe("RulesEmbedding", () => {
 
   before(async () => {
     initialize();
-
-    fs.copyFile("assets/datasets/Properties_60InstancesWithUrl2.ibim", testIModelName, (err: Error) => {
-      if (err)
-        expect(false);
-    });
-
     nativePlatform = new (createDefaultNativePlatform())();
-    imodel = IModelDb.openStandalone(testIModelName, OpenMode.ReadWrite);
+    imodel = IModelDb.createSnapshotFromSeed(testIModelName, "assets/datasets/Properties_60InstancesWithUrl2.ibim");
     expect(imodel).is.not.null;
   });
 
   after(() => {
-    imodel.closeStandalone();
+    imodel.closeSnapshot();
     nativePlatform.dispose();
 
     fs.unlink(testIModelName, (err: Error) => {

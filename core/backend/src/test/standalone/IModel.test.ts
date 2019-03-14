@@ -9,9 +9,6 @@ import {
   Guid,
   Id64,
   Id64String,
-  OpenMode,
-  LogLevel,
-  Logger,
   using,
 } from "@bentley/bentleyjs-core";
 import {
@@ -45,7 +42,6 @@ import {
 } from "../../imodeljs-backend";
 import { DisableNativeAssertions, IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
-import { HubUtility } from "../integration/HubUtility";
 
 let lastPushTimeMillis = 0;
 let lastAutoPushEventType: AutoPushEventType | undefined;
@@ -76,23 +72,23 @@ describe("iModel", () => {
   const actx = new ActivityLoggingContext("");
 
   before(async () => {
-    IModelTestUtils.registerTestBim();
-    imodel1 = IModelTestUtils.openIModel("test.bim");
-    imodel2 = IModelTestUtils.openIModel("CompatibilityTestSeed.bim");
-    imodel3 = IModelTestUtils.openIModel("GetSetAutoHandledStructProperties.bim");
-    imodel4 = IModelTestUtils.openIModel("GetSetAutoHandledArrayProperties.bim");
-    imodel5 = IModelTestUtils.openIModel("mirukuru.ibim");
+    IModelTestUtils.registerTestBimSchema();
+    imodel1 = IModelDb.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("IModel", "test.bim"), IModelTestUtils.resolveAssetFile("test.bim"));
+    imodel2 = IModelDb.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("IModel", "CompatibilityTestSeed.bim"), IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim"));
+    imodel3 = IModelDb.openSnapshot(IModelTestUtils.resolveAssetFile("GetSetAutoHandledStructProperties.bim"));
+    imodel4 = IModelDb.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("IModel", "GetSetAutoHandledArrayProperties.bim"), IModelTestUtils.resolveAssetFile("GetSetAutoHandledArrayProperties.bim"));
+    imodel5 = IModelDb.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("IModel", "mirukuru.ibim"), IModelTestUtils.resolveAssetFile("mirukuru.ibim"));
 
     const schemaPathname = path.join(KnownTestLocations.assetsDir, "TestBim.ecschema.xml");
     await imodel1.importSchema(actx, schemaPathname); // will throw an exception if import fails
   });
 
   after(() => {
-    IModelTestUtils.closeIModel(imodel1);
-    IModelTestUtils.closeIModel(imodel2);
-    IModelTestUtils.closeIModel(imodel3);
-    IModelTestUtils.closeIModel(imodel4);
-    IModelTestUtils.closeIModel(imodel5);
+    imodel1.closeSnapshot();
+    imodel2.closeSnapshot();
+    imodel3.closeSnapshot();
+    imodel4.closeSnapshot();
+    imodel5.closeSnapshot();
   });
 
   /** test the copy constructor and to/from Json methods for the supplied entity */
@@ -107,13 +103,6 @@ describe("iModel", () => {
     s2 = JSON.stringify(el2);
     assert.equal(s1, s2);
   };
-
-  it.skip("dump cs file", () => {
-    Logger.setLevel("DgnCore", LogLevel.Trace);
-    Logger.setLevel("Changeset", LogLevel.Trace);
-    const db = IModelDb.openStandalone("D:\\dgn\\problem\\83927\\EAP_TT_001\\seed\\EAP_TT_001.bim");
-    HubUtility.dumpChangeSetFile(db, "D:\\dgn\\problem\\83927\\EAP_TT_001", "9fd0e30f88e93bec72532f6f1e05688e2c2408cd");
-  });
 
   it("should be able to get properties of an iIModel", () => {
     expect(imodel1.name).equals("TBD"); // That's the name of the root subject!
@@ -1347,7 +1336,7 @@ describe("iModel", () => {
     }
   });
 
-  it("should be able to create a standalone IModel", async () => {
+  it("should be able to create a snapshot IModel", async () => {
     const args = {
       rootSubject: { name: "TestSubject", description: "test project" },
       client: "ABC Manufacturing",
@@ -1356,7 +1345,7 @@ describe("iModel", () => {
       guid: Guid.createValue(),
     };
 
-    const iModel: IModelDb = IModelTestUtils.createStandaloneIModel("TestStandalone.bim", args);
+    const iModel: IModelDb = IModelDb.createSnapshot(IModelTestUtils.prepareOutputFile("IModel", "TestSnapshot.bim"), args);
     assert.equal(iModel.getGuid(), args.guid);
     assert.equal(iModel.rootSubject.name, args.rootSubject.name);
     assert.equal(iModel.rootSubject.description, args.rootSubject.description);
@@ -1399,7 +1388,7 @@ describe("iModel", () => {
     next = iModel.queryNextAvailableFileProperty(myPropsStr);
     assert.equal(0, next, "queryNextAvailableFileProperty, should return 0 when none present");
 
-    iModel.closeStandalone();
+    iModel.closeSnapshot();
   });
 
   it("The same promise can have two subscribers, and it will notify both.", async () => {
@@ -1544,7 +1533,9 @@ describe("iModel", () => {
 
   it.skip("ImodelJsTest.MeasureInsertPerformance", () => {
 
-    const ifperfimodel = IModelTestUtils.openIModel("DgnPlatformSeedManager_OneSpatialModel10.bim", { copyFilename: "ImodelJsTest_MeasureInsertPerformance.bim", enableTransactions: true });
+    const seedFileName = IModelTestUtils.resolveAssetFile("DgnPlatformSeedManager_OneSpatialModel10.bim");
+    const testFileName = IModelTestUtils.prepareOutputFile("IModel", "ImodelJsTest_MeasureInsertPerformance.bim");
+    const ifperfimodel = IModelDb.createSnapshotFromSeed(testFileName, seedFileName);
 
     // tslint:disable-next-line:no-console
     console.time("ImodelJsTest.MeasureInsertPerformance");
@@ -1664,10 +1655,10 @@ describe("iModel", () => {
   });
 
   it("Run plain SQL against readonly connection", () => {
-    let iModel: IModelDb = IModelTestUtils.createStandaloneIModel("sqlitesqlreadonlyconnection.bim", { rootSubject: { name: "test" } });
+    let iModel: IModelDb = IModelDb.createSnapshot(IModelTestUtils.prepareOutputFile("IModel", "sqlitesqlreadonlyconnection.bim"), { rootSubject: { name: "test" } });
     const iModelPath: string = iModel.briefcase.pathname;
-    iModel.closeStandalone();
-    iModel = IModelDb.openStandalone(iModelPath, OpenMode.Readonly);
+    iModel.closeSnapshot();
+    iModel = IModelDb.openSnapshot(iModelPath);
 
     iModel.withPreparedSqliteStatement("SELECT Name,StrData FROM be_Prop WHERE Namespace='ec_Db'", (stmt: SqliteStatement) => {
       let rowCount: number = 0;
@@ -1701,6 +1692,6 @@ describe("iModel", () => {
       }
       assert.equal(rowCount, 2);
     });
-    iModel.closeStandalone();
+    iModel.closeSnapshot();
   });
 });

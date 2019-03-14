@@ -118,7 +118,7 @@ describe("PerformanceElementsTests", () => {
         const fileName = "Performance_seed_" + className + "_" + dbSize + ".bim";
         const pathname = path.join(KnownTestLocations.outputDir, fileName);
         if (!IModelJsFs.existsSync(pathname)) {
-          seedIModel = IModelTestUtils.createStandaloneIModel(fileName, { rootSubject: { name: "PerfTest" } });
+          seedIModel = IModelDb.createSnapshot(IModelTestUtils.prepareOutputFile("ElementCRUDPerformance", fileName), { rootSubject: { name: "PerfTest" } });
           const testSchemaName = path.join(KnownTestLocations.assetsDir, "PerfTestDomain.ecschema.xml");
           await seedIModel.importSchema(actx, testSchemaName);
           seedIModel.setAsMaster();
@@ -137,7 +137,7 @@ describe("PerformanceElementsTests", () => {
           }
 
           seedIModel.saveChanges();
-          IModelTestUtils.closeIModel(seedIModel);
+          seedIModel.closeSnapshot();
         }
       }
     }
@@ -148,10 +148,10 @@ describe("PerformanceElementsTests", () => {
   it("ElementsInsert", () => {
     for (const className of classNames) {
       for (const dbSize of dbSizes) {
-        const baseSeed = "Performance_seed_" + className + "_" + dbSize + ".bim";
+        const seedFileName = path.join(KnownTestLocations.outputDir, "ElementCRUDPerformance", "Performance_seed_" + className + "_" + dbSize + ".bim");
         for (const opCount of opSizes) {
-          const testFileName = "ImodelPerformance_Insert_" + className + "_" + opCount + ".bim";
-          const perfimodel = IModelTestUtils.openIModelFromOut(baseSeed, { copyFilename: testFileName, enableTransactions: true });
+          const testFileName = IModelTestUtils.prepareOutputFile("ElementCRUDPerformance", "IModelPerformance_Insert_" + className + "_" + opCount + ".bim");
+          const perfimodel = IModelDb.createSnapshotFromSeed(testFileName, seedFileName);
           let newModelId: Id64String;
           [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(perfimodel, Code.createEmpty(), true);
           let spatialCategoryId = SpatialCategory.queryCategoryIdByName(perfimodel, IModel.dictionaryId, "MySpatialCategory");
@@ -177,7 +177,7 @@ describe("PerformanceElementsTests", () => {
             const row = stmt.getRow();
             assert.equal(row.count, dbSize + opCount);
           });
-          IModelTestUtils.closeIModel(perfimodel);
+          perfimodel.closeStandalone();
         }
       }
     }
@@ -186,10 +186,10 @@ describe("PerformanceElementsTests", () => {
   it("ElementsDelete", () => {
     for (const className of classNames) {
       for (const dbSize of dbSizes) {
-        const baseSeed = "Performance_seed_" + className + "_" + dbSize + ".bim";
+        const seedFileName = path.join(KnownTestLocations.outputDir, "ElementCRUDPerformance", "Performance_seed_" + className + "_" + dbSize + ".bim");
         for (const opCount of opSizes) {
-          const testFileName = "ImodelPerformance_Delete_" + className + "_" + opCount + ".bim";
-          const perfimodel = IModelTestUtils.openIModelFromOut(baseSeed, { copyFilename: testFileName, enableTransactions: true });
+          const testFileName = IModelTestUtils.prepareOutputFile("ElementCRUDPerformance", "IModelPerformance_Delete_" + className + "_" + opCount + ".bim");
+          const perfimodel = IModelDb.createSnapshotFromSeed(testFileName, seedFileName);
           const stat = perfimodel.executeQuery("SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM bis.PhysicalElement")[0];
           const elementIdIncrement = Math.floor(dbSize / opCount);
           assert.equal((stat.maxId - stat.minId + 1), dbSize);
@@ -212,7 +212,7 @@ describe("PerformanceElementsTests", () => {
             const row = stmt.getRow();
             assert.equal(row.count, dbSize - opCount);
           });
-          IModelTestUtils.closeIModel(perfimodel);
+          perfimodel.closeStandalone();
         }
       }
     }
@@ -221,10 +221,10 @@ describe("PerformanceElementsTests", () => {
   it("ElementsRead", () => {
     for (const className of classNames) {
       for (const dbSize of dbSizes) {
-        const baseSeed = "Performance_seed_" + className + "_" + dbSize + ".bim";
+        const seedFileName = path.join(KnownTestLocations.outputDir, "ElementCRUDPerformance", "Performance_seed_" + className + "_" + dbSize + ".bim");
         for (const opCount of opSizes) {
-          const testFileName = "ImodelPerformance_Read_" + className + "_" + opCount + ".bim";
-          const perfimodel = IModelTestUtils.openIModelFromOut(baseSeed, { copyFilename: testFileName, enableTransactions: true });
+          const testFileName = IModelTestUtils.prepareOutputFile("ElementCRUDPerformance", "IModelPerformance_Read_" + className + "_" + opCount + ".bim");
+          const perfimodel = IModelDb.createSnapshotFromSeed(testFileName, seedFileName);
           const stat = perfimodel.executeQuery("SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM bis.PhysicalElement")[0];
           const elementIdIncrement = Math.floor(dbSize / opCount);
           assert.equal((stat.maxId - stat.minId + 1), dbSize);
@@ -239,7 +239,7 @@ describe("PerformanceElementsTests", () => {
           const recordTime = new Date().toISOString();
           fs.appendFileSync(csvPath, recordTime + ",PerformanceElementsTests,ElementsRead," + elapsedTime + "," + opCount +
             ",\"Element API Read   \'" + className + "\' [Initial count: " + dbSize + "]\",Read," + dbSize + "\n");
-          IModelTestUtils.closeIModel(perfimodel);
+          perfimodel.closeStandalone();
         }
       }
     }
@@ -248,10 +248,10 @@ describe("PerformanceElementsTests", () => {
   it("ElementsUpdate", () => {
     for (const className of classNames) {
       for (const dbSize of dbSizes) {
-        const baseSeed = "Performance_seed_" + className + "_" + dbSize + ".bim";
+        const seedFileName = path.join(KnownTestLocations.outputDir, "ElementCRUDPerformance", "Performance_seed_" + className + "_" + dbSize + ".bim");
         for (const opCount of opSizes) {
-          const testFileName = "ImodelPerformance_Update_" + className + "_" + opCount + ".bim";
-          const perfimodel = IModelTestUtils.openIModelFromOut(baseSeed, { copyFilename: testFileName, enableTransactions: true });
+          const testFileName = IModelTestUtils.prepareOutputFile("ElementCRUDPerformance", "IModelPerformance_Update_" + className + "_" + opCount + ".bim");
+          const perfimodel = IModelDb.createSnapshotFromSeed(testFileName, seedFileName);
           const stat = perfimodel.executeQuery("SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM bis.PhysicalElement")[0];
           const elementIdIncrement = Math.floor(dbSize / opCount);
           // first construct modified elements
@@ -293,7 +293,7 @@ describe("PerformanceElementsTests", () => {
           fs.appendFileSync(csvPath, recordTime + ",PerformanceElementsTests,ElementsUpdate," + elapsedTime + "," + opCount +
             ",\"Element API Update   \'" + className + "\' [Initial count: " + dbSize + "]\",Update," + dbSize + "\n");
 
-          IModelTestUtils.closeIModel(perfimodel);
+          perfimodel.closeStandalone();
         }
       }
     }

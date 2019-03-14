@@ -2,7 +2,7 @@
 
 exports[`StandardRotationNavigationAid <StandardRotationNavigationAid /> renders correctly 1`] = `
 <div
-  className="standard-rotation-navigation"
+  className="uifw-standard-rotation-navigation"
 >
   <ExpandableButton
     button={

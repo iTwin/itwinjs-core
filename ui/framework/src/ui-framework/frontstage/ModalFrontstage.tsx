@@ -39,7 +39,7 @@ export class ModalFrontstage extends React.Component<ModalFrontstageProps> {
 
     return (
       <>
-        <div className={"modal-frontstage" + openClass}>
+        <div className={"uifw-modal-frontstage" + openClass}>
           <div className="app-bar">
             <BackButton className="nz-toolbar-button-app"
               onClick={this._onGoBack}
@@ -56,7 +56,7 @@ export class ModalFrontstage extends React.Component<ModalFrontstageProps> {
             {this.props.children}
           </div>
         </div>
-        <div className="modal-frontstage-overlay" />
+        <div className="uifw-modal-frontstage-overlay" />
       </>
     );
   }

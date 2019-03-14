@@ -124,6 +124,7 @@ export async function loadIModelJs(options: IModelJsLoadOptions): Promise<void> 
   await ScriptLoader.loadPackage(options.prefixVersion("imodeljs-common.js"));
   await ScriptLoader.loadPackage(options.prefixVersion("imodeljs-quantity.js"));
   await ScriptLoader.loadPackage(options.prefixVersion("imodeljs-frontend.js"));
+  await ScriptLoader.loadPackage(options.prefixVersion("imodeljs-markup.js"));
   if (options.loadUiComponents) {
     await thirdPartyRootPromise;
     // load the rest of the third party modules that depend on react and redux.

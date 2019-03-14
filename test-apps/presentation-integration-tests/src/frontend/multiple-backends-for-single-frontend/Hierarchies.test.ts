@@ -5,7 +5,6 @@
 import { expect } from "chai";
 import { initialize, terminate } from "../../IntegrationTests";
 import { resetBackend } from "./Helpers";
-import { OpenMode } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { PresentationManager } from "@bentley/presentation-frontend";
 
@@ -19,13 +18,13 @@ describe("Multiple backends for one frontend", async () => {
     before(async () => {
       initialize();
       const testIModelName: string = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
-      imodel = await IModelConnection.openStandalone(testIModelName, OpenMode.Readonly);
+      imodel = await IModelConnection.openSnapshot(testIModelName);
       expect(imodel).is.not.null;
       frontend = PresentationManager.create();
     });
 
     after(async () => {
-      await imodel.closeStandalone();
+      await imodel.closeSnapshot();
       frontend.dispose();
       terminate();
     });

@@ -8,7 +8,7 @@ import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import {
   createRandomECInstanceKey,
   createRandomECInstanceNodeKey, createRandomECInstanceNode, createRandomNodePathElement,
-  createRandomDescriptor, createRandomRuleset, createRandomId, createRandomSelectionScope, createRandomEntityProps,
+  createRandomDescriptor, createRandomRuleset, createRandomId, createRandomSelectionScope,
 } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { IModelToken } from "@bentley/imodeljs-common";
@@ -18,7 +18,7 @@ import {
   ClientStateSyncRequestOptions, SelectionScopeRequestOptions,
   HierarchyRpcRequestOptions, RulesetVariablesState,
   Node, Descriptor, Content, PageOptions, KeySet, InstanceKey,
-  Paged, RulesetManagerState, VariableValueTypes, Omit, PresentationStatus,
+  Paged, RulesetManagerState, VariableValueTypes, Omit, PresentationStatus, DescriptorOverrides,
 } from "@bentley/presentation-common";
 import RulesetVariablesManager from "../RulesetVariablesManager";
 import PresentationManager from "../PresentationManager";
@@ -412,6 +412,31 @@ describe("PresentationRpcImpl", () => {
         expect(actualResult.result!.content).to.eq(contentMock.object);
         expect(actualResult.result!.size).to.deep.eq(contentSizeResult);
       });
+
+      it("handles case when manager returns no content", async () => {
+        const descriptorOverrides: DescriptorOverrides = {
+          displayType: "",
+          contentFlags: 0,
+          hiddenFieldNames: [],
+        };
+        const options: Paged<Omit<ContentRequestOptions<IModelToken>, "imodel">> = {
+          rulesetId: testData.rulesetId,
+          paging: testData.pageOptions,
+        };
+        presentationManagerMock
+          .setup(async (x) => x.getContentAndSize(ActivityLoggingContext.current, { ...options, imodel: testData.imodelMock.object }, descriptorOverrides, testData.inputKeys))
+          .returns(async () => ({ content: undefined, size: 0 }))
+          .verifiable();
+
+        const actualResult = await impl.getContentAndSize(testData.imodelToken, { ...defaultRpcParams, ...options },
+          descriptorOverrides, testData.inputKeys);
+
+        presentationManagerMock.verifyAll();
+
+        expect(actualResult.result!.content).to.be.undefined;
+        expect(actualResult.result!.size).to.eq(0);
+      });
+
     });
 
     describe("getContentSetSize", () => {
@@ -423,8 +448,8 @@ describe("PresentationRpcImpl", () => {
           rulesetId: testData.rulesetId,
         };
         presentationManagerMock
-          .setup((x) => x.getContentSetSize(ActivityLoggingContext.current, { ...options, imodel: testData.imodelMock.object }, descriptor, testData.inputKeys))
-          .returns(() => Promise.resolve(result))
+          .setup(async (x) => x.getContentSetSize(ActivityLoggingContext.current, { ...options, imodel: testData.imodelMock.object }, descriptor, testData.inputKeys))
+          .returns(async () => Promise.resolve(result))
           .verifiable();
         const actualResult = await impl.getContentSetSize(testData.imodelToken, { ...defaultRpcParams, ...options },
           descriptor, testData.inputKeys);
@@ -459,6 +484,25 @@ describe("PresentationRpcImpl", () => {
         expect(actualResult.result).to.eq(contentMock.object);
       });
 
+      it("handles case when manager returns no content", async () => {
+        const descriptorOverrides: DescriptorOverrides = {
+          displayType: "",
+          contentFlags: 0,
+          hiddenFieldNames: [],
+        };
+        const options: Paged<Omit<ContentRequestOptions<IModelToken>, "imodel">> = {
+          rulesetId: testData.rulesetId,
+          paging: testData.pageOptions,
+        };
+        presentationManagerMock.setup(async (x) => x.getContent(ActivityLoggingContext.current, { ...options, imodel: testData.imodelMock.object }, descriptorOverrides, testData.inputKeys))
+          .returns(async () => undefined)
+          .verifiable();
+        const actualResult = await impl.getContent(testData.imodelToken, { ...defaultRpcParams, ...options },
+          descriptorOverrides, testData.inputKeys);
+        presentationManagerMock.verifyAll();
+        expect(actualResult.result).to.be.undefined;
+      });
+
     });
 
     describe("getDistinctValues", () => {
@@ -489,7 +533,7 @@ describe("PresentationRpcImpl", () => {
           imodel: testData.imodelToken,
         };
         const result = [createRandomSelectionScope()];
-        presentationManagerMock.setup((x) => x.getSelectionScopes(ActivityLoggingContext.current, { ...options, imodel: testData.imodelMock.object }))
+        presentationManagerMock.setup(async (x) => x.getSelectionScopes(ActivityLoggingContext.current, { ...options, imodel: testData.imodelMock.object }))
           .returns(async () => result)
           .verifiable();
         const actualResult = await impl.getSelectionScopes(testData.imodelToken, { ...defaultRpcParams, ...options });
@@ -499,19 +543,19 @@ describe("PresentationRpcImpl", () => {
 
     });
 
-    describe("getSelectionScopes", () => {
+    describe("computeSelection", () => {
 
       it("calls manager", async () => {
         const options: SelectionScopeRequestOptions<IModelToken> = {
           imodel: testData.imodelToken,
         };
         const scope = createRandomSelectionScope();
-        const keys = [createRandomEntityProps()];
+        const ids = [createRandomId()];
         const result = new KeySet();
-        presentationManagerMock.setup((x) => x.computeSelection(ActivityLoggingContext.current, { ...options, imodel: testData.imodelMock.object }, keys, scope.id))
+        presentationManagerMock.setup(async (x) => x.computeSelection(ActivityLoggingContext.current, { ...options, imodel: testData.imodelMock.object }, ids, scope.id))
           .returns(async () => result)
           .verifiable();
-        const actualResult = await impl.computeSelection(testData.imodelToken, { ...defaultRpcParams, ...options }, keys, scope.id);
+        const actualResult = await impl.computeSelection(testData.imodelToken, { ...defaultRpcParams, ...options }, ids, scope.id);
         presentationManagerMock.verifyAll();
         expect(actualResult.result).to.deep.eq(result);
       });

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fixed AppButton onClick on Firefox and bar color",
+      "packageName": "@bentley/ui-ninezone",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-ninezone",
+  "email": "dan.east@bentley.com"
+}

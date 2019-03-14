@@ -14,7 +14,7 @@ import {
 } from "@bentley/ui-ninezone";
 import { NotifyMessageDetails, OutputMessageType } from "@bentley/imodeljs-frontend";
 
-import { MessageContainer, MessageSeverity, Button, ButtonType } from "@bentley/ui-core";
+import { MessageContainer, MessageSeverity, Button, ButtonType, SmallText } from "@bentley/ui-core";
 
 import { MessageManager, MessageAddedEventArgs, ActivityMessageEventArgs } from "../messages/MessageManager";
 import { UiFramework } from "../UiFramework";
@@ -278,7 +278,7 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> i
                 <MessageLabel text={this.state.activityMessageInfo!.message} />
                 {
                   (messageDetails && messageDetails.showPercentInMessage) &&
-                  <h6 className="body-text-dark">{this.state.activityMessageInfo!.percentage + percentComplete}</h6>
+                  <SmallText>{this.state.activityMessageInfo!.percentage + percentComplete}</SmallText>
                 }
               </div>
             }

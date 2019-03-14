@@ -3,14 +3,14 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module iModels */
-import { ActivityLoggingContext, BeEvent, BentleyStatus, DbResult, AuthStatus, GuidString, Id64, Id64Arg, Id64Set, Id64String, JsonUtils, Logger, OpenMode } from "@bentley/bentleyjs-core";
+import { ActivityLoggingContext, BeEvent, BentleyStatus, DbResult, AuthStatus, Guid, GuidString, Id64, Id64Arg, Id64Set, Id64String, JsonUtils, Logger, OpenMode } from "@bentley/bentleyjs-core";
 import { AccessToken, UlasClient, UsageLogEntry, UsageType, LogPostingResponse } from "@bentley/imodeljs-clients";
 import {
   AxisAlignedBox3d, CategorySelectorProps, Code, CodeSpec, CreateIModelProps, DisplayStyleProps, EcefLocation, ElementAspectProps,
   ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontMap, FontMapProps, FontProps,
   IModel, IModelError, IModelNotFoundResponse, IModelProps, IModelStatus, IModelToken, IModelVersion, ModelProps, ModelSelectorProps,
   PropertyCallback, SheetProps, SnapRequestProps, SnapResponseProps, ThumbnailProps, TileTreeProps, ViewDefinitionProps, ViewQueryParams,
-  ViewStateProps, IModelCoordinatesResponseProps, GeoCoordinatesResponseProps, PageOptions, kPagingDefaultOptions, PagableECSql,
+  ViewStateProps, IModelCoordinatesResponseProps, GeoCoordinatesResponseProps, PageOptions, kPagingDefaultOptions, PageableECSql,
 } from "@bentley/imodeljs-common";
 import * as path from "path";
 import * as os from "os";
@@ -22,6 +22,8 @@ import { ECSqlStatement, ECSqlStatementCache } from "./ECSqlStatement";
 import { Element, Subject } from "./Element";
 import { ElementAspect } from "./ElementAspect";
 import { Entity } from "./Entity";
+import { ExportGraphicsProps } from "./ExportGraphics";
+import { IModelJsFs } from "./IModelJsFs";
 import { IModelJsNative } from "./IModelJsNative";
 import { Model } from "./Model";
 import { Relationship, RelationshipProps, Relationships } from "./Relationship";
@@ -29,10 +31,11 @@ import { CachedSqliteStatement, SqliteStatement, SqliteStatementCache } from "./
 import { SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
 import { IModelHost } from "./IModelHost";
 
-/** @hidden */
 const loggingCategory = "imodeljs-backend.IModelDb";
 
-/** The signature of a function that can supply a description of local Txns in the specified briefcase up to and including the specified endTxnId. */
+/** The signature of a function that can supply a description of local Txns in the specified briefcase up to and including the specified endTxnId.
+ * @internal Uses the internal `IModelJsNative` type.
+ */
 export type ChangeSetDescriber = (endTxnId: IModelJsNative.TxnIdString) => string;
 
 /** Operations allowed when synchronizing changes between the IModelDb and the iModel Hub */
@@ -99,7 +102,9 @@ export class OpenParams {
   /** Create parameters to open the Db to make edits and push changes to the Hub */
   public static pullAndPush(exclusiveAccessOption: ExclusiveAccessOption = ExclusiveAccessOption.TryReuseOpenBriefcase): OpenParams { return new OpenParams(OpenMode.ReadWrite, AccessMode.Exclusive, SyncMode.PullAndPush, exclusiveAccessOption); }
 
-  /** Create parameters to open a standalone Db */
+  /** Create parameters to open a standalone Db
+   * @deprecated The confusing concept of *standalone* is being replaced by the more strict concept of a read-only iModel *snapshot*.
+   */
   public static standalone(openMode: OpenMode) { return new OpenParams(openMode); }
 
   /** Returns true if equal and false otherwise */
@@ -108,13 +113,13 @@ export class OpenParams {
   }
 }
 
-/**
- * Represents a physical copy (a briefcase) of an iModel that can be accessed as a file on the local computer.
+/** An iModel database file. The database file is either a local copy (briefcase) of an iModel managed by iModelHub or a read-only *snapshot* used for archival and data transfer purposes.
  *
  * IModelDb raises a set of events to allow apps and subsystems to track IModelDb object life cycle, including [[onOpen]] and [[onOpened]].
  * @see [learning about IModelDb]($docs/learning/backend/IModelDb.md)
+ * @public
  */
-export class IModelDb extends IModel implements PagableECSql {
+export class IModelDb extends IModel implements PageableECSql {
   public static readonly defaultLimit = 1000; // default limit for batching queries
   public static readonly maxLimit = 10000; // maximum limit for batching queries
   /** Event called after a changeset is applied to this IModelDb. */
@@ -191,15 +196,42 @@ export class IModelDb extends IModel implements PagableECSql {
     return new IModelDb(briefcaseEntry, iModelToken, openParams);
   }
 
-  /**
-   * Create a standalone local Db.
+  /** Create a standalone local Db.
    * @param fileName The name for the iModel
    * @param args The parameters that define the new iModel
+   * @deprecated The confusing concept of *standalone* is being replaced by the more strict concept of a read-only iModel *snapshot*. Callers should migrate to [[createSnapshot]].
    */
   public static createStandalone(fileName: string, args: CreateIModelProps): IModelDb {
     const briefcaseEntry: BriefcaseEntry = BriefcaseManager.createStandalone(fileName, args);
     // Logger.logTrace(loggingCategory, "IModelDb.createStandalone", loggingCategory, () => ({ pathname }));
     return IModelDb.constructIModelDb(briefcaseEntry, OpenParams.standalone(briefcaseEntry.openParams!.openMode!));
+  }
+
+  /** Create a local iModel *snapshot* file. Snapshots are disconnected from iModelHub so do not have a change timeline. Snapshots are typically used for archival or data transfer purposes.
+   * > Note: A *snapshot* cannot be modified after [[closeSnapshot]] is called.
+   * @param filePath The file that will contain the new iModel *snapshot*
+   * @param args The parameters that define the new iModel *snapshot*
+   * @beta The *snapshot* concept is solid, but the concept name might change which would cause a function rename.
+   */
+  public static createSnapshot(filePath: string, args: CreateIModelProps): IModelDb {
+    return this.createStandalone(filePath, args);
+  }
+
+  /** Create a local iModel *snapshot* file using an existing iModel file as a *seed* or starting point.
+   * @beta The *snapshot* concept is solid, but the concept name might change which would cause a function rename.
+   */
+  public static createSnapshotFromSeed(snapshotFile: string, seedFile: string): IModelDb {
+    IModelJsFs.copySync(seedFile, snapshotFile);
+    const briefcaseEntry: BriefcaseEntry = BriefcaseManager.openStandalone(snapshotFile, OpenMode.ReadWrite, false);
+    briefcaseEntry.iModelId = Guid.createValue();
+    briefcaseEntry.briefcaseId = BriefcaseId.Standalone;
+    const snapshotDb: IModelDb = IModelDb.constructIModelDb(briefcaseEntry, OpenParams.standalone(OpenMode.ReadWrite));
+    // WIP: clean up copied file if error on open?
+    snapshotDb.setGuid(briefcaseEntry.iModelId);
+    if (snapshotDb.nativeDb.getBriefcaseId() !== briefcaseEntry.briefcaseId) {
+      snapshotDb.nativeDb.setBriefcaseId(briefcaseEntry.briefcaseId);
+    }
+    return snapshotDb;
   }
 
   /** Create an iModel on iModelHub */
@@ -215,14 +247,23 @@ export class IModelDb extends IModel implements PagableECSql {
    * @param openMode Open mode for database
    * @param enableTransactions Enable tracking of transactions in this standalone iModel
    * @throws [[IModelError]]
+   * @see [[open]], [[openSnapshot]]
+   * @deprecated iModelHub manages the change history of an iModel, so writing changes to a local/unmanaged file doesn't make sense. Callers should migrate to [[openSnapshot]] or [[open]] instead.
    */
   public static openStandalone(pathname: string, openMode: OpenMode = OpenMode.ReadWrite, enableTransactions: boolean = false): IModelDb {
     const briefcaseEntry: BriefcaseEntry = BriefcaseManager.openStandalone(pathname, openMode, enableTransactions);
     return IModelDb.constructIModelDb(briefcaseEntry, OpenParams.standalone(openMode));
   }
 
-  /**
-   * Open an iModel from iModelHub. IModelDb files are cached locally. The requested version may be downloaded from iModelHub to the
+  /** Open a local iModel *snapshot*. Once created, *snapshots* are read-only and are typically used for archival or data transfer purposes.
+   * @see [[open]]
+   * @beta The *snapshot* concept is solid, but the concept name might change which would cause a function rename.
+   */
+  public static openSnapshot(filePath: string): IModelDb {
+    return this.openStandalone(filePath, OpenMode.Readonly, false);
+  }
+
+  /** Open an iModel from iModelHub. IModelDb files are cached locally. The requested version may be downloaded from iModelHub to the
    * cache, or a previously downloaded version re-used from the cache - this behavior can optionally be configured through OpenParams.
    * Every open call must be matched with a call to close the IModelDb.
    * @param accessToken Delegation token of the authorized user.
@@ -278,15 +319,16 @@ export class IModelDb extends IModel implements PagableECSql {
     }
   }
 
-  /**
-   * Close this standalone iModel, if it is currently open
+  /** Close this standalone iModel, if it is currently open
    * @throws IModelError if the iModel is not open, or is not standalone
+   * @see [[closeSnapshot]]
+   * @deprecated The confusing concept of *standalone* is being replaced by the more strict concept of a read-only iModel *snapshot*. Callers should migrate to [[closeSnapshot]].
    */
   public closeStandalone(): void {
     if (!this.briefcase)
       throw this.newNotOpenError();
     if (!this.briefcase.isStandalone)
-      throw new IModelError(BentleyStatus.ERROR, "Cannot use IModelDb.closeStandalone() to close a non-standalone iModel. Use IModelDb.close() instead");
+      throw new IModelError(BentleyStatus.ERROR, "Cannot use to close a managed iModel. Use IModelDb.close() instead");
 
     try {
       BriefcaseManager.closeStandalone(this.briefcase);
@@ -297,8 +339,16 @@ export class IModelDb extends IModel implements PagableECSql {
     }
   }
 
-  /**
-   * Close this iModel, if it is currently open.
+  /** Close this local read-only iModel *snapshot*, if it is currently open.
+   * > Note: A *snapshot* cannot be modified after this function is called.
+   * @throws IModelError if the iModel is not open, or is not a *snapshot*.
+   * @beta The *snapshot* concept is solid, but the concept name might change which would cause a function rename.
+   */
+  public closeSnapshot(): void {
+    this.closeStandalone();
+  }
+
+  /** Close this iModel, if it is currently open.
    * @param accessToken Delegation token of the authorized user.
    * @param keepBriefcase Hint to discard or keep the briefcase for potential future use.
    * @throws IModelError if the iModel is not open, or is really a standalone iModel
@@ -441,7 +491,7 @@ export class IModelDb extends IModel implements PagableECSql {
     return this.withPreparedStatement(`select count(*) from (${ecsql})`, async (stmt: ECSqlStatement) => {
       if (bindings)
         stmt.bindValues(bindings);
-      const ret = await stmt.stepAsync();
+      const ret = stmt.step();
       if (ret === DbResult.BE_SQLITE_ROW) {
         return stmt.getValue(0).getInteger();
       }
@@ -475,13 +525,16 @@ export class IModelDb extends IModel implements PagableECSql {
 
     const pageNo = options.start || kPagingDefaultOptions.start;
     const pageSize = options.size || kPagingDefaultOptions.size;
-
+    const stepsPerTick = options.stepsPerTick || kPagingDefaultOptions.stepsPerTick;
     // verify if correct options was provided.
     if (pageNo! < 0)
       throw new IModelError(DbResult.BE_SQLITE_ERROR, "options.start must be positive integer");
 
-    if (pageSize! < 0)
+    if (pageSize! < 1)
       throw new IModelError(DbResult.BE_SQLITE_ERROR, "options.size must be positive integer starting from 1");
+
+    if (stepsPerTick! < 1)
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, "options.stepsPerTick must be positive integer starting from 1");
 
     const pageParams = { sys_page_size: pageSize!, sys_page_offset: pageNo! * pageSize! };
     return this.withPreparedStatement(`select * from (${ecsql}) limit :sys_page_size offset :sys_page_offset`, async (stmt: ECSqlStatement) => {
@@ -490,17 +543,36 @@ export class IModelDb extends IModel implements PagableECSql {
 
       stmt.bindValues(pageParams);
       const rows: any[] = [];
+      const result = await new Promise<DbResult>((resolve: any) => {
+        const nextStep = () => {
+          setTimeout(() => {
+            let status = DbResult.BE_SQLITE_DONE;
+            for (let i = 0; i < stepsPerTick!; ++i) {
+              status = stmt.step();
+              if (DbResult.BE_SQLITE_ROW === status) {
+                rows.push(stmt.getRow());
+                if (pageSize === rows.length) {
+                  return resolve(DbResult.BE_SQLITE_DONE);
+                }
+              } else {
+                return resolve(status);
+              }
+            }
+            if (status === DbResult.BE_SQLITE_ROW) {
+              nextStep();
+            }
+          }, 1);
+        };
+        nextStep();
+      });
+      if (result !== DbResult.BE_SQLITE_DONE)
+        throw new IModelError(result, "Sqlite error");
 
-      let ret = await stmt.stepAsync();
-      while (ret === DbResult.BE_SQLITE_ROW) {
-        rows.push(stmt.getRow());
-        ret = await stmt.stepAsync();
-      }
       return rows;
     });
   }
 
-  /** Execute a pagable query.
+  /** Execute a pageable query.
    * The result of the query is async iterator over the rows. The iterator will get next page automatically once rows in current page has been read.
    * [ECSQL row]($docs/learning/ECSQLRowFormat).
    *
@@ -1057,6 +1129,43 @@ export class IModelDb extends IModel implements PagableECSql {
     activity.enter();
     const resultString: string = this.nativeDb.getGeoCoordinatesFromIModelCoordinates(props);
     return JSON.parse(resultString) as GeoCoordinatesResponseProps;
+  }
+
+  /** Export meshes suitable for graphics APIs from arbitrary geometry in elements in this IModelDb.
+   *  * Requests can be slow when processing many elements so it is expected that this function be used on a dedicated backend.
+   *  * Vertices are exported in the IModelDb's world coordinate system, which is right-handed with Z pointing up.
+   *  * The results of changing [ExportGraphicsProps]($imodeljs-backend) during the [ExportGraphicsProps.onGraphics]($imodeljs-backend) callback are not defined.
+   *
+   * Example that prints the mesh for element 1 to stdout in [OBJ format](https://en.wikipedia.org/wiki/Wavefront_.obj_file)
+   * ```
+   * const onGraphics: ExportGraphicsFunction = (info: ExportGraphicsInfo) => {
+   *   const mesh: ExportGraphicsMesh = info.mesh;
+   *   for (let i = 0; i < mesh.points.length; i += 3) {
+   *     process.stdout.write(`v ${mesh.points[i]} ${mesh.points[i + 1]} ${mesh.points[i + 2]}\n`);
+   *     process.stdout.write(`vn ${mesh.normals[i]} ${mesh.normals[i + 1]} ${mesh.normals[i + 2]}\n`);
+   *   }
+   *
+   *   for (let i = 0; i < mesh.params.length; i += 2) {
+   *     process.stdout.write(`vt ${mesh.params[i]} ${mesh.params[i + 1]}\n`);
+   *   }
+   *
+   *   for (let i = 0; i < mesh.indices.length; i += 3) {
+   *     const p1 = mesh.indices[i];
+   *     const p2 = mesh.indices[i + 1];
+   *     const p3 = mesh.indices[i + 2];
+   *     process.stdout.write(`f ${p1}/${p1}/${p1} ${p2}/${p2}/${p2} ${p3}/${p3}/${p3}\n`);
+   *   }
+   *
+   *   return true;
+   * };
+   *
+   * iModel.exportGraphics(({ onGraphics, elementIdArray: ["0x1"] }));
+   * ```
+   * @returns 0 if successful, status otherwise
+   * @beta Waiting for feedback from community before finalizing.
+   */
+  public exportGraphics(exportProps: ExportGraphicsProps): DbResult {
+    return this.nativeDb.exportGraphics(exportProps);
   }
 
 }

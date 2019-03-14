@@ -32,6 +32,9 @@ export class CategorySelectorState extends ElementState {
     return val;
   }
 
+  /** Returns true if this category selector is logically equivalent to the specified category selector.
+   * Two category selectors are logically equivalent if they have the same name and contain the same set of category Ids.
+   */
   public equalState(other: CategorySelectorState): boolean {
     if (this.categories.size !== other.categories.size)
       return false;
@@ -49,7 +52,7 @@ export class CategorySelectorState extends ElementState {
     return true;
   }
 
-  /** Get the name of this CategorySelector */
+  /** The name of this CategorySelector */
   public get name(): string { return this.code.getValue(); }
 
   /** Determine whether this CategorySelector includes the specified categoryId string */
@@ -58,12 +61,15 @@ export class CategorySelectorState extends ElementState {
   /** Determine whether this CategorySelector includes the specified category */
   public isCategoryViewed(categoryId: Id64String): boolean { return this.has(categoryId); }
 
-  /** Add a category to this CategorySelector */
+  /** Add one or more categories to this CategorySelector */
   public addCategories(arg: Id64Arg): void { Id64.toIdSet(arg).forEach((id) => this.categories.add(id)); }
 
-  /** Drop a category from this CategorySelector */
+  /** Remove one or more categories from this CategorySelector */
   public dropCategories(arg: Id64Arg) { Id64.toIdSet(arg).forEach((id) => this.categories.delete(id)); }
 
-  /** Add or Drop categories to this CategorySelector */
+  /** Add or remove categories from this CategorySelector.
+   * @param arg The categories to add or remove
+   * @param add If true, categories will be added; otherwise they will be removed.
+   */
   public changeCategoryDisplay(arg: Id64Arg, add: boolean): void { if (add) this.addCategories(arg); else this.dropCategories(arg); }
 }

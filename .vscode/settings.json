@@ -127,6 +127,8 @@
     "nodeaddonapi",
     "nullptr",
     "numeronyms",
+    "oldcolor",
+    "pageable",
     "parallelized",
     "parameterize",
     "pnpm",
@@ -146,21 +148,24 @@
     "subclassing",
     "subgraphic",
     "superset",
+    "svgdotjs",
     "symb",
     "symbologies",
     "syncui",
     "tbgr",
-    "testbed",
     "tileset",
     "transpiler",
+    "uifw",
     "uisettings",
     "unchecking",
     "unclipped",
     "undoable",
+    "ungroup",
     "unhilite",
     "unhilited",
     "unhilites",
     "unitless",
+    "unmanaged",
     "unsuspended",
     "vect",
     "viewflags",
@@ -173,7 +178,8 @@
   "typescript.tsdk": "node_modules\\typescript\\lib",
   "files.associations": {
     "*.snap": "javascript",
-    ".nycrc": "json"
+    ".nycrc": "json",
+    "certa.json": "jsonc"
   },
   "cSpell.enabledLanguageIds": [
     "c",
@@ -193,6 +199,14 @@
     "typescriptreact",
     "xml",
     "yml"
+  ],
+  "json.schemas": [
+    {
+      "fileMatch": [
+        "certa.json"
+      ],
+      "url": "./tools/certa/certa.schema.json"
+    },
   ],
   "markdownlint.config": {
     "MD024": {

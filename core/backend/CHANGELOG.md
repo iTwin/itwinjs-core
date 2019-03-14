@@ -1,6 +1,43 @@
 # Change Log - @bentley/imodeljs-backend
 
-This log was last generated on Wed, 16 Jan 2019 16:36:09 GMT and should not be manually modified.
+This log was last generated on Wed, 06 Mar 2019 15:41:22 GMT and should not be manually modified.
+
+## 0.189.0
+Wed, 06 Mar 2019 15:41:22 GMT
+
+### Updates
+
+- Changes package.json to include api-extractor and adds api-extractor.json
+- Use new buildIModelJsBuild script
+- AxisAlignedBox and ElementAlignedBox are now typed to Range3d rather than classes
+- Moved AzureFileHandler, IOSAzureFileHandler, UrlFileHandler and the iModelHub tests to the imodeljs-clients-backend package. This removes the dependency of imodeljs-clients on the "fs" module, and turns it into a browser only package. 
+- clone methods are no longer generic
+- Remove uneeded typedoc plugin depedency
+- Added spatial <-> cartographic methods that check/use the geographic coordinate system before using ecef location.
+- Added async method for ECSqlStatement and SqliteStatement for step and stepAndInsert
+- Create iModel from empty template if seed file path not defined.
+- Add IModelImporter for importing data between iModels
+- Enable IModelWriteTest create/delete iModels on per user-machine basis
+- Enable IModelWriteTest create/delete iModels on per user-machine basis
+- Validated size of change sets before applying them. 
+- codespec lock example
+- Add backend Material API
+- Validated version of Node.js in IModelHost.startup()
+- Save BUILD_SEMVER to globally accessible map
+- Fixed resolution of queryable promises. 
+- added queryModelRange 
+- IModelConnection.close() always disposes the briefcase held at the backend in the case of ReadWrite connections. 
+- Move the IModelUnitTestRpcImpl into the testbed and out of the public API and marked nativeDb as hidden
+- Remove loadNativeAsset and formatElements RPC calls from the IModelReadRpcInterface
+- debugging aid
+- Removed IModelConnection.connectionId, added IModelApp.sessionId
+- Tile requests can optionally specify a retryInterval.
+- Improve tile request logging and make timeout configurable.
+- Prevent tile generation from interfering with other asynchronous requests.
+- Handled error with fetching host information on deployed machines.
+- Quick fix to ULAS failures. 
+- WIP fixes to Usage Logging. 
+- upgrade to TypeScript 3.2.2
 
 ## 0.188.0
 Wed, 16 Jan 2019 16:36:09 GMT

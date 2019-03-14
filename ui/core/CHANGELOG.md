@@ -1,6 +1,44 @@
 # Change Log - @bentley/ui-core
 
-This log was last generated on Wed, 16 Jan 2019 16:36:09 GMT and should not be manually modified.
+This log was last generated on Wed, 06 Mar 2019 15:41:22 GMT and should not be manually modified.
+
+## 0.189.0
+Wed, 06 Mar 2019 15:41:22 GMT
+
+### Updates
+
+- Renamed CSS files to SCSS
+- UI documentation fixes
+- Added ToggleEditor. Support for defaultTool in Frontstage. Fixed BooleanEditor sizing.
+- Added testing props to SplitButton
+- Added tilde-prefixed hotkey support to ContextMenu
+- Use new buildIModelJsBuild script
+- Changed Checkbox container from <label> to <span>, because the former caused weird visual glitch when clicked on.
+- Color tweaks
+- Fixed submenus, added default autoselect for hotkeys
+- Added tests for Dialog and Context Menu
+- Remove uneeded typedoc plugin depedency
+- Minor UI Color Theme changes
+- Support for including CSS files in published UI packages
+- Added styling capability to messages
+- Removed dependency on BWC. Parts of BWC copied into ui-core in preparation for theming support.
+- Save BUILD_SEMVER to globally accessible map
+- Added UnderlinedButton
+- Cleanup of DefaultToolSetting provider and EnumButtonGroup editor
+- Move property definitions to imodeljs-frontend so they could be used by tools to define properties for tool settings.
+- Added Image component.
+- Renamed core-tree-tree to core-tree.
+- Removed Div component.
+- Renamed icon container class in tree node to core-tree-node-icon.
+- Made tree node checkbox container background transparent.
+- Tree node checkbox css fix
+- Tree node now accepts one checkbox prop object instead of multiple props.
+- Changed tree node styling.
+- Added support for UI color themes
+- Add a way to specify custom Node checkbox renderer
+- Keyboard Shortcut keys in context menu. ui-core unit test branches.
+- Update to use newer generic-icons-webfont package.
+- upgrade to TypeScript 3.2.2
 
 ## 0.188.0
 Wed, 16 Jan 2019 16:36:09 GMT

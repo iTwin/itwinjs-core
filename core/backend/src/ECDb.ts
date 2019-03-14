@@ -4,13 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module ECDb */
 
-import { IModelError, IModelStatus, PageOptions, kPagingDefaultOptions, PagableECSql } from "@bentley/imodeljs-common";
+import { IModelError, IModelStatus, PageOptions, kPagingDefaultOptions, PageableECSql } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "./IModelJsNative";
 import { ECSqlStatement, ECSqlStatementCache } from "./ECSqlStatement";
 import { SqliteStatement, SqliteStatementCache, CachedSqliteStatement } from "./SqliteStatement";
 import { DbResult, OpenMode, IDisposable, Logger, assert } from "@bentley/bentleyjs-core";
 import { IModelHost } from "./IModelHost";
-
 const loggingCategory = "imodeljs-backend.ECDb";
 /** Modes for how to open [ECDb]($backend) files. */
 export enum ECDbOpenMode {
@@ -21,7 +20,7 @@ export enum ECDbOpenMode {
 }
 
 /** An ECDb file */
-export class ECDb implements IDisposable, PagableECSql {
+export class ECDb implements IDisposable, PageableECSql {
   private _nativeDb?: IModelJsNative.ECDb;
   private readonly _statementCache: ECSqlStatementCache = new ECSqlStatementCache();
   private readonly _sqliteStatementCache: SqliteStatementCache = new SqliteStatementCache();
@@ -48,7 +47,7 @@ export class ECDb implements IDisposable, PagableECSql {
     return this.withPreparedStatement(`select count(*) from (${ecsql})`, async (stmt: ECSqlStatement) => {
       if (bindings)
         stmt.bindValues(bindings);
-      const ret = await stmt.stepAsync();
+      const ret = stmt.step();
       if (ret === DbResult.BE_SQLITE_ROW) {
         return stmt.getValue(0).getInteger();
       }
@@ -82,13 +81,16 @@ export class ECDb implements IDisposable, PagableECSql {
 
     const pageNo = options.start || kPagingDefaultOptions.start;
     const pageSize = options.size || kPagingDefaultOptions.size;
-
+    const stepsPerTick = options.stepsPerTick || kPagingDefaultOptions.stepsPerTick;
     // verify if correct options was provided.
     if (pageNo! < 0)
       throw new IModelError(DbResult.BE_SQLITE_ERROR, "options.start must be positive integer");
 
-    if (pageSize! < 0)
+    if (pageSize! < 1)
       throw new IModelError(DbResult.BE_SQLITE_ERROR, "options.size must be positive integer starting from 1");
+
+    if (stepsPerTick! < 1)
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, "options.stepsPerTick must be positive integer starting from 1");
 
     const pageParams = { sys_page_size: pageSize!, sys_page_offset: pageNo! * pageSize! };
     return this.withPreparedStatement(`select * from (${ecsql}) limit :sys_page_size offset :sys_page_offset`, async (stmt: ECSqlStatement) => {
@@ -97,17 +99,35 @@ export class ECDb implements IDisposable, PagableECSql {
 
       stmt.bindValues(pageParams);
       const rows: any[] = [];
+      const result = await new Promise<DbResult>((resolve: any) => {
+        const nextStep = () => {
+          setTimeout(() => {
+            let status = DbResult.BE_SQLITE_DONE;
+            for (let i = 0; i < stepsPerTick!; ++i) {
+              status = stmt.step();
+              if (DbResult.BE_SQLITE_ROW === status) {
+                rows.push(stmt.getRow());
+                if (pageSize === rows.length) {
+                  return resolve(DbResult.BE_SQLITE_DONE);
+                }
+              } else {
+                return resolve(status);
+              }
+            }
+            if (status === DbResult.BE_SQLITE_ROW) {
+              nextStep();
+            }
+          }, 1);
+        };
+        nextStep();
+      });
+      if (result !== DbResult.BE_SQLITE_DONE)
+        throw new IModelError(result, "Sqlite error");
 
-      let ret = await stmt.stepAsync();
-      while (ret === DbResult.BE_SQLITE_ROW) {
-        rows.push(stmt.getRow());
-        ret = await stmt.stepAsync();
-      }
       return rows;
     });
   }
-
-  /** Execute a pagable query.
+  /** Execute a pageable query.
    * The result of the query is async iterator over the rows. The iterator will get next page automatically once rows in current page has been read.
    * [ECSQL row]($docs/learning/ECSQLRowFormat).
    *
