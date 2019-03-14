@@ -15,7 +15,7 @@ import { TechniqueId } from "./TechniqueId";
 import { assert, dispose } from "@bentley/bentleyjs-core";
 import { System } from "./System";
 import { InstancedGraphicParams, RenderMemory } from "../System";
-import { InstancedGeometry } from "./InstancedGeometry";
+import { InstancedGeometry, InstanceBuffers } from "./InstancedGeometry";
 
 export class Primitive extends Graphic {
   public cachedGeometry: CachedGeometry;
@@ -24,13 +24,21 @@ export class Primitive extends Graphic {
   protected constructor(cachedGeom: CachedGeometry) { super(); this.cachedGeometry = cachedGeom; }
 
   public static create(createGeom: () => CachedGeometry | undefined, instances?: InstancedGraphicParams): Primitive | undefined {
+    const instanceBuffers = undefined !== instances ? InstanceBuffers.create(instances, false) : undefined;
+    if (undefined === instanceBuffers && undefined !== instances)
+      return undefined;
+
+    return this.createShared(createGeom, instanceBuffers);
+  }
+
+  public static createShared(createGeom: () => CachedGeometry | undefined, instances?: InstanceBuffers): Primitive | undefined {
     let geom = createGeom();
     if (undefined === geom)
       return undefined;
 
     if (undefined !== instances) {
       assert(geom instanceof LUTGeometry, "Invalid geometry type for instancing");
-      geom = InstancedGeometry.create(geom as LUTGeometry, true, instances);
+      geom = new InstancedGeometry(geom as LUTGeometry, true, instances);
     }
 
     return undefined !== geom ? new this(geom) : undefined;

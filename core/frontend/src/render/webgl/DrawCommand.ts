@@ -61,6 +61,8 @@ export class DrawParams {
   public get geometry(): CachedGeometry { assert(undefined !== this._geometry); return this._geometry!; }
   public get programParams(): ShaderProgramParams { assert(undefined !== this._programParams); return this._programParams!; }
   public get modelViewMatrix() { return this._modelViewMatrix; }
+
+  // Used strictly by planar classification shaders - otherwise not necessarily initialized!
   public get modelMatrix() { return this._modelMatrix; }
 
   public get target() { return this.programParams.target; }
@@ -79,7 +81,6 @@ export class DrawParams {
       assert(pass === this.programParams.renderPass);
 
     this._geometry = geometry;
-    Matrix4.fromTransform(modelMatrix, this._modelMatrix);
     if (this.isViewCoords) {
       // Zero out Z for silly clipping tools...
       const tf = modelMatrix.clone(_scratchTransform);
@@ -87,7 +88,17 @@ export class DrawParams {
       Matrix4.fromTransform(tf, this._modelViewMatrix);
     } else {
       let modelViewMatrix = this.target.viewMatrix.clone(_scratchTransform);
-      modelViewMatrix = modelViewMatrix.multiplyTransformTransform(modelMatrix, modelViewMatrix);
+
+      // For instanced geometry, the "model view" matrix is really a transform from center of instanced geometry range to view.
+      // Shader will compute final model-view matrix based on this and the per-instance transform.
+      const instancedGeom = geometry.asInstanced;
+      if (undefined !== instancedGeom) {
+        modelViewMatrix = modelViewMatrix.multiplyTransformTransform(instancedGeom.getRtcTransform(modelMatrix), modelViewMatrix);
+      } else {
+        Matrix4.fromTransform(modelMatrix, this._modelMatrix);
+        modelViewMatrix = modelViewMatrix.multiplyTransformTransform(modelMatrix, modelViewMatrix);
+      }
+
       Matrix4.fromTransform(modelViewMatrix, this._modelViewMatrix);
     }
   }

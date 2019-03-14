@@ -12,27 +12,36 @@ import { RenderClassifierModel, ClassifierType } from "./render/System";
 import { System } from "./render/webgl/System";
 import { PlanarClassifier } from "./render/webgl/PlanarClassifier";
 
+export interface ClassificationFlagsProps {
+  inside: Classification.Display;
+  outside: Classification.Display;
+  selected: Classification.Display;
+  type: number;         // Not currently implemented
+}
 export namespace Classification {
   export const enum Display { Off = 0, On = 1, Dimmed = 2, Hilite = 3, ElementColor = 4 }
-  export interface FlagsProps {
-    inside: Display;
-    outside: Display;
-    selected: Display;
-    type: number;         // Not currently implemented
-  }
-  export class Flags implements FlagsProps {
+  export class Flags implements ClassificationFlagsProps {
     public inside: Display = Display.ElementColor;
     public outside: Display = Display.Dimmed;
     public selected: Display = Display.Hilite;
     public type: number = 0;         // Not currently implemented
   }
-  export class Properties {
-    public id: Id64String;
-    public expansion: number;
+  export interface PropertiesProps {
+    modelId: Id64String;
+    expand: number;
+    flags: Flags;
+    name: string;
+  }
+
+  export class Properties implements PropertiesProps {
+    public modelId: Id64String;
+    public expand: number;
     public flags: Flags;
-    constructor(id: Id64String, expansion: number, flags?: FlagsProps) {
-      this.id = id;
-      this.expansion = expansion;
+    public name: string;
+    constructor(name: string, modelId: Id64String, expand: number, flags?: ClassificationFlagsProps) {
+      this.name = name;
+      this.modelId = modelId;
+      this.expand = expand;
       this.flags = flags ? flags : new Flags();
     }
   }
@@ -56,7 +65,7 @@ export namespace Classification {
     if (model.jsonProperties.classifiers !== undefined) {
       for (const classifier of model.jsonProperties.classifiers) {
         if (classifier.isActive)
-          return new Properties(classifier.modelId, classifier.expand, classifier.flags);
+          return new Properties(classifier.name, classifier.modelId, classifier.expand, classifier.flags);
 
       }
     }
@@ -71,7 +80,7 @@ export namespace Classification {
       if (undefined !== model) {
         const props = getClassifierProps(model);
         if (undefined !== props) {
-          classifiersToLoad.push(props.id);
+          classifiersToLoad.push(props.modelId);
         }
       }
     }
@@ -87,17 +96,17 @@ export namespace Classification {
   export function addModelClassifierToScene(model: GeometricModelState, context: SceneContext): void {
     const classifierProps = getClassifierProps(model);
     if (undefined !== classifierProps) {
-      const classifier = System.instance.getClassifier(classifierProps.id, model.iModel);
+      const classifier = System.instance.getClassifier(classifierProps.modelId, model.iModel);
       if (undefined !== classifier) {
-        const classifierModel = model.iModel.models.getLoaded(classifierProps.id) as GeometricModelState;
+        const classifierModel = model.iModel.models.getLoaded(classifierProps.modelId) as GeometricModelState;
         if (undefined !== classifierModel) {
-          classifierModel.loadTileTree(classifier.type === ClassifierType.Planar ? BatchType.PlanarClassifier : BatchType.VolumeClassifier, false, undefined, classifierProps.expansion);
+          classifierModel.loadTileTree(classifier.type === ClassifierType.Planar ? BatchType.PlanarClassifier : BatchType.VolumeClassifier, false, undefined, classifierProps.expand);
           if (undefined === classifierModel.classifierTileTree)
             return;
-          context.modelClassifiers.set(model.id, classifierProps.id);
+          context.modelClassifiers.set(model.id, classifierProps.modelId);
           if (classifier.type === ClassifierType.Planar) {
-            if (!context.getPlanarClassifier(classifierProps.id))
-              context.setPlanarClassifier(classifierProps.id, PlanarClassifier.create(classifierProps, classifierModel.classifierTileTree, model, context));
+            if (!context.getPlanarClassifier(classifierProps.modelId))
+              context.setPlanarClassifier(classifierProps.modelId, PlanarClassifier.create(classifierProps, classifierModel.classifierTileTree, model, context));
           } else {
             classifierModel.classifierTileTree.drawScene(context);
           }

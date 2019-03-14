@@ -131,12 +131,12 @@ export namespace IModelTile {
      * Must ensure front-end does not request tiles of a format the back-end cannot supply, and back-end does
      * not supply tiles of a format the front-end doesn't recognize.
      */
-    public static create(formatVersion?: number): ContentIdProvider {
+    public static create(allowInstancing: boolean, formatVersion?: number): ContentIdProvider {
       if (undefined !== formatVersion) {
         const majorVersion = Math.min((formatVersion >>> 0x10), IModelTileIO.CurrentVersion.Major);
         assert(majorVersion > 0);
         if (majorVersion > 1)
-          return new ContentIdV2Provider(majorVersion);
+          return new ContentIdV2Provider(majorVersion, allowInstancing);
       }
 
       return new ContentIdV1Provider();
@@ -161,9 +161,9 @@ export namespace IModelTile {
   class ContentIdV2Provider extends ContentIdProvider {
     private readonly _prefix: string;
 
-    public constructor(majorVersion: number) {
+    public constructor(majorVersion: number, allowInstancing: boolean) {
       super();
-      const flags = IModelApp.tileAdmin.enableInstancing ? ContentFlags.AllowInstancing : ContentFlags.None;
+      const flags = (allowInstancing && IModelApp.tileAdmin.enableInstancing) ? ContentFlags.AllowInstancing : ContentFlags.None;
       this._prefix = this._separator + majorVersion.toString(16) + this._separator + flags.toString(16) + this._separator;
     }
 
@@ -182,12 +182,12 @@ export namespace IModelTile {
     protected get _batchType() { return this._type; }
     protected get _loadEdges(): boolean { return this._edgesRequired; }
 
-    public constructor(iModel: IModelConnection, formatVersion: number | undefined, batchType: BatchType, edgesRequired: boolean = true) {
+    public constructor(iModel: IModelConnection, formatVersion: number | undefined, batchType: BatchType, edgesRequired: boolean, allowInstancing: boolean) {
       super();
       this._iModel = iModel;
       this._type = batchType;
       this._edgesRequired = edgesRequired;
-      this._contentIdProvider = ContentIdProvider.create(formatVersion);
+      this._contentIdProvider = ContentIdProvider.create(allowInstancing, formatVersion);
     }
 
     public get maxDepth(): number { return 32; }  // Can be removed when element tile selector is working.
