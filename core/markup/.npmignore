@@ -2,8 +2,8 @@
 *
 !lib/**/*.d.ts
 !lib/**/*.js
+!lib/module/dev/imodeljs-markup.js.map
+!lib/public/**
 test
-!public/**
-!assets/**
 !package.json
 !*.md
