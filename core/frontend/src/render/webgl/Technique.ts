@@ -59,7 +59,7 @@ export class SingularTechnique implements Technique {
 }
 
 function numFeatureVariants(numBaseShaders: number) { return numBaseShaders * 3; }
-const numHiliteVariants = 4; // instanced and non-instanced, classified or not.
+const numHiliteVariants = 2; // instanced and non-instanced.
 const featureModes = [FeatureMode.None, FeatureMode.Pick, FeatureMode.Overrides];
 const scratchTechniqueFlags = new TechniqueFlags();
 const scratchHiliteFlags = new TechniqueFlags();
@@ -173,52 +173,70 @@ class SurfaceTechnique extends VariedTechnique {
   private static readonly _kOpaque = 0;
   private static readonly _kTranslucent = 1;
   private static readonly _kAnimated = 2;
-  private static readonly _kClassified = 4;
-  private static readonly _kInstanced = 8;
-  private static readonly _kFeature = 16;
+  private static readonly _kInstanced = 4;
+  private static readonly _kFeature = 8;
   private static readonly _kHilite = numFeatureVariants(SurfaceTechnique._kFeature);
+  // Classifiers are a special case - they are never translucent, animated, or instanced. We have 4 variants: 1 for each of the 3 feature modes, plus 1 for hilite.
+  private static readonly _kClassified = SurfaceTechnique._kHilite + numHiliteVariants;
 
   public constructor(gl: WebGLRenderingContext) {
-    super((SurfaceTechnique._kHilite + numHiliteVariants));
+    super(SurfaceTechnique._kClassified + numFeatureVariants(1) + 1);
 
     const flags = scratchTechniqueFlags;
 
     for (let instanced = IsInstanced.No; instanced <= IsInstanced.Yes; instanced++) {
-      for (let iClassified = IsClassified.No; iClassified <= IsClassified.Yes; iClassified++) {
-        this.addHiliteShader(gl, instanced, iClassified, createSurfaceHiliter);
-        for (let iAnimate = IsAnimated.No; iAnimate <= IsAnimated.Yes; iAnimate++) {
-          for (const featureMode of featureModes) {
-            flags.reset(featureMode, instanced);
-            flags.isAnimated = iAnimate;
-            flags.isClassified = iClassified;
-            const builder = createSurfaceBuilder(featureMode, flags.isInstanced, flags.isAnimated, flags.isClassified);
-            addMonochrome(builder.frag);
-            addMaterial(builder.frag);
+      this.addHiliteShader(gl, instanced, IsClassified.No, createSurfaceHiliter);
+      for (let iAnimate = IsAnimated.No; iAnimate <= IsAnimated.Yes; iAnimate++) {
+        for (const featureMode of featureModes) {
+          flags.reset(featureMode, instanced);
+          flags.isAnimated = iAnimate;
+          const builder = createSurfaceBuilder(featureMode, flags.isInstanced, flags.isAnimated, IsClassified.No);
+          addMonochrome(builder.frag);
+          addMaterial(builder.frag);
 
-            addSurfaceDiscardByAlpha(builder.frag);
-            this.addShader(builder, flags, gl);
+          addSurfaceDiscardByAlpha(builder.frag);
+          this.addShader(builder, flags, gl);
 
-            builder.frag.unset(FragmentShaderComponent.DiscardByAlpha);
-            this.addTranslucentShader(builder, flags, gl);
-          }
+          builder.frag.unset(FragmentShaderComponent.DiscardByAlpha);
+          this.addTranslucentShader(builder, flags, gl);
         }
       }
     }
+
+    this.addHiliteShader(gl, IsInstanced.No, IsClassified.Yes, createSurfaceHiliter);
+    for (const featureMode of featureModes) {
+      flags.reset(featureMode, IsInstanced.No);
+      flags.isClassified = IsClassified.Yes;
+
+      const builder = createSurfaceBuilder(featureMode, IsInstanced.No, IsAnimated.No, IsClassified.Yes);
+      addMonochrome(builder.frag);
+      addMaterial(builder.frag);
+      addSurfaceDiscardByAlpha(builder.frag);
+
+      this.addShader(builder, flags, gl);
+    }
   }
+
   protected get _debugDescription() { return "Surface"; }
 
   public computeShaderIndex(flags: TechniqueFlags): number {
-    if (flags.isHilite) {
-      assert(flags.hasFeatures || flags.isClassified === IsClassified.Yes);
-      return SurfaceTechnique._kHilite + 2 * flags.isInstanced + flags.isClassified;
+    if (flags.isClassified) {
+      assert(!flags.isAnimated);
+      assert(!flags.isTranslucent);
+      assert(!flags.isInstanced);
+
+      const baseIndex = SurfaceTechnique._kClassified;
+      return flags.isHilite ? baseIndex + numFeatureVariants(1) : baseIndex + flags.featureMode;
+    } else if (flags.isHilite) {
+      assert(flags.hasFeatures);
+      return SurfaceTechnique._kHilite + flags.isInstanced;
     }
 
     let index = flags.isTranslucent ? SurfaceTechnique._kTranslucent : SurfaceTechnique._kOpaque;
     index += SurfaceTechnique._kFeature * flags.featureMode;
     if (flags.isAnimated)
       index += SurfaceTechnique._kAnimated;
-    if (flags.isClassified)
-      index += SurfaceTechnique._kClassified;
+
     if (flags.isInstanced)
       index += SurfaceTechnique._kInstanced;
 

@@ -37,7 +37,7 @@ function createTarget(): Target | undefined {
   return System.instance!.createTarget(canvas!) as Target;
 }
 
-describe.skip("Technique tests", () => {
+describe("Technique tests", () => {
   before(() => WebGLTestContext.startup());
   after(() => WebGLTestContext.shutdown());
 

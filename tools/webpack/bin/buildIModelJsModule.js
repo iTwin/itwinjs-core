@@ -781,10 +781,10 @@ class IModelJsModuleBuilder {
     private async _compileAndSymlinkSources(): Promise<Result[]> {
       // compile the .ts and .tsx files
       const compileResult = this.compileSource();
-
+  
       // symlink the source resource ().scss and .svg files, public locale files, etc.) to the lib directory for inclusion in the webpack.
       const symlinkSourceResourcesResult = this.symlinkSourceResources();
-
+  
       // wait for all of those operations to finish.
       return Promise.all([compileResult, symlinkSourceResourcesResult])
     }
