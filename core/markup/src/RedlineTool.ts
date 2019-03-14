@@ -105,7 +105,7 @@ export class LineTool extends RedlineTool {
 export class RectangleTool extends RedlineTool {
   public static toolId = "Markup.Rectangle";
 
-  constructor(protected _roundCorners?: boolean) { super(); }
+  constructor(protected _cornerRadius?: number) { super(); } // Specify radius to create a rectangle with rounded corners.
 
   protected showPrompt(): void { this.outputMarkupPrompt(0 === this._points.length ? "Rectangle.Prompts.FirstPoint" : "Rectangle.Prompts.NextPoint"); }
 
@@ -122,8 +122,8 @@ export class RectangleTool extends RedlineTool {
     const offset = Point3d.create(vec.x < 0 ? end.x : start.x, vec.y < 0 ? end.y : start.y); // define location by corner points...
     const element = svgMarkup.rect(width, height).move(offset.x, offset.y);
     this.setCurrentStyle(element, true);
-    if (this._roundCorners)
-      element.radius(10.0);
+    if (undefined !== this._cornerRadius)
+      element.radius(this._cornerRadius);
     if (!isDynamics)
       this.onAdded(element);
   }
@@ -257,7 +257,7 @@ export class EllipseTool extends RedlineTool {
 export class ArrowTool extends RedlineTool {
   public static toolId = "Markup.Arrow";
 
-  constructor(protected _arrowPos?: string) { super(); } // Specify "start", "end", or "both". Default if undefined is "start".
+  constructor(protected _arrowPos?: string) { super(); } // Specify "start", "end", or "both". Default if undefined is "end".
 
   protected showPrompt(): void { this.outputMarkupPrompt(0 === this._points.length ? "Arrow.Prompts.FirstPoint" : "Arrow.Prompts.NextPoint"); }
 
@@ -285,9 +285,11 @@ export class ArrowTool extends RedlineTool {
       marker.attr("refX", arrowLength);
       marker.css({ stroke: color, fill: color });
     }
-    if (undefined === this._arrowPos || "start" === this._arrowPos || "both" === this._arrowPos)
+    const addToStart = ("start" === this._arrowPos || "both" === this._arrowPos);
+    const addToEnd = ("end" === this._arrowPos || "both" === this._arrowPos);
+    if (addToStart)
       element.marker("start", marker);
-    if ("end" === this._arrowPos || "both" === this._arrowPos)
+    if (addToEnd || !addToStart)
       element.marker("end", marker);
     if (!isDynamics)
       this.onAdded(element);

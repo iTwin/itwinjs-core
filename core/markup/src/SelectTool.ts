@@ -379,8 +379,13 @@ export class SelectionSet {
     const first = this.elements.values().next().value;
     const parent = first.parent("svg") as Svg;
     const group = parent.group();
+
+    const ordered: MarkupElement[] = [];
+    this.elements.forEach((el) => { ordered.push(el); });
+    ordered.sort((lhs, rhs) => parent.index(lhs) - parent.index(rhs)); // Preserve relative z ordering
+
     undo.doGroup(() => {
-      this.elements.forEach((el) => {
+      ordered.forEach((el) => {
         const oldParent = el.parent() as MarkupElement;
         const oldPos = el.position();
         el.unHilite(); undo.onRepositioned(el.addTo(group), oldPos, oldParent);
