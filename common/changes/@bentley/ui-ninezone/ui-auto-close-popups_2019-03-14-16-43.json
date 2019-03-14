@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Auto close popups when clicking outside.",
+      "packageName": "@bentley/ui-ninezone",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-ninezone",
+  "email": "gerardas.butkevicius@bentley.com"
+}

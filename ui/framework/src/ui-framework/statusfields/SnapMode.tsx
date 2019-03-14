@@ -12,7 +12,11 @@ import { ConfigurableUiActions } from "../configurableui/state";
 import { StatusBarFieldId, IStatusBar } from "../widgets/StatusBarWidgetControl";
 import { UiFramework } from "../UiFramework";
 
-import { SnapModeIndicator, SnapModeIcon, SnapModeDialog, Snap as SnapRow } from "@bentley/ui-ninezone";
+import { SnapModeIndicator, SnapModeIcon, SnapModeDialog as SnapModeDialogComponent, Snap as SnapRow } from "@bentley/ui-ninezone";
+import { withOnOutsideClick } from "@bentley/ui-core";
+
+// tslint:disable-next-line: variable-name
+const SnapModeDialog = withOnOutsideClick(SnapModeDialogComponent, undefined, false);
 
 // cSpell:ignore multione
 /** Defines properties supported by the SnapMode Field Component. */
@@ -81,8 +85,9 @@ class SnapModeFieldComponent extends React.Component<SnapModeFieldProps> {
         dialog={
           this.props.openWidget !== this._className ? undefined :
             <SnapModeDialog
-              title={UiFramework.i18n.translate("UiFramework:snapModeField.snapMode")}
+              onOutsideClick={this._handleDialogOutsideClick}
               snaps={this.getSnapEntries()}
+              title={UiFramework.i18n.translate("UiFramework:snapModeField.snapMode")}
             />
         }
       />
@@ -121,6 +126,10 @@ class SnapModeFieldComponent extends React.Component<SnapModeFieldProps> {
       this.setOpenWidget(null);
     else
       this.setOpenWidget(this._className);
+  }
+
+  private _handleDialogOutsideClick = () => {
+    this.setOpenWidget(null);
   }
 
   /** Opens the pop-up window. */

@@ -6,7 +6,11 @@ import * as React from "react";
 
 import { IModelApp } from "@bentley/imodeljs-frontend";
 import { IStatusBar, StatusBarFieldId, FrontstageManager } from "@bentley/ui-framework";
-import { ToolAssistanceIndicator, ToolAssistanceDialog } from "@bentley/ui-ninezone";
+import { ToolAssistanceIndicator, ToolAssistanceDialog as ToolAssistanceDialogComponent } from "@bentley/ui-ninezone";
+import { withOnOutsideClick } from "@bentley/ui-core";
+
+// tslint:disable-next-line: variable-name
+const ToolAssistanceDialog = withOnOutsideClick(ToolAssistanceDialogComponent, undefined, false);
 
 export interface ToolAssistanceProps {
   statusBar: IStatusBar;
@@ -33,8 +37,9 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceProps> {
         dialog={
           this.props.openWidget !== this._className ? undefined : (
             <ToolAssistanceDialog
-              title={IModelApp.i18n.translate("SampleApp:toolAssist.title")}
               items={FrontstageManager.activeToolAssistanceNode}
+              onOutsideClick={this._handleDialogOutsideClick}
+              title={IModelApp.i18n.translate("SampleApp:toolAssist.title")}
             />
           )
         }
@@ -57,6 +62,10 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceProps> {
       this.setOpenWidget(null);
     else
       this.setOpenWidget(this._className);
+  }
+
+  private _handleDialogOutsideClick = () => {
+    this.setOpenWidget(null);
   }
 
   private setOpenWidget(openWidget: StatusBarFieldId) {

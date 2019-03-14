@@ -6,22 +6,22 @@ import "@bentley/icons-generic-webfont/dist/bentley-icons-generic-webfont.css";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import rafSchedule, { ScheduleFn } from "raf-schd";
-import { Timer, withTimeout, Button, ButtonType, ButtonProps, Omit } from "@bentley/ui-core";
+import { Timer, withTimeout, Button, ButtonType, ButtonProps, Omit, withOnOutsideClick } from "@bentley/ui-core";
 import { App } from "@src/app/App";
 import { Content } from "@src/app/Content";
 import { AppButton } from "@src/widget/tools/button/App";
 import { MouseTracker } from "@src/context/MouseTracker";
 import { Footer } from "@src/footer/Footer";
-import { MessageCenter, MessageCenterButton } from "@src/footer/message-center/MessageCenter";
+import { MessageCenter as MessageCenterComponent, MessageCenterButton } from "@src/footer/message-center/MessageCenter";
 import { MessageCenterIndicator } from "@src/footer/message-center/Indicator";
 import { MessageCenterMessage } from "@src/footer/message-center/Message";
 import { MessageCenterTab } from "@src/footer/message-center/Tab";
-import { SnapModeDialog } from "@src/footer/snap-mode/Dialog";
+import { SnapModeDialog as SnapModeDialogComponent } from "@src/footer/snap-mode/Dialog";
 import { SnapModeIcon } from "@src/footer/snap-mode/Icon";
 import { SnapModeIndicator } from "@src/footer/snap-mode/Indicator";
 import { Snap } from "@src/footer/snap-mode/Snap";
 import { ToolAssistanceIndicator } from "@src/footer/tool-assistance/Indicator";
-import { ToolAssistanceDialog } from "@src/footer/tool-assistance/Dialog";
+import { ToolAssistanceDialog as ToolAssistanceDialogComponent } from "@src/footer/tool-assistance/Dialog";
 import { ToolAssistanceItem } from "@src/footer/tool-assistance/Item";
 import { ToolAssistanceSeparator } from "@src/footer/tool-assistance/Separator";
 import { Activity } from "@src/footer/message/Activity";
@@ -96,9 +96,15 @@ const adjustTooltipPosition = offsetAndContainInContainer();
 // tslint:disable-next-line:variable-name
 const TooltipWithTimeout = withTimeout(ToolSettingsTooltip);
 // tslint:disable-next-line:variable-name
-const ToolGroupContained = withContainInViewport(Group);
+const ToolGroupContained = withOnOutsideClick(withContainInViewport(Group), undefined, false);
 // tslint:disable-next-line:variable-name
-const NestedToolGroupContained = withContainInViewport(NestedGroup);
+const NestedToolGroupContained = withOnOutsideClick(withContainInViewport(NestedGroup), undefined, false);
+// tslint:disable-next-line:variable-name
+const ToolAssistanceDialog = withOnOutsideClick(ToolAssistanceDialogComponent, undefined, false);
+// tslint:disable-next-line:variable-name
+const SnapModeDialog = withOnOutsideClick(SnapModeDialogComponent, undefined, false);
+// tslint:disable-next-line:variable-name
+const MessageCenter = withOnOutsideClick(MessageCenterComponent, undefined, false);
 
 // tslint:disable-next-line:variable-name
 const BlueButton = (props: ButtonProps & Omit<ButtonProps, "type">) => (
@@ -534,7 +540,6 @@ class StatusZoneExample extends React.PureComponent<StatusZoneExampleProps, Stat
                   dialog={
                     this.props.openWidget !== FooterWidget.ToolAssistance ? undefined :
                       <ToolAssistanceDialog
-                        title="Trim Multiple - Tool Assistance"
                         items={
                           <>
                             <ToolAssistanceItem>
@@ -557,6 +562,8 @@ class StatusZoneExample extends React.PureComponent<StatusZoneExampleProps, Stat
                               </ToolAssistanceItem>
                           </>
                         }
+                        onOutsideClick={this._handleOnOutsideDialogClick}
+                        title="Trim Multiple - Tool Assistance"
                       />
                   }
                   icons={
@@ -578,7 +585,6 @@ class StatusZoneExample extends React.PureComponent<StatusZoneExampleProps, Stat
                   dialog={
                     this.props.openWidget !== FooterWidget.Messages ? undefined :
                       <MessageCenter
-                        title="Messages"
                         buttons={
                           <>
                             <MessageCenterButton>
@@ -587,22 +593,6 @@ class StatusZoneExample extends React.PureComponent<StatusZoneExampleProps, Stat
                             <MessageCenterButton onClick={this._handleCloseMessageCenter}>
                               <i className={"icon icon-close"} />
                             </MessageCenterButton>
-                          </>
-                        }
-                        tabs={
-                          <>
-                            <MessageCenterTab
-                              isOpen={this.state.messageCenterTab === MessageCenterActiveTab.AllMessages}
-                              onClick={this._handleAllMessagesTabClick}
-                            >
-                              All
-                          </MessageCenterTab>
-                            <MessageCenterTab
-                              isOpen={this.state.messageCenterTab === MessageCenterActiveTab.Problems}
-                              onClick={this._handleProblemsTabClick}
-                            >
-                              Problems
-                          </MessageCenterTab>
                           </>
                         }
                         messages={this.state.messageCenterTab === MessageCenterActiveTab.AllMessages ?
@@ -672,7 +662,25 @@ class StatusZoneExample extends React.PureComponent<StatusZoneExampleProps, Stat
                             />
                           </>
                         }
+                        onOutsideClick={this._handleOnOutsideDialogClick}
                         prompt="No messages."
+                        tabs={
+                          <>
+                            <MessageCenterTab
+                              isOpen={this.state.messageCenterTab === MessageCenterActiveTab.AllMessages}
+                              onClick={this._handleAllMessagesTabClick}
+                            >
+                              All
+                          </MessageCenterTab>
+                            <MessageCenterTab
+                              isOpen={this.state.messageCenterTab === MessageCenterActiveTab.Problems}
+                              onClick={this._handleProblemsTabClick}
+                            >
+                              Problems
+                          </MessageCenterTab>
+                          </>
+                        }
+                        title="Messages"
                       />
                   }
                 />
@@ -686,7 +694,7 @@ class StatusZoneExample extends React.PureComponent<StatusZoneExampleProps, Stat
                   dialog={
                     this.props.openWidget !== FooterWidget.SnapMode ? undefined :
                       <SnapModeDialog
-                        title="Snap Mode"
+                        onOutsideClick={this._handleOnOutsideDialogClick}
                         snaps={
                           <>
                             <Snap
@@ -720,6 +728,7 @@ class StatusZoneExample extends React.PureComponent<StatusZoneExampleProps, Stat
                             />
                           </>
                         }
+                        title="Snap Mode"
                       />
                   }
                 />
@@ -753,6 +762,10 @@ class StatusZoneExample extends React.PureComponent<StatusZoneExampleProps, Stat
   }
 
   private _handleCloseMessageCenter = () => {
+    this.props.onOpenWidgetChange(FooterWidget.None);
+  }
+
+  private _handleOnOutsideDialogClick = () => {
     this.props.onOpenWidgetChange(FooterWidget.None);
   }
 
@@ -1572,6 +1585,7 @@ class ToolbarItemHistoryItem extends React.PureComponent<ToolbarItemHistoryItemP
 
 interface ToolbarItemPanelProps {
   onExpandGroup: (toolId: string, trayId: string | undefined) => void;
+  onOutsideClick: (toolId: string) => void;
   onToolClick: (args: ToolbarItemGroupToolClickArgs) => void;
   onBack: (toolId: string) => void;
   tool: ToolGroup;
@@ -1621,16 +1635,18 @@ class ToolbarItemPanel extends React.PureComponent<ToolbarItemPanelProps> {
     if (this.props.tool.backTrays.length > 0)
       return (
         <NestedToolGroupContained
-          title={tray.title}
           columns={columns}
           onBack={this._handleBack}
+          onOutsideClick={this._handleOutsideClick}
+          title={tray.title}
         />
       );
 
     return (
       <ToolGroupContained
-        title={tray.title}
         columns={columns}
+        onOutsideClick={this._handleOutsideClick}
+        title={tray.title}
       />
     );
   }
@@ -1645,6 +1661,10 @@ class ToolbarItemPanel extends React.PureComponent<ToolbarItemPanelProps> {
 
   private _handleExpanderClick = (trayId: string) => {
     this.props.onExpandGroup(this.props.tool.id, trayId);
+  }
+
+  private _handleOutsideClick = () => {
+    this.props.onOutsideClick(this.props.tool.id);
   }
 }
 
@@ -1716,6 +1736,7 @@ interface Zone1Props {
   onIsHistoryExtendedChange: (toolId: string, isExtended: boolean) => void;
   onOpenPanelGroup: (toolId: string, trayId: string | undefined) => void;
   onPanelBack: (toolId: string) => void;
+  onPanelOutsideClick: (toolId: string) => void;
   onPanelToolClick: (args: ToolbarItemGroupToolClickArgs) => void;
   onToolClick: (toolId: string) => void;
   verticalTools: Tools;
@@ -1754,6 +1775,7 @@ class Zone1 extends React.PureComponent<Zone1Props> {
               onIsHistoryExtendedChange={this.props.onIsHistoryExtendedChange}
               onOpenPanelGroup={this.props.onOpenPanelGroup}
               onPanelBack={this.props.onPanelBack}
+              onPanelOutsideClick={this.props.onPanelOutsideClick}
               onPanelToolClick={this.props.onPanelToolClick}
               onToolClick={this.props.onToolClick}
               panelAlignment={ToolbarPanelAlignment.Start}
@@ -1768,6 +1790,7 @@ class Zone1 extends React.PureComponent<Zone1Props> {
               onIsHistoryExtendedChange={this.props.onIsHistoryExtendedChange}
               onOpenPanelGroup={this.props.onOpenPanelGroup}
               onPanelBack={this.props.onPanelBack}
+              onPanelOutsideClick={this.props.onPanelOutsideClick}
               onPanelToolClick={this.props.onPanelToolClick}
               onToolClick={this.props.onToolClick}
               panelAlignment={ToolbarPanelAlignment.Start}
@@ -1800,6 +1823,7 @@ class Zone3 extends React.PureComponent<Zone3Props> {
               onIsHistoryExtendedChange={this.props.onIsHistoryExtendedChange}
               onOpenPanelGroup={this.props.onOpenPanelGroup}
               onPanelBack={this.props.onPanelBack}
+              onPanelOutsideClick={this.props.onPanelOutsideClick}
               onPanelToolClick={this.props.onPanelToolClick}
               onToolClick={this.props.onToolClick}
               panelAlignment={ToolbarPanelAlignment.End}
@@ -1814,6 +1838,7 @@ class Zone3 extends React.PureComponent<Zone3Props> {
               onIsHistoryExtendedChange={this.props.onIsHistoryExtendedChange}
               onOpenPanelGroup={this.props.onOpenPanelGroup}
               onPanelBack={this.props.onPanelBack}
+              onPanelOutsideClick={this.props.onPanelOutsideClick}
               onPanelToolClick={this.props.onPanelToolClick}
               onScroll={this.props.onToolbarScroll}
               onToolClick={this.props.onToolClick}
@@ -1834,6 +1859,7 @@ interface ToolZoneToolbarProps {
   onIsHistoryExtendedChange: (toolId: string, isExtended: boolean) => void;
   onOpenPanelGroup: (toolId: string, trayId: string | undefined) => void;
   onPanelBack: (toolId: string) => void;
+  onPanelOutsideClick: (toolId: string) => void;
   onPanelToolClick: (args: ToolbarItemGroupToolClickArgs) => void;
   onToolClick: (toolId: string) => void;
   panelAlignment: ToolbarPanelAlignment;
@@ -1865,6 +1891,7 @@ class ToolZoneToolbar extends React.PureComponent<ToolZoneToolbarProps> {
           key={tool.id}
           onBack={this.props.onPanelBack}
           onExpandGroup={this.props.onOpenPanelGroup}
+          onOutsideClick={this.props.onPanelOutsideClick}
           onToolClick={this.props.onPanelToolClick}
           tool={tool}
         />
@@ -2408,6 +2435,7 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
         onIsHistoryExtendedChange={this._handleIsToolHistoryExtendedChange}
         onOpenPanelGroup={this._handleExpandPanelGroup}
         onPanelBack={this._handlePanelBack}
+        onPanelOutsideClick={this._handlePanelOutsideClick}
         onPanelToolClick={this._handlePanelToolClick}
         onToolClick={this._handleToolClick}
         verticalTools={this.state.tools[zoneId].vertical}
@@ -2438,6 +2466,7 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
         onIsHistoryExtendedChange={this._handleIsToolHistoryExtendedChange}
         onOpenPanelGroup={this._handleExpandPanelGroup}
         onPanelBack={this._handlePanelBack}
+        onPanelOutsideClick={this._handlePanelOutsideClick}
         onPanelToolClick={this._handlePanelToolClick}
         onToolbarScroll={this._handleToolbarScroll}
         onToolClick={this._handleToolClick}
@@ -2853,6 +2882,10 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
         },
       };
     });
+  }
+
+  private _handlePanelOutsideClick = (toolId: string) => {
+    this.setState((prevState) => this.closePanel(toolId, prevState));
   }
 
   private _handlePanelToolClick = ({ toolId, trayId, columnId, itemId }: ToolbarItemGroupToolClickArgs) => {

@@ -6,6 +6,7 @@
 
 import * as React from "react";
 import { ExpandableItem, Item } from "@bentley/ui-ninezone";
+import { withOnOutsideClick } from "@bentley/ui-core";
 import { ItemProps, StringGetter } from "../shared/ItemProps";
 import { BaseItemState } from "../shared/ItemDefBase";
 import { SyncUiEventDispatcher, SyncUiEventArgs } from "../syncui/SyncUiEventDispatcher";
@@ -14,6 +15,9 @@ import { UiFramework } from "../UiFramework";
 
 // import "@bentley/ui-ninezone/lib/ui-ninezone/toolbar/item/expandable/group/tool/Tool.scss";
 import "@bentley/ui-ninezone/lib/ui-ninezone/toolbar/item/expandable/group/Panel.scss";
+
+// tslint:disable-next-line: variable-name
+const DivWithOnOutsideClick = withOnOutsideClick((props: React.HTMLProps<HTMLDivElement>) => (<div {...props} />), undefined, false);
 
 /** Definition for a Group item that opens a group of items.
  */
@@ -140,9 +144,12 @@ export class PopupButton extends React.Component<PopupButtonProps, PopupButtonSt
       return undefined;
 
     return (
-      <div className="nz-toolbar-item-expandable-group-panel">
+      <DivWithOnOutsideClick
+        className="nz-toolbar-item-expandable-group-panel"
+        onOutsideClick={this.minimize}
+      >
         {this.props.children}
-      </div>
+      </DivWithOnOutsideClick>
     );
   }
 }

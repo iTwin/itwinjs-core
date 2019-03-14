@@ -18,16 +18,17 @@ export const withOnOutsideClick = <ComponentProps extends {}>(
   // tslint:disable-next-line:variable-name
   Component: React.ComponentType<ComponentProps>,
   defaultOnOutsideClick?: (event: MouseEvent) => any,
+  useCapture: boolean = true,
 ) => {
   return class WithOnOutsideClick extends React.Component<ComponentProps & WithOnOutsideClickProps> {
     public ref: HTMLDivElement | undefined;
 
     public componentDidMount() {
-      document.addEventListener("click", this.handleDocumentClick, true);
+      document.addEventListener("click", this.handleDocumentClick, useCapture);
     }
 
     public componentWillUnmount() {
-      document.removeEventListener("click", this.handleDocumentClick, true);
+      document.removeEventListener("click", this.handleDocumentClick, useCapture);
     }
 
     public handleDocumentClick = (e: MouseEvent) => {

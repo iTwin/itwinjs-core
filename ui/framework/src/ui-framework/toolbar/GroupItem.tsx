@@ -16,9 +16,15 @@ import { PropsHelper } from "../utils/PropsHelper";
 
 import {
   Item, HistoryTray, History, HistoryIcon, DefaultHistoryManager, HistoryEntry, ExpandableItem, GroupColumn,
-  GroupTool, GroupToolExpander, Group as ToolGroupComponent, NestedGroup as NestedToolGroup, Direction,
+  GroupTool, GroupToolExpander, Group as ToolGroupComponent, NestedGroup as NestedToolGroupComponent, Direction,
 } from "@bentley/ui-ninezone";
+import { withOnOutsideClick } from "@bentley/ui-core";
 import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
+
+// tslint:disable-next-line: variable-name
+const ToolGroup = withOnOutsideClick(ToolGroupComponent, undefined, false);
+// tslint:disable-next-line: variable-name
+const NestedToolGroup = withOnOutsideClick(NestedToolGroupComponent, undefined, false);
 
 // -----------------------------------------------------------------------------
 // GroupItemDef class
@@ -413,71 +419,69 @@ class GroupItem extends React.Component<Props, State> {
       return undefined;
 
     const tray = this._tray;
-    const columns = (
-      Array.from(this._tray.columns.keys()).map((columnIndex) => {
-        const column = tray.columns.get(columnIndex)!;
-        return (
-          <GroupColumn key={columnIndex}>
-            {Array.from(column.items.keys()).map((itemKey) => {
-              const item = column.items.get(itemKey)!;
-              const icon = <Icon iconSpec={item.iconSpec} />;
-              let isVisible = true;
-              let isActive = false;
-              let isEnabled = true;
+    const columns = Array.from(this._tray.columns.keys()).map((columnIndex) => {
+      const column = tray.columns.get(columnIndex)!;
+      return (
+        <GroupColumn key={columnIndex}>
+          {Array.from(column.items.keys()).map((itemKey) => {
+            const item = column.items.get(itemKey)!;
+            const icon = <Icon iconSpec={item.iconSpec} />;
+            let isVisible = true;
+            let isActive = false;
+            let isEnabled = true;
 
-              if (item instanceof ItemDefBase) {
-                isVisible = item.isVisible;
-                isActive = item.isActive;
-                isEnabled = item.isEnabled;
-                if (item.stateFunc) {
-                  const newState = item.stateFunc({ isVisible, isActive, isEnabled });
-                  isVisible = undefined !== newState.isVisible ? newState.isVisible : isVisible;
-                  isEnabled = undefined !== newState.isEnabled ? newState.isEnabled : isEnabled;
-                  isActive = undefined !== newState.isActive ? newState.isActive : isActive;
-                }
+            if (item instanceof ItemDefBase) {
+              isVisible = item.isVisible;
+              isActive = item.isActive;
+              isEnabled = item.isEnabled;
+              if (item.stateFunc) {
+                const newState = item.stateFunc({ isVisible, isActive, isEnabled });
+                isVisible = undefined !== newState.isVisible ? newState.isVisible : isVisible;
+                isEnabled = undefined !== newState.isEnabled ? newState.isEnabled : isEnabled;
+                isActive = undefined !== newState.isActive ? newState.isActive : isActive;
               }
+            }
 
-              const trayId = item.trayId;
-              if (trayId)
-                return (
-                  isVisible &&
-                  <GroupToolExpander
-                    isDisabled={!isEnabled}
-                    key={itemKey}
-                    ref={itemKey}
-                    label={item.label}
-                    icon={icon}
-                    onClick={() => this.setState((prevState) => {
-                      return {
-                        ...prevState,
-                        trayId,
-                        backTrays: [...prevState.backTrays, prevState.trayId],
-                      };
-                    })}
-                  />
-                );
+            const trayId = item.trayId;
+            if (trayId)
               return (
                 isVisible &&
-                < GroupTool
+                <GroupToolExpander
                   isDisabled={!isEnabled}
-                  isActive={isActive}
                   key={itemKey}
                   ref={itemKey}
                   label={item.label}
-                  onClick={() => this.handleToolGroupItemClicked(this.state.trayId, columnIndex, itemKey)}
                   icon={icon}
+                  onClick={() => this.setState((prevState) => {
+                    return {
+                      ...prevState,
+                      trayId,
+                      backTrays: [...prevState.backTrays, prevState.trayId],
+                    };
+                  })}
                 />
               );
-            })}
-          </GroupColumn>
-        );
-      })
-    );
+            return (
+              isVisible &&
+              <GroupTool
+                isDisabled={!isEnabled}
+                isActive={isActive}
+                key={itemKey}
+                ref={itemKey}
+                label={item.label}
+                onClick={() => this.handleToolGroupItemClicked(this.state.trayId, columnIndex, itemKey)}
+                icon={icon}
+              />
+            );
+          })}
+        </GroupColumn>
+      );
+    });
 
     if (this.state.backTrays.length > 0)
       return (
         <NestedToolGroup
-          title={tray.title}
+          columns={columns}
           onBack={() => this.setState((prevState) => {
             let trayId = prevState.trayId;
             if (prevState.backTrays.length > 0)
@@ -490,14 +494,16 @@ class GroupItem extends React.Component<Props, State> {
               backTrays,
             };
           })}
-          columns={columns}
+          onOutsideClick={this._closeGroupButton}
+          title={tray.title}
         />
       );
 
     return (
-      <ToolGroupComponent
-        title={tray.title}
+      <ToolGroup
         columns={columns}
+        onOutsideClick={this._closeGroupButton}
+        title={tray.title}
       />
     );
   }

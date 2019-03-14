@@ -13,7 +13,11 @@ import UiFramework from "../UiFramework";
 import { StatusBarFieldId, IStatusBar } from "../widgets/StatusBarWidgetControl";
 import { MessageManager } from "../messages/MessageManager";
 
-import { MessageCenterIndicator, MessageCenterTab, MessageCenterMessage, MessageCenter, MessageCenterButton } from "@bentley/ui-ninezone";
+import { MessageCenterIndicator, MessageCenterTab, MessageCenterMessage, MessageCenter as MessageCenterComponent, MessageCenterButton } from "@bentley/ui-ninezone";
+import { withOnOutsideClick } from "@bentley/ui-core";
+
+// tslint:disable-next-line: variable-name
+const MessageCenter = withOnOutsideClick(MessageCenterComponent, undefined, false);
 
 /** Properties for the [[MessageCenterField]] React component */
 export interface MessageCenterProps {
@@ -62,7 +66,6 @@ export class MessageCenterField extends React.Component<MessageCenterProps, Mess
         dialog={
           this.props.openWidget !== this._className ? undefined :
             <MessageCenter
-              title={UiFramework.i18n.translate("UiFramework:messageCenter.messages")}
               buttons={
                 <>
                   <MessageCenterButton title={UiFramework.i18n.translate("UiFramework:messageCenter.export")}>
@@ -73,6 +76,8 @@ export class MessageCenterField extends React.Component<MessageCenterProps, Mess
                   </MessageCenterButton>
                 </>
               }
+              messages={this.getMessages()}
+              onOutsideClick={this._handleCloseMessageIndicatorClick}
               tabs={
                 <>
                   <MessageCenterTab
@@ -89,7 +94,7 @@ export class MessageCenterField extends React.Component<MessageCenterProps, Mess
                   </MessageCenterTab>
                 </>
               }
-              messages={this.getMessages()}
+              title={UiFramework.i18n.translate("UiFramework:messageCenter.messages")}
               prompt={UiFramework.i18n.translate("UiFramework:messageCenter.prompt")}
             />
         }
