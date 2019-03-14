@@ -16,6 +16,7 @@ import { TILE_DATA_1_1 } from "./TileIO.data.1.1";
 import { TILE_DATA_1_2 } from "./TileIO.data.1.2";
 import { TILE_DATA_1_3 } from "./TileIO.data.1.3";
 import { TILE_DATA_1_4 } from "./TileIO.data.1.4";
+import { TILE_DATA_2_0 } from "./TileIO.data.2.0";
 import { changeMinorVersion, changeMajorVersion, changeHeaderLength } from "./TileIO.data.fake";
 import { testOnScreenViewport } from "../TestViewport";
 
@@ -26,6 +27,7 @@ const testCases = [
   TILE_DATA_1_2,
   TILE_DATA_1_3,
   TILE_DATA_1_4,
+  TILE_DATA_2_0,
 ];
 
 const currentTestCase = testCases[testCases.length - 1];
