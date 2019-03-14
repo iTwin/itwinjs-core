@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import { Viewport, SpatialViewState, SpatialModelState, GeometricModelState } from "@bentley/imodeljs-frontend";
+import { Viewport, SpatialViewState, SpatialModelState, GeometricModelState, Classification } from "@bentley/imodeljs-frontend";
 import { createCheckBox, CheckBox } from "./CheckBox";
 import { ToolBarDropDown } from "./ToolBar";
 import { compareStringsOrUndefined, Id64String } from "@bentley/bentleyjs-core";
@@ -66,6 +66,8 @@ export class ModelPicker extends ToolBarDropDown {
         // ###TODO: Load models on demand when they are enabled in the dialog - not all up front like this...super-inefficient.
         await view.iModel.models.load(prop.id);
         model = view.iModel.models.getLoaded(prop.id);
+        if (undefined === model)
+          continue;
       }
 
       const id = prop.id;
@@ -83,6 +85,12 @@ export class ModelPicker extends ToolBarDropDown {
       this._models.add(id);
 
       const geometricModel = model as GeometricModelState;
+      // If reality model with no classifiers -- add classifiers (for testing)
+      if (model.jsonProperties && undefined !== model.jsonProperties.tilesetUrl && undefined === model.jsonProperties.classifiers)   // We need a better test for reality models.
+        for (const otherProp of props)
+          if (otherProp !== prop && undefined !== otherProp.id && undefined !== otherProp.name)
+            geometricModel.addClassifier(new Classification.Properties(otherProp.name, otherProp.id, 0.0));
+
       const classifiers = undefined !== model ? model.jsonProperties.classifiers : undefined;
       if (undefined !== geometricModel && undefined !== classifiers) {
         const div = document.createElement("div");

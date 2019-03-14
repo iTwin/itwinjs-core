@@ -191,7 +191,8 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     if (this._graphics === undefined)
       return;
 
-    const classifierHeight = target.viewRect.height, classifierWidth = target.viewRect.width;     // TBD - Size to classified area.
+    const classifierHeight = 2 * Math.max(target.viewRect.width, target.viewRect.height);     // TBD - Size to classified area.
+    const classifierWidth = classifierHeight;
     const colorTextureHandle = TextureHandle.createForAttachment(classifierWidth, classifierHeight, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
     const featureTextureHandle = TextureHandle.createForAttachment(classifierWidth, classifierHeight, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
     if (undefined === colorTextureHandle ||

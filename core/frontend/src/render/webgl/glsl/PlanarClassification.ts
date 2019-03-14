@@ -41,6 +41,10 @@ const computeClassifiedSurfaceHiliteColor = `
   return vec4(hiliteTexel.a > 0.5 ? 1.0 : 0.0);
 `;
 
+const computeClassifiedSurfaceHiliteColorNoTexture = `
+  vec4 hiliteTexel = TEXTURE(s_pClassHiliteSampler, v_pClassPos.xy);
+  return vec4(hiliteTexel.a > 0.5 ? 1.0 : 0.0);
+`;
 const computeClassifierPos = "v_pClassPos = (u_pClassProj * u_m * rawPosition).xyz;";
 const scratchBytes = new Uint8Array(4);
 const scratchBatchBaseId = new Uint32Array(scratchBytes.buffer);
@@ -127,7 +131,7 @@ export function addFeaturePlanarClassifier(builder: ProgramBuilder) {
   frag.set(FragmentShaderComponent.OverrideFeatureId, overrideFeatureId);
   frag.addFunction(addUInt32s);
 }
-export function addHilitePlanarClassifier(builder: ProgramBuilder) {
+export function addHilitePlanarClassifier(builder: ProgramBuilder, supportTextures = true) {
   addPlanarClassifierCommon(builder);
   const frag = builder.frag;
   frag.addUniform("s_pClassHiliteSampler", VariableType.Sampler2D, (prog) => {
@@ -138,5 +142,5 @@ export function addHilitePlanarClassifier(builder: ProgramBuilder) {
     });
   });
 
-  frag.set(FragmentShaderComponent.ComputeBaseColor, computeClassifiedSurfaceHiliteColor);
+  frag.set(FragmentShaderComponent.ComputeBaseColor, supportTextures ? computeClassifiedSurfaceHiliteColor : computeClassifiedSurfaceHiliteColorNoTexture);
 }

@@ -1022,6 +1022,92 @@ interface CheckBoxIconsEditorParams extends BasePropertyEditorParams {
   type: PropertyEditorParamTypes.CheckBoxIcons;
 }
 
+// @public (undocumented)
+module Classification {
+  // (undocumented)
+  function addModelClassifierToScene(model: GeometricModelState, context: SceneContext): void;
+
+  // (undocumented)
+  function createClassifier(id: Id64String, iModel: IModelConnection): Promise<RenderClassifierModel | undefined>;
+
+  // (undocumented)
+  enum Display {
+    // (undocumented)
+    Dimmed = 2,
+    // (undocumented)
+    ElementColor = 4,
+    // (undocumented)
+    Hilite = 3,
+    // (undocumented)
+    Off = 0,
+    // (undocumented)
+    On = 1
+  }
+
+  // (undocumented)
+  class Flags implements ClassificationFlagsProps {
+    // WARNING: The type "Display" needs to be exported by the package (e.g. added to index.ts)
+    // (undocumented)
+    inside: Display;
+    // WARNING: The type "Display" needs to be exported by the package (e.g. added to index.ts)
+    // (undocumented)
+    outside: Display;
+    // WARNING: The type "Display" needs to be exported by the package (e.g. added to index.ts)
+    // (undocumented)
+    selected: Display;
+    // (undocumented)
+    type: number;
+  }
+
+  // (undocumented)
+  function getClassifierProps(model: GeometricModelState): Properties | undefined;
+
+  // (undocumented)
+  function loadClassifiers(classifierIdArg: Id64Arg, iModel: IModelConnection): Promise<void>;
+
+  // (undocumented)
+  function loadModelClassifiers(modelIdArg: Id64Arg, iModel: IModelConnection): Promise<void>;
+
+  // (undocumented)
+  class Properties implements PropertiesProps {
+    constructor(name: string, modelId: Id64String, expand: number, flags?: ClassificationFlagsProps);
+    // (undocumented)
+    expand: number;
+    // WARNING: The type "Flags" needs to be exported by the package (e.g. added to index.ts)
+    // (undocumented)
+    flags: Flags;
+    // (undocumented)
+    modelId: Id64String;
+    // (undocumented)
+    name: string;
+  }
+
+  // (undocumented)
+  interface PropertiesProps {
+    // (undocumented)
+    expand: number;
+    // (undocumented)
+    flags: Flags;
+    // (undocumented)
+    modelId: Id64String;
+    // (undocumented)
+    name: string;
+  }
+
+}
+
+// @public (undocumented)
+interface ClassificationFlagsProps {
+  // (undocumented)
+  inside: Classification.Display;
+  // (undocumented)
+  outside: Classification.Display;
+  // (undocumented)
+  selected: Classification.Display;
+  // (undocumented)
+  type: number;
+}
+
 // @public
 enum ClassifierType {
   // (undocumented)
@@ -2181,6 +2267,9 @@ class GeometricModelState extends ModelState, implements TileTreeModelState {
   protected _classifierTileTreeState: TileTreeState;
   // @internal (undocumented)
   protected _tileTreeState: TileTreeState;
+  // WARNING: The type "Classification.PropertiesProps" needs to be exported by the package (e.g. added to index.ts)
+  // (undocumented)
+  addClassifier(classifier: Classification.PropertiesProps): void;
   // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
   // @internal (undocumented)
   readonly asGeometricModel: GeometricModelState;
@@ -2642,6 +2731,7 @@ interface InstancedGraphicParams {
   // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
   // @internal
   readonly symbologyOverrides?: Uint8Array;
+  readonly transformCenter: Point3d;
   readonly transforms: Float32Array;
 }
 

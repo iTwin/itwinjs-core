@@ -387,24 +387,25 @@ class PointStringTechnique extends VariedTechnique {
 }
 
 class PointCloudTechnique extends VariedTechnique {
-  private static readonly _kHilite = 1;
-  private static readonly _kFeature = 2;
+
+  private static readonly _kHilite = 4;
 
   public constructor(gl: WebGLRenderingContext) {
-    super(3);
+    super(PointCloudTechnique._kHilite + 2);
+    for (let iClassified = IsClassified.No; iClassified <= IsClassified.Yes; iClassified++) {
+      this.addHiliteShader(gl, IsInstanced.No, iClassified, () => createPointCloudHiliter(iClassified));
+      const flags = scratchTechniqueFlags;
+      const pointCloudFeatureModes = [FeatureMode.None, FeatureMode.Overrides];
+      for (const featureMode of pointCloudFeatureModes) {
+        flags.reset(featureMode);
+        flags.isClassified = iClassified;
+        const builder = createPointCloudBuilder(flags.isClassified, featureMode);
+        if (FeatureMode.Overrides === featureMode)
+          addUniformFeatureSymbology(builder);
 
-    this.addHiliteShader(gl, IsInstanced.No, IsClassified.No, () => createPointCloudHiliter());
-
-    const flags = scratchTechniqueFlags;
-    const pointCloudFeatureModes = [FeatureMode.None, FeatureMode.Overrides];
-    for (const featureMode of pointCloudFeatureModes) {
-      flags.reset(featureMode);
-      const builder = createPointCloudBuilder();
-      if (FeatureMode.Overrides === featureMode)
-        addUniformFeatureSymbology(builder);
-
-      this.addFeatureId(builder, featureMode);
-      this.addShader(builder, flags, gl);
+        this.addFeatureId(builder, featureMode);
+        this.addShader(builder, flags, gl);
+      }
     }
   }
 
@@ -412,11 +413,9 @@ class PointCloudTechnique extends VariedTechnique {
 
   public computeShaderIndex(flags: TechniqueFlags): number {
     if (flags.isHilite)
-      return PointCloudTechnique._kHilite;
-    else if (FeatureMode.None !== flags.featureMode)
-      return PointCloudTechnique._kFeature;
+      return PointCloudTechnique._kHilite + flags.isClassified;
     else
-      return 0;
+      return 2 * flags.isClassified + ((flags.featureMode === FeatureMode.None) ? 0 : 1);
   }
 }
 

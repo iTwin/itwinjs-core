@@ -564,17 +564,7 @@ export namespace IModelTileIO {
       return AuxChannelTable.fromJSON(props);
     }
 
-    // ###TODO_INSTANCING: Remove me once feature complete...
-    private static _forceInstancing = false;
-    private static _fakeInstanceParams = {
-      transforms: new Float32Array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0]),
-      featureIds: new Uint8Array([0, 0, 0]),
-      count: 1,
-    };
     private readInstances(primitive: any): InstancedGraphicParams | undefined {
-      if (Reader._forceInstancing)
-        return Reader._fakeInstanceParams;
-
       const json = primitive.instances;
       if (undefined === json)
         return undefined;
@@ -582,6 +572,12 @@ export namespace IModelTileIO {
       const count = JsonUtils.asInt(json.count, 0);
       if (count <= 0)
         return undefined;
+
+      const centerComponents = JsonUtils.asArray(json.transformCenter);
+      if (undefined === centerComponents || 3 !== centerComponents.length)
+        return undefined;
+
+      const transformCenter = Point3d.create(centerComponents[0], centerComponents[1], centerComponents[2]);
 
       const featureIds = this.findBuffer(JsonUtils.asString(json.featureIds));
       if (undefined === featureIds)
@@ -602,7 +598,7 @@ export namespace IModelTileIO {
       if (undefined !== json.symbologyOverrides)
         symbologyOverrides = this.findBuffer(JsonUtils.asString(json.symbologyOverrides));
 
-      return { count, transforms, featureIds, symbologyOverrides };
+      return { count, transforms, transformCenter, featureIds, symbologyOverrides };
     }
 
     private readVertexIndices(json: any): VertexIndices | undefined {
