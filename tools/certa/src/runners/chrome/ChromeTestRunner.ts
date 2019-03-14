@@ -9,6 +9,7 @@ import { spawnChildProcess } from "../../utils/SpawnUtils";
 import { executeRegisteredCallback } from "../../utils/CallbackUtils";
 import { CertaConfig } from "../../CertaConfig";
 import { writeCoverageData } from "../../utils/CoverageUtils";
+import { configureRemoteReporter } from "./MochaRemoteReporter";
 
 interface ChromeTestResults {
   failures: number;
@@ -109,6 +110,8 @@ async function runTestsInPuppeteer(config: CertaConfig, port: string) {
       await loadScript(page, require.resolve("mocha/mocha.js"));
       await loadScript(page, require.resolve("source-map-support/browser-source-map-support.js"));
       await loadScript(page, require.resolve("../../utils/initSourceMaps.js"));
+      await loadScript(page, require.resolve("./MochaSerializer.js"));
+      await configureRemoteReporter(page);
       await loadScript(page, require.resolve("../../utils/initMocha.js"));
       if (config.debug)
         await loadScriptAndTemporarilyBreak(page, testBundle);
