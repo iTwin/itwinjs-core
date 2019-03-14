@@ -21,6 +21,7 @@ import {
   FrontstageProvider,
   GroupButton,
   ToolButton,
+  PopupButton,
   ToolWidget,
   ZoneState,
   NavigationWidget,
@@ -42,6 +43,7 @@ import {
   WidgetState,
   ContentViewManager,
   BooleanSyncUiListener,
+  StagePanel,
 } from "@bentley/ui-framework";
 
 import { Direction, Toolbar } from "@bentley/ui-ninezone";
@@ -178,6 +180,16 @@ export class ViewsFrontstage extends FrontstageProvider {
             ]}
           />
         }
+
+        leftPanel={
+          <StagePanel size="280px"
+            widgets={[
+              <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.VisibilityTree"
+                control={VisibilityTreeWidgetControl}
+                applicationData={{ iModelConnection: this.iModelConnection }} />,
+            ]}
+          />
+        }
       />
     );
   }
@@ -304,6 +316,11 @@ class FrontstageToolWidget extends React.Component {
           <ActionItemButton actionItem={AppTools.appSelectElementCommand} />
           <ToolButton toolId="Measure.Points" iconSpec="icon-measure-distance" labelKey="SampleApp:tools.Measure.Points.flyover"
             execute={this.executeMeasureByPoints} stateSyncIds={[SyncUiEventId.ActiveContentChanged]} stateFunc={this._measureStateFunc} />
+          <PopupButton iconSpec="icon-arrow-down" label="Popup Test">
+            <div style={{ width: "200px", height: "100px" }}>
+              hello world!
+            </div>
+          </PopupButton>
           <ActionItemButton actionItem={AppTools.tool1} />
           <BooleanSyncUiListener eventIds={[SampleAppUiActionId.setTestProperty]} boolFunc={(): boolean => SampleAppIModelApp.getTestProperty() !== "HIDE"}>
             {(enabled: boolean, otherProps: any) => <ActionItemButton actionItem={AppTools.tool2} isEnabled={enabled} {...otherProps} />}

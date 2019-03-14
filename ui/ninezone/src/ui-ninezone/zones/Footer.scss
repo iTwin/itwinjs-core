@@ -5,6 +5,9 @@
 .nz-zones-footer {
   &.nz-is-in-footer-mode {
     padding: 0;
+    opacity: 1;
+    visibility: visible;
+    transition: visibility 0.5s ease, opacity 0.5s ease;
   }
 
   &:not(.nz-is-in-footer-mode) {
@@ -12,5 +15,13 @@
     box-sizing: border-box;
     display: grid;
     align-items: end;
+    opacity: 1;
+    transition: visibility 0.5s ease, opacity 0.5s ease;
+    visibility: visible;
+  }
+
+  &.hide {
+    opacity: 0;
+    visibility: hidden;
   }
 }

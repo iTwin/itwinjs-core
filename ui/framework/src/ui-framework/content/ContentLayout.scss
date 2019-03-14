@@ -6,10 +6,11 @@
 @import "@bentley/ui-ninezone/lib/ui-ninezone/footer/_variables";
 
 #uifw-contentlayout-div {
-  position: absolute;
+  position: relative;
   top: 0;
   left: 0;
   right: 0;
+  height: 100%;
 
   &.uifw-contentlayout-footer-mode {
     bottom: $footer-height;

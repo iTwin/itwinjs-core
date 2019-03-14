@@ -6,12 +6,12 @@
 
 import * as React from "react";
 import * as classnames from "classnames";
-
 import "./ContentLayout.scss";
 import { FrontstageManager, ContentLayoutActivatedEventArgs } from "../frontstage/FrontstageManager";
 import { ContentGroup } from "./ContentGroup";
 import { ContentViewManager, ActiveContentChangedEventArgs } from "./ContentViewManager";
 import { Orientation } from "@bentley/ui-core";
+import { UiFramework, UiVisibilityEventArgs } from "../UiFramework";
 
 // There is a problem with this import and a different tsconfig being used. Using the require statement instead.
 // Locking into react-split-pane release 0.1.77 and using the require statement works for browser, electron and mocha test environment.
@@ -436,6 +436,7 @@ export interface ContentLayoutState {
   contentLayout: ContentLayoutDef;
   contentGroup: ContentGroup;
   contentContainer?: React.ReactNode;
+  hideZones: boolean;
 }
 
 /** Properties for the [[ContentLayout]] React component.
@@ -477,15 +478,22 @@ export class ContentLayout extends React.Component<ContentLayoutReactProps, Cont
       contentLayout: this.props.contentLayout,
       contentGroup: this.props.contentGroup,
       contentContainer,
+      hideZones: UiFramework.getIsUiVisible(),
     };
   }
 
   public componentDidMount() {
     FrontstageManager.onContentLayoutActivatedEvent.addListener(this._handleContentLayoutActivated);
+    UiFramework.onUiVisibilityChanged.addListener(this._uiVisibilityChanged);
   }
 
   public componentWillUnmount() {
     FrontstageManager.onContentLayoutActivatedEvent.removeListener(this._handleContentLayoutActivated);
+    UiFramework.onUiVisibilityChanged.removeListener(this._uiVisibilityChanged);
+  }
+
+  private _uiVisibilityChanged = (args: UiVisibilityEventArgs): void => {
+    this.setState ({ hideZones: !args.visible });
   }
 
   private _handleContentLayoutActivated = (args: ContentLayoutActivatedEventArgs) => {
@@ -514,7 +522,7 @@ export class ContentLayout extends React.Component<ContentLayoutReactProps, Cont
 
   public render(): React.ReactNode {
     if (this.state.contentContainer) {
-      const className = this.props.isInFooterMode ? "uifw-contentlayout-footer-mode" : "uifw-contentlayout-open-mode";
+      const className = (this.props.isInFooterMode && !this.state.hideZones) ? "uifw-contentlayout-footer-mode" : "uifw-contentlayout-open-mode";
 
       return (
         <div id="uifw-contentlayout-div" className={className} key={this.state.contentLayout.id}

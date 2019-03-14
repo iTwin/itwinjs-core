@@ -13,15 +13,14 @@ import "./Zones.scss";
 export interface ZonesProps extends CommonProps {
   /** Actual zones here (i.e. [[FooterZone]], [[Zone]]) */
   children?: React.ReactNode;
+  isHidden?: boolean;
 }
 
 /** Zones component of 9-zone UI app. */
 export class Zones extends React.PureComponent<ZonesProps> {
   public render() {
-    const className = classnames(
-      "nz-zones-zones",
-      this.props.className);
-
+    const { isHidden } = this.props;
+    const className = classnames( "nz-zones-zones", isHidden && "hide", this.props.className );
     return (
       <div className={className} style={this.props.style}>
         {this.props.children}

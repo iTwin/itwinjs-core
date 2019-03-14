@@ -13,6 +13,7 @@ import "./Footer.scss";
 export interface FooterZoneProps extends ZoneProps {
   /** Declares if the zone is in footer mode (stretched through the bottom of the app). */
   isInFooterMode?: boolean;
+  isHidden?: boolean;
 }
 
 /**
@@ -21,12 +22,12 @@ export interface FooterZoneProps extends ZoneProps {
  */
 export class FooterZone extends React.PureComponent<FooterZoneProps> {
   public render() {
+    const { isInFooterMode, className, isHidden, ...props } = this.props;
     const zoneClassName = classnames(
       "nz-zones-footer",
-      this.props.isInFooterMode && "nz-is-in-footer-mode",
-      this.props.className);
-
-    const { isInFooterMode, className, ...props } = this.props;
+      isInFooterMode && "nz-is-in-footer-mode",
+      isHidden && "hide",
+      className);
 
     return (
       <ZoneComponent

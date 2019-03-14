@@ -21,8 +21,6 @@ export interface ToolbarButtonProps extends CommonProps {
 export class ToolbarButton extends React.PureComponent<ToolbarButtonProps> {
   public render() {
     const onClick = (): void => {
-      // tslint:disable-next-line:no-console
-      console.log("got onClick");
       if (this.props.onClick)
         this.props.onClick();
     };

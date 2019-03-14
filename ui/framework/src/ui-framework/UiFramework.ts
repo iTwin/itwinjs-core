@@ -17,6 +17,17 @@ import { ScheduleAnimationTool } from "./tools/ScheduleAnimation";
 import { SyncUiEventDispatcher } from "./syncui/SyncUiEventDispatcher";
 import { FrameworkState } from "./FrameworkState";
 import { ConfigurableUiActionId } from "./configurableui/state";
+import { UiEvent } from "@bentley/ui-core";
+
+/** UiVisibility Event Args interface.
+ */
+export interface UiVisibilityEventArgs {
+  visible: boolean;
+}
+
+/** UiVisibility Event class.
+ */
+export class UiVisibilityChangedEvent extends UiEvent<UiVisibilityEventArgs> { }
 
 /**
  * Manages the Redux store, I18N service and iModel, Project and Login services for the ui-framework package.
@@ -28,6 +39,10 @@ export class UiFramework {
   private static _store?: Store<any>;
   private static _complaint = "UiFramework not initialized";
   private static _frameworkStateKeyInStore: string = "frameworkState";  // default name
+  private static _isUiVisible: boolean = true;
+
+  /** Get Show Ui event. */
+  public static readonly onUiVisibilityChanged = new UiVisibilityChangedEvent();
 
   /**
    * Called by IModelApp to initialize the UiFramework
@@ -119,6 +134,15 @@ export class UiFramework {
 
   public static getAccudrawSnapMode(): SnapMode {
     return UiFramework.frameworkState ? UiFramework.frameworkState.configurableUiState.snapMode : SnapMode.NearestKeypoint;
+  }
+
+  public static getIsUiVisible () {
+    return this._isUiVisible;
+  }
+
+  public static setIsUiVisible (visible: boolean) {
+    this._isUiVisible = visible;
+    UiFramework.onUiVisibilityChanged.emit({ visible });
   }
 }
 

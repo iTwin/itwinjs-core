@@ -142,6 +142,7 @@ class ToolWidgetWithDef extends React.Component<Props> {
         button={button}
         horizontalToolbar={horizontalToolbar}
         verticalToolbar={verticalToolbar}
+        preserveSpace={true}
       />
     );
   }

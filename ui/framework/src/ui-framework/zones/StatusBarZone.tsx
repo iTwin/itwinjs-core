@@ -5,11 +5,11 @@
 /** @module StatusBar */
 
 import * as React from "react";
-
 import { TargetChangeHandler, WidgetChangeHandler } from "../frontstage/FrontstageComposer";
 import { ZoneTargets } from "../dragdrop/ZoneTargets";
 import { StatusBar } from "../widgets/StatusBar";
 import { StatusBarWidgetControl } from "../widgets/StatusBarWidgetControl";
+import { UiFramework, UiVisibilityEventArgs } from "../UiFramework";
 
 // import TemporaryMessage from "@bentley/ui-ninezone/messages/Temporary";
 import { StatusZoneProps as NZ_ZoneProps, DropTarget, FooterZone as NZ_FooterZone, RectangleProps, GhostOutline } from "@bentley/ui-ninezone";
@@ -24,14 +24,38 @@ export interface StatusBarZoneProps {
   dropTarget: DropTarget;
 }
 
+interface StatusBarZoneState {
+  isUiVisible: boolean;
+}
+
 /** Status Bar Zone React component.
  */
-export class StatusBarZone extends React.Component<StatusBarZoneProps, {}> {
+export class StatusBarZone extends React.Component<StatusBarZoneProps, StatusBarZoneState> {
+
+  constructor(props: StatusBarZoneProps) {
+    super(props);
+
+    this.state = {isUiVisible: UiFramework.getIsUiVisible()};
+  }
+
+  public componentDidMount() {
+    UiFramework.onUiVisibilityChanged.addListener(this._uiVisibilityChanged);
+  }
+
+  public componentWillUnmount() {
+    UiFramework.onUiVisibilityChanged.removeListener(this._uiVisibilityChanged);
+  }
+
+  private _uiVisibilityChanged = (args: UiVisibilityEventArgs): void => {
+    this.setState ({ isUiVisible: args.visible });
+  }
+
   public render(): React.ReactNode {
     return (
       <>
         <NZ_FooterZone
           isInFooterMode={this.props.zoneProps.isInFooterMode}
+          isHidden={!this.state.isUiVisible}
           bounds={this.props.zoneProps.floating ? this.props.zoneProps.floating.bounds : this.props.zoneProps.bounds}
         >
           {

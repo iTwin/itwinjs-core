@@ -22,6 +22,7 @@ import {
   FrontstageManager,
   CoreTools,
   ContentLayoutManager,
+  StagePanel,
 } from "@bentley/ui-framework";
 
 import { AppStatusBarWidgetControl } from "../statusbars/AppStatusBar";
@@ -83,6 +84,49 @@ export class Frontstage1 extends FrontstageProvider {
             widgets={[
               <Widget defaultState={WidgetState.Open} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.HorizontalPropertyGrid" control={HorizontalPropertyGridWidgetControl} fillZone={true} />,
               <Widget id="VerticalPropertyGrid" defaultState={WidgetState.Hidden} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.VerticalPropertyGrid" control={VerticalPropertyGridWidgetControl} />,
+            ]}
+          />
+        }
+
+        topMostPanel={
+          <StagePanel size="64px"
+            widgets={[
+              <Widget element={<h2>TopMost panel</h2>} />,
+            ]}
+          />
+        }
+        topPanel={
+          <StagePanel size="64px"
+            widgets={[
+              <Widget element={<h2>Top panel</h2>} />,
+            ]}
+          />
+        }
+        leftPanel={
+          <StagePanel size="100px"
+            widgets={[
+              <Widget element={<h2>Left panel</h2>} />,
+            ]}
+          />
+        }
+        rightPanel={
+          <StagePanel size="100px"
+            widgets={[
+              <Widget element={<h2>Right panel</h2>} />,
+            ]}
+          />
+        }
+        bottomPanel={
+          <StagePanel size="64px"
+            widgets={[
+              <Widget element={<h2>Bottom panel</h2>} />,
+            ]}
+          />
+        }
+        bottomMostPanel={
+          <StagePanel size="64px"
+            widgets={[
+              <Widget element={<h2>BottomMost panel</h2>} />,
             ]}
           />
         }

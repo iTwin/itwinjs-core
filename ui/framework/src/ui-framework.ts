@@ -81,6 +81,7 @@ export * from "./ui-framework/content/ViewportContentControl";
 export * from "./ui-framework/widgets/Widget";
 export * from "./ui-framework/widgets/WidgetControl";
 export * from "./ui-framework/widgets/WidgetDef";
+export * from "./ui-framework/widgets/WidgetHost";
 export * from "./ui-framework/widgets/WidgetFactory";
 export * from "./ui-framework/workflow/Workflow";
 export * from "./ui-framework/zones/FrameworkZone";
@@ -92,9 +93,13 @@ export * from "./ui-framework/zones/toolsettings/DefaultToolSettingsProvider";
 export * from "./ui-framework/zones/Zone";
 export * from "./ui-framework/zones/ZoneDef";
 
+export * from "./ui-framework/stagepanels/StagePanel";
+export * from "./ui-framework/stagepanels/StagePanelDef";
+
 export * from "./ui-framework/toolbar/ActionItemButton";
 export * from "./ui-framework/toolbar/GroupItem";
 export * from "./ui-framework/toolbar/ToolButton";
+export * from "./ui-framework/toolbar/PopupButton";
 
 export * from "./ui-framework/backstage/Backstage";
 export * from "./ui-framework/backstage/FrontstageLaunch";

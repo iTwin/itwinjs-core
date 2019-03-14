@@ -11,6 +11,14 @@
   top: 0;
   left: 0;
   overflow: hidden;
+  opacity: 1;
+  visibility: visible;
   pointer-events: none;
+  transition: visibility 0.5s ease, opacity 0.5s ease;
   @include uicore-z-index(zones);
+
+  &.hide {
+    opacity: 0;
+    visibility: hidden;
+  }
 }

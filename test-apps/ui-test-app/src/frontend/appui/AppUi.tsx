@@ -5,8 +5,8 @@
 import "@bentley/icons-generic-webfont/dist/bentley-icons-generic-webfont.css";
 
 import {
-  ConfigurableUiManager, FrontstageManager, WidgetState,
-  ContentGroupProps, ViewClass, TaskPropsList, WorkflowPropsList, ContentLayoutProps,
+  ConfigurableUiManager, FrontstageManager, WidgetState, ContentGroupProps,
+  ViewClass, TaskPropsList, WorkflowPropsList, ContentLayoutProps, UiFramework,
   KeyboardShortcutProps, FunctionKey, CommandItemDef, KeyboardShortcutManager,
 } from "@bentley/ui-framework";
 import { StandardViewId } from "@bentley/imodeljs-frontend";
@@ -361,6 +361,10 @@ export class AppUi {
         item: AppTools.verticalPropertyGridOffCommand,
       },
       {
+        key: "r",
+        item: AppUi._toggleZonesCommand,
+      },
+      {
         key: "d",
         labelKey: "SampleApp:buttons.shortcutsSubMenu",
         shortcuts: [
@@ -398,4 +402,15 @@ export class AppUi {
     });
   }
 
+  private static get _toggleZonesCommand() {
+    return new CommandItemDef({
+      commandId: "toggleZones",
+      labelKey: "SampleApp:buttons.showhideZones",
+      execute: () => {
+        const isVisible = UiFramework.getIsUiVisible();
+        UiFramework.setIsUiVisible (!isVisible);
+        // IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "F11", "Click F11 to restore view!"));
+      },
+    });
+  }
 }

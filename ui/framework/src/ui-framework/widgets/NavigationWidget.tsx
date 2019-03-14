@@ -202,6 +202,7 @@ class NavigationWidgetWithDef extends React.Component<Props> {
         button={navigationAid}
         horizontalToolbar={horizontalToolbar}
         verticalToolbar={verticalToolbar}
+        preserveSpace={true}
       />
     );
   }

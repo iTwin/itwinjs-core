@@ -5,7 +5,7 @@
 /** @module Frontstage */
 
 import * as React from "react";
-import * as ReactDOM from "react-dom";
+// import * as ReactDOM from "react-dom";
 
 import { FrontstageManager, FrontstageActivatedEventArgs, ModalFrontstageInfo, ModalFrontstageChangedEventArgs } from "./FrontstageManager";
 import { FrontstageDef } from "./FrontstageDef";
@@ -335,7 +335,8 @@ export class FrontstageComposer extends React.Component<FrontstageComposerProps,
 
   private layout() {
     this.setState((prevState) => {
-      const element = ReactDOM.findDOMNode(this) as Element;
+      // const element = ReactDOM.findDOMNode(this) as Element;
+      const element = document.getElementById("uifw-ninezone-area");
       let nineZoneProps = prevState.nineZoneProps;
       if (element) {
         nineZoneProps = FrontstageManager.NineZoneStateManager.layout(new Size(element.clientWidth, element.clientHeight), prevState.nineZoneProps);

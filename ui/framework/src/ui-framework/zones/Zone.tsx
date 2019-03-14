@@ -12,12 +12,24 @@ import { ConfigurableUiControlType } from "../configurableui/ConfigurableUiContr
 import { FrameworkZone } from "./FrameworkZone";
 import { StatusBarWidgetControl } from "../widgets/StatusBarWidgetControl";
 import { WidgetProps } from "../widgets/Widget";
-import { ZoneLocation } from "../frontstage/Frontstage";
 import { WidgetChangeHandler, TargetChangeHandler, ZoneDefProvider } from "../frontstage/FrontstageComposer";
 import { ToolSettingsZone } from "./toolsettings/ToolSettingsZone";
 import { StatusBarZone } from "./StatusBarZone";
 
 import { isStatusZone, ZonePropsBase as NZ_ZoneProps, DropTarget, HorizontalAnchor, VerticalAnchor, RectangleProps, PointProps } from "@bentley/ui-ninezone";
+
+/** Enum for [[Zone]] Location.
+ */
+export enum ZoneLocation {
+  TopLeft = 1,
+  TopCenter = 2,
+  TopRight = 3,
+  CenterLeft = 4,
+  CenterRight = 6,
+  BottomLeft = 7,
+  BottomCenter = 8,
+  BottomRight = 9,
+}
 
 /** Properties of a [[Zone]] component
  */
@@ -115,7 +127,7 @@ export class Zone extends React.Component<ZoneProps> {
           throw new TypeError();
 
         let widgetControl: StatusBarWidgetControl | undefined;
-        const widgetDef = zoneDef.getOnlyWidgetDef();
+        const widgetDef = zoneDef.getSingleWidgetDef();
 
         // istanbul ignore else
         if (widgetDef)
