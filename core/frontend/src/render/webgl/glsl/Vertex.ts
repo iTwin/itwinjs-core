@@ -76,15 +76,14 @@ export function addProjectionMatrix(vert: VertexShaderBuilder): void {
 
 export function addModelViewMatrix(vert: VertexShaderBuilder): void {
   if (vert.usesInstancedGeometry) {
-    // ###TODO_INSTANCING: We only need 3 rows, not 4...
-    vert.addUniform("u_viewMatrix", VariableType.Mat4, (prog) => {
-      prog.addProgramUniform("u_viewMatrix", (uniform, params) => {
-        uniform.setMatrix4(params.viewMatrix);
+    vert.addUniform("u_instanced_modelView", VariableType.Mat4, (prog) => {
+      prog.addGraphicUniform("u_instanced_modelView", (uniform, params) => {
+        uniform.setMatrix4(params.modelViewMatrix);
       });
     });
 
     vert.addGlobal("g_mv", VariableType.Mat4);
-    vert.addInitializer("g_mv = u_viewMatrix * g_modelMatrix;");
+    vert.addInitializer("g_mv = u_instanced_modelView * g_modelMatrix;");
   } else {
     vert.addUniform("u_mv", VariableType.Mat4, (prog) => {
       // ###TODO: We only need 3 rows, not 4...

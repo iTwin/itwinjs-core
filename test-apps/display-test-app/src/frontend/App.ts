@@ -116,7 +116,7 @@ export class DisplayTestApp extends IModelApp {
     IModelApp.notifications = new Notifications();
     IModelApp.tileAdmin = TileAdmin.create({
       retryInterval: 50,
-      enableInstancing: false, // true,
+      enableInstancing: true,
       elideEmptyChildContentRequests: true,
     });
 

@@ -25,6 +25,7 @@ import { BufferHandle, AttributeHandle } from "./Handle";
 import { GL } from "./GL";
 import { TechniqueId } from "./TechniqueId";
 import { InstancedGraphicParams, RenderMemory } from "../System";
+import { InstanceBuffers } from "./InstancedGeometry";
 
 export class MeshData implements IDisposable {
   public readonly edgeWidth: number;
@@ -67,21 +68,27 @@ export class MeshData implements IDisposable {
 export class MeshGraphic extends Graphic {
   public readonly meshData: MeshData;
   private readonly _primitives: Primitive[] = [];
+  private readonly _instances?: InstanceBuffers;
 
   public static create(params: MeshParams, instances?: InstancedGraphicParams): MeshGraphic | undefined {
+    const buffers = undefined !== instances ? InstanceBuffers.create(instances, true) : undefined;
+    if (undefined === buffers && undefined !== instances)
+      return undefined;
+
     const data = MeshData.create(params);
-    return undefined !== data ? new MeshGraphic(data, params, instances) : undefined;
+    return undefined !== data ? new MeshGraphic(data, params, buffers) : undefined;
   }
 
-  private addPrimitive(createGeom: () => CachedGeometry | undefined, instances?: InstancedGraphicParams) {
-    const primitive = Primitive.create(createGeom, instances);
+  private addPrimitive(createGeom: () => CachedGeometry | undefined, instances?: InstanceBuffers) {
+    const primitive = Primitive.createShared(createGeom, instances);
     if (undefined !== primitive)
       this._primitives.push(primitive);
   }
 
-  private constructor(data: MeshData, params: MeshParams, instances?: InstancedGraphicParams) {
+  private constructor(data: MeshData, params: MeshParams, instances?: InstanceBuffers) {
     super();
     this.meshData = data;
+    this._instances = instances;
 
     this.addPrimitive(() => SurfaceGeometry.create(this.meshData, params.surface.indices), instances);
 
@@ -111,6 +118,10 @@ export class MeshGraphic extends Graphic {
   public collectStatistics(stats: RenderMemory.Statistics): void {
     stats.addVertexTable(this.meshData.lut.bytesUsed);
     this._primitives.forEach((prim) => prim.collectStatistics(stats));
+
+    // Only count the shared instance buffers once...
+    if (undefined !== this._instances)
+      this._instances.collectStatistics(stats);
   }
 
   public addCommands(cmds: RenderCommands): void { this._primitives.forEach((prim) => prim.addCommands(cmds)); }

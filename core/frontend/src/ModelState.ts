@@ -157,11 +157,12 @@ export abstract class GeometricModelState extends ModelState implements TileTree
     if (BatchType.VolumeClassifier === batchType || BatchType.PlanarClassifier === batchType)
       classificationPrefix = (BatchType.PlanarClassifier === batchType ? "CP" : "C") + ":" + classifierExpansion as string + "_";
     const id = (classificationPrefix ? classificationPrefix : "") + (animationId ? ("A:" + animationId + "_") : "") + this.id;
+    const allowInstancing = undefined === classificationPrefix && undefined === animationId;
 
     this.iModel.tiles.getTileTreeProps(id).then((result: TileTreeProps) => {
       // NB: Make sure root content ID matches that expected by tile format major version...
       // back-end uses old format ("0/0/0/0/1") to support older front-ends.
-      const loader = new IModelTile.Loader(this.iModel, result.formatVersion, batchType, edgesRequired);
+      const loader = new IModelTile.Loader(this.iModel, result.formatVersion, batchType, edgesRequired, allowInstancing);
       result.rootTile.contentId = loader.rootContentId;
       tileTreeState.setTileTree(result, loader);
 

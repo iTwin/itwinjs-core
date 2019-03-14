@@ -5,7 +5,7 @@
 /** @module Tile */
 import { TileIO } from "./TileIO";
 import { GltfTileIO } from "./GltfTileIO";
-import { ColorDef, ElementAlignedBox3d, FeatureTable, Feature, BatchType } from "@bentley/imodeljs-common";
+import { ElementAlignedBox3d, FeatureTable, Feature, BatchType } from "@bentley/imodeljs-common";
 import { Id64String, utf8ToString, JsonUtils } from "@bentley/bentleyjs-core";
 import { InstancedGraphicParams, RenderSystem } from "../render/System";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
@@ -147,11 +147,12 @@ export namespace I3dmTileIO {
       const rightNormal = Vector3d.create(1, 0, 0);
       const scale = Vector3d.create(1, 1, 1);
 
+      const transformCenter = this._range.center;
       const transforms = new Float32Array(12 * count);
       for (let i = 0; i < count; i++) {
         const index = i * 3;
         if (positions)
-          position.set(positions[index], positions[index + 1], positions[index + 2]);
+          position.set(positions[index] - transformCenter.x, positions[index + 1] - transformCenter.y, positions[index + 2] - transformCenter.z);
 
         if (upNormals || rightNormals) {
           if (upNormals)
@@ -178,37 +179,10 @@ export namespace I3dmTileIO {
       }
 
       // ###TODO_INSTANCING: Use actual feature IDs if feature table exists
-      const featureIds = new Uint8Array(3 * count);
+      const featureIds = undefined;
+      const symbologyOverrides = undefined;
 
-      // ###TODO_INSTANCING: Remove me when feature complete...
-      const testSymbologyOverrides = false;
-      let symbologyOverrides: Uint8Array | undefined;
-      if (testSymbologyOverrides) {
-        const colors = [ColorDef.red, ColorDef.green, ColorDef.blue, ColorDef.white];
-        const weights = [1, 4, 8, 12, 16];
-        const codes = [0, 1, 2, 3, 4, 5, 6, 7, 8];
-        const alphas = [20, 127, 220];
-
-        symbologyOverrides = new Uint8Array(count * 8);
-        for (let i = 0; i < count; i++) {
-          const index = i * 8;
-          const color = colors[i % colors.length].colors;
-          const weight = weights[i % weights.length];
-          const code = codes[i % codes.length];
-          const alpha = alphas[i % alphas.length];
-          const overrideAlpha = true;
-
-          symbologyOverrides[index + 0] = overrideAlpha ? 78 : 74; // alpha 74; // OvrFlags: Rgb | Weight | LineCode
-          symbologyOverrides[index + 1] = weight;
-          symbologyOverrides[index + 2] = code;
-          symbologyOverrides[index + 4] = color.r;
-          symbologyOverrides[index + 5] = color.g;
-          symbologyOverrides[index + 6] = color.b;
-          symbologyOverrides[index + 7] = alpha;
-        }
-      }
-
-      return { count, transforms, symbologyOverrides, featureIds };
+      return { count, transforms, symbologyOverrides, featureIds, transformCenter };
     }
   }
 }

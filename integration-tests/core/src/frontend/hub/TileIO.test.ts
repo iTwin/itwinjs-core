@@ -551,7 +551,7 @@ describe("mirukuru TileTree", () => {
     const rootTile = treeProps.rootTile;
     expect(rootTile.isLeaf).not.to.be.true; // the backend will only set this to true if the tile range contains no elements.
 
-    const loader = new IModelTile.Loader(imodel, treeProps.formatVersion, BatchType.Primary);
+    const loader = new IModelTile.Loader(imodel, treeProps.formatVersion, BatchType.Primary, true, true);
     const tree = new TileTree(TileTree.Params.fromJSON(treeProps, imodel, true, loader, "0x1c"));
 
     const response: TileRequest.Response = await loader.requestTileContent(tree.rootTile);
