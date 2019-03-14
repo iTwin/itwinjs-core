@@ -52,9 +52,9 @@
     "NOTE: peerDependencies are a standard way for npm to perform a module compatibility check"
   ],
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "0.191.0-dev.5",
-    "@bentley/geometry-core": "0.191.0-dev.5",
-    "@bentley/imodeljs-clients": "0.191.0-dev.5"
+    "@bentley/bentleyjs-core": "^0.191.0-dev.5",
+    "@bentley/geometry-core": "^0.191.0-dev.5",
+    "@bentley/imodeljs-clients": "^0.191.0-dev.5"
   },
   "//devDependencies": [
     "NOTE: Must include modules mentioned in peerDependencies since those are not auto-installed",

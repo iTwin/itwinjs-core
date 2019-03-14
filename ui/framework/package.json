@@ -54,17 +54,17 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "0.191.0-dev.5",
-    "@bentley/geometry-core": "0.191.0-dev.5",
-    "@bentley/imodeljs-i18n": "0.191.0-dev.5",
-    "@bentley/imodeljs-frontend": "0.191.0-dev.5",
-    "@bentley/imodeljs-common": "0.191.0-dev.5",
-    "@bentley/imodeljs-clients": "0.191.0-dev.5",
-    "@bentley/presentation-common": "0.191.0-dev.5",
-    "@bentley/presentation-frontend": "0.191.0-dev.5",
-    "@bentley/ui-core": "0.191.0-dev.5",
-    "@bentley/ui-components": "0.191.0-dev.5",
-    "@bentley/ui-ninezone": "0.191.0-dev.5"
+    "@bentley/bentleyjs-core": "^0.191.0-dev.5",
+    "@bentley/geometry-core": "^0.191.0-dev.5",
+    "@bentley/imodeljs-i18n": "^0.191.0-dev.5",
+    "@bentley/imodeljs-frontend": "^0.191.0-dev.5",
+    "@bentley/imodeljs-common": "^0.191.0-dev.5",
+    "@bentley/imodeljs-clients": "^0.191.0-dev.5",
+    "@bentley/presentation-common": "^0.191.0-dev.5",
+    "@bentley/presentation-frontend": "^0.191.0-dev.5",
+    "@bentley/ui-core": "^0.191.0-dev.5",
+    "@bentley/ui-components": "^0.191.0-dev.5",
+    "@bentley/ui-ninezone": "^0.191.0-dev.5"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",

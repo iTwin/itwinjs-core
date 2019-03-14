@@ -30,7 +30,7 @@
     "iModel"
   ],
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "0.191.0-dev.5",
+    "@bentley/bentleyjs-core": "^0.191.0-dev.5",
     "bunyan": "^1.8.12",
     "bunyan-seq": "^0.2.0",
     "request": "^2.88.0",

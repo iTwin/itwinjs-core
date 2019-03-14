@@ -58,7 +58,7 @@
   },
   "dependencies": {},
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "0.191.0-dev.5"
+    "@bentley/bentleyjs-core": "^0.191.0-dev.5"
   },
   "nyc": {
     "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc",

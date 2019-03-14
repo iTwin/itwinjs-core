@@ -26,9 +26,7 @@
     "name": "Bentley Systems, Inc.",
     "url": "http://www.bentley.com"
   },
-  "peerDependencies": {},
   "//devDependencies": [
-    "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
@@ -42,11 +40,6 @@
     "typedoc": "^0.11.1",
     "typescript": "~3.2.2"
   },
-  "//dependencies": [
-    "NOTE: these dependencies are specific to imodeljs-i18n",
-    "NOTE: these dependencies should be only for things that DO NOT APPEAR IN THE API",
-    "NOTE: imodeljs-i18n should remain UI technology agnostic, so no react/angular dependencies are allowed"
-  ],
   "dependencies": {
     "express": "^4.16.3",
     "tree-kill": "^1.2.0",
