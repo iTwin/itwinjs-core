@@ -3,7 +3,6 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
-import * as fs from "fs";
 import { executeRegisteredCallback } from "../../utils/CallbackUtils";
 import { relaunchInElectron } from "../../utils/SpawnUtils";
 import { CertaConfig } from "../../CertaConfig";
@@ -50,9 +49,13 @@ export class ElectronTestRunner {
       event.returnValue = executeRegisteredCallback(msg.name, msg.args);
     });
 
-    rendererWindow.loadFile(this.generateHtml(config));
+    rendererWindow.loadFile(path.join(__dirname, "../../../public/index.html"));
     rendererWindow.webContents.once("did-finish-load", async () => {
-      const startTests = async () => rendererWindow.webContents.executeJavaScript(`startCertaTests(${JSON.stringify(config.testBundle)});`);
+      const initScriptPath = require.resolve("./initElectronTests.js");
+      const startTests = async () => rendererWindow.webContents.executeJavaScript(`
+        var _CERTA_CONFIG = ${JSON.stringify(config)};
+        require(${JSON.stringify(initScriptPath)});
+        startCertaTests(${JSON.stringify(config.testBundle)});`);
 
       if (config.debug) {
         // For some reason, the VS Code chrome debugger doesn't work correctly unless we reload the window before running tests.
@@ -64,22 +67,5 @@ export class ElectronTestRunner {
 
       await startTests();
     });
-  }
-
-  private static generateHtml(config: CertaConfig): string {
-    const initScriptPath = require.resolve("./initElectronTests.js");
-    const contents = `<!doctype html>
-      <html>
-        <head>
-          <meta charset="utf-8" />
-          <script>
-            var _CERTA_CONFIG = ${JSON.stringify(config)};
-            require(${JSON.stringify(initScriptPath)});
-          </script>
-        </head>
-      </html>`;
-    const filename = path.join(__dirname, "test.html");
-    fs.writeFileSync(filename, contents);
-    return filename;
   }
 }
