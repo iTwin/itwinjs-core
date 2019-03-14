@@ -72,18 +72,21 @@ class IModelJsLoadOptions {
   public loadUiComponents: boolean;
   public loadUiFramework: boolean;
   public loadECPresentation: boolean;
+  public loadMarkup: boolean;
 
   // IModelJsVersionString is a JSON string. The object properties are the module names, and the values are the versions.
   constructor(iModelJsVersionString: string | null) {
     this.loadUiComponents = true;
     this.loadUiFramework = true;
     this.loadECPresentation = true;
+    this.loadMarkup = true;
 
     if (iModelJsVersionString) {
       this._iModelJsVersions = JSON.parse(iModelJsVersionString);
       this.loadUiComponents = (undefined !== this._iModelJsVersions["ui-core"]) || (undefined !== this._iModelJsVersions["ui-components"]);
       this.loadUiFramework = (undefined !== this._iModelJsVersions["ui-ninezone"]) || (undefined !== this._iModelJsVersions["ui-framework"]);
       this.loadECPresentation = (undefined !== this._iModelJsVersions["presentation-common"]) || (undefined !== this._iModelJsVersions["presentation-frontend"]) || (undefined !== this._iModelJsVersions["presentation-components"]);
+      this.loadMarkup = (undefined !== this._iModelJsVersions["imodeljs-markup"]);
 
       // we need the uiComponents for either ECPresentation or uiFramework.
       if (this.loadECPresentation || this.loadUiFramework) {
@@ -124,7 +127,8 @@ export async function loadIModelJs(options: IModelJsLoadOptions): Promise<void> 
   await ScriptLoader.loadPackage(options.prefixVersion("imodeljs-common.js"));
   await ScriptLoader.loadPackage(options.prefixVersion("imodeljs-quantity.js"));
   await ScriptLoader.loadPackage(options.prefixVersion("imodeljs-frontend.js"));
-  await ScriptLoader.loadPackage(options.prefixVersion("imodeljs-markup.js"));
+  if (options.loadMarkup)
+    await ScriptLoader.loadPackage(options.prefixVersion("imodeljs-markup.js"));
   if (options.loadUiComponents) {
     await thirdPartyRootPromise;
     // load the rest of the third party modules that depend on react and redux.

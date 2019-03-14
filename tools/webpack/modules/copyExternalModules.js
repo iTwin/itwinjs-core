@@ -254,7 +254,7 @@ class ModuleCopier {
 
       // link the IModelJsLoader.js from imodeljs/frontend also. NOTE: imodeljs-frontend must always be in package.json's dependencies.
       const loaderFile = path.resolve(process.cwd(), "node_modules/@bentley/imodeljs-frontend", this.isDevelopment ? "lib/module/dev/IModelJsLoader.js" : "lib/module/prod/IModelJsLoader.js");
-      ModuleCopier.symlinkModuleFile(loaderFile, path.resolve(outputDirectory, "iModelJsLoader.js"));
+      ModuleCopier.symlinkModuleFile(loaderFile, path.resolve(outputDirectory, "IModelJsLoader.js"));
 
     } catch (e) {
       console.log("Error", e);

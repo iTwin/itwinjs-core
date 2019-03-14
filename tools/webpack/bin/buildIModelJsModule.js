@@ -698,7 +698,7 @@ class IModelJsModuleBuilder {
                 return Promise.resolve(results);
             }
             const styleSheets = subModule.styleSheets ? true : false;
-            // this is a special case for the iModelJsLoader - set plugin.type to "system" or "webworker" to avoid plugin treatment.
+            // this is a special case for the IModelJsLoader - set plugin.type to "system" or "webworker" to avoid plugin treatment.
             const subType = subModule.type || "plugin";
             if ((subType !== "system") && (subType !== "plugin") && (subType != "webworker")) {
                 console.log('the "type" property for a subModule must be one of "system", "plugin", or "webworker"');
@@ -781,10 +781,10 @@ class IModelJsModuleBuilder {
     private async _compileAndSymlinkSources(): Promise<Result[]> {
       // compile the .ts and .tsx files
       const compileResult = this.compileSource();
-  
+
       // symlink the source resource ().scss and .svg files, public locale files, etc.) to the lib directory for inclusion in the webpack.
       const symlinkSourceResourcesResult = this.symlinkSourceResources();
-  
+
       // wait for all of those operations to finish.
       return Promise.all([compileResult, symlinkSourceResourcesResult])
     }

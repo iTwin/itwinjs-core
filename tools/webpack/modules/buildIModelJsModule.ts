@@ -770,7 +770,7 @@ class IModelJsModuleBuilder {
       }
 
       const styleSheets: boolean = subModule.styleSheets ? true : false;
-      // this is a special case for the iModelJsLoader - set plugin.type to "system" or "webworker" to avoid plugin treatment.
+      // this is a special case for the IModelJsLoader - set plugin.type to "system" or "webworker" to avoid plugin treatment.
       const subType: string = subModule.type || "plugin";
       if ((subType !== "system") && (subType !== "plugin") && (subType != "webworker")) {
         console.log('the "type" property for a subModule must be one of "system", "plugin", or "webworker"');
