@@ -15,7 +15,7 @@ if (ElectronRpcConfiguration.isElectron) {
   ElectronRpcManager.initializeClient({}, rpcInterfaces);
 } else {
   const config = BentleyCloudRpcManager.initializeClient({ info: { title: "integration-test", version: "v1.0" } }, rpcInterfaces);
-  config.protocol.pathPrefix = `http://localhost:3011`;
+  config.protocol.pathPrefix = `http://${window.location.hostname}:${Number(window.location.port) + 2000}`;
 
   for (const definition of rpcInterfaces) {
     RpcOperation.forEach(definition, (operation) => operation.policy.token = (_request) => new IModelToken("test", "test", "test", "test", OpenMode.Readonly));

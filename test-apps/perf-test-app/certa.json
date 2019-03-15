@@ -5,7 +5,7 @@
   "backendInitModule": "./lib/backend/backend.js",
   "ports": {
     "debugging": 5858,
-    "frontend": 3010,
+    "frontend": 3030,
     "frontendDebugging": 9223
   },
   "chromeOptions": {
