@@ -28,29 +28,20 @@ const timeout = (argv.timeout !== undefined) ? argv.timeout : "999999";
 
 const tscPaths = argv.tscPaths ? ["--require", "tsconfig-paths/register"] : [];
 
-const inMonoRepo = fs.existsSync(path.join(__dirname, "../../../common/scripts/mocha-reporter-tweaks.js"));
-const rushTweaks = (inMonoRepo) ? ["--require", require.resolve("../../../common/scripts/mocha-reporter-tweaks")] : [];
-
 const options = [
   "--check-leaks",
-  ...rushTweaks,
   "--require", "source-map-support/register",
   "--require", "ts-node/register",
   "--watch-extensions", "ts",
   "-u", "tdd",
   "--no-cache",
   "--timeout", timeout,
-  "--colors"
+  "--colors",
+  "--reporter", require.resolve("../mocha-reporter"),
+  "--reporter-options", `mochaFile=${paths.appJUnitTestResults}`,
 ];
 
 const watchOptions = argv.watch ? ["--watch", "--inline-diffs"] : [];
-
-const reporterOptions = (!isCI) ? [
-  "-R", "spec"
-] : [
-    "--reporter", "mocha-junit-reporter",
-    "--reporter-options", `mochaFile=${paths.appJUnitTestResults}`,
-  ]
 
 const debugOptions = argv.debug ?
   [
@@ -70,7 +61,6 @@ const args = [
   ...debugOptions,
   path.resolve(packageRoot, "node_modules/mocha/bin/_mocha"),
   ...watchOptions,
-  ...reporterOptions,
   ...options,
   ...grepOptions,
   ...tscPaths,

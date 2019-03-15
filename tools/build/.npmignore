@@ -3,6 +3,7 @@
 !scripts/**/*.js
 !bin/**/*.js
 !tslint-rules/**/*.js
+!mocha-reporter/**/*.js
 !package.json
 !*.md
 !tsconfig.json

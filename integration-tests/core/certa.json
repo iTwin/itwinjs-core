@@ -12,5 +12,11 @@
     "args": [
       "--disable-web-security"
     ]
+  },
+  "mochaOptions": {
+    "reporter": "node_modules/@bentley/build-tools/mocha-reporter",
+    "reporterOptions": {
+      "mochaFile": "lib/test/junit_results.xml"
+    }
   }
 }

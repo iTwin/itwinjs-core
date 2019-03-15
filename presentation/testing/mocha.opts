@@ -1,7 +1,8 @@
 --require scripts/copy-test-setup.js
---require ../../common/scripts/mocha-reporter-tweaks.js
 --require jsdom-global/register
 --check-leaks
 --file lib/test/setup.js
 --require ignore-styles
 --exclude lib/test/coverage/**/*
+--reporter node_modules/@bentley/build-tools/mocha-reporter
+--reporter-options mochaFile=lib/test/junit_results.xml
