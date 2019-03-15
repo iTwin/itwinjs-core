@@ -6,6 +6,7 @@
 
 import * as React from "react";
 import { connect } from "react-redux";
+import { ClientRequestContext, Id64String } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { OidcClientWrapper } from "@bentley/imodeljs-frontend";
 import { OverallContentPage, OverallContentActions } from "./state";
@@ -17,7 +18,6 @@ import { SignIn } from "../oidc/SignIn";
 import { ApplicationHeader, ApplicationHeaderProps } from "../openimodel/ApplicationHeader";
 import { ViewDefinitionProps } from "@bentley/imodeljs-common";
 import { IModelInfo } from "../clientservices/IModelServices";
-import { Id64String, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { UiFramework } from "../UiFramework";
 import { ThemeManager } from "../theme/ThemeManager";
 
@@ -99,7 +99,7 @@ class OverallContentComponent extends React.Component<OverallContentProps> {
     if (this.props.initialIModels && 1 === this.props.initialIModels.length && this.props.initialViewIds)
       this._imodelAndViewSpecified = true;
 
-    OidcClientWrapper.oidcClient.getAccessToken(new ActivityLoggingContext("")) // tslint:disable-line:no-floating-promises
+    OidcClientWrapper.oidcClient.getAccessToken(new ClientRequestContext()) // tslint:disable-line:no-floating-promises
       .then((accessToken: AccessToken | undefined) => this._setOrClearAccessToken(accessToken));
     OidcClientWrapper.oidcClient.onUserStateChanged.addListener(this._setOrClearAccessToken);
   }
@@ -127,7 +127,7 @@ class OverallContentComponent extends React.Component<OverallContentProps> {
       element = (
         <React.Fragment>
           <ApplicationHeader {...appHeaderProps} />
-          <SignIn onSignIn={() => OidcClientWrapper.oidcClient.signIn(new ActivityLoggingContext(""))} onOffline={this._onOffline} />
+          <SignIn onSignIn={() => OidcClientWrapper.oidcClient.signIn(new ClientRequestContext())} onOffline={this._onOffline} />
         </React.Fragment>
       );
     } else if (navigator.onLine && OverallContentPage.SelectIModelPage === currentPage) {

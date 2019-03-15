@@ -42,15 +42,15 @@ describe("MeshBuilderMap Tests", () => {
   document.body.appendChild(viewDiv!);
 
   before(async () => {   // Create a ViewState to load into a Viewport
+    MockRender.App.startup();
     imodel = await IModelConnection.openSnapshot(iModelLocation);
     spatialView = await imodel.views.load("0x34") as SpatialViewState;
     spatialView.setStandardRotation(StandardViewId.RightIso);
-    MockRender.App.startup();
   });
 
   after(async () => {
-    MockRender.App.shutdown();
     if (imodel) await imodel.closeSnapshot();
+    MockRender.App.shutdown();
   });
 
   it("constructor", () => {

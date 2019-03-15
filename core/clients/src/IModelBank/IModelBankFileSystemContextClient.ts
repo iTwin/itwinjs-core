@@ -4,11 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import { IModelHubClientError } from "../imodelhub/Errors";
 import { ContextManagerClient } from "../IModelCloudEnvironment";
-import { ActivityLoggingContext, IModelHubStatus, Logger, WSStatus } from "@bentley/bentleyjs-core";
-import { AccessToken } from "../Token";
+import { IModelHubStatus, Logger, WSStatus } from "@bentley/bentleyjs-core";
 import { Project } from "../ConnectClients";
 import { RequestOptions, request, Response } from "../Request";
 import { WsgError } from "../WsgClient";
+import { AuthorizedClientRequestContext } from "../AuthorizedClientRequestContext";
 
 // Format of the imodelContext.json file found in the root directory of an iModel file system context master directory.
 // TODO: Remove this when we
@@ -24,11 +24,11 @@ export class IModelBankFileSystemContextClient implements ContextManagerClient {
   constructor(public baseUri: string) {
   }
 
-  public async queryContextByName(alctx: ActivityLoggingContext, accessToken: AccessToken, projectName: string): Promise<Project> {
+  public async queryContextByName(requestContext: AuthorizedClientRequestContext, projectName: string): Promise<Project> {
 
-    alctx.enter();
+    requestContext.enter();
     const url: string = this.baseUri + "/sv1.0/Repositories/IModelBankFileSystem--main/IModelBankFileSystem/Context";
-    alctx.enter();
+    requestContext.enter();
     Logger.logInfo(loggingCategory, `Sending GET request to ${url}`);
 
     const queryOptions = {      // use the same ODATA-style queries that Connect and iModelHub use
@@ -38,13 +38,13 @@ export class IModelBankFileSystemContextClient implements ContextManagerClient {
 
     const options: RequestOptions = {
       method: "GET",
-      headers: { authorization: accessToken.toTokenString() },
+      headers: { authorization: requestContext.accessToken.toTokenString() },
       qs: queryOptions,
       accept: "application/json",
     };
 
-    const res: Response = await request(alctx, url, options);
-    alctx.enter();
+    const res: Response = await request(requestContext, url, options);
+    requestContext.enter();
     if (!res.body) {
       return Promise.reject(new Error(`Query to URL ${url} executed successfully, but did NOT return anything.`));
     }
@@ -63,8 +63,8 @@ export class IModelBankFileSystemContextClient implements ContextManagerClient {
     return Promise.resolve(project);
   }
 
-  public async createContext(alctx: ActivityLoggingContext, accessToken: AccessToken, name: string): Promise<void> {
-    alctx.enter();
+  public async createContext(requestContext: AuthorizedClientRequestContext, name: string): Promise<void> {
+    requestContext.enter();
     const url: string = this.baseUri + "/sv1.0/Repositories/IModelBankFileSystem--main/IModelBankFileSystem/Context";
 
     Logger.logInfo(loggingCategory, `Sending POST request to ${url}`);
@@ -73,24 +73,24 @@ export class IModelBankFileSystemContextClient implements ContextManagerClient {
 
     const options: RequestOptions = {
       method: "POST",
-      headers: { authorization: accessToken.toTokenString() },
+      headers: { authorization: requestContext.accessToken.toTokenString() },
       body,
     };
 
-    return request(alctx, url, options).then(async () => Promise.resolve());
+    return request(requestContext, url, options).then(async () => Promise.resolve());
   }
 
-  public async deleteContext(alctx: ActivityLoggingContext, accessToken: AccessToken, contextId: string): Promise<void> {
-    alctx.enter();
+  public async deleteContext(requestContext: AuthorizedClientRequestContext, contextId: string): Promise<void> {
+    requestContext.enter();
     const url: string = this.baseUri + "/sv1.0/Repositories/IModelBankFileSystem--main/IModelBankFileSystem/Context/" + contextId;
-    alctx.enter();
+    requestContext.enter();
     Logger.logInfo(loggingCategory, `Sending DELETE request to ${url}`);
 
     const options: RequestOptions = {
       method: "DELETE",
-      headers: { authorization: accessToken.toTokenString() },
+      headers: { authorization: requestContext.accessToken.toTokenString() },
     };
 
-    return request(alctx, url, options).then(async () => Promise.resolve());
+    return request(requestContext, url, options).then(async () => Promise.resolve());
   }
 }

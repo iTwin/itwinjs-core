@@ -2,10 +2,10 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-
+import { ClientRequestContext } from "@bentley/bentleyjs-core";
 import { OidcClient, AccessToken, UserInfo } from "@bentley/imodeljs-clients";
 import { Issuer, Client as OpenIdClient, ClientConfiguration, TokenSet } from "openid-client";
-import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { decode } from "jsonwebtoken";
 
 /** Client configuration to create OIDC/OAuth tokens for backend applications */
 export interface OidcBackendClientConfiguration {
@@ -31,13 +31,13 @@ export abstract class OidcBackendClient extends OidcClient {
   }
 
   private _issuer: Issuer;
-  private async getIssuer(actx: ActivityLoggingContext): Promise<Issuer> {
-    actx.enter();
+  private async getIssuer(requestContext: ClientRequestContext): Promise<Issuer> {
+    requestContext.enter();
 
     if (this._issuer)
       return this._issuer;
 
-    const url = await this.getUrl(actx);
+    const url = await this.getUrl(requestContext);
     this._issuer = await Issuer.discover(url);
     return this._issuer;
   }
@@ -45,14 +45,14 @@ export abstract class OidcBackendClient extends OidcClient {
   /**
    * Discover the endpoints of the service
    */
-  public async discoverEndpoints(actx: ActivityLoggingContext): Promise<Issuer> {
-    actx.enter();
-    return this.getIssuer(actx);
+  public async discoverEndpoints(requestContext: ClientRequestContext): Promise<Issuer> {
+    requestContext.enter();
+    return this.getIssuer(requestContext);
   }
 
   private _client: OpenIdClient;
-  protected async getClient(actx: ActivityLoggingContext): Promise<OpenIdClient> {
-    actx.enter();
+  protected async getClient(requestContext: ClientRequestContext): Promise<OpenIdClient> {
+    requestContext.enter();
 
     if (this._client)
       return this._client;
@@ -61,7 +61,7 @@ export abstract class OidcBackendClient extends OidcClient {
       client_id: this._configuration.clientId,
       client_secret: this._configuration.clientSecret,
     };
-    const issuer = await this.getIssuer(actx);
+    const issuer = await this.getIssuer(requestContext);
     this._client = new issuer.Client(clientConfiguration);
     return this._client;
   }
@@ -72,4 +72,9 @@ export abstract class OidcBackendClient extends OidcClient {
     return AccessToken.fromJsonWebTokenString(tokenSet.access_token, startsAt, expiresAt, userInfo);
   }
 
+  public static parseUserInfo(jwt: string): UserInfo | undefined {
+    const decoded: any = decode(jwt, { json: true, complete: false });
+    const userInfo = UserInfo.fromJson(decoded);
+    return userInfo;
+  }
 }

@@ -6,9 +6,9 @@
 import {
   IModelHubClient, AccessToken, GlobalEventSubscription, AuthorizationToken,
   ImsActiveSecureTokenClient, IModelHubGlobalEvent, GlobalEventSAS, GetEventOperationType,
+  AuthorizedClientRequestContext, ImsUserCredentials,
 } from "@bentley/imodeljs-clients";
-
-import { Guid, ActivityLoggingContext, Logger } from "@bentley/bentleyjs-core";
+import { Logger, ClientRequestContext } from "@bentley/bentleyjs-core";
 
 class MockAccessToken extends AccessToken {
   public constructor() { super(""); }
@@ -17,16 +17,17 @@ class MockAccessToken extends AccessToken {
 
 const authorizationClient: ImsActiveSecureTokenClient = new ImsActiveSecureTokenClient();
 const imodelHubClient: IModelHubClient = new IModelHubClient();
-const username: string = "";
-const password: string = "";
-const token: AccessToken = new MockAccessToken();
+const userCredentials: ImsUserCredentials = {
+  email: "",
+  password: "",
+};
 
 // __PUBLISH_EXTRACT_START__ GlobalEventHandler.createListener.authenticate.example-code
 async function authenticate(): Promise<AccessToken> {
-  const alctx: ActivityLoggingContext = new ActivityLoggingContext(Guid.createValue());
+  const requestContext = new ClientRequestContext();
   const authorizationToken: AuthorizationToken = await authorizationClient
-    .getToken(alctx, username, password);
-  return imodelHubClient.getAccessToken(alctx, authorizationToken);
+    .getToken(requestContext, userCredentials);
+  return imodelHubClient.getAccessToken(requestContext, authorizationToken);
 }
 // __PUBLISH_EXTRACT_END__
 
@@ -37,21 +38,23 @@ function processGlobalEvent(event: IModelHubGlobalEvent): void {
 // __PUBLISH_EXTRACT_END__
 
 async () => {
-  const alctx: ActivityLoggingContext = new ActivityLoggingContext("b0f0808d-e76f-4615-acf4-95aa1b78eba5");
   const accessToken = new MockAccessToken();
+  const requestContext = new ClientRequestContext("b0f0808d-e76f-4615-acf4-95aa1b78eba5");
+  const authorizedRequestContext = new AuthorizedClientRequestContext(accessToken, "b0f0808d-e76f-4615-acf4-95aa1b78eba5");
+
   // __PUBLISH_EXTRACT_START__ GlobalEventSubscriptionsHandler.create.example-code
   const id = "c41580e2-6ac9-473c-9194-2c9a36187dbd";
   const subscription: GlobalEventSubscription = await imodelHubClient.globalEvents
-    .subscriptions.create(alctx, token, id, ["iModelCreatedEvent", "NamedVersionCreatedEvent"]);
+    .subscriptions.create(authorizedRequestContext, id, ["iModelCreatedEvent", "NamedVersionCreatedEvent"]);
   // __PUBLISH_EXTRACT_END__
 
   // __PUBLISH_EXTRACT_START__ GlobalEventHandler.getSASToken.example-code
-  const sasToken: GlobalEventSAS = await imodelHubClient.globalEvents.getSASToken(alctx, accessToken);
+  const sasToken: GlobalEventSAS = await imodelHubClient.globalEvents.getSASToken(authorizedRequestContext);
   // __PUBLISH_EXTRACT_END__
 
   // __PUBLISH_EXTRACT_START__ GlobalEventHandler.getEvent.example-code
   const globalEvent: IModelHubGlobalEvent | undefined = await imodelHubClient.globalEvents
-    .getEvent(alctx, sasToken.sasToken!, sasToken.baseAddress!, subscription.wsgId, 60);
+    .getEvent(requestContext, sasToken.sasToken!, sasToken.baseAddress!, subscription.wsgId, 60);
   // __PUBLISH_EXTRACT_END__
 
   if (globalEvent)
@@ -59,19 +62,19 @@ async () => {
 
   // __PUBLISH_EXTRACT_START__ GlobalEventHandler.getEvent.lock.example-code
   const globalEventWithLock: IModelHubGlobalEvent | undefined = await imodelHubClient.globalEvents
-    .getEvent(alctx, sasToken.sasToken!, sasToken.baseAddress!, subscription.wsgId, 60, GetEventOperationType.Peek);
+    .getEvent(requestContext, sasToken.sasToken!, sasToken.baseAddress!, subscription.wsgId, 60, GetEventOperationType.Peek);
   // __PUBLISH_EXTRACT_END__
 
   if (!globalEventWithLock)
     return;
 
   // __PUBLISH_EXTRACT_START__ GlobalEventHandler.getEvent.delete.example-code
-  await globalEventWithLock.delete(alctx);
+  await globalEventWithLock.delete(authorizedRequestContext);
   // __PUBLISH_EXTRACT_END__
 
   // __PUBLISH_EXTRACT_START__ GlobalEventHandler.createListener.create.example-code
   const deleteCallback = await imodelHubClient.globalEvents // tslint:disable-line:await-promise
-    .createListener(alctx, authenticate, subscription.wsgId, processGlobalEvent);
+    .createListener(authorizedRequestContext, authenticate, subscription.wsgId, processGlobalEvent);
   // __PUBLISH_EXTRACT_END__
 
   // __PUBLISH_EXTRACT_START__ GlobalEventHandler.createListener.delete.example-code

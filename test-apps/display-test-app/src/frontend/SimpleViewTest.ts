@@ -2,7 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { OpenMode, ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
+import { OpenMode } from "@bentley/bentleyjs-core";
 import {
   BentleyCloudRpcManager,
   ElectronRpcConfiguration,
@@ -17,12 +17,13 @@ import {
   MobileRpcConfiguration,
   MobileRpcManager,
 } from "@bentley/imodeljs-common";
-import { AccessToken, Config, OidcFrontendClientConfiguration } from "@bentley/imodeljs-clients";
+import { Config, OidcFrontendClientConfiguration } from "@bentley/imodeljs-clients";
 import {
   IModelApp,
   IModelConnection,
   OidcClientWrapper,
   RenderDiagnostics,
+  FrontendRequestContext,
 } from "@bentley/imodeljs-frontend";
 import { SimpleViewState } from "./SimpleViewState";
 import { showStatus } from "./Utils";
@@ -63,7 +64,6 @@ async function openSnapshotIModel(state: SimpleViewState, filename: string) {
   configuration.standalone = true;
   state.iModelConnection = await IModelConnection.openSnapshot(filename);
   configuration.iModelName = state.iModelConnection.name;
-  IModelApp.accessToken = state.accessToken;
 }
 
 // If we are using a browser, close the current iModel before leaving
@@ -71,32 +71,32 @@ window.onbeforeunload = () => {
   if (activeViewState.iModelConnection !== undefined)
     if (configuration.standalone)
       activeViewState.iModelConnection.closeSnapshot(); // tslint:disable-line:no-floating-promises
-    else
-      activeViewState.iModelConnection.close(activeViewState.accessToken!); // tslint:disable-line:no-floating-promises
+    else {
+      activeViewState.iModelConnection.close(); // tslint:disable-line:no-floating-promises
+    }
 };
 
-async function initializeOidc(actx: ActivityLoggingContext) {
-  actx.enter();
+async function initializeOidc() {
+  if (OidcClientWrapper.oidcClient)
+    return;
 
-  const clientId = Config.App.get((ElectronRpcConfiguration.isElectron) ? "imjs_electron_test_client_id" : "imjs_browser_test_client_id");
-  const redirectUri = Config.App.get((ElectronRpcConfiguration.isElectron) ? "imjs_electron_test_redirect_uri" : "imjs_browser_test_redirect_uri");
+  const clientId = (ElectronRpcConfiguration.isElectron) ? Config.App.get("imjs_electron_test_client_id") : Config.App.get("imjs_browser_test_client_id");
+  const redirectUri = (ElectronRpcConfiguration.isElectron) ? Config.App.get("imjs_electron_test_redirect_uri") : Config.App.get("imjs_browser_test_redirect_uri");
   const oidcConfig: OidcFrontendClientConfiguration = { clientId, redirectUri, scope: "openid email profile organization imodelhub context-registry-service imodeljs-router reality-data:read" };
 
-  await OidcClientWrapper.initialize(actx, oidcConfig);
-  actx.enter();
+  await OidcClientWrapper.initialize(new FrontendRequestContext(), oidcConfig);
+  IModelApp.authorizationClient = OidcClientWrapper.oidcClient;
+}
 
-  OidcClientWrapper.oidcClient.onUserStateChanged.addListener((accessToken: AccessToken | undefined) => {
-    activeViewState.accessToken = accessToken;
-  });
-
-  activeViewState.accessToken = await OidcClientWrapper.oidcClient.getAccessToken(actx);
-  actx.enter();
+async function signIn() {
+  await initializeOidc();
+  if (OidcClientWrapper.oidcClient.hasSignedIn)
+    return;
+  await OidcClientWrapper.oidcClient.signIn(new FrontendRequestContext());
 }
 
 // main entry point.
 async function main() {
-  const actx = new ActivityLoggingContext(Guid.createValue());
-  actx.enter();
   // retrieve, set, and output the global configuration variable
   await retrieveConfiguration(); // (does a fetch)
   console.log("Configuration", JSON.stringify(configuration)); // tslint:disable-line:no-console
@@ -129,25 +129,13 @@ async function main() {
 
   // while the browser is loading stuff, start work on logging in and downloading the imodel, etc.
   try {
-    if (configuration.standalone && !configuration.signInForStandalone) {
-      await openSnapshotIModel(activeViewState, configuration.iModelName!);
-      await uiReady; // Now wait for the HTML UI to finish loading.
-      await initView();
-      return;
-    }
+    if ((!configuration.standalone || configuration.signInForStandalone) && !MobileRpcConfiguration.isMobileFrontend)
+      await signIn();
 
-    if (!MobileRpcConfiguration.isMobileFrontend) {
-      await initializeOidc(actx);
-      actx.enter();
+    await openSnapshotIModel(activeViewState, configuration.iModelName!);
+    await uiReady; // Now wait for the HTML UI to finish loading.
+    await initView();
 
-      if (!activeViewState.accessToken)
-        OidcClientWrapper.oidcClient.signIn(actx);
-      else {
-        await openSnapshotIModel(activeViewState, configuration.iModelName!);
-        await uiReady; // Now, wait for the HTML UI to finish loading.
-        await initView();
-      }
-    }
   } catch (reason) {
     alert(reason);
     return;

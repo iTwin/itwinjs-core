@@ -3,12 +3,14 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module RpcInterface */
+import { SerializedClientRequestContext, ClientRequestContext } from "@bentley/bentleyjs-core";
 import { RpcInterface, RpcInterfaceDefinition } from "../../RpcInterface";
 import { RpcManager } from "../../RpcManager";
-import { RpcProtocol, RpcRequestFulfillment } from "./RpcProtocol";
+import { RpcProtocol, RpcRequestFulfillment, SerializedRpcRequest } from "./RpcProtocol";
 import { RpcRequest } from "./RpcRequest";
 import { INSTANCE } from "./RpcRegistry";
 import { RpcControlChannel } from "./RpcControl";
+import { RpcRequestContext } from "./RpcRequestContext";
 
 export type RpcConfigurationSupplier = () => { new(): RpcConfiguration };
 
@@ -43,23 +45,25 @@ export abstract class RpcConfiguration {
     return instance;
   }
 
+  /** Enables passing of application-specific context with each RPC request. */
+  public static requestContext: RpcRequestContext = {
+    getId: (_request: RpcRequest): string => "",
+    serialize: async (_request: RpcRequest): Promise<SerializedClientRequestContext> => ({
+      id: "",
+      applicationId: "",
+      applicationVersion: "",
+      sessionId: "",
+      authorization: "",
+      userId: "",
+    }),
+    deserialize: async (_request: SerializedRpcRequest): Promise<ClientRequestContext> => new ClientRequestContext(""),
+  };
+
   /** The protocol of the configuration. */
   public abstract readonly protocol: RpcProtocol;
 
   /** The RPC interfaces managed by the configuration. */
   public abstract readonly interfaces: () => RpcInterfaceDefinition[];
-
-  /** Reserved for an application authorization key. */
-  public applicationAuthorizationKey: string = "";
-
-  /** Reserved for an application authorization value. */
-  public applicationAuthorizationValue: string = "";
-
-  /** Reserved for an application version key. */
-  public applicationVersionKey: string = "";
-
-  /** Reserved for an application version value. */
-  public static applicationVersionValue: string = "";
 
   /** The target interval (in milliseconds) between connection attempts for pending RPC operation requests. */
   public pendingOperationRetryInterval = 10000;
@@ -103,8 +107,6 @@ export abstract class RpcConfiguration {
 export class RpcDefaultConfiguration extends RpcConfiguration {
   public interfaces = () => [];
   public protocol: RpcProtocol = new RpcDirectProtocol(this);
-  public applicationAuthorizationKey = "Authorization";
-  public applicationAuthorizationValue = "Basic Og==";
 }
 
 // A default protocol that can be used for basic testing within a library.
@@ -118,7 +120,7 @@ export class RpcDirectRequest extends RpcRequest {
   public fulfillment: RpcRequestFulfillment | undefined = undefined;
 
   protected async send() {
-    const request = this.protocol.serialize(this);
+    const request = await this.protocol.serialize(this);
     return new Promise<number>(async (resolve, reject) => {
       try {
         this.fulfillment = await this.protocol.fulfill(request);

@@ -5,7 +5,6 @@
 /** @module RpcInterface */
 
 import { Id64String, Id64Set } from "@bentley/bentleyjs-core";
-import { AccessToken } from "@bentley/imodeljs-clients";
 import { Point2d, Point3d, Vector2d, Vector3d, Range3dProps } from "@bentley/geometry-core";
 import { Code } from "../Code";
 import { RpcInterface } from "../RpcInterface";
@@ -36,7 +35,6 @@ export class IModelNotFoundResponse extends RpcNotFoundResponse {
 export abstract class IModelReadRpcInterface extends RpcInterface {
   /** The types that can be marshaled by the interface. */
   public static types = () => [
-    AccessToken,
     IModelVersion,
     IModelToken,
     Point2d,
@@ -52,14 +50,14 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
   public static getClient(): IModelReadRpcInterface { return RpcManager.getClientForInterface(IModelReadRpcInterface); }
 
   /** The semantic version of the interface. */
-  public static version = "0.2.1";
+  public static version = "0.3.0";
 
   /*===========================================================================================
     NOTE: Any add/remove/change to the methods below requires an update of the interface version.
     NOTE: Please consult the README in this folder for the semantic versioning rules.
   ===========================================================================================*/
-  public async openForRead(_accessToken: AccessToken, _iModelToken: IModelToken): Promise<IModel> { return this.forward(arguments); }
-  public async close(_accessToken: AccessToken, _iModelToken: IModelToken): Promise<boolean> { return this.forward(arguments); }
+  public async openForRead(_iModelToken: IModelToken): Promise<IModel> { return this.forward(arguments); }
+  public async close(_iModelToken: IModelToken): Promise<boolean> { return this.forward(arguments); }
   public async queryPage(_iModelToken: IModelToken, _ecsql: string, _bindings?: any[] | object, _options?: PageOptions): Promise<any[]> { return this.forward(arguments); }
   public async queryRowCount(_iModelToken: IModelToken, _ecsql: string, _bindings?: any[] | object): Promise<number> { return this.forward(arguments); }
   public async getModelProps(_iModelToken: IModelToken, _modelIds: Id64Set): Promise<ModelProps[]> { return this.forward(arguments); }

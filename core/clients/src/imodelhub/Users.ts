@@ -5,9 +5,8 @@
 /** @module iModelHub */
 
 import { ECJsonTypeMap, WsgInstance } from "./../ECJsonTypeMap";
-
-import { AccessToken } from "../Token";
-import { Logger, ActivityLoggingContext, GuidString } from "@bentley/bentleyjs-core";
+import { AuthorizedClientRequestContext } from "../AuthorizedClientRequestContext";
+import { Logger, GuidString } from "@bentley/bentleyjs-core";
 import { Query } from "./Query";
 import { ArgumentCheck } from "./Errors";
 import { IModelBaseHandler } from "./BaseHandler";
@@ -175,17 +174,17 @@ export class UserStatisticsHandler {
 
   /**
    * Get [[UserStatistics]].
-   * @param token Delegation token of the authorized user.
+   * @param requestContext The client request context.
    * @param imodelId Id of the iModel. See [[HubIModel]].
    * @param query Optional query object to filter the queried [[UserStatistics]] or select different data from them.
    * @returns Array of [[UserStatistics]] for users matching the query.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async get(alctx: ActivityLoggingContext, token: AccessToken, imodelId: GuidString,
+  public async get(requestContext: AuthorizedClientRequestContext, imodelId: GuidString,
     query: UserStatisticsQuery = new UserStatisticsQuery()): Promise<UserStatistics[]> {
-    alctx.enter();
+    requestContext.enter();
     Logger.logInfo(loggingCategory, `Querying user statistics for iModel ${imodelId}`);
-    ArgumentCheck.defined("token", token);
+    ArgumentCheck.defined("requestContext", requestContext);
     ArgumentCheck.validGuid("imodelId", imodelId);
 
     // if there are no specific selects defined, select all statistics
@@ -195,13 +194,13 @@ export class UserStatisticsHandler {
 
     let userStatistics: UserStatistics[];
     if (query.isQueriedByIds) {
-      userStatistics = await this._handler.postQuery<UserStatistics>(alctx, UserStatistics, token,
+      userStatistics = await this._handler.postQuery<UserStatistics>(requestContext, UserStatistics,
         this.getRelativeUrl(imodelId), query.getQueryOptions());
     } else {
-      userStatistics = await this._handler.getInstances<UserStatistics>(alctx, UserStatistics, token,
+      userStatistics = await this._handler.getInstances<UserStatistics>(requestContext, UserStatistics,
         this.getRelativeUrl(imodelId, query.getId()), query.getQueryOptions());
     }
-    alctx.enter();
+    requestContext.enter();
     Logger.logTrace(loggingCategory, `Queried ${userStatistics.length} user statistics for iModel ${imodelId}`);
     return userStatistics;
   }
@@ -299,24 +298,24 @@ export class UserInfoHandler {
 
   /**
    * Get the information on users who have accessed the iModel.
-   * @param token Delegation token of the authorized user.
+   * @param requestContext The client request context.
    * @param imodelId Id of the iModel. See [[HubIModel]].
    * @param query Optional query object to filter the queried users or select different data from them.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async get(alctx: ActivityLoggingContext, token: AccessToken, imodelId: GuidString, query: UserInfoQuery = new UserInfoQuery()): Promise<HubUserInfo[]> {
-    alctx.enter();
+  public async get(requestContext: AuthorizedClientRequestContext, imodelId: GuidString, query: UserInfoQuery = new UserInfoQuery()): Promise<HubUserInfo[]> {
+    requestContext.enter();
     Logger.logInfo(loggingCategory, `Querying users for iModel ${imodelId}`);
-    ArgumentCheck.defined("token", token);
+    ArgumentCheck.defined("requestContext", requestContext);
     ArgumentCheck.validGuid("imodelId", imodelId);
 
     let users: HubUserInfo[];
     if (query.isQueriedByIds) {
-      users = await this._handler.postQuery<HubUserInfo>(alctx, HubUserInfo, token, this.getRelativeUrl(imodelId, query.getId()), query.getQueryOptions());
+      users = await this._handler.postQuery<HubUserInfo>(requestContext, HubUserInfo, this.getRelativeUrl(imodelId, query.getId()), query.getQueryOptions());
     } else {
-      users = await this._handler.getInstances<HubUserInfo>(alctx, HubUserInfo, token, this.getRelativeUrl(imodelId, query.getId()), query.getQueryOptions());
+      users = await this._handler.getInstances<HubUserInfo>(requestContext, HubUserInfo, this.getRelativeUrl(imodelId, query.getId()), query.getQueryOptions());
     }
-    alctx.enter();
+    requestContext.enter();
     Logger.logTrace(loggingCategory, `Queried users for iModel ${imodelId}`);
 
     return users;

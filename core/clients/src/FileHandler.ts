@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Utils */
 import { ProgressInfo } from "./Request";
+import { AuthorizedClientRequestContext } from "./AuthorizedClientRequestContext";
 import * as https from "https";
-import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
 
 /** Handler for file system, and upload / download. TODO: Move this to parent directory -- it is not iModelHub-specific. */
 export interface FileHandler {
@@ -13,22 +13,22 @@ export interface FileHandler {
   agent: https.Agent;
   /**
    * Download a file.
-   * @param alctx Activity logging context
+   * @param requestContext The client request context
    * @param downloadUrl URL to download file from.
    * @param path Path to download the file to, including file name.
    * @param fileSize Size of the file that's being downloaded.
    * @param progressCallback Callback for tracking progress.
    */
-  downloadFile(alctx: ActivityLoggingContext, downloadUrl: string, path: string, fileSize?: number, progress?: (progress: ProgressInfo) => void): Promise<void>;
+  downloadFile(requestContext: AuthorizedClientRequestContext, downloadUrl: string, path: string, fileSize?: number, progress?: (progress: ProgressInfo) => void): Promise<void>;
 
   /**
    * Upload a file.
-   * @param alctx Activity logging context
+   * @param requestContext The client request context
    * @param uploadUrl URL to upload the file to.
    * @param path Path of the file to be uploaded.
    * @param progressCallback Callback for tracking progress.
    */
-  uploadFile(alctx: ActivityLoggingContext, uploadUrlString: string, path: string, progress?: (progress: ProgressInfo) => void): Promise<void>;
+  uploadFile(requestContext: AuthorizedClientRequestContext, uploadUrlString: string, path: string, progress?: (progress: ProgressInfo) => void): Promise<void>;
 
   /**
    * Get size of a file.

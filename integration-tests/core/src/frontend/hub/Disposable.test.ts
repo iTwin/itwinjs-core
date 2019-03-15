@@ -3,6 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { expect, assert } from "chai";
+import { ClientRequestContext } from "@bentley/bentleyjs-core";
 import { WebGLTestContext } from "../WebGLTestContext";
 import { IModelApp, IModelConnection, ScreenViewport } from "@bentley/imodeljs-frontend";
 import { ColorDef, ImageBuffer, ImageBufferFormat, RenderTexture, QPoint3dList, QParams3d, ColorByName } from "@bentley/imodeljs-common";
@@ -13,7 +14,9 @@ import { Point3d, Range3d, Arc3d } from "@bentley/geometry-core";
 import { FakeGMState, FakeModelProps, FakeREProps } from "./TileIO.test";
 import { TileIO, IModelTileIO } from "@bentley/imodeljs-frontend/lib/tile";
 import { TILE_DATA_1_1 } from "./TileIO.data.1.1";
-import { TestData } from "./TestData";
+import { ImsTestAuthorizationClient } from "@bentley/imodeljs-clients";
+import { TestUtility } from "./TestUtility";
+import { TestUsers } from "./TestUsers";
 
 /* tslint:disable:no-console */
 
@@ -118,16 +121,23 @@ describe("Disposal of System (#integration)", () => {
     assert(null !== viewDiv);
     viewDiv!.style.width = viewDiv!.style.height = "1000px";
     document.body.appendChild(viewDiv!);
+
     WebGLTestContext.startup();
 
-    await TestData.load();
+    const imsTestAuthorizationClient = new ImsTestAuthorizationClient();
+    await imsTestAuthorizationClient.signIn(new ClientRequestContext(), TestUsers.regular);
+    WebGLTestContext.setAuthorizationClient(imsTestAuthorizationClient);
+
     imodel0 = await IModelConnection.openSnapshot(iModelLocation);
-    imodel1 = await IModelConnection.open(TestData.accessToken, TestData.testProjectId, TestData.testIModelId);
+
+    const testProjectId = await TestUtility.getTestProjectId("iModelJsIntegrationTest");
+    const testIModelId = await TestUtility.getTestIModelId(testProjectId, "ConnectionReadTest");
+    imodel1 = await IModelConnection.open(testProjectId, testIModelId);
   });
 
   after(async () => {
     await imodel0.closeSnapshot();
-    await imodel1.close(TestData.accessToken);
+    await imodel1.close();
     WebGLTestContext.shutdown();
   });
 
@@ -174,14 +184,20 @@ describe("Disposal of WebGL Resources (#integration)", () => {
 
     WebGLTestContext.startup();
 
-    await TestData.load();
+    const imsTestAuthorizationClient = new ImsTestAuthorizationClient();
+    await imsTestAuthorizationClient.signIn(new ClientRequestContext(), TestUsers.regular);
+    WebGLTestContext.setAuthorizationClient(imsTestAuthorizationClient);
+
     imodel0 = await IModelConnection.openSnapshot(iModelLocation);
-    imodel1 = await IModelConnection.open(TestData.accessToken, TestData.testProjectId, TestData.testIModelId);
+
+    const testProjectId = await TestUtility.getTestProjectId("iModelJsIntegrationTest");
+    const testIModelId = await TestUtility.getTestIModelId(testProjectId, "ConnectionReadTest");
+    imodel1 = await IModelConnection.open(testProjectId, testIModelId);
   });
 
   after(async () => {
     await imodel0.closeSnapshot();
-    await imodel1.close(TestData.accessToken);
+    await imodel1.close();
     WebGLTestContext.shutdown();
   });
 

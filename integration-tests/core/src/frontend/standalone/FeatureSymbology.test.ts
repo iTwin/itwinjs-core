@@ -8,7 +8,7 @@ import { ViewDefinitionProps, GeometryClass, Feature, RgbColor, LinePixels, View
 import * as path from "path";
 // import { DeepCompare } from "@bentley/geometry-core";
 import { Id64 } from "@bentley/bentleyjs-core";
-import { ViewState, SpatialViewState, IModelConnection, FeatureSymbology } from "@bentley/imodeljs-frontend";
+import { ViewState, SpatialViewState, IModelConnection, FeatureSymbology, IModelApp } from "@bentley/imodeljs-frontend";
 
 const iModelLocation = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/test.bim");
 
@@ -29,6 +29,7 @@ describe("FeatureSymbology.Overrides", () => {
     overrides: Overrides;
 
   before(async () => {
+    IModelApp.startup();
     imodel = await IModelConnection.openSnapshot(iModelLocation);
     const viewRows: ViewDefinitionProps[] = await imodel.views.queryProps({ from: SpatialViewState.sqlName });
     assert.exists(viewRows, "Should find some views");
@@ -38,6 +39,7 @@ describe("FeatureSymbology.Overrides", () => {
   after(async () => {
     if (imodel)
       await imodel.closeSnapshot();
+    IModelApp.shutdown();
   });
 
   it("default constructor works as expected", () => {

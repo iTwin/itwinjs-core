@@ -15,7 +15,7 @@ import {
   RpcResponseCacheControl,
   WipRpcInterface,
 } from "@bentley/imodeljs-common";
-import { BentleyError, Id64, OpenMode } from "@bentley/bentleyjs-core";
+import { BentleyError, Id64, OpenMode, SerializedClientRequestContext } from "@bentley/bentleyjs-core";
 import {
   TestRpcInterface,
   TestOp1Params,
@@ -26,7 +26,6 @@ import {
   RpcTransportTest,
   ZeroMajorRpcInterface,
 } from "../common/TestRpcInterface";
-
 import { assert } from "chai";
 import { BackendTestCallbacks } from "../common/SideChannels";
 import * as semver from "semver";
@@ -206,13 +205,11 @@ describe("RpcInterface", () => {
     assert(await executeBackendCallback(BackendTestCallbacks.unregisterTestRpcImpl2Class));
   });
 
-  it("should allow access to request and invocation objects and allow a custom request id", async () => {
-    const op9 = RpcOperation.lookup(TestRpcInterface, "op9");
-
+  it("should allow access to request and invocation objects and allow a custom request id #FIXME-direct", async () => {
     const customId = "customId";
     let expectedRequest: RpcRequest = undefined as any;
-
-    op9.policy.requestId = (request) => {
+    const backupFn = RpcConfiguration.requestContext.getId;
+    RpcConfiguration.requestContext.getId = (request: RpcRequest) => {
       assert(!expectedRequest);
       expectedRequest = request;
       return customId;
@@ -224,9 +221,11 @@ describe("RpcInterface", () => {
     assert.strictEqual(associatedRequest, expectedRequest);
     assert.equal(associatedRequest.id, customId);
 
-    return response.then((value) => {
+    await response.then((value) => {
       assert.equal(value, customId);
     }, (reason) => assert(false, reason));
+
+    RpcConfiguration.requestContext.getId = backupFn;
   });
 
   it("should marshal errors over the wire #FIXME-direct", async () => {
@@ -512,12 +511,26 @@ describe("RpcInterface", () => {
   });
 
   it("should send app version to backend #FIXME-direct", async () => {
-    RpcConfiguration.applicationVersionValue = "testbed1";
+    const backupFn = RpcConfiguration.requestContext.serialize;
+
+    RpcConfiguration.requestContext.serialize = async (_request): Promise<SerializedClientRequestContext> => {
+      const serializedContext: SerializedClientRequestContext = {
+        id: "",
+        applicationId: "",
+        applicationVersion: "testbed1",
+        sessionId: "",
+      };
+      return serializedContext;
+    };
+
     try {
       await TestRpcInterface.getClient().op15();
       assert(true);
     } catch (err) {
       assert(false);
+    } finally {
+      RpcConfiguration.requestContext.serialize = backupFn;
     }
   });
+
 });

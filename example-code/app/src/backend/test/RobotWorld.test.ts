@@ -10,14 +10,14 @@ import { RobotWorld } from "../RobotWorldSchema";
 import { Point3d, Angle } from "@bentley/geometry-core";
 import { IModel } from "@bentley/imodeljs-common";
 import { Barrier } from "../BarrierElement";
-import { Id64String, OpenMode, ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { Id64String, OpenMode, ClientRequestContext } from "@bentley/bentleyjs-core";
 import { Robot } from "../RobotElement";
 
-const actx = new ActivityLoggingContext("");
+const requestContext = new ClientRequestContext();
 
 describe("RobotWorld", () => {
     it("should run robotworld", async () => {
-        RobotWorldEngine.initialize(actx);
+        RobotWorldEngine.initialize(requestContext);
 
         const iModelFile = IModelTestUtils.prepareOutputFile("should-run-robotworld.bim");
         const seedFile = IModelTestUtils.resolveAssetFile("empty.bim");
@@ -32,7 +32,7 @@ describe("RobotWorld", () => {
             // expect countRobots to fail
         }
 
-        await RobotWorld.importSchema(actx, iModel);
+        await RobotWorld.importSchema(requestContext, iModel);
         iModel.saveChanges();
 
         assert.equal(RobotWorldEngine.countRobots(iModel), 0, "no Robots should be found in the empty iModel at first");

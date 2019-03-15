@@ -5,13 +5,13 @@
 /** @module Utilities */
 import { OidcFrontendClientConfiguration } from "@bentley/imodeljs-clients";
 import { I18N } from "@bentley/imodeljs-i18n";
-import { ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
+import { ClientRequestContext } from "@bentley/bentleyjs-core";
 import { ProjectServices } from "./clientservices/ProjectServices";
 import { DefaultProjectServices } from "./clientservices/DefaultProjectServices";
 import { IModelServices } from "./clientservices/IModelServices";
 import { DefaultIModelServices } from "./clientservices/DefaultIModelServices";
 import { Store } from "redux";
-import { OidcClientWrapper, SnapMode } from "@bentley/imodeljs-frontend";
+import { OidcClientWrapper, SnapMode, IModelApp } from "@bentley/imodeljs-frontend";
 import { AnalysisAnimationTool } from "./tools/AnalysisAnimation";
 import { ScheduleAnimationTool } from "./tools/ScheduleAnimation";
 import { SyncUiEventDispatcher } from "./syncui/SyncUiEventDispatcher";
@@ -70,7 +70,8 @@ export class UiFramework {
     UiFramework._iModelServices = iModelServices ? iModelServices : new DefaultIModelServices();
 
     if (oidcConfig) {
-      const initOidcPromise = OidcClientWrapper.initialize(new ActivityLoggingContext(Guid.createValue()), oidcConfig);
+      const initOidcPromise = OidcClientWrapper.initialize(new ClientRequestContext(), oidcConfig)
+        .then(() => IModelApp.authorizationClient = OidcClientWrapper.oidcClient);
       return Promise.all([readFinishedPromise, initOidcPromise]);
     }
     return readFinishedPromise;

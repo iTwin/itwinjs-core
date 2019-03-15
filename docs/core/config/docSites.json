@@ -49,6 +49,7 @@
       "frontend": "imodeljs-frontend",
       "backend": "imodeljs-backend",
       "clients": "imodeljs-clients",
+      "clients-backend": "imodeljs-clients-backend",
       "quantity": "imodeljs-quantity",
       "i18n": "imodeljs-i18n",
       "geometry": "geometry-core",

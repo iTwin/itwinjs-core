@@ -64,7 +64,7 @@ export interface IModelServices {
   getIModels(accessToken: AccessToken, projectInfo: ProjectInfo, top: number, skip: number): Promise<IModelInfo[]>;
 
   /** Open the specified version of the IModel */
-  openIModel(accessToken: AccessToken, projectInfo: ProjectInfo, iModelId: string, openMode?: OpenMode, changeSetId?: string): Promise<IModelConnection>;
+  openIModel(projectInfo: ProjectInfo, iModelId: string, openMode?: OpenMode, changeSetId?: string): Promise<IModelConnection>;
 
   /** Get the thumbnail for the iModel. */
   getThumbnail(accessToken: AccessToken, projectId: string, iModelId: string): Promise<string | undefined>;

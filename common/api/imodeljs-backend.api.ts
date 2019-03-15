@@ -17,8 +17,14 @@ interface AppActivityMonitor {
 }
 
 // @public
+class AuthorizedBackendRequestContext extends AuthorizedClientRequestContext {
+  constructor(accessToken: AccessToken, activityId?: string);
+  static create(activityId?: string): Promise<AuthorizedBackendRequestContext>;
+}
+
+// @public
 class AutoPush {
-  constructor(iModel: IModelDb, params: AutoPushParams, accessTokenManager: IAccessTokenManager, activityMonitor?: AppActivityMonitor);
+  constructor(iModel: IModelDb, params: AutoPushParams, activityMonitor?: AppActivityMonitor);
   autoSchedule: boolean;
   cancel(): void;
   readonly durationOfLastPushMillis: number;
@@ -49,7 +55,6 @@ enum AutoPushEventType {
 
 // @public
 interface AutoPushParams {
-  activityContext: ActivityLoggingContext;
   autoSchedule: boolean;
   pushIntervalSecondsMax: number;
   pushIntervalSecondsMin: number;
@@ -113,11 +118,17 @@ class BackendActivityMonitor implements AppActivityMonitor {
 }
 
 // @public
+class BackendRequestContext extends ClientRequestContext {
+  constructor(activityId?: string);
+}
+
+// @public
 class BisCore extends Schema {
   static registerSchema(): void;
 }
 
-// @public
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal
 class BriefcaseEntry {
   briefcaseId: number;
   changeSetId: string;
@@ -148,17 +159,12 @@ class BriefcaseEntry {
   userId?: string;
 }
 
-// @public
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal
 class BriefcaseId {
   constructor(value?: number);
   // (undocumented)
   static readonly Illegal: number;
-  // (undocumented)
-  readonly isMaster: boolean;
-  // (undocumented)
-  readonly isStandaloneId: boolean;
-  // (undocumented)
-  readonly isValid: boolean;
   // (undocumented)
   static readonly Master: number;
   // (undocumented)
@@ -174,16 +180,16 @@ class BriefcaseManager {
   static applyStandaloneChangeSets(briefcase: BriefcaseEntry, changeSetTokens: ChangeSetToken[], processOption: ChangeSetApplyOption): ChangeSetStatus;
   // (undocumented)
   static readonly cacheDir: string;
-  static close(actx: ActivityLoggingContext, accessToken: AccessToken, briefcase: BriefcaseEntry, keepBriefcase: KeepBriefcase): Promise<void>;
+  static close(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseEntry, keepBriefcase: KeepBriefcase): Promise<void>;
   static closeStandalone(briefcase: BriefcaseEntry): void;
   static readonly connectClient: ConnectClient;
-  static create(actx: ActivityLoggingContext, accessToken: AccessToken, contextId: string, iModelName: string, args: CreateIModelProps): Promise<string>;
+  static create(requestContext: AuthorizedClientRequestContext, contextId: string, iModelName: string, args: CreateIModelProps): Promise<string>;
   static createStandalone(fileName: string, args: CreateIModelProps): BriefcaseEntry;
   static createStandaloneChangeSet(briefcase: BriefcaseEntry): ChangeSetToken;
   // (undocumented)
-  static deleteAllBriefcases(actx: ActivityLoggingContext, accessToken: AccessToken, iModelId: GuidString): Promise<void[] | undefined>;
-  static deleteClosed(actx: ActivityLoggingContext, accessToken: AccessToken): Promise<void>;
-  static downloadChangeSets(actx: ActivityLoggingContext, accessToken: AccessToken, iModelId: GuidString, fromChangeSetId: string, toChangeSetId: string): Promise<ChangeSet[]>;
+  static deleteAllBriefcases(requestContext: AuthorizedClientRequestContext, iModelId: GuidString): Promise<void[] | undefined>;
+  static deleteClosed(requestContext: AuthorizedClientRequestContext): Promise<void>;
+  static downloadChangeSets(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, fromChangeSetId: string, toChangeSetId: string): Promise<ChangeSet[]>;
   static dumpChangeSet(briefcase: BriefcaseEntry, changeSetToken: ChangeSetToken): void;
   static findBriefcaseByToken(iModelToken: IModelToken): BriefcaseEntry | undefined;
   // (undocumented)
@@ -193,15 +199,15 @@ class BriefcaseManager {
   // (undocumented)
   static getChangeSetsPath(iModelId: GuidString): string;
   static imodelClient: IModelClient;
-  static open(actx: ActivityLoggingContext, accessToken: AccessToken, contextId: string, iModelId: GuidString, openParams: OpenParams, version: IModelVersion): Promise<BriefcaseEntry>;
+  static open(requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: GuidString, openParams: OpenParams, version: IModelVersion): Promise<BriefcaseEntry>;
   static openStandalone(pathname: string, openMode: OpenMode, enableTransactions: boolean): BriefcaseEntry;
-  static pullAndMergeChanges(actx: ActivityLoggingContext, accessToken: AccessToken, briefcase: BriefcaseEntry, mergeToVersion?: IModelVersion): Promise<void>;
-  static purgeCache(actx: ActivityLoggingContext, accessToken: AccessToken): Promise<void>;
-  static pushChanges(actx: ActivityLoggingContext, accessToken: AccessToken, briefcase: BriefcaseEntry, description: string, relinquishCodesLocks?: boolean): Promise<void>;
+  static pullAndMergeChanges(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseEntry, mergeToVersion?: IModelVersion): Promise<void>;
+  static purgeCache(requestContext: AuthorizedClientRequestContext): Promise<void>;
+  static pushChanges(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseEntry, description: string, relinquishCodesLocks?: boolean): Promise<void>;
   // (undocumented)
-  static reinstateChanges(actx: ActivityLoggingContext, accessToken: AccessToken, briefcase: BriefcaseEntry, reinstateToVersion?: IModelVersion): Promise<void>;
+  static reinstateChanges(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseEntry, reinstateToVersion?: IModelVersion): Promise<void>;
   // (undocumented)
-  static reverseChanges(actx: ActivityLoggingContext, accessToken: AccessToken, briefcase: BriefcaseEntry, reverseToVersion: IModelVersion): Promise<void>;
+  static reverseChanges(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseEntry, reverseToVersion: IModelVersion): Promise<void>;
 }
 
 // @public
@@ -270,10 +276,11 @@ class ChangedElementsDb implements IDisposable {
   // (undocumented)
   readonly nativeDb: IModelJsNative.ChangedElementsECDb;
   static openDb(pathName: string, openMode?: ECDbOpenMode): ChangedElementsDb;
-  processChangesets(accessToken: AccessToken, briefcase: IModelDb, rulesetId: string, startChangesetId: string, endChangesetId: string, filterSpatial?: boolean): Promise<DbResult>;
+  processChangesets(requestContext: AuthorizedClientRequestContext, briefcase: IModelDb, rulesetId: string, startChangesetId: string, endChangesetId: string, filterSpatial?: boolean): Promise<DbResult>;
 }
 
-// @public
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal
 class ChangeSetToken {
   constructor(id: string, parentId: string, index: number, pathname: string, containsSchemaChanges: boolean, pushDate?: string | undefined);
   // (undocumented)
@@ -306,9 +313,7 @@ interface ChangeSummary {
 
 // @public (undocumented)
 class ChangeSummaryExtractContext {
-  constructor(accessToken: AccessToken, iModel: IModelDb);
-  // (undocumented)
-  readonly accessToken: AccessToken;
+  constructor(iModel: IModelDb);
   // (undocumented)
   readonly iModel: IModelDb;
   // (undocumented)
@@ -334,8 +339,8 @@ class ChangeSummaryManager {
       }, changedValueState: ChangedValueState, changedPropertyNames?: string[]): string;
   static detachChangeCache(iModel: IModelDb): void;
   // (undocumented)
-  static downloadChangeSets(actx: ActivityLoggingContext, ctx: ChangeSummaryExtractContext, startChangeSetId: GuidString, endChangeSetId: GuidString): Promise<ChangeSet[]>;
-  static extractChangeSummaries(actx: ActivityLoggingContext, accessToken: AccessToken, iModel: IModelDb, options?: ChangeSummaryExtractOptions): Promise<Id64String[]>;
+  static downloadChangeSets(requestContext: AuthorizedClientRequestContext, ctx: ChangeSummaryExtractContext, startChangeSetId: GuidString, endChangeSetId: GuidString): Promise<ChangeSet[]>;
+  static extractChangeSummaries(requestContext: AuthorizedClientRequestContext, iModel: IModelDb, options?: ChangeSummaryExtractOptions): Promise<Id64String[]>;
   static getChangedPropertyValueNames(iModel: IModelDb, instanceChangeId: Id64String): string[];
   static isChangeCacheAttached(iModel: IModelDb): boolean;
   static queryChangeSummary(iModel: IModelDb, changeSummaryId: Id64String): ChangeSummary;
@@ -895,7 +900,7 @@ interface ExportGraphicsProps {
 // @public (undocumented)
 class Functional extends Schema {
   // (undocumented)
-  static importSchema(activityLoggingContext: ActivityLoggingContext, iModelDb: IModelDb, accessToken?: AccessToken): Promise<void>;
+  static importSchema(requestContext: AuthorizedClientRequestContext | ClientRequestContext, iModelDb: IModelDb): Promise<void>;
   // (undocumented)
   static registerSchema(): void;
 }
@@ -1071,16 +1076,21 @@ class IModelDb {
 // @public
 class IModelHost {
   static readonly appAssetsDir: string | undefined;
+  static applicationId: string;
+  static applicationVersion: string;
+  static authorizationClient: IAuthorizationClient | undefined;
   // (undocumented)
   static backendVersion: string;
   // (undocumented)
   static configuration?: IModelHostConfiguration;
+  static getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
   // (undocumented)
   static loadNative(region: number, dir?: string): void;
   static readonly onAfterStartup: BeEvent<() => void>;
   static readonly onBeforeShutdown: BeEvent<() => void>;
   // (undocumented)
   static readonly platform: typeof IModelJsNative;
+  static sessionId: GuidString;
   static shutdown(): void;
   static startup(configuration?: IModelHostConfiguration): void;
   static readonly tileContentRequestTimeout: number;
@@ -2836,9 +2846,9 @@ class VolumeElement extends SpatialLocationElement {
 class WebMercatorModel extends SpatialModel {
 }
 
-// WARNING: Unsupported export: AutoPushEventHandler
 // WARNING: Unsupported export: SchemaKey
 // WARNING: Unsupported export: SchemaMatchType
 // WARNING: Unsupported export: ExportGraphicsFunction
+// WARNING: Unsupported export: AutoPushEventHandler
 // WARNING: Unsupported export: ChangeSetDescriber
 // (No @packagedocumentation comment for this package)

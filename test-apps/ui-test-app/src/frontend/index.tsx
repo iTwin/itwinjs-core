@@ -201,13 +201,11 @@ export class SampleAppIModelApp extends IModelApp {
   }
 
   public static async handleIModelViewsSelected(iModelInfo: IModelInfo, viewIdsSelected: Id64String[]) {
-
-    const accessToken = SampleAppIModelApp.store.getState().frameworkState!.overallContentState.accessToken!;
     const projectInfo = iModelInfo.projectInfo;
     const wsgId = iModelInfo.wsgId;
 
     // open the imodel
-    const iModelConnection = await UiFramework.iModelServices.openIModel(accessToken, projectInfo, wsgId);
+    const iModelConnection = await UiFramework.iModelServices.openIModel(projectInfo, wsgId);
 
     const payload = { iModelConnection };
     SampleAppIModelApp.store.dispatch({ type: SampleAppUiActionId.setIModelConnection, payload });

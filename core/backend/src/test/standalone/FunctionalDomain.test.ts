@@ -4,13 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import * as path from "path";
-import { ActivityLoggingContext, DbResult, Guid, Id64String, Id64, Logger } from "@bentley/bentleyjs-core";
+import { DbResult, Guid, Id64String, Id64, Logger } from "@bentley/bentleyjs-core";
 import { Code, CodeSpec, CodeScopeSpec, FunctionalElementProps, IModel } from "@bentley/imodeljs-common";
-import { BriefcaseManager, ECSqlStatement, Functional, FunctionalModel, IModelDb, SqliteStatement } from "../../imodeljs-backend";
+import { BriefcaseManager, ECSqlStatement, Functional, FunctionalModel, IModelDb, SqliteStatement, BackendRequestContext } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
 describe("Functional Domain", () => {
-  const activityLoggingContext = new ActivityLoggingContext("");
+  const requestContext = new BackendRequestContext();
 
   before(() => {
     // Logger.initializeToConsole();
@@ -33,7 +33,7 @@ describe("Functional Domain", () => {
     });
 
     // Import the Functional schema
-    await Functional.importSchema(activityLoggingContext, iModelDb);
+    await Functional.importSchema(requestContext, iModelDb);
     Functional.registerSchema();
 
     let commits = 0;
@@ -49,7 +49,7 @@ describe("Functional Domain", () => {
 
     BriefcaseManager.createStandaloneChangeSet(iModelDb.briefcase); // importSchema below will fail if this is not called to flush local changes
 
-    await iModelDb.importSchema(activityLoggingContext, path.join(__dirname, "../assets/TestFunctional.ecschema.xml"));
+    await iModelDb.importSchema(requestContext, path.join(__dirname, "../assets/TestFunctional.ecschema.xml"));
 
     iModelDb.saveChanges("Import TestFunctional schema");
     assert.equal(commits, 1);

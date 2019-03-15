@@ -4,11 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module OIDC */
 
-import { ActivityLoggingContext, BeEvent, AuthStatus, Logger, BentleyError } from "@bentley/bentleyjs-core";
+import { BeEvent, AuthStatus, Logger, BentleyError, ClientRequestContext } from "@bentley/bentleyjs-core";
 import { UserManagerSettings, UserManager, User } from "oidc-client";
 import { OidcClient, IOidcFrontendClient, UserInfo, AccessToken, OidcFrontendClientConfiguration } from "@bentley/imodeljs-clients";
+import { FrontendRequestContext } from "../FrontendRequestContext";
 
-const loggingCategory = "imodeljs-clients-device.OidcBrowserClient";
+const loggingCategory = "imodeljs-frontend.OidcBrowserClient";
 
 /** Utility to generate OIDC/OAuth tokens for frontend applications */
 export class OidcBrowserClient extends OidcClient implements IOidcFrontendClient {
@@ -27,8 +28,8 @@ export class OidcBrowserClient extends OidcClient implements IOidcFrontendClient
    * The application should use this method whenever a redirection happens - redirection typically causes
    * the re-initialization of a Single Page Application.
    */
-  public async initialize(actx: ActivityLoggingContext): Promise<void> {
-    await this.createUserManager(actx);
+  public async initialize(requestContext: FrontendRequestContext): Promise<void> {
+    await this.createUserManager(requestContext);
 
     // Load any existing user
     const user: User = await this._userManager!.getUser();
@@ -69,10 +70,31 @@ export class OidcBrowserClient extends OidcClient implements IOidcFrontendClient
    * The call redirects application to the redirectUri specified in the configuration and then
    * redirects back to root when sign-in is complete.
    */
-  public signIn(_actx: ActivityLoggingContext) {
+  private startSignIn(_requestContext: ClientRequestContext) {
     if (!this._userManager)
       throw new BentleyError(AuthStatus.Error, "OidcBrowserClient not initialized", Logger.logError, loggingCategory);
     this._userManager.signinRedirect(); // tslint:disable-line:no-floating-promises
+  }
+
+  /** Start the sign-in and return a promise that fulfils or rejects when it's complete
+   * The call redirects application to the redirectUri specified in the configuration and then
+   * redirects back to root when sign-in is complete.
+   */
+  public async signIn(requestContext: ClientRequestContext): Promise<AccessToken> {
+    return new Promise((resolve, reject) => {
+      try {
+        this.startSignIn(requestContext);
+      } catch (error) {
+        reject(error);
+      }
+
+      this.onUserStateChanged.addListener((token: AccessToken | undefined, message: string) => {
+        if (token)
+          resolve(token);
+        else
+          reject(message);
+      });
+    });
   }
 
   /**
@@ -80,18 +102,63 @@ export class OidcBrowserClient extends OidcClient implements IOidcFrontendClient
    * The call redirects application to postSignoutRedirectUri specified in the configuration
    * when sign-out is complete
    */
-  public signOut(_actx: ActivityLoggingContext): void {
+  private startSignOut(_requestContext: ClientRequestContext): void {
     if (!this._userManager)
       throw new BentleyError(AuthStatus.Error, "OidcBrowserClient not initialized", Logger.logError, loggingCategory);
     this._userManager.signoutRedirect(); // tslint:disable-line:no-floating-promises
   }
 
-  /** Event called when the user's sign-in state changes - this may be due to calls to signIn(), signOut() or simply because the token expired */
-  public readonly onUserStateChanged = new BeEvent<(token: AccessToken | undefined) => void>();
+  /** Start the sign-out and return a promise that fulfils or rejects when it's complete
+   * The call redirects application to postSignoutRedirectUri specified in the configuration
+   * when sign-out is complete
+   */
+  public async signOut(requestContext: ClientRequestContext): Promise<void> {
+    return new Promise((resolve, reject) => {
+      try {
+        this.startSignOut(requestContext);
+      } catch (error) {
+        reject(error);
+      }
 
-  /** Returns a promise that resolves to the AccessToken. The token is silently refreshed if it's possible and necessary. */
-  public async getAccessToken(_actx: ActivityLoggingContext): Promise<AccessToken> {
-    return Promise.resolve(this._accessToken!);
+      this.onUserStateChanged.addListener((token: AccessToken | undefined, _message: string) => {
+        if (!token)
+          resolve();
+        else
+          reject("Unable to signout");
+      });
+    });
+  }
+
+  /** Event called when the user's sign-in state changes - this may be due to calls to signIn(), signOut() or simply because the token expired */
+  public readonly onUserStateChanged = new BeEvent<(token: AccessToken | undefined, message: string) => void>();
+
+  /** Returns a promise that resolves to the AccessToken of the currently authorized user.
+   * The token is refreshed as necessary.
+   * @throws [[BentleyError]] If signIn() was not called, or there was an authorization error.
+   */
+  public async getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken> {
+    if (this._accessToken)
+      return this._accessToken;
+    if (requestContext)
+      requestContext.enter();
+    throw new BentleyError(AuthStatus.Error, "Not signed in.", Logger.logError, loggingCategory);
+  }
+
+  /** Set to true if there's a current authorized user or client (in the case of agent applications).
+   * Set to true if signed in and the access token has not expired, and false otherwise.
+   */
+  public get isAuthorized(): boolean {
+    return !!this._accessToken;
+  }
+
+  /** Set to true if the user has signed in, but the token has expired and requires a refresh */
+  public get hasExpired(): boolean {
+    return !!this._accessToken; // Always silently refreshed
+  }
+
+  /** Set to true if signed in - the accessToken may be active or may have expired and require a refresh */
+  public get hasSignedIn(): boolean {
+    return !!this._accessToken; // Always silently refreshed
   }
 
   /** Disposes the resources held by this client */
@@ -106,8 +173,8 @@ export class OidcBrowserClient extends OidcClient implements IOidcFrontendClient
     this._userManager.events.removeUserSignedOut(this._onUserSignedOut);
   }
 
-  private async createUserManager(actx: ActivityLoggingContext): Promise<UserManager> {
-    const settings: UserManagerSettings = await this.getUserManagerSettings(actx);
+  private async createUserManager(requestContext: FrontendRequestContext): Promise<UserManager> {
+    const settings: UserManagerSettings = await this.getUserManagerSettings(requestContext);
 
     this._userManager = new UserManager(settings);
     this._userManager.events.addUserLoaded(this._onUserLoaded);
@@ -119,9 +186,9 @@ export class OidcBrowserClient extends OidcClient implements IOidcFrontendClient
     return this._userManager;
   }
 
-  private async getUserManagerSettings(actx: ActivityLoggingContext): Promise<UserManagerSettings> {
+  private async getUserManagerSettings(requestContext: FrontendRequestContext): Promise<UserManagerSettings> {
     const userManagerSettings: UserManagerSettings = {
-      authority: await this.getUrl(actx),
+      authority: await this.getUrl(requestContext),
       client_id: this._configuration.clientId,
       redirect_uri: this._configuration.redirectUri,
       silent_redirect_uri: this._configuration.redirectUri,
@@ -149,7 +216,7 @@ export class OidcBrowserClient extends OidcClient implements IOidcFrontendClient
     return (window.location.pathname === this._redirectPath);
   }
 
-  private _onUserStateChanged = (user: User | undefined, _reason: string) => {
+  private _onUserStateChanged = (user: User | undefined, message: string) => {
     this.initUser(user);
 
     if (this.getIsLoading()) {
@@ -157,7 +224,7 @@ export class OidcBrowserClient extends OidcClient implements IOidcFrontendClient
       return;
     }
 
-    this.onUserStateChanged.raiseEvent(this._accessToken);
+    this.onUserStateChanged.raiseEvent(this._accessToken, message);
   }
 
   /**

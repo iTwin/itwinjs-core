@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import * as path from "path";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { IModelConnection, IModelApp } from "@bentley/imodeljs-frontend";
 
 const iModelLocation = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/");
 
@@ -16,6 +16,7 @@ describe("ECSql Query", () => {
   let imodel5: IModelConnection;
 
   before(async () => {
+    IModelApp.startup();
     imodel1 = await IModelConnection.openSnapshot(iModelLocation + "test.bim");
     imodel2 = await IModelConnection.openSnapshot(iModelLocation + "CompatibilityTestSeed.bim");
     imodel3 = await IModelConnection.openSnapshot(iModelLocation + "GetSetAutoHandledStructProperties.bim");
@@ -29,7 +30,7 @@ describe("ECSql Query", () => {
     if (imodel3) await imodel3.closeSnapshot();
     if (imodel4) await imodel4.closeSnapshot();
     if (imodel5) await imodel5.closeSnapshot();
-
+    IModelApp.shutdown();
   });
 
   it("Paging Results", async () => {

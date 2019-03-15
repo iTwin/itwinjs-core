@@ -16,7 +16,7 @@ import {
 } from "@bentley/presentation-common/lib/test/_helpers/random";
 import "@bentley/presentation-common/lib/test/_helpers/Promises";
 import "./IModelHostSetup";
-import { using, ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { using, ClientRequestContext } from "@bentley/bentleyjs-core";
 import { RelatedElementProps, EntityMetaData, ElementProps, ModelProps } from "@bentley/imodeljs-common";
 import { IModelHost, IModelDb, DrawingGraphic, Element } from "@bentley/imodeljs-backend";
 import {
@@ -129,13 +129,13 @@ describe("PresentationManager", () => {
       const locale = faker.random.locale().toLowerCase();
       await using(new PresentationManager({ addon: addonMock.object, activeLocale: locale }), async (manager) => {
         addonMock
-          .setup(async (x) => x.handleRequest(ActivityLoggingContext.current, moq.It.isAny(), moq.It.is((serializedRequest: string): boolean => {
+          .setup(async (x) => x.handleRequest(ClientRequestContext.current, moq.It.isAny(), moq.It.is((serializedRequest: string): boolean => {
             const request = JSON.parse(serializedRequest);
             return request.params.locale === locale;
           })))
           .returns(async () => "{}")
           .verifiable(moq.Times.once());
-        await manager.getNodesCount(ActivityLoggingContext.current, { imodel: imodelMock.object, rulesetId });
+        await manager.getNodesCount(ClientRequestContext.current, { imodel: imodelMock.object, rulesetId });
         addonMock.verifyAll();
       });
     });
@@ -147,13 +147,13 @@ describe("PresentationManager", () => {
       await using(new PresentationManager({ addon: addonMock.object, activeLocale: faker.random.locale().toLowerCase() }), async (manager) => {
         expect(manager.activeLocale).to.not.eq(locale);
         addonMock
-          .setup(async (x) => x.handleRequest(ActivityLoggingContext.current, moq.It.isAny(), moq.It.is((serializedRequest: string): boolean => {
+          .setup(async (x) => x.handleRequest(ClientRequestContext.current, moq.It.isAny(), moq.It.is((serializedRequest: string): boolean => {
             const request = JSON.parse(serializedRequest);
             return request.params.locale === locale;
           })))
           .returns(async () => "{}")
           .verifiable(moq.Times.once());
-        await manager.getNodesCount(ActivityLoggingContext.current, { imodel: imodelMock.object, rulesetId, locale });
+        await manager.getNodesCount(ClientRequestContext.current, { imodel: imodelMock.object, rulesetId, locale });
         addonMock.verifyAll();
       });
     });
@@ -230,12 +230,12 @@ describe("PresentationManager", () => {
 
     const setup = (addonResponse: any) => {
       // nativePlatformMock the handleRequest function
-      nativePlatformMock.setup(async (x) => x.handleRequest(ActivityLoggingContext.current, moq.It.isAny(), moq.It.isAnyString()))
+      nativePlatformMock.setup(async (x) => x.handleRequest(ClientRequestContext.current, moq.It.isAny(), moq.It.isAnyString()))
         .returns(async () => JSON.stringify(addonResponse));
     };
     const verifyWithSnapshot = (result: any, expectedParams: any, recreateSnapshot: boolean = false) => {
       // verify the addon was called with correct params
-      nativePlatformMock.verify(async (x) => x.handleRequest(ActivityLoggingContext.current, moq.It.isAny(), moq.It.is((serializedParam: string): boolean => {
+      nativePlatformMock.verify(async (x) => x.handleRequest(ClientRequestContext.current, moq.It.isAny(), moq.It.is((serializedParam: string): boolean => {
         const param = JSON.parse(serializedParam);
         expectedParams = JSON.parse(JSON.stringify(expectedParams));
         return deepEqual(param, expectedParams);
@@ -245,7 +245,7 @@ describe("PresentationManager", () => {
     };
     const verifyWithExpectedResult = (actualResult: any, expectedResult: any, expectedParams: any) => {
       // verify the addon was called with correct params
-      nativePlatformMock.verify(async (x) => x.handleRequest(ActivityLoggingContext.current, moq.It.isAny(), moq.It.is((serializedParam: string): boolean => {
+      nativePlatformMock.verify(async (x) => x.handleRequest(ClientRequestContext.current, moq.It.isAny(), moq.It.is((serializedParam: string): boolean => {
         const param = JSON.parse(serializedParam);
         expectedParams = JSON.parse(JSON.stringify(expectedParams));
         return deepEqual(param, expectedParams);
@@ -317,7 +317,7 @@ describe("PresentationManager", () => {
         rulesetId: testData.rulesetId,
         paging: testData.pageOptions,
       };
-      const result = await manager.getNodes(ActivityLoggingContext.current, options);
+      const result = await manager.getNodes(ClientRequestContext.current, options);
       verifyWithSnapshot(result, expectedParams);
     });
 
@@ -339,7 +339,7 @@ describe("PresentationManager", () => {
         imodel: imodelMock.object,
         rulesetId: testData.rulesetId,
       };
-      const result = await manager.getNodesCount(ActivityLoggingContext.current, options);
+      const result = await manager.getNodesCount(ClientRequestContext.current, options);
       verifyWithExpectedResult(result, addonResponse, expectedParams);
     });
 
@@ -416,7 +416,7 @@ describe("PresentationManager", () => {
         rulesetId: testData.rulesetId,
         paging: pageOptions,
       };
-      const result = await manager.getNodesAndCount(ActivityLoggingContext.current, options);
+      const result = await manager.getNodesAndCount(ClientRequestContext.current, options);
 
       verifyWithSnapshot(result.nodes, expectedGetRootNodesParams);
       verifyWithExpectedResult(result.count, addonGetRootNodesCountResponse, expectedGetRootNodesCountParams);
@@ -457,7 +457,7 @@ describe("PresentationManager", () => {
         rulesetId: testData.rulesetId,
         paging: testData.pageOptions,
       };
-      const result = await manager.getNodes(ActivityLoggingContext.current, options, nodeKeyFromJSON(parentNodeKeyJSON));
+      const result = await manager.getNodes(ClientRequestContext.current, options, nodeKeyFromJSON(parentNodeKeyJSON));
       verifyWithSnapshot(result, expectedParams);
     });
 
@@ -481,7 +481,7 @@ describe("PresentationManager", () => {
         imodel: imodelMock.object,
         rulesetId: testData.rulesetId,
       };
-      const result = await manager.getNodesCount(ActivityLoggingContext.current, options, nodeKeyFromJSON(parentNodeKeyJSON));
+      const result = await manager.getNodesCount(ClientRequestContext.current, options, nodeKeyFromJSON(parentNodeKeyJSON));
       verifyWithExpectedResult(result, addonResponse, expectedParams);
     });
 
@@ -532,7 +532,7 @@ describe("PresentationManager", () => {
         rulesetId: testData.rulesetId,
         paging: pageOptions,
       };
-      const result = await manager.getNodesAndCount(ActivityLoggingContext.current, options, nodeKeyFromJSON(parentNodeKeyJSON));
+      const result = await manager.getNodesAndCount(ClientRequestContext.current, options, nodeKeyFromJSON(parentNodeKeyJSON));
 
       verifyWithSnapshot(result.nodes, expectedGetChildNodesParams);
       verifyWithExpectedResult(result.count, addonGetChildNodeCountResponse, expectedGetChildNodeCountParams);
@@ -557,7 +557,7 @@ describe("PresentationManager", () => {
         imodel: imodelMock.object,
         rulesetId: testData.rulesetId,
       };
-      const result = await manager.getFilteredNodePaths(ActivityLoggingContext.current, options, "filter");
+      const result = await manager.getFilteredNodePaths(ClientRequestContext.current, options, "filter");
       verifyWithSnapshot(result, expectedParams);
     });
 
@@ -584,7 +584,7 @@ describe("PresentationManager", () => {
         imodel: imodelMock.object,
         rulesetId: testData.rulesetId,
       };
-      const result = await manager.getNodePaths(ActivityLoggingContext.current, options, keyArray, markedIndex);
+      const result = await manager.getNodePaths(ClientRequestContext.current, options, keyArray, markedIndex);
       verifyWithSnapshot(result, expectedParams);
     });
 
@@ -735,7 +735,7 @@ describe("PresentationManager", () => {
         imodel: imodelMock.object,
         rulesetId: testData.rulesetId,
       };
-      const result = await manager.getContentDescriptor(ActivityLoggingContext.current, options, testData.displayType,
+      const result = await manager.getContentDescriptor(ClientRequestContext.current, options, testData.displayType,
         keys, testData.selectionInfo);
       verifyWithSnapshot(result, expectedParams);
     });
@@ -762,7 +762,7 @@ describe("PresentationManager", () => {
         imodel: imodelMock.object,
         rulesetId: testData.rulesetId,
       };
-      const result = await manager.getContentSetSize(ActivityLoggingContext.current, options, descriptor, keys);
+      const result = await manager.getContentSetSize(ClientRequestContext.current, options, descriptor, keys);
       verifyWithExpectedResult(result, addonResponse, expectedParams);
     });
 
@@ -792,7 +792,7 @@ describe("PresentationManager", () => {
         imodel: imodelMock.object,
         rulesetId: testData.rulesetId,
       };
-      const result = await manager.getContentSetSize(ActivityLoggingContext.current, options, descriptor.createDescriptorOverrides(), keys);
+      const result = await manager.getContentSetSize(ClientRequestContext.current, options, descriptor.createDescriptorOverrides(), keys);
       verifyWithExpectedResult(result, addonResponse, expectedParams);
     });
 
@@ -864,7 +864,7 @@ describe("PresentationManager", () => {
         rulesetId: testData.rulesetId,
         paging: testData.pageOptions,
       };
-      const result = await manager.getContent(ActivityLoggingContext.current, options, descriptor, keys);
+      const result = await manager.getContent(ClientRequestContext.current, options, descriptor, keys);
       verifyWithSnapshot(result, expectedParams);
     });
 
@@ -940,7 +940,7 @@ describe("PresentationManager", () => {
         rulesetId: testData.rulesetId,
         paging: testData.pageOptions,
       };
-      const result = await manager.getContent(ActivityLoggingContext.current, options, descriptor.createDescriptorOverrides(), keys);
+      const result = await manager.getContent(ClientRequestContext.current, options, descriptor.createDescriptorOverrides(), keys);
       verifyWithSnapshot(result, expectedParams);
     });
 
@@ -1025,7 +1025,7 @@ describe("PresentationManager", () => {
         rulesetId: testData.rulesetId,
         paging: pageOptions,
       };
-      const result = await manager.getContentAndSize(ActivityLoggingContext.current, options, descriptor, keys);
+      const result = await manager.getContentAndSize(ClientRequestContext.current, options, descriptor, keys);
 
       verifyWithSnapshot(result.content, expectedGetContentParams);
       verifyWithExpectedResult(result.size, addonGetContentSetSizeResponse, expectedGetContentSetSizeParams);
@@ -1059,7 +1059,7 @@ describe("PresentationManager", () => {
           imodel: imodelMock.object,
           rulesetId: testData.rulesetId,
         };
-        const result = await manager.getDistinctValues(ActivityLoggingContext.current, options, descriptor,
+        const result = await manager.getDistinctValues(ClientRequestContext.current, options, descriptor,
           keys, fieldName, maximumValueCount);
         verifyWithExpectedResult(result, addonResponse, expectedParams);
       });
@@ -1087,19 +1087,19 @@ describe("PresentationManager", () => {
           imodel: imodelMock.object,
           rulesetId: testData.rulesetId,
         };
-        const result = await manager.getDistinctValues(ActivityLoggingContext.current, options, descriptor, new KeySet(), "");
+        const result = await manager.getDistinctValues(ClientRequestContext.current, options, descriptor, new KeySet(), "");
         verifyWithExpectedResult(result, addonResponse, expectedParams);
       });
 
     });
 
     it("throws on invalid addon response", async () => {
-      nativePlatformMock.setup(async (x) => x.handleRequest(ActivityLoggingContext.current, moq.It.isAny(), moq.It.isAnyString())).returns(() => (undefined as any));
+      nativePlatformMock.setup(async (x) => x.handleRequest(ClientRequestContext.current, moq.It.isAny(), moq.It.isAnyString())).returns(() => (undefined as any));
       const options: HierarchyRequestOptions<IModelDb> = {
         imodel: imodelMock.object,
         rulesetId: testData.rulesetId,
       };
-      return expect(manager.getNodesCount(ActivityLoggingContext.current, options)).to.eventually.be.rejectedWith(Error);
+      return expect(manager.getNodesCount(ClientRequestContext.current, options)).to.eventually.be.rejectedWith(Error);
     });
 
   });
@@ -1121,7 +1121,7 @@ describe("PresentationManager", () => {
     describe("getSelectionScopes", () => {
 
       it("returns expected selection scopes", async () => {
-        const result = await manager.getSelectionScopes(ActivityLoggingContext.current, { imodel: imodelMock.object });
+        const result = await manager.getSelectionScopes(ClientRequestContext.current, { imodel: imodelMock.object });
         expect(result.map((s) => s.id)).to.deep.eq(["element", "assembly", "top-assembly", "category", "model"]);
       });
 
@@ -1177,7 +1177,7 @@ describe("PresentationManager", () => {
       });
 
       it("throws on invalid scopeId", async () => {
-        await expect(manager.computeSelection(ActivityLoggingContext.current, { imodel: imodelMock.object }, [], "invalid")).to.eventually.be.rejected;
+        await expect(manager.computeSelection(ClientRequestContext.current, { imodel: imodelMock.object }, [], "invalid")).to.eventually.be.rejected;
       });
 
       describe("scope: 'element'", () => {
@@ -1188,7 +1188,7 @@ describe("PresentationManager", () => {
           elementsMock.setup((x) => x.getElementProps(ids[0])).returns(() => elementProps[0]);
           elementsMock.setup((x) => x.getElementProps(ids[1])).returns(() => elementProps[1]);
 
-          const result = await manager.computeSelection(ActivityLoggingContext.current, { imodel: imodelMock.object }, ids, "element");
+          const result = await manager.computeSelection(ClientRequestContext.current, { imodel: imodelMock.object }, ids, "element");
           expect(result.size).to.eq(2);
           expect(result.has({ className: elementProps[0].classFullName, id: elementProps[0].id! })).to.be.true;
           expect(result.has({ className: elementProps[1].classFullName, id: elementProps[1].id! })).to.be.true;
@@ -1205,7 +1205,7 @@ describe("PresentationManager", () => {
             elementsMock.setup((x) => x.getElementProps(p.id!)).returns(() => p);
             elementsMock.setup((x) => x.getElementProps(p.parent!.id)).returns(() => parentProps[index]);
           });
-          const result = await manager.computeSelection(ActivityLoggingContext.current, { imodel: imodelMock.object }, elementProps.map((p) => p.id!), "assembly");
+          const result = await manager.computeSelection(ClientRequestContext.current, { imodel: imodelMock.object }, elementProps.map((p) => p.id!), "assembly");
           expect(result.size).to.eq(2);
           expect(result.has({ className: parentProps[0].classFullName, id: parentProps[0].id! })).to.be.true;
           expect(result.has({ className: parentProps[1].classFullName, id: parentProps[1].id! })).to.be.true;
@@ -1219,7 +1219,7 @@ describe("PresentationManager", () => {
             elementsMock.setup((x) => x.getElementProps(p.id!)).returns(() => p);
             elementsMock.setup((x) => x.getElementProps(p.parent!.id)).returns(() => parentProp);
           });
-          const result = await manager.computeSelection(ActivityLoggingContext.current, { imodel: imodelMock.object }, elementProps.map((p) => p.id!), "assembly");
+          const result = await manager.computeSelection(ClientRequestContext.current, { imodel: imodelMock.object }, elementProps.map((p) => p.id!), "assembly");
           expect(result.size).to.eq(1);
           expect(result.has({ className: parentProp.classFullName, id: parentProp.id! })).to.be.true;
         });
@@ -1228,7 +1228,7 @@ describe("PresentationManager", () => {
           const id = createRandomId();
           const elementProps = createRandomTopmostElementProps();
           elementsMock.setup((x) => x.getElementProps(id)).returns(() => elementProps);
-          const result = await manager.computeSelection(ActivityLoggingContext.current, { imodel: imodelMock.object }, [id], "assembly");
+          const result = await manager.computeSelection(ClientRequestContext.current, { imodel: imodelMock.object }, [id], "assembly");
           expect(result.size).to.eq(1);
           expect(result.has({ className: elementProps.classFullName, id: elementProps.id! })).to.be.true;
         });
@@ -1247,7 +1247,7 @@ describe("PresentationManager", () => {
           elementsMock.setup((x) => x.getElementProps(parent.id!)).returns(() => parent);
           elementsMock.setup((x) => x.getElementProps(grandparent.id!)).returns(() => grandparent);
 
-          const result = await manager.computeSelection(ActivityLoggingContext.current, { imodel: imodelMock.object }, [element.id!], "top-assembly");
+          const result = await manager.computeSelection(ClientRequestContext.current, { imodel: imodelMock.object }, [element.id!], "top-assembly");
           expect(result.size).to.eq(1);
           expect(result.has({ className: grandparent.classFullName, id: grandparent.id! })).to.be.true;
         });
@@ -1256,7 +1256,7 @@ describe("PresentationManager", () => {
           const id = createRandomId();
           const elementProps = createRandomTopmostElementProps();
           elementsMock.setup((x) => x.getElementProps(id)).returns(() => elementProps);
-          const result = await manager.computeSelection(ActivityLoggingContext.current, { imodel: imodelMock.object }, [id], "top-assembly");
+          const result = await manager.computeSelection(ClientRequestContext.current, { imodel: imodelMock.object }, [id], "top-assembly");
           expect(result.size).to.eq(1);
           expect(result.has({ className: elementProps.classFullName, id: elementProps.id! })).to.be.true;
         });
@@ -1278,7 +1278,7 @@ describe("PresentationManager", () => {
           elementsMock.setup((x) => x.getElement(elementId)).returns(() => element);
           elementsMock.setup((x) => x.getElementProps(category.id!)).returns(() => category);
 
-          const result = await manager.computeSelection(ActivityLoggingContext.current, { imodel: imodelMock.object }, [elementId], "category");
+          const result = await manager.computeSelection(ClientRequestContext.current, { imodel: imodelMock.object }, [elementId], "category");
           expect(result.size).to.eq(1);
           expect(result.has({ className: category.classFullName, id: element.category! })).to.be.true;
         });
@@ -1288,7 +1288,7 @@ describe("PresentationManager", () => {
           const element = moq.Mock.ofType<Element>();
           elementsMock.setup((x) => x.getElement(elementId)).returns(() => element.object);
 
-          const result = await manager.computeSelection(ActivityLoggingContext.current, { imodel: imodelMock.object }, [elementId], "category");
+          const result = await manager.computeSelection(ClientRequestContext.current, { imodel: imodelMock.object }, [elementId], "category");
           expect(result.isEmpty).to.be.true;
         });
 
@@ -1309,7 +1309,7 @@ describe("PresentationManager", () => {
           elementsMock.setup((x) => x.getElementProps(elementId)).returns(() => element);
           modelsMock.setup((x) => x.getModelProps(model.id!)).returns(() => model);
 
-          const result = await manager.computeSelection(ActivityLoggingContext.current, { imodel: imodelMock.object }, [elementId], "model");
+          const result = await manager.computeSelection(ClientRequestContext.current, { imodel: imodelMock.object }, [elementId], "model");
           expect(result.size).to.eq(1);
           expect(result.has({ className: model.classFullName, id: model.id! })).to.be.true;
         });

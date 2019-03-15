@@ -240,13 +240,13 @@ describe("TileIO (WebGL)", () => {
   let imodel: IModelConnection;
 
   before(async () => {
-    imodel = await IModelConnection.openSnapshot(iModelLocation);
     WebGLTestContext.startup();
+    imodel = await IModelConnection.openSnapshot(iModelLocation);
   });
 
   after(async () => {
-    WebGLTestContext.shutdown();
     if (imodel) await imodel.closeSnapshot();
+    WebGLTestContext.shutdown();
   });
 
   it("should read an iModel tile containing a single rectangle", async () => {
@@ -410,13 +410,13 @@ describe("TileIO (mock render)", () => {
   let imodel: IModelConnection;
 
   before(async () => {
-    imodel = await IModelConnection.openSnapshot(iModelLocation);
     MockRender.App.startup();
+    imodel = await IModelConnection.openSnapshot(iModelLocation);
   });
 
   after(async () => {
-    MockRender.App.shutdown();
     if (imodel) await imodel.closeSnapshot();
+    MockRender.App.shutdown();
   });
 
   it("should support canceling operation", async () => {
@@ -531,13 +531,13 @@ describe("mirukuru TileTree", () => {
   let imodel: IModelConnection;
 
   before(async () => {
-    imodel = await IModelConnection.openSnapshot(path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/mirukuru.ibim"));
     MockRender.App.startup();
+    imodel = await IModelConnection.openSnapshot(path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/mirukuru.ibim"));
   });
 
   after(async () => {
-    MockRender.App.shutdown();
     if (imodel) await imodel.closeSnapshot();
+    MockRender.App.shutdown();
   });
 
   // mirukuru contains a model (ID 0x1C) containing a single rectangle.

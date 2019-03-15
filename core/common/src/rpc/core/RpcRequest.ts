@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module RpcInterface */
 
-import { BeEvent, BentleyStatus } from "@bentley/bentleyjs-core";
+import { BeEvent, BentleyStatus, Guid, SerializedClientRequestContext } from "@bentley/bentleyjs-core";
 import { RpcInterface } from "../../RpcInterface";
 import { RpcOperation } from "./RpcOperation";
 import { RpcProtocol } from "./RpcProtocol";
@@ -20,9 +20,6 @@ const aggregateLoad = { lastRequest: 0, lastResponse: 0 };
 
 /** Supplies an IModelToken for an RPC request. */
 export type RpcRequestTokenSupplier_T = (request: RpcRequest) => IModelToken | undefined;
-
-/** Supplies a unique identifier for an RPC request. */
-export type RpcRequestIdSupplier_T = (request: RpcRequest) => string;
 
 /** Supplies the initial retry interval for an RPC request. */
 export type RpcRequestInitialRetryIntervalSupplier_T = (configuration: RpcConfiguration) => number;
@@ -156,7 +153,7 @@ export abstract class RpcRequest<TResponse = any> {
     this.parameters = parameters;
     this.retryInterval = this.operation.policy.retryInterval(client.configuration);
     this.response = new Promise((resolve, reject) => { this._resolve = resolve; this._reject = reject; });
-    this.id = this.operation.policy.requestId(this);
+    this.id = RpcConfiguration.requestContext.getId(this) || Guid.createValue();
     this.setStatus(RpcRequestStatus.Created);
     this.operation.policy.requestCallback(this);
   }
@@ -189,10 +186,9 @@ export abstract class RpcRequest<TResponse = any> {
     try {
       this._connecting = true;
       this.protocol.events.raiseEvent(RpcProtocolEvent.RequestCreated, this);
-      this.setHeaders();
-      const sent = this.send();
+      const sent = this.setHeaders().then(() => this.send());
       this.operation.policy.sentCallback(this);
-      const response = await sent;
+      const response: number = await sent;
       this.protocol.events.raiseEvent(RpcProtocolEvent.ResponseLoading, this);
 
       const status = this.protocol.getStatus(response);
@@ -324,16 +320,27 @@ export abstract class RpcRequest<TResponse = any> {
     RpcRequest.events.raiseEvent(RpcRequestEvent.PendingUpdateReceived, this);
   }
 
-  private setHeaders(): void {
-    this.setHeader(this.protocol.requestIdHeaderName, this.id);
+  private async setHeaders(): Promise<void> {
+    const headerNames: SerializedClientRequestContext = this.protocol.serializedClientRequestContextHeaderNames;
+    const headerValues: SerializedClientRequestContext = await RpcConfiguration.requestContext.serialize(this);
 
-    if (this.protocol.authorizationHeaderName) {
-      this.setHeader(this.protocol.authorizationHeaderName, this.protocol.configuration.applicationAuthorizationValue);
-    }
+    if (headerNames.id)
+      this.setHeader(headerNames.id, headerValues.id || this.id); // Cannot be empty
 
-    if (this.protocol.versionHeaderName && RpcConfiguration.applicationVersionValue) {
-      this.setHeader(this.protocol.versionHeaderName, RpcConfiguration.applicationVersionValue);
-    }
+    if (headerNames.applicationVersion)
+      this.setHeader(headerNames.applicationVersion, headerValues.applicationVersion);
+
+    if (headerNames.applicationId)
+      this.setHeader(headerNames.applicationId, headerValues.applicationId);
+
+    if (headerNames.sessionId)
+      this.setHeader(headerNames.sessionId, headerValues.sessionId);
+
+    if (headerNames.authorization && headerValues.authorization)
+      this.setHeader(headerNames.authorization, headerValues.authorization);
+
+    if (headerNames.userId && headerValues.userId)
+      this.setHeader(headerNames.userId, headerValues.userId);
   }
 
   private setStatus(status: RpcRequestStatus): void {

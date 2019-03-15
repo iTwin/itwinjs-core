@@ -2,17 +2,17 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
-import { AccessToken, UserInfo, ConnectClient, Project, IModelHubClient } from "@bentley/imodeljs-clients";
+import { ClientRequestContext } from "@bentley/bentleyjs-core";
+import { AccessToken, UserInfo, ConnectClient, Project, IModelHubClient, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
 import { ContextManagerClient, IModelAuthorizationClient, IModelCloudEnvironment } from "@bentley/imodeljs-clients/lib/IModelCloudEnvironment";
 import { TestConfig } from "../TestConfig";
 import { getDefaultClient } from "./TestUtils";
 
 /** An implementation of IModelProjectAbstraction backed by a iModelHub/Connect project */
 class TestConnectClient implements ContextManagerClient {
-  public async queryContextByName(alctx: ActivityLoggingContext, accessToken: AccessToken, name: string): Promise<Project> {
+  public async queryContextByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<Project> {
     const client = new ConnectClient();
-    return client.getProject(alctx, accessToken, {
+    return client.getProject(requestContext, {
       $select: "*",
       $filter: `Name+eq+'${name}'`,
     });
@@ -20,10 +20,14 @@ class TestConnectClient implements ContextManagerClient {
 }
 
 class TestIModelHubUserMgr implements IModelAuthorizationClient {
-  public async authorizeUser(alctx: ActivityLoggingContext, _userInfo: UserInfo | undefined, userCredentials: any): Promise<AccessToken> {
+  public async authorizeUser(requestContext: ClientRequestContext, _userInfo: UserInfo | undefined, userCredentials: any): Promise<AccessToken> {
+    requestContext.enter();
+
     const authToken = await TestConfig.login(userCredentials);
+    requestContext.enter();
+
     const client = getDefaultClient() as IModelHubClient;
-    return client.getAccessToken(alctx, authToken);
+    return client.getAccessToken(requestContext, authToken);
   }
 }
 

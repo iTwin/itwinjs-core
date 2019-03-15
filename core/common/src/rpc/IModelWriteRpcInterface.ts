@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module RpcInterface */
 
-import { AccessToken } from "@bentley/imodeljs-clients";
 import { Point3d, Range3d } from "@bentley/geometry-core";
 import { RpcInterface } from "../RpcInterface";
 import { RpcManager } from "../RpcManager";
@@ -20,7 +19,6 @@ import { IModelNotFoundResponse } from "./IModelReadRpcInterface";
 export abstract class IModelWriteRpcInterface extends RpcInterface {
   /** The types that can be marshaled by the interface. */
   public static types = () => [
-    AccessToken,
     Range3d,
     IModelToken,
     Point3d,
@@ -31,13 +29,13 @@ export abstract class IModelWriteRpcInterface extends RpcInterface {
   public static getClient(): IModelWriteRpcInterface { return RpcManager.getClientForInterface(IModelWriteRpcInterface); }
 
   /** The version of the interface. */
-  public static version = "0.2.0";
+  public static version = "0.3.0";
 
   /*===========================================================================================
       NOTE: Any add/remove/change to the methods below requires an update of the interface version.
       NOTE: Please consult the README in this folder for the semantic versioning rules.
   ===========================================================================================*/
-  public async openForWrite(_accessToken: AccessToken, _iModelToken: IModelToken): Promise<IModel> { return this.forward(arguments); }
+  public async openForWrite(_iModelToken: IModelToken): Promise<IModel> { return this.forward(arguments); }
   public async saveChanges(_iModelToken: IModelToken, _description?: string): Promise<void> { return this.forward(arguments); }
   public async updateProjectExtents(_iModelToken: IModelToken, _newExtents: AxisAlignedBox3d): Promise<void> { return this.forward(arguments); }
   public async saveThumbnail(_iModelToken: IModelToken, _val: Uint8Array): Promise<void> { return this.forward(arguments); }

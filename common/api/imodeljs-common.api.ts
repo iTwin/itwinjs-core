@@ -265,8 +265,6 @@ enum BatchType {
 
 // @public
 class BentleyCloudRpcConfiguration extends RpcConfiguration {
-  applicationAuthorizationKey: string;
-  applicationVersionKey: string;
   // WARNING: The type "BentleyCloudRpcProtocol" needs to be exported by the package (e.g. added to index.ts)
   readonly protocol: BentleyCloudRpcProtocol;
 }
@@ -2382,7 +2380,7 @@ class IModelReadRpcInterface extends RpcInterface {
   // (undocumented)
   cancelSnap(_iModelToken: IModelToken, _sessionId: string): Promise<void>;
   // (undocumented)
-  close(_accessToken: AccessToken, _iModelToken: IModelToken): Promise<boolean>;
+  close(_iModelToken: IModelToken): Promise<boolean>;
   // (undocumented)
   getAllCodeSpecs(_iModelToken: IModelToken): Promise<any[]>;
   // (undocumented)
@@ -2405,7 +2403,7 @@ class IModelReadRpcInterface extends RpcInterface {
   // (undocumented)
   getViewThumbnail(_iModelToken: IModelToken, _viewId: string): Promise<Uint8Array>;
   // (undocumented)
-  openForRead(_accessToken: AccessToken, _iModelToken: IModelToken): Promise<IModel>;
+  openForRead(_iModelToken: IModelToken): Promise<IModel>;
   // (undocumented)
   queryElementProps(_iModelToken: IModelToken, _params: EntityQueryParams): Promise<ElementProps[]>;
   // (undocumented)
@@ -2422,7 +2420,7 @@ class IModelReadRpcInterface extends RpcInterface {
   readFontJson(_iModelToken: IModelToken): Promise<any>;
   // (undocumented)
   requestSnap(_iModelToken: IModelToken, _sessionId: string, _props: SnapRequestProps): Promise<SnapResponseProps>;
-  static types: () => (typeof Point3d | typeof Vector3d | typeof Point2d | typeof IModelToken | typeof Code | typeof IModelNotFoundResponse | typeof AccessToken | typeof Vector2d)[];
+  static types: () => (typeof Point3d | typeof Vector3d | typeof Point2d | typeof IModelToken | typeof Code | typeof IModelNotFoundResponse | typeof Vector2d)[];
   static version: string;
 }
 
@@ -2601,7 +2599,7 @@ class IModelToken {
 // @public
 class IModelVersion {
   static asOfChangeSet(changeSetId: string): IModelVersion;
-  evaluateChangeSet(alctx: ActivityLoggingContext, accessToken: AccessToken, iModelId: string, imodelClient: IModelClient): Promise<string>;
+  evaluateChangeSet(requestContext: AuthorizedClientRequestContext, iModelId: string, imodelClient: IModelClient): Promise<string>;
   static first(): IModelVersion;
   static fromJson(jsonObj: any): IModelVersion;
   getAsOfChangeSet(): string | undefined;
@@ -2616,12 +2614,12 @@ class IModelVersion {
 class IModelWriteRpcInterface extends RpcInterface {
   static getClient(): IModelWriteRpcInterface;
   // (undocumented)
-  openForWrite(_accessToken: AccessToken, _iModelToken: IModelToken): Promise<IModel>;
+  openForWrite(_iModelToken: IModelToken): Promise<IModel>;
   // (undocumented)
   saveChanges(_iModelToken: IModelToken, _description?: string): Promise<void>;
   // (undocumented)
   saveThumbnail(_iModelToken: IModelToken, _val: Uint8Array): Promise<void>;
-  static types: () => (typeof Point3d | typeof Range3d | typeof IModelToken | typeof IModelNotFoundResponse | typeof AccessToken)[];
+  static types: () => (typeof Point3d | typeof Range3d | typeof IModelToken | typeof IModelNotFoundResponse)[];
   // (undocumented)
   updateProjectExtents(_iModelToken: IModelToken, _newExtents: AxisAlignedBox3d): Promise<void>;
   static version: string;
@@ -3614,10 +3612,6 @@ interface RootSubjectProps {
 
 // @public
 class RpcConfiguration {
-  applicationAuthorizationKey: string;
-  applicationAuthorizationValue: string;
-  applicationVersionKey: string;
-  static applicationVersionValue: string;
   static assign<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>, supplier: RpcConfigurationSupplier): void;
   readonly controlChannel: RpcControlChannel;
   static developmentMode: boolean;
@@ -3636,6 +3630,8 @@ class RpcConfiguration {
   onRpcImplTerminated(definition: RpcInterfaceDefinition, impl: RpcInterface): void;
   pendingOperationRetryInterval: number;
   readonly protocol: RpcProtocol;
+  // WARNING: The type "RpcRequestContext" needs to be exported by the package (e.g. added to index.ts)
+  static requestContext: RpcRequestContext;
   static strictMode: boolean;
   // (undocumented)
   static supply(definition: RpcInterface): RpcConfiguration;
@@ -3673,10 +3669,6 @@ class RpcControlResponse {
 
 // @public (undocumented)
 class RpcDefaultConfiguration extends RpcConfiguration {
-  // (undocumented)
-  applicationAuthorizationKey: string;
-  // (undocumented)
-  applicationAuthorizationValue: string;
   // (undocumented)
   interfaces: () => never[];
   // (undocumented)
@@ -3843,7 +3835,6 @@ class RpcOperationPolicy {
   allowResponseCaching: RpcResponseCachingCallback_T;
   invocationCallback: RpcInvocationCallback_T;
   requestCallback: RpcRequestCallback_T;
-  requestId: RpcRequestIdSupplier_T;
   retryInterval: RpcRequestInitialRetryIntervalSupplier_T;
   sentCallback: RpcRequestCallback_T;
   token: RpcRequestTokenSupplier_T;
@@ -3874,7 +3865,6 @@ class RpcPendingResponse extends RpcControlResponse {
 // @public
 class RpcProtocol {
   constructor(configuration: RpcConfiguration);
-  readonly authorizationHeaderName: string;
   readonly configuration: RpcConfiguration;
   static readonly events: BeEvent<RpcProtocolEventHandler>;
   fulfill(request: SerializedRpcRequest): Promise<RpcRequestFulfillment>;
@@ -3890,12 +3880,12 @@ class RpcProtocol {
   onRpcImplInitialized(_definition: RpcInterfaceDefinition, _impl: RpcInterface): void;
   // (undocumented)
   onRpcImplTerminated(_definition: RpcInterfaceDefinition, _impl: RpcInterface): void;
-  requestIdHeaderName: string;
   readonly requestType: typeof RpcRequest;
-  serialize(request: RpcRequest): SerializedRpcRequest;
+  serialize(request: RpcRequest): Promise<SerializedRpcRequest>;
+  // (undocumented)
+  serializedClientRequestContextHeaderNames: SerializedClientRequestContext;
   supplyPathForOperation(operation: RpcOperation, _request: RpcRequest | undefined): string;
   transferChunkThreshold: number;
-  readonly versionHeaderName: string;
 }
 
 // @public
@@ -4088,13 +4078,9 @@ interface SerializedRpcOperation {
 }
 
 // @public
-interface SerializedRpcRequest {
-  // (undocumented)
-  authorization: string;
+interface SerializedRpcRequest extends SerializedClientRequestContext {
   // (undocumented)
   caching: RpcResponseCacheControl;
-  // (undocumented)
-  id: string;
   // (undocumented)
   method: string;
   // (undocumented)
@@ -4103,8 +4089,6 @@ interface SerializedRpcRequest {
   parameters: RpcSerializedValue;
   // (undocumented)
   path: string;
-  // (undocumented)
-  version: string;
 }
 
 // @public (undocumented)
@@ -4822,7 +4806,6 @@ class WipRpcInterface extends RpcInterface {
 // WARNING: Unsupported export: CURRENT_INVOCATION
 // WARNING: Unsupported export: builtins
 // WARNING: Unsupported export: RpcRequestTokenSupplier_T
-// WARNING: Unsupported export: RpcRequestIdSupplier_T
 // WARNING: Unsupported export: RpcRequestInitialRetryIntervalSupplier_T
 // WARNING: Unsupported export: RpcRequestCallback_T
 // WARNING: Unsupported export: RpcResponseCachingCallback_T

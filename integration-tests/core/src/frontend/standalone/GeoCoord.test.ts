@@ -2,7 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { IModelConnection, GeoConverter } from "@bentley/imodeljs-frontend";
+import { IModelConnection, GeoConverter, IModelApp } from "@bentley/imodeljs-frontend";
 import { expect } from "chai";
 import * as path from "path";
 import { XYZProps, Point3d } from "@bentley/geometry-core";
@@ -22,6 +22,7 @@ describe("GeoCoord", () => {
   let wgs84GeoCoordsResponse: GeoCoordinatesResponseProps;
 
   before(async () => {
+    IModelApp.startup();
     iModel = await IModelConnection.openSnapshot(iModelLocation);
     // make an array of 10x10 geoPoints in geoPointList.
     for (let iLatitude: number = 0; iLatitude < 10; iLatitude++) {
@@ -36,6 +37,7 @@ describe("GeoCoord", () => {
 
   after(async () => {
     if (iModel) await iModel.closeSnapshot();
+    IModelApp.shutdown();
   });
 
   it("should get different results for different datums", async () => {

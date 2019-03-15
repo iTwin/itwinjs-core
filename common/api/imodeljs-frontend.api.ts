@@ -760,6 +760,12 @@ module Attachments {
 }
 
 // @public
+class AuthorizedFrontendRequestContext extends AuthorizedClientRequestContext {
+  constructor(accessToken: AccessToken, activityId?: string);
+  static create(activityId?: string): Promise<AuthorizedFrontendRequestContext>;
+}
+
+// @public
 class AuxCoordSystem2dState extends AuxCoordSystemState, implements AuxCoordSystem2dProps {
   constructor(props: AuxCoordSystem2dProps, iModel: IModelConnection);
   // (undocumented)
@@ -2171,6 +2177,11 @@ class FlyViewTool extends ViewManip {
 export function fromSumOf(p: Point3d, v: Vector3d, scale: number, out?: Point3d): Point3d;
 
 // @public
+class FrontendRequestContext extends ClientRequestContext {
+  constructor(activityId?: string);
+}
+
+// @public
 class FrustumUniforms {
   constructor();
   // (undocumented)
@@ -2667,10 +2678,11 @@ class IModelApp {
   protected static _imodelClient?: IModelClient;
   // (undocumented)
   protected static _initialized: boolean;
-  static accessToken?: AccessToken;
   static accuDraw: AccuDraw;
   static accuSnap: AccuSnap;
   static applicationId: string;
+  static applicationVersion: string;
+  static authorizationClient: IAuthorizationClient | undefined;
   // (undocumented)
   static readonly features: FeatureGates;
   // (undocumented)
@@ -3561,18 +3573,21 @@ class OffScreenViewport extends Viewport {
 class OidcBrowserClient extends OidcClient, implements IOidcFrontendClient {
   constructor(_configuration: OidcFrontendClientConfiguration);
   dispose(): void;
-  getAccessToken(_actx: ActivityLoggingContext): Promise<AccessToken>;
+  getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
   handleRedirectCallback(): Promise<boolean>;
-  initialize(actx: ActivityLoggingContext): Promise<void>;
-  readonly onUserStateChanged: BeEvent<(token: AccessToken | undefined) => void>;
-  signIn(_actx: ActivityLoggingContext): void;
-  signOut(_actx: ActivityLoggingContext): void;
+  readonly hasExpired: boolean;
+  readonly hasSignedIn: boolean;
+  initialize(requestContext: FrontendRequestContext): Promise<void>;
+  readonly isAuthorized: boolean;
+  readonly onUserStateChanged: BeEvent<(token: AccessToken | undefined, message: string) => void>;
+  signIn(requestContext: ClientRequestContext): Promise<AccessToken>;
+  signOut(requestContext: ClientRequestContext): Promise<void>;
 }
 
 // @public (undocumented)
 class OidcClientWrapper {
   // (undocumented)
-  static initialize(actx: ActivityLoggingContext, config: OidcFrontendClientConfiguration): Promise<void>;
+  static initialize(requestContext: ClientRequestContext, config: OidcFrontendClientConfiguration): Promise<void>;
   // (undocumented)
   static readonly oidcClient: IOidcFrontendClient;
 }

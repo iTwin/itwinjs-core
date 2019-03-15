@@ -33,7 +33,7 @@
     "@bentley/build-tools": "0.191.0-dev.6",
     "@bentley/dev-cors-proxy-server": "0.0.9",
     "@types/express": "^4.16.1",
-    "@types/node": "10.12.18",
+    "@types/node": "10.14.1",
     "@types/yargs": "^12.0.5",
     "rimraf": "^2.6.2",
     "tslint": "^5.11.0",

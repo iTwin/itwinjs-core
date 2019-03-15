@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import { Logger, assert, BeDuration, ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { Logger, assert, BeDuration, ClientRequestContext } from "@bentley/bentleyjs-core";
 import { RpcPendingResponse, IModelToken, PageOptions } from "@bentley/imodeljs-common";
 import { PromiseMemoizer, QueryablePromise } from "../PromiseMemoizer";
 import { IModelDb } from "../IModelDb";
@@ -16,7 +16,7 @@ const kQueryPageTimeOutKey = "imjs_query_page_timeout";
  * @hidden
  */
 interface QueryPageArgs {
-  actx: ActivityLoggingContext;
+  requestContext: ClientRequestContext;
   iModelToken: IModelToken;
   ecsql: string;
   bindings?: any[] | object;
@@ -68,12 +68,12 @@ export class QueryPageMemoizer extends PromiseMemoizer<any[]> {
   }
 
   private async perform(args: QueryPageArgs): Promise<any[]> {
-    args.actx.enter();
+    args.requestContext.enter();
     const pageQP = this.memoize(args);
     const waitPromise = BeDuration.wait(this._timeout);
     await Promise.race([pageQP.promise, waitPromise]);
 
-    args.actx.enter();
+    args.requestContext.enter();
 
     if (pageQP.isPending) {
       throw new RpcPendingResponse();

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as chai from "chai";
-import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { ClientRequestContext } from "@bentley/bentleyjs-core";
 import { Config, AccessToken } from "@bentley/imodeljs-clients";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
 import { OidcDelegationClient, OidcDelegationClientConfiguration, OidcAgentClient, OidcAgentClientConfiguration } from "../imodeljs-clients-backend";
@@ -18,7 +18,7 @@ describe("OidcDelegationClient (#integration)", () => {
 
   let validator: HubAccessTestValidator;
   let jwt: AccessToken;
-  const actx = new ActivityLoggingContext("");
+  const requestContext = new ClientRequestContext();
 
   before(async () => {
     validator = await HubAccessTestValidator.getInstance();
@@ -30,7 +30,7 @@ describe("OidcDelegationClient (#integration)", () => {
     };
 
     const agentClient = new OidcAgentClient(agentConfiguration);
-    jwt = await agentClient.getToken(actx);
+    jwt = await agentClient.getToken(requestContext);
   });
 
   it("should get valid SAML delegation tokens", async () => {
@@ -42,7 +42,7 @@ describe("OidcDelegationClient (#integration)", () => {
     };
 
     const delegationClient = new OidcDelegationClient(delegationConfiguration);
-    const saml = await delegationClient.getSamlFromJwt(actx, jwt);
+    const saml = await delegationClient.getSamlFromJwt(requestContext, jwt);
     await validator.validateConnectAccess(saml);
     await validator.validateIModelHubAccess(saml);
   });
@@ -55,7 +55,7 @@ describe("OidcDelegationClient (#integration)", () => {
     };
 
     const delegationClient = new OidcDelegationClient(delegationConfiguration);
-    const delegationJwt = await delegationClient.getJwtFromJwt(actx, jwt);
+    const delegationJwt = await delegationClient.getJwtFromJwt(requestContext, jwt);
     await validator.validateConnectAccess(delegationJwt);
     await validator.validateIModelHubAccess(delegationJwt);
   });

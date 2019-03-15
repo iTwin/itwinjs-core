@@ -17,6 +17,7 @@ export * from "./tools/ViewTool";
 export * from "./AccuDraw";
 export * from "./AccuSnap";
 export * from "./AuxCoordSys";
+export * from "./FrontendRequestContext";
 export * from "./CategorySelectorState";
 export * from "./ContextRealityModelState";
 export * from "./Classification";

@@ -5,7 +5,7 @@
 /** @module RpcInterface */
 
 import { IModelError } from "../../IModelError";
-import { BentleyStatus, RpcInterfaceStatus, Logger, ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { BentleyStatus, RpcInterfaceStatus, Logger } from "@bentley/bentleyjs-core";
 import { RpcInterface } from "../../RpcInterface";
 import { RpcOperation } from "./RpcOperation";
 import { RpcRegistry, CURRENT_INVOCATION } from "./RpcRegistry";
@@ -110,8 +110,10 @@ export class RpcInvocation {
     const impl = RpcRegistry.instance.getImplForInterface(this.operation.interfaceDefinition);
     (impl as any)[CURRENT_INVOCATION] = this;
     const op = this.lookupOperationFunction(impl);
-    const context = new ActivityLoggingContext(this.request.id, this.request.version);
-    context.enter();
+
+    const clientRequestContext = await RpcConfiguration.requestContext.deserialize(this.request);
+    clientRequestContext.enter();
+
     return Promise.resolve(op.call(impl, ...parameters));
   }
 

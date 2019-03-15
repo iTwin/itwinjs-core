@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module iModels */
 
-import { Id64String, Id64, DbOpcode, RepositoryStatus, assert, ActivityLoggingContext, Logger } from "@bentley/bentleyjs-core";
-import { AccessToken, HubCode, CodeState, CodeQuery, Lock, LockLevel, LockType } from "@bentley/imodeljs-clients";
+import { Id64String, Id64, DbOpcode, RepositoryStatus, assert, Logger } from "@bentley/bentleyjs-core";
+import { HubCode, CodeState, CodeQuery, Lock, LockLevel, LockType, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
 import { IModelJsNative } from "./IModelJsNative";
 import { Code, IModelError, IModelStatus } from "@bentley/imodeljs-common";
 import { Element } from "./Element";
@@ -137,13 +137,13 @@ export class ConcurrencyControl {
    * ``` ts
    * [[include:ConcurrencyControl.request]]
    * ```
-   * @param accessToken The user's iModelHub access token
+   * @param requestContext The client request context
    * @param req The requests to be sent to iModelHub. If undefined, all pending requests are sent to iModelHub.
    * @throws [[ConcurrencyControl.RequestError]] if some or all of the request could not be fulfilled by iModelHub.
    * @throws [[IModelError]] if the IModelDb is not open or is not connected to an iModel.
    */
-  public async request(actx: ActivityLoggingContext, accessToken: AccessToken, req?: ConcurrencyControl.Request): Promise<void> {
-    actx.enter();
+  public async request(requestContext: AuthorizedClientRequestContext, req?: ConcurrencyControl.Request): Promise<void> {
+    requestContext.enter();
     if (!this._iModel.briefcase)
       return Promise.reject(this._iModel.newNotOpenError());
 
@@ -152,9 +152,11 @@ export class ConcurrencyControl {
     if (req === undefined)
       req = this.extractPendingRequest();
 
-    const codeResults = await this.reserveCodesFromRequest(actx, req, this._iModel.briefcase, accessToken);
-    await this.acquireLocksFromRequest(actx, req, this._iModel.briefcase, accessToken);
-    actx.enter();
+    const codeResults = await this.reserveCodesFromRequest(requestContext, req, this._iModel.briefcase);
+    requestContext.enter();
+
+    await this.acquireLocksFromRequest(requestContext, req, this._iModel.briefcase);
+    requestContext.enter();
 
     assert(this.inBulkOperation(), "should always be in bulk mode");
 
@@ -198,8 +200,8 @@ export class ConcurrencyControl {
   }
 
   /** Obtain the schema lock. This is always an immediate request, never deferred. */
-  public async lockSchema(actx: ActivityLoggingContext, accessToken: AccessToken): Promise<Lock[]> {
-    actx.enter();
+  public async lockSchema(requestContext: AuthorizedClientRequestContext): Promise<Lock[]> {
+    requestContext.enter();
     const locks: Lock[] = [
       {
         wsgId: "what-is-this",
@@ -213,14 +215,14 @@ export class ConcurrencyControl {
       },
     ];
     assert(this.inBulkOperation(), "should always be in bulk mode");
-    const res = BriefcaseManager.imodelClient.locks.update(actx, accessToken, this._iModel.iModelToken.iModelId!, locks);
+    const res = BriefcaseManager.imodelClient.locks.update(requestContext, this._iModel.iModelToken.iModelId!, locks);
     assert(this.inBulkOperation(), "should always be in bulk mode");
     return res;
   }
 
   /** Obtain the CodeSpec lock. This is always an immediate request, never deferred. */
-  public async lockCodeSpecs(actx: ActivityLoggingContext, accessToken: AccessToken): Promise<Lock[]> {
-    actx.enter();
+  public async lockCodeSpecs(requestContext: AuthorizedClientRequestContext): Promise<Lock[]> {
+    requestContext.enter();
     const locks: Lock[] = [
       {
         wsgId: "what-is-this",
@@ -234,7 +236,7 @@ export class ConcurrencyControl {
       },
     ];
     assert(this.inBulkOperation(), "should always be in bulk mode");
-    const res = BriefcaseManager.imodelClient.locks.update(actx, accessToken, this._iModel.iModelToken.iModelId!, locks);
+    const res = BriefcaseManager.imodelClient.locks.update(requestContext, this._iModel.iModelToken.iModelId!, locks);
     assert(this.inBulkOperation(), "should always be in bulk mode");
     return res;
   }
@@ -260,33 +262,33 @@ export class ConcurrencyControl {
   }
 
   /** process the Lock-specific part of the request. */
-  private async acquireLocksFromRequest(actx: ActivityLoggingContext, req: ConcurrencyControl.Request, briefcaseEntry: BriefcaseEntry, accessToken: AccessToken): Promise<Lock[]> {
-    actx.enter();
+  private async acquireLocksFromRequest(requestContext: AuthorizedClientRequestContext, req: ConcurrencyControl.Request, briefcaseEntry: BriefcaseEntry): Promise<Lock[]> {
+    requestContext.enter();
     const locks = this.buildLockRequests(briefcaseEntry, req);
     if (locks === undefined)
       return [];
-    return BriefcaseManager.imodelClient.locks.update(actx, accessToken, this._iModel.iModelToken.iModelId!, locks);
+    return BriefcaseManager.imodelClient.locks.update(requestContext, this._iModel.iModelToken.iModelId!, locks);
   }
 
   /** process a Code-reservation request. The requests in bySpecId must already be in iModelHub REST format. */
-  private async reserveCodes2(actx: ActivityLoggingContext, request: HubCode[], briefcaseEntry: BriefcaseEntry, accessToken: AccessToken): Promise<HubCode[]> {
-    actx.enter();
-    return BriefcaseManager.imodelClient.codes.update(actx, accessToken, briefcaseEntry.iModelId, request);
+  private async reserveCodes2(requestContext: AuthorizedClientRequestContext, request: HubCode[], briefcaseEntry: BriefcaseEntry): Promise<HubCode[]> {
+    requestContext.enter();
+    return BriefcaseManager.imodelClient.codes.update(requestContext, briefcaseEntry.iModelId, request);
   }
 
   /** process the Code-specific part of the request. */
-  private async reserveCodesFromRequest(actx: ActivityLoggingContext, req: ConcurrencyControl.Request, briefcaseEntry: BriefcaseEntry, accessToken: AccessToken): Promise<HubCode[]> {
-    actx.enter();
+  private async reserveCodesFromRequest(requestContext: AuthorizedClientRequestContext, req: ConcurrencyControl.Request, briefcaseEntry: BriefcaseEntry): Promise<HubCode[]> {
+    requestContext.enter();
     const request = this.buildHubCodesFromRequest(briefcaseEntry, req);
     if (request === undefined)
       return [];
 
-    return this.reserveCodes2(actx, request, briefcaseEntry, accessToken);
+    return this.reserveCodes2(requestContext, request, briefcaseEntry);
   }
 
   /** Reserve the specified codes */
-  public async reserveCodes(actx: ActivityLoggingContext, accessToken: AccessToken, codes: Code[]): Promise<HubCode[]> {
-    actx.enter();
+  public async reserveCodes(requestContext: AuthorizedClientRequestContext, codes: Code[]): Promise<HubCode[]> {
+    requestContext.enter();
     if (this._iModel.briefcase === undefined)
       return Promise.reject(this._iModel.newNotOpenError());
 
@@ -294,12 +296,12 @@ export class ConcurrencyControl {
     if (bySpecId === undefined)
       return Promise.reject(new IModelError(IModelStatus.NotFound, "Error reserving codes", Logger.logWarning, loggingCategory));
 
-    return this.reserveCodes2(actx, bySpecId, this._iModel.briefcase, accessToken);
+    return this.reserveCodes2(requestContext, bySpecId, this._iModel.briefcase);
   }
 
   // Query the state of the Codes for the specified CodeSpec and scope.
-  public async queryCodeStates(actx: ActivityLoggingContext, accessToken: AccessToken, specId: Id64String, scopeId: string, _value?: string): Promise<HubCode[]> {
-    actx.enter();
+  public async queryCodeStates(requestContext: AuthorizedClientRequestContext, specId: Id64String, scopeId: string, _value?: string): Promise<HubCode[]> {
+    requestContext.enter();
     if (this._iModel.briefcase === undefined)
       return Promise.reject(this._iModel.newNotOpenError());
 
@@ -311,7 +313,7 @@ export class ConcurrencyControl {
     }
     */
 
-    return BriefcaseManager.imodelClient.codes.get(actx, accessToken, this._iModel.briefcase.iModelId, query);
+    return BriefcaseManager.imodelClient.codes.get(requestContext, this._iModel.briefcase.iModelId, query);
   }
 
   /** Abandon any pending requests for locks or codes. */
@@ -319,11 +321,12 @@ export class ConcurrencyControl {
 
   /**
    * Check to see if *all* of the codes in the specified request are available.
+   * @param requestContext The client request context
    * @param req the list of code requests to be fulfilled. If not specified then all pending requests for codes are queried.
    * @returns true if all codes are available or false if any is not.
    */
-  public async areCodesAvailable(actx: ActivityLoggingContext, accessToken: AccessToken, req?: ConcurrencyControl.Request): Promise<boolean> {
-    actx.enter();
+  public async areCodesAvailable(requestContext: AuthorizedClientRequestContext, req?: ConcurrencyControl.Request): Promise<boolean> {
+    requestContext.enter();
     if (!this._iModel.briefcase)
       return Promise.reject(this._iModel.newNotOpenError());
     // throw new Error("TBD");
@@ -339,7 +342,7 @@ export class ConcurrencyControl {
     const chunkSize = 100;
     for (let i = 0; i < hubCodes.length; i += chunkSize) {
       const query = new CodeQuery().byCodes(hubCodes.slice(i, i + chunkSize));
-      const result = await codesHandler.get(actx, accessToken, this._iModel.briefcase.iModelId, query);
+      const result = await codesHandler.get(requestContext, this._iModel.briefcase.iModelId, query);
       for (const code of result) {
         if (code.state !== CodeState.Available)
           return false;
@@ -350,19 +353,20 @@ export class ConcurrencyControl {
 
   /**
    * Check to see if *all* of the requested resources could be acquired from iModelHub.
+   * @param requestContext The client request context
    * @param req the list of resource requests to be fulfilled. If not specified then all pending requests for locks and codes are queried.
    * @returns true if all resources could be acquired or false if any could not be acquired.
    */
-  public async areAvailable(actx: ActivityLoggingContext, accessToken: AccessToken, req?: ConcurrencyControl.Request): Promise<boolean> {
-    actx.enter();
+  public async areAvailable(requestContext: AuthorizedClientRequestContext, req?: ConcurrencyControl.Request): Promise<boolean> {
+    requestContext.enter();
     if (!this._iModel.briefcase)
       return Promise.reject(this._iModel.newNotOpenError());
 
     if (req === undefined)
       req = this.pendingRequest;
 
-    const allCodesAreAvailable = await this.areCodesAvailable(actx, accessToken, req);
-    actx.enter();
+    const allCodesAreAvailable = await this.areCodesAvailable(requestContext, req);
+    requestContext.enter();
     if (!allCodesAreAvailable)
       return false;
 
@@ -516,38 +520,39 @@ export namespace ConcurrencyControl {
      * ``` ts
      * [[include:ConcurrencyControl_Codes.reserve]]
      * ```
+     * @param requestContext The client request context
      * @param codes The Codes to reserve
      * @throws [[ConcurrencyControl.RequestError]]
      */
-    public async reserve(actx: ActivityLoggingContext, accessToken: AccessToken, codes?: Code[]): Promise<void> {
-      actx.enter();
+    public async reserve(requestContext: AuthorizedClientRequestContext, codes?: Code[]): Promise<void> {
+      requestContext.enter();
 
       if (!this._iModel.briefcase)
         return Promise.reject(this._iModel.newNotOpenError());
 
       if (codes !== undefined) {
-        await this._iModel.concurrencyControl.reserveCodes(actx, accessToken, codes);
+        await this._iModel.concurrencyControl.reserveCodes(requestContext, codes);
 
         // TODO: examine result and throw CodeReservationError if some codes could not be reserved
         return;
       }
-      actx.enter();
+      requestContext.enter();
 
       const req: ConcurrencyControl.Request = this._iModel.concurrencyControl.extractPendingRequest(false, true);
       this._iModel.briefcase.nativeDb.extractBulkResourcesRequest(req as IModelJsNative.BriefcaseManagerResourcesRequest, false, true);
       this._iModel.briefcase.nativeDb.extractBriefcaseManagerResourcesRequest(req as IModelJsNative.BriefcaseManagerResourcesRequest, req as IModelJsNative.BriefcaseManagerResourcesRequest, false, true);
-      return this._iModel.concurrencyControl.request(actx, accessToken, req);
+      return this._iModel.concurrencyControl.request(requestContext, req);
     }
 
     /**
      * Queries the state of the specified Codes in the code service.
-     * @param accessToken The user's iModelHub access token
+     * @param requestContext The client request context
      * @param specId The CodeSpec to query
      * @param scopeId The scope to query
      * @param value Optional. The Code value to query.
      */
-    public async query(actx: ActivityLoggingContext, accessToken: AccessToken, specId: Id64String, scopeId: string, value?: string): Promise<HubCode[]> {
-      return this._iModel.concurrencyControl.queryCodeStates(actx, accessToken, specId, scopeId, value);
+    public async query(requestContext: AuthorizedClientRequestContext, specId: Id64String, scopeId: string, value?: string): Promise<HubCode[]> {
+      return this._iModel.concurrencyControl.queryCodeStates(requestContext, specId, scopeId, value);
     }
   }
 }

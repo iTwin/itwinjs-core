@@ -6,12 +6,12 @@
 
 import * as React from "react";
 import { FrontstageManager, ModalFrontstageInfo } from "../frontstage/FrontstageManager";
+import { ClientRequestContext } from "@bentley/bentleyjs-core";
 import { UserInfo, AccessToken } from "@bentley/imodeljs-clients";
 import { getUserColor } from "@bentley/ui-core";
 import { UiFramework } from "../UiFramework";
 import "./SignOut.scss";
 import { OidcClientWrapper } from "@bentley/imodeljs-frontend";
-import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
 
 /** Modal frontstage displaying sign out form. */
 export class SignOutModalFrontstage implements ModalFrontstageInfo {
@@ -47,9 +47,9 @@ export class SignOutModalFrontstage implements ModalFrontstageInfo {
     return name;
   }
 
-  private _onSignOut = () => {
+  private _onSignOut = async () => {
     FrontstageManager.closeModalFrontstage();
-    OidcClientWrapper.oidcClient.signOut(new ActivityLoggingContext(""));
+    OidcClientWrapper.oidcClient.signOut(new ClientRequestContext()); // tslint:disable-line:no-floating-promises
   }
 
   public get content(): React.ReactNode {

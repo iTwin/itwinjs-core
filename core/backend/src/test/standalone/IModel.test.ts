@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import {
-  ActivityLoggingContext,
+  ClientRequestContext,
   BeEvent,
   DbResult,
   Guid,
@@ -24,7 +24,7 @@ import {
   PolyfaceBuilder,
   YawPitchRollAngles,
 } from "@bentley/geometry-core";
-import { AccessToken, IAccessTokenManager } from "@bentley/imodeljs-clients";
+import { AccessToken, IAuthorizationClient } from "@bentley/imodeljs-clients";
 import {
   AxisAlignedBox3d, Code, CodeScopeSpec, CodeSpec, ColorByName, EntityMetaData, EntityProps, FilePropertyProps, FontMap,
   FontType, GeometricElementProps, IModel, IModelError, IModelStatus, PrimitiveTypeCode, RelatedElement, SubCategoryAppearance,
@@ -38,10 +38,11 @@ import {
   DictionaryModel, DocumentPartition, ECSqlStatement, Element, ElementGroupsMembers, ElementPropertyFormatter, Entity,
   GeometricElement2d, GeometricElement3d, GeometricModel, GroupInformationPartition, IModelDb, InformationPartitionElement,
   LightLocation, LinkPartition, Model, PhysicalModel, PhysicalPartition, RenderMaterial, SpatialCategory, SqliteStatement, SqliteValue,
-  SqliteValueType, SubCategory, Subject, Texture, ViewDefinition, DisplayStyle3d, ElementDrivesElement, PhysicalObject,
+  SqliteValueType, SubCategory, Subject, Texture, ViewDefinition, DisplayStyle3d, ElementDrivesElement, PhysicalObject, BackendRequestContext,
 } from "../../imodeljs-backend";
 import { DisableNativeAssertions, IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
+import { IModelHost } from "../../IModelHost";
 
 let lastPushTimeMillis = 0;
 let lastAutoPushEventType: AutoPushEventType | undefined;
@@ -69,7 +70,7 @@ describe("iModel", () => {
   let imodel3: IModelDb;
   let imodel4: IModelDb;
   let imodel5: IModelDb;
-  const actx = new ActivityLoggingContext("");
+  const requestContext = new BackendRequestContext();
 
   before(async () => {
     IModelTestUtils.registerTestBimSchema();
@@ -80,7 +81,7 @@ describe("iModel", () => {
     imodel5 = IModelDb.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("IModel", "mirukuru.ibim"), IModelTestUtils.resolveAssetFile("mirukuru.ibim"));
 
     const schemaPathname = path.join(KnownTestLocations.assetsDir, "TestBim.ecschema.xml");
-    await imodel1.importSchema(actx, schemaPathname); // will throw an exception if import fails
+    await imodel1.importSchema(requestContext, schemaPathname); // will throw an exception if import fails
   });
 
   after(() => {
@@ -543,8 +544,8 @@ describe("iModel", () => {
 
   it("should find a tile tree for a geometric model", async () => {
     // Note: this is an empty model.
-    const actx2 = new ActivityLoggingContext("tiletreetest");
-    const tree = await imodel1.tiles.requestTileTreeProps(actx2, "0x1c");
+    const requestContext2 = new BackendRequestContext();
+    const tree = await imodel1.tiles.requestTileTreeProps(requestContext2, "0x1c");
     expect(tree).not.to.be.undefined;
 
     expect(tree.id).to.equal("0x1c");
@@ -570,24 +571,24 @@ describe("iModel", () => {
   });
 
   it("should throw on invalid tile requests", async () => {
-    const logCtx = new ActivityLoggingContext("invalidTileRequests");
+    const requestContext2 = new ClientRequestContext("invalidTileRequests");
     await using(new DisableNativeAssertions(), async (_r) => {
-      let error = await getIModelError(imodel1.tiles.requestTileTreeProps(logCtx, "0x12345"));
+      let error = await getIModelError(imodel1.tiles.requestTileTreeProps(requestContext2, "0x12345"));
       expectIModelError(IModelStatus.MissingId, error);
 
-      error = await getIModelError(imodel1.tiles.requestTileTreeProps(logCtx, "NotAValidId"));
+      error = await getIModelError(imodel1.tiles.requestTileTreeProps(requestContext2, "NotAValidId"));
       expectIModelError(IModelStatus.InvalidId, error);
 
-      error = await getIModelError(imodel1.tiles.requestTileContent(logCtx, "0x1c", "0/0/0/0"));
+      error = await getIModelError(imodel1.tiles.requestTileContent(requestContext2, "0x1c", "0/0/0/0"));
       expectIModelError(IModelStatus.InvalidId, error);
 
-      error = await getIModelError(imodel1.tiles.requestTileContent(logCtx, "0x12345", "0/0/0/0/1"));
+      error = await getIModelError(imodel1.tiles.requestTileContent(requestContext2, "0x12345", "0/0/0/0/1"));
       expectIModelError(IModelStatus.MissingId, error);
 
-      error = await getIModelError(imodel1.tiles.requestTileContent(logCtx, "0x1c", "V/W/X/Y/Z"));
+      error = await getIModelError(imodel1.tiles.requestTileContent(requestContext2, "0x1c", "V/W/X/Y/Z"));
       expectIModelError(IModelStatus.InvalidId, error);
 
-      error = await getIModelError(imodel1.tiles.requestTileContent(logCtx, "0x1c", "NotAValidId"));
+      error = await getIModelError(imodel1.tiles.requestTileContent(requestContext2, "0x1c", "NotAValidId"));
       expectIModelError(IModelStatus.InvalidId, error);
     });
   });
@@ -1114,7 +1115,7 @@ describe("iModel", () => {
 
   it("snapping", async () => {
     const worldToView = Matrix4d.createIdentity();
-    const response = await imodel2.requestSnap(actx, "0x222", { testPoint: { x: 1, y: 2, z: 3 }, closePoint: { x: 1, y: 2, z: 3 }, id: "0x111", worldToView: worldToView.toJSON() });
+    const response = await imodel2.requestSnap(requestContext, "0x222", { testPoint: { x: 1, y: 2, z: 3 }, closePoint: { x: 1, y: 2, z: 3 }, id: "0x111", worldToView: worldToView.toJSON() });
     assert.isDefined(response.status);
   });
 
@@ -1437,19 +1438,23 @@ describe("iModel", () => {
       },
     };
 
-    const accessTokenManager: IAccessTokenManager = {
-      getAccessToken: async (_actx: ActivityLoggingContext): Promise<AccessToken> => {
+    const authorizationClient: IAuthorizationClient = {
+      getAccessToken: async (_requestContext: ClientRequestContext): Promise<AccessToken> => {
         const fakeAccessToken2 = {} as AccessToken;
         return fakeAccessToken2;
       },
+      isAuthorized: true,
+      hasExpired: false,
+      hasSignedIn: true,
     };
 
     lastPushTimeMillis = 0;
     lastAutoPushEventType = undefined;
 
     // Create an autopush in manual-schedule mode.
-    const autoPushParams: AutoPushParams = { pushIntervalSecondsMin: 0, pushIntervalSecondsMax: 1, autoSchedule: false, activityContext: actx };
-    const autoPush = new AutoPush(iModel as any, autoPushParams, accessTokenManager, activityMonitor);
+    const autoPushParams: AutoPushParams = { pushIntervalSecondsMin: 0, pushIntervalSecondsMax: 1, autoSchedule: false };
+    IModelHost.authorizationClient = authorizationClient;
+    const autoPush = new AutoPush(iModel as any, autoPushParams, activityMonitor);
     assert.equal(autoPush.state, AutoPushState.NotRunning, "I configured auto-push NOT to start automatically");
     assert.isFalse(autoPush.autoSchedule);
 

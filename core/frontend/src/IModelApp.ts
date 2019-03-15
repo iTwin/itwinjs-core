@@ -4,15 +4,19 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module IModelApp */
 
-import { dispose, Guid, GuidString } from "@bentley/bentleyjs-core";
-import { AccessToken, ConnectSettingsClient, IModelClient, IModelHubClient, SettingsAdmin } from "@bentley/imodeljs-clients";
-import { FeatureGates, IModelError, IModelStatus } from "@bentley/imodeljs-common";
+import { dispose, Guid, GuidString, Logger, ClientRequestContext, SerializedClientRequestContext } from "@bentley/bentleyjs-core";
+import {
+  AccessToken, ConnectSettingsClient, IModelClient, IModelHubClient,
+  SettingsAdmin, IAuthorizationClient, IncludePrefix,
+} from "@bentley/imodeljs-clients";
+import { FeatureGates, IModelError, IModelStatus, RpcConfiguration, RpcRequest } from "@bentley/imodeljs-common";
 import { I18N, I18NOptions } from "@bentley/imodeljs-i18n";
 import { AccuSnap } from "./AccuSnap";
 import { AccuDraw } from "./AccuDraw";
 import { ElementLocateManager } from "./ElementLocateManager";
 import { NotificationManager } from "./NotificationManager";
 import { QuantityFormatter } from "./QuantityFormatter";
+import { FrontendRequestContext } from "./FrontendRequestContext";
 import { RenderSystem } from "./render/System";
 import { System } from "./render/webgl/System";
 import { TentativePoint } from "./TentativePoint";
@@ -25,6 +29,9 @@ import * as selectTool from "./tools/SelectTool";
 import * as pluginTool from "./tools/PluginTool";
 import * as viewTool from "./tools/ViewTool";
 import * as measureTool from "./tools/MeasureTool";
+
+const loggingCategory = "imodeljs-frontend.IModelApp";
+declare var BUILD_SEMVER: string;
 
 /** Creates an *Application* to show an iModel in a web browser.
  * It connects the user interface with the iModel.js services. There can be only one IModelApp active in a session.
@@ -39,6 +46,7 @@ export class IModelApp {
   /** @hidden */
   protected static _initialized = false;
   private static _renderSystem?: RenderSystem;
+  private static _authorizationClient?: IAuthorizationClient;
   /** The [[RenderSystem]] for this session. */
   public static get renderSystem(): RenderSystem { return IModelApp._renderSystem!; }
   /** The [[ViewManager]] for this session. */
@@ -55,6 +63,13 @@ export class IModelApp {
   public static accuDraw: AccuDraw;
   /** The [[AccuSnap]] for this session. */
   public static accuSnap: AccuSnap;
+  /** Implementation of [[IAuthorizationClient]] to supply the authorization information for this session */
+  public static get authorizationClient(): IAuthorizationClient | undefined {
+    return IModelApp._authorizationClient;
+  }
+  public static set authorizationClient(authorizationClient: IAuthorizationClient | undefined) {
+    IModelApp._authorizationClient = authorizationClient;
+  }
   /** @hidden */
   public static locateManager: ElementLocateManager;
   /** @hidden */
@@ -63,8 +78,10 @@ export class IModelApp {
   public static i18n: I18N;
   /** The [[SettingsAdmin]] for this session. */
   public static settings: SettingsAdmin;
-  /** The name of this application. */
+  /** The Id of this application. Applications must set this to the Global Product Registry ID (GPRID) for usage logging. */
   public static applicationId: string;
+  /** The version of this application. Must be set for usage logging. */
+  public static applicationVersion: string;
   /** A uniqueId for this session */
   public static sessionId: GuidString;
   /** @hidden */
@@ -88,10 +105,8 @@ export class IModelApp {
   /** @hidden */
   public static get hasRenderSystem() { return this._renderSystem !== undefined && this._renderSystem.isValid; }
 
-  /** @hidden This is to be refactored...for now it holds the AccessToken for the current session. Must be set by the application. */
-  public static accessToken?: AccessToken;
-
-  /** This method must be called before any iModel.js frontend services are used. Typically, an application will make a subclass of IModelApp
+  /**
+   * This method must be called before any iModel.js frontend services are used. Typically, an application will make a subclass of IModelApp
    * and call this method on that subclass. E.g:
    * ``` ts
    * MyApp extends IModelApp {
@@ -107,10 +122,18 @@ export class IModelApp {
     if (IModelApp._initialized)
       throw new IModelError(IModelStatus.AlreadyLoaded, "startup may only be called once");
 
+    // Setup a current context for all requests that originate from this frontend
+    const requestContext = new FrontendRequestContext();
+    requestContext.enter();
+
     IModelApp._initialized = true;
     IModelApp.sessionId = Guid.createValue();
+    IModelApp.applicationVersion = this.getApplicationVersion();
+
     if (imodelClient !== undefined)
       this._imodelClient = imodelClient;
+
+    IModelApp._setupRpcRequestContext();
 
     // get the localization system set up so registering tools works. At startup, the only namespace is the system namespace.
     IModelApp.i18n = new I18N(["iModelJs"], "iModelJs", this.supplyI18NOptions());
@@ -126,7 +149,7 @@ export class IModelApp {
     this.onStartup(); // allow subclasses to register their tools, set their applicationId, etc.
 
     // the startup function may have already allocated any of these members, so first test whether they're present
-    if (!IModelApp.applicationId) IModelApp.applicationId = "IModelJsApp";
+    if (!IModelApp.applicationId) IModelApp.applicationId = "2686";  // Default to product id of iModel.js
     if (!IModelApp.settings) IModelApp.settings = new ConnectSettingsClient(IModelApp.applicationId);
     if (!IModelApp._renderSystem) IModelApp._renderSystem = this.supplyRenderSystem();
     if (!IModelApp.viewManager) IModelApp.viewManager = new ViewManager();
@@ -171,4 +194,40 @@ export class IModelApp {
    * @hidden
    */
   protected static supplyRenderSystem(): RenderSystem { return System.create(); }
+
+  private static getApplicationVersion(): string {
+    return typeof (BUILD_SEMVER) !== "undefined" ? BUILD_SEMVER : "";
+  }
+
+  private static _setupRpcRequestContext() {
+    RpcConfiguration.requestContext.getId = (_request: RpcRequest): string => {
+      const id = ClientRequestContext.current.useContextForRpc ? ClientRequestContext.current.activityId : Guid.createValue(); // Use any context explicitly set for an RPC call if possible
+      ClientRequestContext.current.useContextForRpc = false; // Reset flag so it doesn't get used inadvertently for next RPC call
+      return id;
+    };
+
+    RpcConfiguration.requestContext.serialize = async (_request: RpcRequest): Promise<SerializedClientRequestContext> => {
+      const id = _request.id;
+
+      let authorization: string | undefined;
+      let userId: string | undefined;
+      if (IModelApp.authorizationClient) {
+        // todo: need to subscribe to token change events to avoid getting the string equivalent and compute length
+        const accessToken: AccessToken = await IModelApp.authorizationClient.getAccessToken();
+        authorization = accessToken.toTokenString(IncludePrefix.Yes);
+        userId = accessToken.getUserInfo()!.id;
+        const tokenLength = authorization.length;
+        if (tokenLength > 7.5 * 1024)
+          Logger.logError(loggingCategory, `AccessToken size is too large. Reduce the claims for SAML tokens, or consider migrating to OIDC!`, () => ({ tokenLength }));
+      }
+      return {
+        id,
+        applicationId: IModelApp.applicationId,
+        applicationVersion: IModelApp.applicationVersion,
+        sessionId: IModelApp.sessionId,
+        authorization,
+        userId,
+      };
+    };
+  }
 }

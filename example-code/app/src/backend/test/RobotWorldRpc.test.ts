@@ -9,15 +9,15 @@ import { SnapshotIModelRpcInterface, StandaloneIModelRpcInterface, IModel, IMode
 import { RobotWorldReadRpcInterface, RobotWorldWriteRpcInterface } from "../../common/RobotWorldRpcInterface";
 import { RobotWorldEngine } from "../RobotWorldEngine";
 import { KnownTestLocations } from "./KnownTestLocations";
-import { OpenMode, Id64String, Id64, ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { OpenMode, Id64String, Id64, ClientRequestContext } from "@bentley/bentleyjs-core";
 import { IModelTestUtils } from "./Utils";
 import { Point3d, Angle } from "@bentley/geometry-core";
 import { RobotWorld } from "../RobotWorldSchema";
 
-const actx = new ActivityLoggingContext("<backend-initialization>");
+const requestContext = new ClientRequestContext();
 
 function simulateBackendDeployment() {
-  RobotWorldEngine.initialize(actx);
+  RobotWorldEngine.initialize(requestContext);
 }
 
 function simulateBackendShutdown() {
@@ -30,7 +30,7 @@ async function setUpTest() {
   const seedFile = IModelTestUtils.resolveAssetFile("empty.bim");
   IModelJsFs.copySync(seedFile, iModelFile);
   const iModel = IModelDb.openStandalone(iModelFile, OpenMode.ReadWrite);
-  await RobotWorld.importSchema(actx, iModel);
+  await RobotWorld.importSchema(requestContext, iModel);
   iModel.saveChanges();
   PhysicalModel.insert(iModel, IModel.rootSubjectId, "test");
   iModel.saveChanges();

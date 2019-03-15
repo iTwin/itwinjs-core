@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import { BeEvent, ActivityLoggingContext, BentleyError, AuthStatus, Logger, assert } from "@bentley/bentleyjs-core";
+import { BeEvent, BentleyError, AuthStatus, Logger, assert, ClientRequestContext } from "@bentley/bentleyjs-core";
 import { AccessToken, OidcClient, IOidcFrontendClient, UserInfo, OidcFrontendClientConfiguration } from "@bentley/imodeljs-clients";
 import {
   AuthorizationRequest, AuthorizationRequestJson, AuthorizationNotifier, AuthorizationServiceConfiguration,
@@ -24,10 +24,11 @@ export class OidcDeviceClient extends OidcClient implements IOidcFrontendClient 
   private _configuration: AuthorizationServiceConfiguration | undefined;
   private _tokenResponse: TokenResponse | undefined;
   private _nodeRequestor = new NodeRequestor(); // the Node.js based HTTP client
-  private _actx?: ActivityLoggingContext;
+  private _requestContext?: ClientRequestContext;
+  private _accessToken?: AccessToken;
 
   /** Event called when the user's sign-in state changes - this may be due to calls to signIn(), signOut() or simply because the token expired */
-  public readonly onUserStateChanged = new BeEvent<(token: AccessToken | undefined) => void>();
+  public readonly onUserStateChanged = new BeEvent<(token: AccessToken | undefined, message: string) => void>();
 
   public constructor(clientConfiguration: OidcFrontendClientConfiguration) {
     super();
@@ -48,8 +49,8 @@ export class OidcDeviceClient extends OidcClient implements IOidcFrontendClient 
   }
 
   /** Used to initialize the client - must be awaited before any other methods are called */
-  public async initialize(actx: ActivityLoggingContext): Promise<void> {
-    const url = await this.getUrl(actx);
+  public async initialize(requestContext: ClientRequestContext): Promise<void> {
+    const url = await this.getUrl(requestContext);
     this._configuration = await AuthorizationServiceConfiguration.fetchFromIssuer(
       url,
       this._nodeRequestor,
@@ -57,49 +58,127 @@ export class OidcDeviceClient extends OidcClient implements IOidcFrontendClient 
     Logger.logTrace(loggingCategory, "Initialized service configuration", () => ({ configuration: this._configuration }));
   }
 
-  public getIsSignedIn(): boolean {
-    return !!this._tokenResponse && this._tokenResponse.isValid();
-  }
-
   /** Called to start the sign-in process. Subscribe to onUserStateChanged to be notified when sign-in completes */
-  public signIn(actx: ActivityLoggingContext): void {
-    if (this.getIsSignedIn())
+  private startSignIn(requestContext: ClientRequestContext): void {
+    if (this.hasSignedIn)
       return;
-    this.makeAuthorizationRequest(actx);
+    this.makeAuthorizationRequest(requestContext);
   }
 
   /** Called to start the sign-out process. Subscribe to onUserStateChanged to be notified when sign-out completes */
-  public signOut(actx: ActivityLoggingContext): void {
-    if (!this.getIsSignedIn())
+  private startSignOut(requestContext: ClientRequestContext): void {
+    if (!this.hasSignedIn)
       return;
-
-    this.makeRevokeTokenRequest(actx); // tslint:disable-line:no-floating-promises
+    this.makeRevokeTokenRequest(requestContext); // tslint:disable-line:no-floating-promises
   }
 
-  /** Returns a promise that resolves to the AccessToken if signed in, and undefined otherwise. The token is refreshed if it's possible and necessary. */
-  public async getAccessToken(actx: ActivityLoggingContext): Promise<AccessToken | undefined> {
-    actx.enter();
-    if (!this._tokenResponse)
-      throw new BentleyError(AuthStatus.Error, "Not signed In. First call signIn()", Logger.logError, loggingCategory);
+  /** Start the sign-in and return a promise that fulfils or rejects when it's complete
+   * Subscribe to onUserStateChanged to be notified when sign-in completes
+   */
+  public async signIn(requestContext: ClientRequestContext): Promise<AccessToken> {
+    return new Promise((resolve, reject) => {
+      try {
+        this.startSignIn(requestContext);
+      } catch (error) {
+        reject(error);
+      }
 
-    if (!this._tokenResponse.isValid()) {
-      await this.makeAccessTokenRequest(actx);
-      assert(this._tokenResponse.isValid());
-    }
+      this.onUserStateChanged.addListener((token: AccessToken | undefined, message: string) => {
+        if (token)
+          resolve(token);
+        else
+          reject(message);
+      });
+    });
+  }
 
+  /** Start the sign-out and return a promise that fulfils or rejects when it's complete
+   * Subscribe to onUserStateChanged to be notified when sign-out completes
+   */
+  public async signOut(requestContext: ClientRequestContext): Promise<void> {
+    return new Promise((resolve, reject) => {
+      try {
+        this.startSignOut(requestContext);
+      } catch (error) {
+        reject(error);
+      }
+
+      this.onUserStateChanged.addListener((token: AccessToken | undefined, _message: string) => {
+        if (!token)
+          resolve();
+        else
+          reject("Unable to signout");
+      });
+    });
+  }
+
+  private async getUserInfo(requestContext: ClientRequestContext): Promise<UserInfo | undefined> {
+    requestContext.enter();
+
+    assert(!!this._tokenResponse);
     const request = new Request(this._configuration!.userInfoEndpoint!, {
-      headers: new Headers({ Authorization: `Bearer ${this._tokenResponse.accessToken}` }),
+      headers: new Headers({ Authorization: `Bearer ${this._tokenResponse!.accessToken}` }),
       method: "GET",
       cache: "no-cache",
     });
 
     const result = await fetch(request);
     const user = await result.json();
-    const userInfo = UserInfo.fromJson(user);
+    requestContext.enter();
+
+    return UserInfo.fromJson(user);
+  }
+
+  /** Returns a promise that resolves to the AccessToken if signed in. The token is refreshed if it's possible and necessary. */
+  private async createOrRefreshAccessToken(requestContext: ClientRequestContext): Promise<void> {
+    requestContext.enter();
+
+    if (!this._tokenResponse)
+      throw new BentleyError(AuthStatus.Error, "Not signed In. First call signIn()", Logger.logError, loggingCategory);
+
+    if (this._tokenResponse.isValid()) {
+      if (this._accessToken)
+        return; // No need to update
+    } else {
+      this._tokenResponse = await this.makeRefreshTokenRequest(requestContext);
+      requestContext.enter();
+      assert(this._tokenResponse.isValid());
+    }
+
     const startsAt: Date = new Date(this._tokenResponse.issuedAt);
     const expiresAt: Date = new Date(this._tokenResponse.issuedAt + this._tokenResponse.expiresIn!);
-    const accessToken = AccessToken.fromJsonWebTokenString(this._tokenResponse.accessToken, startsAt, expiresAt, userInfo);
-    return Promise.resolve(accessToken);
+    const userInfo: UserInfo | undefined = await this.getUserInfo(requestContext);
+
+    this._accessToken = AccessToken.fromJsonWebTokenString(this._tokenResponse.accessToken, startsAt, expiresAt, userInfo);
+  }
+
+  /** Returns a promise that resolves to the AccessToken of the currently authorized user.
+   * The token is refreshed as necessary.
+   * @throws [[BentleyError]] If signIn() was not called, or there was an authorization error.
+   */
+  public async getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken> {
+    if (this.isAuthorized)
+      return this._accessToken!;
+    await this.createOrRefreshAccessToken(requestContext || new ClientRequestContext());
+    assert(!!this._accessToken);
+    return this._accessToken!;
+  }
+
+  /** Returns true if there's a current authorized user or client (in the case of agent applications).
+   * Returns true if signed in and the access token has not expired, and false otherwise.
+   */
+  public get isAuthorized(): boolean {
+    return this.hasSignedIn && this._tokenResponse!.isValid();
+  }
+
+  /** Returns true if the user has signed in, but the token has expired and requires a refresh */
+  public get hasExpired(): boolean {
+    return this.hasSignedIn && !this._tokenResponse!.isValid();
+  }
+
+  /** Returns true if the user has signed in, but the token has expired and requires a refresh */
+  public get hasSignedIn(): boolean {
+    return !!this._tokenResponse && !!this._accessToken;
   }
 
   /** Disposes the resources held by this client */
@@ -107,27 +186,32 @@ export class OidcDeviceClient extends OidcClient implements IOidcFrontendClient 
   }
 
   private async authorizationListener(authRequest: AuthorizationRequest, authResponse: AuthorizationResponse | null, authError: AuthorizationError | null) {
-    assert(!!this._actx);
-    const actx: ActivityLoggingContext = this._actx!;
-    this._actx = undefined;
-    actx.enter();
+    assert(!!this._requestContext);
+    const requestContext: ClientRequestContext = this._requestContext!;
+    this._requestContext = undefined;
+    requestContext.enter();
 
     Logger.logTrace(loggingCategory, "Authorization listener invoked", () => ({ authRequest, authResponse, authError }));
-    if (authError || !authResponse)
-      throw new BentleyError(AuthStatus.Error, "Authorization error", Logger.logError, loggingCategory, () => authError);
+    if (authError || !authResponse) {
+      const errorMessage = authError ? authError.error : "Authorization error";
+      Logger.logError(loggingCategory, errorMessage, () => authError);
+      this.onUserStateChanged.raiseEvent(undefined, errorMessage);
+      return;
+    }
 
-    await this.makeRefreshTokenRequest(this._actx!, authResponse.code, authRequest);
-    actx.enter();
+    this._tokenResponse = await this.requestAccessTokenFromCode(requestContext, authResponse.code, authRequest);
+    requestContext.enter();
 
-    const accessToken: AccessToken | undefined = await this.getAccessToken(this._actx!);
-    actx.enter();
+    await this.createOrRefreshAccessToken(requestContext);
+    requestContext.enter();
 
-    Logger.logTrace(loggingCategory, "Authorization completed, and issued access token");
-    this.onUserStateChanged.raiseEvent(accessToken);
+    const message = "Authorization completed, and issued access token";
+    Logger.logTrace(loggingCategory, message);
+    this.onUserStateChanged.raiseEvent(this._accessToken, message);
   }
 
-  private makeAuthorizationRequest(actx: ActivityLoggingContext) {
-    actx.enter();
+  private makeAuthorizationRequest(requestContext: ClientRequestContext) {
+    requestContext.enter();
     if (!this._configuration)
       throw new BentleyError(AuthStatus.Error, "Not initialized. First call initialize()", Logger.logError, loggingCategory);
 
@@ -145,7 +229,7 @@ export class OidcDeviceClient extends OidcClient implements IOidcFrontendClient 
     );
 
     Logger.logTrace(loggingCategory, "Making authorization request", () => ({ configuration: this._configuration, request }));
-    this._actx = actx;
+    this._requestContext = requestContext;
     this._authorizationHandler.performAuthorizationRequest(
       this._configuration,
       request,
@@ -153,8 +237,8 @@ export class OidcDeviceClient extends OidcClient implements IOidcFrontendClient 
   }
 
   /** Make a request for a refresh token starting with the authorization code */
-  private async makeRefreshTokenRequest(actx: ActivityLoggingContext, authCode: string, authRequest: AuthorizationRequest): Promise<TokenResponse> {
-    actx.enter();
+  private async requestAccessTokenFromCode(requestContext: ClientRequestContext, authCode: string, authRequest: AuthorizationRequest): Promise<TokenResponse> {
+    requestContext.enter();
     if (!this._configuration)
       throw new BentleyError(AuthStatus.Error, "Not initialized. First call initialize()", Logger.logError, loggingCategory);
 
@@ -173,12 +257,11 @@ export class OidcDeviceClient extends OidcClient implements IOidcFrontendClient 
     };
 
     const request = new TokenRequest(tokenRequestJson);
-    this._tokenResponse = await this._tokenHandler.performTokenRequest(this._configuration, request);
-    return this._tokenResponse;
+    return this._tokenHandler.performTokenRequest(this._configuration, request);
   }
 
-  private async makeAccessTokenRequest(actx: ActivityLoggingContext): Promise<TokenResponse> {
-    actx.enter();
+  private async makeRefreshTokenRequest(requestContext: ClientRequestContext): Promise<TokenResponse> {
+    requestContext.enter();
     if (!this._configuration)
       throw new BentleyError(AuthStatus.Error, "Not initialized. First call initialize()", Logger.logError, loggingCategory);
     if (!this._tokenResponse)
@@ -192,14 +275,11 @@ export class OidcDeviceClient extends OidcClient implements IOidcFrontendClient 
     };
 
     const request = new TokenRequest(tokenRequestJson);
-    this._tokenResponse = await this._tokenHandler.performTokenRequest(this._configuration, request);
-    actx.enter();
-
-    return this._tokenResponse;
+    return this._tokenHandler.performTokenRequest(this._configuration, request);
   }
 
-  private async makeRevokeTokenRequest(actx: ActivityLoggingContext): Promise<void> {
-    actx.enter();
+  private async makeRevokeTokenRequest(requestContext: ClientRequestContext): Promise<void> {
+    requestContext.enter();
     if (!this._configuration)
       throw new BentleyError(AuthStatus.Error, "Not initialized. First call initialize()", Logger.logError, loggingCategory);
     if (!this._tokenResponse)
@@ -207,7 +287,7 @@ export class OidcDeviceClient extends OidcClient implements IOidcFrontendClient 
 
     const request = new RevokeTokenRequest({ token: this._tokenResponse.refreshToken! });
     await this._tokenHandler.performRevokeTokenRequest(this._configuration, request);
-    actx.enter();
+    requestContext.enter();
 
     this._tokenResponse = undefined;
     Logger.logTrace(loggingCategory, "Authorization revoked, and removed access token");

@@ -10,7 +10,7 @@ import {
   createRandomECInstanceNodeKey, createRandomECInstanceNode, createRandomNodePathElement,
   createRandomDescriptor, createRandomRuleset, createRandomId, createRandomSelectionScope,
 } from "@bentley/presentation-common/lib/test/_helpers/random";
-import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { ClientRequestContext } from "@bentley/bentleyjs-core";
 import { IModelToken } from "@bentley/imodeljs-common";
 import { IModelDb } from "@bentley/imodeljs-backend";
 import {
@@ -69,8 +69,8 @@ describe("PresentationRpcImpl", () => {
       testData.imodelMock.setup((x: IModelDb) => x.iModelToken).returns(() => testData.imodelToken);
       IModelDb.find = () => testData.imodelMock.object;
       impl = new PresentationRpcImpl();
-      const actx = new ActivityLoggingContext("");
-      actx.enter();
+      const requestContext = new ClientRequestContext();
+      requestContext.enter();
     });
 
     it("returns invalid argument status code when using invalid imodel token", async () => {
@@ -87,7 +87,7 @@ describe("PresentationRpcImpl", () => {
     describe("verifyRequest", () => {
 
       beforeEach(() => {
-        presentationManagerMock.setup((x) => x.getNodesCount(ActivityLoggingContext.current, moq.It.isAny())).returns(async () => faker.random.number());
+        presentationManagerMock.setup((x) => x.getNodesCount(ClientRequestContext.current, moq.It.isAny())).returns(async () => faker.random.number());
       });
 
       it("succeeds if request doesn't specify clientStateId", async () => {
@@ -214,7 +214,7 @@ describe("PresentationRpcImpl", () => {
           paging: testData.pageOptions,
         };
 
-        presentationManagerMock.setup((x) => x.getNodesAndCount(ActivityLoggingContext.current, { ...options, imodel: testData.imodelMock.object }, undefined))
+        presentationManagerMock.setup((x) => x.getNodesAndCount(ClientRequestContext.current, { ...options, imodel: testData.imodelMock.object }, undefined))
           .returns(async () => ({ nodes: getRootNodesResult, count: getRootNodesCountResult }))
           .verifiable();
         const actualResult = await impl.getNodesAndCount(testData.imodelToken, { ...defaultRpcParams, ...options });
@@ -233,7 +233,7 @@ describe("PresentationRpcImpl", () => {
           paging: testData.pageOptions,
         };
 
-        presentationManagerMock.setup((x) => x.getNodesAndCount(ActivityLoggingContext.current, { ...options, imodel: testData.imodelMock.object }, parentNodeKey))
+        presentationManagerMock.setup((x) => x.getNodesAndCount(ClientRequestContext.current, { ...options, imodel: testData.imodelMock.object }, parentNodeKey))
           .returns(async () => ({ nodes: getChildNodeResult, count: getChildNodesCountResult }))
           .verifiable();
         const actualResult = await impl.getNodesAndCount(testData.imodelToken, { ...defaultRpcParams, ...options }, parentNodeKey);
@@ -252,7 +252,7 @@ describe("PresentationRpcImpl", () => {
           rulesetId: testData.rulesetId,
           paging: testData.pageOptions,
         };
-        presentationManagerMock.setup((x) => x.getNodes(ActivityLoggingContext.current, { ...options, imodel: testData.imodelMock.object }, undefined))
+        presentationManagerMock.setup((x) => x.getNodes(ClientRequestContext.current, { ...options, imodel: testData.imodelMock.object }, undefined))
           .returns(async () => result)
           .verifiable();
         const actualResult = await impl.getNodes(testData.imodelToken, { ...defaultRpcParams, ...options });
@@ -267,7 +267,7 @@ describe("PresentationRpcImpl", () => {
           rulesetId: testData.rulesetId,
           paging: testData.pageOptions,
         };
-        presentationManagerMock.setup((x) => x.getNodes(ActivityLoggingContext.current, { ...options, imodel: testData.imodelMock.object }, parentNodeKey))
+        presentationManagerMock.setup((x) => x.getNodes(ClientRequestContext.current, { ...options, imodel: testData.imodelMock.object }, parentNodeKey))
           .returns(() => Promise.resolve(result))
           .verifiable();
         const actualResult = await impl.getNodes(testData.imodelToken, { ...defaultRpcParams, ...options }, parentNodeKey);
@@ -284,7 +284,7 @@ describe("PresentationRpcImpl", () => {
         const options: Omit<HierarchyRequestOptions<IModelToken>, "imodel"> = {
           rulesetId: testData.rulesetId,
         };
-        presentationManagerMock.setup((x) => x.getNodesCount(ActivityLoggingContext.current, { ...options, imodel: testData.imodelMock.object }, undefined))
+        presentationManagerMock.setup((x) => x.getNodesCount(ClientRequestContext.current, { ...options, imodel: testData.imodelMock.object }, undefined))
           .returns(() => Promise.resolve(result))
           .verifiable();
         const actualResult = await impl.getNodesCount(testData.imodelToken, { ...defaultRpcParams, ...options });
@@ -298,7 +298,7 @@ describe("PresentationRpcImpl", () => {
         const options: Omit<HierarchyRequestOptions<IModelToken>, "imodel"> = {
           rulesetId: testData.rulesetId,
         };
-        presentationManagerMock.setup((x) => x.getNodesCount(ActivityLoggingContext.current, { ...options, imodel: testData.imodelMock.object }, parentNodeKey))
+        presentationManagerMock.setup((x) => x.getNodesCount(ClientRequestContext.current, { ...options, imodel: testData.imodelMock.object }, parentNodeKey))
           .returns(() => Promise.resolve(result))
           .verifiable();
         const actualResult = await impl.getNodesCount(testData.imodelToken, { ...defaultRpcParams, ...options }, parentNodeKey);
@@ -315,7 +315,7 @@ describe("PresentationRpcImpl", () => {
         const options: Omit<HierarchyRequestOptions<IModelToken>, "imodel"> = {
           rulesetId: testData.rulesetId,
         };
-        presentationManagerMock.setup((x) => x.getFilteredNodePaths(ActivityLoggingContext.current, { ...options, imodel: testData.imodelMock.object }, "filter"))
+        presentationManagerMock.setup((x) => x.getFilteredNodePaths(ClientRequestContext.current, { ...options, imodel: testData.imodelMock.object }, "filter"))
           .returns(async () => result)
           .verifiable();
         const actualResult = await impl.getFilteredNodePaths(testData.imodelToken, { ...defaultRpcParams, ...options }, "filter");
@@ -333,7 +333,7 @@ describe("PresentationRpcImpl", () => {
         const options: Omit<HierarchyRequestOptions<IModelToken>, "imodel"> = {
           rulesetId: testData.rulesetId,
         };
-        presentationManagerMock.setup((x) => x.getNodePaths(ActivityLoggingContext.current, { ...options, imodel: testData.imodelMock.object }, keyArray, 1))
+        presentationManagerMock.setup((x) => x.getNodePaths(ClientRequestContext.current, { ...options, imodel: testData.imodelMock.object }, keyArray, 1))
           .returns(async () => result)
           .verifiable();
         const actualResult = await impl.getNodePaths(testData.imodelToken, { ...defaultRpcParams, ...options }, keyArray, 1);
@@ -355,7 +355,7 @@ describe("PresentationRpcImpl", () => {
         const options: Omit<ContentRequestOptions<IModelToken>, "imodel"> = {
           rulesetId: testData.rulesetId,
         };
-        presentationManagerMock.setup((x) => x.getContentDescriptor(ActivityLoggingContext.current, { ...options, imodel: testData.imodelMock.object }, testData.displayType, testData.inputKeys, undefined))
+        presentationManagerMock.setup((x) => x.getContentDescriptor(ClientRequestContext.current, { ...options, imodel: testData.imodelMock.object }, testData.displayType, testData.inputKeys, undefined))
           .returns(async () => result)
           .verifiable();
 
@@ -370,7 +370,7 @@ describe("PresentationRpcImpl", () => {
         const options: Omit<ContentRequestOptions<IModelToken>, "imodel"> = {
           rulesetId: testData.rulesetId,
         };
-        presentationManagerMock.setup((x) => x.getContentDescriptor(ActivityLoggingContext.current, { ...options, imodel: testData.imodelMock.object }, testData.displayType, testData.inputKeys, undefined))
+        presentationManagerMock.setup((x) => x.getContentDescriptor(ClientRequestContext.current, { ...options, imodel: testData.imodelMock.object }, testData.displayType, testData.inputKeys, undefined))
           .returns(async () => undefined)
           .verifiable();
         const actualResult = await impl.getContentDescriptor(testData.imodelToken, { ...defaultRpcParams, ...options },
@@ -399,7 +399,7 @@ describe("PresentationRpcImpl", () => {
           paging: testData.pageOptions,
         };
 
-        presentationManagerMock.setup(async (x) => x.getContentAndSize(ActivityLoggingContext.current, { ...options, imodel: testData.imodelMock.object }, descriptorMock.object, testData.inputKeys))
+        presentationManagerMock.setup(async (x) => x.getContentAndSize(ClientRequestContext.current, { ...options, imodel: testData.imodelMock.object }, descriptorMock.object, testData.inputKeys))
           .returns(async () => ({ content: contentMock.object, size: contentSizeResult }))
           .verifiable();
 
@@ -424,7 +424,7 @@ describe("PresentationRpcImpl", () => {
           paging: testData.pageOptions,
         };
         presentationManagerMock
-          .setup(async (x) => x.getContentAndSize(ActivityLoggingContext.current, { ...options, imodel: testData.imodelMock.object }, descriptorOverrides, testData.inputKeys))
+          .setup(async (x) => x.getContentAndSize(ClientRequestContext.current, { ...options, imodel: testData.imodelMock.object }, descriptorOverrides, testData.inputKeys))
           .returns(async () => ({ content: undefined, size: 0 }))
           .verifiable();
 
@@ -448,7 +448,7 @@ describe("PresentationRpcImpl", () => {
           rulesetId: testData.rulesetId,
         };
         presentationManagerMock
-          .setup(async (x) => x.getContentSetSize(ActivityLoggingContext.current, { ...options, imodel: testData.imodelMock.object }, descriptor, testData.inputKeys))
+          .setup(async (x) => x.getContentSetSize(ClientRequestContext.current, { ...options, imodel: testData.imodelMock.object }, descriptor, testData.inputKeys))
           .returns(async () => Promise.resolve(result))
           .verifiable();
         const actualResult = await impl.getContentSetSize(testData.imodelToken, { ...defaultRpcParams, ...options },
@@ -474,7 +474,7 @@ describe("PresentationRpcImpl", () => {
           rulesetId: testData.rulesetId,
           paging: testData.pageOptions,
         };
-        presentationManagerMock.setup(async (x) => x.getContent(ActivityLoggingContext.current, { ...options, imodel: testData.imodelMock.object }, descriptorMock.object, testData.inputKeys))
+        presentationManagerMock.setup(async (x) => x.getContent(ClientRequestContext.current, { ...options, imodel: testData.imodelMock.object }, descriptorMock.object, testData.inputKeys))
           .returns(async () => contentMock.object)
           .verifiable();
         const actualResult = await impl.getContent(testData.imodelToken, { ...defaultRpcParams, ...options },
@@ -494,7 +494,7 @@ describe("PresentationRpcImpl", () => {
           rulesetId: testData.rulesetId,
           paging: testData.pageOptions,
         };
-        presentationManagerMock.setup(async (x) => x.getContent(ActivityLoggingContext.current, { ...options, imodel: testData.imodelMock.object }, descriptorOverrides, testData.inputKeys))
+        presentationManagerMock.setup(async (x) => x.getContent(ClientRequestContext.current, { ...options, imodel: testData.imodelMock.object }, descriptorOverrides, testData.inputKeys))
           .returns(async () => undefined)
           .verifiable();
         const actualResult = await impl.getContent(testData.imodelToken, { ...defaultRpcParams, ...options },
@@ -515,7 +515,7 @@ describe("PresentationRpcImpl", () => {
         const options: Omit<ContentRequestOptions<IModelToken>, "imodel"> = {
           rulesetId: testData.rulesetId,
         };
-        presentationManagerMock.setup((x) => x.getDistinctValues(ActivityLoggingContext.current, { ...options, imodel: testData.imodelMock.object }, descriptor, testData.inputKeys, fieldName, maximumValueCount))
+        presentationManagerMock.setup((x) => x.getDistinctValues(ClientRequestContext.current, { ...options, imodel: testData.imodelMock.object }, descriptor, testData.inputKeys, fieldName, maximumValueCount))
           .returns(async () => distinctValues)
           .verifiable();
         const actualResult = await impl.getDistinctValues(testData.imodelToken, { ...defaultRpcParams, ...options }, descriptor,
@@ -533,7 +533,7 @@ describe("PresentationRpcImpl", () => {
           imodel: testData.imodelToken,
         };
         const result = [createRandomSelectionScope()];
-        presentationManagerMock.setup(async (x) => x.getSelectionScopes(ActivityLoggingContext.current, { ...options, imodel: testData.imodelMock.object }))
+        presentationManagerMock.setup(async (x) => x.getSelectionScopes(ClientRequestContext.current, { ...options, imodel: testData.imodelMock.object }))
           .returns(async () => result)
           .verifiable();
         const actualResult = await impl.getSelectionScopes(testData.imodelToken, { ...defaultRpcParams, ...options });
@@ -552,7 +552,7 @@ describe("PresentationRpcImpl", () => {
         const scope = createRandomSelectionScope();
         const ids = [createRandomId()];
         const result = new KeySet();
-        presentationManagerMock.setup(async (x) => x.computeSelection(ActivityLoggingContext.current, { ...options, imodel: testData.imodelMock.object }, ids, scope.id))
+        presentationManagerMock.setup(async (x) => x.computeSelection(ClientRequestContext.current, { ...options, imodel: testData.imodelMock.object }, ids, scope.id))
           .returns(async () => result)
           .verifiable();
         const actualResult = await impl.computeSelection(testData.imodelToken, { ...defaultRpcParams, ...options }, ids, scope.id);

@@ -4,9 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Core */
 
-import { IDisposable, ActivityLoggingContext } from "@bentley/bentleyjs-core";
-import { IModelJsNative } from "@bentley/imodeljs-backend";
-import { IModelDb, IModelHost } from "@bentley/imodeljs-backend";
+import { IDisposable, ClientRequestContext } from "@bentley/bentleyjs-core";
+import { IModelJsNative, IModelDb, IModelHost } from "@bentley/imodeljs-backend";
 import { PresentationError, PresentationStatus } from "@bentley/presentation-common";
 import { VariableValueJSON, VariableValueTypes } from "@bentley/presentation-common/lib/RulesetVariables";
 
@@ -33,7 +32,7 @@ export interface NativePlatformDefinition extends IDisposable {
   addRuleset(serializedRulesetJson: string): string;
   removeRuleset(rulesetId: string, hash: string): boolean;
   clearRulesets(): void;
-  handleRequest(activityLoggingContext: ActivityLoggingContext, db: any, options: string): Promise<string>;
+  handleRequest(requestContext: ClientRequestContext, db: any, options: string): Promise<string>;
   getRulesetVariableValue(rulesetId: string, variableId: string, type: VariableValueTypes): VariableValueJSON;
   setRulesetVariableValue(rulesetId: string, variableId: string, type: VariableValueTypes, value: VariableValueJSON): void;
 }
@@ -91,8 +90,8 @@ export const createDefaultNativePlatform = (): { new(): NativePlatformDefinition
     public clearRulesets(): void {
       this.handleVoidResult(this._nativeAddon.clearRulesets());
     }
-    public handleRequest(activityLoggingContext: ActivityLoggingContext, db: any, options: string): Promise<string> {
-      activityLoggingContext.enter();
+    public handleRequest(requestContext: ClientRequestContext, db: any, options: string): Promise<string> {
+      requestContext.enter();
       return new Promise((resolve, reject) => {
         this._nativeAddon.handleRequest(db, options, (response) => {
           try {

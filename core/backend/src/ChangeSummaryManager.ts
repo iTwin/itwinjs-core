@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module iModels */
 
-import { AccessToken, ChangeSet, ChangeSetQuery } from "@bentley/imodeljs-clients";
+import { ChangeSet, ChangeSetQuery, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
 import { IModelJsNative } from "./IModelJsNative";
-import { Id64String, GuidString, using, assert, Logger, PerfLogger, DbResult, ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { Id64String, GuidString, using, assert, Logger, PerfLogger, DbResult } from "@bentley/bentleyjs-core";
 import { IModelDb } from "./IModelDb";
 import { ECDb, ECDbOpenMode } from "./ECDb";
 import { ECSqlStatement } from "./ECSqlStatement";
@@ -58,7 +58,7 @@ export interface ChangeSummaryExtractOptions {
 }
 
 export class ChangeSummaryExtractContext {
-  public constructor(public readonly accessToken: AccessToken, public readonly iModel: IModelDb) { }
+  public constructor(public readonly iModel: IModelDb) { }
 
   public get iModelId(): GuidString { assert(!!this.iModel.briefcase); return this.iModel.briefcase!.iModelId; }
 }
@@ -125,6 +125,7 @@ export class ChangeSummaryManager {
   /** Extracts change summaries from the specified iModel.
    * Change summaries are extracted from the specified start version up through the version the iModel was opened with.
    * If no start version has been specified, the first version will be used.
+   * @param requestContext The client request context
    * @param iModel iModel to extract change summaries for. The iModel must not be a standalone iModel.
    * Note: For every version to extract a summary from, the method moves the iModel to that version before extraction. After
    * the extraction has completed, the iModel is moved back to the original version.
@@ -132,12 +133,12 @@ export class ChangeSummaryManager {
    * @return the Ids of the extracted change summaries.
    * @throws [IModelError]($common) if the iModel is standalone
    */
-  public static async extractChangeSummaries(actx: ActivityLoggingContext, accessToken: AccessToken, iModel: IModelDb, options?: ChangeSummaryExtractOptions): Promise<Id64String[]> {
-    actx.enter();
+  public static async extractChangeSummaries(requestContext: AuthorizedClientRequestContext, iModel: IModelDb, options?: ChangeSummaryExtractOptions): Promise<Id64String[]> {
+    requestContext.enter();
     if (!iModel || !iModel.briefcase || !iModel.briefcase.isOpen || iModel.openParams.isStandalone)
       throw new IModelError(IModelStatus.BadArg, "iModel to extract change summaries for must be open and must not be a standalone iModel.");
 
-    const ctx = new ChangeSummaryExtractContext(accessToken, iModel);
+    const ctx = new ChangeSummaryExtractContext(iModel);
 
     const endChangeSetId: GuidString = iModel.briefcase.currentChangeSetId;
     assert(endChangeSetId.length !== 0);
@@ -145,8 +146,8 @@ export class ChangeSummaryManager {
     let startChangeSetId: GuidString = "";
     if (options) {
       if (options.startVersion) {
-        startChangeSetId = await options.startVersion.evaluateChangeSet(actx, ctx.accessToken, ctx.iModelId, BriefcaseManager.imodelClient);
-        actx.enter();
+        startChangeSetId = await options.startVersion.evaluateChangeSet(requestContext, ctx.iModelId, BriefcaseManager.imodelClient);
+        requestContext.enter();
       } else if (options.currentVersionOnly) {
         startChangeSetId = endChangeSetId;
       }
@@ -157,8 +158,8 @@ export class ChangeSummaryManager {
 
     // download necessary changesets if they were not downloaded before and retrieve infos about those changesets
     let perfLogger = new PerfLogger("ChangeSummaryManager.extractChangeSummaries>Retrieve ChangeSetInfos and download ChangeSets from Hub");
-    const changeSetInfos: ChangeSet[] = await ChangeSummaryManager.downloadChangeSets(actx, ctx, startChangeSetId, endChangeSetId);
-    actx.enter();
+    const changeSetInfos: ChangeSet[] = await ChangeSummaryManager.downloadChangeSets(requestContext, ctx, startChangeSetId, endChangeSetId);
+    requestContext.enter();
     perfLogger.dispose();
     Logger.logTrace(loggingCategory, "Retrieved changesets to extract from from cache or from hub.", () => ({ iModel: ctx.iModelId, startChangeset: startChangeSetId, endChangeset: endChangeSetId, changeSets: changeSetInfos }));
 
@@ -194,8 +195,8 @@ export class ChangeSummaryManager {
         // iModel is at end changeset, so no need to reverse for it.
         if (i !== endChangeSetIx) {
           perfLogger = new PerfLogger("ChangeSummaryManager.extractChangeSummaries>Roll iModel to previous changeset");
-          await iModel.reverseChanges(actx, accessToken, IModelVersion.asOfChangeSet(currentChangeSetId));
-          actx.enter();
+          await iModel.reverseChanges(requestContext, IModelVersion.asOfChangeSet(currentChangeSetId));
+          requestContext.enter();
           perfLogger.dispose();
           Logger.logTrace(loggingCategory, `Moved iModel to changeset #${i + 1} to extract summary from.`, () => ({ iModel: ctx.iModelId, changeset: currentChangeSetId }));
         }
@@ -229,8 +230,8 @@ export class ChangeSummaryManager {
 
       perfLogger = new PerfLogger("ChangeSummaryManager.extractChangeSummaries>Move iModel to original changeset");
       if (iModel.briefcase.currentChangeSetId !== endChangeSetId)
-        await iModel.reinstateChanges(actx, accessToken, IModelVersion.asOfChangeSet(endChangeSetId));
-      actx.enter();
+        await iModel.reinstateChanges(requestContext, IModelVersion.asOfChangeSet(endChangeSetId));
+      requestContext.enter();
       perfLogger.dispose();
       Logger.logTrace(loggingCategory, "Moved iModel to initial changeset (the end changeset).", () => ({ iModel: ctx.iModelId, startChangeset: startChangeSetId, endChangeset: endChangeSetId }));
 
@@ -239,8 +240,8 @@ export class ChangeSummaryManager {
     }
   }
 
-  public static async downloadChangeSets(actx: ActivityLoggingContext, ctx: ChangeSummaryExtractContext, startChangeSetId: GuidString, endChangeSetId: GuidString): Promise<ChangeSet[]> {
-    actx.enter();
+  public static async downloadChangeSets(requestContext: AuthorizedClientRequestContext, ctx: ChangeSummaryExtractContext, startChangeSetId: GuidString, endChangeSetId: GuidString): Promise<ChangeSet[]> {
+    requestContext.enter();
     // Get the change set before the startChangeSet so that startChangeSet is included in the download and processing
     let beforeStartChangeSetId: GuidString;
     if (startChangeSetId.length === 0)
@@ -249,8 +250,8 @@ export class ChangeSummaryManager {
       const query = new ChangeSetQuery();
       query.byId(startChangeSetId);
 
-      const changeSets: ChangeSet[] = await BriefcaseManager.imodelClient.changeSets.get(actx, ctx.accessToken, ctx.iModelId, query);
-      actx.enter();
+      const changeSets: ChangeSet[] = await BriefcaseManager.imodelClient.changeSets.get(requestContext, ctx.iModelId, query);
+      requestContext.enter();
       if (changeSets.length === 0)
         throw new Error(`Unable to find change set ${startChangeSetId} for iModel ${ctx.iModelId}`);
 
@@ -259,8 +260,8 @@ export class ChangeSummaryManager {
       beforeStartChangeSetId = !changeSetInfo.parentId ? "" : changeSetInfo.parentId;
     }
 
-    const changeSetInfos: ChangeSet[] = await BriefcaseManager.downloadChangeSets(actx, ctx.accessToken, ctx.iModelId, beforeStartChangeSetId, endChangeSetId);
-    actx.enter();
+    const changeSetInfos: ChangeSet[] = await BriefcaseManager.downloadChangeSets(requestContext, ctx.iModelId, beforeStartChangeSetId, endChangeSetId);
+    requestContext.enter();
     assert(startChangeSetId.length === 0 || startChangeSetId === changeSetInfos[0].wsgId);
     assert(endChangeSetId === changeSetInfos[changeSetInfos.length - 1].wsgId);
     return changeSetInfos;

@@ -4,9 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module ClientServices */
 
-import { ConnectClient, AccessToken, Project, ConnectRequestQueryOptions } from "@bentley/imodeljs-clients";
+import { ConnectClient, AccessToken, Project, ConnectRequestQueryOptions, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
 import { ProjectServices, ProjectScope, ProjectInfo, ProjectReadStatus } from "./ProjectServices";
-import { ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
 
 class ProjectInfoImpl implements ProjectInfo {
   public readStatus: ProjectReadStatus;
@@ -35,7 +34,7 @@ export class DefaultProjectServices implements ProjectServices {
 
   /** Get projects accessible to the user based on various scopes/criteria */
   public async getProjects(accessToken: AccessToken, projectScope: ProjectScope, top: number, skip: number, filter?: string): Promise<ProjectInfo[]> {
-    const alctx = new ActivityLoggingContext(Guid.createValue());
+    const requestContext = new AuthorizedClientRequestContext(accessToken);
 
     const queryOptions: ConnectRequestQueryOptions = {
       $select: "*", // TODO: Get Name,Number,AssetType to work
@@ -47,7 +46,7 @@ export class DefaultProjectServices implements ProjectServices {
     let projectList: Project[];
     try {
       if (projectScope === ProjectScope.Invited) {
-        projectList = await this._connectClient.getInvitedProjects(alctx, accessToken, queryOptions);
+        projectList = await this._connectClient.getInvitedProjects(requestContext, queryOptions);
       }
 
       if (projectScope === ProjectScope.Favorites) {
@@ -56,7 +55,7 @@ export class DefaultProjectServices implements ProjectServices {
         queryOptions.isMRU = true;
       }
 
-      projectList = await this._connectClient.getProjects(alctx, accessToken, queryOptions);
+      projectList = await this._connectClient.getProjects(requestContext, queryOptions);
     } catch (e) {
       alert(JSON.stringify(e));
       return Promise.reject(e);

@@ -79,7 +79,7 @@
     "@types/chai": "^4.1.4",
     "@types/js-base64": "^2.3.1",
     "@types/mocha": "^5.2.5",
-    "@types/node": "10.12.18",
+    "@types/node": "10.14.1",
     "@types/semver": "^5.5.0",
     "chai": "^4.1.2",
     "glob": "^7.1.2",

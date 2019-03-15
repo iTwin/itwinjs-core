@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module IModelHost */
 
-import { BeEvent, Logger, IModelStatus } from "@bentley/bentleyjs-core";
-import { Config, IModelClient, UrlDiscoveryClient } from "@bentley/imodeljs-clients";
-import { BentleyStatus, IModelError, MobileRpcConfiguration } from "@bentley/imodeljs-common";
+import { BentleyStatus, IModelError, MobileRpcConfiguration, RpcConfiguration, SerializedRpcRequest } from "@bentley/imodeljs-common";
+import { BeEvent, Logger, IModelStatus, GuidString, Guid, AuthStatus, ClientRequestContext, BentleyError } from "@bentley/bentleyjs-core";
+import { Config, IModelClient, UrlDiscoveryClient, IAuthorizationClient, AccessToken, AuthorizedClientRequestContext, UserInfo } from "@bentley/imodeljs-clients";
 import * as path from "path";
 import { BisCore } from "./BisCore";
 import { BriefcaseManager } from "./BriefcaseManager";
@@ -14,6 +14,7 @@ import { Functional } from "./domains/Functional";
 import { Generic } from "./domains/Generic";
 import { IModelJsFs } from "./IModelJsFs";
 import { IModelJsNative } from "./IModelJsNative";
+import { BackendRequestContext } from "./BackendRequestContext";
 import { IModelReadRpcImpl } from "./rpc-impl/IModelReadRpcImpl";
 import { IModelTileRpcImpl } from "./rpc-impl/IModelTileRpcImpl";
 import { IModelWriteRpcImpl } from "./rpc-impl/IModelWriteRpcImpl";
@@ -61,6 +62,7 @@ export class IModelHostConfiguration {
  * See [the learning article]($docs/learning/backend/IModelHost.md)
  */
 export class IModelHost {
+  private static _authorizationClient?: IAuthorizationClient;
   public static backendVersion = "";
   private static _platform?: typeof IModelJsNative;
   public static get platform(): typeof IModelJsNative { return this._platform!; }
@@ -71,6 +73,39 @@ export class IModelHost {
 
   /** Event raised just before the backend IModelHost is to be shut down */
   public static readonly onBeforeShutdown = new BeEvent<() => void>();
+
+  /** A uniqueId for this backend session */
+  public static sessionId: GuidString;
+
+  /** The Id of this backend application - needs to be set only if it is an agent application. The applicationId
+   * will otherwise originate at the frontend.
+   */
+  public static applicationId: string;
+
+  /** The version of this backend application - needs to be set if is an agent application. The applicationVersion
+   * will otherwise originate at the frontend.
+   */
+  public static applicationVersion: string;
+
+  /** Implementation of [[IAuthorizationClient]] to supply the authorization information for this session - only required for backend applications */
+  public static get authorizationClient(): IAuthorizationClient | undefined {
+    return IModelHost._authorizationClient;
+  }
+  public static set authorizationClient(authorizationClient: IAuthorizationClient | undefined) {
+    IModelHost._authorizationClient = authorizationClient;
+  }
+
+  /** Get the active authorization/access token for use with various services
+   * @throws [[BentleyError]] if the access token cannot be obtained
+   */
+  public static async getAccessToken(requestContext: ClientRequestContext = new BackendRequestContext()): Promise<AccessToken> {
+    requestContext.enter();
+    if (!this.authorizationClient)
+      throw new BentleyError(AuthStatus.Error, "No AuthorizationClient has been supplied to IModelHost", Logger.logError, loggingCategory);
+    if (!this.authorizationClient.hasSignedIn)
+      throw new BentleyError(AuthStatus.Error, "AuthorizationClient has not been used to sign in", Logger.logError, loggingCategory);
+    return this.authorizationClient.getAccessToken(requestContext);
+  }
 
   private static get _isNativePlatformLoaded(): boolean { return this._platform !== undefined; }
 
@@ -107,6 +142,25 @@ export class IModelHost {
     return;
   }
 
+  private static getApplicationVersion(): string {
+    return require("../package.json").version;
+  }
+
+  private static _setupRpcRequestContext() {
+    RpcConfiguration.requestContext.deserialize = async (serializedContext: SerializedRpcRequest): Promise<ClientRequestContext> => {
+      if (!serializedContext.authorization)
+        return new ClientRequestContext(serializedContext.id, serializedContext.applicationId, serializedContext.applicationVersion, serializedContext.sessionId);
+
+      const accessToken = AccessToken.fromTokenString(serializedContext.authorization);
+      const userId = serializedContext.userId; // Really needed only for JWTs
+      if (!userId)
+        throw new BentleyError(AuthStatus.Error, "UserId needs to be passed into the backend", Logger.logError);
+      accessToken.setUserInfo(new UserInfo(userId));
+
+      return new AuthorizedClientRequestContext(accessToken, serializedContext.id, serializedContext.applicationId, serializedContext.applicationVersion, serializedContext.sessionId);
+    };
+  }
+
   /** @hidden */
   public static loadNative(region: number, dir?: string): void { this.registerPlatform(Platform.load(dir), region); }
 
@@ -118,6 +172,12 @@ export class IModelHost {
   public static startup(configuration: IModelHostConfiguration = new IModelHostConfiguration()) {
     if (IModelHost.configuration)
       throw new IModelError(BentleyStatus.ERROR, "startup may only be called once", Logger.logError, loggingCategory, () => (configuration));
+
+    IModelHost.sessionId = Guid.createValue();
+
+    // Setup a current context for all requests that originate from this backend
+    const requestContext = new BackendRequestContext();
+    requestContext.enter();
 
     if (!MobileRpcConfiguration.isMobileBackend) {
       this.validateNodeJsVersion();
@@ -141,6 +201,8 @@ export class IModelHost {
     if (configuration.imodelClient)
       BriefcaseManager.imodelClient = configuration.imodelClient;
 
+    IModelHost._setupRpcRequestContext();
+
     IModelReadRpcImpl.register();
     IModelTileRpcImpl.register();
     IModelWriteRpcImpl.register();
@@ -153,6 +215,10 @@ export class IModelHost {
     Functional.registerSchema();
 
     IModelHost.configuration = configuration;
+
+    if (!IModelHost.applicationId) IModelHost.applicationId = "2686"; // Default to product id of iModel.js
+    if (!IModelHost.applicationVersion) IModelHost.applicationVersion = this.getApplicationVersion(); // Default to version of this package
+
     IModelHost.onAfterStartup.raiseEvent();
   }
 

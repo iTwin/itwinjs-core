@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module RpcInterface */
 
-import { BeEvent } from "@bentley/bentleyjs-core";
+import { BeEvent, SerializedClientRequestContext } from "@bentley/bentleyjs-core";
 import { RpcRequest } from "./RpcRequest";
 import { RpcInvocation } from "./RpcInvocation";
 import { RpcConfiguration } from "./RpcConfiguration";
@@ -22,10 +22,7 @@ export interface SerializedRpcOperation {
 }
 
 /** A serialized RPC operation request. */
-export interface SerializedRpcRequest {
-  id: string;
-  authorization: string;
-  version: string;
+export interface SerializedRpcRequest extends SerializedClientRequestContext {
   operation: SerializedRpcOperation;
   method: string;
   path: string;
@@ -86,14 +83,25 @@ export abstract class RpcProtocol {
   /** The RPC invocation class for this protocol. */
   public readonly invocationType: typeof RpcInvocation = RpcInvocation;
 
-  /** The name of the request id header. */
-  public requestIdHeaderName: string = "X-RequestId";
+  public serializedClientRequestContextHeaderNames: SerializedClientRequestContext = {
+    /** The name of the request id header. */
+    id: "",
 
-  /** The name of the version header. */
-  public get versionHeaderName() { return this.configuration.applicationVersionKey; }
+    /** The name of the application id header  */
+    applicationId: "",
 
-  /** The name of the authorization header. */
-  public get authorizationHeaderName() { return this.configuration.applicationAuthorizationKey; }
+    /** The name of the version header. */
+    applicationVersion: "",
+
+    /** The name of the session id header  */
+    sessionId: "",
+
+    /** The name of the authorization header. */
+    authorization: "",
+
+    /** The id of the authorized user */
+    userId: "",
+  };
 
   /** If greater than zero, specifies where to break large binary request payloads. */
   public transferChunkThreshold: number = 0;
@@ -124,11 +132,10 @@ export abstract class RpcProtocol {
   }
 
   /** Serializes a request. */
-  public serialize(request: RpcRequest): SerializedRpcRequest {
+  public async serialize(request: RpcRequest): Promise<SerializedRpcRequest> {
+    const serializedContext: SerializedClientRequestContext = await RpcConfiguration.requestContext.serialize(request);
     return {
-      id: request.id,
-      authorization: this.configuration.applicationAuthorizationValue || "",
-      version: RpcConfiguration.applicationVersionValue || "",
+      ...serializedContext,
       operation: {
         interfaceDefinition: request.operation.interfaceDefinition.name,
         operationName: request.operation.operationName,

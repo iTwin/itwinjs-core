@@ -245,6 +245,7 @@ class DelayedPromise<T> implements Promise<T> {
   readonly __@toStringTag: "Promise";
   constructor(startCallback: () => Promise<T>);
   catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): Promise<T | TResult>;
+  finally(onFinally?: (() => void) | undefined | null): Promise<T>;
   start: () => Promise<T>;
   then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): Promise<TResult1 | TResult2>;
 }

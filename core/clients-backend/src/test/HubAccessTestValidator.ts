@@ -4,8 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as chai from "chai";
-import { AccessToken } from "@bentley/imodeljs-clients";
-import { TestConfig, TestUsers } from "./TestConfig";
+import { AccessToken, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
+import { TestConfig } from "./TestConfig";
+import { TestUsers } from "./TestUsers";
 
 chai.should();
 
@@ -21,23 +22,26 @@ export class HubAccessTestValidator {
       return HubAccessTestValidator._singletonInstance;
 
     const accessToken: AccessToken = await TestConfig.getAccessToken(TestUsers.regular);
+    const requestContext = new AuthorizedClientRequestContext(accessToken);
 
     const testProjectName = "iModelJsIntegrationTest";
     const testIModelName = "ReadOnlyTest";
-    const testProjectId: string = await TestConfig.queryProjectId(accessToken, testProjectName);
-    const testIModelId: string = await TestConfig.queryIModelId(accessToken, testIModelName, testProjectId);
+    const testProjectId: string = await TestConfig.queryProjectId(requestContext, testProjectName);
+    const testIModelId: string = await TestConfig.queryIModelId(requestContext, testIModelName, testProjectId);
 
     HubAccessTestValidator._singletonInstance = new HubAccessTestValidator(testProjectName, testProjectId, testIModelName, testIModelId);
     return HubAccessTestValidator._singletonInstance;
   }
 
   public async validateConnectAccess(accessToken: AccessToken) {
-    const projectId = await TestConfig.queryProjectId(accessToken, this._testProjectName);
+    const requestContext = new AuthorizedClientRequestContext(accessToken);
+    const projectId = await TestConfig.queryProjectId(requestContext, this._testProjectName);
     chai.expect(projectId).to.be.equal(this._testProjectId);
   }
 
   public async validateIModelHubAccess(accessToken: AccessToken) {
-    const iModelId = await TestConfig.queryIModelId(accessToken, this._testIModelName, this._testProjectId);
+    const requestContext = new AuthorizedClientRequestContext(accessToken);
+    const iModelId = await TestConfig.queryIModelId(requestContext, this._testIModelName, this._testProjectId);
     chai.expect(iModelId).to.be.equal(this._testIModelId);
   }
 }

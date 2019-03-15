@@ -14,16 +14,16 @@ import {
 } from "@bentley/imodeljs-common";
 import {
   assert,
-  ActivityLoggingContext,
   BeDuration,
   Logger,
+  ClientRequestContext,
 } from "@bentley/bentleyjs-core";
 import { IModelDb } from "../IModelDb";
 import { IModelHost } from "../IModelHost";
 import { PromiseMemoizer, QueryablePromise } from "../PromiseMemoizer";
 
 interface TileRequestProps {
-  actx: ActivityLoggingContext;
+  requestContext: ClientRequestContext;
   iModelToken: IModelToken;
   treeId: string;
 }
@@ -65,14 +65,14 @@ abstract class TileRequestMemoizer<Result, Props extends TileRequestProps> exten
   }
 
   protected async perform(props: Props): Promise<Result> {
-    props.actx.enter();
+    props.requestContext.enter();
     this.log("received", props);
 
     const tileQP = this.memoize(props);
     const waitPromise = BeDuration.wait(this._timeoutMilliseconds);
     await Promise.race([tileQP.promise, waitPromise]);
 
-    props.actx.enter();
+    props.requestContext.enter();
 
     if (tileQP.isPending) {
       this.log("issuing pending status for", props);
@@ -94,7 +94,7 @@ abstract class TileRequestMemoizer<Result, Props extends TileRequestProps> exten
 
 async function getTileTreeProps(props: TileRequestProps): Promise<TileTreeProps> {
   const db = IModelDb.find(props.iModelToken);
-  return db.tiles.requestTileTreeProps(props.actx, props.treeId);
+  return db.tiles.requestTileTreeProps(props.requestContext, props.treeId);
 }
 
 class RequestTileTreePropsMemoizer extends TileRequestMemoizer<TileTreeProps, TileRequestProps> {
@@ -125,7 +125,7 @@ interface TileContentRequestProps extends TileRequestProps {
 
 async function getTileContent(props: TileContentRequestProps): Promise<Uint8Array> {
   const db = IModelDb.find(props.iModelToken);
-  return db.tiles.requestTileContent(props.actx, props.treeId, props.contentId);
+  return db.tiles.requestTileContent(props.requestContext, props.treeId, props.contentId);
 }
 
 function generateTileContentKey(props: TileContentRequestProps): string {
@@ -160,24 +160,24 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
   public static register() { RpcManager.registerImpl(IModelTileRpcInterface, IModelTileRpcImpl); }
 
   public async getTileTreeProps(iModelToken: IModelToken, id: string): Promise<TileTreeProps> {
-    const actx = ActivityLoggingContext.current; actx.enter();
+    const requestContext = ClientRequestContext.current;
     const db = IModelDb.find(iModelToken);
-    return db.tiles.requestTileTreeProps(actx, id);
+    return db.tiles.requestTileTreeProps(requestContext, id);
   }
 
   public async getTileContent(iModelToken: IModelToken, treeId: string, contentId: string): Promise<Uint8Array> {
-    const actx = ActivityLoggingContext.current; actx.enter();
+    const requestContext = ClientRequestContext.current;
     const db = IModelDb.find(iModelToken);
-    return db.tiles.requestTileContent(actx, treeId, contentId);
+    return db.tiles.requestTileContent(requestContext, treeId, contentId);
   }
 
   public async requestTileTreeProps(iModelToken: IModelToken, treeId: string): Promise<TileTreeProps> {
-    const actx = ActivityLoggingContext.current; actx.enter();
-    return RequestTileTreePropsMemoizer.perform({ actx, iModelToken, treeId });
+    const requestContext = ClientRequestContext.current;
+    return RequestTileTreePropsMemoizer.perform({ requestContext, iModelToken, treeId });
   }
 
   public async requestTileContent(iModelToken: IModelToken, treeId: string, contentId: string): Promise<Uint8Array> {
-    const actx = ActivityLoggingContext.current; actx.enter();
-    return RequestTileContentMemoizer.perform({ actx, iModelToken, treeId, contentId });
+    const requestContext = ClientRequestContext.current;
+    return RequestTileContentMemoizer.perform({ requestContext, iModelToken, treeId, contentId });
   }
 }

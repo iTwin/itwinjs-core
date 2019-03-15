@@ -3,29 +3,23 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { ClientRequestContext } from "@bentley/bentleyjs-core";
 import { IModelJsFs } from "@bentley/imodeljs-backend/lib/IModelJsFs";
 import * as path from "path";
-import { AuthorizationToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, AccessToken, Config } from "@bentley/imodeljs-clients";
+import { AuthorizationToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, AccessToken, Config, ImsUserCredentials } from "@bentley/imodeljs-clients";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
 IModelJsConfig.init(true /* suppress exception */, false /* suppress error message */, Config.App);
-
-/** Credentials for test users */
-export interface UserCredentials {
-  email: string;
-  password: string;
-}
 
 /** Test users with various permissions */
 export class TestUsers {
   /** User with the typical permissions of the regular/average user - Co-Admin: No, Connect-Services-Admin: No */
-  public static get regular(): UserCredentials {
+  public static get regular(): ImsUserCredentials {
     return {
       email: Config.App.getString("imjs_test_regular_user_name"),
       password: Config.App.getString("imjs_test_regular_user_password"),
     };
   }
-  public static get superManager(): UserCredentials {
+  public static get superManager(): ImsUserCredentials {
     return {
       email: Config.App.getString("imjs_test_super_manager_user_name"),
       password: Config.App.getString("imjs_test_super_manager_user_password"),
@@ -49,10 +43,10 @@ export class KnownTestLocations {
 
 export class IModelTestUtils {
   // __PUBLISH_EXTRACT_START__ Bridge.getAccessToken.example-code
-  public static async getAccessToken(activityContext: ActivityLoggingContext, userCredentials: any): Promise<AccessToken> {
-    const authToken: AuthorizationToken = await (new ImsActiveSecureTokenClient()).getToken(activityContext, userCredentials.email, userCredentials.password);
+  public static async getAccessToken(requestContext: ClientRequestContext, userCredentials: any): Promise<AccessToken> {
+    const authToken: AuthorizationToken = await (new ImsActiveSecureTokenClient()).getToken(requestContext, userCredentials.email, userCredentials.password);
     assert(authToken);
-    const accessToken = await (new ImsDelegationSecureTokenClient()).getToken(activityContext, authToken!);
+    const accessToken = await (new ImsDelegationSecureTokenClient()).getToken(requestContext, authToken!);
     assert(accessToken);
     return accessToken;
   }

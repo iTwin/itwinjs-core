@@ -2,11 +2,11 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+import { Logger } from "@bentley/bentleyjs-core";
 import { WsgClient, WsgRequestOptions } from "./WsgClient";
-import { AccessToken } from "./Token";
-import { ActivityLoggingContext, Logger } from "@bentley/bentleyjs-core";
 import { Config } from "./Config";
 import { ECJsonTypeMap, WsgInstance } from "./ECJsonTypeMap";
+import { AuthorizedClientRequestContext } from "./AuthorizedClientRequestContext";
 import { RequestQueryOptions, Response, RequestOptions, request, ResponseError } from "./Request";
 
 const loggingCategory = "imodeljs-clients.Clients";
@@ -76,18 +76,17 @@ export class BIMReviewShareClient extends WsgClient {
   /** BIM Review Share functionality to post an instance and data
    * Not REST-ful, they treat 308 differently without returning a redirect location
    * However, this is handled by this call to act as expected by the service
-   * @param alctx The activity logging context
+   * @param requestContext The client request context
    * @param typedConstructor Used by clients to post a strongly typed instance through the REST API that's expected to return a standard response.
-   * @param token Delegation token
    * @param relativeUrlPath Relative path to the REST resource.
    * @param instance Strongly typed instance to be posted.
    * @param data JSON string that will be sent in second request for posting the data of the content
    * @param requestOptions WSG options for the request.
    * @returns The posted instance that's returned back from the server.
    */
-  private async postInstanceAndData<T extends WsgInstance>(alctx: ActivityLoggingContext, _typedConstructor: new () => T, token: AccessToken, relativeUrlPath: string, instance: T, data: any, requestOptions?: WsgRequestOptions): Promise<T> {
-    const url: string = await this.getUrl(alctx) + relativeUrlPath;
-    alctx.enter();
+  private async postInstanceAndData<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, _typedConstructor: new () => T, relativeUrlPath: string, instance: T, data: any, requestOptions?: WsgRequestOptions): Promise<T> {
+    const url: string = await this.getUrl(requestContext) + relativeUrlPath;
+    requestContext.enter();
     Logger.logInfo(loggingCategory, `Sending POST request to ${url}`);
     const untypedInstance: any = ECJsonTypeMap.toJson<T>("wsg", instance);
 
@@ -106,7 +105,7 @@ export class BIMReviewShareClient extends WsgClient {
     const options: RequestOptions = {
       method: "POST",
       headers: {
-        "authorization": token.toTokenString(),
+        "authorization": requestContext.accessToken.toTokenString(),
         "Content-Disposition": `attachment; filename="attachment.json"`,
         "Content-Range": "bytes */" + byteCount.toString(),
         "Content-Type": "application/json",
@@ -122,14 +121,14 @@ export class BIMReviewShareClient extends WsgClient {
     }
 
     await this.setupOptionDefaults(options);
-    alctx.enter();
-    await request(alctx, url, options).then((response: Response) => {
+    requestContext.enter();
+    await request(requestContext, url, options).then((response: Response) => {
       // no-op
       res = response;
     }).catch((_reason: any) => {
       // don't do anything
     });
-    alctx.enter();
+    requestContext.enter();
 
     // Make sure the error callback set the response
     if (!res || !res.headers)
@@ -140,7 +139,7 @@ export class BIMReviewShareClient extends WsgClient {
     const dataOptions: RequestOptions = {
       method: "POST",
       headers: {
-        "authorization": token.toTokenString(),
+        "authorization": requestContext.accessToken.toTokenString(),
         "If-Match": res.headers.etag,
         "Cookie": res.headers["set-cookie"][0],
         "Content-Range": "bytes 0-" + (byteCount - 1).toString() + "/" + (byteCount),
@@ -152,9 +151,9 @@ export class BIMReviewShareClient extends WsgClient {
     };
 
     await this.setupOptionDefaults(dataOptions);
-    alctx.enter();
-    const dataRes: Response = await request(alctx, url, dataOptions);
-    alctx.enter();
+    requestContext.enter();
+    const dataRes: Response = await request(requestContext, url, dataOptions);
+    requestContext.enter();
     if (!dataRes.body || !dataRes.body.changedInstance || !dataRes.body.changedInstance.instanceAfterChange) {
       return Promise.reject(new Error(`POST to URL ${url} executed successfully, but did not return the expected result.`));
     }
@@ -165,31 +164,30 @@ export class BIMReviewShareClient extends WsgClient {
   // @todo Use lower level utilities instead of the node based Request API.
   /**
    * Used by clients to get strongly typed instances from standard WSG REST queries that return EC JSON instances.
-   * @param typedConstructor Constructor function for the type
-   * @param token Delegation token
+   * @param requestContext The client request context
    * @param relativeUrlPath Relative path to the REST resource.
    * @param queryOptions Query options.
    * @returns Array of strongly typed instances.
    */
-  private async getBlob(alctx: ActivityLoggingContext, token: AccessToken, relativeUrlPath: string, queryOptions?: RequestQueryOptions): Promise<any> {
-    alctx.enter();
-    const url: string = await this.getUrl(alctx) + relativeUrlPath;
-    alctx.enter();
+  private async getBlob(requestContext: AuthorizedClientRequestContext, relativeUrlPath: string, queryOptions?: RequestQueryOptions): Promise<any> {
+    requestContext.enter();
+    const url: string = await this.getUrl(requestContext) + relativeUrlPath;
+    requestContext.enter();
     Logger.logInfo(loggingCategory, `Sending GET request to ${url}`);
 
     const options: RequestOptions = {
       method: "GET",
-      headers: { authorization: token.toTokenString() },
+      headers: { authorization: requestContext.accessToken.toTokenString() },
       qs: queryOptions,
       responseType: "blob",
       accept: "application/octet-stream",
     };
 
     await this.setupOptionDefaults(options);
-    alctx.enter();
+    requestContext.enter();
 
-    const res: Response = await request(alctx, url, options);
-    alctx.enter();
+    const res: Response = await request(requestContext, url, options);
+    requestContext.enter();
     if (!res.body || !res.body.buffer) {
       return Promise.reject(new Error(`Query to URL ${url} executed successfully, but did NOT return the blob data.`));
     }
@@ -203,8 +201,7 @@ export class BIMReviewShareClient extends WsgClient {
 
   /**
    * Post content to BIM Review Share
-   * @param alctx the ActivityLoggingContext to track this with
-   * @param token the access token to use
+   * @param requestContext The client request context
    * @param filter Filter property in content, defines the name of the iModel that relates to this content
    * @param groupLabel GroupLabel property in content
    * @param module Module property (e.g. 'DataViz')
@@ -215,84 +212,79 @@ export class BIMReviewShareClient extends WsgClient {
    * @param data JSON string with the data that wants to be saved
    * @param instanceId Wsg Instance Id if updating the instance instead of creating a new one
    */
-  public async postContent(alctx: ActivityLoggingContext, token: AccessToken, filter: string, groupLabel: string, module: string, moduleVersion: string, name: string, owner: string, projectId: string, data: any, instanceId?: string) {
+  public async postContent(requestContext: AuthorizedClientRequestContext, filter: string, groupLabel: string, module: string, moduleVersion: string, name: string, owner: string, projectId: string, data: any, instanceId?: string) {
     const content = new Content();
     Object.assign(content, { filter, groupLabel, module, moduleVersion, name, owner, projectId });
     let url = `/Repositories/ContentPlugin--default/ContentSchema/Content`;
     if (instanceId !== undefined)
       url += `/${instanceId}`;
 
-    const instance = await this.postInstanceAndData<Content>(alctx, Content, token, url, content, data);
+    const instance = await this.postInstanceAndData<Content>(requestContext, Content, url, content, data);
     return instance;
   }
 
   /**
    * Updates the data of an already existing instance using a retrieved Content
-   * @param alctx ActivityLoggingContext to track
-   * @param token access token to use
+   * @param requestContext The client request context
    * @param content instance of the Content
    * @param data updated data
    */
-  public async updateContent(alctx: ActivityLoggingContext, token: AccessToken, content: Content, data: any) {
+  public async updateContent(requestContext: AuthorizedClientRequestContext, content: Content, data: any) {
     let url = `/Repositories/ContentPlugin--default/ContentSchema/Content`;
     if (content.wsgId !== undefined)
       url += `/${content.wsgId}`;
 
-    const instance = await this.postInstanceAndData<Content>(alctx, Content, token, url, content, data);
+    const instance = await this.postInstanceAndData<Content>(requestContext, Content, url, content, data);
     return instance;
   }
 
   /**
    * Get all content instances
-   * @param token Access Token to use
-   * @param alctx Activity Logging
+   * @param requestContext The client request context
    * @param projectId Id of the project to get the instances from
    * @param module Name of the module (e.g. 'DataViz')
    */
-  public async getContentInstances(alctx: ActivityLoggingContext, token: AccessToken, projectId: string, module: string, owner?: string) {
+  public async getContentInstances(requestContext: AuthorizedClientRequestContext, projectId: string, module: string, owner?: string) {
     const queryOptions: RequestQueryOptions = {
       $filter: `ProjectId+eq+'${projectId}'+and+Module+eq+'${module}'` + (owner ? `+and+owner+eq+'${owner}'` : ``),
     };
     const url = `/Repositories/ContentPlugin--default/ContentSchema/Content`;
-    return this.getInstances<Content>(alctx, Content, token, url, queryOptions);
+    return this.getInstances<Content>(requestContext, Content, url, queryOptions);
   }
 
   /**
    * Get an instance of a Content
-   * @param alctx ActivityLoggingContext to track this with
-   * @param token Access Token to use
+   * @param requestContext The client request context
    * @param projectId Project Id where the content resides
    * @param moduleName Module name of the content (e.g. 'DataViz')
    * @param instanceId Instance Id of the Content
    * @param queryOptions Query options for filtering
    */
-  public async getContentInstance(alctx: ActivityLoggingContext, token: AccessToken, projectId: string, moduleName: string, instanceId: string, queryOptions?: RequestQueryOptions) {
+  public async getContentInstance(requestContext: AuthorizedClientRequestContext, projectId: string, moduleName: string, instanceId: string, queryOptions?: RequestQueryOptions) {
     const url = `/Repositories/ContentPlugin--default/ContentSchema/Content/${projectId}${moduleName}${instanceId}`;
-    return this.getInstances<Content>(alctx, Content, token, url, queryOptions);
+    return this.getInstances<Content>(requestContext, Content, url, queryOptions);
   }
 
   /**
    * Deletes a content instance
-   * @param alctx ActivityLoggingContext to track this
-   * @param token access token to use
+   * @param requestContext The client request context
    * @param content Content instance
    * @param options WsgRequestOptions optional
    */
-  public async deleteContentInstance(alctx: ActivityLoggingContext, token: AccessToken, content: Content, options?: WsgRequestOptions) {
+  public async deleteContentInstance(requestContext: AuthorizedClientRequestContext, content: Content, options?: WsgRequestOptions) {
     const url = `/Repositories/ContentPlugin--default/ContentSchema/Content/${content.wsgId}`;
-    return this.deleteInstance(alctx, token, url, content, options);
+    return this.deleteInstance(requestContext, url, content, options);
   }
 
   /**
    * Gets the data related to an instance of a Content
-   * @param alctx ActivityLoggingContext to track this with
-   * @param token Access Token to use
+   * @param requestContext The client request context
    * @param instanceId Instance Id of the Content instance
    * @param queryOptions Query options for filtering
    */
-  public async getContentData(alctx: ActivityLoggingContext, token: AccessToken, instanceId: string, queryOptions?: RequestQueryOptions) {
+  public async getContentData(requestContext: AuthorizedClientRequestContext, instanceId: string, queryOptions?: RequestQueryOptions) {
     const url = `/Repositories/ContentPlugin--default/ContentSchema/Content/${instanceId}/$file`;
-    return this.getBlob(alctx, token, url, queryOptions);
+    return this.getBlob(requestContext, url, queryOptions);
   }
 
   /**

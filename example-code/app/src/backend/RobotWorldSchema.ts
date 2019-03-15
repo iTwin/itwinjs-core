@@ -12,7 +12,8 @@ import * as _schemaNames from "../common/RobotWorldSchema";
 // Import all modules that define classes in this schema.
 import * as robots from "./RobotElement";
 import * as obstacles from "./BarrierElement";
-import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { ClientRequestContext } from "@bentley/bentleyjs-core";
+import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
 // ... other modules ...
 
 /** An example of defining a class that represents a schema.
@@ -49,8 +50,8 @@ export class RobotWorld extends Schema {
 
   // Import the RobotWorld schema into the specified iModel.
   // Also do some one-time bootstrapping of supporting definitions such as Categories.
-  public static async importSchema(activityContext: ActivityLoggingContext, iModelDb: IModelDb): Promise<void> {
-    activityContext.enter();
+  public static async importSchema(requestContext: ClientRequestContext | AuthorizedClientRequestContext, iModelDb: IModelDb): Promise<void> {
+    requestContext.enter();
     if (iModelDb.containsClass(_schemaNames.Class.Robot))
       return Promise.resolve();
 
@@ -60,8 +61,8 @@ export class RobotWorld extends Schema {
     // Must import the schema. The schema must be installed alongside the app in its
     // assets directory. Note that, for portability, make sure the case of
     // the filename is correct!
-    await iModelDb.importSchema(activityContext, path.join(IModelHost.appAssetsDir!, "RobotWorld.ecschema.xml"));
-    activityContext.enter();
+    await iModelDb.importSchema(requestContext, path.join(IModelHost.appAssetsDir!, "RobotWorld.ecschema.xml"));
+    requestContext.enter();
 
     // This is the right time to create definitions, such as Categories, that will
     // be used with the classes in this schema.

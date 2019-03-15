@@ -5,7 +5,7 @@
 /** @module RpcInterface */
 
 import { IModelError, ServerError, ServerTimeoutError } from "../../IModelError";
-import { BentleyStatus } from "@bentley/bentleyjs-core";
+import { BentleyStatus, SerializedClientRequestContext } from "@bentley/bentleyjs-core";
 import { RpcInterface } from "../../RpcInterface";
 import { SerializedRpcRequest, RpcRequestFulfillment, SerializedRpcOperation } from "../core/RpcProtocol";
 import { RpcRequest } from "../core/RpcRequest";
@@ -41,14 +41,28 @@ export class WebAppRpcRequest extends RpcRequest {
   /** Standardized access to metadata about the request (useful for purposes such as logging). */
   public metadata = { status: 0, message: "" };
 
+  /** Parse headers */
+  private static parseHeaders(protocol: WebAppRpcProtocol, req: HttpServerRequest): SerializedClientRequestContext {
+    const headerNames: SerializedClientRequestContext = protocol.serializedClientRequestContextHeaderNames;
+    const parsedHeaders: SerializedClientRequestContext = {
+      id: req.header(headerNames.id) || "",
+      applicationId: req.header(headerNames.applicationId) || "",
+      applicationVersion: req.header(headerNames.applicationVersion) || "",
+      sessionId: req.header(headerNames.sessionId) || "",
+      authorization: headerNames.authorization ? req.header(headerNames.authorization) : undefined,
+      userId: headerNames.userId ? req.header(headerNames.userId) : undefined,
+    };
+    return parsedHeaders;
+  }
+
   /** Parses a request. */
   public static async parseRequest(protocol: WebAppRpcProtocol, req: HttpServerRequest): Promise<SerializedRpcRequest> {
     const operation = protocol.getOperationFromPath(req.url!);
 
-    const request = {
-      id: req.header(protocol.requestIdHeaderName) || "",
-      authorization: req.header(protocol.authorizationHeaderName) || "",
-      version: req.header(protocol.versionHeaderName) || "",
+    const parsedHeaders = this.parseHeaders(protocol, req);
+
+    const request: SerializedRpcRequest = {
+      ...parsedHeaders,
       operation: {
         interfaceDefinition: operation.interfaceDefinition,
         operationName: operation.operationName,
@@ -108,7 +122,7 @@ export class WebAppRpcRequest extends RpcRequest {
   /** Sends the request. */
   protected async send(): Promise<number> {
     this._loading = true;
-    this.setupTransport();
+    await this.setupTransport();
 
     return new Promise<number>(async (resolve, reject) => {
       try {
@@ -254,8 +268,8 @@ export class WebAppRpcRequest extends RpcRequest {
     return value;
   }
 
-  private setupTransport(): void {
-    const parameters = this.protocol.serialize(this).parameters;
+  private async setupTransport(): Promise<void> {
+    const parameters = (await this.protocol.serialize(this)).parameters;
     const transportType = WebAppRpcRequest.computeTransportType(parameters, this.parameters);
 
     if (transportType === RpcContentType.Binary) {

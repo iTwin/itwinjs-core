@@ -6,10 +6,13 @@ class AccessToken extends Token {
   static fromForeignProjectAccessTokenJson(foreignJsonStr: string): AccessToken | undefined;
   // (undocumented)
   static fromJson(jsonObj: any): AccessToken | undefined;
-  static fromJsonWebTokenString(jwt: string, startsAt: Date, expiresAt: Date, userInfo?: UserInfo): AccessToken;
+  static fromJsonWebTokenString(jwt: string, startsAt?: Date, expiresAt?: Date, userInfo?: UserInfo): AccessToken;
   // (undocumented)
-  static fromSamlAssertion(samlAssertion: string): AuthorizationToken;
+  static fromSamlAssertion(samlAssertion: string): AccessToken;
   static fromSamlTokenString(accessTokenString: string, includesPrefix?: IncludePrefix): AccessToken;
+  // (undocumented)
+  static fromTokenString(tokenStr: string): AccessToken;
+  readonly isJwt: boolean;
   // (undocumented)
   toTokenString(includePrefix?: IncludePrefix): string;
 }
@@ -62,6 +65,12 @@ class AuthorizationToken extends Token {
 }
 
 // @public
+class AuthorizedClientRequestContext extends ClientRequestContext {
+  constructor(accessToken: AccessToken, activityId?: string, applicationId?: string, applicationVersion?: string, sessionId?: string);
+  accessToken: AccessToken;
+}
+
+// @public
 class Briefcase extends WsgInstance {
   // (undocumented)
   accessMode?: BriefcaseAccessMode;
@@ -104,10 +113,10 @@ class BriefcaseEvent extends IModelHubEvent {
 // @public
 class BriefcaseHandler {
   constructor(handler: IModelBaseHandler, fileHandler?: FileHandler);
-  create(alctx: ActivityLoggingContext, token: AccessToken, imodelId: GuidString): Promise<Briefcase>;
-  delete(alctx: ActivityLoggingContext, token: AccessToken, imodelId: GuidString, briefcaseId: number): Promise<void>;
-  download(alctx: ActivityLoggingContext, briefcase: Briefcase, path: string, progressCallback?: (progress: ProgressInfo) => void): Promise<void>;
-  get(alctx: ActivityLoggingContext, token: AccessToken, imodelId: GuidString, query?: BriefcaseQuery): Promise<Briefcase[]>;
+  create(requestContext: AuthorizedClientRequestContext, imodelId: GuidString): Promise<Briefcase>;
+  delete(requestContext: AuthorizedClientRequestContext, imodelId: GuidString, briefcaseId: number): Promise<void>;
+  download(requestContext: AuthorizedClientRequestContext, briefcase: Briefcase, path: string, progressCallback?: (progress: ProgressInfo) => void): Promise<void>;
+  get(requestContext: AuthorizedClientRequestContext, imodelId: GuidString, query?: BriefcaseQuery): Promise<Briefcase[]>;
 }
 
 // @public
@@ -150,9 +159,9 @@ class ChangeSetCreatedEvent extends IModelHubGlobalEvent {
 // @public
 class ChangeSetHandler {
   constructor(handler: IModelBaseHandler, fileHandler?: FileHandler);
-  create(alctx: ActivityLoggingContext, token: AccessToken, imodelId: GuidString, changeSet: ChangeSet, path: string, progressCallback?: (progress: ProgressInfo) => void): Promise<ChangeSet>;
-  download(alctx: ActivityLoggingContext, changeSets: ChangeSet[], path: string, progressCallback?: (progress: ProgressInfo) => void): Promise<void>;
-  get(alctx: ActivityLoggingContext, token: AccessToken, imodelId: GuidString, query?: ChangeSetQuery): Promise<ChangeSet[]>;
+  create(requestContext: AuthorizedClientRequestContext, imodelId: GuidString, changeSet: ChangeSet, path: string, progressCallback?: (progress: ProgressInfo) => void): Promise<ChangeSet>;
+  download(requestContext: AuthorizedClientRequestContext, changeSets: ChangeSet[], path: string, progressCallback?: (progress: ProgressInfo) => void): Promise<void>;
+  get(requestContext: AuthorizedClientRequestContext, imodelId: GuidString, query?: ChangeSetQuery): Promise<ChangeSet[]>;
 }
 
 // @public
@@ -199,8 +208,8 @@ class Client {
   protected constructor();
   // (undocumented)
   protected _url?: string;
-  protected delete(alctx: ActivityLoggingContext, token: AccessToken, relativeUrlPath: string): Promise<void>;
-  getUrl(alctx: ActivityLoggingContext): Promise<string>;
+  protected delete(requestContext: AuthorizedClientRequestContext, relativeUrlPath: string): Promise<void>;
+  getUrl(requestContext: ClientRequestContext): Promise<string>;
   protected abstract getUrlSearchKey(): string;
   protected setupOptionDefaults(options: RequestOptions): Promise<void>;
 }
@@ -227,10 +236,10 @@ class CodeEvent extends BriefcaseEvent {
 // @public
 class CodeHandler {
   constructor(handler: IModelBaseHandler);
-  deleteAll(alctx: ActivityLoggingContext, token: AccessToken, imodelId: GuidString, briefcaseId: number): Promise<void>;
-  get(alctx: ActivityLoggingContext, token: AccessToken, imodelId: GuidString, query?: CodeQuery): Promise<HubCode[]>;
+  deleteAll(requestContext: AuthorizedClientRequestContext, imodelId: GuidString, briefcaseId: number): Promise<void>;
+  get(requestContext: AuthorizedClientRequestContext, imodelId: GuidString, query?: CodeQuery): Promise<HubCode[]>;
   readonly sequences: CodeSequenceHandler;
-  update(alctx: ActivityLoggingContext, token: AccessToken, imodelId: GuidString, codes: HubCode[], updateOptions?: CodeUpdateOptions): Promise<HubCode[]>;
+  update(requestContext: AuthorizedClientRequestContext, imodelId: GuidString, codes: HubCode[], updateOptions?: CodeUpdateOptions): Promise<HubCode[]>;
 }
 
 // @public
@@ -258,7 +267,7 @@ class CodeSequence extends WsgInstance {
 // @public
 class CodeSequenceHandler {
   constructor(handler: IModelBaseHandler);
-  get(alctx: ActivityLoggingContext, token: AccessToken, imodelId: GuidString, sequence: CodeSequence): Promise<string>;
+  get(requestContext: AuthorizedClientRequestContext, imodelId: GuidString, sequence: CodeSequence): Promise<string>;
 }
 
 // @public
@@ -318,9 +327,9 @@ class ConflictingLocksError extends IModelHubError {
 // @public
 class ConnectClient extends WsgClient {
   constructor();
-  getInvitedProjects(alctx: ActivityLoggingContext, token: AccessToken, queryOptions?: ConnectRequestQueryOptions): Promise<Project[]>;
-  getProject(alctx: ActivityLoggingContext, token: AccessToken, queryOptions?: ConnectRequestQueryOptions): Promise<Project>;
-  getProjects(alctx: ActivityLoggingContext, token: AccessToken, queryOptions?: ConnectRequestQueryOptions): Promise<Project[]>;
+  getInvitedProjects(requestContext: AuthorizedClientRequestContext, queryOptions?: ConnectRequestQueryOptions): Promise<Project[]>;
+  getProject(requestContext: AuthorizedClientRequestContext, queryOptions?: ConnectRequestQueryOptions): Promise<Project>;
+  getProjects(requestContext: AuthorizedClientRequestContext, queryOptions?: ConnectRequestQueryOptions): Promise<Project[]>;
   protected getRelyingPartyUrl(): string;
   protected getUrlSearchKey(): string;
   // (undocumented)
@@ -342,20 +351,20 @@ class ConnectSettingsClient extends Client, implements SettingsAdmin {
   // (undocumented)
   applicationId: string;
   // (undocumented)
-  deleteSetting(alctx: ActivityLoggingContext, settingNamespace: string, settingName: string, accessToken: AccessToken, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
+  deleteSetting(requestContext: AuthorizedClientRequestContext, settingNamespace: string, settingName: string, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
   // (undocumented)
-  deleteUserSetting(alctx: ActivityLoggingContext, settingNamespace: string, settingName: string, accessToken: AccessToken, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
-  getAccessToken(alctx: ActivityLoggingContext, authSamlToken: AuthorizationToken): Promise<AccessToken>;
+  deleteUserSetting(requestContext: AuthorizedClientRequestContext, settingNamespace: string, settingName: string, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
+  getAccessToken(requestContext: ClientRequestContext, authSamlToken: AuthorizationToken): Promise<AccessToken>;
   // (undocumented)
-  getSetting(alctx: ActivityLoggingContext, settingNamespace: string, settingName: string, accessToken: AccessToken, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
+  getSetting(requestContext: AuthorizedClientRequestContext, settingNamespace: string, settingName: string, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
   // (undocumented)
   protected getUrlSearchKey(): string;
   // (undocumented)
-  getUserSetting(alctx: ActivityLoggingContext, settingNamespace: string, settingName: string, accessToken: AccessToken, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
+  getUserSetting(requestContext: AuthorizedClientRequestContext, settingNamespace: string, settingName: string, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
   // (undocumented)
-  saveSetting(alctx: ActivityLoggingContext, settings: any, settingNamespace: string, settingName: string, accessToken: AccessToken, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
+  saveSetting(requestContext: AuthorizedClientRequestContext, settings: any, settingNamespace: string, settingName: string, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
   // (undocumented)
-  saveUserSetting(alctx: ActivityLoggingContext, settings: any, settingNamespace: string, settingName: string, accessToken: AccessToken, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
+  saveUserSetting(requestContext: AuthorizedClientRequestContext, settings: any, settingNamespace: string, settingName: string, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
   // (undocumented)
   static readonly searchKey: string;
 }
@@ -408,9 +417,9 @@ class ECJsonTypeMap {
 // @public
 class EventHandler extends EventBaseHandler {
   constructor(handler: IModelBaseHandler);
-  createListener(alctx: ActivityLoggingContext, authenticationCallback: () => Promise<AccessToken>, subscriptionId: string, imodelId: GuidString, listener: (event: IModelHubEvent) => void): () => void;
-  getEvent(alctx: ActivityLoggingContext, sasToken: string, baseAddress: string, subscriptionId: string, timeout?: number): Promise<IModelHubEvent | undefined>;
-  getSASToken(alctx: ActivityLoggingContext, token: AccessToken, imodelId: GuidString): Promise<EventSAS>;
+  createListener(requestContext: ClientRequestContext, authenticationCallback: () => Promise<AccessToken>, subscriptionId: string, imodelId: GuidString, listener: (event: IModelHubEvent) => void): () => void;
+  getEvent(requestContext: ClientRequestContext, sasToken: string, baseAddress: string, subscriptionId: string, timeout?: number): Promise<IModelHubEvent | undefined>;
+  getSASToken(requestContext: AuthorizedClientRequestContext, imodelId: GuidString): Promise<EventSAS>;
   readonly subscriptions: EventSubscriptionHandler;
 }
 
@@ -426,9 +435,9 @@ class EventSubscription extends WsgInstance {
 // @public
 class EventSubscriptionHandler {
   constructor(handler: IModelBaseHandler);
-  create(alctx: ActivityLoggingContext, token: AccessToken, imodelId: GuidString, events: EventType[]): Promise<EventSubscription>;
-  delete(alctx: ActivityLoggingContext, token: AccessToken, imodelId: GuidString, eventSubscriptionId: string): Promise<void>;
-  update(alctx: ActivityLoggingContext, token: AccessToken, imodelId: GuidString, subscription: EventSubscription): Promise<EventSubscription>;
+  create(requestContext: AuthorizedClientRequestContext, imodelId: GuidString, events: EventType[]): Promise<EventSubscription>;
+  delete(requestContext: AuthorizedClientRequestContext, imodelId: GuidString, eventSubscriptionId: string): Promise<void>;
+  update(requestContext: AuthorizedClientRequestContext, imodelId: GuidString, subscription: EventSubscription): Promise<EventSubscription>;
 }
 
 // @public
@@ -500,16 +509,16 @@ interface FileHandler {
   // (undocumented)
   agent: https.Agent;
   basename(filePath: string): string;
-  downloadFile(alctx: ActivityLoggingContext, downloadUrl: string, path: string, fileSize?: number, progress?: (progress: ProgressInfo) => void): Promise<void>;
+  downloadFile(requestContext: AuthorizedClientRequestContext, downloadUrl: string, path: string, fileSize?: number, progress?: (progress: ProgressInfo) => void): Promise<void>;
   exists(filePath: string): boolean;
   getFileSize(filePath: string): number;
   isDirectory(filePath: string): boolean;
   join(...paths: string[]): string;
-  uploadFile(alctx: ActivityLoggingContext, uploadUrlString: string, path: string, progress?: (progress: ProgressInfo) => void): Promise<void>;
+  uploadFile(requestContext: AuthorizedClientRequestContext, uploadUrlString: string, path: string, progress?: (progress: ProgressInfo) => void): Promise<void>;
 }
 
 // @public
-export function getArrayBuffer(alctx: ActivityLoggingContext, url: string): Promise<any>;
+export function getArrayBuffer(requestContext: ClientRequestContext, url: string): Promise<any>;
 
 // @public
 enum GetEventOperationType {
@@ -518,14 +527,14 @@ enum GetEventOperationType {
 }
 
 // @public
-export function getJson(alctx: ActivityLoggingContext, url: string): Promise<any>;
+export function getJson(requestContext: ClientRequestContext, url: string): Promise<any>;
 
 // @public
 class GlobalEventHandler extends EventBaseHandler {
   constructor(handler: IModelBaseHandler);
-  createListener(alctx: ActivityLoggingContext, authenticationCallback: () => Promise<AccessToken>, subscriptionInstanceId: string, listener: (event: IModelHubGlobalEvent) => void): () => void;
-  getEvent(alctx: ActivityLoggingContext, sasToken: string, baseAddress: string, subscriptionInstanceId: string, timeout?: number, getOperation?: GetEventOperationType): Promise<IModelHubGlobalEvent | undefined>;
-  getSASToken(alctx: ActivityLoggingContext, token: AccessToken): Promise<GlobalEventSAS>;
+  createListener(requestContext: AuthorizedClientRequestContext, authenticationCallback: () => Promise<AccessToken>, subscriptionInstanceId: string, listener: (event: IModelHubGlobalEvent) => void): () => void;
+  getEvent(requestContext: ClientRequestContext, sasToken: string, baseAddress: string, subscriptionInstanceId: string, timeout?: number, getOperation?: GetEventOperationType): Promise<IModelHubGlobalEvent | undefined>;
+  getSASToken(requestContext: AuthorizedClientRequestContext): Promise<GlobalEventSAS>;
   readonly subscriptions: GlobalEventSubscriptionHandler;
 }
 
@@ -544,9 +553,9 @@ class GlobalEventSubscription extends WsgInstance {
 // @public
 class GlobalEventSubscriptionHandler {
   constructor(handler: IModelBaseHandler);
-  create(alctx: ActivityLoggingContext, token: AccessToken, subscriptionId: GuidString, globalEvents: GlobalEventType[]): Promise<GlobalEventSubscription>;
-  delete(alctx: ActivityLoggingContext, token: AccessToken, subscriptionInstanceId: string): Promise<void>;
-  update(alctx: ActivityLoggingContext, token: AccessToken, subscription: GlobalEventSubscription): Promise<GlobalEventSubscription>;
+  create(requestContext: AuthorizedClientRequestContext, subscriptionId: GuidString, globalEvents: GlobalEventType[]): Promise<GlobalEventSubscription>;
+  delete(requestContext: AuthorizedClientRequestContext, subscriptionInstanceId: string): Promise<void>;
+  update(requestContext: AuthorizedClientRequestContext, subscription: GlobalEventSubscription): Promise<GlobalEventSubscription>;
 }
 
 // @public
@@ -578,14 +587,17 @@ class HubUserInfo extends WsgInstance {
 }
 
 // @public
-interface IAccessTokenManager {
-  getAccessToken(actx: ActivityLoggingContext): Promise<AccessToken>;
-}
-
-// @public
 interface IAngularOidcFrontendClient extends IOidcFrontendClient {
   // (undocumented)
   handleRedirectCallback(): Promise<boolean>;
+}
+
+// @public
+interface IAuthorizationClient {
+  getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
+  hasExpired: boolean;
+  hasSignedIn: boolean;
+  isAuthorized: boolean;
 }
 
 // @public (undocumented)
@@ -599,18 +611,18 @@ class IModelBankFileSystemContextClient implements ContextManagerClient {
   // (undocumented)
   baseUri: string;
   // (undocumented)
-  createContext(alctx: ActivityLoggingContext, accessToken: AccessToken, name: string): Promise<void>;
+  createContext(requestContext: AuthorizedClientRequestContext, name: string): Promise<void>;
   // (undocumented)
-  deleteContext(alctx: ActivityLoggingContext, accessToken: AccessToken, contextId: string): Promise<void>;
+  deleteContext(requestContext: AuthorizedClientRequestContext, contextId: string): Promise<void>;
   // (undocumented)
-  queryContextByName(alctx: ActivityLoggingContext, accessToken: AccessToken, projectName: string): Promise<Project>;
+  queryContextByName(requestContext: AuthorizedClientRequestContext, projectName: string): Promise<Project>;
 }
 
 // @public (undocumented)
 class IModelBankHandler extends IModelBaseHandler {
   constructor(url: string, handler: FileHandler | undefined, keepAliveDuration?: number);
   // (undocumented)
-  getUrl(_actx: ActivityLoggingContext, excludeApiVersion?: boolean): Promise<string>;
+  getUrl(_requestContext: ClientRequestContext, excludeApiVersion?: boolean): Promise<string>;
   // (undocumented)
   protected getUrlSearchKey(): string;
 }
@@ -625,23 +637,23 @@ class IModelBaseHandler extends WsgClient {
   protected _fileHandler: FileHandler | undefined;
   // (undocumented)
   protected _url?: string;
-  delete(alctx: ActivityLoggingContext, token: AccessToken, relativeUrlPath: string): Promise<void>;
-  deleteInstance<T extends WsgInstance>(alctx: ActivityLoggingContext, token: AccessToken, relativeUrlPath: string, instance?: T, requestOptions?: WsgRequestOptions): Promise<void>;
+  delete(requestContext: AuthorizedClientRequestContext, relativeUrlPath: string): Promise<void>;
+  deleteInstance<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, relativeUrlPath: string, instance?: T, requestOptions?: WsgRequestOptions): Promise<void>;
   // (undocumented)
   formatProjectIdForUrl(projectId: string): string;
-  getAccessToken(alctx: ActivityLoggingContext, authorizationToken: AuthorizationToken): Promise<AccessToken>;
+  getAccessToken(requestContext: ClientRequestContext, authorizationToken: AuthorizationToken): Promise<AccessToken>;
   getAgent(): any;
   // WARNING: The type "CustomRequestOptions" needs to be exported by the package (e.g. added to index.ts)
   getCustomRequestOptions(): CustomRequestOptions;
   // (undocumented)
   getFileHandler(): FileHandler | undefined;
-  getInstances<T extends WsgInstance>(alctx: ActivityLoggingContext, typedConstructor: new () => T, token: AccessToken, relativeUrlPath: string, queryOptions?: RequestQueryOptions): Promise<T[]>;
+  getInstances<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, queryOptions?: RequestQueryOptions): Promise<T[]>;
   protected getRelyingPartyUrl(): string;
-  getUrl(alctx: ActivityLoggingContext): Promise<string>;
+  getUrl(requestContext: ClientRequestContext): Promise<string>;
   protected getUrlSearchKey(): string;
-  postInstance<T extends WsgInstance>(alctx: ActivityLoggingContext, typedConstructor: new () => T, token: AccessToken, relativeUrlPath: string, instance: T, requestOptions?: WsgRequestOptions): Promise<T>;
-  postInstances<T extends WsgInstance>(alctx: ActivityLoggingContext, typedConstructor: new () => T, token: AccessToken, relativeUrlPath: string, instances: T[], requestOptions?: WsgRequestOptions): Promise<T[]>;
-  postQuery<T extends WsgInstance>(alctx: ActivityLoggingContext, typedConstructor: new () => T, token: AccessToken, relativeUrlPath: string, queryOptions: RequestQueryOptions): Promise<T[]>;
+  postInstance<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, instance: T, requestOptions?: WsgRequestOptions): Promise<T>;
+  postInstances<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, instances: T[], requestOptions?: WsgRequestOptions): Promise<T[]>;
+  postQuery<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, queryOptions: RequestQueryOptions): Promise<T[]>;
   // (undocumented)
   static readonly searchKey: string;
   protected setupOptionDefaults(options: RequestOptions): Promise<void>;
@@ -689,18 +701,18 @@ interface IModelFileSystemContextProps {
 // @public
 class IModelHandler {
   constructor(handler: IModelsHandler);
-  create(alctx: ActivityLoggingContext, token: AccessToken, contextId: string, name: string, path?: string, description?: string, progressCallback?: (progress: ProgressInfo) => void, timeOutInMilliseconds?: number): Promise<HubIModel>;
-  delete(alctx: ActivityLoggingContext, token: AccessToken, contextId: string): Promise<void>;
-  download(alctx: ActivityLoggingContext, token: AccessToken, contextId: string, path: string, progressCallback?: (progress: ProgressInfo) => void): Promise<void>;
-  get(alctx: ActivityLoggingContext, token: AccessToken, contextId: string): Promise<HubIModel>;
-  getInitializationState(alctx: ActivityLoggingContext, token: AccessToken, contextId: string): Promise<InitializationState>;
-  update(alctx: ActivityLoggingContext, token: AccessToken, contextId: string, imodel: HubIModel): Promise<HubIModel>;
+  create(requestContext: AuthorizedClientRequestContext, contextId: string, name: string, path?: string, description?: string, progressCallback?: (progress: ProgressInfo) => void, timeOutInMilliseconds?: number): Promise<HubIModel>;
+  delete(requestContext: AuthorizedClientRequestContext, contextId: string): Promise<void>;
+  download(requestContext: AuthorizedClientRequestContext, contextId: string, path: string, progressCallback?: (progress: ProgressInfo) => void): Promise<void>;
+  get(requestContext: AuthorizedClientRequestContext, contextId: string): Promise<HubIModel>;
+  getInitializationState(requestContext: AuthorizedClientRequestContext, contextId: string): Promise<InitializationState>;
+  update(requestContext: AuthorizedClientRequestContext, contextId: string, imodel: HubIModel): Promise<HubIModel>;
 }
 
 // @public
 class IModelHubClient extends IModelClient {
   constructor(fileHandler?: FileHandler, iModelBaseHandler?: IModelBaseHandler);
-  getAccessToken(alctx: ActivityLoggingContext, authorizationToken: AuthorizationToken): Promise<AccessToken>;
+  getAccessToken(requestContext: ClientRequestContext, authorizationToken: AuthorizationToken): Promise<AccessToken>;
 }
 
 // @public
@@ -746,18 +758,18 @@ class IModelQuery extends InstanceIdQuery {
 // @public
 class IModelsHandler {
   constructor(handler: IModelBaseHandler, fileHandler?: FileHandler);
-  create(alctx: ActivityLoggingContext, token: AccessToken, contextId: string, name: string, path?: string, description?: string, progressCallback?: (progress: ProgressInfo) => void, timeOutInMilliseconds?: number): Promise<HubIModel>;
-  delete(alctx: ActivityLoggingContext, token: AccessToken, contextId: string, imodelId: GuidString): Promise<void>;
-  download(alctx: ActivityLoggingContext, token: AccessToken, imodelId: GuidString, path: string, progressCallback?: (progress: ProgressInfo) => void): Promise<void>;
-  get(alctx: ActivityLoggingContext, token: AccessToken, contextId: string, query?: IModelQuery): Promise<HubIModel[]>;
-  getInitializationState(alctx: ActivityLoggingContext, token: AccessToken, imodelId: GuidString): Promise<InitializationState>;
-  update(alctx: ActivityLoggingContext, token: AccessToken, contextId: string, imodel: HubIModel): Promise<HubIModel>;
+  create(requestContext: AuthorizedClientRequestContext, contextId: string, name: string, path?: string, description?: string, progressCallback?: (progress: ProgressInfo) => void, timeOutInMilliseconds?: number): Promise<HubIModel>;
+  delete(requestContext: AuthorizedClientRequestContext, contextId: string, imodelId: GuidString): Promise<void>;
+  download(requestContext: AuthorizedClientRequestContext, imodelId: GuidString, path: string, progressCallback?: (progress: ProgressInfo) => void): Promise<void>;
+  get(requestContext: AuthorizedClientRequestContext, contextId: string, query?: IModelQuery): Promise<HubIModel[]>;
+  getInitializationState(requestContext: AuthorizedClientRequestContext, imodelId: GuidString): Promise<InitializationState>;
+  update(requestContext: AuthorizedClientRequestContext, contextId: string, imodel: HubIModel): Promise<HubIModel>;
 }
 
 // @public
 class ImsActiveSecureTokenClient extends Client {
   constructor();
-  getToken(alctx: ActivityLoggingContext, user: string, password: string, appId?: string): Promise<AuthorizationToken>;
+  getToken(requestContext: ClientRequestContext, userCredentials: ImsUserCredentials, appId?: string): Promise<AuthorizationToken>;
   protected getUrlSearchKey(): string;
   // (undocumented)
   static readonly searchKey: string;
@@ -768,7 +780,7 @@ class ImsActiveSecureTokenClient extends Client {
 // @public
 class ImsDelegationSecureTokenClient extends Client {
   constructor();
-  getToken(alctx: ActivityLoggingContext, authorizationToken: AuthorizationToken, relyingPartyUri?: string, appId?: string): Promise<AccessToken>;
+  getToken(requestContext: ClientRequestContext, authorizationToken: AuthorizationToken, relyingPartyUri?: string, appId?: string): Promise<AccessToken>;
   protected getUrlSearchKey(): string;
   // (undocumented)
   static readonly searchKey: string;
@@ -782,6 +794,24 @@ class ImsFederatedAuthenticationClient extends Client {
   static parseTokenResponse(authTokenResponse: string): AuthorizationToken | undefined;
   // (undocumented)
   static readonly searchKey: string;
+}
+
+// @public
+class ImsTestAuthorizationClient implements IAuthorizationClient {
+  getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
+  readonly hasExpired: boolean;
+  readonly hasSignedIn: boolean;
+  readonly isAuthorized: boolean;
+  // (undocumented)
+  signIn(requestContext: ClientRequestContext, userCredentials: ImsUserCredentials, relyingPartyUri?: string): Promise<AccessToken>;
+}
+
+// @public
+interface ImsUserCredentials {
+  // (undocumented)
+  email: string;
+  // (undocumented)
+  password: string;
 }
 
 // @public (undocumented)
@@ -812,12 +842,15 @@ class InstanceIdQuery extends Query {
 }
 
 // @public
-interface IOidcFrontendClient extends IDisposable {
-  getAccessToken(actx: ActivityLoggingContext): Promise<AccessToken | undefined>;
-  initialize(actx: ActivityLoggingContext): Promise<void>;
+interface IOidcFrontendClient extends IDisposable, IAuthorizationClient {
+  getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
+  hasExpired: boolean;
+  hasSignedIn: boolean;
+  initialize(requestContext: ClientRequestContext): Promise<void>;
+  isAuthorized: boolean;
   readonly onUserStateChanged: BeEvent<(token: AccessToken | undefined) => void>;
-  signIn(actx: ActivityLoggingContext): void;
-  signOut(actx: ActivityLoggingContext): void;
+  signIn(requestContext: ClientRequestContext): Promise<AccessToken>;
+  signOut(requestContext: ClientRequestContext): Promise<void>;
 }
 
 // @public
@@ -851,9 +884,9 @@ class LockEvent extends BriefcaseEvent {
 // @public
 class LockHandler {
   constructor(handler: IModelBaseHandler);
-  deleteAll(alctx: ActivityLoggingContext, token: AccessToken, imodelId: GuidString, briefcaseId: number): Promise<void>;
-  get(alctx: ActivityLoggingContext, token: AccessToken, imodelId: GuidString, query?: LockQuery): Promise<Lock[]>;
-  update(alctx: ActivityLoggingContext, token: AccessToken, imodelId: GuidString, locks: Lock[], updateOptions?: LockUpdateOptions): Promise<Lock[]>;
+  deleteAll(requestContext: AuthorizedClientRequestContext, imodelId: GuidString, briefcaseId: number): Promise<void>;
+  get(requestContext: AuthorizedClientRequestContext, imodelId: GuidString, query?: LockQuery): Promise<Lock[]>;
+  update(requestContext: AuthorizedClientRequestContext, imodelId: GuidString, locks: Lock[], updateOptions?: LockUpdateOptions): Promise<Lock[]>;
 }
 
 // @public
@@ -1083,12 +1116,12 @@ class RealityData extends WsgInstance {
   description?: string;
   // (undocumented)
   footprint?: string;
-  getBlobStringUrl(alctx: ActivityLoggingContext, token: AccessToken, name: string, nameRelativeToRootDocumentPath?: boolean): Promise<string>;
-  getBlobUrl(alctx: ActivityLoggingContext, token: AccessToken): Promise<URL>;
-  getModelData(alctx: ActivityLoggingContext, token: AccessToken, name: string, nameRelativeToRootDocumentPath?: boolean): Promise<any>;
-  getRootDocumentJson(alctx: ActivityLoggingContext, token: AccessToken): Promise<any>;
-  getTileContent(alctx: ActivityLoggingContext, token: AccessToken, name: string, nameRelativeToRootDocumentPath?: boolean): Promise<any>;
-  getTileJson(alctx: ActivityLoggingContext, token: AccessToken, name: string, nameRelativeToRootDocumentPath?: boolean): Promise<any>;
+  getBlobStringUrl(requestContext: AuthorizedClientRequestContext, name: string, nameRelativeToRootDocumentPath?: boolean): Promise<string>;
+  getBlobUrl(requestContext: AuthorizedClientRequestContext): Promise<URL>;
+  getModelData(requestContext: AuthorizedClientRequestContext, name: string, nameRelativeToRootDocumentPath?: boolean): Promise<any>;
+  getRootDocumentJson(requestContext: AuthorizedClientRequestContext): Promise<any>;
+  getTileContent(requestContext: AuthorizedClientRequestContext, name: string, nameRelativeToRootDocumentPath?: boolean): Promise<any>;
+  getTileJson(requestContext: AuthorizedClientRequestContext, name: string, nameRelativeToRootDocumentPath?: boolean): Promise<any>;
   // (undocumented)
   group?: number;
   // (undocumented)
@@ -1133,11 +1166,11 @@ class RealityData extends WsgInstance {
 // @public
 class RealityDataServicesClient extends WsgClient {
   constructor();
-  getFileAccessKey(alctx: ActivityLoggingContext, token: AccessToken, projectId: string, tilesId: string): Promise<FileAccessKey[]>;
-  getRealityData(alctx: ActivityLoggingContext, token: AccessToken, projectId: string, tilesId: string): Promise<RealityData>;
-  getRealityDataInProject(alctx: ActivityLoggingContext, token: AccessToken, projectId: string): Promise<RealityData[]>;
-  getRealityDataInProjectOverlapping(alctx: ActivityLoggingContext, token: AccessToken, projectId: string, range: Range2d): Promise<RealityData[]>;
-  getRealityDataUrl(alctx: ActivityLoggingContext, projectId: string, tilesId: string): Promise<string>;
+  getFileAccessKey(requestContext: AuthorizedClientRequestContext, projectId: string, tilesId: string): Promise<FileAccessKey[]>;
+  getRealityData(requestContext: AuthorizedClientRequestContext, projectId: string, tilesId: string): Promise<RealityData>;
+  getRealityDataInProject(requestContext: AuthorizedClientRequestContext, projectId: string): Promise<RealityData[]>;
+  getRealityDataInProjectOverlapping(requestContext: AuthorizedClientRequestContext, projectId: string, range: Range2d): Promise<RealityData[]>;
+  getRealityDataUrl(requestContext: ClientRequestContext, projectId: string, tilesId: string): Promise<string>;
   protected getRelyingPartyUrl(): string;
   protected getUrlSearchKey(): string;
   // (undocumented)
@@ -1145,7 +1178,7 @@ class RealityDataServicesClient extends WsgClient {
 }
 
 // @public
-export function request(alctx: ActivityLoggingContext, url: string, options: RequestOptions): Promise<Response>;
+export function request(requestContext: ClientRequestContext, url: string, options: RequestOptions): Promise<Response>;
 
 // @public (undocumented)
 interface RequestBasicCredentials {
@@ -1289,12 +1322,12 @@ class SeedFile extends WsgInstance {
 
 // @public
 interface SettingsAdmin {
-  deleteSetting(alctx: ActivityLoggingContext, namespace: string, name: string, accessToken: AccessToken, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
-  deleteUserSetting(alctx: ActivityLoggingContext, namespace: string, name: string, accessToken: AccessToken, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
-  getSetting(alctx: ActivityLoggingContext, namespace: string, name: string, accessToken: AccessToken, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
-  getUserSetting(alctx: ActivityLoggingContext, namespace: string, name: string, accessToken: AccessToken, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
-  saveSetting(alctx: ActivityLoggingContext, settings: any, namespace: string, name: string, accessToken: AccessToken, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
-  saveUserSetting(alctx: ActivityLoggingContext, settings: any, namespace: string, name: string, accessToken: AccessToken, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
+  deleteSetting(requestContext: AuthorizedClientRequestContext, namespace: string, name: string, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
+  deleteUserSetting(requestContext: AuthorizedClientRequestContext, namespace: string, name: string, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
+  getSetting(requestContext: AuthorizedClientRequestContext, namespace: string, name: string, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
+  getUserSetting(requestContext: AuthorizedClientRequestContext, namespace: string, name: string, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
+  saveSetting(requestContext: AuthorizedClientRequestContext, settings: any, namespace: string, name: string, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
+  saveUserSetting(requestContext: AuthorizedClientRequestContext, settings: any, namespace: string, name: string, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
 }
 
 // @public
@@ -1350,8 +1383,8 @@ class Thumbnail extends WsgInstance {
 // @public
 class ThumbnailHandler {
   constructor(handler: IModelBaseHandler);
-  download(alctx: ActivityLoggingContext, token: AccessToken, imodelId: GuidString, thumbnail: Thumbnail | TipThumbnail): Promise<string>;
-  get(alctx: ActivityLoggingContext, token: AccessToken, imodelId: GuidString, size: ThumbnailSize, query?: ThumbnailQuery): Promise<Thumbnail[]>;
+  download(requestContext: AuthorizedClientRequestContext, imodelId: GuidString, thumbnail: Thumbnail | TipThumbnail): Promise<string>;
+  get(requestContext: AuthorizedClientRequestContext, imodelId: GuidString, size: ThumbnailSize, query?: ThumbnailQuery): Promise<Thumbnail[]>;
 }
 
 // @public
@@ -1388,15 +1421,17 @@ class Token {
   getUserInfo(): UserInfo | undefined;
   // (undocumented)
   protected parseSamlAssertion(): boolean;
+  // (undocumented)
+  setUserInfo(userInfo: UserInfo): void;
 }
 
 // @public
 class UlasClient extends Client {
   constructor();
-  getAccessToken(alctx: ActivityLoggingContext, authorizationToken: AuthorizationToken): Promise<AccessToken>;
+  getAccessToken(requestContext: ClientRequestContext, authorizationToken: AuthorizationToken): Promise<AccessToken>;
   protected getUrlSearchKey(): string;
-  logFeature(alctx: ActivityLoggingContext, token: AccessToken, ...entries: FeatureLogEntry[]): Promise<LogPostingResponse>;
-  logUsage(alctx: ActivityLoggingContext, token: AccessToken, entry: UsageLogEntry): Promise<LogPostingResponse>;
+  logFeature(requestContext: AuthorizedClientRequestContext, ...entries: FeatureLogEntry[]): Promise<LogPostingResponse>;
+  logUsage(requestContext: AuthorizedClientRequestContext, entry: UsageLogEntry): Promise<LogPostingResponse>;
   // (undocumented)
   protected setupOptionDefaults(options: RequestOptions): Promise<void>;
 }
@@ -1406,7 +1441,7 @@ class UlasClient extends Client {
 // @public
 class UrlDiscoveryClient extends Client {
   constructor();
-  discoverUrl(alctx: ActivityLoggingContext, searchKey: string, regionId: number | undefined): Promise<string>;
+  discoverUrl(requestContext: ClientRequestContext, searchKey: string, regionId: number | undefined): Promise<string>;
   getUrl(): Promise<string>;
   protected getUrlSearchKey(): string;
 }
@@ -1498,7 +1533,7 @@ class UserInfo {
           usageCountryIso: string;
       } | undefined;
   // (undocumented)
-  static fromJson(jsonObj: any): UserInfo;
+  static fromJson(jsonObj: any): UserInfo | undefined;
   id: string;
   organization?: {
           id: string;
@@ -1515,7 +1550,7 @@ class UserInfo {
 // @public
 class UserInfoHandler {
   constructor(handler: IModelBaseHandler);
-  get(alctx: ActivityLoggingContext, token: AccessToken, imodelId: GuidString, query?: UserInfoQuery): Promise<HubUserInfo[]>;
+  get(requestContext: AuthorizedClientRequestContext, imodelId: GuidString, query?: UserInfoQuery): Promise<HubUserInfo[]>;
   readonly statistics: UserStatisticsHandler;
 }
 
@@ -1541,7 +1576,7 @@ class UserStatistics extends HubUserInfo {
 // @public
 class UserStatisticsHandler {
   constructor(handler: IModelBaseHandler);
-  get(alctx: ActivityLoggingContext, token: AccessToken, imodelId: GuidString, query?: UserStatisticsQuery): Promise<UserStatistics[]>;
+  get(requestContext: AuthorizedClientRequestContext, imodelId: GuidString, query?: UserStatisticsQuery): Promise<UserStatistics[]>;
 }
 
 // @public
@@ -1584,9 +1619,9 @@ class VersionEvent extends IModelHubEvent {
 // @public
 class VersionHandler {
   constructor(handler: IModelBaseHandler);
-  create(alctx: ActivityLoggingContext, token: AccessToken, imodelId: GuidString, changeSetId: string, name: string, description?: string): Promise<Version>;
-  get(alctx: ActivityLoggingContext, token: AccessToken, imodelId: GuidString, query?: VersionQuery): Promise<Version[]>;
-  update(alctx: ActivityLoggingContext, token: AccessToken, imodelId: GuidString, version: Version): Promise<Version>;
+  create(requestContext: AuthorizedClientRequestContext, imodelId: GuidString, changeSetId: string, name: string, description?: string): Promise<Version>;
+  get(requestContext: AuthorizedClientRequestContext, imodelId: GuidString, query?: VersionQuery): Promise<Version[]>;
+  update(requestContext: AuthorizedClientRequestContext, imodelId: GuidString, version: Version): Promise<Version>;
 }
 
 // @public
@@ -1605,14 +1640,14 @@ class WsgClient extends Client {
   protected _url?: string;
   // (undocumented)
   apiVersion: string;
-  protected deleteInstance<T extends WsgInstance>(alctx: ActivityLoggingContext, token: AccessToken, relativeUrlPath: string, instance?: T, requestOptions?: WsgRequestOptions): Promise<void>;
-  getAccessToken(alctx: ActivityLoggingContext, authorizationToken: AuthorizationToken): Promise<AccessToken>;
-  protected getInstances<T extends WsgInstance>(alctx: ActivityLoggingContext, typedConstructor: new () => T, token: AccessToken, relativeUrlPath: string, queryOptions?: RequestQueryOptions): Promise<T[]>;
+  protected deleteInstance<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, relativeUrlPath: string, instance?: T, requestOptions?: WsgRequestOptions): Promise<void>;
+  getAccessToken(requestContext: ClientRequestContext, authorizationToken: AuthorizationToken): Promise<AccessToken>;
+  protected getInstances<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, queryOptions?: RequestQueryOptions): Promise<T[]>;
   protected abstract getRelyingPartyUrl(): string;
-  getUrl(alctx: ActivityLoggingContext, excludeApiVersion?: boolean): Promise<string>;
-  protected postInstance<T extends WsgInstance>(alctx: ActivityLoggingContext, typedConstructor: new () => T, token: AccessToken, relativeUrlPath: string, instance: T, requestOptions?: WsgRequestOptions): Promise<T>;
-  protected postInstances<T extends WsgInstance>(alctx: ActivityLoggingContext, typedConstructor: new () => T, token: AccessToken, relativeUrlPath: string, instances: T[], requestOptions?: WsgRequestOptions): Promise<T[]>;
-  protected postQuery<T extends WsgInstance>(alctx: ActivityLoggingContext, typedConstructor: new () => T, token: AccessToken, relativeUrlPath: string, queryOptions: RequestQueryOptions): Promise<T[]>;
+  getUrl(requestContext: ClientRequestContext, excludeApiVersion?: boolean): Promise<string>;
+  protected postInstance<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, instance: T, requestOptions?: WsgRequestOptions): Promise<T>;
+  protected postInstances<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, instances: T[], requestOptions?: WsgRequestOptions): Promise<T[]>;
+  protected postQuery<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, queryOptions: RequestQueryOptions): Promise<T[]>;
   protected setupOptionDefaults(options: RequestOptions): Promise<void>;
 }
 

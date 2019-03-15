@@ -6,8 +6,7 @@
 
 import { ECJsonTypeMap, WsgInstance } from "./ECJsonTypeMap";
 import { WsgClient } from "./WsgClient";
-import { AccessToken } from "./Token";
-import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { AuthorizedClientRequestContext } from "./AuthorizedClientRequestContext";
 import { Config } from "./Config";
 
 /** FormDefinition */
@@ -126,13 +125,12 @@ export class FormDataManagementClient extends WsgClient {
 
   /**
    * get form definitions and their meta data from the form data management client
-   * @param token the access token used to authenticate the request
-   * @param alctx the ActivityLoggingContext to track this request by
+   * @param requestContext The client request context
    * @param projectId the project associated with the form definitions
    * @param filter [optional] can either supply a string or an array of property names and values which are then unioned together as a string and inserted into the url to exclude definitions
    * @param format either xml or json, this corresponds to the actual form definition which will be returned a string property, but can be parse into the format specified
    */
-  public async getFormDefinitions(token: AccessToken, alctx: ActivityLoggingContext, projectId: string, filter?: string | Array<{ name: string, value: string }>, format: "json" | "xml" = "json"): Promise<FormDefinition[]> {
+  public async getFormDefinitions(requestContext: AuthorizedClientRequestContext, projectId: string, filter?: string | Array<{ name: string, value: string }>, format: "json" | "xml" = "json"): Promise<FormDefinition[]> {
     let url = `/Repositories/Bentley.Forms--${projectId}/Forms_EC_Mapping/FormDefinition`;
 
     if (filter !== undefined) {
@@ -142,37 +140,35 @@ export class FormDataManagementClient extends WsgClient {
       url += `?definitionFormat=${format}`;
     }
 
-    return this.getInstances<FormDefinition>(alctx, FormDefinition, token, url);
+    return this.getInstances<FormDefinition>(requestContext, FormDefinition, url);
   }
 
   /**
    * get form definitions that have the classification "Risk" and the discipline "Issue"
-   * @param token the access token used to authenticate the request
-   * @param alctx the ActivityLoggingContext to track this request by
+   * @param requestContext The client request context
    * @param projectId the project associated with the form definitions
    */
-  public async getRiskIssueFormDefinitions(token: AccessToken, alctx: ActivityLoggingContext, projectId: string): Promise<FormDefinition[]> {
+  public async getRiskIssueFormDefinitions(requestContext: AuthorizedClientRequestContext, projectId: string): Promise<FormDefinition[]> {
     const filters = [
       { name: "Classification", value: "Risk" },
       { name: "Discipline", value: "Issue" },
     ];
 
-    return this.getFormDefinitions(token, alctx, projectId, filters);
+    return this.getFormDefinitions(requestContext, projectId, filters);
   }
 
   /**
    * get the form data instances from the form data management client. Note this the data saved from a user filling out a form definition, it is not the form definition itself,
    * furthermore, the data does not correspond directly to a form definition but rather the 'class' both this data and a form definition share. That 'class' can be said to 'own' the properties
    * that are referenced by both a form definition and this
-   * @param token the access token used to authenticate the request
-   * @param alctx the ActivityLoggingContext to track this request by
+   * @param requestContext The client request context
    * @param projectId the project associated with the form data
    * @param className the name of the class that owns the properties for which each instance binds data to (note this is dynamic, ie a user can create/destroy classes)
    * @param skip the starting index of instances to fetch (accomodates paging to reduce the request payload)
    * @param top the maximum number of instances to return
    * @param filter [optional] can either supply a string or an array of property names and values which are then unioned together as a string and inserted into the url to exclude data instances
    */
-  public async getFormData(token: AccessToken, alctx: ActivityLoggingContext, projectId: string, className: string, skip: number = 0, top: number = 50, filter?: string | Array<{ name: string, value: string }>): Promise<FormInstanceData[]> {
+  public async getFormData(requestContext: AuthorizedClientRequestContext, projectId: string, className: string, skip: number = 0, top: number = 50, filter?: string | Array<{ name: string, value: string }>): Promise<FormInstanceData[]> {
     let url = `/Repositories/Bentley.Forms--${projectId}/DynamicSchema/${className}?$select=*,Forms_EC_Mapping.Form.*&$skip=${skip}&$top=${top}`;
 
     if (filter !== undefined) {
@@ -180,7 +176,7 @@ export class FormDataManagementClient extends WsgClient {
       url += `&$filter=${filterString}`;
     }
 
-    return this.getInstances<FormInstanceData>(alctx, FormInstanceData, token, url);
+    return this.getInstances<FormInstanceData>(requestContext, FormInstanceData, url);
   }
 
   /**
@@ -199,33 +195,31 @@ export class FormDataManagementClient extends WsgClient {
 
   /**
    * get form data instances with the "Risk" classification, "Issue" discipline, and the given iModelId which is stored as the data isntance's "_ContainerId" property
-   * @param token the access token used to authenticate the request
-   * @param alctx the ActivityLoggingContext to track this request by
+   * @param requestContext The client request context
    * @param projectId the project associated with the form data
    * @param iModelId the iModelId associated with the form data
    * @param className the name of the class that owns the properties for which each instance binds data to (note this is dynamic, ie a user can create/destroy classes)
    * @param skip the starting index of instances to fetch (accomodates paging to reduce the request payload)
    * @param top the maximum number of instances to return
    */
-  public async getRiskIssueFormData(token: AccessToken, alctx: ActivityLoggingContext, projectId: string, iModelId: string, className: string = "Issue", skip: number = 0, top: number = 50): Promise<FormInstanceData[]> {
+  public async getRiskIssueFormData(requestContext: AuthorizedClientRequestContext, projectId: string, iModelId: string, className: string = "Issue", skip: number = 0, top: number = 50): Promise<FormInstanceData[]> {
     const filters = [
       { name: "_Classification", value: "Risk" },
       { name: "_Discipline", value: "Issue" },
       { name: "_ContainerId", value: iModelId },
     ];
-    return this.getFormData(token, alctx, projectId, className, skip, top, filters);
+    return this.getFormData(requestContext, projectId, className, skip, top, filters);
   }
 
   /**
    * create/update a form data instance with given form data
-   * @param token the access token used to authenticate the request
-   * @param alctx the ActivityLoggingContext to track this request by
+   * @param requestContext The client request context
    * @param formData the data to be persisted
    * @param projectId the project associated with the form data
    * @param className the name of the class that owns the properties for which each instance binds data to (note this is dynamic, ie a user can create/destroy classes)
    * @param instanceId [optional] if provided the data is used to update an existing form data instance, otherwise a new instance is created
    */
-  public async postFormData(token: AccessToken, alctx: ActivityLoggingContext, formData: FormInstanceData, projectId: string, className: string = "Issue", instanceId?: string): Promise<FormInstanceData> {
+  public async postFormData(requestContext: AuthorizedClientRequestContext, formData: FormInstanceData, projectId: string, className: string = "Issue", instanceId?: string): Promise<FormInstanceData> {
     formData.changeState = instanceId === undefined ? "new" : "modified";
     formData.formDataDirection = "forward";
     formData.formSchemaName = "Forms_EC_Mapping";
@@ -235,13 +229,12 @@ export class FormDataManagementClient extends WsgClient {
     if (instanceId !== undefined)
       url += `/${instanceId}`;
 
-    return this.postInstance<FormInstanceData>(alctx, FormInstanceData, token, url, formData as FormInstanceData);
+    return this.postInstance<FormInstanceData>(requestContext, FormInstanceData, url, formData as FormInstanceData);
   }
 
   /**
    * create/update a form data instance with given form data that is associated by the classification "Risk", discipline "Issue", and the element and imodel ids provided
-   * @param token the access token used to authenticate the request
-   * @param alctx the ActivityLoggingContext to track this request by
+   * @param requestContext The client request context
    * @param properties the data to be persisted, note due to the dynamic nature of classes this cannot be generalized by a specific type
    * @param projectId the project associated with the form data
    * @param iModelId the iModelId associated with the form data (bound to teh _ContainerId reference property)
@@ -250,7 +243,7 @@ export class FormDataManagementClient extends WsgClient {
    * @param className the name of the class that owns the properties for which each instance binds data to (note this is dynamic, ie a user can create/destroy classes)
    * @param instanceId [optional] if provided the data is used to update an existing form data instance, otherwise a new instance is created
    */
-  public async postRiskIssueFormData(token: AccessToken, alctx: ActivityLoggingContext, properties: any, projectId: string, iModelId: string, elementId: string, formId: string, className: string = "Issue", instanceId?: string): Promise<FormInstanceData> {
+  public async postRiskIssueFormData(requestContext: AuthorizedClientRequestContext, properties: any, projectId: string, iModelId: string, elementId: string, formId: string, className: string = "Issue", instanceId?: string): Promise<FormInstanceData> {
     const formData = new FormInstanceData();
     formData.formId = formId;
     formData.properties = properties;
@@ -258,6 +251,6 @@ export class FormDataManagementClient extends WsgClient {
     formData.properties["_ItemId"] = elementId; // tslint:disable-line
     formData.properties["_Classification"] = "Risk"; // tslint:disable-line
     formData.properties["_Discipline"] = "Issue"; // tslint:disable-line
-    return this.postFormData(token, alctx, formData, projectId, className, instanceId);
+    return this.postFormData(requestContext, formData, projectId, className, instanceId);
   }
 }

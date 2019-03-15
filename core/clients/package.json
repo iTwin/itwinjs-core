@@ -6,7 +6,7 @@
   "typings": "lib/imodeljs-clients",
   "license": "MIT",
   "engines": {
-    "node": ">=10.14.0 <11.0"
+    "node": ">=10.11.0 <11.0"
   },
   "scripts": {
     "build": "node ./node_modules/@bentley/webpack-tools/bin/buildIModelJsModule.js",
@@ -66,7 +66,7 @@
     "@types/js-base64": "^2.3.1",
     "@types/mocha": "^5.2.5",
     "@types/nock": "^9.1.2",
-    "@types/node": "10.12.18",
+    "@types/node": "10.14.1",
     "@types/qs": "^6.5.0",
     "@types/superagent": "^3.5.6",
     "@types/xmldom": "^0.1.29",

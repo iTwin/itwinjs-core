@@ -3,8 +3,8 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module iModelBank */
+import { assert, ClientRequestContext } from "@bentley/bentleyjs-core";
 import { IModelBaseHandler } from "../imodelhub/BaseHandler";
-import { assert, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { FileHandler } from "../imodeljs-clients";
 
 /*
@@ -25,7 +25,7 @@ export class IModelBankHandler extends IModelBaseHandler {
 
   protected getUrlSearchKey(): string { assert(false, "Bentley cloud-specific method should be factored out of WsgClient base class"); return ""; }
 
-  public async getUrl(_actx: ActivityLoggingContext, excludeApiVersion?: boolean): Promise<string> {
+  public async getUrl(_requestContext: ClientRequestContext, excludeApiVersion?: boolean): Promise<string> {
     if (this._url)
       return Promise.resolve(this._url!);
 

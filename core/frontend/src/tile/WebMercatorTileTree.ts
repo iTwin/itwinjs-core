@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Tile */
 
-import { assert, ActivityLoggingContext, BentleyError, IModelStatus, JsonUtils } from "@bentley/bentleyjs-core";
+import { assert, BentleyError, IModelStatus, JsonUtils } from "@bentley/bentleyjs-core";
 import {
   TileTreeProps, TileProps, Cartographic, ImageSource, ImageSourceFormat, RenderTexture, EcefLocation,
   BackgroundMapType, BackgroundMapProps, IModelCoordinatesResponseProps, GeoCoordStatus,
@@ -21,6 +21,7 @@ import { SceneContext, DecorateContext } from "../ViewContext";
 import { ScreenViewport } from "../Viewport";
 import { MessageBoxType, MessageBoxIconType } from "../NotificationManager";
 import { GeoConverter } from "../GeoServices";
+import { FrontendRequestContext } from "../FrontendRequestContext";
 
 // this interface is implemented in two ways:
 // LinearTransformChildCreator is used when the range of the iModel is small, such as a building, when an approximation will work.
@@ -350,7 +351,6 @@ class WebMercatorTileLoader extends TileLoader {
 // Represents the service that is providing map tiles for Web Mercator models (background maps).
 abstract class ImageryProvider {
   public mapType: BackgroundMapType;
-  protected _activityLoggingContext = new ActivityLoggingContext("");
 
   constructor(mapType: BackgroundMapType) {
     this.mapType = mapType;
@@ -374,15 +374,18 @@ abstract class ImageryProvider {
 
   // returns a Uint8Array with the contents of the tile.
   public async loadTile(row: number, column: number, zoomLevel: number): Promise<ImageSource | undefined> {
+    const requestContext = new FrontendRequestContext();
+    requestContext.enter();
+
     let tileUrl: string = this.constructUrl(row, column, zoomLevel);
 
     if (!tileUrl.includes("https"))
       tileUrl = tileUrl.replace("http", "https");
 
-    const alctx = this._activityLoggingContext;
     const tileRequestOptions: RequestOptions = { method: "GET", responseType: "arraybuffer" };
     try {
-      const tileResponse: Response = await request(alctx, tileUrl, tileRequestOptions);
+      const tileResponse: Response = await request(requestContext, tileUrl, tileRequestOptions);
+      requestContext.enter();
       const byteArray: Uint8Array = new Uint8Array(tileResponse.body);
       if (!byteArray || (byteArray.length === 0))
         return undefined;
@@ -568,10 +571,12 @@ class BingMapProvider extends ImageryProvider {
 
   // initializes the BingMapProvider by reading the templateUrl, logo image, and attribution list.
   public async initialize(): Promise<void> {
+    const requestContext = new FrontendRequestContext();
+    requestContext.enter();
+
     // get the template url
     // NEEDSWORK - should get bing key from server.
     const bingKey = "AtaeI3QDNG7Bpv1L53cSfDBgBKXIgLq3q-xmn_Y2UyzvF-68rdVxwAuje49syGZt";
-    const alctx = this._activityLoggingContext;
 
     let imagerySet = "Road";
     if (BackgroundMapType.Aerial === this.mapType)
@@ -586,7 +591,8 @@ class BingMapProvider extends ImageryProvider {
       method: "GET",
     };
     try {
-      const response: Response = await request(alctx, bingRequestUrl, requestOptions);
+      const response: Response = await request(requestContext, bingRequestUrl, requestOptions);
+      requestContext.enter();
       const bingResponseProps: any = response.body;
       this._logoUrl = bingResponseProps.brandLogoUri;
 

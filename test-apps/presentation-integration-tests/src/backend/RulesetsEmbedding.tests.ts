@@ -3,9 +3,9 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { IModelDb } from "@bentley/imodeljs-backend/lib/IModelDb";
+import { ClientRequestContext, Id64 } from "@bentley/bentleyjs-core";
 import { initialize, terminate } from "../IntegrationTests";
 import RulesetEmbedder, { DuplicateHandlingStrategy } from "../../../../presentation/backend/lib/RulesetEmbedder";
-import { Id64, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { expect } from "chai";
 import { tweakRuleset } from "./Helpers";
 import { Ruleset } from "@bentley/presentation-common/lib/rules/Ruleset";
@@ -106,7 +106,7 @@ describe("RulesEmbedding", () => {
     expect(Id64.isValid(insertId)).true;
 
     // Try getting root node to confirm embedded ruleset is being located
-    const rootNodes = await Presentation.getManager().getNodes(ActivityLoggingContext.current, { imodel, rulesetId: rulesetToLocate.id });
+    const rootNodes = await Presentation.getManager().getNodes(ClientRequestContext.current, { imodel, rulesetId: rulesetToLocate.id });
     expect(rootNodes.length).to.be.equal(1);
   });
 
@@ -117,14 +117,14 @@ describe("RulesEmbedding", () => {
     expect(Id64.isValid(insertId)).true;
 
     // Try getting root node to confirm embedded ruleset is being located
-    let rootNodes = await Presentation.getManager().getNodes(ActivityLoggingContext.current, { imodel, rulesetId: rulesetToLocate.id });
+    let rootNodes = await Presentation.getManager().getNodes(ClientRequestContext.current, { imodel, rulesetId: rulesetToLocate.id });
     expect(rootNodes.length).to.be.equal(1);
 
     const rulesetElement = imodel.elements.getElement(insertId);
     rulesetElement.setJsonProperty("id", faker.random.uuid());
     imodel.elements.updateElement(rulesetElement);
 
-    rootNodes = await Presentation.getManager().getNodes(ActivityLoggingContext.current, { imodel, rulesetId: rulesetToLocate.id });
+    rootNodes = await Presentation.getManager().getNodes(ClientRequestContext.current, { imodel, rulesetId: rulesetToLocate.id });
     expect(rootNodes.length).to.be.equal(1);
   });
 

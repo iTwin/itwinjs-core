@@ -1,15 +1,4 @@
 // @beta
-class ActivityLoggingContext {
-  constructor(activityId: string, versionId?: string);
-  // (undocumented)
-  protected static _current: ActivityLoggingContext;
-  readonly activityId: string;
-  static readonly current: ActivityLoggingContext;
-  enter(): this;
-  readonly versionId: string;
-}
-
-// @beta
 export function assert(condition: boolean, msg?: string): void;
 
 // @beta
@@ -153,6 +142,21 @@ enum ChangeSetStatus {
   // (undocumented)
   Success = 0,
   WrongDgnDb = 90130
+}
+
+// @public
+class ClientRequestContext {
+  constructor(activityId?: string, applicationId?: string, applicationVersion?: string, sessionId?: string);
+  // (undocumented)
+  protected static _current: ClientRequestContext;
+  readonly activityId: string;
+  readonly applicationId: string;
+  readonly applicationVersion: string;
+  static readonly current: ClientRequestContext;
+  enter(): this;
+  readonly sessionId: string;
+  // (undocumented)
+  useContextForRpc: boolean;
 }
 
 // @public (undocumented)
@@ -946,6 +950,22 @@ enum RpcInterfaceStatus {
   RPC_INTERFACE_ERROR_BASE = 135168,
   // (undocumented)
   Success = 0
+}
+
+// @public
+interface SerializedClientRequestContext {
+  // (undocumented)
+  applicationId: string;
+  // (undocumented)
+  applicationVersion: string;
+  // (undocumented)
+  authorization?: string;
+  // (undocumented)
+  id: string;
+  // (undocumented)
+  sessionId: string;
+  // (undocumented)
+  userId?: string;
 }
 
 // @public

@@ -49,8 +49,8 @@ export class MobileRpcProtocol extends RpcProtocol {
   private _partialFulfillment: RpcRequestFulfillment | undefined = undefined;
   private _partialData: Uint8Array[] = [];
 
-  public static encodeRequest(request: MobileRpcRequest): MobileRpcChunks {
-    const serialized = request.protocol.serialize(request);
+  public static async encodeRequest(request: MobileRpcRequest): Promise<MobileRpcChunks> {
+    const serialized = await request.protocol.serialize(request);
     const data = serialized.parameters.data;
     serialized.parameters.data = data.map((v) => v.byteLength) as any[];
     return [JSON.stringify(serialized), ...data];

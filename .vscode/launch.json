@@ -3,8 +3,7 @@
   // Hover to view descriptions of existing attributes.
   // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
   "version": "0.2.0",
-  "configurations": [
-    {
+  "configurations": [{
       "type": "node",
       "request": "launch",
       "name": "LocalOrchestrator",
@@ -227,7 +226,7 @@
       "protocol": "inspector",
       "sourceMaps": true,
       "outFiles": [
-        "${workspaceRoot}/simplefrontend/lib/{backend}/**/*.js",
+        "${workspaceRoot}/test-apps/display-test-app/lib/{backend}/**/*.js",
         "${workspaceRoot}/core/{backend,bentley,clients,common,frontend,geometry}/lib/**/*.js"
       ]
     },
@@ -240,7 +239,21 @@
       "smartStep": true,
       "sourceMaps": true,
       "outFiles": [
-        "${workspaceRoot}/simplefrontend/lib/{backend}/**/*.js",
+        "${workspaceRoot}/test-apps/display-test-app/lib/{backend}/**/*.js",
+        "${workspaceRoot}/core/{backend,bentley,clients,common,frontend,geometry}/lib/**/*.js"
+      ],
+      "protocol": "inspector"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "display-performance-test-app Browser (backend)",
+      "cwd": "${workspaceRoot}/test-apps/display-performance-test-app",
+      "program": "${workspaceRoot}/test-apps/display-performance-test-app/lib/backend/WebMain.js",
+      "smartStep": true,
+      "sourceMaps": true,
+      "outFiles": [
+        "${workspaceRoot}/test-apps/display-performance-test-app/lib/{backend}/**/*.js",
         "${workspaceRoot}/core/{backend,bentley,clients,common,frontend,geometry}/lib/**/*.js"
       ],
       "protocol": "inspector"
@@ -597,7 +610,42 @@
       "request": "attach",
       "port": 9223, // NB: This must match ports.frontendDebugging in integration-tests/core/certa.json
       "sourceMaps": true,
-      "timeout": 20000,
+      "timeout": 200000,
+      "smartStep": true,
+      "showAsyncStacks": true,
+      "webRoot": "${workspaceFolder}"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "perf-test-app tests (backend)",
+      "cwd": "${workspaceRoot}/test-apps/perf-test-app/",
+      "program": "${workspaceRoot}/tools/certa/bin/certa.js",
+      "args": [
+        "--debug",
+        "-r",
+        "${input:integrationTestEnvironment}",
+        "--grep",
+        "\"#integration\"",
+      ],
+      "smartStep": true,
+      "sourceMaps": true,
+      "outFiles": [
+        "${workspaceRoot}/test-apps/perf-test-app/lib/**/*.js",
+        "${workspaceRoot}/core/*/lib/**/*.js",
+        "${workspaceRoot}/tools/certa/lib/**/*.js"
+      ],
+      "protocol": "inspector",
+      "outputCapture": "std",
+      "port": 5858 // NB: This must match ports.debugging in integration-tests/core/certa.json
+    },
+    {
+      "name": "perf-test-app tests (frontend)",
+      "type": "chrome",
+      "request": "attach",
+      "port": 9223, // NB: This must match ports.frontendDebugging in integration-tests/core/certa.json
+      "sourceMaps": true,
+      "timeout": 200000,
       "smartStep": true,
       "showAsyncStacks": true,
       "webRoot": "${workspaceFolder}"
@@ -631,14 +679,13 @@
       "request": "attach",
       "port": 9223, // NB: This must match ports.frontendDebugging in integration-tests/rpc/certa.json
       "sourceMaps": true,
-      "timeout": 20000,
+      "timeout": 200000,
       "smartStep": true,
       "showAsyncStacks": true,
       "webRoot": "${workspaceFolder}"
     },
   ],
-  "compounds": [
-    {
+  "compounds": [{
       "name": "Integration Tests",
       "configurations": [
         "Integration Tests (frontend)",
@@ -658,10 +705,16 @@
         "display-test-app Electron (backend)",
         "display-test-app (frontend)"
       ]
+    },
+    {
+      "name": "perf-test-app tests",
+      "configurations": [
+        "perf-test-app tests (backend)",
+        "perf-test-app tests (frontend)"
+      ]
     }
   ],
-  "inputs": [
-    {
+  "inputs": [{
       "id": "integrationTestEnvironment",
       "description": "Select test frontend environment",
       "type": "pickString",

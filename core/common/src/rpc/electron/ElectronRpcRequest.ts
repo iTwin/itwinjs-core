@@ -21,7 +21,7 @@ export class ElectronRpcRequest extends RpcRequest {
   protected async send() {
     try {
       this.protocol.requests.set(this.id, this);
-      const request = this.protocol.serialize(this);
+      const request = await this.protocol.serialize(this);
       ipcTransport!.sendRequest(request);
     } catch (e) {
       this.protocol.events.raiseEvent(RpcProtocolEvent.ConnectionErrorReceived, this);

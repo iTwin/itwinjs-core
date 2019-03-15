@@ -6,7 +6,7 @@
   "typings": "lib/logger-config",
   "license": "MIT",
   "engines": {
-    "node": ">=10.6.0 <11.0"
+    "node": ">=10.11.0 <11.0"
   },
   "scripts": {
     "build": "tsc 1>&2 && node ./node_modules/@bentley/build-tools/scripts/ignoreargs.js 1>&2",
@@ -41,7 +41,7 @@
     "@bentley/build-tools": "0.191.0-dev.6",
     "@types/bunyan": "^1.8.4",
     "@types/bunyan-seq": "^0.2.0",
-    "@types/node": "10.12.18",
+    "@types/node": "10.14.1",
     "bunyan": "^1.8.12",
     "bunyan-seq": "^0.2.0",
     "rimraf": "^2.6.2",

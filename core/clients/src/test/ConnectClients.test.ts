@@ -3,20 +3,22 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
+import { ClientRequestContext } from "@bentley/bentleyjs-core";
 import { ConnectClient, Project, ConnectRequestQueryOptions } from "../ConnectClients";
-import { AuthorizationToken, AccessToken } from "../Token";
+import { AuthorizationToken } from "../Token";
 import { TestConfig } from "./TestConfig";
-import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { AuthorizedClientRequestContext } from "../AuthorizedClientRequestContext";
 
 chai.should();
 describe("ConnectClient (#integration)", () => {
-  let accessToken: AccessToken;
   const connectClient: ConnectClient = new ConnectClient();
-  const actx = new ActivityLoggingContext("");
+  let requestContext: AuthorizedClientRequestContext;
+
   before(async function (this: Mocha.IHookCallbackContext) {
     this.enableTimeouts(false);
     const authToken: AuthorizationToken = await TestConfig.login();
-    accessToken = await connectClient.getAccessToken(actx, authToken);
+    const accessToken = await connectClient.getAccessToken(new ClientRequestContext(), authToken);
+    requestContext = new AuthorizedClientRequestContext(accessToken);
   });
 
   it("should get a list of projects (#integration)", async function (this: Mocha.ITestCallbackContext) {
@@ -25,7 +27,7 @@ describe("ConnectClient (#integration)", () => {
       $top: 20,
     };
 
-    const projects: Project[] = await connectClient.getProjects(actx, accessToken, queryOptions);
+    const projects: Project[] = await connectClient.getProjects(requestContext, queryOptions);
     chai.expect(projects.length).greaterThan(10);
   });
 
@@ -36,7 +38,7 @@ describe("ConnectClient (#integration)", () => {
       isMRU: true,
     };
 
-    const projects: Project[] = await connectClient.getProjects(actx, accessToken, queryOptions);
+    const projects: Project[] = await connectClient.getProjects(requestContext, queryOptions);
     chai.expect(projects.length).greaterThan(5);
   });
 
@@ -47,7 +49,7 @@ describe("ConnectClient (#integration)", () => {
       isFavorite: true,
     };
 
-    const projects: Project[] = await connectClient.getProjects(actx, accessToken, queryOptions);
+    const projects: Project[] = await connectClient.getProjects(requestContext, queryOptions);
     chai.expect(projects.length).to.be.greaterThan(0);
   });
 
@@ -56,12 +58,12 @@ describe("ConnectClient (#integration)", () => {
       $select: "*",
       $filter: "Name+eq+'" + TestConfig.projectName + "'",
     };
-    const project: Project = await connectClient.getProject(actx, accessToken, queryOptions);
+    const project: Project = await connectClient.getProject(requestContext, queryOptions);
     chai.expect(project.name).equals(TestConfig.projectName);
   });
 
   it("should get a list of invited projects (#integration)", async function (this: Mocha.ITestCallbackContext) {
-    const invitedProjects: Project[] = await connectClient.getInvitedProjects(actx, accessToken);
+    const invitedProjects: Project[] = await connectClient.getInvitedProjects(requestContext);
     chai.expect(invitedProjects.length).greaterThan(5); // TODO: Setup a private test user where we can maintain a more strict control of invited projects.
   });
 

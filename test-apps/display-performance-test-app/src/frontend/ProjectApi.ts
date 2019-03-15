@@ -2,8 +2,8 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { ConnectClient, AccessToken, Project, ConnectRequestQueryOptions } from "@bentley/imodeljs-clients";
-import { ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
+import { ConnectClient, Project, ConnectRequestQueryOptions } from "@bentley/imodeljs-clients";
+import { AuthorizedFrontendRequestContext } from "@bentley/imodeljs-frontend";
 
 export enum ProjectScope {
   Favorites,
@@ -22,9 +22,7 @@ export class ProjectApi {
     ProjectApi._connectClient = new ConnectClient();
   }
 
-  public static async getProjectByName(accessToken: AccessToken, projectScope: ProjectScope, projectName: string): Promise<Project | undefined> {
-    const alctx = new ActivityLoggingContext(Guid.createValue());
-
+  public static async getProjectByName(requestContext: AuthorizedFrontendRequestContext, projectScope: ProjectScope, projectName: string): Promise<Project | undefined> {
     const queryOptions: ConnectRequestQueryOptions = {
       $select: "*", // TODO: Get Name,Number,AssetType to work
       $top: 100,
@@ -33,7 +31,7 @@ export class ProjectApi {
 
     let projectList: Project[] = [];
     if (projectScope === ProjectScope.Invited) {
-      projectList = await ProjectApi._connectClient.getInvitedProjects(alctx, accessToken, queryOptions);
+      projectList = await ProjectApi._connectClient.getInvitedProjects(requestContext, queryOptions);
     }
 
     if (projectScope === ProjectScope.Favorites) {
@@ -42,7 +40,7 @@ export class ProjectApi {
       queryOptions.isMRU = true;
     }
 
-    projectList = await ProjectApi._connectClient.getProjects(alctx, accessToken, queryOptions);
+    projectList = await ProjectApi._connectClient.getProjects(requestContext, queryOptions);
 
     for (const thisProject of projectList) {
       if (thisProject.name === projectName)

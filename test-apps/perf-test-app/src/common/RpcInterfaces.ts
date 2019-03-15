@@ -24,7 +24,7 @@ export abstract class TestRpcInterface extends RpcInterface {
     return this.forward(arguments);
   }
 
-  public async extractChangeSummaries(_accessToken: AccessToken, _iModelToken: IModelToken, _options: any): Promise<void> {
+  public async extractChangeSummaries(_iModelToken: IModelToken, _options: any): Promise<void> {
     return this.forward(arguments);
   }
 

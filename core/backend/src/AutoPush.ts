@@ -5,9 +5,11 @@
 /** @module iModels */
 
 import { IModelDb } from "./IModelDb";
-import { AccessToken, IAccessTokenManager } from "@bentley/imodeljs-clients";
-import { assert, Logger, BeEvent, IModelStatus, ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { AccessToken } from "@bentley/imodeljs-clients";
+import { assert, Logger, BeEvent, IModelStatus } from "@bentley/bentleyjs-core";
 import { RpcRequest, IModelError } from "@bentley/imodeljs-common";
+import { IModelHost } from "./IModelHost";
+import { AuthorizedBackendRequestContext } from "./BackendRequestContext";
 
 const loggingCategory = "imodeljs-backend.AutoPush";
 
@@ -40,8 +42,6 @@ export interface AutoPushParams {
   pushIntervalSecondsMax: number;
   /** Should AutoPush automatically schedule pushes? If not, the app must call [[AutoPush#scheduleNextPush]] */
   autoSchedule: boolean;
-  /** The ActivityContext in iModelServer operations are to be carried out */
-  activityContext: ActivityLoggingContext;
 }
 
 /** Identifies the current state of an AutoPush object. */
@@ -105,8 +105,6 @@ export class AutoPush {
   private _activityMonitor: AppActivityMonitor;
   private _lastPushError: any;
   private _pendingTimeout: any | undefined;
-  private _activityContext: ActivityLoggingContext;
-  private _accessTokenManager: IAccessTokenManager;
   /** Events raised by AutoPush. See [[AutoPushEventType]] */
   public event: BeEvent<AutoPushEventHandler>;
 
@@ -114,17 +112,15 @@ export class AutoPush {
    * @param params  Auto-push configuration parameters
    * @param activityMonitor The activity monitor that will tell me when the app is idle. Defaults to BackendActivityMonitor with a 1 second idle period.
    */
-  constructor(iModel: IModelDb, params: AutoPushParams, accessTokenManager: IAccessTokenManager, activityMonitor?: AppActivityMonitor) {
+  constructor(iModel: IModelDb, params: AutoPushParams, activityMonitor?: AppActivityMonitor) {
     AutoPush.validateAutoPushParams(params);
     iModel.onBeforeClose.addListener(() => this.cancel());
     this._iModel = iModel;
-    this._accessTokenManager = accessTokenManager;
     this._activityMonitor = activityMonitor || new BackendActivityMonitor();
     this._pushIntervalMillisMin = params.pushIntervalSecondsMin * 1000;
     this._pushIntervalMillisMax = params.pushIntervalSecondsMax * 1000;
     this._endOfPushMillis = Date.now(); // not true, but this sets the mark for detecting when we reach the max
     this._startOfPushMillis = this._endOfPushMillis + 1; // initialize to invalid duration
-    this._activityContext = params.activityContext;
     this._lastPushError = undefined;
     this._state = AutoPushState.NotRunning;
     this._pendingTimeout = undefined;
@@ -199,12 +195,19 @@ export class AutoPush {
   }
 
   public async reserveCodes(): Promise<void> {
-    const accessToken = await this.getAccessToken();
-    return this._iModel.concurrencyControl.request(this._activityContext, accessToken);
+    const requestContext: AuthorizedBackendRequestContext = await this.getRequestContext();
+    return this._iModel.concurrencyControl.request(requestContext);
   }
 
-  private async getAccessToken(): Promise<AccessToken> {
-    return this._accessTokenManager.getAccessToken(new ActivityLoggingContext(""));
+  private _requestContext?: AuthorizedBackendRequestContext;
+  private async getRequestContext(): Promise<AuthorizedBackendRequestContext> {
+    // Create or refresh requestContext as necessary
+    // todo: replace this logic to check the validity of the accessToken
+    const accessToken: AccessToken = await IModelHost.getAccessToken();
+    if (!this._requestContext || this._requestContext.accessToken !== accessToken)
+      this._requestContext = new AuthorizedBackendRequestContext(accessToken);
+
+    return this._requestContext;
   }
 
   /** Callback invoked just before auto-pushing */
@@ -284,8 +287,8 @@ export class AutoPush {
 
     // We are either in lull or we have put off this push long enough. Start to push accumulated changes now.
     this.onPushStart();
-    this.getAccessToken()
-      .then(async (accessToken: AccessToken) => this.iModel.pushChanges(this._activityContext, accessToken))
+    this.getRequestContext()
+      .then(async (requestContext: AuthorizedBackendRequestContext) => this.iModel.pushChanges(requestContext))
       .then(() => this.onPushEnd())
       .catch((reason) => this.onPushEndWithError(reason));
 

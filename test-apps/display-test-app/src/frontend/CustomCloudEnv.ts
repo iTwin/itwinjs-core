@@ -4,8 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { AccessToken, UserInfo, IModelBankClient, IModelBankFileSystemContextClient } from "@bentley/imodeljs-clients";
 import { SimpleViewState } from "./SimpleViewState";
-import { IModelApp } from "@bentley/imodeljs-frontend";
-import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { IModelApp, AuthorizedFrontendRequestContext } from "@bentley/imodeljs-frontend";
 
 // A connection to a non-Connect-hosted project and iModel
 export async function initializeCustomCloudEnv(state: SimpleViewState, url: string): Promise<void> {
@@ -20,12 +19,11 @@ export async function initializeCustomCloudEnv(state: SimpleViewState, url: stri
   foreignAccessTokenWrapper[AccessToken.foreignProjectAccessTokenJsonProperty] = { userInfo };
   state.accessToken = AccessToken.fromForeignProjectAccessTokenJson(JSON.stringify(foreignAccessTokenWrapper));
 
-  let projectName = "iModelJsTest";
-  if (state.projectConfig !== undefined && state.projectConfig.projectName !== undefined)
-    projectName = state.projectConfig!.projectName;
-
+  const projectName = state.projectConfig ? state.projectConfig.projectName || "iModelJsTest" : "iModelJsTest";
   const bankContextClient = new IModelBankFileSystemContextClient(url);
-  state.project = await bankContextClient.queryContextByName(new ActivityLoggingContext(""), state.accessToken!, projectName);
+  const requestContext = new AuthorizedFrontendRequestContext(state.accessToken!);
+
+  state.project = await bankContextClient.queryContextByName(requestContext, projectName);
 
   IModelApp.iModelClient = new IModelBankClient(url, undefined);
 }

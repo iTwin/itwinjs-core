@@ -6,8 +6,8 @@ import { assert } from "chai";
 import { BisCore, ConcurrencyControl, Element, ElementAspect, IModelDb, PhysicalModel } from "@bentley/imodeljs-backend";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { ElementAspectProps, CodeSpec, CodeScopeSpec, IModel } from "@bentley/imodeljs-common";
-import { Id64, Id64String, ActivityLoggingContext, Logger } from "@bentley/bentleyjs-core";
-import { AccessToken } from "@bentley/imodeljs-clients";
+import { Id64, Id64String, Logger, ClientRequestContext } from "@bentley/bentleyjs-core";
+import { AccessToken, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
 import { Range3d } from "@bentley/geometry-core";
 
 /** Example code organized as tests to make sure that it builds and runs successfully. */
@@ -16,7 +16,7 @@ describe("Example Code", () => {
 
   // tslint:prefer-const:false
   const accessToken: AccessToken = (AccessToken as any);
-  const activityContext = new ActivityLoggingContext("");
+  const authorizedRequestContext = new AuthorizedClientRequestContext(accessToken);
 
   before(async () => {
     iModel = IModelTestUtils.openIModel("test.bim");
@@ -26,14 +26,14 @@ describe("Example Code", () => {
     iModel.closeStandalone();
   });
 
-  // __PUBLISH_EXTRACT_START__ ActivityLoggingContext.asyncCallback
-  //                                  Rule: A Promise-returning function takes an ActivityLoggingContext as an argument
-  async function asyncFunctionCallsAsync(context: ActivityLoggingContext): Promise<void> {
-    context.enter();        // Rule: A Promise-returning function enters the ActivityLoggingContext on the first line.
+  // __PUBLISH_EXTRACT_START__ ClientRequestContext.asyncCallback
+  //                                  Rule: A Promise-returning function takes an ClientRequestContext as an argument
+  async function asyncFunctionCallsAsync(requestContext: ClientRequestContext): Promise<void> {
+    requestContext.enter();        // Rule: A Promise-returning function enters the ClientRequestContext on the first line.
 
     await new Promise((resolve) => {
       setTimeout(() => {
-        context.enter(); // Rule: Enter the activity logging context of the enclosing JavaScript scope in the callback.
+        requestContext.enter(); // Rule: Enter the client request context of the enclosing JavaScript scope in the callback.
         Logger.logTrace("cat", "callback invoked");
         resolve();
       }, 1);
@@ -41,54 +41,54 @@ describe("Example Code", () => {
   }
   // __PUBLISH_EXTRACT_END__
 
-  // __PUBLISH_EXTRACT_START__ ActivityLoggingContext.asyncCallback2
+  // __PUBLISH_EXTRACT_START__ ClientRequestContext.asyncCallback2
   function synchronousFunctionCallsAsync() {
     // This is an example of the rare case where a synchronous function invokes an async function and
     // the async callback emits logging messages. In this case, because the caller is synchronous, it must
-    // access the current ActivityLoggingContext and assign it to a local variable.
-    const context = ActivityLoggingContext.current;        // Must hold a local reference for callback to use.
+    // access the current ClientRequestContext and assign it to a local variable.
+    const requestContext = ClientRequestContext.current;        // Must hold a local reference for callback to use.
     setTimeout(() => {
-      context.enter(); // Rule: Enter the activity logging context of the enclosing JavaScript scope in the callback.
+      requestContext.enter(); // Rule: Enter the client request context of the enclosing JavaScript scope in the callback.
       Logger.logTrace("cat", "callback invoked");
     }, 1);
   }
   // __PUBLISH_EXTRACT_END__
 
-  async function someAsync(_context: ActivityLoggingContext): Promise<void> { }
-  // Rule: A Promise-returning function enters the ActivityLoggingContext on the first line.
-  // __PUBLISH_EXTRACT_START__ ActivityLoggingContext.asyncMethod
+  async function someAsync(_context: ClientRequestContext): Promise<void> { }
+  // Rule: A Promise-returning function enters the ClientRequestContext on the first line.
+  // __PUBLISH_EXTRACT_START__ ClientRequestContext.asyncMethod
 
-  //                                Rule: A Promise-returning function takes an ActivityLoggingContext as an argument
-  async function asyncMethodExample(context: ActivityLoggingContext): Promise<void> {
-    context.enter();
+  //                                Rule: A Promise-returning function takes an ClientRequestContext as an argument
+  async function asyncMethodExample(requestContext: ClientRequestContext): Promise<void> {
+    requestContext.enter();
 
     try {
-      await someAsync(context); // Rule: Pass the ActivityLoggingContext to Promise-returning methods
-      context.enter();        // Rule: Enter the ActivityLoggingContext on the line after an await
+      await someAsync(requestContext); // Rule: Pass the ClientRequestContext to Promise-returning methods
+      requestContext.enter();        // Rule: Enter the ClientRequestContext on the line after an await
       Logger.logTrace("cat", "promise resolved");
     } catch (_err) {
-      context.enter();        // Rule: Enter the ActivityLoggingContext in an async rejection
+      requestContext.enter();        // Rule: Enter the ClientRequestContext in an async rejection
       Logger.logTrace("cat", "promise rejected");
     }
 
     // The same rules, using .then.catch instead of await + try/catch.
-    someAsync(context)          // Rule: Pass the ActivityLoggingContext to Promise-returning methods
+    someAsync(requestContext)          // Rule: Pass the ClientRequestContext to Promise-returning methods
       .then(() => {
-        context.enter();    // Rule: Enter the ActivityLoggingContext on the line of .then callback
+        requestContext.enter();    // Rule: Enter the ClientRequestContext on the line of .then callback
         Logger.logTrace("cat", "promise resolved");
       })
       .catch((_err) => {
-        context.enter();    // Rule: Enter the ActivityLoggingContext in .catch callback
+        requestContext.enter();    // Rule: Enter the ClientRequestContext in .catch callback
         Logger.logTrace("cat", "promise rejected");
       });
 
   }
   // __PUBLISH_EXTRACT_END__
 
-  it("should handle ActivityLoggingContext in async callbacks", async () => {
-    await asyncFunctionCallsAsync(new ActivityLoggingContext("abc"));
+  it("should handle ClientRequestContext in async callbacks", async () => {
+    await asyncFunctionCallsAsync(new ClientRequestContext("abc"));
     await synchronousFunctionCallsAsync(); // tslint:disable-line:await-promise
-    await asyncMethodExample(new ActivityLoggingContext("abc"));
+    await asyncMethodExample(new ClientRequestContext("abc"));
   });
 
   it("should update the imodel project extents", async () => {
@@ -124,7 +124,7 @@ describe("Example Code", () => {
 
     // __PUBLISH_EXTRACT_START__ ConcurrencyControl_Codes.reserve
     try {
-      await iModel.concurrencyControl.codes.reserve(activityContext, accessToken);
+      await iModel.concurrencyControl.codes.reserve(authorizedRequestContext);
     } catch (err) {
       if (err instanceof ConcurrencyControl.RequestError) {
         // Do something about err.unavailableCodes ...
@@ -139,7 +139,7 @@ describe("Example Code", () => {
     // Now acquire all locks and reserve all codes needed.
     // This is a *perquisite* to saving local changes.
     try {
-      await iModel.concurrencyControl.request(activityContext, accessToken);
+      await iModel.concurrencyControl.request(authorizedRequestContext);
     } catch (err) {
       // If we can't get *all* of the locks and codes that are needed,
       // then we can't go on with this transaction as is.

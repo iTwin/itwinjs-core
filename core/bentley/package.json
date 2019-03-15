@@ -43,7 +43,7 @@
     "@bentley/webpack-tools": "0.191.0-dev.6",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^5.2.5",
-    "@types/node": "10.12.18",
+    "@types/node": "10.14.1",
     "chai": "^4.1.2",
     "mocha": "^5.2.0",
     "rimraf": "^2.6.2",

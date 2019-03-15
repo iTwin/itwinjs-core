@@ -3,13 +3,14 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
-import { GuidString, Guid, IModelHubStatus, ActivityLoggingContext, Id64, Id64String } from "@bentley/bentleyjs-core";
+import { GuidString, Guid, IModelHubStatus, Id64, Id64String } from "@bentley/bentleyjs-core";
 import {
   AccessToken, IModelClient, Lock, Briefcase, ChangeSet, LockType, LockLevel, LockQuery,
   AggregateResponseError, ConflictingLocksError,
-  IModelHubClientError,
+  IModelHubClientError, AuthorizedClientRequestContext,
 } from "@bentley/imodeljs-clients";
-import { TestConfig, TestUsers } from "../TestConfig";
+import { TestConfig } from "../TestConfig";
+import { TestUsers } from "../TestUsers";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
 import * as utils from "./TestUtils";
 
@@ -24,7 +25,6 @@ function mockDeleteAllLocks(imodelId: GuidString, briefcaseId: number) {
 }
 
 describe("iModelHubClient LockHandler", () => {
-  let accessToken: AccessToken;
   let imodelId: GuidString;
   let iModelClient: IModelClient;
   const imodelName = "imodeljs-clients Locks test";
@@ -32,30 +32,32 @@ describe("iModelHubClient LockHandler", () => {
   let changeSet: ChangeSet;
   let lastObjectId: Id64String;
   const conflictStrategyOption = { CustomOptions: { ConflictStrategy: "Continue" } };
-  const alctx = new ActivityLoggingContext("");
+  let requestContext: AuthorizedClientRequestContext;
 
   before(async function (this: Mocha.IHookCallbackContext) {
-    accessToken = TestConfig.enableMocks ? new utils.MockAccessToken() : await utils.login(TestUsers.super);
+    const accessToken: AccessToken = TestConfig.enableMocks ? new utils.MockAccessToken() : await utils.login(TestUsers.super);
+    requestContext = new AuthorizedClientRequestContext(accessToken);
+
     // Does not create an imodel right now, but should in the future
-    await utils.createIModel(accessToken, imodelName, undefined, true);
-    imodelId = await utils.getIModelId(accessToken, imodelName);
+    await utils.createIModel(requestContext, imodelName, undefined, true);
+    imodelId = await utils.getIModelId(requestContext, imodelName);
     iModelClient = utils.getDefaultClient();
-    briefcases = (await utils.getBriefcases(accessToken, imodelId, 2));
-    lastObjectId = await utils.getLastLockObjectId(accessToken, imodelId);
-    changeSet = (await utils.createChangeSets(accessToken, imodelId, briefcases[0]))[0];
+    briefcases = (await utils.getBriefcases(requestContext, imodelId, 2));
+    lastObjectId = await utils.getLastLockObjectId(requestContext, imodelId);
+    changeSet = (await utils.createChangeSets(requestContext, imodelId, briefcases[0]))[0];
     if (changeSet === undefined) {
-      changeSet = (await iModelClient.changeSets.get(alctx, accessToken, imodelId))[0];
+      changeSet = (await iModelClient.changeSets.get(requestContext, imodelId))[0];
     }
 
     // make sure there exists at least two locks
     if ((!TestConfig.enableMocks) && lastObjectId.toString() === "0") {
       lastObjectId = utils.incrementLockObjectId(lastObjectId);
-      await iModelClient.locks.update(alctx, accessToken, imodelId,
+      await iModelClient.locks.update(requestContext, imodelId,
         [utils.generateLock(briefcases[0].briefcaseId!, lastObjectId, LockType.Model, LockLevel.Shared, briefcases[0].fileId,
           changeSet.id, changeSet.index)]);
 
       lastObjectId = utils.incrementLockObjectId(lastObjectId);
-      await iModelClient.locks.update(alctx, accessToken, imodelId,
+      await iModelClient.locks.update(requestContext, imodelId,
         [utils.generateLock(briefcases[1].briefcaseId!, lastObjectId, LockType.Model, LockLevel.Shared, briefcases[1].fileId)]);
     }
   });
@@ -68,7 +70,7 @@ describe("iModelHubClient LockHandler", () => {
     lastObjectId = utils.incrementLockObjectId(lastObjectId);
     const generatedLock = utils.generateLock(briefcases[0].briefcaseId!, lastObjectId, 1, 1, briefcases[0].fileId);
     utils.mockUpdateLocks(imodelId, [generatedLock]);
-    const lock = (await iModelClient.locks.update(alctx, accessToken, imodelId, [generatedLock]))[0];
+    const lock = (await iModelClient.locks.update(requestContext, imodelId, [generatedLock]))[0];
 
     chai.assert(lock);
     chai.expect(lock.briefcaseId).equal(briefcases[0].briefcaseId);
@@ -83,7 +85,7 @@ describe("iModelHubClient LockHandler", () => {
     const generatedLock2 = utils.generateLock(briefcases[0].briefcaseId!, lastObjectId, 1, 1, briefcases[0].fileId);
 
     utils.mockUpdateLocks(imodelId, [generatedLock1, generatedLock2]);
-    const locks = (await iModelClient.locks.update(alctx, accessToken, imodelId, [generatedLock1, generatedLock2]));
+    const locks = (await iModelClient.locks.update(requestContext, imodelId, [generatedLock1, generatedLock2]));
 
     chai.assert(locks);
     chai.expect(locks.length).to.be.equal(2);
@@ -94,12 +96,12 @@ describe("iModelHubClient LockHandler", () => {
     const generatedLock = utils.generateLock(briefcases[0].briefcaseId!, lastObjectId, 1, 1, briefcases[0].fileId);
 
     utils.mockUpdateLocks(imodelId, [generatedLock]);
-    let lock = (await iModelClient.locks.update(alctx, accessToken, imodelId, [generatedLock]))[0];
+    let lock = (await iModelClient.locks.update(requestContext, imodelId, [generatedLock]))[0];
 
     lock.seedFileId = briefcases[0].fileId!;
     lock.lockLevel = LockLevel.None;
     utils.mockUpdateLocks(imodelId, [lock]);
-    lock = (await iModelClient.locks.update(alctx, accessToken, imodelId, [lock]))[0];
+    lock = (await iModelClient.locks.update(requestContext, imodelId, [lock]))[0];
     chai.assert(lock);
     chai.expect(lock.lockLevel).equals(LockLevel.None);
 
@@ -107,7 +109,7 @@ describe("iModelHubClient LockHandler", () => {
     lock.lockLevel = LockLevel.Shared;
     lock.releasedWithChangeSet = changeSet.id;
     utils.mockUpdateLocks(imodelId, [lock]);
-    lock = (await iModelClient.locks.update(alctx, accessToken, imodelId, [lock]))[0];
+    lock = (await iModelClient.locks.update(requestContext, imodelId, [lock]))[0];
     chai.assert(lock);
     chai.expect(lock.lockLevel).equals(LockLevel.Shared);
   });
@@ -116,7 +118,7 @@ describe("iModelHubClient LockHandler", () => {
 
     utils.mockGetLocks(imodelId, "", ResponseBuilder.generateObject<Lock>(Lock));
     // Needs to acquire before expecting more than 0.
-    const locks: Lock[] = await iModelClient.locks.get(alctx, accessToken, imodelId);
+    const locks: Lock[] = await iModelClient.locks.get(requestContext, imodelId);
     chai.expect(locks.length).to.be.greaterThan(0);
   });
 
@@ -125,7 +127,7 @@ describe("iModelHubClient LockHandler", () => {
     utils.mockGetLocks(imodelId, filter, utils.generateLock(briefcases[0].briefcaseId));
 
     const query = new LockQuery().byBriefcaseId(briefcases[0].briefcaseId!);
-    const locks = await iModelClient.locks.get(alctx, accessToken, imodelId, query);
+    const locks = await iModelClient.locks.get(requestContext, imodelId, query);
     chai.assert(locks);
     chai.expect(locks).length.to.be.greaterThan(0);
     locks.forEach((lock) => chai.expect(lock.briefcaseId).to.be.equal(briefcases[0].briefcaseId));
@@ -136,7 +138,7 @@ describe("iModelHubClient LockHandler", () => {
     utils.mockGetLocks(imodelId, undefined, utils.generateLock(undefined, objectId));
 
     const query = new LockQuery().byObjectId(objectId);
-    const locks = await iModelClient.locks.get(alctx, accessToken, imodelId, query);
+    const locks = await iModelClient.locks.get(requestContext, imodelId, query);
     chai.assert(locks);
     chai.expect(locks).length.to.be.greaterThan(0);
     locks.forEach((lock) => chai.expect(lock.objectId!.toString()).to.be.equal(objectId!.toString()));
@@ -149,9 +151,9 @@ describe("iModelHubClient LockHandler", () => {
     utils.mockGetLocks(imodelId, "", ...mockedLocks);
     utils.mockGetLocks(imodelId, filter, mockedLocks[0]);
 
-    const allLocks = await iModelClient.locks.get(alctx, accessToken, imodelId);
+    const allLocks = await iModelClient.locks.get(requestContext, imodelId);
     const query = new LockQuery().byReleasedWithChangeSet(changeSet.id!);
-    const locks = await iModelClient.locks.get(alctx, accessToken, imodelId, query);
+    const locks = await iModelClient.locks.get(requestContext, imodelId, query);
     chai.assert(locks);
     chai.expect(locks.length).to.be.greaterThan(0);
     chai.expect(locks.length).to.be.lessThan(allLocks.length);
@@ -164,9 +166,9 @@ describe("iModelHubClient LockHandler", () => {
     utils.mockGetLocks(imodelId, "", ...mockedLocks);
     utils.mockGetLocks(imodelId, filter, mockedLocks[0]);
 
-    const allLocks = await iModelClient.locks.get(alctx, accessToken, imodelId);
+    const allLocks = await iModelClient.locks.get(requestContext, imodelId);
     const query = new LockQuery().byReleasedWithChangeSetIndex(Number.parseInt(changeSet.index!, 10));
-    const locks = await iModelClient.locks.get(alctx, accessToken, imodelId, query);
+    const locks = await iModelClient.locks.get(requestContext, imodelId, query);
     chai.assert(locks);
     chai.expect(locks).length.to.be.greaterThan(0);
     chai.expect(locks.length).to.be.lessThan(allLocks.length);
@@ -177,7 +179,7 @@ describe("iModelHubClient LockHandler", () => {
     utils.mockGetLocks(imodelId, filter, utils.generateLock(briefcases[0].briefcaseId));
 
     const query = new LockQuery().byLockLevel(LockLevel.Shared).byLockType(LockType.Model);
-    const locks = await iModelClient.locks.get(alctx, accessToken, imodelId, query);
+    const locks = await iModelClient.locks.get(requestContext, imodelId, query);
     chai.assert(locks);
     chai.expect(locks).length.to.be.greaterThan(0);
     locks.forEach((lock) => {
@@ -192,13 +194,13 @@ describe("iModelHubClient LockHandler", () => {
     utils.generateLock(briefcases[1].briefcaseId, undefined, LockType.Model, LockLevel.Shared, fileId, "", "0")];
     utils.mockGetLocks(imodelId, "?$filter=BriefcaseId+eq+2", ...mockedLocks);
 
-    let existingLocks = await iModelClient.locks.get(alctx, accessToken, imodelId, new LockQuery().byBriefcaseId(briefcases[0].briefcaseId!));
+    let existingLocks = await iModelClient.locks.get(requestContext, imodelId, new LockQuery().byBriefcaseId(briefcases[0].briefcaseId!));
     existingLocks = existingLocks.slice(0, 2);
 
     utils.mockGetLocks(imodelId, undefined, ...mockedLocks);
 
     const query = new LockQuery().byLocks(existingLocks);
-    const locks = await iModelClient.locks.get(alctx, accessToken, imodelId, query);
+    const locks = await iModelClient.locks.get(requestContext, imodelId, query);
     chai.assert(locks);
     chai.expect(locks.length).to.be.equal(existingLocks.length);
     for (let i = 0; i < locks.length; ++i) {
@@ -220,7 +222,7 @@ describe("iModelHubClient LockHandler", () => {
       utils.mockGetLocks(imodelId, filter, ...mockedLocks);
     }
     const query = new LockQuery().unavailableLocks(briefcases[0].briefcaseId!, changeSet.index!);
-    const locks = await iModelClient.locks.get(alctx, accessToken, imodelId, query);
+    const locks = await iModelClient.locks.get(requestContext, imodelId, query);
     chai.assert(locks);
     chai.expect(locks.length).to.be.greaterThan(0);
     locks.forEach((lock: Lock) => {
@@ -236,7 +238,7 @@ describe("iModelHubClient LockHandler", () => {
 
     utils.mockUpdateLocks(imodelId, [lock1, lock2, lock3]);
 
-    const result = await iModelClient.locks.update(alctx, accessToken, imodelId, [lock1, lock2, lock3]);
+    const result = await iModelClient.locks.update(requestContext, imodelId, [lock1, lock2, lock3]);
     chai.assert(result);
     chai.expect(result.length).to.be.equal(3);
 
@@ -250,7 +252,7 @@ describe("iModelHubClient LockHandler", () => {
 
     let receivedError: Error | undefined;
     try {
-      await iModelClient.locks.update(alctx, accessToken, imodelId, [lock2, lock3, lock4],
+      await iModelClient.locks.update(requestContext, imodelId, [lock2, lock3, lock4],
         { deniedLocks: false, locksPerRequest: 1 });
     } catch (error) {
       receivedError = error;
@@ -267,7 +269,7 @@ describe("iModelHubClient LockHandler", () => {
 
     utils.mockUpdateLocks(imodelId, [lock1, lock2, lock3]);
 
-    const result = await iModelClient.locks.update(alctx, accessToken, imodelId, [lock1, lock2, lock3]);
+    const result = await iModelClient.locks.update(requestContext, imodelId, [lock1, lock2, lock3]);
     chai.assert(result);
     chai.expect(result.length).to.be.equal(3);
 
@@ -279,7 +281,7 @@ describe("iModelHubClient LockHandler", () => {
 
     let receivedError: ConflictingLocksError | undefined;
     try {
-      await iModelClient.locks.update(alctx, accessToken, imodelId, [lock2, lock3],
+      await iModelClient.locks.update(requestContext, imodelId, [lock2, lock3],
         { deniedLocks: true, locksPerRequest: 1 });
     } catch (error) {
       chai.expect(error).to.be.instanceof(ConflictingLocksError);
@@ -300,7 +302,7 @@ describe("iModelHubClient LockHandler", () => {
 
     utils.mockUpdateLocks(imodelId, [lock1, lock2, lock3]);
 
-    const result = await iModelClient.locks.update(alctx, accessToken, imodelId, [lock1, lock2, lock3]);
+    const result = await iModelClient.locks.update(requestContext, imodelId, [lock1, lock2, lock3]);
     chai.assert(result);
     chai.expect(result.length).to.be.equal(3);
 
@@ -314,7 +316,7 @@ describe("iModelHubClient LockHandler", () => {
 
     let receivedError: ConflictingLocksError | undefined;
     try {
-      await iModelClient.locks.update(alctx, accessToken, imodelId, [lock2, lock3, lock4],
+      await iModelClient.locks.update(requestContext, imodelId, [lock2, lock3, lock4],
         { deniedLocks: true, locksPerRequest: 1, continueOnConflict: true });
     } catch (error) {
       chai.expect(error).to.be.instanceof(ConflictingLocksError);
@@ -332,7 +334,7 @@ describe("iModelHubClient LockHandler", () => {
   it("should delete all locks", async () => {
     for (const briefcase of briefcases) {
       mockDeleteAllLocks(imodelId, briefcase.briefcaseId!);
-      await iModelClient.locks.deleteAll(alctx, accessToken, imodelId, briefcase.briefcaseId!);
+      await iModelClient.locks.deleteAll(requestContext, imodelId, briefcase.briefcaseId!);
     }
   });
 
@@ -365,7 +367,7 @@ describe("iModelHubClient LockHandler", () => {
   it("should fail deleting all locks with invalid briefcase id", async () => {
     let error: IModelHubClientError | undefined;
     try {
-      await iModelClient.locks.deleteAll(alctx, accessToken, imodelId, 0);
+      await iModelClient.locks.deleteAll(requestContext, imodelId, 0);
     } catch (err) {
       if (err instanceof IModelHubClientError)
         error = err;

@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module iModelHub */
 
-import { Logger, ActivityLoggingContext } from "@bentley/bentleyjs-core";
-import { request, RequestOptions, ProgressInfo, ResponseError, FileHandler, ArgumentCheck } from "@bentley/imodeljs-clients";
+import { Logger } from "@bentley/bentleyjs-core";
+import { request, RequestOptions, ProgressInfo, ResponseError, FileHandler, ArgumentCheck, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
 import * as fs from "fs";
 import * as path from "path";
 import * as https from "https";
@@ -76,7 +76,7 @@ export class AzureFileHandler implements FileHandler {
 
   /**
    * Download a file from AzureBlobStorage for the iModelHub. Creates the directory containing the file if necessary. If there is an error in the operation, incomplete file is deleted from disk.
-   * @param alctx The activity logging context
+   * @param requestContext The client request context
    * @param downloadUrl URL to download file from.
    * @param downloadToPathname Pathname to download the file to.
    * @param fileSize Size of the file that's being downloaded.
@@ -84,9 +84,9 @@ export class AzureFileHandler implements FileHandler {
    * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) if one of the arguments is undefined or empty.
    * @throws [[ResponseError]] if the file cannot be downloaded.
    */
-  public async downloadFile(alctx: ActivityLoggingContext, downloadUrl: string, downloadToPathname: string, fileSize?: number,
+  public async downloadFile(requestContext: AuthorizedClientRequestContext, downloadUrl: string, downloadToPathname: string, fileSize?: number,
     progressCallback?: (progress: ProgressInfo) => void): Promise<void> {
-    alctx.enter();
+    requestContext.enter();
     Logger.logInfo(loggingCategory, `Downloading file from ${downloadUrl}`);
     ArgumentCheck.defined("downloadUrl", downloadUrl);
     ArgumentCheck.defined("downloadToPathname", downloadToPathname);
@@ -131,13 +131,13 @@ export class AzureFileHandler implements FileHandler {
           });
       });
     } catch (err) {
-      alctx.enter();
+      requestContext.enter();
       if (fs.existsSync(downloadToPathname))
         fs.unlinkSync(downloadToPathname); // Just in case there was a partial download, delete the file
       Logger.logError(loggingCategory, `Error downloading file`);
       return Promise.reject(err);
     }
-    alctx.enter();
+    requestContext.enter();
     Logger.logTrace(loggingCategory, `Downloaded file from ${downloadUrl}`);
   }
 
@@ -146,8 +146,8 @@ export class AzureFileHandler implements FileHandler {
     return Base64.encode(blockId.toString(16).padStart(5, "0"));
   }
 
-  private async uploadChunk(alctx: ActivityLoggingContext, uploadUrlString: string, fileDescriptor: number, blockId: number, callback?: (progress: ProgressInfo) => void) {
-    alctx.enter();
+  private async uploadChunk(requestContext: AuthorizedClientRequestContext, uploadUrlString: string, fileDescriptor: number, blockId: number, callback?: (progress: ProgressInfo) => void) {
+    requestContext.enter();
     const chunkSize = 4 * 1024 * 1024;
     let buffer = Buffer.alloc(chunkSize);
     const bytesRead = fs.readSync(fileDescriptor, buffer, 0, chunkSize, chunkSize * blockId);
@@ -167,20 +167,20 @@ export class AzureFileHandler implements FileHandler {
     };
 
     const uploadUrl = `${uploadUrlString}&comp=block&blockid=${this.getBlockId(blockId)}`;
-    await request(alctx, uploadUrl, options);
+    await request(requestContext, uploadUrl, options);
   }
 
   /**
    * Upload a file to AzureBlobStorage for the iModelHub.
-   * @param alctx The activity logging context
+   * @param requestContext The client request context
    * @param uploadUrl URL to upload the file to.
    * @param uploadFromPathname Pathname to upload the file from.
    * @param progressCallback Callback for tracking progress.
    * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) if one of the arguments is undefined or empty.
    * @throws [[ResponseError]] if the file cannot be uploaded.
    */
-  public async uploadFile(alctx: ActivityLoggingContext, uploadUrlString: string, uploadFromPathname: string, progressCallback?: (progress: ProgressInfo) => void): Promise<void> {
-    alctx.enter();
+  public async uploadFile(requestContext: AuthorizedClientRequestContext, uploadUrlString: string, uploadFromPathname: string, progressCallback?: (progress: ProgressInfo) => void): Promise<void> {
+    requestContext.enter();
     Logger.logTrace(loggingCategory, `Uploading file to ${uploadUrlString}`);
     ArgumentCheck.defined("uploadUrlString", uploadUrlString);
     ArgumentCheck.defined("uploadFromPathname", uploadFromPathname);
@@ -196,7 +196,7 @@ export class AzureFileHandler implements FileHandler {
       progressCallback!({ loaded: uploaded, percent: uploaded / fileSize, total: fileSize });
     };
     for (; i * chunkSize < fileSize; ++i) {
-      await this.uploadChunk(alctx, uploadUrlString, file, i, progressCallback ? callback : undefined);
+      await this.uploadChunk(requestContext, uploadUrlString, file, i, progressCallback ? callback : undefined);
       blockList += `<Latest>${this.getBlockId(i)}</Latest>`;
     }
     blockList += "</BlockList>";
@@ -216,7 +216,7 @@ export class AzureFileHandler implements FileHandler {
     };
 
     const uploadUrl = `${uploadUrlString}&comp=blocklist`;
-    await request(alctx, uploadUrl, options);
+    await request(requestContext, uploadUrl, options);
   }
 
   /**

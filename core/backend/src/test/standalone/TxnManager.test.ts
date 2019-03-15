@@ -2,17 +2,16 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { ActivityLoggingContext, BeDuration, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
+import { BeDuration, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
 import { Code, ColorByName, IModel, IModelError, SubCategoryAppearance } from "@bentley/imodeljs-common";
 import { assert } from "chai";
-import { IModelDb, IModelJsFs, PhysicalModel, SpatialCategory, TxnAction } from "../../imodeljs-backend";
+import { IModelDb, IModelJsFs, PhysicalModel, SpatialCategory, TxnAction, BackendRequestContext } from "../../imodeljs-backend";
 import { IModelTestUtils, TestElementDrivesElement, TestPhysicalObject, TestPhysicalObjectProps } from "../IModelTestUtils";
 
 describe("TxnManager", () => {
   let imodel: IModelDb;
   let props: TestPhysicalObjectProps;
-
-  const actx = new ActivityLoggingContext("");
+  const requestContext = new BackendRequestContext();
 
   before(async () => {
     IModelTestUtils.registerTestBimSchema();
@@ -21,7 +20,7 @@ describe("TxnManager", () => {
     const schemaFileName = IModelTestUtils.resolveAssetFile("TestBim.ecschema.xml");
     IModelJsFs.copySync(seedFileName, testFileName);
     imodel = IModelDb.openStandalone(testFileName, OpenMode.ReadWrite);
-    await imodel.importSchema(actx, schemaFileName); // will throw an exception if import fails
+    await imodel.importSchema(requestContext, schemaFileName); // will throw an exception if import fails
 
     props = {
       classFullName: "TestBim:TestPhysicalObject",

@@ -3,8 +3,8 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module iModels */
-import { ActivityLoggingContext, BeEvent, BentleyStatus, DbResult, AuthStatus, Guid, GuidString, Id64, Id64Arg, Id64Set, Id64String, JsonUtils, Logger, OpenMode } from "@bentley/bentleyjs-core";
-import { AccessToken, UlasClient, UsageLogEntry, UsageType, LogPostingResponse } from "@bentley/imodeljs-clients";
+import { ClientRequestContext, BeEvent, BentleyStatus, DbResult, AuthStatus, Guid, GuidString, Id64, Id64Arg, Id64Set, Id64String, JsonUtils, Logger, OpenMode } from "@bentley/bentleyjs-core";
+import { AuthorizedClientRequestContext, UlasClient, UsageLogEntry, UsageType, LogPostingResponse } from "@bentley/imodeljs-clients";
 import {
   AxisAlignedBox3d, CategorySelectorProps, Code, CodeSpec, CreateIModelProps, DisplayStyleProps, EcefLocation, ElementAspectProps,
   ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontMap, FontMapProps, FontProps,
@@ -152,7 +152,7 @@ export class IModelDb extends IModel implements PageableECSql {
    * [[include:IModelDb.onOpen]]
    * ```
    */
-  public static readonly onOpen = new BeEvent<(_accessToken: AccessToken, _contextId: string, _iModelId: string, _openParams: OpenParams, _version: IModelVersion, _activityId: ActivityLoggingContext) => void>();
+  public static readonly onOpen = new BeEvent<(_requestContext: AuthorizedClientRequestContext, _contextId: string, _iModelId: string, _openParams: OpenParams, _version: IModelVersion) => void>();
 
   /** Event raised just after an IModelDb is opened.
    * @note This event is *not* raised for standalone IModelDbs.
@@ -162,9 +162,9 @@ export class IModelDb extends IModel implements PageableECSql {
    * [[include:IModelDb.onOpened]]
    * ```
    */
-  public static readonly onOpened = new BeEvent<(_imodelDb: IModelDb, _activityId: ActivityLoggingContext) => void>();
+  public static readonly onOpened = new BeEvent<(_requestContext: AuthorizedClientRequestContext, _imodelDb: IModelDb) => void>();
   /** Event raised just before an IModelDb is created in iModelHub. This event is raised only for iModel access initiated by this app only. This event is not raised for standalone IModelDbs. */
-  public static readonly onCreate = new BeEvent<(_accessToken: AccessToken, _contextId: string, _args: CreateIModelProps) => void>();
+  public static readonly onCreate = new BeEvent<(_requestContext: AuthorizedClientRequestContext, _contextId: string, _args: CreateIModelProps) => void>();
   /** Event raised just after an IModelDb is created in iModelHub. This event is raised only for iModel access initiated by this app only. This event is not raised for standalone IModelDbs. */
   public static readonly onCreated = new BeEvent<(_imodelDb: IModelDb) => void>();
 
@@ -235,11 +235,12 @@ export class IModelDb extends IModel implements PageableECSql {
   }
 
   /** Create an iModel on iModelHub */
-  public static async create(activity: ActivityLoggingContext, accessToken: AccessToken, contextId: string, iModelName: string, args: CreateIModelProps): Promise<IModelDb> {
-    activity.enter();
-    IModelDb.onCreate.raiseEvent(accessToken, contextId, args);
-    const iModelId: string = await BriefcaseManager.create(activity, accessToken, contextId, iModelName, args);
-    return IModelDb.open(activity, accessToken, contextId, iModelId);
+  public static async create(requestContext: AuthorizedClientRequestContext, contextId: string, iModelName: string, args: CreateIModelProps): Promise<IModelDb> {
+    requestContext.enter();
+    IModelDb.onCreate.raiseEvent(requestContext, contextId, args);
+    const iModelId: string = await BriefcaseManager.create(requestContext, contextId, iModelName, args);
+    requestContext.enter();
+    return IModelDb.open(requestContext, contextId, iModelId);
   }
 
   /** Open an iModel from a local file.
@@ -266,49 +267,36 @@ export class IModelDb extends IModel implements PageableECSql {
   /** Open an iModel from iModelHub. IModelDb files are cached locally. The requested version may be downloaded from iModelHub to the
    * cache, or a previously downloaded version re-used from the cache - this behavior can optionally be configured through OpenParams.
    * Every open call must be matched with a call to close the IModelDb.
-   * @param accessToken Delegation token of the authorized user.
+   * @param requestContext The client request context.
    * @param contextId Id of the Connect Project or Asset containing the iModel
    * @param iModelId Id of the iModel
    * @param version Version of the iModel to open
    * @param openParams Parameters to open the iModel
    */
-  public static async open(activity: ActivityLoggingContext, accessToken: AccessToken, contextId: string, iModelId: string, openParams: OpenParams = OpenParams.pullAndPush(), version: IModelVersion = IModelVersion.latest()): Promise<IModelDb> {
-    activity.enter();
-    IModelDb.onOpen.raiseEvent(accessToken, contextId, iModelId, openParams, version, activity);
-    const briefcaseEntry: BriefcaseEntry = await BriefcaseManager.open(activity, accessToken, contextId, iModelId, openParams, version);
-    activity.enter();
-
+  public static async open(requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: string, openParams: OpenParams = OpenParams.pullAndPush(), version: IModelVersion = IModelVersion.latest()): Promise<IModelDb> {
+    requestContext.enter();
+    IModelDb.onOpen.raiseEvent(requestContext, contextId, iModelId, openParams, version);
+    const briefcaseEntry: BriefcaseEntry = await BriefcaseManager.open(requestContext, contextId, iModelId, openParams, version);
+    requestContext.enter();
     const imodelDb = IModelDb.constructIModelDb(briefcaseEntry, openParams, contextId);
-    await imodelDb.logUsage(activity, accessToken, contextId);
-    IModelDb.onOpened.raiseEvent(imodelDb, activity);
+    await imodelDb.logUsage(requestContext, contextId);
+    requestContext.enter();
+    IModelDb.onOpened.raiseEvent(requestContext, imodelDb);
     Logger.logTrace(loggingCategory, "IModelDb.open", () => ({ ...imodelDb._token, ...openParams }));
     return imodelDb;
   }
 
-  private static createUsageLogEntry(accessToken: AccessToken, contextId: GuidString): UsageLogEntry {
-    const entry: UsageLogEntry = new UsageLogEntry(os.hostname(), UsageType.Trial);
-    const userInfo = accessToken.getUserInfo();
-    const featureTrackingInfo = userInfo ? userInfo.featureTracking : undefined;
-
-    entry.userInfo = {
-      imsId: userInfo ? userInfo.id : "",
-      ultimateSite: !featureTrackingInfo ? 0 : parseInt(featureTrackingInfo.ultimateSite, 10),
-      usageCountryIso: !featureTrackingInfo ? "" : featureTrackingInfo.usageCountryIso,
-    };
-
-    entry.projectId = contextId;
-    entry.productId = 2686; // todo: needs to be passed in from frontend
-    entry.productVersion = { major: 1, minor: 0 }; // todo: needs to be passed in from frontend
-
-    return entry;
-  }
-
-  private async logUsage(actx: ActivityLoggingContext, accessToken: AccessToken, contextId: GuidString): Promise<void> {
+  private async logUsage(requestContext: AuthorizedClientRequestContext, contextId: GuidString): Promise<void> {
+    requestContext.enter();
     const client = new UlasClient();
     let status: BentleyStatus;
     try {
-      const entry: UsageLogEntry = IModelDb.createUsageLogEntry(accessToken, contextId);
-      const resp: LogPostingResponse = await client.logUsage(actx, accessToken, entry);
+      const ulasEntry: UsageLogEntry = new UsageLogEntry(os.hostname(), UsageType.Trial);
+      ulasEntry.projectId = contextId;
+      ulasEntry.productId = requestContext.applicationId ? +requestContext.applicationId : 1686;
+      ulasEntry.productVersion = { major: 1, minor: 0 }; // todo: needs to be passed in from frontend
+      const resp: LogPostingResponse = await client.logUsage(requestContext, ulasEntry);
+      requestContext.enter();
       status = resp ? resp.status : BentleyStatus.ERROR;
     } catch (error) {
       status = BentleyStatus.ERROR;
@@ -349,22 +337,23 @@ export class IModelDb extends IModel implements PageableECSql {
   }
 
   /** Close this iModel, if it is currently open.
-   * @param accessToken Delegation token of the authorized user.
+   * @param requestContext The client request context.
    * @param keepBriefcase Hint to discard or keep the briefcase for potential future use.
    * @throws IModelError if the iModel is not open, or is really a standalone iModel
    */
-  public async close(activity: ActivityLoggingContext, accessToken: AccessToken, keepBriefcase: KeepBriefcase = KeepBriefcase.Yes): Promise<void> {
+  public async close(requestContext: AuthorizedClientRequestContext, keepBriefcase: KeepBriefcase = KeepBriefcase.Yes): Promise<void> {
+    requestContext.enter();
     if (!this.briefcase)
       throw this.newNotOpenError();
     if (this.briefcase.isStandalone)
       throw new IModelError(BentleyStatus.ERROR, "Cannot use IModelDb.close() to close a standalone iModel. Use IModelDb.closeStandalone() instead");
 
     try {
-      await BriefcaseManager.close(activity, accessToken, this.briefcase, keepBriefcase);
+      await BriefcaseManager.close(requestContext, this.briefcase, keepBriefcase);
     } catch (error) {
       throw error;
     } finally {
-      activity.enter();
+      requestContext.enter();
       this.clearBriefcaseEntry();
     }
   }
@@ -805,15 +794,15 @@ export class IModelDb extends IModel implements PageableECSql {
 
   /**
    * Pull and Merge changes from iModelHub
-   * @param accessToken Delegation token of the authorized user.
+   * @param requestContext The client request context.
    * @param version Version to pull and merge to.
    * @throws [[IModelError]] If the pull and merge fails.
    */
-  public async pullAndMergeChanges(activity: ActivityLoggingContext, accessToken: AccessToken, version: IModelVersion = IModelVersion.latest()): Promise<void> {
-    activity.enter();
+  public async pullAndMergeChanges(requestContext: AuthorizedClientRequestContext, version: IModelVersion = IModelVersion.latest()): Promise<void> {
+    requestContext.enter();
     this.concurrencyControl.onMergeChanges();
-    await BriefcaseManager.pullAndMergeChanges(activity, accessToken, this.briefcase, version);
-    activity.enter();
+    await BriefcaseManager.pullAndMergeChanges(requestContext, this.briefcase, version);
+    requestContext.enter();
     this.concurrencyControl.onMergedChanges();
     this._token.changeSetId = this.briefcase.changeSetId;
     this.initializeIModelDb();
@@ -821,40 +810,42 @@ export class IModelDb extends IModel implements PageableECSql {
 
   /**
    * Push changes to iModelHub
-   * @param accessToken Delegation token of the authorized user.
+   * @param requestContext The client request context.
    * @param describer A function that returns a description of the changeset. Defaults to the combination of the descriptions of all local Txns.
    * @throws [[IModelError]] If the pull and merge fails.
    */
-  public async pushChanges(activity: ActivityLoggingContext, accessToken: AccessToken, describer?: ChangeSetDescriber): Promise<void> {
-    activity.enter();
+  public async pushChanges(requestContext: AuthorizedClientRequestContext, describer?: ChangeSetDescriber): Promise<void> {
+    requestContext.enter();
     const description = describer ? describer(this.txns.getCurrentTxnId()) : this.txns.describeChangeSet();
-    await BriefcaseManager.pushChanges(activity, accessToken, this.briefcase, description);
-    activity.enter();
+    await BriefcaseManager.pushChanges(requestContext, this.briefcase, description);
+    requestContext.enter();
     this._token.changeSetId = this.briefcase.changeSetId;
     this.initializeIModelDb();
   }
 
   /**
    * Reverse a previously merged set of changes
-   * @param accessToken Delegation token of the authorized user.
+   * @param requestContext The client request context.
    * @param version Version to reverse changes to.
    * @throws [[IModelError]] If the reversal fails.
    */
-  public async reverseChanges(activity: ActivityLoggingContext, accessToken: AccessToken, version: IModelVersion = IModelVersion.latest()): Promise<void> {
-    await BriefcaseManager.reverseChanges(activity, accessToken, this.briefcase, version);
-    activity.enter();
+  public async reverseChanges(requestContext: AuthorizedClientRequestContext, version: IModelVersion = IModelVersion.latest()): Promise<void> {
+    requestContext.enter();
+    await BriefcaseManager.reverseChanges(requestContext, this.briefcase, version);
+    requestContext.enter();
     this.initializeIModelDb();
   }
 
   /**
    * Reinstate a previously reversed set of changes
-   * @param accessToken Delegation token of the authorized user.
+   * @param requestContext The client request context.
    * @param version Version to reinstate changes to.
    * @throws [[IModelError]] If the reinstate fails.
    */
-  public async reinstateChanges(activity: ActivityLoggingContext, accessToken: AccessToken, version: IModelVersion = IModelVersion.latest()): Promise<void> {
-    await BriefcaseManager.reinstateChanges(activity, accessToken, this.briefcase, version);
-    activity.enter();
+  public async reinstateChanges(requestContext: AuthorizedClientRequestContext, version: IModelVersion = IModelVersion.latest()): Promise<void> {
+    requestContext.enter();
+    await BriefcaseManager.reinstateChanges(requestContext, this.briefcase, version);
+    requestContext.enter();
     this.initializeIModelDb();
   }
 
@@ -875,36 +866,44 @@ export class IModelDb extends IModel implements PageableECSql {
    * This method is asynchronous (must be awaited) because, in the case where this IModelId is a briefcase,
    * this method must first obtain the schema lock from the IModel server.
    * You must import a schema into an iModel before you can insert instances of the classes in that schema. See [[Element]]
+   * @param requestContext The client request context
    * @param schemaFileName  Full path to an ECSchema.xml file that is to be imported.
    * @throws IModelError if the schema lock cannot be obtained.
    * @see containsClass
    */
-  public async importSchema(activity: ActivityLoggingContext, schemaFileName: string, accessToken?: AccessToken): Promise<void> {
-    activity.enter();
-
+  public async importSchema(requestContext: ClientRequestContext | AuthorizedClientRequestContext, schemaFileName: string): Promise<void> {
+    requestContext.enter();
     if (!this.briefcase)
       throw this.newNotOpenError();
 
-    if (!this.briefcase.isStandalone) {
-      if (!accessToken)
-        throw new IModelError(AuthStatus.Error, "Importing the schema requires the accessToken of the authorized user");
-      await this.concurrencyControl.lockSchema(activity, accessToken);
-      activity.enter();
+    if (this.briefcase.isStandalone) {
+      const status = this.briefcase.nativeDb.importSchema(schemaFileName);
+      if (DbResult.BE_SQLITE_OK !== status)
+        throw new IModelError(status, "Error importing schema", Logger.logError, loggingCategory, () => ({ schemaFileName }));
+      return;
     }
+
+    if (!(requestContext instanceof AuthorizedClientRequestContext))
+      throw new IModelError(AuthStatus.Error, "Importing the schema requires an AuthorizedClientRequestContext");
+    await this.concurrencyControl.lockSchema(requestContext);
+    requestContext.enter();
+
     const stat = this.briefcase.nativeDb.importSchema(schemaFileName);
     if (DbResult.BE_SQLITE_OK !== stat) {
       throw new IModelError(stat, "Error importing schema", Logger.logError, loggingCategory, () => ({ schemaFileName }));
     }
-    if (!this.briefcase.isStandalone) {
-      try {
-        // The schema import logic and/or imported Domains may have created new elements and models.
-        // Make sure we have the supporting locks and codes.
-        await this.concurrencyControl.request(activity, accessToken!);
-      } catch (err) {
-        activity.enter();
-        this.abandonChanges();
-        throw err;
-      }
+
+    try {
+      // The schema import logic and/or imported Domains may have created new elements and models.
+      // Make sure we have the supporting locks and codes.
+      if (!(requestContext instanceof AuthorizedClientRequestContext))
+        throw new IModelError(AuthStatus.Error, "Importing the schema requires an AuthorizedClientRequestContext");
+      await this.concurrencyControl.request(requestContext);
+      requestContext.enter();
+    } catch (err) {
+      requestContext.enter();
+      this.abandonChanges();
+      throw err;
     }
   }
 
@@ -1088,8 +1087,8 @@ export class IModelDb extends IModel implements PageableECSql {
    */
   public queryNextAvailableFileProperty(prop: FilePropertyProps) { return this.nativeDb.queryNextAvailableFileProperty(JSON.stringify(prop)); }
 
-  public async requestSnap(activity: ActivityLoggingContext, sessionId: string, props: SnapRequestProps): Promise<SnapResponseProps> {
-    activity.enter();
+  public async requestSnap(requestContext: ClientRequestContext, sessionId: string, props: SnapRequestProps): Promise<SnapResponseProps> {
+    requestContext.enter();
     let request = this._snaps.get(sessionId);
     if (undefined === request) {
       request = new IModelHost.platform.SnapRequest();
@@ -1118,15 +1117,15 @@ export class IModelDb extends IModel implements PageableECSql {
   }
 
   /** Get the IModel coordinate corresponding to each GeoCoordinate point in the input */
-  public async getIModelCoordinatesFromGeoCoordinates(activity: ActivityLoggingContext, props: string): Promise<IModelCoordinatesResponseProps> {
-    activity.enter();
+  public async getIModelCoordinatesFromGeoCoordinates(requestContext: ClientRequestContext, props: string): Promise<IModelCoordinatesResponseProps> {
+    requestContext.enter();
     const resultString: string = this.nativeDb.getIModelCoordinatesFromGeoCoordinates(props);
     return JSON.parse(resultString) as IModelCoordinatesResponseProps;
   }
 
   /** Get the GeoCoordinate (longitude, latitude, elevation) corresponding to each IModel Coordinate point in the input */
-  public async getGeoCoordinatesFromIModelCoordinates(activity: ActivityLoggingContext, props: string): Promise<GeoCoordinatesResponseProps> {
-    activity.enter();
+  public async getGeoCoordinatesFromIModelCoordinates(requestContext: ClientRequestContext, props: string): Promise<GeoCoordinatesResponseProps> {
+    requestContext.enter();
     const resultString: string = this.nativeDb.getGeoCoordinatesFromIModelCoordinates(props);
     return JSON.parse(resultString) as GeoCoordinatesResponseProps;
   }
@@ -1651,13 +1650,13 @@ export namespace IModelDb {
     public constructor(private _iModel: IModelDb) { }
 
     /** @hidden */
-    public async requestTileTreeProps(activity: ActivityLoggingContext, id: string): Promise<TileTreeProps> {
-      activity.enter();
+    public async requestTileTreeProps(requestContext: ClientRequestContext, id: string): Promise<TileTreeProps> {
+      requestContext.enter();
       if (!this._iModel.briefcase)
         throw this._iModel.newNotOpenError();
 
       return new Promise<TileTreeProps>((resolve, reject) => {
-        activity.enter();
+        requestContext.enter();
         this._iModel.nativeDb.getTileTree(id, (ret: IModelJsNative.ErrorStatusOrResult<IModelStatus, any>) => {
           if (undefined !== ret.error)
             reject(new IModelError(ret.error.status, "TreeId=" + id));
@@ -1667,8 +1666,8 @@ export namespace IModelDb {
       });
     }
 
-    private pollTileContent(resolve: (arg0: Uint8Array) => void, reject: (err: Error) => void, treeId: string, tileId: string, activity: ActivityLoggingContext) {
-      activity.enter();
+    private pollTileContent(resolve: (arg0: Uint8Array) => void, reject: (err: Error) => void, treeId: string, tileId: string, requestContext: ClientRequestContext) {
+      requestContext.enter();
       if (!this._iModel.briefcase) {
         reject(this._iModel.newNotOpenError());
         return;
@@ -1681,23 +1680,23 @@ export namespace IModelDb {
         resolve(ret.result);
       } else {
         // ###TODO: Decide appropriate timeout interval. May want to switch on state (new vs loading vs pending)
-        setTimeout(() => this.pollTileContent(resolve, reject, treeId, tileId, activity), 10);
+        setTimeout(() => this.pollTileContent(resolve, reject, treeId, tileId, requestContext), 10);
       }
     }
 
     /** @hidden */
-    public async requestTileContent(activity: ActivityLoggingContext, treeId: string, tileId: string): Promise<Uint8Array> {
-      activity.enter();
+    public async requestTileContent(requestContext: ClientRequestContext, treeId: string, tileId: string): Promise<Uint8Array> {
+      requestContext.enter();
       if (!this._iModel.briefcase)
         throw this._iModel.newNotOpenError();
 
       if (IModelHost.useTileContentThreadPool) {
         return new Promise<Uint8Array>((resolve, reject) => {
-          this.pollTileContent(resolve, reject, treeId, tileId, activity);
+          this.pollTileContent(resolve, reject, treeId, tileId, requestContext);
         });
       } else {
         return new Promise<Uint8Array>((resolve, reject) => {
-          activity.enter();
+          requestContext.enter();
           this._iModel.nativeDb.getTileContent(treeId, tileId, (ret: IModelJsNative.ErrorStatusOrResult<IModelStatus, Uint8Array>) => {
             if (undefined !== ret.error)
               reject(new IModelError(ret.error.status, "TreeId=" + treeId + " TileId=" + tileId));

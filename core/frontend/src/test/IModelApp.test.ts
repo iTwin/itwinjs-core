@@ -165,4 +165,5 @@ describe("IModelApp", () => {
     expect(TestApp.hasRenderSystem).to.be.true;
     expect(TestApp.renderSystem).instanceof(MockRender.System);
   });
+
 });

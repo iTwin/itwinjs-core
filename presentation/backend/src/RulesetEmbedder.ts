@@ -8,7 +8,7 @@ import { Ruleset } from "@bentley/presentation-common/lib/rules/Ruleset";
 import { IModelDb } from "@bentley/imodeljs-backend/lib/IModelDb";
 import { ECSqlStatement, KnownLocations, DefinitionModel, DefinitionPartition, Subject, Model, DefinitionElement } from "@bentley/imodeljs-backend";
 import { DefinitionElementProps, CodeScopeSpec, CodeSpec, BisCodeSpec, Code, SubjectProps, InformationPartitionElementProps, ModelProps } from "@bentley/imodeljs-common";
-import { Id64, Id64String, DbResult, ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { Id64, Id64String, DbResult, ClientRequestContext } from "@bentley/bentleyjs-core";
 import * as RulesetElements from "./domain/RulesetElements";
 import * as path from "path";
 import { PresentationRules } from "./domain/PresentationRulesDomain";
@@ -207,7 +207,7 @@ export default class RulesetEmbedder {
         if (this._iModelDb.containsClass(RulesetElements.Ruleset.classFullName))
             return;
 
-        await this._iModelDb.importSchema(ActivityLoggingContext.current, this._schemaPath);
+        await this._iModelDb.importSchema(ClientRequestContext.current, this._schemaPath);
         this.insertCodeSpecs();
         this._iModelDb.saveChanges();
     }

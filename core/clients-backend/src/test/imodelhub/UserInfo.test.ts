@@ -3,10 +3,11 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
-import { IModelHubStatus, ActivityLoggingContext, GuidString } from "@bentley/bentleyjs-core";
-import { AccessToken, UserInfoQuery, HubUserInfo, UserInfo, IModelHubClientError, IModelClient } from "@bentley/imodeljs-clients";
+import { IModelHubStatus, GuidString } from "@bentley/bentleyjs-core";
+import { AccessToken, UserInfoQuery, HubUserInfo, UserInfo, IModelHubClientError, IModelClient, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
 import { ResponseBuilder, ScopeType, RequestType } from "../ResponseBuilder";
-import { TestUsers, TestConfig } from "../TestConfig";
+import { TestConfig } from "../TestConfig";
+import { TestUsers } from "../TestUsers";
 import * as utils from "./TestUtils";
 
 function mockGetUserInfo(imodelId: GuidString, userInfo: HubUserInfo[], query?: string) {
@@ -38,24 +39,25 @@ function generateHubUserInfo(userInfos: UserInfo[]): HubUserInfo[] {
 }
 
 describe("iModelHubClient UserInfoHandler", () => {
-  const accessTokens: AccessToken[] = [];
+  const requestContexts: AuthorizedClientRequestContext[] = [];
   let imodelId: GuidString;
-  const actx = new ActivityLoggingContext("");
 
   const imodelName = "imodeljs-clients UserInfo test";
   const imodelHubClient: IModelClient = utils.getDefaultClient();
 
   before(async function (this: Mocha.IHookCallbackContext) {
-    accessTokens.push(TestConfig.enableMocks ? new utils.MockAccessToken() : await utils.login(TestUsers.super));
-    accessTokens.push(TestConfig.enableMocks ? new utils.MockAccessToken() : await utils.login(TestUsers.manager));
+    const superAccessToken: AccessToken = TestConfig.enableMocks ? new utils.MockAccessToken() : await utils.login(TestUsers.super);
+    const managerAccessToken: AccessToken = TestConfig.enableMocks ? new utils.MockAccessToken() : await utils.login(TestUsers.manager);
+    requestContexts.push(new AuthorizedClientRequestContext(superAccessToken));
+    requestContexts.push(new AuthorizedClientRequestContext(managerAccessToken));
 
-    accessTokens.sort((a: AccessToken, b: AccessToken) => a.getUserInfo()!.id.localeCompare(b.getUserInfo()!.id));
-    await utils.createIModel(accessTokens[0], imodelName);
-    imodelId = await utils.getIModelId(accessTokens[0], imodelName);
+    requestContexts.sort((a: AuthorizedClientRequestContext, b: AuthorizedClientRequestContext) => a.accessToken.getUserInfo()!.id.localeCompare(b.accessToken.getUserInfo()!.id));
+    await utils.createIModel(requestContexts[0], imodelName);
+    imodelId = await utils.getIModelId(requestContexts[0], imodelName);
 
     if (!TestConfig.enableMocks) {
-      await utils.getBriefcases(accessTokens[0], imodelId, 1);
-      await utils.getBriefcases(accessTokens[1], imodelId, 1);
+      await utils.getBriefcases(requestContexts[0], imodelId, 1);
+      await utils.getBriefcases(requestContexts[1], imodelId, 1);
     }
   });
 
@@ -65,43 +67,43 @@ describe("iModelHubClient UserInfoHandler", () => {
 
   it("should get one user info", async function (this: Mocha.ITestCallbackContext) {
     if (TestConfig.enableMocks) {
-      const mockedUserInfo = generateHubUserInfo([accessTokens[0].getUserInfo()!]);
+      const mockedUserInfo = generateHubUserInfo([requestContexts[0].accessToken.getUserInfo()!]);
       mockGetUserInfo(imodelId, mockedUserInfo, `${mockedUserInfo[0].id}`);
     }
 
-    const query = new UserInfoQuery().byId(accessTokens[0].getUserInfo()!.id);
-    const userInfo = (await imodelHubClient.users.get(actx, accessTokens[0], imodelId, query));
+    const query = new UserInfoQuery().byId(requestContexts[0].accessToken.getUserInfo()!.id);
+    const userInfo = (await imodelHubClient.users.get(requestContexts[0], imodelId, query));
     chai.assert(userInfo);
     chai.expect(userInfo.length).to.be.equal(1);
-    chai.expect(userInfo[0].id).to.be.equal(accessTokens[0].getUserInfo()!.id);
-    chai.expect(userInfo[0].firstName).to.be.equal(accessTokens[0].getUserInfo()!.profile!.firstName);
-    chai.expect(userInfo[0].lastName).to.be.equal(accessTokens[0].getUserInfo()!.profile!.lastName);
+    chai.expect(userInfo[0].id).to.be.equal(requestContexts[0].accessToken.getUserInfo()!.id);
+    chai.expect(userInfo[0].firstName).to.be.equal(requestContexts[0].accessToken.getUserInfo()!.profile!.firstName);
+    chai.expect(userInfo[0].lastName).to.be.equal(requestContexts[0].accessToken.getUserInfo()!.profile!.lastName);
   });
 
   it("should get several users info", async function (this: Mocha.ITestCallbackContext) {
     if (TestConfig.enableMocks) {
-      const mockedUsersInfo = generateHubUserInfo([accessTokens[0].getUserInfo()!, accessTokens[1].getUserInfo()!]);
+      const mockedUsersInfo = generateHubUserInfo([requestContexts[0].accessToken.getUserInfo()!, requestContexts[1].accessToken.getUserInfo()!]);
       mockGetUserInfo(imodelId, mockedUsersInfo);
     }
 
     const query = new UserInfoQuery().byIds(
-      [accessTokens[0].getUserInfo()!.id,
-      accessTokens[1].getUserInfo()!.id]);
-    const userInfo = (await imodelHubClient.users.get(actx, accessTokens[0], imodelId, query));
+      [requestContexts[0].accessToken.getUserInfo()!.id,
+      requestContexts[1].accessToken.getUserInfo()!.id]);
+    const userInfo = (await imodelHubClient.users.get(requestContexts[0], imodelId, query));
     userInfo.sort((a: HubUserInfo, b: HubUserInfo) => a.id!.localeCompare(b.id!));
     chai.assert(userInfo);
     chai.expect(userInfo.length).to.be.equal(2);
     for (let i = 0; i < 2; ++i) {
-      chai.expect(userInfo[i].id).to.be.equal(accessTokens[i].getUserInfo()!.id);
-      chai.expect(userInfo[i].firstName).to.be.equal(accessTokens[i].getUserInfo()!.profile!.firstName);
-      chai.expect(userInfo[i].lastName).to.be.equal(accessTokens[i].getUserInfo()!.profile!.lastName);
+      chai.expect(userInfo[i].id).to.be.equal(requestContexts[i].accessToken.getUserInfo()!.id);
+      chai.expect(userInfo[i].firstName).to.be.equal(requestContexts[i].accessToken.getUserInfo()!.profile!.firstName);
+      chai.expect(userInfo[i].lastName).to.be.equal(requestContexts[i].accessToken.getUserInfo()!.profile!.lastName);
     }
   });
 
   it("should fail to get users without ids", async () => {
     let error: IModelHubClientError | undefined;
     try {
-      await imodelHubClient.users.get(actx, accessTokens[0], imodelId, new UserInfoQuery().byIds([]));
+      await imodelHubClient.users.get(requestContexts[0], imodelId, new UserInfoQuery().byIds([]));
     } catch (err) {
       if (err instanceof IModelHubClientError)
         error = err;

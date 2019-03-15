@@ -6,6 +6,7 @@ export * from "./ECJsonTypeMap";
 export * from "./Client";
 export * from "./Config";
 export * from "./Token";
+export * from "./AuthorizationClient";
 export * from "./UserInfo";
 export * from "./ConnectClients";
 export * from "./WsgClient";
@@ -17,6 +18,7 @@ export * from "./Request";
 export * from "./RealityDataServicesClient";
 export * from "./SettingsAdmin";
 export * from "./SettingsClient";
+export * from "./AuthorizedClientRequestContext";
 
 export * from "./IModelBank/IModelBankClient";
 export * from "./IModelBank/IModelBankHandler";

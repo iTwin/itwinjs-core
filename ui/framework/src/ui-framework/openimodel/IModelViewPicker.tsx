@@ -112,13 +112,11 @@ export class IModelViewPicker extends React.Component<ViewsProps, ViewsState> {
   }
 
   private async startRetrieveViews() {
-    // TODO:  should be able to retrieve views w/o passing around accessToken!
-    const accessToken = this.props.accessToken;
     const projectInfo = this.props.iModel.projectInfo;
     const iModelWsgId = this.props.iModel.wsgId;
 
     // this.setState({ waitingForViews: true });
-    this._iModelConnection = await UiFramework.iModelServices.openIModel(accessToken, projectInfo, iModelWsgId);
+    this._iModelConnection = await UiFramework.iModelServices.openIModel(projectInfo, iModelWsgId);
     const viewQueryParams: ViewQueryParams = { wantPrivate: false };
     let viewProps: ViewDefinitionProps[] = [];
     try {

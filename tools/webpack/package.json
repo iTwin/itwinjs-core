@@ -28,7 +28,7 @@
     "@types/chai": "^4.1.4",
     "@types/enzyme": "^3.1.12",
     "@types/mocha": "^5.2.5",
-    "@types/node": "10.12.18",
+    "@types/node": "10.14.1",
     "@types/sinon": "^5.0.5",
     "@types/webdriverio": "^4.8.6",
     "app-root-path": "^2.0.1",

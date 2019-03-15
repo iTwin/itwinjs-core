@@ -63,6 +63,15 @@ export class DelayedPromise<T> implements Promise<T> {
   public async catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): Promise<T | TResult> {
     return this.start().catch(onrejected);
   }
+
+  /**
+   * Attaches a callback for only the finally clause of the Promise.
+   * @param onrejected The callback to execute when the Promise is finalized.
+   * @return A Promise for the completion of the callback.
+   */
+  public async finally(onFinally?: (() => void) | undefined | null): Promise<T> {
+    return this.start().finally(onFinally);
+  }
 }
 
 // This keeps us from accidentally overriding one of DelayedPromise's methods in the DelayedPromiseWithProps constructor

@@ -105,7 +105,7 @@ The impl must override each method in the interface definition class. Each overr
 
 Each impl method must return the operation's result as a Promise.
 
-The impl method must obtain the ActivityLoggingContext by calling [ActivityLoggingContext.current]($bentleyjs-core). It must then follow the [rules of managing the ActivityLoggingContext](./backend/ManagingActivityLoggingContext.md).
+The impl method must obtain the ClientRequestContext by calling [ClientRequestContext.current]($imodeljs-clients). It must then follow the [rules of managing the ClientRequestContext](./backend/ManagingClientRequestContext.md).
 
 As noted above, the methods in the impl may have to transform certain argument types, such as IModelTokens, before they can be used.
 
@@ -261,7 +261,7 @@ Briefly, here is how it works:
 * Log Browsers
   * Can filter on the Bentley-standard "ActivityId" property to correlate all messages related to the same request.
 
-See [managing the ActivityLoggingContext](../learning/backend/ManagingActivityLoggingContext.md) for details.
+See [managing the ClientRequestContext](../learning/backend/ManagingClientRequestContext.md) for details.
 
 ## RpcInterface Versioning
 

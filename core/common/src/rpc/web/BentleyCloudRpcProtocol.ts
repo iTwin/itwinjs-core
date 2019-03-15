@@ -10,7 +10,7 @@ import { SerializedRpcOperation } from "../core/RpcProtocol";
 import { RpcOperation } from "../core/RpcOperation";
 import { RpcRequest } from "../core/RpcRequest";
 import { IModelError } from "../../IModelError";
-import { BentleyStatus, OpenMode, Logger, assert } from "@bentley/bentleyjs-core";
+import { BentleyStatus, OpenMode, Logger, assert, SerializedClientRequestContext } from "@bentley/bentleyjs-core";
 import { URL } from "url";
 
 enum AppMode {
@@ -20,8 +20,27 @@ enum AppMode {
 
 /** An http protocol for Bentley cloud RPC interface deployments. */
 export abstract class BentleyCloudRpcProtocol extends WebAppRpcProtocol {
-  /** The name of the HTTP request header  */
-  public requestIdHeaderName = "X-Correlation-Id";
+
+  /** The name of various HTTP request headers based on client's request context */
+  public serializedClientRequestContextHeaderNames: SerializedClientRequestContext = {
+    /** The name of the HTTP request id header. */
+    id: "X-Correlation-Id",
+
+    /** The name of the HTTP application id header. */
+    applicationId: "X-Application-Id",
+
+    /** The name of the HTTP application version header. */
+    applicationVersion: "X-Application-Version",
+
+    /** The name of the HTTP session id header. */
+    sessionId: "X-Session-Id",
+
+    /** The name of the HTTP authorization header. */
+    authorization: "Authorization",
+
+    /** The id of the authorized user */
+    userId: "X-User-Id",
+  };
 
   /** Returns the operation specified by an OpenAPI-compatible URI path. */
   public getOperationFromPath(path: string): SerializedRpcOperation {

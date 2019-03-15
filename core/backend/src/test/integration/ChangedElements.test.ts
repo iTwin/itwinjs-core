@@ -3,15 +3,16 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { DbResult, ActivityLoggingContext } from "@bentley/bentleyjs-core";
-import { AccessToken, ChangeSet } from "@bentley/imodeljs-clients";
+import { DbResult } from "@bentley/bentleyjs-core";
+import { ChangeSet } from "@bentley/imodeljs-clients";
 import { IModelVersion, ChangedElements } from "@bentley/imodeljs-common";
-import { BriefcaseManager } from "../../BriefcaseManager";
-import { IModelDb, OpenParams } from "../../IModelDb";
-import { IModelTestUtils, TestUsers, TestIModelInfo } from "../IModelTestUtils";
-import { IModelJsFs } from "../../IModelJsFs";
+import {
+  BriefcaseManager, ChangedElementsDb, AuthorizedBackendRequestContext,
+  IModelDb, OpenParams, IModelJsFs,
+} from "../../imodeljs-backend";
+import { IModelTestUtils, TestIModelInfo } from "../IModelTestUtils";
+import { TestUsers } from "../TestUsers";
 import { HubUtility } from "./HubUtility";
-import { ChangedElementsDb } from "../../imodeljs-backend";
 import { ChangedElementsManager } from "../../ChangedElementsManager";
 
 function setupTest(iModelId: string): void {
@@ -21,28 +22,26 @@ function setupTest(iModelId: string): void {
 }
 
 describe("ChangedElements (#integration)", () => {
-  let accessToken: AccessToken;
+  let requestContext: AuthorizedBackendRequestContext;
   let testProjectId: string;
 
   let testIModel: TestIModelInfo;
 
-  const actx = new ActivityLoggingContext("");
-
   before(async () => {
-    accessToken = await HubUtility.login(TestUsers.regular);
-    testProjectId = await HubUtility.queryProjectIdByName(accessToken, "iModelJsIntegrationTest");
-    testIModel = await IModelTestUtils.getTestModelInfo(accessToken, testProjectId, "ReadOnlyTest");
+    requestContext = await IModelTestUtils.getTestUserRequestContext(TestUsers.regular);
+    testProjectId = await HubUtility.queryProjectIdByName(requestContext, "iModelJsIntegrationTest");
+    testIModel = await IModelTestUtils.getTestModelInfo(requestContext, testProjectId, "ReadOnlyTest");
 
     // Purge briefcases that are close to reaching the acquire limit
-    const managerAccessToken: AccessToken = await HubUtility.login(TestUsers.manager);
-    await HubUtility.purgeAcquiredBriefcases(managerAccessToken, "iModelJsIntegrationTest", "ReadOnlyTest");
+    const managerRequestContext = await IModelTestUtils.getTestUserRequestContext(TestUsers.manager);
+    await HubUtility.purgeAcquiredBriefcases(managerRequestContext, "iModelJsIntegrationTest", "ReadOnlyTest");
   });
 
   it("Create ChangedElements Cache and process changesets", async () => {
     setupTest(testIModel.id);
 
-    const iModel: IModelDb = await IModelDb.open(actx, accessToken, testProjectId, testIModel.id, OpenParams.fixedVersion(), IModelVersion.latest());
-    const changeSets: ChangeSet[] = await BriefcaseManager.imodelClient.changeSets.get(actx, accessToken, testIModel.id);
+    const iModel: IModelDb = await IModelDb.open(requestContext, testProjectId, testIModel.id, OpenParams.fixedVersion(), IModelVersion.latest());
+    const changeSets: ChangeSet[] = await BriefcaseManager.imodelClient.changeSets.get(requestContext, testIModel.id);
     assert.exists(iModel);
 
     const filePath = ChangedElementsManager.getChangedElementsPathName(iModel.iModelToken.iModelId!);
@@ -65,7 +64,7 @@ describe("ChangedElements (#integration)", () => {
     }
     assert.isTrue(changes === undefined);
     // Process changesets with "Items" presentation rules
-    const result: DbResult = await cache.processChangesets(accessToken, iModel, "Items", startChangesetId, endChangesetId);
+    const result: DbResult = await cache.processChangesets(requestContext, iModel, "Items", startChangesetId, endChangesetId);
     assert.equal(result, DbResult.BE_SQLITE_OK);
     // Check that the changesets should have been processed now
     assert.isTrue(cache.isProcessed(startChangesetId));

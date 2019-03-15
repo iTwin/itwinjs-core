@@ -6,12 +6,13 @@ import * as chai from "chai";
 import * as fs from "fs";
 import * as path from "path";
 
-import { Guid, GuidString, IModelHubStatus, ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { Guid, GuidString, IModelHubStatus } from "@bentley/bentleyjs-core";
 import {
   AccessToken, WsgError, IModelQuery, IModelClient, InitializationState,
-  IModelHubClient, HubIModel, SeedFile, IModelHubError, IModelHubClientError,
+  IModelHubClient, HubIModel, SeedFile, IModelHubError, IModelHubClientError, AuthorizedClientRequestContext,
 } from "@bentley/imodeljs-clients";
-import { TestConfig, TestUsers } from "../TestConfig";
+import { TestConfig } from "../TestConfig";
+import { TestUsers } from "../TestUsers";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
 import * as utils from "./TestUtils";
 
@@ -168,23 +169,24 @@ function mockUpdateiModel(projectId: string, imodel: HubIModel) {
 }
 
 describe("iModelHub iModelsHandler", () => {
-  let accessToken: AccessToken;
   let projectId: string;
   let imodelId: GuidString;
   let iModelClient: IModelClient;
   const imodelName = "imodeljs-clients iModels test";
   const createIModelName = "imodeljs-client iModels Create test";
   const imodelClient: IModelClient = utils.getDefaultClient();
-  const alctx = new ActivityLoggingContext("");
+  let requestContext: AuthorizedClientRequestContext;
 
   before(async function (this: Mocha.IHookCallbackContext) {
     this.enableTimeouts(false);
-    accessToken = TestConfig.enableMocks ? new utils.MockAccessToken() : await utils.login(TestUsers.super);
-    projectId = await utils.getProjectId(accessToken, undefined);
-    await utils.createIModel(accessToken, imodelName);
-    imodelId = await utils.getIModelId(accessToken, imodelName);
+    const accessToken: AccessToken = TestConfig.enableMocks ? new utils.MockAccessToken() : await utils.login(TestUsers.super);
+    requestContext = new AuthorizedClientRequestContext(accessToken);
+
+    projectId = await utils.getProjectId(requestContext, undefined);
+    await utils.createIModel(requestContext, imodelName);
+    imodelId = await utils.getIModelId(requestContext, imodelName);
     iModelClient = utils.getDefaultClient();
-    await utils.deleteIModelByName(accessToken, projectId, createIModelName);
+    await utils.deleteIModelByName(requestContext, projectId, createIModelName);
 
     if (!fs.existsSync(utils.workDir)) {
       fs.mkdirSync(utils.workDir);
@@ -196,7 +198,7 @@ describe("iModelHub iModelsHandler", () => {
   });
 
   after(async () => {
-    await utils.deleteIModelByName(accessToken, projectId, createIModelName);
+    await utils.deleteIModelByName(requestContext, projectId, createIModelName);
   });
 
   it("should get list of IModels", async () => {
@@ -208,13 +210,13 @@ describe("iModelHub iModelsHandler", () => {
     }
 
     let imodels: HubIModel[];
-    imodels = await imodelClient.iModels.get(alctx, accessToken, projectId, undefined);
+    imodels = await imodelClient.iModels.get(requestContext, projectId, undefined);
     chai.expect(imodels.length).to.be.greaterThan(0);
   });
 
   it("should get a specific IModel", async () => {
     mockGetIModelByName(projectId, imodelName);
-    const iModel: HubIModel = (await imodelClient.iModels.get(alctx, accessToken, projectId, new IModelQuery().byName(imodelName)))[0];
+    const iModel: HubIModel = (await imodelClient.iModels.get(requestContext, projectId, new IModelQuery().byName(imodelName)))[0];
     chai.expect(iModel.name).to.be.equal(imodelName);
   });
 
@@ -226,10 +228,10 @@ describe("iModelHub iModelsHandler", () => {
     const names = ["22_LargePlant.166.i"];
     for (const name of names) {
       mockGetIModelByName(projectId, name);
-      const iModel: HubIModel = (await imodelClient.iModels.get(alctx, accessToken, projectId, new IModelQuery().byName(name)))[0];
+      const iModel: HubIModel = (await imodelClient.iModels.get(requestContext, projectId, new IModelQuery().byName(name)))[0];
       chai.expect(iModel.name).to.be.equal(name);
       mockDeleteiModel(projectId, iModel.id!);
-      await imodelClient.iModels.delete(alctx, accessToken, projectId, iModel.id!);
+      await imodelClient.iModels.delete(requestContext, projectId, iModel.id!);
     }
   });
 
@@ -241,7 +243,7 @@ describe("iModelHub iModelsHandler", () => {
       ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Get, requestPath, requestResponse);
     }
 
-    const iModel: HubIModel = (await imodelClient.iModels.get(alctx, accessToken, projectId, new IModelQuery().byId(imodelId)))[0];
+    const iModel: HubIModel = (await imodelClient.iModels.get(requestContext, projectId, new IModelQuery().byId(imodelId)))[0];
 
     chai.expect(iModel.id!).to.be.equal(imodelId);
   });
@@ -256,7 +258,7 @@ describe("iModelHub iModelsHandler", () => {
 
     let error: WsgError | undefined;
     try {
-      await imodelClient.iModels.get(alctx, accessToken, projectId, new IModelQuery().byId(mockGuid));
+      await imodelClient.iModels.get(requestContext, projectId, new IModelQuery().byId(mockGuid));
     } catch (err) {
       if (err instanceof WsgError)
         error = err;
@@ -268,7 +270,7 @@ describe("iModelHub iModelsHandler", () => {
   it("should fail getting an iModel without projectId", async () => {
     let error: IModelHubClientError | undefined;
     try {
-      await imodelClient.iModels.get(alctx, accessToken, "", new IModelQuery().byId(imodelId));
+      await imodelClient.iModels.get(requestContext, "", new IModelQuery().byId(imodelId));
     } catch (err) {
       if (err instanceof IModelHubClientError)
         error = err;
@@ -287,7 +289,7 @@ describe("iModelHub iModelsHandler", () => {
 
     let error: IModelHubError | undefined;
     try {
-      await imodelClient.iModels.create(alctx, accessToken, projectId, imodelName, utils.getMockSeedFilePath(), "");
+      await imodelClient.iModels.create(requestContext, projectId, imodelName, utils.getMockSeedFilePath(), "");
     } catch (err) {
       if (err instanceof IModelHubError)
         error = err;
@@ -301,7 +303,7 @@ describe("iModelHub iModelsHandler", () => {
     const description = "Test iModel created by imodeljs-clients tests";
     mockCreateiModel(projectId, Guid.createValue(), createIModelName, description, filePath, 2);
     const progressTracker = new utils.ProgressTracker();
-    const iModel = await imodelClient.iModels.create(alctx, accessToken, projectId, createIModelName, filePath, description, progressTracker.track());
+    const iModel = await imodelClient.iModels.create(requestContext, projectId, createIModelName, filePath, description, progressTracker.track());
 
     chai.expect(iModel.name).to.be.equal(createIModelName);
     chai.expect(iModel.initialized).to.be.equal(true);
@@ -330,7 +332,7 @@ describe("iModelHub iModelsHandler", () => {
       mockGetSeedFile(imodelId);
     }
 
-    const iModel = await imodelClient.iModels.create(alctx, accessToken, projectId, imodelName, filePath, "");
+    const iModel = await imodelClient.iModels.create(requestContext, projectId, imodelName, filePath, "");
 
     chai.expect(iModel.id!.toString()).to.be.equal(imodelId!.toString());
     chai.expect(iModel.name).to.be.equal(imodelName);
@@ -343,7 +345,7 @@ describe("iModelHub iModelsHandler", () => {
     utils.mockFileResponse();
 
     const progressTracker = new utils.ProgressTracker();
-    await iModelClient.iModels.download(alctx, accessToken, imodelId, downloadToPathname, progressTracker.track());
+    await iModelClient.iModels.download(requestContext, imodelId, downloadToPathname, progressTracker.track());
     progressTracker.check();
     fs.existsSync(downloadToPathname).should.be.equal(true);
   });
@@ -352,7 +354,7 @@ describe("iModelHub iModelsHandler", () => {
     let error: IModelHubClientError | undefined;
     const invalidClient = new IModelHubClient();
     try {
-      await invalidClient.iModels.download(alctx, accessToken, imodelId, utils.workDir);
+      await invalidClient.iModels.download(requestContext, imodelId, utils.workDir);
     } catch (err) {
       if (err instanceof IModelHubClientError)
         error = err;
@@ -368,7 +370,7 @@ describe("iModelHub iModelsHandler", () => {
     let error: IModelHubClientError | undefined;
     const invalidClient = new IModelHubClient();
     try {
-      await invalidClient.iModels.create(alctx, accessToken, projectId, createIModelName, utils.workDir);
+      await invalidClient.iModels.create(requestContext, projectId, createIModelName, utils.workDir);
     } catch (err) {
       if (err instanceof IModelHubClientError)
         error = err;
@@ -380,7 +382,7 @@ describe("iModelHub iModelsHandler", () => {
   it("should fail creating an iModel with no file", async () => {
     let error: IModelHubClientError | undefined;
     try {
-      await iModelClient.iModels.create(alctx, accessToken, projectId, createIModelName, utils.workDir + "InvalidiModel.bim");
+      await iModelClient.iModels.create(requestContext, projectId, createIModelName, utils.workDir + "InvalidiModel.bim");
     } catch (err) {
       if (err instanceof IModelHubClientError)
         error = err;
@@ -392,7 +394,7 @@ describe("iModelHub iModelsHandler", () => {
   it("should fail creating an iModel with directory path", async () => {
     let error: IModelHubClientError | undefined;
     try {
-      await iModelClient.iModels.create(alctx, accessToken, projectId, createIModelName, utils.workDir);
+      await iModelClient.iModels.create(requestContext, projectId, createIModelName, utils.workDir);
     } catch (err) {
       if (err instanceof IModelHubClientError)
         error = err;
@@ -403,25 +405,25 @@ describe("iModelHub iModelsHandler", () => {
 
   it("should update iModel name and description", async () => {
     mockGetIModelByName(projectId, imodelName);
-    const imodel: HubIModel = (await iModelClient.iModels.get(alctx, accessToken, projectId, new IModelQuery().byName(imodelName)))[0];
+    const imodel: HubIModel = (await iModelClient.iModels.get(requestContext, projectId, new IModelQuery().byName(imodelName)))[0];
     chai.expect(imodel.name).to.be.equal(imodelName);
 
     const newName = imodel.name + "_updated";
     const newDescription = "Description_updated";
-    await utils.deleteIModelByName(accessToken, projectId, newName);
+    await utils.deleteIModelByName(requestContext, projectId, newName);
     imodel.name = newName;
     imodel.description = newDescription;
     mockUpdateiModel(projectId, imodel);
-    let updatediModel = await iModelClient.iModels.update(alctx, accessToken, projectId, imodel);
+    let updatediModel = await iModelClient.iModels.update(requestContext, projectId, imodel);
 
     chai.expect(updatediModel.wsgId).to.be.equal(imodel.wsgId);
     chai.expect(updatediModel.name).to.be.equal(newName);
     chai.expect(updatediModel.description).to.be.equal(newDescription);
 
     mockGetIModelByName(projectId, newName, newDescription, imodel.id);
-    updatediModel = (await iModelClient.iModels.get(alctx, accessToken, projectId, new IModelQuery().byName(newName)))[0];
+    updatediModel = (await iModelClient.iModels.get(requestContext, projectId, new IModelQuery().byName(newName)))[0];
 
-    await utils.deleteIModelByName(accessToken, projectId, newName);
+    await utils.deleteIModelByName(requestContext, projectId, newName);
 
     chai.assert(!!updatediModel);
     chai.expect(updatediModel.wsgId).to.be.equal(imodel.wsgId);
@@ -434,7 +436,7 @@ describe("iModelHub iModelsHandler", () => {
       mockGetIModel(projectId, imodelName, Guid.createValue(), 1);
     }
 
-    const imodel = await imodelClient.iModel.get(alctx, accessToken, projectId);
+    const imodel = await imodelClient.iModel.get(requestContext, projectId);
     chai.assert(imodel);
   });
 
@@ -446,7 +448,7 @@ describe("iModelHub iModelsHandler", () => {
 
     let error: IModelHubError | undefined;
     try {
-      await imodelClient.iModel.get(alctx, accessToken, projectId);
+      await imodelClient.iModel.get(requestContext, projectId);
     } catch (err) {
       if (err instanceof IModelHubError)
         error = err;
@@ -463,7 +465,7 @@ describe("iModelHub iModelsHandler", () => {
     imodelId = imodelId || Guid.createValue();
     mockGetIModel(projectId, "22_LargePlant.166.i", imodelId, 1);
     mockDeleteiModel(projectId, imodelId);
-    await imodelClient.iModel.delete(alctx, accessToken, projectId);
+    await imodelClient.iModel.delete(requestContext, projectId);
   });
 
   it("delete iModel should throw if iModel does not exist", async function (this: Mocha.ITestCallbackContext) {
@@ -476,7 +478,7 @@ describe("iModelHub iModelsHandler", () => {
 
     let error: IModelHubError | undefined;
     try {
-      await imodelClient.iModel.delete(alctx, accessToken, projectId);
+      await imodelClient.iModel.delete(requestContext, projectId);
     } catch (err) {
       if (err instanceof IModelHubError)
         error = err;
@@ -493,7 +495,7 @@ describe("iModelHub iModelsHandler", () => {
     mockGetIModel(projectId, "22_LargePlant.166.i", imodelId, 1);
     mockGetSeedFile(imodelId);
 
-    const initializationState = await imodelClient.iModel.getInitializationState(alctx, accessToken, projectId);
+    const initializationState = await imodelClient.iModel.getInitializationState(requestContext, projectId);
 
     chai.expect(initializationState).to.be.equal(InitializationState.Successful);
   });
@@ -508,7 +510,7 @@ describe("iModelHub iModelsHandler", () => {
     mockGetIModel(projectId, createIModelName, imodelId, 0);
     mockCreateiModel(projectId, imodelId, createIModelName, description, filePath, 2);
     const progressTracker = new utils.ProgressTracker();
-    const iModel = await imodelClient.iModel.create(alctx, accessToken, projectId, createIModelName, filePath, description, progressTracker.track());
+    const iModel = await imodelClient.iModel.create(requestContext, projectId, createIModelName, filePath, description, progressTracker.track());
 
     chai.expect(iModel.name).to.be.equal(createIModelName);
     chai.expect(iModel.initialized).to.be.equal(true);
@@ -524,7 +526,7 @@ describe("iModelHub iModelsHandler", () => {
 
     let error: IModelHubError | undefined;
     try {
-      await imodelClient.iModel.create(alctx, accessToken, projectId, createIModelName, filePath, description, progressTracker.track());
+      await imodelClient.iModel.create(requestContext, projectId, createIModelName, filePath, description, progressTracker.track());
     } catch (err) {
       if (err instanceof IModelHubError)
         error = err;
@@ -534,19 +536,19 @@ describe("iModelHub iModelsHandler", () => {
   });
 
   it("should create iModel from empty seed file", async function (this: Mocha.ITestCallbackContext) {
-    await utils.deleteIModelByName(accessToken, projectId, createIModelName);
+    await utils.deleteIModelByName(requestContext, projectId, createIModelName);
 
     const description = "Test iModel created by imodeljs-clients tests";
     mockCreateEmptyiModel(projectId, Guid.createValue(), createIModelName, description);
     const progressTracker = new utils.ProgressTracker();
-    const imodel = await imodelClient.iModels.create(alctx, accessToken, projectId, createIModelName, undefined, description, progressTracker.track());
+    const imodel = await imodelClient.iModels.create(requestContext, projectId, createIModelName, undefined, description, progressTracker.track());
 
     chai.expect(imodel.name).to.be.equal(createIModelName);
     chai.expect(imodel.initialized).to.be.equal(true);
     progressTracker.check(false);
 
     mockGetIModelByName(projectId, createIModelName, description, imodel.id);
-    const getiModel = (await iModelClient.iModels.get(alctx, accessToken, projectId, new IModelQuery().byName(createIModelName)))[0];
+    const getiModel = (await iModelClient.iModels.get(requestContext, projectId, new IModelQuery().byName(createIModelName)))[0];
     chai.assert(!!getiModel);
     chai.expect(getiModel.wsgId).to.be.equal(imodel.id!);
   });
@@ -560,7 +562,7 @@ describe("iModelHub iModelsHandler", () => {
     mockGetIModel(projectId, createIModelName, imodelId, 0);
     mockCreateEmptyiModel(projectId, Guid.createValue(), createIModelName, description);
     const progressTracker = new utils.ProgressTracker();
-    const imodel = await imodelClient.iModel.create(alctx, accessToken, projectId, createIModelName, undefined, description, progressTracker.track());
+    const imodel = await imodelClient.iModel.create(requestContext, projectId, createIModelName, undefined, description, progressTracker.track());
 
     chai.expect(imodel.name).to.be.equal(createIModelName);
     chai.expect(imodel.initialized).to.be.equal(true);
@@ -573,22 +575,22 @@ describe("iModelHub iModelsHandler", () => {
     const newName = imodelName + "_updated";
     const newDescription = "Description_updated";
 
-    const imodel = await iModelClient.iModel.get(alctx, accessToken, projectId);
+    const imodel = await iModelClient.iModel.get(requestContext, projectId);
     imodel.name = newName;
     imodel.description = newDescription;
     mockUpdateiModel(projectId, imodel);
-    let updatediModel = await iModelClient.iModel.update(alctx, accessToken, projectId, imodel);
+    let updatediModel = await iModelClient.iModel.update(requestContext, projectId, imodel);
 
     chai.expect(updatediModel.wsgId).to.be.equal(imodel.wsgId);
     chai.expect(updatediModel.name).to.be.equal(newName);
     chai.expect(updatediModel.description).to.be.equal(newDescription);
 
     mockGetIModel(projectId, newName, imodel.id!, 1, newDescription);
-    updatediModel = await iModelClient.iModel.get(alctx, accessToken, projectId);
+    updatediModel = await iModelClient.iModel.get(requestContext, projectId);
 
     mockGetIModel(projectId, newName, imodel.id!, 1, newDescription);
     mockDeleteiModel(projectId, imodel.id!);
-    await iModelClient.iModel.delete(alctx, accessToken, projectId);
+    await iModelClient.iModel.delete(requestContext, projectId);
 
     chai.assert(!!updatediModel);
     chai.expect(updatediModel.wsgId).to.be.equal(imodel.wsgId);
@@ -603,7 +605,7 @@ describe("iModelHub iModelsHandler", () => {
     utils.mockFileResponse();
 
     const progressTracker = new utils.ProgressTracker();
-    await iModelClient.iModel.download(alctx, accessToken, projectId, downloadToPathname, progressTracker.track());
+    await iModelClient.iModel.download(requestContext, projectId, downloadToPathname, progressTracker.track());
     progressTracker.check();
     fs.existsSync(downloadToPathname).should.be.equal(true);
   });

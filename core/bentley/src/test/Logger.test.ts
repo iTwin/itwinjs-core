@@ -6,7 +6,7 @@ import { assert } from "chai";
 import { using, Logger, LogLevel, PerfLogger, DbResult } from "../bentleyjs-core";
 import { EnvMacroSubst } from "../Logger";
 import { BentleyError } from "../BentleyError";
-import { ActivityLoggingContext } from "../ActivityLoggingContext";
+import { ClientRequestContext } from "../ClientRequestContext";
 
 let outerr: any[];
 let outwarn: any[];
@@ -480,12 +480,12 @@ describe("Logger", () => {
       (c, m, d) => outtrace = [c, m, d ? d() : {}]);
     Logger.setLevel("testcat", LogLevel.Error);
 
-    const lctx1 = new ActivityLoggingContext("activity1").enter();
+    const lctx1 = new ClientRequestContext("activity1").enter();
     clearOutlets();
     Logger.logError("testcat", "message1");
     checkOutlets(["testcat", "message1", { ActivityId: lctx1.activityId }], [], [], []);
 
-    const lctx2 = new ActivityLoggingContext("activity2").enter();
+    const lctx2 = new ClientRequestContext("activity2").enter();
     clearOutlets();
     Logger.logError("testcat", "message2");
     checkOutlets(["testcat", "message2", { ActivityId: lctx2.activityId }], [], [], []);

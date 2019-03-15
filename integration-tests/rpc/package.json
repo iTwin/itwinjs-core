@@ -23,7 +23,7 @@
     "@bentley/imodeljs-clients": "0.191.0-dev.6",
     "@bentley/imodeljs-common": "0.191.0-dev.6",
     "chai": "^4.1.2",
-    "electron": "^4.0.1",
+    "electron": "^4.1.0",
     "express": "^4.16.3",
     "semver": "^5.5.0"
   },
@@ -34,7 +34,7 @@
     "@types/chai": "^4.1.4",
     "@types/express": "^4.16.1",
     "@types/mocha": "^5.2.5",
-    "@types/node": "10.12.18",
+    "@types/node": "10.14.1",
     "@types/semver": "^5.5.0",
     "@types/webpack": "^3.8.5",
     "chai": "^4.1.2",

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import * as path from "path";
-import { DbResult, Id64String, Id64, ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { DbResult, Id64String, Id64 } from "@bentley/bentleyjs-core";
 import { SpatialCategory, Element, IModelDb } from "../imodeljs-backend";
 import { ECSqlStatement } from "../ECSqlStatement";
 import { IModelTestUtils } from "../test/IModelTestUtils";
@@ -14,13 +14,13 @@ import { IModelJson as GeomJson } from "@bentley/geometry-core/lib/serialization
 import { KnownTestLocations } from "../test/KnownTestLocations";
 import { IModelJsFs } from "../IModelJsFs";
 import * as fs from "fs";
+import { BackendRequestContext } from "../BackendRequestContext";
 
 describe("PerformanceElementsTests", () => {
   let seedIModel: IModelDb;
   const opSizes: any[] = [1000, 2000, 3000];
   const dbSizes: any[] = [10000, 100000, 1000000];
   const classNames: any[] = ["PerfElement", "PerfElementSub1", "PerfElementSub2", "PerfElementSub3"];
-  const actx = new ActivityLoggingContext("");
 
   const values: any = {
     baseStr: "PerfElement - InitValue", sub1Str: "PerfElementSub1 - InitValue",
@@ -120,7 +120,7 @@ describe("PerformanceElementsTests", () => {
         if (!IModelJsFs.existsSync(pathname)) {
           seedIModel = IModelDb.createSnapshot(IModelTestUtils.prepareOutputFile("ElementCRUDPerformance", fileName), { rootSubject: { name: "PerfTest" } });
           const testSchemaName = path.join(KnownTestLocations.assetsDir, "PerfTestDomain.ecschema.xml");
-          await seedIModel.importSchema(actx, testSchemaName);
+          await seedIModel.importSchema(new BackendRequestContext(), testSchemaName);
           seedIModel.setAsMaster();
           assert.isDefined(seedIModel.getMetaData("PerfTestDomain:" + className), className + "is present in iModel.");
           const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(seedIModel, Code.createEmpty(), true);

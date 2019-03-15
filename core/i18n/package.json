@@ -50,7 +50,7 @@
     "@bentley/webpack-tools": "0.191.0-dev.6",
     "@types/i18next": "^8.4.2",
     "@types/i18next-browser-languagedetector": "^2.0.1",
-    "@types/node": "10.12.18",
+    "@types/node": "10.14.1",
     "rimraf": "^2.6.2",
     "tslint": "^5.11.0",
     "typedoc": "^0.11.1",

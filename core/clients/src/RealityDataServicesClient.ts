@@ -3,25 +3,24 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module OtherServices */
-
+import { ClientRequestContext } from "@bentley/bentleyjs-core";
 import { ECJsonTypeMap, WsgInstance } from "./ECJsonTypeMap";
 import { WsgClient } from "./WsgClient";
-import { AccessToken } from "./Token";
 import { URL } from "url";
 import { request, RequestOptions } from "./Request";
 import { Config } from "./Config";
-import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { AuthorizedClientRequestContext } from "./AuthorizedClientRequestContext";
 import { Angle, Range2d } from "@bentley/geometry-core";
 
 /** RealityData
  * This class implements a Reality Data stored in ProjectWise Context Share (Reality Data Service)
  * Data is accessed directly through methods of the reality data instance.
- * Access to the data required a properly entitled token though the access to the blob is controled through
+ * Access to the data required a properly entitled token though the access to the blob is controlled through
  * an Azure blob URL, the token may be required to obtain this Azure blob URL or refresh it.
  * The Azure blob URL is considered valid for an hour and is refreshed after 50 minutes.
  * In addition to the reality data properties, and Azure blob URL and internal states, a reality data also contains
  * the identification of the CONNECT project to identify the context(used for access permissions resolution) and
- * may contain a RealityDataClient to obtain the WSG client specialisation to communicate with ProjectWise Context Share (to obtain the Azure blob URL).
+ * may contain a RealityDataClient to obtain the WSG client specialization to communicate with ProjectWise Context Share (to obtain the Azure blob URL).
  */
 @ECJsonTypeMap.classToJson("wsg", "S3MX.RealityData", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class RealityData extends WsgInstance {
@@ -125,13 +124,13 @@ export class RealityData extends WsgInstance {
 
   /**
    * Gets string url to fetch blob data from
-   * @param token Delegation token of the authorized user issued for this service.
+   * @param requestContext The client request context.
    * @param name name or path of tile
    * @param nameRelativeToRootDocumentPath (optional default is false) Indicates if the given name is relative to the root document path.
    * @returns string url for blob data
    */
-  public async getBlobStringUrl(alctx: ActivityLoggingContext, token: AccessToken, name: string, nameRelativeToRootDocumentPath: boolean = false): Promise<string> {
-    const url = await this.getBlobUrl(alctx, token);
+  public async getBlobStringUrl(requestContext: AuthorizedClientRequestContext, name: string, nameRelativeToRootDocumentPath: boolean = false): Promise<string> {
+    const url = await this.getBlobUrl(requestContext);
 
     let host: string = "";
     if (nameRelativeToRootDocumentPath && this._blobRooDocumentPath && this._blobRooDocumentPath !== "")
@@ -146,21 +145,21 @@ export class RealityData extends WsgInstance {
 
   /**
    * Gets a tileset's tile data
-   * @param token Delegation token of the authorized user issued for this service.
+   * @param requestContext The client request context.
    * @param name name or path of tile
    * @param nameRelativeToRootDocumentPath (optional default is false) Indicates if the given name is relative to the root document path.
    * @returns tile data json
    */
-  public async getModelData(alctx: ActivityLoggingContext, token: AccessToken, name: string, nameRelativeToRootDocumentPath: boolean = false): Promise<any> {
-    return this.getTileJson(alctx, token, name, nameRelativeToRootDocumentPath);
+  public async getModelData(requestContext: AuthorizedClientRequestContext, name: string, nameRelativeToRootDocumentPath: boolean = false): Promise<any> {
+    return this.getTileJson(requestContext, name, nameRelativeToRootDocumentPath);
   }
 
   /**
    * Gets a tile access url URL object
-   * @param token Delegation token of the authorized user issued for this service.
+   * @param requestContext The client request context.
    * @returns app URL object for blob url
    */
-  public async getBlobUrl(alctx: ActivityLoggingContext, token: AccessToken): Promise<URL> {
+  public async getBlobUrl(requestContext: AuthorizedClientRequestContext): Promise<URL> {
     // Normally the client is set when the reality data is extracted for the client but it could be undefined
     // if the reality data instance is created manually.
     if (!this.client)
@@ -173,7 +172,7 @@ export class RealityData extends WsgInstance {
       return Promise.reject(new Error("id not set"));
 
     if (undefined === this._blobUrl || this._blobTimeStamp.valueOf() - Date.now() > 3000000) { // 3 million milliseconds or 50 minutes
-      const fileAccess: FileAccessKey[] = await this.client.getFileAccessKey(alctx, token, this.projectId as string, this.id);
+      const fileAccess: FileAccessKey[] = await this.client.getFileAccessKey(requestContext, this.projectId as string, this.id);
       if (fileAccess.length !== 1)
         return Promise.reject(new Error("Could not obtain blob file access key for reality data: " + this.id));
       const urlString = fileAccess[0].url!;
@@ -194,52 +193,52 @@ export class RealityData extends WsgInstance {
 
   /**
    * Gets a tileset's app data json
-   * @param token Delegation token of the authorized user issued for this service.
+   * @param requestContext The client request context.
    * @param name name or path of tile
    * @param nameRelativeToRootDocumentPath (optional default is false) Indicates if the given name is relative to the root document path.
    * @returns app data json object
    */
-  public async getTileJson(alctx: ActivityLoggingContext, token: AccessToken, name: string, nameRelativeToRootDocumentPath: boolean = false): Promise<any> {
-    const stringUrl = await this.getBlobStringUrl(alctx, token, name, nameRelativeToRootDocumentPath);
+  public async getTileJson(requestContext: AuthorizedClientRequestContext, name: string, nameRelativeToRootDocumentPath: boolean = false): Promise<any> {
+    const stringUrl = await this.getBlobStringUrl(requestContext, name, nameRelativeToRootDocumentPath);
     const options: RequestOptions = {
       method: "GET",
       responseType: "json",
     };
-    const data = await request(alctx, stringUrl, options);
+    const data = await request(requestContext, stringUrl, options);
     return data.body;
   }
 
   /**
    * Gets tile content
-   * @param token Delegation token of the authorized user issued for this service.
+   * @param requestContext The client request context.
    * @param name name or path of tile
    * @param nameRelativeToRootDocumentPath (optional default is false) Indicates if the given name is relative to the root document path.
    * @returns array buffer of tile content
    */
-  public async getTileContent(alctx: ActivityLoggingContext, token: AccessToken, name: string, nameRelativeToRootDocumentPath: boolean = false): Promise<any> {
-    const stringUrl = await this.getBlobStringUrl(alctx, token, name, nameRelativeToRootDocumentPath);
+  public async getTileContent(requestContext: AuthorizedClientRequestContext, name: string, nameRelativeToRootDocumentPath: boolean = false): Promise<any> {
+    const stringUrl = await this.getBlobStringUrl(requestContext, name, nameRelativeToRootDocumentPath);
     const options: RequestOptions = {
       method: "GET",
       responseType: "arraybuffer",
     };
-    const data = await request(alctx, stringUrl, options);
+    const data = await request(requestContext, stringUrl, options);
     return data.body;
   }
 
   /**
    * Gets a reality data root document json
-   * @param token Delegation token of the authorized user issued for this service.
+   * @param requestContext The client request context.
    * @returns tile data json
    */
-  public async getRootDocumentJson(alctx: ActivityLoggingContext, token: AccessToken): Promise<any> {
-    alctx.enter();
+  public async getRootDocumentJson(requestContext: AuthorizedClientRequestContext): Promise<any> {
+    requestContext.enter();
 
     if (!this.rootDocument)
       return Promise.reject(new Error("Root document not defined for reality data: " + this.id));
 
     const root = this.rootDocument!;
 
-    return this.getModelData(alctx, token, root, false);
+    return this.getModelData(requestContext, root, false);
   }
 
 }
@@ -308,26 +307,26 @@ export class RealityDataServicesClient extends WsgClient {
    * This method returns the URL to obtain the Reality Data details from PW Context Share.
    * Technically it should never be required as the RealityData object returned should have all the information to obtain the
    * data.
-   * @param token Delegation token of the authorized user issued for this service.
+   * @param requestContext The client request context.
    * @param projectId id of associated connect project
    * @param tilesId realityDataInstance id, called tilesId when returned from tile generator job
    * @returns string containing the URL to reality data for indicated tile.
    */
-  public async getRealityDataUrl(alctx: ActivityLoggingContext, projectId: string, tilesId: string): Promise<string> {
-    const serverUrl: string = await this.getUrl(alctx);
+  public async getRealityDataUrl(requestContext: ClientRequestContext, projectId: string, tilesId: string): Promise<string> {
+    const serverUrl: string = await this.getUrl(requestContext);
 
     return serverUrl + `/Repositories/S3MXECPlugin--${projectId}/S3MX/RealityData/${tilesId}`;
   }
 
   /**
    * Gets reality data with all of its properties
-   * @param token Delegation token of the authorized user issued for this service.
+   * @param requestContext The client request context.
    * @param projectId id of associated connect project
    * @param tilesId realityDataInstance id, called tilesId when returned from tile generator job
    * @returns The requested reality data.
    */
-  public async getRealityData(alctx: ActivityLoggingContext, token: AccessToken, projectId: string, tilesId: string): Promise<RealityData> {
-    const realityDatas: RealityData[] = await this.getInstances<RealityData>(alctx, RealityData, token, `/Repositories/S3MXECPlugin--${projectId}/S3MX/RealityData/${tilesId}`);
+  public async getRealityData(requestContext: AuthorizedClientRequestContext, projectId: string, tilesId: string): Promise<RealityData> {
+    const realityDatas: RealityData[] = await this.getInstances<RealityData>(requestContext, RealityData, `/Repositories/S3MXECPlugin--${projectId}/S3MX/RealityData/${tilesId}`);
     if (realityDatas.length !== 1)
       return Promise.reject(new Error("Could not fetch reality data: " + tilesId));
 
@@ -338,12 +337,12 @@ export class RealityDataServicesClient extends WsgClient {
 
   /**
    * Gets all reality data associated to the project. Consider using getRealityDataInProjectOverlapping() if spatial extent is known.
-   * @param token Delegation token of the authorized user issued for this service.
+   * @param requestContext The client request context.
    * @param projectId id of associated connect project
    * @returns an array of RealityData that are associated to the project.
    */
-  public async getRealityDataInProject(alctx: ActivityLoggingContext, token: AccessToken, projectId: string): Promise<RealityData[]> {
-    const realityDatas: RealityData[] = await this.getInstances<RealityData>(alctx, RealityData, token, `/Repositories/S3MXECPlugin--${projectId}/S3MX/RealityData?project=${projectId}&$filter=Type+eq+'RealityMesh3DTiles'`);
+  public async getRealityDataInProject(requestContext: AuthorizedClientRequestContext, projectId: string): Promise<RealityData[]> {
+    const realityDatas: RealityData[] = await this.getInstances<RealityData>(requestContext, RealityData, `/Repositories/S3MXECPlugin--${projectId}/S3MX/RealityData?project=${projectId}&$filter=Type+eq+'RealityMesh3DTiles'`);
     realityDatas.forEach((realityData) => { realityData.client = this; realityData.projectId = projectId; });
     return realityDatas;
   }
@@ -351,7 +350,7 @@ export class RealityDataServicesClient extends WsgClient {
   /**
    * Gets all reality data that has a footprint defined that overlaps the given area and that are associated with the project. Reality Data returned must be accessible by user
    * as public, enterprise data, private or accessible through context RBAC rights attributed to user.
-   * @param token Delegation token of the authorized user issued for this service.
+   * @param requestContext The client request context.
    * @param projectId id of associated connect project
    * @param range The range to search for given as a range 2d where X repesentents the longitude in radians and Y the latitude in radians
    * longitude can be in the range -2P to 2PI but the minimum value must be smaller numerically to the maximum.
@@ -359,28 +358,28 @@ export class RealityDataServicesClient extends WsgClient {
    * for ranges that overlap the -PI/+PI frontier in which case either representation is acceptable.
    * @returns an array of RealityData
    */
-  public async getRealityDataInProjectOverlapping(alctx: ActivityLoggingContext, token: AccessToken, projectId: string, range: Range2d): Promise<RealityData[]> {
+  public async getRealityDataInProjectOverlapping(requestContext: AuthorizedClientRequestContext, projectId: string, range: Range2d): Promise<RealityData[]> {
     const minLongDeg = Angle.radiansToDegrees(range.low.x);
     const maxLongDeg = Angle.radiansToDegrees(range.high.x);
     const minLatDeg = Angle.radiansToDegrees(range.low.y);
     const maxLatDeg = Angle.radiansToDegrees(range.high.y);
     const polygonString = `{\"points\":[[${minLongDeg},${minLatDeg}],[${maxLongDeg},${minLatDeg}],[${maxLongDeg},${maxLatDeg}],[${minLongDeg},${maxLatDeg}],[${minLongDeg},${minLatDeg}]], \"coordinate_system\":\"4326\"}`;
 
-    const realityDatas: RealityData[] = await this.getInstances<RealityData>(alctx, RealityData, token, `/Repositories/S3MXECPlugin--${projectId}/S3MX/RealityData?project=${projectId}&polygon=${polygonString}&$filter=Type+eq+'RealityMesh3DTiles'`);
+    const realityDatas: RealityData[] = await this.getInstances<RealityData>(requestContext, RealityData, `/Repositories/S3MXECPlugin--${projectId}/S3MX/RealityData?project=${projectId}&polygon=${polygonString}&$filter=Type+eq+'RealityMesh3DTiles'`);
     realityDatas.forEach((realityData) => { realityData.client = this; realityData.projectId = projectId; });
     return realityDatas;
   }
 
   /**
    * Gets a tile file access key
-   * @param token Delegation token of the authorized user issued for this service.
+   * @param requestContext The client request context.
    * @param projectId id of associated connect project
    * @param tilesId realityDataInstance id, called tilesId when returned from tile generator job
    * @returns a FileAccessKey object containing the Azure blob address.
    */
-  public async getFileAccessKey(alctx: ActivityLoggingContext, token: AccessToken, projectId: string, tilesId: string): Promise<FileAccessKey[]> {
+  public async getFileAccessKey(requestContext: AuthorizedClientRequestContext, projectId: string, tilesId: string): Promise<FileAccessKey[]> {
     const path = encodeURIComponent(tilesId);
-    return this.getInstances<FileAccessKey>(alctx, FileAccessKey, token, `/Repositories/S3MXECPlugin--${projectId}/S3MX/RealityData/${path}/FileAccess.FileAccessKey?$filter=Permissions+eq+%27Read%27`);
+    return this.getInstances<FileAccessKey>(requestContext, FileAccessKey, `/Repositories/S3MXECPlugin--${projectId}/S3MX/RealityData/${path}/FileAccess.FileAccessKey?$filter=Permissions+eq+%27Read%27`);
   }
 
 }

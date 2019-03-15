@@ -4,9 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { GrantParams, TokenSet } from "openid-client";
-import { decode } from "jsonwebtoken";
-import { AccessToken, UserInfo } from "@bentley/imodeljs-clients";
-import { ActivityLoggingContext, BentleyStatus, BentleyError } from "@bentley/bentleyjs-core";
+import { AccessToken } from "@bentley/imodeljs-clients";
+import { BentleyStatus, BentleyError, ClientRequestContext } from "@bentley/bentleyjs-core";
 import { OidcBackendClientConfiguration, OidcBackendClient } from "./OidcBackendClient";
 
 export type OidcAgentClientConfiguration = OidcBackendClientConfiguration;
@@ -18,7 +17,7 @@ export class OidcAgentClient extends OidcBackendClient {
   }
 
   /** Get the access token */
-  public async getToken(actx: ActivityLoggingContext): Promise<AccessToken> {
+  public async getToken(requestContext: ClientRequestContext): Promise<AccessToken> {
     const scope = this._configuration.scope;
     if (scope.includes("openid") || scope.includes("email") || scope.includes("profile") || scope.includes("organization"))
       throw new BentleyError(BentleyStatus.ERROR, "Scopes for an Agent cannot include 'openid email profile organization'");
@@ -28,26 +27,23 @@ export class OidcAgentClient extends OidcBackendClient {
       scope,
     };
 
-    const client = await this.getClient(actx);
+    const client = await this.getClient(requestContext);
     const tokenSet: TokenSet = await client.grant(grantParams);
-
-    const decoded: any = decode(tokenSet.access_token, { json: true, complete: false });
-    const userInfo = UserInfo.fromJson(decoded);
-
+    const userInfo = OidcBackendClient.parseUserInfo(tokenSet.access_token);
     return this.createToken(tokenSet, userInfo);
   }
 
   /** Refresh the access token - simply checks if the token is still valid before re-fetching a new access token */
-  public async refreshToken(actx: ActivityLoggingContext, jwt: AccessToken): Promise<AccessToken> {
-    actx.enter();
+  public async refreshToken(requestContext: ClientRequestContext, jwt: AccessToken): Promise<AccessToken> {
+    requestContext.enter();
 
     // Refresh 1 minute before expiry
     const expiresAt = jwt.getExpiresAt();
     if (!expiresAt)
       throw new BentleyError(BentleyStatus.ERROR, "Invalid JWT passed to refresh");
-    if ((expiresAt.getTime() - Date.now()) > 1 * 60 * 1000)
+    if ((expiresAt.getTime() - Date.now()) < 1 * 60 * 1000)
       return jwt;
 
-    return this.getToken(actx);
+    return this.getToken(requestContext);
   }
 }

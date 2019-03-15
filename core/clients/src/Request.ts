@@ -7,7 +7,7 @@
 import * as sarequest from "superagent";
 import * as deepAssign from "deep-assign";
 import { stringify, IStringifyOptions } from "qs";
-import { Logger, LogLevel, BentleyError, HttpStatus, GetMetaDataFunction, ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { Logger, LogLevel, BentleyError, HttpStatus, GetMetaDataFunction, ClientRequestContext } from "@bentley/bentleyjs-core";
 import { Config } from "./Config";
 import * as https from "https";
 
@@ -207,14 +207,15 @@ const logRequest = (req: sarequest.SuperAgentRequest) => {
 
 /**
  * Wrapper around HTTP request utility
+ * @param requestContext The client request context
  * @param url Server URL to address the request
  * @param options Options to pass to the request
  * @returns Resolves to the response from the server
  * @throws ResponseError if the request fails due to network issues, or if the
  * returned status is *outside* the range of 200-299 (inclusive)
  */
-export async function request(alctx: ActivityLoggingContext, url: string, options: RequestOptions): Promise<Response> {
-  alctx.enter();
+export async function request(requestContext: ClientRequestContext, url: string, options: RequestOptions): Promise<Response> {
+  requestContext.enter();
   let proxyUrl = "";
   if (options.useCorsProxy === true) {
     proxyUrl = Config.App.get("imjs_dev_cors_proxy_server", "");
@@ -234,8 +235,8 @@ export async function request(alctx: ActivityLoggingContext, url: string, option
   if (options.headers)
     sareq = sareq.set(options.headers);
 
-  if (alctx.activityId !== "")
-    sareq.set(requestIdHeaderName, alctx.activityId);
+  if (requestContext.activityId !== "")
+    sareq.set(requestIdHeaderName, requestContext.activityId);
 
   let queryStr: string = "";
   let fullUrl: string = "";
@@ -389,12 +390,12 @@ export async function request(alctx: ActivityLoggingContext, url: string, option
  * fetch array buffer from HTTP request
  * @param url server URL to address the request
  */
-export async function getArrayBuffer(alctx: ActivityLoggingContext, url: string): Promise<any> {
+export async function getArrayBuffer(requestContext: ClientRequestContext, url: string): Promise<any> {
   const options: RequestOptions = {
     method: "GET",
     responseType: "arraybuffer",
   };
-  const data = await request(alctx, url, options);
+  const data = await request(requestContext, url, options);
   return data.body;
 }
 
@@ -402,11 +403,11 @@ export async function getArrayBuffer(alctx: ActivityLoggingContext, url: string)
  * fetch json from HTTP request
  * @param url server URL to address the request
  */
-export async function getJson(alctx: ActivityLoggingContext, url: string): Promise<any> {
+export async function getJson(requestContext: ClientRequestContext, url: string): Promise<any> {
   const options: RequestOptions = {
     method: "GET",
     responseType: "json",
   };
-  const data = await request(alctx, url, options);
+  const data = await request(requestContext, url, options);
   return data.body;
 }

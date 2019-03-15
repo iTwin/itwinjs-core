@@ -6,18 +6,20 @@ import * as fs from "fs";
 import * as path from "path";
 import * as chai from "chai";
 import { Base64 } from "js-base64";
-import { GuidString, Guid, ActivityLoggingContext, Id64, Id64String } from "@bentley/bentleyjs-core";
+import { GuidString, Guid, Id64, Id64String, ClientRequestContext } from "@bentley/bentleyjs-core";
 import {
   ECJsonTypeMap, AccessToken, UserInfo, Project, ProgressInfo,
   IModelHubClient, HubCode, CodeState, MultiCode, Briefcase, ChangeSet, Version,
   Thumbnail, SmallThumbnail, LargeThumbnail, IModelQuery, LockType, LockLevel,
   MultiLock, Lock, VersionQuery, Config, IModelBaseHandler,
-  IModelBankClient, IModelBankFileSystemContextClient,
+  IModelBankClient, IModelBankFileSystemContextClient, AuthorizedClientRequestContext,
+  ImsUserCredentials,
 } from "@bentley/imodeljs-clients";
 import { AzureFileHandler } from "../../imodelhub/AzureFileHandler";
 import { IModelCloudEnvironment } from "@bentley/imodeljs-clients/lib/IModelCloudEnvironment";
 import { ResponseBuilder, RequestType, ScopeType, UrlDiscoveryMock } from "../ResponseBuilder";
-import { TestConfig, UserCredentials, TestUsers } from "../TestConfig";
+import { TestConfig } from "../TestConfig";
+import { TestUsers } from "../TestUsers";
 import { TestIModelHubCloudEnv } from "./IModelHubCloudEnv";
 import { getIModelBankCloudEnv } from "./IModelBankCloudEnv";
 
@@ -83,8 +85,6 @@ export class RequestBehaviorOptions {
     return { BehaviourOptions: this._currentOptions.join(",") };
   }
 }
-
-const actx = new ActivityLoggingContext("");
 
 const requestBehaviorOptions = new RequestBehaviorOptions();
 
@@ -162,34 +162,34 @@ export async function delay(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-export async function login(userCredentials?: UserCredentials): Promise<AccessToken> {
+export async function login(userCredentials?: ImsUserCredentials): Promise<AccessToken> {
   if (TestConfig.enableMocks)
     return new MockAccessToken();
 
   userCredentials = userCredentials || TestUsers.regular;
-  return getCloudEnv().authorization.authorizeUser(actx, undefined, userCredentials);
+  return getCloudEnv().authorization.authorizeUser(new ClientRequestContext(), undefined, userCredentials);
 }
 
-export async function bootstrapBankProject(accessToken: AccessToken, projectName: string): Promise<void> {
+export async function bootstrapBankProject(requestContext: AuthorizedClientRequestContext, projectName: string): Promise<void> {
   if (getCloudEnv().isIModelHub || bankProjects.includes(projectName))
     return;
 
   const bankContext = getCloudEnv().contextMgr as IModelBankFileSystemContextClient;
-  try { await bankContext.deleteContext(actx, accessToken, projectName); } catch (_err) { }
-  await bankContext.createContext(actx, accessToken, projectName);
+  try { await bankContext.deleteContext(requestContext, projectName); } catch (_err) { }
+  await bankContext.createContext(requestContext, projectName);
 
   bankProjects.push(projectName);
 }
 
-export async function getProjectId(accessToken: AccessToken, projectName?: string): Promise<string> {
+export async function getProjectId(requestContext: AuthorizedClientRequestContext, projectName?: string): Promise<string> {
   if (TestConfig.enableMocks)
     return Guid.createValue();
 
   projectName = projectName || TestConfig.projectName;
 
-  await bootstrapBankProject(accessToken, projectName);
+  await bootstrapBankProject(requestContext, projectName);
 
-  const project: Project = await getCloudEnv().contextMgr.queryContextByName(actx, accessToken, projectName);
+  const project: Project = await getCloudEnv().contextMgr.queryContextByName(requestContext, projectName);
 
   if (!project || !project.wsgId)
     return Promise.reject(`Project with name ${TestConfig.projectName} doesn't exist.`);
@@ -198,26 +198,26 @@ export async function getProjectId(accessToken: AccessToken, projectName?: strin
 }
 
 /** iModels */
-export async function deleteIModelByName(accessToken: AccessToken, projectId: string, imodelName: string): Promise<void> {
+export async function deleteIModelByName(requestContext: AuthorizedClientRequestContext, projectId: string, imodelName: string): Promise<void> {
   if (TestConfig.enableMocks)
     return;
 
   const client = getDefaultClient();
-  const imodels = await client.iModels.get(actx, accessToken, projectId, new IModelQuery().byName(imodelName));
+  const imodels = await client.iModels.get(requestContext, projectId, new IModelQuery().byName(imodelName));
 
   for (const imodel of imodels) {
-    await client.iModels.delete(actx, accessToken, projectId, imodel.id!);
+    await client.iModels.delete(requestContext, projectId, imodel.id!);
   }
 }
 
-export async function getIModelId(accessToken: AccessToken, imodelName: string): Promise<GuidString> {
+export async function getIModelId(requestContext: AuthorizedClientRequestContext, imodelName: string): Promise<GuidString> {
   if (TestConfig.enableMocks)
     return Guid.createValue();
 
-  const projectId = await getProjectId(accessToken);
+  const projectId = await getProjectId(requestContext);
 
   const client = getDefaultClient();
-  const imodels = await client.iModels.get(actx, accessToken, projectId, new IModelQuery().byName(imodelName));
+  const imodels = await client.iModels.get(requestContext, projectId, new IModelQuery().byName(imodelName));
 
   if (!imodels[0] || !imodels[0].id)
     return Promise.reject(`iModel with name ${imodelName} doesn't exist.`);
@@ -243,7 +243,7 @@ export function mockUploadFile(imodelId: GuidString, chunks = 1) {
 }
 
 /** Briefcases */
-export async function getBriefcases(accessToken: AccessToken, imodelId: GuidString, count: number): Promise<Briefcase[]> {
+export async function getBriefcases(requestContext: AuthorizedClientRequestContext, imodelId: GuidString, count: number): Promise<Briefcase[]> {
   if (TestConfig.enableMocks) {
     let briefcaseId = 2;
     const fileId: GuidString = Guid.createValue();
@@ -256,12 +256,12 @@ export async function getBriefcases(accessToken: AccessToken, imodelId: GuidStri
   }
 
   const client = getDefaultClient();
-  let briefcases = await client.briefcases.get(actx, accessToken, imodelId);
+  let briefcases = await client.briefcases.get(requestContext, imodelId);
   if (briefcases.length < count) {
     for (let i = 0; i < count - briefcases.length; ++i) {
-      await client.briefcases.create(actx, accessToken, imodelId);
+      await client.briefcases.create(requestContext, imodelId);
     }
-    briefcases = await client.briefcases.get(actx, accessToken, imodelId);
+    briefcases = await client.briefcases.get(requestContext, imodelId);
   }
   return briefcases;
 }
@@ -431,12 +431,12 @@ export function incrementLockObjectId(objectId: Id64String): Id64String {
   return Id64.fromUint32Pair(low, high);
 }
 
-export async function getLastLockObjectId(accessToken: AccessToken, imodelId: GuidString): Promise<Id64String> {
+export async function getLastLockObjectId(requestContext: AuthorizedClientRequestContext, imodelId: GuidString): Promise<Id64String> {
   if (TestConfig.enableMocks)
     return Id64.fromString("0x0");
 
   const client = getDefaultClient();
-  const locks = await client.locks.get(actx, accessToken, imodelId);
+  const locks = await client.locks.get(requestContext, imodelId);
 
   locks.sort((lock1, lock2) => (parseInt(lock1.objectId!.toString(), 16) > parseInt(lock2.objectId!.toString(), 16) ? -1 : 1));
 
@@ -623,26 +623,26 @@ export function getMockSeedFilePath() {
   return path.join(dir, fs.readdirSync(dir).find((value) => value.endsWith(".bim"))!);
 }
 
-export async function createIModel(accessToken: AccessToken, name: string, projectId?: string, deleteIfExists = false, fromSeedFile = false) {
+export async function createIModel(requestContext: AuthorizedClientRequestContext, name: string, projectId?: string, deleteIfExists = false, fromSeedFile = false) {
   if (TestConfig.enableMocks)
     return;
 
-  projectId = projectId || await getProjectId(accessToken, TestConfig.projectName);
+  projectId = projectId || await getProjectId(requestContext, TestConfig.projectName);
 
   const client = getDefaultClient();
 
-  const imodels = await client.iModels.get(actx, accessToken, projectId, new IModelQuery().byName(name));
+  const imodels = await client.iModels.get(requestContext, projectId, new IModelQuery().byName(name));
 
   if (imodels.length > 0) {
     if (deleteIfExists) {
-      await client.iModels.delete(actx, accessToken, projectId, imodels[0].id!);
+      await client.iModels.delete(requestContext, projectId, imodels[0].id!);
     } else {
       return;
     }
   }
 
   const pathName = fromSeedFile ? getMockSeedFilePath() : undefined;
-  return client.iModels.create(actx, accessToken, projectId, name, pathName, "");
+  return client.iModels.create(requestContext, projectId, name, pathName, "");
 }
 
 export function getMockChangeSets(briefcase: Briefcase): ChangeSet[] {
@@ -668,7 +668,7 @@ export function getMockChangeSetPath(index: number, changeSetId: string) {
   return path.join(assetsPath, "SeedFile", `${index}_${changeSetId!}.cs`);
 }
 
-export async function createChangeSets(accessToken: AccessToken, imodelId: GuidString, briefcase: Briefcase,
+export async function createChangeSets(requestContext: AuthorizedClientRequestContext, imodelId: GuidString, briefcase: Briefcase,
   startingId = 0, count = 1): Promise<ChangeSet[]> {
   if (TestConfig.enableMocks)
     return getMockChangeSets(briefcase).slice(startingId, startingId + count);
@@ -680,26 +680,26 @@ export async function createChangeSets(accessToken: AccessToken, imodelId: GuidS
 
   const client = getDefaultClient();
 
-  const currentCount = (await client.changeSets.get(actx, accessToken, imodelId)).length;
+  const currentCount = (await client.changeSets.get(requestContext, imodelId)).length;
 
   const changeSets = getMockChangeSets(briefcase);
 
   const result: ChangeSet[] = [];
   for (let i = currentCount; i < startingId + count; ++i) {
     const changeSetPath = getMockChangeSetPath(i, changeSets[i].id!);
-    const changeSet = await client.changeSets.create(actx, accessToken, imodelId, changeSets[i], changeSetPath);
+    const changeSet = await client.changeSets.create(requestContext, imodelId, changeSets[i], changeSetPath);
     result.push(changeSet);
   }
   return result;
 }
 
-export async function createLocks(accessToken: AccessToken, imodelId: GuidString, briefcase: Briefcase, count = 1,
+export async function createLocks(requestContext: AuthorizedClientRequestContext, imodelId: GuidString, briefcase: Briefcase, count = 1,
   lockType: LockType = 1, lockLevel: LockLevel = 1, releasedWithChangeSet?: string, releasedWithChangeSetIndex?: string) {
   if (TestConfig.enableMocks)
     return;
 
   const client = getDefaultClient();
-  let lastObjectId: Id64String = await getLastLockObjectId(accessToken, imodelId);
+  let lastObjectId: Id64String = await getLastLockObjectId(requestContext, imodelId);
   const generatedLocks: Lock[] = [];
 
   for (let i = 0; i < count; i++) {
@@ -709,19 +709,19 @@ export async function createLocks(accessToken: AccessToken, imodelId: GuidString
       releasedWithChangeSet, releasedWithChangeSetIndex));
   }
 
-  await client.locks.update(actx, accessToken, imodelId, generatedLocks);
+  await client.locks.update(requestContext, imodelId, generatedLocks);
 }
 
-export async function createVersions(accessToken: AccessToken, imodelId: GuidString, changesetIds: string[], versionNames: string[]) {
+export async function createVersions(requestContext: AuthorizedClientRequestContext, imodelId: GuidString, changesetIds: string[], versionNames: string[]) {
   if (TestConfig.enableMocks)
     return;
 
   const client = getDefaultClient();
   for (let i = 0; i < changesetIds.length; i++) {
     // check if changeset does not have version
-    const version = await client.versions.get(actx, accessToken, imodelId, new VersionQuery().byChangeSet(changesetIds[i]));
+    const version = await client.versions.get(requestContext, imodelId, new VersionQuery().byChangeSet(changesetIds[i]));
     if (!version || version.length === 0) {
-      await client.versions.create(actx, accessToken, imodelId, changesetIds[i], versionNames[i]);
+      await client.versions.create(requestContext, imodelId, changesetIds[i], versionNames[i]);
     }
   }
 }

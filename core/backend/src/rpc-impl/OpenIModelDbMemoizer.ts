@@ -3,8 +3,8 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import { Logger, assert, BeDuration, ActivityLoggingContext } from "@bentley/bentleyjs-core";
-import { AccessToken } from "@bentley/imodeljs-clients";
+import { Logger, assert, BeDuration } from "@bentley/bentleyjs-core";
+import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
 import { RpcPendingResponse, IModel, IModelToken, IModelVersion } from "@bentley/imodeljs-common";
 import { PromiseMemoizer, QueryablePromise } from "../PromiseMemoizer";
 import { IModelDb, OpenParams } from "../IModelDb";
@@ -20,26 +20,25 @@ export class OpenIModelDbMemoizer extends PromiseMemoizer<IModelDb> {
   private static _openIModelDbMemoizer: OpenIModelDbMemoizer;
 
   public constructor() {
-    super(IModelDb.open, (_actx: ActivityLoggingContext, accessToken: AccessToken, contextId: string, iModelId: string, openParams: OpenParams, version: IModelVersion): string => {
-      return `${accessToken.toTokenString()}:${contextId}:${iModelId}:${JSON.stringify(openParams)}:${JSON.stringify(version)}`;
+    super(IModelDb.open, (requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: string, openParams: OpenParams, version: IModelVersion): string => {
+      return `${requestContext.accessToken.toTokenString()}:${contextId}:${iModelId}:${JSON.stringify(openParams)}:${JSON.stringify(version)}`;
     });
   }
 
   private _superMemoize = this.memoize;
-  public memoize = (actx: ActivityLoggingContext, accessToken: AccessToken, contextId: string, iModelId: string, openParams: OpenParams, version: IModelVersion): QueryablePromise<IModelDb> => {
-    return this._superMemoize(actx, accessToken, contextId, iModelId, openParams, version);
+  public memoize = (requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: string, openParams: OpenParams, version: IModelVersion): QueryablePromise<IModelDb> => {
+    return this._superMemoize(requestContext, contextId, iModelId, openParams, version);
   }
 
   private _superDeleteMemoized = this.deleteMemoized;
-  public deleteMemoized = (actx: ActivityLoggingContext, accessToken: AccessToken, contextId: string, iModelId: string, openParams: OpenParams, version: IModelVersion) => {
-    this._superDeleteMemoized(actx, accessToken, contextId, iModelId, openParams, version);
+  public deleteMemoized = (requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: string, openParams: OpenParams, version: IModelVersion) => {
+    this._superDeleteMemoized(requestContext, contextId, iModelId, openParams, version);
   }
 
-  public static async openIModelDb(actx: ActivityLoggingContext, accessToken: AccessToken, iModelToken: IModelToken, openParams: OpenParams): Promise<IModel> {
-    actx.enter();
+  public static async openIModelDb(requestContext: AuthorizedClientRequestContext, iModelToken: IModelToken, openParams: OpenParams): Promise<IModel> {
+    requestContext.enter();
     assert(iModelToken.changeSetId !== undefined, "Expected a valid changeSetId in openIModelDb");
     const iModelVersion = IModelVersion.asOfChangeSet(iModelToken.changeSetId!);
-    const accessTokenObj = AccessToken.fromJson(accessToken);
 
     Logger.logTrace(loggingCategory, "Received OpenIModelDbMemoizer.openIModelDb request at the backend", () => (iModelToken));
 
@@ -47,7 +46,7 @@ export class OpenIModelDbMemoizer extends PromiseMemoizer<IModelDb> {
       OpenIModelDbMemoizer._openIModelDbMemoizer = new OpenIModelDbMemoizer();
     const { memoize: memoizeOpenIModelDb, deleteMemoized: deleteMemoizedOpenIModelDb } = OpenIModelDbMemoizer._openIModelDbMemoizer;
 
-    const openQP = memoizeOpenIModelDb(actx, accessTokenObj!, iModelToken.contextId!, iModelToken.iModelId!, openParams, iModelVersion);
+    const openQP = memoizeOpenIModelDb(requestContext, iModelToken.contextId!, iModelToken.iModelId!, openParams, iModelVersion);
 
     const waitPromise = BeDuration.wait(100); // Wait a little before issuing a pending response - this avoids a potentially expensive round trip for the case a briefcase was already downloaded.
     await Promise.race([openQP.promise, waitPromise]); // This resolves as soon as either the open is completed or the wait time has expired. Prevents waiting un-necessarily if the open has already completed.
@@ -57,7 +56,7 @@ export class OpenIModelDbMemoizer extends PromiseMemoizer<IModelDb> {
       throw new RpcPendingResponse();
     }
 
-    deleteMemoizedOpenIModelDb(actx, accessTokenObj!, iModelToken.contextId!, iModelToken.iModelId!, openParams, iModelVersion);
+    deleteMemoizedOpenIModelDb(requestContext, iModelToken.contextId!, iModelToken.iModelId!, openParams, iModelVersion);
 
     if (openQP.isFulfilled) {
       Logger.logTrace(loggingCategory, "Completed open request in OpenIModelDbMemoizer.openIModelDb", () => (iModelToken));

@@ -4,8 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { RpcInterfaceDefinition, RpcManager, IModelReadRpcInterface, IModelWriteRpcInterface, GeometricElement3dProps, Code, TestRpcManager, FeatureGates } from "@bentley/imodeljs-common";
 import { IModelDb, IModelHost, Element, ECSqlStatement, IModelHostConfiguration, KnownLocations, Platform } from "@bentley/imodeljs-backend";
-import { DbResult, Id64String, ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { DbResult, Id64String, ClientRequestContext } from "@bentley/bentleyjs-core";
 import { Point3d, Angle, YawPitchRollAngles } from "@bentley/geometry-core";
+import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
 import { RobotWorld } from "./RobotWorldSchema";
 import { Robot } from "./RobotElement";
 import * as path from "path";
@@ -112,7 +113,7 @@ export class RobotWorldEngine {
     return iModelDb.elements.insertElement(props);
   }
 
-  public static initialize(activityContext: ActivityLoggingContext) {
+  public static initialize(_requestContext: ClientRequestContext) {
     const config = new IModelHostConfiguration();
     if (Platform.isNodeJs)
       config.appAssetsDir = path.join(__dirname, "assets");
@@ -137,8 +138,8 @@ export class RobotWorldEngine {
 
     // __PUBLISH_EXTRACT_START__ Schema.importSchema
     // Make sure the RobotWorld schema is in the iModel.
-    IModelDb.onOpened.addListener((iModel: IModelDb) => {
-      RobotWorld.importSchema(activityContext, iModel); // tslint:disable-line:no-floating-promises
+    IModelDb.onOpened.addListener((requestContext: AuthorizedClientRequestContext, iModel: IModelDb) => {
+      RobotWorld.importSchema(requestContext, iModel); // tslint:disable-line:no-floating-promises
     });
     // __PUBLISH_EXTRACT_END__
   }

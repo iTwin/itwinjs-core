@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { RpcManager, IModelReadRpcInterface } from "@bentley/imodeljs-common";
-import { OpenMode, ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
-import { AccessToken, AuthorizationToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, ConnectClient, Config } from "@bentley/imodeljs-clients";
+import { OpenMode, ClientRequestContext } from "@bentley/bentleyjs-core";
+import { AccessToken, AuthorizationToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, ConnectClient, Config, ImsUserCredentials } from "@bentley/imodeljs-clients";
 import { IModelDb, IModelHost, IModelHostConfiguration, KnownLocations } from "@bentley/imodeljs-backend";
 import { IModelJsFs, IModelJsFsStats } from "@bentley/imodeljs-backend/lib/IModelJsFs";
 import * as path from "path";
@@ -20,16 +20,10 @@ export interface IModelTestUtilsOpenOptions {
   openMode?: OpenMode;
 }
 
-/** Credentials for test users */
-export interface UserCredentials {
-  email: string;
-  password: string;
-}
-
 /** Test users with various permissions */
 export class TestUsers {
   /** User with the typical permissions of the regular/average user - Co-Admin: No, Connect-Services-Admin: No */
-  public static get regular(): UserCredentials {
+  public static get regular(): ImsUserCredentials {
     return {
       email: Config.App.getString("imjs_test_regular_user_name"),
       password: Config.App.getString("imjs_test_regular_user_password"),
@@ -63,13 +57,13 @@ export class IModelTestUtils {
   }
 
   public static async getTestUserAccessToken(userCredentials?: any): Promise<AccessToken> {
-    const alctx = new ActivityLoggingContext(Guid.createValue());
+    const requestContext = new ClientRequestContext();
     if (userCredentials === undefined)
       userCredentials = TestUsers.regular;
-    const authToken: AuthorizationToken = await (new ImsActiveSecureTokenClient()).getToken(alctx, userCredentials.email, userCredentials.password);
+    const authToken: AuthorizationToken = await (new ImsActiveSecureTokenClient()).getToken(requestContext, userCredentials.email, userCredentials.password);
     assert(authToken);
 
-    const accessToken = await (new ImsDelegationSecureTokenClient()).getToken(alctx, authToken!);
+    const accessToken = await (new ImsDelegationSecureTokenClient()).getToken(requestContext, authToken!);
     assert(accessToken);
 
     return accessToken;

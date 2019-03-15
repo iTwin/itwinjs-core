@@ -6,7 +6,7 @@
 
 import { GetMetaDataFunction, IModelStatus, BentleyError } from "./BentleyError";
 import { IDisposable } from "./Disposable";
-import { ActivityLoggingContext } from "./ActivityLoggingContext";
+import { ClientRequestContext } from "./ClientRequestContext";
 
 /** Defines the *signature* for a log function.
  * @public
@@ -81,9 +81,9 @@ export class Logger {
 
   /** Add the currently registered activityId, if any, to the specified metadata. */
   public static addActivityId(mdata: any) {
-    if ((ActivityLoggingContext.current.activityId === "") || mdata.hasOwnProperty("ActivityId"))
+    if ((ClientRequestContext.current.activityId === "") || mdata.hasOwnProperty("ActivityId"))
       return;
-    const activityId = ActivityLoggingContext.current.activityId;
+    const activityId = ClientRequestContext.current.activityId;
     if (activityId !== "")
       mdata.ActivityId = activityId;
   }
@@ -100,7 +100,7 @@ export class Logger {
 
   /** Compose the metadata for a log message.  */
   public static makeMetaData(getMetaData?: GetMetaDataFunction): any {
-    if (!getMetaData && (ActivityLoggingContext.current.activityId === ""))
+    if (!getMetaData && (ClientRequestContext.current.activityId === ""))
       return;
     const mdata: any = getMetaData ? getMetaData() : {};
     Logger.addActivityId(mdata);
@@ -109,7 +109,7 @@ export class Logger {
 
   /** Format the metadata for a log message.  */
   private static formatMetaData(getMetaData?: GetMetaDataFunction): any {
-    if (!getMetaData && (ActivityLoggingContext.current.activityId === ""))
+    if (!getMetaData && (ClientRequestContext.current.activityId === ""))
       return "";
     return " " + JSON.stringify(Logger.makeMetaData(getMetaData));
   }

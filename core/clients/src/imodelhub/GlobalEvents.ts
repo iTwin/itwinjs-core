@@ -3,11 +3,11 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module iModelHubGlobalEvents */
-
+import { Logger, GuidString, ClientRequestContext } from "@bentley/bentleyjs-core";
 import { ECJsonTypeMap, WsgInstance } from "./../ECJsonTypeMap";
 import { request, Response, RequestOptions } from "./../Request";
 import { AccessToken } from "../Token";
-import { Logger, ActivityLoggingContext, GuidString } from "@bentley/bentleyjs-core";
+import { AuthorizedClientRequestContext } from "../AuthorizedClientRequestContext";
 import { EventBaseHandler, IModelHubBaseEvent, BaseEventSAS, ListenerSubscription, EventListener, GetEventOperationToRequestType } from "./EventsBase";
 import { IModelBaseHandler } from "./BaseHandler";
 import { ArgumentCheck } from "./Errors";
@@ -188,25 +188,25 @@ export class GlobalEventSubscriptionHandler {
 
   /**
    * Create a [[GlobalEventSubscription]]. You can use this to get or update the existing subscription instance, if you only have the original subscriptionId.
-   * @param token Delegation token of the authorized Service Account.
+   * @param requestContext The client request context
    * @param subscriptionId Guid to be used by global event subscription. It will be a part of the resulting subscription id.
    * @param globalEvents Array of GlobalEventTypes to subscribe to.
    * @return Created GlobalEventSubscription instance.
    * @throws [[IModelHubError]] with [IModelHubStatus.EventSubscriptionAlreadyExists]($bentley) if [[GlobalEventSubscription]] already exists with the specified subscriptionId.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async create(alctx: ActivityLoggingContext, token: AccessToken, subscriptionId: GuidString, globalEvents: GlobalEventType[]) {
-    alctx.enter();
+  public async create(requestContext: AuthorizedClientRequestContext, subscriptionId: GuidString, globalEvents: GlobalEventType[]) {
+    requestContext.enter();
     Logger.logInfo(loggingCategory, `Creating global event subscription with instance id: ${subscriptionId}`);
-    ArgumentCheck.defined("token", token);
+    ArgumentCheck.defined("requestContext", requestContext);
     ArgumentCheck.validGuid("subscriptionId", subscriptionId);
 
     let subscription = new GlobalEventSubscription();
     subscription.eventTypes = globalEvents;
     subscription.subscriptionId = subscriptionId;
 
-    subscription = await this._handler.postInstance<GlobalEventSubscription>(alctx, GlobalEventSubscription, token, this.getRelativeUrl(), subscription);
-    alctx.enter();
+    subscription = await this._handler.postInstance<GlobalEventSubscription>(requestContext, GlobalEventSubscription, this.getRelativeUrl(), subscription);
+    requestContext.enter();
     Logger.logTrace(loggingCategory, `Created global event subscription with instance id: ${subscriptionId}`);
 
     return subscription;
@@ -214,21 +214,21 @@ export class GlobalEventSubscriptionHandler {
 
   /**
    * Update a [[GlobalEventSubscription]]. Can change the [[GlobalEventType]]s specified in the subscription. Must be a valid subscription that was previously created with [[GlobalEventSubscriptionHandler.create]].
-   * @param token Delegation token of the authorized Service Account.
+   * @param requestContext The client request context.
    * @param subscription Updated GlobalEventSubscription.
    * @return GlobalEventSubscription instance from iModelHub after update.
    * @throws [[IModelHubError]] with [IModelHubStatus.EventSubscriptionDoesNotExist]($bentley) if [[GlobalEventSubscription]] does not exist with the specified subscription.wsgId.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async update(alctx: ActivityLoggingContext, token: AccessToken, subscription: GlobalEventSubscription): Promise<GlobalEventSubscription> {
-    alctx.enter();
+  public async update(requestContext: AuthorizedClientRequestContext, subscription: GlobalEventSubscription): Promise<GlobalEventSubscription> {
+    requestContext.enter();
     Logger.logInfo(loggingCategory, `Updating global event subscription with instance id: ${subscription.wsgId} and subscription id: ${subscription.subscriptionId}`);
-    ArgumentCheck.defined("token", token);
+    ArgumentCheck.defined("requestContext", requestContext);
     ArgumentCheck.defined("subscription", subscription);
     ArgumentCheck.validGuid("subscription.wsgId", subscription.wsgId);
 
-    const updatedSubscription = await this._handler.postInstance<GlobalEventSubscription>(alctx, GlobalEventSubscription, token, this.getRelativeUrl(subscription.wsgId), subscription);
-    alctx.enter();
+    const updatedSubscription = await this._handler.postInstance<GlobalEventSubscription>(requestContext, GlobalEventSubscription, this.getRelativeUrl(subscription.wsgId), subscription);
+    requestContext.enter();
     Logger.logTrace(loggingCategory, `Updated global event subscription with instance id: ${subscription.wsgId} and subscription id: ${subscription.subscriptionId}`);
 
     return updatedSubscription;
@@ -236,20 +236,20 @@ export class GlobalEventSubscriptionHandler {
 
   /**
    * Delete a [[GlobalEventSubscription]].
-   * @param token Delegation token of the authorized Service Account.
+   * @param requestContext The client request context.
    * @param subscriptionInstanceId WSG Id of the GlobalEventSubscription.
    * @returns Resolves if the GlobalEventSubscription has been successfully deleted.
    * @throws [[IModelHubError]] with [IModelHubStatus.EventSubscriptionDoesNotExist]($bentley) if GlobalEventSubscription does not exist with the specified subscription.wsgId.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async delete(alctx: ActivityLoggingContext, token: AccessToken, subscriptionInstanceId: string): Promise<void> {
-    alctx.enter();
+  public async delete(requestContext: AuthorizedClientRequestContext, subscriptionInstanceId: string): Promise<void> {
+    requestContext.enter();
     Logger.logInfo(loggingCategory, `Deleting global event subscription with instance id: ${subscriptionInstanceId}`);
-    ArgumentCheck.defined("token", token);
+    ArgumentCheck.defined("requestContext", requestContext);
     ArgumentCheck.validGuid("subscriptionInstanceId", subscriptionInstanceId);
 
-    await this._handler.delete(alctx, token, this.getRelativeUrl(subscriptionInstanceId));
-    alctx.enter();
+    await this._handler.delete(requestContext, this.getRelativeUrl(subscriptionInstanceId));
+    requestContext.enter();
     Logger.logTrace(loggingCategory, `Deleted global event subscription with instance id: ${subscriptionInstanceId}`);
   }
 }
@@ -301,17 +301,16 @@ export class GlobalEventHandler extends EventBaseHandler {
 
   /**
    * Get global event SAS Token. Used to authenticate for [[GlobalEventHandler.getEvent]].
-   * @param token Delegation token of the authorized Service Account.
-   * @return SAS Token to connect to the topic.
+   * @param requestContext The client request context
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async getSASToken(alctx: ActivityLoggingContext, token: AccessToken): Promise<GlobalEventSAS> {
-    alctx.enter();
+  public async getSASToken(requestContext: AuthorizedClientRequestContext): Promise<GlobalEventSAS> {
+    requestContext.enter();
     Logger.logInfo(loggingCategory, `Getting global event SAS token`);
-    ArgumentCheck.defined("token", token);
+    ArgumentCheck.defined("requestContext", requestContext);
 
-    const globalEventSAS = await this._handler.postInstance<GlobalEventSAS>(alctx, GlobalEventSAS, token, this.getGlobalEventSASRelativeUrl(), new GlobalEventSAS());
-    alctx.enter();
+    const globalEventSAS = await this._handler.postInstance<GlobalEventSAS>(requestContext, GlobalEventSAS, this.getGlobalEventSASRelativeUrl(), new GlobalEventSAS());
+    requestContext.enter();
     Logger.logTrace(loggingCategory, `Got global event SAS token`);
 
     return globalEventSAS;
@@ -335,6 +334,7 @@ export class GlobalEventHandler extends EventBaseHandler {
 
   /**
    * Get an [[IModelHubGlobalEvent]] from the [[GlobalEventSubscription]]. You can use long polling timeout, to have requests return when events are available (or request times out), rather than returning immediately when no events are found.
+   * @param requestContext The client request context
    * @param sasToken SAS Token used to authenticate. See [[GlobalEventSAS.sasToken]].
    * @param baseAddress Address for the events. See [[GlobalEventSAS.baseAddress]].
    * @param subscriptionInstanceId Id of the subscription to the topic. See [[GlobalEventSubscription]].
@@ -343,8 +343,8 @@ export class GlobalEventHandler extends EventBaseHandler {
    * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) or [IModelHubStatus.InvalidArgumentError]($bentley) if one of the arguments is undefined or has an invalid value.
    * @throws [[ResponseError]] if request has failed.
    */
-  public async getEvent(alctx: ActivityLoggingContext, sasToken: string, baseAddress: string, subscriptionInstanceId: string, timeout?: number, getOperation: GetEventOperationType = GetEventOperationType.Destructive): Promise<IModelHubGlobalEvent | undefined> {
-    alctx.enter();
+  public async getEvent(requestContext: ClientRequestContext, sasToken: string, baseAddress: string, subscriptionInstanceId: string, timeout?: number, getOperation: GetEventOperationType = GetEventOperationType.Destructive): Promise<IModelHubGlobalEvent | undefined> {
+    requestContext.enter();
     Logger.logInfo(loggingCategory, `Getting global event from subscription with instance id: ${subscriptionInstanceId}`);
     ArgumentCheck.defined("sasToken", sasToken);
     ArgumentCheck.defined("baseAddress", baseAddress);
@@ -358,8 +358,8 @@ export class GlobalEventHandler extends EventBaseHandler {
     else // Unknown operation type.
       return undefined;
 
-    const result = await request(alctx, this.getGlobalEventUrl(baseAddress, subscriptionInstanceId, timeout), options);
-    alctx.enter();
+    const result = await request(requestContext, this.getGlobalEventUrl(baseAddress, subscriptionInstanceId, timeout), options);
+    requestContext.enter();
     if (result.status === 204) {
       Logger.logTrace(loggingCategory, `No events found on subscription ${subscriptionInstanceId}`);
       return undefined;
@@ -379,14 +379,14 @@ export class GlobalEventHandler extends EventBaseHandler {
    * @returns Function that deletes the created listener.
    * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) or [IModelHubStatus.InvalidArgumentError]($bentley) if one of the arguments is undefined or has an invalid value.
    */
-  public createListener(alctx: ActivityLoggingContext, authenticationCallback: () => Promise<AccessToken>, subscriptionInstanceId: string, listener: (event: IModelHubGlobalEvent) => void): () => void {
-    alctx.enter();
+  public createListener(requestContext: AuthorizedClientRequestContext, authenticationCallback: () => Promise<AccessToken>, subscriptionInstanceId: string, listener: (event: IModelHubGlobalEvent) => void): () => void {
+    requestContext.enter();
     ArgumentCheck.defined("subscriptionInstanceId", subscriptionInstanceId);
     const subscription = new ListenerSubscription();
     subscription.authenticationCallback = authenticationCallback;
     subscription.getEvent = async (sasToken: string, baseAddress: string, id: string, timeout?: number) =>
-      this.getEvent(alctx, sasToken, baseAddress, id, timeout);
-    subscription.getSASToken = async (token: AccessToken) => this.getSASToken(alctx, token);
+      this.getEvent(requestContext, sasToken, baseAddress, id, timeout);
+    subscription.getSASToken = async (reqContext: AuthorizedClientRequestContext) => this.getSASToken(reqContext);
     subscription.id = subscriptionInstanceId;
     return EventListener.create(subscription, listener);
   }

@@ -2,6 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+import { IAuthorizationClient } from "@bentley/imodeljs-clients";
 import { IModelApp, NullRenderSystem } from "@bentley/imodeljs-frontend";
 import { RenderSystem, RenderDiagnostics } from "@bentley/imodeljs-frontend/lib/rendering";
 
@@ -34,6 +35,10 @@ export namespace WebGLTestContext {
     MaybeRenderApp.renderSystem.enableDiagnostics(RenderDiagnostics.None);
     MaybeRenderApp.shutdown();
     isInitialized = false;
+  }
+
+  export function setAuthorizationClient(authorizationClient: IAuthorizationClient) {
+    MaybeRenderApp.authorizationClient = authorizationClient;
   }
 
   const canvasId = "WebGLTestCanvas";

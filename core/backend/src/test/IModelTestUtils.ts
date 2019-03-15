@@ -3,8 +3,8 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { Logger, OpenMode, Id64, Id64String, IDisposable, ActivityLoggingContext, BeEvent, LogLevel } from "@bentley/bentleyjs-core";
-import { AccessToken, Config, ChangeSet } from "@bentley/imodeljs-clients";
+import { Logger, OpenMode, Id64, Id64String, IDisposable, BeEvent, LogLevel } from "@bentley/bentleyjs-core";
+import { AccessToken, Config, ChangeSet, AuthorizedClientRequestContext, ImsUserCredentials } from "@bentley/imodeljs-clients";
 import { Code, ElementProps, RpcManager, GeometricElementProps, IModel, IModelReadRpcInterface, RelatedElement, RpcConfiguration, CodeProps } from "@bentley/imodeljs-common";
 import {
   IModelHostConfiguration, IModelHost, BriefcaseManager, IModelDb, Model, Element,
@@ -12,15 +12,15 @@ import {
 } from "../imodeljs-backend";
 import { IModelJsNative } from "../IModelJsNative";
 import { KnownTestLocations } from "./KnownTestLocations";
-import { HubUtility, UserCredentials } from "./integration/HubUtility";
+import { HubUtility } from "./integration/HubUtility";
 import * as path from "path";
 import { Schema, Schemas } from "../Schema";
 import { ElementDrivesElement, RelationshipProps } from "../Relationship";
 import { PhysicalElement } from "../Element";
 import { ClassRegistry } from "../ClassRegistry";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
-
-const actx = new ActivityLoggingContext("");
+import { AuthorizedBackendRequestContext } from "../BackendRequestContext";
+import { TestUsers } from "./TestUsers";
 
 /** Class for simple test timing */
 export class Timer {
@@ -74,48 +74,6 @@ export interface IModelTestUtilsOpenOptions {
   openMode?: OpenMode;
 }
 
-/** Test users with various permissions */
-export class TestUsers {
-  /** User with the typical permissions of the regular/average user - Co-Admin: No, Connect-Services-Admin: No */
-  public static get regular(): UserCredentials {
-    return {
-      email: Config.App.getString("imjs_test_regular_user_name"),
-      password: Config.App.getString("imjs_test_regular_user_password"),
-    };
-  }
-
-  /** User with typical permissions of the project administrator - Co-Admin: Yes, Connect-Services-Admin: No */
-  public static get manager(): UserCredentials {
-    return {
-      email: Config.App.getString("imjs_test_manager_user_name"),
-      password: Config.App.getString("imjs_test_manager_user_password"),
-    };
-  }
-
-  /** User with the typical permissions of the connected services administrator - Co-Admin: No, Connect-Services-Admin: Yes */
-  public static get super(): UserCredentials {
-    return {
-      email: Config.App.getString("imjs_test_super_user_name"),
-      password: Config.App.getString("imjs_test_super_user_password"),
-    };
-  }
-
-  /** User with the typical permissions of the connected services administrator - Co-Admin: Yes, Connect-Services-Admin: Yes */
-  public static get superManager(): UserCredentials {
-    return {
-      email: Config.App.getString("imjs_test_super_manager_user_name"),
-      password: Config.App.getString("imjs_test_super_manager_user_password"),
-    };
-  }
-  /** Just another user */
-  public static get user1(): UserCredentials {
-    return {
-      email: Config.App.getString("imjs_test_user1_user_name"),
-      password: Config.App.getString("imjs_test_user1_user_password"),
-    };
-  }
-}
-
 /**
  * Disables native code assertions from firing. This can be used by tests that intentionally
  * test failing operations. If those failing operations raise assertions in native code, the test
@@ -163,20 +121,21 @@ export class TestPhysicalObject extends PhysicalElement implements TestPhysicalO
 }
 
 export class IModelTestUtils {
-  public static async getTestModelInfo(accessToken: AccessToken, testProjectId: string, iModelName: string): Promise<TestIModelInfo> {
+  public static async getTestModelInfo(requestContext: AuthorizedClientRequestContext, testProjectId: string, iModelName: string): Promise<TestIModelInfo> {
     const iModelInfo = new TestIModelInfo(iModelName);
-    iModelInfo.id = await HubUtility.queryIModelIdByName(accessToken, testProjectId, iModelInfo.name);
+    iModelInfo.id = await HubUtility.queryIModelIdByName(requestContext, testProjectId, iModelInfo.name);
 
     const cacheDir = IModelHost.configuration!.briefcaseCacheDir;
     iModelInfo.localReadonlyPath = path.join(cacheDir, iModelInfo.id, "readOnly");
     iModelInfo.localReadWritePath = path.join(cacheDir, iModelInfo.id, "readWrite");
 
-    iModelInfo.changeSets = await BriefcaseManager.imodelClient.changeSets.get(actx, accessToken, iModelInfo.id);
+    iModelInfo.changeSets = await BriefcaseManager.imodelClient.changeSets.get(requestContext, iModelInfo.id);
     return iModelInfo;
   }
 
-  public static async getTestUserAccessToken(userCredentials: any = TestUsers.regular): Promise<AccessToken> {
-    return HubUtility.login(userCredentials);
+  public static async getTestUserRequestContext(userCredentials: ImsUserCredentials = TestUsers.regular): Promise<AuthorizedBackendRequestContext> {
+    const accessToken: AccessToken = await HubUtility.login(userCredentials);
+    return new AuthorizedBackendRequestContext(accessToken);
   }
 
   /** Prepare for an output file by:

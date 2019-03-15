@@ -4,9 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module IModelConnection */
 
-import { ActivityLoggingContext, assert, BeEvent, BentleyStatus, DbResult, Guid, Id64, Id64Arg, Id64Set, Id64String, Logger, OpenMode, TransientIdSequence } from "@bentley/bentleyjs-core";
+import { assert, BeEvent, BentleyStatus, DbResult, Id64, Id64Arg, Id64Set, Id64String, Logger, OpenMode, TransientIdSequence } from "@bentley/bentleyjs-core";
 import { Angle, Point3d, Range3dProps, XYAndZ } from "@bentley/geometry-core";
-import { AccessToken } from "@bentley/imodeljs-clients";
 import {
   AxisAlignedBox3d, Cartographic, CodeSpec, ElementProps, EntityQueryParams, FontMap, GeoCoordStatus, ImageSourceFormat, IModel, IModelError,
   IModelNotFoundResponse, IModelReadRpcInterface, IModelStatus, IModelToken, IModelVersion, IModelWriteRpcInterface, kPagingDefaultOptions,
@@ -19,6 +18,7 @@ import { IModelApp } from "./IModelApp";
 import { ModelState } from "./ModelState";
 import { HilitedSet, SelectionSet } from "./SelectionSet";
 import { ViewState } from "./ViewState";
+import { AuthorizedFrontendRequestContext } from "./FrontendRequestContext";
 
 const loggingCategory = "imodeljs-frontend.IModelConnection";
 
@@ -121,20 +121,30 @@ export class IModelConnection extends IModel {
   }
 
   /** Open an IModelConnection to an iModel. It's recommended that every open call be matched with a corresponding call to close. */
-  public static async open(accessToken: AccessToken, contextId: string, iModelId: string, openMode: OpenMode = OpenMode.Readonly, version: IModelVersion = IModelVersion.latest()): Promise<IModelConnection> {
+  public static async open(contextId: string, iModelId: string, openMode: OpenMode = OpenMode.Readonly, version: IModelVersion = IModelVersion.latest()): Promise<IModelConnection> {
     if (!IModelApp.initialized)
       throw new IModelError(BentleyStatus.ERROR, "Call IModelApp.startup() before calling open");
 
-    const actx = new ActivityLoggingContext(Guid.createValue());
-    const changeSetId: string = await version.evaluateChangeSet(actx, accessToken, iModelId, IModelApp.iModelClient);
+    const requestContext = await AuthorizedFrontendRequestContext.create();
+    requestContext.enter();
+
+    const changeSetId: string = await version.evaluateChangeSet(requestContext, iModelId, IModelApp.iModelClient);
+    requestContext.enter();
+
     const iModelToken = new IModelToken(undefined, contextId, iModelId, changeSetId, openMode);
-    const openResponse: IModel = await IModelConnection.callOpen(accessToken, iModelToken, openMode);
+
+    const openResponse: IModel = await IModelConnection.callOpen(requestContext, iModelToken, openMode);
+    requestContext.enter();
+
     const connection = new IModelConnection(openResponse, openMode);
     RpcRequest.notFoundHandlers.addListener(connection._reopenConnectionHandler);
+
     return connection;
   }
 
-  private static async callOpen(accessToken: AccessToken, iModelToken: IModelToken, openMode: OpenMode): Promise<IModel> {
+  private static async callOpen(requestContext: AuthorizedFrontendRequestContext, iModelToken: IModelToken, openMode: OpenMode): Promise<IModel> {
+    requestContext.enter();
+
     // Try opening the iModel repeatedly accommodating any pending responses from the backend.
     // Waits for an increasing amount of time (but within a range) before checking on the pending request again.
     const connectionRetryIntervalRange = { min: 100, max: 5000 }; // in milliseconds
@@ -165,6 +175,7 @@ export class IModelConnection extends IModel {
       if (!(openForReadOperation && request.operation === openForReadOperation) && !(openForWriteOperation && request.operation === openForWriteOperation))
         return;
 
+      requestContext.enter();
       Logger.logTrace(loggingCategory, "Received pending open notification in IModelConnection.open", () => ({ ...iModelToken, openMode }));
 
       const connectionTimeElapsed = Date.now() - startTime;
@@ -180,20 +191,22 @@ export class IModelConnection extends IModel {
       }
     });
 
+    let openPromise: Promise<IModel>;
+    if (openMode === OpenMode.ReadWrite)
+      openPromise = IModelWriteRpcInterface.getClient().openForWrite(iModelToken);
+    else
+      openPromise = IModelReadRpcInterface.getClient().openForRead(iModelToken);
+
     let openResponse: IModel;
     try {
-      if (openMode === OpenMode.ReadWrite)
-        openResponse = await IModelWriteRpcInterface.getClient().openForWrite(accessToken, iModelToken);
-      else
-        openResponse = await IModelReadRpcInterface.getClient().openForRead(accessToken, iModelToken);
+      openResponse = await openPromise;
     } finally {
+      requestContext.enter();
+      Logger.logTrace(loggingCategory, "Completed open request in IModelConnection.open", () => ({ ...iModelToken, openMode }));
       removeListener();
     }
 
-    IModelApp.accessToken = accessToken; // ###TODO to be refactored later...
-
-    Logger.logTrace(loggingCategory, "Completed open request in IModelConnection.open", () => ({ ...iModelToken, openMode }));
-    return openResponse!;
+    return openResponse;
   }
 
   private _reopenConnectionHandler = async (request: RpcRequest<RpcNotFoundResponse>, response: IModelNotFoundResponse, resubmit: () => void, reject: (reason: any) => void) => {
@@ -204,16 +217,21 @@ export class IModelConnection extends IModel {
     if (this._token.key !== iModelToken.key)
       return; // The handler is called for a different connection than this
 
+    const requestContext: AuthorizedFrontendRequestContext = await AuthorizedFrontendRequestContext.create();
+    requestContext.enter();
+
+    Logger.logTrace(loggingCategory, "Attempting to reopen connection", () => ({ iModelId: iModelToken.iModelId, changeSetId: iModelToken.changeSetId, key: iModelToken.key }));
+
     try {
-      Logger.logTrace(loggingCategory, "Attempting to reopen connection", () => ({ iModelId: iModelToken.iModelId, changeSetId: iModelToken.changeSetId, key: iModelToken.key }));
-      const accessToken = IModelApp.accessToken;
-      assert(undefined !== accessToken);
-      const openResponse: IModel = await IModelConnection.callOpen(accessToken!, iModelToken, this.openMode);
+      const openResponse: IModel = await IModelConnection.callOpen(requestContext, iModelToken, this.openMode);
       this._token = openResponse.iModelToken;
     } catch (error) {
       reject(error.message);
+    } finally {
+      requestContext.enter();
     }
 
+    // request.id;
     Logger.logTrace(loggingCategory, "Resubmitting original request after reopening connection", () => ({ iModelId: iModelToken.iModelId, changeSetId: iModelToken.changeSetId, key: iModelToken.key }));
     request.parameters[0] = this._token; // Modify the token of the original request before resubmitting it.
     resubmit();
@@ -223,14 +241,20 @@ export class IModelConnection extends IModel {
    * In the case of ReadWrite connections ensure all changes are pushed to the iModelHub before making this call -
    * any un-pushed changes are lost after the close.
    */
-  public async close(accessToken: AccessToken): Promise<void> {
+  public async close(): Promise<void> {
     if (!this.iModelToken)
       return;
+
+    const requestContext = await AuthorizedFrontendRequestContext.create();
+    requestContext.enter();
+
     RpcRequest.notFoundHandlers.removeListener(this._reopenConnectionHandler);
     IModelConnection.onClose.raiseEvent(this);
     this.models.onIModelConnectionClose();  // free WebGL resources if rendering
+
+    const closePromise = IModelReadRpcInterface.getClient().close(this.iModelToken); // Ensure the method isn't await-ed right away.
     try {
-      await IModelReadRpcInterface.getClient().close(accessToken, this.iModelToken);
+      await closePromise;
     } finally {
       (this._token as any) = undefined; // prevent closed connection from being reused
     }
@@ -242,6 +266,9 @@ export class IModelConnection extends IModel {
    * @deprecated The confusing concept of *standalone* is being replaced by the more strict concept of a read-only iModel *snapshot*. Callers should migrate to [[openSnapshot]].
    */
   public static async openStandalone(fileName: string, openMode = OpenMode.Readonly): Promise<IModelConnection> {
+    if (!IModelApp.initialized)
+      throw new IModelError(BentleyStatus.ERROR, "Call IModelApp.startup() before calling openStandalone");
+
     const openResponse: IModel = await StandaloneIModelRpcInterface.getClient().openStandalone(fileName, openMode);
     Logger.logTrace(loggingCategory, "IModelConnection.openStandalone", () => ({ fileName, openMode }));
     return new IModelConnection(openResponse, openMode);

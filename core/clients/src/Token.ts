@@ -8,7 +8,7 @@ import * as xpath from "xpath";
 import { DOMParser } from "xmldom";
 import { UserInfo } from "./UserInfo";
 import { Base64 } from "js-base64";
-import { BentleyError, BentleyStatus, ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { BentleyError, BentleyStatus } from "@bentley/bentleyjs-core";
 
 export enum IncludePrefix {
   Yes = 0,
@@ -34,6 +34,10 @@ export abstract class Token {
 
   public getUserInfo(): UserInfo | undefined {
     return this._userInfo;
+  }
+
+  public setUserInfo(userInfo: UserInfo) {
+    this._userInfo = userInfo;
   }
 
   public getExpiresAt(): Date | undefined {
@@ -123,7 +127,12 @@ export class AccessToken extends Token {
   private static _jwtTokenPrefix = "Bearer";
   public static foreignProjectAccessTokenJsonProperty = "ForeignProjectAccessToken";
 
-  public static fromSamlAssertion(samlAssertion: string): AuthorizationToken {
+  /** Returns true if it's a Jason Web Token, and false if it's a SAML token */
+  public get isJwt(): boolean {
+    return !!this._jwt;
+  }
+
+  public static fromSamlAssertion(samlAssertion: string): AccessToken {
     const token = new AccessToken(samlAssertion);
     if (!token.parseSamlAssertion())
       throw new BentleyError(BentleyStatus.ERROR, "Cannot parse Saml assertion");
@@ -162,7 +171,7 @@ export class AccessToken extends Token {
   }
 
   /** Create an AccessToken from a JWT token for OIDC workflows */
-  public static fromJsonWebTokenString(jwt: string, startsAt: Date, expiresAt: Date, userInfo?: UserInfo): AccessToken {
+  public static fromJsonWebTokenString(jwt: string, startsAt?: Date, expiresAt?: Date, userInfo?: UserInfo): AccessToken {
     const token = new AccessToken("");
     token._jwt = jwt;
     token._startsAt = startsAt;
@@ -182,6 +191,21 @@ export class AccessToken extends Token {
     return (includePrefix === IncludePrefix.Yes) ? AccessToken._samlTokenPrefix + " " + tokenStr : tokenStr;
   }
 
+  public static fromTokenString(tokenStr: string): AccessToken {
+    if (tokenStr.startsWith(AccessToken._jwtTokenPrefix)) {
+      const jwtString = tokenStr.substr(AccessToken._jwtTokenPrefix.length + 1);
+      return AccessToken.fromJsonWebTokenString(jwtString);
+    }
+
+    if (tokenStr.startsWith(AccessToken._samlTokenPrefix)) {
+      tokenStr.substr(AccessToken._samlTokenPrefix.length + 1);
+      const samlString = tokenStr.substr(AccessToken._samlTokenPrefix.length + 1);
+      return AccessToken.fromSamlTokenString(samlString, IncludePrefix.No);
+    }
+
+    throw new BentleyError(BentleyStatus.ERROR, "Invalid access token");
+  }
+
   public static fromJson(jsonObj: any): AccessToken | undefined {
     if (jsonObj._jwt)
       return AccessToken.fromJsonWebTokenString(jsonObj._jwt, jsonObj._startsAt, jsonObj._expiresAt, jsonObj._userInfo);
@@ -189,16 +213,6 @@ export class AccessToken extends Token {
     const foreignTok = AccessToken.fromForeignProjectAccessTokenJson(jsonObj._samlAssertion);
     if (foreignTok !== undefined)
       return foreignTok;
-    return AccessToken.fromSamlAssertion(jsonObj._samlAssertion);
+    return AccessToken.fromSamlAssertion(jsonObj._samlAssertion) as AccessToken;
   }
-
-}
-
-/** Interface to fetch the accessToken for authorization of various API */
-export interface IAccessTokenManager {
-  /** Returns a promise that resolves to the AccessToken if signed in.
-   * The token is refreshed if it's possible and necessary.
-   * Rejects with an appropriate error if the access token cannot be obtained.
-   */
-  getAccessToken(actx: ActivityLoggingContext): Promise<AccessToken>;
 }

@@ -17,7 +17,7 @@ export class MobileRpcRequest extends RpcRequest {
   /** Sends the request. */
   protected async send(): Promise<number> {
     this.protocol.requests.set(this.id, this);
-    const parts = MobileRpcProtocol.encodeRequest(this);
+    const parts = await MobileRpcProtocol.encodeRequest(this);
     this.protocol.sendToBackend(parts);
     return new Promise<number>((resolve) => { this._response = resolve; });
   }

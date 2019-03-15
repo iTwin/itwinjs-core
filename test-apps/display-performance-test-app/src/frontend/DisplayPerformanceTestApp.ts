@@ -3,8 +3,8 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { ActivityLoggingContext, Guid, OpenMode, StopWatch } from "@bentley/bentleyjs-core";
-import { Config, AccessToken, HubIModel, Project, OidcFrontendClientConfiguration } from "@bentley/imodeljs-clients";
+import { OpenMode, StopWatch } from "@bentley/bentleyjs-core";
+import { Config, HubIModel, Project, OidcFrontendClientConfiguration } from "@bentley/imodeljs-clients";
 import {
   BentleyCloudRpcManager, DisplayStyleProps, ElectronRpcConfiguration, ElectronRpcManager, IModelReadRpcInterface,
   IModelTileRpcInterface, IModelToken, RpcConfiguration, RpcOperation, RenderMode, StandaloneIModelRpcInterface,
@@ -12,7 +12,7 @@ import {
 } from "@bentley/imodeljs-common";
 import { ConnectProjectConfiguration, SVTConfiguration } from "../common/SVTConfiguration";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
-import { DisplayStyleState, DisplayStyle3dState, IModelApp, IModelConnection, Viewport, ViewState, ScreenViewport, OidcClientWrapper, PerformanceMetrics, Target } from "@bentley/imodeljs-frontend";
+import { DisplayStyleState, DisplayStyle3dState, IModelApp, IModelConnection, Viewport, ViewState, ScreenViewport, OidcClientWrapper, PerformanceMetrics, Target, FrontendRequestContext, AuthorizedFrontendRequestContext } from "@bentley/imodeljs-frontend";
 import { IModelApi } from "./IModelApi";
 import { initializeIModelHub } from "./ConnectEnv";
 
@@ -354,7 +354,6 @@ class DefaultConfigs {
 }
 
 class SimpleViewState {
-  public accessToken?: AccessToken;
   public project?: Project;
   public iModel?: HubIModel;
   public iModelConnection?: IModelConnection;
@@ -400,20 +399,23 @@ async function openView(state: SimpleViewState, viewSize: ViewSize) {
   }
 }
 
-async function initializeOidc(actx: ActivityLoggingContext) {
-  actx.enter();
-  const clientId = Config.App.get((ElectronRpcConfiguration.isElectron) ? "imjs_electron_test_client_id" : "imjs_browser_test_client_id");
-  const redirectUri = Config.App.get((ElectronRpcConfiguration.isElectron) ? "imjs_electron_test_redirect_uri" : "imjs_browser_test_redirect_uri");
+async function initializeOidc() {
+  if (OidcClientWrapper.oidcClient)
+    return;
+
+  const clientId = (ElectronRpcConfiguration.isElectron) ? Config.App.get("imjs_electron_test_client_id") : Config.App.get("imjs_browser_test_client_id");
+  const redirectUri = (ElectronRpcConfiguration.isElectron) ? Config.App.get("imjs_electron_test_redirect_uri") : Config.App.get("imjs_browser_test_redirect_uri");
   const oidcConfig: OidcFrontendClientConfiguration = { clientId, redirectUri, scope: "openid email profile organization imodelhub context-registry-service imodeljs-router reality-data:read" };
 
-  await OidcClientWrapper.initialize(actx, oidcConfig);
-  actx.enter();
+  await OidcClientWrapper.initialize(new FrontendRequestContext(), oidcConfig);
+  IModelApp.authorizationClient = OidcClientWrapper.oidcClient;
+}
 
-  OidcClientWrapper.oidcClient.onUserStateChanged.addListener((accessToken: AccessToken | undefined) => {
-    activeViewState.accessToken = accessToken;
-  });
-  activeViewState.accessToken = await OidcClientWrapper.oidcClient.getAccessToken(actx);
-  actx.enter();
+async function signIn() {
+  await initializeOidc();
+  if (OidcClientWrapper.oidcClient.hasSignedIn)
+    return;
+  await OidcClientWrapper.oidcClient.signIn(new FrontendRequestContext());
 }
 
 // Retrieves the configuration for which project and imodel to open from connect-configuration.json file located in the built public folder
@@ -451,25 +453,19 @@ async function loadIModel(testConfig: DefaultConfigs) {
 
   // Open an iModel from the iModelHub
   if (!openLocalIModel && testConfig.iModelHubProject !== undefined) {
-    const actx = new ActivityLoggingContext(Guid.createValue());
-    actx.enter();
+    await signIn();
 
-    // Connected to hub
-    await initializeOidc(actx);
-    actx.enter();
+    const requestContext = await AuthorizedFrontendRequestContext.create();
+    requestContext.enter();
 
-    if (!activeViewState.accessToken)
-      OidcClientWrapper.oidcClient.signIn(actx);
-    else {
-      await retrieveProjectConfiguration();
-      activeViewState.projectConfig!.projectName = testConfig.iModelHubProject;
-      activeViewState.projectConfig!.iModelName = testConfig.iModelName!.replace(".ibim", "").replace(".bim", "");
-      await initializeIModelHub(activeViewState);
-      activeViewState.iModel = await IModelApi.getIModelByName(activeViewState.accessToken!, activeViewState.project!.wsgId, activeViewState.projectConfig!.iModelName);
-      if (activeViewState.iModel === undefined)
-        throw new Error(`${activeViewState.projectConfig!.iModelName} - IModel not found in project ${activeViewState.project!.name}`);
-      activeViewState.iModelConnection = await IModelApi.openIModel(activeViewState.accessToken!, activeViewState.project!.wsgId, activeViewState.iModel!.wsgId, undefined, OpenMode.Readonly);
-    }
+    await retrieveProjectConfiguration();
+    activeViewState.projectConfig!.projectName = testConfig.iModelHubProject;
+    activeViewState.projectConfig!.iModelName = testConfig.iModelName!.replace(".ibim", "").replace(".bim", "");
+    await initializeIModelHub(activeViewState);
+    activeViewState.iModel = await IModelApi.getIModelByName(requestContext, activeViewState.project!.wsgId, activeViewState.projectConfig!.iModelName);
+    if (activeViewState.iModel === undefined)
+      throw new Error(`${activeViewState.projectConfig!.iModelName} - IModel not found in project ${activeViewState.project!.name}`);
+    activeViewState.iModelConnection = await IModelApi.openIModel(activeViewState.project!.wsgId, activeViewState.iModel!.wsgId, undefined, OpenMode.Readonly);
   }
 
   // open the specified view
@@ -503,8 +499,9 @@ async function closeIModel(isSnapshot: boolean) {
   if (activeViewState.iModelConnection) {
     if (isSnapshot)
       await activeViewState.iModelConnection.closeSnapshot();
-    else
-      await activeViewState.iModelConnection!.close(activeViewState.accessToken!);
+    else {
+      await activeViewState.iModelConnection!.close();
+    }
   }
 
   debugPrint("end closeIModel");

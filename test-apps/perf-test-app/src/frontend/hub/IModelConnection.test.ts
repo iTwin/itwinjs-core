@@ -3,9 +3,11 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { Id64, OpenMode, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { Id64, OpenMode, Logger, LogLevel, ClientRequestContext } from "@bentley/bentleyjs-core";
+import { ImsTestAuthorizationClient } from "@bentley/imodeljs-clients";
 import { IModelVersion } from "@bentley/imodeljs-common";
-import { TestData } from "./TestData";
+import { TestUtility } from "./TestUtility";
+import { TestUsers } from "./TestUsers";
 import { IModelConnection, MockRender } from "@bentley/imodeljs-frontend";
 import { TestRpcInterface } from "../../common/RpcInterfaces";
 
@@ -19,28 +21,39 @@ async function executeQuery(iModel: IModelConnection, ecsql: string, bindings?: 
 
 describe("IModelConnection (#integration)", () => {
   let iModel: IModelConnection;
+  let testProjectId: string;
+  let testIModelId: string;
 
   before(async () => {
     MockRender.App.startup();
     Logger.initializeToConsole();
     Logger.setLevel("imodeljs-frontend.IModelConnection", LogLevel.Error); // Change to trace to debug
-    await TestData.load();
-    iModel = await IModelConnection.open(TestData.accessToken, TestData.testProjectId, TestData.testIModelId);
+
+    const imsTestAuthorizationClient = new ImsTestAuthorizationClient();
+    await imsTestAuthorizationClient.signIn(new ClientRequestContext(), TestUsers.regular);
+    MockRender.App.authorizationClient = imsTestAuthorizationClient;
+
+    assert(MockRender.App.authorizationClient);
+
+    testProjectId = await TestUtility.getTestProjectId("iModelJsIntegrationTest");
+    testIModelId = await TestUtility.getTestIModelId(testProjectId, "ConnectionReadTest");
+
+    iModel = await IModelConnection.open(testProjectId, testIModelId);
   });
 
   after(async () => {
     if (iModel)
-      await iModel.close(TestData.accessToken);
+      await iModel.close();
     MockRender.App.shutdown();
   });
 
   it("should be able to open an IModel", async () => {
-    const projectId = await TestData.getTestProjectId(TestData.accessToken, "iModelJsIntegrationTest");
-    const iModelId = await TestData.getTestIModelId(TestData.accessToken, projectId, "NoVersionsTest");
+    const projectId = await TestUtility.getTestProjectId("iModelJsIntegrationTest");
+    const iModelId = await TestUtility.getTestIModelId(projectId, "NoVersionsTest");
 
     // time to open an imodel with latest revision
     const startTime1 = new Date().getTime();
-    const noVersionsIModel = await IModelConnection.open(TestData.accessToken, projectId, iModelId, OpenMode.Readonly, IModelVersion.latest());
+    const noVersionsIModel = await IModelConnection.open(projectId, iModelId, OpenMode.Readonly, IModelVersion.latest());
     const endTime1 = new Date().getTime();
     assert.isNotNull(noVersionsIModel);
     assert.exists(noVersionsIModel);
@@ -49,7 +62,7 @@ describe("IModelConnection (#integration)", () => {
 
     // time to open an imodel with first revision
     const startTime = new Date().getTime();
-    const noVersionsIModel2 = await IModelConnection.open(TestData.accessToken, projectId, iModelId, OpenMode.Readonly, IModelVersion.first());
+    const noVersionsIModel2 = await IModelConnection.open(projectId, iModelId, OpenMode.Readonly, IModelVersion.first());
     const endTime = new Date().getTime();
     assert.isNotNull(noVersionsIModel2);
     assert.exists(noVersionsIModel2);
