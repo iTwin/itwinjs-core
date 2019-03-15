@@ -428,6 +428,67 @@ export class ContentLayoutDef {
 
     return undefined;
   }
+
+  public getUsedContentIndexes(): number[] {
+    let allContentIndexes: number[] = [];
+
+    if (!this._layoutProps.horizontalSplit && !this._layoutProps.verticalSplit)
+      allContentIndexes.push(0);
+    else {
+      allContentIndexes = allContentIndexes.concat(this.getHorizontalSplitContentIndexes(this._layoutProps.horizontalSplit));
+      allContentIndexes = allContentIndexes.concat(this.getVerticalSplitContentIndexes(this._layoutProps.verticalSplit));
+    }
+
+    const uniqueContentIndexes = [...new Set(allContentIndexes)];
+
+    return uniqueContentIndexes;
+  }
+
+  private getHorizontalSplitContentIndexes(splitProps?: LayoutHorizontalSplitProps): number[] {
+    let contentIndexes: number[] = [];
+
+    if (!splitProps)
+      return contentIndexes;
+
+    if (typeof splitProps.top === "number")
+      contentIndexes.push(splitProps.top);
+    else {
+      contentIndexes = contentIndexes.concat(this.getHorizontalSplitContentIndexes(splitProps.top.horizontalSplit));
+      contentIndexes = contentIndexes.concat(this.getVerticalSplitContentIndexes(splitProps.top.verticalSplit));
+    }
+
+    if (typeof splitProps.bottom === "number")
+      contentIndexes.push(splitProps.bottom);
+    else {
+      contentIndexes = contentIndexes.concat(this.getHorizontalSplitContentIndexes(splitProps.bottom.horizontalSplit));
+      contentIndexes = contentIndexes.concat(this.getVerticalSplitContentIndexes(splitProps.bottom.verticalSplit));
+    }
+
+    return contentIndexes;
+  }
+
+  private getVerticalSplitContentIndexes(splitProps?: LayoutVerticalSplitProps): number[] {
+    let contentIndexes: number[] = [];
+
+    if (!splitProps)
+      return contentIndexes;
+
+    if (typeof splitProps.left === "number")
+      contentIndexes.push(splitProps.left);
+    else {
+      contentIndexes = contentIndexes.concat(this.getHorizontalSplitContentIndexes(splitProps.left.horizontalSplit));
+      contentIndexes = contentIndexes.concat(this.getVerticalSplitContentIndexes(splitProps.left.verticalSplit));
+    }
+
+    if (typeof splitProps.right === "number")
+      contentIndexes.push(splitProps.right);
+    else {
+      contentIndexes = contentIndexes.concat(this.getHorizontalSplitContentIndexes(splitProps.right.horizontalSplit));
+      contentIndexes = contentIndexes.concat(this.getVerticalSplitContentIndexes(splitProps.right.verticalSplit));
+    }
+
+    return contentIndexes;
+  }
 }
 
 /** State for the [[ContentLayout]].
@@ -436,7 +497,7 @@ export interface ContentLayoutState {
   contentLayout: ContentLayoutDef;
   contentGroup: ContentGroup;
   contentContainer?: React.ReactNode;
-  hideZones: boolean;
+  isUiVisible: boolean;
 }
 
 /** Properties for the [[ContentLayout]] React component.
@@ -478,7 +539,7 @@ export class ContentLayout extends React.Component<ContentLayoutReactProps, Cont
       contentLayout: this.props.contentLayout,
       contentGroup: this.props.contentGroup,
       contentContainer,
-      hideZones: UiFramework.getIsUiVisible(),
+      isUiVisible: UiFramework.getIsUiVisible(),
     };
   }
 
@@ -493,7 +554,7 @@ export class ContentLayout extends React.Component<ContentLayoutReactProps, Cont
   }
 
   private _uiVisibilityChanged = (args: UiVisibilityEventArgs): void => {
-    this.setState ({ hideZones: !args.visible });
+    this.setState({ isUiVisible: args.visible });
   }
 
   private _handleContentLayoutActivated = (args: ContentLayoutActivatedEventArgs) => {
@@ -522,7 +583,7 @@ export class ContentLayout extends React.Component<ContentLayoutReactProps, Cont
 
   public render(): React.ReactNode {
     if (this.state.contentContainer) {
-      const className = (this.props.isInFooterMode && !this.state.hideZones) ? "uifw-contentlayout-footer-mode" : "uifw-contentlayout-open-mode";
+      const className = (this.props.isInFooterMode && this.state.isUiVisible) ? "uifw-contentlayout-footer-mode" : "uifw-contentlayout-open-mode";
 
       return (
         <div id="uifw-contentlayout-div" className={className} key={this.state.contentLayout.id}

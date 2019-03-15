@@ -197,4 +197,27 @@ describe("ContentLayout", () => {
     expect(() => ContentLayoutManager.loadLayout(layoutProps)).to.throw(Error);
   });
 
+  const threeRightStackedLayoutDef: ContentLayoutDef = new ContentLayoutDef(
+    { // Three Views, one on the left, two stacked on the right.
+      id: "ThreeRightStacked",
+      descriptionKey: "SampleApp:ContentLayoutDef.ThreeRightStacked",
+      priority: 85,
+      verticalSplit: {
+        id: "ThreeRightStacked.MainVertical",
+        percentage: 0.50,
+        left: 0,
+        right: { horizontalSplit: { id: "ThreeRightStacked.Right", percentage: 0.50, top: 1, bottom: 3 } },
+      },
+    },
+  );
+
+  it("ContentLayoutDef.getUsedContentIndexes should return correct indexes", () => {
+    expect(myContentLayout.getUsedContentIndexes()).to.have.members([0]);
+    expect(contentLayout2.getUsedContentIndexes()).to.have.members([0, 1]);
+    expect(contentLayout3.getUsedContentIndexes()).to.have.members([0, 1]);
+    expect(fourQuadrantsVerticalLayoutDef.getUsedContentIndexes()).to.have.members([0, 1, 2, 3]);
+    expect(fourQuadrantsHorizontalLayoutDef.getUsedContentIndexes()).to.have.members([0, 1, 2, 3]);
+    expect(threeRightStackedLayoutDef.getUsedContentIndexes()).to.have.members([0, 1, 3]);
+  });
+
 });

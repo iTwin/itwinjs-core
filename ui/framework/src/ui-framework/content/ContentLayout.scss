@@ -10,14 +10,13 @@
   top: 0;
   left: 0;
   right: 0;
-  height: 100%;
 
   &.uifw-contentlayout-footer-mode {
-    bottom: $footer-height;
+    height: calc(100% - #{$footer-height});
   }
 
   &.uifw-contentlayout-open-mode {
-    bottom: 0;
+    height: 100%;
   }
 
   .Resizer {

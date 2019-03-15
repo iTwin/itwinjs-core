@@ -140,7 +140,7 @@ exports[`ContentLayout FourQuadrantsVertical renders correctly 2`] = `
 
 exports[`ContentLayout SingleContent renders correctly 1`] = `
 <div
-  className="uifw-contentlayout-open-mode"
+  className="uifw-contentlayout-footer-mode"
   id="uifw-contentlayout-div"
   key="SingleContent"
   onMouseDown={[Function]}
@@ -193,7 +193,7 @@ exports[`ContentLayout TwoHalvesHorizontal renders correctly 1`] = `
 
 exports[`ContentLayout TwoHalvesVertical renders correctly 1`] = `
 <div
-  className="uifw-contentlayout-open-mode"
+  className="uifw-contentlayout-footer-mode"
   id="uifw-contentlayout-div"
   key="TwoHalvesVertical"
   onMouseDown={[Function]}

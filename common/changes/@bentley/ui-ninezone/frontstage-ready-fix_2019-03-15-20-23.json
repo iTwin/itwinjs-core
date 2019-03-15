@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fixed Viewport heights & initial navigation aid. Widget transparency.",
+      "packageName": "@bentley/ui-ninezone",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-ninezone",
+  "email": "dan.east@bentley.com"
+}

@@ -115,7 +115,7 @@ export class ContentGroup {
 
     this._contentSetMap.clear();
 
-    this.contentPropsList.map((contentProps: ContentProps, index: number) => {
+    this.contentPropsList.forEach((contentProps: ContentProps, index: number) => {
       const control = this.getContentControl(contentProps, index);
       if (control) {
         contentNodes.push(control.reactElement);
@@ -133,7 +133,7 @@ export class ContentGroup {
   public getContentControls(): ContentControl[] {
     const contentControls: ContentControl[] = new Array<ContentControl>();
 
-    this.contentPropsList.map((contentProps: ContentProps, index: number) => {
+    this.contentPropsList.forEach((contentProps: ContentProps, index: number) => {
       const control = this.getContentControl(contentProps, index);
       if (control) {
         contentControls.push(control);

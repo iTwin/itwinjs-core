@@ -97,11 +97,16 @@ export class FrontstageDef {
   public async waitUntilReady(): Promise<void> {
     // create an array of control-ready promises
     const controlReadyPromises = new Array<Promise<void>>();
-    for (const control of this._widgetControls) {
+    this._widgetControls.forEach((control: WidgetControl) => {
       controlReadyPromises.push(control.isReady);
-    }
-    for (const control of this.contentControls) {
-      controlReadyPromises.push(control.isReady);
+    });
+
+    if (ContentLayoutManager.activeLayout) {
+      const usedContentIndexes = ContentLayoutManager.activeLayout.getUsedContentIndexes();
+      this.contentControls.forEach((control: ContentControl, index: number) => {
+        if (usedContentIndexes.includes(index))
+          controlReadyPromises.push(control.isReady);
+      });
     }
 
     return Promise.all(controlReadyPromises)
@@ -284,8 +289,9 @@ export class FrontstageDef {
 
   /** Gets the list of [[ContentControl]]s */
   public get contentControls(): ContentControl[] {
-    if (this.contentGroup)
+    if (this.contentGroup) {
       return this.contentGroup.getContentControls();
+    }
     return [];
   }
 
