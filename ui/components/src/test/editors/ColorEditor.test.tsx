@@ -40,7 +40,7 @@ describe("<ColorEditor />", () => {
     expect(pickerButton.tagName).to.be.equal("BUTTON");
     fireEvent.click(pickerButton);
 
-    const popupDiv = await waitForElement(() => renderedComponent.getByTestId("components-colorpicker-popup"));
+    const popupDiv = await waitForElement(() => renderedComponent.getByTestId("components-colorpicker-popup-colors"));
     expect(popupDiv).not.to.be.undefined;
     if (popupDiv) {
       const firstColorButton = popupDiv.firstChild as HTMLElement;

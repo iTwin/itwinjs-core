@@ -11,7 +11,6 @@ import { AccessToken } from "@bentley/imodeljs-clients";
 import { IModelViewPicker } from "./IModelViewPicker";
 import { ViewDefinitionProps } from "@bentley/imodeljs-common";
 import { Popup, Position, Spinner, SpinnerSize } from "@bentley/ui-core";
-import { PopupTest } from "./PopupTest";
 import "./IModelCard.scss";
 
 /** Properties for the [[IModelCard]] component */
@@ -26,7 +25,6 @@ interface IModelCardState {
   waitingForThumbnail: boolean;
   showViews: boolean;
   showOptions: boolean;
-  showPopupTest: boolean;
 }
 
 /**
@@ -36,7 +34,7 @@ export class IModelCard extends React.Component<IModelCardProps, IModelCardState
 
   constructor(props: IModelCardProps, context?: any) {
     super(props, context);
-    this.state = { waitingForThumbnail: false, showViews: false, showOptions: false, showPopupTest: false };
+    this.state = { waitingForThumbnail: false, showViews: false, showOptions: false };
   }
 
   public static defaultProps: Partial<IModelCardProps> = {
@@ -84,17 +82,8 @@ export class IModelCard extends React.Component<IModelCardProps, IModelCardState
     this.setState({ showViews: true });
   }
 
-  private _onPopupTestClicked = () => {
-    this._onCloseOptions();
-    this.setState({ showPopupTest: true });
-  }
-
   private _onCloseOptions = () => {
     this.setState({ showOptions: false });
-  }
-
-  private _onClosePopupTest = () => {
-    this.setState({ showPopupTest: false });
   }
 
   private renderDescription() {
@@ -144,11 +133,9 @@ export class IModelCard extends React.Component<IModelCardProps, IModelCardState
             <span className="text">{this.props.iModel.name}</span>
             <div className="options" >
               <span className="icon icon-more-2" onClick={this._onShowOptions}></span>
-              <Popup isShown={this.state.showOptions} position={Position.BottomRight}
-                onClose={this._onClose}>
+              <Popup isOpen={this.state.showOptions} position={Position.BottomRight} onClose={this._onClose}>
                 <ul className="options-dropdown">
                   <li onClick={this._onViewsClicked}><span className="icon icon-visibility" />Views</li>
-                  <li onClick={this._onPopupTestClicked}><span className="icon icon-placeholder" />Details</li>
                 </ul>
               </Popup>
             </div>
@@ -156,9 +143,9 @@ export class IModelCard extends React.Component<IModelCardProps, IModelCardState
           {this.props.showDescription && this.renderDescription()}
         </div>
         {this.state.showViews &&
-          <IModelViewPicker accessToken={this.props.accessToken} iModel={this.props.iModel} onClose={this._onViewsClose.bind(this)} OnViewsSelected={this._onViewsSelected.bind(this)} />}
-        {this.state.showPopupTest && <PopupTest onClose={this._onClosePopupTest} />}
-      </div>
+          <IModelViewPicker accessToken={this.props.accessToken} iModel={this.props.iModel} onClose={this._onViewsClose.bind(this)} OnViewsSelected={this._onViewsSelected.bind(this)} />
+        }
+       </div>
     );
   }
 }

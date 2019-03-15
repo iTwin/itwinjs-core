@@ -34,23 +34,24 @@ describe("<ColorPickerButton/>", () => {
     }
 
     const renderedComponent = render(<ColorPickerButton activeColor={colorDef} onColorPick={handleColorPick} dropDownTitle="test-title" />);
+    expect(renderedComponent.getByTestId("components-colorpicker-button")).to.exist;
     const pickerButton = renderedComponent.getByTestId("components-colorpicker-button");
     // renderedComponent.debug();
     expect(pickerButton.tagName).to.be.equal("BUTTON");
     fireEvent.click(pickerButton);
 
-    const popupDiv = await waitForElement(() => renderedComponent.getByTestId("components-colorpicker-popup"));
+    const popupDiv = await waitForElement(() => renderedComponent.getByTestId("components-colorpicker-popup-colors"));
     expect(popupDiv).not.to.be.undefined;
 
     if (popupDiv) {
+      const title = renderedComponent.getByText("test-title");
+      expect(title).not.to.be.undefined;
+
       const firstColorButton = popupDiv.firstChild as HTMLElement;
       expect(firstColorButton).not.to.be.undefined;
       fireEvent.click(firstColorButton);
 
       expect(spyOnColorPick).to.be.calledOnce;
-
-      const title = renderedComponent.getByText("test-title");
-      expect(title).not.to.be.undefined;
     }
   });
 

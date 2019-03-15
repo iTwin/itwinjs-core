@@ -3,13 +3,12 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import * as classnames from "classnames";
-import "./Common.scss";
+import { Popup, Position, Toggle, Dialog, DialogButtonType } from "@bentley/ui-core";
+import { ModalDialogManager } from "@bentley/ui-framework";
 import "./PopupTest.scss";
-import { Popup, Position, Toggle } from "@bentley/ui-core";
 
 interface PopupTestProps {
-  onClose: () => void;
+  opened: boolean;
 }
 
 interface PopupTestState {
@@ -23,22 +22,30 @@ interface PopupTestState {
   showRight: boolean;
   showArrow: boolean;
   showShadow: boolean;
-  showStatusBarColors: boolean;
-  onHover: boolean;
+  opened: boolean;
 }
 
 /**
  * Test for popups.  Do not use, ths will be removed!
  * @hidden
  */
-export class PopupTest extends React.Component<PopupTestProps, PopupTestState> {
+export class PopupTestDialog extends React.Component<PopupTestProps, PopupTestState> {
+  public readonly state: Readonly<PopupTestState>;
+  private _targetTop: HTMLElement | null = null;
+  private _targetBottom: HTMLElement | null = null;
+  private _targetLeft: HTMLElement | null = null;
+  private _targetRight: HTMLElement | null = null;
+  private _targetTopLeft: HTMLElement | null = null;
+  private _targetTopRight: HTMLElement | null = null;
+  private _targetBottomLeft: HTMLElement | null = null;
+  private _targetBottomRight: HTMLElement | null = null;
 
   constructor(props?: any, context?: any) {
     super(props, context);
 
     this.state = {
       showTopLeft: false, showTop: false, showTopRight: false, showBottomLeft: false, showBottom: false, showBottomRight: false,
-      showArrow: false, showStatusBarColors: false, showLeft: false, showRight: false, showShadow: true, onHover: false,
+      showArrow: false, showLeft: false, showRight: false, showShadow: true, opened: this.props.opened,
     };
   }
 
@@ -114,17 +121,21 @@ export class PopupTest extends React.Component<PopupTestProps, PopupTestState> {
     this.setState((_prevState) => ({ showShadow: !this.state.showShadow }));
   }
 
-  private _onStatusBarChange = () => {
-    this.setState((_prevState) => ({ showStatusBarColors: !this.state.showStatusBarColors }));
+  private _handleOK = () => {
+    this._closeDialog();
   }
 
-  private _onHoverChange = () => {
-    this.setState((_prevState) => ({ onHover: !this.state.onHover }));
+  private _handleCancel = () => {
+    this._closeDialog();
   }
 
-  private _onClose = () => {
-    if (this.props.onClose)
-      this.props.onClose();
+  private _closeDialog = () => {
+    this.setState((_prevState) => ({
+      opened: false,
+    }), () => {
+      if (!this.state.opened)
+        ModalDialogManager.closeModalDialog();
+    });
   }
 
   private renderPopup(title: string, onClose: () => any) {
@@ -142,96 +153,94 @@ export class PopupTest extends React.Component<PopupTestProps, PopupTestState> {
     );
   }
   public render() {
-    const className = classnames("popupcolors", this.state.showStatusBarColors && "statusbarcolors");
     return (
-      <div className="modal-background2 fade-in-fast">
+      <Dialog
+        title={"Test Popups"}
+        opened={this.state.opened}
+        modal={true}
+        buttonCluster={[
+          { type: DialogButtonType.OK, onClick: () => { this._handleOK(); } },
+          { type: DialogButtonType.Cancel, onClick: () => { this._handleCancel(); } },
+        ]}
+        onClose={() => this._handleCancel()}
+        onEscape={() => this._handleCancel()}
+      >
         <div className="popup-test" >
-          <div className="popup-header">
-            <h3>Popups</h3>
-            <span onClick={this._onClose} className="close icon icon-close" title="Close" />
-          </div>
           <div className="popup-content">
             <div className="buttons">
               <div>
-                <button onClick={this._toggleTopLeft}>
+                <button onClick={this._toggleTopLeft} ref={(element) => { this._targetTopLeft = element; }}>
                   Top Left
                 </button>
-                <Popup className={className} isShown={this.state.showTopLeft} position={Position.TopLeft}
-                  onClose={this._closeTopLeft} showArrow={this.state.showArrow} showShadow={this.state.showShadow}
-                  showOnHover={this.state.onHover}>
+                <Popup className="popupcolors" isOpen={this.state.showTopLeft} position={Position.TopLeft} onClose={this._closeTopLeft} target={this._targetTopLeft}
+                                  showArrow={this.state.showArrow} showShadow={this.state.showShadow}>
                   {this.renderPopup("Top Left", this._closeTopLeft)}
                 </Popup>
               </div>
               <div>
-                <button onClick={this._toggleTop}>
+                <button onClick={this._toggleTop} ref={(element) => { this._targetTop = element; }}>
                   Top
                 </button>
-                <Popup className={className} isShown={this.state.showTop} position={Position.Top} onClose={this._closeTop}
-                  showArrow={this.state.showArrow} showShadow={this.state.showShadow} showOnHover={this.state.onHover}>
+                <Popup className="popupcolors" isOpen={this.state.showTop} position={Position.Top} onClose={this._closeTop} target={this._targetTop}
+                  showArrow={this.state.showArrow} showShadow={this.state.showShadow}>
                   {this.renderPopup("Top Center", this._closeTop)}
                 </Popup>
               </div>
               <div>
-                <button onClick={this._toggleTopRight}>
+                <button onClick={this._toggleTopRight} ref={(element) => { this._targetTopRight = element; }}>
                   Top Right
                 </button>
-                <Popup className={className} isShown={this.state.showTopRight} position={Position.TopRight}
-                  onClose={this._onCloseTopRight} showArrow={this.state.showArrow} showShadow={this.state.showShadow}
-                  showOnHover={this.state.onHover}>
+                <Popup className="popupcolors" isOpen={this.state.showTopRight} position={Position.TopRight} target={this._targetTopRight}
+                  onClose={this._onCloseTopRight} showArrow={this.state.showArrow} showShadow={this.state.showShadow}>
                   {this.renderPopup("Top Right", this._onCloseTopRight)}
                 </Popup>
               </div>
             </div>
             <div className="buttons">
               <div>
-                <button onClick={this._toggleLeft}>
+                <button onClick={this._toggleLeft} ref={(element) => { this._targetLeft = element; }}>
                   Left
                 </button>
-                <Popup className={className} isShown={this.state.showLeft} position={Position.Left}
-                  onClose={this._onCloseLeft} showArrow={this.state.showArrow} showShadow={this.state.showShadow}
-                  showOnHover={this.state.onHover}>
+                <Popup className="popupcolors" isOpen={this.state.showLeft} position={Position.Left} target={this._targetLeft}
+                  onClose={this._onCloseLeft} showArrow={this.state.showArrow} showShadow={this.state.showShadow}>
                   {this.renderPopup("Left Center", this._onCloseLeft)}
                 </Popup>
               </div>
               <div style={{ marginLeft: "auto" }}>
-                <button onClick={this._toggleRight}>
+                <button onClick={this._toggleRight} ref={(element) => { this._targetRight = element; }}>
                   Right
                 </button>
-                <Popup className={className} isShown={this.state.showRight} position={Position.Right}
-                  onClose={this._onCloseRight} showArrow={this.state.showArrow} showShadow={this.state.showShadow}
-                  showOnHover={this.state.onHover}>
+                <Popup className="popupcolors" isOpen={this.state.showRight} position={Position.Right} target={this._targetRight}
+                  onClose={this._onCloseRight} showArrow={this.state.showArrow} showShadow={this.state.showShadow}>
                   {this.renderPopup("Right Center", this._onCloseRight)}
                 </Popup>
               </div>
             </div>
             <div className="buttons">
               <div>
-                <button onClick={this._toggleBottomLeft}>
+                <button onClick={this._toggleBottomLeft} ref={(element) => { this._targetBottomLeft = element; }}>
                   Bottom Left
                 </button>
-                <Popup className={className} isShown={this.state.showBottomLeft} position={Position.BottomLeft}
-                  onClose={this._onCloseBottomLeft} showArrow={this.state.showArrow} showShadow={this.state.showShadow}
-                  showOnHover={this.state.onHover}>
+                <Popup className="popupcolors" isOpen={this.state.showBottomLeft} position={Position.BottomLeft} target={this._targetBottomLeft}
+                  onClose={this._onCloseBottomLeft} showArrow={this.state.showArrow} showShadow={this.state.showShadow}>
                   {this.renderPopup("Bottom Left", this._onCloseBottomLeft)}
                 </Popup>
               </div>
               <div>
-                <button onClick={this._toggleBottom}>
+                <button onClick={this._toggleBottom} ref={(element) => { this._targetBottom = element; }}>
                   Bottom
                 </button>
-                <Popup className={className} isShown={this.state.showBottom} position={Position.Bottom}
-                  onClose={this._onCloseBottom} showArrow={this.state.showArrow} showShadow={this.state.showShadow}
-                  showOnHover={this.state.onHover}>
+                <Popup className="popupcolors" isOpen={this.state.showBottom} position={Position.Bottom} target={this._targetBottom}
+                  onClose={this._onCloseBottom} showArrow={this.state.showArrow} showShadow={this.state.showShadow}>
                   {this.renderPopup("Bottom Center", this._onCloseBottom)}
                 </Popup>
               </div>
               <div>
-                <button onClick={this._toggleBottomRight}>
+                <button onClick={this._toggleBottomRight} ref={(element) => { this._targetBottomRight = element; }}>
                   Bottom Right
                 </button>
-                <Popup className={className} isShown={this.state.showBottomRight} position={Position.BottomRight}
-                  onClose={this._onCloseBottomRight} showArrow={this.state.showArrow} showShadow={this.state.showShadow}
-                  showOnHover={this.state.onHover}>
+                <Popup className="popupcolors" isOpen={this.state.showBottomRight} position={Position.BottomRight} target={this._targetBottomRight}
+                  onClose={this._onCloseBottomRight} showArrow={this.state.showArrow} showShadow={this.state.showShadow}>
                   {this.renderPopup("Bottom Right", this._onCloseBottomRight)}
                 </Popup>
               </div>
@@ -246,17 +255,9 @@ export class PopupTest extends React.Component<PopupTestProps, PopupTestState> {
               <label>Shadow</label>
               <Toggle className="popup-toggle" onChange={this._onShadowChange} isOn={this.state.showShadow} />
             </div>
-            <div>
-              <label>Hover</label>
-              <Toggle className="popup-toggle" onChange={this._onHoverChange} isOn={this.state.onHover} />
-            </div>
-            <div>
-              <label>Status Bar Colors</label>
-              <Toggle className="popup-toggle" onChange={this._onStatusBarChange} isOn={this.state.showStatusBarColors} />
-            </div>
           </div>
         </div>
-      </div>
+      </Dialog>
     );
   }
 }

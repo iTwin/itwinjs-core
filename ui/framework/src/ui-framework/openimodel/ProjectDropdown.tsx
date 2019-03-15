@@ -119,7 +119,7 @@ export class ProjectDropdown extends React.Component<ProjectDropdownProps, Proje
       height: this._itemHeight + "em",
     };
     return (
-      <Popup isShown={this.state.isDropdownOpen} position={Position.Bottom} onClose={this._handleOnOutsideClick}>
+      <Popup isOpen={this.state.isDropdownOpen} position={Position.Bottom} onClose={this._handleOnOutsideClick}>
         <div className="pp-dropdown">
           {this.renderProjects()}
           <div className="pp-separator" />
