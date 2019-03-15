@@ -27,6 +27,32 @@ describe.skip("DebugHubIssues (#integration)", () => {
     requestContext = await IModelTestUtils.getTestUserRequestContext(TestUsers.regular);
   });
 
+  it.skip("should be able to validate change set operations from iModel on disk", async () => {
+    const iModelName = "PnId2";
+    const iModelDir = path.join(iModelRootDir, iModelName);
+    HubUtility.validateAllChangeSetOperationsOnDisk(iModelDir);
+  });
+
+  it.skip("should be able to validate change set operations on iModel from Hub", async () => {
+    const projectName = "DigOpsDev1";
+    const iModelName = "PnId2";
+    const myProjectId = await HubUtility.queryProjectIdByName(requestContext, projectName);
+    const myIModelId = await HubUtility.queryIModelIdByName(requestContext, myProjectId, iModelName);
+
+    const link = `https://connect-imodelweb.bentley.com/imodeljs/?projectId=${myProjectId}&iModelId=${myIModelId}`;
+    console.log(`ProjectName: ${projectName}, iModelName: ${iModelName}, URL Link: ${link}`); // tslint:disable-line:no-console
+
+    const iModelDir = path.join(iModelRootDir, iModelName);
+    await HubUtility.validateAllChangeSetOperations(requestContext, myProjectId, myIModelId, iModelDir);
+  });
+
+  it.skip("should be able to download and backup required test files from the Hub", async () => {
+    const projectName = "DigOpsDev1";
+    const iModelName = "PnId2";
+    const iModelDir = path.join(iModelRootDir, iModelName);
+    await HubUtility.downloadIModelByName(requestContext, projectName, iModelName, iModelDir);
+  });
+
   it.skip("should be able to upload required test files to the Hub", async () => {
     const projectName = "iModelJsTest";
     const iModelName = "ReadOnlyTest";

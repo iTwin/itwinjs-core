@@ -43,7 +43,7 @@ Archival scenarios can use *snapshot* iModels. Once created, a *snapshot* iModel
 
 ## Node 10.15.3
 
-The iModel.js backend now requires [Node version 10.15.3](https://nodejs.org) or later. If you run the backend, please install it before running this version.
+The iModel.js backend now requires [Node version 10.15.3](https://nodejs.org) or later.
 
 ## Starting up of backends
 
@@ -128,7 +128,7 @@ The electron version used internally has  been updated to v4.10.0.
 
 ## Miscellaneous changes
 
-* [IModelConnection.openSnapshot]($frontend) throws an exception if [IModelApp.startup] has not been called.
+* [IModelConnection.openSnapshot]($frontend) throws an exception if [IModelApp.startup]($frontend) has not been called.
 * [IModelDb.onOpened.addListener]($backend) takes a callback with a different signature -  [AuthorizedClientRequestContext]($clients) is now passed as te first argument.
 * [ImsActiveSecureTokenClient]($client) takes [ImsCredentials]($client) as a single argument instead of separate email and password fields.
 * Deleted agent-test-app from the repository.

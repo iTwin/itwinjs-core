@@ -200,14 +200,12 @@ export class HubUtility {
     throw new Error(whichCs + " - .cs file not found in directory " + dir);
   }
 
-  /** Validate all change set operations by downloading seed files & change sets, creating a standalone iModel,
-   * merging the change sets, reversing them, and finally reinstating them. The method also logs the necessary performance
+  /** Validate all change set operations on an iModel on disk - the supplied directory contains a sub folder
+   * with the seed files, change sets, etc. in a standard format. This tests merging the change sets, reversing them,
+   * and finally reinstating them. The method also logs the necessary performance
    * metrics with these operations.
    */
-  public static async validateAllChangeSetOperations(requestContext: AuthorizedClientRequestContext, projectId: string, iModelId: GuidString, iModelDir: string) {
-    Logger.logInfo(HubUtility.logCategory, "Downloading seed file and all available change sets");
-    await HubUtility.downloadIModelById(requestContext, projectId, iModelId, iModelDir);
-
+  public static validateAllChangeSetOperationsOnDisk(iModelDir: string) {
     const seedPathname = HubUtility.getSeedPathname(iModelDir);
     const iModelPathname = path.join(iModelDir, path.basename(seedPathname));
 
@@ -239,6 +237,17 @@ export class HubUtility {
 
     iModel.closeStandalone();
     assert(status === ChangeSetStatus.Success, "Error applying change sets");
+  }
+
+  /** Validate all change set operations by downloading seed files & change sets, creating a standalone iModel,
+   * merging the change sets, reversing them, and finally reinstating them. The method also logs the necessary performance
+   * metrics with these operations.
+   */
+  public static async validateAllChangeSetOperations(requestContext: AuthorizedClientRequestContext, projectId: string, iModelId: GuidString, iModelDir: string) {
+    Logger.logInfo(HubUtility.logCategory, "Downloading seed file and all available change sets");
+    await HubUtility.downloadIModelById(requestContext, projectId, iModelId, iModelDir);
+
+    this.validateAllChangeSetOperationsOnDisk(iModelDir);
   }
 
   public static getSeedPathname(iModelDir: string) {
