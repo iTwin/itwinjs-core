@@ -17,7 +17,7 @@ let marshalingScope = "";
 let marshalingTarget: RpcSerializedValue;
 let chunkThreshold = 0;
 
-interface MarshalingBinaryMarker {
+export interface MarshalingBinaryMarker {
   [RpcMarshalingDirective.Binary]: true;
   type: number;
   index: number;

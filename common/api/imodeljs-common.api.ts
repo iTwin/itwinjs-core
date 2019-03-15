@@ -2838,10 +2838,7 @@ interface LineStyleProps extends ElementProps {
 }
 
 // @public (undocumented)
-module MarshalingBinaryMarker {
-  // (undocumented)
-  function createDefault(): MarshalingBinaryMarker;
-
+interface MarshalingBinaryMarker {
 }
 
 // @public
