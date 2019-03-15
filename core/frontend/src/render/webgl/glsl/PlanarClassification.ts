@@ -12,16 +12,18 @@ const applyPlanarClassificationColor = `
   vec4 colorTexel = TEXTURE(s_pClassColorSampler, v_pClassPos.xy);
   if (colorTexel.a < .5) {
     if (s_pClassColorParams.y == 0.0)
-      return vec4(0);
+      return vec4(0);                          // Unclassifed, Off.
    else if (s_pClassColorParams.y == 1.0)
-      return baseColor;
+      return baseColor;                        // Unclassified, On.
     else
-      return baseColor * .6;
+      return baseColor * .6;                   // Unclassified, Dimmed.
    } else {
      if (s_pClassColorParams.x == 0.0)
-       return vec4(0);
+       return vec4(0);                        // Classified, off.
       else if (s_pClassColorParams.x == 2.0)
-        return baseColor * .6;
+        return baseColor * .6;                // Classified, dimmed.
+      else if (s_pClassColorParams.x == 3.0)
+        return baseColor * colorTexel * vec4(.8, .8, 1.0, 1.0);  // Classified, hilite.  TBD - make colr configurable.
       else
         return baseColor * colorTexel;
     // TBD -- mode 1.  Return baseColor unless flash or hilite

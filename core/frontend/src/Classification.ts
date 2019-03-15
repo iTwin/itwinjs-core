@@ -12,19 +12,24 @@ import { RenderClassifierModel, ClassifierType } from "./render/System";
 import { System } from "./render/webgl/System";
 import { PlanarClassifier } from "./render/webgl/PlanarClassifier";
 
-export interface ClassificationFlagsProps {
-  inside: Classification.Display;
-  outside: Classification.Display;
-  selected: Classification.Display;
-  type: number;         // Not currently implemented
-}
+/** @internal */
 export namespace Classification {
   export const enum Display { Off = 0, On = 1, Dimmed = 2, Hilite = 3, ElementColor = 4 }
-  export class Flags implements ClassificationFlagsProps {
+
+  export interface FlagsProps {
+    inside: Classification.Display;
+    outside: Classification.Display;
+    selected: Classification.Display;
+    type: number;         // Not currently implemented
+  }
+
+  export class Flags implements FlagsProps {
     public inside: Display = Display.ElementColor;
     public outside: Display = Display.Dimmed;
     public selected: Display = Display.Hilite;
     public type: number = 0;         // Not currently implemented
+
+    public constructor(inside = Display.ElementColor, outside = Display.Dimmed) { this.inside = inside; this.outside = outside; }
   }
   export interface PropertiesProps {
     modelId: Id64String;
@@ -38,7 +43,7 @@ export namespace Classification {
     public expand: number;
     public flags: Flags;
     public name: string;
-    constructor(name: string, modelId: Id64String, expand: number, flags?: ClassificationFlagsProps) {
+    constructor(name: string, modelId: Id64String, expand: number, flags?: FlagsProps) {
       this.name = name;
       this.modelId = modelId;
       this.expand = expand;

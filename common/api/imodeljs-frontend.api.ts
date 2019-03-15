@@ -1022,7 +1022,8 @@ interface CheckBoxIconsEditorParams extends BasePropertyEditorParams {
   type: PropertyEditorParamTypes.CheckBoxIcons;
 }
 
-// @public (undocumented)
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal (undocumented)
 module Classification {
   // (undocumented)
   function addModelClassifierToScene(model: GeometricModelState, context: SceneContext): void;
@@ -1045,7 +1046,10 @@ module Classification {
   }
 
   // (undocumented)
-  class Flags implements ClassificationFlagsProps {
+  class Flags implements FlagsProps {
+    // WARNING: The type "Display" needs to be exported by the package (e.g. added to index.ts)
+    // WARNING: The type "Display" needs to be exported by the package (e.g. added to index.ts)
+    constructor(inside?: Display, outside?: Display);
     // WARNING: The type "Display" needs to be exported by the package (e.g. added to index.ts)
     // (undocumented)
     inside: Display;
@@ -1055,6 +1059,18 @@ module Classification {
     // WARNING: The type "Display" needs to be exported by the package (e.g. added to index.ts)
     // (undocumented)
     selected: Display;
+    // (undocumented)
+    type: number;
+  }
+
+  // (undocumented)
+  interface FlagsProps {
+    // (undocumented)
+    inside: Classification.Display;
+    // (undocumented)
+    outside: Classification.Display;
+    // (undocumented)
+    selected: Classification.Display;
     // (undocumented)
     type: number;
   }
@@ -1070,7 +1086,8 @@ module Classification {
 
   // (undocumented)
   class Properties implements PropertiesProps {
-    constructor(name: string, modelId: Id64String, expand: number, flags?: ClassificationFlagsProps);
+    // WARNING: The type "FlagsProps" needs to be exported by the package (e.g. added to index.ts)
+    constructor(name: string, modelId: Id64String, expand: number, flags?: FlagsProps);
     // (undocumented)
     expand: number;
     // WARNING: The type "Flags" needs to be exported by the package (e.g. added to index.ts)
@@ -1094,18 +1111,6 @@ module Classification {
     name: string;
   }
 
-}
-
-// @public (undocumented)
-interface ClassificationFlagsProps {
-  // (undocumented)
-  inside: Classification.Display;
-  // (undocumented)
-  outside: Classification.Display;
-  // (undocumented)
-  selected: Classification.Display;
-  // (undocumented)
-  type: number;
 }
 
 // @public
