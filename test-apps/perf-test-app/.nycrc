@@ -1,0 +1,25 @@
+{
+  "include": [
+    "core/backend/src/**/*",
+    "core/backend/lib/**/*",
+    "core/frontend/src/**/*",
+    "core/frontend/lib/**/*"
+  ],
+  "exclude": [
+    "**/*.d.ts",
+    "**/*.d.tsx"
+  ],
+  "extension": [
+    ".ts",
+    ".tsx"
+  ],
+  "temp-directory": "./integration-tests/core/coverage/.nyc_output",
+  "report-dir": "./integration-tests/core/coverage/",
+  "reporter": [
+    "text-summary",
+    "lcov",
+    "cobertura"
+  ],
+  "cache": false,
+  "cwd": "../.."
+}

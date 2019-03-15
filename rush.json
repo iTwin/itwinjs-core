@@ -301,6 +301,12 @@
       "projectFolder": "integration-tests/rpc",
       "reviewCategory": "internal",
       "shouldPublish": false
+    },
+    {
+      "packageName": "perf-test-app",
+      "projectFolder": "test-apps/perf-test-app",
+      "reviewCategory": "internal",
+      "shouldPublish": false
     }
   ]
 }
