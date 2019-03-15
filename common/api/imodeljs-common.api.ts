@@ -4270,17 +4270,6 @@ interface SpotProps extends LightProps {
   outer?: AngleProps;
 }
 
-// @public @deprecated
-class StandaloneIModelRpcInterface extends RpcInterface {
-  // (undocumented)
-  closeStandalone(_iModelToken: IModelToken): Promise<boolean>;
-  static getClient(): StandaloneIModelRpcInterface;
-  // (undocumented)
-  openStandalone(_fileName: string, _openMode: OpenMode): Promise<IModel>;
-  static types: () => (typeof IModelToken)[];
-  static version: string;
-}
-
 // @public (undocumented)
 class SubCategoryAppearance {
 }

@@ -10,7 +10,7 @@ import {
   AxisAlignedBox3d, Cartographic, CodeSpec, ElementProps, EntityQueryParams, FontMap, GeoCoordStatus, ImageSourceFormat, IModel, IModelError,
   IModelNotFoundResponse, IModelReadRpcInterface, IModelStatus, IModelToken, IModelVersion, IModelWriteRpcInterface, kPagingDefaultOptions,
   ModelProps, ModelQueryParams, PageOptions, RpcNotFoundResponse, RpcOperation, RpcRequest, RpcRequestEvent, SnapRequestProps, SnapResponseProps,
-  SnapshotIModelRpcInterface, StandaloneIModelRpcInterface, ThumbnailProps, TileTreeProps, ViewDefinitionProps, ViewQueryParams, WipRpcInterface,
+  SnapshotIModelRpcInterface, ThumbnailProps, TileTreeProps, ViewDefinitionProps, ViewQueryParams, WipRpcInterface,
 } from "@bentley/imodeljs-common";
 import { EntityState } from "./EntityState";
 import { GeoServices } from "./GeoServices";
@@ -260,20 +260,6 @@ export class IModelConnection extends IModel {
     }
   }
 
-  /** Open an IModelConnection to a standalone iModel (not managed by iModelHub) from a file name that is resolved by the backend.
-   * This method is intended for desktop or mobile applications and should not be used for web applications.
-   * @see [[openSnapshot]]
-   * @deprecated The confusing concept of *standalone* is being replaced by the more strict concept of a read-only iModel *snapshot*. Callers should migrate to [[openSnapshot]].
-   */
-  public static async openStandalone(fileName: string, openMode = OpenMode.Readonly): Promise<IModelConnection> {
-    if (!IModelApp.initialized)
-      throw new IModelError(BentleyStatus.ERROR, "Call IModelApp.startup() before calling openStandalone");
-
-    const openResponse: IModel = await StandaloneIModelRpcInterface.getClient().openStandalone(fileName, openMode);
-    Logger.logTrace(loggingCategory, "IModelConnection.openStandalone", () => ({ fileName, openMode }));
-    return new IModelConnection(openResponse, openMode);
-  }
-
   /** Open an IModelConnection to a read-only iModel *snapshot* (not managed by iModelHub) from a file name that is resolved by the backend.
    * This method is intended for desktop or mobile applications and should not be used for web applications.
    * @beta The *snapshot* concept is solid, but the concept name might change which would cause a function rename.
@@ -282,23 +268,6 @@ export class IModelConnection extends IModel {
     const openResponse: IModel = await SnapshotIModelRpcInterface.getClient().openSnapshot(fileName);
     Logger.logTrace(loggingCategory, "IModelConnection.openSnapshot", () => ({ fileName }));
     return new IModelConnection(openResponse, OpenMode.Readonly);
-  }
-
-  /** Close this standalone IModelConnection
-   * @see [[closeSnapshot]]
-   * @deprecated The confusing concept of *standalone* is being replaced by the more strict concept of a read-only iModel *snapshot*. Callers should migrate to [[closeSnapshot]].
-   */
-  public async closeStandalone(): Promise<void> {
-    if (!this.iModelToken)
-      return;
-
-    IModelConnection.onClose.raiseEvent(this);
-    this.models.onIModelConnectionClose();  // free WebGL resources if rendering
-    try {
-      await StandaloneIModelRpcInterface.getClient().closeStandalone(this.iModelToken);
-    } finally {
-      (this._token as any) = undefined; // prevent closed connection from being reused
-    }
   }
 
   /** Close this IModelConnection to a read-only iModel *snapshot*.

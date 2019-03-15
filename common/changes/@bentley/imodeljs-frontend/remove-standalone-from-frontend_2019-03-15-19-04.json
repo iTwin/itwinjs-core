@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Remove IModelConnection.openStandalone and IModelConnection.closeStandalone",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "shaun.sewall@bentley.com"
+}

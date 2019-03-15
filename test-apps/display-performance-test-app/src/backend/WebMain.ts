@@ -9,7 +9,7 @@ import * as fs from "fs";
 import * as child_process from "child_process";
 import * as chromeLauncher from "chrome-launcher";
 
-import { BentleyCloudRpcManager, IModelTileRpcInterface, SnapshotIModelRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface } from "@bentley/imodeljs-common";
+import { BentleyCloudRpcManager, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface } from "@bentley/imodeljs-common";
 import { Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { initializeBackend } from "./backend";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
@@ -17,7 +17,7 @@ import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 // tslint:disable:no-console
 
 export function getRpcInterfaces() {
-  return [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface];
+  return [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface];
 }
 
 function setupStandaloneConfiguration() {
