@@ -731,6 +731,10 @@
       "allowedCategories": [ "backend", "common", "frontend", "tools" ]
     },
     {
+      "name": "ssri",
+      "allowedCategories": [ "tools" ]
+    },
+    {
       "name": "style-loader",
       "allowedCategories": [ "frontend", "internal", "tools" ]
     },

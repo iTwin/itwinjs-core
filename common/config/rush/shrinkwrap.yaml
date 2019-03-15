@@ -13379,6 +13379,7 @@ packages:
       recursive-readdir: 2.2.2
       rimraf: 2.6.3
       sass-loader: 7.1.0
+      ssri: 6.0.1
       style-loader: 0.21.0
       svg-sprite-loader: 3.9.2
       ts-node: 7.0.1
@@ -13398,7 +13399,7 @@ packages:
     dev: false
     name: '@rush-temp/build-tools'
     resolution:
-      integrity: sha512-RqRNFP4o6Fx6LuzIdwCZNiQbsXF0BBoiRQr37Z22PvYGVL681iu3NxKeRYA10zUJ3Dt1WiQJuaqDoogrgBcTzw==
+      integrity: sha512-B/QPQR2gaKu9kCCsxEOS7bPTg1v5K5PLkNeVAcj6edsBG/uYDgggMHRo8iEkbtWpIGJsQeOJ+bsm805IXngL4A==
       tarball: 'file:projects/build-tools.tgz'
     version: 0.0.0
   'file:projects/certa.tgz':
