@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Adds error handling in api-extractor to handle no lib folder",
+      "packageName": "@bentley/build-tools",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/build-tools",
+  "email": "akshay.madhukar@bentley.com"
+}

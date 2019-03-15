@@ -43,6 +43,11 @@ const config = {
   }
 };
 
+if (!fs.existsSync("lib")) {
+  process.stderr.write("lib folder not found. Run `rush build` before extract-api");
+  process.exit(1);
+}
+
 const configFileName = `lib/${entryPointFileName}.json`;
 fs.writeFileSync(configFileName, JSON.stringify(config, null, 2));
 
