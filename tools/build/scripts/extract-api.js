@@ -14,7 +14,6 @@ if (argv.entry === undefined) {
 }
 
 const isCI = (process.env.TF_BUILD);
-var errorCode = 0;
 const entryPointFileName = argv.entry;
 const isPresentation = argv.isPresentation;
 
@@ -58,16 +57,21 @@ const args = [
 if (!isCI)
   args.push("-l");
 
-
 //Temporarily re-implementing features of simple-spawn till version 7 of api-extractor is released
 //Spawns a child process to run api-extractor and pipes the errors to be handled in this script
-const cwd = process.cwd();
-const child = spawn("api-extractor", args, {
-  cwd: cwd,
+
+console.log("Arguments to TypeDoc: " + JSON.stringify(args, null, 2));
+
+const child = spawn(require.resolve(".bin/api-extractor"), args, {
+  cwd: process.cwd(),
+  env: Object.assign({ FORCE_COLOR: "1" }, process.env),
+  stdio: 'pipe',
 });
 child.stdout.on('data', (data) => {
   process.stdout.write(data);
-})
+});
+
+let errorCode = 0;
 child.stderr.on('data', (data) => {
   if (data.includes("You have changed the public API signature for this project.") && isCI)
     errorCode = 1;
@@ -87,9 +91,7 @@ child.stderr.on('data', (data) => {
       errorCode = 1;
   }
 });
-child.on('error', (data) => {
-  console.log(data);
-});
+child.on('error', function (data) { console.log(chalk.red(data)); });
 child.on('close', (code) => {
   if (fs.existsSync(configFileName))
     fs.unlinkSync(configFileName);
