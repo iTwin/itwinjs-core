@@ -245,6 +245,7 @@ describe("KeySet", () => {
       const key = createRandomECInstanceNodeKey();
       set.add(key);
       expect(set.size).to.eq(2);
+      expect(set.nodeKeysCount).to.eq(2);
       expect(set.has(key)).to.be.true;
       expect(set.guid).to.not.eq(guidBefore);
     });
@@ -266,6 +267,7 @@ describe("KeySet", () => {
       const keys = [createRandomECInstanceNodeKey(), createRandomECInstanceNodeKey()];
       set.add(keys);
       expect(set.size).to.eq(3);
+      expect(set.nodeKeysCount).to.eq(3);
       expect(set.has(keys[0])).to.be.true;
       expect(set.has(keys[1])).to.be.true;
       expect(set.guid).to.not.eq(guidBefore);
@@ -288,6 +290,7 @@ describe("KeySet", () => {
       const key = createRandomECInstanceKey();
       set.add(key);
       expect(set.size).to.eq(2);
+      expect(set.instanceKeysCount).to.eq(2);
       expect(set.has(key)).to.be.true;
       expect(set.guid).to.not.eq(guidBefore);
     });
@@ -309,6 +312,7 @@ describe("KeySet", () => {
       const keys = [createRandomECInstanceKey(), createRandomECInstanceKey()];
       set.add(keys);
       expect(set.size).to.eq(3);
+      expect(set.instanceKeysCount).to.eq(3);
       expect(set.has(keys[0])).to.be.true;
       expect(set.has(keys[1])).to.be.true;
       expect(set.guid).to.not.eq(guidBefore);
@@ -331,6 +335,7 @@ describe("KeySet", () => {
       const prop = createRandomEntityProps();
       set.add(prop);
       expect(set.size).to.eq(2);
+      expect(set.instanceKeysCount).to.eq(2);
       expect(set.has(prop)).to.be.true;
       expect(set.guid).to.not.eq(guidBefore);
     });
@@ -352,6 +357,7 @@ describe("KeySet", () => {
       const props = [createRandomEntityProps(), createRandomEntityProps()];
       set.add(props);
       expect(set.size).to.eq(3);
+      expect(set.instanceKeysCount).to.eq(3);
       expect(set.has(props[0])).to.be.true;
       expect(set.has(props[1])).to.be.true;
       expect(set.guid).to.not.eq(guidBefore);
@@ -484,6 +490,7 @@ describe("KeySet", () => {
       const guidBefore = set.guid;
       set.delete(keys[1]);
       expect(set.size).to.eq(2);
+      expect(set.nodeKeysCount).to.eq(2);
       expect(set.has(keys[1])).to.be.false;
       expect(set.guid).to.not.eq(guidBefore);
     });
@@ -495,6 +502,7 @@ describe("KeySet", () => {
       const guidBefore = set.guid;
       set.delete([keys[1], keys[2]]);
       expect(set.size).to.eq(1);
+      expect(set.nodeKeysCount).to.eq(1);
       expect(set.has(keys[1])).to.be.false;
       expect(set.has(keys[2])).to.be.false;
       expect(set.guid).to.not.eq(guidBefore);
@@ -507,6 +515,7 @@ describe("KeySet", () => {
       const guidBefore = set.guid;
       set.delete(keys[1]);
       expect(set.size).to.eq(2);
+      expect(set.instanceKeysCount).to.eq(2);
       expect(set.has(keys[1])).to.be.false;
       expect(set.guid).to.not.eq(guidBefore);
     });
@@ -518,6 +527,7 @@ describe("KeySet", () => {
       const guidBefore = set.guid;
       set.delete([keys[1], keys[2]]);
       expect(set.size).to.eq(1);
+      expect(set.instanceKeysCount).to.eq(1);
       expect(set.has(keys[1])).to.be.false;
       expect(set.has(keys[2])).to.be.false;
       expect(set.guid).to.not.eq(guidBefore);
@@ -530,6 +540,7 @@ describe("KeySet", () => {
       const guidBefore = set.guid;
       set.delete(props[1]);
       expect(set.size).to.eq(2);
+      expect(set.instanceKeysCount).to.eq(2);
       expect(set.has(props[1])).to.be.false;
       expect(set.guid).to.not.eq(guidBefore);
     });
@@ -541,6 +552,7 @@ describe("KeySet", () => {
       const guidBefore = set.guid;
       set.delete([props[1], props[2]]);
       expect(set.size).to.eq(1);
+      expect(set.instanceKeysCount).to.eq(1);
       expect(set.has(props[1])).to.be.false;
       expect(set.has(props[2])).to.be.false;
       expect(set.guid).to.not.eq(guidBefore);

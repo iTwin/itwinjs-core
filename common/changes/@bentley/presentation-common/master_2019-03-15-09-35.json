@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fix creating a KeySet from EntityProps which have a `type` property",
+      "packageName": "@bentley/presentation-common",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-common",
+  "email": "grigas.p@gmail.com"
+}
