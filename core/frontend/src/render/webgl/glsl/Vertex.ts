@@ -6,7 +6,7 @@
 
 import { assert } from "@bentley/bentleyjs-core";
 import { VertexShaderBuilder, VariableType } from "../ShaderBuilder";
-import { Matrix3, Matrix4 } from "../Matrix";
+import { Matrix4 } from "../Matrix";
 import { TextureUnit, RenderPass } from "../RenderFlags";
 import { GLSLDecode } from "./Decode";
 import { addLookupTable } from "./LookupTable";
@@ -95,18 +95,8 @@ export function addModelViewMatrix(vert: VertexShaderBuilder): void {
 }
 
 export function addNormalMatrix(vert: VertexShaderBuilder) {
-  if (vert.usesInstancedGeometry) {
-    vert.addGlobal("g_nmx", VariableType.Mat3);
-    vert.addInitializer("g_nmx = mat3(MAT_MV);");
-  } else {
-    vert.addUniform("u_nmx", VariableType.Mat3, (prog) => {
-      prog.addGraphicUniform("u_nmx", (uniform, params) => {
-        const rotMat: Matrix3 | undefined = params.modelViewMatrix.getRotation();
-        if (undefined !== rotMat)
-          uniform.setMatrix3(rotMat);
-      });
-    });
-  }
+  vert.addGlobal("g_nmx", VariableType.Mat3);
+  vert.addInitializer("g_nmx = mat3(MAT_MV);");
 }
 
 const scratchLutParams = new Float32Array(4);

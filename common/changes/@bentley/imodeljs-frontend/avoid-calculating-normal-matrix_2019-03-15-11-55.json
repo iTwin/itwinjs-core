@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Eliminate display performance issue caused by normal matrix computation.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Paul.Connelly@bentley.com"
+}

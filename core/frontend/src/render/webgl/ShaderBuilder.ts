@@ -431,14 +431,13 @@ export class ShaderBuilder extends ShaderVariables {
     src.add(this.buildDeclarations());
 
     if (!isFrag) {
+      src.addline("#define MAT_NORM g_nmx");
       if (!this.usesInstancedGeometry) {
         src.addline("#define MAT_MV u_mv");
         src.addline("#define MAT_MVP u_mvp");
-        src.addline("#define MAT_NORM u_nmx");
       } else {
         src.addline("#define MAT_MV g_mv");
         src.addline("#define MAT_MVP g_mvp");
-        src.addline("#define MAT_NORM g_nmx");
       }
     } else {
       src.addline("#define FragColor gl_FragColor");
