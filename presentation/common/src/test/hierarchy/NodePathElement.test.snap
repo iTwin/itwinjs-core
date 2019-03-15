@@ -3,31 +3,36 @@
 exports[`NodePathElement fromJSON creates valid NodePathElement from JSON 1`] = `
 Object {
   "children": Array [],
-  "index": 333,
+  "index": 540,
   "isMarked": true,
   "node": Object {
-    "backColor": undefined,
+    "backColor": "rgb(
+    160,
+    109,
+    224
+  )",
     "description": undefined,
-    "foreColor": "#3AF79E",
-    "hasChildren": false,
-    "isCheckboxEnabled": true,
+    "foreColor": undefined,
+    "hasChildren": true,
+    "imageId": undefined,
+    "isCheckboxEnabled": false,
     "isCheckboxVisible": false,
-    "isChecked": true,
-    "isEditable": false,
-    "isExpanded": true,
-    "isSelectionDisabled": true,
+    "isChecked": false,
+    "isEditable": true,
+    "isExpanded": false,
+    "isSelectionDisabled": false,
     "key": Object {
       "instanceKey": Object {
-        "className": "Tajikistan",
-        "id": "0x7c4a000000278c",
+        "className": "Incredible",
+        "id": "0x90dd000000f738",
       },
       "pathFromRoot": Array [
-        "32224f6c-4c12-4d84-a248-7912933b9c0d",
-        "2ae720f0-5f5f-4380-8dcf-42b29bba3e81",
+        "4f6c4c12-d842-4248-b912-933b9c0d2ae7",
+        "20f05f5f-380c-4dcf-82b2-9bba3e810379",
       ],
       "type": "ECInstanceNode",
     },
-    "label": "payment Tasty",
+    "label": "Central Profit-focused Administrator",
   },
 }
 `;
@@ -38,9 +43,14 @@ Object {
   "index": 364,
   "isMarked": false,
   "node": Object {
+    "backColor": "rgb(
+    235,
+    134,
+    206
+  )",
     "description": "Id repellendus praesentium alias rerum et omnis aut laborum eveniet.",
-    "foreColor": "#4A97E8",
     "hasChildren": false,
+    "imageId": "multi-tasking",
     "isCheckboxEnabled": true,
     "isCheckboxVisible": true,
     "isChecked": false,
@@ -67,35 +77,36 @@ exports[`NodePathElement[] fromJSON creates valid NodePathElement[] from JSON 1`
 Array [
   Object {
     "children": Array [],
-    "index": 449,
-    "isMarked": true,
+    "index": 921,
+    "isMarked": false,
     "node": Object {
       "backColor": "rgb(
-    148,
-    184,
-    246
+    17,
+    84,
+    218
   )",
-      "description": "Est et doloribus consequatur a totam maiores nostrum voluptatum.",
+      "description": "Totam maiores nostrum voluptatum ut et culpa quisquam sapiente consequatur.",
       "foreColor": undefined,
       "hasChildren": false,
+      "imageId": undefined,
       "isCheckboxEnabled": true,
       "isCheckboxVisible": false,
-      "isChecked": false,
+      "isChecked": true,
       "isEditable": true,
       "isExpanded": false,
-      "isSelectionDisabled": true,
+      "isSelectionDisabled": false,
       "key": Object {
         "instanceKey": Object {
-          "className": "reciprocal",
-          "id": "0x3dd0000000e5f4",
+          "className": "Toys",
+          "id": "0x14bd10000010c84",
         },
         "pathFromRoot": Array [
-          "76f871cc-f32b-44c5-a308-dfaa5ba3fb6a",
-          "1a828e76-0678-4765-8002-2fa9e36e1392",
+          "cf32b4c5-a308-4dfa-a5ba-3fb6a1a828e7",
+          "60678765-0002-42fa-9e36-e13924e054c9",
         ],
         "type": "ECInstanceNode",
       },
-      "label": "Licensed wireless",
+      "label": "Jamaican Dollar multi-byte Personal Loan Account",
     },
   },
   Object {
@@ -104,27 +115,28 @@ Array [
     "isMarked": true,
     "node": Object {
       "backColor": "rgb(
-    168,
-    43,
-    21
+    239,
+    86,
+    223
   )",
       "description": undefined,
-      "foreColor": "#9861B9",
+      "foreColor": "#1B91A2",
       "hasChildren": true,
+      "imageId": "Home Loan Account",
       "isCheckboxEnabled": false,
       "isCheckboxVisible": true,
-      "isChecked": true,
+      "isChecked": false,
       "isEditable": true,
       "isExpanded": true,
-      "isSelectionDisabled": false,
+      "isSelectionDisabled": true,
       "key": Object {
         "instanceKey": Object {
-          "className": "ADP",
-          "id": "0x43600000008c46",
+          "className": "Computer",
+          "id": "0xccf300000044e9",
         },
         "pathFromRoot": Array [
-          "ad04dc4f-3625-42e7-b2a4-3fc7a77eaccb",
-          "a7f48a6e-6794-4f2c-b6cb-cfed6e58f270",
+          "4dc4f362-52e7-472a-83fc-7a77eaccba7f",
+          "48a6e679-4f2c-436c-bcfe-d6e58f2700ea",
         ],
         "type": "ECInstanceNode",
       },
@@ -142,27 +154,28 @@ Array [
     "isMarked": false,
     "node": Object {
       "backColor": "rgb(
-    120,
-    9,
-    138
+    251,
+    217,
+    236
   )",
       "description": "Ad beatae sunt asperiores labore ipsa et provident voluptatem natus.",
-      "foreColor": "#02EE0D",
+      "foreColor": "#D7708F",
       "hasChildren": true,
+      "imageId": "Rustic Fresh Sausages",
       "isCheckboxEnabled": true,
       "isCheckboxVisible": true,
-      "isChecked": true,
-      "isEditable": true,
-      "isExpanded": true,
-      "isSelectionDisabled": false,
+      "isChecked": false,
+      "isEditable": false,
+      "isExpanded": false,
+      "isSelectionDisabled": true,
       "key": Object {
         "instanceKey": Object {
-          "className": "Bike",
-          "id": "0xb9f200000135bc",
+          "className": "transform",
+          "id": "0xecf000000d08c",
         },
         "pathFromRoot": Array [
-          "210fc227-a508-4cc2-9589-8a907d468035",
-          "733f4777-de2b-4507-a6eb-63211a04ad25",
+          "227a508c-c2d5-4898-a907-d468035733f4",
+          "777de2b5-07a6-4eb6-b211-a04ad25d5f62",
         ],
         "type": "ECInstanceNode",
       },
@@ -171,35 +184,35 @@ Array [
   },
   Object {
     "children": Array [],
-    "index": 570,
-    "isMarked": true,
+    "index": 231,
+    "isMarked": false,
     "node": Object {
       "backColor": "rgb(
-    253,
-    184,
-    100
+    204,
+    243,
+    193
   )",
-      "description": "Esse totam numquam sed cumque dolore quam tempore.",
-      "foreColor": "#3FFB7F",
+      "description": "Earum a eligendi quos.",
+      "foreColor": "#FB6C15",
       "hasChildren": true,
       "isCheckboxEnabled": true,
       "isCheckboxVisible": true,
       "isChecked": false,
-      "isEditable": false,
-      "isExpanded": true,
-      "isSelectionDisabled": false,
+      "isEditable": true,
+      "isExpanded": false,
+      "isSelectionDisabled": true,
       "key": Object {
         "instanceKey": Object {
-          "className": "Checking Account",
-          "id": "0x1388d000001536b",
+          "className": "Music",
+          "id": "0x15f780000013ae0",
         },
         "pathFromRoot": Array [
-          "def658cf-4949-4ac5-97af-65b2063aaec0",
-          "3833ad65-ca9f-4ade-993d-ce1c57ca7546",
+          "f4949ac5-97af-465b-a063-aaec03833ad6",
+          "5ca9fade-993d-4ce1-857c-a7546114a90d",
         ],
         "type": "ECInstanceNode",
       },
-      "label": "Rubber",
+      "label": "bandwidth",
     },
   },
 ]

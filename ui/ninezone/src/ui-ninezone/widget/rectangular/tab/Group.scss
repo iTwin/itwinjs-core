@@ -2,12 +2,12 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-@import "@bentley/ui-core/lib/ui-core/colors";
+@import "@bentley/ui-core/lib/ui-core/style/themecolors";
 @import "../../_variables";
 
 .nz-widget-rectangular-tab-group {
   @mixin nz-handle-gradient($direction) {
-    background: linear-gradient($direction, $background-5, $background-4);
+    background: linear-gradient($direction, $buic-background-5, $buic-background-4);
   }
 
   $border-radius: 2px;

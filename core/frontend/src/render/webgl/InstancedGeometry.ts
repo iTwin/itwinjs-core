@@ -15,6 +15,7 @@ export class InstancedGeometry extends CachedGeometry {
   public readonly numInstances: number;
   public readonly transforms: BufferHandle;
   public readonly featureIds?: BufferHandle;
+  public readonly symbology?: BufferHandle;
   private readonly _repr: LUTGeometry;
   private readonly _ownsRepr: boolean;
 
@@ -44,31 +45,39 @@ export class InstancedGeometry extends CachedGeometry {
   public getLineWeight(params: ShaderProgramParams) { return this._repr.getLineWeight(params); }
 
   public static create(repr: LUTGeometry, ownsRepr: boolean, params: InstancedGraphicParams): InstancedGeometry | undefined {
-    const { count, transforms, featureIds } = params;
+    const { count, transforms, featureIds, symbologyOverrides } = params;
+
     assert(count > 0 && Math.floor(count) === count);
     assert(count === transforms.length / 12);
     assert(undefined === featureIds || count === featureIds.length / 3);
+    assert(undefined === symbologyOverrides || count * 8 === symbologyOverrides.length);
 
     let idBuf: BufferHandle | undefined;
     if (undefined !== featureIds && undefined === (idBuf = BufferHandle.createArrayBuffer(featureIds)))
       return undefined;
 
+    let symBuf: BufferHandle | undefined;
+    if (undefined !== symbologyOverrides && undefined === (symBuf = BufferHandle.createArrayBuffer(symbologyOverrides)))
+      return undefined;
+
     const tfBuf = BufferHandle.createArrayBuffer(transforms);
-    return undefined !== tfBuf ? new InstancedGeometry(repr, ownsRepr, count, tfBuf, idBuf) : undefined;
+    return undefined !== tfBuf ? new InstancedGeometry(repr, ownsRepr, count, tfBuf, symBuf, idBuf) : undefined;
   }
 
-  private constructor(repr: LUTGeometry, ownsRepr: boolean, count: number, transforms: BufferHandle, featureIds?: BufferHandle) {
+  private constructor(repr: LUTGeometry, ownsRepr: boolean, count: number, transforms: BufferHandle, symbology?: BufferHandle, featureIds?: BufferHandle) {
     super();
     this._repr = repr;
     this._ownsRepr = ownsRepr;
     this.numInstances = count;
     this.transforms = transforms;
     this.featureIds = featureIds;
+    this.symbology = symbology;
   }
 
   public dispose() {
     dispose(this.transforms);
     dispose(this.featureIds);
+    dispose(this.symbology);
     if (this._ownsRepr)
       this._repr.dispose();
   }
@@ -88,7 +97,11 @@ export class InstancedGeometry extends CachedGeometry {
 
   public collectStatistics(stats: RenderMemory.Statistics) {
     this._repr.collectStatistics(stats);
-    const bytesUsed = this.transforms.bytesUsed + (undefined !== this.featureIds ? this.featureIds.bytesUsed : 0);
+
+    const featureBytes = undefined !== this.featureIds ? this.featureIds.bytesUsed : 0;
+    const symBytes = undefined !== this.symbology ? this.symbology.bytesUsed : 0;
+
+    const bytesUsed = this.transforms.bytesUsed + symBytes + featureBytes;
     stats.addInstances(bytesUsed);
   }
 }

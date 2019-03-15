@@ -4,9 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Utilities */
 
-import "./colorthemes.scss";
-
 import { I18N } from "@bentley/imodeljs-i18n";
+
+/** Import color themes and Sass classes barrel file */
+import "./colorthemes.scss";
+import "./classes.scss";
 
 /**
  * Entry point for static initialization required by various

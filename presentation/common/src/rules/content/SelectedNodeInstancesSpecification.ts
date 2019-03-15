@@ -27,10 +27,8 @@ export interface SelectedNodeInstancesSpecification extends ContentSpecification
   /**
    * Filter selected nodes by specified class names. All classes are
    * accepted if not specified.
-   *
-   * @pattern ^[\w\d]+$
    */
-  acceptableClassNames?: string;
+  acceptableClassNames?: string[];
 
   /**
    * Should [[acceptableClassNames]] property be checked polymorphically. If true, all derived
@@ -39,7 +37,7 @@ export interface SelectedNodeInstancesSpecification extends ContentSpecification
   acceptablePolymorphically?: boolean;
 
   /**
-   * Identifies whether we should ignore this specification if there is already existing specification
+   * Identifies whether we should ignore this specification if there is already an existing specification
    * with higher `priority` that already provides content.
    */
   onlyIfNotHandled?: boolean;

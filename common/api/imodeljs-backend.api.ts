@@ -514,12 +514,14 @@ class DriverBundleElement extends InformationContentElement {
 }
 
 // @public
-class ECDb implements IDisposable {
+class ECDb implements IDisposable, PageableECSql {
   constructor();
   abandonChanges(): void;
+  clearStatementCache(): void;
   closeDb(): void;
   createDb(pathName: string): void;
   dispose(): void;
+  getCachedStatementCount(): number;
   importSchema(pathName: string): void;
   readonly isOpen: boolean;
   // WARNING: The type "IModelJsNative.ECDb" needs to be exported by the package (e.g. added to index.ts)
@@ -528,6 +530,9 @@ class ECDb implements IDisposable {
   openDb(pathName: string, openMode?: ECDbOpenMode): void;
   prepareSqliteStatement(sql: string): SqliteStatement;
   prepareStatement(ecsql: string): ECSqlStatement;
+  query(ecsql: string, bindings?: any[] | object, options?: PageOptions): AsyncIterableIterator<any>;
+  queryPage(ecsql: string, bindings?: any[] | object, options?: PageOptions): Promise<any[]>;
+  queryRowCount(ecsql: string, bindings?: any[] | object): Promise<number>;
   saveChanges(changeSetName?: string): void;
   withPreparedSqliteStatement<T>(sql: string, cb: (stmt: SqliteStatement) => T): T;
   withPreparedStatement<T>(ecsql: string, cb: (stmt: ECSqlStatement) => T): T;
@@ -648,7 +653,9 @@ class ECSqlStatement implements IterableIterator<any>, IDisposable {
   reset(): void;
   setIsShared(b: boolean): void;
   step(): DbResult;
+  stepAsync(): Promise<DbResult>;
   stepForInsert(): ECSqlInsertResult;
+  stepForInsertAsync(): Promise<ECSqlInsertResult>;
 }
 
 // @public
@@ -668,6 +675,8 @@ class ECSqlStatementCache {
   release(stmt: ECSqlStatement): void;
   // (undocumented)
   removeUnusedStatementsIfNecessary(): void;
+  // (undocumented)
+  replace(str: string, stmt: ECSqlStatement): void;
 }
 
 // @public
@@ -861,6 +870,30 @@ enum ExclusiveAccessOption {
   TryReuseOpenBriefcase = 2
 }
 
+// @beta
+interface ExportGraphicsInfo {
+  color: number;
+  elementId: Id64String;
+  mesh: ExportGraphicsMesh;
+}
+
+// @beta
+interface ExportGraphicsMesh {
+  indices: Int32Array;
+  normals: Float32Array;
+  params: Float32Array;
+  points: Float64Array;
+}
+
+// @beta
+interface ExportGraphicsProps {
+  angleTol?: number;
+  chordTol?: number;
+  elementIdArray: Id64Array;
+  maxEdgeLength?: number;
+  onGraphics: ExportGraphicsFunction;
+}
+
 // @public (undocumented)
 class Functional extends Schema {
   // (undocumented)
@@ -1052,14 +1085,21 @@ class IModelHost {
   static readonly platform: typeof IModelJsNative;
   static shutdown(): void;
   static startup(configuration?: IModelHostConfiguration): void;
+  static readonly tileContentRequestTimeout: number;
+  static readonly tileTreeRequestTimeout: number;
+  static readonly useTileContentThreadPool: boolean;
 }
 
 // @public
 class IModelHostConfiguration {
   appAssetsDir?: string;
   briefcaseCacheDir: string;
+  static defaultTileRequestTimeout: number;
   imodelClient?: IModelClient;
   nativePlatform?: any;
+  tileContentRequestTimeout: number;
+  tileTreeRequestTimeout: number;
+  useTileContentThreadPool: boolean;
 }
 
 // @public (undocumented)
@@ -1277,6 +1317,8 @@ module IModelJsNative {
     endMultiTxnOperation(): DbResult;
     // (undocumented)
     executeTest(testName: string, params: string): string;
+    // (undocumented)
+    exportGraphics(exportProps: ExportGraphicsProps): DbResult;
     // WARNING: The type "BriefcaseManagerResourcesRequest" needs to be exported by the package (e.g. added to index.ts)
     // WARNING: The type "BriefcaseManagerResourcesRequest" needs to be exported by the package (e.g. added to index.ts)
     // (undocumented)
@@ -1392,6 +1434,10 @@ module IModelJsNative {
     openIModel(accessToken: string, appVersion: string, projectId: GuidString, dbName: string, mode: OpenMode): DbResult;
     // (undocumented)
     openIModelFile(dbName: string, mode: OpenMode): DbResult;
+    // WARNING: The type "ErrorStatusOrResult" needs to be exported by the package (e.g. added to index.ts)
+    // WARNING: The type "IModelDb.TileContentState" needs to be exported by the package (e.g. added to index.ts)
+    // (undocumented)
+    pollTileContent(treeId: string, tileId: string): ErrorStatusOrResult<IModelStatus, IModelDb.TileContentState | Uint8Array>;
     // (undocumented)
     queryFileProperty(props: string, wantString: boolean): string | Uint8Array | undefined;
     // WARNING: The type "TxnIdString" needs to be exported by the package (e.g. added to index.ts)
@@ -1634,10 +1680,17 @@ module IModelJsNative {
     // (undocumented)
     step(): DbResult;
     // (undocumented)
+    stepAsync(callback: (result: DbResult) => void): void;
+    // (undocumented)
     stepForInsert: {
       id: string;
       status: DbResult;
     }
+    // (undocumented)
+    stepForInsertAsync(callback: (result: {
+                status: DbResult;
+                id: string;
+            }) => void): void;
   }
 
   // (undocumented)
@@ -1804,6 +1857,8 @@ module IModelJsNative {
     reset(): DbResult;
     // (undocumented)
     step(): DbResult;
+    // (undocumented)
+    stepAsync(callback: (result: DbResult) => void): void;
   }
 
 }
@@ -2458,6 +2513,7 @@ class SqliteStatement implements IterableIterator<any>, IDisposable {
   reset(): void;
   setIsShared(b: boolean): void;
   step(): DbResult;
+  stepAsync(): Promise<DbResult>;
 }
 
 // @public
@@ -2477,6 +2533,8 @@ class SqliteStatementCache {
   release(stmt: SqliteStatement): void;
   // (undocumented)
   removeUnusedStatementsIfNecessary(): void;
+  // (undocumented)
+  replace(str: string, stmt: SqliteStatement): void;
 }
 
 // @public
@@ -2782,5 +2840,6 @@ class WebMercatorModel extends SpatialModel {
 // WARNING: Unsupported export: AutoPushEventHandler
 // WARNING: Unsupported export: SchemaKey
 // WARNING: Unsupported export: SchemaMatchType
+// WARNING: Unsupported export: ExportGraphicsFunction
 // WARNING: Unsupported export: ChangeSetDescriber
 // (No @packagedocumentation comment for this package)

@@ -14,9 +14,10 @@ import { Transform } from "@bentley/geometry-core";
 
 /**
  * Provides facilities for deserializing Batched 3D Model (B3dm) tiles.
- * @hidden
+ * @internal
  */
 export namespace B3dmTileIO {
+  /** @internal */
   export class Header extends TileIO.Header {
     public readonly length: number;
     public readonly featureTableJsonLength: number;
@@ -73,7 +74,7 @@ export namespace B3dmTileIO {
 
   /**
    * Deserializes a B3DM tile.
-   * @hidden
+   * @internal
    */
   export class Reader extends GltfTileIO.Reader {
     public static create(stream: TileIO.StreamBuffer, iModel: IModelConnection, modelId: Id64String, is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem, yAxisUp: boolean, isLeaf: boolean, transformToRoot?: Transform, isCanceled?: GltfTileIO.IsCanceled): Reader | undefined {

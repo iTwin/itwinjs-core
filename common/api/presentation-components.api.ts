@@ -11,16 +11,18 @@ class ContentDataProvider implements IContentDataProvider {
   readonly displayType: string;
   // (undocumented)
   dispose(): void;
-  getContent: ((pageOptions?: PageOptions | undefined) => Promise<Readonly<Content> | undefined>) & _.MemoizedFunction;
+  getContent(pageOptions?: PageOptions): Promise<Readonly<Content> | undefined>;
   getContentDescriptor: (() => Promise<Readonly<Descriptor> | undefined>) & _.MemoizedFunction;
-  getContentSetSize: (() => Promise<number>) & _.MemoizedFunction;
+  getContentSetSize(): Promise<number>;
   imodel: IModelConnection;
   // WARNING: The type "CacheInvalidationProps" needs to be exported by the package (e.g. added to index.ts)
   protected invalidateCache(props: CacheInvalidationProps): void;
   protected isFieldHidden(_field: Field): boolean;
   keys: Readonly<KeySet>;
+  pagingSize: number | undefined;
   rulesetId: string;
   selectionInfo: Readonly<SelectionInfo> | undefined;
+  protected shouldConfigureContentDescriptor(): boolean;
   protected shouldExcludeFromDescriptor(field: Field): boolean;
 }
 
@@ -92,9 +94,10 @@ class PresentationTreeDataProvider implements IPresentationTreeDataProvider {
   constructor(imodel: IModelConnection, rulesetId: string);
   getFilteredNodePaths: (filter: string) => Promise<NodePathElement[]>;
   getNodeKey(node: TreeNodeItem): NodeKey;
-  getNodes: ((parentNode?: TreeNodeItem | undefined, pageOptions?: PageOptions | undefined) => Promise<DelayLoadedTreeNodeItem[]>) & _.MemoizedFunction;
-  getNodesCount: ((parentNode?: TreeNodeItem | undefined) => Promise<number>) & _.MemoizedFunction;
+  getNodes(parentNode?: TreeNodeItem, pageOptions?: PageOptions): Promise<DelayLoadedTreeNodeItem[]>;
+  getNodesCount(parentNode?: TreeNodeItem): Promise<number>;
   readonly imodel: IModelConnection;
+  pagingSize: number | undefined;
   readonly rulesetId: string;
 }
 

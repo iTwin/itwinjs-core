@@ -1,6 +1,20 @@
 # Change Log - @bentley/ui-framework
 
-This log was last generated on Wed, 06 Mar 2019 15:41:22 GMT and should not be manually modified.
+This log was last generated on Thu, 14 Mar 2019 14:26:49 GMT and should not be manually modified.
+
+## 0.190.0
+Thu, 14 Mar 2019 14:26:49 GMT
+
+### Updates
+
+- Added 'uifw-' to ContentLayout CSS class names and others. Fixed Status Bar separators.
+- Added 'uifw-' prefix to most ui-framework CSS class names
+- Fixed .npmignore in ui-framework to include JSON files in lib
+- Cleaned up index.scss for variables & mixins in ui-core and added classes.scss that generates CSS
+- Add SaturationPicker for use with ColorType editor.
+- Made ContentLayoutManager.setActiveLayout callable by apps
+- Update ModelSelector when changes are made to ViewState
+- Add models visibility tree
 
 ## 0.189.0
 Wed, 06 Mar 2019 15:41:22 GMT

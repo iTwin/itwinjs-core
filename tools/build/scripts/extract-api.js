@@ -66,15 +66,22 @@ child.stdout.on('data', (data) => {
 child.stderr.on('data', (data) => {
   if (data.includes("You have changed the public API signature for this project.") && isCI)
     errorCode = 1;
-  if (data.includes("The @param block") || data.includes("TSDoc") || data.includes("HTML") || data.includes("Structured content") || data.includes("The code span") || data.includes("A backslash can only be used") || data.includes("for a code fence")) {
+
+  // Workaround: Errors we currently hit in the iModel.js that will be fixed with API-extractor v7.
+  if (data.includes("The @param block") ||
+    data.includes("TSDoc") ||
+    data.includes("HTML") ||
+    data.includes("Structured content") ||
+    data.includes("The code span") ||
+    data.includes("A backslash can only be used") ||
+    data.includes("for a code fence")) {
     //Filter out these errors
   } else {
     process.stderr.write(data);
-    if (isCI) {
+    if (isCI)
       errorCode = 1;
   }
-
-})
+});
 child.on('error', (data) => {
   console.log(data);
 });

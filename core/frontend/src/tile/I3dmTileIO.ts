@@ -5,7 +5,7 @@
 /** @module Tile */
 import { TileIO } from "./TileIO";
 import { GltfTileIO } from "./GltfTileIO";
-import { ElementAlignedBox3d, FeatureTable, Feature, BatchType } from "@bentley/imodeljs-common";
+import { ColorDef, ElementAlignedBox3d, FeatureTable, Feature, BatchType } from "@bentley/imodeljs-common";
 import { Id64String, utf8ToString, JsonUtils } from "@bentley/bentleyjs-core";
 import { InstancedGraphicParams, RenderSystem } from "../render/System";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
@@ -42,9 +42,10 @@ function setTransform(transforms: Float32Array, index: number, rotation: Matrix3
 
 /**
  * Provides facilities for deserializing Batched 3D Model (B3dm) tiles.
- * @hidden
+ * @internal
  */
 export namespace I3dmTileIO {
+  /** @internal */
   export class Header extends TileIO.Header {
     public readonly length: number;
     public readonly featureTableJsonPosition: number;
@@ -76,7 +77,7 @@ export namespace I3dmTileIO {
 
   /**
    * Deserializes a I3DM tile.
-   * @hidden
+   * @internal
    */
   export class Reader extends GltfTileIO.Reader {
     public static create(stream: TileIO.StreamBuffer, iModel: IModelConnection, modelId: Id64String, is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem, yAxisUp: boolean, isLeaf: boolean, isCanceled?: GltfTileIO.IsCanceled): Reader | undefined {
@@ -98,6 +99,9 @@ export namespace I3dmTileIO {
     }
 
     public async read(): Promise<GltfTileIO.ReaderResult> {
+      const skipI3dm = false; // for debugging
+      if (skipI3dm)
+        return Promise.resolve({ readStatus: TileIO.ReadStatus.Canceled, isLeaf: this._isLeaf });
 
       // TBD... Create an actual feature table if one exists.  For now we are only reading tiles from scalable mesh which have no features.
       // NB: For reality models with no batch table, we want the model ID in the feature table
@@ -134,11 +138,14 @@ export namespace I3dmTileIO {
       const positions = json.POSITION ? new Float32Array(binary.buffer, binary.byteOffset + json.POSITION.byteOffset, count * 3) : undefined;
       const upNormals = json.NORMAL_UP ? new Float32Array(binary.buffer, binary.byteOffset + json.NORMAL_UP.byteOffset, count * 3) : undefined;
       const rightNormals = json.NORMAL_RIGHT ? new Float32Array(binary.buffer, binary.byteOffset + json.NORMAL_RIGHT.byteOffset, count * 3) : undefined;
+      const scales = json.SCALE ? new Float32Array(binary.buffer, binary.byteOffset + json.SCALE.byteOffset, count) : undefined;
+      const nonUniformScales = json.SCALE_NON_UNIFORM ? new Float32Array(binary.buffer, binary.byteOffset + json.SCALE_NON_UNIFORM.byteOffset, count * 3) : undefined;
 
       const matrix = Matrix3d.createIdentity();
       const position = Point3d.createZero();
       const upNormal = Vector3d.create(0, 0, 1);
       const rightNormal = Vector3d.create(1, 0, 0);
+      const scale = Vector3d.create(1, 1, 1);
 
       const transforms = new Float32Array(12 * count);
       for (let i = 0; i < count; i++) {
@@ -153,15 +160,55 @@ export namespace I3dmTileIO {
           if (rightNormals)
             rightNormal.set(rightNormals[index], rightNormals[index + 1], rightNormals[index + 2]);
 
+          if (scales)
+            scale.x = scale.y = scale.z = scales[i];
+
+          if (nonUniformScales) {
+            scale.x *= nonUniformScales[index + 0];
+            scale.y *= nonUniformScales[index + 1];
+            scale.z *= nonUniformScales[index + 2];
+          }
+
           Matrix3d.createRigidFromColumns(rightNormal, upNormal, AxisOrder.XYZ, matrix);
+          if (scales || nonUniformScales)
+            matrix.scaleColumnsInPlace(scale.x, scale.y, scale.z);
+
           setTransform(transforms, i, matrix, position);
         }
       }
 
-      // ###TODO: Use actual feature IDs if feature table exists
+      // ###TODO_INSTANCING: Use actual feature IDs if feature table exists
       const featureIds = new Uint8Array(3 * count);
 
-      return { count, transforms, featureIds };
+      // ###TODO_INSTANCING: Remove me when feature complete...
+      const testSymbologyOverrides = false;
+      let symbologyOverrides: Uint8Array | undefined;
+      if (testSymbologyOverrides) {
+        const colors = [ColorDef.red, ColorDef.green, ColorDef.blue, ColorDef.white];
+        const weights = [1, 4, 8, 12, 16];
+        const codes = [0, 1, 2, 3, 4, 5, 6, 7, 8];
+        const alphas = [20, 127, 220];
+
+        symbologyOverrides = new Uint8Array(count * 8);
+        for (let i = 0; i < count; i++) {
+          const index = i * 8;
+          const color = colors[i % colors.length].colors;
+          const weight = weights[i % weights.length];
+          const code = codes[i % codes.length];
+          const alpha = alphas[i % alphas.length];
+          const overrideAlpha = true;
+
+          symbologyOverrides[index + 0] = overrideAlpha ? 78 : 74; // alpha 74; // OvrFlags: Rgb | Weight | LineCode
+          symbologyOverrides[index + 1] = weight;
+          symbologyOverrides[index + 2] = code;
+          symbologyOverrides[index + 4] = color.r;
+          symbologyOverrides[index + 5] = color.g;
+          symbologyOverrides[index + 6] = color.b;
+          symbologyOverrides[index + 7] = alpha;
+        }
+      }
+
+      return { count, transforms, symbologyOverrides, featureIds };
     }
   }
 }

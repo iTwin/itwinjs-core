@@ -261,6 +261,29 @@ class Quantity implements QuantityProps {
   readonly unit: UnitProps;
 }
 
+// WARNING: CHAR_COMMA has incomplete type information
+// WARNING: CHAR_SPACE has incomplete type information
+// WARNING: CHAR_NUMBER has incomplete type information
+// WARNING: CHAR_PLUS has incomplete type information
+// WARNING: CHAR_MINUS has incomplete type information
+// WARNING: CHAR_PERIOD has incomplete type information
+// WARNING: CHAR_SLASH has incomplete type information
+// WARNING: CHAR_DIVISION_SLASH has incomplete type information
+// WARNING: CHAR_FRACTION_SLASH has incomplete type information
+// WARNING: CHAR_ONE_QUARTER has incomplete type information
+// WARNING: CHAR_ONE_HALF has incomplete type information
+// WARNING: CHAR_THREE_QUARTER has incomplete type information
+// WARNING: CHAR_DIGIT_ZERO has incomplete type information
+// WARNING: CHAR_DIGIT_NINE has incomplete type information
+// WARNING: CHAR_UPPER_E has incomplete type information
+// WARNING: CHAR_LOWER_E has incomplete type information
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal
+class QuantityConstants {
+  static readonly LocaleSpecificDecimalSeparator: string;
+  static readonly LocaleSpecificThousandSeparator: string;
+}
+
 // @alpha
 class QuantityError extends BentleyError {
   constructor(errorNumber: number, message?: string);

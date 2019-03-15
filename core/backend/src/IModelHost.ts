@@ -6,7 +6,7 @@
 
 import { BeEvent, Logger, IModelStatus } from "@bentley/bentleyjs-core";
 import { Config, IModelClient, UrlDiscoveryClient } from "@bentley/imodeljs-clients";
-import { BentleyStatus, IModelError } from "@bentley/imodeljs-common";
+import { BentleyStatus, IModelError, MobileRpcConfiguration } from "@bentley/imodeljs-common";
 import * as path from "path";
 import { BisCore } from "./BisCore";
 import { BriefcaseManager } from "./BriefcaseManager";
@@ -118,8 +118,9 @@ export class IModelHost {
     if (IModelHost.configuration)
       throw new IModelError(BentleyStatus.ERROR, "startup may only be called once", Logger.logError, loggingCategory, () => (configuration));
 
-    this.validateNodeJsVersion();
-
+    if (!MobileRpcConfiguration.isMobileBackend) {
+      this.validateNodeJsVersion();
+    }
     this.backendVersion = require("../package.json").version;
     initializeRpcBackend();
 

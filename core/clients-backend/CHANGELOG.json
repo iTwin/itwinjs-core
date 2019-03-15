@@ -2,6 +2,27 @@
   "name": "@bentley/imodeljs-clients-backend",
   "entries": [
     {
+      "version": "0.190.0",
+      "tag": "@bentley/imodeljs-clients-backend_v0.190.0",
+      "date": "Thu, 14 Mar 2019 14:26:49 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add missing peerDependencies on @bentley/geometry-core and @bentley/imodeljs-clients"
+          },
+          {
+            "comment": "Allow mobile webpack to skip node dependent module"
+          },
+          {
+            "comment": "Replaced OidcAgentClient with OidcAgentClientV2."
+          },
+          {
+            "comment": "Reverted changes to OidcAgentClient. "
+          }
+        ]
+      }
+    },
+    {
       "version": "0.189.0",
       "tag": "@bentley/imodeljs-clients-backend_v0.189.0",
       "date": "Wed, 06 Mar 2019 15:41:22 GMT",

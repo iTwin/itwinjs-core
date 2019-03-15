@@ -237,8 +237,8 @@ export class ClipMaskVolume extends RenderClipVolume implements RenderMemory.Con
 
       } else if (clippedPolygon.length > 4) {
         // Clipped polygon must be triangulated before appending
-        const triangulatedPolygonGraph = Triangulator.earcutSingleLoop(clippedPolygon);
-        Triangulator.cleanupTriangulation(triangulatedPolygonGraph);
+        const triangulatedPolygonGraph = Triangulator.createTriangulatedGraphFromSingleLoop(clippedPolygon);
+        Triangulator.flipTriangles(triangulatedPolygonGraph);
         polyfaceBuilder.addGraph(triangulatedPolygonGraph, false);
       }
     }

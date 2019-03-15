@@ -2,6 +2,39 @@
   "name": "@bentley/ui-framework",
   "entries": [
     {
+      "version": "0.190.0",
+      "tag": "@bentley/ui-framework_v0.190.0",
+      "date": "Thu, 14 Mar 2019 14:26:49 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added 'uifw-' to ContentLayout CSS class names and others. Fixed Status Bar separators."
+          },
+          {
+            "comment": "Added 'uifw-' prefix to most ui-framework CSS class names"
+          },
+          {
+            "comment": "Fixed .npmignore in ui-framework to include JSON files in lib"
+          },
+          {
+            "comment": "Cleaned up index.scss for variables & mixins in ui-core and added classes.scss that generates CSS"
+          },
+          {
+            "comment": "Add SaturationPicker for use with ColorType editor."
+          },
+          {
+            "comment": "Made ContentLayoutManager.setActiveLayout callable by apps"
+          },
+          {
+            "comment": "Update ModelSelector when changes are made to ViewState"
+          },
+          {
+            "comment": "Add models visibility tree"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.189.0",
       "tag": "@bentley/ui-framework_v0.189.0",
       "date": "Wed, 06 Mar 2019 15:41:22 GMT",

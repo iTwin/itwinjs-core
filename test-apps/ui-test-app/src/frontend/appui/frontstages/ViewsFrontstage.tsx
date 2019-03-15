@@ -57,6 +57,7 @@ import { IModelViewportControl } from "../contentviews/IModelViewport";
 import { AppStatusBarWidgetControl } from "../statusbars/AppStatusBar";
 import { VerticalPropertyGridWidgetControl } from "../widgets/PropertyGridDemoWidget";
 import { NavigationTreeWidgetControl } from "../widgets/NavigationTreeWidget";
+import { VisibilityTreeWidgetControl } from "../widgets/VisibilityTreeWidget";
 import { BreadcrumbDemoWidgetControl } from "../widgets/BreadcrumbDemoWidget";
 
 import { FeedbackDemoWidget } from "../widgets/FeedbackWidget";
@@ -139,6 +140,8 @@ export class ViewsFrontstage extends FrontstageProvider {
             widgets={[
               <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.NavigationTree" control={NavigationTreeWidgetControl}
                 applicationData={{ iModelConnection: this.iModelConnection, rulesetId: "Items" }} fillZone={true} />,
+              <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.VisibilityTree" control={VisibilityTreeWidgetControl}
+                applicationData={{ iModelConnection: this.iModelConnection }} fillZone={true} />,
             ]}
           />
         }

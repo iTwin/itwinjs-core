@@ -30,16 +30,16 @@ class PresentationManager implements IDisposable {
   static create(props?: Props): PresentationManager;
   // (undocumented)
   dispose(): void;
-  getChildren(requestOptions: Paged<HierarchyRequestOptions<IModelConnection>>, parentKey: Readonly<NodeKey>): Promise<ReadonlyArray<Readonly<Node>>>;
-  getChildrenCount(requestOptions: HierarchyRequestOptions<IModelConnection>, parentKey: Readonly<NodeKey>): Promise<number>;
-  getContent(requestOptions: Paged<ContentRequestOptions<IModelConnection>>, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>): Promise<Readonly<Content>>;
+  getContent(requestOptions: Paged<ContentRequestOptions<IModelConnection>>, descriptorOrDisplayType: Readonly<Descriptor> | string, keys: Readonly<KeySet>): Promise<Readonly<Content>>;
+  getContentAndSize(requestOptions: Paged<ContentRequestOptions<IModelConnection>>, descriptorOrDisplayType: Readonly<Descriptor> | string, keys: Readonly<KeySet>): Promise<Readonly<ContentResponse>>;
   getContentDescriptor(requestOptions: ContentRequestOptions<IModelConnection>, displayType: string, keys: Readonly<KeySet>, selection: Readonly<SelectionInfo> | undefined): Promise<Readonly<Descriptor> | undefined>;
-  getContentSetSize(requestOptions: ContentRequestOptions<IModelConnection>, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>): Promise<number>;
+  getContentSetSize(requestOptions: ContentRequestOptions<IModelConnection>, descriptorOrDisplayType: Readonly<Descriptor> | string, keys: Readonly<KeySet>): Promise<number>;
   getDistinctValues(requestOptions: ContentRequestOptions<IModelConnection>, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>, fieldName: string, maximumValueCount?: number): Promise<string[]>;
   getFilteredNodePaths(requestOptions: HierarchyRequestOptions<IModelConnection>, filterText: string): Promise<NodePathElement[]>;
   getNodePaths(requestOptions: HierarchyRequestOptions<IModelConnection>, paths: InstanceKey[][], markedIndex: number): Promise<NodePathElement[]>;
-  getRootNodes(requestOptions: Paged<HierarchyRequestOptions<IModelConnection>>): Promise<ReadonlyArray<Readonly<Node>>>;
-  getRootNodesCount(requestOptions: HierarchyRequestOptions<IModelConnection>): Promise<number>;
+  getNodes(requestOptions: Paged<HierarchyRequestOptions<IModelConnection>>, parentKey?: Readonly<NodeKey>): Promise<ReadonlyArray<Readonly<Node>>>;
+  getNodesAndCount(requestOptions: Paged<HierarchyRequestOptions<IModelConnection>>, parentKey?: Readonly<NodeKey>): Promise<Readonly<NodesResponse>>;
+  getNodesCount(requestOptions: HierarchyRequestOptions<IModelConnection>, parentKey?: Readonly<NodeKey>): Promise<number>;
   // (undocumented)
   readonly rpcRequestsHandler: RpcRequestsHandler;
   // WARNING: The type "RulesetManager" needs to be exported by the package (e.g. added to index.ts)

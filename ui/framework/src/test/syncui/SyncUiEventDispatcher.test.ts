@@ -58,7 +58,7 @@ describe("SyncUiEventDispatcher", () => {
     SyncUiEventDispatcher.onSyncUiEvent.removeListener(handleSyncUiEvent);
   });
 
-  it("test timed sync event", () => {
+  it.skip("test timed sync event", () => {
     let callbackCalled = false;
     let callbackHasExpectedEventId = false;
 
@@ -79,7 +79,7 @@ describe("SyncUiEventDispatcher", () => {
     SyncUiEventDispatcher.onSyncUiEvent.removeListener(handleSyncUiEvent);
   });
 
-  it("test multiple event Id with a timed sync event", () => {
+  it.skip("test multiple event Id with a timed sync event", () => {
     let callbackCalled = false;
     let callbackHasExpectedEventIds = false;
 
@@ -100,7 +100,7 @@ describe("SyncUiEventDispatcher", () => {
     SyncUiEventDispatcher.onSyncUiEvent.removeListener(handleSyncUiEvent);
   });
 
-  it("test multiple event Id with a multiple dispatches", () => {
+  it.skip("test multiple event Id with a multiple dispatches", () => {
     let callbackCalled = false;
     let callbackHasExpectedEventIds = false;
 
@@ -123,7 +123,7 @@ describe("SyncUiEventDispatcher", () => {
     SyncUiEventDispatcher.onSyncUiEvent.removeListener(handleSyncUiEvent);
   });
 
-  it("Test event handlers", () => {
+  it.skip("Test event handlers", () => {
     const handleSyncUiEvent = sinon.spy();
 
     SyncUiEventDispatcher.initialize();

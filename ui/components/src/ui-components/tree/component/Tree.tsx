@@ -50,7 +50,7 @@ export type NodesDeselectedCallback = OnItemsDeselectedCallback<TreeNodeItem>;
 /** Type for node renderer */
 export type NodeRenderer = (item: BeInspireTreeNode<TreeNodeItem>, props: TreeNodeProps) => React.ReactNode;
 
-/** Properties for the [[Tree]] component  */
+/** Properties for the Tree component  */
 export interface TreeProps {
   /** Nodes provider */
   dataProvider: TreeDataProvider;
@@ -185,7 +185,7 @@ export interface TreeProps {
   rowHeight?: ((node?: TreeNodeItem, index?: number) => number) | number;
 }
 
-/** State for the [[Tree]] component  */
+/** State for the Tree component  */
 export interface TreeState {
   prev: {
     dataProvider: TreeDataProvider;

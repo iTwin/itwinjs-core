@@ -4,23 +4,24 @@ exports[`TreeDataProvider getFilteredNodes returns presentation manager result 1
 Array [
   Object {
     "children": Array [],
-    "index": 841,
+    "index": 769,
     "isMarked": false,
     "node": Object {
       "backColor": "rgb(
-    32,
-    198,
-    46
+    96,
+    226,
+    226
   )",
       "description": undefined,
-      "foreColor": "#970E90",
+      "foreColor": "#E9002C",
       "hasChildren": false,
+      "imageId": "Missouri",
       "isCheckboxEnabled": false,
-      "isCheckboxVisible": true,
+      "isCheckboxVisible": false,
       "isChecked": false,
       "isEditable": true,
-      "isExpanded": false,
-      "isSelectionDisabled": true,
+      "isExpanded": true,
+      "isSelectionDisabled": false,
       "key": Object {
         "instanceKey": Object {
           "className": "Taka",
@@ -37,35 +38,32 @@ Array [
   },
   Object {
     "children": Array [],
-    "index": 992,
-    "isMarked": true,
+    "index": 136,
+    "isMarked": false,
     "node": Object {
-      "backColor": "rgb(
-    238,
-    33,
-    44
-  )",
-      "description": "Et dolorem dolorum quasi quia hic sit libero deserunt non.",
-      "foreColor": "#36C0D2",
-      "hasChildren": true,
-      "isCheckboxEnabled": true,
-      "isCheckboxVisible": false,
-      "isChecked": true,
-      "isEditable": false,
-      "isExpanded": false,
+      "backColor": undefined,
+      "description": undefined,
+      "foreColor": undefined,
+      "hasChildren": false,
+      "imageId": "SAS",
+      "isCheckboxEnabled": false,
+      "isCheckboxVisible": true,
+      "isChecked": false,
+      "isEditable": true,
+      "isExpanded": true,
       "isSelectionDisabled": false,
       "key": Object {
         "instanceKey": Object {
-          "className": "Extended",
-          "id": "0x4081000000a62f",
+          "className": "Sausages",
+          "id": "0xd4fd000001090c",
         },
         "pathFromRoot": Array [
-          "7c2dc083-a9d7-4f77-8e8f-8a394442664d",
-          "12027c22-44b3-4f70-b5dc-2845797cdfdf",
+          "dc083a9d-7f77-44e8-b8a3-94442664d120",
+          "27c2244b-3f70-475d-8284-5797cdfdf346",
         ],
         "type": "ECInstanceNode",
       },
-      "label": "Mauritius Rupee lime North Carolina",
+      "label": "hard drive",
     },
   },
 ]
@@ -74,7 +72,6 @@ Array [
 exports[`TreeDataProvider getNodes children returns presentation manager result 1`] = `
 Array [
   Object {
-    "checkBoxState": 1,
     "description": "Voluptatem repellendus sint rerum.",
     "extendedData": Object {
       "key": Object {
@@ -89,40 +86,36 @@ Array [
         "type": "ECInstanceNode",
       },
     },
+    "hasChildren": true,
     "id": "21ab590b-334a-4e25-bb59-28504ca89d67/5a887966-3af4-4c64-be5e-66399295a54e",
-    "isCheckboxDisabled": true,
-    "isCheckboxVisible": true,
     "label": "Tasty Wooden Mouse",
     "parentId": "cfa5b4da-3271-4b2d-a97b-279993a4436c",
     "style": Object {
       "colorOverrides": Object {
-        "backgroundColor": 1940403455,
+        "color": 2050433535,
       },
     },
   },
   Object {
-    "checkBoxState": 1,
     "extendedData": Object {
       "key": Object {
         "instanceKey": Object {
-          "className": "sky blue",
-          "id": "0x12ef20000006ff8",
+          "className": "Practical Plastic Fish",
+          "id": "0x17dfb0000004a94",
         },
         "pathFromRoot": Array [
-          "4a1d5363-4882-4980-9817-3db762e53773",
-          "76d7efbb-df5e-470a-8764-c60c82aebaa5",
+          "53634882-9809-4817-bdb7-62e5377376d7",
+          "efbbdf5e-70a4-4764-860c-82aebaa5384c",
         ],
         "type": "ECInstanceNode",
       },
     },
-    "hasChildren": true,
-    "id": "76d7efbb-df5e-470a-8764-c60c82aebaa5/4a1d5363-4882-4980-9817-3db762e53773",
-    "isCheckboxVisible": true,
-    "label": "action-items",
+    "id": "efbbdf5e-70a4-4764-860c-82aebaa5384c/53634882-9809-4817-bdb7-62e5377376d7",
+    "label": "Cambridgeshire reboot",
     "parentId": "cfa5b4da-3271-4b2d-a97b-279993a4436c",
     "style": Object {
       "colorOverrides": Object {
-        "color": -142622977,
+        "color": 1585037311,
       },
     },
   },
@@ -132,6 +125,7 @@ Array [
 exports[`TreeDataProvider getNodes root returns presentation manager result 1`] = `
 Array [
   Object {
+    "checkBoxState": 1,
     "extendedData": Object {
       "key": Object {
         "instanceKey": Object {
@@ -147,40 +141,36 @@ Array [
     },
     "hasChildren": true,
     "id": "14189a13-8287-4e88-b429-40a6f4fc635a/44689e68-48ae-45ef-90f6-e931fa4685cc",
-    "isCheckboxDisabled": true,
     "isCheckboxVisible": true,
     "label": "Fiji payment",
     "style": Object {
       "colorOverrides": Object {
-        "backgroundColor": -1872553985,
+        "backgroundColor": 81687551,
+        "color": -1776365569,
       },
     },
   },
   Object {
     "checkBoxState": 1,
-    "description": "Quo fuga nihil corrupti nihil eum quidem reiciendis veniam sunt.",
+    "description": "Eum quidem reiciendis veniam sunt sunt.",
     "extendedData": Object {
       "key": Object {
         "instanceKey": Object {
-          "className": "disintermediate",
-          "id": "0x74cc0000003e36",
+          "className": "national",
+          "id": "0x37190000000e92",
         },
         "pathFromRoot": Array [
-          "979d0b9c-0ad3-4c15-a225-8d91174cf691",
-          "c86639b7-62a6-4c71-b7b4-13aa82a1d6b7",
+          "c0ad3c15-e225-48d9-9174-cf691c86639b",
+          "762a6c71-77b4-413a-a82a-1d6b76624dbc",
         ],
         "type": "ECInstanceNode",
       },
     },
-    "hasChildren": true,
-    "id": "c86639b7-62a6-4c71-b7b4-13aa82a1d6b7/979d0b9c-0ad3-4c15-a225-8d91174cf691",
+    "icon": "orange",
+    "id": "762a6c71-77b4-413a-a82a-1d6b76624dbc/c0ad3c15-e225-48d9-9174-cf691c86639b",
+    "isCheckboxDisabled": true,
     "isCheckboxVisible": true,
-    "label": "application national Rustic Frozen Bike",
-    "style": Object {
-      "colorOverrides": Object {
-        "backgroundColor": 793823743,
-      },
-    },
+    "label": "Assimilated International Investment Account",
   },
 ]
 `;

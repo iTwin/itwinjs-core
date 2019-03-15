@@ -9,9 +9,9 @@ $desktop-tool-stripe-height: 22px;
 
 $icon-size: 16px;
 $icon-color: $buic-icon-color;
-$hovered-icon-color: $primary-tone;
+$hovered-icon-color: $buic-foreground-primary-tone;
 $pressed-icon-color: $buic-icon-color-reverse;
-$active-icon-color: $primary-base;
+$active-icon-color: $buic-foreground-primary;
 $disabled-icon-color: $buic-icon-color-disabled;
 $icon-shadow-color: $buic-icon-color-reverse;
 $icon-shadow: drop-shadow(0 1px 0 $icon-shadow-color);
@@ -121,7 +121,7 @@ $components-enumbuttongroup-editor-space-between-toolbar-items: 1px;
   }
 
   &:active:not(.nz-is-disabled) {
-    background: $primary-tone;
+    background: $buic-foreground-primary-tone;
     color: $buic-foreground-body-reverse;
     transition-duration: 150ms;
     transition-timing-function: cubic-bezier(1, 0.1, 1, 0.5);
@@ -134,7 +134,7 @@ $components-enumbuttongroup-editor-space-between-toolbar-items: 1px;
       transition-duration: 0s;
 
       >i {
-        color: $primary-base;
+        color: $buic-foreground-primary;
         filter: $no-shadow;
         transition-duration: 150ms;
         transition-timing-function: cubic-bezier(1, 0.1, 1, 0.5);
@@ -148,7 +148,7 @@ $components-enumbuttongroup-editor-space-between-toolbar-items: 1px;
         content: '';
         display: block;
         position: absolute;
-        background: $primary-base;
+        background: $buic-foreground-primary;
         left: 3px;
         top: ($components-enumbuttongroup-editor-item-height - $desktop-tool-stripe-height) / 2;
         border-radius: 2px;

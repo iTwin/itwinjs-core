@@ -10,7 +10,7 @@ import {
   ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontMap, FontMapProps, FontProps,
   IModel, IModelError, IModelNotFoundResponse, IModelProps, IModelStatus, IModelToken, IModelVersion, ModelProps, ModelSelectorProps,
   PropertyCallback, SheetProps, SnapRequestProps, SnapResponseProps, ThumbnailProps, TileTreeProps, ViewDefinitionProps, ViewQueryParams,
-  ViewStateProps, IModelCoordinatesResponseProps, GeoCoordinatesResponseProps, PageOptions, kPagingDefaultOptions, PagableECSql,
+  ViewStateProps, IModelCoordinatesResponseProps, GeoCoordinatesResponseProps, PageOptions, kPagingDefaultOptions, PageableECSql,
 } from "@bentley/imodeljs-common";
 import * as path from "path";
 import * as os from "os";
@@ -22,6 +22,7 @@ import { ECSqlStatement, ECSqlStatementCache } from "./ECSqlStatement";
 import { Element, Subject } from "./Element";
 import { ElementAspect } from "./ElementAspect";
 import { Entity } from "./Entity";
+import { ExportGraphicsProps } from "./ExportGraphics";
 import { IModelJsNative } from "./IModelJsNative";
 import { Model } from "./Model";
 import { Relationship, RelationshipProps, Relationships } from "./Relationship";
@@ -114,7 +115,7 @@ export class OpenParams {
  * IModelDb raises a set of events to allow apps and subsystems to track IModelDb object life cycle, including [[onOpen]] and [[onOpened]].
  * @see [learning about IModelDb]($docs/learning/backend/IModelDb.md)
  */
-export class IModelDb extends IModel implements PagableECSql {
+export class IModelDb extends IModel implements PageableECSql {
   public static readonly defaultLimit = 1000; // default limit for batching queries
   public static readonly maxLimit = 10000; // maximum limit for batching queries
   /** Event called after a changeset is applied to this IModelDb. */
@@ -500,7 +501,7 @@ export class IModelDb extends IModel implements PagableECSql {
     });
   }
 
-  /** Execute a pagable query.
+  /** Execute a pageable query.
    * The result of the query is async iterator over the rows. The iterator will get next page automatically once rows in current page has been read.
    * [ECSQL row]($docs/learning/ECSQLRowFormat).
    *
@@ -1057,6 +1058,43 @@ export class IModelDb extends IModel implements PagableECSql {
     activity.enter();
     const resultString: string = this.nativeDb.getGeoCoordinatesFromIModelCoordinates(props);
     return JSON.parse(resultString) as GeoCoordinatesResponseProps;
+  }
+
+  /** Export meshes suitable for graphics APIs from arbitrary geometry in elements in this IModelDb.
+   *  * Requests can be slow when processing many elements so it is expected that this function be used on a dedicated backend.
+   *  * Vertices are exported in the IModelDb's world coordinate system, which is right-handed with Z pointing up.
+   *  * The results of changing [ExportGraphicsProps]($imodeljs-backend) during the [ExportGraphicsProps.onGraphics]($imodeljs-backend) callback are not defined.
+   *
+   * Example that prints the mesh for element 1 to stdout in [OBJ format](https://en.wikipedia.org/wiki/Wavefront_.obj_file)
+   * ```
+   * const onGraphics: ExportGraphicsFunction = (info: ExportGraphicsInfo) => {
+   *   const mesh: ExportGraphicsMesh = info.mesh;
+   *   for (let i = 0; i < mesh.points.length; i += 3) {
+   *     process.stdout.write(`v ${mesh.points[i]} ${mesh.points[i + 1]} ${mesh.points[i + 2]}\n`);
+   *     process.stdout.write(`vn ${mesh.normals[i]} ${mesh.normals[i + 1]} ${mesh.normals[i + 2]}\n`);
+   *   }
+   *
+   *   for (let i = 0; i < mesh.params.length; i += 2) {
+   *     process.stdout.write(`vt ${mesh.params[i]} ${mesh.params[i + 1]}\n`);
+   *   }
+   *
+   *   for (let i = 0; i < mesh.indices.length; i += 3) {
+   *     const p1 = mesh.indices[i];
+   *     const p2 = mesh.indices[i + 1];
+   *     const p3 = mesh.indices[i + 2];
+   *     process.stdout.write(`f ${p1}/${p1}/${p1} ${p2}/${p2}/${p2} ${p3}/${p3}/${p3}\n`);
+   *   }
+   *
+   *   return true;
+   * };
+   *
+   * iModel.exportGraphics(({ onGraphics, elementIdArray: ["0x1"] }));
+   * ```
+   * @returns 0 if successful, status otherwise
+   * @beta Waiting for feedback from community before finalizing.
+   */
+  public exportGraphics(exportProps: ExportGraphicsProps): DbResult {
+    return this.nativeDb.exportGraphics(exportProps);
   }
 
 }

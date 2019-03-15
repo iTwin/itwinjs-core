@@ -628,33 +628,51 @@ class IModelJsModuleBuilder {
     if (!this._moduleDescription.makeConfig.dest)
       return Promise.resolve(new Result("makeConfig", 1, undefined, undefined, 'The iModelJs.buildModule.makeConfig must have a "dest" property'));
 
-    const makeConfigFullPath = path.resolve(process.cwd(), "node_modules/@bentley/webpack-tools/node_modules/@bentley/config-loader/scripts/write.js");
-    const args: string[] = [makeConfigFullPath, this._moduleDescription.makeConfig.dest];
-    if (this._moduleDescription.makeConfig.filter)
-      args.push(this._moduleDescription.makeConfig.filter);
+    try {
+      // get the path to config-loader/scripts/write.js module
+      let makeConfigFullPath;
+      const nestedConfigLoaderPath = 'node_modules/@bentley/webpack-tools/node_modules/@bentley/config-loader/scripts/write.js';
+      if (fs.existsSync(nestedConfigLoaderPath)) {
+        // use the nested config-loader dependency
+        makeConfigFullPath = path.resolve(process.cwd(), nestedConfigLoaderPath);
+      }
+      else {
+        // attempt to use the sibling config-loader dependency. Would need to be explicitly declared as a dependency in a consumer's package.json
+        const siblingConfigLoaderPath = 'node_modules/@bentley/config-loader/scripts/write.js';
+        makeConfigFullPath = path.resolve(process.cwd(), siblingConfigLoaderPath);
+      }
+      const args: string[] = [makeConfigFullPath, this._moduleDescription.makeConfig.dest];
+      if (this._moduleDescription.makeConfig.filter)
+        args.push(this._moduleDescription.makeConfig.filter);
 
-    if (this._detail > 0)
-      console.log("Starting makeConfig");
+      if (this._detail > 0)
+        console.log("Starting makeConfig");
 
-    return new Promise((resolve, _reject) => {
-      child_process.execFile("node", args, { cwd: process.cwd() }, (error: Error | null, stdout: string, stderr: string) => {
-        if (this._detail > 0)
-          console.log("Finished makeConfig");
-        resolve(new Result("makeConfig", (null !== error) || (stderr && stderr.length) ? 1 : 0, error, stdout, stderr));
-      })
-    });
+      return new Promise((resolve, _reject) => {
+        child_process.execFile("node", args, { cwd: process.cwd() }, (error: Error | null, stdout: string, stderr: string) => {
+          if (this._detail > 0)
+            console.log("Finished makeConfig");
+          resolve(new Result("makeConfig", (null !== error) || (stderr && stderr.length) ? 1 : 0, error, stdout, stderr));
+        })
+      });
+    }
+    catch (e) {
+      return new Promise((resolve, _reject) => {
+        resolve(new Result("Make Config", 1, e));
+      });
+    }
   }
 
   // find webpack executable.
   private findWebpack(): string | undefined {
     // first look in node_modules/webpack
     const webpackCommand: string = process.platform === "win32" ? "webpack.cmd" : "webpack";
-    const inLocalNodeModules = path.resolve (process.cwd(), "node_modules/.bin", webpackCommand);
-    if (fs.existsSync (inLocalNodeModules))
+    const inLocalNodeModules = path.resolve(process.cwd(), "node_modules/.bin", webpackCommand);
+    if (fs.existsSync(inLocalNodeModules))
       return inLocalNodeModules;
 
     const inToolsWebpackNodeModules = path.resolve(process.cwd(), "node_modules/@bentley/webpack-tools/node_modules/.bin", webpackCommand);
-    if (fs.existsSync (inToolsWebpackNodeModules))
+    if (fs.existsSync(inToolsWebpackNodeModules))
       return inToolsWebpackNodeModules;
 
     return undefined;

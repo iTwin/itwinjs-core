@@ -6,7 +6,6 @@
 
 import * as React from "react";
 import * as classnames from "classnames";
-import "./index.scss";
 
 /** Properties for [[Textarea]] component */
 export interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {

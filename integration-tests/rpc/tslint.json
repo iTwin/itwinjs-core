@@ -1,0 +1,7 @@
+{
+  "extends": "@bentley/build-tools/tslint.json",
+  "rules": {
+    "no-conditional-assignment": true,
+    "callable-types": false
+  }
+}

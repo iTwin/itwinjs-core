@@ -53,8 +53,8 @@ class SettingsPageComponent extends React.Component<SettingsPageProps> {
     const isLightTheme = this._isLightTheme();
     const _theme: string = UiFramework.i18n.translate((isLightTheme) ? "UiFramework:settingsStage.light" : "UiFramework:settingsStage.dark");
     return (
-      <div className="settings">
-        <div className="settings-item">
+      <div className="uifw-settings">
+        <div className="uifw-settings-item">
           <div className="panel left-panel">
             <span className="title">{this._themeTitle}</span>
             <span className="description">{this._themeDescription}</span>

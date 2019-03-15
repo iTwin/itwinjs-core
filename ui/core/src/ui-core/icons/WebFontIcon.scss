@@ -4,11 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 @import "./index";
 
-.core-icon-large { @include uicore-icons-large; }
-.core-icon-medium { @include uicore-icons-medium; }
-.core-icon-small { @include uicore-icons-small; }
-.core-icon-x-large { @include uicore-icons-x-large; }
-
 .bui-webfont-icon {
   font-family: bentley-icons-generic-webfont !important;
   speak: none;
@@ -20,5 +15,3 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
-
-

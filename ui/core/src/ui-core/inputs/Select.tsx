@@ -6,7 +6,6 @@
 
 import * as React from "react";
 import * as classnames from "classnames";
-import "./index.scss";
 
 /** Properties for [[Select]] component */
 export interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {

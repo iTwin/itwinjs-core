@@ -1,6 +1,21 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Wed, 06 Mar 2019 15:41:22 GMT and should not be manually modified.
+This log was last generated on Thu, 14 Mar 2019 14:26:49 GMT and should not be manually modified.
+
+## 0.190.0
+Thu, 14 Mar 2019 14:26:49 GMT
+
+### Updates
+
+- Add ColorEditor to list of available Type Editors including new ColorParams to specify set of colors.
+- #73219 FitViewTool enhancement to fit to isolated elements or clip volume.
+- Supply additional statistics for monitoring tile requests.
+- Resolve transparency rendering error in multi-pass compositor due to way textures are bound.
+- Cleaned up documentation related to the display system.
+- use bubble-up for keyboard events
+- Plugin Enhancements
+- Documentation for Skybox
+- Added vertex handles for line/arrow markup.
 
 ## 0.189.0
 Wed, 06 Mar 2019 15:41:22 GMT

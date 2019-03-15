@@ -7,9 +7,10 @@ import { TileIO } from "./TileIO";
 
 /**
  * Provides facilities for deserializing Composite (cmpt) tiles.
- * @hidden
+ * @internal
  */
 export namespace CompositeTileIO {
+  /** @internal */
   export class Header extends TileIO.Header {
     public readonly length: number;
     public readonly tileCount: number;

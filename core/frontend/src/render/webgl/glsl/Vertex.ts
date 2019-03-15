@@ -8,9 +8,9 @@ import { assert } from "@bentley/bentleyjs-core";
 import { VertexShaderBuilder, VariableType } from "../ShaderBuilder";
 import { Matrix3, Matrix4 } from "../Matrix";
 import { TextureUnit, RenderPass } from "../RenderFlags";
-import { GL } from "../GL";
 import { GLSLDecode } from "./Decode";
 import { addLookupTable } from "./LookupTable";
+import { addInstanceOverrides } from "./Instancing";
 
 const initializeVertLUTCoords = `
   g_vertexLUTIndex = decodeUInt32(a_pos);
@@ -25,9 +25,9 @@ const unquantizeVertexPosition = `
 vec4 unquantizeVertexPosition(vec3 pos, vec3 origin, vec3 scale) { return unquantizePosition(pos, origin, scale); }
 `;
 
+// Need to read 2 rgba values to obtain 6 16-bit integers for position
 const unquantizeVertexPositionFromLUTPrelude = `
 vec4 unquantizeVertexPosition(vec3 encodedIndex, vec3 origin, vec3 scale) {
-  // Need to read 2 rgba values to obtain 6 16-bit integers for position
   vec2 tc = g_vertexBaseCoords;
   vec4 enc1 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
   tc.x += g_vert_stepX;
@@ -43,6 +43,9 @@ const unquantizeVertexPositionFromLUTPostlude = `
   return unquantizePosition(qpos, origin, scale);
 }
 `;
+
+const computeLineWeight = "\nfloat computeLineWeight() { return g_lineWeight; }\n";
+const computeLineCode = "\nfloat computeLineCode() { return g_lineCode; }\n";
 
 const scratchMVPMatrix = new Matrix4();
 
@@ -105,49 +108,6 @@ export function addNormalMatrix(vert: VertexShaderBuilder) {
       });
     });
   }
-}
-
-function addInstanceMatrixRow(vert: VertexShaderBuilder, row: number) {
-  // 3 rows per instance; 4 floats per row; 4 bytes per float.
-  const floatsPerRow = 4;
-  const bytesPerVertex = floatsPerRow * 4;
-  const offset = row * bytesPerVertex;
-  const stride = 3 * bytesPerVertex;
-  const name = "a_instanceMatrixRow" + row;
-  vert.addAttribute(name, VariableType.Vec4, (prog) => {
-    prog.addAttribute(name, (attr, params) => {
-      const geom = params.geometry.asInstanced!;
-      assert(undefined !== geom);
-      attr.enableArray(geom.transforms, floatsPerRow, GL.DataType.Float, false, stride, offset, true);
-    });
-  });
-}
-
-const computeInstancedModelMatrix = `
-  mat4 instanceMatrix = mat4(
-    a_instanceMatrixRow0.x, a_instanceMatrixRow1.x, a_instanceMatrixRow2.x, 0.0,
-    a_instanceMatrixRow0.y, a_instanceMatrixRow1.y, a_instanceMatrixRow2.y, 0.0,
-    a_instanceMatrixRow0.z, a_instanceMatrixRow1.z, a_instanceMatrixRow2.z, 0.0,
-    a_instanceMatrixRow0.w, a_instanceMatrixRow1.w, a_instanceMatrixRow2.w, 1.0);
-  g_modelMatrix = instanceMatrix * u_rootModelMatrix;
-`;
-
-export function addInstancedModelMatrix(vert: VertexShaderBuilder) {
-  // ###TODO_INSTANCING: We can make this more efficient, reduce amount of data sent as uniforms and attributes, and reduce computation on the GPU.
-  // Get it working the straightforward way first.
-  vert.addUniform("u_rootModelMatrix", VariableType.Mat4, (prog) => {
-    // ###TODO_INSTANCING: We only need 3 rows, not 4...
-    prog.addGraphicUniform("u_rootModelMatrix", (uniform, params) => {
-      uniform.setMatrix4(params.modelMatrix);
-    });
-  });
-
-  addInstanceMatrixRow(vert, 0);
-  addInstanceMatrixRow(vert, 1);
-  addInstanceMatrixRow(vert, 2);
-
-  vert.addGlobal("g_modelMatrix", VariableType.Mat4);
-  vert.addInitializer(computeInstancedModelMatrix);
 }
 
 const scratchLutParams = new Float32Array(4);
@@ -220,6 +180,50 @@ export function addAlpha(vert: VertexShaderBuilder): void {
   });
 }
 
+export function addLineWeight(vert: VertexShaderBuilder): void {
+  vert.addUniform("u_lineWeight", VariableType.Float, (prog) => {
+    prog.addGraphicUniform("u_lineWeight", (attr, params) => {
+      attr.setUniform1f(params.geometry.getLineWeight(params.programParams));
+    });
+  });
+
+  vert.addGlobal("g_lineWeight", VariableType.Float);
+  if (vert.usesInstancedGeometry) {
+    addInstanceOverrides(vert);
+    vert.addInitializer("g_lineWeight = mix(u_lineWeight, a_instanceOverrides.g, extractInstanceBit(kOvrBit_Weight));");
+  } else {
+    vert.addInitializer("g_lineWeight = u_lineWeight;");
+  }
+
+  vert.addFunction(computeLineWeight);
+}
+
+export function replaceLineWeight(vert: VertexShaderBuilder, func: string): void {
+  vert.replaceFunction(computeLineWeight, func);
+}
+
+export function addLineCode(vert: VertexShaderBuilder): void {
+  vert.addUniform("u_lineCode", VariableType.Float, (prog) => {
+    prog.addGraphicUniform("u_lineCode", (attr, params) => {
+      attr.setUniform1f(params.geometry.getLineCode(params.programParams));
+    });
+  });
+
+  vert.addGlobal("g_lineCode", VariableType.Float);
+  if (vert.usesInstancedGeometry) {
+    addInstanceOverrides(vert);
+    vert.addInitializer("g_lineCode = mix(u_lineCode, a_instanceOverrides.b, extractInstanceBit(kOvrBit_LineCode));");
+  } else {
+    vert.addInitializer("g_lineCode = u_lineCode;");
+  }
+
+  vert.addFunction(computeLineCode);
+}
+
+export function replaceLineCode(vert: VertexShaderBuilder, func: string): void {
+  vert.replaceFunction(computeLineCode, func);
+}
+
 export namespace GLSLVertex {
   // This vertex belongs to a triangle which should not be rendered. Produce a degenerate triangle.
   // Also place it outside NDC range (for GL_POINTS)
@@ -233,7 +237,4 @@ export namespace GLSLVertex {
   export const earlyDiscard = `  if (checkForEarlyDiscard(rawPosition))` + discardVertex;
   export const discard = `  if (checkForDiscard())` + discardVertex;
   export const lateDiscard = `  if (checkForLateDiscard())` + discardVertex;
-
-  export const computeLineWeight = "\nfloat ComputeLineWeight() { return u_lineWeight; }\n";
-  export const computeLineCode = "\nfloat ComputeLineCode() { return u_lineCode; }\n";
 }

@@ -1,11 +1,13 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+ * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+ *--------------------------------------------------------------------------------------------*/
 
 const path = require("path");
 const webpack = require("webpack");
-module.exports = (env) => { return getConfig(env); };
+module.exports = (env) => {
+  return getConfig(env);
+};
 
 function getConfig(env) {
   // set sourcedir if not specified in arguments.
@@ -42,13 +44,7 @@ function getConfig(env) {
     target: "webworker",
     devtool: "source-map",
     module: {
-      rules: [
-        {
-          test: /\.js$/,
-          use: "source-map-loader",
-          enforce: "pre"
-        },
-        {
+      rules: [{
           test: /growl\.js$/,
           use: 'null-loader'
         },
@@ -83,12 +79,9 @@ function getConfig(env) {
       Buffer: true,
     },
     plugins: [
-      new webpack.DefinePlugin({
-      }),
-      new webpack.ProvidePlugin({
-      }),
-      new webpack.EnvironmentPlugin({
-      })
+      new webpack.DefinePlugin({}),
+      new webpack.ProvidePlugin({}),
+      new webpack.EnvironmentPlugin({})
     ],
   };
 

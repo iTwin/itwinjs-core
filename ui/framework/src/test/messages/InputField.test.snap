@@ -59,10 +59,10 @@ exports[`InputFieldMessage should render correctly 1`] = `
   }
 >
   <WithOnOutsideClick
-    className="nz-popup-message-inputField"
+    className="uifw-popup-message-inputField"
   >
     <WithTheme
-      className="nz-popup-message-inputField"
+      className="uifw-popup-message-inputField"
       icon={
         <i
           className="icon icon-status-error-hollow"
@@ -80,7 +80,7 @@ exports[`InputFieldMessage should render correctly 1`] = `
             />
           </WithTheme>
         }
-        className="message-inputField-content"
+        className="uifw-message-inputField-content"
         label={<div />}
       />
     </WithTheme>

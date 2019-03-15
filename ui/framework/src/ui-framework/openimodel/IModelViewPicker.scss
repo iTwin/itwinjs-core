@@ -114,7 +114,7 @@
   }
 */
   > button {
-    @extend .uicore-buttons-blue;
+    @include uicore-buttons-blue;
     margin-left: auto;
     padding-left: 3em;
     padding-right: 5em;

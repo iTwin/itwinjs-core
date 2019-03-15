@@ -2,7 +2,7 @@
 
 exports[`SheetNavigationAid <SheetNavigationAid /> renders correctly 1`] = `
 <div
-  className="sheet-navigation"
+  className="uifw-sheet-navigation"
 >
   <div
     className="gradient"

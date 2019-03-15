@@ -33,18 +33,20 @@ export interface CheckBoxRule extends RuleBase, ConditionContainer {
 
   /**
    * Should property value be inversed for the check box state.
+   *
+   * **Note:** Only makes sense when bound to an ECProperty.
    */
   useInversedPropertyValue?: boolean;
 
   /**
    * Default value to use for the check box state
+   *
+   * **Note:** Only makes sense when *not* bound to an ECProperty.
    */
   defaultValue?: boolean;
 
   /**
    * Indicates whether check box is enabled or disabled.
-   *
-   * **Note:** Only makes sense when not bound to an ECProperty.
    */
   isEnabled?: string | boolean;
 }

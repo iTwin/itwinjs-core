@@ -452,10 +452,16 @@ export class System extends RenderSystem {
   private readonly _textureBindings: TextureBinding[] = [];
 
   // NB: Increase the size of these arrays when the maximum number of attributes used by any one shader increases.
-  private readonly _curVertexAttribStates: VertexAttribState[] = [VertexAttribState.Disabled, VertexAttribState.Disabled, VertexAttribState.Disabled, VertexAttribState.Disabled,
-  VertexAttribState.Disabled, VertexAttribState.Disabled, VertexAttribState.Disabled, VertexAttribState.Disabled];
-  private readonly _nextVertexAttribStates: VertexAttribState[] = [VertexAttribState.Disabled, VertexAttribState.Disabled, VertexAttribState.Disabled, VertexAttribState.Disabled,
-  VertexAttribState.Disabled, VertexAttribState.Disabled, VertexAttribState.Disabled, VertexAttribState.Disabled];
+  private readonly _curVertexAttribStates: VertexAttribState[] = [
+    VertexAttribState.Disabled, VertexAttribState.Disabled, VertexAttribState.Disabled, VertexAttribState.Disabled,
+    VertexAttribState.Disabled, VertexAttribState.Disabled, VertexAttribState.Disabled, VertexAttribState.Disabled,
+    VertexAttribState.Disabled, VertexAttribState.Disabled, VertexAttribState.Disabled, VertexAttribState.Disabled,
+  ];
+  private readonly _nextVertexAttribStates: VertexAttribState[] = [
+    VertexAttribState.Disabled, VertexAttribState.Disabled, VertexAttribState.Disabled, VertexAttribState.Disabled,
+    VertexAttribState.Disabled, VertexAttribState.Disabled, VertexAttribState.Disabled, VertexAttribState.Disabled,
+    VertexAttribState.Disabled, VertexAttribState.Disabled, VertexAttribState.Disabled, VertexAttribState.Disabled,
+  ];
 
   // The following are initialized immediately after the System is constructed.
   private _lineCodeTexture?: TextureHandle;
@@ -716,8 +722,8 @@ export class System extends RenderSystem {
       } else {
         // ### TODO: There are a lot of inefficiencies here (what if it is a simple convex polygon... we must adjust UV params ourselves afterwards, a PolyfaceVisitor....)
         // We are also assuming that when we use the polyface visitor, it will iterate over the points in order of the entire array
-        const triangulatedPolygon = Triangulator.earcutSingleLoop(polygon);
-        Triangulator.cleanupTriangulation(triangulatedPolygon);
+        const triangulatedPolygon = Triangulator.createTriangulatedGraphFromSingleLoop(polygon);
+        Triangulator.flipTriangles(triangulatedPolygon);
 
         triangulatedPolygon.announceFaceLoops((_graph: HalfEdgeGraph, edge: HalfEdge): boolean => {
           if (!edge.isMaskSet(HalfEdgeMask.EXTERIOR)) {
@@ -808,11 +814,7 @@ export class System extends RenderSystem {
 
   // Ensure *something* is bound to suppress 'no texture assigned to unit x' warnings.
   public ensureSamplerBound(uniform: UniformHandle, unit: TextureUnit): void {
-    const index = unit - TextureUnit.Zero;
-    if (undefined === this._textureBindings[index])
-      this.lineCodeTexture!.bindSampler(uniform, unit);
-    else
-      uniform.setUniform1i(index); // use whatever's already bound - it won't actually be sampled.
+    this.lineCodeTexture!.bindSampler(uniform, unit);
   }
 
   public disposeTexture(texture: WebGLTexture) {

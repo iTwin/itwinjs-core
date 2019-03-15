@@ -32,6 +32,8 @@ export * from "./ui-framework/openimodel/ProjectDialog";
 export * from "./ui-framework/openimodel/ProjectDropdown";
 export * from "./ui-framework/openimodel/ProjectTabs";
 
+export * from "./ui-framework/imodel-components/visibility-tree/VisibilityTree";
+
 export * from "./ui-framework/overallcontent/OverallContent";
 export * from "./ui-framework/overallcontent/state";
 
@@ -111,6 +113,8 @@ export * from "./ui-framework/statusfields/MessageCenter";
 export * from "./ui-framework/statusfields/SnapMode";
 export * from "./ui-framework/statusfields/PromptField";
 export * from "./ui-framework/statusfields/SelectionInfo";
+
+export * from "./ui-framework/theme/ThemeManager";
 
 export * from "./ui-framework/tools/AnalysisAnimation";
 export * from "./ui-framework/tools/AnalysisAnimationToolSettings";

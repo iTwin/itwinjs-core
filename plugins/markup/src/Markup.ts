@@ -3,108 +3,191 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { IModelApp, Plugin, PluginAdmin, ScreenViewport } from "@bentley/imodeljs-frontend";
-import * as SVG from "svg.js";
-import { MarkupTool } from "./MarkupTool";
-import { SelectTool } from "./SelectTool";
+import { I18NNamespace } from "@bentley/imodeljs-i18n";
+import { Svg, SVG, adopt, create } from "@svgdotjs/svg.js";
+import * as redlineTool from "./RedlineTool";
+import * as textTool from "./TextEdit";
+import { SelectionSet, SelectTool } from "./SelectTool";
+import { svgInit } from "./SvgJsExt";
 import { UndoManager } from "./Undo";
 
-/** An SVG.Element with additional properties added for the Markup system. */
-export type MarkupElement = SVG.Element & {
-  _inSelection?: boolean;
-  _oldColor?: { fill: any; stroke: any; };
-};
-
 // temporary, for testing.
-function getSvgFile(uri: string) {
-  const xhr = new XMLHttpRequest();
-  xhr.open("GET", uri, false);
-  xhr.send();
-  return xhr.responseText;
-}
+// function getSvgFile(uri: string) {
+//   const xhr = new XMLHttpRequest();
+//   xhr.open("GET", uri, false);
+//   xhr.send();
+//   return xhr.responseText;
+// }
 
-class MarkupApp extends Plugin {
+export class MarkupApp extends Plugin {
   public markup?: Markup;
+  public markupNamespace: I18NNamespace;
+  public props = {
+    handles: {
+      size: 10,
+      stretch: { "fill-opacity": .85, "stroke": "black", "fill": "white" },
+      rotateLine: { "stroke": "grey", "fill-opacity": .85 },
+      rotate: { "cursor": "url(Markup/rotate.png) 12 12, auto", "fill-opacity": .85, "stroke": "black", "fill": "lightBlue" },
+      moveOutline: { "cursor": "move", "stroke-dasharray": "6,6", "fill": "none", "stroke-opacity": .85, "stroke": "white" },
+      move: { "cursor": "move", "opacity": 0, "stroke-width": 6, "stroke": "white" },
+      vertex: { "cursor": "url(cursors/crosshair.cur), crosshair", "fill-opacity": .85, "stroke": "black", "fill": "white" },
+    },
+    hilite: {
+      color: "magenta",
+      flash: "cyan",
+    },
+    dropShadow: {
+      enable: true,
+      attr: {
+        "stdDeviation": 2,
+        "dx": 0.8,
+        "dy": 1,
+        "flood-color": "#1B3838",
+      },
+    },
+    active: {
+      text: {
+        "font-family": "sans-serif",
+        "font-size": "30px",
+        "stroke": "red",
+        "fill": "red",
+      },
+      element: {
+        "stroke": "red",
+        "stroke-opacity": 0.8,
+        "stroke-width": 3,
+        "fill-opacity": 0.2,
+        "fill": "blue",
+      },
+    },
+    text: {
+      startValue: "Note: ",
+      edit: {
+        box: { "fill": "lightGrey", "fill-opacity": .1, "stroke-opacity": .85, "stroke": "lightBlue" },
+      },
+    },
+  };
+  private _saveDefaultToolId = "";
+  private _saveDefaultToolArgs?: any[];
 
+  /** called when the plugin is executed by its host */
   public async onExecute(_args: string[]) {
     if (this.markup) {
+      if (IModelApp.toolAdmin.defaultToolId === "Markup.Select" && (undefined === IModelApp.toolAdmin.activeTool || "Markup.Select" !== IModelApp.toolAdmin.activeTool.toolId)) {
+        IModelApp.toolAdmin.startDefaultTool();
+        return;
+      }
+
       IModelApp.toolAdmin.markupView = undefined;
       this.markup.destroy();
       this.markup = undefined;
+
+      IModelApp.toolAdmin.defaultToolId = this._saveDefaultToolId;
+      IModelApp.toolAdmin.defaultToolArgs = this._saveDefaultToolArgs;
+      this._saveDefaultToolId = "";
+      this._saveDefaultToolArgs = undefined;
+      IModelApp.toolAdmin.startDefaultTool();
       return;
     }
 
+    await this.markupNamespace.readFinished; // make sure our localized messages are ready.
     const view = IModelApp.toolAdmin.markupView = IModelApp.viewManager.selectedView;
-    if (view)
-      this.markup = new Markup(view, getSvgFile("DemoMarkup.svg"));
+    if (view) {
+      this.markup = new Markup(view);
+
+      this._saveDefaultToolId = IModelApp.toolAdmin.defaultToolId;
+      this._saveDefaultToolArgs = IModelApp.toolAdmin.defaultToolArgs;
+      IModelApp.toolAdmin.defaultToolId = "Markup.Select";
+      IModelApp.toolAdmin.defaultToolArgs = undefined;
+      IModelApp.toolAdmin.startDefaultTool();
+    }
+  }
+
+  public constructor(name: string, versions: string) {
+    super(name, versions);
+    this.markupNamespace = IModelApp.i18n.registerNamespace("MarkupTools");
+    IModelApp.tools.register(SelectTool, this.markupNamespace);
+    IModelApp.tools.registerModule(redlineTool, this.markupNamespace);
+    IModelApp.tools.registerModule(textTool, this.markupNamespace);
+  }
+
+  private _withDecorationsRemoved(fn: () => void) {
+    const markup = this.markup!;
+    markup.svgDecorations!.remove();
+    markup.svgDynamics!.remove();
+    IModelApp.toolAdmin.startDefaultTool();
+    fn();
+    markup.svgContainer!.add(markup.svgDecorations!);
+    markup.svgContainer!.add(markup.svgDynamics!);
+
+  }
+  public readMarkupSvg(): string | undefined {
+    let svgData: string | undefined;
+    const markup = this.markup;
+    if (markup && markup.svgContainer)
+      this._withDecorationsRemoved(() => svgData = markup.svgContainer!.svg());
+    return svgData;
   }
 }
 
-/**
- * The set of currently selected SVG elements. When elements are added to the set, they are hilited.
- */
-export class SelectionSet {
-  public readonly elements = new Set<MarkupElement>();
-  public get size() { return this.elements.size; }
-  public get isActive() { return this.size !== 0; }
-  public has(el: MarkupElement) { return this.elements.has(el); }
-  public emptyAll(): void {
-    this.elements.forEach((el) => Markup.unHilite(el));
-    this.elements.clear();
-  }
-  public add(el: MarkupElement) {
-    this.elements.add(el);
-    Markup.hilite(el);
-  }
-  public drop(el: MarkupElement): boolean {
-    if (!this.elements.delete(el))
-      return false;
-    Markup.unHilite(el);
-    return true;
-  }
-  public deleteAll(undo: UndoManager) {
-    undo.doGroup(() => this.elements.forEach((el) => { undo.onDelete(el); el.remove(); }));
-    this.emptyAll();
-  }
-  public reposition(undo: UndoManager, fn: (el: MarkupElement) => void) {
-    undo.doGroup(() => this.elements.forEach((el) => {
-      const oldParent = el.parent() as MarkupElement;
-      const oldPos = el.position();
-      fn(el);
-      undo.onRepositioned(el, oldPos, oldParent);
-    }));
-  }
-}
-
+const dropShadowId = "markup-dropShadow";
 /**
  * The current markup being created/edited. Holds the SVG elements, plus the active MarkupTool.
- * When starting a Markup, a new Div is added as a child of the ScreenViewport's parentDiv.
+ * When starting a Markup, a new Div is added  aa child of the ScreenViewport's parentDiv.
  */
 export class Markup {
-  public static hiliteColor = "magenta";
-  public static flashColor = "cyan";
   public readonly markupDiv: HTMLDivElement;
   public readonly undo = new UndoManager();
-  public readonly selected = new SelectionSet();
-  public tool!: MarkupTool;
-  public readonly svgMarkup?: SVG.Nested;
-  public readonly svgDecorations?: SVG.Nested;
+  public readonly selected: SelectionSet;
+  public readonly svgContainer?: Svg;
+  public readonly svgMarkup?: Svg;
+  public readonly svgDynamics?: Svg;
+  public readonly svgDecorations?: Svg;
+
+  private createDropShadow(svg: Svg) {
+    let filter = SVG("#" + dropShadowId);
+    if (filter)
+      filter.remove();
+    filter = adopt(create("filter")).id(dropShadowId);
+    const effect = adopt(create("feDropShadow"));
+    effect.attr(markupApp.props.dropShadow.attr);
+    filter.add(effect);
+    svg.defs().add(filter);
+    return filter;
+  }
+  private removeSvgNamespace(svg: Svg) { svg.node.removeAttribute("xmlns:svgjs"); return svg; }
+  private addSvg(className: string) {
+    const svg = SVG().addTo(this.markupDiv).addClass(className);
+    this.removeSvgNamespace(svg);
+    const style = svg.node.style;
+    style.position = "absolute";
+    style.top = style.left = "0";
+    style.height = style.width = "100%";
+    return svg;
+  }
+  private addNested(className: string): Svg { return this.removeSvgNamespace(this.svgContainer!.nested().addClass(className)); }
+  public constructor(public vp: ScreenViewport, svgData?: string) {
+    this.markupDiv = vp.addNewDiv("overlay-markup", true, 20); // this div goes on top of the canvas, but behind UI layers
+    this.svgContainer = this.addSvg("markup-container");  // SVG container to hold both Markup SVG and svg-based Markup decorators
+    this.svgMarkup = this.addNested("markup-svg");
+    this.createDropShadow(this.svgContainer);
+    if (markupApp.props.dropShadow.enable)
+      this.svgMarkup.attr("filter", "url(#" + dropShadowId + ")");
+
+    if (svgData) {
+      this.svgMarkup.svg(svgData); // if supplied, add the SVG
+      this.svgMarkup.each(() => { }, true); // create an SVG.Element for each entry in the SVG file.
+    }
+    this.svgDynamics = this.addNested("markup-dynamics"); // only for tool dynamics of SVG graphics.
+    this.svgDecorations = this.addNested("markup-decorations"); // only for temporary decorations of SVG graphics.
+    this.selected = new SelectionSet(this.svgDecorations);
+  }
 
   /** Called when the Markup is destroyed */
   public destroy() { this.markupDiv.parentNode!.removeChild(this.markupDiv); }
   public enablePick() { this.markupDiv.style.pointerEvents = "auto"; }
   public disablePick() { this.markupDiv.style.pointerEvents = "none"; }
-
-  private static overrideColor(el: MarkupElement, color: string) {
-    if (undefined === el._oldColor)
-      el._oldColor = { fill: el.style("fill"), stroke: el.style("stroke") };
-    const toColor = (val: string) => (val === "none") ? "none" : color;
-    el.style({ fill: toColor(el._oldColor.fill), stroke: toColor(el._oldColor.stroke) });
-  }
-  public static resetColor(el: MarkupElement) { if (undefined !== el._oldColor) { el.style(el._oldColor); el._oldColor = undefined; } }
-  public static hilite(el: MarkupElement) { if (undefined === el._inSelection) { this.overrideColor(el, Markup.hiliteColor); el._inSelection = true; } }
-  public static unHilite(el: MarkupElement) { if (undefined !== el._inSelection) { this.resetColor(el); el._inSelection = undefined; } }
-  public static flash(el: MarkupElement) { if (undefined === el._inSelection) this.overrideColor(el, Markup.flashColor); }
-  public static unFlash(el: MarkupElement) { if (undefined === el._inSelection) this.resetColor(el); }
+  public setCursor(cursor: string) { this.markupDiv.style.cursor = cursor; }
 
   /** Delete all the entries in the selection set, then empty it. */
   public deleteSelected() { this.selected.deleteAll(this.undo); }
@@ -112,24 +195,13 @@ export class Markup {
   public bringToFront() { this.selected.reposition(this.undo, (el) => el.front()); }
   /** Send all the entries in the selection set to the back. */
   public sendToBack() { this.selected.reposition(this.undo, (el) => el.back()); }
-
-  public makePickable(el: MarkupElement) {
-    if (el instanceof SVG.Shape) {
-      el.attr("cursor", "move");
-      el.on("mouseenter", (ev: MouseEvent) => this.tool.onMouseEnter(ev, el));
-      el.on("mouseleave", (ev: MouseEvent) => this.tool.onMouseLeave(ev, el));
-    }
-  }
-
-  public constructor(vp: ScreenViewport, svgData: string) {
-    this.markupDiv = vp.addNewDiv("overlay-markup", true, 20); // this div goes on top of the canvas, but behind UI layers
-    const svgContainer = SVG(this.markupDiv).attr("id", "markup-container"); // SVG container to hold both Markup SVG and svg-based Markup decorators
-    this.svgMarkup = svgContainer.nested().svg(svgData).attr("id", "markup-svg").each((i, children) => this.makePickable(children[i]), true); // The actual SVG for the markup
-    this.svgDecorations = svgContainer.nested().attr("id", "markup-decorations"); // only for temporary decorations of SVG graphics.
-
-    new SelectTool(this).run();
-  }
+  /** Group all the entries in the selection set, then select the group. */
+  public groupSelected() { if (undefined !== this.svgMarkup) this.selected.groupAll(this.undo); }
+  /** Ungroup all the group entries in the selection set. */
+  public ungroupSelected() { if (undefined !== this.svgMarkup) this.selected.ungroupAll(this.undo); }
 }
+
+svgInit(); // to ensure we load the SvgJsExt extensions
 
 declare var IMODELJS_VERSIONS_REQUIRED: string;
 declare var PLUGIN_NAME: string;

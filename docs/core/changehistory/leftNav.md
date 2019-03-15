@@ -9,3 +9,17 @@
 - [0.171.0](./0.171.0.md)
 
 - [0.163.0](./0.163.0.md)
+
+---
+### [link_to changelogs docSite=changehistory text="Change Logs"]
+- [imodeljs-backend](../reference/imodeljs-backend/changelog)
+
+- [imodeljs-frontend](../reference/imodeljs-frontend/changelog)
+
+- [imodeljs-common](../reference/imodeljs-common/changelog)
+
+- [geometry-core](../reference/geometry-core/changelog)
+
+- [imodeljs-clients](../reference/imodeljs-clients/changelog)
+
+- [bentleyjs-core](../reference/bentleyjs-core/changelog)

@@ -10,7 +10,7 @@ import { GLSLFragment } from "./Fragment";
 import { createViewportQuadBuilder } from "./ViewportQuad";
 import { FrustumUniformType, fromSumOf } from "../Target";
 import { Frustum, Npc } from "@bentley/imodeljs-common";
-import { Vector3d, Point3d, Angle} from "@bentley/geometry-core";
+import { Vector3d, Point3d, Angle } from "@bentley/geometry-core";
 import { SkySphereViewportQuadGeometry } from "../CachedGeometry";
 import { GL } from "../GL";
 import { Texture } from "../Texture";

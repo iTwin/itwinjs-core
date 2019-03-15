@@ -13,6 +13,10 @@ export class MyAppFrontend {
     return SampleRpcInterface.getClient().getSampleImodels();
   }
 
+  public static async getAvailableRulesets(): Promise<string[]> {
+    return SampleRpcInterface.getClient().getAvailableRulesets();
+  }
+
   public static async openIModel(path: string): Promise<IModelConnection> {
     this.iModel = await IModelConnection.openStandalone(path, OpenMode.Readonly);
     Logger.logInfo("presentation", "Opened: " + this.iModel.name);

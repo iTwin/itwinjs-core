@@ -49,7 +49,7 @@
   }
 
   button {
-    @extend .uicore-buttons-hollow;
+    @include uicore-buttons-hollow;
     width: 110px;
   }
 }

@@ -2,7 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-@import "@bentley/ui-core/lib/ui-core/colors";
+@import "@bentley/ui-core/lib/ui-core/style/themecolors";
 
 .nzdemo-pages-home-home {
   $menu-width: 200px;
@@ -12,17 +12,17 @@
   color: #333;
 
   a {
-    color: $primary-base;
+    color: $buic-foreground-primary;
     text-decoration: none;
   }
 
   a:hover {
-    color: $primary-hover;
+    color: $buic-row-hover;
     text-decoration: underline;
   }
 
   a:active {
-    color: $primary-tone;
+    color: $buic-foreground-primary-tone;
   }
 
   .sidebar {

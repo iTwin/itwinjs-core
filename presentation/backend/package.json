@@ -1,6 +1,6 @@
 {
   "name": "@bentley/presentation-backend",
-  "version": "0.189.0",
+  "version": "0.190.0",
   "description": "Backend of iModel.js Presentation library",
   "license": "MIT",
   "repository": {
@@ -34,21 +34,21 @@
     "lint": "echo Disabled until https://github.com/palantir/tslint/issues/4148 is fixed",
     "//lint": "tslint -p ./src 1>&2",
     "pseudolocalize": "node ./node_modules/@bentley/build-tools/scripts/pseudolocalize.js --englishDir ./assets/locales/en --out ./lib/assets/locales/en-pseudo",
-    "test": " mocha --opts ../mocha.opts lib/test/**/*.js",
+    "test": " mocha --opts ../mocha.opts \"./lib/test/**/*.js\"",
     "test:watch": "npm test -- --reporter min --watch-extensions ts --watch"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "0.189.0",
-    "@bentley/imodeljs-common": "0.189.0",
-    "@bentley/imodeljs-backend": "0.189.0",
-    "@bentley/presentation-common": "0.189.0"
+    "@bentley/bentleyjs-core": "0.190.0",
+    "@bentley/imodeljs-common": "0.190.0",
+    "@bentley/imodeljs-backend": "0.190.0",
+    "@bentley/presentation-common": "0.190.0"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "0.189.0",
-    "@bentley/build-tools": "0.189.0",
-    "@bentley/imodeljs-common": "0.189.0",
-    "@bentley/imodeljs-backend": "0.189.0",
-    "@bentley/presentation-common": "0.189.0",
+    "@bentley/bentleyjs-core": "0.190.0",
+    "@bentley/build-tools": "0.190.0",
+    "@bentley/imodeljs-common": "0.190.0",
+    "@bentley/imodeljs-backend": "0.190.0",
+    "@bentley/presentation-common": "0.190.0",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
     "@types/chai-jest-snapshot": "^1.3.0",

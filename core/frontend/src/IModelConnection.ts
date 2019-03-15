@@ -303,7 +303,7 @@ export class IModelConnection extends IModel {
     return IModelReadRpcInterface.getClient().queryPage(this.iModelToken, ecsql, bindings, options);
   }
 
-  /** Execute a pagable query.
+  /** Execute a pageable query.
    * The result of the query is async iterator over the rows. The iterator will get next page automatically once rows in current page has been read.
    * [ECSQL row]($docs/learning/ECSQLRowFormat).
    *

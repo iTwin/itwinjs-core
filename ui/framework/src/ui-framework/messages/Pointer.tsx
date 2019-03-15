@@ -104,7 +104,7 @@ export class PointerMessage extends React.Component<PointerMessageProps, Pointer
       return null;
 
     const className = classnames(
-      "nz-popup-message-pointer",
+      "uifw-popup-message-pointer",
       this.props.className);
 
     return (

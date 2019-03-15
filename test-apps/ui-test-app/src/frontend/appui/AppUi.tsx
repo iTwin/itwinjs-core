@@ -22,6 +22,7 @@ import "./widgets/TableDemoWidget";
 import "./widgets/FeedbackWidget";
 import "./widgets/NavigationTreeWidget";
 import "./widgets/PropertyGridDemoWidget";
+import "./widgets/VisibilityTreeWidget";
 import "./tooluiproviders/Tool1UiProvider";
 import "./tooluiproviders/Tool2UiProvider";
 import "./statusbars/AppStatusBar";

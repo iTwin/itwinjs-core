@@ -25,7 +25,7 @@
         font-weight:            $uicore-font-weight-semibold;
         line-height:            $uicore-line-height;
         text-align:             left;
-        color:                  $uicore-text-color;
+        color:                  $buic-text-color;
     }
 
     > .message {
@@ -33,7 +33,7 @@
         display:                block;
         font-size:              $uicore-font-size-small;
         line-height:            $uicore-line-height;
-        color:                  $uicore-gray;
+        color:                  $buic-text-color-muted; // $uicore-gray;
     }
 
 
@@ -58,16 +58,14 @@
             > .uicore-inputs-select {
 
                 border-color:       $color;
-                box-shadow:         rgba( $uicore-black, 0.075 ) 0px 1px 1px inset;
+                box-shadow:         $buic-inputs-boxshadow 0px 1px 1px inset;
 
                 &:focus {
 
                     border-color:   $color;
-                    box-shadow:     rgba( $uicore-black, 0 ) 0px 1px 1px inset, rgba( $color, 0.15 ) 0px 0px 0px 2px;
+                    box-shadow:     $buic-inputs-focus-boxshadow-gradient1 0px 1px 1px inset, rgba( $color, 0.15 ) 0px 0px 0px 2px;
                 }
             }
         }
     }
 }
-
-.uicore-inputs-labeled-select { @include uicore-inputs-labeled-select; }

@@ -26,7 +26,7 @@ import {
   AuxChannelTableProps,
 } from "../render/primitives/AuxChannelTable";
 import { Id64String, JsonUtils, assert } from "@bentley/bentleyjs-core";
-import { RenderSystem, RenderGraphic, PackedFeatureTable, GraphicBranch } from "../render/System";
+import { InstancedGraphicParams, RenderSystem, RenderGraphic, PackedFeatureTable, GraphicBranch } from "../render/System";
 import { imageElementFromImageSource } from "../ImageUtil";
 import {
   ElementAlignedBox3d,
@@ -49,11 +49,11 @@ import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 import { Range2d, Point3d, Range3d, Transform } from "@bentley/geometry-core";
 
 /** Provides facilities for deserializing tiles in 'imodel' format. These tiles contain element geometry encoded into a format optimized for the imodeljs webgl renderer.
- * @hidden
+ * @internal
  */
 export namespace IModelTileIO {
   /** Flags describing the geometry contained within a tile.
-   * @hidden
+   * @internal
    */
   export const enum Flags {
     /** No special flags */
@@ -64,23 +64,25 @@ export namespace IModelTileIO {
     Incomplete = 1 << 2,
   }
 
-  /** Describes the major and minor version of the tile format supported by this front-end package. */
+  /** Describes the maximum major and minor version of the tile format supported by this front-end package.
+   * @internal
+   */
   export const enum CurrentVersion {
     /** The unsigned 16-bit major version number. If the major version specified in the tile header is greater than this value, then this
      * front-end is not capable of reading the tile content. Otherwise, this front-end can read the tile content even if the header specifies a
      * greater minor version than CurrentVersion.Minor, although some data may be skipped.
      */
-    Major = 1,
+    Major = 2,
     /** The unsigned 16-bit minor version number. If the major version in the tile header is equal to CurrentVersion.Major, then this front-end can
      * read the tile content even if the minor version in the tile header is greater than this value, although some data may be skipped.
      */
-    Minor = 4,
+    Minor = 0,
     /** The unsigned 32-bit version number derived from the 16-bit major and minor version numbers. */
     Combined = (Major << 0x10) | Minor,
   }
 
   /** Header embedded at the beginning of the binary tile data describing its contents.
-   * @hidden
+   * @internal
    */
   export class Header extends TileIO.Header {
     /** The size of this header in bytes. */
@@ -97,6 +99,8 @@ export namespace IModelTileIO {
     public readonly numElementsExcluded: number;
     /** The total number of bytes in the binary tile data, including this header */
     public readonly tileLength: number;
+    /** A bitfield wherein each set bit indicates an empty sub-volume. */
+    public readonly emptySubRanges: number;
 
     public get versionMajor(): number { return this.version >>> 0x10; }
     public get versionMinor(): number { return (this.version & 0xffff) >>> 0; }
@@ -123,6 +127,9 @@ export namespace IModelTileIO {
       this.numElementsExcluded = stream.nextUint32;
       this.tileLength = stream.nextUint32;
 
+      // empty sub-volume bit field introduced in format v02.00
+      this.emptySubRanges = this.versionMajor >= 2 ? stream.nextUint32 : 0;
+
       // Skip any unprocessed bytes in header
       const remainingHeaderBytes = this.headerLength - stream.curPos;
       assert(remainingHeaderBytes >= 0);
@@ -133,7 +140,7 @@ export namespace IModelTileIO {
     }
   }
 
-  /** @hidden */
+  /** @internal */
   class FeatureTableHeader {
     public static readFrom(stream: TileIO.StreamBuffer) {
       const length = stream.nextUint32;
@@ -153,7 +160,7 @@ export namespace IModelTileIO {
   const minElementsPerTile = 100;
 
   /** Deserializes an iModel tile.
-   * @hidden
+   * @internal
    */
   export class Reader extends GltfTileIO.Reader {
     private readonly _sizeMultiplier?: number;
@@ -201,7 +208,9 @@ export namespace IModelTileIO {
       if (emptyTile || this._isClassifier) {    // Classifier algorithm currently supports only a single tile.
         isLeaf = true;
       } else {
-        const canSkipSubdivision = header.tolerance <= maxLeafTolerance;
+        // Non-spatial (2d) models are of arbitrary scale and contain geometry like line work and especially text which
+        // can be adversely affected by quantization issues when zooming in closely.
+        const canSkipSubdivision = this._is3d && header.tolerance <= maxLeafTolerance;
         if (canSkipSubdivision) {
           if (completeTile && 0 === header.numElementsExcluded && header.numElementsIncluded <= minElementsPerTile) {
             const containsCurves = 0 !== (header.flags & IModelTileIO.Flags.ContainsCurves);
@@ -215,7 +224,7 @@ export namespace IModelTileIO {
         }
       }
 
-      return Promise.resolve(this.finishRead(isLeaf, featureTable, header.contentRange, sizeMultiplier));
+      return Promise.resolve(this.finishRead(isLeaf, featureTable, header.contentRange, header.emptySubRanges, sizeMultiplier));
     }
 
     /** @hidden */
@@ -457,13 +466,14 @@ export namespace IModelTileIO {
 
       const isPlanar = JsonUtils.asBool(primitive.isPlanar);
       const primitiveType = JsonUtils.asInt(primitive.type, Mesh.PrimitiveType.Mesh);
+      const instances = this.readInstances(primitive);
       switch (primitiveType) {
         case Mesh.PrimitiveType.Mesh:
-          return this.createMeshGraphic(primitive, displayParams, vertices, isPlanar, this.readAuxChannelTable(primitive));
+          return this.createMeshGraphic(primitive, displayParams, vertices, isPlanar, this.readAuxChannelTable(primitive), instances);
         case Mesh.PrimitiveType.Polyline:
-          return this.createPolylineGraphic(primitive, displayParams, vertices, isPlanar);
+          return this.createPolylineGraphic(primitive, displayParams, vertices, isPlanar, instances);
         case Mesh.PrimitiveType.Point:
-          return this.createPointStringGraphic(primitive, displayParams, vertices);
+          return this.createPointStringGraphic(primitive, displayParams, vertices, instances);
       }
 
       assert(false, "unhandled primitive type");
@@ -554,18 +564,59 @@ export namespace IModelTileIO {
       return AuxChannelTable.fromJSON(props);
     }
 
+    // ###TODO_INSTANCING: Remove me once feature complete...
+    private static _forceInstancing = false;
+    private static _fakeInstanceParams = {
+      transforms: new Float32Array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0]),
+      featureIds: new Uint8Array([0, 0, 0]),
+      count: 1,
+    };
+    private readInstances(primitive: any): InstancedGraphicParams | undefined {
+      if (Reader._forceInstancing)
+        return Reader._fakeInstanceParams;
+
+      const json = primitive.instances;
+      if (undefined === json)
+        return undefined;
+
+      const count = JsonUtils.asInt(json.count, 0);
+      if (count <= 0)
+        return undefined;
+
+      const featureIds = this.findBuffer(JsonUtils.asString(json.featureIds));
+      if (undefined === featureIds)
+        return undefined;
+
+      const transformBytes = this.findBuffer(JsonUtils.asString(json.transforms));
+      if (undefined === transformBytes)
+        return undefined;
+
+      // 1 transform = 3 rows of 4 floats = 12 floats per instance
+      const numFloats = transformBytes.byteLength / 4;
+      assert(Math.floor(numFloats) === numFloats);
+      assert(0 === numFloats % 12);
+
+      const transforms = new Float32Array(transformBytes.buffer, transformBytes.byteOffset, numFloats);
+
+      let symbologyOverrides: Uint8Array | undefined;
+      if (undefined !== json.symbologyOverrides)
+        symbologyOverrides = this.findBuffer(JsonUtils.asString(json.symbologyOverrides));
+
+      return { count, transforms, featureIds, symbologyOverrides };
+    }
+
     private readVertexIndices(json: any): VertexIndices | undefined {
       const bytes = this.findBuffer(json as string);
       return undefined !== bytes ? new VertexIndices(bytes) : undefined;
     }
 
-    private createPointStringGraphic(primitive: any, displayParams: DisplayParams, vertices: VertexTable): RenderGraphic | undefined {
+    private createPointStringGraphic(primitive: any, displayParams: DisplayParams, vertices: VertexTable, instances: InstancedGraphicParams | undefined): RenderGraphic | undefined {
       const indices = this.readVertexIndices(primitive.indices);
       if (undefined === indices)
         return undefined;
 
       const params = new PointStringParams(vertices, indices, displayParams.width);
-      return this._system.createPointString(params);
+      return this._system.createPointString(params, instances);
     }
 
     private readTesselatedPolyline(json: any): TesselatedPolyline | undefined {
@@ -583,7 +634,7 @@ export namespace IModelTileIO {
       };
     }
 
-    private createPolylineGraphic(primitive: any, displayParams: DisplayParams, vertices: VertexTable, isPlanar: boolean): RenderGraphic | undefined {
+    private createPolylineGraphic(primitive: any, displayParams: DisplayParams, vertices: VertexTable, isPlanar: boolean, instances: InstancedGraphicParams | undefined): RenderGraphic | undefined {
       const polyline = this.readTesselatedPolyline(primitive);
       if (undefined === polyline)
         return undefined;
@@ -593,7 +644,7 @@ export namespace IModelTileIO {
         flags = (undefined === displayParams.gradient || displayParams.gradient.isOutlined) ? PolylineTypeFlags.Edge : PolylineTypeFlags.Outline;
 
       const params = new PolylineParams(vertices, polyline, displayParams.width, displayParams.linePixels, isPlanar, flags);
-      return this._system.createPolyline(params);
+      return this._system.createPolyline(params, instances);
     }
 
     private readSurface(mesh: any, displayParams: DisplayParams): SurfaceParams | undefined {
@@ -663,7 +714,7 @@ export namespace IModelTileIO {
       return { succeeded, params };
     }
 
-    private createMeshGraphic(primitive: any, displayParams: DisplayParams, vertices: VertexTable, isPlanar: boolean, auxChannels: AuxChannelTable | undefined): RenderGraphic | undefined {
+    private createMeshGraphic(primitive: any, displayParams: DisplayParams, vertices: VertexTable, isPlanar: boolean, auxChannels: AuxChannelTable | undefined, instances: InstancedGraphicParams | undefined): RenderGraphic | undefined {
       const surface = this.readSurface(primitive, displayParams);
       if (undefined === surface)
         return undefined;
@@ -679,10 +730,10 @@ export namespace IModelTileIO {
       }
 
       const params = new MeshParams(vertices, surface, edgeParams, isPlanar, auxChannels);
-      return this._system.createMesh(params);
+      return this._system.createMesh(params, instances);
     }
 
-    private finishRead(isLeaf: boolean, featureTable: PackedFeatureTable, contentRange: ElementAlignedBox3d, sizeMultiplier?: number): GltfTileIO.ReaderResult {
+    private finishRead(isLeaf: boolean, featureTable: PackedFeatureTable, contentRange: ElementAlignedBox3d, emptySubRangeMask: number, sizeMultiplier?: number): GltfTileIO.ReaderResult {
       const graphics: RenderGraphic[] = [];
 
       if (undefined === this._nodes.Node_Root) {
@@ -745,7 +796,8 @@ export namespace IModelTileIO {
         isLeaf,
         sizeMultiplier,
         contentRange: contentRange.isNull ? undefined : contentRange,
-        renderGraphic: tileGraphic,
+        graphic: tileGraphic,
+        emptySubRangeMask,
       };
     }
   }

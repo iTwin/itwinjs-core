@@ -10,11 +10,15 @@ import { Checkbox, CheckboxProps } from "../inputs/checkbox/Checkbox";
 import { CheckBoxState } from "../enums/CheckBoxState";
 import ExpansionToggle from "./ExpansionToggle";
 import { Spinner, SpinnerSize } from "../loading/Spinner";
+import { Omit } from "../utils/typeUtils";
 
 import "./Node.scss";
 
+/** Props for node checkbox renderer */
+export type NodeCheckboxRenderProps = Omit<CheckboxProps, "onChange"> & { onChange: (checked: boolean) => void };
+
 /** Type for node checkbox renderer */
-export type NodeCheckboxRenderer = (props: CheckboxProps) => React.ReactNode;
+export type NodeCheckboxRenderer = (props: NodeCheckboxRenderProps) => React.ReactNode;
 
 /** Number of pixels the node gets offset per each hierarchy level */
 export const LEVEL_OFFSET = 20;
@@ -77,7 +81,7 @@ export default class TreeNode extends React.Component<NodeProps> {
 
     let checkbox: React.ReactNode;
     if (this.props.checkboxProps) {
-      const props: CheckboxProps = {
+      const props: NodeCheckboxRenderProps = {
         label: "",
         checked: this.props.checkboxProps.state === CheckBoxState.On,
         disabled: this.props.checkboxProps.isDisabled,
@@ -87,7 +91,7 @@ export default class TreeNode extends React.Component<NodeProps> {
       if (this.props.renderOverrides && this.props.renderOverrides.renderCheckbox) {
         checkbox = this.props.renderOverrides.renderCheckbox(props);
       } else {
-        checkbox = (<Checkbox {...props} data-testid={this.createSubComponentTestId("checkbox")} />);
+        checkbox = (<Checkbox {...props} onChange={(e) => this._onCheckboxChange(e.target.checked)} data-testid={this.createSubComponentTestId("checkbox")} />);
       }
     }
 
@@ -102,24 +106,23 @@ export default class TreeNode extends React.Component<NodeProps> {
       />
     );
 
-    const style = { ...this.props.style, paddingLeft: offset };
-
     return (
       <div
         className={className}
-        style={style}
+        style={this.props.style}
         data-testid={this.props["data-testid"]}
         onClick={this._onClick}
         onMouseDown={this.props.onMouseDown}
         onMouseUp={this.props.onMouseUp}
         onMouseMove={this.props.onMouseMove}
       >
-        {loader}
-        {toggle}
         <div
           className="contents"
+          style={{ marginLeft: offset }}
           data-testid={this.createSubComponentTestId("contents")}
         >
+          {loader}
+          {toggle}
           {checkbox}
           {icon}
           {this.props.label}
@@ -135,9 +138,9 @@ export default class TreeNode extends React.Component<NodeProps> {
     return `${this.props["data-testid"]}-${subId}`;
   }
 
-  private _onCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  private _onCheckboxChange = (checked: boolean) => {
     if (this.props.checkboxProps && this.props.checkboxProps.onClick && !this.props.checkboxProps.isDisabled)
-      this.props.checkboxProps.onClick(e.target.indeterminate ? CheckBoxState.Partial : e.target.checked ? CheckBoxState.On : CheckBoxState.Off);
+      this.props.checkboxProps.onClick(checked ? CheckBoxState.On : CheckBoxState.Off);
   }
 
   private _onCheckboxClick = (e: React.MouseEvent<HTMLInputElement>) => {

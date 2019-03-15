@@ -2,7 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-@import "../button/index.scss";
+@import "../button/hollow";
 
 .core-loadingprompt {
   height: 100%;
@@ -27,6 +27,6 @@
 
 /* cancel button */
 .loading-prompt-cancel {
-  @extend .uicore-buttons-hollow;
+  @include uicore-buttons-hollow;
   margin-top: 2em;
 }

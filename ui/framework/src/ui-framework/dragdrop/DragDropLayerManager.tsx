@@ -124,7 +124,7 @@ class DragDropLayerRendererComponent extends React.Component<DragDropLayerRender
     dragSourceArgs.initialSourceClientOffset = initialSourceClientOffset;
 
     return (
-      <div className="dragdrop-layer">
+      <div className="uifw-dragdrop-layer">
         <LayerElement args={dragSourceArgs} />
       </div>
     );

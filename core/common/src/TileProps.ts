@@ -24,7 +24,7 @@ export interface TileProps {
   transformToRoot?: TransformProps;
 }
 
-/** @hidden */
+/** @internal */
 export interface TileTreeProps {
   /** The unique identifier of this TileTree within the iModel */
   id: string;
@@ -38,4 +38,6 @@ export interface TileTreeProps {
   yAxisUp?: boolean;
   /** Optional - if defined and true, this TileTree contains only terrain tiles. */
   isTerrain?: boolean;
+  /** Optionally specifies the maximum tile format version supported. */
+  formatVersion?: number;
 }

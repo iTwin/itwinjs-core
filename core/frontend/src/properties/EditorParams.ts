@@ -18,6 +18,7 @@ export enum PropertyEditorParamTypes {
   Slider,
   SuppressUnitLabel,
   SuppressEditorLabel,
+  ColorData,
 }
 
 /**
@@ -75,6 +76,18 @@ export interface SliderEditorParams extends BasePropertyEditorParams {
   vertical?: boolean;
   /** Since slider must work with integer values define factor used to produce a integer (0.1=10, 0.01=100, 0.001=1000). */
   valueFactor?: number;
+}
+
+/**
+ * Parameters used to populate color type editor with a specific set of colors. If not specified the Color
+ * Editor will show a default palette of 16 colors.
+ */
+export interface ColorEditorParams extends BasePropertyEditorParams {
+  type: PropertyEditorParamTypes.ColorData;
+  /** array of color values to show in color picker popup. Use [[ColorByName]] enum values. Values should be 32-bit integer in the form 0xBBGGRR. */
+  colorValues: number[];
+  /** number of columns to show in color picker popup. The value of 4 is used if not defined. */
+  numColumns?: number;
 }
 
 /**
@@ -141,4 +154,4 @@ export interface SuppressLabelEditorParams extends BasePropertyEditorParams {
  */
 export type PropertyEditorParams = JsonEditorParams | RangeEditorParams | SliderEditorParams | ButtonGroupEditorParams
   | MultilineTextEditorParams | IconEditorParams | CheckBoxIconsEditorParams | SuppressUnitLabelEditorParams
-  | SuppressLabelEditorParams | InputEditorSizeParams;
+  | SuppressLabelEditorParams | InputEditorSizeParams | ColorEditorParams;

@@ -25,6 +25,15 @@ export default class SampleRpcImpl extends SampleRpcInterface {
       .map((name) => path.resolve(dir, name));
   }
 
+  public async getAvailableRulesets(): Promise<string[]> {
+    const extensions = [".PresentationRuleSet.xml", ".PresentationRuleSet.json"];
+    const dir = path.join(this.getAssetsDir(), "presentation_rules");
+    const files = fs.readdirSync(dir);
+    return files
+      .filter((fullPath) => extensions.some((ext) => fullPath.endsWith(ext)))
+      .map((fullPath) => extensions.reduce((name, ext) => path.basename(name, ext), fullPath));
+  }
+
 }
 
 /** Auto-register the impl when this file is included. */

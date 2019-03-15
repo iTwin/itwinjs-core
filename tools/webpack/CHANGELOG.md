@@ -1,6 +1,18 @@
 # Change Log - @bentley/webpack-tools
 
-This log was last generated on Wed, 06 Mar 2019 15:41:22 GMT and should not be manually modified.
+This log was last generated on Thu, 14 Mar 2019 14:26:49 GMT and should not be manually modified.
+
+## 0.190.0
+Thu, 14 Mar 2019 14:26:49 GMT
+
+### Updates
+
+- changes path to config-loader from nested to sibling dependency in order to function in non-symlinked repos that use rush/pnpm
+- First checks for nested dependency. Falls back to sibling
+- Change to fix iModelJs version string was overly broad.
+- fix issue for ios
+- Massage the version required stored in Plugins in the case of pre-release versions.
+- Cleaned up index.scss for variables & mixins in ui-core and added classes.scss that generates CSS
 
 ## 0.189.0
 Wed, 06 Mar 2019 15:41:22 GMT

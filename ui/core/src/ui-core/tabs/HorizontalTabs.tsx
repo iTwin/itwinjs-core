@@ -7,8 +7,6 @@
 import * as React from "react";
 import * as classnames from "classnames";
 
-import "./index.scss";
-
 /** Properties for the [[HorizontalTabs]] component */
 export interface HorizontalTabsProps extends React.AllHTMLAttributes<HTMLUListElement> {
   labels: string[];

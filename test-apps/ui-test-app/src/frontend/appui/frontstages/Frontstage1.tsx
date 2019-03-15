@@ -21,6 +21,7 @@ import {
   CommandItemDef,
   FrontstageManager,
   CoreTools,
+  ContentLayoutManager,
 } from "@bentley/ui-framework";
 
 import { AppStatusBarWidgetControl } from "../statusbars/AppStatusBar";
@@ -96,13 +97,29 @@ class FrontstageToolWidget extends React.Component {
   /** Command that opens a nested Frontstage */
   private get _openNestedFrontstage1() {
     return new CommandItemDef({
-      commandId: "openNestedFrontstage1",
       iconSpec: "icon-placeholder",
       labelKey: "SampleApp:buttons.openNestedFrontstage1",
       execute: async () => {
         const frontstageProvider = new NestedFrontstage1();
         const frontstageDef = frontstageProvider.initializeDef();
         await FrontstageManager.openNestedFrontstage(frontstageDef);
+      },
+    });
+  }
+
+  /** Command that opens a nested Frontstage */
+  private get _switchLayout() {
+    return new CommandItemDef({
+      iconSpec: "icon-placeholder",
+      labelKey: "SampleApp:buttons.switchLayout",
+      execute: async () => {
+        const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
+        if (activeFrontstageDef) {
+          const contentLayout = ContentLayoutManager.findLayout("TwoHalvesHorizontal");
+          if (contentLayout && activeFrontstageDef.contentGroup) {
+            ContentLayoutManager.setActiveLayout(contentLayout, activeFrontstageDef.contentGroup);
+          }
+        }
       },
     });
   }
@@ -116,14 +133,7 @@ class FrontstageToolWidget extends React.Component {
           <ActionItemButton actionItem={AppTools.item1} />
           <ActionItemButton actionItem={AppTools.item2} />
           <ActionItemButton actionItem={this._openNestedFrontstage1} />
-          <GroupButton
-            labelKey="SampleApp:buttons.toolGroup"
-            iconSpec="icon-placeholder"
-            items={[AppTools.tool1, AppTools.tool2, AppTools.item1, AppTools.item2, AppTools.item3, AppTools.item4, AppTools.item5,
-            AppTools.item6, AppTools.item7, AppTools.item8]}
-            direction={Direction.Bottom}
-            itemsInColumn={7}
-          />
+          <ActionItemButton actionItem={this._switchLayout} />
         </>
       }
     />;

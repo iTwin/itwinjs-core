@@ -1,0 +1,124 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "http://dev.bentley.com/certa.json",
+  "type": "object",
+  "description": "certa.json",
+  "required": [
+    "testBundle"
+  ],
+  "properties": {
+    "debug": {
+      "type": "boolean",
+      "description": "Run tests in debug mode. If debug is enabled, chrome and electron windows will be visible, and remote debugging will be enabled in chrome.",
+      "default": false
+    },
+    "cover": {
+      "type": "boolean",
+      "description": "Run tests in coverage mode. If cover is enabled, Certa will measure code coverage according via `nyc`.",
+      "default": false
+    },
+    "testBundle": {
+      "type": "string",
+      "description": "The path to a javascript file containing all mocha tests to be run.",
+      "examples": [
+        "./lib/dist/bundled-tests.js"
+      ]
+    },
+    "instrumentedTestBundle": {
+      "type": "string",
+      "description": "An instanbul-instrumented version of the `testBundle`. This will be used instead of `testBundle` when running with `cover` enabled.",
+      "examples": [
+        "./lib/dist/bundled-tests.instrumented.js"
+      ]
+    },
+    "backendInitModule": {
+      "type": "string",
+      "description": "The path to a JavaScript module containing backend initialization logic.\nThis module will be required in Certa's \"main\" process ***before*** initializing a test runner.\nIf the file's `module.exports` is a Promise, that Promise will also be awaited before running tests.",
+      "examples": [
+        "./lib/backend/backend.js"
+      ]
+    },
+    "ports": {
+      "type": "object",
+      "description": "Defines ports used by the chrome and electron test runners.",
+      "properties": {
+        "debugging": {
+          "type": "integer",
+          "description": "The port that will be used by the v8 inspector (in Certa's \"main\" process) to communicate with a debugger (when the `debug` option is enabled).",
+          "default": 5858
+        },
+        "frontend": {
+          "type": "integer",
+          "description": "[Chrome Only] The port that will be used to serve test assets to the frontend.",
+          "default": 3000
+        },
+        "frontendDebugging": {
+          "type": "integer",
+          "description": "[Chrome and Electron Only] The port that will be used for remote debugging (when debug is enabled).",
+          "default": 9223
+        }
+      }
+    },
+    "mochaOptions": {
+      "type": "object",
+      "description": "Defines common mocha options.",
+      "properties": {
+        "timeout": {
+          "type": "integer",
+          "description": "The default test-case timeout, in milliseconds.",
+          "default": 120000
+        },
+        "grep": {
+          "type": "string",
+          "description": "Only run tests matching this regular expression"
+        },
+        "fgrep": {
+          "type": "string",
+          "description": "Only run tests containing this string"
+        },
+        "invert": {
+          "type": "boolean",
+          "description": "Inverts grep and fgrep matches.",
+          "default": false
+        },
+        "reporter": {
+          "type": "string",
+          "description": "Specifies the mocha reporter to use.",
+          "default": "spec",
+          "examples": [
+            "spec",
+            "dot",
+            "nyan",
+            "tap",
+            "landing",
+            "list",
+            "json",
+            "min"
+          ]
+        }
+      }
+    },
+    "chromeOptions": {
+      "type": "object",
+      "description": "Defines chrome-specific options",
+      "properties": {
+        "args": {
+          "type": "array",
+          "description": "[Chrome Only] Additional chrome arguments.",
+          "default": [],
+          "items": {
+            "type": "string"
+          }
+        },
+        "publicDirs": {
+          "type": "array",
+          "description": "[Chrome Only] Directories that contain static assets which should be made available via the frontend webserver.",
+          "default": [],
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

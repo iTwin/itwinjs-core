@@ -43,7 +43,7 @@
         text-align:         left;
         vertical-align:     initial;
         white-space:        normal;
-        color:              $uicore-text-color;
+        color:              $buic-text-color;
     }
 
     &.disabled {
@@ -54,7 +54,5 @@
     &.success > .label {    color: $uicore-green; }
     &.warning > .label {    color: $uicore-orange; }
     &.error > .label {      color: $uicore-red; }
-    &.disabled > .label {   color: $uicore-gray-9; }
+    &.disabled > .label {   color: $buic-text-color-disabled; }
 }
-
-.uicore-inputs-radio { @include uicore-inputs-radio; }

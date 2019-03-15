@@ -3,7 +3,6 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 @import "../style/index";
-
 @import "./button";
 
 
@@ -16,5 +15,3 @@
         @include uicore-buttons-button-disabled;
     }
 }
-
-.uicore-buttons-disabled { @include uicore-buttons-disabled; }

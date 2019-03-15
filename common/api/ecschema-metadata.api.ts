@@ -1602,10 +1602,10 @@ class Schema implements CustomAttributeContainerProps {
   static fromJsonSync(jsonObj: object | string, context: SchemaContext): Schema;
   readonly fullName: string;
   // (undocumented)
-  getClasses(): ECClass[];
+  getClasses(): IterableIterator<ECClass>;
   getItem<T extends SchemaItem>(name: string): Promise<T | undefined>;
   // (undocumented)
-  getItems<T extends AnySchemaItem>(): T[];
+  getItems<T extends AnySchemaItem>(): IterableIterator<T>;
   getItemSync<T extends SchemaItem>(name: string): T | undefined;
   // (undocumented)
   getReference<T extends Schema>(refSchemaName: string): Promise<T | undefined>;

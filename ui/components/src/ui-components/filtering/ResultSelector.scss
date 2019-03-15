@@ -10,7 +10,7 @@
   font-size: 12px;
 
   @include uicore-font-family;
-  color: $uicore-text-color;
+  color: $buic-text-color;
 }
 
 .result-selector-current-result {
@@ -42,12 +42,12 @@
   height: 20px;
   width: 20px;
   border-style: none;
-  color: $uicore-gray-5;
+  color: $buic-foreground-muted;
   margin: 0 4px;
 }
 
 .result-selector-button:hover {
-  background-color: $uicore-gray-b;
+  background-color: $buic-row-hover; // $uicore-gray-b;
   border-radius: 2px;
 }
 
@@ -63,6 +63,6 @@
 
 .result-selector-button:disabled,
 .result-selector-button[disabled]:hover {
-  background-color: $uicore-gray-9;
+  background-color: $buic-background-control-disabled; // $uicore-gray-9;
   cursor: default;
 }

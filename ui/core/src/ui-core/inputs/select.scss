@@ -18,7 +18,7 @@
     background-image:       none;
     border:                 1px solid $buic-inputs-border;
     border-radius:          $uicore-border-radius;
-    box-shadow:             rgba( $uicore-black, 0.075 ) 0px 1px 1px inset;
+    box-shadow:             $buic-inputs-boxshadow 0px 1px 1px inset;
     transition:             border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 
     &:invalid {
@@ -48,9 +48,6 @@
 
         border-color:       $buic-inputs-border;
         outline:            0px;
-        // box-shadow:         rgba( $uicore-black, 0 ) 0px 1px 1px inset, rgba( $uicore-blue, 0.1 ) 0px 0px 0px 2px;
         box-shadow:         $buic-inputs-focus-boxshadow-gradient1 0px 1px 1px inset, $buic-inputs-focus-boxshadow-gradient2 0px 0px 0px 2px;
     }
 }
-
-.uicore-inputs-select { @include uicore-inputs-select; }

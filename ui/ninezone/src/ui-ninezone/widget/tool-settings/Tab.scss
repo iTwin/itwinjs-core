@@ -2,13 +2,13 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-@import "@bentley/ui-core/lib/ui-core/colors";
+@import "@bentley/ui-core/lib/ui-core/style/themecolors";
 @import "_variables";
 
 .nz-widget-toolSettings-tab {
   width: $nz-tab-width;
   height: $nz-tab-height;
-  background-color: $background-3;
+  background-color: $buic-background-tab-inactive;
   display: flex;
   align-items: center;
   justify-content: center;

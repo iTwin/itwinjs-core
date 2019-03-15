@@ -188,7 +188,7 @@ export class DefaultToolSettings extends React.Component<TsProps, TsState> {
     if (col.type === ColumnType.Label) {
       const labelData = this.state.labelMap.get(col.name);
       if (labelData) {
-        const className = labelData.isDisabled ? "toolSettings-label-disabled" : undefined;
+        const className = labelData.isDisabled ? "uifw-toolSettings-label-disabled" : undefined;
         return ( // return a <span> containing a label
           <span style={labelStyle} className={className} key={`${rowIndex.toString()}-${colIndex.toString()}`}>
             {labelData.label}:
@@ -249,7 +249,7 @@ export class DefaultToolSettings extends React.Component<TsProps, TsState> {
       };
 
       return (
-        <div style={gridStyle} className="toolSettingsContainer" >
+        <div style={gridStyle} className="uifw-toolSettingsContainer" >
           {rows.map((row, index) => this.getRow(row, index))}
         </div>
       );

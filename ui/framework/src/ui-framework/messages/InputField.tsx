@@ -36,7 +36,7 @@ export class InputFieldMessage extends React.Component<InputFieldMessageProps> {
    */
   private _getErrorMessage(): React.ReactNode {
     const className = classnames(
-      "nz-popup-message-inputField",
+      "uifw-popup-message-inputField",
       this.props.className);
 
     return (
@@ -46,14 +46,14 @@ export class InputFieldMessage extends React.Component<InputFieldMessageProps> {
         // TODO: dismiss onOutsideClick without immediately dismissing message
         children={
           <StatusMessage
-            className="nz-popup-message-inputField"
+            className="uifw-popup-message-inputField"
             status={Status.Error}
             icon={
-              < i className="icon icon-status-error-hollow" />
+              <i className="icon icon-status-error-hollow" />
             }
           >
             <StatusMessageLayout
-              className="message-inputField-content"
+              className="uifw-message-inputField-content"
               label={this.props.children}
               buttons={
                 <MessageButton onClick={this.props.onClose}>

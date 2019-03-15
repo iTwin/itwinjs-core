@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 @import "@bentley/ui-core/lib/ui-core/index";
 
-.ValidationTextbox {
+.uifw-ValidationTextbox {
   @include uicore-font-family;
   position: relative;
   padding: $uicore-unbordered-padding;
@@ -24,7 +24,7 @@
     border-width: 1px;
   }
   .ValidationTextbox-invalid {
-    border: 2px solid $alert-base;
+    border: 2px solid $buic-foreground-alert;
   }
   .ValidationTextbox-icon {
     position: absolute;

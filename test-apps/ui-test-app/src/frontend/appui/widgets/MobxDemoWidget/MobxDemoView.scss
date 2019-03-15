@@ -4,6 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 @import "@bentley/ui-core/lib/ui-core/index";
 
+.mobx-demo-view {
+  color: $buic-text-color;
+}
+
 .bird-name {
   width: 200px;
   display: inline-block;

@@ -6,8 +6,9 @@ import * as React from "react";
 
 import { ConfigurableUiManager, ConfigurableCreateInfo, ToolUiProvider } from "@bentley/ui-framework";
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
+import { HSVColor, ColorDef } from "@bentley/imodeljs-common";
 
-import { ColorSwatch } from "@bentley/ui-components";
+import { ColorSwatch, HueSlider, AlphaSlider, SaturationPicker, ColorPickerButton } from "@bentley/ui-components";
 import { ToolAssistanceItem, ToolAssistanceSeparator } from "@bentley/ui-ninezone";
 import { SampleAppIModelApp } from "../..";
 
@@ -23,13 +24,83 @@ class Tool1UiProvider extends ToolUiProvider {
   }
 }
 
-class Tool1Settings extends React.Component {
-  private _handleColorChange = (color: string) => {
-    const msg = `Color set to ${color}`;
+interface State {
+  alpha: number;    // slider value from 0 to 1 (ColorDef want 0-255)
+  hsv: HSVColor;
+  userColor: ColorDef;
+}
+
+class Tool1Settings extends React.Component<{}, State> {
+  constructor(props: any) {
+    super(props);
+    const hsv = new HSVColor();
+    hsv.h = 30;
+    hsv.s = 30;
+    hsv.v = 30;
+    const alpha = .5;
+    const userColor = hsv.toColorDef();
+    userColor.setAlpha(alpha * 255);
+    this.state = { alpha, hsv, userColor };
+  }
+
+  private _handleColorChange = (color: ColorDef) => {
+    const msg = `Color set to ${color.toRgbString()} alpha=${(color.getAlpha() / 255) * 100}%`;
     IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
   }
 
+  private _handleHueChange = (hue: HSVColor) => {
+    const userColor = hue.toColorDef();
+    userColor.setAlpha(this.state.alpha * 255);
+    const msg = `Hue set to ${userColor.toRgbString()} alpha=${(userColor.getAlpha() / 255) * 100}%`;
+    IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
+    this.setState({ hsv: hue, userColor });
+  }
+
+  private _handleSaturationChange = (saturation: HSVColor) => {
+    const userColor = saturation.toColorDef();
+    userColor.setAlpha(this.state.alpha * 255);
+    const msg = `Saturation set to ${userColor.toRgbString()} alpha=${(userColor.getAlpha() / 255) * 100}%`;
+    IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
+    this.setState({ hsv: saturation, userColor });
+  }
+
+  private _handleAlphaChange = (alpha: number) => {
+    const msg = `Alpha set to ${JSON.stringify(alpha * 100)}%`;
+    IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
+    const userColor = this.state.userColor.clone();
+    userColor.setAlpha(alpha * 255);
+    this.setState({ alpha, userColor });
+  }
+
+  private _onColorPick = (color: ColorDef) => {
+    const msg = `Color set to ${color.toRgbString()} alpha=${(color.getAlpha() / 255) * 100}%`;
+    IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
+    const hsvColor = HSVColor.fromColorDef(color);
+    this.setState({ userColor: color, hsv: hsvColor });
+  }
+
   public render(): React.ReactNode {
+    // const vertDivStyle: React.CSSProperties = {
+    //  height: `120px`,
+    // };
+
+    const satDivStyle: React.CSSProperties = {
+      width: `200px`,
+      height: `200px`,
+    };
+
+    /*
+    <tr>
+      <td>Green</td>
+      <td> <ColorSwatch color="rgb(0%,100%,0%)" onColorPick={this._handleColorChange} /> </td>
+    </tr>
+    */
+
+    const redDef = ColorDef.from(255, 0, 0, 0);
+    const blueDef = ColorDef.from(0, 0, 255, 0);
+    const purpleDef = new ColorDef("#800080");
+    const brownDef = new ColorDef("hsl(59,67%,30%)");
+
     return (
       <div>
         <table>
@@ -51,40 +122,61 @@ class Tool1Settings extends React.Component {
               <td> <input type="password" /> </td>
             </tr>
             <tr>
-              <td>{SampleAppIModelApp.i18n.translate("SampleApp:tool1.radio")}</td>
-              <td> <input type="radio" /> </td>
+              <td><label htmlFor="radio">{SampleAppIModelApp.i18n.translate("SampleApp:tool1.radio")}</label></td>
+              <td> <input name="radio" type="radio" /> </td>
             </tr>
             <tr>
-              <td>{SampleAppIModelApp.i18n.translate("SampleApp:tool1.range")}</td>
-              <td> <input type="range" /> </td>
+              <td><label htmlFor="range">{SampleAppIModelApp.i18n.translate("SampleApp:tool1.range")}</label></td>
+              <td> <input name="range" type="range" min="1" max="100" step="5" /> </td>
             </tr>
             <tr>
               <td>Red</td>
-              <td> <ColorSwatch color="rgba(255,0,0,255)" onColorPick={this._handleColorChange} /> </td>
-            </tr>
-            <tr>
-              <td>Green</td>
-              <td> <ColorSwatch color="rgb(0%,100%,0%)" onColorPick={this._handleColorChange} /> </td>
+              <td> <ColorSwatch colorDef={redDef} onColorPick={this._handleColorChange} /> </td>
             </tr>
             <tr>
               <td>Blue</td>
-              <td> <ColorSwatch color="#0000ff" onColorPick={this._handleColorChange} /> </td>
+              <td> <ColorSwatch colorDef={blueDef} onColorPick={this._handleColorChange} /> </td>
             </tr>
             <tr>
               <td>Purple</td>
-              <td> <ColorSwatch color="#800080ff" onColorPick={this._handleColorChange} round={true} /> </td>
+              <td> <ColorSwatch colorDef={purpleDef} onColorPick={this._handleColorChange} round={true} /> </td>
             </tr>
             <tr>
               <td>Brown</td>
-              <td> <ColorSwatch color="hsl(59,67%,30%)" onColorPick={this._handleColorChange} round={true} /> </td>
+              <td> <ColorSwatch colorDef={brownDef} onColorPick={this._handleColorChange} round={true} /> </td>
+            </tr>
+            <tr>
+              <td>User Color</td>
+              <td> <ColorSwatch colorDef={this.state.userColor} onColorPick={this._handleColorChange} round={true} /> </td>
+            </tr>
+            <tr>
+              <td>Hue</td>
+              <td> <HueSlider hsv={this.state.hsv} onHueChange={this._handleHueChange} isHorizontal={true} /> </td>
+            </tr>
+            <tr>
+              <td>Alpha</td>
+              <td> <AlphaSlider alpha={this.state.alpha} onAlphaChange={this._handleAlphaChange} isHorizontal={true} /> </td>
+            </tr>
+            <tr>
+              <td>Saturation</td>
+              <td> <div style={satDivStyle}><SaturationPicker hsv={this.state.hsv} onSaturationChange={this._handleSaturationChange} /></div> </td>
+            </tr>
+            <tr>
+              <td>Color Picker</td>
+              <td> <ColorPickerButton activeColor={this.state.userColor} onColorPick={this._onColorPick} /></td>
             </tr>
           </tbody>
         </table>
-      </div>
+      </div >
     );
   }
 }
 
+/*
+   <td> <AlphaSlider alpha={this.state.alpha} onAlphaChange={this._handleAlphaChange} isHorizontal={true} /> </td>
+    <td> <div style={vertDivStyle}><AlphaSlider alpha={this.state.alpha} onAlphaChange={this._handleAlphaChange} isHorizontal={false} /></div> </td>
+    <td> <div style={vertDivStyle}><HueSlider hsv={this.state.hsv} onHueChange={this._handleHueChange} isHorizontal={false} /></div> </td>
+*/
 class Tool1Assistance extends React.Component {
   public render(): React.ReactNode {
     return (

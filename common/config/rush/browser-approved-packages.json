@@ -15,6 +15,10 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "@bentley/certa",
+      "allowedCategories": [ "frontend", "internal" ]
+    },
+    {
       "name": "@bentley/config-loader",
       "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
     },
@@ -144,7 +148,7 @@
     },
     {
       "name": "body-parser",
-      "allowedCategories": [ "backend", "internal" ]
+      "allowedCategories": [ "backend", "internal", "tools" ]
     },
     {
       "name": "bunyan",
@@ -267,6 +271,14 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "detect-port",
+      "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "dom-testing-library",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "dotenv",
       "allowedCategories": [ "tools" ]
     },
@@ -276,7 +288,7 @@
     },
     {
       "name": "electron",
-      "allowedCategories": [ "backend", "internal" ]
+      "allowedCategories": [ "backend", "internal", "tools" ]
     },
     {
       "name": "electron-chromedriver",
@@ -308,7 +320,7 @@
     },
     {
       "name": "express",
-      "allowedCategories": [ "common", "internal" ]
+      "allowedCategories": [ "common", "internal", "tools" ]
     },
     {
       "name": "express-session",
@@ -348,7 +360,7 @@
     },
     {
       "name": "glob",
-      "allowedCategories": [ "backend", "common", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
     },
     {
       "name": "highlight.js",
@@ -396,7 +408,7 @@
     },
     {
       "name": "istanbul-instrumenter-loader",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [ "internal", "tools" ]
     },
     {
       "name": "istanbul-lib-hook",
@@ -425,6 +437,14 @@
     {
       "name": "json5",
       "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "jsonc-parser",
+      "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "jsonwebtoken",
+      "allowedCategories": [ "common" ]
     },
     {
       "name": "license-webpack-plugin",
@@ -471,6 +491,10 @@
       "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
     },
     {
+      "name": "mocha-headless-chrome",
+      "allowedCategories": [ "tools" ]
+    },
+    {
       "name": "mocha-junit-reporter",
       "allowedCategories": [ "tools" ]
     },
@@ -485,10 +509,6 @@
     {
       "name": "nock",
       "allowedCategories": [ "common" ]
-    },
-    {
-      "name": "node-glob",
-      "allowedCategories": [ "internal" ]
     },
     {
       "name": "node-gyp",
@@ -557,6 +577,10 @@
     {
       "name": "proxy-agent",
       "allowedCategories": [ "common" ]
+    },
+    {
+      "name": "puppeteer",
+      "allowedCategories": [ "tools" ]
     },
     {
       "name": "qs",
@@ -700,7 +724,7 @@
     },
     {
       "name": "source-map-support",
-      "allowedCategories": [ "backend", "common", "frontend" ]
+      "allowedCategories": [ "backend", "common", "frontend", "tools" ]
     },
     {
       "name": "style-loader",
@@ -807,6 +831,10 @@
       "allowedCategories": [ "common" ]
     },
     {
+      "name": "uuid",
+      "allowedCategories": [ "tools" ]
+    },
+    {
       "name": "wdio-chromedriver-service",
       "allowedCategories": [ "tools" ]
     },
@@ -888,7 +916,7 @@
     },
     {
       "name": "yargs",
-      "allowedCategories": [ "common", "internal", "tools" ]
+      "allowedCategories": [ "common", "frontend", "internal", "tools" ]
     }
   ]
 }

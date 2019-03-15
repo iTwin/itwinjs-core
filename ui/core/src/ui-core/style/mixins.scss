@@ -2,7 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-@import "./colors";
+@import "./themecolors";
 
 @mixin no-border {
 
@@ -12,14 +12,14 @@
 @mixin no-link {
 
     text-decoration:        none;
-    color:                  $uicore-text-color;
+    color:                  $buic-text-color;
 
     &:link,
     &:visited,
     &:hover,
     &:active {
 
-        color:              $uicore-text-color;
+        color:              $buic-text-color;
         text-decoration:    none;
     }
 }

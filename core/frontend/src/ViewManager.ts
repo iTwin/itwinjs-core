@@ -75,7 +75,7 @@ export class ViewManager {
   private _invalidateScenes = false;
   private _skipSceneCreation = false;
 
-  /** @hidden */
+  /** @internal */
   public onInitialized() {
     IModelConnection.registerClass(SpatialModelState.getClassFullName(), SpatialModelState);
     IModelConnection.registerClass("BisCore:PhysicalModel", SpatialModelState);
@@ -95,7 +95,7 @@ export class ViewManager {
     this.cursor = "default";
   }
 
-  /** @hidden */
+  /** @internal */
   public onShutDown() {
     this._viewports.length = 0;
     this.decorators.length = 0;
@@ -138,7 +138,7 @@ export class ViewManager {
    */
   public readonly onFinishRender = new BeEvent<() => void>();
 
-  /** @hidden */
+  /** @internal */
   public endDynamicsMode(): void {
     if (!this.inDynamicsMode)
       return;
@@ -155,9 +155,10 @@ export class ViewManager {
     }
   }
 
-  /** @hidden */
+  /** @internal */
   public beginDynamicsMode() { this.inDynamicsMode = true; }
-  /** @hidden */
+
+  /** @internal */
   public get doesHostHaveFocus(): boolean { return document.hasFocus(); }
 
   /** Set the selected [[Viewport]] to undefined. */
@@ -191,7 +192,7 @@ export class ViewManager {
     return BentleyStatus.SUCCESS;
   }
 
-  /** @hidden */
+  /** @internal */
   public notifySelectedViewportChanged(previous: ScreenViewport | undefined, current: ScreenViewport | undefined): void {
     IModelApp.toolAdmin.onSelectedViewportChanged(previous, current);
     this.onSelectedViewportChanged.emit({ previous, current });
@@ -265,22 +266,22 @@ export class ViewManager {
 
   /** Force each registered [[Viewport]] to regenerate its [[Decorations]] on the next frame. */
   public invalidateDecorationsAllViews(): void { this.forEachViewport((vp) => vp.invalidateDecorations()); }
-  /** @hidden */
+  /** @internal */
   public onSelectionSetChanged(_iModel: IModelConnection) { this.forEachViewport((vp) => vp.view.setSelectionSetDirty()); }
-  /** @hidden */
+  /** @internal */
   public invalidateViewportScenes(): void { this.forEachViewport((vp) => vp.sync.invalidateScene()); }
-  /** @hidden */
+  /** @internal */
   public validateViewportScenes(): void { this.forEachViewport((vp) => vp.sync.setValidScene()); }
 
-  /** @hidden */
+  /** @internal */
   public invalidateScenes(): void { this._invalidateScenes = true; }
-  /** @hidden */
+  /** @internal */
   public get sceneInvalidated(): boolean { return this._invalidateScenes; }
-  /** @hidden */
+  /** @internal */
   public onNewTilesReady(): void { this.invalidateScenes(); }
 
   /** Invoked by ToolAdmin event loop.
-   * @hidden
+   * @internal
    */
   public renderLoop(): void {
     if (0 === this._viewports.length) return;
@@ -330,7 +331,7 @@ export class ViewManager {
   }
 
   /** Get the tooltip for a pickable decoration.
-   * @hidden
+   * @internal
    */
   public async getDecorationToolTip(hit: HitDetail): Promise<HTMLElement | string> {
     for (const decorator of this.decorators) {
@@ -341,7 +342,7 @@ export class ViewManager {
   }
 
   /** Allow a pickable decoration to handle a button event that identified it for the SelectTool.
-   * @hidden
+   * @internal
    */
   public async onDecorationButtonEvent(hit: HitDetail, ev: BeButtonEvent): Promise<EventHandled> {
     for (const decorator of IModelApp.viewManager.decorators) {
@@ -352,7 +353,7 @@ export class ViewManager {
   }
 
   /** Allow a pickable decoration to be snapped to by AccuSnap or TentativePoint.
-   * @hidden
+   * @internal
    */
   public getDecorationGeometry(hit: HitDetail): GeometryStreamProps | undefined {
     for (const decorator of IModelApp.viewManager.decorators) {

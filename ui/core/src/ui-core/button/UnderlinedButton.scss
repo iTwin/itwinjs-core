@@ -2,9 +2,10 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+@import "../style/index.scss";
 
-$color: #0000ee;
-$hoverColor: #4d8bff;
+$color: $buic-foreground-primary; // #0000ee;
+$hoverColor: $buic-foreground-primary-tone; // #4d8bff;
 
 .core-underlined-button {
   background: transparent;

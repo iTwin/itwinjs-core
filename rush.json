@@ -193,6 +193,13 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
+      "packageName": "@bentley/certa",
+      "projectFolder": "tools/certa",
+      "reviewCategory": "tools",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
       "packageName": "example-code-snippets",
       "projectFolder": "example-code/snippets",
       "reviewCategory": "internal",
@@ -217,6 +224,12 @@
       "shouldPublish": false
     },
     {
+      "packageName": "export-obj",
+      "projectFolder": "test-apps/export-obj",
+      "reviewCategory": "internal",
+      "shouldPublish": false
+    },
+    {
       "packageName": "imodel-from-geojson",
       "projectFolder": "test-apps/imodel-from-geojson",
       "reviewCategory": "internal",
@@ -237,12 +250,6 @@
     {
       "packageName": "imodel-from-reality-model",
       "projectFolder": "test-apps/imodel-from-reality-model",
-      "reviewCategory": "internal",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "testbed",
-      "projectFolder": "test-apps/testbed",
       "reviewCategory": "internal",
       "shouldPublish": false
     },
@@ -279,6 +286,18 @@
     {
       "packageName": "webworker-test-app",
       "projectFolder": "test-apps/webworker-test-app",
+      "reviewCategory": "internal",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "core-integration-tests",
+      "projectFolder": "integration-tests/core",
+      "reviewCategory": "internal",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "rpc-integration-tests",
+      "projectFolder": "integration-tests/rpc",
       "reviewCategory": "internal",
       "shouldPublish": false
     }

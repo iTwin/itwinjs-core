@@ -15,32 +15,30 @@
     font-size:              $uicore-font-size;
     font-weight:            normal;
     line-height:            $uicore-line-height;
-    color:                  $uicore-text-color;
-    background-color:       $uicore-white;
+    color:                  $buic-text-color;
+    background-color:       $buic-background-control;
     background-image:       none;
     border:                 1px solid $uicore-inputs-border-color;
     border-radius:          $uicore-border-radius;
-    box-shadow:             rgba( $uicore-black, 0.075 ) 0px 1px 1px inset;
+    box-shadow:             $buic-inputs-boxshadow 0px 1px 1px inset;
     transition:             border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 
-    &:-ms-input-placeholder {       color: $uicore-gray-9; }
-    &::-webkit-input-placeholder {  color: $uicore-gray-9; }
-    &::placeholder {                color: $uicore-gray-9; }
+    &:-ms-input-placeholder {       color: $buic-foreground-disabled; /* $uicore-gray-9;*/ }
+    &::-webkit-input-placeholder {  color: $buic-foreground-disabled; /* $uicore-gray-9;*/ }
+    &::placeholder {                color: $buic-foreground-disabled; /* $uicore-gray-9;*/ }
 
     &[disabled],
     &[readonly] {
 
-        background-color:   $uicore-gray-b;
-        color:              $uicore-gray-9;
-        cursor:             not-allowed;
+      background-color:   $buic-background-control-disabled; // $uicore-gray-b;
+      color:              $buic-foreground-muted; // $uicore-gray-9;
+      cursor:             not-allowed;
     }
 
     &:focus {
 
-        border-color:       $uicore-inputs-border-color;
-        outline:            0px;
-        box-shadow:         rgba( $uicore-black, 0 ) 0px 1px 1px inset, rgba( $uicore-blue, 0.1 ) 0px 0px 0px 2px;
+      border-color:       $buic-inputs-border;
+      outline:            0px;
+      box-shadow:         $buic-inputs-focus-boxshadow-gradient1 0px 1px 1px inset, $buic-inputs-focus-boxshadow-gradient2 0px 0px 0px 2px;
     }
 }
-
-.uicore-inputs-textarea { @include uicore-inputs-textarea; }

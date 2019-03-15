@@ -62,6 +62,12 @@ export class LocateOptions {
     other.hitSource = this.hitSource;
     return other;
   }
+  public setFrom(other: LocateOptions): void {
+    this.allowDecorations = other.allowDecorations;
+    this.allowNonLocatable = other.allowNonLocatable;
+    this.maxHits = other.maxHits;
+    this.hitSource = other.hitSource;
+  }
   public init() { this.allowDecorations = this.allowNonLocatable = false; this.maxHits = 20; this.hitSource = HitSource.DataPoint; }
 }
 

@@ -2,7 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-@import "@bentley/ui-core/lib/ui-core/colors";
+@import "@bentley/ui-core/lib/ui-core/style/themecolors";
 
 .nz-footer-message-content-status-message {
   $min-width: 370px;
@@ -13,7 +13,7 @@
   min-width: $min-width;
   min-height: $min-height;
   display: flex;
-  background-color: $background-1;
+  background-color: $buic-background-control;
   overflow: hidden;
   border: {
     style: solid;

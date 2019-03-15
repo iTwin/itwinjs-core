@@ -2,8 +2,8 @@
 
 exports[`ContentLayout FourQuadrantsVertical renders correctly 1`] = `
 <div
-  className="contentlayout-open-mode"
-  id="ContentLayoutDiv"
+  className="uifw-contentlayout-open-mode"
+  id="uifw-contentlayout-div"
   key="fourQuadrantsVertical"
   onMouseDown={[Function]}
   onMouseUp={[Function]}
@@ -71,8 +71,8 @@ exports[`ContentLayout FourQuadrantsVertical renders correctly 1`] = `
 
 exports[`ContentLayout FourQuadrantsVertical renders correctly 2`] = `
 <div
-  className="contentlayout-open-mode"
-  id="ContentLayoutDiv"
+  className="uifw-contentlayout-open-mode"
+  id="uifw-contentlayout-div"
   key="ContentLayout-1"
   onMouseDown={[Function]}
   onMouseUp={[Function]}
@@ -140,8 +140,8 @@ exports[`ContentLayout FourQuadrantsVertical renders correctly 2`] = `
 
 exports[`ContentLayout SingleContent renders correctly 1`] = `
 <div
-  className="contentlayout-footer-mode"
-  id="ContentLayoutDiv"
+  className="uifw-contentlayout-footer-mode"
+  id="uifw-contentlayout-div"
   key="SingleContent"
   onMouseDown={[Function]}
   onMouseUp={[Function]}
@@ -158,8 +158,8 @@ exports[`ContentLayout SingleContent renders correctly 1`] = `
 
 exports[`ContentLayout TwoHalvesHorizontal renders correctly 1`] = `
 <div
-  className="contentlayout-open-mode"
-  id="ContentLayoutDiv"
+  className="uifw-contentlayout-open-mode"
+  id="uifw-contentlayout-div"
   key="TwoHalvesHorizontal"
   onMouseDown={[Function]}
   onMouseUp={[Function]}
@@ -193,8 +193,8 @@ exports[`ContentLayout TwoHalvesHorizontal renders correctly 1`] = `
 
 exports[`ContentLayout TwoHalvesVertical renders correctly 1`] = `
 <div
-  className="contentlayout-footer-mode"
-  id="ContentLayoutDiv"
+  className="uifw-contentlayout-footer-mode"
+  id="uifw-contentlayout-div"
   key="TwoHalvesVertical"
   onMouseDown={[Function]}
   onMouseUp={[Function]}

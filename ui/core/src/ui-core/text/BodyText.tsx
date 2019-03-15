@@ -7,7 +7,6 @@
 import * as React from "react";
 import * as classnames from "classnames";
 import { TextProps } from "./TextProps";
-import "./index.scss";
 
 /** Styled body text */
 export class BodyText extends React.Component<TextProps> {

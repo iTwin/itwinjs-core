@@ -12,6 +12,7 @@ import { IModelConnection } from "./IModelConnection";
 import { ClipPlanesVolume } from "./render/webgl/ClipVolume";
 import { AnimationBranchStates, AnimationBranchState } from "./render/System";
 
+/** @internal */
 export namespace RenderScheduleState {
   class Interval {
     constructor(public index0: number = 0, public index1: number = 0, public fraction: number = 0.0) { }

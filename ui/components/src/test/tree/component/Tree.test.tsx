@@ -61,6 +61,11 @@ describe("Tree", () => {
       throw new Error(`Found more than one node with label "${label}"`);
     return result[0];
   };
+  const getNodeLabel = (node: HTMLElement): string => {
+    const contents = within(node).getByTestId(Tree.TestId.NodeContents);
+    const labelSpan = contents.querySelector("div.components-tree-node-content span");
+    return labelSpan!.innerHTML;
+  };
 
   const createDataProvider = (expandedNodes?: string[]): TreeDataProviderMethod => {
     const isExpanded = (id: string) => (undefined === expandedNodes) || expandedNodes.includes(id);
@@ -112,7 +117,7 @@ describe("Tree", () => {
     const getSelectedNodes = (): Array<HTMLElement & { label: string }> => {
       return renderedTree.getAllByTestId(Tree.TestId.Node as any)
         .filter((node) => node.classList.contains("is-selected"))
-        .map((node) => Object.assign(node, { label: within(node).getByTestId(Tree.TestId.NodeContents).innerHTML }));
+        .map((node) => Object.assign(node, { label: getNodeLabel(node) }));
     };
 
     let defaultSelectionProps: TreeProps;
@@ -597,12 +602,7 @@ describe("Tree", () => {
         nodesDeselectedCallbackMock.verify((x) => x(moq.It.isAny()), moq.Times.never());
         expect(getSelectedNodes().length).to.equal(0);
 
-        const expectSelectAll = [
-          "<div class=\"components-tree-node-content\"><span>0</span></div>",
-          "<div class=\"components-tree-node-content\"><span>0-a</span></div>",
-          "<div class=\"components-tree-node-content\"><span>0-b</span></div>",
-          "<div class=\"components-tree-node-content\"><span>1</span></div>",
-        ];
+        const expectSelectAll = ["0", "0-a", "0-b", "1"];
 
         // drag
         // note: dragging re-renders to update selection
@@ -632,19 +632,13 @@ describe("Tree", () => {
         await waitForUpdate(() => fireEvent.mouseMove(getNode("0-b").contentArea, { buttons: 1 }), renderSpy);
         nodesSelectedCallbackMock.verify((x) => x(moq.It.isAny(), moq.It.isAny()), moq.Times.never());
         nodesDeselectedCallbackMock.verify((x) => x(moq.It.isAny()), moq.Times.never());
-        expect(getSelectedNodes().map((n) => n.label)).to.deep.eq([
-          "<div class=\"components-tree-node-content\"><span>0</span></div>",
-          "<div class=\"components-tree-node-content\"><span>0-a</span></div>",
-        ]);
+        expect(getSelectedNodes().map((n) => n.label)).to.deep.eq(["0", "0-a"]);
 
         // release
         fireEvent.mouseUp(getNode("0-b").contentArea);
         nodesSelectedCallbackMock.verify((x) => x(moq.It.isAny(), moq.It.isAny()), moq.Times.never());
         nodesDeselectedCallbackMock.verify((x) => x(moq.It.is<TreeNodeItem[]>((items: TreeNodeItem[]): boolean => verifyNodes(items, ["0-b", "1"]))), moq.Times.once());
-        expect(getSelectedNodes().map((n) => n.label)).to.deep.eq([
-          "<div class=\"components-tree-node-content\"><span>0</span></div>",
-          "<div class=\"components-tree-node-content\"><span>0-a</span></div>",
-        ]);
+        expect(getSelectedNodes().map((n) => n.label)).to.deep.eq(["0", "0-a"]);
       });
 
       it("dragging with multiple buttons pressed doesn't select nodes", async () => {
@@ -678,29 +672,20 @@ describe("Tree", () => {
         fireEvent.mouseDown(getNode("0").contentArea);
         nodesSelectedCallbackMock.verify((x) => x(moq.It.isAny(), moq.It.isAny()), moq.Times.never());
         nodesDeselectedCallbackMock.verify((x) => x(moq.It.isAny()), moq.Times.never());
-        expect(getSelectedNodes().map((n) => n.label)).to.deep.eq([
-          "<div class=\"components-tree-node-content\"><span>0</span></div>",
-          "<div class=\"components-tree-node-content\"><span>0-b</span></div>",
-        ]);
+        expect(getSelectedNodes().map((n) => n.label)).to.deep.eq(["0", "0-b"]);
 
         // drag
         // note: dragging re-renders to update selection
         await waitForUpdate(() => fireEvent.mouseMove(getNode("1").contentArea, { buttons: 1 }), renderSpy);
         nodesSelectedCallbackMock.verify((x) => x(moq.It.isAny(), moq.It.isAny()), moq.Times.never());
         nodesDeselectedCallbackMock.verify((x) => x(moq.It.isAny()), moq.Times.never());
-        expect(getSelectedNodes().map((n) => n.label)).to.deep.eq([
-          "<div class=\"components-tree-node-content\"><span>0-a</span></div>",
-          "<div class=\"components-tree-node-content\"><span>1</span></div>",
-        ]);
+        expect(getSelectedNodes().map((n) => n.label)).to.deep.eq(["0-a", "1"]);
 
         // release
         fireEvent.mouseUp(getNode("1").contentArea);
         nodesSelectedCallbackMock.verify((x) => x(moq.It.is<TreeNodeItem[]>((items: TreeNodeItem[]): boolean => verifyNodes(items, ["0-a", "1"])), false), moq.Times.once());
         nodesDeselectedCallbackMock.verify((x) => x(moq.It.is<TreeNodeItem[]>((items: TreeNodeItem[]): boolean => verifyNodes(items, ["0", "0-b"]))), moq.Times.once());
-        expect(getSelectedNodes().map((n) => n.label)).to.deep.eq([
-          "<div class=\"components-tree-node-content\"><span>0-a</span></div>",
-          "<div class=\"components-tree-node-content\"><span>1</span></div>",
-        ]);
+        expect(getSelectedNodes().map((n) => n.label)).to.deep.eq(["0-a", "1"]);
       });
 
       it("drag selecting nodes does not select collapsed nodes", async () => {
@@ -718,19 +703,13 @@ describe("Tree", () => {
         await waitForUpdate(() => fireEvent.mouseMove(getNode("1").contentArea, { buttons: 1 }), renderSpy);
         nodesSelectedCallbackMock.verify((x) => x(moq.It.isAny(), moq.It.isAny()), moq.Times.never());
         nodesDeselectedCallbackMock.verify((x) => x(moq.It.isAny()), moq.Times.never());
-        expect(getSelectedNodes().map((n) => n.label)).to.deep.eq([
-          "<div class=\"components-tree-node-content\"><span>0</span></div>",
-          "<div class=\"components-tree-node-content\"><span>1</span></div>",
-        ]);
+        expect(getSelectedNodes().map((n) => n.label)).to.deep.eq(["0", "1"]);
 
         // release
         fireEvent.mouseUp(getNode("1").contentArea);
         nodesSelectedCallbackMock.verify((x) => x(moq.It.is<TreeNodeItem[]>((items: TreeNodeItem[]): boolean => verifyNodes(items, ["0", "1"])), false), moq.Times.once());
         nodesDeselectedCallbackMock.verify((x) => x(moq.It.isAny()), moq.Times.never());
-        expect(getSelectedNodes().map((n) => n.label)).to.deep.eq([
-          "<div class=\"components-tree-node-content\"><span>0</span></div>",
-          "<div class=\"components-tree-node-content\"><span>1</span></div>",
-        ]);
+        expect(getSelectedNodes().map((n) => n.label)).to.deep.eq(["0", "1"]);
       });
 
     });
@@ -1501,19 +1480,13 @@ describe("Tree", () => {
     });
 
     it("rerenders when `onTreeNodeChanged` is broadcasted with undefined node", async () => {
-      const getFlatList = () => renderedTree.getAllByTestId(Tree.TestId.Node as any)
-        .map((node) => within(node).getByTestId(Tree.TestId.NodeContents).innerHTML);
+      const getFlatList = () => renderedTree.getAllByTestId(Tree.TestId.Node as any).map(getNodeLabel);
 
       await waitForUpdate(() => {
         renderedTree = render(<Tree {...defaultProps} dataProvider={interfaceProvider} />);
       }, renderSpy, 2);
       expect(renderedTree.getAllByTestId(Tree.TestId.Node as any).length).to.eq(4);
-      expect(getFlatList()).to.deep.eq([
-        "<div class=\"components-tree-node-content\"><span>0</span></div>",
-        "<div class=\"components-tree-node-content\"><span>0-a</span></div>",
-        "<div class=\"components-tree-node-content\"><span>0-b</span></div>",
-        "<div class=\"components-tree-node-content\"><span>1</span></div>",
-      ]);
+      expect(getFlatList()).to.deep.eq(["0", "0-a", "0-b", "1"]);
 
       setReverseOrder(true);
 
@@ -1521,12 +1494,7 @@ describe("Tree", () => {
         interfaceProvider.onTreeNodeChanged!.raiseEvent([undefined]);
       }, renderSpy, 1);
       expect(renderedTree.getAllByTestId(Tree.TestId.Node as any).length).to.eq(4);
-      expect(getFlatList()).to.deep.eq([
-        "<div class=\"components-tree-node-content\"><span>1</span></div>",
-        "<div class=\"components-tree-node-content\"><span>0</span></div>",
-        "<div class=\"components-tree-node-content\"><span>0-b</span></div>",
-        "<div class=\"components-tree-node-content\"><span>0-a</span></div>",
-      ]);
+      expect(getFlatList()).to.deep.eq(["1", "0", "0-b", "0-a"]);
     });
 
     it("handles case when `onTreeNodeChanged` is broadcasted with invalid node", async () => {

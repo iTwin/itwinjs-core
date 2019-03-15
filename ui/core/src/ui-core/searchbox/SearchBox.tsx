@@ -132,6 +132,11 @@ export class SearchBox extends React.Component<SearchBoxProps, SearchBoxState> {
   public componentWillUnmount() {
     this._unsetTimeout();
   }
+
+  public focus () {
+    if (this._inputElement)
+      this._inputElement.focus();
+  }
 }
 
 export default SearchBox;

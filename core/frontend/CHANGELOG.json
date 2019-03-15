@@ -2,6 +2,42 @@
   "name": "@bentley/imodeljs-frontend",
   "entries": [
     {
+      "version": "0.190.0",
+      "tag": "@bentley/imodeljs-frontend_v0.190.0",
+      "date": "Thu, 14 Mar 2019 14:26:49 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add ColorEditor to list of available Type Editors including new ColorParams to specify set of colors."
+          },
+          {
+            "comment": "#73219 FitViewTool enhancement to fit to isolated elements or clip volume."
+          },
+          {
+            "comment": "Supply additional statistics for monitoring tile requests."
+          },
+          {
+            "comment": "Resolve transparency rendering error in multi-pass compositor due to way textures are bound."
+          },
+          {
+            "comment": "Cleaned up documentation related to the display system."
+          },
+          {
+            "comment": "use bubble-up for keyboard events"
+          },
+          {
+            "comment": "Plugin Enhancements"
+          },
+          {
+            "comment": "Documentation for Skybox"
+          },
+          {
+            "comment": "Added vertex handles for line/arrow markup."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.189.0",
       "tag": "@bentley/imodeljs-frontend_v0.189.0",
       "date": "Wed, 06 Mar 2019 15:41:22 GMT",

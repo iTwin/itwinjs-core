@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { IModelHost, IModelHostConfiguration } from "@bentley/imodeljs-backend";
 import { Logger } from "@bentley/bentleyjs-core";
-import { IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface } from "@bentley/imodeljs-common";
+import { IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface, MobileRpcConfiguration } from "@bentley/imodeljs-common";
 import * as fs from "fs";
 import * as path from "path";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
@@ -20,6 +20,9 @@ export function getRpcInterfaces() {
 }
 
 function setupStandaloneConfiguration() {
+  if (MobileRpcConfiguration.isMobileBackend)
+    return;
+
   const filename = process.env.SVT_STANDALONE_FILENAME;
   if (filename !== undefined) {
     const configuration: any = {};
@@ -41,13 +44,15 @@ export function initializeBackend() {
 
   const hostConfig = new IModelHostConfiguration();
   hostConfig.useTileContentThreadPool = true;
-
-  // tslint:disable-next-line:no-var-requires
-  const configPathname = path.normalize(path.join(__dirname, "../webresources", "configuration.json"));
-  const svtConfig: SVTConfiguration = require(configPathname);
-  if (svtConfig.customOrchestratorUri)
-    hostConfig.imodelClient = new IModelBankClient(svtConfig.customOrchestratorUri, new UrlFileHandler());
-
+  if (MobileRpcConfiguration.isMobileBackend) {
+    // Does not seem SVTConfiguraiton is used anymore.
+  } else {
+    // tslint:disable-next-line:no-var-requires
+    const configPathname = path.normalize(path.join(__dirname, "../webresources", "configuration.json"));
+    const svtConfig: SVTConfiguration = require(configPathname);
+    if (svtConfig.customOrchestratorUri)
+      hostConfig.imodelClient = new IModelBankClient(svtConfig.customOrchestratorUri, new UrlFileHandler());
+  }
   IModelHost.startup(hostConfig);
 
   Logger.initializeToConsole(); // configure logging for imodeljs-core

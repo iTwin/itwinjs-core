@@ -8,7 +8,6 @@
 @import "./button";
 @import "./disabled";
 
-
 @mixin uicore-buttons-hollow {
 
     @include uicore-buttons-button;
@@ -36,5 +35,3 @@
         padding:            $uicore-inputs-padding $uicore-unbordered-padding;
     }
 }
-
-.uicore-buttons-hollow { @include uicore-buttons-hollow; }

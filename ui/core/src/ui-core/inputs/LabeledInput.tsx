@@ -9,7 +9,6 @@ import * as classnames from "classnames";
 
 import Input, { InputProps } from "./Input";
 import InputStatus from "./InputStatus";
-import "./index.scss";
 
 /** Properties for [[LabeledInput]] components */
 export interface LabeledInputProps extends InputProps {

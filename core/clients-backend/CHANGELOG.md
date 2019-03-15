@@ -1,6 +1,16 @@
 # Change Log - @bentley/imodeljs-clients-backend
 
-This log was last generated on Wed, 06 Mar 2019 15:41:22 GMT and should not be manually modified.
+This log was last generated on Thu, 14 Mar 2019 14:26:49 GMT and should not be manually modified.
+
+## 0.190.0
+Thu, 14 Mar 2019 14:26:49 GMT
+
+### Updates
+
+- Add missing peerDependencies on @bentley/geometry-core and @bentley/imodeljs-clients
+- Allow mobile webpack to skip node dependent module
+- Replaced OidcAgentClient with OidcAgentClientV2.
+- Reverted changes to OidcAgentClient. 
 
 ## 0.189.0
 Wed, 06 Mar 2019 15:41:22 GMT

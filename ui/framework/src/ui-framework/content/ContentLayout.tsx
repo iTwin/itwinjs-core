@@ -76,18 +76,12 @@ class ContentWrapper extends React.Component<ContentWrapperProps, ContentWrapper
   }
 
   public render(): React.ReactNode {
-    const divStyle: React.CSSProperties = {
-      position: "relative",
-      width: "100%",
-      height: "100%",
-    };
-
     const overlayClassName = classnames(
-      "contentlayout-overlay-div",
-      this.state.isActive ? "contentlayout-overlay-active" : "contentlayout-overlay-inactive");
+      "uifw-contentlayout-overlay-div",
+      this.state.isActive ? "uifw-contentlayout-overlay-active" : "uifw-contentlayout-overlay-inactive");
 
     return (
-      <div className="contentlayout-wrapper" style={divStyle}
+      <div className="uifw-contentlayout-wrapper"
         onMouseDown={this._handleMouseDown}
       >
         {this.state.content}
@@ -243,7 +237,7 @@ class SplitContainer extends React.Component<SplitContainerProps, SplitContainer
     const defaultSize = (this.props.percentage * 100).toString() + "%";
 
     return (
-      <div ref={(e) => { this._containerDiv = e; }} style={{ width: "100%", height: "100%" }} >
+      <div ref={(e) => { this._containerDiv = e; }} className="uifw-contentlayout-full-size">
         <SplitPane split={orientation} minSize={50} defaultSize={defaultSize} onChange={this._onSplitterChange} allowResize={this.props.resizable}>
           {this.props.contentA}
           <div style={{ width: this.state.pane2Width, height: this.state.pane2Height }}>
@@ -264,13 +258,8 @@ interface SingleContentProps {
 class SingleContentContainer extends React.Component<SingleContentProps> {
 
   public render(): React.ReactNode {
-    const style: React.CSSProperties = {
-      width: "100%",
-      height: "100%",
-    };
-
     return (
-      <div style={style}>
+      <div className="uifw-contentlayout-full-size">
         {this.props.content}
       </div>
     );
@@ -525,10 +514,10 @@ export class ContentLayout extends React.Component<ContentLayoutReactProps, Cont
 
   public render(): React.ReactNode {
     if (this.state.contentContainer) {
-      const className = this.props.isInFooterMode ? "contentlayout-footer-mode" : "contentlayout-open-mode";
+      const className = this.props.isInFooterMode ? "uifw-contentlayout-footer-mode" : "uifw-contentlayout-open-mode";
 
       return (
-        <div id="ContentLayoutDiv" className={className} key={this.state.contentLayout.id}
+        <div id="uifw-contentlayout-div" className={className} key={this.state.contentLayout.id}
           onMouseDown={this._onMouseDown}
           onMouseUp={this._onMouseUp}
         >
@@ -579,8 +568,9 @@ export class ContentLayoutManager {
 
   public static get activeLayout(): ContentLayoutDef | undefined { return this._activeLayout; }
 
-  public static setActiveLayout(layout: ContentLayoutDef | undefined) {
-    return this._activeLayout = layout;
+  public static setActiveLayout(contentLayout: ContentLayoutDef, contentGroup: ContentGroup) {
+    this._activeLayout = contentLayout;
+    FrontstageManager.onContentLayoutActivatedEvent.emit({ contentLayout, contentGroup });
   }
 
   public static createSplit(fragmentDef: LayoutFragmentProps): LayoutSplit | undefined {

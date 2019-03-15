@@ -40,7 +40,7 @@ export interface GroupingRule extends RuleBase, ConditionContainer {
   /** Specification of ECClass which should be grouped using this rule */
   class: SingleSchemaClassSpecification;
 
-  /** Specifications of grouping which should be applied to maching ECInstances */
+  /** Specifications of grouping which should be applied to matching ECInstances */
   groups: GroupingSpecification[];
 }
 

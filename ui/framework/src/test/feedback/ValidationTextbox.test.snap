@@ -2,7 +2,7 @@
 
 exports[`ValidationTextbox should render correctly 1`] = `
 <div
-  className="ValidationTextbox"
+  className="uifw-ValidationTextbox"
   style={
     Object {
       "width": "12em",

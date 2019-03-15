@@ -17,11 +17,12 @@ import { RelatedInstanceSpecification } from "../RelatedInstanceSpecification";
 /** Base interface for all [[ChildNodeSpecification]] implementations */
 export interface ChildNodeSpecificationBase extends RuleSpecification {
   /**
-   * This tells the rules engine that specification always returns nodes.
+   * This tells the rules engine that nodes produced using this
+   * specification always or never have children. Defaults to `Unknown`.
    *
-   * **Note:** setting this flag to `true` improves performance.
+   * **Note:** setting this flag to `Always` or `Never` improves performance.
    */
-  alwaysReturnsChildren?: boolean;
+  hasChildren?: "Always" | "Never" | "Unknown";
 
   /**
    * Hide nodes provided by this specification and directly show nodes of its children.

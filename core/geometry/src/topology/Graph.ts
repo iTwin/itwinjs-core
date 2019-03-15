@@ -5,10 +5,11 @@
 
 /** @module Topology */
 
-import { Vector2d } from "../geometry3d/Point2dVector2d";
+import { Vector2d, Point2d } from "../geometry3d/Point2dVector2d";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { LineSegment3d } from "../curve/LineSegment3d";
 import { Geometry } from "../Geometry";
+import { SmallSystem } from "../numerics/Polynomials";
 export type NodeFunction = (node: HalfEdge) => any;
 export type NodeToNumberFunction = (node: HalfEdge) => number;
 export type HalfEdgeToBooleanFunction = (node: HalfEdge) => boolean;
@@ -38,7 +39,7 @@ export class HalfEdge {
   public x: number;
   public y: number;
   public z: number;
-
+  public sortAngle?: number;  // used in sorting around vertex.
   private _id: any;   // immutable id useful for debuggging.
   public get id() { return this._id; }
 
@@ -151,8 +152,8 @@ export class HalfEdge {
   }
   // These members are specific to the z-sweep trapezoidal decomposition and earlobe triangulation.
   // previous and next nodes in z-order
-  public prevZ!: HalfEdge;
-  public nextZ!: HalfEdge;
+  //   public prevZ?: HalfEdge;
+  // public nextZ?: HalfEdge;
   // indicates whether this is a steiner point
   public steiner: boolean;
   // z-order curve value
@@ -358,8 +359,6 @@ export class HalfEdge {
     (this._facePredecessor as any) = undefined;
     (this._faceSuccessor as any) = undefined;
     (this._edgeMate as any) = undefined;
-    (this.nextZ as any) = undefined;
-    (this.prevZ as any) = undefined;
   }
 
   /** @returns Return the node. This identity function is useful as the NodeFunction in collector methods. */
@@ -526,6 +525,56 @@ export class HalfEdge {
       node0 = node1;
     } while (node0 !== this);
     return 0.5 * sum;
+  }
+  /**
+   * interpolate xy coordinates between this node and its face successor.
+   * @param fraction fractional position along this edge.
+   * @param result xy coordinates
+   */
+  public fractionToPoint2d(fraction: number, result?: Point2d): Point2d {
+    const node1 = this.faceSuccessor;
+    return Point2d.create(
+      this.x + (node1.x - this.x) * fraction,
+      this.y + (node1.y - this.y) * fraction,
+      result);
+  }
+  /**
+   * * Compute fractional coordintes of the intersection of edges from given base nodes
+   * * If parallel or colinear, return undefined.
+   * * If (possibly extended) lines intersect, return the fractions of intersection as x,y in the result.
+   * @param nodeA0 Base node of edge A
+   * @param nodeB0 Base node of edge B
+   * @param result optional preallocated result
+   */
+  public static transverseIntersectionFractions(nodeA0: HalfEdge, nodeB0: HalfEdge, result?: Vector2d): Vector2d | undefined {
+    const nodeA1 = nodeA0.faceSuccessor;
+    const nodeB1 = nodeB0.faceSuccessor;
+    if (!result)
+      result = Vector2d.create();
+    if (SmallSystem.linearSystem2d(
+      nodeA1.x - nodeA0.x, nodeB0.x - nodeB1.x,
+      nodeA1.y - nodeA0.y, nodeB0.y - nodeB1.y,
+      nodeB0.x - nodeA0.x, nodeB0.y - nodeA0.y,
+      result))
+      return result;
+    return undefined;
+  }
+  /**
+   * * Compute fractional coordintes of the intersection of a horizontal line with an edge.
+   * * If the edge is horizontal with (approximate) identical y, return the node.
+   * * If the edge is horizontal with different y, return undefined.
+   * * If the edge is not horizontal, return the fractional position (possibly outside 0..1) of the intersection.
+   * @param nodeA Base node of edge
+   * @param result optional preallocated result
+   */
+  public static horizontalScanFraction(node0: HalfEdge, y: number): number | undefined | HalfEdge {
+    const node1 = node0.faceSuccessor;
+    const dy = node1.y - node0.y;
+    if (Geometry.isSameCoordinate(y, node0.y) && Geometry.isSameCoordinate(y, node1.y))
+      return node0;
+    if (Geometry.isSameCoordinate(dy, 0.0))
+      return undefined;
+    return Geometry.conditionalDivideFraction(y - node0.y, dy);
   }
 
 }

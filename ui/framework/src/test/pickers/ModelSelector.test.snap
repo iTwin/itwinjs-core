@@ -3,6 +3,7 @@
 exports[`ModelSelector Category generates correct drawing categories' hierarchy 1`] = `
 Array [
   Object {
+    "icon": "ECLiteralImage://CATEGORY",
     "label": "Uncategorized",
   },
 ]
@@ -11,6 +12,7 @@ Array [
 exports[`ModelSelector Category generates correct spatial categories' hierarchy 1`] = `
 Array [
   Object {
+    "icon": "ECLiteralImage://CATEGORY",
     "label": "Uncategorized",
   },
 ]
@@ -19,6 +21,7 @@ Array [
 exports[`ModelSelector Model generates correct models' hierarchy 1`] = `
 Array [
   Object {
+    "icon": "ECLiteralImage://MODEL_3D",
     "label": "Properties_60InstancesWithUrl2",
   },
 ]
