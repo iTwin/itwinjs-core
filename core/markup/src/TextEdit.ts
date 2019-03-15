@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { BeButtonEvent, EventHandled, InputSource } from "@bentley/imodeljs-frontend";
-import { Svg, Text as MarkupText } from "@svgdotjs/svg.js";
+import { G, Text as MarkupText } from "@svgdotjs/svg.js";
 import { RedlineTool } from "./RedlineTool";
 import { MarkupApp } from "./Markup";
 import { MarkupTool } from "./MarkupTool";
@@ -22,10 +22,10 @@ export class PlaceTextTool extends RedlineTool {
 
   protected showPrompt(): void { this.outputMarkupPrompt("Text.Place.Prompts.FirstPoint"); }
 
-  protected createMarkup(svg: Svg, ev: BeButtonEvent, isDynamics: boolean): void {
+  protected createMarkup(svg: G, ev: BeButtonEvent, isDynamics: boolean): void {
     if (isDynamics && InputSource.Touch === ev.inputSource)
       return;
-    const start = ev.viewPoint;
+    const start = MarkupApp.convertVpToVb(ev.viewPoint);
     const text = new MarkupText().plain(this._value);
     svg.put(text);
     this.setCurrentTextStyle(text);
@@ -127,9 +127,9 @@ export class EditTextTool extends MarkupTool {
       undo.doGroup(() => {
         const newVal = this.editor!.value;
         if (newVal.trim() === "") { // if the result of the editing is blank, just delete the text element
-          text.remove();
           if (!this._fromPlaceTool)
             undo.onDelete(text);
+          text.remove();
           return;
         }
 

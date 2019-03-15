@@ -39,7 +39,7 @@ declare module "@svgdotjs/svg.js" {
     /** return true if this element is a child of the supplied Svg. */
     isChildOf(svg: Svg): boolean;
     /** return selectable element or the outermost group containing this element if it's a child of the supplied Svg. */
-    getChildOrGroupOf(svg: Svg): MarkupElement | undefined;
+    getChildOrGroupOf(svg: G): MarkupElement | undefined;
 
     forElementsOfGroup(fn: (child: MarkupElement) => void): void;
     getNpcToVp(): Matrix;
@@ -109,7 +109,7 @@ extend(MarkupElement, {
     const parent = (this as MarkupElement).parent();
     return (parent === svg) ? true : (parent instanceof MarkupElement) ? parent.isChildOf(svg) : false;
   },
-  getChildOrGroupOf(svg: Svg): MarkupElement | undefined {
+  getChildOrGroupOf(svg: G): MarkupElement | undefined {
     const me = this as MarkupElement;
     const parents = me.parents(svg.parent());
     if (0 === parents.length || parents[parents.length - 1].node !== svg.node)
@@ -124,12 +124,12 @@ extend(MarkupElement, {
   getNpcToVp(): Matrix {
     const me = this as MarkupElement;
     const bb = me.bbox();
-    return new Matrix().scaleO(bb.w, bb.h).translateO(bb.x, bb.y).lmultiplyO(me.ctm());
+    return new Matrix().scaleO(bb.w, bb.h).translateO(bb.x, bb.y).lmultiplyO(me.matrixify());
   },
   getOutline(): Rect {
     const me = this as MarkupElement;
     const box = me.bbox();
-    return new Rect().move(box.x, box.y).size(box.w, box.h).transform(new Matrix(me));
+    return new Rect().move(box.x, box.y).size(box.w, box.h).transform(me.matrixify());
   },
 });
 

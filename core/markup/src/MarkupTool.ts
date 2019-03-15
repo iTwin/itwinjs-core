@@ -3,10 +3,11 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { XAndY } from "@bentley/geometry-core";
-import { CoordinateLockOverrides, IModelApp, PrimitiveTool, Viewport, BeTouchEvent, EventHandled, BeButton } from "@bentley/imodeljs-frontend";
+import { BeButton, BeTouchEvent, CoordinateLockOverrides, EventHandled, IModelApp, PrimitiveTool, Viewport } from "@bentley/imodeljs-frontend";
 import { Element as MarkupElement, LinkedHTMLElement } from "@svgdotjs/svg.js";
-import { MarkupApp, Markup } from "./Markup";
+import { Markup, MarkupApp } from "./Markup";
 
+/** Base class for all tools that operate on Markup elements. */
 export abstract class MarkupTool extends PrimitiveTool {
   public markup!: Markup;
   public static toolKey = "MarkupTools:tools.";
@@ -35,9 +36,9 @@ export abstract class MarkupTool extends PrimitiveTool {
   public async onTouchCancel(ev: BeTouchEvent): Promise<void> { return IModelApp.toolAdmin.convertTouchEndToButtonUp(ev, BeButton.Reset); }
 
   public async undoPreviousStep(): Promise<boolean> {
-    if (await this.onUndoPreviousStep())
-      return true;
-    this.markup.undo.doUndo();
+    if (await this.onUndoPreviousStep()) // first see if this tool has an "oops" operation.
+      return true; // yes, we're done
+    this.markup.undo.doUndo(); // otherwise undo the last change by previous tools
     return true;
   }
 
@@ -54,7 +55,7 @@ export abstract class MarkupTool extends PrimitiveTool {
    */
   public pickElement(pt: XAndY): MarkupElement | undefined {
     const markup = this.markup;
-    const rect = markup.vp.getClientRect();
+    const rect = markup.markupDiv.getBoundingClientRect();
     const node = document.elementFromPoint(pt.x + rect.left, pt.y + rect.top) as LinkedHTMLElement | null;
     if (!node || !node.instance)
       return undefined;
