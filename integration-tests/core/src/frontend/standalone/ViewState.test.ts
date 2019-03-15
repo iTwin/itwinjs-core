@@ -351,4 +351,50 @@ describe("ViewState", () => {
 
     expect(numModelsVisited).to.equal(numSpatialModels);
   });
+
+  it("should enforce extent limits", async () => {
+    const view = await imodel2.views.load("0x46") as SpatialViewState;
+    const defaultLimits = view.defaultExtentLimits;
+    expect(view.extentLimits.min).to.equal(defaultLimits.min);
+    expect(view.extentLimits.max).to.equal(defaultLimits.max);
+
+    // Default limits are accepted
+    const delta = new Vector3d(defaultLimits.min, defaultLimits.min, defaultLimits.min);
+    expect(view.validateViewDelta(delta)).to.equal(ViewStatus.Success);
+    delta.set(defaultLimits.max, defaultLimits.max, defaultLimits.max);
+    expect(view.validateViewDelta(delta)).to.equal(ViewStatus.Success);
+    delta.scale(0.5, delta);
+    expect(view.validateViewDelta(delta)).to.equal(ViewStatus.Success);
+
+    // Outside default limits rejected
+    delta.scale(5.0, delta);
+    expect(view.validateViewDelta(delta)).to.equal(ViewStatus.MaxWindow);
+    delta.scale(0.0, delta);
+    expect(view.validateViewDelta(delta)).to.equal(ViewStatus.MinWindow);
+
+    // Override default limits
+    view.extentLimits = { min: 20, max: 100 };
+    expect(view.extentLimits.min).to.equal(20);
+    expect(view.extentLimits.max).to.equal(100);
+    delta.set(20, 20, 20);
+    expect(view.validateViewDelta(delta)).to.equal(ViewStatus.Success);
+    delta.set(100, 100, 100);
+    expect(view.validateViewDelta(delta)).to.equal(ViewStatus.Success);
+    delta.set(10, 10, 10);
+    expect(view.validateViewDelta(delta)).to.equal(ViewStatus.MinWindow);
+    delta.set(110, 110, 110);
+    expect(view.validateViewDelta(delta)).to.equal(ViewStatus.MaxWindow);
+
+    // Cloning preserved extent overrides
+    const view2 = view.clone();
+    expect(view2.extentLimits.min).to.equal(view.extentLimits.min);
+    expect(view2.extentLimits.max).to.equal(view.extentLimits.max);
+
+    // Can reset default extent limits
+    view.resetExtentLimits();
+    expect(view.extentLimits.min).to.equal(defaultLimits.min);
+    expect(view.extentLimits.max).to.equal(defaultLimits.max);
+    expect(view2.extentLimits.min).not.to.equal(view.extentLimits.min);
+    expect(view2.extentLimits.max).not.to.equal(view.extentLimits.max);
+  });
 });

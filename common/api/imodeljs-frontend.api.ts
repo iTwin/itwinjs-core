@@ -1522,10 +1522,7 @@ class DrawingViewState extends ViewState2d {
   // (undocumented)
   static createFromProps(props: ViewStateProps, iModel: IModelConnection): ViewState | undefined;
   // (undocumented)
-  getExtentLimits: {
-    max: number;
-    min: number;
-  }
+  readonly defaultExtentLimits: ExtentLimits;
 }
 
 // @public
@@ -1901,6 +1898,12 @@ enum EventHandled {
   No = 0,
   // (undocumented)
   Yes = 1
+}
+
+// @public
+interface ExtentLimits {
+  max: number;
+  min: number;
 }
 
 // @public
@@ -4879,7 +4882,7 @@ class SheetViewState extends ViewState2d {
   decorate(context: DecorateContext): void;
   // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
   // @internal (undocumented)
-  getExtentLimits: {
+  readonly defaultExtentLimits: {
     max: number;
     min: number;
   }
@@ -5056,6 +5059,11 @@ class SpatialViewState extends ViewState3d {
   // (undocumented)
   static createFromProps(props: ViewStateProps, iModel: IModelConnection): ViewState | undefined;
   // (undocumented)
+  readonly defaultExtentLimits: {
+    max: number;
+    min: number;
+  }
+  // (undocumented)
   equals(other: this): boolean;
   // (undocumented)
   equalState(other: SpatialViewState): boolean;
@@ -5063,11 +5071,6 @@ class SpatialViewState extends ViewState3d {
   forEachModel(func: (model: GeometricModelState) => void): void;
   // (undocumented)
   forEachTileTreeModel(func: (model: TileTreeModelState) => void): void;
-  // (undocumented)
-  getExtentLimits: {
-    max: number;
-    min: number;
-  }
   // (undocumented)
   getViewedExtents(): AxisAlignedBox3d;
   // (undocumented)
@@ -6621,6 +6624,7 @@ class ViewState extends ElementState {
   // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
   // @internal
   decorate(context: DecorateContext): void;
+  readonly defaultExtentLimits: ExtentLimits;
   // (undocumented)
   description?: string;
   // (undocumented)
@@ -6631,6 +6635,7 @@ class ViewState extends ElementState {
   dropSubCategoryOverride(id: Id64String): void;
   equals(other: this): boolean;
   equalState(other: ViewState): boolean;
+  extentLimits: ExtentLimits;
   abstract forEachModel(func: (model: GeometricModelState) => void): void;
   forEachTileTreeModel(func: (model: TileTreeModelState) => void): void;
   getAspectRatio(): number;
@@ -6642,10 +6647,6 @@ class ViewState extends ElementState {
   getDetail(name: string): any;
   // (undocumented)
   getDetails(): any;
-  getExtentLimits: {
-    max: number;
-    min: number;
-  }
   abstract getExtents(): Vector3d;
   getGridOrientation(): GridOrientationType;
   getGridSettings(vp: Viewport, origin: Point3d, rMatrix: Matrix3d, orientation: GridOrientationType): void;
@@ -6692,6 +6693,7 @@ class ViewState extends ElementState {
   // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
   // @internal
   removeDetail(name: string): void;
+  resetExtentLimits(): void;
   // WARNING: The type "RenderScheduleState.Script" needs to be exported by the package (e.g. added to index.ts)
   readonly scheduleScript: RenderScheduleState.Script | undefined;
   // (undocumented)

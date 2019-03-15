@@ -83,6 +83,17 @@ export class MarginPercent {
   }
 }
 
+/** Describes the largest and smallest values allowed for the extents of a [[ViewState]].
+ * Attempts to exceed these limits in any dimension will fail, preserving the previous extents.
+ * @public
+ */
+export interface ExtentLimits {
+  /** The smallest allowed extent in any dimension. */
+  min: number;
+  /** The largest allowed extent in any dimension. */
+  max: number;
+}
+
 /** A cancelable paginated request for subcategory information.
  * @see ViewSubCategories
  * @internal
@@ -245,6 +256,7 @@ export abstract class ViewState extends ElementState {
   protected _selectionSetDirty = true;
   private _auxCoordSystem?: AuxCoordSystemState;
   private _scheduleTime: number = 0.0;
+  private _extentLimits?: ExtentLimits;
   public description?: string;
   public isPrivate?: boolean;
   /** Time this ViewState was saved in view undo. */
@@ -265,6 +277,7 @@ export abstract class ViewState extends ElementState {
       this.categorySelector = categorySelector.categorySelector.clone();
       this.displayStyle = categorySelector.displayStyle.clone();
       this.subCategories = categorySelector.subCategories; // NB: This is a cache. No reason to deep-copy.
+      this._extentLimits = categorySelector._extentLimits;
     }
   }
 
@@ -732,10 +745,26 @@ export abstract class ViewState extends ElementState {
     return ViewStatus.Success;
   }
 
-  /** Get the largest and smallest values allowed for the extents for this ViewState
-   * @returns an object with members {min, max}
+  /** Get or set the largest and smallest values allowed for the extents for this ViewState
+   * The default limits vary based on the type of view:
+   *   - Spatial view extents cannot exceed the diameter of the earth.
+   *   - Drawing view extents cannot exceed twice the longest axis of the drawing model's range.
+   *   - Sheet view extents cannot exceed ten times the paper size of the sheet.
+   * Explicitly setting the extent limits overrides the default limits.
+   * @see [[resetExtentLimits]] to restore the default limits.
    */
-  public abstract getExtentLimits(): { min: number, max: number };
+  public get extentLimits(): ExtentLimits { return undefined !== this._extentLimits ? this._extentLimits : this.defaultExtentLimits; }
+  public set extentLimits(limits: ExtentLimits) { this._extentLimits = limits; }
+
+  /** Resets the largest and smallest values allowed for the extents of this ViewState to their default values.
+   * @see [[extentLimits]].
+   */
+  public resetExtentLimits(): void { this._extentLimits = undefined; }
+
+  /** Returns the default extent limits for this ViewState. These limits are used if the [[extentLimits]] have not been explicitly overridden.
+   */
+  public abstract get defaultExtentLimits(): ExtentLimits;
+
   public setDisplayStyle(style: DisplayStyleState) { this.displayStyle = style; }
   public getDetails(): any { if (!this.jsonProperties.viewDetails) this.jsonProperties.viewDetails = new Object(); return this.jsonProperties.viewDetails; }
 
@@ -782,7 +811,7 @@ export abstract class ViewState extends ElementState {
 
   /** @internal */
   public validateViewDelta(delta: Vector3d, messageNeeded?: boolean): ViewStatus {
-    const limit = this.getExtentLimits();
+    const limit = this.extentLimits;
     let error = ViewStatus.Success;
 
     const limitWindowSize = (v: number, ignoreError: boolean) => {
@@ -1669,7 +1698,7 @@ export class SpatialViewState extends ViewState3d {
 
   public static get className() { return "SpatialViewDefinition"; }
   public createAuxCoordSystem(acsName: string): AuxCoordSystemState { return AuxCoordSystemSpatialState.createNew(acsName, this.iModel); }
-  public getExtentLimits() { return { min: Constant.oneMillimeter, max: Constant.diameterOfEarth }; }
+  public get defaultExtentLimits() { return { min: Constant.oneMillimeter, max: Constant.diameterOfEarth }; }
 
   public computeFitRange(): AxisAlignedBox3d {
     // Loop over the current models in the model selector with loaded tile trees and union their ranges
@@ -1825,6 +1854,9 @@ export abstract class ViewState2d extends ViewState {
  * @public
  */
 export class DrawingViewState extends ViewState2d {
+  // Computed from the tile tree range once the tile tree is available; cached thereafter to avoid recomputing.
+  private _modelLimits?: ExtentLimits;
+
   public static createFromProps(props: ViewStateProps, iModel: IModelConnection): ViewState | undefined {
     const cat = new CategorySelectorState(props.categorySelectorProps, iModel);
     const displayStyleState = new DisplayStyle2dState(props.displayStyleProps, iModel);
@@ -1834,17 +1866,16 @@ export class DrawingViewState extends ViewState2d {
 
   public static get className() { return "DrawingViewDefinition"; }
 
-  private _extentLimits?: { min: number, max: number };
-  public getExtentLimits() {
-    if (undefined !== this._extentLimits)
-      return this._extentLimits;
+  public get defaultExtentLimits() {
+    if (undefined !== this._modelLimits)
+      return this._modelLimits;
 
     const model = this.getViewedModel();
     const tree = undefined !== model ? model.tileTree : undefined;
     if (undefined === tree)
       return { min: Constant.oneMillimeter, max: Constant.diameterOfEarth };
 
-    this._extentLimits = { min: Constant.oneMillimeter, max: 2.0 * tree.range.maxLength() };
-    return this._extentLimits;
+    this._modelLimits = { min: Constant.oneMillimeter, max: 2.0 * tree.range.maxLength() };
+    return this._modelLimits;
   }
 }

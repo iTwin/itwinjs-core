@@ -639,7 +639,7 @@ export class ViewFrustum {
     delta.y = Math.abs(delta.y);
     delta.z = Math.abs(delta.z);
 
-    const limits = this.view.getExtentLimits();
+    const limits = this.view.extentLimits;
     const clampRange = (val: number) => Math.min(Math.max(limits.min, val), limits.max);
     delta.x = clampRange(delta.x);
     delta.y = clampRange(delta.y);
