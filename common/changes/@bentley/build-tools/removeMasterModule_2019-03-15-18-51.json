@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Remove the mastermodule as it is not used.",
+      "packageName": "@bentley/build-tools",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/build-tools",
+  "email": "Caleb.Shafer@bentley.com"
+}

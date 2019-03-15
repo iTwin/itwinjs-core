@@ -47,9 +47,7 @@
     "cover:bentley": "cd core/bentley && npm run cover",
     "cover:clients": "cd core/clients && npm run cover",
     "cover:common": "cd core/common && npm run cover",
-    "cover:ecschema-metadata": "cd core/ecschema-metadata && npm run cover",
-    "module:backend": "cd core/backend && node ../../node_modules/@bentley/build-tools/scripts/mastermodule --includes=../common --recursively=true",
-    "module:frontend": "cd core/frontend && node ../../node_modules/@bentley/build-tools/scripts/mastermodule --includes=../common --recursively=true"
+    "cover:ecschema-metadata": "cd core/ecschema-metadata && npm run cover"
   },
   "keywords": [
     "Bentley",
