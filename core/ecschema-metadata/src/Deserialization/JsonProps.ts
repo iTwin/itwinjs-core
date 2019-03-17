@@ -8,6 +8,9 @@ export type AnyPropertyProps = PrimitivePropertyProps | StructPropertyProps | Pr
 export type AnyClassProps = EntityClassProps | MixinProps | CustomAttributeClassProps | RelationshipClassProps;
 export type AnySchemaItemProps = AnyClassProps | EnumerationProps | KindOfQuantityProps | PropertyCategoryProps | UnitProps | InvertedUnitProps | ConstantProps | PhenomenonProps | FormatProps;
 
+/**
+ * @beta
+ */
 export interface SchemaProps {
   readonly $schema: string;
   readonly name: string;
@@ -18,11 +21,17 @@ export interface SchemaProps {
   readonly references?: SchemaReferenceProps[];
 }
 
+/**
+ * @beta
+ */
 export interface SchemaReferenceProps {
   readonly name: string;
   readonly version: string;
 }
 
+/**
+ * @beta
+ */
 export interface SchemaItemProps {
   // NEEDSWORK: Still need to clarify how single-item deserialization works...
   readonly schema?: string;  // conditionally required
@@ -32,25 +41,43 @@ export interface SchemaItemProps {
   readonly description?: string;
 }
 
+/**
+ * @beta
+ */
 export interface ClassProps extends SchemaItemProps {
   readonly modifier?: string;
   readonly baseClass?: string;
 }
 
+/**
+ * @beta
+ */
 export interface EntityClassProps extends ClassProps {
   readonly mixins?: string[];
 }
 
+/**
+ * @beta
+ */
 export interface MixinProps extends ClassProps {
   readonly appliesTo: string;
 }
 
+/**
+ * @beta
+ */
 export type StructClassProps = ClassProps;
 
+/**
+ * @beta
+ */
 export interface CustomAttributeClassProps extends ClassProps {
   readonly appliesTo: string;
 }
 
+/**
+ * @beta
+ */
 export interface RelationshipClassProps extends ClassProps {
   readonly strength: string;
   readonly strengthDirection: string;
@@ -58,6 +85,9 @@ export interface RelationshipClassProps extends ClassProps {
   readonly target: RelationshipConstraintProps;
 }
 
+/**
+ * @beta
+ */
 export interface RelationshipConstraintProps {
   readonly multiplicity: string;
   readonly roleLabel: string;
@@ -66,12 +96,18 @@ export interface RelationshipConstraintProps {
   readonly constraintClasses: string[];
 }
 
+/**
+ * @beta
+ */
 export interface EnumerationProps extends SchemaItemProps {
   readonly type: string;
   readonly isStrict: boolean;
   readonly enumerators: EnumeratorProps[];
 }
 
+/**
+ * @beta
+ */
 export interface EnumeratorProps {
   readonly name: string;
   readonly value: string | number;
@@ -79,16 +115,25 @@ export interface EnumeratorProps {
   readonly description?: string;
 }
 
+/**
+ * @beta
+ */
 export interface KindOfQuantityProps extends SchemaItemProps {
   readonly persistenceUnit: string;
   readonly presentationUnits?: string | string[];
   readonly relativeError: number;
 }
 
+/**
+ * @beta
+ */
 export interface PropertyCategoryProps extends SchemaItemProps {
   readonly priority: number;
 }
 
+/**
+ * @beta
+ */
 export interface PropertyProps {
   readonly name: string;
   readonly type: string;
@@ -101,6 +146,9 @@ export interface PropertyProps {
   readonly kindOfQuantity?: string;
 }
 
+/**
+ * @beta
+ */
 export interface PrimitiveOrEnumPropertyBaseProps extends PropertyProps {
   readonly extendedTypeName?: string;
   readonly minLength?: number;
@@ -108,36 +156,61 @@ export interface PrimitiveOrEnumPropertyBaseProps extends PropertyProps {
   readonly minValue?: number;
   readonly maxValue?: number;
 }
+
+/**
+ * @beta
+ */
 export interface PrimitivePropertyProps extends PrimitiveOrEnumPropertyBaseProps {
   readonly typeName: string;
 }
 
+/**
+ * @beta
+ */
 export interface StructPropertyProps extends PropertyProps {
   readonly typeName: string;
 }
 
+/**
+ * @beta
+ */
 export interface EnumerationPropertyProps extends PrimitiveOrEnumPropertyBaseProps {
   readonly typeName: string;
 }
 
+/**
+ * @beta
+ */
 export interface ArrayPropertyProps extends PrimitiveOrEnumPropertyBaseProps {
   readonly minOccurs?: number;
   readonly maxOccurs?: number;
 }
 
+/**
+ * @beta
+ */
 export interface PrimitiveArrayPropertyProps extends ArrayPropertyProps {
   readonly typeName: string;
 }
 
+/**
+ * @beta
+ */
 export interface StructArrayPropertyProps extends ArrayPropertyProps {
   readonly typeName: string;
 }
 
+/**
+ * @beta
+ */
 export interface NavigationPropertyProps extends PropertyProps {
   readonly relationshipName: string;
   readonly direction: string;
 }
 
+/**
+ * @beta
+ */
 export interface ConstantProps extends SchemaItemProps {
   readonly phenomenon: string;
   readonly definition: string;
@@ -145,6 +218,9 @@ export interface ConstantProps extends SchemaItemProps {
   readonly denominator?: number;
 }
 
+/**
+ * @beta
+ */
 export interface FormatProps extends SchemaItemProps {
   readonly type: string;
   readonly precision?: number;
@@ -168,17 +244,29 @@ export interface FormatProps extends SchemaItemProps {
   };
 }
 
+/**
+ * @beta
+ */
 export interface InvertedUnitProps extends SchemaItemProps {
   readonly invertsUnit: string;
   readonly unitSystem: string;
 }
 
+/**
+ * @beta
+ */
 export interface PhenomenonProps extends SchemaItemProps {
   readonly definition: string;
 }
 
+/**
+ * @beta
+ */
 export type UnitSystemProps = SchemaItemProps;
 
+/**
+ * @beta
+ */
 export interface UnitProps extends SchemaItemProps {
   readonly phenomenon: string;
   readonly unitSystem: string;

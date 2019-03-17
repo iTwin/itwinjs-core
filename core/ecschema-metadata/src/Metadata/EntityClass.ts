@@ -17,6 +17,7 @@ import { SchemaItemKey } from "./../SchemaKey";
 
 /**
  * A Typescript class representation of an ECEntityClass.
+ * @beta
  */
 export class EntityClass extends ECClass {
   public readonly schemaItemType!: SchemaItemType.EntityClass; // tslint:disable-line
@@ -193,8 +194,9 @@ export class EntityClass extends ECClass {
   }
 }
 
-/** @hidden
+/**
  * Hackish approach that works like a "friend class" so we can access protected members without making them public.
+ * @internal
  */
 export abstract class MutableEntityClass extends EntityClass {
   public abstract addMixin(mixin: Mixin): any;
@@ -202,7 +204,7 @@ export abstract class MutableEntityClass extends EntityClass {
   public abstract createNavigationPropertySync(name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): NavigationProperty;
 }
 
-/** @hidden */
+/** @internal */
 export async function createNavigationProperty(ecClass: ECClass, name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): Promise<NavigationProperty> {
   if (await ecClass.getProperty(name))
     throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${ecClass.name}.`);
@@ -227,7 +229,7 @@ export async function createNavigationProperty(ecClass: ECClass, name: string, r
   return new NavigationProperty(ecClass, name, lazyRelationship, direction);
 }
 
-/** @hidden */
+/** @internal */
 export function createNavigationPropertySync(ecClass: ECClass, name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): NavigationProperty {
   if (ecClass.getPropertySync(name))
     throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${ecClass.name}.`);

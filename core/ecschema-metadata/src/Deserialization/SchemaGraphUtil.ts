@@ -5,7 +5,10 @@
 
 import { Schema } from "./../Metadata/Schema";
 
-/** Utility class for working with Schema graphs. */
+/**
+ * Utility class for working with Schema graphs.
+ * @internal
+ */
 export class SchemaGraphUtil {
   /**
    * Creates a flattened list of schemas in topological order, typically used before schema import

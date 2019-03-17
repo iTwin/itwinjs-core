@@ -135,7 +135,10 @@ export const ECRuleSet: IRuleSet = {
   ],
 };
 
-/** EC Rule: Sealed classes cannot be a base class. */
+/**
+ * EC Rule: Sealed classes cannot be a base class.
+ * @internal Should we make all of these methods internal??
+ */
 export async function* baseClassIsSealed(ecClass: AnyClass): AsyncIterable<ClassDiagnostic<any[]>> {
   if (!ecClass.baseClass)
     return;
@@ -148,7 +151,10 @@ export async function* baseClassIsSealed(ecClass: AnyClass): AsyncIterable<Class
   yield new Diagnostics.BaseClassIsSealed(ecClass, [ecClass.fullName, baseClass!.fullName]);
 }
 
-/** EC Rule: Base and child class must be of the same type (i.e. Entity, Mixin, Relationship, etc.)  */
+/**
+ * EC Rule: Base and child class must be of the same type (i.e. Entity, Mixin, Relationship, etc.)
+ * @internal Should we make
+ */
 export async function* baseClassIsOfDifferentType(ecClass: AnyClass): AsyncIterable<ClassDiagnostic<any[]>> {
   if (!ecClass.baseClass)
     return;

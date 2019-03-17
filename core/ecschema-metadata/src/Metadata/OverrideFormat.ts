@@ -10,6 +10,7 @@ import { DecimalPrecision, FormatTraits, FormatType, FractionalPrecision, Scient
 
 /**
  * Overrides of a Format, from a Schema, and is SchemaItem that is used specifically on KindOfQuantity.
+ * @beta
  */
 export class OverrideFormat {
   private _precision?: DecimalPrecision | FractionalPrecision;

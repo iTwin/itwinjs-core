@@ -17,6 +17,7 @@ import { SchemaItemKey } from "./../SchemaKey";
 
 /**
  * A Typescript class representation of a Mixin.
+ * @beta
  */
 export class Mixin extends ECClass {
   public readonly schemaItemType!: SchemaItemType.Mixin; // tslint:disable-line

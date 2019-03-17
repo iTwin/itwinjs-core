@@ -12,6 +12,7 @@ const baseTranslationKey = translationNamespace + ":" + subTranslationNamespace;
 
 /**
  * Interface used to report [[IDiagnostics]] objects created during schema validation.
+ * @beta
  */
 export interface IDiagnosticReporter {
   /** The I18N object to use for message translation. */
@@ -27,6 +28,7 @@ export interface IDiagnosticReporter {
 
 /**
  * The abstract base class for all [[IDiagnosticReporter]] implementations.
+ * @beta
  */
 export abstract class DiagnosticReporterBase implements IDiagnosticReporter {
   constructor(i18n?: I18N) {

@@ -13,6 +13,7 @@ const SCHEMAURL3_2 = "https://dev.bentley.com/json_schemas/ec/32/draft-01/schema
 
 /**
  * An abstract class that supplies all of the common parts of a SchemaItem.
+ * @beta
  */
 export abstract class SchemaItem {
   public readonly schemaItemType!: SchemaItemType; // allow the derived classes to define their own schemaItemType

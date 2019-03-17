@@ -7,7 +7,7 @@ import { SchemaMatchType } from "./ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "./Exception";
 
 /**
- *
+ * @beta
  */
 export class ECVersion {
   private _read: number = 0;
@@ -81,6 +81,7 @@ export class ECVersion {
 
 /**
  * An ECName is an invariant, string based, name is needed for an item in a schema.
+ * @beta
  */
 export class ECName {
   private _name: string;
@@ -105,6 +106,7 @@ export class ECName {
 
 /**
  * The SchemaKey contains a Schemas name and version.
+ * @beta
  */
 export class SchemaKey {
   private _name: ECName;
@@ -210,6 +212,7 @@ export class SchemaKey {
 
 /**
  * The SchemaItemKey contains an items name, type, and its schema.
+ * @beta
  */
 export class SchemaItemKey {
   private _name: ECName;

@@ -17,6 +17,7 @@ import { SchemaItemKey } from "./../SchemaKey";
 /**
  * An abstract class that adds the ability to define Units and everything that goes with them, within an ECSchema as a
  * first-class concept is to allow the iModel to not be dependent on any hard-coded Units
+ * @beta
  */
 export class Unit extends SchemaItem {
   public readonly schemaItemType!: SchemaItemType.Unit; // tslint:disable-line

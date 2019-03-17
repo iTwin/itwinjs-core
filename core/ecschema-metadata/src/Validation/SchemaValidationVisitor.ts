@@ -36,6 +36,7 @@ interface RuleSetArray {
  * [[IRuleSet]] objects registered with the instance. Also allows for reporting of [[IDiagnostic]]
  * objects returned from failing rules using [[IDiagnosticReporter]] implementations registered
  * with an instance of this class.
+ * @beta
  */
 export class SchemaValidationVisitor implements ISchemaPartVisitor {
   private _reporters: IDiagnosticReporter[] = [];

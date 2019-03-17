@@ -3,6 +3,9 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
+/**
+ * @internal
+ */
 export class ECStringConstants {
   // Relationship End
   public static readonly RELATIONSHIP_END_SOURCE: string = "Source";

@@ -10,6 +10,7 @@ import { PrimitiveType, SchemaItemType } from "./../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "./../Exception";
 import { ECName } from "./../SchemaKey";
 
+/** @beta */
 export interface Enumerator<T> {
   readonly name: string;
   readonly value: T;
@@ -17,10 +18,12 @@ export interface Enumerator<T> {
   readonly description?: string;
 }
 
+/** @beta */
 export type AnyEnumerator = Enumerator<string | number>;
 
 /**
  * A Typescript class representation of an ECEnumeration.
+ * @beta
  */
 export class Enumeration extends SchemaItem {
   public readonly schemaItemType!: SchemaItemType.Enumeration; // tslint:disable-line
@@ -147,7 +150,7 @@ export class Enumeration extends SchemaItem {
   }
 }
 
-/** @hidden */
+/** @internal */
 export abstract class MutableEnumeration extends Enumeration {
   public abstract addEnumerator(enumerator: AnyEnumerator): void;
 }

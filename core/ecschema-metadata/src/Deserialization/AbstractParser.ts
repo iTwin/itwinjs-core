@@ -13,7 +13,7 @@ import { CustomAttribute } from "../Metadata/CustomAttribute";
 type SchemaItemTuple<T> = Readonly<[string /** Name */, string /** SchemaItemType */, Readonly<T>]>;
 type PropertyTuple<T> = Readonly<[string /** Name */, string /** Property */, Readonly<T>]>;
 
-/** @hidden */
+/** @internal */
 export abstract class AbstractParser<TItem = any, TProperty = TItem> {
   public abstract parseSchema(): SchemaProps;
   public abstract getReferences(): Iterable<SchemaReferenceProps>;
@@ -50,4 +50,5 @@ export abstract class AbstractParser<TItem = any, TProperty = TItem> {
   public abstract getRelationshipConstraintCustomAttributes(data: Readonly<TItem>): [Iterable<CustomAttribute> /* source */, Iterable<CustomAttribute> /* target */];
 }
 
+/** @internal */
 export interface AbstractParserConstructor<TSchema, TItem = any, TProperty = TItem> { new(obj: Readonly<TSchema>): AbstractParser<TItem, TProperty>; }
