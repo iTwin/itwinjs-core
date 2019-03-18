@@ -7,6 +7,7 @@
 import { QParams3d, FeatureIndex } from "@bentley/imodeljs-common";
 import { Mesh } from "./mesh/MeshPrimitives";
 
+/** @internal */
 export class PointCloudArgs {
   public points: Uint16Array;
   public pointParams: QParams3d;

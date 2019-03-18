@@ -20,6 +20,7 @@ import { GL } from "./GL";
 import { ClipPlanesVolume, ClipMaskVolume } from "./ClipVolume";
 import { PlanarClassifier } from "./PlanarClassifier";
 
+/** @internal */
 export class FeatureOverrides implements IDisposable {
   public lut?: TextureHandle;
   public readonly target: Target;
@@ -250,6 +251,7 @@ export class FeatureOverrides implements IDisposable {
   }
 }
 
+/** @internal */
 export abstract class Graphic extends RenderGraphic {
   public abstract addCommands(_commands: RenderCommands): void;
   public get isPickable(): boolean { return false; }
@@ -257,6 +259,7 @@ export abstract class Graphic extends RenderGraphic {
   public toPrimitive(): Primitive | undefined { return undefined; }
 }
 
+/** @internal */
 export class Batch extends Graphic {
   public readonly graphic: RenderGraphic;
   public readonly featureTable: PackedFeatureTable;
@@ -331,6 +334,7 @@ export class Batch extends Graphic {
   }
 }
 
+/** @internal */
 export class Branch extends Graphic {
   public readonly branch: GraphicBranch;
   public localToWorldTransform: Transform;
@@ -359,6 +363,7 @@ export class Branch extends Graphic {
   public addHiliteCommands(commands: RenderCommands, batch: Batch, pass: RenderPass): void { commands.addHiliteBranch(this, batch, pass); }
 }
 
+/** @internal */
 export class WorldDecorations extends Branch {
   public constructor(viewFlags: ViewFlags) { super(new GraphicBranch(), Transform.identity, undefined, viewFlags); }
 
@@ -369,6 +374,7 @@ export class WorldDecorations extends Branch {
     }
   }
 }
+/** @internal */
 export class GraphicsArray extends Graphic {
   // Note: We assume the graphics array we get contains undisposed graphics to start
   constructor(public graphics: RenderGraphic[]) { super(); }

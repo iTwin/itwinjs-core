@@ -8,6 +8,7 @@ if (typeof (WebGLRenderingContext) === "undefined") {
   (global as any).WebGLRenderingContext = new Proxy({}, { get: () => 0 });
 }
 
+/** @internal */
 export namespace GL {
   export enum BlendEquation {
     Add = WebGLRenderingContext.FUNC_ADD,

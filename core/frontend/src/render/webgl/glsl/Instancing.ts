@@ -38,6 +38,7 @@ function addInstanceMatrixRow(vert: VertexShaderBuilder, row: number) {
   });
 }
 
+/** @internal */
 export function addInstancedModelMatrix(vert: VertexShaderBuilder) {
   assert(vert.usesInstancedGeometry);
 
@@ -49,6 +50,7 @@ export function addInstancedModelMatrix(vert: VertexShaderBuilder) {
   vert.addInitializer(computeInstancedModelMatrix);
 }
 
+/** @internal */
 export function addInstanceOverrides(vert: VertexShaderBuilder): void {
   if (undefined !== vert.find("a_instanceOverrides"))
     return;
@@ -71,6 +73,7 @@ export function addInstanceOverrides(vert: VertexShaderBuilder): void {
   });
 }
 
+/** @internal */
 export function addInstanceColor(vert: VertexShaderBuilder): void {
   addInstanceOverrides(vert);
 

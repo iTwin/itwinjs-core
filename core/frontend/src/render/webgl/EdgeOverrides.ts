@@ -8,8 +8,9 @@ import { LinePixels, HiddenLine } from "@bentley/imodeljs-common";
 import { FloatPreMulRgba } from "./FloatRGBA";
 import { OvrFlags } from "./RenderFlags";
 
-// Describes one of the pre-defined line patterns.
-// See Render.LinePixels.
+/** Describes one of the pre-defined line patterns. See Render.LinePixels.
+ * @internal
+ */
 export namespace LineCode {
   export function valueFromLinePixels(pixels: LinePixels): number {
     switch (pixels) {
@@ -52,6 +53,7 @@ export namespace LineCode {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00];
 }
 
+/** @internal */
 export class EdgeOverrides {
   private _color?: FloatPreMulRgba;
   private _lineCode?: number;

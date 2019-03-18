@@ -46,6 +46,7 @@ const assignFragColor = computeOutputs + `
   FragColor = (0 == u_renderTargetIndex) ? output0 : output1;
 `;
 
+/** @internal */
 export function addTranslucency(prog: ProgramBuilder): void {
   const frag = prog.frag;
 

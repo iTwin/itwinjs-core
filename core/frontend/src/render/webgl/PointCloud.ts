@@ -15,6 +15,7 @@ import { System } from "./System";
 import { dispose } from "@bentley/bentleyjs-core";
 import { RenderMemory } from "../System";
 
+/** @internal */
 export class PointCloudGeometry extends CachedGeometry {
   private _vertices: QBufferHandle3d;
   private _vertexCount: number;

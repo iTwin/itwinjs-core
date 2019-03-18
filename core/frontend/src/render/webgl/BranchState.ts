@@ -15,6 +15,7 @@ import { PlanarClassifier } from "./PlanarClassifier";
 /**
  * Represents a branch node in the scene graph, with associated view flags and transform to be applied to
  * all sub-nodes of the branch.
+ * @internal
  */
 export class BranchState {
   public readonly transform: Transform;
@@ -62,6 +63,7 @@ export class BranchState {
  * and multiplies the current transform with the branch's transform. Popping it inverts this
  * operation. The state at the top of the stack applies to the rendering of all primitives.
  * The stack does not store the scene graph itself.
+ * @internal
  */
 export class BranchStack {
   private readonly _stack: BranchState[] = [];
@@ -116,6 +118,7 @@ export class BranchStack {
  * During rendering, the feature IDs are written to the "feature ID" color attachment.
  * The batch IDs remain valid during a call to Target.readPixels() so that they can be used to extract
  * Features from the Batch's FeatureTables.
+ * @internal
  */
 export class BatchState {
   private _batches: Batch[] = []; // NB: this list is ordered - but *not* indexed - by batch ID.

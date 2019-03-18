@@ -88,7 +88,9 @@ class PackedPlanesWriter extends PlanesWriter {
   }
 }
 
-/** A 3D clip volume defined as a texture derived from a set of planes. */
+/** A 3D clip volume defined as a texture derived from a set of planes.
+ * @internal
+ */
 export class ClipPlanesVolume extends RenderClipVolume implements RenderMemory.Consumer {
   private _texture?: TextureHandle;
 
@@ -182,7 +184,9 @@ export class ClipPlanesVolume extends RenderClipVolume implements RenderMemory.C
   }
 }
 
-/** A 2D clip volume defined as a texture derived from a masked set of planes. */
+/** A 2D clip volume defined as a texture derived from a masked set of planes.
+ * @internal
+ */
 export class ClipMaskVolume extends RenderClipVolume implements RenderMemory.Consumer {
   public readonly geometry: ClipMaskGeometry;
   public readonly frustum: Frustum;

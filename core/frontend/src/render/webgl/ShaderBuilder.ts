@@ -13,7 +13,9 @@ import { GLSLVertex, addPosition } from "./glsl/Vertex";
 import { addInstancedModelMatrix } from "./glsl/Instancing";
 import { addClipping } from "./glsl/Clipping";
 
-/** Describes the data type of a shader program variable. */
+/** Describes the data type of a shader program variable.
+ * @internal
+ */
 export const enum VariableType {
   Boolean, // bool
   Int, // int
@@ -29,7 +31,9 @@ export const enum VariableType {
   COUNT,
 }
 
-/** Describes the qualifier associated with a shader program variable. */
+/** Describes the qualifier associated with a shader program variable.
+ * @internal
+ */
 export const enum VariableScope {
   Global, // no qualifier
   Varying, // varying
@@ -39,7 +43,9 @@ export const enum VariableScope {
   COUNT,
 }
 
-/** Describes the declared or undeclared precision of a shader program variable. */
+/** Describes the declared or undeclared precision of a shader program variable.
+ * @internal
+ */
 export const enum VariablePrecision {
   Default, // undeclared precision - variable uses the explicit or implicit precision default for its type
   Low, // lowp
@@ -49,6 +55,7 @@ export const enum VariablePrecision {
   COUNT,
 }
 
+/** @internal */
 namespace Convert {
   export function typeToString(type: VariableType): string {
     switch (type) {
@@ -91,10 +98,13 @@ namespace Convert {
  * Function invoked by ShaderVariable::AddBinding() to bind the variable to the compiled program.
  * The implementation should call ShaderProgram::AddShaderUniform or ShaderProgram::AddGraphicUniform/Attribute to register a function
  * which can be used to bind the value of the variable when program is used.
+ * @internal
  */
 export type AddVariableBinding = (prog: ShaderProgram) => void;
 
-/** Represents a variable within a fragment or vertex shader. */
+/** Represents a variable within a fragment or vertex shader.
+ * @internal
+ */
 export class ShaderVariable {
   private readonly _addBinding?: AddVariableBinding;
   public readonly name: string;
@@ -161,6 +171,7 @@ export class ShaderVariable {
 /**
  * Represents the set of variables defined and used within a fragment or vertex shader.
  * If the same variable is used in both the fragment and vertex shader (e.g., a varying variable), it should be defined in both ShaderBuilders' ShaderVariables object.
+ * @internal
  */
 export class ShaderVariables {
   public readonly list: ShaderVariable[] = new Array<ShaderVariable>();
@@ -277,7 +288,9 @@ export class ShaderVariables {
   }
 }
 
-/** Convenience API for assembling glsl source code. */
+/** Convenience API for assembling glsl source code.
+ * @internal
+ */
 export class SourceBuilder {
   public source: string = "";
 
@@ -317,6 +330,7 @@ export class SourceBuilder {
   public addMain(implementation: string): void { this.addFunction("void main()", implementation); }
 }
 
+/** @internal */
 export const enum ShaderBuilderFlags {
   // No special flags. Vertex data comes from attributes, geometry is not instanced.
   None = 0,
@@ -330,6 +344,7 @@ export const enum ShaderBuilderFlags {
 /*
  * Represents a fragment or vertex shader under construction. The shader consists of a set of defined variables,
  * plus a set of code snippets which can be concatenated together to form the shader source.
+ * @internal
  */
 export class ShaderBuilder extends ShaderVariables {
   public readonly components = new Array<string | undefined>();
@@ -464,7 +479,9 @@ export class ShaderBuilder extends ShaderVariables {
   }
 }
 
-// Describes the optional and required components which can be assembled into complete
+/** Describes the optional and required components which can be assembled into complete
+ * @internal
+ */
 export const enum VertexShaderComponent {
   // (Optional) Adjust the result of unquantizeVertexPosition().
   // vec4 adjustRawPosition(vec4 rawPosition)
@@ -489,7 +506,9 @@ export const enum VertexShaderComponent {
   COUNT,
 }
 
-/** Assembles the source code for a vertex shader from a set of modular components. */
+/** Assembles the source code for a vertex shader from a set of modular components.
+ * @internal
+ */
 export class VertexShaderBuilder extends ShaderBuilder {
   private _computedVarying: string[] = new Array<string>();
   private _initializers: string[] = new Array<string>();
@@ -576,7 +595,9 @@ export class VertexShaderBuilder extends ShaderBuilder {
   }
 }
 
-// Describes the optional and required components which can be assembled into complete
+/** Describes the optional and required components which can be assembled into complete
+ * @internal
+ */
 export const enum FragmentShaderComponent {
   // (Optional) Return true to immediately discard this fragment.
   // bool checkForEarlyDiscard()
@@ -629,7 +650,9 @@ export const enum FragmentShaderComponent {
   COUNT,
 }
 
-/** Assembles the source code for a fragment shader from a set of modular components. */
+/** Assembles the source code for a fragment shader from a set of modular components.
+ * @internal
+ */
 export class FragmentShaderBuilder extends ShaderBuilder {
   public maxClippingPlanes: number = 0;
 
@@ -753,7 +776,9 @@ export class FragmentShaderBuilder extends ShaderBuilder {
   }
 }
 
-/** A collection of shader programs with clipping that vary based on the max number of clipping planes each supports. */
+/** A collection of shader programs with clipping that vary based on the max number of clipping planes each supports.
+ * @internal
+ */
 export class ClippingShaders {
   public builder: ProgramBuilder;
   public shaders: ShaderProgram[] = [];
@@ -810,6 +835,7 @@ export class ClippingShaders {
   }
 }
 
+/** @internal */
 export const enum ShaderType {
   Fragment = 1 << 0,
   Vertex = 1 << 1,
@@ -819,6 +845,7 @@ export const enum ShaderType {
 /**
  * Assembles vertex and fragment shaders from a set of modular components to produce a compiled ShaderProgram.
  * Be very careful with components which use samplers to ensure that no conflicts exist with texture units used by other components (see TextureUnit enum).
+ * @internal
  */
 export class ProgramBuilder {
   public readonly vert: VertexShaderBuilder;

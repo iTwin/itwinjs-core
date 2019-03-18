@@ -17,6 +17,7 @@ import { System } from "./System";
 import { InstancedGraphicParams, RenderMemory } from "../System";
 import { InstancedGeometry, InstanceBuffers } from "./InstancedGeometry";
 
+/** @internal */
 export class Primitive extends Graphic {
   public cachedGeometry: CachedGeometry;
   public isPixelMode: boolean = false;
@@ -102,6 +103,7 @@ export class Primitive extends Graphic {
   public getTechniqueId(target: Target): TechniqueId { return this.cachedGeometry.getTechniqueId(target); }
 }
 
+/** @internal */
 export class SkyBoxPrimitive extends Primitive {
   public constructor(cachedGeom: CachedGeometry) { super(cachedGeom); }
 

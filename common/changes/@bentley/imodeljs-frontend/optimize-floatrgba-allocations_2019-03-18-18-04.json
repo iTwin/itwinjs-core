@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Optimize frontend renderer's performance by minimizing allocations of float arrays passed to the GPU.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Mark.Schlosser@bentley.com"
+}

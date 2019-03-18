@@ -15,7 +15,7 @@ import { SpatialClassification } from "../../SpatialClassification";
 import { SceneContext } from "../../ViewContext";
 import { GeometricModelState } from "../../ModelState";
 import { TileTree, Tile } from "../../tile/TileTree";
-import { Frustum, FrustumPlanes, RenderTexture, RenderMode } from "@bentley/imodeljs-common";
+import { Frustum, FrustumPlanes, RenderTexture, RenderMode, ColorDef } from "@bentley/imodeljs-common";
 import { ViewportQuadGeometry } from "./CachedGeometry";
 import { Plane3dByOriginAndUnitNormal, Point3d, Vector3d, Range3d, Transform, Matrix3d, ClipVector } from "@bentley/geometry-core";
 import { System } from "./System";
@@ -26,6 +26,7 @@ import { Batch, Branch } from "./Graphic";
 import { RenderState } from "./RenderState";
 import { RenderCommands } from "./DrawCommand";
 import { RenderPass } from "./RenderFlags";
+import { FloatRgba } from "./FloatRGBA";
 
 class PlanarClassifierDrawArgs extends Tile.DrawArgs {
   constructor(private _classifierPlanes: FrustumPlanes, private _classifier: PlanarClassifier, context: SceneContext, location: Transform, root: TileTree, now: BeTimePoint, purgeOlderThan: BeTimePoint, clip?: ClipVector) {
@@ -45,6 +46,7 @@ class PlanarClassifierDrawArgs extends Tile.DrawArgs {
   }
 }
 
+/** @internal */
 export class PlanarClassifier extends RenderPlanarClassifier implements RenderMemory.Consumer {
   private _colorTexture?: Texture;
   private _featureTexture?: Texture;
@@ -241,9 +243,10 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     const batchState = new BatchState();
     System.instance.applyRenderState(state);
     const prevPlan = target.plan;
-    const prevBgColor = target.bgColor.clone();
+    const prevBgColor = FloatRgba.fromColorDef(ColorDef.white);
+    prevBgColor.setFromFloatRgba(target.bgColor);
 
-    target.bgColor.tbgr = 0xff000000;    // Avoid white on white reversal.
+    target.bgColor.setFromColorDef(ColorDef.from(0, 0, 0, 255)); // Avoid white on white reversal.
     target.changeFrustum(this._frustum, this._frustum.getFraction(), true);
     target.branchStack.setViewFlags(viewFlags);
 
@@ -275,7 +278,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     }
 
     batchState.reset();   // Reset the batch Ids...
-    target.bgColor.setFrom(prevBgColor);
+    target.bgColor.setFromFloatRgba(prevBgColor);
     if (prevPlan)
       target.changeRenderPlan(prevPlan);
 

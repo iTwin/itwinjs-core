@@ -21,8 +21,10 @@ import { DisplayParams } from "../DisplayParams";
 import { StrokesPrimitive, StrokesPrimitiveList, StrokesPrimitivePointList, StrokesPrimitivePointLists } from "../Strokes";
 import { PolyfacePrimitive, PolyfacePrimitiveList } from "../Polyface";
 
+/** @internal */
 export type PrimitiveGeometryType = Loop | Path | IndexedPolyface;
 
+/** @internal */
 export abstract class Geometry {
   public readonly transform: Transform;
   public readonly tileRange: Range3d;
@@ -81,6 +83,7 @@ export abstract class Geometry {
   public part() { return undefined; }
 }
 
+/** @internal */
 export class PrimitivePathGeometry extends Geometry {
   public readonly path: Path;
   public readonly isDisjoint: boolean;
@@ -126,6 +129,7 @@ export class PrimitivePathGeometry extends Geometry {
   }
 }
 
+/** @internal */
 export class PrimitivePointStringGeometry extends Geometry {
   public readonly pts: Point3d[];
 
@@ -151,6 +155,7 @@ export class PrimitivePointStringGeometry extends Geometry {
   }
 }
 
+/** @internal */
 export class PrimitiveLineStringGeometry extends Geometry {
   public readonly pts: Point3d[];
 
@@ -176,6 +181,7 @@ export class PrimitiveLineStringGeometry extends Geometry {
   }
 }
 
+/** @internal */
 export class PrimitiveLoopGeometry extends Geometry {
   public readonly loop: Loop;
   public readonly isDisjoint: boolean;
@@ -210,6 +216,7 @@ export class PrimitiveLoopGeometry extends Geometry {
   }
 }
 
+/** @internal */
 export class PrimitivePolyfaceGeometry extends Geometry {
   public readonly polyface: IndexedPolyface;
 

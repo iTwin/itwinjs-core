@@ -73,6 +73,7 @@ function addPlanarClassifierCommon(builder: ProgramBuilder) {
   builder.addInlineComputedVarying("v_pClassPos", VariableType.Vec3, computeClassifierPos);
 }
 
+/** @internal */
 export function addColorPlanarClassifier(builder: ProgramBuilder) {
   addPlanarClassifierCommon(builder);
   const frag = builder.frag;
@@ -111,6 +112,7 @@ export function addColorPlanarClassifier(builder: ProgramBuilder) {
   frag.set(FragmentShaderComponent.ApplyPlanarClassifier, applyPlanarClassificationColor);
 }
 
+/** @internal */
 export function addFeaturePlanarClassifier(builder: ProgramBuilder) {
   const frag = builder.frag;
   frag.addUniform("u_batchBase", VariableType.Vec4, (prog) => {     // TBD.  Instancing.
@@ -136,6 +138,7 @@ export function addFeaturePlanarClassifier(builder: ProgramBuilder) {
   frag.addFunction(addUInt32s);
 }
 
+/** @internal */
 export function addHilitePlanarClassifier(builder: ProgramBuilder, supportTextures = true) {
   addPlanarClassifierCommon(builder);
   const frag = builder.frag;

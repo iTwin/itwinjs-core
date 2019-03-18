@@ -31,6 +31,7 @@ const initializerTemplate = `
   {LUTCENTER} = vec2(0.5*{LUTSTEPX}, 0.5*{LUTSTEPY});
 `;
 
+/** @internal */
 export function addLookupTable(sb: ShaderBuilder, lutName: string, mult: string = "1.0") {
   sb.addFunction(computeLUTCoords);
 

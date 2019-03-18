@@ -176,6 +176,7 @@ function computeAnimParams(params: Float32Array, channel: AuxChannel, fraction: 
   params[2] = 0.0;
 }
 
+/** @internal */
 export function addAnimation(vert: VertexShaderBuilder, isSurface: boolean): void {
   // Lookup table
   vert.addGlobal("g_anim_step", VariableType.Vec2);

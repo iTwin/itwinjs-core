@@ -13,6 +13,7 @@ import { ShaderProgramParams } from "./DrawCommand";
 import { AttributeHandle, BufferHandle } from "./Handle";
 import { FeaturesInfo } from "./FeaturesInfo";
 
+/** @internal */
 export class InstanceBuffers implements IDisposable {
   public readonly numInstances: number;
   public readonly transforms: BufferHandle;
@@ -85,6 +86,7 @@ export class InstanceBuffers implements IDisposable {
   }
 }
 
+/** @internal */
 export class InstancedGeometry extends CachedGeometry {
   private readonly _buffers: InstanceBuffers;
   private readonly _repr: LUTGeometry;

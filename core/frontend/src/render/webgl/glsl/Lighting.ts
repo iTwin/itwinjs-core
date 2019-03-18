@@ -69,6 +69,7 @@ const applyLighting = `
   return baseColor;
 `;
 
+/** @internal */
 export function addLighting(builder: ProgramBuilder) {
   addFrustum(builder);
 

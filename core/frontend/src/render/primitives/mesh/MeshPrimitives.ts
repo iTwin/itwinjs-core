@@ -35,7 +35,9 @@ import { InstancedGraphicParams, RenderGraphic, RenderSystem } from "../../Syste
 import { Triangle, TriangleList } from "../Primitives";
 import { VertexKeyProps } from "../VertexKey";
 
-/* Information needed to draw a set of indexed polylines using a shared vertex buffer. */
+/* Information needed to draw a set of indexed polylines using a shared vertex buffer.
+ * @internal
+ */
 export class PolylineArgs {
   public colors = new ColorIndex();
   public features = new FeatureIndex();
@@ -100,7 +102,9 @@ export class PolylineArgs {
   }
 }
 
-// The vertices of the edges are shared with those of the surface
+/** The vertices of the edges are shared with those of the surface
+ * @internal
+ */
 export class MeshArgsEdges {
   public edges = new EdgeArgs();
   public silhouettes = new SilhouetteEdgeArgs();
@@ -118,7 +122,9 @@ export class MeshArgsEdges {
   public get isValid(): boolean { return this.edges.isValid || this.silhouettes.isValid || this.polylines.isValid; }
 }
 
-/* A carrier of information needed to describe a triangle mesh and its edges. */
+/* A carrier of information needed to describe a triangle mesh and its edges.
+ * @internal
+ */
 export class MeshArgs {
   public edges = new MeshArgsEdges();
   public vertIndices?: number[];
@@ -199,11 +205,13 @@ export class MeshArgs {
   }
 }
 
+/** @internal */
 export class MeshGraphicArgs {
   public polylineArgs = new PolylineArgs();
   public meshArgs: MeshArgs = new MeshArgs();
 }
 
+/** @internal */
 export class Mesh {
   private readonly _data: TriangleList | MeshPolylineList;
   public readonly points: QPoint3dList;
@@ -306,6 +314,7 @@ export class Mesh {
   }
 }
 
+/** @internal */
 export namespace Mesh {
   export const enum PrimitiveType {
     Mesh,
@@ -376,6 +385,7 @@ export namespace Mesh {
   }
 }
 
+/** @internal */
 export class MeshList extends Array<Mesh> {
   public readonly features?: FeatureTable;
   constructor(features?: FeatureTable) {

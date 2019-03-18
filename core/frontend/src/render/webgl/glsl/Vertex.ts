@@ -49,6 +49,7 @@ const computeLineCode = "\nfloat computeLineCode() { return g_lineCode; }\n";
 
 const scratchMVPMatrix = new Matrix4();
 
+/** @internal */
 export function addModelViewProjectionMatrix(vert: VertexShaderBuilder): void {
   if (vert.usesInstancedGeometry) {
     addModelViewMatrix(vert);
@@ -66,6 +67,7 @@ export function addModelViewProjectionMatrix(vert: VertexShaderBuilder): void {
   }
 }
 
+/** @internal */
 export function addProjectionMatrix(vert: VertexShaderBuilder): void {
   vert.addUniform("u_proj", VariableType.Mat4, (prog) => {
     prog.addProgramUniform("u_proj", (uniform, params) => {
@@ -74,6 +76,7 @@ export function addProjectionMatrix(vert: VertexShaderBuilder): void {
   });
 }
 
+/** @internal */
 export function addModelViewMatrix(vert: VertexShaderBuilder): void {
   if (vert.usesInstancedGeometry) {
     vert.addUniform("u_instanced_modelView", VariableType.Mat4, (prog) => {
@@ -94,6 +97,7 @@ export function addModelViewMatrix(vert: VertexShaderBuilder): void {
   }
 }
 
+/** @internal */
 export function addNormalMatrix(vert: VertexShaderBuilder) {
   vert.addGlobal("g_nmx", VariableType.Mat3);
   vert.addInitializer("g_nmx = mat3(MAT_MV);");
@@ -137,6 +141,7 @@ function addPositionFromLUT(vert: VertexShaderBuilder) {
   vert.addInitializer(initializeVertLUTCoords);
 }
 
+/** @internal */
 export function addPosition(vert: VertexShaderBuilder, fromLUT: boolean) {
   vert.addFunction(unquantizePosition);
 
@@ -161,6 +166,7 @@ export function addPosition(vert: VertexShaderBuilder, fromLUT: boolean) {
   }
 }
 
+/** @internal */
 export function addAlpha(vert: VertexShaderBuilder): void {
   vert.addUniform("u_hasAlpha", VariableType.Float, (prog) => {
     prog.addGraphicUniform("u_hasAlpha", (uniform, params) => {
@@ -169,6 +175,7 @@ export function addAlpha(vert: VertexShaderBuilder): void {
   });
 }
 
+/** @internal */
 export function addLineWeight(vert: VertexShaderBuilder): void {
   vert.addUniform("u_lineWeight", VariableType.Float, (prog) => {
     prog.addGraphicUniform("u_lineWeight", (attr, params) => {
@@ -187,10 +194,12 @@ export function addLineWeight(vert: VertexShaderBuilder): void {
   vert.addFunction(computeLineWeight);
 }
 
+/** @internal */
 export function replaceLineWeight(vert: VertexShaderBuilder, func: string): void {
   vert.replaceFunction(computeLineWeight, func);
 }
 
+/** @internal */
 export function addLineCode(vert: VertexShaderBuilder): void {
   vert.addUniform("u_lineCode", VariableType.Float, (prog) => {
     prog.addGraphicUniform("u_lineCode", (attr, params) => {
@@ -209,10 +218,12 @@ export function addLineCode(vert: VertexShaderBuilder): void {
   vert.addFunction(computeLineCode);
 }
 
+/** @internal */
 export function replaceLineCode(vert: VertexShaderBuilder, func: string): void {
   vert.replaceFunction(computeLineCode, func);
 }
 
+/** @internal */
 export namespace GLSLVertex {
   // This vertex belongs to a triangle which should not be rendered. Produce a degenerate triangle.
   // Also place it outside NDC range (for GL_POINTS)

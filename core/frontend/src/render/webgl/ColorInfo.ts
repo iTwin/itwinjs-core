@@ -9,7 +9,9 @@ import { assert } from "@bentley/bentleyjs-core";
 import { FloatPreMulRgba } from "./FloatRGBA";
 import { VertexTable } from "../primitives/VertexTable";
 
-/* Describes a primitive's basic color properties */
+/* Describes a primitive's basic color properties
+ * @internal
+ */
 export class ColorInfo {
   private readonly _uniform?: FloatPreMulRgba;
   public readonly hasTranslucency: boolean;

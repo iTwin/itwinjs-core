@@ -13,6 +13,7 @@ import { TextureUnit, OvrFlags } from "./RenderFlags";
 
 type CanvasOrImage = HTMLCanvasElement | HTMLImageElement;
 
+/** @internal */
 export interface TextureMonitor {
   onTextureCreated: (texture: TextureHandle) => void;
   onTextureDisposed: (texture: TextureHandle) => void;
@@ -110,7 +111,9 @@ interface TextureImageProperties {
   format: GL.Texture.Format;
 }
 
-/** Wrapper class for a WebGL texture handle and parameters specific to an individual texture. */
+/** Wrapper class for a WebGL texture handle and parameters specific to an individual texture.
+ * @internal
+ */
 export class Texture extends RenderTexture {
   public readonly texture: TextureHandle;
 
@@ -240,7 +243,9 @@ class TextureCubeCreateParams {
   }
 }
 
-/** Wraps a WebGLTextureHandle */
+/** Wraps a WebGLTextureHandle
+ * @internal
+ */
 export abstract class TextureHandle implements IDisposable {
   protected static _monitor?: TextureMonitor;
   public static set monitor(monitor: TextureMonitor | undefined) { this._monitor = monitor; }
@@ -310,6 +315,7 @@ export abstract class TextureHandle implements IDisposable {
   }
 }
 
+/** @internal */
 export class Texture2DHandle extends TextureHandle {
   private _width: number;
   private _height: number;
@@ -416,6 +422,7 @@ export class Texture2DHandle extends TextureHandle {
   }
 }
 
+/** @internal */
 export class TextureCubeHandle extends TextureHandle {
   private _dim: number; // Cubemap texture height and width must match.  This must be the same for each of the six faces.
   private _format: GL.Texture.Format; // Format must be the same for each of the six faces.
@@ -478,6 +485,7 @@ export class TextureCubeHandle extends TextureHandle {
   }
 }
 
+/** @internal */
 export class Texture2DDataUpdater {
   public data: Uint8Array;
   public modified: boolean = false;

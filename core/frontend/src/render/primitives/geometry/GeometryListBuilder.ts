@@ -22,6 +22,7 @@ function copy2dTo3d(pts2d: Point2d[], depth: number): Point3d[] {
   return pts3d;
 }
 
+/** @internal */
 export abstract class GeometryListBuilder extends GraphicBuilder {
   public accum: GeometryAccumulator;
   public graphicParams: GraphicParams = new GraphicParams();
@@ -145,6 +146,7 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
   }
 }
 
+/** @internal */
 export class PrimitiveBuilder extends GeometryListBuilder {
   public primitives: RenderGraphic[] = [];
 

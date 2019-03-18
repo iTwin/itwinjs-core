@@ -7,6 +7,7 @@
 import { IndexedPolyface, Transform } from "@bentley/geometry-core";
 import { DisplayParams } from "./DisplayParams";
 
+/** @internal */
 export class PolyfacePrimitive {
   public readonly displayParams: DisplayParams;
   private _polyface: IndexedPolyface;
@@ -30,4 +31,5 @@ export class PolyfacePrimitive {
   public transform(trans: Transform): boolean { return this._polyface.tryTransformInPlace(trans); }
 }
 
+/** @internal */
 export class PolyfacePrimitiveList extends Array<PolyfacePrimitive> { constructor(...args: PolyfacePrimitive[]) { super(...args); } }

@@ -16,6 +16,7 @@ const assignFragData = `FragColor = TEXTURE_CUBE(s_cube, v_texDir);`;
 const computePosition = `vec3 pos = u_rot * vec3(rawPos.x, rawPos.z, -rawPos.y); return pos.xyzz;`; // rawPos swizzling accounts for iModel rotation.
 const computeTexDir = `v_texDir = rawPosition.xyz;`;
 
+/** @internal */
 export function createSkyBoxProgram(context: WebGLRenderingContext): ShaderProgram {
   const prog = new ProgramBuilder();
 

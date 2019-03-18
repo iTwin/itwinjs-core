@@ -30,6 +30,7 @@ function addShaderFlagsLookup(shader: ShaderBuilder) {
   shader.addFunction(isShaderBitSet);
 }
 
+/** @internal */
 export function addViewMatrix(vert: ShaderBuilder): void {
   vert.addUniform("u_viewMatrix", VariableType.Mat4, (prog) => {
     prog.addGraphicUniform("u_viewMatrix", (uniform, params) => {
@@ -78,6 +79,7 @@ function setShaderFlags(uniform: UniformHandle, params: DrawParams) {
   uniform.setUniform1f(flags);
 }
 
+/** @internal */
 export function addShaderFlags(builder: ProgramBuilder) {
   addShaderFlagsLookup(builder.vert);
   addShaderFlagsLookup(builder.frag);
@@ -87,6 +89,7 @@ export function addShaderFlags(builder: ProgramBuilder) {
   });
 }
 
+/** @internal */
 export function addFrustum(builder: ProgramBuilder) {
   builder.addUniform("u_frustum", VariableType.Vec3, (prog) => {
     prog.addProgramUniform("u_frustum", (uniform, params) => {
@@ -101,10 +104,12 @@ export function addFrustum(builder: ProgramBuilder) {
 
 const computeEyeSpace = "v_eyeSpace = (MAT_MV * rawPosition);";
 
+/** @internal */
 export function addEyeSpace(builder: ProgramBuilder) {
   builder.addInlineComputedVarying("v_eyeSpace", VariableType.Vec4, computeEyeSpace);
 }
 
+/** @internal */
 export const addUInt32s = `
   vec4 addUInt32s(vec4 a, vec4 b)
       {
@@ -116,6 +121,7 @@ export const addUInt32s = `
       }
 `;
 
+/** @internal */
 export namespace GLSLCommon {
   // Expects flags in range [0...256] with no fraction; and bit is [0..31] with no fraction.
   // Returns 1.0 if the nth bit is set, 0.0 otherwise.

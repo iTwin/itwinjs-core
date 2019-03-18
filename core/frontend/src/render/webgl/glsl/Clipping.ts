@@ -109,6 +109,7 @@ const applyClipMask = `
     discard;
 `;
 
+/** @internal */
 export function addClipping(prog: ProgramBuilder, clipDef: ClipDef) {
   if (clipDef.type === ClippingType.Mask)
     addClippingMask(prog);
