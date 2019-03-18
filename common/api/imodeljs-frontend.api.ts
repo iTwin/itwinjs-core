@@ -3870,7 +3870,7 @@ class PluginAdmin {
 // WARNING: Unsupported export: Point3d
 // WARNING: Unsupported export: Point
 // WARNING: Unsupported export: Value
-// @public
+// @public (undocumented)
 module Primitives {
 }
 
