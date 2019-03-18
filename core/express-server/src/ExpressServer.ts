@@ -3,26 +3,22 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as bodyParser from "body-parser";
-import { WebAppRpcProtocol } from "@bentley/imodeljs-common/lib/rpc/web/WebAppRpcProtocol";
+import * as express from "express";
+import { Server as HttpServer } from "http";
+import { WebAppRpcProtocol } from "@bentley/imodeljs-common";
 
-// Note that we're never actually importing express here - we're only using import types, so the generated .js never includes `require("express")`
-// This way, the imodeljs-backend package doesn't need to have a dependency on express.
-// tslint:disable:whitespace -- FIXME: This is a bug in TSLint: https://github.com/palantir/tslint/issues/3987
-type ExpressApp = import("express").Application;
-type HttpServer = import("http").Server;
-// tslint:enable:whitespace
 /**
  * An express web server with some reasonable defaults for web applications built with @bentley/webpack-tools.
  * @note This server is not designed to be a hardened, secure endpoint on the public internet.
  *       It is intended to participate in a private HTTP exchange with a public-facing routing and provisioning infrastructure
  *       that should be supplied by the application's deployment environment.
+ * @public
  */
 export class IModelJsExpressServer {
   private _protocol: WebAppRpcProtocol;
-  protected _app: ExpressApp;
+  protected _app: import("express").Application = express();
 
-  constructor(app: ExpressApp, protocol: WebAppRpcProtocol) {
-    this._app = app;
+  constructor(protocol: WebAppRpcProtocol) {
     this._protocol = protocol;
   }
 

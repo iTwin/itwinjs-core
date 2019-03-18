@@ -128,6 +128,8 @@ The electron version used internally has  been updated to v4.10.0.
 
 ## Miscellaneous changes
 
+* The [IModelJsExpressServer]($express-server) class has been moved to its own package (`@bentley/express-server`).
+  * This package has a dependency on express, so the first constructor argument to `IModelJsExpressServer` has been removed.
 * [IModelConnection.openSnapshot]($frontend) throws an exception if [IModelApp.startup]($frontend) has not been called.
 * [IModelDb.onOpened.addListener]($backend) takes a callback with a different signature -  [AuthorizedClientRequestContext]($clients) is now passed as te first argument.
 * [ImsActiveSecureTokenClient]($client) takes [ImsCredentials]($client) as a single argument instead of separate email and password fields.

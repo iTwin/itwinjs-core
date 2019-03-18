@@ -16,6 +16,7 @@ dependencies:
   '@rush-temp/example-code-app': 'file:projects/example-code-app.tgz'
   '@rush-temp/example-code-snippets': 'file:projects/example-code-snippets.tgz'
   '@rush-temp/export-obj': 'file:projects/export-obj.tgz'
+  '@rush-temp/express-server': 'file:projects/express-server.tgz'
   '@rush-temp/geometry-core': 'file:projects/geometry-core.tgz'
   '@rush-temp/imodel-from-geojson': 'file:projects/imodel-from-geojson.tgz'
   '@rush-temp/imodel-from-reality-model': 'file:projects/imodel-from-reality-model.tgz'
@@ -13664,6 +13665,23 @@ packages:
       integrity: sha512-uVp9W9NqbEjtcV5ArJ+N+wDbZ6JvegCJW3hpq+YHJ5lxNS1VIu01Ts9RVPTZd060LFsJf5uZZNOI1LasLiNVQA==
       tarball: 'file:projects/export-obj.tgz'
     version: 0.0.0
+  'file:projects/express-server.tgz':
+    dependencies:
+      '@types/body-parser': 1.17.0
+      '@types/express': 4.16.1
+      '@types/node': 10.14.1
+      body-parser: 1.18.3
+      express: 4.16.4
+      rimraf: 2.6.3
+      tslint: /tslint/5.14.0/typescript@3.2.4
+      typedoc: 0.11.1
+      typescript: 3.2.4
+    dev: false
+    name: '@rush-temp/express-server'
+    resolution:
+      integrity: sha512-vBvFdFWeHYp0uYLwzP3w4UggHkBEJr3/YLzz5TKRggse0MyrE3RMo822PAkMyAnngatzMwdxD6s0ShrW2Y7d5w==
+      tarball: 'file:projects/express-server.tgz'
+    version: 0.0.0
   'file:projects/geometry-core.tgz':
     dependencies:
       '@types/chai': 4.1.7
@@ -14757,6 +14775,7 @@ specifiers:
   '@rush-temp/example-code-app': 'file:./projects/example-code-app.tgz'
   '@rush-temp/example-code-snippets': 'file:./projects/example-code-snippets.tgz'
   '@rush-temp/export-obj': 'file:./projects/export-obj.tgz'
+  '@rush-temp/express-server': 'file:./projects/express-server.tgz'
   '@rush-temp/geometry-core': 'file:./projects/geometry-core.tgz'
   '@rush-temp/imodel-from-geojson': 'file:./projects/imodel-from-geojson.tgz'
   '@rush-temp/imodel-from-reality-model': 'file:./projects/imodel-from-reality-model.tgz'

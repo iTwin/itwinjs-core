@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import { Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
-import { IModelHost, IModelJsExpressServer, IModelHostConfiguration } from "@bentley/imodeljs-backend";
+import { IModelHost, IModelHostConfiguration } from "@bentley/imodeljs-backend";
 import { Config } from "@bentley/imodeljs-clients";
+import { IModelJsExpressServer } from "@bentley/express-server";
 import { BentleyCloudRpcManager, ElectronRpcConfiguration, ElectronRpcManager, RpcConfiguration } from "@bentley/imodeljs-common";
-import * as express from "express";
 import { rpcInterfaces } from "../common/RpcInterfaces";
 import "./RpcImpl";
 
@@ -32,8 +32,7 @@ async function init() {
 
     // create a basic express web server
     const port = Number(process.env.CERTA_PORT || 3011) + 2000;
-    const app = express();
-    const server = new IModelJsExpressServer(app, rpcConfig.protocol);
+    const server = new IModelJsExpressServer(rpcConfig.protocol);
     await server.initialize(port);
     // tslint:disable-next-line:no-console
     console.log("Web backend for integration-tests listening on port " + port);

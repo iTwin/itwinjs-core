@@ -1162,23 +1162,6 @@ class IModelImporter {
 }
 
 // @public
-class IModelJsExpressServer {
-  // WARNING: The type "ExpressApp" needs to be exported by the package (e.g. added to index.ts)
-  constructor(app: ExpressApp, protocol: WebAppRpcProtocol);
-  // WARNING: The type "ExpressApp" needs to be exported by the package (e.g. added to index.ts)
-  // (undocumented)
-  protected _app: ExpressApp;
-  // (undocumented)
-  protected _configureHeaders(): void;
-  // (undocumented)
-  protected _configureMiddleware(): void;
-  // (undocumented)
-  protected _configureRoutes(): void;
-  // WARNING: The type "HttpServer" needs to be exported by the package (e.g. added to index.ts)
-  initialize(port: number | string): Promise<HttpServer>;
-}
-
-// @public
 class IModelJsFs {
   static appendFileSync(path: string, str: string): void;
   static copySync(src: string, dest: string, opts?: any): void;

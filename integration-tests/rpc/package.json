@@ -19,6 +19,7 @@
   "repository": {},
   "dependencies": {
     "@bentley/bentleyjs-core": "0.191.0-dev.8",
+    "@bentley/express-server": "0.191.0-dev.8",
     "@bentley/imodeljs-backend": "0.191.0-dev.8",
     "@bentley/imodeljs-clients": "0.191.0-dev.8",
     "@bentley/imodeljs-common": "0.191.0-dev.8",
