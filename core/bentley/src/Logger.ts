@@ -79,13 +79,13 @@ export class Logger {
     );
   }
 
-  /** Add the currently registered activityId, if any, to the specified metadata. */
-  public static addActivityId(mdata: any) {
-    if ((ClientRequestContext.current.activityId === "") || mdata.hasOwnProperty("ActivityId"))
-      return;
-    const activityId = ClientRequestContext.current.activityId;
-    if (activityId !== "")
-      mdata.ActivityId = activityId;
+  /** Add the generic client context to the specified metadata. */
+  private static addClientRequestContext(mdata: any) {
+    const requestContext = ClientRequestContext.current;
+    mdata.ActivityId = requestContext.activityId;
+    mdata.SessionId = requestContext.sessionId;
+    mdata.ApplicationId = requestContext.applicationId;
+    mdata.ApplicationVersion = requestContext.applicationVersion;
   }
 
   /** Should the callstack be included when an exception is logged?  */
@@ -100,16 +100,16 @@ export class Logger {
 
   /** Compose the metadata for a log message.  */
   public static makeMetaData(getMetaData?: GetMetaDataFunction): any {
-    if (!getMetaData && (ClientRequestContext.current.activityId === ""))
+    if (!getMetaData)
       return;
     const mdata: any = getMetaData ? getMetaData() : {};
-    Logger.addActivityId(mdata);
+    Logger.addClientRequestContext(mdata);
     return mdata;
   }
 
   /** Format the metadata for a log message.  */
   private static formatMetaData(getMetaData?: GetMetaDataFunction): any {
-    if (!getMetaData && (ClientRequestContext.current.activityId === ""))
+    if (!getMetaData)
       return "";
     return " " + JSON.stringify(Logger.makeMetaData(getMetaData));
   }

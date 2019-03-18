@@ -804,7 +804,6 @@ module JsonUtils {
 
 // @public
 class Logger {
-  static addActivityId(mdata: any): void;
   static configureLevels(cfg: LoggerLevelsConfig): void;
   static getLevel(category: string): LogLevel | undefined;
   static initialize(logError: LogFunction | undefined, logWarning?: LogFunction | undefined, logInfo?: LogFunction | undefined, logTrace?: LogFunction | undefined): void;
