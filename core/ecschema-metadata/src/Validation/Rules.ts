@@ -28,7 +28,10 @@ import { BaseDiagnostic } from "./Diagnostic";
 export type IRule<T extends AnyECType, U = {}> = (ecDefinition: T, ...args: U[]) => AsyncIterable<BaseDiagnostic<T, any[]>>;
 export type BaseRule<T extends AnyECType, U extends AnyECType> = IRule<T, U>;
 
-/** Interface used to represent logical collection of [[IRule]] instances. */
+/**
+ * Interface used to represent logical collection of [[IRule]] instances.
+ * @beta
+ */
 export interface IRuleSet {
   /** The name of the rule set. */
   name: string;

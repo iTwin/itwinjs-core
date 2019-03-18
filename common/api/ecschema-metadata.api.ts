@@ -1,4 +1,4 @@
-// @public (undocumented)
+// @beta (undocumented)
 class ArrayProperty extends Property {
   // (undocumented)
   protected _maxOccurs?: number;
@@ -10,7 +10,7 @@ class ArrayProperty extends Property {
   readonly minOccurs: number;
 }
 
-// @public
+// @beta
 class BaseDiagnostic<TYPE extends AnyECType, ARGS extends any[]> implements IDiagnostic<TYPE, ARGS> {
   constructor(ecDefinition: TYPE, messageArgs: ARGS);
   readonly category: DiagnosticCategory;
@@ -21,15 +21,15 @@ class BaseDiagnostic<TYPE extends AnyECType, ARGS extends any[]> implements IDia
   readonly messageText: string;
 }
 
-// @public
+// @beta
 class ClassDiagnostic<ARGS extends any[]> extends SchemaItemDiagnostic<AnyClass, ARGS> {
   constructor(ecClass: AnyClass, messageArgs: ARGS);
 }
 
-// @public
+// @beta
 export function classModifierToString(modifier: ECClassModifier): string;
 
-// @public
+// @beta
 class Constant extends SchemaItem {
   constructor(schema: Schema, name: string);
   // (undocumented)
@@ -63,10 +63,10 @@ class Constant extends SchemaItem {
   }
 }
 
-// @public
+// @beta
 export function containerTypeToString(type: CustomAttributeContainerType): string;
 
-// @public
+// @beta
 export function createClassDiagnosticClass<ARGS extends any[]>(code: string, messageText: string, category?: DiagnosticCategory): {
     new (ecClass: AnyClass, messageArgs: ARGS): {
         readonly code: string;
@@ -79,7 +79,7 @@ export function createClassDiagnosticClass<ARGS extends any[]>(code: string, mes
     diagnosticType: DiagnosticType;
 };
 
-// @public
+// @beta
 export function createCustomAttributeContainerDiagnosticClass<ARGS extends any[]>(code: string, messageText: string, category?: DiagnosticCategory): {
     new (container: CustomAttributeContainerProps, messageArgs: ARGS): {
         readonly code: string;
@@ -91,7 +91,7 @@ export function createCustomAttributeContainerDiagnosticClass<ARGS extends any[]
     };
 };
 
-// @public
+// @beta
 export function createPropertyDiagnosticClass<ARGS extends any[]>(code: string, messageText: string, category?: DiagnosticCategory): {
     new (property: AnyProperty, messageArgs: ARGS): {
         readonly code: string;
@@ -103,7 +103,7 @@ export function createPropertyDiagnosticClass<ARGS extends any[]>(code: string, 
     };
 };
 
-// @public
+// @beta
 export function createRelationshipConstraintDiagnosticClass<ARGS extends any[]>(code: string, messageText: string, category?: DiagnosticCategory): {
     new (constraint: RelationshipConstraint, messageArgs: ARGS): {
         readonly code: string;
@@ -115,7 +115,7 @@ export function createRelationshipConstraintDiagnosticClass<ARGS extends any[]>(
     };
 };
 
-// @public
+// @beta
 export function createSchemaDiagnosticClass<ARGS extends any[]>(code: string, messageText: string, category?: DiagnosticCategory): {
     new (schema: Schema, messageArgs: ARGS): {
         readonly code: string;
@@ -128,7 +128,7 @@ export function createSchemaDiagnosticClass<ARGS extends any[]>(code: string, me
     diagnosticType: DiagnosticType;
 };
 
-// @public
+// @beta
 export function createSchemaItemDiagnosticClass<ITEM extends SchemaItem, ARGS extends any[]>(code: string, messageText: string, category?: DiagnosticCategory): {
     new (ecDefinition: ITEM, messageArgs: ARGS): {
         readonly code: string;
@@ -141,7 +141,7 @@ export function createSchemaItemDiagnosticClass<ITEM extends SchemaItem, ARGS ex
     diagnosticType: DiagnosticType;
 };
 
-// @public
+// @beta
 class CustomAttributeClass extends ECClass {
   constructor(schema: Schema, name: string, modifier?: ECClassModifier);
   // (undocumented)
@@ -164,7 +164,7 @@ class CustomAttributeClass extends ECClass {
 }
 
 // WARNING: The type "CustomAttributeContainerProps" needs to be exported by the package (e.g. added to index.ts)
-// @public
+// @beta
 class CustomAttributeContainerDiagnostic<ARGS extends any[]> extends BaseDiagnostic<CustomAttributeContainerProps, ARGS> {
   // WARNING: The type "CustomAttributeContainerProps" needs to be exported by the package (e.g. added to index.ts)
   constructor(container: CustomAttributeContainerProps, messageArgs: ARGS);
@@ -172,7 +172,7 @@ class CustomAttributeContainerDiagnostic<ARGS extends any[]> extends BaseDiagnos
   readonly diagnosticType: DiagnosticType;
 }
 
-// @public
+// @beta
 enum CustomAttributeContainerType {
   // (undocumented)
   Any = 4095,
@@ -208,7 +208,8 @@ enum CustomAttributeContainerType {
   TargetRelationshipConstraint = 2048
 }
 
-// @public (undocumented)
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal
 enum DecimalPrecision {
   // (undocumented)
   Eight = 8,
@@ -238,7 +239,8 @@ enum DecimalPrecision {
   Zero = 0
 }
 
-// @public
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal
 class DelayedPromise<T> implements Promise<T> {
   // WARNING: The name "__@toStringTag" contains unsupported characters; API names should use only letters, numbers, and underscores
   // (undocumented)
@@ -250,12 +252,12 @@ class DelayedPromise<T> implements Promise<T> {
   then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): Promise<TResult1 | TResult2>;
 }
 
-// @public (undocumented)
+// @beta (undocumented)
 interface DelayedPromiseWithPropsConstructor {
   new <TProps extends NoDelayedPromiseMethods, TPayload>(props: TProps, startCallback: () => Promise<TPayload>): Readonly<TProps> & DelayedPromise<TPayload>;
 }
 
-// @public
+// @beta
 enum DiagnosticCategory {
   // (undocumented)
   Error = 1,
@@ -267,10 +269,10 @@ enum DiagnosticCategory {
   Warning = 0
 }
 
-// @public (undocumented)
+// @beta (undocumented)
 export function diagnosticCategoryToString(category: DiagnosticCategory): "Error" | "Warning" | "Message" | "Suggestion";
 
-// @public
+// @beta
 class DiagnosticReporterBase implements IDiagnosticReporter {
   constructor(i18n?: I18N);
   protected formatStringFromArgs(text: string, args: ArrayLike<string>, baseIndex?: number): string;
@@ -279,7 +281,7 @@ class DiagnosticReporterBase implements IDiagnosticReporter {
   protected abstract reportDiagnostic(diagnostic: AnyDiagnostic, messageText: string): void;
 }
 
-// @public
+// @beta
 enum DiagnosticType {
   // (undocumented)
   CustomAttributeContainer = 4,
@@ -295,10 +297,10 @@ enum DiagnosticType {
   SchemaItem = 2
 }
 
-// @public (undocumented)
+// @beta (undocumented)
 export function diagnosticTypeToString(type: DiagnosticType): "Schema" | "None" | "CustomAttributeContainer" | "Property" | "RelationshipConstraint" | "SchemaItem";
 
-// @public
+// @beta
 class ECClass extends SchemaItem, implements CustomAttributeContainerProps {
   constructor(schema: Schema, name: string, modifier?: ECClassModifier);
   // (undocumented)
@@ -373,7 +375,7 @@ class ECClass extends SchemaItem, implements CustomAttributeContainerProps {
   traverseBaseClassesSync(callback: (ecClass: ECClass, arg?: any) => boolean, arg?: any): boolean;
 }
 
-// @public (undocumented)
+// @beta (undocumented)
 enum ECClassModifier {
   // (undocumented)
   Abstract = 1,
@@ -383,7 +385,7 @@ enum ECClassModifier {
   Sealed = 2
 }
 
-// @public
+// @beta
 class ECName {
   constructor(name: string);
   // (undocumented)
@@ -392,7 +394,8 @@ class ECName {
   static validate(newName: string): boolean;
 }
 
-// @public (undocumented)
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal (undocumented)
 class ECObjectsError extends BentleyError {
   constructor(errorNumber: number, message?: string);
   // (undocumented)
@@ -401,7 +404,8 @@ class ECObjectsError extends BentleyError {
   toDebugString(): string;
 }
 
-// @public (undocumented)
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal (undocumented)
 enum ECObjectsStatus {
   // (undocumented)
   ClassNotFound = 35074,
@@ -457,7 +461,8 @@ enum ECObjectsStatus {
   UnableToLocateSchema = 35071
 }
 
-// @public (undocumented)
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal (undocumented)
 class ECStringConstants {
   // (undocumented)
   static readonly CONTAINERTYPE_ANY: string;
@@ -497,7 +502,7 @@ class ECStringConstants {
   static readonly RELATIONSHIP_END_TARGET: string;
 }
 
-// @public (undocumented)
+// @beta (undocumented)
 class ECVersion {
   constructor(read?: number, write?: number, minor?: number);
   compare(rhv: ECVersion): number;
@@ -511,7 +516,7 @@ class ECVersion {
   readonly write: number;
 }
 
-// @public
+// @beta
 class EntityClass extends ECClass {
   constructor(schema: Schema, name: string, modifier?: ECClassModifier);
   // (undocumented)
@@ -545,7 +550,7 @@ class EntityClass extends ECClass {
   toJson(standalone: boolean, includeSchemaVersion: boolean): any | void;
 }
 
-// @public
+// @beta
 class Enumeration extends SchemaItem {
   // WARNING: The type "PrimitiveType.Integer" needs to be exported by the package (e.g. added to index.ts)
   // WARNING: The type "PrimitiveType.String" needs to be exported by the package (e.g. added to index.ts)
@@ -589,12 +594,12 @@ class Enumeration extends SchemaItem {
   readonly type: PrimitiveType.Integer | PrimitiveType.String | undefined;
 }
 
-// @public (undocumented)
+// @beta (undocumented)
 class EnumerationArrayProperty extends EnumerationArrayProperty_base {
   constructor(ecClass: ECClass, name: string, type: LazyLoadedEnumeration);
 }
 
-// @public (undocumented)
+// @beta (undocumented)
 class EnumerationProperty extends PrimitiveOrEnumPropertyBase {
   constructor(ecClass: ECClass, name: string, type: LazyLoadedEnumeration);
   // (undocumented)
@@ -611,7 +616,7 @@ class EnumerationProperty extends PrimitiveOrEnumPropertyBase {
   toJson(): any;
 }
 
-// @public (undocumented)
+// @beta (undocumented)
 interface Enumerator<T> {
   // (undocumented)
   readonly description?: string;
@@ -623,7 +628,8 @@ interface Enumerator<T> {
   readonly value: T;
 }
 
-// @public
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal
 class FileSchemaKey extends SchemaKey {
   constructor(key: SchemaKey, fileName: string, schemaJson?: string);
   // (undocumented)
@@ -632,7 +638,7 @@ class FileSchemaKey extends SchemaKey {
   schemaText?: string;
 }
 
-// @public (undocumented)
+// @beta (undocumented)
 class Format extends SchemaItem {
   constructor(schema: Schema, name: string);
   // (undocumented)
@@ -715,7 +721,8 @@ class Format extends SchemaItem {
   readonly uomSeparator: string;
 }
 
-// @public (undocumented)
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal
 enum FormatTraits {
   // (undocumented)
   ApplyRounding = 16,
@@ -739,10 +746,12 @@ enum FormatTraits {
   ZeroEmpty = 4
 }
 
-// @public (undocumented)
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal
 export function formatTraitsToArray(currentFormatTrait: FormatTraits): string[];
 
-// @public (undocumented)
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal
 enum FormatType {
   // (undocumented)
   Decimal = 0,
@@ -754,10 +763,12 @@ enum FormatType {
   Station = 3
 }
 
-// @public (undocumented)
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal
 export function formatTypeToString(type: FormatType): string;
 
-// @public (undocumented)
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal
 enum FractionalPrecision {
   // (undocumented)
   Eight = 8,
@@ -779,10 +790,7 @@ enum FractionalPrecision {
   TwoHundredFiftySix = 256
 }
 
-// @public (undocumented)
-export function getItemNamesFromFormatString(formatString: string): Iterable<string>;
-
-// @public
+// @beta
 interface IDiagnostic<TYPE extends AnyECType, ARGS extends any[]> {
   category: DiagnosticCategory;
   code: string;
@@ -792,13 +800,13 @@ interface IDiagnostic<TYPE extends AnyECType, ARGS extends any[]> {
   messageText: string;
 }
 
-// @public
+// @beta
 interface IDiagnosticReporter {
   i18N?: I18N;
   report(diagnostic: AnyDiagnostic): void;
 }
 
-// @public
+// @beta
 class InvertedUnit extends SchemaItem {
   constructor(schema: Schema, name: string);
   // (undocumented)
@@ -824,7 +832,7 @@ class InvertedUnit extends SchemaItem {
   readonly unitSystem: LazyLoadedUnitSystem | undefined;
 }
 
-// @public
+// @beta
 interface IRuleSet {
   classRules?: Array<IRule<AnyClass>>;
   constantRules?: Array<IRule<Constant>>;
@@ -850,19 +858,19 @@ interface IRuleSet {
   unitSystemRules?: Array<IRule<UnitSystem>>;
 }
 
-// @public (undocumented)
+// @beta (undocumented)
 interface ISchemaItemLocater {
   // (undocumented)
   getSchemaItem<T extends SchemaItem>(schemaItemKey: SchemaItemKey): Promise<T | undefined>;
 }
 
-// @public
+// @beta
 interface ISchemaLocater {
   getSchema<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context?: SchemaContext): Promise<T | undefined>;
   getSchemaSync<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context?: SchemaContext): T | undefined;
 }
 
-// @public
+// @beta
 interface ISchemaPartVisitor {
   visitClass?: (ecClass: AnyClass) => Promise<void>;
   visitClassSync?: (ecClass: AnyClass) => void;
@@ -908,7 +916,7 @@ interface ISchemaPartVisitor {
   visitUnitSystemSync?: (unitSystem: UnitSystem) => void;
 }
 
-// @public
+// @beta
 class KindOfQuantity extends SchemaItem {
   constructor(schema: Schema, name: string);
   // (undocumented)
@@ -944,13 +952,13 @@ class KindOfQuantity extends SchemaItem {
   }
 }
 
-// @public
+// @beta
 class LoggingDiagnosticReporter extends DiagnosticReporterBase {
   // (undocumented)
   reportDiagnostic(diagnostic: AnyDiagnostic, messageText: string): void;
 }
 
-// @public
+// @beta
 class Mixin extends ECClass {
   constructor(schema: Schema, name: string);
   // (undocumented)
@@ -978,7 +986,7 @@ class Mixin extends ECClass {
   }
 }
 
-// @public (undocumented)
+// @beta (undocumented)
 class NavigationProperty extends Property {
   constructor(ecClass: ECClass, name: string, relationship: LazyLoadedRelationshipClass, direction?: StrengthDirection);
   // (undocumented)
@@ -995,7 +1003,7 @@ class NavigationProperty extends Property {
   toJson(): any;
 }
 
-// @public (undocumented)
+// @beta (undocumented)
 interface NoDelayedPromiseMethods {
   // (undocumented)
   [propName: string]: any;
@@ -1007,7 +1015,7 @@ interface NoDelayedPromiseMethods {
   then?: never;
 }
 
-// @public
+// @beta
 class OverrideFormat {
   constructor(parent: Format, name: string, precision?: DecimalPrecision | FractionalPrecision, unitAndLabels?: Array<[Unit | InvertedUnit, string | undefined]>);
   // (undocumented)
@@ -1048,49 +1056,56 @@ class OverrideFormat {
   readonly uomSeparator: string;
 }
 
-// @public
+// @beta
 export function parseClassModifier(modifier: string): ECClassModifier | undefined;
 
-// @public
+// @beta
 export function parseCustomAttributeContainerType(type: string): CustomAttributeContainerType | undefined;
 
-// @public (undocumented)
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal
 export function parseDecimalPrecision(jsonObjPrecision: number): DecimalPrecision | undefined;
 
-// @public (undocumented)
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal
 export function parseFormatTrait(formatTraitsString: string): FormatTraits | undefined;
 
-// @public (undocumented)
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal
 export function parseFormatType(jsonObjType: string): FormatType | undefined;
 
-// @public (undocumented)
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal
 export function parseFractionalPrecision(jsonObjPrecision: number): FractionalPrecision | undefined;
 
-// @public (undocumented)
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal
 export function parsePrecision(precision: number, type: FormatType): DecimalPrecision | FractionalPrecision | undefined;
 
-// @public
+// @beta
 export function parsePrimitiveType(type: string): PrimitiveType | undefined;
 
-// @public (undocumented)
+// @beta (undocumented)
 export function parseRelationshipEnd(end: string): RelationshipEnd | undefined;
 
-// @public
+// @beta
 export function parseSchemaItemType(type: string): SchemaItemType | undefined;
 
-// @public (undocumented)
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal
 export function parseScientificType(scientificType: string): ScientificType | undefined;
 
-// @public (undocumented)
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal
 export function parseShowSignOption(showSignOption: string): ShowSignOption | undefined;
 
-// @public
+// @beta
 export function parseStrength(strength: string): StrengthType | undefined;
 
-// @public (undocumented)
+// @beta (undocumented)
 export function parseStrengthDirection(direction: string): StrengthDirection | undefined;
 
-// @public (undocumented)
+// @beta (undocumented)
 class Phenomenon extends SchemaItem {
   constructor(schema: Schema, name: string);
   // (undocumented)
@@ -1112,12 +1127,12 @@ class Phenomenon extends SchemaItem {
   }
 }
 
-// @public (undocumented)
+// @beta (undocumented)
 class PrimitiveArrayProperty extends PrimitiveArrayProperty_base {
   constructor(ecClass: ECClass, name: string, primitiveType?: PrimitiveType);
 }
 
-// @public (undocumented)
+// @beta (undocumented)
 class PrimitiveOrEnumPropertyBase extends Property {
   constructor(ecClass: ECClass, name: string, type: PropertyType);
   // (undocumented)
@@ -1150,7 +1165,7 @@ class PrimitiveOrEnumPropertyBase extends Property {
   toJson(): any;
 }
 
-// @public (undocumented)
+// @beta (undocumented)
 class PrimitiveProperty extends PrimitiveOrEnumPropertyBase {
   constructor(ecClass: ECClass, name: string, primitiveType?: PrimitiveType);
   // WARNING: The type "PrimitivePropertyProps" needs to be exported by the package (e.g. added to index.ts)
@@ -1165,7 +1180,7 @@ class PrimitiveProperty extends PrimitiveOrEnumPropertyBase {
   toJson(): any;
 }
 
-// @public
+// @beta
 enum PrimitiveType {
   // (undocumented)
   Binary = 257,
@@ -1191,10 +1206,10 @@ enum PrimitiveType {
   Uninitialized = 0
 }
 
-// @public (undocumented)
+// @beta (undocumented)
 export function primitiveTypeToString(type: PrimitiveType): string;
 
-// @public
+// @beta
 class Property implements CustomAttributeContainerProps {
   constructor(ecClass: ECClass, name: string, type: PropertyType);
   // (undocumented)
@@ -1263,7 +1278,7 @@ class Property implements CustomAttributeContainerProps {
   toJson(): any;
 }
 
-// @public (undocumented)
+// @beta (undocumented)
 class PropertyCategory extends SchemaItem {
   constructor(schema: Schema, name: string);
   // (undocumented)
@@ -1285,14 +1300,14 @@ class PropertyCategory extends SchemaItem {
   }
 }
 
-// @public
+// @beta
 class PropertyDiagnostic<ARGS extends any[]> extends BaseDiagnostic<AnyProperty, ARGS> {
   constructor(property: AnyProperty, messageArgs: ARGS);
   // (undocumented)
   readonly diagnosticType: DiagnosticType;
 }
 
-// @public (undocumented)
+// @beta (undocumented)
 enum PropertyType {
   // (undocumented)
   Binary = 257,
@@ -1350,10 +1365,10 @@ enum PropertyType {
   Struct_Array = 6
 }
 
-// @public (undocumented)
+// @beta (undocumented)
 export function propertyTypeToString(type: PropertyType): "PrimitiveProperty" | "StructProperty" | "StructArrayProperty" | "NavigationProperty" | "PrimitiveArrayProperty";
 
-// @public (undocumented)
+// @beta (undocumented)
 module PropertyTypeUtils {
   // (undocumented)
   function asArray(t: PropertyType): PropertyType;
@@ -1381,7 +1396,7 @@ module PropertyTypeUtils {
 
 }
 
-// @public
+// @beta
 class RelationshipClass extends ECClass {
   constructor(schema: Schema, name: string, modifier?: ECClassModifier);
   // (undocumented)
@@ -1421,7 +1436,7 @@ class RelationshipClass extends ECClass {
   }
 }
 
-// @public
+// @beta
 class RelationshipConstraint implements CustomAttributeContainerProps {
   constructor(relClass: RelationshipClass, relEnd: RelationshipEnd, roleLabel?: string, polymorphic?: boolean);
   // (undocumented)
@@ -1476,14 +1491,14 @@ class RelationshipConstraint implements CustomAttributeContainerProps {
   }
 }
 
-// @public
+// @beta
 class RelationshipConstraintDiagnostic<ARGS extends any[]> extends BaseDiagnostic<RelationshipConstraint, ARGS> {
   constructor(constraint: RelationshipConstraint, messageArgs: ARGS);
   // (undocumented)
   readonly diagnosticType: DiagnosticType;
 }
 
-// @public
+// @beta
 enum RelationshipEnd {
   // (undocumented)
   Source = 0,
@@ -1491,10 +1506,10 @@ enum RelationshipEnd {
   Target = 1
 }
 
-// @public (undocumented)
+// @beta (undocumented)
 export function relationshipEndToString(end: RelationshipEnd): string;
 
-// @public (undocumented)
+// @beta (undocumented)
 class RelationshipMultiplicity {
   constructor(lowerLimit: number, upperLimit: number);
   // (undocumented)
@@ -1517,7 +1532,7 @@ class RelationshipMultiplicity {
   static readonly zeroOne: RelationshipMultiplicity;
 }
 
-// @public (undocumented)
+// @beta (undocumented)
 class Schema implements CustomAttributeContainerProps {
   constructor(context: SchemaContext, name: string, readVersion: number, writeVersion: number, minorVersion: number);
   // (undocumented)
@@ -1636,7 +1651,7 @@ class Schema implements CustomAttributeContainerProps {
   readonly writeVersion: number;
 }
 
-// @public (undocumented)
+// @beta (undocumented)
 class SchemaCache implements ISchemaLocater {
   constructor();
   addSchema<T extends Schema>(schema: T): Promise<void>;
@@ -1648,7 +1663,7 @@ class SchemaCache implements ISchemaLocater {
   getSchemaSync<T extends Schema>(schemaKey: SchemaKey, matchType?: SchemaMatchType): T | undefined;
 }
 
-// @public
+// @beta
 class SchemaContext implements ISchemaLocater, ISchemaItemLocater {
   constructor();
   // (undocumented)
@@ -1666,14 +1681,14 @@ class SchemaContext implements ISchemaLocater, ISchemaItemLocater {
   getSchemaSync<T extends Schema>(schemaKey: SchemaKey, matchType?: SchemaMatchType): T | undefined;
 }
 
-// @public
+// @beta
 class SchemaDiagnostic<ARGS extends any[]> extends BaseDiagnostic<Schema, ARGS> {
   constructor(schema: Schema, messageArgs: ARGS);
   // (undocumented)
   static diagnosticType: DiagnosticType;
 }
 
-// @public
+// @alpha
 class SchemaFileLocater {
   constructor();
   addSchemaSearchPath(schemaPath: string): void;
@@ -1692,12 +1707,13 @@ class SchemaFileLocater {
   searchPaths: string[];
 }
 
-// @public
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal
 class SchemaGraphUtil {
   static buildDependencyOrderedSchemaList(insertSchema: Schema, schemas?: Schema[]): Schema[];
 }
 
-// @public
+// @beta
 class SchemaItem {
   constructor(schema: Schema, name: string);
   // (undocumented)
@@ -1734,14 +1750,14 @@ class SchemaItem {
   }
 }
 
-// @public
+// @beta
 class SchemaItemDiagnostic<TYPE extends AnyECType, ARGS extends any[]> extends BaseDiagnostic<TYPE, ARGS> {
   constructor(ecDefinition: TYPE, messageArgs: ARGS);
   // (undocumented)
   static diagnosticType: DiagnosticType;
 }
 
-// @public
+// @beta
 class SchemaItemKey {
   constructor(name: string, schema: SchemaKey);
   // (undocumented)
@@ -1759,7 +1775,7 @@ class SchemaItemKey {
   readonly schemaName: string;
 }
 
-// @public (undocumented)
+// @beta (undocumented)
 enum SchemaItemType {
   // (undocumented)
   Constant = 10,
@@ -1791,17 +1807,17 @@ enum SchemaItemType {
   UnitSystem = 12
 }
 
-// @public
+// @beta
 export function schemaItemTypeToString(value: SchemaItemType): string;
 
-// @public
+// @alpha
 class SchemaJsonFileLocater extends SchemaFileLocater, implements ISchemaLocater {
   getSchema<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<T | undefined>;
   protected getSchemaKey(data: string): SchemaKey;
   getSchemaSync<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): T | undefined;
 }
 
-// @public
+// @beta
 class SchemaKey {
   constructor(name: string, version: ECVersion);
   // (undocumented)
@@ -1826,11 +1842,11 @@ class SchemaKey {
   readonly writeVersion: number;
 }
 
-// @public (undocumented)
+// @beta (undocumented)
 class SchemaMap extends Array<Schema> {
 }
 
-// @public
+// @beta
 enum SchemaMatchType {
   // (undocumented)
   Exact = 1,
@@ -1844,7 +1860,7 @@ enum SchemaMatchType {
   LatestWriteCompatible = 2
 }
 
-// @public
+// @beta
 class SchemaPartVisitorDelegate {
   constructor(visitor: ISchemaPartVisitor);
   visitSchema(schema: Schema, fullSchema?: boolean): Promise<void>;
@@ -1853,7 +1869,7 @@ class SchemaPartVisitorDelegate {
   visitSchemaSync(schema: Schema, fullSchema?: boolean): void;
 }
 
-// @public
+// @beta
 class SchemaValidationVisitor implements ISchemaPartVisitor {
   // (undocumented)
   applyClassRules(ecClass: AnyClass, ruleSet: IRuleSet): Promise<void>;
@@ -1928,13 +1944,15 @@ class SchemaValidationVisitor implements ISchemaPartVisitor {
   visitUnitSystem(unitSystem: UnitSystem): Promise<void>;
 }
 
-// @public
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal
 class SchemaWalker {
   constructor(visitor: ISchemaPartVisitor);
   traverseSchema<T extends Schema>(schema: T): Promise<T>;
 }
 
-// @public
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal
 class SchemaXmlFileLocater extends SchemaFileLocater, implements ISchemaLocater {
   addSchemaReferences(schema: Schema, context?: SchemaContext): Promise<void>;
   addSchemaReferencesSync(schema: Schema, context?: SchemaContext): void;
@@ -1945,7 +1963,8 @@ class SchemaXmlFileLocater extends SchemaFileLocater, implements ISchemaLocater 
   loadSchema<T extends Schema>(schemaPath: string, context: SchemaContext): Promise<T | undefined>;
 }
 
-// @public (undocumented)
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal
 enum ScientificType {
   // (undocumented)
   Normalized = 0,
@@ -1953,10 +1972,12 @@ enum ScientificType {
   ZeroNormalized = 1
 }
 
-// @public (undocumented)
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal
 export function scientificTypeToString(scientificType: ScientificType): string;
 
-// @public (undocumented)
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal
 enum ShowSignOption {
   // (undocumented)
   NegativeParentheses = 3,
@@ -1968,10 +1989,11 @@ enum ShowSignOption {
   SignAlways = 2
 }
 
-// @public (undocumented)
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal
 export function showSignOptionToString(showSign: ShowSignOption): string;
 
-// @public (undocumented)
+// @beta (undocumented)
 enum StrengthDirection {
   // (undocumented)
   Backward = 2,
@@ -1979,13 +2001,13 @@ enum StrengthDirection {
   Forward = 1
 }
 
-// @public (undocumented)
+// @beta (undocumented)
 export function strengthDirectionToString(direction: StrengthDirection): string;
 
-// @public (undocumented)
+// @beta (undocumented)
 export function strengthToString(strength: StrengthType): string;
 
-// @public (undocumented)
+// @beta (undocumented)
 enum StrengthType {
   // (undocumented)
   Embedding = 2,
@@ -1995,12 +2017,12 @@ enum StrengthType {
   Referencing = 0
 }
 
-// @public (undocumented)
+// @beta (undocumented)
 class StructArrayProperty extends StructArrayProperty_base {
   constructor(ecClass: ECClass, name: string, type: StructClass);
 }
 
-// @public
+// @beta
 class StructClass extends ECClass {
   constructor(schema: Schema, name: string, modifier?: ECClassModifier);
   // WARNING: The type "SchemaItemType.StructClass" needs to be exported by the package (e.g. added to index.ts)
@@ -2008,7 +2030,7 @@ class StructClass extends ECClass {
   readonly schemaItemType: SchemaItemType.StructClass;
 }
 
-// @public (undocumented)
+// @beta (undocumented)
 class StructProperty extends Property {
   constructor(ecClass: ECClass, name: string, type: StructClass);
   // (undocumented)
@@ -2025,7 +2047,7 @@ class StructProperty extends Property {
   toJson(): any;
 }
 
-// @public
+// @beta
 class Unit extends SchemaItem {
   constructor(schema: Schema, name: string);
   // (undocumented)
@@ -2067,7 +2089,7 @@ class Unit extends SchemaItem {
   readonly unitSystem: LazyLoadedUnitSystem | undefined;
 }
 
-// @public (undocumented)
+// @beta (undocumented)
 class UnitSystem extends SchemaItem {
   constructor(schema: Schema, name: string);
   // WARNING: The type "SchemaItemType.UnitSystem" needs to be exported by the package (e.g. added to index.ts)

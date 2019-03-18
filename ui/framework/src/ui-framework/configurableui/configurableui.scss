@@ -55,3 +55,29 @@
   width: $icon-size;
   height: $icon-size;
 }
+
+// Transparency for widgets when mouse not hovering - NEEDSWORK for Mobile
+$nz-widget-transparency: 0.90;
+
+.nz-widget-stacked,
+.nz-widget-toolSettings,
+.nz-app-button,
+.nz-horizontal-toolbar,
+.nz-vertical-toolbar,
+.nz-tab {
+  opacity: $nz-widget-transparency;
+
+  &:hover {
+    opacity: 1.00;
+  }
+}
+
+.nz-tabs {
+  &.nz-is-closed {
+    opacity: $nz-widget-transparency;
+
+    &:hover {
+      opacity: 1.00;
+    }
+  }
+}

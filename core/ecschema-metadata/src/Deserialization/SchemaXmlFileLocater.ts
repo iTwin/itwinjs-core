@@ -15,6 +15,7 @@ import * as path from "path";
  * A SchemaLocater implementation for locating XML Schema files
  * from the file system using configurable search paths. Returns only
  * Schemas from XML files with their keys populated.
+ * @internal This is a workaround the current lack of a full xml parser.
  */
 export class SchemaXmlFileLocater extends SchemaFileLocater implements ISchemaLocater {
   /**

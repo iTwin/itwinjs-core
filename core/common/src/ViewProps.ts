@@ -262,6 +262,8 @@ export interface DisplayStyleSettingsProps {
   backgroundMap?: BackgroundMapProps;
   /** Contexual Reality Models */
   ContextRealityModels?: ContextRealityModelProps[];
+  /** List of IDs of excluded elements */
+  excludedElements?: Id64String[];
 }
 
 /** JSON representation of settings associated with a [[DisplayStyle3dProps]].
@@ -379,6 +381,7 @@ export class DisplayStyleSettings {
   private readonly _background: ColorDef;
   private readonly _monochrome: ColorDef;
   private readonly _subCategoryOverrides: Map<string, SubCategoryOverride> = new Map<string, SubCategoryOverride>();
+  private readonly _excludedElements: Set<Id64String> = new Set<Id64String>();
 
   /** Construct a new DisplayStyleSettings from an [[ElementProps.jsonProperties]].
    * @param jsonProperties An object with an optional `styles` property containing a display style's settings.
@@ -402,6 +405,16 @@ export class DisplayStyleSettings {
           const subCatOvr = SubCategoryOverride.fromJSON(ovrJson);
           if (subCatOvr.anyOverridden)
             this.changeSubCategoryOverride(subCatId, false, subCatOvr);
+        }
+      }
+    }
+
+    const exElemArray = JsonUtils.asArray(this._json.excludedElements);
+    if (undefined !== exElemArray) {
+      for (const exElemStr of exElemArray) {
+        const exElem = Id64.fromJSON(exElemStr);
+        if (Id64.isValid(exElem)) {
+          this._excludedElements.add(exElem);
         }
       }
     }
@@ -471,6 +484,37 @@ export class DisplayStyleSettings {
 
   /** Returns true if an [[SubCategoryOverride]s are defined by this style. */
   public get hasSubCategoryOverride(): boolean { return this._subCategoryOverrides.size > 0; }
+
+  /** The set of elements that the display style will exclude.
+   * @returns The set of excluded elements.
+   */
+  public get excludedElements(): Set<Id64String> { return this._excludedElements; }
+
+  /** Add an element to the set of excluded elements defined by the display style.
+   * @param id The ID of the element to be excluded.
+   */
+  public addExcludedElements(id: Id64String) {
+    if (Id64.isValid(id)) {
+      if (undefined === this._json.excludedElements)
+        this._json.excludedElements = [];
+      this._json.excludedElements.push(id);
+      this._excludedElements.add(id);
+    }
+  }
+
+  /** Remove an element from the set of excluded elements defined by the display style.
+   * @param id The ID of the element to be removed from the set of excluded elements.
+   */
+  public dropExcludedElement(id: Id64String) {
+    if (this._json.excludedElements !== undefined) {
+      const index = this._json.excludedElements.indexOf(id);
+      if (index > -1)
+        this._json.excludedElements.splice(index, 1);
+      if (this._json.excludedElements.length === 0)
+        this._json.excludedElements = undefined;
+    }
+    this._excludedElements.delete(id);
+  }
 
   public toJSON(): DisplayStyleSettingsProps { return this._json; }
 

@@ -20,7 +20,7 @@ export * from "./AuxCoordSys";
 export * from "./FrontendRequestContext";
 export * from "./CategorySelectorState";
 export * from "./ContextRealityModelState";
-export * from "./Classification";
+export * from "./SpatialClassification";
 export * from "./DisplayStyleState";
 export * from "./ElementLocateManager";
 export * from "./EmphasizeElements";
@@ -63,8 +63,7 @@ export * from "./properties/EditorParams";
 export * from "./properties/Record";
 export * from "./properties/Value";
 export * from "./properties/ToolSettingsValue";
-import * as Primitives from "./properties/PrimitiveTypes";
-export { Primitives };
+export * from "./properties/PrimitiveTypes";
 
 // Set the version number so it can be found at runtime. BUILD_SEMVER is replaced at build time by the webpack DefinePlugin.
 declare var BUILD_SEMVER: string;

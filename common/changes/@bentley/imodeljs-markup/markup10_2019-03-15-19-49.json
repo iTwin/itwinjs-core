@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "allow editing of existing markups",
+      "packageName": "@bentley/imodeljs-markup",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-markup",
+  "email": "keith.bentley@bentley.com"
+}

@@ -19,7 +19,8 @@
   "iModelJs": {
     "buildModule": {
       "type": "application",
-      "sourceResources": [{
+      "sourceResources": [
+        {
           "source": "./src/**/*.scss",
           "dest": "./lib"
         },
@@ -43,12 +44,14 @@
         "styleSheets": true,
         "htmlTemplate": "./src/frontend/index.html"
       },
-      "subModules": [{
-        "dest": "./lib/webresources",
-        "entry": "./lib/frontend/plugins/MeasurePoints.js",
-        "bundleName": "MeasurePoints",
-        "type": "plugin"
-      }],
+      "subModules": [
+        {
+          "dest": "./lib/webresources",
+          "entry": "./lib/frontend/plugins/MeasurePoints.js",
+          "bundleName": "MeasurePoints",
+          "type": "plugin"
+        }
+      ],
       "makeConfig": {
         "dest": "./lib/webresources/config.json",
         "filter": "^imjs_"
@@ -73,17 +76,17 @@
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/config-loader": "0.191.0-dev.6",
-    "@bentley/webpack-tools": "0.191.0-dev.6",
-    "@bentley/build-tools": "0.191.0-dev.6",
-    "@bentley/bentleyjs-core": "0.191.0-dev.6",
-    "@bentley/imodeljs-i18n": "0.191.0-dev.6",
-    "@bentley/imodeljs-backend": "0.191.0-dev.6",
-    "@bentley/imodeljs-frontend": "0.191.0-dev.6",
-    "@bentley/imodeljs-quantity": "0.191.0-dev.6",
-    "@bentley/imodeljs-common": "0.191.0-dev.6",
-    "@bentley/imodeljs-clients": "0.191.0-dev.6",
-    "@bentley/imodeljs-webserver": "0.191.0-dev.6",
+    "@bentley/config-loader": "0.191.0-dev.8",
+    "@bentley/webpack-tools": "0.191.0-dev.8",
+    "@bentley/build-tools": "0.191.0-dev.8",
+    "@bentley/bentleyjs-core": "0.191.0-dev.8",
+    "@bentley/imodeljs-i18n": "0.191.0-dev.8",
+    "@bentley/imodeljs-backend": "0.191.0-dev.8",
+    "@bentley/imodeljs-frontend": "0.191.0-dev.8",
+    "@bentley/imodeljs-quantity": "0.191.0-dev.8",
+    "@bentley/imodeljs-common": "0.191.0-dev.8",
+    "@bentley/imodeljs-clients": "0.191.0-dev.8",
+    "@bentley/imodeljs-webserver": "0.191.0-dev.8",
     "@bentley/icons-generic-webfont": "^0.0.9",
     "@types/body-parser": "^1.17.0",
     "@types/express": "^4.16.1",
@@ -112,24 +115,24 @@
     "webpack": "^4.20.2"
   },
   "dependencies": {
-    "@bentley/bentleyjs-core": "0.191.0-dev.6",
-    "@bentley/electron-manager": "0.191.0-dev.6",
-    "@bentley/geometry-core": "0.191.0-dev.6",
-    "@bentley/imodeljs-clients": "0.191.0-dev.6",
-    "@bentley/imodeljs-clients-backend": "0.191.0-dev.6",
-    "@bentley/imodeljs-common": "0.191.0-dev.6",
-    "@bentley/imodeljs-i18n": "0.191.0-dev.6",
-    "@bentley/imodeljs-frontend": "0.191.0-dev.6",
-    "@bentley/imodeljs-quantity": "0.191.0-dev.6",
-    "@bentley/imodeljs-backend": "0.191.0-dev.6",
-    "@bentley/presentation-backend": "0.191.0-dev.6",
-    "@bentley/presentation-common": "0.191.0-dev.6",
-    "@bentley/presentation-components": "0.191.0-dev.6",
-    "@bentley/presentation-frontend": "0.191.0-dev.6",
-    "@bentley/ui-core": "0.191.0-dev.6",
-    "@bentley/ui-components": "0.191.0-dev.6",
-    "@bentley/ui-ninezone": "0.191.0-dev.6",
-    "@bentley/ui-framework": "0.191.0-dev.6",
+    "@bentley/bentleyjs-core": "0.191.0-dev.8",
+    "@bentley/electron-manager": "0.191.0-dev.8",
+    "@bentley/geometry-core": "0.191.0-dev.8",
+    "@bentley/imodeljs-clients": "0.191.0-dev.8",
+    "@bentley/imodeljs-clients-backend": "0.191.0-dev.8",
+    "@bentley/imodeljs-common": "0.191.0-dev.8",
+    "@bentley/imodeljs-i18n": "0.191.0-dev.8",
+    "@bentley/imodeljs-frontend": "0.191.0-dev.8",
+    "@bentley/imodeljs-quantity": "0.191.0-dev.8",
+    "@bentley/imodeljs-backend": "0.191.0-dev.8",
+    "@bentley/presentation-backend": "0.191.0-dev.8",
+    "@bentley/presentation-common": "0.191.0-dev.8",
+    "@bentley/presentation-components": "0.191.0-dev.8",
+    "@bentley/presentation-frontend": "0.191.0-dev.8",
+    "@bentley/ui-core": "0.191.0-dev.8",
+    "@bentley/ui-components": "0.191.0-dev.8",
+    "@bentley/ui-ninezone": "0.191.0-dev.8",
+    "@bentley/ui-framework": "0.191.0-dev.8",
     "body-parser": "^1.18.2",
     "express": "^4.16.3",
     "mobx": "^5.8.0",

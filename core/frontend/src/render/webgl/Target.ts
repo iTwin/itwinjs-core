@@ -6,7 +6,7 @@
 
 import { Transform, Vector3d, Point3d, Matrix4d, Point2d, XAndY } from "@bentley/geometry-core";
 import { assert, BeTimePoint, Id64String, Id64, StopWatch, dispose, disposeArray } from "@bentley/bentleyjs-core";
-import { RenderTarget, RenderSystem, Decorations, GraphicList, RenderPlan, ClippingType, CanvasDecoration, Pixel, AnimationBranchStates } from "../System";
+import { RenderTarget, RenderSystem, Decorations, GraphicList, RenderPlan, ClippingType, CanvasDecoration, Pixel, AnimationBranchStates, PlanarClassifierMap } from "../System";
 import { ViewFlags, Frustum, Hilite, ColorDef, Npc, RenderMode, ImageBuffer, ImageBufferFormat, AnalysisStyle, RenderTexture, AmbientOcclusion } from "@bentley/imodeljs-common";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { Techniques } from "./Technique";
@@ -25,7 +25,7 @@ import { GL } from "./GL";
 import { SceneCompositor } from "./SceneCompositor";
 import { FrameBuffer } from "./FrameBuffer";
 import { TextureHandle } from "./Texture";
-import { PlanarClassifier, PlanarClassifierMap } from "./PlanarClassifier";
+import { PlanarClassifier } from "./PlanarClassifier";
 import { SingleTexturedViewportQuadGeometry } from "./CachedGeometry";
 import { ShaderLights } from "./Lighting";
 import { ClipDef } from "./TechniqueFlags";
@@ -1055,7 +1055,7 @@ export abstract class Target extends RenderTarget {
 
   public drawPlanarClassifiers() {
     if (this._planarClassifiers)
-      this._planarClassifiers.forEach((classifier) => classifier.draw(this));
+      this._planarClassifiers.forEach((classifier) => (classifier as PlanarClassifier).draw(this));
   }
 
   // ---- Methods expected to be overridden by subclasses ---- //

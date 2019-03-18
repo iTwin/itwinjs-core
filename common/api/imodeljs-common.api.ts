@@ -1240,10 +1240,13 @@ class DisplayStyleSettings {
       });
   // (undocumented)
   protected readonly _json: DisplayStyleSettingsProps;
+  addExcludedElements(id: Id64String): void;
   backgroundColor: ColorDef;
   // (undocumented)
   backgroundMap: BackgroundMapProps | undefined;
+  dropExcludedElement(id: Id64String): void;
   dropSubCategoryOverride(id: Id64String): void;
+  readonly excludedElements: Set<Id64String>;
   getSubCategoryOverride(id: Id64String): SubCategoryOverride | undefined;
   readonly hasSubCategoryOverride: boolean;
   monochromeColor: ColorDef;
@@ -1259,6 +1262,7 @@ interface DisplayStyleSettingsProps {
   backgroundColor?: ColorDefProps;
   backgroundMap?: BackgroundMapProps;
   ContextRealityModels?: ContextRealityModelProps[];
+  excludedElements?: Id64String[];
   monochromeColor?: ColorDefProps;
   scheduleScript?: RenderSchedule.ElementTimelineProps[];
   subCategoryOvr?: DisplayStyleSubCategoryProps[];
@@ -4268,17 +4272,6 @@ interface SpotProps extends LightProps {
   inner?: AngleProps;
   // (undocumented)
   outer?: AngleProps;
-}
-
-// @public @deprecated
-class StandaloneIModelRpcInterface extends RpcInterface {
-  // (undocumented)
-  closeStandalone(_iModelToken: IModelToken): Promise<boolean>;
-  static getClient(): StandaloneIModelRpcInterface;
-  // (undocumented)
-  openStandalone(_fileName: string, _openMode: OpenMode): Promise<IModel>;
-  static types: () => (typeof IModelToken)[];
-  static version: string;
 }
 
 // @public (undocumented)

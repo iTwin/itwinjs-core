@@ -19,7 +19,6 @@ import { IModelReadRpcImpl } from "./rpc-impl/IModelReadRpcImpl";
 import { IModelTileRpcImpl } from "./rpc-impl/IModelTileRpcImpl";
 import { IModelWriteRpcImpl } from "./rpc-impl/IModelWriteRpcImpl";
 import { SnapshotIModelRpcImpl } from "./rpc-impl/SnapshotIModelRpcImpl";
-import { StandaloneIModelRpcImpl } from "./rpc-impl/StandaloneIModelRpcImpl";
 import { WipRpcImpl } from "./rpc-impl/WipRpcImpl";
 import { initializeRpcBackend } from "./RpcBackend";
 import * as os from "os";
@@ -207,7 +206,6 @@ export class IModelHost {
     IModelTileRpcImpl.register();
     IModelWriteRpcImpl.register();
     SnapshotIModelRpcImpl.register();
-    StandaloneIModelRpcImpl.register();
     WipRpcImpl.register();
 
     BisCore.registerSchema();

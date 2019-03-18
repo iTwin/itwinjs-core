@@ -6,6 +6,7 @@
 import { PrimitiveType } from "./ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "./Exception";
 
+/** @beta */
 const enum PropertyFlags {
   Primitive = 0x01,
   Struct = 0x02,
@@ -15,7 +16,7 @@ const enum PropertyFlags {
 }
 
 /**
- *
+ * @beta
  */
 export const enum PropertyType {
   Struct = 0x02, // PropertyFlags.Struct
@@ -47,6 +48,7 @@ export const enum PropertyType {
   IGeometry_Array = 0xA05, // PrimitiveType.IGeometry | PropertyFlags.Array
 }
 
+/** @beta */
 export namespace PropertyTypeUtils {
   export function isArray(t: PropertyType) { return (t === (PropertyFlags.Array | t)); }
   export function isPrimitive(t: PropertyType) { return (t === (PropertyFlags.Primitive | t)); }
@@ -58,6 +60,7 @@ export namespace PropertyTypeUtils {
   export function fromPrimitiveType(t: PrimitiveType): PropertyType { return t | 0; }
 }
 
+/** @beta */
 export function propertyTypeToString(type: PropertyType) {
   if (PropertyTypeUtils.isPrimitive(type))
     return (PropertyTypeUtils.isArray(type)) ? "PrimitiveArrayProperty" : "PrimitiveProperty";

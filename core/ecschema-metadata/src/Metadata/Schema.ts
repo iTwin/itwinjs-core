@@ -31,7 +31,7 @@ import { SchemaKey, ECVersion, SchemaItemKey } from "./../SchemaKey";
 const SCHEMAURL3_2 = "https://dev.bentley.com/json_schemas/ec/32/ecschema";
 
 /**
- *
+ * @beta
  */
 export class Schema implements CustomAttributeContainerProps {
   private _context: SchemaContext;
@@ -496,10 +496,11 @@ export class Schema implements CustomAttributeContainerProps {
 
 }
 
-/** @hidden
+/**
  * Hackish approach that works like a "friend class" so we can access protected members without making them public.
  * We cannot put this into Helper.ts and make it non-export, because we are importing Helper.ts from this file, and the circular import
  * would prevent this class from extending Schema.
+ * @internal
  */
 export abstract class MutableSchema extends Schema {
   public abstract addCustomAttribute(customAttribute: CustomAttribute): void;

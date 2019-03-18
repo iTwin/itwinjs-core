@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Allow a view to define a set of elements which should never be drawn in that view.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Paul.Connelly@bentley.com"
+}

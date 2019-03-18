@@ -3,21 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-export const formatStringRgx = /([\w.:]+)(\(([^\)]+)\))?(\[([^\|\]]+)([\|])?([^\]]+)?\])?(\[([^\|\]]+)([\|])?([^\]]+)?\])?(\[([^\|\]]+)([\|])?([^\]]+)?\])?(\[([^\|\]]+)([\|])?([^\]]+)?\])?/;
-
-export function* getItemNamesFromFormatString(formatString: string): Iterable<string> {
-  const match = formatString.split(formatStringRgx);
-  yield match[1]; // the Format Name
-  let index = 4;
-  while (index < match.length - 1) { // index 0 and 21 are empty strings
-    if (match[index] !== undefined)
-      yield match[index + 1]; // Unit Name
-    else
-      break;
-    index += 4;
-  }
-}
-
+/** @internal Needs to be moved to quantity  */
 export const enum FormatTraits {
   TrailZeroes = 0x1,
   KeepSingleZero = 0x2,
@@ -31,6 +17,7 @@ export const enum FormatTraits {
   ExponentOnlyNegative = 0x200,
 }
 
+/** @internal Needs to be moved to quantity  */
 export const enum FractionalPrecision {
   One = 1,
   Two = 2,
@@ -43,6 +30,7 @@ export const enum FractionalPrecision {
   TwoHundredFiftySix = 256,
 }
 
+/** @internal Needs to be moved to quantity  */
 export const enum DecimalPrecision {
   Zero = 0,
   One = 1,
@@ -59,6 +47,7 @@ export const enum DecimalPrecision {
   Twelve = 12,
 }
 
+/** @internal Needs to be moved to quantity  */
 export const enum FormatType {
   Decimal,
   Fractional,
@@ -66,11 +55,13 @@ export const enum FormatType {
   Station,
 }
 
+/** @internal Needs to be moved to quantity  */
 export const enum ScientificType { // required if type is scientific; options: normalized, zeroNormalized
   Normalized,
   ZeroNormalized,
 }
 
+/** @internal Needs to be moved to quantity  */
 export const enum ShowSignOption { // default is no sign
   NoSign,
   OnlyNegative,
@@ -80,6 +71,7 @@ export const enum ShowSignOption { // default is no sign
 
 // parse and toString methods
 
+/** @internal Needs to be moved to quantity  */
 export function parseScientificType(scientificType: string): ScientificType | undefined {
   switch (scientificType.toLowerCase()) {
     case "normalized": return ScientificType.Normalized;
@@ -89,10 +81,12 @@ export function parseScientificType(scientificType: string): ScientificType | un
   }
 }
 
+/** @internal Needs to be moved to quantity  */
 export function scientificTypeToString(scientificType: ScientificType): string {
   return (scientificType === ScientificType.Normalized) ? "Normalized" : "ZeroNormalized";
 }
 
+/** @internal Needs to be moved to quantity  */
 export function parseShowSignOption(showSignOption: string): ShowSignOption | undefined {
   switch (showSignOption.toLowerCase()) {
     case "nosign": return ShowSignOption.NoSign;
@@ -104,6 +98,7 @@ export function parseShowSignOption(showSignOption: string): ShowSignOption | un
   }
 }
 
+/** @internal Needs to be moved to quantity  */
 export function showSignOptionToString(showSign: ShowSignOption): string {
   switch (showSign) {
     case ShowSignOption.NegativeParentheses: return "NegativeParentheses";
@@ -113,10 +108,7 @@ export function showSignOptionToString(showSign: ShowSignOption): string {
   }
 }
 
-/**
- *
- * @param formatTraitsString
- */
+/** @internal Needs to be moved to quantity  */
 export function parseFormatTrait(formatTraitsString: string): FormatTraits | undefined {
   switch (formatTraitsString.toLowerCase()) {
     case "trailzeroes": return FormatTraits.TrailZeroes;
@@ -133,6 +125,7 @@ export function parseFormatTrait(formatTraitsString: string): FormatTraits | und
   }
 }
 
+/** @internal Needs to be moved to quantity  */
 export function formatTraitsToArray(currentFormatTrait: FormatTraits): string[] {
   const formatTraitsArr = Array<string>();
   if ((currentFormatTrait & FormatTraits.TrailZeroes) === FormatTraits.TrailZeroes)
@@ -158,6 +151,7 @@ export function formatTraitsToArray(currentFormatTrait: FormatTraits): string[] 
   return formatTraitsArr;
 }
 
+/** @internal Needs to be moved to quantity  */
 export function parseFormatType(jsonObjType: string): FormatType | undefined {
   switch (jsonObjType.toLowerCase()) {
     case "decimal": return FormatType.Decimal;
@@ -169,6 +163,7 @@ export function parseFormatType(jsonObjType: string): FormatType | undefined {
   }
 }
 
+/** @internal Needs to be moved to quantity  */
 export function formatTypeToString(type: FormatType): string {
   switch (type) {
     case FormatType.Decimal: return "Decimal";
@@ -178,6 +173,7 @@ export function formatTypeToString(type: FormatType): string {
   }
 }
 
+/** @internal Needs to be moved to quantity  */
 export function parseDecimalPrecision(jsonObjPrecision: number): DecimalPrecision | undefined {
   switch (jsonObjPrecision) {
     case 0: return DecimalPrecision.Zero;
@@ -198,6 +194,7 @@ export function parseDecimalPrecision(jsonObjPrecision: number): DecimalPrecisio
   }
 }
 
+/** @internal Needs to be moved to quantity  */
 export function parseFractionalPrecision(jsonObjPrecision: number): FractionalPrecision | undefined {
   switch (jsonObjPrecision) {
     case 1: return FractionalPrecision.One;
@@ -214,6 +211,7 @@ export function parseFractionalPrecision(jsonObjPrecision: number): FractionalPr
   }
 }
 
+/** @internal Needs to be moved to quantity  */
 export function parsePrecision(precision: number, type: FormatType): DecimalPrecision | FractionalPrecision | undefined {
   switch (type) { // type must be decimal, fractional, scientific, or station
     case FormatType.Decimal:

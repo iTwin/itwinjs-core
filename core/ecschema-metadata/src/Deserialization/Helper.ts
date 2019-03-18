@@ -15,7 +15,7 @@ import { CustomAttribute } from "./../Metadata/CustomAttribute";
 import { EntityClass, MutableEntityClass } from "./../Metadata/EntityClass";
 import { Format } from "./../Metadata/Format";
 import { InvertedUnit } from "./../Metadata/InvertedUnit";
-import { KindOfQuantity } from "./../Metadata/KindOfQuantity";
+import { KindOfQuantity, formatStringRgx } from "./../Metadata/KindOfQuantity";
 import { Mixin } from "./../Metadata/Mixin";
 import { Property, MutableProperty } from "./../Metadata/Property";
 import { RelationshipClass, RelationshipConstraint, MutableRelationshipConstraint } from "./../Metadata/RelationshipClass";
@@ -23,14 +23,13 @@ import { Schema, MutableSchema } from "./../Metadata/Schema";
 import { SchemaItem } from "./../Metadata/SchemaItem";
 import { Unit } from "./../Metadata/Unit";
 import { SchemaKey, ECVersion, SchemaItemKey } from "./../SchemaKey";
-import { getItemNamesFromFormatString } from "../utils/FormatEnums";
 import { SchemaPartVisitorDelegate, ISchemaPartVisitor } from "../SchemaPartVisitorDelegate";
 
 type AnyCAContainer = Schema | ECClass | Property | RelationshipConstraint;
 type AnyMutableCAContainer = MutableSchema | MutableClass | MutableProperty | MutableRelationshipConstraint;
 
 /**
- * @hidden
+ * @internal
  * The purpose of this class is to properly order the deserialization of ECSchemas and SchemaItems from serialized formats.
  * For example, when deserializing an ECClass most times all base class should be de-serialized before the given class.
  */
@@ -891,5 +890,18 @@ export class SchemaReadHelper<T = unknown> {
       this.findSchemaItemSync(customAttribute.className);
       (container as AnyMutableCAContainer).addCustomAttribute(customAttribute);
     }
+  }
+}
+
+export function* getItemNamesFromFormatString(formatString: string): Iterable<string> {
+  const match = formatString.split(formatStringRgx);
+  yield match[1]; // the Format Name
+  let index = 4;
+  while (index < match.length - 1) { // index 0 and 21 are empty strings
+    if (match[index] !== undefined)
+      yield match[index + 1]; // Unit Name
+    else
+      break;
+    index += 4;
   }
 }

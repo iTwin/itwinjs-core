@@ -16,6 +16,7 @@ import { SchemaItemKey } from "./../SchemaKey";
 
 /**
  * An InvertedUnit is a specific type of Unit that describes the inverse of a single Unit whose dimensional derivation is unit-less.
+ * @beta
  */
 export class InvertedUnit extends SchemaItem {
   public readonly schemaItemType!: SchemaItemType.InvertedUnit; // tslint:disable-line

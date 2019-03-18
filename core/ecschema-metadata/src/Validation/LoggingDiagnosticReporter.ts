@@ -9,7 +9,10 @@ import { DiagnosticReporterBase } from "./DiagnosticReporter";
 
 const loggingCategory = "ecschema-metadata";
 
-/** An [[IDiagnosticReporter]] for logging [[IDiagnostic]] objects.  */
+/**
+ * An [[IDiagnosticReporter]] for logging [[IDiagnostic]] objects.
+ * @beta
+ */
 export class LoggingDiagnosticReporter extends DiagnosticReporterBase {
   public reportDiagnostic(diagnostic: AnyDiagnostic, messageText: string) {
     switch (diagnostic.category) {

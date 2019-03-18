@@ -4,14 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 import { GL } from "./GL";
-import { dispose, BeTimePoint, Id64String, assert } from "@bentley/bentleyjs-core";
+import { dispose, BeTimePoint, assert } from "@bentley/bentleyjs-core";
 import { FrameBuffer } from "./FrameBuffer";
 import { RenderMemory, RenderGraphic, RenderPlanarClassifier } from "../System";
 import { Texture, TextureHandle } from "./Texture";
 import { Target } from "./Target";
 import { ShaderProgramExecutor } from "./ShaderProgram";
 import { Matrix4 } from "./Matrix";
-import { Classification } from "../../Classification";
+import { SpatialClassification } from "../../SpatialClassification";
 import { SceneContext } from "../../ViewContext";
 import { GeometricModelState } from "../../ModelState";
 import { TileTree, Tile } from "../../tile/TileTree";
@@ -54,24 +54,26 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
   private _projectionMatrix = new Matrix4();
   private _graphics: RenderGraphic[] = [];
   private _frustum?: Frustum;
+  private _width = 0;
+  private _height = 0;
   private _baseBatchId = 0;
   private _anyHilited = false;
   private _plane = Plane3dByOriginAndUnitNormal.create(new Point3d(0, 0, 0), new Vector3d(0, 0, 1))!;    // TBD -- Support other planes - default to X-Y for now.
   private static _scratchFrustum = new Frustum();
 
-  private constructor(private _classifierProperties: Classification.Properties) { super(); }
+  private constructor(private _classifierProperties: SpatialClassification.Properties) { super(); }
   public get colorTexture(): Texture | undefined { return this._colorTexture; }
   public get featureTexture(): Texture | undefined { return this._featureTexture; }
   public get hiliteTexture(): Texture | undefined { return this._hiliteTexture; }
   public get projectionMatrix(): Matrix4 { return this._projectionMatrix; }
-  public get properties(): Classification.Properties { return this._classifierProperties; }
+  public get properties(): SpatialClassification.Properties { return this._classifierProperties; }
   public get baseBatchId(): number { return this._baseBatchId; }
   public get anyHilited(): boolean { return this._anyHilited; }
-  public get insideDisplay(): Classification.Display { return this._classifierProperties.flags.inside; }
-  public get outsideDisplay(): Classification.Display { return this._classifierProperties.flags.outside; }
+  public get insideDisplay(): SpatialClassification.Display { return this._classifierProperties.flags.inside; }
+  public get outsideDisplay(): SpatialClassification.Display { return this._classifierProperties.flags.outside; }
   public addGraphic(graphic: RenderGraphic) { this._graphics.push(graphic); }
 
-  public static create(properties: Classification.Properties, tileTree: TileTree, classifiedModel: GeometricModelState, sceneContext: SceneContext): PlanarClassifier {
+  public static create(properties: SpatialClassification.Properties, tileTree: TileTree, classifiedModel: GeometricModelState, sceneContext: SceneContext): PlanarClassifier {
     const classifier = new PlanarClassifier(properties);
     classifier.drawScene(sceneContext, classifiedModel, tileTree);
     return classifier;
@@ -187,25 +189,34 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
       assert(false);
       return;
     }
-    this.dispose();     // TBD. - Manage lifecycle.
+
     if (this._graphics === undefined)
       return;
 
-    const classifierHeight = 2 * Math.max(target.viewRect.width, target.viewRect.height);     // TBD - Size to classified area.
-    const classifierWidth = classifierHeight;
-    const colorTextureHandle = TextureHandle.createForAttachment(classifierWidth, classifierHeight, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
-    const featureTextureHandle = TextureHandle.createForAttachment(classifierWidth, classifierHeight, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
-    if (undefined === colorTextureHandle ||
-      undefined === featureTextureHandle ||
-      undefined === (this._fbo = FrameBuffer.create([colorTextureHandle, featureTextureHandle]))) {
-      assert(false, "Failed to create planar classifier texture");
-      return;
+    const requiredHeight = 2 * Math.max(target.viewRect.width, target.viewRect.height);     // TBD - Size to classified area.
+    const requiredWidth = requiredHeight;
+
+    if (requiredWidth !== this._width || requiredHeight !== this._height)
+      this.dispose();
+
+    this._width = requiredWidth;
+    this._height = requiredHeight;
+
+    if (undefined === this._fbo) {
+      const colorTextureHandle = TextureHandle.createForAttachment(this._width, this._height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
+      const featureTextureHandle = TextureHandle.createForAttachment(this._width, this._height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
+      if (undefined === colorTextureHandle ||
+        undefined === featureTextureHandle ||
+        undefined === (this._fbo = FrameBuffer.create([colorTextureHandle, featureTextureHandle]))) {
+        assert(false, "Failed to create planar classifier texture");
+        return;
+      }
+      this._colorTexture = new Texture(new RenderTexture.Params(undefined, RenderTexture.Type.TileSection, true), colorTextureHandle);
+      this._featureTexture = new Texture(new RenderTexture.Params(undefined, RenderTexture.Type.TileSection, true), featureTextureHandle);
     }
-    this._colorTexture = new Texture(new RenderTexture.Params(undefined, RenderTexture.Type.TileSection, true), colorTextureHandle);
-    this._featureTexture = new Texture(new RenderTexture.Params(undefined, RenderTexture.Type.TileSection, true), featureTextureHandle);
 
     const prevState = System.instance.currentRenderState.clone();
-    System.instance.context.viewport(0, 0, classifierWidth, classifierHeight);
+    System.instance.context.viewport(0, 0, this._width, this._height);
 
     const state = new RenderState();
     state.flags.depthMask = false;
@@ -247,11 +258,13 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     });
     const hiliteCommands = renderCommands.getCommands(RenderPass.Hilite);
     if (false !== (this._anyHilited = 0 !== hiliteCommands.length)) {
-      const hiliteTextureHandle = TextureHandle.createForAttachment(classifierWidth, classifierHeight, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
-      this._hiliteTexture = new Texture(new RenderTexture.Params(undefined, RenderTexture.Type.TileSection, true), hiliteTextureHandle!);
-      if (undefined === hiliteTextureHandle || undefined === (this._hiliteFbo = FrameBuffer.create([hiliteTextureHandle!]))) {
-        assert(false, "Failed to create planar classifier hilite texture");
-        return;
+      if (undefined === this._hiliteFbo) {
+        const hiliteTextureHandle = TextureHandle.createForAttachment(this._width, this._height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
+        this._hiliteTexture = new Texture(new RenderTexture.Params(undefined, RenderTexture.Type.TileSection, true), hiliteTextureHandle!);
+        if (undefined === hiliteTextureHandle || undefined === (this._hiliteFbo = FrameBuffer.create([hiliteTextureHandle!]))) {
+          assert(false, "Failed to create planar classifier hilite texture");
+          return;
+        }
       }
 
       System.instance.frameBufferStack.execute(this._hiliteFbo, true, () => {
@@ -270,5 +283,3 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     System.instance.context.viewport(0, 0, target.viewRect.width, target.viewRect.height); // Restore viewport
   }
 }
-
-export type PlanarClassifierMap = Map<Id64String, PlanarClassifier>;

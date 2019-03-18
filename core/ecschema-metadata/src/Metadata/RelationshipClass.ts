@@ -24,6 +24,7 @@ type AnyConstraintClass = EntityClass | Mixin | RelationshipClass;
 
 /**
  * A Typescript class representation of a ECRelationshipClass.
+ * @beta
  */
 export class RelationshipClass extends ECClass {
   public readonly schema!: Schema; // tslint:disable-line
@@ -95,6 +96,7 @@ export class RelationshipClass extends ECClass {
 
 /**
  * A Typescript class representation of a ECRelationshipConstraint.
+ * @beta
  */
 export class RelationshipConstraint implements CustomAttributeContainerProps {
   protected _abstractConstraint?: LazyLoadedRelationshipConstraintClass;
@@ -287,8 +289,9 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
   }
 }
 
-/** @hidden
+/**
  * Hackish approach that works like a "friend class" so we can access protected members without making them public.
+ * @internal
  */
 export abstract class MutableRelationshipConstraint extends RelationshipConstraint {
   public abstract addCustomAttribute(customAttribute: CustomAttribute): void;
@@ -297,7 +300,7 @@ export abstract class MutableRelationshipConstraint extends RelationshipConstrai
 const INT32_MAX = 2147483647;
 
 /**
- *
+ * @beta
  */
 export class RelationshipMultiplicity {
   public static readonly zeroOne = new RelationshipMultiplicity(0, 1);

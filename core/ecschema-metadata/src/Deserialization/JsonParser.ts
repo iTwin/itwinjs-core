@@ -18,7 +18,7 @@ function isObject(x: unknown): x is UnknownObject {
   return typeof (x) === "object";
 }
 
-/** @hidden */
+/** @internal */
 export class JsonParser extends AbstractParser<UnknownObject> {
   private _rawSchema: UnknownObject;
   private _schemaName?: string;

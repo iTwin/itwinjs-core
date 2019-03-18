@@ -9,6 +9,7 @@ import { PhenomenonProps } from "./../Deserialization/JsonProps";
 import { SchemaItemType } from "./../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "./../Exception";
 
+/** @beta */
 export class Phenomenon extends SchemaItem {
   public readonly schemaItemType!: SchemaItemType.Phenomenon; // tslint:disable-line
   protected _definition: string; // Contains a combination of Phenomena names which form this Phenomenon. Each Phenomena name is separated by a * and may have an exponent, specified using parentheses

@@ -12,7 +12,7 @@ import { MarkupTool } from "./MarkupTool";
 
 /** A "modify handle" is a visible position on the screen that provides UI to modify a MarkupElement. */
 abstract class ModifyHandle {
-  public vpToStartTrn!: Transform;
+  public vbToStartTrn!: Transform;
 
   constructor(public handles: Handles) { }
   /** perform the modification given a current mouse position. */
@@ -23,7 +23,7 @@ abstract class ModifyHandle {
   public abstract setPosition(): void;
   /** the mouse just went down on this handle, begin modification. */
   public startDrag(_ev: BeButtonEvent, makeCopy = false): void {
-    this.vpToStartTrn = this.handles.vpToBoxTrn.clone(); // save the starting vp -> element box transform
+    this.vbToStartTrn = this.handles.vbToBoxTrn.clone(); // save the starting vp -> element box transform
     this.startModify(makeCopy);
   }
   public startModify(makeCopy: boolean) {
@@ -67,13 +67,13 @@ class StretchHandle extends ModifyHandle {
     this.setMouseHandler(this._circle);
   }
   public setPosition() {
-    const pt = this.handles.npcToVp(this.posNpc); // convert to vp coords
+    const pt = this.handles.npcToVb(this.posNpc); // convert to vp coords
     this._circle.center(pt.x, pt.y);
   }
 
   public startDrag(_ev: BeButtonEvent) {
     const handles = this.handles;
-    this.startCtm = handles.el.ctm();
+    this.startCtm = handles.el.screenCTM().lmultiplyO(MarkupApp.screenToVbMtx);
     this.startBox = handles.el.bbox(); // save starting size so we can preserve aspect ratio
     this.startPos = handles.npcToBox(this.posNpc);
     this.opposite = handles.npcToBox({ x: 1 - this.posNpc.x, y: 1 - this.posNpc.y });
@@ -81,7 +81,8 @@ class StretchHandle extends ModifyHandle {
   }
 
   public modify(ev: BeButtonEvent): void {
-    const diff = this.startPos.vectorTo(this.vpToStartTrn.multiplyPoint2d(ev.viewPoint)); // movement of cursor from start, in view coords
+    const evPt = MarkupApp.convertVpToVb(ev.viewPoint);
+    const diff = this.startPos.vectorTo(this.vbToStartTrn.multiplyPoint2d(evPt)); // movement of cursor from start, in view coords
     const diag = this.startPos.vectorTo(this.opposite).normalize()!; // vector from opposite corner to this handle
     const diagVec = diag.scaleToLength(diff.dotProduct(diag)); // projected distance along diagonal
 
@@ -121,18 +122,18 @@ class RotateHandle extends ModifyHandle {
     this._circle = handles.group!.circle(props.size * 1.25).attr(props.rotate).addClass("markup-rotateHandle");
     this.setMouseHandler(this._circle);
   }
-  public get centerVp() { return this.handles.npcToVp({ x: .5, y: .5 }); }
-  public get anchorVp() { return this.handles.npcToVp({ x: .5, y: 0 }); }
+  public get centerVb() { return this.handles.npcToVb({ x: .5, y: .5 }); }
+  public get anchorVb() { return this.handles.npcToVb({ x: .5, y: 0 }); }
   public setPosition(): void {
-    const anchor = this.anchorVp;
-    const dir = this.centerVp.vectorTo(anchor).normalize()!;
+    const anchor = this.anchorVb;
+    const dir = this.centerVb.vectorTo(anchor).normalize()!;
     const loc = this.location = anchor.plusScaled(dir, MarkupApp.props.handles.size * 3);
     this._line.plot(anchor.x, anchor.y, loc.x, loc.y);
     this._circle.center(loc.x, loc.y);
   }
   public modify(ev: BeButtonEvent): void {
-    const centerVp = this.centerVp;
-    const currDir = centerVp.vectorTo(ev.viewPoint);
+    const centerVp = this.centerVb;
+    const currDir = centerVp.vectorTo(MarkupApp.convertVpToVb(ev.viewPoint));
     const dir = centerVp.vectorTo(this.location);
     this.handles.el.rotate(dir.angleTo(currDir).degrees);
   }
@@ -154,7 +155,7 @@ class VertexHandle extends ModifyHandle {
   }
   public setPosition(): void {
     let point = new Point(this.handles.el.attr(this._x), this.handles.el.attr(this._y));
-    const matrix = this.handles.el.ctm();
+    const matrix = this.handles.el.screenCTM().lmultiplyO(MarkupApp.screenToVbMtx);
     point = point.transform(matrix);
     this._circle.center(point.x, point.y);
   }
@@ -163,7 +164,7 @@ class VertexHandle extends ModifyHandle {
   }
   public modify(ev: BeButtonEvent): void {
     let point = new Point(ev.viewPoint.x, ev.viewPoint.y);
-    const matrix = this.handles.el.ctm().inverse();
+    const matrix = this.handles.el.screenCTM().inverseO().multiplyO(MarkupApp.getVpToScreenMtx());
     point = point.transform(matrix);
     this.handles.el.attr(this._x, point.x);
     this.handles.el.attr(this._y, point.y);
@@ -207,17 +208,18 @@ class MoveHandle extends ModifyHandle {
   public setPosition() {
     if (undefined !== this._outline) {
       const pts = [new Point2d(0, 0), new Point2d(0, 1), new Point2d(1, 1), new Point2d(1, 0)];
-      this._outline.plot(this.handles.npcToVpArray(pts).map((pt) => [pt.x, pt.y] as ArrayXY)); // draws the outline of the element's bbox
+      this._outline.plot(this.handles.npcToVbArray(pts).map((pt) => [pt.x, pt.y] as ArrayXY)); // draws the outline of the element's bbox
     }
   }
   public startDrag(ev: BeButtonEvent) {
     super.startDrag(ev, ev.isShiftKey);
-    this._lastPos = ev.viewPoint;
+    this._lastPos = MarkupApp.convertVpToVb(ev.viewPoint);
   }
   public modify(ev: BeButtonEvent): void {
     const handles = this.handles;
-    const dist = ev.viewPoint.minus(this._lastPos!);
-    this._lastPos = ev.viewPoint;
+    const evPt = MarkupApp.convertVpToVb(ev.viewPoint);
+    const dist = evPt.minus(this._lastPos!);
+    this._lastPos = evPt;
     handles.el.translate(dist.x, dist.y);
   }
 }
@@ -228,8 +230,8 @@ class Handles {
   public active?: ModifyHandle;
   public dragging = false;
   public group: G;
-  public npcToVpTrn!: Transform;
-  public vpToBoxTrn!: Transform;
+  public npcToVbTrn!: Transform;
+  public vbToBoxTrn!: Transform;
 
   constructor(public ss: SelectionSet, public el: MarkupElement) {
     this.group = ss.svg.group();
@@ -250,23 +252,23 @@ class Handles {
     // then add all the stretch handles
     const pts = [[0, 0], [0, .5], [0, 1], [.5, 1], [1, 1], [1, .5], [1, 0], [.5, 0]];
     const cursors = ["nw", "w", "sw", "s", "se", "e", "ne", "n"];
-    const angle = el.ctm().decompose().rotate || 0;
+    const angle = el.screenCTM().decompose().rotate || 0;
     const start = Math.round(-angle / 45); // so that we rotate the cursors for rotated elements
     pts.forEach((h, i) => this.handles.push(new StretchHandle(this, h as ArrayXY, cursors[(i + start + 8) % 8])));
     this.draw(); // show starting state
   }
 
-  public npcToBox(p: XAndY) { const pt = this.npcToVp(p); return this.vpToBox(pt, pt); }
-  public npcToVp(p: XAndY, result?: Point2d): Point2d { return this.npcToVpTrn.multiplyPoint2d(p, result); }
-  public vpToBox(p: XAndY, result?: Point2d): Point2d { return this.vpToBoxTrn.multiplyPoint2d(p, result); }
-  public npcToVpArray(pts: Point2d[]): Point2d[] { pts.forEach((pt) => this.npcToVp(pt, pt)); return pts; }
+  public npcToBox(p: XAndY) { const pt = this.npcToVb(p); return this.vbToBox(pt, pt); }
+  public npcToVb(p: XAndY, result?: Point2d): Point2d { return this.npcToVbTrn.multiplyPoint2d(p, result); }
+  public vbToBox(p: XAndY, result?: Point2d): Point2d { return this.vbToBoxTrn.multiplyPoint2d(p, result); }
+  public npcToVbArray(pts: Point2d[]): Point2d[] { pts.forEach((pt) => this.npcToVb(pt, pt)); return pts; }
 
   public draw() {
     const el = this.el;
     const bb = el.bbox();
-    const ctm = el.ctm();
-    this.vpToBoxTrn = ctm.inverse().toIModelTransform();
-    this.npcToVpTrn = new Matrix().scaleO(bb.w, bb.h).translateO(bb.x, bb.y).lmultiplyO(ctm).toIModelTransform();
+    const ctm = el.screenCTM().lmultiplyO(MarkupApp.screenToVbMtx);
+    this.vbToBoxTrn = ctm.inverse().toIModelTransform();
+    this.npcToVbTrn = new Matrix().scaleO(bb.w, bb.h).translateO(bb.x, bb.y).lmultiplyO(ctm).toIModelTransform();
     this.handles.forEach((h) => h.setPosition());
   }
 
@@ -343,7 +345,7 @@ export class SelectionSet {
     this.emptyAll();
     if (el) this.add(el);
   }
-  public constructor(public svg: Svg) { }
+  public constructor(public svg: G) { }
   public clearEditors() {
     if (this.handles) {
       this.handles.remove();
@@ -427,7 +429,7 @@ export class SelectTool extends MarkupTool {
   public static toolId = "Markup.Select";
   private _flashedElement?: MarkupElement;
   private readonly _dragging: MarkupElement[] = [];
-  private readonly _anchor = new Point3d();
+  private _anchorPt!: Point3d;
 
   public get flashedElement(): MarkupElement | undefined { return this._flashedElement; }
   public set flashedElement(el: MarkupElement | undefined) {
@@ -446,15 +448,16 @@ export class SelectTool extends MarkupTool {
     this.markup.selected.emptyAll();
   }
   public onCleanup(): void { this.clearSelect(); }
-
   protected showPrompt(): void { this.outputMarkupPrompt("Select.Prompts.IdentifyMarkup"); }
   public onPostInstall() { this.initSelect(); super.onPostInstall(); }
   public onRestartTool(): void { this.initSelect(); }
 
+  /** When we start a drag operation, we add a new set of elements to the DOM and start modifying them.
+   * If we cancel the operation, we need remove them from the DOM.
+   */
   private cancelDrag() {
     this._dragging.forEach((el) => el.remove()); // remove temporary elements from DOM
     this._dragging.length = 0;
-
   }
   public async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> {
     const selected = this.markup.selected;
@@ -499,7 +502,6 @@ export class SelectTool extends MarkupTool {
 
   /** called when the mouse moves while the data button is down. */
   public async onMouseStartDrag(ev: BeButtonEvent): Promise<EventHandled> {
-    // console.log("start drag");
     const markup = this.markup;
     const selected = markup.selected;
     const handles = selected.handles;
@@ -520,7 +522,7 @@ export class SelectTool extends MarkupTool {
       selected.restart(flashed); // we clicked on an element not in the selection set, replace current selection with just this element
 
     selected.clearEditors();
-    this._anchor.setFrom(ev.viewPoint);  // save the starting point. This is the point where the "down" occurred.
+    this._anchorPt = MarkupApp.convertVpToVb(ev.viewPoint);  // save the starting point. This is the point where the "down" occurred.
     this.cancelDrag();
 
     selected.elements.forEach((el) => { // add all selected elements to the "dragging" set
@@ -534,7 +536,6 @@ export class SelectTool extends MarkupTool {
 
   /** Called whenever the mouse moves while this tool is active. */
   public async onMouseMotion(ev: BeButtonEvent): Promise<void> {
-    // console.log("motion");
     const markup = this.markup;
     const handles = markup.selected.handles;
     if (handles && handles.dragging) {
@@ -551,8 +552,9 @@ export class SelectTool extends MarkupTool {
     }
 
     // we have a set of elements being dragged
-    const delta = ev.viewPoint.minus(this._anchor);
-    this._anchor.setFrom(ev.viewPoint); // translate moves from last mouse location
+    const vbPt = MarkupApp.convertVpToVb(ev.viewPoint);
+    const delta = vbPt.minus(this._anchorPt);
+    this._anchorPt = vbPt; // translate moves from last mouse location
     this._dragging.forEach((el) => {
       el.translate(delta.x, delta.y);
     });
@@ -560,7 +562,6 @@ export class SelectTool extends MarkupTool {
 
   /** Called when the mouse goes up after dragging. */
   public async onMouseEndDrag(ev: BeButtonEvent): Promise<EventHandled> {
-    // console.log("end drag");
     const markup = this.markup;
     const selected = markup.selected;
     const handles = selected.handles;
@@ -572,7 +573,7 @@ export class SelectTool extends MarkupTool {
     if (this._dragging.length === 0) // we had nothing selected
       return EventHandled.Yes;
 
-    const delta = ev.viewPoint.minus(this._anchor);
+    const delta = MarkupApp.convertVpToVb(ev.viewPoint).minus(this._anchorPt);
     const undo = markup.undo;
     if (ev.isShiftKey)
       selected.emptyAll();
