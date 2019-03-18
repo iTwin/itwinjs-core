@@ -29,13 +29,16 @@ export class MarkupSelectTestTool extends SelectTool {
         tools.run("Markup.Circle");
         return EventHandled.Yes;
       case "d":
-        tools.run("Markup.Cloud");
+        tools.run("Markup.Distance");
         return EventHandled.Yes;
       case "e":
         tools.run("Markup.Ellipse");
         return EventHandled.Yes;
       case "l":
         tools.run("Markup.Line");
+        return EventHandled.Yes;
+      case "o":
+        tools.run("Markup.Cloud");
         return EventHandled.Yes;
       case "p":
         tools.run("Markup.Polygon");
@@ -49,13 +52,13 @@ export class MarkupSelectTestTool extends SelectTool {
       case "t":
         tools.run("Markup.Text.Place");
         return EventHandled.Yes;
-      case "x":
+      case "1":
         const symbol1 = getSvgFile("Warning_sign.svg");
         if (undefined === symbol1)
           return EventHandled.No;
         tools.run("Markup.Symbol", symbol1);
         return EventHandled.Yes;
-      case "y":
+      case "2":
         const symbol2 = getSvgFile("window-area.svg");
         if (undefined === symbol2)
           return EventHandled.No;
