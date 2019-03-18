@@ -12,7 +12,7 @@
   "scripts": {
     "build": "node ./node_modules/@bentley/webpack-tools/bin/buildIModelJsModule.js",
     "clean": "rimraf lib package-deps.json",
-    "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=bentleyjs-core",
+    "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=bentleyjs-core --ignoreMissingTags",
     "test": "node ./node_modules/@bentley/build-tools/scripts/test.js",
     "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --source=./src --json=../../generated-docs/core/bentleyjs-core/file.json --tsIndexFile=bentleyjs-core.ts --onlyJson %TYPEDOC_THEME%",
     "cover": "nyc npm test",

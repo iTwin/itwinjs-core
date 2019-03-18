@@ -16,6 +16,7 @@ if (argv.entry === undefined) {
 const isCI = (process.env.TF_BUILD);
 const entryPointFileName = argv.entry;
 const isPresentation = argv.isPresentation;
+const ignoreMissingTags = argv.ignoreMissingTags;
 
 const config = {
   $schema: "https://developer.microsoft.com/json-schemas/api-extractor/api-extractor.schema.json",
@@ -30,7 +31,7 @@ const config = {
     namespaceSupport: "permissive"
   },
   validationRules: {
-    missingReleaseTags: "allow"
+    missingReleaseTags: ignoreMissingTags ? "allow" : "error"
   },
   apiJsonFile: {
     enabled: false
