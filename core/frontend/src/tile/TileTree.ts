@@ -38,7 +38,7 @@ import {
 } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
-import { GraphicBranch, RenderGraphic, RenderMemory } from "../render/System";
+import { GraphicBranch, RenderGraphic, RenderMemory, RenderPlanarClassifier } from "../render/System";
 import { SceneContext } from "../ViewContext";
 import { ViewFrustum } from "../Viewport";
 import { B3dmTileIO } from "./B3dmTileIO";
@@ -50,7 +50,6 @@ import { computeChildRanges } from "./IModelTile";
 import { PntsTileIO } from "./PntsTileIO";
 import { TileIO } from "./TileIO";
 import { TileRequest } from "./TileRequest";
-import { PlanarClassifier } from "../render/webgl/PlanarClassifier";
 
 /** A 3d tile within a [[TileTree]].
  * @internal
@@ -625,7 +624,7 @@ export namespace Tile {
     public readonly now: BeTimePoint;
     public readonly purgeOlderThan: BeTimePoint;
     private readonly _frustumPlanes?: FrustumPlanes;
-    public planarClassifier?: PlanarClassifier;
+    public planarClassifier?: RenderPlanarClassifier;
 
     public getPixelSizeAtPoint(inPoint?: Point3d): number {
       return this.viewFrustum !== undefined ? this.viewFrustum.getPixelSizeAtPoint(inPoint) : this.context.getPixelSizeAtPoint();

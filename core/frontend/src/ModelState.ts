@@ -13,7 +13,7 @@ import { IModelConnection } from "./IModelConnection";
 import { IModelTile } from "./tile/IModelTile";
 import { RealityModelTileTree } from "./tile/RealityModelTileTree";
 import { TileTree, TileTreeState } from "./tile/TileTree";
-import { Classification } from "./Classification";
+import { SpatialClassification } from "./SpatialClassification";
 
 /** Represents the front-end state of a [Model]($backend).
  * @public
@@ -211,9 +211,9 @@ export abstract class GeometricModelState extends ModelState implements TileTree
     if (classifiers !== undefined)
       for (let index = 0; index < classifiers.length; index++)
         if (false !== (classifiers[index].isActive = (classifierIndex === index && active)))
-          await Classification.loadModelClassifiers(this.id, this.iModel);
+          await SpatialClassification.loadModelClassifiers(this.id, this.iModel);
   }
-  public addClassifier(classifier: Classification.PropertiesProps) {
+  public addClassifier(classifier: SpatialClassification.PropertiesProps) {
     if (undefined === this.jsonProperties.classifiers)
       this.jsonProperties.classifiers = [];
 

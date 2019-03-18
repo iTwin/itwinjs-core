@@ -8,13 +8,12 @@ import { Id64String } from "@bentley/bentleyjs-core";
 import { ConvexClipPlaneSet, CurveLocationDetail, Geometry, LineSegment3d, Matrix3d, Point2d, Point3d, Transform, Vector2d, Vector3d, XAndY, Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core";
 import { ColorDef, Frustum, FrustumPlanes, LinePixels, Npc, ViewFlags } from "@bentley/imodeljs-common";
 import { GraphicBuilder, GraphicType } from "./render/GraphicBuilder";
-import { CanvasDecoration, Decorations, GraphicBranch, GraphicList, RenderClipVolume, RenderGraphic, RenderTarget, RenderPlanarClassifier } from "./render/System";
+import { CanvasDecoration, Decorations, GraphicBranch, GraphicList, RenderClipVolume, RenderGraphic, RenderTarget, RenderPlanarClassifier, PlanarClassifierMap } from "./render/System";
 import { BackgroundMapState } from "./tile/WebMercatorTileTree";
 import { ScreenViewport, Viewport, ViewFrustum } from "./Viewport";
 import { ViewState3d } from "./ViewState";
 import { Tile } from "./tile/TileTree";
 import { IModelApp } from "./IModelApp";
-import { PlanarClassifier, PlanarClassifierMap } from "./render/webgl/PlanarClassifier";
 
 const gridConstants = { maxPoints: 50, maxRefs: 25, maxDotsInRow: 250, maxHorizon: 500, dotTransparency: 100, lineTransparency: 200, planeTransparency: 225 };
 
@@ -542,10 +541,10 @@ export class SceneContext extends RenderContext {
   public requestMissingTiles(): void {
     IModelApp.tileAdmin.requestTiles(this.viewport, this.missingTiles);
   }
-  public getPlanarClassifier(id: Id64String): PlanarClassifier | undefined { return this.planarClassifiers ? this.planarClassifiers.get(id) : undefined; }
-  public setPlanarClassifier(id: Id64String, planarClassifier: PlanarClassifier) {
+  public getPlanarClassifier(id: Id64String): RenderPlanarClassifier | undefined { return this.planarClassifiers ? this.planarClassifiers.get(id) : undefined; }
+  public setPlanarClassifier(id: Id64String, planarClassifier: RenderPlanarClassifier) {
     if (!this.planarClassifiers)
-      this.planarClassifiers = new Map<Id64String, PlanarClassifier>();
+      this.planarClassifiers = new Map<Id64String, RenderPlanarClassifier>();
     this.planarClassifiers.set(id, planarClassifier);
   }
   public getPlanarClassifierForModel(modelId: Id64String) {

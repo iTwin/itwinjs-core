@@ -29,7 +29,7 @@ import { StandardView, StandardViewId } from "./StandardView";
 import { TileTree } from "./tile/TileTree";
 import { DecorateContext, SceneContext } from "./ViewContext";
 import { Viewport } from "./Viewport";
-import { Classification } from "./Classification";
+import { SpatialClassification } from "./SpatialClassification";
 
 /** Describes the orientation of the grid displayed within a [[Viewport]].
  * @public
@@ -552,7 +552,7 @@ export abstract class ViewState extends ElementState {
   }
 
   /** @internal */
-  public createClassification(context: SceneContext): void { this.forEachModel((model: GeometricModelState) => Classification.addModelClassifierToScene(model, context)); }
+  public createClassification(context: SceneContext): void { this.forEachModel((model: GeometricModelState) => SpatialClassification.addModelClassifierToScene(model, context)); }
 
   /** Add view-specific decorations. The base implementation draws the grid. Subclasses must invoke super.decorate()
    * @internal

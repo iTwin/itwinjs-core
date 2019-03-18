@@ -22,8 +22,10 @@ import { GraphicBuilder, GraphicType } from "./GraphicBuilder";
 import { MeshArgs, PolylineArgs } from "./primitives/mesh/MeshPrimitives";
 import { PointCloudArgs } from "./primitives/PointCloudPrimitive";
 import { MeshParams, PointStringParams, PolylineParams } from "./primitives/VertexTable";
-import { ClipPlanesVolume } from "./webgl/ClipVolume";
-import { PlanarClassifierMap } from "./webgl/PlanarClassifier";
+import { GeometricModelState } from "../ModelState";
+import { SpatialClassification } from "../SpatialClassification";
+import { TileTree } from "../tile/TileTree";
+import { SceneContext } from "../ViewContext";
 
 /** Contains metadata about memory consumed by the render system or aspect thereof.
  * @internal
@@ -295,6 +297,8 @@ export const enum ClassifierType {
   Volume,
   Planar,
 }
+
+export type PlanarClassifierMap = Map<Id64String, RenderPlanarClassifier>;
 
 /** Models that may be used as classifiers.  Detecting their type requires a range query... */
 export class RenderClassifierModel {
@@ -873,7 +877,11 @@ export abstract class RenderSystem implements IDisposable {
   /** @internal */
   public getClipVolume(_clipVector: ClipVector, _imodel: IModelConnection): RenderClipVolume | undefined { return undefined; }
   /** @internal */
-  public getClassifier(_classifierModelId: Id64String, _iModel: IModelConnection): RenderClassifierModel | undefined { return undefined; }
+  public getSpatialClassificationModel(_classifierModelId: Id64String, _iModel: IModelConnection): RenderClassifierModel | undefined { return undefined; }
+  /** @internal */
+  public addSpatialClassificationModel(_modelId: Id64String, _classificationModel: RenderClassifierModel, _iModel: IModelConnection) { }
+  /** @internal */
+  public createPlanarClassifier(_properties: SpatialClassification.Properties, _tileTree: TileTree, _classifiedModel: GeometricModelState, _sceneContext: SceneContext): RenderPlanarClassifier | undefined { return undefined; }
 
   /** @internal */
   public createTile(tileTexture: RenderTexture, corners: Point3d[]): RenderGraphic | undefined {
@@ -1019,8 +1027,8 @@ export abstract class RenderSystem implements IDisposable {
 export class AnimationBranchState {
   public readonly omit?: boolean;
   public readonly transform?: Transform;
-  public readonly clip?: ClipPlanesVolume;
-  constructor(transform?: Transform, clip?: ClipPlanesVolume, omit?: boolean) { this.transform = transform; this.clip = clip; this.omit = omit; }
+  public readonly clip?: RenderClipVolume;
+  constructor(transform?: Transform, clip?: RenderClipVolume, omit?: boolean) { this.transform = transform; this.clip = clip; this.omit = omit; }
 }
 
 /** Mapping from node/branch IDs to animation branch state

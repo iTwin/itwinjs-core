@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import { Viewport, SpatialViewState, SpatialModelState, GeometricModelState, Classification } from "@bentley/imodeljs-frontend";
+import { Viewport, SpatialViewState, SpatialModelState, GeometricModelState, SpatialClassification } from "@bentley/imodeljs-frontend";
 import { createCheckBox, CheckBox } from "./CheckBox";
 import { ToolBarDropDown } from "./ToolBar";
 import { compareStringsOrUndefined, Id64String } from "@bentley/bentleyjs-core";
@@ -89,7 +89,7 @@ export class ModelPicker extends ToolBarDropDown {
       if (model.jsonProperties && undefined !== model.jsonProperties.tilesetUrl && undefined === model.jsonProperties.classifiers)   // We need a better test for reality models.
         for (const otherProp of props)
           if (otherProp !== prop && undefined !== otherProp.id && undefined !== otherProp.name)
-            geometricModel.addClassifier(new Classification.Properties(otherProp.name, otherProp.id, 0.0));
+            geometricModel.addClassifier(new SpatialClassification.Properties(otherProp.name, otherProp.id, 0.0));
 
       const classifiers = undefined !== model ? model.jsonProperties.classifiers : undefined;
       if (undefined !== geometricModel && undefined !== classifiers) {

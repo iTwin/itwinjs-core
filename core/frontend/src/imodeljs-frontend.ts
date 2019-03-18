@@ -20,7 +20,7 @@ export * from "./AuxCoordSys";
 export * from "./FrontendRequestContext";
 export * from "./CategorySelectorState";
 export * from "./ContextRealityModelState";
-export * from "./Classification";
+export * from "./SpatialClassification";
 export * from "./DisplayStyleState";
 export * from "./ElementLocateManager";
 export * from "./EmphasizeElements";

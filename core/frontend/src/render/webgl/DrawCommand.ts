@@ -16,10 +16,11 @@ import { ShaderProgramExecutor } from "./ShaderProgram";
 import { RenderPass, RenderOrder, CompositeFlags } from "./RenderFlags";
 import { Target } from "./Target";
 import { BranchStack, BatchState } from "./BranchState";
-import { GraphicList, Decorations, RenderGraphic, AnimationBranchState } from "../System";
+import { GraphicList, Decorations, RenderGraphic, AnimationBranchState, ClippingType } from "../System";
 import { TechniqueId } from "./TechniqueId";
 import { SurfaceType } from "../primitives/VertexTable";
 import { MeshGraphic } from "./Mesh";
+import { ClipPlanesVolume } from "./ClipVolume";
 
 export class ShaderProgramParams {
   private _target?: Target;
@@ -185,8 +186,8 @@ class BranchCommand extends DrawCommand {
           branchTransform = prevWorldToLocal.multiplyTransformTransform(branchTransform.multiplyTransformTransform(prevLocalToWorld));
         this._branch.localToWorldTransform = branchTransform;
       }
-      if (animationBranch.clip)
-        this._branch.clips = animationBranch.clip;
+      if (animationBranch.clip !== undefined && animationBranch.clip.type === ClippingType.Planes)
+        this._branch.clips = animationBranch.clip as ClipPlanesVolume;
     }
   }
 

@@ -482,11 +482,9 @@ enum ActivityMessageEndReason {
 // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
 // @internal
 class AnimationBranchState {
-  // WARNING: The type "ClipPlanesVolume" needs to be exported by the package (e.g. added to index.ts)
-  constructor(transform?: Transform, clip?: ClipPlanesVolume, omit?: boolean);
-  // WARNING: The type "ClipPlanesVolume" needs to be exported by the package (e.g. added to index.ts)
+  constructor(transform?: Transform, clip?: RenderClipVolume, omit?: boolean);
   // (undocumented)
-  readonly clip?: ClipPlanesVolume;
+  readonly clip?: RenderClipVolume;
   // (undocumented)
   readonly omit?: boolean;
   // (undocumented)
@@ -1026,97 +1024,6 @@ interface CheckBoxIconsEditorParams extends BasePropertyEditorParams {
   onIconDefinition?: IconDefinition;
   // (undocumented)
   type: PropertyEditorParamTypes.CheckBoxIcons;
-}
-
-// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
-// @internal (undocumented)
-module Classification {
-  // (undocumented)
-  function addModelClassifierToScene(model: GeometricModelState, context: SceneContext): void;
-
-  // (undocumented)
-  function createClassifier(id: Id64String, iModel: IModelConnection): Promise<RenderClassifierModel | undefined>;
-
-  // (undocumented)
-  enum Display {
-    // (undocumented)
-    Dimmed = 2,
-    // (undocumented)
-    ElementColor = 4,
-    // (undocumented)
-    Hilite = 3,
-    // (undocumented)
-    Off = 0,
-    // (undocumented)
-    On = 1
-  }
-
-  // (undocumented)
-  class Flags implements FlagsProps {
-    // WARNING: The type "Display" needs to be exported by the package (e.g. added to index.ts)
-    // WARNING: The type "Display" needs to be exported by the package (e.g. added to index.ts)
-    constructor(inside?: Display, outside?: Display);
-    // WARNING: The type "Display" needs to be exported by the package (e.g. added to index.ts)
-    // (undocumented)
-    inside: Display;
-    // WARNING: The type "Display" needs to be exported by the package (e.g. added to index.ts)
-    // (undocumented)
-    outside: Display;
-    // WARNING: The type "Display" needs to be exported by the package (e.g. added to index.ts)
-    // (undocumented)
-    selected: Display;
-    // (undocumented)
-    type: number;
-  }
-
-  // (undocumented)
-  interface FlagsProps {
-    // (undocumented)
-    inside: Classification.Display;
-    // (undocumented)
-    outside: Classification.Display;
-    // (undocumented)
-    selected: Classification.Display;
-    // (undocumented)
-    type: number;
-  }
-
-  // (undocumented)
-  function getClassifierProps(model: GeometricModelState): Properties | undefined;
-
-  // (undocumented)
-  function loadClassifiers(classifierIdArg: Id64Arg, iModel: IModelConnection): Promise<void>;
-
-  // (undocumented)
-  function loadModelClassifiers(modelIdArg: Id64Arg, iModel: IModelConnection): Promise<void>;
-
-  // (undocumented)
-  class Properties implements PropertiesProps {
-    // WARNING: The type "FlagsProps" needs to be exported by the package (e.g. added to index.ts)
-    constructor(name: string, modelId: Id64String, expand: number, flags?: FlagsProps);
-    // (undocumented)
-    expand: number;
-    // WARNING: The type "Flags" needs to be exported by the package (e.g. added to index.ts)
-    // (undocumented)
-    flags: Flags;
-    // (undocumented)
-    modelId: Id64String;
-    // (undocumented)
-    name: string;
-  }
-
-  // (undocumented)
-  interface PropertiesProps {
-    // (undocumented)
-    expand: number;
-    // (undocumented)
-    flags: Flags;
-    // (undocumented)
-    modelId: Id64String;
-    // (undocumented)
-    name: string;
-  }
-
 }
 
 // @public
@@ -2286,9 +2193,9 @@ class GeometricModelState extends ModelState, implements TileTreeModelState {
   protected _classifierTileTreeState: TileTreeState;
   // @internal (undocumented)
   protected _tileTreeState: TileTreeState;
-  // WARNING: The type "Classification.PropertiesProps" needs to be exported by the package (e.g. added to index.ts)
+  // WARNING: The type "SpatialClassification.PropertiesProps" needs to be exported by the package (e.g. added to index.ts)
   // (undocumented)
-  addClassifier(classifier: Classification.PropertiesProps): void;
+  addClassifier(classifier: SpatialClassification.PropertiesProps): void;
   // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
   // @internal (undocumented)
   readonly asGeometricModel: GeometricModelState;
@@ -4365,6 +4272,9 @@ class RenderPlanarClassifier implements IDisposable {
 // @public
 class RenderSystem implements IDisposable {
   // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
+  addSpatialClassificationModel(_modelId: Id64String, _classificationModel: RenderClassifierModel, _iModel: IModelConnection): void;
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
   // @internal
   abstract createBatch(graphic: RenderGraphic, features: PackedFeatureTable, range: ElementAlignedBox3d): RenderGraphic;
   abstract createBranch(branch: GraphicBranch, transform: Transform, clips?: RenderClipVolume, planarClassifier?: RenderPlanarClassifier): RenderGraphic;
@@ -4382,6 +4292,10 @@ class RenderSystem implements IDisposable {
   // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
   // @internal (undocumented)
   abstract createOffscreenTarget(rect: ViewRect): RenderTarget;
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // WARNING: The type "SpatialClassification.Properties" needs to be exported by the package (e.g. added to index.ts)
+  // @internal (undocumented)
+  createPlanarClassifier(_properties: SpatialClassification.Properties, _tileTree: TileTree, _classifiedModel: GeometricModelState, _sceneContext: SceneContext): RenderPlanarClassifier | undefined;
   // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
   // WARNING: The type "PointCloudArgs" needs to be exported by the package (e.g. added to index.ts)
   // @internal (undocumented)
@@ -4428,11 +4342,11 @@ class RenderSystem implements IDisposable {
   findTexture(_key: string, _imodel: IModelConnection): RenderTexture | undefined;
   // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
   // @internal (undocumented)
-  getClassifier(_classifierModelId: Id64String, _iModel: IModelConnection): RenderClassifierModel | undefined;
-  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
-  // @internal (undocumented)
   getClipVolume(_clipVector: ClipVector, _imodel: IModelConnection): RenderClipVolume | undefined;
   getGradientTexture(_symb: Gradient.Symb, _imodel: IModelConnection): RenderTexture | undefined;
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
+  getSpatialClassificationModel(_classifierModelId: Id64String, _iModel: IModelConnection): RenderClassifierModel | undefined;
   // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
   // @internal (undocumented)
   readonly isValid: boolean;
@@ -4459,7 +4373,6 @@ class RenderTarget implements IDisposable {
   abstract changeDecorations(decorations: Decorations): void;
   // (undocumented)
   abstract changeDynamics(dynamics?: GraphicList): void;
-  // WARNING: The type "PlanarClassifierMap" needs to be exported by the package (e.g. added to index.ts)
   // (undocumented)
   changePlanarClassifiers(_classifiers?: PlanarClassifierMap): void;
   // (undocumented)
@@ -4578,12 +4491,10 @@ class SceneContext extends RenderContext {
   // WARNING: The type "BackgroundMapState" needs to be exported by the package (e.g. added to index.ts)
   // (undocumented)
   backgroundMap?: BackgroundMapState;
-  // WARNING: The type "PlanarClassifier" needs to be exported by the package (e.g. added to index.ts)
   // (undocumented)
-  getPlanarClassifier(id: Id64String): PlanarClassifier | undefined;
-  // WARNING: The type "PlanarClassifier" needs to be exported by the package (e.g. added to index.ts)
+  getPlanarClassifier(id: Id64String): RenderPlanarClassifier | undefined;
   // (undocumented)
-  getPlanarClassifierForModel(modelId: Id64String): PlanarClassifier | undefined;
+  getPlanarClassifierForModel(modelId: Id64String): RenderPlanarClassifier | undefined;
   // (undocumented)
   readonly graphics: RenderGraphic[];
   // (undocumented)
@@ -4596,14 +4507,12 @@ class SceneContext extends RenderContext {
   modelClassifiers: Map<string, string>;
   // (undocumented)
   outputGraphic(graphic: RenderGraphic): void;
-  // WARNING: The type "PlanarClassifierMap" needs to be exported by the package (e.g. added to index.ts)
   // (undocumented)
   planarClassifiers?: PlanarClassifierMap;
   // (undocumented)
   requestMissingTiles(): void;
-  // WARNING: The type "PlanarClassifier" needs to be exported by the package (e.g. added to index.ts)
   // (undocumented)
-  setPlanarClassifier(id: Id64String, planarClassifier: PlanarClassifier): void;
+  setPlanarClassifier(id: Id64String, planarClassifier: RenderPlanarClassifier): void;
   // (undocumented)
   readonly viewFrustum: ViewFrustum | undefined;
 }
@@ -5040,6 +4949,98 @@ enum SnapStatus {
 }
 
 // @public
+module SpatialClassification {
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
+  function addModelClassifierToScene(model: GeometricModelState, context: SceneContext): void;
+
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
+  function createClassifier(id: Id64String, iModel: IModelConnection): Promise<RenderClassifierModel | undefined>;
+
+  enum Display {
+    Dimmed = 2,
+    ElementColor = 4,
+    Hilite = 3,
+    Off = 0,
+    On = 1
+  }
+
+  // (undocumented)
+  class Flags implements FlagsProps {
+    // WARNING: The type "Display" needs to be exported by the package (e.g. added to index.ts)
+    // WARNING: The type "Display" needs to be exported by the package (e.g. added to index.ts)
+    constructor(inside?: Display, outside?: Display);
+    // WARNING: The type "Display" needs to be exported by the package (e.g. added to index.ts)
+    // (undocumented)
+    inside: Display;
+    // WARNING: The type "Display" needs to be exported by the package (e.g. added to index.ts)
+    // (undocumented)
+    outside: Display;
+    // WARNING: The type "Display" needs to be exported by the package (e.g. added to index.ts)
+    // (undocumented)
+    selected: Display;
+    // (undocumented)
+    type: number;
+  }
+
+  interface FlagsProps {
+    // (undocumented)
+    inside: SpatialClassification.Display;
+    // (undocumented)
+    outside: SpatialClassification.Display;
+    // (undocumented)
+    selected: SpatialClassification.Display;
+    // (undocumented)
+    type: number;
+  }
+
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
+  function getClassifierProps(model: GeometricModelState): Properties | undefined;
+
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
+  function loadClassifiers(classifierIdArg: Id64Arg, iModel: IModelConnection): Promise<void>;
+
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
+  function loadModelClassifiers(modelIdArg: Id64Arg, iModel: IModelConnection): Promise<void>;
+
+  // (undocumented)
+  class Properties implements PropertiesProps {
+    // WARNING: The type "FlagsProps" needs to be exported by the package (e.g. added to index.ts)
+    constructor(name: string, modelId: Id64String, expand: number, flags?: FlagsProps);
+    // (undocumented)
+    expand: number;
+    // WARNING: The type "Flags" needs to be exported by the package (e.g. added to index.ts)
+    // (undocumented)
+    flags: Flags;
+    // (undocumented)
+    modelId: Id64String;
+    // (undocumented)
+    name: string;
+  }
+
+  interface PropertiesProps {
+    expand: number;
+    // (undocumented)
+    flags: Flags;
+    modelId: Id64String;
+    // (undocumented)
+    name: string;
+  }
+
+  enum Type {
+    // (undocumented)
+    Planar = 0,
+    // (undocumented)
+    Volume = 1
+  }
+
+}
+
+// @public
 class SpatialModelState extends GeometricModel3dState {
 }
 
@@ -5300,7 +5301,6 @@ class Target extends RenderTarget {
   changeDynamics(dynamics?: GraphicList): void;
   // (undocumented)
   changeFrustum(newFrustum: Frustum, newFraction: number, is3d: boolean): void;
-  // WARNING: The type "PlanarClassifierMap" needs to be exported by the package (e.g. added to index.ts)
   // (undocumented)
   changePlanarClassifiers(planarClassifiers?: PlanarClassifierMap): void;
   // (undocumented)
@@ -7017,6 +7017,7 @@ class ZoomViewTool extends ViewManip {
 // WARNING: Unsupported export: MarkerFillStyle
 // WARNING: Unsupported export: MarkerTextAlign
 // WARNING: Unsupported export: MarkerTextBaseline
+// WARNING: Unsupported export: PlanarClassifierMap
 // WARNING: Unsupported export: GraphicList
 // WARNING: Unsupported export: CanvasDecorationList
 // WARNING: Unsupported export: AnimationBranchStates

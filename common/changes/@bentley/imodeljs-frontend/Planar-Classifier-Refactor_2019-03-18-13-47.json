@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Refactor classification  rename to SpatialClassification",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "ray.bentley@bentley.com"
+}

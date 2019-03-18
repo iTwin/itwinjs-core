@@ -18,6 +18,7 @@ import {
   RenderTarget,
   RenderClipVolume,
   RenderClassifierModel,
+  RenderPlanarClassifier,
   GraphicList,
   PackedFeatureTable,
 } from "../System";
@@ -52,6 +53,10 @@ import { TextureUnit } from "./RenderFlags";
 import { UniformHandle } from "./Handle";
 import { Debug } from "./Diagnostics";
 import { PlanarClassifier } from "./PlanarClassifier";
+import { GeometricModelState } from "../../ModelState";
+import { SpatialClassification } from "../../SpatialClassification";
+import { TileTree } from "../../tile/TileTree";
+import { SceneContext } from "../../ViewContext";
 
 export const enum ContextState {
   Uninitialized,
@@ -409,11 +414,11 @@ export class IdMap implements IDisposable {
       this.clipVolumes.set(clipVector, clipVolume);
     return clipVolume;
   }
-  /** Get  */
-  public getClassifier(modelId: Id64String): RenderClassifierModel | undefined { return this.classifiers.get(modelId); }
+  /** Get a classifier model */
+  public getSpatialClassificationModel(modelId: Id64String): RenderClassifierModel | undefined { return this.classifiers.get(modelId); }
 
   /** Add a new classifier */
-  public addClassifier(modelId: Id64String, classifier: RenderClassifierModel) { this.classifiers.set(modelId, classifier); }
+  public addSpatialClassificationModel(modelId: Id64String, classifier: RenderClassifierModel) { this.classifiers.set(modelId, classifier); }
 }
 
 class TextureStats implements TextureMonitor {
@@ -662,8 +667,9 @@ export class System extends RenderSystem {
     const idMap = this.getIdMap(imodel);
     return idMap.getClipVolume(clipVector);
   }
-  public getClassifier(modelId: Id64String, iModel: IModelConnection): RenderClassifierModel | undefined { return this.getIdMap(iModel).classifiers.get(modelId); }
-  public addClassifier(modelId: Id64String, classifier: RenderClassifierModel, iModel: IModelConnection) { this.getIdMap(iModel).classifiers.set(modelId, classifier); }
+  public getSpatialClassificationModel(modelId: Id64String, iModel: IModelConnection): RenderClassifierModel | undefined { return this.getIdMap(iModel).classifiers.get(modelId); }
+  public addSpatialClassificationModel(modelId: Id64String, classifier: RenderClassifierModel, iModel: IModelConnection) { this.getIdMap(iModel).classifiers.set(modelId, classifier); }
+  public createPlanarClassifier(properties: SpatialClassification.Properties, tileTree: TileTree, classifiedModel: GeometricModelState, sceneContext: SceneContext): RenderPlanarClassifier | undefined { return PlanarClassifier.create(properties, tileTree, classifiedModel, sceneContext); }
 
   private constructor(canvas: HTMLCanvasElement, context: WebGLRenderingContext, capabilities: Capabilities) {
     super();
