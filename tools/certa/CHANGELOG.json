@@ -1,0 +1,17 @@
+{
+  "name": "@bentley/certa",
+  "entries": [
+    {
+      "version": "0.190.0",
+      "tag": "@bentley/certa_v0.190.0",
+      "date": "Thu, 14 Mar 2019 14:26:49 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Initial version of Certa, a new tool for running mocha tests in different environments."
+          }
+        ]
+      }
+    }
+  ]
+}

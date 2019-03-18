@@ -1,6 +1,15 @@
 # Change Log - @bentley/ui-ninezone
 
-This log was last generated on Wed, 06 Mar 2019 15:41:22 GMT and should not be manually modified.
+This log was last generated on Thu, 14 Mar 2019 14:26:49 GMT and should not be manually modified.
+
+## 0.190.0
+Thu, 14 Mar 2019 14:26:49 GMT
+
+### Updates
+
+- Added 'uifw-' to ContentLayout CSS class names and others. Fixed Status Bar separators.
+- Added 'uifw-' prefix to most ui-framework CSS class names
+- Cleaned up index.scss for variables & mixins in ui-core and added classes.scss that generates CSS
 
 ## 0.189.0
 Wed, 06 Mar 2019 15:41:22 GMT

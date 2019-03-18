@@ -2,6 +2,33 @@
   "name": "@bentley/webpack-tools",
   "entries": [
     {
+      "version": "0.190.0",
+      "tag": "@bentley/webpack-tools_v0.190.0",
+      "date": "Thu, 14 Mar 2019 14:26:49 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "changes path to config-loader from nested to sibling dependency in order to function in non-symlinked repos that use rush/pnpm"
+          },
+          {
+            "comment": "First checks for nested dependency. Falls back to sibling"
+          },
+          {
+            "comment": "Change to fix iModelJs version string was overly broad."
+          },
+          {
+            "comment": "fix issue for ios"
+          },
+          {
+            "comment": "Massage the version required stored in Plugins in the case of pre-release versions."
+          },
+          {
+            "comment": "Cleaned up index.scss for variables & mixins in ui-core and added classes.scss that generates CSS"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.189.0",
       "tag": "@bentley/webpack-tools_v0.189.0",
       "date": "Wed, 06 Mar 2019 15:41:22 GMT",
