@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fix tree placeholder styling (set correct background and offset)",
+      "packageName": "@bentley/ui-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-core",
+  "email": "grigas.p@gmail.com"
+}
