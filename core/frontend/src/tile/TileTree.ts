@@ -199,9 +199,11 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
     const { graphic, isLeaf, contentRange, sizeMultiplier } = content;
 
     this._graphic = graphic;
-    if (undefined === graphic)
-      this._maximumSize = 0;
-    else if (0 === this._maximumSize)
+
+    // NB: If this tile has no graphics, it may or may not have children - but we don't want to load the children until
+    // this tile is too coarse for view based on its size in pixels.
+    // That is different than an "undisplayable" tile (maximumSize=0) whose children should be loaded immediately.
+    if (undefined !== graphic && 0 === this._maximumSize)
       this._maximumSize = 512;
 
     if (undefined !== isLeaf && isLeaf !== this._isLeaf) {
