@@ -261,7 +261,7 @@ export namespace Id64 {
     return String.fromCharCode(..._scratchCharCodes);
   }
 
-  /** @hidden */
+  /** @internal */
   export function isValidUint32Pair(lowBytes: number, highBytes: number): boolean {
     // Detect local ID of zero
     return 0 !== lowBytes || 0 !== (highBytes & 0x000000ff);
