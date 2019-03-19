@@ -26,6 +26,7 @@ function createBuilder(): ProgramBuilder {
   return builder;
 }
 
+/** @internal */
 export function createPointCloudBuilder(classified: IsClassified, featureMode: FeatureMode): ProgramBuilder {
   const builder = createBuilder();
 
@@ -49,6 +50,7 @@ export function createPointCloudBuilder(classified: IsClassified, featureMode: F
   return builder;
 }
 
+/** @internal */
 export function createPointCloudHiliter(classified: IsClassified): ProgramBuilder {
   const builder = createBuilder();
   addUniformHiliter(builder);

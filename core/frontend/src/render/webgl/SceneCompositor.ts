@@ -18,7 +18,6 @@ import { GL } from "./GL";
 import { RenderCommands, ShaderProgramParams, DrawParams, DrawCommands, BatchPrimitiveCommand } from "./DrawCommand";
 import { RenderState } from "./RenderState";
 import { CompositeFlags, RenderPass, RenderOrder } from "./RenderFlags";
-import { FloatRgba } from "./FloatRGBA";
 import { BatchState } from "./BranchState";
 import { Feature } from "@bentley/imodeljs-common";
 import { Debug } from "./Diagnostics";
@@ -26,6 +25,7 @@ import { Debug } from "./Diagnostics";
 let progParams: ShaderProgramParams | undefined;
 let drawParams: DrawParams | undefined;
 
+/** @internal */
 export function getDrawParams(target: Target, geometry: CachedGeometry): DrawParams {
   if (undefined === progParams) {
     progParams = new ShaderProgramParams();
@@ -375,8 +375,10 @@ class PixelBuffer implements Pixel.Buffer {
   }
 }
 
-// Orchestrates rendering of the scene on behalf of a Target.
-// This base class exists only so we don't have to export all the types of the shared Compositor members like Textures, FrameBuffers, etc.
+/** Orchestrates rendering of the scene on behalf of a Target.
+ * This base class exists only so we don't have to export all the types of the shared Compositor members like Textures, FrameBuffers, etc.
+ * @internal
+ */
 export abstract class SceneCompositor implements IDisposable {
   public readonly target: Target;
 
@@ -1253,7 +1255,7 @@ class MPCompositor extends Compositor {
   protected getBackgroundFbo(needComposite: boolean): FrameBuffer { return needComposite ? this._fbos.opaqueAndCompositeColor! : this._fbos.opaqueColor!; }
 
   protected clearOpaque(needComposite: boolean): void {
-    const bg = FloatRgba.fromColorDef(this.target.bgColor);
+    const bg = this.target.bgColor;
     this.clearFbo(needComposite ? this._fbos.opaqueAndCompositeColor! : this._fbos.opaqueColor!, bg.red, bg.green, bg.blue, bg.alpha, true);
     this.clearFbo(this._fbos.depthAndOrder!, 0, 0, 0, 0, true);
     this.clearFbo(this._fbos.featureId!, 0, 0, 0, 0, true);

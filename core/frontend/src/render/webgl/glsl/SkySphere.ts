@@ -83,6 +83,7 @@ function setPointsFromFrustum(skyGeometry: SkySphereViewportQuadGeometry, frustu
   wp[11] = mid.z;
 }
 
+/** @internal */
 export function createSkySphereProgram(context: WebGLRenderingContext, isGradient: boolean): ShaderProgram {
   const builder = createViewportQuadBuilder(false);
   if (isGradient) {

@@ -19,6 +19,7 @@ const assignFragData = `
   FragColor1 = TEXTURE(u_pickDepthAndOrder, v_texCoord);
 `;
 
+/** @internal */
 export function createCopyPickBuffersProgram(context: WebGLRenderingContext): ShaderProgram {
   const builder = createViewportQuadBuilder(true);
   const frag = builder.frag;

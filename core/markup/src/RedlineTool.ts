@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { Point3d, Vector3d } from "@bentley/geometry-core";
-import { BeButtonEvent, EventHandled, IModelApp } from "@bentley/imodeljs-frontend";
+import { BeButtonEvent, EventHandled, IModelApp, QuantityType, CoordinateLockOverrides } from "@bentley/imodeljs-frontend";
 import { Element as MarkupElement, Marker, SVG, G } from "@svgdotjs/svg.js";
 import { MarkupApp } from "./Markup";
 import { MarkupTool } from "./MarkupTool";
@@ -49,7 +49,7 @@ export abstract class RedlineTool extends MarkupTool {
   public onCleanup() { this.clearDynamicsMarkup(false); }
 
   public onReinitialize(): void {
-    this.clearDynamicsMarkup(false); // ### TODO Should this be automatically cleared when installing a new tool?
+    this.clearDynamicsMarkup(false);
     super.onReinitialize();
   }
 
@@ -262,11 +262,24 @@ export class ArrowTool extends RedlineTool {
 
   protected showPrompt(): void { this.outputMarkupPrompt(0 === this._points.length ? "Arrow.Prompts.FirstPoint" : "Arrow.Prompts.NextPoint"); }
 
+  protected getOrCreateArrowMarker(color: string, arrowLength: number = 7, arrowWidth: number = 6): Marker {
+    // NOTE: Flashing doesn't currently affect markers, need support for "context-stroke" and "context-fill". For now encode color in name...
+    const arrowMarkerId = "ArrowMarker" + arrowLength + "x" + arrowWidth + "-" + color;
+    let marker = SVG("#" + arrowMarkerId) as Marker;
+    if (null === marker) {
+      marker = this.markup.svgContainer!.marker(arrowLength, arrowWidth).id(arrowMarkerId);
+      marker.polygon([0, 0, arrowLength, arrowWidth * 0.5, 0, arrowWidth]);
+      marker.attr("orient", "auto-start-reverse");
+      marker.attr("overflow", "visible"); // Don't clip the stroke that is being applied to allow the specified start/end to be used directly while hiding the arrow tail fully under the arrow head...
+      marker.attr("refX", arrowLength);
+      marker.css({ stroke: color, fill: color });
+    }
+    return marker;
+  }
+
   protected createMarkup(svgMarkup: G, ev: BeButtonEvent, isDynamics: boolean): void {
     if (this._points.length < (isDynamics ? this._nRequiredPoints - 1 : this._nRequiredPoints))
       return;
-    const arrowLength = 7;
-    const arrowWidth = 6;
     const start = this._points[0];
     const end = isDynamics ? MarkupApp.convertVpToVb(ev.viewPoint) : this._points[1];
     const vec = start.vectorTo(end);
@@ -275,17 +288,7 @@ export class ArrowTool extends RedlineTool {
     const element = svgMarkup.line(start.x, start.y, end.x, end.y);
     this.setCurrentStyle(element, false);
     element.attr("stroke-linecap", "round");
-    const color = element.css("stroke"); // ###TODO - Flashing doesn't currently affect markers, need support for "context-stroke" and "context-fill". For now encode color in name...
-    const arrowMarkerId = "ArrowMarker" + arrowLength + "x" + arrowWidth + "-" + color;
-    let marker = SVG("#" + arrowMarkerId) as Marker;
-    if (null === marker) {
-      marker = this.markup.svgMarkup!.marker(arrowLength, arrowWidth).id(arrowMarkerId);
-      marker.polygon([0, 0, arrowLength, arrowWidth * 0.5, 0, arrowWidth]);
-      marker.attr("orient", "auto-start-reverse");
-      marker.attr("overflow", "visible"); // Don't clip the stroke that is being applied to allow the specified start/end to be used directly while hiding the arrow tail fully under the arrow head...
-      marker.attr("refX", arrowLength);
-      marker.css({ stroke: color, fill: color });
-    }
+    const marker = this.getOrCreateArrowMarker(element.css("stroke"));
     const addToStart = ("start" === this._arrowPos || "both" === this._arrowPos);
     const addToEnd = ("end" === this._arrowPos || "both" === this._arrowPos);
     if (addToStart)
@@ -294,6 +297,68 @@ export class ArrowTool extends RedlineTool {
       element.marker("end", marker);
     if (!isDynamics)
       this.onAdded(element);
+  }
+}
+
+export class DistanceTool extends ArrowTool {
+  public static toolId = "Markup.Distance";
+  protected readonly _startPointWorld = new Point3d();
+
+  protected showPrompt(): void { this.outputMarkupPrompt(0 === this._points.length ? "Distance.Prompts.FirstPoint" : "Distance.Prompts.NextPoint"); }
+  protected setupAndPromptForNextAction(): void { super.setupAndPromptForNextAction(); IModelApp.accuSnap.enableSnap(true); IModelApp.toolAdmin.toolState.coordLockOvr = CoordinateLockOverrides.None; }
+
+  protected getFormattedDistance(distance: number): string | undefined {
+    const formatterSpec = IModelApp.quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Length);
+    if (undefined === formatterSpec)
+      return undefined;
+    return IModelApp.quantityFormatter.formatQuantity(distance, formatterSpec);
+  }
+
+  protected createMarkup(svgMarkup: G, ev: BeButtonEvent, isDynamics: boolean): void {
+    if (this._points.length < (isDynamics ? this._nRequiredPoints - 1 : this._nRequiredPoints))
+      return;
+    const start = this._points[0];
+    const end = isDynamics ? MarkupApp.convertVpToVb(ev.viewPoint) : this._points[1];
+    const vec = start.vectorTo(end);
+    if (!vec.normalizeInPlace())
+      return;
+    const formatterSpec = IModelApp.quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Length);
+    if (undefined === formatterSpec)
+      return;
+
+    const distanceLine = svgMarkup.line(start.x, start.y, end.x, end.y);
+    this.setCurrentStyle(distanceLine, false);
+    const marker = this.getOrCreateArrowMarker(distanceLine.css("stroke"));
+    distanceLine.marker("start", marker);
+    distanceLine.marker("end", marker);
+
+    const textWithBg = svgMarkup.group();
+    const loc = start.interpolate(0.5, end);
+    const distance = IModelApp.quantityFormatter.formatQuantity(this._startPointWorld.distance(ev.point), formatterSpec);
+    const text = svgMarkup.plain(distance).attr("text-anchor", "middle").translate(loc.x, loc.y);
+    this.setCurrentTextStyle(text);
+    const outline = text.getOutline();
+    this.setCurrentStyle(outline, true);
+    outline.css({ "stroke-width": 1 });
+    outline.addTo(textWithBg);
+    text.addTo(textWithBg);
+
+    if (!isDynamics) {
+      const markup = this.markup;
+      const undo = markup.undo;
+      undo.doGroup(() => { undo.onAdded(distanceLine); undo.onAdded(textWithBg); });
+      markup.selected.restart(textWithBg); // Select text+box so that user can freely position relative to distance line...
+    }
+  }
+
+  public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
+    if (undefined === await IModelApp.quantityFormatter.getFormatterSpecByQuantityType(QuantityType.Length)) {
+      this.onReinitialize();
+      return EventHandled.No;
+    }
+    if (0 === this._points.length)
+      this._startPointWorld.setFrom(ev.point);
+    return super.onDataButtonDown(ev);
   }
 }
 

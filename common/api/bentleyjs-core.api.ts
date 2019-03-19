@@ -452,7 +452,8 @@ module Id64 {
 
   function isValidId64(id: string): boolean;
 
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   function isValidUint32Pair(lowBytes: number, highBytes: number): boolean;
 
   function toIdSet(arg: Id64Arg): Id64Set;
@@ -804,7 +805,6 @@ module JsonUtils {
 
 // @public
 class Logger {
-  static addActivityId(mdata: any): void;
   static configureLevels(cfg: LoggerLevelsConfig): void;
   static getLevel(category: string): LogLevel | undefined;
   static initialize(logError: LogFunction | undefined, logWarning?: LogFunction | undefined, logInfo?: LogFunction | undefined, logTrace?: LogFunction | undefined): void;

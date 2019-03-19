@@ -62,6 +62,15 @@
         "NextPoint": "Identify end of arrow."
       }
     },
+    "Distance": {
+      "keyin": "Markup Distance",
+      "description": "Markup distance between points",
+      "flyover": "Markup Distance",
+      "Prompts": {
+        "FirstPoint": "Enter point to measure from.",
+        "NextPoint": "Enter point to measure to,"
+      }
+    },
     "Cloud": {
       "keyin": "Markup Cloud",
       "description": "Draw cloud",
@@ -85,7 +94,7 @@
       "description": "Place symbol",
       "flyover": "Markup Symbol",
       "Prompts": {
-        "FirstPoint": "Identity symbol center with click or tab, drag to identify symbol corner",
+        "FirstPoint": "Click to place symbol by center, drag to place symbol by corners.",
         "NextPoint": "Identify opposite corner of symbol."
       }
     },

@@ -7,7 +7,6 @@
 import { createViewportQuadBuilder } from "./ViewportQuad";
 import { VariableType, FragmentShaderComponent } from "../ShaderBuilder";
 import { ShaderProgram } from "../ShaderProgram";
-import { FloatRgba } from "../FloatRGBA";
 import { System } from "../System";
 
 const computeBaseColor = "return u_bgColor;";
@@ -18,13 +17,13 @@ const assignFragData = `
   FragColor2 = vec4(0.0);
 `;
 
+/** @internal */
 export function createClearPickAndColorProgram(context: WebGLRenderingContext): ShaderProgram {
   const builder = createViewportQuadBuilder(false);
   const frag = builder.frag;
   frag.addUniform("u_bgColor", VariableType.Vec4, (prog) => {
     prog.addProgramUniform("u_bgColor", (uniform, params) => {
-      const bgColor = FloatRgba.fromColorDef(params.target.bgColor);
-      bgColor.bind(uniform);
+      params.target.bgColor.bind(uniform);
     });
   });
 

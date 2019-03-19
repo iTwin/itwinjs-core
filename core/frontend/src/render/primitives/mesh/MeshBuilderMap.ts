@@ -16,6 +16,7 @@ import { GeometryList } from "../geometry/GeometryList";
 import { StrokesPrimitive } from "../Strokes";
 import { Feature, FeatureTable } from "@bentley/imodeljs-common";
 
+/** @internal */
 export class MeshBuilderMap extends Dictionary<MeshBuilderMap.Key, MeshBuilder> {
   public readonly range: Range3d;
   public readonly vertexTolerance: number;
@@ -157,6 +158,7 @@ export class MeshBuilderMap extends Dictionary<MeshBuilderMap.Key, MeshBuilder> 
   }
 }
 
+/** @internal */
 export namespace MeshBuilderMap {
   export class Key {
     public order: number = 0;

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Adds parameter for api-extractor to validate missing release tags",
+      "packageName": "@bentley/electron-manager",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/electron-manager",
+  "email": "akshay.madhukar@bentley.com"
+}

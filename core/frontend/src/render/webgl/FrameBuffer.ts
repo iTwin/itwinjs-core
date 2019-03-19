@@ -10,8 +10,10 @@ import { RenderBuffer } from "./RenderBuffer";
 import { GL } from "./GL";
 import { System } from "./System";
 
+/** @internal */
 export type DepthBuffer = RenderBuffer | TextureHandle;
 
+/** @internal */
 export const enum FrameBufferBindState {
   Unbound,
   Bound,
@@ -19,6 +21,7 @@ export const enum FrameBufferBindState {
   Suspended,
 }
 
+/** @internal */
 export class FrameBuffer implements IDisposable {
   private _fbo?: WebGLFramebuffer;
   private _bindState: FrameBufferBindState = FrameBufferBindState.Unbound;
@@ -140,6 +143,7 @@ interface Binding {
   withAttachments: boolean;
 }
 
+/** @internal */
 export class FrameBufferStack {
   // FrameBuffers within this array are not owned, as this is only a storage device holding references
   private readonly _stack: Binding[] = [];

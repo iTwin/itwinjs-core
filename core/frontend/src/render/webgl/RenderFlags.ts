@@ -4,7 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-/** Ordered list of render passes which produce a rendered frame. */
+/** Ordered list of render passes which produce a rendered frame.
+ * @internal
+ */
 export const enum RenderPass {
     None = 0xff,
     Background = 0,
@@ -25,14 +27,18 @@ export const enum RenderPass {
     COUNT,
 }
 
-/** Describes the type of geometry rendered by a ShaderProgram. */
+/** Describes the type of geometry rendered by a ShaderProgram.
+ * @internal
+ */
 export const enum GeometryType {
     IndexedTriangles,
     IndexedPoints,
     ArrayedPoints,
 }
 
-/** Reserved texture units for specific sampler variables, to avoid conflicts between shader components which each have their own textures. */
+/** Reserved texture units for specific sampler variables, to avoid conflicts between shader components which each have their own textures.
+ * @internal
+ */
 export enum TextureUnit {
     // For shaders which know exactly which textures will be used
     Zero = WebGLRenderingContext.TEXTURE0,
@@ -69,6 +75,7 @@ export enum TextureUnit {
  * sketched onto non-planar surfaces. When the depth test is ambiguous the planar geometry
  * is always on top of the non-planar surface. This addresses z-fighting when shapes are
  * sketched onto surfaces, e.g. as part of push-pull modeling workflows.
+ * @internal
  */
 export const enum RenderOrder {
     None = 0,
@@ -86,11 +93,15 @@ export const enum RenderOrder {
     PlanarSilhouette = Silhouette | PlanarBit,
 }
 
+/** @internal */
 export function isPlanar(order: RenderOrder): boolean { return order >= RenderOrder.PlanarBit; }
 
+/** @internal */
 export function isSurface(order: RenderOrder): boolean { return order <= RenderOrder.Surface || order === RenderOrder.PlanarSurface; }
 
-/** Flags indicating operations to be performed by the post-process composite step. */
+/** Flags indicating operations to be performed by the post-process composite step.
+ * @internal
+ */
 export const enum CompositeFlags {
     None = 0,
     Translucent = 1 << 0,
@@ -98,7 +109,9 @@ export const enum CompositeFlags {
     AmbientOcclusion = 1 << 2,
 }
 
-/** Describes attributes of a MeshGeometry object. Used to conditionally execute portion of shader programs. */
+/** Describes attributes of a MeshGeometry object. Used to conditionally execute portion of shader programs.
+ * @internal
+ */
 export const enum SurfaceFlags {
     None = 0,
     HasTexture = 1 << 0,
@@ -120,6 +133,7 @@ export const enum SurfaceFlags {
     HasColorAndNormal = 1 << 6,
 }
 
+/** @internal */
 export const enum OvrFlags {
     None = 0,
     Visibility = 1 << 0,
@@ -134,4 +148,5 @@ export const enum OvrFlags {
     Rgba = Rgb | Alpha,
 }
 
+/** @internal */
 export const enum IsTranslucent { No, Yes, Maybe }

@@ -21,6 +21,7 @@ import { ShaderProgramParams } from "./DrawCommand";
 import { dispose } from "@bentley/bentleyjs-core";
 import { RenderMemory } from "../System";
 
+/** @internal */
 export class PolylineGeometry extends LUTGeometry {
   public vertexParams: QParams3d;
   public features?: FeaturesInfo;

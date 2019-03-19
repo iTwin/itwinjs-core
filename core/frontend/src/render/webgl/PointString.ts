@@ -19,6 +19,7 @@ import { System } from "./System";
 import { ShaderProgramParams } from "./DrawCommand";
 import { RenderMemory } from "../System";
 
+/** @internal */
 export class PointStringGeometry extends LUTGeometry {
   public readonly vertexParams: QParams3d;
   public readonly features: FeaturesInfo | undefined;

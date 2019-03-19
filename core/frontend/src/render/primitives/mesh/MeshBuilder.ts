@@ -28,6 +28,7 @@ import { Triangle, TriangleKey, TriangleSet } from "../Primitives";
 import { Mesh } from "./MeshPrimitives";
 import { StrokesPrimitivePointLists } from "../Strokes";
 
+/** @internal */
 export class MeshBuilder {
   private _vertexMap?: VertexMap;
   private _triangleSet?: TriangleSet;
@@ -249,6 +250,7 @@ export class MeshBuilder {
   }
 }
 
+/** @internal */
 export namespace MeshBuilder {
   export interface Props extends Mesh.Props {
     tolerance: number;
@@ -265,6 +267,7 @@ export namespace MeshBuilder {
   }
 }
 
+/** @internal */
 export class MeshEdgeCreationOptions {
   public readonly type: MeshEdgeCreationOptions.Type;
   public readonly minCreaseAngle = 20.0 * Angle.radiansPerDegree;
@@ -277,6 +280,7 @@ export class MeshEdgeCreationOptions {
   constructor(type = MeshEdgeCreationOptions.Type.NoEdges) { this.type = type; }
 }
 
+/** @internal */
 export namespace MeshEdgeCreationOptions {
   export const enum Type {
     NoEdges = 0x0000,
@@ -289,6 +293,7 @@ export namespace MeshEdgeCreationOptions {
   }
 }
 
+/** @internal */
 export class MeshBuilderPolyface {
   public readonly polyface: Polyface;
   public readonly edgeOptions: MeshEdgeCreationOptions;

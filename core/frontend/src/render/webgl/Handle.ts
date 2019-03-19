@@ -11,11 +11,13 @@ import { Matrix3, Matrix4 } from "./Matrix";
 import { System } from "./System";
 import { Point3d } from "@bentley/geometry-core";
 
+/** @internal */
 export type BufferData = number | Int8Array | Int16Array | Int32Array | Uint8Array | Uint16Array | Uint32Array | Uint8ClampedArray | Float32Array | Float64Array | DataView | ArrayBuffer;
 
 /**
  * A handle to a WebGLBuffer, such as a vertex or index buffer.
  * The WebGLBuffer is allocated by the constructor and should be freed by a call to dispose().
+ * @internal
  */
 export class BufferHandle implements IDisposable {
   private _glBuffer?: WebGLBuffer;
@@ -92,6 +94,7 @@ function setScale(index: number, value: number, array: Float32Array) {
  * params[1] = origin.y
  * params[2] = scale.x
  * params[3] = scale.y
+ * @internal
  */
 export function qparams2dToArray(params: QParams2d): Float32Array {
   const arr = new Float32Array(4);
@@ -104,6 +107,7 @@ export function qparams2dToArray(params: QParams2d): Float32Array {
   return arr;
 }
 
+/** @internal */
 export function qorigin3dToArray(qorigin: Point3d): Float32Array {
   const origin = new Float32Array(3);
   origin[0] = qorigin.x;
@@ -112,6 +116,7 @@ export function qorigin3dToArray(qorigin: Point3d): Float32Array {
   return origin;
 }
 
+/** @internal */
 export function qscale3dToArray(qscale: Point3d): Float32Array {
   const scale = new Float32Array(3);
   setScale(0, qscale.x, scale);
@@ -120,14 +125,18 @@ export function qscale3dToArray(qscale: Point3d): Float32Array {
   return scale;
 }
 
-/** Converts 3d quantization params to a pair of Float32Arrays */
+/** Converts 3d quantization params to a pair of Float32Arrays
+ * @internal
+ */
 export function qparams3dToArray(params: QParams3d): { origin: Float32Array, scale: Float32Array } {
   const origin = qorigin3dToArray(params.origin);
   const scale = qscale3dToArray(params.scale);
   return { origin, scale };
 }
 
-/** A handle to a WebGLBuffer intended to hold quantized 2d points */
+/** A handle to a WebGLBuffer intended to hold quantized 2d points
+ * @internal
+ */
 export class QBufferHandle2d extends BufferHandle {
   public readonly params: Float32Array;
 
@@ -147,7 +156,9 @@ export class QBufferHandle2d extends BufferHandle {
   }
 }
 
-/* A handle to a WebGLBuffer intended to hold quantized 3d points */
+/* A handle to a WebGLBuffer intended to hold quantized 3d points
+ * @internal
+ */
 export class QBufferHandle3d extends BufferHandle {
   /** The quantization origin in x, y, and z */
   public readonly origin: Float32Array;
@@ -171,7 +182,9 @@ export class QBufferHandle3d extends BufferHandle {
   }
 }
 
-/** A handle to the location of an attribute within a shader program */
+/** A handle to the location of an attribute within a shader program
+ * @internal
+ */
 export class AttributeHandle {
   private readonly _glId: number;
 
@@ -213,7 +226,9 @@ const enum DataType {
   Int,
 }
 
-/** A handle to the location of a uniform within a shader program */
+/** A handle to the location of a uniform within a shader program
+ * @internal
+ */
 export class UniformHandle {
   private readonly _location: WebGLUniformLocation;
   private _type: DataType = DataType.Undefined;

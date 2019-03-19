@@ -8,14 +8,18 @@ import { Target } from "./Target";
 import { RenderPass } from "./RenderFlags";
 import { ClippingType } from "../System";
 
-/** Specifies how a TechniqueFlags handles feature table/overrides. */
+/** Specifies how a TechniqueFlags handles feature table/overrides.
+ * @internal
+ */
 export const enum FeatureMode {
   None,       // no features
   Pick,       // feature table only
   Overrides,  // feature table with symbology overrides
 }
 
-/** Meta data for what type of clip volume is being stored (mask or planes). */
+/** Meta data for what type of clip volume is being stored (mask or planes).
+ * @internal
+ */
 export class ClipDef {
   public type: ClippingType;
   public numberOfPlanes: number;
@@ -25,11 +29,18 @@ export class ClipDef {
   public static forPlanes(numPlanes: number) { return new ClipDef(ClippingType.Planes, numPlanes); }
 }
 
+/** @internal */
 export const enum IsInstanced { No, Yes }
+
+/** @internal */
 export const enum IsAnimated { No, Yes }
+
+/** @internal */
 export const enum IsClassified { No, Yes }
 
-/** Flags used to control which shader program is used by a rendering Technique. */
+/** Flags used to control which shader program is used by a rendering Technique.
+ * @internal
+ */
 export class TechniqueFlags {
   public clip: ClipDef = new ClipDef();
   public featureMode = FeatureMode.None;

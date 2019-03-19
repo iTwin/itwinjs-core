@@ -58,13 +58,16 @@ import { SpatialClassification } from "../../SpatialClassification";
 import { TileTree } from "../../tile/TileTree";
 import { SceneContext } from "../../ViewContext";
 
+/** @internal */
 export const enum ContextState {
   Uninitialized,
   Success,
   Error,
 }
 
-/** Describes the type of a render target. Used by Capabilities to represent maximum precision render target available on host system. */
+/** Describes the type of a render target. Used by Capabilities to represent maximum precision render target available on host system.
+ * @internal
+ */
 export const enum RenderType {
   TextureUnsignedByte,
   TextureHalfFloat,
@@ -74,6 +77,7 @@ export const enum RenderType {
 /**
  * Describes the type of a depth buffer. Used by Capabilities to represent maximum depth buffer precision available on host system.
  * Note: the commented-out values are unimplemented but left in place for reference, in case desired for future implementation.
+ * @internal
  */
 export const enum DepthType {
   RenderBufferUnsignedShort16,     // core to WebGL1
@@ -89,7 +93,9 @@ const forceNoDrawBuffers = false;
 const forceHalfFloat = false;
 const debugTextureLifetime = false;
 
-/** Describes the rendering capabilities of the host system. */
+/** Describes the rendering capabilities of the host system.
+ * @internal
+ */
 export class Capabilities {
   private _maxRenderType: RenderType = RenderType.TextureUnsignedByte;
   private _maxDepthType: DepthType = DepthType.RenderBufferUnsignedShort16;
@@ -268,7 +274,9 @@ export class Capabilities {
   }
 }
 
-/** Id map holds key value pairs for both materials and textures, useful for caching such objects. */
+/** Id map holds key value pairs for both materials and textures, useful for caching such objects.
+ * @internal
+ */
 export class IdMap implements IDisposable {
   /** Mapping of materials by their key values. */
   public readonly materials: Map<string, RenderMaterial>;
@@ -445,6 +453,7 @@ class TextureStats implements TextureMonitor {
   }
 }
 
+/** @internal */
 export type TextureBinding = WebGLTexture | undefined;
 
 const enum VertexAttribState {
@@ -454,6 +463,7 @@ const enum VertexAttribState {
   InstancedEnabled = Instanced | Enabled,
 }
 
+/** @internal */
 export class System extends RenderSystem {
   public readonly canvas: HTMLCanvasElement;
   public readonly currentRenderState = new RenderState();

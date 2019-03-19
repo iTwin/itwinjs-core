@@ -22,6 +22,7 @@ import { SurfaceType } from "../primitives/VertexTable";
 import { MeshGraphic } from "./Mesh";
 import { ClipPlanesVolume } from "./ClipVolume";
 
+/** @internal */
 export class ShaderProgramParams {
   private _target?: Target;
   private _renderPass: RenderPass = RenderPass.None;
@@ -53,6 +54,7 @@ export class ShaderProgramParams {
 
 const _scratchTransform = Transform.createIdentity();
 
+/** @internal */
 export class DrawParams {
   private _programParams?: ShaderProgramParams;
   private _geometry?: CachedGeometry;
@@ -105,7 +107,9 @@ export class DrawParams {
   }
 }
 
-/** Defines operation associated with pushing or popping a branch */
+/** Defines operation associated with pushing or popping a branch
+ * @internal
+ */
 export const enum PushOrPop {
   Push,
   Pop,
@@ -115,6 +119,7 @@ export const enum PushOrPop {
  * Represents a command to be executed within a RenderPass. The most common command is
  * to draw a primitive; others involve state changes such as pushing/popping transforms
  * and symbology overrides, which require that commands be executed in order.
+ * @internal
  */
 export const enum OmitStatus {
   Neutral = 0,
@@ -122,6 +127,7 @@ export const enum OmitStatus {
   End = -1,
 }
 
+/** @internal */
 export abstract class DrawCommand {
   public preExecute(_exec: ShaderProgramExecutor): void { }
   public abstract execute(_exec: ShaderProgramExecutor): void;
@@ -214,7 +220,9 @@ class PrimitiveCommand extends DrawCommand {
   public execute(exec: ShaderProgramExecutor): void { this._primitive.draw(exec); }
 }
 
-/** Draw a batch primitive, possibly with symbology overridden per-feature */
+/** Draw a batch primitive, possibly with symbology overridden per-feature
+ * @internal
+ */
 export class BatchPrimitiveCommand extends PrimitiveCommand {
   private readonly _batch: Batch;
 
@@ -244,10 +252,14 @@ export class BatchPrimitiveCommand extends PrimitiveCommand {
   }
 }
 
-/** For a single RenderPass, an ordered list of commands to be executed during that pass. */
+/** For a single RenderPass, an ordered list of commands to be executed during that pass.
+ * @internal
+ */
 export type DrawCommands = DrawCommand[];
 
-/** A list of DrawCommands to be rendered, ordered by render pass. */
+/** A list of DrawCommands to be rendered, ordered by render pass.
+ * @internal
+ */
 export class RenderCommands {
   private _frustumPlanes?: FrustumPlanes;
   private readonly _scratchFrustum = new Frustum();

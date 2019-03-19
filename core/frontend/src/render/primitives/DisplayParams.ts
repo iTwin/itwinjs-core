@@ -14,7 +14,9 @@ function compareTextureMappings(lhs?: TextureMapping, rhs?: TextureMapping): num
   return comparePossiblyUndefined((lhTex: TextureMapping, rhTex: TextureMapping) => lhTex === rhTex ? 0 : compareStringsOrUndefined(lhTex.texture.key, rhTex.texture.key), lhs, rhs);
 }
 
-/** This class is used to determine if things can be batched together for display. */
+/** This class is used to determine if things can be batched together for display.
+ * @internal
+ */
 export class DisplayParams {
   public static readonly minTransparency: number = 15;  // Threshold below which we consider a color fully opaque
   public readonly type: DisplayParams.Type = DisplayParams.Type.Mesh;
@@ -171,6 +173,7 @@ export class DisplayParams {
   }
 }
 
+/** @internal */
 export namespace DisplayParams {
   export enum Type {
     Mesh,

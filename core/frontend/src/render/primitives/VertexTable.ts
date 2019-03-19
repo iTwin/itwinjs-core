@@ -30,6 +30,7 @@ import { IModelApp } from "../../IModelApp";
 /**
  * Holds an array of indices into a VertexTable. Each index is a 24-bit unsigned integer.
  * The order of the indices specifies the order in which vertices are drawn.
+ * @internal
  */
 export class VertexIndices {
   public readonly data: Uint8Array;
@@ -101,7 +102,9 @@ function computeDimensions(nEntries: number, nRgbaPerEntry: number, nExtraRgba: 
 
 const scratchColorDef = new ColorDef();
 
-/** Describes a VertexTable. */
+/** Describes a VertexTable.
+ * @internal
+ */
 export interface VertexTableProps {
   /** The rectangular array of vertex data, of size width*height*numRgbaPerVertex bytes. */
   readonly data: Uint8Array;
@@ -133,6 +136,7 @@ export interface VertexTableProps {
  * This allows vertex data to be uploaded to the GPU as a texture and vertex data to be sampled
  * from that texture using a single vertex ID representing an index into the array.
  * Vertex color is identified by a 16-bit index into a color table appended to the vertex data.
+ * @internal
  */
 export class VertexTable implements VertexTableProps {
   /** The rectangular array of vertex data, of size width*height*numRgbaPerVertex bytes. */
@@ -213,7 +217,9 @@ export class VertexTable implements VertexTableProps {
   }
 }
 
-/** Describes point string geometry to be submitted to the rendering system. */
+/** Describes point string geometry to be submitted to the rendering system.
+ * @internal
+ */
 export class PointStringParams {
   public readonly vertices: VertexTable;
   public readonly indices: VertexIndices;
@@ -266,6 +272,7 @@ const enum PolylineParam {
  * Represents a tesselated polyline.
  * Given a polyline as a line string, each segment of the line string is triangulated into a quad.
  * Based on the angle between two segments, additional joint triangles may be inserted in between to enable smoothly-rounded corners.
+ * @internal
  */
 export interface TesselatedPolyline {
   /** 24-bit index of each vertex. */
@@ -433,6 +440,7 @@ class PolylineTesselator {
   }
 }
 
+/** @internal */
 export const enum SurfaceType {
   Unlit,
   Lit,
@@ -441,6 +449,7 @@ export const enum SurfaceType {
   VolumeClassifier,
 }
 
+/** @internal */
 export function isValidSurfaceType(value: number): boolean {
   switch (value) {
     case SurfaceType.Unlit:
@@ -454,6 +463,7 @@ export function isValidSurfaceType(value: number): boolean {
   }
 }
 
+/** @internal */
 export interface SurfaceParams {
   readonly type: SurfaceType;
   readonly indices: VertexIndices;
@@ -467,6 +477,7 @@ export interface SurfaceParams {
  * Describes a set of line segments representing edges of a mesh.
  * Each segment is expanded into a quad defined by two triangles.
  * The positions are adjusted in the shader to account for the edge width.
+ * @internal
  */
 export interface SegmentEdgeParams {
   /** The 24-bit indices of the tesselated line segment */
@@ -546,6 +557,7 @@ function convertPolylinesAndEdges(polylines?: PolylineData[], edges?: MeshEdge[]
  * A set of line segments representing edges of curved portions of a mesh.
  * Each vertex is augmented with a pair of oct-encoded normals used in the shader
  * to determine whether or not the edge should be displayed.
+ * @internal
  */
 export interface SilhouetteParams extends SegmentEdgeParams {
   /** Per index, 2 16-bit oct-encoded normals */

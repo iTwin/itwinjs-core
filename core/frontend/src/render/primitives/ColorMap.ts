@@ -7,6 +7,7 @@
 import { assert, IndexMap, compareNumbers } from "@bentley/bentleyjs-core";
 import { ColorDef, ColorIndex } from "@bentley/imodeljs-common";
 
+/** @internal */
 export class ColorMap extends IndexMap<number> {
   private _hasTransparency: boolean = false;
 

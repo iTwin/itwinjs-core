@@ -85,7 +85,7 @@ export class MarkupApp {
       text: {
         "font-family": "sans-serif",
         "font-size": "30px",
-        "stroke": "red",
+        "stroke": "none",
         "fill": "red",
       },
       /** the CSS style properties of new elements. */

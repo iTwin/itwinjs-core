@@ -155,6 +155,7 @@ function createBase(isSilhouette: boolean, instanced: IsInstanced, isAnimated: I
   return builder;
 }
 
+/** @internal */
 export function createEdgeBuilder(isSilhouette: boolean, instanced: IsInstanced, isAnimated: IsAnimated): ProgramBuilder {
   const builder = createBase(isSilhouette, instanced, isAnimated);
   addShaderFlags(builder);

@@ -1,6 +1,6 @@
 {
   "name": "@bentley/geometry-core",
-  "version": "0.191.0-dev.8",
+  "version": "0.191.0-dev.9",
   "license": "MIT",
   "description": "Bentley Core Geometry library",
   "main": "lib/geometry-core.js",
@@ -10,7 +10,7 @@
     "clean": "rimraf ./lib ./src/test/output package-deps.json",
     "watch": "tsc --watch",
     "test": "node ./node_modules/@bentley/build-tools/scripts/test.js",
-    "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=geometry-core",
+    "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=geometry-core --ignoreMissingTags",
     "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --source=./src --tsIndexFile=./geometry-core.ts --json=../../generated-docs/core/geometry-core/file.json --onlyJson %TYPEDOC_THEME%",
     "cover": "nyc npm test",
     "cover:docs": "node ./node_modules/@bentley/build-tools/scripts/docscoverage.js",
@@ -39,8 +39,8 @@
     "url": "http://www.bentley.com"
   },
   "devDependencies": {
-    "@bentley/build-tools": "0.191.0-dev.8",
-    "@bentley/webpack-tools": "0.191.0-dev.8",
+    "@bentley/build-tools": "0.191.0-dev.9",
+    "@bentley/webpack-tools": "0.191.0-dev.9",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^5.2.5",
     "@types/node": "10.14.1",

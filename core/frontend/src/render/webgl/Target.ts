@@ -30,7 +30,9 @@ import { SingleTexturedViewportQuadGeometry } from "./CachedGeometry";
 import { ShaderLights } from "./Lighting";
 import { ClipDef } from "./TechniqueFlags";
 import { ClipMaskVolume, ClipPlanesVolume } from "./ClipVolume";
+import { FloatRgba } from "./FloatRGBA";
 
+/** @internal */
 export const enum FrustumUniformType {
   TwoDee,
   Orthographic,
@@ -50,7 +52,9 @@ const enum FrustumData {
   kType,
 }
 
-/** Represents the frustum for use in glsl as a pair of uniforms. */
+/** Represents the frustum for use in glsl as a pair of uniforms.
+ * @internal
+ */
 export class FrustumUniforms {
   private _planeData: Float32Array;
   private _frustumData: Float32Array;
@@ -89,7 +93,9 @@ export class FrustumUniforms {
   }
 }
 
-/** Interface for 3d GPU clipping. */
+/** Interface for 3d GPU clipping.
+ * @internal
+ */
 export class Clips {
   private _texture?: TextureHandle;
   private _clipActive: number = 0;   // count of SetActiveClip nesting (only outermost used)
@@ -118,7 +124,9 @@ export class Clips {
   }
 }
 
-/** Active classifiers - only the innermost is used. */
+/** Active classifiers - only the innermost is used.
+ * @internal
+ */
 export class PlanarClassifiers {
   private _classifiers: PlanarClassifier[] = new Array<PlanarClassifier>();
 
@@ -128,6 +136,8 @@ export class PlanarClassifiers {
   public push(texture: PlanarClassifier) { this._classifiers.push(texture); }
   public pop() { this._classifiers.pop(); }
 }
+
+/** @internal */
 export class PerformanceMetrics {
   private _lastTimePoint = BeTimePoint.now();
   public frameTimings = new Map<string, number>();
@@ -180,6 +190,7 @@ function swapImageByte(image: ImageBuffer, i0: number, i1: number) {
   image.data[i1] = tmp;
 }
 
+/** @internal */
 export abstract class Target extends RenderTarget {
   protected _decorations?: Decorations;
   private _stack = new BranchStack();
@@ -211,9 +222,10 @@ export abstract class Target extends RenderTarget {
   public performanceMetrics?: PerformanceMetrics;
   public readonly decorationState = BranchState.createForDecorations(); // Used when rendering view background and view/world overlays.
   public readonly frustumUniforms = new FrustumUniforms();
-  public readonly bgColor = ColorDef.red.clone();
-  public readonly monoColor = ColorDef.white.clone();
+  public readonly bgColor = FloatRgba.fromColorDef(ColorDef.red);
+  public readonly monoColor = FloatRgba.fromColorDef(ColorDef.white);
   public hiliteSettings = new Hilite.Settings();
+  public hiliteColor = FloatRgba.fromColorDef(this.hiliteSettings.color);
   public readonly planFrustum = new Frustum();
   public readonly renderRect = new ViewRect();
   private _planFraction: number = 0;
@@ -536,9 +548,10 @@ export abstract class Target extends RenderTarget {
       return;
     }
 
-    this.bgColor.setFrom(plan.bgColor);
-    this.monoColor.setFrom(plan.monoColor);
+    this.bgColor.setFromColorDef(plan.bgColor);
+    this.monoColor.setFromColorDef(plan.monoColor);
     this.hiliteSettings = plan.hiliteSettings;
+    this.hiliteColor.setFromColorDef(this.hiliteSettings.color);
     this.isFadeOutActive = plan.isFadeOutActive;
     this._transparencyThreshold = 0.0;
     this.analysisStyle = plan.analysisStyle === undefined ? undefined : plan.analysisStyle.clone();
@@ -1019,7 +1032,7 @@ export abstract class Target extends RenderTarget {
     // They indicate this by supplying a background color with full transparency
     // Any other pixels are treated as fully-opaque as alpha has already been blended
     // ###TODO: This introduces a defect in that we are not preserving alpha of translucent pixels, and therefore the returned image cannot be blended
-    const preserveBGAlpha = 0x00 === this.bgColor.getAlpha();
+    const preserveBGAlpha = 0.0 === this.bgColor.alpha;
 
     // Optimization for view attachments: if image consists entirely of background pixels, return an undefined
     let isEmptyImage = true;
@@ -1065,7 +1078,9 @@ export abstract class Target extends RenderTarget {
   protected abstract _endPaint(): void;
 }
 
-/** A Target that renders to a canvas on the screen */
+/** A Target that renders to a canvas on the screen
+ * @internal
+ */
 export class OnScreenTarget extends Target {
   private readonly _canvas: HTMLCanvasElement;
   private _blitGeom?: SingleTexturedViewportQuadGeometry;
@@ -1234,6 +1249,7 @@ export class OnScreenTarget extends Target {
   }
 }
 
+/** @internal */
 export class OffScreenTarget extends Target {
   private _animationFraction: number = 0;
 
@@ -1297,6 +1313,7 @@ function normalizedDifference(p0: Point3d, p1: Point3d, out?: Vector3d): Vector3
   return result;
 }
 
+/** @internal */
 export function fromSumOf(p: Point3d, v: Vector3d, scale: number, out?: Point3d) {
   const result = undefined !== out ? out : new Point3d();
   result.x = p.x + v.x * scale;

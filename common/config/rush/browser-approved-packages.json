@@ -31,6 +31,10 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "@bentley/express-server",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "@bentley/geometry-core",
       "allowedCategories": [ "backend", "common", "frontend", "internal" ]
     },
@@ -324,7 +328,7 @@
     },
     {
       "name": "express",
-      "allowedCategories": [ "common", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "internal", "tools" ]
     },
     {
       "name": "express-session",

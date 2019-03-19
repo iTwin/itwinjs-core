@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { ColorDef } from "@bentley/imodeljs-common";
 import {
   ProgramBuilder,
   FragmentShaderBuilder,
@@ -21,7 +20,6 @@ import { addAnimation } from "./Animation";
 import { GLSLDecode } from "./Decode";
 import { addColor } from "./Color";
 import { addLighting } from "./Lighting";
-import { FloatPreMulRgba } from "../FloatRGBA";
 import { addSurfaceDiscard, FeatureSymbologyOptions, addFeatureSymbology, addSurfaceHiliter } from "./FeatureSymbology";
 import { addShaderFlags, GLSLCommon } from "./Common";
 import { SurfaceFlags, TextureUnit } from "../RenderFlags";
@@ -30,6 +28,8 @@ import { Material } from "../Material";
 import { System } from "../System";
 import { assert } from "@bentley/bentleyjs-core";
 import { addColorPlanarClassifier, addHilitePlanarClassifier, addFeaturePlanarClassifier } from "./PlanarClassification";
+import { MutableFloatRgb, FloatRgba } from "../FloatRGBA";
+import { ColorDef } from "@bentley/imodeljs-common";
 
 const sampleSurfaceTexture = `
   vec4 sampleSurfaceTexture() {
@@ -50,6 +50,7 @@ const applyMaterialOverrides = `
   return mix(matColor, g_surfaceTexel, textureWeight);
 `;
 
+/** @internal */
 export function addMaterial(frag: FragmentShaderBuilder): void {
   // ###TODO: We could pack rgb, alpha, and override flags into two floats.
   frag.addFunction(GLSLFragment.revertPreMultipliedAlpha);
@@ -99,6 +100,7 @@ function createCommon(instanced: IsInstanced, animated: IsAnimated, classified: 
   return builder;
 }
 
+/** @internal */
 export function createSurfaceHiliter(instanced: IsInstanced, classified: IsClassified): ProgramBuilder {
   const builder = createCommon(instanced, IsAnimated.No, classified);
 
@@ -161,6 +163,7 @@ const computeSurfaceFlags = `
   return flags;
 `;
 
+/** @internal */
 export const octDecodeNormal = `
 vec3 octDecodeNormal(vec2 e) {
   e = e / 255.0 * 2.0 - 1.0;
@@ -286,6 +289,10 @@ function addTexture(builder: ProgramBuilder, animated: IsAnimated) {
   });
 }
 
+const scratchBgColor: MutableFloatRgb = MutableFloatRgb.fromColorDef(ColorDef.white);
+const blackColor = FloatRgba.fromColorDef(ColorDef.black);
+
+/** @internal */
 export function createSurfaceBuilder(feat: FeatureMode, isInstanced: IsInstanced, isAnimated: IsAnimated, isClassified: IsClassified): ProgramBuilder {
   const builder = createCommon(isInstanced, isAnimated, isClassified);
   addShaderFlags(builder);
@@ -299,9 +306,9 @@ export function createSurfaceBuilder(feat: FeatureMode, isInstanced: IsInstanced
   builder.frag.set(FragmentShaderComponent.FinalizeBaseColor, applyBackgroundColor);
   builder.frag.addUniform("u_bgColor", VariableType.Vec3, (prog) => {
     prog.addProgramUniform("u_bgColor", (uniform, params) => {
-      const bgColor: ColorDef = params.target.bgColor;
-      const rgbColor: FloatPreMulRgba = FloatPreMulRgba.fromColorDef(bgColor);
-      uniform.setUniform3fv(new Float32Array([rgbColor.red, rgbColor.green, rgbColor.blue]));
+      const bgColor = params.target.bgColor.alpha === 0.0 ? blackColor : params.target.bgColor;
+      scratchBgColor.setRgbValues(bgColor.red, bgColor.green, bgColor.blue);
+      scratchBgColor.bind(uniform);
     });
   });
 
@@ -347,6 +354,7 @@ export function createSurfaceBuilder(feat: FeatureMode, isInstanced: IsInstanced
 // non-transparent pixel of it.
 const discardTransparentTexel = `return isSurfaceBitSet(kSurfaceBit_HasTexture) && alpha == 0.0;`;
 
+/** @internal */
 export function addSurfaceDiscardByAlpha(frag: FragmentShaderBuilder): void {
   frag.set(FragmentShaderComponent.DiscardByAlpha, discardTransparentTexel);
 }

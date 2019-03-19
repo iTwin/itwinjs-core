@@ -4,8 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { BentleyCloudRpcManager } from "@bentley/imodeljs-common";
 import { rpcInterfaces } from "../common/TestRpcInterface";
-import { IModelJsExpressServer } from "@bentley/imodeljs-backend";
-import * as express from "express";
+import { IModelJsExpressServer } from "@bentley/express-server";
 
 import { registerBackendCallback } from "@bentley/certa/lib/utils/CallbackUtils";
 import { BackendTestCallbacks } from "../common/SideChannels";
@@ -18,8 +17,7 @@ async function init() {
 
   // create a basic express web server
   const port = Number(process.env.CERTA_PORT || 3021) + 2000;
-  const app = express();
-  const server = new IModelJsExpressServer(app, rpcConfig.protocol);
+  const server = new IModelJsExpressServer(rpcConfig.protocol);
   await server.initialize(port);
   // tslint:disable-next-line:no-console
   console.log("Web backend for integration-tests listening on port " + port);

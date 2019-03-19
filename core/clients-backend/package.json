@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-clients-backend",
-  "version": "0.191.0-dev.8",
+  "version": "0.191.0-dev.9",
   "description": "Clients for various Bentley Services used by iModel.js at the backend",
   "main": "lib/imodeljs-clients-backend.js",
   "browser": {
@@ -19,7 +19,7 @@
     "cover": "npm run copy:test-assets && nyc npm test",
     "cover:integration": "npm run copy:test-assets && nyc --report-dir ./lib/test/coverage/integration npm run test-integration",
     "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-clients-backend/file.json --tsIndexFile=imodeljs-clients-backend.ts --onlyJson %TYPEDOC_THEME%",
-    "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=imodeljs-clients-backend",
+    "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=imodeljs-clients-backend --ignoreMissingTags",
     "lint": "tslint --project . 1>&2",
     "pretest": "rimraf \"./lib/test/*.log\" && npm run copy:test-assets",
     "test": "npm run pretest && node ./node_modules/@bentley/build-tools/scripts/test.js --offline=\"mock\" --grep=\"#integration|iModelHub URL Whitelist Validator\" --invert",
@@ -38,20 +38,20 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^0.191.0-dev.8",
-    "@bentley/geometry-core": "^0.191.0-dev.8",
-    "@bentley/imodeljs-clients": "^0.191.0-dev.8"
+    "@bentley/bentleyjs-core": "^0.191.0-dev.9",
+    "@bentley/geometry-core": "^0.191.0-dev.9",
+    "@bentley/imodeljs-clients": "^0.191.0-dev.9"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/bentleyjs-core": "0.191.0-dev.8",
-    "@bentley/build-tools": "0.191.0-dev.8",
-    "@bentley/config-loader": "0.191.0-dev.8",
-    "@bentley/geometry-core": "0.191.0-dev.8",
-    "@bentley/imodeljs-clients": "0.191.0-dev.8",
+    "@bentley/bentleyjs-core": "0.191.0-dev.9",
+    "@bentley/build-tools": "0.191.0-dev.9",
+    "@bentley/config-loader": "0.191.0-dev.9",
+    "@bentley/geometry-core": "0.191.0-dev.9",
+    "@bentley/imodeljs-clients": "0.191.0-dev.9",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^5.2.5",
     "@types/nock": "^9.1.2",

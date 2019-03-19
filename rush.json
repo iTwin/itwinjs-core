@@ -16,7 +16,8 @@
       "@types"
     ]
   },
-  "projects": [{
+  "projects": [
+    {
       "packageName": "@bentley/build-tools",
       "projectFolder": "tools/build",
       "reviewCategory": "tools",
@@ -194,6 +195,13 @@
     {
       "packageName": "@bentley/electron-manager",
       "projectFolder": "core/electron-manager",
+      "reviewCategory": "backend",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
+      "packageName": "@bentley/express-server",
+      "projectFolder": "core/express-server",
       "reviewCategory": "backend",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"

@@ -11,6 +11,7 @@ import {
 import { VertexTable } from "../primitives/VertexTable";
 import { assert } from "@bentley/bentleyjs-core";
 
+/** @internal */
 export class FeaturesInfo {
   public readonly uniform?: number;
 

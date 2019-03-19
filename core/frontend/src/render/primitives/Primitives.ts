@@ -7,22 +7,31 @@
 import { assert, SortedArray } from "@bentley/bentleyjs-core";
 import { GraphicBuilder } from "../GraphicBuilder";
 
+/** @internal */
 export namespace ToleranceRatio {
   export const vertex = 0.1;
   export const facetArea = 0.1;
 }
 
-// Specifies under what circumstances a GeometryAccumulator should generate normals.
+/** Specifies under what circumstances a GeometryAccumulator should generate normals.
+ * @internal
+ */
 export const enum NormalMode {
   Never,              // Never generate normals
   Always,             // Always generate normals
   CurvedSurfacesOnly, // Generate normals only for curved surfaces
 }
 
+/** @internal */
 export const enum SurfacesOnly { Yes = 1, No = 0 }  // Yes indicates polylines will not be generated, only meshes.
+
+/** @internal */
 export const enum PreserveOrder { Yes = 1, No = 0 } // Yes indicates primitives will not be merged, and the order in which they were added to the GraphicBuilder will be preserved.
+
+/** @internal */
 export const enum GenerateEdges { Yes = 1, No = 0 } // Yes indicates edges will be generated for surfaces
 
+/** @internal */
 export class GeometryOptions {
   public readonly normals: NormalMode;
   public readonly surfaces: SurfacesOnly;
@@ -41,6 +50,7 @@ export class GeometryOptions {
   }
 }
 
+/** @internal */
 export class Triangle {
   public readonly indices = new Uint32Array(3);
   public readonly visible = [true, true, true];
@@ -68,6 +78,7 @@ export class Triangle {
   public get isDegenerate() { return this.indices[0] === this.indices[1] || this.indices[0] === this.indices[2] || this.indices[1] === this.indices[2]; }
 }
 
+/** @internal */
 export class TriangleList {
   private readonly _flags: number[] = [];
   public readonly indices: number[] = [];
@@ -108,6 +119,7 @@ export class TriangleList {
   }
 }
 
+/** @internal */
 export class TriangleKey {
   private readonly _sortedIndices = new Uint32Array(3);
 
@@ -163,6 +175,7 @@ export class TriangleKey {
   }
 }
 
+/** @internal */
 export class TriangleSet extends SortedArray<TriangleKey> {
   public constructor() {
     super((lhs: TriangleKey, rhs: TriangleKey) => lhs.compare(rhs));

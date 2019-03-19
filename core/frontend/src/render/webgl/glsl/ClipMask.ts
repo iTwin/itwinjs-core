@@ -13,6 +13,7 @@ const computePosition = "return MAT_MVP * rawPos;";
 
 const computeBaseColor = "return vec4(1.0);";
 
+/** @internal */
 export function createClipMaskProgram(context: WebGLRenderingContext): ShaderProgram {
   const builder = new ProgramBuilder();
 

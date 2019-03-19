@@ -81,6 +81,7 @@ vec2 computeLineCodeTextureCoords(vec2 windowDir, vec4 projPos, float adjust) {
 }
 `;
 
+/** @internal */
 export const adjustWidth = `
 void adjustWidth(inout float width, vec2 d2, vec2 org) {
   // calculate slope based width adjustment for non-AA lines, widths 1 to 4
@@ -130,6 +131,7 @@ void adjustWidth(inout float width, vec2 d2, vec2 org) {
 }
 `;
 
+/** @internal */
 export function addLineCodeTexture(frag: FragmentShaderBuilder) {
   frag.addUniform("u_lineCodeTexture", VariableType.Sampler2D, (prog) => {
     prog.addProgramUniform("u_lineCodeTexture", (uniform) => {
@@ -141,6 +143,7 @@ export function addLineCodeTexture(frag: FragmentShaderBuilder) {
   });
 }
 
+/** @internal */
 export function addLineCode(prog: ProgramBuilder, args: string) {
   const vert = prog.vert;
   const frag = prog.frag;
@@ -344,6 +347,7 @@ const computePosition = `
 
 const lineCodeArgs = "g_windowDir, g_windowPos, miterAdjust";
 
+/** @internal */
 export function createPolylineBuilder(instanced: IsInstanced): ProgramBuilder {
   const builder = new ProgramBuilder(instanced ? ShaderBuilderFlags.InstancedVertexTable : ShaderBuilderFlags.VertexTable);
   addShaderFlags(builder);
@@ -358,6 +362,7 @@ export function createPolylineBuilder(instanced: IsInstanced): ProgramBuilder {
   return builder;
 }
 
+/** @internal */
 export function createPolylineHiliter(instanced: IsInstanced): ProgramBuilder {
   const builder = new ProgramBuilder(instanced ? ShaderBuilderFlags.InstancedVertexTable : ShaderBuilderFlags.VertexTable);
   addCommon(builder);

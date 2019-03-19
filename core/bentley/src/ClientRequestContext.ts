@@ -13,6 +13,7 @@ import { Guid } from "./Id";
  * [[AuthorizedClientRequestContext]].
  * @see [ClientRequestContext rules]($docs/learning/backend/managingclientrequestcontext.md).
  * @see [[AuthorizedClientRequestContext]]
+ * @public
  */
 export class ClientRequestContext {
 
@@ -62,7 +63,9 @@ export class ClientRequestContext {
   }
 }
 
-/** Serialized format for sending the client request context across the RPC layer */
+/** Serialized format for sending the client request context across the RPC layer
+ * @public
+ */
 export interface SerializedClientRequestContext {
   id: string;
   applicationId: string;

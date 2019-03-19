@@ -14,6 +14,7 @@ function addTexture(prog: ProgramBuilder) {
   prog.addInlineComputedVarying("v_texCoord", VariableType.Vec2, computeTexCoord);
 }
 
+/** @internal */
 export function createViewportQuadBuilder(textured: boolean): ProgramBuilder {
   const prog = new ProgramBuilder();
   prog.vert.set(VertexShaderComponent.ComputePosition, computePosition);

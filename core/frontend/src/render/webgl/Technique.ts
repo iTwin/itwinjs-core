@@ -35,7 +35,9 @@ import { createSkySphereProgram } from "./glsl/SkySphere";
 import { createAmbientOcclusionProgram } from "./glsl/AmbientOcclusion";
 import { createBlurProgram } from "./glsl/Blur";
 
-// Defines a rendering technique implemented using one or more shader programs.
+/** Defines a rendering technique implemented using one or more shader programs.
+ * @internal
+ */
 export interface Technique extends IDisposable {
   getShader(flags: TechniqueFlags): ShaderProgram;
 
@@ -43,7 +45,9 @@ export interface Technique extends IDisposable {
   compileShaders(): boolean;
 }
 
-// A rendering technique implemented using a single shader program, typically for some specialized purpose.
+/** A rendering technique implemented using a single shader program, typically for some specialized purpose.
+ * @internal
+ */
 export class SingularTechnique implements Technique {
   public readonly program: ShaderProgram;
 
@@ -64,7 +68,9 @@ const featureModes = [FeatureMode.None, FeatureMode.Pick, FeatureMode.Overrides]
 const scratchTechniqueFlags = new TechniqueFlags();
 const scratchHiliteFlags = new TechniqueFlags();
 
-// A rendering technique implemented using multiple shader programs, selected based on TechniqueFlags.
+/** A rendering technique implemented using multiple shader programs, selected based on TechniqueFlags.
+ * @internal
+ */
 export abstract class VariedTechnique implements Technique {
   private readonly _basicPrograms: ShaderProgram[] = [];
   private readonly _clippingPrograms: ClippingShaders[] = [];
@@ -437,7 +443,9 @@ class PointCloudTechnique extends VariedTechnique {
   }
 }
 
-// A collection of rendering techniques accessed by ID.
+/** A collection of rendering techniques accessed by ID.
+ * @internal
+ */
 export class Techniques implements IDisposable {
   private readonly _list = new Array<Technique>(); // indexed by TechniqueId, which may exceed TechniqueId.NumBuiltIn for dynamic techniques.
   private readonly _dynamicTechniqueIds = new Array<string>(); // technique ID = (index in this array) + TechniqueId.NumBuiltIn

@@ -4,17 +4,20 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Rendering */
 
+/** @internal */
 export interface AuxChannelProps {
   readonly name: string;
   readonly inputs: number[];
   readonly indices: number[];
 }
 
+/** @internal */
 export interface QuantizedAuxChannelProps extends AuxChannelProps {
   readonly qOrigin: number[];
   readonly qScale: number[];
 }
 
+/** @internal */
 export class AuxChannel implements AuxChannelProps {
   public readonly name: string;
   public readonly inputs: number[];
@@ -27,6 +30,7 @@ export class AuxChannel implements AuxChannelProps {
   }
 }
 
+/** @internal */
 export class AuxDisplacementChannel extends AuxChannel {
   public readonly qOrigin: Float32Array;
   public readonly qScale: Float32Array;
@@ -38,6 +42,7 @@ export class AuxDisplacementChannel extends AuxChannel {
   }
 }
 
+/** @internal */
 export class AuxParamChannel extends AuxChannel {
   public readonly qOrigin: number;
   public readonly qScale: number;
@@ -49,6 +54,7 @@ export class AuxParamChannel extends AuxChannel {
   }
 }
 
+/** @internal */
 export interface AuxChannelTableProps {
   /** Rectangular array of per-vertex data, of size width * height * numBytesPerVertex bytes. */
   readonly data: Uint8Array;
@@ -74,6 +80,7 @@ export interface AuxChannelTableProps {
  * The channels are interleaved in a rectangular array such that the data for each vertex is stored contiguously; that is, if a displacement and
  * a normal channel exist, then the first vertex's displacement is followed by the first vertex's normal, which is followed by the second
  * vertex's displacement and normal; and so on.
+ * @internal
  */
 export class AuxChannelTable {
   /** Rectangular array of per-vertex data, of size width * height * numBytesPerVertex bytes. */

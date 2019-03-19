@@ -8,6 +8,7 @@ import { assert, IDisposable } from "@bentley/bentleyjs-core";
 import { GL } from "./GL";
 import { System } from "./System";
 
+/** @internal */
 export class RenderBuffer implements IDisposable {
   private _glBuffer?: WebGLRenderbuffer;
 

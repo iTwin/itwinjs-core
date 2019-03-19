@@ -56,6 +56,7 @@ function getComputeColor(vert: VertexShaderBuilder, forwardBaseAlpha: boolean): 
 // Fragment
 const computeBaseColor = "return v_color;";
 
+/** @internal */
 export function addColor(builder: ProgramBuilder, forwardBaseAlpha: boolean = false) {
   // ShaderSource::AddRenderPass
   builder.vert.addUniform("u_color", VariableType.Vec4, (prog) => {
@@ -63,8 +64,7 @@ export function addColor(builder: ProgramBuilder, forwardBaseAlpha: boolean = fa
       const lutGeom = params.geometry.asLUT!;
       const color = lutGeom.getColor(params.target);
       if (color.isUniform) {
-        const rgba = color.uniform;
-        uniform.setUniform4fv(new Float32Array([rgba.red, rgba.green, rgba.blue, rgba.alpha]));
+        color.uniform.bind(uniform);
       }
     });
   });

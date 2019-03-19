@@ -27,6 +27,7 @@ import { TechniqueId } from "./TechniqueId";
 import { InstancedGraphicParams, RenderMemory } from "../System";
 import { InstanceBuffers } from "./InstancedGeometry";
 
+/** @internal */
 export class MeshData implements IDisposable {
   public readonly edgeWidth: number;
   public features?: FeaturesInfo;
@@ -65,6 +66,7 @@ export class MeshData implements IDisposable {
   }
 }
 
+/** @internal */
 export class MeshGraphic extends Graphic {
   public readonly meshData: MeshData;
   private readonly _primitives: Primitive[] = [];
@@ -133,7 +135,9 @@ export class MeshGraphic extends Graphic {
   public get surfaceType(): SurfaceType { return this.meshData.type; }
 }
 
-// Defines one aspect of the geometry of a mesh (surface or edges)
+/** Defines one aspect of the geometry of a mesh (surface or edges)
+ * @internal
+ */
 export abstract class MeshGeometry extends LUTGeometry {
   public readonly mesh: MeshData;
   protected readonly _numIndices: number;
@@ -176,6 +180,7 @@ export abstract class MeshGeometry extends LUTGeometry {
   }
 }
 
+/** @internal */
 export class EdgeGeometry extends MeshGeometry {
   protected readonly _indices: BufferHandle;
   protected readonly _endPointAndQuadIndices: BufferHandle;
@@ -223,6 +228,7 @@ export class EdgeGeometry extends MeshGeometry {
   }
 }
 
+/** @internal */
 export class SilhouetteEdgeGeometry extends EdgeGeometry {
   private readonly _normalPairs: BufferHandle;
 
@@ -253,6 +259,8 @@ export class SilhouetteEdgeGeometry extends EdgeGeometry {
     this._normalPairs = normalPairs;
   }
 }
+
+/** @internal */
 export class PolylineEdgeGeometry extends MeshGeometry {
   private _buffers: PolylineBuffers;
 
@@ -298,6 +306,7 @@ function wantLighting(vf: ViewFlags) {
   return RenderMode.SmoothShade === vf.renderMode && (vf.sourceLights || vf.cameraLights || vf.solarLight);
 }
 
+/** @internal */
 export class SurfaceGeometry extends MeshGeometry {
   private readonly _indices: BufferHandle;
 
@@ -357,7 +366,7 @@ export class SurfaceGeometry extends MeshGeometry {
 
   public getColor(target: Target) {
     if (FillFlags.Background === (this.fillFlags & FillFlags.Background))
-      return ColorInfo.createFromColorDef(target.bgColor);
+      return ColorInfo.createUniform(target.bgColor);
     else
       return this.colorInfo;
   }

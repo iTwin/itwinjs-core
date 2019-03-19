@@ -44,12 +44,14 @@ function createBase(instanced: IsInstanced): ProgramBuilder {
   return builder;
 }
 
+/** @internal */
 export function createPointStringHiliter(instanced: IsInstanced): ProgramBuilder {
   const builder = createBase(instanced);
   addHiliter(builder, true);
   return builder;
 }
 
+/** @internal */
 export function createPointStringBuilder(instanced: IsInstanced): ProgramBuilder {
   const builder = createBase(instanced);
   addShaderFlags(builder);

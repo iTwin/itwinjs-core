@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Adds parameter for api-extractor to validate missing release tags",
+      "packageName": "@bentley/presentation-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-components",
+  "email": "akshay.madhukar@bentley.com"
+}

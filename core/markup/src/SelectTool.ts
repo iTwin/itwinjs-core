@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { Point2d, Point3d, Transform, XAndY } from "@bentley/geometry-core";
 import { BeButtonEvent, BeModifierKeys, EventHandled, IModelApp, InputSource } from "@bentley/imodeljs-frontend";
-import { ArrayXY, Box, Circle, Element as MarkupElement, G, Line, Matrix, Point, Polygon, Svg, Text as MarkupText } from "@svgdotjs/svg.js";
+import { ArrayXY, Box, Circle, Element as MarkupElement, G, Line, Matrix, Point, Polygon, Container, Text as MarkupText } from "@svgdotjs/svg.js";
 import { MarkupApp } from "./Markup";
 import { EditTextTool } from "./TextEdit";
 import { UndoManager } from "./Undo";
@@ -379,7 +379,7 @@ export class SelectionSet {
     if (this.size < 2)
       return;
     const first = this.elements.values().next().value;
-    const parent = first.parent("svg") as Svg;
+    const parent = first.parent() as Container;
     const group = parent.group();
 
     const ordered: MarkupElement[] = [];

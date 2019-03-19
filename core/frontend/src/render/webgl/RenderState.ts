@@ -7,6 +7,7 @@
 import { GL } from "./GL";
 import { System } from "./System";
 
+/** @internal */
 export class RenderStateFlags {
   public cull: boolean = false;
   public depthTest: boolean = false;
@@ -75,6 +76,7 @@ export class RenderStateFlags {
   }
 }
 
+/** @internal */
 export class RenderStateBlend {
   public color: [number, number, number, number] = [0.0, 0.0, 0.0, 0.0];
   public equationRgb: GL.BlendEquation = GL.BlendEquation.Default;
@@ -160,6 +162,7 @@ export class RenderStateBlend {
   }
 }
 
+/** @internal */
 export class RenderStateStencilOperation {
   public fail: GL.StencilOperation = GL.StencilOperation.Default;
   public zFail: GL.StencilOperation = GL.StencilOperation.Default;
@@ -193,6 +196,7 @@ export class RenderStateStencilOperation {
   }
 }
 
+/** @internal */
 export class RenderStateStencilFunction {
   public function: GL.StencilFunction = GL.StencilFunction.Default;
   public ref: number = 0;
@@ -226,6 +230,7 @@ export class RenderStateStencilFunction {
   }
 }
 
+/** @internal */
 export class RenderStateStencil {
   public frontFunction: RenderStateStencilFunction = new RenderStateStencilFunction();
   public backFunction: RenderStateStencilFunction = new RenderStateStencilFunction();
@@ -286,6 +291,7 @@ export class RenderStateStencil {
  * System::ApplyRenderState().
  * The context tracks the most-recently applied RenderState, allowing it to minimize
  * the number of GL state changes actually invoked, improving performance.
+ * @internal
  */
 export class RenderState {
   public flags: RenderStateFlags = new RenderStateFlags();

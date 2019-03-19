@@ -8,17 +8,21 @@ import { FeatureIndexType } from "@bentley/imodeljs-common";
 import { System } from "./System";
 import { assert } from "@bentley/bentleyjs-core";
 
-/** Describes the dimensionality of a texture used as a look-up table. */
+/** Describes the dimensionality of a texture used as a look-up table.
+ * @internal
+ */
 export const enum LUTDimension {
   Uniform, //  uniform lookup table
   NonUniform, // 1- or 2-dimensional lookup table
 }
 
+/** @internal */
 export interface WidthAndHeight {
   readonly width: number;
   readonly height: number;
 }
 
+/** @internal */
 export class LUTParams implements WidthAndHeight {
   public readonly width: number;
   public readonly height: number;
@@ -26,7 +30,9 @@ export class LUTParams implements WidthAndHeight {
   public constructor(width: number, height: number) { this.width = width; this.height = height; }
 }
 
-/** Describes the dimensions of a texture used as a look-up table */
+/** Describes the dimensions of a texture used as a look-up table
+ * @internal
+ */
 export class LUTDimensions implements WidthAndHeight {
   public readonly width: number;
   public readonly height: number;
@@ -69,6 +75,7 @@ export class LUTDimensions implements WidthAndHeight {
   }
 }
 
+/** @internal */
 export const enum FeatureDimension {
   Empty,
   SingleUniform,
@@ -77,6 +84,7 @@ export const enum FeatureDimension {
   COUNT,
 }
 
+/** @internal */
 export function getFeatureName(dim: FeatureDimension): string {
   switch (dim) {
     case FeatureDimension.Empty: return "Empty";
@@ -87,6 +95,7 @@ export function getFeatureName(dim: FeatureDimension): string {
   }
 }
 
+/** @internal */
 export function computeFeatureDimension(dim: LUTDimension, type: FeatureIndexType) {
   switch (type) {
     case FeatureIndexType.Empty:

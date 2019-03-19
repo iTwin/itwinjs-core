@@ -1048,7 +1048,8 @@ enum ClipResult {
   OriginalElements = 2
 }
 
-// @public
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal
 class Clips {
   // (undocumented)
   clear(): void;
@@ -2083,7 +2084,8 @@ class FlyViewTool extends ViewManip {
   static toolId: string;
 }
 
-// @public (undocumented)
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal (undocumented)
 export function fromSumOf(p: Point3d, v: Vector3d, scale: number, out?: Point3d): Point3d;
 
 // @public
@@ -2091,7 +2093,8 @@ class FrontendRequestContext extends ClientRequestContext {
   constructor(activityId?: string);
 }
 
-// @public
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal
 class FrustumUniforms {
   constructor();
   // (undocumented)
@@ -2112,7 +2115,8 @@ class FrustumUniforms {
   readonly type: FrustumUniformType;
 }
 
-// @public (undocumented)
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal (undocumented)
 enum FrustumUniformType {
   // (undocumented)
   Orthographic = 1,
@@ -3447,7 +3451,8 @@ class NullTarget extends RenderTarget {
   readonly wantInvertBlackBackground: boolean;
 }
 
-// @public (undocumented)
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal (undocumented)
 class OffScreenTarget extends Target {
   constructor(rect: ViewRect);
   // (undocumented)
@@ -3502,7 +3507,8 @@ class OidcClientWrapper {
   static readonly oidcClient: IOidcFrontendClient;
 }
 
-// @public
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal
 class OnScreenTarget extends Target {
   constructor(canvas: HTMLCanvasElement);
   // (undocumented)
@@ -3639,7 +3645,8 @@ class PanViewTool extends ViewManip {
   static toolId: string;
 }
 
-// @public (undocumented)
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal (undocumented)
 class PerformanceMetrics {
   constructor(gatherGlFinish?: boolean, gatherCurPerformanceMetrics?: boolean);
   // (undocumented)
@@ -3732,7 +3739,8 @@ module Pixel {
 
 }
 
-// @public
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal
 class PlanarClassifiers {
   // WARNING: The type "PlanarClassifier" needs to be exported by the package (e.g. added to index.ts)
   // (undocumented)
@@ -5256,7 +5264,8 @@ class SyncFlags {
   setValidScene(): void;
 }
 
-// @public (undocumented)
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal (undocumented)
 class Target extends RenderTarget {
   protected constructor(rect?: ViewRect);
   // (undocumented)
@@ -5288,8 +5297,9 @@ class Target extends RenderTarget {
   // WARNING: The type "BatchState" needs to be exported by the package (e.g. added to index.ts)
   // (undocumented)
   readonly batchState: BatchState;
+  // WARNING: The type "FloatRgba" needs to be exported by the package (e.g. added to index.ts)
   // (undocumented)
-  readonly bgColor: ColorDef;
+  readonly bgColor: FloatRgba;
   // WARNING: The type "BranchStack" needs to be exported by the package (e.g. added to index.ts)
   // (undocumented)
   readonly branchStack: BranchStack;
@@ -5387,6 +5397,9 @@ class Target extends RenderTarget {
   readonly hiddenEdgeOverrides: EdgeOverrides | undefined;
   // (undocumented)
   readonly hilite: Id64.Uint32Set;
+  // WARNING: The type "FloatRgba" needs to be exported by the package (e.g. added to index.ts)
+  // (undocumented)
+  hiliteColor: FloatRgba;
   // (undocumented)
   hiliteSettings: Hilite.Settings;
   // (undocumented)
@@ -5403,8 +5416,9 @@ class Target extends RenderTarget {
   isFadeOutActive: boolean;
   // (undocumented)
   readonly isReadPixelsInProgress: boolean;
+  // WARNING: The type "FloatRgba" needs to be exported by the package (e.g. added to index.ts)
   // (undocumented)
-  readonly monoColor: ColorDef;
+  readonly monoColor: FloatRgba;
   // (undocumented)
   readonly nearPlaneCenter: Point3d;
   // WARNING: The type "Batch" needs to be exported by the package (e.g. added to index.ts)
