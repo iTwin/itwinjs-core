@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Upgrade TypeDoc dependency to 0.14.2",
+      "packageName": "@bentley/ecschema-metadata",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ecschema-metadata",
+  "email": "will.bentley@bentley.com"
+}

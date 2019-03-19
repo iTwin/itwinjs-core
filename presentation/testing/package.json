@@ -28,7 +28,7 @@
     "test": "mocha --opts mocha.opts lib/test/**/*.js"
   },
   "devDependencies": {
-    "typedoc": "^0.11.1",
+    "typedoc": "^0.14.2",
     "ignore-styles": "^5.0.1"
   },
   "dependencies": {

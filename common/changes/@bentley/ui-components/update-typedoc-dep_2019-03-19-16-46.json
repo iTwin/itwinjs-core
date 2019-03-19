@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Upgrade TypeDoc dependency to 0.14.2",
+      "packageName": "@bentley/ui-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "will.bentley@bentley.com"
+}
