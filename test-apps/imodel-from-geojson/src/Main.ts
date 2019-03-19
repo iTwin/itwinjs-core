@@ -34,6 +34,9 @@ const argv: yargs.Arguments<Args> = yargs
   .describe("point_radius", "Radius for point geometry")
   .number("point_radius")
   .alias("point_radius", "r")
+  .describe("color", "Add random colors")
+  .boolean("color")
+  .alias("color", "c")
   .demandOption(["input", "output"])
   .argv;
 
@@ -41,7 +44,7 @@ IModelHost.startup();
 Logger.initializeToConsole();
 
 const geoJson = new GeoJson(argv.input as string);
-const importer = new GeoJsonImporter(argv.output as string, geoJson, argv.append as boolean, argv.model_name as string, argv.label as string, argv.point_radius as number);
+const importer = new GeoJsonImporter(argv.output as string, geoJson, argv.append as boolean, argv.model_name as string, argv.label as string, argv.point_radius as number, argv.color as boolean);
 importer.import();
 
 IModelHost.shutdown();

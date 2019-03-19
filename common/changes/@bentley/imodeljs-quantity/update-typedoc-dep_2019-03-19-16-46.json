@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Upgrade TypeDoc dependency to 0.14.2",
+      "packageName": "@bentley/imodeljs-quantity",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-quantity",
+  "email": "will.bentley@bentley.com"
+}

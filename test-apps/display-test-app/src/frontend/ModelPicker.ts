@@ -5,15 +5,16 @@
 
 import { Viewport, SpatialViewState, SpatialModelState, GeometricModelState, SpatialClassification } from "@bentley/imodeljs-frontend";
 import { createCheckBox, CheckBox } from "./CheckBox";
+import { createComboBox, ComboBox } from "./ComboBox";
+import { createNumericInput } from "./NumericInput";
 import { ToolBarDropDown } from "./ToolBar";
-import { compareStringsOrUndefined, Id64String } from "@bentley/bentleyjs-core";
+import { compareStringsOrUndefined } from "@bentley/bentleyjs-core";
 
 export class ModelPicker extends ToolBarDropDown {
   private readonly _vp: Viewport;
   private readonly _element: HTMLElement;
   private readonly _parent: HTMLElement;
   private readonly _modelCheckBoxes: HTMLInputElement[] = [];
-  private readonly _modelClassifierCheckBoxes = new Map<Id64String, HTMLInputElement[]>();
   private _toggleAll?: HTMLInputElement;
   private readonly _models = new Set<string>();
 
@@ -34,6 +35,7 @@ export class ModelPicker extends ToolBarDropDown {
   protected _close(): void { this._element.style.display = "none"; }
   public get onViewChanged(): Promise<void> { return this.populate(); }
 
+  private showOrHide(element: HTMLElement, show: boolean) { if (element) element.style.display = show ? "block" : "none"; }
   // ###TODO: Unless the iModel changed we should be able to use the same set of spatial models regardless of active view...
   public async populate(): Promise<void> {
     this._models.clear();
@@ -56,7 +58,6 @@ export class ModelPicker extends ToolBarDropDown {
     const props = await view.iModel.models.queryProps(query);
     props.sort((lhs, rhs) => compareStringsOrUndefined(lhs.name, rhs.name));
 
-    let classifierIndex = 0;
     for (const prop of props) {
       if (undefined === prop.id || undefined === prop.name)
         continue;
@@ -87,42 +88,94 @@ export class ModelPicker extends ToolBarDropDown {
       const geometricModel = model as GeometricModelState;
       // If reality model with no classifiers -- add classifiers (for testing)
       if (model.jsonProperties && undefined !== model.jsonProperties.tilesetUrl && undefined === model.jsonProperties.classifiers)   // We need a better test for reality models.
+
         for (const otherProp of props)
           if (otherProp !== prop && undefined !== otherProp.id && undefined !== otherProp.name)
-            geometricModel.addClassifier(new SpatialClassification.Properties(otherProp.name, otherProp.id, 0.0));
+            geometricModel.addSpatialClassifier(new SpatialClassification.Properties({ name: otherProp.name, modelId: otherProp.id, expand: 1.0, flags: new SpatialClassification.Flags(), isActive: false }));
 
       const classifiers = undefined !== model ? model.jsonProperties.classifiers : undefined;
+      let insideCombo: ComboBox | undefined;
+      let outsideCombo: ComboBox | undefined;
+      let expandInput: HTMLInputElement | undefined;
       if (undefined !== geometricModel && undefined !== classifiers) {
         const div = document.createElement("div");
-        div.style.paddingLeft = "2em";
         cb.div.appendChild(div);
 
-        const classifierCheckBoxes = [];
-        for (const classifier of classifiers) {
-          const prefix = "classifier_";
-          const ccb = this.addCheckbox(classifier.name, prefix + classifierIndex++, classifier.isActive, async (enabled) => {
-            const indexString = ccb.checkbox.id.substring(prefix.length);
-            const index = parseInt(indexString, 10);
-            await geometricModel.setActiveClassifier(index, enabled);
-            this._vp.invalidateScene();
-            for (const otherCb of this._modelClassifierCheckBoxes.get(geometricModel.id)!)
-              if (otherCb !== ccb.checkbox) otherCb.checked = false;
-          }, div, "radio");
-          classifierCheckBoxes.push(ccb.checkbox);
-        }
-        const noneCb = this.addCheckbox("None", "classifierNone", false, async (enabled) => {
-          if (enabled) {
-            this._vp.invalidateScene();
-            for (let index = 0; index < classifiers.length; index++) await geometricModel.setActiveClassifier(index, false);
-            for (const otherCb of this._modelClassifierCheckBoxes.get(geometricModel.id)!)
-              if (otherCb !== noneCb.checkbox) otherCb.checked = false;
-          }
-        }, div, "radio");
-        classifierCheckBoxes.push(noneCb.checkbox);
-        this._modelClassifierCheckBoxes.set(model!.id, classifierCheckBoxes);
+        const entries = [{ name: "None", value: -1 }];
+        let classifier;
+        let activeClassifierIndex = geometricModel.getActiveSpatialClassifier();
+        let activeClassifier = (activeClassifierIndex >= 0) ? geometricModel.getSpatialClassifier(activeClassifierIndex) : undefined;
+        for (let i = 0; undefined !== (classifier = geometricModel.getSpatialClassifier(i)); i++)
+          entries.push({ name: classifier.name, value: i });
+
+        createComboBox({
+          parent: div,
+          name: "Classifier: ",
+          id: "Classifier_" + id,
+          value: activeClassifierIndex,
+          handler: (select) => {
+            activeClassifierIndex = Number.parseInt(select.value, 10);
+            geometricModel.setActiveSpatialClassifier(activeClassifierIndex, true).then((_) => {
+              activeClassifier = geometricModel.getSpatialClassifier(activeClassifierIndex);
+              this.showOrHide(insideCombo!.div, activeClassifier !== undefined);
+              this.showOrHide(outsideCombo!.div, activeClassifier !== undefined);
+              this.showOrHide(expandInput!, activeClassifier !== undefined);
+              if (activeClassifier) {
+                if (insideCombo) insideCombo.div.style.display = "block";
+                if (outsideCombo) outsideCombo.select.selectedIndex = activeClassifier.flags.outside;
+                if (expandInput) expandInput.value = activeClassifier.expand.toString();
+              }
+              this._vp.invalidateScene();
+            }).catch((_) => undefined);
+          },
+          entries,
+        });
+
+        insideCombo = createComboBox({
+          parent: div,
+          name: "Inside: ",
+          id: "ClassifierInside_" + id,
+          value: activeClassifier ? activeClassifier!.flags.inside : 1,
+          handler: (select) => {
+            if (activeClassifier) {
+              activeClassifier.flags.inside = Number.parseInt(select.value, 10);
+              geometricModel.setSpatialClassifier(activeClassifierIndex, activeClassifier);
+              this._vp.invalidateScene();
+            }
+          },
+          entries: [{ name: "Off", value: 0 }, { name: "On", value: 1 }, { name: "Dimmed", value: 2 }, { name: "Hilite", value: 3 }, { name: "Color", value: 4 }],
+        });
+        outsideCombo = createComboBox({
+          parent: div,
+          name: "Outside: ",
+          id: "ClassifierInside_" + id,
+          value: activeClassifier ? activeClassifier.flags.outside : 1,
+          handler: (select) => {
+            if (activeClassifier) {
+              activeClassifier.flags.outside = Number.parseInt(select.value, 10);
+              geometricModel.setSpatialClassifier(activeClassifierIndex, activeClassifier);
+              this._vp.invalidateScene();
+            }
+          },
+          entries: [{ name: "Off", value: 0 }, { name: "On", value: 1 }, { name: "Dimmed", value: 2 }],
+        });
+        expandInput = createNumericInput({
+          parent: div,
+          id: "ClassifierExpand_" + id,
+          value: activeClassifier ? activeClassifier.expand : 0.0,
+          handler: (select) => {
+            if (activeClassifier) {
+              activeClassifier.expand = select;
+              geometricModel.setSpatialClassifier(activeClassifierIndex, activeClassifier);
+              this._vp.invalidateScene();
+            }
+          },
+        });
+        this.showOrHide(insideCombo!.div, activeClassifier !== undefined);
+        this.showOrHide(outsideCombo!.div, activeClassifier !== undefined);
+        this.showOrHide(expandInput!, activeClassifier !== undefined);
       }
     }
-
     this._toggleAll.checked = areAllEnabled();
   }
 

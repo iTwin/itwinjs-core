@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Add spatial classifier UX ",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "ray.bentley@bentley.com"
+}

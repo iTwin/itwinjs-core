@@ -137,13 +137,14 @@ export abstract class GeometricModelState extends ModelState implements TileTree
   public loadTileTree(batchType: BatchType, edgesRequired: boolean, animationId?: Id64String, classifierExpansion?: number): TileTree.LoadStatus {
     const asClassifier = (BatchType.VolumeClassifier === batchType || BatchType.PlanarClassifier === batchType);
     const tileTreeState = asClassifier ? this._classifierTileTreeState : this._tileTreeState;
-    if (tileTreeState.edgesOmitted && edgesRequired)
+    if (tileTreeState.edgesOmitted && edgesRequired || (asClassifier && tileTreeState.classifierExpansion !== classifierExpansion))
       tileTreeState.clearTileTree();
 
     if (TileTree.LoadStatus.NotLoaded !== tileTreeState.loadStatus)
       return tileTreeState.loadStatus;
 
     tileTreeState.loadStatus = TileTree.LoadStatus.Loading;
+    tileTreeState.classifierExpansion = (classifierExpansion === undefined) ? 0.0 : classifierExpansion;
 
     if (!asClassifier && this.jsonProperties.tilesetUrl !== undefined) {
       RealityModelTileTree.loadRealityModelTileTree(this.jsonProperties.tilesetUrl, this.jsonProperties.tilesetToDbTransform, tileTreeState);
@@ -167,6 +168,7 @@ export abstract class GeometricModelState extends ModelState implements TileTree
       tileTreeState.setTileTree(result, loader);
 
       this._tileTreeState.edgesOmitted = !edgesRequired;
+
       IModelApp.viewManager.onNewTilesReady();
     }).catch((_err) => {
       // Retry in case of timeout; otherwise fail.
@@ -195,25 +197,52 @@ export abstract class GeometricModelState extends ModelState implements TileTree
     }
     return this._modelRange!;
   }
-  /** Get the list of model classifiers */
-  public getClassifiers(): Id64String[] {
-    const result = new Array<Id64String>();
-    const classifiers = this.jsonProperties.classifiers;
-    if (classifiers !== undefined)
-      for (const classifier of classifiers)
-        if (undefined !== classifier.id)
-          result.push(classifier.id);
 
-    return result;
+  /**   Get active spatial classifier
+   * @beta
+   */
+  public getActiveSpatialClassifier(): number {
+    if (this.jsonProperties !== undefined && this.jsonProperties.classifiers !== undefined) {
+      for (let index = 0; index < this.jsonProperties.classifiers.length; index++) {
+        if (this.jsonProperties.classifiers[index].isActive)
+          return index;
+      }
+    }
+    return -1;
   }
-  public async setActiveClassifier(classifierIndex: number, active: boolean) {
+  /** Get spatial classifier at  index
+   * @beta
+   */
+  public getSpatialClassifier(index: number): SpatialClassification.Properties | undefined {
+    if (index < 0 || undefined === this.jsonProperties.classifiers || index >= this.jsonProperties.classifiers.length)
+      return undefined;
+
+    return new SpatialClassification.Properties(this.jsonProperties.classifiers[index]);
+  }
+  /** Set the spatial classifier at index
+   * @beta
+   */
+  public setSpatialClassifier(index: number, classifier: SpatialClassification.Properties) {
+    if (index < 0 || undefined === this.jsonProperties.classifiers || index >= this.jsonProperties.classifiers.length)
+      return;
+
+    this.jsonProperties.classifiers[index] = classifier;
+  }
+  /** Set the active spatial classifier by index
+   * @beta
+   */
+  public async setActiveSpatialClassifier(classifierIndex: number, active: boolean) {
     const classifiers = this.jsonProperties.classifiers;
     if (classifiers !== undefined)
       for (let index = 0; index < classifiers.length; index++)
         if (false !== (classifiers[index].isActive = (classifierIndex === index && active)))
           await SpatialClassification.loadModelClassifiers(this.id, this.iModel);
   }
-  public addClassifier(classifier: SpatialClassification.PropertiesProps) {
+
+  /** Add a spatial classifier
+   * @beta
+   */
+  public addSpatialClassifier(classifier: SpatialClassification.PropertiesProps) {
     if (undefined === this.jsonProperties.classifiers)
       this.jsonProperties.classifiers = [];
 
