@@ -18,6 +18,7 @@ import {
   Arc3d,
   ClipPlaneContainment,
   ClipVector,
+  Point2d,
   Point3d,
   Range3d,
   Transform,
@@ -39,6 +40,7 @@ import {
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { GraphicBranch, RenderGraphic, RenderMemory, RenderPlanarClassifier } from "../render/System";
+import { GraphicBuilder } from "../render/GraphicBuilder";
 import { SceneContext } from "../ViewContext";
 import { ViewFrustum } from "../Viewport";
 import { B3dmTileIO } from "./B3dmTileIO";
@@ -50,6 +52,22 @@ import { computeChildRanges } from "./IModelTile";
 import { PntsTileIO } from "./PntsTileIO";
 import { TileIO } from "./TileIO";
 import { TileRequest } from "./TileRequest";
+
+const scratchRange2d = [ new Point2d(), new Point2d(), new Point2d(), new Point2d() ];
+function addRangeGraphic(builder: GraphicBuilder, range: Range3d, is2d: boolean): void {
+  if (!is2d) {
+    builder.addRangeBox(range);
+    return;
+  }
+
+  // 3d box is useless in 2d and will be clipped by near/far planes anyway
+  const pts = scratchRange2d;
+  pts[0].set(range.low.x, range.low.y);
+  pts[1].set(range.high.x, range.low.y);
+  pts[2].set(range.high.x, range.high.y);
+  pts[3].set(range.low.x, range.high.y);
+  builder.addLineString2d(pts, 0);
+}
 
 /** A 3d tile within a [[TileTree]].
  * @internal
@@ -250,17 +268,17 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
       const builder = context.createSceneGraphicBuilder();
       if (Tile.DebugBoundingBoxes.Both === type) {
         builder.setSymbology(ColorDef.blue, ColorDef.blue, 1);
-        builder.addRangeBox(this.range);
+        addRangeGraphic(builder, this.range, this.root.is2d);
         if (this.hasContentRange) {
           builder.setSymbology(ColorDef.red, ColorDef.red, 1);
-          builder.addRangeBox(this.contentRange);
+          addRangeGraphic(builder, this.contentRange, this.root.is2d);
         }
       } else if (Tile.DebugBoundingBoxes.ChildVolumes === type) {
         const ranges = computeChildRanges(this);
         for (const range of ranges) {
           const color = range.isEmpty ? ColorDef.blue : ColorDef.green;
           builder.setSymbology(color, color, 1);
-          builder.addRangeBox(range.range);
+          addRangeGraphic(builder, range.range, this.root.is2d);
         }
       } else if (Tile.DebugBoundingBoxes.Sphere === type) {
         builder.setSymbology(ColorDef.green, ColorDef.green, 1);
@@ -275,7 +293,7 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
         const color = this.hasSizeMultiplier ? ColorDef.red : (this.isLeaf ? ColorDef.blue : ColorDef.green);
         builder.setSymbology(color, color, 1);
         const range = Tile.DebugBoundingBoxes.Content === type ? this.contentRange : this.range;
-        builder.addRangeBox(range);
+        addRangeGraphic(builder, range, this.root.is2d);
       }
 
       this._rangeGraphic = builder.finish();
