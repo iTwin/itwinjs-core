@@ -13,6 +13,7 @@
     "clean": "rimraf lib package-deps.json",
     "cover": "",
     "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/core/logger-config/file.json --tsIndexFile=./logger-config.ts --onlyJson %TYPEDOC_THEME%",
+    "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=logger-config",
     "lint": "tslint --project . 1>&2",
     "test": ""
   },
