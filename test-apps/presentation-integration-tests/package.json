@@ -59,8 +59,8 @@
     "xmlhttprequest": "^1.8.0"
   },
   "devDependencies": {
-    "@bentley/config-loader": "0.191.0-dev.6",
-    "@bentley/build-tools": "0.191.0-dev.6",
+    "@bentley/config-loader": "0.191.0-dev.9",
+    "@bentley/build-tools": "0.191.0-dev.9",
     "cache-require-paths": "^0.3.0",
     "cross-env": "^5.1.4",
     "ignore-styles": "^5.0.1",

@@ -32,8 +32,8 @@
   },
   "devDependencies": {
     "@bentley/bentleyjs-core": "0.191.0-dev.9",
-    "@bentley/build-tools": "0.191.0-dev.6",
-    "@bentley/imodeljs-i18n": "0.191.0-dev.6",
+    "@bentley/build-tools": "0.191.0-dev.9",
+    "@bentley/imodeljs-i18n": "0.191.0-dev.9",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
     "@types/glob": "^5.0.35",
