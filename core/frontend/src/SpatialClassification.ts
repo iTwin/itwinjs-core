@@ -14,13 +14,17 @@ import { IModelApp } from "./IModelApp";
 /** Geometry may be classified by its spatial location.  This is typically used to classify reality models.
  * A volume classifier classifies on all space within a closed mesh.  A planar classifier classifies within a
  * planar region swept perpendicular to its plane.
- * @public
+ * @beta
  */
 export namespace SpatialClassification {
-  /** Classification Type */
+  /** Classification Type
+   * @beta
+   */
   export const enum Type { Planar = 0, Volume = 1 }
 
-  /** Display modes */
+  /** Display modes
+   * @beta
+   */
   export const enum Display {
     /** If off, geometry is omitted (invisible) */
     Off = 0,
@@ -34,7 +38,9 @@ export namespace SpatialClassification {
     ElementColor = 4,
   }
 
-  /** Flag Properties */
+  /** Flag Properties
+   * @beta
+   */
   export interface FlagsProps {
     inside: SpatialClassification.Display;
     outside: SpatialClassification.Display;
@@ -42,7 +48,9 @@ export namespace SpatialClassification {
     type: number;         // Not currently implemented
   }
 
-  /** Flags */
+  /** Flags
+   * @beta
+   */
   export class Flags implements FlagsProps {
     public inside: Display = Display.ElementColor;
     public outside: Display = Display.Dimmed;
@@ -51,7 +59,9 @@ export namespace SpatialClassification {
 
     public constructor(inside = Display.ElementColor, outside = Display.Dimmed) { this.inside = inside; this.outside = outside; }
   }
-  /** Properties describe a single application of a classifier to a model. */
+  /** Properties describe a single application of a classifier to a model.
+   * @beta
+   */
   export interface PropertiesProps {
     /** The classifier model Id. */
     modelId: Id64String;
@@ -59,18 +69,24 @@ export namespace SpatialClassification {
     expand: number;
     flags: Flags;
     name: string;
+    isActive: boolean;
   }
 
+  /** Properties describe a single application of a classifier to a model.
+   * @beta
+   */
   export class Properties implements PropertiesProps {
     public modelId: Id64String;
     public expand: number;
     public flags: Flags;
     public name: string;
-    constructor(name: string, modelId: Id64String, expand: number, flags?: FlagsProps) {
-      this.name = name;
-      this.modelId = modelId;
-      this.expand = expand;
-      this.flags = flags ? flags : new Flags();
+    public isActive: boolean;
+    constructor(props: PropertiesProps) {
+      this.name = props.name;
+      this.modelId = props.modelId;
+      this.expand = props.expand;
+      this.flags = props.flags ? props.flags : new Flags();
+      this.isActive = props.isActive;
     }
   }
 
@@ -96,7 +112,7 @@ export namespace SpatialClassification {
     if (model.jsonProperties.classifiers !== undefined) {
       for (const classifier of model.jsonProperties.classifiers) {
         if (classifier.isActive)
-          return new Properties(classifier.name, classifier.modelId, classifier.expand, classifier.flags);
+          return new Properties(classifier);
 
       }
     }

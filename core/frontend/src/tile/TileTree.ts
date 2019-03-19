@@ -952,6 +952,7 @@ export class TileTreeState {
   public tileTree?: TileTree;
   public loadStatus: TileTree.LoadStatus = TileTree.LoadStatus.NotLoaded;
   public edgesOmitted: boolean = false;
+  public classifierExpansion: number = 0;
   public get iModel() { return this._iModel; }
 
   constructor(private _iModel: IModelConnection, private _is3d: boolean, private _modelId: Id64String) { }
