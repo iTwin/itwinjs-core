@@ -138,8 +138,10 @@ export class EditTextTool extends MarkupTool {
       let newText: G | MarkupText = text.clone();
       const fontSize = text.getFontSize();
       newText.createMarkup(newVal, fontSize);
-      if (this.boxed)
+      if (this.boxed) {
         newText = this.createBoxedText(original.parent() as G, newText);
+        newText.matrix(original.matrix());
+      }
       original.replace(newText);
       if (this._fromPlaceTool)
         undo.onAdded(newText);
