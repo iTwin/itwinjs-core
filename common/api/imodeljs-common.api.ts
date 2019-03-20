@@ -4746,7 +4746,7 @@ class WebAppRpcRequest extends RpcRequest {
   static parseRequest(protocol: WebAppRpcProtocol, req: HttpServerRequest): Promise<SerializedRpcRequest>;
   readonly protocol: WebAppRpcProtocol;
   protected send(): Promise<number>;
-  static sendResponse(_protocol: WebAppRpcProtocol, request: SerializedRpcRequest, fulfillment: RpcRequestFulfillment, res: HttpServerResponse): void;
+  static sendResponse(protocol: WebAppRpcProtocol, request: SerializedRpcRequest, fulfillment: RpcRequestFulfillment, res: HttpServerResponse): void;
   protected setHeader(name: string, value: string): void;
 }
 

@@ -13,7 +13,7 @@ import { WebAppRpcProtocol, HttpServerRequest, HttpServerResponse } from "./WebA
 import { RpcSerializedValue, MarshalingBinaryMarker } from "../core/RpcMarshaling";
 import { RpcMultipart } from "./RpcMultipart";
 import { RpcMultipartParser } from "./multipart/RpcMultipartParser";
-import { RpcResponseCacheControl, RpcContentType, RpcProtocolEvent, WEB_RPC_CONSTANTS } from "../core/RpcConstants";
+import { RpcResponseCacheControl, RpcContentType, RpcProtocolEvent, WEB_RPC_CONSTANTS, RpcRequestStatus } from "../core/RpcConstants";
 import URLSearchParams = require("url-search-params");
 
 export type HttpMethod_T = "get" | "put" | "post" | "delete" | "options" | "head" | "patch" | "trace";
@@ -82,14 +82,14 @@ export class WebAppRpcRequest extends RpcRequest {
   }
 
   /** Sends the response for a web request. */
-  public static sendResponse(_protocol: WebAppRpcProtocol, request: SerializedRpcRequest, fulfillment: RpcRequestFulfillment, res: HttpServerResponse) {
+  public static sendResponse(protocol: WebAppRpcProtocol, request: SerializedRpcRequest, fulfillment: RpcRequestFulfillment, res: HttpServerResponse) {
     const transportType = WebAppRpcRequest.computeTransportType(fulfillment.result, fulfillment.rawResult);
     if (transportType === RpcContentType.Text) {
-      WebAppRpcRequest.sendText(request, fulfillment, res);
+      WebAppRpcRequest.sendText(protocol, request, fulfillment, res);
     } else if (transportType === RpcContentType.Binary) {
-      WebAppRpcRequest.sendBinary(request, fulfillment, res);
+      WebAppRpcRequest.sendBinary(protocol, request, fulfillment, res);
     } else if (transportType === RpcContentType.Multipart) {
-      WebAppRpcRequest.sendMultipart(request, fulfillment, res);
+      WebAppRpcRequest.sendMultipart(protocol, request, fulfillment, res);
     } else {
       throw new IModelError(BentleyStatus.ERROR, "Unknown response type.");
     }
@@ -179,29 +179,31 @@ export class WebAppRpcRequest extends RpcRequest {
     });
   }
 
-  private static configureResponse(request: SerializedRpcRequest, _fulfillment: RpcRequestFulfillment, res: HttpServerResponse) {
-    if (request.caching === RpcResponseCacheControl.Immutable) {
+  private static configureResponse(protocol: WebAppRpcProtocol, request: SerializedRpcRequest, fulfillment: RpcRequestFulfillment, res: HttpServerResponse) {
+    const success = protocol.getStatus(fulfillment.status) === RpcRequestStatus.Resolved;
+
+    if (success && request.caching === RpcResponseCacheControl.Immutable) {
       res.set("Cache-Control", "private, max-age=31536000, immutable");
     }
   }
 
-  private static sendText(request: SerializedRpcRequest, fulfillment: RpcRequestFulfillment, res: HttpServerResponse) {
+  private static sendText(protocol: WebAppRpcProtocol, request: SerializedRpcRequest, fulfillment: RpcRequestFulfillment, res: HttpServerResponse) {
     const response = fulfillment.result.objects;
     res.set(WEB_RPC_CONSTANTS.CONTENT, WEB_RPC_CONSTANTS.TEXT);
-    WebAppRpcRequest.configureResponse(request, fulfillment, res);
+    WebAppRpcRequest.configureResponse(protocol, request, fulfillment, res);
     res.status(fulfillment.status).send(response);
   }
 
-  private static sendBinary(request: SerializedRpcRequest, fulfillment: RpcRequestFulfillment, res: HttpServerResponse) {
+  private static sendBinary(protocol: WebAppRpcProtocol, request: SerializedRpcRequest, fulfillment: RpcRequestFulfillment, res: HttpServerResponse) {
     const data = fulfillment.result.data[0];
     const response = Buffer.isBuffer(data) ? data : Buffer.from(data);
 
     res.set(WEB_RPC_CONSTANTS.CONTENT, WEB_RPC_CONSTANTS.BINARY);
-    WebAppRpcRequest.configureResponse(request, fulfillment, res);
+    WebAppRpcRequest.configureResponse(protocol, request, fulfillment, res);
     res.status(fulfillment.status).send(response);
   }
 
-  private static sendMultipart(request: SerializedRpcRequest, fulfillment: RpcRequestFulfillment, res: HttpServerResponse) {
+  private static sendMultipart(protocol: WebAppRpcProtocol, request: SerializedRpcRequest, fulfillment: RpcRequestFulfillment, res: HttpServerResponse) {
     const response = RpcMultipart.createStream(fulfillment.result);
     const headers = response.getHeaders();
     for (const header in headers) {
@@ -210,7 +212,7 @@ export class WebAppRpcRequest extends RpcRequest {
       }
     }
 
-    WebAppRpcRequest.configureResponse(request, fulfillment, res);
+    WebAppRpcRequest.configureResponse(protocol, request, fulfillment, res);
     res.status(fulfillment.status);
     response.pipe(res);
   }
