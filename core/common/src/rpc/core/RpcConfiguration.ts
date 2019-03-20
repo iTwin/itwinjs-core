@@ -3,29 +3,28 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module RpcInterface */
-import { SerializedClientRequestContext, ClientRequestContext } from "@bentley/bentleyjs-core";
+import { ClientRequestContext, SerializedClientRequestContext } from "@bentley/bentleyjs-core";
 import { RpcInterface, RpcInterfaceDefinition } from "../../RpcInterface";
 import { RpcManager } from "../../RpcManager";
-import { RpcProtocol, RpcRequestFulfillment, SerializedRpcRequest } from "./RpcProtocol";
-import { RpcRequest } from "./RpcRequest";
-import { INSTANCE } from "./RpcRegistry";
 import { RpcControlChannel } from "./RpcControl";
+import { RpcProtocol, RpcRequestFulfillment, SerializedRpcRequest } from "./RpcProtocol";
+import { INSTANCE } from "./RpcRegistry";
+import { RpcRequest } from "./RpcRequest";
 import { RpcRequestContext } from "./RpcRequestContext";
 
 export type RpcConfigurationSupplier = () => { new(): RpcConfiguration };
 
 /** A RpcConfiguration specifies how calls on an RPC interface will be marshalled, plus other operating parameters.
  * RpcConfiguration is the base class for specific configurations.
+ * @public
  */
 export abstract class RpcConfiguration {
-  /**
-   * Whether development mode is enabled.
+  /** Whether development mode is enabled.
    * @note This parameter determines whether developer convenience features like backend stack traces are available.
    */
   public static developmentMode: boolean = false;
 
-  /**
-   * Whether strict mode is enabled.
+  /** Whether strict mode is enabled.
    * This parameter determines system behaviors relating to strict checking:
    * - Whether an error is thrown if the type marshaling system encounters an unregistered type (only in strict mode).
    */
@@ -77,44 +76,50 @@ export abstract class RpcConfiguration {
     configuration.controlChannel.initialize();
   }
 
-  /** @hidden */
+  /** @internal */
   public static supply(definition: RpcInterface): RpcConfiguration {
     return RpcConfiguration.obtain(definition.configurationSupplier ? definition.configurationSupplier() : RpcDefaultConfiguration);
   }
 
-  /** @hidden */
+  /** @internal */
   public onRpcClientInitialized(definition: RpcInterfaceDefinition, client: RpcInterface): void {
     this.protocol.onRpcClientInitialized(definition, client);
   }
 
-  /** @hidden */
+  /** @internal */
   public onRpcImplInitialized(definition: RpcInterfaceDefinition, impl: RpcInterface): void {
     this.protocol.onRpcImplInitialized(definition, impl);
   }
 
-  /** @hidden */
+  /** @internal */
   public onRpcClientTerminated(definition: RpcInterfaceDefinition, client: RpcInterface): void {
     this.protocol.onRpcClientTerminated(definition, client);
   }
 
-  /** @hidden */
+  /** @internal */
   public onRpcImplTerminated(definition: RpcInterfaceDefinition, impl: RpcInterface): void {
     this.protocol.onRpcImplTerminated(definition, impl);
   }
 }
 
-// A default configuration that can be used for basic testing within a library.
+/** A default configuration that can be used for basic testing within a library.
+ * @internal
+ */
 export class RpcDefaultConfiguration extends RpcConfiguration {
   public interfaces = () => [];
   public protocol: RpcProtocol = new RpcDirectProtocol(this);
 }
 
-// A default protocol that can be used for basic testing within a library.
+/** A default protocol that can be used for basic testing within a library.
+ * @internal
+ */
 export class RpcDirectProtocol extends RpcProtocol {
   public readonly requestType = RpcDirectRequest;
 }
 
-// A default request type that can be used for basic testing within a library.
+/** A default request type that can be used for basic testing within a library.
+ * @internal
+ */
 export class RpcDirectRequest extends RpcRequest {
   public headers: Map<string, string> = new Map();
   public fulfillment: RpcRequestFulfillment | undefined = undefined;

@@ -55,18 +55,18 @@ export class ImageBuffer {
     return this.isValidData(data, format, width) ? new ImageBuffer(data, format, width) : undefined;
   }
 
-  /** @hidden */
+  /** @internal */
   protected static isValidData(data: Uint8Array, format: ImageBufferFormat, width: number): boolean {
     const height = this.computeHeight(data, format, width);
     return width > 0 && height > 0 && Math.floor(width) === width && Math.floor(height) === height;
   }
 
-  /** @hidden */
+  /** @internal */
   protected static computeHeight(data: Uint8Array, format: ImageBufferFormat, width: number): number {
     return data.length / (width * this.getNumBytesPerPixel(format));
   }
 
-  /** @hidden */
+  /** @internal */
   protected constructor(data: Uint8Array, format: ImageBufferFormat, width: number) {
     this.data = data;
     this.format = format;
@@ -106,7 +106,7 @@ export const enum ImageSourceFormat {
   Svg = 3,
 }
 
-/** @hidden */
+/** @internal */
 export function isValidImageSourceFormat(format: ImageSourceFormat): boolean {
   switch (format) {
     case ImageSourceFormat.Jpeg:

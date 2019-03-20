@@ -6,7 +6,7 @@
 
 import { Vector3d, XYAndZ } from "@bentley/geometry-core";
 
-/** @hidden */
+/** @internal */
 export class OctEncodedNormal {
   private static _scratchUInt16 = new Uint16Array(1);
   private static clamp(val: number, minVal: number, maxVal: number): number { return val < minVal ? minVal : (val > maxVal ? maxVal : val); }
@@ -47,7 +47,7 @@ export class OctEncodedNormal {
   }
 }
 
-/** @hidden */
+/** @internal */
 export class OctEncodedNormalPair {
   constructor(public first: OctEncodedNormal, public second: OctEncodedNormal) { }
 }

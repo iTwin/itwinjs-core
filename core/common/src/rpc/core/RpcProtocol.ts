@@ -5,15 +5,17 @@
 /** @module RpcInterface */
 
 import { BeEvent, SerializedClientRequestContext } from "@bentley/bentleyjs-core";
-import { RpcRequest } from "./RpcRequest";
-import { RpcInvocation } from "./RpcInvocation";
-import { RpcConfiguration } from "./RpcConfiguration";
-import { RpcOperation } from "./RpcOperation";
-import { RpcMarshaling, RpcSerializedValue } from "./RpcMarshaling";
 import { RpcInterface, RpcInterfaceDefinition } from "../../RpcInterface";
-import { RpcResponseCacheControl, RpcRequestStatus, RpcProtocolEvent } from "./RpcConstants";
+import { RpcConfiguration } from "./RpcConfiguration";
+import { RpcProtocolEvent, RpcRequestStatus, RpcResponseCacheControl } from "./RpcConstants";
+import { RpcInvocation } from "./RpcInvocation";
+import { RpcMarshaling, RpcSerializedValue } from "./RpcMarshaling";
+import { RpcOperation } from "./RpcOperation";
+import { RpcRequest } from "./RpcRequest";
 
-/** A serialized RPC operation descriptor. */
+/** A serialized RPC operation descriptor.
+ * @internal
+ */
 export interface SerializedRpcOperation {
   interfaceDefinition: string;
   operationName: string;
@@ -21,7 +23,9 @@ export interface SerializedRpcOperation {
   encodedRequest?: string;
 }
 
-/** A serialized RPC operation request. */
+/** A serialized RPC operation request.
+ * @internal
+ */
 export interface SerializedRpcRequest extends SerializedClientRequestContext {
   operation: SerializedRpcOperation;
   method: string;
@@ -30,7 +34,9 @@ export interface SerializedRpcRequest extends SerializedClientRequestContext {
   caching: RpcResponseCacheControl;
 }
 
-/** An RPCD operation request fulfillment. */
+/** An RPCD operation request fulfillment.
+ * @internal
+ */
 export interface RpcRequestFulfillment {
   /** The RPC interface for the request. */
   interfaceName: string;
@@ -48,7 +54,7 @@ export interface RpcRequestFulfillment {
   status: number;
 }
 
-/** @hidden */
+/** @internal */
 export namespace RpcRequestFulfillment {
   export function forUnknownError(request: SerializedRpcRequest, error: any): RpcRequestFulfillment {
     const result = RpcMarshaling.serialize(request.operation.interfaceDefinition, undefined, error);
@@ -66,7 +72,9 @@ export namespace RpcRequestFulfillment {
 /** Handles RPC protocol events. */
 export type RpcProtocolEventHandler = (type: RpcProtocolEvent, object: RpcRequest | RpcInvocation) => void;
 
-/** An application protocol for an RPC interface. */
+/** An application protocol for an RPC interface.
+ * @public
+ */
 export abstract class RpcProtocol {
   /** Events raised by all protocols. See [[RpcProtocolEvent]] */
   public static readonly events: BeEvent<RpcProtocolEventHandler> = new BeEvent();
@@ -154,15 +162,15 @@ export abstract class RpcProtocol {
     this.events.addListener((type, object) => RpcProtocol.events.raiseEvent(type, object));
   }
 
-  /** @hidden */
+  /** @internal */
   public onRpcClientInitialized(_definition: RpcInterfaceDefinition, _client: RpcInterface): void { }
 
-  /** @hidden */
+  /** @internal */
   public onRpcImplInitialized(_definition: RpcInterfaceDefinition, _impl: RpcInterface): void { }
 
-  /** @hidden */
+  /** @internal */
   public onRpcClientTerminated(_definition: RpcInterfaceDefinition, _client: RpcInterface): void { }
 
-  /** @hidden */
+  /** @internal */
   public onRpcImplTerminated(_definition: RpcInterfaceDefinition, _impl: RpcInterface): void { }
 }

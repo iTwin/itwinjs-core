@@ -9,13 +9,13 @@ import { BentleyStatus } from "@bentley/bentleyjs-core";
 import { IModelError } from "../../IModelError";
 import { RpcSerializedValue } from "../core/RpcMarshaling";
 import { RpcEndpoint } from "../core/RpcConstants";
-/** @hidden */
+/** @internal */
 declare var bentley: any;
 
-/** @hidden */
+/** @internal */
 export const CHANNEL = "@bentley/imodeljs-mobilegateway";
 
-/** @hidden */
+/** @internal */
 export const interop = (() => {
   let mobilegateway = null;
 

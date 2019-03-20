@@ -65,11 +65,11 @@ export interface AreaFillProps {
 export interface MaterialProps {
   /** Material id to use, specify an invalid [[Id64]] to override [[SubCategoryAppearance.materialId]] with no material. */
   materialId?: Id64String;
-  /** @hidden */
+  /** @internal */
   origin?: XYZProps;
-  /** @hidden */
+  /** @internal */
   size?: XYZProps;
-  /** @hidden */
+  /** @internal */
   rotation?: YawPitchRollProps;
 }
 

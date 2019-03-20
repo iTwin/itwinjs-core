@@ -14,7 +14,7 @@ import { ElectronRpcProtocol } from "./ElectronRpcProtocol";
 const OBJECTS_CHANNEL = "@bentley/imodeljs-common/ElectronRpcProtocol/objects";
 const DATA_CHANNEL = "@bentley/imodeljs-common/ElectronRpcProtocol/data";
 
-/** @hidden */
+/** @internal */
 export const interop = (() => {
   let electron = null;
   if (typeof (global) !== "undefined" && global && global.process && (global.process as any).type) {
@@ -27,10 +27,10 @@ export const interop = (() => {
 
 interface PartialPayload { id: string; index: number; data: Uint8Array; }
 
-/** @hidden */
+/** @internal */
 export interface IpcTransportMessage { id: string; parameters?: RpcSerializedValue; result?: RpcSerializedValue; }
 
-/** @hidden */
+/** @internal */
 export abstract class ElectronIpcTransport<TIn extends IpcTransportMessage = IpcTransportMessage, TOut extends IpcTransportMessage = IpcTransportMessage> {
   private _ipc: any;
   private _partials: Map<string, { message: TIn; received: number; } | PartialPayload[]>;
@@ -175,5 +175,5 @@ if (interop) {
   }
 }
 
-/** @hidden */
+/** @internal */
 export const ipcTransport = transport;

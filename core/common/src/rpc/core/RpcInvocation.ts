@@ -18,7 +18,9 @@ import { RpcRequestStatus, RpcProtocolEvent } from "./RpcConstants";
 /** Notification callback for an RPC invocation. */
 export type RpcInvocationCallback_T = (invocation: RpcInvocation) => void;
 
-/** An RPC operation invocation in response to a request. */
+/** An RPC operation invocation in response to a request.
+ * @internal
+ */
 export class RpcInvocation {
   private _threw: boolean = false;
   private _pending: boolean = false;

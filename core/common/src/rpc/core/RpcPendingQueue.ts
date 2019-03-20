@@ -4,15 +4,15 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module RpcInterface */
 
-import { RpcRequest } from "./RpcRequest";
 import { RpcRequestEvent, RpcRequestStatus } from "./RpcConstants";
+import { RpcRequest } from "./RpcRequest";
 
-/** Manages pending RPC requests and responses. */
+/** Manages pending RPC requests and responses.
+ * @internal
+ */
 export class RpcPendingQueue {
-  /** @hidden */
   public static instance: RpcPendingQueue;
 
-  /** @hidden */
   public static initialize() {
     if (!RpcPendingQueue.instance) {
       RpcPendingQueue.instance = new RpcPendingQueue();

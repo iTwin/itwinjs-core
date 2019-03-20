@@ -6,7 +6,7 @@
 
 import { ColorDef } from "./ColorDef";
 
-/** @hidden */
+/** @internal */
 export class NonUniformColor {
   public readonly colors: Uint32Array;
   public readonly indices: Uint16Array;
@@ -19,7 +19,7 @@ export class NonUniformColor {
   }
 }
 
-/** @hidden */
+/** @internal */
 export class ColorIndex {
   private _color: ColorDef | NonUniformColor;
 
@@ -40,14 +40,14 @@ export class ColorIndex {
   }
 }
 
-/** @hidden */
+/** @internal */
 export const enum FeatureIndexType {
   Empty,
   Uniform,
   NonUniform,
 }
 
-/** @hidden */
+/** @internal */
 export class FeatureIndex {
   public type: FeatureIndexType = FeatureIndexType.Empty;
   public featureID: number = 0;

@@ -4,12 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module RpcInterface */
 
-import { CURRENT_REQUEST } from "./rpc/core/RpcRegistry";
-import { RpcConfiguration, RpcConfigurationSupplier } from "./rpc/core/RpcConfiguration";
 import * as semver from "semver";
+import { RpcConfiguration, RpcConfigurationSupplier } from "./rpc/core/RpcConfiguration";
+import { CURRENT_REQUEST } from "./rpc/core/RpcRegistry";
 
-// tslint:disable-next-line:ban-types
-export interface RpcInterfaceDefinition<T extends RpcInterface = RpcInterface> { prototype: T; name: string; version: string; types: () => Function[]; }
+/** @public */
+export interface RpcInterfaceDefinition<T extends RpcInterface = RpcInterface> { prototype: T; name: string; version: string; types: () => Function[]; } // tslint:disable-line:ban-types
 export type RpcInterfaceImplementation<T extends RpcInterface = RpcInterface> = new () => T;
 
 /** An RPC interface is a set of operations exposed by a service that a client can call, using configurable protocols,
@@ -41,7 +41,7 @@ export abstract class RpcInterface {
     return request.response;
   }
 
-  /** @hidden */
+  /** @internal */
   public configurationSupplier: RpcConfigurationSupplier | undefined;
 }
 

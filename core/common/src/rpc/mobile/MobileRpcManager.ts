@@ -4,10 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 import { RpcInterfaceDefinition } from "../../RpcInterface";
 import { RpcConfiguration } from "../core/RpcConfiguration";
-import { MobileRpcProtocol, interop } from "./MobileRpcProtocol";
-import { RpcMobilePlatform, RpcEndpoint } from "../core/RpcConstants";
+import { RpcEndpoint, RpcMobilePlatform } from "../core/RpcConstants";
+import { interop, MobileRpcProtocol } from "./MobileRpcProtocol";
 
-/** Holds configuration for the RpcInterfaces used by the application. */
+/** Holds configuration for the RpcInterfaces used by the application.
+ * @public
+ */
 export abstract class MobileRpcConfiguration extends RpcConfiguration {
   public abstract protocol: MobileRpcProtocol;
   private static getMobilePlaform(): RpcMobilePlatform {
@@ -45,7 +47,9 @@ export abstract class MobileRpcConfiguration extends RpcConfiguration {
   public static get isIOSFrontend() { return MobileRpcConfiguration.isMobileFrontend && (window as any).webkit && (window as any).webkit.messageHandlers; }
 }
 
-/** Coordinates usage of RPC interfaces for an Mobile-based application. */
+/** Coordinates usage of RPC interfaces for an Mobile-based application.
+ * @public
+ */
 export class MobileRpcManager {
   private static performInitialization(interfaces: RpcInterfaceDefinition[], endPoint: RpcEndpoint): MobileRpcConfiguration {
     const config = class extends MobileRpcConfiguration {
@@ -70,5 +74,5 @@ export class MobileRpcManager {
   /** Initializes MobileRpcManager for the backend of an application. */
   public static initializeImpl(interfaces: RpcInterfaceDefinition[]): MobileRpcConfiguration {
     return MobileRpcManager.performInitialization(interfaces, RpcEndpoint.Backend);
-    }
+  }
 }

@@ -156,7 +156,7 @@ export abstract class IModel implements IModelProps {
     this._ecefTrans = undefined;
   }
 
-  /** @hidden */
+  /** @internal */
   public toJSON(): IModelProps {
     const out: any = {};
     out.name = this.name;
@@ -168,16 +168,16 @@ export abstract class IModel implements IModelProps {
     return out;
   }
 
-  /** @hidden */
+  /** @internal */
   protected _token: IModelToken;
 
   /** The token that can be used to find this iModel instance. */
   public get iModelToken(): IModelToken { return this._token; }
 
-  /** @hidden */
+  /** @internal */
   protected constructor(iModelToken: IModelToken) { this._token = iModelToken; }
 
-  /** @hidden */
+  /** @internal */
   protected initialize(name: string, props: IModelProps) {
     this.name = name;
     this.rootSubject = props.rootSubject;

@@ -6,17 +6,18 @@
 
 // tslint:disable:no-string-literal
 
-import { RpcRegistry } from "./RpcRegistry";
+import { BentleyStatus, IModelError } from "../../IModelError";
+import { RpcConfiguration } from "./RpcConfiguration";
+import { RpcMarshalingDirective } from "./RpcConstants";
 import { RpcOperation } from "./RpcOperation";
 import { RpcProtocol } from "./RpcProtocol";
-import { RpcConfiguration } from "./RpcConfiguration";
-import { IModelError, BentleyStatus } from "../../IModelError";
-import { RpcMarshalingDirective } from "./RpcConstants";
+import { RpcRegistry } from "./RpcRegistry";
 
 let marshalingScope = "";
 let marshalingTarget: RpcSerializedValue;
 let chunkThreshold = 0;
 
+/** @internal */
 export interface MarshalingBinaryMarker {
   [RpcMarshalingDirective.Binary]: true;
   type: number;
@@ -25,25 +26,28 @@ export interface MarshalingBinaryMarker {
   chunks: number;
 }
 
+/** @internal */
 export namespace MarshalingBinaryMarker {
   export function createDefault(): MarshalingBinaryMarker {
     return { [RpcMarshalingDirective.Binary]: true, type: 0, index: 0, size: -1, chunks: 1 };
   }
 }
 
+/** @internal */
 export interface RpcSerializedValue {
   objects: string;
   data: Uint8Array[];
   chunks?: number;
 }
 
+/** @internal */
 export namespace RpcSerializedValue {
   export function create(objects = "", data: Uint8Array[] = []): RpcSerializedValue {
     return { objects, data };
   }
 }
 
-/** @hidden */
+/** @internal */
 export class RpcMarshaling {
   private constructor() { }
 

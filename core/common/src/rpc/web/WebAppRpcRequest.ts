@@ -4,21 +4,23 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module RpcInterface */
 
-import { IModelError, ServerError, ServerTimeoutError } from "../../IModelError";
 import { BentleyStatus, SerializedClientRequestContext } from "@bentley/bentleyjs-core";
+import { IModelError, ServerError, ServerTimeoutError } from "../../IModelError";
 import { RpcInterface } from "../../RpcInterface";
-import { SerializedRpcRequest, RpcRequestFulfillment, SerializedRpcOperation } from "../core/RpcProtocol";
+import { RpcContentType, RpcProtocolEvent, RpcRequestStatus, RpcResponseCacheControl, WEB_RPC_CONSTANTS } from "../core/RpcConstants";
+import { MarshalingBinaryMarker, RpcSerializedValue } from "../core/RpcMarshaling";
+import { RpcRequestFulfillment, SerializedRpcOperation, SerializedRpcRequest } from "../core/RpcProtocol";
 import { RpcRequest } from "../core/RpcRequest";
-import { WebAppRpcProtocol, HttpServerRequest, HttpServerResponse } from "./WebAppRpcProtocol";
-import { RpcSerializedValue, MarshalingBinaryMarker } from "../core/RpcMarshaling";
-import { RpcMultipart } from "./RpcMultipart";
 import { RpcMultipartParser } from "./multipart/RpcMultipartParser";
-import { RpcResponseCacheControl, RpcContentType, RpcProtocolEvent, WEB_RPC_CONSTANTS, RpcRequestStatus } from "../core/RpcConstants";
+import { RpcMultipart } from "./RpcMultipart";
+import { HttpServerRequest, HttpServerResponse, WebAppRpcProtocol } from "./WebAppRpcProtocol";
 import URLSearchParams = require("url-search-params");
 
 export type HttpMethod_T = "get" | "put" | "post" | "delete" | "options" | "head" | "patch" | "trace";
 
-/** A web application RPC request. */
+/** A web application RPC request.
+ * @public
+ */
 export class WebAppRpcRequest extends RpcRequest {
   private _loading: boolean = false;
   private _request: RequestInit = {};
@@ -26,8 +28,7 @@ export class WebAppRpcRequest extends RpcRequest {
   private _pathSuffix: string = "";
   private get _headers() { return this._request.headers as { [key: string]: string }; }
 
-  /**
-   * The maximum size permitted for an encoded component in a URL.
+  /** The maximum size permitted for an encoded component in a URL.
    * @note This is used for features like encoding the payload of a cacheable request in the URL.
    */
   public static maxUrlComponentSize = 1024;
