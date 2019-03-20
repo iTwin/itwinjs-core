@@ -28,17 +28,18 @@ export class AlphaSlider extends React.PureComponent<AlphaSliderProps> {
 
   private _calculateChange = (e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>, isHorizontal: boolean, alpha: number, container: HTMLDivElement): number | undefined => {
     e.preventDefault();
-    const containerWidth = container.clientWidth;
-    const containerHeight = container.clientHeight;
+    const { width: containerWidth, height: containerHeight } = container.getBoundingClientRect();
 
     let x = 0;
     if ("pageX" in e) {
       x = (e as React.MouseEvent<HTMLDivElement>).pageX;
     } else {
+      // istanbul ignore if
       if (undefined === e.touches)
         return undefined;
       x = (e as React.TouchEvent<HTMLDivElement>).touches[0].pageX;
     }
+    // istanbul ignore if
     if (undefined === x)
       return undefined;
 
@@ -46,10 +47,12 @@ export class AlphaSlider extends React.PureComponent<AlphaSliderProps> {
     if ("pageY" in e) {
       y = (e as React.MouseEvent<HTMLDivElement>).pageY;
     } else {
+      // istanbul ignore if
       if (undefined === e.touches)
         return;
       y = (e as React.TouchEvent<HTMLDivElement>).touches[0].pageY;
     }
+    // istanbul ignore if
     if (undefined === y)
       return undefined;
 
@@ -59,6 +62,7 @@ export class AlphaSlider extends React.PureComponent<AlphaSliderProps> {
     let t = alpha;
 
     if (!isHorizontal) {
+      // istanbul ignore next
       if (top < 0) {
         t = 1;
       } else if (top > containerHeight) {
@@ -67,6 +71,7 @@ export class AlphaSlider extends React.PureComponent<AlphaSliderProps> {
         t = 1 - (top / containerHeight);
       }
     } else {  // horizontal
+      // istanbul ignore next
       if (left < 0) {
         t = 0;
       } else if (left > containerWidth) {
@@ -76,8 +81,11 @@ export class AlphaSlider extends React.PureComponent<AlphaSliderProps> {
       }
     }
 
+    // istanbul ignore if
     if (t < 0) t = 0;
+    // istanbul ignore if
     if (t > 1) t = 1;
+    // istanbul ignore next
     return (alpha !== t) ? t : undefined;
   }
 
@@ -94,6 +102,7 @@ export class AlphaSlider extends React.PureComponent<AlphaSliderProps> {
 
   private _onMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
     this._onChange(e);
+    // istanbul ignore else
     if (this._container)
       this._container.focus();
     window.addEventListener("mousemove", this._onChange as any);
@@ -117,8 +126,11 @@ export class AlphaSlider extends React.PureComponent<AlphaSliderProps> {
     }
 
     if (undefined !== newTransparency) {
+      // istanbul ignore if
       if (newTransparency > 1) newTransparency = 1;
+      // istanbul ignore if
       if (newTransparency < 0) newTransparency = 0;
+      // istanbul ignore else
       if (this.props.onAlphaChange)
         this.props.onAlphaChange(newTransparency);
     }
