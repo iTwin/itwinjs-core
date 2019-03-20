@@ -16,7 +16,7 @@ export class PlaceTextTool extends RedlineTool {
   protected _value!: string;
 
   public onPostInstall(): void {
-    this._value = MarkupApp.props.text.startValue; // so applications can put a default string (e.g. user's initials) in the note
+    this._value = MarkupApp.props.text.startValue; // so applications can put a default string (e.g. user's initials) in the note. Can be empty
     super.onPostInstall();
   }
 
@@ -25,15 +25,15 @@ export class PlaceTextTool extends RedlineTool {
   protected createMarkup(svg: G, ev: BeButtonEvent, isDynamics: boolean): void {
     if (isDynamics && InputSource.Touch === ev.inputSource)
       return;
-    const start = MarkupApp.convertVpToVb(ev.viewPoint);
-    const text = new MarkupText().plain(this._value);
-    svg.put(text);
-    this.setCurrentTextStyle(text);
-    text.translate(start.x, start.y);
+    const start = MarkupApp.convertVpToVb(ev.viewPoint); // starting point in viewbox coordinates
+    const text = new MarkupText().plain(this._value); // create a plain text element
+    svg.put(text); // add it to the supplied container
+    this.setCurrentTextStyle(text); // apply active text style
+    text.translate(start.x, start.y); // and position it relative to the cursor
     if (isDynamics) {
-      svg.add(text.getOutline().attr(MarkupApp.props.text.edit.textBox).addClass("markup-editBox"));
+      svg.add(text.getOutline().attr(MarkupApp.props.text.edit.textBox).addClass(MarkupApp.textOutlineClass)); // in dynamics, draw the box around the text
     } else {
-      new EditTextTool(text, true).run();
+      new EditTextTool(text, true).run(); // text is now positioned, open text editor
     }
   }
   public onRestartTool(): void { }
@@ -45,25 +45,33 @@ export class EditTextTool extends MarkupTool {
   public static toolId = "Markup.Text.Edit";
   public editor?: HTMLTextAreaElement;
   public editDiv?: HTMLDivElement;
-  constructor(public text?: MarkupText, private _fromPlaceTool = false) { super(); }
+  public boxed?: G;
+  constructor(public text?: MarkupText | G, private _fromPlaceTool = false) { super(); }
 
+  /** Open the text editor  */
   public startEditor() {
-    const text = this.text;
+    let text = this.text;
     if (text === undefined)
       return;
 
+    if (text instanceof G) {
+      this.boxed = text;
+      text = text.children()[1] as MarkupText;
+      if (!(text instanceof MarkupText))
+        return;
+      this.text = text;
+    }
     const markupDiv = this.markup.markupDiv!;
-    const editDiv = this.editDiv = document.createElement("div");
+    const editDiv = this.editDiv = document.createElement("div"); // create a new DIV to hold the text editor
     const editProps = MarkupApp.props.text.edit;
     let style = editDiv.style;
-    style.backgroundColor = "blanchedalmond";
+    style.backgroundColor = editProps.background;
     style.top = style.left = "0";
     style.right = style.bottom = "100%";
 
-    markupDiv.appendChild(editDiv);
+    markupDiv.appendChild(editDiv); // add textEditor div to markup div
 
     const divRect = markupDiv.getBoundingClientRect();
-
     const outline = text.getOutline(); // use the outline rather than the text in case it's blank.
     text.after(outline); // we have to add it to the DOM or the rbox call doesn't work.
     const rbox = outline.rbox();
@@ -71,29 +79,19 @@ export class EditTextTool extends MarkupTool {
     outline.remove(); // take it out again.
     const editor = this.editor = document.createElement("textarea");
     editDiv.appendChild(editor);
-    editor.className = "markup-textEditor";
+    editor.className = MarkupApp.textEditorClass;
     editor.contentEditable = "true";
     editor.spellcheck = true;
     editor.wrap = "off";
-    const mouselistener = (ev: Event) => {
-      ev.stopPropagation();
-      return true;
-    };
+    // so we don't send these events to the ToolAdmin and process them by tools. We want default handling
+    const mouseListener = (ev: Event) => (ev.stopPropagation(), true);
+    (editor as any).onselectstart = editor.oncontextmenu = editor.onmousedown = editor.onmouseup = mouseListener; // enable default handling for these events
 
-    (editor as any).onselectstart = mouselistener;
-    editor.oncontextmenu = editor.onmousedown = editor.onmouseup = mouselistener;
+    // Tab, Escape, ctrl-enter, or shift-enter all end the editor
     editor.onkeydown = (ev: KeyboardEvent) => {
-      switch (ev.key) {
-        case "Tab":
-        case "Escape":
-          this.exitTool();
-          ev.stopPropagation();
-          break;
-      }
-      if (ev.key === "Enter" && (ev.shiftKey || ev.ctrlKey)) {
+      if (ev.key === "Tab" || ev.key === "Escape" || (ev.key === "Enter" && (ev.shiftKey || ev.ctrlKey)))
         this.exitTool();
-        ev.stopPropagation();
-      }
+      ev.stopPropagation();
 
     };
     const textElStyle = window.getComputedStyle(text.node);
@@ -101,55 +99,61 @@ export class EditTextTool extends MarkupTool {
     style = editor.style;
     style.pointerEvents = "auto";
     style.position = "absolute";
-    style.top = ((rbox.cy - (bbox.h / 2)) - divRect.top) + "px";
+    style.top = ((rbox.cy - (bbox.h / 2)) - divRect.top) + "px"; // put the editor over the middle of the text element
     style.left = ((rbox.cx - (bbox.w / 2)) - divRect.left) + "px";
     style.height = editProps.size.height;
     style.width = editProps.size.width;
     style.resize = "both";
-    style.fontFamily = textElStyle.fontFamily;
-    style.fontSize = editProps.fontSize;
+    style.fontFamily = textElStyle.fontFamily; // set the font family and anchor to the same as the text element
     style.textAnchor = textElStyle.textAnchor;
+    style.fontSize = editProps.fontSize; // from app.props
 
     const parentZ = parseInt(window.getComputedStyle(markupDiv).zIndex || "0", 10);
     style.zIndex = (parentZ + 200).toString();
 
-    editor.innerHTML = text.getMarkup();
-    this.editor.focus();
+    editor.innerHTML = text.getMarkup(); // start with existing text
+    this.editor.focus(); // give the editor focus
+
     // if we're started from the place text tool, select the entire current value, otherwise place the cursor at the end.
     this.editor.setSelectionRange(this._fromPlaceTool ? 0 : editor.value.length, editor.value.length);
   }
 
   /** Called when EditText exits, saves the edited value into the text element */
   public onCleanup() {
-    if (this.editDiv) {
-      const text = this.text!;
-      const undo = this.markup.undo;
-      undo.doGroup(() => {
-        const newVal = this.editor!.value;
-        if (newVal.trim() === "") { // if the result of the editing is blank, just delete the text element
-          if (!this._fromPlaceTool)
-            undo.onDelete(text);
-          text.remove();
-          return;
-        }
+    if (!this.editDiv)
+      return;
 
-        const newText = text.clone();
-        const fontSize = text.getFontSize();
-        newText.createMarkup(newVal, fontSize);
-        text.replace(newText);
-        if (this._fromPlaceTool) {
-          undo.onAdded(newText);
-        } else {
-          undo.onModified(newText, text);
-        }
-      });
-      const editProps = MarkupApp.props.text.edit;
-      editProps.size.height = this.editor!.style.height!;
-      editProps.size.width = this.editor!.style.width!;
-      this.editDiv.remove();
-      this.editDiv = undefined;
-      this.editor = undefined;
-    }
+    const text = this.text! as MarkupText;
+    const original = this.boxed ? this.boxed : text;
+    const undo = this.markup.undo;
+    undo.doGroup(() => {
+      const newVal = this.editor!.value;
+      if (newVal.trim() === "") { // if the result of the editing is blank, just delete the text element
+        if (!this._fromPlaceTool)
+          undo.onDelete(original);
+        original.remove(); // must do this *after* we call undo.onDelete
+        return;
+      }
+
+      let newText: G | MarkupText = text.clone();
+      const fontSize = text.getFontSize();
+      newText.createMarkup(newVal, fontSize);
+      if (this.boxed)
+        newText = this.createBoxedText(original.parent() as G, newText);
+      original.replace(newText);
+      if (this._fromPlaceTool)
+        undo.onAdded(newText);
+      else
+        undo.onModified(newText, original);
+    });
+
+    const editSize = MarkupApp.props.text.edit.size;
+    const style = this.editor!.style;
+    editSize.height = style.height!;
+    editSize.width = style.width!;
+    this.editDiv.remove();
+    this.editDiv = undefined;
+    this.editor = undefined;
   }
 
   public onInstall() {
