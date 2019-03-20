@@ -5,28 +5,23 @@
 /** @module Elements */
 
 import { Id64String } from "@bentley/bentleyjs-core";
-import {
-  BisCodeSpec,
-  Code,
-  CodeSpec,
-  CodeScopeProps,
-  TextureMapProps,
-  RenderMaterialProps,
-} from "@bentley/imodeljs-common";
+import { BisCodeSpec, Code, CodeScopeProps, CodeSpec, RenderMaterialProps, TextureMapProps } from "@bentley/imodeljs-common";
 import { DefinitionElement } from "./Element";
 import { IModelDb } from "./IModelDb";
 
-/** Defines a rendering material. */
+/** Defines a rendering material.
+ * @public
+ */
 export class RenderMaterial extends DefinitionElement implements RenderMaterialProps {
   public paletteName: string;
   public description?: string;
-  /** @hidden */
+  /** @internal */
   constructor(props: RenderMaterialProps, iModel: IModelDb) {
     super(props, iModel);
     this.paletteName = props.paletteName;
     this.description = props.description;
   }
-  /** @hidden */
+  /** @internal */
   public toJSON(): RenderMaterialProps {
     const val = super.toJSON() as RenderMaterialProps;
     val.paletteName = this.paletteName;
@@ -101,6 +96,7 @@ export class RenderMaterial extends DefinitionElement implements RenderMaterialP
   }
 }
 
+/** @public */
 export namespace RenderMaterial {
   /** Parameters used to construct a [[RenderMaterial]]. */
   export class Params {

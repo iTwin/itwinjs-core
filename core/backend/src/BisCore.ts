@@ -25,6 +25,7 @@ import * as materialMod from "./Material";
  * ``` ts
  * [[include:BisCore.registerSchemaAndGetClass]]
  * ```
+ * @public
  */
 export class BisCore extends Schema {
   /**

@@ -4,13 +4,15 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Schema */
 
-import { IModelError, IModelStatus } from "@bentley/imodeljs-common";
 import { Logger } from "@bentley/bentleyjs-core";
+import { IModelError, IModelStatus } from "@bentley/imodeljs-common";
 import { ClassRegistry } from "./ClassRegistry";
-import { IModelDb } from "./IModelDb";
 import { Entity } from "./Entity";
+import { IModelDb } from "./IModelDb";
 
-/** Base class for all schema classes - see [working with schemas and elements in TypeScript]($docs/learning/backend/SchemasAndElementsInTypeScript.md). */
+/** Base class for all schema classes - see [working with schemas and elements in TypeScript]($docs/learning/backend/SchemasAndElementsInTypeScript.md).
+ * @public
+ */
 export class Schema {
   public get name(): string { return this.constructor.name; }
 
@@ -22,7 +24,9 @@ export class Schema {
   public static getClass(className: string, iModel: IModelDb): typeof Entity | undefined { return ClassRegistry.getClass(this.name + ":" + className, iModel); }
 }
 
-/** Manages registered schemas */
+/** Manages registered schemas
+ * @public
+ */
 export class Schemas {
   private static _registeredSchemas: { [key: string]: Schema; } = {};
 
@@ -39,7 +43,7 @@ export class Schemas {
   /** Unregister a schema that may already be registered.
    * This function is not normally needed, but is useful for cases where a generated *proxy* schema needs to be replaced by the *real* schema.
    * @param schemaName Name of the schema to unregister
-   * @hidden
+   * @internal
    */
   public static unregisterSchema(schemaName: string): void {
     const key = schemaName.toLowerCase();

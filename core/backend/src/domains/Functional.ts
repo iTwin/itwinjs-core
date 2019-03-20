@@ -12,9 +12,9 @@ import { IModelDb } from "../IModelDb";
 import { Schema, Schemas } from "../Schema";
 import * as elementsModule from "./FunctionalElements";
 
-/** @hidden */
 const loggingCategory = "imodeljs-backend.Functional";
 
+/** @public */
 export class Functional extends Schema {
   public static registerSchema() {
     Schemas.unregisterSchema(Functional.name);

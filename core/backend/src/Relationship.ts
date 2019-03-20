@@ -10,7 +10,6 @@ import { EntityProps, IModelError, IModelStatus } from "@bentley/imodeljs-common
 import { Id64, Id64String, Logger, DbOpcode, DbResult } from "@bentley/bentleyjs-core";
 import { ECSqlStatement } from "./ECSqlStatement";
 
-/** @hidden */
 const loggingCategory = "imodeljs-backend.Relationship";
 
 /** Specifies the source and target elements of a [[Relationship]] instance. */
@@ -19,23 +18,27 @@ export interface SourceAndTarget {
   targetId: Id64String;
 }
 
-/** Properties that are common to all types of link table ECRelationships */
+/** Properties that are common to all types of link table ECRelationships
+ * @public
+ */
 export interface RelationshipProps extends EntityProps, SourceAndTarget {
 }
 
-/** Base class for all link table ECRelationships */
+/** Base class for all link table ECRelationships
+ * @public
+ */
 export class Relationship extends Entity implements RelationshipProps {
   public readonly sourceId: Id64String;
   public readonly targetId: Id64String;
 
-  /** @hidden */
+  /** @internal */
   constructor(props: RelationshipProps, iModel: IModelDb) {
     super(props, iModel);
     this.sourceId = Id64.fromJSON(props.sourceId);
     this.targetId = Id64.fromJSON(props.targetId);
   }
 
-  /** @hidden */
+  /** @internal */
   public toJSON(): RelationshipProps {
     const val = super.toJSON() as RelationshipProps;
     val.sourceId = this.sourceId;
@@ -63,8 +66,8 @@ export class Relationship extends Entity implements RelationshipProps {
   public buildConcurrencyControlRequest(opcode: DbOpcode): void { this.iModel.concurrencyControl.buildRequestForRelationship(this, opcode); }
 }
 
-/**
- * A Relationship where one Element refers to another Element
+/**A Relationship where one Element refers to another Element
+ * @public
  */
 export class ElementRefersToElements extends Relationship {
   /** Create an instance of the Relationship.
@@ -88,17 +91,21 @@ export class ElementRefersToElements extends Relationship {
   }
 }
 
-/** Relates a [[DrawingGraphic]] to the [[Element]] that it represents */
+/** Relates a [[DrawingGraphic]] to the [[Element]] that it represents
+ * @public
+ */
 export class DrawingGraphicRepresentsElement extends ElementRefersToElements {
 }
 
-/** Properties that are common to all types of link table ECRelationships */
+/** Properties that are common to all types of link table ECRelationships
+ * @public
+ */
 export interface ElementGroupsMembersProps extends RelationshipProps {
   memberPriority: number;
 }
 
-/**
- * An ElementRefersToElements relationship where one Element *groups* a set of other Elements.
+/** An ElementRefersToElements relationship where one Element *groups* a set of other Elements.
+ * @public
  */
 export class ElementGroupsMembers extends ElementRefersToElements {
   public memberPriority: number;
@@ -127,7 +134,7 @@ export class ElementDrivesElement extends Relationship implements ElementDrivesE
   public status: number;
   public priority: number;
 
-  /** @hidden */
+  /** @internal */
   constructor(props: ElementDrivesElementProps, iModel: IModelDb) {
     super(props, iModel);
     this.status = props.status;
@@ -140,22 +147,22 @@ export class ElementDrivesElement extends Relationship implements ElementDrivesE
   }
 }
 
-/** Manages [[Relationship]]s. */
+/** Manages [[Relationship]]s.
+ * @public
+ */
 export class Relationships {
   private _iModel: IModelDb;
 
-  /** @hidden */
+  /** @internal */
   constructor(iModel: IModelDb) { this._iModel = iModel; }
 
-  /**
-   * Create a new instance of a Relationship.
+  /** Create a new instance of a Relationship.
    * @param props The properties of the new Relationship.
    * @throws [[IModelError]] if there is a problem creating the Relationship.
    */
   public createInstance(props: RelationshipProps): Relationship { return this._iModel.constructEntity<Relationship>(props); }
 
-  /**
-   * Insert a new relationship instance into the iModel.
+  /** Insert a new relationship instance into the iModel.
    * @param props The properties of the new relationship.
    * @returns The Id of the newly inserted relationship.
    * @note The id property of the props object is set as a side effect of this function.
@@ -170,8 +177,7 @@ export class Relationships {
     return props.id;
   }
 
-  /**
-   * Update the properties of an existing relationship instance in the iModel.
+  /** Update the properties of an existing relationship instance in the iModel.
    * @param props the properties of the relationship instance to update. Any properties that are not present will be left unchanged.
    * @throws [[IModelError]] if unable to update the relationship instance.
    */
@@ -181,8 +187,7 @@ export class Relationships {
       throw new IModelError(error, "", Logger.logWarning, loggingCategory);
   }
 
-  /**
-   * Delete an Relationship instance from this iModel.
+  /** Delete an Relationship instance from this iModel.
    * @param id The Id of the Relationship to be deleted
    * @throws [[IModelError]]
    */

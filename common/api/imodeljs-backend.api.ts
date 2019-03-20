@@ -8,6 +8,7 @@ enum AccessMode {
 
 // @public
 class AnnotationElement2d extends GraphicalElement2d {
+  // @internal
   constructor(props: GeometricElement2dProps, iModel: IModelDb);
 }
 
@@ -212,6 +213,7 @@ class BriefcaseManager {
 
 // @public
 class CachedECSqlStatement {
+  // @internal
   constructor(stmt: ECSqlStatement);
   // (undocumented)
   statement: ECSqlStatement;
@@ -221,6 +223,7 @@ class CachedECSqlStatement {
 
 // @public
 class CachedSqliteStatement {
+  // @internal
   constructor(stmt: SqliteStatement);
   // (undocumented)
   statement: SqliteStatement;
@@ -235,12 +238,14 @@ class Callout extends DetailingSymbol, implements CalloutProps {
 
 // @public
 class Category extends DefinitionElement, implements CategoryProps {
+  // @internal
   constructor(props: CategoryProps, iModel: IModelDb);
   myDefaultSubCategoryId(): Id64String;
   // (undocumented)
   rank: Rank;
   setDefaultAppearance(props: SubCategoryAppearance.Props): void;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   toJSON(): CategoryProps;
 }
 
@@ -253,12 +258,14 @@ class CategoryOwnsSubCategories extends ElementOwnsChildElements {
 
 // @public
 class CategorySelector extends DefinitionElement, implements CategorySelectorProps {
+  // @internal
   constructor(props: CategorySelectorProps, iModel: IModelDb);
   categories: string[];
   static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, categories: Id64Array): CategorySelector;
   static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
   static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, categories: Id64Array): Id64String;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   toJSON(): CategorySelectorProps;
 }
 
@@ -351,18 +358,24 @@ class ChangeSummaryManager {
 class ClassRegistry {
   static findRegisteredClass(classFullName: string): typeof Entity | undefined;
   static getClass(fullName: string, iModel: IModelDb): typeof Entity;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   static getRegisteredSchema(domainName: string): Schema | undefined;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   static getSchemaBaseClass(): typeof Schema;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   static isNotFoundError(err: any): boolean;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   static makeMetaDataNotFoundError(className: string): IModelError;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   static register(entityClass: typeof Entity, schema: Schema): void;
   static registerModule(moduleObj: any, schema: Schema): void;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   static registerSchema(schema: Schema): void;
 }
 
@@ -384,9 +397,11 @@ class ConcurrencyControl {
 
 // @public
 class DefinitionElement extends InformationContentElement, implements DefinitionElementProps {
+  // @internal
   constructor(props: ElementProps, iModel: IModelDb);
   isPrivate: boolean;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   toJSON(): DefinitionElementProps;
 }
 
@@ -415,6 +430,7 @@ class DictionaryModel extends DefinitionModel {
 
 // @public
 class DisplayStyle extends DefinitionElement, implements DisplayStyleProps {
+  // @internal
   protected constructor(props: DisplayStyleProps, iModel: IModelDb);
   static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
   // (undocumented)
@@ -423,6 +439,7 @@ class DisplayStyle extends DefinitionElement, implements DisplayStyleProps {
 
 // @public
 class DisplayStyle2d extends DisplayStyle {
+  // @internal
   constructor(props: DisplayStyleProps, iModel: IModelDb);
   static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string): DisplayStyle2d;
   static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string): Id64String;
@@ -432,6 +449,7 @@ class DisplayStyle2d extends DisplayStyle {
 
 // @public
 class DisplayStyle3d extends DisplayStyle {
+  // @internal
   constructor(props: DisplayStyleProps, iModel: IModelDb);
   static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, options?: DisplayStyleCreationOptions): DisplayStyle3d;
   static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, options?: DisplayStyleCreationOptions): Id64String;
@@ -455,11 +473,13 @@ interface DisplayStyleCreationOptions {
 
 // @public
 class Document extends InformationContentElement {
+  // @internal
   constructor(props: ElementProps, iModel: IModelDb);
 }
 
-// @public
+// @public @deprecated
 class DocumentCarrier extends InformationCarrierElement {
+  // @internal
   constructor(props: ElementProps, iModel: IModelDb);
 }
 
@@ -474,6 +494,7 @@ class DocumentPartition extends InformationPartitionElement {
 
 // @public
 class Drawing extends Document {
+  // @internal
   constructor(props: ElementProps, iModel: IModelDb);
   static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
   static insert(iModelDb: IModelDb, documentListModelId: Id64String, name: string): Id64String;
@@ -481,6 +502,7 @@ class Drawing extends Document {
 
 // @public
 class DrawingCategory extends Category {
+  // @internal
   constructor(opts: ElementProps, iModel: IModelDb);
   static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string): DrawingCategory;
   static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
@@ -491,6 +513,7 @@ class DrawingCategory extends Category {
 
 // @public
 class DrawingGraphic extends GraphicalElement2d {
+  // @internal
   constructor(props: GeometricElement2dProps, iModel: IModelDb);
 }
 
@@ -508,6 +531,7 @@ class DrawingModel extends GraphicalModel2d {
 
 // @public
 class DrawingViewDefinition extends ViewDefinition2d {
+  // @internal
   constructor(props: ViewDefinition2dProps, iModel: IModelDb);
   static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, baseModelId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range2d): DrawingViewDefinition;
   static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, baseModelId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range2d): Id64String;
@@ -515,6 +539,7 @@ class DrawingViewDefinition extends ViewDefinition2d {
 
 // @public
 class DriverBundleElement extends InformationContentElement {
+  // @internal
   constructor(props: ElementProps, iModel: IModelDb);
 }
 
@@ -564,7 +589,8 @@ interface ECEnumValue {
   value: number | string;
 }
 
-// @public (undocumented)
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal (undocumented)
 class ECSchemaXmlContext {
   constructor();
   // (undocumented)
@@ -650,12 +676,18 @@ class ECSqlStatement implements IterableIterator<any>, IDisposable {
   getRow(): any;
   getValue(columnIx: number): ECSqlValue;
   readonly isPrepared: boolean;
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal
   readonly isShared: boolean;
   next(): IteratorResult<any>;
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
   // WARNING: The type "IModelJsNative.DgnDb" needs to be exported by the package (e.g. added to index.ts)
   // WARNING: The type "IModelJsNative.ECDb" needs to be exported by the package (e.g. added to index.ts)
+  // @internal
   prepare(db: IModelJsNative.DgnDb | IModelJsNative.ECDb, ecsql: string): void;
   reset(): void;
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal
   setIsShared(b: boolean): void;
   step(): DbResult;
   stepForInsert(): ECSqlInsertResult;
@@ -722,6 +754,7 @@ class ECSqlValueIterator implements IterableIterator<ECSqlValue> {
 
 // @public
 class Element extends Entity, implements ElementProps {
+  // @internal
   constructor(props: ElementProps, iModel: IModelDb);
   buildConcurrencyControlRequest(opcode: DbOpcode): void;
   readonly code: Code;
@@ -758,6 +791,8 @@ class Element extends Entity, implements ElementProps {
   // (undocumented)
   setJsonProperty(nameSpace: string, value: any): void;
   setUserProperties(nameSpace: string, value: any): void;
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal
   toJSON(): ElementProps;
   update(): void;
   userLabel?: string;
@@ -765,15 +800,18 @@ class Element extends Entity, implements ElementProps {
 
 // @public
 class ElementAspect extends Entity, implements ElementAspectProps {
+  // @internal
   constructor(props: ElementAspectProps, iModel: IModelDb);
   // (undocumented)
   element: RelatedElement;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   toJSON(): ElementAspectProps;
 }
 
 // @public
 class ElementDrivesElement extends Relationship, implements ElementDrivesElementProps {
+  // @internal
   constructor(props: ElementDrivesElementProps, iModel: IModelDb);
   // (undocumented)
   static create<T extends ElementRefersToElements>(iModel: IModelDb, sourceId: Id64String, targetId: Id64String, priority?: number): T;
@@ -824,7 +862,8 @@ class ElementOwnsChildElements extends RelatedElement {
   static classFullName: string;
 }
 
-// @public (undocumented)
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal (undocumented)
 class ElementPropertyFormatter {
   constructor(iModel: IModelDb);
   formatProperties(elem: Element): any;
@@ -851,6 +890,7 @@ class EmbeddedFileLink extends LinkElement {
 
 // @public
 class Entity implements EntityProps {
+  // @internal
   constructor(props: EntityProps, iModel: IModelDb);
   // (undocumented)
   [propName: string]: any;
@@ -863,7 +903,8 @@ class Entity implements EntityProps {
   iModel: IModelDb;
   static schema: Schema;
   readonly schemaName: string;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   toJSON(): EntityProps;
 }
 
@@ -907,21 +948,25 @@ class Functional extends Schema {
 
 // @public
 class FunctionalBreakdownElement extends FunctionalElement {
+  // @internal
   constructor(props: FunctionalElementProps, iModel: IModelDb);
 }
 
 // @public
 class FunctionalComponentElement extends FunctionalElement {
+  // @internal
   constructor(props: FunctionalElementProps, iModel: IModelDb);
 }
 
 // @public (undocumented)
 class FunctionalComposite extends FunctionalBreakdownElement {
+  // @internal
   constructor(props: FunctionalElementProps, iModel: IModelDb);
 }
 
 // @public
 class FunctionalElement extends RoleElement, implements FunctionalElementProps {
+  // @internal
   constructor(props: FunctionalElementProps, iModel: IModelDb);
 }
 
@@ -940,11 +985,13 @@ class FunctionalModel extends RoleModel {
 
 // @public
 class FunctionalPartition extends InformationPartitionElement {
+  // @internal
   constructor(props: InformationPartitionElementProps, iModel: IModelDb);
 }
 
 // @public
 class FunctionalType extends TypeDefinitionElement {
+  // @internal
   constructor(props: TypeDefinitionElementProps, iModel: IModelDb);
 }
 
@@ -956,6 +1003,7 @@ class Generic extends Schema {
 
 // @public
 class GeometricElement extends Element, implements GeometricElementProps {
+  // @internal
   constructor(props: GeometricElementProps, iModel: IModelDb);
   // (undocumented)
   calculateRange3d(): AxisAlignedBox3d;
@@ -964,15 +1012,19 @@ class GeometricElement extends Element, implements GeometricElementProps {
   getPlacementTransform(): Transform;
   is2d(): this is GeometricElement2d;
   is3d(): this is GeometricElement3d;
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   toJSON(): GeometricElementProps;
 }
 
 // @public
 class GeometricElement2d extends GeometricElement, implements GeometricElement2dProps {
+  // @internal
   constructor(props: GeometricElement2dProps, iModel: IModelDb);
   // (undocumented)
   placement: Placement2d;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   toJSON(): GeometricElement2dProps;
   // (undocumented)
   typeDefinition?: TypeDefinition;
@@ -980,10 +1032,12 @@ class GeometricElement2d extends GeometricElement, implements GeometricElement2d
 
 // @public
 class GeometricElement3d extends GeometricElement, implements GeometricElement3dProps {
+  // @internal
   constructor(props: GeometricElement3dProps, iModel: IModelDb);
   // (undocumented)
   placement: Placement3d;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   toJSON(): GeometricElement3dProps;
   // (undocumented)
   typeDefinition?: TypeDefinition;
@@ -1006,12 +1060,15 @@ class GeometricModel3d extends GeometricModel {
 
 // @public
 class GeometryPart extends DefinitionElement, implements GeometryPartProps {
+  // @internal
   constructor(props: GeometryPartProps, iModel: IModelDb);
   // (undocumented)
   bbox: ElementAlignedBox3d;
   static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
   // (undocumented)
   geom?: GeometryStreamProps;
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   toJSON(): GeometryPartProps;
 }
 
@@ -1022,6 +1079,7 @@ class Graphic3d extends GraphicalElement3d {
 
 // @public
 class GraphicalElement2d extends GeometricElement2d {
+  // @internal
   constructor(props: GeometricElement2dProps, iModel: IModelDb);
 }
 
@@ -1034,6 +1092,7 @@ class GraphicalElement2dIsOfType extends RelatedElement {
 
 // @public
 class GraphicalElement3d extends GeometricElement3d {
+  // @internal
   constructor(props: GeometricElement3dProps, iModel: IModelDb);
 }
 
@@ -1043,6 +1102,7 @@ class GraphicalModel2d extends GeometricModel2d {
 
 // @public
 class GraphicalType2d extends TypeDefinitionElement {
+  // @internal
   constructor(props: ElementProps, iModel: IModelDb);
   static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
 }
@@ -1084,7 +1144,8 @@ class IModelHost {
   // (undocumented)
   static configuration?: IModelHostConfiguration;
   static getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   static loadNative(region: number, dir?: string): void;
   static readonly onAfterStartup: BeEvent<() => void>;
   static readonly onBeforeShutdown: BeEvent<() => void>;
@@ -1110,7 +1171,7 @@ class IModelHostConfiguration {
   useTileContentThreadPool: boolean;
 }
 
-// @public (undocumented)
+// @alpha (undocumented)
 class IModelImporter {
   constructor(sourceDb: IModelDb, targetDb: IModelDb);
   // (undocumented)
@@ -1855,13 +1916,15 @@ module IModelJsNative {
 
 }
 
-// @public
+// @public @deprecated
 class InformationCarrierElement extends Element {
+  // @internal
   constructor(props: ElementProps, iModel: IModelDb);
 }
 
 // @public
 class InformationContentElement extends Element {
+  // @internal
   constructor(props: ElementProps, iModel: IModelDb);
 }
 
@@ -1871,6 +1934,7 @@ class InformationModel extends Model {
 
 // @public
 class InformationPartitionElement extends InformationContentElement, implements InformationPartitionElementProps {
+  // @internal
   constructor(props: InformationPartitionElementProps, iModel: IModelDb);
   static createCode(iModel: IModelDb, scopeElementId: CodeScopeProps, codeValue: string): Code;
   // (undocumented)
@@ -1879,6 +1943,7 @@ class InformationPartitionElement extends InformationContentElement, implements 
 
 // @public
 class InformationRecordElement extends InformationContentElement {
+  // @internal
   constructor(props: ElementProps, iModel: IModelDb);
 }
 
@@ -1892,6 +1957,7 @@ class InformationRecordPartition extends InformationPartitionElement {
 
 // @public
 class InformationReferenceElement extends InformationContentElement {
+  // @internal
   constructor(props: ElementProps, iModel: IModelDb);
 }
 
@@ -1929,12 +1995,14 @@ class KnownLocations {
 
 // @public
 class LightLocation extends SpatialLocationElement, implements LightLocationProps {
+  // @internal
   constructor(props: LightLocationProps, iModel: IModelDb);
   enabled: boolean;
 }
 
 // @public
 class LineStyle extends DefinitionElement, implements LineStyleProps {
+  // @internal
   constructor(props: LineStyleProps, iModel: IModelDb);
   static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
   // (undocumented)
@@ -2133,7 +2201,8 @@ class LinkModel extends InformationModel {
 class LinkPartition extends InformationPartitionElement {
 }
 
-// @public
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal
 class MetaDataRegistry {
   add(classFullName: string, metaData: EntityMetaData): void;
   find(classFullName: string): EntityMetaData | undefined;
@@ -2141,6 +2210,7 @@ class MetaDataRegistry {
 
 // @public
 class Model extends Entity, implements ModelProps {
+  // @internal
   constructor(props: ModelProps, iModel: IModelDb);
   buildConcurrencyControlRequest(opcode: DbOpcode): void;
   // (undocumented)
@@ -2174,17 +2244,21 @@ class Model extends Entity, implements ModelProps {
   // (undocumented)
   setJsonProperty(name: string, value: any): void;
   setUserProperties(nameSpace: string, value: any): void;
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal
   toJSON(): ModelProps;
 }
 
 // @public
 class ModelSelector extends DefinitionElement, implements ModelSelectorProps {
+  // @internal
   constructor(props: ModelSelectorProps, iModel: IModelDb);
   static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, models: Id64Array): ModelSelector;
   static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
   static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, models: Id64Array): Id64String;
   models: string[];
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   toJSON(): ModelSelectorProps;
 }
 
@@ -2218,6 +2292,7 @@ class OrthographicViewDefinition extends SpatialViewDefinition {
 
 // @public
 class PhysicalElement extends SpatialElement {
+  // @internal
   constructor(props: GeometricElement3dProps, iModel: IModelDb);
 }
 
@@ -2255,6 +2330,7 @@ class PhysicalPartition extends InformationPartitionElement {
 
 // @public
 class PhysicalType extends TypeDefinitionElement {
+  // @internal
   constructor(props: TypeDefinitionElementProps, iModel: IModelDb);
   static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
 }
@@ -2276,13 +2352,16 @@ class Platform {
   static readonly platformName: string;
 }
 
-// @public
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal
 class RecipeDefinitionElement extends DefinitionElement {
+  // @internal
   constructor(props: ElementProps, iModel: IModelDb);
 }
 
 // @public
 class Relationship extends Entity, implements RelationshipProps {
+  // @internal
   constructor(props: RelationshipProps, iModel: IModelDb);
   buildConcurrencyControlRequest(opcode: DbOpcode): void;
   delete(): void;
@@ -2299,7 +2378,8 @@ class Relationship extends Entity, implements RelationshipProps {
   readonly sourceId: Id64String;
   // (undocumented)
   readonly targetId: Id64String;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   toJSON(): RelationshipProps;
   update(): void;
 }
@@ -2310,6 +2390,7 @@ interface RelationshipProps extends EntityProps, SourceAndTarget {
 
 // @public
 class Relationships {
+  // @internal
   constructor(iModel: IModelDb);
   createInstance(props: RelationshipProps): Relationship;
   deleteInstance(props: RelationshipProps): void;
@@ -2359,6 +2440,8 @@ class Schemas {
   // (undocumented)
   static isRegistered(schema: Schema): boolean;
   static registerSchema(schema: Schema): void;
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal
   static unregisterSchema(schemaName: string): void;
 }
 
@@ -2369,6 +2452,7 @@ class SectionCallout extends Callout {
 
 // @public
 class SectionDrawing extends Drawing {
+  // @internal
   constructor(props: ElementProps, iModel: IModelDb);
 }
 
@@ -2378,6 +2462,7 @@ class SectionDrawingModel extends DrawingModel {
 
 // @public
 class Sheet extends Document, implements SheetProps {
+  // @internal
   constructor(props: SheetProps, iModel: IModelDb);
   static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
   // (undocumented)
@@ -2392,6 +2477,7 @@ class Sheet extends Document, implements SheetProps {
 
 // @public
 class SheetBorderTemplate extends Document, implements SheetBorderTemplateProps {
+  // @internal
   constructor(props: SheetBorderTemplateProps, iModel: IModelDb);
   // (undocumented)
   height?: number;
@@ -2405,6 +2491,7 @@ class SheetModel extends GraphicalModel2d {
 
 // @public
 class SheetTemplate extends Document, implements SheetTemplateProps {
+  // @internal
   constructor(props: SheetTemplateProps, iModel: IModelDb);
   // (undocumented)
   border?: Id64String;
@@ -2428,6 +2515,7 @@ interface SourceAndTarget {
 
 // @public
 class SpatialCategory extends Category {
+  // @internal
   constructor(opts: ElementProps, iModel: IModelDb);
   static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string): SpatialCategory;
   static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
@@ -2438,6 +2526,7 @@ class SpatialCategory extends Category {
 
 // @public
 class SpatialElement extends GeometricElement3d {
+  // @internal
   constructor(props: GeometricElement3dProps, iModel: IModelDb);
 }
 
@@ -2448,6 +2537,7 @@ class SpatialLocation extends SpatialLocationElement {
 
 // @public
 class SpatialLocationElement extends SpatialElement {
+  // @internal
   constructor(props: GeometricElement3dProps, iModel: IModelDb);
 }
 
@@ -2468,6 +2558,7 @@ class SpatialLocationPartition extends InformationPartitionElement {
 
 // @public
 class SpatialLocationType extends TypeDefinitionElement {
+  // @internal
   constructor(props: TypeDefinitionElementProps, iModel: IModelDb);
   static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
 }
@@ -2478,10 +2569,12 @@ class SpatialModel extends GeometricModel3d {
 
 // @public
 class SpatialViewDefinition extends ViewDefinition3d, implements SpatialViewDefinitionProps {
+  // @internal
   constructor(props: SpatialViewDefinitionProps, iModel: IModelDb);
   loadModelSelector(): ModelSelector;
   modelSelectorId: Id64String;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   toJSON(): SpatialViewDefinitionProps;
 }
 
@@ -2498,12 +2591,18 @@ class SqliteStatement implements IterableIterator<any>, IDisposable {
   getValue(columnIx: number): SqliteValue;
   readonly isPrepared: boolean;
   readonly isReadonly: boolean;
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal
   readonly isShared: boolean;
   next(): IteratorResult<any>;
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
   // WARNING: The type "IModelJsNative.DgnDb" needs to be exported by the package (e.g. added to index.ts)
   // WARNING: The type "IModelJsNative.ECDb" needs to be exported by the package (e.g. added to index.ts)
+  // @internal
   prepare(db: IModelJsNative.DgnDb | IModelJsNative.ECDb, sql: string): void;
   reset(): void;
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal
   setIsShared(b: boolean): void;
   step(): DbResult;
 }
@@ -2569,6 +2668,7 @@ interface StringParam {
 
 // @public
 class SubCategory extends DefinitionElement, implements SubCategoryProps {
+  // @internal
   constructor(props: SubCategoryProps, iModel: IModelDb);
   appearance: SubCategoryAppearance;
   static create(iModelDb: IModelDb, parentCategoryId: Id64String, name: string, appearance: SubCategoryAppearance.Props): SubCategory;
@@ -2579,12 +2679,14 @@ class SubCategory extends DefinitionElement, implements SubCategoryProps {
   getSubCategoryName(): string;
   static insert(iModelDb: IModelDb, parentCategoryId: Id64String, name: string, appearance: SubCategoryAppearance.Props): Id64String;
   readonly isDefaultSubCategory: boolean;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   toJSON(): SubCategoryProps;
 }
 
 // @public
 class Subject extends InformationReferenceElement, implements SubjectProps {
+  // @internal
   constructor(props: SubjectProps, iModel: IModelDb);
   static create(iModelDb: IModelDb, parentSubjectId: Id64String, name: string, description?: string): Subject;
   static createCode(iModelDb: IModelDb, parentSubjectId: CodeScopeProps, codeValue: string): Code;
@@ -2617,36 +2719,45 @@ enum SyncMode {
   PullOnly = 2
 }
 
-// @public
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal
 class TemplateRecipe2d extends RecipeDefinitionElement {
+  // @internal
   constructor(props: ElementProps, iModel: IModelDb);
 }
 
-// @public
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal
 class TemplateRecipe3d extends RecipeDefinitionElement {
+  // @internal
   constructor(props: ElementProps, iModel: IModelDb);
 }
 
-// @public
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal
 class TemplateViewDefinition2d extends ViewDefinition2d {
 }
 
-// @public
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal
 class TemplateViewDefinition3d extends ViewDefinition3d {
 }
 
 // @public
 class TextAnnotation2d extends AnnotationElement2d {
+  // @internal
   constructor(props: GeometricElement2dProps, iModel: IModelDb);
 }
 
 // @public
 class TextAnnotation3d extends GraphicalElement3d {
+  // @internal
   constructor(props: GeometricElement3dProps, iModel: IModelDb);
 }
 
 // @public
 class Texture extends DefinitionElement, implements TextureProps {
+  // @internal
   constructor(props: TextureProps, iModel: IModelDb);
   static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, format: ImageSourceFormat, data: string, width: number, height: number, description: string, flags: TextureFlags): Texture;
   static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, name: string): Code;
@@ -2661,7 +2772,8 @@ class Texture extends DefinitionElement, implements TextureProps {
   // (undocumented)
   height: number;
   static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, format: ImageSourceFormat, data: string, width: number, height: number, description: string, flags: TextureFlags): Id64String;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   toJSON(): TextureProps;
   // (undocumented)
   width: number;
@@ -2691,19 +2803,19 @@ enum TxnAction {
 // @public
 class TxnManager {
   constructor(_iModel: IModelDb);
-  // (undocumented)
+  // @internal (undocumented)
   protected _onAllInputsHandled(elClassName: string, elId: Id64String): void;
-  // (undocumented)
+  // @internal (undocumented)
   protected _onBeforeOutputsHandled(elClassName: string, elId: Id64String): void;
-  // (undocumented)
+  // @internal (undocumented)
   protected _onBeginValidate(): void;
-  // (undocumented)
+  // @internal (undocumented)
   protected _onDeletedDependency(props: RelationshipProps): void;
-  // (undocumented)
+  // @internal (undocumented)
   protected _onEndValidate(): void;
-  // (undocumented)
+  // @internal (undocumented)
   protected _onRootChanged(props: RelationshipProps): void;
-  // (undocumented)
+  // @internal (undocumented)
   protected _onValidateOutput(props: RelationshipProps): void;
   beginMultiTxnOperation(): DbResult;
   // WARNING: The type "IModelJsNative.TxnIdString" needs to be exported by the package (e.g. added to index.ts)
@@ -2751,6 +2863,7 @@ class TxnManager {
 
 // @public
 class TypeDefinitionElement extends DefinitionElement, implements TypeDefinitionElementProps {
+  // @internal
   constructor(props: TypeDefinitionElementProps, iModel: IModelDb);
   // (undocumented)
   recipe?: RelatedElement;
@@ -2781,6 +2894,7 @@ class ViewAttachmentLabel extends DetailingSymbol, implements ViewAttachmentLabe
 
 // @public
 class ViewDefinition extends DefinitionElement, implements ViewDefinitionProps {
+  // @internal
   protected constructor(props: ViewDefinitionProps, iModel: IModelDb);
   categorySelectorId: Id64String;
   static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
@@ -2791,24 +2905,28 @@ class ViewDefinition extends DefinitionElement, implements ViewDefinitionProps {
   isView3d(): this is ViewDefinition3d;
   loadCategorySelector(): CategorySelector;
   loadDisplayStyle(): DisplayStyle;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   toJSON(): ViewDefinitionProps;
 }
 
 // @public
 class ViewDefinition2d extends ViewDefinition, implements ViewDefinition2dProps {
+  // @internal
   constructor(props: ViewDefinition2dProps, iModel: IModelDb);
   angle: Angle;
   baseModelId: Id64String;
   delta: Point2d;
   loadDisplayStyle2d(): DisplayStyle2d;
   origin: Point2d;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   toJSON(): ViewDefinition2dProps;
 }
 
 // @public
 class ViewDefinition3d extends ViewDefinition, implements ViewDefinition3dProps {
+  // @internal
   constructor(props: ViewDefinition3dProps, iModel: IModelDb);
   angles: YawPitchRollAngles;
   camera: Camera;
@@ -2816,12 +2934,14 @@ class ViewDefinition3d extends ViewDefinition, implements ViewDefinition3dProps 
   extents: Vector3d;
   loadDisplayStyle3d(): DisplayStyle3d;
   origin: Point3d;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   toJSON(): ViewDefinition3dProps;
 }
 
 // @public
 class VolumeElement extends SpatialLocationElement {
+  // @internal
   constructor(props: GeometricElement3dProps, iModel: IModelDb);
 }
 

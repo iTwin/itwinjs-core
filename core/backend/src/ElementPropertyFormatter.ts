@@ -7,7 +7,7 @@ import { IModelDb } from "./IModelDb";
 
 /** @module iModels */
 
-/** @hidden */
+/** @internal */
 export class ElementPropertyFormatter {
 
   private _iModel: IModelDb;

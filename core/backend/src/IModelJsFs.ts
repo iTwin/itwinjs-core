@@ -25,7 +25,9 @@ export class IModelJsFsStats {
   ) { }
 }
 
-/** File system operations that are defined on all platforms. See also [[Platform]] and [[KnownLocations]] */
+/** File system operations that are defined on all platforms. See also [[Platform]] and [[KnownLocations]]
+ * @public
+ */
 export class IModelJsFs {
 
   /** Does file or directory exist? */

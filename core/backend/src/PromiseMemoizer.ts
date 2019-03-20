@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** Wrapper around a promise that allows synchronous queries of it's state
- * @hidden
+ * @internal
  */
 export class QueryablePromise<T> {
   public result?: T;
@@ -21,7 +21,7 @@ export class QueryablePromise<T> {
 
 /** Utility to cache and retrieve results of long running asynchronous functions.
  * The cache is keyed on the input arguments passed to these functions
- * @hidden
+ * @internal
  */
 export class PromiseMemoizer<T> {
   private _cachedPromises: Map<string, QueryablePromise<T>> = new Map<string, QueryablePromise<T>>();

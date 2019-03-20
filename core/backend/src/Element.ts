@@ -17,8 +17,7 @@ import {
   InformationPartitionElementProps, DefinitionElementProps, LineStyleProps, GeometryPartProps, EntityMetaData, IModel,
 } from "@bentley/imodeljs-common";
 
-/**
- * Elements are the smallest individually identifiable building blocks for modeling the real world in an iModel.
+/** Elements are the smallest individually identifiable building blocks for modeling the real world in an iModel.
  * Each element represents an entity in the real world. Sets of Elements (contained in [[Model]]s) are used to model
  * other Elements that represent larger scale real world entities. Using this recursive modeling strategy,
  * Elements can represent entities at any scale. Elements can represent physical things or abstract concepts
@@ -33,6 +32,7 @@ import {
  * * [Element Fundamentals]($docs/bis/intro/element-fundamentals.md)
  * * [Working with schemas and elements in TypeScript]($docs/learning/backend/SchemasAndElementsInTypeScript.md)
  * * [Creating elements]($docs/learning/backend/CreateElements.md)
+ * @public
  */
 export class Element extends Entity implements ElementProps {
   /** The ModelId of the [Model]($docs/bis/intro/model-fundamentals.md) containing this element */
@@ -49,7 +49,7 @@ export class Element extends Entity implements ElementProps {
   public readonly jsonProperties: { [key: string]: any };
 
   /** constructor for Element.
-   * @hidden
+   * @internal
    */
   constructor(props: ElementProps, iModel: IModelDb) {
     super(props, iModel);
@@ -71,7 +71,7 @@ export class Element extends Entity implements ElementProps {
   public static onAllInputsHandled(_id: Id64String, _iModel: IModelDb): void { }
 
   /** Add this Element's properties to an object for serializing to JSON.
-   * @hidden
+   * @internal
    */
   public toJSON(): ElementProps {
     const val = super.toJSON() as ElementProps;
@@ -140,8 +140,8 @@ export class Element extends Entity implements ElementProps {
   public buildConcurrencyControlRequest(opcode: DbOpcode) { this.iModel.concurrencyControl.buildRequestForElement(this, opcode); }
 }
 
-/**
- * An abstract base class to model real world entities that intrinsically have geometry.
+/** An abstract base class to model real world entities that intrinsically have geometry.
+ * @public
  */
 export abstract class GeometricElement extends Element implements GeometricElementProps {
   /** The Id of the [[Category]] for this GeometricElement. */
@@ -149,7 +149,7 @@ export abstract class GeometricElement extends Element implements GeometricEleme
   /** The GeometryStream for this GeometricElement. */
   public geom?: GeometryStreamProps;
 
-  /** @hidden */
+  /** @internal */
   public constructor(props: GeometricElementProps, iModel: IModelDb) {
     super(props, iModel);
     this.category = Id64.fromJSON(props.category);
@@ -164,9 +164,7 @@ export abstract class GeometricElement extends Element implements GeometricEleme
   public getPlacementTransform(): Transform { return this.placement.getTransform(); }
   public calculateRange3d(): AxisAlignedBox3d { return this.placement.calculateRange(); }
 
-  /** convert this geometric element to a JSON object.
-   * @hidden
-   */
+  /** @internal */
   public toJSON(): GeometricElementProps {
     const val = super.toJSON() as GeometricElementProps;
     val.category = this.category;
@@ -176,15 +174,15 @@ export abstract class GeometricElement extends Element implements GeometricEleme
   }
 }
 
-/**
- * An abstract base class to model real world entities that intrinsically have 3d geometry.
+/** An abstract base class to model real world entities that intrinsically have 3d geometry.
  * See [how to create a GeometricElement3d]$(docs/learning/backend/CreateElements.md#GeometricElement3d).
+ * @public
  */
 export abstract class GeometricElement3d extends GeometricElement implements GeometricElement3dProps {
   public placement: Placement3d;
   public typeDefinition?: TypeDefinition;
 
-  /** @hidden */
+  /** @internal */
   public constructor(props: GeometricElement3dProps, iModel: IModelDb) {
     super(props, iModel);
     this.placement = Placement3d.fromJSON(props.placement);
@@ -192,7 +190,7 @@ export abstract class GeometricElement3d extends GeometricElement implements Geo
       this.typeDefinition = TypeDefinition.fromJSON(props.typeDefinition);
   }
 
-  /** @hidden */
+  /** @internal */
   public toJSON(): GeometricElement3dProps {
     const val = super.toJSON() as GeometricElement3dProps;
     val.placement = this.placement;
@@ -202,20 +200,22 @@ export abstract class GeometricElement3d extends GeometricElement implements Geo
   }
 }
 
-/** A 3D Graphical Element */
+/** A 3D Graphical Element
+ * @public
+ */
 export abstract class GraphicalElement3d extends GeometricElement3d {
-  /** @hidden */
+  /** @internal */
   public constructor(props: GeometricElement3dProps, iModel: IModelDb) { super(props, iModel); }
 }
 
-/**
- * An abstract base class to model information entities that intrinsically have 2d geometry.
+/** An abstract base class to model information entities that intrinsically have 2d geometry.
+ * @public
  */
 export abstract class GeometricElement2d extends GeometricElement implements GeometricElement2dProps {
   public placement: Placement2d;
   public typeDefinition?: TypeDefinition;
 
-  /** @hidden */
+  /** @internal */
   public constructor(props: GeometricElement2dProps, iModel: IModelDb) {
     super(props, iModel);
     this.placement = Placement2d.fromJSON(props.placement);
@@ -223,7 +223,7 @@ export abstract class GeometricElement2d extends GeometricElement implements Geo
       this.typeDefinition = TypeDefinition.fromJSON(props.typeDefinition);
   }
 
-  /** @hidden */
+  /** @internal */
   public toJSON(): GeometricElement2dProps {
     const val = super.toJSON() as GeometricElement2dProps;
     val.placement = this.placement;
@@ -233,112 +233,113 @@ export abstract class GeometricElement2d extends GeometricElement implements Geo
   }
 }
 
-/**
- * An abstract base class for 2d Geometric Elements that are used to convey information within graphical presentations (like drawings).
+/**An abstract base class for 2d Geometric Elements that are used to convey information within graphical presentations (like drawings).
+ * @public
  */
 export abstract class GraphicalElement2d extends GeometricElement2d {
-  /** @hidden */
+  /** @internal */
   public constructor(props: GeometricElement2dProps, iModel: IModelDb) { super(props, iModel); }
 }
 
-/**
- * 2d element used to annotate drawings and sheets.
+/** 2d element used to annotate drawings and sheets.
+ * @public
  */
 export class AnnotationElement2d extends GraphicalElement2d {
-  /** @hidden */
+  /** @internal */
   public constructor(props: GeometricElement2dProps, iModel: IModelDb) { super(props, iModel); }
 }
 
-/**
- * 2d element used to persist graphics for use in drawings.
+/** 2d element used to persist graphics for use in drawings.
+ * @public
  */
 export class DrawingGraphic extends GraphicalElement2d {
-  /** @hidden */
+  /** @internal */
   public constructor(props: GeometricElement2dProps, iModel: IModelDb) { super(props, iModel); }
 }
 
-/** 2D Text Annotation */
+/** 2D Text Annotation
+ * @public
+ */
 export class TextAnnotation2d extends AnnotationElement2d {
-  /** @hidden */
+  /** @internal */
   public constructor(props: GeometricElement2dProps, iModel: IModelDb) { super(props, iModel); }
 }
 
-/** 3D Text Annotation */
+/** 3D Text Annotation
+ * @public
+ */
 export class TextAnnotation3d extends GraphicalElement3d {
-  /** @hidden */
+  /** @internal */
   public constructor(props: GeometricElement3dProps, iModel: IModelDb) { super(props, iModel); }
 }
 
-/**
- * An Element that occupies real world space. Its coordinates are in the project space of its iModel.
+/** An Element that occupies real world space. Its coordinates are in the project space of its iModel.
+ * @public
  */
 export abstract class SpatialElement extends GeometricElement3d {
-  /** @hidden */
+  /** @internal */
   public constructor(props: GeometricElement3dProps, iModel: IModelDb) { super(props, iModel); }
 }
 
-/**
- * An Element that is spatially located, has mass, and can be 'touched'.
+/** An Element that is spatially located, has mass, and can be 'touched'.
+ * @public
  */
 export abstract class PhysicalElement extends SpatialElement {
-  /** @hidden */
+  /** @internal */
   public constructor(props: GeometricElement3dProps, iModel: IModelDb) { super(props, iModel); }
 }
 
-/**
- * Identifies a *tracked* real world location but has no mass and cannot be *touched*.
+/** Identifies a *tracked* real world location but has no mass and cannot be *touched*.
+ * @public
  */
 export abstract class SpatialLocationElement extends SpatialElement {
-  /** @hidden */
+  /** @internal */
   public constructor(props: GeometricElement3dProps, iModel: IModelDb) { super(props, iModel); }
 }
 
-/**
- * A Volume Element is a Spatial Location Element that is restricted to defining a volume.
+/** A Volume Element is a Spatial Location Element that is restricted to defining a volume.
+ * @public
  */
 export class VolumeElement extends SpatialLocationElement {
-  /** @hidden */
+  /** @internal */
   public constructor(props: GeometricElement3dProps, iModel: IModelDb) { super(props, iModel); }
 }
 
-/**
- * Information Content Element is an abstract base class for modeling pure information entities. Only the
+/** Information Content Element is an abstract base class for modeling pure information entities. Only the
  * core framework should directly subclass from Information Content Element. Domain and application developers
  * should start with the most appropriate subclass of Information Content Element.
+ * @public
  */
 export abstract class InformationContentElement extends Element {
-  /** @hidden */
+  /** @internal */
   constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 }
 
-/**
- * Element used in conjunction with bis:ElementDrivesElement relationships to bundle multiple inputs before
+/** Element used in conjunction with bis:ElementDrivesElement relationships to bundle multiple inputs before
  * driving the output element.
  */
 export abstract class DriverBundleElement extends InformationContentElement {
-  /** @hidden */
+  /** @internal */
   constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 }
 
-/**
- * Information Reference is an abstract base class for modeling entities whose main purpose is to reference
- * something else.
+/** Information Reference is an abstract base class for modeling entities whose main purpose is to reference something else.
+ * @public
  */
 export abstract class InformationReferenceElement extends InformationContentElement {
-  /** @hidden */
+  /** @internal */
   public constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 }
 
-/**
- * A Subject is an information element that describes what this repository (or part thereof) is about.
+/** A Subject is an information element that describes what this repository (or part thereof) is about.
  * See [how to create a Subject element]$(docs/learning/backend/CreateElements.md#Subject).
+ * @public
  */
 export class Subject extends InformationReferenceElement implements SubjectProps {
   public description?: string;
-  /** @hidden */
+  /** @internal */
   public constructor(props: SubjectProps, iModel: IModelDb) { super(props, iModel); }
-  /**
-   * Create a Code for a Subject given a name that is meant to be unique within the scope of its parent Subject.
+  /** Create a Code for a Subject given a name that is meant to be unique within the scope of its parent Subject.
    * @param iModelDb The IModelDb
    * @param parentSubjectId The Id of the DocumentListModel that contains the Drawing and provides the scope for its name.
    * @param codeValue The Drawing name
@@ -347,8 +348,7 @@ export class Subject extends InformationReferenceElement implements SubjectProps
     const codeSpec: CodeSpec = iModelDb.codeSpecs.getByName(BisCodeSpec.subject);
     return new Code({ spec: codeSpec.id, scope: parentSubjectId, value: codeValue });
   }
-  /**
-   * Create a Subject
+  /** Create a Subject
    * @param iModelDb The IModelDb
    * @param parentSubjectId The new Subject will be a child of this Subject
    * @param name The name (codeValue) of the Subject
@@ -366,8 +366,7 @@ export class Subject extends InformationReferenceElement implements SubjectProps
     };
     return new Subject(subjectProps, iModelDb);
   }
-  /**
-   * Insert a Subject
+  /** Insert a Subject
    * @param iModelDb Insert into this IModelDb
    * @param parentSubjectId The new Subject will be inserted as a child of this Subject
    * @param name The name (codeValue) of the Subject
@@ -381,21 +380,23 @@ export class Subject extends InformationReferenceElement implements SubjectProps
   }
 }
 
-/**
- * An InformationContentElement that identifies the content of a document.
+/** An InformationContentElement that identifies the content of a document.
  * The realized form of a document is called a DocumentCarrier (different class than Document).
  * For example, a will is a legal document. The will published into a PDF file is an ElectronicDocumentCopy.
  * The will printed onto paper is a PrintedDocumentCopy.
  * In this example, the Document only identifies, names, and tracks the content of the will.
+ * @public
  */
 export abstract class Document extends InformationContentElement {
-  /** @hidden */
+  /** @internal */
   constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 }
 
-/** A document that represents a drawing, that is, 2-D graphical representation of engineering data. A Drawing element is modelled by a [[DrawingModel]]. */
+/** A document that represents a drawing, that is, 2-D graphical representation of engineering data. A Drawing element is modelled by a [[DrawingModel]].
+ * @public
+ */
 export class Drawing extends Document {
-  /** @hidden */
+  /** @internal */
   constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 
   /** Create a Code for a Drawing given a name that is meant to be unique within the scope of the specified DocumentListModel.
@@ -408,8 +409,7 @@ export class Drawing extends Document {
     return new Code({ spec: codeSpec.id, scope: scopeModelId, value: codeValue });
   }
 
-  /**
-   * Insert a Drawing element and a DrawingModel that breaks it down.
+  /** Insert a Drawing element and a DrawingModel that breaks it down.
    * @param iModelDb Insert into this iModel
    * @param documentListModelId Insert the new Drawing into this DocumentListModel
    * @param name The name of the Drawing.
@@ -431,39 +431,45 @@ export class Drawing extends Document {
   }
 }
 
-/**
- * A document that represents a section drawing, that is, 2-D graphical documentation derived from a planar
+/** A document that represents a section drawing, that is, 2-D graphical documentation derived from a planar
  * section of some other spatial model. A SectionDrawing element is modelled by a [[SectionDrawingModel]].
+ * @public
  */
 export class SectionDrawing extends Drawing {
-  /** @hidden */
+  /** @internal */
   constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 }
 
-/** The template for a SheetBorder */
+/** The template for a SheetBorder
+ * @public
+ */
 export class SheetBorderTemplate extends Document implements SheetBorderTemplateProps {
   public height?: number;
   public width?: number;
-  /** @hidden */
+  /** @internal */
   public constructor(props: SheetBorderTemplateProps, iModel: IModelDb) { super(props, iModel); }
 }
 
-/** The template for a [[Sheet]] */
+/** The template for a [[Sheet]]
+ * @public
+ */
 export class SheetTemplate extends Document implements SheetTemplateProps {
   public height?: number;
   public width?: number;
   public border?: Id64String;
-  /** @hidden */
+  /** @internal */
   constructor(props: SheetTemplateProps, iModel: IModelDb) { super(props, iModel); }
 }
 
-/** A digital representation of a *sheet of paper*. Modeled by a [[SheetModel]]. */
+/** A digital representation of a *sheet of paper*. Modeled by a [[SheetModel]].
+ * @public
+ */
 export class Sheet extends Document implements SheetProps {
   public height: number;
   public width: number;
   public scale?: number;
   public sheetTemplate?: Id64String;
-  /** @hidden */
+  /** @internal */
   constructor(props: SheetProps, iModel: IModelDb) {
     super(props, iModel);
     this.height = JsonUtils.asDouble(props.height);
@@ -483,41 +489,41 @@ export class Sheet extends Document implements SheetProps {
   }
 }
 
-/**
- * An Information Carrier carries information, but is not the information itself. For example, the arrangement
+/** An Information Carrier carries information, but is not the information itself. For example, the arrangement
  * of ink on paper or the sequence of electronic bits are information carriers.
+ * @deprecated BisCore will focus on the information itself and not how it is carried.
  */
 export abstract class InformationCarrierElement extends Element {
-  /** @hidden */
+  /** @internal */
   constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 }
 
-/**
- * An Information Carrier that carries a Document. An electronic file is a good example.
+/** An Information Carrier that carries a Document. An electronic file is a good example.
+ * @deprecated BisCore will focus on the information itself and not how it is carried.
  */
 export abstract class DocumentCarrier extends InformationCarrierElement {
-  /** @hidden */
+  /** @internal */
   constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 }
 
-/**
- * Information Record Element is an abstract base class for modeling information records. Information Record
+/** Information Record Element is an abstract base class for modeling information records. Information Record
  * Element is the default choice if no other subclass of Information Content Element makes sense.
+ * @public
  */
 export abstract class InformationRecordElement extends InformationContentElement {
-  /** @hidden */
+  /** @internal */
   constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 }
 
-/**
- * A Definition Element holds configuration-related information that is meant to be referenced / shared.
+/** A Definition Element holds configuration-related information that is meant to be referenced / shared.
+ * @public
  */
 export abstract class DefinitionElement extends InformationContentElement implements DefinitionElementProps {
   /** If true, don't show this DefinitionElement in user interface lists. */
   public isPrivate: boolean;
-  /** @hidden */
+  /** @internal */
   constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); this.isPrivate = props.isPrivate; }
-  /** @hidden */
+  /** @internal */
   public toJSON(): DefinitionElementProps {
     const val = super.toJSON() as DefinitionElementProps;
     val.isPrivate = this.isPrivate;
@@ -525,30 +531,30 @@ export abstract class DefinitionElement extends InformationContentElement implem
   }
 }
 
-/**
- * Defines a set of properties (the *type*) that may be associated with an element.
+/** Defines a set of properties (the *type*) that may be associated with an element.
+ * @public
  */
 export abstract class TypeDefinitionElement extends DefinitionElement implements TypeDefinitionElementProps {
   public recipe?: RelatedElement;
-  /** @hidden */
+  /** @internal */
   constructor(props: TypeDefinitionElementProps, iModel: IModelDb) { super(props, iModel); }
 }
 
-/**
- * Defines a recipe for generating a *type*.
+/** Defines a recipe for generating a *type*.
+ * @internal
  */
 export abstract class RecipeDefinitionElement extends DefinitionElement {
-  /** @hidden */
+  /** @internal */
   constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 }
 
-/**
- * Defines a set of properties (the *type*) that can be associated with a Physical Element. A Physical
+/** Defines a set of properties (the *type*) that can be associated with a Physical Element. A Physical
  * Type has a strong correlation with something that can be ordered from a catalog since all instances
  * share a common set of properties.
+ * @public
  */
 export abstract class PhysicalType extends TypeDefinitionElement {
-  /** @hidden */
+  /** @internal */
   constructor(props: TypeDefinitionElementProps, iModel: IModelDb) { super(props, iModel); }
 
   /** Create a Code for a PhysicalType element given a name that is meant to be unique within the scope of the specified DefinitionModel.
@@ -562,11 +568,11 @@ export abstract class PhysicalType extends TypeDefinitionElement {
   }
 }
 
-/**
- * Defines a set of properties (the *type*) that can be associated with a spatial location.
+/** Defines a set of properties (the *type*) that can be associated with a spatial location.
+ * @public
  */
 export abstract class SpatialLocationType extends TypeDefinitionElement {
-  /** @hidden */
+  /** @internal */
   constructor(props: TypeDefinitionElementProps, iModel: IModelDb) { super(props, iModel); }
 
   /** Create a Code for a SpatialLocationType element given a name that is meant to be unique within the scope of the specified DefinitionModel.
@@ -580,19 +586,19 @@ export abstract class SpatialLocationType extends TypeDefinitionElement {
   }
 }
 
-/**
- * A recipe that uses a 3d template for creating new instances.
+/** A recipe that uses a 3d template for creating new instances.
+ * @internal
  */
 export class TemplateRecipe3d extends RecipeDefinitionElement {
-  /** @hidden */
+  /** @internal */
   public constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 }
 
-/**
- * Defines a set of properties (the *type*) that can be associated with a 2D Graphical Element.
+/** Defines a set of properties (the *type*) that can be associated with a 2D Graphical Element.
+ * @public
  */
 export abstract class GraphicalType2d extends TypeDefinitionElement {
-  /** @hidden */
+  /** @internal */
   public constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 
   /** Create a Code for a GraphicalType2d element given a name that is meant to be unique within the scope of the specified DefinitionModel.
@@ -606,22 +612,22 @@ export abstract class GraphicalType2d extends TypeDefinitionElement {
   }
 }
 
-/**
- * A recipe that uses a 2D template for creating new instances.
+/** A recipe that uses a 2D template for creating new instances.
+ * @internal
  */
 export class TemplateRecipe2d extends RecipeDefinitionElement {
-  /** @hidden */
+  /** @internal */
   public constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 }
 
-/**
- * An abstract base class for elements that introduce a new modeling
+/** An abstract base class for elements that introduce a new modeling
  * perspective within the overall iModel information hierarchy. An Information Partition is always parented
  * to a `Subject` and broken down by a `Model`.
+ * @public
  */
 export abstract class InformationPartitionElement extends InformationContentElement implements InformationPartitionElementProps {
   public description?: string;
-  /** @hidden */
+  /** @internal */
   public constructor(props: InformationPartitionElementProps, iModel: IModelDb) { super(props, iModel); }
 
   /** Create a code that can be used for any kind of InformationPartitionElement. */
@@ -631,71 +637,68 @@ export abstract class InformationPartitionElement extends InformationContentElem
   }
 }
 
-/**
- * An Element that indicates that there is a definition-related modeling perspective within
+/** An Element that indicates that there is a definition-related modeling perspective within
  * the overall iModel information hierarchy. A Definition Partition is always parented to a Subject and
  * broken down by a Definition Model.
+ * @public
  */
 export class DefinitionPartition extends InformationPartitionElement {
 }
 
-/**
- * A Document Partition element indicates that there is a document-related modeling perspective within
- * the overall iModel information hierarchy. A Document Partition is always parented to a Subject and broken
- * down by a Document List Model.
+/** A Document Partition element indicates that there is a document-related modeling perspective within
+ * the overall iModel information hierarchy. A Document Partition is always parented to a Subject and broken down by a Document List Model.
+ * @public
  */
 export class DocumentPartition extends InformationPartitionElement {
 }
 
-/**
- * A Group Information Partition element indicates that there is a group-information-related modeling perspective
+/** A Group Information Partition element indicates that there is a group-information-related modeling perspective
  * within the overall iModel information hierarchy. A Group Information Partition is always parented to
  * a Subject and broken down by a Group Information Model.
+ * @public
  */
 export class GroupInformationPartition extends InformationPartitionElement {
 }
 
-/**
- * A Information Record Partition element indicates that there is an information-record-related modeling
+/** A Information Record Partition element indicates that there is an information-record-related modeling
  * perspective within the overall iModel information hierarchy. An Information Record Partition is always
  * parented to a Subject and broken down by an Information Record Model.
+ * @public
  */
 export class InformationRecordPartition extends InformationPartitionElement {
 }
 
-/**
- * A Link Partition element indicates that there is a link-related modeling perspective within the overall
- * iModel information hierarchy. A Link Partition is always parented to a Subject and broken down by a Link
- * Model.
+/** A Link Partition element indicates that there is a link-related modeling perspective within the overall
+ * iModel information hierarchy. A Link Partition is always parented to a Subject and broken down by a LinkModel.
+ * @public
  */
 export class LinkPartition extends InformationPartitionElement {
 }
 
-/**
- * A Physical Partition element indicates that there is a physical modeling perspective within the overall
- * iModel information hierarchy. A Physical Partition is always parented to a Subject and broken down by
- * a Physical Model.
+/** A Physical Partition element indicates that there is a physical modeling perspective within the overall
+ * iModel information hierarchy. A Physical Partition is always parented to a Subject and broken down by a Physical Model.
+ * @public
  */
 export class PhysicalPartition extends InformationPartitionElement {
 }
 
-/**
- * A Spatial Location Partition element indicates that there is a spatial-location-related modeling perspective
+/** A Spatial Location Partition element indicates that there is a spatial-location-related modeling perspective
  * within the overall iModel information hierarchy. A Spatial Location Partition is always parented to a
  * Subject and broken down by a Spatial Location Model.
+ * @public
  */
 export class SpatialLocationPartition extends InformationPartitionElement {
 }
 
-/**
- * Group Information is an abstract base class for modeling entities whose main purpose is to reference
+/** Group Information is an abstract base class for modeling entities whose main purpose is to reference
  * a group of related elements.
+ * @public
  */
 export abstract class GroupInformationElement extends InformationReferenceElement {
 }
 
-/**
- * An information element that specifies a link.
+/** An information element that specifies a link.
+ * @public
  */
 export abstract class LinkElement extends InformationReferenceElement {
   /** Create a Code for a LinkElement given a name that is meant to be unique within the scope of the specified Model.
@@ -709,49 +712,47 @@ export abstract class LinkElement extends InformationReferenceElement {
   }
 }
 
-/**
- * An information element that specifies a URL link.
+/** An information element that specifies a URL link.
+ * @public
  */
 export class UrlLink extends LinkElement {
 }
 
-/**
- * An information element that links to an embedded file.
+/** An information element that links to an embedded file.
+ * @public
  */
 export class EmbeddedFileLink extends LinkElement {
 }
 
-/**
- * An information element that links to a repository.
+/** An information element that links to a repository.
+ * @public
  */
 export class RepositoryLink extends UrlLink {
 }
 
-/**
- * A real world entity is modeled as a Role Element when a set of external circumstances define an important
+/** A real world entity is modeled as a Role Element when a set of external circumstances define an important
  * role (one that is worth tracking) that is not intrinsic to the entity playing the role. For example,
  * a person can play the role of a teacher or a rock can play the role of a boundary marker.
+ * @public
  */
 export abstract class RoleElement extends Element {
 }
 
-/**
- * A Definition Element that specifies a collection of geometry that is meant to be reused across Geometric
+/** A Definition Element that specifies a collection of geometry that is meant to be reused across Geometric
  * Element instances. Leveraging Geometry Parts can help reduce file size and improve display performance.
+ * @public
  */
 export class GeometryPart extends DefinitionElement implements GeometryPartProps {
   public geom?: GeometryStreamProps;
   public bbox: ElementAlignedBox3d;
-  /** @hidden */
+  /** @internal */
   public constructor(props: GeometryPartProps, iModel: IModelDb) {
     super(props, iModel);
     this.geom = props.geom;
     this.bbox = Range3d.fromJSON(props.bbox);
   }
 
-  /** convert this geometry part to a JSON object.
-   * @hidden
-   */
+  /** @internal */
   public toJSON(): GeometryPartProps {
     const val = super.toJSON() as GeometryPartProps;
     val.geom = this.geom;
@@ -771,13 +772,13 @@ export class GeometryPart extends DefinitionElement implements GeometryPartProps
   }
 }
 
-/**
- * The definition element for a line style
+/** The definition element for a line style
+ * @public
  */
 export class LineStyle extends DefinitionElement implements LineStyleProps {
   public description?: string;
   public data!: string;
-  /** @hidden */
+  /** @internal */
   constructor(props: LineStyleProps, iModel: IModelDb) { super(props, iModel); }
 
   /** Create a Code for a LineStyle definition given a name that is meant to be unique within the scope of the specified model.

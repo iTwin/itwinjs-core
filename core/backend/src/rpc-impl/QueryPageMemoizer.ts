@@ -13,7 +13,7 @@ const kLoggingCategory = "imodeljs-backend.IModelDb";
 const kDefaultQueryPageTimeout = 2 * 1000; // 2 seconds
 const kQueryPageTimeOutKey = "imjs_query_page_timeout";
 /** Represent args for query page
- * @hidden
+ * @internal
  */
 interface QueryPageArgs {
   requestContext: ClientRequestContext;
@@ -23,7 +23,7 @@ interface QueryPageArgs {
   options?: PageOptions;
 }
 /** Key generator for memoizer
- * @hidden
+ * @internal
  */
 function generateQueryPageRequestKey(args: QueryPageArgs) {
   let key = args.ecsql;
@@ -38,7 +38,7 @@ function generateQueryPageRequestKey(args: QueryPageArgs) {
   return key;
 }
 /** Calls into queryPage to get result in case we did not found it in Cache.
- * @hidden
+ * @internal
  */
 async function queryPage(args: QueryPageArgs): Promise<any[]> {
   const iModelDb: IModelDb = IModelDb.find(args.iModelToken);
@@ -49,7 +49,7 @@ async function queryPage(args: QueryPageArgs): Promise<any[]> {
 }
 /** Utility to cache and retrieve results of long running queryPagerequests
  * The cache is keyed on the input arguments passed to open
- * @hidden
+ * @internal
  */
 export class QueryPageMemoizer extends PromiseMemoizer<any[]> {
   private static _instance: QueryPageMemoizer;

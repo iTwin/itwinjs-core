@@ -4,30 +4,32 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Schema */
 
-import { IModelError, IModelStatus, EntityMetaData } from "@bentley/imodeljs-common";
+import { EntityMetaData, IModelError, IModelStatus } from "@bentley/imodeljs-common";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import { Schema, Schemas } from "./Schema";
 
-/** The mapping between a class name (schema.class) and its constructor function  */
+/** The mapping between a class name (schema.class) and its constructor function
+ * @public
+ */
 export class ClassRegistry {
   private static readonly _classMap = new Map<string, typeof Entity>();
   private static getKey(schemaName: string, className: string) { return (schemaName + ":" + className).toLowerCase(); }
   private static lookupClass(name: string) { return this._classMap.get(name.toLowerCase()); }
 
-  /** @hidden */
+  /** @internal */
   public static isNotFoundError(err: any) { return (err instanceof IModelError) && (err.errorNumber === IModelStatus.NotFound); }
 
-  /** @hidden */
+  /** @internal */
   public static makeMetaDataNotFoundError(className: string): IModelError { return new IModelError(IModelStatus.NotFound, "metadata not found for " + className); }
 
-  /** @hidden */
+  /** @internal */
   public static register(entityClass: typeof Entity, schema: Schema) { entityClass.schema = schema; this._classMap.set(this.getKey(entityClass.schema.name, entityClass.name), entityClass); }
-  /** @hidden */
+  /** @internal */
   public static registerSchema(schema: Schema) { Schemas.registerSchema(schema); }
-  /** @hidden */
+  /** @internal */
   public static getRegisteredSchema(domainName: string) { return Schemas.getRegisteredSchema(domainName); }
-  /** @hidden */
+  /** @internal */
   public static getSchemaBaseClass() { return Schema; }
 
   private static generateProxySchema(schemaName: string): typeof Schema {
@@ -124,7 +126,7 @@ export class ClassRegistry {
 
 /**
  * A cache that records the mapping between class names and class metadata
- * @hidden
+ * @internal
  */
 export class MetaDataRegistry {
   private _registry: Map<string, EntityMetaData> = new Map<string, EntityMetaData>();

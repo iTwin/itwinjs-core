@@ -4,18 +4,18 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Models */
 
-import { Id64String, Id64, DbOpcode, JsonUtils, IModelStatus } from "@bentley/bentleyjs-core";
-import { AxisAlignedBox3d, GeometricModel2dProps, IModel, IModelError, InformationPartitionElementProps, ModelProps, RelatedElement } from "@bentley/imodeljs-common";
+import { DbOpcode, Id64, Id64String, IModelStatus, JsonUtils } from "@bentley/bentleyjs-core";
 import { Point2d, Range3d } from "@bentley/geometry-core";
+import { AxisAlignedBox3d, GeometricModel2dProps, IModel, IModelError, InformationPartitionElementProps, ModelProps, RelatedElement } from "@bentley/imodeljs-common";
 import { DefinitionPartition, DocumentPartition, PhysicalPartition } from "./Element";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import { SubjectOwnsPartitionElements } from "./NavigationRelationship";
 
-/**
- * A Model is a container for persisting a collection of related elements within an iModel.
+/** A Model is a container for persisting a collection of related elements within an iModel.
  * See [[IModelDb.Models]] for how to query and manage the Models in an IModelDB.
  * See [Creating models]($docs/learning/backend/CreateModels.md)
+ * @public
  */
 export class Model extends Entity implements ModelProps {
   public readonly modeledElement: RelatedElement;
@@ -25,7 +25,7 @@ export class Model extends Entity implements ModelProps {
   public isPrivate: boolean;
   public isTemplate: boolean;
 
-  /** @hidden */
+  /** @internal */
   constructor(props: ModelProps, iModel: IModelDb) {
     super(props, iModel);
     this.id = Id64.fromJSON(props.id);
@@ -38,7 +38,7 @@ export class Model extends Entity implements ModelProps {
   }
 
   /** Add all custom-handled properties of a Model to a json object.
-   * @hidden
+   * @internal
    */
   public toJSON(): ModelProps {
     const val = super.toJSON() as ModelProps;
@@ -83,8 +83,8 @@ export class Model extends Entity implements ModelProps {
   public buildConcurrencyControlRequest(opcode: DbOpcode): void { this.iModel.concurrencyControl.buildRequestForModel(this, opcode); }
 }
 
-/**
- * A container for persisting geometric elements.
+/** A container for persisting geometric elements.
+ * @public
  */
 export class GeometricModel extends Model {
   /** Query for the union of the extents of the elements contained by this model. */
@@ -96,37 +96,36 @@ export class GeometricModel extends Model {
   }
 }
 
-/**
- * A container for persisting 3d geometric elements.
+/** A container for persisting 3d geometric elements.
+ * @public
  */
 export abstract class GeometricModel3d extends GeometricModel {
 }
 
-/**
- * A container for persisting 2d geometric elements.
+/** A container for persisting 2d geometric elements.
+ * @public
  */
 export abstract class GeometricModel2d extends GeometricModel implements GeometricModel2dProps {
   public globalOrigin?: Point2d;
 }
 
-/**
- * A container for persisting 2d graphical elements.
+/** A container for persisting 2d graphical elements.
+ * @public
  */
 export abstract class GraphicalModel2d extends GeometricModel2d {
 }
 
-/**
- * A container for persisting 3d geometric elements that are spatially located.
+/** A container for persisting 3d geometric elements that are spatially located.
+ * @public
  */
 export abstract class SpatialModel extends GeometricModel3d {
 }
 
-/**
- * A container for persisting physical elements that model physical space.
+/** A container for persisting physical elements that model physical space.
+ * @public
  */
 export class PhysicalModel extends SpatialModel {
-  /**
-   * Insert a PhysicalPartition and a PhysicalModel that breaks it down.
+  /** Insert a PhysicalPartition and a PhysicalModel that breaks it down.
    * @param iModelDb Insert into this iModel
    * @param parentSubjectId The PhysicalPartition will be inserted as a child of this Subject element.
    * @param name The name of the PhysicalPartition that the new PhysicalModel will break down.
@@ -148,62 +147,61 @@ export class PhysicalModel extends SpatialModel {
   }
 }
 
-/**
- * A container for persisting spatial location elements.
+/** A container for persisting spatial location elements.
+ * @public
  */
 export class SpatialLocationModel extends SpatialModel {
 }
 
-/**
- * A 2d model that holds [[DrawingGraphic]]s. DrawingModels may be dimensional or non-dimensional.
+/** A 2d model that holds [[DrawingGraphic]]s. DrawingModels may be dimensional or non-dimensional.
+ * @public
  */
 export class DrawingModel extends GraphicalModel2d {
 }
 
-/**
- * A container for persisting section [[DrawingGraphic]]s.
+/** A container for persisting section [[DrawingGraphic]]s.
+ * @public
  */
 export class SectionDrawingModel extends DrawingModel {
 }
 
-/**
- * A container for persisting [[ViewAttachment]]s and [[DrawingGraphic]]s.
+/** A container for persisting [[ViewAttachment]]s and [[DrawingGraphic]]s.
  * A SheetModel is a digital representation of a *sheet of paper*. SheetModels are 2d models in bounded paper coordinates.
  * SheetModels may contain annotation Elements as well as references to 2d or 3d Views.
+ * @public
  */
 export class SheetModel extends GraphicalModel2d {
 }
 
-/**
- * A container for persisting role elements.
+/** A container for persisting role elements.
+ * @public
  */
 export class RoleModel extends Model {
 }
 
-/**
- * A container for persisting information elements.
+/** A container for persisting information elements.
+ * @public
  */
 export abstract class InformationModel extends Model {
 }
 
-/**
- * A container for persisting group information elements.
+/** A container for persisting group information elements.
+ * @public
  */
 export abstract class GroupInformationModel extends InformationModel {
 }
 
-/**
- * A container for persisting Information Record Elements
+/** A container for persisting Information Record Elements
+ * @public
  */
 export class InformationRecordModel extends InformationModel {
 }
 
-/**
- * A container for persisting definition elements.
+/** A container for persisting definition elements.
+ * @public
  */
 export class DefinitionModel extends InformationModel {
-  /**
-   * Insert a DefinitionPartition and a DefinitionModel that breaks it down.
+  /** Insert a DefinitionPartition and a DefinitionModel that breaks it down.
    * @param iModelDb Insert into this iModel
    * @param parentSubjectId The DefinitionPartition will be inserted as a child of this Subject element.
    * @param name The name of the DefinitionPartition that the new DefinitionModel will break down.
@@ -225,18 +223,17 @@ export class DefinitionModel extends InformationModel {
   }
 }
 
-/**
- * The singleton container of repository-related information elements.
+/** The singleton container of repository-related information elements.
+ * @public
  */
 export class RepositoryModel extends DefinitionModel {
 }
 
-/**
- * Contains a list of document elements.
+/** Contains a list of document elements.
+ * @public
  */
 export class DocumentListModel extends InformationModel {
-  /**
-   * Insert a DocumentPartition and a DocumentListModel that breaks it down.
+  /** Insert a DocumentPartition and a DocumentListModel that breaks it down.
    * @param iModelDb Insert into this iModel
    * @param parentSubjectId The DocumentPartition will be inserted as a child of this Subject element.
    * @param name The name of the DocumentPartition that the new DocumentListModel will break down.
@@ -258,18 +255,20 @@ export class DocumentListModel extends InformationModel {
   }
 }
 
-/**
- * A container for persisting link elements.
+/** A container for persisting link elements.
+ * @public
  */
 export class LinkModel extends InformationModel {
 }
 
-/**
- * The singleton container for repository-specific definition elements.
+/** The singleton container for repository-specific definition elements.
+ * @public
  */
 export class DictionaryModel extends DefinitionModel {
 }
 
-/** Obtains and displays multi-resolution tiled raster organized according to the WebMercator tiling system. */
+/** Obtains and displays multi-resolution tiled raster organized according to the WebMercator tiling system.
+ * @public
+ */
 export class WebMercatorModel extends SpatialModel {
 }

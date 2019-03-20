@@ -9,10 +9,11 @@ import { CodeSpec, CodeScopeSpec, IModelError, IModelStatus } from "@bentley/imo
 import { ECSqlStatement } from "./ECSqlStatement";
 import { IModelDb } from "./IModelDb";
 
-/** @hidden */
 const loggingCategory = "imodeljs-backend.CodeSpecs";
 
-/** Manages [CodeSpecs]($docs/BIS/intro/element-fundamentals.md#codespec) within an [[IModelDb]] */
+/** Manages [CodeSpecs]($docs/BIS/intro/element-fundamentals.md#codespec) within an [[IModelDb]]
+ * @public
+ */
 export class CodeSpecs {
   private _imodel: IModelDb;
   private _loadedCodeSpecs: CodeSpec[] = [];
