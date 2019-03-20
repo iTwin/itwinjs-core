@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Avoid making a backend request when we know there will be no content",
+      "packageName": "@bentley/presentation-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-components",
+  "email": "grigas.p@gmail.com"
+}
