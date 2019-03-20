@@ -617,10 +617,10 @@ export class SelectTool extends MarkupTool {
       case "escape": // esc = cancel current operation
         this.exitTool();
         return EventHandled.Yes;
-      case "f": // ctrl-f = bring to front
-        return (key.ctrlKey) ? (markup.bringToFront(), EventHandled.Yes) : EventHandled.No;
-      case "b": // ctrl-b = send to back
-        return (key.ctrlKey) ? (markup.sendToBack(), EventHandled.Yes) : EventHandled.No;
+      case "b": // alt-shift-b = send to back
+        return (key.altKey && key.shiftKey) ? (markup.sendToBack(), EventHandled.Yes) : EventHandled.No;
+      case "f": // alt-shift-f = bring to front
+        return (key.altKey && key.shiftKey) ? (markup.bringToFront(), EventHandled.Yes) : EventHandled.No;
       case "g": // ctrl-g = create group
         return (key.ctrlKey) ? (markup.groupSelected(), EventHandled.Yes) : EventHandled.No;
       case "u": // ctrl-u = ungroup
