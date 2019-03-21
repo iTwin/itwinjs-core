@@ -99,42 +99,36 @@ export interface ExtentLimits {
  * @internal
  */
 export class SubCategoriesRequest {
-  private static readonly _LIMIT = 1000;
-
   private readonly _imodel: IModelConnection;
-  private readonly _subcategories: ViewSubCategories;
-  private readonly _ecsql: string;
-  private readonly _pages: any[][] = [];
+  private readonly _ecsql: string[] = [];
+  private readonly _pages: SubCategoriesRequest.Result = [];
+  private readonly _pageSize: number;
   private _canceled = false;
+  private _curECSqlIndex = 0;
+  private _curPageIndex = 0;
 
-  public constructor(subcategories: ViewSubCategories, categoryIds: Set<string>, imodel: IModelConnection) {
+  public constructor(categoryIds: Set<string>, imodel: IModelConnection, maxCategoriesPerQuery = 200, maxSubCategoriesPerPage = 1000) {
     this._imodel = imodel;
-    this._subcategories = subcategories;
+    this._pageSize = maxSubCategoriesPerPage;
 
-    const where = [...categoryIds].join(",");
-    this._ecsql = "SELECT ECInstanceId as id, Parent.Id as parentId, Properties as appearance FROM BisCore.SubCategory WHERE Parent.Id IN (" + where + ")";
+    const catIds = [...categoryIds];
+    while (catIds.length !== 0) {
+      const end = (catIds.length > maxCategoriesPerQuery) ? maxCategoriesPerQuery : catIds.length;
+      const where = catIds.splice(0, end).join(",");
+      this._ecsql.push("SELECT ECInstanceId as id, Parent.Id as parentId, Properties as appearance FROM BisCore.SubCategory WHERE Parent.Id IN (" + where + ")");
+    }
   }
 
   public cancel() { this._canceled = true; }
 
-  public async dispatch(): Promise<void> {
-    if (this._canceled)
-      return Promise.resolve();
+  public async dispatch(): Promise<SubCategoriesRequest.Result | undefined> {
+    if (this._canceled || this._curECSqlIndex >= this._ecsql.length) // handle case of empty category Id set...
+      return undefined;
 
-    let rows: any[] | undefined;
+    let rows: SubCategoriesRequest.ResultRow[] | undefined;
     try {
-      const pageToGet = this._pages.length;
-      const pageSize = SubCategoriesRequest._LIMIT;
-      // we can actully use following async iterator here which would grab pages and iterator over rows automatically.
-      // at any time inside the loop user can break and cancel or stop reading the results. With catch that async iterator work on all browser except ie/edge and starting of safari 12/ ios 12
-      // rows = [];
-      // for await (const row of this._imodel.query(this._ecsql)) {
-      //   if (this._canceled)
-      //     return Promise.resolve();
-      //   else
-      //     rows.push(row);
-      // }
-      rows = Array.from(await this._imodel.queryPage(this._ecsql, undefined, { start: pageToGet, size: pageSize }));
+      const ecsql = this._ecsql[this._curECSqlIndex];
+      rows = Array.from(await this._imodel.queryPage(ecsql, undefined, { start: this._curPageIndex, size: this._pageSize }));
     } catch (_) {
       // ###TODO: detect cases in which retry is warranted
       // Note that currently, if we succeed in obtaining some pages of results and fail to retrieve another page, we will end up processing the
@@ -142,28 +136,47 @@ export class SubCategoriesRequest {
       rows = undefined;
     }
 
+    // NB: from hereafter, we only check the cancellation flag if more results need to be obtained.
     if (undefined !== rows && rows.length > 0) {
       this._pages.push(rows);
-      // More rows exist. If we're canceled, we can't process the partial results we've obtained thus far.
-      if (this._canceled)
-        return Promise.resolve();
+      if (rows.length >= this._pageSize) {
+        // More rows (may) exist for current ecsql query. If canceled, abort.
+        if (this._canceled)
+          return undefined;
 
-      // Query the next page of results.
-      return this.dispatch();
+        // Obtain the next page of results for current ECSql query.
+        ++this._curPageIndex;
+        return this.dispatch();
+      }
+    }
+
+    // Finished with current ECSql query. Dispatch the next if one exists.
+    this._curPageIndex = 0;
+    if (++this._curECSqlIndex < this._ecsql.length) {
+      if (this._canceled)
+        return undefined;
+      else
+        return this.dispatch();
     }
 
     // Even if we were canceled, we've retrieved all the rows. Might as well process them to prevent another request for some of the same rows from being enqueued.
-    this.processResults();
-    return Promise.resolve();
+    return this._pages;
+  }
+}
+
+/** @internal */
+export namespace SubCategoriesRequest {
+  /** @internal */
+  export interface ResultRow {
+    parentId: Id64String;
+    id: Id64String;
+    appearance: SubCategoryAppearance.Props;
   }
 
-  // Because this request can be canceled before all rows are obtained and processed, we must wait to populate the ViewSubCategories until we have all of the data.
-  private processResults(): void {
-    for (const rows of this._pages)
-      this._subcategories.loadFromRows(rows);
-
-    this._pages.length = 0;
-  }
+  /** @internal */
+  export type ResultPage = ResultRow[];
+  /** @internal */
+  export type Result = ResultPage[];
 }
 
 /** Stores information about sub-categories specific to a ViewState. Functions as a lazily-populated cache.
@@ -212,8 +225,11 @@ export class ViewSubCategories {
 
   private async request(categoryIds: Set<string>, iModel: IModelConnection): Promise<void> {
     this.cancelRequest();
-    this._request = new SubCategoriesRequest(this, categoryIds, iModel);
-    return this._request.dispatch();
+    this._request = new SubCategoriesRequest(categoryIds, iModel);
+    return this._request.dispatch().then((pages?: SubCategoriesRequest.Result) => {
+      if (undefined !== pages)
+        this.processResults(pages);
+    });
   }
 
   private cancelRequest(): void {
@@ -231,9 +247,10 @@ export class ViewSubCategories {
     return new SubCategoryAppearance(props);
   }
 
-  public loadFromRows(rows: any[]): void {
-    for (const row of rows)
-      this.add(row.parentId as string, row.id as string, ViewSubCategories.createSubCategoryAppearance(row.appearance));
+  private processResults(pages: SubCategoriesRequest.Result): void {
+    for (const rows of pages)
+      for (const row of rows)
+        this.add(row.parentId as string, row.id as string, ViewSubCategories.createSubCategoryAppearance(row.appearance));
   }
 
   private add(categoryId: string, subCategoryId: string, appearance: SubCategoryAppearance) {

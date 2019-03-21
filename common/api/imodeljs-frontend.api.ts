@@ -5201,13 +5201,8 @@ interface StructValue extends BasePropertyValue {
 }
 
 // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
-// @internal
+// @internal (undocumented)
 class SubCategoriesRequest {
-  constructor(subcategories: ViewSubCategories, categoryIds: Set<string>, imodel: IModelConnection);
-  // (undocumented)
-  cancel(): void;
-  // (undocumented)
-  dispatch(): Promise<void>;
 }
 
 // @public
@@ -6940,8 +6935,6 @@ class ViewSubCategories {
   getSubCategories(categoryId: string): Id64Set | undefined;
   getSubCategoryAppearance(subCategoryId: Id64String): SubCategoryAppearance | undefined;
   load(categoryIds: Set<string>, iModel: IModelConnection): Promise<void>;
-  // (undocumented)
-  loadFromRows(rows: any[]): void;
   update(addedCategoryIds: Set<string>, iModel: IModelConnection): Promise<void>;
 }
 

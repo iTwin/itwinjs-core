@@ -7,8 +7,22 @@ import { Point3d, Vector3d, YawPitchRollAngles, Range3d, Angle, Matrix3d, DeepCo
 import { AmbientOcclusion, BackgroundMapType, ColorDef, HiddenLine, RenderMode, SpatialViewDefinitionProps, ViewDefinitionProps } from "@bentley/imodeljs-common";
 import * as path from "path";
 import {
-  SpatialViewState, ViewStatus, ViewState3d, StandardView, StandardViewId, MarginPercent, AuxCoordSystemSpatialState, CategorySelectorState,
-  ModelSelectorState, IModelConnection, DisplayStyle3dState, SheetModelState, SpatialModelState, DrawingModelState, MockRender,
+  AuxCoordSystemSpatialState,
+  CategorySelectorState,
+  DisplayStyle3dState,
+  DrawingModelState,
+  IModelConnection,
+  MarginPercent,
+  MockRender,
+  ModelSelectorState,
+  SheetModelState,
+  SpatialModelState,
+  SpatialViewState,
+  StandardView,
+  StandardViewId,
+  SubCategoriesRequest,
+  ViewState3d,
+  ViewStatus,
 } from "@bentley/imodeljs-frontend";
 import { TestRpcInterface } from "../../common/RpcInterfaces";
 
@@ -396,5 +410,66 @@ describe("ViewState", () => {
     expect(view.extentLimits.max).to.equal(defaultLimits.max);
     expect(view2.extentLimits.min).not.to.equal(view.extentLimits.min);
     expect(view2.extentLimits.max).not.to.equal(view.extentLimits.max);
+  });
+
+  // test.bim contains 4 spatial categories, 1 drawing category, and 6 subcategories.
+  // Spatial category 0x2f contains 2 subcategories.
+  it("should query pages of subcategories", async () => {
+    // First use ECSql to query all the subcategories.
+    const ecsql = "SELECT ECInstanceId as subCategoryId, Parent.Id as categoryId FROM bis.SubCategory";
+    const ecsqlRows = await imodel.queryPage(ecsql);
+    expect(ecsqlRows).not.to.be.undefined;
+    expect(ecsqlRows.length).to.equal(6);
+
+    const ecsqlSubcats = new Map<string, string>(); // map subcat Id to cat Id
+    const ecsqlCats = new Set<string>(); // unique cat Ids
+
+    for (const ecsqlRow of ecsqlRows) {
+      ecsqlSubcats.set(ecsqlRow.subCategoryId, ecsqlRow.categoryId);
+      ecsqlCats.add(ecsqlRow.categoryId);
+    }
+
+    expect(ecsqlSubcats.size).to.equal(6);
+    expect(ecsqlCats.size).to.equal(5);
+
+    // Now construct a paged SubCategoryRequests object to query same data as above.
+    // Allow only 1 category to be sent per query, and only 1 row in each page of results.
+    let request = new SubCategoriesRequest(ecsqlCats, imodel, 1, 1);
+    let result = await request.dispatch();
+
+    // Result is an array of pages, each of which is an array of rows, each containing id=subcategoryId and parentId=categoryId
+    expect(result).not.to.be.undefined;
+    expect(result!.length).to.equal(6);
+
+    const resultSubcats = new Map<string, string>();
+    const resultCats = new Set<string>();
+
+    for (const page of result!) {
+      expect(page.length).to.equal(1);
+      const row = page[0];
+      resultSubcats.set(row.id, row.parentId);
+      resultCats.add(row.parentId);
+    }
+
+    expect(resultSubcats.size).to.equal(ecsqlSubcats.size);
+    expect(resultCats.size).to.equal(ecsqlCats.size);
+
+    // Now request 2 categories per query and 100 rows per page
+    request = new SubCategoriesRequest(ecsqlCats, imodel, 2, 100);
+    result = await request.dispatch();
+    expect(result!.length).to.equal(3);
+
+    // Now request 100 categories per query and 4 rows per page
+    request = new SubCategoriesRequest(ecsqlCats, imodel, 100, 4);
+    result = await request.dispatch();
+    expect(result!.length).to.equal(2);
+    expect(result![0].length).to.equal(4);
+    expect(result![1].length).to.equal(2);
+
+    // Request using default limits.
+    request = new SubCategoriesRequest(ecsqlCats, imodel);
+    result = await request.dispatch();
+    expect(result!.length).to.equal(1);
+    expect(result![0].length).to.equal(6);
   });
 });
