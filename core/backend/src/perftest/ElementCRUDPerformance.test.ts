@@ -116,7 +116,7 @@ describe("PerformanceElementsTests", () => {
     for (const className of classNames) {
       for (const dbSize of dbSizes) {
         const fileName = "Performance_seed_" + className + "_" + dbSize + ".bim";
-        const pathname = path.join(KnownTestLocations.outputDir, fileName);
+        const pathname = path.join(KnownTestLocations.outputDir, "ElementCRUDPerformance", fileName);
         if (!IModelJsFs.existsSync(pathname)) {
           seedIModel = IModelDb.createSnapshot(IModelTestUtils.prepareOutputFile("ElementCRUDPerformance", fileName), { rootSubject: { name: "PerfTest" } });
           const testSchemaName = path.join(KnownTestLocations.assetsDir, "PerfTestDomain.ecschema.xml");
