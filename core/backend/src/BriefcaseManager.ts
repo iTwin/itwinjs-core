@@ -346,15 +346,41 @@ export class BriefcaseManager {
   /** Get information on a briefcase on disk by opening it, and querying the IModelServer */
   private static async addBriefcaseToCache(requestContext: AuthorizedClientRequestContext, briefcaseDir: string, iModelId: GuidString) {
     requestContext.enter();
+
+    // Determine the briefcase .bim file in the folder, and cleanup anything else (may be a result of an aborted copy)
     const fileNames = IModelJsFs.readdirSync(briefcaseDir);
-    if (fileNames.length !== 1)
-      throw new IModelError(DbResult.BE_SQLITE_ERROR, `Briefcase directory ${briefcaseDir} must contain exactly one briefcase`, Logger.logError, loggingCategory);
-    const pathname = path.join(briefcaseDir, fileNames[0]);
+    let briefcasePathname: string | undefined;
+    for (const tmpFileName of fileNames) {
+      const tmpPathname = path.join(briefcaseDir, tmpFileName);
+      const ext = path.extname(tmpPathname).toLowerCase();
+      if (ext === ".tiles")
+        continue;
+
+      // Ensure there's only one bim file
+      if (ext === ".bim") {
+        if (!!briefcasePathname)
+          throw new IModelError(DbResult.BE_SQLITE_ERROR, `Briefcase directory ${briefcaseDir} must contain only one briefcase`, Logger.logError, loggingCategory);
+        briefcasePathname = tmpPathname;
+        continue;
+      }
+
+      // Clean up any non .bim files (may be a result of an aborted copy)
+      try {
+        Logger.logInfo(loggingCategory, `Cleaning up temporary cache file ${tmpPathname}`);
+        IModelJsFs.unlinkSync(tmpPathname);
+      } catch (error) {
+        Logger.logError(loggingCategory, `Cannot delete temporary cache file ${tmpPathname}`);
+        throw error;
+      }
+    }
+
+    if (!briefcasePathname)
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, `Briefcase directory ${briefcaseDir} must contain at least one briefcase`, Logger.logError, loggingCategory);
 
     // Open the briefcase to populate the briefcase entry with briefcaseid changesetid and reversedchangesetid
     const briefcase = new BriefcaseEntry();
     briefcase.iModelId = iModelId;
-    briefcase.pathname = pathname;
+    briefcase.pathname = briefcasePathname;
     briefcase.isStandalone = false;
 
     const nativeDb = new IModelHost.platform.DgnDb();
