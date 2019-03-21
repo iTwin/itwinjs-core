@@ -5,7 +5,7 @@
 /** @module Core */
 
 import * as path from "path";
-import { ClientRequestContext, Id64String } from "@bentley/bentleyjs-core";
+import { ClientRequestContext, Id64String, Id64 } from "@bentley/bentleyjs-core";
 import { IModelDb, GeometricElement } from "@bentley/imodeljs-backend";
 import {
   PresentationError, PresentationStatus,
@@ -367,9 +367,9 @@ export default class PresentationManager {
 
   private computeElementSelection(requestOptions: SelectionScopeRequestOptions<IModelDb>, ids: Id64String[]) {
     const keys = new KeySet();
-    ids.forEach((id) => {
+    ids.forEach(skipTransients((id) => {
       keys.add(this.getElementKey(requestOptions.imodel, id));
-    });
+    }));
     return keys;
   }
 
@@ -386,20 +386,20 @@ export default class PresentationManager {
 
   private computeAssemblySelection(requestOptions: SelectionScopeRequestOptions<IModelDb>, ids: Id64String[]) {
     const parentKeys = new KeySet();
-    ids.forEach((id) => {
+    ids.forEach(skipTransients((id) => {
       const parentKey = this.getParentInstanceKey(requestOptions.imodel, id);
       if (parentKey) {
         parentKeys.add(parentKey);
       } else {
         parentKeys.add(this.getElementKey(requestOptions.imodel, id));
       }
-    });
+    }));
     return parentKeys;
   }
 
   private computeTopAssemblySelection(requestOptions: SelectionScopeRequestOptions<IModelDb>, ids: Id64String[]) {
     const parentKeys = new KeySet();
-    ids.forEach((id) => {
+    ids.forEach(skipTransients((id) => {
       let curr: InstanceKey | undefined;
       let parent = this.getParentInstanceKey(requestOptions.imodel, id);
       while (parent) {
@@ -407,29 +407,29 @@ export default class PresentationManager {
         parent = this.getParentInstanceKey(requestOptions.imodel, curr.id);
       }
       parentKeys.add(curr ? curr : this.getElementKey(requestOptions.imodel, id));
-    });
+    }));
     return parentKeys;
   }
 
   private computeCategorySelection(requestOptions: SelectionScopeRequestOptions<IModelDb>, ids: Id64String[]) {
     const categoryKeys = new KeySet();
-    ids.forEach((id) => {
+    ids.forEach(skipTransients((id) => {
       const el = requestOptions.imodel.elements.getElement(id);
       if (el instanceof GeometricElement) {
         const category = requestOptions.imodel.elements.getElementProps(el.category);
         categoryKeys.add({ className: category.classFullName, id: category.id! });
       }
-    });
+    }));
     return categoryKeys;
   }
 
   private computeModelSelection(requestOptions: SelectionScopeRequestOptions<IModelDb>, ids: Id64String[]) {
     const modelKeys = new KeySet();
-    ids.forEach((id) => {
+    ids.forEach(skipTransients((id) => {
       const el = requestOptions.imodel.elements.getElementProps(id);
       const model = requestOptions.imodel.models.getModelProps(el.model);
       modelKeys.add({ className: model.classFullName, id: model.id! });
-    });
+    }));
     return modelKeys;
   }
 
@@ -483,3 +483,10 @@ export default class PresentationManager {
     return JSON.stringify(request);
   }
 }
+
+const skipTransients = (callback: (id: Id64String) => void) => {
+  return (id: Id64String) => {
+    if (!Id64.isTransient(id))
+      callback(id);
+  };
+};

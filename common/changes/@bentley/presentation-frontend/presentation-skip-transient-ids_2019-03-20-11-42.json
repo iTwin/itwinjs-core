@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Do not include transient element IDs when syncing with logical selection",
+      "packageName": "@bentley/presentation-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-frontend",
+  "email": "grigas.p@gmail.com"
+}

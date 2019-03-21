@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Do not attempt to handle transient element ids when computing selection based on scope",
+      "packageName": "@bentley/presentation-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-backend",
+  "email": "grigas.p@gmail.com"
+}
