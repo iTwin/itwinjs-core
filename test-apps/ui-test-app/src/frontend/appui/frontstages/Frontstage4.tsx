@@ -30,6 +30,7 @@ import { TreeDemoWidgetControl } from "../widgets/TreeDemoWidget";
 import { Toolbar, Direction } from "@bentley/ui-ninezone";
 
 import { TestModalDialog } from "../dialogs/TestModalDialog";
+import { PopupTestDialog } from "../dialogs/PopupTest";
 import { TestRadialMenu } from "../dialogs/TestRadialMenu";
 import { AppTools } from "../../tools/ToolSpecifications";
 
@@ -162,6 +163,14 @@ export class Frontstage4 extends FrontstageProvider {
     );
   }
 
+  private testPopup(): React.ReactNode {
+    return (
+      <PopupTestDialog
+        opened={true}
+      />
+    );
+  }
+
   private radialMenu(): React.ReactNode {
     return (
       <TestRadialMenu
@@ -182,6 +191,7 @@ export class Frontstage4 extends FrontstageProvider {
             <ToolButton toolId={AppTools.item5.id} iconSpec={AppTools.item5.iconSpec!} labelKey={AppTools.item5.label} />
             <ToolButton toolId="openDialog" iconSpec="icon-placeholder" execute={() => ModalDialogManager.openModalDialog(this.modalDialog())} />
             <ToolButton toolId="openRadial" iconSpec="icon-placeholder" execute={() => ModalDialogManager.openModalDialog(this.radialMenu())} />
+            <ToolButton toolId="popupTest" iconSpec="icon-placeholder" execute={() => ModalDialogManager.openModalDialog(this.testPopup())} />
           </>
         }
       />;
