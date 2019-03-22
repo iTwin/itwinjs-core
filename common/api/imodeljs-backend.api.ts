@@ -1103,6 +1103,8 @@ class IModelHostConfiguration {
   appAssetsDir?: string;
   briefcaseCacheDir: string;
   static defaultTileRequestTimeout: number;
+  // @alpha
+  disableInternalTileCache: boolean;
   imodelClient?: IModelClient;
   nativePlatform?: any;
   tileContentRequestTimeout: number;
@@ -1786,6 +1788,9 @@ module IModelJsNative {
 
   // (undocumented)
   function initializeRegion(region: number): void;
+
+  // (undocumented)
+  function setUseTileCache(useTileCache: boolean): void;
 
   // (undocumented)
   class SnapRequest {
