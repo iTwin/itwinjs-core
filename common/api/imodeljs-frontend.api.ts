@@ -4638,12 +4638,6 @@ enum SelectionProcessing {
   ReplaceSelectionWithElement = 3
 }
 
-// @public (undocumented)
-enum SelectionScope {
-  Assembly = 1,
-  Element = 0
-}
-
 // @public
 class SelectionSet {
   constructor(iModel: IModelConnection);
@@ -4665,8 +4659,6 @@ class SelectionSet {
 
 // @public
 class SelectionTool extends PrimitiveTool {
-  // (undocumented)
-  protected _selectionScopeValue: ToolSettingsValue;
   applyToolSettingPropertyChange(updatedValue: ToolSettingsPropertySyncItem): boolean;
   // (undocumented)
   autoLockTarget(): void;
@@ -4733,8 +4725,6 @@ class SelectionTool extends PrimitiveTool {
   // (undocumented)
   selectionOption: SelectOptions;
   // (undocumented)
-  selectionScope: SelectionScope;
-  // (undocumented)
   protected setSelectionMethod(method: SelectionMethod): void;
   // (undocumented)
   protected setSelectionMode(mode: SelectionMode): void;
@@ -4755,8 +4745,6 @@ class SelectionTool extends PrimitiveTool {
   protected wantPickableDecorations(): boolean;
   // (undocumented)
   protected wantSelectionClearOnMiss(_ev: BeButtonEvent): boolean;
-  // (undocumented)
-  protected wantSelectionScopeInToolSettings(): boolean;
   // (undocumented)
   protected wantToolSettings(): boolean;
 }

@@ -144,8 +144,7 @@
         "IdentifyBoxRemove": "Identify elements to remove by box corner points",
         "AcceptSelection": "Accept/Reject Selection",
         "AcceptFence": "Accept/Reject Fence Contents",
-        "Mode": "Mode",
-        "Scope": "Scope"
+        "Mode": "Mode"
       },
       "Error": {
         "NoFence": "No fence defined",
@@ -161,10 +160,6 @@
         "Box": "Select by range",
         "Add": "Add to selection",
         "Remove": "Remove from selection"
-      },
-      "SelectionScope": {
-        "Element": "Element",
-        "Assembly": "Assembly"
       }
     },
     "Plugin": {
