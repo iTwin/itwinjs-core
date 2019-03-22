@@ -5,30 +5,28 @@
 /** @module Categories */
 
 import { Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
-import { BisCodeSpec, Code, CodeScopeProps, CodeSpec, ElementProps, SubCategoryAppearance, Rank, SubCategoryProps, CategoryProps } from "@bentley/imodeljs-common";
+import { BisCodeSpec, CategoryProps, Code, CodeScopeProps, CodeSpec, ElementProps, Rank, SubCategoryAppearance, SubCategoryProps } from "@bentley/imodeljs-common";
 import { DefinitionElement } from "./Element";
 import { IModelDb } from "./IModelDb";
 import { CategoryOwnsSubCategories } from "./NavigationRelationship";
 
-/** Defines the appearance for graphics in Geometric elements */
+/** Defines the appearance for graphics in Geometric elements
+ * @public
+ */
 export class SubCategory extends DefinitionElement implements SubCategoryProps {
   /** The Appearance parameters for this SubCategory */
   public appearance: SubCategoryAppearance;
   /** Optional description of this SubCategory. */
   public description?: string;
 
-  /** Construct a SubCategory.
-   * @param props The properties of the SubCategory
-   * @param iModel The IModelDb for the SubCategory
-   * @hidden
-   */
+  /** @internal */
   public constructor(props: SubCategoryProps, iModel: IModelDb) {
     super(props, iModel);
     this.appearance = new SubCategoryAppearance(props.appearance);
     this.description = JsonUtils.asString(props.description);
   }
 
-  /** @hidden */
+  /** @internal */
   public toJSON(): SubCategoryProps {
     const val = super.toJSON();
     val.appearance = this.appearance.toJSON();
@@ -90,18 +88,20 @@ export class SubCategory extends DefinitionElement implements SubCategoryProps {
   }
 }
 
-/** A Category element is the target of the `category` member of [[GeometricElement]]. */
+/** A Category element is the target of the `category` member of [[GeometricElement]].
+ * @public
+ */
 export class Category extends DefinitionElement implements CategoryProps {
   public rank: Rank = Rank.User;
 
-  /** @hidden */
+  /** @internal */
   public constructor(props: CategoryProps, iModel: IModelDb) {
     super(props, iModel);
     this.rank = JsonUtils.asInt(props.rank);
     this.description = JsonUtils.asString(props.description);
   }
 
-  /** @hidden */
+  /** @internal */
   public toJSON(): CategoryProps {
     const val = super.toJSON();
     val.rank = this.rank;
@@ -121,12 +121,14 @@ export class Category extends DefinitionElement implements CategoryProps {
   }
 }
 
-/** Categorizes 2d GeometricElements. */
+/** Categorizes 2d GeometricElements.
+ * @public
+ */
 export class DrawingCategory extends Category {
   /** Construct a DrawingCategory
    * @param opts  The properties of the new DrawingCategory
    * @param iModel The IModelDb where the DrawingCategory may be inserted.
-   * @hidden
+   * @internal
    */
   public constructor(opts: ElementProps, iModel: IModelDb) { super(opts, iModel); }
 
@@ -150,8 +152,7 @@ export class DrawingCategory extends Category {
     return new Code({ spec: codeSpec.id, scope: scopeModelId, value: codeValue });
   }
 
-  /**
-   * Create a new DrawingCategory
+  /** Create a new DrawingCategory
    * @param iModelDb The iModel
    * @param definitionModelId The [[DefinitionModel]]
    * @param name The name of the DrawingCategory
@@ -168,8 +169,7 @@ export class DrawingCategory extends Category {
     return new DrawingCategory(categoryProps, iModelDb);
   }
 
-  /**
-   * Insert a new DrawingCategory
+  /** Insert a new DrawingCategory
    * @param iModelDb Insert into this iModel
    * @param definitionModelId Insert the new DrawingCategory into this [[DefinitionModel]]
    * @param name The name of the DrawingCategory
@@ -186,12 +186,14 @@ export class DrawingCategory extends Category {
   }
 }
 
-/** Categorizes SpatialElements. See [how to create a SpatialCategory]$(docs/learning/backend/CreateElements.md#SpatialCategory). */
+/** Categorizes SpatialElements. See [how to create a SpatialCategory]$(docs/learning/backend/CreateElements.md#SpatialCategory).
+ * @public
+ */
 export class SpatialCategory extends Category {
   /** Construct a SpatialCategory
    * @param opts  The properties of the new SpatialCategory
    * @param iModel The IModelDb where the SpatialCategory may be inserted.
-   * @hidden
+   * @internal
    */
   public constructor(opts: ElementProps, iModel: IModelDb) { super(opts, iModel); }
 
@@ -215,8 +217,7 @@ export class SpatialCategory extends Category {
     return new Code({ spec: codeSpec.id, scope: scopeModelId, value: codeValue });
   }
 
-  /**
-   * Create a new SpatialCategory
+  /** Create a new SpatialCategory
    * @param iModelDb The iModel
    * @param definitionModelId The [[DefinitionModel]]
    * @param name The name/CodeValue of the SpatialCategory
@@ -233,8 +234,7 @@ export class SpatialCategory extends Category {
     return new SpatialCategory(categoryProps, iModelDb);
   }
 
-  /**
-   * Insert a new SpatialCategory
+  /** Insert a new SpatialCategory
    * @param iModelDb Insert into this iModel
    * @param definitionModelId Insert the new SpatialCategory into this DefinitionModel
    * @param name The name of the SpatialCategory

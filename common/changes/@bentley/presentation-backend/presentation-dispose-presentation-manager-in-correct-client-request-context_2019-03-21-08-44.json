@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Dispose PresentationManager in the same client request context as it was created in.",
+      "packageName": "@bentley/presentation-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-backend",
+  "email": "grigas.p@gmail.com"
+}

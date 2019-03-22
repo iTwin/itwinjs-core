@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module UnifiedSelection */
 
-import { IDisposable, Id64Set, GuidString, Guid, Id64Arg } from "@bentley/bentleyjs-core";
+import { IDisposable, Id64Set, GuidString, Guid, Id64Arg, Id64, Id64Array } from "@bentley/bentleyjs-core";
 import { IModelConnection, SelectEventType } from "@bentley/imodeljs-frontend";
 import { KeySet, Keys, SelectionScope } from "@bentley/presentation-common";
 import ISelectionProvider from "./ISelectionProvider";
@@ -325,18 +325,19 @@ export class ToolSelectionSyncHandler implements IDisposable {
       return;
     }
 
+    const persistentElementIds = getPersistentElementIds(ids!);
     const asyncId = Guid.createValue();
     this._asyncsInProgress.add(asyncId);
     try {
       switch (eventType) {
         case SelectEventType.Add:
-          await changer.add(ids!, selectionLevel);
+          await changer.add(persistentElementIds, selectionLevel);
           break;
         case SelectEventType.Replace:
-          await changer.replace(ids!, selectionLevel);
+          await changer.replace(persistentElementIds, selectionLevel);
           break;
         case SelectEventType.Remove:
-          await changer.remove(ids!, selectionLevel);
+          await changer.remove(persistentElementIds, selectionLevel);
           break;
       }
     } finally {
@@ -345,9 +346,35 @@ export class ToolSelectionSyncHandler implements IDisposable {
   }
 }
 
-const createElementKeys = (ids: Id64Set): KeySet => {
+const getPersistentElementIds = (ids: Id64Set): Id64Array | Id64Set => {
+  let hasTransients = false;
+  for (const id of ids) {
+    if (Id64.isTransient(id)) {
+      hasTransients = true;
+      break;
+    }
+  }
+  if (!hasTransients) {
+    // avoid making a copy if there are no transient element ids in
+    // the given set
+    return ids;
+  }
+
+  // if `ids` contain transient ids, we have to copy.. use Array instead of
+  // a Set for performance
+  const persistentElementIds: Id64Array = [];
+  ids.forEach((id) => {
+    if (!Id64.isTransient(id))
+      persistentElementIds.push(id);
+  });
+  return persistentElementIds;
+};
+
+const createElementKeys = (ids: Id64Array | Id64Set): KeySet => {
   const set = new KeySet();
-  ids.forEach((id) => set.add({ classFullName: "BisCore:Element", id }));
+  for (const id of ids) {
+    set.add({ classFullName: "BisCore:Element", id });
+  }
   return set;
 };
 
@@ -364,13 +391,13 @@ class SelectionChanger {
   public async clear(level: number): Promise<void> {
     this.manager.clearSelection(this.name, this.imodel, level);
   }
-  public async add(ids: Id64Set, level: number): Promise<void> {
+  public async add(ids: Id64Array | Id64Set, level: number): Promise<void> {
     this.manager.addToSelection(this.name, this.imodel, createElementKeys(ids), level);
   }
-  public async remove(ids: Id64Set, level: number): Promise<void> {
+  public async remove(ids: Id64Array | Id64Set, level: number): Promise<void> {
     this.manager.removeFromSelection(this.name, this.imodel, createElementKeys(ids), level);
   }
-  public async replace(ids: Id64Set, level: number): Promise<void> {
+  public async replace(ids: Id64Array | Id64Set, level: number): Promise<void> {
     this.manager.replaceSelection(this.name, this.imodel, createElementKeys(ids), level);
   }
 }
@@ -382,13 +409,13 @@ class ScopedSelectionChanger extends SelectionChanger {
     super(name, imodel, manager);
     this.scope = scope;
   }
-  public async add(ids: Id64Set, level: number): Promise<void> {
+  public async add(ids: Id64Array | Id64Set, level: number): Promise<void> {
     await this.manager.addToSelectionWithScope(this.name, this.imodel, ids, this.scope, level);
   }
-  public async remove(ids: Id64Set, level: number): Promise<void> {
+  public async remove(ids: Id64Array | Id64Set, level: number): Promise<void> {
     await this.manager.removeFromSelectionWithScope(this.name, this.imodel, ids, this.scope, level);
   }
-  public async replace(ids: Id64Set, level: number): Promise<void> {
+  public async replace(ids: Id64Array | Id64Set, level: number): Promise<void> {
     await this.manager.replaceSelectionWithScope(this.name, this.imodel, ids, this.scope, level);
   }
 }

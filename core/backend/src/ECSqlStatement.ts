@@ -12,7 +12,6 @@ import { IModelJsNative } from "./IModelJsNative";
 import { IModelHost } from "./IModelHost";
 import { Config } from "@bentley/imodeljs-clients";
 
-/** @hidden */
 const loggingCategory = "imodeljs-backend.ECSqlStatement";
 
 /** The result of an **ECSQL INSERT** statement as returned from [ECSqlStatement.stepForInsert]($backend).
@@ -55,21 +54,21 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
   private _stmt: IModelJsNative.ECSqlStatement | undefined;
   private _isShared: boolean = false;
 
-  /** @hidden - used by statement cache */
+  /** @internal - used by statement cache */
   public setIsShared(b: boolean) { this._isShared = b; }
 
-  /** @hidden - used by statement cache */
+  /** @internal - used by statement cache */
   public get isShared(): boolean { return this._isShared; }
 
   /** Check if this statement has been prepared successfully or not */
   public get isPrepared(): boolean { return !!this._stmt; }
 
-  /** @hidden used internally only
-   * Prepare this statement prior to first use.
+  /** Prepare this statement prior to first use.
    * @param db The DgnDb or ECDb to prepare the statement against
    * @param ecsql The ECSQL statement string to prepare
    * @throws [IModelError]($common) if the ECSQL statement cannot be prepared. Normally, prepare fails due to ECSQL syntax errors or references to tables or properties that do not exist.
    * The error.message property will provide details.
+   * @internal
    */
   public prepare(db: IModelJsNative.DgnDb | IModelJsNative.ECDb, ecsql: string): void {
     if (this.isPrepared)
@@ -937,7 +936,7 @@ export class CachedECSqlStatement {
   public statement: ECSqlStatement;
   public useCount: number;
 
-  /** @hidden - used by statement cache */
+  /** @internal - used by statement cache */
   public constructor(stmt: ECSqlStatement) {
     this.statement = stmt;
     this.useCount = 1;

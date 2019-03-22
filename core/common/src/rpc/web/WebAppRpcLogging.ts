@@ -29,7 +29,7 @@ function getHostname(): string {
   }
 }
 
-/** @hidden */
+/** @internal */
 export class WebAppRpcLogging {
   public static logProtocolEvent(event: RpcProtocolEvent, object: RpcRequest | RpcInvocation): void {
     if (object instanceof WebAppRpcRequest) {

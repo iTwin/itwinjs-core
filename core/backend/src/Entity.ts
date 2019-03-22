@@ -4,12 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Schema */
 
-import { Id64String, Id64, DbOpcode } from "@bentley/bentleyjs-core";
-import { EntityProps, PropertyMetaData, PropertyCallback } from "@bentley/imodeljs-common";
+import { DbOpcode, Id64, Id64String } from "@bentley/bentleyjs-core";
+import { EntityProps, PropertyCallback, PropertyMetaData } from "@bentley/imodeljs-common";
 import { IModelDb } from "./IModelDb";
 import { Schema } from "./Schema";
 
-/** Base class for all Entities in an iModel. */
+/** Base class for all Entities in an iModel.
+ * @public
+ */
 export class Entity implements EntityProps {
   [propName: string]: any;
 
@@ -22,7 +24,7 @@ export class Entity implements EntityProps {
   /** The Id of this Entity. May be invalid if the Entity has not yet been saved in the database. */
   public id: Id64String;
 
-  /** @hidden */
+  /** @internal */
   constructor(props: EntityProps, iModel: IModelDb) {
     this.iModel = iModel;
     this.id = Id64.fromJSON(props.id);
@@ -30,7 +32,7 @@ export class Entity implements EntityProps {
     this.forEachProperty((propName: string, meta: PropertyMetaData) => this[propName] = meta.createProperty(props[propName]));
   }
 
-  /** @hidden */
+  /** @internal */
   public toJSON(): EntityProps {
     const val: any = {};
     val.classFullName = this.classFullName;

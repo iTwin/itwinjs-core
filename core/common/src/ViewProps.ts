@@ -69,7 +69,7 @@ export interface ViewFlagProps {
   noStyle?: boolean;
   /** If true, don't use transparency. */
   noTransp?: boolean;
-  /** @hidden This doesn't belong here - it is not persistent. */
+  /** @internal This doesn't belong here - it is not persistent. */
   contRend?: boolean;
   /** If true, don't show filled regions. */
   noFill?: boolean;
@@ -99,7 +99,7 @@ export interface ViewFlagProps {
   hlMatColors?: boolean;
   /** If true, show view with monochrome settings. */
   monochrome?: boolean;
-  /** @hidden unused */
+  /** @internal unused */
   edgeMask?: number;
   /** [[RenderMode]] */
   renderMode?: number;
@@ -165,7 +165,7 @@ export const enum SkyBoxImageType {
   Spherical,
   /** 6 images mapped to the faces of a cube. @see [[SkyCube]] */
   Cube,
-  /** @hidden not yet supported */
+  /** @internal not yet supported */
   Cylindrical,
 }
 
@@ -450,12 +450,12 @@ export class DisplayStyleSettings {
     this._json.monochromeColor = color.toJSON();
   }
 
-  /** @hidden */
+  /** @internal */
   public get backgroundMap(): BackgroundMapProps | undefined {
     const props = this._json.backgroundMap;
     return undefined !== props ? props : {};
   }
-  /** @hidden */
+  /** @internal */
   public set backgroundMap(map: BackgroundMapProps | undefined) { this._json.backgroundMap = map; }
 
   /** Customize the way geometry belonging to a [[SubCategory]] is drawn by this display style.
@@ -592,12 +592,12 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     this._json3d.ao = ao.toJSON();
   }
 
-  /** @hidden */
+  /** @internal */
   public get environment(): EnvironmentProps {
     const env = this._json3d.environment;
     return undefined !== env ? env : {};
   }
 
-  /** @hidden */
+  /** @internal */
   public set environment(environment: EnvironmentProps) { this._json3d.environment = environment; }
 }

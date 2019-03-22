@@ -11,16 +11,18 @@ import { IModelDb } from "./IModelDb";
 /** An Element Aspect is a class that defines a set of properties that are related to (and owned by) a single element.
  * Semantically, an ElementAspect can be considered part of the Element. Thus, an ElementAspect is deleted if its owning Element is deleted.
  * BIS Guideline: Subclass ElementUniqueAspect or ElementMultiAspect rather than subclassing ElementAspect directly.
+ * @public
  */
 export class ElementAspect extends Entity implements ElementAspectProps {
   public element: RelatedElement;
 
-  /** @hidden */
+  /** @internal */
   constructor(props: ElementAspectProps, iModel: IModelDb) {
     super(props, iModel);
     this.element = RelatedElement.fromJSON(props.element)!;
   }
 
+  /** @internal */
   public toJSON(): ElementAspectProps {
     const val = super.toJSON() as ElementAspectProps;
     val.element = this.element;
@@ -28,10 +30,14 @@ export class ElementAspect extends Entity implements ElementAspectProps {
   }
 }
 
-/** An Element Unique Aspect is an ElementAspect where there can be only zero or one instance of the Element Aspect class per Element. */
+/** An Element Unique Aspect is an ElementAspect where there can be only zero or one instance of the Element Aspect class per Element.
+ * @public
+ */
 export class ElementUniqueAspect extends ElementAspect {
 }
 
-/** An Element Multi-Aspect is an ElementAspect where there can be **n** instances of the Element Aspect class per Element. */
+/** An Element Multi-Aspect is an ElementAspect where there can be **n** instances of the Element Aspect class per Element.
+ * @public
+ */
 export class ElementMultiAspect extends ElementAspect {
 }

@@ -16,7 +16,7 @@ import {
 } from "@bentley/presentation-common/lib/test/_helpers/random";
 import "@bentley/presentation-common/lib/test/_helpers/Promises";
 import "./IModelHostSetup";
-import { using, ClientRequestContext } from "@bentley/bentleyjs-core";
+import { using, ClientRequestContext, Id64 } from "@bentley/bentleyjs-core";
 import { RelatedElementProps, EntityMetaData, ElementProps, ModelProps } from "@bentley/imodeljs-common";
 import { IModelHost, IModelDb, DrawingGraphic, Element } from "@bentley/imodeljs-backend";
 import {
@@ -1164,6 +1164,8 @@ describe("PresentationManager", () => {
         };
       };
 
+      const createTransientElementId = () => Id64.fromLocalAndBriefcaseIds(faker.random.number(), 0xffffff);
+
       beforeEach(() => {
         elementsMock.reset();
         modelsMock.reset();
@@ -1192,6 +1194,16 @@ describe("PresentationManager", () => {
           expect(result.size).to.eq(2);
           expect(result.has({ className: elementProps[0].classFullName, id: elementProps[0].id! })).to.be.true;
           expect(result.has({ className: elementProps[1].classFullName, id: elementProps[1].id! })).to.be.true;
+        });
+
+        it("skips transient element ids", async () => {
+          const ids = [createRandomId(), createTransientElementId()];
+          const elementProps = [createRandomElementProps()];
+          elementsMock.setup((x) => x.getElementProps(ids[0])).returns(() => elementProps[0]);
+
+          const result = await manager.computeSelection(ClientRequestContext.current, { imodel: imodelMock.object }, ids, "element");
+          expect(result.size).to.eq(1);
+          expect(result.has({ className: elementProps[0].classFullName, id: elementProps[0].id! })).to.be.true;
         });
 
       });
@@ -1233,6 +1245,19 @@ describe("PresentationManager", () => {
           expect(result.has({ className: elementProps.classFullName, id: elementProps.id! })).to.be.true;
         });
 
+        it("skips transient element ids", async () => {
+          const parentProps = [createRandomElementProps()];
+          const elementProps = [createRandomElementProps()];
+          elementProps.forEach((p, index) => {
+            elementsMock.setup((x) => x.getElementProps(p.id!)).returns(() => p);
+            elementsMock.setup((x) => x.getElementProps(p.parent!.id)).returns(() => parentProps[index]);
+          });
+          const ids = [elementProps[0].id!, createTransientElementId()];
+          const result = await manager.computeSelection(ClientRequestContext.current, { imodel: imodelMock.object }, ids, "assembly");
+          expect(result.size).to.eq(1);
+          expect(result.has({ className: parentProps[0].classFullName, id: parentProps[0].id! })).to.be.true;
+        });
+
       });
 
       describe("scope: 'top-assembly'", () => {
@@ -1259,6 +1284,19 @@ describe("PresentationManager", () => {
           const result = await manager.computeSelection(ClientRequestContext.current, { imodel: imodelMock.object }, [id], "top-assembly");
           expect(result.size).to.eq(1);
           expect(result.has({ className: elementProps.classFullName, id: elementProps.id! })).to.be.true;
+        });
+
+        it("skips transient element ids", async () => {
+          const parent = createRandomTopmostElementProps();
+          const parentKey = { relClassName: faker.random.word(), id: parent.id! };
+          const element = createRandomElementProps(parentKey);
+          elementsMock.setup((x) => x.getElementProps(element.id!)).returns(() => element);
+          elementsMock.setup((x) => x.getElementProps(parent.id!)).returns(() => parent);
+
+          const ids = [element.id!, createTransientElementId()];
+          const result = await manager.computeSelection(ClientRequestContext.current, { imodel: imodelMock.object }, ids, "top-assembly");
+          expect(result.size).to.eq(1);
+          expect(result.has({ className: parent.classFullName, id: parent.id! })).to.be.true;
         });
 
       });
@@ -1292,6 +1330,25 @@ describe("PresentationManager", () => {
           expect(result.isEmpty).to.be.true;
         });
 
+        it("skips transient element ids", async () => {
+          const category = createRandomElementProps();
+          const elementId = createRandomId();
+          const element = new DrawingGraphic({
+            id: elementId,
+            classFullName: faker.random.word(),
+            model: createRandomId(),
+            category: category.id!,
+            code: { scope: faker.random.word(), spec: faker.random.word() },
+          }, imodelMock.object);
+          elementsMock.setup((x) => x.getElement(elementId)).returns(() => element);
+          elementsMock.setup((x) => x.getElementProps(category.id!)).returns(() => category);
+
+          const ids = [elementId, createTransientElementId()];
+          const result = await manager.computeSelection(ClientRequestContext.current, { imodel: imodelMock.object }, ids, "category");
+          expect(result.size).to.eq(1);
+          expect(result.has({ className: category.classFullName, id: element.category! })).to.be.true;
+        });
+
       });
 
       describe("scope: 'model'", () => {
@@ -1310,6 +1367,25 @@ describe("PresentationManager", () => {
           modelsMock.setup((x) => x.getModelProps(model.id!)).returns(() => model);
 
           const result = await manager.computeSelection(ClientRequestContext.current, { imodel: imodelMock.object }, [elementId], "model");
+          expect(result.size).to.eq(1);
+          expect(result.has({ className: model.classFullName, id: model.id! })).to.be.true;
+        });
+
+        it("skips transient element ids", async () => {
+          const model = createRandomModelProps();
+          const elementId = createRandomId();
+          const element = new DrawingGraphic({
+            id: elementId,
+            classFullName: faker.random.word(),
+            model: model.id!,
+            category: createRandomId(),
+            code: { scope: faker.random.word(), spec: faker.random.word() },
+          }, imodelMock.object);
+          elementsMock.setup((x) => x.getElementProps(elementId)).returns(() => element);
+          modelsMock.setup((x) => x.getModelProps(model.id!)).returns(() => model);
+
+          const ids = [elementId, createTransientElementId()];
+          const result = await manager.computeSelection(ClientRequestContext.current, { imodel: imodelMock.object }, ids, "model");
           expect(result.size).to.eq(1);
           expect(result.has({ className: model.classFullName, id: model.id! })).to.be.true;
         });

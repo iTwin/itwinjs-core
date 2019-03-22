@@ -37,7 +37,7 @@ export class MobileRpcRequest extends RpcRequest {
     // No implementation
   }
 
-  /** @hidden */
+  /** @internal */
   public notifyResponse(fulfillment: RpcRequestFulfillment) {
     this._fulfillment = fulfillment;
     this._response(fulfillment.status);

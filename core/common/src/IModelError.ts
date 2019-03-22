@@ -24,6 +24,7 @@ export class ServerError extends IModelError {
   }
 }
 
+/** @public */
 export class ServerTimeoutError extends ServerError {
   public constructor(errorNumber: number, message: string, log?: LogFunction) {
     super(errorNumber, message, log);

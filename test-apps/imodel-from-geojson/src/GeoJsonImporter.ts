@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { Id64, Id64String, OpenMode } from "@bentley/bentleyjs-core";
 import { Angle, GeometryQuery, LineString3d, Loop, StandardViewIndex, Arc3d } from "@bentley/geometry-core";
-import { Cartographic, Code, ColorDef, GeometricElement3dProps, GeometryStreamBuilder, GeometryStreamProps, AxisAlignedBox3d, EcefLocation, ViewFlags, IModel } from "@bentley/imodeljs-common";
+import { Cartographic, Code, ColorDef, ColorByName, GeometricElement3dProps, GeometryStreamBuilder, GeometryStreamProps, GeometryParams, AxisAlignedBox3d, EcefLocation, ViewFlags, IModel } from "@bentley/imodeljs-common";
 import { CategorySelector, DefinitionModel, DisplayStyle3d, IModelDb, ModelSelector, OrthographicViewDefinition, PhysicalModel, SpatialCategory, SpatialModel, ViewDefinition } from "@bentley/imodeljs-backend";
 import { GeoJson } from "./GeoJson";
 
@@ -21,18 +21,20 @@ export class GeoJsonImporter {
   private readonly _forceZeroHeight = true;
   private readonly _labelProperty?: string;
   private readonly _pointRadius: number;
+  private _colorIndex?: number;
 
   /** Construct a new GeoJsonImporter
    * @param iModelFileName the output iModel file name
    * @param geoJson the input GeoJson data
    */
-  public constructor(iModelFileName: string, geoJson: GeoJson, appendToExisting: boolean, modelName?: string, labelProperty?: string, pointRadius?: number) {
+  public constructor(iModelFileName: string, geoJson: GeoJson, appendToExisting: boolean, modelName?: string, labelProperty?: string, pointRadius?: number, pseudoColor?: boolean) {
     this.iModelDb = appendToExisting ? IModelDb.openStandalone(iModelFileName, OpenMode.ReadWrite) : IModelDb.createStandalone(iModelFileName, { rootSubject: { name: geoJson.title } });
     this._geoJson = geoJson;
     this._appendToExisting = appendToExisting;
     this._modelName = modelName;
     this._labelProperty = labelProperty;
     this._pointRadius = pointRadius === undefined ? .25 : pointRadius;
+    this._colorIndex = pseudoColor ? 0 : undefined;
   }
 
   /** Perform the import */
@@ -153,6 +155,13 @@ export class GeoJsonImporter {
       return undefined;
 
     const builder = new GeometryStreamBuilder();
+    if (this._colorIndex !== undefined) {
+      const colorValues = [ColorByName.blue, ColorByName.red, ColorByName.green, ColorByName.yellow, ColorByName.cyan, ColorByName.magenta, ColorByName.cornSilk, ColorByName.blueViolet, ColorByName.deepSkyBlue, ColorByName.indigo, ColorByName.fuchsia];
+      const geomParams = new GeometryParams(this.featureCategoryId);
+      geomParams.lineColor = new ColorDef(colorValues[this._colorIndex++ % colorValues.length]);
+      builder.appendGeometryParamsChange(geomParams);
+    }
+
     switch (inGeometry.type) {
       case GeoJson.GeometryType.point:
         const pointGeometry = this.convertPoint(inGeometry.coordinates);

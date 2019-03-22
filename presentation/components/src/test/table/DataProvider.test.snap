@@ -3,10 +3,10 @@
 exports[`TableDataProvider getColumns returns valid column descriptions 1`] = `
 Array [
   Object {
-    "editable": true,
+    "editable": false,
     "filterable": true,
-    "key": "Implemented",
-    "label": "Checking Account Kuwaiti Dinar Gibraltar Pound",
+    "key": "monitor",
+    "label": "Legacy Colorado Compatible",
     "sortable": true,
   },
   Object {

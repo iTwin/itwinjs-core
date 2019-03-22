@@ -4,21 +4,18 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module RpcInterface */
 
-import { IModelError } from "../../IModelError";
-import { IModelToken } from "../../IModel";
 import { BentleyStatus } from "@bentley/bentleyjs-core";
+import { IModelToken } from "../../IModel";
+import { IModelError } from "../../IModelError";
 import { RpcInterface, RpcInterfaceDefinition } from "../../RpcInterface";
-import { RpcRegistry, OPERATION, POLICY, builtins } from "./RpcRegistry";
-import {
-  RpcRequestTokenSupplier_T,
-  RpcRequestInitialRetryIntervalSupplier_T,
-  RpcRequestCallback_T,
-  RpcResponseCachingCallback_T,
-} from "./RpcRequest";
-import { RpcInvocationCallback_T } from "./RpcInvocation";
 import { RpcResponseCacheControl } from "./RpcConstants";
+import { RpcInvocationCallback_T } from "./RpcInvocation";
+import { builtins, OPERATION, POLICY, RpcRegistry } from "./RpcRegistry";
+import { RpcRequestCallback_T, RpcRequestInitialRetryIntervalSupplier_T, RpcRequestTokenSupplier_T, RpcResponseCachingCallback_T } from "./RpcRequest";
 
-/** The policy for an RPC operation. */
+/** The policy for an RPC operation.
+ * @public
+ */
 export class RpcOperationPolicy {
   /** Supplies the IModelToken for an operation request. */
   public token: RpcRequestTokenSupplier_T = (request) => request.findParameterOfType(IModelToken);
@@ -42,7 +39,9 @@ export class RpcOperationPolicy {
   public allowResponseCaching: RpcResponseCachingCallback_T = (_request) => RpcResponseCacheControl.None;
 }
 
-/** An RPC operation descriptor. */
+/** An RPC operation descriptor.
+ * @public
+ */
 export class RpcOperation {
   /** A fallback token to use for RPC system management requests like RpcManager.describeAvailableEndpoints. */
   public static fallbackToken: IModelToken | undefined = undefined;
@@ -95,14 +94,14 @@ export class RpcOperation {
   /** The policy for this operation. */
   public policy: RpcOperationPolicy;
 
-  /** @hidden */
+  /** @internal */
   public constructor(definition: RpcInterfaceDefinition, operation: string, policy: RpcOperationPolicy) {
     this.interfaceDefinition = definition;
     this.operationName = operation;
     this.policy = policy;
   }
 
-  /** @hidden */
+  /** @internal */
   public static computeOperationName(identifier: string): string {
     const c = identifier.indexOf(":");
     if (c === -1)
@@ -112,6 +111,7 @@ export class RpcOperation {
   }
 }
 
+/** @public */
 export namespace RpcOperation {
   /** Decorator for setting the policy for an RPC operation function. */
   export function setPolicy(policy: RpcOperationPolicy) {

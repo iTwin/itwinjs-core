@@ -4,13 +4,17 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module RpcInterface */
 
-/** Describes available options for RPC response caching. */
+/** Describes available options for RPC response caching.
+ * @public
+ */
 export enum RpcResponseCacheControl {
   None,
   Immutable,
 }
 
-/** RPC interface type marshaling directives. */
+/** RPC interface type marshaling directives.
+ * @internal
+ */
 export enum RpcMarshalingDirective {
   Name = "__name__",
   JSON = "__JSON__",
@@ -25,7 +29,9 @@ export enum RpcMarshalingDirective {
   Binary = "__binary__",
 }
 
-/** RPC protocol event types. */
+/** RPC protocol event types.
+ * @internal
+ */
 export enum RpcProtocolEvent {
   RequestCreated,
   ResponseLoaded,
@@ -41,7 +47,9 @@ export enum RpcProtocolEvent {
   BackendErrorOccurred,
 }
 
-/** The status of an RPC operation request. */
+/** The status of an RPC operation request.
+ * @internal
+ */
 export enum RpcRequestStatus {
   Unknown,
   Created,
@@ -53,13 +61,17 @@ export enum RpcRequestStatus {
   NotFound,
 }
 
-/** RPC request event types. */
+/** RPC request event types.
+ * @internal
+ */
 export enum RpcRequestEvent {
   StatusChanged,
   PendingUpdateReceived,
 }
 
-/** RPC content types. */
+/** RPC content types.
+ * @internal
+ */
 export enum RpcContentType {
   Unknown,
   Text,
@@ -67,7 +79,9 @@ export enum RpcContentType {
   Multipart,
 }
 
-/** RPC supported mobile platforms. */
+/** RPC supported mobile platforms.
+ * @internal
+ */
 export enum RpcMobilePlatform {
   Unknown,
   Window, // Window Phone
@@ -75,13 +89,15 @@ export enum RpcMobilePlatform {
   iOS, // iOS platform
 }
 
-/** Endpoints for RPC protocols.. */
+/** Endpoints for RPC protocols.
+ * @internal
+ */
 export enum RpcEndpoint {
   Frontend,
   Backend,
 }
 
-/** @hidden */
+/** @internal */
 export const WEB_RPC_CONSTANTS = {
   CONTENT: "Content-Type",
   TEXT: "text/plain",

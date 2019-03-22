@@ -62,13 +62,6 @@ export const enum SelectOptions {
   PickAndRemove,
 }
 
-export const enum SelectionScope {
-  /** Identified elements are selected. */
-  Element,
-  /** Identified elements as well as all members of assemblies that include the identified elements are selected. */
-  Assembly,
-}
-
 /** Tool for picking a set of elements of interest, selected by the user. */
 export class SelectionTool extends PrimitiveTool {
   public static hidden = false;
@@ -79,7 +72,6 @@ export class SelectionTool extends PrimitiveTool {
   private _selectionMode = SelectionMode.Replace;
   private _selectionMethod = SelectionMethod.Pick;
   private _selectionOptionValue = new ToolSettingsValue(SelectOptions.PickAndReplace);
-  protected _selectionScopeValue = new ToolSettingsValue(SelectionScope.Element);
 
   public requireWriteableTarget(): boolean { return false; }
   public autoLockTarget(): void { } // NOTE: For selecting elements we only care about iModel, so don't lock target model automatically.
@@ -93,7 +85,6 @@ export class SelectionTool extends PrimitiveTool {
   protected getSelectionMode(): SelectionMode { return this._selectionMode; }
   protected setSelectionMode(mode: SelectionMode): void { this._selectionMode = mode; }
   protected wantToolSettings(): boolean { return false; }
-  protected wantSelectionScopeInToolSettings(): boolean { return true; }
 
   private static optionMessage(str: string) { return IModelApp.i18n.translate("CoreTools:tools.ElementSet.SelectionOptions." + str); }
   private static _optionsName = "selectionOptions";
@@ -128,22 +119,6 @@ export class SelectionTool extends PrimitiveTool {
           { label: SelectionTool.optionMessage("Box"), value: SelectOptions.BoxAndReplace },
           { label: SelectionTool.optionMessage("Add"), value: SelectOptions.PickAndAdd },
           { label: SelectionTool.optionMessage("Remove"), value: SelectOptions.PickAndRemove },
-        ],
-      },
-    };
-  }
-
-  private static scopeMessage(str: string) { return IModelApp.i18n.translate("CoreTools:tools.ElementSet.SelectionScope." + str); }
-  private static _scopesName = "selectionScope";
-  private static _getScopesDescription(): PropertyDescription {
-    return {
-      name: SelectionTool._scopesName,
-      displayLabel: IModelApp.i18n.translate("CoreTools:tools.ElementSet.Prompts.Scope"),
-      typename: "enum",
-      enum: {
-        choices: [
-          { label: SelectionTool.scopeMessage("Element"), value: SelectionScope.Element },
-          { label: SelectionTool.scopeMessage("Assembly"), value: SelectionScope.Assembly },
         ],
       },
     };
@@ -230,22 +205,7 @@ export class SelectionTool extends PrimitiveTool {
     return returnValue;
   }
 
-  public async processSelection(elementId: Id64Arg, process: SelectionProcessing): Promise<boolean> {
-    if (SelectionScope.Assembly === this.selectionScope) {
-      const assemblyIds = new Set<string>();
-      Id64.toIdSet(elementId).forEach((id) => { assemblyIds.add(id); });
-      if (0 === assemblyIds.size)
-        return false;
-      const where = [...assemblyIds].join(",");
-      const ecsql = "SELECT ECInstanceId as id, Parent.Id as parentId FROM BisCore.GeometricElement WHERE Parent.Id IN (SELECT Parent.Id as parentId FROM BisCore.GeometricElement WHERE parent.Id != 0 AND ECInstanceId IN (" + where + "))";
-      for (const row of await this.iModel.queryPage(ecsql)) {
-        assemblyIds.add(row.parentId as string);
-        assemblyIds.add(row.id as string);
-      }
-      return this.updateSelection(assemblyIds, process);
-    }
-    return this.updateSelection(elementId, process);
-  }
+  public async processSelection(elementId: Id64Arg, process: SelectionProcessing): Promise<boolean> { return this.updateSelection(elementId, process); }
 
   protected useOverlapSelection(ev: BeButtonEvent): boolean {
     if (undefined === ev.viewport)
@@ -622,29 +582,6 @@ export class SelectionTool extends PrimitiveTool {
       this.initSelectTool();
   }
 
-  private syncSelectionScope(): void {
-    const syncItem: ToolSettingsPropertySyncItem = { value: this._selectionScopeValue.clone(), propertyName: SelectionTool._scopesName };
-    this.syncToolSettingsProperties([syncItem]);
-  }
-
-  public get selectionScope(): SelectionScope {
-    return this._selectionScopeValue.value as SelectionScope;
-  }
-
-  public set selectionScope(scope: SelectionScope) {
-    this._selectionScopeValue.value = scope;
-    this.syncSelectionScope();
-  }
-
-  private applySelectionScope(scope: SelectionScope): void {
-    // if we change scopes clear the selection
-    if (scope !== this.selectionScope) {
-      this._selectionScopeValue.value = scope;
-      this.iModel.selectionSet.emptyAll();
-      this.syncSelectionOption();
-    }
-  }
-
   /** Used to supply DefaultToolSettingProvider with a list of properties to use to generate ToolSettings.  If undefined then no ToolSettings will be displayed */
   public supplyToolSettingsProperties(): ToolSettingsPropertyRecord[] | undefined {
     if (!this.wantToolSettings())
@@ -652,9 +589,6 @@ export class SelectionTool extends PrimitiveTool {
     const toolSettings = new Array<ToolSettingsPropertyRecord>();
     // generate 2 columns - label will be placed in column 0 and editor in column 1.
     toolSettings.push(new ToolSettingsPropertyRecord(this._selectionOptionValue.clone() as PrimitiveValue, SelectionTool._getOptionsDescription(), { rowPriority: 0, columnIndex: 1 }));
-    if (this.wantSelectionScopeInToolSettings())
-      toolSettings.push(new ToolSettingsPropertyRecord(this._selectionScopeValue.clone() as PrimitiveValue, SelectionTool._getScopesDescription(), { rowPriority: 10, columnIndex: 1 }));
-
     return toolSettings;
   }
 
@@ -663,10 +597,7 @@ export class SelectionTool extends PrimitiveTool {
     if (updatedValue.propertyName === SelectionTool._optionsName) {
       if (this._selectionOptionValue.update(updatedValue.value))
         this.applySelectionOption(updatedValue.value.value as SelectOptions);
-    } else if (updatedValue.propertyName === SelectionTool._scopesName) {
-      this.applySelectionScope(updatedValue.value.value as SelectionScope);
     }
-
     // return true is change is valid
     return true;
   }

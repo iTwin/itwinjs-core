@@ -24,11 +24,10 @@ import { initializeRpcBackend } from "./RpcBackend";
 import * as os from "os";
 import * as semver from "semver";
 
-/** @hidden */
 const loggingCategory = "imodeljs-backend.IModelHost";
 
-/**
- * Configuration of imodeljs-backend.
+/** Configuration of imodeljs-backend.
+ * @public
  */
 export class IModelHostConfiguration {
   /** The native platform to use -- normally, the app should leave this undefined. [[IModelHost.startup]] will set it to the appropriate nativePlatform automatically. */
@@ -61,9 +60,9 @@ export class IModelHostConfiguration {
   public disableInternalTileCache = false;
 }
 
-/**
- * IModelHost initializes ($backend) and captures its configuration. A backend must call [[IModelHost.startup]] before using any backend classes.
+/** IModelHost initializes ($backend) and captures its configuration. A backend must call [[IModelHost.startup]] before using any backend classes.
  * See [the learning article]($docs/learning/backend/IModelHost.md)
+ * @public
  */
 export class IModelHost {
   private static _authorizationClient?: IAuthorizationClient;
@@ -81,14 +80,10 @@ export class IModelHost {
   /** A uniqueId for this backend session */
   public static sessionId: GuidString;
 
-  /** The Id of this backend application - needs to be set only if it is an agent application. The applicationId
-   * will otherwise originate at the frontend.
-   */
+  /** The Id of this backend application - needs to be set only if it is an agent application. The applicationId will otherwise originate at the frontend. */
   public static applicationId: string;
 
-  /** The version of this backend application - needs to be set if is an agent application. The applicationVersion
-   * will otherwise originate at the frontend.
-   */
+  /** The version of this backend application - needs to be set if is an agent application. The applicationVersion will otherwise originate at the frontend. */
   public static applicationVersion: string;
 
   /** Implementation of [[IAuthorizationClient]] to supply the authorization information for this session - only required for backend applications */
@@ -165,7 +160,7 @@ export class IModelHost {
     };
   }
 
-  /** @hidden */
+  /** @internal */
   public static loadNative(region: number, dir?: string): void { this.registerPlatform(Platform.load(dir), region); }
 
   /** This method must be called before any iModel.js services are used.
@@ -256,7 +251,9 @@ export class IModelHost {
   public static get useTileContentThreadPool(): boolean { return undefined !== IModelHost.configuration && IModelHost.configuration.useTileContentThreadPool; }
 }
 
-/** Information about the platform on which the app is running. Also see [[KnownLocations]] and [[IModelJsFs]]. */
+/** Information about the platform on which the app is running. Also see [[KnownLocations]] and [[IModelJsFs]].
+ * @public
+ */
 export class Platform {
   /** The imodeljs mobile info object, if this is running in the imodeljs mobile platform. */
   public static get imodeljsMobile(): any { return (typeof (self) !== "undefined") ? (self as any).imodeljsMobile : undefined; }
@@ -290,7 +287,9 @@ export class Platform {
   }
 }
 
-/** Well known directories that may be used by the app. Also see [[Platform]] */
+/** Well known directories that may be used by the app. Also see [[Platform]]
+ * @public
+ */
 export class KnownLocations {
 
   /** The directory where the imodeljs-native assets are stored. */

@@ -8,6 +8,7 @@ import { ClassRegistry } from "../ClassRegistry";
 import { Schema, Schemas } from "../Schema";
 import * as elementsModule from "./GenericElements";
 
+/** @public */
 export class Generic extends Schema {
   public static registerSchema() {
     Schemas.unregisterSchema(Generic.name);

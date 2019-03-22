@@ -2198,18 +2198,22 @@ class GeometricModelState extends ModelState, implements TileTreeModelState {
   // @internal (undocumented)
   protected _tileTreeState: TileTreeState;
   // WARNING: The type "SpatialClassification.PropertiesProps" needs to be exported by the package (e.g. added to index.ts)
-  // (undocumented)
-  addClassifier(classifier: SpatialClassification.PropertiesProps): void;
+  // @beta
+  addSpatialClassifier(classifier: SpatialClassification.PropertiesProps): void;
   // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
   // @internal (undocumented)
   readonly asGeometricModel: GeometricModelState;
   // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
   // @internal (undocumented)
   readonly classifierTileTree: TileTree | undefined;
-  getClassifiers(): Id64String[];
+  // @beta
+  getActiveSpatialClassifier(): number;
   // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
   // @internal
   getOrLoadTileTree(batchType: BatchType, edgesRequired: boolean): TileTree | undefined;
+  // WARNING: The type "SpatialClassification.Properties" needs to be exported by the package (e.g. added to index.ts)
+  // @beta
+  getSpatialClassifier(index: number): SpatialClassification.Properties | undefined;
   readonly is2d: boolean;
   readonly is3d: boolean;
   // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
@@ -2227,8 +2231,11 @@ class GeometricModelState extends ModelState, implements TileTreeModelState {
   // @internal (undocumented)
   onIModelConnectionClose(): void;
   queryModelRange(): Promise<Range3d>;
-  // (undocumented)
-  setActiveClassifier(classifierIndex: number, active: boolean): Promise<void>;
+  // @beta
+  setActiveSpatialClassifier(classifierIndex: number, active: boolean): Promise<void>;
+  // WARNING: The type "SpatialClassification.Properties" needs to be exported by the package (e.g. added to index.ts)
+  // @beta
+  setSpatialClassifier(index: number, classifier: SpatialClassification.Properties): void;
   // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
   // @internal
   readonly tileTree: TileTree | undefined;
@@ -4631,12 +4638,6 @@ enum SelectionProcessing {
   ReplaceSelectionWithElement = 3
 }
 
-// @public (undocumented)
-enum SelectionScope {
-  Assembly = 1,
-  Element = 0
-}
-
 // @public
 class SelectionSet {
   constructor(iModel: IModelConnection);
@@ -4658,8 +4659,6 @@ class SelectionSet {
 
 // @public
 class SelectionTool extends PrimitiveTool {
-  // (undocumented)
-  protected _selectionScopeValue: ToolSettingsValue;
   applyToolSettingPropertyChange(updatedValue: ToolSettingsPropertySyncItem): boolean;
   // (undocumented)
   autoLockTarget(): void;
@@ -4726,8 +4725,6 @@ class SelectionTool extends PrimitiveTool {
   // (undocumented)
   selectionOption: SelectOptions;
   // (undocumented)
-  selectionScope: SelectionScope;
-  // (undocumented)
   protected setSelectionMethod(method: SelectionMethod): void;
   // (undocumented)
   protected setSelectionMode(mode: SelectionMode): void;
@@ -4748,8 +4745,6 @@ class SelectionTool extends PrimitiveTool {
   protected wantPickableDecorations(): boolean;
   // (undocumented)
   protected wantSelectionClearOnMiss(_ev: BeButtonEvent): boolean;
-  // (undocumented)
-  protected wantSelectionScopeInToolSettings(): boolean;
   // (undocumented)
   protected wantToolSettings(): boolean;
 }
@@ -4956,7 +4951,7 @@ enum SnapStatus {
   Success = 0
 }
 
-// @public
+// @beta
 module SpatialClassification {
   // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
   // @internal (undocumented)
@@ -4966,6 +4961,7 @@ module SpatialClassification {
   // @internal (undocumented)
   function createClassifier(id: Id64String, iModel: IModelConnection): Promise<RenderClassifierModel | undefined>;
 
+  // @beta
   enum Display {
     Dimmed = 2,
     ElementColor = 4,
@@ -4974,7 +4970,7 @@ module SpatialClassification {
     On = 1
   }
 
-  // (undocumented)
+  // @beta (undocumented)
   class Flags implements FlagsProps {
     // WARNING: The type "Display" needs to be exported by the package (e.g. added to index.ts)
     // WARNING: The type "Display" needs to be exported by the package (e.g. added to index.ts)
@@ -4992,6 +4988,7 @@ module SpatialClassification {
     type: number;
   }
 
+  // @beta
   interface FlagsProps {
     // (undocumented)
     inside: SpatialClassification.Display;
@@ -5015,30 +5012,36 @@ module SpatialClassification {
   // @internal (undocumented)
   function loadModelClassifiers(modelIdArg: Id64Arg, iModel: IModelConnection): Promise<void>;
 
-  // (undocumented)
+  // @beta
   class Properties implements PropertiesProps {
-    // WARNING: The type "FlagsProps" needs to be exported by the package (e.g. added to index.ts)
-    constructor(name: string, modelId: Id64String, expand: number, flags?: FlagsProps);
+    // WARNING: The type "PropertiesProps" needs to be exported by the package (e.g. added to index.ts)
+    constructor(props: PropertiesProps);
     // (undocumented)
     expand: number;
     // WARNING: The type "Flags" needs to be exported by the package (e.g. added to index.ts)
     // (undocumented)
     flags: Flags;
     // (undocumented)
+    isActive: boolean;
+    // (undocumented)
     modelId: Id64String;
     // (undocumented)
     name: string;
   }
 
+  // @beta
   interface PropertiesProps {
     expand: number;
     // (undocumented)
     flags: Flags;
+    // (undocumented)
+    isActive: boolean;
     modelId: Id64String;
     // (undocumented)
     name: string;
   }
 
+  // @beta
   enum Type {
     // (undocumented)
     Planar = 0,
@@ -5186,13 +5189,8 @@ interface StructValue extends BasePropertyValue {
 }
 
 // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
-// @internal
+// @internal (undocumented)
 class SubCategoriesRequest {
-  constructor(subcategories: ViewSubCategories, categoryIds: Set<string>, imodel: IModelConnection);
-  // (undocumented)
-  cancel(): void;
-  // (undocumented)
-  dispatch(): Promise<void>;
 }
 
 // @public
@@ -5653,6 +5651,8 @@ interface TileTreeModelState {
 // @internal (undocumented)
 class TileTreeState {
   constructor(_iModel: IModelConnection, _is3d: boolean, _modelId: Id64String);
+  // (undocumented)
+  classifierExpansion: number;
   // (undocumented)
   clearTileTree(): void;
   // (undocumented)
@@ -6923,8 +6923,6 @@ class ViewSubCategories {
   getSubCategories(categoryId: string): Id64Set | undefined;
   getSubCategoryAppearance(subCategoryId: Id64String): SubCategoryAppearance | undefined;
   load(categoryIds: Set<string>, iModel: IModelConnection): Promise<void>;
-  // (undocumented)
-  loadFromRows(rows: any[]): void;
   update(addedCategoryIds: Set<string>, iModel: IModelConnection): Promise<void>;
 }
 

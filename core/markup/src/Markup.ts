@@ -2,15 +2,15 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+import { Point3d, XAndY } from "@bentley/geometry-core";
 import { ImageSource, ImageSourceFormat } from "@bentley/imodeljs-common";
 import { imageElementFromImageSource, IModelApp, ScreenViewport } from "@bentley/imodeljs-frontend";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
-import { adopt, create, Svg, SVG, G, Matrix, Point } from "@svgdotjs/svg.js";
-import { SelectionSet, SelectTool } from "./SelectTool";
-import { UndoManager } from "./Undo";
+import { adopt, create, G, Matrix, Point, Svg, SVG } from "@svgdotjs/svg.js";
 import * as redlineTool from "./RedlineTool";
+import { SelectionSet, SelectTool } from "./SelectTool";
 import * as textTool from "./TextEdit";
-import { Point3d, XAndY } from "@bentley/geometry-core";
+import { UndoManager } from "./Undo";
 
 export interface WidthAndHeight {
   width: number;
@@ -74,8 +74,8 @@ export class MarkupApp {
       /** the attributes of the drop shadow. See https://developer.mozilla.org/en-US/docs/Web/SVG/Element/feDropShadow */
       attr: {
         "stdDeviation": 2,
-        "dx": 1,
-        "dy": 1.2,
+        "dx": 1.2,
+        "dy": 1.4,
         "flood-color": "#1B3838",
       },
     },
@@ -96,6 +96,14 @@ export class MarkupApp {
         "fill-opacity": 0.2,
         "fill": "blue",
         "stroke-linecap": "round",
+        "stroke-linejoin": "round",
+      },
+      arrow: {
+        length: 7,
+        width: 6,
+      },
+      cloud: {
+        path: "M3.0,2.5 C3.9,.78 5.6,-.4 8.1,1.0 C9.1,0 11.3,-.2 12.5,.5 C14.2,-.5 17,.16 17.9,2.5 C21,3 20.2,7.3 17.6,7.5 C16.5,9.2 14.4,9.8 12.7,8.9 C11.6,10 9.5,10.3 8.1,9.4 C5.7,10.8 3.3,9.4 2.6,7.5 C-.9,7.7 .6,1.7 3.0,2.5z",
       },
     },
     /** Values for placing and editing Text. */
@@ -104,8 +112,9 @@ export class MarkupApp {
       startValue: "Note: ",
       /** Parameters for the size and appearance of the text editor */
       edit: {
+        background: "blanchedalmond",
         /** Starting size, will be updated if user stretches the box */
-        size: { width: "180px", height: "60px" },
+        size: { width: "25%", height: "4em" },
         /** font size of the text editor */
         fontSize: "14pt",
         /** A background box drawn around text so user can tell what's being selected */
@@ -257,14 +266,27 @@ export class MarkupApp {
     // return the markup data to be saved by the application.
     return { rect: { width: canvas.width, height: canvas.height }, svg, image: !result.imageFormat ? undefined : canvas.toDataURL(result.imageFormat) };
   }
-}
 
-const dropShadowId = "markup-dropShadow"; // this is referenced in the markup Svg to apply the drop-shadow filter to all markup elements.
-const cornerId = "markup-photoCorner";
-const containerClass = "markup-container";
-const dynamicsClass = "markup-dynamics";
-const decorationsClass = "markup-decorations";
-const markupSvgClass = "markup-svg";
+  public static markupPrefix = "markup-";
+  public static get dropShadowId() { return this.markupPrefix + "dropShadow"; } // this is referenced in the markup Svg to apply the drop-shadow filter to all markup elements.
+  public static get cornerId() { return this.markupPrefix + "photoCorner"; }
+  public static get containerClass() { return this.markupPrefix + "container"; }
+  public static get dynamicsClass() { return this.markupPrefix + "dynamics"; }
+  public static get decorationsClass() { return this.markupPrefix + "decorations"; }
+  public static get markupSvgClass() { return this.markupPrefix + "svg"; }
+  public static get boxedTextClass() { return this.markupPrefix + "boxedText"; }
+  public static get textClass() { return this.markupPrefix + "text"; }
+  public static get stretchHandleClass() { return this.markupPrefix + "stretchHandle"; }
+  public static get rotateLineClass() { return this.markupPrefix + "rotateLine"; }
+  public static get rotateHandleClass() { return this.markupPrefix + "rotateHandle"; }
+  public static get vertexHandleClass() { return this.markupPrefix + "vertexHandle"; }
+  public static get moveHandleClass() { return this.markupPrefix + "moveHandle"; }
+  /** class for box drawn around text being placed/edited */
+  public static get textOutlineClass() { return this.markupPrefix + "textOutline"; }
+  /** class for HTMLTextAreaElement created to edit text */
+  public static get textEditorClass() { return this.markupPrefix + "textEditor"; }
+
+}
 
 const removeSvgNamespace = (svg: Svg) => { svg.node.removeAttribute("xmlns:svgjs"); return svg; };
 const newSvgElement = (name: string) => adopt(create(name));
@@ -283,12 +305,12 @@ export class Markup {
 
   /** create the drop-shadow filter in the Defs section of the supplied svg element */
   private createDropShadow(svg: Svg) {
-    const filter = SVG("#" + dropShadowId); // see if we already have one?
+    const filter = SVG("#" + MarkupApp.dropShadowId); // see if we already have one?
     if (filter) filter.remove(); // yes, remove it. This must be someone modifying the drop shadow properties
 
     // create a new filter, and add it to the Defs of the supplied svg
     svg.defs()
-      .add(newSvgElement("filter").id(dropShadowId)
+      .add(newSvgElement("filter").id(MarkupApp.dropShadowId)
         .add(newSvgElement("feDropShadow").attr(MarkupApp.props.dropShadow.attr)));
   }
   private addNested(className: string): G { return this.svgContainer!.group().addClass(className); }
@@ -298,7 +320,7 @@ export class Markup {
     const cornerSize = inset * 6;
     const cornerPts = [0, 0, cornerSize, 0, cornerSize * .7, cornerSize * .3, cornerSize * .3, cornerSize * .3, cornerSize * .3, cornerSize * .7, 0, cornerSize];
     const decorations = this.svgDecorations!;
-    const photoCorner = decorations.symbol().polygon(cornerPts).attr(MarkupApp.props.borderCorners).id(cornerId);
+    const photoCorner = decorations.symbol().polygon(cornerPts).attr(MarkupApp.props.borderCorners).id(MarkupApp.cornerId);
     const cornerGroup = decorations.group();
     cornerGroup.rect(rect.width - inset, rect.height - inset).move(inset / 2, inset / 2).attr(MarkupApp.props.borderOutline);
     cornerGroup.use(photoCorner);
@@ -315,29 +337,30 @@ export class Markup {
     this.markupDiv = vp.addNewDiv("overlay-markup", true, 20); // this div goes on top of the canvas, but behind UI layers
     const rect = this.markupDiv.getBoundingClientRect();
 
-    /** create the container that will be returned as the "svg" data for this markup */
+    // First, see if there is a markup passed in as an argument
     if (markupData && markupData.svg) {
-      this.markupDiv.innerHTML = markupData.svg;
-      this.svgContainer = SVG("." + containerClass) as Svg | undefined;
-      this.svgMarkup = SVG("." + markupSvgClass) as G | undefined;
-      if (!this.svgContainer || !this.svgMarkup)
+      this.markupDiv.innerHTML = markupData.svg; // make it a child of the markupDiv
+      this.svgContainer = SVG("." + MarkupApp.containerClass) as Svg | undefined; // get it in svg.js format
+      this.svgMarkup = SVG("." + MarkupApp.markupSvgClass) as G | undefined;
+      if (!this.svgContainer || !this.svgMarkup) // if either isn't present, its not a valid markup
         return;
-      removeSvgNamespace(this.svgContainer);
-      this.svgMarkup.each(() => { }, true); // create an SVG.Element for each entry in the SVG file.
+      removeSvgNamespace(this.svgContainer); // the SVG call above adds this - remove it
+      this.svgMarkup.each(() => { }, true); // create an SVG.Element for each entry in the supplied markup.
     } else {
-      this.svgContainer = SVG().addTo(this.markupDiv).addClass(containerClass).viewbox(0, 0, rect.width, rect.height);
+      // create the container that will be returned as the "svg" data for this markup
+      this.svgContainer = SVG().addTo(this.markupDiv).addClass(MarkupApp.containerClass).viewbox(0, 0, rect.width, rect.height);
       removeSvgNamespace(this.svgContainer);
-      this.svgMarkup = this.addNested(markupSvgClass);
+      this.svgMarkup = this.addNested(MarkupApp.markupSvgClass);
     }
 
     if (MarkupApp.props.dropShadow.enable) {
       this.createDropShadow(this.svgContainer);
-      this.svgContainer.attr("filter", "url(#" + dropShadowId + ")");
+      this.svgContainer.attr("filter", "url(#" + MarkupApp.dropShadowId + ")");
     }
 
     /** add two nested groups for providing feedback during the markup session. These Svgs are removed before the data is returned. */
-    this.svgDynamics = this.addNested(dynamicsClass); // only for tool dynamics of SVG graphics.
-    this.svgDecorations = this.addNested(decorationsClass); // only for temporary decorations of SVG graphics.
+    this.svgDynamics = this.addNested(MarkupApp.dynamicsClass); // only for tool dynamics of SVG graphics.
+    this.svgDecorations = this.addNested(MarkupApp.decorationsClass); // only for temporary decorations of SVG graphics.
     this.addBorder();
     this.selected = new SelectionSet(this.svgDecorations);
     MarkupApp.screenToVbMtx = this.svgMarkup.screenCTM().inverse();

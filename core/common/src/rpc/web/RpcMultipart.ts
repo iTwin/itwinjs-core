@@ -4,22 +4,24 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module RpcInterface */
 
-import { RpcSerializedValue } from "../core/RpcMarshaling";
 import { Readable } from "stream";
+import { BentleyStatus, IModelError } from "../../IModelError";
+import { RpcSerializedValue } from "../core/RpcMarshaling";
 import { HttpServerRequest } from "../web/WebAppRpcProtocol";
-import { IModelError, BentleyStatus } from "../../IModelError";
 
-/** @hidden */
+/** @internal */
 export interface FormDataCommon {
   append(name: string, value: string | Blob | Buffer, fileName?: string): void;
 }
 
-/** @hidden */
+/** @internal */
 export interface ReadableFormData extends Readable {
   getHeaders(): { [key: string]: any };
 }
 
-/** Support for transporting RPC values using the HTTP multipart content type. */
+/** Support for transporting RPC values using the HTTP multipart content type.
+ * @internal
+ */
 export class RpcMultipart {
   /** Creates a multipart form object for an RPC value. */
   public static createForm(value: RpcSerializedValue): FormData {
@@ -38,7 +40,7 @@ export class RpcMultipart {
     throw new IModelError(BentleyStatus.ERROR, "Not implemented.");
   }
 
-  /** @hidden */
+  /** @internal */
   public static writeValueToForm(form: FormDataCommon, value: RpcSerializedValue) {
     form.append("objects", value.objects);
 

@@ -34,7 +34,7 @@ export class ElectronRpcProtocol extends RpcProtocol {
   /** Specifies where to break large binary request payloads. */
   public transferChunkThreshold = 48 * 1024 * 1024;
 
-  /** @hidden */
+  /** @internal */
   public requests: Map<string, ElectronRpcRequest> = new Map();
 
   /** Constructs an Electron protocol. */
@@ -42,22 +42,22 @@ export class ElectronRpcProtocol extends RpcProtocol {
     super(configuration);
   }
 
-  /** @hidden */
+  /** @internal */
   public onRpcClientInitialized(definition: RpcInterfaceDefinition, _client: RpcInterface): void {
     this.registerInterface(definition);
   }
 
-  /** @hidden */
+  /** @internal */
   public onRpcImplInitialized(definition: RpcInterfaceDefinition, _impl: RpcInterface): void {
     this.registerInterface(definition);
   }
 
-  /** @hidden */
+  /** @internal */
   public onRpcClientTerminated(definition: RpcInterfaceDefinition, _client: RpcInterface): void {
     this.purgeInterface(definition);
   }
 
-  /** @hidden */
+  /** @internal */
   public onRpcImplTerminated(definition: RpcInterfaceDefinition, _impl: RpcInterface): void {
     this.purgeInterface(definition);
   }

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Do not cache pending http responses.",
+      "packageName": "@bentley/imodeljs-common",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-common",
+  "email": "steve.wilson@bentley.com"
+}

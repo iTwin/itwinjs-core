@@ -66,4 +66,5 @@ class TableDataProviderWithDescription extends PresentationTableDataProvider {
     super(baseProps);
     this.description = description;
   }
+  protected shouldRequestContentForEmptyKeyset() { return true; }
 }

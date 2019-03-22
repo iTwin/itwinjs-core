@@ -14,28 +14,28 @@ import { RpcConfiguration, RpcPendingQueue, initializeRpcRequest } from "../../i
 
 // tslint:disable:ban-types
 
-/** @hidden */
+/** @internal */
 export const REGISTRY = Symbol.for("@bentley/imodeljs-common/RpcRegistry");
 
-/** @hidden */
+/** @internal */
 export const OPERATION = Symbol.for("@bentley/imodeljs-common/RpcOperation");
 
-/** @hidden */
+/** @internal */
 export const POLICY = Symbol.for("@bentley/imodeljs-common/RpcOperationPolicy");
 
-/** @hidden */
+/** @internal */
 export const INSTANCE = Symbol.for("@bentley/imodeljs-common/RpcInterface/__instance__");
 
-/** @hidden */
+/** @internal */
 export const CURRENT_REQUEST = Symbol.for("@bentley/imodeljs-common/RpcRequest/__current__");
 
-/** @hidden */
+/** @internal */
 export const CURRENT_INVOCATION = Symbol.for("@bentley/imodeljs-common/RpcInvocation/__current__");
 
-/** @hidden */
+/** @internal */
 export const builtins: string[] = [];
 
-/** @hidden */
+/** @internal */
 export class RpcRegistry {
   private static _instance: RpcRegistry;
 

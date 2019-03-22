@@ -129,7 +129,7 @@ export class PresentationTableDataProvider extends ContentDataProvider implement
     if (props.descriptor) {
       this._filterExpression = undefined;
       this._sortColumnKey = undefined;
-      this._sortDirection = UiSortDirection.Ascending;
+      this._sortDirection = UiSortDirection.NoSort;
     }
 
     if (props.descriptor || props.descriptorConfiguration) {

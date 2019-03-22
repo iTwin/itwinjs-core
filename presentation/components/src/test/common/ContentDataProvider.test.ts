@@ -10,7 +10,7 @@ import * as sinon from "sinon";
 import * as faker from "faker";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { PromiseContainer, ResolvablePromise } from "@bentley/presentation-common/lib/test/_helpers/Promises";
-import { createRandomDescriptor, createRandomRuleset, createRandomContent } from "@bentley/presentation-common/lib/test/_helpers/random";
+import { createRandomDescriptor, createRandomRuleset, createRandomContent, createRandomECInstanceKey } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import {
   Descriptor, Field,
@@ -35,6 +35,7 @@ class Provider extends ContentDataProvider {
   public configureContentDescriptor(descriptor: Readonly<Descriptor>) { return super.configureContentDescriptor(descriptor); }
   public shouldExcludeFromDescriptor(field: Field) { return super.shouldExcludeFromDescriptor(field); }
   public shouldConfigureContentDescriptor() { return super.shouldConfigureContentDescriptor(); }
+  public shouldRequestContentForEmptyKeyset() { return super.shouldRequestContentForEmptyKeyset(); }
   public getDescriptorOverrides() { return super.getDescriptorOverrides(); }
   public isFieldHidden(field: Field) { return super.isFieldHidden(field); }
 }
@@ -114,7 +115,7 @@ describe("ContentDataProvider", () => {
       p.dispose();
 
       const rulesetDisposeSpy = sinon.spy();
-      await registerPromise.resolve(new RegisteredRuleset(ruleset, "test", rulesetDisposeSpy))
+      await registerPromise.resolve(new RegisteredRuleset(ruleset, "test", rulesetDisposeSpy));
       expect(rulesetDisposeSpy).to.be.calledOnce;
     });
 
@@ -131,7 +132,7 @@ describe("ContentDataProvider", () => {
       const ruleset = await createRandomRuleset();
       const p = new Provider(imodelMock.object, ruleset, displayType);
       const rulesetDisposeSpy = sinon.spy();
-      await registerPromise.resolve(new RegisteredRuleset(ruleset, "test", rulesetDisposeSpy))
+      await registerPromise.resolve(new RegisteredRuleset(ruleset, "test", rulesetDisposeSpy));
 
       expect(rulesetDisposeSpy).to.not.be.called;
       p.dispose();
@@ -219,6 +220,23 @@ describe("ContentDataProvider", () => {
       verifyMemoizedCachesCleared(true);
     });
 
+    it("doesn't clear caches if keys didn't change", () => {
+      const keys = new KeySet();
+      provider.keys = keys;
+      resetMemoizedCacheSpies();
+      provider.keys = keys;
+      verifyMemoizedCachesCleared(false);
+    });
+
+    it("sets keys and clears caches when keys change in place", () => {
+      const keys = new KeySet();
+      provider.keys = keys;
+      resetMemoizedCacheSpies();
+      keys.add(createRandomECInstanceKey());
+      provider.keys = keys;
+      verifyMemoizedCachesCleared(true);
+    });
+
   });
 
   describe("invalidateCache", () => {
@@ -261,6 +279,10 @@ describe("ContentDataProvider", () => {
 
     const selection: SelectionInfo = { providerName: "test" };
 
+    beforeEach(() => {
+      provider.keys = new KeySet([createRandomECInstanceKey()]);
+    });
+
     it("requests presentation manager for descriptor and returns its copy", async () => {
       const result = createRandomDescriptor(displayType);
       presentationManagerMock
@@ -272,6 +294,29 @@ describe("ContentDataProvider", () => {
       presentationManagerMock.verifyAll();
       expect(descriptor).to.not.eq(result);
       expect(descriptor).to.deep.eq(result);
+    });
+
+    it("requests presentation manager for descriptor when keyset is empty and `shouldRequestContentForEmptyKeyset()` returns `true`", async () => {
+      provider.keys = new KeySet();
+      provider.shouldRequestContentForEmptyKeyset = () => true;
+      presentationManagerMock
+        .setup((x) => x.getContentDescriptor(moq.It.isAny(), moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
+        .returns(async () => undefined)
+        .verifiable();
+      const descriptor = await provider.getContentDescriptor();
+      presentationManagerMock.verifyAll();
+      expect(descriptor).to.be.undefined;
+    });
+
+    it("doesn't request presentation manager for descriptor when keyset is empty and `shouldRequestContentForEmptyKeyset()` returns `false`", async () => {
+      provider.keys = new KeySet();
+      presentationManagerMock
+        .setup((x) => x.getContentDescriptor(moq.It.isAny(), moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
+        .returns(async () => undefined)
+        .verifiable(moq.Times.never());
+      const descriptor = await provider.getContentDescriptor();
+      presentationManagerMock.verifyAll();
+      expect(descriptor).to.be.undefined;
     });
 
     it("handles undefined descriptor returned by presentation manager", async () => {
@@ -293,7 +338,7 @@ describe("ContentDataProvider", () => {
     it("memoizes result", async () => {
       const resultPromiseContainer = new PromiseContainer<Descriptor>();
       presentationManagerMock.setup((x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetId }, moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
-        .returns(() => resultPromiseContainer.promise)
+        .returns(async () => resultPromiseContainer.promise)
         .verifiable(moq.Times.once());
       const requests = [provider.getContentDescriptor(), provider.getContentDescriptor()];
       const result = createRandomDescriptor();
@@ -306,6 +351,10 @@ describe("ContentDataProvider", () => {
   });
 
   describe("getContentSetSize", () => {
+
+    beforeEach(() => {
+      provider.keys = new KeySet([createRandomECInstanceKey()]);
+    });
 
     it("returns 0 when manager returns undefined descriptor", async () => {
       presentationManagerMock.setup((x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetId }, moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
@@ -324,7 +373,7 @@ describe("ContentDataProvider", () => {
         .returns(async () => createRandomDescriptor())
         .verifiable();
       presentationManagerMock.setup((x) => x.getContentAndSize({ imodel: imodelMock.object, rulesetId, paging: { start: 0, size: 10 } }, moq.It.isAny(), moq.It.isAny()))
-        .returns(() => result.promise)
+        .returns(async () => result.promise)
         .verifiable();
       provider.pagingSize = 10;
       const contentAndContentSize = { content: createRandomContent(), size: faker.random.number() };
@@ -340,7 +389,7 @@ describe("ContentDataProvider", () => {
         .returns(async () => createRandomDescriptor())
         .verifiable();
       presentationManagerMock.setup((x) => x.getContentAndSize({ imodel: imodelMock.object, rulesetId, paging: { start: 0, size: 10 } }, moq.It.isAny(), moq.It.isAny()))
-        .returns(() => resultPromiseContainer.promise)
+        .returns(async () => resultPromiseContainer.promise)
         .verifiable(moq.Times.once());
       provider.pagingSize = 10;
       const requests = [provider.getContentSetSize(), provider.getContentSetSize()];
@@ -359,7 +408,7 @@ describe("ContentDataProvider", () => {
         .returns(async () => createRandomDescriptor())
         .verifiable();
       presentationManagerMock.setup((x) => x.getContentAndSize({ imodel: imodelMock.object, rulesetId, paging: { start: 0, size: pagingSize } }, moq.It.isAny(), moq.It.isAny()))
-        .returns(() => resultPromiseContainer.promise)
+        .returns(async () => resultPromiseContainer.promise)
         .verifiable(moq.Times.once());
 
       provider.pagingSize = pagingSize;
@@ -412,6 +461,10 @@ describe("ContentDataProvider", () => {
   });
 
   describe("getContent", () => {
+
+    beforeEach(() => {
+      provider.keys = new KeySet([createRandomECInstanceKey()]);
+    });
 
     it("returns undefined when manager returns undefined descriptor", async () => {
       presentationManagerMock.setup(async (x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetId }, moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
@@ -520,6 +573,7 @@ describe("ContentDataProvider", () => {
 
       presentationManagerMock.verifyAll();
     });
+
   });
 
 });

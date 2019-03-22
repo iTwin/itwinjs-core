@@ -25,6 +25,7 @@ class ContentDataProvider implements IContentDataProvider {
   selectionInfo: Readonly<SelectionInfo> | undefined;
   protected shouldConfigureContentDescriptor(): boolean;
   protected shouldExcludeFromDescriptor(field: Field): boolean;
+  protected shouldRequestContentForEmptyKeyset(): boolean;
 }
 
 // @public

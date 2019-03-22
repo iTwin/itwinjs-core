@@ -264,7 +264,7 @@ export class Popup extends React.Component<PopupProps, PopupState> {
 
       case Position.TopRight:
         point.y = scrollY + targetRect.top - popupHeight - offset - offsetArrow;
-        point.x = scrollX + targetRect.right - popupHeight;
+        point.x = scrollX + targetRect.right - popupWidth;
         break;
 
       case Position.Bottom:

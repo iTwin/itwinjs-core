@@ -11,7 +11,7 @@ import { IModelHost } from "./IModelHost";
 export type SchemaKey = IModelJsNative.ECSchemaXmlContext.SchemaKey;
 export type SchemaMatchType = IModelJsNative.ECSchemaXmlContext.SchemaMatchType;
 
-/** @hidden */
+/** @internal */
 export class ECSchemaXmlContext {
   private _nativeContext: IModelJsNative.ECSchemaXmlContext | undefined;
 

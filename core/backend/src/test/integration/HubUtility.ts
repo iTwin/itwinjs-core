@@ -178,7 +178,7 @@ export class HubUtility {
   }
 
   /** Delete an IModel from the hub
-   * @hidden
+   * @internal
    */
   public static async deleteIModel(requestContext: AuthorizedClientRequestContext, projectName: string, iModelName: string): Promise<void> {
     const projectId: string = await HubUtility.queryProjectIdByName(requestContext, projectName);

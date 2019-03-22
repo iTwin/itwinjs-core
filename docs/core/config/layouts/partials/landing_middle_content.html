@@ -1,10 +1,10 @@
 <!-- Loop through all middleContents. If even, the img goes first. Content first if odd. -->
-<div id="middle-content-wrapper">
+<div id="middle-wrapper">
   {{#each this.middleContent}}
   <div class="middle-content-group" style="order:{{addOne @index}}">
     {{#if_even @index}}
 
-    <div class="middle-content-text" style="order:2;">
+    <div class="middle-content-text" style="order:1;">
       {{#if this.header}}
       <h4 style="font-size:24px;"> {{{this.header}}} </h4>
       {{/if}}
@@ -38,7 +38,7 @@
   {{/each}}
 </div>
 <div id="demo-container">
-  <div class="try-imodeljs-text">
+  <div class="try-imodeljs-text" style="margin-top:56px;">
     <h4> Try iModel.js now </h4>
   </div>
   <img src="landing-page/assets/placeholder_viewer_690x431.png" class="example-view-demonstrator">

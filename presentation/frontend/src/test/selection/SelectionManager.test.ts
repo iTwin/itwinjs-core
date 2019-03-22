@@ -11,7 +11,7 @@ import {
   createRandomECInstanceKey, createRandomSelectionScope, createRandomId,
 } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { waitForPendingAsyncs } from "../_helpers/PendingAsyncsHelper";
-import { Id64String } from "@bentley/bentleyjs-core";
+import { Id64String, Id64 } from "@bentley/bentleyjs-core";
 import { IModelConnection, SelectionSet, IModelApp, ViewManager, SelectEventType } from "@bentley/imodeljs-frontend";
 import { KeySet, InstanceKey, SelectionScope } from "@bentley/presentation-common";
 import { SelectionManager } from "../../presentation-frontend";
@@ -495,6 +495,16 @@ describe("SelectionManager", () => {
           await waitForPendingAsyncs(syncer);
           const selection = selectionManager.getSelection(imodelMock.object);
           expect(selection.size).to.eq(0);
+        });
+
+        it("ignores transient elements", async () => {
+          const transientId = Id64.fromLocalAndBriefcaseIds(123, 0xffffff);
+          const persistentId = createRandomId();
+          ss.add([transientId, persistentId]);
+          await waitForPendingAsyncs(syncer);
+          const selection = selectionManager.getSelection(imodelMock.object);
+          expect(selection.size).to.eq(1);
+          expect(selection.has({ className: "BisCore:Element", id: persistentId })).to.be.true;
         });
 
         it("adds elements to logical selection when tool selection changes", async () => {

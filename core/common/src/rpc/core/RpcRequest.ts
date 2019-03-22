@@ -30,7 +30,9 @@ export type RpcRequestCallback_T = (request: RpcRequest) => void;
 /** Determines if caching is permitted for a RPC response. */
 export type RpcResponseCachingCallback_T = (request: RpcRequest) => RpcResponseCacheControl;
 
-/** Runtime information related to the operation load of one or more RPC interfaces. */
+/** Runtime information related to the operation load of one or more RPC interfaces.
+ * @public
+ */
 export interface RpcOperationsProfile {
   readonly lastRequest: number;
   readonly lastResponse: number;
@@ -42,7 +44,9 @@ export type RpcRequestEventHandler = (type: RpcRequestEvent, request: RpcRequest
 /** Resolves "not found" responses for RPC requests. */
 export type RpcRequestNotFoundHandler = (request: RpcRequest, response: RpcNotFoundResponse, resubmit: () => void, reject: (reason: any) => void) => void;
 
-/** A RPC operation request. */
+/** A RPC operation request.
+ * @public
+ */
 export abstract class RpcRequest<TResponse = any> {
   private _resolve: (value?: TResponse | PromiseLike<TResponse> | undefined) => void = () => undefined;
   private _reject: (reason?: any) => void = () => undefined;
@@ -172,7 +176,7 @@ export abstract class RpcRequest<TResponse = any> {
     this._lastUpdated = new Date().getTime();
   }
 
-  /* @hidden */
+  /* @internal */
   public async submit(): Promise<void> {
     if (!this._active)
       return;
@@ -300,7 +304,7 @@ export abstract class RpcRequest<TResponse = any> {
     this.dispose();
   }
 
-  /** @hidden */
+  /** @internal */
   public dispose(): void {
     this.setStatus(RpcRequestStatus.Disposed);
 
@@ -352,7 +356,7 @@ export abstract class RpcRequest<TResponse = any> {
   }
 }
 
-/** @hidden */
+/** @internal */
 export const initializeRpcRequest = (() => {
   let initialized = false;
 

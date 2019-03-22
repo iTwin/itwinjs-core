@@ -66,4 +66,5 @@ describe("<ColorPickerButton/>", () => {
     if (corePopupDiv)
       expect(corePopupDiv.classList.contains("visible")).to.be.false;
   });
+
 });

@@ -36,7 +36,7 @@ export enum FillFlags {
   Background = 1 << 3,
 }
 
-/** @hidden */
+/** @internal */
 export enum PolylineTypeFlags {
   Normal = 0,      // Just an ordinary polyline
   Edge = 1 << 0, // A polyline used to define the edges of a planar region.
@@ -44,7 +44,7 @@ export enum PolylineTypeFlags {
 }
 
 /** Flags describing a polyline. A polyline may represent a continuous line string, or a set of discrete points.
- * @hidden
+ * @internal
  */
 export class PolylineFlags {
   public isDisjoint: boolean;
@@ -101,7 +101,7 @@ export class PolylineFlags {
   }
 }
 
-/** @hidden */
+/** @internal */
 export class PolylineData {
   public vertIndices: number[];
   public numIndices: number;
@@ -118,7 +118,7 @@ export class PolylineData {
   }
 }
 
-/** @hidden */
+/** @internal */
 export class MeshPolyline {
   public readonly indices: number[];
   public constructor(indices: number[] = []) {
@@ -132,10 +132,10 @@ export class MeshPolyline {
   public clear() { this.indices.length = 0; }
 }
 
-/** @hidden */
+/** @internal */
 export class MeshPolylineList extends Array<MeshPolyline> { constructor(...args: MeshPolyline[]) { super(...args); } }
 
-/** @hidden */
+/** @internal */
 export class MeshEdge {
   public indices = [0, 0];
   public constructor(index0?: number, index1?: number) {
@@ -151,7 +151,7 @@ export class MeshEdge {
   }
 }
 
-/** @hidden */
+/** @internal */
 export class MeshEdges {
   public visible: MeshEdge[] = [];
   public silhouette: MeshEdge[] = [];
@@ -160,7 +160,7 @@ export class MeshEdges {
   public constructor() { }
 }
 
-/** @hidden */
+/** @internal */
 export class EdgeArgs {
   public edges?: MeshEdge[];
 
@@ -177,7 +177,7 @@ export class EdgeArgs {
   public get numEdges() { return undefined !== this.edges ? this.edges.length : 0; }
 }
 
-/** @hidden */
+/** @internal */
 export class SilhouetteEdgeArgs extends EdgeArgs {
   public normals?: OctEncodedNormalPair[];
 
@@ -194,7 +194,7 @@ export class SilhouetteEdgeArgs extends EdgeArgs {
   public clear() { this.normals = undefined; super.clear(); }
 }
 
-/** @hidden */
+/** @internal */
 export class PolylineEdgeArgs {
   public lines?: PolylineData[];
 
@@ -349,7 +349,7 @@ export namespace RenderMaterial {
 }
 Object.freeze(RenderMaterial.Params.defaults);
 
-/** @hidden */
+/** @internal */
 export namespace ImageLight {
   export class Solar {
     constructor(public direction: Vector3d = new Vector3d(),
@@ -407,6 +407,7 @@ export class GraphicParams {
   }
 }
 
+/** @internal */
 export const enum AntiAliasPref { Detect = 0, On = 1, Off = 2 }
 
 /** Enumerates the available rendering modes. The rendering mode chiefly controls whether and how surfaces and their edges are drawn.
@@ -493,7 +494,7 @@ export class ViewFlags {
   public styles: boolean = true;
   /** Controls whether element transparency is used (e.g. control whether elements with transparency draw normally, or as opaque). */
   public transparency: boolean = true;
-  /** @hidden This doesn't belong here - it is not persistent. */
+  /** @internal This doesn't belong here - it is not persistent. */
   public continuousRendering: boolean = false;
   /** Controls whether the fills on filled elements are displayed. */
   public fill: boolean = true;
@@ -523,13 +524,13 @@ export class ViewFlags {
   public constructions: boolean = false;
   /** Draw all graphics in a single color */
   public monochrome: boolean = false;
-  /** @hidden unused Ignore geometry maps */
+  /** @internal unused Ignore geometry maps */
   public noGeometryMap: boolean = false;
   /** Display background map */
   public backgroundMap: boolean = false;
   /** Use material colors for hidden lines */
   public hLineMaterialColors: boolean = false;
-  /** @hidden 0=none, 1=generate mask, 2=use mask */
+  /** @internal 0=none, 1=generate mask, 2=use mask */
   public edgeMask: number = 0;
   /** Controls whether ambient occlusion is used. */
   public ambientOcclusion: boolean = false;
@@ -568,7 +569,7 @@ export class ViewFlags {
     return val;
   }
 
-  /** @hidden */
+  /** @internal */
   public hiddenEdgesVisible(): boolean {
     switch (this.renderMode) {
       case RenderMode.SolidFill:
@@ -579,7 +580,7 @@ export class ViewFlags {
     }
     return true;
   }
-  /** @hidden */
+  /** @internal */
   public edgesRequired(): boolean {
     switch (this.renderMode) {
       case RenderMode.SolidFill:
@@ -693,9 +694,9 @@ export class ViewFlags {
   }
 }
 
-/** @hidden */
+/** @internal */
 export namespace ViewFlag {
-  /** @hidden */
+  /** @internal */
   export const enum PresenceFlag {
     kRenderMode,
     kText,
@@ -724,7 +725,7 @@ export namespace ViewFlag {
   }
 
   /** Overrides a subset of ViewFlags.
-   * @hidden
+   * @internal
    */
   export class Overrides {
     private _present = 0;
@@ -813,6 +814,7 @@ export namespace ViewFlag {
 
 /** Enumerates the available patterns for drawing patterned lines.
  * Each is a 32-bit pattern in which each bit specifies the on- or off-state of a pixel.
+ * @internal
  */
 export const enum LinePixels {
   Solid = 0,
@@ -830,7 +832,7 @@ export const enum LinePixels {
 }
 
 /** Represents a bounding sphere.  Optional optimization for FrustumPlane containment test.
- * @hidden
+ * @internal
  */
 export class BoundingSphere {
   public center: Point3d;
@@ -845,7 +847,7 @@ export class BoundingSphere {
 }
 
 /** Represents a frustum as 6 planes and provides containment and intersection testing
- * @hidden
+ * @internal
  */
 export class FrustumPlanes {
   private _planes?: ClipPlane[];
@@ -940,16 +942,16 @@ export class FrustumPlanes {
   }
 }
 
-/** @hidden */
+/** @internal */
 export namespace FrustumPlanes {
-  /** @hidden */
+  /** @internal */
   export const enum Containment {
     Outside = 0,
     Partial = 1,
     Inside = 2,
   }
 
-  /** @hidden */
+  /** @internal */
   export function addPlaneFromPoints(planes: ClipPlane[], points: Point3d[], i0: number, i1: number, i2: number, expandPlaneDistance: number = 1.0e-6): void {
     const normal = Vector3d.createCrossProductToPoints(points[i2], points[i1], points[i0]);
     normal.normalizeInPlace();
@@ -1037,7 +1039,7 @@ export namespace AmbientOcclusion {
 export namespace HiddenLine {
   /** Describes the symbology with which edges should be drawn. */
   export interface StyleProps {
-    /** @hidden
+    /** @internal
      * This JSON representation is awkward, but it must match that used in the db.
      * If the JSON came from the db then all members are present and:
      *  - color is overridden only if ovrColor = true.
@@ -1063,7 +1065,7 @@ export namespace HiddenLine {
 
   /** Describes the symbology with which edges should be drawn. */
   export class Style implements StyleProps {
-    /** @hidden */
+    /** @internal */
     public get ovrColor(): boolean { return undefined !== this.color; }
     /** If defined, the color used to draw the edges. If undefined, edges are drawn using the element's line color. */
     public readonly color?: ColorDef;
@@ -1214,11 +1216,11 @@ export namespace Gradient {
     Cylindrical = 3,
     Spherical = 4,
     Hemispherical = 5,
-    /** @hidden */
+    /** @internal */
     Thematic = 6,
   }
 
-  /** @hidden */
+  /** @internal */
   export const enum ThematicMode {
     Smooth = 0,
     Stepped = 1,
@@ -1226,7 +1228,7 @@ export namespace Gradient {
     IsoLines = 3,
   }
 
-  /** @hidden */
+  /** @internal */
   export const enum ThematicColorScheme {
     BlueRed = 0,
     RedBlue = 1,
@@ -1236,7 +1238,7 @@ export namespace Gradient {
     Custom = 5,
   }
 
-  /** @hidden */
+  /** @internal */
   export interface ThematicSettingsProps {
     mode: ThematicMode;
     stepCount: number;
@@ -1246,7 +1248,7 @@ export namespace Gradient {
     rangeHigh: number;
   }
 
-  /** @hidden Gradient settings specific to thematic mesh display */
+  /** @internal Gradient settings specific to thematic mesh display */
   export class ThematicSettings implements ThematicSettingsProps {
     public mode: ThematicMode = ThematicMode.Smooth;
     public stepCount: number = 10;
@@ -1321,7 +1323,7 @@ export namespace Gradient {
     shift?: number;
     /** Gradient fraction value/color pairs, 1 minimum (uses tint for 2nd color), 8 maximum */
     keys: KeyColorProps[];
-    /** @hidden Settings applicable to meshes and Gradient.Mode.Thematic only */
+    /** @internal Settings applicable to meshes and Gradient.Mode.Thematic only */
     thematicSettings?: ThematicSettingsProps;
   }
 
@@ -1354,7 +1356,7 @@ export namespace Gradient {
       return result;
     }
 
-    /** @hidden */
+    /** @internal */
     public static createThematic(settings: ThematicSettings) {
       const result = new Symb();
       result.mode = Mode.Thematic;
@@ -1711,7 +1713,7 @@ export const enum GeometryClass {
   Pattern = 3,
 }
 
-/** @hidden */
+/** @internal */
 export class SceneLights {
   private _list: Light[] = [];
   public get isEmpty(): boolean { return this._list.length === 0; }
@@ -2047,7 +2049,7 @@ export class FeatureTable extends IndexMap<Feature> {
 
   /** Returns the maximum number of [[Feature]]s this FeatureTable can contain. */
   public get maxFeatures(): number { return this._maximumSize; }
-  /** @hidden */
+  /** @internal */
   public get anyDefined(): boolean { return this.length > 1 || (1 === this.length && this._array[0].value.isDefined); }
   /** Returns true if this FeatureTable contains exactly one [[Feature]]. */
   public get isUniform(): boolean { return 1 === this.length; }
@@ -2067,7 +2069,7 @@ export class FeatureTable extends IndexMap<Feature> {
     return undefined;
   }
 
-  /** @hidden */
+  /** @internal */
   public insertWithIndex(feature: Feature, index: number): void {
     const bound = this.lowerBound(feature);
     assert(!bound.equal);
@@ -2076,7 +2078,7 @@ export class FeatureTable extends IndexMap<Feature> {
     this._array.splice(bound.index, 0, entry);
   }
 
-  /** @hidden */
+  /** @internal */
   public getArray(): Array<IndexedValue<Feature>> { return this._array; }
 }
 
@@ -2095,7 +2097,7 @@ export class TextureMapping {
     this.params = params;
   }
 
-  /** @hidden */
+  /** @internal */
   public computeUVParams(visitor: PolyfaceVisitor, transformToImodel: Transform): Point2d[] | undefined {
     return this.params.computeUVParams(visitor as IndexedPolyfaceVisitor, transformToImodel);
   }
@@ -2109,17 +2111,17 @@ export namespace TextureMapping {
     Parametric = 0,
     ElevationDrape = 1,
     Planar = 2,
-    /** @hidden */
+    /** @internal */
     DirectionalDrape = 3,
-    /** @hidden */
+    /** @internal */
     Cubic = 4,
-    /** @hidden */
+    /** @internal */
     Spherical = 5,
-    /** @hidden */
+    /** @internal */
     Cylindrical = 6,
-    /** @hidden */
+    /** @internal */
     Solid = 7,
-    /** @hidden Only valid for lights */
+    /** @internal Only valid for lights */
     FrontProject = 8,
   }
 
@@ -2162,7 +2164,7 @@ export namespace TextureMapping {
      * @note Defaults to [[TextureMapping.Mode.Parametric]].
      */
     mapMode?: TextureMapping.Mode;
-    /** @hidden */
+    /** @internal */
     worldMapping?: boolean;
   }
 
@@ -2176,7 +2178,7 @@ export namespace TextureMapping {
     public weight: number;
     /** The mode by which to map the image to a surface. */
     public mode: TextureMapping.Mode;
-    /** @hidden */
+    /** @internal */
     public worldMapping: boolean;
 
     constructor(props = {} as TextureMapping.ParamProps) {
@@ -2186,7 +2188,7 @@ export namespace TextureMapping {
 
     /**
      * Generates UV parameters for textured surfaces. Returns undefined on failure.
-     * @hidden
+     * @internal
      */
     public computeUVParams(visitor: IndexedPolyfaceVisitor, transformToImodel: Transform): Point2d[] | undefined {
       switch (this.mode) {
@@ -2391,7 +2393,7 @@ export class GroundPlane implements GroundPlaneProps {
 
   /** Returns and locally stores gradient symbology for the ground plane texture depending on whether we are looking from above or below.
    * Will store the ground colors used in the optional ColorDef array provided.
-   * @hidden
+   * @internal
    */
   public getGroundPlaneGradient(aboveGround: boolean): Gradient.Symb {
     let gradient = aboveGround ? this._aboveSymb : this._belowSymb;

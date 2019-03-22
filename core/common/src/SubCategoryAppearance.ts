@@ -33,11 +33,11 @@ export class SubCategoryAppearance {
   public readonly transparency: number;
   /** If true, geometry belonging to this SubCategory is not drawn. */
   public readonly invisible: boolean;
-  /** @hidden */
+  /** @internal */
   public readonly dontPlot: boolean;
-  /** @hidden */
+  /** @internal */
   public readonly dontSnap: boolean;
-  /** @hidden */
+  /** @internal */
   public readonly dontLocate: boolean;
   /** The element ID of the line style used to draw curves, or an invalid ID if no line style is specified. */
   public readonly styleId: Id64String;
@@ -115,11 +115,11 @@ export namespace SubCategoryAppearance {
     color?: ColorDefProps;
     /** @see [[SubCategoryAppearance.invisible]]. Defaults to false. */
     invisible?: boolean;
-    /** @hidden */
+    /** @internal */
     dontPlot?: boolean;
-    /** @hidden */
+    /** @internal */
     dontSnap?: boolean;
-    /** @hidden */
+    /** @internal */
     dontLocate?: boolean;
     /** @see [[SubCategoryAppearance.weight]]. Defaults to 0. */
     weight?: number;
@@ -150,7 +150,7 @@ export class SubCategoryOverride {
   public readonly invisible?: boolean;
   /** @see [[SubCategoryAppearance.weight]] */
   public readonly weight?: number;
-  /** @hidden Overriding with arbitrary custom line style is not supported - overriding with LinePixels enum could be. */
+  /** @internal Overriding with arbitrary custom line style is not supported - overriding with LinePixels enum could be. */
   public readonly style?: Id64String;
   /** @see [[SubCategoryAppearance.priority]] */
   public readonly priority?: number;

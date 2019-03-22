@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Core */
 
-import { DisposeFunc } from "@bentley/bentleyjs-core";
+import { DisposeFunc, ClientRequestContext } from "@bentley/bentleyjs-core";
 import { RpcManager } from "@bentley/imodeljs-common";
 import { IModelHost } from "@bentley/imodeljs-backend";
 import {
@@ -32,6 +32,11 @@ export interface Props extends PresentationManagerProps {
   unusedClientLifetime?: number;
 }
 
+interface ClientStoreItem {
+  context: ClientRequestContext;
+  manager: PresentationManager;
+}
+
 /**
  * Static class used to statically set up Presentation library for the backend.
  * Basically what it does is:
@@ -43,7 +48,7 @@ export interface Props extends PresentationManagerProps {
 export default class Presentation {
 
   private static _initProps: Props | undefined;
-  private static _clientsStorage: TemporaryStorage<PresentationManager> | undefined;
+  private static _clientsStorage: TemporaryStorage<ClientStoreItem> | undefined;
   private static _shutdownListener: DisposeFunc | undefined;
 
   /* istanbul ignore next */
@@ -73,7 +78,7 @@ export default class Presentation {
     }
     this._initProps = props || {};
     this._shutdownListener = IModelHost.onBeforeShutdown.addListener(Presentation.terminate);
-    this._clientsStorage = new TemporaryStorage<PresentationManager>({
+    this._clientsStorage = new TemporaryStorage<ClientStoreItem>({
       factory: this.createClientManager,
       cleanupHandler: this.disposeClientManager,
       // cleanup unused managers every minute
@@ -99,14 +104,18 @@ export default class Presentation {
     this._initProps = undefined;
   }
 
-  private static createClientManager(clientId: string): PresentationManager {
+  private static createClientManager(clientId: string): ClientStoreItem {
+    let manager: PresentationManager;
     if (Presentation._initProps && Presentation._initProps.clientManagerFactory)
-      return Presentation._initProps.clientManagerFactory(clientId, Presentation._initProps);
-    return new PresentationManager(Presentation._initProps);
+      manager = Presentation._initProps.clientManagerFactory(clientId, Presentation._initProps);
+    else
+      manager = new PresentationManager(Presentation._initProps);
+    return { manager, context: ClientRequestContext.current };
   }
 
-  private static disposeClientManager(manager: PresentationManager) {
-    manager.dispose();
+  private static disposeClientManager(storeItem: ClientStoreItem) {
+    storeItem.context.enter();
+    storeItem.manager.dispose();
   }
 
   /**
@@ -117,7 +126,7 @@ export default class Presentation {
   public static getManager(clientId?: string): PresentationManager {
     if (!Presentation._clientsStorage)
       throw new PresentationError(PresentationStatus.NotInitialized, "Presentation must be first initialized by calling Presentation.initialize");
-    return Presentation._clientsStorage.getValue(clientId || "");
+    return Presentation._clientsStorage.getValue(clientId || "").manager;
   }
 
 }

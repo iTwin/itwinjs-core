@@ -170,7 +170,7 @@ export class IModelDb extends IModel implements PageableECSql {
 
   private _briefcase?: BriefcaseEntry;
 
-  /** @hidden */
+  /** @internal */
   public get briefcase(): BriefcaseEntry { return this._briefcase!; }
 
   /** Check if this iModel has been opened read-only or not. */
@@ -389,7 +389,7 @@ export class IModelDb extends IModel implements PageableECSql {
   public readonly onBeforeClose = new BeEvent<() => void>();
 
   /** Get the in-memory handle of the native Db
-   * @hidden
+   * @internal
    */
   public get nativeDb(): IModelJsNative.DgnDb { return this.briefcase.nativeDb; }
 
@@ -397,7 +397,7 @@ export class IModelDb extends IModel implements PageableECSql {
   public getBriefcaseId(): BriefcaseId { return new BriefcaseId(this.briefcase === undefined ? BriefcaseId.Illegal : this.briefcase.briefcaseId); }
 
   /** Returns a new IModelError with errorNumber, message, and meta-data set properly for a *not open* error.
-   * @hidden
+   * @internal
    */
   public newNotOpenError() {
     return new IModelError(IModelStatus.NotOpen, "IModelDb not open" + this.name, Logger.logError, loggingCategory, () => ({ iModelId: this.iModelToken.iModelId }));
@@ -936,7 +936,7 @@ export class IModelDb extends IModel implements PageableECSql {
   /** Get the CodeSpecs in this IModel. */
   public get codeSpecs(): CodeSpecs { return (this._codeSpecs !== undefined) ? this._codeSpecs : (this._codeSpecs = new CodeSpecs(this)); }
 
-  /** @hidden */
+  /** @internal */
   public insertCodeSpec(codeSpec: CodeSpec): Id64String {
     if (!this.briefcase) throw this.newNotOpenError();
     const { error, result } = this.nativeDb.insertCodeSpec(codeSpec.name, codeSpec.specScopeType, codeSpec.scopeReq);
@@ -944,7 +944,7 @@ export class IModelDb extends IModel implements PageableECSql {
     return Id64.fromJSON(result);
   }
 
-  /** @hidden */
+  /** @internal */
   public getElementPropertiesForDisplay(elementId: string): string {
     if (!this.briefcase)
       throw this.newNotOpenError();
@@ -1027,7 +1027,7 @@ export class IModelDb extends IModel implements PageableECSql {
       meta.baseClasses.forEach((baseClass) => this.forEachMetaData(iModel, baseClass, true, func, includeCustom));
   }
 
-  /*** @hidden */
+  /*** @internal */
   private loadMetaData(classFullName: string) {
     if (this.classMetaDataRegistry.find(classFullName))
       return;
@@ -1166,14 +1166,14 @@ export class IModelDb extends IModel implements PageableECSql {
   public exportGraphics(exportProps: ExportGraphicsProps): DbResult {
     return this.nativeDb.exportGraphics(exportProps);
   }
-
 }
 
+/** @public */
 export namespace IModelDb {
 
   /** The collection of models in an [[IModelDb]]. */
   export class Models {
-    /** @hidden */
+    /** @internal */
     public constructor(private _iModel: IModelDb) { }
 
     /** Get the Model with the specified identifier.
@@ -1284,7 +1284,7 @@ export namespace IModelDb {
 
   /** The collection of elements in an [[IModelDb]]. */
   export class Elements {
-    /** @hidden */
+    /** @internal */
     public constructor(private _iModel: IModelDb) { }
 
     /**
@@ -1519,7 +1519,7 @@ export namespace IModelDb {
 
   /** The collection of views in an [[IModelDb]]. */
   export class Views {
-    /** @hidden */
+    /** @internal */
     public constructor(private _iModel: IModelDb) { }
 
     /** Query for the array of ViewDefinitionProps of the specified class and matching the specified IsPrivate setting.
@@ -1636,7 +1636,7 @@ export namespace IModelDb {
 
   /** Represents the current state of a pollable tile content request.
    * Note: lack of a "completed" state because polling a completed request returns the content as a Uint8Array.
-   * @hidden
+   * @internal
    */
   export const enum TileContentState {
     New, // Request was just created and enqueued.
@@ -1644,12 +1644,12 @@ export namespace IModelDb {
     Loading, // Request is being actively processed.
   }
 
-  /** @hidden */
+  /** @internal */
   export class Tiles {
-    /** @hidden */
+    /** @internal */
     public constructor(private _iModel: IModelDb) { }
 
-    /** @hidden */
+    /** @internal */
     public async requestTileTreeProps(requestContext: ClientRequestContext, id: string): Promise<TileTreeProps> {
       requestContext.enter();
       if (!this._iModel.briefcase)
@@ -1684,7 +1684,7 @@ export namespace IModelDb {
       }
     }
 
-    /** @hidden */
+    /** @internal */
     public async requestTileContent(requestContext: ClientRequestContext, treeId: string, tileId: string): Promise<Uint8Array> {
       requestContext.enter();
       if (!this._iModel.briefcase)
@@ -1733,21 +1733,21 @@ export class TxnManager {
   private _getElementClass(elClassName: string): typeof Element { return this._iModel.getJsClass(elClassName) as unknown as typeof Element; }
   private _getRelationshipClass(relClassName: string): typeof Relationship { return this._iModel.getJsClass<typeof Relationship>(relClassName); }
 
-  /** @hidden */
+  /** @internal */
   protected _onBeforeOutputsHandled(elClassName: string, elId: Id64String): void { this._getElementClass(elClassName).onBeforeOutputsHandled(elId, this._iModel); }
-  /** @hidden */
+  /** @internal */
   protected _onAllInputsHandled(elClassName: string, elId: Id64String): void { this._getElementClass(elClassName).onAllInputsHandled(elId, this._iModel); }
 
-  /** @hidden */
+  /** @internal */
   protected _onRootChanged(props: RelationshipProps): void { this._getRelationshipClass(props.classFullName).onRootChanged(props, this._iModel); }
-  /** @hidden */
+  /** @internal */
   protected _onValidateOutput(props: RelationshipProps): void { this._getRelationshipClass(props.classFullName).onValidateOutput(props, this._iModel); }
-  /** @hidden */
+  /** @internal */
   protected _onDeletedDependency(props: RelationshipProps): void { this._getRelationshipClass(props.classFullName).onDeletedDependency(props, this._iModel); }
 
-  /** @hidden */
+  /** @internal */
   protected _onBeginValidate() { this.validationErrors.length = 0; }
-  /** @hidden */
+  /** @internal */
   protected _onEndValidate() { }
 
   /** Dependency handlers may call method this to report a validation error.

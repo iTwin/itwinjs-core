@@ -43,21 +43,21 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
   private _stmt: IModelJsNative.SqliteStatement | undefined;
   private _isShared: boolean = false;
 
-  /** @hidden - used by statement cache */
+  /** @internal - used by statement cache */
   public setIsShared(b: boolean) { this._isShared = b; }
 
-  /** @hidden - used by statement cache */
+  /** @internal - used by statement cache */
   public get isShared(): boolean { return this._isShared; }
 
   /** Check if this statement has been prepared successfully or not */
   public get isPrepared(): boolean { return !!this._stmt; }
 
-  /** @hidden used internally only
-   * Prepare this statement prior to first use.
+  /** Prepare this statement prior to first use.
    * @param db The DgnDb or ECDb to prepare the statement against
    * @param sql The SQL statement string to prepare
    * @throws [IModelError]($common) if the SQL statement cannot be prepared. Normally, prepare fails due to SQL syntax errors or references to tables or properties that do not exist.
    * The error.message property will provide details.
+   * @internal
    */
   public prepare(db: IModelJsNative.DgnDb | IModelJsNative.ECDb, sql: string): void {
     if (this.isPrepared)
@@ -68,8 +68,7 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
       throw new IModelError(stat.status, stat.message);
   }
 
-  /**
-   * Indicates whether the prepared statement makes no **direct* changes to the content of the file
+  /** Indicates whether the prepared statement makes no **direct* changes to the content of the file
    * or not. See [SQLite docs](https://www.sqlite.org/c3ref/stmt_readonly.html) for details.
    * @return Returns True, if the statement is readonly. False otherwise.
    */
@@ -378,7 +377,7 @@ export class CachedSqliteStatement {
   public statement: SqliteStatement;
   public useCount: number;
 
-  /** @hidden - used by statement cache */
+  /** @internal - used by statement cache */
   public constructor(stmt: SqliteStatement) {
     this.statement = stmt;
     this.useCount = 1;

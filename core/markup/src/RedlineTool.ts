@@ -3,8 +3,8 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { Point3d, Vector3d } from "@bentley/geometry-core";
-import { BeButtonEvent, EventHandled, IModelApp, QuantityType, CoordinateLockOverrides } from "@bentley/imodeljs-frontend";
-import { Element as MarkupElement, Marker, SVG, G } from "@svgdotjs/svg.js";
+import { BeButtonEvent, CoordinateLockOverrides, EventHandled, IModelApp, QuantityType } from "@bentley/imodeljs-frontend";
+import { Element as MarkupElement, G, Marker, SVG } from "@svgdotjs/svg.js";
 import { MarkupApp } from "./Markup";
 import { MarkupTool } from "./MarkupTool";
 
@@ -28,22 +28,7 @@ export abstract class RedlineTool extends MarkupTool {
   }
 
   protected createMarkup(_svgMarkup: G, _ev: BeButtonEvent, _isDynamics: boolean): void { }
-
-  protected clearDynamicsMarkup(_isDynamics: boolean): void {
-    this.markup.svgDynamics!.clear();
-  }
-
-  protected setCurrentStyle(element: MarkupElement, canBeFilled: boolean): void {
-    const active = MarkupApp.props.active;
-    element.css(active.element);
-    if (!canBeFilled)
-      element.css({ fill: "none" });
-  }
-
-  protected setCurrentTextStyle(element: MarkupElement): void {
-    const active = MarkupApp.props.active;
-    element.css(active.text);
-  }
+  protected clearDynamicsMarkup(_isDynamics: boolean): void { this.markup.svgDynamics!.clear(); }
 
   public onRestartTool(): void { this.exitTool(); } // Default to single shot and return control to select tool...
   public onCleanup() { this.clearDynamicsMarkup(false); }
@@ -97,7 +82,6 @@ export class LineTool extends RedlineTool {
     const end = isDynamics ? MarkupApp.convertVpToVb(ev.viewPoint) : this._points[1];
     const element = svgMarkup.line(start.x, start.y, end.x, end.y);
     this.setCurrentStyle(element, false);
-    element.attr("stroke-linecap", "round");
     if (!isDynamics)
       this.onAdded(element);
   }
@@ -192,8 +176,7 @@ export class CloudTool extends RedlineTool {
     if (width < 10 || height < 10)
       return;
     if (undefined === this._cloud) {
-      this._cloud = svgMarkup.path("M3.0,2.5 C3.9,.78 5.6,-.4 8.1,1.0 C9.1,0 11.3,-.2 12.5,.5 C14.2,-.5 17,.16 17.9,2.5 C21,3 20.2,7.3 17.6,7.5 C16.5,9.2 14.4,9.8 12.7,8.9 C11.6,10 9.5,10.3 8.1,9.4 C5.7,10.8 3.3,9.4 2.6,7.5 C-.9,7.7 .6,1.7 3.0,2.5z");
-      this._cloud.attr("stroke-linejoin", "round");
+      this._cloud = svgMarkup.path(MarkupApp.props.active.cloud.path);
     } else if (!isDynamics) {
       svgMarkup.add(this._cloud);
     }
@@ -258,16 +241,22 @@ export class EllipseTool extends RedlineTool {
 export class ArrowTool extends RedlineTool {
   public static toolId = "Markup.Arrow";
 
-  constructor(protected _arrowPos?: string) { super(); } // Specify "start", "end", or "both". Default if undefined is "end".
+  /** ctor for ArrowTool
+   * @param _arrowPos "start", "end", or "both". If undefined = "end".
+   */
+  constructor(protected _arrowPos?: string) { super(); }
 
   protected showPrompt(): void { this.outputMarkupPrompt(0 === this._points.length ? "Arrow.Prompts.FirstPoint" : "Arrow.Prompts.NextPoint"); }
 
-  protected getOrCreateArrowMarker(color: string, arrowLength: number = 7, arrowWidth: number = 6): Marker {
+  protected getOrCreateArrowMarker(color: string): Marker {
     // NOTE: Flashing doesn't currently affect markers, need support for "context-stroke" and "context-fill". For now encode color in name...
+    const arrowProps = MarkupApp.props.active.arrow;
+    const arrowLength = arrowProps.length;
+    const arrowWidth = arrowProps.width;
     const arrowMarkerId = "ArrowMarker" + arrowLength + "x" + arrowWidth + "-" + color;
     let marker = SVG("#" + arrowMarkerId) as Marker;
     if (null === marker) {
-      marker = this.markup.svgContainer!.marker(arrowLength, arrowWidth).id(arrowMarkerId);
+      marker = this.markup.svgMarkup!.marker(arrowLength, arrowWidth).id(arrowMarkerId);
       marker.polygon([0, 0, arrowLength, arrowWidth * 0.5, 0, arrowWidth]);
       marker.attr("orient", "auto-start-reverse");
       marker.attr("overflow", "visible"); // Don't clip the stroke that is being applied to allow the specified start/end to be used directly while hiding the arrow tail fully under the arrow head...
@@ -287,7 +276,6 @@ export class ArrowTool extends RedlineTool {
       return;
     const element = svgMarkup.line(start.x, start.y, end.x, end.y);
     this.setCurrentStyle(element, false);
-    element.attr("stroke-linecap", "round");
     const marker = this.getOrCreateArrowMarker(element.css("stroke"));
     const addToStart = ("start" === this._arrowPos || "both" === this._arrowPos);
     const addToEnd = ("end" === this._arrowPos || "both" === this._arrowPos);
@@ -332,16 +320,11 @@ export class DistanceTool extends ArrowTool {
     distanceLine.marker("start", marker);
     distanceLine.marker("end", marker);
 
-    const textWithBg = svgMarkup.group();
     const loc = start.interpolate(0.5, end);
     const distance = IModelApp.quantityFormatter.formatQuantity(this._startPointWorld.distance(ev.point), formatterSpec);
-    const text = svgMarkup.plain(distance).attr("text-anchor", "middle").translate(loc.x, loc.y);
+    const text = svgMarkup.plain(distance).addClass(MarkupApp.textClass).attr("text-anchor", "middle").translate(loc.x, loc.y);
     this.setCurrentTextStyle(text);
-    const outline = text.getOutline();
-    this.setCurrentStyle(outline, true);
-    outline.css({ "stroke-width": 1 });
-    outline.addTo(textWithBg);
-    text.addTo(textWithBg);
+    const textWithBg = this.createBoxedText(svgMarkup, text);
 
     if (!isDynamics) {
       const markup = this.markup;
@@ -378,8 +361,6 @@ export class SketchTool extends RedlineTool {
     const isClosed = (this._points.length > 2 && (this._points[0].distanceSquaredXY(isDynamics ? evPt : this._points[this._points.length - 1]) < this._minDistSquared * 2));
     const element = isClosed ? svgMarkup.polygon(pts) : svgMarkup.polyline(pts);
     this.setCurrentStyle(element, isClosed);
-    element.attr("stroke-linecap", "round");
-    element.attr("stroke-linejoin", "round");
     if (!isDynamics)
       this.onAdded(element);
   }

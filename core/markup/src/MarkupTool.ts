@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { XAndY } from "@bentley/geometry-core";
 import { BeButton, BeTouchEvent, CoordinateLockOverrides, EventHandled, IModelApp, PrimitiveTool, Viewport } from "@bentley/imodeljs-frontend";
-import { Element as MarkupElement, LinkedHTMLElement } from "@svgdotjs/svg.js";
+import { Element as MarkupElement, LinkedHTMLElement, G, Text as MarkupText } from "@svgdotjs/svg.js";
 import { Markup, MarkupApp } from "./Markup";
 
 /** Base class for all tools that operate on Markup elements. */
@@ -62,4 +62,22 @@ export abstract class MarkupTool extends PrimitiveTool {
     const el = node.instance;
     return el.getChildOrGroupOf(markup.svgMarkup!);
   }
+  protected setCurrentStyle(element: MarkupElement, canBeFilled: boolean): void {
+    element.css(MarkupApp.props.active.element);
+    if (!canBeFilled)
+      element.css({ fill: "none" });
+  }
+
+  protected setCurrentTextStyle(element: MarkupElement): void { element.css(MarkupApp.props.active.text); }
+
+  public createBoxedText(g: G, text: MarkupText) {
+    const boxedText = g.group().addClass(MarkupApp.boxedTextClass);
+    const outline = text.getOutline(3);
+    this.setCurrentStyle(outline, true);
+    outline.css({ "stroke-width": 1 });
+    outline.addTo(boxedText);
+    text.addTo(boxedText); // make sure the text is on top
+    return boxedText;
+  }
+
 }

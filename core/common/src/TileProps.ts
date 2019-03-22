@@ -6,7 +6,7 @@
 
 import { TransformProps, Range3dProps } from "@bentley/geometry-core";
 
-/** @hidden */
+/** @internal */
 export interface TileProps {
   /** The unique identifier of the tile's content */
   contentId: string;

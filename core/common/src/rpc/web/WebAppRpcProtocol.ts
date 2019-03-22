@@ -4,16 +4,18 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module RpcInterface */
 
+import { Readable, Writable } from "stream";
+import { RpcConfiguration } from "../core/RpcConfiguration";
+import { RpcContentType, RpcRequestStatus, WEB_RPC_CONSTANTS } from "../core/RpcConstants";
 import { RpcOperation } from "../core/RpcOperation";
 import { RpcProtocol } from "../core/RpcProtocol";
-import { RpcConfiguration } from "../core/RpcConfiguration";
-import { WebAppRpcRequest } from "./WebAppRpcRequest";
 import { OpenAPIInfo, OpenAPIParameter, RpcOpenAPIDescription } from "./OpenAPI";
 import { WebAppRpcLogging } from "./WebAppRpcLogging";
-import { Readable, Writable } from "stream";
-import { RpcContentType, RpcRequestStatus, WEB_RPC_CONSTANTS } from "../core/RpcConstants";
+import { WebAppRpcRequest } from "./WebAppRpcRequest";
 
-/** An HTTP server request object. */
+/** An HTTP server request object.
+ * @public
+ */
 export interface HttpServerRequest extends Readable {
   httpVersion: string;
   httpVersionMajor: number;
@@ -35,14 +37,18 @@ export interface HttpServerRequest extends Readable {
   header: (field: string) => string | undefined;
 }
 
-/** An HTTP server response object. */
+/** An HTTP server response object.
+ * @public
+ */
 export interface HttpServerResponse extends Writable {
   send(body?: any): HttpServerResponse;
   status(code: number): HttpServerResponse;
   set(field: string, value: string): void;
 }
 
-/** The HTTP application protocol. */
+/** The HTTP application protocol.
+ * @public
+ */
 export abstract class WebAppRpcProtocol extends RpcProtocol {
   /** Convenience handler for an RPC operation get request for an HTTP server. */
   public async handleOperationGetRequest(req: HttpServerRequest, res: HttpServerResponse) {

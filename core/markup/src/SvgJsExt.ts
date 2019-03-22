@@ -43,7 +43,7 @@ declare module "@svgdotjs/svg.js" {
 
     forElementsOfGroup(fn: (child: MarkupElement) => void): void;
     getNpcToVp(): Matrix;
-    getOutline(): Rect;
+    getOutline(expand?: number): Rect;
   }
   interface Text {
     getMarkup(): string;
@@ -126,10 +126,11 @@ extend(MarkupElement, {
     const bb = me.bbox();
     return new Matrix().scaleO(bb.w, bb.h).translateO(bb.x, bb.y).lmultiplyO(me.matrixify());
   },
-  getOutline(): Rect {
+  getOutline(expand?: number): Rect {
     const me = this as MarkupElement;
     const box = me.bbox();
-    return new Rect().move(box.x, box.y).size(box.w, box.h).transform(me.matrixify());
+    if (expand === undefined) expand = 0;
+    return new Rect().move(box.x - expand, box.y - expand).size(box.w + (expand * 2), box.h + (expand * 2)).transform(me.matrixify());
   },
 });
 
@@ -169,14 +170,14 @@ extend(Text, {
     me.dom = {};
   },
   // override for Text so that empty text will return a size
-  getOutline(): Rect {
+  getOutline(expand?: number): Rect {
     const me = this as Text;
     const node = me.node;
     const content = node.textContent;
     if (content !== null && content.length > 0)
-      return MarkupElement.prototype.getOutline.call(me);
+      return MarkupElement.prototype.getOutline.call(me, expand);
     node.textContent = "M";
-    const outline = MarkupElement.prototype.getOutline.call(me);
+    const outline = MarkupElement.prototype.getOutline.call(me, expand);
     node.textContent = content;
     return outline;
   },

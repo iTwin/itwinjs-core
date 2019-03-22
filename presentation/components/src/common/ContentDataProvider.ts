@@ -93,6 +93,7 @@ export class ContentDataProvider implements IContentDataProvider {
   private _rulesetId: string;
   private _displayType: string;
   private _keys: Readonly<KeySet>;
+  private _previousKeysGuid: string;
   private _selectionInfo?: Readonly<SelectionInfo>;
   private _registeredRuleset?: RegisteredRuleset;
   private _isDisposed?: boolean;
@@ -110,6 +111,7 @@ export class ContentDataProvider implements IContentDataProvider {
     this._displayType = displayType;
     this._imodel = imodel;
     this._keys = new KeySet();
+    this._previousKeysGuid = this._keys.guid;
     this.invalidateCache(CacheInvalidationProps.full());
     if (typeof ruleset === "object") {
       this.registerRuleset(ruleset); // tslint:disable-line: no-floating-promises
@@ -150,6 +152,7 @@ export class ContentDataProvider implements IContentDataProvider {
   public set imodel(imodel: IModelConnection) {
     if (this._imodel === imodel)
       return;
+
     this._imodel = imodel;
     this.invalidateCache(CacheInvalidationProps.full());
   }
@@ -159,6 +162,7 @@ export class ContentDataProvider implements IContentDataProvider {
   public set rulesetId(value: string) {
     if (this._rulesetId === value)
       return;
+
     this._rulesetId = value;
     this.invalidateCache(CacheInvalidationProps.full());
   }
@@ -166,7 +170,11 @@ export class ContentDataProvider implements IContentDataProvider {
   /** Keys defining what to request content for */
   public get keys() { return this._keys; }
   public set keys(keys: Readonly<KeySet>) {
+    if (keys.guid === this._previousKeysGuid)
+      return;
+
     this._keys = keys;
+    this._previousKeysGuid = this._keys.guid;
     this.invalidateCache(CacheInvalidationProps.full());
   }
 
@@ -175,6 +183,7 @@ export class ContentDataProvider implements IContentDataProvider {
   public set selectionInfo(info: Readonly<SelectionInfo> | undefined) {
     if (this._selectionInfo === info)
       return;
+
     this._selectionInfo = info;
     this.invalidateCache(CacheInvalidationProps.full());
   }
@@ -220,10 +229,20 @@ export class ContentDataProvider implements IContentDataProvider {
   }
 
   /**
-   * Called to check whether the content descriptor should be configured.
-   * Not configuring content descriptor saves a backend request.
+   * Called to check whether the content descriptor needs advanced configuration. If yes,
+   * descriptor is requested from the backend and `configureContentDescriptor()` is called
+   * to configure it before requesting content. If not, the provider calls
+   * `getDescriptorOverrides()` to get basic configuration and immediately requests
+   * content - that saves a trip to the backend.
    */
   protected shouldConfigureContentDescriptor(): boolean { return true; }
+
+  /**
+   * Called to check if content should be requested even when `keys` is empty. If this
+   * method returns `false`, then content is not requested and this saves a trip
+   * to the backend.
+   */
+  protected shouldRequestContentForEmptyKeyset(): boolean { return false; }
 
   /** Called to check whether the field should be excluded from the descriptor. */
   protected shouldExcludeFromDescriptor(field: Field): boolean { return this.isFieldHidden(field); }
@@ -234,7 +253,7 @@ export class ContentDataProvider implements IContentDataProvider {
   /**
    * Get the content descriptor overrides.
    *
-   * **Note:** The method is only called if `shouldConfigureContentDescriptor` returns `false` -
+   * **Note:** The method is only called if `shouldConfigureContentDescriptor()` returns `false` -
    * in that case when requesting content we skip requesting descriptor and instead just pass
    * overrides.
    */
@@ -256,9 +275,13 @@ export class ContentDataProvider implements IContentDataProvider {
    * Get the content descriptor.
    */
   public getContentDescriptor = _.memoize(async (): Promise<Readonly<Descriptor> | undefined> => {
+    if (!this.shouldRequestContentForEmptyKeyset() && this.keys.isEmpty)
+      return undefined;
+
     const descriptor = await this.getDefaultContentDescriptor();
     if (!descriptor)
       return undefined;
+
     return this.configureContentDescriptor(descriptor);
   });
 
@@ -285,6 +308,9 @@ export class ContentDataProvider implements IContentDataProvider {
   }
 
   private _getContentAndSize = _.memoize(async (pageOptions?: PageOptions) => {
+    if (!this.shouldRequestContentForEmptyKeyset() && this.keys.isEmpty)
+      return undefined;
+
     let descriptorOrOverrides;
     if (this.shouldConfigureContentDescriptor()) {
       descriptorOrOverrides = await this.getContentDescriptor();

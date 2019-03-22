@@ -14,7 +14,7 @@ import { assert } from "@bentley/bentleyjs-core";
  * `min`, scaling the result according to `max`, and truncating the result to an integer.
  * Therefore min quantizes to 0, max to 0xffff, (min+max)/2 to 0x7fff, and so on.
  * These routines are chiefly used internally by classes like QPoint2d and QPoint3d.
- * @hidden
+ * @internal
  */
 export namespace Quantization {
   const rangeScale = 0xffff;
@@ -28,7 +28,7 @@ export namespace Quantization {
 }
 
 /** Parameters used for quantization of 2d points.
- * @hidden
+ * @internal
  */
 export class QParams2d {
   public readonly origin = new Point2d();
@@ -73,7 +73,7 @@ export class QParams2d {
 }
 
 /** Represents a quantized 2d point as an (x, y) pair in the integer range [0, 0xffff].
- * @hidden
+ * @internal
  */
 export class QPoint2d {
   private _x: number = 0;
@@ -138,7 +138,7 @@ export class QPoint2d {
 }
 
 /** A list of 2d points all quantized to the same range.
- * @hidden
+ * @internal
  */
 export class QPoint2dList {
   public readonly params: QParams2d;
@@ -209,7 +209,7 @@ export class QPoint2dList {
 }
 
 /** Parameters used for quantization of 3d points.
- * @hidden
+ * @internal
  */
 export class QParams3d {
   public readonly origin = new Point3d();
@@ -267,7 +267,7 @@ export class QParams3d {
 }
 
 /** Represents a quantized 3d point as an (x, y, z) tripliet in the integer range [0, 0xffff].
- * @hidden
+ * @internal
  */
 export class QPoint3d {
   private _x: number = 0;
@@ -357,7 +357,7 @@ export class QPoint3d {
 }
 
 /** A list of 3d points all quantized to the same range.
- * @hidden
+ * @internal
  */
 export class QPoint3dList {
   private readonly _list: QPoint3d[] = [];

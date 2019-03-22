@@ -433,7 +433,7 @@ describe("ViewportSelectionHandler", () => {
 
     it("ignores intermediate unified selection changes", async () => {
       // the handler asks selection manager for overall selection
-      const keys = new KeySet();
+      const keys = new KeySet([createRandomECInstanceKey()]);
       selectionManagerMock.setup((x) => x.getSelection(imodelMock.object, 0)).returns(() => keys);
 
       const overrides: DescriptorOverrides = {

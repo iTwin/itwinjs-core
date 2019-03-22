@@ -89,7 +89,8 @@ interface AnalysisStyleProps {
   scalarThematicSettings?: Gradient.ThematicSettingsProps;
 }
 
-// @public (undocumented)
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal (undocumented)
 enum AntiAliasPref {
   // (undocumented)
   Detect = 0,
@@ -369,7 +370,8 @@ enum BisCodeSpec {
   viewDefinition = "bis:ViewDefinition"
 }
 
-// @public
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal
 class BoundingSphere {
   constructor(center?: Point3d, radius?: number);
   // (undocumented)
@@ -997,7 +999,8 @@ class ColorDef {
   static readonly white: ColorDef;
 }
 
-// @public (undocumented)
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal (undocumented)
 class ColorIndex {
   constructor();
   // (undocumented)
@@ -1211,7 +1214,8 @@ class DisplayStyle3dSettings extends DisplayStyleSettings {
       });
   // WARNING: The type "AmbientOcclusion.Settings" needs to be exported by the package (e.g. added to index.ts)
   ambientOcclusionSettings: AmbientOcclusion.Settings;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   environment: EnvironmentProps;
   // WARNING: The type "HiddenLine.Settings" needs to be exported by the package (e.g. added to index.ts)
   hiddenLineSettings: HiddenLine.Settings;
@@ -1242,7 +1246,8 @@ class DisplayStyleSettings {
   protected readonly _json: DisplayStyleSettingsProps;
   addExcludedElements(id: Id64String): void;
   backgroundColor: ColorDef;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   backgroundMap: BackgroundMapProps | undefined;
   dropExcludedElement(id: Id64String): void;
   dropSubCategoryOverride(id: Id64String): void;
@@ -1358,7 +1363,8 @@ enum ECSqlValueType {
   StructArray = 15
 }
 
-// @public (undocumented)
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal (undocumented)
 class EdgeArgs {
   // (undocumented)
   clear(): void;
@@ -1499,7 +1505,8 @@ class Feature {
   readonly subCategoryId: string;
 }
 
-// @public
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal
 class FeatureGates {
   addMonitor(feature: string, monitor: (val: GateValue) => void): () => void;
   check(feature: string, defaultVal?: GateValue): GateValue;
@@ -1508,7 +1515,8 @@ class FeatureGates {
   setGate(feature: string, val: GateValue): void;
 }
 
-// @public (undocumented)
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal (undocumented)
 class FeatureIndex {
   constructor();
   // (undocumented)
@@ -1525,7 +1533,8 @@ class FeatureIndex {
   type: FeatureIndexType;
 }
 
-// @public (undocumented)
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal (undocumented)
 enum FeatureIndexType {
   // (undocumented)
   Empty = 0,
@@ -1538,12 +1547,15 @@ enum FeatureIndexType {
 // @beta
 class FeatureTable extends IndexMap<Feature> {
   constructor(maxFeatures: number, modelId?: Id64String, type?: BatchType);
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   readonly anyDefined: boolean;
   findFeature(index: number): Feature | undefined;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   getArray(): Array<IndexedValue<Feature>>;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   insertWithIndex(feature: Feature, index: number): void;
   readonly isPlanarClassifier: boolean;
   readonly isUniform: boolean;
@@ -1623,7 +1635,8 @@ enum FontType {
   TrueType = 1
 }
 
-// @public (undocumented)
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal (undocumented)
 interface FormDataCommon {
   // (undocumented)
   append(name: string, value: string | Blob | Buffer, fileName?: string): void;
@@ -1656,7 +1669,8 @@ class Frustum {
   translate(offset: Vector3d): void;
 }
 
-// @public (undocumented)
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal (undocumented)
 class FrustumPlanes {
 }
 
@@ -1904,7 +1918,8 @@ module Gradient {
     None = 0,
     // (undocumented)
     Spherical = 4,
-    // (undocumented)
+    // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+    // @internal (undocumented)
     Thematic = 6
   }
 
@@ -1919,9 +1934,10 @@ module Gradient {
     // WARNING: The type "Gradient.Symb" needs to be exported by the package (e.g. added to index.ts)
     // WARNING: The type "Gradient.Symb" needs to be exported by the package (e.g. added to index.ts)
     static compareSymb(lhs: Gradient.Symb, rhs: Gradient.Symb): number;
+    // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
     // WARNING: The type "ThematicSettings" needs to be exported by the package (e.g. added to index.ts)
     // WARNING: The type "Symb" needs to be exported by the package (e.g. added to index.ts)
-    // (undocumented)
+    // @internal (undocumented)
     static createThematic(settings: ThematicSettings): Symb;
     // WARNING: The type "Symb" needs to be exported by the package (e.g. added to index.ts)
     equals(other: Symb): boolean;
@@ -1956,11 +1972,14 @@ module Gradient {
     keys: KeyColorProps[];
     mode: Mode;
     shift?: number;
+    // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+    // @internal
     thematicSettings?: ThematicSettingsProps;
     tint?: number;
   }
 
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   enum ThematicColorScheme {
     // (undocumented)
     BlueRed = 0,
@@ -1976,7 +1995,8 @@ module Gradient {
     Topographic = 3
   }
 
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   enum ThematicMode {
     // (undocumented)
     IsoLines = 3,
@@ -1988,6 +2008,8 @@ module Gradient {
     SteppedWithDelimiter = 2
   }
 
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal
   class ThematicSettings implements ThematicSettingsProps {
     // WARNING: The type "ThematicSettings" needs to be exported by the package (e.g. added to index.ts)
     // WARNING: The type "ThematicSettings" needs to be exported by the package (e.g. added to index.ts)
@@ -2026,7 +2048,8 @@ module Gradient {
     stepCount: number;
   }
 
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   interface ThematicSettingsProps {
     // (undocumented)
     colorScheme: number;
@@ -2087,7 +2110,9 @@ class GroundPlane implements GroundPlaneProps {
   belowColor: ColorDef;
   display: boolean;
   elevation: number;
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
   // WARNING: The type "Gradient.Symb" needs to be exported by the package (e.g. added to index.ts)
+  // @internal
   getGroundPlaneGradient(aboveGround: boolean): Gradient.Symb;
   // (undocumented)
   toJSON(): GroundPlaneProps;
@@ -2140,7 +2165,8 @@ module HiddenLine {
     static fromJSON(json?: StyleProps): Style;
     // WARNING: The type "Style" needs to be exported by the package (e.g. added to index.ts)
     overrideColor(color: ColorDef): Style;
-    // (undocumented)
+    // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+    // @internal (undocumented)
     readonly ovrColor: boolean;
     readonly pattern?: LinePixels;
     // WARNING: The type "StyleProps" needs to be exported by the package (e.g. added to index.ts)
@@ -2151,6 +2177,8 @@ module HiddenLine {
 
   interface StyleProps {
     readonly color?: ColorDefProps;
+    // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+    // @internal
     readonly ovrColor?: boolean;
     readonly pattern?: LinePixels;
     readonly width?: number;
@@ -2268,15 +2296,18 @@ interface HttpServerResponse extends Writable {
 
 // @public
 class ImageBuffer {
+  // @internal
   protected constructor(data: Uint8Array, format: ImageBufferFormat, width: number);
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   protected static computeHeight(data: Uint8Array, format: ImageBufferFormat, width: number): number;
   static create(data: Uint8Array, format: ImageBufferFormat, width: number): ImageBuffer | undefined;
   readonly data: Uint8Array;
   readonly format: ImageBufferFormat;
   static getNumBytesPerPixel(format: ImageBufferFormat): number;
   readonly height: number;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   protected static isValidData(data: Uint8Array, format: ImageBufferFormat, width: number): boolean;
   readonly numBytesPerPixel: number;
   readonly width: number;
@@ -2289,7 +2320,8 @@ enum ImageBufferFormat {
   Rgba = 0
 }
 
-// @public (undocumented)
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal (undocumented)
 module ImageLight {
   // (undocumented)
   class Solar {
@@ -2320,8 +2352,9 @@ enum ImageSourceFormat {
 
 // @public
 class IModel implements IModelProps {
+  // @internal
   protected constructor(iModelToken: IModelToken);
-  // (undocumented)
+  // @internal (undocumented)
   protected _token: IModelToken;
   cartographicToSpatialFromEcef(cartographic: Cartographic, result?: Point3d): Point3d;
   static readonly dictionaryId: Id64String;
@@ -2331,7 +2364,8 @@ class IModel implements IModelProps {
   getEcefTransform(): Transform;
   readonly globalOrigin: Point3d;
   readonly iModelToken: IModelToken;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   protected initialize(name: string, props: IModelProps): void;
   readonly isGeoLocated: boolean;
   name: string;
@@ -2342,7 +2376,8 @@ class IModel implements IModelProps {
   setEcefLocation(ecef: EcefLocationProps): void;
   spatialToCartographicFromEcef(spatial: XYAndZ, result?: Cartographic): Cartographic;
   spatialToEcef(spatial: XYAndZ, result?: Point3d): Point3d;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   toJSON(): IModelProps;
 }
 
@@ -2638,7 +2673,8 @@ interface InformationPartitionElementProps extends DefinitionElementProps {
 // @public
 export function isPowerOfTwo(num: number): boolean;
 
-// @public (undocumented)
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal (undocumented)
 export function isValidImageSourceFormat(format: ImageSourceFormat): boolean;
 
 // @public (undocumented)
@@ -2655,7 +2691,8 @@ interface LatLongAndHeight extends LatAndLong {
   height: number;
 }
 
-// @public
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal
 class Light {
   constructor(opts?: LightProps);
   // (undocumented)
@@ -2688,7 +2725,8 @@ interface LightLocationProps extends GeometricElement3dProps {
   enabled?: boolean;
 }
 
-// @public
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal
 interface LightProps {
   // (undocumented)
   bulbs?: number;
@@ -2710,7 +2748,8 @@ interface LightProps {
   shadows?: number;
 }
 
-// @public
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal
 enum LightType {
   // (undocumented)
   Ambient = 2,
@@ -2734,7 +2773,8 @@ enum LightType {
   Spot = 6
 }
 
-// @public
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal
 enum LinePixels {
   // (undocumented)
   Code0 = 0,
@@ -2839,29 +2879,35 @@ interface LineStyleProps extends ElementProps {
   description?: string;
 }
 
-// @public (undocumented)
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal (undocumented)
 interface MarshalingBinaryMarker {
 }
 
 // @public
 interface MaterialProps {
   materialId?: Id64String;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   origin?: XYZProps;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   rotation?: YawPitchRollProps;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   size?: XYZProps;
 }
 
-// @public (undocumented)
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal (undocumented)
 class MeshEdge {
   constructor(index0?: number, index1?: number);
   // (undocumented)
   indices: number[];
 }
 
-// @public (undocumented)
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal (undocumented)
 class MeshEdges {
   constructor();
   // (undocumented)
@@ -2874,7 +2920,8 @@ class MeshEdges {
   visible: MeshEdge[];
 }
 
-// @public (undocumented)
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal (undocumented)
 class MeshPolyline {
   constructor(indices?: number[]);
   // (undocumented)
@@ -2885,7 +2932,8 @@ class MeshPolyline {
   readonly indices: number[];
 }
 
-// @public (undocumented)
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal (undocumented)
 class MeshPolylineList extends Array<MeshPolyline> {
   constructor(...args: MeshPolyline[]);
 }
@@ -2953,7 +3001,8 @@ interface NavigationValue {
 // @public
 export function nextHighestPowerOfTwo(num: number): number;
 
-// @public (undocumented)
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal (undocumented)
 class NonUniformColor {
   constructor(colors: Uint32Array, indices: number[], hasAlpha: boolean);
   // (undocumented)
@@ -2993,7 +3042,8 @@ enum Npc {
   RightTopRear = 3
 }
 
-// @public (undocumented)
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal (undocumented)
 class OctEncodedNormal {
   constructor(val: number);
   // (undocumented)
@@ -3004,7 +3054,8 @@ class OctEncodedNormal {
   readonly value: number;
 }
 
-// @public (undocumented)
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal (undocumented)
 class OctEncodedNormalPair {
   constructor(first: OctEncodedNormal, second: OctEncodedNormal);
   // (undocumented)
@@ -3091,7 +3142,8 @@ interface PointWithStatus {
   s: GeoCoordStatus;
 }
 
-// @public (undocumented)
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal (undocumented)
 class PolylineData {
   constructor(vertIndices?: number[], numIndices?: number);
   // (undocumented)
@@ -3106,7 +3158,8 @@ class PolylineData {
   vertIndices: number[];
 }
 
-// @public (undocumented)
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal (undocumented)
 class PolylineEdgeArgs {
   constructor(lines?: PolylineData[]);
   // (undocumented)
@@ -3121,7 +3174,8 @@ class PolylineEdgeArgs {
   readonly numLines: number;
 }
 
-// @public
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal
 class PolylineFlags {
   constructor(is2d?: boolean, isPlanar?: boolean, isDisjoint?: boolean, type?: PolylineTypeFlags);
   // (undocumented)
@@ -3152,7 +3206,8 @@ class PolylineFlags {
   static unpack(value: number): PolylineFlags;
 }
 
-// @public (undocumented)
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal (undocumented)
 enum PolylineTypeFlags {
   // (undocumented)
   Edge = 1,
@@ -3268,7 +3323,8 @@ interface PropertyMetaDataProps {
   structName?: string;
 }
 
-// @public
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal
 class QParams2d {
   // (undocumented)
   clone(out?: QParams2d): QParams2d;
@@ -3284,7 +3340,8 @@ class QParams2d {
   setFromRange(range: Range2d): void;
 }
 
-// @public
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal
 class QParams3d {
   // (undocumented)
   clone(out?: QParams3d): QParams3d;
@@ -3302,7 +3359,8 @@ class QParams3d {
   setFromRange(range: Range3d): void;
 }
 
-// @public
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal
 class QPoint2d {
   constructor();
   // (undocumented)
@@ -3320,7 +3378,8 @@ class QPoint2d {
   y: number;
 }
 
-// @public
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal
 class QPoint2dList {
   constructor(params: QParams2d);
   add(pt: Point2d): void;
@@ -3336,7 +3395,8 @@ class QPoint2dList {
   unquantize(index: number, out?: Point2d): Point2d;
 }
 
-// @public
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal
 class QPoint3d {
   // (undocumented)
   clone(out?: QPoint3d): QPoint3d;
@@ -3359,7 +3419,8 @@ class QPoint3d {
   z: number;
 }
 
-// @public
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal
 class QPoint3dList {
   // WARNING: The name "__@iterator" contains unsupported characters; API names should use only letters, numbers, and underscores
   // (undocumented)
@@ -3384,7 +3445,8 @@ class QPoint3dList {
   unquantize(index: number, out?: Point3d): Point3d;
 }
 
-// @public
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal
 module Quantization {
   // (undocumented)
   function computeScale(extent: number): number;
@@ -3414,7 +3476,8 @@ enum Rank {
   User = 3
 }
 
-// @public (undocumented)
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal (undocumented)
 interface ReadableFormData extends Readable {
   // (undocumented)
   getHeaders: {
@@ -3624,24 +3687,30 @@ class RpcConfiguration {
   static obtain<T extends RpcConfiguration>(configurationConstructor: {
           new (): T;
       }): T;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   onRpcClientInitialized(definition: RpcInterfaceDefinition, client: RpcInterface): void;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   onRpcClientTerminated(definition: RpcInterfaceDefinition, client: RpcInterface): void;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   onRpcImplInitialized(definition: RpcInterfaceDefinition, impl: RpcInterface): void;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   onRpcImplTerminated(definition: RpcInterfaceDefinition, impl: RpcInterface): void;
   pendingOperationRetryInterval: number;
   readonly protocol: RpcProtocol;
   // WARNING: The type "RpcRequestContext" needs to be exported by the package (e.g. added to index.ts)
   static requestContext: RpcRequestContext;
   static strictMode: boolean;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   static supply(definition: RpcInterface): RpcConfiguration;
 }
 
-// @public
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal
 enum RpcContentType {
   // (undocumented)
   Binary = 2,
@@ -3653,17 +3722,23 @@ enum RpcContentType {
   Unknown = 0
 }
 
-// @public
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal
 class RpcControlChannel {
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   static channels: RpcControlChannel[];
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   describeEndpoints(): Promise<RpcInterfaceEndpoints[]>;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   handleUnknownOperation(invocation: RpcInvocation, _error: any): boolean;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   initialize(): void;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   static obtain(configuration: RpcConfiguration): RpcControlChannel;
 }
 
@@ -3671,7 +3746,8 @@ class RpcControlChannel {
 class RpcControlResponse {
 }
 
-// @public (undocumented)
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal
 class RpcDefaultConfiguration extends RpcConfiguration {
   // (undocumented)
   interfaces: () => never[];
@@ -3679,13 +3755,15 @@ class RpcDefaultConfiguration extends RpcConfiguration {
   protocol: RpcProtocol;
 }
 
-// @public (undocumented)
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal
 class RpcDirectProtocol extends RpcProtocol {
   // (undocumented)
   readonly requestType: typeof RpcDirectRequest;
 }
 
-// @public (undocumented)
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal
 class RpcDirectRequest extends RpcRequest {
   // (undocumented)
   fulfillment: RpcRequestFulfillment | undefined;
@@ -3699,7 +3777,8 @@ class RpcDirectRequest extends RpcRequest {
   protected setHeader(name: string, value: string): void;
 }
 
-// @public
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal
 enum RpcEndpoint {
   // (undocumented)
   Backend = 1,
@@ -3710,7 +3789,8 @@ enum RpcEndpoint {
 // @public
 class RpcInterface {
   readonly configuration: RpcConfiguration;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   configurationSupplier: RpcConfigurationSupplier | undefined;
   forward<T = any>(parameters: IArguments): Promise<T>;
   static isVersionCompatible(backend: string, frontend: string): boolean;
@@ -3749,7 +3829,8 @@ enum RpcInterfaceStatus {
   Success = 0
 }
 
-// @public
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal
 class RpcInvocation {
   constructor(protocol: RpcProtocol, request: SerializedRpcRequest);
   static current(rpcImpl: RpcInterface): RpcInvocation;
@@ -3773,13 +3854,15 @@ class RpcManager {
   static unregisterImpl<TDefinition extends RpcInterface>(definition: RpcInterfaceDefinition<TDefinition>): void;
 }
 
-// @public (undocumented)
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal (undocumented)
 class RpcMarshaling {
   static deserialize(_operation: RpcOperation, protocol: RpcProtocol | undefined, value: RpcSerializedValue): any;
   static serialize(operation: RpcOperation | string, protocol: RpcProtocol | undefined, value: any): RpcSerializedValue;
 }
 
-// @public
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal
 enum RpcMarshalingDirective {
   // (undocumented)
   Binary = "__binary__",
@@ -3805,7 +3888,8 @@ enum RpcMarshalingDirective {
   Unregistered = "__unregistered__"
 }
 
-// @public
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal
 enum RpcMobilePlatform {
   // (undocumented)
   Android = 2,
@@ -3817,12 +3901,14 @@ enum RpcMobilePlatform {
   Window = 1
 }
 
-// @public
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal
 class RpcMultipart {
   static createForm(value: RpcSerializedValue): FormData;
   static createStream(_value: RpcSerializedValue): ReadableFormData;
   static parseRequest(_req: HttpServerRequest): Promise<RpcSerializedValue>;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   static writeValueToForm(form: FormDataCommon, value: RpcSerializedValue): void;
 }
 
@@ -3852,7 +3938,8 @@ interface RpcOperationsProfile {
   readonly lastResponse: number;
 }
 
-// @public
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal
 class RpcPendingQueue {
   // (undocumented)
   static initialize(): void;
@@ -3876,13 +3963,17 @@ class RpcProtocol {
   getOperationFromPath(path: string): SerializedRpcOperation;
   getStatus(code: number): RpcRequestStatus;
   readonly invocationType: typeof RpcInvocation;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   onRpcClientInitialized(_definition: RpcInterfaceDefinition, _client: RpcInterface): void;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   onRpcClientTerminated(_definition: RpcInterfaceDefinition, _client: RpcInterface): void;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   onRpcImplInitialized(_definition: RpcInterfaceDefinition, _impl: RpcInterface): void;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   onRpcImplTerminated(_definition: RpcInterfaceDefinition, _impl: RpcInterface): void;
   readonly requestType: typeof RpcRequest;
   serialize(request: RpcRequest): Promise<SerializedRpcRequest>;
@@ -3892,7 +3983,8 @@ class RpcProtocol {
   transferChunkThreshold: number;
 }
 
-// @public
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal
 enum RpcProtocolEvent {
   // (undocumented)
   BackendErrorOccurred = 11,
@@ -3920,7 +4012,8 @@ enum RpcProtocolEvent {
   UnknownErrorReceived = 4
 }
 
-// @public (undocumented)
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal (undocumented)
 class RpcRegistry {
   // (undocumented)
   definitionClasses: Map<string, RpcInterfaceDefinition>;
@@ -3969,7 +4062,8 @@ class RpcRequest<TResponse = any> {
   readonly client: RpcInterface;
   readonly connecting: boolean;
   static current(context: RpcInterface): RpcRequest;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   dispose(): void;
   readonly elapsed: number;
   static readonly events: BeEvent<RpcRequestEventHandler>;
@@ -4002,7 +4096,8 @@ class RpcRequest<TResponse = any> {
   submit(): Promise<void>;
 }
 
-// @public
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal
 enum RpcRequestEvent {
   // (undocumented)
   PendingUpdateReceived = 1,
@@ -4010,11 +4105,13 @@ enum RpcRequestEvent {
   StatusChanged = 0
 }
 
-// @public (undocumented)
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal (undocumented)
 interface RpcRequestFulfillment {
 }
 
-// @public
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal
 enum RpcRequestStatus {
   // (undocumented)
   Created = 1,
@@ -4042,11 +4139,13 @@ enum RpcResponseCacheControl {
   None = 0
 }
 
-// @public (undocumented)
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal (undocumented)
 interface RpcSerializedValue {
 }
 
-// @public (undocumented)
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal (undocumented)
 class SceneLights {
   // WARNING: The type "ImageLight.Solar" needs to be exported by the package (e.g. added to index.ts)
   constructor(imageBased: {
@@ -4069,7 +4168,8 @@ class SceneLights {
   readonly isEmpty: boolean;
 }
 
-// @public
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal
 interface SerializedRpcOperation {
   // (undocumented)
   encodedRequest?: string;
@@ -4081,7 +4181,8 @@ interface SerializedRpcOperation {
   operationName: string;
 }
 
-// @public
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal
 interface SerializedRpcRequest extends SerializedClientRequestContext {
   // (undocumented)
   caching: RpcResponseCacheControl;
@@ -4137,7 +4238,8 @@ interface SheetTemplateProps extends ElementProps {
   width?: number;
 }
 
-// @public (undocumented)
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal (undocumented)
 class SilhouetteEdgeArgs extends EdgeArgs {
   // (undocumented)
   clear(): void;
@@ -4157,6 +4259,8 @@ interface SkyBoxImageProps {
 // @public
 enum SkyBoxImageType {
   Cube = 2,
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal
   Cylindrical = 3,
   // (undocumented)
   None = 0,
@@ -4257,7 +4361,8 @@ interface SpatialViewDefinitionProps extends ViewDefinition3dProps {
   modelSelectorId: Id64String;
 }
 
-// @public
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal
 class Spot extends Light {
   constructor(opts?: SpotProps);
   // (undocumented)
@@ -4266,7 +4371,8 @@ class Spot extends Light {
   outer: Angle;
 }
 
-// @public
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal
 interface SpotProps extends LightProps {
   // (undocumented)
   inner?: AngleProps;
@@ -4289,6 +4395,8 @@ class SubCategoryOverride {
   readonly material?: Id64String;
   override(appearance: SubCategoryAppearance): SubCategoryAppearance;
   readonly priority?: number;
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal
   readonly style?: Id64String;
   // WARNING: The type "SubCategoryAppearance.Props" needs to be exported by the package (e.g. added to index.ts)
   toJSON(): SubCategoryAppearance.Props;
@@ -4310,7 +4418,8 @@ interface SubjectProps extends ElementProps {
   description?: string;
 }
 
-// @public
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal
 class TestRpcManager {
   // (undocumented)
   static initialize(interfaces: RpcInterfaceDefinition[]): void;
@@ -4413,7 +4522,8 @@ interface ThumbnailProps extends ThumbnailFormatProps {
   image: Uint8Array;
 }
 
-// @public (undocumented)
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal (undocumented)
 interface TileProps {
   contentId: string;
   contentRange?: Range3dProps;
@@ -4489,8 +4599,11 @@ interface ViewDefinitionProps extends DefinitionElementProps {
   displayStyleId: Id64String;
 }
 
-// @public (undocumented)
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal (undocumented)
 module ViewFlag {
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal
   class Overrides {
     constructor(flags?: ViewFlags);
     // (undocumented)
@@ -4559,7 +4672,8 @@ module ViewFlag {
     setUseHlineMaterialColors(val: boolean): void;
   }
 
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   enum PresenceFlag {
     // (undocumented)
     kBackgroundMap = 23,
@@ -4619,8 +4733,11 @@ interface ViewFlagProps {
   ambientOcclusion?: boolean;
   backgroundMap?: boolean;
   clipVol?: boolean;
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal
   contRend?: boolean;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   edgeMask?: number;
   grid?: boolean;
   hidEdges?: boolean;
@@ -4653,12 +4770,17 @@ class ViewFlags {
   // (undocumented)
   clone(out?: ViewFlags): ViewFlags;
   constructions: boolean;
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal
   continuousRendering: boolean;
   // (undocumented)
   static createFrom(other?: ViewFlags, out?: ViewFlags): ViewFlags;
   dimensions: boolean;
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal
   edgeMask: number;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   edgesRequired(): boolean;
   // (undocumented)
   equals(other: ViewFlags): boolean;
@@ -4667,11 +4789,14 @@ class ViewFlags {
   static fromJSON(json?: ViewFlagProps): ViewFlags;
   grid: boolean;
   hiddenEdges: boolean;
-  // (undocumented)
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal (undocumented)
   hiddenEdgesVisible(): boolean;
   hLineMaterialColors: boolean;
   materials: boolean;
   monochrome: boolean;
+  // WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+  // @internal
   noGeometryMap: boolean;
   patterns: boolean;
   renderMode: RenderMode;
@@ -4746,11 +4871,12 @@ class WebAppRpcRequest extends RpcRequest {
   static parseRequest(protocol: WebAppRpcProtocol, req: HttpServerRequest): Promise<SerializedRpcRequest>;
   readonly protocol: WebAppRpcProtocol;
   protected send(): Promise<number>;
-  static sendResponse(_protocol: WebAppRpcProtocol, request: SerializedRpcRequest, fulfillment: RpcRequestFulfillment, res: HttpServerResponse): void;
+  static sendResponse(protocol: WebAppRpcProtocol, request: SerializedRpcRequest, fulfillment: RpcRequestFulfillment, res: HttpServerResponse): void;
   protected setHeader(name: string, value: string): void;
 }
 
-// @public
+// WARNING: Because this definition is explicitly marked as @internal, an underscore prefix ("_") should be added to its name
+// @internal
 class WipRpcInterface extends RpcInterface {
   // (undocumented)
   attachChangeCache(_iModelToken: IModelToken): Promise<void>;

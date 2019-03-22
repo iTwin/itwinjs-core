@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Upgrade TypeDoc dependency to 0.14.2",
+      "packageName": "@bentley/express-server",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/express-server",
+  "email": "will.bentley@bentley.com"
+}

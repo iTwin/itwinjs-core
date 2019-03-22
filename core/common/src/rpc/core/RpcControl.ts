@@ -16,11 +16,15 @@ import { BentleyStatus } from "@bentley/bentleyjs-core";
 
 // tslint:disable:space-before-function-paren
 
-/** An RPC operation control response. */
+/** An RPC operation control response.
+ * @public
+ */
 export abstract class RpcControlResponse {
 }
 
-/** A pending RPC operation response. */
+/** A pending RPC operation response.
+ * @public
+ */
 export class RpcPendingResponse extends RpcControlResponse {
   /** Extended status regarding the pending operation. */
   public message: string;
@@ -32,13 +36,17 @@ export class RpcPendingResponse extends RpcControlResponse {
   }
 }
 
-/** A RPC operation response . */
+/** A RPC operation response.
+ * @public
+ */
 export class RpcNotFoundResponse extends RpcControlResponse {
 }
 
-/** Manages requests and responses for an RPC configuration. */
+/** Manages requests and responses for an RPC configuration.
+ * @internal
+ */
 export class RpcControlChannel {
-  /** @hidden */
+  /** @internal */
   public static channels: RpcControlChannel[] = [];
   private static _obtainLock = 0;
   private _configuration: RpcConfiguration;
@@ -51,13 +59,13 @@ export class RpcControlChannel {
     RpcControlChannel.channels.push(this);
   }
 
-  /** @hidden */
+  /** @internal */
   public async describeEndpoints() {
     this.activateClient();
     return this._describeEndpoints();
   }
 
-  /** @hidden */
+  /** @internal */
   public static obtain(configuration: RpcConfiguration): RpcControlChannel {
     if (RpcControlChannel._obtainLock)
       return undefined as any;
@@ -122,7 +130,7 @@ export class RpcControlChannel {
     this._describeEndpoints = async () => client.describeEndpoints();
   }
 
-  /** @hidden */
+  /** @internal */
   public initialize() {
     if (this._initialized)
       throw new IModelError(BentleyStatus.ERROR, `Already initialized.`);
@@ -138,7 +146,7 @@ export class RpcControlChannel {
     RpcManager.initializeInterface(this._channelInterface);
   }
 
-  /** @hidden */
+  /** @internal */
   public handleUnknownOperation(invocation: RpcInvocation, _error: any): boolean {
     const op = invocation.request.operation;
     if (op.interfaceVersion === "CONTROL" && op.operationName === "describeEndpoints") {

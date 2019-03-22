@@ -20,10 +20,12 @@ const applyPlanarClassificationColor = `
    } else {
      if (s_pClassColorParams.x == 0.0)
        return vec4(0);                        // Classified, off.
+       else if (s_pClassColorParams.x == 1.0)
+       return baseColor;
       else if (s_pClassColorParams.x == 2.0)
         return baseColor * .6;                // Classified, dimmed.
       else if (s_pClassColorParams.x == 3.0)
-        return baseColor * colorTexel * vec4(.8, .8, 1.0, 1.0);  // Classified, hilite.  TBD - make colr configurable.
+        return baseColor * vec4(.8, .8, 1.0, 1.0);  // Classified, hilite.  TBD - make color configurable.
       else
         return baseColor * colorTexel;
     // TBD -- mode 1.  Return baseColor unless flash or hilite
