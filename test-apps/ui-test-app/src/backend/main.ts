@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
 import { app as electron } from "electron";
-import { Logger } from "@bentley/bentleyjs-core";
 import { IModelHost } from "@bentley/imodeljs-backend";
 import { RpcInterfaceDefinition } from "@bentley/imodeljs-common";
 import { Presentation } from "@bentley/presentation-backend";
@@ -12,11 +11,12 @@ import getSupportedRpcs from "../common/rpcs";
 
 import { Config } from "@bentley/imodeljs-clients";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
+import { initializeLogging } from "./web/BackendServer";
 
 IModelJsConfig.init(true /*suppress error*/, true /* suppress message */, Config.App);
 
-// initialize logging
-Logger.initializeToConsole();
+if (!electron)
+  initializeLogging();
 
 // initialize imodeljs-backend
 IModelHost.startup();

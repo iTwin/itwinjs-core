@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module IModelApp */
 
-import { dispose, Guid, GuidString, Logger, ClientRequestContext, SerializedClientRequestContext } from "@bentley/bentleyjs-core";
+import { dispose, Guid, GuidString, ClientRequestContext, SerializedClientRequestContext } from "@bentley/bentleyjs-core";
 import {
   AccessToken, ConnectSettingsClient, IModelClient, IModelHubClient,
   SettingsAdmin, IAuthorizationClient, IncludePrefix,
@@ -30,7 +30,6 @@ import * as pluginTool from "./tools/PluginTool";
 import * as viewTool from "./tools/ViewTool";
 import * as measureTool from "./tools/MeasureTool";
 
-const loggingCategory = "imodeljs-frontend.IModelApp";
 declare var BUILD_SEMVER: string;
 
 /** Creates an *Application* to show an iModel in a web browser.
@@ -216,9 +215,6 @@ export class IModelApp {
         const accessToken: AccessToken = await IModelApp.authorizationClient.getAccessToken();
         authorization = accessToken.toTokenString(IncludePrefix.Yes);
         userId = accessToken.getUserInfo()!.id;
-        const tokenLength = authorization.length;
-        if (tokenLength > 7.5 * 1024)
-          Logger.logError(loggingCategory, `AccessToken size is too large. Reduce the claims for SAML tokens, or consider migrating to OIDC!`, () => ({ tokenLength }));
       }
       return {
         id,

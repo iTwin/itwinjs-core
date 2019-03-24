@@ -94,7 +94,6 @@ export class RpcInvocation {
       }
 
       this.operation.policy.invocationCallback(this);
-      protocol.events.raiseEvent(RpcProtocolEvent.RequestReceived, this);
       this.result = this.resolve();
     } catch (error) {
       this.result = this.reject(error);
@@ -108,13 +107,15 @@ export class RpcInvocation {
   }
 
   private async resolve(): Promise<any> {
+    const clientRequestContext = await RpcConfiguration.requestContext.deserialize(this.request);
+    clientRequestContext.enter();
+
+    this.protocol.events.raiseEvent(RpcProtocolEvent.RequestReceived, this);
+
     const parameters = RpcMarshaling.deserialize(this.operation, this.protocol, this.request.parameters);
     const impl = RpcRegistry.instance.getImplForInterface(this.operation.interfaceDefinition);
     (impl as any)[CURRENT_INVOCATION] = this;
     const op = this.lookupOperationFunction(impl);
-
-    const clientRequestContext = await RpcConfiguration.requestContext.deserialize(this.request);
-    clientRequestContext.enter();
 
     return Promise.resolve(op.call(impl, ...parameters));
   }

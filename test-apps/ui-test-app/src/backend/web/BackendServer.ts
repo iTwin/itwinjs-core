@@ -3,22 +3,38 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 // tslint:disable:no-console
-import { RpcInterfaceDefinition, BentleyCloudRpcManager } from "@bentley/imodeljs-common";
+import { IModelError, IModelStatus, RpcInterfaceDefinition, BentleyCloudRpcManager } from "@bentley/imodeljs-common";
 import { IModelJsExpressServer } from "@bentley/express-server";
+import { Logger, LogLevel, EnvMacroSubst } from "@bentley/bentleyjs-core";
+import { BunyanLoggerConfig, SeqLoggerConfig } from "@bentley/logger-config";
 
-/* ---- not used with separate web and RPC server
-import * as path from "path";
+const loggerCategory = "ui-test-app";
 
-class UITestExpressServer extends IModelJsExpressServer {
-  protected _configureRoutes() {
-    super._configureRoutes();
-    // server out our static files (locale files, javascript files, icons, etc. from the ../public directory/)
-    const publicDir = path.resolve(__dirname, "../public");
-    this._app.use(express.static(publicDir));
-    this._app.use("*", (_req, resp) => { resp.sendFile(path.resolve(publicDir, "index.html")); });
+// Setup to log to a locally install seq server from https://datalust.co/download
+const defaultConfigValues = {
+  "TESTAPP-SEQ-URL": "http://localhost",
+  "TESTAPP-SEQ-PORT": 5341,
+  "TESTAPP-API-KEY": "InvalidApiKey",
+};
+
+/** Initializes logging based on the configuration json file */
+export function initializeLogging() {
+  const config: any = require("./BackendServer.config.json");
+  EnvMacroSubst.replaceInProperties(config, true, defaultConfigValues);
+
+  if ("seq" in config) {
+    if (EnvMacroSubst.anyPropertyContainsEnvvars(config.seq, true))
+      throw new IModelError(IModelStatus.NotFound, "Unmatched environment variables in 'seq' element in BackendServer.config.json.", Logger.logError, loggerCategory, () => config.seq);
+    BunyanLoggerConfig.logToBunyan(SeqLoggerConfig.createBunyanSeqLogger(config.seq, loggerCategory));
+  } else {
+    Logger.initializeToConsole();
+
   }
+
+  Logger.setLevelDefault(LogLevel.Error);
+  if ("loggerConfig" in config)
+    Logger.configureLevels(config.loggerConfig);
 }
---------------------------------------------------------*/
 
 /**
  * Initializes Web Server backend

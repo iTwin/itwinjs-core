@@ -5,7 +5,9 @@
   "license": "MIT",
   "version": "0.0.0",
   "scripts": {
-    "build": "node ./node_modules/@bentley/webpack-tools/bin/buildIModelJsModule",
+    "build": "npm run build:copy-config && npm run build:src",
+    "build:src": "node ./node_modules/@bentley/webpack-tools/bin/buildIModelJsModule",
+    "build:copy-config": "cpx ./src/backend/web/BackendServer.config.json ./lib/backend/web",
     "lint": "tslint -p . 1>&2",
     "electron": "electron ./lib/backend/main.js",
     "start:webserver": "node ./node_modules/@bentley/imodeljs-webserver/lib/WebServer.js --port=3000 --resources=./lib/webresources/",
@@ -19,8 +21,7 @@
   "iModelJs": {
     "buildModule": {
       "type": "application",
-      "sourceResources": [
-        {
+      "sourceResources": [{
           "source": "./src/**/*.scss",
           "dest": "./lib"
         },
@@ -44,14 +45,12 @@
         "styleSheets": true,
         "htmlTemplate": "./src/frontend/index.html"
       },
-      "subModules": [
-        {
-          "dest": "./lib/webresources",
-          "entry": "./lib/frontend/plugins/MeasurePoints.js",
-          "bundleName": "MeasurePoints",
-          "type": "plugin"
-        }
-      ],
+      "subModules": [{
+        "dest": "./lib/webresources",
+        "entry": "./lib/frontend/plugins/MeasurePoints.js",
+        "bundleName": "MeasurePoints",
+        "type": "plugin"
+      }],
       "makeConfig": {
         "dest": "./lib/webresources/config.json",
         "filter": "^imjs_"
@@ -77,6 +76,7 @@
   ],
   "devDependencies": {
     "@bentley/config-loader": "0.191.0-dev.15",
+    "@bentley/logger-config": "0.191.0-dev.15",
     "@bentley/webpack-tools": "0.191.0-dev.15",
     "@bentley/build-tools": "0.191.0-dev.15",
     "@bentley/bentleyjs-core": "0.191.0-dev.15",
@@ -133,6 +133,7 @@
     "@bentley/ui-components": "0.191.0-dev.15",
     "@bentley/ui-ninezone": "0.191.0-dev.15",
     "@bentley/ui-framework": "0.191.0-dev.15",
+    "cpx": "^1.5.0",
     "mobx": "^5.8.0",
     "mobx-react": "^5.4.3",
     "react": "^16.4.2",

@@ -100,8 +100,6 @@ export class Logger {
 
   /** Compose the metadata for a log message.  */
   public static makeMetaData(getMetaData?: GetMetaDataFunction): any {
-    if (!getMetaData)
-      return;
     const mdata: any = getMetaData ? getMetaData() : {};
     Logger.addClientRequestContext(mdata);
     return mdata;
