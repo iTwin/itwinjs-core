@@ -20,7 +20,7 @@ import { IModelJsFs } from "./IModelJsFs";
 import * as path from "path";
 import * as glob from "glob";
 
-const loggingCategory = "imodeljs-backend.BriefcaseManager";
+const loggingCategory = "imodeljs-backend.IModelDb";
 
 /** The Id assigned to a briefcase by iModelHub, or one of the special values that identify special kinds of iModels
  * @internal
@@ -386,7 +386,7 @@ export class BriefcaseManager {
     const nativeDb = new IModelHost.platform.DgnDb();
     const res: DbResult = nativeDb.openIModelFile(briefcase.pathname, OpenMode.Readonly);
     if (DbResult.BE_SQLITE_OK !== res)
-      throw new IModelError(res, "Unable to open briefcase", Logger.logError, loggingCategory, () => ({ iModelId: briefcase.iModelId, pathname: briefcase.pathname, result: res }));
+      throw new IModelError(res, "Unable to open briefcase", Logger.logError, loggingCategory, () => ({ ...briefcase.getDebugInfo(), result: res }));
 
     briefcase.briefcaseId = nativeDb.getBriefcaseId();
     briefcase.changeSetId = nativeDb.getParentChangeSetId();
@@ -505,7 +505,7 @@ export class BriefcaseManager {
 
     if (!IModelHost.configuration)
       throw new IModelError(DbResult.BE_SQLITE_ERROR, "IModelHost.startup() should be called before any backend operations", Logger.logError, loggingCategory);
-    Logger.logTrace(loggingCategory, "Initializing briefcase cache");
+    Logger.logTrace(loggingCategory, "Started initializing briefcase cache");
 
     IModelHost.onBeforeShutdown.addListener(BriefcaseManager.onIModelHostShutdown);
 
@@ -516,6 +516,7 @@ export class BriefcaseManager {
     perfLogger.dispose();
 
     BriefcaseManager._isCacheInitialized = true;
+    Logger.logTrace(loggingCategory, "Finished initializing briefcase cache");
   }
 
   private static _memoizedInitCache?: Promise<void>;
@@ -612,7 +613,7 @@ export class BriefcaseManager {
       requestContext.enter();
 
       if (error.errorNumber === ChangeSetStatus.CorruptedChangeStream || error.errorNumber === ChangeSetStatus.InvalidId || error.errorNumber === ChangeSetStatus.InvalidVersion) {
-        Logger.logError(loggingCategory, "Detected potential corruption of change sets. Deleting them from cache to enable retries", () => ({ iModelId }));
+        Logger.logError(loggingCategory, "Detected potential corruption of change sets. Deleting them from cache to enable retries", () => briefcase!.getDebugInfo());
         BriefcaseManager.deleteChangeSetsFromLocalDisk(iModelId);
       }
       throw error;

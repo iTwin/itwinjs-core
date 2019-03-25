@@ -12,7 +12,7 @@ import { IModelJsNative } from "./IModelJsNative";
 import { IModelHost } from "./IModelHost";
 import { Config } from "@bentley/imodeljs-clients";
 
-const loggingCategory = "imodeljs-backend.ECSqlStatement";
+const loggingCategory = "imodeljs-backend.ECDb";
 
 /** The result of an **ECSQL INSERT** statement as returned from [ECSqlStatement.stepForInsert]($backend).
  *

@@ -275,6 +275,8 @@ export class IModelDb extends IModel implements PageableECSql {
    */
   public static async open(requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: string, openParams: OpenParams = OpenParams.pullAndPush(), version: IModelVersion = IModelVersion.latest()): Promise<IModelDb> {
     requestContext.enter();
+    Logger.logTrace(loggingCategory, "Started IModelDb.open", () => ({ iModelId, contextId, ...openParams }));
+
     IModelDb.onOpen.raiseEvent(requestContext, contextId, iModelId, openParams, version);
     const briefcaseEntry: BriefcaseEntry = await BriefcaseManager.open(requestContext, contextId, iModelId, openParams, version);
     requestContext.enter();
@@ -282,7 +284,13 @@ export class IModelDb extends IModel implements PageableECSql {
     await imodelDb.logUsage(requestContext, contextId);
     requestContext.enter();
     IModelDb.onOpened.raiseEvent(requestContext, imodelDb);
-    Logger.logTrace(loggingCategory, "IModelDb.open", () => ({ ...imodelDb._token, ...openParams }));
+
+    // TODO: Included for temporary debugging using SEQ. Should really turn into a trace/assertion
+    if (!IModelDb.find(imodelDb._token))
+      Logger.logError(loggingCategory, "Error with IModelDb.open. Cannot find briefcase!", () => ({ ...imodelDb._token, ...openParams }));
+    else
+      Logger.logTrace(loggingCategory, "Finished IModelDb.open", () => ({ ...imodelDb._token, ...openParams }));
+
     return imodelDb;
   }
 
@@ -432,7 +440,7 @@ export class IModelDb extends IModel implements PageableECSql {
    * @internal
    */
   public newNotOpenError() {
-    return new IModelError(IModelStatus.NotOpen, "IModelDb not open" + this.name, Logger.logError, loggingCategory, () => ({ iModelId: this.iModelToken.iModelId }));
+    return new IModelError(IModelStatus.NotOpen, "IModelDb not open", Logger.logError, loggingCategory, () => ({ name: this.name, ...this.iModelToken }));
   }
 
   /** Get a prepared ECSQL statement - may require preparing the statement, if not found in the cache.
@@ -943,13 +951,12 @@ export class IModelDb extends IModel implements PageableECSql {
    * @throws [[IModelError]] if an open IModelDb matching the token is not found.
    */
   public static find(iModelToken: IModelToken): IModelDb {
-    // Logger.logTrace(loggingCategory, "Finding IModelDb", () => ({ iModelId: iModelToken.iModelId, changeSetId: iModelToken.changeSetId, key: iModelToken.key }));
     const briefcaseEntry = BriefcaseManager.findBriefcaseByToken(iModelToken);
     if (!briefcaseEntry || !briefcaseEntry.iModelDb) {
-      Logger.logError(loggingCategory, "IModelDb not found", () => ({ iModelId: iModelToken.iModelId, changeSetId: iModelToken.changeSetId, key: iModelToken.key }));
+      Logger.logError(loggingCategory, "IModelDb not found in briefcase cache", () => iModelToken);
       throw new IModelNotFoundResponse();
     }
-    // Logger.logTrace(loggingCategory, "Found IModelDb", () => ({ iModelId: iModelToken.iModelId, changeSetId: iModelToken.changeSetId, key: iModelToken.key }));
+    Logger.logTrace(loggingCategory, "IModelDb found in briefcase cache", () => iModelToken);
     return briefcaseEntry.iModelDb;
   }
 
@@ -983,7 +990,7 @@ export class IModelDb extends IModel implements PageableECSql {
 
     const { error, result: idHexStr } = this.nativeDb.getElementPropertiesForDisplay(elementId);
     if (error)
-      throw new IModelError(error.status, error.message, Logger.logError, loggingCategory, () => ({ iModelId: this._token.iModelId, elementId }));
+      throw new IModelError(error.status, error.message, Logger.logError, loggingCategory, () => ({ ...this._token, elementId }));
 
     return idHexStr!;
   }
@@ -1066,11 +1073,11 @@ export class IModelDb extends IModel implements PageableECSql {
 
     const className = classFullName.split(":");
     if (className.length !== 2)
-      throw new IModelError(IModelStatus.BadArg, "Invalid classFullName", Logger.logError, loggingCategory, () => ({ iModelId: this._token.iModelId, classFullName }));
+      throw new IModelError(IModelStatus.BadArg, "Invalid classFullName", Logger.logError, loggingCategory, () => ({ ...this._token, classFullName }));
 
     const val = this.nativeDb.getECClassMetaData(className[0], className[1]);
     if (val.error)
-      throw new IModelError(val.error.status, "Error getting class meta data for: " + classFullName, Logger.logError, loggingCategory, () => ({ iModelId: this._token.iModelId, classFullName }));
+      throw new IModelError(val.error.status, "Error getting class meta data for: " + classFullName, Logger.logError, loggingCategory, () => ({ ...this._token, classFullName }));
 
     const metaData = new EntityMetaData(JSON.parse(val.result!));
     this.classMetaDataRegistry.add(classFullName, metaData);

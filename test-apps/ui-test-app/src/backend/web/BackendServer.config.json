@@ -14,7 +14,7 @@
                 "logLevel": "Trace"
             },
             {
-                "category": "imodeljs-backend.AutoPush",
+                "category": "imodeljs-backend.IModelDb",
                 "logLevel": "Trace"
             },
             {
@@ -59,18 +59,6 @@
             },
             {
                 "category": "Performance",
-                "logLevel": "Trace"
-            },
-            {
-                "category": "imodeljs-backend",
-                "logLevel": "Trace"
-            },
-            {
-                "category": "imodeljs-backend.BriefcaseManager",
-                "logLevel": "Trace"
-            },
-            {
-                "category": "imodeljs-backend.OpenIModelDb",
                 "logLevel": "Trace"
             },
             {

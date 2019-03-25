@@ -9,7 +9,7 @@ import { RpcPendingResponse, IModel, IModelToken, IModelVersion } from "@bentley
 import { PromiseMemoizer, QueryablePromise } from "../PromiseMemoizer";
 import { IModelDb, OpenParams } from "../IModelDb";
 
-const loggingCategory = "imodeljs-backend.OpenIModelDb";
+const loggingCategory = "imodeljs-backend.IModelDb";
 
 /** Utility to cache and retrieve results of long running open IModelDb requests
  * The cache is keyed on the input arguments passed to open
@@ -37,10 +37,10 @@ export class OpenIModelDbMemoizer extends PromiseMemoizer<IModelDb> {
 
   public static async openIModelDb(requestContext: AuthorizedClientRequestContext, iModelToken: IModelToken, openParams: OpenParams): Promise<IModel> {
     requestContext.enter();
+    Logger.logTrace(loggingCategory, "Received OpenIModelDbMemoizer.openIModelDb request at the backend", () => iModelToken);
+
     assert(iModelToken.changeSetId !== undefined, "Expected a valid changeSetId in openIModelDb");
     const iModelVersion = IModelVersion.asOfChangeSet(iModelToken.changeSetId!);
-
-    Logger.logTrace(loggingCategory, "Received OpenIModelDbMemoizer.openIModelDb request at the backend", () => (iModelToken));
 
     if (!OpenIModelDbMemoizer._openIModelDbMemoizer)
       OpenIModelDbMemoizer._openIModelDbMemoizer = new OpenIModelDbMemoizer();
@@ -52,19 +52,19 @@ export class OpenIModelDbMemoizer extends PromiseMemoizer<IModelDb> {
     await Promise.race([openQP.promise, waitPromise]); // This resolves as soon as either the open is completed or the wait time has expired. Prevents waiting un-necessarily if the open has already completed.
 
     if (openQP.isPending) {
-      Logger.logTrace(loggingCategory, "Issuing pending status in OpenIModelDbMemoizer.openIModelDb", () => (iModelToken));
+      Logger.logTrace(loggingCategory, "Issuing pending status in OpenIModelDbMemoizer.openIModelDb", () => iModelToken);
       throw new RpcPendingResponse();
     }
 
     deleteMemoizedOpenIModelDb(requestContext, iModelToken.contextId!, iModelToken.iModelId!, openParams, iModelVersion);
 
     if (openQP.isFulfilled) {
-      Logger.logTrace(loggingCategory, "Completed open request in OpenIModelDbMemoizer.openIModelDb", () => (iModelToken));
+      Logger.logTrace(loggingCategory, "Completed open request in OpenIModelDbMemoizer.openIModelDb", () => iModelToken);
       return openQP.result!;
     }
 
     assert(openQP.isRejected);
-    Logger.logTrace(loggingCategory, "Rejected open request in OpenIModelDbMemoizer.openIModelDb", () => (iModelToken));
+    Logger.logTrace(loggingCategory, "Rejected open request in OpenIModelDbMemoizer.openIModelDb", () => iModelToken);
     throw openQP.error!;
   }
 }

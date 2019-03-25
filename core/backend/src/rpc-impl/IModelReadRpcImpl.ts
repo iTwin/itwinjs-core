@@ -19,7 +19,7 @@ import { DictionaryModel } from "../Model";
 import { OpenIModelDbMemoizer } from "./OpenIModelDbMemoizer";
 import { QueryPageMemoizer } from "./QueryPageMemoizer";
 
-const loggingCategory = "imodeljs-backend.IModelReadRpcImpl";
+const loggingCategory = "imodeljs-backend.IModelDb";
 
 /** The backend implementation of IModelReadRpcInterface.
  * @internal

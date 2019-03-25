@@ -11,7 +11,7 @@ import { RpcRequest, IModelError } from "@bentley/imodeljs-common";
 import { IModelHost } from "./IModelHost";
 import { AuthorizedBackendRequestContext } from "./BackendRequestContext";
 
-const loggingCategory = "imodeljs-backend.AutoPush";
+const loggingCategory = "imodeljs-backend.IModelDb";
 
 /** Monitors backend activity. */
 export interface AppActivityMonitor {
@@ -233,7 +233,7 @@ export class AutoPush {
     this._state = AutoPushState.NotRunning;
     this._pendingTimeout = undefined;
     this._lastPushError = undefined;
-    Logger.logTrace(loggingCategory, "AutoPush - pushed.", () => ({ changeSetId: this._iModel.iModelToken.changeSetId }));
+    Logger.logTrace(loggingCategory, "AutoPush - pushed.", () => this._iModel.iModelToken);
     if (this._autoSchedule)
       this.scheduleNextPush();
     if (this.event)

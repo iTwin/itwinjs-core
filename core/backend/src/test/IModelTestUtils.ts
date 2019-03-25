@@ -283,8 +283,7 @@ export class IModelTestUtils {
   public static setupDebugLogLevels() {
     Logger.setLevelDefault(LogLevel.Warning);
     Logger.setLevel("Performance", LogLevel.Info);
-    Logger.setLevel("imodeljs-backend.BriefcaseManager", LogLevel.Trace);
-    Logger.setLevel("imodeljs-backend.OpenIModelDb", LogLevel.Trace);
+    Logger.setLevel("imodeljs-backend.IModelDb", LogLevel.Trace);
     Logger.setLevel("imodeljs-clients.Clients", LogLevel.Trace);
     Logger.setLevel("imodeljs-clients.imodelhub", LogLevel.Trace);
     Logger.setLevel("imodeljs-clients.Request", LogLevel.Trace);

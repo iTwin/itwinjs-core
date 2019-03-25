@@ -114,9 +114,9 @@ class BriefcaseEvent extends IModelHubEvent {
 class BriefcaseHandler {
   constructor(handler: IModelBaseHandler, fileHandler?: FileHandler);
   create(requestContext: AuthorizedClientRequestContext, imodelId: GuidString): Promise<Briefcase>;
-  delete(requestContext: AuthorizedClientRequestContext, imodelId: GuidString, briefcaseId: number): Promise<void>;
+  delete(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, briefcaseId: number): Promise<void>;
   download(requestContext: AuthorizedClientRequestContext, briefcase: Briefcase, path: string, progressCallback?: (progress: ProgressInfo) => void): Promise<void>;
-  get(requestContext: AuthorizedClientRequestContext, imodelId: GuidString, query?: BriefcaseQuery): Promise<Briefcase[]>;
+  get(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, query?: BriefcaseQuery): Promise<Briefcase[]>;
 }
 
 // @public
@@ -159,9 +159,9 @@ class ChangeSetCreatedEvent extends IModelHubGlobalEvent {
 // @public
 class ChangeSetHandler {
   constructor(handler: IModelBaseHandler, fileHandler?: FileHandler);
-  create(requestContext: AuthorizedClientRequestContext, imodelId: GuidString, changeSet: ChangeSet, path: string, progressCallback?: (progress: ProgressInfo) => void): Promise<ChangeSet>;
+  create(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, changeSet: ChangeSet, path: string, progressCallback?: (progress: ProgressInfo) => void): Promise<ChangeSet>;
   download(requestContext: AuthorizedClientRequestContext, changeSets: ChangeSet[], path: string, progressCallback?: (progress: ProgressInfo) => void): Promise<void>;
-  get(requestContext: AuthorizedClientRequestContext, imodelId: GuidString, query?: ChangeSetQuery): Promise<ChangeSet[]>;
+  get(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, query?: ChangeSetQuery): Promise<ChangeSet[]>;
 }
 
 // @public
@@ -759,8 +759,8 @@ class IModelQuery extends InstanceIdQuery {
 class IModelsHandler {
   constructor(handler: IModelBaseHandler, fileHandler?: FileHandler);
   create(requestContext: AuthorizedClientRequestContext, contextId: string, name: string, path?: string, description?: string, progressCallback?: (progress: ProgressInfo) => void, timeOutInMilliseconds?: number): Promise<HubIModel>;
-  delete(requestContext: AuthorizedClientRequestContext, contextId: string, imodelId: GuidString): Promise<void>;
-  download(requestContext: AuthorizedClientRequestContext, imodelId: GuidString, path: string, progressCallback?: (progress: ProgressInfo) => void): Promise<void>;
+  delete(requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: GuidString): Promise<void>;
+  download(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, path: string, progressCallback?: (progress: ProgressInfo) => void): Promise<void>;
   get(requestContext: AuthorizedClientRequestContext, contextId: string, query?: IModelQuery): Promise<HubIModel[]>;
   getInitializationState(requestContext: AuthorizedClientRequestContext, imodelId: GuidString): Promise<InitializationState>;
   update(requestContext: AuthorizedClientRequestContext, contextId: string, imodel: HubIModel): Promise<HubIModel>;

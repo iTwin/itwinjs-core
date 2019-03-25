@@ -294,22 +294,22 @@ export class ChangeSetHandler {
   /**
    * Get the [[ChangeSet]]s for the iModel.
    * @param requestContext The client request context
-   * @param imodelId Id of the iModel. See [[HubIModel]].
+   * @param iModelId Id of the iModel. See [[HubIModel]].
    * @param query Optional query object to filter the queried ChangeSets or select different data from them.
    * @returns ChangeSets that match the query.
    * @throws [[WsgError]] with [WSStatus.InstanceNotFound]($bentley) if [[InstanceIdQuery.byId]] is used and a [[ChangeSet]] with the specified id could not be found.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async get(requestContext: AuthorizedClientRequestContext, imodelId: GuidString, query: ChangeSetQuery = new ChangeSetQuery()): Promise<ChangeSet[]> {
+  public async get(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, query: ChangeSetQuery = new ChangeSetQuery()): Promise<ChangeSet[]> {
     requestContext.enter();
-    Logger.logInfo(loggingCategory, `Querying changesets for iModel ${imodelId}`);
+    Logger.logInfo(loggingCategory, `Started querying ChangeSets`, () => ({ iModelId }));
     ArgumentCheck.defined("requestContext", requestContext);
-    ArgumentCheck.validGuid("imodelId", imodelId);
+    ArgumentCheck.validGuid("imodelId", iModelId);
 
     const id = query.getId();
-    const changeSets = await this._handler.getInstances<ChangeSet>(requestContext, ChangeSet, this.getRelativeUrl(imodelId, id), query.getQueryOptions());
+    const changeSets = await this._handler.getInstances<ChangeSet>(requestContext, ChangeSet, this.getRelativeUrl(iModelId, id), query.getQueryOptions());
     requestContext.enter();
-    Logger.logTrace(loggingCategory, `Queried ${changeSets.length} changesets for iModel ${imodelId}`);
+    Logger.logTrace(loggingCategory, `Finished querying ChangeSets`, () => ({ iModelId, count: changeSets.length }));
 
     return changeSets;
   }
@@ -372,7 +372,7 @@ export class ChangeSetHandler {
    *
    * ChangeSets have to be uploaded in a linear order. If another user is uploading, or changeSet.parentId does not point to the latest ChangeSet on iModelHub, this method will fail. User will have to download all of the newer ChangeSets, merge them into their [[Briefcase]] and calculate a new ChangeSet id.
    * @param requestContext The client request context
-   * @param imodelId Id of the iModel. See [[HubIModel]].
+   * @param iModelId Id of the iModel. See [[HubIModel]].
    * @param changeSet Information of the ChangeSet to be uploaded.
    * @param path Path of the ChangeSet file to be uploaded.
    * @param progressCallback Callback for tracking upload progress.
@@ -383,11 +383,11 @@ export class ChangeSetHandler {
    * @throws [IModelHubStatus.ChangeSetPointsToBadSeed]($bentley) if changeSet.seedFileId is not set to the correct file id. That file id should match to the value written to the Briefcase file. See [IModelDb.setGuid]($backend).
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async create(requestContext: AuthorizedClientRequestContext, imodelId: GuidString, changeSet: ChangeSet, path: string, progressCallback?: (progress: ProgressInfo) => void): Promise<ChangeSet> {
+  public async create(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, changeSet: ChangeSet, path: string, progressCallback?: (progress: ProgressInfo) => void): Promise<ChangeSet> {
     requestContext.enter();
-    Logger.logInfo(loggingCategory, `Uploading changeset ${changeSet.id} to iModel ${imodelId}`);
+    Logger.logInfo(loggingCategory, "Started uploading ChangeSet", () => ({ iModelId, ...changeSet }));
     ArgumentCheck.defined("requestContext", requestContext);
-    ArgumentCheck.validGuid("imodelId", imodelId);
+    ArgumentCheck.validGuid("imodelId", iModelId);
     ArgumentCheck.defined("changeSet", changeSet);
     ArgumentCheck.defined("path", path);
 
@@ -400,7 +400,7 @@ export class ChangeSetHandler {
     if (!this._fileHandler.exists(path) || this._fileHandler.isDirectory(path))
       return Promise.reject(IModelHubClientError.fileNotFound());
 
-    const postChangeSet = await this._handler.postInstance<ChangeSet>(requestContext, ChangeSet, this.getRelativeUrl(imodelId), changeSet);
+    const postChangeSet = await this._handler.postInstance<ChangeSet>(requestContext, ChangeSet, this.getRelativeUrl(iModelId), changeSet);
 
     await this._fileHandler.uploadFile(requestContext, postChangeSet.uploadUrl!, path, progressCallback);
     requestContext.enter();
@@ -409,12 +409,12 @@ export class ChangeSetHandler {
     postChangeSet.downloadUrl = undefined;
     postChangeSet.isUploaded = true;
 
-    const confirmChangeSet = await this._handler.postInstance<ChangeSet>(requestContext, ChangeSet, this.getRelativeUrl(imodelId, postChangeSet.id!), postChangeSet);
+    const confirmChangeSet = await this._handler.postInstance<ChangeSet>(requestContext, ChangeSet, this.getRelativeUrl(iModelId, postChangeSet.id!), postChangeSet);
     requestContext.enter();
 
     changeSet.isUploaded = true;
 
-    Logger.logTrace(loggingCategory, `Uploaded changeset ${changeSet.id} to iModel ${imodelId}`);
+    Logger.logInfo(loggingCategory, "Finished uploading ChangeSet", () => ({ iModelId, ...changeSet }));
 
     return confirmChangeSet;
   }
