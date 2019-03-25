@@ -6,10 +6,11 @@
 import { FpsTracker } from "./FpsTracker";
 import { MemoryTracker } from "./MemoryTracker";
 import { StatsTracker } from "./TileStatisticsTracker";
-import { createCheckBox } from "./CheckBox";
+import { createCheckBox, CheckBox } from "./CheckBox";
 import { createComboBox } from "./ComboBox";
 import { Viewport, Tile } from "@bentley/imodeljs-frontend";
 import { ToolBarDropDown } from "./ToolBar";
+import { FrustumDecorator } from "./FrustumDecoration";
 
 export class DebugPanel extends ToolBarDropDown {
   private readonly _viewport: Viewport;
@@ -18,10 +19,13 @@ export class DebugPanel extends ToolBarDropDown {
   private readonly _fpsTracker: FpsTracker;
   private readonly _memoryTracker: MemoryTracker;
   private readonly _statsTracker: StatsTracker;
+  private readonly _frustumCheckbox: CheckBox;
+  private _currentViewId?: string;
 
   public constructor(vp: Viewport, parentElement: HTMLElement) {
     super();
     this._viewport = vp;
+    this._currentViewId = vp.view.id;
     this._parentElement = parentElement;
     this._element = document.createElement("div");
     this._element.className = "debugPanel";
@@ -33,6 +37,14 @@ export class DebugPanel extends ToolBarDropDown {
       name: "Freeze Scene",
       handler: (cb) => this._viewport.freezeScene = cb.checked,
       id: "debugPanel_freezeScene",
+    });
+
+    this._frustumCheckbox = createCheckBox({
+      parent: this._element,
+      name: "Frustum Snapshot",
+      handler: (cb) => this.toggleFrustumSnapshot(cb.checked),
+      id: "debugPanel_frustumSnapshot",
+      tooltip: "Draw the current frustum as a decoration graphic",
     });
 
     this.addBoundingBoxDropdown(this._element);
@@ -57,6 +69,17 @@ export class DebugPanel extends ToolBarDropDown {
     this._parentElement.removeChild(this._element);
   }
 
+  public get onViewChanged(): Promise<void> | undefined {
+    if (this._currentViewId !== this._viewport.view.id) {
+      this._currentViewId = this._viewport.view.id;
+      FrustumDecorator.disable();
+      this._frustumCheckbox.checkbox.checked = false;
+      this._frustumCheckbox.div.style.display = this._viewport.view.isSpatialView() ? "block" : "none";
+    }
+
+    return Promise.resolve();
+  }
+
   private addSeparator(): void {
     this._element.appendChild(document.createElement("hr")!);
   }
@@ -64,6 +87,13 @@ export class DebugPanel extends ToolBarDropDown {
   public get isOpen(): boolean { return "none" !== this._element.style.display; }
   protected _open(): void { this._element.style.display = "block"; }
   protected _close(): void { this._element.style.display = "none"; }
+
+  private toggleFrustumSnapshot(enabled: boolean): void {
+    if (enabled)
+      FrustumDecorator.enable(this._viewport);
+    else
+      FrustumDecorator.disable();
+  }
 
   private addBoundingBoxDropdown(parent: HTMLElement): void {
     createComboBox({

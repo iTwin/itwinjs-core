@@ -18,6 +18,7 @@ export interface CheckBoxProps {
   parent?: HTMLElement;
   isChecked?: boolean;
   typeOverride?: string;
+  tooltip?: string;
 }
 
 export function createCheckBox(props: CheckBoxProps): CheckBox {
@@ -37,6 +38,9 @@ export function createCheckBox(props: CheckBoxProps): CheckBox {
 
   if (undefined !== props.parent)
     props.parent.appendChild(div);
+
+  if (undefined !== props.tooltip)
+    div.title = props.tooltip;
 
   return { label, checkbox, div };
 }
