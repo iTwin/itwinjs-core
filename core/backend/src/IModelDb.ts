@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module iModels */
 import { ClientRequestContext, BeEvent, BentleyStatus, DbResult, AuthStatus, Guid, GuidString, Id64, Id64Arg, Id64Set, Id64String, JsonUtils, Logger, OpenMode } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext, UlasClient, UsageLogEntry, UsageType, LogPostingResponse } from "@bentley/imodeljs-clients";
+import { AuthorizedClientRequestContext, UlasClient, UsageLogEntry, ProductVersion, UsageType, LogPostingResponse } from "@bentley/imodeljs-clients";
 import {
   AxisAlignedBox3d, CategorySelectorProps, Code, CodeSpec, CreateIModelProps, DisplayStyleProps, EcefLocation, ElementAspectProps,
   ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontMap, FontMapProps, FontProps,
@@ -286,6 +286,38 @@ export class IModelDb extends IModel implements PageableECSql {
     return imodelDb;
   }
 
+  private parseVersion(version: string): ProductVersion {
+    const versionSplit = version.split(".");
+    const length = versionSplit.length;
+    if (length < 2) {
+      Logger.logError(loggingCategory, "Invalid version specified", () => ({ versionString: version }));
+      return { major: 1, minor: 0 };
+    }
+
+    const major = parseInt(versionSplit[0], 10);
+    if (typeof major === "undefined") {
+      Logger.logError(loggingCategory, "Invalid version specified", () => ({ versionString: version }));
+      return { major: 1, minor: 0 };
+    }
+
+    const minor = parseInt(versionSplit[1], 10);
+    if (typeof minor === "undefined") {
+      Logger.logError(loggingCategory, "Invalid version specified", () => ({ versionString: version }));
+      return { major, minor: 0 };
+    }
+
+    let sub1: number | undefined;
+    let sub2: number | undefined;
+    if (length > 2) {
+      sub1 = parseInt(versionSplit[2], 10) || undefined;
+      if (length > 3 && sub1) {
+        sub2 = parseInt(versionSplit[3], 10) || undefined;
+      }
+    }
+
+    return { major, minor, sub1, sub2 };
+  }
+
   private async logUsage(requestContext: AuthorizedClientRequestContext, contextId: GuidString): Promise<void> {
     requestContext.enter();
     const client = new UlasClient();
@@ -294,7 +326,7 @@ export class IModelDb extends IModel implements PageableECSql {
       const ulasEntry: UsageLogEntry = new UsageLogEntry(os.hostname(), UsageType.Trial);
       ulasEntry.projectId = contextId;
       ulasEntry.productId = requestContext.applicationId ? +requestContext.applicationId : 1686;
-      ulasEntry.productVersion = { major: 1, minor: 0 }; // todo: needs to be passed in from frontend
+      ulasEntry.productVersion = this.parseVersion(requestContext.applicationVersion);
       const resp: LogPostingResponse = await client.logUsage(requestContext, ulasEntry);
       requestContext.enter();
       status = resp ? resp.status : BentleyStatus.ERROR;
