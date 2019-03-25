@@ -108,7 +108,7 @@ describe("iModel", () => {
     assert.equal(s1, s2);
   };
 
-  it("should do logging from worker threads in correct context", async () => {
+  it.skip("should do logging from worker threads in correct context", async () => {
 
     const contextForTest = new ClientRequestContext("contextForTest");
     const contextForStepAsync = new ClientRequestContext("contextForStepAsync");
