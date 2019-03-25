@@ -8,9 +8,12 @@ import * as React from "react";
 import { KeySet, Subtract } from "@bentley/presentation-common";
 import { Presentation, SelectionHandler, SelectionChangeEventArgs } from "@bentley/presentation-frontend";
 import { PropertyGridProps } from "@bentley/ui-components";
-import { getDisplayName } from "../common/Utils";
+import { getDisplayName, translate } from "../common/Utils";
 import { IUnifiedSelectionComponent } from "../common/IUnifiedSelectionComponent";
 import { IPresentationPropertyDataProvider } from "./DataProvider";
+import "./WithUnifiedSelection.scss";
+
+const DEFAULT_REQUESTED_CONTENT_INSTANCES_LIMIT = 100;
 
 /**
  * Props that are injected to the HOC component.
@@ -19,8 +22,21 @@ export interface Props {
   /** The data provider used by the property grid. */
   dataProvider: IPresentationPropertyDataProvider;
 
+  /**
+   * Maximum number of instances to request content for.
+   * Defaults to `100`.
+   */
+  requestedContentInstancesLimit?: number;
+
   /** @hidden */
   selectionHandler?: SelectionHandler;
+}
+
+interface State {
+  overLimit?: boolean;
+  localizedStrings?: {
+    tooManyElements: string;
+  };
 }
 
 /**
@@ -34,9 +50,23 @@ export function propertyGridWithUnifiedSelection<P extends PropertyGridProps>(Pr
 
   type CombinedProps = Subtract<P, Props> & Props;
 
-  return class WithUnifiedSelection extends React.Component<CombinedProps> implements IUnifiedSelectionComponent {
+  return class WithUnifiedSelection extends React.Component<CombinedProps, State> implements IUnifiedSelectionComponent {
 
     private _selectionHandler?: SelectionHandler;
+
+    public constructor(props: CombinedProps) {
+      super(props);
+      this.state = {};
+      this.initLocalizedStrings(); // tslint:disable-line:no-floating-promises
+    }
+
+    private async initLocalizedStrings() {
+      this.setState({
+        localizedStrings: {
+          tooManyElements: await translate("property-grid.too-many-elements-selected"),
+        },
+      });
+    }
 
     /** Returns the display name of this component */
     public static get displayName() { return `WithUnifiedSelection(${getDisplayName(PropertyGridComponent)})`; }
@@ -49,6 +79,13 @@ export function propertyGridWithUnifiedSelection<P extends PropertyGridProps>(Pr
 
     /** Get imodel used by this property grid to query property data */
     public get imodel() { return this.props.dataProvider.imodel; }
+
+    // tslint:disable-next-line: naming-convention
+    private get requestedContentInstancesLimit() {
+      if (undefined === this.props.requestedContentInstancesLimit)
+        return DEFAULT_REQUESTED_CONTENT_INSTANCES_LIMIT;
+      return this.props.requestedContentInstancesLimit;
+    }
 
     public componentDidMount() {
       const name = `PropertyGrid_${counter++}`;
@@ -94,8 +131,15 @@ export function propertyGridWithUnifiedSelection<P extends PropertyGridProps>(Pr
 
     private updateDataProviderSelection(selectionLevel?: number) {
       const selection = this.getSelectedKeys(selectionLevel);
-      if (selection)
-        this.setDataProviderSelection(selection);
+      if (selection) {
+        if (selection.size > this.requestedContentInstancesLimit) {
+          this.setState({ overLimit: true });
+          this.setDataProviderSelection(new KeySet());
+        } else {
+          this.setState({ overLimit: false });
+          this.setDataProviderSelection(selection);
+        }
+      }
     }
 
     // tslint:disable-next-line:naming-convention
@@ -106,10 +150,21 @@ export function propertyGridWithUnifiedSelection<P extends PropertyGridProps>(Pr
     public render() {
       const {
         selectionHandler, // do not bleed our props
-        ...props /* tslint:disable-line: trailing-comma */ // pass-through props
+        requestedContentInstancesLimit,
+        ...props
       } = this.props as any;
+
+      let content;
+      if (this.state.overLimit) {
+        content = (<span>{this.state.localizedStrings ? this.state.localizedStrings.tooManyElements : undefined}</span>);
+      } else {
+        content = (<PropertyGridComponent {...props} />);
+      }
+
       return (
-        <PropertyGridComponent {...props} />
+        <div className="pcomponents-property-grid-with-unified-selection">
+          {content}
+        </div>
       );
     }
   };
