@@ -24,7 +24,7 @@ class SignInControl extends ContentControl {
     // store the AccessToken in the sample app store
     SampleAppIModelApp.setAccessToken(accessToken, true);
     // set the default imodel frontstage
-    await SampleAppIModelApp.showFrontstage ("DefaultIModel");
+    await SampleAppIModelApp.onSinIn ();
   }
 }
 

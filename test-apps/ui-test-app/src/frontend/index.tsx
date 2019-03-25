@@ -15,7 +15,7 @@ import { Presentation } from "@bentley/presentation-frontend";
 import { UiCore } from "@bentley/ui-core";
 import { UiComponents, BeDragDropContext} from "@bentley/ui-components";
 import { UiFramework, FrameworkState, FrameworkReducer, AppNotificationManager,
-         IModelInfo, FrontstageManager, createAction, ActionsUnion, DeepReadonly,
+         IModelInfo, FrontstageManager, createAction, ActionsUnion, DeepReadonly, ProjectInfo,
          ConfigurableUiContent, ThemeManager, DragDropLayerRenderer, SyncUiEventDispatcher } from "@bentley/ui-framework";
 import { Id64String } from "@bentley/bentleyjs-core";
 import getSupportedRpcs from "../common/rpcs";
@@ -231,12 +231,55 @@ export class SampleAppIModelApp extends IModelApp {
     await SampleAppIModelApp.showFrontstage ("IModelIndex");
   }
 
-  public static async showIModelOpen(_iModels: IModelInfo[]) {
+  public static async showIModelOpen(_iModels: IModelInfo[] | undefined) {
     await SampleAppIModelApp.showFrontstage ("IModelOpen");
   }
 
   public static async showSignIn() {
     await SampleAppIModelApp.showFrontstage ("SignIn");
+  }
+
+  // called after the user has signed in (or access token is still valid)
+  public static async onSinIn () {
+
+    // get the default IModel (from imodejs-config)
+    let defaultImodel: IModelInfo | undefined;
+
+    let viewId: string | undefined;
+    if (Config.App.has("imjs_uitestapp_imodel_viewId"))
+      viewId = Config.App.get("imjs_uitestapp_imodel_viewId");
+
+    if (Config.App.has("imjs_uitestapp_imodel_name") &&
+      Config.App.has("imjs_uitestapp_imodel_wsgId") &&
+      Config.App.has("imjs_uitestapp_imodel_project_name") &&
+      Config.App.has("imjs_uitestapp_imodel_project_projectNumber") &&
+      Config.App.has("imjs_uitestapp_imodel_project_wsgId")) {
+      const defaultProject = {
+        name: Config.App.get("imjs_uitestapp_imodel_project_name"),
+        projectNumber: Config.App.get("imjs_uitestapp_imodel_project_projectNumber"),
+        wsgId: Config.App.get("imjs_uitestapp_imodel_project_wsgId"),
+        readStatus: 0,
+      } as ProjectInfo;
+
+      defaultImodel = {
+        name: Config.App.get("imjs_uitestapp_imodel_name"),
+        description: Config.App.get("imjs_uitestapp_imodel_name"),
+        wsgId: Config.App.get("imjs_uitestapp_imodel_wsgId"),
+        projectInfo: defaultProject,
+        status: "",
+      } as IModelInfo;
+
+      if (viewId) {
+        // open directly into the iModel (view)
+        await SampleAppIModelApp.openViews (defaultImodel.projectInfo.wsgId, defaultImodel.wsgId, [viewId!]);
+      } else {
+        // open to the IModelIndex frontstage
+        await SampleAppIModelApp.showIModelIndex(defaultImodel.projectInfo.wsgId, defaultImodel.wsgId);
+      }
+    } else {
+      // open to the IModelOpen frontstage
+      await SampleAppIModelApp.showIModelOpen(undefined);
+    }
   }
 
   public static setTestProperty(value: string, immediateSync = false) {
