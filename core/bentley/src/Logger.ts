@@ -88,6 +88,23 @@ export class Logger {
     mdata.ApplicationVersion = requestContext.applicationVersion;
   }
 
+  /** @private used by addon */
+  public static getCurrentClientRequestContext(): ClientRequestContext {
+    return ClientRequestContext.current;
+  }
+
+  /** @private used by addon */
+  public static setCurrentClientRequestContext(obj: any) {
+    if (obj === undefined) {
+      if (ClientRequestContext.current.activityId !== "")
+        new ClientRequestContext("").enter();
+    } else {
+      if (!(obj instanceof ClientRequestContext))
+        throw new TypeError(`${JSON.stringify(obj)} -- this is not an instance of ClientRequestContext`);
+      obj.enter();
+    }
+  }
+
   /** Should the callstack be included when an exception is logged?  */
   public static set logExceptionCallstacks(b: boolean) {
     Logger._logExceptionCallstacks = b;

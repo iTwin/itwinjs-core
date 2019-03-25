@@ -3,19 +3,7 @@
   // Hover to view descriptions of existing attributes.
   // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
   "version": "0.2.0",
-  "configurations": [{
-      "type": "node",
-      "request": "launch",
-      "name": "LocalOrchestrator",
-      "program": "${workspaceFolder}/test-apps/local-orchestrator/lib/server.js",
-      "cwd": "${workspaceFolder}/test-apps/local-orchestrator",
-      "args": [
-        "./assets/config.json",
-        "./assets/iModelBank.server.config.json",
-        "./assets/iModelBank.logging.config.json",
-        "./assets/backend-registry.json",
-      ]
-    },
+  "configurations": [
     {
       "name": "Frontend Tests",
       "type": "chrome",
@@ -685,7 +673,8 @@
       "webRoot": "${workspaceFolder}"
     },
   ],
-  "compounds": [{
+  "compounds": [
+    {
       "name": "Integration Tests",
       "configurations": [
         "Integration Tests (frontend)",
@@ -714,7 +703,8 @@
       ]
     }
   ],
-  "inputs": [{
+  "inputs": [
+    {
       "id": "integrationTestEnvironment",
       "description": "Select test frontend environment",
       "type": "pickString",
