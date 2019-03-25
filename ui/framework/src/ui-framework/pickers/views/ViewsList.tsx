@@ -33,7 +33,7 @@ export interface ViewsListProps extends CommonProps {
   /** Apply a filter to the list of views */
   filter: string;
   /** Called when a view is selected */
-  onViewSelected?: (viewState: ViewState, view: ViewDefinitionProps) => void;
+  onViewsSelected?: (viewState: ViewState[], view: ViewDefinitionProps[]) => void;
    /** Optional class name for the thumbnail in thumbnail view */
   thumbnailViewClassName?: string;
   /** Optional class name for the thumbnail in details view */
@@ -44,6 +44,8 @@ export interface ViewsListProps extends CommonProps {
   onViewsInitialized: (views: ViewDefinitionProps[]) => void;
   /** Optional content when no views are found */
   noViewsContent?: React.ReactNode;
+  /** Multiple or single selection (default) */
+  isMultiSelect?: boolean;
 }
 
 interface ViewsListState {
@@ -51,8 +53,8 @@ interface ViewsListState {
   filteredViewDefinitions: ViewDefinitionProps[];
   filter: string;
   initialized: boolean;
-  selected: any | null;
   detailsView: boolean;
+  selectedViews: ViewDefinitionProps[];
 }
 
 /** View List Component with functionality to show thumbnails, handle saved view functionality */
@@ -72,8 +74,8 @@ export class ViewsList extends React.Component<ViewsListProps, ViewsListState> {
       filteredViewDefinitions: [],
       filter: "",
       initialized: false,
-      selected: null,
       detailsView: this.props.detailsView,
+      selectedViews: [],
     };
   }
 
@@ -142,7 +144,7 @@ export class ViewsList extends React.Component<ViewsListProps, ViewsListState> {
     const props: ViewItemProps = {
       iModelConnection: this.props.iModelConnection,
       viewProps: _viewProps,
-      isSelected: (_viewProps === this.state.selected),
+      isSelected: (this.state.selectedViews.indexOf(_viewProps) !== -1),
       detailsView: this.state.detailsView,
       showHoverIndicator: this.props.showHoverIndicator,
       onClick: this._handleViewSelected.bind(this),
@@ -182,19 +184,34 @@ export class ViewsList extends React.Component<ViewsListProps, ViewsListState> {
       this.props.onViewsInitialized(_viewDefProps3d);
 
     // Set new state with JSX Elements and the view definition props
-    this.setState({...this.state, viewDefinitions: _viewDefProps3d, filteredViewDefinitions: [], initialized: true, selected: null});
+    this.setState({...this.state, viewDefinitions: _viewDefProps3d, filteredViewDefinitions: [], initialized: true, selectedViews: []});
   }
 
   /** Handle selecting views by changing it in the selected viewport */
-  private async _handleViewSelected(view: ViewDefinitionProps) {
+  private _handleViewSelected = async (view: ViewDefinitionProps) =>  {
     if (!view.id)
       return;
 
-    this.setState({selected: view});
+    const selectedViews = [...this.state.selectedViews];
+    const index = selectedViews.findIndex((currentView: ViewDefinitionProps) => currentView.id === view.id);
 
-    if (this.props.onViewSelected) {
-      const viewState = await this.props.iModelConnection!.views.load(view.id);
-      this.props.onViewSelected (viewState, view);
+    if (index === -1) {
+      if (!this.props.isMultiSelect)
+        selectedViews.length = 0;
+      selectedViews.push(view); // selected, add the view
+    } else {
+      selectedViews.splice(index, 1); // unselected, remove the view
+    }
+
+    this.setState({ selectedViews });
+
+    if (this.props.onViewsSelected) {
+      const viewStates: ViewState[] = [];
+      for (const currrentView of selectedViews) {
+        const viewState = await this.props.iModelConnection!.views.load(currrentView.id!);
+        viewStates.push (viewState);
+      }
+      this.props.onViewsSelected (viewStates, selectedViews);
     }
   }
 

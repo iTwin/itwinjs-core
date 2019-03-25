@@ -3,7 +3,6 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import * as classnames from "classnames";
 import { IModelConnection, SpatialModelState } from "@bentley/imodeljs-frontend";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { ModelQueryParams, ModelProps } from "@bentley/imodeljs-common";
@@ -596,11 +595,10 @@ export class ModelsTab extends React.Component<ModelsProps, ModelsState> {
   }
 
   public render() {
-    const buttonStyle = classnames("open-button");
     return (
       <div className="modelstab-container">
         {this.renderContent()}
-        {this.state.initialized && <button className={buttonStyle} disabled={!this._isOkButtonEnabled()} type="button" onClick={this._onOpen.bind(this)}>{UiFramework.i18n.translate("UiFramework:iModelIndex.enteriModel")}</button>}
+        {this.state.initialized && <button className="open-button" disabled={!this._isOkButtonEnabled()} type="button" onClick={this._onOpen.bind(this)}>{UiFramework.i18n.translate("UiFramework:iModelIndex.enteriModel")}</button>}
         {this.state.showToast && this.renderToastMessage()}
       </div>
     );

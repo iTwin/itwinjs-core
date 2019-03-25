@@ -3,39 +3,59 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 @import "@bentley/ui-core/lib/ui-core/index";
+@import "@bentley/ui-core/lib/ui-core/classes";
 
-.imodelindex-thumbnailView {
-  width: 300px;
-  height: 200px;
-  margin: 10px;
-  padding: 10px 10px 6px 10px;
-}
+/* 3D Models tab */
+.viewstab-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding-bottom: $uicore-m;
+  box-sizing: border-box;
+  font-size: $uicore-font-size;
+  background: $uicore-gray-c;
+  position: relative;
+  overflow: hidden;
 
-.imodelindex-detailsView {
-  margin-left: 6px;
-}
+  .imodelindex-thumbnailView {
+    width: 300px;
+    height: 200px;
+    margin: 10px;
+    padding: 10px 10px 6px 10px;
+  }
 
-.searchbox {
-  margin-right: $uicore-sm;
-  width: 220px;
-}
+  .imodelindex-detailsView {
+    margin-left: 6px;
+  }
 
-/* list & thumbnail buttons */
-.viewtype {
-  padding: 7px;
-  border: 1px solid #ccc;
-  font-size: 18px;
-  color: $uicore-icons-light;
-  cursor: pointer;
-  -webkit-transition: all background-color.2s ease;
-  -moz-transition: all background-color.2s ease;
-  -o-transition: all background-color.2s ease;
-  transition: all background-color .2s ease;
+  .searchbox {
+    margin-right: $uicore-sm;
+    width: 220px;
+  }
 
-  /* Hover over list/thumbnail button */
-  &.active, &:hover {
-    color: $uicore-white;
-    background: $uicore-blue;
+  /* list & thumbnail buttons */
+  .viewtype {
+    padding: 7px;
+    border: 1px solid #ccc;
+    font-size: 18px;
+    color: $uicore-icons-light;
+    cursor: pointer;
+    -webkit-transition: all background-color.2s ease;
+    -moz-transition: all background-color.2s ease;
+    -o-transition: all background-color.2s ease;
+    transition: all background-color .2s ease;
+
+    /* Hover over list/thumbnail button */
+    &.active, &:hover {
+      color: $uicore-white;
+      background: $uicore-blue;
+    }
+  }
+
+  /* enter iModel button */
+  .open-button {
+    margin: $uicore-l $uicore-m 0 auto !important;
+    @extend .uicore-buttons-blue;
   }
 }
 

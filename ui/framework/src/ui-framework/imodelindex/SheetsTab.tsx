@@ -10,6 +10,7 @@ import { ViewsList } from "../pickers/views//ViewsList";
 import { SearchBox, Timer, LoadingBar } from "@bentley/ui-core";
 import { ViewDefinitionProps } from "@bentley/imodeljs-common";
 import { Id64String } from "@bentley/bentleyjs-core";
+import { UiFramework } from "../../ui-framework";
 import "./SheetsTab.scss";
 
 export interface SheetsProps {
@@ -28,11 +29,11 @@ export interface SheetsProps {
 }
 
 interface SheetsState {
-  initialized: boolean;
   detailsView: boolean;
   filter: string;
   showPrompt: boolean;
   percent: number;
+  selectedViews: ViewState[];
 }
 
 /**
@@ -45,7 +46,7 @@ export class SheetsTab extends React.Component<SheetsProps, SheetsState> {
   constructor(props?: any, context?: any) {
     super(props, context);
 
-    this.state = { initialized: false, detailsView: false, filter: "", showPrompt: false, percent: 0 };
+    this.state = { detailsView: false, filter: "", showPrompt: false, percent: 0, selectedViews: [] };
   }
 
   public componentDidMount() {
@@ -67,13 +68,14 @@ export class SheetsTab extends React.Component<SheetsProps, SheetsState> {
   }
 
   /* sheet has been selected */
-  private _onSheetViewSelected(viewState: ViewState) {
-    this.openView (viewState);
+  private _onSheetViewsSelected(views: ViewState[]) {
+    this.setState ({ selectedViews: views });
   }
 
-  private openView(viewState: ViewState) {
+  /* open into the iModel */
+  private _onOpen = () => {
     const ids: Id64String[] = [];
-    ids.push (viewState.id);
+    this.state.selectedViews.forEach((view: ViewState) => { ids.push(view.id); });
     this.props.onEnter(ids);
   }
 
@@ -120,11 +122,14 @@ export class SheetsTab extends React.Component<SheetsProps, SheetsState> {
   }
 
   public render() {
+    const disabled = this.state.selectedViews.length === 0;
+    const label = UiFramework.i18n.translate("UiFramework:iModelIndex.enteriModel");
     return (
-      <>
+      <div className="viewstab-container">
         <ViewsList
           iModelConnection={this.props.iModelConnection}
           accessToken={this.props.accessToken}
+          isMultiSelect={true}
           showiModelViews={true}
           showSheetViews={false}
           showThumbnails={true}
@@ -132,11 +137,12 @@ export class SheetsTab extends React.Component<SheetsProps, SheetsState> {
           detailsView={this.state.detailsView}
           thumbnailViewClassName="imodelindex-thumbnailView"
           detailsViewClassName="imodelindex-detailsView"
-          onViewSelected={this._onSheetViewSelected.bind(this)}
+          onViewsSelected={this._onSheetViewsSelected.bind(this)}
           filter={this.state.filter}
           onViewsInitialized={this._onViewsInitialized.bind(this)} />
-          {this.state.showPrompt && this._onRenderPrompt()}
-      </>
+        <button className="open-button" disabled={disabled} type="button" onClick={this._onOpen.bind(this)}>{label}</button>
+        {this.state.showPrompt && this._onRenderPrompt()}
+      </div>
     );
   }
 }

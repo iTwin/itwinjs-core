@@ -113,7 +113,7 @@ export default class ViewItem extends React.Component<ViewItemProps, ViewItemSta
     return (
       <>
         {this.props.detailsView &&
-          <div className={classnames("view-list-item", this.props.className)} style={this.props.style} onClick={this._onClick}>
+          <div className={classnames("view-list-item", this.props.isSelected && "selected", this.props.className)} style={this.props.style} onClick={this._onClick}>
             <div className="view-item-thumbnail-container thumbnail-container-small">
               {this.renderThumbnail()}
             </div>
@@ -121,7 +121,7 @@ export default class ViewItem extends React.Component<ViewItemProps, ViewItemSta
           </div>
         }
         {!this.props.detailsView &&
-          <div className={classnames("view-list-item-thumbnail", this.props.className)} style={this.props.style} onClick={this._onClick}>
+          <div className={classnames("view-list-item-thumbnail", this.props.isSelected && "selected", this.props.className)} style={this.props.style} onClick={this._onClick}>
             <div className="view-item-thumbnail-container">
               {this.renderThumbnail()}
             </div>
