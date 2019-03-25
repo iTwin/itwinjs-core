@@ -53,6 +53,11 @@ export class IModelHostConfiguration {
   public static defaultTileRequestTimeout = 20 * 1000;
   /** If true, requests for tile content will execute on a separate thread pool in order to avoid blocking other, less expensive asynchronous requests such as ECSql queries. */
   public useTileContentThreadPool = false;
+  /** If true, the add-on's sqlite tile cache database will not be read from or written to when requesting tile content.
+   * ###TODO: Steve Wilson to replace with external cache configuration options.
+   * @alpha
+   */
+  public disableInternalTileCache = false;
 }
 
 /** IModelHost initializes ($backend) and captures its configuration. A backend must call [[IModelHost.startup]] before using any backend classes.
@@ -211,6 +216,11 @@ export class IModelHost {
 
     if (!IModelHost.applicationId) IModelHost.applicationId = "2686"; // Default to product id of iModel.js
     if (!IModelHost.applicationVersion) IModelHost.applicationVersion = this.getApplicationVersion(); // Default to version of this package
+
+    // ###TODO: Steve to replace this simple boolean flag with configuration options for tile cache residing outside of add-on, and disable the add-on's cache
+    // if external cache is configured.
+    if (undefined !== this._platform)
+      this._platform.setUseTileCache(!configuration.disableInternalTileCache);
 
     IModelHost.onAfterStartup.raiseEvent();
   }

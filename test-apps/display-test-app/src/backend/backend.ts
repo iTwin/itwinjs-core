@@ -52,7 +52,11 @@ export function initializeBackend() {
     const svtConfig: SVTConfiguration = require(configPathname);
     if (svtConfig.customOrchestratorUri)
       hostConfig.imodelClient = new IModelBankClient(svtConfig.customOrchestratorUri, new UrlFileHandler());
+
+    if (undefined !== process.env.SVT_DISABLE_TILE_CACHE)
+      hostConfig.disableInternalTileCache = true;
   }
+
   IModelHost.startup(hostConfig);
 
   Logger.initializeToConsole(); // configure logging for imodeljs-core

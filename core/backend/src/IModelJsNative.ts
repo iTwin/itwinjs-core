@@ -19,6 +19,7 @@ export declare namespace IModelJsNative {
   export const version: string;
   export let logger: Logger;
   export function initializeRegion(region: number): void;
+  export function setUseTileCache(useTileCache: boolean): void;
   export type TxnIdString = string;
 
   /** The return type of synchronous functions that may return an error or a successful result. */

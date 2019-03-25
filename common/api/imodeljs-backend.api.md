@@ -1572,6 +1572,8 @@ export class IModelHostConfiguration {
     appAssetsDir?: string;
     briefcaseCacheDir: string;
     static defaultTileRequestTimeout: number;
+    // @alpha
+    disableInternalTileCache: boolean;
     imodelClient?: IModelClient;
     nativePlatform?: any;
     tileContentRequestTimeout: number;
@@ -1982,6 +1984,17 @@ export namespace IModelJsNative {
         Success = 0
     }
     // (undocumented)
+    export class ECSchemaXmlContext {
+        // (undocumented)
+        constructor();
+        // (undocumented)
+        addSchemaPath(path: string): void;
+        // (undocumented)
+        readSchemaFromXmlFile(filePath: string): ErrorStatusOrResult<BentleyStatus, string>;
+        // (undocumented)
+        setSchemaLocater(locater: ECSchemaXmlContext.SchemaLocaterCallback): void;
+    }
+    // (undocumented)
     export namespace ECSchemaXmlContext {
         // (undocumented)
         export interface SchemaKey {
@@ -2009,17 +2022,6 @@ export namespace IModelJsNative {
             // (undocumented)
             LatestWriteCompatible = 2
         }
-    }
-    // (undocumented)
-    export class ECSchemaXmlContext {
-        // (undocumented)
-        constructor();
-        // (undocumented)
-        addSchemaPath(path: string): void;
-        // (undocumented)
-        readSchemaFromXmlFile(filePath: string): ErrorStatusOrResult<BentleyStatus, string>;
-        // (undocumented)
-        setSchemaLocater(locater: ECSchemaXmlContext.SchemaLocaterCallback): void;
     }
     // (undocumented)
     export class ECSqlBinder {
@@ -2204,6 +2206,8 @@ export namespace IModelJsNative {
     }
     // (undocumented)
     export function initializeRegion(region: number): void;
+    // (undocumented)
+    export function setUseTileCache(useTileCache: boolean): void;
     // (undocumented)
     export class SnapRequest {
         // (undocumented)

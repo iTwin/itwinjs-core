@@ -1,7 +1,7 @@
 dependencies:
   '@bentley/dev-cors-proxy-server': npm.bentley.com/@bentley/dev-cors-proxy-server/0.0.9
   '@bentley/icons-generic-webfont': npm.bentley.com/@bentley/icons-generic-webfont/0.0.9
-  '@bentley/imodeljs-native': npm.bentley.com/@bentley/imodeljs-native/0.109.0
+  '@bentley/imodeljs-native': npm.bentley.com/@bentley/imodeljs-native/0.110.0
   '@microsoft/api-extractor': 7.0.32
   '@openid/appauth': 1.2.2
   '@rush-temp/bentleyjs-core': 'file:projects/bentleyjs-core.tgz'
@@ -105,7 +105,7 @@ dependencies:
   '@types/webpack': 3.8.17
   '@types/xmldom': 0.1.29
   '@types/yargs': 12.0.10
-  app-root-path: 2.2.0
+  app-root-path: 2.2.1
   asn1: 0.2.3
   autoprefixer: 8.6.5
   body-parser: 1.18.3
@@ -1385,12 +1385,12 @@ packages:
     dev: false
     resolution:
       integrity: sha512-5teOsQWABXHHBFP9y3skS5P3d/WfWXpv3FUpy+LorMrNYaT9pI4oLMQX7jzQ2KklNpGpWHzdCXTDT2Y3XGlZBw==
-  /app-root-path/2.2.0:
+  /app-root-path/2.2.1:
     dev: false
     engines:
       node: '>= 6.0.0'
     resolution:
-      integrity: sha512-qbXcJgmuLGNwO7FH2WrtoJpA0mpcm0ZFQZPm6RV7ZLfA0QR3bQFpoij33x74+u3Zn58JDy5Jc/Z/LXKxTvh1Rw==
+      integrity: sha512-91IFKeKk7FjfmezPKkwtaRvSpnUc4gDwPAjA1YZ9Gn0q0PPeW+vbeUsZuyDwjI7+QTHhcLen2v25fi/AmhvbJA==
   /aproba/1.2.0:
     dev: false
     resolution:
@@ -13743,7 +13743,7 @@ packages:
     version: 0.0.0
   'file:projects/imodeljs-backend.tgz':
     dependencies:
-      '@bentley/imodeljs-native': npm.bentley.com/@bentley/imodeljs-native/0.109.0
+      '@bentley/imodeljs-native': npm.bentley.com/@bentley/imodeljs-native/0.110.0
       '@types/chai': 4.1.7
       '@types/form-data': 2.2.1
       '@types/fs-extra': 4.0.8
@@ -13775,7 +13775,7 @@ packages:
     dev: false
     name: '@rush-temp/imodeljs-backend'
     resolution:
-      integrity: sha512-66aNJCvDvd/P/rpZr8Bevg9e97sB0YXZYUwmP32POwA/208D41MAkEyGBgKMFSf4hRHJ4wtuIF49gHX+nQKe3Q==
+      integrity: sha512-ew5afEzlNwl2Yl4pVbxOJePshXqxIXPmZDgoy+pX3d10dTH70sP/KVHEU/4cNn+Hr/O3tWOH7JI2h2adCYrp4g==
       tarball: 'file:projects/imodeljs-backend.tgz'
     version: 0.0.0
   'file:projects/imodeljs-clients-backend.tgz':
@@ -14623,7 +14623,7 @@ packages:
       '@types/sinon': 5.0.7
       '@types/webdriverio': 4.13.3
       '@types/yargs': 12.0.10
-      app-root-path: 2.2.0
+      app-root-path: 2.2.1
       autoprefixer: 8.6.5
       case-sensitive-paths-webpack-plugin: 2.2.0
       chai: 4.2.0
@@ -14737,22 +14737,22 @@ packages:
       registry: 'https://npm.bentley.com/npm/npm/'
       tarball: 'https://npm.bentley.com/npm/npm/@bentley/icons-generic-webfont/-/icons-generic-webfont-0.0.9.tgz'
     version: 0.0.9
-  npm.bentley.com/@bentley/imodeljs-native/0.109.0:
+  npm.bentley.com/@bentley/imodeljs-native/0.110.0:
     dev: false
     name: '@bentley/imodeljs-native'
     requiresBuild: true
     resolution:
-      integrity: sha1-ja0AvkzHuthFmMfFOLNxZVrPIbA=
+      integrity: sha1-7PTTfw4+u4/pr412LKbpvrzMgjI=
       registry: 'https://npm.bentley.com/npm/npm/'
-      tarball: 'https://npm.bentley.com/npm/npm/@bentley/imodeljs-native/-/imodeljs-native-0.109.0.tgz'
-    version: 0.109.0
+      tarball: 'https://npm.bentley.com/npm/npm/@bentley/imodeljs-native/-/imodeljs-native-0.110.0.tgz'
+    version: 0.110.0
 registry: 'https://registry.npmjs.org/'
 shrinkwrapMinorVersion: 9
 shrinkwrapVersion: 3
 specifiers:
   '@bentley/dev-cors-proxy-server': 0.0.9
   '@bentley/icons-generic-webfont': ^0.0.9
-  '@bentley/imodeljs-native': ~0.109.0
+  '@bentley/imodeljs-native': ~0.110.0
   '@microsoft/api-extractor': ^7.0.32
   '@openid/appauth': ^1.1.1
   '@rush-temp/bentleyjs-core': 'file:./projects/bentleyjs-core.tgz'
