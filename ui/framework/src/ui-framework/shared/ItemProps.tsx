@@ -58,8 +58,6 @@ export interface ItemProps extends IconProps, LabelProps, SyncUiProps, TooltipPr
   isActive?: boolean;
   /** if set, component will be considered selected but will NOT display an "active stripe" - defaults to false. Typically used by buttons that toggle between two states. */
   isPressed?: boolean;
-  /** for future use. */
-  featureId?: string;
   /** can be used by application to store miscellaneous data. */
   applicationData?: any;
 }

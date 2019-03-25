@@ -119,7 +119,6 @@ describe("ContentLayout", () => {
     { // Four Views, two stacked on the left, two stacked on the right.
       descriptionKey: "SampleApp:ContentLayoutDef.FourQuadrants",
       priority: 85,
-      featureId: "test",
       horizontalSplit: {
         percentage: 0.50,
         lock: true,

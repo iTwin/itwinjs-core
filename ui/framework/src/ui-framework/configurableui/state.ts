@@ -8,10 +8,10 @@ import { createAction, ActionsUnion } from "../utils/redux-ts";
 import { SnapMode } from "@bentley/imodeljs-frontend";
 
 // cSpell:ignore configurableui snapmode toolprompt
-/** Action Ids used by redux and to send sync UI components. Typically used to refresh visibility or enable state of control.
+/** Action Ids used by Redux and to send sync UI components. Typically used to refresh visibility or enable state of control.
  *  Since these are also used as sync ids they should be in lowercase.
  */
-export const enum ConfigurableUiActionId {
+export enum ConfigurableUiActionId {
   SetSnapMode = "configurableui:set_snapmode",
   SetToolPrompt = "configurableui:set_toolprompt",
 }

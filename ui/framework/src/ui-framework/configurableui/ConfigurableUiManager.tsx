@@ -10,7 +10,7 @@ import { ConfigurableCreateInfo, ConfigurableUiElement, ConfigurableUiControlCon
 import { ContentGroupManager, ContentGroupProps } from "../content/ContentGroup";
 import { ContentLayoutManager, ContentLayoutProps } from "../content/ContentLayout";
 import { TaskManager, TaskPropsList } from "../workflow/Task";
-import { WorkflowManager, WorkflowPropsList } from "../workflow/Workflow";
+import { WorkflowManager, WorkflowPropsList, WorkflowProps } from "../workflow/Workflow";
 import { KeyboardShortcutManager, KeyboardShortcutProps } from "../keyboardshortcut/KeyboardShortcut";
 import { FrontstageProvider } from "../frontstage/FrontstageProvider";
 import { SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
@@ -53,7 +53,7 @@ export class ConfigurableUiManager {
    * [[NavigationAidControl]],
    * [[StatusBarWidgetControl]],
    * [[WidgetControl]] or
-   * ToolUiProvider.
+   * [ToolUiProvider]($framework).
    * @param classId the class id of the control to register
    * @param constructor the constructor of the control to register
    */
@@ -153,6 +153,13 @@ export class ConfigurableUiManager {
     TaskManager.loadTasks(taskPropsList);
   }
 
+  /** Loads a Workflow into the [[WorkflowManager]].
+   * @param workflowProps  the Workflow to load
+   */
+  public static loadWorkflow(workflowProps: WorkflowProps): void {
+    WorkflowManager.loadWorkflow(workflowProps);
+  }
+
   /** Loads one or more Workflows into the [[WorkflowManager]].
    * @param workflowPropsList  the list of Workflows to load
    */
@@ -166,7 +173,6 @@ export class ConfigurableUiManager {
   public static loadKeyboardShortcuts(shortcutList: KeyboardShortcutProps[]): void {
     KeyboardShortcutManager.loadKeyboardShortcuts(shortcutList);
   }
-
 }
 
 export default ConfigurableUiManager;

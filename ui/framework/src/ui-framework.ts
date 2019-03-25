@@ -177,6 +177,10 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
  * Classes for working with a Frontstage
  */
 /**
+ * @docs-group-description IModelComponents
+ * Classes for displaying information about an iModel
+ */
+/**
  * @docs-group-description Item
  * Classes for working with an Item in a Tool Widget, Navigation Widget or Backstage
  */

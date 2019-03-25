@@ -62,11 +62,9 @@ describe("Item", () => {
       iconSpec: "icon-placeholder",
       isPressed: true,
       isActive: true,
-      featureId: "test",
     });
     expect(toolItem.isPressed).to.be.true;
     expect(toolItem.isActive).to.be.true;
-    expect(toolItem.featureId).to.eq("test");
   });
 
 });

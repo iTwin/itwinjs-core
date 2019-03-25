@@ -7,11 +7,12 @@
 import * as React from "react";
 import { connect } from "react-redux";
 import { UiFramework } from "../UiFramework";
+import { ColorTheme } from "../overallcontent/state";
 
 /** Properties of [[ThemeManagerComponent]]. */
 interface ThemeProps {
   /** theme ("light", "dark", etc.) */
-  theme: string;
+  theme: ColorTheme;
 }
 
 function mapStateToProps(state: any) {

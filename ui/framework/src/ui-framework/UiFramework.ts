@@ -18,6 +18,7 @@ import { SyncUiEventDispatcher } from "./syncui/SyncUiEventDispatcher";
 import { FrameworkState } from "./FrameworkState";
 import { ConfigurableUiActionId } from "./configurableui/state";
 import { UiEvent } from "@bentley/ui-core";
+import { OverallContentActionId, COLOR_THEME_DEFAULT } from "./overallcontent/state";
 
 /** UiVisibility Event Args interface.
  */
@@ -137,13 +138,21 @@ export class UiFramework {
     return UiFramework.frameworkState ? UiFramework.frameworkState.configurableUiState.snapMode : SnapMode.NearestKeypoint;
   }
 
-  public static getIsUiVisible () {
+  public static getIsUiVisible() {
     return this._isUiVisible;
   }
 
-  public static setIsUiVisible (visible: boolean) {
+  public static setIsUiVisible(visible: boolean) {
     this._isUiVisible = visible;
     UiFramework.onUiVisibilityChanged.emit({ visible });
+  }
+
+  public static setColorTheme(theme: string) {
+    UiFramework.store.dispatch({ type: OverallContentActionId.SetTheme, payload: theme });
+  }
+
+  public static getColorTheme(): string {
+    return UiFramework.frameworkState ? UiFramework.frameworkState.overallContentState.theme : COLOR_THEME_DEFAULT;
   }
 }
 

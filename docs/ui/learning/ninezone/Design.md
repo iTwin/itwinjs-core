@@ -1,6 +1,6 @@
 # 9-Zone UI Pattern
 
-The 9-Zone pattern is user interface layout for applications. It is an alternative to a ribbon or toolbar based interfaces.
+The 9-Zone pattern is a user interface layout for applications. It is an alternative to a ribbon or toolbar based interfaces.
 Traditional toolbar and dialog interfaces compress the content into an ever shrinking area. They do not scale to large presentation screens or small mobile devices.
 The 9-Zone UI Pattern allows applications to work across a range of devices and stop shrinking the content area.
 
@@ -26,6 +26,8 @@ This a list of the zones and their recommended contents:
 7. App specific
 8. Status
 9. Properties
+
+![ninezone layout](./ninezone.png "Layout of the 9 Zones")
 
 ## Widgets
 

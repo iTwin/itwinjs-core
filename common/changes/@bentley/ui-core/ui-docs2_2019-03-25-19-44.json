@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "UI documentation - added to Learning section",
+      "packageName": "@bentley/ui-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-core",
+  "email": "dan.east@bentley.com"
+}

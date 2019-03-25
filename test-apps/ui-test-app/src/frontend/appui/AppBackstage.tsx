@@ -14,6 +14,7 @@ import {
   BackstageCloseEventArgs,
   BooleanSyncUiListener,
   SettingsModalFrontstage,
+  TaskLaunchBackstageItem,
 } from "@bentley/ui-framework";
 
 import { Tool } from "@bentley/imodeljs-frontend";
@@ -88,9 +89,13 @@ class AppBackstage extends React.Component<AppBackstageProps> {
         <FrontstageLaunchBackstageItem frontstageId="IModelIndex" labelKey="SampleApp:backstage.imodelindex" iconSpec="icon icon-placeholder" />
         <SeparatorBackstageItem />
         <CommandLaunchBackstageItem labelKey="SampleApp:backstage.testFrontstage6" iconSpec="icon icon-settings"
-              commandId="SampleApp:backstage.testFrontstage6" execute={() => FrontstageManager.openModalFrontstage(new SettingsModalFrontstage())}/>
+          commandId="SampleApp:backstage.testFrontstage6" execute={() => FrontstageManager.openModalFrontstage(new SettingsModalFrontstage())} />
         <SeparatorBackstageItem />
-        <FrontstageLaunchBackstageItem frontstageId="ViewsFrontstage" label="View iModel" descriptionKey="SampleApp:backstage.iModelStage" iconSpec="icon-placeholder" />
+        <FrontstageLaunchBackstageItem frontstageId="ViewsFrontstage" labelKey="SampleApp:backstage.viewIModel" descriptionKey="SampleApp:backstage.iModelStage" iconSpec="icon-placeholder" />
+        <SeparatorBackstageItem />
+        <TaskLaunchBackstageItem workflowId="ExampleWorkflow" taskId="Task1"
+          labelKey="SampleApp:backstage.viewIModelTask" descriptionKey="SampleApp:backstage.iModelStage"
+          iconSpec="icon-placeholder" />
       </Backstage>
     );
   }

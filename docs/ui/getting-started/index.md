@@ -31,7 +31,7 @@ In addition to the tools required by iModel.js Core, iModel.js UI uses the follo
 
 - [Visual Studio Code](https://code.visualstudio.com)
   - Excellent support for TypeScript and React controls.
-- [Redux DevTools](https://chrome.google.com/webstore/detail/redux-devtools/lmhkpmbekcpmknklioeibfkpmmfibljd)
-  - Allows for runtime control of an application's state and time travel for debugging.
 - [React Developer Tools](https://chrome.google.com/webstore/detail/react-developer-tools/fmkadmapgofadopljbjfkapdkoienihi)
   - Great support for the virtual DOM as well as viewing and changing component props.
+- [Redux DevTools](https://chrome.google.com/webstore/detail/redux-devtools/lmhkpmbekcpmknklioeibfkpmmfibljd)
+  - Allows for runtime control of an application's state and time travel for debugging.

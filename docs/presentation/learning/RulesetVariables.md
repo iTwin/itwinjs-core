@@ -20,6 +20,7 @@ values and may be modified by end users through some UI component.
 ## Examples
 
 Specifying user-controllable ruleset variable in a ruleset:
+
 ```JSON
 {
   "id": "ruleset_id",
@@ -29,7 +30,7 @@ Specifying user-controllable ruleset variable in a ruleset:
     "vars": [{
       "id": "boolean_var_id",
       "type": "ShowHide",
-      "label": "Show someything?"
+      "label": "Show something?"
     }, {
       "id": "string_var_id",
       "type": "StringValue",
@@ -44,6 +45,7 @@ Specifying user-controllable ruleset variable in a ruleset:
 ```
 
 Using ruleset variable in a rule condition:
+
 ```JSON
 {
   "id": "ruleset_id",
@@ -56,6 +58,7 @@ Using ruleset variable in a rule condition:
 ```
 
 Using ruleset variable in a customization rule value:
+
 ```JSON
 {
   "id": "ruleset_id",
@@ -67,6 +70,7 @@ Using ruleset variable in a customization rule value:
 ```
 
 Using ruleset variable in specification instance filter
+
 ```JSON
 {
   "id": "ruleset_id",
