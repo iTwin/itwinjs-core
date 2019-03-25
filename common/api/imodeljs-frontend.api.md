@@ -5826,8 +5826,6 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
     // (undocumented)
     readonly iModel: IModelConnection;
     // (undocumented)
-    readonly isAbandoned: boolean;
-    // (undocumented)
     isContentCulled(args: Tile.DrawArgs): boolean;
     // (undocumented)
     readonly isDisplayable: boolean;
@@ -5842,11 +5840,7 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
     // (undocumented)
     readonly isNotFound: boolean;
     // (undocumented)
-    readonly isNotLoaded: boolean;
-    // (undocumented)
     readonly isParentDisplayable: boolean;
-    // (undocumented)
-    readonly isQueued: boolean;
     // (undocumented)
     readonly isReady: boolean;
     // (undocumented)
