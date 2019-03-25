@@ -4,7 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Content */
 
-import * as ec from "../EC";
+import {
+  PropertyInfo, PropertyInfoJSON, propertyInfoFromJSON,
+  RelationshipPathInfo, RelationshipPathInfoJSON, relatedClassInfoFromJSON,
+} from "../EC";
 
 /**
  * Data structure that describes one step of property
@@ -28,12 +31,12 @@ export type PropertyAccessorPath = PropertyAccessor[];
  */
 export default interface Property {
   /** ECProperty information */
-  property: Readonly<ec.PropertyInfo>;
+  property: Readonly<PropertyInfo>;
   /**
    * Relationship path from [Primary instance]($docs/learning/content/Terminology#primary-instance) to
    * this property. This array is not empty only for [Related properties]($docs/learning/content/Terminology#related-properties).
    */
-  relatedClassPath: Readonly<ec.RelationshipPathInfo>;
+  relatedClassPath: Readonly<RelationshipPathInfo>;
 }
 
 /**
@@ -42,8 +45,8 @@ export default interface Property {
  * @hidden
  */
 export interface PropertyJSON {
-  property: ec.PropertyInfoJSON;
-  relatedClassPath: ec.RelationshipPathInfoJSON;
+  property: PropertyInfoJSON;
+  relatedClassPath: RelationshipPathInfoJSON;
 }
 
 /**
@@ -53,7 +56,7 @@ export interface PropertyJSON {
  */
 export const propertyFromJSON = (json: PropertyJSON): Property => {
   return {
-    property: ec.propertyInfoFromJSON(json.property),
-    relatedClassPath: json.relatedClassPath.map((p) => ec.relatedClassInfoFromJSON(p)),
+    property: propertyInfoFromJSON(json.property),
+    relatedClassPath: json.relatedClassPath.map((p) => relatedClassInfoFromJSON(p)),
   };
 };

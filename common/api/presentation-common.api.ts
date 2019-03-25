@@ -460,15 +460,15 @@ export function isPrimitive(v: Value | DisplayValue): v is string | number | boo
 
 // @public
 class Item {
-  constructor(primaryKeys: ec.InstanceKey[], label: string, imageId: string, classInfo: ec.ClassInfo | undefined, values: ValuesDictionary<Value>, displayValues: ValuesDictionary<DisplayValue>, mergedFieldNames: string[]);
-  classInfo?: Readonly<ec.ClassInfo>;
+  constructor(primaryKeys: InstanceKey[], label: string, imageId: string, classInfo: ClassInfo | undefined, values: ValuesDictionary<Value>, displayValues: ValuesDictionary<DisplayValue>, mergedFieldNames: string[]);
+  classInfo?: Readonly<ClassInfo>;
   displayValues: Readonly<ValuesDictionary<DisplayValue>>;
   static fromJSON(json: ItemJSON | string | undefined): Item | undefined;
   imageId: string;
   isFieldMerged(fieldName: string): boolean;
   label: string;
   mergedFieldNames: string[];
-  primaryKeys: Array<Readonly<ec.InstanceKey>>;
+  primaryKeys: Array<Readonly<InstanceKey>>;
   static reviver(key: string, value: any): any;
   values: Readonly<ValuesDictionary<Value>>;
 }
@@ -476,7 +476,7 @@ class Item {
 // @public
 interface ItemJSON {
   // (undocumented)
-  classInfo?: ec.ClassInfoJSON;
+  classInfo?: ClassInfoJSON;
   // (undocumented)
   displayValues: ValuesDictionary<DisplayValueJSON>;
   // (undocumented)
@@ -486,7 +486,7 @@ interface ItemJSON {
   // (undocumented)
   mergedFieldNames: string[];
   // (undocumented)
-  primaryKeys: ec.InstanceKeyJSON[];
+  primaryKeys: InstanceKeyJSON[];
   // (undocumented)
   values: ValuesDictionary<ValueJSON>;
 }
@@ -581,11 +581,11 @@ interface MultiSchemaClassesSpecification {
 
 // @public
 class NestedContentField extends Field {
-  constructor(category: CategoryDescription, name: string, label: string, description: TypeDescription, isReadonly: boolean, priority: number, contentClassInfo: ec.ClassInfo, pathToPrimaryClass: ec.RelationshipPathInfo, nestedFields: Field[], editor?: EditorDescription);
-  contentClassInfo: ec.ClassInfo;
+  constructor(category: CategoryDescription, name: string, label: string, description: TypeDescription, isReadonly: boolean, priority: number, contentClassInfo: ClassInfo, pathToPrimaryClass: RelationshipPathInfo, nestedFields: Field[], editor?: EditorDescription);
+  contentClassInfo: ClassInfo;
   static fromJSON(json: NestedContentFieldJSON | string | undefined): NestedContentField | undefined;
   nestedFields: Array<Readonly<Field>>;
-  pathToPrimaryClass: ec.RelationshipPathInfo;
+  pathToPrimaryClass: RelationshipPathInfo;
   // (undocumented)
   rebuildParentship(parentField?: NestedContentField): void;
   // (undocumented)
@@ -595,11 +595,11 @@ class NestedContentField extends Field {
 // @public
 interface NestedContentFieldJSON extends BaseFieldJSON {
   // (undocumented)
-  contentClassInfo: ec.ClassInfoJSON;
+  contentClassInfo: ClassInfoJSON;
   // (undocumented)
   nestedFields: FieldJSON[];
   // (undocumented)
-  pathToPrimaryClass: ec.RelationshipPathInfoJSON;
+  pathToPrimaryClass: RelationshipPathInfoJSON;
 }
 
 // @public
@@ -795,8 +795,8 @@ interface PropertiesFieldJSON extends BaseFieldJSON {
 
 // @public
 interface Property {
-  property: Readonly<ec.PropertyInfo>;
-  relatedClassPath: Readonly<ec.RelationshipPathInfo>;
+  property: Readonly<PropertyInfo>;
+  relatedClassPath: Readonly<RelationshipPathInfo>;
 }
 
 // @public
@@ -895,9 +895,9 @@ interface PropertyInfoJSON {
 // @public
 interface PropertyJSON {
   // (undocumented)
-  property: ec.PropertyInfoJSON;
+  property: PropertyInfoJSON;
   // (undocumented)
-  relatedClassPath: ec.RelationshipPathInfoJSON;
+  relatedClassPath: RelationshipPathInfoJSON;
 }
 
 // @public
@@ -1177,9 +1177,9 @@ interface SchemasSpecification {
 // @public
 interface SelectClassInfo {
   isSelectPolymorphic: boolean;
-  pathToPrimaryClass: ec.RelationshipPathInfo;
-  relatedPropertyPaths: ec.RelationshipPathInfo[];
-  selectClassInfo: ec.ClassInfo;
+  pathToPrimaryClass: RelationshipPathInfo;
+  relatedPropertyPaths: RelationshipPathInfo[];
+  selectClassInfo: ClassInfo;
 }
 
 // @public
@@ -1187,11 +1187,11 @@ interface SelectClassInfoJSON {
   // (undocumented)
   isSelectPolymorphic: boolean;
   // (undocumented)
-  pathToPrimaryClass: ec.RelationshipPathInfoJSON;
+  pathToPrimaryClass: RelationshipPathInfoJSON;
   // (undocumented)
-  relatedPropertyPaths: ec.RelationshipPathInfoJSON[];
+  relatedPropertyPaths: RelationshipPathInfoJSON[];
   // (undocumented)
-  selectClassInfo: ec.ClassInfoJSON;
+  selectClassInfo: ClassInfoJSON;
 }
 
 // @public
