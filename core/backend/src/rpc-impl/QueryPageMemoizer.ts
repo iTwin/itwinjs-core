@@ -3,15 +3,17 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import { Logger, assert, BeDuration, ClientRequestContext } from "@bentley/bentleyjs-core";
-import { RpcPendingResponse, IModelToken, PageOptions } from "@bentley/imodeljs-common";
-import { PromiseMemoizer, QueryablePromise } from "../PromiseMemoizer";
-import { IModelDb } from "../IModelDb";
+import { assert, BeDuration, ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
 import { Config } from "@bentley/imodeljs-clients";
+import { IModelToken, PageOptions, RpcPendingResponse } from "@bentley/imodeljs-common";
+import { IModelDb } from "../IModelDb";
+import { LoggerCategory } from "../LoggerCategory";
+import { PromiseMemoizer, QueryablePromise } from "../PromiseMemoizer";
 
-const kLoggingCategory = "imodeljs-backend.IModelDb";
+const loggerCategory: string = LoggerCategory.IModelDb;
 const kDefaultQueryPageTimeout = 2 * 1000; // 2 seconds
 const kQueryPageTimeOutKey = "imjs_query_page_timeout";
+
 /** Represent args for query page
  * @internal
  */
@@ -44,7 +46,7 @@ async function queryPage(args: QueryPageArgs): Promise<any[]> {
   const iModelDb: IModelDb = IModelDb.find(args.iModelToken);
   const rows = iModelDb.queryPage(args.ecsql, args.bindings, args.options);
   const ecsql = args.ecsql;
-  Logger.logTrace(kLoggingCategory, "IModelDbRemoting.querypage", () => ({ ecsql }));
+  Logger.logTrace(loggerCategory, "IModelDbRemoting.queryPage", () => ({ ecsql }));
   return rows;
 }
 /** Utility to cache and retrieve results of long running queryPagerequests

@@ -20,6 +20,7 @@ export * from "./IModelJsFs";
 export * from "./Relationship";
 export * from "./Texture";
 export * from "./LineStyle";
+export * from "./LoggerCategory";
 export * from "./Material";
 export * from "./Model";
 export * from "./NavigationRelationship";

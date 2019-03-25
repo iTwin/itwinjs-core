@@ -4,15 +4,16 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module ECSQL */
 
-import { DbResult, Id64String, GuidString, IDisposable, Logger, StatusCodeWithMessage } from "@bentley/bentleyjs-core";
-import { IModelError, ECSqlValueType, NavigationValue, NavigationBindingValue, ECJsNames } from "@bentley/imodeljs-common";
-import { XAndY, XYAndZ, XYZ, LowAndHighXYZ, Range3d } from "@bentley/geometry-core";
-import { ECDb } from "./ECDb";
-import { IModelJsNative } from "./IModelJsNative";
-import { IModelHost } from "./IModelHost";
+import { DbResult, GuidString, Id64String, IDisposable, Logger, StatusCodeWithMessage } from "@bentley/bentleyjs-core";
+import { LowAndHighXYZ, Range3d, XAndY, XYAndZ, XYZ } from "@bentley/geometry-core";
 import { Config } from "@bentley/imodeljs-clients";
+import { ECJsNames, ECSqlValueType, IModelError, NavigationBindingValue, NavigationValue } from "@bentley/imodeljs-common";
+import { ECDb } from "./ECDb";
+import { IModelHost } from "./IModelHost";
+import { IModelJsNative } from "./IModelJsNative";
+import { LoggerCategory } from "./LoggerCategory";
 
-const loggingCategory = "imodeljs-backend.ECDb";
+const loggerCategory: string = LoggerCategory.ECDb;
 
 /** The result of an **ECSQL INSERT** statement as returned from [ECSqlStatement.stepForInsert]($backend).
  *
@@ -246,7 +247,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
   public clearBindings(): void {
     const stat: DbResult = this._stmt!.clearBindings();
     if (stat !== DbResult.BE_SQLITE_OK)
-      throw new IModelError(stat, "Error clearing bindings", Logger.logWarning, loggingCategory);
+      throw new IModelError(stat, "Error clearing bindings", Logger.logWarning, loggerCategory);
   }
 
   /** Step this statement to the next row.
@@ -380,7 +381,7 @@ export class ECSqlBinder {
   public bindNull(): void {
     const stat: DbResult = this._binder.bindNull();
     if (stat !== DbResult.BE_SQLITE_OK)
-      throw new IModelError(stat, "Error binding null", Logger.logWarning, loggingCategory);
+      throw new IModelError(stat, "Error binding null", Logger.logWarning, loggerCategory);
   }
 
   /** Binds a BLOB value to the ECSQL parameter.
@@ -389,7 +390,7 @@ export class ECSqlBinder {
   public bindBlob(blob: string | Uint8Array | ArrayBuffer | SharedArrayBuffer): void {
     const stat: DbResult = this._binder.bindBlob(blob);
     if (stat !== DbResult.BE_SQLITE_OK)
-      throw new IModelError(stat, "Error binding blob", Logger.logWarning, loggingCategory);
+      throw new IModelError(stat, "Error binding blob", Logger.logWarning, loggerCategory);
   }
 
   /** Binds a boolean value to the ECSQL parameter.
@@ -398,7 +399,7 @@ export class ECSqlBinder {
   public bindBoolean(val: boolean): void {
     const stat: DbResult = this._binder.bindBoolean(val);
     if (stat !== DbResult.BE_SQLITE_OK)
-      throw new IModelError(stat, "Error binding boolean", Logger.logWarning, loggingCategory);
+      throw new IModelError(stat, "Error binding boolean", Logger.logWarning, loggerCategory);
   }
 
   /** Binds a DateTime value to the ECSQL parameter.
@@ -407,7 +408,7 @@ export class ECSqlBinder {
   public bindDateTime(isoDateTimeString: string): void {
     const stat: DbResult = this._binder.bindDateTime(isoDateTimeString);
     if (stat !== DbResult.BE_SQLITE_OK)
-      throw new IModelError(stat, "Error binding DateTime", Logger.logWarning, loggingCategory);
+      throw new IModelError(stat, "Error binding DateTime", Logger.logWarning, loggerCategory);
   }
 
   /** Binds a double value to the ECSQL parameter.
@@ -416,7 +417,7 @@ export class ECSqlBinder {
   public bindDouble(val: number): void {
     const stat: DbResult = this._binder.bindDouble(val);
     if (stat !== DbResult.BE_SQLITE_OK)
-      throw new IModelError(stat, "Error binding double", Logger.logWarning, loggingCategory);
+      throw new IModelError(stat, "Error binding double", Logger.logWarning, loggerCategory);
   }
 
   /** Binds an GUID value to the ECSQL parameter.
@@ -425,7 +426,7 @@ export class ECSqlBinder {
   public bindGuid(val: GuidString): void {
     const stat: DbResult = this._binder.bindGuid(val);
     if (stat !== DbResult.BE_SQLITE_OK)
-      throw new IModelError(stat, "Error binding GUID", Logger.logWarning, loggingCategory);
+      throw new IModelError(stat, "Error binding GUID", Logger.logWarning, loggerCategory);
   }
 
   /** Binds an Id value to the ECSQL parameter.
@@ -434,7 +435,7 @@ export class ECSqlBinder {
   public bindId(val: Id64String): void {
     const stat: DbResult = this._binder.bindId(val);
     if (stat !== DbResult.BE_SQLITE_OK)
-      throw new IModelError(stat, "Error binding Id", Logger.logWarning, loggingCategory);
+      throw new IModelError(stat, "Error binding Id", Logger.logWarning, loggerCategory);
   }
 
   /** Binds an integer value to the ECSQL parameter.
@@ -443,7 +444,7 @@ export class ECSqlBinder {
   public bindInteger(val: number | string): void {
     const stat: DbResult = this._binder.bindInteger(val);
     if (stat !== DbResult.BE_SQLITE_OK)
-      throw new IModelError(stat, "Error binding integer", Logger.logWarning, loggingCategory);
+      throw new IModelError(stat, "Error binding integer", Logger.logWarning, loggerCategory);
   }
 
   /** Binds an Point2d value to the ECSQL parameter.
@@ -452,7 +453,7 @@ export class ECSqlBinder {
   public bindPoint2d(val: XAndY): void {
     const stat: DbResult = this._binder.bindPoint2d(val.x, val.y);
     if (stat !== DbResult.BE_SQLITE_OK)
-      throw new IModelError(stat, "Error binding Point2d", Logger.logWarning, loggingCategory);
+      throw new IModelError(stat, "Error binding Point2d", Logger.logWarning, loggerCategory);
   }
 
   /** Binds an Point3d value to the ECSQL parameter.
@@ -461,7 +462,7 @@ export class ECSqlBinder {
   public bindPoint3d(val: XYAndZ): void {
     const stat: DbResult = this._binder.bindPoint3d(val.x, val.y, val.z);
     if (stat !== DbResult.BE_SQLITE_OK)
-      throw new IModelError(stat, "Error binding Point3d", Logger.logWarning, loggingCategory);
+      throw new IModelError(stat, "Error binding Point3d", Logger.logWarning, loggerCategory);
   }
 
   /** Binds a Range3d as a blob to the ECSQL parameter.
@@ -470,7 +471,7 @@ export class ECSqlBinder {
   public bindRange3d(val: LowAndHighXYZ): void {
     const stat: DbResult = this._binder.bindBlob(Range3d.toFloat64Array(val).buffer);
     if (stat !== DbResult.BE_SQLITE_OK)
-      throw new IModelError(stat, "Error binding Range3d", Logger.logWarning, loggingCategory);
+      throw new IModelError(stat, "Error binding Range3d", Logger.logWarning, loggerCategory);
   }
 
   /** Binds an string to the ECSQL parameter.
@@ -479,7 +480,7 @@ export class ECSqlBinder {
   public bindString(val: string): void {
     const stat: DbResult = this._binder.bindString(val);
     if (stat !== DbResult.BE_SQLITE_OK)
-      throw new IModelError(stat, "Error binding string", Logger.logWarning, loggingCategory);
+      throw new IModelError(stat, "Error binding string", Logger.logWarning, loggerCategory);
   }
 
   /** Binds a navigation property value to the ECSQL parameter.
@@ -488,7 +489,7 @@ export class ECSqlBinder {
   public bindNavigation(val: NavigationBindingValue): void {
     const stat: DbResult = this._binder.bindNavigation(val.id, val.relClassName, val.relClassTableSpace);
     if (stat !== DbResult.BE_SQLITE_OK)
-      throw new IModelError(stat, "Error binding navigation property", Logger.logWarning, loggingCategory);
+      throw new IModelError(stat, "Error binding navigation property", Logger.logWarning, loggerCategory);
   }
 
   /** Binds a struct property value to the ECSQL parameter.

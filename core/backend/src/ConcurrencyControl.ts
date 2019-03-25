@@ -4,19 +4,19 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module iModels */
 
-import { Id64String, Id64, DbOpcode, RepositoryStatus, assert, Logger } from "@bentley/bentleyjs-core";
-import { HubCode, CodeState, CodeQuery, Lock, LockLevel, LockType, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
-import { IModelJsNative } from "./IModelJsNative";
+import { assert, DbOpcode, Id64, Id64String, Logger, RepositoryStatus } from "@bentley/bentleyjs-core";
+import { AuthorizedClientRequestContext, CodeQuery, CodeState, HubCode, Lock, LockLevel, LockType } from "@bentley/imodeljs-clients";
 import { Code, IModelError, IModelStatus } from "@bentley/imodeljs-common";
-import { Element } from "./Element";
-import { Model } from "./Model";
 import { BriefcaseEntry, BriefcaseManager } from "./BriefcaseManager";
-import { Relationship } from "./Relationship";
+import { Element } from "./Element";
 import { IModelDb } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
+import { IModelJsNative } from "./IModelJsNative";
+import { LoggerCategory } from "./LoggerCategory";
+import { Model } from "./Model";
+import { Relationship } from "./Relationship";
 
-/** @hidden */
-const loggingCategory = "imodeljs-backend.ConcurrencyControl";
+const loggerCategory: string = LoggerCategory.ConcurrencyControl;
 
 /**
  * ConcurrencyControl enables an app to coordinate local changes with changes that are being made by others to an iModel.
@@ -30,7 +30,7 @@ export class ConcurrencyControl {
   /** @hidden */
   public onSaveChanges() {
     if (this.hasPendingRequests)
-      throw new IModelError(IModelStatus.TransactionActive, "Error - hasPendingRequests", Logger.logError, loggingCategory);
+      throw new IModelError(IModelStatus.TransactionActive, "Error - hasPendingRequests", Logger.logError, loggerCategory);
   }
 
   /** @hidden */
@@ -39,7 +39,7 @@ export class ConcurrencyControl {
   /** @hidden */
   public onMergeChanges() {
     if (this.hasPendingRequests)
-      throw new IModelError(IModelStatus.TransactionActive, "Error - hasPendingRequests", Logger.logError, loggingCategory);
+      throw new IModelError(IModelStatus.TransactionActive, "Error - hasPendingRequests", Logger.logError, loggerCategory);
   }
 
   /** @hidden */
@@ -64,32 +64,32 @@ export class ConcurrencyControl {
   /** @hidden [[Model.buildConcurrencyControlRequest]] */
   public buildRequestForModel(model: Model, opcode: DbOpcode): void {
     if (!this._iModel.briefcase)
-      throw new IModelError(IModelStatus.BadRequest, "Invalid briefcase", Logger.logError, loggingCategory);
+      throw new IModelError(IModelStatus.BadRequest, "Invalid briefcase", Logger.logError, loggerCategory);
     const rc: RepositoryStatus = this._iModel.briefcase.nativeDb.buildBriefcaseManagerResourcesRequestForModel(this._pendingRequest as IModelJsNative.BriefcaseManagerResourcesRequest, JSON.stringify(model.id), opcode);
     if (rc !== RepositoryStatus.Success)
-      throw new IModelError(rc, "Error building request for Model", Logger.logError, loggingCategory);
+      throw new IModelError(rc, "Error building request for Model", Logger.logError, loggerCategory);
   }
 
   /** @hidden [[Element.buildConcurrencyControlRequest]] */
   public buildRequestForElement(element: Element, opcode: DbOpcode): void {
     if (!this._iModel.briefcase)
-      throw new IModelError(IModelStatus.BadRequest, "Invalid briefcase", Logger.logError, loggingCategory);
+      throw new IModelError(IModelStatus.BadRequest, "Invalid briefcase", Logger.logError, loggerCategory);
     let rc: RepositoryStatus;
     if (element.id === undefined || opcode === DbOpcode.Insert)
       rc = this._iModel.briefcase.nativeDb.buildBriefcaseManagerResourcesRequestForElement(this._pendingRequest as IModelJsNative.BriefcaseManagerResourcesRequest, JSON.stringify({ modelid: element.model, code: element.code }), opcode);
     else
       rc = this._iModel.briefcase.nativeDb.buildBriefcaseManagerResourcesRequestForElement(this._pendingRequest as IModelJsNative.BriefcaseManagerResourcesRequest, JSON.stringify(element.id), opcode);
     if (rc !== RepositoryStatus.Success)
-      throw new IModelError(rc, "Error building request for Element", Logger.logError, loggingCategory);
+      throw new IModelError(rc, "Error building request for Element", Logger.logError, loggerCategory);
   }
 
   /** @hidden [[LinkTableRelationship.buildConcurrencyControlRequest]] */
   public buildRequestForRelationship(instance: Relationship, opcode: DbOpcode): void {
     if (!this._iModel.briefcase)
-      throw new IModelError(IModelStatus.BadRequest, "Invalid briefcase", Logger.logError, loggingCategory);
+      throw new IModelError(IModelStatus.BadRequest, "Invalid briefcase", Logger.logError, loggerCategory);
     const rc: RepositoryStatus = this._iModel.briefcase.nativeDb.buildBriefcaseManagerResourcesRequestForLinkTableRelationship(this._pendingRequest as IModelJsNative.BriefcaseManagerResourcesRequest, JSON.stringify(instance), opcode);
     if (rc !== RepositoryStatus.Success)
-      throw new IModelError(rc, "Error building request for LinkTableRelationship", Logger.logError, loggingCategory);
+      throw new IModelError(rc, "Error building request for LinkTableRelationship", Logger.logError, loggerCategory);
   }
 
   private captureBulkOpRequest() {
@@ -119,7 +119,7 @@ export class ConcurrencyControl {
    */
   public extractPendingRequest(locksOnly?: boolean, codesOnly?: boolean): ConcurrencyControl.Request {
     if (!this._iModel.briefcase)
-      throw new IModelError(IModelStatus.BadRequest, "Invalid briefcase", Logger.logError, loggingCategory);
+      throw new IModelError(IModelStatus.BadRequest, "Invalid briefcase", Logger.logError, loggerCategory);
 
     const extractLocks: boolean = !codesOnly;
     const extractCodes: boolean = !locksOnly;
@@ -164,7 +164,7 @@ export class ConcurrencyControl {
     for (const code of codeResults) {
       if (code.state !== CodeState.Reserved) {
         if (err === undefined)
-          err = new ConcurrencyControl.RequestError(IModelStatus.CodeNotReserved, "Code not reserved", Logger.logError, loggingCategory);
+          err = new ConcurrencyControl.RequestError(IModelStatus.CodeNotReserved, "Code not reserved", Logger.logError, loggerCategory);
         err.unavailableCodes.push(code);
       }
     }
@@ -294,7 +294,7 @@ export class ConcurrencyControl {
 
     const bySpecId = this.buildHubCodesFromCodes(this._iModel.briefcase, codes);
     if (bySpecId === undefined)
-      return Promise.reject(new IModelError(IModelStatus.NotFound, "Error reserving codes", Logger.logWarning, loggingCategory));
+      return Promise.reject(new IModelError(IModelStatus.NotFound, "Error reserving codes", Logger.logWarning, loggerCategory));
 
     return this.reserveCodes2(requestContext, bySpecId, this._iModel.briefcase);
   }
@@ -389,7 +389,7 @@ export class ConcurrencyControl {
   public setPolicy(policy: ConcurrencyControl.PessimisticPolicy | ConcurrencyControl.OptimisticPolicy): void {
     this._policy = policy;
     if (!this._iModel.briefcase)
-      throw new IModelError(IModelStatus.BadRequest, "Invalid briefcase", Logger.logError, loggingCategory);
+      throw new IModelError(IModelStatus.BadRequest, "Invalid briefcase", Logger.logError, loggerCategory);
     let rc: RepositoryStatus = RepositoryStatus.Success;
     if (policy instanceof ConcurrencyControl.OptimisticPolicy) {
       const oc: ConcurrencyControl.OptimisticPolicy = policy as ConcurrencyControl.OptimisticPolicy;
@@ -398,7 +398,7 @@ export class ConcurrencyControl {
       rc = this._iModel.briefcase.nativeDb.setBriefcaseManagerPessimisticConcurrencyControlPolicy();
     }
     if (RepositoryStatus.Success !== rc) {
-      throw new IModelError(rc, "Error setting concurrency control policy", Logger.logError, loggingCategory);
+      throw new IModelError(rc, "Error setting concurrency control policy", Logger.logError, loggerCategory);
     }
     this.applyTransactionOptions();
   }
@@ -415,10 +415,10 @@ export class ConcurrencyControl {
    */
   private startBulkOperation(): void {
     if (!this._iModel.briefcase)
-      throw new IModelError(IModelStatus.BadRequest, "Invalid briefcase", Logger.logError, loggingCategory);
+      throw new IModelError(IModelStatus.BadRequest, "Invalid briefcase", Logger.logError, loggerCategory);
     const rc: RepositoryStatus = this._iModel.briefcase.nativeDb.briefcaseManagerStartBulkOperation();
     if (RepositoryStatus.Success !== rc)
-      throw new IModelError(rc, "Error starting bulk operation", Logger.logError, loggingCategory);
+      throw new IModelError(rc, "Error starting bulk operation", Logger.logError, loggerCategory);
   }
 
   /** Check if there is a bulk operation in progress */

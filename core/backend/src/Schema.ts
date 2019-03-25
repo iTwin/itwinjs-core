@@ -9,6 +9,9 @@ import { IModelError, IModelStatus } from "@bentley/imodeljs-common";
 import { ClassRegistry } from "./ClassRegistry";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
+import { LoggerCategory } from "./LoggerCategory";
+
+const loggerCategory: string = LoggerCategory.Schemas;
 
 /** Base class for all schema classes - see [working with schemas and elements in TypeScript]($docs/learning/backend/SchemasAndElementsInTypeScript.md).
  * @public
@@ -36,7 +39,7 @@ export class Schemas {
   public static registerSchema(schema: Schema) {
     const key = schema.name.toLowerCase();
     if (Schemas.getRegisteredSchema(key))
-      throw new IModelError(IModelStatus.DuplicateName, "Schema \"" + key + "\" is already registered", Logger.logWarning, "imodeljs-backend.Schemas");
+      throw new IModelError(IModelStatus.DuplicateName, "Schema \"" + key + "\" is already registered", Logger.logWarning, loggerCategory);
     Schemas._registeredSchemas[key] = schema;
   }
 

@@ -11,6 +11,7 @@ import {
   InformationPartitionElement, SpatialCategory, IModelJsFs, PhysicalPartition, PhysicalModel, SubjectOwnsPartitionElements,
 } from "../imodeljs-backend";
 import { IModelJsNative } from "../IModelJsNative";
+import { LoggerCategory as BackendLoggerCategory } from "../LoggerCategory";
 import { KnownTestLocations } from "./KnownTestLocations";
 import { HubUtility } from "./integration/HubUtility";
 import * as path from "path";
@@ -283,13 +284,13 @@ export class IModelTestUtils {
   public static setupDebugLogLevels() {
     Logger.setLevelDefault(LogLevel.Warning);
     Logger.setLevel("Performance", LogLevel.Info);
-    Logger.setLevel("imodeljs-backend.IModelDb", LogLevel.Trace);
+    Logger.setLevel(BackendLoggerCategory.IModelDb, LogLevel.Trace);
     Logger.setLevel("imodeljs-clients.Clients", LogLevel.Trace);
     Logger.setLevel("imodeljs-clients.imodelhub", LogLevel.Trace);
     Logger.setLevel("imodeljs-clients.Request", LogLevel.Trace);
     Logger.setLevel("imodeljs-clients.Url", LogLevel.Trace);
-    Logger.setLevel("DgnCore", LogLevel.Error);
-    Logger.setLevel("BeSQLite", LogLevel.Error);
+    Logger.setLevel(IModelJsNative.LoggerCategory.DgnCore, LogLevel.Error);
+    Logger.setLevel(IModelJsNative.LoggerCategory.BeSQLite, LogLevel.Error);
     Logger.setLevel("Bentley.LICENSING", LogLevel.Error);
     Logger.setLevel("imodeljs-addon", LogLevel.Error);
   }

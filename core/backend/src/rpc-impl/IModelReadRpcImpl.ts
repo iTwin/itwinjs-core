@@ -15,11 +15,12 @@ import {
 import { KeepBriefcase } from "../BriefcaseManager";
 import { SpatialCategory } from "../Category";
 import { IModelDb, OpenParams } from "../IModelDb";
+import { LoggerCategory } from "../LoggerCategory";
 import { DictionaryModel } from "../Model";
 import { OpenIModelDbMemoizer } from "./OpenIModelDbMemoizer";
 import { QueryPageMemoizer } from "./QueryPageMemoizer";
 
-const loggingCategory = "imodeljs-backend.IModelDb";
+const loggerCategory: string = LoggerCategory.IModelDb;
 
 /** The backend implementation of IModelReadRpcInterface.
  * @internal
@@ -47,7 +48,7 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
   public async queryRowCount(iModelToken: IModelToken, ecsql: string, bindings?: any[] | object): Promise<number> {
     const iModelDb: IModelDb = IModelDb.find(iModelToken);
     const rowCount: number = await iModelDb.queryRowCount(ecsql, bindings);
-    Logger.logTrace(loggingCategory, "IModelDbRemoting.getRowCount", () => ({ ecsql, count: rowCount }));
+    Logger.logTrace(loggerCategory, "IModelDbRemoting.getRowCount", () => ({ ecsql, count: rowCount }));
     return rowCount;
   }
 
@@ -140,7 +141,7 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
       for (const row of statement)
         codeSpecs.push({ id: row.id, name: row.name, jsonProperties: JSON.parse(row.jsonProperties) });
     });
-    Logger.logTrace(loggingCategory, "IModelDbRemoting.getAllCodeSpecs", () => ({ numCodeSpecs: codeSpecs.length }));
+    Logger.logTrace(loggerCategory, "IModelDbRemoting.getAllCodeSpecs", () => ({ numCodeSpecs: codeSpecs.length }));
     return codeSpecs;
   }
 

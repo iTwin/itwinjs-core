@@ -1984,17 +1984,6 @@ export namespace IModelJsNative {
         Success = 0
     }
     // (undocumented)
-    export class ECSchemaXmlContext {
-        // (undocumented)
-        constructor();
-        // (undocumented)
-        addSchemaPath(path: string): void;
-        // (undocumented)
-        readSchemaFromXmlFile(filePath: string): ErrorStatusOrResult<BentleyStatus, string>;
-        // (undocumented)
-        setSchemaLocater(locater: ECSchemaXmlContext.SchemaLocaterCallback): void;
-    }
-    // (undocumented)
     export namespace ECSchemaXmlContext {
         // (undocumented)
         export interface SchemaKey {
@@ -2022,6 +2011,17 @@ export namespace IModelJsNative {
             // (undocumented)
             LatestWriteCompatible = 2
         }
+    }
+    // (undocumented)
+    export class ECSchemaXmlContext {
+        // (undocumented)
+        constructor();
+        // (undocumented)
+        addSchemaPath(path: string): void;
+        // (undocumented)
+        readSchemaFromXmlFile(filePath: string): ErrorStatusOrResult<BentleyStatus, string>;
+        // (undocumented)
+        setSchemaLocater(locater: ECSchemaXmlContext.SchemaLocaterCallback): void;
     }
     // (undocumented)
     export class ECSqlBinder {
@@ -2206,6 +2206,18 @@ export namespace IModelJsNative {
     }
     // (undocumented)
     export function initializeRegion(region: number): void;
+    export const enum LoggerCategory {
+        // (undocumented)
+        BeSQLite = "BeSQLite",
+        // (undocumented)
+        Changeset = "Changeset",
+        // (undocumented)
+        DgnCore = "DgnCore",
+        // (undocumented)
+        ECDb = "ECDb",
+        // (undocumented)
+        ECObjectsNative = "ECObjectsNative"
+    }
     // (undocumented)
     export function setUseTileCache(useTileCache: boolean): void;
     // (undocumented)
@@ -2531,6 +2543,21 @@ export class LinkModel extends InformationModel {
 
 // @public
 export class LinkPartition extends InformationPartitionElement {
+}
+
+// @public
+export const enum LoggerCategory {
+    CodeSpecs = "imodeljs-backend.CodeSpecs",
+    ConcurrencyControl = "imodeljs-backend.ConcurrencyControl",
+    ECDb = "imodeljs-backend.ECDb",
+    Functional = "imodeljs-backend.Functional",
+    IModelDb = "imodeljs-backend.IModelDb",
+    IModelHost = "imodeljs-backend.IModelHost",
+    // @alpha
+    IModelImporter = "imodeljs-backend.IModelImporter",
+    IModelTileRequestRpc = "imodeljs-backend.IModelTileRequestRpc",
+    Relationship = "imodeljs-backend.Relationship",
+    Schemas = "imodeljs-backend.Schemas"
 }
 
 // @internal

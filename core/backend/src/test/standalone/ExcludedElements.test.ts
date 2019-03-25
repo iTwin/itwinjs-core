@@ -2,20 +2,15 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import {
-  LogLevel, Logger, Id64, Id64String,
-} from "@bentley/bentleyjs-core";
-import {
-  BisCodeSpec, ColorDef, DisplayStyleProps, DisplayStyleSettingsProps, IModel, RenderMode, ViewFlags,
-} from "@bentley/imodeljs-common";
+import { Id64, Id64String, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { BisCodeSpec, ColorDef, DisplayStyleProps, DisplayStyleSettingsProps, IModel, RenderMode, ViewFlags } from "@bentley/imodeljs-common";
 import { expect } from "chai";
 import * as path from "path";
-import {
-  BackendRequestContext, DictionaryModel, DisplayStyle3d, Element, IModelDb,
-} from "../../imodeljs-backend";
+import { BackendRequestContext, DictionaryModel, DisplayStyle3d, Element, IModelDb } from "../../imodeljs-backend";
+import { IModelJsNative } from "../../IModelJsNative";
 import { IModelTestUtils } from "../IModelTestUtils";
-import { KnownTestLocations } from "../KnownTestLocations";
 import { HubUtility } from "../integration/HubUtility";
+import { KnownTestLocations } from "../KnownTestLocations";
 
 // spell-checker: disable
 
@@ -45,8 +40,8 @@ describe("ExcludedElements", () => {
   });
 
   it.skip("dump cs file", () => {
-    Logger.setLevel("DgnCore", LogLevel.Trace);
-    Logger.setLevel("Changeset", LogLevel.Trace);
+    Logger.setLevel(IModelJsNative.LoggerCategory.DgnCore, LogLevel.Trace);
+    Logger.setLevel(IModelJsNative.LoggerCategory.Changeset, LogLevel.Trace);
     const db = IModelDb.openStandalone("D:\\dgn\\problem\\83927\\EAP_TT_001\\seed\\EAP_TT_001.bim");
     HubUtility.dumpChangeSetFile(db, "D:\\dgn\\problem\\83927\\EAP_TT_001", "9fd0e30f88e93bec72532f6f1e05688e2c2408cd");
   });

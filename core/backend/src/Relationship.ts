@@ -4,13 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Relationships */
 
+import { DbOpcode, DbResult, Id64, Id64String, Logger } from "@bentley/bentleyjs-core";
+import { EntityProps, IModelError, IModelStatus } from "@bentley/imodeljs-common";
+import { ECSqlStatement } from "./ECSqlStatement";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
-import { EntityProps, IModelError, IModelStatus } from "@bentley/imodeljs-common";
-import { Id64, Id64String, Logger, DbOpcode, DbResult } from "@bentley/bentleyjs-core";
-import { ECSqlStatement } from "./ECSqlStatement";
+import { LoggerCategory } from "./LoggerCategory";
 
-const loggingCategory = "imodeljs-backend.Relationship";
+const loggerCategory = LoggerCategory.Relationship;
 
 /** Specifies the source and target elements of a [[Relationship]] instance. */
 export interface SourceAndTarget {
@@ -171,7 +172,7 @@ export class Relationships {
   public insertInstance(props: RelationshipProps): Id64String {
     const val = this._iModel.briefcase.nativeDb.insertLinkTableRelationship(JSON.stringify(props));
     if (val.error)
-      throw new IModelError(val.error.status, "Problem inserting relationship instance", Logger.logWarning, loggingCategory);
+      throw new IModelError(val.error.status, "Problem inserting relationship instance", Logger.logWarning, loggerCategory);
 
     props.id = Id64.fromJSON(val.result);
     return props.id;
@@ -184,7 +185,7 @@ export class Relationships {
   public updateInstance(props: RelationshipProps): void {
     const error = this._iModel.briefcase.nativeDb.updateLinkTableRelationship(JSON.stringify(props));
     if (error !== DbResult.BE_SQLITE_OK)
-      throw new IModelError(error, "", Logger.logWarning, loggingCategory);
+      throw new IModelError(error, "", Logger.logWarning, loggerCategory);
   }
 
   /** Delete an Relationship instance from this iModel.
@@ -194,7 +195,7 @@ export class Relationships {
   public deleteInstance(props: RelationshipProps): void {
     const error = this._iModel.briefcase.nativeDb.deleteLinkTableRelationship(JSON.stringify(props));
     if (error !== DbResult.BE_SQLITE_DONE)
-      throw new IModelError(error, "", Logger.logWarning, loggingCategory);
+      throw new IModelError(error, "", Logger.logWarning, loggerCategory);
   }
 
   /** Get the props of a Relationship instance */
@@ -204,7 +205,7 @@ export class Relationships {
       props = this._iModel.withPreparedStatement(`SELECT * FROM ${relClassSqlName} WHERE ecinstanceid=?`, (stmt: ECSqlStatement) => {
         stmt.bindId(1, criteria);
         if (DbResult.BE_SQLITE_ROW !== stmt.step())
-          throw new IModelError(IModelStatus.NotFound, "Relationship not found", Logger.logWarning, loggingCategory);
+          throw new IModelError(IModelStatus.NotFound, "Relationship not found", Logger.logWarning, loggerCategory);
         return stmt.getRow() as T;
       });
     } else {
@@ -212,7 +213,7 @@ export class Relationships {
         stmt.bindId(1, criteria.sourceId);
         stmt.bindId(2, criteria.targetId);
         if (DbResult.BE_SQLITE_ROW !== stmt.step())
-          throw new IModelError(IModelStatus.NotFound, "Relationship not found", Logger.logWarning, loggingCategory);
+          throw new IModelError(IModelStatus.NotFound, "Relationship not found", Logger.logWarning, loggerCategory);
         return stmt.getRow() as T;
       });
     }

@@ -3,13 +3,14 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import { Logger, assert, BeDuration } from "@bentley/bentleyjs-core";
+import { assert, BeDuration, Logger } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
-import { RpcPendingResponse, IModel, IModelToken, IModelVersion } from "@bentley/imodeljs-common";
-import { PromiseMemoizer, QueryablePromise } from "../PromiseMemoizer";
+import { IModel, IModelToken, IModelVersion, RpcPendingResponse } from "@bentley/imodeljs-common";
 import { IModelDb, OpenParams } from "../IModelDb";
+import { LoggerCategory } from "../LoggerCategory";
+import { PromiseMemoizer, QueryablePromise } from "../PromiseMemoizer";
 
-const loggingCategory = "imodeljs-backend.IModelDb";
+const loggerCategory = LoggerCategory.IModelDb;
 
 /** Utility to cache and retrieve results of long running open IModelDb requests
  * The cache is keyed on the input arguments passed to open
@@ -37,7 +38,7 @@ export class OpenIModelDbMemoizer extends PromiseMemoizer<IModelDb> {
 
   public static async openIModelDb(requestContext: AuthorizedClientRequestContext, iModelToken: IModelToken, openParams: OpenParams): Promise<IModel> {
     requestContext.enter();
-    Logger.logTrace(loggingCategory, "Received OpenIModelDbMemoizer.openIModelDb request at the backend", () => iModelToken);
+    Logger.logTrace(loggerCategory, "Received OpenIModelDbMemoizer.openIModelDb request at the backend", () => iModelToken);
 
     assert(iModelToken.changeSetId !== undefined, "Expected a valid changeSetId in openIModelDb");
     const iModelVersion = IModelVersion.asOfChangeSet(iModelToken.changeSetId!);
@@ -52,19 +53,19 @@ export class OpenIModelDbMemoizer extends PromiseMemoizer<IModelDb> {
     await Promise.race([openQP.promise, waitPromise]); // This resolves as soon as either the open is completed or the wait time has expired. Prevents waiting un-necessarily if the open has already completed.
 
     if (openQP.isPending) {
-      Logger.logTrace(loggingCategory, "Issuing pending status in OpenIModelDbMemoizer.openIModelDb", () => iModelToken);
+      Logger.logTrace(loggerCategory, "Issuing pending status in OpenIModelDbMemoizer.openIModelDb", () => iModelToken);
       throw new RpcPendingResponse();
     }
 
     deleteMemoizedOpenIModelDb(requestContext, iModelToken.contextId!, iModelToken.iModelId!, openParams, iModelVersion);
 
     if (openQP.isFulfilled) {
-      Logger.logTrace(loggingCategory, "Completed open request in OpenIModelDbMemoizer.openIModelDb", () => iModelToken);
+      Logger.logTrace(loggerCategory, "Completed open request in OpenIModelDbMemoizer.openIModelDb", () => iModelToken);
       return openQP.result!;
     }
 
     assert(openQP.isRejected);
-    Logger.logTrace(loggingCategory, "Rejected open request in OpenIModelDbMemoizer.openIModelDb", () => iModelToken);
+    Logger.logTrace(loggerCategory, "Rejected open request in OpenIModelDbMemoizer.openIModelDb", () => iModelToken);
     throw openQP.error!;
   }
 }

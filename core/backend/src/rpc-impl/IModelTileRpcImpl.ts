@@ -4,22 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module RpcInterface */
 
-import {
-  IModelTileRpcInterface,
-  IModelToken,
-  RpcInterface,
-  RpcManager,
-  RpcPendingResponse,
-  TileTreeProps,
-} from "@bentley/imodeljs-common";
-import {
-  assert,
-  BeDuration,
-  Logger,
-  ClientRequestContext,
-} from "@bentley/bentleyjs-core";
+import { assert, BeDuration, ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
+import { IModelTileRpcInterface, IModelToken, RpcInterface, RpcManager, RpcPendingResponse, TileTreeProps } from "@bentley/imodeljs-common";
 import { IModelDb } from "../IModelDb";
 import { IModelHost } from "../IModelHost";
+import { LoggerCategory } from "../LoggerCategory";
 import { PromiseMemoizer, QueryablePromise } from "../PromiseMemoizer";
 
 interface TileRequestProps {
@@ -33,7 +22,7 @@ function generateTileRequestKey(props: TileRequestProps): string {
 }
 
 abstract class TileRequestMemoizer<Result, Props extends TileRequestProps> extends PromiseMemoizer<Result> {
-  private readonly _loggingCategory = "imodeljs-backend.IModelTileRequestRpc";
+  private readonly _loggerCategory = LoggerCategory.IModelTileRequestRpc;
   protected abstract get _operationName(): string;
   protected abstract addMetadata(metadata: any, props: Props): void;
   protected abstract stringify(props: Props): string;
@@ -61,7 +50,7 @@ abstract class TileRequestMemoizer<Result, Props extends TileRequestProps> exten
 
   private log(status: string, props: Props): void {
     const descr = this._operationName + "(" + this.stringify(props) + ")";
-    Logger.logTrace(this._loggingCategory, "Backend " + status + " " + descr, () => this.makeMetadata(props));
+    Logger.logTrace(this._loggerCategory, "Backend " + status + " " + descr, () => this.makeMetadata(props));
   }
 
   protected async perform(props: Props): Promise<Result> {

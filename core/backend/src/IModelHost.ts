@@ -4,27 +4,28 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module IModelHost */
 
+import { AuthStatus, BeEvent, BentleyError, ClientRequestContext, Guid, GuidString, IModelStatus, Logger } from "@bentley/bentleyjs-core";
+import { AccessToken, AuthorizedClientRequestContext, Config, IAuthorizationClient, IModelClient, UrlDiscoveryClient, UserInfo } from "@bentley/imodeljs-clients";
 import { BentleyStatus, IModelError, MobileRpcConfiguration, RpcConfiguration, SerializedRpcRequest } from "@bentley/imodeljs-common";
-import { BeEvent, Logger, IModelStatus, GuidString, Guid, AuthStatus, ClientRequestContext, BentleyError } from "@bentley/bentleyjs-core";
-import { Config, IModelClient, UrlDiscoveryClient, IAuthorizationClient, AccessToken, AuthorizedClientRequestContext, UserInfo } from "@bentley/imodeljs-clients";
+import * as os from "os";
 import * as path from "path";
+import * as semver from "semver";
+import { BackendRequestContext } from "./BackendRequestContext";
 import { BisCore } from "./BisCore";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { Functional } from "./domains/Functional";
 import { Generic } from "./domains/Generic";
 import { IModelJsFs } from "./IModelJsFs";
 import { IModelJsNative } from "./IModelJsNative";
-import { BackendRequestContext } from "./BackendRequestContext";
+import { LoggerCategory } from "./LoggerCategory";
 import { IModelReadRpcImpl } from "./rpc-impl/IModelReadRpcImpl";
 import { IModelTileRpcImpl } from "./rpc-impl/IModelTileRpcImpl";
 import { IModelWriteRpcImpl } from "./rpc-impl/IModelWriteRpcImpl";
 import { SnapshotIModelRpcImpl } from "./rpc-impl/SnapshotIModelRpcImpl";
 import { WipRpcImpl } from "./rpc-impl/WipRpcImpl";
 import { initializeRpcBackend } from "./RpcBackend";
-import * as os from "os";
-import * as semver from "semver";
 
-const loggingCategory = "imodeljs-backend.IModelHost";
+const loggerCategory: string = LoggerCategory.IModelHost;
 
 /** Configuration of imodeljs-backend.
  * @public
@@ -100,9 +101,9 @@ export class IModelHost {
   public static async getAccessToken(requestContext: ClientRequestContext = new BackendRequestContext()): Promise<AccessToken> {
     requestContext.enter();
     if (!this.authorizationClient)
-      throw new BentleyError(AuthStatus.Error, "No AuthorizationClient has been supplied to IModelHost", Logger.logError, loggingCategory);
+      throw new BentleyError(AuthStatus.Error, "No AuthorizationClient has been supplied to IModelHost", Logger.logError, loggerCategory);
     if (!this.authorizationClient.hasSignedIn)
-      throw new BentleyError(AuthStatus.Error, "AuthorizationClient has not been used to sign in", Logger.logError, loggingCategory);
+      throw new BentleyError(AuthStatus.Error, "AuthorizationClient has not been used to sign in", Logger.logError, loggerCategory);
     return this.authorizationClient.getAccessToken(requestContext);
   }
 
@@ -153,7 +154,7 @@ export class IModelHost {
       const accessToken = AccessToken.fromTokenString(serializedContext.authorization);
       const userId = serializedContext.userId; // Really needed only for JWTs
       if (!userId)
-        throw new BentleyError(AuthStatus.Error, "UserId needs to be passed into the backend", Logger.logError);
+        throw new BentleyError(AuthStatus.Error, "UserId needs to be passed into the backend", Logger.logError, loggerCategory);
       accessToken.setUserInfo(new UserInfo(userId));
 
       return new AuthorizedClientRequestContext(accessToken, serializedContext.id, serializedContext.applicationId, serializedContext.applicationVersion, serializedContext.sessionId);
@@ -170,7 +171,7 @@ export class IModelHost {
    */
   public static startup(configuration: IModelHostConfiguration = new IModelHostConfiguration()) {
     if (IModelHost.configuration)
-      throw new IModelError(BentleyStatus.ERROR, "startup may only be called once", Logger.logError, loggingCategory, () => (configuration));
+      throw new IModelError(BentleyStatus.ERROR, "startup may only be called once", Logger.logError, loggerCategory, () => (configuration));
 
     IModelHost.sessionId = Guid.createValue();
 
@@ -192,7 +193,7 @@ export class IModelHost {
         else
           this.loadNative(region);
       } catch (error) {
-        Logger.logError(loggingCategory, "Error registering/loading the native platform API", () => (configuration));
+        Logger.logError(loggerCategory, "Error registering/loading the native platform API", () => (configuration));
         throw error;
       }
     }

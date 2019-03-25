@@ -25,13 +25,14 @@ import { Entity } from "./Entity";
 import { ExportGraphicsProps } from "./ExportGraphics";
 import { IModelJsFs } from "./IModelJsFs";
 import { IModelJsNative } from "./IModelJsNative";
+import { LoggerCategory } from "./LoggerCategory";
 import { Model } from "./Model";
 import { Relationship, RelationshipProps, Relationships } from "./Relationship";
 import { CachedSqliteStatement, SqliteStatement, SqliteStatementCache } from "./SqliteStatement";
 import { SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
 import { IModelHost } from "./IModelHost";
 
-const loggingCategory = "imodeljs-backend.IModelDb";
+const loggerCategory: string = LoggerCategory.IModelDb;
 
 /** The signature of a function that can supply a description of local Txns in the specified briefcase up to and including the specified endTxnId.
  * @internal Uses the internal `IModelJsNative` type.
@@ -203,7 +204,7 @@ export class IModelDb extends IModel implements PageableECSql {
    */
   public static createStandalone(fileName: string, args: CreateIModelProps): IModelDb {
     const briefcaseEntry: BriefcaseEntry = BriefcaseManager.createStandalone(fileName, args);
-    // Logger.logTrace(loggingCategory, "IModelDb.createStandalone", loggingCategory, () => ({ pathname }));
+    // Logger.logTrace(loggerCategory, "IModelDb.createStandalone", loggerCategory, () => ({ pathname }));
     return IModelDb.constructIModelDb(briefcaseEntry, OpenParams.standalone(briefcaseEntry.openParams!.openMode!));
   }
 
@@ -275,7 +276,7 @@ export class IModelDb extends IModel implements PageableECSql {
    */
   public static async open(requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: string, openParams: OpenParams = OpenParams.pullAndPush(), version: IModelVersion = IModelVersion.latest()): Promise<IModelDb> {
     requestContext.enter();
-    Logger.logTrace(loggingCategory, "Started IModelDb.open", () => ({ iModelId, contextId, ...openParams }));
+    Logger.logTrace(loggerCategory, "Started IModelDb.open", () => ({ iModelId, contextId, ...openParams }));
 
     IModelDb.onOpen.raiseEvent(requestContext, contextId, iModelId, openParams, version);
     const briefcaseEntry: BriefcaseEntry = await BriefcaseManager.open(requestContext, contextId, iModelId, openParams, version);
@@ -287,9 +288,9 @@ export class IModelDb extends IModel implements PageableECSql {
 
     // TODO: Included for temporary debugging using SEQ. Should really turn into a trace/assertion
     if (!IModelDb.find(imodelDb._token))
-      Logger.logError(loggingCategory, "Error with IModelDb.open. Cannot find briefcase!", () => ({ ...imodelDb._token, ...openParams }));
+      Logger.logError(loggerCategory, "Error with IModelDb.open. Cannot find briefcase!", () => ({ ...imodelDb._token, ...openParams }));
     else
-      Logger.logTrace(loggingCategory, "Finished IModelDb.open", () => ({ ...imodelDb._token, ...openParams }));
+      Logger.logTrace(loggerCategory, "Finished IModelDb.open", () => ({ ...imodelDb._token, ...openParams }));
 
     return imodelDb;
   }
@@ -298,19 +299,19 @@ export class IModelDb extends IModel implements PageableECSql {
     const versionSplit = version.split(".");
     const length = versionSplit.length;
     if (length < 2) {
-      Logger.logError(loggingCategory, "Invalid version specified", () => ({ versionString: version }));
+      Logger.logError(loggerCategory, "Invalid version specified", () => ({ versionString: version }));
       return { major: 1, minor: 0 };
     }
 
     const major = parseInt(versionSplit[0], 10);
     if (typeof major === "undefined") {
-      Logger.logError(loggingCategory, "Invalid version specified", () => ({ versionString: version }));
+      Logger.logError(loggerCategory, "Invalid version specified", () => ({ versionString: version }));
       return { major: 1, minor: 0 };
     }
 
     const minor = parseInt(versionSplit[1], 10);
     if (typeof minor === "undefined") {
-      Logger.logError(loggingCategory, "Invalid version specified", () => ({ versionString: version }));
+      Logger.logError(loggerCategory, "Invalid version specified", () => ({ versionString: version }));
       return { major, minor: 0 };
     }
 
@@ -343,7 +344,7 @@ export class IModelDb extends IModel implements PageableECSql {
     }
 
     if (status !== BentleyStatus.SUCCESS) {
-      Logger.logError(loggingCategory, "Could not log usage information", () => this.iModelToken);
+      Logger.logError(loggerCategory, "Could not log usage information", () => this.iModelToken);
     }
   }
 
@@ -440,7 +441,7 @@ export class IModelDb extends IModel implements PageableECSql {
    * @internal
    */
   public newNotOpenError() {
-    return new IModelError(IModelStatus.NotOpen, "IModelDb not open", Logger.logError, loggingCategory, () => ({ name: this.name, ...this.iModelToken }));
+    return new IModelError(IModelStatus.NotOpen, "IModelDb not open", Logger.logError, loggerCategory, () => ({ name: this.name, ...this.iModelToken }));
   }
 
   /** Get a prepared ECSQL statement - may require preparing the statement, if not found in the cache.
@@ -497,7 +498,7 @@ export class IModelDb extends IModel implements PageableECSql {
       return val;
     } catch (err) {
       release();
-      Logger.logError(loggingCategory, err.toString());
+      Logger.logError(loggerCategory, err.toString());
       throw err;
     }
   }
@@ -708,7 +709,7 @@ export class IModelDb extends IModel implements PageableECSql {
       return val;
     } catch (err) {
       release();
-      Logger.logError(loggingCategory, err.toString());
+      Logger.logError(loggerCategory, err.toString());
       throw err;
     }
   }
@@ -814,14 +815,14 @@ export class IModelDb extends IModel implements PageableECSql {
    */
   public saveChanges(description?: string) {
     if (this.openParams.openMode === OpenMode.Readonly)
-      throw new IModelError(IModelStatus.ReadOnly, "IModelDb was opened read-only", Logger.logError);
+      throw new IModelError(IModelStatus.ReadOnly, "IModelDb was opened read-only", Logger.logError, loggerCategory);
 
     // TODO: this.Txns.onSaveChanges => validation, rules, indirect changes, etc.
     this.concurrencyControl.onSaveChanges();
 
     const stat = this.nativeDb.saveChanges(description);
     if (DbResult.BE_SQLITE_OK !== stat)
-      throw new IModelError(stat, "Problem saving changes", Logger.logError);
+      throw new IModelError(stat, "Problem saving changes", Logger.logError, loggerCategory);
 
     this.concurrencyControl.onSavedChanges();
   }
@@ -895,10 +896,10 @@ export class IModelDb extends IModel implements PageableECSql {
   public setAsMaster(guid?: GuidString): void {
     if (guid === undefined) {
       if (DbResult.BE_SQLITE_OK !== this.nativeDb.setAsMaster())
-        throw new IModelError(IModelStatus.SQLiteError, "", Logger.logWarning, loggingCategory);
+        throw new IModelError(IModelStatus.SQLiteError, "", Logger.logWarning, loggerCategory);
     } else {
       if (DbResult.BE_SQLITE_OK !== this.nativeDb.setAsMaster(guid!))
-        throw new IModelError(IModelStatus.SQLiteError, "", Logger.logWarning, loggingCategory);
+        throw new IModelError(IModelStatus.SQLiteError, "", Logger.logWarning, loggerCategory);
     }
   }
 
@@ -919,7 +920,7 @@ export class IModelDb extends IModel implements PageableECSql {
     if (this.briefcase.isStandalone) {
       const status = this.briefcase.nativeDb.importSchema(schemaFileName);
       if (DbResult.BE_SQLITE_OK !== status)
-        throw new IModelError(status, "Error importing schema", Logger.logError, loggingCategory, () => ({ schemaFileName }));
+        throw new IModelError(status, "Error importing schema", Logger.logError, loggerCategory, () => ({ schemaFileName }));
       return;
     }
 
@@ -930,7 +931,7 @@ export class IModelDb extends IModel implements PageableECSql {
 
     const stat = this.briefcase.nativeDb.importSchema(schemaFileName);
     if (DbResult.BE_SQLITE_OK !== stat) {
-      throw new IModelError(stat, "Error importing schema", Logger.logError, loggingCategory, () => ({ schemaFileName }));
+      throw new IModelError(stat, "Error importing schema", Logger.logError, loggerCategory, () => ({ schemaFileName }));
     }
 
     try {
@@ -953,10 +954,10 @@ export class IModelDb extends IModel implements PageableECSql {
   public static find(iModelToken: IModelToken): IModelDb {
     const briefcaseEntry = BriefcaseManager.findBriefcaseByToken(iModelToken);
     if (!briefcaseEntry || !briefcaseEntry.iModelDb) {
-      Logger.logError(loggingCategory, "IModelDb not found in briefcase cache", () => iModelToken);
+      Logger.logError(loggerCategory, "IModelDb not found in briefcase cache", () => iModelToken);
       throw new IModelNotFoundResponse();
     }
-    Logger.logTrace(loggingCategory, "IModelDb found in briefcase cache", () => iModelToken);
+    Logger.logTrace(loggerCategory, "IModelDb found in briefcase cache", () => iModelToken);
     return briefcaseEntry.iModelDb;
   }
 
@@ -979,7 +980,7 @@ export class IModelDb extends IModel implements PageableECSql {
   public insertCodeSpec(codeSpec: CodeSpec): Id64String {
     if (!this.briefcase) throw this.newNotOpenError();
     const { error, result } = this.nativeDb.insertCodeSpec(codeSpec.name, codeSpec.specScopeType, codeSpec.scopeReq);
-    if (error) throw new IModelError(error.status, "inserting CodeSpec" + codeSpec, Logger.logWarning, loggingCategory);
+    if (error) throw new IModelError(error.status, "inserting CodeSpec" + codeSpec, Logger.logWarning, loggerCategory);
     return Id64.fromJSON(result);
   }
 
@@ -990,7 +991,7 @@ export class IModelDb extends IModel implements PageableECSql {
 
     const { error, result: idHexStr } = this.nativeDb.getElementPropertiesForDisplay(elementId);
     if (error)
-      throw new IModelError(error.status, error.message, Logger.logError, loggingCategory, () => ({ ...this._token, elementId }));
+      throw new IModelError(error.status, error.message, Logger.logError, loggerCategory, () => ({ ...this._token, elementId }));
 
     return idHexStr!;
   }
@@ -1021,7 +1022,7 @@ export class IModelDb extends IModel implements PageableECSql {
       return ClassRegistry.getClass(classFullName, this) as T;
     } catch (err) {
       if (!ClassRegistry.isNotFoundError(err)) {
-        Logger.logError(loggingCategory, err.toString());
+        Logger.logError(loggerCategory, err.toString());
         throw err;
       }
 
@@ -1073,11 +1074,11 @@ export class IModelDb extends IModel implements PageableECSql {
 
     const className = classFullName.split(":");
     if (className.length !== 2)
-      throw new IModelError(IModelStatus.BadArg, "Invalid classFullName", Logger.logError, loggingCategory, () => ({ ...this._token, classFullName }));
+      throw new IModelError(IModelStatus.BadArg, "Invalid classFullName", Logger.logError, loggerCategory, () => ({ ...this._token, classFullName }));
 
     const val = this.nativeDb.getECClassMetaData(className[0], className[1]);
     if (val.error)
-      throw new IModelError(val.error.status, "Error getting class meta data for: " + classFullName, Logger.logError, loggingCategory, () => ({ ...this._token, classFullName }));
+      throw new IModelError(val.error.status, "Error getting class meta data for: " + classFullName, Logger.logError, loggerCategory, () => ({ ...this._token, classFullName }));
 
     const metaData = new EntityMetaData(JSON.parse(val.result!));
     this.classMetaDataRegistry.add(classFullName, metaData);
@@ -1251,7 +1252,7 @@ export namespace IModelDb {
     public getSubModel<T extends Model>(modeledElementId: Id64String | GuidString | Code): T {
       const modeledElement = this._iModel.elements.getElement(modeledElementId);
       if (modeledElement.id === IModel.rootSubjectId)
-        throw new IModelError(IModelStatus.NotFound, "Root subject does not have a sub-model", Logger.logWarning, loggingCategory);
+        throw new IModelError(IModelStatus.NotFound, "Root subject does not have a sub-model", Logger.logWarning, loggerCategory);
 
       return this.getModel<T>(modeledElement.id);
     }
@@ -1278,7 +1279,7 @@ export namespace IModelDb {
 
       const val = this._iModel.nativeDb.insertModel(JSON.stringify(props));
       if (val.error)
-        throw new IModelError(val.error.status, "inserting model", Logger.logWarning, loggingCategory);
+        throw new IModelError(val.error.status, "inserting model", Logger.logWarning, loggerCategory);
 
       props.id = Id64.fromJSON(JSON.parse(val.result!).id);
       jsClass.onInserted(props.id);
@@ -1296,7 +1297,7 @@ export namespace IModelDb {
 
       const error = this._iModel.nativeDb.updateModel(JSON.stringify(props));
       if (error !== IModelStatus.Success)
-        throw new IModelError(error, "updating model id=" + props.id, Logger.logWarning, loggingCategory);
+        throw new IModelError(error, "updating model id=" + props.id, Logger.logWarning, loggerCategory);
 
       jsClass.onUpdated(props);
     }
@@ -1314,7 +1315,7 @@ export namespace IModelDb {
 
         const error = this._iModel.nativeDb.deleteModel(id);
         if (error !== IModelStatus.Success)
-          throw new IModelError(error, "", Logger.logWarning, loggingCategory);
+          throw new IModelError(error, "", Logger.logWarning, loggerCategory);
 
         jsClass.onDeleted(props);
       });
@@ -1334,7 +1335,7 @@ export namespace IModelDb {
     public getElementJson<T extends ElementProps>(elementIdArg: string): T {
       const val = this._iModel.nativeDb.getElement(elementIdArg);
       if (val.error)
-        throw new IModelError(val.error.status, "reading element=" + elementIdArg, Logger.logWarning, loggingCategory);
+        throw new IModelError(val.error.status, "reading element=" + elementIdArg, Logger.logWarning, loggerCategory);
       return val.result! as T;
     }
 
@@ -1379,10 +1380,10 @@ export namespace IModelDb {
      */
     public queryElementIdByCode(code: Code): Id64String | undefined {
       if (Id64.isInvalid(code.spec))
-        throw new IModelError(IModelStatus.InvalidCodeSpec, "Invalid CodeSpec", Logger.logWarning, loggingCategory);
+        throw new IModelError(IModelStatus.InvalidCodeSpec, "Invalid CodeSpec", Logger.logWarning, loggerCategory);
 
       if (code.value === undefined)
-        throw new IModelError(IModelStatus.InvalidCode, "Invalid Code", Logger.logWarning, loggingCategory);
+        throw new IModelError(IModelStatus.InvalidCode, "Invalid Code", Logger.logWarning, loggerCategory);
 
       return this._iModel.withPreparedStatement(`SELECT ECInstanceId FROM ${Element.classFullName} WHERE CodeSpec.Id=? AND CodeScope.Id=? AND CodeValue=?`, (stmt: ECSqlStatement) => {
         stmt.bindId(1, code.spec);
@@ -1416,7 +1417,7 @@ export namespace IModelDb {
 
       const val = iModel.nativeDb.insertElement(JSON.stringify(elProps));
       if (val.error)
-        throw new IModelError(val.error.status, "Problem inserting element", Logger.logWarning, loggingCategory);
+        throw new IModelError(val.error.status, "Problem inserting element", Logger.logWarning, loggerCategory);
 
       elProps.id = Id64.fromJSON(JSON.parse(val.result!).id);
       jsClass.onInserted(elProps, iModel);
@@ -1435,7 +1436,7 @@ export namespace IModelDb {
 
       const error = iModel.nativeDb.updateElement(JSON.stringify(elProps));
       if (error !== IModelStatus.Success)
-        throw new IModelError(error, "", Logger.logWarning, loggingCategory);
+        throw new IModelError(error, "", Logger.logWarning, loggerCategory);
 
       jsClass.onUpdated(elProps, iModel);
     }
@@ -1455,7 +1456,7 @@ export namespace IModelDb {
 
         const error = iModel.nativeDb.deleteElement(id);
         if (error !== IModelStatus.Success)
-          throw new IModelError(error, "", Logger.logWarning, loggingCategory);
+          throw new IModelError(error, "", Logger.logWarning, loggerCategory);
 
         jsClass.onDeleted(props, iModel);
       });
@@ -1497,7 +1498,7 @@ export namespace IModelDb {
     private _queryAspect(aspectInstanceId: Id64String, aspectClassName: string): ElementAspect {
       const rows = this._iModel.executeQuery(`SELECT * FROM ${aspectClassName} WHERE ECInstanceId=?`, [aspectInstanceId]);
       if (rows.length !== 1) {
-        throw new IModelError(IModelStatus.NotFound, "ElementAspect not found", Logger.logError, loggingCategory, () => ({ aspectInstanceId, aspectClassName }));
+        throw new IModelError(IModelStatus.NotFound, "ElementAspect not found", Logger.logError, loggerCategory, () => ({ aspectInstanceId, aspectClassName }));
       }
       const aspectProps: ElementAspectProps = rows[0]; // start with everything that SELECT * returned
       aspectProps.classFullName = aspectProps.className.replace(".", ":"); // add in property required by EntityProps
@@ -1525,7 +1526,7 @@ export namespace IModelDb {
 
       const status = this._iModel.nativeDb.insertElementAspect(JSON.stringify(aspectProps));
       if (status !== IModelStatus.Success)
-        throw new IModelError(status, "Error inserting ElementAspect", Logger.logWarning, loggingCategory);
+        throw new IModelError(status, "Error inserting ElementAspect", Logger.logWarning, loggerCategory);
     }
 
     /**
@@ -1539,7 +1540,7 @@ export namespace IModelDb {
 
       const status = this._iModel.nativeDb.updateElementAspect(JSON.stringify(aspectProps));
       if (status !== IModelStatus.Success)
-        throw new IModelError(status, "Error updating ElementAspect", Logger.logWarning, loggingCategory);
+        throw new IModelError(status, "Error updating ElementAspect", Logger.logWarning, loggerCategory);
     }
 
     /**
@@ -1551,7 +1552,7 @@ export namespace IModelDb {
       Id64.toIdSet(ids).forEach((id) => {
         const status = this._iModel.nativeDb.deleteElementAspect(id);
         if (status !== IModelStatus.Success)
-          throw new IModelError(status, "Error deleting ElementAspect", Logger.logWarning, loggingCategory);
+          throw new IModelError(status, "Error deleting ElementAspect", Logger.logWarning, loggerCategory);
       });
     }
   }

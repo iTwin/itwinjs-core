@@ -9,9 +9,10 @@ import { DefinitionPartition, Drawing, Element, InformationPartitionElement, She
 import { IModelDb } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { IModelJsNative } from "./IModelJsNative";
+import { LoggerCategory } from "./LoggerCategory";
 import { ElementRefersToElements, RelationshipProps } from "./Relationship";
 
-const logCategory = "IModelImporter";
+const loggerCategory: string = LoggerCategory.IModelImporter;
 
 /** @alpha */
 export class IModelImporter {
@@ -54,13 +55,13 @@ export class IModelImporter {
         const sourceCodeSpecId = statement.getRow().id;
         const codeSpec: CodeSpec = this._sourceDb.codeSpecs.getById(sourceCodeSpecId);
         if (this._excludedCodeSpecNames.has(codeSpec.name)) {
-          Logger.logInfo(logCategory, `Excluding CodeSpec: ${codeSpec.name}`);
+          Logger.logInfo(loggerCategory, `Excluding CodeSpec: ${codeSpec.name}`);
           this._excludedCodeSpecIds.add(codeSpec.id);
           continue;
         }
         const targetCodeSpecId = this._importContext.importCodeSpec(sourceCodeSpecId);
         if (!Id64.isValidId64(targetCodeSpecId)) {
-          throw new IModelError(IModelStatus.InvalidCodeSpec, `Error importing CodeSpec: ${codeSpec.name}`, Logger.logError, logCategory);
+          throw new IModelError(IModelStatus.InvalidCodeSpec, `Error importing CodeSpec: ${codeSpec.name}`, Logger.logError, loggerCategory);
         }
       }
     });
@@ -130,23 +131,23 @@ export class IModelImporter {
     let targetElementId: Id64String | undefined = this._importContext.findElementId(sourceElementId);
     if (!Id64.isValidId64(targetElementId)) {
       if (this._excludedElementIds.has(sourceElementId)) {
-        Logger.logInfo(logCategory, `Excluding Element(${sourceElementId})`);
+        Logger.logInfo(loggerCategory, `Excluding Element(${sourceElementId})`);
         return Id64.invalid; // already excluded
       }
       const sourceElementProps = this._sourceDb.elements.getElementProps({ id: sourceElementId, wantGeometry: false });
       if (this._excludedElementClassNames.has(sourceElementProps.classFullName)) { // WIP: handle subclasses
-        Logger.logInfo(logCategory, `Excluding Element(${sourceElementId}) by Class(${sourceElementProps.classFullName})`);
+        Logger.logInfo(loggerCategory, `Excluding Element(${sourceElementId}) by Class(${sourceElementProps.classFullName})`);
         this.excludeElementId(sourceElementId);
         return Id64.invalid; // excluded by class
       }
       if (this._excludedCodeSpecIds.has(sourceElementProps.code.spec)) {
-        Logger.logInfo(logCategory, `Excluding Element(${sourceElementId}) by CodeSpec(${sourceElementProps.code.spec})`);
+        Logger.logInfo(loggerCategory, `Excluding Element(${sourceElementId}) by CodeSpec(${sourceElementProps.code.spec})`);
         this.excludeElementId(sourceElementId);
         return Id64.invalid; // excluded by CodeSpec
       }
       if (sourceElementProps.category) {
         if (this._excludedElementIds.has(sourceElementProps.category)) {
-          Logger.logInfo(logCategory, `Excluding Element(${sourceElementId}) by Category(${sourceElementProps.category})`);
+          Logger.logInfo(loggerCategory, `Excluding Element(${sourceElementId}) by Category(${sourceElementProps.category})`);
           this.excludeElementId(sourceElementId);
           return Id64.invalid; // excluded by Category
         }
@@ -157,9 +158,9 @@ export class IModelImporter {
         try {
           targetElementId = this._targetDb.elements.insertElement(targetElementProps); // insert from TypeScript so TypeScript handlers are called
           this.addElementId(sourceElementId, targetElementId);
-          Logger.logInfo(logCategory, `Inserted ${targetElementProps.classFullName}-${targetElementProps.code.value}-${targetElementId}`);
+          Logger.logInfo(loggerCategory, `Inserted ${targetElementProps.classFullName}-${targetElementProps.code.value}-${targetElementId}`);
         } catch (error) {
-          Logger.logError(logCategory, "Error inserting Element into target iModel");
+          Logger.logError(loggerCategory, "Error inserting Element into target iModel");
         }
       } else {
         try {
@@ -167,7 +168,7 @@ export class IModelImporter {
           this._targetDb.elements.updateElement(targetElementProps);
           this.addElementId(sourceElementId, targetElementId);
         } catch (error) {
-          Logger.logError(logCategory, "Error updating Element within target iModel");
+          Logger.logError(loggerCategory, "Error updating Element within target iModel");
         }
       }
     }
