@@ -266,7 +266,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    */
   public step(): DbResult { return this._stmt!.step(); }
 
-  /** @private */
+  /** @private added this back in for testing purposes */
   public stepAsync(): Promise<DbResult> {
     return new Promise((resolve, _reject) => {
       this._stmt!.stepAsync(resolve);
