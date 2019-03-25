@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 "use strict";
 
-const spawn = require('cross-spawn');
+const { spawn, handleInterrupts } = require("./utils/simpleSpawn");
 const argv = require("yargs").argv;
 const fs = require("fs-extra");
 
@@ -19,7 +19,6 @@ const isPresentation = argv.isPresentation;
 const ignoreMissingTags = argv.ignoreMissingTags;
 
 const config = {
-  $schema: "https://developer.microsoft.com/json-schemas/api-extractor/api-extractor.schema.json",
   compiler: {
     configType: "tsconfig",
     rootFolder: isPresentation ? "./src" : "."
@@ -40,6 +39,19 @@ const config = {
     enabled: true,
     apiReviewFolder: isPresentation ? "../../../common/api" : "../../common/api",
     tempFolder: isPresentation ? "../../../common/temp/api" : "../../common/temp/api"
+  },
+  messages: {
+    tsdocMessageReporting: {
+      default: {
+        logLevel: "none"
+      }
+    },
+    extractorMessageReporting: {
+      "ae-internal-missing-underscore": {
+        addToApiReviewFile: false,
+        logLevel: "none"
+      }
+    }
   }
 };
 
@@ -58,48 +70,9 @@ const args = [
 if (!isCI)
   args.push("-l");
 
-//Temporarily re-implementing features of simple-spawn till version 7 of api-extractor is released
-//Spawns a child process to run api-extractor and pipes the errors to be handled in this script
-
-console.log("Arguments to TypeDoc: " + JSON.stringify(args, null, 2));
-
-const child = spawn(require.resolve(".bin/api-extractor"), args, {
-  cwd: process.cwd(),
-  env: Object.assign({ FORCE_COLOR: "1" }, process.env),
-  stdio: 'pipe',
-});
-child.stdout.on('data', (data) => {
-  process.stdout.write(data);
-});
-
-let errorCode = 0;
-child.stderr.on('data', (data) => {
-  if (data.includes("You have changed the public API signature for this project.") && isCI)
-    errorCode = 1;
-
-  // Workaround: Errors we currently hit in the iModel.js that will be fixed with API-extractor v7.
-  if (data.includes("The @param block") ||
-    data.includes("TSDoc") ||
-    data.includes("HTML") ||
-    data.includes("Structured content") ||
-    data.includes("The code span") ||
-    data.includes("A backslash can only be used") ||
-    data.includes("for a code fence")) {
-    //Filter out these errors
-  } else {
-    process.stderr.write(data);
-    if (isCI)
-      errorCode = 1;
-  }
-});
-child.on('error', function (data) { console.log(chalk.red(data)); });
-child.on('close', (code) => {
+spawn("api-extractor", args).then((code) => {
   if (fs.existsSync(configFileName))
     fs.unlinkSync(configFileName);
-
-  if (fs.existsSync("dist/tsdoc-metadata.json")) {
-    fs.unlinkSync("dist/tsdoc-metadata.json");
-    fs.rmdirSync("dist");
-  }
-  process.exit(errorCode);
+  process.exit(code);
 });
+handleInterrupts();

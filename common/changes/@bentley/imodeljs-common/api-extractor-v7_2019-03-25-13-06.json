@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Adds ignoreMissingTags flag",
+      "packageName": "@bentley/imodeljs-common",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-common",
+  "email": "akshay.madhukar@bentley.com"
+}
