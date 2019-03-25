@@ -77,10 +77,10 @@ export class DefaultIModelServices implements IModelServices {
   }
 
   /** Open the specified version of the IModel */
-  public async openIModel(projectInfo: ProjectInfo, iModelId: GuidString, openMode?: OpenMode, changeSetId?: string): Promise<IModelConnection> {
+  public async openIModel(contextId: string, iModelId: GuidString, openMode?: OpenMode, changeSetId?: string): Promise<IModelConnection> {
     try {
       // GatewayProxyApi.setAccessToken(accessToken);
-      const iModelConnection: IModelConnection = await IModelConnection.open(projectInfo.wsgId, iModelId, openMode ? openMode : OpenMode.Readonly, changeSetId ? IModelVersion.asOfChangeSet(changeSetId) : IModelVersion.latest());
+      const iModelConnection: IModelConnection = await IModelConnection.open(contextId, iModelId, openMode ? openMode : OpenMode.Readonly, changeSetId ? IModelVersion.asOfChangeSet(changeSetId) : IModelVersion.latest());
       return iModelConnection;
     } catch (e) {
       alert(JSON.stringify(e));

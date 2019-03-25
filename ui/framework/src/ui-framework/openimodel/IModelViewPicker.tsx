@@ -116,7 +116,7 @@ export class IModelViewPicker extends React.Component<ViewsProps, ViewsState> {
     const iModelWsgId = this.props.iModel.wsgId;
 
     // this.setState({ waitingForViews: true });
-    this._iModelConnection = await UiFramework.iModelServices.openIModel(projectInfo, iModelWsgId);
+    this._iModelConnection = await UiFramework.iModelServices.openIModel(projectInfo.wsgId, iModelWsgId);
     const viewQueryParams: ViewQueryParams = { wantPrivate: false };
     let viewProps: ViewDefinitionProps[] = [];
     try {

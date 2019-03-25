@@ -34,7 +34,9 @@
     "task1": "Task 1",
     "task2": "Task 2",
     "task3": "Task 3",
-    "exit": "Exit"
+    "exit": "Exit",
+    "imodelopen": "IModel Open",
+    "imodelindex": "IModel Index"
   },
   "zone6": {
     "month": "Month",

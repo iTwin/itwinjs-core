@@ -1,0 +1,97 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+@import "@bentley/ui-core/lib/ui-core/index";
+
+.imodelindex-thumbnailView {
+  width: 300px;
+  height: 200px;
+  margin: 10px;
+  padding: 10px 10px 6px 10px;
+}
+
+.imodelindex-detailsView {
+  margin-left: 6px;
+}
+
+.searchbox {
+  margin-right: $uicore-sm;
+  width: 220px;
+}
+
+/* list & thumbnail buttons */
+.viewtype {
+  padding: 7px;
+  border: 1px solid #ccc;
+  font-size: 18px;
+  color: $uicore-icons-light;
+  cursor: pointer;
+  -webkit-transition: all background-color.2s ease;
+  -moz-transition: all background-color.2s ease;
+  -o-transition: all background-color.2s ease;
+  transition: all background-color .2s ease;
+
+  /* Hover over list/thumbnail button */
+  &.active, &:hover {
+    color: $uicore-white;
+    background: $uicore-blue;
+  }
+}
+
+@-webkit-keyframes show {
+  0%   {opacity: 0;}
+  100% {opacity: 1;}
+  }
+
+@keyframes show {
+  0%   {opacity: 0;}
+  100% {opacity: 1;}
+}
+
+.no-views-alert  {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  max-width: 300px;
+  padding: 30px;
+  transform: translate(-50%, -50%);
+  border-radius: 10px;
+  background: white;
+  color: #7b7b7b;
+  display: block;
+  font: bold 16px/25px sans-serif;
+  text-align: center;
+  text-decoration: none;
+  -webkit-animation: alert .4s ease forwards;
+  -moz-animation: alert .4s ease forwards;
+  -ms-animation: alert .4s ease forwards;
+  -o-animation: alert .4s ease forwards;
+   animation: alert .4s ease forwards;
+  -moz-box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+  -webkit-box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+   box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+}
+
+/* Animation */
+
+@-webkit-keyframes alert {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+@-moz-keyframes alert {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+@-ms-keyframes alert {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+@-o-keyframes alert {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+@keyframes alert {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}

@@ -16,7 +16,6 @@ import { BeDragDropContext } from "@bentley/ui-components";
 import { DragDropLayerRenderer } from "../dragdrop/DragDropLayerManager";
 import { SignIn } from "../oidc/SignIn";
 import { ApplicationHeader, ApplicationHeaderProps } from "../openimodel/ApplicationHeader";
-import { ViewDefinitionProps } from "@bentley/imodeljs-common";
 import { IModelInfo } from "../clientservices/IModelServices";
 import { UiFramework } from "../UiFramework";
 import { ThemeManager } from "../theme/ThemeManager";
@@ -77,6 +76,7 @@ class OverallContentComponent extends React.Component<OverallContentProps> {
   }
 
   // called when an imodel (and views) have been selected on the IModelOpen
+  /*
   private _onOpenIModel = (iModelInfo: IModelInfo, views: ViewDefinitionProps[]) => {
 
     // view ids are passed as params
@@ -87,6 +87,7 @@ class OverallContentComponent extends React.Component<OverallContentProps> {
 
     this.onOpenIModel(iModelInfo, viewIds);
   }
+*/
 
   // called when the "Offline" is clicked on the Sign In.
   private _onOffline = () => {
@@ -137,7 +138,7 @@ class OverallContentComponent extends React.Component<OverallContentProps> {
           this.onOpenIModel(this.props.initialIModels![0], this.props.initialViewIds!);
         });
       } else {
-        element = <IModelOpen accessToken={this.props.accessToken} onOpenIModel={this._onOpenIModel} initialIModels={this.props.initialIModels} />;
+        element = <IModelOpen accessToken={this.props.accessToken} initialIModels={this.props.initialIModels} />;
       }
     } else if (OverallContentPage.ConfigurableUiPage === currentPage || OverallContentPage.OfflinePage === currentPage) {
       const configurableUiContentProps = {

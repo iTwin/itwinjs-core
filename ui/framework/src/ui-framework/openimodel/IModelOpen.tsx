@@ -14,14 +14,13 @@ import { AccessToken } from "@bentley/imodeljs-clients";
 import { NavigationList, NavigationItem } from "./Navigation";
 import { BlockingPrompt } from "./BlockingPrompt";
 import { ProjectInfo, ProjectScope } from "../clientservices/ProjectServices";
-import { ViewDefinitionProps } from "@bentley/imodeljs-common";
 import "./IModelOpen.scss";
 import "./Common.scss";
 
 /** Properties for the [[IModelOpen]] component */
 export interface IModelOpenProps {
   accessToken: AccessToken;
-  onOpenIModel?: (iModelInfo: IModelInfo, views: ViewDefinitionProps[]) => void;
+  onIModelSelected?: (iModelInfo: IModelInfo) => void;
   initialIModels?: IModelInfo[];
 }
 
@@ -107,7 +106,7 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
       return (
         <IModelList iModels={this.state.iModels}
           accessToken={this.props.accessToken}
-          onIModelSelected={this.props.onOpenIModel} />
+          onIModelSelected={this.props.onIModelSelected} />
       );
     }
   }

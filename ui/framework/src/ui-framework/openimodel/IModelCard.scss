@@ -174,7 +174,7 @@
   background: $uicore-gray-a;
 }
 
-.imodel-card .options-dropdown {
+.imodel-card-options-dropdown {
   margin: 0;
   padding: .5em 0;
   font-size: $uicore-font-size;
@@ -182,7 +182,7 @@
   background-color: $uicore-white;
 }
 
-.imodel-card .options-dropdown li {
+.imodel-card-options-dropdown li {
   display: flex;
   align-items: center;
   padding: .25em 2em .25em .75em;

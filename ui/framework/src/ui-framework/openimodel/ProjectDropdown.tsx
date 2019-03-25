@@ -31,6 +31,7 @@ interface ProjectDropdownState {
  */
 export class ProjectDropdown extends React.Component<ProjectDropdownProps, ProjectDropdownState> {
   private _itemHeight: number = 3.25; // each item (project) height is (n-em) in the dropdown
+  private _target: HTMLElement | null = null;
 
   public static defaultProps: Partial<ProjectDropdownProps> = {
     numVisibleProjects: 5, // default number of visible project to 5
@@ -119,7 +120,7 @@ export class ProjectDropdown extends React.Component<ProjectDropdownProps, Proje
       height: this._itemHeight + "em",
     };
     return (
-      <Popup isOpen={this.state.isDropdownOpen} position={Position.Bottom} onClose={this._handleOnOutsideClick}>
+      <Popup isOpen={this.state.isDropdownOpen} position={Position.Bottom} onClose={this._handleOnOutsideClick} target={this._target}>
         <div className="pp-dropdown">
           {this.renderProjects()}
           <div className="pp-separator" />
@@ -136,7 +137,7 @@ export class ProjectDropdown extends React.Component<ProjectDropdownProps, Proje
     const splitterClassName = classnames("pp-splitter icon icon-chevron-down", this.state.isDropdownOpen && "opened");
     return (
       <div className="pp">
-        <div className="pp-content" onClick={this._splitterClicked}>
+        <div className="pp-content" onClick={this._splitterClicked} ref={(element) => { this._target = element; }}>
           <div>
             <span className="number">{this.props.currentProject ? this.props.currentProject.projectNumber : ""}</span>
             <span className="name">{this.props.currentProject ? this.props.currentProject.name : ""}</span>

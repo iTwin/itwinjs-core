@@ -151,5 +151,23 @@
     "dark": "Dark",
     "themeTitle": "THEME",
     "themeDescription": "Toggle the theme between light and dark"
+  },
+  "iModelIndex": {
+    "views": "Views",
+    "3dModels": "3D Models",
+    "enteriModeling": "Enter iModel",
+    "upToDate": "You have the latest version.",
+    "updatesAvailable": "Later changes are available",
+    "toastTitle": "Need more control?",
+    "toastMessage": "Try ProjectWise Document Codes.",
+    "learnMore": "Learn more",
+    "enteriModel": "Enter iModel",
+    "noSavedView": "No saved views were found.",
+    "nextTab": "Switching you to the 3D Models tab..."
+  },
+  "listTools": {
+    "searchViews": "Search Views...",
+    "listView": "List",
+    "thumbnailView": "Thumbnails"
   }
 }

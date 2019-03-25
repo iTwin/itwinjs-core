@@ -32,6 +32,10 @@ import { Frontstage1 } from "./frontstages/Frontstage1";
 import { Frontstage2 } from "./frontstages/Frontstage2";
 import { Frontstage3 } from "./frontstages/Frontstage3";
 import { Frontstage4 } from "./frontstages/Frontstage4";
+import { IModelIndexFrontstage } from "./frontstages/IModelIndexFrontstage";
+import { IModelOpenFrontstage } from "./frontstages/IModelOpenFrontstage";
+import { SignInFrontstage } from "./frontstages/SignInFrontstage";
+import { DefaultIModelFrontstage } from "./frontstages/DefaultIModelFrontstage";
 import { IModelViewportControl } from "./contentviews/IModelViewport";
 import { AppTools } from "../tools/ToolSpecifications";
 
@@ -57,6 +61,10 @@ export class AppUi {
     ConfigurableUiManager.addFrontstageProvider(new Frontstage2());
     ConfigurableUiManager.addFrontstageProvider(new Frontstage3());
     ConfigurableUiManager.addFrontstageProvider(new Frontstage4());
+    ConfigurableUiManager.addFrontstageProvider(new IModelIndexFrontstage());
+    ConfigurableUiManager.addFrontstageProvider(new IModelOpenFrontstage());
+    ConfigurableUiManager.addFrontstageProvider(new SignInFrontstage());
+    ConfigurableUiManager.addFrontstageProvider(new DefaultIModelFrontstage());
   }
 
   public static command1 = () => {

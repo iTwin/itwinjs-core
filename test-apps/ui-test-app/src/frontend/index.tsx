@@ -6,31 +6,18 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { createStore, combineReducers, Store } from "redux";
 import { Provider } from "react-redux";
-import {
-  RpcConfiguration, RpcOperation, IModelToken,
-  ElectronRpcManager, ElectronRpcConfiguration, BentleyCloudRpcManager,
-} from "@bentley/imodeljs-common";
+import {  RpcConfiguration, RpcOperation, IModelToken, ElectronRpcManager,
+          ElectronRpcConfiguration, BentleyCloudRpcManager } from "@bentley/imodeljs-common";
 import { IModelApp, IModelConnection, SnapMode, AccuSnap } from "@bentley/imodeljs-frontend";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
-import { Config, OidcFrontendClientConfiguration } from "@bentley/imodeljs-clients";
+import { Config, OidcFrontendClientConfiguration, AccessToken } from "@bentley/imodeljs-clients";
 import { Presentation } from "@bentley/presentation-frontend";
-
-import { WebFontIcon, UiCore } from "@bentley/ui-core";
-import { UiComponents } from "@bentley/ui-components";
-import {
-  UiFramework,
-  FrameworkState,
-  FrameworkReducer,
-  OverallContent,
-  AppNotificationManager,
-  IModelInfo,
-  ProjectInfo,
-  FrontstageManager,
-  createAction, ActionsUnion, DeepReadonly, SyncUiEventDispatcher,
-} from "@bentley/ui-framework";
-
+import { UiCore } from "@bentley/ui-core";
+import { UiComponents, BeDragDropContext} from "@bentley/ui-components";
+import { UiFramework, FrameworkState, FrameworkReducer, AppNotificationManager,
+         IModelInfo, FrontstageManager, createAction, ActionsUnion, DeepReadonly,
+         ConfigurableUiContent, ThemeManager, DragDropLayerRenderer, SyncUiEventDispatcher } from "@bentley/ui-framework";
 import { Id64String } from "@bentley/bentleyjs-core";
-
 import getSupportedRpcs from "../common/rpcs";
 import { AppUi } from "./appui/AppUi";
 import AppBackstage, { BackstageShow, BackstageHide } from "./appui/AppBackstage";
@@ -65,12 +52,14 @@ export const enum SampleAppUiActionId {
   showBackstage = "sampleapp:backstageshow",
   hideBackstage = "sampleapp:backstagehide",
   setIModelConnection = "sampleapp:setimodelconnection",
+  setAccessToken = "sampleapp:setaccesstoken",
   setTestProperty = "sampleapp:settestproperty",
 }
 
 export interface SampleAppState {
   backstageVisible: boolean;
   currentIModelConnection?: IModelConnection;
+  accessToken?: AccessToken;
   testProperty: string;
 }
 
@@ -84,7 +73,8 @@ const initialState: SampleAppState = {
 export const SampleAppActions = {
   showBackstage: () => createAction(SampleAppUiActionId.showBackstage),
   hideBackstage: () => createAction(SampleAppUiActionId.hideBackstage),
-  setIModelConnection: (iModelConnection: IModelConnection) => createAction(SampleAppUiActionId.setIModelConnection, { iModelConnection }),
+  setIModelConnection: (iModelConnection: IModelConnection) => createAction(SampleAppUiActionId.setIModelConnection, iModelConnection ),
+  setAccessToken: (accessToken: AccessToken) => createAction(SampleAppUiActionId.setAccessToken, accessToken ),
   setTestProperty: (testProperty: string) => createAction(SampleAppUiActionId.setTestProperty, testProperty),
 };
 
@@ -118,7 +108,10 @@ function SampleAppReducer(state: SampleAppState = initialState, action: SampleAp
       return { ...state, backstageVisible: false };
     }
     case SampleAppUiActionId.setIModelConnection: {
-      return { ...state, currentIModelConnection: action.payload.iModelConnection };
+      return { ...state, currentIModelConnection: action.payload };
+    }
+    case SampleAppUiActionId.setAccessToken: {
+      return { ...state, accessToken: action.payload };
     }
     case SampleAppUiActionId.setTestProperty: {
       return { ...state, testProperty: action.payload };
@@ -200,15 +193,13 @@ export class SampleAppIModelApp extends IModelApp {
     IModelApp.toolAdmin.defaultToolId = AppSelectTool.toolId;
   }
 
-  public static async handleIModelViewsSelected(iModelInfo: IModelInfo, viewIdsSelected: Id64String[]) {
-    const projectInfo = iModelInfo.projectInfo;
-    const wsgId = iModelInfo.wsgId;
-
+  public static async openViews(projectId: string, iModelId: string, viewIdsSelected: Id64String[]) {
     // open the imodel
-    const iModelConnection = await UiFramework.iModelServices.openIModel(projectInfo, wsgId);
+    const iModelConnection = await UiFramework.iModelServices.openIModel(projectId, iModelId);
 
-    const payload = { iModelConnection };
-    SampleAppIModelApp.store.dispatch({ type: SampleAppUiActionId.setIModelConnection, payload });
+    // store the IModelConnection in the sample app store
+    SampleAppIModelApp.setIModelConnection(iModelConnection, true);
+
     SyncUiEventDispatcher.initializeConnectionEvents(iModelConnection);
 
     // we create a FrontStage that contains the views that we want.
@@ -221,11 +212,31 @@ export class SampleAppIModelApp extends IModelApp {
     });
   }
 
-  public static handleWorkOffline() {
+  public static async handleWorkOffline() {
     if (!FrontstageManager.activeFrontstageDef) {
-      const frontstageDef = FrontstageManager.findFrontstageDef("Test4");
-      FrontstageManager.setActiveFrontstageDef(frontstageDef); // tslint:disable-line:no-floating-promises
+      await SampleAppIModelApp.showFrontstage ("Test4");
     }
+  }
+
+  public static async showIModelIndex(contextId: string, iModelId: string) {
+    const currentConnection = SampleAppIModelApp.getIModelConnection();
+    if (!currentConnection || (currentConnection.iModelToken.iModelId !== iModelId)) {
+      // open the imodel
+      const iModelConnection = await UiFramework.iModelServices.openIModel(contextId, iModelId);
+
+      // store the IModelConnection in the sample app store
+      SampleAppIModelApp.setIModelConnection(iModelConnection, true);
+    }
+
+    await SampleAppIModelApp.showFrontstage ("IModelIndex");
+  }
+
+  public static async showIModelOpen(_iModels: IModelInfo[]) {
+    await SampleAppIModelApp.showFrontstage ("IModelOpen");
+  }
+
+  public static async showSignIn() {
+    await SampleAppIModelApp.showFrontstage ("SignIn");
   }
 
   public static setTestProperty(value: string, immediateSync = false) {
@@ -237,67 +248,59 @@ export class SampleAppIModelApp extends IModelApp {
   public static getTestProperty(): string {
     return SampleAppIModelApp.store.getState().sampleAppState.testProperty;
   }
-}
 
-SampleAppIModelApp.startup();
-
-// wait for both our i18n namespaces to be read.
-SampleAppIModelApp.initialize().then(() => { // tslint:disable-line:no-floating-promises
-  //  create the application icon.
-  const applicationIconStyle: React.CSSProperties = {
-    width: "50px",
-    height: "50px",
-    fontSize: "50px",
-    color: "red",
-    marginLeft: "10px",
-  };
-
-  const applicationIcon = React.createElement(WebFontIcon, { iconName: "icon-construction-worker", style: applicationIconStyle });
-  let defaultImodel: IModelInfo | undefined;
-  let viewId: string | undefined;
-
-  if (Config.App.has("imjs_uitestapp_imodel_viewId"))
-    viewId = Config.App.get("imjs_uitestapp_imodel_viewId");
-
-  if (Config.App.has("imjs_uitestapp_imodel_name") &&
-    Config.App.has("imjs_uitestapp_imodel_wsgId") &&
-    Config.App.has("imjs_uitestapp_imodel_project_name") &&
-    Config.App.has("imjs_uitestapp_imodel_project_projectNumber") &&
-    Config.App.has("imjs_uitestapp_imodel_project_wsgId")) {
-    const defaultProject = {
-      name: Config.App.get("imjs_uitestapp_imodel_project_name"),
-      projectNumber: Config.App.get("imjs_uitestapp_imodel_project_projectNumber"),
-      wsgId: Config.App.get("imjs_uitestapp_imodel_project_wsgId"),
-      readStatus: 0,
-    } as ProjectInfo;
-
-    defaultImodel = {
-      name: Config.App.get("imjs_uitestapp_imodel_name"),
-      description: Config.App.get("imjs_uitestapp_imodel_name"),
-      wsgId: Config.App.get("imjs_uitestapp_imodel_wsgId"),
-      projectInfo: defaultProject,
-      status: "",
-    } as IModelInfo;
+  public static setIModelConnection(iModelConnection: IModelConnection, immediateSync = false) {
+    UiFramework.dispatchActionToStore(SampleAppUiActionId.setIModelConnection, iModelConnection, immediateSync);
   }
 
-  const overallContentProps = {
-    appHeaderIcon: applicationIcon,
-    appHeaderMessage: SampleAppIModelApp.i18n.translate("SampleApp:Header.welcome"),
-    appBackstage: <AppBackstage />,
-    onIModelViewsSelected: SampleAppIModelApp.handleIModelViewsSelected,
-    onWorkOffline: SampleAppIModelApp.handleWorkOffline,
-    initialIModels: defaultImodel ? [defaultImodel] : undefined,
-    initialViewIds: viewId ? [viewId] : undefined,
-  };
-  AppUi.initialize();
+  public static setAccessToken(accessToken: AccessToken, immediateSync = false) {
+    UiFramework.dispatchActionToStore(SampleAppUiActionId.setAccessToken, accessToken, immediateSync);
+  }
 
-  // tslint:disable-next-line:no-console
-  console.log("Versions:", (window as any).iModelJsVersions);
+  public static getAccessToken(): AccessToken | undefined {
+    return SampleAppIModelApp.store.getState().sampleAppState.accessToken;
+  }
 
-  ReactDOM.render(
-    <Provider store={SampleAppIModelApp.store} >
-      <OverallContent {...overallContentProps} />
-    </Provider >,
-    document.getElementById("root") as HTMLElement,
-  );
-});
+  public static getIModelConnection(): IModelConnection | undefined {
+    return SampleAppIModelApp.store.getState().sampleAppState.currentIModelConnection;
+  }
+
+  public static async showFrontstage(frontstageId: string) {
+    const frontstageDef = FrontstageManager.findFrontstageDef(frontstageId);
+    FrontstageManager.setActiveFrontstageDef(frontstageDef); // tslint:disable-line:no-floating-promises
+  }
+}
+
+export class SampleAppViewer extends React.Component<any> {
+  constructor(props: any) {
+    super(props);
+
+    SampleAppIModelApp.startup();
+
+    // wait for both our i18n namespaces to be read.
+    SampleAppIModelApp.initialize().then(() => { // tslint:disable-line:no-floating-promises
+
+      AppUi.initialize();
+
+      // tslint:disable-next-line:no-console
+      console.log("Versions:", (window as any).iModelJsVersions);
+
+      SampleAppIModelApp.showSignIn(); // tslint:disable-line:no-floating-promises
+    });
+  }
+
+  public render(): JSX.Element {
+    return (
+      <Provider store={SampleAppIModelApp.store} >
+        <ThemeManager>
+          <BeDragDropContext>
+            <ConfigurableUiContent appBackstage={<AppBackstage />} />
+            <DragDropLayerRenderer />
+          </BeDragDropContext>
+        </ThemeManager>
+      </Provider >
+    );
+  }
+}
+
+ReactDOM.render( <SampleAppViewer />, document.getElementById("root") as HTMLElement);

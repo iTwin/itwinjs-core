@@ -15,6 +15,8 @@ export * from "./ui-framework/clientservices/ProjectServices";
 export * from "./ui-framework/feedback/ValidationTextbox";
 export * from "./ui-framework/feedback/ElementTooltip";
 
+export * from "./ui-framework/imodelindex/IModelIndex";
+
 export * from "./ui-framework/messages/InputField";
 export * from "./ui-framework/messages/Pointer";
 

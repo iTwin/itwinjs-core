@@ -9,9 +9,7 @@ import * as classnames from "classnames";
 import { IModelCard } from "./IModelCard";
 import { IModelInfo } from "../clientservices/IModelServices";
 import { AccessToken } from "@bentley/imodeljs-clients";
-import { ViewDefinitionProps } from "@bentley/imodeljs-common";
 import { ProjectDialog } from "./ProjectDialog";
-import { IModelViewPicker } from "./IModelViewPicker";
 import { SearchBox, Toggle } from "@bentley/ui-core";
 import "./IModelList.scss";
 
@@ -19,7 +17,7 @@ import "./IModelList.scss";
 export interface IModelListProps {
   accessToken: AccessToken;
   iModels?: IModelInfo[];
-  onIModelSelected?: (iModel: IModelInfo, views: ViewDefinitionProps[]) => void;
+  onIModelSelected?: (iModel: IModelInfo) => void;
 }
 
 interface IModelListState {
@@ -27,7 +25,6 @@ interface IModelListState {
   showProjectDialog: boolean;
   currentIModel?: IModelInfo;
   showDetails: boolean;
-  showViews: boolean;
   filter: string;
 }
 
@@ -43,7 +40,6 @@ export class IModelList extends React.Component<IModelListProps, IModelListState
       showDescriptions: true, /* show descriptions by default */
       showProjectDialog: false,
       showDetails: false,
-      showViews: false,
       filter: "",
     };
   }
@@ -68,22 +64,14 @@ export class IModelList extends React.Component<IModelListProps, IModelListState
     this.setState({ filter: value });
   }
 
-  private _onViewsClose = () => {
-    this.setState({ showViews: false });
-  }
-
-  private _onViewsSelected = (views: ViewDefinitionProps[]) => {
-    if (this.props.onIModelSelected && this.state.currentIModel)
-      this.props.onIModelSelected(this.state.currentIModel, views);
-  }
-
   private _onIModelClick = (iModelInfo: IModelInfo) => {
-    this.setState({ currentIModel: iModelInfo, showViews: true });
+    if (this.props.onIModelSelected)
+      this.props.onIModelSelected(iModelInfo);
   }
 
   public componentDidMount() {
     if (this.props.iModels && 1 === this.props.iModels.length) {
-      this.setState({ currentIModel: this.props.iModels[0], showViews: true });
+      this.setState({ currentIModel: this.props.iModels[0] });
     }
   }
 
@@ -185,8 +173,6 @@ export class IModelList extends React.Component<IModelListProps, IModelListState
         <div className="cards-scroll-y">
           {this.renderContent()}
         </div>
-        {this.state.showViews &&
-          <IModelViewPicker accessToken={this.props.accessToken} iModel={this.state.currentIModel!} onClose={this._onViewsClose.bind(this)} OnViewsSelected={this._onViewsSelected.bind(this)} />}
       </div>
     );
   }
