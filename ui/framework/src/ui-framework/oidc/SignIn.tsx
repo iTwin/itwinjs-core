@@ -23,6 +23,7 @@ export interface SignInProps {
 
 interface SignInState {
   isSigningIn: boolean;
+  isReady: boolean;
 }
 
 /**
@@ -32,13 +33,17 @@ export class SignIn extends React.Component<SignInProps, SignInState> {
   constructor(props: SignInProps, context?: any) {
     super(props, context);
 
-    this.state = { isSigningIn: false };
+    this.state = { isSigningIn: false, isReady: false };
   }
 
   public componentDidMount() {
     OidcClientWrapper.oidcClient.getAccessToken(new ClientRequestContext()) // tslint:disable-line:no-floating-promises
       .then((accessToken: AccessToken | undefined) => { this._setOrClearAccessToken (accessToken); });
     OidcClientWrapper.oidcClient.onUserStateChanged.addListener(this._setOrClearAccessToken);
+  }
+
+  public componentWillUnmount() {
+    OidcClientWrapper.oidcClient.onUserStateChanged.removeListener(this._setOrClearAccessToken);
   }
 
   private _onSignInClick = async (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -50,6 +55,8 @@ export class SignIn extends React.Component<SignInProps, SignInState> {
   private _setOrClearAccessToken = (accessToken: AccessToken | undefined) => {
     if (accessToken)
       this.props.onSignIn(accessToken);
+    else
+      this.setState ( {isReady: true} );
   }
 
   private _onRegisterShow = () => {
@@ -57,15 +64,19 @@ export class SignIn extends React.Component<SignInProps, SignInState> {
 
   public render() {
     return (
-      <div className="signin">
-        <div className="signin-content">
-          <span className="icon icon-user" />
-          <span className="prompt">Please sign in to access your Bentley Services.</span>
-          <button className="signin-button" type="button" disabled={this.state.isSigningIn} onClick={this._onSignInClick}>Sign In</button>
-          <span className="signin-register-div">Don't have a profile?<a onClick={this._onRegisterShow}>Register</a></span>
-          <a className="signin-offline" onClick={this.props.onOffline}>Work Offline?</a>
-        </div>
-      </div>
+      <>
+        {this.state.isReady &&
+          <div className="signin">
+            <div className="signin-content">
+              <span className="icon icon-user" />
+              <span className="prompt">Please sign in to access your Bentley Services.</span>
+              <button className="signin-button" type="button" disabled={this.state.isSigningIn} onClick={this._onSignInClick}>Sign In</button>
+              <span className="signin-register-div">Don't have a profile?<a onClick={this._onRegisterShow}>Register</a></span>
+              <a className="signin-offline" onClick={this.props.onOffline}>Work Offline?</a>
+            </div>
+          </div>
+        }
+      </>
     );
   }
 }
