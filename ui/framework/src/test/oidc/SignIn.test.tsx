@@ -17,7 +17,7 @@ describe("SignIn", () => {
 
   it("should render", () => {
     const spyMethod = sinon.spy();
-    const wrapper = mount(<SignIn onSignIn={spyMethod} />);
+    const wrapper = mount(<SignIn onSignedIn={spyMethod} />);
     expect(wrapper).not.to.be.undefined;
     wrapper.unmount();
   });

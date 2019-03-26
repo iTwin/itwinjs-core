@@ -10,7 +10,7 @@ import {
   RpcConfiguration, RpcOperation, IModelToken, ElectronRpcManager,
   ElectronRpcConfiguration, BentleyCloudRpcManager,
 } from "@bentley/imodeljs-common";
-import { IModelApp, IModelConnection, SnapMode, AccuSnap } from "@bentley/imodeljs-frontend";
+import { IModelApp, IModelConnection, SnapMode, AccuSnap, OidcClientWrapper } from "@bentley/imodeljs-frontend";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
 import { Config, OidcFrontendClientConfiguration, AccessToken } from "@bentley/imodeljs-clients";
 import { Presentation } from "@bentley/presentation-frontend";
@@ -244,7 +244,14 @@ export class SampleAppIModelApp extends IModelApp {
   }
 
   // called after the user has signed in (or access token is still valid)
-  public static async onSinIn() {
+  public static async onSignedIn () {
+    const accessToken = await IModelApp.authorizationClient!.getAccessToken();
+
+    // NOTE: do we need to store access token since its store in OidcClient?
+    SampleAppIModelApp.setAccessToken(accessToken);
+
+    if (!accessToken)
+      return;
 
     // get the default IModel (from imodejs-config)
     let defaultImodel: IModelInfo | undefined;
@@ -275,7 +282,7 @@ export class SampleAppIModelApp extends IModelApp {
 
       if (viewId) {
         // open directly into the iModel (view)
-        await SampleAppIModelApp.openViews(defaultImodel.projectInfo.wsgId, defaultImodel.wsgId, [viewId!]);
+        await SampleAppIModelApp.openViews (defaultImodel.projectInfo.wsgId, defaultImodel.wsgId, [viewId!]);
       } else {
         // open to the IModelIndex frontstage
         await SampleAppIModelApp.showIModelIndex(defaultImodel.projectInfo.wsgId, defaultImodel.wsgId);
@@ -332,7 +339,11 @@ export class SampleAppViewer extends React.Component<any> {
       // tslint:disable-next-line:no-console
       console.log("Versions:", (window as any).iModelJsVersions);
 
-      SampleAppIModelApp.showSignIn(); // tslint:disable-line:no-floating-promises
+      if (OidcClientWrapper.oidcClient.hasSignedIn) {
+        SampleAppIModelApp.onSignedIn(); // tslint:disable-line:no-floating-promises
+      } else {
+        SampleAppIModelApp.showSignIn(); // tslint:disable-line:no-floating-promises
+      }
     });
   }
 

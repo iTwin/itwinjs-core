@@ -79,31 +79,7 @@ $signin-hyperlink-hover-color: $uicore-blue-5;
   margin-top: auto;
 }
 
-/* "Register" container */
-.signin .signin-register-div {
-  font-size: .9em;
-  margin-top: 1em;
-  text-align: center;
-  width: 100%;
-}
-
-/* "Register" hyperlink */
-.signin .signin-register-div a {
-  text-decoration: underline;
-  margin-left: .5em;
-  color: $signin-hyperlink-color;
-  cursor: pointer;
-
-  &:hover {
-    color: $signin-hyperlink-hover-color;
-  }
-
-  &:active {
-    color: $signin-hyperlink-hover-color;
-  }
-}
-
-/* "Register" container */
+/* offline container */
 .signin .signin-offline {
   align-self: center;
   margin-top: 2.25em;
