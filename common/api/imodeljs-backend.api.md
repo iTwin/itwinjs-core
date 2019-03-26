@@ -977,6 +977,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
     // @internal
     setIsShared(b: boolean): void;
     step(): DbResult;
+    stepAsync(): Promise<DbResult>;
     stepForInsert(): ECSqlInsertResult;
     }
 
