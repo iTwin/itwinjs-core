@@ -107,14 +107,20 @@ export class ClipPlanesVolume extends RenderClipVolume implements RenderMemory.C
   public get type(): ClippingType { return ClippingType.Planes; }
   public get texture(): TextureHandle | undefined { return this._texture; }
 
-  /** Create a new ClipPlanesVolume from a ClipVector. */
+  /** Create a new ClipPlanesVolume from a ClipVector.
+   * * The result is undefined if
+   *   * (a) there is more than one clipper
+   *   * (b) the clipper does not have clipPlaneSet (for instance, a pure mask clipper has mask planes but not primary clip planes)
+   */
   public static create(clipVec: ClipVector): ClipPlanesVolume | undefined {
     if (1 !== clipVec.clips.length)
       return undefined;
 
     const clipPrim = clipVec.clips[0];
     const clipPlaneSet = clipPrim.fetchClipPlanesRef();
-    return ClipPlanesVolume.createFromClipPlaneSet(clipPlaneSet);
+    if (clipPlaneSet)
+      return ClipPlanesVolume.createFromClipPlaneSet(clipPlaneSet);
+    return undefined;
   }
 
   public static createFromClipPlaneSet(clipPlaneSet: UnionOfConvexClipPlaneSets) {

@@ -1147,34 +1147,37 @@ export const enum ClipPlaneContainment {
 }
 
 // @public
-export abstract class ClipPrimitive {
+export class ClipPrimitive {
     // (undocumented)
     protected constructor(planeSet?: UnionOfConvexClipPlaneSets | undefined, isInvisible?: boolean);
     static addOutsideEdgeSetToParams(x0: number, y0: number, x1: number, y1: number, pParams: PlaneSetParamsCache, isInvisible?: boolean): void;
     static addShapeToParams(shape: Point3d[], pFlags: number[], pParams: PlaneSetParamsCache): void;
-    classifyPointContainment(points: Point3d[], ignoreMasks: boolean): ClipPlaneContainment;
-    // (undocumented)
+    arePlanesDefined(): boolean;
+    classifyPointContainment(points: Point3d[], ignoreInvisibleSetting: boolean): ClipPlaneContainment;
     protected _clipPlanes?: UnionOfConvexClipPlaneSets;
     // (undocumented)
+    clone(): ClipPrimitive;
     containsZClip(): boolean;
+    static createCapture(planes: UnionOfConvexClipPlaneSets | ConvexClipPlaneSet | undefined, isInvisible?: boolean): ClipPrimitive;
+    ensurePlaneSets(): void;
     // (undocumented)
-    abstract fetchClipPlanesRef(): UnionOfConvexClipPlaneSets | undefined;
+    fetchClipPlanesRef(): UnionOfConvexClipPlaneSets | undefined;
     // (undocumented)
-    abstract fetchMaskPlanesRef(): UnionOfConvexClipPlaneSets | undefined;
-    abstract getRange(returnMaskRange: boolean, transform: Transform, result?: Range3d): Range3d | undefined;
+    fetchMaskPlanesRef(): UnionOfConvexClipPlaneSets | undefined;
     // (undocumented)
-    abstract readonly invisible: boolean;
+    static fromJSON(json: any): ClipPrimitive | undefined;
     // (undocumented)
+    static fromJSONClipPrimitive(json: any): ClipPrimitive | undefined;
+    getRange(_returnMaskRange: boolean, _transform: Transform, _result?: Range3d): Range3d | undefined;
+    // (undocumented)
+    readonly invisible: boolean;
     protected _invisible: boolean;
-    // (undocumented)
     static isLimitEdge(limitValue: number, point0: Point3d, point1: Point3d): boolean;
-    // (undocumented)
-    protected _maskPlanes?: UnionOfConvexClipPlaneSets;
-    // (undocumented)
-    abstract multiplyPlanesTimesMatrix(matrix: Matrix4d): boolean;
+    multiplyPlanesTimesMatrix(matrix: Matrix4d): boolean;
+    pointInside(point: Point3d, onTolerance?: number): boolean;
     setInvisible(invisible: boolean): void;
     // (undocumented)
-    abstract toJSON(): any;
+    toJSON(): any;
     transformInPlace(transform: Transform): boolean;
 }
 
@@ -1182,19 +1185,15 @@ export abstract class ClipPrimitive {
 export class ClipShape extends ClipPrimitive {
     // (undocumented)
     protected constructor(polygon?: Point3d[], zLow?: number, zHigh?: number, transform?: Transform, isMask?: boolean, invisible?: boolean);
-    arePlanesDefined(): boolean;
-    readonly bCurve: BSplineCurve3d | undefined;
-    // (undocumented)
-    protected _bCurve: BSplineCurve3d | undefined;
     clone(result?: ClipShape): ClipShape;
     static createBlock(extremities: Range3d, clipMask: ClipMask, isMask?: boolean, invisible?: boolean, transform?: Transform, result?: ClipShape): ClipShape;
     static createEmpty(isMask?: boolean, invisible?: boolean, transform?: Transform, result?: ClipShape): ClipShape;
     static createFrom(other: ClipShape, result?: ClipShape): ClipShape;
     static createShape(polygon?: Point3d[], zLow?: number, zHigh?: number, transform?: Transform, isMask?: boolean, invisible?: boolean, result?: ClipShape): ClipShape | undefined;
-    fetchClipPlanesRef(): UnionOfConvexClipPlaneSets;
-    fetchMaskPlanesRef(): UnionOfConvexClipPlaneSets | undefined;
     // (undocumented)
-    static fromJSON(json: any, result?: ClipShape): ClipShape | undefined;
+    ensurePlaneSets(): void;
+    // (undocumented)
+    static fromClipShapeJSON(json: any, result?: ClipShape): ClipShape | undefined;
     getRange(returnMaskRange?: boolean, transform?: Transform, result?: Range3d): Range3d | undefined;
     initSecondaryProps(isMask: boolean, zLow?: number, zHigh?: number, transform?: Transform): void;
     readonly invisible: boolean;
@@ -1204,11 +1203,9 @@ export class ClipShape extends ClipPrimitive {
     readonly isValidPolygon: boolean;
     // (undocumented)
     readonly isXYPolygon: boolean;
-    // (undocumented)
     multiplyPlanesTimesMatrix(matrix: Matrix4d): boolean;
     performTransformFromClip(point: Point3d): void;
     performTransformToClip(point: Point3d): void;
-    pointInside(point: Point3d, onTolerance?: number): boolean;
     readonly polygon: Point3d[];
     // (undocumented)
     protected _polygon: Point3d[];
@@ -1253,7 +1250,7 @@ export const enum ClipStatus {
 // @public
 export class ClipUtilities {
     static announceNNC(intervals: Range1d[], cp: CurvePrimitive, announce?: AnnounceNumberNumberCurvePrimitive): boolean;
-    static clipPolygonToClipShape(polygon: Point3d[], clipShape: ClipShape): Point3d[][];
+    static clipPolygonToClipShape(polygon: Point3d[], clipShape: ClipPrimitive): Point3d[][];
     // (undocumented)
     static collectClippedCurves(curve: CurvePrimitive, clipper: Clipper): CurvePrimitive[];
     static pointSetSingleClipStatus(points: GrowableXYZArray, planeSet: UnionOfConvexClipPlaneSets, tolerance: number): ClipStatus;
@@ -1263,20 +1260,23 @@ export class ClipUtilities {
 
 // @public
 export class ClipVector {
-    appendClone(clip: ClipShape): void;
-    appendReference(clip: ClipShape): void;
+    appendClone(clip: ClipPrimitive): void;
+    appendReference(clip: ClipPrimitive): void;
     appendShape(shape: Point3d[], zLow?: number, zHigh?: number, transform?: Transform, isMask?: boolean, invisible?: boolean): boolean;
     // (undocumented)
     boundingRange: Range3d;
     classifyPointContainment(points: Point3d[], ignoreMasks?: boolean): ClipPlaneContainment;
     classifyRangeContainment(range: Range3d, ignoreMasks: boolean): ClipPlaneContainment;
     clear(): void;
-    readonly clips: ClipShape[];
+    readonly clips: ClipPrimitive[];
     clone(result?: ClipVector): ClipVector;
+    static create(clips: ClipPrimitive[], result?: ClipVector): ClipVector;
+    static createCapture(clips: ClipPrimitive[], result?: ClipVector): ClipVector;
+    // @deprecated
     static createClipShapeClones(clips: ClipShape[], result?: ClipVector): ClipVector;
+    // @deprecated
     static createClipShapeRefs(clips: ClipShape[], result?: ClipVector): ClipVector;
     static createEmpty(result?: ClipVector): ClipVector;
-    static createFrom(donor: ClipVector, result?: ClipVector): ClipVector;
     extractBoundaryLoops(loopPoints: Point3d[][], transform?: Transform): number[];
     static fromJSON(json: any, result?: ClipVector): ClipVector;
     getRange(transform?: Transform, result?: Range3d): Range3d | undefined;
@@ -1462,6 +1462,7 @@ export class ConvexClipPlaneSet implements Clipper {
     clipUnboundedSegment(pointA: Point3d, pointB: Point3d, announce?: (fraction0: number, fraction1: number) => void): boolean;
     // (undocumented)
     clone(result?: ConvexClipPlaneSet): ConvexClipPlaneSet;
+    computePlanePlanePlaneIntersections(points: Point3d[] | undefined, rangeToExtend: Range3d | undefined, transform?: Transform, testContainment?: boolean): number;
     // (undocumented)
     static createEmpty(result?: ConvexClipPlaneSet): ConvexClipPlaneSet;
     // (undocumented)
@@ -1475,7 +1476,6 @@ export class ConvexClipPlaneSet implements Clipper {
     static createXYPolyLineInsideLeft(points: Point3d[], result?: ConvexClipPlaneSet): ConvexClipPlaneSet;
     // (undocumented)
     static fromJSON(json: any, result?: ConvexClipPlaneSet): ConvexClipPlaneSet;
-    getRangeOfAlignedPlanes(transform?: Transform, result?: Range3d): Range3d | undefined;
     // (undocumented)
     static readonly hugeVal = 1e+37;
     // (undocumented)
@@ -1494,7 +1494,6 @@ export class ConvexClipPlaneSet implements Clipper {
     // (undocumented)
     polygonClip(input: Point3d[], output: Point3d[], work: Point3d[]): void;
     reloadSweptPolygon(points: Point3d[], sweepDirection: Vector3d, sideSelect: number): number;
-    // (undocumented)
     setInvisible(invisible: boolean): void;
     // (undocumented)
     static testRayIntersections(tNear: Float64Array, origin: Point3d, direction: Vector3d, planes: ConvexClipPlaneSet): boolean;
@@ -5637,6 +5636,7 @@ export class UnionOfConvexClipPlaneSets implements Clipper {
     classifyPointContainment(points: Point3d[], onIsOutside: boolean): number;
     // (undocumented)
     clone(result?: UnionOfConvexClipPlaneSets): UnionOfConvexClipPlaneSets;
+    computePlanePlanePlaneIntersectionsInAllConvexSets(points: Point3d[] | undefined, rangeToExtend: Range3d | undefined, transform?: Transform, testContainment?: boolean): number;
     // (undocumented)
     readonly convexSets: ConvexClipPlaneSet[];
     // (undocumented)
@@ -5645,7 +5645,6 @@ export class UnionOfConvexClipPlaneSets implements Clipper {
     static createEmpty(result?: UnionOfConvexClipPlaneSets): UnionOfConvexClipPlaneSets;
     // (undocumented)
     static fromJSON(json: any, result?: UnionOfConvexClipPlaneSets): UnionOfConvexClipPlaneSets;
-    getRangeOfAlignedPlanes(transform?: Transform, result?: Range3d): Range3d | undefined;
     // (undocumented)
     getRayIntersection(point: Point3d, direction: Vector3d): number | undefined;
     // (undocumented)

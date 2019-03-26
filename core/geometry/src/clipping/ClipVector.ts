@@ -5,7 +5,7 @@
 
 /** @module CartesianGeometry */
 
-import { ClipShape, ClipMask } from "./ClipPrimitive";
+import { ClipPrimitive, ClipShape, ClipMask } from "./ClipPrimitive";
 import { ClipPlaneContainment } from "./ClipUtils";
 import { Point3d } from "../geometry3d/Point3dVector3d";
 import { Segment1d } from "../geometry3d/Segment1d";
@@ -17,17 +17,17 @@ import { LineSegment3d } from "../curve/LineSegment3d";
 
 /** Class holding an array structure of shapes defined by clip plane sets */
 export class ClipVector {
-    private _clips: ClipShape[];
+    private _clips: ClipPrimitive[];
     public boundingRange: Range3d = Range3d.createNull();
 
     /** Returns a reference to the array of ClipShapes. */
     public get clips() { return this._clips; }
 
-    private constructor(clips?: ClipShape[]) {
+    private constructor(clips?: ClipPrimitive[]) {
         this._clips = clips ? clips : [];
     }
 
-    /** Returns true if this ClipVector contains a ClipShape. */
+    /** Returns true if this ClipVector contains a ClipPrimitive. */
     public get isValid(): boolean { return this._clips.length > 0; }
 
     /** Create a ClipVector with an empty set of ClipShapes. */
@@ -39,8 +39,22 @@ export class ClipVector {
         return new ClipVector();
     }
 
-    /** Create a ClipVector from an array of ClipShapes */
+    /** Create a ClipVector from an array of ClipShapes.
+     * @deprecated This just passes args through to `CreateCapture ()`
+     */
     public static createClipShapeRefs(clips: ClipShape[], result?: ClipVector): ClipVector {
+        return this.createCapture(clips, result);
+    }
+
+    /** Create a ClipVector from an array of ClipShapes, each one becoming a deep copy.
+     * @deprecated this just passes the args to `Create ()`
+     */
+    public static createClipShapeClones(clips: ClipShape[], result?: ClipVector): ClipVector {
+        return this.create(clips, result);
+    }
+
+    /** Create a ClipVector from an array of ClipPrimitives (or derived classes) (capture the pointers) */
+    public static createCapture(clips: ClipPrimitive[], result?: ClipVector): ClipVector {
         if (result) {
             result._clips = clips;
             return result;
@@ -48,22 +62,22 @@ export class ClipVector {
         return new ClipVector(clips);
     }
 
-    /** Create a ClipVector from an array of ClipShapes, each one becoming a deep copy. */
-    public static createClipShapeClones(clips: ClipShape[], result?: ClipVector): ClipVector {
-        const clipClones: ClipShape[] = [];
+    /** Create a ClipVector from (clones of) an array of ClipPrimitives */
+    public static create(clips: ClipPrimitive[], result?: ClipVector): ClipVector {
+        const clipClones: ClipPrimitive[] = [];
         for (const clip of clips)
             clipClones.push(clip.clone());
-        return ClipVector.createClipShapeRefs(clipClones, result);
+        return ClipVector.createCapture(clipClones, result);
     }
 
     /** Create a deep copy of another ClipVector */
-    public static createFrom(donor: ClipVector, result?: ClipVector): ClipVector {
+    public clone (result?: ClipVector): ClipVector {
         const retVal = result ? result : new ClipVector();
         retVal._clips.length = 0;
-        for (const clip of donor._clips) {
+        for (const clip of this._clips) {
             retVal._clips.push(clip.clone());
         }
-        retVal.boundingRange.setFrom(donor.boundingRange);
+        retVal.boundingRange.setFrom(this.boundingRange);
         return retVal;
     }
 
@@ -86,7 +100,7 @@ export class ClipVector {
 
         try {
             for (const clip of json) {
-                const clipPrim = ClipShape.fromJSON(clip);
+                const clipPrim = ClipPrimitive.fromJSON(clip);
                 if (clipPrim)
                     result._clips.push(clipPrim);
             }
@@ -97,23 +111,18 @@ export class ClipVector {
         return result;
     }
 
-    /** Returns a deep copy of this ClipVector (optionally stores it in the result param rather than create using new()) */
-    public clone(result?: ClipVector): ClipVector {
-        return ClipVector.createFrom(this, result);
-    }
-
     /** Empties out the array of ClipShapes. */
     public clear() {
         this._clips.length = 0;
     }
 
-    /** Append a deep copy of the given ClipShape to this ClipVector. */
-    public appendClone(clip: ClipShape) {
+    /** Append a deep copy of the given ClipPrimitive to this ClipVector. */
+    public appendClone(clip: ClipPrimitive) {
         this._clips.push(clip.clone());
     }
 
-    /** Append a reference of the given ClipShape to this ClipVector. */
-    public appendReference(clip: ClipShape) {
+    /** Append a reference of the given ClipPrimitive to this ClipVector. */
+    public appendReference(clip: ClipPrimitive) {
         this._clips.push(clip);
     }
 
@@ -127,17 +136,19 @@ export class ClipVector {
         return true;
     }
 
-    /** Returns the three-dimensional range that this ClipVector spans, which may be null. */
+    /** Returns the three-dimensional range of the ClipShapes (ignoring other kinds of clippers) that this ClipVector spans, which may be null. */
     public getRange(transform?: Transform, result?: Range3d): Range3d | undefined {
         const range = Range3d.createNull(result);
 
         for (const shape of this._clips) {
-            const thisRange = shape.getRange(false, transform);
-            if (thisRange !== undefined) {
-                if (range.isNull)
-                    range.setFrom(thisRange);
-                else
-                    range.intersect(thisRange, range);
+            if (shape instanceof ClipShape) {
+                const thisRange = shape.getRange(false, transform);
+                if (thisRange !== undefined) {
+                    if (range.isNull)
+                        range.setFrom(thisRange);
+                    else
+                        range.intersect(thisRange, range);
+                }
             }
         }
         if (!this.boundingRange.isNull)
@@ -151,9 +162,10 @@ export class ClipVector {
         if (!this.boundingRange.isNull && !this.boundingRange.containsPoint(point))
             return false;
 
-        for (const clip of this._clips)
+        for (const clip of this._clips) {
             if (!clip.pointInside(point, onTolerance))
                 return false;
+        }
         return true;
     }
 
@@ -171,12 +183,14 @@ export class ClipVector {
 
     /**
      * A simple way of packaging this ClipVector's ClipShape points into a multidimensional array, while also
-     * taking into account each ClipShape's individual transforms.
+     * taking into account each ClipPrimitive's individual transforms.
+     *
+     * ClipPrimitives OTHER THAN ClipShape are ignored.
      *
      * Information out:
      *  - All of the loop points are stored in the multidimensional Point3d array given (will return unchanged upon failure)
-     *  - If given a transform, will be set from the transformFromClip of the first ClipShape
-     *  - The ClipMask of the final ClipShape is stored in the returned array at index 0
+     *  - If given a transform, will be set from the transformFromClip of the first ClipPrimitive
+     *  - The ClipMask of the final ClipPrimitive is stored in the returned array at index 0
      *  - The last valid zLow found is stored in the returned array at index 1
      *  - The last valid zHigh found is stored in the returned array at index 2
      */
@@ -189,39 +203,42 @@ export class ClipVector {
 
         if (this._clips.length === 0)
             return retVal;
-
+        let firstClipShape: ClipShape | undefined;
         const deltaTrans = Transform.createIdentity();
+
         for (const clip of this._clips) {
+            if (clip instanceof ClipShape) {
+                if (firstClipShape !== undefined && clip !== firstClipShape) {      // Is not the first iteration
+                    let fwdTrans = Transform.createIdentity();
+                    let invTrans = Transform.createIdentity();
 
-            if (clip !== this._clips[0]) {      // Is not the first iteration
-                let fwdTrans = Transform.createIdentity();
-                let invTrans = Transform.createIdentity();
-
-                if (this._clips[0].transformValid && clip.transformValid) {
-                    fwdTrans = clip.transformFromClip!.clone();
-                    invTrans = this._clips[0].transformToClip!.clone();
+                    if (firstClipShape.transformValid && clip.transformValid) {
+                        fwdTrans = clip.transformFromClip!.clone();
+                        invTrans = firstClipShape.transformToClip!.clone();
+                    }
+                    deltaTrans.setFrom(invTrans.multiplyTransformTransform(fwdTrans));
                 }
-                deltaTrans.setFrom(invTrans.multiplyTransformTransform(fwdTrans));
-            }
+                if (!firstClipShape)
+                    firstClipShape = clip;
+                loopPoints[nLoops] = [];
 
-            loopPoints[nLoops] = [];
+                if (clip.polygon !== undefined) {
+                    clipM = ClipMask.XAndY;
 
-            if (clip.polygon !== undefined) {
-                clipM = ClipMask.XAndY;
+                    if (clip.zHighValid) {
+                        clipM = clipM | ClipMask.ZHigh;
+                        zFront = clip.zHigh!;
+                    }
+                    if (clip.zLowValid) {
+                        clipM = clipM | ClipMask.ZLow;
+                        zBack = clip.zLow!;
+                    }
 
-                if (clip.zHighValid) {
-                    clipM = clipM | ClipMask.ZHigh;
-                    zFront = clip.zHigh!;
+                    for (const point of clip.polygon)
+                        loopPoints[nLoops].push(point.clone());
+                    deltaTrans.multiplyPoint3dArray(loopPoints[nLoops], loopPoints[nLoops]);
+                    nLoops++;
                 }
-                if (clip.zLowValid) {
-                    clipM = clipM | ClipMask.ZLow;
-                    zBack = clip.zLow!;
-                }
-
-                for (const point of clip.polygon)
-                    loopPoints[nLoops].push(point.clone());
-                deltaTrans.multiplyPoint3dArray(loopPoints[nLoops], loopPoints[nLoops]);
-                nLoops++;
             }
         }
 
@@ -229,8 +246,8 @@ export class ClipVector {
         retVal.push(zBack);
         retVal.push(zFront);
 
-        if (transform)
-            transform.setFrom(this._clips[0].transformFromClip!);
+        if (transform && firstClipShape)
+            transform.setFrom(firstClipShape.transformFromClip!);
 
         return retVal;
     }
@@ -247,7 +264,7 @@ export class ClipVector {
             clip.fetchClipPlanesRef();
     }
 
-    /** Returns true if able to successfully multiply all member ClipShape planes by the matrix given. */
+    /** Returns true if able to successfully multiply all member ClipPrimitive planes by the matrix given. */
     public multiplyPlanesTimesMatrix(matrix: Matrix4d): boolean {
         let numErrors = 0;
         for (const clip of this._clips)
@@ -293,10 +310,12 @@ export class ClipVector {
     public isAnyLineStringPointInside(points: Point3d[]): boolean {
         for (const clip of this._clips) {
             const clipPlaneSet = clip.fetchClipPlanesRef();
-            for (let i = 0; i + 1 < points.length; i++) {
-                const segment = LineSegment3d.create(points[i], points[i + 1]);
-                if (clipPlaneSet.isAnyPointInOrOnFromSegment(segment))
-                    return true;
+            if (clipPlaneSet !== undefined) {
+                for (let i = 0; i + 1 < points.length; i++) {
+                    const segment = LineSegment3d.create(points[i], points[i + 1]);
+                    if (clipPlaneSet.isAnyPointInOrOnFromSegment(segment))
+                        return true;
+                }
             }
         }
         return false;
@@ -325,13 +344,15 @@ export class ClipVector {
 
             for (const clip of this._clips) {
                 const clipPlaneSet = clip.fetchClipPlanesRef();
-                clipPlaneSet.appendIntervalsFromSegment(segment, clipIntervals);
-                const index1 = clipIntervals.length;
-                fractionSum += this.sumSizes(clipIntervals, index0, index1);
-                index0 = index1;
-                // ASSUME primitives are non-overlapping...
-                if (fractionSum >= ClipVector._TARGET_FRACTION_SUM)
-                    break;
+                if (clipPlaneSet !== undefined) {
+                    clipPlaneSet.appendIntervalsFromSegment(segment, clipIntervals);
+                    const index1 = clipIntervals.length;
+                    fractionSum += this.sumSizes(clipIntervals, index0, index1);
+                    index0 = index1;
+                    // ASSUME primitives are non-overlapping...
+                    if (fractionSum >= ClipVector._TARGET_FRACTION_SUM)
+                        break;
+                }
             }
             if (fractionSum < ClipVector._TARGET_FRACTION_SUM)
                 return false;

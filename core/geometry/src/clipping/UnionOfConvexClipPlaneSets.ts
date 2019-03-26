@@ -220,22 +220,21 @@ export class UnionOfConvexClipPlaneSets implements Clipper {
   }
 
   /**
-   * Returns range if result does not cover a space of infinity, otherwise undefined.
-   * Note: If given a range for output, overwrites it, rather than extending it.
+   * Collect the output from computePlanePlanePlaneIntersections in all the contained convex sets.
+   *
+   * @param transform (optional) transform to apply to the points.
+   * @param points (optional) array to which computed points are to be added.
+   * @param range (optional) range to be extended by the computed points
+   * @param transform (optional) transform to apply to the accepted points.
+   * @param testContainment if true, test each point to see if it is within the convex set.  (Send false if confident that the convex set is rectilinear set such as a slab.  Send true if chiseled corners are possible)
+   * @returns number of points.
    */
-  public getRangeOfAlignedPlanes(transform?: Transform, result?: Range3d): Range3d | undefined {
-    const range = Range3d.createNull(result);
-
+  public computePlanePlanePlaneIntersectionsInAllConvexSets(points: Point3d[] | undefined, rangeToExtend: Range3d | undefined, transform?: Transform, testContainment: boolean = true): number {
+    let n = 0;
     for (const convexSet of this._convexSets) {
-      const thisRange = Range3d.createNull();
-
-      if (convexSet.getRangeOfAlignedPlanes(transform, thisRange))
-        range.extendRange(thisRange);
+      n += convexSet.computePlanePlanePlaneIntersections(points, rangeToExtend, transform, testContainment);
     }
-    if (range.isNull)
-      return undefined;
-    else
-      return range;
+    return n;
   }
 
   public multiplyPlanesByMatrix(matrix: Matrix4d) {
