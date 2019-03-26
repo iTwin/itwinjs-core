@@ -837,10 +837,12 @@ export class ECDb implements IDisposable, PageableECSql {
     // (undocumented)
     constructor();
     abandonChanges(): void;
+    // @internal
     clearStatementCache(): void;
     closeDb(): void;
     createDb(pathName: string): void;
     dispose(): void;
+    // @internal
     getCachedStatementCount(): number;
     importSchema(pathName: string): void;
     readonly isOpen: boolean;
@@ -977,6 +979,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
     // @internal
     setIsShared(b: boolean): void;
     step(): DbResult;
+    // @internal
     stepAsync(): Promise<DbResult>;
     stepForInsert(): ECSqlInsertResult;
     }

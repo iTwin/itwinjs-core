@@ -224,12 +224,12 @@ export class ECDb implements IDisposable, PageableECSql {
     this.nativeDb.closeDb();
   }
 
-  /** @private use to test statement caching */
+  /** @internal use to test statement caching */
   public clearStatementCache() {
     this._statementCache.clear();
   }
 
-  /** @private use to test statement caching */
+  /** @internal use to test statement caching */
   public getCachedStatementCount() {
     return this._statementCache.getCount();
   }

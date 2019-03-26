@@ -88,12 +88,12 @@ export class Logger {
     mdata.ApplicationVersion = requestContext.applicationVersion;
   }
 
-  /** @private used by addon */
+  /** @internal used by addon */
   public static getCurrentClientRequestContext(): ClientRequestContext {
     return ClientRequestContext.current;
   }
 
-  /** @private used by addon */
+  /** @internal used by addon */
   public static setCurrentClientRequestContext(obj: any) {
     if (obj === undefined) {
       if (ClientRequestContext.current.activityId !== "")
