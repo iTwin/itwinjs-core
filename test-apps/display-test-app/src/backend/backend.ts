@@ -34,6 +34,10 @@ function setupStandaloneConfiguration() {
     if (undefined !== process.env.SVT_STANDALONE_SIGNIN)
       configuration.signInForStandalone = true;
 
+    const extensions = process.env.SVT_DISABLED_EXTENSIONS;
+    if (undefined !== extensions)
+      configuration.disabledExtensions = extensions.split(";");
+
     const configPathname = path.normalize(path.join(__dirname, "../webresources", "configuration.json"));
     fs.writeFileSync(configPathname, JSON.stringify(configuration), "utf8");
   }

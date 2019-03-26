@@ -5,16 +5,6 @@
 import { ConnectClient, Project, IModelHubClient, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
 import { IModelApp, AuthorizedFrontendRequestContext } from "@bentley/imodeljs-frontend";
 import { showStatus } from "./Utils";
-import { SimpleViewState } from "./SimpleViewState";
-
-/** Parameters for starting SimpleViewTest with a specified initial configuration */
-
-export enum ProjectScope {
-  Favorites,
-  MostRecentlyUsed,
-  Invited,
-  All,
-}
 
 // Logic to establish a connection to a Connect-hosted project and iModel
 let _connectClient!: ConnectClient;
@@ -31,13 +21,14 @@ async function getProjectByName(requestContext: AuthorizedClientRequestContext, 
   return project;
 }
 
-export async function initializeIModelHub(state: SimpleViewState): Promise<void> {
+export async function initializeIModelHub(projectName: string): Promise<Project | undefined> {
   _connectClient = new ConnectClient();
 
-  showStatus("opening Project", state.projectConfig!.projectName);
+  showStatus("opening Project", projectName);
 
   const requestContext = await AuthorizedFrontendRequestContext.create();
-  state.project = await getProjectByName(requestContext, state.projectConfig!.projectName);
+  const project = await getProjectByName(requestContext, projectName);
 
   IModelApp.iModelClient = new IModelHubClient();
+  return project;
 }

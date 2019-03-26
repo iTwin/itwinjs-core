@@ -117,7 +117,7 @@ export class IModelApp {
    * MyApp.startup();
    * ```
    */
-  public static startup(imodelClient?: IModelClient): void {
+  public static startup(imodelClient?: IModelClient, renderSysOpt?: RenderSystem.Options): void {
     if (IModelApp._initialized)
       throw new IModelError(IModelStatus.AlreadyLoaded, "startup may only be called once");
 
@@ -150,7 +150,7 @@ export class IModelApp {
     // the startup function may have already allocated any of these members, so first test whether they're present
     if (!IModelApp.applicationId) IModelApp.applicationId = "2686";  // Default to product id of iModel.js
     if (!IModelApp.settings) IModelApp.settings = new ConnectSettingsClient(IModelApp.applicationId);
-    if (!IModelApp._renderSystem) IModelApp._renderSystem = this.supplyRenderSystem();
+    if (!IModelApp._renderSystem) IModelApp._renderSystem = this.supplyRenderSystem(renderSysOpt);
     if (!IModelApp.viewManager) IModelApp.viewManager = new ViewManager();
     if (!IModelApp.tileAdmin) IModelApp.tileAdmin = TileAdmin.create();
     if (!IModelApp.notifications) IModelApp.notifications = new NotificationManager();
@@ -192,7 +192,7 @@ export class IModelApp {
   /** Implement this method to supply the RenderSystem that provides display capabilities.
    * @hidden
    */
-  protected static supplyRenderSystem(): RenderSystem { return System.create(); }
+  protected static supplyRenderSystem(options?: RenderSystem.Options): RenderSystem { return System.create(options); }
 
   private static getApplicationVersion(): string {
     return typeof (BUILD_SEMVER) !== "undefined" ? BUILD_SEMVER : "";

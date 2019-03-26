@@ -29,7 +29,7 @@ if (process.argv.length > 2 && process.argv[2].split(".").pop() === "json")
 // --------------------------------------------------------------------------------------
 // ---------------- This part copied from protogist ElectronMain.ts ---------------------
 const autoOpenDevTools = (undefined === process.env.SVT_NO_DEV_TOOLS);
-const maximizeWindow = (undefined !== process.env.SVT_MAXIMIZE_WINDOW);
+const maximizeWindow = (undefined === process.env.SVT_NO_MAXIMIZE_WINDOW); // Make max window the default
 
 (async () => { // tslint:disable-line:no-floating-promises
   const manager = new IModelJsElectronManager(path.join(__dirname, "..", "webresources"));

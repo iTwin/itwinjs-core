@@ -2773,9 +2773,9 @@ export class IModelApp {
     static sessionId: GuidString;
     static settings: SettingsAdmin;
     static shutdown(): void;
-    static startup(imodelClient?: IModelClient): void;
+    static startup(imodelClient?: IModelClient, renderSysOpt?: RenderSystem.Options): void;
     protected static supplyI18NOptions(): I18NOptions | undefined;
-    protected static supplyRenderSystem(): RenderSystem;
+    protected static supplyRenderSystem(options?: RenderSystem.Options): RenderSystem;
     // (undocumented)
     static tentativePoint: TentativePoint;
     // Warning: (ae-incompatible-release-tags) The symbol "tileAdmin" is marked as @public, but its signature references "TileAdmin" which is marked as @alpha
@@ -4554,6 +4554,15 @@ export abstract class RenderSystem implements IDisposable {
     readonly maxTextureSize: number;
     // @internal (undocumented)
     onInitialized(): void;
+}
+
+// @public
+export namespace RenderSystem {
+    // @alpha
+    export interface Options {
+        // @internal
+        disabledExtensions?: WebGLExtensionName[];
+    }
 }
 
 // @internal
@@ -7471,6 +7480,9 @@ export class WalkViewTool extends ViewManip {
     // (undocumented)
     static toolId: string;
 }
+
+// @internal (undocumented)
+export type WebGLExtensionName = "WEBGL_draw_buffers" | "OES_element_index_uint" | "OES_texture_float" | "OES_texture_half_float" | "WEBGL_depth_texture" | "EXT_color_buffer_float" | "EXT_shader_texture_lod" | "ANGLE_instanced_arrays";
 
 // @public
 export class WheelEventProcessor {
