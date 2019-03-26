@@ -6,14 +6,12 @@
 
 import * as React from "react";
 import * as classnames from "classnames";
+import { UiFramework, IModelInfo, ProjectInfo, ProjectScope } from "@bentley/ui-framework";
 import { IModelList } from "./IModelList";
 import { ProjectDropdown } from "./ProjectDropdown";
-import { UiFramework } from "../UiFramework";
-import { IModelInfo } from "../clientservices/IModelServices";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { NavigationList, NavigationItem } from "./Navigation";
 import { BlockingPrompt } from "./BlockingPrompt";
-import { ProjectInfo, ProjectScope } from "../clientservices/ProjectServices";
 import "./IModelOpen.scss";
 import "./Common.scss";
 

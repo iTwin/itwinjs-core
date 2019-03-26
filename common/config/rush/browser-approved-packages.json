@@ -224,7 +224,7 @@
     },
     {
       "name": "classnames",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "cli-highlight",

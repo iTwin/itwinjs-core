@@ -21,8 +21,7 @@
   "iModelJs": {
     "buildModule": {
       "type": "application",
-      "sourceResources": [
-        {
+      "sourceResources": [{
           "source": "./src/**/*.scss",
           "dest": "./lib"
         },
@@ -46,14 +45,12 @@
         "styleSheets": true,
         "htmlTemplate": "./src/frontend/index.html"
       },
-      "subModules": [
-        {
-          "dest": "./lib/webresources",
-          "entry": "./lib/frontend/plugins/MeasurePoints.js",
-          "bundleName": "MeasurePoints",
-          "type": "plugin"
-        }
-      ],
+      "subModules": [{
+        "dest": "./lib/webresources",
+        "entry": "./lib/frontend/plugins/MeasurePoints.js",
+        "bundleName": "MeasurePoints",
+        "type": "plugin"
+      }],
       "makeConfig": {
         "dest": "./lib/webresources/config.json",
         "filter": "^imjs_"
@@ -92,6 +89,7 @@
     "@bentley/imodeljs-clients": "0.191.0-dev.18",
     "@bentley/imodeljs-webserver": "0.191.0-dev.18",
     "@bentley/icons-generic-webfont": "^0.0.9",
+    "@types/classnames": "^2.2.3",
     "@types/node": "10.14.1",
     "@types/react": "16.7.22",
     "@types/react-dom": "16.0.11",
@@ -136,6 +134,7 @@
     "@bentley/ui-components": "0.191.0-dev.18",
     "@bentley/ui-ninezone": "0.191.0-dev.18",
     "@bentley/ui-framework": "0.191.0-dev.18",
+    "classnames": "^2.2.5",
     "cpx": "^1.5.0",
     "mobx": "^5.8.0",
     "mobx-react": "^5.4.3",

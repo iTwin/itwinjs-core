@@ -127,22 +127,6 @@
         "pause": "Pause",
         "stop": "Stop"
       }
-    },
-    "ScheduleAnimation": {
-      "keyin": "Schedule Animation",
-      "description": "Schedule analysis solutions",
-      "flyover": "Schedule Animation",
-      "Prompts": {
-        "SelectView": "Select View and press Play button"
-      },
-      "ToolSettings": {
-        "duration": "Duration:",
-        "seconds": "sec",
-        "loop": "Loop",
-        "play": "Play",
-        "pause": "Pause",
-        "stop": "Stop"
-      }
     }
   },
   "settingsStage": {

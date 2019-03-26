@@ -29,8 +29,10 @@ export class SignOutModalFrontstage implements ModalFrontstageInfo {
   private _getInitials(): string {
     let initials: string = "";
     if (this._userInfo && this._userInfo.profile) {
+      // istanbul ignore else
       if (this._userInfo.profile.firstName.length > 0)
         initials += this._userInfo.profile.firstName[0];
+      // istanbul ignore else
       if (this._userInfo.profile.lastName.length > 0)
         initials += this._userInfo.profile.lastName[0];
     }

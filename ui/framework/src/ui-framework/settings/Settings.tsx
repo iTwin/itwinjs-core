@@ -7,9 +7,10 @@
 import * as React from "react";
 import { ModalFrontstageInfo } from "../frontstage/FrontstageManager";
 import { UiFramework } from "../UiFramework";
+// import { ConfigurableUiActions } from "../configurableui/state";
 import { Toggle } from "@bentley/ui-core";
 import "./Settings.scss";
-import { ColorTheme } from "../overallcontent/state";
+import { ColorTheme } from "../theme/ThemeManager";
 
 /** Modal frontstage displaying the active settings. */
 export class SettingsModalFrontstage implements ModalFrontstageInfo {

@@ -37,13 +37,17 @@ export class SignIn extends React.Component<SignInProps, SignInState> {
   }
 
   public componentDidMount() {
-    OidcClientWrapper.oidcClient.getAccessToken(new ClientRequestContext()) // tslint:disable-line:no-floating-promises
-      .then((accessToken: AccessToken | undefined) => { this._setOrClearAccessToken (accessToken); });
-    OidcClientWrapper.oidcClient.onUserStateChanged.addListener(this._setOrClearAccessToken);
+    if (OidcClientWrapper.oidcClient) {
+      OidcClientWrapper.oidcClient.getAccessToken(new ClientRequestContext()) // tslint:disable-line:no-floating-promises
+        .then((accessToken: AccessToken | undefined) => { this._setOrClearAccessToken(accessToken); });
+      OidcClientWrapper.oidcClient.onUserStateChanged.addListener(this._setOrClearAccessToken);
+    }
   }
 
   public componentWillUnmount() {
-    OidcClientWrapper.oidcClient.onUserStateChanged.removeListener(this._setOrClearAccessToken);
+    if (OidcClientWrapper.oidcClient) {
+      OidcClientWrapper.oidcClient.onUserStateChanged.removeListener(this._setOrClearAccessToken);
+    }
   }
 
   private _onSignInClick = async (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -56,7 +60,7 @@ export class SignIn extends React.Component<SignInProps, SignInState> {
     if (accessToken)
       this.props.onSignIn(accessToken);
     else
-      this.setState ( {isReady: true} );
+      this.setState({ isReady: true });
   }
 
   private _onRegisterShow = () => {

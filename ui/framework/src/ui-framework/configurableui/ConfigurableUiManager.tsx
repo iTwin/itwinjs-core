@@ -47,6 +47,10 @@ export class ConfigurableUiManager {
     ToolUiManager.initialize();
   }
 
+  public static clearRegisteredControls() {
+    this._registeredControls = {};
+  }
+
   /** Registers a control implementing the [[ConfigurableUiElement]] interface.
    * These controls can be a
    * [[ContentControl]],

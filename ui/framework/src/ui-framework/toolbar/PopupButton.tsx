@@ -25,14 +25,10 @@ export interface PopupButtonProps extends ItemProps {
   onExpanded?: (expand: boolean) => void;
 }
 
-export interface PopupButtonState extends BaseItemState {
-  expanded: boolean;
-}
-
 /**
  * Used to provide custom popup button in toolbar.
  */
-export class PopupButton extends React.Component<PopupButtonProps, PopupButtonState> {
+export class PopupButton extends React.Component<PopupButtonProps, BaseItemState> {
   private _label: string | StringGetter = "";
   private _componentUnmounting = false;
 
@@ -49,7 +45,6 @@ export class PopupButton extends React.Component<PopupButtonProps, PopupButtonSt
       isEnabled: undefined !== props.isEnabled ? props.isEnabled : true,
       isActive: undefined !== props.isActive ? props.isActive : false,
       isPressed: undefined !== props.isPressed ? props.isPressed : false,
-      expanded: false,
     };
   }
 
@@ -63,17 +58,17 @@ export class PopupButton extends React.Component<PopupButtonProps, PopupButtonSt
   }
 
   private _toggleIsExpanded = () => {
-    const expand = !this.state.expanded;
+    const isPressed = !this.state.isPressed;
 
     this.setState((_prevState, _props) => {
       return {
         ..._prevState,
-        expanded: !_prevState.expanded,
+        isPressed,
       };
     });
 
     if (this.props.onExpanded)
-      this.props.onExpanded(expand);
+      this.props.onExpanded(isPressed);
   }
 
   /** Minimizes the expandable component. */
@@ -81,14 +76,14 @@ export class PopupButton extends React.Component<PopupButtonProps, PopupButtonSt
     this.setState((_prevState, _props) => {
       return {
         ..._prevState,
-        expanded: false,
+        isPressed: false,
       };
     });
   }
 
   /** Checks if ExpandableItem is expanded. */
   public isExpanded = () => {
-    return this.state.expanded;
+    return this.state.isPressed;
   }
 
   private _handleSyncUiEvent = (args: SyncUiEventArgs): void => {
@@ -140,7 +135,7 @@ export class PopupButton extends React.Component<PopupButtonProps, PopupButtonSt
 
   /** Returns the list with the items */
   public getExpandedContent() {
-    if (!this.state.expanded)
+    if (!this.state.isPressed)
       return undefined;
 
     return (

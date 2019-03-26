@@ -6,9 +6,8 @@
 
 import * as React from "react";
 import * as classnames from "classnames";
-import { ProjectInfo, ProjectScope } from "../clientservices/ProjectServices";
+import { UiFramework, ProjectInfo, ProjectScope } from "@bentley/ui-framework";
 import { AccessToken } from "@bentley/imodeljs-clients";
-import { UiFramework } from "../UiFramework";
 import { ProjectTabs, ProjectTab } from "./ProjectTabs";
 import { SearchBox, Spinner, SpinnerSize } from "@bentley/ui-core";
 import "./Common.scss";

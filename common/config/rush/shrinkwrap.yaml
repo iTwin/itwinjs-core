@@ -14659,12 +14659,14 @@ packages:
   'file:projects/ui-test-app.tgz':
     dependencies:
       '@bentley/icons-generic-webfont': npm.bentley.com/@bentley/icons-generic-webfont/0.0.9
+      '@types/classnames': 2.2.7
       '@types/node': 10.14.1
       '@types/react': 16.7.22
       '@types/react-dom': 16.0.11
       '@types/react-redux': 7.0.5
       '@types/semver': 5.5.0
       autoprefixer: 8.6.5
+      classnames: 2.2.6
       cpx: 1.5.0
       css-loader: 0.28.11
       electron: 4.1.1

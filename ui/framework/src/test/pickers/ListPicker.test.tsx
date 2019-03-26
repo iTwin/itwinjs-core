@@ -123,11 +123,28 @@ describe("ListPickerItem", () => {
   });
 
   it("should unmount correctly", () => {
+    const enableAllFunc = () => { };
+    const disableAllFunc = () => { };
+    const invertFunc = () => { };
+
+    const unknownItem: ListItem = {
+      key: "unknown-item",
+      name: "unknown",
+      enabled: false,
+      type: ListItemType.Item,
+    };
+
+    const singleItemList = new Array<ListItem>();
+    singleItemList.push(unknownItem);
+
     const component = enzyme.mount(
       <ListPicker
         title={title}
-        items={listItems}
+        items={singleItemList}
         setEnabled={setEnabled}
+        enableAllFunc={enableAllFunc}
+        disableAllFunc={disableAllFunc}
+        invertFunc={invertFunc}
       />,
     );
     component.unmount();

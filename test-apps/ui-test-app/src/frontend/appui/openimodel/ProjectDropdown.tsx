@@ -6,7 +6,7 @@
 
 import * as React from "react";
 import * as classnames from "classnames";
-import { ProjectInfo } from "../clientservices/ProjectServices";
+import { ProjectInfo } from "@bentley/ui-framework";
 import { ProjectDialog } from "./ProjectDialog";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { Popup, Position } from "@bentley/ui-core";

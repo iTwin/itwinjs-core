@@ -6,6 +6,7 @@
 
 import { createAction, ActionsUnion } from "../utils/redux-ts";
 import { SnapMode } from "@bentley/imodeljs-frontend";
+import { COLOR_THEME_DEFAULT } from "../theme/ThemeManager";
 
 // cSpell:ignore configurableui snapmode toolprompt
 /** Action Ids used by Redux and to send sync UI components. Typically used to refresh visibility or enable state of control.
@@ -14,24 +15,28 @@ import { SnapMode } from "@bentley/imodeljs-frontend";
 export enum ConfigurableUiActionId {
   SetSnapMode = "configurableui:set_snapmode",
   SetToolPrompt = "configurableui:set_toolprompt",
+  SetTheme = "configurableui:set_theme",
 }
 
 /** The portion of state managed by the ConfigurableUiReducer. */
 export interface ConfigurableUiState {
   snapMode: number;
   toolPrompt: string;
+  theme: string;
 }
 
 /** used on first call of ConfigurableUiReducer */
 const initialState: ConfigurableUiState = {
   snapMode: SnapMode.NearestKeypoint as number,
   toolPrompt: "",
+  theme: COLOR_THEME_DEFAULT,
 };
 
 /** An object with a function that creates each ConfigurableUiReducer that can be handled by our reducer. */ // tslint:disable-next-line:variable-name
 export const ConfigurableUiActions = {
   setSnapMode: (snapMode: number) => createAction(ConfigurableUiActionId.SetSnapMode, snapMode),
   setToolPrompt: (toolPrompt: string) => createAction(ConfigurableUiActionId.SetToolPrompt, toolPrompt),
+  setTheme: (theme: string) => createAction(ConfigurableUiActionId.SetTheme, theme),
 };
 
 /** Union of ConfigurableUi Redux actions  */
@@ -50,7 +55,8 @@ export function ConfigurableUiReducer(state: ConfigurableUiState = initialState,
         return { ...state, toolPrompt: _action.payload };
       break;
     }
-
+    case ConfigurableUiActionId.SetTheme:
+      return { ...state, theme: _action.payload };
   }
 
   return state;

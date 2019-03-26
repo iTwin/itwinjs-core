@@ -7,7 +7,15 @@
 import * as React from "react";
 import { connect } from "react-redux";
 import { UiFramework } from "../UiFramework";
-import { ColorTheme } from "../overallcontent/state";
+
+/** Enum for the Color Theme string. */
+export enum ColorTheme {
+  Light = "light",
+  Dark = "dark",
+}
+
+/** The default color theme. */
+export const COLOR_THEME_DEFAULT = ColorTheme.Light;
 
 /** Properties of [[ThemeManagerComponent]]. */
 interface ThemeProps {
@@ -17,10 +25,11 @@ interface ThemeProps {
 
 function mapStateToProps(state: any) {
   const frameworkState = state[UiFramework.frameworkStateKey];  // since app sets up key, don't hard-code name
+  // istanbul ignore if
   if (!frameworkState)
     return undefined;
 
-  return { theme: frameworkState.overallContentState.theme };
+  return { theme: frameworkState.configurableUiState.theme };
 }
 
 /** ThemeManagerComponent handles setting themes. */

@@ -7,8 +7,8 @@ import { expect } from "chai";
 import { render, cleanup } from "react-testing-library";
 
 import TestUtils from "../../TestUtils";
-import { ConfigurableUiManager, FrontstageManager, FrontstageProvider, Frontstage, Zone, Widget, FrontstageProps, CoreTools, ToolUiManager } from "../../../ui-framework";
-import { ToolSettingsValue, ToolSettingsPropertyRecord, PrimitiveValue, PropertyDescription, PropertyEditorParamTypes, SuppressLabelEditorParams } from "@bentley/imodeljs-frontend";
+import { ConfigurableUiManager, FrontstageManager, FrontstageProvider, Frontstage, Zone, Widget, FrontstageProps, CoreTools, ToolUiManager, SyncToolSettingsPropertiesEventArgs } from "../../../ui-framework";
+import { ToolSettingsValue, ToolSettingsPropertyRecord, PrimitiveValue, PropertyDescription, PropertyEditorParamTypes, SuppressLabelEditorParams, ToolSettingsPropertySyncItem } from "@bentley/imodeljs-frontend";
 
 describe("DefaultToolUiSettingsProvider", () => {
 
@@ -80,7 +80,8 @@ describe("DefaultToolUiSettingsProvider", () => {
     if (frontstageDef) {
       await FrontstageManager.setActiveFrontstageDef(frontstageDef); // tslint:disable-line:no-floating-promises
 
-      // do not define FrontstageManager.toolSettingsProperties to test that case.
+      // If a tool does not define toolSettingsProperties then useDefaultToolSettingsProvider should be false, but make sure we can gracefully handle
+      // case where useDefaultToolSettingsProvider is true but toolSettingsProperties is not defined.
       ToolUiManager.useDefaultToolSettingsProvider = true;
 
       FrontstageManager.setActiveToolId(firstToolId);
@@ -155,6 +156,12 @@ describe("DefaultToolUiSettingsProvider", () => {
 
       const enumEditor = renderedComponent.getByTestId("components-select-editor");
       expect(enumEditor).not.to.be.undefined;
+
+      // simulate sync from tool
+      const newUseLengthValue = new ToolSettingsValue(false);
+      const syncItem = new ToolSettingsPropertySyncItem(newUseLengthValue, useLengthDescription.name, false);
+      const syncArgs = { toolId: testToolId, syncProperties: [syncItem] } as SyncToolSettingsPropertiesEventArgs;
+      ToolUiManager.onSyncToolSettingsProperties.emit(syncArgs);
     }
   });
 

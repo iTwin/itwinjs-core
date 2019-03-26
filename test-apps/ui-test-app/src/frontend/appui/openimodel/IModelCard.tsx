@@ -5,11 +5,12 @@
 /** @module OpenIModel */
 
 import * as React from "react";
-import { UiFramework } from "../UiFramework";
-import { IModelInfo } from "../clientservices/IModelServices";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { Spinner, SpinnerSize } from "@bentley/ui-core";
+import { UiFramework, IModelInfo } from "@bentley/ui-framework";
+
 import "./IModelCard.scss";
+// import { IModelViewPicker } from "./IModelViewPicker";
 
 /** Properties for the [[IModelCard]] component */
 export interface IModelCardProps {

@@ -6,8 +6,8 @@
 
 import * as React from "react";
 import * as classnames from "classnames";
+import { IModelInfo } from "@bentley/ui-framework";
 import { IModelCard } from "./IModelCard";
-import { IModelInfo } from "../clientservices/IModelServices";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { ProjectDialog } from "./ProjectDialog";
 import { SearchBox, Toggle } from "@bentley/ui-core";

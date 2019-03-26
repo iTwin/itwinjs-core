@@ -6,17 +6,21 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { createStore, combineReducers, Store } from "redux";
 import { Provider } from "react-redux";
-import {  RpcConfiguration, RpcOperation, IModelToken, ElectronRpcManager,
-          ElectronRpcConfiguration, BentleyCloudRpcManager } from "@bentley/imodeljs-common";
+import {
+  RpcConfiguration, RpcOperation, IModelToken, ElectronRpcManager,
+  ElectronRpcConfiguration, BentleyCloudRpcManager,
+} from "@bentley/imodeljs-common";
 import { IModelApp, IModelConnection, SnapMode, AccuSnap } from "@bentley/imodeljs-frontend";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
 import { Config, OidcFrontendClientConfiguration, AccessToken } from "@bentley/imodeljs-clients";
 import { Presentation } from "@bentley/presentation-frontend";
 import { UiCore } from "@bentley/ui-core";
-import { UiComponents, BeDragDropContext} from "@bentley/ui-components";
-import { UiFramework, FrameworkState, FrameworkReducer, AppNotificationManager,
-         IModelInfo, FrontstageManager, createAction, ActionsUnion, DeepReadonly, ProjectInfo,
-         ConfigurableUiContent, ThemeManager, DragDropLayerRenderer, SyncUiEventDispatcher } from "@bentley/ui-framework";
+import { UiComponents, BeDragDropContext } from "@bentley/ui-components";
+import {
+  UiFramework, FrameworkState, FrameworkReducer, AppNotificationManager,
+  IModelInfo, FrontstageManager, createAction, ActionsUnion, DeepReadonly, ProjectInfo,
+  ConfigurableUiContent, ThemeManager, DragDropLayerRenderer, SyncUiEventDispatcher,
+} from "@bentley/ui-framework";
 import { Id64String } from "@bentley/bentleyjs-core";
 import getSupportedRpcs from "../common/rpcs";
 import { AppUi } from "./appui/AppUi";
@@ -73,8 +77,8 @@ const initialState: SampleAppState = {
 export const SampleAppActions = {
   showBackstage: () => createAction(SampleAppUiActionId.showBackstage),
   hideBackstage: () => createAction(SampleAppUiActionId.hideBackstage),
-  setIModelConnection: (iModelConnection: IModelConnection) => createAction(SampleAppUiActionId.setIModelConnection, iModelConnection ),
-  setAccessToken: (accessToken: AccessToken) => createAction(SampleAppUiActionId.setAccessToken, accessToken ),
+  setIModelConnection: (iModelConnection: IModelConnection) => createAction(SampleAppUiActionId.setIModelConnection, iModelConnection),
+  setAccessToken: (accessToken: AccessToken) => createAction(SampleAppUiActionId.setAccessToken, accessToken),
   setTestProperty: (testProperty: string) => createAction(SampleAppUiActionId.setTestProperty, testProperty),
 };
 
@@ -214,7 +218,7 @@ export class SampleAppIModelApp extends IModelApp {
 
   public static async handleWorkOffline() {
     if (!FrontstageManager.activeFrontstageDef) {
-      await SampleAppIModelApp.showFrontstage ("Test4");
+      await SampleAppIModelApp.showFrontstage("Test4");
     }
   }
 
@@ -228,19 +232,19 @@ export class SampleAppIModelApp extends IModelApp {
       SampleAppIModelApp.setIModelConnection(iModelConnection, true);
     }
 
-    await SampleAppIModelApp.showFrontstage ("IModelIndex");
+    await SampleAppIModelApp.showFrontstage("IModelIndex");
   }
 
   public static async showIModelOpen(_iModels: IModelInfo[] | undefined) {
-    await SampleAppIModelApp.showFrontstage ("IModelOpen");
+    await SampleAppIModelApp.showFrontstage("IModelOpen");
   }
 
   public static async showSignIn() {
-    await SampleAppIModelApp.showFrontstage ("SignIn");
+    await SampleAppIModelApp.showFrontstage("SignIn");
   }
 
   // called after the user has signed in (or access token is still valid)
-  public static async onSinIn () {
+  public static async onSinIn() {
 
     // get the default IModel (from imodejs-config)
     let defaultImodel: IModelInfo | undefined;
@@ -271,7 +275,7 @@ export class SampleAppIModelApp extends IModelApp {
 
       if (viewId) {
         // open directly into the iModel (view)
-        await SampleAppIModelApp.openViews (defaultImodel.projectInfo.wsgId, defaultImodel.wsgId, [viewId!]);
+        await SampleAppIModelApp.openViews(defaultImodel.projectInfo.wsgId, defaultImodel.wsgId, [viewId!]);
       } else {
         // open to the IModelIndex frontstage
         await SampleAppIModelApp.showIModelIndex(defaultImodel.projectInfo.wsgId, defaultImodel.wsgId);
@@ -346,4 +350,4 @@ export class SampleAppViewer extends React.Component<any> {
   }
 }
 
-ReactDOM.render( <SampleAppViewer />, document.getElementById("root") as HTMLElement);
+ReactDOM.render(<SampleAppViewer />, document.getElementById("root") as HTMLElement);

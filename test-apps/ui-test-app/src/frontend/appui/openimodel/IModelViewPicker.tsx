@@ -6,9 +6,8 @@
 
 import * as React from "react";
 import * as classnames from "classnames";
-import { UiFramework } from "../UiFramework";
+import { UiFramework, IModelInfo } from "@bentley/ui-framework";
 import { ViewQueryParams, ViewDefinitionProps } from "@bentley/imodeljs-common";
-import { IModelInfo } from "../clientservices/IModelServices";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { Spinner, SpinnerSize } from "@bentley/ui-core";

@@ -75,7 +75,7 @@ class AppBackstage extends React.Component<AppBackstageProps> {
 
   public render(): React.ReactNode {
     return (
-      <Backstage isVisible={this.props.isVisible} onClose={this._handleOnClose} accessToken={SampleAppIModelApp.store.getState().frameworkState!.overallContentState.accessToken} >
+      <Backstage isVisible={this.props.isVisible} onClose={this._handleOnClose} accessToken={SampleAppIModelApp.store.getState().sampleAppState.accessToken} >
         <FrontstageLaunchBackstageItem frontstageId="Test1" labelKey="SampleApp:backstage.testFrontstage1" iconSpec="icon icon-placeholder" />
         <FrontstageLaunchBackstageItem frontstageId="Test2" labelKey="SampleApp:backstage.testFrontstage2" iconSpec="icon icon-placeholder" />
         <BooleanSyncUiListener eventIds={[SampleAppUiActionId.setTestProperty]} boolFunc={(): boolean => SampleAppIModelApp.getTestProperty() !== "HIDE"}>
