@@ -267,6 +267,13 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    */
   public step(): DbResult { return this._stmt!.step(); }
 
+  /** @internal added this back in for testing purposes */
+  public async stepAsync(): Promise<DbResult> {
+    return new Promise((resolve, _reject) => {
+      this._stmt!.stepAsync(resolve);
+    });
+  }
+
   /** Step this INSERT statement and returns status and the ECInstanceId of the newly
    * created instance.
    *

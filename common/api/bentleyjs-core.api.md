@@ -818,6 +818,8 @@ export type LogFunction = (category: string, message: string, metaData?: GetMeta
 // @public
 export class Logger {
     static configureLevels(cfg: LoggerLevelsConfig): void;
+    // @internal
+    static getCurrentClientRequestContext(): ClientRequestContext;
     static getLevel(category: string): LogLevel | undefined;
     static initialize(logError: LogFunction | undefined, logWarning?: LogFunction | undefined, logInfo?: LogFunction | undefined, logTrace?: LogFunction | undefined): void;
     static initializeToConsole(): void;
@@ -830,6 +832,8 @@ export class Logger {
     static logWarning(category: string, message: string, metaData?: GetMetaDataFunction): void;
     static makeMetaData(getMetaData?: GetMetaDataFunction): any;
     static parseLogLevel(str: string): LogLevel;
+    // @internal
+    static setCurrentClientRequestContext(obj: any): void;
     static setLevel(category: string, minLevel: LogLevel): void;
     static setLevelDefault(minLevel: LogLevel): void;
     static turnOffCategories(): void;
