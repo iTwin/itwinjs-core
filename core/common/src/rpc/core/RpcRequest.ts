@@ -18,6 +18,30 @@ import { RpcResponseCacheControl, RpcRequestEvent, RpcRequestStatus, RpcProtocol
 
 const aggregateLoad = { lastRequest: 0, lastResponse: 0 };
 
+export class ResponseLike implements Response {
+  private _data: Promise<any>;
+  public get body() { return null; }
+  public async arrayBuffer(): Promise<ArrayBuffer> { return this._data; }
+  public async blob(): Promise<Blob> { throw new IModelError(BentleyStatus.ERROR, "Not implemented."); }
+  public async formData(): Promise<FormData> { throw new IModelError(BentleyStatus.ERROR, "Not implemented."); }
+  public async json(): Promise<any> { return this._data; }
+  public async text(): Promise<string> { return this._data; }
+  public get bodyUsed() { return false; }
+  public get headers(): Headers { throw new IModelError(BentleyStatus.ERROR, "Not implemented."); }
+  public get ok(): boolean { return this.status >= 200 && this.status <= 299; }
+  public get redirected() { return false; }
+  public get status() { return 200; }
+  public get statusText() { return ""; }
+  public get trailer(): Promise<Headers> { throw new IModelError(BentleyStatus.ERROR, "Not implemented."); }
+  public get type(): ResponseType { return "basic"; }
+  public get url() { return ""; }
+  public clone() { return Object.assign({}, this); }
+
+  public constructor(data: any) {
+    this._data = Promise.resolve(data);
+  }
+}
+
 /** Supplies an IModelToken for an RPC request. */
 export type RpcRequestTokenSupplier_T = (request: RpcRequest) => IModelToken | undefined;
 
@@ -49,7 +73,9 @@ export type RpcRequestNotFoundHandler = (request: RpcRequest, response: RpcNotFo
  */
 export abstract class RpcRequest<TResponse = any> {
   private _resolve: (value?: TResponse | PromiseLike<TResponse> | undefined) => void = () => undefined;
+  protected _resolveRaw: (value?: Response | PromiseLike<Response> | undefined) => void = () => undefined;
   private _reject: (reason?: any) => void = () => undefined;
+  private _rejectRaw: (reason?: any) => void = () => undefined;
   private _created: number = 0;
   private _lastSubmitted: number = 0;
   private _lastUpdated: number = 0;
@@ -57,6 +83,10 @@ export abstract class RpcRequest<TResponse = any> {
   private _extendedStatus: string = "";
   private _connecting: boolean = false;
   private _active: boolean = true;
+  private _hasRawListener = false;
+  private _raw: ArrayBuffer | string | undefined = undefined;
+  protected _response: Response | undefined = undefined;
+  protected _rawPromise: Promise<Response>;
 
   /** Events raised by RpcRequest. See [[RpcRequestEvent]] */
   public static readonly events: BeEvent<RpcRequestEventHandler> = new BeEvent();
@@ -146,6 +176,12 @@ export abstract class RpcRequest<TResponse = any> {
     return undefined;
   }
 
+  /** The raw implementation response for this request. */
+  public get rawResponse(): Promise<Response> {
+    this._hasRawListener = true;
+    return this._rawPromise;
+  }
+
   /** Constructs an RPC request. */
   public constructor(client: RpcInterface, operation: string, parameters: any[]) {
     this._created = new Date().getTime();
@@ -157,6 +193,7 @@ export abstract class RpcRequest<TResponse = any> {
     this.parameters = parameters;
     this.retryInterval = this.operation.policy.retryInterval(client.configuration);
     this.response = new Promise((resolve, reject) => { this._resolve = resolve; this._reject = reject; });
+    this._rawPromise = new Promise((resolve, reject) => { this._resolveRaw = resolve; this._rejectRaw = reject; });
     this.id = RpcConfiguration.requestContext.getId(this) || Guid.createValue();
     this.setStatus(RpcRequestStatus.Created);
     this.operation.policy.requestCallback(this);
@@ -193,19 +230,26 @@ export abstract class RpcRequest<TResponse = any> {
       const sent = this.setHeaders().then(() => this.send());
       this.operation.policy.sentCallback(this);
       const response: number = await sent;
-      this.protocol.events.raiseEvent(RpcProtocolEvent.ResponseLoading, this);
 
       const status = this.protocol.getStatus(response);
-      if (status === RpcRequestStatus.Unknown) {
-        this._connecting = false;
-        this.handleUnknownResponse(response);
-        return;
-      }
 
-      const value = await this.load();
-      this.protocol.events.raiseEvent(RpcProtocolEvent.ResponseLoaded, this);
-      this._connecting = false;
-      this.handleResponse(response, value);
+      if (this._hasRawListener && status === RpcRequestStatus.Resolved && typeof (this._response) !== "undefined") {
+        this._connecting = false;
+        this.resolveRaw();
+      } else {
+        this.protocol.events.raiseEvent(RpcProtocolEvent.ResponseLoading, this);
+
+        if (status === RpcRequestStatus.Unknown) {
+          this._connecting = false;
+          this.handleUnknownResponse(response);
+          return;
+        }
+
+        const value = await this.load();
+        this.protocol.events.raiseEvent(RpcProtocolEvent.ResponseLoaded, this);
+        this._connecting = false;
+        this.handleResponse(response, value);
+      }
     } catch (err) {
       this.protocol.events.raiseEvent(RpcProtocolEvent.ConnectionErrorReceived, this, err);
       this._connecting = false;
@@ -241,7 +285,13 @@ export abstract class RpcRequest<TResponse = any> {
 
   private handleResolved(value: RpcSerializedValue) {
     try {
+      this._raw = value.objects;
       const result: TResponse = RpcMarshaling.deserialize(this.operation, this.protocol, value);
+
+      if (ArrayBuffer.isView(result)) {
+        this._raw = result.buffer;
+      }
+
       return this.resolve(result);
     } catch (err) {
       return this.reject(err);
@@ -282,13 +332,34 @@ export abstract class RpcRequest<TResponse = any> {
     return;
   }
 
-  private resolve(value: TResponse): void {
+  private resolve(result: TResponse): void {
     if (!this._active)
       return;
 
     this._active = false;
     this.setLastUpdatedTime();
-    this._resolve(value);
+    this._resolve(result);
+
+    if (this._hasRawListener) {
+      if (typeof (this._raw) === "undefined") {
+        throw new IModelError(BentleyStatus.ERROR, "Cannot access raw response.");
+      }
+
+      this._resolveRaw(new ResponseLike(this._raw));
+    }
+
+    this.setStatus(RpcRequestStatus.Resolved);
+    this.dispose();
+  }
+
+  private resolveRaw() {
+    if (typeof (this._response) === "undefined") {
+      throw new IModelError(BentleyStatus.ERROR, "Cannot access raw response.");
+    }
+
+    this._active = false;
+    this.setLastUpdatedTime();
+    this._resolveRaw(this._response);
     this.setStatus(RpcRequestStatus.Resolved);
     this.dispose();
   }
@@ -300,6 +371,11 @@ export abstract class RpcRequest<TResponse = any> {
     this._active = false;
     this.setLastUpdatedTime();
     this._reject(reason);
+
+    if (this._hasRawListener) {
+      this._rejectRaw(reason);
+    }
+
     this.setStatus(RpcRequestStatus.Rejected);
     this.dispose();
   }
@@ -307,6 +383,8 @@ export abstract class RpcRequest<TResponse = any> {
   /** @internal */
   public dispose(): void {
     this.setStatus(RpcRequestStatus.Disposed);
+    this._raw = undefined;
+    this._response = undefined;
 
     const client = this.client as any;
     if (client[CURRENT_REQUEST] === this) {

@@ -568,6 +568,90 @@ export enum ChangeOpCode {
 
 export { ChangeSetStatus }
 
+// @public (undocumented)
+export abstract class CloudStorageCache<TContentId, TContentType> {
+    // (undocumented)
+    constructor();
+    // (undocumented)
+    abstract enabled: boolean;
+    // (undocumented)
+    abstract formContainerName(id: TContentId): string;
+    // (undocumented)
+    abstract formResourceName(id: TContentId): string;
+    // (undocumented)
+    protected getContainer(id: TContentId): Promise<CloudStorageContainerUrl>;
+    // (undocumented)
+    protected abstract instantiateResource(response: Response): Promise<TContentType | undefined>;
+    // (undocumented)
+    protected abstract obtainContainerUrl(id: TContentId, descriptor: CloudStorageContainerDescriptor): Promise<CloudStorageContainerUrl>;
+    // (undocumented)
+    protected requestResource(container: CloudStorageContainerUrl, id: TContentId): Promise<Response>;
+    // (undocumented)
+    retrieve(id: TContentId): Promise<TContentType | undefined>;
+    // (undocumented)
+    protected supplyUrlBase(_container: CloudStorageContainerUrl, _id: TContentId): string | undefined;
+}
+
+// @public (undocumented)
+export interface CloudStorageContainerDescriptor {
+    // (undocumented)
+    name: string;
+    // (undocumented)
+    provider?: CloudStorageProvider;
+}
+
+// @public (undocumented)
+export interface CloudStorageContainerUrl {
+    // (undocumented)
+    descriptor: CloudStorageContainerDescriptor;
+    // (undocumented)
+    expires: number;
+    // (undocumented)
+    headers?: Record<string, string>;
+    // (undocumented)
+    method?: string;
+    // (undocumented)
+    url: string;
+    // (undocumented)
+    valid: number;
+}
+
+// @public (undocumented)
+export namespace CloudStorageContainerUrl {
+    // (undocumented)
+    export function empty(): CloudStorageContainerUrl;
+}
+
+// @public (undocumented)
+export enum CloudStorageProvider {
+    // (undocumented)
+    AliCloud = 2,
+    // (undocumented)
+    Amazon = 1,
+    // (undocumented)
+    Azure = 0,
+    // (undocumented)
+    Local = 3
+}
+
+// @public (undocumented)
+export class CloudStorageTileCache extends CloudStorageCache<TileContentIdentifier, Uint8Array> {
+    // @alpha (undocumented)
+    enabled: boolean;
+    // (undocumented)
+    formContainerName(id: TileContentIdentifier): string;
+    // (undocumented)
+    formResourceName(id: TileContentIdentifier): string;
+    // (undocumented)
+    static getCache(): CloudStorageTileCache;
+    // (undocumented)
+    protected instantiateResource(response: Response): Promise<Uint8Array | undefined>;
+    // (undocumented)
+    protected obtainContainerUrl(id: TileContentIdentifier, descriptor: CloudStorageContainerDescriptor): Promise<CloudStorageContainerUrl>;
+    // (undocumented)
+    protected requestResource(container: CloudStorageContainerUrl, id: TileContentIdentifier): Promise<Response>;
+}
+
 // @public
 export class Code implements CodeProps {
     // (undocumented)
@@ -2309,7 +2393,7 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
     // 
     // (undocumented)
     requestSnap(_iModelToken: IModelToken, _sessionId: string, _props: SnapRequestProps): Promise<SnapResponseProps>;
-    static types: () => (typeof Point3d | typeof Vector3d | typeof Point2d | typeof IModelToken | typeof Code | typeof IModelNotFoundResponse | typeof Vector2d)[];
+    static types: () => (typeof Point3d | typeof Vector3d | typeof Code | typeof Point2d | typeof IModelToken | typeof IModelNotFoundResponse | typeof Vector2d)[];
     static version: string;
 }
 
@@ -2320,13 +2404,15 @@ export abstract class IModelTileRpcInterface extends RpcInterface {
     // (undocumented)
     static getClient(): IModelTileRpcInterface;
     // (undocumented)
-    getTileContent(_iModelToken: IModelToken, _treeId: string, _contentId: string): Promise<Uint8Array>;
+    getTileCacheContainerUrl(_iModelToken: IModelToken, _id: CloudStorageContainerDescriptor): Promise<CloudStorageContainerUrl>;
+    // (undocumented)
+    getTileContent(iModelToken: IModelToken, treeId: string, contentId: string): Promise<Uint8Array>;
     // Warning: (ae-incompatible-release-tags) The symbol "getTileTreeProps" is marked as @public, but its signature references "TileTreeProps" which is marked as @internal
     // 
     // (undocumented)
     getTileTreeProps(_iModelToken: IModelToken, _id: string): Promise<TileTreeProps>;
     // (undocumented)
-    requestTileContent(_iModelToken: IModelToken, _treeId: string, _contentId: string): Promise<Uint8Array>;
+    requestTileContent(iModelToken: IModelToken, treeId: string, contentId: string): Promise<Uint8Array>;
     // Warning: (ae-incompatible-release-tags) The symbol "requestTileTreeProps" is marked as @public, but its signature references "TileTreeProps" which is marked as @internal
     // 
     // (undocumented)
@@ -3451,6 +3537,47 @@ export namespace RenderTexture {
 
 export { RepositoryStatus }
 
+// @internal (undocumented)
+export const RESOURCE = "getResource";
+
+// @public (undocumented)
+export class ResponseLike implements Response {
+    // (undocumented)
+    constructor(data: any);
+    // (undocumented)
+    arrayBuffer(): Promise<ArrayBuffer>;
+    // (undocumented)
+    blob(): Promise<Blob>;
+    // (undocumented)
+    readonly body: null;
+    // (undocumented)
+    readonly bodyUsed: boolean;
+    // (undocumented)
+    clone(): {} & this;
+    // (undocumented)
+    formData(): Promise<FormData>;
+    // (undocumented)
+    readonly headers: Headers;
+    // (undocumented)
+    json(): Promise<any>;
+    // (undocumented)
+    readonly ok: boolean;
+    // (undocumented)
+    readonly redirected: boolean;
+    // (undocumented)
+    readonly status: number;
+    // (undocumented)
+    readonly statusText: string;
+    // (undocumented)
+    text(): Promise<string>;
+    // (undocumented)
+    readonly trailer: Promise<Headers>;
+    // (undocumented)
+    readonly type: ResponseType;
+    // (undocumented)
+    readonly url: string;
+}
+
 // @public
 export class RgbColor {
     constructor(r: number, g: number, b: number);
@@ -3513,6 +3640,8 @@ export enum RpcContentType {
     Binary = 2,
     // (undocumented)
     Multipart = 3,
+    // (undocumented)
+    Stream = 4,
     // (undocumented)
     Text = 1,
     // (undocumented)
@@ -3579,7 +3708,9 @@ export abstract class RpcInterface {
     // @internal (undocumented)
     configurationSupplier: RpcConfigurationSupplier | undefined;
     forward<T = any>(parameters: IArguments): Promise<T>;
+    getResource(token: IModelToken, name: string): Promise<Response>;
     static isVersionCompatible(backend: string, frontend: string): boolean;
+    supplyResource(_token: IModelToken, _name: string): Promise<Readable | undefined>;
 }
 
 // @public (undocumented)
@@ -3642,8 +3773,8 @@ export class RpcManager {
 
 // @internal (undocumented)
 export class RpcMarshaling {
-    static deserialize(_operation: RpcOperation, protocol: RpcProtocol | undefined, value: RpcSerializedValue): any;
-    static serialize(operation: RpcOperation | string, protocol: RpcProtocol | undefined, value: any): RpcSerializedValue;
+    static deserialize(operation: RpcOperation, protocol: RpcProtocol | undefined, value: RpcSerializedValue): any;
+    static serialize(operation: RpcOperation | string, protocol: RpcProtocol | undefined, _value: any): Promise<RpcSerializedValue>;
 }
 
 // @internal
@@ -3715,19 +3846,23 @@ export class RpcOperation {
 // @public (undocumented)
 export namespace RpcOperation {
     export function allowResponseCaching(control?: RpcResponseCacheControl): <T extends RpcInterface>(target: T, propertyKey: string, descriptor: PropertyDescriptor) => void;
-    export function setDefaultPolicy(policy: RpcOperationPolicy): <T extends RpcInterface>(definition: RpcInterfaceDefinition<T>) => void;
-    export function setPolicy(policy: RpcOperationPolicy): <T extends RpcInterface>(target: T, propertyKey: string, descriptor: PropertyDescriptor) => void;
+    export function setDefaultPolicy(policy: RpcOperationPolicy | RpcOperationPolicyProps): <T extends RpcInterface>(definition: RpcInterfaceDefinition<T>) => void;
+    export function setPolicy(policy: RpcOperationPolicy | RpcOperationPolicyProps): <T extends RpcInterface>(target: T, propertyKey: string, descriptor: PropertyDescriptor) => void;
 }
 
 // @public
 export class RpcOperationPolicy {
     allowResponseCaching: RpcResponseCachingCallback_T;
+    forceStrictMode: boolean;
     invocationCallback: RpcInvocationCallback_T;
     requestCallback: RpcRequestCallback_T;
     retryInterval: RpcRequestInitialRetryIntervalSupplier_T;
     sentCallback: RpcRequestCallback_T;
     token: RpcRequestTokenSupplier_T;
 }
+
+// @public (undocumented)
+export type RpcOperationPolicyProps = Partial<RpcOperationPolicy>;
 
 // @public
 export interface RpcOperationsProfile {
@@ -3755,8 +3890,8 @@ export class RpcPendingResponse extends RpcControlResponse {
 export abstract class RpcProtocol {
     constructor(configuration: RpcConfiguration);
     readonly configuration: RpcConfiguration;
-    readonly events: BeEvent<RpcProtocolEventHandler>;
     static readonly events: BeEvent<RpcProtocolEventHandler>;
+    readonly events: BeEvent<RpcProtocolEventHandler>;
     // Warning: (ae-incompatible-release-tags) The symbol "fulfill" is marked as @public, but its signature references "SerializedRpcRequest" which is marked as @internal
     // Warning: (ae-incompatible-release-tags) The symbol "fulfill" is marked as @public, but its signature references "RpcRequestFulfillment" which is marked as @internal
     fulfill(request: SerializedRpcRequest): Promise<RpcRequestFulfillment>;
@@ -3776,6 +3911,7 @@ export abstract class RpcProtocol {
     onRpcImplInitialized(_definition: RpcInterfaceDefinition, _impl: RpcInterface): void;
     // @internal (undocumented)
     onRpcImplTerminated(_definition: RpcInterfaceDefinition, _impl: RpcInterface): void;
+    preserveStreams: boolean;
     abstract readonly requestType: typeof RpcRequest;
     // Warning: (ae-incompatible-release-tags) The symbol "serialize" is marked as @public, but its signature references "SerializedRpcRequest" which is marked as @internal
     serialize(request: RpcRequest): Promise<SerializedRpcRequest>;
@@ -3891,8 +4027,15 @@ export abstract class RpcRequest<TResponse = any> {
     readonly pending: boolean;
     readonly protocol: RpcProtocol;
     // (undocumented)
+    protected _rawPromise: Promise<Response>;
+    readonly rawResponse: Promise<Response>;
+    // (undocumented)
     protected reject(reason: any): void;
+    // (undocumented)
+    protected _resolveRaw: (value?: Response | PromiseLike<Response> | undefined) => void;
     readonly response: Promise<TResponse>;
+    // (undocumented)
+    protected _response: Response | undefined;
     retryInterval: number;
     protected abstract send(): Promise<number>;
     protected abstract setHeader(name: string, value: string): void;
@@ -3931,7 +4074,7 @@ export interface RpcRequestFulfillment {
 // @internal (undocumented)
 export namespace RpcRequestFulfillment {
     // (undocumented)
-    export function forUnknownError(request: SerializedRpcRequest, error: any): RpcRequestFulfillment;
+    export function forUnknownError(request: SerializedRpcRequest, error: any): Promise<RpcRequestFulfillment>;
 }
 
 // @public
@@ -3982,6 +4125,8 @@ export interface RpcSerializedValue {
     data: Uint8Array[];
     // (undocumented)
     objects: string;
+    // (undocumented)
+    stream?: Readable;
 }
 
 // @internal (undocumented)
@@ -4461,6 +4606,16 @@ export interface ThumbnailProps extends ThumbnailFormatProps {
     image: Uint8Array;
 }
 
+// @public (undocumented)
+export interface TileContentIdentifier {
+    // (undocumented)
+    contentId: string;
+    // (undocumented)
+    iModelToken: IModelToken;
+    // (undocumented)
+    treeId: string;
+}
+
 // @internal (undocumented)
 export interface TileProps {
     contentId: string;
@@ -4783,6 +4938,8 @@ export abstract class WebAppRpcProtocol extends RpcProtocol {
     // Warning: (ae-forgotten-export) The symbol "RpcOpenAPIDescription" needs to be exported by the entry point imodeljs-common.d.ts
     readonly openAPIDescription: RpcOpenAPIDescription;
     pathPrefix: string;
+    // (undocumented)
+    preserveStreams: boolean;
     readonly requestType: typeof WebAppRpcRequest;
     // Warning: (ae-forgotten-export) The symbol "OpenAPIParameter" needs to be exported by the entry point imodeljs-common.d.ts
     abstract supplyPathParametersForOperation(_operation: RpcOperation): OpenAPIParameter[];

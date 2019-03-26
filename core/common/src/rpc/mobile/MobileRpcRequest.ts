@@ -8,7 +8,7 @@ import { MobileRpcProtocol } from "./MobileRpcProtocol";
 import { RpcSerializedValue } from "../core/RpcMarshaling";
 
 export class MobileRpcRequest extends RpcRequest {
-  private _response: (value: number) => void = () => undefined;
+  private _res: (value: number) => void = () => undefined;
   private _fulfillment: RpcRequestFulfillment | undefined = undefined;
 
   /** Convenience access to the protocol of this request. */
@@ -19,7 +19,7 @@ export class MobileRpcRequest extends RpcRequest {
     this.protocol.requests.set(this.id, this);
     const parts = await MobileRpcProtocol.encodeRequest(this);
     this.protocol.sendToBackend(parts);
-    return new Promise<number>((resolve) => { this._response = resolve; });
+    return new Promise<number>((resolve) => { this._res = resolve; });
   }
 
   /** Loads the request. */
@@ -40,6 +40,6 @@ export class MobileRpcRequest extends RpcRequest {
   /** @internal */
   public notifyResponse(fulfillment: RpcRequestFulfillment) {
     this._fulfillment = fulfillment;
-    this._response(fulfillment.status);
+    this._res(fulfillment.status);
   }
 }

@@ -8,7 +8,7 @@ import { IModelError } from "../../IModelError";
 import { BentleyStatus, RpcInterfaceStatus, Logger } from "@bentley/bentleyjs-core";
 import { RpcInterface } from "../../RpcInterface";
 import { RpcOperation } from "./RpcOperation";
-import { RpcRegistry, CURRENT_INVOCATION } from "./RpcRegistry";
+import { RpcRegistry, CURRENT_INVOCATION, RESOURCE } from "./RpcRegistry";
 import { RpcProtocol, SerializedRpcRequest, RpcRequestFulfillment } from "./RpcProtocol";
 import { RpcConfiguration } from "./RpcConfiguration";
 import { RpcMarshaling, RpcSerializedValue } from "./RpcMarshaling";
@@ -126,19 +126,19 @@ export class RpcInvocation {
     return Promise.reject(error);
   }
 
-  private fulfillResolved(value: any): RpcRequestFulfillment {
+  private async fulfillResolved(value: any): Promise<RpcRequestFulfillment> {
     this._timeOut = new Date().getTime();
     this.protocol.events.raiseEvent(RpcProtocolEvent.BackendResponseCreated, this);
-    const result = RpcMarshaling.serialize(this.operation, this.protocol, value);
+    const result = await RpcMarshaling.serialize(this.operation, this.protocol, value);
     return this.fulfill(result, value);
   }
 
-  private fulfillRejected(reason: any): RpcRequestFulfillment {
+  private async fulfillRejected(reason: any): Promise<RpcRequestFulfillment> {
     this._timeOut = new Date().getTime();
     if (!RpcConfiguration.developmentMode)
       reason.stack = undefined;
 
-    const result = RpcMarshaling.serialize(this.operation, this.protocol, reason);
+    const result = await RpcMarshaling.serialize(this.operation, this.protocol, reason);
 
     if (reason instanceof RpcPendingResponse) {
       this._pending = true;
@@ -168,9 +168,14 @@ export class RpcInvocation {
   }
 
   private lookupOperationFunction(implementation: RpcInterface): (...args: any[]) => any {
-    const func = (implementation as any)[this.operation.operationName];
+    let op = this.operation.operationName;
+    if (op === RESOURCE) {
+      op = "supplyResource";
+    }
+
+    const func = (implementation as any)[op];
     if (!func || typeof (func) !== "function") {
-      throw new IModelError(BentleyStatus.ERROR, `RPC interface class "${implementation.constructor.name}" does not implement operation "${this.operation.operationName}".`, Logger.logError, "imodeljs-backend.RpcInterface");
+      throw new IModelError(BentleyStatus.ERROR, `RPC interface class "${implementation.constructor.name}" does not implement operation "${op}".`, Logger.logError, "imodeljs-backend.RpcInterface");
     }
 
     return func;

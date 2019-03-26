@@ -11,7 +11,7 @@ import { RpcProtocolEvent } from "../core/RpcConstants";
 import { ipcTransport } from "./ElectronIpcTransport";
 
 export class ElectronRpcRequest extends RpcRequest {
-  private _response: (value: number) => void = () => undefined;
+  private _res: (value: number) => void = () => undefined;
   private _fulfillment: RpcRequestFulfillment | undefined = undefined;
 
   /** Convenience access to the protocol of this request. */
@@ -27,7 +27,7 @@ export class ElectronRpcRequest extends RpcRequest {
       this.protocol.events.raiseEvent(RpcProtocolEvent.ConnectionErrorReceived, this);
     }
 
-    return new Promise<number>((resolve) => { this._response = resolve; });
+    return new Promise<number>((resolve) => { this._res = resolve; });
   }
 
   /** Loads the request. */
@@ -48,6 +48,6 @@ export class ElectronRpcRequest extends RpcRequest {
   /** @internal */
   public notifyResponse(fulfillment: RpcRequestFulfillment) {
     this._fulfillment = fulfillment;
-    this._response(fulfillment.status);
+    this._res(fulfillment.status);
   }
 }

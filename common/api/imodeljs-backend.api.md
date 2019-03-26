@@ -25,6 +25,9 @@ import { ChangeSet } from '@bentley/imodeljs-clients';
 import { ChangeSetApplyOption } from '@bentley/bentleyjs-core';
 import { ChangeSetStatus } from '@bentley/bentleyjs-core';
 import { ClientRequestContext } from '@bentley/bentleyjs-core';
+import { CloudStorageContainerDescriptor } from '@bentley/imodeljs-common';
+import { CloudStorageContainerUrl } from '@bentley/imodeljs-common';
+import { CloudStorageProvider } from '@bentley/imodeljs-common';
 import { Code } from '@bentley/imodeljs-common';
 import { CodeScopeProps } from '@bentley/imodeljs-common';
 import { CodeScopeSpec } from '@bentley/imodeljs-common';
@@ -99,6 +102,7 @@ import { PropertyCallback } from '@bentley/imodeljs-common';
 import { Range2d } from '@bentley/geometry-core';
 import { Range3d } from '@bentley/geometry-core';
 import { Rank } from '@bentley/imodeljs-common';
+import { Readable } from 'stream';
 import { RelatedElement } from '@bentley/imodeljs-common';
 import { RenderMaterialProps } from '@bentley/imodeljs-common';
 import { RepositoryStatus } from '@bentley/bentleyjs-core';
@@ -249,6 +253,24 @@ export class AuxCoordSystem3d extends AuxCoordSystem implements AuxCoordSystem3d
 // @public
 export class AuxCoordSystemSpatial extends AuxCoordSystem3d {
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
+}
+
+// @public (undocumented)
+export class AzureBlobStorage extends CloudStorageService {
+    // (undocumented)
+    constructor(credentials: CloudStorageServiceCredentials);
+    // (undocumented)
+    ensureContainer(name: string): Promise<void>;
+    // (undocumented)
+    readonly id = CloudStorageProvider.Azure;
+    // (undocumented)
+    obtainContainerUrl(id: CloudStorageContainerDescriptor): CloudStorageContainerUrl;
+    // (undocumented)
+    static resourceValidity: number;
+    // (undocumented)
+    static resourceValidityPadding: number;
+    // (undocumented)
+    upload(container: string, name: string, data: Uint8Array, options?: CloudStorageUploadOptions): Promise<string>;
 }
 
 // @public
@@ -536,6 +558,45 @@ export class ClassRegistry {
     static registerModule(moduleObj: any, schema: Schema): void;
     // @internal (undocumented)
     static registerSchema(schema: Schema): void;
+}
+
+// @public (undocumented)
+export abstract class CloudStorageService {
+    // (undocumented)
+    download(_name: string): Promise<Readable | undefined>;
+    // (undocumented)
+    abstract id: CloudStorageProvider;
+    // (undocumented)
+    initialize(): void;
+    // (undocumented)
+    protected makeDescriptor(id: CloudStorageContainerDescriptor): {
+        name: string;
+        provider: CloudStorageProvider;
+    };
+    // (undocumented)
+    abstract obtainContainerUrl(id: CloudStorageContainerDescriptor): CloudStorageContainerUrl;
+    // (undocumented)
+    terminate(): void;
+    // (undocumented)
+    abstract upload(container: string, name: string, data: Uint8Array, options?: CloudStorageUploadOptions): Promise<string>;
+}
+
+// @public (undocumented)
+export interface CloudStorageServiceCredentials {
+    // (undocumented)
+    accessKey: string;
+    // (undocumented)
+    account: string;
+    // (undocumented)
+    service: "azure";
+}
+
+// @public (undocumented)
+export interface CloudStorageUploadOptions {
+    // (undocumented)
+    cacheControl?: string;
+    // (undocumented)
+    type?: string;
 }
 
 // @public
@@ -1563,8 +1624,12 @@ export class IModelHost {
     static sessionId: GuidString;
     static shutdown(): void;
     static startup(configuration?: IModelHostConfiguration): void;
+    // (undocumented)
+    static tileCacheService: CloudStorageService;
     static readonly tileContentRequestTimeout: number;
     static readonly tileTreeRequestTimeout: number;
+    // @alpha
+    static readonly useExternalTileCache: boolean;
     static readonly useTileContentThreadPool: boolean;
     }
 
@@ -1573,12 +1638,15 @@ export class IModelHostConfiguration {
     appAssetsDir?: string;
     briefcaseCacheDir: string;
     static defaultTileRequestTimeout: number;
-    // @alpha
-    disableInternalTileCache: boolean;
     imodelClient?: IModelClient;
+    localTileCacheDir: string;
+    localTileCacheMaxSize: number;
     nativePlatform?: any;
+    tileCacheCredentials?: CloudStorageServiceCredentials;
     tileContentRequestTimeout: number;
     tileTreeRequestTimeout: number;
+    // @alpha
+    useExternalTileCache: boolean;
     useTileContentThreadPool: boolean;
 }
 
@@ -1638,6 +1706,8 @@ export class IModelImporter {
 export class IModelJsFs {
     static appendFileSync(path: string, str: string): void;
     static copySync(src: string, dest: string, opts?: any): void;
+    static createReadStream(path: string): Readable;
+    static ensureDirSync(path: string): void;
     static existsSync(path: string): boolean;
     static lstatSync(path: string): IModelJsFsStats | undefined;
     static mkdirSync(path: string): void;
@@ -1646,7 +1716,7 @@ export class IModelJsFs {
     static removeSync(path: string): void;
     static rmdirSync(path: string): void;
     static unlinkSync(path: string): void;
-    static writeFileSync(path: string, str: string, wflag?: string): void;
+    static writeFileSync(path: string, data: string | Uint8Array, wflag?: string): void;
 }
 
 // @public
@@ -2544,6 +2614,24 @@ export class LinkModel extends InformationModel {
 
 // @public
 export class LinkPartition extends InformationPartitionElement {
+}
+
+// @public (undocumented)
+export class LocalStorageService extends CloudStorageService {
+    // (undocumented)
+    constructor(basePath: string, maxSize?: number, removeOnTerminate?: boolean);
+    // (undocumented)
+    download(name: string): Promise<Readable | undefined>;
+    // (undocumented)
+    readonly id = CloudStorageProvider.Local;
+    // (undocumented)
+    initialize(): void;
+    // (undocumented)
+    obtainContainerUrl(id: CloudStorageContainerDescriptor): CloudStorageContainerUrl;
+    // (undocumented)
+    terminate(): void;
+    // (undocumented)
+    upload(container: string, name: string, data: Uint8Array, _options?: CloudStorageUploadOptions): Promise<string>;
 }
 
 // @public

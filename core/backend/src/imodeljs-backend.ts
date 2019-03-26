@@ -38,6 +38,7 @@ export * from "./IModelJsNative";
 export * from "./IModelHost";
 export * from "./AutoPush";
 export * from "./BackendRequestContext";
+export * from "./CloudStorageBackend";
 export * from "./IModelDb"; // must be last
 
 /** @docs-package-description

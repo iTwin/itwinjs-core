@@ -533,4 +533,11 @@ describe("RpcInterface", () => {
     }
   });
 
+  it("should support readable resources", async () => {
+    const response = await RpcTransportTest.getClient().getResource(new IModelToken(), "");
+    const data = new Uint8Array(await response.arrayBuffer());
+    assert.equal(data.byteLength, 2);
+    assert.equal(data[0], 1);
+    assert.equal(data[1], 2);
+  });
 });

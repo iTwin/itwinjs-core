@@ -5,11 +5,13 @@
 /** @module RpcInterface */
 
 import { assert, BeDuration, ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
-import { IModelTileRpcInterface, IModelToken, RpcInterface, RpcManager, RpcPendingResponse, TileTreeProps } from "@bentley/imodeljs-common";
+import { IModelTileRpcInterface, IModelToken, RpcInterface, RpcManager, RpcPendingResponse, TileTreeProps, CloudStorageContainerDescriptor, CloudStorageContainerUrl, TileContentIdentifier, CloudStorageTileCache } from "@bentley/imodeljs-common";
 import { IModelDb } from "../IModelDb";
 import { IModelHost } from "../IModelHost";
 import { LoggerCategory } from "../LoggerCategory";
 import { PromiseMemoizer, QueryablePromise } from "../PromiseMemoizer";
+import { Readable } from "stream";
+import { loggingCategory } from "@bentley/imodeljs-clients";
 
 interface TileRequestProps {
   requestContext: ClientRequestContext;
@@ -157,7 +159,9 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
   public async getTileContent(iModelToken: IModelToken, treeId: string, contentId: string): Promise<Uint8Array> {
     const requestContext = ClientRequestContext.current;
     const db = IModelDb.find(iModelToken);
-    return db.tiles.requestTileContent(requestContext, treeId, contentId);
+    const content = db.tiles.requestTileContent(requestContext, treeId, contentId);
+    this.cacheTile(iModelToken, treeId, contentId, content);
+    return content;
   }
 
   public async requestTileTreeProps(iModelToken: IModelToken, treeId: string): Promise<TileTreeProps> {
@@ -167,6 +171,40 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
 
   public async requestTileContent(iModelToken: IModelToken, treeId: string, contentId: string): Promise<Uint8Array> {
     const requestContext = ClientRequestContext.current;
-    return RequestTileContentMemoizer.perform({ requestContext, iModelToken, treeId, contentId });
+    const content = RequestTileContentMemoizer.perform({ requestContext, iModelToken, treeId, contentId });
+    this.cacheTile(iModelToken, treeId, contentId, content);
+    return content;
+  }
+
+  public async getTileCacheContainerUrl(_iModelToken: IModelToken, id: CloudStorageContainerDescriptor): Promise<CloudStorageContainerUrl> {
+    if (!IModelHost.useExternalTileCache) {
+      return CloudStorageContainerUrl.empty();
+    }
+
+    return IModelHost.tileCacheService.obtainContainerUrl(id);
+  }
+
+  public async supplyResource(_token: IModelToken, name: string): Promise<Readable | undefined> {
+    if (!IModelHost.useExternalTileCache) {
+      return Promise.resolve(undefined);
+    }
+
+    return IModelHost.tileCacheService.download(name);
+  }
+
+  private cacheTile(iModelToken: IModelToken, treeId: string, contentId: string, content: Promise<Uint8Array>) {
+    if (!IModelHost.useExternalTileCache) {
+      return;
+    }
+
+    try {
+      const id: TileContentIdentifier = { iModelToken, treeId, contentId };
+      setTimeout(async () => {
+        const cache = CloudStorageTileCache.getCache();
+        IModelHost.tileCacheService.upload(cache.formContainerName(id), cache.formResourceName(id), await content); // tslint:disable-line:no-floating-promises
+      });
+    } catch (err) {
+      Logger.logError(loggingCategory, err.toString());
+    }
   }
 }

@@ -77,6 +77,7 @@ export enum RpcContentType {
   Text,
   Binary,
   Multipart,
+  Stream,
 }
 
 /** RPC supported mobile platforms.

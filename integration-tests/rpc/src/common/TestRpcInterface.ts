@@ -5,6 +5,7 @@
 import { RpcInterface, RpcManager, RpcOperationsProfile, IModelToken, RpcNotFoundResponse, IModelReadRpcInterface, WipRpcInterface, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
 import { Id64String } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
+import { Readable, PassThrough } from "stream";
 
 export class TestOp1Params {
   public a: number;
@@ -217,6 +218,15 @@ export class RpcTransportTestImpl extends RpcInterface implements RpcTransportTe
       b: RpcTransportTestImpl.mutateString(value.b),
       c: RpcTransportTestImpl.mutateBits(value.c),
     });
+  }
+
+  public async supplyResource(_token: IModelToken, _name: string): Promise<Readable | undefined> {
+    const data = new Uint8Array(2);
+    data[0] = 1;
+    data[1] = 2;
+    const source = new PassThrough();
+    source.end(data);
+    return source;
   }
 }
 

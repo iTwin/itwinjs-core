@@ -58,7 +58,7 @@ export function initializeBackend() {
       hostConfig.imodelClient = new IModelBankClient(svtConfig.customOrchestratorUri, new UrlFileHandler());
 
     if (undefined !== process.env.SVT_DISABLE_TILE_CACHE)
-      hostConfig.disableInternalTileCache = true;
+      hostConfig.useExternalTileCache = true;
   }
 
   IModelHost.startup(hostConfig);

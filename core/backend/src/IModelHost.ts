@@ -24,6 +24,7 @@ import { IModelWriteRpcImpl } from "./rpc-impl/IModelWriteRpcImpl";
 import { SnapshotIModelRpcImpl } from "./rpc-impl/SnapshotIModelRpcImpl";
 import { WipRpcImpl } from "./rpc-impl/WipRpcImpl";
 import { initializeRpcBackend } from "./RpcBackend";
+import { CloudStorageService, LocalStorageService, CloudStorageServiceCredentials, AzureBlobStorage } from "./CloudStorageBackend";
 
 const loggerCategory: string = LoggerCategory.IModelHost;
 
@@ -35,16 +36,24 @@ export class IModelHostConfiguration {
   public nativePlatform?: any;
 
   private _briefcaseCacheDir = path.normalize(path.join(KnownLocations.tmpdir, "Bentley/IModelJs/cache/"));
+  private _localTileCacheDir = path.normalize(path.join(KnownLocations.tmpdir, "Bentley/IModelJs/tiles/"));
 
   /** The path where the cache of briefcases are stored. Defaults to `path.join(KnownLocations.tmpdir, "Bentley/IModelJs/cache/iModels/")` */
   public get briefcaseCacheDir(): string { return this._briefcaseCacheDir; }
   public set briefcaseCacheDir(cacheDir: string) { this._briefcaseCacheDir = path.normalize(cacheDir.replace(/\/?$/, path.sep)); }
+
+  /** The path where the local cache of tiles is stored (if used on this platform). Defaults to `path.join(KnownLocations.tmpdir, "Bentley/IModelJs/tiles/")` */
+  public get localTileCacheDir(): string { return this._localTileCacheDir; }
+  public set localTileCacheDir(cacheDir: string) { this._localTileCacheDir = path.normalize(cacheDir.replace(/\/?$/, path.sep)); }
 
   /** The directory where the app's assets are found. */
   public appAssetsDir?: string;
 
   /** The kind of iModel server to use. Defaults to iModelHubClient */
   public imodelClient?: IModelClient;
+
+  /** The credentials to use for the tile cache service. If omitted, a local cache will be used. */
+  public tileCacheCredentials?: CloudStorageServiceCredentials;
 
   /** The time, in milliseconds, for which [IModelTileRpcInterface.requestTileTreeProps]($common) should wait before returning a "pending" status. */
   public tileTreeRequestTimeout = IModelHostConfiguration.defaultTileRequestTimeout;
@@ -54,11 +63,14 @@ export class IModelHostConfiguration {
   public static defaultTileRequestTimeout = 20 * 1000;
   /** If true, requests for tile content will execute on a separate thread pool in order to avoid blocking other, less expensive asynchronous requests such as ECSql queries. */
   public useTileContentThreadPool = false;
-  /** If true, the add-on's sqlite tile cache database will not be read from or written to when requesting tile content.
-   * ###TODO: Steve Wilson to replace with external cache configuration options.
+  /**
+   * Whether external tile caching is enabled.
+   * @note This flag will be removed once the azure/external file caching system is stable.
    * @alpha
    */
-  public disableInternalTileCache = false;
+  public useExternalTileCache = false;
+  /** The maximum size (in bytes) for the local tile cache (if used on this platform). */
+  public localTileCacheMaxSize = 1024 * 1024 * 1024;
 }
 
 /** IModelHost initializes ($backend) and captures its configuration. A backend must call [[IModelHost.startup]] before using any backend classes.
@@ -164,6 +176,9 @@ export class IModelHost {
   /** @internal */
   public static loadNative(region: number, dir?: string): void { this.registerPlatform(Platform.load(dir), region); }
 
+  /** @hidden */
+  public static tileCacheService: CloudStorageService;
+
   /** This method must be called before any iModel.js services are used.
    * @param configuration Host configuration data.
    * Raises [[onAfterStartup]].
@@ -214,14 +229,13 @@ export class IModelHost {
     Functional.registerSchema();
 
     IModelHost.configuration = configuration;
-
+    IModelHost.setupTileCache();
     if (!IModelHost.applicationId) IModelHost.applicationId = "2686"; // Default to product id of iModel.js
     if (!IModelHost.applicationVersion) IModelHost.applicationVersion = this.getApplicationVersion(); // Default to version of this package
 
-    // ###TODO: Steve to replace this simple boolean flag with configuration options for tile cache residing outside of add-on, and disable the add-on's cache
-    // if external cache is configured.
+    // ###TODO: remove this once external caching system is stable.
     if (undefined !== this._platform)
-      this._platform.setUseTileCache(!configuration.disableInternalTileCache);
+      this._platform.setUseTileCache(!configuration.useExternalTileCache);
 
     IModelHost.onAfterStartup.raiseEvent();
   }
@@ -250,6 +264,29 @@ export class IModelHost {
 
   /** If true, requests for tile content will execute on a separate thread pool in order to avoid blocking other, less expensive asynchronous requests such as ECSql queries. */
   public static get useTileContentThreadPool(): boolean { return undefined !== IModelHost.configuration && IModelHost.configuration.useTileContentThreadPool; }
+
+  /**
+   * Whether external tile caching is enabled.
+   * @note This flag will be removed once the azure/external file caching system is stable.
+   * @alpha
+   */
+  public static get useExternalTileCache(): boolean { return undefined !== IModelHost.configuration && IModelHost.configuration.useExternalTileCache; }
+
+  private static setupTileCache() {
+    const config = IModelHost.configuration!;
+    if (!config.useExternalTileCache) {
+      return;
+    }
+
+    const credentials = config.tileCacheCredentials;
+    if (credentials) {
+      if (credentials.service === "azure") {
+        IModelHost.tileCacheService = new AzureBlobStorage(credentials);
+      }
+    } else {
+      IModelHost.tileCacheService = new LocalStorageService(config.localTileCacheDir, config.localTileCacheMaxSize);
+    }
+  }
 }
 
 /** Information about the platform on which the app is running. Also see [[KnownLocations]] and [[IModelJsFs]].

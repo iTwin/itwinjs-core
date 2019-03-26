@@ -33,7 +33,10 @@ export const CURRENT_REQUEST = Symbol.for("@bentley/imodeljs-common/RpcRequest/_
 export const CURRENT_INVOCATION = Symbol.for("@bentley/imodeljs-common/RpcInvocation/__current__");
 
 /** @internal */
-export const builtins: string[] = [];
+export const RESOURCE = "getResource";
+
+/** @internal */
+export const builtins: string[] = [RESOURCE];
 
 /** @internal */
 export class RpcRegistry {
@@ -185,11 +188,33 @@ export class RpcRegistry {
       if (operationName === "constructor" || operationName === "configurationSupplier")
         return;
 
-      (proxy as any)[operationName] = (proxy as any)[operationName].bind(proxy, operationName);
+      if (!this.checkName(operationName)) {
+        this.interceptOperation(proxy, operationName);
+      }
     });
 
     proxy.configuration.onRpcClientInitialized(definition, proxy);
     return proxy;
+  }
+
+  private checkName(name: string) {
+    for (const builtin of builtins) {
+      if (name === builtin) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  private interceptOperation(proxy: RpcInterface, operation: string) {
+    const clientFunction = (proxy as any)[operation];
+    // tslint:disable-next-line:only-arrow-functions
+    (proxy as any)[operation] = function () {
+      const args = Array.from(arguments);
+      args.push(operation);
+      return clientFunction.apply(proxy, args);
+    };
   }
 
   private checkInitialized<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>) {
@@ -200,14 +225,7 @@ export class RpcRegistry {
   private configureOperations<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>) {
     const proto = (definition.prototype as any);
 
-    for (const builtin of builtins) {
-      const propertyName = Symbol.for(builtin);
-      if (!proto[propertyName]) {
-        proto[propertyName] = { [OPERATION]: new RpcOperation(definition, builtin, new RpcOperationPolicy()) };
-      }
-    }
-
-    Object.getOwnPropertyNames(definition.prototype).forEach((operationName) => {
+    Object.getOwnPropertyNames(proto).forEach((operationName) => {
       if (operationName === "constructor" || operationName === "configurationSupplier")
         return;
 
@@ -218,6 +236,13 @@ export class RpcRegistry {
         proto[propertyName][OPERATION] = new RpcOperation(definition, propertyName, policy);
       }
     });
+
+    for (const builtin of builtins) {
+      const base = proto[builtin];
+      proto[builtin] = function () { return base.apply(this, arguments); };
+      const policy = base[OPERATION] ? base[OPERATION].policy : new RpcOperationPolicy();
+      proto[builtin][OPERATION] = new RpcOperation(definition, builtin, policy);
+    }
   }
 
   private registerTypes<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>) {

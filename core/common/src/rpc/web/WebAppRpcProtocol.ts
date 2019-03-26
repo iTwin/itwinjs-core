@@ -50,6 +50,8 @@ export interface HttpServerResponse extends Writable {
  * @public
  */
 export abstract class WebAppRpcProtocol extends RpcProtocol {
+  public preserveStreams = true;
+
   /** Convenience handler for an RPC operation get request for an HTTP server. */
   public async handleOperationGetRequest(req: HttpServerRequest, res: HttpServerResponse) {
     return this.handleOperationPostRequest(req, res);
