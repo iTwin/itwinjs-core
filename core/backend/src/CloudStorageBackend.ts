@@ -76,7 +76,7 @@ export class LocalStorageService extends CloudStorageService {
 
   public async upload(container: string, name: string, data: Uint8Array, _options?: CloudStorageUploadOptions): Promise<string> {
     const containerSafe = path.basename(container);
-    const nameSafe = path.basename(name);
+    const nameSafe = path.basename(name.replace(/\//g, "-"));
 
     const dest = path.join(this._basePath, containerSafe, nameSafe);
     this._entries.set(dest, data.byteLength);

@@ -15,6 +15,7 @@ import {
   SnapshotIModelRpcInterface,
   MobileRpcConfiguration,
   MobileRpcManager,
+  CloudStorageTileCache,
 } from "@bentley/imodeljs-common";
 import { Config, OidcFrontendClientConfiguration } from "@bentley/imodeljs-clients";
 import {
@@ -101,6 +102,7 @@ async function main() {
   await retrieveConfiguration(); // (does a fetch)
   console.log("Configuration", JSON.stringify(configuration)); // tslint:disable-line:no-console
   // Start the app. (This tries to fetch a number of localization json files from the origin.)
+  CloudStorageTileCache.getCache().enabled = true; // temporary
   const renderSystemOptions = { disabledExtensions: configuration.disabledExtensions as WebGLExtensionName[] };
   DisplayTestApp.startup(undefined, renderSystemOptions);
   if (configuration.enableDiagnostics)
