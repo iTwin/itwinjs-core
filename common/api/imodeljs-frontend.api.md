@@ -7199,13 +7199,12 @@ export abstract class ViewState extends ElementState {
     getXVector(result?: Vector3d): Vector3d;
     getYVector(result?: Vector3d): Vector3d;
     getZVector(result?: Vector3d): Vector3d;
-    // (undocumented)
+    is2d(): this is ViewState2d;
     is3d(): this is ViewState3d;
     // (undocumented)
     isPrivate?: boolean;
     // @internal (undocumented)
     readonly isSelectionSetDirty: boolean;
-    // (undocumented)
     isSpatialView(): this is SpatialViewState;
     // @internal (undocumented)
     isSubCategoryVisible(id: Id64String): boolean;

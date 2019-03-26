@@ -510,7 +510,11 @@ export abstract class ViewState extends ElementState {
   public setFeatureOverridesDirty(dirty: boolean = true): void { this._featureOverridesDirty = dirty; }
   /** @internal */
   public setSelectionSetDirty(dirty: boolean = true): void { this._selectionSetDirty = dirty; }
+  /** Returns true if this ViewState is-a [[ViewState3d]] */
   public is3d(): this is ViewState3d { return this instanceof ViewState3d; }
+  /** Returns true if this ViewState is-a [[ViewState2d]] */
+  public is2d(): this is ViewState2d { return this instanceof ViewState2d; }
+  /** Returns true if this ViewState is-a [[SpatialViewState]] */
   public isSpatialView(): this is SpatialViewState { return this instanceof SpatialViewState; }
   /** Returns true if [[ViewTool]]s are allowed to operate in three dimensions on this view. */
   public abstract allow3dManipulations(): boolean;
