@@ -10,6 +10,9 @@ import {
   Id64,
   Id64String,
   using,
+  Logger,
+  LogLevel,
+  GetMetaDataFunction,
 } from "@bentley/bentleyjs-core";
 import {
   Angle,
@@ -104,6 +107,47 @@ describe("iModel", () => {
     s2 = JSON.stringify(el2);
     assert.equal(s1, s2);
   };
+
+  it.skip("should do logging from worker threads in correct context", async () => {
+
+    const contextForTest = new ClientRequestContext("contextForTest");
+    const contextForStepAsync = new ClientRequestContext("contextForStepAsync");
+
+    const testMessage = "message from test in main";
+
+    const expectedMsgsInOrder: any[] = [
+      { message: "ECSqlStepWorker: Start on main thread", ctx: contextForStepAsync },
+      { message: testMessage, ctx: contextForTest },
+      { message: "ECSqlStepWorker: In worker thread", ctx: contextForStepAsync },
+      { message: "ECSqlStepWorker: Back on main thread", ctx: contextForStepAsync },
+    ];
+
+    const msgs: any[] = [];
+    Logger.initialize((_category: string, message: string, _metaData?: GetMetaDataFunction) => {
+      msgs.push({ message, ctx: ClientRequestContext.current });
+    });
+    Logger.setLevel("ECSqlStepWorkerTestCategory", LogLevel.Error);
+    const stmt = imodel1.prepareStatement("SELECT * from bis.Element");
+
+    contextForStepAsync.enter();        // the statement should run entirely in contextForStepAsync
+    const stepPromise = stmt.stepAsync();
+
+    contextForTest.enter();             // while the statement runs, the test switches to a new context
+    Logger.logError("ECSqlStepWorkerTestCategory", testMessage);
+
+    const res = await stepPromise;      // now the statement completes.
+    assert.equal(res, DbResult.BE_SQLITE_ROW);
+
+    assert.strictEqual(ClientRequestContext.current, contextForTest);
+
+    assert.equal(msgs.length, expectedMsgsInOrder.length);
+    for (let i = 0; i < msgs.length; ++i) {
+      assert.equal(msgs[i].message, expectedMsgsInOrder[i].message);
+      assert.strictEqual(msgs[i].ctx, expectedMsgsInOrder[i].ctx);
+    }
+
+    stmt.dispose();
+  });
 
   it("should be able to get properties of an iIModel", () => {
     expect(imodel1.name).equals("TBD"); // That's the name of the root subject!
