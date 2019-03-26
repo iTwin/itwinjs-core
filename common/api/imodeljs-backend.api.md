@@ -1153,6 +1153,7 @@ export interface ExportGraphicsInfo {
     color: number;
     elementId: Id64String;
     mesh: ExportGraphicsMesh;
+    textureId?: Id64String;
 }
 
 // @beta

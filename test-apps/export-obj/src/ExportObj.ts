@@ -1,9 +1,9 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2019 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { ExportGraphicsInfo, IModelHost, IModelDb, ECSqlStatement } from "@bentley/imodeljs-backend";
-import { DbResult, Id64Array } from "@bentley/bentleyjs-core";
-import { ColorDef } from "@bentley/imodeljs-common";
+import { ExportGraphicsInfo, IModelHost, IModelDb, ECSqlStatement, Texture } from "@bentley/imodeljs-backend";
+import { DbResult, Id64Array, Id64String } from "@bentley/bentleyjs-core";
+import { ColorDef, ImageSourceFormat } from "@bentley/imodeljs-common";
 import * as fs from "fs";
 import * as Yargs from "yargs";
 import * as path from "path";
@@ -30,13 +30,24 @@ function doExport(iModelName: string, objName: string, mtlName: string) {
     return;
 
   const materialMap = new Map<number, string>();
+  const textureMap = new Map<string, string>();
   let pointOffset = 1;
 
   const onGraphics = (info: ExportGraphicsInfo) => {
-    let materialName = materialMap.get(info.color);
-    if (materialName === undefined) {
-      materialName = `Material${materialMap.size}`;
-      materialMap.set(info.color, materialName);
+    let materialName: string | undefined;
+
+    if (info.textureId) {
+      materialName = textureMap.get(info.textureId);
+      if (materialName === undefined) {
+        materialName = `Material${materialMap.size + textureMap.size}`;
+        textureMap.set(info.textureId, materialName);
+      }
+    } else {
+      materialName = materialMap.get(info.color);
+      if (materialName === undefined) {
+        materialName = `Material${materialMap.size + textureMap.size}`;
+        materialMap.set(info.color, materialName);
+      }
     }
     fs.appendFileSync(objFile, `usemtl ${materialName}\n`);
 
@@ -69,7 +80,7 @@ function doExport(iModelName: string, objName: string, mtlName: string) {
 
   fs.appendFileSync(objFile, `mtllib ${mtlName}\n`);
   iModel.exportGraphics(({ onGraphics, elementIdArray, chordTol: 0.01 }));
-  process.stdout.write(`Wrote ${pointOffset} vertices.\n`);
+  process.stdout.write(`Wrote ${pointOffset - 1} vertices.\n`);
   fs.closeSync(objFile);
 
   materialMap.forEach((materialName: string, color: number) => {
@@ -79,6 +90,20 @@ function doExport(iModelName: string, objName: string, mtlName: string) {
     if (rawColors.t !== 0)
       fs.appendFileSync(mtlFile, `Tr ${(rawColors.t / 255).toFixed(2)}\n`);
   });
+
+  const textureDirectory = path.dirname(mtlName);
+  const getTextureExt = (format: ImageSourceFormat): string => format === ImageSourceFormat.Jpeg ? ".jpg" : ".png";
+
+  textureMap.forEach((materialName: string, textureId: Id64String) => {
+    const texture = iModel.elements.getElement(textureId) as Texture;
+    const texturePath = path.join(textureDirectory, textureId + getTextureExt(texture.format));
+
+    fs.appendFileSync(mtlFile, `newmtl ${materialName}\n`);
+    fs.appendFileSync(mtlFile, `map_Kd ${texturePath}\n`);
+
+    fs.writeFile(texturePath, Buffer.from(texture.data, "base64"), () => { }); // async is fine
+  });
+
   fs.closeSync(mtlFile);
 }
 
