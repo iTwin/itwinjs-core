@@ -2681,6 +2681,13 @@ export type LocalAlignedBox3d = Range3d;
 
 export { LogFunction }
 
+// @public
+export const enum LoggerCategory {
+    ElementProps = "imodeljs-common.ElementProps",
+    RpcInterfaceBackend = "imodeljs-backend.RpcInterface",
+    RpcInterfaceFrontend = "imodeljs-frontend.RpcInterface"
+}
+
 // @internal (undocumented)
 export interface MarshalingBinaryMarker {
     // (undocumented)

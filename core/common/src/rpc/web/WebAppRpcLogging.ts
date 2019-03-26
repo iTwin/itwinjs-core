@@ -12,8 +12,7 @@ import { Logger } from "@bentley/bentleyjs-core";
 import { RpcInterfaceDefinition } from "../../RpcInterface";
 import { RpcProtocolEvent } from "../core/RpcConstants";
 import { RpcOperation } from "../core/RpcOperation";
-
-const loggingCategory = "imodeljs-rpc.WebAppRpcProtocol";
+import { LoggerCategory } from "../../LoggerCategory";
 
 // tslint:disable-next-line:no-var-requires
 const os = (typeof (process) !== "undefined") ? require("os") : undefined;
@@ -80,7 +79,7 @@ export class WebAppRpcLogging {
     const operationDescriptor = WebAppRpcLogging.buildOperationDescriptor(object.operation);
     const pathIds = WebAppRpcLogging.findPathIds(object.path);
 
-    Logger.logTrace(loggingCategory, `${message}.${operationDescriptor}`, () => ({
+    Logger.logTrace(LoggerCategory.RpcInterfaceFrontend, `${message}.${operationDescriptor}`, () => ({
       method: object.method,
       path: object.path,
       operation: object.operation.operationName,
@@ -97,7 +96,7 @@ export class WebAppRpcLogging {
     const operationDescriptor = WebAppRpcLogging.buildOperationDescriptor(object.operation);
     const pathIds = WebAppRpcLogging.findPathIds(object.path);
 
-    Logger.logTrace(loggingCategory, `${message}.${operationDescriptor}`, () => ({
+    Logger.logTrace(LoggerCategory.RpcInterfaceFrontend, `${message}.${operationDescriptor}`, () => ({
       method: object.method,
       path: object.path,
       operation: object.operation.operationName,
@@ -115,7 +114,7 @@ export class WebAppRpcLogging {
     const operationDescriptor = WebAppRpcLogging.buildOperationDescriptor(request.operation);
     const pathIds = WebAppRpcLogging.findPathIds(request.path);
 
-    Logger.logInfo(loggingCategory, `${message}.${operationDescriptor}`, () => ({
+    Logger.logInfo(LoggerCategory.RpcInterfaceFrontend, `${message}.${operationDescriptor}`, () => ({
       method: request.method,
       path: request.path,
       // Alert! The following properties are required by Bentley DevOps standards. Do not change their names!
@@ -129,7 +128,7 @@ export class WebAppRpcLogging {
     const operationDescriptor = WebAppRpcLogging.buildOperationDescriptor(invocation.operation);
     const pathIds = WebAppRpcLogging.findPathIds(invocation.request.path);
 
-    Logger.logInfo(loggingCategory, `${message}.${operationDescriptor}`, () => ({
+    Logger.logInfo(LoggerCategory.RpcInterfaceBackend, `${message}.${operationDescriptor}`, () => ({
       method: invocation.request.method,
       path: invocation.request.path,
       status: invocation.status,

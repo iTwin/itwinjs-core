@@ -4,16 +4,17 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module RpcInterface */
 
+import { BentleyStatus, Logger, RpcInterfaceStatus } from "@bentley/bentleyjs-core";
 import { IModelError } from "../../IModelError";
-import { BentleyStatus, RpcInterfaceStatus, Logger } from "@bentley/bentleyjs-core";
+import { LoggerCategory } from "../../LoggerCategory";
 import { RpcInterface } from "../../RpcInterface";
-import { RpcOperation } from "./RpcOperation";
-import { RpcRegistry, CURRENT_INVOCATION, RESOURCE } from "./RpcRegistry";
-import { RpcProtocol, SerializedRpcRequest, RpcRequestFulfillment } from "./RpcProtocol";
 import { RpcConfiguration } from "./RpcConfiguration";
-import { RpcMarshaling, RpcSerializedValue } from "./RpcMarshaling";
+import { RpcProtocolEvent, RpcRequestStatus } from "./RpcConstants";
 import { RpcNotFoundResponse, RpcPendingResponse } from "./RpcControl";
-import { RpcRequestStatus, RpcProtocolEvent } from "./RpcConstants";
+import { RpcMarshaling, RpcSerializedValue } from "./RpcMarshaling";
+import { RpcOperation } from "./RpcOperation";
+import { RpcProtocol, RpcRequestFulfillment, SerializedRpcRequest } from "./RpcProtocol";
+import { CURRENT_INVOCATION, RESOURCE, RpcRegistry } from "./RpcRegistry";
 
 /** Notification callback for an RPC invocation. */
 export type RpcInvocationCallback_T = (invocation: RpcInvocation) => void;
@@ -175,7 +176,7 @@ export class RpcInvocation {
 
     const func = (implementation as any)[op];
     if (!func || typeof (func) !== "function") {
-      throw new IModelError(BentleyStatus.ERROR, `RPC interface class "${implementation.constructor.name}" does not implement operation "${op}".`, Logger.logError, "imodeljs-backend.RpcInterface");
+      throw new IModelError(BentleyStatus.ERROR, `RPC interface class "${implementation.constructor.name}" does not implement operation "${op}".`, Logger.logError, LoggerCategory.RpcInterfaceBackend);
     }
 
     return func;
