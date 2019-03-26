@@ -70,7 +70,7 @@ const args = [
 if (!isCI)
   args.push("-l");
 
-spawn("api-extractor", args).then((code) => {
+spawn(require.resolve(".bin/api-extractor"), args).then((code) => {
   if (fs.existsSync(configFileName))
     fs.unlinkSync(configFileName);
   process.exit(code);
