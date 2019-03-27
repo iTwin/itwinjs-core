@@ -149,6 +149,7 @@ export class DefaultToolSettings extends React.Component<TsProps, TsState> {
     const prevRecord = prevProps.rows;
     const currentRecord = this.props.rows;
     let refreshRequired = false;
+    /* istanbul ignore next */
     if (prevRecord !== currentRecord)
       refreshRequired = true;
 
@@ -197,6 +198,7 @@ export class DefaultToolSettings extends React.Component<TsProps, TsState> {
       }
     }
 
+    // istanbul ignore if
     if (col.type === ColumnType.RecordSpan)
       return null;
 
@@ -297,6 +299,7 @@ export class DefaultToolSettingsProvider extends ToolUiProvider {
   private setEditorLabel(row: TsRow, record: ToolSettingsPropertyRecord, propertyName: string): void {
 
     const suppressLabelEditorParams = this.hasSuppressEditorLabelParam(record);
+    // istanbul ignore if
     if (suppressLabelEditorParams && suppressLabelEditorParams.suppressLabelPlaceholder)
       return;
 
@@ -322,6 +325,7 @@ export class DefaultToolSettingsProvider extends ToolUiProvider {
   private setPropertyRecord(row: TsRow, record: ToolSettingsPropertyRecord): void {
     const editCol = record.editorPosition.columnIndex;
 
+    // istanbul ignore if
     if (row.cols[editCol].type !== ColumnType.Empty) {
       // tslint:disable-next-line:no-console
       console.log(`Default ToolSettings Provider - label column for ${record.property.name} is already in use`);
@@ -334,6 +338,7 @@ export class DefaultToolSettingsProvider extends ToolUiProvider {
     this.valueMap.set(recordName, record);
 
     let columnSpan = 1;
+    // istanbul ignore if
     if (record.editorPosition.columnSpan)
       columnSpan = record.editorPosition.columnSpan;
 

@@ -25,10 +25,14 @@ import { ItemList } from "../shared/ItemMap";
 /** Widget state enum.
  */
 export enum WidgetState {
-  Open,     // widgetTab is visible and active and its contents are visible.
-  Closed,   // widgetTab is visible but its contents are not visible.
-  Hidden,   // widgetTab nor its contents are visible
-  Floating, // widgetTab is in a 'floating' state and is not docked in zone's tab stack.
+  /** Widget tab is visible and active and its contents are visible */
+  Open,
+  /** Widget tab is visible but its contents are not visible */
+  Closed,
+  /** Widget tab nor its contents are visible */
+  Hidden,
+  /** Widget tab is in a 'floating' state and is not docked in zone's tab stack */
+  Floating,
 }
 
 /** Widget type enum.
@@ -85,7 +89,6 @@ export class WidgetDef {
   public id: string;
   public classId: string | ConfigurableUiControlConstructor | undefined = undefined;
   public priority: number = 0;
-  public featureId: string = "";
   public isFreeform: boolean = false;
   public isFloatingStateSupported: boolean = false;
   public isFloatingStateWindowResizable: boolean = true;
@@ -144,8 +147,6 @@ export class WidgetDef {
     if (widgetProps.defaultState !== undefined)
       me.state = widgetProps.defaultState;
 
-    if (widgetProps.featureId !== undefined)
-      me.featureId = widgetProps.featureId;
     if (widgetProps.isFreeform !== undefined) {
       me.isFreeform = widgetProps.isFreeform;
       me.widgetType = me.isFreeform ? WidgetType.FreeFrom : WidgetType.Rectangular;

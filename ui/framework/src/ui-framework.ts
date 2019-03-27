@@ -15,27 +15,15 @@ export * from "./ui-framework/clientservices/ProjectServices";
 export * from "./ui-framework/feedback/ValidationTextbox";
 export * from "./ui-framework/feedback/ElementTooltip";
 
+export * from "./ui-framework/imodelindex/IModelIndex";
+
 export * from "./ui-framework/messages/InputField";
 export * from "./ui-framework/messages/Pointer";
 
 export * from "./ui-framework/oidc/SignIn";
 export * from "./ui-framework/oidc/SignOut";
 
-export * from "./ui-framework/openimodel/ApplicationHeader";
-export * from "./ui-framework/openimodel/BlockingPrompt";
-export * from "./ui-framework/openimodel/IModelCard";
-export * from "./ui-framework/openimodel/IModelList";
-export * from "./ui-framework/openimodel/IModelOpen";
-export * from "./ui-framework/openimodel/IModelViewPicker";
-export * from "./ui-framework/openimodel/Navigation";
-export * from "./ui-framework/openimodel/ProjectDialog";
-export * from "./ui-framework/openimodel/ProjectDropdown";
-export * from "./ui-framework/openimodel/ProjectTabs";
-
 export * from "./ui-framework/imodel-components/visibility-tree/VisibilityTree";
-
-export * from "./ui-framework/overallcontent/OverallContent";
-export * from "./ui-framework/overallcontent/state";
 
 export * from "./ui-framework/pickers/ListPicker";
 export * from "./ui-framework/pickers/ModelSelector";
@@ -123,8 +111,6 @@ export * from "./ui-framework/theme/ThemeManager";
 
 export * from "./ui-framework/tools/AnalysisAnimation";
 export * from "./ui-framework/tools/AnalysisAnimationToolSettings";
-export * from "./ui-framework/tools/ScheduleAnimation";
-export * from "./ui-framework/tools/ScheduleAnimationToolSettings";
 
 export * from "./ui-framework/utils/ViewUtilities";
 export * from "./ui-framework/utils/redux-ts";
@@ -173,6 +159,10 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
 /**
  * @docs-group-description Frontstage
  * Classes for working with a Frontstage
+ */
+/**
+ * @docs-group-description IModelComponents
+ * Classes for displaying information about an iModel
  */
 /**
  * @docs-group-description Item

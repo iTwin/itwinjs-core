@@ -56,8 +56,8 @@ export interface RpcRequestFulfillment {
 
 /** @internal */
 export namespace RpcRequestFulfillment {
-  export function forUnknownError(request: SerializedRpcRequest, error: any): RpcRequestFulfillment {
-    const result = RpcMarshaling.serialize(request.operation.interfaceDefinition, undefined, error);
+  export async function forUnknownError(request: SerializedRpcRequest, error: any): Promise<RpcRequestFulfillment> {
+    const result = await RpcMarshaling.serialize(request.operation.interfaceDefinition, undefined, error);
 
     return {
       interfaceName: request.operation.interfaceDefinition,
@@ -114,6 +114,9 @@ export abstract class RpcProtocol {
   /** If greater than zero, specifies where to break large binary request payloads. */
   public transferChunkThreshold: number = 0;
 
+  /** Used by protocols that can transmit stream values natively. */
+  public preserveStreams: boolean = false;
+
   /** Override to supply the status corresponding to a protocol-specific code value. */
   public getStatus(code: number): RpcRequestStatus {
     return code;
@@ -151,7 +154,7 @@ export abstract class RpcProtocol {
       },
       method: request.method,
       path: request.path,
-      parameters: RpcMarshaling.serialize(request.operation, request.protocol, request.parameters),
+      parameters: await RpcMarshaling.serialize(request.operation, request.protocol, request.parameters),
       caching: RpcResponseCacheControl.None,
     };
   }

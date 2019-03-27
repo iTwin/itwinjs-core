@@ -16,7 +16,7 @@ import { LineSegment3d } from "../../curve/LineSegment3d";
 import { Matrix4d } from "../../geometry4d/Matrix4d";
 
 // External test functions
-import { clipShapesAreEqual } from "./ClipPrimitives.test";
+import { clipPrimitivesAreEqual } from "./ClipPrimitives.test";
 
 /** Enumerated type for point manipulation at the extremities of a ClipVector's ClipShape. */
 const enum PointAdjustment {
@@ -84,7 +84,7 @@ function clipVectorsAreEqual(vector0: ClipVector, vector1: ClipVector): boolean 
     return false;
 
   for (let i = 0; i < vector0.clips.length; i++)
-    if (!clipShapesAreEqual(vector0.clips[i], vector1.clips[i]))
+    if (!clipPrimitivesAreEqual(vector0.clips[i], vector1.clips[i]))
       return false;
   return true;
 }
@@ -155,27 +155,27 @@ describe("ClipVector", () => {
     const clipVectorTester0 = clipVector012.clone();
     const clipVectorTester1 = ClipVector.createEmpty();
     ck.testTrue(!clipVectorTester1.isValid, "Empty ClipVector should not be valid");
-    ClipVector.createClipShapeRefs(clipVectorTester0.clips, clipVectorTester1);
+    ClipVector.createCapture(clipVectorTester0.clips, clipVectorTester1);
     ck.testTrue(clipVectorTester1.isValid, "ClipVector should not be empty after copy");
-    ClipVector.createClipShapeClones(clipVectorTester0.clips, clipVectorTester1);
+    ClipVector.create(clipVectorTester0.clips, clipVectorTester1);
     ck.testTrue(clipVectorTester1.isValid, "ClipVector should not be empty after clone");
     ClipVector.createEmpty(clipVectorTester1);
     const arrLen = clipVector012.clips.length;
     for (let i = 0; i < arrLen; i++) {
       ck.testTrue(clipVector012.clips[i] !== clipVectorTester0.clips[i], "ClipVector created with clones should have deep copies of each ClipShape");
-      ck.testTrue(clipShapesAreEqual(clipVector012.clips[i], clipVectorTester0.clips[i]), "ClipShape members of copied vector and cloned vector should be equivalent");
+      ck.testTrue(clipPrimitivesAreEqual(clipVector012.clips[i], clipVectorTester0.clips[i]), "ClipShape members of copied vector and cloned vector should be equivalent");
       clipVectorTester1.appendReference(clipVector012.clips[i]);
       ck.testTrue(clipVector012.clips[i] === clipVectorTester1.clips[0], "ClipShapes appended by reference should be shallow copies of each other");
       clipVectorTester1.clear();
       clipVectorTester1.appendClone(clipVector012.clips[i]);
       ck.testTrue(clipVector012.clips[i] !== clipVectorTester1.clips[0], "ClipVector with appended clone should have deep copy of ClipShape");
-      ck.testTrue(clipShapesAreEqual(clipVector012.clips[i], clipVectorTester1.clips[0]), "ClipVector with shallow copied ClipShape should be equivalent");
+      ck.testTrue(clipPrimitivesAreEqual(clipVector012.clips[i], clipVectorTester1.clips[0]), "ClipVector with shallow copied ClipShape should be equivalent");
       clipVectorTester1.clear();
     }
 
     // Test appendages to the ClipVector array
     clipVectorTester1.appendShape(clipShape2.polygon, clipShape2.zLow, clipShape2.zHigh, undefined, clipShape2.isMask, clipShape2.invisible);
-    ck.testTrue(clipShapesAreEqual(clipShape2, clipVectorTester1.clips[0]), "ClipShape can be appended using points array.");
+    ck.testTrue(clipPrimitivesAreEqual(clipShape2, clipVectorTester1.clips[0]), "ClipShape can be appended using points array.");
 
     // Test the to/from JSON methods
     const clipJSON = clipVector012.toJSON();
@@ -228,7 +228,7 @@ describe("ClipVector", () => {
     // Check whether points are considered inside or outside at the extremities of each contained ClipShape
     let clipVectorSingleShape: ClipVector | undefined;
     for (let i = 0; i < clipVector012.clips.length; i++) {
-      clipVectorSingleShape = ClipVector.createClipShapeRefs([clipVector012.clips[i]], clipVectorSingleShape);
+      clipVectorSingleShape = ClipVector.create([clipVector012.clips[i]], clipVectorSingleShape);
       for (let j = 0; j < shapeExtremities[i].length; j++) {
         const pointOnEdge = shapeExtremities[i][j];
         const pointAdjustments = makePointAdjustments(pointOnEdge, shapePointAdjustments[i][j]);
@@ -259,26 +259,28 @@ describe("ClipVector", () => {
   it("GetRange", () => {
     // Check individual ranges of a single held ClipShape
     for (const shape of clipVector012.clips) {
-      const clipVectorSingleShape = ClipVector.createClipShapeRefs([shape]);
-      // Calculate the highest x, y, and z values
-      let minX: number = Number.MAX_VALUE;
-      let minY: number = Number.MAX_VALUE;
-      const minZ: number = shape.zLowValid ? shape.zLow! : -Number.MAX_VALUE;  // If low z is present use it, otherwise, this represents -infinity.
-      let maxX: number = -Number.MAX_VALUE;
-      let maxY: number = -Number.MAX_VALUE;
-      const maxZ: number = shape.zHighValid ? shape.zHigh! : Number.MAX_VALUE; // If high z is present use it, otherwise, this represents +infinity.
-      for (const point of shape.polygon) {
-        if (point.x < minX)
-          minX = point.x;
-        if (point.x > maxX)
-          maxX = point.x;
-        if (point.y < minY)
-          minY = point.y;
-        if (point.y > maxY)
-          maxY = point.y;
+      if (shape instanceof ClipShape) {
+        const clipVectorSingleShape = ClipVector.createClipShapeRefs([shape]);
+        // Calculate the highest x, y, and z values
+        let minX: number = Number.MAX_VALUE;
+        let minY: number = Number.MAX_VALUE;
+        const minZ: number = shape.zLowValid ? shape.zLow! : -Number.MAX_VALUE;  // If low z is present use it, otherwise, this represents -infinity.
+        let maxX: number = -Number.MAX_VALUE;
+        let maxY: number = -Number.MAX_VALUE;
+        const maxZ: number = shape.zHighValid ? shape.zHigh! : Number.MAX_VALUE; // If high z is present use it, otherwise, this represents +infinity.
+        for (const point of shape.polygon) {
+          if (point.x < minX)
+            minX = point.x;
+          if (point.x > maxX)
+            maxX = point.x;
+          if (point.y < minY)
+            minY = point.y;
+          if (point.y > maxY)
+            maxY = point.y;
+        }
+        const rangeFormed = Range3d.createXYZXYZ(minX, minY, minZ, maxX, maxY, maxZ);
+        ck.testRange3d(rangeFormed, clipVectorSingleShape.getRange()!, "Expect range of ClipVector of one ClipShape to match expected");
       }
-      const rangeFormed = Range3d.createXYZXYZ(minX, minY, minZ, maxX, maxY, maxZ);
-      ck.testRange3d(rangeFormed, clipVectorSingleShape.getRange()!, "Expect range of ClipVector of one ClipShape to match expected");
     }
 
     // Test range of intersection of ClipShapes 2 and 3
@@ -326,8 +328,7 @@ describe("ClipVector", () => {
     ck.testTrue(clipVectorClone.transformInPlace(t0));
     ck.testTrue(clipVectorsAreEqual(clipVectorClone, clipVector012), "Transforming with identity transform has no effect");
 
-    clipVectorClone.appendShape([Point3d.create(), Point3d.create(), Point3d.create()], undefined, undefined, undefined, true);
-    ck.testFalse(clipVectorClone.multiplyPlanesTimesMatrix(m0), "Matrix multiplication should fail on ClipShape that is mask");
+    clipVectorClone.appendShape([Point3d.create(2, 0, 0), Point3d.create(0, 1, 0), Point3d.create(-1, 0, 0)], undefined, undefined, undefined, true);
 
     // TODO: Provide checks for correct application of an actual transform into a new coordinate system
 
@@ -337,20 +338,22 @@ describe("ClipVector", () => {
 
   it("Extract boundary loops", () => {
     const vectorLen = clipVector012.clips.length;
-    const expClipMask = ClipMask.XAndY | (clipVector012.clips[vectorLen - 1].zLowValid ? ClipMask.ZLow : 0) | (clipVector012.clips[vectorLen - 1].zHighValid ? ClipMask.ZHigh : 0);
+    const lastShape = clipVector012.clips[vectorLen - 1] as ClipShape;
+    const expClipMask = ClipMask.XAndY | (lastShape.zLowValid ? ClipMask.ZLow : 0) | (lastShape.zHighValid ? ClipMask.ZHigh : 0);
     let expZLow = -Number.MAX_VALUE;
     let expZHigh = Number.MAX_VALUE;
     let zLowFound = false;
     let zHighFound = false;
     // Find final mask, zLow, and zHigh of clipVector012
     for (let i = vectorLen - 1; i >= 0; i--) {
-      if (clipVector012.clips[i].zLowValid) {
+      const shape = clipVector012.clips[i] as ClipShape;
+      if (shape.zLowValid) {
         zLowFound = true;
-        expZLow = clipVector012.clips[i].zLow!;
+        expZLow = shape.zLow!;
       }
-      if (clipVector012.clips[i].zHighValid) {
+      if (shape.zHighValid) {
         zHighFound = true;
-        expZHigh = clipVector012.clips[i].zHigh!;
+        expZHigh = shape.zHigh!;
       }
       if (zLowFound && zHighFound)
         break;
@@ -361,9 +364,9 @@ describe("ClipVector", () => {
     ck.testExactNumber(expZLow, retVal[1], "zLow returned matches expected");
     ck.testExactNumber(expZHigh, retVal[2], "zHigh returned matches expected");
     for (let loopNum = 0; loopNum < loopPoints.length; loopNum++) {
-      ck.testTrue(loopPoints[loopNum].length === clipVector012.clips[loopNum].polygon.length, "Extracted point array is of same length as ClipShape polygon");
+      ck.testTrue(loopPoints[loopNum].length === (clipVector012.clips[loopNum] as ClipShape).polygon.length, "Extracted point array is of same length as ClipShape polygon");
       for (let pointNum = 0; pointNum < loopPoints[loopNum].length; pointNum++)
-        ck.testTrue(loopPoints[loopNum][pointNum].isAlmostEqual(clipVector012.clips[loopNum].polygon[pointNum]), "Extracted point matches point in ClipShape polygon array");
+        ck.testTrue(loopPoints[loopNum][pointNum].isAlmostEqual((clipVector012.clips[loopNum] as ClipShape).polygon[pointNum]), "Extracted point matches point in ClipShape polygon array");
     }
 
     // TODO: Attempt the same check, with member transforms in each of the ClipShapes s.t. the points are transformed as they are extracted

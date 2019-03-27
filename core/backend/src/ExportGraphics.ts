@@ -29,6 +29,8 @@ export interface ExportGraphicsInfo {
   elementId: Id64String;
   /** The color and transparency for these graphics, laid out in TBGR format, see [ColorDef]($imodeljs-common) */
   color: number;
+  /** If defined, ID for the [Texture]($imodeljs-backend) for these graphics  */
+  textureId?: Id64String;
   /** The mesh for these graphics */
   mesh: ExportGraphicsMesh;
 }

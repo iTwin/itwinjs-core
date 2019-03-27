@@ -48,10 +48,11 @@ $buic-foreground-disabled:                var(--buic-foreground-disabled);
 $buic-foreground-muted:                   var(--buic-foreground-muted);
 $buic-foreground-activehover:             var(--buic-foreground-activehover);
 
-$buic-text-color:                         var(--buic-foreground-body);
-$buic-text-color-disabled:                var(--buic-foreground-disabled);
-$buic-text-color-muted:                   var(--buic-foreground-muted);
-$buic-text-color-reverse:                 var(--buic-foreground-body-reverse);
+$buic-text-color:                         var(--buic-foreground-body);          // 0.85 opacity
+$buic-text-color-disabled:                var(--buic-foreground-disabled);      // 0.44 opacity (Note: 0.25 is too much)
+$buic-text-color-muted:                   var(--buic-foreground-muted);         // 0.55 opacity
+$buic-text-color-reverse:                 var(--buic-foreground-body-reverse);  // 0.85 opacity
+$buic-text-color-hover:                   var(--buic-foreground-activehover);   // 1.00 opacity
 
 $buic-icon-color:                         var(--buic-foreground-body);
 $buic-icon-color-disabled:                var(--buic-foreground-disabled);

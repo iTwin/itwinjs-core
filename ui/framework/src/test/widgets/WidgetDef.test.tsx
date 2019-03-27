@@ -36,7 +36,6 @@ describe("WidgetDef", () => {
       isToolSettings: true,
       isStatusBar: true,
       fillZone: true,
-      featureId: "FeatureId",
       isFloatingStateSupported: true,
       isFloatingStateWindowResizable: false,
       applicationData: "AppData",
@@ -50,7 +49,6 @@ describe("WidgetDef", () => {
     expect(widgetDef.isActive).to.eq(true);
     expect(widgetDef.isFloating).to.eq(false);
     expect(widgetDef.priority).to.eq(100);
-    expect(widgetDef.featureId).to.eq("FeatureId");
     expect(widgetDef.isFreeform).to.eq(true);
     expect(widgetDef.isFloatingStateSupported).to.eq(true);
     expect(widgetDef.isFloatingStateWindowResizable).to.eq(false);

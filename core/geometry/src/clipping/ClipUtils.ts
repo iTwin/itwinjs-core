@@ -9,7 +9,7 @@ import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 import { Arc3d } from "../curve/Arc3d";
 import { UnionOfConvexClipPlaneSets } from "./UnionOfConvexClipPlaneSets";
 import { CurvePrimitive, AnnounceNumberNumber, AnnounceNumberNumberCurvePrimitive } from "../curve/CurvePrimitive";
-import { ClipShape } from "./ClipPrimitive";
+import { ClipPrimitive } from "./ClipPrimitive";
 
 /** Enumerated type for describing where geometry lies with respect to clipping planes. */
 export const enum ClipPlaneContainment {
@@ -103,9 +103,12 @@ export class ClipUtilities {
    * Clip a polygon down to regions defined by each shape of a ClipShape.
    * @return An multidimensional array of points, where each array is the boundary of part of the remaining polygon.
    */
-  public static clipPolygonToClipShape(polygon: Point3d[], clipShape: ClipShape): Point3d[][] {
+  public static clipPolygonToClipShape(polygon: Point3d[], clipShape: ClipPrimitive): Point3d[][] {
     const output: Point3d[][] = [];
-    clipShape.fetchClipPlanesRef().polygonClip(polygon, output);
+    const clipper = clipShape.fetchClipPlanesRef();
+    // NEEDS WORK -- what if it is a mask !!!!
+    if (clipper)
+      clipper.polygonClip(polygon, output);
     return output;
   }
 

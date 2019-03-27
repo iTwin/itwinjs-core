@@ -12,17 +12,6 @@ import { IModelTestUtils } from "../IModelTestUtils";
 describe("Functional Domain", () => {
   const requestContext = new BackendRequestContext();
 
-  before(() => {
-    // Logger.initializeToConsole();
-    // Logger.setLevelDefault(LogLevel.Warning);
-    // Logger.setLevel("FunctionalDomain.test", LogLevel.Info);
-    // Logger.setLevel("imodeljs-addon", LogLevel.Warning);
-    // Logger.setLevel("imodeljs-backend", LogLevel.Warning);
-    // Logger.setLevel("DgnCore", LogLevel.Warning);
-    // Logger.setLevel("ECObjectsNative", LogLevel.Warning);
-    // Logger.setLevel("ECDb", LogLevel.Warning);
-  });
-
   it("should populate FunctionalModel", async () => {
     const iModelDb: IModelDb = IModelDb.createSnapshot(IModelTestUtils.prepareOutputFile("FunctionalDomain", "FunctionalTest.bim"), {
       rootSubject: { name: "FunctionalTest", description: "Test of the Functional domain schema." },

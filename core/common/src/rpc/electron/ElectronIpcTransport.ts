@@ -158,7 +158,7 @@ class BackendIpcTransport extends ElectronIpcTransport<SerializedRpcRequest, Rpc
       const protocol = ElectronRpcProtocol.obtainInstance(message);
       response = await protocol.fulfill(message);
     } catch (err) {
-      response = RpcRequestFulfillment.forUnknownError(message, err);
+      response = await RpcRequestFulfillment.forUnknownError(message, err);
     }
 
     this.sendResponse(response, evt);

@@ -12,9 +12,11 @@ import {
 } from "@bentley/imodeljs-common";
 import { ConnectProjectConfiguration, SVTConfiguration } from "../common/SVTConfiguration";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
-import { DisplayStyleState, DisplayStyle3dState, IModelApp, IModelConnection, Viewport, ViewState, ScreenViewport, OidcClientWrapper, PerformanceMetrics, Target, FrontendRequestContext, AuthorizedFrontendRequestContext } from "@bentley/imodeljs-frontend";
+import { WebGLExtensionName, RenderSystem, DisplayStyleState, DisplayStyle3dState, IModelApp, IModelConnection, Viewport, ViewState, ScreenViewport, OidcClientWrapper, PerformanceMetrics, Target, FrontendRequestContext, AuthorizedFrontendRequestContext } from "@bentley/imodeljs-frontend";
 import { IModelApi } from "./IModelApi";
 import { initializeIModelHub } from "./ConnectEnv";
+
+let curDisabledExts = new Set<WebGLExtensionName>(); // Keep track of disabled webgl extensions
 
 // Retrieve default config data from json file
 async function getDefaultConfigs(): Promise<string> {
@@ -64,6 +66,14 @@ function combineFilePaths(additionalPath: string, initPath?: string) {
     combined += "\\";
   combined += additionalPath;
   return combined;
+}
+
+function setRenderOptions(jsonRenderOpt: any, curRenderOpt?: RenderSystem.Options): RenderSystem.Options {
+  if (!curRenderOpt)
+    curRenderOpt = {};
+  if (jsonRenderOpt.hasOwnProperty("disabledExtensions"))
+    curRenderOpt!.disabledExtensions = jsonRenderOpt.disabledExtensions;
+  return curRenderOpt;
 }
 
 function setViewFlagOverrides(vf: any, vfo?: ViewFlag.Overrides): ViewFlag.Overrides {
@@ -155,6 +165,42 @@ function getRenderMode(): string {
   }
 }
 
+function getDisabledExts(): string {
+  let extString = "";
+  curDisabledExts.forEach((ext) => {
+    switch (ext) {
+      case "WEBGL_draw_buffers":
+        extString += "-drawBuf";
+        break;
+      case "OES_element_index_uint":
+        extString += "-unsignedInt";
+        break;
+      case "OES_texture_float":
+        extString += "-texFloat";
+        break;
+      case "OES_texture_half_float":
+        extString += "-texHalfFloat";
+        break;
+      case "WEBGL_depth_texture":
+        extString += "-depthTex";
+        break;
+      case "EXT_color_buffer_float":
+        extString += "-floats";
+        break;
+      case "EXT_shader_texture_lod":
+        extString += "-texLod";
+        break;
+      case "ANGLE_instanced_arrays":
+        extString += "-instArrays";
+        break;
+      default:
+        extString += "-" + ext;
+        break;
+    }
+  });
+  return extString;
+}
+
 function getViewFlagsString(): string {
   const vf = activeViewState.viewState!.displayStyle.viewFlags;
   let vfString = "";
@@ -229,6 +275,7 @@ function getRowData(finalFrameTimings: Array<Map<string, number>>, configs: Defa
   rowData.set("Display Style", activeViewState.viewState!.displayStyle.name);
   rowData.set("Render Mode", getRenderMode());
   rowData.set("View Flags", " " + getViewFlagsString());
+  rowData.set("Disabled Ext", getDisabledExts());
   rowData.set("Tile Loading Time", curTileLoadingTime);
 
   // Calculate average timings
@@ -254,6 +301,7 @@ function getImageString(configs: DefaultConfigs): string {
   output += configs.displayStyle ? "_" + configs.displayStyle.trim() : "";
   output += getRenderMode() ? "_" + getRenderMode() : "";
   output += getViewFlagsString() !== "" ? "_" + getViewFlagsString() : "";
+  output += getDisabledExts() ? "_" + getDisabledExts() : "";
   output += ".png";
   return output;
 }
@@ -284,6 +332,7 @@ class DefaultConfigs {
   public testType?: string;
   public displayStyle?: string;
   public viewFlags?: ViewFlag.Overrides;
+  public renderOptions?: RenderSystem.Options;
   public aoEnabled = false;
 
   public constructor(jsonData: any, prevConfigs?: DefaultConfigs, useDefaults = false) {
@@ -306,6 +355,7 @@ class DefaultConfigs {
       if (prevConfigs.viewName) this.viewName = prevConfigs.viewName;
       if (prevConfigs.testType) this.testType = prevConfigs.testType;
       if (prevConfigs.displayStyle) this.displayStyle = prevConfigs.displayStyle;
+      if (prevConfigs.renderOptions) this.renderOptions = prevConfigs.renderOptions;
       if (prevConfigs.viewFlags) this.viewFlags = prevConfigs.viewFlags;
     } else if (jsonData.argOutputPath)
       this.outputPath = jsonData.argOutputPath;
@@ -318,6 +368,7 @@ class DefaultConfigs {
     if (jsonData.viewName) this.viewName = jsonData.viewName;
     if (jsonData.testType) this.testType = jsonData.testType;
     if (jsonData.displayStyle) this.displayStyle = jsonData.displayStyle;
+    if (jsonData.renderOptions) this.renderOptions = setRenderOptions(jsonData.renderOptions, this.renderOptions);
     if (jsonData.viewFlags) this.viewFlags = setViewFlagOverrides(jsonData.viewFlags, this.viewFlags);
     this.aoEnabled = undefined !== jsonData.viewFlags && !!jsonData.viewFlags.ambientOcclusion;
 
@@ -332,6 +383,7 @@ class DefaultConfigs {
     debugPrint("viewName: " + this.viewName);
     debugPrint("testType: " + this.testType);
     debugPrint("displayStyle: " + this.displayStyle);
+    debugPrint("renderOptions: " + this.renderOptions);
     debugPrint("viewFlags: " + this.viewFlags);
   }
 
@@ -461,7 +513,7 @@ async function loadIModel(testConfig: DefaultConfigs) {
     await retrieveProjectConfiguration();
     activeViewState.projectConfig!.projectName = testConfig.iModelHubProject;
     activeViewState.projectConfig!.iModelName = testConfig.iModelName!.replace(".ibim", "").replace(".bim", "");
-    await initializeIModelHub(activeViewState);
+    activeViewState.project = await initializeIModelHub(activeViewState.projectConfig!.projectName);
     activeViewState.iModel = await IModelApi.getIModelByName(requestContext, activeViewState.project!.wsgId, activeViewState.projectConfig!.iModelName);
     if (activeViewState.iModel === undefined)
       throw new Error(`${activeViewState.projectConfig!.iModelName} - IModel not found in project ${activeViewState.project!.name}`);
@@ -508,6 +560,27 @@ async function closeIModel(isSnapshot: boolean) {
 }
 
 async function runTest(testConfig: DefaultConfigs) {
+  // Restart the IModelApp if the disabled extensions for the RenderSystem have changed
+  const newDisabledExts = new Set<WebGLExtensionName>(testConfig.renderOptions ? testConfig.renderOptions.disabledExtensions : undefined);
+  if (IModelApp.initialized) {
+    if (newDisabledExts.size !== curDisabledExts.size) {
+      IModelApp.shutdown();
+      curDisabledExts = newDisabledExts;
+    } else {
+      for (const ext in newDisabledExts) {
+        if (!curDisabledExts.has(ext as WebGLExtensionName)) {
+          IModelApp.shutdown();
+          curDisabledExts = newDisabledExts;
+          break;
+        }
+      }
+    }
+  } else {
+    curDisabledExts = newDisabledExts;
+  }
+  if (!IModelApp.initialized)
+    IModelApp.startup(undefined, testConfig.renderOptions);
+
   // Open and finish loading model
   await loadIModel(testConfig);
 
@@ -585,8 +658,6 @@ async function testModel(configs: DefaultConfigs, modelData: any) {
 }
 
 async function main() {
-  IModelApp.startup();
-
   // Retrieve DefaultConfigs
   const defaultConfigStr = await getDefaultConfigs();
   const jsonData = JSON.parse(defaultConfigStr);
@@ -626,6 +697,10 @@ window.onload = () => {
     for (const definition of rpcConfiguration.interfaces())
       RpcOperation.forEach(definition, (operation) => operation.policy.token = (_request) => new IModelToken("test", "test", "test", "test", OpenMode.Readonly));
   }
+
+  // ###TODO: Raman added one-time initialization logic IModelApp.startup which replaces a couple of RpcRequest-related functions.
+  // Cheap hacky workaround until that's fixed.
+  IModelApp.startup();
 
   main(); // tslint:disable-line:no-floating-promises
 };

@@ -1,0 +1,200 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+@import "@bentley/ui-core/lib/ui-core/index";
+@import "@bentley/ui-core/lib/ui-core/classes";
+
+$border-color: #eeeeee;
+
+/* 3D Models tab */
+.modelstab-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding-bottom: $uicore-m;
+  box-sizing: border-box;
+  font-size: $uicore-font-size;
+  background: $uicore-gray-c;
+  position: relative;
+  overflow: hidden;
+
+  /* container - models from presentation rules */
+  .models-tree-container {
+    box-sizing: border-box;
+    width: 100%;
+    flex: 1;
+    padding-left: $uicore-m;
+    padding-top: $uicore-m;
+    padding-bottom: $uicore-m;
+    border-bottom: 1px solid $uicore-gray-a;
+  }
+
+  /* container - flat list of models */
+  .models-list-container {
+    flex: 1;
+    margin-top: $uicore-s;
+    margin-left: $uicore-s;
+    margin-right: $uicore-s;
+    border: 1px solid $uicore-gray-a;
+    background: $uicore-white;
+    overflow-y: auto;
+
+    .showtree-button {
+      @extend .uicore-buttons-blue;
+      padding-top: $uicore-xs;
+      padding-bottom: $uicore-xs;
+      margin: $uicore-s;
+    }
+  }
+
+  /* container - document codes */
+  .documentcode-container {
+    display: flex;
+    flex-wrap: nowrap;
+    flex: 1;
+    overflow-x: auto;
+    box-sizing: border-box;
+    width: 100%;
+    padding: $uicore-m;
+
+    .dc-table {
+      flex: 1 1 225px;
+      display: flex;
+      flex-direction: column;
+      min-width: 175px;
+      margin: $uicore-sm $uicore-s;
+      background: $uicore-white;
+      position: relative;
+
+      .dc-table-header {
+        padding: 10px $uicore-s;
+        border: 1px solid $uicore-gray-a;
+        color: rgba($uicore-text-color, 0.85);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+
+        .check-box {
+          position: absolute;
+          left: 9px;
+        }
+
+        .dc-table-title {
+          // flex: 1;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+          overflow: hidden;
+        }
+      }
+
+      .dc-table-content {
+        flex: 1;
+        border-width: 0px 1px 1px 1px;
+        border-color: #dce0e3 ;
+        border-style: solid;
+        overflow-y: auto;
+      }
+    }
+  }
+
+  /* enter iModel button */
+  .open-button {
+    margin: $uicore-l $uicore-m 0 auto !important;
+    @extend .uicore-buttons-blue;
+  }
+
+  /* toast displayed for 3d Models */
+  .toast {
+    position: absolute;
+    left: 0px;
+    bottom: -50px;
+    min-width: 450px;
+    margin-left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    background-color: $uicore-white;
+    color: rgba(black, .85);
+    border: 1px solid $uicore-blue;
+    border-radius: 3px;
+
+    .toast-image {
+      width: 48px;
+      min-height: 48px;
+      background: $uicore-blue;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: $uicore-white;
+    }
+
+    .toast-message {
+      display: flex;
+      justify-content: center;
+      flex-direction: column;
+      padding: 0 $uicore-m;
+
+      > span:first-child {
+        font-size: 14px;
+        color: rgba($uicore-text-color,.85);
+      }
+
+      > span:last-child {
+        margin-top: 3px;
+        font-size: 12px;
+        color: $uicore-gray;
+      }
+    }
+
+    > a {
+      margin-left: auto;
+      margin-right: $uicore-xs;
+      font-size: 12px;
+      text-decoration: underline;
+      color: $uicore-blue;
+      cursor: pointer;
+    }
+
+    .close {
+      font-size: 2em;
+      margin-left: $uicore-m;
+      margin-right: $uicore-sm;
+      color: rgba(0,0,0,.85);
+      cursor: pointer;
+
+      &:hover {
+        color: rgba(0,0,0,1);
+      }
+    }
+  }
+}
+
+/* Loading (spinner) view */
+.view-loading {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.slide {
+  -webkit-animation: slide 0.6s forwards;
+  -webkit-animation-delay: 1.25s;
+  animation: slide 0.6s forwards;
+  animation-delay: 1.25s;
+}
+
+@-webkit-keyframes slide {
+  100% { bottom: 15px }
+}
+
+@keyframes slide {
+  100% { bottom: 15px }
+}

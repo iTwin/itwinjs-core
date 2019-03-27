@@ -4,13 +4,16 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module ECDb */
 
-import { IModelError, IModelStatus, PageOptions, kPagingDefaultOptions, PageableECSql } from "@bentley/imodeljs-common";
-import { IModelJsNative } from "./IModelJsNative";
+import { assert, DbResult, IDisposable, Logger, OpenMode } from "@bentley/bentleyjs-core";
+import { IModelError, IModelStatus, kPagingDefaultOptions, PageableECSql, PageOptions } from "@bentley/imodeljs-common";
 import { ECSqlStatement, ECSqlStatementCache } from "./ECSqlStatement";
-import { SqliteStatement, SqliteStatementCache, CachedSqliteStatement } from "./SqliteStatement";
-import { DbResult, OpenMode, IDisposable, Logger, assert } from "@bentley/bentleyjs-core";
 import { IModelHost } from "./IModelHost";
-const loggingCategory = "imodeljs-backend.ECDb";
+import { IModelJsNative } from "./IModelJsNative";
+import { LoggerCategory } from "./LoggerCategory";
+import { CachedSqliteStatement, SqliteStatement, SqliteStatementCache } from "./SqliteStatement";
+
+const loggerCategory: string = LoggerCategory.ECDb;
+
 /** Modes for how to open [ECDb]($backend) files. */
 export enum ECDbOpenMode {
   Readonly,
@@ -221,12 +224,12 @@ export class ECDb implements IDisposable, PageableECSql {
     this.nativeDb.closeDb();
   }
 
-  /** @private use to test statement caching */
+  /** @internal use to test statement caching */
   public clearStatementCache() {
     this._statementCache.clear();
   }
 
-  /** @private use to test statement caching */
+  /** @internal use to test statement caching */
   public getCachedStatementCount() {
     return this._statementCache.getCount();
   }
@@ -259,7 +262,7 @@ export class ECDb implements IDisposable, PageableECSql {
   public importSchema(pathName: string): void {
     const status: DbResult = this.nativeDb.importSchema(pathName);
     if (status !== DbResult.BE_SQLITE_OK) {
-      Logger.logError(loggingCategory, "Failed to import schema from '" + pathName + "'.");
+      Logger.logError(loggerCategory, "Failed to import schema from '" + pathName + "'.");
       throw new IModelError(status, "Failed to import schema from '" + pathName + "'.");
     }
   }
@@ -296,7 +299,7 @@ export class ECDb implements IDisposable, PageableECSql {
       return val;
     } catch (err) {
       release();
-      Logger.logError(loggingCategory, err.toString());
+      Logger.logError(loggerCategory, err.toString());
       throw err;
     }
   }
@@ -363,7 +366,7 @@ export class ECDb implements IDisposable, PageableECSql {
       return val;
     } catch (err) {
       release();
-      Logger.logError(loggingCategory, err.toString());
+      Logger.logError(loggerCategory, err.toString());
       throw err;
     }
   }

@@ -6,7 +6,6 @@
 /** @module CartesianGeometry */
 
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
-import { Range1d, Range3d } from "../geometry3d/Range";
 import { Transform } from "../geometry3d/Transform";
 import { Matrix3d } from "../geometry3d/Matrix3d";
 import { Matrix4d } from "../geometry4d/Matrix4d";
@@ -18,6 +17,7 @@ import { Arc3d } from "../curve/Arc3d";
 import { ClipPlane } from "./ClipPlane";
 import { ClipPlaneContainment, Clipper, ClipUtilities } from "./ClipUtils";
 import { AnnounceNumberNumberCurvePrimitive } from "../curve/CurvePrimitive";
+import { Range3d } from "../geometry3d/Range";
 
 /**
  * A ConvexClipPlaneSet is a collection of ClipPlanes, often used for bounding regions of space.
@@ -470,56 +470,53 @@ export class ConvexClipPlaneSet implements Clipper {
   }
 
   /**
-   * Returns range if result does not cover a space of infinity, otherwise undefined.
-   * Note: If given a range for output, this will overwrite it, NOT extend it.
+   * Compute intersections among all combinations of 3 planes in the convex set.
+   * * optionally throw out points that are not in the set.
+   * * optionally push the points in the caller-supplied point array.
+   * * optionally extend a caller supplied range.
+   * * In the common case where the convex set is (a) a slab or (b) a view frustum, there will be 8 points and the range is the range of the convex set.
+   * * If the convex set is unbounded, the range only contains the range of the accepted (corner) points, and the range is not a representative of the "range of all points in the set" .
+   * @param transform (optional) transform to apply to the points.
+   * @param points (optional) array to which computed points are to be added.
+   * @param range (optional) range to be extended by the computed points
+   * @param transform (optional) transform to apply to the accepted points.
+   * @param testContainment if true, test each point to see if it is within the convex set.  (Send false if confident that the convex set is rectilinear set such as a slab.  Send true if chiseled corners are possible)
+   * @returns number of points.
    */
-  public getRangeOfAlignedPlanes(transform?: Transform, result?: Range3d): Range3d | undefined {
-    const idMatrix: Matrix3d = Matrix3d.createIdentity();
-    const bigRange: Range3d = Range3d.createXYZXYZ(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
+  public computePlanePlanePlaneIntersections(points: Point3d[] | undefined, rangeToExtend: Range3d | undefined, transform?: Transform, testContainment: boolean = true): number {
 
-    const range = bigRange.clone(result);
-    for (const clipPlane of this._planes) {
-      if (transform)
-        clipPlane.transformInPlace(transform);
-
-      // Array of 1-d ranges that will be pieced back together into a Range3d after making adjustments
-      const rangePieces: Range1d[] = [
-        Range1d.createXX(range.low.x, range.high.x),
-        Range1d.createXX(range.low.y, range.high.y),
-        Range1d.createXX(range.low.z, range.high.z)];
-
-      for (let i = 0; i < 3; i++) {
-        // Set values of minP and maxP based on i (we are compensating for pointer arithmetic in native code)
-        let minP;
-        let maxP;
-        minP = rangePieces[i].low;
-        maxP = rangePieces[i].high;
-
-        const direction: Vector3d = idMatrix.getColumn(i);
-        if (clipPlane.inwardNormalRef.isParallelTo(direction, true)) {
-          if (clipPlane.inwardNormalRef.dotProduct(direction) > 0.0) {
-            if (clipPlane.distance > minP)
-              rangePieces[i].low = clipPlane.distance;
-          } else {
-            if (-clipPlane.distance < maxP)
-              rangePieces[i].high = - clipPlane.distance;
+    const normalRows = Matrix3d.createIdentity();
+    const allPlanes = this._planes;
+    const n = allPlanes.length;
+    let numPoints = 0;    // explicityly count points -- can't wait to end for points.length because it may be an optional output.
+    for (let i = 0; i < n; i++) {
+      for (let j = i + 1; j < n; j++)
+        for (let k = j + 1; k < n; k++) {
+          Matrix3d.createRowValues(
+            allPlanes[i].inwardNormalRef.x, allPlanes[i].inwardNormalRef.y, allPlanes[i].inwardNormalRef.z,
+            allPlanes[j].inwardNormalRef.x, allPlanes[j].inwardNormalRef.y, allPlanes[j].inwardNormalRef.z,
+            allPlanes[k].inwardNormalRef.x, allPlanes[k].inwardNormalRef.y, allPlanes[k].inwardNormalRef.z,
+            normalRows);
+          if (normalRows.computeCachedInverse(false)) {
+            const xyz = normalRows.multiplyInverseXYZAsPoint3d(allPlanes[i].distance, allPlanes[j].distance, allPlanes[k].distance)!;
+            if (!testContainment || this.isPointOnOrInside(xyz, Geometry.smallMetricDistance)) {
+              numPoints++;
+              if (transform)
+                transform.multiplyPoint3d(xyz, xyz);
+              if (points)
+                points.push(xyz);
+              if (rangeToExtend)
+              rangeToExtend.extendPoint(xyz);
+            }
           }
         }
-      }
-      // Reassign to Range3d
-      range.low.x = rangePieces[0].low;
-      range.high.x = rangePieces[0].high;
-      range.low.y = rangePieces[1].low;
-      range.high.y = rangePieces[1].high;
-      range.low.z = rangePieces[2].low;
-      range.high.z = rangePieces[2].high;
     }
-    if (range.isAlmostEqual(bigRange))
-      return undefined;
-    else
-      return range;
+    return numPoints;
   }
-
+  /**
+   * Set the `invisible` property on each plane of the convex set.
+   * @param invisible value to store
+   */
   public setInvisible(invisible: boolean) {
     for (const plane of this._planes) {
       plane.setInvisible(invisible);

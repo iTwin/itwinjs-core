@@ -46,5 +46,5 @@ function mapStateToProps(state: any) {
 }
 
 // we declare the variable and export that rather than using export default.
-/** OverallContent React component that is Redux connected. */ // tslint:disable-next-line:variable-name
+/** React component that is Redux connected. */ // tslint:disable-next-line:variable-name
 export const PromptField = connect(mapStateToProps)(PromptFieldComponent);

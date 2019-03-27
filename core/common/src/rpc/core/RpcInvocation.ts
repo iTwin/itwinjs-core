@@ -4,16 +4,17 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module RpcInterface */
 
+import { BentleyStatus, Logger, RpcInterfaceStatus } from "@bentley/bentleyjs-core";
 import { IModelError } from "../../IModelError";
-import { BentleyStatus, RpcInterfaceStatus, Logger } from "@bentley/bentleyjs-core";
+import { LoggerCategory } from "../../LoggerCategory";
 import { RpcInterface } from "../../RpcInterface";
-import { RpcOperation } from "./RpcOperation";
-import { RpcRegistry, CURRENT_INVOCATION } from "./RpcRegistry";
-import { RpcProtocol, SerializedRpcRequest, RpcRequestFulfillment } from "./RpcProtocol";
 import { RpcConfiguration } from "./RpcConfiguration";
-import { RpcMarshaling, RpcSerializedValue } from "./RpcMarshaling";
+import { RpcProtocolEvent, RpcRequestStatus } from "./RpcConstants";
 import { RpcNotFoundResponse, RpcPendingResponse } from "./RpcControl";
-import { RpcRequestStatus, RpcProtocolEvent } from "./RpcConstants";
+import { RpcMarshaling, RpcSerializedValue } from "./RpcMarshaling";
+import { RpcOperation } from "./RpcOperation";
+import { RpcProtocol, RpcRequestFulfillment, SerializedRpcRequest } from "./RpcProtocol";
+import { CURRENT_INVOCATION, RESOURCE, RpcRegistry } from "./RpcRegistry";
 
 /** Notification callback for an RPC invocation. */
 export type RpcInvocationCallback_T = (invocation: RpcInvocation) => void;
@@ -94,7 +95,6 @@ export class RpcInvocation {
       }
 
       this.operation.policy.invocationCallback(this);
-      protocol.events.raiseEvent(RpcProtocolEvent.RequestReceived, this);
       this.result = this.resolve();
     } catch (error) {
       this.result = this.reject(error);
@@ -108,13 +108,15 @@ export class RpcInvocation {
   }
 
   private async resolve(): Promise<any> {
+    const clientRequestContext = await RpcConfiguration.requestContext.deserialize(this.request);
+    clientRequestContext.enter();
+
+    this.protocol.events.raiseEvent(RpcProtocolEvent.RequestReceived, this);
+
     const parameters = RpcMarshaling.deserialize(this.operation, this.protocol, this.request.parameters);
     const impl = RpcRegistry.instance.getImplForInterface(this.operation.interfaceDefinition);
     (impl as any)[CURRENT_INVOCATION] = this;
     const op = this.lookupOperationFunction(impl);
-
-    const clientRequestContext = await RpcConfiguration.requestContext.deserialize(this.request);
-    clientRequestContext.enter();
 
     return Promise.resolve(op.call(impl, ...parameters));
   }
@@ -125,19 +127,19 @@ export class RpcInvocation {
     return Promise.reject(error);
   }
 
-  private fulfillResolved(value: any): RpcRequestFulfillment {
+  private async fulfillResolved(value: any): Promise<RpcRequestFulfillment> {
     this._timeOut = new Date().getTime();
     this.protocol.events.raiseEvent(RpcProtocolEvent.BackendResponseCreated, this);
-    const result = RpcMarshaling.serialize(this.operation, this.protocol, value);
+    const result = await RpcMarshaling.serialize(this.operation, this.protocol, value);
     return this.fulfill(result, value);
   }
 
-  private fulfillRejected(reason: any): RpcRequestFulfillment {
+  private async fulfillRejected(reason: any): Promise<RpcRequestFulfillment> {
     this._timeOut = new Date().getTime();
     if (!RpcConfiguration.developmentMode)
       reason.stack = undefined;
 
-    const result = RpcMarshaling.serialize(this.operation, this.protocol, reason);
+    const result = await RpcMarshaling.serialize(this.operation, this.protocol, reason);
 
     if (reason instanceof RpcPendingResponse) {
       this._pending = true;
@@ -167,9 +169,14 @@ export class RpcInvocation {
   }
 
   private lookupOperationFunction(implementation: RpcInterface): (...args: any[]) => any {
-    const func = (implementation as any)[this.operation.operationName];
+    let op = this.operation.operationName;
+    if (op === RESOURCE) {
+      op = "supplyResource";
+    }
+
+    const func = (implementation as any)[op];
     if (!func || typeof (func) !== "function") {
-      throw new IModelError(BentleyStatus.ERROR, `RPC interface class "${implementation.constructor.name}" does not implement operation "${this.operation.operationName}".`, Logger.logError, "imodeljs-backend.RpcInterface");
+      throw new IModelError(BentleyStatus.ERROR, `RPC interface class "${implementation.constructor.name}" does not implement operation "${op}".`, Logger.logError, LoggerCategory.RpcInterfaceBackend);
     }
 
     return func;

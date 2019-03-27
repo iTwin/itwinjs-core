@@ -36,6 +36,7 @@ export class ToolUiManager {
   private static _activeToolDescription: string = "";
 
   private static syncToolSettingsProperties(toolId: string, syncProperties: ToolSettingsPropertySyncItem[]): void {
+    // istanbul ignore if
     if (toolId !== ToolUiManager._toolIdForCachedProperties) {
       // tslint:disable-next-line:no-console
       console.log(`Error = Sync tool with UI - ToolId ${toolId} does not match id of cached properties ${ToolUiManager._toolIdForCachedProperties}}`);
@@ -63,10 +64,13 @@ export class ToolUiManager {
   /** Cache Tool Settings properties */
   public static cacheToolSettingsProperties(toolSettingsProperties: ToolSettingsPropertyRecord[] | undefined, toolId?: string, toolLabel?: string, toolDescription?: string): boolean {
     ToolUiManager.clearCachedProperties();
+    // istanbul ignore else
     if (toolId)
       ToolUiManager._toolIdForCachedProperties = toolId;
+    // istanbul ignore else
     if (toolLabel)
       ToolUiManager._activeToolLabel = toolLabel;
+    // istanbul ignore else
     if (toolDescription)
       ToolUiManager._activeToolDescription = toolDescription;
 

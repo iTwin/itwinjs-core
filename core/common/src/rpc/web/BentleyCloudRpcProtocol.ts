@@ -4,14 +4,15 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module RpcInterface */
 
-import { WebAppRpcProtocol } from "./WebAppRpcProtocol";
-import { OpenAPIParameter } from "./OpenAPI";
-import { SerializedRpcOperation } from "../core/RpcProtocol";
-import { RpcOperation } from "../core/RpcOperation";
-import { RpcRequest } from "../core/RpcRequest";
-import { IModelError } from "../../IModelError";
-import { BentleyStatus, OpenMode, Logger, assert, SerializedClientRequestContext } from "@bentley/bentleyjs-core";
+import { assert, BentleyStatus, Logger, OpenMode, SerializedClientRequestContext } from "@bentley/bentleyjs-core";
 import { URL } from "url";
+import { IModelError } from "../../IModelError";
+import { LoggerCategory } from "../../LoggerCategory";
+import { RpcOperation } from "../core/RpcOperation";
+import { SerializedRpcOperation } from "../core/RpcProtocol";
+import { RpcRequest } from "../core/RpcRequest";
+import { OpenAPIParameter } from "./OpenAPI";
+import { WebAppRpcProtocol } from "./WebAppRpcProtocol";
 
 enum AppMode {
   MilestoneReview = "1",
@@ -84,7 +85,7 @@ export abstract class BentleyCloudRpcProtocol extends WebAppRpcProtocol {
     } else {
       const token = operation.policy.token(request);
       if (!token || !token.contextId || !token.iModelId)
-        throw new IModelError(BentleyStatus.ERROR, "Invalid iModelToken for RPC operation request", Logger.logError, "imodeljs-frontend.BentleyCloudRpcProtocol");
+        throw new IModelError(BentleyStatus.ERROR, "Invalid iModelToken for RPC operation request", Logger.logError, LoggerCategory.RpcInterfaceFrontend);
 
       contextId = encodeURIComponent(token.contextId);
       iModelId = encodeURIComponent(token.iModelId);

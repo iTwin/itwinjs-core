@@ -7,51 +7,22 @@
 import { ContentControl } from "./ContentControl";
 import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager";
 import { ConfigurableUiControlType, ConfigurableUiControlConstructor, ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl";
-import { StandardViewId } from "@bentley/imodeljs-frontend";
-
-// -----------------------------------------------------------------------------
-// ContentGroupDef and associated enums & interfaces
-// -----------------------------------------------------------------------------
-
-/** Enumeration for the iModel view class */
-export enum ViewClass {
-  Drawing,
-  Sheet,
-  Orthographic,
-  Camera,
-}
-
-/** Interface for the definition of a color */
-export interface ColorDef {
-  r: number;
-  g: number;
-  b: number;
-  a: number;
-}
-
-/** Interface for the definition of a view specification */
-export interface ViewSpecDef {
-  viewDefinitionClass: ViewClass;
-  viewRotation: StandardViewId;
-}
 
 /** Properties for content displayed in a content view */
 export interface ContentProps {
+  /** An optional id for the Content View */
   id?: string;
+  /** The class name or [[ConfigurableUiControlConstructor]] of the content control */
   classId: string | ConfigurableUiControlConstructor;
-
-  featureId?: string;
-  sourceFile?: string;
-
-  backgroundColor?: ColorDef;
-  defaultViewSpec?: ViewSpecDef;
-
+  /** Optional application data passed down the the Content View */
   applicationData?: any;
 }
 
 /** Properties for a [[ContentGroup]] */
 export interface ContentGroupProps {
+  /** An optional id for the [[ContentGroup]] */
   id?: string;
+  /** A collection of [[ContentProps]], one for each content view */
   contents: ContentProps[];
 }
 

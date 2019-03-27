@@ -13,11 +13,11 @@ import { DefaultIModelServices } from "./clientservices/DefaultIModelServices";
 import { Store } from "redux";
 import { OidcClientWrapper, SnapMode, IModelApp } from "@bentley/imodeljs-frontend";
 import { AnalysisAnimationTool } from "./tools/AnalysisAnimation";
-import { ScheduleAnimationTool } from "./tools/ScheduleAnimation";
 import { SyncUiEventDispatcher } from "./syncui/SyncUiEventDispatcher";
 import { FrameworkState } from "./FrameworkState";
 import { ConfigurableUiActionId } from "./configurableui/state";
 import { UiEvent } from "@bentley/ui-core";
+import { COLOR_THEME_DEFAULT } from "./theme/ThemeManager";
 
 /** UiVisibility Event Args interface.
  */
@@ -64,7 +64,6 @@ export class UiFramework {
 
     // register UiFramework provided tools
     AnalysisAnimationTool.register(frameworkNamespace);
-    ScheduleAnimationTool.register(frameworkNamespace);
 
     UiFramework._projectServices = projectServices ? projectServices : new DefaultProjectServices();
     UiFramework._iModelServices = iModelServices ? iModelServices : new DefaultIModelServices();
@@ -137,13 +136,21 @@ export class UiFramework {
     return UiFramework.frameworkState ? UiFramework.frameworkState.configurableUiState.snapMode : SnapMode.NearestKeypoint;
   }
 
-  public static getIsUiVisible () {
+  public static getIsUiVisible() {
     return this._isUiVisible;
   }
 
-  public static setIsUiVisible (visible: boolean) {
+  public static setIsUiVisible(visible: boolean) {
     this._isUiVisible = visible;
     UiFramework.onUiVisibilityChanged.emit({ visible });
+  }
+
+  public static setColorTheme(theme: string) {
+    UiFramework.store.dispatch({ type: ConfigurableUiActionId.SetTheme, payload: theme });
+  }
+
+  public static getColorTheme(): string {
+    return UiFramework.frameworkState ? UiFramework.frameworkState.configurableUiState.theme : COLOR_THEME_DEFAULT;
   }
 }
 

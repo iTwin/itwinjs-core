@@ -155,7 +155,7 @@ class FrontstageNavigationWidget extends React.Component {
 
   private _verticalToolbar =
     <Toolbar
-      expandsTo={Direction.Right}
+      expandsTo={Direction.Left}
       items={
         <>
           <ToolButton toolId={AppTools.item7.id} iconSpec={AppTools.item7.iconSpec!} labelKey={AppTools.item7.label} execute={AppTools.item7.execute} />

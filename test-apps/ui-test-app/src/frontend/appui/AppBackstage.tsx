@@ -14,6 +14,7 @@ import {
   BackstageCloseEventArgs,
   BooleanSyncUiListener,
   SettingsModalFrontstage,
+  TaskLaunchBackstageItem,
 } from "@bentley/ui-framework";
 
 import { Tool } from "@bentley/imodeljs-frontend";
@@ -74,7 +75,7 @@ class AppBackstage extends React.Component<AppBackstageProps> {
 
   public render(): React.ReactNode {
     return (
-      <Backstage isVisible={this.props.isVisible} onClose={this._handleOnClose} accessToken={SampleAppIModelApp.store.getState().frameworkState!.overallContentState.accessToken} >
+      <Backstage isVisible={this.props.isVisible} onClose={this._handleOnClose} accessToken={SampleAppIModelApp.store.getState().sampleAppState.accessToken} >
         <FrontstageLaunchBackstageItem frontstageId="Test1" labelKey="SampleApp:backstage.testFrontstage1" iconSpec="icon icon-placeholder" />
         <FrontstageLaunchBackstageItem frontstageId="Test2" labelKey="SampleApp:backstage.testFrontstage2" iconSpec="icon icon-placeholder" />
         <BooleanSyncUiListener eventIds={[SampleAppUiActionId.setTestProperty]} boolFunc={(): boolean => SampleAppIModelApp.getTestProperty() !== "HIDE"}>
@@ -84,10 +85,17 @@ class AppBackstage extends React.Component<AppBackstageProps> {
           {(isEnabled: boolean) => <FrontstageLaunchBackstageItem frontstageId="Test4" labelKey="SampleApp:backstage.testFrontstage4" iconSpec="icon icon-placeholder" isEnabled={isEnabled} />}
         </BooleanSyncUiListener>
         <SeparatorBackstageItem />
-        <CommandLaunchBackstageItem labelKey="SampleApp:backstage.testFrontstage6" iconSpec="icon icon-settings"
-              commandId="SampleApp:backstage.testFrontstage6" execute={() => FrontstageManager.openModalFrontstage(new SettingsModalFrontstage())}/>
+        <FrontstageLaunchBackstageItem frontstageId="IModelOpen" labelKey="SampleApp:backstage.imodelopen" iconSpec="icon icon-folder-opened" />
+        <FrontstageLaunchBackstageItem frontstageId="IModelIndex" labelKey="SampleApp:backstage.imodelindex" iconSpec="icon icon-placeholder" />
         <SeparatorBackstageItem />
-        <FrontstageLaunchBackstageItem frontstageId="ViewsFrontstage" label="View iModel" descriptionKey="SampleApp:backstage.iModelStage" iconSpec="icon-placeholder" />
+        <CommandLaunchBackstageItem labelKey="SampleApp:backstage.testFrontstage6" iconSpec="icon icon-settings"
+          commandId="SampleApp:backstage.testFrontstage6" execute={() => FrontstageManager.openModalFrontstage(new SettingsModalFrontstage())} />
+        <SeparatorBackstageItem />
+        <FrontstageLaunchBackstageItem frontstageId="ViewsFrontstage" labelKey="SampleApp:backstage.viewIModel" descriptionKey="SampleApp:backstage.iModelStage" iconSpec="icon-placeholder" />
+        <SeparatorBackstageItem />
+        <TaskLaunchBackstageItem workflowId="ExampleWorkflow" taskId="Task1"
+          labelKey="SampleApp:backstage.viewIModelTask" descriptionKey="SampleApp:backstage.iModelStage"
+          iconSpec="icon-placeholder" />
       </Backstage>
     );
   }

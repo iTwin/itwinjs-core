@@ -1,6 +1,6 @@
 # Tool Settings
 
-'Tool Settings' refers to the UI widget that is shown in top center zone of the application window and the UI components displayed there. These UI component allow users to control settings/properties used by the "active" tool. Tools have two options for populating the Tool Settings widget. The tool can register their own React-based ToolUiProvider to display the UI components for its settings. An alternate approach is for the tool to publish information about the properties it uses for settings and allow the 'DefaultToolSettings' provider to generate the necessary UI components.
+'Tool Settings' refers to the UI widget that is shown in top center zone of the application window and the UI components displayed there. These UI components allow users to control settings/properties used by the "active" tool. Tools have two options for populating the Tool Settings widget. The tool can register their own React-based ToolUiProvider to display the UI components for its settings. An alternate approach is for the tool to publish information about the properties it uses for settings and allow the 'DefaultToolSettings' provider to generate the necessary UI components.
 
 ## Default ToolSettings Provider
 
@@ -26,3 +26,7 @@ The following classes defined within the imodeljs-frontend package are used by t
 * EditorPosition
 * PropertyEditorParamTypes
 * PropertyValue
+
+## API Reference
+
+* [ToolSettings]($framework:ToolSettings)

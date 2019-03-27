@@ -151,7 +151,7 @@ class FrontstageToolWidget extends React.Component {
     });
   }
 
-  /** Command that opens a nested Frontstage */
+  /** Command that opens switches the content layout */
   private get _switchLayout() {
     return new CommandItemDef({
       iconSpec: "icon-placeholder",

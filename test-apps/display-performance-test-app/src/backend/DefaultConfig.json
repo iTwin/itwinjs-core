@@ -944,6 +944,53 @@
             "edgeMask": 0,
             "ambientOcclusion": true
           }
+        },
+        {
+          "testName": "Force Multi-Pass Rendering",
+          "testType": "both",
+          "renderOptions": {
+            "disabledExtensions": [
+              "WEBGL_draw_buffers"
+            ]
+          },
+          "tests": [
+            {
+              "iModelName": "TimingTest_01.bim",
+              "viewName": "V0",
+              "viewFlags": {
+                "renderMode": "Wireframe",
+                "visibleEdges": true,
+                "hiddenEdges": true
+              }
+            },
+            {
+              "iModelName": "TimingTest_01.bim",
+              "viewName": "V2",
+              "viewFlags": {
+                "renderMode": "SmoothShade",
+                "visibleEdges": true,
+                "hiddenEdges": false
+              }
+            },
+            {
+              "iModelName": "TimingTest_01.bim",
+              "viewName": "V3",
+              "viewFlags": {
+                "renderMode": "SmoothShade",
+                "visibleEdges": true,
+                "hiddenEdges": false
+              }
+            },
+            {
+              "iModelName": "TimingTest_02_TranslucencyAllButOne.bim",
+              "viewName": "W0",
+              "viewFlags": {
+                "renderMode": "SmoothShade",
+                "visibleEdges": false,
+                "hiddenEdges": false
+              }
+            }
+          ]
         }
       ]
     }

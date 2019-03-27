@@ -12,19 +12,7 @@ The iModel.js UI library requires a JavaScript engine with es2017 support.
 
 ## React version requirements
 
-iModel.js UI is compatible with React 16.2 and later
-
-## Helpful articles:
-
-* [Core](./core/index)
-* [Components](./components/index)
-* [Nine Zone](./ninezone/index)
-* [Framework](./framework/index)
-
-See also:
-
-* [Glossary of terms used in iModel.js UI](./Glossary)
-* [Frequently asked Questions](./faq)
+iModel.js UI is compatible with React 16.4 and later
 
 ## Library Organization
 
@@ -32,24 +20,15 @@ The iModel.js UI library is divided into these NPM packages in the `@bentley` sc
 
 |Package Name|Description
 |-----|-----
-|**ui&#8209;core**|General purpose React components, such as Dialog, MessageBox, SearchBox, RadialMenu and SplitButton.
-|**ui&#8209;components**|React components that are data-oriented, such as PropertyGrid, Table, Tree and Breadcrumb.
-|**ui&#8209;ninezone**|React components for application user interface layouts following the Bentley 9&#8209;Zone pattern.
-|**ui&#8209;framework**|Application fragments for Login, Project, iModel and View selection, and configuration of the application UI including the Backstage, Frontstages, Widgets, etc.
+|[ui&#8209;core](./core/index)|General purpose React components, such as Dialog, MessageBox, SearchBox, RadialMenu and SplitButton.
+|[ui&#8209;components](./components/index)|React components that are data-oriented, such as PropertyGrid, Table, Tree and Breadcrumb.
+|[ui&#8209;ninezone](./ninezone/index)|React components for application user interface layouts following the Bentley 9&#8209;Zone pattern.
+|[ui&#8209;framework](./framework/index)|Application fragments for Login, Project, iModel and View selection, and configuration of the application UI including the Backstage, Frontstages, Zones, Widgets, etc.
 
-## Application UI Configuration
+See also:
 
-There are numerous React components and TypeScript classes in the ui&#8209;framework NPM package for configuring the application user interface. The following are defined using these classes:
-
-* Backstage
-* Frontstages
-* Content Groups
-* Content Layouts
-* Content Views
-* Widgets
-* Dialogs
-* Status Bars and Fields
-* Navigation Aids
-* Tool Settings
-* Tasks
-* Workflows
+* [Glossary of terms used in iModel.js UI](./Glossary)
+* [Frequently Asked Questions](./faq)
+* [React](https://reactjs.org/)
+* [Redux](https://redux.js.org/)
+* [TypeScript](https://www.typescriptlang.org)

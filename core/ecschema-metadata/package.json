@@ -1,6 +1,6 @@
 {
   "name": "@bentley/ecschema-metadata",
-  "version": "0.191.0-dev.15",
+  "version": "0.191.0-dev.19",
   "description": "ECObjects core concepts in typescript",
   "license": "MIT",
   "main": "lib/ecschema-metadata.js",
@@ -12,7 +12,7 @@
   "scripts": {
     "build": "tsc 1>&2 && node ./node_modules/@bentley/build-tools/scripts/ignoreargs.js 1>&2",
     "clean": "rimraf lib package-deps.json",
-    "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=ecschema-metadata",
+    "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=ecschema-metadata --ignoreMissingTags",
     "lint": "tslint --project . 1>&2",
     "test": "node ./node_modules/@bentley/build-tools/scripts/test-tsnode.js --testDir=./test/",
     "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/core/ecschema-metadata/file.json --tsIndexFile=./ecschema-metadata.ts --onlyJson %TYPEDOC_THEME%",
@@ -31,9 +31,9 @@
     "url": "http://www.bentley.com"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "0.191.0-dev.15",
-    "@bentley/build-tools": "0.191.0-dev.15",
-    "@bentley/imodeljs-i18n": "0.191.0-dev.15",
+    "@bentley/bentleyjs-core": "0.191.0-dev.19",
+    "@bentley/build-tools": "0.191.0-dev.19",
+    "@bentley/imodeljs-i18n": "0.191.0-dev.19",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
     "@types/glob": "^5.0.35",
@@ -57,8 +57,8 @@
     "bunyan-seq": "^0.2.0"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^0.191.0-dev.15",
-    "@bentley/imodeljs-i18n": "^0.191.0-dev.15"
+    "@bentley/bentleyjs-core": "^0.191.0-dev.19",
+    "@bentley/imodeljs-i18n": "^0.191.0-dev.19"
   },
   "nyc": {
     "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc",

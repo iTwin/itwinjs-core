@@ -11,6 +11,12 @@ function getCategoryName(row: any): string {
   return undefined !== row.label ? row.label : row.code;
 }
 
+const selectUsedSpatialCategoryIds = "SELECT DISTINCT Category.Id as CategoryId from BisCore.GeometricElement3d WHERE Category.Id IN (SELECT ECInstanceId from BisCore.SpatialCategory)";
+const selectUsedDrawingCategoryIds = "SELECT DISTINCT Category.Id as CategoryId from BisCore.GeometricElement2d WHERE Model.Id=? AND Category.Id IN (SELECT ECInstanceId from BisCore.DrawingCategory)";
+const selectCategoryProps = "SELECT ECInstanceId as id, CodeValue as code, UserLabel as label FROM ";
+const selectSpatialCategoryProps = selectCategoryProps + "BisCore.SpatialCategory WHERE ECInstanceId IN (" + selectUsedSpatialCategoryIds + ")";
+const selectDrawingCategoryProps = selectCategoryProps + "BisCore.DrawingCategory WHERE ECInstanceId IN (" + selectUsedDrawingCategoryIds + ")";
+
 export class CategoryPicker extends ToolBarDropDown {
   private readonly _categories = new Set<string>();
   private readonly _vp: Viewport;
@@ -40,8 +46,9 @@ export class CategoryPicker extends ToolBarDropDown {
     const areAllEnabled = () => this._categories.size === view.categorySelector.categories.size;
     const toggleAll = this.addCheckbox("Toggle All", "cat_toggleAll", false, (enabled: boolean) => this.toggleAll(enabled));
 
-    const ecsql = "SELECT ECInstanceId as id, CodeValue as code, UserLabel as label FROM " + (view.is3d() ? "BisCore.SpatialCategory" : "BisCore.DrawingCategory");
-    const rows = Array.from(await view.iModel.queryPage(ecsql, undefined, { size: 1000 })); // max rows to return after which result will be truncated.
+    const ecsql = view.is3d() ? selectSpatialCategoryProps : selectDrawingCategoryProps;
+    const bindings = view.is2d() ? [ view.baseModelId ] : undefined;
+    const rows = Array.from(await view.iModel.queryPage(ecsql, bindings, { size: 1000 })); // max rows to return after which result will be truncated.
     rows.sort((lhs, rhs) => {
       const lhName = getCategoryName(lhs);
       const rhName = getCategoryName(rhs);
@@ -62,6 +69,13 @@ export class CategoryPicker extends ToolBarDropDown {
         toggleAll.checked = areAllEnabled();
       });
     }
+
+    // Remove any unused categories from category selector (otherwise areAllEnabled criterion is broken).
+    for (const categoryId of view.categorySelector.categories)
+      if (!this._categories.has(categoryId))
+        view.categorySelector.categories.delete(categoryId);
+
+    view.setFeatureOverridesDirty();
 
     toggleAll.checked = areAllEnabled();
   }

@@ -4,14 +4,15 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module iModels */
 
-import { IModelDb } from "./IModelDb";
+import { assert, BeEvent, IModelStatus, Logger } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
-import { assert, Logger, BeEvent, IModelStatus } from "@bentley/bentleyjs-core";
-import { RpcRequest, IModelError } from "@bentley/imodeljs-common";
-import { IModelHost } from "./IModelHost";
+import { IModelError, RpcRequest } from "@bentley/imodeljs-common";
 import { AuthorizedBackendRequestContext } from "./BackendRequestContext";
+import { IModelDb } from "./IModelDb";
+import { IModelHost } from "./IModelHost";
+import { LoggerCategory } from "./LoggerCategory";
 
-const loggingCategory = "imodeljs-backend.AutoPush";
+const loggerCategory: string = LoggerCategory.IModelDb;
 
 /** Monitors backend activity. */
 export interface AppActivityMonitor {
@@ -135,7 +136,7 @@ export class AutoPush {
     const reqProps = ["pushIntervalSecondsMin", "pushIntervalSecondsMax", "autoSchedule"];
     for (const reqProp of reqProps) {
       if (!params.hasOwnProperty(reqProp)) {
-        throw new IModelError(IModelStatus.BadArg, "Invalid AutoPushParams object - missing required property: " + reqProp, Logger.logError, loggingCategory);
+        throw new IModelError(IModelStatus.BadArg, "Invalid AutoPushParams object - missing required property: " + reqProp, Logger.logError, loggerCategory);
       }
     }
   }
@@ -191,7 +192,7 @@ export class AutoPush {
     const intervalMillis = intervalSeconds ? (intervalSeconds * 1000) : this._pushIntervalMillisMin;
     this._pendingTimeout = setTimeout(() => this.doAutoPush(), intervalMillis);
     this._state = AutoPushState.Scheduled;
-    Logger.logTrace(loggingCategory, "AutoPush - next push in " + (intervalMillis / 1000) + " seconds...");
+    Logger.logTrace(loggerCategory, "AutoPush - next push in " + (intervalMillis / 1000) + " seconds...");
   }
 
   public async reserveCodes(): Promise<void> {
@@ -212,7 +213,7 @@ export class AutoPush {
 
   /** Callback invoked just before auto-pushing */
   private onPushStart() {
-    Logger.logTrace(loggingCategory, "AutoPush - pushing...");
+    Logger.logTrace(loggerCategory, "AutoPush - pushing...");
     this._state = AutoPushState.Pushing;
     this._startOfPushMillis = Date.now();
     if (this.event)
@@ -221,7 +222,7 @@ export class AutoPush {
 
   /** Callback invoked when the next scheduled autopush is cancelled */
   private onPushCancelled() {
-    Logger.logTrace(loggingCategory, "AutoPush - cancelling.");
+    Logger.logTrace(loggerCategory, "AutoPush - cancelling.");
     assert(this._state === AutoPushState.NotRunning);
     if (this.event)
       this.event.raiseEvent(AutoPushEventType.PushCancelled, this);
@@ -233,7 +234,7 @@ export class AutoPush {
     this._state = AutoPushState.NotRunning;
     this._pendingTimeout = undefined;
     this._lastPushError = undefined;
-    Logger.logTrace(loggingCategory, "AutoPush - pushed.", () => ({ changeSetId: this._iModel.iModelToken.changeSetId }));
+    Logger.logTrace(loggerCategory, "AutoPush - pushed.", () => this._iModel.iModelToken);
     if (this._autoSchedule)
       this.scheduleNextPush();
     if (this.event)
@@ -244,7 +245,7 @@ export class AutoPush {
     this._state = AutoPushState.NotRunning;
     this._pendingTimeout = undefined;
     this._lastPushError = err;
-    Logger.logInfo(loggingCategory, "AutoPush - push failed", () => err);
+    Logger.logInfo(loggerCategory, "AutoPush - push failed", () => err);
     if (this._autoSchedule)
       this.scheduleNextPush();
     if (this.event)
@@ -261,7 +262,7 @@ export class AutoPush {
     }
 
     if (this.iModel === undefined) {
-      Logger.logInfo(loggingCategory, "AutoPush - No iModel! Cancelling...");
+      Logger.logInfo(loggerCategory, "AutoPush - No iModel! Cancelling...");
       this.cancel();
       return;
     }
@@ -269,7 +270,7 @@ export class AutoPush {
     //  If the previous push is still in progress ...
     if (this._state === AutoPushState.Pushing) {
       assert(this._pendingTimeout !== undefined);
-      Logger.logInfo(loggingCategory, "AutoPush - Attempt to auto-push while push is in progress. Re-scheduling.");
+      Logger.logInfo(loggerCategory, "AutoPush - Attempt to auto-push while push is in progress. Re-scheduling.");
       if (this._autoSchedule)
         this.scheduleNextPush();  // wait a while before trying another one.
       else
@@ -279,7 +280,7 @@ export class AutoPush {
 
     // If the backend is busy, then put off the push for a little while, and wait for a lull.
     if (!this._activityMonitor.isIdle && ((Date.now() - this._endOfPushMillis) < this._pushIntervalMillisMax)) {
-      Logger.logInfo(loggingCategory, "AutoPush - Attempt to auto-push while backend is busy. Re-scheduling.");
+      Logger.logInfo(loggerCategory, "AutoPush - Attempt to auto-push while backend is busy. Re-scheduling.");
       this.cancel();
       this.scheduleNextPush();
       return;

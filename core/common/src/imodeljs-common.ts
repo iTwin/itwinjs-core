@@ -20,6 +20,7 @@ export * from "./IModel";
 export * from "./IModelError";
 export * from "./IModelVersion";
 export * from "./Lighting";
+export * from "./LoggerCategory";
 export * from "./MaterialProps";
 export * from "./ModelProps";
 export * from "./OctEncodedNormal";
@@ -64,6 +65,8 @@ export * from "./rpc/IModelReadRpcInterface";
 export * from "./rpc/IModelTileRpcInterface";
 export * from "./rpc/IModelWriteRpcInterface";
 export * from "./rpc/SnapshotIModelRpcInterface";
+export * from "./CloudStorage";
+export * from "./CloudStorageTileCache";
 
 // Set the version number so it can be found at runtime. BUILD_SEMVER is replaced at build time by the webpack DefinePlugin.
 declare var BUILD_SEMVER: string;

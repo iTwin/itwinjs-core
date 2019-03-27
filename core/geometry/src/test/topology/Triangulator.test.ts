@@ -24,7 +24,6 @@ import { Geometry } from "../../Geometry";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { GraphChecker } from "./Graph.test";
 import { HalfEdgeMask } from "../../topology/Graph";
-import { prettyPrint } from "../testFunctions";
 
 function rotateArray(data: Point3d[], index0: number) {
   const out = [];
@@ -215,9 +214,6 @@ describe("MonotoneFaces", () => {
       // Sample.creatVerticalStaggerPolygon(7, 0, 0, -6, ax, ay, -0.5, 0),
     ]) {
       const segmentA = Sample.convertPointsToSegments(loopA);
-      console.log("hello");
-      const s = prettyPrint(loopA);
-      console.log("loopA", s);
       testGraphFromSegments(ck, id * 30, segmentA, true, "LoopA" + id++, false);
     }
     expect(ck.getNumErrors()).equals(0);

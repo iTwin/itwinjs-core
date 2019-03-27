@@ -247,9 +247,6 @@ class TextureCubeCreateParams {
  * @internal
  */
 export abstract class TextureHandle implements IDisposable {
-  protected static _monitor?: TextureMonitor;
-  public static set monitor(monitor: TextureMonitor | undefined) { this._monitor = monitor; }
-
   protected _glTexture?: WebGLTexture;
   protected _bytesUsed = 0;
 
@@ -277,9 +274,6 @@ export abstract class TextureHandle implements IDisposable {
 
   public dispose() {
     if (!this.isDisposed) {
-      if (undefined !== TextureHandle._monitor)
-        TextureHandle._monitor.onTextureDisposed(this);
-
       System.instance.disposeTexture(this._glTexture!);
       this._glTexture = undefined;
     }
@@ -415,9 +409,6 @@ export class Texture2DHandle extends TextureHandle {
     this._dataType = params.dataType;
     this._dataBytes = params.dataBytes;
 
-    if (undefined !== TextureHandle._monitor)
-      TextureHandle._monitor.onTextureCreated(this);
-
     params.loadImageData(this, params);
   }
 }
@@ -477,9 +468,6 @@ export class TextureCubeHandle extends TextureHandle {
     this._dim = params.dim;
     this._format = params.format;
     this._dataType = params.dataType;
-
-    if (undefined !== TextureHandle._monitor)
-      TextureHandle._monitor.onTextureCreated(this);
 
     params.loadImageData(this, params);
   }

@@ -11,7 +11,6 @@ import { ContentViewManager } from "./content/ContentViewManager";
 import { BaseItemState } from "./shared/ItemDefBase";
 import { SyncUiEventId } from "./syncui/SyncUiEventDispatcher";
 import { AnalysisAnimationTool } from "./tools/AnalysisAnimation";
-import { ScheduleAnimationTool } from "./tools/ScheduleAnimation";
 
 /** Utility Class that provides definitions of tools provided by imodel.js core. These definitions can be used to populate the ui. */
 export class CoreTools {
@@ -119,28 +118,6 @@ export class CoreTools {
         const activeContentControl = ContentViewManager.getActiveContentControl();
 
         if (activeContentControl && activeContentControl.viewport && (undefined !== activeContentControl.viewport.view.analysisStyle))
-          returnState.isVisible = true;
-        else
-          returnState.isVisible = false;
-        return returnState;
-      },
-    });
-  }
-
-  public static get scheduleAnimationCommand() {
-    return new ToolItemDef({
-      toolId: ScheduleAnimationTool.toolId,
-      iconSpec: "icon-camera-animation",
-      label: () => ScheduleAnimationTool.flyover,
-      tooltip: () => ScheduleAnimationTool.description,
-      execute: () => { IModelApp.tools.run(ScheduleAnimationTool.toolId); },
-      isVisible: false, // default to not show and then allow stateFunc to redefine.
-      stateSyncIds: [SyncUiEventId.ActiveContentChanged],
-      stateFunc: (currentState: Readonly<BaseItemState>): BaseItemState => {
-        const returnState: BaseItemState = { ...currentState };
-        const activeContentControl = ContentViewManager.getActiveContentControl();
-
-        if (activeContentControl && activeContentControl.viewport && (undefined !== activeContentControl.viewport.view.scheduleScript))
           returnState.isVisible = true;
         else
           returnState.isVisible = false;

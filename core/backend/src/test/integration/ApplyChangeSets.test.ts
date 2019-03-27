@@ -2,16 +2,14 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import * as path from "path";
-import { assert } from "chai";
-import { Logger, LogLevel, GuidString } from "@bentley/bentleyjs-core";
+import { GuidString, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
 import { IModelVersion } from "@bentley/imodeljs-common";
-import { IModelDb, OpenParams } from "../../imodeljs-backend";
+import { assert } from "chai";
+import * as path from "path";
+import { AuthorizedBackendRequestContext, IModelDb, IModelJsNative, KnownLocations, OpenParams } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
-import { KnownLocations } from "../../IModelHost";
-import { AuthorizedBackendRequestContext } from "../../BackendRequestContext";
 
 // Useful utilities to download/upload test cases from/to the iModel Hub
 describe("ApplyChangeSets (#integration)", () => {
@@ -20,8 +18,8 @@ describe("ApplyChangeSets (#integration)", () => {
   before(async () => {
     // Note: Change to LogLevel.Info for useful debug information
     Logger.setLevel(HubUtility.logCategory, LogLevel.Error);
-    Logger.setLevel("DgnCore", LogLevel.Error);
-    Logger.setLevel("BeSQLite", LogLevel.Error);
+    Logger.setLevel(IModelJsNative.LoggerCategory.DgnCore, LogLevel.Error);
+    Logger.setLevel(IModelJsNative.LoggerCategory.BeSQLite, LogLevel.Error);
   });
 
   const testAllChangeSetOperations = async (requestContext: AuthorizedClientRequestContext, projectId: string, iModelId: GuidString) => {

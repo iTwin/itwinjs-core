@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Do not load property grid data if more than 100 (configurable) elements are selected",
+      "packageName": "@bentley/presentation-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-components",
+  "email": "grigas.p@gmail.com"
+}

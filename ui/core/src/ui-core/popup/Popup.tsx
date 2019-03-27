@@ -78,7 +78,7 @@ export class Popup extends React.Component<PopupProps, PopupState> {
     left: -1,
   };
 
-  public componentDidMount () {
+  public componentDidMount() {
     if (this.props.isOpen) {
       this._onShow();
     }
@@ -194,7 +194,7 @@ export class Popup extends React.Component<PopupProps, PopupState> {
     return "";
   }
 
-  private _getPopupDimensions (): {popupWidth: number, popupHeight: number} {
+  private _getPopupDimensions(): { popupWidth: number, popupHeight: number } {
 
     let popupWidth = 0;
     let popupHeight = 0;
@@ -209,7 +209,7 @@ export class Popup extends React.Component<PopupProps, PopupState> {
           break;
         case Position.TopLeft:
         case Position.BottomLeft:
-          popupWidth = popupRect.width  * 2;
+          popupWidth = popupRect.width * 2;
           popupHeight = popupRect.height * 2;
           break;
         case Position.TopRight:
@@ -225,7 +225,7 @@ export class Popup extends React.Component<PopupProps, PopupState> {
       }
     }
 
-    return {popupWidth, popupHeight};
+    return { popupWidth, popupHeight };
   }
 
   private _getPosition = (position: Position) => {
@@ -249,7 +249,7 @@ export class Popup extends React.Component<PopupProps, PopupState> {
     // const popupRect = this._popup.getBoundingClientRect();
     const targetRect = target!.getBoundingClientRect();
 
-    const { popupWidth, popupHeight} = this._getPopupDimensions();
+    const { popupWidth, popupHeight } = this._getPopupDimensions();
 
     switch (position) {
       case Position.Top:
@@ -320,7 +320,7 @@ export class Popup extends React.Component<PopupProps, PopupState> {
     // Note: Cannot use DOMRect yet since it's experimental and not available in all browsers (Nov. 2018)
     const viewportRect: Rect = { left: window.scrollX, top: window.scrollY, right: window.scrollX + window.innerWidth, bottom: window.scrollY + window.innerHeight };
     const targetRect = target.getBoundingClientRect();
-    const { popupWidth, popupHeight} = this._getPopupDimensions();
+    const { popupWidth, popupHeight } = this._getPopupDimensions();
     const containerStyle = window.getComputedStyle(target);
     const offsetArrow = (this.props.showArrow) ? 10 : 2;
 
@@ -360,7 +360,7 @@ export class Popup extends React.Component<PopupProps, PopupState> {
     }
 
     // const popupRect = this._popup.getBoundingClientRect();
-    const { popupWidth, popupHeight} = this._getPopupDimensions();
+    const { popupWidth, popupHeight } = this._getPopupDimensions();
     const { innerWidth, innerHeight } = window;
 
     if (fittedPoint.y + popupHeight > innerHeight) {
@@ -397,7 +397,7 @@ export class Popup extends React.Component<PopupProps, PopupState> {
 
     return ReactDOM.createPortal(
       (
-        <div className={className} data-testid="popup" style={{top: this.state.top, left: this.state.left}} ref={(element) => { this._popup = element; }}>
+        <div className={className} data-testid="popup" style={{ top: this.state.top, left: this.state.left }} ref={(element) => { this._popup = element; }}>
           {this.props.children}
         </div>
       ), document.body);

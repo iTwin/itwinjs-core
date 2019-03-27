@@ -29,12 +29,16 @@
     "testFrontstage3": "Test 3 Frontstage",
     "testFrontstage4": "Test 4 Frontstage",
     "testFrontstage5": "Test 5 Frontstage",
+    "viewIModel": "View iModel",
+    "viewIModelTask": "View iModel via Task",
     "testFrontstage6": "Settings",
     "iModelStage": "Review iModel",
     "task1": "Task 1",
     "task2": "Task 2",
     "task3": "Task 3",
-    "exit": "Exit"
+    "exit": "Exit",
+    "imodelopen": "IModel Open",
+    "imodelindex": "IModel Index"
   },
   "zone6": {
     "month": "Month",

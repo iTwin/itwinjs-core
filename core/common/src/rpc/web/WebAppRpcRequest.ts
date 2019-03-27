@@ -24,7 +24,6 @@ export type HttpMethod_T = "get" | "put" | "post" | "delete" | "options" | "head
 export class WebAppRpcRequest extends RpcRequest {
   private _loading: boolean = false;
   private _request: RequestInit = {};
-  private _response: Response | undefined = undefined;
   private _pathSuffix: string = "";
   private get _headers() { return this._request.headers as { [key: string]: string }; }
 
@@ -91,6 +90,8 @@ export class WebAppRpcRequest extends RpcRequest {
       WebAppRpcRequest.sendBinary(protocol, request, fulfillment, res);
     } else if (transportType === RpcContentType.Multipart) {
       WebAppRpcRequest.sendMultipart(protocol, request, fulfillment, res);
+    } else if (transportType === RpcContentType.Stream) {
+      WebAppRpcRequest.sendStream(protocol, request, fulfillment, res);
     } else {
       throw new IModelError(BentleyStatus.ERROR, "Unknown response type.");
     }
@@ -102,6 +103,8 @@ export class WebAppRpcRequest extends RpcRequest {
       return RpcContentType.Binary;
     } else if (value.data.length > 0) {
       return RpcContentType.Multipart;
+    } else if (value.stream) {
+      return RpcContentType.Stream;
     } else {
       return RpcContentType.Text;
     }
@@ -216,6 +219,13 @@ export class WebAppRpcRequest extends RpcRequest {
     WebAppRpcRequest.configureResponse(protocol, request, fulfillment, res);
     res.status(fulfillment.status);
     response.pipe(res);
+  }
+
+  private static sendStream(protocol: WebAppRpcProtocol, request: SerializedRpcRequest, fulfillment: RpcRequestFulfillment, res: HttpServerResponse) {
+    const response = fulfillment.result.stream;
+    WebAppRpcRequest.configureResponse(protocol, request, fulfillment, res);
+    res.status(fulfillment.status);
+    response!.pipe(res);
   }
 
   private static parseFromPath(operation: SerializedRpcOperation): RpcSerializedValue {

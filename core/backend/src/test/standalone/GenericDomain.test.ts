@@ -11,16 +11,6 @@ import { IModelTestUtils } from "../IModelTestUtils";
 
 describe("Generic Domain", () => {
 
-  before(() => {
-    // Logger.initializeToConsole();
-    // Logger.setLevelDefault(LogLevel.Warning);
-    // Logger.setLevel("imodeljs-addon", LogLevel.Warning);
-    // Logger.setLevel("imodeljs-backend", LogLevel.Warning);
-    // Logger.setLevel("DgnCore", LogLevel.Warning);
-    // Logger.setLevel("ECObjectsNative", LogLevel.Warning);
-    // Logger.setLevel("ECDb", LogLevel.Warning);
-  });
-
   it("should create elements from the Generic domain", async () => {
     Generic.registerSchema();
     assert.equal(Generic.name, "Generic");

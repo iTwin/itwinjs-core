@@ -133,7 +133,7 @@ export class SearchBox extends React.Component<SearchBoxProps, SearchBoxState> {
     this._unsetTimeout();
   }
 
-  public focus () {
+  public focus() {
     if (this._inputElement)
       this._inputElement.focus();
   }

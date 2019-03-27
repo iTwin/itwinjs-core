@@ -4,15 +4,16 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Schema */
 
-import { DbResult, Logger, AuthStatus, ClientRequestContext } from "@bentley/bentleyjs-core";
+import { AuthStatus, ClientRequestContext, DbResult, Logger } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
 import { IModelError } from "@bentley/imodeljs-common";
 import { ClassRegistry } from "../ClassRegistry";
 import { IModelDb } from "../IModelDb";
+import { LoggerCategory } from "../LoggerCategory";
 import { Schema, Schemas } from "../Schema";
 import * as elementsModule from "./FunctionalElements";
 
-const loggingCategory = "imodeljs-backend.Functional";
+const loggerCategory: string = LoggerCategory.Functional;
 
 /** @public */
 export class Functional extends Schema {
@@ -35,7 +36,7 @@ export class Functional extends Schema {
     }
     const stat = iModelDb.briefcase.nativeDb.importFunctionalSchema();
     if (DbResult.BE_SQLITE_OK !== stat) {
-      throw new IModelError(stat, "Error importing Functional schema", Logger.logError, loggingCategory);
+      throw new IModelError(stat, "Error importing Functional schema", Logger.logError, loggerCategory);
     }
     // FunctionalDomain (C++) does not create Category or other Elements on import
   }

@@ -177,17 +177,18 @@ class SeedFileHandler {
      * Get the seed files given the id of the iModel.
      * @hidden
      * @param requestContext The client request context.
-     * @param imodelId Id of the iModel. See [[HubIModel]].
+     * @param iModelId Id of the iModel. See [[HubIModel]].
      * @param query Optional query object to filter the queried SeedFiles or select different data from them.
      * @returns Resolves to the seed file.
      */
-    public async get(requestContext: AuthorizedClientRequestContext, imodelId: GuidString, query: SeedFileQuery = new SeedFileQuery()): Promise<SeedFile[]> {
+    public async get(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, query: SeedFileQuery = new SeedFileQuery()): Promise<SeedFile[]> {
         requestContext.enter();
-        Logger.logInfo(loggingCategory, `Querying seed files for iModel ${imodelId}`);
+        Logger.logInfo(loggingCategory, "Started querying seed files", () => ({ imodelId: iModelId }));
 
-        const seedFiles = await this._handler.getInstances<SeedFile>(requestContext, SeedFile, this.getRelativeUrl(imodelId, query.getId()), query.getQueryOptions());
+        const seedFiles = await this._handler.getInstances<SeedFile>(requestContext, SeedFile, this.getRelativeUrl(iModelId, query.getId()), query.getQueryOptions());
         requestContext.enter();
-        Logger.logTrace(loggingCategory, `Queried ${seedFiles.length} seed files for iModel ${imodelId}`);
+
+        Logger.logInfo(loggingCategory, "Finished querying seed files", () => ({ imodelId: iModelId, count: seedFiles.length }));
 
         return seedFiles;
     }
@@ -196,14 +197,14 @@ class SeedFileHandler {
      * Upload the seed file. Use [[confirmUploadSeedFile]] to confirm the completion of the upload.
      * @hidden
      * @param requestContext The client request context.
-     * @param imodelId Id of the iModel. See [[HubIModel]].
+     * @param iModelId Id of the iModel. See [[HubIModel]].
      * @param seedFile Information of the SeedFile to be uploaded.
      * @param seedPath Path of the SeedFile to be uploaded.
      * @param progressCallback Callback for tracking progress.
      */
-    public async uploadSeedFile(requestContext: AuthorizedClientRequestContext, imodelId: GuidString, seedPath: string, seedFileDescription?: string, progressCallback?: (progress: ProgressInfo) => void): Promise<SeedFile> {
+    public async uploadSeedFile(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, seedPath: string, seedFileDescription?: string, progressCallback?: (progress: ProgressInfo) => void): Promise<SeedFile> {
         requestContext.enter();
-        Logger.logInfo(loggingCategory, `Uploading seed file to iModel ${imodelId}`);
+        Logger.logInfo(loggingCategory, "Started uploading seed file", () => ({ iModelId, seedPath }));
 
         const seedFile = new SeedFile();
         seedFile.fileName = this._fileHandler!.basename(seedPath);
@@ -211,7 +212,7 @@ class SeedFileHandler {
         if (seedFileDescription)
             seedFile.fileDescription = seedFileDescription;
 
-        const createdSeedFile: SeedFile = await this._handler.postInstance<SeedFile>(requestContext, SeedFile, this.getRelativeUrl(imodelId), seedFile);
+        const createdSeedFile: SeedFile = await this._handler.postInstance<SeedFile>(requestContext, SeedFile, this.getRelativeUrl(iModelId), seedFile);
         requestContext.enter();
         await this._fileHandler!.uploadFile(requestContext, createdSeedFile.uploadUrl!, seedPath, progressCallback);
         requestContext.enter();
@@ -219,9 +220,9 @@ class SeedFileHandler {
         createdSeedFile.downloadUrl = undefined;
         createdSeedFile.isUploaded = true;
 
-        const confirmSeedFile = await this._handler.postInstance<SeedFile>(requestContext, SeedFile, this.getRelativeUrl(imodelId, createdSeedFile.id), createdSeedFile);
+        const confirmSeedFile: SeedFile = await this._handler.postInstance<SeedFile>(requestContext, SeedFile, this.getRelativeUrl(iModelId, createdSeedFile.id), createdSeedFile);
         requestContext.enter();
-        Logger.logTrace(loggingCategory, `Uploaded seed file ${seedFile.wsgId} to iModel ${imodelId}`);
+        Logger.logTrace(loggingCategory, "Finished uploading seed file", () => confirmSeedFile);
 
         return confirmSeedFile;
     }
@@ -286,13 +287,13 @@ export class IModelsHandler {
      */
     public async get(requestContext: AuthorizedClientRequestContext, contextId: string, query: IModelQuery = new IModelQuery()): Promise<HubIModel[]> {
         requestContext.enter();
-        Logger.logInfo(loggingCategory, `Querying iModels in project ${contextId}`);
+        Logger.logInfo(loggingCategory, `Started querying iModels in project`, () => ({ contextId }));
         ArgumentCheck.defined("requestContext", requestContext);
         ArgumentCheck.defined("contextId", contextId); // contextId is a GUID for iModelHub and a JSON representation of an IModelBankAccessContext for iModelBank.
 
         const imodels = await this._handler.getInstances<HubIModel>(requestContext, HubIModel, this.getRelativeUrl(contextId, query.getId()), query.getQueryOptions());
         requestContext.enter();
-        Logger.logTrace(loggingCategory, `Queried ${imodels.length} iModels in project ${contextId}`);
+        Logger.logInfo(loggingCategory, `Finished querying iModels in project`, () => ({ contextId, count: imodels.length }));
 
         return imodels;
     }
@@ -301,29 +302,29 @@ export class IModelsHandler {
      * Delete an iModel with specified id from a [[Project]]. This method is not supported in iModelBank.
      * @param requestContext The client request context.
      * @param contextId Id for the iModel's context. For iModelHub it should be the id of the connect [[Project]].
-     * @param imodelId Id of the iModel to be deleted. See [[HubIModel]].
+     * @param iModelId Id of the iModel to be deleted. See [[HubIModel]].
      * @throws [[IModelHubError]] with [IModelHubStatus.iModelDoesNotExist]$(bentley) if iModel with specified id does not exist.
      * @throws [[IModelHubError]] with [IModelHubStatus.UserDoesNotHavePermission]($bentley) if the user does not have DeleteiModel permission.
      * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
      */
-    public async delete(requestContext: AuthorizedClientRequestContext, contextId: string, imodelId: GuidString): Promise<void> {
+    public async delete(requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: GuidString): Promise<void> {
         requestContext.enter();
-        Logger.logInfo(loggingCategory, `Deleting iModel with id ${imodelId} from project ${contextId}`);
+        Logger.logInfo(loggingCategory, "Started deleting iModel", () => ({ iModelId, contextId }));
         ArgumentCheck.defined("requestContext", requestContext);
         ArgumentCheck.validGuid("contextId", contextId);
-        ArgumentCheck.validGuid("imodelId", imodelId);
+        ArgumentCheck.validGuid("imodelId", iModelId);
 
         if (this._handler.getCustomRequestOptions().isSet) {
             // to add custom request options, request with body is needed.
             const imodel = new HubIModel();
-            imodel.id = imodelId;
+            imodel.id = iModelId;
             imodel.changeState = "deleted";
-            await this._handler.deleteInstance(requestContext, this.getRelativeUrl(contextId, imodelId), imodel);
+            await this._handler.deleteInstance(requestContext, this.getRelativeUrl(contextId, iModelId), imodel);
         } else {
-            await this._handler.delete(requestContext, this.getRelativeUrl(contextId, imodelId));
+            await this._handler.delete(requestContext, this.getRelativeUrl(contextId, iModelId));
         }
         requestContext.enter();
-        Logger.logTrace(loggingCategory, `Deleted iModel with id ${imodelId} from project ${contextId}`);
+        Logger.logInfo(loggingCategory, "Finished deleting iModel", () => ({ iModelId, contextId }));
     }
 
     /**
@@ -509,16 +510,16 @@ export class IModelsHandler {
     /**
      * Method to download the seed file for iModel. This will download the original seed file, that was uploaded when creating iModel. To download a file that was updated with ChangeSets on iModelHub, see [[BriefcaseHandler.download]].
      * @param requestContext The client request context.
-     * @param imodelId Id of the iModel. See [[HubIModel]].
+     * @param iModelId Id of the iModel. See [[HubIModel]].
      * @param path Path to download the seed file to, including file name.
      * @param progressCallback Callback for tracking progress.
      * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
      */
-    public async download(requestContext: AuthorizedClientRequestContext, imodelId: GuidString, path: string, progressCallback?: (progress: ProgressInfo) => void): Promise<void> {
+    public async download(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, path: string, progressCallback?: (progress: ProgressInfo) => void): Promise<void> {
         requestContext.enter();
-        Logger.logInfo(loggingCategory, `Downloading seed file for iModel ${imodelId}`);
+        Logger.logInfo(loggingCategory, "Started downloading seed file", () => ({ imodelId: iModelId }));
         ArgumentCheck.defined("requestContext", requestContext);
-        ArgumentCheck.validGuid("imodelId", imodelId);
+        ArgumentCheck.validGuid("imodelId", iModelId);
         ArgumentCheck.defined("path", path);
 
         if (typeof window !== "undefined")
@@ -527,7 +528,7 @@ export class IModelsHandler {
         if (!this._fileHandler)
             return Promise.reject(IModelHubClientError.fileHandler());
 
-        const seedFiles: SeedFile[] = await this._seedFileHandler.get(requestContext, imodelId, new SeedFileQuery().selectDownloadUrl().latest());
+        const seedFiles: SeedFile[] = await this._seedFileHandler.get(requestContext, iModelId, new SeedFileQuery().selectDownloadUrl().latest());
         requestContext.enter();
 
         if (!seedFiles || !seedFiles[0] || !seedFiles[0].downloadUrl)
@@ -535,7 +536,7 @@ export class IModelsHandler {
 
         await this._fileHandler.downloadFile(requestContext, seedFiles[0].downloadUrl!, path, parseInt(seedFiles[0].fileSize!, 10), progressCallback);
         requestContext.enter();
-        Logger.logTrace(loggingCategory, `Downloading seed file for iModel ${imodelId}`);
+        Logger.logInfo(loggingCategory, "Finished downloading seed file", () => ({ imodelId: iModelId }));
     }
 }
 

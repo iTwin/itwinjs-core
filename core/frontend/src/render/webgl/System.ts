@@ -21,6 +21,7 @@ import {
   RenderPlanarClassifier,
   GraphicList,
   PackedFeatureTable,
+  WebGLExtensionName,
 } from "../System";
 import { SkyBox } from "../../DisplayStyleState";
 import { OnScreenTarget, OffScreenTarget } from "./Target";
@@ -38,7 +39,7 @@ import { ViewRect, Viewport } from "../../Viewport";
 import { RenderState } from "./RenderState";
 import { FrameBufferStack, DepthBuffer } from "./FrameBuffer";
 import { RenderBuffer } from "./RenderBuffer";
-import { TextureHandle, Texture, TextureMonitor } from "./Texture";
+import { TextureHandle, Texture } from "./Texture";
 import { GL } from "./GL";
 import { PolylineGeometry } from "./Polyline";
 import { PointStringGeometry } from "./PointString";
@@ -89,9 +90,16 @@ export const enum DepthType {
   // TextureFloat32Stencil8,       // core to WeBGL2
 }
 
-const forceNoDrawBuffers = false;
-const forceHalfFloat = false;
-const debugTextureLifetime = false;
+const knownExtensions: WebGLExtensionName[] = [
+  "WEBGL_draw_buffers",
+  "OES_element_index_uint",
+  "OES_texture_float",
+  "OES_texture_half_float",
+  "WEBGL_depth_texture",
+  "EXT_color_buffer_float",
+  "EXT_shader_texture_lod",
+  "ANGLE_instanced_arrays",
+];
 
 /** Describes the rendering capabilities of the host system.
  * @internal
@@ -136,13 +144,13 @@ export class Capabilities {
   public get supportsMRTPickShaders(): boolean { return this.maxColorAttachments >= 4; }
 
   /** Queries an extension object if available.  This is necessary for other parts of the system to access some constants within extensions. */
-  public queryExtensionObject<T>(ext: string): T | undefined {
+  public queryExtensionObject<T>(ext: WebGLExtensionName): T | undefined {
     const extObj: any = this._extensionMap[ext];
     return (null !== extObj) ? extObj as T : undefined;
   }
 
   /** Initializes the capabilities based on a GL context. Must be called first. */
-  public init(gl: WebGLRenderingContext): boolean {
+  public init(gl: WebGLRenderingContext, disabledExtensions?: WebGLExtensionName[]): boolean {
     this._maxTextureSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
     this._maxFragTextureUnits = gl.getParameter(gl.MAX_TEXTURE_IMAGE_UNITS);
     this._maxVertTextureUnits = gl.getParameter(gl.MAX_VERTEX_TEXTURE_IMAGE_UNITS);
@@ -153,14 +161,16 @@ export class Capabilities {
 
     const extensions = gl.getSupportedExtensions(); // This just retrieves a list of available extensions (not necessarily enabled).
     if (extensions) {
-      for (const ext of extensions) {
-        if ((!forceNoDrawBuffers && ext === "WEBGL_draw_buffers") || ext === "OES_element_index_uint" || (!forceHalfFloat && ext === "OES_texture_float") ||
-          ext === "OES_texture_half_float" || ext === "WEBGL_depth_texture" || ext === "EXT_color_buffer_float" ||
-          ext === "EXT_shader_texture_lod" || ext === "ANGLE_instanced_arrays") {
-          const extObj: any = gl.getExtension(ext); // This call enables the extension and returns a WebGLObject containing extension instance.
-          if (null !== extObj)
-            this._extensionMap[ext] = extObj;
-        }
+      for (const extStr of extensions) {
+        const ext = extStr as WebGLExtensionName;
+        if (-1 === knownExtensions.indexOf(ext))
+          continue;
+        else if (undefined !== disabledExtensions && -1 !== disabledExtensions.indexOf(ext))
+          continue;
+
+        const extObj: any = gl.getExtension(ext); // This call enables the extension and returns a WebGLObject containing extension instance.
+        if (null !== extObj)
+          this._extensionMap[ext] = extObj;
       }
     }
 
@@ -169,7 +179,8 @@ export class Capabilities {
     this._maxDrawBuffers = dbExt !== undefined ? gl.getParameter(dbExt.MAX_DRAW_BUFFERS_WEBGL) : 1;
 
     // Determine the maximum color-renderable attachment type.
-    if (!forceHalfFloat && this.isTextureRenderable(gl, gl.FLOAT))
+    const allowFloatRender = undefined === disabledExtensions || -1 === disabledExtensions.indexOf("OES_texture_float");
+    if (allowFloatRender && this.isTextureRenderable(gl, gl.FLOAT))
       this._maxRenderType = RenderType.TextureFloat;
     else {
       const hfExt: OES_texture_half_float | undefined = this.queryExtensionObject<OES_texture_half_float>("OES_texture_half_float");
@@ -186,9 +197,9 @@ export class Capabilities {
     return this._hasRequiredFeatures && this._hasRequiredTextureUnits;
   }
 
-  public static create(gl: WebGLRenderingContext): Capabilities | undefined {
+  public static create(gl: WebGLRenderingContext, disabledExtensions?: WebGLExtensionName[]): Capabilities | undefined {
     const caps = new Capabilities();
-    return caps.init(gl) ? caps : undefined;
+    return caps.init(gl, disabledExtensions) ? caps : undefined;
   }
 
   /** Determines if a particular texture type is color-renderable on the host system. */
@@ -429,31 +440,6 @@ export class IdMap implements IDisposable {
   public addSpatialClassificationModel(modelId: Id64String, classifier: RenderClassifierModel) { this.classifiers.set(modelId, classifier); }
 }
 
-class TextureStats implements TextureMonitor {
-  private _allocated = new Set<TextureHandle>();
-  private _maxSize = 0;
-
-  public onTextureCreated(tex: TextureHandle): void {
-    assert(!this._allocated.has(tex));
-    const size = tex.width * tex.height;
-    this._maxSize = Math.max(size, this._maxSize);
-    this._allocated.add(tex);
-  }
-
-  public onTextureDisposed(tex: TextureHandle): void {
-    assert(this._allocated.has(tex));
-    this._allocated.delete(tex);
-    const thisSize = tex.width * tex.height;
-    if (thisSize < this._maxSize)
-      return;
-
-    this._maxSize = 0;
-    for (const entry of this._allocated)
-      this._maxSize = Math.max(this._maxSize, entry.width * entry.height);
-  }
-}
-
-/** @internal */
 export type TextureBinding = WebGLTexture | undefined;
 
 const enum VertexAttribState {
@@ -473,7 +459,6 @@ export class System extends RenderSystem {
   public readonly resourceCache: Map<IModelConnection, IdMap>;
   private readonly _drawBuffersExtension?: WEBGL_draw_buffers;
   private readonly _instancingExtension?: ANGLE_instanced_arrays;
-  private readonly _textureStats?: TextureStats;
   private readonly _textureBindings: TextureBinding[] = [];
 
   // NB: Increase the size of these arrays when the maximum number of attributes used by any one shader increases.
@@ -508,7 +493,7 @@ export class System extends RenderSystem {
       this._drawBuffersExtension.drawBuffersWEBGL(attachments);
   }
 
-  public static create(): System {
+  public static create(options?: RenderSystem.Options): System {
     const canvas = document.createElement("canvas") as HTMLCanvasElement;
     if (null === canvas)
       throw new IModelError(BentleyStatus.ERROR, "Failed to obtain HTMLCanvasElement");
@@ -521,7 +506,7 @@ export class System extends RenderSystem {
       }
     }
 
-    const capabilities = Capabilities.create(context);
+    const capabilities = Capabilities.create(context, undefined !== options ? options.disabledExtensions : undefined);
     if (undefined === capabilities)
       throw new IModelError(BentleyStatus.ERROR, "Failed to initialize rendering capabilities");
 
@@ -692,11 +677,6 @@ export class System extends RenderSystem {
 
     // Make this System a subscriber to the the IModelConnection onClose event
     IModelConnection.onClose.addListener(this.removeIModelMap.bind(this));
-
-    if (debugTextureLifetime) {
-      this._textureStats = new TextureStats();
-      TextureHandle.monitor = this._textureStats;
-    }
   }
 
   private getIdMap(imodel: IModelConnection): IdMap {

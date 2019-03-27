@@ -46,9 +46,8 @@ export interface LayoutHorizontalSplitProps extends LayoutSplitPropsBase {
 /** Properties for a [[ContentLayoutDef]] */
 export interface ContentLayoutProps extends LayoutFragmentProps {
   id?: string;
-  descriptionKey: string;
-  priority: number;     // The priority for the layout. Determines its position in menus. Higher numbers appear first.
-  featureId?: string;
+  descriptionKey?: string;
+  priority?: number;     // The priority for the layout. Determines its position in menus. Higher numbers appear first.
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////
@@ -390,9 +389,8 @@ export class ContentLayoutDef {
   private static _sId = 0;
 
   public id: string = "";
-  public descriptionKey: string;
-  public priority: number;
-  public featureId: string = "";
+  public descriptionKey: string = "";
+  public priority: number = 0;
   private _layoutProps: ContentLayoutProps;
 
   private _rootSplit?: LayoutSplit;
@@ -407,11 +405,10 @@ export class ContentLayoutDef {
       this.id = "ContentLayout-" + ContentLayoutDef._sId;
     }
 
-    this.descriptionKey = layoutProps.descriptionKey;
-    this.priority = layoutProps.priority;
-
-    if (layoutProps.featureId !== undefined)
-      this.featureId = layoutProps.featureId;
+    if (layoutProps.descriptionKey !== undefined)
+      this.descriptionKey = layoutProps.descriptionKey;
+    if (layoutProps.priority !== undefined)
+      this.priority = layoutProps.priority;
   }
 
   public get rootSplit(): LayoutSplit | undefined { return this._rootSplit; }

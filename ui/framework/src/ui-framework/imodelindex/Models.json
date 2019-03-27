@@ -1,0 +1,63 @@
+{
+  "$schema": "../../../presentation/common/Ruleset.schema.json",
+  "id": "ui-framework/ModelsHierarchy",
+  "rules": [
+    {
+      "ruleType": "RootNodes",
+      "specifications": [
+        {
+          "specType": "InstanceNodesOfSpecificClasses",
+          "classes": [
+            {
+              "schemaName": "BisCore",
+              "classNames": [
+                "Subject"
+              ]
+            }
+          ],
+          "arePolymorphic": false,
+          "instanceFilter": "this.Parent = NULL",
+          "groupByClass": false,
+          "groupByLabel": false
+        }
+      ]
+    },
+    {
+      "ruleType": "ChildNodes",
+      "specifications": [
+        {
+          "specType": "RelatedInstanceNodes",
+          "relationships": {"schemaName": "BisCore", "classNames": ["SubjectOwnsSubjects"]},
+          "requiredDirection": "Forward",
+          "relatedClasses": {"schemaName": "BisCore", "classNames": ["Subject"]},
+          "instanceFilter": "this.CodeValue <> \"Physical\"",
+          "groupByClass": false,
+          "groupByLabel": false
+        },
+        {
+          "specType": "RelatedInstanceNodes",
+          "relationships": {"schemaName": "BisCore", "classNames": ["SubjectOwnsSubjects"]},
+          "requiredDirection": "Forward",
+          "relatedClasses": {"schemaName": "BisCore", "classNames": ["Subject"]},
+          "instanceFilter": "this.CodeValue = \"Physical\"",
+          "hideNodesInHierarchy": true,
+          "groupByClass": false,
+          "groupByLabel": false
+        },
+        {
+          "specType": "RelatedInstanceNodes",
+          "relationships": {"schemaName": "BisCore", "classNames": ["SubjectOwnsPartitionElements"]},
+          "requiredDirection": "Forward",
+          "relatedClasses": {"schemaName": "BisCore", "classNames": ["PhysicalPartition"]},
+          "groupByClass": false,
+          "groupByLabel": false
+        }
+      ]
+    },
+    {
+      "ruleType": "StyleOverride",
+      "condition": "ThisNode.IsOfClass(\"PhysicalPartition\", \"BisCore\")",
+      "fontStyle": "Bold"
+    }
+  ]
+}

@@ -25,6 +25,7 @@ The default configuration file allows you to specify the following:
 * what models to use for testing
 * what display style to use
 * what view flags to use
+* what render options to use
 
 The types of view flags that can be specified are as follows:
 * renderMode
@@ -49,6 +50,9 @@ The types of view flags that can be specified are as follows:
 * backgroundMap
 * hLineMaterialColors
 * edgeMask
+
+The types of render options that can be specified are as follows:
+* disabledExtensions - This should contain an array of all the WebGL extensions that you wish to disable. The program will restart the IModelApp every time this value changes, to ensure that the render system is changed appropriately (so it is better to group things that use the same render options). The extensions that may be disabled are found in WebGLExtensionName, and they currently include the following: "WEBGL_draw_buffers", "OES_element_index_uint", "OES_texture_float", "OES_texture_half_float", "WEBGL_depth_texture", "EXT_color_buffer_float", "EXT_shader_texture_lod", and "ANGLE_instanced_arrays".
 
 If any settings are not specified, the program will not change these settings. For example: if no view flags were specified, the program will not specifically alter the view flags. (though the view flags may be altered depending on what settings the chosen view has applied or if a specific display style has been chosen that affects the view flags).
 
@@ -78,6 +82,9 @@ Below is an example json config file:
         {
           "testType": "timing",
           "viewName": "V0",
+          "renderOptions": {
+		      "disabledExtensions": ["WEBGL_draw_buffers", "OES_texture_half_float"]
+		      },
           "viewFlags": {
             "renderMode": "SmoothShade",
             "dimensions": true,

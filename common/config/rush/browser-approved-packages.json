@@ -151,6 +151,10 @@
       "allowedCategories": [ "internal", "tools" ]
     },
     {
+      "name": "azure-storage",
+      "allowedCategories": [ "backend" ]
+    },
+    {
       "name": "benchmark",
       "allowedCategories": [ "common" ]
     },
@@ -220,7 +224,7 @@
     },
     {
       "name": "classnames",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "cli-highlight",
@@ -464,6 +468,10 @@
     },
     {
       "name": "lolex",
+      "allowedCategories": [ "backend" ]
+    },
+    {
+      "name": "lru-cache",
       "allowedCategories": [ "backend" ]
     },
     {

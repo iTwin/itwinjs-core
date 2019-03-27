@@ -32,6 +32,15 @@ export declare namespace IModelJsNative {
   export function setCrashReporting(cfg: NativeCrashReportingConfig): void;
   export type TxnIdString = string;
 
+  /** Logger categories used by the native addon */
+  export const enum LoggerCategory {
+    BeSQLite = "BeSQLite",
+    Changeset = "Changeset",
+    DgnCore = "DgnCore",
+    ECDb = "ECDb",
+    ECObjectsNative = "ECObjectsNative",
+  }
+
   /** The return type of synchronous functions that may return an error or a successful result. */
   export interface ErrorStatusOrResult<ErrorCodeType, ResultType> {
     /** Error from the operation. This property is defined if and only if the operation failed. */

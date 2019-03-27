@@ -165,7 +165,7 @@ export class BriefcaseHandler {
    */
   public async create(requestContext: AuthorizedClientRequestContext, imodelId: GuidString): Promise<Briefcase> {
     requestContext.enter();
-    Logger.logInfo(loggingCategory, `Acquiring briefcase for iModel ${imodelId}`);
+    Logger.logInfo(loggingCategory, "Acquiring briefcase for iModel", () => ({ imodelId }));
     ArgumentCheck.defined("requestContext", requestContext);
     ArgumentCheck.validGuid("imodelId", imodelId);
 
@@ -173,7 +173,7 @@ export class BriefcaseHandler {
 
     briefcase = await this._handler.postInstance<Briefcase>(requestContext, Briefcase, this.getRelativeUrl(imodelId), briefcase);
     requestContext.enter();
-    Logger.logTrace(loggingCategory, `Acquired briefcase ${briefcase.briefcaseId!} for iModel ${imodelId}`);
+    Logger.logTrace(loggingCategory, "Acquired briefcase for iModel", () => briefcase);
 
     return briefcase;
   }
@@ -181,46 +181,46 @@ export class BriefcaseHandler {
   /**
    * Delete the [[Briefcase]] from iModelHub. This frees up the id to be reused later and allows user to acquire additional briefcases if one of the briefcase limits was reached.
    * @param requestContext The client request context
-   * @param imodelId Id of the iModel. See [[HubIModel]].
+   * @param iModelId Id of the iModel. See [[HubIModel]].
    * @param briefcaseId Id of the Briefcase to be deleted.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async delete(requestContext: AuthorizedClientRequestContext, imodelId: GuidString, briefcaseId: number): Promise<void> {
+  public async delete(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, briefcaseId: number): Promise<void> {
     requestContext.enter();
-    Logger.logInfo(loggingCategory, `Deleting briefcase ${briefcaseId} from iModel ${imodelId}`);
+    Logger.logInfo(loggingCategory, "Deleting briefcase from iModel", () => ({ iModelId, briefcaseId }));
     ArgumentCheck.defined("requestContext", requestContext);
-    ArgumentCheck.validGuid("imodelId", imodelId);
+    ArgumentCheck.validGuid("imodelId", iModelId);
     ArgumentCheck.validBriefcaseId("briefcaseId", briefcaseId);
 
-    await this._handler.delete(requestContext, this.getRelativeUrl(imodelId, briefcaseId));
+    await this._handler.delete(requestContext, this.getRelativeUrl(iModelId, briefcaseId));
     requestContext.enter();
-    Logger.logTrace(loggingCategory, `Deleted briefcase ${briefcaseId} from iModel ${imodelId}`);
+    Logger.logTrace(loggingCategory, "Deleted briefcase from iModel", () => ({ iModelId, briefcaseId }));
   }
 
   /**
    * Get the [[Briefcase]]s.
    * @param requestContext The client request context
-   * @param imodelId Id of the iModel. See [[HubIModel]].
+   * @param iModelId Id of the iModel. See [[HubIModel]].
    * @param query Optional query object to filter the queried Briefcases or select different data from them.
    * @returns Briefcases that match the query.
    * @throws [[WsgError]] with [WSStatus.InstanceNotFound]($bentley) if [[BriefcaseQuery.byId]] is used and a Briefcase with the specified id could not be found.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async get(requestContext: AuthorizedClientRequestContext, imodelId: GuidString, query: BriefcaseQuery = new BriefcaseQuery()): Promise<Briefcase[]> {
+  public async get(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, query: BriefcaseQuery = new BriefcaseQuery()): Promise<Briefcase[]> {
     requestContext.enter();
-    Logger.logInfo(loggingCategory, `Querying briefcases for iModel ${imodelId}`);
+    Logger.logInfo(loggingCategory, "Querying briefcases for iModel", () => ({ iModelId }));
     ArgumentCheck.defined("requestContext", requestContext);
-    ArgumentCheck.validGuid("imodelId", imodelId);
+    ArgumentCheck.validGuid("imodelId", iModelId);
 
     const id = query.getId();
 
-    const briefcases = await this._handler.getInstances<Briefcase>(requestContext, Briefcase, this.getRelativeUrl(imodelId, id), query.getQueryOptions());
+    const briefcases = await this._handler.getInstances<Briefcase>(requestContext, Briefcase, this.getRelativeUrl(iModelId, id), query.getQueryOptions());
     requestContext.enter();
     for (const briefcase of briefcases) {
-      briefcase.iModelId = imodelId;
+      briefcase.iModelId = iModelId;
     }
 
-    Logger.logTrace(loggingCategory, `Queried ${briefcases.length} briefcases for iModel ${imodelId}`);
+    Logger.logTrace(loggingCategory, "Queried briefcases for iModel", () => ({ iModelId, count: briefcases.length }));
 
     return briefcases;
   }
@@ -240,7 +240,7 @@ export class BriefcaseHandler {
    */
   public async download(requestContext: AuthorizedClientRequestContext, briefcase: Briefcase, path: string, progressCallback?: (progress: ProgressInfo) => void): Promise<void> {
     requestContext.enter();
-    Logger.logInfo(loggingCategory, `Downloading briefcase ${briefcase.wsgId} for iModel ${briefcase.iModelId}`);
+    Logger.logTrace(loggingCategory, "Started downloading briefcase", () => ({ ...briefcase, path }));
     ArgumentCheck.defined("briefcase", briefcase);
     ArgumentCheck.defined("path", path);
 
@@ -255,6 +255,6 @@ export class BriefcaseHandler {
 
     await this._fileHandler.downloadFile(requestContext, briefcase.downloadUrl, path, parseInt(briefcase.fileSize!, 10), progressCallback);
     requestContext.enter();
-    Logger.logTrace(loggingCategory, `Downloading briefcase ${briefcase.wsgId} for iModel ${briefcase.iModelId}`);
+    Logger.logTrace(loggingCategory, "Finished downloading briefcase", () => ({ ...briefcase, path }));
   }
 }

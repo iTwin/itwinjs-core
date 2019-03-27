@@ -164,8 +164,8 @@ export class IModelConnection extends IModel {
       openForWriteOperation.policy.retryInterval = () => connectionRetryInterval;
     }
 
-    Logger.logTrace(loggingCategory, `Received open request in IModelConnection.open`, () => ({ ...iModelToken, openMode }));
-    Logger.logTrace(loggingCategory, `Setting open connection retry interval to ${connectionRetryInterval} milliseconds in IModelConnection.open`, () => ({ ...iModelToken, openMode }));
+    Logger.logTrace(loggingCategory, `Received open request in IModelConnection.open`, () => iModelToken);
+    Logger.logTrace(loggingCategory, `Setting retry interval in IModelConnection.open`, () => ({ ...iModelToken, connectionRetryInterval }));
 
     const startTime = Date.now();
 
@@ -176,18 +176,18 @@ export class IModelConnection extends IModel {
         return;
 
       requestContext.enter();
-      Logger.logTrace(loggingCategory, "Received pending open notification in IModelConnection.open", () => ({ ...iModelToken, openMode }));
+      Logger.logTrace(loggingCategory, "Received pending open notification in IModelConnection.open", () => iModelToken);
 
       const connectionTimeElapsed = Date.now() - startTime;
       if (connectionTimeElapsed > IModelConnection.connectionTimeout) {
-        Logger.logError(loggingCategory, `Timed out opening connection in IModelConnection.open (took longer than ${IModelConnection.connectionTimeout} milliseconds)`, () => ({ ...iModelToken, openMode }));
+        Logger.logError(loggingCategory, `Timed out opening connection in IModelConnection.open (took longer than ${IModelConnection.connectionTimeout} milliseconds)`, () => iModelToken);
         throw new IModelError(BentleyStatus.ERROR, "Opening a connection was timed out"); // NEEDS_WORK: More specific error status
       }
 
       connectionRetryInterval = Math.min(connectionRetryIntervalRange.max, connectionRetryInterval * 2, IModelConnection.connectionTimeout - connectionTimeElapsed);
       if (request.retryInterval !== connectionRetryInterval) {
         request.retryInterval = connectionRetryInterval;
-        Logger.logTrace(loggingCategory, `Adjusted open connection retry interval to ${request.retryInterval} milliseconds in IModelConnection.open`, () => ({ ...iModelToken, openMode }));
+        Logger.logTrace(loggingCategory, `Adjusted open connection retry interval to ${request.retryInterval} milliseconds in IModelConnection.open`, () => iModelToken);
       }
     });
 
@@ -202,7 +202,7 @@ export class IModelConnection extends IModel {
       openResponse = await openPromise;
     } finally {
       requestContext.enter();
-      Logger.logTrace(loggingCategory, "Completed open request in IModelConnection.open", () => ({ ...iModelToken, openMode }));
+      Logger.logTrace(loggingCategory, "Completed open request in IModelConnection.open", () => iModelToken);
       removeListener();
     }
 
@@ -217,10 +217,10 @@ export class IModelConnection extends IModel {
     if (this._token.key !== iModelToken.key)
       return; // The handler is called for a different connection than this
 
-    const requestContext: AuthorizedFrontendRequestContext = await AuthorizedFrontendRequestContext.create();
+    const requestContext: AuthorizedFrontendRequestContext = await AuthorizedFrontendRequestContext.create(request.id); // Reuse activityId
     requestContext.enter();
 
-    Logger.logTrace(loggingCategory, "Attempting to reopen connection", () => ({ iModelId: iModelToken.iModelId, changeSetId: iModelToken.changeSetId, key: iModelToken.key }));
+    Logger.logTrace(loggingCategory, "Attempting to reopen connection", () => iModelToken);
 
     try {
       const openResponse: IModel = await IModelConnection.callOpen(requestContext, iModelToken, this.openMode);
@@ -231,8 +231,7 @@ export class IModelConnection extends IModel {
       requestContext.enter();
     }
 
-    // request.id;
-    Logger.logTrace(loggingCategory, "Resubmitting original request after reopening connection", () => ({ iModelId: iModelToken.iModelId, changeSetId: iModelToken.changeSetId, key: iModelToken.key }));
+    Logger.logTrace(loggingCategory, "Resubmitting original request after reopening connection", () => iModelToken);
     request.parameters[0] = this._token; // Modify the token of the original request before resubmitting it.
     resubmit();
   }
@@ -302,7 +301,7 @@ export class IModelConnection extends IModel {
    * @throws [IModelError]($common) If the statement is invalid
    */
   public async queryRowCount(ecsql: string, bindings?: any[] | object): Promise<number> {
-    Logger.logTrace(loggingCategory, "IModelConnection.queryRowCount", () => ({ iModelId: this.iModelToken.iModelId, ecsql, bindings }));
+    Logger.logTrace(loggingCategory, "IModelConnection.queryRowCount", () => ({ ...this.iModelToken, ecsql, bindings }));
     return IModelReadRpcInterface.getClient().queryRowCount(this.iModelToken, ecsql, bindings);
   }
 
@@ -326,7 +325,7 @@ export class IModelConnection extends IModel {
    * @throws [IModelError]($common) If the statement is invalid
    */
   public async queryPage(ecsql: string, bindings?: any[] | object, options?: PageOptions): Promise<any[]> {
-    Logger.logTrace(loggingCategory, "IModelConnection.queryPage", () => ({ iModelId: this.iModelToken.iModelId, ecsql, options, bindings }));
+    Logger.logTrace(loggingCategory, "IModelConnection.queryPage", () => ({ ...this.iModelToken, ecsql, options, bindings }));
     return IModelReadRpcInterface.getClient().queryPage(this.iModelToken, ecsql, bindings, options);
   }
 
@@ -385,7 +384,7 @@ export class IModelConnection extends IModel {
    * @throws [[IModelError]] if the IModelConnection is read-only or there is a problem updating the extents.
    */
   public async updateProjectExtents(newExtents: AxisAlignedBox3d): Promise<void> {
-    Logger.logTrace(loggingCategory, "IModelConnection.updateProjectExtents", () => ({ iModelId: this.iModelToken.iModelId, newExtents }));
+    Logger.logTrace(loggingCategory, "IModelConnection.updateProjectExtents", () => ({ ...this.iModelToken, newExtents }));
     if (OpenMode.ReadWrite !== this.openMode)
       return Promise.reject(new IModelError(IModelStatus.ReadOnly, "IModelConnection was opened read-only", Logger.logError));
     return IModelWriteRpcInterface.getClient().updateProjectExtents(this.iModelToken, newExtents);
@@ -396,7 +395,7 @@ export class IModelConnection extends IModel {
    * @throws [[IModelError]] if the IModelConnection is read-only or there is a problem saving changes.
    */
   public async saveChanges(description?: string): Promise<void> {
-    Logger.logTrace(loggingCategory, "IModelConnection.saveChanges", () => ({ iModelId: this.iModelToken.iModelId, description }));
+    Logger.logTrace(loggingCategory, "IModelConnection.saveChanges", () => ({ ...this.iModelToken, description }));
     if (OpenMode.ReadWrite !== this.openMode)
       return Promise.reject(new IModelError(IModelStatus.ReadOnly, "IModelConnection was opened read-only", Logger.logError));
     return IModelWriteRpcInterface.getClient().saveChanges(this.iModelToken, description);

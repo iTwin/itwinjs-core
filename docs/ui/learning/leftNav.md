@@ -5,7 +5,9 @@
 - [Nine Zone](./ninezone/index)
 - [Framework](./framework/index)
 
-&nbsp;
+---
+
 ### Helpful links
 
 - [iModel.js UI Glossary](./Glossary.md)
+- [Frequently Asked Questions](./faq.md)

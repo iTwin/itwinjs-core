@@ -188,9 +188,6 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
     }
   }
 
-  public get isQueued(): boolean { return Tile.LoadStatus.Queued === this.loadStatus; }
-  public get isAbandoned(): boolean { return Tile.LoadStatus.Abandoned === this.loadStatus; }
-  public get isNotLoaded(): boolean { return Tile.LoadStatus.NotLoaded === this.loadStatus; }
   public get isLoading(): boolean { return Tile.LoadStatus.Loading === this.loadStatus; }
   public get isNotFound(): boolean { return Tile.LoadStatus.NotFound === this.loadStatus; }
   public get isReady(): boolean { return Tile.LoadStatus.Ready === this.loadStatus; }
@@ -370,7 +367,7 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
         ++args.context.viewport.numReadyTiles;
         selected.push(this);
         this.unloadChildren(args.purgeOlderThan);
-      } else {
+      } else if (!this.isReady) {
         // It can't be drawn. If direct children are drawable, draw them in this tile's place; otherwise draw the parent.
         // Do not load/request the children for this purpose.
         const initialSize = selected.length;

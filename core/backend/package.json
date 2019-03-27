@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-backend",
-  "version": "0.191.0-dev.15",
+  "version": "0.191.0-dev.19",
   "description": "iModel.js backend components",
   "main": "lib/imodeljs-backend.js",
   "typings": "lib/imodeljs-backend",
@@ -39,24 +39,24 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^0.191.0-dev.15",
-    "@bentley/geometry-core": "^0.191.0-dev.15",
-    "@bentley/imodeljs-clients": "^0.191.0-dev.15",
-    "@bentley/imodeljs-clients-backend": "^0.191.0-dev.15",
-    "@bentley/imodeljs-common": "^0.191.0-dev.15"
+    "@bentley/bentleyjs-core": "^0.191.0-dev.19",
+    "@bentley/geometry-core": "^0.191.0-dev.19",
+    "@bentley/imodeljs-clients": "^0.191.0-dev.19",
+    "@bentley/imodeljs-clients-backend": "^0.191.0-dev.19",
+    "@bentley/imodeljs-common": "^0.191.0-dev.19"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/config-loader": "0.191.0-dev.15",
-    "@bentley/bentleyjs-core": "0.191.0-dev.15",
-    "@bentley/build-tools": "0.191.0-dev.15",
-    "@bentley/geometry-core": "0.191.0-dev.15",
-    "@bentley/imodeljs-clients": "0.191.0-dev.15",
-    "@bentley/imodeljs-clients-backend": "0.191.0-dev.15",
-    "@bentley/imodeljs-common": "0.191.0-dev.15",
+    "@bentley/config-loader": "0.191.0-dev.19",
+    "@bentley/bentleyjs-core": "0.191.0-dev.19",
+    "@bentley/build-tools": "0.191.0-dev.19",
+    "@bentley/geometry-core": "0.191.0-dev.19",
+    "@bentley/imodeljs-clients": "0.191.0-dev.19",
+    "@bentley/imodeljs-clients-backend": "0.191.0-dev.19",
+    "@bentley/imodeljs-common": "0.191.0-dev.19",
     "@types/chai": "^4.1.4",
     "@types/fs-extra": "^4.0.7",
     "@types/glob": "^5.0.35",
@@ -66,6 +66,7 @@
     "@types/semver": "^5.5.0",
     "@types/form-data": "^2.2.1",
     "@types/multiparty": "^0.0.31",
+    "@types/lru-cache": "^5.1.0",
     "chai": "^4.1.2",
     "cpx": "^1.5.0",
     "mocha": "^5.2.0",
@@ -81,13 +82,15 @@
     "asn1": "0.2.3"
   },
   "dependencies": {
-    "@bentley/imodeljs-native": "~0.109.0",
+    "@bentley/imodeljs-native": "~0.111.0",
     "fs-extra": "^6.0.1",
     "glob": "^7.1.2",
     "js-base64": "^2.4.5",
     "semver": "^5.5.0",
     "form-data": "2.3.2",
-    "multiparty": "^4.2.1"
+    "multiparty": "^4.2.1",
+    "azure-storage": "^2.10.2",
+    "lru-cache": "^5.1.1"
   },
   "nyc": {
     "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc"

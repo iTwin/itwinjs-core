@@ -5,12 +5,12 @@
 /** @module Settings */
 
 import * as React from "react";
-import { connect } from "react-redux";
 import { ModalFrontstageInfo } from "../frontstage/FrontstageManager";
 import { UiFramework } from "../UiFramework";
+// import { ConfigurableUiActions } from "../configurableui/state";
 import { Toggle } from "@bentley/ui-core";
-import { OverallContentActions } from "../overallcontent/state";
 import "./Settings.scss";
+import { ColorTheme } from "../theme/ThemeManager";
 
 /** Modal frontstage displaying the active settings. */
 export class SettingsModalFrontstage implements ModalFrontstageInfo {
@@ -18,35 +18,18 @@ export class SettingsModalFrontstage implements ModalFrontstageInfo {
   public get content(): React.ReactNode { return (<SettingsPage />); }
 }
 
-interface SettingsPageProps {
-  theme: string;
-  setTheme: (theme: string) => any;
-}
-
-function mapStateToProps(state: any) {
-  const frameworkState = state[UiFramework.frameworkStateKey];  // since app sets up key, don't hard-code name
-  if (!frameworkState)
-    return undefined;
-
-  return { theme: frameworkState.overallContentState.theme };
-}
-
-const mapDispatch = {
-  setTheme: OverallContentActions.setTheme,
-};
-
-/** SettingsPageComponent displaying the active settings. */
-class SettingsPageComponent extends React.Component<SettingsPageProps> {
+/** SettingsPage displaying the active settings. */
+class SettingsPage extends React.Component {
   private _themeTitle: string = UiFramework.i18n.translate("UiFramework:settingsStage.themeTitle");
   private _themeDescription: string = UiFramework.i18n.translate("UiFramework:settingsStage.themeDescription");
 
   private _onThemeChange = () => {
-    const theme = this._isLightTheme() ? "dark" : "light";
-    this.props.setTheme(theme);
+    const theme = this._isLightTheme() ? ColorTheme.Dark : ColorTheme.Light;
+    UiFramework.setColorTheme(theme);
   }
 
   private _isLightTheme(): boolean {
-    return (this.props.theme === "light");
+    return (UiFramework.getColorTheme() === ColorTheme.Light);
   }
 
   public render(): React.ReactNode {
@@ -60,7 +43,7 @@ class SettingsPageComponent extends React.Component<SettingsPageProps> {
             <span className="description">{this._themeDescription}</span>
           </div>
           <div className="panel right-panel">
-            <Toggle isOn={isLightTheme} showCheckmark={false} onChange={this._onThemeChange.bind(this)} />
+            <Toggle isOn={isLightTheme} showCheckmark={false} onChange={this._onThemeChange} />
             {_theme}
           </div>
         </div>
@@ -68,6 +51,3 @@ class SettingsPageComponent extends React.Component<SettingsPageProps> {
     );
   }
 }
-
-/** SettingsPage React component that is Redux connected. */
-export const SettingsPage = connect(mapStateToProps, mapDispatch)(SettingsPageComponent); // tslint:disable-line:variable-name

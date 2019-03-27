@@ -12,8 +12,7 @@ import { Logger } from "@bentley/bentleyjs-core";
 import { RpcInterfaceDefinition } from "../../RpcInterface";
 import { RpcProtocolEvent } from "../core/RpcConstants";
 import { RpcOperation } from "../core/RpcOperation";
-
-const loggingCategory = "imodeljs-rpc.WebAppRpcProtocol";
+import { LoggerCategory } from "../../LoggerCategory";
 
 // tslint:disable-next-line:no-var-requires
 const os = (typeof (process) !== "undefined") ? require("os") : undefined;
@@ -53,21 +52,21 @@ export class WebAppRpcLogging {
   }
 
   private static findPathIds(path: string) {
-    let contextID = "";
-    let imodelID = "";
+    let contextId = "";
+    let iModelId = "";
 
     const tokens = path.split("/");
     for (let i = 0; i !== tokens.length; ++i) {
       if ((/^context$/i).test(tokens[i])) {
-        contextID = tokens[i + 1] || "";
+        contextId = tokens[i + 1] || "";
       }
 
       if ((/^imodel$/i).test(tokens[i])) {
-        imodelID = tokens[i + 1] || "";
+        iModelId = tokens[i + 1] || "";
       }
     }
 
-    return { contextID, imodelID };
+    return { contextId, iModelId };
   }
 
   private static buildOperationDescriptor(operation: RpcOperation | SerializedRpcOperation): string {
@@ -78,9 +77,9 @@ export class WebAppRpcLogging {
 
   public static logRequest(message: string, object: WebAppRpcRequest | SerializedRpcRequest): void {
     const operationDescriptor = WebAppRpcLogging.buildOperationDescriptor(object.operation);
-    const { contextID, imodelID } = WebAppRpcLogging.findPathIds(object.path);
+    const pathIds = WebAppRpcLogging.findPathIds(object.path);
 
-    Logger.logTrace(loggingCategory, `${message}.${operationDescriptor}`, () => ({
+    Logger.logTrace(LoggerCategory.RpcInterfaceFrontend, `${message}.${operationDescriptor}`, () => ({
       method: object.method,
       path: object.path,
       operation: object.operation.operationName,
@@ -89,16 +88,15 @@ export class WebAppRpcLogging {
       ActivityId: object.id,
       TimeElapsed: ("elapsed" in object) ? object.elapsed : 0,
       MachineName: getHostname(),
-      contextID,
-      imodelID,
+      ...pathIds,
     }));
   }
 
   private static logResponse(message: string, object: WebAppRpcRequest | SerializedRpcRequest, status: number, elapsed: number): void {
     const operationDescriptor = WebAppRpcLogging.buildOperationDescriptor(object.operation);
-    const { contextID, imodelID } = WebAppRpcLogging.findPathIds(object.path);
+    const pathIds = WebAppRpcLogging.findPathIds(object.path);
 
-    Logger.logTrace(loggingCategory, `${message}.${operationDescriptor}`, () => ({
+    Logger.logTrace(LoggerCategory.RpcInterfaceFrontend, `${message}.${operationDescriptor}`, () => ({
       method: object.method,
       path: object.path,
       operation: object.operation.operationName,
@@ -108,31 +106,29 @@ export class WebAppRpcLogging {
       ActivityId: object.id,
       TimeElapsed: elapsed,
       MachineName: getHostname(),
-      contextID,
-      imodelID,
+      ...pathIds,
     }));
   }
 
   private static logErrorFrontend(message: string, request: WebAppRpcRequest): void {
     const operationDescriptor = WebAppRpcLogging.buildOperationDescriptor(request.operation);
-    const { contextID, imodelID } = WebAppRpcLogging.findPathIds(request.path);
+    const pathIds = WebAppRpcLogging.findPathIds(request.path);
 
-    Logger.logInfo(loggingCategory, `${message}.${operationDescriptor}`, () => ({
+    Logger.logInfo(LoggerCategory.RpcInterfaceFrontend, `${message}.${operationDescriptor}`, () => ({
       method: request.method,
       path: request.path,
       // Alert! The following properties are required by Bentley DevOps standards. Do not change their names!
       ActivityId: request.id,
       MachineName: getHostname(),
-      contextID,
-      imodelID,
+      ...pathIds,
     }));
   }
 
   private static logErrorBackend(message: string, invocation: RpcInvocation): void {
     const operationDescriptor = WebAppRpcLogging.buildOperationDescriptor(invocation.operation);
-    const { contextID, imodelID } = WebAppRpcLogging.findPathIds(invocation.request.path);
+    const pathIds = WebAppRpcLogging.findPathIds(invocation.request.path);
 
-    Logger.logInfo(loggingCategory, `${message}.${operationDescriptor}`, () => ({
+    Logger.logInfo(LoggerCategory.RpcInterfaceBackend, `${message}.${operationDescriptor}`, () => ({
       method: invocation.request.method,
       path: invocation.request.path,
       status: invocation.status,
@@ -140,8 +136,7 @@ export class WebAppRpcLogging {
       // Alert! The following properties are required by Bentley DevOps standards. Do not change their names!
       ActivityId: invocation.request.id,
       MachineName: getHostname(),
-      contextID,
-      imodelID,
+      ...pathIds,
     }));
   }
 }

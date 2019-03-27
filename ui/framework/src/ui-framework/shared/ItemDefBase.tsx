@@ -24,7 +24,6 @@ export abstract class ItemDefBase {
   public isEnabled: boolean = true;
   public isPressed: boolean = false;
   public isActive: boolean = false;
-  public featureId: string = "";
   public applicationData?: any;
 
   public stateFunc?: (state: Readonly<BaseItemState>) => BaseItemState;
@@ -40,7 +39,6 @@ export abstract class ItemDefBase {
     me.isPressed = (itemProps.isPressed !== undefined) ? itemProps.isPressed : false;
     me.isActive = (itemProps.isActive !== undefined) ? itemProps.isActive : false;
 
-    if (itemProps.featureId !== undefined) me.featureId = itemProps.featureId;
     if (itemProps.applicationData !== undefined) me.applicationData = itemProps.applicationData;
     if (itemProps.iconSpec) me.iconSpec = itemProps.iconSpec;
 
