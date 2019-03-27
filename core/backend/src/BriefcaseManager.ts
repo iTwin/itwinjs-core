@@ -425,7 +425,7 @@ export class BriefcaseManager {
         await BriefcaseManager.addBriefcaseToCache(requestContext, briefcaseDir, iModelId);
         requestContext.enter();
       } catch (error) {
-        Logger.logWarning(loggerCategory, `Deleting briefcase in ${briefcaseDir} from cache`);
+        Logger.logWarning(loggerCategory, `Deleting briefcase in ${briefcaseDir} from cache`, () => ({ iModelId }));
         BriefcaseManager.deleteFolderRecursive(briefcaseDir);
       }
     }
@@ -558,7 +558,7 @@ export class BriefcaseManager {
       // briefcase already exists. If open and has a different version than requested, close first
       if (briefcase.isOpen) {
         if (briefcase.currentChangeSetIndex === changeSetIndex) {
-          Logger.logTrace(loggerCategory, `Reused briefcase ${briefcase.pathname} without changes`);
+          Logger.logTrace(loggerCategory, `Reused briefcase ${briefcase.pathname} without changes`, () => briefcase!.getDebugInfo());
           return briefcase;
         }
 
@@ -787,7 +787,7 @@ export class BriefcaseManager {
     briefcase.isStandalone = false;
     briefcase.imodelClientContext = contextId;
 
-    Logger.logTrace(loggerCategory, `Created briefcase ${briefcase.pathname}`);
+    Logger.logTrace(loggerCategory, `Created briefcase ${briefcase.pathname}`, () => briefcase.getDebugInfo());
     return briefcase;
   }
 
@@ -1541,7 +1541,7 @@ export class BriefcaseManager {
     changeSet.fileSize = IModelJsFs.lstatSync(changeSetToken.pathname)!.size.toString();
     changeSet.description = description;
     if (changeSet.description.length >= 255) {
-      Logger.logWarning(loggerCategory, "pushChanges - Truncating description to 255 characters. " + changeSet.description);
+      Logger.logWarning(loggerCategory, "pushChanges - Truncating description to 255 characters. " + changeSet.description, () => briefcase.getDebugInfo());
       changeSet.description = changeSet.description.slice(0, 254);
     }
 
