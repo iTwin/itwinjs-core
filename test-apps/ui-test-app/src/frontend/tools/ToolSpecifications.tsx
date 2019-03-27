@@ -10,9 +10,9 @@ import {
 } from "@bentley/imodeljs-frontend";
 import { MessageSeverity } from "@bentley/ui-core";
 import {
-  CommandItemDef, ToolItemDef, WidgetState, FrontstageManager, ModalDialogManager, BaseItemState, ContentViewManager, SyncUiEventId,
+  CommandItemDef, ToolItemDef, WidgetState, FrontstageManager, ModalDialogManager, BaseItemState, ContentViewManager, SyncUiEventId, Backstage,
 } from "@bentley/ui-framework";
-import { SampleAppIModelApp, RootState, SampleAppUiActionId } from "../";
+import { SampleAppIModelApp } from "../";
 import { Tool1 } from "../tools/Tool1";
 import { Tool2 } from "../tools/Tool2";
 import { ToolWithSettings } from "../tools/ToolWithSettings";
@@ -82,17 +82,7 @@ export class AppTools {
 
   // Tool that toggles the backstage
   public static get backstageToggleCommand() {
-    return new CommandItemDef({
-      commandId: "SampleApp.BackstageShow",
-      iconSpec: "icon-home",
-      labelKey: "SampleApp:tools.",
-      execute: () => {
-        const state: RootState = SampleAppIModelApp.store.getState();
-        // cSpell:Ignore BACKSTAGEHIDE BACKSTAGESHOW
-        const action: string = (state.sampleAppState!.backstageVisible) ? SampleAppUiActionId.hideBackstage : SampleAppUiActionId.showBackstage;
-        SampleAppIModelApp.store.dispatch({ type: action });
-      },
-    });
+    return Backstage.backstageToggleCommand;
   }
 
   public static get item1() {

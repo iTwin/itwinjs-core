@@ -2,8 +2,10 @@
 | $Copyright: (c) 2019 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { CoreTools, ContentGroup, ContentControl, ConfigurableUiManager, ConfigurableCreateInfo,
-         FrontstageProvider, FrontstageProps, Frontstage, IModelIndex } from "@bentley/ui-framework";
+import {
+  CoreTools, ContentGroup, ContentControl, ConfigurableCreateInfo,
+  FrontstageProvider, FrontstageProps, Frontstage, IModelIndex,
+} from "@bentley/ui-framework";
 import { SampleAppIModelApp } from "../../index";
 import { Id64String } from "@bentley/bentleyjs-core";
 
@@ -13,7 +15,7 @@ class IModelIndexControl extends ContentControl {
 
     const iModelConnection = SampleAppIModelApp.getIModelConnection();
     const accessToken = SampleAppIModelApp.getAccessToken();
-    super.reactElement = <IModelIndex iModelConnection={iModelConnection!} accessToken={accessToken!} onOpen={this._onOpen} />;
+    this.reactElement = <IModelIndex iModelConnection={iModelConnection!} accessToken={accessToken!} onOpen={this._onOpen} />;
   }
 
   private _onOpen = async (viewIds: Id64String[]) => {
@@ -24,18 +26,16 @@ class IModelIndexControl extends ContentControl {
   }
 }
 
-ConfigurableUiManager.registerControl("IModelIndexControl", IModelIndexControl);
-
 export class IModelIndexFrontstage extends FrontstageProvider {
 
   public get frontstage(): React.ReactElement<FrontstageProps> {
     const contentGroup: ContentGroup = new ContentGroup({
-        contents: [
-          {
-            classId: "IModelIndexControl",
-          },
-        ],
-      });
+      contents: [
+        {
+          classId: IModelIndexControl,
+        },
+      ],
+    });
 
     return (
       <Frontstage id="IModelIndex"
@@ -43,7 +43,7 @@ export class IModelIndexFrontstage extends FrontstageProvider {
         defaultLayout="SingleContent"
         contentGroup={contentGroup}
         isInFooterMode={false}
-        />
+      />
     );
   }
 }

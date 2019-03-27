@@ -10,7 +10,6 @@ import {
   Backstage,
   CommandLaunchBackstageItem,
   FrontstageLaunchBackstageItem,
-  SeparatorBackstageItem,
   TaskLaunchBackstageItem,
   FrontstageManager,
   FrontstageActivatedEventArgs,
@@ -20,12 +19,14 @@ import {
   FrontstageProvider,
   Frontstage,
   FrontstageProps,
+  BackstageItemState,
 } from "../../ui-framework";
 import TestUtils from "../TestUtils";
 import { BackstageItem as NZ_BackstageItem } from "@bentley/ui-ninezone";
 import { CoreTools } from "../../ui-framework/CoreToolDefinitions";
 import { SyncUiEventDispatcher } from "../../ui-framework/syncui/SyncUiEventDispatcher";
-import { BackstageItemState } from "../../ui-framework/backstage/Backstage";
+import { SeparatorBackstageItem } from "../../ui-framework/backstage/Separator";
+import { WorkflowManager } from "../../ui-framework/workflow/Workflow";
 
 describe("Backstage", () => {
   const testEventId = "test-state-function-event";
@@ -161,8 +162,19 @@ describe("Backstage", () => {
       });
     });
 
-    it("FrontstageLaunchBackstageItem renders correctly", () => {
+    it("FrontstageLaunchBackstageItem renders correctly when inactive", async () => {
+      await FrontstageManager.setActiveFrontstageDef(undefined);
       shallow(<FrontstageLaunchBackstageItem frontstageId="Test1" labelKey="UiFramework:tests.label" iconSpec="icon-placeholder" />).should.matchSnapshot();
+    });
+
+    it("FrontstageLaunchBackstageItem renders correctly when active", async () => {
+      const frontstageDef = FrontstageManager.findFrontstageDef("Test1");
+      expect(frontstageDef).to.not.be.undefined;
+
+      if (frontstageDef) {
+        await FrontstageManager.setActiveFrontstageDef(frontstageDef);
+        shallow(<FrontstageLaunchBackstageItem frontstageId="Test1" labelKey="UiFramework:tests.label" iconSpec="icon-placeholder" />).should.matchSnapshot();
+      }
     });
 
     it("TaskLaunchBackstageItem should render & execute", () => {
@@ -231,8 +243,24 @@ describe("Backstage", () => {
       });
     });
 
-    it("TaskLaunchBackstageItem renders correctly", () => {
+    it("TaskLaunchBackstageItem renders correctly when inactive", () => {
+      WorkflowManager.setActiveWorkflow(undefined);
       shallow(<TaskLaunchBackstageItem taskId="Task1" workflowId="ExampleWorkflow" labelKey="UiFramework:tests.label" iconSpec="icon-placeholder" />).should.matchSnapshot();
+    });
+
+    it("TaskLaunchBackstageItem renders correctly when active", async () => {
+      const workflow = WorkflowManager.findWorkflow("ExampleWorkflow");
+      expect(workflow).to.not.be.undefined;
+
+      if (workflow) {
+        const task1 = workflow.getTask("Task1");
+        expect(task1).to.not.be.undefined;
+
+        if (task1) {
+          await WorkflowManager.setActiveWorkflowAndTask(workflow, task1);
+          shallow(<TaskLaunchBackstageItem taskId="Task1" workflowId="ExampleWorkflow" labelKey="UiFramework:tests.label" iconSpec="icon-placeholder" />).should.matchSnapshot();
+        }
+      }
     });
 
   });

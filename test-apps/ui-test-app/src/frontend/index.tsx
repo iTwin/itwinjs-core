@@ -24,7 +24,7 @@ import {
 import { Id64String } from "@bentley/bentleyjs-core";
 import getSupportedRpcs from "../common/rpcs";
 import { AppUi } from "./appui/AppUi";
-import AppBackstage, { BackstageShow, BackstageHide } from "./appui/AppBackstage";
+import { AppBackstage } from "./appui/AppBackstage";
 import { ViewsFrontstage } from "./appui/frontstages/ViewsFrontstage";
 import { Tool1 } from "./tools/Tool1";
 import { Tool2 } from "./tools/Tool2";
@@ -48,35 +48,29 @@ else
 for (const definition of rpcConfiguration.interfaces())
   RpcOperation.forEach(definition, (operation) => operation.policy.token = (_request) => new IModelToken("test", "test", "test", "test"));
 
-// cSpell:ignore BACKSTAGESHOW BACKSTAGEHIDE SETIMODELCONNECTION setTestProperty
+// cSpell:ignore SETIMODELCONNECTION setTestProperty sampleapp setaccesstoken uitestapp
 /** Action Ids used by redux and to send sync UI components. Typically used to refresh visibility or enable state of control.
  * Use lower case strings to be compatible with SyncUi processing.
  */
 export const enum SampleAppUiActionId {
-  showBackstage = "sampleapp:backstageshow",
-  hideBackstage = "sampleapp:backstagehide",
   setIModelConnection = "sampleapp:setimodelconnection",
   setAccessToken = "sampleapp:setaccesstoken",
   setTestProperty = "sampleapp:settestproperty",
 }
 
 export interface SampleAppState {
-  backstageVisible: boolean;
   currentIModelConnection?: IModelConnection;
   accessToken?: AccessToken;
   testProperty: string;
 }
 
 const initialState: SampleAppState = {
-  backstageVisible: false,
   testProperty: "",
 };
 
 // An object with a function that creates each OpenIModelAction that can be handled by our reducer.
 // tslint:disable-next-line:variable-name
 export const SampleAppActions = {
-  showBackstage: () => createAction(SampleAppUiActionId.showBackstage),
-  hideBackstage: () => createAction(SampleAppUiActionId.hideBackstage),
   setIModelConnection: (iModelConnection: IModelConnection) => createAction(SampleAppUiActionId.setIModelConnection, iModelConnection),
   setAccessToken: (accessToken: AccessToken) => createAction(SampleAppUiActionId.setAccessToken, accessToken),
   setTestProperty: (testProperty: string) => createAction(SampleAppUiActionId.setTestProperty, testProperty),
@@ -105,12 +99,6 @@ export type SampleAppActionsUnion = ActionsUnion<typeof SampleAppActions>;
 
 function SampleAppReducer(state: SampleAppState = initialState, action: SampleAppActionsUnion): DeepReadonly<SampleAppState> {
   switch (action.type) {
-    case SampleAppUiActionId.showBackstage: {
-      return { ...state, backstageVisible: true };
-    }
-    case SampleAppUiActionId.hideBackstage: {
-      return { ...state, backstageVisible: false };
-    }
     case SampleAppUiActionId.setIModelConnection: {
       return { ...state, currentIModelConnection: action.payload };
     }
@@ -188,8 +176,6 @@ export class SampleAppIModelApp extends IModelApp {
     });
 
     // Register tools.
-    BackstageShow.register(this.sampleAppNamespace);
-    BackstageHide.register(this.sampleAppNamespace);
     Tool1.register(this.sampleAppNamespace);
     Tool2.register(this.sampleAppNamespace);
     ToolWithSettings.register(this.sampleAppNamespace);
@@ -244,7 +230,7 @@ export class SampleAppIModelApp extends IModelApp {
   }
 
   // called after the user has signed in (or access token is still valid)
-  public static async onSignedIn () {
+  public static async onSignedIn() {
     const accessToken = await IModelApp.authorizationClient!.getAccessToken();
 
     // NOTE: do we need to store access token since its store in OidcClient?
@@ -282,7 +268,7 @@ export class SampleAppIModelApp extends IModelApp {
 
       if (viewId) {
         // open directly into the iModel (view)
-        await SampleAppIModelApp.openViews (defaultImodel.projectInfo.wsgId, defaultImodel.wsgId, [viewId!]);
+        await SampleAppIModelApp.openViews(defaultImodel.projectInfo.wsgId, defaultImodel.wsgId, [viewId!]);
       } else {
         // open to the IModelIndex frontstage
         await SampleAppIModelApp.showIModelIndex(defaultImodel.projectInfo.wsgId, defaultImodel.wsgId);
@@ -329,22 +315,16 @@ export class SampleAppViewer extends React.Component<any> {
   constructor(props: any) {
     super(props);
 
-    SampleAppIModelApp.startup();
+    AppUi.initialize();
 
-    // wait for both our i18n namespaces to be read.
-    SampleAppIModelApp.initialize().then(() => { // tslint:disable-line:no-floating-promises
+    // tslint:disable-next-line:no-console
+    console.log("Versions:", (window as any).iModelJsVersions);
 
-      AppUi.initialize();
-
-      // tslint:disable-next-line:no-console
-      console.log("Versions:", (window as any).iModelJsVersions);
-
-      if (OidcClientWrapper.oidcClient.hasSignedIn) {
-        SampleAppIModelApp.onSignedIn(); // tslint:disable-line:no-floating-promises
-      } else {
-        SampleAppIModelApp.showSignIn(); // tslint:disable-line:no-floating-promises
-      }
-    });
+    if (OidcClientWrapper.oidcClient.hasSignedIn) {
+      SampleAppIModelApp.onSignedIn(); // tslint:disable-line:no-floating-promises
+    } else {
+      SampleAppIModelApp.showSignIn(); // tslint:disable-line:no-floating-promises
+    }
   }
 
   public render(): JSX.Element {
@@ -361,4 +341,9 @@ export class SampleAppViewer extends React.Component<any> {
   }
 }
 
-ReactDOM.render(<SampleAppViewer />, document.getElementById("root") as HTMLElement);
+SampleAppIModelApp.startup();
+
+// wait for both our i18n namespaces to be read.
+SampleAppIModelApp.initialize().then(() => { // tslint:disable-line:no-floating-promises
+  ReactDOM.render(<SampleAppViewer />, document.getElementById("root") as HTMLElement);
+});

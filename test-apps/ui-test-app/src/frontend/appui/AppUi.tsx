@@ -286,7 +286,7 @@ export class AppUi {
         },
         {
           id: "Task2",
-          primaryStageId: "Test2",
+          primaryStageId: "ViewsFrontstage",
           iconSpec: "icon-placeholder",
           labelKey: "SampleApp:backstage.task2",
         },

@@ -7,20 +7,24 @@
 import * as React from "react";
 
 import { SyncUiEventDispatcher, SyncUiEventArgs } from "../syncui/SyncUiEventDispatcher";
-import { FrontstageManager } from "../frontstage/FrontstageManager";
+import { FrontstageManager, FrontstageActivatedEventArgs } from "../frontstage/FrontstageManager";
 import { PropsHelper } from "../utils/PropsHelper";
-import { Backstage, BackstageItemProps, BackstageItemState, getBackstageItemStateFromProps } from "./Backstage";
+import { Backstage } from "./Backstage";
+import { BackstageItemProps, BackstageItemState, getBackstageItemStateFromProps } from "./BackstageItem";
 
 import { BackstageItem as NZ_BackstageItem } from "@bentley/ui-ninezone";
 
 /** Properties for a [[FrontstageLaunchBackstageItem]] component
+ * @public
  */
 export interface FrontstageLaunchBackstageItemProps extends BackstageItemProps {
   /** id of the frontstage */
   frontstageId: string;
 }
 
-/** Backstage item that activates a Frontstage */
+/** Backstage item that activates a Frontstage
+ * @public
+ */
 export class FrontstageLaunchBackstageItem extends React.PureComponent<FrontstageLaunchBackstageItemProps, BackstageItemState> {
 
   /** @hidden */
@@ -34,12 +38,17 @@ export class FrontstageLaunchBackstageItem extends React.PureComponent<Frontstag
     if (props.stateSyncIds)
       this._stateSyncIds = props.stateSyncIds.map((value) => value.toLowerCase());
 
-    this.state = getBackstageItemStateFromProps(props);
+    const state = getBackstageItemStateFromProps(props);
+    if (this.props.isActive === undefined) {
+      state.isActive = FrontstageManager.activeFrontstageId === this.props.frontstageId;
+    }
+    this.state = state;
   }
 
   public componentDidMount() {
     if (this.props.stateFunc && this._stateSyncIds.length > 0)
       SyncUiEventDispatcher.onSyncUiEvent.addListener(this._handleSyncUiEvent);
+    FrontstageManager.onFrontstageActivatedEvent.addListener(this._handleFrontstageActivatedEvent);
   }
 
   public componentWillUnmount() {
@@ -47,6 +56,7 @@ export class FrontstageLaunchBackstageItem extends React.PureComponent<Frontstag
     /* istanbul ignore else */
     if (this.props.stateFunc && this._stateSyncIds.length > 0)
       SyncUiEventDispatcher.onSyncUiEvent.removeListener(this._handleSyncUiEvent);
+    FrontstageManager.onFrontstageActivatedEvent.removeListener(this._handleFrontstageActivatedEvent);
   }
 
   private _handleSyncUiEvent = (args: SyncUiEventArgs): void => {
@@ -74,11 +84,17 @@ export class FrontstageLaunchBackstageItem extends React.PureComponent<Frontstag
       FrontstageManager.setActiveFrontstageDef(frontstageDef); // tslint:disable-line:no-floating-promises
   }
 
-  public componentWillReceiveProps(nextProps: FrontstageLaunchBackstageItemProps) {
-    const updatedState = getBackstageItemStateFromProps(nextProps);
+  public componentDidUpdate(_prevProps: FrontstageLaunchBackstageItemProps) {
+    const updatedState = getBackstageItemStateFromProps(this.props);
     updatedState.isActive = FrontstageManager.activeFrontstageId === this.props.frontstageId;
     if (!PropsHelper.isShallowEqual(updatedState, this.state))
       this.setState((_prevState) => updatedState);
+  }
+
+  private _handleFrontstageActivatedEvent = (args: FrontstageActivatedEventArgs) => {
+    const isActive = args.activatedFrontstageDef.id === this.props.frontstageId;
+    if (isActive !== this.state.isActive)
+      this.setState({ isActive });
   }
 
   // TODO: add tooltip, subtitle, aria-label? to NZ_BackstageItem

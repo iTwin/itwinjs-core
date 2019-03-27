@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Removed Redux from AppState in ui-test-app and made Backstage stateful",
+      "packageName": "@bentley/ui-framework",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-framework",
+  "email": "dan.east@bentley.com"
+}

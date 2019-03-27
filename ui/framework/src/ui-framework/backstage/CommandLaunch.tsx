@@ -8,19 +8,23 @@ import * as React from "react";
 
 import { SyncUiEventDispatcher, SyncUiEventArgs } from "../syncui/SyncUiEventDispatcher";
 import { PropsHelper } from "../utils/PropsHelper";
-import { Backstage, BackstageItemProps, BackstageItemState, getBackstageItemStateFromProps } from "./Backstage";
+import { Backstage } from "./Backstage";
+import { BackstageItemProps, BackstageItemState, getBackstageItemStateFromProps } from "./BackstageItem";
 import { CommandHandler } from "../shared/ItemProps";
 
 import { BackstageItem as NZ_BackstageItem } from "@bentley/ui-ninezone";
 
 /** Properties for a [[CommandLaunchBackstageItem]] component
+ * @public
  */
 export interface CommandLaunchBackstageItemProps extends BackstageItemProps, CommandHandler {
   /** Unique Id for this backstage item. */
   commandId: string;
 }
 
-/** Backstage item that launches a Command */
+/** Backstage item that launches a Command
+ * @public
+ */
 export class CommandLaunchBackstageItem extends React.PureComponent<CommandLaunchBackstageItemProps, BackstageItemState> {
 
   /** @hidden */

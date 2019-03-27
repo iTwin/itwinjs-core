@@ -15,7 +15,23 @@ exports[`Backstage <Backstage /> CommandLaunchBackstageItem renders correctly 1`
 />
 `;
 
-exports[`Backstage <Backstage /> FrontstageLaunchBackstageItem renders correctly 1`] = `
+exports[`Backstage <Backstage /> FrontstageLaunchBackstageItem renders correctly when active 1`] = `
+<BackstageItem
+  icon={
+    <Unknown
+      iconSpec="icon-placeholder"
+    />
+  }
+  isActive={true}
+  isDisabled={false}
+  key="Test1"
+  label="tests.label"
+  onClick={[Function]}
+  subtitle=""
+/>
+`;
+
+exports[`Backstage <Backstage /> FrontstageLaunchBackstageItem renders correctly when inactive 1`] = `
 <BackstageItem
   icon={
     <Unknown
@@ -37,7 +53,22 @@ exports[`Backstage <Backstage /> SeparatorBackstageItem renders correctly 1`] = 
 />
 `;
 
-exports[`Backstage <Backstage /> TaskLaunchBackstageItem renders correctly 1`] = `
+exports[`Backstage <Backstage /> TaskLaunchBackstageItem renders correctly when active 1`] = `
+<BackstageItem
+  icon={
+    <Unknown
+      iconSpec="icon-placeholder"
+    />
+  }
+  isActive={true}
+  isDisabled={false}
+  key="ExampleWorkflow:Task1"
+  label="tests.label"
+  onClick={[Function]}
+/>
+`;
+
+exports[`Backstage <Backstage /> TaskLaunchBackstageItem renders correctly when inactive 1`] = `
 <BackstageItem
   icon={
     <Unknown
