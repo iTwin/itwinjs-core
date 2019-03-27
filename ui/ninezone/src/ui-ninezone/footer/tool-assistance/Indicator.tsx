@@ -15,8 +15,6 @@ export interface ToolAssistanceIndicatorProps extends CommonProps, NoChildrenPro
   dialog?: React.ReactNode;
   /** Indicator icons. */
   icons?: React.ReactNode;
-  /** Describes if the step string is visible. */
-  isStepStringVisible?: boolean;
   /** Function called when indicator is clicked. */
   onClick?: () => void;
   /** Step string. */
@@ -30,11 +28,6 @@ export class ToolAssistanceIndicator extends React.PureComponent<ToolAssistanceI
       "nz-footer-toolAssistance-indicator",
       this.props.className);
 
-    const stepStringClassName = classnames(
-      "nz-step-string",
-      this.props.isStepStringVisible && "nz-is-visible",
-    );
-
     return (
       <div
         className={className}
@@ -47,7 +40,9 @@ export class ToolAssistanceIndicator extends React.PureComponent<ToolAssistanceI
           <div className="nz-icons">
             {this.props.icons}
           </div>
-          <span className={stepStringClassName}>{this.props.stepString}</span>
+          {this.props.stepString !== undefined &&
+            <span className="nz-step-string">{this.props.stepString}</span>
+          }
           <div className="nz-triangle" />
         </div>
         {this.props.dialog}

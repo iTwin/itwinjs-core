@@ -32,11 +32,9 @@ export class ToolSettingsWidget extends React.PureComponent<ToolSettingsWidgetPr
         className={className}
         style={this.props.style}
       >
-        {!this.props.content ? undefined :
-          <div className="nz-content">
-            {this.props.content}
-          </div>
-        }
+        <div className="nz-content">
+          {this.props.content}
+        </div>
         <div className="nz-tab">
           {this.props.tab}
         </div>

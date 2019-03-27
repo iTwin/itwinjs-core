@@ -15,4 +15,8 @@ describe("<Toggle />", () => {
   it("renders correctly", () => {
     shallow(<Toggle />).should.matchSnapshot();
   });
+
+  it("renders popover content correctly", () => {
+    shallow(<Toggle popoverContent={"abc"} />).should.matchSnapshot();
+  });
 });

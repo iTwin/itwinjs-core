@@ -15,7 +15,6 @@ export * from "./ui-ninezone/base/PointerCaptor";
 export * from "./ui-ninezone/base/SvgPath";
 export * from "./ui-ninezone/base/SvgSprite";
 export * from "./ui-ninezone/base/WithContainIn";
-export * from "./ui-ninezone/base/WithContainInViewport";
 
 export * from "./ui-ninezone/context/MouseTracker";
 
@@ -44,7 +43,7 @@ export * from "./ui-ninezone/footer/message/content/status/Status";
 export * from "./ui-ninezone/footer/message-center/Content";
 export * from "./ui-ninezone/footer/message-center/Indicator";
 export * from "./ui-ninezone/footer/message-center/Message";
-export * from "./ui-ninezone/footer/message-center/MessageCenter";
+export * from "./ui-ninezone/footer/message-center/Dialog";
 export * from "./ui-ninezone/footer/message-center/Tab";
 
 export * from "./ui-ninezone/footer/snap-mode/Dialog";
@@ -66,11 +65,7 @@ export * from "./ui-ninezone/popup/popover/Popover";
 export * from "./ui-ninezone/popup/popover/Triangle";
 export * from "./ui-ninezone/popup/tooltip/Tooltip";
 
-export * from "./ui-ninezone/theme/Context";
-export * from "./ui-ninezone/theme/Theme";
-export * from "./ui-ninezone/theme/WithTheme";
-
-export * from "./ui-ninezone/toolbar/item/Icon";
+export * from "./ui-ninezone/toolbar/item/Item";
 export * from "./ui-ninezone/toolbar/item/Overflow";
 export * from "./ui-ninezone/toolbar/item/expandable/Expandable";
 
@@ -105,7 +100,7 @@ export * from "./ui-ninezone/utilities/Rectangle";
 export * from "./ui-ninezone/utilities/Size";
 
 export * from "./ui-ninezone/widget/Stacked";
-export * from "./ui-ninezone/widget/TabIcon";
+export * from "./ui-ninezone/widget/Tools";
 export * from "./ui-ninezone/widget/ToolSettings";
 
 export * from "./ui-ninezone/widget/tools/button/App";
@@ -113,13 +108,11 @@ export * from "./ui-ninezone/widget/tools/button/Back";
 export * from "./ui-ninezone/widget/tools/button/Button";
 export * from "./ui-ninezone/widget/tools/button/Expandable";
 export * from "./ui-ninezone/widget/tools/button/Icon";
-export * from "./ui-ninezone/widget/tools/Tools";
 
 export * from "./ui-ninezone/widget/rectangular/Content";
 export * from "./ui-ninezone/widget/rectangular/ResizeGrip";
 export * from "./ui-ninezone/widget/rectangular/ResizeHandle";
 
-export * from "./ui-ninezone/widget/rectangular/tab/Draggable";
 export * from "./ui-ninezone/widget/rectangular/tab/Group";
 export * from "./ui-ninezone/widget/rectangular/tab/Separator";
 export * from "./ui-ninezone/widget/rectangular/tab/Tab";
@@ -154,6 +147,7 @@ export * from "./ui-ninezone/zones/target/Target";
 
 // Set the version number so it can be found at runtime. BUILD_SEMVER is replaced at build time by the webpack DefinePlugin.
 declare var BUILD_SEMVER: string;
+/* istanbul ignore next */
 if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") && window) {
   if (!(window as any).iModelJsVersions)
     (window as any).iModelJsVersions = new Map<string, string>();

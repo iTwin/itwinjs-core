@@ -17,7 +17,7 @@ export interface MessageCenterMessageProps extends CommonProps, NoChildrenProps 
   content?: React.ReactNode;
 }
 
-/** Message entry in [[MessageCenter]] component. */
+/** Message entry in [[MessageCenterDialog]] component. */
 export class MessageCenterMessage extends React.PureComponent<MessageCenterMessageProps> {
   public render() {
     const className = classnames(

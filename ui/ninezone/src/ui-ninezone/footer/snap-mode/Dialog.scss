@@ -14,24 +14,22 @@
   color: $bg-color;
 
   @include uicore-z-index(status-popover);
+}
 
-  > .nz-content {
-    > div {
-      background-color: currentColor;
-      border-radius: 3px;
+.nz-footer-snapMode-dialogContent {
+  background-color: currentColor;
+  border-radius: 3px;
 
-      > .nz-title {
-        line-height: 40px;
-        font-size: 18px;
-        text-align: center;
-        color: $buic-text-color;
-      }
+  > .nz-title {
+    line-height: 40px;
+    font-size: 18px;
+    text-align: center;
+    color: $buic-text-color;
+  }
 
-      > .nz-snaps {
-        display: grid;
-        grid-gap: 15px;
-        padding: 0 0 15px 5px;
-      }
-    }
+  > .nz-snaps {
+    display: grid;
+    grid-gap: 15px;
+    padding: 0 0 15px 5px;
   }
 }

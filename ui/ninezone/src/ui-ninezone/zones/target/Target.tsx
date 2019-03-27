@@ -23,8 +23,7 @@ export class MergeTarget extends React.PureComponent<MergeTargetProps> {
   private _isTargeted = false;
 
   public componentWillUnmount() {
-    if (this._isTargeted)
-      this.props.onTargetChanged && this.props.onTargetChanged(false);
+    this._isTargeted && this.props.onTargetChanged && this.props.onTargetChanged(false);
   }
 
   public render() {

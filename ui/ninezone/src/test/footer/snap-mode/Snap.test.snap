@@ -1,0 +1,19 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<Snap /> renders active correctly 1`] = `
+<div
+  className="nz-footer-snapMode-snap nz-is-active"
+>
+  <div />
+  <div />
+</div>
+`;
+
+exports[`<Snap /> renders correctly 1`] = `
+<div
+  className="nz-footer-snapMode-snap"
+>
+  <div />
+  <div />
+</div>
+`;

@@ -1,0 +1,37 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<UserProfile /> renders correctly 1`] = `
+<div
+  className="nz-backstage-userprofile"
+>
+  <span
+    style={
+      Object {
+        "backgroundColor": "#6ab9ec",
+      }
+    }
+  >
+    FL
+  </span>
+  <span>
+    First Last
+  </span>
+</div>
+`;
+
+exports[`<UserProfile /> renders w/o initials 1`] = `
+<div
+  className="nz-backstage-userprofile"
+>
+  <span
+    style={
+      Object {
+        "backgroundColor": "#6ab9ec",
+      }
+    }
+  />
+  <span>
+     
+  </span>
+</div>
+`;

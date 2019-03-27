@@ -9,8 +9,7 @@ import { StatusBarFieldId, IStatusBar, StatusBarWidgetControl } from "./StatusBa
 
 import {
   Footer, Activity as ActivityMessage, Modal as ModalMessage, Dialog as ModalMessageDialog, ScrollableContent as DialogScrollableContent, Buttons as DialogButtonsContent,
-  Toast as ToastMessage, Stage as ToastMessageStage, Sticky as StickyMessage, StatusMessage, MessageLayout as StatusMessageLayout,
-  Label as MessageLabel, MessageButton, Status, Hyperlink, Progress,
+  Toast as ToastMessage, Sticky as StickyMessage, StatusMessage, MessageLayout as StatusMessageLayout, MessageButton, Status, Hyperlink, Progress,
 } from "@bentley/ui-ninezone";
 import { NotifyMessageDetails, OutputMessageType } from "@bentley/imodeljs-frontend";
 
@@ -18,6 +17,15 @@ import { MessageContainer, MessageSeverity, Button, ButtonType, SmallText } from
 
 import { MessageManager, MessageAddedEventArgs, ActivityMessageEventArgs } from "../messages/MessageManager";
 import { UiFramework } from "../UiFramework";
+
+// tslint:disable-next-line: variable-name
+const MessageLabel = (props: { text: string }) => {
+  return (
+    <div
+      className="StatusBarMessageLabel"
+      dangerouslySetInnerHTML={{ __html: props.text }} />
+  );
+};
 
 /** Enum for StatusBar Message Type */
 export enum StatusBarMessageType {
@@ -35,7 +43,7 @@ export interface StatusBarState {
   messageDetails: NotifyMessageDetails | undefined;
   activityMessageInfo: ActivityMessageEventArgs | undefined;
   isActivityMessageVisible: boolean;
-  toastMessageStage: ToastMessageStage;
+  toastMessageKey: number;
 }
 
 /** Properties for the [[StatusBar]] React component */
@@ -66,7 +74,7 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> i
     messageDetails: undefined,
     activityMessageInfo: undefined,
     isActivityMessageVisible: false,
-    toastMessageStage: ToastMessageStage.Visible,
+    toastMessageKey: 0,
   };
 
   public render(): React.ReactNode {
@@ -115,7 +123,7 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> i
     this.setVisibleMessage(statusbarMessageType, args.message);
 
     if (args.message.msgType === OutputMessageType.Toast) {
-      this.setState(() => ({ toastMessageStage: ToastMessageStage.Visible }));
+      this.setState((prevState) => ({ toastMessageKey: prevState.toastMessageKey + 1 }));
     }
   }
 
@@ -189,13 +197,9 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> i
       case (StatusBarMessageType.Toast): {
         return (
           <ToastMessage
-            stage={this.state.toastMessageStage}
             animateOutTo={this._footerMessages}
             onAnimatedOut={() => this._hideMessages()}
             timeout={2500}
-            onStageChange={(stage: ToastMessageStage) => {
-              this.setState((_prevState) => ({ toastMessageStage: stage }));
-            }}
             content={
               <StatusMessage
                 status={StatusBar.severityToStatus(severity)}
@@ -206,11 +210,11 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> i
                 <StatusMessageLayout
                   label={
                     <>
-                      <MessageLabel text={this.state.messageDetails!.briefMessage} />
-                      {this.state.messageDetails!.detailedMessage &&
+                      <MessageLabel text={this.state.messageDetails.briefMessage} />
+                      {this.state.messageDetails.detailedMessage &&
                         <>
                           <br />
-                          <MessageLabel text={this.state.messageDetails!.detailedMessage} />
+                          <MessageLabel text={this.state.messageDetails.detailedMessage} />
                         </>
                       }
                     </>
@@ -275,7 +279,7 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> i
           <StatusMessageLayout
             label={
               <div>
-                <MessageLabel text={this.state.activityMessageInfo!.message} />
+                {this.state.activityMessageInfo && <MessageLabel text={this.state.activityMessageInfo.message} />}
                 {
                   (messageDetails && messageDetails.showPercentInMessage) &&
                   <SmallText>{this.state.activityMessageInfo!.percentage + percentComplete}</SmallText>

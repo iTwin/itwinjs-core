@@ -1,0 +1,21 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<Expandable /> renders correctly 1`] = `
+<div
+  className="nz-base-expandable nz-direction-right"
+>
+  <div
+    className="nz-expanded"
+  />
+</div>
+`;
+
+exports[`<Expandable /> should set direction class 1`] = `
+<div
+  className="nz-base-expandable nz-direction-left"
+>
+  <div
+    className="nz-expanded"
+  />
+</div>
+`;

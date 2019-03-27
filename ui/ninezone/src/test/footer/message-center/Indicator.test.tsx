@@ -15,4 +15,8 @@ describe("<MessageCenterIndicator />", () => {
   it("renders correctly", () => {
     shallow(<MessageCenterIndicator />).should.matchSnapshot();
   });
+
+  it("renders correctly with label", () => {
+    shallow(<MessageCenterIndicator label="Messages:" />).should.matchSnapshot();
+  });
 });

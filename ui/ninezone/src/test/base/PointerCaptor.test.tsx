@@ -17,6 +17,10 @@ describe("<PointerCaptor />", () => {
     shallow(<PointerCaptor />).should.matchSnapshot();
   });
 
+  it("should respect isMouseDown prop over state", () => {
+    shallow(<PointerCaptor isMouseDown />).should.matchSnapshot();
+  });
+
   it("should unmount", () => {
     const sut = mount(<PointerCaptor />);
     sut.unmount();

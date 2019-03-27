@@ -25,9 +25,32 @@ exports[`<Item /> should apply style 1`] = `
 </li>
 `;
 
+exports[`<Item /> should render subtitle 1`] = `
+<li
+  className="nz-backstage-item"
+>
+  <div>
+    <span />
+    <span>
+      custom subtitle
+    </span>
+  </div>
+</li>
+`;
+
 exports[`<Item /> should set is-active class 1`] = `
 <li
   className="nz-backstage-item nz-is-active"
+>
+  <div>
+    <span />
+  </div>
+</li>
+`;
+
+exports[`<Item /> should set is-disabled class 1`] = `
+<li
+  className="nz-backstage-item nz-is-disabled"
 >
   <div>
     <span />

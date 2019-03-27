@@ -1,0 +1,15 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<ExpandableButton  /> renders correctly 1`] = `
+<Expandable
+  className="nz-toolbar-button-expandable"
+>
+  <div
+    className="nz-button"
+  >
+    <div
+      className="nz-triangle"
+    />
+  </div>
+</Expandable>
+`;

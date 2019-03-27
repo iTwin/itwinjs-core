@@ -6,7 +6,7 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import { Edge } from "../utilities/Rectangle";
+import { Edge, RectangleProps, Rectangle } from "../utilities/Rectangle";
 import { WidgetContent } from "./rectangular/Content";
 import { ResizeGrip, ResizeDirection } from "./rectangular/ResizeGrip";
 import { ResizeHandle } from "./rectangular/ResizeHandle";
@@ -77,10 +77,10 @@ export interface StackedProps extends CommonProps, NoChildrenProps {
   isOpen?: boolean;
   /** Function called when resize action is performed. */
   onResize?: (x: number, y: number, handle: ResizeHandle, filledHeightDiff: number) => void;
-  /** Widget tabs. See: [[Draggable]], [[TabSeparator]], [[Tab]], [[Group]] */
+  /** Widget tabs. See: [[Tab]], [[TabSeparator]], [[Group]] */
   tabs?: React.ReactNode;
-  /** Describes to which side the widget is vertically anchored. Defaults to [[VerticalAnchor.Middle]] */
-  verticalAnchor?: VerticalAnchor;
+  /** Describes to which side the widget is vertically anchored. */
+  verticalAnchor: VerticalAnchor;
 }
 
 /**
@@ -90,10 +90,68 @@ export interface StackedProps extends CommonProps, NoChildrenProps {
 export class Stacked extends React.PureComponent<StackedProps> {
   private _widget = React.createRef<HTMLDivElement>();
 
-  private _getFilledHeightDiff(): number {
-    if (this.props.fillZone)
-      return 0;
+  public getBounds(): RectangleProps {
+    if (!this._widget.current)
+      return new Rectangle();
+    return this._widget.current.getBoundingClientRect();
+  }
 
+  public render() {
+    const className = classnames(
+      "nz-widget-stacked",
+      HorizontalAnchorHelpers.getCssClassName(this.props.horizontalAnchor),
+      VerticalAnchorHelpers.getCssClassName(this.props.verticalAnchor),
+      !this.props.isOpen && "nz-is-closed",
+      this.props.isDragged && "nz-is-dragged",
+      this.props.isFloating && "nz-is-floating",
+      this.props.fillZone && "nz-fill-zone",
+      this.props.className);
+
+    return (
+      <div
+        className={className}
+        style={this.props.style}
+        ref={this._widget}
+      >
+        <div className="nz-content-area">
+          <WidgetContent
+            anchor={this.props.horizontalAnchor}
+            content={this.props.content}
+          />
+          <ResizeGrip
+            className="nz-bottom-grip"
+            direction={ResizeDirection.NorthSouth}
+            onResize={this._handleBottomGripResize}
+          />
+          <ResizeGrip
+            className="nz-content-grip"
+            direction={ResizeDirection.EastWest}
+            onResize={this._handleContentGripResize}
+          />
+        </div>
+        <div className="nz-tabs-column">
+          <div className="nz-tabs">
+            {this.props.tabs}
+          </div>
+          <div className="nz-tabs-grip-container">
+            <ResizeGrip
+              className="nz-tabs-grip"
+              direction={ResizeDirection.EastWest}
+              onResize={this._handleTabsGripResize}
+            />
+          </div>
+        </div>
+        <div className="nz-height-expander" />
+        <ResizeGrip
+          className="nz-top-grip"
+          direction={ResizeDirection.NorthSouth}
+          onResize={this._handleTopGripResize}
+        />
+      </div>
+    );
+  }
+
+  private _getFilledHeightDiff(): number {
     const widget = this._widget.current;
     if (!widget)
       return 0;
@@ -146,60 +204,5 @@ export class Stacked extends React.PureComponent<StackedProps> {
   private _handleBottomGripResize = (_x: number, y: number) => {
     const filledHeightDiff = this._getFilledHeightDiff();
     this.props.onResize && this.props.onResize(0, y, Edge.Bottom, filledHeightDiff);
-  }
-
-  public render() {
-    const className = classnames(
-      "nz-widget-stacked",
-      HorizontalAnchorHelpers.getCssClassName(this.props.horizontalAnchor),
-      VerticalAnchorHelpers.getCssClassName(this.props.verticalAnchor === undefined ? VerticalAnchor.Middle : this.props.verticalAnchor),
-      !this.props.isOpen && "nz-is-closed",
-      this.props.isDragged && "nz-is-dragged",
-      this.props.isFloating && "nz-is-floating",
-      this.props.fillZone && "nz-fill-zone",
-      this.props.className);
-
-    return (
-      <div
-        className={className}
-        style={this.props.style}
-        ref={this._widget}
-      >
-        <div className="nz-content-area">
-          <WidgetContent
-            anchor={this.props.horizontalAnchor}
-            content={this.props.content}
-          />
-          <ResizeGrip
-            className="nz-bottom-grip"
-            direction={ResizeDirection.NorthSouth}
-            onResize={this._handleBottomGripResize}
-          />
-          <ResizeGrip
-            className="nz-content-grip"
-            direction={ResizeDirection.EastWest}
-            onResize={this._handleContentGripResize}
-          />
-        </div>
-        <div className="nz-tabs-column">
-          <div className="nz-tabs">
-            {this.props.tabs}
-          </div>
-          <div className="nz-tabs-grip-container">
-            <ResizeGrip
-              className="nz-tabs-grip"
-              direction={ResizeDirection.EastWest}
-              onResize={this._handleTabsGripResize}
-            />
-          </div>
-        </div>
-        <div className="nz-height-expander" />
-        <ResizeGrip
-          className="nz-top-grip"
-          direction={ResizeDirection.NorthSouth}
-          onResize={this._handleTopGripResize}
-        />
-      </div>
-    );
   }
 }

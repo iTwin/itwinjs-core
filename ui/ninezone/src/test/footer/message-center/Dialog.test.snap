@@ -1,0 +1,30 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<MessageCenterDialog /> renders correctly 1`] = `
+<TrianglePopover
+  className="nz-footer-messageCenter-dialog"
+  direction={1}
+/>
+`;
+
+exports[`<MessageCenterDialogContent /> renders correctly 1`] = `
+<Dialog
+  content={
+    <MessageCenterContent
+      messages={undefined}
+      prompt={undefined}
+      tabs={undefined}
+    />
+  }
+  titleBar={
+    <TitleBar
+      buttons={undefined}
+      title={
+        <DialogTitle
+          text={undefined}
+        />
+      }
+    />
+  }
+/>
+`;

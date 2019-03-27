@@ -12,12 +12,16 @@ import UiFramework from "../UiFramework";
 
 import { StatusBarFieldId, IStatusBar } from "../widgets/StatusBarWidgetControl";
 import { MessageManager } from "../messages/MessageManager";
-
-import { MessageCenterIndicator, MessageCenterTab, MessageCenterMessage, MessageCenter as MessageCenterComponent, MessageCenterButton } from "@bentley/ui-ninezone";
+import {
+  MessageCenterIndicator, MessageCenterTab, MessageCenterMessage, MessageCenterDialog as MessageCenterDialogComponent,
+  MessageCenterDialogContent as MessageCenterDialogContentComponent, MessageCenterButton, withContainIn, containHorizontally,
+} from "@bentley/ui-ninezone";
 import { withOnOutsideClick } from "@bentley/ui-core";
 
 // tslint:disable-next-line: variable-name
-const MessageCenter = withOnOutsideClick(MessageCenterComponent, undefined, false);
+const MessageCenterDialog = withOnOutsideClick(MessageCenterDialogComponent, undefined, false);
+// tslint:disable-next-line: variable-name
+const MessageCenterDialogContent = withContainIn(MessageCenterDialogContentComponent);
 
 /** Properties for the [[MessageCenterField]] React component */
 export interface MessageCenterProps {
@@ -59,43 +63,47 @@ export class MessageCenterField extends React.Component<MessageCenterProps, Mess
     const footerMessages = (
       <MessageCenterIndicator
         ref={(element: any) => { this._element = element; }}
-        label={UiFramework.i18n.translate("UiFramework:messageCenter.messages")}
-        isLabelVisible={this.props.isInFooterMode}
+        label={this.props.isInFooterMode ? UiFramework.i18n.translate("UiFramework:messageCenter.messages") : undefined}
         balloonLabel={messageCount.toString()}
         onClick={this._handleMessageIndicatorClick}
         dialog={
           this.props.openWidget !== this._className ? undefined :
-            <MessageCenter
-              buttons={
-                <>
-                  <MessageCenterButton title={UiFramework.i18n.translate("UiFramework:messageCenter.export")}>
-                    <i className={"icon icon-export"} />
-                  </MessageCenterButton>
-                  <MessageCenterButton onClick={this._handleCloseMessageIndicatorClick} title={UiFramework.i18n.translate("UiCore:dialog.close")}>
-                    <i className={"icon icon-close"} />
-                  </MessageCenterButton>
-                </>
+            <MessageCenterDialog
+              content={
+                <MessageCenterDialogContent
+                  buttons={
+                    <>
+                      <MessageCenterButton title={UiFramework.i18n.translate("UiFramework:messageCenter.export")}>
+                        <i className={"icon icon-export"} />
+                      </MessageCenterButton>
+                      <MessageCenterButton onClick={this._handleCloseMessageIndicatorClick} title={UiFramework.i18n.translate("UiCore:dialog.close")}>
+                        <i className={"icon icon-close"} />
+                      </MessageCenterButton>
+                    </>
+                  }
+                  containFn={containHorizontally}
+                  messages={this.getMessages()}
+                  prompt={UiFramework.i18n.translate("UiFramework:messageCenter.prompt")}
+                  tabs={
+                    <>
+                      <MessageCenterTab
+                        isOpen={this.state.activeTab === MessageCenterActiveTab.AllMessages}
+                        onClick={() => this._changeActiveTab(MessageCenterActiveTab.AllMessages)}
+                      >
+                        {UiFramework.i18n.translate("UiFramework:messageCenter.all")}
+                      </MessageCenterTab>
+                      <MessageCenterTab
+                        isOpen={this.state.activeTab === MessageCenterActiveTab.Problems}
+                        onClick={() => this._changeActiveTab(MessageCenterActiveTab.Problems)}
+                      >
+                        {UiFramework.i18n.translate("UiFramework:messageCenter.problems")}
+                      </MessageCenterTab>
+                    </>
+                  }
+                  title={UiFramework.i18n.translate("UiFramework:messageCenter.messages")}
+                />
               }
-              messages={this.getMessages()}
               onOutsideClick={this._handleCloseMessageIndicatorClick}
-              tabs={
-                <>
-                  <MessageCenterTab
-                    isOpen={this.state.activeTab === MessageCenterActiveTab.AllMessages}
-                    onClick={() => this._changeActiveTab(MessageCenterActiveTab.AllMessages)}
-                  >
-                    {UiFramework.i18n.translate("UiFramework:messageCenter.all")}
-                  </MessageCenterTab>
-                  <MessageCenterTab
-                    isOpen={this.state.activeTab === MessageCenterActiveTab.Problems}
-                    onClick={() => this._changeActiveTab(MessageCenterActiveTab.Problems)}
-                  >
-                    {UiFramework.i18n.translate("UiFramework:messageCenter.problems")}
-                  </MessageCenterTab>
-                </>
-              }
-              title={UiFramework.i18n.translate("UiFramework:messageCenter.messages")}
-              prompt={UiFramework.i18n.translate("UiFramework:messageCenter.prompt")}
             />
         }
       />

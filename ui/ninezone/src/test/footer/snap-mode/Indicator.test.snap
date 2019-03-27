@@ -1,0 +1,40 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<SnapModeIndicator /> renders correctly 1`] = `
+<div
+  className="nz-footer-snapMode-indicator"
+>
+  <div
+    className="nz-indicator"
+  >
+    <div
+      className="nz-icon"
+    />
+  </div>
+  <div
+    className="nz-dialog"
+  />
+</div>
+`;
+
+exports[`<SnapModeIndicator /> renders correctly with label 1`] = `
+<div
+  className="nz-footer-snapMode-indicator"
+>
+  <div
+    className="nz-indicator"
+  >
+    <span
+      className="nz-label"
+    >
+      Snap Mode
+    </span>
+    <div
+      className="nz-icon"
+    />
+  </div>
+  <div
+    className="nz-dialog"
+  />
+</div>
+`;

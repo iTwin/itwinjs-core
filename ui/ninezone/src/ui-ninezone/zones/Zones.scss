@@ -17,7 +17,7 @@
   transition: visibility 0.5s ease, opacity 0.5s ease;
   @include uicore-z-index(zones);
 
-  &.hide {
+  &.nz-is-hidden {
     opacity: 0;
     visibility: hidden;
   }

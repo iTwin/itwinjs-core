@@ -15,8 +15,6 @@ export interface SnapModeIndicatorProps extends CommonProps, NoChildrenProps {
   dialog?: React.ReactChild;
   /** Indicator icon. I.e. [[SnapModeIcon]] */
   icon?: React.ReactNode;
-  /** Describes if the label is visible. Pass true if the [[Footer]] is in footer mode. */
-  isLabelVisible?: boolean;
   /** Indicator label. */
   label?: string;
   /** Function called when indicator is clicked. */
@@ -30,19 +28,18 @@ export class SnapModeIndicator extends React.PureComponent<SnapModeIndicatorProp
       "nz-footer-snapMode-indicator",
       this.props.className);
 
-    const labelClassName = classnames(
-      "nz-label",
-      this.props.isLabelVisible && "nz-is-visible",
-    );
-
     return (
       <div
         className={className}
         style={this.props.style}
-        onClick={this.props.onClick}
       >
-        <div className="nz-indicator">
-          <span className={labelClassName}>{this.props.label}</span>
+        <div
+          className="nz-indicator"
+          onClick={this.props.onClick}
+        >
+          {this.props.label !== undefined &&
+            <span className="nz-label">{this.props.label}</span>
+          }
           <div
             className="nz-icon"
           >

@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-
 import { TabSeparator } from "../../../../ui-ninezone";
 
 describe("<TabSeparator />", () => {

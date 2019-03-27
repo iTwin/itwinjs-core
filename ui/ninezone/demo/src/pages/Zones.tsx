@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 import "@bentley/icons-generic-webfont/dist/bentley-icons-generic-webfont.css";
 import * as React from "react";
-import * as ReactDOM from "react-dom";
 import rafSchedule, { ScheduleFn } from "raf-schd";
 import { Timer, withTimeout, Button, ButtonType, ButtonProps, Omit, withOnOutsideClick } from "@bentley/ui-core";
 import { App } from "@src/app/App";
@@ -12,16 +11,20 @@ import { Content } from "@src/app/Content";
 import { AppButton } from "@src/widget/tools/button/App";
 import { MouseTracker } from "@src/context/MouseTracker";
 import { Footer } from "@src/footer/Footer";
-import { MessageCenter as MessageCenterComponent, MessageCenterButton } from "@src/footer/message-center/MessageCenter";
+import {
+  MessageCenterDialog as MessageCenterDialogComponent,
+  MessageCenterDialogContent as MessageCenterDialogContentComponent,
+  MessageCenterButton,
+} from "@src/footer/message-center/Dialog";
 import { MessageCenterIndicator } from "@src/footer/message-center/Indicator";
 import { MessageCenterMessage } from "@src/footer/message-center/Message";
 import { MessageCenterTab } from "@src/footer/message-center/Tab";
-import { SnapModeDialog as SnapModeDialogComponent } from "@src/footer/snap-mode/Dialog";
+import { SnapModeDialog as SnapModeDialogComponent, SnapModeDialogContent as SnapModeDialogContentComponent } from "@src/footer/snap-mode/Dialog";
 import { SnapModeIcon } from "@src/footer/snap-mode/Icon";
 import { SnapModeIndicator } from "@src/footer/snap-mode/Indicator";
 import { Snap } from "@src/footer/snap-mode/Snap";
 import { ToolAssistanceIndicator } from "@src/footer/tool-assistance/Indicator";
-import { ToolAssistanceDialog as ToolAssistanceDialogComponent } from "@src/footer/tool-assistance/Dialog";
+import { ToolAssistanceDialog as ToolAssistanceDialogComponent, ToolAssistanceDialogContent as ToolAssistanceDialogContentComponent } from "@src/footer/tool-assistance/Dialog";
 import { ToolAssistanceItem } from "@src/footer/tool-assistance/Item";
 import { ToolAssistanceSeparator } from "@src/footer/tool-assistance/Separator";
 import { Activity } from "@src/footer/message/Activity";
@@ -42,7 +45,7 @@ import { MessageResizeHandle } from "@src/footer/message/content/dialog/ResizeHa
 import { Modal } from "@src/footer/message/Modal";
 import { Sticky } from "@src/footer/message/Sticky";
 import { Temporary } from "@src/footer/message/Temporary";
-import { Toast, Stage } from "@src/footer/message/Toast";
+import { Toast } from "@src/footer/message/Toast";
 import { Nested } from "@src/widget/tool-settings/Nested";
 import { ScrollableArea } from "@src/widget/tool-settings/ScrollableArea";
 import { Toggle } from "@src/widget/tool-settings/Toggle";
@@ -59,19 +62,18 @@ import { Group } from "@src/toolbar/item/expandable/group/Group";
 import { NestedGroup } from "@src/toolbar/item/expandable/group/Nested";
 import { HistoryIcon } from "@src/toolbar/item/expandable/history/Icon";
 import { HistoryTray, History, DefaultHistoryManager } from "@src/toolbar/item/expandable/history/Tray";
-import { Item } from "@src/toolbar/item/Icon";
+import { Item } from "@src/toolbar/item/Item";
 import { Toolbar, ToolbarPanelAlignment } from "@src/toolbar/Toolbar";
 import { Scrollable } from "@src/toolbar/Scrollable";
 import { Direction } from "@src/utilities/Direction";
 import { PointProps, Point } from "@src/utilities/Point";
 import { Size, SizeProps } from "@src/utilities/Size";
 import { ResizeHandle } from "@src/widget/rectangular/ResizeHandle";
-import { Draggable } from "@src/widget/rectangular/tab/Draggable";
 import { TabSeparator } from "@src/widget/rectangular/tab/Separator";
-import { TabGroup, VisibilityMode } from "@src/widget/rectangular/tab/Group";
-import { TabMode } from "@src/widget/rectangular/tab/Tab";
+import { TabGroup, HandleMode } from "@src/widget/rectangular/tab/Group";
+import { Tab, TabMode } from "@src/widget/rectangular/tab/Tab";
 import { Stacked, HorizontalAnchor, VerticalAnchor } from "@src/widget/Stacked";
-import { Tools as ToolsWidget } from "@src/widget/tools/Tools";
+import { Tools as ToolsWidget } from "@src/widget/Tools";
 import { FooterZone } from "@src/zones/Footer";
 import { NineZone, getDefaultNineZoneProps, NineZoneProps, WidgetZoneIndex } from "@src/zones/state/NineZone";
 import { DefaultStateManager } from "@src/zones/state/Manager";
@@ -84,11 +86,9 @@ import { Back } from "@src/zones/target/Back";
 import { ZoneComponent } from "@src/zones/Zone";
 import { Zones } from "@src/zones/Zones";
 import { GhostOutline } from "@src/zones/GhostOutline";
-import { ThemeContext, ThemeContextProps } from "@src/theme/Context";
-import { Theme, DarkTheme, PrimaryTheme, LightTheme } from "@src/theme/Theme";
 import { offsetAndContainInContainer } from "@src/popup/tooltip/Tooltip";
 import { RectangleProps, Rectangle } from "@src/utilities/Rectangle";
-import { withContainInViewport } from "@src/base/WithContainInViewport";
+import { withContainIn, containHorizontally } from "@src/base/WithContainIn";
 import { OmitChildrenProp } from "@src/utilities/Props";
 import "./Zones.scss";
 
@@ -96,15 +96,21 @@ const adjustTooltipPosition = offsetAndContainInContainer();
 // tslint:disable-next-line:variable-name
 const TooltipWithTimeout = withTimeout(ToolSettingsTooltip);
 // tslint:disable-next-line:variable-name
-const ToolGroupContained = withOnOutsideClick(withContainInViewport(Group), undefined, false);
+const ToolGroupContained = withContainIn(withOnOutsideClick(Group, undefined, false));
 // tslint:disable-next-line:variable-name
-const NestedToolGroupContained = withOnOutsideClick(withContainInViewport(NestedGroup), undefined, false);
+const NestedToolGroupContained = withContainIn(withOnOutsideClick(NestedGroup, undefined, false));
 // tslint:disable-next-line:variable-name
 const ToolAssistanceDialog = withOnOutsideClick(ToolAssistanceDialogComponent, undefined, false);
 // tslint:disable-next-line:variable-name
+const ToolAssistanceDialogContent = withContainIn(ToolAssistanceDialogContentComponent);
+// tslint:disable-next-line:variable-name
 const SnapModeDialog = withOnOutsideClick(SnapModeDialogComponent, undefined, false);
 // tslint:disable-next-line:variable-name
-const MessageCenter = withOnOutsideClick(MessageCenterComponent, undefined, false);
+const SnapModeDialogContent = withContainIn(SnapModeDialogContentComponent);
+// tslint:disable-next-line:variable-name
+const MessageCenterDialog = withOnOutsideClick(MessageCenterDialogComponent, undefined, false);
+// tslint:disable-next-line:variable-name
+const MessageCenterDialogContent = withContainIn(MessageCenterDialogContentComponent);
 
 // tslint:disable-next-line:variable-name
 const BlueButton = (props: ButtonProps & Omit<ButtonProps, "type">) => (
@@ -121,20 +127,6 @@ const HollowButton = (props: ButtonProps & Omit<ButtonProps, "type">) => (
     {...props}
   />
 );
-
-interface State {
-  isNestedPopoverOpen: boolean;
-  isPopoverOpen: boolean;
-  isTemporaryMessageVisible: number;
-  isTooltipVisible: boolean;
-  message: Message;
-  nineZone: NineZoneProps;
-  openWidget: FooterWidget;
-  toolSettingsWidget: ToolSettingsWidgetMode;
-  tools: ZoneTools | HiddenZoneTools;
-  themeContext: ThemeContextProps;
-  toastMessageKey: number;
-}
 
 interface ZoneTools {
   1: DirectionTools<Zone1HorizontalTools, Zone1VerticalTools>;
@@ -263,9 +255,7 @@ const isToolGroup = (tool: Tool): tool is ToolGroup => {
   return (tool as ToolGroup).trays !== undefined;
 };
 
-const customTheme: Theme = {
-  name: "custom",
-};
+type Theme = "light" | "dark";
 
 interface MessageProps {
   onHideMessage: () => void;
@@ -283,7 +273,7 @@ class ActivityMessage extends React.PureComponent<MessageProps> {
         >
           <MessageLayout
             label={
-              <Label text="Rendering 'big-image.png'" />
+              <Label>Rendering 'big-image.png'</Label>
             }
             buttons={
               <Hyperlink
@@ -301,15 +291,10 @@ class ActivityMessage extends React.PureComponent<MessageProps> {
   }
 }
 
-interface ModalMessageProps extends MessageProps {
-  renderTo: () => HTMLElement;
-}
-
-class ModalMessage extends React.PureComponent<ModalMessageProps> {
+class ModalMessage extends React.PureComponent<MessageProps> {
   public render() {
     return (
       <Modal
-        renderTo={this.props.renderTo}
         dialog={
           <Dialog
             titleBar={
@@ -383,7 +368,7 @@ class StickyMessage extends React.PureComponent<MessageProps> {
         >
           <MessageLayout
             label={
-              <Label text="Unable to load 3 fonts, replaced with Arial." />
+              <Label>Unable to load 3 fonts, replaced with Arial.</Label>
             }
             buttons={
               <MessageButton onClick={this.props.onHideMessage}>
@@ -398,18 +383,10 @@ class StickyMessage extends React.PureComponent<MessageProps> {
 }
 
 interface ToastMessageProps extends MessageProps {
-  animateOutTo: React.ReactInstance | undefined;
+  animateOutTo: React.RefObject<HTMLElement>;
 }
 
-interface ToastMessageState {
-  stage: Stage;
-}
-
-class ToastMessageExample extends React.PureComponent<ToastMessageProps, ToastMessageState> {
-  public readonly state = {
-    stage: Stage.Visible,
-  };
-
+class ToastMessageExample extends React.PureComponent<ToastMessageProps> {
   public render() {
     return (
       <Toast
@@ -423,31 +400,21 @@ class ToastMessageExample extends React.PureComponent<ToastMessageProps, ToastMe
           >
             <MessageLayout
               label={
-                <Label text="Image 'big.png' saved." />
+                <Label>Image 'big.png' saved.</Label>
               }
             />
           </StatusMessage>
         }
         onAnimatedOut={this.props.onHideMessage}
-        onStageChange={this._handleToastStageChange}
-        stage={this.state.stage}
-        timeout={2500}
       />
     );
-  }
-
-  private _handleToastStageChange = (stage: Stage) => {
-    this.setState(() => ({
-      stage,
-    }));
   }
 }
 
 interface FooterMessageExampleProps {
   toastMessageKey: React.Key;
   message: Message;
-  renderModalMessageTo: () => HTMLElement;
-  animateToastMessageTo: React.ReactInstance | undefined;
+  animateToastMessageTo: React.RefObject<HTMLElement>;
   onHideMessage: () => void;
 }
 
@@ -461,16 +428,8 @@ class FooterMessageExample extends React.PureComponent<FooterMessageExampleProps
           />
         );
       }
-      case (Message.Modal): {
-        return (
-          <ModalMessage
-            onHideMessage={this.props.onHideMessage}
-            renderTo={this.props.renderModalMessageTo}
-          />
-        );
-      }
       case (Message.Toast): {
-        return (
+        return this.props.animateToastMessageTo === undefined ? null : (
           <ToastMessageExample
             key={this.props.toastMessageKey}
             onHideMessage={this.props.onHideMessage}
@@ -500,7 +459,6 @@ interface StatusZoneExampleProps extends MessageProps {
   onOpenWidgetChange: (widget: FooterWidget) => void;
   openWidget: FooterWidget;
   outlineBounds: RectangleProps | undefined;
-  renderModalMessageTo: () => HTMLElement;
   targetBounds: RectangleProps;
   toastMessageKey: React.Key;
 }
@@ -510,7 +468,7 @@ interface StatusZoneExampleState {
 }
 
 class StatusZoneExample extends React.PureComponent<StatusZoneExampleProps, StatusZoneExampleState> {
-  private _footerMessages = React.createRef<MessageCenterIndicator>();
+  private _messageCenterIndicatorContainer = React.createRef<HTMLDivElement>();
 
   public readonly state = {
     messageCenterTab: MessageCenterActiveTab.AllMessages,
@@ -528,10 +486,9 @@ class StatusZoneExample extends React.PureComponent<StatusZoneExampleProps, Stat
             message={
               <FooterMessageExample
                 toastMessageKey={this.props.toastMessageKey}
-                animateToastMessageTo={this._footerMessages.current || undefined}
+                animateToastMessageTo={this._messageCenterIndicatorContainer}
                 onHideMessage={this.props.onHideMessage}
                 message={this.props.message}
-                renderModalMessageTo={this.props.renderModalMessageTo}
               />
             }
             indicators={
@@ -540,30 +497,35 @@ class StatusZoneExample extends React.PureComponent<StatusZoneExampleProps, Stat
                   dialog={
                     this.props.openWidget !== FooterWidget.ToolAssistance ? undefined :
                       <ToolAssistanceDialog
-                        items={
-                          <>
-                            <ToolAssistanceItem>
-                              <i className="icon icon-cursor" />
-                              Identify piece to trim
-                              </ToolAssistanceItem>
-                            <ToolAssistanceSeparator label="Inputs" />
-                            <ToolAssistanceItem>
-                              <i className="icon icon-cursor-click" />
-                              Clink on element
-                              </ToolAssistanceItem>
-                            <ToolAssistanceItem>
-                              <i className="icon  icon-placeholder" />
-                              Drag across elements
-                              </ToolAssistanceItem>
-                            <ToolAssistanceSeparator />
-                            <ToolAssistanceItem>
-                              <input type="checkbox" />
-                              Show prompt @ cursor
-                              </ToolAssistanceItem>
-                          </>
+                        content={
+                          <ToolAssistanceDialogContent
+                            containFn={containHorizontally}
+                            items={
+                              <>
+                                <ToolAssistanceItem>
+                                  <i className="icon icon-cursor" />
+                                  Identify piece to trim
+                                </ToolAssistanceItem>
+                                <ToolAssistanceSeparator label="Inputs" />
+                                <ToolAssistanceItem>
+                                  <i className="icon icon-cursor-click" />
+                                  Clink on element
+                                  </ToolAssistanceItem>
+                                <ToolAssistanceItem>
+                                  <i className="icon  icon-placeholder" />
+                                  Drag across elements
+                                </ToolAssistanceItem>
+                                <ToolAssistanceSeparator />
+                                <ToolAssistanceItem>
+                                  <input type="checkbox" />
+                                  Show prompt @ cursor
+                                </ToolAssistanceItem>
+                              </>
+                            }
+                            title="Trim Multiple - Tool Assistance"
+                          />
                         }
                         onOutsideClick={this._handleOnOutsideDialogClick}
-                        title="Trim Multiple - Tool Assistance"
                       />
                   }
                   icons={
@@ -572,163 +534,171 @@ class StatusZoneExample extends React.PureComponent<StatusZoneExampleProps, Stat
                       <i className="icon icon-add" />
                     </>
                   }
-                  isStepStringVisible={!this.props.isInWidgetMode}
                   onClick={this._handleToggleToolAssistanceDialog}
-                  stepString="Start Point"
+                  stepString={this.props.isInWidgetMode ? undefined : "Start Point"}
                 />
-                <MessageCenterIndicator
-                  ref={this._footerMessages}
-                  label="Message(s):"
-                  isLabelVisible={!this.props.isInWidgetMode}
-                  balloonLabel="9+"
-                  onClick={this._handleToggleMessageCenterDialog}
-                  dialog={
-                    this.props.openWidget !== FooterWidget.Messages ? undefined :
-                      <MessageCenter
-                        buttons={
-                          <>
-                            <MessageCenterButton>
-                              <i className={"icon icon-placeholder"} />
-                            </MessageCenterButton>
-                            <MessageCenterButton onClick={this._handleCloseMessageCenter}>
-                              <i className={"icon icon-close"} />
-                            </MessageCenterButton>
-                          </>
-                        }
-                        messages={this.state.messageCenterTab === MessageCenterActiveTab.AllMessages ?
-                          <>
-                            <MessageCenterMessage
-                              icon={<i className={"icon icon-status-success nzdemo-success"} />}
-                              content={"Document saved successfully."}
-                            />
-                            <MessageCenterMessage
-                              icon={<i className={"icon icon-clock nzdemo-progress"} />}
-                              content={
+                <div ref={this._messageCenterIndicatorContainer}>
+                  <MessageCenterIndicator
+                    balloonLabel="9+"
+                    dialog={
+                      this.props.openWidget !== FooterWidget.Messages ? undefined :
+                        <MessageCenterDialog
+                          content={
+                            <MessageCenterDialogContent
+                              buttons={
                                 <>
-                                  <span>Downloading required assets.</span>
-                                  <br />
-                                  <i><small>75% complete</small></i>
+                                  <MessageCenterButton>
+                                    <i className={"icon icon-placeholder"} />
+                                  </MessageCenterButton>
+                                  <MessageCenterButton onClick={this._handleCloseMessageCenter}>
+                                    <i className={"icon icon-close"} />
+                                  </MessageCenterButton>
                                 </>
                               }
-                            />
-                            <MessageCenterMessage
-                              icon={<i className={"icon icon-status-rejected nzdemo-error"} />}
-                              content={
+                              containFn={containHorizontally}
+                              messages={this.state.messageCenterTab === MessageCenterActiveTab.AllMessages ?
                                 <>
-                                  <span>Cannot attach reference.</span>
-                                  <br />
-                                  <i><u><small>Details...</small></u></i>
+                                  <MessageCenterMessage
+                                    icon={<i className={"icon icon-status-success nzdemo-success"} />}
+                                    content={"Document saved successfully."}
+                                  />
+                                  <MessageCenterMessage
+                                    icon={<i className={"icon icon-clock nzdemo-progress"} />}
+                                    content={
+                                      <>
+                                        <span>Downloading required assets.</span>
+                                        <br />
+                                        <i><small>75% complete</small></i>
+                                      </>
+                                    }
+                                  />
+                                  <MessageCenterMessage
+                                    icon={<i className={"icon icon-status-rejected nzdemo-error"} />}
+                                    content={
+                                      <>
+                                        <span>Cannot attach reference.</span>
+                                        <br />
+                                        <i><u><small>Details...</small></u></i>
+                                      </>
+                                    }
+                                  />
+                                  <MessageCenterMessage
+                                    icon={<i className={"icon icon-status-warning nzdemo-warning"} />}
+                                    content={"Missing 10 fonts. Replaces with Arial."}
+                                  />
+                                  <MessageCenterMessage
+                                    icon={<i className={"icon icon-star nzdemo-favorite"} />}
+                                    content={"Your document has been favorited by 5 people in the..."}
+                                  />
+                                  <MessageCenterMessage
+                                    icon={<i className={"icon icon-status-success nzdemo-success"} />}
+                                    content={"Navigator has successfully updated"}
+                                  />
+                                </> :
+                                <>
+                                  <MessageCenterMessage
+                                    icon={<i className={"icon icon-status-rejected"} style={{ color: "red" }} />}
+                                    content={"Missing 10 fonts. Replaced with Arial."}
+                                  />
+                                  <MessageCenterMessage
+                                    content={"Cannot attach reference"}
+                                  />
+                                  <MessageCenterMessage
+                                    content={"Problem1"}
+                                  />
+                                  <MessageCenterMessage
+                                    content={"Problem2"}
+                                  />
+                                  <MessageCenterMessage
+                                    content={"Problem3"}
+                                  />
+                                  <MessageCenterMessage
+                                    content={"Problem4"}
+                                  />
+                                  <MessageCenterMessage
+                                    content={"Problem5"}
+                                  />
+                                  <MessageCenterMessage
+                                    content={"Problem6"}
+                                  />
                                 </>
                               }
+                              prompt="No messages."
+                              tabs={
+                                <>
+                                  <MessageCenterTab
+                                    isOpen={this.state.messageCenterTab === MessageCenterActiveTab.AllMessages}
+                                    onClick={this._handleAllMessagesTabClick}
+                                  >
+                                    All
+                                  </MessageCenterTab>
+                                  <MessageCenterTab
+                                    isOpen={this.state.messageCenterTab === MessageCenterActiveTab.Problems}
+                                    onClick={this._handleProblemsTabClick}
+                                  >
+                                    Problems
+                                  </MessageCenterTab>
+                                </>
+                              }
+                              title="Messages"
                             />
-                            <MessageCenterMessage
-                              icon={<i className={"icon icon-status-warning nzdemo-warning"} />}
-                              content={"Missing 10 fonts. Replaces with Arial."}
-                            />
-                            <MessageCenterMessage
-                              icon={<i className={"icon icon-star nzdemo-favorite"} />}
-                              content={"Your document has been favorited by 5 people in the..."}
-                            />
-                            <MessageCenterMessage
-                              icon={<i className={"icon icon-status-success nzdemo-success"} />}
-                              content={"Navigator has successfully updated"}
-                            />
-                          </> :
-                          <>
-                            <MessageCenterMessage
-                              icon={<i className={"icon icon-status-rejected"} style={{ color: "red" }} />}
-                              content={"Missing 10 fonts. Replaced with Arial."}
-                            />
-                            <MessageCenterMessage
-                              content={"Cannot attach reference"}
-                            />
-                            <MessageCenterMessage
-                              content={"Problem1"}
-                            />
-                            <MessageCenterMessage
-                              content={"Problem2"}
-                            />
-                            <MessageCenterMessage
-                              content={"Problem3"}
-                            />
-                            <MessageCenterMessage
-                              content={"Problem4"}
-                            />
-                            <MessageCenterMessage
-                              content={"Problem5"}
-                            />
-                            <MessageCenterMessage
-                              content={"Problem6"}
-                            />
-                          </>
-                        }
-                        onOutsideClick={this._handleOnOutsideDialogClick}
-                        prompt="No messages."
-                        tabs={
-                          <>
-                            <MessageCenterTab
-                              isOpen={this.state.messageCenterTab === MessageCenterActiveTab.AllMessages}
-                              onClick={this._handleAllMessagesTabClick}
-                            >
-                              All
-                          </MessageCenterTab>
-                            <MessageCenterTab
-                              isOpen={this.state.messageCenterTab === MessageCenterActiveTab.Problems}
-                              onClick={this._handleProblemsTabClick}
-                            >
-                              Problems
-                          </MessageCenterTab>
-                          </>
-                        }
-                        title="Messages"
-                      />
-                  }
-                />
+                          }
+                          onOutsideClick={this._handleOnOutsideDialogClick}
+                        />
+                    }
+                    label={this.props.isInWidgetMode ? undefined : "Message(s):"}
+                    onClick={this._handleToggleMessageCenterDialog}
+                  />
+                </div>
                 <SnapModeIndicator
-                  label="Snap Mode"
-                  isLabelVisible={!this.props.isInWidgetMode}
+                  label={this.props.isInWidgetMode ? undefined : "Snap Mode"}
                   onClick={this._handleToggleSnapModeDialog}
                   icon={
-                    <SnapModeIcon text="k" />
+                    <SnapModeIcon>k</SnapModeIcon>
                   }
                   dialog={
                     this.props.openWidget !== FooterWidget.SnapMode ? undefined :
                       <SnapModeDialog
-                        onOutsideClick={this._handleOnOutsideDialogClick}
-                        snaps={
-                          <>
-                            <Snap
-                              key="1"
-                              isActive
-                              label="Keypoint"
-                              icon={
-                                <SnapModeIcon isActive text="k" />
-                              }
-                            />
-                            <Snap
-                              key="2"
-                              label="Intersection"
-                              icon={
-                                <SnapModeIcon text="i" />
-                              }
-                            />
-                            <Snap
-                              key="3"
-                              label="Center"
-                              icon={
-                                <SnapModeIcon text="c" />
-                              }
-                            />
-                            <Snap
-                              key="4"
-                              label="Nearest"
-                              icon={
-                                <SnapModeIcon text="n" />
-                              }
-                            />
-                          </>
+                        content={
+                          <SnapModeDialogContent
+                            containFn={containHorizontally}
+                            snaps={
+                              <>
+                                <Snap
+                                  key="1"
+                                  isActive
+                                  label="Keypoint"
+                                  icon={
+                                    <SnapModeIcon isActive>k</SnapModeIcon>
+                                  }
+                                />
+                                <Snap
+                                  key="2"
+                                  label="Intersection"
+                                  icon={
+                                    <SnapModeIcon>i</SnapModeIcon>
+                                  }
+                                />
+                                <Snap
+                                  key="3"
+                                  label="Center"
+                                  icon={
+                                    <SnapModeIcon>c</SnapModeIcon>
+                                  }
+                                />
+                                <Snap
+                                  key="4"
+                                  label="Nearest"
+                                  icon={
+                                    <SnapModeIcon>n</SnapModeIcon>
+                                  }
+                                />
+                              </>
+                            }
+                            title="Snap Mode"
+                          />
                         }
-                        title="Snap Mode"
+                        onOutsideClick={this._handleOnOutsideDialogClick}
                       />
                   }
                 />
@@ -823,6 +793,7 @@ class FloatingZone extends React.PureComponent<FloatingZoneProps> {
               onTabDragEnd={this.props.onTabDragEnd}
               onTabDrag={this.props.onTabDrag}
               verticalAnchor={this.props.verticalAnchor}
+              theme={this.props.theme}
               zone={this.props.zone}
             />
           }
@@ -854,6 +825,8 @@ interface FloatingZoneWidgetProps extends Widget6Tab1ContentProps, Widget7Tab1Co
 }
 
 class FloatingZoneWidget extends React.PureComponent<FloatingZoneWidgetProps> {
+  private _widget = React.createRef<Stacked>();
+
   public render() {
     const isOpen = this.props.zone.widgets.some((w) => w.tabIndex >= 0);
     const activeWidget = this.props.zone.widgets.find((widget) => widget.tabIndex >= 0);
@@ -871,6 +844,7 @@ class FloatingZoneWidget extends React.PureComponent<FloatingZoneWidgetProps> {
             onShowTooltip={this.props.onShowTooltip}
             onToggleFooterMode={this.props.onToggleFooterMode}
             tabIndex={activeWidget.tabIndex}
+            theme={this.props.theme}
             widgetId={activeWidget.id}
           />
         }
@@ -880,13 +854,14 @@ class FloatingZoneWidget extends React.PureComponent<FloatingZoneWidgetProps> {
         isFloating={this.props.zone.floating ? true : false}
         isOpen={isOpen}
         onResize={this._handleResize}
+        ref={this._widget}
         tabs={
           <FloatingZoneTabs
             anchor={this.props.horizontalAnchor}
             draggingWidget={this.props.draggingWidget}
             isOpen={isOpen}
             onTabClick={this.props.onTabClick}
-            onTabDragStart={this.props.onTabDragStart}
+            onTabDragStart={this._handleTabDragStart}
             onTabDragEnd={this.props.onTabDragEnd}
             onTabDrag={this.props.onTabDrag}
             zone={this.props.zone}
@@ -900,6 +875,16 @@ class FloatingZoneWidget extends React.PureComponent<FloatingZoneWidgetProps> {
   private _handleResize = (x: number, y: number, handle: ResizeHandle, filledHeightDiff: number) => {
     this.props.onResize(this.props.zone.id, x, y, handle, filledHeightDiff);
   }
+
+  private _handleTabDragStart = (widgetId: WidgetZoneIndex, tabId: number, initialPosition: PointProps, firstTabBounds: RectangleProps) => {
+    if (!this._widget.current)
+      return;
+
+    const firstTab = Rectangle.create(firstTabBounds).topLeft();
+    const widget = Rectangle.create(this._widget.current.getBounds()).topLeft();
+    const offset = widget.getOffsetTo(firstTab);
+    this.props.onTabDragStart(widgetId, tabId, initialPosition, offset);
+  }
 }
 
 interface FloatingZoneTabsProps {
@@ -907,7 +892,7 @@ interface FloatingZoneTabsProps {
   draggingWidget: DraggingWidgetProps | undefined;
   isOpen: boolean;
   onTabClick: (widgetId: WidgetZoneIndex, tabId: number) => void;
-  onTabDragStart: (widgetId: WidgetZoneIndex, tabId: number, initialPosition: PointProps, widgetOffset: PointProps) => void;
+  onTabDragStart: (widgetId: WidgetZoneIndex, tabId: number, initialPosition: PointProps, firstTabBounds: RectangleProps) => void;
   onTabDragEnd: () => void;
   onTabDrag: (dragged: PointProps) => void;
   zone: ZonePropsBase;
@@ -950,21 +935,23 @@ interface FloatingZoneWidgetTabsProps {
   isOpen: boolean;
   isStacked: boolean;
   onTabClick: (widgetId: WidgetZoneIndex, tabId: number) => void;
-  onTabDragStart: (widgetId: WidgetZoneIndex, tabId: number, initialPosition: PointProps, widgetOffset: PointProps) => void;
+  onTabDragStart: (widgetId: WidgetZoneIndex, tabId: number, initialPosition: PointProps, firstTabBounds: RectangleProps) => void;
   onTabDragEnd: () => void;
   onTabDrag: (dragged: PointProps) => void;
   widget: WidgetProps;
 }
 
 class FloatingZoneWidgetTabs extends React.PureComponent<FloatingZoneWidgetTabsProps> {
+  private _firstTab = React.createRef<Tab>();
+
   private getTabHandleMode() {
     if (this.props.draggingWidget && this.props.draggingWidget.id === this.props.widget.id && this.props.draggingWidget.isUnmerge)
-      return VisibilityMode.Visible;
+      return HandleMode.Visible;
 
     if (this.props.isStacked)
-      return VisibilityMode.OnHover;
+      return HandleMode.Hovered;
 
-    return VisibilityMode.Timeout;
+    return HandleMode.Timedout;
   }
 
   private getTab(tabId: number, mode: TabMode, lastPosition: PointProps | undefined) {
@@ -974,13 +961,22 @@ class FloatingZoneWidgetTabs extends React.PureComponent<FloatingZoneWidgetTabsP
         lastPosition={lastPosition}
         mode={mode}
         onClick={this.props.onTabClick}
-        onDragStart={this.props.onTabDragStart}
+        onDragStart={this._handleDragStart}
         onDragEnd={this.props.onTabDragEnd}
         onDrag={this.props.onTabDrag}
         tabId={tabId}
+        tabRef={tabId === 1 ? this._firstTab : undefined}
         widgetId={this.props.widget.id}
       />
     );
+  }
+
+  private _handleDragStart = (widgetId: WidgetZoneIndex, tabId: number, initialPosition: PointProps) => {
+    if (!this._firstTab.current)
+      return;
+
+    const bounds = this._firstTab.current.getBounds();
+    this.props.onTabDragStart(widgetId, tabId, initialPosition, bounds);
   }
 
   public render() {
@@ -997,7 +993,7 @@ class FloatingZoneWidgetTabs extends React.PureComponent<FloatingZoneWidgetTabsP
         return (
           <TabGroup
             anchor={this.props.anchor}
-            handleMode={handleMode}
+            handle={handleMode}
           >
             {this.getTab(1, mode1, lastPosition1)}
             {this.getTab(2, mode2, lastPosition2)}
@@ -1017,7 +1013,7 @@ class FloatingZoneWidgetTabs extends React.PureComponent<FloatingZoneWidgetTabsP
         return (
           <TabGroup
             anchor={this.props.anchor}
-            handleMode={handleMode}
+            handle={handleMode}
           >
             {this.getTab(1, mode1, lastPosition1)}
             {this.getTab(2, mode2, lastPosition2)}
@@ -1034,28 +1030,29 @@ interface FloatingZoneWidgetTabProps {
   lastPosition: PointProps | undefined;
   mode: TabMode;
   onClick: (widgetId: WidgetZoneIndex, tabId: number) => void;
-  onDragStart: (widgetId: WidgetZoneIndex, tabId: number, initialPosition: PointProps, widgetOffset: PointProps) => void;
+  onDragStart: (widgetId: WidgetZoneIndex, tabId: number, initialPosition: PointProps) => void;
   onDragEnd: () => void;
   onDrag: (dragged: PointProps) => void;
   tabId: number;
+  tabRef?: React.RefObject<Tab>;
   widgetId: WidgetZoneIndex;
 }
 
 class FloatingZoneWidgetTab extends React.PureComponent<FloatingZoneWidgetTabProps> {
   public render() {
     return (
-      <Draggable
-        key="3_1"
+      <Tab
+        anchor={this.props.anchor}
+        lastPosition={this.props.lastPosition}
         mode={this.props.mode}
         onClick={this._handleClick}
-        lastPosition={this.props.lastPosition}
         onDragStart={this._handleDragStart}
         onDragEnd={this.props.onDragEnd}
         onDrag={this.props.onDrag}
-        anchor={this.props.anchor}
+        ref={this.props.tabRef}
       >
         {placeholderIcon}
-      </Draggable>
+      </Tab>
     );
   }
 
@@ -1063,8 +1060,8 @@ class FloatingZoneWidgetTab extends React.PureComponent<FloatingZoneWidgetTabPro
     this.props.onClick(this.props.widgetId, this.props.tabId);
   }
 
-  private _handleDragStart = (initialPosition: PointProps, widgetOffset: PointProps) => {
-    this.props.onDragStart(this.props.widgetId, this.props.tabId, initialPosition, widgetOffset);
+  private _handleDragStart = (initialPosition: PointProps) => {
+    this.props.onDragStart(this.props.widgetId, this.props.tabId, initialPosition);
   }
 }
 
@@ -1127,7 +1124,7 @@ interface TooltipExampleProps {
 }
 
 interface TooltipExampleState {
-  temporaryMessageStyle: React.CSSProperties;
+  temporaryMessageStyle: React.CSSProperties | undefined;
   tooltipPosition: PointProps;
 }
 
@@ -1141,7 +1138,7 @@ class TooltipExample extends React.PureComponent<TooltipExampleProps, TooltipExa
       x: 0,
       y: 0,
     },
-    temporaryMessageStyle: {},
+    temporaryMessageStyle: undefined,
   };
 
   public componentDidMount(): void {
@@ -1285,28 +1282,19 @@ class ContentExample extends React.PureComponent<ContentExampleProps> {
 }
 
 interface Widget6Tab1ContentProps {
-  onChangeTheme: (themeContext: ThemeContextProps) => void;
+  theme: Theme;
+  onChangeTheme: () => void;
 }
 
 class Widget6Tab1Content extends React.PureComponent<Widget6Tab1ContentProps> {
   public render() {
     return (
-      <ThemeContext.Consumer>
-        {
-          (context) => (
-            <BlueButton
-              onClick={this._handleButtonClick(context)}
-            >
-              Theme: {context.theme.name}
-            </BlueButton>
-          )
-        }
-      </ThemeContext.Consumer>
+      <BlueButton
+        onClick={this.props.onChangeTheme}
+      >
+        Theme: {this.props.theme}
+      </BlueButton>
     );
-  }
-
-  private _handleButtonClick = (context: ThemeContextProps) => () => {
-    this.props.onChangeTheme(context);
   }
 }
 
@@ -1433,7 +1421,8 @@ class WidgetContent extends React.PureComponent<WidgetContentProps> {
       case 6: {
         return (
           <Widget6Tab1Content
-            onChangeTheme={this.props.onChangeTheme} />
+            onChangeTheme={this.props.onChangeTheme}
+            theme={this.props.theme} />
         );
       }
       case 7: {
@@ -2206,9 +2195,23 @@ const zoneTools: ZoneTools = {
 const zoneKeys: Array<keyof ZoneTools> = [1, 3];
 const directionKeys: Array<keyof DirectionTools> = ["horizontal", "vertical"];
 
+const initialTheme: Theme = "light";
+
+interface State {
+  isNestedPopoverOpen: boolean;
+  isPopoverOpen: boolean;
+  isTemporaryMessageVisible: number;
+  isTooltipVisible: boolean;
+  message: Message;
+  nineZone: NineZoneProps;
+  openWidget: FooterWidget;
+  theme: Theme;
+  toolSettingsWidget: ToolSettingsWidgetMode;
+  tools: ZoneTools | HiddenZoneTools;
+  toastMessageKey: number;
+}
+
 export default class ZonesExample extends React.PureComponent<{}, State> {
-  private _app = React.createRef<App>();
-  private _dialogContainer = document.createElement("div");
   private _scheduleWidgetTabDrag: ScheduleFn<WidgetTabDragFn>;
   private _scheduleZoneResize: ScheduleFn<ZoneResizeFn>;
 
@@ -2224,19 +2227,7 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
       ),
     ),
     openWidget: FooterWidget.None,
-    themeContext: {
-      theme: PrimaryTheme,
-      change: (theme: Theme) => {
-        this.setState((prevProps) => {
-          return {
-            themeContext: {
-              ...prevProps.themeContext,
-              theme,
-            },
-          };
-        });
-      },
-    },
+    theme: initialTheme,
     toastMessageKey: 0,
     tools: zoneTools,
     toolSettingsWidget: ToolSettingsWidgetMode.Open,
@@ -2254,12 +2245,6 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
       nineZone: DefaultStateManager.layout(new Size(document.body.clientWidth, document.body.clientHeight), prevState.nineZone),
     }));
 
-    if (this._app.current) {
-      const node = ReactDOM.findDOMNode(this._app.current);
-      if (node && (node instanceof HTMLElement))
-        node.appendChild(this._dialogContainer);
-    }
-
     window.addEventListener("resize", this._handleWindowResize, true);
   }
 
@@ -2270,16 +2255,18 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
 
   public render() {
     return (
-      <ThemeContext.Provider value={this.state.themeContext}>
-        <App
-          className={"nzdemo-pages-zones"}
-          ref={this._app}
-        >
-          {this.getZones()}
-          {this.getBackstage()}
-          {this.getContent()}
-        </App>
-      </ThemeContext.Provider>
+      <App
+        className={"nzdemo-pages-zones"}
+      >
+        {this.getZones()}
+        {this.getBackstage()}
+        {this.getContent()}
+        {this.state.message === Message.Modal &&
+          <ModalMessage
+            onHideMessage={this._handleHideMessage}
+          />
+        }
+      </App>
     );
   }
 
@@ -2504,6 +2491,7 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
         onTabDrag={this._scheduleWidgetTabDrag}
         onTargetChanged={this._handleTargetChanged}
         onToggleFooterMode={this._handleToggleFooterMode}
+        theme={this.state.theme}
         verticalAnchor={zone.verticalAnchor}
         zone={zone.props}
       />
@@ -2530,7 +2518,6 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
         key={zoneId}
         onTargetChanged={this._handleTargetChanged}
         outlineBounds={outlineBounds}
-        renderModalMessageTo={this._renderModalMessageTo}
         message={this.state.message}
         onHideMessage={this._handleHideMessage}
         onOpenWidgetChange={this._handleOpenWidgetChange}
@@ -3117,27 +3104,15 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
     });
   }
 
-  private _renderModalMessageTo = () => this._dialogContainer;
-
-  private _handleChangeTheme = ({ theme, change }: ThemeContextProps) => {
-    switch (theme) {
-      case PrimaryTheme: {
-        change && change(LightTheme);
-        break;
-      }
-      case LightTheme: {
-        change && change(DarkTheme);
-        break;
-      }
-      case DarkTheme: {
-        change && change(customTheme);
-        break;
-      }
-      case customTheme: {
-        change && change(PrimaryTheme);
-        break;
-      }
-    }
+  private _handleChangeTheme = () => {
+    this.setState((prevState) => {
+      const theme = prevState.theme === "light" ? "dark" : "light";
+      return {
+        theme,
+      };
+    }, () => {
+      document.documentElement.setAttribute("data-theme", this.state.theme);
+    });
   }
 
   private _handleToggleFooterMode = () => {

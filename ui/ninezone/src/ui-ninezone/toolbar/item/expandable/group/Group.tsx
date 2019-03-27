@@ -6,7 +6,6 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import { withContainIn, WithContainInProps } from "../../../../base/WithContainIn";
 import { Panel } from "./Panel";
 import { Columns } from "./Columns";
 import { Title } from "./Title";
@@ -39,6 +38,3 @@ export class Group extends React.PureComponent<GroupProps> {
     );
   }
 }
-
-// tslint:disable-next-line:variable-name
-export const GroupWithContainIn: React.ComponentClass<GroupProps & WithContainInProps> = withContainIn(Group);

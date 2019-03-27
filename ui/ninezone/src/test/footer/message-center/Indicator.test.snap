@@ -4,9 +4,35 @@ exports[`<MessageCenterIndicator /> renders correctly 1`] = `
 <div
   className="nz-footer-messageCenter-indicator"
 >
+  <div
+    className="nz-balloon-container"
+  >
+    <div
+      className="nz-dialog"
+    />
+    <div
+      className="nz-balloon"
+    >
+      <div
+        className="nz-arrow"
+      />
+      <div
+        className="nz-content"
+      />
+    </div>
+  </div>
+</div>
+`;
+
+exports[`<MessageCenterIndicator /> renders correctly with label 1`] = `
+<div
+  className="nz-footer-messageCenter-indicator"
+>
   <span
     className="nz-label"
-  />
+  >
+    Messages:
+  </span>
   <div
     className="nz-balloon-container"
   >

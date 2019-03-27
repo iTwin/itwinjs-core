@@ -3,21 +3,21 @@
 exports[`<ToolAssistanceDialog /> renders correctly 1`] = `
 <TrianglePopover
   className="nz-footer-toolAssistance-dialog"
-  content={
-    <WithContainInViewport
-      content={<ToolAssistanceContent />}
-      noVerticalContainment={true}
-      titleBar={
-        <TitleBar
-          title={
-            <DialogTitle
-              text={undefined}
-            />
-          }
+  direction={1}
+/>
+`;
+
+exports[`<ToolAssistanceDialogContent /> renders correctly 1`] = `
+<Dialog
+  content={<ToolAssistanceContent />}
+  titleBar={
+    <TitleBar
+      title={
+        <DialogTitle
+          text={undefined}
         />
       }
     />
   }
-  direction={1}
 />
 `;

@@ -13,7 +13,7 @@ import { GroupTool } from "@src/toolbar/item/expandable/group/tool/Tool";
 import { GroupToolExpander } from "@src/toolbar/item/expandable/group/tool/Expander";
 import { Overflow } from "@src/toolbar/item/Overflow";
 import { ExpandableItem } from "@src/toolbar/item/expandable/Expandable";
-import { Item } from "@src/toolbar/item/Icon";
+import { Item } from "@src/toolbar/item/Item";
 import { Toolbar } from "@src/toolbar/Toolbar";
 import { Scrollable } from "@src/toolbar/Scrollable";
 import { Direction } from "@src/utilities/Direction";

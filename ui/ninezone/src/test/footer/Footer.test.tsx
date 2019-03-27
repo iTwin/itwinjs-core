@@ -15,4 +15,8 @@ describe("<Footer />", () => {
   it("renders correctly", () => {
     shallow(<Footer />).should.matchSnapshot();
   });
+
+  it("renders correctly in widget mode", () => {
+    shallow(<Footer isInWidgetMode />).should.matchSnapshot();
+  });
 });

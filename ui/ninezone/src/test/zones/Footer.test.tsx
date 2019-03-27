@@ -14,4 +14,12 @@ describe("<FooterZone />", () => {
   it("renders correctly", () => {
     shallow(<FooterZone bounds={{ bottom: 10, left: 0, right: 10, top: 0 }} />).should.matchSnapshot();
   });
+
+  it("renders correctly in footer mode", () => {
+    shallow(<FooterZone bounds={{ bottom: 10, left: 0, right: 10, top: 0 }} isInFooterMode />).should.matchSnapshot();
+  });
+
+  it("renders hidden correctly", () => {
+    shallow(<FooterZone bounds={{ bottom: 10, left: 0, right: 10, top: 0 }} isHidden />).should.matchSnapshot();
+  });
 });

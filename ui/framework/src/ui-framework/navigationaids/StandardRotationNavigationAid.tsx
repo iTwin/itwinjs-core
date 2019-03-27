@@ -7,7 +7,7 @@
 import * as React from "react";
 import * as classnames from "classnames";
 
-import { Direction, ExpandableButton as NZ_Expandable, ToolbarIcon as NZ_Icon, GroupColumn as NZ_Column, GroupTool as NZ_Item, Group as NZ_Tray, withContainInViewport } from "@bentley/ui-ninezone";
+import { Direction, ExpandableButton as NZ_Expandable, ToolbarIcon as NZ_Icon, GroupColumn as NZ_Column, GroupTool as NZ_Item, Group as NZ_Tray, withContainIn, containHorizontally } from "@bentley/ui-ninezone";
 
 import { ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl";
 import { NavigationAidControl } from "./NavigationAidControl";
@@ -19,7 +19,7 @@ import { StandardViewId } from "@bentley/imodeljs-frontend";
 import { ViewportComponentEvents } from "@bentley/ui-components";
 
 // tslint:disable-next-line:variable-name
-const NZ_ContainedTray = withContainInViewport(NZ_Tray);
+const NZ_ContainedTray = withContainIn(NZ_Tray);
 
 // -----------------------------------------------------------------------------
 // 3D Orientation Navigation Aid Control
@@ -170,7 +170,7 @@ export class StandardRotationNavigationAid extends React.Component<{}, StandardR
 
     return (
       <NZ_ContainedTray
-        noVerticalContainment={true}
+        containFn={containHorizontally}
         columns={
           <NZ_Column>
             {this.state.list.map((item, itemIndex) => {

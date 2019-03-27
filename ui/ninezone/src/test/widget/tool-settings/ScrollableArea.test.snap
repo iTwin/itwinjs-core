@@ -10,3 +10,41 @@ exports[`<ScrollableArea /> renders correctly 1`] = `
   />
 </div>
 `;
+
+exports[`<ScrollableArea /> renders correctly with bottom indicator 1`] = `
+<div
+  className="nz-widget-toolSettings-scrollableArea"
+>
+  <div
+    className="nz-content"
+    onScroll={[Function]}
+  />
+  <div
+    className="nz-indicator nz-bottom"
+  >
+    <div
+      className="nz-triangle"
+      onClick={[Function]}
+    />
+  </div>
+</div>
+`;
+
+exports[`<ScrollableArea /> renders correctly with top indicator 1`] = `
+<div
+  className="nz-widget-toolSettings-scrollableArea"
+>
+  <div
+    className="nz-content"
+    onScroll={[Function]}
+  />
+  <div
+    className="nz-indicator"
+  >
+    <div
+      className="nz-triangle"
+      onClick={[Function]}
+    />
+  </div>
+</div>
+`;

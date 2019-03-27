@@ -19,7 +19,7 @@ export interface MessageCenterContentProps extends CommonProps, NoChildrenProps 
   prompt?: string;
 }
 
-/** Used by [[MessageCenter]] component. */
+/** Used by [[MessageCenterDialog]] component. */
 export class MessageCenterContent extends React.PureComponent<MessageCenterContentProps> {
   public render() {
     const className = classnames(

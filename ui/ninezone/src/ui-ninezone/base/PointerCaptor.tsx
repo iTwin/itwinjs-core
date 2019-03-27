@@ -40,16 +40,10 @@ export class PointerCaptor extends React.PureComponent<PointerCaptorProps, Point
     document.removeEventListener("mousemove", this._handleDocumentMouseMove);
   }
 
-  public get isMouseDown() {
-    if (this.props.isMouseDown === undefined)
-      return this.state.isMouseDown;
-    return this.props.isMouseDown;
-  }
-
   public render() {
     const className = classnames(
       "nz-base-pointerCaptor",
-      this.isMouseDown && "nz-captured",
+      this.isMouseDown() && "nz-captured",
       this.props.className);
 
     return (
@@ -61,6 +55,12 @@ export class PointerCaptor extends React.PureComponent<PointerCaptorProps, Point
         {this.props.children}
       </div>
     );
+  }
+
+  private isMouseDown() {
+    if (this.props.isMouseDown === undefined)
+      return this.state.isMouseDown;
+    return this.props.isMouseDown;
   }
 
   private setIsMouseDown(isMouseDown: boolean) {
@@ -77,7 +77,7 @@ export class PointerCaptor extends React.PureComponent<PointerCaptorProps, Point
   }
 
   private _handleDocumentMouseUp = (e: MouseEvent) => {
-    if (!this.isMouseDown)
+    if (!this.isMouseDown())
       return;
 
     this.setIsMouseDown(false);
@@ -85,7 +85,7 @@ export class PointerCaptor extends React.PureComponent<PointerCaptorProps, Point
   }
 
   private _handleDocumentMouseMove = (e: MouseEvent) => {
-    if (!this.isMouseDown)
+    if (!this.isMouseDown())
       return;
 
     this.props.onMouseMove && this.props.onMouseMove(e);

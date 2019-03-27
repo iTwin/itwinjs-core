@@ -14,4 +14,13 @@ describe("<GhostOutline />", () => {
   it("renders correctly", () => {
     shallow(<GhostOutline />).should.matchSnapshot();
   });
+
+  it("renders correctly with specified bounds", () => {
+    shallow(<GhostOutline bounds={{
+      bottom: 0,
+      left: 0,
+      right: 5,
+      top: 5,
+    }} />).should.matchSnapshot();
+  });
 });

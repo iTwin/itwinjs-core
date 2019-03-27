@@ -90,7 +90,7 @@ describe("GroupItem", () => {
         />,
       );
 
-      const buttonDiv = wrapper.find("button.nz-toolbar-item-icon");
+      const buttonDiv = wrapper.find("button.nz-toolbar-item-item");
       expect(buttonDiv.length).to.eq(1);
 
       buttonDiv.simulate("click");
@@ -119,7 +119,7 @@ describe("GroupItem", () => {
         />,
       );
 
-      const buttonDiv = wrapper.find("button.nz-toolbar-item-icon");
+      const buttonDiv = wrapper.find("button.nz-toolbar-item-item");
       expect(buttonDiv.length).to.eq(1);
 
       buttonDiv.simulate("click");
@@ -139,7 +139,7 @@ describe("GroupItem", () => {
 
     it("should set focus to home on Esc", () => {
       const wrapper = mount(<GroupButton items={[tool1, tool2]} />);
-      const element = wrapper.find(".nz-toolbar-item-icon");
+      const element = wrapper.find(".nz-toolbar-item-item");
       element.simulate("focus");
       element.simulate("keyDown", { key: "Escape", keyCode: 27 });
       expect(KeyboardShortcutManager.isFocusOnHome).to.be.true;

@@ -11,6 +11,7 @@
   "typings": "lib/ui-ninezone",
   "scripts": {
     "build": "node ./node_modules/@bentley/webpack-tools/bin/buildIModelJsModule.js",
+    "build:watch": "tsc -w",
     "clean": "rimraf lib out demo/lib package-deps.json",
     "cover": "nyc npm test",
     "docs": "npm run docs:typedoc && npm run docs:demo",

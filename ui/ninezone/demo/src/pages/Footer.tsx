@@ -42,7 +42,7 @@ export default class Footer extends React.PureComponent {
             >
               <MessageLayout
                 label={
-                  <Label text="Processing - 25% completed." />
+                  <Label>Processing - 25% completed.</Label>
                 }
                 buttons={
                   <>
@@ -70,7 +70,7 @@ export default class Footer extends React.PureComponent {
             >
               <MessageLayout
                 label={
-                  <Label text="Processing completed." />
+                  <Label>Processing completed.</Label>
                 }
                 buttons={
                   <>
@@ -92,7 +92,7 @@ export default class Footer extends React.PureComponent {
             >
               <MessageLayout
                 label={
-                  <Label text="Processing failed." />
+                  <Label>Processing failed.</Label>
                 }
                 buttons={
                   <>

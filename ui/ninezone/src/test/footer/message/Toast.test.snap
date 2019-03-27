@@ -7,6 +7,12 @@ exports[`<Toast /> renders correctly 1`] = `
   <div
     className="nz-toast"
     onTransitionEnd={[Function]}
+    style={
+      Object {
+        "height": undefined,
+        "width": undefined,
+      }
+    }
   />
 </Activity>
 `;

@@ -55,12 +55,7 @@
 
     >.nz-step-string {
       margin-left: 10px;
-      display: none;
       font-size: $text-font-size;
-
-      &.nz-is-visible {
-        display: block;
-      }
     }
 
     >.nz-triangle {

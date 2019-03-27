@@ -1,0 +1,11 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<StatusMessage /> renders correctly 1`] = `
+<div
+  className="nz-footer-message-content-status-message nz-status-error"
+>
+  <div
+    className="nz-icon"
+  />
+</div>
+`;

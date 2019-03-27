@@ -5,6 +5,12 @@
 import { Cell } from "../../ui-ninezone";
 
 describe("Cell", () => {
+  it("should create Cell from CellProps", () => {
+    const sut = Cell.create({ col: 1, row: 2 });
+    sut.col.should.eq(1);
+    sut.row.should.eq(2);
+  });
+
   it("should specify row and col in constructor", () => {
     const sut = new Cell(5, 4);
     sut.row.should.eq(5);
@@ -55,5 +61,20 @@ describe("Cell", () => {
     cells.length.should.eq(1, "length");
     cells[0].row.should.eq(5, "row");
     cells[0].col.should.eq(5, "col");
+  });
+
+  it("isRowAlignedWith should return false for matching cell", () => {
+    const sut = new Cell(5, 4);
+    sut.isRowAlignedWith({ row: 5, col: 4 }).should.false;
+  });
+
+  it("isColumnAlignedWith should return false for matching cell", () => {
+    const sut = new Cell(5, 4);
+    sut.isColumnAlignedWith({ row: 5, col: 4 }).should.false;
+  });
+
+  it("isBetween should return true if cell is vertically between specified cells", () => {
+    const sut = new Cell(5, 3);
+    sut.isBetween({ row: 5, col: 1 }, { row: 5, col: 6 }).should.true;
   });
 });

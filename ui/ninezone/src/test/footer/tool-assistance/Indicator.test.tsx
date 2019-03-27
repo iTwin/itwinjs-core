@@ -15,4 +15,8 @@ describe("<ToolAssistanceIndicator />", () => {
   it("renders correctly", () => {
     shallow(<ToolAssistanceIndicator />).should.matchSnapshot();
   });
+
+  it("renders correctly with step string", () => {
+    shallow(<ToolAssistanceIndicator stepString="" />).should.matchSnapshot();
+  });
 });

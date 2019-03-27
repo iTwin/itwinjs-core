@@ -6,3 +6,17 @@ exports[`<GhostOutline /> renders correctly 1`] = `
   style={Object {}}
 />
 `;
+
+exports[`<GhostOutline /> renders correctly with specified bounds 1`] = `
+<div
+  className="nz-zones-ghostOutline"
+  style={
+    Object {
+      "height": -5,
+      "left": 0,
+      "top": 5,
+      "width": 5,
+    }
+  }
+/>
+`;
