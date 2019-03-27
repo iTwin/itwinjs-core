@@ -392,7 +392,8 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
   public componentWillUnmount() {
     this._isMounted = false;
 
-    Presentation.presentation.rulesets().remove(this.state.activeTree.ruleset); // tslint:disable-line:no-floating-promises
+    if (this.state.activeTree && this.state.activeTree.ruleset)
+      Presentation.presentation.rulesets().remove(this.state.activeTree.ruleset); // tslint:disable-line:no-floating-promises
 
     if (this._removeSelectedViewportChanged)
       this._removeSelectedViewportChanged();
@@ -1096,10 +1097,12 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
    * @returns Matching node.
    */
   private _getNodeFromItem = async (item: ListItem, nodes: TreeNodeItem[]) => {
-    for (const node of nodes) {
-      const key = this.state.activeTree.dataProvider.getNodeKey(node);
-      if (isInstanceNodeKey(key) && key.instanceKey.id === item.key) {
-        return node;
+    if (this.state.activeTree && this.state.activeTree.dataProvider) {
+      for (const node of nodes) {
+        const key = this.state.activeTree.dataProvider.getNodeKey(node);
+        if (isInstanceNodeKey(key) && key.instanceKey.id === item.key) {
+          return node;
+        }
       }
     }
     return;
