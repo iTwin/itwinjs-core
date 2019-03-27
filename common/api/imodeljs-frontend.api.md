@@ -615,7 +615,7 @@ export class AccuSnap implements Decorator {
     // (undocumented)
     destroy(): void;
     // (undocumented)
-    displayToolTip(viewPt: XAndY, vp: ScreenViewport, uorPt?: Point3d): Promise<void>;
+    displayToolTip(viewPt: XAndY, vp: ScreenViewport, uorPt?: Point3d): void;
     enableLocate(yesNo: boolean): void;
     // (undocumented)
     enableSnap(yesNo: boolean): void;
@@ -671,7 +671,7 @@ export class AccuSnap implements Decorator {
     // (undocumented)
     protected _settings: AccuSnap.Settings;
     // (undocumented)
-    showElemInfo(viewPt: XAndY, vp: ScreenViewport, hit: HitDetail): Promise<void>;
+    showElemInfo(viewPt: XAndY, vp: ScreenViewport, hit: HitDetail): void;
     // (undocumented)
     suppress(doSuppress: boolean): number;
     // (undocumented)
