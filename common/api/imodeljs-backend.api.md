@@ -1128,12 +1128,6 @@ export class ElementOwnsChildElements extends RelatedElement {
     static classFullName: string;
 }
 
-// @internal (undocumented)
-export class ElementPropertyFormatter {
-    constructor(iModel: IModelDb);
-    formatProperties(elem: Element): any;
-    }
-
 // @public
 export class ElementRefersToElements extends Relationship {
     static create<T extends ElementRefersToElements>(iModel: IModelDb, sourceId: Id64String, targetId: Id64String): T;
@@ -1439,8 +1433,6 @@ export class IModelDb extends IModel implements PageableECSql {
     static forEachMetaData(iModel: IModelDb, classFullName: string, wantSuper: boolean, func: PropertyCallback, includeCustom: boolean): void;
     // Warning: (ae-incompatible-release-tags) The symbol "getBriefcaseId" is marked as @public, but its signature references "BriefcaseId" which is marked as @internal
     getBriefcaseId(): BriefcaseId;
-    // @internal (undocumented)
-    getElementPropertiesForDisplay(elementId: string): string;
     getGeoCoordinatesFromIModelCoordinates(requestContext: ClientRequestContext, props: string): Promise<GeoCoordinatesResponseProps>;
     getGuid(): GuidString;
     getIModelCoordinatesFromGeoCoordinates(requestContext: ClientRequestContext, props: string): Promise<IModelCoordinatesResponseProps>;
@@ -1830,8 +1822,6 @@ export namespace IModelJsNative {
         getECClassMetaData(schema: string, className: string): ErrorStatusOrResult<IModelStatus, string>;
         // (undocumented)
         getElement(opts: string): ErrorStatusOrResult<IModelStatus, ElementProps>;
-        // (undocumented)
-        getElementPropertiesForDisplay(id: string): ErrorStatusOrResult<IModelStatus, string>;
         // (undocumented)
         getGeoCoordinatesFromIModelCoordinates(points: string): string;
         // (undocumented)

@@ -102,7 +102,6 @@ export declare namespace IModelJsNative {
     public getDbGuid(): GuidString;
     public getECClassMetaData(schema: string, className: string): ErrorStatusOrResult<IModelStatus, string>;
     public getElement(opts: string): ErrorStatusOrResult<IModelStatus, ElementProps>;
-    public getElementPropertiesForDisplay(id: string): ErrorStatusOrResult<IModelStatus, string>;
     public getGeoCoordinatesFromIModelCoordinates(points: string): string;
     public getIModelCoordinatesFromGeoCoordinates(points: string): string;
     public getIModelProps(): string;

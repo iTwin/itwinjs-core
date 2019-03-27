@@ -38,7 +38,7 @@ import { assert, expect } from "chai";
 import * as path from "path";
 import {
   AutoPush, AutoPushParams, AutoPushEventHandler, AutoPushEventType, AutoPushState, BisCore, Category, ClassRegistry, DefinitionPartition,
-  DictionaryModel, DocumentPartition, ECSqlStatement, Element, ElementGroupsMembers, ElementPropertyFormatter, Entity,
+  DictionaryModel, DocumentPartition, ECSqlStatement, Element, ElementGroupsMembers, Entity,
   GeometricElement2d, GeometricElement3d, GeometricModel, GroupInformationPartition, IModelDb, InformationPartitionElement,
   LightLocation, LinkPartition, Model, PhysicalModel, PhysicalPartition, RenderMaterial, SpatialCategory, SqliteStatement, SqliteValue,
   SqliteValueType, SubCategory, Subject, Texture, ViewDefinition, DisplayStyle3d, ElementDrivesElement, PhysicalObject, BackendRequestContext,
@@ -644,20 +644,6 @@ describe("iModel", () => {
     assert.isAtLeast(rows.length, 1);
     assert.exists(rows[0].id);
     assert.notEqual(rows[0].id.value, "");
-  });
-
-  it("ElementPropertyFormatter should format", () => {
-    const code1 = new Code({ spec: "0x10", scope: "0x11", value: "RF1.dgn" });
-    const el = imodel1.elements.getElement(code1);
-    const formatter: ElementPropertyFormatter = new ElementPropertyFormatter(imodel1);
-    const props = formatter.formatProperties(el);
-    assert.exists(props);
-    // WIP: format seems to have changed?
-    // assert.isArray(props);
-    // assert.notEqual(props.length, 0);
-    // const item = props[0];
-    // assert.isString(item.category);
-    // assert.isArray(item.properties);
   });
 
   it("should be some categories", () => {

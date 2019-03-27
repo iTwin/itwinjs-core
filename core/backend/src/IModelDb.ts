@@ -1001,18 +1001,6 @@ export class IModelDb extends IModel implements PageableECSql {
     return Id64.fromJSON(result);
   }
 
-  /** @internal */
-  public getElementPropertiesForDisplay(elementId: string): string {
-    if (!this.briefcase)
-      throw this.newNotOpenError();
-
-    const { error, result: idHexStr } = this.nativeDb.getElementPropertiesForDisplay(elementId);
-    if (error)
-      throw new IModelError(error.status, error.message, Logger.logError, loggerCategory, () => ({ ...this._token, elementId }));
-
-    return idHexStr!;
-  }
-
   /** Prepare an ECSQL statement.
    * @param sql The ECSQL statement to prepare
    * @throws [[IModelError]] if there is a problem preparing the statement.

@@ -13,7 +13,6 @@ export * from "./ECSchemaXmlContext";
 export * from "./ECSqlStatement";
 export * from "./Element";
 export * from "./ElementAspect";
-export * from "./ElementPropertyFormatter";
 export * from "./Entity";
 export * from "./ExportGraphics";
 export * from "./IModelJsFs";
