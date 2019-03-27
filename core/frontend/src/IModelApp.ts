@@ -28,6 +28,7 @@ import * as idleTool from "./tools/IdleTool";
 import * as selectTool from "./tools/SelectTool";
 import * as pluginTool from "./tools/PluginTool";
 import * as viewTool from "./tools/ViewTool";
+import * as clipViewTool from "./tools/ClipViewTool";
 import * as measureTool from "./tools/MeasureTool";
 
 declare var BUILD_SEMVER: string;
@@ -142,6 +143,7 @@ export class IModelApp {
     tools.registerModule(selectTool, coreNamespace);
     tools.registerModule(idleTool, coreNamespace);
     tools.registerModule(viewTool, coreNamespace);
+    tools.registerModule(clipViewTool, coreNamespace);
     tools.registerModule(measureTool, coreNamespace);
     tools.registerModule(pluginTool, coreNamespace);
 

@@ -478,11 +478,11 @@ export class ClipShape extends ClipPrimitive {
       trans = Transform.fromJSON(json.shape.trans);
 
     let zLow: number | undefined;
-    if (json.shape.zlow)
+    if (undefined !== json.shape.zlow)
       zLow = json.shape.zlow as number;
 
     let zHigh: number | undefined;
-    if (json.shape.zhigh)
+    if (undefined !== json.shape.zhigh)
       zHigh = json.shape.zhigh as number;
 
     let isMask = false;

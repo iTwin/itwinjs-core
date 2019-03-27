@@ -794,10 +794,9 @@ export class ClippingShaders {
     assert(this.maskShader !== undefined);
   }
 
-  private static roundUpToNearesMultipleOf(value: number, factor: number): number {
+  private static roundUpToNearestMultipleOf(value: number, factor: number): number {
     const maxPlanes = Math.ceil(value / factor) * factor;
-    assert(maxPlanes > 0);
-    assert(maxPlanes <= value);
+    assert(maxPlanes >= value);
     return maxPlanes;
   }
 
@@ -809,9 +808,9 @@ export class ClippingShaders {
     else if (minPlanes <= 6)
       return 6;           // cuboid volume
     else if (minPlanes <= 120)
-      return this.roundUpToNearesMultipleOf(minPlanes, 20);
+      return this.roundUpToNearestMultipleOf(minPlanes, 20);
     else
-      return this.roundUpToNearesMultipleOf(minPlanes, 50);
+      return this.roundUpToNearestMultipleOf(minPlanes, 50);
   }
 
   public getProgram(clipDef: ClipDef): ShaderProgram | undefined {
