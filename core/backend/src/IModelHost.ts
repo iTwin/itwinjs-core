@@ -24,7 +24,19 @@ import { initializeRpcBackend } from "./RpcBackend";
 import * as os from "os";
 import * as semver from "semver";
 
+// tslint:disable-next-line:no-var-requires
+// const segfaultHandler = require("segfault-handler");
+
 const loggingCategory = "imodeljs-backend.IModelHost";
+
+export interface CrashReportingConfig {
+  crashDumpDir: string; /** The directory to which .dmp files are written. */
+  uploadUrl?: string; /** The webserver to which .dmp are uploaded. If not specified, dumps are not uploaded. */
+  maxDumpsInDir?: number; /** max # .dmp files that may exist in crashDumpDir */
+  maxUploadRetries?: number; /** max # times to retry uploading .dmp file to server. Defaults to 0. */
+  uploadRetryWaitInterval?: number; /** Amount of time in milliseconds to wait before retrying uploading .dmp file to server. Defaults to 1000. */
+  wantFullMemory?: boolean; /** Want a full-memory dump? Defaults to false. */
+}
 
 /** Configuration of imodeljs-backend.
  * @public
@@ -58,6 +70,11 @@ export class IModelHostConfiguration {
    * @alpha
    */
   public disableInternalTileCache = false;
+
+  /** Crash-reporting configuration
+   * @alpha
+   */
+  public crashReportingConfig?: CrashReportingConfig;
 }
 
 /** IModelHost initializes ($backend) and captures its configuration. A backend must call [[IModelHost.startup]] before using any backend classes.
@@ -196,6 +213,16 @@ export class IModelHost {
         throw error;
       }
     }
+
+    // *** TEMPORARY
+    // if (!configuration.crashReportingConfig) {
+    //   configuration.crashReportingConfig = {
+    //     crashDumpDir: path.normalize(path.join(KnownLocations.tmpdir, "Bentley/IModelJs/CrashDumps/")),
+    //   };
+    // }
+
+    if (configuration.crashReportingConfig && this._platform && (Platform.isNodeJs && !Platform.electron)) // We do crash-reporting *only* in node.js and *not* in electron
+      this._platform.setCrashReporting(configuration.crashReportingConfig);
 
     if (configuration.imodelClient)
       BriefcaseManager.imodelClient = configuration.imodelClient;
