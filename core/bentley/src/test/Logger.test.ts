@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { using, Logger, LogLevel, PerfLogger, DbResult } from "../bentleyjs-core";
+import { using, Logger, LogLevel, PerfLogger, DbResult, GetMetaDataFunction } from "../bentleyjs-core";
 import { EnvMacroSubst } from "../Logger";
 import { BentleyError } from "../BentleyError";
 import { ClientRequestContext } from "../ClientRequestContext";
@@ -470,6 +470,14 @@ describe("Logger", () => {
     } catch (_err) {
     }
     checkOutlets(["testcat", "BE_SQLITE_ERROR: bentley error message", { MyProp: "mypropvalue", ExceptionType: "BentleyError" }], [], [], []);
+  });
+
+  it("logger shouldn't mutate arguments", () => {
+    Logger.initialize((_category: string, _message: string, getMetaData?: GetMetaDataFunction) => Logger.makeMetaData(getMetaData));
+    Logger.setLevel("testcat", LogLevel.Error);
+    const myInstance = { foo: "foo" };
+    Logger.logError("testcat", "some message", () => myInstance);
+    assert.equal(Object.keys(myInstance).length, 1);
   });
 
   it("log should capture ActivityId", () => {

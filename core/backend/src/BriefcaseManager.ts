@@ -354,27 +354,12 @@ export class BriefcaseManager {
     for (const tmpFileName of fileNames) {
       const tmpPathname = path.join(briefcaseDir, tmpFileName);
       const ext = path.extname(tmpPathname).toLowerCase();
-      if (ext === ".tiles")
+      if (ext !== ".bim")
         continue;
-
-      // Ensure there's only one bim file
-      if (ext === ".bim") {
-        if (!!briefcasePathname)
-          throw new IModelError(DbResult.BE_SQLITE_ERROR, `Briefcase directory ${briefcaseDir} must contain only one briefcase`, Logger.logError, loggerCategory);
-        briefcasePathname = tmpPathname;
-        continue;
-      }
-
-      // Clean up any non .bim files (may be a result of an aborted copy)
-      try {
-        Logger.logInfo(loggerCategory, `Cleaning up temporary cache file ${tmpPathname}`);
-        IModelJsFs.unlinkSync(tmpPathname);
-      } catch (error) {
-        Logger.logError(loggerCategory, `Cannot delete temporary cache file ${tmpPathname}`);
-        throw error;
-      }
+      if (!!briefcasePathname)
+        throw new IModelError(DbResult.BE_SQLITE_ERROR, `Briefcase directory ${briefcaseDir} must contain only one briefcase`, Logger.logError, loggerCategory);
+      briefcasePathname = tmpPathname;
     }
-
     if (!briefcasePathname)
       throw new IModelError(DbResult.BE_SQLITE_ERROR, `Briefcase directory ${briefcaseDir} must contain at least one briefcase`, Logger.logError, loggerCategory);
 
