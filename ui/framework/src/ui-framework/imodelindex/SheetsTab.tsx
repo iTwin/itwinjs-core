@@ -34,6 +34,7 @@ interface SheetsState {
   showPrompt: boolean;
   percent: number;
   selectedViews: ViewState[];
+  isOpenDisabled: boolean;
 }
 
 /**
@@ -46,7 +47,7 @@ export class SheetsTab extends React.Component<SheetsProps, SheetsState> {
   constructor(props?: any, context?: any) {
     super(props, context);
 
-    this.state = { detailsView: false, filter: "", showPrompt: false, percent: 0, selectedViews: [] };
+    this.state = { detailsView: false, filter: "", showPrompt: false, percent: 0, selectedViews: [], isOpenDisabled: true };
   }
 
   public componentDidMount() {
@@ -69,11 +70,13 @@ export class SheetsTab extends React.Component<SheetsProps, SheetsState> {
 
   /* sheet has been selected */
   private _onSheetViewsSelected(views: ViewState[]) {
-    this.setState ({ selectedViews: views });
+    this.setState ({ selectedViews: views, isOpenDisabled: views.length === 0 });
   }
 
   /* open into the iModel */
   private _onOpen = () => {
+    this.setState ({ isOpenDisabled: true });
+
     const ids: Id64String[] = [];
     this.state.selectedViews.forEach((view: ViewState) => { ids.push(view.id); });
     this.props.onEnter(ids);
@@ -122,7 +125,6 @@ export class SheetsTab extends React.Component<SheetsProps, SheetsState> {
   }
 
   public render() {
-    const disabled = this.state.selectedViews.length === 0;
     const label = UiFramework.i18n.translate("UiFramework:iModelIndex.enteriModel");
     return (
       <div className="viewstab-container">
@@ -140,7 +142,7 @@ export class SheetsTab extends React.Component<SheetsProps, SheetsState> {
           onViewsSelected={this._onSheetViewsSelected.bind(this)}
           filter={this.state.filter}
           onViewsInitialized={this._onViewsInitialized.bind(this)} />
-        <button className="open-button" disabled={disabled} type="button" onClick={this._onOpen.bind(this)}>{label}</button>
+        <button className="open-button" disabled={this.state.isOpenDisabled} type="button" onClick={this._onOpen.bind(this)}>{label}</button>
         {this.state.showPrompt && this._onRenderPrompt()}
       </div>
     );
