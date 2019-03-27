@@ -84,7 +84,6 @@ export class PresentationManager implements IDisposable {
 
 // @public (undocumented)
 export class RulesetVariablesManager implements IClientStateHolder<RulesetVariablesState> {
-    // (undocumented)
     constructor(rulesetId: string);
     getBool(variableId: string): Promise<boolean>;
     getId64(variableId: string): Promise<Id64String>;

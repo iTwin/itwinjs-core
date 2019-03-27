@@ -4,20 +4,21 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module iModelHub */
 
-import { ECJsonTypeMap, WsgInstance } from "./../ECJsonTypeMap";
-import { IModelHubClientError, IModelHubError, ArgumentCheck } from "./Errors";
-import { InstanceIdQuery, addSelectFileAccessKey } from "./Query";
-import { Logger, IModelHubStatus, GuidString } from "@bentley/bentleyjs-core";
-import { FileHandler } from "../FileHandler";
-import { ProgressInfo } from "../Request";
+import { GuidString, IModelHubStatus, Logger } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext } from "../AuthorizedClientRequestContext";
+import { FileHandler } from "../FileHandler";
+import { LoggerCategory } from "../LoggerCategory";
+import { ProgressInfo } from "../Request";
+import { ECJsonTypeMap, WsgInstance } from "./../ECJsonTypeMap";
 import { IModelBaseHandler } from "./BaseHandler";
+import { ArgumentCheck, IModelHubClientError, IModelHubError } from "./Errors";
+import { addSelectFileAccessKey, InstanceIdQuery } from "./Query";
 
-const loggingCategory = "imodeljs-clients.imodelhub";
+const loggerCategory: string = LoggerCategory.IModelHub;
 const iModelTemplateEmpty = "Empty";
 
 /**
- * HubIModel represents an iModel on iModelHub. Getting a valid HubIModel instance from iModelHub is required for majority of iModelHub method calls, as wsgId of this object needs to be passed as imodelId argument to those methods.
+ * HubIModel represents an iModel on iModelHub. Getting a valid HubIModel instance from iModelHub is required for majority of iModelHub method calls, as wsgId of this object needs to be passed as iModelId argument to those methods.
  *
  * For iModel representation in iModel.js, see [IModel]($common). For the file that is used for that iModel, see [IModelDb]($backend).
  */
@@ -122,10 +123,7 @@ export class SeedFile extends WsgInstance {
     public uploadUrl?: string;
 }
 
-/**
- * Query object for getting SeedFiles. You can use this to modify the query. See [[SeedFileHandler.get]].
- * @hidden
- */
+/** Query object for getting SeedFiles. You can use this to modify the query. See [[SeedFileHandler.get]]. */
 class SeedFileQuery extends InstanceIdQuery {
     /**
      * Query will additionally select SeedFile file download URL.
@@ -146,16 +144,12 @@ class SeedFileQuery extends InstanceIdQuery {
     }
 }
 
-/**
- * Handler for all methods related to @see SeedFile instances.
- * @hidden
- */
+/** Handler for all methods related to @see SeedFile instances. */
 class SeedFileHandler {
     private _handler: IModelBaseHandler;
     private _fileHandler?: FileHandler;
 
-    /**
-     * Constructor for SeedFileHandler. Should use @see IModelHandler instead of directly constructing this.
+    /** Constructor for SeedFileHandler. Should use @see IModelHandler instead of directly constructing this.
      * @param handler Handler for WSG requests.
      * @param fileHandler Handler for file system.
      */
@@ -164,18 +158,15 @@ class SeedFileHandler {
         this._fileHandler = fileHandler;
     }
 
-    /**
-     * Get relative url for SeedFile requests.
-     * @param imodelId Id of the iModel. See [[HubIModel]].
+    /** Get relative url for SeedFile requests.
+     * @param iModelId Id of the iModel. See [[HubIModel]].
      * @param fileId Id of the Seed File.
      */
-    private getRelativeUrl(imodelId: GuidString, fileId?: GuidString) {
-        return `/Repositories/iModel--${imodelId}/iModelScope/SeedFile/${fileId || ""}`;
+    private getRelativeUrl(iModelId: GuidString, fileId?: GuidString) {
+        return `/Repositories/iModel--${iModelId}/iModelScope/SeedFile/${fileId || ""}`;
     }
 
-    /**
-     * Get the seed files given the id of the iModel.
-     * @hidden
+    /** Get the seed files given the id of the iModel.
      * @param requestContext The client request context.
      * @param iModelId Id of the iModel. See [[HubIModel]].
      * @param query Optional query object to filter the queried SeedFiles or select different data from them.
@@ -183,19 +174,16 @@ class SeedFileHandler {
      */
     public async get(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, query: SeedFileQuery = new SeedFileQuery()): Promise<SeedFile[]> {
         requestContext.enter();
-        Logger.logInfo(loggingCategory, "Started querying seed files", () => ({ imodelId: iModelId }));
+        Logger.logInfo(loggerCategory, "Started querying seed files", () => ({ iModelId }));
 
         const seedFiles = await this._handler.getInstances<SeedFile>(requestContext, SeedFile, this.getRelativeUrl(iModelId, query.getId()), query.getQueryOptions());
         requestContext.enter();
 
-        Logger.logInfo(loggingCategory, "Finished querying seed files", () => ({ imodelId: iModelId, count: seedFiles.length }));
-
+        Logger.logInfo(loggerCategory, "Finished querying seed files", () => ({ iModelId, count: seedFiles.length }));
         return seedFiles;
     }
 
-    /**
-     * Upload the seed file. Use [[confirmUploadSeedFile]] to confirm the completion of the upload.
-     * @hidden
+    /** Upload the seed file. Use [[confirmUploadSeedFile]] to confirm the completion of the upload.
      * @param requestContext The client request context.
      * @param iModelId Id of the iModel. See [[HubIModel]].
      * @param seedFile Information of the SeedFile to be uploaded.
@@ -204,7 +192,7 @@ class SeedFileHandler {
      */
     public async uploadSeedFile(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, seedPath: string, seedFileDescription?: string, progressCallback?: (progress: ProgressInfo) => void): Promise<SeedFile> {
         requestContext.enter();
-        Logger.logInfo(loggingCategory, "Started uploading seed file", () => ({ iModelId, seedPath }));
+        Logger.logInfo(loggerCategory, "Started uploading seed file", () => ({ iModelId, seedPath }));
 
         const seedFile = new SeedFile();
         seedFile.fileName = this._fileHandler!.basename(seedPath);
@@ -222,7 +210,7 @@ class SeedFileHandler {
 
         const confirmSeedFile: SeedFile = await this._handler.postInstance<SeedFile>(requestContext, SeedFile, this.getRelativeUrl(iModelId, createdSeedFile.id), createdSeedFile);
         requestContext.enter();
-        Logger.logTrace(loggingCategory, "Finished uploading seed file", () => confirmSeedFile);
+        Logger.logTrace(loggerCategory, "Finished uploading seed file", () => confirmSeedFile);
 
         return confirmSeedFile;
     }
@@ -254,12 +242,11 @@ export class IModelsHandler {
     private _fileHandler?: FileHandler;
     private _seedFileHandler: SeedFileHandler;
 
-    /**
-     * Constructor for IModelsHandler. Should use @see IModelClient instead of directly constructing this.
+    /** Constructor for IModelsHandler. Should use @see IModelClient instead of directly constructing this.
      * @param handler Handler for WSG requests.
      * @param fileHandler Handler for file system.
      * @note Use [[IModelHubClient.IModel]] for the preferred single iModel per [[Project]] workflow.
-     * @hidden
+     * @internal
      */
     constructor(handler: IModelBaseHandler, fileHandler?: FileHandler) {
         this._handler = handler;
@@ -267,17 +254,15 @@ export class IModelsHandler {
         this._seedFileHandler = new SeedFileHandler(this._handler, this._fileHandler);
     }
 
-    /**
-     * Get relative url for iModel requests.
+    /** Get relative url for iModel requests.
      * @param projectId Id of the project.
-     * @param imodelId Id of the iModel. See [[HubIModel]].
+     * @param iModelId Id of the iModel. See [[HubIModel]].
      */
-    private getRelativeUrl(contextId: string, imodelId?: GuidString) {
-        return `/Repositories/Project--${this._handler.formatProjectIdForUrl(contextId)}/ProjectScope/iModel/${imodelId || ""}`;
+    private getRelativeUrl(contextId: string, iModelId?: GuidString) {
+        return `/Repositories/Project--${this._handler.formatProjectIdForUrl(contextId)}/ProjectScope/iModel/${iModelId || ""}`;
     }
 
-    /**
-     * Get iModels that belong to the specified [[Project]].
+    /** Get iModels that belong to the specified [[Project]].
      * @param requestContext The client request context.
      * @param contextId Id for the iModel's context. For iModelHub it should be the id of the connect [[Project]].
      * @param query Optional query object to filter the queried iModels or select different data from them.
@@ -287,13 +272,13 @@ export class IModelsHandler {
      */
     public async get(requestContext: AuthorizedClientRequestContext, contextId: string, query: IModelQuery = new IModelQuery()): Promise<HubIModel[]> {
         requestContext.enter();
-        Logger.logInfo(loggingCategory, `Started querying iModels in project`, () => ({ contextId }));
+        Logger.logInfo(loggerCategory, `Started querying iModels in project`, () => ({ contextId }));
         ArgumentCheck.defined("requestContext", requestContext);
         ArgumentCheck.defined("contextId", contextId); // contextId is a GUID for iModelHub and a JSON representation of an IModelBankAccessContext for iModelBank.
 
         const imodels = await this._handler.getInstances<HubIModel>(requestContext, HubIModel, this.getRelativeUrl(contextId, query.getId()), query.getQueryOptions());
         requestContext.enter();
-        Logger.logInfo(loggingCategory, `Finished querying iModels in project`, () => ({ contextId, count: imodels.length }));
+        Logger.logInfo(loggerCategory, `Finished querying iModels in project`, () => ({ contextId, count: imodels.length }));
 
         return imodels;
     }
@@ -309,10 +294,10 @@ export class IModelsHandler {
      */
     public async delete(requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: GuidString): Promise<void> {
         requestContext.enter();
-        Logger.logInfo(loggingCategory, "Started deleting iModel", () => ({ iModelId, contextId }));
+        Logger.logInfo(loggerCategory, "Started deleting iModel", () => ({ iModelId, contextId }));
         ArgumentCheck.defined("requestContext", requestContext);
         ArgumentCheck.validGuid("contextId", contextId);
-        ArgumentCheck.validGuid("imodelId", iModelId);
+        ArgumentCheck.validGuid("iModelId", iModelId);
 
         if (this._handler.getCustomRequestOptions().isSet) {
             // to add custom request options, request with body is needed.
@@ -324,21 +309,20 @@ export class IModelsHandler {
             await this._handler.delete(requestContext, this.getRelativeUrl(contextId, iModelId));
         }
         requestContext.enter();
-        Logger.logInfo(loggingCategory, "Finished deleting iModel", () => ({ iModelId, contextId }));
+        Logger.logInfo(loggerCategory, "Finished deleting iModel", () => ({ iModelId, contextId }));
     }
 
-    /**
-     * Create an iModel instance
-     * @hidden
+    /** Create an iModel instance
      * @param requestContext The client request context.
-     * @param projectId Id of the connect [[Project]].
+     * @param contextId Id of the connect [[Project]].
      * @param iModelName Name of the iModel on the Hub.
      * @param description Description of the iModel on the Hub.
      * @param iModelTemplate iModel template.
+     * @internal
      */
-    private async createIModelInstance(requestContext: AuthorizedClientRequestContext, projectId: string, iModelName: string, description?: string, iModelTemplate?: string): Promise<HubIModel> {
+    private async createIModelInstance(requestContext: AuthorizedClientRequestContext, contextId: string, iModelName: string, description?: string, iModelTemplate?: string): Promise<HubIModel> {
         requestContext.enter();
-        Logger.logInfo(loggingCategory, `Creating iModel with name ${iModelName} in project ${projectId}`);
+        Logger.logInfo(loggerCategory, `Creating iModel with name ${iModelName}`, () => ({ contextId }));
 
         let imodel: HubIModel;
         const iModel = new HubIModel();
@@ -349,34 +333,34 @@ export class IModelsHandler {
             iModel.iModelTemplate = iModelTemplate;
 
         try {
-            imodel = await this._handler.postInstance<HubIModel>(requestContext, HubIModel, this.getRelativeUrl(projectId), iModel);
+            imodel = await this._handler.postInstance<HubIModel>(requestContext, HubIModel, this.getRelativeUrl(contextId), iModel);
             requestContext.enter();
-            Logger.logTrace(loggingCategory, `Created iModel instance with name ${iModelName} in project ${projectId}`);
+            Logger.logTrace(loggerCategory, `Created iModel instance with name ${iModelName}`, () => ({ contextId }));
         } catch (err) {
             requestContext.enter();
             if (!(err instanceof IModelHubError) || IModelHubStatus.iModelAlreadyExists !== err.errorNumber) {
-                Logger.logWarning(loggingCategory, `Can not create iModel: ${err.message}`);
+                Logger.logWarning(loggerCategory, `Can not create iModel: ${err.message}`, () => ({ contextId }));
 
                 return Promise.reject(err);
             }
 
             const initialized: boolean = err.data.iModelInitialized;
             if (initialized) {
-                Logger.logWarning(loggingCategory, `Error creating iModel: iModel with name ${iModelName} already exists and is initialized`);
+                Logger.logWarning(loggerCategory, `Error creating iModel: iModel with name ${iModelName} already exists and is initialized`, () => ({ contextId }));
 
                 return Promise.reject(err);
             }
 
-            Logger.logInfo(loggingCategory, `Querying iModel by name ${iModelName} in project ${projectId}`);
+            Logger.logInfo(loggerCategory, `Querying iModel by name ${iModelName}`, () => ({ contextId }));
 
-            const imodels = await this.get(requestContext, projectId, new IModelQuery().byName(iModelName));
+            const imodels = await this.get(requestContext, contextId, new IModelQuery().byName(iModelName));
             requestContext.enter();
-            Logger.logTrace(loggingCategory, `Queried iModel by name ${iModelName} in project ${projectId}`);
+            Logger.logTrace(loggerCategory, `Queried iModel by name ${iModelName}`, () => ({ contextId }));
 
             if (imodels.length > 0) {
                 imodel = imodels[0];
             } else {
-                Logger.logTrace(loggingCategory, `iModel by name: iModel ${iModelName} not found`);
+                Logger.logTrace(loggerCategory, `iModel by name: iModel ${iModelName} not found`, () => ({ contextId }));
 
                 return Promise.reject(new Error(`iModel by name: iModel ${iModelName} not found`));
             }
@@ -385,16 +369,15 @@ export class IModelsHandler {
         return imodel;
     }
 
-    /**
-     * Get the [[InitializationState]] for the specified iModel. See [iModel creation]($docs/learning/iModelHub/iModels/CreateiModel.md).
+    /** Get the [[InitializationState]] for the specified iModel. See [iModel creation]($docs/learning/iModelHub/iModels/CreateiModel.md).
      * @param requestContext The client request context.
-     * @param imodelId Id of the iModel. See [[HubIModel]].
+     * @param iModelId Id of the iModel. See [[HubIModel]].
      * @returns State of the seed file initialization.
      * @throws [[IModelHubError]] with [IModelHubStatus.FileDoesNotExist]($bentley) if the seed file was not found.
      * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
      */
-    public async getInitializationState(requestContext: AuthorizedClientRequestContext, imodelId: GuidString): Promise<InitializationState> {
-        const seedFiles: SeedFile[] = await this._seedFileHandler.get(requestContext, imodelId, new SeedFileQuery().latest());
+    public async getInitializationState(requestContext: AuthorizedClientRequestContext, iModelId: GuidString): Promise<InitializationState> {
+        const seedFiles: SeedFile[] = await this._seedFileHandler.get(requestContext, iModelId, new SeedFileQuery().latest());
         requestContext.enter();
         if (seedFiles.length < 1)
             return Promise.reject(new IModelHubError(IModelHubStatus.FileDoesNotExist));
@@ -402,9 +385,7 @@ export class IModelsHandler {
         return seedFiles[0].initializationState!;
     }
 
-    /**
-     * Create an iModel from given seed file. In most cases [IModelDb.create]($backend) should be used instead. See [iModel creation]($docs/learning/iModelHub/iModels/CreateiModel.md).
-     *
+    /** Create an iModel from given seed file. In most cases [IModelDb.create]($backend) should be used instead. See [iModel creation]($docs/learning/iModelHub/iModels/CreateiModel.md).
      * This method does not work on browsers. If iModel creation fails before finishing file upload, partially created iModel is deleted. This method is not supported in iModelBank.
      * @param requestContext The client request context.
      * @param contextId Id for the iModel's context. For iModelHub it should be the id of the connect [[Project]].
@@ -420,7 +401,7 @@ export class IModelsHandler {
         description?: string, progressCallback?: (progress: ProgressInfo) => void,
         timeOutInMilliseconds: number = 120000): Promise<HubIModel> {
         requestContext.enter();
-        Logger.logInfo(loggingCategory, `Creating iModel in project ${contextId}`);
+        Logger.logInfo(loggerCategory, "Creating iModel", () => ({ contextId }));
         ArgumentCheck.defined("requestContext", requestContext);
         ArgumentCheck.validGuid("contextId", contextId);
         ArgumentCheck.defined("name", name);
@@ -459,13 +440,13 @@ export class IModelsHandler {
                 const initState = await this.getInitializationState(requestContext, imodel.id!);
                 requestContext.enter();
                 if (initState === InitializationState.Successful) {
-                    Logger.logTrace(loggingCategory, `Created iModel with id ${imodel.id} in project ${contextId}`);
+                    Logger.logTrace(loggerCategory, "Created iModel", () => ({ contextId, iModelId: imodel.id }));
                     imodel.initialized = true;
                     return imodel;
                 }
 
                 if (initState !== InitializationState.NotStarted && initState !== InitializationState.Scheduled) {
-                    Logger.logWarning(loggingCategory, errorMessage);
+                    Logger.logWarning(loggerCategory, errorMessage);
                     return Promise.reject(new IModelHubError(IModelHubStatus.SeedFileInitializationFailed,
                         `Seed file initialization failed with status ${InitializationState[initState]}`));
                 }
@@ -474,17 +455,16 @@ export class IModelsHandler {
                 requestContext.enter();
             } catch (err) {
                 requestContext.enter();
-                Logger.logWarning(loggingCategory, errorMessage);
+                Logger.logWarning(loggerCategory, errorMessage);
                 return Promise.reject(err);
             }
         }
 
-        Logger.logWarning(loggingCategory, errorMessage);
+        Logger.logWarning(loggerCategory, errorMessage);
         return Promise.reject(new Error("Timed out waiting for seed file initialization."));
     }
 
-    /**
-     * Update iModel's name and/or description
+    /** Update iModel's name and/or description
      * @param requestContext The client request context.
      * @param contextId Id for the iModel's context. For iModelHub it should be the id of the connect [[Project]].
      * @param imodel iModel to update. See [[HubIModel]].
@@ -496,19 +476,17 @@ export class IModelsHandler {
      */
     public async update(requestContext: AuthorizedClientRequestContext, contextId: string, imodel: HubIModel): Promise<HubIModel> {
         requestContext.enter();
-        Logger.logInfo(loggingCategory, `Updating iModel in project ${contextId}`);
+        Logger.logInfo(loggerCategory, "Updating iModel", () => ({ contextId, iModelId: imodel.id }));
         ArgumentCheck.defined("requestContext", requestContext);
         ArgumentCheck.validGuid("contextId", contextId);
 
-        const updatediModel = await this._handler.postInstance<HubIModel>(requestContext, HubIModel, this.getRelativeUrl(contextId, imodel.id), imodel);
+        const updatedIModel = await this._handler.postInstance<HubIModel>(requestContext, HubIModel, this.getRelativeUrl(contextId, imodel.id), imodel);
 
-        Logger.logTrace(loggingCategory, `Updated iModel with id ${imodel.wsgId}`);
-
-        return updatediModel;
+        Logger.logTrace(loggerCategory, "Updated iModel", () => ({ contextId, iModelId: imodel.id }));
+        return updatedIModel;
     }
 
-    /**
-     * Method to download the seed file for iModel. This will download the original seed file, that was uploaded when creating iModel. To download a file that was updated with ChangeSets on iModelHub, see [[BriefcaseHandler.download]].
+    /** Method to download the seed file for iModel. This will download the original seed file, that was uploaded when creating iModel. To download a file that was updated with ChangeSets on iModelHub, see [[BriefcaseHandler.download]].
      * @param requestContext The client request context.
      * @param iModelId Id of the iModel. See [[HubIModel]].
      * @param path Path to download the seed file to, including file name.
@@ -517,9 +495,9 @@ export class IModelsHandler {
      */
     public async download(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, path: string, progressCallback?: (progress: ProgressInfo) => void): Promise<void> {
         requestContext.enter();
-        Logger.logInfo(loggingCategory, "Started downloading seed file", () => ({ imodelId: iModelId }));
+        Logger.logInfo(loggerCategory, "Started downloading seed file", () => ({ iModelId }));
         ArgumentCheck.defined("requestContext", requestContext);
-        ArgumentCheck.validGuid("imodelId", iModelId);
+        ArgumentCheck.validGuid("iModelId", iModelId);
         ArgumentCheck.defined("path", path);
 
         if (typeof window !== "undefined")
@@ -536,7 +514,7 @@ export class IModelsHandler {
 
         await this._fileHandler.downloadFile(requestContext, seedFiles[0].downloadUrl!, path, parseInt(seedFiles[0].fileSize!, 10), progressCallback);
         requestContext.enter();
-        Logger.logInfo(loggingCategory, "Finished downloading seed file", () => ({ imodelId: iModelId }));
+        Logger.logInfo(loggerCategory, "Finished downloading seed file", () => ({ iModelId }));
     }
 }
 
@@ -568,7 +546,7 @@ export class IModelHandler {
     public async get(requestContext: AuthorizedClientRequestContext, contextId: string): Promise<HubIModel> {
         requestContext.enter();
 
-        Logger.logInfo(loggingCategory, `Querying iModel in project ${contextId}`);
+        Logger.logInfo(loggerCategory, "Querying iModel", () => ({ contextId }));
         const query = new IModelQuery().orderBy("CreatedDate+asc").top(1);
         const imodels = await this._handler.get(requestContext, contextId, query);
 

@@ -60,8 +60,6 @@ export class BentleyError extends Error {
     // Warning: (ae-incompatible-release-tags) The symbol "__constructor" is marked as @public, but its signature references "HttpStatus" which is marked as @beta
     // Warning: (ae-incompatible-release-tags) The symbol "__constructor" is marked as @public, but its signature references "WSStatus" which is marked as @beta
     // Warning: (ae-incompatible-release-tags) The symbol "__constructor" is marked as @public, but its signature references "IModelHubStatus" which is marked as @beta
-    // 
-    // (undocumented)
     constructor(errorNumber: number | IModelStatus | DbResult | BentleyStatus | BriefcaseStatus | RepositoryStatus | ChangeSetStatus | HttpStatus | WSStatus | IModelHubStatus, message?: string, log?: LogFunction, category?: string, getMetaData?: GetMetaDataFunction);
     // (undocumented)
     errorNumber: number;
@@ -402,7 +400,6 @@ export type DisposeFunc = () => void;
 
 // @public
 export class Entry<K, V> {
-    // (undocumented)
     constructor(key: K, value: V);
     // (undocumented)
     key: K;
@@ -764,7 +761,6 @@ export const enum IModelStatus {
 
 // @public
 export class IndexedValue<T> {
-    // (undocumented)
     constructor(value: T, index: number);
     // (undocumented)
     readonly index: number;
@@ -911,7 +907,6 @@ export type OrderedComparator<T, U = T> = (lhs: T, rhs: U) => number;
 
 // @public
 export class PerfLogger implements IDisposable {
-    // (undocumented)
     constructor(routine: string);
     // (undocumented)
     dispose(): void;

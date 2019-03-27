@@ -2,26 +2,19 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { Logger, BentleyStatus, Guid, GuidString, LogLevel, ClientRequestContext } from "@bentley/bentleyjs-core";
-import { AccessToken, IncludePrefix, AuthorizationToken } from "../Token";
-import { request, Response, RequestOptions } from "../Request";
+import { BentleyStatus, ClientRequestContext, Guid, GuidString, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { AuthorizedClientRequestContext } from "../AuthorizedClientRequestContext";
 import { Client } from "../Client";
 import { Config } from "../Config";
 import { ImsDelegationSecureTokenClient } from "../ImsClients";
-import { LogEntryConverter, UsageLogEntryJson, FeatureLogEntryJson } from "./LogEntryConverter";
-import { AuthorizedClientRequestContext } from "../AuthorizedClientRequestContext";
+import { LoggerCategory } from "../LoggerCategory";
+import { request, RequestOptions, Response } from "../Request";
+import { AccessToken, AuthorizationToken, IncludePrefix } from "../Token";
+import { FeatureLogEntryJson, LogEntryConverter, UsageLogEntryJson } from "./LogEntryConverter";
 
-/**
- * Usage Logging and Analysis Services Client.
- */
+const loggerCategory: string = LoggerCategory.UlasClient;
 
-/**
- * Logging category for the UlasClient.
- */
-const loggingCategory: string = "ulasclient";
-
-/**
- * Represents one of the potential usage types.
+/** Represents one of the potential usage types.
  * See also
  *  - [[UsageLogEntry]], [[FeatureLogEntry]]
  *  - *UsageType* entry on [ULAS Swagger](https://qa-connect-ulastm.bentley.com/Bentley.ULAS.SwaggerUI/SwaggerWebApp/?urls.primaryName=ULAS%20Posting%20Service%20v1)
@@ -31,8 +24,7 @@ export enum UsageType {
   Production, Trial, Beta, HomeUse, PreActivation,
 }
 
-/**
- * Represents the version of the product logging usage or features.
+/** Represents the version of the product logging usage or features.
  * See also [[UsageLogEntry]], [[FeatureLogEntry]].
  */
 export interface ProductVersion {
@@ -42,8 +34,7 @@ export interface ProductVersion {
   sub2?: number;
 }
 
-/**
- * Information about the user for who usage is tracked with the ULAS Posting Service.
+/** Information about the user for who usage is tracked with the ULAS Posting Service.
  * See [[UsageLogEntry]] and [[FeatureLogEntry]] for how to use it.
  * > You do not have to pass this to [[UlasClient]], if you have an OIDC access token from
  * > a client registration that includes the ULAS scope in its audiences.
@@ -356,14 +347,14 @@ export class UlasClient extends Client {
 
     await this.setupOptionDefaults(options);
     requestContext.enter();
-    if (Logger.isEnabled(loggingCategory, LogLevel.Trace))
-      Logger.logTrace(loggingCategory, `Sending ${isFeatureEntry ? "Feature" : "Usage"} Log REST request...`, () => ({ url: postUrl, body: entryJson }));
+    if (Logger.isEnabled(loggerCategory, LogLevel.Trace))
+      Logger.logTrace(loggerCategory, `Sending ${isFeatureEntry ? "Feature" : "Usage"} Log REST request...`, () => ({ url: postUrl, body: entryJson }));
 
     const resp: Response = await request(requestContext, postUrl, options);
     requestContext.enter();
     const requestDetails = { url: postUrl, body: entryJson, response: resp };
-    if (Logger.isEnabled(loggingCategory, LogLevel.Trace))
-      Logger.logTrace(loggingCategory, `Sent ${isFeatureEntry ? "Feature" : "Usage"} Log REST request.`, () => requestDetails);
+    if (Logger.isEnabled(loggerCategory, LogLevel.Trace))
+      Logger.logTrace(loggerCategory, `Sent ${isFeatureEntry ? "Feature" : "Usage"} Log REST request.`, () => requestDetails);
 
     const respBody: any = resp.body;
     if (!respBody || !respBody.status || respBody.status.toLowerCase() !== "success")

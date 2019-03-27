@@ -3,16 +3,15 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module BaseClients */
-// import { stringify, IStringifyOptions } from "qs";
-import * as sarequest from "superagent";
+import { BentleyError, ClientRequestContext, GetMetaDataFunction, HttpStatus, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import * as deepAssign from "deep-assign";
-import { stringify, IStringifyOptions } from "qs";
-import { Logger, LogLevel, BentleyError, HttpStatus, GetMetaDataFunction, ClientRequestContext } from "@bentley/bentleyjs-core";
-import { Config } from "./Config";
 import * as https from "https";
+import { IStringifyOptions, stringify } from "qs";
+import * as sarequest from "superagent";
+import { Config } from "./Config";
+import { LoggerCategory } from "./LoggerCategory";
 
-export const loggingCategory = "imodeljs-clients.Request";
-export const loggingCategoryFullUrl = "imodeljs-clients.Url";
+const loggerCategory: string = LoggerCategory.Request;
 
 export const requestIdHeaderName = "X-Correlation-Id";
 
@@ -186,14 +185,14 @@ export class ResponseError extends BentleyError {
    * Logs this error
    */
   public log(): void {
-    Logger.logError(loggingCategory, this.logMessage(), this.getMetaData());
+    Logger.logError(loggerCategory, this.logMessage(), this.getMetaData());
   }
 }
 
 const logResponse = (req: sarequest.SuperAgentRequest, startTime: number) => (res: sarequest.Response) => {
   const elapsed = new Date().getTime() - startTime;
   const elapsedTime = elapsed + "ms";
-  Logger.logTrace(loggingCategory, `${req.method.toUpperCase()} ${res.status} ${req.url} (${elapsedTime})`);
+  Logger.logTrace(loggerCategory, `${req.method.toUpperCase()} ${res.status} ${req.url} (${elapsedTime})`);
 };
 
 const logRequest = (req: sarequest.SuperAgentRequest) => {
@@ -205,14 +204,12 @@ const logRequest = (req: sarequest.SuperAgentRequest) => {
 // @todo The purpose of this wrapper is to allow us to easily replace this with another
 // module that will rid us of NodeJs dependency.
 
-/**
- * Wrapper around HTTP request utility
+/** Wrapper around HTTP request utility
  * @param requestContext The client request context
  * @param url Server URL to address the request
  * @param options Options to pass to the request
  * @returns Resolves to the response from the server
- * @throws ResponseError if the request fails due to network issues, or if the
- * returned status is *outside* the range of 200-299 (inclusive)
+ * @throws ResponseError if the request fails due to network issues, or if the returned status is *outside* the range of 200-299 (inclusive)
  */
 export async function request(requestContext: ClientRequestContext, url: string, options: RequestOptions): Promise<Response> {
   requestContext.enter();
@@ -229,7 +226,7 @@ export async function request(requestContext: ClientRequestContext, url: string,
   const retries = typeof options.retries === "undefined" ? 4 : options.retries;
   let sareq: sarequest.SuperAgentRequest = sarequest(options.method, proxyUrl).retry(retries, options.retryCallback);
 
-  if (Logger.isEnabled(loggingCategory, LogLevel.Trace))
+  if (Logger.isEnabled(loggerCategory, LogLevel.Trace))
     sareq = sareq.use(logRequest);
 
   if (options.headers)
@@ -249,7 +246,7 @@ export async function request(requestContext: ClientRequestContext, url: string,
     fullUrl = url;
   }
 
-  Logger.logInfo(loggingCategoryFullUrl, fullUrl);
+  Logger.logInfo(loggerCategory, fullUrl);
 
   if (options.auth) {
     sareq = sareq.auth(options.auth.user, options.auth.password);

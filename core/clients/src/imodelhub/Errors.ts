@@ -4,14 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module iModelHub */
 
+import { GetMetaDataFunction, Guid, HttpStatus, IModelHubStatus, LogFunction, Logger, WSStatus } from "@bentley/bentleyjs-core";
 import * as deepAssign from "deep-assign";
+import { LoggerCategory } from "../LoggerCategory";
 import { ResponseError } from "./../Request";
 import { WsgError } from "./../WsgClient";
-import {
-  Logger, LogFunction, HttpStatus, WSStatus, IModelHubStatus, GetMetaDataFunction, Guid,
-} from "@bentley/bentleyjs-core";
 
-const loggingCategory = "imodeljs-clients.imodelhub";
+const loggerCategory: string = LoggerCategory.IModelHub;
 
 /**
  * Error returned from iModelHub service.
@@ -21,7 +20,7 @@ export class IModelHubError extends WsgError {
   public data: any;
   private static _idPrefix: string = "iModelHub.";
 
-  /** @hidden */
+  /** @internal */
   public constructor(errorNumber: number | HttpStatus, message?: string, getMetaData?: GetMetaDataFunction) {
     super(errorNumber, message, getMetaData);
   }
@@ -160,7 +159,7 @@ export class IModelHubError extends WsgError {
    * @hidden
    */
   public log(): void {
-    (this.getLogLevel())(loggingCategory, this.logMessage(), this.getMetaData());
+    (this.getLogLevel())(loggerCategory, this.logMessage(), this.getMetaData());
   }
 }
 
@@ -168,12 +167,11 @@ export class IModelHubError extends WsgError {
  * Errors for incorrect iModelHub requests.
  */
 export class IModelHubClientError extends IModelHubError {
-  /**
-   * Creates IModelHubClientError from id.
-   * @hidden
+  /** Creates IModelHubClientError from id.
    * @param id Id of the error.
    * @param message Message for the error.
    * @returns Created error.
+   * @internal
    */
   public static fromId(id: IModelHubStatus, message: string): IModelHubClientError {
     const error = new IModelHubClientError(id, message);
@@ -181,66 +179,60 @@ export class IModelHubClientError extends IModelHubError {
     return error;
   }
 
-  /**
-   * Create error for undefined arguments being passed.
-   * @hidden
+  /** Create error for undefined arguments being passed.
    * @param argumentName Undefined argument name
    * @returns Created error.
+   * @internal
    */
   public static undefinedArgument(argumentName: string): IModelHubClientError {
     return this.fromId(IModelHubStatus.UndefinedArgumentError, `Argument ${argumentName} is null or undefined`);
   }
 
-  /**
-   * Create error for invalid arguments being passed.
-   * @hidden
+  /** Create error for invalid arguments being passed.
    * @param argumentName Invalid argument name
    * @returns Created error.
+   * @internal
    */
   public static invalidArgument(argumentName: string): IModelHubClientError {
     return this.fromId(IModelHubStatus.InvalidArgumentError, `Argument ${argumentName} has an invalid value.`);
   }
 
-  /**
-   * Create error for arguments being passed that are missing download URL.
-   * @hidden
+  /** Create error for arguments being passed that are missing download URL.
    * @param argumentName Argument name
    * @returns Created error.
+   * @internal
    */
   public static missingDownloadUrl(argumentName: string): IModelHubClientError {
     return this.fromId(IModelHubStatus.MissingDownloadUrlError,
       `Supplied ${argumentName} must include download URL. Use selectDownloadUrl() when getting ${argumentName}.`);
   }
 
-  /**
-   * Create error for incompatible operation being used in browser.
-   * @hidden
+  /** Create error for incompatible operation being used in browser.
    * @returns Created error.
+   * @internal
    */
   public static browser(): IModelHubClientError {
     return this.fromId(IModelHubStatus.NotSupportedInBrowser, "Operation is not supported in browser.");
   }
 
-  /**
-   * Create error for incompatible operation being used in browser.
-   * @hidden
+  /** Create error for incompatible operation being used in browser.
    * @returns Created error.
+   * @internal
    */
   public static fileHandler(): IModelHubClientError {
     return this.fromId(IModelHubStatus.FileHandlerNotSet, "File handler is required to be set for file download / upload.");
   }
 
-  /**
-   * Create error for a missing file.
-   * @hidden
+  /** Create error for a missing file.
    * @returns Created error.
+   * @internal
    */
   public static fileNotFound(): IModelHubClientError {
     return this.fromId(IModelHubStatus.FileNotFound, "Could not find the file to upload.");
   }
 }
 
-/** @hidden */
+/** @internal */
 export class ArgumentCheck {
   public static defined(argumentName: string, argument?: any) {
     if (!argument)
@@ -263,38 +255,29 @@ export class ArgumentCheck {
       throw IModelHubClientError.invalidArgument(argumentName);
   }
 
-  /** @hidden */
   public static nonEmptyArray(argumentName: string, argument?: any[]) {
     this.defined(argumentName, argument);
     if (argument!.length < 1)
       throw IModelHubClientError.invalidArgument(argumentName);
   }
 
-  /**
-   * Check if Briefcase Id is valid.
-   * @hidden
-   */
+  /** Check if Briefcase Id is valid. */
   private static isBriefcaseIdValid(briefcaseId: number): boolean {
     return briefcaseId > 1 && briefcaseId < 16 * 1024 * 1024;
   }
 
-  /**
-   * Check if Briefcase Id argument is valid.
-   * @hidden
-   */
+  /** Check if Briefcase Id argument is valid. */
   public static validBriefcaseId(argumentName: string, argument?: number) {
     this.definedNumber(argumentName, argument);
     if (!this.isBriefcaseIdValid(argument!))
       throw IModelHubClientError.invalidArgument(argumentName);
   }
 
-  /** @hidden */
   private static isValidChangeSetId(changeSetId: string) {
     const pattern = new RegExp("^[0-9A-Fa-f]+$");
     return changeSetId.length === 40 && pattern.test(changeSetId);
   }
 
-  /** @hidden */
   public static validChangeSetId(argumentName: string, argument?: string) {
     this.defined(argumentName, argument);
     if (!this.isValidChangeSetId(argument!))
@@ -302,7 +285,7 @@ export class ArgumentCheck {
   }
 }
 
-/** Class for aggregating errors from multiple requests. Only thrown when more than 1 error has occured. */
+/** Class for aggregating errors from multiple requests. Only thrown when more than 1 error has occurred. */
 export class AggregateResponseError extends Error {
   /** Errors that happened over multiple requests. */
   public errors: ResponseError[] = [];

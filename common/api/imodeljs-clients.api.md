@@ -54,7 +54,7 @@ export class AllCodesDeletedEvent extends BriefcaseEvent {
 export class AllLocksDeletedEvent extends BriefcaseEvent {
 }
 
-// @public (undocumented)
+// @internal (undocumented)
 export class ArgumentCheck {
     // (undocumented)
     static defined(argumentName: string, argument?: any): void;
@@ -133,8 +133,9 @@ export abstract class BriefcaseEvent extends IModelHubEvent {
 
 // @public
 export class BriefcaseHandler {
+    // @internal
     constructor(handler: IModelBaseHandler, fileHandler?: FileHandler);
-    create(requestContext: AuthorizedClientRequestContext, imodelId: GuidString): Promise<Briefcase>;
+    create(requestContext: AuthorizedClientRequestContext, iModelId: GuidString): Promise<Briefcase>;
     delete(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, briefcaseId: number): Promise<void>;
     download(requestContext: AuthorizedClientRequestContext, briefcase: Briefcase, path: string, progressCallback?: (progress: ProgressInfo) => void): Promise<void>;
     get(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, query?: BriefcaseQuery): Promise<Briefcase[]>;
@@ -143,6 +144,7 @@ export class BriefcaseHandler {
 // @public
 export class BriefcaseQuery extends Query {
     byId(id: number): this;
+    // @internal
     getId(): number | undefined;
     selectDownloadUrl(): this;
 }
@@ -260,10 +262,10 @@ export class CodeEvent extends BriefcaseEvent {
 // @public
 export class CodeHandler {
     constructor(handler: IModelBaseHandler);
-    deleteAll(requestContext: AuthorizedClientRequestContext, imodelId: GuidString, briefcaseId: number): Promise<void>;
-    get(requestContext: AuthorizedClientRequestContext, imodelId: GuidString, query?: CodeQuery): Promise<HubCode[]>;
+    deleteAll(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, briefcaseId: number): Promise<void>;
+    get(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, query?: CodeQuery): Promise<HubCode[]>;
     readonly sequences: CodeSequenceHandler;
-    update(requestContext: AuthorizedClientRequestContext, imodelId: GuidString, codes: HubCode[], updateOptions?: CodeUpdateOptions): Promise<HubCode[]>;
+    update(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, codes: HubCode[], updateOptions?: CodeUpdateOptions): Promise<HubCode[]>;
     }
 
 // @public
@@ -291,7 +293,7 @@ export class CodeSequence extends WsgInstance {
 // @public
 export class CodeSequenceHandler {
     constructor(handler: IModelBaseHandler);
-    get(requestContext: AuthorizedClientRequestContext, imodelId: GuidString, sequence: CodeSequence): Promise<string>;
+    get(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, sequence: CodeSequence): Promise<string>;
     }
 
 // @public
@@ -343,12 +345,12 @@ export class ConflictingCodesError extends IModelHubError {
 export class ConflictingLocksError extends IModelHubError {
     addLocks(error: IModelHubError): void;
     conflictingLocks?: Lock[];
+    // @internal
     static fromError(error: IModelHubError): ConflictingLocksError | undefined;
 }
 
 // @public
 export class ConnectClient extends WsgClient {
-    // (undocumented)
     constructor();
     // (undocumented)
     static readonly configRelyingPartyUri = "imjs_connected_context_service_relying_party_uri";
@@ -404,7 +406,7 @@ export class DefaultCodeUpdateOptionsProvider {
     protected _defaultOptions: CodeUpdateOptions;
 }
 
-// @public
+// @internal
 export class DefaultLockUpdateOptionsProvider {
     constructor();
     assignOptions(options: LockUpdateOptions): Promise<void>;
@@ -446,9 +448,9 @@ export class ECJsonTypeMap {
 // @public
 export class EventHandler extends EventBaseHandler {
     constructor(handler: IModelBaseHandler);
-    createListener(requestContext: ClientRequestContext, authenticationCallback: () => Promise<AccessToken>, subscriptionId: string, imodelId: GuidString, listener: (event: IModelHubEvent) => void): () => void;
+    createListener(requestContext: ClientRequestContext, authenticationCallback: () => Promise<AccessToken>, subscriptionId: string, iModelId: GuidString, listener: (event: IModelHubEvent) => void): () => void;
     getEvent(requestContext: ClientRequestContext, sasToken: string, baseAddress: string, subscriptionId: string, timeout?: number): Promise<IModelHubEvent | undefined>;
-    getSASToken(requestContext: AuthorizedClientRequestContext, imodelId: GuidString): Promise<EventSAS>;
+    getSASToken(requestContext: AuthorizedClientRequestContext, iModelId: GuidString): Promise<EventSAS>;
     readonly subscriptions: EventSubscriptionHandler;
 }
 
@@ -466,9 +468,9 @@ export class EventSubscription extends WsgInstance {
 // @public
 export class EventSubscriptionHandler {
     constructor(handler: IModelBaseHandler);
-    create(requestContext: AuthorizedClientRequestContext, imodelId: GuidString, events: EventType[]): Promise<EventSubscription>;
-    delete(requestContext: AuthorizedClientRequestContext, imodelId: GuidString, eventSubscriptionId: string): Promise<void>;
-    update(requestContext: AuthorizedClientRequestContext, imodelId: GuidString, subscription: EventSubscription): Promise<EventSubscription>;
+    create(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, events: EventType[]): Promise<EventSubscription>;
+    delete(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, eventSubscriptionId: string): Promise<void>;
+    update(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, subscription: EventSubscription): Promise<EventSubscription>;
 }
 
 // @public
@@ -585,7 +587,7 @@ export function getJson(requestContext: ClientRequestContext, url: string): Prom
 export class GlobalEventHandler extends EventBaseHandler {
     constructor(handler: IModelBaseHandler);
     createListener(requestContext: AuthorizedClientRequestContext, authenticationCallback: () => Promise<AccessToken>, subscriptionInstanceId: string, listener: (event: IModelHubGlobalEvent) => void): () => void;
-    getEvent(requestContext: ClientRequestContext, sasToken: string, baseAddress: string, subscriptionInstanceId: string, timeout?: number, getOperation?: GetEventOperationType): Promise<IModelHubGlobalEvent | undefined>;
+    getEvent(requestContext: ClientRequestContext, sasToken: string, baseAddress: string, subscriptionId: string, timeout?: number, getOperation?: GetEventOperationType): Promise<IModelHubGlobalEvent | undefined>;
     getSASToken(requestContext: AuthorizedClientRequestContext): Promise<GlobalEventSAS>;
     readonly subscriptions: GlobalEventSubscriptionHandler;
 }
@@ -606,7 +608,7 @@ export class GlobalEventSubscription extends WsgInstance {
 export class GlobalEventSubscriptionHandler {
     constructor(handler: IModelBaseHandler);
     create(requestContext: AuthorizedClientRequestContext, subscriptionId: GuidString, globalEvents: GlobalEventType[]): Promise<GlobalEventSubscription>;
-    delete(requestContext: AuthorizedClientRequestContext, subscriptionInstanceId: string): Promise<void>;
+    delete(requestContext: AuthorizedClientRequestContext, subscriptionId: string): Promise<void>;
     update(requestContext: AuthorizedClientRequestContext, subscription: GlobalEventSubscription): Promise<GlobalEventSubscription>;
 }
 
@@ -667,7 +669,6 @@ export interface IAuthorizationClient {
 
 // @public (undocumented)
 export class IModelBankClient extends IModelClient {
-    // (undocumented)
     constructor(url: string, handler: FileHandler | undefined);
 }
 
@@ -675,7 +676,6 @@ export class IModelBankClient extends IModelClient {
 // 
 // @public (undocumented)
 export class IModelBankFileSystemContextClient implements ContextManagerClient {
-    // (undocumented)
     constructor(baseUri: string);
     // (undocumented)
     baseUri: string;
@@ -689,7 +689,6 @@ export class IModelBankFileSystemContextClient implements ContextManagerClient {
 
 // @public (undocumented)
 export class IModelBankHandler extends IModelBaseHandler {
-    // (undocumented)
     constructor(url: string, handler: FileHandler | undefined, keepAliveDuration?: number);
     // (undocumented)
     getUrl(_requestContext: ClientRequestContext, excludeApiVersion?: boolean): Promise<string>;
@@ -787,17 +786,25 @@ export class IModelHubClient extends IModelClient {
 
 // @public
 export class IModelHubClientError extends IModelHubError {
+    // @internal
     static browser(): IModelHubClientError;
+    // @internal
     static fileHandler(): IModelHubClientError;
+    // @internal
     static fileNotFound(): IModelHubClientError;
+    // @internal
     static fromId(id: IModelHubStatus, message: string): IModelHubClientError;
+    // @internal
     static invalidArgument(argumentName: string): IModelHubClientError;
+    // @internal
     static missingDownloadUrl(argumentName: string): IModelHubClientError;
+    // @internal
     static undefinedArgument(argumentName: string): IModelHubClientError;
 }
 
 // @public
 export class IModelHubError extends WsgError {
+    // @internal
     constructor(errorNumber: number | HttpStatus, message?: string, getMetaData?: GetMetaDataFunction);
     data: any;
     static fromId(id: IModelHubStatus, message: string): IModelHubError;
@@ -817,6 +824,7 @@ export abstract class IModelHubEvent extends IModelHubBaseEvent {
 
 // @public
 export abstract class IModelHubGlobalEvent extends IModelHubBaseEvent {
+    // @internal
     fromJson(obj: any): void;
     iModelId?: GuidString;
     projectId?: string;
@@ -829,12 +837,13 @@ export class IModelQuery extends InstanceIdQuery {
 
 // @public
 export class IModelsHandler {
+    // @internal
     constructor(handler: IModelBaseHandler, fileHandler?: FileHandler);
     create(requestContext: AuthorizedClientRequestContext, contextId: string, name: string, path?: string, description?: string, progressCallback?: (progress: ProgressInfo) => void, timeOutInMilliseconds?: number): Promise<HubIModel>;
     delete(requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: GuidString): Promise<void>;
     download(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, path: string, progressCallback?: (progress: ProgressInfo) => void): Promise<void>;
     get(requestContext: AuthorizedClientRequestContext, contextId: string, query?: IModelQuery): Promise<HubIModel[]>;
-    getInitializationState(requestContext: AuthorizedClientRequestContext, imodelId: GuidString): Promise<InitializationState>;
+    getInitializationState(requestContext: AuthorizedClientRequestContext, iModelId: GuidString): Promise<InitializationState>;
     update(requestContext: AuthorizedClientRequestContext, contextId: string, imodel: HubIModel): Promise<HubIModel>;
 }
 
@@ -956,9 +965,9 @@ export class LockEvent extends BriefcaseEvent {
 // @public
 export class LockHandler {
     constructor(handler: IModelBaseHandler);
-    deleteAll(requestContext: AuthorizedClientRequestContext, imodelId: GuidString, briefcaseId: number): Promise<void>;
-    get(requestContext: AuthorizedClientRequestContext, imodelId: GuidString, query?: LockQuery): Promise<Lock[]>;
-    update(requestContext: AuthorizedClientRequestContext, imodelId: GuidString, locks: Lock[], updateOptions?: LockUpdateOptions): Promise<Lock[]>;
+    deleteAll(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, briefcaseId: number): Promise<void>;
+    get(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, query?: LockQuery): Promise<Lock[]>;
+    update(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, locks: Lock[], updateOptions?: LockUpdateOptions): Promise<Lock[]>;
     }
 
 // @public
@@ -1007,11 +1016,20 @@ export class LogEntryConverter {
     static toUsageLogJson(entry: UsageLogEntry): UsageLogEntryJson;
     }
 
-// @public (undocumented)
-export const loggingCategory = "imodeljs-clients.Request";
-
-// @public (undocumented)
-export const loggingCategoryFullUrl = "imodeljs-clients.Url";
+// @public
+export const enum LoggerCategory {
+    Clients = "imodeljs-clients.Clients",
+    ECJson = "ECJson",
+    // @internal (undocumented)
+    IModelBank = "imodeljs-clients.iModelBank",
+    IModelHub = "imodeljs-clients.imodelhub",
+    // @internal (undocumented)
+    ImsClients = "imodeljs-clients.ImsClients",
+    // (undocumented)
+    Request = "imodeljs-clients.Request",
+    // @internal (undocumented)
+    UlasClient = "ulasclient"
+}
 
 // @public
 export interface LogPostingResponse {
@@ -1050,7 +1068,6 @@ export class NamedVersionCreatedEvent extends IModelHubGlobalEvent {
 
 // @public (undocumented)
 export abstract class OidcClient extends Client {
-    // (undocumented)
     constructor();
     protected getUrlSearchKey(): string;
     // (undocumented)
@@ -1351,7 +1368,6 @@ export interface Response {
 
 // @public
 export class ResponseError extends BentleyError {
-    // (undocumented)
     constructor(errorNumber: number | HttpStatus, message?: string, getMetaData?: GetMetaDataFunction);
     // (undocumented)
     protected _data?: any;
@@ -1462,8 +1478,8 @@ export abstract class Thumbnail extends WsgInstance {
 // @public
 export class ThumbnailHandler {
     constructor(handler: IModelBaseHandler);
-    download(requestContext: AuthorizedClientRequestContext, imodelId: GuidString, thumbnail: Thumbnail | TipThumbnail): Promise<string>;
-    get(requestContext: AuthorizedClientRequestContext, imodelId: GuidString, size: ThumbnailSize, query?: ThumbnailQuery): Promise<Thumbnail[]>;
+    download(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, thumbnail: Thumbnail | TipThumbnail): Promise<string>;
+    get(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, size: ThumbnailSize, query?: ThumbnailQuery): Promise<Thumbnail[]>;
     }
 
 // @public
@@ -1482,7 +1498,6 @@ export interface TipThumbnail {
 
 // @public
 export abstract class Token {
-    // (undocumented)
     protected constructor(samlAssertion: string);
     // (undocumented)
     protected _expiresAt?: Date;
@@ -1589,7 +1604,6 @@ export interface UsageUserInfo {
 
 // @public
 export class UserInfo {
-    // (undocumented)
     constructor(
     id: string, 
     email?: {
@@ -1635,19 +1649,21 @@ export class UserInfo {
 
 // @public
 export class UserInfoHandler {
+    // @internal
     constructor(handler: IModelBaseHandler);
-    get(requestContext: AuthorizedClientRequestContext, imodelId: GuidString, query?: UserInfoQuery): Promise<HubUserInfo[]>;
+    get(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, query?: UserInfoQuery): Promise<HubUserInfo[]>;
     readonly statistics: UserStatisticsHandler;
 }
 
 // @public
 export class UserInfoQuery extends Query {
     byId(id: string): this;
-    // (undocumented)
+    // @internal (undocumented)
     protected _byId?: string;
     byIds(ids: string[]): this;
+    // @internal
     getId(): string | undefined;
-    // (undocumented)
+    // @internal (undocumented)
     readonly isQueriedByIds: boolean;
     }
 
@@ -1662,7 +1678,7 @@ export class UserStatistics extends HubUserInfo {
 // @public
 export class UserStatisticsHandler {
     constructor(handler: IModelBaseHandler);
-    get(requestContext: AuthorizedClientRequestContext, imodelId: GuidString, query?: UserStatisticsQuery): Promise<UserStatistics[]>;
+    get(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, query?: UserStatisticsQuery): Promise<UserStatistics[]>;
     }
 
 // @public
@@ -1705,9 +1721,9 @@ export class VersionEvent extends IModelHubEvent {
 // @public
 export class VersionHandler {
     constructor(handler: IModelBaseHandler);
-    create(requestContext: AuthorizedClientRequestContext, imodelId: GuidString, changeSetId: string, name: string, description?: string): Promise<Version>;
-    get(requestContext: AuthorizedClientRequestContext, imodelId: GuidString, query?: VersionQuery): Promise<Version[]>;
-    update(requestContext: AuthorizedClientRequestContext, imodelId: GuidString, version: Version): Promise<Version>;
+    create(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, changeSetId: string, name: string, description?: string): Promise<Version>;
+    get(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, query?: VersionQuery): Promise<Version[]>;
+    update(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, version: Version): Promise<Version>;
 }
 
 // @public
@@ -1741,7 +1757,6 @@ export abstract class WsgClient extends Client {
 
 // @public
 export class WsgError extends ResponseError {
-    // (undocumented)
     constructor(errorNumber: number | HttpStatus, message?: string, getMetaData?: GetMetaDataFunction);
     static getErrorStatus(errorId: number, httpStatusType: number): number;
     static getWSStatusId(error: string): number;

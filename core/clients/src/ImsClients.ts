@@ -4,16 +4,17 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Authentication */
 
-import * as xpath from "xpath";
+import { assert, AuthStatus, BentleyError, ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
 import { DOMParser } from "xmldom";
-import { ClientRequestContext, assert, BentleyError, AuthStatus, Logger } from "@bentley/bentleyjs-core";
-import { request, RequestOptions, Response } from "./Request";
-import { Config } from "./Config";
-import { Client } from "./Client";
-import { AuthorizationToken, AccessToken } from "./Token";
+import * as xpath from "xpath";
 import { IAuthorizationClient } from "./AuthorizationClient";
+import { Client } from "./Client";
+import { Config } from "./Config";
+import { LoggerCategory } from "./LoggerCategory";
+import { request, RequestOptions, Response } from "./Request";
+import { AccessToken, AuthorizationToken } from "./Token";
 
-const loggingCategory = "imodeljs-clients.ImsClients";
+const loggerCategory: string = LoggerCategory.ImsClients;
 
 /** Interface for user credentials for programmatic login to IMS
  * Note: This can only be used in test environments. In a real application, the password cannot be explicitly used in any API.
@@ -26,23 +27,19 @@ export interface ImsUserCredentials {
 /** Client API for the IMS Federated Authentication Service. */
 export class ImsFederatedAuthenticationClient extends Client {
   public static readonly searchKey: string = "IMS.FederatedAuth.Url";
-  /**
-   * Creates an instance of ImsFederatedAuthenticationClient.
-   */
+  /** Creates an instance of ImsFederatedAuthenticationClient. */
   public constructor() {
     super();
   }
 
-  /**
-   * Gets name/key to query the service URLs from the URL Discovery Service ("Buddi")
+  /** Gets name/key to query the service URLs from the URL Discovery Service ("Buddi")
    * @returns Search key for the URL.
    */
   protected getUrlSearchKey(): string {
     return ImsFederatedAuthenticationClient.searchKey;
   }
 
-  /**
-   * Parses the response from the token request to obtain the token and the user profile.
+  /** Parses the response from the token request to obtain the token and the user profile.
    * @param authTokenResponse Response for the token request.
    */
   public static parseTokenResponse(authTokenResponse: string): AuthorizationToken | undefined {
@@ -240,7 +237,7 @@ export class ImsTestAuthorizationClient implements IAuthorizationClient {
     if (this.isAuthorized)
       return this._accessToken!;
     if (!this._userCredentials)
-      throw new BentleyError(AuthStatus.Error, "No use has signed in - call ImsTokenManager.signIn() before fetching access token", Logger.logError, loggingCategory);
+      throw new BentleyError(AuthStatus.Error, "No use has signed in - call ImsTokenManager.signIn() before fetching access token", Logger.logError, loggerCategory);
     return this.signIn(requestContext || new ClientRequestContext(), this._userCredentials, this._relyingPartyUri);
   }
 }

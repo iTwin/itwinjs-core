@@ -4,17 +4,18 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module iModelHub */
 
+import { GuidString, Id64String, IModelHubStatus, Logger } from "@bentley/bentleyjs-core";
 import * as deepAssign from "deep-assign";
+import { AuthorizedClientRequestContext } from "../AuthorizedClientRequestContext";
+import { LoggerCategory } from "../LoggerCategory";
+import { WsgRequestOptions } from "../WsgClient";
 import { ECJsonTypeMap, WsgInstance } from "./../ECJsonTypeMap";
 import { ResponseError } from "./../Request";
-import { AuthorizedClientRequestContext } from "../AuthorizedClientRequestContext";
-import { Logger, IModelHubStatus, Id64String, GuidString } from "@bentley/bentleyjs-core";
-import { Query } from "./Query";
-import { AggregateResponseError, IModelHubError, ArgumentCheck } from "./Errors";
 import { IModelBaseHandler } from "./BaseHandler";
-import { WsgRequestOptions } from "../WsgClient";
+import { AggregateResponseError, ArgumentCheck, IModelHubError } from "./Errors";
+import { Query } from "./Query";
 
-const loggingCategory = "imodeljs-clients.imodelhub";
+const loggerCategory: string = LoggerCategory.IModelHub;
 
 /** [[Lock]] type describes the kind of object that is locked. */
 export enum LockType {
@@ -71,25 +72,19 @@ export interface LockUpdateOptions {
   continueOnConflict?: boolean;
 }
 
-/**
- * Provider for default LockUpdateOptions, used by LockHandler to set defaults.
- * @hidden
+/** Provider for default LockUpdateOptions, used by LockHandler to set defaults.
+ * @internal
  */
 export class DefaultLockUpdateOptionsProvider {
   protected _defaultOptions: LockUpdateOptions;
-  /**
-   * Creates an instance of DefaultRequestOptionsProvider and sets up the default options.
-   * @hidden
-   */
+  /** Creates an instance of DefaultRequestOptionsProvider and sets up the default options. */
   constructor() {
     this._defaultOptions = {
       locksPerRequest: 2000,
     };
   }
 
-  /**
-   * Augments options with the provider's default values.
-   * @hidden
+  /** Augments options with the provider's default values.
    * @note The options passed in override any defaults where necessary.
    * @param options Options that should be augmented.
    */
@@ -108,11 +103,10 @@ export class ConflictingLocksError extends IModelHubError {
   /** Locks that couldn't be updated due to other users owning them. */
   public conflictingLocks?: Lock[];
 
-  /**
-   * Create ConflictingLocksError from IModelHubError instance.
-   * @hidden
+  /** Create ConflictingLocksError from IModelHubError instance.
    * @param error IModelHubError to get error data from.
    * @returns Undefined if the error is not for a lock conflict, otherwise newly created error instance.
+   * @internal
    */
   public static fromError(error: IModelHubError): ConflictingLocksError | undefined {
     if (error.errorNumber !== IModelHubStatus.LockOwnedByAnotherBriefcase
@@ -353,8 +347,8 @@ export class LockHandler {
     this._handler = handler;
   }
 
-  private getRelativeUrl(imodelId: GuidString, multilock = true, lockId?: string) {
-    return `/Repositories/iModel--${imodelId}/iModelScope/${multilock ? "MultiLock" : "Lock"}/${lockId || ""}`;
+  private getRelativeUrl(iModelId: GuidString, multilock = true, lockId?: string) {
+    return `/Repositories/iModel--${iModelId}/iModelScope/${multilock ? "MultiLock" : "Lock"}/${lockId || ""}`;
   }
 
   private static convertLocksToMultiLocks(locks: Lock[]): MultiLock[] {
@@ -399,10 +393,8 @@ export class LockHandler {
     return result;
   }
 
-  /**
-   * Augment update options with defaults returned by the DefaultLockUpdateOptionsProvider.
+  /** Augment update options with defaults returned by the DefaultLockUpdateOptionsProvider.
    * The options passed in by clients override any defaults where necessary.
-   * @hidden
    * @param options Options the caller wants to eaugment with the defaults.
    */
   private async setupOptionDefaults(options: LockUpdateOptions): Promise<void> {
@@ -412,7 +404,7 @@ export class LockHandler {
   }
 
   /** Send partial request for lock updates */
-  private async updateInternal(requestContext: AuthorizedClientRequestContext, imodelId: GuidString, locks: Lock[], updateOptions?: LockUpdateOptions): Promise<Lock[]> {
+  private async updateInternal(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, locks: Lock[], updateOptions?: LockUpdateOptions): Promise<Lock[]> {
     requestContext.enter();
     let requestOptions: WsgRequestOptions | undefined;
     if (updateOptions) {
@@ -432,15 +424,14 @@ export class LockHandler {
       }
     }
 
-    const result = await this._handler.postInstances<MultiLock>(requestContext, MultiLock, `/Repositories/iModel--${imodelId}/$changeset`, LockHandler.convertLocksToMultiLocks(locks), requestOptions);
+    const result = await this._handler.postInstances<MultiLock>(requestContext, MultiLock, `/Repositories/iModel--${iModelId}/$changeset`, LockHandler.convertLocksToMultiLocks(locks), requestOptions);
     requestContext.enter();
     return LockHandler.convertMultiLocksToLocks(result);
   }
 
-  /**
-   * Update multiple [[Lock]]s. This call can simultaneously acquire new Locks and update states of already owned Locks. If large amount of Locks are updated, they are split across multiple requests. See [[LockUpdateOptions.locksPerRequest]]. Default is 2000 Locks per request.
+  /** Update multiple [[Lock]]s. This call can simultaneously acquire new Locks and update states of already owned Locks. If large amount of Locks are updated, they are split across multiple requests. See [[LockUpdateOptions.locksPerRequest]]. Default is 2000 Locks per request.
    * @param requestContext The client request context.
-   * @param imodelId Id of the iModel. See [[HubIModel]].
+   * @param iModelId Id of the iModel. See [[HubIModel]].
    * @param locks Locks to acquire. Requires briefcaseId, seedFileId to be set for every
    * Lock instance. They must be consistent throughout all of the Locks.
    * @param updateOptions Options for the update request. You can set this to change
@@ -453,11 +444,11 @@ export class LockHandler {
    * @throws [[IModelHubError]] with [IModelHubStatus.OperationFailed]($bentley) when including multiple identical locks in the request.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async update(requestContext: AuthorizedClientRequestContext, imodelId: GuidString, locks: Lock[], updateOptions?: LockUpdateOptions): Promise<Lock[]> {
+  public async update(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, locks: Lock[], updateOptions?: LockUpdateOptions): Promise<Lock[]> {
     requestContext.enter();
-    Logger.logInfo(loggingCategory, `Requesting locks for iModel ${imodelId}`);
+    Logger.logInfo(loggerCategory, "Requesting locks", () => ({ iModelId }));
     ArgumentCheck.defined("requestContext", requestContext);
-    ArgumentCheck.validGuid("imodelId", imodelId);
+    ArgumentCheck.validGuid("iModelId", iModelId);
     ArgumentCheck.nonEmptyArray("locks", locks);
 
     updateOptions = updateOptions || {};
@@ -470,7 +461,7 @@ export class LockHandler {
     for (let i = 0; i < locks.length; i += updateOptions.locksPerRequest!) {
       const chunk = locks.slice(i, i + updateOptions.locksPerRequest!);
       try {
-        result.push(...await this.updateInternal(requestContext, imodelId, chunk, updateOptions));
+        result.push(...await this.updateInternal(requestContext, iModelId, chunk, updateOptions));
         requestContext.enter();
       } catch (error) {
         requestContext.enter();
@@ -500,32 +491,31 @@ export class LockHandler {
       return Promise.reject(aggregateError.errors.length > 1 ? aggregateError : aggregateError.errors[0]);
     }
 
-    Logger.logTrace(loggingCategory, `Requested ${locks.length} locks for iModel ${imodelId}`);
+    Logger.logTrace(loggerCategory, `Requested ${locks.length} locks for iModel`, () => ({ iModelId }));
 
     return result;
   }
 
-  /**
-   * Get the [[Lock]]s that have been issued for the iModel.
+  /** Get the [[Lock]]s that have been issued for the iModel.
    * @param requestContext The client request context.
-   * @param imodelId Id of the iModel. See [[HubIModel]].
+   * @param iModelId Id of the iModel. See [[HubIModel]].
    * @param query Optional query object to filter the queried Locks or select different data from them.
    * @returns Resolves to an array of Locks matching the query.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async get(requestContext: AuthorizedClientRequestContext, imodelId: GuidString, query: LockQuery = new LockQuery()): Promise<Lock[]> {
+  public async get(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, query: LockQuery = new LockQuery()): Promise<Lock[]> {
     requestContext.enter();
-    Logger.logInfo(loggingCategory, `Querying locks for iModel ${imodelId}`);
+    Logger.logInfo(loggerCategory, "Querying locks", () => ({ iModelId }));
     ArgumentCheck.defined("requestContext", requestContext);
-    ArgumentCheck.validGuid("imodelId", imodelId);
+    ArgumentCheck.validGuid("iModelId", iModelId);
 
     let locks: Lock[];
     if (query.isMultiLockQuery) {
-      const result = await this._handler.getInstances<MultiLock>(requestContext, MultiLock, this.getRelativeUrl(imodelId), query.getQueryOptions());
+      const result = await this._handler.getInstances<MultiLock>(requestContext, MultiLock, this.getRelativeUrl(iModelId), query.getQueryOptions());
       requestContext.enter();
       locks = LockHandler.convertMultiLocksToLocks(result);
     } else {
-      locks = await this._handler.postQuery<Lock>(requestContext, Lock, this.getRelativeUrl(imodelId, false), query.getQueryOptions());
+      locks = await this._handler.postQuery<Lock>(requestContext, Lock, this.getRelativeUrl(iModelId, false), query.getQueryOptions());
       requestContext.enter();
       locks = locks.map((value: Lock) => {
         const result = new Lock();
@@ -539,29 +529,27 @@ export class LockHandler {
       });
     }
 
-    Logger.logTrace(loggingCategory, `Queried ${locks.length} locks for iModel ${imodelId}`);
-
+    Logger.logTrace(loggerCategory, `Queried ${locks.length} locks for iModel`, () => ({ iModelId }));
     return locks;
   }
 
-  /**
-   * Delete all [[Lock]]s owned by the specified [[Briefcase]].
+  /** Delete all [[Lock]]s owned by the specified [[Briefcase]].
    * @param requestContext The client request context.
-   * @param imodelId Id of the iModel. See [[HubIModel]].
+   * @param iModelId Id of the iModel. See [[HubIModel]].
    * @param briefcaseId Id of the Briefcacase.
    * @throws [[IModelHubError]] with [IModelHubStatus.BriefcaseDoesNotExist]($bentley) if [[Briefcase]] with specified briefcaseId does not exist. This can happen if number was not given as a Briefcase id yet, or Briefcase with that id was already deleted.
    * @throws [[IModelHubError]] with [IModelHubStatus.UserDoesNotHavePermission]($bentley) if [[Briefcase]] belongs to another user and user sending the request does not have ManageResources permission.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async deleteAll(requestContext: AuthorizedClientRequestContext, imodelId: GuidString, briefcaseId: number): Promise<void> {
+  public async deleteAll(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, briefcaseId: number): Promise<void> {
     requestContext.enter();
-    Logger.logInfo(loggingCategory, `Deleting all locks from briefcase ${briefcaseId} in iModel ${imodelId}`);
+    Logger.logInfo(loggerCategory, "Deleting all locks from briefcase", () => ({ iModelId, briefcaseId }));
     ArgumentCheck.defined("requestContext", requestContext);
-    ArgumentCheck.validGuid("imodelId", imodelId);
+    ArgumentCheck.validGuid("iModelId", iModelId);
     ArgumentCheck.validBriefcaseId("briefcaseId", briefcaseId);
 
-    await this._handler.delete(requestContext, this.getRelativeUrl(imodelId, false, `DeleteAll-${briefcaseId}`));
+    await this._handler.delete(requestContext, this.getRelativeUrl(iModelId, false, `DeleteAll-${briefcaseId}`));
     requestContext.enter();
-    Logger.logTrace(loggingCategory, `Deleted all locks from briefcase ${briefcaseId} in iModel ${imodelId}`);
+    Logger.logTrace(loggerCategory, "Deleted all locks from briefcase", () => ({ iModelId, briefcaseId }));
   }
 }

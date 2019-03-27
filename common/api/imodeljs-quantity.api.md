@@ -315,7 +315,6 @@ export class QuantityConstants {
 
 // @alpha
 export class QuantityError extends BentleyError {
-    // (undocumented)
     constructor(errorNumber: number, message?: string);
     // (undocumented)
     readonly errorNumber: number;

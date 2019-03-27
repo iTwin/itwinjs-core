@@ -4,16 +4,16 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module iModelHub */
 
-import { ECJsonTypeMap, WsgInstance } from "./../ECJsonTypeMap";
-
-import { request, RequestOptions } from "./../Request";
+import { GuidString, Logger } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext } from "../AuthorizedClientRequestContext";
-import { Logger, GuidString } from "@bentley/bentleyjs-core";
+import { LoggerCategory } from "../LoggerCategory";
+import { ECJsonTypeMap, WsgInstance } from "./../ECJsonTypeMap";
+import { request, RequestOptions } from "./../Request";
+import { IModelBaseHandler } from "./BaseHandler";
 import { ArgumentCheck } from "./Errors";
 import { InstanceIdQuery } from "./Query";
-import { IModelBaseHandler } from "./BaseHandler";
 
-const loggingCategory = "imodeljs-clients.imodelhub";
+const loggerCategory: string = LoggerCategory.IModelHub;
 
 /** Thumbnail size. 'Small' is 400x250 PNG image and 'Large' is a 800x500 PNG image. */
 export type ThumbnailSize = "Small" | "Large";
@@ -71,40 +71,32 @@ export class ThumbnailHandler {
     this._handler = handler;
   }
 
-  /**
-   * Get relative url for tip Thumbnail requests.
-   * @hidden
+  /** Get relative url for tip Thumbnail requests.
    * @param projectId Id of the [[Project]].
-   * @param imodelId Id of the iModel. See [[HubIModel]].
+   * @param iModelId Id of the iModel. See [[HubIModel]].
    * @param size Size of the thumbnail.
    */
-  private getRelativeProjectUrl(projectId: string, imodelId: GuidString, size: ThumbnailSize) {
-    return `/Repositories/Project--${this._handler.formatProjectIdForUrl(projectId)}/ProjectScope/${size}Thumbnail/${imodelId.toString()}/$file`;
+  private getRelativeProjectUrl(projectId: string, iModelId: GuidString, size: ThumbnailSize) {
+    return `/Repositories/Project--${this._handler.formatProjectIdForUrl(projectId)}/ProjectScope/${size}Thumbnail/${iModelId.toString()}/$file`;
   }
 
-  /**
-   * Get relative url for Thumbnail requests.
-   * @hidden
-   * @param imodelId Id of the iModel. See [[HubIModel]].
+  /** Get relative url for Thumbnail requests.
+   * @param iModelId Id of the iModel. See [[HubIModel]].
    * @param size Size of the thumbnail.
    * @param thumbnailId Id of the thumbnail.
    */
-  private getRelativeUrl(imodelId: GuidString, size: ThumbnailSize, thumbnailId?: GuidString) {
-    return `/Repositories/iModel--${imodelId}/iModelScope/${size}Thumbnail/${thumbnailId || ""}`;
+  private getRelativeUrl(iModelId: GuidString, size: ThumbnailSize, thumbnailId?: GuidString) {
+    return `/Repositories/iModel--${iModelId}/iModelScope/${size}Thumbnail/${thumbnailId || ""}`;
   }
 
-  /**
-   * Check if given thumbnail is TipThumbnail.
-   * @hidden
+  /** Check if given thumbnail is TipThumbnail.
    * @param thumbnail SmallThumbnail, LargeThumbnail or TipThumbnail.
    */
   private isTipThumbnail(thumbnail: Thumbnail | TipThumbnail): thumbnail is TipThumbnail {
     return (thumbnail as TipThumbnail).projectId !== undefined;
   }
 
-  /**
-   * Download the thumbnail.
-   * @hidden
+  /** Download the thumbnail.
    * @param requestContext The client request context.
    * @param url Url to download thumbnail.
    * @return String for the PNG image that includes the base64 encoded array of the image bytes.
@@ -130,86 +122,79 @@ export class ThumbnailHandler {
     return "data:image/png;base64," + base64Data;
   }
 
-  /**
-   * Download the latest iModel's thumbnail.
-   * @hidden
+  /** Download the latest iModel's thumbnail.
    * @param requestContext The client request context.
    * @param projectId Id of the connect project.
-   * @param imodelId Id of the iModel. See [[HubIModel]].
+   * @param iModelId Id of the iModel. See [[HubIModel]].
    * @param size Size of the thumbnail. Pass 'Small' for 400x250 PNG image, and 'Large' for a 800x500 PNG image.
    * @return String for the PNG image that includes the base64 encoded array of the image bytes.
    */
-  private async downloadTipThumbnail(requestContext: AuthorizedClientRequestContext, projectId: string, imodelId: GuidString, size: ThumbnailSize): Promise<string> {
+  private async downloadTipThumbnail(requestContext: AuthorizedClientRequestContext, projectId: string, iModelId: GuidString, size: ThumbnailSize): Promise<string> {
     requestContext.enter();
-    Logger.logInfo(loggingCategory, `Downloading tip ${size}Thumbnail for iModel ${imodelId}`);
+    Logger.logInfo(loggerCategory, `Downloading tip ${size}Thumbnail`, () => ({ iModelId }));
     ArgumentCheck.defined("requestContext", requestContext);
     ArgumentCheck.validGuid("projectId", projectId);
-    ArgumentCheck.validGuid("imodelId", imodelId);
+    ArgumentCheck.validGuid("iModelId", iModelId);
 
-    const url: string = await this._handler.getUrl(requestContext) + this.getRelativeProjectUrl(projectId, imodelId, size);
+    const url: string = await this._handler.getUrl(requestContext) + this.getRelativeProjectUrl(projectId, iModelId, size);
     const pngImage = await this.downloadThumbnail(requestContext, url);
     requestContext.enter();
 
-    Logger.logTrace(loggingCategory, `Downloaded tip ${size}Thumbnail for iModel ${imodelId}`);
-
+    Logger.logTrace(loggerCategory, `Downloaded tip ${size}Thumbnail`, () => ({ iModelId }));
     return pngImage;
   }
 
-  /**
-   * Get the [[Thumbnail]]s. Returned Thumbnails are ordered from the latest [[ChangeSet]] to the oldest.
+  /** Get the [[Thumbnail]]s. Returned Thumbnails are ordered from the latest [[ChangeSet]] to the oldest.
    * @param requestContext The client request context.
-   * @param imodelId Id of the iModel. See [[HubIModel]].
+   * @param iModelId Id of the iModel. See [[HubIModel]].
    * @param size Size of the thumbnail.
    * @param query Optional query object to filter the queried Thumbnails.
    * @return Array of Thumbnails of the specified size that match the query.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async get(requestContext: AuthorizedClientRequestContext, imodelId: GuidString, size: ThumbnailSize, query: ThumbnailQuery = new ThumbnailQuery()): Promise<Thumbnail[]> {
+  public async get(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, size: ThumbnailSize, query: ThumbnailQuery = new ThumbnailQuery()): Promise<Thumbnail[]> {
     requestContext.enter();
-    Logger.logInfo(loggingCategory, `Querying iModel ${imodelId} thumbnails`);
+    Logger.logInfo(loggerCategory, "Querying iModel thumbnails", () => ({ iModelId }));
     ArgumentCheck.defined("requestContext", requestContext);
-    ArgumentCheck.validGuid("imodelId", imodelId);
+    ArgumentCheck.validGuid("iModelId", iModelId);
 
     let thumbnails = [];
     if (size === "Small")
-      thumbnails = await this._handler.getInstances<SmallThumbnail>(requestContext, SmallThumbnail, this.getRelativeUrl(imodelId, size, query.getId()), query.getQueryOptions());
+      thumbnails = await this._handler.getInstances<SmallThumbnail>(requestContext, SmallThumbnail, this.getRelativeUrl(iModelId, size, query.getId()), query.getQueryOptions());
     else
-      thumbnails = await this._handler.getInstances<LargeThumbnail>(requestContext, LargeThumbnail, this.getRelativeUrl(imodelId, size, query.getId()), query.getQueryOptions());
+      thumbnails = await this._handler.getInstances<LargeThumbnail>(requestContext, LargeThumbnail, this.getRelativeUrl(iModelId, size, query.getId()), query.getQueryOptions());
 
-    Logger.logTrace(loggingCategory, `Queried iModel ${imodelId} thumbnails`);
-
+    Logger.logTrace(loggerCategory, "Queried iModel thumbnails", () => ({ iModelId }));
     return thumbnails;
   }
 
-  /**
-   * Download a [[Thumbnail]].
+  /** Download a [[Thumbnail]].
    * @param requestContext The client request context.
-   * @param imodelId Id of the iModel. See [[HubIModel]].
+   * @param iModelId Id of the iModel. See [[HubIModel]].
    * @param thumbnail Small, Large or Tip thumbnail. Use [[ThumbnailHandler.get]] to get a [[SmallThumbnail]] or [[LargeThumbnail]] instance or provide Tip thumbnail information by constructing a [[TipThumbnail]] instance.
    * @return Base64 encoded string containing the PNG image.
    * @throws Error if a successful server response contains no content.
    * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) or [IModelHubStatus.InvalidArgumentError]($bentley) if one of the arguments is undefined or has an invalid value.
    * @throws [[ResponseError]] if a network issue occurs.
    */
-  public async download(requestContext: AuthorizedClientRequestContext, imodelId: GuidString, thumbnail: Thumbnail | TipThumbnail): Promise<string> {
+  public async download(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, thumbnail: Thumbnail | TipThumbnail): Promise<string> {
     requestContext.enter();
     ArgumentCheck.defined("requestContext", requestContext);
-    ArgumentCheck.validGuid("imodelId", imodelId);
+    ArgumentCheck.validGuid("iModelId", iModelId);
 
     if (this.isTipThumbnail(thumbnail)) {
-      return this.downloadTipThumbnail(requestContext, thumbnail.projectId, imodelId, thumbnail.size);
+      return this.downloadTipThumbnail(requestContext, thumbnail.projectId, iModelId, thumbnail.size);
     }
 
     const size: ThumbnailSize = thumbnail instanceof SmallThumbnail ? "Small" : "Large";
     const thumbnailId: GuidString = thumbnail.id!;
 
-    Logger.logInfo(loggingCategory, `Downloading ${size}Thumbnail ${thumbnailId} for iModel ${imodelId}`);
+    Logger.logInfo(loggerCategory, `Downloading ${size}Thumbnail ${thumbnailId} for iModel`, () => ({ iModelId }));
 
-    const url: string = await this._handler.getUrl(requestContext) + this.getRelativeUrl(imodelId, size, thumbnailId) + "/$file";
+    const url: string = await this._handler.getUrl(requestContext) + this.getRelativeUrl(iModelId, size, thumbnailId) + "/$file";
     const pngImage = await this.downloadThumbnail(requestContext, url);
     requestContext.enter();
-    Logger.logTrace(loggingCategory, `Downloaded ${size}Thumbnail ${thumbnailId} for iModel ${imodelId}`);
-
+    Logger.logTrace(loggerCategory, `Downloaded ${size}Thumbnail ${thumbnailId} for iModel`, () => ({ iModelId }));
     return pngImage;
   }
 }

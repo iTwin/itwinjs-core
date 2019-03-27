@@ -20,7 +20,6 @@ export class FluentdBunyanLoggerConfig {
 
 // @beta (undocumented)
 export class FluentdLoggerStream extends Writable {
-    // (undocumented)
     constructor(fluentdParams: IFluentdConfig);
     // (undocumented)
     _write(chunk: any, encoding: string, callback: (err?: Error) => void): void;

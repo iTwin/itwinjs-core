@@ -11,7 +11,6 @@ import { IModelHost } from "../IModelHost";
 import { LoggerCategory } from "../LoggerCategory";
 import { PromiseMemoizer, QueryablePromise } from "../PromiseMemoizer";
 import { Readable } from "stream";
-import { loggingCategory } from "@bentley/imodeljs-clients";
 
 interface TileRequestProps {
   requestContext: ClientRequestContext;
@@ -204,7 +203,7 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
         IModelHost.tileCacheService.upload(cache.formContainerName(id), cache.formResourceName(id), await content); // tslint:disable-line:no-floating-promises
       });
     } catch (err) {
-      Logger.logError(loggingCategory, err.toString());
+      Logger.logError(LoggerCategory.IModelTileRequestRpc, err.toString());
     }
   }
 }

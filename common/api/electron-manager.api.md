@@ -9,7 +9,6 @@ import { BrowserWindowConstructorOptions } from 'electron';
 
 // @public
 export class IModelJsElectronManager extends StandardElectronManager {
-    // (undocumented)
     constructor(webResourcesPath?: string);
     // (undocumented)
     appIconPath: string;
@@ -35,7 +34,6 @@ export abstract class StandardElectronManager {
 
 // @public
 export class WebpackDevServerElectronManager extends StandardElectronManager {
-    // (undocumented)
     constructor(frontendPort?: number);
     // (undocumented)
     appIconPath: string;

@@ -167,7 +167,6 @@ export interface AreaFillProps {
 export namespace AreaPattern {
     // (undocumented)
     export class HatchDefLine implements HatchDefLineProps {
-        // (undocumented)
         constructor(json: HatchDefLineProps);
         // (undocumented)
         angle?: Angle;
@@ -395,7 +394,6 @@ export const enum BisCodeSpec {
 
 // @internal
 export class BoundingSphere {
-    // (undocumented)
     constructor(center?: Point3d, radius?: number);
     // (undocumented)
     center: Point3d;
@@ -513,7 +511,6 @@ export class Cartographic implements LatLongAndHeight {
 
 // @public
 export class CartographicRange {
-    // (undocumented)
     constructor(spatialRange: Range3d, spatialToEcef: Transform);
     getLongitudeLatitudeBoundingBox(): Range2d;
     // (undocumented)
@@ -570,7 +567,6 @@ export { ChangeSetStatus }
 
 // @public (undocumented)
 export abstract class CloudStorageCache<TContentId, TContentType> {
-    // (undocumented)
     constructor();
     // (undocumented)
     abstract enabled: boolean;
@@ -654,7 +650,6 @@ export class CloudStorageTileCache extends CloudStorageCache<TileContentIdentifi
 
 // @public
 export class Code implements CodeProps {
-    // (undocumented)
     constructor(val: CodeProps);
     static createEmpty(): Code;
     // (undocumented)
@@ -697,7 +692,6 @@ export namespace CodeScopeSpec {
 
 // @public
 export class CodeSpec {
-    // (undocumented)
     constructor(iModel: IModel, id: Id64String, name: string, specScopeType: CodeScopeSpec.Type, scopeReq?: CodeScopeSpec.ScopeRequirement, properties?: any);
     id: Id64String;
     iModel: IModel;
@@ -1062,7 +1056,6 @@ export type ColorDefProps = number | ColorDef;
 
 // @internal (undocumented)
 export class ColorIndex {
-    // (undocumented)
     constructor();
     // (undocumented)
     readonly hasAlpha: boolean;
@@ -1118,7 +1111,6 @@ export { DbResult }
 
 // @beta
 export class DecorationGeometryProps {
-    // (undocumented)
     constructor(id: Id64String, geometryStream: GeometryStreamProps);
     // (undocumented)
     readonly geometryStream: GeometryStreamProps;
@@ -1141,7 +1133,6 @@ export interface DisplayStyle3dProps extends DisplayStyleProps {
 
 // @beta
 export class DisplayStyle3dSettings extends DisplayStyleSettings {
-    // (undocumented)
     constructor(jsonProperties: {
         styles?: DisplayStyle3dSettingsProps;
     });
@@ -1366,7 +1357,6 @@ export interface ElementProps extends EntityProps {
 
 // @beta
 export class EntityMetaData implements EntityMetaDataProps {
-    // (undocumented)
     constructor(jsonObj: EntityMetaDataProps);
     readonly baseClasses: string[];
     readonly customAttributes?: CustomAttribute[];
@@ -1428,8 +1418,6 @@ export interface EnvironmentProps {
 // @beta
 export class Feature {
     // Warning: (ae-incompatible-release-tags) The symbol "__constructor" is marked as @beta, but its signature references "GeometryClass" which is marked as @alpha
-    // 
-    // (undocumented)
     constructor(elementId?: Id64String, subCategoryId?: Id64String, geometryClass?: GeometryClass);
     // (undocumented)
     compare(rhs: Feature): number;
@@ -1460,7 +1448,6 @@ export class FeatureGates {
 
 // @internal (undocumented)
 export class FeatureIndex {
-    // (undocumented)
     constructor();
     // (undocumented)
     featureID: number;
@@ -1539,7 +1526,6 @@ export enum FillFlags {
 
 // @public
 export class FontMap {
-    // (undocumented)
     constructor(props: FontMapProps);
     // (undocumented)
     readonly fonts: Map<number, FontProps>;
@@ -1609,7 +1595,6 @@ export class Frustum {
 
 // @internal
 export class FrustumPlanes {
-    // (undocumented)
     constructor(frustum?: Frustum);
     // (undocumented)
     computeContainment(points: Point3d[], sphere?: BoundingSphere, tolerance?: number): FrustumPlanes.Containment;
@@ -1842,7 +1827,6 @@ export class GeometryStreamIterator implements IterableIterator<GeometryStreamIt
 
 // @public
 export class GeometryStreamIteratorEntry {
-    // (undocumented)
     constructor(category?: Id64String);
     // Warning: (ae-incompatible-release-tags) The symbol "brep" is marked as @public, but its signature references "BRepEntity" which is marked as @beta
     brep?: BRepEntity.DataProps;
@@ -1868,7 +1852,6 @@ export namespace Gradient {
         Outline = 2
     }
     export class KeyColor implements KeyColorProps {
-        // (undocumented)
         constructor(json: KeyColorProps);
         // (undocumented)
         color: ColorDef;
@@ -2051,7 +2034,6 @@ export class GraphicParams {
 
 // @public
 export class GroundPlane implements GroundPlaneProps {
-    // (undocumented)
     constructor(ground?: GroundPlaneProps);
     aboveColor: ColorDef;
     belowColor: ColorDef;
@@ -2118,7 +2100,6 @@ export namespace HiddenLine {
 // @public
 export namespace Hilite {
     export class Settings {
-        // (undocumented)
         constructor(color?: ColorDef, visibleRatio?: number, hiddenRatio?: number, silhouette?: Silhouette);
         readonly color: ColorDef;
         readonly hiddenRatio: number;
@@ -2245,7 +2226,6 @@ export const enum ImageBufferFormat {
 export namespace ImageLight {
     // (undocumented)
     export class Solar {
-        // (undocumented)
         constructor(direction?: Vector3d, color?: ColorDef, intensity?: number);
         // (undocumented)
         color: ColorDef;
@@ -2318,7 +2298,6 @@ export interface IModelCoordinatesResponseProps {
 
 // @public
 export class IModelError extends BentleyError {
-    // (undocumented)
     constructor(errorNumber: number | IModelStatus | DbResult | BentleyStatus | BriefcaseStatus | RepositoryStatus | ChangeSetStatus | RpcInterfaceStatus | AuthStatus, message: string, log?: LogFunction, category?: string, getMetaData?: GetMetaDataFunction);
 }
 
@@ -2503,7 +2482,6 @@ export interface LatLongAndHeight extends LatAndLong {
 
 // @internal
 export class Light {
-    // (undocumented)
     constructor(opts?: LightProps);
     // (undocumented)
     bulbs: number;
@@ -2721,7 +2699,6 @@ export interface MaterialProps {
 
 // @internal (undocumented)
 export class MeshEdge {
-    // (undocumented)
     constructor(index0?: number, index1?: number);
     // (undocumented)
     indices: number[];
@@ -2729,7 +2706,6 @@ export class MeshEdge {
 
 // @internal (undocumented)
 export class MeshEdges {
-    // (undocumented)
     constructor();
     // (undocumented)
     polylines: MeshPolylineList;
@@ -2743,7 +2719,6 @@ export class MeshEdges {
 
 // @internal (undocumented)
 export class MeshPolyline {
-    // (undocumented)
     constructor(indices?: number[]);
     // (undocumented)
     addIndex(index: number): void;
@@ -2755,7 +2730,6 @@ export class MeshPolyline {
 
 // @internal (undocumented)
 export class MeshPolylineList extends Array<MeshPolyline> {
-    // (undocumented)
     constructor(...args: MeshPolyline[]);
 }
 
@@ -2826,7 +2800,6 @@ export function nextHighestPowerOfTwo(num: number): number;
 
 // @internal (undocumented)
 export class NonUniformColor {
-    // (undocumented)
     constructor(colors: Uint32Array, indices: number[], hasAlpha: boolean);
     // (undocumented)
     readonly colors: Uint32Array;
@@ -2873,7 +2846,6 @@ export const NpcCorners: Point3d[];
 
 // @internal (undocumented)
 export class OctEncodedNormal {
-    // (undocumented)
     constructor(val: number);
     // (undocumented)
     decode(): Vector3d | undefined;
@@ -2885,7 +2857,6 @@ export class OctEncodedNormal {
 
 // @internal (undocumented)
 export class OctEncodedNormalPair {
-    // (undocumented)
     constructor(first: OctEncodedNormal, second: OctEncodedNormal);
     // (undocumented)
     first: OctEncodedNormal;
@@ -2912,7 +2883,6 @@ export interface PageOptions {
 
 // @public
 export class Placement2d implements Placement2dProps {
-    // (undocumented)
     constructor(origin: Point2d, angle: Angle, bbox: ElementAlignedBox2d);
     // (undocumented)
     angle: Angle;
@@ -2941,7 +2911,6 @@ export interface Placement2dProps {
 
 // @public
 export class Placement3d implements Placement3dProps {
-    // (undocumented)
     constructor(origin: Point3d, angles: YawPitchRollAngles, bbox: ElementAlignedBox3d);
     // (undocumented)
     angles: YawPitchRollAngles;
@@ -2984,7 +2953,6 @@ export const POLICY: unique symbol;
 
 // @internal (undocumented)
 export class PolylineData {
-    // (undocumented)
     constructor(vertIndices?: number[], numIndices?: number);
     // (undocumented)
     init(polyline: MeshPolyline): boolean;
@@ -3000,7 +2968,6 @@ export class PolylineData {
 
 // @internal (undocumented)
 export class PolylineEdgeArgs {
-    // (undocumented)
     constructor(lines?: PolylineData[]);
     // (undocumented)
     clear(): void;
@@ -3016,7 +2983,6 @@ export class PolylineEdgeArgs {
 
 // @internal
 export class PolylineFlags {
-    // (undocumented)
     constructor(is2d?: boolean, isPlanar?: boolean, isDisjoint?: boolean, type?: PolylineTypeFlags);
     // (undocumented)
     clone(): PolylineFlags;
@@ -3085,7 +3051,6 @@ export type PropertyCallback = (name: string, meta: PropertyMetaData) => void;
 
 // @beta
 export class PropertyMetaData implements PropertyMetaDataProps {
-    // (undocumented)
     constructor(jsonObj: PropertyMetaDataProps);
     createProperty(jsonObj: any): any;
     // (undocumented)
@@ -3202,7 +3167,6 @@ export class QParams3d {
 
 // @internal
 export class QPoint2d {
-    // (undocumented)
     constructor();
     // (undocumented)
     clone(out?: QPoint2d): QPoint2d;
@@ -3221,7 +3185,6 @@ export class QPoint2d {
 
 // @internal
 export class QPoint2dList {
-    // (undocumented)
     constructor(params: QParams2d);
     add(pt: Point2d): void;
     clear(): void;
@@ -3265,7 +3228,6 @@ export class QPoint3dList {
     [Symbol.iterator](): {
         next: () => IteratorResult<QPoint3d>;
     };
-    // (undocumented)
     constructor(paramsIn?: QParams3d);
     add(pt: Point3d): void;
     clear(): void;
@@ -3321,7 +3283,6 @@ export const REGISTRY: unique symbol;
 
 // @public
 export class RelatedElement implements RelatedElementProps {
-    // (undocumented)
     constructor(props: RelatedElementProps);
     // (undocumented)
     static fromJSON(json?: RelatedElementProps): RelatedElement | undefined;
@@ -3338,7 +3299,6 @@ export interface RelatedElementProps {
 
 // @beta
 export abstract class RenderMaterial {
-    // (undocumented)
     protected constructor(params: RenderMaterial.Params);
     // (undocumented)
     readonly hasTexture: boolean;
@@ -3349,7 +3309,6 @@ export abstract class RenderMaterial {
 // @beta
 export namespace RenderMaterial {
     export class Params {
-        // (undocumented)
         constructor(key?: string);
         // (undocumented)
         ambient: number;
@@ -3504,7 +3463,6 @@ export namespace RenderSchedule {
 
 // @beta
 export abstract class RenderTexture implements IDisposable {
-    // (undocumented)
     protected constructor(params: RenderTexture.Params);
     abstract dispose(): void;
     // (undocumented)
@@ -3521,7 +3479,6 @@ export abstract class RenderTexture implements IDisposable {
 // @beta
 export namespace RenderTexture {
     export class Params {
-        // (undocumented)
         constructor(key?: string, type?: Type, isOwned?: boolean);
         static readonly defaults: Params;
         // (undocumented)
@@ -3549,7 +3506,6 @@ export const RESOURCE = "getResource";
 
 // @public (undocumented)
 export class ResponseLike implements Response {
-    // (undocumented)
     constructor(data: any);
     // (undocumented)
     arrayBuffer(): Promise<ArrayBuffer>;
@@ -4144,7 +4100,6 @@ export namespace RpcSerializedValue {
 
 // @internal (undocumented)
 export class SceneLights {
-    // (undocumented)
     constructor(imageBased: {
         environmentalMap: RenderTexture;
         diffuseImage: RenderTexture;
@@ -4192,13 +4147,11 @@ export interface SerializedRpcRequest extends SerializedClientRequestContext {
 
 // @public (undocumented)
 export class ServerError extends IModelError {
-    // (undocumented)
     constructor(errorNumber: number, message: string, log?: LogFunction);
 }
 
 // @public (undocumented)
 export class ServerTimeoutError extends ServerError {
-    // (undocumented)
     constructor(errorNumber: number, message: string, log?: LogFunction);
 }
 
@@ -4359,7 +4312,6 @@ export interface SpatialViewDefinitionProps extends ViewDefinition3dProps {
 
 // @internal
 export class Spot extends Light {
-    // (undocumented)
     constructor(opts?: SpotProps);
     // (undocumented)
     inner: Angle;
@@ -4377,7 +4329,6 @@ export interface SpotProps extends LightProps {
 
 // @public
 export class SubCategoryAppearance {
-    // (undocumented)
     constructor(props?: SubCategoryAppearance.Props);
     // (undocumented)
     clone(): SubCategoryAppearance;
@@ -4460,7 +4411,6 @@ export class TestRpcManager {
 
 // @public
 export class TextString {
-    // (undocumented)
     constructor(props: TextStringProps);
     bold?: boolean;
     font: number;
@@ -4504,7 +4454,6 @@ export enum TextureFlags {
 
 // @beta
 export class TextureMapping {
-    // (undocumented)
     constructor(tx: RenderTexture, params: TextureMapping.Params);
     // @internal (undocumented)
     computeUVParams(visitor: PolyfaceVisitor, transformToImodel: Transform): Point2d[] | undefined;
@@ -4544,7 +4493,6 @@ export namespace TextureMapping {
         worldMapping?: boolean;
     }
     export class Params {
-        // (undocumented)
         constructor(props?: ParamProps);
         // @internal
         computeUVParams(visitor: IndexedPolyfaceVisitor, transformToImodel: Transform): Point2d[] | undefined;
@@ -4555,7 +4503,6 @@ export namespace TextureMapping {
         worldMapping: boolean;
     }
     export class Trans2x3 {
-        // (undocumented)
         constructor(t00?: number, t01?: number, t02?: number, t10?: number, t11?: number, t12?: number);
         // (undocumented)
         setTransform(): void;

@@ -4,16 +4,17 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module iModelHub */
 
-import { Logger, GuidString } from "@bentley/bentleyjs-core";
-import { ECJsonTypeMap, WsgInstance } from "./../ECJsonTypeMap";
-import { IModelHubClientError, ArgumentCheck } from "./Errors";
+import { GuidString, Logger } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext } from "../AuthorizedClientRequestContext";
-import { Query, addSelectFileAccessKey } from "./Query";
 import { FileHandler } from "../FileHandler";
+import { LoggerCategory } from "../LoggerCategory";
 import { ProgressInfo } from "../Request";
+import { ECJsonTypeMap, WsgInstance } from "./../ECJsonTypeMap";
 import { IModelBaseHandler } from "./BaseHandler";
+import { ArgumentCheck, IModelHubClientError } from "./Errors";
+import { addSelectFileAccessKey, Query } from "./Query";
 
-const loggingCategory = "imodeljs-clients.imodelhub";
+const loggerCategory: string = LoggerCategory.IModelHub;
 
 /** Controls whether the user has exclusive or shared access to a local briefcase */
 export enum BriefcaseAccessMode {
@@ -104,17 +105,15 @@ export class BriefcaseQuery extends Query {
     return this;
   }
 
-  /**
-   * Used by handler to get the id that is queried.
+  /** Used by handler to get the id that is queried.
    * @returns Value that was set with byId method.
-   * @hidden
+   * @internal
    */
   public getId(): number | undefined {
     return this._byId;
   }
 
-  /**
-   * Query will additionally select [[Briefcase]] file download URL. This is needed to use the Briefcase object with [[BriefcaseHandler.download]].
+  /** Query will additionally select [[Briefcase]] file download URL. This is needed to use the Briefcase object with [[BriefcaseHandler.download]].
    * @returns This query.
    */
   public selectDownloadUrl(): this {
@@ -123,63 +122,55 @@ export class BriefcaseQuery extends Query {
   }
 }
 
-/**
- * Handler for managing [[Briefcase]]s. Use [[IModelClient.Briefcases]] to get an instance of this class.
- *
+/** Handler for managing [[Briefcase]]s. Use [[IModelClient.Briefcases]] to get an instance of this class.
  * In most cases, you should use [IModelDb]($backend) or [BriefcaseManager]($backend) methods instead.
  */
 export class BriefcaseHandler {
   private _handler: IModelBaseHandler;
   private _fileHandler?: FileHandler;
 
-  /**
-   * Constructor for BriefcaseHandler. Use [[IModelClient]] instead of directly constructing this.
-   * @hidden
+  /** Constructor for BriefcaseHandler. Use [[IModelClient]] instead of directly constructing this.
    * @param handler Handler for WSG requests.
    * @param fileHandler Handler for file system.
+   * @internal
    */
   constructor(handler: IModelBaseHandler, fileHandler?: FileHandler) {
     this._handler = handler;
     this._fileHandler = fileHandler;
   }
 
-  /**
-   * Get relative url for Briefcase requests.
-   * @hidden
-   * @param imodelId Id of the iModel. See [[HubIModel]].
+  /** Get relative url for Briefcase requests.
+   * @param iModelId Id of the iModel. See [[HubIModel]].
    * @param briefcaseId Id of the briefcase.
+   * @internal
    */
-  private getRelativeUrl(imodelId: GuidString, briefcaseId?: number) {
-    return `/Repositories/iModel--${imodelId}/iModelScope/Briefcase/${briefcaseId || ""}`;
+  private getRelativeUrl(iModelId: GuidString, briefcaseId?: number) {
+    return `/Repositories/iModel--${iModelId}/iModelScope/Briefcase/${briefcaseId || ""}`;
   }
 
-  /**
-   * Acquire a [[Briefcase]] for the specified iModel. This assigns you a new briefcaseId and returns you a download link.
-   *
+  /** Acquire a [[Briefcase]] for the specified iModel. This assigns you a new briefcaseId and returns you a download link.
    * A briefcase is automatically acquired when calling [IModelDb.open]($backend) or [IModelDb.create]($backend). You should use this method only when you want to acquire the briefcaseId without downloading the file. If you need just the download link, you can call [[BriefcaseHandler.get]] with [[BriefcaseQuery.selectDownloadUrl]].
    * @param requestContext The client request context
-   * @param imodelId Id of the iModel. See [[HubIModel]].
+   * @param iModelId Id of the iModel. See [[HubIModel]].
    * @returns The acquired Briefcase instance.
    * @throws [[IModelHubError]] with [IModelHubStatus.MaximumNumberOfBriefcasesPerUser]($bentley) or [IModelHubStatus.MaximumNumberOfBriefcasesPerUserPerMinute]($bentley) if a limit of Briefcases for that user was reached. Users should use the Briefcases they have previously acquired. If that is no longer possible, they should delete them, to be able to acquire new ones.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async create(requestContext: AuthorizedClientRequestContext, imodelId: GuidString): Promise<Briefcase> {
+  public async create(requestContext: AuthorizedClientRequestContext, iModelId: GuidString): Promise<Briefcase> {
     requestContext.enter();
-    Logger.logInfo(loggingCategory, "Acquiring briefcase for iModel", () => ({ imodelId }));
+    Logger.logInfo(loggerCategory, "Acquiring briefcase for iModel", () => ({ iModelId }));
     ArgumentCheck.defined("requestContext", requestContext);
-    ArgumentCheck.validGuid("imodelId", imodelId);
+    ArgumentCheck.validGuid("iModelId", iModelId);
 
     let briefcase: Briefcase = new Briefcase();
 
-    briefcase = await this._handler.postInstance<Briefcase>(requestContext, Briefcase, this.getRelativeUrl(imodelId), briefcase);
+    briefcase = await this._handler.postInstance<Briefcase>(requestContext, Briefcase, this.getRelativeUrl(iModelId), briefcase);
     requestContext.enter();
-    Logger.logTrace(loggingCategory, "Acquired briefcase for iModel", () => briefcase);
-
+    Logger.logTrace(loggerCategory, "Acquired briefcase for iModel", () => briefcase);
     return briefcase;
   }
 
-  /**
-   * Delete the [[Briefcase]] from iModelHub. This frees up the id to be reused later and allows user to acquire additional briefcases if one of the briefcase limits was reached.
+  /** Delete the [[Briefcase]] from iModelHub. This frees up the id to be reused later and allows user to acquire additional briefcases if one of the briefcase limits was reached.
    * @param requestContext The client request context
    * @param iModelId Id of the iModel. See [[HubIModel]].
    * @param briefcaseId Id of the Briefcase to be deleted.
@@ -187,18 +178,17 @@ export class BriefcaseHandler {
    */
   public async delete(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, briefcaseId: number): Promise<void> {
     requestContext.enter();
-    Logger.logInfo(loggingCategory, "Deleting briefcase from iModel", () => ({ iModelId, briefcaseId }));
+    Logger.logInfo(loggerCategory, "Deleting briefcase from iModel", () => ({ iModelId, briefcaseId }));
     ArgumentCheck.defined("requestContext", requestContext);
-    ArgumentCheck.validGuid("imodelId", iModelId);
+    ArgumentCheck.validGuid("iModelId", iModelId);
     ArgumentCheck.validBriefcaseId("briefcaseId", briefcaseId);
 
     await this._handler.delete(requestContext, this.getRelativeUrl(iModelId, briefcaseId));
     requestContext.enter();
-    Logger.logTrace(loggingCategory, "Deleted briefcase from iModel", () => ({ iModelId, briefcaseId }));
+    Logger.logTrace(loggerCategory, "Deleted briefcase from iModel", () => ({ iModelId, briefcaseId }));
   }
 
-  /**
-   * Get the [[Briefcase]]s.
+  /** Get the [[Briefcase]]s.
    * @param requestContext The client request context
    * @param iModelId Id of the iModel. See [[HubIModel]].
    * @param query Optional query object to filter the queried Briefcases or select different data from them.
@@ -208,9 +198,9 @@ export class BriefcaseHandler {
    */
   public async get(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, query: BriefcaseQuery = new BriefcaseQuery()): Promise<Briefcase[]> {
     requestContext.enter();
-    Logger.logInfo(loggingCategory, "Querying briefcases for iModel", () => ({ iModelId }));
+    Logger.logInfo(loggerCategory, "Querying briefcases for iModel", () => ({ iModelId }));
     ArgumentCheck.defined("requestContext", requestContext);
-    ArgumentCheck.validGuid("imodelId", iModelId);
+    ArgumentCheck.validGuid("iModelId", iModelId);
 
     const id = query.getId();
 
@@ -220,14 +210,11 @@ export class BriefcaseHandler {
       briefcase.iModelId = iModelId;
     }
 
-    Logger.logTrace(loggingCategory, "Queried briefcases for iModel", () => ({ iModelId, count: briefcases.length }));
-
+    Logger.logTrace(loggerCategory, "Queried briefcases for iModel", () => ({ iModelId, count: briefcases.length }));
     return briefcases;
   }
 
-  /**
-   * Download the latest copy of master file. This only downloads the file and does not write the [[Briefcase]] id into it. Use [IModelDb.open]($backend) instead if you want to get a Briefcase file you can work with.
-   *
+  /** Download the latest copy of master file. This only downloads the file and does not write the [[Briefcase]] id into it. Use [IModelDb.open]($backend) instead if you want to get a Briefcase file you can work with.
    * This method does not work on the browser. Directory containing the Briefcase file is created if it does not exist. If there is an error during download, any partially downloaded file is deleted from disk.
    * @param requestContext The client request context
    * @param briefcase Briefcase to download. This needs to include a download link. See [[BriefcaseQuery.selectDownloadUrl]].
@@ -240,7 +227,7 @@ export class BriefcaseHandler {
    */
   public async download(requestContext: AuthorizedClientRequestContext, briefcase: Briefcase, path: string, progressCallback?: (progress: ProgressInfo) => void): Promise<void> {
     requestContext.enter();
-    Logger.logTrace(loggingCategory, "Started downloading briefcase", () => ({ ...briefcase, path }));
+    Logger.logTrace(loggerCategory, "Started downloading briefcase", () => ({ ...briefcase, path }));
     ArgumentCheck.defined("briefcase", briefcase);
     ArgumentCheck.defined("path", path);
 
@@ -255,6 +242,6 @@ export class BriefcaseHandler {
 
     await this._fileHandler.downloadFile(requestContext, briefcase.downloadUrl, path, parseInt(briefcase.fileSize!, 10), progressCallback);
     requestContext.enter();
-    Logger.logTrace(loggingCategory, "Finished downloading briefcase", () => ({ ...briefcase, path }));
+    Logger.logTrace(loggerCategory, "Finished downloading briefcase", () => ({ ...briefcase, path }));
   }
 }
