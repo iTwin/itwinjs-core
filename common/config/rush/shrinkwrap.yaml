@@ -2,7 +2,7 @@ dependencies:
   '@bentley/dev-cors-proxy-server': npm.bentley.com/@bentley/dev-cors-proxy-server/0.0.9
   '@bentley/icons-generic-webfont': npm.bentley.com/@bentley/icons-generic-webfont/0.0.9
   '@bentley/imodeljs-native': npm.bentley.com/@bentley/imodeljs-native/0.111.0
-  '@microsoft/api-extractor': 7.0.32
+  '@microsoft/api-extractor': 7.0.33
   '@openid/appauth': 1.2.2
   '@rush-temp/bentleyjs-core': 'file:projects/bentleyjs-core.tgz'
   '@rush-temp/build-tools': 'file:projects/build-tools.tgz'
@@ -236,7 +236,7 @@ dependencies:
   rimraf: 2.6.3
   sass-loader: 7.1.0
   save: 2.3.3
-  semver: 5.6.0
+  semver: 5.7.0
   sinon: 7.3.0
   sinon-chai: 3.3.0
   source-map-loader: 0.2.4
@@ -446,7 +446,7 @@ packages:
     dev: false
     resolution:
       integrity: sha512-kZJaWwdu3z5A1DugJpOZ9dI5+DjIEhqQJwHn2/kLTpsKT7gOyqNRbGHlDGG8xSiJ6/m994+cwh3qSGYDC17dtw==
-  /@microsoft/api-extractor/7.0.32:
+  /@microsoft/api-extractor/7.0.33:
     dependencies:
       '@microsoft/api-extractor-model': 7.0.28
       '@microsoft/node-core-library': 3.13.0
@@ -460,7 +460,7 @@ packages:
     dev: false
     hasBin: true
     resolution:
-      integrity: sha512-MRXI3FVEXHrt1cjZ9tjhPF422RydWOZkD0LF8y+IRmz/QhYTQ7xFMy0afI/PBWw+607sLNTchgYx1gtHBgsn+g==
+      integrity: sha512-HaOnscz6Cj+LCxa2CLR2COH70HN7yJ3ahqBQjucOeFB45gdZ496sreOTZXLVgmbY520g9FyfppSB3CaHzj68Vw==
   /@microsoft/node-core-library/3.13.0:
     dependencies:
       '@types/fs-extra': 5.0.4
@@ -3042,7 +3042,7 @@ packages:
     dependencies:
       nice-try: 1.0.5
       path-key: 2.0.1
-      semver: 5.6.0
+      semver: 5.7.0
       shebang-command: 1.2.0
       which: 1.3.1
     dev: false
@@ -3718,7 +3718,7 @@ packages:
       nugget: 2.0.1
       path-exists: 3.0.0
       rc: 1.2.8
-      semver: 5.6.0
+      semver: 5.7.0
       sumchecker: 2.0.2
     dev: false
     engines:
@@ -3806,7 +3806,7 @@ packages:
       prop-types: 15.7.2
       react-is: 16.8.5
       react-test-renderer: 16.8.5
-      semver: 5.6.0
+      semver: 5.7.0
     dev: false
     peerDependencies:
       enzyme: ^3.0.0
@@ -3825,7 +3825,7 @@ packages:
       react-dom: /react-dom/16.8.5/react@16.8.5
       react-is: 16.8.5
       react-test-renderer: /react-test-renderer/16.8.5/react@16.8.5
-      semver: 5.6.0
+      semver: 5.7.0
     dev: false
     id: registry.npmjs.org/enzyme-adapter-react-16/1.11.2
     peerDependencies:
@@ -3840,7 +3840,7 @@ packages:
       object.assign: 4.1.0
       object.fromentries: 2.0.0
       prop-types: 15.7.2
-      semver: 5.6.0
+      semver: 5.7.0
     dev: false
     peerDependencies:
       react: 0.13.x || 0.14.x || ^15.0.0-0 || ^16.0.0-0
@@ -3853,7 +3853,7 @@ packages:
       object.fromentries: 2.0.0
       prop-types: 15.7.2
       react: 16.8.5
-      semver: 5.6.0
+      semver: 5.7.0
     dev: false
     id: registry.npmjs.org/enzyme-adapter-utils/1.10.1
     peerDependencies:
@@ -5298,7 +5298,7 @@ packages:
       '@babel/runtime': 7.4.2
       loose-envify: 1.4.0
       resolve-pathname: 2.2.0
-      tiny-invariant: 1.0.3
+      tiny-invariant: 1.0.4
       tiny-warning: 1.0.2
       value-equal: 0.4.0
     dev: false
@@ -6307,7 +6307,7 @@ packages:
       babel-types: 6.26.0
       babylon: 6.18.0
       istanbul-lib-coverage: 1.2.1
-      semver: 5.6.0
+      semver: 5.7.0
     dev: false
     resolution:
       integrity: sha512-aWHxfxDqvh/ZlxR8BBaEPVSWDPUkGD63VjGQn3jcw8jCp7sHEMKcrj4xfJn/ABzdMEHiQNyvDQhqm5o8+SQg7A==
@@ -6319,7 +6319,7 @@ packages:
       '@babel/traverse': 7.4.0
       '@babel/types': 7.4.0
       istanbul-lib-coverage: 2.0.3
-      semver: 5.6.0
+      semver: 5.7.0
     dev: false
     engines:
       node: '>=6'
@@ -6655,7 +6655,7 @@ packages:
       lodash.isstring: 4.0.1
       lodash.once: 4.1.1
       ms: 2.1.1
-      semver: 5.6.0
+      semver: 5.7.0
     dev: false
     engines:
       node: '>=4'
@@ -7072,7 +7072,7 @@ packages:
   /make-dir/2.1.0:
     dependencies:
       pify: 4.0.1
-      semver: 5.6.0
+      semver: 5.7.0
     dev: false
     engines:
       node: '>=6'
@@ -7739,7 +7739,7 @@ packages:
       moo: 0.4.3
       railroad-diagrams: 1.0.0
       randexp: 0.4.6
-      semver: 5.6.0
+      semver: 5.7.0
     dev: false
     hasBin: true
     resolution:
@@ -7784,7 +7784,7 @@ packages:
       mkdirp: 0.5.1
       propagate: 1.0.0
       qs: 6.7.0
-      semver: 5.6.0
+      semver: 5.7.0
     dev: false
     engines:
       '0': node >= 4.0
@@ -7887,7 +7887,7 @@ packages:
       integrity: sha512-5MQunG/oyOaBdttrL40dA7bUfPORLRWMUJLQtMg7nluxUvk5XwnLdL9twQHFAjRx/y7mIMkLKT9++qPbbk6BZA==
   /node-releases/1.1.11:
     dependencies:
-      semver: 5.6.0
+      semver: 5.7.0
     dev: false
     resolution:
       integrity: sha512-8v1j5KfP+s5WOTa1spNUAOfreajQPN12JXbRR0oDE+YrJBQCXBnNqUDj27EKpPLOoSiU3tKi3xGPB+JaOdUEQQ==
@@ -7939,7 +7939,7 @@ packages:
       ignore-by-default: 1.0.1
       minimatch: 3.0.4
       pstree.remy: 1.1.6
-      semver: 5.6.0
+      semver: 5.7.0
       supports-color: 5.5.0
       touch: 3.1.0
       undefsafe: 2.0.2
@@ -7982,7 +7982,7 @@ packages:
     dependencies:
       hosted-git-info: 2.7.1
       resolve: 1.10.0
-      semver: 5.6.0
+      semver: 5.7.0
       validate-npm-package-license: 3.0.4
     dev: false
     resolution:
@@ -8529,7 +8529,7 @@ packages:
       got: 6.7.1
       registry-auth-token: 3.4.0
       registry-url: 3.1.0
-      semver: 5.6.0
+      semver: 5.7.0
     dev: false
     engines:
       node: '>=4'
@@ -10589,7 +10589,7 @@ packages:
       lodash.tail: 4.1.1
       neo-async: 2.6.0
       pify: 3.0.0
-      semver: 5.6.0
+      semver: 5.7.0
     dev: false
     engines:
       node: '>= 6.9.0 || >= 8.9.0'
@@ -10604,7 +10604,7 @@ packages:
       lodash.tail: 4.1.1
       neo-async: 2.6.0
       pify: 3.0.0
-      semver: 5.6.0
+      semver: 5.7.0
       webpack: 4.29.6
     dev: false
     engines:
@@ -10684,7 +10684,7 @@ packages:
       integrity: sha512-9AukTiDmHXGXWtWjembZ5NDmVvP2695EtpgbCsxCa68w3c88B+alqbmZ4O3hZ4VWGXeGWzEVdvqgAJD8DQPCDw==
   /semver-diff/2.1.0:
     dependencies:
-      semver: 5.6.0
+      semver: 5.7.0
     dev: false
     engines:
       node: '>=0.10.0'
@@ -10695,11 +10695,11 @@ packages:
     hasBin: true
     resolution:
       integrity: sha1-myzl094C0XxgEq0yaqa00M9U+U8=
-  /semver/5.6.0:
+  /semver/5.7.0:
     dev: false
     hasBin: true
     resolution:
-      integrity: sha512-RS9R6R35NYgQn++fkDWaOmqGoj4Ek9gGs+DPxNUZKuwE183xjJroKvyo1IzVFeXvUrvmALy6FWD5xrdJT25gMg==
+      integrity: sha512-Ya52jSX2u7QKghxeoFGpLwCtGlt7j0oY9DYb5apt9nPlJ42ID+ulTXESnt/qAQcoSERyZ5sl3LDIOw0nAn/5DA==
   /send/0.16.2:
     dependencies:
       debug: 2.6.9
@@ -11683,10 +11683,10 @@ packages:
       node: '>=0.6.0'
     resolution:
       integrity: sha512-YvC1SV1XdOUaL6gx5CoGroT3Gu49pK9+TZ38ErPldOWW4j49GI1HKs9DV+KGq/w6y+LZ72W1c8cKz2vzY+qpzg==
-  /tiny-invariant/1.0.3:
+  /tiny-invariant/1.0.4:
     dev: false
     resolution:
-      integrity: sha512-ytQx8T4DL8PjlX53yYzcIC0WhIZbpR0p1qcYjw2pHu3w6UtgWwFJQ/02cnhOnBBhlFx/edUIfcagCaQSe3KMWg==
+      integrity: sha512-lMhRd/djQJ3MoaHEBrw8e2/uM4rs9YMNk0iOr8rHQ0QdbM7D4l0gFl3szKdeixrlyfm9Zqi4dxHCM2qVG8ND5g==
   /tiny-warning/1.0.2:
     dev: false
     resolution:
@@ -11847,7 +11847,7 @@ packages:
       enhanced-resolve: 4.1.0
       loader-utils: 1.2.3
       micromatch: 3.1.10
-      semver: 5.6.0
+      semver: 5.7.0
     dev: false
     engines:
       node: '>=6.11.5'
@@ -11914,7 +11914,7 @@ packages:
       mkdirp: 0.5.1
       object-assign: 4.1.1
       rimraf: 2.6.3
-      semver: 5.6.0
+      semver: 5.7.0
     dev: false
     peerDependencies:
       tslint: '>=4.0.0'
@@ -11926,7 +11926,7 @@ packages:
       mkdirp: 0.5.1
       object-assign: 4.1.1
       rimraf: 2.6.3
-      semver: 5.6.0
+      semver: 5.7.0
       tslint: /tslint/5.14.0/typescript@3.2.4
     dev: false
     id: registry.npmjs.org/tslint-loader/3.6.0
@@ -11946,7 +11946,7 @@ packages:
       minimatch: 3.0.4
       mkdirp: 0.5.1
       resolve: 1.10.0
-      semver: 5.6.0
+      semver: 5.7.0
       tslib: 1.9.3
       tsutils: 2.29.0
     dev: false
@@ -11969,7 +11969,7 @@ packages:
       minimatch: 3.0.4
       mkdirp: 0.5.1
       resolve: 1.10.0
-      semver: 5.6.0
+      semver: 5.7.0
       tslib: 1.9.3
       tsutils: /tsutils/2.29.0/typescript@3.2.4
       typescript: 3.2.4
@@ -12892,7 +12892,7 @@ packages:
       portfinder: 1.0.20
       schema-utils: 1.0.0
       selfsigned: 1.10.4
-      semver: 5.6.0
+      semver: 5.7.0
       serve-index: 1.9.1
       sockjs: 0.3.19
       sockjs-client: 1.3.0
@@ -12932,7 +12932,7 @@ packages:
       portfinder: 1.0.20
       schema-utils: 1.0.0
       selfsigned: 1.10.4
-      semver: 5.6.0
+      semver: 5.7.0
       serve-index: 1.9.1
       sockjs: 0.3.19
       sockjs-client: 1.3.0
@@ -13450,7 +13450,7 @@ packages:
     version: 0.0.0
   'file:projects/build-tools.tgz':
     dependencies:
-      '@microsoft/api-extractor': 7.0.32
+      '@microsoft/api-extractor': 7.0.33
       cache-require-paths: 0.3.0
       chai: 4.2.0
       chalk: 2.4.2
@@ -13496,7 +13496,7 @@ packages:
     dev: false
     name: '@rush-temp/build-tools'
     resolution:
-      integrity: sha512-kFhAtcatYqf2Yrg9Sb7+SSb6aatPHUU+zOPtQEb2ryoPwytpdjWEONA+vO0Zsuxf0kuJb7koKovOAz7P+h7+pA==
+      integrity: sha512-Xl0ufSoZ/P0oFZHCDlCt0ivZCxrH88Knditbsd06Vxwaut0f/tfXFqOVyitkLUOgWlqF+KHeHGF5ef5IGM1Llg==
       tarball: 'file:projects/build-tools.tgz'
     version: 0.0.0
   'file:projects/certa.tgz':
@@ -13776,7 +13776,7 @@ packages:
       mocha: 5.2.0
       nyc: 13.3.0
       rimraf: 2.6.3
-      semver: 5.6.0
+      semver: 5.7.0
       ts-node: 7.0.1
       tslint: /tslint/5.14.0/typescript@3.2.4
       typedoc: 0.14.2
@@ -13850,7 +13850,7 @@ packages:
       multiparty: 4.2.1
       nyc: 13.3.0
       rimraf: 2.6.3
-      semver: 5.6.0
+      semver: 5.7.0
       source-map-support: 0.5.11
       ts-node: 7.0.1
       tslint: /tslint/5.14.0/typescript@3.2.4
@@ -13943,7 +13943,7 @@ packages:
       chai: 4.2.0
       mocha: 5.2.0
       rimraf: 2.6.3
-      semver: 5.6.0
+      semver: 5.7.0
       ts-node: 7.0.1
       tslint: /tslint/5.14.0/typescript@3.2.4
       typedoc: 0.14.2
@@ -13970,7 +13970,7 @@ packages:
       nyc: 13.3.0
       oidc-client: 1.7.0
       rimraf: 2.6.3
-      semver: 5.6.0
+      semver: 5.7.0
       source-map-loader: 0.2.4
       tslint: /tslint/5.14.0/typescript@3.2.4
       typedoc: 0.14.2
@@ -14307,7 +14307,7 @@ packages:
       react: 16.8.5
       react-dom: /react-dom/16.8.5/react@16.8.5
       rimraf: 2.6.3
-      semver: 5.6.0
+      semver: 5.7.0
       tslint: /tslint/5.14.0/typescript@3.2.4
       typescript: 3.2.4
     dev: false
@@ -14361,7 +14361,7 @@ packages:
       glob: 7.1.3
       null-loader: 0.1.1
       rimraf: 2.6.3
-      semver: 5.6.0
+      semver: 5.7.0
       source-map-loader: 0.2.4
       tslint: /tslint/5.14.0/typescript@3.2.4
       typescript: 3.2.4
@@ -14684,7 +14684,7 @@ packages:
       redux: 4.0.1
       rimraf: 2.6.3
       sass-loader: /sass-loader/7.1.0/webpack@4.29.6
-      semver: 5.6.0
+      semver: 5.7.0
       style-loader: 0.21.0
       svg-sprite-loader: 3.9.2
       tsconfig-paths: 3.8.0
@@ -14696,7 +14696,7 @@ packages:
     dev: false
     name: '@rush-temp/ui-test-app'
     resolution:
-      integrity: sha512-usM6Xmj6WhTDp22dFG0Q/C7o8R4Z8m/M9isCnNnUdP6Si4UU0nuXTnPxZHE6t7XZZHNpq2VK2yh9LgimoNqubA==
+      integrity: sha512-DTOpJApNwTErlEs7Is2Vx2f302jb5bDQ8dlEgOensNIElNA10ULetk6zXV7OZFTA11ZEifFwLpWXWlA6rNfyag==
       tarball: 'file:projects/ui-test-app.tgz'
     version: 0.0.0
   'file:projects/webpack-tools.tgz':
@@ -14841,7 +14841,7 @@ specifiers:
   '@bentley/dev-cors-proxy-server': 0.0.9
   '@bentley/icons-generic-webfont': ^0.0.9
   '@bentley/imodeljs-native': ~0.111.0
-  '@microsoft/api-extractor': ^7.0.32
+  '@microsoft/api-extractor': 7.0.33
   '@openid/appauth': ^1.1.1
   '@rush-temp/bentleyjs-core': 'file:./projects/bentleyjs-core.tgz'
   '@rush-temp/build-tools': 'file:./projects/build-tools.tgz'
