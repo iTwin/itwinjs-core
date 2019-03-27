@@ -19,22 +19,18 @@ import { LogFunction } from '@bentley/bentleyjs-core';
 import { Range2d } from '@bentley/geometry-core';
 import { URL } from 'url';
 
-// @public
+// @beta
 export class AccessToken extends Token {
     // (undocumented)
     static foreignProjectAccessTokenJsonProperty: string;
-    // (undocumented)
+    // @internal
     static fromForeignProjectAccessTokenJson(foreignJsonStr: string): AccessToken | undefined;
-    // (undocumented)
     static fromJson(jsonObj: any): AccessToken | undefined;
     static fromJsonWebTokenString(jwt: string, startsAt?: Date, expiresAt?: Date, userInfo?: UserInfo): AccessToken;
-    // (undocumented)
     static fromSamlAssertion(samlAssertion: string): AccessToken;
-    static fromSamlTokenString(accessTokenString: string, includesPrefix?: IncludePrefix): AccessToken;
-    // (undocumented)
+    static fromSamlTokenString(accessTokenStr: string, includesPrefix?: IncludePrefix): AccessToken;
     static fromTokenString(tokenStr: string): AccessToken;
     readonly isJwt: boolean;
-    // (undocumented)
     toTokenString(includePrefix?: IncludePrefix): string;
 }
 
@@ -75,19 +71,17 @@ export class ArgumentCheck {
 export class AuthenticationError extends ResponseError {
 }
 
-// @public
+// @beta
 export class AuthorizationToken extends Token {
-    // (undocumented)
-    static clone(unTypedObj: any): AuthorizationToken;
-    // (undocumented)
     static fromSamlAssertion(samlAssertion: string): AuthorizationToken;
-    // (undocumented)
     toTokenString(includePrefix?: IncludePrefix): string;
 }
 
 // @public
 export class AuthorizedClientRequestContext extends ClientRequestContext {
+    // Warning: (ae-incompatible-release-tags) The symbol "__constructor" is marked as @public, but its signature references "AccessToken" which is marked as @beta
     constructor(accessToken: AccessToken, activityId?: string, applicationId?: string, applicationVersion?: string, sessionId?: string);
+    // Warning: (ae-incompatible-release-tags) The symbol "accessToken" is marked as @public, but its signature references "AccessToken" which is marked as @beta
     accessToken: AccessToken;
 }
 
@@ -448,6 +442,7 @@ export class ECJsonTypeMap {
 // @public
 export class EventHandler extends EventBaseHandler {
     constructor(handler: IModelBaseHandler);
+    // Warning: (ae-incompatible-release-tags) The symbol "createListener" is marked as @public, but its signature references "AccessToken" which is marked as @beta
     createListener(requestContext: ClientRequestContext, authenticationCallback: () => Promise<AccessToken>, subscriptionId: string, iModelId: GuidString, listener: (event: IModelHubEvent) => void): () => void;
     getEvent(requestContext: ClientRequestContext, sasToken: string, baseAddress: string, subscriptionId: string, timeout?: number): Promise<IModelHubEvent | undefined>;
     getSASToken(requestContext: AuthorizedClientRequestContext, iModelId: GuidString): Promise<EventSAS>;
@@ -586,6 +581,7 @@ export function getJson(requestContext: ClientRequestContext, url: string): Prom
 // @public
 export class GlobalEventHandler extends EventBaseHandler {
     constructor(handler: IModelBaseHandler);
+    // Warning: (ae-incompatible-release-tags) The symbol "createListener" is marked as @public, but its signature references "AccessToken" which is marked as @beta
     createListener(requestContext: AuthorizedClientRequestContext, authenticationCallback: () => Promise<AccessToken>, subscriptionInstanceId: string, listener: (event: IModelHubGlobalEvent) => void): () => void;
     getEvent(requestContext: ClientRequestContext, sasToken: string, baseAddress: string, subscriptionId: string, timeout?: number, getOperation?: GetEventOperationType): Promise<IModelHubGlobalEvent | undefined>;
     getSASToken(requestContext: AuthorizedClientRequestContext): Promise<GlobalEventSAS>;
@@ -661,6 +657,7 @@ export interface IAngularOidcFrontendClient extends IOidcFrontendClient {
 
 // @public
 export interface IAuthorizationClient {
+    // Warning: (ae-incompatible-release-tags) The symbol "getAccessToken" is marked as @public, but its signature references "AccessToken" which is marked as @beta
     getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
     hasExpired: boolean;
     hasSignedIn: boolean;
@@ -709,6 +706,8 @@ export class IModelBaseHandler extends WsgClient {
     protected _fileHandler: FileHandler | undefined;
     // (undocumented)
     formatProjectIdForUrl(projectId: string): string;
+    // Warning: (ae-incompatible-release-tags) The symbol "getAccessToken" is marked as @public, but its signature references "AuthorizationToken" which is marked as @beta
+    // Warning: (ae-incompatible-release-tags) The symbol "getAccessToken" is marked as @public, but its signature references "AccessToken" which is marked as @beta
     getAccessToken(requestContext: ClientRequestContext, authorizationToken: AuthorizationToken): Promise<AccessToken>;
     getAgent(): any;
     // Warning: (ae-forgotten-export) The symbol "CustomRequestOptions" needs to be exported by the entry point imodeljs-clients.d.ts
@@ -781,6 +780,8 @@ export class IModelHandler {
 // @public
 export class IModelHubClient extends IModelClient {
     constructor(fileHandler?: FileHandler, iModelBaseHandler?: IModelBaseHandler);
+    // Warning: (ae-incompatible-release-tags) The symbol "getAccessToken" is marked as @public, but its signature references "AuthorizationToken" which is marked as @beta
+    // Warning: (ae-incompatible-release-tags) The symbol "getAccessToken" is marked as @public, but its signature references "AccessToken" which is marked as @beta
     getAccessToken(requestContext: ClientRequestContext, authorizationToken: AuthorizationToken): Promise<AccessToken>;
 }
 
@@ -850,6 +851,7 @@ export class IModelsHandler {
 // @public
 export class ImsActiveSecureTokenClient extends Client {
     constructor();
+    // Warning: (ae-incompatible-release-tags) The symbol "getToken" is marked as @public, but its signature references "AuthorizationToken" which is marked as @beta
     getToken(requestContext: ClientRequestContext, userCredentials: ImsUserCredentials, appId?: string): Promise<AuthorizationToken>;
     protected getUrlSearchKey(): string;
     // (undocumented)
@@ -861,6 +863,8 @@ export class ImsActiveSecureTokenClient extends Client {
 // @public
 export class ImsDelegationSecureTokenClient extends Client {
     constructor();
+    // Warning: (ae-incompatible-release-tags) The symbol "getToken" is marked as @public, but its signature references "AuthorizationToken" which is marked as @beta
+    // Warning: (ae-incompatible-release-tags) The symbol "getToken" is marked as @public, but its signature references "AccessToken" which is marked as @beta
     getToken(requestContext: ClientRequestContext, authorizationToken: AuthorizationToken, relyingPartyUri?: string, appId?: string): Promise<AccessToken>;
     protected getUrlSearchKey(): string;
     // (undocumented)
@@ -872,6 +876,7 @@ export class ImsDelegationSecureTokenClient extends Client {
 export class ImsFederatedAuthenticationClient extends Client {
     constructor();
     protected getUrlSearchKey(): string;
+    // Warning: (ae-incompatible-release-tags) The symbol "parseTokenResponse" is marked as @public, but its signature references "AuthorizationToken" which is marked as @beta
     static parseTokenResponse(authTokenResponse: string): AuthorizationToken | undefined;
     // (undocumented)
     static readonly searchKey: string;
@@ -879,10 +884,13 @@ export class ImsFederatedAuthenticationClient extends Client {
 
 // @public
 export class ImsTestAuthorizationClient implements IAuthorizationClient {
+    // Warning: (ae-incompatible-release-tags) The symbol "getAccessToken" is marked as @public, but its signature references "AccessToken" which is marked as @beta
     getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
     readonly hasExpired: boolean;
     readonly hasSignedIn: boolean;
     readonly isAuthorized: boolean;
+    // Warning: (ae-incompatible-release-tags) The symbol "signIn" is marked as @public, but its signature references "AccessToken" which is marked as @beta
+    // 
     // (undocumented)
     signIn(requestContext: ClientRequestContext, userCredentials: ImsUserCredentials, relyingPartyUri?: string): Promise<AccessToken>;
     }
@@ -924,12 +932,15 @@ export class InstanceIdQuery extends Query {
 
 // @public
 export interface IOidcFrontendClient extends IDisposable, IAuthorizationClient {
+    // Warning: (ae-incompatible-release-tags) The symbol "getAccessToken" is marked as @public, but its signature references "AccessToken" which is marked as @beta
     getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
     hasExpired: boolean;
     hasSignedIn: boolean;
     initialize(requestContext: ClientRequestContext): Promise<void>;
     isAuthorized: boolean;
+    // Warning: (ae-incompatible-release-tags) The symbol "onUserStateChanged" is marked as @public, but its signature references "AccessToken" which is marked as @beta
     readonly onUserStateChanged: BeEvent<(token: AccessToken | undefined) => void>;
+    // Warning: (ae-incompatible-release-tags) The symbol "signIn" is marked as @public, but its signature references "AccessToken" which is marked as @beta
     signIn(requestContext: ClientRequestContext): Promise<AccessToken>;
     signOut(requestContext: ClientRequestContext): Promise<void>;
 }
@@ -1496,13 +1507,15 @@ export interface TipThumbnail {
     size: ThumbnailSize;
 }
 
-// @public
+// @beta
 export abstract class Token {
-    protected constructor(samlAssertion: string);
+    protected constructor();
     // (undocumented)
     protected _expiresAt?: Date;
     // (undocumented)
     getExpiresAt(): Date | undefined;
+    // (undocumented)
+    protected getSaml(): string | undefined;
     // (undocumented)
     getSamlAssertion(): string | undefined;
     // (undocumented)
@@ -1510,9 +1523,13 @@ export abstract class Token {
     // (undocumented)
     getUserInfo(): UserInfo | undefined;
     // (undocumented)
+    protected _jwt?: string;
+    // (undocumented)
     protected parseSamlAssertion(): boolean;
     // (undocumented)
-    protected _samlAssertion: string;
+    protected _saml?: string;
+    // (undocumented)
+    protected _samlAssertion?: string;
     // (undocumented)
     setUserInfo(userInfo: UserInfo): void;
     // (undocumented)
@@ -1526,6 +1543,8 @@ export abstract class Token {
 // @public
 export class UlasClient extends Client {
     constructor();
+    // Warning: (ae-incompatible-release-tags) The symbol "getAccessToken" is marked as @public, but its signature references "AuthorizationToken" which is marked as @beta
+    // Warning: (ae-incompatible-release-tags) The symbol "getAccessToken" is marked as @public, but its signature references "AccessToken" which is marked as @beta
     getAccessToken(requestContext: ClientRequestContext, authorizationToken: AuthorizationToken): Promise<AccessToken>;
     protected getUrlSearchKey(): string;
     logFeature(requestContext: AuthorizedClientRequestContext, ...entries: FeatureLogEntry[]): Promise<LogPostingResponse>;
@@ -1743,6 +1762,8 @@ export abstract class WsgClient extends Client {
     // (undocumented)
     static readonly configUseHostRelyingPartyUriAsFallback = "imjs_use_default_relying_party_uri_as_fallback";
     protected deleteInstance<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, relativeUrlPath: string, instance?: T, requestOptions?: WsgRequestOptions): Promise<void>;
+    // Warning: (ae-incompatible-release-tags) The symbol "getAccessToken" is marked as @public, but its signature references "AuthorizationToken" which is marked as @beta
+    // Warning: (ae-incompatible-release-tags) The symbol "getAccessToken" is marked as @public, but its signature references "AccessToken" which is marked as @beta
     getAccessToken(requestContext: ClientRequestContext, authorizationToken: AuthorizationToken): Promise<AccessToken>;
     protected getInstances<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, queryOptions?: RequestQueryOptions): Promise<T[]>;
     protected abstract getRelyingPartyUrl(): string;

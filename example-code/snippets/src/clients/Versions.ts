@@ -7,7 +7,7 @@ import { IModelHubClient, AccessToken, ChangeSet, Version, VersionQuery, SmallTh
 import { GuidString, Guid } from "@bentley/bentleyjs-core";
 
 class MockAccessToken extends AccessToken {
-  public constructor() { super(""); }
+  public constructor() { super(); this._samlAssertion = ""; }
   public toTokenString() { return ""; }
 }
 

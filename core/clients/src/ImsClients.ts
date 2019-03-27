@@ -109,11 +109,8 @@ export class ImsActiveSecureTokenClient extends Client {
         if (!res.body.RequestedSecurityToken)
           return Promise.reject(new Error("Authorization token not in expected format " + JSON.stringify(res)));
 
-        const token: AuthorizationToken | undefined = AuthorizationToken.fromSamlAssertion(res.body.RequestedSecurityToken);
-        if (!token)
-          return Promise.reject(new Error("Could not parse the authorization token"));
-
-        return Promise.resolve(token!);
+        const token: AuthorizationToken = AuthorizationToken.fromSamlAssertion(res.body.RequestedSecurityToken);
+        return Promise.resolve(token);
       });
   }
 }
@@ -184,11 +181,8 @@ export class ImsDelegationSecureTokenClient extends Client {
         if (!res.body.RequestedSecurityToken)
           return Promise.reject(new Error("Authorization token not in expected format " + JSON.stringify(res)));
 
-        const accessToken: AccessToken | undefined = AccessToken.fromSamlAssertion(res.body.RequestedSecurityToken);
-        if (!accessToken)
-          return Promise.reject(new Error("Could not parse the accessToken token"));
-
-        return Promise.resolve(accessToken!);
+        const accessToken: AccessToken = AccessToken.fromSamlAssertion(res.body.RequestedSecurityToken);
+        return Promise.resolve(accessToken);
       });
   }
 }

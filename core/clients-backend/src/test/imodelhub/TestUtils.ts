@@ -40,7 +40,11 @@ function configMockSettings() {
 
 /** Other services */
 export class MockAccessToken extends AccessToken {
-  public constructor() { super(""); }
+  public constructor() {
+    super();
+    this._samlAssertion = "";
+  }
+
   public getUserInfo(): UserInfo | undefined {
     const id = "596c0d8b-eac2-46a0-aa4a-b590c3314e7c";
     const email = { id: "testuser001@mailinator.com" };
