@@ -1573,7 +1573,7 @@ export abstract class ViewState3d extends ViewState {
       return;
 
     const vp = context.viewport;
-    const skyBoxParams = style3d.loadSkyBoxParams(vp.target.renderSystem);
+    const skyBoxParams = style3d.loadSkyBoxParams(vp.target.renderSystem, vp);
     if (undefined !== skyBoxParams) {
       const skyBoxGraphic = IModelApp.renderSystem.createSkyBox(skyBoxParams);
       context.setSkyBox(skyBoxGraphic!);

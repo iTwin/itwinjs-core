@@ -1593,11 +1593,9 @@ export class DisplayStyle3dState extends DisplayStyleState {
     constructor(props: DisplayStyleProps, iModel: IModelConnection);
     environment: Environment;
     // @internal
-    loadSkyBoxParams(system: RenderSystem): SkyBox.CreateParams | undefined;
+    loadSkyBoxParams(system: RenderSystem, vp?: Viewport): SkyBox.CreateParams | undefined;
     // (undocumented)
     readonly settings: DisplayStyle3dSettings;
-    // @internal (undocumented)
-    skyboxMaterial: RenderMaterial | undefined;
     }
 
 // @public
