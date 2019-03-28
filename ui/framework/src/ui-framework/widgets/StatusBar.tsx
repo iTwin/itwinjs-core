@@ -8,12 +8,17 @@ import * as React from "react";
 import { StatusBarFieldId, IStatusBar, StatusBarWidgetControl } from "./StatusBarWidgetControl";
 
 import {
-  Footer, Activity as ActivityMessage, Modal as ModalMessage, Dialog as ModalMessageDialog, ScrollableContent as DialogScrollableContent, Buttons as DialogButtonsContent,
-  Toast as ToastMessage, Sticky as StickyMessage, StatusMessage, MessageLayout as StatusMessageLayout, MessageButton, Status, Hyperlink, Progress,
+  Footer,
+  Activity as ActivityMessage,
+  Toast as ToastMessage,
+  Sticky as StickyMessage,
+  StatusMessage,
+  MessageLayout as StatusMessageLayout,
+  MessageButton, Status, Hyperlink, Progress,
 } from "@bentley/ui-ninezone";
 import { NotifyMessageDetails, OutputMessageType } from "@bentley/imodeljs-frontend";
 
-import { MessageContainer, MessageSeverity, Button, ButtonType, SmallText } from "@bentley/ui-core";
+import { MessageContainer, MessageSeverity, SmallText } from "@bentley/ui-core";
 
 import { MessageManager, MessageAddedEventArgs, ActivityMessageEventArgs } from "../messages/MessageManager";
 import { UiFramework } from "../UiFramework";
@@ -31,7 +36,6 @@ const MessageLabel = (props: { text: string }) => {
 export enum StatusBarMessageType {
   None,
   Activity,
-  Modal,
   Toast,
   Sticky,
 }
@@ -115,9 +119,6 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> i
       case OutputMessageType.Sticky:
         statusbarMessageType = StatusBarMessageType.Sticky;
         break;
-      case OutputMessageType.Alert:
-        statusbarMessageType = StatusBarMessageType.Modal;
-        break;
     }
 
     this.setVisibleMessage(statusbarMessageType, args.message);
@@ -159,41 +160,6 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> i
 
     const severity = MessageManager.getSeverity(this.state.messageDetails);
     switch (this.state.visibleMessage) {
-      case (StatusBarMessageType.Modal): {
-        return (
-          <ModalMessage
-            dialog={
-              <ModalMessageDialog
-                content={
-                  <DialogButtonsContent
-                    buttons={
-                      <Button type={ButtonType.Blue} onClick={this._hideMessages}>
-                        {UiFramework.i18n.translate("UiCore:dialog.close")}
-                      </Button>
-                    }
-                    content={
-                      <DialogScrollableContent
-                        content={
-                          <MessageContainer severity={severity} >
-                            <span dangerouslySetInnerHTML={{ __html: this.state.messageDetails!.briefMessage }} />
-                            {
-                              this.state.messageDetails!.detailedMessage && (
-                                <p>
-                                  <span dangerouslySetInnerHTML={{ __html: this.state.messageDetails!.detailedMessage! }} />
-                                </p>
-                              )
-                            }
-                          </MessageContainer>
-                        }
-                      />
-                    }
-                  />
-                }
-              />
-            }
-          />
-        );
-      }
       case (StatusBarMessageType.Toast): {
         return (
           <ToastMessage
