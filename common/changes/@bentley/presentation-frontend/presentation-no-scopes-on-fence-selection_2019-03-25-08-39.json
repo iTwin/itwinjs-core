@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Do *not* use selection scopes when fence selecting or selection scope is set to \"element\"",
+      "packageName": "@bentley/presentation-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-frontend",
+  "email": "grigas.p@gmail.com"
+}

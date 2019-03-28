@@ -5,7 +5,7 @@
 /** @module UnifiedSelection */
 
 import { IDisposable, Id64Set, GuidString, Guid, Id64Arg, Id64, Id64Array } from "@bentley/bentleyjs-core";
-import { IModelConnection, SelectEventType } from "@bentley/imodeljs-frontend";
+import { IModelConnection, SelectEventType, ElementLocateManager, IModelApp } from "@bentley/imodeljs-frontend";
 import { KeySet, Keys, SelectionScope } from "@bentley/presentation-common";
 import ISelectionProvider from "./ISelectionProvider";
 import SelectionChangeEvent, { SelectionChangeEventArgs, SelectionChangeType } from "./SelectionChangeEvent";
@@ -62,7 +62,7 @@ export class SelectionManager implements ISelectionProvider {
     const registration = this._imodelToolSelectionSyncHandlers.get(imodel);
     if (sync) {
       if (!registration || registration.requestorsCount === 0) {
-        this._imodelToolSelectionSyncHandlers.set(imodel, { requestorsCount: 1, handler: new ToolSelectionSyncHandler(imodel, this) });
+        this._imodelToolSelectionSyncHandlers.set(imodel, { requestorsCount: 1, handler: new ToolSelectionSyncHandler(imodel, IModelApp.locateManager, this) });
       } else {
         this._imodelToolSelectionSyncHandlers.set(imodel, { ...registration, requestorsCount: registration.requestorsCount + 1 });
       }
@@ -287,12 +287,14 @@ export class ToolSelectionSyncHandler implements IDisposable {
 
   private _selectionSourceName = "Tool";
   private _logicalSelection: SelectionManager;
+  private _locateManager: ElementLocateManager;
   private _imodel: IModelConnection;
   private _imodelToolSelectionListenerDisposeFunc: () => void;
   private _asyncsInProgress = new Set<GuidString>();
 
-  public constructor(imodel: IModelConnection, logicalSelection: SelectionManager) {
+  public constructor(imodel: IModelConnection, locateManager: ElementLocateManager, logicalSelection: SelectionManager) {
     this._imodel = imodel;
+    this._locateManager = locateManager;
     this._logicalSelection = logicalSelection;
     this._imodelToolSelectionListenerDisposeFunc = imodel.selectionSet.onChanged.addListener(this.onToolSelectionChanged);
   }
@@ -314,9 +316,14 @@ export class ToolSelectionSyncHandler implements IDisposable {
     // wip: may want to allow selecting at different levels?
     const selectionLevel = 0;
 
-    const scope = this._logicalSelection.scopes.activeScope;
-    const changer = scope
-      ? new ScopedSelectionChanger(this._selectionSourceName, this._imodel, this._logicalSelection, scope)
+    const isSingleSelectionFromPick = (undefined !== ids
+      && 1 === ids.size
+      && undefined !== this._locateManager.currHit
+      && ids.has(this._locateManager.currHit.sourceId));
+
+    const scopeId = getScopeId(this._logicalSelection.scopes.activeScope);
+    const changer = ("element" !== scopeId && isSingleSelectionFromPick)
+      ? new ScopedSelectionChanger(this._selectionSourceName, this._imodel, this._logicalSelection, scopeId)
       : new SelectionChanger(this._selectionSourceName, this._imodel, this._logicalSelection);
 
     // we know what to do immediately on `clear` events
@@ -345,6 +352,14 @@ export class ToolSelectionSyncHandler implements IDisposable {
     }
   }
 }
+
+const getScopeId = (scope: SelectionScope | string | undefined): string => {
+  if (!scope)
+    return "element";
+  if (typeof scope === "string")
+    return scope;
+  return scope.id;
+};
 
 const getPersistentElementIds = (ids: Id64Set): Id64Array | Id64Set => {
   let hasTransients = false;
