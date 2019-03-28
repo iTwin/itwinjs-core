@@ -6,32 +6,29 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import { CommonProps, NoChildrenProps } from "../../utilities/Props";
+import { CommonProps } from "../../utilities/Props";
 import "./Icon.scss";
 
 /** Properties of [[SnapModeIcon]] component. */
-export interface SnapModeIconProps extends CommonProps, NoChildrenProps {
+export interface SnapModeIconProps extends CommonProps {
   /** Describes if the icon is active. */
   isActive?: boolean;
-  /** Characters displayed as icon if icon is not defined. */
-  text?: string;
-  /** Icon to show, fallback to text display if no icon specified. */
-  iconName?: string;
 }
 
 /** Snap mode icon displays characters as snap icon. Used in Snap, SnapModeIndicator components. */
 export class SnapModeIcon extends React.PureComponent<SnapModeIconProps> {
   public render() {
     const className = classnames(
-      "icon icon-" + this.props.iconName,
       "nz-footer-snapMode-icon",
       this.props.className);
 
-    if (this.props.iconName) {
-      return (
-        <div className={className}></div>
-      );
-    }
-    return (<div>{this.props.text}</div>);
+    return (
+      <div
+        className={className}
+        style={this.props.style}
+      >
+        {this.props.children}
+      </div>
+    );
   }
 }

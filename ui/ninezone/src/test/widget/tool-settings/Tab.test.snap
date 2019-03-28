@@ -1,0 +1,13 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<ToolSettingsTab /> renders active correctly 1`] = `
+<button
+  className="nz-widget-toolSettings-tab nz-is-active"
+/>
+`;
+
+exports[`<ToolSettingsTab /> renders correctly 1`] = `
+<button
+  className="nz-widget-toolSettings-tab"
+/>
+`;

@@ -9,7 +9,6 @@ import * as React from "react";
 
 import { CommonProps, NoChildrenProps } from "../../../utilities/Props";
 import { Css } from "../../../utilities/Css";
-import { withTheme, WithThemeProps } from "../../../theme/WithTheme";
 import { Status, StatusHelpers } from "./status/Status";
 import "./Progress.scss";
 
@@ -21,7 +20,8 @@ export interface ProgressProps extends CommonProps, NoChildrenProps {
   status: Status;
 }
 
-class ProgressComponent extends React.PureComponent<ProgressProps> {
+/** Progress bar component used in status message. I.e. [[MessageLayout]] */
+export class Progress extends React.PureComponent<ProgressProps> {
   public render() {
     const className = classnames(
       "nz-footer-message-content-progress",
@@ -47,7 +47,3 @@ class ProgressComponent extends React.PureComponent<ProgressProps> {
     );
   }
 }
-
-/** Progress bar component used in status message. I.e. [[MessageLayout]] */
-// tslint:disable-next-line:variable-name
-export const Progress: React.ComponentClass<ProgressProps & WithThemeProps> = withTheme(ProgressComponent);

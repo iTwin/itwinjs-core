@@ -23,7 +23,7 @@ export interface SelectionInfoProps extends CommonProps, NoChildrenProps {
 export class SelectionInfo extends React.PureComponent<SelectionInfoProps> {
   public render() {
     const combinedClassName = classnames(
-      "nz-footer-selection-info",
+      "nz-footer-selectionInfo-selectionInfo",
       this.props.isInFooterMode && "nz-is-in-footer-mode",
       this.props.className);
 

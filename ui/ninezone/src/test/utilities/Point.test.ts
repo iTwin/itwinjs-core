@@ -76,4 +76,24 @@ describe("Point", () => {
     const sut = new Point(1, 1);
     sut.equals({ x: 1, y: 2 }).should.false;
   });
+
+  it("should set x by returning a new point", () => {
+    const sut = new Point(1, 1);
+    const result = sut.setX(10);
+
+    sut.x.should.eq(1);
+    result.should.not.eq(sut);
+    result.x.should.eq(10);
+    result.y.should.eq(1);
+  });
+
+  it("should set y by returning a new point", () => {
+    const sut = new Point(1, 1);
+    const result = sut.setY(10);
+
+    sut.y.should.eq(1);
+    result.should.not.eq(sut);
+    result.x.should.eq(1);
+    result.y.should.eq(10);
+  });
 });

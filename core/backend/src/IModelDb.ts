@@ -295,23 +295,30 @@ export class IModelDb extends IModel implements PageableECSql {
     return imodelDb;
   }
 
-  private parseVersion(version: string): ProductVersion {
-    const versionSplit = version.split(".");
+  private getApplicationVersion(requestContext: AuthorizedClientRequestContext): ProductVersion {
+    const applicationVersion = requestContext.applicationVersion;
+    const defaultVersion = { major: 1, minor: 0 };
+    if (!applicationVersion) {
+      Logger.logWarning(loggerCategory, "ApplicationVersion was not specified. Set up IModelApp.applicationVersion for frontend applications, or IModelHost.applicationVersion for agents", () => ({ applicationVersion }));
+      return defaultVersion;
+    }
+
+    const versionSplit = applicationVersion.split(".");
     const length = versionSplit.length;
     if (length < 2) {
-      Logger.logError(loggerCategory, "Invalid version specified", () => ({ versionString: version }));
-      return { major: 1, minor: 0 };
+      Logger.logWarning(loggerCategory, "ApplicationVersion is not valid", () => ({ applicationVersion }));
+      return defaultVersion;
     }
 
     const major = parseInt(versionSplit[0], 10);
     if (typeof major === "undefined") {
-      Logger.logError(loggerCategory, "Invalid version specified", () => ({ versionString: version }));
-      return { major: 1, minor: 0 };
+      Logger.logWarning(loggerCategory, "ApplicationVersion is not valid", () => ({ applicationVersion }));
+      return defaultVersion;
     }
 
     const minor = parseInt(versionSplit[1], 10);
     if (typeof minor === "undefined") {
-      Logger.logError(loggerCategory, "Invalid version specified", () => ({ versionString: version }));
+      Logger.logWarning(loggerCategory, "ApplicationVersion is not valid", () => ({ applicationVersion }));
       return { major, minor: 0 };
     }
 
@@ -327,6 +334,16 @@ export class IModelDb extends IModel implements PageableECSql {
     return { major, minor, sub1, sub2 };
   }
 
+  private getApplicationId(requestContext: AuthorizedClientRequestContext): number {
+    const defaultId = 2686; // iModel.js
+    if (!requestContext.applicationId) {
+      Logger.logWarning(loggerCategory, "ApplicationId was not specified. Set up IModelApp.applicationId for frontend applications, or IModelHost.applicationId for agents");
+      return defaultId;
+    }
+
+    return parseInt(requestContext.applicationId, defaultId);
+  }
+
   private async logUsage(requestContext: AuthorizedClientRequestContext, contextId: GuidString): Promise<void> {
     requestContext.enter();
     const client = new UlasClient();
@@ -334,8 +351,8 @@ export class IModelDb extends IModel implements PageableECSql {
     try {
       const ulasEntry: UsageLogEntry = new UsageLogEntry(os.hostname(), UsageType.Trial);
       ulasEntry.projectId = contextId;
-      ulasEntry.productId = requestContext.applicationId ? +requestContext.applicationId : 1686;
-      ulasEntry.productVersion = this.parseVersion(requestContext.applicationVersion);
+      ulasEntry.productId = this.getApplicationId(requestContext);
+      ulasEntry.productVersion = this.getApplicationVersion(requestContext);
       const resp: LogPostingResponse = await client.logUsage(requestContext, ulasEntry);
       requestContext.enter();
       status = resp ? resp.status : BentleyStatus.ERROR;
@@ -982,18 +999,6 @@ export class IModelDb extends IModel implements PageableECSql {
     const { error, result } = this.nativeDb.insertCodeSpec(codeSpec.name, codeSpec.specScopeType, codeSpec.scopeReq);
     if (error) throw new IModelError(error.status, "inserting CodeSpec" + codeSpec, Logger.logWarning, loggerCategory);
     return Id64.fromJSON(result);
-  }
-
-  /** @internal */
-  public getElementPropertiesForDisplay(elementId: string): string {
-    if (!this.briefcase)
-      throw this.newNotOpenError();
-
-    const { error, result: idHexStr } = this.nativeDb.getElementPropertiesForDisplay(elementId);
-    if (error)
-      throw new IModelError(error.status, error.message, Logger.logError, loggerCategory, () => ({ ...this._token, elementId }));
-
-    return idHexStr!;
   }
 
   /** Prepare an ECSQL statement.

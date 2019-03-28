@@ -46,7 +46,7 @@ async function queryPage(args: QueryPageArgs): Promise<any[]> {
   const iModelDb: IModelDb = IModelDb.find(args.iModelToken);
   const rows = iModelDb.queryPage(args.ecsql, args.bindings, args.options);
   const ecsql = args.ecsql;
-  Logger.logTrace(loggerCategory, "IModelDbRemoting.queryPage", () => ({ ecsql }));
+  Logger.logTrace(loggerCategory, "IModelDbRemoting.queryPage", () => ({ ecsql, ...iModelDb.iModelToken }));
   return rows;
 }
 /** Utility to cache and retrieve results of long running queryPagerequests

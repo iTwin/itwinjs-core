@@ -47,3 +47,147 @@ exports[`<Stacked /> renders correctly 1`] = `
   />
 </div>
 `;
+
+exports[`<Stacked /> renders correctly to fill zone 1`] = `
+<div
+  className="nz-widget-stacked nz-right-anchor nz-middle-anchor nz-is-closed nz-fill-zone"
+>
+  <div
+    className="nz-content-area"
+  >
+    <WidgetContent
+      anchor={1}
+    />
+    <ResizeGrip
+      className="nz-bottom-grip"
+      direction={1}
+      onResize={[Function]}
+    />
+    <ResizeGrip
+      className="nz-content-grip"
+      direction={0}
+      onResize={[Function]}
+    />
+  </div>
+  <div
+    className="nz-tabs-column"
+  >
+    <div
+      className="nz-tabs"
+    />
+    <div
+      className="nz-tabs-grip-container"
+    >
+      <ResizeGrip
+        className="nz-tabs-grip"
+        direction={0}
+        onResize={[Function]}
+      />
+    </div>
+  </div>
+  <div
+    className="nz-height-expander"
+  />
+  <ResizeGrip
+    className="nz-top-grip"
+    direction={1}
+    onResize={[Function]}
+  />
+</div>
+`;
+
+exports[`<Stacked /> renders dragged correctly 1`] = `
+<div
+  className="nz-widget-stacked nz-right-anchor nz-middle-anchor nz-is-closed nz-is-dragged"
+>
+  <div
+    className="nz-content-area"
+  >
+    <WidgetContent
+      anchor={1}
+    />
+    <ResizeGrip
+      className="nz-bottom-grip"
+      direction={1}
+      onResize={[Function]}
+    />
+    <ResizeGrip
+      className="nz-content-grip"
+      direction={0}
+      onResize={[Function]}
+    />
+  </div>
+  <div
+    className="nz-tabs-column"
+  >
+    <div
+      className="nz-tabs"
+    />
+    <div
+      className="nz-tabs-grip-container"
+    >
+      <ResizeGrip
+        className="nz-tabs-grip"
+        direction={0}
+        onResize={[Function]}
+      />
+    </div>
+  </div>
+  <div
+    className="nz-height-expander"
+  />
+  <ResizeGrip
+    className="nz-top-grip"
+    direction={1}
+    onResize={[Function]}
+  />
+</div>
+`;
+
+exports[`<Stacked /> renders floating correctly 1`] = `
+<div
+  className="nz-widget-stacked nz-right-anchor nz-middle-anchor nz-is-closed nz-is-floating"
+>
+  <div
+    className="nz-content-area"
+  >
+    <WidgetContent
+      anchor={1}
+    />
+    <ResizeGrip
+      className="nz-bottom-grip"
+      direction={1}
+      onResize={[Function]}
+    />
+    <ResizeGrip
+      className="nz-content-grip"
+      direction={0}
+      onResize={[Function]}
+    />
+  </div>
+  <div
+    className="nz-tabs-column"
+  >
+    <div
+      className="nz-tabs"
+    />
+    <div
+      className="nz-tabs-grip-container"
+    >
+      <ResizeGrip
+        className="nz-tabs-grip"
+        direction={0}
+        onResize={[Function]}
+      />
+    </div>
+  </div>
+  <div
+    className="nz-height-expander"
+  />
+  <ResizeGrip
+    className="nz-top-grip"
+    direction={1}
+    onResize={[Function]}
+  />
+</div>
+`;

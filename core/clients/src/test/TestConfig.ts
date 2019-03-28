@@ -7,7 +7,6 @@ import { AuthorizationToken } from "../Token";
 import { HubIModel } from "../imodelhub/iModels";
 import { IModelHubClient, IModelClient } from "../imodeljs-clients";
 import { ConnectClient, Project } from "../ConnectClients";
-import { expect } from "chai";
 
 import { Logger, GuidString, ClientRequestContext } from "@bentley/bentleyjs-core";
 import { Config } from "../Config";
@@ -42,10 +41,7 @@ export class TestConfig {
     if (Config.App.getNumber("imjs_buddi_resolve_url_using_region") !== 0)
       process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // Dev requires that SSL certificate checks be bypassed
 
-    const authToken: AuthorizationToken | undefined =
-      await (new ImsActiveSecureTokenClient()).getToken(new ClientRequestContext(), user);
-    expect(authToken);
-
+    const authToken: AuthorizationToken = await (new ImsActiveSecureTokenClient()).getToken(new ClientRequestContext(), user);
     return authToken;
   }
 

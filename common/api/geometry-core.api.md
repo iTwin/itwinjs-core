@@ -407,7 +407,6 @@ export const enum AxisScaleSelect {
 
 // @public
 export class BagOfCurves extends CurveCollection {
-    // (undocumented)
     constructor();
     // (undocumented)
     announceToCurveProcessor(processor: RecursiveCurveProcessor, indexInParent?: number): void;
@@ -442,7 +441,6 @@ export interface BeJSONFunctions {
 
 // @public
 export class Bezier1dNd {
-    // (undocumented)
     constructor(blockSize: number, polygon: Float64Array);
     clonePolygon(result?: Float64Array): Float64Array;
     static create(data: Point2d[] | Point3d[] | Point4d[]): Bezier1dNd | undefined;
@@ -555,7 +553,6 @@ export class BezierCurve3dH extends BezierCurveBase {
 
 // @public
 export abstract class BezierCurveBase extends CurvePrimitive {
-    // (undocumented)
     protected constructor(blockSize: number, data: Float64Array);
     protected allocateAndZeroBezierWorkData(primaryBezierOrder: number, orderA: number, orderB: number): void;
     abstract computeStrokeCountForOptions(options?: StrokeOptions): number;
@@ -618,7 +615,6 @@ export type BlockComparisonFunction = (data: Float64Array, blockSize: number, in
 
 // @public (undocumented)
 export class Box extends SolidPrimitive {
-    // (undocumented)
     protected constructor(map: Transform, baseX: number, baseY: number, topX: number, topY: number, capped: boolean);
     // (undocumented)
     clone(): Box;
@@ -847,7 +843,6 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
 
 // @public
 export abstract class BSplineCurve3dBase extends CurvePrimitive {
-    // (undocumented)
     protected constructor(poleDimension: number, numPoles: number, order: number, knots: KnotVector);
     appendPlaneIntersectionPoints(plane: PlaneAltitudeEvaluator, result: CurveLocationDetail[]): number;
     // (undocumented)
@@ -1148,7 +1143,6 @@ export const enum ClipPlaneContainment {
 
 // @public
 export class ClipPrimitive {
-    // (undocumented)
     protected constructor(planeSet?: UnionOfConvexClipPlaneSets | undefined, isInvisible?: boolean);
     static addOutsideEdgeSetToParams(x0: number, y0: number, x1: number, y1: number, pParams: PlaneSetParamsCache, isInvisible?: boolean): void;
     static addShapeToParams(shape: Point3d[], pFlags: number[], pParams: PlaneSetParamsCache): void;
@@ -1183,7 +1177,6 @@ export class ClipPrimitive {
 
 // @public
 export class ClipShape extends ClipPrimitive {
-    // (undocumented)
     protected constructor(polygon?: Point3d[], zLow?: number, zHigh?: number, transform?: Transform, isMask?: boolean, invisible?: boolean);
     clone(result?: ClipShape): ClipShape;
     static createBlock(extremities: Range3d, clipMask: ClipMask, isMask?: boolean, invisible?: boolean, transform?: Transform, result?: ClipShape): ClipShape;
@@ -1333,7 +1326,6 @@ export function compareRange1dLexicalLowHigh(a: Range1d, b: Range1d): number;
 
 // @public (undocumented)
 export class Complex implements BeJSONFunctions {
-    // (undocumented)
     constructor(x?: number, y?: number);
     // (undocumented)
     angle(): Angle;
@@ -1377,7 +1369,6 @@ export class Complex implements BeJSONFunctions {
 
 // @public
 export class Cone extends SolidPrimitive implements UVSurface, UVSurfaceIsoParametricDistance {
-    // (undocumented)
     protected constructor(map: Transform, radiusA: number, radiusB: number, capped: boolean);
     // (undocumented)
     clone(): Cone;
@@ -1505,7 +1496,6 @@ export class ConvexClipPlaneSet implements Clipper {
 
 // @public (undocumented)
 export class ConvexPolygon2d {
-    // (undocumented)
     constructor(points: Point2d[]);
     clipRay(ray: Ray2d): Range1d;
     static computeConvexHull(points: Point2d[]): Point2d[];
@@ -1540,7 +1530,6 @@ export class CoordinateXYZ extends GeometryQuery {
 
 // @public
 export abstract class CurveChain extends CurveCollection {
-    // (undocumented)
     protected constructor();
     // (undocumented)
     readonly children: CurvePrimitive[];
@@ -1644,7 +1633,6 @@ export enum CurveIntervalRole {
 
 // @public
 export class CurveLocationDetail {
-    // (undocumented)
     constructor();
     a: number;
     childDetail?: CurveLocationDetail;
@@ -1673,7 +1661,6 @@ export class CurveLocationDetail {
 
 // @public
 export class CurveLocationDetailArrayPair {
-    // (undocumented)
     constructor();
     // (undocumented)
     dataA: CurveLocationDetail[];
@@ -1683,7 +1670,6 @@ export class CurveLocationDetailArrayPair {
 
 // @public
 export class CurveLocationDetailPair {
-    // (undocumented)
     constructor();
     clone(result?: CurveLocationDetailPair): CurveLocationDetailPair;
     static createDetailRef(detailA: CurveLocationDetail, detailB: CurveLocationDetail, result?: CurveLocationDetailPair): CurveLocationDetailPair;
@@ -1695,7 +1681,6 @@ export class CurveLocationDetailPair {
 
 // @public
 export abstract class CurvePrimitive extends GeometryQuery {
-    // (undocumented)
     protected constructor();
     addMappedStrokesToLineString3D(map: StrokeCountMap, linestring: LineString3d): number;
     announceClipIntervals(_clipper: Clipper, _announce?: AnnounceNumberNumberCurvePrimitive): boolean;
@@ -1742,7 +1727,6 @@ export enum CurveSearchStatus {
 
 // @public
 export class DeepCompare {
-    // (undocumented)
     constructor(numberRelTol?: number);
     // (undocumented)
     compare(a: any, b: any, tolerance?: number): boolean;
@@ -1770,7 +1754,6 @@ export class DeepCompare {
 
 // @public (undocumented)
 export class Degree2PowerPolynomial {
-    // (undocumented)
     constructor(c0?: number, c1?: number, c2?: number);
     // (undocumented)
     addConstant(a: number): void;
@@ -1795,7 +1778,6 @@ export class Degree2PowerPolynomial {
 
 // @public (undocumented)
 export class Degree3PowerPolynomial {
-    // (undocumented)
     constructor(c0?: number, c1?: number, c2?: number, c3?: number);
     // (undocumented)
     addConstant(a: number): void;
@@ -1811,7 +1793,6 @@ export class Degree3PowerPolynomial {
 
 // @public (undocumented)
 export class Degree4PowerPolynomial {
-    // (undocumented)
     constructor(c0?: number, c1?: number, c2?: number, c3?: number, c4?: number);
     // (undocumented)
     addConstant(a: number): void;
@@ -1842,7 +1823,6 @@ export class FacetFaceData {
 
 // @public
 export class FrameBuilder {
-    // (undocumented)
     constructor();
     announce(data: any): void;
     announcePoint(point: Point3d): number;
@@ -2049,7 +2029,6 @@ export type GraphNodeFunction = (graph: HalfEdgeGraph, node: HalfEdge) => boolea
 
 // @public
 export class GrowableBlockedArray {
-    // (undocumented)
     constructor(blockSize: number, initialBlocks?: number);
     addBlock(newData: number[]): void;
     blockCapacity(): number;
@@ -2079,7 +2058,6 @@ export class GrowableBlockedArray {
 
 // @public
 export class GrowableFloat64Array {
-    // (undocumented)
     constructor(initialCapacity?: number);
     // (undocumented)
     atUncheckedIndex(index: number): number;
@@ -2242,7 +2220,6 @@ export class GrowableXYZArray extends IndexedXYZCollection {
 
 // @public
 export class HalfEdge {
-    // (undocumented)
     constructor(x?: number, y?: number, z?: number, i?: number);
     clearMask(mask: HalfEdgeMask): void;
     clearMaskAroundFace(mask: HalfEdgeMask): void;
@@ -2339,7 +2316,6 @@ export type HalfEdgeAndMaskToBooleanFunction = (node: HalfEdge, mask: HalfEdgeMa
 
 // @public
 export class HalfEdgeGraph {
-    // (undocumented)
     constructor();
     addEdgeXY(x0: number, y0: number, x1: number, y1: number): HalfEdge;
     // (undocumented)
@@ -2530,7 +2506,6 @@ export namespace IModelJson {
         point?: XYZProps;
     }
     export class Reader {
-        // (undocumented)
         constructor();
         // (undocumented)
         static parse(json?: any): any;
@@ -3130,7 +3105,6 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
 
 // @public
 export class Loop extends CurveChain {
-    // (undocumented)
     constructor();
     // (undocumented)
     announceToCurveProcessor(processor: RecursiveCurveProcessor, indexInParent?: number): void;
@@ -3512,7 +3486,6 @@ export class MomentData {
 
 // @public (undocumented)
 export class Newton1dUnbounded extends AbstractNewtonIterator {
-    // (undocumented)
     constructor(func: NewtonEvaluatorRtoRD);
     // (undocumented)
     applyCurrentStep(): boolean;
@@ -3529,7 +3502,6 @@ export class Newton1dUnbounded extends AbstractNewtonIterator {
 
 // @public
 export class Newton1dUnboundedApproximateDerivative extends AbstractNewtonIterator {
-    // (undocumented)
     constructor(func: NewtonEvaluatorRtoR);
     // (undocumented)
     applyCurrentStep(): boolean;
@@ -3546,7 +3518,6 @@ export class Newton1dUnboundedApproximateDerivative extends AbstractNewtonIterat
 
 // @public
 export class Newton2dUnboundedWithDerivative extends AbstractNewtonIterator {
-    // (undocumented)
     constructor(func: NewtonEvaluatorRRtoRRD);
     // (undocumented)
     applyCurrentStep(): boolean;
@@ -3671,7 +3642,6 @@ export type OptionalGrowableFloat64Array = GrowableFloat64Array | undefined;
 
 // @public
 export class Order2Bezier extends BezierCoffs {
-    // (undocumented)
     constructor(f0?: number, f1?: number);
     basisFunctions(u: number, result?: Float64Array): Float64Array;
     clone(): Order2Bezier;
@@ -3686,7 +3656,6 @@ export class Order2Bezier extends BezierCoffs {
 
 // @public
 export class Order3Bezier extends BezierCoffs {
-    // (undocumented)
     constructor(f0?: number, f1?: number, f2?: number);
     addSquareLinear(f0: number, f1: number, a: number): void;
     basisFunctions(u: number, result?: Float64Array): Float64Array;
@@ -3701,7 +3670,6 @@ export class Order3Bezier extends BezierCoffs {
 
 // @public
 export class Order4Bezier extends BezierCoffs {
-    // (undocumented)
     constructor(f0?: number, f1?: number, f2?: number, f3?: number);
     basisFunctions(u: number, result?: Float64Array): Float64Array;
     // (undocumented)
@@ -3718,7 +3686,6 @@ export class Order4Bezier extends BezierCoffs {
 
 // @public
 export class Order5Bezier extends BezierCoffs {
-    // (undocumented)
     constructor(f0?: number, f1?: number, f2?: number, f3?: number, f4?: number);
     // (undocumented)
     addConstant(a: number): void;
@@ -3789,7 +3756,6 @@ export class PackedPointsWithIndex {
 
 // @public
 export class ParityRegion extends CurveCollection {
-    // (undocumented)
     constructor();
     // (undocumented)
     announceToCurveProcessor(processor: RecursiveCurveProcessor, indexInParent?: number): void;
@@ -3826,7 +3792,6 @@ export class PascalCoefficients {
 
 // @public
 export class Path extends CurveChain {
-    // (undocumented)
     constructor();
     // (undocumented)
     announceToCurveProcessor(processor: RecursiveCurveProcessor, indexInParent?: number): void;
@@ -3957,7 +3922,6 @@ export class PlaneByOriginAndVectors4d {
 
 // @public
 export class PlaneSetParamsCache {
-    // (undocumented)
     constructor(zLow: number, zHigh: number, localOrigin?: Point3d, isMask?: boolean, isInvisible?: boolean, focalLength?: number);
     // (undocumented)
     clipPlaneSet: UnionOfConvexClipPlaneSets;
@@ -4126,7 +4090,6 @@ export class Point3dArrayCarrier extends IndexedXYZCollection {
 
 // @public
 export class Point4d implements BeJSONFunctions {
-    // (undocumented)
     protected constructor(x?: number, y?: number, z?: number, w?: number);
     altitude(point: Point3d): number;
     // (undocumented)
@@ -4272,7 +4235,6 @@ export class PointString3d extends GeometryQuery implements BeJSONFunctions {
 
 // @public
 export abstract class Polyface extends GeometryQuery {
-    // (undocumented)
     protected constructor(data: PolyfaceData);
     static areIndicesValid(indices: number[] | undefined, indexPositionA: number, indexPositionB: number, data: any | undefined, dataLength: number): boolean;
     abstract createVisitor(_numWrap: number): PolyfaceVisitor;
@@ -4286,7 +4248,6 @@ export abstract class Polyface extends GeometryQuery {
 
 // @public
 export class PolyfaceAuxData {
-    // (undocumented)
     constructor(channels: AuxChannel[], indices: number[]);
     // (undocumented)
     channels: AuxChannel[];
@@ -4370,7 +4331,6 @@ export class PolyfaceBuilder extends NullGeometryHandler {
 
 // @public
 export class PolyfaceData {
-    // (undocumented)
     constructor(needNormals?: boolean, needParams?: boolean, needColors?: boolean);
     // (undocumented)
     auxData: PolyfaceAuxData | undefined;
@@ -4619,7 +4579,6 @@ export type Range1dProps = {
 
 // @public (undocumented)
 export class Range2d extends RangeBase implements LowAndHighXY {
-    // (undocumented)
     constructor(lowx?: number, lowy?: number, highx?: number, highy?: number);
     // (undocumented)
     readonly bottom: number;
@@ -4702,7 +4661,6 @@ export type Range2dProps = {
 
 // @public (undocumented)
 export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions {
-    // (undocumented)
     constructor(lowx?: number, lowy?: number, lowz?: number, highx?: number, highy?: number, highz?: number);
     // (undocumented)
     readonly back: number;
@@ -4970,7 +4928,6 @@ export class RecurseToCurvesGeometryHandler extends GeometryHandler {
 
 // @public
 export abstract class RecursiveCurveProcessor {
-    // (undocumented)
     protected constructor();
     // (undocumented)
     announceBagOfCurves(data: BagOfCurves, _indexInParent?: number): void;
@@ -4984,7 +4941,6 @@ export abstract class RecursiveCurveProcessor {
 
 // @public
 export abstract class RecursiveCurveProcessorWithStack extends RecursiveCurveProcessor {
-    // (undocumented)
     protected constructor();
     // (undocumented)
     announceBagOfCurves(data: BagOfCurves, _indexInParent?: number): void;
@@ -5117,7 +5073,6 @@ export class SmoothTransformBetweenFrusta {
 
 // @public
 export abstract class SolidPrimitive extends GeometryQuery {
-    // (undocumented)
     protected constructor(capped: boolean);
     capped: boolean;
     // (undocumented)
@@ -5172,7 +5127,6 @@ export class Sphere extends SolidPrimitive implements UVSurface {
 
 // @public
 export class SphereImplicit {
-    // (undocumented)
     constructor(r: number);
     // (undocumented)
     evaluateDerivativesThetaPhi(theta: number, phi: number, dxdTheta: Vector3d, dxdPhi: Vector3d): void;
@@ -5280,7 +5234,6 @@ export class SweepContour {
 
 // @public (undocumented)
 export class TorusImplicit {
-    // (undocumented)
     constructor(majorRadiusR: number, minorRadiusr: number);
     // (undocumented)
     boxSize(): number;
@@ -5313,7 +5266,6 @@ export class TorusImplicit {
 
 // @public
 export class TorusPipe extends SolidPrimitive implements UVSurface, UVSurfaceIsoParametricDistance {
-    // (undocumented)
     protected constructor(map: Transform, radiusA: number, radiusB: number, sweep: Angle, capped: boolean);
     // (undocumented)
     clone(): TorusPipe;
@@ -5451,7 +5403,6 @@ export class TransitionConditionalProperties {
 
 // @public (undocumented)
 export class TransitionSpiral3d extends CurvePrimitive {
-    // (undocumented)
     constructor(spiralType: string | undefined, radius01: Segment1d, bearing01: AngleSweep, activeFractionInterval: Segment1d, localToWorld: Transform, arcLength: number, properties: TransitionConditionalProperties | undefined);
     // (undocumented)
     activeFractionInterval: Segment1d;
@@ -5537,7 +5488,6 @@ export class Triangulator {
 
 // @public (undocumented)
 export class TriDiagonalSystem {
-    // (undocumented)
     constructor(n: number);
     // (undocumented)
     addToB(row: number, bb: number): void;
@@ -5671,7 +5621,6 @@ export class UnionOfConvexClipPlaneSets implements Clipper {
 
 // @public
 export class UnionRegion extends CurveCollection {
-    // (undocumented)
     constructor();
     // (undocumented)
     announceToCurveProcessor(processor: RecursiveCurveProcessor, indexInParent?: number): void;
@@ -5699,7 +5648,6 @@ export class UnionRegion extends CurveCollection {
 
 // @public
 export class UnivariateBezier extends BezierCoffs {
-    // (undocumented)
     constructor(data: number | Float64Array | number[]);
     addSquaredSquaredBezier(coffA: Float64Array, scale: number): boolean;
     allocateOrder(order: number): void;
@@ -5748,7 +5696,6 @@ export class UVSurfaceOps {
 
 // @public
 export class Vector2d extends XY implements BeJSONFunctions {
-    // (undocumented)
     constructor(x?: number, y?: number);
     angleTo(vectorB: XAndY): Angle;
     // (undocumented)
@@ -5802,7 +5749,6 @@ export class Vector2d extends XY implements BeJSONFunctions {
 
 // @public
 export class Vector3d extends XYZ {
-    // (undocumented)
     constructor(x?: number, y?: number, z?: number);
     addCrossProductToTargetsInPlace(ax: number, ay: number, az: number, bx: number, by: number, bz: number, cx: number, cy: number, cz: number): void;
     // (undocumented)
@@ -5955,7 +5901,6 @@ export type XAndY = Readonly<WritableXAndY>;
 
 // @public
 export class XY implements XAndY {
-    // (undocumented)
     protected constructor(x?: number, y?: number);
     static crossProductToPoints(origin: XAndY, targetA: XAndY, targetB: XAndY): number;
     distance(other: XAndY): number;
@@ -5998,7 +5943,6 @@ export type XYProps = {
 
 // @public
 export class XYZ implements XYAndZ {
-    // (undocumented)
     protected constructor(x?: number, y?: number, z?: number);
     addInPlace(other: XYAndZ): void;
     addScaledInPlace(other: XYAndZ, scale: number): void;
@@ -6056,7 +6000,6 @@ export type XYZProps = {
 
 // @public
 export class YawPitchRollAngles {
-    // (undocumented)
     constructor(yaw?: Angle, pitch?: Angle, roll?: Angle);
     clone(): YawPitchRollAngles;
     static createDegrees(yawDegrees: number, pitchDegrees: number, rollDegrees: number): YawPitchRollAngles;

@@ -13,6 +13,7 @@ export * from "./WsgClient";
 export * from "./FileHandler";
 export * from "./IModelClient";
 export * from "./ImsClients";
+export * from "./LoggerCategory";
 export * from "./Config";
 export * from "./Request";
 export * from "./RealityDataServicesClient";

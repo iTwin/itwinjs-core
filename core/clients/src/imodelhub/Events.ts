@@ -3,18 +3,19 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module iModelHubEvents */
-import { ClientRequestContext, Logger, Id64, Id64String, GuidString } from "@bentley/bentleyjs-core";
+import { ClientRequestContext, GuidString, Id64, Id64String, Logger } from "@bentley/bentleyjs-core";
+import { AuthorizedClientRequestContext } from "../AuthorizedClientRequestContext";
+import { LoggerCategory } from "../LoggerCategory";
+import { AccessToken } from "../Token";
 import { ECJsonTypeMap, WsgInstance } from "./../ECJsonTypeMap";
 import { request, Response } from "./../Request";
-import { CodeState } from "./Codes";
-import { AccessToken } from "../Token";
-import { AuthorizedClientRequestContext } from "../AuthorizedClientRequestContext";
-import { EventBaseHandler, BaseEventSAS, IModelHubBaseEvent, EventListener, ListenerSubscription, GetEventOperationToRequestType } from "./EventsBase";
 import { IModelBaseHandler } from "./BaseHandler";
+import { CodeState } from "./Codes";
 import { ArgumentCheck } from "./Errors";
-import { LockType, LockLevel } from "./Locks";
+import { BaseEventSAS, EventBaseHandler, EventListener, GetEventOperationToRequestType, IModelHubBaseEvent, ListenerSubscription } from "./EventsBase";
+import { LockLevel, LockType } from "./Locks";
 
-const loggingCategory = "imodeljs-clients.imodelhub";
+const loggerCategory: string = LoggerCategory.IModelHub;
 
 /** Type of [[IModelHubEvent]]. Event type is used to define which events you wish to receive from your [[EventSubscription]]. See [[EventSubscriptionHandler.create]] and [[EventSubscriptionHandler.update]]. */
 export type EventType =
@@ -255,94 +256,86 @@ export class EventSAS extends BaseEventSAS {
 export class EventSubscriptionHandler {
   private _handler: IModelBaseHandler;
 
-  /**
-   * Constructor for EventSubscriptionHandler.
-   * @hidden
+  /** Constructor for EventSubscriptionHandler.
    * @param handler Handler for WSG requests.
    */
   constructor(handler: IModelBaseHandler) {
     this._handler = handler;
   }
 
-  /**
-   * Get relative url for EventSubscription requests.
-   * @hidden
-   * @param imodelId Id of the iModel. See [[HubIModel]].
+  /** Get relative url for EventSubscription requests.
+   * @param iModelId Id of the iModel. See [[HubIModel]].
    * @param instanceId Id of the subscription.
    */
-  private getRelativeUrl(imodelId: GuidString, instanceId?: string) {
-    return `/Repositories/iModel--${imodelId}/iModelScope/EventSubscription/${instanceId || ""}`;
+  private getRelativeUrl(iModelId: GuidString, instanceId?: string) {
+    return `/Repositories/iModel--${iModelId}/iModelScope/EventSubscription/${instanceId || ""}`;
   }
 
-  /**
-   * Create an [[EventSubscription]].
+  /** Create an [[EventSubscription]].
    * @param requestContext The client request context
-   * @param imodelId Id of the iModel. See [[HubIModel]].
+   * @param iModelId Id of the iModel. See [[HubIModel]].
    * @param events Array of EventTypes to subscribe to.
    * @return Created EventSubscription instance.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async create(requestContext: AuthorizedClientRequestContext, imodelId: GuidString, events: EventType[]) {
+  public async create(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, events: EventType[]) {
     requestContext.enter();
-    Logger.logInfo(loggingCategory, `Creating event subscription on iModel ${imodelId}`);
+    Logger.logInfo(loggerCategory, "Creating event subscription on iModel", () => ({ iModelId }));
     ArgumentCheck.defined("requestContext", requestContext);
-    ArgumentCheck.validGuid("imodelId", imodelId);
+    ArgumentCheck.validGuid("iModelId", iModelId);
     ArgumentCheck.nonEmptyArray("events", events);
 
     let subscription = new EventSubscription();
     subscription.eventTypes = events;
 
-    subscription = await this._handler.postInstance<EventSubscription>(requestContext, EventSubscription, this.getRelativeUrl(imodelId), subscription);
+    subscription = await this._handler.postInstance<EventSubscription>(requestContext, EventSubscription, this.getRelativeUrl(iModelId), subscription);
     requestContext.enter();
-    Logger.logTrace(loggingCategory, `Created event subscription on iModel ${imodelId}`);
-
+    Logger.logTrace(loggerCategory, "Created event subscription on iModel", () => ({ iModelId }));
     return subscription;
   }
 
   /**
    * Update an [[EventSubscription]]. Can change the [[EventType]]s specified in the subscription. Must be a valid subscription that was previously created with [[EventSubscriptionHandler.create]] that hasn't expired.
    * @param requestContext The client request context
-   * @param imodelId Id of the iModel. See [[HubIModel]].
+   * @param iModelId Id of the iModel. See [[HubIModel]].
    * @param subscription Updated EventSubscription.
    * @return EventSubscription instance from iModelHub after update.
    * @throws [[IModelHubError]] with [IModelHubStatus.EventSubscriptionDoesNotExist]($bentley) if [[EventSubscription]] does not exist with the specified subscription.wsgId.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async update(requestContext: AuthorizedClientRequestContext, imodelId: GuidString, subscription: EventSubscription): Promise<EventSubscription> {
+  public async update(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, subscription: EventSubscription): Promise<EventSubscription> {
     requestContext.enter();
-    Logger.logInfo(loggingCategory, `Updating event subscription on iModel ${subscription.wsgId}`);
+    Logger.logInfo(loggerCategory, "Updating event subscription on iModel", () => ({ iModelId }));
     ArgumentCheck.defined("requestContext", requestContext);
-    ArgumentCheck.validGuid("imodelId", imodelId);
+    ArgumentCheck.validGuid("iModelId", iModelId);
     ArgumentCheck.defined("subscription", subscription);
     ArgumentCheck.validGuid("subscription.wsgId", subscription.wsgId);
 
-    const updatedSubscription = await this._handler.postInstance<EventSubscription>(requestContext, EventSubscription, this.getRelativeUrl(imodelId, subscription.wsgId), subscription);
+    const updatedSubscription = await this._handler.postInstance<EventSubscription>(requestContext, EventSubscription, this.getRelativeUrl(iModelId, subscription.wsgId), subscription);
     requestContext.enter();
 
-    Logger.logTrace(loggingCategory, `Updated event subscription on iModel ${subscription.wsgId}`);
-
+    Logger.logTrace(loggerCategory, "Updated event subscription on iModel", () => ({ iModelId }));
     return updatedSubscription;
   }
 
-  /**
-   * Delete an [[EventSubscription]].
+  /** Delete an [[EventSubscription]].
    * @param requestContext The client request context
-   * @param imodelId Id of the iModel. See [[HubIModel]].
+   * @param iModelId Id of the iModel. See [[HubIModel]].
    * @param eventSubscriptionId Id of the EventSubscription.
    * @returns Resolves if the EventSubscription has been successfully deleted.
    * @throws [[IModelHubError]] with [IModelHubStatus.EventSubscriptionDoesNotExist]($bentley) if EventSubscription does not exist with the specified subscription.wsgId.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async delete(requestContext: AuthorizedClientRequestContext, imodelId: GuidString, eventSubscriptionId: string): Promise<void> {
+  public async delete(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, eventSubscriptionId: string): Promise<void> {
     requestContext.enter();
-    Logger.logInfo(loggingCategory, `Deleting event subscription ${eventSubscriptionId} from iModel ${imodelId}`);
+    Logger.logInfo(loggerCategory, `Deleting event subscription ${eventSubscriptionId} from iModel`, () => ({ iModelId }));
     ArgumentCheck.defined("requestContext", requestContext);
-    ArgumentCheck.validGuid("imodelId", imodelId);
+    ArgumentCheck.validGuid("iModelId", iModelId);
     ArgumentCheck.validGuid("eventSubscriptionId", eventSubscriptionId);
 
-    await this._handler.delete(requestContext, this.getRelativeUrl(imodelId, eventSubscriptionId));
+    await this._handler.delete(requestContext, this.getRelativeUrl(iModelId, eventSubscriptionId));
     requestContext.enter();
-    Logger.logTrace(loggingCategory, `Deleted event subscription ${eventSubscriptionId} from iModel ${imodelId}`);
+    Logger.logTrace(loggerCategory, `Deleted event subscription ${eventSubscriptionId} from iModel`, () => ({ iModelId }));
   }
 }
 
@@ -362,9 +355,7 @@ export class EventHandler extends EventBaseHandler {
     this._handler = handler;
   }
 
-  /**
-   * Get a handler for managing [[EventSubscription]]s.
-   */
+  /** Get a handler for managing [[EventSubscription]]s. */
   public get subscriptions(): EventSubscriptionHandler {
     if (!this._subscriptionHandler) {
       this._subscriptionHandler = new EventSubscriptionHandler(this._handler);
@@ -373,36 +364,31 @@ export class EventHandler extends EventBaseHandler {
     return this._subscriptionHandler;
   }
 
-  /**
-   * Get relative url for EventSAS requests.
-   * @hidden
-   * @param imodelId Id of the iModel. See [[HubIModel]].
+  /** Get relative url for EventSAS requests.
+   * @param iModelId Id of the iModel. See [[HubIModel]].
    */
-  private getEventSASRelativeUrl(imodelId: GuidString): string {
-    return `/Repositories/iModel--${imodelId}/iModelScope/EventSAS/`;
+  private getEventSASRelativeUrl(iModelId: GuidString): string {
+    return `/Repositories/iModel--${iModelId}/iModelScope/EventSAS/`;
   }
 
-  /**
-   * Get event SAS Token. Used to authenticate for [[EventHandler.getEvent]].
+  /** Get event SAS Token. Used to authenticate for [[EventHandler.getEvent]].
    * @param requestContext The client request context
-   * @param imodelId Id of the iModel. See [[HubIModel]].
+   * @param iModelId Id of the iModel. See [[HubIModel]].
    * @return SAS Token to connect to the topic.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async getSASToken(requestContext: AuthorizedClientRequestContext, imodelId: GuidString): Promise<EventSAS> {
-    Logger.logInfo(loggingCategory, `Getting event SAS token from iModel ${imodelId}`);
+  public async getSASToken(requestContext: AuthorizedClientRequestContext, iModelId: GuidString): Promise<EventSAS> {
+    Logger.logInfo(loggerCategory, "Getting event SAS token from iModel", () => ({ iModelId }));
     ArgumentCheck.defined("requestContext", requestContext);
-    ArgumentCheck.validGuid("imodelId", imodelId);
+    ArgumentCheck.validGuid("iModelId", iModelId);
 
-    const eventSAS = await this._handler.postInstance<EventSAS>(requestContext, EventSAS, this.getEventSASRelativeUrl(imodelId), new EventSAS());
+    const eventSAS = await this._handler.postInstance<EventSAS>(requestContext, EventSAS, this.getEventSASRelativeUrl(iModelId), new EventSAS());
     requestContext.enter();
-    Logger.logTrace(loggingCategory, `Got event SAS token from iModel ${imodelId}`);
-
+    Logger.logTrace(loggerCategory, "Got event SAS token from iModel", () => ({ iModelId }));
     return eventSAS;
   }
 
-  /**
-   * Get absolute url for event requests.
+  /** Get absolute url for event requests.
    * @param baseAddress Base address for the serviceBus.
    * @param subscriptionId Id of the subscription.
    * @param timeout Optional timeout for long polling.
@@ -417,8 +403,7 @@ export class EventHandler extends EventBaseHandler {
     return url;
   }
 
-  /**
-   * Get [[IModelHubEvent]] from the [[EventSubscription]]. You can use long polling timeout, to have requests return when events are available (or request times out), rather than returning immediately when no events are found.
+  /** Get [[IModelHubEvent]] from the [[EventSubscription]]. You can use long polling timeout, to have requests return when events are available (or request times out), rather than returning immediately when no events are found.
    * @param requestContext The client request context
    * @param sasToken SAS Token used to authenticate. See [[EventSAS.sasToken]].
    * @param baseAddress Address for the events. See [[EventSAS.baseAddress]].
@@ -430,7 +415,7 @@ export class EventHandler extends EventBaseHandler {
    */
   public async getEvent(requestContext: ClientRequestContext, sasToken: string, baseAddress: string, subscriptionId: string, timeout?: number): Promise<IModelHubEvent | undefined> {
     requestContext.enter();
-    Logger.logInfo(loggingCategory, `Getting event from subscription ${subscriptionId}`);
+    Logger.logInfo(loggerCategory, "Getting event from subscription", () => ({ subscriptionId }));
     ArgumentCheck.defined("sasToken", sasToken);
     ArgumentCheck.defined("baseAddress", baseAddress);
     ArgumentCheck.validGuid("subscriptionId", subscriptionId);
@@ -440,38 +425,36 @@ export class EventHandler extends EventBaseHandler {
     const result = await request(requestContext, this.getEventUrl(baseAddress, subscriptionId, timeout), options);
     requestContext.enter();
     if (result.status === 204) {
-      Logger.logTrace(loggingCategory, `No events found on subscription ${subscriptionId}`);
+      Logger.logTrace(loggerCategory, "No events found on subscription", () => ({ subscriptionId }));
       return undefined;
     }
 
     const event = ParseEvent(result);
-    Logger.logTrace(loggingCategory, `Got event from subscription ${subscriptionId}`);
-
+    Logger.logTrace(loggerCategory, "Got event from subscription", () => ({ subscriptionId }));
     return Promise.resolve(event);
   }
 
-  /**
-   * Create a listener for long polling events from an [[EventSubscription]]. When event is received from the subscription, every registered listener callback is called. This continuously waits for events until all created listeners for that subscriptionId are deleted. [[EventSAS]] token expirations are handled automatically, [[AccessToken]] expiration is handled by calling authenticationCallback to get a new token.
+  /** Create a listener for long polling events from an [[EventSubscription]]. When event is received from the subscription, every registered listener callback is called. This continuously waits for events until all created listeners for that subscriptionId are deleted. [[EventSAS]] token expirations are handled automatically, [[AccessToken]] expiration is handled by calling authenticationCallback to get a new token.
    * @param requestContext The client request context
    * @param authenticationCallback Callback used to get AccessToken. Only the first registered authenticationCallback for this subscriptionId will be used.
    * @param subscriptionId Id of EventSubscription.
-   * @param imodelId Id of the iModel. See [[HubIModel]].
+   * @param iModelId Id of the iModel. See [[HubIModel]].
    * @param listener Callback that is called when an [[IModelHubEvent]] is received.
    * @returns Function that deletes the created listener.
    * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) or [IModelHubStatus.InvalidArgumentError]($bentley) if one of the arguments is undefined or has an invalid value.
    */
-  public createListener(requestContext: ClientRequestContext, authenticationCallback: () => Promise<AccessToken>, subscriptionId: string, imodelId: GuidString, listener: (event: IModelHubEvent) => void): () => void {
+  public createListener(requestContext: ClientRequestContext, authenticationCallback: () => Promise<AccessToken>, subscriptionId: string, iModelId: GuidString, listener: (event: IModelHubEvent) => void): () => void {
     requestContext.enter();
     ArgumentCheck.defined("requestContext", requestContext);
     ArgumentCheck.defined("authenticationCallback", authenticationCallback);
     ArgumentCheck.validGuid("subscriptionId", subscriptionId);
-    ArgumentCheck.validGuid("imodelId", imodelId);
+    ArgumentCheck.validGuid("iModelId", iModelId);
 
     const subscription = new ListenerSubscription();
     subscription.authenticationCallback = authenticationCallback;
     subscription.getEvent = async (sasToken: string, baseAddress: string, id: string, timeout?: number) =>
       this.getEvent(requestContext, sasToken, baseAddress, id, timeout);
-    subscription.getSASToken = async (requestContextArg: AuthorizedClientRequestContext) => this.getSASToken(requestContextArg, imodelId);
+    subscription.getSASToken = async (requestContextArg: AuthorizedClientRequestContext) => this.getSASToken(requestContextArg, iModelId);
     subscription.id = subscriptionId;
     return EventListener.create(subscription, listener);
   }

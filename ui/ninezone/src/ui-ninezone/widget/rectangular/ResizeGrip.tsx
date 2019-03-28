@@ -8,9 +8,9 @@ import * as classnames from "classnames";
 import * as React from "react";
 import { PointerCaptor } from "../../base/PointerCaptor";
 import { CommonProps } from "../../utilities/Props";
-import "./ResizeGrip.scss";
 import { Rectangle } from "../../utilities/Rectangle";
 import { Point, PointProps } from "../../utilities/Point";
+import "./ResizeGrip.scss";
 
 /** Properties of [[ResizeGrip]] component. */
 export interface ResizeGripProps extends CommonProps {
@@ -99,9 +99,6 @@ export class ResizeGrip extends React.PureComponent<ResizeGripProps> {
   }
 
   private _handleMouseUp = () => {
-    if (!this._relativePosition)
-      return;
-
     this._relativePosition = undefined;
   }
 

@@ -7,7 +7,6 @@
 import * as classnames from "classnames";
 import * as React from "react";
 import { CommonProps, NoChildrenProps } from "../../../utilities/Props";
-import { withTheme, WithThemeProps } from "../../../theme/WithTheme";
 import "./Hyperlink.scss";
 
 /** Properties of [[Hyperlink]] component. */
@@ -18,7 +17,8 @@ export interface HyperlinkProps extends CommonProps, NoChildrenProps {
   onClick?: () => void;
 }
 
-class HyperlinkComponent extends React.PureComponent<HyperlinkProps> {
+/** Hyperlink component used in status message. I.e. [[MessageLayout]] */
+export class Hyperlink extends React.PureComponent<HyperlinkProps> {
   public render() {
     const className = classnames(
       "nz-footer-message-content-hyperlink",
@@ -35,7 +35,3 @@ class HyperlinkComponent extends React.PureComponent<HyperlinkProps> {
     );
   }
 }
-
-/** Hyperlink component used in status message. I.e. [[MessageLayout]] */
-// tslint:disable-next-line:variable-name
-export const Hyperlink: React.ComponentClass<HyperlinkProps & WithThemeProps> = withTheme(HyperlinkComponent);

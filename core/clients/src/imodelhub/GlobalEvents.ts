@@ -3,19 +3,19 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module iModelHubGlobalEvents */
-import { Logger, GuidString, ClientRequestContext } from "@bentley/bentleyjs-core";
-import { ECJsonTypeMap, WsgInstance } from "./../ECJsonTypeMap";
-import { request, Response, RequestOptions } from "./../Request";
-import { AccessToken } from "../Token";
+import { ClientRequestContext, GuidString, Logger } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext } from "../AuthorizedClientRequestContext";
-import { EventBaseHandler, IModelHubBaseEvent, BaseEventSAS, ListenerSubscription, EventListener, GetEventOperationToRequestType } from "./EventsBase";
+import { LoggerCategory } from "../LoggerCategory";
+import { AccessToken } from "../Token";
+import { ECJsonTypeMap, WsgInstance } from "./../ECJsonTypeMap";
+import { request, RequestOptions, Response } from "./../Request";
 import { IModelBaseHandler } from "./BaseHandler";
 import { ArgumentCheck } from "./Errors";
+import { BaseEventSAS, EventBaseHandler, EventListener, GetEventOperationToRequestType, IModelHubBaseEvent, ListenerSubscription } from "./EventsBase";
 
-const loggingCategory = "imodeljs-clients.imodelhub";
+const loggerCategory: string = LoggerCategory.IModelHub;
 
-/**
- * Type of [[IModelHubGlobalEvent]]. Global Event type is used to define which events you wish to receive from your [[GlobalEventSubscription]]. See [[GlobalEventSubscriptionHandler.create]] and [[GlobalEventSubscriptionHandler.update]].
+/** Type of [[IModelHubGlobalEvent]]. Global Event type is used to define which events you wish to receive from your [[GlobalEventSubscription]]. See [[GlobalEventSubscriptionHandler.create]] and [[GlobalEventSubscriptionHandler.update]].
  */
 export type GlobalEventType =
   /** Sent when an iModel is put into the archive. See [[SoftiModelDeleteEvent]]. */
@@ -29,8 +29,7 @@ export type GlobalEventType =
   /** Sent when a named [[Version]] is created. See [[NamedVersionCreatedEvent]]. */
   "NamedVersionCreatedEvent";
 
-/**
- * Base type for all iModelHub global events.
+/** Base type for all iModelHub global events.
  */
 export abstract class IModelHubGlobalEvent extends IModelHubBaseEvent {
   /** Id of the iModel that caused this event. */
@@ -38,10 +37,9 @@ export abstract class IModelHubGlobalEvent extends IModelHubBaseEvent {
   /** Id of the [[Project]] that this iModel belongs to. */
   public projectId?: string;
 
-  /**
-   * Construct this global event from object instance.
-   * @hidden
+  /** Construct this global event from object instance.
    * @param obj Object instance.
+   * @internal
    */
   public fromJson(obj: any) {
     super.fromJson(obj);
@@ -50,26 +48,22 @@ export abstract class IModelHubGlobalEvent extends IModelHubBaseEvent {
   }
 }
 
-/**
- * Sent when an iModel is put into the archive. See [[IModelHandler.delete]].
+/** Sent when an iModel is put into the archive. See [[IModelHandler.delete]].
  */
 export class SoftiModelDeleteEvent extends IModelHubGlobalEvent {
 }
 
-/**
- * Sent when an archived iModel is completely deleted from the storage. Sent after some time passes after [[IModelHandler.delete]] and iModel is no longer kept in the archive. iModel is kept at least 30 days in the archive.
+/** Sent when an archived iModel is completely deleted from the storage. Sent after some time passes after [[IModelHandler.delete]] and iModel is no longer kept in the archive. iModel is kept at least 30 days in the archive.
  */
 export class HardiModelDeleteEvent extends IModelHubGlobalEvent {
 }
 
-/**
- * Sent when an iModel is created. See [[IModelHandler.create]].
+/** Sent when an iModel is created. See [[IModelHandler.create]].
  */
 export class IModelCreatedEvent extends IModelHubGlobalEvent {
 }
 
-/**
- * Sent when a [[ChangeSet]] is pushed. See [[ChangeSetHandler.create]]. Sent together with [[ChangeSetPostPushEvent]].
+/** Sent when a [[ChangeSet]] is pushed. See [[ChangeSetHandler.create]]. Sent together with [[ChangeSetPostPushEvent]].
  */
 export class ChangeSetCreatedEvent extends IModelHubGlobalEvent {
   public changeSetId?: string;
@@ -177,17 +171,14 @@ export class GlobalEventSubscriptionHandler {
     this._handler = handler;
   }
 
-  /**
-   * Get relative url for GlobalEventSubscription requests.
-   * @hidden
+  /** Get relative url for GlobalEventSubscription requests.
    * @param instanceId Id of the subscription.
    */
   private getRelativeUrl(instanceId?: string) {
     return `/Repositories/Global--Global/GlobalScope/GlobalEventSubscription/${instanceId || ""}`;
   }
 
-  /**
-   * Create a [[GlobalEventSubscription]]. You can use this to get or update the existing subscription instance, if you only have the original subscriptionId.
+  /** Create a [[GlobalEventSubscription]]. You can use this to get or update the existing subscription instance, if you only have the original subscriptionId.
    * @param requestContext The client request context
    * @param subscriptionId Guid to be used by global event subscription. It will be a part of the resulting subscription id.
    * @param globalEvents Array of GlobalEventTypes to subscribe to.
@@ -197,7 +188,7 @@ export class GlobalEventSubscriptionHandler {
    */
   public async create(requestContext: AuthorizedClientRequestContext, subscriptionId: GuidString, globalEvents: GlobalEventType[]) {
     requestContext.enter();
-    Logger.logInfo(loggingCategory, `Creating global event subscription with instance id: ${subscriptionId}`);
+    Logger.logInfo(loggerCategory, "Creating global event subscription", () => ({ subscriptionId }));
     ArgumentCheck.defined("requestContext", requestContext);
     ArgumentCheck.validGuid("subscriptionId", subscriptionId);
 
@@ -207,13 +198,11 @@ export class GlobalEventSubscriptionHandler {
 
     subscription = await this._handler.postInstance<GlobalEventSubscription>(requestContext, GlobalEventSubscription, this.getRelativeUrl(), subscription);
     requestContext.enter();
-    Logger.logTrace(loggingCategory, `Created global event subscription with instance id: ${subscriptionId}`);
-
+    Logger.logTrace(loggerCategory, "Created global event subscription", () => ({ subscriptionId }));
     return subscription;
   }
 
-  /**
-   * Update a [[GlobalEventSubscription]]. Can change the [[GlobalEventType]]s specified in the subscription. Must be a valid subscription that was previously created with [[GlobalEventSubscriptionHandler.create]].
+  /** Update a [[GlobalEventSubscription]]. Can change the [[GlobalEventType]]s specified in the subscription. Must be a valid subscription that was previously created with [[GlobalEventSubscriptionHandler.create]].
    * @param requestContext The client request context.
    * @param subscription Updated GlobalEventSubscription.
    * @return GlobalEventSubscription instance from iModelHub after update.
@@ -222,35 +211,33 @@ export class GlobalEventSubscriptionHandler {
    */
   public async update(requestContext: AuthorizedClientRequestContext, subscription: GlobalEventSubscription): Promise<GlobalEventSubscription> {
     requestContext.enter();
-    Logger.logInfo(loggingCategory, `Updating global event subscription with instance id: ${subscription.wsgId} and subscription id: ${subscription.subscriptionId}`);
+    Logger.logInfo(loggerCategory, `Updating global event subscription with instance id: ${subscription.wsgId}`, () => ({ subscriptionId: subscription.subscriptionId }));
     ArgumentCheck.defined("requestContext", requestContext);
     ArgumentCheck.defined("subscription", subscription);
     ArgumentCheck.validGuid("subscription.wsgId", subscription.wsgId);
 
     const updatedSubscription = await this._handler.postInstance<GlobalEventSubscription>(requestContext, GlobalEventSubscription, this.getRelativeUrl(subscription.wsgId), subscription);
     requestContext.enter();
-    Logger.logTrace(loggingCategory, `Updated global event subscription with instance id: ${subscription.wsgId} and subscription id: ${subscription.subscriptionId}`);
-
+    Logger.logTrace(loggerCategory, `Updated global event subscription with instance id: ${subscription.wsgId}`, () => ({ subscriptionId: subscription.subscriptionId }));
     return updatedSubscription;
   }
 
-  /**
-   * Delete a [[GlobalEventSubscription]].
+  /** Delete a [[GlobalEventSubscription]].
    * @param requestContext The client request context.
-   * @param subscriptionInstanceId WSG Id of the GlobalEventSubscription.
+   * @param subscriptionId WSG Id of the GlobalEventSubscription.
    * @returns Resolves if the GlobalEventSubscription has been successfully deleted.
    * @throws [[IModelHubError]] with [IModelHubStatus.EventSubscriptionDoesNotExist]($bentley) if GlobalEventSubscription does not exist with the specified subscription.wsgId.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async delete(requestContext: AuthorizedClientRequestContext, subscriptionInstanceId: string): Promise<void> {
+  public async delete(requestContext: AuthorizedClientRequestContext, subscriptionId: string): Promise<void> {
     requestContext.enter();
-    Logger.logInfo(loggingCategory, `Deleting global event subscription with instance id: ${subscriptionInstanceId}`);
+    Logger.logInfo(loggerCategory, "Deleting global event subscription", () => ({ subscriptionId }));
     ArgumentCheck.defined("requestContext", requestContext);
-    ArgumentCheck.validGuid("subscriptionInstanceId", subscriptionInstanceId);
+    ArgumentCheck.validGuid("subscriptionInstanceId", subscriptionId);
 
-    await this._handler.delete(requestContext, this.getRelativeUrl(subscriptionInstanceId));
+    await this._handler.delete(requestContext, this.getRelativeUrl(subscriptionId));
     requestContext.enter();
-    Logger.logTrace(loggingCategory, `Deleted global event subscription with instance id: ${subscriptionInstanceId}`);
+    Logger.logTrace(loggerCategory, "Deleted global event subscription", () => ({ subscriptionId }));
   }
 }
 
@@ -306,13 +293,12 @@ export class GlobalEventHandler extends EventBaseHandler {
    */
   public async getSASToken(requestContext: AuthorizedClientRequestContext): Promise<GlobalEventSAS> {
     requestContext.enter();
-    Logger.logInfo(loggingCategory, `Getting global event SAS token`);
+    Logger.logInfo(loggerCategory, "Getting global event SAS token");
     ArgumentCheck.defined("requestContext", requestContext);
 
     const globalEventSAS = await this._handler.postInstance<GlobalEventSAS>(requestContext, GlobalEventSAS, this.getGlobalEventSASRelativeUrl(), new GlobalEventSAS());
     requestContext.enter();
-    Logger.logTrace(loggingCategory, `Got global event SAS token`);
-
+    Logger.logTrace(loggerCategory, "Got global event SAS token");
     return globalEventSAS;
   }
 
@@ -332,23 +318,22 @@ export class GlobalEventHandler extends EventBaseHandler {
     return url;
   }
 
-  /**
-   * Get an [[IModelHubGlobalEvent]] from the [[GlobalEventSubscription]]. You can use long polling timeout, to have requests return when events are available (or request times out), rather than returning immediately when no events are found.
+  /** Get an [[IModelHubGlobalEvent]] from the [[GlobalEventSubscription]]. You can use long polling timeout, to have requests return when events are available (or request times out), rather than returning immediately when no events are found.
    * @param requestContext The client request context
    * @param sasToken SAS Token used to authenticate. See [[GlobalEventSAS.sasToken]].
    * @param baseAddress Address for the events. See [[GlobalEventSAS.baseAddress]].
-   * @param subscriptionInstanceId Id of the subscription to the topic. See [[GlobalEventSubscription]].
+   * @param subscriptionId Id of the subscription to the topic. See [[GlobalEventSubscription]].
    * @param timeout Optional timeout duration in seconds for request, when using long polling.
    * @return IModelHubGlobalEvent if it exists, undefined otherwise.
    * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) or [IModelHubStatus.InvalidArgumentError]($bentley) if one of the arguments is undefined or has an invalid value.
    * @throws [[ResponseError]] if request has failed.
    */
-  public async getEvent(requestContext: ClientRequestContext, sasToken: string, baseAddress: string, subscriptionInstanceId: string, timeout?: number, getOperation: GetEventOperationType = GetEventOperationType.Destructive): Promise<IModelHubGlobalEvent | undefined> {
+  public async getEvent(requestContext: ClientRequestContext, sasToken: string, baseAddress: string, subscriptionId: string, timeout?: number, getOperation: GetEventOperationType = GetEventOperationType.Destructive): Promise<IModelHubGlobalEvent | undefined> {
     requestContext.enter();
-    Logger.logInfo(loggingCategory, `Getting global event from subscription with instance id: ${subscriptionInstanceId}`);
+    Logger.logInfo(loggerCategory, "Getting global event from subscription", () => ({ subscriptionId }));
     ArgumentCheck.defined("sasToken", sasToken);
     ArgumentCheck.defined("baseAddress", baseAddress);
-    ArgumentCheck.defined("subscriptionInstanceId", subscriptionInstanceId);
+    ArgumentCheck.defined("subscriptionInstanceId", subscriptionId);
 
     let options: RequestOptions;
     if (getOperation === GetEventOperationType.Destructive)
@@ -358,21 +343,19 @@ export class GlobalEventHandler extends EventBaseHandler {
     else // Unknown operation type.
       return undefined;
 
-    const result = await request(requestContext, this.getGlobalEventUrl(baseAddress, subscriptionInstanceId, timeout), options);
+    const result = await request(requestContext, this.getGlobalEventUrl(baseAddress, subscriptionId, timeout), options);
     requestContext.enter();
     if (result.status === 204) {
-      Logger.logTrace(loggingCategory, `No events found on subscription ${subscriptionInstanceId}`);
+      Logger.logTrace(loggerCategory, "No events found on subscription", () => ({ subscriptionId }));
       return undefined;
     }
 
     const event = ParseGlobalEvent(result, this._handler, sasToken);
-    Logger.logTrace(loggingCategory, `Got Global Event from subscription with instance id: ${subscriptionInstanceId}`);
-
+    Logger.logTrace(loggerCategory, "Got Global Event from subscription", () => ({ subscriptionId }));
     return Promise.resolve(event);
   }
 
-  /**
-   * Create a listener for long polling events from a [[GlobalEventSubscription]]. When event is received from the subscription, every registered listener callback is called. This continuously waits for events until all created listeners for that subscriptionInstanceId are deleted. [[GlobalEventSAS]] token expirations are handled automatically, [[AccessToken]] expiration is handled by calling authenticationCallback to get a new token.
+  /** Create a listener for long polling events from a [[GlobalEventSubscription]]. When event is received from the subscription, every registered listener callback is called. This continuously waits for events until all created listeners for that subscriptionInstanceId are deleted. [[GlobalEventSAS]] token expirations are handled automatically, [[AccessToken]] expiration is handled by calling authenticationCallback to get a new token.
    * @param authenticationCallback Callback used to get AccessToken. Only the first registered authenticationCallback for this subscriptionId will be used.
    * @param subscriptionInstanceId Id of GlobalEventSubscription.
    * @param listener Callback that is called when an [[IModelHubGlobalEvent]] is received.

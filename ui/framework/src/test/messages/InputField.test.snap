@@ -61,7 +61,7 @@ exports[`InputFieldMessage should render correctly 1`] = `
   <WithOnOutsideClick
     className="uifw-popup-message-inputField"
   >
-    <WithTheme
+    <StatusMessage
       className="uifw-popup-message-inputField"
       icon={
         <i
@@ -72,18 +72,18 @@ exports[`InputFieldMessage should render correctly 1`] = `
     >
       <MessageLayout
         buttons={
-          <WithTheme
+          <MessageButton
             onClick={[Function]}
           >
             <i
               className="icon icon-close"
             />
-          </WithTheme>
+          </MessageButton>
         }
         className="uifw-message-inputField-content"
         label={<div />}
       />
-    </WithTheme>
+    </StatusMessage>
   </WithOnOutsideClick>
 </Portal>
 `;

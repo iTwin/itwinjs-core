@@ -7,7 +7,6 @@
 import * as classnames from "classnames";
 import * as React from "react";
 import { CommonProps } from "../../../../utilities/Props";
-import { withTheme, WithThemeProps } from "../../../../theme/WithTheme";
 import { Status, StatusHelpers } from "./Status";
 import "./Message.scss";
 
@@ -21,7 +20,8 @@ export interface StatusMessageProps extends CommonProps {
   status: Status;
 }
 
-class StatusMessageComponent extends React.PureComponent<StatusMessageProps> {
+/** Status message can be used in one of footer messages. I.e.: [[Toast]], [[Temporary]], [[Sticky]], [[Activity]] */
+export class StatusMessage extends React.PureComponent<StatusMessageProps> {
   public render() {
     const className = classnames(
       "nz-footer-message-content-status-message",
@@ -41,7 +41,3 @@ class StatusMessageComponent extends React.PureComponent<StatusMessageProps> {
     );
   }
 }
-
-/** Status message can be used in one of footer messages. I.e.: [[Toast]], [[Temporary]], [[Sticky]], [[Activity]] */
-// tslint:disable-next-line:variable-name
-export const StatusMessage: React.ComponentClass<StatusMessageProps & WithThemeProps> = withTheme(StatusMessageComponent);

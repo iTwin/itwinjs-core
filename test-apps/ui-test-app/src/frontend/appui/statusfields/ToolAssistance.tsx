@@ -6,11 +6,16 @@ import * as React from "react";
 
 import { IModelApp } from "@bentley/imodeljs-frontend";
 import { IStatusBar, StatusBarFieldId, FrontstageManager } from "@bentley/ui-framework";
-import { ToolAssistanceIndicator, ToolAssistanceDialog as ToolAssistanceDialogComponent } from "@bentley/ui-ninezone";
+import {
+  ToolAssistanceIndicator, ToolAssistanceDialog as ToolAssistanceDialogComponent,
+  ToolAssistanceDialogContent as ToolAssistanceDialogContentComponent, containHorizontally, withContainIn,
+} from "@bentley/ui-ninezone";
 import { withOnOutsideClick } from "@bentley/ui-core";
 
 // tslint:disable-next-line: variable-name
 const ToolAssistanceDialog = withOnOutsideClick(ToolAssistanceDialogComponent, undefined, false);
+// tslint:disable-next-line: variable-name
+const ToolAssistanceDialogContent = withContainIn(ToolAssistanceDialogContentComponent);
 
 export interface ToolAssistanceProps {
   statusBar: IStatusBar;
@@ -37,9 +42,14 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceProps> {
         dialog={
           this.props.openWidget !== this._className ? undefined : (
             <ToolAssistanceDialog
-              items={FrontstageManager.activeToolAssistanceNode}
+              content={
+                <ToolAssistanceDialogContent
+                  containFn={containHorizontally}
+                  items={FrontstageManager.activeToolAssistanceNode}
+                  title={IModelApp.i18n.translate("SampleApp:toolAssist.title")}
+                />
+              }
               onOutsideClick={this._handleDialogOutsideClick}
-              title={IModelApp.i18n.translate("SampleApp:toolAssist.title")}
             />
           )
         }
@@ -49,9 +59,8 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceProps> {
             <i className="icon icon-placeholder" />
           </>
         }
-        isStepStringVisible={this.props.isInFooterMode}
         onClick={this._handleToolAssistanceIndicatorClick}
-        stepString={IModelApp.i18n.translate("SampleApp:toolAssist.startPoint")}
+        stepString={this.props.isInFooterMode ? IModelApp.i18n.translate("SampleApp:toolAssist.startPoint") : undefined}
       />
     );
   }

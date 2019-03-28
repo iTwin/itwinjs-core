@@ -10,3 +10,14 @@ exports[`<PointerCaptor /> renders correctly 1`] = `
   />
 </div>
 `;
+
+exports[`<PointerCaptor /> should respect isMouseDown prop over state 1`] = `
+<div
+  className="nz-base-pointerCaptor nz-captured"
+  onMouseDown={[Function]}
+>
+  <div
+    className="nz-overlay"
+  />
+</div>
+`;

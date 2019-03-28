@@ -5,11 +5,12 @@
 /** @module BaseClients */
 import { ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
 import * as deepAssign from "deep-assign";
-import { Config } from "./Config";
-import { request, RequestOptions, Response, ResponseError } from "./Request";
 import { AuthorizedClientRequestContext } from "./AuthorizedClientRequestContext";
+import { Config } from "./Config";
+import { LoggerCategory } from "./LoggerCategory";
+import { request, RequestOptions, Response, ResponseError } from "./Request";
 
-const loggingCategory = "imodeljs-clients.Clients";
+const loggerCategory: string = LoggerCategory.Clients;
 
 /** Provider for default RequestOptions, used by Client to set defaults.
  */
@@ -98,7 +99,7 @@ export abstract class Client {
   protected async delete(requestContext: AuthorizedClientRequestContext, relativeUrlPath: string): Promise<void> {
     requestContext.enter();
     const url: string = await this.getUrl(requestContext) + relativeUrlPath;
-    Logger.logInfo(loggingCategory, `Sending DELETE request to ${url}`);
+    Logger.logInfo(loggerCategory, "Sending DELETE request", () => ({ url }));
     const options: RequestOptions = {
       method: "DELETE",
       headers: { authorization: requestContext.accessToken.toTokenString() },
@@ -106,7 +107,7 @@ export abstract class Client {
     await this.setupOptionDefaults(options);
     await request(requestContext, url, options);
     requestContext.enter();
-    Logger.logTrace(loggingCategory, `Successful DELETE request to ${url}`);
+    Logger.logTrace(loggerCategory, "Successful DELETE request", () => ({ url }));
   }
 }
 

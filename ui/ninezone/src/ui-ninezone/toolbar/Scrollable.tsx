@@ -9,22 +9,16 @@ import * as React from "react";
 import { Direction, OrthogonalDirection, DirectionHelpers, OrthogonalDirectionHelpers } from "../utilities/Direction";
 import { FlattenChildren } from "../utilities/Props";
 import { Indicator } from "./scroll/Indicator";
-import { Toolbar, ToolbarProps, getToolbarDirection, ToolbarPanelAlignmentHelpers, PanelsProvider } from "./Toolbar";
+import { ToolbarProps, getToolbarDirection, ToolbarPanelAlignmentHelpers, PanelsProvider, Toolbar } from "./Toolbar";
 import { Items } from "./Items";
 import "./Scrollable.scss";
 
-/** Properties of [[Scrollable]] component. See [[ScrollableDefaultProps]] */
+/** Properties of [[Scrollable]] component. */
 export interface ScrollableProps extends ToolbarProps {
   /** Describes number of visible elements. Should not be lower than 3. */
-  visibleItemThreshold?: number;
+  visibleItemThreshold: number;
   /** Function called when component scrolls. */
   onScroll?: () => void;
-}
-
-/** Default properties of [[ScrollableProps]] used in [[Scrollable]] component. */
-export interface ScrollableDefaultProps extends ScrollableProps {
-  /** Defaults to 5. */
-  visibleItemThreshold: number;
 }
 
 /** State of [[Scrollable]] component. */
@@ -38,6 +32,8 @@ const getItemCount = (props: ToolbarProps) => {
   return React.Children.count(items);
 };
 
+export type ScrollableDefaultProps = Pick<ScrollableProps, "visibleItemThreshold">;
+
 /** A [[Toolbar]] with scroll overflow strategy. */
 export class Scrollable extends React.PureComponent<ScrollableProps, ScrollableState> {
   private static readonly _DESKTOP_ITEM_WIDTH = 40;
@@ -48,7 +44,7 @@ export class Scrollable extends React.PureComponent<ScrollableProps, ScrollableS
   private _histories = React.createRef<HTMLDivElement>();
   private _panels = React.createRef<HTMLDivElement>();
 
-  public static readonly defaultProps: Partial<ScrollableDefaultProps> = {
+  public static readonly defaultProps: ScrollableDefaultProps = {
     ...Toolbar.defaultProps,
     visibleItemThreshold: 5,
   };

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Conform logging metaData to existing iModelHub standards",
+      "packageName": "@bentley/bentleyjs-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/bentleyjs-core",
+  "email": "shaun.sewall@bentley.com"
+}

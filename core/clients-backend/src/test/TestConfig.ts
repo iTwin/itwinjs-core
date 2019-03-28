@@ -10,9 +10,8 @@ import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
 import {
   ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, AuthorizationToken, AccessToken, HubIModel,
   IModelHubClient, IModelClient, ConnectClient, Project, Config, IModelQuery, AuthorizedClientRequestContext,
-  ImsUserCredentials,
+  ImsUserCredentials, LoggerCategory,
 } from "@bentley/imodeljs-clients";
-import { loggingCategoryFullUrl } from "@bentley/imodeljs-clients/lib/Request";
 import { TestUsers } from "./TestUsers";
 
 IModelJsConfig.init(true /* suppress exception */, false /* suppress error message */, Config.App);
@@ -25,7 +24,7 @@ const urlLogFileStream = fs.createWriteStream(urlLogPath, { flags: "a" });
 console.log("URL Log file created at: " + urlLogPath);
 
 function logFunction(logLevel: string, category: string, message: string) {
-  if (category === loggingCategoryFullUrl)
+  if (category === LoggerCategory.Request)
     urlLogFileStream.write(message + "\n");
   else
     logFileStream.write(logLevel + "|" + category + "|" + message + "\n");
@@ -48,7 +47,7 @@ if (!!loggingConfigFile) {
 }
 
 // log all request URLs as this will be the input to the Hub URL whitelist test
-Logger.setLevel(loggingCategoryFullUrl, LogLevel.Trace);
+Logger.setLevel(LoggerCategory.Request, LogLevel.Trace);
 
 function isOfflineSet(): boolean {
   const index = process.argv.indexOf("--offline");

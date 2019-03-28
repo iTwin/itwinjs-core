@@ -90,9 +90,11 @@ export * from "./ui-framework/toolbar/ToolButton";
 export * from "./ui-framework/toolbar/PopupButton";
 
 export * from "./ui-framework/backstage/Backstage";
+export * from "./ui-framework/backstage/BackstageItem";
 export * from "./ui-framework/backstage/FrontstageLaunch";
 export * from "./ui-framework/backstage/CommandLaunch";
 export * from "./ui-framework/backstage/TaskLaunch";
+export * from "./ui-framework/backstage/Separator";
 
 export * from "./ui-framework/navigationaids/CubeNavigationAid";
 export * from "./ui-framework/navigationaids/SheetNavigationAid";

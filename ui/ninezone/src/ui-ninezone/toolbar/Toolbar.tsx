@@ -49,6 +49,7 @@ export interface PanelsProviderProps {
 /** Provides panels and histories of toolbar items. */
 export class PanelsProvider extends React.PureComponent<PanelsProviderProps> {
   private _update = false;
+  private _refs = new Array<React.RefObject<ToolbarItem>>();
 
   private appendPanels() {
     const panels = this.props.panels.current;
@@ -61,8 +62,6 @@ export class PanelsProvider extends React.PureComponent<PanelsProviderProps> {
 
     for (const ref of this._refs) {
       if (!ref.current)
-        continue;
-      if (!ref.current.panel)
         continue;
       panels.appendChild(ref.current.panel);
     }
@@ -80,8 +79,6 @@ export class PanelsProvider extends React.PureComponent<PanelsProviderProps> {
     for (const ref of this._refs) {
       if (!ref.current)
         continue;
-      if (!ref.current.history)
-        continue;
       histories.appendChild(ref.current.history);
     }
   }
@@ -97,8 +94,6 @@ export class PanelsProvider extends React.PureComponent<PanelsProviderProps> {
     this.appendHistories();
     this._update = true;
   }
-
-  private _refs = new Array<React.RefObject<ToolbarItem>>();
 
   public render() {
     const flattened = FlattenChildren(this.props.items);
@@ -205,16 +200,16 @@ export class Toolbar extends React.PureComponent<ToolbarProps> {
 }
 
 export interface ToolbarItem {
-  panel: HTMLElement;
-  history: HTMLElement;
+  readonly panel: HTMLElement;
+  readonly history: HTMLElement;
 }
 
 /**
  * These props will be injected by Toolbar.
  * @note Must be passed down when wrapping the toolbar item component.
  */
-export interface ToolbarItemProps<TItem extends ToolbarItem> {
-  toolbarItemRef?: React.Ref<TItem>;
+export interface ToolbarItemProps<TItem extends ToolbarItem = ToolbarItem> {
+  readonly toolbarItemRef?: React.Ref<TItem>;
 }
 
 /** Extracts [[ToolbarItemProps]] from your props. */

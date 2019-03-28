@@ -1,0 +1,11 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<ToolbarButton  /> renders correctly 1`] = `
+<button
+  className="nz-toolbar-button-button"
+>
+  <div
+    className="nz-gradient"
+  />
+</button>
+`;

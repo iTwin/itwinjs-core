@@ -3,29 +3,28 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module BaseClients */
+import { ClientRequestContext, GetMetaDataFunction, HttpStatus, Logger, WSStatus } from "@bentley/bentleyjs-core";
 import * as deepAssign from "deep-assign";
-import { Logger, HttpStatus, WSStatus, GetMetaDataFunction, ClientRequestContext } from "@bentley/bentleyjs-core";
-import { AccessToken, AuthorizationToken } from "./Token";
-import { request, RequestOptions, RequestQueryOptions, Response, ResponseError } from "./Request";
-import { ECJsonTypeMap, WsgInstance } from "./ECJsonTypeMap";
-import { DefaultRequestOptionsProvider, AuthenticationError, Client } from "./Client";
-import { ImsDelegationSecureTokenClient } from "./ImsClients";
 import { AuthorizedClientRequestContext } from "./AuthorizedClientRequestContext";
-const loggingCategory = "imodeljs-clients.Clients";
+import { AuthenticationError, Client, DefaultRequestOptionsProvider } from "./Client";
+import { ECJsonTypeMap, WsgInstance } from "./ECJsonTypeMap";
+import { ImsDelegationSecureTokenClient } from "./ImsClients";
+import { LoggerCategory } from "./LoggerCategory";
+import { request, RequestOptions, RequestQueryOptions, Response, ResponseError } from "./Request";
+import { AccessToken, AuthorizationToken } from "./Token";
 
-/**
- * Error that was returned by a WSG based service.
+const loggerCategory: string = LoggerCategory.Clients;
+
+/** Error that was returned by a WSG based service.
  */
 export class WsgError extends ResponseError {
   public constructor(errorNumber: number | HttpStatus, message?: string, getMetaData?: GetMetaDataFunction) {
     super(errorNumber, message, getMetaData);
   }
 
-  /**
-   * Attempt to parse the error from the response.
+  /** Attempt to parse the error from the response.
    * Attempts to parse error data in a format that is returned by WSG services.
-   * This method only accesses data that was parsed by parent class to avoid dependencies on
-   * http libraries.
+   * This method only accesses data that was parsed by parent class to avoid dependencies on http libraries.
    * @param response Response from the server.
    * @returns Parsed error.
    */
@@ -165,7 +164,7 @@ export class WsgError extends ResponseError {
    * Logs this error
    */
   public log(): void {
-    Logger.logError(loggingCategory, this.logMessage(), this.getMetaData());
+    Logger.logError(loggerCategory, this.logMessage(), this.getMetaData());
   }
 }
 
@@ -294,7 +293,7 @@ export abstract class WsgClient extends Client {
   protected async postInstance<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, instance: T, requestOptions?: WsgRequestOptions): Promise<T> {
     const url: string = await this.getUrl(requestContext) + relativeUrlPath;
     requestContext.enter();
-    Logger.logInfo(loggingCategory, `Sending POST request to ${url}`);
+    Logger.logInfo(loggerCategory, "Sending POST request", () => ({ url }));
     const untypedInstance: any = ECJsonTypeMap.toJson<T>("wsg", instance);
 
     const options: RequestOptions = {
@@ -322,12 +321,11 @@ export abstract class WsgClient extends Client {
       return Promise.reject(new Error(`POST to URL ${url} executed successfully, but could not convert response to a strongly typed instance.`));
     }
 
-    Logger.logTrace(loggingCategory, `Successful POST request to ${url}`);
+    Logger.logTrace(loggerCategory, "Successful POST request", () => ({ url }));
     return Promise.resolve(typedInstance);
   }
 
-  /**
-   * Used by clients to post multiple strongly typed instances through standard WSG REST API
+  /** Used by clients to post multiple strongly typed instances through standard WSG REST API
    * @param requestContext Client request context
    * @param typedConstructor Used by clients to post a strongly typed instances through the REST API that's expected to return a standard response.
    * @param relativeUrlPath Relative path to the REST resource.
@@ -339,7 +337,7 @@ export abstract class WsgClient extends Client {
     requestContext.enter();
     const url: string = await this.getUrl(requestContext) + relativeUrlPath;
     requestContext.enter();
-    Logger.logInfo(loggingCategory, `Sending POST request to ${url}`);
+    Logger.logInfo(loggerCategory, "Sending POST request", () => ({ url }));
     const untypedInstances: any[] = instances.map((value: T) => ECJsonTypeMap.toJson<T>("wsg", value));
 
     const options: RequestOptions = {
@@ -372,7 +370,7 @@ export abstract class WsgClient extends Client {
       return typedInstance;
     });
 
-    Logger.logTrace(loggingCategory, `Successful POST request to ${url}`);
+    Logger.logTrace(loggerCategory, "Successful POST request", () => ({ url }));
     return Promise.resolve(changedInstances);
   }
 
@@ -390,7 +388,7 @@ export abstract class WsgClient extends Client {
     requestContext.enter();
     const url: string = await this.getUrl(requestContext) + relativeUrlPath;
     requestContext.enter();
-    Logger.logInfo(loggingCategory, `Sending GET request to ${url}`);
+    Logger.logInfo(loggerCategory, "Sending GET request", () => ({ url }));
 
     const options: RequestOptions = {
       method: "GET",
@@ -416,7 +414,7 @@ export abstract class WsgClient extends Client {
       }
     }
 
-    Logger.logTrace(loggingCategory, `Successful GET request to ${url}`);
+    Logger.logTrace(loggerCategory, "Successful GET request", () => ({ url }));
     return Promise.resolve(typedInstances);
   }
 
@@ -446,8 +444,7 @@ export abstract class WsgClient extends Client {
     return result;
   }
 
-  /**
-   * Used by clients to get strongly typed instances from standard WSG REST queries that return EC JSON instances.
+  /** Used by clients to get strongly typed instances from standard WSG REST queries that return EC JSON instances.
    * @param typedConstructor Constructor function for the type
    * @param relativeUrlPath Relative path to the REST resource.
    * @param queryOptions Query options.
@@ -457,7 +454,7 @@ export abstract class WsgClient extends Client {
     requestContext.enter();
     const url: string = `${await this.getUrl(requestContext)}${relativeUrlPath}$query`;
     requestContext.enter();
-    Logger.logInfo(loggingCategory, `Sending POST request to ${url}`);
+    Logger.logInfo(loggerCategory, "Sending POST request", () => ({ url }));
 
     const options: RequestOptions = {
       method: "POST",
@@ -482,7 +479,7 @@ export abstract class WsgClient extends Client {
       }
     }
 
-    Logger.logTrace(loggingCategory, `Successful POST request to ${url}`);
+    Logger.logTrace(loggerCategory, "Successful POST request", () => ({ url }));
     return Promise.resolve(typedInstances);
   }
 }

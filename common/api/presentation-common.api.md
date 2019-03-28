@@ -1052,7 +1052,6 @@ export const enum QuerySpecificationTypes {
 
 // @public
 export class RegisteredRuleset implements IDisposable, Ruleset {
-    // (undocumented)
     constructor(ruleset: Ruleset, uniqueIdentifier: string, disposeFunc: (ruleset: RegisteredRuleset) => void);
     // (undocumented)
     dispose(): void;
@@ -1173,8 +1172,6 @@ export interface RpcRequestOptions {
 // @public
 export class RpcRequestsHandler implements IDisposable {
     // Warning: (ae-forgotten-export) The symbol "Props" needs to be exported by the entry point presentation-common.d.ts
-    // 
-    // (undocumented)
     constructor(props?: Props);
     readonly clientId: string;
     readonly clientStateId: string | undefined;

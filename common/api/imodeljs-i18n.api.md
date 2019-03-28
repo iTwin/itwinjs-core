@@ -25,7 +25,6 @@ export class I18N {
 
 // @public
 export class I18NNamespace {
-    // (undocumented)
     constructor(name: string, readFinished: Promise<void>);
     // (undocumented)
     name: string;

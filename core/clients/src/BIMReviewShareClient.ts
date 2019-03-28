@@ -3,13 +3,14 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { Logger } from "@bentley/bentleyjs-core";
-import { WsgClient, WsgRequestOptions } from "./WsgClient";
+import { AuthorizedClientRequestContext } from "./AuthorizedClientRequestContext";
 import { Config } from "./Config";
 import { ECJsonTypeMap, WsgInstance } from "./ECJsonTypeMap";
-import { AuthorizedClientRequestContext } from "./AuthorizedClientRequestContext";
-import { RequestQueryOptions, Response, RequestOptions, request, ResponseError } from "./Request";
+import { LoggerCategory } from "./LoggerCategory";
+import { request, RequestOptions, RequestQueryOptions, Response, ResponseError } from "./Request";
+import { WsgClient, WsgRequestOptions } from "./WsgClient";
 
-const loggingCategory = "imodeljs-clients.Clients";
+const loggerCategory: string = LoggerCategory.Clients;
 
 /** Content */
 @ECJsonTypeMap.classToJson("wsg", "ContentSchema.Content", { schemaPropertyName: "schemaName", classPropertyName: "className" })
@@ -87,7 +88,7 @@ export class BIMReviewShareClient extends WsgClient {
   private async postInstanceAndData<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, _typedConstructor: new () => T, relativeUrlPath: string, instance: T, data: any, requestOptions?: WsgRequestOptions): Promise<T> {
     const url: string = await this.getUrl(requestContext) + relativeUrlPath;
     requestContext.enter();
-    Logger.logInfo(loggingCategory, `Sending POST request to ${url}`);
+    Logger.logInfo(loggerCategory, "Sending POST request", () => ({ url }));
     const untypedInstance: any = ECJsonTypeMap.toJson<T>("wsg", instance);
 
     const byteCount = this.byteCount(JSON.stringify({ ...data })) - 1;
@@ -134,7 +135,7 @@ export class BIMReviewShareClient extends WsgClient {
     if (!res || !res.headers)
       return Promise.reject(new Error(`POST failed`));
 
-    Logger.logTrace(loggingCategory, `Successful POST request to ${url}`);
+    Logger.logTrace(loggerCategory, "Successful POST request", () => ({ url }));
     // Setup options for posting the instance data
     const dataOptions: RequestOptions = {
       method: "POST",
@@ -173,7 +174,7 @@ export class BIMReviewShareClient extends WsgClient {
     requestContext.enter();
     const url: string = await this.getUrl(requestContext) + relativeUrlPath;
     requestContext.enter();
-    Logger.logInfo(loggingCategory, `Sending GET request to ${url}`);
+    Logger.logInfo(loggerCategory, "Sending GET request", () => ({ url }));
 
     const options: RequestOptions = {
       method: "GET",
@@ -195,7 +196,7 @@ export class BIMReviewShareClient extends WsgClient {
     const blobStr = String.fromCharCode.apply(null, res.body);
     const data = JSON.parse(blobStr);
 
-    Logger.logTrace(loggingCategory, `Successful GET request to ${url}`);
+    Logger.logTrace(loggerCategory, "Successful GET request", () => ({ url }));
     return Promise.resolve(data);
   }
 

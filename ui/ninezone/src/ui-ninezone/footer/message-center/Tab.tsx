@@ -19,7 +19,7 @@ export interface MessageCenterTabProps extends CommonProps {
   onClick?: () => void;
 }
 
-/** Message center tab used in [[MessageCenter]] component. */
+/** Message center tab used in [[MessageCenterDialog]] component. */
 export class MessageCenterTab extends React.PureComponent<MessageCenterTabProps> {
   public render() {
     const className = classnames(

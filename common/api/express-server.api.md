@@ -9,7 +9,6 @@ import { WebAppRpcProtocol } from '@bentley/imodeljs-common';
 
 // @public
 export class IModelJsExpressServer {
-    // (undocumented)
     constructor(protocol: WebAppRpcProtocol);
     // (undocumented)
     protected _app: import("express").Application;

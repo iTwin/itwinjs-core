@@ -15,4 +15,8 @@ describe("<MessageCenterTab />", () => {
   it("renders correctly", () => {
     shallow(<MessageCenterTab />).should.matchSnapshot();
   });
+
+  it("should set is-open class", () => {
+    shallow(<MessageCenterTab isOpen />).should.matchSnapshot();
+  });
 });

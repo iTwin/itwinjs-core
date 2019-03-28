@@ -5,7 +5,7 @@
 /** @module Picker */
 
 import * as React from "react";
-import { Group, Panel, GroupColumn, CommonProps, ExpandableItem, withContainInViewport, Item } from "@bentley/ui-ninezone";
+import { Group, Panel, GroupColumn, CommonProps, ExpandableItem, withContainIn, Item, containHorizontally } from "@bentley/ui-ninezone";
 import * as classnames from "classnames";
 
 import "@bentley/ui-ninezone/lib/ui-ninezone/toolbar/item/expandable/group/tool/Tool.scss";
@@ -14,7 +14,7 @@ import "./ListPicker.scss";
 import { UiFramework } from "../UiFramework";
 
 // tslint:disable-next-line:variable-name
-const ContainedGroup = withContainInViewport(Group);
+const ContainedGroup = withContainIn(Group);
 
 /** Enum for the list picker item type */
 export enum ListItemType {
@@ -238,7 +238,7 @@ export class ListPickerBase extends React.Component<ListPickerProps, ListPickerS
       <ContainedGroup
         title={this.props.title}
         className="ListPickerContainer"
-        noVerticalContainment={true}
+        containFn={containHorizontally}
         columns={
           <GroupColumn className="ListPicker-column">
             {this.props.items.map(listItemToElement)}

@@ -3,79 +3,23 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { connect } from "react-redux";
-import { SampleAppIModelApp, RootState, SampleAppUiActionId } from "..";
+import { SampleAppIModelApp, SampleAppUiActionId } from "..";
 import {
   Backstage,
   FrontstageManager,
   FrontstageLaunchBackstageItem,
   CommandLaunchBackstageItem,
   SeparatorBackstageItem,
-  BackstageCloseEventArgs,
   BooleanSyncUiListener,
   SettingsModalFrontstage,
   TaskLaunchBackstageItem,
 } from "@bentley/ui-framework";
 
-import { Tool } from "@bentley/imodeljs-frontend";
-
-// Tool that shows the backstage
-export class BackstageShow extends Tool {
-  public static toolId = "SampleApp.BackstageShow";
-
-  public run(): boolean {
-    // dispatch the action
-    SampleAppIModelApp.store.dispatch({ type: SampleAppUiActionId.showBackstage });
-    return true;
-  }
-}
-
-// Tool that hides the backstage
-export class BackstageHide extends Tool {
-  public static toolId = "SampleApp.BackstageHide";
-
-  public run(): boolean {
-    // dispatch the action
-    SampleAppIModelApp.store.dispatch({ type: SampleAppUiActionId.hideBackstage });
-    return true;
-  }
-}
-
-export interface AppBackstageProps {
-  isVisible: boolean;
-  className?: string;
-  style?: React.CSSProperties;
-}
-
-function mapStateToProps(state: RootState) {
-  return { isVisible: state.sampleAppState!.backstageVisible };
-}
-
-class AppBackstage extends React.Component<AppBackstageProps> {
-
-  constructor(props?: any, context?: any) {
-    super(props, context);
-  }
-
-  public componentDidMount() {
-    Backstage.onBackstageCloseEventEvent.addListener(this._handleBackstageCloseEventEvent);
-  }
-
-  public componentWillUnmount() {
-    Backstage.onBackstageCloseEventEvent.removeListener(this._handleBackstageCloseEventEvent);
-  }
-
-  private _handleBackstageCloseEventEvent = (_args: BackstageCloseEventArgs) => {
-    new BackstageHide().run();
-  }
-
-  private _handleOnClose() {
-    new BackstageHide().run();
-  }
+export class AppBackstage extends React.Component {
 
   public render(): React.ReactNode {
     return (
-      <Backstage isVisible={this.props.isVisible} onClose={this._handleOnClose} accessToken={SampleAppIModelApp.store.getState().sampleAppState.accessToken} >
+      <Backstage accessToken={SampleAppIModelApp.store.getState().sampleAppState.accessToken} >
         <FrontstageLaunchBackstageItem frontstageId="Test1" labelKey="SampleApp:backstage.testFrontstage1" iconSpec="icon icon-placeholder" />
         <FrontstageLaunchBackstageItem frontstageId="Test2" labelKey="SampleApp:backstage.testFrontstage2" iconSpec="icon icon-placeholder" />
         <BooleanSyncUiListener eventIds={[SampleAppUiActionId.setTestProperty]} boolFunc={(): boolean => SampleAppIModelApp.getTestProperty() !== "HIDE"}>
@@ -93,13 +37,11 @@ class AppBackstage extends React.Component<AppBackstageProps> {
         <SeparatorBackstageItem />
         <FrontstageLaunchBackstageItem frontstageId="ViewsFrontstage" labelKey="SampleApp:backstage.viewIModel" descriptionKey="SampleApp:backstage.iModelStage" iconSpec="icon-placeholder" />
         <SeparatorBackstageItem />
-        <TaskLaunchBackstageItem workflowId="ExampleWorkflow" taskId="Task1"
-          labelKey="SampleApp:backstage.viewIModelTask" descriptionKey="SampleApp:backstage.iModelStage"
-          iconSpec="icon-placeholder" />
+        <TaskLaunchBackstageItem workflowId="ExampleWorkflow" taskId="Task1" labelKey="SampleApp:backstage.task1" iconSpec="icon-placeholder" />
+        <TaskLaunchBackstageItem workflowId="ExampleWorkflow" taskId="Task2" labelKey="SampleApp:backstage.task2" iconSpec="icon-placeholder" />
       </Backstage>
     );
   }
 }
 
-// makes a <Connect> react component
-export default connect(mapStateToProps)(AppBackstage);
+export default AppBackstage;

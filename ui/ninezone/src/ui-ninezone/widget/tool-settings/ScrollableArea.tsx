@@ -18,9 +18,9 @@ export interface ScrollableAreaProps extends CommonProps {
 /** State of [[ScrollableArea]] component. */
 export interface ScrollableAreaState {
   /** Describes if bottom scroll indicator is visible. */
-  isScrollBottomIndicatorVisible: boolean;
+  isBottomIndicatorVisible: boolean;
   /** Describes if top scroll indicator is visible. */
-  isScrollTopIndicatorVisible: boolean;
+  isTopIndicatorVisible: boolean;
 }
 
 /**
@@ -32,8 +32,8 @@ export class ScrollableArea extends React.PureComponent<ScrollableAreaProps, Scr
   private _content = React.createRef<HTMLDivElement>();
 
   public readonly state = {
-    isScrollBottomIndicatorVisible: false,
-    isScrollTopIndicatorVisible: false,
+    isBottomIndicatorVisible: false,
+    isTopIndicatorVisible: false,
   };
 
   public componentDidMount() {
@@ -57,7 +57,7 @@ export class ScrollableArea extends React.PureComponent<ScrollableAreaProps, Scr
         >
           {this.props.children}
         </div>
-        {!this.state.isScrollTopIndicatorVisible ? undefined :
+        {!this.state.isTopIndicatorVisible ? undefined :
           <div className="nz-indicator">
             <div
               className="nz-triangle"
@@ -65,7 +65,7 @@ export class ScrollableArea extends React.PureComponent<ScrollableAreaProps, Scr
             />
           </div>
         }
-        {!this.state.isScrollBottomIndicatorVisible ? undefined :
+        {!this.state.isBottomIndicatorVisible ? undefined :
           <div className="nz-indicator nz-bottom">
             <div
               className="nz-triangle"
@@ -85,8 +85,8 @@ export class ScrollableArea extends React.PureComponent<ScrollableAreaProps, Scr
 
       const bottomOverflow = content.scrollHeight - content.clientHeight - content.scrollTop;
       return {
-        isScrollBottomIndicatorVisible: (bottomOverflow > 0),
-        isScrollTopIndicatorVisible: (content.scrollTop > 0),
+        isBottomIndicatorVisible: (bottomOverflow > 0),
+        isTopIndicatorVisible: (content.scrollTop > 0),
       };
     });
   }
@@ -100,15 +100,15 @@ export class ScrollableArea extends React.PureComponent<ScrollableAreaProps, Scr
   }
 
   private calculateOffset(content: HTMLDivElement) {
-    return content.clientHeight - ScrollableArea.INDICATOR_HEIGHT * 2;
+    return Math.max(10, content.clientHeight - ScrollableArea.INDICATOR_HEIGHT * 1.5);
   }
 
-  private scroll(offsetMultiplier: number) {
+  private scroll(direction: number) {
     const content = this._content.current;
     if (!content)
       return;
 
-    const offset = this.calculateOffset(content) * offsetMultiplier;
+    const offset = this.calculateOffset(content) * direction;
     const from = content.scrollTop;
     const startTime = Date.now();
     const duration = 200;

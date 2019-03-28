@@ -115,7 +115,7 @@ export class Workflow extends ItemDefBase {
   public setActiveTask(task: Task) {
     this.activeTaskId = task.taskId;
     task.onActivated(); // tslint:disable-line:no-floating-promises
-    WorkflowManager.onTaskActivatedEvent.emit({ task, taskId: task.id });
+    WorkflowManager.onTaskActivatedEvent.emit({ task, taskId: task.id, workflow: this, workflowId: this.id });
   }
 
   /** Gets an array of sorted Tasks in the Workflow. */
@@ -140,8 +140,8 @@ export class Workflow extends ItemDefBase {
 /** Workflow Activated Event Args class.
  */
 export interface WorkflowActivatedEventArgs {
-  workflowId: string;
-  workflow: Workflow;
+  workflowId?: string;
+  workflow?: Workflow;
 }
 
 /** Workflow Activated Event class.
@@ -151,8 +151,11 @@ export class WorkflowActivatedEvent extends UiEvent<WorkflowActivatedEventArgs> 
 /** Task Activated Event Args class.
  */
 export interface TaskActivatedEventArgs {
-  taskId: string;
-  task: Task;
+  taskId?: string;
+  task?: Task;
+
+  workflowId: string;
+  workflow: Workflow;
 }
 
 /** Task Activated Event class.
@@ -167,7 +170,7 @@ export class TaskActivatedEvent extends UiEvent<TaskActivatedEventArgs> { }
  */
 export class WorkflowManager {
   private static _workflows: Map<string, Workflow> = new Map<string, Workflow>();
-  private static _activeWorkflow: Workflow;
+  private static _activeWorkflow: Workflow | undefined;
   private static _defaultWorkflowId: string;
 
   /** Get Workflow Activated event. */
@@ -216,9 +219,9 @@ export class WorkflowManager {
   /** Sets the active Workflow
    * @param workflow  The Workflow to set as active
    */
-  public static setActiveWorkflow(workflow: Workflow): void {
+  public static setActiveWorkflow(workflow: Workflow | undefined): void {
     this._activeWorkflow = workflow;
-    WorkflowManager.onWorkflowActivatedEvent.emit({ workflow, workflowId: workflow.id });
+    WorkflowManager.onWorkflowActivatedEvent.emit({ workflow, workflowId: workflow ? workflow.id : undefined });
   }
 
   /** Sets the active Workflow and Task
@@ -234,8 +237,31 @@ export class WorkflowManager {
   }
 
   /** Gets the active Workflow */
-  public static get activeWorkflow(): Workflow {
+  public static get activeWorkflow(): Workflow | undefined {
     return this._activeWorkflow;
+  }
+
+  /** Gets the active Workflow id */
+  public static get activeWorkflowId(): string {
+    if (this._activeWorkflow !== undefined)
+      return this._activeWorkflow.id;
+    return "";
+  }
+
+  /** Gets the active Task */
+  public static get activeTask(): Task | undefined {
+    if (this._activeWorkflow !== undefined)
+      return this._activeWorkflow.activeTask;
+    return undefined;
+  }
+
+  /** Gets the active Task id */
+  public static get activeTaskId(): string {
+    if (this._activeWorkflow !== undefined) {
+      if (this._activeWorkflow.activeTask)
+        return this._activeWorkflow.activeTask.id;
+    }
+    return "";
   }
 
   /** Gets the Id of the default Workflow */

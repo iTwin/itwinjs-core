@@ -14,7 +14,6 @@ import {
   ToolSettings,
   CommonProps,
   RectangleProps,
-  TabIcon,
   ZoneComponent,
   TitleBar,
   DialogTitle,
@@ -210,7 +209,7 @@ export class ToolSettingsZone extends React.Component<ToolSettingsZoneProps, Too
     // istanbul ignore else
     if (FrontstageManager.activeToolSettingsNode) {
       button = (
-        <TabIcon iconSpec="icon-settings" isActive={this.state.toolSettingsZoneContent === ToolSettingsZoneContent.ToolSettings} />
+        <i className="icon icon-settings" />
       );
     }
 

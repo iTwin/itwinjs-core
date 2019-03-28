@@ -156,11 +156,12 @@
  */
 // @todo Update example with property type conversions once that's available.
 
-import { Logger, assert } from "@bentley/bentleyjs-core";
+import { assert, Logger } from "@bentley/bentleyjs-core";
+import { LoggerCategory } from "./LoggerCategory";
 
 export type ConstructorType = new () => any;
 
-const loggingCategory = "ECJson";
+const loggerCategory: string = LoggerCategory.ECJson;
 const className = "className";
 
 export interface ClassKeyMapInfo {
@@ -304,14 +305,14 @@ export class ECJsonTypeMap {
   public static fromJson<T extends ECInstance>(typedConstructor: new () => T, applicationKey: string, ecJsonInstance: any): T | undefined {
     const mappedClassEntry: ClassEntry | undefined = ECJsonTypeMap.getClassByType(typedConstructor);
     if (!mappedClassEntry) {
-      Logger.logError(loggingCategory, `Type ${typedConstructor.name} is not mapped to an ECClass. Supply the appropriate class decorator`);
+      Logger.logError(loggerCategory, `Type ${typedConstructor.name} is not mapped to an ECClass. Supply the appropriate class decorator`);
       return undefined;
     }
 
     const lowCaseApplicationKey = applicationKey.toLowerCase();
     const mappedApplicationEntry: ApplicationEntry | undefined = mappedClassEntry.getApplicationByKey(lowCaseApplicationKey);
     if (!mappedApplicationEntry) {
-      Logger.logError(loggingCategory, `Type ${typedConstructor.name} is not mapped for the supplied application.`);
+      Logger.logError(loggerCategory, `Type ${typedConstructor.name} is not mapped for the supplied application.`);
       return undefined;
     }
 
@@ -326,7 +327,7 @@ export class ECJsonTypeMap {
     }
 
     if (mappedApplicationEntry.classKey !== ecJsonClassKey) {
-      Logger.logError(loggingCategory, `The ClassKey ${mappedApplicationEntry.classKey} was specified to map with ${typedConstructor.name}, but does not match that specified in the JSON: ${ecJsonClassKey} `);
+      Logger.logError(loggerCategory, `The ClassKey ${mappedApplicationEntry.classKey} was specified to map with ${typedConstructor.name}, but does not match that specified in the JSON: ${ecJsonClassKey} `);
       return undefined;
     }
 

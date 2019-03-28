@@ -5,3 +5,20 @@ exports[`<MessageCenterMessage /> renders correctly 1`] = `
   className="nz-footer-messageCenter-message"
 />
 `;
+
+exports[`<MessageCenterMessage /> renders correctly with icon and content 1`] = `
+<div
+  className="nz-footer-messageCenter-message"
+>
+  <div
+    className="nz-icon"
+  >
+    <img />
+  </div>
+  <div
+    className="nz-content"
+  >
+    Custom message
+  </div>
+</div>
+`;

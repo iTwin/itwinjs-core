@@ -6,7 +6,6 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import { withContainIn, WithContainInProps } from "../../../../base/WithContainIn";
 import { Panel } from "./Panel";
 import { GroupProps } from "./Group";
 import { Columns } from "./Columns";
@@ -45,6 +44,3 @@ export class NestedGroup extends React.PureComponent<NestedGroupProps> {
     );
   }
 }
-
-// tslint:disable-next-line:variable-name
-export const NestedWithContainIn: React.ComponentClass<NestedGroupProps & WithContainInProps> = withContainIn(NestedGroup);

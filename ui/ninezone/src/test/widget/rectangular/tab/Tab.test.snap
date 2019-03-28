@@ -3,5 +3,26 @@
 exports[`<Tab /> renders correctly 1`] = `
 <div
   className="nz-widget-rectangular-tab-tab nz-left-anchor nz-mode-open"
-/>
+>
+  <PointerCaptor
+    className="nz-draggable"
+    onMouseDown={[Function]}
+    onMouseMove={[Function]}
+    onMouseUp={[Function]}
+  />
+</div>
+`;
+
+exports[`<Tab /> renders with last position correctly 1`] = `
+<div
+  className="nz-widget-rectangular-tab-tab nz-left-anchor nz-mode-open"
+>
+  <PointerCaptor
+    className="nz-draggable"
+    isMouseDown={true}
+    onMouseDown={[Function]}
+    onMouseMove={[Function]}
+    onMouseUp={[Function]}
+  />
+</div>
 `;

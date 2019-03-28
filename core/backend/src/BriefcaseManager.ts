@@ -354,27 +354,12 @@ export class BriefcaseManager {
     for (const tmpFileName of fileNames) {
       const tmpPathname = path.join(briefcaseDir, tmpFileName);
       const ext = path.extname(tmpPathname).toLowerCase();
-      if (ext === ".tiles")
+      if (ext !== ".bim")
         continue;
-
-      // Ensure there's only one bim file
-      if (ext === ".bim") {
-        if (!!briefcasePathname)
-          throw new IModelError(DbResult.BE_SQLITE_ERROR, `Briefcase directory ${briefcaseDir} must contain only one briefcase`, Logger.logError, loggerCategory);
-        briefcasePathname = tmpPathname;
-        continue;
-      }
-
-      // Clean up any non .bim files (may be a result of an aborted copy)
-      try {
-        Logger.logInfo(loggerCategory, `Cleaning up temporary cache file ${tmpPathname}`);
-        IModelJsFs.unlinkSync(tmpPathname);
-      } catch (error) {
-        Logger.logError(loggerCategory, `Cannot delete temporary cache file ${tmpPathname}`);
-        throw error;
-      }
+      if (!!briefcasePathname)
+        throw new IModelError(DbResult.BE_SQLITE_ERROR, `Briefcase directory ${briefcaseDir} must contain only one briefcase`, Logger.logError, loggerCategory);
+      briefcasePathname = tmpPathname;
     }
-
     if (!briefcasePathname)
       throw new IModelError(DbResult.BE_SQLITE_ERROR, `Briefcase directory ${briefcaseDir} must contain at least one briefcase`, Logger.logError, loggerCategory);
 
@@ -440,7 +425,7 @@ export class BriefcaseManager {
         await BriefcaseManager.addBriefcaseToCache(requestContext, briefcaseDir, iModelId);
         requestContext.enter();
       } catch (error) {
-        Logger.logWarning(loggerCategory, `Deleting briefcase in ${briefcaseDir} from cache`);
+        Logger.logWarning(loggerCategory, `Deleting briefcase in ${briefcaseDir} from cache`, () => ({ iModelId }));
         BriefcaseManager.deleteFolderRecursive(briefcaseDir);
       }
     }
@@ -573,7 +558,7 @@ export class BriefcaseManager {
       // briefcase already exists. If open and has a different version than requested, close first
       if (briefcase.isOpen) {
         if (briefcase.currentChangeSetIndex === changeSetIndex) {
-          Logger.logTrace(loggerCategory, `Reused briefcase ${briefcase.pathname} without changes`);
+          Logger.logTrace(loggerCategory, `Reused briefcase ${briefcase.pathname} without changes`, () => briefcase!.getDebugInfo());
           return briefcase;
         }
 
@@ -802,7 +787,7 @@ export class BriefcaseManager {
     briefcase.isStandalone = false;
     briefcase.imodelClientContext = contextId;
 
-    Logger.logTrace(loggerCategory, `Created briefcase ${briefcase.pathname}`);
+    Logger.logTrace(loggerCategory, `Created briefcase ${briefcase.pathname}`, () => briefcase.getDebugInfo());
     return briefcase;
   }
 
@@ -1556,7 +1541,7 @@ export class BriefcaseManager {
     changeSet.fileSize = IModelJsFs.lstatSync(changeSetToken.pathname)!.size.toString();
     changeSet.description = description;
     if (changeSet.description.length >= 255) {
-      Logger.logWarning(loggerCategory, "pushChanges - Truncating description to 255 characters. " + changeSet.description);
+      Logger.logWarning(loggerCategory, "pushChanges - Truncating description to 255 characters. " + changeSet.description, () => briefcase.getDebugInfo());
       changeSet.description = changeSet.description.slice(0, 254);
     }
 

@@ -18,10 +18,12 @@ export interface TooltipProps extends CommonProps {
   /** Tooltip content. */
   children?: React.ReactNode;
   /** Position of the tooltip. */
-  position?: PointProps;
+  position: PointProps;
   /** Function called when the bounds of the tooltip changes. */
   onSizeChanged?: (size: SizeProps) => void;
 }
+
+export type TooltipDefaultProps = Pick<TooltipProps, "position">;
 
 export const offsetAndContainInContainer = (offset: PointProps = new Point(20, 20)) => (relativeTooltipBounds: RectangleProps, containerSize: SizeProps) => {
   const tooltipBounds = Rectangle.create(relativeTooltipBounds);
@@ -36,7 +38,7 @@ export const offsetAndContainInContainer = (offset: PointProps = new Point(20, 2
 
 /** Positionable tooltip component. */
 export class Tooltip extends React.PureComponent<TooltipProps> {
-  public static readonly defaultProps: Partial<TooltipProps> = {
+  public static readonly defaultProps: TooltipDefaultProps = {
     position: {
       x: 0,
       y: 0,
@@ -53,7 +55,7 @@ export class Tooltip extends React.PureComponent<TooltipProps> {
 
     const style: React.CSSProperties = {
       ...this.props.style,
-      ...CssProperties.fromPosition(this.props.position || { x: 0, y: 0 }),
+      ...CssProperties.fromPosition(this.props.position),
     };
 
     return (

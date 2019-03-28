@@ -1,11 +1,3 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`<Expandable /> renders correctly 1`] = `
-<div
-  className="nz-base-expandable nz-direction-right"
->
-  <div
-    className="nz-expanded"
-  />
-</div>
-`;
+exports[`<ExpandableItem /> renders correctly 1`] = `<ExpandableItemComponent />`;

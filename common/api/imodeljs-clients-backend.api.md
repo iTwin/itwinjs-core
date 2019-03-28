@@ -49,7 +49,6 @@ export class IOSAzureFileHandler implements FileHandler {
 
 // @public
 export class OidcAgentClient extends OidcBackendClient {
-    // (undocumented)
     constructor(agentConfiguration: OidcAgentClientConfiguration);
     getToken(requestContext: ClientRequestContext): Promise<AccessToken>;
     refreshToken(requestContext: ClientRequestContext, jwt: AccessToken): Promise<AccessToken>;
@@ -92,7 +91,6 @@ export type OidcDelegationClientConfiguration = OidcBackendClientConfiguration;
 
 // @public (undocumented)
 export class OidcDeviceClient extends OidcClient implements IOidcFrontendClient {
-    // (undocumented)
     constructor(clientConfiguration: OidcFrontendClientConfiguration);
     dispose(): void;
     getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
@@ -112,7 +110,6 @@ export class RequestHost {
 
 // @public
 export class UrlFileHandler implements FileHandler {
-    // (undocumented)
     constructor();
     // (undocumented)
     agent: https.Agent;

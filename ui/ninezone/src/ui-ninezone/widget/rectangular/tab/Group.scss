@@ -45,7 +45,7 @@
     }
   }
 
-  &.nz-handle-hover {
+  &.nz-handle-hovered {
     &:hover {
       &:before {
         opacity: 1;
@@ -60,7 +60,7 @@
     }
   }
 
-  &.nz-handle-timeout {
+  &.nz-handle-timedout {
     &:before {
       transition-delay: 1s;
       opacity: 0;

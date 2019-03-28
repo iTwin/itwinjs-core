@@ -3,7 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import {
-  CoreTools, ContentGroup, ContentControl, ConfigurableUiManager,
+  CoreTools, ContentGroup, ContentControl,
   ConfigurableCreateInfo, FrontstageProvider, FrontstageProps,
   Frontstage, IModelInfo,
 } from "@bentley/ui-framework";
@@ -15,8 +15,7 @@ class IModelOpenControl extends ContentControl {
     super(info, options);
 
     const accessToken = SampleAppIModelApp.getAccessToken()!;
-    super.reactElement = <IModelOpen accessToken={accessToken} onIModelSelected={this._onOpenIModel} />;
-    // super.reactElement = <IModelOpen accessToken={accessToken} onOpenIModel={this._onOpenIModel} initialIModels={[defaultImodel]} />
+    this.reactElement = <IModelOpen accessToken={accessToken} onIModelSelected={this._onOpenIModel} />;
   }
 
   // called when an imodel has been selected on the IModelOpen
@@ -25,15 +24,13 @@ class IModelOpenControl extends ContentControl {
   }
 }
 
-ConfigurableUiManager.registerControl("IModelOpenControl", IModelOpenControl);
-
 export class IModelOpenFrontstage extends FrontstageProvider {
 
   public get frontstage(): React.ReactElement<FrontstageProps> {
     const contentGroup: ContentGroup = new ContentGroup({
       contents: [
         {
-          classId: "IModelOpenControl",
+          classId: IModelOpenControl,
         },
       ],
     });

@@ -13,10 +13,8 @@ import "./Indicator.scss";
 export interface MessageCenterIndicatorProps extends CommonProps, NoChildrenProps {
   /** Label of balloon icon. */
   balloonLabel?: string;
-  /** Dialog that is opened when indicator is clicked. See [[MessageCenter]] */
+  /** Dialog that is opened when indicator is clicked. See [[MessageCenterDialog]] */
   dialog?: React.ReactChild;
-  /** Describes if the indicator label is visible. */
-  isLabelVisible?: boolean;
   /** Indicator label. */
   label?: string;
   /** Function called when indicator is clicked. */
@@ -30,17 +28,14 @@ export class MessageCenterIndicator extends React.PureComponent<MessageCenterInd
       "nz-footer-messageCenter-indicator",
       this.props.className);
 
-    const labelClassName = classnames(
-      "nz-label",
-      this.props.isLabelVisible && "nz-is-visible",
-    );
-
     return (
       <div
         className={className}
         style={this.props.style}
       >
-        <span className={labelClassName}>{this.props.label}</span>
+        {this.props.label !== undefined &&
+          <span className="nz-label">{this.props.label}</span>
+        }
         <div className="nz-balloon-container">
           <div className="nz-dialog">
             {this.props.dialog}

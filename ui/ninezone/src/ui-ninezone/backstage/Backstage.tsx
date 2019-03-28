@@ -16,7 +16,7 @@ export interface BackstageProps extends CommonProps, NoChildrenProps {
   /** Backstage items and separators. See: [[BackstageItem]], [[BackstageSeparator]] */
   items?: React.ReactNode;
   /** Determine if a "ghosting" overlay is shown or not. */
-  showOverlay?: boolean;
+  showOverlay: boolean;
   /** Optional header content */
   header?: React.ReactNode;
   /** Optional footer content */
@@ -25,9 +25,11 @@ export interface BackstageProps extends CommonProps, NoChildrenProps {
   onClose?: () => void;
 }
 
+export type BackstageDefaultProps = Pick<BackstageProps, "showOverlay">;
+
 /** Backstage component of 9-zone UI app. */
 export class Backstage extends React.PureComponent<BackstageProps> {
-  public static defaultProps: Partial<BackstageProps> = {
+  public static defaultProps: BackstageDefaultProps = {
     showOverlay: true,
   };
 
@@ -38,11 +40,11 @@ export class Backstage extends React.PureComponent<BackstageProps> {
   }
 
   public componentDidMount(): void {
-    document.body.addEventListener("keydown", this._onEsc, false);
+    document.addEventListener("keydown", this._onEsc, false);
   }
 
   public componentWillUnmount() {
-    document.body.removeEventListener("keydown", this._onEsc, false);
+    document.removeEventListener("keydown", this._onEsc, false);
   }
 
   private _onEsc = (event: KeyboardEvent): void => {

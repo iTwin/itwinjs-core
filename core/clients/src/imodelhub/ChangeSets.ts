@@ -4,16 +4,17 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module iModelHub */
 
-import { ECJsonTypeMap, WsgInstance } from "./../ECJsonTypeMap";
-import { IModelHubClientError, ArgumentCheck } from "./Errors";
-import { Logger, GuidString } from "@bentley/bentleyjs-core";
-import { addSelectFileAccessKey, StringIdQuery } from "./Query";
-import { FileHandler } from "../FileHandler";
-import { ProgressInfo } from "../Request";
+import { GuidString, Logger } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext } from "../AuthorizedClientRequestContext";
+import { FileHandler } from "../FileHandler";
+import { LoggerCategory } from "../LoggerCategory";
+import { ProgressInfo } from "../Request";
+import { ECJsonTypeMap, WsgInstance } from "./../ECJsonTypeMap";
 import { IModelBaseHandler } from "./BaseHandler";
+import { ArgumentCheck, IModelHubClientError } from "./Errors";
+import { addSelectFileAccessKey, StringIdQuery } from "./Query";
 
-const loggingCategory = "imodeljs-clients.imodelhub";
+const loggerCategory: string = LoggerCategory.IModelHub;
 
 /** Specifies types of changes in a [[ChangeSet]]. */
 export const enum ChangesType {
@@ -281,18 +282,16 @@ export class ChangeSetHandler {
     this._fileHandler = fileHandler;
   }
 
-  /**
-   * Get relative url for ChangeSet requests.
-   * @hidden
-   * @param imodelId Id of the iModel. See [[HubIModel]].
+  /** Get relative url for ChangeSet requests.
+   * @param iModelId Id of the iModel. See [[HubIModel]].
    * @param changeSetId Id of the ChangeSet.
+   * @internal
    */
-  private getRelativeUrl(imodelId: GuidString, changeSetId?: string) {
-    return `/Repositories/iModel--${imodelId}/iModelScope/ChangeSet/${changeSetId || ""}`;
+  private getRelativeUrl(iModelId: GuidString, changeSetId?: string) {
+    return `/Repositories/iModel--${iModelId}/iModelScope/ChangeSet/${changeSetId || ""}`;
   }
 
-  /**
-   * Get the [[ChangeSet]]s for the iModel.
+  /** Get the [[ChangeSet]]s for the iModel.
    * @param requestContext The client request context
    * @param iModelId Id of the iModel. See [[HubIModel]].
    * @param query Optional query object to filter the queried ChangeSets or select different data from them.
@@ -302,14 +301,14 @@ export class ChangeSetHandler {
    */
   public async get(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, query: ChangeSetQuery = new ChangeSetQuery()): Promise<ChangeSet[]> {
     requestContext.enter();
-    Logger.logInfo(loggingCategory, `Started querying ChangeSets`, () => ({ iModelId }));
+    Logger.logInfo(loggerCategory, `Started querying ChangeSets`, () => ({ iModelId }));
     ArgumentCheck.defined("requestContext", requestContext);
-    ArgumentCheck.validGuid("imodelId", iModelId);
+    ArgumentCheck.validGuid("iModelId", iModelId);
 
     const id = query.getId();
     const changeSets = await this._handler.getInstances<ChangeSet>(requestContext, ChangeSet, this.getRelativeUrl(iModelId, id), query.getQueryOptions());
     requestContext.enter();
-    Logger.logTrace(loggingCategory, `Finished querying ChangeSets`, () => ({ iModelId, count: changeSets.length }));
+    Logger.logTrace(loggerCategory, `Finished querying ChangeSets`, () => ({ iModelId, count: changeSets.length }));
 
     return changeSets;
   }
@@ -327,7 +326,7 @@ export class ChangeSetHandler {
    */
   public async download(requestContext: AuthorizedClientRequestContext, changeSets: ChangeSet[], path: string, progressCallback?: (progress: ProgressInfo) => void): Promise<void> {
     requestContext.enter();
-    Logger.logInfo(loggingCategory, `Downloading ${changeSets.length} changesets`);
+    Logger.logInfo(loggerCategory, `Downloading ${changeSets.length} changesets`);
     ArgumentCheck.nonEmptyArray("changeSets", changeSets);
     ArgumentCheck.defined("path", path);
 
@@ -364,7 +363,7 @@ export class ChangeSetHandler {
 
     await queue.waitAll();
     requestContext.enter();
-    Logger.logTrace(loggingCategory, `Downloaded ${changeSets.length} changesets`);
+    Logger.logTrace(loggerCategory, `Downloaded ${changeSets.length} changesets`);
   }
 
   /**
@@ -385,9 +384,9 @@ export class ChangeSetHandler {
    */
   public async create(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, changeSet: ChangeSet, path: string, progressCallback?: (progress: ProgressInfo) => void): Promise<ChangeSet> {
     requestContext.enter();
-    Logger.logInfo(loggingCategory, "Started uploading ChangeSet", () => ({ iModelId, ...changeSet }));
+    Logger.logInfo(loggerCategory, "Started uploading ChangeSet", () => ({ iModelId, ...changeSet }));
     ArgumentCheck.defined("requestContext", requestContext);
-    ArgumentCheck.validGuid("imodelId", iModelId);
+    ArgumentCheck.validGuid("iModelId", iModelId);
     ArgumentCheck.defined("changeSet", changeSet);
     ArgumentCheck.defined("path", path);
 
@@ -414,7 +413,7 @@ export class ChangeSetHandler {
 
     changeSet.isUploaded = true;
 
-    Logger.logInfo(loggingCategory, "Finished uploading ChangeSet", () => ({ iModelId, ...changeSet }));
+    Logger.logInfo(loggerCategory, "Finished uploading ChangeSet", () => ({ iModelId, ...changeSet }));
 
     return confirmChangeSet;
   }

@@ -5,7 +5,7 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import { ToolAssistanceDialog } from "../../../ui-ninezone";
+import { ToolAssistanceDialog, ToolAssistanceDialogContent } from "../../../ui-ninezone";
 
 describe("<ToolAssistanceDialog />", () => {
   it("should render", () => {
@@ -14,5 +14,15 @@ describe("<ToolAssistanceDialog />", () => {
 
   it("renders correctly", () => {
     shallow(<ToolAssistanceDialog />).should.matchSnapshot();
+  });
+});
+
+describe("<ToolAssistanceDialogContent />", () => {
+  it("should render", () => {
+    mount(<ToolAssistanceDialogContent />);
+  });
+
+  it("renders correctly", () => {
+    shallow(<ToolAssistanceDialogContent />).should.matchSnapshot();
   });
 });

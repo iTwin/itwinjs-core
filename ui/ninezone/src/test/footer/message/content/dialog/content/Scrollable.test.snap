@@ -1,0 +1,11 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<ScrollableContent  /> renders correctly 1`] = `
+<div
+  className="nz-footer-message-content-dialog-content-scrollable"
+>
+  <div
+    className="nz-content"
+  />
+</div>
+`;

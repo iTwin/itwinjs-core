@@ -15,3 +15,51 @@ exports[`<Tools /> renders correctly 1`] = `
   />
 </div>
 `;
+
+exports[`<Tools /> renders correctly with out gap 1`] = `
+<div
+  className="nz-widget-tools nz-no-gap"
+>
+  <div
+    className="nz-app-button"
+  />
+  <div
+    className="nz-horizontal-toolbar"
+  />
+  <div
+    className="nz-vertical-toolbar"
+  />
+</div>
+`;
+
+exports[`<Tools /> renders correctly with reduced gap 1`] = `
+<div
+  className="nz-widget-tools nz-reduced-gap"
+>
+  <div
+    className="nz-app-button"
+  />
+  <div
+    className="nz-horizontal-toolbar"
+  />
+  <div
+    className="nz-vertical-toolbar"
+  />
+</div>
+`;
+
+exports[`<Tools /> renders navigation correctly 1`] = `
+<div
+  className="nz-widget-tools nz-is-navigation"
+>
+  <div
+    className="nz-app-button"
+  />
+  <div
+    className="nz-horizontal-toolbar"
+  />
+  <div
+    className="nz-vertical-toolbar"
+  />
+</div>
+`;

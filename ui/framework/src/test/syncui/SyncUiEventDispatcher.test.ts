@@ -170,7 +170,7 @@ describe("SyncUiEventDispatcher", () => {
     expect(handleSyncUiEvent.calledOnce).to.be.true;
 
     handleSyncUiEvent.resetHistory();
-    Backstage.onBackstageCloseEventEvent.emit({} as BackstageCloseEventArgs);
+    Backstage.onBackstageCloseEvent.emit({} as BackstageCloseEventArgs);
     clock.tick(20); // timer expiration will see new event id(s) so it should delay onSyncUiEvent processing until next cycle
     expect(handleSyncUiEvent.calledOnce).to.be.true;
 

@@ -216,7 +216,6 @@ export enum AutoPushState {
 
 // @public
 export abstract class AuxCoordSystem extends DefinitionElement implements AuxCoordSystemProps {
-    // (undocumented)
     constructor(props: AuxCoordSystemProps, iModel: IModelDb);
     // (undocumented)
     description?: string;
@@ -226,7 +225,6 @@ export abstract class AuxCoordSystem extends DefinitionElement implements AuxCoo
 
 // @public
 export class AuxCoordSystem2d extends AuxCoordSystem implements AuxCoordSystem2dProps {
-    // (undocumented)
     constructor(props: AuxCoordSystem2dProps, iModel: IModelDb);
     // (undocumented)
     angle: number;
@@ -237,7 +235,6 @@ export class AuxCoordSystem2d extends AuxCoordSystem implements AuxCoordSystem2d
 
 // @public
 export class AuxCoordSystem3d extends AuxCoordSystem implements AuxCoordSystem3dProps {
-    // (undocumented)
     constructor(props: AuxCoordSystem3dProps, iModel: IModelDb);
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
     // (undocumented)
@@ -257,7 +254,6 @@ export class AuxCoordSystemSpatial extends AuxCoordSystem3d {
 
 // @public (undocumented)
 export class AzureBlobStorage extends CloudStorageService {
-    // (undocumented)
     constructor(credentials: CloudStorageServiceCredentials);
     // (undocumented)
     ensureContainer(name: string): Promise<void>;
@@ -275,7 +271,6 @@ export class AzureBlobStorage extends CloudStorageService {
 
 // @public
 export class BackendActivityMonitor implements AppActivityMonitor {
-    // (undocumented)
     constructor(idleIntervalSeconds?: number);
     // (undocumented)
     idleIntervalSeconds: number;
@@ -325,7 +320,6 @@ export class BriefcaseEntry {
 
 // @internal
 export class BriefcaseId {
-    // (undocumented)
     constructor(value?: number);
     // (undocumented)
     static readonly Illegal: number;
@@ -414,7 +408,6 @@ export class CachedSqliteStatement {
 
 // @public (undocumented)
 export abstract class Callout extends DetailingSymbol implements CalloutProps {
-    // (undocumented)
     constructor(props: CalloutProps, iModel: IModelDb);
 }
 
@@ -432,7 +425,6 @@ export class Category extends DefinitionElement implements CategoryProps {
 
 // @public
 export class CategoryOwnsSubCategories extends ElementOwnsChildElements {
-    // (undocumented)
     constructor(parentId: Id64String, relClassName?: string);
     // (undocumented)
     static classFullName: string;
@@ -452,7 +444,6 @@ export class CategorySelector extends DefinitionElement implements CategorySelec
 
 // @public
 export class ChangedElementsDb implements IDisposable {
-    // (undocumented)
     constructor();
     closeDb(): void;
     static createDb(briefcase: IModelDb, pathName: string): ChangedElementsDb;
@@ -474,7 +465,6 @@ export type ChangeSetDescriber = (endTxnId: IModelJsNative.TxnIdString) => strin
 
 // @internal
 export class ChangeSetToken {
-    // (undocumented)
     constructor(id: string, parentId: string, index: number, pathname: string, containsSchemaChanges: boolean, pushDate?: string | undefined);
     // (undocumented)
     containsSchemaChanges: boolean;
@@ -506,7 +496,6 @@ export interface ChangeSummary {
 
 // @public (undocumented)
 export class ChangeSummaryExtractContext {
-    // (undocumented)
     constructor(iModel: IModelDb);
     // (undocumented)
     readonly iModel: IModelDb;
@@ -601,7 +590,6 @@ export interface CloudStorageUploadOptions {
 
 // @public
 export class CodeSpecs {
-    // (undocumented)
     constructor(imodel: IModelDb);
     getById(codeSpecId: Id64String): CodeSpec;
     getByName(name: string): CodeSpec;
@@ -615,7 +603,6 @@ export class CodeSpecs {
 
 // @public
 export class ConcurrencyControl {
-    // (undocumented)
     constructor(_iModel: IModelDb);
     abandonRequest(): void;
     areAvailable(requestContext: AuthorizedClientRequestContext, req?: ConcurrencyControl.Request): Promise<boolean>;
@@ -650,7 +637,6 @@ export class ConcurrencyControl {
 // @public (undocumented)
 export namespace ConcurrencyControl {
     export class Codes {
-        // (undocumented)
         constructor(_iModel: IModelDb);
         query(requestContext: AuthorizedClientRequestContext, specId: Id64String, scopeId: string, value?: string): Promise<HubCode[]>;
         reserve(requestContext: AuthorizedClientRequestContext, codes?: Code[]): Promise<void>;
@@ -666,7 +652,6 @@ export namespace ConcurrencyControl {
         RejectIncomingChange = 0
     }
     export class OptimisticPolicy {
-        // (undocumented)
         constructor(policy?: ConflictResolutionPolicy);
         // (undocumented)
         conflictResolution: ConflictResolutionPolicy;
@@ -703,13 +688,11 @@ export class DefinitionPartition extends InformationPartitionElement {
 
 // @public (undocumented)
 export class DetailCallout extends Callout {
-    // (undocumented)
     constructor(props: CalloutProps, iModel: IModelDb);
 }
 
 // @public (undocumented)
 export abstract class DetailingSymbol extends GraphicalElement2d {
-    // (undocumented)
     constructor(props: GeometricElement2dProps, iModel: IModelDb);
 }
 
@@ -834,7 +817,6 @@ export abstract class DriverBundleElement extends InformationContentElement {
 
 // @public
 export class ECDb implements IDisposable, PageableECSql {
-    // (undocumented)
     constructor();
     abandonChanges(): void;
     // @internal
@@ -884,7 +866,6 @@ export interface ECEnumValue {
 
 // @internal (undocumented)
 export class ECSchemaXmlContext {
-    // (undocumented)
     constructor();
     // (undocumented)
     addSchemaPath(searchPath: string): void;
@@ -897,8 +878,6 @@ export class ECSchemaXmlContext {
 // @public
 export class ECSqlBinder {
     // Warning: (ae-incompatible-release-tags) The symbol "__constructor" is marked as @public, but its signature references "IModelJsNative" which is marked as @internal
-    // 
-    // (undocumented)
     constructor(binder: IModelJsNative.ECSqlBinder);
     addArrayElement(): ECSqlBinder;
     bind(val: any): void;
@@ -935,7 +914,6 @@ export interface ECSqlColumnInfo {
 
 // @public
 export class ECSqlInsertResult {
-    // (undocumented)
     constructor(status: DbResult, id?: string | undefined);
     // (undocumented)
     id?: string | undefined;
@@ -986,7 +964,6 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
 
 // @public
 export class ECSqlStatementCache {
-    // (undocumented)
     constructor(maxCount?: number);
     // (undocumented)
     add(str: string, stmt: ECSqlStatement): void;
@@ -1009,8 +986,6 @@ export class ECSqlStatementCache {
 // @public
 export class ECSqlValue {
     // Warning: (ae-incompatible-release-tags) The symbol "__constructor" is marked as @public, but its signature references "IModelJsNative" which is marked as @internal
-    // 
-    // (undocumented)
     constructor(val: IModelJsNative.ECSqlValue);
     readonly columnInfo: ECSqlColumnInfo;
     getArray(): any[];
@@ -1040,8 +1015,6 @@ export class ECSqlValueIterator implements IterableIterator<ECSqlValue> {
     // (undocumented)
     [Symbol.iterator](): IterableIterator<ECSqlValue>;
     // Warning: (ae-incompatible-release-tags) The symbol "__constructor" is marked as @public, but its signature references "IModelJsNative" which is marked as @internal
-    // 
-    // (undocumented)
     constructor(it: IModelJsNative.ECSqlValueIterator);
     // (undocumented)
     next(): IteratorResult<ECSqlValue>;
@@ -1124,7 +1097,6 @@ export interface ElementDrivesElementProps extends RelationshipProps {
 
 // @public
 export class ElementEncapsulatesElements extends ElementOwnsChildElements {
-    // (undocumented)
     constructor(parentId: Id64String, relClassName?: string);
     // (undocumented)
     static classFullName: string;
@@ -1132,7 +1104,6 @@ export class ElementEncapsulatesElements extends ElementOwnsChildElements {
 
 // @public
 export class ElementGroupsMembers extends ElementRefersToElements {
-    // (undocumented)
     constructor(props: ElementGroupsMembersProps, iModel: IModelDb);
     // (undocumented)
     static create<T extends ElementRefersToElements>(iModel: IModelDb, sourceId: Id64String, targetId: Id64String, memberPriority?: number): T;
@@ -1152,17 +1123,10 @@ export class ElementMultiAspect extends ElementAspect {
 
 // @public
 export class ElementOwnsChildElements extends RelatedElement {
-    // (undocumented)
     constructor(parentId: Id64String, relClassName?: string);
     // (undocumented)
     static classFullName: string;
 }
-
-// @internal (undocumented)
-export class ElementPropertyFormatter {
-    constructor(iModel: IModelDb);
-    formatProperties(elem: Element): any;
-    }
 
 // @public
 export class ElementRefersToElements extends Relationship {
@@ -1176,7 +1140,6 @@ export class ElementUniqueAspect extends ElementAspect {
 
 // @public (undocumented)
 export class ElevationCallout extends Callout {
-    // (undocumented)
     constructor(props: CalloutProps, iModel: IModelDb);
 }
 
@@ -1272,7 +1235,6 @@ export abstract class FunctionalElement extends RoleElement implements Functiona
 
 // @public
 export class FunctionalElementIsOfType extends RelatedElement {
-    // (undocumented)
     constructor(id: Id64String, relClassName?: string);
     // (undocumented)
     static classFullName: string;
@@ -1280,7 +1242,6 @@ export class FunctionalElementIsOfType extends RelatedElement {
 
 // @public
 export class FunctionalModel extends RoleModel {
-    // (undocumented)
     constructor(props: ModelProps, iModel: IModelDb);
     static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string): Id64String;
 }
@@ -1372,7 +1333,6 @@ export class GeometryPart extends DefinitionElement implements GeometryPartProps
 
 // @public (undocumented)
 export class Graphic3d extends GraphicalElement3d {
-    // (undocumented)
     constructor(props: GeometricElement3dProps, iModel: IModelDb);
 }
 
@@ -1384,7 +1344,6 @@ export abstract class GraphicalElement2d extends GeometricElement2d {
 
 // @public
 export class GraphicalElement2dIsOfType extends RelatedElement {
-    // (undocumented)
     constructor(id: Id64String, relClassName?: string);
     // (undocumented)
     static classFullName: string;
@@ -1409,7 +1368,6 @@ export abstract class GraphicalType2d extends TypeDefinitionElement {
 
 // @public (undocumented)
 export class Group extends GroupInformationElement {
-    // (undocumented)
     constructor(props: ElementProps, iModel: IModelDb);
 }
 
@@ -1427,7 +1385,6 @@ export class GroupInformationPartition extends InformationPartitionElement {
 
 // @public (undocumented)
 export class GroupModel extends GroupInformationModel {
-    // (undocumented)
     constructor(props: ModelProps, iModel: IModelDb);
 }
 
@@ -1476,8 +1433,6 @@ export class IModelDb extends IModel implements PageableECSql {
     static forEachMetaData(iModel: IModelDb, classFullName: string, wantSuper: boolean, func: PropertyCallback, includeCustom: boolean): void;
     // Warning: (ae-incompatible-release-tags) The symbol "getBriefcaseId" is marked as @public, but its signature references "BriefcaseId" which is marked as @internal
     getBriefcaseId(): BriefcaseId;
-    // @internal (undocumented)
-    getElementPropertiesForDisplay(elementId: string): string;
     getGeoCoordinatesFromIModelCoordinates(requestContext: ClientRequestContext, props: string): Promise<GeoCoordinatesResponseProps>;
     getGuid(): GuidString;
     getIModelCoordinatesFromGeoCoordinates(requestContext: ClientRequestContext, props: string): Promise<IModelCoordinatesResponseProps>;
@@ -1656,7 +1611,6 @@ export class IModelHostConfiguration {
 
 // @alpha (undocumented)
 export class IModelImporter {
-    // (undocumented)
     constructor(sourceDb: IModelDb, targetDb: IModelDb);
     // (undocumented)
     addCodeSpecId(sourceId: Id64String, targetId: Id64String): void;
@@ -1725,7 +1679,6 @@ export class IModelJsFs {
 
 // @public
 export class IModelJsFsStats {
-    // (undocumented)
     constructor(size: number, atimeMs: number, mtimeMs: number, birthtimeMs: number, isDirectory: boolean, isFile: boolean, isSocket: boolean, isSymbolicLink: boolean, isReadOnly: boolean);
     // (undocumented)
     atimeMs: number;
@@ -1769,7 +1722,6 @@ export namespace IModelJsNative {
     }
     // (undocumented)
     export class ChangedElementsECDb implements IDisposable {
-        // (undocumented)
         constructor();
         // (undocumented)
         closeDb(): void;
@@ -1789,7 +1741,6 @@ export namespace IModelJsNative {
         processChangesets(db: DgnDb, changesets: string, rulesetId: string, filterSpatial: boolean): DbResult;
     }
     export class DgnDb {
-        // (undocumented)
         constructor();
         // (undocumented)
         abandonChanges(): DbResult;
@@ -1871,8 +1822,6 @@ export namespace IModelJsNative {
         getECClassMetaData(schema: string, className: string): ErrorStatusOrResult<IModelStatus, string>;
         // (undocumented)
         getElement(opts: string): ErrorStatusOrResult<IModelStatus, ElementProps>;
-        // (undocumented)
-        getElementPropertiesForDisplay(id: string): ErrorStatusOrResult<IModelStatus, string>;
         // (undocumented)
         getGeoCoordinatesFromIModelCoordinates(points: string): string;
         // (undocumented)
@@ -1998,14 +1947,12 @@ export namespace IModelJsNative {
     }
     // (undocumented)
     export class DisableNativeAssertions implements IDisposable {
-        // (undocumented)
         constructor();
         // (undocumented)
         dispose(): void;
     }
     // (undocumented)
     export class ECDb implements IDisposable {
-        // (undocumented)
         constructor();
         // (undocumented)
         abandonChanges(): DbResult;
@@ -2026,7 +1973,6 @@ export namespace IModelJsNative {
     }
     // (undocumented)
     export class ECPresentationManager implements IDisposable {
-        // (undocumented)
         constructor();
         // (undocumented)
         addRuleset(serializedRuleset: string): ErrorStatusOrResult<ECPresentationStatus, string>;
@@ -2089,7 +2035,6 @@ export namespace IModelJsNative {
     }
     // (undocumented)
     export class ECSchemaXmlContext {
-        // (undocumented)
         constructor();
         // (undocumented)
         addSchemaPath(path: string): void;
@@ -2100,7 +2045,6 @@ export namespace IModelJsNative {
     }
     // (undocumented)
     export class ECSqlBinder {
-        // (undocumented)
         constructor();
         // (undocumented)
         addArrayElement(): ECSqlBinder;
@@ -2133,7 +2077,6 @@ export namespace IModelJsNative {
     }
     // (undocumented)
     export class ECSqlColumnInfo {
-        // (undocumented)
         constructor();
         // (undocumented)
         getAccessString(): string;
@@ -2156,7 +2099,6 @@ export namespace IModelJsNative {
     }
     // (undocumented)
     export class ECSqlStatement implements IDisposable {
-        // (undocumented)
         constructor();
         // (undocumented)
         clearBindings(): DbResult;
@@ -2189,7 +2131,6 @@ export namespace IModelJsNative {
     }
     // (undocumented)
     export class ECSqlValue {
-        // (undocumented)
         constructor();
         // (undocumented)
         getArrayIterator(): ECSqlValueIterator;
@@ -2247,7 +2188,6 @@ export namespace IModelJsNative {
     }
     // (undocumented)
     export class ECSqlValueIterator {
-        // (undocumented)
         constructor();
         // (undocumented)
         getCurrent(): ECSqlValue;
@@ -2260,7 +2200,6 @@ export namespace IModelJsNative {
     }
     // (undocumented)
     export class ImportContext implements IDisposable {
-        // (undocumented)
         constructor(sourceDb: DgnDb, targetDb: DgnDb);
         // (undocumented)
         addCodeSpecId(sourceId: Id64String, targetId: Id64String): BentleyStatus;
@@ -2297,7 +2236,6 @@ export namespace IModelJsNative {
     export function setUseTileCache(useTileCache: boolean): void;
     // (undocumented)
     export class SnapRequest {
-        // (undocumented)
         constructor();
         // (undocumented)
         cancelSnap(): void;
@@ -2306,7 +2244,6 @@ export namespace IModelJsNative {
     }
     // (undocumented)
     export class SqliteStatement implements IDisposable {
-        // (undocumented)
         constructor();
         // (undocumented)
         bindBlob(param: number | string, val: Uint8Array | ArrayBuffer | SharedArrayBuffer): DbResult;
@@ -2622,7 +2559,6 @@ export class LinkPartition extends InformationPartitionElement {
 
 // @public (undocumented)
 export class LocalStorageService extends CloudStorageService {
-    // (undocumented)
     constructor(basePath: string, maxSize?: number, removeOnTerminate?: boolean);
     // (undocumented)
     download(name: string): Promise<Readable | undefined>;
@@ -2713,7 +2649,6 @@ export class ModelSelector extends DefinitionElement implements ModelSelectorPro
 
 // @public
 export class OpenParams {
-    // (undocumented)
     constructor(
     openMode: OpenMode, 
     accessMode?: AccessMode | undefined, 
@@ -2734,7 +2669,6 @@ export class OpenParams {
 
 // @public
 export class OrthographicViewDefinition extends SpatialViewDefinition {
-    // (undocumented)
     constructor(props: SpatialViewDefinitionProps, iModel: IModelDb);
     static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, modelSelectorId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range3d, standardView?: StandardViewIndex): OrthographicViewDefinition;
     static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, modelSelectorId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range3d, standardView?: StandardViewIndex): Id64String;
@@ -2749,7 +2683,6 @@ export abstract class PhysicalElement extends SpatialElement {
 
 // @public
 export class PhysicalElementAssemblesElements extends ElementOwnsChildElements {
-    // (undocumented)
     constructor(parentId: Id64String, relClassName?: string);
     // (undocumented)
     static classFullName: string;
@@ -2761,7 +2694,6 @@ export class PhysicalElementFulfillsFunction extends ElementRefersToElements {
 
 // @public
 export class PhysicalElementIsOfType extends RelatedElement {
-    // (undocumented)
     constructor(id: Id64String, relClassName?: string);
     // (undocumented)
     static classFullName: string;
@@ -2774,7 +2706,6 @@ export class PhysicalModel extends SpatialModel {
 
 // @public (undocumented)
 export class PhysicalObject extends PhysicalElement {
-    // (undocumented)
     constructor(props: GeometricElement3dProps, iModel: IModelDb);
 }
 
@@ -2791,7 +2722,6 @@ export abstract class PhysicalType extends TypeDefinitionElement {
 
 // @public (undocumented)
 export class PlanCallout extends Callout {
-    // (undocumented)
     constructor(props: CalloutProps, iModel: IModelDb);
 }
 
@@ -2889,7 +2819,6 @@ export namespace RenderMaterial {
 
 // @public
 export class RenderMaterialOwnsRenderMaterials extends ElementOwnsChildElements {
-    // (undocumented)
     constructor(parentId: Id64String, relClassName?: string);
     // (undocumented)
     static classFullName: string;
@@ -2940,7 +2869,6 @@ export class Schemas {
 
 // @public (undocumented)
 export class SectionCallout extends Callout {
-    // (undocumented)
     constructor(props: CalloutProps, iModel: IModelDb);
 }
 
@@ -3026,7 +2954,6 @@ export abstract class SpatialElement extends GeometricElement3d {
 
 // @public (undocumented)
 export class SpatialLocation extends SpatialLocationElement {
-    // (undocumented)
     constructor(props: GeometricElement3dProps, iModel: IModelDb);
 }
 
@@ -3038,7 +2965,6 @@ export abstract class SpatialLocationElement extends SpatialElement {
 
 // @public
 export class SpatialLocationIsOfType extends RelatedElement {
-    // (undocumented)
     constructor(id: Id64String, relClassName?: string);
     // (undocumented)
     static classFullName: string;
@@ -3098,7 +3024,6 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
 
 // @public
 export class SqliteStatementCache {
-    // (undocumented)
     constructor(maxCount?: number);
     // (undocumented)
     add(str: string, stmt: SqliteStatement): void;
@@ -3121,8 +3046,6 @@ export class SqliteStatementCache {
 // @public
 export class SqliteValue {
     // Warning: (ae-incompatible-release-tags) The symbol "__constructor" is marked as @public, but its signature references "IModelJsNative" which is marked as @internal
-    // 
-    // (undocumented)
     constructor(stmt: IModelJsNative.SqliteStatement, colIndex: number);
     readonly columnName: string;
     getBlob(): Uint8Array;
@@ -3188,7 +3111,6 @@ export class Subject extends InformationReferenceElement implements SubjectProps
 
 // @public
 export class SubjectOwnsPartitionElements extends ElementOwnsChildElements {
-    // (undocumented)
     constructor(parentId: Id64String, relClassName?: string);
     // (undocumented)
     static classFullName: string;
@@ -3196,7 +3118,6 @@ export class SubjectOwnsPartitionElements extends ElementOwnsChildElements {
 
 // @public
 export class SubjectOwnsSubjects extends ElementOwnsChildElements {
-    // (undocumented)
     constructor(parentId: Id64String, relClassName?: string);
     // (undocumented)
     static classFullName: string;
@@ -3267,7 +3188,6 @@ export class Texture extends DefinitionElement implements TextureProps {
 
 // @public (undocumented)
 export class TitleText extends DetailingSymbol {
-    // (undocumented)
     constructor(props: GeometricElement2dProps, iModel: IModelDb);
 }
 
@@ -3289,7 +3209,6 @@ export const enum TxnAction {
 
 // @public
 export class TxnManager {
-    // (undocumented)
     constructor(_iModel: IModelDb);
     beginMultiTxnOperation(): DbResult;
     // Warning: (ae-incompatible-release-tags) The symbol "cancelTo" is marked as @public, but its signature references "IModelJsNative" which is marked as @internal
@@ -3368,7 +3287,6 @@ export interface ValidationError {
 
 // @public
 export class ViewAttachment extends GraphicalElement2d implements ViewAttachmentProps {
-    // (undocumented)
     constructor(props: ViewAttachmentProps, iModel: IModelDb);
     // (undocumented)
     view: RelatedElement;
@@ -3376,7 +3294,6 @@ export class ViewAttachment extends GraphicalElement2d implements ViewAttachment
 
 // @public (undocumented)
 export class ViewAttachmentLabel extends DetailingSymbol implements ViewAttachmentLabelProps {
-    // (undocumented)
     constructor(props: ViewAttachmentLabelProps, iModel: IModelDb);
 }
 

@@ -6,25 +6,51 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import { withContainInViewport } from "../../base/WithContainInViewport";
 import { TrianglePopover } from "../../popup/popover/Triangle";
 import { Direction } from "../../utilities/Direction";
-import { CommonProps } from "../../utilities/Props";
+import { CommonProps, NoChildrenProps } from "../../utilities/Props";
 import { Dialog } from "../message/content/dialog/Dialog";
 import { TitleBar } from "../message/content/dialog/TitleBar";
 import { DialogTitle } from "../message/content/dialog/Title";
 import { ToolAssistanceContent } from "./Content";
 import "./Dialog.scss";
 
-// tslint:disable-next-line:variable-name
-const DialogWithContainIn = withContainInViewport(Dialog);
-
 /** Properties of [[ToolAssistanceDialog]] component. */
-export interface ToolAssistanceDialogProps extends CommonProps {
-  /** Dialog title. */
-  title?: string;
+export interface ToolAssistanceDialogContentProps extends CommonProps, NoChildrenProps {
   /** Items and separators of tool assistance. I.e. [[ToolAssistanceItem]], [[ToolAssistanceSeparator]] */
   items?: React.ReactNode;
+  /** Dialog title. */
+  title?: string;
+}
+
+/** Dialog content used in [[ToolAssistanceDialog]] component. */
+export class ToolAssistanceDialogContent extends React.PureComponent<ToolAssistanceDialogContentProps> {
+  public render() {
+    return (
+      <Dialog
+        className={this.props.className}
+        content={
+          <ToolAssistanceContent>
+            {this.props.items}
+          </ToolAssistanceContent>
+        }
+        style={this.props.style}
+        titleBar={
+          <TitleBar
+            title={
+              <DialogTitle text={this.props.title} />
+            }
+          />
+        }
+      />
+    );
+  }
+}
+
+/** Properties of [[ToolAssistanceDialog]] component. */
+export interface ToolAssistanceDialogProps extends CommonProps, NoChildrenProps {
+  /** Dialog content. See [[SnapModeDialogContent]] */
+  content?: React.ReactNode;
 }
 
 /** Tool assistance dialog used in [[ToolAssistanceIndicator]] component. */
@@ -37,24 +63,9 @@ export class ToolAssistanceDialog extends React.PureComponent<ToolAssistanceDial
     return (
       <TrianglePopover
         className={className}
+        content={this.props.content}
         direction={Direction.Top}
-        content={
-          <DialogWithContainIn
-            noVerticalContainment
-            titleBar={
-              <TitleBar
-                title={
-                  <DialogTitle text={this.props.title} />
-                }
-              />
-            }
-            content={
-              <ToolAssistanceContent>
-                {this.props.items}
-              </ToolAssistanceContent>
-            }
-          />
-        }
+        style={this.props.style}
       />
     );
   }

@@ -9,6 +9,12 @@ $nz-tab-width: 32px;
 $nz-tab-strip-width: 2px;
 $nz-tab-strip-margin: 2px;
 $nz-tab-background-color: $buic-background-tab-inactive;
+$nz-tab-color: $buic-icon-color;
+$nz-hovered-tab-color: $buic-foreground-primary-tone;
+$nz-active-tab-color: $buic-foreground-primary;
+$nz-tab-shadow: drop-shadow((-0.4px) 0.9px 0 $buic-text-color-reverse);
+$nz-active-tab-shadow: drop-shadow(0 1px 0 $buic-text-color-reverse);
+$nz-tab-no-shadow: drop-shadow(0 0 0 transparent);
 
 $resize-grip-size: 3px;
 
@@ -16,12 +22,3 @@ $nz-widget-background-color: $buic-background-widget;
 $nz-widget-border-color: $buic-background-widget-stroke;
 $nz-widget-border-width: 1px;
 $nz-widget-border-radius: 3px;
-
-$icon-color: $buic-icon-color;
-$hovered-icon-color: $buic-foreground-primary-tone;
-$pressed-icon-color: $buic-background-control;
-$active-icon-color: $buic-foreground-primary;
-$disabled-icon-color: $buic-icon-color-disabled;
-$icon-shadow-color: $buic-background-control;
-$icon-shadow: drop-shadow(0 1px 0 $icon-shadow-color);
-$no-shadow: drop-shadow(0 0 0 transparent);

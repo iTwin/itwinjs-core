@@ -16,3 +16,25 @@ exports[`<Toggle /> renders correctly 1`] = `
   </div>
 </div>
 `;
+
+exports[`<Toggle /> renders popover content correctly 1`] = `
+<div
+  className="nz-widget-toolSettings-toggle"
+>
+  <div
+    className="nz-toggle"
+  >
+    <div
+      className="nz-content"
+    />
+    <div
+      className="nz-triangle"
+    />
+  </div>
+  <TrianglePopover
+    className="nz-popover"
+    content="abc"
+    direction={3}
+  />
+</div>
+`;

@@ -4,15 +4,48 @@
 *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
+import * as sinon from "sinon";
 
-import { Expandable } from "../../../../ui-ninezone";
+import { ExpandableItem } from "../../../../ui-ninezone";
 
-describe("<Expandable />", () => {
+describe("<ExpandableItem />", () => {
   it("should render", () => {
-    mount(<Expandable />);
+    mount(<ExpandableItem />);
   });
 
   it("renders correctly", () => {
-    shallow(<Expandable />).should.matchSnapshot();
+    shallow(<ExpandableItem />).should.matchSnapshot();
+  });
+
+  it("renders active correctly", () => {
+    const sut = mount(<ExpandableItem isActive />);
+    const button = sut.getDOMNode() as HTMLElement;
+    button.classList.contains("nz-is-active").should.true;
+  });
+
+  it("renders disabled correctly", () => {
+    const sut = mount(<ExpandableItem isDisabled />);
+    const button = sut.getDOMNode() as HTMLElement;
+    button.classList.contains("nz-is-disabled").should.true;
+  });
+
+  it("should invoke onIsHistoryExtendedChange when mouse enters", () => {
+    const spy = sinon.spy();
+    const sut = mount(<ExpandableItem onIsHistoryExtendedChange={spy} />);
+    sut.simulate("mouseEnter");
+    spy.calledOnceWithExactly(true).should.true;
+  });
+
+  it("should invoke onIsHistoryExtendedChange when mouse leaves", () => {
+    const spy = sinon.spy();
+    const sut = mount(<ExpandableItem onIsHistoryExtendedChange={spy} />);
+    sut.simulate("mouseLeave");
+    spy.calledOnceWithExactly(false).should.true;
+  });
+
+  it("should not invoke if onIsHistoryExtendedChange is not provided", () => {
+    const sut = mount(<ExpandableItem />);
+    sut.simulate("mouseEnter");
+    sut.simulate("mouseLeave");
   });
 });

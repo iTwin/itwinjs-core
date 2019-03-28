@@ -7,7 +7,9 @@
 
 .nz-footer-messageCenter-indicator {
   height: 100%;
-  display: flex;
+  display: grid;
+  grid-auto-flow: column;
+  grid-gap: $space-between-text-and-icon;
   align-items: center;
   padding-left: $nz-footer-indicator-horizontal-padding;
   padding-right: $nz-footer-indicator-horizontal-padding;
@@ -26,13 +28,7 @@
   }
 
   >.nz-label {
-    margin-right: $space-between-text-and-icon;
-    display: none;
     font-size: $text-font-size;
-
-    &.nz-is-visible {
-      display: block;
-    }
   }
 
   >.nz-balloon-container {

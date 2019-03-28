@@ -47,3 +47,21 @@ exports[`<HistoryTray /> renders items 1`] = `
   />
 </div>
 `;
+
+exports[`<HistoryTray /> renders items 2`] = `
+<div
+  className="nz-toolbar-item-expandable-history-tray nz-direction-left nz-extend-is-visible"
+  onMouseEnter={[Function]}
+  onMouseLeave={[Function]}
+>
+  <div
+    className="nz-items"
+  >
+    <br />
+    <br />
+  </div>
+  <div
+    className="nz-extend-indicator"
+  />
+</div>
+`;

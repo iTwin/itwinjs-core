@@ -10,6 +10,23 @@ exports[`<ToolAssistanceIndicator /> renders correctly 1`] = `
     <div
       className="nz-icons"
     />
+    <div
+      className="nz-triangle"
+    />
+  </div>
+</div>
+`;
+
+exports[`<ToolAssistanceIndicator /> renders correctly with step string 1`] = `
+<div
+  className="nz-footer-toolAssistance-indicator"
+>
+  <div
+    className="nz-indicator"
+  >
+    <div
+      className="nz-icons"
+    />
     <span
       className="nz-step-string"
     />
