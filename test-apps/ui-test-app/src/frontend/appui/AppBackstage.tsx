@@ -39,6 +39,7 @@ export class AppBackstage extends React.Component {
         <SeparatorBackstageItem />
         <TaskLaunchBackstageItem workflowId="ExampleWorkflow" taskId="Task1" labelKey="SampleApp:backstage.task1" iconSpec="icon-placeholder" />
         <TaskLaunchBackstageItem workflowId="ExampleWorkflow" taskId="Task2" labelKey="SampleApp:backstage.task2" iconSpec="icon-placeholder" />
+        <FrontstageLaunchBackstageItem frontstageId="ScheduleAnimationFrontstage" label="Schedule Animation" iconSpec="icon-placeholder" />
       </Backstage>
     );
   }

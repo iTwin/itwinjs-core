@@ -619,6 +619,10 @@
       "allowedCategories": [ "frontend", "internal", "tools" ]
     },
     {
+      "name": "react-compound-slider",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "react-data-grid",
       "allowedCategories": [ "frontend" ]
     },

@@ -15,6 +15,7 @@ import {
 import "./contentviews/CubeContent";
 import "./contentviews/TableExampleContent";
 import "./contentviews/TreeExampleContent";
+import "./contentviews/ScheduleAnimationViewport";
 import "./widgets/BreadcrumbDemoWidget";
 import "./widgets/TreeDemoWidget";
 import "./widgets/TableDemoWidget";
@@ -35,6 +36,7 @@ import { IModelIndexFrontstage } from "./frontstages/IModelIndexFrontstage";
 import { IModelOpenFrontstage } from "./frontstages/IModelOpenFrontstage";
 import { SignInFrontstage } from "./frontstages/SignInFrontstage";
 import { IModelViewportControl } from "./contentviews/IModelViewport";
+import { ScheduleAnimationFrontstage} from "./frontstages/ScheduleAnimationFrontstage";
 import { AppTools } from "../tools/ToolSpecifications";
 
 /** Example Ui Configuration for an iModelJS App
@@ -62,6 +64,7 @@ export class AppUi {
     ConfigurableUiManager.addFrontstageProvider(new IModelIndexFrontstage());
     ConfigurableUiManager.addFrontstageProvider(new IModelOpenFrontstage());
     ConfigurableUiManager.addFrontstageProvider(new SignInFrontstage());
+    ConfigurableUiManager.addFrontstageProvider(new ScheduleAnimationFrontstage());
   }
 
   public static command1 = () => {
