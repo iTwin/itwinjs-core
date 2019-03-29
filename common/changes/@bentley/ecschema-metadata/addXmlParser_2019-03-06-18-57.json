@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Add XmlParser for direct consumption of Xml Schemas",
+      "packageName": "@bentley/ecschema-metadata",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ecschema-metadata",
+  "email": "enioluwa.segun@bentley.com"
+}
