@@ -64,4 +64,9 @@ export const enum LoggerCategory {
    * - [[Schemas]]
    */
   Schemas = "imodeljs-backend.Schemas",
+
+  /** The logger category used by the following classes:
+   * - [[PromiseMemoizer]]
+   */
+  PromiseMemoizer = "imodeljs-backend.PromiseMemoizer",
 }

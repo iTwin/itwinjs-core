@@ -2635,6 +2635,7 @@ export const enum LoggerCategory {
     // @alpha
     IModelImporter = "imodeljs-backend.IModelImporter",
     IModelTileRequestRpc = "imodeljs-backend.IModelTileRequestRpc",
+    PromiseMemoizer = "imodeljs-backend.PromiseMemoizer",
     Relationship = "imodeljs-backend.Relationship",
     Schemas = "imodeljs-backend.Schemas"
 }

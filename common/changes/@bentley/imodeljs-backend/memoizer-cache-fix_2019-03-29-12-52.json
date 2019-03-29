@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Limited maximum cache size of the backend PromiseMemoizer. ",
+      "packageName": "@bentley/imodeljs-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-backend",
+  "email": "Ramanujam.Raman@bentley.com"
+}
