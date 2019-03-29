@@ -48,7 +48,7 @@ import { PointCloudGeometry } from "./PointCloud";
 import { LineCode } from "./EdgeOverrides";
 import { Material } from "./Material";
 import { SkyBoxQuadsGeometry, SkySphereViewportQuadGeometry } from "./CachedGeometry";
-import { SkyBoxPrimitive, Primitive } from "./Primitive";
+import { SkyCubePrimitive, SkySpherePrimitive, Primitive } from "./Primitive";
 import { ClipPlanesVolume, ClipMaskVolume } from "./ClipVolume";
 import { TextureUnit } from "./RenderFlags";
 import { UniformHandle } from "./Handle";
@@ -555,10 +555,10 @@ export class System extends RenderSystem {
 
   public createSkyBox(params: SkyBox.CreateParams): RenderGraphic | undefined {
     if (undefined !== params.cube) {
-      return SkyBoxPrimitive.create(() => SkyBoxQuadsGeometry.create(params.cube!));
+      return SkyCubePrimitive.create(() => SkyBoxQuadsGeometry.create(params.cube!));
     } else {
       assert(undefined !== params.sphere || undefined !== params.gradient);
-      return SkyBoxPrimitive.create(() => SkySphereViewportQuadGeometry.createGeometry(params));
+      return SkySpherePrimitive.create(() => SkySphereViewportQuadGeometry.createGeometry(params));
     }
   }
 

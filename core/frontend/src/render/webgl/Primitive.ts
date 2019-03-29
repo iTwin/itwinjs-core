@@ -104,7 +104,7 @@ export class Primitive extends Graphic {
 }
 
 /** @internal */
-export class SkyBoxPrimitive extends Primitive {
+export class SkyCubePrimitive extends Primitive {
   public constructor(cachedGeom: CachedGeometry) { super(cachedGeom); }
 
   public draw(shader: ShaderProgramExecutor): void {
@@ -119,5 +119,14 @@ export class SkyBoxPrimitive extends Primitive {
     super.draw(shader); // Draw the skybox cubemap
 
     System.instance.context.viewport(0, 0, vw, vh); // Restore viewport
+  }
+}
+
+/** @internal */
+export class SkySpherePrimitive extends Primitive {
+  public constructor(cachedGeom: CachedGeometry) { super(cachedGeom); }
+
+  public draw(shader: ShaderProgramExecutor): void {
+    super.draw(shader); // Draw the skybox sphere
   }
 }
