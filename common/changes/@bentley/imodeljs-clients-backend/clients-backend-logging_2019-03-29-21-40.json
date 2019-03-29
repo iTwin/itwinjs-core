@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Introduce LoggerCategory enum to advertise logger categories used by this package.",
+      "packageName": "@bentley/imodeljs-clients-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-clients-backend",
+  "email": "shaun.sewall@bentley.com"
+}

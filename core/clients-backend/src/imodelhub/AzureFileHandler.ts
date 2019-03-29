@@ -5,13 +5,15 @@
 /** @module iModelHub */
 
 import { Logger } from "@bentley/bentleyjs-core";
-import { request, RequestOptions, ProgressInfo, ResponseError, FileHandler, ArgumentCheck, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
+import { ArgumentCheck, AuthorizedClientRequestContext, FileHandler, ProgressInfo, request, RequestOptions, ResponseError } from "@bentley/imodeljs-clients";
 import * as fs from "fs";
-import * as path from "path";
 import * as https from "https";
+import * as path from "path";
 import { Transform, TransformCallback } from "stream";
+import { LoggerCategory } from "../LoggerCategory";
 import WriteStreamAtomic = require("fs-write-stream-atomic");
-const loggingCategory = "imodeljs-clients.imodelhub";
+
+const loggerCategory: string = LoggerCategory.IModelHub;
 
 /**
  * Stream that buffers writing to file.
@@ -87,7 +89,7 @@ export class AzureFileHandler implements FileHandler {
   public async downloadFile(requestContext: AuthorizedClientRequestContext, downloadUrl: string, downloadToPathname: string, fileSize?: number,
     progressCallback?: (progress: ProgressInfo) => void): Promise<void> {
     requestContext.enter();
-    Logger.logInfo(loggingCategory, `Downloading file from ${downloadUrl}`);
+    Logger.logInfo(loggerCategory, `Downloading file from ${downloadUrl}`);
     ArgumentCheck.defined("downloadUrl", downloadUrl);
     ArgumentCheck.defined("downloadToPathname", downloadToPathname);
 
@@ -134,11 +136,11 @@ export class AzureFileHandler implements FileHandler {
       requestContext.enter();
       if (fs.existsSync(downloadToPathname))
         fs.unlinkSync(downloadToPathname); // Just in case there was a partial download, delete the file
-      Logger.logError(loggingCategory, `Error downloading file`);
+      Logger.logError(loggerCategory, `Error downloading file`);
       return Promise.reject(err);
     }
     requestContext.enter();
-    Logger.logTrace(loggingCategory, `Downloaded file from ${downloadUrl}`);
+    Logger.logTrace(loggerCategory, `Downloaded file from ${downloadUrl}`);
   }
 
   /** Get encoded block id from its number. */
@@ -181,7 +183,7 @@ export class AzureFileHandler implements FileHandler {
    */
   public async uploadFile(requestContext: AuthorizedClientRequestContext, uploadUrlString: string, uploadFromPathname: string, progressCallback?: (progress: ProgressInfo) => void): Promise<void> {
     requestContext.enter();
-    Logger.logTrace(loggingCategory, `Uploading file to ${uploadUrlString}`);
+    Logger.logTrace(loggerCategory, `Uploading file to ${uploadUrlString}`);
     ArgumentCheck.defined("uploadUrlString", uploadUrlString);
     ArgumentCheck.defined("uploadFromPathname", uploadFromPathname);
 

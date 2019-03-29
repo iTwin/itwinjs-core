@@ -13,8 +13,9 @@ import {
 } from "@openid/appauth";
 import { NodeBasedHandler, NodeRequestor } from "@openid/appauth/built/node_support";
 import { StringMap } from "@openid/appauth/built/types";
+import { LoggerCategory } from "../LoggerCategory";
 
-const loggingCategory = "imodeljs-clients-device.OidcDeviceClient";
+const loggerCategory: string = LoggerCategory.OidcDeviceClient;
 
 export class OidcDeviceClient extends OidcClient implements IOidcFrontendClient {
   private _clientConfiguration: OidcFrontendClientConfiguration;
@@ -55,7 +56,7 @@ export class OidcDeviceClient extends OidcClient implements IOidcFrontendClient 
       url,
       this._nodeRequestor,
     );
-    Logger.logTrace(loggingCategory, "Initialized service configuration", () => ({ configuration: this._configuration }));
+    Logger.logTrace(loggerCategory, "Initialized service configuration", () => ({ configuration: this._configuration }));
   }
 
   /** Called to start the sign-in process. Subscribe to onUserStateChanged to be notified when sign-in completes */
@@ -134,7 +135,7 @@ export class OidcDeviceClient extends OidcClient implements IOidcFrontendClient 
     requestContext.enter();
 
     if (!this._tokenResponse)
-      throw new BentleyError(AuthStatus.Error, "Not signed In. First call signIn()", Logger.logError, loggingCategory);
+      throw new BentleyError(AuthStatus.Error, "Not signed In. First call signIn()", Logger.logError, loggerCategory);
 
     if (this._tokenResponse.isValid()) {
       if (this._accessToken)
@@ -191,10 +192,10 @@ export class OidcDeviceClient extends OidcClient implements IOidcFrontendClient 
     this._requestContext = undefined;
     requestContext.enter();
 
-    Logger.logTrace(loggingCategory, "Authorization listener invoked", () => ({ authRequest, authResponse, authError }));
+    Logger.logTrace(loggerCategory, "Authorization listener invoked", () => ({ authRequest, authResponse, authError }));
     if (authError || !authResponse) {
       const errorMessage = authError ? authError.error : "Authorization error";
-      Logger.logError(loggingCategory, errorMessage, () => authError);
+      Logger.logError(loggerCategory, errorMessage, () => authError);
       this.onUserStateChanged.raiseEvent(undefined, errorMessage);
       return;
     }
@@ -206,14 +207,14 @@ export class OidcDeviceClient extends OidcClient implements IOidcFrontendClient 
     requestContext.enter();
 
     const message = "Authorization completed, and issued access token";
-    Logger.logTrace(loggingCategory, message);
+    Logger.logTrace(loggerCategory, message);
     this.onUserStateChanged.raiseEvent(this._accessToken, message);
   }
 
   private makeAuthorizationRequest(requestContext: ClientRequestContext) {
     requestContext.enter();
     if (!this._configuration)
-      throw new BentleyError(AuthStatus.Error, "Not initialized. First call initialize()", Logger.logError, loggingCategory);
+      throw new BentleyError(AuthStatus.Error, "Not initialized. First call initialize()", Logger.logError, loggerCategory);
 
     const reqJson: AuthorizationRequestJson = {
       response_type: AuthorizationRequest.RESPONSE_TYPE_CODE,
@@ -228,7 +229,7 @@ export class OidcDeviceClient extends OidcClient implements IOidcFrontendClient 
       true, /* usePkce */
     );
 
-    Logger.logTrace(loggingCategory, "Making authorization request", () => ({ configuration: this._configuration, request }));
+    Logger.logTrace(loggerCategory, "Making authorization request", () => ({ configuration: this._configuration, request }));
     this._requestContext = requestContext;
     this._authorizationHandler.performAuthorizationRequest(
       this._configuration,
@@ -240,7 +241,7 @@ export class OidcDeviceClient extends OidcClient implements IOidcFrontendClient 
   private async requestAccessTokenFromCode(requestContext: ClientRequestContext, authCode: string, authRequest: AuthorizationRequest): Promise<TokenResponse> {
     requestContext.enter();
     if (!this._configuration)
-      throw new BentleyError(AuthStatus.Error, "Not initialized. First call initialize()", Logger.logError, loggingCategory);
+      throw new BentleyError(AuthStatus.Error, "Not initialized. First call initialize()", Logger.logError, loggerCategory);
 
     let extras: StringMap | undefined;
     if (authRequest && authRequest.internal) {
@@ -263,9 +264,9 @@ export class OidcDeviceClient extends OidcClient implements IOidcFrontendClient 
   private async makeRefreshTokenRequest(requestContext: ClientRequestContext): Promise<TokenResponse> {
     requestContext.enter();
     if (!this._configuration)
-      throw new BentleyError(AuthStatus.Error, "Not initialized. First call initialize()", Logger.logError, loggingCategory);
+      throw new BentleyError(AuthStatus.Error, "Not initialized. First call initialize()", Logger.logError, loggerCategory);
     if (!this._tokenResponse)
-      throw new BentleyError(AuthStatus.Error, "Missing refresh token. First call signIn() and ensure it's successful", Logger.logError, loggingCategory);
+      throw new BentleyError(AuthStatus.Error, "Missing refresh token. First call signIn() and ensure it's successful", Logger.logError, loggerCategory);
 
     const tokenRequestJson: TokenRequestJson = {
       grant_type: GRANT_TYPE_REFRESH_TOKEN,
@@ -281,16 +282,16 @@ export class OidcDeviceClient extends OidcClient implements IOidcFrontendClient 
   private async makeRevokeTokenRequest(requestContext: ClientRequestContext): Promise<void> {
     requestContext.enter();
     if (!this._configuration)
-      throw new BentleyError(AuthStatus.Error, "Not initialized. First call initialize()", Logger.logError, loggingCategory);
+      throw new BentleyError(AuthStatus.Error, "Not initialized. First call initialize()", Logger.logError, loggerCategory);
     if (!this._tokenResponse)
-      throw new BentleyError(AuthStatus.Error, "Missing refresh token. First call signIn() and ensure it's successful", Logger.logError, loggingCategory);
+      throw new BentleyError(AuthStatus.Error, "Missing refresh token. First call signIn() and ensure it's successful", Logger.logError, loggerCategory);
 
     const request = new RevokeTokenRequest({ token: this._tokenResponse.refreshToken! });
     await this._tokenHandler.performRevokeTokenRequest(this._configuration, request);
     requestContext.enter();
 
     this._tokenResponse = undefined;
-    Logger.logTrace(loggingCategory, "Authorization revoked, and removed access token");
+    Logger.logTrace(loggerCategory, "Authorization revoked, and removed access token");
     this.onUserStateChanged.raiseEvent(undefined);
   }
 }

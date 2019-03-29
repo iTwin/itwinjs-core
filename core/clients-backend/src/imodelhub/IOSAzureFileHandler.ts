@@ -4,10 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module iModelHub */
 import { Logger } from "@bentley/bentleyjs-core";
-import { request, RequestOptions, FileHandler, ArgumentCheck, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
+import { ArgumentCheck, AuthorizedClientRequestContext, FileHandler, request, RequestOptions } from "@bentley/imodeljs-clients";
 import * as fs from "fs";
 import * as path from "path";
-const loggingCategory = "imodeljs-clients.imodelhub";
+import { LoggerCategory } from "../LoggerCategory";
+
+const loggerCategory: string = LoggerCategory.IModelHub;
 
 /**
  * Provides methods to work with the file system and azure storage. An instance of this class has to be provided to [[IModelClient]] for file upload/download methods to work.
@@ -46,11 +48,11 @@ export class IOSAzureFileHandler implements FileHandler {
   public async downloadFile(requestContext: AuthorizedClientRequestContext, downloadUrl: string, downloadToPathname: string): Promise<void> {
     requestContext.enter();
     if (!IOSAzureFileHandler._isMobile) {
-      Logger.logError(loggingCategory, "Expecting this code to run on a mobile device");
+      Logger.logError(loggerCategory, "Expecting this code to run on a mobile device");
       return Promise.reject("Expecting this code to run on a mobile device");
     }
 
-    Logger.logInfo(loggingCategory, `Downloading file from ${downloadUrl}`);
+    Logger.logInfo(loggerCategory, `Downloading file from ${downloadUrl}`);
     ArgumentCheck.defined("downloadUrl", downloadUrl);
     ArgumentCheck.defined("downloadToPathname", downloadToPathname);
 
@@ -79,11 +81,11 @@ export class IOSAzureFileHandler implements FileHandler {
       requestContext.enter();
       if (fs.existsSync(downloadToPathname))
         fs.unlinkSync(downloadToPathname); // Just in case there was a partial download, delete the file
-      Logger.logError(loggingCategory, `Error downloading file`);
+      Logger.logError(loggerCategory, `Error downloading file`);
       return Promise.reject(err);
     }
     requestContext.enter();
-    Logger.logTrace(loggingCategory, `Downloaded file from ${downloadUrl}`);
+    Logger.logTrace(loggerCategory, `Downloaded file from ${downloadUrl}`);
   }
 
   /** Get encoded block id from its number. */
@@ -126,11 +128,11 @@ export class IOSAzureFileHandler implements FileHandler {
   public async uploadFile(requestContext: AuthorizedClientRequestContext, uploadUrlString: string, uploadFromPathname: string): Promise<void> {
     requestContext.enter();
     if (!IOSAzureFileHandler._isMobile) {
-      Logger.logError(loggingCategory, "Expecting this code to run on a mobile device");
+      Logger.logError(loggerCategory, "Expecting this code to run on a mobile device");
       return Promise.reject("Expecting this code to run on a mobile device");
     }
 
-    Logger.logTrace(loggingCategory, `Uploading file to ${uploadUrlString}`);
+    Logger.logTrace(loggerCategory, `Uploading file to ${uploadUrlString}`);
     ArgumentCheck.defined("uploadUrlString", uploadUrlString);
     ArgumentCheck.defined("uploadFromPathname", uploadFromPathname);
 

@@ -48,6 +48,12 @@ export class IOSAzureFileHandler implements FileHandler {
 }
 
 // @public
+export const enum LoggerCategory {
+    IModelHub = "imodeljs-clients.imodelhub",
+    OidcDeviceClient = "imodeljs-clients-device.OidcDeviceClient"
+}
+
+// @public
 export class OidcAgentClient extends OidcBackendClient {
     constructor(agentConfiguration: OidcAgentClientConfiguration);
     getToken(requestContext: ClientRequestContext): Promise<AccessToken>;
