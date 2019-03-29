@@ -126,8 +126,6 @@ describe("PropertyGrid withUnifiedSelection", () => {
       selectionHandler={selectionHandlerMock.object}
       requestedContentInstancesLimit={1}
     />);
-    // dataProviderMock.object.onDataChanged.raiseEvent();
-    // wrapper.update();
     expect(wrapper).to.matchSnapshot();
   });
 

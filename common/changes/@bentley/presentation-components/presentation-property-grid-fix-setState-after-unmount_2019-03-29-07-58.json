@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fix a warning in `propertyGridWithUnifiedSelection` due to state being set after unmounting component",
+      "packageName": "@bentley/presentation-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-components",
+  "email": "grigas.p@gmail.com"
+}
