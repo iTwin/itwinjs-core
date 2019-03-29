@@ -129,13 +129,6 @@
       }
     }
   },
-  "settingsStage": {
-    "settings": "Settings",
-    "light": "Light",
-    "dark": "Dark",
-    "themeTitle": "THEME",
-    "themeDescription": "Toggle the theme between light and dark"
-  },
   "iModelIndex": {
     "views": "Views",
     "3dModels": "3D Models",

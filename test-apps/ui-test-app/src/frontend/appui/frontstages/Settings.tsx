@@ -5,23 +5,20 @@
 /** @module Settings */
 
 import * as React from "react";
-import { ModalFrontstageInfo } from "../frontstage/FrontstageManager";
-import { UiFramework } from "../UiFramework";
-// import { ConfigurableUiActions } from "../configurableui/state";
 import { Toggle } from "@bentley/ui-core";
+import { UiFramework, ColorTheme, ModalFrontstageInfo } from "@bentley/ui-framework";
 import "./Settings.scss";
-import { ColorTheme } from "../theme/ThemeManager";
 
 /** Modal frontstage displaying the active settings. */
 export class SettingsModalFrontstage implements ModalFrontstageInfo {
-  public title: string = UiFramework.i18n.translate("UiFramework:settingsStage.settings");
+  public title: string = UiFramework.i18n.translate("SampleApp:settingsStage.settings");
   public get content(): React.ReactNode { return (<SettingsPage />); }
 }
 
 /** SettingsPage displaying the active settings. */
 class SettingsPage extends React.Component {
-  private _themeTitle: string = UiFramework.i18n.translate("UiFramework:settingsStage.themeTitle");
-  private _themeDescription: string = UiFramework.i18n.translate("UiFramework:settingsStage.themeDescription");
+  private _themeTitle: string = UiFramework.i18n.translate("SampleApp:settingsStage.themeTitle");
+  private _themeDescription: string = UiFramework.i18n.translate("SampleApp:settingsStage.themeDescription");
 
   private _onThemeChange = () => {
     const theme = this._isLightTheme() ? ColorTheme.Dark : ColorTheme.Light;
@@ -34,7 +31,7 @@ class SettingsPage extends React.Component {
 
   public render(): React.ReactNode {
     const isLightTheme = this._isLightTheme();
-    const _theme: string = UiFramework.i18n.translate((isLightTheme) ? "UiFramework:settingsStage.light" : "UiFramework:settingsStage.dark");
+    const _theme: string = UiFramework.i18n.translate((isLightTheme) ? "SampleApp:settingsStage.light" : "SampleApp:settingsStage.dark");
     return (
       <div className="uifw-settings">
         <div className="uifw-settings-item">
