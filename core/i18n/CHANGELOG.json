@@ -23,7 +23,7 @@
             "comment": "Fixed type definitions"
           },
           {
-            "comment": "Remove uneeded typedoc plugin depedency"
+            "comment": "Remove unneeded typedoc plugin dependency"
           },
           {
             "comment": "fix imports of i18next-xhr-backend"

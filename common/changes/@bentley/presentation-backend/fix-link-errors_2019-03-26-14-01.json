@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fix broken links",
+      "packageName": "@bentley/presentation-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-backend",
+  "email": "will.bentley@bentley.com"
+}

@@ -34,7 +34,7 @@ export const enum LoggerCategory {
 
   /** The logger category used by the following classes:
    * - [[AutoPush]]
-   * - [[BriefcaseManager]]
+   * - BriefcaseManager
    * - [[IModelDb]]
    */
   IModelDb = "imodeljs-backend.IModelDb",
@@ -51,7 +51,7 @@ export const enum LoggerCategory {
   IModelImporter = "imodeljs-backend.IModelImporter",
 
   /** The logger category used by the following classes:
-   * - [[TileRequestMemoizer]]
+   * - TileRequestMemoizer
    */
   IModelTileRequestRpc = "imodeljs-backend.IModelTileRequestRpc",
 

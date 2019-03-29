@@ -28,7 +28,7 @@ Wed, 06 Mar 2019 15:41:22 GMT
 - Use new buildIModelJsBuild script
 - Removed rowHeight function from ModelSelector, because heights changed to default.
 - Updated view query in ViewSelector to exclude private views
-- Remove uneeded typedoc plugin depedency
+- Remove unneeded typedoc plugin dependency
 - Support for including CSS files in published UI packages
 - Include descriptions (if any) in category and model picker
 - Added styling capability to messages
@@ -183,7 +183,7 @@ Mon, 03 Dec 2018 18:52:58 GMT
 
 ### Updates
 
-- More information logged from BriefcaseManager.\nFixed deletion/cleanup of invalid briefcases.\nAdded OIDC support for simpleviewtest application. 
+- More information logged from BriefcaseManager.\nFixed deletion/cleanup of invalid briefcases.\nAdded OIDC support for simpleviewtest application.
 - Unit tests
 - Removed ConfigurableUiManager.addFrontstageDef and other unused/old methods and components
 
@@ -192,7 +192,7 @@ Mon, 26 Nov 2018 19:38:42 GMT
 
 ### Updates
 
-- Fix to OIDC browser client. 
+- Fix to OIDC browser client.
 
 ## 0.169.0
 Tue, 20 Nov 2018 16:17:15 GMT
@@ -236,7 +236,7 @@ Thu, 08 Nov 2018 17:59:21 GMT
 
 ### Updates
 
-- OIDC related enhancments (WIP). 
+- OIDC related enhancments (WIP).
 - Updated to TypeScript 3.1
 - ui-core unit tests. Fixed backstage open issue.
 - Zone & Widget initial state, more ui-core unit tests, cleaned up ui-framework index.ts files.

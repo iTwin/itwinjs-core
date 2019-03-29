@@ -105,7 +105,7 @@ The impl must override each method in the interface definition class. Each overr
 
 Each impl method must return the operation's result as a Promise.
 
-The impl method must obtain the ClientRequestContext by calling [ClientRequestContext.current]($imodeljs-clients). It must then follow the [rules of managing the ClientRequestContext](./backend/ManagingClientRequestContext.md).
+The impl method must obtain the ClientRequestContext by calling [ClientRequestContext.current]($bentley). It must then follow the [rules of managing the ClientRequestContext](./backend/ManagingClientRequestContext.md).
 
 As noted above, the methods in the impl may have to transform certain argument types, such as IModelTokens, before they can be used.
 

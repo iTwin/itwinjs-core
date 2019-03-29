@@ -11,7 +11,7 @@ const subTranslationNamespace = "Diagnostics";
 const baseTranslationKey = translationNamespace + ":" + subTranslationNamespace;
 
 /**
- * Interface used to report [[IDiagnostics]] objects created during schema validation.
+ * Interface used to report [[IDiagnostic]] objects created during schema validation.
  * @beta
  */
 export interface IDiagnosticReporter {

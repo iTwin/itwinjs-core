@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fix broken links",
+      "packageName": "@bentley/imodeljs-clients-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-clients-backend",
+  "email": "will.bentley@bentley.com"
+}

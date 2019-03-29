@@ -20,7 +20,7 @@
             "comment": "Use new buildIModelJsBuild script"
           },
           {
-            "comment": "Remove uneeded typedoc plugin depedency"
+            "comment": "Remove unneeded typedoc plugin dependency"
           },
           {
             "comment": "upgrade to TypeScript 3.2.2"

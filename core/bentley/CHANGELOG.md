@@ -15,7 +15,7 @@ Wed, 06 Mar 2019 15:41:22 GMT
 - Changes package.json to include api-extractor and adds api-extractor.json
 - Use new buildIModelJsBuild script
 - Add release tags to indicate API stability
-- Remove uneeded typedoc plugin depedency
+- Remove unneeded typedoc plugin dependency
 - Save BUILD_SEMVER to globally accessible map
 - upgrade to TypeScript 3.2.2
 
@@ -34,7 +34,7 @@ Mon, 14 Jan 2019 23:09:10 GMT
 
 ### Updates
 
-- Removed IModelDb's cache of accessToken. For long running operations like AutoPush, the user must explicitly supply an IAccessTokenManager to keep the token current. 
+- Removed IModelDb's cache of accessToken. For long running operations like AutoPush, the user must explicitly supply an IAccessTokenManager to keep the token current.
 
 ## 0.185.0
 Fri, 11 Jan 2019 18:29:00 GMT
@@ -141,7 +141,7 @@ Fri, 16 Nov 2018 21:45:44 GMT
 
 ### Updates
 
-- changes to debug utilities. 
+- changes to debug utilities.
 - Fluentd Bunnyan Logger added
 
 ## 0.166.0

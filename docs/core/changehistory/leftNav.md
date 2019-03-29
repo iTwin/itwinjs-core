@@ -11,7 +11,7 @@
 - [0.163.0](./0.163.0.md)
 
 ---
-### [link_to changelogs docSite=changehistory text="Change Logs"]
+### [Change Logs](./ChangeLogs.md)
 - [imodeljs-backend](../reference/imodeljs-backend/changelog)
 
 - [imodeljs-frontend](../reference/imodeljs-frontend/changelog)

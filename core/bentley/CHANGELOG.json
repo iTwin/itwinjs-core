@@ -23,7 +23,7 @@
             "comment": "Add release tags to indicate API stability"
           },
           {
-            "comment": "Remove uneeded typedoc plugin depedency"
+            "comment": "Remove unneeded typedoc plugin dependency"
           },
           {
             "comment": "Save BUILD_SEMVER to globally accessible map"

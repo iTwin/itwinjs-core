@@ -49,7 +49,7 @@ export class ChangeSet extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Index")
   public index?: string;
 
-  /** Id of this ChangeSet's parent ChangeSet. It has to be set during the push. See [BriefcaseEntry.reversedChangeSetId]($backend). */
+  /** Id of this ChangeSet's parent ChangeSet. It has to be set during the push. */
   @ECJsonTypeMap.propertyToJson("wsg", "properties.ParentId")
   public parentId?: string;
 
@@ -265,7 +265,7 @@ class ParallelQueue {
 }
 
 /**
- * Handler for managing [[ChangeSet]]s. Use [[IModelClient.ChangeSets]] to get an instance of this class. In most cases, you should use [IModelDb]($backend) or [BriefcaseManager]($backend) methods instead.
+ * Handler for managing [[ChangeSet]]s. Use [[IModelClient.ChangeSets]] to get an instance of this class. In most cases, you should use [IModelDb]($backend) methods instead.
  */
 export class ChangeSetHandler {
   private _handler: IModelBaseHandler;

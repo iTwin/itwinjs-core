@@ -59,7 +59,7 @@
             "comment": "Added tests for Dialog and Context Menu"
           },
           {
-            "comment": "Remove uneeded typedoc plugin depedency"
+            "comment": "Remove unneeded typedoc plugin dependency"
           },
           {
             "comment": "Minor UI Color Theme changes"

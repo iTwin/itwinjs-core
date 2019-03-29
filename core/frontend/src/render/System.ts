@@ -817,14 +817,14 @@ export abstract class RenderSystem implements IDisposable {
   /** @internal */
   public abstract createOffscreenTarget(rect: ViewRect): RenderTarget;
 
-  /** Find a previously-created [[RenderMaterial]] by its ID.
+  /** Find a previously-created [RenderMaterial]($common) by its ID.
    * @param _key The unique ID of the material within the context of the IModelConnection. Typically an element ID.
    * @param _imodel The IModelConnection with which the material is associated.
    * @returns A previously-created material matching the specified ID, or undefined if no such material exists.
    */
   public findMaterial(_key: string, _imodel: IModelConnection): RenderMaterial | undefined { return undefined; }
 
-  /** Create a [[RenderMaterial]] from parameters
+  /** Create a [RenderMaterial]($common) from parameters
    * If the parameters include a non-empty key, and no previously-created material already exists with that key, the newly-created material will be cached on the IModelConnection such
    * that it can later be retrieved by the same key using [[RenderSystem.findMaterial]].
    * @param _params A description of the material's properties.

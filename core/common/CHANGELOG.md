@@ -26,7 +26,7 @@ Wed, 06 Mar 2019 15:41:22 GMT
 - Add release tags to indicate API stability
 - Handle transforms on child tiles.
 - Optimize use of animation cutting planes.
-- Remove uneeded typedoc plugin depedency
+- Remove unneeded typedoc plugin dependency
 - Add support for draco compressed meshes.
 - Consistent naming of "get" methods in Growable arrays.
 - Added spatial <-> cartographic methods that check/use the geographic coordinate system before using ecef location.
@@ -62,7 +62,7 @@ Mon, 14 Jan 2019 23:09:10 GMT
 
 ### Updates
 
-- Removed IModelDb's cache of accessToken. For long running operations like AutoPush, the user must explicitly supply an IAccessTokenManager to keep the token current. 
+- Removed IModelDb's cache of accessToken. For long running operations like AutoPush, the user must explicitly supply an IAccessTokenManager to keep the token current.
 - Add TextureProps for use by new backend Texture API
 
 ## 0.185.0

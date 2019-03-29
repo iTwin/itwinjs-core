@@ -32,7 +32,7 @@
             "comment": "PresentationManager now converts locale string to lower case when creating request parameters."
           },
           {
-            "comment": "Remove uneeded typedoc plugin depedency"
+            "comment": "Remove unneeded typedoc plugin dependency"
           },
           {
             "comment": "Add hardcoded implementations for 'element', 'assembly', 'top-assembly', 'category', 'model' selection scopes"

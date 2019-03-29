@@ -18,23 +18,23 @@ Wed, 06 Mar 2019 15:41:22 GMT
 - Changes package.json to include api-extractor and adds api-extractor.json
 - Use new buildIModelJsBuild script
 - AxisAlignedBox and ElementAlignedBox are now typed to Range3d rather than classes
-- Moved AzureFileHandler, IOSAzureFileHandler, UrlFileHandler and the iModelHub tests to the imodeljs-clients-backend package. This removes the dependency of imodeljs-clients on the "fs" module, and turns it into a browser only package. 
+- Moved AzureFileHandler, IOSAzureFileHandler, UrlFileHandler and the iModelHub tests to the imodeljs-clients-backend package. This removes the dependency of imodeljs-clients on the "fs" module, and turns it into a browser only package.
 - clone methods are no longer generic
-- Remove uneeded typedoc plugin depedency
+- Remove unneeded typedoc plugin dependency
 - Added spatial <-> cartographic methods that check/use the geographic coordinate system before using ecef location.
 - Added async method for ECSqlStatement and SqliteStatement for step and stepAndInsert
 - Create iModel from empty template if seed file path not defined.
 - Add IModelImporter for importing data between iModels
 - Enable IModelWriteTest create/delete iModels on per user-machine basis
 - Enable IModelWriteTest create/delete iModels on per user-machine basis
-- Validated size of change sets before applying them. 
+- Validated size of change sets before applying them.
 - codespec lock example
 - Add backend Material API
 - Validated version of Node.js in IModelHost.startup()
 - Save BUILD_SEMVER to globally accessible map
-- Fixed resolution of queryable promises. 
-- added queryModelRange 
-- IModelConnection.close() always disposes the briefcase held at the backend in the case of ReadWrite connections. 
+- Fixed resolution of queryable promises.
+- added queryModelRange
+- IModelConnection.close() always disposes the briefcase held at the backend in the case of ReadWrite connections.
 - Move the IModelUnitTestRpcImpl into the testbed and out of the public API and marked nativeDb as hidden
 - Remove loadNativeAsset and formatElements RPC calls from the IModelReadRpcInterface
 - debugging aid
@@ -43,8 +43,8 @@ Wed, 06 Mar 2019 15:41:22 GMT
 - Improve tile request logging and make timeout configurable.
 - Prevent tile generation from interfering with other asynchronous requests.
 - Handled error with fetching host information on deployed machines.
-- Quick fix to ULAS failures. 
-- WIP fixes to Usage Logging. 
+- Quick fix to ULAS failures.
+- WIP fixes to Usage Logging.
 - upgrade to TypeScript 3.2.2
 
 ## 0.188.0
@@ -64,8 +64,8 @@ Mon, 14 Jan 2019 23:09:10 GMT
 
 ### Updates
 
-- More logging of HTTP requests, and enabled use of fiddler for backend diagnostics. 
-- Removed IModelDb's cache of accessToken. For long running operations like AutoPush, the user must explicitly supply an IAccessTokenManager to keep the token current. 
+- More logging of HTTP requests, and enabled use of fiddler for backend diagnostics.
+- Removed IModelDb's cache of accessToken. For long running operations like AutoPush, the user must explicitly supply an IAccessTokenManager to keep the token current.
 - Renamed RequestProxy->RequestHost. Allowed applications to configure proxy server with HTTPS_PROXY env.
 - Add backend TextureAPI and accompanying test
 
@@ -170,15 +170,15 @@ Mon, 03 Dec 2018 18:52:58 GMT
 
 ### Updates
 
-- More information logged from BriefcaseManager.\nFixed deletion/cleanup of invalid briefcases.\nAdded OIDC support for simpleviewtest application. 
+- More information logged from BriefcaseManager.\nFixed deletion/cleanup of invalid briefcases.\nAdded OIDC support for simpleviewtest application.
 - Add ElementRefersToElements.insert
-- Fixed front end integration tests. 
+- Fixed front end integration tests.
 - Document the intended purpose of IModelJsExpressServer within a deployment environment.
-- Fixed integration tests. 
+- Fixed integration tests.
 - added tests for ElementDrivesElement handlers
-- Fixes to integration tests. 
+- Fixes to integration tests.
 - Add OrthographicViewDefinition.setRange
-- Cleaned up use of mocks in core tests. 
+- Cleaned up use of mocks in core tests.
 - Enable test now that addon was updated.
 - Fix Subject.insert to set parent
 
@@ -209,7 +209,7 @@ Fri, 16 Nov 2018 21:45:44 GMT
 - Add IModelDb.CodeSpecs.insert overload
 - Add SubCategory.insert
 - Add missing createCode methods
-- Changes to debug utilities. 
+- Changes to debug utilities.
 - Added IModelHubClient.IModel, removed IModelQuery.primary(), use IModelHubClient.IModel.Get instead
 - Add IModelDb.Views.setDefaultViewId
 - Add OrthographicViewDefinition.insert
@@ -239,11 +239,11 @@ Thu, 08 Nov 2018 17:59:20 GMT
 
 - Fix JSON representation of DisplayStyle.
 - Add IModelImporter as a base class for utility methods needed by all importers
-- Removed assertion when deleting a memoized open call. 
+- Removed assertion when deleting a memoized open call.
 - Add more methods to IModelImporter
 - Fix snapping test
 - OIDC related enhancments (WIP).
-- Re-enabled several backend integration tests. 
+- Re-enabled several backend integration tests.
 - Refactor analysis-importer to use IModelImporter
 - Updated to TypeScript 3.1
 

@@ -29,7 +29,7 @@
             "comment": "Use new buildIModelJsBuild script"
           },
           {
-            "comment": "Remove uneeded typedoc plugin depedency"
+            "comment": "Remove unneeded typedoc plugin dependency"
           },
           {
             "comment": "Changed stripInternal to false so @internal-marked symbols still put in .d.ts files"

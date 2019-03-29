@@ -27,7 +27,7 @@ Wed, 06 Mar 2019 15:41:22 GMT
 - Color tweaks
 - Fixed submenus, added default autoselect for hotkeys
 - Added tests for Dialog and Context Menu
-- Remove uneeded typedoc plugin depedency
+- Remove unneeded typedoc plugin dependency
 - Minor UI Color Theme changes
 - Support for including CSS files in published UI packages
 - Added styling capability to messages

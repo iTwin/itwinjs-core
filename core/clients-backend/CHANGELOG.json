@@ -47,7 +47,7 @@
             "comment": "Fixes to OidcDelegationClient-s. "
           },
           {
-            "comment": "Remove uneeded typedoc plugin depedency"
+            "comment": "Remove unneeded typedoc plugin dependency"
           },
           {
             "comment": "Create iModel from empty template if seed file path not defined."

@@ -504,7 +504,7 @@ export abstract class ViewState extends ElementState {
    * Conditions that may cause the overrides to become dirty include:
    *  - Toggling the display of a category within the view.
    *  - Changing the symbology associated with a [[SubCategory]] within the view by adding a [[SubCategoryOverride]]
-   *  - Changes in some application state that affects the [[AddFeatureOverrides]] function registered with [[Viewport]].
+   *  - Changes in some application state that affects the [[FeatureOverrideProvider]] registered with [[Viewport]].
    * The next time the [[Viewport]] associated with this [[ViewState]] is rendered, the symbology overrides will be regenerated if they have been marked "dirty".
    */
   public setFeatureOverridesDirty(dirty: boolean = true): void { this._featureOverridesDirty = dirty; }

@@ -24,6 +24,6 @@ The following domains exist in [BIS](../index.md)
 
 ## Application
 
-## [Building Concept Station](./building-concept-station.md)
+### [Building Concept Station](./building-concept-station.md)
 
-## [AecoSim Building Designer](./building-designer.md)
+### [AecoSim Building Designer](./building-designer.md)
