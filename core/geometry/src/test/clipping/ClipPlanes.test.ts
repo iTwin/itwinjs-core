@@ -9,7 +9,7 @@ import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAn
 import { Geometry } from "../../Geometry";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { Angle } from "../../geometry3d/Angle";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
+import { Point3d, Vector3d, XYZ } from "../../geometry3d/Point3dVector3d";
 import { Segment1d } from "../../geometry3d/Segment1d";
 import { Range1d, Range3d } from "../../geometry3d/Range";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
@@ -30,9 +30,39 @@ import { Sample } from "../../serialization/GeometrySamples";
 
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
+import { Loop } from "../../curve/Loop";
+import { prettyPrint } from "../testFunctions";
+import { Matrix4d } from "../../geometry4d/Matrix4d";
 /* tslint:disable:no-console no-trailing-whitespace */
 
 Checker.noisy.clipPlane = false;
+/**
+ * Verify that a (convex) polygon (a) is within a range (b) tight to the range.
+ * @param ck checker
+ * @param range range
+ * @param xyz post-clip polygon
+ */
+function testPolygonClippedToRange(ck: Checker, range: Range3d, convexXYZ: Point3d[]): boolean {
+  const expandedRange = range.clone();
+  expandedRange.expandInPlace(Geometry.smallMetricDistance);
+  // every point must be in . . .
+  for (const xyz of convexXYZ) {
+    {
+      if (!ck.testTrue(expandedRange.containsPoint(xyz)))
+        return false;
+    }
+  }
+  // extension of every interior edge is out.  (But only test a subset . ..l.)
+  for (let i = 0; i < XYZ.length; i++) {
+    const i1 = (i + 1) % XYZ.length;
+    if (convexXYZ[i].isAlmostEqual(convexXYZ[i1])) continue;
+    if (!ck.testFalse(range.containsPoint(convexXYZ[i].interpolate(1.1, convexXYZ[i + 1]))))
+      return false;
+    if (!ck.testFalse(range.containsPoint(convexXYZ[i1].interpolate(-0.1, convexXYZ[i + 1]))))
+      return false;
+  }
+  return true;
+}
 
 function testConvexClipXY(x0: number, y0: number, ux: number, uy: number, xyz: Point3d[], ck: Checker) {
   const plane0 = Plane3dByOriginAndUnitNormal.create(Point3d.create(x0, y0, 0.0), Vector3d.create(ux, uy, 0.0));
@@ -857,4 +887,112 @@ describe("CurveClips", () => {
     ck.checkpoint("QuickClipStatus");
     expect(ck.getNumErrors()).equals(0);
   });
+  it("ClipToRange", () => {
+    const ck = new Checker();
+    const range = Range3d.createXYZXYZ(-2, -1, -3, 4, 5, 2);
+    const allGeometry: GeometryQuery[] = [];
+    let dy = 0.0;
+    // obviously inside ...
+    for (const clipPlane of [
+      ClipPlane.createNormalAndPointXYZXYZ(0, 0, 1, 0, 0, 0)!,
+      ClipPlane.createNormalAndPointXYZXYZ(1, 0, 0, 0, 0, 0)!,
+      ClipPlane.createNormalAndPointXYZXYZ(0, 0, 1, 0, 0, 0.1)!,
+      ClipPlane.createNormalAndPointXYZXYZ(-2, 4, 1, 0.3, 0.2, 1.1)!,
+      ClipPlane.createNormalAndPointXYZXYZ(1, 1, 1.1, 0.3, 0.2, 1.1)!,
+      ClipPlane.createNormalAndPointXYZXYZ(-2, 6, 3, 0.3, 0.2, 1.1)!,
+      ClipPlane.createNormalAndPointXYZXYZ(0.2, 0, 1, 0, 0, 0)!]) {
+      const clipped = clipPlane.intersectRange(range, true);
+      GeometryCoreTestIO.captureRangeEdges(allGeometry, range, 0, dy, 0);
+      if (ck.testPointer(clipped) && clipped) {
+        testPolygonClippedToRange(ck, range, clipped);
+        GeometryCoreTestIO.captureGeometry(allGeometry, Loop.create(LineString3d.create(clipped)), 0, dy, 0);
+      }
+      dy += 10.0;
+    }
+    // obviously outside
+    const big = 20.0;
+    for (const clipPlane of [
+      ClipPlane.createNormalAndPointXYZXYZ(0, 0, 1, 0, 0, big)!,
+      ClipPlane.createNormalAndPointXYZXYZ(0, 1, 0, 0, big, 0)!,
+      ClipPlane.createNormalAndPointXYZXYZ(1, 0, 0, big, 0, 0)!,
+      ClipPlane.createNormalAndPointXYZXYZ(1, 1, 1, big, big, big)!]) {
+      const clipped = clipPlane.intersectRange(range, true);
+      ck.testUndefined(clipped, prettyPrint(clipPlane), prettyPrint(range));
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "ClipPlane", "ClipToRange");
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("RangeFaces", () => {
+    const ck = new Checker();
+    const range = Range3d.createXYZXYZ(-2, -1, -3, 4, 5, 2);
+    const allGeometry: GeometryQuery[] = [];
+    const corners = range.corners();
+    for (let i = 0; i < 6; i++) {
+      const indices = Range3d.faceCornerIndices(i);
+      const lineString = LineString3d.createIndexedPoints(corners, indices);
+      testPolygonClippedToRange(ck, range, lineString.points);
+      GeometryCoreTestIO.captureGeometry(allGeometry, Loop.create(lineString), 0, 0, 0);
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "ClipPlane", "RangeFaces");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("ClipConvexSetToRange", () => {
+    const ck = new Checker();
+    const range = Range3d.createXYZXYZ(-2, -1, -3, 4, 5, 4.5);
+    const rangeB = Range3d.createXYZXYZ(0, 0, 0, 6, 1, 2);
+    const allGeometry: GeometryQuery[] = [];
+    let dy = 0.0;
+    // obviously inside ...
+    const transforms = Sample.createInvertibleTransforms();
+    transforms.reverse();
+    for (const transform of transforms) {
+      const matrix = Matrix4d.createTransform(transform);
+      const cornerB = rangeB.corners();
+      transform.multiplyPoint3dArrayInPlace(cornerB);
+      const convexSetB = ConvexClipPlaneSet.createRange3dPlanes(rangeB);
+      convexSetB.multiplyPlanesByMatrix4d(matrix, true, true);
+      GeometryCoreTestIO.captureRangeEdges(allGeometry, range, 0, dy, 0);
+      // We happen to know that the convexSet planes are in rangeB faces.
+      // So we can clip the faces directly.
+      for (let i = 0; i < 6; i++) {
+        const indices = Range3d.faceCornerIndices(i);
+        const linestring = LineString3d.createIndexedPoints(cornerB, indices, true);
+        GeometryCoreTestIO.captureGeometry(allGeometry, linestring.clone(), 0, dy, 0);
+        const clippedPoints = linestring.points;
+        clippedPoints.pop(); // get rid of closure
+        ClipPlane.intersectRangeConvexPolygonInPlace(range, clippedPoints);
+        if (clippedPoints && clippedPoints.length > 0)
+          GeometryCoreTestIO.captureGeometry(allGeometry, Loop.createPolygon(clippedPoints), 0, dy, 0);
+      }
+
+      // Now we forget about rangeB.  We just know that convexSetB is there.
+      // Remove planes to make it unbounded
+      // Clip each of its planes to the range (which is bounded and hence produces bounded clip)
+      // then clip to the clip plane set.  (which is not bounded)
+      let xB = 30.0;
+
+      for (const hide of [-1, 0, 2, 3, 4]) {
+        if (hide > 0 && hide < convexSetB.planes.length)
+          convexSetB.planes[hide].setInvisible(true);
+        GeometryCoreTestIO.captureRangeEdges(allGeometry, range, xB, dy, 0);
+        let intersectionFaces = ClipUtilities.intersectConvexClipPlaneSetWithRange(convexSetB, range, true, true, true);
+        GeometryCoreTestIO.captureGeometry(allGeometry, intersectionFaces, xB, dy, 0);
+        xB += 20.0;
+        GeometryCoreTestIO.captureRangeEdges(allGeometry, range, xB, dy, 0);
+        intersectionFaces = ClipUtilities.intersectConvexClipPlaneSetWithRange(convexSetB, range, true, false, true);
+        GeometryCoreTestIO.captureGeometry(allGeometry, intersectionFaces, xB, dy, 0);
+        xB += 20.0;
+        GeometryCoreTestIO.captureRangeEdges(allGeometry, range, xB, dy, 0);
+        intersectionFaces = ClipUtilities.intersectConvexClipPlaneSetWithRange(convexSetB, range, false, true, true);
+        GeometryCoreTestIO.captureGeometry(allGeometry, intersectionFaces, xB, dy, 0);
+        xB += 40;
+      }
+      dy += 20.0;
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "ClipPlane", "ClipConvexSetToRange");
+    expect(ck.getNumErrors()).equals(0);
+
+  });
+
 });

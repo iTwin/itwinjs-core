@@ -452,6 +452,31 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
       Point3d.create(this.low.x, this.high.y, this.high.z),
       Point3d.create(this.high.x, this.high.y, this.high.z)];
   }
+
+  /** Return an array with indices of the corners of a face
+   * * face 0 has negative x normal
+   * * face 1 has positive x normal
+   * * face 2 has negative y normal
+   * * face 3 has positive y normal
+   * * face 4 has negative z normal
+   * * face 5 has positive z normal
+   * * Any other value returns face 5
+   * * faces are CCW as viewed from outside.
+   */
+  public static faceCornerIndices(index: number): number[] {
+    if (index === 0)
+      return [0, 4, 6, 2];
+    if (index === 1)
+      return [1, 3, 7, 5];
+    if (index === 2)
+      return [0, 1, 5, 4];
+    if (index === 3)
+      return [3, 2, 6, 7];
+    if (index === 4)
+      return [0, 2, 3, 1];
+    return [4, 5, 7, 6];
+  }
+
   /** Return the largest absolute value among any coordinates in the box corners. */
   public maxAbs(): number {
     if (this.isNull)

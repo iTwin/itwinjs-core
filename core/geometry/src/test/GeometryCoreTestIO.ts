@@ -9,6 +9,8 @@ import * as fs from "fs";
 import { IModelJson } from "../serialization/IModelJsonSchema";
 import { Arc3d } from "../curve/Arc3d";
 import { Point3d } from "../geometry3d/Point3dVector3d";
+import { Range3d } from "../geometry3d/Range";
+import { LineString3d } from "../curve/LineString3d";
 /* tslint:disable:no-console */
 
 // Methods (called from other files in the test suite) for doing I/O of tests files.
@@ -60,4 +62,22 @@ export class GeometryCoreTestIO {
       collection.push(newGeometry);
     }
   }
+  /**
+   * Create edges of a range.
+   * @param collection growing array of geometry
+   * @param range Range
+   * @param dx x shift
+   * @param dy y shift
+   * @param dz z shift
+   */
+  public static captureRangeEdges(collection: GeometryQuery[], range: Range3d, dx: number = 0, dy: number = 0, dz: number = 0) {
+    if (!range.isNull) {
+      const corners = range.corners();
+      this.captureGeometry(collection, LineString3d.createIndexedPoints(corners, [0, 1, 3, 2, 0]), dx, dy, dz);
+      this.captureGeometry(collection, LineString3d.createIndexedPoints(corners, [4, 5, 7, 6, 4]), dx, dy, dz);
+      this.captureGeometry(collection, LineString3d.createIndexedPoints(corners, [0, 4, 6, 2]), dx, dy, dz);
+      this.captureGeometry(collection, LineString3d.createIndexedPoints(corners, [1, 5, 7, 3]), dx, dy, dz);
+    }
+  }
+
 }

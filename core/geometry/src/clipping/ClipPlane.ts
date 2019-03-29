@@ -6,13 +6,13 @@
 /** @module CartesianGeometry */
 
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
-import { Range1d } from "../geometry3d/Range";
+import { Range1d, Range3d } from "../geometry3d/Range";
 import { Transform } from "../geometry3d/Transform";
 import { Matrix3d } from "../geometry3d/Matrix3d";
 import { Matrix4d } from "../geometry4d/Matrix4d";
 import { Point4d } from "../geometry4d/Point4d";
 import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
-import { Geometry } from "../Geometry";
+import { Geometry, AxisOrder } from "../Geometry";
 import { Angle } from "../geometry3d/Angle";
 import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
 import { AnalyticRoots } from "../numerics/Polynomials";
@@ -48,6 +48,10 @@ export class ClipPlane implements Clipper {
     this._interior = interior;
     this._inwardNormal = normal;
     this._distanceFromOrigin = distance;
+  }
+  private safeSetXYZDistance(nx: number, ny: number, nz: number, d: number) {
+    this._inwardNormal.set(nx, ny, nz);
+    this._distanceFromOrigin = d;
   }
   /**
    * @returns Return true if all members are almostEqual to corresponding members of other.
@@ -203,7 +207,12 @@ export class ClipPlane implements Clipper {
   public getPlane4d(): Point4d {
     return Point4d.create(this._inwardNormal.x, this._inwardNormal.y, this._inwardNormal.z, - this._distanceFromOrigin);
   }
-
+  /**
+   * Set the plane from DPoint4d style plane.
+   * * The saved plane has its direction normalized.
+   * * This preserves the plane itself as a zero set but make plane evaluations act as true distances (even if the plane coefficients are scaled otherwise)
+   * @param plane
+   */
   public setPlane4d(plane: Point4d) {
     const a = Math.sqrt(plane.x * plane.x + plane.y * plane.y + plane.z * plane.z);
     const r = a === 0.0 ? 1.0 : 1.0 / a;
@@ -313,10 +322,11 @@ export class ClipPlane implements Clipper {
     this._distanceFromOrigin += offset;
   }
 
-  public convexPolygonClipInPlace(xyz: Point3d[], work: Point3d[]) {
+  public convexPolygonClipInPlace(xyz: Point3d[], work: Point3d[], tolerance: number = Geometry.smallMetricDistance) {
     work.length = 0;
     let numNegative = 0;
     ClipPlane.fractionTol = 1.0e-8;
+    const b = -tolerance;
     if (xyz.length > 2) {
       let xyz0 = xyz[xyz.length - 1];
       let a0 = this.evaluatePoint(xyz0);
@@ -335,7 +345,7 @@ export class ClipPlane implements Clipper {
             work.push(xyz0.interpolate(f, xyz1));
           }
         }
-        if (a1 >= 0.0)
+        if (a1 >= b)
           work.push(xyz1);
         xyz0 = Point3d.createFrom(xyz1);
         a0 = a1;
@@ -374,7 +384,13 @@ export class ClipPlane implements Clipper {
       }
     }
   }
-
+  /**
+   * Split a (convex) polygon into 2 parts.
+   * @param xyz original polygon
+   * @param xyzIn array to receive inside part
+   * @param xyzOut array to receive outside part
+   * @param altitudeRange min and max altitudes encountered.
+   */
   public convexPolygonSplitInsideOutside(xyz: Point3d[], xyzIn: Point3d[], xyzOut: Point3d[], altitudeRange: Range1d) {
     xyzOut.length = 0;
     xyzIn.length = 0;
@@ -413,11 +429,31 @@ export class ClipPlane implements Clipper {
       }
     }
   }
-
-  public multiplyPlaneByMatrix(matrix: Matrix4d) {
+  /**
+   * Multiply the ClipPlanes's DPoint4d by matrix.
+   * @param matrix matrix to apply.
+   * @param invert if true, use in verse of the matrix.
+   * @param transpose if true, use the transpose of the matrix (or inverse, per invert parameter)
+   * * Note that if matrixA is applied to all of space, the matrix to send to this method to get a corresponding effect on the plane is the inverse transpose of matrixA
+   * * Callers that will apply the same matrix to many planes should pre-invert the matrix for efficiency.
+   * * Both params default to true to get the full effect of transforming space.
+   * @param matrix matrix to apply
+   * @return false if unable to invert
+   */
+  public multiplyPlaneByMatrix4d(matrix: Matrix4d, invert: boolean = true, transpose: boolean = true): boolean {
     const plane: Point4d = this.getPlane4d();
-    matrix.multiplyTransposePoint4d(plane, plane);
+    if (invert) {
+      const inverse = matrix.createInverse();
+      if (inverse)
+        return this.multiplyPlaneByMatrix4d(inverse, false, transpose);
+      return false;
+    }
+    if (transpose)
+      matrix.multiplyTransposePoint4d(plane, plane);
+    else
+      matrix.multiplyPoint4d(plane, plane);
     this.setPlane4d(plane);
+    return true;
   }
 
   /** announce the interval (if any) where a line is within the clip plane half space. */
@@ -443,5 +479,87 @@ export class ClipPlane implements Clipper {
       return false;
     if (announce) announce(f0, f1);
     return true;
+  }
+  /*
+   * Return a coordinate frame with
+   * * origin at closest point to global origin
+   * * z axis points in
+   * * x and y are "in plane"
+  */
+  public getFrame(): Transform {
+    const d = this._distanceFromOrigin;
+    const origin = Point3d.create(this._inwardNormal.x * d, this._inwardNormal.y * d, this._inwardNormal.z * d);
+    const matrix = Matrix3d.createRigidHeadsUp(this._inwardNormal, AxisOrder.ZXY);
+    return Transform.createOriginAndMatrix(origin, matrix);
+
+  }
+  /**
+   * Return the intersection of the plane with a range cube.
+   * @param range
+   * @param xyzOut intersection polygon.  This is convex.
+   */
+  public intersectRange(range: Range3d, addClosurePoint: boolean = false): Point3d[] | undefined {
+    if (range.isNull)
+      return undefined;
+    const corners = range.corners();
+    const frameOnPlane = this.getFrame();
+    frameOnPlane.multiplyInversePoint3dArrayInPlace(corners);
+    const localRange = Range3d.createArray(corners);
+    if (localRange.low.z * localRange.high.z > 0.0)
+      return undefined;
+    // oversized polygon on local z= 0
+    const xyzOut: Point3d[] = [];
+    xyzOut.push(Point3d.create(localRange.low.x, localRange.low.y));
+    xyzOut.push(Point3d.create(localRange.high.x, localRange.low.y));
+    xyzOut.push(Point3d.create(localRange.high.x, localRange.high.y));
+    xyzOut.push(Point3d.create(localRange.low.x, localRange.high.y));
+    frameOnPlane.multiplyPoint3dArrayInPlace(xyzOut);
+    ClipPlane.intersectRangeConvexPolygonInPlace(range, xyzOut);
+    if (xyzOut.length === 0)
+      return undefined;
+    if (addClosurePoint)
+      xyzOut.push(xyzOut[0].clone());
+    return xyzOut;
+  }
+  /**
+   * Return the intersection of the plane with a range cube.
+   * @param range
+   * @param xyzOut intersection polygon.  This is convex.
+   */
+  public static intersectRangeConvexPolygonInPlace(range: Range3d, xyz: Point3d[]) {
+    if (range.isNull)
+      return undefined;
+    const work: Point3d[] = [];
+    // clip the polygon to each plane of the cubic ...
+    const clipper = ClipPlane.createNormalAndPointXYZXYZ(-1, 0, 0, range.high.x, range.high.y, range.high.z)!;
+    clipper.convexPolygonClipInPlace(xyz, work);
+    if (xyz.length === 0)
+      return undefined;
+    clipper.safeSetXYZDistance(0, -1, 0, -range.high.y);
+    clipper.convexPolygonClipInPlace(xyz, work);
+
+    if (xyz.length === 0)
+      return undefined;
+    clipper.safeSetXYZDistance(0, 0, -1, -range.high.z);
+    clipper.convexPolygonClipInPlace(xyz, work);
+
+    if (xyz.length === 0)
+      return undefined;
+    clipper.safeSetXYZDistance(1, 0, 0, range.low.x);
+    clipper.convexPolygonClipInPlace(xyz, work);
+
+    if (xyz.length === 0)
+      return undefined;
+    clipper.safeSetXYZDistance(0, 1, 0, range.low.y);
+    clipper.convexPolygonClipInPlace(xyz, work);
+
+    if (xyz.length === 0)
+      return undefined;
+    clipper.safeSetXYZDistance(0, 0, 1, range.low.z);
+    clipper.convexPolygonClipInPlace(xyz, work);
+    if (xyz.length === 0)
+      return undefined;
+
+    return xyz;
   }
 }

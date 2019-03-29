@@ -322,7 +322,7 @@ describe("ClipVector", () => {
     const m0 = Matrix4d.createIdentity();
     const t0 = Transform.createIdentity();
     const clipVectorClone = clipVector012.clone();
-    ck.testTrue(clipVectorClone.multiplyPlanesTimesMatrix(m0));
+    ck.testTrue(clipVectorClone.multiplyPlanesByMatrix4d(m0, true, true));
     // Should contain no changes
     ck.testTrue(clipVectorsAreEqual(clipVectorClone, clipVector012), "Multiplying by identity matrix does not alter the ClipVector");
     ck.testTrue(clipVectorClone.transformInPlace(t0));

@@ -71,7 +71,7 @@ export class ClipVector {
     }
 
     /** Create a deep copy of another ClipVector */
-    public clone (result?: ClipVector): ClipVector {
+    public clone(result?: ClipVector): ClipVector {
         const retVal = result ? result : new ClipVector();
         retVal._clips.length = 0;
         for (const clip of this._clips) {
@@ -264,13 +264,28 @@ export class ClipVector {
             clip.fetchClipPlanesRef();
     }
 
-    /** Returns true if able to successfully multiply all member ClipPrimitive planes by the matrix given. */
-    public multiplyPlanesTimesMatrix(matrix: Matrix4d): boolean {
-        let numErrors = 0;
+    /**
+     * Multiply all ClipPlanes DPoint4d by matrix.
+     * @param matrix matrix to apply.
+     * @param invert if true, use in verse of the matrix.
+     * @param transpose if true, use the transpose of the matrix (or inverse, per invert parameter)
+     * * Note that if matrixA is applied to all of space, the matrix to send to this method to get a corresponding effect on the plane is the inverse transpose of matrixA
+     * * Callers that will apply the same matrix to many planes should pre-invert the matrix for efficiency.
+     * * Both params default to true to get the full effect of transforming space.
+     * @param matrix matrix to apply
+     * @returns false if matrix inversion fails.
+     */
+    public multiplyPlanesByMatrix4d(matrix: Matrix4d, invert: boolean = true, transpose: boolean = true): boolean {
+        if (invert) {  // form inverse once here, reuse for all planes
+            const inverse = matrix.createInverse();
+            if (!inverse)
+                return false;
+            return this.multiplyPlanesByMatrix4d(inverse, false, transpose);
+        }
+        // no inverse necessary -- lower level cannot fail.
         for (const clip of this._clips)
-            if (clip.multiplyPlanesTimesMatrix(matrix) === false)
-                numErrors++;
-        return numErrors === 0 ? true : false;
+            clip.multiplyPlanesByMatrix4d(matrix, false, transpose);
+        return true;
     }
 
     /**

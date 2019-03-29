@@ -3,13 +3,17 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
-import { Range1d } from "../geometry3d/Range";
+import { Range1d, Range3d } from "../geometry3d/Range";
 import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 import { Arc3d } from "../curve/Arc3d";
 import { UnionOfConvexClipPlaneSets } from "./UnionOfConvexClipPlaneSets";
 import { CurvePrimitive, AnnounceNumberNumber, AnnounceNumberNumberCurvePrimitive } from "../curve/CurvePrimitive";
 import { ClipPrimitive } from "./ClipPrimitive";
+import { ConvexClipPlaneSet } from "./ConvexClipPlaneSet";
+import { Loop } from "../curve/Loop";
+import { LineString3d } from "../curve/LineString3d";
+import { GeometryQuery } from "../curve/GeometryQuery";
 
 /** Enumerated type for describing where geometry lies with respect to clipping planes. */
 export const enum ClipPlaneContainment {
@@ -150,4 +154,46 @@ export class ClipUtilities {
     }
     return ClipStatus.TrivialReject;
   }
+
+  /**
+   * Return a (possibly empty) array of geometry (Loops !!) which are facets of the intersection of the convex set intersecting a range.
+   * * return zero length array for (a) null range or (b) no intersectionis
+   * @param range range to intersect
+   * @param includeConvexSetFaces if false, do not compute facets originating as convex set planes.
+   * @param includeRangeFaces if false, do not compute facets originating as range faces
+   * @param ignoreInvisiblePlanes if true, do NOT compute a facet for convex set faces marked invisible.
+   */
+  public static intersectConvexClipPlaneSetWithRange(convexSet: ConvexClipPlaneSet, range: Range3d, includeConvexSetFaces: boolean = true, includeRangeFaces: boolean = true, ignoreInvisiblePlanes = false ): GeometryQuery[] {
+    const result = [];
+    const work: Point3d[] = [];
+    if (includeConvexSetFaces) {
+      // Clip convexSet planes to the range and to the rest of the convexSet . .
+      for (const plane of convexSet.planes) {
+        if (ignoreInvisiblePlanes && plane.invisible)
+          continue;
+        const pointsClippedToRange = plane.intersectRange(range, true);
+        const finalPoints: Point3d[] = [];
+        if (pointsClippedToRange) {
+          convexSet.polygonClip(pointsClippedToRange, finalPoints, work, plane);
+          if (finalPoints.length > 0)
+            result.push(Loop.createPolygon(finalPoints));
+        }
+      }
+    }
+
+    if (includeRangeFaces) {
+      // clip range faces to the convex set . . .
+      const corners = range.corners();
+      for (let i = 0; i < 6; i++) {
+        const indices = Range3d.faceCornerIndices(i);
+        const finalPoints: Point3d[] = [];
+        const lineString = LineString3d.createIndexedPoints(corners, indices);
+        convexSet.polygonClip(lineString.points, finalPoints, work);
+        if (finalPoints.length > 0)
+          result.push(Loop.createPolygon(finalPoints));
+      }
+    }
+    return result;
+  }
+
 }
