@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module RpcInterface */
 import { LogLevel } from "@bentley/bentleyjs-core";
-import { RpcInterface, RpcManager, DevToolsRpcInterface } from "@bentley/imodeljs-common";
+import { RpcInterface, RpcManager, DevToolsRpcInterface, IModelToken } from "@bentley/imodeljs-common";
 import { DevTools } from "../DevTools";
 
 /** The backend implementation of WipRpcInterface.
@@ -15,22 +15,22 @@ export class DevToolsRpcImpl extends RpcInterface implements DevToolsRpcInterfac
   public static register() { RpcManager.registerImpl(DevToolsRpcInterface, DevToolsRpcImpl); }
 
   // Returns true if the signal was processed
-  public async signal(signalType: number): Promise<boolean> {
+  public async signal(_iModelToken: IModelToken, signalType: number): Promise<boolean> {
     return DevTools.signal(signalType);
   }
 
   // Returns true if the backend received the ping
-  public async ping(): Promise<boolean> {
+  public async ping(_iModelToken: IModelToken): Promise<boolean> {
     return DevTools.ping();
   }
 
   // Returns JSON object with statistics
-  public async stats(): Promise<any> {
+  public async stats(_iModelToken: IModelToken): Promise<any> {
     return DevTools.stats();
   }
 
   // Sets up a log level at the backend
-  public async setLogLevel(loggerCategory: string, logLevel: LogLevel): Promise<LogLevel | undefined> {
+  public async setLogLevel(_iModelToken: IModelToken, loggerCategory: string, logLevel: LogLevel): Promise<LogLevel | undefined> {
     return DevTools.setLogLevel(loggerCategory, logLevel);
   }
 }

@@ -3,13 +3,21 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { LogLevel } from "@bentley/bentleyjs-core";
+import { IModelToken } from "@bentley/imodeljs-common";
 import { DevTools, IModelApp } from "@bentley/imodeljs-frontend";
 import { assert } from "chai";
 
 describe("DevTools", () => {
+  let devTools: DevTools;
 
   before(async () => {
     IModelApp.startup();
+
+    const iModelToken: IModelToken = {
+      iModelId: "test",
+      changeSetId: "test",
+    }; // Supply a real token in an integration test
+    devTools = DevTools.connectToBackendInstance(iModelToken);
   });
 
   after(async () => {
@@ -17,14 +25,14 @@ describe("DevTools", () => {
   });
 
   it("can fetch stats from backend", async () => {
-    const stats = await DevTools.stats();
+    const stats = await devTools.stats();
     assert.isDefined(stats);
     assert.isDefined(stats.os);
     assert.isDefined(stats.process);
   });
 
   it("can ping backend", async () => {
-    const ret = await DevTools.ping(10);
+    const ret = await devTools.ping(10);
     assert.isTrue(ret);
   });
 
@@ -32,14 +40,14 @@ describe("DevTools", () => {
     const loggerCategory = "test-category";
 
     const firstLevel = LogLevel.Info;
-    await DevTools.setLogLevel(loggerCategory, firstLevel);
+    await devTools.setLogLevel(loggerCategory, firstLevel);
 
     const secondLevel = LogLevel.Warning;
-    const actualFirstLevel = await DevTools.setLogLevel(loggerCategory, secondLevel);
+    const actualFirstLevel = await devTools.setLogLevel(loggerCategory, secondLevel);
     assert.equal(actualFirstLevel, firstLevel);
 
     const thirdLevel = LogLevel.Error;
-    const acutalSecondLevel = await DevTools.setLogLevel(loggerCategory, thirdLevel);
+    const acutalSecondLevel = await devTools.setLogLevel(loggerCategory, thirdLevel);
     assert.equal(acutalSecondLevel, secondLevel);
   });
 });

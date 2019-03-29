@@ -85,6 +85,7 @@ import { ImageSourceFormat } from '@bentley/imodeljs-common';
 import { IModel } from '@bentley/imodeljs-common';
 import { IModelClient } from '@bentley/imodeljs-clients';
 import { IModelCoordinatesResponseProps } from '@bentley/imodeljs-common';
+import { IModelToken } from '@bentley/imodeljs-common';
 import { IModelVersion } from '@bentley/imodeljs-common';
 import { IndexedPolyface } from '@bentley/geometry-core';
 import { IndexMap } from '@bentley/bentleyjs-core';
@@ -1584,10 +1585,11 @@ export class DepthRangeNpc {
 
 // @internal
 export class DevTools {
-    static ping(count: number): Promise<boolean>;
-    static setLogLevel(inLoggerCategory: string, newLevel: LogLevel): Promise<LogLevel | undefined>;
-    static signal(signalType: number): Promise<boolean>;
-    static stats(): Promise<any>;
+    static connectToBackendInstance(iModelToken: IModelToken): DevTools;
+    ping(count: number): Promise<boolean>;
+    setLogLevel(inLoggerCategory: string, newLevel: LogLevel): Promise<LogLevel | undefined>;
+    signal(signalType: number): Promise<boolean>;
+    stats(): Promise<any>;
 }
 
 // @public

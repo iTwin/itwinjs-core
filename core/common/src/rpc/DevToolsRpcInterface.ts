@@ -7,6 +7,8 @@
 import { RpcInterface } from "../RpcInterface";
 import { RpcManager } from "../RpcManager";
 import { LogLevel } from "@bentley/bentleyjs-core";
+import { IModelToken } from "../IModel";
+import { IModelNotFoundResponse } from "./IModelReadRpcInterface";
 
 /** The purpose of this class is to house RPC methods for developer tools.
  * Note that this should NOT be used in production environments.
@@ -15,6 +17,8 @@ import { LogLevel } from "@bentley/bentleyjs-core";
 export abstract class DevToolsRpcInterface extends RpcInterface {
   /** The types that can be marshaled by the interface. */
   public static types = () => [
+    IModelToken,
+    IModelNotFoundResponse,
   ]
 
   /** Returns the IModelReadRpcInterface instance for the frontend. */
@@ -28,14 +32,14 @@ export abstract class DevToolsRpcInterface extends RpcInterface {
     NOTE: Please consult the README in this folder for the semantic versioning rules.
   ==========================================================================================*/
   // Sends a signal and returns true if the signal was processed
-  public async signal(_signalType: number): Promise<boolean> { return this.forward(arguments); }
+  public async signal(_iModelToken: IModelToken, _signalType: number): Promise<boolean> { return this.forward(arguments); }
 
   // Sends a ping and returns true if the backend received the ping
-  public async ping(): Promise<boolean> { return this.forward(arguments); }
+  public async ping(_iModelToken: IModelToken): Promise<boolean> { return this.forward(arguments); }
 
   // Returns JSON object with backend statistics
-  public async stats(): Promise<any> { return this.forward(arguments); }
+  public async stats(_iModelToken: IModelToken): Promise<any> { return this.forward(arguments); }
 
   // Sets a new log level for the specified category and returns the old log level
-  public async setLogLevel(_loggerCategory: string, _logLevel: LogLevel): Promise<LogLevel | undefined> { return this.forward(arguments); }
+  public async setLogLevel(_iModelToken: IModelToken, _loggerCategory: string, _logLevel: LogLevel): Promise<LogLevel | undefined> { return this.forward(arguments); }
 }

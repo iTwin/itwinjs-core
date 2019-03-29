@@ -1129,14 +1129,14 @@ export interface DefinitionElementProps extends ElementProps {
 export abstract class DevToolsRpcInterface extends RpcInterface {
     static getClient(): DevToolsRpcInterface;
     // (undocumented)
-    ping(): Promise<boolean>;
+    ping(_iModelToken: IModelToken): Promise<boolean>;
     // (undocumented)
-    setLogLevel(_loggerCategory: string, _logLevel: LogLevel): Promise<LogLevel | undefined>;
+    setLogLevel(_iModelToken: IModelToken, _loggerCategory: string, _logLevel: LogLevel): Promise<LogLevel | undefined>;
     // (undocumented)
-    signal(_signalType: number): Promise<boolean>;
+    signal(_iModelToken: IModelToken, _signalType: number): Promise<boolean>;
     // (undocumented)
-    stats(): Promise<any>;
-    static types: () => never[];
+    stats(_iModelToken: IModelToken): Promise<any>;
+    static types: () => (typeof IModelToken | typeof IModelNotFoundResponse)[];
     static version: string;
 }
 
