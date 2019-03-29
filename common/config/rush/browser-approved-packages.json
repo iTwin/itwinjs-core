@@ -359,6 +359,10 @@
       "allowedCategories": [ "backend" ]
     },
     {
+      "name": "formidable",
+      "allowedCategories": [ "backend" ]
+    },
+    {
       "name": "fs-extra",
       "allowedCategories": [ "backend", "common", "internal", "tools" ]
     },

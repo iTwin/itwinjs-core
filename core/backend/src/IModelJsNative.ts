@@ -16,6 +16,11 @@ import { IModelDb } from "./IModelDb";
  * @internal
  */
 export declare namespace IModelJsNative {
+  export interface NativeCrashReportingConfigNameValuePair {
+    name: string;
+    value: string;
+  }
+
   export interface NativeCrashReportingConfig {
     crashDumpDir: string; /** The directory to which .dmp files are written. */
     uploadUrl?: string; /** The webserver to which .dmp are uploaded. If not specified, dumps are not uploaded. */
@@ -23,6 +28,8 @@ export declare namespace IModelJsNative {
     maxUploadRetries?: number; /** max # times to retry uploading .dmp file to server. Defaults to 0. */
     uploadRetryWaitInterval?: number; /** Amount of time in milliseconds to wait before retrying uploading .dmp file to server. Defaults to 1000. */
     wantFullMemory?: boolean; /** Want a full-memory dump? Defaults to false. */
+    maxReportsPerDay?: number; /** max # crashes that will be uploaded to the server per day */
+    params?: NativeCrashReportingConfigNameValuePair[];
   }
 
   export const version: string;
