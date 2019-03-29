@@ -526,6 +526,36 @@ describe("PresentationRpcImpl", () => {
 
     });
 
+    describe("getDisplayLabel", () => {
+
+      it("calls manager", async () => {
+        const result = faker.random.word();
+        const key = createRandomECInstanceKey();
+        presentationManagerMock.setup(async (x) => x.getDisplayLabel(ClientRequestContext.current, { imodel: testData.imodelMock.object }, key))
+          .returns(async () => result)
+          .verifiable();
+        const actualResult = await impl.getDisplayLabel(testData.imodelToken, { ...defaultRpcParams }, key);
+        presentationManagerMock.verifyAll();
+        expect(actualResult.result).to.eq(result);
+      });
+
+    });
+
+    describe("getDisplayLabels", () => {
+
+      it("calls manager", async () => {
+        const result = [faker.random.word(), faker.random.word()];
+        const keys = [createRandomECInstanceKey(), createRandomECInstanceKey()];
+        presentationManagerMock.setup(async (x) => x.getDisplayLabels(ClientRequestContext.current, { imodel: testData.imodelMock.object }, keys))
+          .returns(async () => result)
+          .verifiable();
+        const actualResult = await impl.getDisplayLabels(testData.imodelToken, { ...defaultRpcParams }, keys);
+        presentationManagerMock.verifyAll();
+        expect(actualResult.result).to.deep.eq(result);
+      });
+
+    });
+
     describe("getSelectionScopes", () => {
 
       it("calls manager", async () => {

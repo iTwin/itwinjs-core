@@ -19,6 +19,7 @@ import {
   PresentationRpcResponse, RpcRequestOptions,
   HierarchyRpcRequestOptions, ContentRpcRequestOptions,
   SelectionScopeRpcRequestOptions, ClientStateSyncRequestOptions,
+  LabelRpcRequestOptions,
 } from "@bentley/presentation-common";
 import Presentation from "./Presentation";
 import PresentationManager from "./PresentationManager";
@@ -200,6 +201,18 @@ export default class PresentationRpcImpl extends PresentationRpcInterface {
       this.getManager(requestOptions.clientId).getDistinctValues(requestContext, options, descriptor, keys, fieldName, maximumValueCount);
 
     return this.makeRequest(token, requestOptions, contentGetter);
+  }
+
+  public async getDisplayLabel(token: IModelToken, requestOptions: LabelRpcRequestOptions, key: InstanceKey): PresentationRpcResponse<string> {
+    const getter: ContentGetter<Promise<string>> = (requestContext, options) =>
+      this.getManager(requestOptions.clientId).getDisplayLabel(requestContext, options, key);
+    return this.makeRequest(token, requestOptions, getter);
+  }
+
+  public async getDisplayLabels(token: IModelToken, requestOptions: LabelRpcRequestOptions, keys: InstanceKey[]): PresentationRpcResponse<string[]> {
+    const getter: ContentGetter<Promise<string[]>> = (requestContext, options) =>
+      this.getManager(requestOptions.clientId).getDisplayLabels(requestContext, options, keys);
+    return this.makeRequest(token, requestOptions, getter);
   }
 
   public async getSelectionScopes(token: IModelToken, requestOptions: SelectionScopeRpcRequestOptions): PresentationRpcResponse<SelectionScope[]> {

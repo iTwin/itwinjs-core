@@ -22,12 +22,12 @@ import { IModelHost, IModelDb, DrawingGraphic, Element } from "@bentley/imodeljs
 import {
   PageOptions, SelectionInfo, KeySet, PresentationError, PropertyInfoJSON,
   HierarchyRequestOptions, Paged, ContentRequestOptions,
-  instanceKeyFromJSON, NodeJSON,
+  instanceKeyFromJSON, NodeJSON, ContentFlags,
   ECInstanceNodeKeyJSON, NodeKeyJSON, nodeKeyFromJSON,
   ContentJSON, DescriptorJSON, SelectClassInfoJSON,
   PrimitiveTypeDescription, ArrayTypeDescription, StructTypeDescription,
   PropertiesFieldJSON, NestedContentFieldJSON, FieldJSON,
-  KindOfQuantityInfo, PropertyJSON, ItemJSON,
+  KindOfQuantityInfo, PropertyJSON, ItemJSON, DefaultContentDisplayTypes, LabelRequestOptions,
 } from "@bentley/presentation-common";
 import { NativePlatformDefinition, NativePlatformRequestTypes } from "../NativePlatform";
 import PresentationManager from "../PresentationManager";
@@ -233,23 +233,23 @@ describe("PresentationManager", () => {
       nativePlatformMock.setup(async (x) => x.handleRequest(ClientRequestContext.current, moq.It.isAny(), moq.It.isAnyString()))
         .returns(async () => JSON.stringify(addonResponse));
     };
-    const verifyWithSnapshot = (result: any, expectedParams: any, recreateSnapshot: boolean = false) => {
+    const verifyMockRequest = (expectedParams: any) => {
       // verify the addon was called with correct params
       nativePlatformMock.verify(async (x) => x.handleRequest(ClientRequestContext.current, moq.It.isAny(), moq.It.is((serializedParam: string): boolean => {
         const param = JSON.parse(serializedParam);
         expectedParams = JSON.parse(JSON.stringify(expectedParams));
         return deepEqual(param, expectedParams);
       })), moq.Times.once());
+    };
+    const verifyWithSnapshot = (result: any, expectedParams: any, recreateSnapshot: boolean = false) => {
+      // verify the addon was called with correct params
+      verifyMockRequest(expectedParams);
       // verify the manager correctly used addonResponse to create its result
       expect(result).to.matchSnapshot(recreateSnapshot);
     };
     const verifyWithExpectedResult = (actualResult: any, expectedResult: any, expectedParams: any) => {
       // verify the addon was called with correct params
-      nativePlatformMock.verify(async (x) => x.handleRequest(ClientRequestContext.current, moq.It.isAny(), moq.It.is((serializedParam: string): boolean => {
-        const param = JSON.parse(serializedParam);
-        expectedParams = JSON.parse(JSON.stringify(expectedParams));
-        return deepEqual(param, expectedParams);
-      })), moq.Times.once());
+      verifyMockRequest(expectedParams);
       // verify the manager correctly used addonResponse to create its result
       expect(actualResult).to.deep.eq(expectedResult);
     };
@@ -1089,6 +1089,115 @@ describe("PresentationManager", () => {
         };
         const result = await manager.getDistinctValues(ClientRequestContext.current, options, descriptor, new KeySet(), "");
         verifyWithExpectedResult(result, addonResponse, expectedParams);
+      });
+
+    });
+
+    describe("getDisplayLabel", () => {
+
+      it("returns label from native addon", async () => {
+        // what the addon receives
+        const key = createRandomECInstanceKey();
+        const expectedParams = {
+          requestId: NativePlatformRequestTypes.GetDisplayLabel,
+          params: {
+            key,
+          },
+        };
+
+        // what the addon returns
+        const addonResponse = faker.random.word();
+        setup(addonResponse);
+
+        // test
+        const options: LabelRequestOptions<IModelDb> = {
+          imodel: imodelMock.object,
+        };
+        const result = await manager.getDisplayLabel(ClientRequestContext.current, options, key);
+        verifyWithExpectedResult(result, addonResponse, expectedParams);
+      });
+
+    });
+
+    describe("getDisplayLabels", () => {
+
+      it("returns labels from list content", async () => {
+        // what the addon receives
+        const keys = [createRandomECInstanceKey(), createRandomECInstanceKey()];
+        const labels = [faker.random.word(), faker.random.word()];
+        const expectedContentParams = {
+          requestId: NativePlatformRequestTypes.GetContent,
+          params: {
+            keys: new KeySet(keys).toJSON(),
+            descriptorOverrides: {
+              displayType: DefaultContentDisplayTypes.LIST,
+              contentFlags: ContentFlags.ShowLabels | ContentFlags.NoFields,
+              hiddenFieldNames: [],
+            },
+            rulesetId: "RulesDrivenECPresentationManager_RulesetId_DisplayLabel",
+          },
+        };
+
+        // what the addon returns
+        const addonContentResponse = {
+          descriptor: {
+            connectionId: faker.random.uuid(),
+            inputKeysHash: faker.random.uuid(),
+            contentOptions: {},
+            displayType: DefaultContentDisplayTypes.LIST,
+            selectClasses: [{
+              selectClassInfo: createRandomECClassInfoJSON(),
+              isSelectPolymorphic: true,
+              pathToPrimaryClass: [],
+              relatedPropertyPaths: [],
+            } as SelectClassInfoJSON],
+            fields: [],
+            contentFlags: 0,
+          } as DescriptorJSON,
+          // note: return in wrong order to verify the resulting labels are still in the right order
+          contentSet: [1, 0].map((index): ItemJSON => ({
+            primaryKeys: [keys[index]],
+            classInfo: createRandomECClassInfoJSON(),
+            label: labels[index],
+            imageId: faker.random.uuid(),
+            values: {},
+            displayValues: {},
+            mergedFieldNames: [],
+          })),
+        } as ContentJSON;
+        setup(addonContentResponse);
+
+        // test
+        const options: LabelRequestOptions<IModelDb> = {
+          imodel: imodelMock.object,
+        };
+        const result = await manager.getDisplayLabels(ClientRequestContext.current, options, keys);
+        verifyMockRequest(expectedContentParams);
+        expect(result).to.deep.eq(labels);
+      });
+
+      it("returns empty label if content doesn't contain item with request key", async () => {
+        const keys = [createRandomECInstanceKey()];
+        const expectedContentParams = {
+          requestId: NativePlatformRequestTypes.GetContent,
+          params: {
+            keys: new KeySet(keys).toJSON(),
+            descriptorOverrides: {
+              displayType: DefaultContentDisplayTypes.LIST,
+              contentFlags: ContentFlags.ShowLabels | ContentFlags.NoFields,
+              hiddenFieldNames: [],
+            },
+            rulesetId: "RulesDrivenECPresentationManager_RulesetId_DisplayLabel",
+          },
+        };
+
+        // test
+        const options: LabelRequestOptions<IModelDb> = {
+          imodel: imodelMock.object,
+        };
+        const result = await manager.getDisplayLabels(ClientRequestContext.current, options, keys);
+        verifyMockRequest(expectedContentParams);
+        expect(result).to.deep.eq([""]);
       });
 
     });

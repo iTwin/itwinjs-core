@@ -14,6 +14,7 @@ import { DescriptorOverrides } from '@bentley/presentation-common';
 import { Field } from '@bentley/presentation-common';
 import { IDisposable } from '@bentley/bentleyjs-core';
 import { IModelConnection } from '@bentley/imodeljs-frontend';
+import { InstanceKey } from '@bentley/presentation-common';
 import { IPropertyDataProvider } from '@bentley/ui-components';
 import { Item } from '@bentley/presentation-common';
 import { ITreeDataProvider } from '@bentley/ui-components';
@@ -91,6 +92,13 @@ export interface DataProvidersFactoryProps {
 }
 
 // @public
+export interface IPresentationLabelsProvider {
+    getLabel(key: InstanceKey): Promise<string>;
+    getLabels(keys: InstanceKey[]): Promise<string[]>;
+    readonly imodel: IModelConnection;
+}
+
+// @public
 export type IPresentationPropertyDataProvider = IPropertyDataProvider & IContentDataProvider;
 
 // @public
@@ -102,6 +110,15 @@ export type IPresentationTableDataProvider = TableDataProvider & IContentDataPro
 export interface IPresentationTreeDataProvider extends ITreeDataProvider, IPresentationDataProvider {
     getFilteredNodePaths(filter: string): Promise<NodePathElement[]>;
     getNodeKey(node: TreeNodeItem): NodeKey;
+}
+
+// @public
+export class LabelsProvider implements IPresentationLabelsProvider {
+    constructor(imodel: IModelConnection);
+    getLabel(key: InstanceKey, memoize?: boolean): Promise<string>;
+    getLabels(keys: InstanceKey[], memoize?: boolean): Promise<string[]>;
+    // (undocumented)
+    readonly imodel: IModelConnection;
 }
 
 // @public

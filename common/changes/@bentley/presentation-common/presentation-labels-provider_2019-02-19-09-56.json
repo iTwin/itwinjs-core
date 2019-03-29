@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Add APIs to retrieve instance labels",
+      "packageName": "@bentley/presentation-common",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-common",
+  "email": "grigas.p@gmail.com"
+}
