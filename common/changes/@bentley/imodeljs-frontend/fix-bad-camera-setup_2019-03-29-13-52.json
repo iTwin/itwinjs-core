@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "When loading a perspective view, fix up potentially bad camera settings.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Paul.Connelly@bentley.com"
+}

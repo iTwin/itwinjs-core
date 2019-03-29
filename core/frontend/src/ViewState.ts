@@ -1183,6 +1183,12 @@ export abstract class ViewState3d extends ViewState {
     this.rotation = YawPitchRollAngles.fromJSON(props.angles).toMatrix3d();
     assert(this.rotation.isRigid());
     this.camera = new Camera(props.camera);
+
+    if (!(categories instanceof ViewState)) { // actual constructor, not clone
+      // Fix bad camera setup - e.g., very small front distance.
+      if (this._cameraOn)
+        this.lookAt(this.getEyePoint(), this.getTargetPoint(), this.getYVector(), this.extents, this.getFrontDistance(), this.getBackDistance());
+    }
   }
 
   public toJSON(): ViewDefinition3dProps {
