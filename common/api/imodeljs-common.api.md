@@ -31,6 +31,7 @@ import { IndexedPolyfaceVisitor } from '@bentley/geometry-core';
 import { IndexedValue } from '@bentley/bentleyjs-core';
 import { IndexMap } from '@bentley/bentleyjs-core';
 import { LogFunction } from '@bentley/bentleyjs-core';
+import { LogLevel } from '@bentley/bentleyjs-core';
 import { LowAndHighXY } from '@bentley/geometry-core';
 import { LowAndHighXYZ } from '@bentley/geometry-core';
 import { Map4d } from '@bentley/geometry-core';
@@ -1122,6 +1123,21 @@ export class DecorationGeometryProps {
 export interface DefinitionElementProps extends ElementProps {
     // (undocumented)
     isPrivate?: boolean;
+}
+
+// @internal
+export abstract class DevToolsRpcInterface extends RpcInterface {
+    static getClient(): DevToolsRpcInterface;
+    // (undocumented)
+    ping(): Promise<boolean>;
+    // (undocumented)
+    setLogLevel(_loggerCategory: string, _logLevel: LogLevel): Promise<LogLevel | undefined>;
+    // (undocumented)
+    signal(_signalType: number): Promise<boolean>;
+    // (undocumented)
+    stats(): Promise<any>;
+    static types: () => never[];
+    static version: string;
 }
 
 // @beta

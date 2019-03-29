@@ -6,6 +6,7 @@ import { AccessToken, AuthorizedClientRequestContext } from "@bentley/imodeljs-c
 import {
   IModelReadRpcInterface, IModelTileRpcInterface, IModelToken,
   IModelWriteRpcInterface, RpcInterface, RpcManager, SnapshotIModelRpcInterface, WipRpcInterface,
+  DevToolsRpcInterface,
 } from "@bentley/imodeljs-common";
 import { ClientRequestContext } from "@bentley/bentleyjs-core";
 
@@ -53,4 +54,5 @@ export const rpcInterfaces = [
   SnapshotIModelRpcInterface,
   TestRpcInterface,
   WipRpcInterface,
+  DevToolsRpcInterface,
 ];

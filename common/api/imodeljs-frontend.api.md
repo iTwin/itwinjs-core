@@ -90,6 +90,7 @@ import { IndexedPolyface } from '@bentley/geometry-core';
 import { IndexMap } from '@bentley/bentleyjs-core';
 import { IOidcFrontendClient } from '@bentley/imodeljs-clients';
 import { LinePixels } from '@bentley/imodeljs-common';
+import { LogLevel } from '@bentley/bentleyjs-core';
 import { Loop } from '@bentley/geometry-core';
 import { LowAndHighXY } from '@bentley/geometry-core';
 import { LowAndHighXYZ } from '@bentley/geometry-core';
@@ -1579,6 +1580,14 @@ export class DepthRangeNpc {
     middle(): number;
     // (undocumented)
     minimum: number;
+}
+
+// @internal
+export class DevTools {
+    static ping(count: number): Promise<boolean>;
+    static setLogLevel(inLoggerCategory: string, newLevel: LogLevel): Promise<LogLevel | undefined>;
+    static signal(signalType: number): Promise<boolean>;
+    static stats(): Promise<any>;
 }
 
 // @public

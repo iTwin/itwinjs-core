@@ -44,6 +44,7 @@ export * from "./geometry/Placement";
 export * from "./geometry/TextString";
 export * from "./rpc/TestRpcManager";
 export * from "./rpc/WipRpcInterface";
+export * from "./rpc/DevToolsRpcInterface";
 export * from "./rpc/core/RpcConstants";
 export * from "./rpc/core/RpcConfiguration";
 export * from "./rpc/core/RpcInvocation";

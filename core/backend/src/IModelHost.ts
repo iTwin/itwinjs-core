@@ -25,8 +25,18 @@ import { SnapshotIModelRpcImpl } from "./rpc-impl/SnapshotIModelRpcImpl";
 import { WipRpcImpl } from "./rpc-impl/WipRpcImpl";
 import { initializeRpcBackend } from "./RpcBackend";
 import { CloudStorageService, LocalStorageService, CloudStorageServiceCredentials, AzureBlobStorage } from "./CloudStorageBackend";
+import { DevToolsRpcImpl } from "./rpc-impl/DevToolsRpcImpl";
 
 const loggerCategory: string = LoggerCategory.IModelHost;
+
+export interface CrashReportingConfig {
+  crashDumpDir: string; /** The directory to which .dmp files are written. */
+  uploadUrl?: string; /** The webserver to which .dmp are uploaded. If not specified, dumps are not uploaded. */
+  maxDumpsInDir?: number; /** max # .dmp files that may exist in crashDumpDir */
+  maxUploadRetries?: number; /** max # times to retry uploading .dmp file to server. Defaults to 0. */
+  uploadRetryWaitInterval?: number; /** Amount of time in milliseconds to wait before retrying uploading .dmp file to server. Defaults to 1000. */
+  wantFullMemory?: boolean; /** Want a full-memory dump? Defaults to false. */
+}
 
 /** Configuration of imodeljs-backend.
  * @public
@@ -68,9 +78,16 @@ export class IModelHostConfiguration {
    * @note This flag will be removed once the azure/external file caching system is stable.
    * @alpha
    */
+  public disableInternalTileCache = false;
+
   public useExternalTileCache = false;
   /** The maximum size (in bytes) for the local tile cache (if used on this platform). */
   public localTileCacheMaxSize = 1024 * 1024 * 1024;
+
+  /** Crash-reporting configuration
+   * @alpha
+   */
+  public crashReportingConfig?: CrashReportingConfig;
 }
 
 /** IModelHost initializes ($backend) and captures its configuration. A backend must call [[IModelHost.startup]] before using any backend classes.
@@ -213,6 +230,16 @@ export class IModelHost {
       }
     }
 
+    // *** TEMPORARY
+    // if (!configuration.crashReportingConfig) {
+    //   configuration.crashReportingConfig = {
+    //     crashDumpDir: path.normalize(path.join(KnownLocations.tmpdir, "Bentley/IModelJs/CrashDumps/")),
+    //   };
+    // }
+
+    if (configuration.crashReportingConfig && this._platform && (Platform.isNodeJs && !Platform.electron)) // We do crash-reporting *only* in node.js and *not* in electron
+      this._platform.setCrashReporting(configuration.crashReportingConfig);
+
     if (configuration.imodelClient)
       BriefcaseManager.imodelClient = configuration.imodelClient;
 
@@ -223,6 +250,7 @@ export class IModelHost {
     IModelWriteRpcImpl.register();
     SnapshotIModelRpcImpl.register();
     WipRpcImpl.register();
+    DevToolsRpcImpl.register();
 
     BisCore.registerSchema();
     Generic.registerSchema();

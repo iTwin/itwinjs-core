@@ -16,10 +16,20 @@ import { IModelDb } from "./IModelDb";
  * @internal
  */
 export declare namespace IModelJsNative {
+  export interface NativeCrashReportingConfig {
+    crashDumpDir: string; /** The directory to which .dmp files are written. */
+    uploadUrl?: string; /** The webserver to which .dmp are uploaded. If not specified, dumps are not uploaded. */
+    maxDumpsInDir?: number; /** max # .dmp files that may exist in crashDumpDir */
+    maxUploadRetries?: number; /** max # times to retry uploading .dmp file to server. Defaults to 0. */
+    uploadRetryWaitInterval?: number; /** Amount of time in milliseconds to wait before retrying uploading .dmp file to server. Defaults to 1000. */
+    wantFullMemory?: boolean; /** Want a full-memory dump? Defaults to false. */
+  }
+
   export const version: string;
   export let logger: Logger;
   export function initializeRegion(region: number): void;
   export function setUseTileCache(useTileCache: boolean): void;
+  export function setCrashReporting(cfg: NativeCrashReportingConfig): void;
   export type TxnIdString = string;
 
   /** Logger categories used by the native addon */
@@ -359,5 +369,13 @@ export declare namespace IModelJsNative {
     public cloneElement(sourceId: Id64String): ElementProps;
     public importCodeSpec(sourceId: Id64String): Id64String;
     public importFont(sourceId: number): number;
+  }
+
+  /**
+   * Temporary implementation to allow crashing the backend for testing purposes
+   * @internal
+   */
+  export class NativeDevTools {
+    public static signal(signalType: number): boolean;
   }
 }
