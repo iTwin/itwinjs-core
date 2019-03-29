@@ -16,6 +16,7 @@ import { IDisposable } from '@bentley/bentleyjs-core';
 import { IModelDb } from '@bentley/imodeljs-backend';
 import { InstanceKey } from '@bentley/presentation-common';
 import { KeySet } from '@bentley/presentation-common';
+import { LabelRequestOptions } from '@bentley/presentation-common';
 import { Node } from '@bentley/presentation-common';
 import { NodeKey } from '@bentley/presentation-common';
 import { NodePathElement } from '@bentley/presentation-common';
