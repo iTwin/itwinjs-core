@@ -1,4 +1,5 @@
 import * as React from "react";
+import { CommonProps } from "@bentley/ui-ninezone";
 import { Slider, Rail, Handles, SliderItem, Tracks, GetTrackProps } from "react-compound-slider";
 import "./Scrubber.scss";
 
@@ -85,31 +86,31 @@ function Track({ source, target, getTrackProps }: ITrackProps) {
     );
 }
 
-export interface ExampleProps {
-  startDate: Date;
-  endDate: Date;
-  selectedDate: Date;
+export interface ScrubberProps extends CommonProps {
+  currentDuration: number;
+  totalDuration: number;
   isPlaying: boolean;
   onChange?: (values: ReadonlyArray<number>) => void;
   onUpdate?: (values: ReadonlyArray<number>) => void;
   onSlideStart?: () => void;
 }
 
-export class Scrubber extends React.Component<ExampleProps> {
+export class Scrubber extends React.Component<ScrubberProps> {
 
   public render() {
-    const { startDate, endDate, selectedDate, onChange, onUpdate, onSlideStart } = this.props;
-    const domain = [startDate.getTime(), endDate.getTime()];
+    const { currentDuration, totalDuration, onChange, onUpdate, onSlideStart } = this.props;
+    const domain = [0, totalDuration];
 
     return (
       <Slider
+        className={this.props.className}
         mode={1}
         step={1}
         domain={domain}
         onUpdate={onUpdate}
         onChange={onChange}
         onSlideStart={onSlideStart}
-        values={[selectedDate.getTime()]}
+        values={[currentDuration]}
       >
         <Rail>
           {({ getRailProps }) => (

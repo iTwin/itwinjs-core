@@ -89,11 +89,14 @@
       width: 40px;
     }
 
-    > span:last-child {
+    > .end-time {
+      width: 40px;
+      min-height: inherit;
+      font-size: 14px;
       text-align: right;
     }
 
-    > div {
+    > .scrubber-scrubber {
       position: relative;
       flex: 1;
       margin: 0 20px;

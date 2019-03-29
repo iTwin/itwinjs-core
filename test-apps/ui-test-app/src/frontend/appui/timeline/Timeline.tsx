@@ -70,11 +70,6 @@ class TooltipRail extends React.Component<TooltipRailProps, TooltipRailState> {
     document.removeEventListener("mousemove", this._onMouseMove);
   }
 
-  private _onMouseDown = (e: any) => {
-    alert ("down");
-    e.stopPropagation();
-  }
-
   private _onMouseMove = (e: Event) => {
     const { activeHandleID, getEventData } = this.props;
 
@@ -103,7 +98,6 @@ class TooltipRail extends React.Component<TooltipRailProps, TooltipRailState> {
           {...getRailProps({
             onMouseEnter: this._onMouseEnter,
             onMouseLeave: this._onMouseLeave,
-            onMouseDown: this._onMouseDown,
           })}
         />
         <div className="rail-center" />

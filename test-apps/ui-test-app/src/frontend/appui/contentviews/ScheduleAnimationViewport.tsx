@@ -5,7 +5,8 @@
 import * as React from "react";
 
 import { ViewportComponent } from "@bentley/ui-components";
-import { ConfigurableCreateInfo, ConfigurableUiManager, ViewportContentControl } from "@bentley/ui-framework";
+import { ConfigurableCreateInfo, ConfigurableUiManager, ViewportContentControl,
+         ContentViewManager } from "@bentley/ui-framework";
 import { ScreenViewport, IModelConnection, ViewState } from "@bentley/imodeljs-frontend";
 import { viewWithUnifiedSelection } from "@bentley/presentation-components";
 import { TimelineComponent } from "../timeline/TimelineComponent";
@@ -41,6 +42,7 @@ interface ScheduleAnimationViewportState {
   viewId?: Id64String;
   startDate: Date;
   endDate: Date;
+  totalDuration: number;
   milestones?: Milestone[];
 }
 
@@ -50,14 +52,22 @@ class ScheduleAnimationViewport extends React.Component<ScheduleAnimationViewpor
   constructor(props: any) {
     super(props);
 
-    const _startDate = new Date();
-    const _endDate = new Date(_startDate.getTime() + (86400000 * 10));
+    const startDate = new Date();
+    const endDate = new Date(startDate.getTime() + (86400000 * 10));
+    const totalDuration = 20000; // 20 seconds
 
-    this.state = ( {viewId: undefined, startDate: _startDate, endDate: _endDate} );
+    this.state = ({ viewId: undefined, startDate, endDate, totalDuration });
   }
 
   public async componentDidMount() {
     await this._getView();
+  }
+
+  public componentWillUnmount() {
+    const activeContentControl = ContentViewManager.getActiveContentControl();
+    if (activeContentControl && activeContentControl.viewport) {
+      activeContentControl.viewport.animationFraction = 0;
+    }
   }
 
   private async _getView() {
@@ -91,6 +101,13 @@ class ScheduleAnimationViewport extends React.Component<ScheduleAnimationViewpor
     this.setState ( {viewId: viewState.id, startDate, endDate, milestones});
   }
 
+  private _onChange = (duration: number) => {
+    const activeContentControl = ContentViewManager.getActiveContentControl();
+    if (activeContentControl && activeContentControl.viewport) {
+      activeContentControl.viewport.animationFraction = duration;
+    }
+  }
+
   public render(): React.ReactNode {
     const divStyle: React.CSSProperties = {
       backgroundColor: "white",
@@ -120,17 +137,18 @@ class ScheduleAnimationViewport extends React.Component<ScheduleAnimationViewpor
           }
           {this.state.viewId &&
             <UnifiedSelectionViewport viewportRef={this.props.viewportRef}
-                viewDefinitionId={this.state.viewId} imodel={this.props.iModelConnection} ruleset="Default" />
+              viewDefinitionId={this.state.viewId} imodel={this.props.iModelConnection} ruleset="Default" />
           }
         </div>
         {this.state.viewId &&
           <div style={{ zIndex: 2000 }}>
             <TimelineComponent
-                  startDate={this.state.startDate}
-                  endDate={this.state.endDate}
-                  selectedDate={this.state.startDate}
-                  milestones={this.state.milestones}
-                  hideTimeline={false} />
+                startDate={this.state.startDate}
+                endDate={this.state.endDate}
+                totalDuration={this.state.totalDuration}
+                milestones={this.state.milestones}
+                hideTimeline={false}
+                onChange={this._onChange} />
           </div>
         }
       </div>

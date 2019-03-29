@@ -1,28 +1,27 @@
 import * as React from "react";
 import { PlayerButton, PlayButton } from "./PlayerButton";
-import { ContentViewManager } from "@bentley/ui-framework";
 import { Popup, Position, Toggle } from "@bentley/ui-core";
 import { Milestone } from "./Interfaces";
 import { Timeline } from "./Timeline";
 import { Scrubber } from "./Scrubber";
+import { InlineEdit } from "./InlineEdit";
 import "./TimelineComponent.scss";
 
 interface TimelineComponentProps {
-  startDate: Date;
-  endDate: Date;
-  selectedDate: Date;
-  duration: number;
-  milestones?: Milestone[];
-  hideTimeline: boolean;
+  startDate: Date; // start date
+  endDate: Date;   // end date
+  totalDuration: number;  // total duration in milliseconds
+  milestones?: Milestone[]; // optional milestones
+  hideTimeline?: boolean;  // show in mini-mode
+  onChange?: (duration: number) => void; // callback with current value (as a fraction)
 }
 
 interface TimelineComponentState {
-  isSettingsOpen: boolean;
-  isPlaying: boolean;
-  isSeeking: boolean;
-  selectedDate: Date;
-  showSettings: boolean;
-  hideTimeline: boolean;
+  isSettingsOpen: boolean; // settings popup is opened or closed
+  isPlaying: boolean; // timeline is currently playing or paused
+  hideTimeline?: boolean;
+  currentDuration: number; // current duration in milliseconds
+  totalDuration: number;  // total duration in milliseconds
 }
 
 export class TimelineComponent extends React.PureComponent<TimelineComponentProps, TimelineComponentState> {
@@ -31,60 +30,47 @@ export class TimelineComponent extends React.PureComponent<TimelineComponentProp
   private _unmounted = false;
   private _settings: HTMLElement | null = null;
 
-  public static defaultProps = {
-    duration: 20000, // 20 seconds
-    hideTimeline: false,
-  };
-
   constructor(props: TimelineComponentProps) {
     super(props);
 
     this.state = {
       isSettingsOpen: false,
       isPlaying: false,
-      isSeeking: false,
-      selectedDate: this.props.startDate,
-      showSettings: false,
       hideTimeline: this.props.hideTimeline,
+      currentDuration: 0,
+      totalDuration: this.props.totalDuration,
     };
   }
 
-  public componentWillReceiveProps(nextProps: Readonly<TimelineComponentProps>): void {
-    if (nextProps.startDate !== this.props.startDate) {
-      this.setState({ selectedDate: nextProps.startDate });
-    }
-  }
-
   public componentWillUnmount() {
-    const activeContentControl = ContentViewManager.getActiveContentControl();
-    if (activeContentControl && activeContentControl.viewport) {
-      activeContentControl.viewport.animationFraction = 0;
-      window.cancelAnimationFrame(this._requestFrame);
-    }
+    window.cancelAnimationFrame(this._requestFrame);
     this._unmounted = true;
   }
 
+  // user clicked backward button
   private _onBackward = () => {
   }
 
+  // user clicked forward button
   private _onForward = () => {
   }
 
+  // user clicked play button
   private _onPlay = () => {
     if (this.state.isPlaying)
       return;
 
-    // start playing
-    this.setState({ isPlaying: true });
-
-    // request the next frame
-    this._timeLastCycle = new Date().getTime();
-    this._requestFrame = window.requestAnimationFrame(this._updateAnimation);
+    // timeline was complete, restart from the beginning
+    if (this.state.currentDuration >= this.state.totalDuration) {
+      this.setState ( {currentDuration: 0}, (() => this._play() ));
+    } else
+      this._play();
   }
 
+  // user clicked pause button
   private _onPause = () => {
     if (!this.state.isPlaying)
-      return;
+      return; // not playing
 
     // stop requesting frames
     window.cancelAnimationFrame(this._requestFrame);
@@ -93,50 +79,36 @@ export class TimelineComponent extends React.PureComponent<TimelineComponentProp
     this.setState({ isPlaying: false });
   }
 
-  private updateAnimationFraction (fraction: number) {
-    const activeContentControl = ContentViewManager.getActiveContentControl();
-    if (activeContentControl && activeContentControl.viewport) {
-      activeContentControl.viewport.animationFraction = fraction;
+  // user clicked on timeline rail or dragged scrubber handle
+  private _onTimelineChange = (values: ReadonlyArray<number>) => {
+    const currentDuration = values[0];
+    this._setDuration(currentDuration);
+  }
+
+  // set the current duration, which will call the OnChange callback
+  private _setDuration = (currentDuration: number) => {
+    this._timeLastCycle = new Date().getTime();
+    this.setState( {currentDuration} );
+    if (this.props.onChange) {
+      const fraction = currentDuration / this.state.totalDuration;
+      this.props.onChange (fraction);
     }
   }
 
-  private _onTimelineChange = (_values: ReadonlyArray<number>) => {
-    // set the new selected date
-    const selectedDate = new Date(_values[0]);
-    this._setSelectedDate(selectedDate);
-  }
-
-  private _onTimelineUpdate = (_values: ReadonlyArray<number>) => {
-    // set the new selected date
-    const updateDate = new Date(_values[0]);
-    this._setSelectedDate(updateDate);
-    // const fraction = (updateDate.getTime() - this.props.startDate.getTime()) / (this.props.endDate.getTime() - this.props.startDate.getTime());
-    // this.updateAnimationFraction(fraction);
-  }
-
-  private _setSelectedDate = (selectedDate: Date) => {
-    this._timeLastCycle = new Date().getTime();
-    this.setState( {selectedDate}, () => {
-      // update the animation fraction after the selected date has been updated
-      const fraction = (this.state.selectedDate.getTime() - this.props.startDate.getTime()) / (this.props.endDate.getTime() - this.props.startDate.getTime());
-      this.updateAnimationFraction(fraction);
-    });
-  }
-
+  // recursively update the animation until we hit the end or the pause button is clicked
   private _updateAnimation = (_timestamp: number) => {
     if (!this.state.isPlaying && !this._unmounted) {
       return;
     }
 
-    // update selected date
+    // update duration
     const currentTime = new Date().getTime();
-    const fractionElapsed = (currentTime - this._timeLastCycle) / this.props.duration;
-    const timeElapsed = (this.props.endDate.getTime() - this.props.startDate.getTime()) * fractionElapsed; // time since last cycle
-    const selectedDate = new Date(this.state.selectedDate.getTime() + timeElapsed);
-    this._setSelectedDate (selectedDate);
+    const millisecondsElapsed = currentTime - this._timeLastCycle;
+    const duration = this.state.currentDuration + millisecondsElapsed;
+    this._setDuration (duration);
 
     // stop the animation!
-    if (selectedDate >= this.props.endDate) {
+    if (duration >= this.state.totalDuration) {
       window.cancelAnimationFrame(this._requestFrame);
       this.setState({ isPlaying: false });
       return;
@@ -146,8 +118,16 @@ export class TimelineComponent extends React.PureComponent<TimelineComponentProp
     this._requestFrame = window.requestAnimationFrame(this._updateAnimation);
   }
 
-  private _displayTime(millisec: number) {
+  private _play() {
+    // start playing
+    this.setState({ isPlaying: true });
 
+    // request the next frame
+    this._timeLastCycle = new Date().getTime();
+    this._requestFrame = window.requestAnimationFrame(this._updateAnimation);
+  }
+
+  private _displayTime(millisec: number) {
     const addZero = (i: number) => {
       return (i < 10) ? "0" + i : i;
     };
@@ -156,21 +136,43 @@ export class TimelineComponent extends React.PureComponent<TimelineComponentProp
     // const hours = date.getUTCHours();
     const minutes = date.getUTCMinutes();
     const seconds = date.getUTCSeconds();
-
     return `${addZero(minutes)}:${addZero(seconds)}`;
   }
 
+  private _getMilliseconds(time: string) {
+    if (time.indexOf(":") !== -1) {
+      return (Number(time.split(":")[0]) * 60 + Number(time.split(":")[1])) * 1000;
+    } else {
+      return Number(time) * 1000;
+    }
+  }
+
+  // user changed the total duration
+  private _onTotalDurationChange = (value: string) => {
+    // NOTE: we should reset the current duration to 0
+    const milliseconds = this._getMilliseconds(value);
+    this.setState ({ totalDuration: milliseconds });
+  }
+
   private _onSettingsClick = () => {
-    this.setState ({ showSettings: !this.state.showSettings });
+    this.setState ({ isSettingsOpen: !this.state.isSettingsOpen });
   }
 
   private _onHideTimelineChanged = () => {
     this.setState ({ hideTimeline: !this.state.hideTimeline });
   }
 
+  private _currentDate = () => {
+    const fraction = this.state.currentDuration / this.state.totalDuration;
+    const timeElapsed = (this.props.endDate.getTime() - this.props.startDate.getTime()) * fraction;
+    return new Date(this.props.startDate.getTime() + timeElapsed);
+  }
+
   public render() {
-    const { startDate, endDate, milestones, duration } = this.props;
-    const endTime = this._displayTime(duration);
+    const { startDate, endDate, milestones } = this.props;
+    const { totalDuration } = this.state;
+    const currentDate = this._currentDate();
+    const durationString = this._displayTime(totalDuration);
 
     return (
       <div className="timeline-component">
@@ -189,9 +191,9 @@ export class TimelineComponent extends React.PureComponent<TimelineComponentProp
             <PlayerButton className="play-repeat" onClick={this._onForward}>
               <span className="icon icon-placeholder"></span>
             </PlayerButton>
-            <span className="current-date">{this.state.selectedDate.toLocaleDateString()}</span>
+            <span className="current-date">{currentDate.toLocaleDateString()}</span>
             <span className="timeline-settings icon icon-settings" ref={(element) => { this._settings = element; }} onClick={this._onSettingsClick} ></span>
-            <Popup position={Position.TopRight} target={this._settings} isOpen={this.state.showSettings} onClose={this._onSettingsClick} >
+            <Popup position={Position.TopRight} target={this._settings} isOpen={this.state.isSettingsOpen} onClose={this._onSettingsClick} >
               <div className="settings-content">
                 <div>
                   <span>Show Timline:</span>
@@ -206,7 +208,7 @@ export class TimelineComponent extends React.PureComponent<TimelineComponentProp
             className="timeline-timeline"
             startDate={startDate}
             endDate={endDate}
-            selectedDate={this.state.selectedDate}
+            selectedDate={currentDate}
             milestones={milestones}
             isPlaying={this.state.isPlaying}
           />
@@ -215,14 +217,14 @@ export class TimelineComponent extends React.PureComponent<TimelineComponentProp
           {this.state.hideTimeline && <PlayButton className="play-button" isPlaying={this.state.isPlaying} onPlay={this._onPlay} onPause={this._onPause} />}
           <span className="start-time">00:00</span>
           <Scrubber
-            startDate={startDate}
-            endDate={endDate}
-            selectedDate={this.state.selectedDate}
+            className="scrubber-scrubber"
+            currentDuration={this.state.currentDuration}
+            totalDuration={totalDuration}
             isPlaying={this.state.isPlaying}
             onChange={this._onTimelineChange}
-            onUpdate={this._onTimelineUpdate}
+            onUpdate={this._onTimelineChange}
           />
-          <span className="end-time">{endTime}</span>
+          <InlineEdit className="end-time" defaultValue={durationString} onChange={this._onTotalDurationChange} />
         </div>
       </div>
     );
