@@ -6,7 +6,7 @@ import { LogLevel } from "@bentley/bentleyjs-core";
 import { DevTools, IModelApp } from "@bentley/imodeljs-frontend";
 import { assert } from "chai";
 
-describe.only("DevTools", () => {
+describe("DevTools", () => {
 
   before(async () => {
     IModelApp.startup();

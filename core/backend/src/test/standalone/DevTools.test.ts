@@ -70,7 +70,7 @@ describe.skip("DevTools is able to signal the backend", () => {
     DevTools.signal(5);
   });
 
-  it.only("ThreadDeadlock", () => {
+  it("ThreadDeadlock", () => {
     DevTools.signal(6);
   });
 });
