@@ -1411,6 +1411,7 @@ export class GroupInformationPartition extends InformationPartitionElement {
 // @public (undocumented)
 export class GroupModel extends GroupInformationModel {
     constructor(props: ModelProps, iModel: IModelDb);
+    static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string): Id64String;
 }
 
 // @public
@@ -2381,6 +2382,7 @@ export abstract class InformationRecordElement extends InformationContentElement
 
 // @public
 export class InformationRecordModel extends InformationModel {
+    static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string): Id64String;
 }
 
 // @public

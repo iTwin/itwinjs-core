@@ -7,7 +7,7 @@
 import { DbOpcode, Id64, Id64String, IModelStatus, JsonUtils } from "@bentley/bentleyjs-core";
 import { Point2d, Range3d } from "@bentley/geometry-core";
 import { AxisAlignedBox3d, GeometricModel2dProps, IModel, IModelError, InformationPartitionElementProps, ModelProps, RelatedElement } from "@bentley/imodeljs-common";
-import { DefinitionPartition, DocumentPartition, PhysicalPartition } from "./Element";
+import { DefinitionPartition, DocumentPartition, InformationRecordPartition, PhysicalPartition } from "./Element";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import { SubjectOwnsPartitionElements } from "./NavigationRelationship";
@@ -195,6 +195,26 @@ export abstract class GroupInformationModel extends InformationModel {
  * @public
  */
 export class InformationRecordModel extends InformationModel {
+  /** Insert a InformationRecordPartition and a InformationRecordModel that breaks it down.
+   * @param iModelDb Insert into this iModel
+   * @param parentSubjectId The InformationRecordPartition will be inserted as a child of this Subject element.
+   * @param name The name of the InformationRecordPartition that the new InformationRecordModel will break down.
+   * @returns The Id of the newly inserted InformationRecordModel.
+   * @throws [[IModelError]] if there is an insert problem.
+   */
+  public static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string): Id64String {
+    const partitionProps: InformationPartitionElementProps = {
+      classFullName: InformationRecordPartition.classFullName,
+      model: IModel.repositoryModelId,
+      parent: new SubjectOwnsPartitionElements(parentSubjectId),
+      code: InformationRecordPartition.createCode(iModelDb, parentSubjectId, name),
+    };
+    const partitionId = iModelDb.elements.insertElement(partitionProps);
+    return iModelDb.models.insertModel({
+      classFullName: this.classFullName,
+      modeledElement: { id: partitionId },
+    });
+  }
 }
 
 /** A container for persisting definition elements.
