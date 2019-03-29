@@ -9,16 +9,26 @@ export interface RequestOptions<TIModel> {
   /** iModel to request data from */
   imodel: TIModel;
 
-  /** Id of the ruleset to use when requesting data */
-  rulesetId: string;
-
   /** Optional locale to use when formatting / localizing data */
   locale?: string;
 }
+
+export interface RequestOptionsWithRuleset<TIModel> extends RequestOptions<TIModel> {
+  /** Id of the ruleset to use when requesting data */
+  rulesetId: string;
+}
+
 /** Request type for hierarchy requests */
-export interface HierarchyRequestOptions<TIModel> extends RequestOptions<TIModel> { }
+export interface HierarchyRequestOptions<TIModel> extends RequestOptionsWithRuleset<TIModel> { }
+
 /** Request type for content requests */
-export interface ContentRequestOptions<TIModel> extends RequestOptions<TIModel> { }
+export interface ContentRequestOptions<TIModel> extends RequestOptionsWithRuleset<TIModel> { }
+
+/** Request type for label requests */
+export interface LabelRequestOptions<TIModel> extends RequestOptions<TIModel> { }
+
+/** Request options used for selection scope related requests */
+export interface SelectionScopeRequestOptions<TIModel> extends RequestOptions<TIModel> { }
 
 /** Paging options. */
 export interface PageOptions {
@@ -33,12 +43,3 @@ export type Paged<TOptions extends {}> = TOptions & {
   /** Optional paging parameters */
   paging?: PageOptions;
 };
-
-/** Request options used for selection scope related requests */
-export interface SelectionScopeRequestOptions<TIModel> {
-  /** iModel to request data for */
-  imodel: TIModel;
-
-  /** Optional locale to use when localizing data */
-  locale?: string;
-}

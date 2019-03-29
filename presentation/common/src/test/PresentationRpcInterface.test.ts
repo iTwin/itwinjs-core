@@ -16,6 +16,7 @@ import {
   RpcRequestOptions, HierarchyRpcRequestOptions, ContentRpcRequestOptions,
   ClientStateSyncRequestOptions,
   SelectionScopeRpcRequestOptions,
+  LabelRpcRequestOptions,
 } from "../PresentationRpcInterface";
 
 describe("PresentationRpcInterface", () => {
@@ -183,6 +184,24 @@ describe("PresentationRpcInterface", () => {
       const keys = new KeySet();
       await rpcInterface.getDistinctValues(token, options, descriptor, keys, fieldName, maximumValueCount);
       mock.verify(async (x) => x(toArguments(token, options, descriptor, keys, fieldName, maximumValueCount)), moq.Times.once());
+    });
+
+    it("forwards getDisplayLabel call", async () => {
+      const key = createRandomECInstanceKey();
+      const options: LabelRpcRequestOptions = {
+        ...defaultRpcOptions,
+      };
+      await rpcInterface.getDisplayLabel(token, options, key);
+      mock.verify(async (x) => x(toArguments(token, options, key)), moq.Times.once());
+    });
+
+    it("forwards getDisplayLabels call", async () => {
+      const keys = [createRandomECInstanceKey(), createRandomECInstanceKey()];
+      const options: LabelRpcRequestOptions = {
+        ...defaultRpcOptions,
+      };
+      await rpcInterface.getDisplayLabels(token, options, keys);
+      mock.verify(async (x) => x(toArguments(token, options, keys)), moq.Times.once());
     });
 
     it("forwards getSelectionScopes call", async () => {

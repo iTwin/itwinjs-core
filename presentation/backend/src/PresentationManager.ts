@@ -11,9 +11,11 @@ import {
   PresentationError, PresentationStatus,
   HierarchyRequestOptions, NodeKey, Node, NodePathElement,
   ContentRequestOptions, SelectionInfo, Content, Descriptor,
-  RequestOptions, Paged, KeySet, InstanceKey,
-  SelectionScopeRequestOptions, SelectionScope,
   NodesResponse, ContentResponse, DescriptorOverrides,
+  Paged, KeySet, InstanceKey, LabelRequestOptions,
+  SelectionScopeRequestOptions, SelectionScope, DefaultContentDisplayTypes,
+  compareInstanceKeys,
+  ContentFlags,
 } from "@bentley/presentation-common";
 import { listReviver as nodesListReviver } from "@bentley/presentation-common/lib/hierarchy/Node";
 import { listReviver as nodePathElementReviver } from "@bentley/presentation-common/lib/hierarchy/NodePathElement";
@@ -337,6 +339,42 @@ export default class PresentationManager {
   }
 
   /**
+   * Retrieves display label of specific item
+   * @param requestContext The client request context
+   * @param requestOptions options for the request
+   * @param key Key of an instance to get label for
+   */
+  public async getDisplayLabel(requestContext: ClientRequestContext, requestOptions: LabelRequestOptions<IModelDb>, key: InstanceKey): Promise<string> {
+    requestContext.enter();
+    const params = this.createRequestParams(NativePlatformRequestTypes.GetDisplayLabel, requestOptions, { key });
+    return this.request<string>(requestContext, requestOptions.imodel, params);
+  }
+
+  /**
+   * Retrieves display labels of specific items
+   * @param requestContext The client request context
+   * @param requestOptions options for the request
+   * @param instanceKeys Keys of instances to get labels for
+   */
+  public async getDisplayLabels(requestContext: ClientRequestContext, requestOptions: LabelRequestOptions<IModelDb>, instanceKeys: InstanceKey[]): Promise<string[]> {
+    const keys = new KeySet(instanceKeys);
+    const rulesetId = "RulesDrivenECPresentationManager_RulesetId_DisplayLabel";
+    const overrides: DescriptorOverrides = {
+      displayType: DefaultContentDisplayTypes.LIST,
+      contentFlags: ContentFlags.ShowLabels | ContentFlags.NoFields,
+      hiddenFieldNames: [],
+    };
+    const content = await this.getContent(requestContext, { ...requestOptions, rulesetId }, overrides, keys);
+    requestContext.enter();
+    return instanceKeys.map((key) => {
+      const item = content ? content.contentSet.find((it) => it.primaryKeys.length > 0 && compareInstanceKeys(it.primaryKeys[0], key) === 0) : undefined;
+      if (!item)
+        return "";
+      return item.label;
+    });
+  }
+
+  /**
    * Retrieves available selection scopes.
    * @param requestContext The client request context
    * @param requestOptions options for the request
@@ -465,7 +503,7 @@ export default class PresentationManager {
     return JSON.parse(serializedResponse, reviver);
   }
 
-  private createRequestParams(requestId: string, genericOptions: Paged<RequestOptions<IModelDb>>, additionalOptions?: object): string {
+  private createRequestParams(requestId: string, genericOptions: { imodel: IModelDb, locale?: string }, additionalOptions?: object): string {
     const { imodel, locale, ...genericOptionsStripped } = genericOptions;
 
     let lowerCaseLocale = locale ? locale : this.activeLocale;

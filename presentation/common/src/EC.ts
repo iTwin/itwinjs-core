@@ -16,6 +16,14 @@ export interface InstanceKey {
   id: InstanceId;
 }
 
+/** Compare 2 instance keys */
+export const compareInstanceKeys = (lhs: InstanceKey, rhs: InstanceKey) => {
+  const classNameCompare = lhs.className.localeCompare(rhs.className);
+  if (classNameCompare !== 0)
+    return classNameCompare;
+  return lhs.id.localeCompare(rhs.id);
+};
+
 /**
  * A serialized version of [[InstanceKey]]
  *

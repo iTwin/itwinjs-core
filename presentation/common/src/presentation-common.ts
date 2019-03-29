@@ -6,13 +6,13 @@
 
 export * from "./EC";
 export { PresentationError, PresentationStatus } from "./Error";
-export { default as KeySet, Keys } from "./KeySet";
+export { default as KeySet, Keys, Key } from "./KeySet";
 export { default as PersistentKeysContainer } from "./PersistentKeysContainer";
 export * from "./content/Value";
 export * from "./PresentationManagerOptions";
 export {
-  default as PresentationRpcInterface,
-  RpcRequestOptions, ClientStateSyncRequestOptions, ContentRpcRequestOptions,
+  default as PresentationRpcInterface, RpcRequestOptions,
+  LabelRpcRequestOptions, ClientStateSyncRequestOptions, ContentRpcRequestOptions,
   HierarchyRpcRequestOptions, SelectionScopeRpcRequestOptions,
   RpcResponse, PresentationRpcResponse, NodesResponse, ContentResponse,
 } from "./PresentationRpcInterface";
