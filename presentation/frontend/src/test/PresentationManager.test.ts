@@ -18,7 +18,7 @@ import { IModelToken } from "@bentley/imodeljs-common";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import {
   KeySet, Content, Descriptor, HierarchyRequestOptions,
-  Paged, ContentRequestOptions, RequestOptions, RpcRequestsHandler,
+  Paged, ContentRequestOptions, RpcRequestsHandler, LabelRequestOptions,
 } from "@bentley/presentation-common";
 import PresentationManager from "../PresentationManager";
 import RulesetVariablesManager from "../RulesetVariablesManager";
@@ -47,7 +47,7 @@ describe("PresentationManager", () => {
     manager.dispose();
   });
 
-  const toIModelTokenOptions = <TOptions extends RequestOptions<IModelConnection>>(options: TOptions) => {
+  const toIModelTokenOptions = <TOptions extends { imodel: IModelConnection, locale?: string }>(options: TOptions) => {
     // 1. put default `locale`
     // 2. put all `options` members (if `locale` is set, it'll override the default put at #1)
     // 3. put `imodel` of type `IModelToken` which overwrites the `imodel` from `options`
@@ -537,6 +537,44 @@ describe("PresentationManager", () => {
       await manager.getDistinctValues(options, createRandomDescriptor(), new KeySet(), "");
       rpcRequestsHandlerMock.verifyAll();
     });
+  });
+
+  describe("getDisplayLabel", () => {
+
+    it("requests display label", async () => {
+      const key = createRandomECInstanceKey();
+      const result = faker.random.word();
+      const options: LabelRequestOptions<IModelConnection> = {
+        imodel: testData.imodelMock.object,
+      };
+      rpcRequestsHandlerMock
+        .setup(async (x) => x.getDisplayLabel(toIModelTokenOptions(options), key))
+        .returns(async () => result)
+        .verifiable();
+      const actualResult = await manager.getDisplayLabel(options, key);
+      expect(actualResult).to.eq(result);
+      rpcRequestsHandlerMock.verifyAll();
+    });
+
+  });
+
+  describe("getDisplayLabels", () => {
+
+    it("requests display labels", async () => {
+      const keys = [createRandomECInstanceKey(), createRandomECInstanceKey()];
+      const result = [faker.random.word(), faker.random.word()];
+      const options: LabelRequestOptions<IModelConnection> = {
+        imodel: testData.imodelMock.object,
+      };
+      rpcRequestsHandlerMock
+        .setup(async (x) => x.getDisplayLabels(toIModelTokenOptions(options), keys))
+        .returns(async () => result)
+        .verifiable();
+      const actualResult = await manager.getDisplayLabels(options, keys);
+      expect(actualResult).to.deep.eq(result);
+      rpcRequestsHandlerMock.verifyAll();
+    });
+
   });
 
 });

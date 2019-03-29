@@ -15,7 +15,7 @@ import { default as NodePathElement } from "./hierarchy/NodePathElement";
 import { SelectionInfo, default as Descriptor, DescriptorOverrides } from "./content/Descriptor";
 import { default as Content } from "./content/Content";
 import { SelectionScope } from "./selection/SelectionScope";
-import { HierarchyRequestOptions, ContentRequestOptions, Paged, SelectionScopeRequestOptions } from "./PresentationManagerOptions";
+import { HierarchyRequestOptions, ContentRequestOptions, Paged, SelectionScopeRequestOptions, LabelRequestOptions } from "./PresentationManagerOptions";
 import PresentationRpcInterface, { RpcRequestOptions, NodesResponse, ContentResponse, PresentationRpcResponse } from "./PresentationRpcInterface";
 import { Omit } from "./Utils";
 
@@ -192,6 +192,15 @@ export default class RpcRequestsHandler implements IDisposable {
   public async getDistinctValues(options: ContentRequestOptions<IModelToken>, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>, fieldName: string, maximumValueCount: number): Promise<string[]> {
     return this.request<string[], ContentRequestOptions<IModelToken>>(
       this.rpcClient, this.rpcClient.getDistinctValues, this.createRequestOptions(options), descriptor, keys, fieldName, maximumValueCount);
+  }
+
+  public async getDisplayLabel(options: LabelRequestOptions<IModelToken>, key: InstanceKey): Promise<string> {
+    return this.request<string, LabelRequestOptions<IModelToken>, any>(
+      this.rpcClient, this.rpcClient.getDisplayLabel, this.createRequestOptions(options), key);
+  }
+  public async getDisplayLabels(options: LabelRequestOptions<IModelToken>, keys: InstanceKey[]): Promise<string[]> {
+    return this.request<string[], LabelRequestOptions<IModelToken>, any>(
+      this.rpcClient, this.rpcClient.getDisplayLabels, this.createRequestOptions(options), keys);
   }
 
   public async getSelectionScopes(options: SelectionScopeRequestOptions<IModelToken>): Promise<SelectionScope[]> {

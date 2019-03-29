@@ -10,7 +10,7 @@ import {
   RpcRequestsHandler, DescriptorOverrides,
   HierarchyRequestOptions, Node, NodeKey, NodePathElement,
   ContentRequestOptions, Content, Descriptor, SelectionInfo,
-  Paged, RequestOptions, KeySet, InstanceKey, NodesResponse, ContentResponse,
+  Paged, KeySet, InstanceKey, NodesResponse, ContentResponse, LabelRequestOptions,
 } from "@bentley/presentation-common";
 import RulesetVariablesManager from "./RulesetVariablesManager";
 import RulesetManager from "./RulesetManager";
@@ -97,7 +97,7 @@ export default class PresentationManager implements IDisposable {
     return this._rulesetVars.get(rulesetId)!;
   }
 
-  private toIModelTokenOptions<TOptions extends RequestOptions<IModelConnection>>(options: TOptions) {
+  private toIModelTokenOptions<TOptions extends { imodel: IModelConnection, locale?: string }>(options: TOptions) {
     // 1. put default `locale`
     // 2. put all `options` members (if `locale` is set, it'll override the default put at #1)
     // 3. put `imodel` of type `IModelToken` which overwrites the `imodel` from `options` put at #2
@@ -230,6 +230,23 @@ export default class PresentationManager implements IDisposable {
    */
   public async getDistinctValues(requestOptions: ContentRequestOptions<IModelConnection>, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>, fieldName: string, maximumValueCount: number = 0): Promise<string[]> {
     return this._requestsHandler.getDistinctValues(this.toIModelTokenOptions(requestOptions), descriptor.createStrippedDescriptor(), keys, fieldName, maximumValueCount);
+  }
+
+  /**
+   * Retrieves display label of specific item
+   * @param requestOptions options for the request
+   * @param key Key of instance to get label for
+   */
+  public async getDisplayLabel(requestOptions: LabelRequestOptions<IModelConnection>, key: InstanceKey): Promise<string> {
+    return this._requestsHandler.getDisplayLabel(this.toIModelTokenOptions(requestOptions), key);
+  }
+  /**
+   * Retrieves display label of specific items
+   * @param requestOptions options for the request
+   * @param keys Keys of instances to get labels for
+   */
+  public async getDisplayLabels(requestOptions: LabelRequestOptions<IModelConnection>, keys: InstanceKey[]): Promise<string[]> {
+    return this._requestsHandler.getDisplayLabels(this.toIModelTokenOptions(requestOptions), keys);
   }
 
 }
