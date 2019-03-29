@@ -1,0 +1,121 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+@import "@bentley/ui-core/lib/ui-core/index";
+
+.timeline-component {
+  box-sizing: border-box;
+  background: #f8f9fb;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  padding: 8px 16px;
+
+  > .header {
+    display: flex;
+    align-items: center;
+    height: 38px;
+    position: relative;
+
+    > .play-backward {
+      border-radius: 3px 0 0 3px;
+    }
+
+    > .play-button-step {
+      border-left: none;
+      border-right: none;
+      border-radius: 0;
+    }
+
+    > .play-forward {
+      border-radius: 0;
+      border-right: none;
+    }
+
+    > .play-repeat {
+      border-radius: 0px 3px 3px 0;
+    }
+
+    > .current-date {
+      font-size: 14px;
+      min-width: 200px;
+      padding: 8px;
+      color: rgba(black, .85);
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      border-radius: 3px;
+      border: solid 1px $buic-background-5;
+      background-color: $buic-background-1;
+      text-align: center;
+      box-sizing: border-box;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    > .timeline-settings {
+      padding: 5px;
+      cursor: pointer;
+      margin-left: auto;
+      font-size: 16px;
+      color: rgba(black, .85);
+
+      &:hover {
+        color: rgba(black, 1);
+      }
+    }
+  }
+
+  .play-button {
+    margin-right: 10px;
+  }
+
+  > .timeline-timeline {
+    margin: 8px 0;
+  }
+
+  > .scrubber {
+    min-height: 20px;
+    display: flex;
+    align-items: center;
+    position: relative;
+
+    > span {
+      font-size: 14px;
+      color: rgba(black, .85);
+      width: 40px;
+    }
+
+    > .end-time {
+      width: 40px;
+      min-height: inherit;
+      font-size: 14px;
+      text-align: right;
+    }
+
+    > .scrubber-scrubber {
+      position: relative;
+      flex: 1;
+      margin: 0 20px;
+    }
+  }
+}
+
+.settings-content {
+  display: flex;
+  flex-direction: column;
+  margin: 20px;
+  font-size: 14px;
+
+  > div {
+    display: flex;
+    align-items: center;
+
+    > span {
+      margin-right: 25px;
+    }
+  }
+}

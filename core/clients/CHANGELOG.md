@@ -18,9 +18,9 @@ Wed, 06 Mar 2019 15:41:22 GMT
 - OIDC changes needed for Angular client
 - Changes package.json to include api-extractor and adds api-extractor.json
 - Use new buildIModelJsBuild script
-- Moved AzureFileHandler, IOSAzureFileHandler, UrlFileHandler and the iModelHub tests to the imodeljs-clients-backend package. This removes the dependency of imodeljs-clients on the "fs" module, and turns it into a browser only package. 
-- Fixed expansion of config variables. 
-- Remove uneeded typedoc plugin depedency
+- Moved AzureFileHandler, IOSAzureFileHandler, UrlFileHandler and the iModelHub tests to the imodeljs-clients-backend package. This removes the dependency of imodeljs-clients on the "fs" module, and turns it into a browser only package.
+- Fixed expansion of config variables.
+- Remove unneeded typedoc plugin dependency
 - Fix error parsing
 - Documentation improvements
 - Create iModel from empty template if seed file path not defined.
@@ -29,9 +29,9 @@ Wed, 06 Mar 2019 15:41:22 GMT
 - Added creatorId, new method to list RD per project, identified numerous area for changes WIP
 - Implemented spatial criterai when searching through all reality data associated to a project.
 - Threading issue accessing Reality Data, RealityData class was transformed to be the main data access object instead of the client that was used by most/all reality data causing cache data clash and mix between many reality data.
-- Removed RBAC client - the RBAC service is considered internal. 
+- Removed RBAC client - the RBAC service is considered internal.
 - Handled error with fetching host information on deployed machines.
-- WIP fixes to Usage Logging. 
+- WIP fixes to Usage Logging.
 - upgrade to TypeScript 3.2.2
 
 ## 0.188.0
@@ -49,8 +49,8 @@ Mon, 14 Jan 2019 23:09:10 GMT
 
 ### Updates
 
-- More logging of HTTP requests, and enabled use of fiddler for backend diagnostics. 
-- Removed IModelDb's cache of accessToken. For long running operations like AutoPush, the user must explicitly supply an IAccessTokenManager to keep the token current. 
+- More logging of HTTP requests, and enabled use of fiddler for backend diagnostics.
+- Removed IModelDb's cache of accessToken. For long running operations like AutoPush, the user must explicitly supply an IAccessTokenManager to keep the token current.
 
 ## 0.185.0
 Fri, 11 Jan 2019 18:29:00 GMT
@@ -125,7 +125,7 @@ Thu, 06 Dec 2018 22:03:29 GMT
 
 ### Updates
 
-- Appended system environment with "imjs" prefix to Config. 
+- Appended system environment with "imjs" prefix to Config.
 - Fixes to errors during file downloads
 - added AzureFileHandler for ios
 - Custom imodelJs noDirectImport lint rule implemented, noDuplicateImport lint rule turned on.
@@ -187,10 +187,10 @@ Thu, 08 Nov 2018 17:59:20 GMT
 
 ### Updates
 
-- Deprecated dev-cors-proxy-server and use of it. 
+- Deprecated dev-cors-proxy-server and use of it.
 - Removed PropertySerializer used by ECJsonTypeMap.
 - OIDC related enhancments (WIP).
-- Fixed more integration tests. 
+- Fixed more integration tests.
 - Updated to TypeScript 3.1
 
 ## 0.163.0
@@ -235,7 +235,7 @@ Mon, 15 Oct 2018 19:36:09 GMT
 
 ### Updates
 
-- Cleaned up frontend configuration. 
+- Cleaned up frontend configuration.
 - add default Buddi URL and region and a added docs for region id
 
 ## 0.157.0

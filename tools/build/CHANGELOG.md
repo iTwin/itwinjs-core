@@ -17,7 +17,7 @@ Wed, 06 Mar 2019 15:41:22 GMT
 - Changes extract-api script to remove tsdoc-metadata.json files
 - Changes error hadling in extract-api
 - Use new buildIModelJsBuild script
-- Remove uneeded typedoc plugin depedency
+- Remove unneeded typedoc plugin dependency
 - Changed stripInternal to false so @internal-marked symbols still put in .d.ts files
 - upgrade to TypeScript 3.2.2
 

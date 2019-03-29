@@ -18,7 +18,7 @@ Wed, 06 Mar 2019 15:41:22 GMT
 - Wrapped PresentationRpcImpl method response values in PresentationRpcInterface object.
 - Use new buildIModelJsBuild script
 - PresentationManager now converts locale string to lower case when creating request parameters.
-- Remove uneeded typedoc plugin depedency
+- Remove unneeded typedoc plugin dependency
 - Add hardcoded implementations for 'element', 'assembly', 'top-assembly', 'category', 'model' selection scopes
 - RPC Interface changes to optimize getting first page of nodes/content
 - upgrade to TypeScript 3.2.2

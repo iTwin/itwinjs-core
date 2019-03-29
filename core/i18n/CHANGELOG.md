@@ -15,7 +15,7 @@ Wed, 06 Mar 2019 15:41:22 GMT
 - Changes package.json to include api-extractor and adds api-extractor.json
 - Use new buildIModelJsBuild script
 - Fixed type definitions
-- Remove uneeded typedoc plugin depedency
+- Remove unneeded typedoc plugin dependency
 - fix imports of i18next-xhr-backend
 - Documentation improvements
 - Save BUILD_SEMVER to globally accessible map

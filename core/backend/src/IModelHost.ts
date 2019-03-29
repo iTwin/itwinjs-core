@@ -25,6 +25,7 @@ import { SnapshotIModelRpcImpl } from "./rpc-impl/SnapshotIModelRpcImpl";
 import { WipRpcImpl } from "./rpc-impl/WipRpcImpl";
 import { initializeRpcBackend } from "./RpcBackend";
 import { CloudStorageService, LocalStorageService, CloudStorageServiceCredentials, AzureBlobStorage } from "./CloudStorageBackend";
+import { DevToolsRpcImpl } from "./rpc-impl/DevToolsRpcImpl";
 
 const loggerCategory: string = LoggerCategory.IModelHost;
 
@@ -261,6 +262,7 @@ export class IModelHost {
     IModelWriteRpcImpl.register();
     SnapshotIModelRpcImpl.register();
     WipRpcImpl.register();
+    DevToolsRpcImpl.register();
 
     BisCore.registerSchema();
     Generic.registerSchema();

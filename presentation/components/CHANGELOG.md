@@ -18,7 +18,7 @@ Wed, 06 Mar 2019 15:41:22 GMT
 - Changes package.json to include api-extractor and adds api-extractor.json
 - Use new buildIModelJsBuild script
 - Exported ContentBuilder and ContentDataProvider
-- Remove uneeded typedoc plugin depedency
+- Remove unneeded typedoc plugin dependency
 - Expose presentation-specific content request methods through IContentDataProvider so they're available for provider consumers
 - Save BUILD_SEMVER to globally accessible map
 - Change `DataProvidersFactory.createSimilarInstancesTableDataProvider` to return data provider that also has a description
@@ -180,7 +180,7 @@ Thu, 08 Nov 2018 17:59:21 GMT
 
 ### Updates
 
-- Deprecated dev-cors-proxy-server and use of it. 
+- Deprecated dev-cors-proxy-server and use of it.
 - Fix filtered tree rendering "0 matches found" when there's no filtering applied and data provider returns 0 nodes
 - Updated to TypeScript 3.1
 - React to Tree API changes

@@ -50,7 +50,7 @@ const computeClassifiedSurfaceHiliteColorNoTexture = `
   return vec4(hiliteTexel.a > 0.5 ? 1.0 : 0.0);
 `;
 
-const computeClassifierPos = "v_pClassPos = (u_pClassProj * u_m * rawPosition).xyz;";
+const computeClassifierPos = "vec4 proj = u_pClassProj * u_m * rawPosition; v_pClassPos = proj.xyz/proj.w;";
 const scratchBytes = new Uint8Array(4);
 const scratchBatchBaseId = new Uint32Array(scratchBytes.buffer);
 const scratchBatchBaseComponents = [0, 0, 0, 0];
@@ -142,7 +142,6 @@ export function addFeaturePlanarClassifier(builder: ProgramBuilder) {
 
 /** @internal */
 export function addHilitePlanarClassifier(builder: ProgramBuilder, supportTextures = true) {
-  addPlanarClassifierCommon(builder);
   const frag = builder.frag;
   frag.addUniform("s_pClassHiliteSampler", VariableType.Sampler2D, (prog) => {
     prog.addGraphicUniform("s_pClassHiliteSampler", (uniform, params) => {

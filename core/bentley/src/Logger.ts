@@ -80,22 +80,12 @@ export class Logger {
   }
 
   // WIP: This modifies the incoming Object!
-  private static setContextMetaData(metaData: any) {
+  private static addClientRequestContext(metaData: any) {
     const requestContext = ClientRequestContext.current;
     metaData.ActivityId = requestContext.activityId;
     metaData.SessionId = requestContext.sessionId;
     metaData.ApplicationId = requestContext.applicationId;
     metaData.ApplicationVersion = requestContext.applicationVersion;
-
-    // WIP: conform logging metaData to existing iModelHub standards
-    if (metaData.contextId) {
-      metaData.ContextId = metaData.contextId;
-      metaData.contextId = undefined;
-    }
-    if (metaData.iModelId) {
-      metaData.IModelId = metaData.iModelId;
-      metaData.iModelId = undefined;
-    }
   }
 
   /** @internal used by addon */
@@ -128,7 +118,7 @@ export class Logger {
   /** Compose the metadata for a log message.  */
   public static makeMetaData(getMetaData?: GetMetaDataFunction): any {
     const metaData: any = getMetaData ? Object.assign({}, getMetaData()) : {}; // Copy object to avoid mutating the original
-    Logger.setContextMetaData(metaData);
+    Logger.addClientRequestContext(metaData);
     return metaData;
   }
 

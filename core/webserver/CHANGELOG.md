@@ -14,7 +14,7 @@ Wed, 06 Mar 2019 15:41:22 GMT
 
 - Changes package.json to include api-extractor and adds api-extractor.json
 - Use new buildIModelJsBuild script
-- Remove uneeded typedoc plugin depedency
+- Remove unneeded typedoc plugin dependency
 - upgrade to TypeScript 3.2.2
 
 ## 0.188.0

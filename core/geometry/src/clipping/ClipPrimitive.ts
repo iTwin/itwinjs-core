@@ -165,12 +165,25 @@ export class ClipPrimitive {
   }
 
   /**
-   * Transform the planes in both the primary and mask sets.
-   * @param matrix matrix to apply to the planes.
+   * Multiply all ClipPlanes DPoint4d by matrix.
+   * @param matrix matrix to apply.
+   * @param invert if true, use in verse of the matrix.
+   * @param transpose if true, use the transpose of the matrix (or inverse, per invert parameter)
+   * * Note that if matrixA is applied to all of space, the matrix to send to this method to get a corresponding effect on the plane is the inverse transpose of matrixA
+   * * Callers that will apply the same matrix to many planes should pre-invert the matrix for efficiency.
+   * * Both params default to true to get the full effect of transforming space.
+   * @param matrix matrix to apply
    */
-  public multiplyPlanesTimesMatrix(matrix: Matrix4d): boolean {
+  public multiplyPlanesByMatrix4d(matrix: Matrix4d, invert: boolean = true, transpose: boolean = true): boolean {
+    if (invert) {  // form inverse once here, reuse for all planes
+      const inverse = matrix.createInverse();
+      if (!inverse)
+        return false;
+      return this.multiplyPlanesByMatrix4d(inverse, false, transpose);
+    }
+
     if (this._clipPlanes)
-      this._clipPlanes.multiplyPlanesByMatrix(matrix);
+      this._clipPlanes.multiplyPlanesByMatrix4d(matrix);
     return true;
   }
 
@@ -772,13 +785,18 @@ export class ClipShape extends ClipPrimitive {
   }
 
   /**
-   * Multiply the planes by a transform.
-   * @param matrix matrix to apply to the planes.
+   * Multiply all ClipPlanes DPoint4d by matrix.
+   * @param matrix matrix to apply.
+   * @param invert if true, use in verse of the matrix.
+   * @param transpose if true, use the transpose of the matrix (or inverse, per invert parameter)
+   * * Note that if matrixA is applied to all of space, the matrix to send to this method to get a corresponding effect on the plane is the inverse transpose of matrixA
+   * * Callers that will apply the same matrix to many planes should pre-invert the matrix for efficiency.
+   * * Both params default to true to get the full effect of transforming space.
+   * @param matrix matrix to apply
    */
-  public multiplyPlanesTimesMatrix(matrix: Matrix4d): boolean {
+  public multiplyPlanesByMatrix4d(matrix: Matrix4d, invert: boolean = true, transpose: boolean = true): boolean {
     this.ensurePlaneSets();
-    super.multiplyPlanesTimesMatrix(matrix);
-    return true;
+    return super.multiplyPlanesByMatrix4d(matrix, invert, transpose);
   }
 
   public transformInPlace(transform: Transform): boolean {

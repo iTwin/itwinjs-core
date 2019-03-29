@@ -50,7 +50,7 @@ export class AuxChannel {
   /** An array of [[AuxChannelData]] that represents the vertex data at one or more input values. */
   public data: AuxChannelData[];
   public dataType: AuxChannelDataType;
-  /** The channel name. This is used to present the [[AuxChannel]] to the user and also to select the [[AuxChannel]] for display from [[AnalysisStyle]] */
+  /** The channel name. This is used to present the [[AuxChannel]] to the user and also to select the [[AuxChannel]] for display from AnalysisStyle */
   public name?: string;
   /** The input name. */
   public inputName?: string;

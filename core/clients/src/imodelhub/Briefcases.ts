@@ -44,7 +44,7 @@ export class Briefcase extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.FileSize")
   public fileSize?: string;
 
-  /** FileId of the master file. See [BriefcaseEntry.fileId]($backend). */
+  /** FileId of the master file. */
   @ECJsonTypeMap.propertyToJson("wsg", "properties.FileId")
   public fileId?: GuidString;
 
@@ -122,8 +122,9 @@ export class BriefcaseQuery extends Query {
   }
 }
 
-/** Handler for managing [[Briefcase]]s. Use [[IModelClient.Briefcases]] to get an instance of this class.
- * In most cases, you should use [IModelDb]($backend) or [BriefcaseManager]($backend) methods instead.
+/**
+ * Handler for managing [[Briefcase]]s. Use [[IModelClient.Briefcases]] to get an instance of this class.
+ * In most cases, you should use [IModelDb]($backend) methods instead.
  */
 export class BriefcaseHandler {
   private _handler: IModelBaseHandler;

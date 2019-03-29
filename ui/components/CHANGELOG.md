@@ -21,7 +21,7 @@ Wed, 06 Mar 2019 15:41:22 GMT
 - Added ToggleEditor. Support for defaultTool in Frontstage. Fixed BooleanEditor sizing.
 - Added 100% test coverage for Breadcrumb/BreadcrumbDetails
 - Use new buildIModelJsBuild script
-- Remove uneeded typedoc plugin depedency
+- Remove unneeded typedoc plugin dependency
 - Added EnumEditor & BooleanEditor type editors
 - Minor UI Color Theme changes
 - Support for including CSS files in published UI packages
@@ -124,7 +124,7 @@ Wed, 19 Dec 2018 18:26:14 GMT
 - Added DragDrop tests, added component withDragDrop HOC tests
 - Synchronizing navigation aids with view definition changes
 - Simplified property pane tooltips and improved Property Pane performance.
-- Simplified struct and array tooltips in Table component. 
+- Simplified struct and array tooltips in Table component.
 - Fix BeInspireTree's event listening functions to handle array inputs
 - Fix BeInspireTree's muting events with allowed number of triggers
 - Cache BeInspireTree.visible() result for better performance
@@ -255,7 +255,7 @@ Thu, 08 Nov 2018 17:59:21 GMT
 
 ### Updates
 
-- Deprecated dev-cors-proxy-server and use of it. 
+- Deprecated dev-cors-proxy-server and use of it.
 - Fix: Do not start search if input field is empty
 - Use strongly typed enums for identifying keyboard keys
 - PropertyGrid property editing and unit tests

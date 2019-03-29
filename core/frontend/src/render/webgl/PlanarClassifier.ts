@@ -15,9 +15,9 @@ import { SpatialClassification } from "../../SpatialClassification";
 import { SceneContext } from "../../ViewContext";
 import { GeometricModelState } from "../../ModelState";
 import { TileTree, Tile } from "../../tile/TileTree";
-import { Frustum, FrustumPlanes, RenderTexture, RenderMode, ColorDef } from "@bentley/imodeljs-common";
+import { Frustum, Npc, FrustumPlanes, RenderTexture, RenderMode, ColorDef } from "@bentley/imodeljs-common";
 import { ViewportQuadGeometry } from "./CachedGeometry";
-import { Plane3dByOriginAndUnitNormal, Point3d, Vector3d, Range3d, Transform, Matrix3d, ClipVector } from "@bentley/geometry-core";
+import { Plane3dByOriginAndUnitNormal, Point3d, Vector3d, Range3d, Transform, Matrix3d, ClipVector, Matrix4d, Ray3d, Point4d } from "@bentley/geometry-core";
 import { System } from "./System";
 import { TechniqueId } from "./TechniqueId";
 import { getDrawParams } from "./SceneCompositor";
@@ -27,6 +27,7 @@ import { RenderState } from "./RenderState";
 import { RenderCommands } from "./DrawCommand";
 import { RenderPass } from "./RenderFlags";
 import { FloatRgba } from "./FloatRGBA";
+import { ViewState3d } from "../../ViewState";
 
 class PlanarClassifierDrawArgs extends Tile.DrawArgs {
   constructor(private _classifierPlanes: FrustumPlanes, private _classifier: PlanarClassifier, context: SceneContext, location: Transform, root: TileTree, now: BeTimePoint, purgeOlderThan: BeTimePoint, clip?: ClipVector) {
@@ -61,7 +62,10 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
   private _baseBatchId = 0;
   private _anyHilited = false;
   private _plane = Plane3dByOriginAndUnitNormal.create(new Point3d(0, 0, 0), new Vector3d(0, 0, 1))!;    // TBD -- Support other planes - default to X-Y for now.
+  private _postProjectionMatrix = Matrix4d.createRowValues(/* Row 1 */ 0, 1, 0, 0, /* Row 1 */ 0, 0, -1, 0, /* Row 3 */ 1, 0, 0, 0, /* Row 4 */ 0, 0, 0, 1);
+  private _postProjectionMatrixNpc = Matrix4d.createRowValues(/* Row 1 */ 0, 1, 0, 0, /* Row 1 */ 0, 0, 1, 0, /* Row 3 */ 1, 0, 0, 0, /* Row 4 */ 0, 0, 0, 1);
   private static _scratchFrustum = new Frustum();
+  private static _scratchPoint4d = Point4d.createZero();
 
   private constructor(private _classifierProperties: SpatialClassification.Properties) { super(); }
   public get colorTexture(): Texture | undefined { return this._colorTexture; }
@@ -122,35 +126,22 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     if (undefined !== this._graphics)
       this.pushBatches(batchState, this._graphics);
   }
-  private static extendRangeByTiles(range: Range3d, frustumPlanes: FrustumPlanes, tile: Tile, treeTransform: Transform, matrix: Matrix3d) {
+
+  private getTileRange(range: Range3d, frustumPlanes: FrustumPlanes, toNpc: Matrix4d, tile: Tile, treeTransform: Transform) {
     const box = Frustum.fromRange(tile.range, PlanarClassifier._scratchFrustum);
     box.transformBy(treeTransform, box);
     if (FrustumPlanes.Containment.Outside === frustumPlanes.computeFrustumContainment(box))
       return;
     if (tile.children === undefined) {
-      matrix.multiplyVectorArrayInPlace(box.points);
-      range.extendArray(box.points);
+      for (const boxPoint of box.points) {
+        toNpc.multiplyPoint3d(boxPoint, 1, PlanarClassifier._scratchPoint4d);
+        if (PlanarClassifier._scratchPoint4d.w > .0001)
+          range.extendXYZW(PlanarClassifier._scratchPoint4d.x, PlanarClassifier._scratchPoint4d.y, PlanarClassifier._scratchPoint4d.z, PlanarClassifier._scratchPoint4d.w);
+      }
     } else {
       for (const child of tile.children)
-        this.extendRangeByTiles(range, frustumPlanes, child, treeTransform, matrix);
+        this.getTileRange(range, frustumPlanes, toNpc, child, treeTransform);
     }
-  }
-
-  private computeClassifiedRange(viewFrustum: Frustum, classifiedModel: GeometricModelState, matrix: Matrix3d): Range3d {
-    const range = Range3d.createNull();
-    if (classifiedModel.tileTree !== undefined) {
-      PlanarClassifier.extendRangeByTiles(range, new FrustumPlanes(viewFrustum), classifiedModel.tileTree.rootTile, classifiedModel.tileTree.location, matrix);
-    } else {
-      const corners = new Array<Point3d>(8);
-      for (let i = 0; i < 8; i++)
-        corners[i] = viewFrustum.getCorner(i);
-
-      matrix.multiplyVectorArrayInPlace(corners);
-      range.extendArray(corners);
-    }
-    range.low.z = Math.min(range.low.z, -.0001);    // Always include classification plane.
-    range.high.z = Math.max(range.high.z, .0001);
-    return range;
   }
 
   public drawScene(context: SceneContext, classifiedModel: GeometricModelState, tileTree: TileTree) {
@@ -158,6 +149,9 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     if (undefined === context.viewFrustum)
       return;
 
+    const viewState = context.viewFrustum!.view as ViewState3d;
+    if (undefined === viewState)
+      return;
     const viewX = context.viewFrustum.rotation.rowX();
     const viewZ = context.viewFrustum.rotation.rowZ();
     const minCrossMagnitude = 1.0E-4;
@@ -175,13 +169,52 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
       classifierY = classifierZ.crossProduct(classifierX).normalize()!;
     }
 
-    const classifierMatrix = Matrix3d.createRows(classifierX, classifierY, classifierZ);
-    const range = this.computeClassifiedRange(context.viewFrustum.getFrustum(), classifiedModel, classifierMatrix);
+    const frustumX = classifierZ, frustumY = classifierX, frustumZ = classifierY;
+    const classifierMatrix = Matrix3d.createRows(frustumX, frustumY, frustumZ);
+    const classifierTransform = Transform.createRefs(Point3d.createZero(), classifierMatrix);
+
+    let npcRange = Range3d.createXYZXYZ(0, 0, 0, 1, 1, 1);
+    const viewFrustum = context.viewFrustum.getFrustum();
+    const viewMap = viewFrustum.toMap4d()!;
+    const viewPlanes = new FrustumPlanes(viewFrustum);
+    if (classifiedModel && classifiedModel.tileTree) {
+      const tileRange = Range3d.createNull();
+      this.getTileRange(tileRange, viewPlanes, viewMap.transform0, classifiedModel.tileTree.rootTile, classifiedModel.tileTree.location);
+      if (undefined === tileRange)
+        return;
+      npcRange = npcRange.intersect(tileRange);
+    }
+    PlanarClassifier._scratchFrustum.initFromRange(npcRange);
+    viewMap.transform1.multiplyPoint3dArrayQuietNormalize(PlanarClassifier._scratchFrustum.points);
+    const range = Range3d.createTransformedArray(classifierTransform, PlanarClassifier._scratchFrustum.points);
+    range.low.x = Math.min(range.low.x, -.0001);    // Always include classification plane.
+    range.high.x = Math.max(range.high.x, .0001);
 
     this._frustum = Frustum.fromRange(range);
+    if (viewState.isCameraOn) {
+      const projectionRay = Ray3d.create(viewState.getEyePoint(), viewZ.crossProduct(classifierX).normalize()!);
+      const projectionDistance = projectionRay.intersectionWithPlane(this._plane);
+      if (undefined !== projectionDistance) {
+        const eyePoint = classifierTransform.multiplyPoint3d(projectionRay.fractionToPoint(projectionDistance));
+        const near = Math.max(.01, eyePoint.z - range.high.z);
+        const far = eyePoint.z - range.low.z;
+        const minFraction = 1.0 / 50.0;
+        const fraction = Math.max(minFraction, near / far);
+        for (let i = Npc.LeftBottomFront; i <= Npc.RightTopFront; i++) {
+          const frustumPoint = this._frustum.points[i];
+          frustumPoint.x = frustumPoint.x * fraction;
+          frustumPoint.y = eyePoint.y + (frustumPoint.y - eyePoint.y) * fraction;
+        }
+      }
+    }
     classifierMatrix.transposeInPlace();
     classifierMatrix.multiplyVectorArrayInPlace(this._frustum.points);
-    this._projectionMatrix.initFromMatrix4d(this._frustum.toMap4d()!.transform0);
+    const frustumMap = this._frustum.toMap4d();
+    if (undefined === frustumMap) {
+      assert(false);
+      return;
+    }
+    this._projectionMatrix.initFromMatrix4d(this._postProjectionMatrixNpc.multiplyMatrixMatrix(frustumMap.transform0));
 
     const drawArgs = PlanarClassifierDrawArgs.create(context, this, tileTree, new FrustumPlanes(this._frustum));
     tileTree.draw(drawArgs);
@@ -239,6 +272,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     viewFlags.monochrome = false;
     viewFlags.materials = false;
     viewFlags.ambientOcclusion = false;
+    viewFlags.visibleEdges = viewFlags.hiddenEdges = false;
 
     const batchState = new BatchState();
     System.instance.applyRenderState(state);
@@ -248,6 +282,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
 
     target.bgColor.setFromColorDef(ColorDef.from(0, 0, 0, 255)); // Avoid white on white reversal.
     target.changeFrustum(this._frustum, this._frustum.getFraction(), true);
+    target.projectionMatrix.setFrom(this._postProjectionMatrix.multiplyMatrixMatrix(target.projectionMatrix));
     target.branchStack.setViewFlags(viewFlags);
 
     const renderCommands = new RenderCommands(target, new BranchStack(), batchState);
@@ -256,8 +291,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     System.instance.frameBufferStack.execute(this._fbo, true, () => {
       const clearPickAndColor = ViewportQuadGeometry.create(TechniqueId.ClearPickAndColor);
       target.techniques.draw(getDrawParams(target, clearPickAndColor!));
-      target.techniques.execute(target, renderCommands.getCommands(RenderPass.OpaqueGeneral), RenderPass.OpaqueGeneral);
-      target.techniques.execute(target, renderCommands.getCommands(RenderPass.OpaquePlanar), RenderPass.OpaquePlanar);
+      target.techniques.execute(target, renderCommands.getCommands(RenderPass.OpaquePlanar), RenderPass.PlanarClassification);    // Draw these with RenderPass.PlanarClassification (rather than Opaque...) so that the pick ordering is avoided.
     });
     const hiliteCommands = renderCommands.getCommands(RenderPass.Hilite);
     if (false !== (this._anyHilited = 0 !== hiliteCommands.length)) {

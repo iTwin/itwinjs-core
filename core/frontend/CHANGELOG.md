@@ -42,7 +42,7 @@ Wed, 06 Mar 2019 15:41:22 GMT
 - Defer Draco support until moved to web worker
 - Reduce memory consumption when ambient occlusion is disabled.
 - Fix incorrect colors for some decoration graphics.
-- Remove uneeded typedoc plugin depedency
+- Remove unneeded typedoc plugin dependency
 - Add support for Draco compressed meshes
 - Change drag select to exclude non locatable
 - noMotion doesn't need to call beginDynamicUpdate
@@ -56,7 +56,7 @@ Wed, 06 Mar 2019 15:41:22 GMT
 - Fix clipping volume being inconsistently applied to view.
 - Dont make textures transparent unless technique enables it.
 - Fix incorrect "fit view" behavior when empty tiles exist.
-- Handle relative subpaths in reality model tile trees.  Handle Y for axis/ 
+- Handle relative subpaths in reality model tile trees.  Handle Y for axis/
 - Fix handling of null animation visibility - should be 100% not 0.
 - Added spatial <-> cartographic methods that check/use the geographic coordinate system before using ecef location.
 - DefaultViewTouchTool should not call handleEvent until it's installed as the active ViewTool.
@@ -79,10 +79,10 @@ Wed, 06 Mar 2019 15:41:22 GMT
 - Omit animation branches that are not visible.
 - Improve efficiency and completeness of SubCategory loading for ViewStates.
 - Save BUILD_SEMVER to globally accessible map. PluginAdmin and Plugin classes defined. IModelJsLoader improved.
-- add optional iModel argument to EntityState.clone 
+- add optional iModel argument to EntityState.clone
 - added GeometricModelState.queryModelRange
 - Added creatorId, new method to list RD per project, identified numerous area for changes WIP
-- IModelConnection.close() always disposes the briefcase held at the backend in the case of ReadWrite connections. 
+- IModelConnection.close() always disposes the briefcase held at the backend in the case of ReadWrite connections.
 - Implemented spatial criterai when searching through all reality data associated to a project.
 - Problem with root document of reality data not in root of blob. Tiles could not be fetched. Root path is added to tiles names.
 - Threading issue accessing Reality Data, RealityData class was transformed to be the main data access object instead of the client that was used by most/all reality data causing cache data clash and mix between many reality data.
@@ -142,7 +142,7 @@ Thu, 10 Jan 2019 22:46:17 GMT
 - Fix IModelJsLoader to ensure react loaded before bwc.
 - MeasureLocationTool show lat/long and altitude.
 - Make raster text locate behave better.
-- Removed default OIDC scopes. All applications must now explicitly pass the required scopes. 
+- Removed default OIDC scopes. All applications must now explicitly pass the required scopes.
 - Can now await result from QuantityFormatter. Report delta relative to ACS when context lock enabled. Cleanup "Measure.Points" plug-in example until real measure tools are available.
 - Quantity formatter now allows async method to get FormatterSpec that can be used to format quantities.
 - QuantityFormatter.formatQuantity is now the only method to format quantities.
@@ -317,7 +317,7 @@ Mon, 12 Nov 2018 16:42:10 GMT
 
 ### Updates
 
-- Hydrated briefcases for ReadOnly cases from the latest checkpoint, rather than the seed files. This significantly improves performance of IModelDb/IModelConnection.open() for typical cases. 
+- Hydrated briefcases for ReadOnly cases from the latest checkpoint, rather than the seed files. This significantly improves performance of IModelDb/IModelConnection.open() for typical cases.
 
 ## 0.165.0
 Mon, 12 Nov 2018 15:47:00 GMT

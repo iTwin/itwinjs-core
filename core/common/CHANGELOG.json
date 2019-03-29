@@ -56,7 +56,7 @@
             "comment": "Optimize use of animation cutting planes."
           },
           {
-            "comment": "Remove uneeded typedoc plugin depedency"
+            "comment": "Remove unneeded typedoc plugin dependency"
           },
           {
             "comment": "Add support for draco compressed meshes."

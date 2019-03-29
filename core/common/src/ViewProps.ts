@@ -207,13 +207,13 @@ export interface SkyBoxProps {
   display?: boolean;
   /** For a [[SkyGradient]], if true, a 2-color gradient skybox is used instead of a 4-color. Defaults to false. */
   twoColor?: boolean;
-  /** For a 4-color [[SkyGradient]], the color of the sky at the horizon. For a 2-color [[SkyGradient]], the color of the sky. */
+  /** For a 4-color [[SkyGradient]], the color of the sky at the horizon. */
   skyColor?: ColorDefProps;
-  /** For a 4-color [[SkyGradient]], the color of the ground at the horizon. For a 2-color [[SkyGradient]], the color of the ground. */
+  /** For a 4-color [[SkyGradient]], the color of the ground at the horizon. */
   groundColor?: ColorDefProps;
-  /** For a 4-color [[SkyGradient]], the color of the sky when looking straight up. */
+  /** For a 4-color [[SkyGradient]], the color of the sky when looking straight up. For a 2-color [[SkyGradient]], the color of the sky. */
   zenithColor?: ColorDefProps;
-  /** For a 4-color [[SkyGradient]], the color of the ground when looking straight down. */
+  /** For a 4-color [[SkyGradient]], the color of the ground when looking straight down. For a 2-color [[SkyGradient]], the color of the ground. */
   nadirColor?: ColorDefProps;
   /** For a 4-color [[SkyGradient]], controls speed of change from sky color to zenith color. */
   skyExponent?: number;

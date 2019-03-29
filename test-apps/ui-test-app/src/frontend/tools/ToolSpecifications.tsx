@@ -6,7 +6,7 @@ import * as React from "react";
 
 import {
   IModelApp, NotifyMessageDetails, OutputMessagePriority, MessageBoxValue, SelectionTool,
-  OutputMessageType, SnapMode, MessageBoxType, MessageBoxIconType,
+  OutputMessageType, SnapMode, MessageBoxType, MessageBoxIconType, OutputMessageAlert,
 } from "@bentley/imodeljs-frontend";
 import { MessageSeverity } from "@bentley/ui-core";
 import {
@@ -246,7 +246,8 @@ export class AppTools {
       execute: () => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, "This is an error message",
         "1. " + this._detailedMessage + "<br>" +
         "2. " + this._detailedMessage + "<br>" +
-        "For more details, <a href='https://www.google.com/' target='_blank'>Google it!</a>", OutputMessageType.Alert)),
+        "For more details, <a href='https://www.google.com/' target='_blank'>Google it!</a>",
+        OutputMessageType.Alert, OutputMessageAlert.Dialog)),
     });
   }
 
@@ -357,7 +358,9 @@ export class AppTools {
       labelKey: "SampleApp:buttons.openMessageBox",
       execute: () => {
         // tslint:disable-next-line:no-floating-promises
-        IModelApp.notifications.openMessageBox(MessageBoxType.Ok, "This is a box opened using IModelApp.notifications.openMessageBox and using promise/then to process result.", MessageBoxIconType.Information)
+        IModelApp.notifications.openMessageBox(MessageBoxType.Ok,
+          "This is a box opened using IModelApp.notifications.openMessageBox and using promise/then to process result.<br>Another line.",
+          MessageBoxIconType.Information)
           .then((value: MessageBoxValue) => { window.alert("Closing message box ... value is " + value); });
       },
     });
@@ -369,7 +372,9 @@ export class AppTools {
       iconSpec: "icon-status-warning",
       labelKey: "SampleApp:buttons.openMessageBox",
       execute: async () => {
-        const value: MessageBoxValue = await IModelApp.notifications.openMessageBox(MessageBoxType.YesNo, "This is a box opened using IModelApp.notifications.openMessageBox and using async/await to process result.", MessageBoxIconType.Warning);
+        const value: MessageBoxValue = await IModelApp.notifications.openMessageBox(MessageBoxType.YesNo,
+          "This is a box opened using IModelApp.notifications.openMessageBox and using async/await to process result.<br>Another line.",
+          MessageBoxIconType.Warning);
         window.alert("Closing message box ... value is " + value);
       },
     });

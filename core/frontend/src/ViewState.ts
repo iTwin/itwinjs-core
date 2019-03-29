@@ -504,7 +504,7 @@ export abstract class ViewState extends ElementState {
    * Conditions that may cause the overrides to become dirty include:
    *  - Toggling the display of a category within the view.
    *  - Changing the symbology associated with a [[SubCategory]] within the view by adding a [[SubCategoryOverride]]
-   *  - Changes in some application state that affects the [[AddFeatureOverrides]] function registered with [[Viewport]].
+   *  - Changes in some application state that affects the [[FeatureOverrideProvider]] registered with [[Viewport]].
    * The next time the [[Viewport]] associated with this [[ViewState]] is rendered, the symbology overrides will be regenerated if they have been marked "dirty".
    */
   public setFeatureOverridesDirty(dirty: boolean = true): void { this._featureOverridesDirty = dirty; }
@@ -1183,6 +1183,12 @@ export abstract class ViewState3d extends ViewState {
     this.rotation = YawPitchRollAngles.fromJSON(props.angles).toMatrix3d();
     assert(this.rotation.isRigid());
     this.camera = new Camera(props.camera);
+
+    if (!(categories instanceof ViewState)) { // actual constructor, not clone
+      // Fix bad camera setup - e.g., very small front distance.
+      if (this._cameraOn)
+        this.lookAt(this.getEyePoint(), this.getTargetPoint(), this.getYVector(), this.extents, this.getFrontDistance(), this.getBackDistance());
+    }
   }
 
   public toJSON(): ViewDefinition3dProps {
@@ -1573,7 +1579,7 @@ export abstract class ViewState3d extends ViewState {
       return;
 
     const vp = context.viewport;
-    const skyBoxParams = style3d.loadSkyBoxParams(vp.target.renderSystem);
+    const skyBoxParams = style3d.loadSkyBoxParams(vp.target.renderSystem, vp);
     if (undefined !== skyBoxParams) {
       const skyBoxGraphic = IModelApp.renderSystem.createSkyBox(skyBoxParams);
       context.setSkyBox(skyBoxGraphic!);

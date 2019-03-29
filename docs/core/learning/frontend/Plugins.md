@@ -9,7 +9,7 @@ presentation-components, and presentation-frontend modules will be available as 
 
 ## Loading Plugins
 
-A [Plugin]($frontend) can be loaded by calling the `loadPlugin` static method of the [PluginAdministrator]($frontend) class. An [ImmediateTool]($frontend) is provided that allows
+A [Plugin]($frontend) can be loaded by calling the `loadPlugin` static method of the [PluginAdmin]($frontend) class. An [ImmediateTool](./Tools.md#immediate-tools) is provided that allows
 a user to initiate [Plugin]($frontend) loading using the "Plugin \<pluginName\> [argument list]" keyin.
 
 When the [PluginAdmin]($frontend) loadPlugin method is called, it initiates loading of the designated [Plugin]($frontend). The [Plugin]($frontend) is loaded as a typical JavaScript script,

@@ -377,4 +377,12 @@ export declare namespace IModelJsNative {
     public importCodeSpec(sourceId: Id64String): Id64String;
     public importFont(sourceId: number): number;
   }
+
+  /**
+   * Temporary implementation to allow crashing the backend for testing purposes
+   * @internal
+   */
+  export class NativeDevTools {
+    public static signal(signalType: number): boolean;
+  }
 }

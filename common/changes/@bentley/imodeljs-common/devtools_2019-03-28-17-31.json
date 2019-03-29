@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Added a utility to diagnose backends",
+      "packageName": "@bentley/imodeljs-common",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-common",
+  "email": "Ramanujam.Raman@bentley.com"
+}

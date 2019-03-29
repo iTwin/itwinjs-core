@@ -1072,8 +1072,7 @@ export class ClipPlane implements Clipper {
     clone(): ClipPlane;
     cloneNegated(): ClipPlane;
     // (undocumented)
-    convexPolygonClipInPlace(xyz: Point3d[], work: Point3d[]): void;
-    // (undocumented)
+    convexPolygonClipInPlace(xyz: Point3d[], work: Point3d[], tolerance?: number): void;
     convexPolygonSplitInsideOutside(xyz: Point3d[], xyzIn: Point3d[], xyzOut: Point3d[], altitudeRange: Range1d): void;
     // (undocumented)
     static createEdgeAndUpVector(point0: Point3d, point1: Point3d, upVector: Vector3d, tiltAngle: Angle, result?: ClipPlane): ClipPlane | undefined;
@@ -1097,11 +1096,15 @@ export class ClipPlane implements Clipper {
     static fromJSON(json: any, result?: ClipPlane): ClipPlane | undefined;
     getBoundedSegmentSimpleIntersection(pointA: Point3d, pointB: Point3d): number | undefined;
     // (undocumented)
+    getFrame(): Transform;
+    // (undocumented)
     getPlane3d(): Plane3dByOriginAndUnitNormal;
     // (undocumented)
     getPlane4d(): Point4d;
     // (undocumented)
     readonly interior: boolean;
+    intersectRange(range: Range3d, addClosurePoint?: boolean): Point3d[] | undefined;
+    static intersectRangeConvexPolygonInPlace(range: Range3d, xyz: Point3d[]): Point3d[] | undefined;
     // (undocumented)
     readonly invisible: boolean;
     // (undocumented)
@@ -1114,8 +1117,7 @@ export class ClipPlane implements Clipper {
     isPointOn(point: Point3d, tolerance?: number): boolean;
     // (undocumented)
     isPointOnOrInside(point: Point3d, tolerance?: number): boolean;
-    // (undocumented)
-    multiplyPlaneByMatrix(matrix: Matrix4d): void;
+    multiplyPlaneByMatrix4d(matrix: Matrix4d, invert?: boolean, transpose?: boolean): boolean;
     negateInPlace(): void;
     offsetDistance(offset: number): void;
     // (undocumented)
@@ -1124,7 +1126,6 @@ export class ClipPlane implements Clipper {
     setFlags(invisible: boolean, interior: boolean): void;
     // (undocumented)
     setInvisible(invisible: boolean): void;
-    // (undocumented)
     setPlane4d(plane: Point4d): void;
     toJSON(): any;
     // (undocumented)
@@ -1167,7 +1168,7 @@ export class ClipPrimitive {
     readonly invisible: boolean;
     protected _invisible: boolean;
     static isLimitEdge(limitValue: number, point0: Point3d, point1: Point3d): boolean;
-    multiplyPlanesTimesMatrix(matrix: Matrix4d): boolean;
+    multiplyPlanesByMatrix4d(matrix: Matrix4d, invert?: boolean, transpose?: boolean): boolean;
     pointInside(point: Point3d, onTolerance?: number): boolean;
     setInvisible(invisible: boolean): void;
     // (undocumented)
@@ -1196,7 +1197,7 @@ export class ClipShape extends ClipPrimitive {
     readonly isValidPolygon: boolean;
     // (undocumented)
     readonly isXYPolygon: boolean;
-    multiplyPlanesTimesMatrix(matrix: Matrix4d): boolean;
+    multiplyPlanesByMatrix4d(matrix: Matrix4d, invert?: boolean, transpose?: boolean): boolean;
     performTransformFromClip(point: Point3d): void;
     performTransformToClip(point: Point3d): void;
     readonly polygon: Point3d[];
@@ -1246,6 +1247,7 @@ export class ClipUtilities {
     static clipPolygonToClipShape(polygon: Point3d[], clipShape: ClipPrimitive): Point3d[][];
     // (undocumented)
     static collectClippedCurves(curve: CurvePrimitive, clipper: Clipper): CurvePrimitive[];
+    static intersectConvexClipPlaneSetWithRange(convexSet: ConvexClipPlaneSet, range: Range3d, includeConvexSetFaces?: boolean, includeRangeFaces?: boolean, ignoreInvisiblePlanes?: boolean): GeometryQuery[];
     static pointSetSingleClipStatus(points: GrowableXYZArray, planeSet: UnionOfConvexClipPlaneSets, tolerance: number): ClipStatus;
     // (undocumented)
     static selectIntervals01(curve: CurvePrimitive, unsortedFractions: GrowableFloat64Array, clipper: Clipper, announce?: AnnounceNumberNumberCurvePrimitive): boolean;
@@ -1276,7 +1278,7 @@ export class ClipVector {
     isAnyLineStringPointInside(points: Point3d[]): boolean;
     isLineStringCompletelyContained(points: Point3d[]): boolean;
     readonly isValid: boolean;
-    multiplyPlanesTimesMatrix(matrix: Matrix4d): boolean;
+    multiplyPlanesByMatrix4d(matrix: Matrix4d, invert?: boolean, transpose?: boolean): boolean;
     parseClipPlanes(): void;
     pointInside(point: Point3d, onTolerance?: number): boolean;
     setInvisible(invisible: boolean): void;
@@ -1440,15 +1442,12 @@ export class ConstructCurveBetweenCurves extends NullGeometryHandler {
 
 // @public
 export class ConvexClipPlaneSet implements Clipper {
-    // (undocumented)
     addPlaneToConvexSet(plane: ClipPlane | undefined): void;
-    // (undocumented)
     addZClipPlanes(invisible: boolean, zLow?: number, zHigh?: number): void;
     // (undocumented)
     announceClippedArcIntervals(arc: Arc3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean;
     announceClippedSegmentIntervals(f0: number, f1: number, pointA: Point3d, pointB: Point3d, announce?: (fraction0: number, fraction1: number) => void): boolean;
     classifyPointContainment(points: Point3d[], onIsOutside: boolean): ClipPlaneContainment;
-    // (undocumented)
     clipPointsOnOrInside(points: Point3d[], inOrOn: Point3d[], out: Point3d[]): void;
     clipUnboundedSegment(pointA: Point3d, pointB: Point3d, announce?: (fraction0: number, fraction1: number) => void): boolean;
     // (undocumented)
@@ -1477,13 +1476,11 @@ export class ConvexClipPlaneSet implements Clipper {
     isPointOnOrInside(point: Point3d, tolerance: number): boolean;
     // (undocumented)
     isSphereInside(point: Point3d, radius: number): boolean;
-    // (undocumented)
-    multiplyPlanesByMatrix(matrix: Matrix4d): void;
+    multiplyPlanesByMatrix4d(matrix: Matrix4d, invert?: boolean, transpose?: boolean): boolean;
     negateAllPlanes(): void;
     // (undocumented)
     readonly planes: ClipPlane[];
-    // (undocumented)
-    polygonClip(input: Point3d[], output: Point3d[], work: Point3d[]): void;
+    polygonClip(input: Point3d[], output: Point3d[], work: Point3d[], planeToSkip?: ClipPlane): void;
     reloadSweptPolygon(points: Point3d[], sweepDirection: Vector3d, sideSelect: number): number;
     setInvisible(invisible: boolean): void;
     // (undocumented)
@@ -3018,6 +3015,8 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     static create(...points: any[]): LineString3d;
     static createFloat64Array(xyzData: Float64Array): LineString3d;
     static createForStrokes(capacity: number | undefined, options: StrokeOptions | undefined): LineString3d;
+    // (undocumented)
+    static createIndexedPoints(points: Point3d[], index: number[], addClosure?: boolean): LineString3d;
     // (undocumented)
     static createPoints(points: Point3d[]): LineString3d;
     // (undocumented)
@@ -4706,6 +4705,7 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
     extendTransformTransformedXYZ(transformA: Transform, transformB: Transform, x: number, y: number, z: number): void;
     extendXYZ(x: number, y: number, z: number): void;
     extendXYZW(x: number, y: number, z: number, w: number): void;
+    static faceCornerIndices(index: number): number[];
     fractionToPoint(fractionX: number, fractionY: number, fractionZ: number, result?: Point3d): Point3d;
     // (undocumented)
     freeze(): void;
@@ -4728,8 +4728,8 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
     readonly isAlmostZeroX: boolean;
     readonly isAlmostZeroY: boolean;
     readonly isAlmostZeroZ: boolean;
-    static isNull(data: LowAndHighXYZ): boolean;
     readonly isNull: boolean;
+    static isNull(data: LowAndHighXYZ): boolean;
     readonly isSinglePoint: boolean;
     // (undocumented)
     readonly left: number;
@@ -5606,8 +5606,7 @@ export class UnionOfConvexClipPlaneSets implements Clipper {
     isPointOnOrInside(point: Point3d, tolerance: number): boolean;
     // (undocumented)
     isSphereInside(point: Point3d, radius: number): boolean;
-    // (undocumented)
-    multiplyPlanesByMatrix(matrix: Matrix4d): void;
+    multiplyPlanesByMatrix4d(matrix: Matrix4d, invert?: boolean, transpose?: boolean): boolean;
     polygonClip(input: Point3d[], output: Point3d[][]): void;
     // (undocumented)
     setInvisible(invisible: boolean): void;

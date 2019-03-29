@@ -399,6 +399,15 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
       ls._points.push(point);
     return ls;
   }
+  public static createIndexedPoints(points: Point3d[], index: number[], addClosure: boolean = false): LineString3d {
+    const ls = new LineString3d();
+    for (const i of index)
+      ls._points.push(points[i]); // no clone needed -- we know this reformats to packed array.
+    if (addClosure && index.length > 1)
+      ls._points.push(points[index[0]]);
+    return ls;
+  }
+
   /** Create a LineString3d from xyz coordinates packed in a Float64Array */
   public static createFloat64Array(xyzData: Float64Array): LineString3d {
     const ls = new LineString3d();

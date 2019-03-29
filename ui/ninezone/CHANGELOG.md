@@ -18,7 +18,7 @@ Wed, 06 Mar 2019 15:41:22 GMT
 
 - UI documentation fixes
 - Use new buildIModelJsBuild script
-- Remove uneeded typedoc plugin depedency
+- Remove unneeded typedoc plugin dependency
 - Minor UI Color Theme changes
 - Support for including CSS files in published UI packages
 - Added styling capability ot messages

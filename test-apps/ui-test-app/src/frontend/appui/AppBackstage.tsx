@@ -3,7 +3,10 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { SampleAppIModelApp, SampleAppUiActionId } from "..";
+import {
+  SampleAppIModelApp, SampleAppUiActionId,
+} from "..";
+import { SettingsModalFrontstage } from "../appui/frontstages/Settings";
 import {
   Backstage,
   FrontstageManager,
@@ -11,7 +14,6 @@ import {
   CommandLaunchBackstageItem,
   SeparatorBackstageItem,
   BooleanSyncUiListener,
-  SettingsModalFrontstage,
   TaskLaunchBackstageItem,
 } from "@bentley/ui-framework";
 
@@ -39,6 +41,7 @@ export class AppBackstage extends React.Component {
         <SeparatorBackstageItem />
         <TaskLaunchBackstageItem workflowId="ExampleWorkflow" taskId="Task1" labelKey="SampleApp:backstage.task1" iconSpec="icon-placeholder" />
         <TaskLaunchBackstageItem workflowId="ExampleWorkflow" taskId="Task2" labelKey="SampleApp:backstage.task2" iconSpec="icon-placeholder" />
+        <FrontstageLaunchBackstageItem frontstageId="ScheduleAnimationFrontstage" label="Schedule Animation" iconSpec="icon-placeholder" />
       </Backstage>
     );
   }

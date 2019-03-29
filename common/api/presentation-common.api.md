@@ -146,6 +146,9 @@ export type ClientStateSyncRequestOptions = RpcRequestOptions & {
 };
 
 // @public
+export const compareInstanceKeys: (lhs: InstanceKey, rhs: InstanceKey) => number;
+
+// @public
 export class Content {
     contentSet: Array<Readonly<Item>>;
     descriptor: Readonly<Descriptor>;
@@ -203,7 +206,7 @@ export interface ContentRelatedInstancesSpecification extends ContentSpecificati
 }
 
 // @public
-export interface ContentRequestOptions<TIModel> extends RequestOptions<TIModel> {
+export interface ContentRequestOptions<TIModel> extends RequestOptionsWithRuleset<TIModel> {
 }
 
 // @public
@@ -461,7 +464,7 @@ export const enum GroupingSpecificationTypes {
 }
 
 // @public
-export interface HierarchyRequestOptions<TIModel> extends RequestOptions<TIModel> {
+export interface HierarchyRequestOptions<TIModel> extends RequestOptionsWithRuleset<TIModel> {
 }
 
 // @public (undocumented)
@@ -584,7 +587,9 @@ export interface ItemJSON {
     values: ValuesDictionary<ValueJSON>;
 }
 
-// Warning: (ae-forgotten-export) The symbol "Key" needs to be exported by the entry point presentation-common.d.ts
+// @public
+export type Key = Readonly<NodeKey> | Readonly<InstanceKey> | Readonly<EntityProps>;
+
 // Warning: (ae-forgotten-export) The symbol "KeySetJSON" needs to be exported by the entry point presentation-common.d.ts
 // 
 // @public
@@ -635,6 +640,13 @@ export interface LabelOverride extends RuleBase, ConditionContainer {
     label?: string;
     ruleType: RuleTypes.LabelOverride;
 }
+
+// @public
+export interface LabelRequestOptions<TIModel> extends RequestOptions<TIModel> {
+}
+
+// @public (undocumented)
+export type LabelRpcRequestOptions = RpcRequestOptions & Omit<LabelRequestOptions<IModelToken>, "imodel">;
 
 // @public
 export const enum LoggingNamespaces {
@@ -844,15 +856,29 @@ export class PresentationError extends BentleyError {
 export class PresentationRpcInterface extends RpcInterface {
     // (undocumented)
     computeSelection(_token: IModelToken, _options: SelectionScopeRpcRequestOptions, _ids: Readonly<Id64String[]>, _scopeId: string): PresentationRpcResponse<KeySet>;
+    // (undocumented)
     getContent(_token: IModelToken, _options: ContentRpcRequestOptions, _descriptorOrOverrides: Readonly<Descriptor> | DescriptorOverrides, _keys: Readonly<KeySet>): PresentationRpcResponse<Content | undefined>;
+    // (undocumented)
     getContentAndSize(_token: IModelToken, _options: ContentRpcRequestOptions, _descriptorOrOverrides: Readonly<Descriptor> | DescriptorOverrides, _keys: Readonly<KeySet>): PresentationRpcResponse<ContentResponse>;
+    // (undocumented)
     getContentDescriptor(_token: IModelToken, _options: ContentRpcRequestOptions, _displayType: string, _keys: Readonly<KeySet>, _selection: Readonly<SelectionInfo> | undefined): PresentationRpcResponse<Descriptor | undefined>;
+    // (undocumented)
     getContentSetSize(_token: IModelToken, _options: ContentRpcRequestOptions, _descriptorOrOverrides: Readonly<Descriptor> | DescriptorOverrides, _keys: Readonly<KeySet>): PresentationRpcResponse<number>;
+    // (undocumented)
+    getDisplayLabel(_token: IModelToken, _options: LabelRpcRequestOptions, _key: InstanceKey): PresentationRpcResponse<string>;
+    // (undocumented)
+    getDisplayLabels(_token: IModelToken, _options: LabelRpcRequestOptions, _keys: InstanceKey[]): PresentationRpcResponse<string[]>;
+    // (undocumented)
     getDistinctValues(_token: IModelToken, _options: ContentRpcRequestOptions, _descriptor: Readonly<Descriptor>, _keys: Readonly<KeySet>, _fieldName: string, _maximumValueCount: number): PresentationRpcResponse<string[]>;
+    // (undocumented)
     getFilteredNodePaths(_token: IModelToken, _options: HierarchyRpcRequestOptions, _filterText: string): PresentationRpcResponse<NodePathElement[]>;
+    // (undocumented)
     getNodePaths(_token: IModelToken, _options: HierarchyRpcRequestOptions, _paths: InstanceKey[][], _markedIndex: number): PresentationRpcResponse<NodePathElement[]>;
+    // (undocumented)
     getNodes(_token: IModelToken, _options: Paged<HierarchyRpcRequestOptions>, _parentKey?: Readonly<NodeKey>): PresentationRpcResponse<Node[]>;
+    // (undocumented)
     getNodesAndCount(_token: IModelToken, _options: Paged<HierarchyRpcRequestOptions>, _parentKey?: Readonly<NodeKey>): PresentationRpcResponse<NodesResponse>;
+    // (undocumented)
     getNodesCount(_token: IModelToken, _options: HierarchyRpcRequestOptions, _parentKey?: Readonly<NodeKey>): PresentationRpcResponse<number>;
     // (undocumented)
     getSelectionScopes(_token: IModelToken, _options: SelectionScopeRpcRequestOptions): PresentationRpcResponse<SelectionScope[]>;
@@ -1152,6 +1178,10 @@ export type RelationshipPathInfoJSON = RelatedClassInfoJSON[];
 export interface RequestOptions<TIModel> {
     imodel: TIModel;
     locale?: string;
+}
+
+// @public (undocumented)
+export interface RequestOptionsWithRuleset<TIModel> extends RequestOptions<TIModel> {
     rulesetId: string;
 }
 
@@ -1187,6 +1217,10 @@ export class RpcRequestsHandler implements IDisposable {
     getContentDescriptor(options: ContentRequestOptions<IModelToken>, displayType: string, keys: Readonly<KeySet>, selection: Readonly<SelectionInfo> | undefined): Promise<Descriptor | undefined>;
     // (undocumented)
     getContentSetSize(options: ContentRequestOptions<IModelToken>, descriptorOrOverrides: Readonly<Descriptor> | DescriptorOverrides, keys: Readonly<KeySet>): Promise<number>;
+    // (undocumented)
+    getDisplayLabel(options: LabelRequestOptions<IModelToken>, key: InstanceKey): Promise<string>;
+    // (undocumented)
+    getDisplayLabels(options: LabelRequestOptions<IModelToken>, keys: InstanceKey[]): Promise<string[]>;
     // (undocumented)
     getDistinctValues(options: ContentRequestOptions<IModelToken>, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>, fieldName: string, maximumValueCount: number): Promise<string[]>;
     // (undocumented)
@@ -1374,9 +1408,7 @@ export interface SelectionScope {
 }
 
 // @public
-export interface SelectionScopeRequestOptions<TIModel> {
-    imodel: TIModel;
-    locale?: string;
+export interface SelectionScopeRequestOptions<TIModel> extends RequestOptions<TIModel> {
 }
 
 // @public (undocumented)

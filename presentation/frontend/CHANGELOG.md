@@ -16,7 +16,7 @@ Wed, 06 Mar 2019 15:41:22 GMT
 
 - Changes package.json to include api-extractor and adds api-extractor.json
 - Use new buildIModelJsBuild script
-- Remove uneeded typedoc plugin depedency
+- Remove unneeded typedoc plugin dependency
 - Uncomment and fixed test
 - Save BUILD_SEMVER to globally accessible map
 - Add an API for getting selection scopes and computing selection based on a selection scope.

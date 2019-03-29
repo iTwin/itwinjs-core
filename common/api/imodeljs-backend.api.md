@@ -86,6 +86,7 @@ import { LinePixels } from '@bentley/imodeljs-common';
 import { LineStyleProps } from '@bentley/imodeljs-common';
 import { Lock } from '@bentley/imodeljs-clients';
 import { Logger } from '@bentley/bentleyjs-core';
+import { LogLevel } from '@bentley/bentleyjs-core';
 import { LowAndHighXYZ } from '@bentley/geometry-core';
 import { ModelProps } from '@bentley/imodeljs-common';
 import { ModelSelectorProps } from '@bentley/imodeljs-common';
@@ -668,6 +669,22 @@ export namespace ConcurrencyControl {
     }
 }
 
+// @public (undocumented)
+export interface CrashReportingConfig {
+    // (undocumented)
+    crashDumpDir: string; /** The directory to which .dmp files are written. */
+    // (undocumented)
+    maxDumpsInDir?: number; /** The directory to which .dmp files are written. */
+    // (undocumented)
+    maxUploadRetries?: number; /** The directory to which .dmp files are written. */
+    // (undocumented)
+    uploadRetryWaitInterval?: number; /** The directory to which .dmp files are written. */
+    // (undocumented)
+    uploadUrl?: string; /** The directory to which .dmp files are written. */
+    // (undocumented)
+    wantFullMemory?: boolean; /** Want a full-memory dump? Defaults to false. */
+}
+
 // @public
 export abstract class DefinitionElement extends InformationContentElement implements DefinitionElementProps {
     // @internal
@@ -694,6 +711,14 @@ export class DetailCallout extends Callout {
 // @public (undocumented)
 export abstract class DetailingSymbol extends GraphicalElement2d {
     constructor(props: GeometricElement2dProps, iModel: IModelDb);
+}
+
+// @internal
+export class DevTools {
+    static ping(): boolean;
+    static setLogLevel(inLoggerCategory: string, newLevel: LogLevel): LogLevel | undefined;
+    static signal(signalType: number): boolean;
+    static stats(): any;
 }
 
 // @public
@@ -1596,7 +1621,11 @@ export class IModelHost {
 export class IModelHostConfiguration {
     appAssetsDir?: string;
     briefcaseCacheDir: string;
+    // @alpha
+    crashReportingConfig?: CrashReportingConfig;
     static defaultTileRequestTimeout: number;
+    // @alpha
+    disableInternalTileCache: boolean;
     imodelClient?: IModelClient;
     localTileCacheDir: string;
     localTileCacheMaxSize: number;
@@ -1604,7 +1633,7 @@ export class IModelHostConfiguration {
     tileCacheCredentials?: CloudStorageServiceCredentials;
     tileContentRequestTimeout: number;
     tileTreeRequestTimeout: number;
-    // @alpha
+    // (undocumented)
     useExternalTileCache: boolean;
     useTileContentThreadPool: boolean;
 }
@@ -1702,15 +1731,15 @@ export class IModelJsFsStats {
 
 // @internal
 export namespace IModelJsNative {
-    const // (undocumented)
-    version: string;
-    let // (undocumented)
-    logger: Logger;
     export interface BriefcaseManagerOnConflictPolicy {
         deleteVsUpdate: number;
         updateVsDelete: number;
         updateVsUpdate: number;
     }
+    const // (undocumented)
+    version: string;
+    let // (undocumented)
+    logger: Logger;
     // (undocumented)
     export class BriefcaseManagerResourcesRequest {
         // (undocumented)
@@ -2005,6 +2034,16 @@ export namespace IModelJsNative {
         Success = 0
     }
     // (undocumented)
+    export class ECSchemaXmlContext {
+        constructor();
+        // (undocumented)
+        addSchemaPath(path: string): void;
+        // (undocumented)
+        readSchemaFromXmlFile(filePath: string): ErrorStatusOrResult<BentleyStatus, string>;
+        // (undocumented)
+        setSchemaLocater(locater: ECSchemaXmlContext.SchemaLocaterCallback): void;
+    }
+    // (undocumented)
     export namespace ECSchemaXmlContext {
         // (undocumented)
         export interface SchemaKey {
@@ -2032,16 +2071,6 @@ export namespace IModelJsNative {
             // (undocumented)
             LatestWriteCompatible = 2
         }
-    }
-    // (undocumented)
-    export class ECSchemaXmlContext {
-        constructor();
-        // (undocumented)
-        addSchemaPath(path: string): void;
-        // (undocumented)
-        readSchemaFromXmlFile(filePath: string): ErrorStatusOrResult<BentleyStatus, string>;
-        // (undocumented)
-        setSchemaLocater(locater: ECSchemaXmlContext.SchemaLocaterCallback): void;
     }
     // (undocumented)
     export class ECSqlBinder {
@@ -2232,6 +2261,27 @@ export namespace IModelJsNative {
         // (undocumented)
         ECObjectsNative = "ECObjectsNative"
     }
+    // (undocumented)
+    export interface NativeCrashReportingConfig {
+        // (undocumented)
+        crashDumpDir: string; /** The directory to which .dmp files are written. */
+        // (undocumented)
+        maxDumpsInDir?: number; /** The directory to which .dmp files are written. */
+        // (undocumented)
+        maxUploadRetries?: number; /** The directory to which .dmp files are written. */
+        // (undocumented)
+        uploadRetryWaitInterval?: number; /** The directory to which .dmp files are written. */
+        // (undocumented)
+        uploadUrl?: string; /** The directory to which .dmp files are written. */
+        // (undocumented)
+        wantFullMemory?: boolean; /** Want a full-memory dump? Defaults to false. */
+    }
+    export class NativeDevTools {
+        // (undocumented)
+        static signal(signalType: number): boolean;
+    }
+    // (undocumented)
+    export function setCrashReporting(cfg: NativeCrashReportingConfig): void;
     // (undocumented)
     export function setUseTileCache(useTileCache: boolean): void;
     // (undocumented)
@@ -2585,6 +2635,7 @@ export const enum LoggerCategory {
     // @alpha
     IModelImporter = "imodeljs-backend.IModelImporter",
     IModelTileRequestRpc = "imodeljs-backend.IModelTileRequestRpc",
+    PromiseMemoizer = "imodeljs-backend.PromiseMemoizer",
     Relationship = "imodeljs-backend.Relationship",
     Schemas = "imodeljs-backend.Schemas"
 }

@@ -7,6 +7,8 @@ import { IModelVersion } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext, AccessToken } from "@bentley/imodeljs-clients";
 import { OpenParams, AuthorizedBackendRequestContext } from "../../imodeljs-backend";
 import { PromiseMemoizer, QueryablePromise } from "../../PromiseMemoizer";
+import { TestMemoizer, testFn } from "./TestMemoizer";
+import { BeDuration } from "@bentley/bentleyjs-core";
 
 describe("PromiseMemoizer", () => {
   let requestContextRegular: AuthorizedBackendRequestContext;
@@ -25,7 +27,8 @@ describe("PromiseMemoizer", () => {
     return generateTestFunctionKey(requestContext, contextId, iModelId, openParams, version);
   };
 
-  const { memoize: memoizeTest, deleteMemoized: deleteMemoizedTest } = new PromiseMemoizer<string>(testFunction, generateTestFunctionKey);
+  const maxCacheSize = 25;
+  const { memoize: memoizeTest, deleteMemoized: deleteMemoizedTest } = new PromiseMemoizer<string>(testFunction, generateTestFunctionKey, maxCacheSize);
 
   before(async () => {
     const fakeRegularAccessToken = AccessToken.fromJsonWebTokenString("Regular", new Date(), new Date());
@@ -90,6 +93,110 @@ describe("PromiseMemoizer", () => {
     deleteMemoizedTest(requestContextRegular, "contextId", "iModelId1", OpenParams.fixedVersion(), IModelVersion.latest());
     const qp0 = memoizeTest(requestContextRegular, "contextId", "iModelId1", OpenParams.fixedVersion(), IModelVersion.latest());
     assert.isTrue(qp0.isPending);
+  });
+
+});
+
+describe("A wrapper around PromiseMemoizer", () => {
+  const maxCacheSize = 10;
+  const resolveWaitTime = 1000; // Time before test resolves in ms
+  const pendingWaitTime = 100; // Time before memoizer issues a pending status in ms
+  const testMemoizer = new TestMemoizer(maxCacheSize, pendingWaitTime);
+
+  beforeEach(() => {
+    testMemoizer.clearCache();
+  });
+
+  it("should wait appropriately before issuing a pending status and eventual resolution", async () => {
+    const startTime = Date.now();
+    let retString = await testMemoizer.callMemoizedTestFn(0, resolveWaitTime);
+    const firstEndTime = Date.now();
+    assert.isAbove(firstEndTime - startTime, pendingWaitTime - 1);
+    assert.equal(retString, "Pending");
+
+    retString = await testMemoizer.callMemoizedTestFn(0, resolveWaitTime);
+    const secondEndTime = Date.now();
+    assert.isAbove(secondEndTime - firstEndTime, pendingWaitTime - 1);
+    assert.equal(retString, "Pending");
+
+    await BeDuration.wait(resolveWaitTime - 2 * pendingWaitTime + 1);
+    const actualValue = await testMemoizer.callMemoizedTestFn(0, resolveWaitTime);
+    const expectedValue = await testFn(0, resolveWaitTime);
+    assert.equal(actualValue, expectedValue);
+  });
+
+  it("should not increase the cache size when repeating the same call", async () => {
+    for (let ii = 0; ii < 5; ii++) { // Ensure the testFn doesn't resolve
+      const retString = await testMemoizer.callMemoizedTestFn(0, resolveWaitTime); // same call everytime
+      assert.equal(retString, "Pending");
+    }
+    const actualCacheSize = (testMemoizer as any)._cachedPromises.size;
+    assert.equal(actualCacheSize, 1);
+  });
+
+  it("should increase the cache size as expected", async () => {
+    for (let ii = 0; ii < 5; ii++) {
+      const retString = await testMemoizer.callMemoizedTestFn(ii, resolveWaitTime); // different call everytime
+      assert.equal(retString, "Pending");
+    }
+    const actualCacheSize = (testMemoizer as any)._cachedPromises.size;
+    assert.equal(actualCacheSize, 5);
+  });
+
+  it("should decrease the cache size and clear it as expected", async () => {
+    for (let ii = 0; ii < maxCacheSize; ii++)
+      await testMemoizer.callMemoizedTestFn(ii, resolveWaitTime); // Different call every time
+
+    let actualCacheSize = (testMemoizer as any)._cachedPromises.size;
+    assert.equal(actualCacheSize, maxCacheSize);
+
+    // Wait for all promises to be resolved and check cache size
+    await BeDuration.wait(resolveWaitTime);
+    actualCacheSize = (testMemoizer as any)._cachedPromises.size;
+    assert.equal(actualCacheSize, maxCacheSize);
+
+    // Fetch resolved promises and check cache size
+    for (let ii = 0; ii < maxCacheSize; ii++)
+      await testMemoizer.callMemoizedTestFn(ii, resolveWaitTime);
+    actualCacheSize = (testMemoizer as any)._cachedPromises.size;
+    assert.equal(actualCacheSize, 0);
+  });
+
+  it("should clear the cache if there is a overflow", async () => {
+    for (let ii = 0; ii < maxCacheSize; ii++)
+      await testMemoizer.callMemoizedTestFn(ii, resolveWaitTime * 10); // Different call every time, ensure nothing resolves for the duration of the test
+    let actualCacheSize = (testMemoizer as any)._cachedPromises.size;
+    assert.equal(actualCacheSize, maxCacheSize);
+
+    await testMemoizer.callMemoizedTestFn(maxCacheSize, resolveWaitTime);
+    actualCacheSize = (testMemoizer as any)._cachedPromises.size;
+    assert.equal(actualCacheSize, 1);
+  });
+
+  it("should clear the cache of resolved entries first if there is a overflow", async () => {
+    const halfCacheSize = Math.floor(maxCacheSize / 2);
+
+    // Set half the cache to be resolved quickly
+    for (let ii = 0; ii < halfCacheSize; ii++)
+      await testMemoizer.callMemoizedTestFn(ii, resolveWaitTime);
+    let actualCacheSize = (testMemoizer as any)._cachedPromises.size;
+    assert.equal(actualCacheSize, halfCacheSize);
+
+    // Set the other half of the cache to be resolved slowly
+    for (let ii = halfCacheSize; ii < maxCacheSize; ii++)
+      await testMemoizer.callMemoizedTestFn(ii, resolveWaitTime * 4);
+    actualCacheSize = (testMemoizer as any)._cachedPromises.size;
+    assert.equal(actualCacheSize, maxCacheSize);
+
+    // Wait for the quick calls to be resolved
+    await BeDuration.wait(resolveWaitTime);
+    actualCacheSize = (testMemoizer as any)._cachedPromises.size;
+    assert.equal(actualCacheSize, maxCacheSize);
+
+    // Memoize one more function - this should clear the resolved half of the cache
+    await testMemoizer.callMemoizedTestFn(maxCacheSize, resolveWaitTime);
+    actualCacheSize = (testMemoizer as any)._cachedPromises.size;
+    assert.equal(actualCacheSize, maxCacheSize - halfCacheSize + 1);
   });
 
 });

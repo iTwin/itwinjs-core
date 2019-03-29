@@ -32,7 +32,7 @@ export abstract class WipRpcInterface extends RpcInterface {
   /*===========================================================================================
     NOTE: Any add/remove/change to the methods below requires an update of the interface version.
     NOTE: Please consult the README in this folder for the semantic versioning rules.
-  =======================================1===================================================*/
+  ==========================================================================================*/
   public async placeholder(_iModelToken: IModelToken): Promise<string> { return this.forward(arguments); } // here to test that WipRpcInterface is configured properly
   public async isChangeCacheAttached(_iModelToken: IModelToken): Promise<boolean> { return this.forward(arguments); }
   public async attachChangeCache(_iModelToken: IModelToken): Promise<void> { return this.forward(arguments); }

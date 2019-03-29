@@ -62,7 +62,7 @@
             "comment": "Updated view query in ViewSelector to exclude private views"
           },
           {
-            "comment": "Remove uneeded typedoc plugin depedency"
+            "comment": "Remove unneeded typedoc plugin dependency"
           },
           {
             "comment": "Support for including CSS files in published UI packages"

@@ -31,6 +31,7 @@ import { IndexedPolyfaceVisitor } from '@bentley/geometry-core';
 import { IndexedValue } from '@bentley/bentleyjs-core';
 import { IndexMap } from '@bentley/bentleyjs-core';
 import { LogFunction } from '@bentley/bentleyjs-core';
+import { LogLevel } from '@bentley/bentleyjs-core';
 import { LowAndHighXY } from '@bentley/geometry-core';
 import { LowAndHighXYZ } from '@bentley/geometry-core';
 import { Map4d } from '@bentley/geometry-core';
@@ -1124,6 +1125,21 @@ export interface DefinitionElementProps extends ElementProps {
     isPrivate?: boolean;
 }
 
+// @internal
+export abstract class DevToolsRpcInterface extends RpcInterface {
+    static getClient(): DevToolsRpcInterface;
+    // (undocumented)
+    ping(): Promise<boolean>;
+    // (undocumented)
+    setLogLevel(_loggerCategory: string, _logLevel: LogLevel): Promise<LogLevel | undefined>;
+    // (undocumented)
+    signal(_signalType: number): Promise<boolean>;
+    // (undocumented)
+    stats(): Promise<any>;
+    static types: () => never[];
+    static version: string;
+}
+
 // @beta
 export interface DisplayStyle3dProps extends DisplayStyleProps {
     jsonProperties?: {
@@ -2000,16 +2016,12 @@ export class GraphicParams {
     fillFlags: FillFlags;
     // (undocumented)
     static fromBlankingFill(fillColor: ColorDef): GraphicParams;
-    // Warning: (ae-incompatible-release-tags) The symbol "fromSymbology" is marked as @beta, but its signature references "LinePixels" which is marked as @internal
-    // 
     // (undocumented)
     static fromSymbology(lineColor: ColorDef, fillColor: ColorDef, lineWidth: number, linePixels?: LinePixels): GraphicParams;
     // (undocumented)
     gradient?: Gradient.Symb;
     // (undocumented)
     readonly lineColor: ColorDef;
-    // Warning: (ae-incompatible-release-tags) The symbol "linePixels" is marked as @beta, but its signature references "LinePixels" which is marked as @internal
-    // 
     // (undocumented)
     linePixels: LinePixels;
     // (undocumented)
@@ -2022,7 +2034,6 @@ export class GraphicParams {
     // (undocumented)
     setFillTransparency(transparency: number): void;
     setLineColor(lineColor: ColorDef): void;
-    // Warning: (ae-incompatible-release-tags) The symbol "setLinePixels" is marked as @beta, but its signature references "LinePixels" which is marked as @internal
     setLinePixels(code: LinePixels): void;
     // (undocumented)
     setLineTransparency(transparency: number): void;
@@ -2081,7 +2092,6 @@ export namespace HiddenLine {
         overrideColor(color: ColorDef): Style;
         // @internal (undocumented)
         readonly ovrColor: boolean;
-        // Warning: (ae-incompatible-release-tags) The symbol "pattern" is marked as @beta, but its signature references "LinePixels" which is marked as @internal
         readonly pattern?: LinePixels;
         // (undocumented)
         toJSON(): StyleProps;
@@ -2091,7 +2101,6 @@ export namespace HiddenLine {
         readonly color?: ColorDefProps;
         // @internal
         readonly ovrColor?: boolean;
-        // Warning: (ae-incompatible-release-tags) The symbol "pattern" is marked as @beta, but its signature references "LinePixels" which is marked as @internal
         readonly pattern?: LinePixels;
         readonly width?: number;
     }
@@ -2559,31 +2568,19 @@ export const enum LightType {
     Spot = 6
 }
 
-// @internal
+// @public
 export const enum LinePixels {
-    // (undocumented)
     Code0 = 0,
-    // (undocumented)
     Code1 = 2155905152,
-    // (undocumented)
     Code2 = 4177066232,
-    // (undocumented)
     Code3 = 4292935648,
-    // (undocumented)
     Code4 = 4262526480,
-    // (undocumented)
     Code5 = 3772834016,
-    // (undocumented)
     Code6 = 4169726088,
-    // (undocumented)
     Code7 = 4279828248,
-    // (undocumented)
     HiddenLine = 3435973836,
-    // (undocumented)
     Invalid = -1,
-    // (undocumented)
     Invisible = 1,
-    // (undocumented)
     Solid = 0
 }
 

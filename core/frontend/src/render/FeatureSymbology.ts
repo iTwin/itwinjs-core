@@ -16,7 +16,7 @@ function copyIdSetToUint32Set(dst: Id64.Uint32Set, src?: Set<string>): void {
   }
 }
 
-/** Contains types that enable an application to customize how [Feature]($commmon)s are drawn within a [[Viewport]]. */
+/** Contains types that enable an application to customize how [Feature]($common)s are drawn within a [[Viewport]]. */
 export namespace FeatureSymbology {
   /** Properties used to initialize a [[FeatureSymbology.Appearance]]. */
   export interface AppearanceProps {
@@ -28,7 +28,7 @@ export namespace FeatureSymbology {
     transparency?: number;
     /** The pixel pattern used to draw lines. */
     linePixels?: LinePixels;
-    /** If true, ignore the [RenderMaterial]($frontend) associated with surfaces. */
+    /** If true, ignore the [RenderMaterial]($common) associated with surfaces. */
     ignoresMaterial?: true | undefined;
     /** If true, the associated [Feature]($common)s will not be drawn when using [[Viewport.readPixels]]. */
     nonLocatable?: true | undefined;
@@ -47,7 +47,7 @@ export namespace FeatureSymbology {
     public readonly transparency?: number;
     /** The pixel pattern used to draw lines. */
     public readonly linePixels?: LinePixels;
-    /** If true, ignore the [RenderMaterial]($frontend) associated with surfaces. */
+    /** If true, ignore the [RenderMaterial]($common) associated with surfaces. */
     public readonly ignoresMaterial?: true | undefined;
     /** If true, ignore the [Feature]($common) when using [[Viewport.readPixels]]. */
     public readonly nonLocatable?: true | undefined;
@@ -160,7 +160,7 @@ export namespace FeatureSymbology {
    *  - The visibility of each [GeometryClass]($common) is set based on the view's [[ViewFlags]].
    *  - The line weight is overridden to 1 pixel for all Features if line weight has been disabled by the view's [[ViewFlags]].
    *  - The sets of elements which are always drawn and never drawn are initialized from the [[ViewState]]'s sets.
-   * An application can further customize the symbology of any Features by specifying an [[AddFeatureOverrides]] function on a [[Viewport]]. That function will be invoked
+   * An application can further customize the symbology of any Features by registering a [[FeatureOverrideProvider]] with a [[Viewport]]. That provider's addFeatureOverrides function will be invoked
    * whenever the Overrides need to be regenerated.
    *
    * To override the symbology of *most* Features within a view, specify a [[defaultOverrides]] to be applied to any Feature not explicitly overridden.

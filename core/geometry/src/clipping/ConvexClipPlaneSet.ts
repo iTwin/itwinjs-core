@@ -213,11 +213,27 @@ export class ConvexClipPlaneSet implements Clipper {
     }
     return tNear[0] <= tFar;
   }
-
-  public multiplyPlanesByMatrix(matrix: Matrix4d) {
-    for (const plane of this._planes) {
-      plane.multiplyPlaneByMatrix(matrix);
+  /**
+   * Multiply all the ClipPlanes DPoint4d by matrix.
+   * @param matrix matrix to apply.
+   * @param invert if true, use in verse of the matrix.
+   * @param transpose if true, use the transpose of the matrix (or inverse, per invert parameter)
+   * * Note that if matrixA is applied to all of space, the matrix to send to this method to get a corresponding effect on the plane is the inverse transpose of matrixA
+   * * Callers that will apply the same matrix to many planes should pre-invert the matrix for efficiency.
+   * * Both params default to true to get the full effect of transforming space.
+   * @param matrix matrix to apply
+   */
+  public multiplyPlanesByMatrix4d(matrix: Matrix4d, invert: boolean = true, transpose: boolean = true): boolean {
+    if (invert) {  // form inverse once here, reuse for all planes
+      const inverse = matrix.createInverse();
+      if (!inverse)
+        return false;
+      return this.multiplyPlanesByMatrix4d(inverse, false, transpose);
     }
+    for (const plane of this._planes) {
+      plane.multiplyPlaneByMatrix4d(matrix, false, transpose);
+    }
+    return true;
   }
 
   public isPointInside(point: Point3d): boolean {
@@ -389,12 +405,20 @@ export class ConvexClipPlaneSet implements Clipper {
     }
     return result;
   }
-
+/**
+ * Add a plane to the convex set.
+ * @param plane plane to add
+ */
   public addPlaneToConvexSet(plane: ClipPlane | undefined) {
     if (plane)
       this._planes.push(plane);
   }
-
+/**
+ * test many points.  Distribute them to arrays depending on in/out result.
+ * @param points points to test
+ * @param inOrOn points tahtare in or on the set
+ * @param out points that are out.
+ */
   public clipPointsOnOrInside(points: Point3d[], inOrOn: Point3d[], out: Point3d[]) {
     inOrOn.length = 0;
     out.length = 0;
@@ -406,14 +430,25 @@ export class ConvexClipPlaneSet implements Clipper {
       }
     }
   }
-
-  public polygonClip(input: Point3d[], output: Point3d[], work: Point3d[]) {
+/**
+ * Clip a polygon to the planes of the clip plane set.
+ * * For a convex input polygon, the output is another convex polygon.
+ * * For a nonconvex input, the output may have double-back edges along plane intersections.  This is still a valid clip in a parity sense.
+ * * The containingPlane parameter allows callers within ConvexClipPlane set to bypass planes known to contain the polygon
+ * @param input input polygon, usually convex.
+ * @param output output polygon
+ * @param work work array.
+ * @param containingPlane if this plane is found inthe convex set, it is NOT applied.
+ */
+  public polygonClip(input: Point3d[], output: Point3d[], work: Point3d[], planeToSkip?: ClipPlane) {
     output.length = 0;
     // Copy input array
     for (const i of input)
       output.push(i);
 
     for (const plane of this._planes) {
+      if (planeToSkip === plane)
+        continue;
       if (output.length === 0)
         break;
       plane.convexPolygonClipInPlace(output, work);
@@ -506,7 +541,7 @@ export class ConvexClipPlaneSet implements Clipper {
               if (points)
                 points.push(xyz);
               if (rangeToExtend)
-              rangeToExtend.extendPoint(xyz);
+                rangeToExtend.extendPoint(xyz);
             }
           }
         }
@@ -522,14 +557,18 @@ export class ConvexClipPlaneSet implements Clipper {
       plane.setInvisible(invisible);
     }
   }
-
+/**
+ * Add planes for z-direction clip between low and high z levels.
+ * @param invisible value to apply to the `invisble` bit for the new planes
+ * @param zLow low z value.  The plane clips out points with z below this.
+ * @param zHigh high z value.  The plane clips out points iwth z above this.
+ */
   public addZClipPlanes(invisible: boolean, zLow?: number, zHigh?: number) {
     if (zLow !== undefined)
       this._planes.push(ClipPlane.createNormalAndDistance(Vector3d.create(0, 0, 1), zLow, invisible)!);
     if (zHigh !== undefined)
       this._planes.push(ClipPlane.createNormalAndDistance(Vector3d.create(0, 0, -1), -zHigh, invisible)!);
   }
-
   /*
     #define CheckAreaXY_not
     // EDL Dec 7 2016.

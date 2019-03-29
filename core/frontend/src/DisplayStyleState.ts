@@ -8,7 +8,6 @@ import {
   ColorDef,
   DisplayStyleProps,
   RenderTexture,
-  RenderMaterial,
   SubCategoryOverride,
   SkyBoxProps,
   SkyBoxImageType,
@@ -30,6 +29,7 @@ import { TileTreeModelState } from "./ModelState";
 import { Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core";
 import { ContextRealityModelState } from "./ContextRealityModelState";
 import { RenderScheduleState } from "./RenderScheduleState";
+import { Viewport } from "./Viewport";
 
 /** A DisplayStyle defines the parameters for 'styling' the contents of a [[ViewState]]
  * @note If the DisplayStyle is associated with a [[ViewState]] which is being rendered inside a [[Viewport]], modifying
@@ -510,12 +510,18 @@ export class Environment implements EnvironmentProps {
   }
 }
 
+function isSameSkyBox(a: SkyBoxProps | undefined, b: SkyBoxProps | undefined): boolean {
+  if (undefined === a || undefined === b)
+    return undefined === a && undefined === b;
+  else
+    return JSON.stringify(a) === JSON.stringify(b);
+}
+
 /** A [[DisplayStyleState]] that can be applied to spatial views.
  * @public
  */
 export class DisplayStyle3dState extends DisplayStyleState {
   /** @internal */
-  public skyboxMaterial: RenderMaterial | undefined;
   private _skyBoxParams?: SkyBox.CreateParams;
   private _skyBoxParamsLoaded?: boolean;
   private _environment?: Environment;
@@ -536,21 +542,33 @@ export class DisplayStyle3dState extends DisplayStyleState {
     return this._environment;
   }
   public set environment(env: Environment) {
+    const prevEnv = this.settings.environment;
     this.settings.environment = env.toJSON();
     this._environment = undefined;
+
+    // Regenerate the skybox if the sky settings have changed
+    if (undefined !== this._skyBoxParamsLoaded && !isSameSkyBox(env.sky, prevEnv.sky)) {
+      // NB: We only reset _skyBoxParamsLoaded - keep the previous skybox (if any) to continue drawing until the new one (if any) is ready
+      this._skyBoxParamsLoaded = undefined;
+    }
   }
 
   /** Attempts to create textures for the sky of the environment, and load it into the sky. Returns true on success, and false otherwise.
    * @internal
    */
-  public loadSkyBoxParams(system: RenderSystem): SkyBox.CreateParams | undefined {
-    if (undefined === this._skyBoxParams && undefined === this._skyBoxParamsLoaded) {
+  public loadSkyBoxParams(system: RenderSystem, vp?: Viewport): SkyBox.CreateParams | undefined {
+    if (undefined === this._skyBoxParamsLoaded) {
       this._skyBoxParamsLoaded = false;
       const skybox = this.environment.sky;
       skybox.loadParams(system, this.iModel).then((params?: SkyBox.CreateParams) => {
         this._skyBoxParams = params;
         this._skyBoxParamsLoaded = true;
-      }).catch((_err) => this._skyBoxParamsLoaded = true);
+        if (undefined !== vp)
+          vp.invalidateDecorations();
+      }).catch((_err) => {
+        this._skyBoxParamsLoaded = true;
+        this._skyBoxParams = undefined;
+      });
     }
 
     return this._skyBoxParams;

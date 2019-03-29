@@ -104,7 +104,7 @@
             "comment": "Fix incorrect colors for some decoration graphics."
           },
           {
-            "comment": "Remove uneeded typedoc plugin depedency"
+            "comment": "Remove unneeded typedoc plugin dependency"
           },
           {
             "comment": "Add support for Draco compressed meshes"

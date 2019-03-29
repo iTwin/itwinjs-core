@@ -20,7 +20,7 @@ Wed, 06 Mar 2019 15:41:22 GMT
 - Use new buildIModelJsBuild script
 - AxisAlignedBox and ElementAlignedBox are now typed to Range3d rather than classes
 - clone methods are no longer generic
-- Remove uneeded typedoc plugin depedency
+- Remove unneeded typedoc plugin dependency
 - PolyfaceBuilder solid primitive improvements
 - PolyfaceBuilder improvements.  Construct normals for sweeps.  Mesh pairing closure test.
 - PolyfaceBuilder creates params and normals for all Solid types

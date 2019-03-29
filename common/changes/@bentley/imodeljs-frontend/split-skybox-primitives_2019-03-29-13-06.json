@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Make sky sphere / sky gradient use separate rendering primitive from sky cube.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Mark.Schlosser@bentley.com"
+}

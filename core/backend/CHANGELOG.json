@@ -38,7 +38,7 @@
             "comment": "clone methods are no longer generic"
           },
           {
-            "comment": "Remove uneeded typedoc plugin depedency"
+            "comment": "Remove unneeded typedoc plugin dependency"
           },
           {
             "comment": "Added spatial <-> cartographic methods that check/use the geographic coordinate system before using ecef location."
