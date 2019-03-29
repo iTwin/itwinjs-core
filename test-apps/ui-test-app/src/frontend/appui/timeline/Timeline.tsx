@@ -2,7 +2,7 @@ import * as React from "react";
 import classnames from "classnames";
 import { CommonProps } from "@bentley/ui-ninezone";
 import { Slider, Rail, Handles, Ticks, SliderItem } from "react-compound-slider";
-import { Milestone } from "./Interfaces";
+import { Milestone } from "@bentley/ui-components";
 import "./Timeline.scss";
 
 // const oneDay = 86400000;
@@ -27,7 +27,7 @@ interface ScrubberProps {
 function Scrubber({ startDate, endDate, selectedDate }: ScrubberProps) {
   const percent = (selectedDate.getTime() - startDate.getTime()) / (endDate.getTime() - startDate.getTime()) * 100;
   return (
-    <div className="handle" style={{left: `${percent}%`}} />
+    <div className="handle" style={{ left: `${percent}%` }} />
   );
 }
 
@@ -54,11 +54,11 @@ class TooltipRail extends React.Component<TooltipRailProps, TooltipRailState> {
   constructor(props: TooltipRailProps) {
     super(props);
 
-    this.state = {value: null, percent: null};
+    this.state = { value: null, percent: null };
   }
 
   public componentDidMount() {
-  //  document.addEventListener("mousedown", this._onMouseDown);
+    //  document.addEventListener("mousedown", this._onMouseDown);
   }
 
   private _onMouseEnter = () => {
@@ -87,7 +87,7 @@ class TooltipRail extends React.Component<TooltipRailProps, TooltipRailState> {
     return (
       <>
         {!activeHandleID && value ? (
-          <div className="tooltip-rail" style={{left: `${percent}%`}}>
+          <div className="tooltip-rail" style={{ left: `${percent}%` }}>
             <div className="tooltip">
               <span className="tooltip-text">{formatDate(value)}</span>
             </div>
@@ -131,7 +131,7 @@ class Handle extends React.Component<HandleProps, HandleState> {
   constructor(props: HandleProps) {
     super(props);
 
-    this.state = {mouseOver: false};
+    this.state = { mouseOver: false };
   }
 
   private _onMouseEnter = () => {
@@ -155,7 +155,7 @@ class Handle extends React.Component<HandleProps, HandleState> {
     return (
       <>
         {(mouseOver || isActive) && !disabled ? (
-          <div className="tooltip-rail" style={{left: `${percent}%`}}>
+          <div className="tooltip-rail" style={{ left: `${percent}%` }}>
             <div className="tooltip">
               <span className="tooltip-text">{formatDate(value)}</span>
             </div>
@@ -167,7 +167,7 @@ class Handle extends React.Component<HandleProps, HandleState> {
           aria-valuemax={max}
           aria-valuenow={value}
           className="handle3"
-          style={{left: `${percent}%`}}
+          style={{ left: `${percent}%` }}
           {...getHandleProps(id, {
             onMouseEnter: this._onMouseEnter,
             onMouseLeave: this._onMouseLeave,
@@ -196,7 +196,7 @@ function Tick({ tick, count, index }: TickProps) {
   } else if (index === (count - 1)) {
     return (
       <span className="tick-label end">End</span>
-     );
+    );
   } else {
     return (
       <>
@@ -229,19 +229,20 @@ export class Timeline extends React.Component<TimelineProps, TimelineState> {
   constructor(props: TimelineProps) {
     super(props);
 
-    const quarter = (this.props.endDate.getTime() - this.props.startDate.getTime()) / 4;
+    if (props.endDate && props.startDate) {
+      const quarter = (props.endDate.getTime() - props.startDate.getTime()) / 4;
 
-    // compute the ticks
-    const ticks: number[] = [];
-    ticks.push (this.props.startDate.getTime());
-    // for (let i = this.props.startDate.getTime(); i <= (this.props.endDate.getTime()); i += oneDay) {
-    for (let i = 1; i < 4; i++) {
-      const newDate = this.props.startDate.getTime() + (quarter * i);
-      ticks.push (newDate);
+      // compute the ticks
+      const ticks: number[] = [];
+      ticks.push(props.startDate.getTime());
+      // for (let i = this.props.startDate.getTime(); i <= (this.props.endDate.getTime()); i += oneDay) {
+      for (let i = 1; i < 4; i++) {
+        const newDate = props.startDate.getTime() + (quarter * i);
+        ticks.push(newDate);
+      }
+      ticks.push(props.endDate.getTime());
+      this.state = { ticks };
     }
-    ticks.push(this.props.endDate.getTime());
-
-    this.state = { ticks };
   }
 
   private _milestones = (): number[] => {
@@ -249,7 +250,7 @@ export class Timeline extends React.Component<TimelineProps, TimelineState> {
     const handles: number[] = [];
 
     if (milestones) {
-      milestones.forEach((milestone: Milestone) => { handles.push (milestone.date.getTime()); });
+      milestones.forEach((milestone: Milestone) => { handles.push(milestone.date.getTime()); });
     }
 
     return handles;
@@ -258,7 +259,9 @@ export class Timeline extends React.Component<TimelineProps, TimelineState> {
   public render() {
     const { startDate, endDate, selectedDate, milestones, onChange, onUpdate, onSlideStart } = this.props;
     const domain = [startDate.getTime(), endDate.getTime()];
-    const className = classnames ("timeline", this.props.className);
+    const className = classnames("timeline", this.props.className);
+    if (0 === this._milestones().length)
+      return null;
 
     return (
       <div className={className}>
@@ -266,7 +269,7 @@ export class Timeline extends React.Component<TimelineProps, TimelineState> {
           mode={1}
           step={1}
           domain={domain}
-          rootStyle={{position: "relative", height: "100%", margin: "0 60px"}}
+          rootStyle={{ position: "relative", height: "100%", margin: "0 60px" }}
           onUpdate={onUpdate}
           onChange={onChange}
           onSlideStart={onSlideStart}
@@ -291,6 +294,7 @@ export class Timeline extends React.Component<TimelineProps, TimelineState> {
               </div>
             )}
           </Handles>
+          {this.state.ticks.length > 0} &&
           <Ticks values={this.state.ticks}>
             {({ ticks }) => (
               <div className="slider-ticks">
