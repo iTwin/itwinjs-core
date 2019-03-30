@@ -6,6 +6,11 @@ import { Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { DevTools } from "../../imodeljs-backend";
 import { assert } from "chai";
 import { IModelTestUtils } from "../IModelTestUtils";
+import * as os from "os";
+
+interface StringIndexedObject<T> {
+  [index: string]: T;
+}
 
 describe("DevTools", () => {
 
@@ -17,7 +22,27 @@ describe("DevTools", () => {
     const stats = DevTools.stats();
     assert.isDefined(stats);
     assert.isDefined(stats.os);
+    assert.isDefined(stats.os.totalmem);
+    assert.isDefined(stats.os.freemem);
+    assert.isDefined(stats.os.uptime);
+    assert.isDefined(stats.os.cpus);
+    assert.isDefined(stats.os.cpuUsage);
+    assert.isTrue(stats.os.cpuUsage < 100);
     assert.isDefined(stats.process);
+    assert.isDefined(stats.process.pid);
+    assert.isDefined(stats.process.ppid);
+    assert.isDefined(stats.process.memoryUsage);
+    assert.isDefined(stats.process.uptime);
+
+    assert.isTrue(Object.keys(stats.os.cpus).length > 0);
+    for (const cpu of Object.values<os.CpuInfo>(stats.os.cpus)) {
+      assert.isDefined(cpu.times);
+      const cpuTimes = cpu.times as StringIndexedObject<number>;
+      assert.isTrue(Object.keys(cpuTimes).length > 0);
+      for (const type of Object.keys(cpuTimes)) {
+        assert.isTrue(cpuTimes[type] < 100);
+      }
+    }
   });
 
   it("can ping backend", () => {

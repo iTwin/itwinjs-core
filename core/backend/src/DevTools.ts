@@ -10,6 +10,10 @@ import * as process from "process";
 
 const loggerCategory = "imodeljs_backend.DevTools";
 
+interface StringIndexedObject<T> {
+  [index: string]: T;
+}
+
 /**
  * Internal diagnostic utility
  * @internal
@@ -28,21 +32,43 @@ export class DevTools {
     return true;
   }
 
+  private static hrtimeToMS(hrtime: any) {
+    return hrtime[0] * 1000 + hrtime[1] / 1000000;
+  }
+
   private static evaluateCpuUsage(): number {
-    const startHrTime = process.hrtime();
+    const NUMBER_OF_CPUS = os.cpus().length;
+    const startTime = process.hrtime();
     const startUsage = process.cpuUsage();
 
-    // spin the CPU for 1000 milliseconds
+    // spin the CPU for 500 milliseconds
     const now = Date.now();
-    while (Date.now() - now < 1000);
+    while (Date.now() - now < 500);
 
-    const elapUsage = process.cpuUsage(startUsage); // micro seconds
-    const elapHrTime = process.hrtime(startHrTime);
+    const elapTime = process.hrtime(startTime);
+    const elapUsage = process.cpuUsage(startUsage);
 
-    const elapTime = elapHrTime[0] + elapHrTime[1] / 1000; // micro seconds
+    const elapTimeMS = this.hrtimeToMS(elapTime);
 
-    const cpuUsagePercent = Math.round(100 * (elapUsage.user + elapUsage.system) / elapTime);
-    return cpuUsagePercent;
+    const elapUserMS = elapUsage.user / 1000; // microseconds to milliseconds
+    const elapSystMS = elapUsage.system / 1000;
+    const cpuPercent = Math.round((100 * (elapUserMS + elapSystMS) / elapTimeMS / NUMBER_OF_CPUS));
+
+    return cpuPercent;
+  }
+
+  private static evaluateCpus(): os.CpuInfo[] {
+    const cpus = new Array<os.CpuInfo>();
+    Object.assign(cpus, os.cpus());
+    for (const cpu of Object.values(cpus)) {
+      const total = Object.values(cpu.times).reduce((_total: number, currValue) => _total += currValue, 0);
+
+      const cpuTimes = cpu.times as StringIndexedObject<number>;
+      for (const type of Object.keys(cpuTimes)) {
+        cpuTimes[type] = Math.round(100 * cpuTimes[type] / total);
+      }
+    }
+    return cpus;
   }
 
   /** Returns JSON object with backend statistics */
@@ -55,11 +81,14 @@ export class DevTools {
           totalmem: os.totalmem(),
           freemem: os.freemem(),
           uptime: os.uptime(),
-          cpus: os.cpus(),
-          cpuUsagePercent: this.evaluateCpuUsage(),
+          cpus: this.evaluateCpus(),
+          cpuUsage: this.evaluateCpuUsage(),
         },
         process: {
-          memoryUsage: process.memoryUsage,
+          uptime: process.uptime(),
+          pid: process.pid,
+          ppid: process.ppid,
+          memoryUsage: process.memoryUsage(),
         },
       };
       return stat;
