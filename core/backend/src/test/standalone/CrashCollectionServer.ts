@@ -6,11 +6,12 @@ import * as formidable from "formidable";
 import * as http from "http";
 import * as fs from "fs-extra";
 import * as path from "path";
-import * as os from "os";
 
 // tslint:disable:no-console
 
-const uploadDir = path.join(os.tmpdir(), "Bentley", "iModelJs", "CrashCollectionServer");
+const uploadDir = path.join(__dirname, "files");
+if (!fs.existsSync(uploadDir))
+  fs.mkdirpSync(uploadDir);
 
 http.createServer((req, res) => {
 
