@@ -138,10 +138,7 @@ export class ElementTooltip extends React.Component<ElementTooltipProps, Element
 
       const containerBounds = Rectangle.create(this._element.getBoundingClientRect());
       const relativeBounds = Rectangle.createFromSize(this._size).offset(this._position);
-      const viewportOffset = new Point().getOffsetTo(containerBounds.topLeft());
-
-      const adjustedPosition = adjustPosition(relativeBounds, containerBounds.getSize());
-      const position = adjustedPosition.offset(viewportOffset);
+      const position = adjustPosition(relativeBounds, containerBounds.getSize());
 
       if (Point.create(position).equals(prevState.position))
         return null;

@@ -16,6 +16,7 @@ import { Zones as NZ_Zones, NineZone, WidgetZoneIndex, WidgetZone } from "@bentl
 import { UiFramework, UiVisibilityEventArgs } from "../UiFramework";
 import { StagePanelProps, StagePanel, StagePanelLocation, StagePanelRuntimeProps } from "../stagepanels/StagePanel";
 import { StagePanelDef } from "../stagepanels/StagePanelDef";
+import { ElementTooltip } from "../feedback/ElementTooltip";
 
 /** Properties for a [[Frontstage]] component.
  */
@@ -403,6 +404,7 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
 
               <NZ_Zones style={zonesStyle} isHidden={!this.state.isUiVisible}>
                 {this.cloneZoneElements(zones, nineZone, runtimeProps)}
+                <ElementTooltip />
               </NZ_Zones>
             </div>
 
