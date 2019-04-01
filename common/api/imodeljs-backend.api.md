@@ -1434,8 +1434,6 @@ export class IModelDb extends IModel implements PageableECSql {
     static createSnapshot(filePath: string, args: CreateIModelProps): IModelDb;
     // @beta
     static createSnapshotFromSeed(snapshotFile: string, seedFile: string): IModelDb;
-    // @deprecated
-    static createStandalone(fileName: string, args: CreateIModelProps): IModelDb;
     // (undocumented)
     static readonly defaultLimit = 1000;
     deleteFileProperty(prop: FilePropertyProps): DbResult;

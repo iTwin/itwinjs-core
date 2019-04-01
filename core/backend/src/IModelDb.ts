@@ -197,17 +197,6 @@ export class IModelDb extends IModel implements PageableECSql {
     return new IModelDb(briefcaseEntry, iModelToken, openParams);
   }
 
-  /** Create a standalone local Db.
-   * @param fileName The name for the iModel
-   * @param args The parameters that define the new iModel
-   * @deprecated The confusing concept of *standalone* is being replaced by the more strict concept of a read-only iModel *snapshot*. Callers should migrate to [[createSnapshot]].
-   */
-  public static createStandalone(fileName: string, args: CreateIModelProps): IModelDb {
-    const briefcaseEntry: BriefcaseEntry = BriefcaseManager.createStandalone(fileName, args);
-    // Logger.logTrace(loggerCategory, "IModelDb.createStandalone", loggerCategory, () => ({ pathname }));
-    return IModelDb.constructIModelDb(briefcaseEntry, OpenParams.standalone(briefcaseEntry.openParams!.openMode!));
-  }
-
   /** Create a local iModel *snapshot* file. Snapshots are disconnected from iModelHub so do not have a change timeline. Snapshots are typically used for archival or data transfer purposes.
    * > Note: A *snapshot* cannot be modified after [[closeSnapshot]] is called.
    * @param filePath The file that will contain the new iModel *snapshot*
@@ -215,7 +204,8 @@ export class IModelDb extends IModel implements PageableECSql {
    * @beta The *snapshot* concept is solid, but the concept name might change which would cause a function rename.
    */
   public static createSnapshot(filePath: string, args: CreateIModelProps): IModelDb {
-    return this.createStandalone(filePath, args);
+    const briefcaseEntry: BriefcaseEntry = BriefcaseManager.createStandalone(filePath, args);
+    return IModelDb.constructIModelDb(briefcaseEntry, OpenParams.standalone(briefcaseEntry.openParams!.openMode!));
   }
 
   /** Create a local iModel *snapshot* file using an existing iModel file as a *seed* or starting point.

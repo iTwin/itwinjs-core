@@ -28,7 +28,7 @@ export class GeoJsonImporter {
    * @param geoJson the input GeoJson data
    */
   public constructor(iModelFileName: string, geoJson: GeoJson, appendToExisting: boolean, modelName?: string, labelProperty?: string, pointRadius?: number, pseudoColor?: boolean) {
-    this.iModelDb = appendToExisting ? IModelDb.openStandalone(iModelFileName, OpenMode.ReadWrite) : IModelDb.createStandalone(iModelFileName, { rootSubject: { name: geoJson.title } });
+    this.iModelDb = appendToExisting ? IModelDb.openStandalone(iModelFileName, OpenMode.ReadWrite) : IModelDb.createSnapshot(iModelFileName, { rootSubject: { name: geoJson.title } });
     this._geoJson = geoJson;
     this._appendToExisting = appendToExisting;
     this._modelName = modelName;

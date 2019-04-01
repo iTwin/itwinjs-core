@@ -65,7 +65,7 @@ export class TestPushUtility {
     if (fs.existsSync(pathname))
       fs.unlinkSync(pathname);
 
-    this._iModelDb = IModelDb.createStandalone(pathname, { rootSubject: { name: this.iModelName! } });
+    this._iModelDb = IModelDb.createSnapshot(pathname, { rootSubject: { name: this.iModelName! } });
 
     const definitionModelId: Id64String = IModel.dictionaryId;
     this._physicalModelId = PhysicalModel.insert(this._iModelDb, IModel.rootSubjectId, "TestModel");
