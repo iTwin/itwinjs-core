@@ -8,7 +8,9 @@ import * as React from "react";
 import * as classnames from "classnames";
 import { TextProps } from "./TextProps";
 
-/** Styled small text */
+/** Styled small text
+ * @public
+ */
 
 export class SmallText extends React.Component<TextProps> {
   public render(): JSX.Element {
@@ -19,4 +21,3 @@ export class SmallText extends React.Component<TextProps> {
     );
   }
 }
-export default SmallText;

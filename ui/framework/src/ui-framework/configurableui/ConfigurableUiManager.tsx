@@ -26,6 +26,7 @@ import { ToolUiManager } from "../zones/toolsettings/ToolUiManager";
 
 /** Configurable Ui Manager maintains controls, Frontstages, Content Groups,
  * Content Layouts, Tasks and Workflows.
+ * @public
  */
 export class ConfigurableUiManager {
   private static _registeredControls: { [classId: string]: new (info: ConfigurableCreateInfo, options: any) => ConfigurableUiElement } = {};
@@ -178,5 +179,3 @@ export class ConfigurableUiManager {
     KeyboardShortcutManager.loadKeyboardShortcuts(shortcutList);
   }
 }
-
-export default ConfigurableUiManager;

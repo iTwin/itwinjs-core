@@ -10,7 +10,9 @@ import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManag
 
 import "./EditorContainer.scss";
 
-/** Arguments for the Property Updated event callback */
+/** Arguments for the Property Updated event callback
+ * @beta
+ */
 export interface PropertyUpdatedArgs {
   /** The property being updated. */
   propertyRecord: PropertyRecord;
@@ -18,7 +20,9 @@ export interface PropertyUpdatedArgs {
   newValue: PropertyValue;
 }
 
-/** Properties for a property editor component */
+/** Properties for a property editor component
+ * @beta
+ */
 export interface PropertyEditorProps {
   propertyRecord?: PropertyRecord;
   onCommit?: (args: PropertyUpdatedArgs) => void;
@@ -27,7 +31,9 @@ export interface PropertyEditorProps {
   setFocus?: boolean;
 }
 
-/** [[EditorContainer]] React component properties */
+/** [[EditorContainer]] React component properties
+ * @beta
+ */
 export interface EditorContainerProps {
   propertyRecord: PropertyRecord;
   title?: string;
@@ -35,21 +41,25 @@ export interface EditorContainerProps {
   onCancel: () => void;
   setFocus?: boolean;
 
-  /** @hidden */
+  /** @internal */
   ignoreEditorBlur?: boolean;
 }
 
+/** @internal */
 interface CloneProps extends PropertyEditorProps {
   ref: (ref: any) => void;
 }
 
-/** Interface implemented by React based type editors  */
+/** Interface implemented by React based type editors
+ * @beta
+ */
 export interface TypeEditor {
   getPropertyValue: () => Promise<PropertyValue | undefined>;
 }
 
 /**
  * EditorContainer React component
+ * @beta
  */
 export class EditorContainer extends React.PureComponent<EditorContainerProps> {
 
@@ -177,6 +187,7 @@ export class EditorContainer extends React.PureComponent<EditorContainerProps> {
     this.props.onCancel();
   }
 
+  /** @internal */
   public render() {
     return (
       <span className="components-editor-container"

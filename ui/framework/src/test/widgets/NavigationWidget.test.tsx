@@ -19,7 +19,7 @@ import {
   FrontstageManager,
 } from "../../ui-framework";
 import { Toolbar, Direction } from "@bentley/ui-ninezone";
-import ConfigurableUiManager from "../../ui-framework/configurableui/ConfigurableUiManager";
+import { ConfigurableUiManager } from "../../ui-framework/configurableui/ConfigurableUiManager";
 import { NavigationAidControl } from "../../ui-framework/navigationaids/NavigationAidControl";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { CoreTools } from "../../ui-framework/CoreToolDefinitions";

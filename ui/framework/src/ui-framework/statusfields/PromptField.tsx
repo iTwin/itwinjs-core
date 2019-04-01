@@ -9,13 +9,15 @@ import { connect } from "react-redux";
 import { StatusBarText } from "@bentley/ui-ninezone";
 import { UiFramework } from "../UiFramework";
 
-/** Defines properties supported by the Prompt Field Component. */
-export interface PromptFieldProps {
+/** Defines properties supported by the Prompt Field Component.
+ */
+interface PromptFieldProps {
   isInFooterMode: boolean;
   toolPrompt: string;
 }
 
-/** Prompt Field React component. This component is designed to be specified in a status bar definition.
+/**
+ * Prompt Field React component. This component is designed to be specified in a status bar definition.
  * It is used to display prompt from tools. To send a prompt to this component use IModelApp.notifications.outputPromptByKey or
  * IModelApp.notifications.outputPrompt.
  */
@@ -46,5 +48,11 @@ function mapStateToProps(state: any) {
 }
 
 // we declare the variable and export that rather than using export default.
-/** React component that is Redux connected. */ // tslint:disable-next-line:variable-name
+/**
+ * Prompt Field React component. This component is designed to be specified in a status bar definition.
+ * It is used to display prompt from tools. To send a prompt to this component use IModelApp.notifications.outputPromptByKey or
+ * IModelApp.notifications.outputPrompt.
+ * This React component is Redux connected.
+ * @public
+ */ // tslint:disable-next-line:variable-name
 export const PromptField = connect(mapStateToProps)(PromptFieldComponent);

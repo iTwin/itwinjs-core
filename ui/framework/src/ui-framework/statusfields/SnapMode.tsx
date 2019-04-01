@@ -23,7 +23,8 @@ const SnapModeDialog = withOnOutsideClick(SnapModeDialogComponent, undefined, fa
 const SnapModeDialogContent = withContainIn(SnapModeDialogContentComponent);
 
 // cSpell:ignore multione
-/** Defines properties supported by the SnapMode Field Component. */
+/** Defines properties supported by the SnapMode Field Component.
+ */
 interface SnapModeFieldProps {
   statusBar: IStatusBar;
   isInFooterMode: boolean;
@@ -39,7 +40,8 @@ interface SnapModeFieldEntry {
   iconName: string;
 }
 
-/** Snap Mode Field React component. This component is designed to be specified in a status bar definition. It will
+/**
+ * Snap Mode Field React component. This component is designed to be specified in a status bar definition. It will
  * display the active snap mode that AccuSnap will use and allow the user to select a new snap mode.
  */
 class SnapModeFieldComponent extends React.Component<SnapModeFieldProps> {
@@ -165,5 +167,10 @@ function mapStateToProps(state: any) {
 }
 
 // we declare the variable and export that rather than using export default.
-/** Snap Mode Field React component that is Redux connected. */ // tslint:disable-next-line:variable-name
+/**
+ * Snap Mode Field React component. This component is designed to be specified in a status bar definition. It will
+ * display the active snap mode that AccuSnap will use and allow the user to select a new snap mode.
+ * This Field React component is Redux connected.
+ * @public
+ */ // tslint:disable-next-line:variable-name
 export const SnapModeField = connect(mapStateToProps, mapDispatch)(SnapModeFieldComponent);

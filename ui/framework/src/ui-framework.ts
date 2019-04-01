@@ -2,7 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-export { default as UiFramework } from "./ui-framework/UiFramework";
+export * from "./ui-framework/UiFramework";
 
 export * from "./ui-framework/AppState";
 export * from "./ui-framework/FrameworkState";
@@ -33,6 +33,7 @@ export * from "./ui-framework/messages/AppNotificationManager";
 export * from "./ui-framework/configurableui/ConfigurableUiContent";
 export * from "./ui-framework/configurableui/ConfigurableUiControl";
 export * from "./ui-framework/configurableui/ConfigurableUiManager";
+export * from "./ui-framework/configurableui/state";
 export * from "./ui-framework/content/ContentControl";
 export * from "./ui-framework/content/ContentGroup";
 export * from "./ui-framework/content/ContentLayout";
@@ -74,6 +75,7 @@ export * from "./ui-framework/widgets/WidgetFactory";
 export * from "./ui-framework/workflow/Workflow";
 export * from "./ui-framework/zones/FrameworkZone";
 export * from "./ui-framework/zones/toolsettings/ToolSettingsZone";
+export * from "./ui-framework/zones/toolsettings/ToolInformation";
 export * from "./ui-framework/zones/toolsettings/ToolUiManager";
 export * from "./ui-framework/zones/toolsettings/ToolUiProvider";
 export * from "./ui-framework/zones/toolsettings/DefaultToolSettingsProvider";
@@ -165,6 +167,10 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
  * Classes for displaying information about an iModel
  */
 /**
+ * @docs-group-description IModelIndex
+ * Classes for displaying information about Models, Sheets and Views in an iModelConnection
+ */
+/**
  * @docs-group-description Item
  * Classes for working with an Item in a Tool Widget, Navigation Widget or Backstage
  */
@@ -187,10 +193,6 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
 /**
  * @docs-group-description OpenIModel
  * Classes for working with the UI for opening an iModel
- */
-/**
- * @docs-group-description OverallContent
- * Classes for working with the overall content of the application UI
  */
 /**
  * @docs-group-description Picker

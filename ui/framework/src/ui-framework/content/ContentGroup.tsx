@@ -8,7 +8,9 @@ import { ContentControl } from "./ContentControl";
 import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager";
 import { ConfigurableUiControlType, ConfigurableUiControlConstructor, ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl";
 
-/** Properties for content displayed in a content view */
+/** Properties for content displayed in a content view
+ * @public
+ */
 export interface ContentProps {
   /** An optional id for the Content View */
   id?: string;
@@ -18,7 +20,9 @@ export interface ContentProps {
   applicationData?: any;
 }
 
-/** Properties for a [[ContentGroup]] */
+/** Properties for a [[ContentGroup]]
+ * @public
+ */
 export interface ContentGroupProps {
   /** An optional id for the [[ContentGroup]] */
   id?: string;
@@ -31,6 +35,7 @@ export interface ContentGroupProps {
 // -----------------------------------------------------------------------------
 
 /** ContentGroup class. ContentGroups define content displayed in content views that are laid out using a [ContentLayout].
+ * @public
  */
 export class ContentGroup {
   private static _sId = 0;
@@ -134,6 +139,7 @@ export class ContentGroup {
 // -----------------------------------------------------------------------------
 
 /** ContentGroup Manager class.
+ * @public
  */
 export class ContentGroupManager {
   private static _groups: Map<string, ContentGroup> = new Map<string, ContentGroup>();

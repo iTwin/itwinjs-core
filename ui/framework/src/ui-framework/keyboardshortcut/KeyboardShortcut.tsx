@@ -9,7 +9,9 @@ import { ActionButtonItemDef } from "../shared/Item";
 import { ItemDefBase } from "../shared/ItemDefBase";
 import { KeyboardShortcutMenu } from "./KeyboardShortcutMenu";
 
-/** Enumeration for Function Keys */
+/** Enumeration for Function Keys
+ * @public
+ */
 export enum FunctionKey {
   F1 = "F1",
   F2 = "F2",
@@ -25,7 +27,9 @@ export enum FunctionKey {
   F12 = "F12",
 }
 
-/** Enumeration for Special Keys */
+/** Enumeration for Special Keys
+ * @public
+ */
 export enum SpecialKey {
   Home = "Home",
   End = "End",
@@ -44,7 +48,9 @@ export enum SpecialKey {
   Backspace = "Backspace",
 }
 
-/** Properties for a Keyboard Shortcut */
+/** Properties for a Keyboard Shortcut
+ * @public
+ */
 export interface KeyboardShortcutProps extends ItemProps {
   /** The key that invokes the shortcut.
    * This is either an alphanumeric key, a function key or a special key.
@@ -64,7 +70,9 @@ export interface KeyboardShortcutProps extends ItemProps {
   isShiftKeyRequired?: boolean;
 }
 
-/** Keyboard Shortcut used to execute an action */
+/** Keyboard Shortcut used to execute an action
+ * @public
+ */
 export class KeyboardShortcut extends ItemDefBase {
 
   private _key: string;
@@ -162,7 +170,9 @@ export class KeyboardShortcut extends ItemDefBase {
 
 }
 
-/** Keyboard Shortcut Container */
+/** Keyboard Shortcut Container
+ * @public
+ */
 export class KeyboardShortcutContainer {
   private _keyMap: Map<string, KeyboardShortcut> = new Map<string, KeyboardShortcut>();
   private _keyArray: KeyboardShortcut[] = new Array<KeyboardShortcut>();
@@ -232,7 +242,9 @@ export class KeyboardShortcutContainer {
   }
 }
 
-/** Keyboard Shortcut Manager */
+/** Keyboard Shortcut Manager
+ * @public
+ */
 export class KeyboardShortcutManager {
 
   private static _shortcuts: KeyboardShortcutContainer = new KeyboardShortcutContainer();

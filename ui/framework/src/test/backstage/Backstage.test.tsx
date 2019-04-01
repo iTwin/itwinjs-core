@@ -39,11 +39,13 @@ describe("Backstage", () => {
 
   describe("<Backstage />", () => {
     it("should render - isVisible", () => {
-      mount(<Backstage isVisible={true} />);
+      const wrapper = mount(<Backstage isVisible={true} />);
+      wrapper.unmount();
     });
 
     it("should render - !isVisible", () => {
-      mount(<Backstage isVisible={false} />);
+      const wrapper = mount(<Backstage isVisible={false} />);
+      wrapper.unmount();
     });
 
     it("renders correctly - isVisible", () => {
@@ -67,6 +69,57 @@ describe("Backstage", () => {
       ).should.matchSnapshot();
     });
 
+    it("should show", () => {
+      const wrapper = mount(<Backstage isVisible={false} />);
+      expect(Backstage.isBackstageVisible).to.be.false;
+      Backstage.show();
+      expect(Backstage.isBackstageVisible).to.be.true;
+      wrapper.unmount();
+    });
+
+    it("should hide", () => {
+      const wrapper = mount(<Backstage isVisible={true} />);
+      expect(Backstage.isBackstageVisible).to.be.true;
+      Backstage.hide();
+      expect(Backstage.isBackstageVisible).to.be.false;
+      wrapper.unmount();
+    });
+
+    it("should toggle", () => {
+      const wrapper = mount(<Backstage isVisible={false} />);
+      expect(Backstage.isBackstageVisible).to.be.false;
+
+      const toggleCommand = Backstage.backstageToggleCommand;
+      toggleCommand.execute();
+      expect(Backstage.isBackstageVisible).to.be.true;
+
+      toggleCommand.execute();
+      expect(Backstage.isBackstageVisible).to.be.false;
+
+      wrapper.unmount();
+    });
+
+    it("should show by updating isVisible prop", () => {
+      const wrapper = mount(<Backstage isVisible={false} />);
+      expect(Backstage.isBackstageVisible).to.be.false;
+      wrapper.setProps({ isVisible: true });
+      expect(Backstage.isBackstageVisible).to.be.true;
+      wrapper.unmount();
+    });
+
+    it("should close when clicking the overlay", () => {
+      const spyMethod = sinon.spy();
+      const wrapper = mount(<Backstage isVisible={true} onClose={spyMethod} />);
+      expect(Backstage.isBackstageVisible).to.be.true;
+      const overlay = wrapper.find("div.nz-backstage-backstage_Overlay");
+      overlay.simulate("click");
+      expect(Backstage.isBackstageVisible).to.be.false;
+      expect(spyMethod.calledOnce).to.be.true;
+      wrapper.unmount();
+    });
+  });
+
+  describe("<SeparatorBackstageItem />", () => {
     it("SeparatorBackstageItem should render", () => {
       mount(<SeparatorBackstageItem />);
     });
@@ -74,7 +127,9 @@ describe("Backstage", () => {
     it("SeparatorBackstageItem renders correctly", () => {
       shallow(<SeparatorBackstageItem />).should.matchSnapshot();
     });
+  });
 
+  describe("<CommandLaunchBackstageItem />", () => {
     it("CommandLaunchBackstageItem should render & execute", () => {
       const spyMethod = sinon.stub();
       let stateFuncRun = false;
@@ -119,7 +174,9 @@ describe("Backstage", () => {
       const commandHandler = () => { };
       shallow(<CommandLaunchBackstageItem commandId="my-command-id" labelKey="UiFramework:tests.label" iconSpec="icon-placeholder" execute={commandHandler} />).should.matchSnapshot();
     });
+  });
 
+  describe("<FrontstageLaunchBackstageItem />", () => {
     it("FrontstageLaunchBackstageItem should render & execute", () => {
       const spyMethod = sinon.stub();
       let stateFuncRun = false;
@@ -176,7 +233,9 @@ describe("Backstage", () => {
         shallow(<FrontstageLaunchBackstageItem frontstageId="Test1" labelKey="UiFramework:tests.label" iconSpec="icon-placeholder" />).should.matchSnapshot();
       }
     });
+  });
 
+  describe("<TaskLaunchBackstageItem />", () => {
     it("TaskLaunchBackstageItem should render & execute", () => {
       class Frontstage1 extends FrontstageProvider {
         public get frontstage(): React.ReactElement<FrontstageProps> {

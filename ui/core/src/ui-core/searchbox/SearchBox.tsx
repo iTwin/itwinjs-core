@@ -11,7 +11,9 @@ import { UiCore } from "../UiCore";
 
 import "./SearchBox.scss";
 
-/** Property interface for [[SearchBox]] */
+/** Properties for [[SearchBox]] component
+ * @public
+ */
 export interface SearchBoxProps extends CommonProps {
   /** value to set SearchBox to initially */
   initialValue?: string;
@@ -29,22 +31,23 @@ export interface SearchBoxProps extends CommonProps {
   onClear?: () => void;
 }
 
-/** @hidden */
-export interface SearchBoxState {
+/** @internal */
+interface SearchBoxState {
   value: string;
 }
 
 /**
  * Input box with builtin icon right justified bounded by the SearchBox
+ * @public
  */
 export class SearchBox extends React.Component<SearchBoxProps, SearchBoxState> {
   private _inputElement: HTMLInputElement | null = null;
   private _timeoutId: number = 0;
 
-  /** @hidden */
+  /** @internal */
   public readonly state: Readonly<SearchBoxState> = { value: this.props.initialValue || "" };
 
-  /** @hidden */
+  /** @internal */
   public render(): React.ReactNode {
     const searchClassName = classnames("searchbox", this.props.className);
     const emptyString = this.state.value === "";
@@ -138,5 +141,3 @@ export class SearchBox extends React.Component<SearchBoxProps, SearchBoxState> {
       this._inputElement.focus();
   }
 }
-
-export default SearchBox;

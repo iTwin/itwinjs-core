@@ -12,15 +12,18 @@ import { CommonProps, ToolSettingsTooltip, offsetAndContainInContainer, PointPro
 import { RelativePosition, NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
 import "./Pointer.scss";
 
-/** Properties of [[PointerMessage]] component. */
+/** Properties of [[PointerMessage]] component.
+ * @public
+ */
 export interface PointerMessageProps extends CommonProps {
   /** Text to display */
   message?: string;
 }
 
 /** [[PointerMessage]] state.
+ * @internal
  */
-export interface PointerMessageState {
+interface PointerMessageState {
   isVisible: boolean;
   priority: OutputMessagePriority;
   message: string;
@@ -29,6 +32,7 @@ export interface PointerMessageState {
 }
 
 /** [[PointerMessageChangedEvent]] arguments.
+ * @public
  */
 export interface PointerMessageChangedEventArgs {
   isVisible: boolean;
@@ -52,10 +56,13 @@ const adjustLeftPosition = offsetAndContainInContainer({ x: -adjustmentOffset, y
 const adjustTopLeftPosition = offsetAndContainInContainer({ x: -adjustmentOffset, y: -adjustmentOffset });
 
 /** Pointer Message Changed Event emitted by the [[PointerMessage]] component
+ * @public
  */
 export class PointerMessageChangedEvent extends UiEvent<PointerMessageChangedEventArgs> { }
 
-/** Pointer message pops up near pointer when attempting an invalid interaction. */
+/** Pointer message pops up near pointer when attempting an invalid interaction.
+ * @public
+ */
 export class PointerMessage extends React.Component<PointerMessageProps, PointerMessageState> {
   private static _pointerMessageChangedEvent: PointerMessageChangedEvent = new PointerMessageChangedEvent();
 
@@ -211,5 +218,3 @@ export class PointerMessage extends React.Component<PointerMessageProps, Pointer
     });
   }
 }
-
-export default PointerMessage;

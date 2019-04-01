@@ -8,7 +8,9 @@ import * as React from "react";
 import * as classnames from "classnames";
 import { TextProps } from "./TextProps";
 
-/** Styled title text */
+/** Styled title text
+ * @public
+ */
 export class Title extends React.Component<TextProps> {
   public render(): JSX.Element {
     return (
@@ -18,4 +20,3 @@ export class Title extends React.Component<TextProps> {
     );
   }
 }
-export default Title;

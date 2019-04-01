@@ -6,19 +6,10 @@
 
 import { ConfigurableUiControl, ConfigurableCreateInfo, ConfigurableUiControlType } from "../../configurableui/ConfigurableUiControl";
 
-// -----------------------------------------------------------------------------
-// Configurable Ui ToolUiProvider
-// -----------------------------------------------------------------------------
-
-/** Properties for the [[ToolUiProvider]] component.
- */
-export interface ToolUiProviderProps {
-  toolUiProvider: ToolUiProvider;
-}
-
 /**
  * ToolUiProvider provides the Tool Settings and/or Tool Assistance UI for a tool.
  * The ToolUiProvider is registered for the tool id via ConfigurableUiManager.registerControl.
+ * @public
  */
 export class ToolUiProvider extends ConfigurableUiControl {
   private _toolSettingsNode: React.ReactNode;
@@ -41,5 +32,3 @@ export class ToolUiProvider extends ConfigurableUiControl {
   /** Gets the type of ConfigurableUiControl, which is 'ToolUiProvider' in this case */
   public getType(): ConfigurableUiControlType { return ConfigurableUiControlType.ToolUiProvider; }
 }
-
-export default ToolUiProvider;

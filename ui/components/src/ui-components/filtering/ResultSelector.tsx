@@ -7,17 +7,21 @@
 import * as React from "react";
 import "./ResultSelector.scss";
 
-/** [[ResultSelector]] React Component state */
+/** [[ResultSelector]] React Component state
+ * @public
+ */
 export interface ResultSelectorState {
   /** Currently selected result/entry index */
   selectedResultId: number;
   /** Input string */
   selectedResultEdit: string;
-  /** Informs if selectdResult is currently being edited */
+  /** Informs if selectedResult is currently being edited */
   selectedResultInEditMode: boolean;
 }
 
-/** [[ResultSelector]] React Component properties */
+/** [[ResultSelector]] React Component properties
+ * @public
+ */
 export interface ResultSelectorProps {
   /** Total number of results/entries */
   resultCount: number;
@@ -25,8 +29,12 @@ export interface ResultSelectorProps {
   onSelectedChanged: (index: number) => void;
 }
 
-/** Component for stepping through results/entries */
+/** Component for stepping through results/entries
+ * @public
+ */
 export class ResultSelector extends React.Component<ResultSelectorProps, ResultSelectorState> {
+
+  /** @internal */
   constructor(props: ResultSelectorProps) {
     super(props);
     this.state = {
@@ -90,16 +98,19 @@ export class ResultSelector extends React.Component<ResultSelectorProps, ResultS
       this._onSelectedResultConfirmed();
   }
 
+  /** @internal */
   public componentDidMount() {
     this.props.onSelectedChanged(this.props.resultCount ? 1 : 0);
   }
 
+  /** @internal */
   public componentDidUpdate(prevProps: ResultSelectorProps) {
     if (this.props.resultCount !== prevProps.resultCount) {
       this.props.onSelectedChanged(this.props.resultCount ? 1 : 0);
     }
   }
 
+  /** @internal */
   public render() {
     return (
       <span className="result-selector">

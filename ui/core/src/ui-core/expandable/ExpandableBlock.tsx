@@ -9,7 +9,9 @@ import * as classnames from "classnames";
 import { CommonProps } from "../utils/Props";
 import "./ExpandableBlock.scss";
 
-/** Properties for the [[ExpandableBlock]] React component */
+/** Properties for the [[ExpandableBlock]] React component
+ * @public
+ */
 export interface ExpandableBlockProps extends CommonProps {
   /** Label */
   title: string;
@@ -23,7 +25,9 @@ export interface ExpandableBlockProps extends CommonProps {
   caption?: string;
 }
 
-/** ExpandableBlock is a React component that shows and hides child content. */
+/** ExpandableBlock is a React component that shows and hides child content.
+ * @public
+ */
 export class ExpandableBlock extends React.Component<ExpandableBlockProps> {
 
   public render() {
@@ -58,5 +62,3 @@ export class ExpandableBlock extends React.Component<ExpandableBlockProps> {
     );
   }
 }
-
-export default ExpandableBlock;

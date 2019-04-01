@@ -9,6 +9,7 @@ import { PropertyRecord } from "@bentley/imodeljs-frontend";
 
 /**
  * Contains metadata about a group of Properties.
+ * @public
  */
 export interface PropertyCategory {
   name: string;
@@ -18,6 +19,7 @@ export interface PropertyCategory {
 
 /**
  * Interface for property data provided to the PropertyGrid React component.
+ * @public
  */
 export interface PropertyData {
   label: string;
@@ -26,15 +28,20 @@ export interface PropertyData {
   records: { [categoryName: string]: PropertyRecord[] };
 }
 
-/** A signature for property data change listeners */
+/** A signature for property data change listeners
+ * @public
+ */
 export declare type PropertyDataChangesListener = () => void;
 
-/** An event broadcasted on property data changes */
+/** An event broadcasted on property data changes
+ * @public
+ */
 export class PropertyDataChangeEvent extends BeEvent<PropertyDataChangesListener> { }
 
 /**
  * An interface for property data provider which returns
  * property data and broadcasts an event when the data changes
+ * @public
  */
 export interface IPropertyDataProvider {
   /** Returns property data. */

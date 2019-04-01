@@ -9,8 +9,10 @@ import * as React from "react";
 import { LEVEL_OFFSET } from "./Node";
 import "./Placeholder.scss";
 
-/** Properties for the [[Placeholder]] React component */
-export interface PlaceholderProps {
+/** Properties for the [[TreeNodePlaceholder]] React component
+ * @public
+ */
+export interface TreeNodePlaceholderProps {
   level: number;
   minWidth?: number;
   maxWidth?: number;
@@ -20,10 +22,10 @@ export interface PlaceholderProps {
 }
 
 /**
- * Presentation React component for a placeholder to be displayed instead of
- * a node while it's being loaded
+ * Presentation React component for a placeholder to be displayed instead of a node while it's being loaded
+ * @public
  */
-export default class Placeholder extends React.PureComponent<PlaceholderProps> {
+export class TreeNodePlaceholder extends React.PureComponent<TreeNodePlaceholderProps> {
   public render() {
     const className = classnames("core-tree-placeholder", this.props.className);
     const offset = this.props.level * LEVEL_OFFSET;

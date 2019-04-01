@@ -4,10 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Inputs */
 
-/** Enum for Input status  */
+/** Enum for Input status
+ * @public
+ */
 export enum InputStatus {
   Success = "success",
   Warning = "warning",
   Error = "error",
 }
-export default InputStatus;

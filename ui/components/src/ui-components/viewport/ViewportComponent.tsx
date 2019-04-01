@@ -24,6 +24,7 @@ import { Transform } from "@bentley/geometry-core";
 
 /**
  * Properties for [[ViewportComponent]] component.
+ * @public
  */
 export interface ViewportProps {
   /** IModel to display */
@@ -34,12 +35,13 @@ export interface ViewportProps {
   viewState?: ViewState;
   /** Function to get a reference to the ScreenViewport */
   viewportRef?: (v: ScreenViewport) => void;
-  /** @hidden */
+  /** @internal */
   onContextMenu?: (e: React.MouseEvent) => boolean;
 }
 
 /**
  * A viewport React component that creates a ScreenViewport.
+ * @public
  */
 export class ViewportComponent extends React.Component<ViewportProps> {
 

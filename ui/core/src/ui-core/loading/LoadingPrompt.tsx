@@ -10,7 +10,9 @@ import { LoadingSpinner } from "./LoadingSpinner";
 import { LoadingStatus } from "./LoadingStatus";
 import "./LoadingPrompt.scss";
 
-/** Properties for [[LoadingPrompt]] component */
+/** Properties for [[LoadingPrompt]] component
+ * @public
+ */
 export interface LoadingPromptProps {
   /** Title */
   title: string;
@@ -34,6 +36,7 @@ export interface LoadingPromptProps {
 
 /**
  * A component to display during loading.
+ * @public
  */
 export class LoadingPrompt extends React.Component<LoadingPromptProps> {
   public static defaultProps: Partial<LoadingPromptProps> = {
@@ -59,5 +62,3 @@ export class LoadingPrompt extends React.Component<LoadingPromptProps> {
     );
   }
 }
-
-export default LoadingPrompt;

@@ -10,13 +10,17 @@ import { MessageManager } from "../messages/MessageManager";
 
 import "./ValidationTextbox.scss";
 
-/** Enum for Input Status used in [[ValidationTextbox]] */
+/** Enum for Input Status used in [[ValidationTextbox]]
+ * @beta
+ */
 export enum InputStatus {
   Valid = 0,
   Invalid = 1,
 }
 
-/** Property interface for ValidationTextbox */
+/** Property interface for ValidationTextbox
+ * @beta
+ */
 export interface ValidationTextboxProps {
   /** value to set ValidationTextbox to initially */
   initialValue?: string;
@@ -24,9 +28,9 @@ export interface ValidationTextboxProps {
   placeholder?: string;
   /** triggered when the content of ValidationTextbox is changed. Return true if valid */
   onValueChanged?: (value: string) => InputStatus;
-  /** listens for <Enter> keypresses */
+  /** listens for <Enter> key presses */
   onEnterPressed?: () => void;
-  /** listens for <Esc> keypresses */
+  /** listens for <Esc> key presses */
   onEscPressed?: () => void;
   /** width of ValidationTextbox, measured in em */
   size?: number;
@@ -37,11 +41,12 @@ export interface ValidationTextboxProps {
 /**
  * Input box that validates text based on provided criteria. Defaults to checking
  * for empty if no method for onValueChanged is provided.
+ * @beta
  */
 export class ValidationTextbox extends React.Component<ValidationTextboxProps> {
   private _isValid: boolean = true;
 
-  /** @hidden */
+  /** @internal */
   public render(): React.ReactNode {
     const sizeStyle = {
       width: this.props.size ? this.props.size.toString() + "em" : "12em",

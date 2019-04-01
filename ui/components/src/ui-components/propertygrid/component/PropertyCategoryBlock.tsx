@@ -10,6 +10,7 @@ import { PropertyCategory } from "../PropertyDataProvider";
 
 /**
  * Properties for the [[PropertyCategoryBlock]] React component
+ * @public
  */
 export interface PropertyCategoryBlockProps {
   /** Category of the properties */
@@ -20,6 +21,7 @@ export interface PropertyCategoryBlockProps {
 
 /**
  * PropertyCategoryBlock React component
+ * @public
  */
 export class PropertyCategoryBlock extends React.Component<PropertyCategoryBlockProps> {
   private toggleExpansion() {
@@ -42,6 +44,7 @@ export class PropertyCategoryBlock extends React.Component<PropertyCategoryBlock
     }
   }
 
+  /** @internal */
   public render() {
     return (
       <ExpandableBlock

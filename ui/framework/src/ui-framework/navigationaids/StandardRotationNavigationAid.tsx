@@ -21,11 +21,8 @@ import { ViewportComponentEvents } from "@bentley/ui-components";
 // tslint:disable-next-line:variable-name
 const NZ_ContainedTray = withContainIn(NZ_Tray);
 
-// -----------------------------------------------------------------------------
-// 3D Orientation Navigation Aid Control
-// -----------------------------------------------------------------------------
-
-/** A 3D orientation Navigation Aid control.
+/** A 3D Standard Rotation Navigation Aid control.
+ * @alpha
  */
 export class StandardRotationNavigationAidControl extends NavigationAidControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
@@ -34,23 +31,24 @@ export class StandardRotationNavigationAidControl extends NavigationAidControl {
   }
 }
 
-/** @hidden */
+/** @internal */
 export interface RotationData {
   label: string;
   iconClassName: string;
 }
 
-/** @hidden */
-export interface StandardRotationNavigationAidState {
+/** @internal */
+interface StandardRotationNavigationAidState {
   list: RotationData[];
   selected: StandardViewId;
   isExpanded: boolean;
 }
 
-/** A 3D orientation Navigation Aid.
+/** A 3D Standard Rotation Navigation Aid.
+ * @alpha
  */
 export class StandardRotationNavigationAid extends React.Component<{}, StandardRotationNavigationAidState> {
-  /** @hidden */
+  /** @internal */
   public readonly state: Readonly<StandardRotationNavigationAidState>;
 
   constructor(props: any) {

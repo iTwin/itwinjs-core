@@ -73,6 +73,7 @@
         "geometry",
         "granularities",
         "groundplane",
+        "groupable",
         "guid",
         "halfspace",
         "hexa",

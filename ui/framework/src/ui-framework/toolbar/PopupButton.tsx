@@ -19,7 +19,8 @@ import "@bentley/ui-ninezone/lib/ui-ninezone/toolbar/item/expandable/group/Panel
 // tslint:disable-next-line: variable-name
 const DivWithOnOutsideClick = withOnOutsideClick((props: React.HTMLProps<HTMLDivElement>) => (<div {...props} />), undefined, false);
 
-/** Definition for a Group item that opens a group of items.
+/** Properties for the [[PopupButton]] React component
+ * @public
  */
 export interface PopupButtonProps extends ItemProps {
   onExpanded?: (expand: boolean) => void;
@@ -27,6 +28,7 @@ export interface PopupButtonProps extends ItemProps {
 
 /**
  * Used to provide custom popup button in toolbar.
+ * @public
  */
 export class PopupButton extends React.Component<PopupButtonProps, BaseItemState> {
   private _label: string | StringGetter = "";

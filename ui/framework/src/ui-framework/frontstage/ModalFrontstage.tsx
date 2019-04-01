@@ -11,6 +11,7 @@ import "./ModalFrontstage.scss";
 
 /**
  * Properties for the [[ModalFrontstage]] React component
+ * @public
  */
 export interface ModalFrontstageProps {
   /** Title displayed at the top of the modal Frontstage */
@@ -27,6 +28,7 @@ export interface ModalFrontstageProps {
 
 /**
  * ModalFrontstage React component
+ * @public
  */
 export class ModalFrontstage extends React.Component<ModalFrontstageProps> {
   private _onGoBack = () => {

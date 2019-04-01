@@ -15,7 +15,9 @@ import { CommonProps, MessageButton, Status, StatusMessage, MessageLayout as Sta
 // tslint:disable-next-line:variable-name
 const DivWithOnOutsideClick = withOnOutsideClick((props: React.HTMLProps<HTMLDivElement>) => (<div {...props} />));
 
-/** Properties of [[InputFieldMessage]] component. */
+/** Properties of [[InputFieldMessage]] component.
+ * @beta
+ */
 export interface InputFieldMessageProps extends CommonProps {
   /** Parent of message. */
   target: Element;
@@ -25,7 +27,9 @@ export interface InputFieldMessageProps extends CommonProps {
   onClose: () => void;
 }
 
-/** InputField message is a popup error message that appears under invalid user input. */
+/** InputField message is a popup error message that appears under invalid user input.
+ * @beta
+ */
 export class InputFieldMessage extends React.Component<InputFieldMessageProps> {
   public render(): React.ReactNode {
     return ReactDOM.createPortal(this._getErrorMessage(), this.props.target);
@@ -67,5 +71,3 @@ export class InputFieldMessage extends React.Component<InputFieldMessageProps> {
     );
   }
 }
-
-export default InputFieldMessage;

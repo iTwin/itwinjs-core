@@ -8,10 +8,15 @@ import { BeEvent } from "@bentley/bentleyjs-core";
 import { PropertyRecord, PropertyDescription } from "@bentley/imodeljs-frontend";
 import { SortDirection } from "@bentley/ui-core";
 import { ItemColorOverrides, ItemStyle } from "../properties/ItemStyle";
-type HorizontalAlignment = "left" | "center" | "right" | "justify";
+
+/** Type for Horizontal Alignment
+ * @public
+ */
+export type HorizontalAlignment = "left" | "center" | "right" | "justify";
 
 /**
  * Column definition provided to Table.
+ * @public
  */
 export interface ColumnDescription {
   key: string;
@@ -41,6 +46,7 @@ export interface ColumnDescription {
 
 /**
  * Cell definition provided to Table.
+ * @public
  */
 export interface CellItem {
   key: string;
@@ -54,6 +60,7 @@ export interface CellItem {
 
 /**
  * Row definition provided to Table.
+ * @public
  */
 export interface RowItem {
   /**
@@ -68,22 +75,20 @@ export interface RowItem {
   colorOverrides?: ItemColorOverrides;
 }
 
-/**
- * Row state for the Table.
+/** An interface table data change listeners
+ * @public
  */
-export interface RowState {
-  isSelected: boolean;
-}
-
-/** An interface table data change listeners */
 export declare type TableDataChangesListener = () => void;
 
-/** An event broadcasted on table data changes */
+/** An event broadcasted on table data changes
+ * @public
+ */
 export class TableDataChangeEvent extends BeEvent<TableDataChangesListener> { }
 
 /**
  * TableDataProvider provides data to the Table.
  * It also provides support for data Sorting & Filtering.
+ * @public
  */
 export interface TableDataProvider {
   onColumnsChanged: TableDataChangeEvent;
@@ -107,6 +112,7 @@ export interface TableDataProvider {
 /**
  * MutableTableDataProvider provides mutation methods for data in the Table.
  * Useful for Drag & Drop processing.
+ * @beta
  */
 export interface MutableTableDataProvider extends TableDataProvider {
   addRow(rowItem: RowItem): number;

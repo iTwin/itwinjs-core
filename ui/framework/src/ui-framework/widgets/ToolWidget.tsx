@@ -15,6 +15,7 @@ import { FrontstageManager, ToolActivatedEventArgs } from "../frontstage/Frontst
 import { AppButton, Tools as NZ_ToolsWidget } from "@bentley/ui-ninezone";
 
 /** A Tool Widget normally displayed in the top left zone in the 9-Zone Layout system.
+ * @public
  */
 export class ToolWidgetDef extends ToolbarWidgetDefBase {
   private _appButton: CommandItemDef | undefined;
@@ -52,6 +53,7 @@ export class ToolWidgetDef extends ToolbarWidgetDefBase {
 }
 
 /** Properties for the [[ToolWidget]] React component.
+ * @public
  */
 export interface ToolWidgetPropsEx extends ToolWidgetProps {
   button?: React.ReactNode;
@@ -60,17 +62,19 @@ export interface ToolWidgetPropsEx extends ToolWidgetProps {
 }
 
 /** State for the [[ToolWidget]] React component.
+ * @internal
  */
-export interface ToolWidgetState {
+interface ToolWidgetState {
   toolWidgetProps: ToolWidgetPropsEx;
   toolWidgetDef: ToolWidgetDef;
 }
 
 /** ToolWidget React component.
+ * @public
  */
 export class ToolWidget extends React.Component<ToolWidgetPropsEx, ToolWidgetState> {
 
-  /** @hidden */
+  /** @internal */
   public readonly state: Readonly<ToolWidgetState>;
 
   constructor(props: ToolWidgetPropsEx, context?: any) {
@@ -147,5 +151,3 @@ class ToolWidgetWithDef extends React.Component<Props> {
     );
   }
 }
-
-export default ToolWidget;

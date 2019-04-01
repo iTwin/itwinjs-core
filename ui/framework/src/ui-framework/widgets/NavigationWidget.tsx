@@ -9,18 +9,20 @@ import * as React from "react";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { ViewportComponentEvents, ViewClassFullNameChangedEventArgs } from "@bentley/ui-components";
 
-import ConfigurableUiManager from "../configurableui/ConfigurableUiManager";
+import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager";
 import { ToolbarWidgetDefBase } from "./ToolbarWidgetBase";
 import { NavigationWidgetProps, WidgetType } from "./WidgetDef";
 
-import { NavigationAidControl } from "../navigationaids/NavigationAidControl";
-import { FrontstageManager, ToolActivatedEventArgs, NavigationAidActivatedEventArgs, ContentControlActivatedEventArgs } from "../frontstage/FrontstageManager";
+import { NavigationAidControl, NavigationAidActivatedEventArgs } from "../navigationaids/NavigationAidControl";
+import { FrontstageManager, ToolActivatedEventArgs } from "../frontstage/FrontstageManager";
 import { ConfigurableUiControlType } from "../configurableui/ConfigurableUiControl";
 
 import { Tools as NZ_ToolsWidget } from "@bentley/ui-ninezone";
 import { ContentViewManager } from "../content/ContentViewManager";
+import { ContentControlActivatedEventArgs } from "../content/ContentControl";
 
 /** A Navigation Widget normally displayed in the top right zone in the 9-Zone Layout system.
+ * @public
  */
 export class NavigationWidgetDef extends ToolbarWidgetDefBase {
   private _navigationAidId: string;
@@ -81,6 +83,7 @@ export class NavigationWidgetDef extends ToolbarWidgetDefBase {
 }
 
 /** Properties for the [[NavigationWidget]] React component.
+ * @public
  */
 export interface NavigationWidgetPropsEx extends NavigationWidgetProps {
   iModelConnection?: IModelConnection;
@@ -89,17 +92,19 @@ export interface NavigationWidgetPropsEx extends NavigationWidgetProps {
 }
 
 /** State for the Navigation Widget React component.
+ * @internal
  */
-export interface NavigationWidgetState {
+interface NavigationWidgetState {
   navigationWidgetProps: NavigationWidgetPropsEx;
   navigationWidgetDef: NavigationWidgetDef;
 }
 
 /** Navigation Widget React component.
+ * @public
  */
 export class NavigationWidget extends React.Component<NavigationWidgetPropsEx, NavigationWidgetState> {
 
-  /** @hidden */
+  /** @internal */
   public readonly state: Readonly<NavigationWidgetState>;
 
   constructor(props: NavigationWidgetPropsEx, context?: any) {

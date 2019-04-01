@@ -8,53 +8,75 @@ import { IModelApp, Viewport, SelectedViewportChangedArgs, StandardViewId } from
 import { UiEvent } from "@bentley/ui-core";
 import { Matrix3d } from "@bentley/geometry-core";
 
-/** Arguments for [[CubeRotationChangeEvent]] */
+/** Arguments for [[CubeRotationChangeEvent]]
+ * @public
+ */
 export interface CubeRotationChangeEventArgs {
   rotMatrix: Matrix3d;
   animationTime?: number;
 }
 
-/** 3d Cube Rotation Change event */
+/** 3d Cube Rotation Change event
+ * @public
+ */
 export class CubeRotationChangeEvent extends UiEvent<CubeRotationChangeEventArgs> { }
 
-/** Arguments for [[StandardRotationChangeEvent]] */
+/** Arguments for [[StandardRotationChangeEvent]]
+ * @public
+ */
 export interface StandardRotationChangeEventArgs {
   standardRotation: StandardViewId;
 }
 
-/** Standard Rotation Change event */
+/** Standard Rotation Change event
+ * @public
+ */
 export class StandardRotationChangeEvent extends UiEvent<StandardRotationChangeEventArgs> { }
 
-/** Arguments for [[ViewRotationChangeEvent]] */
+/** Arguments for [[ViewRotationChangeEvent]]
+ * @public
+ */
 export interface ViewRotationChangeEventArgs {
   viewport: Viewport;
   animationTime?: number;
 }
 
-/** View Rotation Change event */
+/** View Rotation Change event
+ * @public
+ */
 export class ViewRotationChangeEvent extends UiEvent<ViewRotationChangeEventArgs> { }
 
-/** Arguments for [[ViewClassFullNameChangedEvent]] */
+/** Arguments for [[ViewClassFullNameChangedEvent]]
+ * @public
+ */
 export interface ViewClassFullNameChangedEventArgs {
   viewport: Viewport;
   oldName: string;
   newName: string;
 }
 
-/** View Class Full Name Change event */
+/** View Class Full Name Change event
+ * @public
+ */
 export class ViewClassFullNameChangedEvent extends UiEvent<ViewClassFullNameChangedEventArgs> { }
 
-/** Arguments for [[ViewIdChangedEvent]] */
+/** Arguments for [[ViewIdChangedEvent]]
+ * @public
+ */
 export interface ViewIdChangedEventArgs {
   viewport: Viewport;
   oldId: string;
   newId: string;
 }
 
-/** View Id Change event */
+/** View Id Change event
+ * @public
+ */
 export class ViewIdChangedEvent extends UiEvent<ViewIdChangedEventArgs> { }
 
-/** Viewport Rotation events and methods */
+/** Viewport Rotation events and methods
+ * @public
+ */
 export class ViewportComponentEvents {
   private static _removeListener?: () => void;
 

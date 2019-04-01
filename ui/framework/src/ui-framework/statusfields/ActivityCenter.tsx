@@ -12,21 +12,26 @@ import { Status, MessageLayout, Progress } from "@bentley/ui-ninezone";
 import { MessageManager, ActivityMessageEventArgs } from "../messages/MessageManager";
 import { UiFramework } from "../UiFramework";
 
-/** Properties for the [[ActivityCenterField]] component */
+/** Properties for the [[ActivityCenterField]] component
+ * @public
+ */
 export interface ActivityCenterProps {
   statusBar: IStatusBar;
   isInFooterMode: boolean;
   openWidget: StatusBarFieldId;
 }
 
-/** State for the [[ActivityCenterField]] component */
-export interface ActivityCenterState {
+/** State for the [[ActivityCenterField]] component
+ * @internal
+ */
+interface ActivityCenterState {
   title: string;
   percentage: number;
   isActivityMessageVisible: boolean;
 }
 
 /** Activity Center Field React component.
+ * @public
  */
 export class ActivityCenterField extends React.Component<ActivityCenterProps, ActivityCenterState> {
   private _element: any;

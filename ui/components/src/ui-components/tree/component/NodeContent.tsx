@@ -19,7 +19,7 @@ import { ItemStyleProvider, ItemStyle } from "../../properties/ItemStyle";
 import "./NodeContent.scss";
 
 /** Properties for [[TreeNodeContent]] component
- * @hidden
+ * @internal
  */
 export interface TreeNodeContentProps {
   node: BeInspireTreeNode<TreeNodeItem>;
@@ -43,13 +43,13 @@ export interface TreeNodeContentProps {
   renderId?: string;
 }
 
-/** @hidden */
+/** @internal */
 export interface TreeNodeContentState {
   label: React.ReactNode;
 }
 
 /** React component for displaying [[TreeNode]] label
- * @hidden
+ * @internal
  */
 export class TreeNodeContent extends React.Component<TreeNodeContentProps, TreeNodeContentState> {
   public readonly state: TreeNodeContentState = {

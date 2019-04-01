@@ -9,6 +9,7 @@ import { DragLayerProps } from "../../dragdrop/DragDropDef";
 
 /**
  * React component used to portray a column being dragged during Table column reordering.
+ * @public
  */
 export class ColumnDragLayer extends React.Component<DragLayerProps> {
   public render(): React.ReactNode {

@@ -18,7 +18,9 @@ import { UiFramework } from "../UiFramework";
 import { ViewRotationChangeEventArgs, ViewportComponentEvents } from "@bentley/ui-components";
 import { ContentViewManager } from "../content/ContentViewManager";
 
-/** NavigationAid that displays an interactive rotation cube that synchronizes with the rotation of the iModel Viewport */
+/** NavigationAid that displays an interactive rotation cube that synchronizes with the rotation of the iModel Viewport
+ * @public
+ */
 export class CubeNavigationAidControl extends NavigationAidControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
@@ -27,21 +29,21 @@ export class CubeNavigationAidControl extends NavigationAidControl {
   public getSize(): string | undefined { return "96px"; }
 }
 
-/** @hidden */
+/** @internal */
 export enum HitBoxX {
   None = 0,
   Right = 1,
   Left = -1,
 }
 
-/** @hidden */
+/** @internal */
 export enum HitBoxY {
   None = 0,
   Back = 1,
   Front = -1,
 }
 
-/** @hidden */
+/** @internal */
 export enum HitBoxZ {
   None = 0,
   Top = 1,
@@ -74,15 +76,15 @@ const cubeNavigationRoutes: { [key: number]: CubeNavigationRotationMap } = {
   [Face.Left]: { up: Face.Top, down: Face.Bottom, left: Face.Back, right: Face.Front },
 };
 
-/** @hidden */
+/** @internal */
 export enum CubeHover {
   None = 0,
   Hover,
   Active,
 }
 
-/** @hidden */
-export interface CubeNavigationState {
+/** @internal */
+interface CubeNavigationState {
   dragging: boolean;
   startRotMatrix: Matrix3d;
   endRotMatrix: Matrix3d;
@@ -91,7 +93,9 @@ export interface CubeNavigationState {
   hoverMap: { [key: string]: CubeHover };
 }
 
-/** Cube Navigation Aid Component */
+/** Cube Navigation Aid Component
+ * @public
+ */
 export class CubeNavigationAid extends React.Component<{}, CubeNavigationState> {
   private _start: Point2d = Point2d.createZero();
   private _then: number = 0;
@@ -104,7 +108,7 @@ export class CubeNavigationAid extends React.Component<{}, CubeNavigationState> 
     hoverMap: {},
   };
 
-  /** @hidden */
+  /** @internal */
   public componentDidMount() {
     ViewportComponentEvents.onViewRotationChangeEvent.addListener(this._handleViewRotationChangeEvent);
     this._then = Date.now();
@@ -120,7 +124,7 @@ export class CubeNavigationAid extends React.Component<{}, CubeNavigationState> 
     }
   }
 
-  /** @hidden */
+  /** @internal */
   public componentWillUnmount() {
     ViewportComponentEvents.onViewRotationChangeEvent.removeListener(this._handleViewRotationChangeEvent);
   }
@@ -353,7 +357,7 @@ export class CubeNavigationAid extends React.Component<{}, CubeNavigationState> 
   }
 }
 
-/** @hidden */
+/** @internal */
 export interface NavCubeFaceProps extends React.AllHTMLAttributes<HTMLDivElement> {
   face: Face;
   label: string;
@@ -362,7 +366,7 @@ export interface NavCubeFaceProps extends React.AllHTMLAttributes<HTMLDivElement
   onFaceCellHoverChange: (vector: Vector3d, state: CubeHover) => void;
 }
 
-/** @hidden */
+/** @internal */
 export class NavCubeFace extends React.Component<NavCubeFaceProps> {
   public render(): React.ReactNode {
     const { face, hoverMap, onFaceCellClick, onFaceCellHoverChange, label } = this.props;
@@ -417,7 +421,7 @@ class FaceRow extends React.Component<FaceRowProps> {
   }
 }
 
-/** @hidden */
+/** @internal */
 export interface FaceCellProps extends React.AllHTMLAttributes<HTMLDivElement> {
   center?: boolean;
   onFaceCellClick: (vector: Vector3d, face?: Face) => void;
@@ -427,7 +431,7 @@ export interface FaceCellProps extends React.AllHTMLAttributes<HTMLDivElement> {
   face?: Face;
 }
 
-/** @hidden */
+/** @internal */
 export class FaceCell extends React.Component<FaceCellProps> {
   private _startMouse: Point2d | undefined;
   public render(): React.ReactNode {

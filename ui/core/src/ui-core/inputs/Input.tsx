@@ -7,10 +7,14 @@
 import * as React from "react";
 import * as classnames from "classnames";
 
-/** Properties for the [[Input]] component */
+/** Properties for the [[Input]] component
+ * @public
+ */
 export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> { }
 
-/** Basic text input */
+/** Basic text input
+ * @public
+ */
 export class Input extends React.Component<InputProps> {
   public render(): JSX.Element {
     return (
@@ -19,4 +23,3 @@ export class Input extends React.Component<InputProps> {
     );
   }
 }
-export default Input;

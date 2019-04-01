@@ -31,6 +31,7 @@ const NestedToolGroup = withOnOutsideClick(NestedToolGroupComponent, undefined, 
 // -----------------------------------------------------------------------------
 
 /** An Item that opens a group of items.
+ * @public
  */
 export class GroupItemDef extends ActionButtonItemDef {
   public groupId: string;
@@ -141,7 +142,7 @@ interface State extends BaseItemState {
  */
 class GroupItem extends React.Component<Props, State> {
 
-  /** @hidden */
+  /** @internal */
   public readonly state: Readonly<State>;
   private _componentUnmounting = false;
   private _childSyncIds?: Set<string>;
@@ -510,9 +511,9 @@ class GroupItem extends React.Component<Props, State> {
 }
 
 /** Group Button React component
+ * @public
  */
-// tslint:disable-next-line:variable-name
-export const GroupButton: React.FunctionComponent<GroupButtonProps> = (props) => {
+export const GroupButton: React.FunctionComponent<GroupButtonProps> = (props) => {  // tslint:disable-line:variable-name
   const groupItemDef = new GroupItemDef(props);
   groupItemDef.resolveItems();
 

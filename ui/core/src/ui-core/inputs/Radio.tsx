@@ -8,13 +8,17 @@ import * as React from "react";
 import * as classnames from "classnames";
 import { InputStatus } from "./InputStatus";
 
-/** Properties for [[Radio]] component */
+/** Properties for [[Radio]] component
+ * @public
+ */
 export interface RadioProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   status?: InputStatus;
 }
 
-/** Basic radio input component */
+/** Basic radio input component
+ * @public
+ */
 export class Radio extends React.Component<RadioProps> {
   public render(): JSX.Element {
     const { label, disabled, status, className } = this.props;
@@ -32,4 +36,3 @@ export class Radio extends React.Component<RadioProps> {
     );
   }
 }
-export default Radio;

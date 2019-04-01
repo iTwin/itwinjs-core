@@ -13,15 +13,18 @@ import { ToolTipOptions } from "@bentley/imodeljs-frontend";
 
 import { ToolSettingsTooltip, offsetAndContainInContainer, PointProps, SizeProps, Rectangle, Point } from "@bentley/ui-ninezone";
 
-/** [[ElementTooltip]] Props. */
+/** [[ElementTooltip]] Props.
+ * @public
+ */
 export interface ElementTooltipProps {
   className?: string;
   style?: React.CSSProperties;
 }
 
 /** [[ElementTooltip]] State.
+ * @internal
  */
-export interface ElementTooltipState {
+interface ElementTooltipState {
   isVisible: boolean;
   message: HTMLElement | string;
   position: PointProps;
@@ -29,6 +32,7 @@ export interface ElementTooltipState {
 }
 
 /** [[ElementTooltipChangedEvent]] arguments.
+ * @public
  */
 export interface ElementTooltipChangedEventArgs {
   isTooltipVisible: boolean;
@@ -41,10 +45,12 @@ export interface ElementTooltipChangedEventArgs {
 const adjustPosition = offsetAndContainInContainer({ x: 8, y: 8 });
 
 /** ElementTooltip Changed Event class.
+ * @public
  */
 export class ElementTooltipChangedEvent extends UiEvent<ElementTooltipChangedEventArgs> { }
 
 /** ElementTooltip React component.
+ * @public
  */
 export class ElementTooltip extends React.Component<ElementTooltipProps, ElementTooltipState> {
   private static _elementTooltipChangedEvent: ElementTooltipChangedEvent = new ElementTooltipChangedEvent();
@@ -70,7 +76,7 @@ export class ElementTooltip extends React.Component<ElementTooltipProps, Element
   private _element?: HTMLElement;
   private _position?: PointProps;
 
-  /** @hidden */
+  /** @internal */
   public readonly state: Readonly<ElementTooltipState> = {
     message: "",
     isVisible: false,

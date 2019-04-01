@@ -6,6 +6,8 @@
 
 import * as React from "react";
 
-/** Properties for various text components */
+/** Properties for various text components
+ * @public
+ */
 
 export interface TextProps extends React.AllHTMLAttributes<HTMLSpanElement> { }

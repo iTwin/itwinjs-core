@@ -16,7 +16,9 @@ import { KeyboardShortcutMenu } from "../keyboardshortcut/KeyboardShortcutMenu";
 
 import "./configurableui.scss";
 
-/** Properties for [[ConfigurableUiContent]] */
+/** Properties for [[ConfigurableUiContent]]
+ * @public
+ */
 export interface ConfigurableUiContentProps {
   placeholder: string;
   appBackstage?: React.ReactNode;
@@ -82,5 +84,7 @@ class ConfigurableUiContentClass extends React.Component<ConfigurableUiContentPr
   }
 }
 
-/** The ConfigurableUiContent component is the high order component the pages specified using ConfigurableUi */
+/** The ConfigurableUiContent component is the high order component the pages specified using ConfigurableUi
+ * @public
+ */
 export const ConfigurableUiContent = connect(mapStateToProps, mapDispatch)(ConfigurableUiContentClass); // tslint:disable-line:variable-name

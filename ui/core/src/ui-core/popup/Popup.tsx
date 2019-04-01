@@ -10,12 +10,15 @@ import * as classnames from "classnames";
 import { CommonProps } from "../utils/Props";
 import "./Popup.scss";
 
+/** @internal */
 interface Point {
   x: number;
   y: number;
 }
 
-/** Position of the popup relative to its target */
+/** Position of the popup relative to its target
+ * @public
+ */
 export enum Position {
   TopLeft,
   TopRight,
@@ -27,7 +30,9 @@ export enum Position {
   Right,
 }
 
-/** Properties for the [[Popup]] component */
+/** Properties for the [[Popup]] component
+ * @public
+ */
 export interface PopupProps extends CommonProps {
   /**  show or hide the box shadow */
   showShadow: boolean;
@@ -51,6 +56,7 @@ export interface PopupProps extends CommonProps {
   target?: HTMLElement | null;
 }
 
+/** @internal */
 interface PopupState {
   isOpen: boolean;
   top: number;
@@ -58,7 +64,9 @@ interface PopupState {
   position: Position;
 }
 
-/** Popup React component */
+/** Popup React component
+ * @public
+ */
 export class Popup extends React.Component<PopupProps, PopupState> {
   private _popup: HTMLElement | null = null;
 
@@ -403,5 +411,3 @@ export class Popup extends React.Component<PopupProps, PopupState> {
       ), document.body);
   }
 }
-
-export default Popup;

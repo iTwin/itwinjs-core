@@ -7,7 +7,9 @@
 import * as React from "react";
 import * as classnames from "classnames";
 
-/** Properties for [[Textarea]] component */
+/** Properties for [[Textarea]] component
+ * @public
+ */
 export interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
   /** textarea rows
    * Default: 3
@@ -15,7 +17,9 @@ export interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextArea
   rows?: number;
 }
 
-/** Basic textarea component */
+/** Basic textarea component
+ * @public
+ */
 export class Textarea extends React.Component<TextareaProps> {
   public static defaultProps: Partial<TextareaProps> = {
     rows: 3,
@@ -28,4 +32,3 @@ export class Textarea extends React.Component<TextareaProps> {
     );
   }
 }
-export default Textarea;

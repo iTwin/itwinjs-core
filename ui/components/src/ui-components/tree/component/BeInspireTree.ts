@@ -13,6 +13,7 @@ import { PageOptions } from "../../common/PageOptions";
 
 /**
  * Enum containing all events that may be emitted by [[BeInspireTree]]
+ * @public
  */
 export enum BeInspireTreeEvent {
   ChangesApplied = "changes.applied",
@@ -37,7 +38,9 @@ export enum BeInspireTreeEvent {
   NodeUnchecked = "node.unchecked",
 }
 
-/** Be alias for Inspire.NodeConfig */
+/** Be alias for Inspire.NodeConfig
+ * @public
+ */
 export interface BeInspireTreeNodeConfig {
   children?: BeInspireTreeNodeConfig[] | true;
   id?: string;
@@ -45,7 +48,9 @@ export interface BeInspireTreeNodeConfig {
   itree?: BeInspireTreeNodeITree;
 }
 
-/** Be alias for Inspire.NodeConfig.ITree */
+/** Be alias for Inspire.NodeConfig.ITree
+ * @public
+ */
 export interface BeInspireTreeNodeITree {
   icon?: string;
   state?: {
@@ -62,7 +67,9 @@ export interface BeInspireTreeNodeITree {
   };
 }
 
-/** Data structure for [[BeInspireTreeNodeConfig]] with our injected props */
+/** Data structure for [[BeInspireTreeNodeConfig]] with our injected props
+ * @public
+ */
 export interface BeInspireTreeNodePayloadConfig<TPayload> extends BeInspireTreeNodeConfig {
   /** Node's data. May be `undefined` if this is placeholder node. */
   payload?: TPayload;
@@ -72,16 +79,19 @@ export interface BeInspireTreeNodePayloadConfig<TPayload> extends BeInspireTreeN
   beInspireTree: BeInspireTree<TPayload>;
 }
 
-/** Type definition for all BeInspireTree nodes */
+/** Type definition for all BeInspireTree nodes
+ * @public
+ */
 export interface BeInspireTreeNode<TPayload> extends Inspire.TreeNode, BeInspireTreeNodePayloadConfig<TPayload> {
   isDirty(): boolean;
   setDirty(value: boolean): void;
-  /** @hidden */
+  /** @internal */
   resetBeInspireOverrides(): void;
 }
 
 /**
  * Definition of a list of [[BeInspireTreeNode]] with some additional filtering methods
+ * @public
  */
 export interface BeInspireTreeNodes<TPayload> extends Array<BeInspireTreeNode<TPayload>> {
   node(id: string): BeInspireTreeNode<TPayload> | undefined;
@@ -94,24 +104,36 @@ export interface BeInspireTreeNodes<TPayload> extends Array<BeInspireTreeNode<TP
   visible(): BeInspireTreeNodes<TPayload>;
 }
 
-/** Array of tree node data elements */
+/** Array of tree node data elements
+ * @public
+ */
 export type BeInspireTreeDataProviderRaw<TPayload> = TPayload[];
-/** A Promise for DataProviderRaw */
+/** A Promise for DataProviderRaw
+ * @public
+ */
 export type BeInspireTreeDataProviderPromise<TPayload> = Promise<BeInspireTreeDataProviderRaw<TPayload>>;
-/** Signature for BeInspireTree data provider */
+/** Signature for BeInspireTree data provider
+ * @public
+ */
 export type BeInspireTreeDataProviderMethod<TPayload> = (parent?: TPayload) => BeInspireTreeDataProviderPromise<TPayload>;
-/** Signature for BeInspireTree data provider */
+/** Signature for BeInspireTree data provider
+ * @public
+ */
 export interface BeInspireTreeDataProviderInterface<TPayload> {
   getNodesCount(parent?: TPayload): Promise<number>;
   getNodes(parent?: TPayload, page?: PageOptions): BeInspireTreeDataProviderPromise<TPayload>;
 }
-/** Type definition for all BeInspireTree data providers */
+/** Type definition for all BeInspireTree data providers
+ * @public
+ */
 export type BeInspireTreeDataProvider<TPayload> = BeInspireTreeDataProviderRaw<TPayload>
   | BeInspireTreeDataProviderPromise<TPayload>
   | BeInspireTreeDataProviderMethod<TPayload>
   | BeInspireTreeDataProviderInterface<TPayload>;
 
-/** Type definition for a BeInspireTree renderer */
+/** Type definition for a BeInspireTree renderer
+ * @public
+ */
 export type BeInspireTreeRenderer<TPayload> = (rootNodes: Array<BeInspireTreeNode<TPayload>>) => void;
 
 type BeInspireTreeDataFunc<TPayload> = (parent: BeInspireTreeNode<TPayload> | undefined,
@@ -126,6 +148,7 @@ type BeInspireTreeData<TPayload> = Array<BeInspireTreeNodePayloadConfig<TPayload
 /**
  * A context which keeps [[BeInspireTree]] events muted until
  * it gets disposed.
+ * @public
  */
 export class EventsMuteContext implements IDisposable {
 
@@ -177,7 +200,9 @@ export class EventsMuteContext implements IDisposable {
   }
 }
 
-/** @hidden */
+/** Prototype for BeInspireTreeProps.mapPayloadToInspireNodeConfig
+ * @public
+ */
 export type MapPayloadToInspireNodeCallback<TPayload> = (payload: TPayload, remapper: MapPayloadToInspireNodeCallback<TPayload>) => BeInspireTreeNodeConfig;
 
 interface DeferredLoadingHandler<TPayload> {
@@ -187,6 +212,7 @@ interface DeferredLoadingHandler<TPayload> {
 
 /**
  * Configuration properties for [[BeInspireTree]]
+ * @public
  */
 export interface BeInspireTreeProps<TNodePayload> {
   dataProvider: BeInspireTreeDataProvider<TNodePayload>;
@@ -197,6 +223,7 @@ export interface BeInspireTreeProps<TNodePayload> {
 
 /**
  * Bentley wrapper for 'inspire-tree'
+ * @public
  */
 export class BeInspireTree<TNodePayload> {
 
@@ -352,7 +379,7 @@ export class BeInspireTree<TNodePayload> {
   /**
    * Request a new render of current model.
    *
-   * @hidden
+   * @internal
    */
   public applyChanges() {
     this.doEmit([BeInspireTreeEvent.ChangesApplied]);
@@ -591,7 +618,7 @@ export class BeInspireTree<TNodePayload> {
     });
   }
 
-  /** @hidden */
+  /** @internal */
   public createPlaceholderNode(index: number, parent?: BeInspireTreeNode<TNodePayload>): BeInspireTreeNode<TNodePayload> {
     const node = toNode<TNodePayload>(this._tree.createNode({
       id: `${parent ? parent.id : ""}-not_loaded[${index}]`,
@@ -613,7 +640,7 @@ export class BeInspireTree<TNodePayload> {
     return this._deferredLoadingHandler.requestNodeLoad(parent, index);
   }
 
-  /** @hidden */
+  /** @internal */
   public async loadNodes(): Promise<void> {
     await this._tree.load((this._tree as any).config.data);
   }
@@ -646,7 +673,7 @@ async function ensureNodesAutoExpanded(branch: Inspire.TreeNodes | Inspire.TreeN
     await ensureChildrenLoaded(branch, idsToExpand);
 }
 
-/** @hidden */
+/** @internal */
 export const toNode = <TPayload>(inspireNode: Inspire.TreeNode): BeInspireTreeNode<TPayload> => {
   const anyNode = inspireNode as any;
   if (!inspireNode) {
@@ -685,7 +712,7 @@ export const toNode = <TPayload>(inspireNode: Inspire.TreeNode): BeInspireTreeNo
   return anyNode;
 };
 
-/** @hidden */
+/** @internal */
 export const toNodes = <TPayload>(inspireNodes: Inspire.TreeNodes): BeInspireTreeNodes<TPayload> => {
   return Object.assign(inspireNodes.map((n) => toNode<TPayload>(n)), {
     node: (id: string) => toNode<TPayload>(inspireNodes.node(id)),

@@ -7,7 +7,10 @@
 import { CommandItemDef } from "../shared/Item";
 import { FrontstageManager } from "./FrontstageManager";
 
-/** Nested Frontstage related classes and commands */
+/**
+ * Nested Frontstage related classes and commands
+ * @public
+ */
 export class NestedFrontstage {
   /** Command that returns to the previous Frontstage */
   public static get backToPreviousFrontstageCommand() {

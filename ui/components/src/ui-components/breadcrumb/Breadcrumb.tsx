@@ -16,12 +16,14 @@ import { BreadcrumbPath, BreadcrumbUpdateEventArgs } from "./BreadcrumbPath";
 import { BeInspireTree, BeInspireTreeNode, BeInspireTreeNodeConfig, MapPayloadToInspireNodeCallback, BeInspireTreeEvent, BeInspireTreeNodes, toNodes } from "../tree/component/BeInspireTree";
 import UiComponents from "../UiComponents";
 
-/** @hidden */
+/** @internal */
 export type BreadcrumbNodeRenderer = (props: BreadcrumbNodeProps, node?: TreeNodeItem, parent?: TreeNodeItem) => React.ReactNode;
 
-/** Property interface for [[Breadcrumb]] component */
+/** Properties for [[Breadcrumb]] component
+ * @beta
+ */
 export interface BreadcrumbProps {
-  /** Manager to coordinate state between Breadcrumb element and BreadrcumbDetails element. */
+  /** Manager to coordinate state between Breadcrumb element and BreadcrumbDetails element. */
   path?: BreadcrumbPath;
   /** Data provider for tree content  */
   dataProvider: TreeDataProvider;
@@ -47,20 +49,23 @@ export interface BreadcrumbProps {
   onChildrenLoaded?: (parent: TreeNodeItem, children: TreeNodeItem[]) => void;
   /** Callback triggered when root nodes are loaded with an asynchronous dataProvider. */
   onRootNodesLoaded?: (nodes: TreeNodeItem[]) => void;
-  /** @hidden */
+
+  /** @internal */
   renderNode?: BreadcrumbNodeRenderer;
-  /** @hidden */
+  /** @internal */
   onRender?: () => void;
 }
 
-/** @hidden */
+/** Enum for Breadcrumb Mode
+ * @beta
+ */
 export enum BreadcrumbMode {
   Dropdown = "dropdown",
   Input = "input",
 }
 
-/** @hidden */
-export interface BreadcrumbState {
+/** @internal */
+interface BreadcrumbState {
   prev: {
     dataProvider: TreeDataProvider;
     modelReady: boolean;
@@ -77,11 +82,12 @@ export interface BreadcrumbState {
  * Breadcrumb navigation component, with two discrete modes: text mode, and dropdown mode.
  * Text mode includes autocomplete suggestions.
  * Both dropdown and text mode support arrow and tab navigation.
+ * @beta
  */
 export class Breadcrumb extends React.Component<BreadcrumbProps, BreadcrumbState> {
   private _mounted: boolean = false;
 
-  /** @hidden */
+  /** @internal */
   public static defaultProps: Partial<BreadcrumbProps> = {
     delimiter: "\\",
     background: true,
@@ -91,9 +97,10 @@ export class Breadcrumb extends React.Component<BreadcrumbProps, BreadcrumbState
     width: "",
   };
 
-  /** @hidden */
+  /** @internal */
   public readonly state: Readonly<BreadcrumbState>;
 
+  /** @internal */
   constructor(props: BreadcrumbProps) {
     super(props);
 
@@ -118,6 +125,7 @@ export class Breadcrumb extends React.Component<BreadcrumbProps, BreadcrumbState
     });
   }
 
+  /** @internal */
   public static getDerivedStateFromProps(props: BreadcrumbProps, state: BreadcrumbState): BreadcrumbState | null {
     const providerChanged = (props.dataProvider !== state.prev.dataProvider);
 
@@ -140,7 +148,7 @@ export class Breadcrumb extends React.Component<BreadcrumbProps, BreadcrumbState
     return derivedState;
   }
 
-  /** @hidden */
+  /** @internal */
   public componentDidMount() {
     this._mounted = true;
     this.assignModelListeners(this.state.model);
@@ -156,7 +164,7 @@ export class Breadcrumb extends React.Component<BreadcrumbProps, BreadcrumbState
       this.props.onRender();
   }
 
-  /** @hidden */
+  /** @internal */
   public componentWillUnmount() {
     if (this.props.path)
       this.props.path.BreadcrumbUpdateEvent.removeListener(this._handleUpdate);
@@ -165,7 +173,7 @@ export class Breadcrumb extends React.Component<BreadcrumbProps, BreadcrumbState
     this._mounted = false;
   }
 
-  /** @hidden */
+  /** @internal */
   public shouldComponentUpdate(nextProps: BreadcrumbProps, nextState: BreadcrumbState): boolean {
     if (this.state.modelReady !== nextState.modelReady || this.state.model !== nextState.model) {
       // always render when modelReady or model changes
@@ -190,7 +198,7 @@ export class Breadcrumb extends React.Component<BreadcrumbProps, BreadcrumbState
       || this.state.model.visible().some((n) => n.isDirty());
   }
 
-  /** @hidden */
+  /** @internal */
   public componentDidUpdate(prevProps: BreadcrumbProps, prevState: BreadcrumbState) {
     if (this.state.model !== prevState.model) {
       this.dropModelListeners(prevState.model);
@@ -301,6 +309,7 @@ export class Breadcrumb extends React.Component<BreadcrumbProps, BreadcrumbState
     return node;
   }
 
+  /** @internal */
   public render(): React.ReactNode {
     if (!this.state.modelReady) {
       return (
@@ -364,7 +373,7 @@ export class Breadcrumb extends React.Component<BreadcrumbProps, BreadcrumbState
   }
 }
 
-/** @hidden */
+/** @internal */
 export interface InputSwitchProps {
   tree: BeInspireTree<TreeNodeItem>;
   node?: BeInspireTreeNode<TreeNodeItem>;
@@ -380,7 +389,7 @@ export interface InputSwitchProps {
   delimiter: string;
 }
 
-/** @hidden */
+/** @internal */
 export class InputSwitchComponent extends React.PureComponent<InputSwitchProps> {
   public render(): React.ReactNode {
     const { currentMode, tree, node, onInputStart, onInputCancel, onNodeChange, renderNode, width, showUpDir, delimiter } = this.props;
@@ -394,10 +403,10 @@ export class InputSwitchComponent extends React.PureComponent<InputSwitchProps> 
     }
   }
 }
-/** @hidden */
+/** @internal */
 const InputSwitch = withOnOutsideClick(InputSwitchComponent); // tslint:disable-line:variable-name
 
-/** @hidden */
+/** @internal */
 export interface BreadcrumbInputProps {
   width: number | string;
   delimiter?: string;
@@ -412,20 +421,20 @@ export interface BreadcrumbInputProps {
   pathString: string;
 }
 
-/** @hidden */
+/** @internal */
 export interface BreadcrumbInputState {
   autocompleting: boolean;
   autocompleteList: string[];
   messageBoxOpened: boolean;
 }
 
-/** @hidden */
+/** @internal */
 export class BreadcrumbInput extends React.Component<BreadcrumbInputProps, BreadcrumbInputState> {
   private _inputElement: HTMLInputElement | null = null;
   private _autocomplete: ContextMenu | null = null;
   private _mounted: boolean = false;
 
-  /** @hidden */
+  /** @internal */
   public readonly state: Readonly<BreadcrumbInputState> = {
     autocompleting: false,
     autocompleteList: [],
@@ -501,7 +510,7 @@ export class BreadcrumbInput extends React.Component<BreadcrumbInputProps, Bread
     this.setState({ messageBoxOpened: false });
   }
 
-  /** @hidden */
+  /** @internal */
   public componentDidMount() {
     this._mounted = true;
     window.addEventListener("click", this._handleClick);
@@ -512,7 +521,7 @@ export class BreadcrumbInput extends React.Component<BreadcrumbInputProps, Bread
     }
   }
 
-  /** @hidden */
+  /** @internal */
   public componentWillUnmount() {
     window.removeEventListener("click", this._handleClick);
     this._mounted = false;
@@ -658,8 +667,8 @@ export class BreadcrumbInput extends React.Component<BreadcrumbInputProps, Bread
   }
 }
 
-/** @hidden */
-export interface BreadcrumbDropdownProps {
+/** @internal */
+interface BreadcrumbDropdownProps {
   tree: BeInspireTree<TreeNodeItem>;
   node?: BeInspireTreeNode<TreeNodeItem>;
   onInputStart?: () => void;
@@ -672,16 +681,16 @@ export interface BreadcrumbDropdownProps {
   renderNode?: BreadcrumbNodeRenderer;
 }
 
-/** @hidden */
-export class BreadcrumbDropdown extends React.Component<BreadcrumbDropdownProps> {
+/** @internal */
+class BreadcrumbDropdown extends React.Component<BreadcrumbDropdownProps> {
 
-  /** @hidden */
+  /** @internal */
   public componentDidMount() {
     this.props.tree.on(BeInspireTreeEvent.ChildrenLoaded, this._onChildrenLoaded);
     this.props.tree.on(BeInspireTreeEvent.ModelLoaded, this._onModelLoaded);
   }
 
-  /** @hidden */
+  /** @internal */
   public componentWillUnmount() {
     this.props.tree.removeListener(BeInspireTreeEvent.ChildrenLoaded, this._onChildrenLoaded);
     this.props.tree.removeListener(BeInspireTreeEvent.ModelLoaded, this._onModelLoaded);
@@ -695,7 +704,7 @@ export class BreadcrumbDropdown extends React.Component<BreadcrumbDropdownProps>
     this.forceUpdate();
   }
 
-  /** @hidden */
+  /** @internal */
   public shouldComponentUpdate(nextProps: BreadcrumbDropdownProps) {
     return this.props.tree !== nextProps.tree ||
       this.props.node !== nextProps.node ||
@@ -769,8 +778,8 @@ export class BreadcrumbDropdown extends React.Component<BreadcrumbDropdownProps>
   }
 }
 
-/** @hidden */
-export interface BreadcrumbDropdownNodeProps {
+/** @internal */
+interface BreadcrumbDropdownNodeProps {
   tree: BeInspireTree<TreeNodeItem>;
   node?: BeInspireTreeNode<TreeNodeItem>;
   onNodeSelected: (node: TreeNodeItem | undefined) => void;
@@ -780,8 +789,8 @@ export interface BreadcrumbDropdownNodeProps {
   renderNode?: BreadcrumbNodeRenderer;
 }
 
-/** @hidden */
-export class BreadcrumbDropdownNode extends React.Component<BreadcrumbDropdownNodeProps> {
+/** @internal */
+class BreadcrumbDropdownNode extends React.Component<BreadcrumbDropdownNodeProps> {
   constructor(props: BreadcrumbDropdownNodeProps) {
     super(props);
   }
@@ -848,17 +857,21 @@ export class BreadcrumbDropdownNode extends React.Component<BreadcrumbDropdownNo
   }
 }
 
-/** Property interface for [[BreadcrumbNode]] */
+/** Properties for [[BreadcrumbNode]] component
+ * @beta
+ */
 export interface BreadcrumbNodeProps {
   /** Icon class string */
   icon: string;
   /** Node label */
   label: string;
-  /** @hidden */
+  /** @internal */
   onRender?: () => void;
 }
 
-/** Default BreadcrumbNode component */
+/** Default BreadcrumbNode component
+ * @beta
+ */
 export class BreadcrumbNode extends React.Component<BreadcrumbNodeProps> {
   public render(): React.ReactNode {
     const { icon, label } = this.props;

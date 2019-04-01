@@ -9,7 +9,9 @@ import { ConfigurableUiControlType } from "../../configurableui/ConfigurableUiCo
 import { ToolUiProvider } from "./ToolUiProvider";
 import { ToolUiManager } from "./ToolUiManager";
 
-/** Provides information about a tool with a given id, including the ToolUiProvider. */
+/** Provides information about a tool with a given id, including the ToolUiProvider.
+ * @public
+ */
 export class ToolInformation {
   private _toolUiProvider: ToolUiProvider | undefined;
 

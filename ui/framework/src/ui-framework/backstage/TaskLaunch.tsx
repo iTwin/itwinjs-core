@@ -29,7 +29,7 @@ export interface TaskLaunchBackstageItemProps extends BackstageItemProps {
  */
 export class TaskLaunchBackstageItem extends React.PureComponent<TaskLaunchBackstageItemProps, BackstageItemState> {
 
-  /** @hidden */
+  /** @internal */
   public readonly state: Readonly<BackstageItemState>;
   private _componentUnmounting = false;  // used to ensure _handleSyncUiEvent callback is not processed after componentWillUnmount is called
   private _stateSyncIds: string[] = [];  // local version of syncId that are lower cased

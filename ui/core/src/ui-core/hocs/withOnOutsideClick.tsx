@@ -7,13 +7,17 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 
-/** Properties for [[withOnOutsideClick]] React higher-order component */
+/** Properties for [[withOnOutsideClick]] React higher-order component
+ * @public
+ */
 export interface WithOnOutsideClickProps {
   /** outside click callback function */
   onOutsideClick?: (event: MouseEvent) => any;
 }
 
-/** withOnOutsideClick is a React higher-order component that adds outside click support. */
+/** withOnOutsideClick is a React higher-order component that adds outside click support.
+ * @public
+ */
 export const withOnOutsideClick = <ComponentProps extends {}>(
   // tslint:disable-next-line:variable-name
   Component: React.ComponentType<ComponentProps>,
@@ -54,5 +58,3 @@ export const withOnOutsideClick = <ComponentProps extends {}>(
     }
   };
 };
-
-export default withOnOutsideClick;

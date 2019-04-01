@@ -6,18 +6,23 @@
 
 import * as React from "react";
 
-/** Prototype for an IconSpec which can be a string or a ReactNode. */
+/** Prototype for an IconSpec which can be a string or a ReactNode.
+ * @public
+ */
 export type IconSpec = string | React.ReactNode;
 
-/** Properties for the [[Icon]] React component */
+/** Properties for the [[Icon]] React component
+ * @public
+ */
 export interface IconProps {
   /** CSS class name for icon */
   iconSpec?: IconSpec;
 }
 
-/** Icon Functional component */
-// tslint:disable-next-line:variable-name
-export const Icon: React.FunctionComponent<IconProps> = (props) => {
+/** Icon Functional component
+ * @public
+ */
+export const Icon: React.FunctionComponent<IconProps> = (props) => {  // tslint:disable-line:variable-name
   if (!props.iconSpec) return null;
 
   if (typeof props.iconSpec === "string") {

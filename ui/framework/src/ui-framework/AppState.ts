@@ -6,16 +6,19 @@
 
 import { createAction, ActionsUnion } from "./utils/redux-ts";
 
-// cSpell:ignore configurableui snapmode toolprompt
-/** Action Ids used by redux and to send sync UI components. Typically used to refresh visibility or enable state of control.
+// cSpell:ignore configurableui snapmode toolprompt appstate
+/** Action Ids used by Redux and to send sync UI components. Typically used to refresh visibility or enable state of control.
  *  Since these are also used as sync ids they should be in lowercase.
+ * @beta
  */
 export const enum AppStateActionId {
   SetNumItemsSelected = "appstate:set-num-items-selected",
   SetCurrentProperty = "appstate:set-current-property",
 }
 
-/** The portion of state managed by the AppStateReducer. */
+/** The portion of state managed by the AppStateReducer.
+ * @beta
+ */
 export interface AppState {
   numItemsSelected: number;
   property?: any;
@@ -29,16 +32,22 @@ const initialState: AppState = {
   property: undefined,
 };
 
-/** An object with a function that creates each AppStateReducer that can be handled by our reducer. */ // tslint:disable-next-line:variable-name
-export const AppStateActions = {
+/** An object with a function that creates each AppStateReducer that can be handled by our reducer.
+ * @beta
+ */
+export const AppStateActions = {  // tslint:disable-line:variable-name
   setNumItemsSelected: (numSelected: number) => createAction(AppStateActionId.SetNumItemsSelected, numSelected),
   setCurrentProperty: (property: any) => createAction(AppStateActionId.SetCurrentProperty, property),
 };
 
-/** Union of AppState Redux actions  */
+/** Union of AppState Redux actions
+ * @beta
+ */
 export type AppStateActionsUnion = ActionsUnion<typeof AppStateActions>;
 
-/** Handles actions to update AppState. */
+/** Handles actions to update AppState.
+ * @beta
+ */
 export function AppStateReducer(state: AppState = initialState, _action: AppStateActionsUnion): AppState {
   switch (_action.type) {
     case AppStateActionId.SetNumItemsSelected: {

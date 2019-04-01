@@ -13,7 +13,9 @@ import { UiFramework } from "../UiFramework";
 import "./SignOut.scss";
 import { OidcClientWrapper } from "@bentley/imodeljs-frontend";
 
-/** Modal frontstage displaying sign out form. */
+/** Modal frontstage displaying sign out form.
+ * @public
+ */
 export class SignOutModalFrontstage implements ModalFrontstageInfo {
   public title: string = UiFramework.i18n.translate("UiFramework:userProfile.userprofile");
   private _signOut = UiFramework.i18n.translate("UiFramework:userProfile.signout");

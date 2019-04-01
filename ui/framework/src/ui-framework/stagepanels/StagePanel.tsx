@@ -14,6 +14,7 @@ import { WidgetProps } from "../widgets/Widget";
 import "./StagePanel.scss";
 
 /** Enum for StagePanel location.
+ * @alpha
  */
 export enum StagePanelLocation {
   Top,
@@ -25,6 +26,7 @@ export enum StagePanelLocation {
 }
 
 /** Properties of a [[StagePanel]] component
+ * @alpha
  */
 export interface StagePanelProps {
   /** Default Height or Width of the panel */
@@ -39,17 +41,19 @@ export interface StagePanelProps {
   /** Properties for the Widgets in this Panel. */
   widgets?: Array<React.ReactElement<WidgetProps>>;
 
-  /** @hidden */
+  /** @internal */
   runtimeProps?: StagePanelRuntimeProps;
 }
 
 /** Runtime Properties for the [[StagePanel]] component.
+ * @internal
  */
 export interface StagePanelRuntimeProps {
   panelDef: StagePanelDef;
 }
 
 /** Frontstage Panel React component.
+ * @alpha
  */
 export class StagePanel extends React.Component<StagePanelProps> {
 

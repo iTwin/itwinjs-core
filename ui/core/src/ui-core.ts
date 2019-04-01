@@ -3,18 +3,18 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 export * from "./ui-core/UiCore";
-export { CommonProps } from "./ui-core/utils/Props";
+export * from "./ui-core/utils/Props";
 
 export * from "./ui-core/icons/WebFontIcon";
 export * from "./ui-core/base/UiEvent";
 
-export { CheckListBox, CheckListBoxItem, CheckListBoxSeparator } from "./ui-core/checklistbox/CheckListBox";
+export * from "./ui-core/checklistbox/CheckListBox";
 
 export * from "./ui-core/contextmenu/ContextMenu";
 
 export * from "./ui-core/cube/Cube";
 
-export { Dialog, DialogProps, GlobalDialog, GlobalDialogProps, DialogButton, DialogButtonStyle, DialogButtonType } from "./ui-core/dialog/Dialog";
+export * from "./ui-core/dialog/Dialog";
 
 export * from "./ui-core/elementseparator/ElementSeparator";
 
@@ -25,44 +25,44 @@ export * from "./ui-core/enums/Orientation";
 export * from "./ui-core/enums/SortDirection";
 export * from "./ui-core/enums/TimeFormat";
 
-export { ExpandableList } from "./ui-core/expandable/ExpandableList";
-export { ExpandableBlock } from "./ui-core/expandable/ExpandableBlock";
+export * from "./ui-core/expandable/ExpandableList";
+export * from "./ui-core/expandable/ExpandableBlock";
 
-export { withIsPressed, WithIsPressedProps } from "./ui-core/hocs/withIsPressed";
-export { withOnOutsideClick, WithOnOutsideClickProps } from "./ui-core/hocs/withOnOutsideClick";
-export { withTimeout, WithTimeoutProps } from "./ui-core/hocs/withTimeout";
+export * from "./ui-core/hocs/withIsPressed";
+export * from "./ui-core/hocs/withOnOutsideClick";
+export * from "./ui-core/hocs/withTimeout";
 
-export { MessageBox, MessageBoxProps, MessageSeverity, MessageContainer } from "./ui-core/messagebox/MessageBox";
+export * from "./ui-core/messagebox/MessageBox";
 
-export { Popup, Position } from "./ui-core/popup/Popup";
+export * from "./ui-core/popup/Popup";
 
 export * from "./ui-core/radialmenu/RadialMenu";
 export * from "./ui-core/radialmenu/Annulus";
 
 export * from "./ui-core/imagecheckbox/ImageCheckBox";
 
-export { SearchBox, SearchBoxProps } from "./ui-core/searchbox/SearchBox";
+export * from "./ui-core/searchbox/SearchBox";
 
 export * from "./ui-core/splitbutton/SplitButton";
 
-export { LoadingBar, LoadingBarProps } from "./ui-core/loading/LoadingBar";
-export { LoadingPrompt, LoadingPromptProps } from "./ui-core/loading/LoadingPrompt";
-export { LoadingSpinner, LoadingSpinnerProps } from "./ui-core/loading/LoadingSpinner";
-export { LoadingStatus, LoadingStatusProps } from "./ui-core/loading/LoadingStatus";
-export { Spinner, SpinnerProps, SpinnerSize } from "./ui-core/loading/Spinner";
+export * from "./ui-core/loading/LoadingBar";
+export * from "./ui-core/loading/LoadingPrompt";
+export * from "./ui-core/loading/LoadingSpinner";
+export * from "./ui-core/loading/LoadingStatus";
+export * from "./ui-core/loading/Spinner";
 
 export * from "./ui-core/toggle/Toggle";
 
-export { default as ExpansionToggle, ExpansionToggleProps } from "./ui-core/tree/ExpansionToggle";
-export { default as TreeBranch, TreeBranchProps } from "./ui-core/tree/Branch";
-export { default as TreeNode, NodeProps, NodeCheckboxProps, NodeCheckboxRenderer, NodeCheckboxRenderProps } from "./ui-core/tree/Node";
-export { default as Tree, TreeProps } from "./ui-core/tree/Tree";
-export { default as TreeNodePlaceholder, PlaceholderProps as TreeNodePlaceholderProps } from "./ui-core/tree/Placeholder";
+export { ExpansionToggle, ExpansionToggleProps } from "./ui-core/tree/ExpansionToggle";
+export { TreeBranch, TreeBranchProps } from "./ui-core/tree/Branch";
+export { TreeNode, TreeNodeProps, NodeCheckboxProps, NodeCheckboxRenderer, NodeCheckboxRenderProps } from "./ui-core/tree/Node";
+export { Tree, TreeProps } from "./ui-core/tree/Tree";
+export { TreeNodePlaceholder, TreeNodePlaceholderProps } from "./ui-core/tree/Placeholder";
 
 export * from "./ui-core/uisettings/UiSettings";
 export * from "./ui-core/uisettings/LocalUiSettings";
 
-export { default as Timer } from "./ui-core/utils/Timer";
+export * from "./ui-core/utils/Timer";
 export * from "./ui-core/utils/getDisplayName";
 export * from "./ui-core/utils/getUserColor";
 export * from "./ui-core/utils/shallowDiffers";
@@ -92,6 +92,7 @@ export * from "./ui-core/text/MutedText";
 export * from "./ui-core/text/SmallText";
 export * from "./ui-core/text/Subheading";
 export * from "./ui-core/text/Subheading2";
+export * from "./ui-core/text/TextProps";
 export * from "./ui-core/text/Title";
 export * from "./ui-core/text/Title2";
 

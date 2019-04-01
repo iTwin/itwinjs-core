@@ -32,16 +32,20 @@ const MessageLabel = (props: { text: string }) => {
   );
 };
 
-/** Enum for StatusBar Message Type */
-export enum StatusBarMessageType {
+/** Enum for StatusBar Message Type
+ * @internal
+ */
+enum StatusBarMessageType {
   None,
   Activity,
   Toast,
   Sticky,
 }
 
-/** State for the [[StatusBar]] React component */
-export interface StatusBarState {
+/** State for the [[StatusBar]] React component
+ * @internal
+ */
+interface StatusBarState {
   openWidget: StatusBarFieldId;
   visibleMessage: StatusBarMessageType;
   messageDetails: NotifyMessageDetails | undefined;
@@ -50,13 +54,16 @@ export interface StatusBarState {
   toastMessageKey: number;
 }
 
-/** Properties for the [[StatusBar]] React component */
+/** Properties for the [[StatusBar]] React component
+ * @public
+ */
 export interface StatusBarProps {
   widgetControl?: StatusBarWidgetControl;
   isInFooterMode: boolean;
 }
 
 /** Status Bar React component.
+ * @public
  */
 export class StatusBar extends React.Component<StatusBarProps, StatusBarState> implements IStatusBar {
   private _footerMessages: any;
@@ -71,7 +78,7 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> i
     return Status.Information;
   }
 
-  /** @hidden */
+  /** @internal */
   public readonly state: Readonly<StatusBarState> = {
     openWidget: null,
     visibleMessage: StatusBarMessageType.None,

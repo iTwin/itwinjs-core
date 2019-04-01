@@ -10,6 +10,7 @@ import { TypeConverterManager } from "./TypeConverterManager";
 
 /**
  * Navigation property type converter
+ * @public
  */
 export class NavigationPropertyTypeConverter extends TypeConverter {
   public convertPropertyToString(propertyDescription: PropertyDescription, value?: Primitives.Hexadecimal) {

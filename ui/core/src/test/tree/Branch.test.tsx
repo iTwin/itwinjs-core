@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-import Branch from "../../ui-core/tree/Branch";
+import { TreeBranch as Branch } from "../../ui-core/tree/Branch";
 
 describe("<Branch />", () => {
   it("should render", () => {

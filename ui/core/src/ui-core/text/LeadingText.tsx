@@ -8,7 +8,9 @@ import * as React from "react";
 import * as classnames from "classnames";
 import { TextProps } from "./TextProps";
 
-/** Styled leading text */
+/** Styled leading text
+ * @public
+ */
 
 export class LeadingText extends React.Component<TextProps> {
   public render(): JSX.Element {
@@ -19,4 +21,3 @@ export class LeadingText extends React.Component<TextProps> {
     );
   }
 }
-export default LeadingText;

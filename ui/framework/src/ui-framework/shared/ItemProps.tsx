@@ -14,16 +14,22 @@ import { BaseItemState } from "./ItemDefBase";
 // ItemProps and sub-interfaces
 // -----------------------------------------------------------------------------
 
-/** Definition that allows component to register to monitor SyncUi events. */
+/** Definition that allows component to register to monitor SyncUi events.
+ * @public
+ */
 export interface SyncUiProps {
   stateFunc?: (state: Readonly<BaseItemState>) => BaseItemState;
   stateSyncIds?: string[];
 }
 
-/** Prototype for string getter function. */
+/** Prototype for string getter function.
+ * @public
+ */
 export type StringGetter = () => string;
 
-/** Properties for a label in an item */
+/** Properties for a label in an item
+ * @public
+ */
 export interface LabelProps {
   /** if set, it is used to explicitly set the label shown by a component. */
   label?: string | StringGetter;
@@ -31,7 +37,9 @@ export interface LabelProps {
   labelKey?: string;
 }
 
-/** Properties for a description in an item */
+/** Properties for a description in an item
+ * @public
+ */
 export interface DescriptionProps {
   /** if set, it is used to explicitly set the description shown by a component. */
   description?: string | StringGetter;
@@ -39,7 +47,9 @@ export interface DescriptionProps {
   descriptionKey?: string;
 }
 
-/** Properties for a tooltip in an item */
+/** Properties for a tooltip in an item
+ * @public
+ */
 export interface TooltipProps {
   /** used to explicitly set the tooltip shown by a component. */
   tooltip?: string | StringGetter;
@@ -48,6 +58,7 @@ export interface TooltipProps {
 }
 
 /** Definition that specifies properties shared between many ConfigurableUi components.
+ * @public
  */
 export interface ItemProps extends IconProps, LabelProps, SyncUiProps, TooltipProps {
   /** if set, component will be visible - defaults to true */
@@ -63,27 +74,35 @@ export interface ItemProps extends IconProps, LabelProps, SyncUiProps, TooltipPr
 }
 
 /** Definition for a command handler used by [[CommandItemProps]].
+ * @public
  */
 export interface CommandHandler {
   execute?: (args?: any) => any;
   parameters?: any;
   getCommandArgs?: () => any[];
 }
+
 /** Definition for a Tool item with a tool id.
+ * @public
  */
 export interface ToolItemProps extends ItemProps, CommandHandler {
   toolId: string;
 }
 
-/** Definition for a Command item. */
+/** Definition for a Command item.
+ * @public
+ */
 export interface CommandItemProps extends ItemProps, CommandHandler {
   commandId?: string;
 }
 
-/** Union of all Item definitions that can be specified in a GroupItem */
+/** Union of all Item definitions that can be specified in a GroupItem
+ * @public
+ */
 export type AnyItemDef = GroupItemDef | CommandItemDef | ToolItemDef;
 
 /** Definition for a Group item that opens a group of items.
+ * @public
  */
 export interface GroupButtonProps extends ItemProps {
   groupId?: string;
@@ -92,10 +111,14 @@ export interface GroupButtonProps extends ItemProps {
   itemsInColumn?: number;
 }
 
-/** Union of all Item properties. */
+/** Union of all Item properties.
+ * @public
+ */
 export type AnyItemProps = ItemProps | GroupButtonProps | ToolItemProps | CommandItemProps;
 
-/** Definition for a list of AnyItemProps. */
+/** Definition for a list of AnyItemProps.
+ * @public
+ */
 export interface ItemPropsList {
   items?: AnyItemProps[];
 }

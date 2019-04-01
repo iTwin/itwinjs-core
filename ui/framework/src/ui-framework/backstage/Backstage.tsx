@@ -27,14 +27,14 @@ export interface BackstageEventArgs {
 export class BackstageEvent extends UiEvent<BackstageEventArgs> { }
 
 /** [[BackstageCloseEvent]] arguments.
- * @deprecated BackstageEventArgs should be used instead.
+ * @alpha @deprecated BackstageEventArgs should be used instead.
  */
 export interface BackstageCloseEventArgs {
   isVisible: boolean;
 }
 
 /** Backstage Close Event class.
- * @deprecated BackstageEvent should be used instead.
+ * @alpha @deprecated BackstageEvent should be used instead.
  */
 export class BackstageCloseEvent extends UiEvent<BackstageCloseEventArgs> { }
 
@@ -63,8 +63,10 @@ interface BackstageState {
 export class Backstage extends React.Component<BackstageProps, BackstageState> {
 
   public static readonly onBackstageEvent = new BackstageEvent();
-  public static readonly onBackstageCloseEvent = new BackstageCloseEvent();   /** @deprecated */
   public static isBackstageVisible: boolean;
+
+  /** @alpha @deprecated */
+  public static readonly onBackstageCloseEvent = new BackstageCloseEvent();
 
   /** Shows the Backstage */
   public static show(): void {
@@ -90,7 +92,7 @@ export class Backstage extends React.Component<BackstageProps, BackstageState> {
     });
   }
 
-  /** @hidden */
+  /** @internal */
   public readonly state: BackstageState;
 
   constructor(props: BackstageProps) {
@@ -150,17 +152,15 @@ export class Backstage extends React.Component<BackstageProps, BackstageState> {
     Backstage.isBackstageVisible = this.state.isVisible;
 
     return (
-      <>
-        <NZ_Backstage
-          className={this.props.className}
-          style={this.props.style}
-          isOpen={this.state.isVisible}
-          showOverlay={this.props.showOverlay}
-          onClose={this._onClose}
-          header={this._getUserInfo()}
-          items={this.props.children}
-        />
-      </>
+      <NZ_Backstage
+        className={this.props.className}
+        style={this.props.style}
+        isOpen={this.state.isVisible}
+        showOverlay={this.props.showOverlay}
+        onClose={this._onClose}
+        header={this._getUserInfo()}
+        items={this.props.children}
+      />
     );
   }
 }

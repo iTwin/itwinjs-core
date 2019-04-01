@@ -8,6 +8,7 @@ import { TypeConverter } from "./TypeConverter";
 
 /**
  * Manages Type Converters. Type Converters are registered with and obtained from the manager.
+ * @public
  */
 export class TypeConverterManager {
   private static _converters: { [index: string]: (TypeConverter) } = {};

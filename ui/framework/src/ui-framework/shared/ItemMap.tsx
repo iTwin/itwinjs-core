@@ -7,6 +7,7 @@
 import { ItemDefBase } from "./ItemDefBase";
 
 /** Contains a map of Items.
+ * @public
  */
 export class ItemMap extends Map<string, ItemDefBase> {
   public addItem(item: ItemDefBase) {
@@ -15,6 +16,7 @@ export class ItemMap extends Map<string, ItemDefBase> {
 }
 
 /** Contains a list of Items.
+ * @public
  */
 export class ItemList {
   private _items: ItemDefBase[] = new Array<ItemDefBase>();

@@ -17,7 +17,9 @@ import { ViewportComponentEvents, ViewIdChangedEventArgs } from "@bentley/ui-com
 
 import "./SheetNavigationAid.scss";
 
-/** A Sheet Navigation Aid control. */
+/** A Sheet Navigation Aid control.
+ * @alpha
+ */
 export class SheetNavigationAidControl extends NavigationAidControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
@@ -26,28 +28,34 @@ export class SheetNavigationAidControl extends NavigationAidControl {
   public getSize(): string | undefined { return "96px"; }
 }
 
-/** Data displayed about sheet */
+/** Data displayed about sheet
+ * @alpha
+ */
 export interface SheetData {
   name: string;
   viewId: string;
 }
 
-/** @hidden */
+/** Properties for the [[SheetNavigationAid]] component
+ * @alpha
+ */
 export interface SheetNavigationProps {
   iModelConnection: IModelConnection;
 }
 
-/** @hidden */
-export interface SheetNavigationState {
+/** @internal */
+interface SheetNavigationState {
   index: number;
   sheetData: SheetData[];
 }
 
-/** A Sheet Navigation Aid. */
+/** A Sheet Navigation Aid.
+ * @alpha
+ */
 export class SheetNavigationAid extends React.Component<SheetNavigationProps, SheetNavigationState> {
   private _isMounted = false;
 
-  /** @hidden */
+  /** @internal */
   public readonly state: Readonly<SheetNavigationState> = {
     index: 0,
     sheetData: [],
@@ -115,7 +123,7 @@ export class SheetNavigationAid extends React.Component<SheetNavigationProps, Sh
     return stateData;
   }
 
-  /** @hidden */
+  /** @internal */
   public render(): React.ReactNode {
     const name = (this.state.sheetData.length > 0) ? this.state.sheetData[this.state.index].name : "";
     const sheet = UiFramework.i18n.translate("UiFramework:general.sheet");

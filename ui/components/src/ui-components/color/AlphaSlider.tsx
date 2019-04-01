@@ -8,7 +8,9 @@ import * as React from "react";
 import "./AlphaSlider.scss";
 import classnames from "classnames";
 
-/** Properties for the [[AlphaSlider]] React component */
+/** Properties for the [[AlphaSlider]] React component
+ * @beta
+ */
 export interface AlphaSliderProps extends React.HTMLAttributes<HTMLDivElement> {
   /** true if slider is oriented horizontal, else vertical orientation is assumed */
   isHorizontal?: boolean;
@@ -18,10 +20,13 @@ export interface AlphaSliderProps extends React.HTMLAttributes<HTMLDivElement> {
   alpha: number;
 }
 
-/** AlphaSlider component used to set the alpha value. */
+/** AlphaSlider component used to set the alpha value.
+ * @beta
+ */
 export class AlphaSlider extends React.PureComponent<AlphaSliderProps> {
   private _container: HTMLDivElement | null = null;
 
+  /** @internal */
   constructor(props: AlphaSliderProps) {
     super(props);
   }
@@ -89,6 +94,7 @@ export class AlphaSlider extends React.PureComponent<AlphaSliderProps> {
     return (alpha !== t) ? t : undefined;
   }
 
+  /** @internal */
   public componentWillUnmount() {
     this._unbindEventListeners();
   }
@@ -145,6 +151,7 @@ export class AlphaSlider extends React.PureComponent<AlphaSliderProps> {
     window.removeEventListener("mouseup", this._onMouseUp);
   }
 
+  /** @internal */
   public render(): React.ReactNode {
     const containerClasses = classnames(
       this.props.isHorizontal ? "components-alpha-container-horizontal" : "components-alpha-container-vertical",

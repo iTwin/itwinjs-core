@@ -9,7 +9,9 @@ import "./HueSlider.scss";
 import classnames from "classnames";
 import { HSVColor } from "@bentley/imodeljs-common";
 
-/** Properties for the [[HueSlider]] React component */
+/** Properties for the [[HueSlider]] React component
+ * @beta
+ */
 export interface HueSliderProps extends React.HTMLAttributes<HTMLDivElement> {
   /** true if slider is oriented horizontal, else vertical orientation is assumed */
   isHorizontal?: boolean;
@@ -19,10 +21,13 @@ export interface HueSliderProps extends React.HTMLAttributes<HTMLDivElement> {
   hsv: HSVColor;
 }
 
-/** HueSlider component used to set the hue value. */
+/** HueSlider component used to set the hue value.
+ * @beta
+ */
 export class HueSlider extends React.PureComponent<HueSliderProps> {
   private _container: HTMLDivElement | null = null;
 
+  /** @internal */
   constructor(props: HueSliderProps) {
     super(props);
   }
@@ -99,6 +104,7 @@ export class HueSlider extends React.PureComponent<HueSliderProps> {
     return undefined;
   }
 
+  /** @internal */
   public componentWillUnmount() {
     this._unbindEventListeners();
   }
@@ -159,6 +165,7 @@ export class HueSlider extends React.PureComponent<HueSliderProps> {
     window.removeEventListener("mouseup", this._onMouseUp);
   }
 
+  /** @internal */
   public render(): React.ReactNode {
     const containerClasses = classnames(
       this.props.isHorizontal ? "components-hue-container-horizontal" : "components-hue-container-vertical",

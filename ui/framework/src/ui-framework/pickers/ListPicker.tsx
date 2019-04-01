@@ -16,14 +16,18 @@ import { UiFramework } from "../UiFramework";
 // tslint:disable-next-line:variable-name
 const ContainedGroup = withContainIn(Group);
 
-/** Enum for the list picker item type */
+/** Enum for the list picker item type
+ * @beta
+ */
 export enum ListItemType {
   Item = 0,
   Separator = 1,
   Container = 2,
 }
 
-/** List picker item */
+/** List picker item
+ * @beta
+ */
 export interface ListItem {
   [key: string]: any;
   name?: string;
@@ -32,7 +36,9 @@ export interface ListItem {
   children?: ListItem[];
 }
 
-/** Properties for the [[ListPickerBase]] component */
+/** Properties for the [[ListPickerBase]] component
+ * @beta
+ */
 export interface ListPickerProps {
   title: string;
   items: ListItem[];
@@ -41,14 +47,18 @@ export interface ListPickerProps {
   onExpanded?: (expand: boolean) => void;
 }
 
-/** State for the [[ListPickerBase]] component */
-export interface ListPickerState {
+/** State for the [[ListPickerBase]] component
+ * @internal
+ */
+interface ListPickerState {
   expanded: boolean;
 }
 
 let lastOpenedPicker: ListPickerBase | undefined;
 
-/** Properties for the [[ListPickerItem]] component */
+/** Properties for the [[ListPickerItem]] component
+ * @beta
+ */
 export interface ListPickerItemProps extends CommonProps {
   key: any;
   isActive?: boolean;
@@ -57,7 +67,9 @@ export interface ListPickerItemProps extends CommonProps {
   label?: string;
 }
 
-/** List Picker Item React component */
+/** List Picker Item React component
+ * @beta
+ */
 export class ListPickerItem extends React.Component<ListPickerItemProps> {
   /** Renders ListPickerItem */
   public render() {
@@ -78,13 +90,24 @@ export class ListPickerItem extends React.Component<ListPickerItemProps> {
   }
 }
 
-/** Properties for the [[ExpandableSection]] component */
+/** Properties for the [[ExpandableSection]] component
+ * @beta
+ */
 export interface ExpandableSectionProps extends CommonProps {
   title?: string;
 }
 
-/** Expandable Section React component used by [[ListPickerBase]] */
-export class ExpandableSection extends React.Component<ExpandableSectionProps, any> {
+/** State for the [[ExpandableSection]] component
+ * @internal
+ */
+interface ExpandableSectionState {
+  expanded: boolean;
+}
+
+/** Expandable Section React component used by [[ListPickerBase]]
+ * @beta
+ */
+export class ExpandableSection extends React.Component<ExpandableSectionProps, ExpandableSectionState> {
   /** Creates an ExpandableSection */
   constructor(props: ExpandableSectionProps, context: any) {
     super(props, context);
@@ -125,6 +148,7 @@ export class ExpandableSection extends React.Component<ExpandableSectionProps, a
 /**
  * List picker base class.
  * Used to provide an expandable list of items to enable/disable items.
+ * @beta
  */
 export class ListPickerBase extends React.Component<ListPickerProps, ListPickerState> {
   /** Creates a ListPickerBase */
@@ -248,7 +272,9 @@ export class ListPickerBase extends React.Component<ListPickerProps, ListPickerS
   }
 }
 
-/** Properties for the [[ListPicker]] component */
+/** Properties for the [[ListPicker]] component
+ * @beta
+ */
 export interface ListPickerPropsExtended extends ListPickerProps {
   enableAllFunc?: () => void;
   disableAllFunc?: () => void;
@@ -258,8 +284,9 @@ export interface ListPickerPropsExtended extends ListPickerProps {
 /**
  * List Picker that lets the user pick from a list of items to enable/disable
  * It also provides options to enable all, disable all and invert selection
+ * @beta
  */
-export class ListPicker extends React.Component<ListPickerPropsExtended, any> {
+export class ListPicker extends React.Component<ListPickerPropsExtended> {
   public static get Key_All() { return -3; }
   public static get Key_None() { return -2; }
   public static get Key_Invert() { return -1; }
@@ -350,5 +377,3 @@ export class ListPicker extends React.Component<ListPickerPropsExtended, any> {
     );
   }
 }
-
-export default ListPicker;

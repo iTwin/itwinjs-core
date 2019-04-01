@@ -10,16 +10,18 @@ import { SelectionInfo } from "@bentley/ui-ninezone";
 import { UiFramework } from "../UiFramework";
 import { Icon } from "../shared/IconComponent";
 
-/** Defines properties supported by the Prompt Field Component. */
-interface StatusFieldProps {
+/** Defines properties supported by the SelectionInfo Field Component.
+ */
+interface SelectionInfoFieldProps {
   isInFooterMode: boolean;
   selectionCount: number;
 }
 
-/** Status Field React component. This component is designed to be specified in a status bar definition.
+/**
+ * Status Field React component. This component is designed to be specified in a status bar definition.
  * It is used to display the number of selected items based on the Presentation Rules Selection Manager.
  */
-class StatusFieldComponent extends React.Component<StatusFieldProps> {
+class SelectionInfoFieldComponent extends React.Component<SelectionInfoFieldProps> {
 
   constructor(props?: any, context?: any) {
     super(props, context);
@@ -50,5 +52,10 @@ function mapStateToProps(state: any) {
 }
 
 // we declare the variable and export that rather than using export default.
-/** OverallContent React component that is Redux connected. */ // tslint:disable-next-line:variable-name
-export const SelectionInfoField = connect(mapStateToProps)(StatusFieldComponent);
+/**
+ * SelectionInfo Status Field React component. This component is designed to be specified in a status bar definition.
+ * It is used to display the number of selected items based on the Presentation Rules Selection Manager.
+ * This React component is Redux connected.
+ * @public
+ */ // tslint:disable-next-line:variable-name
+export const SelectionInfoField = connect(mapStateToProps)(SelectionInfoFieldComponent);

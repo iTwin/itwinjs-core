@@ -7,11 +7,8 @@
 import { ConfigurableCreateInfo, ConfigurableUiControl, ConfigurableUiControlType } from "../configurableui/ConfigurableUiControl";
 import { WidgetDef, WidgetState } from "./WidgetDef";
 
-// -----------------------------------------------------------------------------
-// Configurable Ui Widget Control
-// -----------------------------------------------------------------------------
-
 /** The base class for Widget controls.
+ * @public
  */
 export class WidgetControl extends ConfigurableUiControl {
   private _widgetDef!: WidgetDef;
@@ -39,5 +36,3 @@ export class WidgetControl extends ConfigurableUiControl {
     this.widgetDef.setWidgetState(state);
   }
 }
-
-export default WidgetControl;

@@ -8,7 +8,7 @@ import * as React from "react";
 
 import { NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
 
-import UiFramework from "../UiFramework";
+import { UiFramework } from "../UiFramework";
 
 import { StatusBarFieldId, IStatusBar } from "../widgets/StatusBarWidgetControl";
 import { MessageManager } from "../messages/MessageManager";
@@ -23,25 +23,32 @@ const MessageCenterDialog = withOnOutsideClick(MessageCenterDialogComponent, und
 // tslint:disable-next-line: variable-name
 const MessageCenterDialogContent = withContainIn(MessageCenterDialogContentComponent);
 
-/** Properties for the [[MessageCenterField]] React component */
+/** Properties for the [[MessageCenterField]] React component
+ * @public
+ */
 export interface MessageCenterProps {
   statusBar: IStatusBar;
   isInFooterMode: boolean;
   openWidget: StatusBarFieldId;
 }
 
-/** Enum for the [[MessageCenterField]] active tab */
-export enum MessageCenterActiveTab {
+/** Enum for the [[MessageCenterField]] active tab
+ * @internal
+ */
+enum MessageCenterActiveTab {
   AllMessages,
   Problems,
 }
 
-/** State for the [[MessageCenterField]] React component */
-export interface MessageCenterState {
+/** State for the [[MessageCenterField]] React component
+ * @internal
+ */
+interface MessageCenterState {
   activeTab: MessageCenterActiveTab;
 }
 
 /** Message Center Field React component.
+ * @public
  */
 export class MessageCenterField extends React.Component<MessageCenterProps, MessageCenterState> {
   private _className: string;

@@ -5,7 +5,6 @@
 /** @module Frontstage */
 
 import * as React from "react";
-// import * as ReactDOM from "react-dom";
 
 import { FrontstageManager, FrontstageActivatedEventArgs, ModalFrontstageInfo, ModalFrontstageChangedEventArgs } from "./FrontstageManager";
 import { FrontstageDef } from "./FrontstageDef";
@@ -19,7 +18,9 @@ import {
 
 import { WidgetDef } from "../widgets/WidgetDef";
 
-/** Interface defining callbacks for widget changes */
+/** Interface defining callbacks for widget changes
+ * @public
+ */
 export interface WidgetChangeHandler {
   handleResize(zoneId: WidgetZoneIndex, x: number, y: number, handle: ResizeHandle, filledHeightDiff: number): void;
   handleTabClick(widgetId: WidgetZoneIndex, tabIndex: number): void;
@@ -29,17 +30,23 @@ export interface WidgetChangeHandler {
   handleWidgetStateChange(widgetId: number, tabIndex: number, isOpening: boolean): void;
 }
 
-/** Interface defining callbacks for ZoneDropTarget changes */
+/** Interface defining callbacks for ZoneDropTarget changes
+ * @public
+ */
 export interface TargetChangeHandler {
   handleTargetChanged(zoneId: WidgetZoneIndex, type: TargetType, isTargeted: boolean): void;
 }
 
-/** Interface defining a provider for Zone definitions */
+/** Interface defining a provider for Zone definitions
+ * @public
+ */
 export interface ZoneDefProvider {
   getZoneDef(zoneId: number): ZoneDef | undefined;
 }
 
-/** Runtime Props for the Frontstage */
+/** Runtime Props for the Frontstage
+ * @internal
+ */
 export interface FrontstageRuntimeProps {
   nineZoneProps: NineZoneProps;
   widgetChangeHandler: WidgetChangeHandler;
@@ -49,6 +56,7 @@ export interface FrontstageRuntimeProps {
 }
 
 /** Properties for the [[FrontstageComposer]] component.
+ * @public
  */
 export interface FrontstageComposerProps {
   className?: string;
@@ -56,21 +64,23 @@ export interface FrontstageComposerProps {
 }
 
 /** State for the FrontstageComposer component.
+ * @internal
  */
-export interface FrontstageComposerState {
+interface FrontstageComposerState {
   frontstageId: string;
   modalFrontstageCount: number;
   nineZoneProps: NineZoneProps;
 }
 
 /** FrontstageComposer React component.
+ * @public
  */
 export class FrontstageComposer extends React.Component<FrontstageComposerProps, FrontstageComposerState>
   implements WidgetChangeHandler, TargetChangeHandler, ZoneDefProvider {
 
   private _frontstageDef: FrontstageDef | undefined;
 
-  /** @hidden */
+  /** @internal */
   public readonly state: Readonly<FrontstageComposerState>;
 
   constructor(props: FrontstageComposerProps, context?: any) {

@@ -12,6 +12,7 @@ import { IModelApp, ToolSettingsPropertyRecord, ToolSettingsPropertySyncItem, In
 // -----------------------------------------------------------------------------
 
 /** Sync Tool Settings Properties Event Args interface.
+ * @public
  */
 export interface SyncToolSettingsPropertiesEventArgs {
   toolId: string;
@@ -19,6 +20,7 @@ export interface SyncToolSettingsPropertiesEventArgs {
 }
 
 /** Sync Tool Settings Properties Event class.
+ * @public
  */
 export class SyncToolSettingsPropertiesEvent extends UiEvent<SyncToolSettingsPropertiesEventArgs> { }
 
@@ -27,6 +29,7 @@ export class SyncToolSettingsPropertiesEvent extends UiEvent<SyncToolSettingsPro
 // -----------------------------------------------------------------------------
 
 /** Tool UI Manager class. Used to generate UI components for Tool Settings.
+ * @internal
  */
 export class ToolUiManager {
   private static _useDefaultToolSettingsProvider = false;
@@ -95,7 +98,7 @@ export class ToolUiManager {
   /** Returns true if the Tool Settings are to be auto populated from the toolSettingsProperties. */
   public static get useDefaultToolSettingsProvider(): boolean { return ToolUiManager._useDefaultToolSettingsProvider; }
 
-  /** @hidden for use only by testing  */
+  /** @internal for use only by testing  */
   public static set useDefaultToolSettingsProvider(useDefaultToolSettings: boolean) { ToolUiManager._useDefaultToolSettingsProvider = useDefaultToolSettings; }
 
   /** Returns the name label of the active tool. */

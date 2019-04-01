@@ -19,6 +19,7 @@ import { StagePanelDef } from "../stagepanels/StagePanelDef";
 import { ElementTooltip } from "../feedback/ElementTooltip";
 
 /** Properties for a [[Frontstage]] component.
+ * @public
  */
 export interface FrontstageProps {
   /** Id for the Frontstage */
@@ -53,20 +54,20 @@ export interface FrontstageProps {
   /** The Zone in the bottom-right corner. */
   bottomRight?: React.ReactElement<ZoneProps>;
 
-  /** The StagePanel on the top of the 9-zone area. */
+  /** The StagePanel on the top of the 9-zone area. @alpha */
   topPanel?: React.ReactElement<StagePanelProps>;
-  /** The StagePanel on the very top across the full width. */
+  /** The StagePanel on the very top across the full width. @alpha  */
   topMostPanel?: React.ReactElement<StagePanelProps>;
-  /** The StagePanel on the left. */
+  /** The StagePanel on the left. @alpha  */
   leftPanel?: React.ReactElement<StagePanelProps>;
-  /** The StagePanel on the right. */
+  /** The StagePanel on the right. @alpha  */
   rightPanel?: React.ReactElement<StagePanelProps>;
-  /** The StagePanel on the bottom of the 9-zone area. */
+  /** The StagePanel on the bottom of the 9-zone area. @alpha  */
   bottomPanel?: React.ReactElement<StagePanelProps>;
-  /** The StagePanel on the very bottom across the full width. */
+  /** The StagePanel on the very bottom across the full width. @alpha  */
   bottomMostPanel?: React.ReactElement<StagePanelProps>;
 
-  /** @hidden */
+  /** @internal */
   runtimeProps?: FrontstageRuntimeProps;
 }
 
@@ -74,20 +75,31 @@ interface FrontstageState {
   isUiVisible: boolean;
 }
 
-/** ConfigurableUi Frontstage React component.
+/** Frontstage React component.
+ * A Frontstage is a full-screen configuration designed to enable the user to accomplish a task.
+ * @public
  */
 export class Frontstage extends React.Component<FrontstageProps, FrontstageState> {
 
+  /** @internal */
   constructor(props: FrontstageProps) {
     super(props);
 
     this.state = { isUiVisible: UiFramework.getIsUiVisible() };
   }
 
+  /** React lifecycle method.
+   * Added listener for UiFramework.onUiVisibilityChanged.
+   * @internal
+   */
   public async componentDidMount() {
     UiFramework.onUiVisibilityChanged.addListener(this._uiVisibilityChanged);
   }
 
+  /** React lifecycle method.
+   * Removed listener for UiFramework.onUiVisibilityChanged.
+   * @internal
+   */
   public componentWillUnmount() {
     UiFramework.onUiVisibilityChanged.removeListener(this._uiVisibilityChanged);
   }
@@ -96,6 +108,7 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
     this.setState({ isUiVisible: args.visible });
   }
 
+  /** Initializes a FrontstageDef from FrontstageProps */
   public static initializeFrontstageDef(frontstageDef: FrontstageDef, props: FrontstageProps): void {
     frontstageDef.id = props.id;
 
@@ -309,6 +322,9 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
     });
   }
 
+  /** React render method
+   * @internal
+   */
   public render(): React.ReactNode {
     const { runtimeProps } = this.props;
 

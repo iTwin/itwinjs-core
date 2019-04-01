@@ -7,8 +7,10 @@
 // cSpell:ignore classname
 
 import { ScreenViewport } from "@bentley/imodeljs-frontend";
+
 /**
  * Various View utility methods
+ * @public
  */
 export class ViewUtilities {
 

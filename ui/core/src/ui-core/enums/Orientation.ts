@@ -6,6 +6,7 @@
 
 /**
  * Enumeration of orientation.
+ * @public
  */
 export const enum Orientation {
   Horizontal,

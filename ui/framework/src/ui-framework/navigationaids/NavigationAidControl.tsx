@@ -5,12 +5,24 @@
 /** @module NavigationAids */
 
 import { ConfigurableCreateInfo, ConfigurableUiControl, ConfigurableUiControlType } from "../configurableui/ConfigurableUiControl";
+import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { UiEvent } from "@bentley/ui-core";
 
-// -----------------------------------------------------------------------------
-// Configurable Ui Navigation Aid Control
-// -----------------------------------------------------------------------------
+/** NavigationAid Activated Event Args interface.
+ * @public
+ */
+export interface NavigationAidActivatedEventArgs {
+  navigationAidId: string;
+  iModelConnection: IModelConnection;
+}
+
+/** NavigationAid Activated Event class.
+ * @public
+ */
+export class NavigationAidActivatedEvent extends UiEvent<NavigationAidActivatedEventArgs> { }
 
 /** The base class for Navigation Aid controls.
+ * @public
  */
 export class NavigationAidControl extends ConfigurableUiControl {
   private _reactElement: React.ReactNode;

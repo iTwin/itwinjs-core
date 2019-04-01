@@ -7,13 +7,17 @@
 import * as React from "react";
 import * as classnames from "classnames";
 
-/** Sizes for [[Button]] component */
+/** Sizes for [[Button]] component
+ * @public
+ */
 export enum ButtonSize {
   Default = "",
   Large = "large",
 }
 
-/** Types for [[Button]] component */
+/** Types for [[Button]] component
+ * @public
+ */
 export enum ButtonType {
   Primary = "primary",
   Blue = "blue",
@@ -21,7 +25,9 @@ export enum ButtonType {
   Hollow = "hollow",
 }
 
-/** Properties for [[Button]] component */
+/** Properties for [[Button]] component
+ * @public
+ */
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   /** Allow ID to be passed to Button */
   id?: string;
@@ -33,7 +39,9 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
   onClick?: ((event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void);
 }
 
-/** Generic button component  */
+/** Generic button component
+ * @public
+ */
 export class Button extends React.Component<ButtonProps> {
   public render() {
     let className = "";
@@ -60,5 +68,3 @@ export class Button extends React.Component<ButtonProps> {
     return <button {...this.props} className={classnames(className, this.props.className)} onClick={this.props.onClick} />;
   }
 }
-
-export default Button;

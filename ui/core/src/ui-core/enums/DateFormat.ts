@@ -6,6 +6,7 @@
 
 /**
  * Enumeration of date formats.
+ * @public
  */
 export const enum DateFormat {
   None = 0,

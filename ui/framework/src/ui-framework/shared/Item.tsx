@@ -12,7 +12,9 @@ import { ItemDefBase } from "./ItemDefBase";
 
 import { Item } from "@bentley/ui-ninezone";
 
-/** Abstract base class that is used by classes to execute an action when pressed. */
+/** Abstract base class that is used by classes to execute an action when pressed.
+ * @public
+ */
 export abstract class ActionButtonItemDef extends ItemDefBase {
   protected _commandHandler?: CommandHandler;
   public parameters?: any;
@@ -52,6 +54,7 @@ export abstract class ActionButtonItemDef extends ItemDefBase {
 }
 
 /** An Item that executes a Command.
+ * @public
  */
 export class CommandItemDef extends ActionButtonItemDef {
   private static _sId = 0;
@@ -79,6 +82,7 @@ export class CommandItemDef extends ActionButtonItemDef {
 }
 
 /** An Item that starts the execution of a Tool.
+ * @public
  */
 export class ToolItemDef extends ActionButtonItemDef {
   public toolId: string = "";

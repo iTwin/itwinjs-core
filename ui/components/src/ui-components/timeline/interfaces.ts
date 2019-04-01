@@ -6,6 +6,7 @@
 
 /**
  * A range of time which can be used to focus in on activities scheduled around a milestone.
+ * @beta
  */
 export interface MilestoneRange {
   start: Date;
@@ -14,6 +15,7 @@ export interface MilestoneRange {
 
 /**
  * A Milestone event that is to be noted in the timeline.
+ * @beta
  */
 export interface Milestone {
   /** uniqueId of milestone */
@@ -32,7 +34,9 @@ export interface Milestone {
   children?: Milestone[];
 }
 
-/** The amount of detail to be displayed in timeline. */
+/** The amount of detail to be displayed in timeline.
+ * @beta
+ */
 export const enum TimelineDetail {
   /** Show duration and milestones if available. */
   Minimal = 0,
@@ -42,7 +46,9 @@ export const enum TimelineDetail {
   Full = 2,
 }
 
-/** The timeline scale to be displayed if TimelineDetail in NOT set to 'Minimal'. */
+/** The timeline scale to be displayed if TimelineDetail in NOT set to 'Minimal'.
+ * @beta
+ */
 export const enum TimelineScale {
   /** Show years */
   Years,
@@ -56,7 +62,9 @@ export const enum TimelineScale {
   Hours,
 }
 
-/** Determines if data displayed to use is the actual date or the amount of time elapsed since project start.  */
+/** Determines if data displayed to use is the actual date or the amount of time elapsed since project start.
+ * @beta
+ */
 export const enum TimelineDateDisplay {
   /** Display time axis using actual start/end dates */
   ActualTime,
@@ -65,7 +73,8 @@ export const enum TimelineDateDisplay {
 }
 
 /**
- * Playback Settings.  TODO: do we need a display StartDate/EndData this would allow user to show a timeline that extends beyond the 'start' and 'end' dates.
+ * Playback Settings.
+ * @beta TODO: do we need a display StartDate/EndData this would allow user to show a timeline that extends beyond the 'start' and 'end' dates.
  */
 export interface PlaybackSettings {
   /** time in milliseconds to play animation from start date to end date */
@@ -86,16 +95,20 @@ export interface PlaybackSettings {
 
 /**
  * An interface used to notify Handlers of the current pointer position in the timeline playback. Valid range is 0 to 1 and it determines percentage complete.
+ * @beta
  */
 export type PlaybackPointerChangeHandler = (pointerValue: number) => void;
 
 /**
  * An interface used to notify Handlers of Playback Settings changes.
  * Contains the settings to be used.
+ * @beta
  */
 export type PlaybackSettingsChangeHandler = (settings: PlaybackSettings) => void;
 
-/** Interface for a timeline data provider class */
+/** Interface for a timeline data provider class
+ * @beta
+ */
 export interface TimelineDataProvider {
   /** uniqueId of provider */
   id: string;

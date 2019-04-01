@@ -11,6 +11,7 @@ import { UiEvent } from "@bentley/ui-core";
 import { DragSourceArguments, DragLayerProps } from "@bentley/ui-components";
 
 /** Drag/Drop Layer Changed Event Args class.
+ * @beta
  */
 export interface DragDropLayerChangedEventArgs {
   /** The new drag type. */
@@ -18,10 +19,12 @@ export interface DragDropLayerChangedEventArgs {
 }
 
 /** Drag/Drop Layer Changed Event class.
+ * @beta
  */
 export class DragDropLayerChangedEvent extends UiEvent<DragDropLayerChangedEventArgs> { }
 
 /** Drag/Drop Layer Manager class.
+ * @beta
  */
 export class DragDropLayerManager {
   private static _currentType: string | undefined;
@@ -61,25 +64,27 @@ export class DragDropLayerManager {
 }
 
 /** Properties for the DragDropLayerRenderer component
+ * @beta
  */
 export interface DragDropLayerRendererProps {
   dragging?: boolean;
   item?: any;
   itemType?: string;
   args?: DragSourceArguments;
-  /** @hidden */
+  /** @internal */
   clientOffset?: { x: number, y: number };
-  /** @hidden */
+  /** @internal */
   initialClientOffset?: { x: number, y: number };
-  /** @hidden */
+  /** @internal */
   sourceClientOffset?: { x: number, y: number };
-  /** @hidden */
+  /** @internal */
   initialSourceClientOffset?: { x: number, y: number };
 }
 
 /** DragDropLayerRenderer component.
+ * @beta
  */
-class DragDropLayerRendererComponent extends React.Component<DragDropLayerRendererProps> {
+export class DragDropLayerRendererComponent extends React.Component<DragDropLayerRendererProps> {
   private _dragging: boolean = false;
   public componentDidMount() {
     window.addEventListener("dragstart", this._handleDragStart);
@@ -135,6 +140,7 @@ class DragDropLayerRendererComponent extends React.Component<DragDropLayerRender
  * Contains the DragLayers to all DragSource types.
  * New DragLayers are registered by type using [[DragDropLayerManager.registerTypeLayer]]
  * This component must be placed on a root DOM node at the bottom to render DragLayers properly.
+ * @beta
  */
 export const DragDropLayerRenderer: typeof DragDropLayerRendererComponent & DndComponentClass<{}> = DragLayer((monitor) => ({ // tslint:disable-line:variable-name
   item: monitor.getItem(),

@@ -9,7 +9,9 @@ import { ShowHideItem, ShowHideID } from "./ShowHideItem";
 import { GlobalDialog, GlobalDialogProps, DialogButtonType } from "@bentley/ui-core";
 import UiComponents from "../../UiComponents";
 
-/** Properties for the [[ShowHideDialog]] component */
+/** Properties for the [[ShowHideDialog]] component
+ * @public
+ */
 export interface ShowHideDialogProps<T extends ShowHideID> extends GlobalDialogProps {
   /** key-label pair list for id's to be shown/hidden, and an accompanying label. */
   items: Array<ShowHideItem<T>>;
@@ -19,16 +21,17 @@ export interface ShowHideDialogProps<T extends ShowHideID> extends GlobalDialogP
   onShowHideChange?: (cols: T[]) => boolean | undefined;
 }
 
-/** @hidden */
-export interface ShowHideDialogState<T extends ShowHideID> {
+/** @internal */
+interface ShowHideDialogState<T extends ShowHideID> {
   hiddenColumns: T[];
 }
 
 /**
  * [Dialog]($ui-core) Component used to toggle show/hide items, given through items prop, through a list of checkboxes.
+ * @public
  */
 export class ShowHideDialog<T extends ShowHideID> extends React.Component<ShowHideDialogProps<T>, ShowHideDialogState<T>> {
-  /** @hidden */
+  /** @internal */
   public readonly state: ShowHideDialogState<T>;
   constructor(props: ShowHideDialogProps<T>) {
     super(props);
@@ -37,7 +40,7 @@ export class ShowHideDialog<T extends ShowHideID> extends React.Component<ShowHi
     };
   }
 
-  /** @hidden */
+  /** @internal */
   public componentDidUpdate(oldProps: ShowHideDialogProps<T>) {
     if (this.props.initialHidden && oldProps.initialHidden !== this.props.initialHidden) {
       this.setState({ hiddenColumns: this.props.initialHidden });
@@ -69,6 +72,7 @@ export class ShowHideDialog<T extends ShowHideID> extends React.Component<ShowHi
     });
   }
 
+  /** @internal */
   public render(): React.ReactNode {
     const { opened, items, initialHidden, onClose, onShowHideChange, ...props } = this.props;
     return (

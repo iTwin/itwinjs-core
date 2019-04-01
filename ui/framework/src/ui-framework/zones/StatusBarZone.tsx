@@ -14,7 +14,9 @@ import { UiFramework, UiVisibilityEventArgs } from "../UiFramework";
 // import TemporaryMessage from "@bentley/ui-ninezone/messages/Temporary";
 import { StatusZoneProps as NZ_ZoneProps, DropTarget, FooterZone as NZ_FooterZone, RectangleProps, GhostOutline } from "@bentley/ui-ninezone";
 
-/** Properties for the [[StatusBarZone]] component */
+/** Properties for the [[StatusBarZone]] component
+ * @internal
+ */
 export interface StatusBarZoneProps {
   widgetControl?: StatusBarWidgetControl;
   zoneProps: NZ_ZoneProps;
@@ -29,13 +31,14 @@ interface StatusBarZoneState {
 }
 
 /** Status Bar Zone React component.
+ * @internal
  */
 export class StatusBarZone extends React.Component<StatusBarZoneProps, StatusBarZoneState> {
 
   constructor(props: StatusBarZoneProps) {
     super(props);
 
-    this.state = {isUiVisible: UiFramework.getIsUiVisible()};
+    this.state = { isUiVisible: UiFramework.getIsUiVisible() };
   }
 
   public componentDidMount() {
@@ -47,7 +50,7 @@ export class StatusBarZone extends React.Component<StatusBarZoneProps, StatusBar
   }
 
   private _uiVisibilityChanged = (args: UiVisibilityEventArgs): void => {
-    this.setState ({ isUiVisible: args.visible });
+    this.setState({ isUiVisible: args.visible });
   }
 
   public render(): React.ReactNode {

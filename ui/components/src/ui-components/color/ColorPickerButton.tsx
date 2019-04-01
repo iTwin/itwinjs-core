@@ -11,7 +11,11 @@ import { Popup, Position } from "@bentley/ui-core";
 import { ColorSwatch } from "./Swatch";
 import "./ColorPickerButton.scss";
 
-/** Properties for the [[ColorPickerButton]] React component */
+// cSpell:ignore colorpicker
+
+/** Properties for the [[ColorPickerButton]] React component
+ * @beta
+ */
 export interface ColorPickerProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   /** active color */
   activeColor: ColorDef;
@@ -31,19 +35,24 @@ export interface ColorPickerProps extends React.ButtonHTMLAttributes<HTMLButtonE
   numColumns: number;
 }
 
+/** @internal */
 interface ColorPickerState {
   showPopup: boolean;
 }
 
-/** ColorPickerButton component */
+/** ColorPickerButton component
+ * @beta
+ */
 export class ColorPickerButton extends React.PureComponent<ColorPickerProps, ColorPickerState> {
   private _colors: ColorDef[] = [];
   private _target: HTMLElement | null = null;
 
+  /** @internal */
   public static defaultProps: Partial<ColorPickerProps> = {
     numColumns: 4,
   };
 
+  /** @internal */
   constructor(props: ColorPickerProps) {
     super(props);
 
@@ -90,40 +99,41 @@ export class ColorPickerButton extends React.PureComponent<ColorPickerProps, Col
   private _handleColorPicked = (color: ColorDef) => {
     this._closePopup();
     if (this.props.onColorPick)
-      this.props.onColorPick (color);
+      this.props.onColorPick(color);
   }
 
   private renderPopup(title: string | undefined) {
-    const containerStyle: React.CSSProperties = {gridTemplateColumns: `repeat(${this.props.numColumns}, 1fr)`};
+    const containerStyle: React.CSSProperties = { gridTemplateColumns: `repeat(${this.props.numColumns}, 1fr)` };
     return (
       <div className="components-colorpicker-popup-container">
         {title && <h4>{title}</h4>}
         <div data-testid="components-colorpicker-popup-colors" className="components-colorpicker-popup-colors" style={containerStyle}>
           {this._colors.map((color, index) => <ColorSwatch className="components-colorpicker-swatch" key={index} colorDef={color}
-                  onColorPick={this._handleColorPicked} round={this.props.round} />)}
+            onColorPick={this._handleColorPicked} round={this.props.round} />)}
         </div>
       </div>
     );
   }
 
+  /** @internal */
   public render() {
     const { b, g, r, t } = this.props.activeColor.colors as any;
     const rgbaString = `rgb(${r},${g},${b},${(255 - t) / 255})`;
     const colorStyle = { backgroundColor: rgbaString } as React.CSSProperties;
     const buttonName = classnames("components-colorpicker-button",
-          this.props.round && "round",
-          this.props.readonly && "readonly",
-          this.props.className);
+      this.props.round && "round",
+      this.props.readonly && "readonly",
+      this.props.className);
 
     return (
       <>
         <button data-testid="components-colorpicker-button" onClick={this._togglePopup} className={buttonName} style={colorStyle} disabled={this.props.disabled} ref={(element) => { this._target = element; }} />
         <Popup
-            className="components-colorpicker-popup"
-            isOpen={this.state.showPopup}
-            position={Position.BottomLeft}
-            onClose={this._closePopup}
-            target={this._target} >
+          className="components-colorpicker-popup"
+          isOpen={this.state.showPopup}
+          position={Position.BottomLeft}
+          onClose={this._closePopup}
+          target={this._target} >
           {this.renderPopup(this.props.dropDownTitle)}
         </Popup>
       </>

@@ -9,6 +9,7 @@ import * as React from "react";
 import { UiEvent } from "@bentley/ui-core";
 
 /** Modal Dialog Stack Changed Event Args class.
+ * @public
  */
 export interface ModalDialogChangedEventArgs {
   modalDialogCount: number;
@@ -16,10 +17,12 @@ export interface ModalDialogChangedEventArgs {
 }
 
 /** Modal Dialog Changed Event class.
+ * @public
  */
 export class ModalDialogChangedEvent extends UiEvent<ModalDialogChangedEventArgs> { }
 
 /** Modal Dialog Manager class.
+ * @public
  */
 export class ModalDialogManager {
   private static _modalDialogs: React.ReactNode[] = new Array<React.ReactNode>();
@@ -68,6 +71,7 @@ export class ModalDialogManager {
 }
 
 /** Properties for the [[ModalDialogRenderer]] component.
+ * @public
  */
 export interface ModalDialogRendererProps {
   className?: string;
@@ -75,12 +79,14 @@ export interface ModalDialogRendererProps {
 }
 
 /** State for the ModalDialogRenderer component.
+ * @internal
  */
-export interface ModalDialogRendererState {
+interface ModalDialogRendererState {
   modalDialogCount: number;
 }
 
 /** ModalDialogRenderer React component.
+ * @public
  */
 export class ModalDialogRenderer extends React.Component<ModalDialogRendererProps, ModalDialogRendererState> {
 

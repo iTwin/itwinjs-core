@@ -16,6 +16,7 @@
     "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/ui/ui-core/file.json --tsIndexFile=./ui-core.ts --onlyJson %TYPEDOC_THEME%",
     "lint": "tslint --project . 1>&2",
     "pack": "node ../../scripts/pack.js",
+    "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=ui-core --ignoreMissingTags",
     "test": "mocha --opts ../mocha.opts lib/test/**/*.test.js",
     "test:watch": "npm test -- --reporter min --watch-extensions ts,tsx --watch"
   },

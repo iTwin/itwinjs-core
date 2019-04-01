@@ -9,7 +9,9 @@ import { CSSProperties } from "react";
 /** Converts a color value from a number to an HTML/CSS hex string */
 const colorDecimalToHex = (decimal: number) => `#${decimal.toString(16).padStart(6, "0")}`;
 
-/** Style properties for styled item like [[CellItem]] and [[TreeNodeItem]] */
+/** Style properties for styled item like [[CellItem]] and [[TreeNodeItem]]
+ * @public
+ */
 export interface ItemStyle {
   /** Is text bolded */
   isBold?: boolean;
@@ -19,7 +21,9 @@ export interface ItemStyle {
   colorOverrides?: ItemColorOverrides;
 }
 
-/** Color overrides for styled item */
+/** Color overrides for styled item
+ * @public
+ */
 export interface ItemColorOverrides {
   /** Text/foreground color */
   color?: number;
@@ -63,6 +67,7 @@ function getForegroundColor(isSelected: boolean, colorOverrides?: ItemColorOverr
 
 /**
  * Style provider for stylable items like [[CellItem]] and [[TreeNodeItem]]
+ * @public
  */
 // tslint:disable-next-line:variable-name
 export const ItemStyleProvider = {
@@ -80,6 +85,7 @@ export const ItemStyleProvider = {
 
 /**
  * Style provider for table rows
+ * @public
  */
 // tslint:disable-next-line:variable-name
 export const TableRowStyleProvider = {

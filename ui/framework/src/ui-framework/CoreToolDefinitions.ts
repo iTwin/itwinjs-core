@@ -12,7 +12,9 @@ import { BaseItemState } from "./shared/ItemDefBase";
 import { SyncUiEventId } from "./syncui/SyncUiEventDispatcher";
 import { AnalysisAnimationTool } from "./tools/AnalysisAnimation";
 
-/** Utility Class that provides definitions of tools provided by imodel.js core. These definitions can be used to populate the ui. */
+/** Utility Class that provides definitions of tools provided by iModel.js core. These definitions can be used to populate the UI.
+ * @public
+ */
 export class CoreTools {
   public static get fitViewCommand() {
     return new ToolItemDef({

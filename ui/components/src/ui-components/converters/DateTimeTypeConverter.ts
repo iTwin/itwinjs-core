@@ -11,6 +11,7 @@ import { Primitives } from "@bentley/imodeljs-frontend";
 
 /**
  * Short Date Type Converter.
+ * @public
  */
 export class ShortDateTypeConverter extends TypeConverter implements LessGreaterOperatorProcessor {
   public convertToString(value?: Primitives.ShortDate) {
@@ -75,6 +76,7 @@ TypeConverterManager.registerConverter("shortdate", ShortDateTypeConverter);
 
 /**
  * Date Time Type Converter.
+ * @public
  */
 export class DateTimeTypeConverter extends ShortDateTypeConverter {
   protected getTimeFormat(): TimeFormat { return TimeFormat.Long; }

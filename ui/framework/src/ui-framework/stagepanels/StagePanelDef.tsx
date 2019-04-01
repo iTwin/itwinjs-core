@@ -8,6 +8,7 @@ import { StagePanelLocation } from "./StagePanel";
 import { WidgetHost } from "../widgets/WidgetHost";
 
 /** Enum for StagePanel state.
+ * @alpha
  */
 export enum StagePanelState {
   Off,
@@ -18,6 +19,7 @@ export enum StagePanelState {
 
 /**
  * A StagePanelDef represents each Stage Panel within a Frontstage.
+ * @alpha
  */
 export class StagePanelDef extends WidgetHost {
   /** Default Height or Width of the panel */

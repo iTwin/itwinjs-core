@@ -11,6 +11,7 @@ import { TargetChangeHandler } from "../frontstage/FrontstageComposer";
 import { Container as ZoneTargetsContainer, Merge as MergeTarget, Back as BackTarget, WidgetZoneIndex, DropTarget, TargetType } from "@bentley/ui-ninezone";
 
 /** Properties for the [[ZoneTargets]] component.
+ * @internal
  */
 export interface ZoneTargetsProps {
   zoneId: WidgetZoneIndex;
@@ -19,6 +20,7 @@ export interface ZoneTargetsProps {
 }
 
 /** Zone Targets React component.
+ * @internal
  */
 export class ZoneTargets extends React.Component<ZoneTargetsProps> {
   public render(): React.ReactNode {

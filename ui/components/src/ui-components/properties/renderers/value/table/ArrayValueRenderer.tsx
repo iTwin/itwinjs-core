@@ -9,7 +9,9 @@ import { TableNonPrimitiveValueRenderer as TableValueRenderer, TableSpecificValu
 import { NonPrimitivePropertyRenderer } from "../../NonPrimitivePropertyRenderer";
 import { ArrayValue } from "@bentley/imodeljs-frontend";
 
-/** A react component which renders array property value as a button with text */
+/** A react component which renders array property value as a button with text
+ * @public
+ */
 export class TableArrayValueRenderer extends React.PureComponent<TableSpecificValueRendererProps> {
   private getButtonLabel(props: TableSpecificValueRendererProps) {
     const value = (props.propertyRecord.value as ArrayValue);
@@ -26,6 +28,7 @@ export class TableArrayValueRenderer extends React.PureComponent<TableSpecificVa
     );
   }
 
+  /** @internal */
   public render() {
     const typeName = (this.props.propertyRecord.value as ArrayValue).itemsTypeName;
     return (

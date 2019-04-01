@@ -8,7 +8,9 @@ import * as React from "react";
 import * as classnames from "classnames";
 import { TextProps } from "./TextProps";
 
-/** Styled headline text */
+/** Styled headline text
+ * @public
+ */
 
 export class Headline extends React.Component<TextProps> {
   public render(): JSX.Element {
@@ -19,4 +21,3 @@ export class Headline extends React.Component<TextProps> {
     );
   }
 }
-export default Headline;

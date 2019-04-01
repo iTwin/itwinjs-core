@@ -11,17 +11,20 @@ import { PropertyEditorManager, PropertyEditorBase } from "./PropertyEditorManag
 import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
 import "./EnumEditor.scss";
 
+/** @internal */
 interface EnumEditorState {
   selectValue: string | number;
   valueIsNumber: boolean;
 }
 
-/** EnumEditor React component that is a property editor with select input  */
+/** EnumEditor React component that is a property editor with select input
+ * @beta
+ */
 export class EnumEditor extends React.PureComponent<PropertyEditorProps, EnumEditorState> implements TypeEditor {
   private _selectElement: HTMLSelectElement | null = null;
   private _isMounted = false;
 
-  /** @hidden */
+  /** @internal */
   public readonly state: Readonly<EnumEditorState> = {
     selectValue: "",
     valueIsNumber: false,
@@ -79,15 +82,18 @@ export class EnumEditor extends React.PureComponent<PropertyEditorProps, EnumEdi
     }
   }
 
+  /** @internal */
   public componentDidMount() {
     this._isMounted = true;
     this.setStateFromProps(); // tslint:disable-line:no-floating-promises
   }
 
+  /** @internal */
   public componentWillUnmount() {
     this._isMounted = false;
   }
 
+  /** @internal */
   public componentDidUpdate(prevProps: PropertyEditorProps) {
     if (this.props.propertyRecord !== prevProps.propertyRecord) {
       this.setStateFromProps(); // tslint:disable-line:no-floating-promises
@@ -122,6 +128,7 @@ export class EnumEditor extends React.PureComponent<PropertyEditorProps, EnumEdi
       );
   }
 
+  /** @internal */
   public render() {
     const className = classnames("cell", "components-cell-editor", "components-enum-editor");
     const { propertyRecord } = this.props;
@@ -154,7 +161,9 @@ export class EnumEditor extends React.PureComponent<PropertyEditorProps, EnumEdi
   }
 }
 
-/** EnumPropertyEditor React component that uses the [[EnumEditor]] property editor. */
+/** EnumPropertyEditor React component that uses the [[EnumEditor]] property editor.
+ * @beta
+ */
 export class EnumPropertyEditor extends PropertyEditorBase {
 
   public get reactElement(): React.ReactNode {

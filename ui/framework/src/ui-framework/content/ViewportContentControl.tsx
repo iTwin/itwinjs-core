@@ -5,22 +5,13 @@
 /** @module ContentView */
 
 import { ScreenViewport, IModelApp } from "@bentley/imodeljs-frontend";
-import { UiEvent } from "@bentley/ui-core";
 
 import { ConfigurableUiControlType, ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl";
 import { ContentControl } from "./ContentControl";
 import { ViewUtilities } from "../utils/ViewUtilities";
 
-/** Arguments for [[ViewClassFullNameChange]] */
-export interface ViewClassFullNameChangeArgs {
-  oldName: string;
-  newName: string;
-}
-
-/** View Class Full Name Change event */
-export class ViewClassFullNameChange extends UiEvent<ViewClassFullNameChangeArgs> { }
-
 /** The base class for Frontstage Viewport content controls.
+ * @public
  */
 export class ViewportContentControl extends ContentControl {
   private _viewport: ScreenViewport | undefined;

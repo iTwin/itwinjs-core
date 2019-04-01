@@ -10,13 +10,17 @@ import { TypeConverterManager } from "../../../converters/TypeConverterManager";
 import { withContextStyle } from "./WithContextStyle";
 import { withLinks } from "../../LinkHandler";
 
-/** Default Primitive Property Renderer */
+/** Default Primitive Property Renderer
+ * @public
+ */
 export class PrimitivePropertyValueRenderer implements IPropertyValueRenderer {
 
+  /** Checks if the renderer can handle given property */
   public canRender(record: PropertyRecord) {
     return record.value.valueFormat === PropertyValueFormat.Primitive;
   }
 
+  /** Method that returns a JSX representation of PropertyRecord */
   public render(record: PropertyRecord, context?: PropertyValueRendererContext) {
     if (context && context.containerType === PropertyContainerType.Tree)
       return withContextStyle(context.decoratedTextElement, context);

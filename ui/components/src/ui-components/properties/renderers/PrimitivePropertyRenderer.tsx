@@ -8,10 +8,12 @@ import * as React from "react";
 import _ from "lodash";
 import { PrimitivePropertyLabelRenderer } from "./label/PrimitivePropertyLabelRenderer";
 import { PropertyView } from "./PropertyView";
-import { SharedRendererProps, PropertyRendererState, PropertyRenderer } from "./PropertyRenderer";
+import { SharedRendererProps, PropertyRenderer } from "./PropertyRenderer";
 import { Orientation } from "@bentley/ui-core";
 
-/** Properties of [[PrimitivePropertyRenderer]] React component */
+/** Properties of [[PrimitivePropertyRenderer]] React component
+ * @public
+ */
 export interface PrimitiveRendererProps extends SharedRendererProps {
   /** Property value as a React element */
   valueElement?: React.ReactNode;
@@ -19,8 +21,12 @@ export interface PrimitiveRendererProps extends SharedRendererProps {
   indentation?: number;
 }
 
-/** React Component that renders primitive properties */
-export class PrimitivePropertyRenderer extends React.Component<PrimitiveRendererProps, PropertyRendererState> {
+/** React Component that renders primitive properties
+ * @public
+ */
+export class PrimitivePropertyRenderer extends React.Component<PrimitiveRendererProps> {
+
+  /** @internal */
   public render() {
     const { children, indentation, ...props } = this.props;
     const offset = PropertyRenderer.getLabelOffset(this.props.indentation);

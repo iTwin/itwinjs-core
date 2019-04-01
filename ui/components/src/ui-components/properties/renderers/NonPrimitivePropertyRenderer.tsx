@@ -16,20 +16,27 @@ import { PropertyRecord, PropertyValueFormat, StructValue, ArrayValue } from "@b
 
 import "./NonPrimitivePropertyRenderer.scss";
 
-/** Properties of [[NonPrimitivePropertyRenderer]] React component */
+/** Properties of [[NonPrimitivePropertyRenderer]] React component
+ * @public
+ */
 export interface NonPrimitivePropertyRendererProps extends PrimitiveRendererProps {
   /** Can struct/array property be collapsed */
   isCollapsible?: boolean;
 }
 
-/** State of [[NonPrimitivePropertyRenderer]] React component */
-export interface NonPrimitivePropertyRendererState {
+/** State of [[NonPrimitivePropertyRenderer]] React component
+ * @internal
+ */
+interface NonPrimitivePropertyRendererState {
   /** Is struct/array property expanded */
   isExpanded?: boolean;
 }
 
-/** React Component that renders struct and array properties */
+/** React Component that renders struct and array properties
+ * @public
+ */
 export class NonPrimitivePropertyRenderer extends React.Component<NonPrimitivePropertyRendererProps, NonPrimitivePropertyRendererState> {
+  /** @internal */
   public readonly state: NonPrimitivePropertyRendererState = {
     /** If it's not collapsible, that means it's expanded by default and can't be collapsed */
     isExpanded: !this.props.isCollapsible,
@@ -108,6 +115,7 @@ export class NonPrimitivePropertyRenderer extends React.Component<NonPrimitivePr
     );
   }
 
+  /** @internal */
   public render() {
     let items: PropertyRecord[];
     if (this.props.propertyRecord.value.valueFormat === PropertyValueFormat.Struct)

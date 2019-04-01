@@ -8,7 +8,9 @@ import * as React from "react";
 import "./SaturationPicker.scss";
 import { HSVColor } from "@bentley/imodeljs-common";
 
-/** Properties for the [[SaturationPicker]] React component */
+/** Properties for the [[SaturationPicker]] React component
+ * @beta
+ */
 export interface SaturationPickerProps extends React.HTMLAttributes<HTMLDivElement> {
   /** function to run when user selects location in saturation region */
   onSaturationChange?: ((saturation: HSVColor) => void) | undefined;
@@ -16,10 +18,13 @@ export interface SaturationPickerProps extends React.HTMLAttributes<HTMLDivEleme
   hsv: HSVColor;
 }
 
-/** SaturationPicker component used to set the saturation value. */
+/** SaturationPicker component used to set the saturation value.
+ * @beta
+ */
 export class SaturationPicker extends React.PureComponent<SaturationPickerProps> {
   private _container: HTMLDivElement | null = null;
 
+  /** @internal */
   constructor(props: SaturationPickerProps) {
     super(props);
   }
@@ -87,6 +92,7 @@ export class SaturationPicker extends React.PureComponent<SaturationPickerProps>
     return newColor;
   }
 
+  /** @internal */
   public componentWillUnmount() {
     this._unbindEventListeners();
   }
@@ -150,6 +156,7 @@ export class SaturationPicker extends React.PureComponent<SaturationPickerProps>
     window.removeEventListener("mouseup", this._onMouseUp);
   }
 
+  /** @internal */
   public render(): React.ReactNode {
 
     const pointerStyle: React.CSSProperties = {

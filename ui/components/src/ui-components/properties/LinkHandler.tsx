@@ -66,10 +66,14 @@ function renderText(text: string, record: PropertyRecord): React.ReactNode {
   return parts.map((part, index) => <React.Fragment key={index}>{part}</React.Fragment>);
 }
 
-/** Returns true if property record has an anchor tag */
+/** Returns true if property record has an anchor tag
+ * @public
+ */
 export const hasLinks = (record: PropertyRecord) => !!record.links;
 
-/** Renders anchor tag by wrapping or splitting provided text */
+/** Renders anchor tag by wrapping or splitting provided text
+ * @public
+ */
 export const renderLinks = (text: string | Promise<string>, record: PropertyRecord): React.ReactNode | Promise<React.ReactNode> => {
   if (isPromiseLike(text)) {
     return text.then((result) => renderText(result, record));
@@ -78,7 +82,9 @@ export const renderLinks = (text: string | Promise<string>, record: PropertyReco
   return renderText(text, record);
 };
 
-/** If record has links, wraps stringValue in them, otherwise returns unchanged stringValue */
+/** If record has links, wraps stringValue in them, otherwise returns unchanged stringValue
+ * @public
+ */
 export const withLinks = (record: PropertyRecord, stringValue: string | Promise<string>): React.ReactNode | Promise<React.ReactNode> => {
   if (hasLinks(record))
     return renderLinks(stringValue, record);

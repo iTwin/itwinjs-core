@@ -22,6 +22,7 @@ import { StagePanelDef } from "../stagepanels/StagePanelDef";
 import { StagePanelLocation } from "../stagepanels/StagePanel";
 
 /** FrontstageDef class provides an API for a Frontstage.
+ * @public
  */
 export class FrontstageDef {
   public id: string = "";
@@ -47,11 +48,17 @@ export class FrontstageDef {
   public bottomCenter?: ZoneDef;
   public bottomRight?: ZoneDef;
 
+  /** @alpha */
   public topPanel?: StagePanelDef;
+  /** @alpha */
   public topMostPanel?: StagePanelDef;
+  /** @alpha */
   public leftPanel?: StagePanelDef;
+  /** @alpha */
   public rightPanel?: StagePanelDef;
+  /** @alpha */
   public bottomPanel?: StagePanelDef;
+  /** @alpha */
   public bottomMostPanel?: StagePanelDef;
 
   public defaultLayout?: ContentLayoutDef;
@@ -200,7 +207,9 @@ export class FrontstageDef {
     return zoneDefs;
   }
 
-  /** Gets a [[StagePanelDef]] based on a given panel location */
+  /** Gets a [[StagePanelDef]] based on a given panel location
+   * @alpha
+   */
   public getStagePanelDef(location: StagePanelLocation): StagePanelDef | undefined {
     let panelDef: StagePanelDef | undefined;
 
@@ -233,7 +242,9 @@ export class FrontstageDef {
     return panelDef;
   }
 
-  /** Gets a list of [[StagePanelDef]]s */
+  /** Gets a list of [[StagePanelDef]]s
+   * @alpha
+   */
   public get panelDefs(): StagePanelDef[] {
     const panels = [StagePanelLocation.Left];
     const panelDefs: StagePanelDef[] = [];

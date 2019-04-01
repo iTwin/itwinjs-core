@@ -11,7 +11,9 @@ import { AnnularSector, Annulus, Point } from "./Annulus";
 
 import "./RadialMenu.scss";
 
-/** Property interface for [[RadialMenu]] */
+/** Properties for [[RadialMenu]]
+ * @public
+ */
 export interface RadialMenuProps {
   /** Whether to show RadialMenu */
   opened: boolean;
@@ -35,13 +37,14 @@ export interface RadialMenuProps {
   onEsc?: (event: any) => any;
 }
 
-/** @hidden */
-export interface RadialMenuState {
+/** @internal */
+interface RadialMenuState {
   sectors: AnnularSector[];
 }
 
 /**
  * A context menu arranged in a radial layout.
+ * @public
  */
 export class RadialMenu extends React.Component<RadialMenuProps, RadialMenuState> {
   private _root: HTMLDivElement | null = null;
@@ -51,7 +54,7 @@ export class RadialMenu extends React.Component<RadialMenuProps, RadialMenuState
     selected: -1,
   };
 
-  /** @hidden */
+  /** @internal */
   public readonly state: Readonly<RadialMenuState> = {
     sectors: [],
   };
@@ -100,6 +103,7 @@ export class RadialMenu extends React.Component<RadialMenuProps, RadialMenuState
       </div>
     );
   }
+
   public componentDidMount() {
     this._generateAnnularSectors();
 
@@ -133,6 +137,7 @@ export class RadialMenu extends React.Component<RadialMenuProps, RadialMenuState
     if (this._selectedButton)
       this._selectedButton.select();
   }
+
   private _generateAnnularSectors = () => {
     const n = React.Children.count(this.props.children);
     const angle = 2 * Math.PI / n;
@@ -149,13 +154,15 @@ export class RadialMenu extends React.Component<RadialMenuProps, RadialMenuState
   }
 }
 
-/** Property interface for [[RadialButton]] */
+/** Properties for [[RadialButton]] component
+ * @public
+ */
 export interface RadialButtonProps {
   /** Whether label is rotated to radial menu. Default: Inherit */
   labelRotate?: boolean;
   /** which icon to display in on the menu button */
   icon?: string;
-  /** @hidden */
+  /** @internal */
   annularSector?: AnnularSector;
   /** listens to any onClick event, or any select event, which can be triggered by the select() method. */
   onSelect?: (e: any) => any;
@@ -163,17 +170,18 @@ export interface RadialButtonProps {
   selected?: boolean;
 }
 
-/** @hidden */
-export interface RadialButtonState {
+/** @internal */
+interface RadialButtonState {
   hover: boolean;
 }
 
 /**
- * Button for use within RadialMenu
+ * Button for use within a [[RadialMenu]]
+ * @public
  */
 export class RadialButton extends React.Component<RadialButtonProps, RadialButtonState> {
 
-  /** @hidden */
+  /** @internal */
   public readonly state: Readonly<RadialButtonState> = { hover: this.props.selected || false };
 
   public render(): JSX.Element {

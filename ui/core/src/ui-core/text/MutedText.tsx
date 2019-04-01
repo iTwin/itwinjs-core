@@ -8,7 +8,9 @@ import * as React from "react";
 import * as classnames from "classnames";
 import { TextProps } from "./TextProps";
 
-/** Styled muted/gray text */
+/** Styled muted/gray text
+ * @public
+ */
 
 export class MutedText extends React.Component<TextProps> {
   public render(): JSX.Element {
@@ -19,4 +21,3 @@ export class MutedText extends React.Component<TextProps> {
     );
   }
 }
-export default MutedText;

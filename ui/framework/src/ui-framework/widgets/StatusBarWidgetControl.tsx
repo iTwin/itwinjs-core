@@ -4,14 +4,16 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module StatusBar */
 
-import WidgetControl from "./WidgetControl";
+import { WidgetControl } from "./WidgetControl";
 import { ConfigurableCreateInfo, ConfigurableUiControlType } from "../configurableui/ConfigurableUiControl";
 
 /** Status Bar Field type.
+ * @public
  */
 export type StatusBarFieldId = string | null;
 
 /** Status Bar interface.
+ * @public
  */
 export interface IStatusBar {
   setOpenWidget(openWidget: StatusBarFieldId): void;
@@ -19,6 +21,7 @@ export interface IStatusBar {
 }
 
 /** Status Bar Widget Control.
+ * @public
  */
 export abstract class StatusBarWidgetControl extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {

@@ -9,7 +9,9 @@ import classnames from "classnames";
 import "./Swatch.scss";
 import { ColorDef } from "@bentley/imodeljs-common";
 
-/** Properties for the [[ColorSwatch]] React component */
+/** Properties for the [[ColorSwatch]] React component
+ * @beta
+ */
 export interface ColorSwatchProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   /** color specification */
   colorDef: ColorDef;
@@ -19,7 +21,9 @@ export interface ColorSwatchProps extends React.ButtonHTMLAttributes<HTMLButtonE
   round?: boolean;
 }
 
-/** ColorSwatch Functional component */
+/** ColorSwatch Functional component
+ * @beta
+ */
 // tslint:disable-next-line:variable-name
 export const ColorSwatch: React.FunctionComponent<ColorSwatchProps> = (props) => {
   const { b, g, r, t } = props.colorDef.colors as any;
@@ -32,7 +36,7 @@ export const ColorSwatch: React.FunctionComponent<ColorSwatchProps> = (props) =>
       props.onColorPick(props.colorDef, e);
   };
 
-  const classes = classnames("components-color-swatch", props.className, props.round && "round" );
+  const classes = classnames("components-color-swatch", props.className, props.round && "round");
 
   const {
     onColorPick, colorDef, round, // do not pass on color swatch specific props

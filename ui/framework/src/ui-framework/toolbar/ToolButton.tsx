@@ -18,12 +18,13 @@ import { Item, getToolbarItemProps } from "@bentley/ui-ninezone";
 import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
 
 /** Tool Button React Component.
+ * @public
  */
 export class ToolButton extends React.Component<ToolItemProps, BaseItemState> {
   private _componentUnmounting = false;
   private _label: string | StringGetter = "";
 
-  /** @hidden */
+  /** @internal */
   public readonly state: Readonly<BaseItemState>;
 
   constructor(props: ToolItemProps) {

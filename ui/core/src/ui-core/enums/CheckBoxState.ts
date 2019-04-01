@@ -4,14 +4,18 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Common */
 
-/** State of a checkbox */
+/** State of a checkbox
+ * @public
+ */
 export enum CheckBoxState {
   Off,
   On,
   Partial,
 }
 
-/** A data type that holds all the checkbox display attributes */
+/** A data type that holds all the checkbox display attributes
+ * @public
+ */
 export interface CheckBoxInfo {
   isVisible?: boolean;
   isDisabled?: boolean;

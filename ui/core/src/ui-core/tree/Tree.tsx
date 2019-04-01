@@ -10,7 +10,9 @@ import { Range2d } from "@bentley/geometry-core";
 
 import "./Tree.scss";
 
-/** Properties for the [[Tree]] presentation React component */
+/** Properties for the [[Tree]] presentation React component
+ * @public
+ */
 export interface TreeProps {
   children?: React.ReactNode;
   className?: string;
@@ -20,8 +22,10 @@ export interface TreeProps {
   onMouseUp?: React.MouseEventHandler<HTMLDivElement>;
 }
 
-/** Presentation React component for a Tree */
-export default class Tree extends React.PureComponent<TreeProps> {
+/** Presentation React component for a Tree
+ * @public
+ */
+export class Tree extends React.PureComponent<TreeProps> {
   private _treeElement: React.RefObject<HTMLDivElement> = React.createRef();
 
   private get _scrollableContainer(): Element | undefined {

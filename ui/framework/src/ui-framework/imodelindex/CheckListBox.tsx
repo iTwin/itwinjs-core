@@ -2,6 +2,8 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+/** @module IModelIndex */
+
 import * as React from "react";
 import * as classnames from "classnames";
 import { CommonProps } from "@bentley/ui-ninezone";
@@ -10,7 +12,7 @@ import "./CheckListBox.scss";
 
 /**
  * Properties for the [[CheckBox]] component.
- * @hidden
+ * @internal
  */
 export interface CheckBoxProps extends CommonProps {
   /** Determine if the item is checked or not */
@@ -23,7 +25,7 @@ export interface CheckBoxProps extends CommonProps {
 
 /**
  * Checkbox item
- * @hidden
+ * @internal
  */
 export class CheckBox extends React.Component<CheckBoxProps> {
 
@@ -38,7 +40,7 @@ export class CheckBox extends React.Component<CheckBoxProps> {
   }
 
   public render() {
-    const checkClassName = classnames ("check-box", this.props.checked && "checked");
+    const checkClassName = classnames("check-box", this.props.checked && "checked");
     return (
       <span className={checkClassName} onClick={this._onClick.bind(this)} />
     );
@@ -47,7 +49,7 @@ export class CheckBox extends React.Component<CheckBoxProps> {
 
 /**
  * Properties for the [[CheckListBoxItem]] component.
- * @hidden
+ * @internal
  */
 export interface CheckListBoxItemProps extends CommonProps {
   /** Label */
@@ -60,7 +62,7 @@ export interface CheckListBoxItemProps extends CommonProps {
 
 /**
  * Item with a checkbox added to a [[CheckListBox]]
- * @hidden
+ * @internal
  */
 export class CheckListBoxItem extends React.Component<CheckListBoxItemProps> {
 
@@ -75,7 +77,7 @@ export class CheckListBoxItem extends React.Component<CheckListBoxItemProps> {
   }
 
   public render() {
-    const listClassName = classnames ("check-box-item", this.props.checked && "selected", this.props.className);
+    const listClassName = classnames("check-box-item", this.props.checked && "selected", this.props.className);
     return (
       <li className={listClassName} onClick={this._onClick.bind(this)}>
         <CheckBox checked={this.props.checked} />
@@ -87,7 +89,7 @@ export class CheckListBoxItem extends React.Component<CheckListBoxItemProps> {
 
 /**
  * Properties for the [[CheckListBox]] component.
- * @hidden
+ * @internal
  */
 export interface CheckListBoxProps {
   /** CSS class name */
@@ -95,7 +97,7 @@ export interface CheckListBoxProps {
 }
 
 /** React component showing a list of Checkbox items.
- * @hidden
+ * @internal
  */
 export class CheckListBox extends React.Component<CheckListBoxProps> {
   public render() {

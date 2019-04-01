@@ -9,6 +9,7 @@ import { WidgetHost } from "../widgets/WidgetHost";
 import { ZoneLocation } from "./Zone";
 
 /** Zone State enum.
+ * @public
  */
 export enum ZoneState {
   Off,
@@ -20,6 +21,7 @@ export enum ZoneState {
 
 /**
  * A ZoneDef represents each zone within a Frontstage.
+ * @public
  */
 export class ZoneDef extends WidgetHost {
   /** Zone state.  Defaults to ZoneState.Open. */

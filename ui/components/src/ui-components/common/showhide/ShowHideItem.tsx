@@ -4,11 +4,15 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Common */
 
-/** Interface for ShowHide items */
+/** Interface for ShowHide items
+ * @public
+ */
 export interface ShowHideItem<T extends ShowHideID> {
   id: T;
   label: string;
 }
 
-/** Union type for all possible ShowHide IDs */
+/** Union type for all possible ShowHide IDs
+ * @public
+ */
 export type ShowHideID = string | number | symbol;

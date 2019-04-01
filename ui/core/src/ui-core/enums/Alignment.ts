@@ -6,6 +6,7 @@
 
 /**
  * Enumeration for horizontal alignment.
+ * @public
  */
 export const enum HorizontalAlignment {
   Left = 1,
@@ -16,6 +17,7 @@ export const enum HorizontalAlignment {
 
 /**
  * Enumeration for vertical alignment.
+ * @public
  */
 export const enum VerticalAlignment {
   Top = 1,

@@ -6,22 +6,19 @@
 
 import * as React from "react";
 
-import { WidgetType, WidgetDef, WidgetState } from "../widgets/WidgetDef";
+import { WidgetType, WidgetDef, WidgetState, WidgetStateChangedEventArgs } from "../widgets/WidgetDef";
 import { WidgetChangeHandler, TargetChangeHandler, ZoneDefProvider } from "../frontstage/FrontstageComposer";
 import { StackedWidget, EachWidgetProps } from "../widgets/StackedWidget";
 import { ZoneTargets } from "../dragdrop/ZoneTargets";
-import { FrontstageManager, WidgetStateChangedEventArgs } from "../frontstage/FrontstageManager";
+import { FrontstageManager } from "../frontstage/FrontstageManager";
 
 import {
   ZonePropsBase, DropTarget, WidgetProps as NZ_WidgetProps, ZoneComponent as NZ_Zone, RectangleProps,
   GhostOutline, HorizontalAnchor, VerticalAnchor, PointProps,
 } from "@bentley/ui-ninezone";
 
-// -----------------------------------------------------------------------------
-// Zone React Components
-// -----------------------------------------------------------------------------
-
 /** Properties for the [[FrameworkZone]] component.
+ * @internal
  */
 export interface FrameworkZoneProps {
   horizontalAnchor: HorizontalAnchor;
@@ -42,7 +39,8 @@ interface FrameworkZoneState {
   updatedWidgetDef?: WidgetDef;
 }
 
-/** ConfigurableUi Zone React component.
+/** FrameworkZone React component.
+ * @internal
  */
 export class FrameworkZone extends React.Component<FrameworkZoneProps, FrameworkZoneState> {
 
@@ -50,7 +48,7 @@ export class FrameworkZone extends React.Component<FrameworkZoneProps, Framework
     super(props);
   }
 
-  /** @hidden */
+  /** @internal */
   public readonly state: Readonly<FrameworkZoneState> = {
     updatedWidgetDef: undefined,
   };

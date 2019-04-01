@@ -12,9 +12,9 @@ import { withDragSource, WithDragSourceProps } from "../../dragdrop/withDragSour
 import { withDropTarget } from "../../dragdrop/withDropTarget";
 
 import "./DragDropRow.scss";
-import { BreadcrumbDragDropType } from "../../breadcrumb/breadcrumbdetails/hoc/withDragDrop";
+import { BreadcrumbDetailsDragDropType } from "../../breadcrumb/breadcrumbdetails/hoc/withDragDrop";
 
-/** @hidden */
+/** @internal */
 export interface DragDropRowProps<DragDropObject = any> {
   dragProps: DragSourceProps<DragDropObject>;
   dropProps: TableDropTargetProps<DragDropObject>;
@@ -35,12 +35,12 @@ enum HoverMode {
   Below,
 }
 
-/** @hidden */
+/** @internal */
 interface RowWrapperState {
   hoverMode: HoverMode;
 }
 
-/** @hidden */
+/** @internal */
 export class DragDropRowWrapper extends React.Component<RowWrapperProps, RowWrapperState> {
   private _root: HTMLDivElement | null = null;
   public readonly state: RowWrapperState = {
@@ -110,8 +110,8 @@ export class DragDropRowWrapper extends React.Component<RowWrapperProps, RowWrap
   }
 }
 
-/** @hidden */
-export function DragDropRow<DragDropObject extends BreadcrumbDragDropType>() {
+/** @internal */
+export function DragDropRow<DragDropObject extends BreadcrumbDetailsDragDropType>() {
   // Used only internally in ./Table.tsx
   return class DragDropRowComponent extends React.Component<DragDropRowProps<DragDropObject> & any> {
     public createDragProps(index?: number) {

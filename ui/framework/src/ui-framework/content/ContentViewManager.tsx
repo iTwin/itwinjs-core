@@ -10,16 +10,19 @@ import { ContentControl } from "./ContentControl";
 import { ViewUtilities } from "../utils/ViewUtilities";
 
 /** [[MouseDownChangedEvent]] Args interface.
+ * @public
  */
 export interface MouseDownChangedEventArgs {
   mouseDown: boolean;
 }
 
 /** Mouse Down Changed Event class.
+ * @public
  */
 export class MouseDownChangedEvent extends UiEvent<MouseDownChangedEventArgs> { }
 
 /** [[ActiveContentChangedEvent]] Args interface.
+ * @public
  */
 export interface ActiveContentChangedEventArgs {
   oldContent?: React.ReactNode;
@@ -27,10 +30,12 @@ export interface ActiveContentChangedEventArgs {
 }
 
 /** Active Content Changed Event class.
+ * @public
  */
 export class ActiveContentChangedEvent extends UiEvent<ActiveContentChangedEventArgs> { }
 
 /** Content View Manager class.
+ * @public
  */
 export class ContentViewManager {
   private static _mouseDown: boolean = false;

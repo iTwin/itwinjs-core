@@ -7,10 +7,10 @@
 import * as React from "react";
 import * as classnames from "classnames";
 import "./ContentLayout.scss";
-import { FrontstageManager, ContentLayoutActivatedEventArgs } from "../frontstage/FrontstageManager";
+import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { ContentGroup } from "./ContentGroup";
 import { ContentViewManager, ActiveContentChangedEventArgs } from "./ContentViewManager";
-import { Orientation } from "@bentley/ui-core";
+import { Orientation, UiEvent } from "@bentley/ui-core";
 import { UiFramework, UiVisibilityEventArgs } from "../UiFramework";
 
 // There is a problem with this import and a different tsconfig being used. Using the require statement instead.
@@ -18,32 +18,42 @@ import { UiFramework, UiVisibilityEventArgs } from "../UiFramework";
 // import SplitPane from "react-split-pane";
 const SplitPane: typeof import("react-split-pane").default = require("react-split-pane"); // tslint:disable-line
 
-/** Base interface for layout split properties */
+/** Base interface for layout split properties
+ * @public
+ */
 export interface LayoutSplitPropsBase {
   id?: string;            // The id used to save the current state of the splitter
   percentage: number;     // The percentage of this layout that should be occupied by the left/top fragment by default
   lock?: boolean;         // Default - false. Used to lock splitter into fixed position
 }
 
-/** Properties for a layout fragment */
+/** Properties for a layout fragment
+ * @public
+ */
 export interface LayoutFragmentProps {
   verticalSplit?: LayoutVerticalSplitProps;
   horizontalSplit?: LayoutHorizontalSplitProps;
 }
 
-/** Properties for a vertical layout split */
+/** Properties for a vertical layout split
+ * @public
+ */
 export interface LayoutVerticalSplitProps extends LayoutSplitPropsBase {
   left: LayoutFragmentProps | number;
   right: LayoutFragmentProps | number;
 }
 
-/** Properties for a horizontal layout split */
+/** Properties for a horizontal layout split
+ * @public
+ */
 export interface LayoutHorizontalSplitProps extends LayoutSplitPropsBase {
   top: LayoutFragmentProps | number;
   bottom: LayoutFragmentProps | number;
 }
 
-/** Properties for a [[ContentLayoutDef]] */
+/** Properties for a [[ContentLayoutDef]]
+ * @public
+ */
 export interface ContentLayoutProps extends LayoutFragmentProps {
   id?: string;
   descriptionKey?: string;
@@ -65,7 +75,7 @@ interface ContentWrapperState {
  */
 class ContentWrapper extends React.Component<ContentWrapperProps, ContentWrapperState> {
 
-  /** @hidden */
+  /** @internal */
   public readonly state: Readonly<ContentWrapperState>;
 
   constructor(props: ContentWrapperProps) {
@@ -144,7 +154,7 @@ class SplitContainer extends React.Component<SplitContainerProps, SplitContainer
 
   private _containerDiv: HTMLDivElement | null = null;
 
-  /** @hidden */
+  /** @internal */
   public readonly state: Readonly<SplitContainerState> = {
     pane2Width: "100%",
     pane2Height: "100%",
@@ -265,8 +275,10 @@ class SingleContentContainer extends React.Component<SingleContentProps> {
   }
 }
 
-/** Common interface for [[HorizontalSplit]] and [[VerticalSplit]] */
-interface LayoutSplit {
+/** Common interface for HorizontalSplit and VerticalSplit
+ * @public
+ */
+export interface LayoutSplit {
   createContentContainer(content: React.ReactNode[], resizable: boolean): React.ReactNode;
   isLocked: boolean;
 }
@@ -384,6 +396,7 @@ class VerticalSplit implements LayoutSplit {
 }
 
 /** Content Layout Definition class.
+ * @public
  */
 export class ContentLayoutDef {
   private static _sId = 0;
@@ -488,9 +501,22 @@ export class ContentLayoutDef {
   }
 }
 
+/** Content Layout Activated Event Args class.
+ * @public
+ */
+export interface ContentLayoutActivatedEventArgs {
+  contentLayout: ContentLayoutDef;
+  contentGroup: ContentGroup;
+}
+
+/** Content Layout Activated Event class.
+ * @public
+ */
+export class ContentLayoutActivatedEvent extends UiEvent<ContentLayoutActivatedEventArgs> { }
+
 /** State for the [[ContentLayout]].
  */
-export interface ContentLayoutState {
+interface ContentLayoutState {
   contentLayout: ContentLayoutDef;
   contentGroup: ContentGroup;
   contentContainer?: React.ReactNode;
@@ -498,6 +524,7 @@ export interface ContentLayoutState {
 }
 
 /** Properties for the [[ContentLayout]] React component.
+ * @public
  */
 export interface ContentLayoutReactProps {
   contentLayout: ContentLayoutDef;
@@ -506,10 +533,11 @@ export interface ContentLayoutReactProps {
 }
 
 /** Content Layout React component.
+ * @public
  */
 export class ContentLayout extends React.Component<ContentLayoutReactProps, ContentLayoutState> {
 
-  /** @hidden */
+  /** @internal */
   public readonly state: Readonly<ContentLayoutState>;
 
   constructor(props: ContentLayoutReactProps) {
@@ -605,6 +633,7 @@ export class ContentLayout extends React.Component<ContentLayoutReactProps, Cont
 }
 
 /** ContentLayout Manager class.
+ * @public
  */
 export class ContentLayoutManager {
   private static _layoutDefs: Map<string, ContentLayoutDef> = new Map<string, ContentLayoutDef>();

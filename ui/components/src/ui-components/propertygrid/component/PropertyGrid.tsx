@@ -16,7 +16,9 @@ import { PropertyUpdatedArgs } from "../../editors/EditorContainer";
 
 import "./PropertyGrid.scss";
 
-/** Properties for [[PropertyGrid]] React component */
+/** Properties for [[PropertyGrid]] React component
+ * @public
+ */
 export interface PropertyGridProps {
   /** Property data provider */
   dataProvider: IPropertyDataProvider;
@@ -35,24 +37,20 @@ export interface PropertyGridProps {
   /** Callback to property selection */
   onPropertySelectionChanged?: (property: PropertyRecord) => void;
 
-  /** Enables/disables property editing */
+  /** Enables/disables property editing @beta */
   isPropertyEditingEnabled?: boolean;
-  /** Callback for when properties are being edited */
+  /** Callback for when properties are being edited @beta */
   onPropertyEditing?: (args: PropertyEditingArgs, category: PropertyCategory) => void;
-  /** Callback for when properties are updated */
+  /** Callback for when properties are updated @beta */
   onPropertyUpdated?: (args: PropertyUpdatedArgs, category: PropertyCategory) => Promise<boolean>;
 
   /** Custom property value renderer manager */
   propertyValueRendererManager?: PropertyValueRendererManager;
 }
 
-/** Property Editor state */
-export interface PropertyEditorState {
-  active: boolean;
-  propertyRecord?: PropertyRecord;
-}
-
-/** Arguments for the Property Editing event callback */
+/** Arguments for the Property Editing event callback
+ * @public
+ */
 export interface PropertyEditingArgs {
   /** PropertyRecord being edited  */
   propertyRecord: PropertyRecord;
@@ -60,7 +58,9 @@ export interface PropertyEditingArgs {
   propertyKey?: string;
 }
 
-/** Arguments for `PropertyGridProps.onPropertyContextMenu` callback */
+/** Arguments for `PropertyGridProps.onPropertyContextMenu` callback
+ * @public
+ */
 export interface PropertyGridContextMenuArgs {
   /** PropertyRecord being edited  */
   propertyRecord: PropertyRecord;
@@ -68,15 +68,19 @@ export interface PropertyGridContextMenuArgs {
   event: React.MouseEvent;
 }
 
-/** Property Category in the [[PropertyGrid]] state */
+/** Property Category in the [[PropertyGrid]] state
+ * @public
+ */
 export interface PropertyGridCategory {
   propertyCategory: PropertyCategory;
   propertyCount: number;
   properties: PropertyRecord[];
 }
 
-/** State of [[PropertyGrid]] React component */
-export interface PropertyGridState {
+/** State of [[PropertyGrid]] React component
+ * @internal
+ */
+interface PropertyGridState {
   /** List of PropertyGrid categories */
   categories: PropertyGridCategory[];
   /** Unique key of currently selected property */
@@ -90,6 +94,7 @@ export interface PropertyGridState {
 }
 
 /** PropertyGrid React component.
+ * @public
  */
 export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGridState> {
   private _dataChangesListenerDisposeFunc?: DisposeFunc;
@@ -104,11 +109,13 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
     orientation: this.props.orientation ? this.props.orientation : Orientation.Horizontal,
   };
 
+  /** @internal */
   constructor(props: PropertyGridProps) {
     super(props);
     this._gridResizeSensor = new ResizeObserver(this._onGridResize);
   }
 
+  /** @internal */
   public componentDidMount() {
     this._isMounted = true;
     this._dataChangesListenerDisposeFunc = this.props.dataProvider.onDataChanged.addListener(this._onPropertyDataChanged);
@@ -123,6 +130,7 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
     }
   }
 
+  /** @internal */
   public componentWillUnmount() {
     if (this._dataChangesListenerDisposeFunc) {
       this._dataChangesListenerDisposeFunc();
@@ -283,6 +291,7 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
     this.setState({ editingPropertyKey: undefined });
   }
 
+  /** @internal */
   public render() {
     if (this.state.isLoading) {
       return (

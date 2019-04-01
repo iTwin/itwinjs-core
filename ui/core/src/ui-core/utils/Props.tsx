@@ -6,12 +6,16 @@
 
 import * as React from "react";
 
-/** Common props used by components. */
+/** Common props used by components.
+ * @public
+ */
 export interface CommonProps extends ClassNameProps {
   style?: React.CSSProperties;
 }
 
-/** Props used by components that expect class name to be passed in. */
+/** Props used by components that expect class name to be passed in.
+ * @public
+ */
 export interface ClassNameProps {
   className?: string;
 }

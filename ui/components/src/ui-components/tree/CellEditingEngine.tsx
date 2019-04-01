@@ -10,18 +10,22 @@ import { BeInspireTreeNode } from "./component/BeInspireTree";
 import { TreeNodeItem } from "./TreeDataProvider";
 import { PropertyUpdatedArgs, EditorContainer } from "../editors/EditorContainer";
 
-/** Properties for a tree that has cell editing enabled */
+/** Properties for a tree that has cell editing enabled
+ * @beta
+ */
 export interface EditableTreeProps {
   /** Callback to when editing starts */
   onCellEditing: (currentlyActiveNode?: BeInspireTreeNode<TreeNodeItem>) => void;
   /** Callback to when editing finishes */
   onCellUpdated: (args: TreeCellUpdatedArgs) => Promise<boolean>;
 
-  /** @hidden */
+  /** @internal */
   ignoreEditorBlur?: boolean;
 }
 
-/** Arguments for the Tree Cell Updated event callback */
+/** Arguments for the Tree Cell Updated event callback
+ * @beta
+ */
 export interface TreeCellUpdatedArgs {
   /** The cell being updated. */
   node: BeInspireTreeNode<TreeNodeItem>;
@@ -29,13 +33,13 @@ export interface TreeCellUpdatedArgs {
   newValue: string;
 }
 
-/** @hidden */
+/** @internal */
 export type SetCurrentlyEditedNode = (currentlyEditedNode?: BeInspireTreeNode<TreeNodeItem>) => void;
 
-/** @hidden */
+/** @internal */
 export type GetCurrentlyEditedNode = () => BeInspireTreeNode<TreeNodeItem> | undefined;
 
-/** @hidden */
+/** @internal */
 export class CellEditingEngine {
   private _getCurrentlyEditedNode?: GetCurrentlyEditedNode;
   private _setCurrentlyEditedNode?: SetCurrentlyEditedNode;

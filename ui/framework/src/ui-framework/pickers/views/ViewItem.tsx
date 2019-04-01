@@ -33,6 +33,9 @@ class ThumbnailCache {
   }
 }
 
+/** Properties for [[ViewItem]] component
+ * @internal
+ */
 export interface ViewItemProps extends CommonProps {
   /** View definition */
   viewProps: ViewDefinitionProps;
@@ -50,12 +53,15 @@ export interface ViewItemProps extends CommonProps {
   onClick: (viewProps: ViewDefinitionProps) => void;
 }
 
+/** @internal */
 interface ViewItemState {
   thumbnail: any;
   waitingForThumbnail: boolean;
 }
 
-/** Button containing thumbnail and view name */
+/** Button containing thumbnail and view name
+ * @internal
+ */
 export default class ViewItem extends React.Component<ViewItemProps, ViewItemState> {
 
   constructor(props: ViewItemProps) {
@@ -71,10 +77,10 @@ export default class ViewItem extends React.Component<ViewItemProps, ViewItemSta
       if (thumbnail) {
         const blob = new Blob([thumbnail!.image], { type: "image/" + thumbnail!.format });
         // Load thumbnails
-        this.setState( {thumbnail: URL.createObjectURL(blob) });
+        this.setState({ thumbnail: URL.createObjectURL(blob) });
       }
     }
-    this.setState({waitingForThumbnail: false});
+    this.setState({ waitingForThumbnail: false });
   }
 
   public get viewDefinition(): ViewDefinitionProps {
@@ -94,9 +100,9 @@ export default class ViewItem extends React.Component<ViewItemProps, ViewItemSta
       return (
         <LoadingSpinner />
       );
-    } else if (this.state.thumbnail === undefined ) {
+    } else if (this.state.thumbnail === undefined) {
       return (
-        <svg className="no-thumbnail" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" enableBackground="new 0 0 16 16"><g><path d="M10.3 5.9 7.7 9.3 6 7.6 3 11 13 11z"/><circle cx="4.4" cy="5.9" r="1.3"/><path d="M0,2v12h16V2H0z M14,12H2V4h12V12z"/></g></svg>
+        <svg className="no-thumbnail" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" enableBackground="new 0 0 16 16"><g><path d="M10.3 5.9 7.7 9.3 6 7.6 3 11 13 11z" /><circle cx="4.4" cy="5.9" r="1.3" /><path d="M0,2v12h16V2H0z M14,12H2V4h12V12z" /></g></svg>
       );
     } else {
       return (

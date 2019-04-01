@@ -9,7 +9,9 @@ import * as classnames from "classnames";
 import { CommonProps } from "../utils/Props";
 import "./LoadingStatus.scss";
 
-/** Properties for [[LoadingStatus]] component */
+/** Properties for [[LoadingStatus]] component
+ * @public
+ */
 export interface LoadingStatusProps extends CommonProps {
   /** Message (text) displayed */
   message: string;
@@ -19,6 +21,7 @@ export interface LoadingStatusProps extends CommonProps {
 
 /**
  * A loading indicator that shows status text along with the percentage.
+ * @public
  */
 export class LoadingStatus extends React.Component<LoadingStatusProps> {
   public static defaultProps: Partial<LoadingStatusProps> = {
@@ -44,5 +47,3 @@ export class LoadingStatus extends React.Component<LoadingStatusProps> {
     );
   }
 }
-
-export default LoadingStatus;

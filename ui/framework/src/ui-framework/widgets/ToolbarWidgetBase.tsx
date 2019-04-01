@@ -13,6 +13,7 @@ import { ActionButtonItemDef } from "../shared/Item";
 import { Toolbar, Direction } from "@bentley/ui-ninezone";
 
 /** A Toolbar Widget normally displayed in the top left & top right zones in the 9-Zone Layout system.
+ * @public
  */
 export class ToolbarWidgetDefBase extends WidgetDef {
   public horizontalDirection: Direction;
@@ -71,5 +72,3 @@ export class ToolbarWidgetDefBase extends WidgetDef {
     return null;
   }
 }
-
-export default ToolbarWidgetDefBase;

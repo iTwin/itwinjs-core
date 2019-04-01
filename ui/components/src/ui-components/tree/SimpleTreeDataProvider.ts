@@ -12,11 +12,13 @@ import { BeEvent } from "@bentley/bentleyjs-core";
  * Used by [[SimpleTreeDataProvider]].
  * key - Parent id.
  * value - Child tree node items.
+ * @public
  */
 export type SimpleTreeDataProviderHierarchy = Map<string | undefined, TreeNodeItem[]>;
 
 /**
  * A tree data provider using [[SimpleTreeDataProviderHierarchy]].
+ * @public
  */
 export class SimpleTreeDataProvider implements ITreeDataProvider {
   private _hierarchy: SimpleTreeDataProviderHierarchy;

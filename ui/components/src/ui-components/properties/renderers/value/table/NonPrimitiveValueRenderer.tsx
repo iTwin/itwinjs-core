@@ -11,7 +11,9 @@ import { PropertyDialogState } from "../../../ValueRendererManager";
 
 import "./NonPrimitiveValueRenderer.scss";
 
-/** Properties for [[TableArrayValueRenderer]] and [[TableStructValueRenderer]] React component */
+/** Properties for [[TableArrayValueRenderer]] and [[TableStructValueRenderer]] React component
+ * @public
+ */
 export interface TableSpecificValueRendererProps extends SharedTableNonPrimitiveValueRendererProps {
   /** Property record */
   propertyRecord: PropertyRecord;
@@ -19,7 +21,9 @@ export interface TableSpecificValueRendererProps extends SharedTableNonPrimitive
   orientation: Orientation;
 }
 
-/** Shared properties between table non-primitive value renderers */
+/** Shared properties between table non-primitive value renderers
+ * @public
+ */
 export interface SharedTableNonPrimitiveValueRendererProps {
   // /** Callback to request for a Popup to be shown. */
   // onPopupShow?: (popupState: PropertyPopupState) => void;
@@ -29,7 +33,9 @@ export interface SharedTableNonPrimitiveValueRendererProps {
   onDialogOpen?: (dialogState: PropertyDialogState) => void;
 }
 
-/** Propertiess for [[TableNonPrimitiveValueRenderer]] React component */
+/** Properties for [[TableNonPrimitiveValueRenderer]] React component
+ * @public
+ */
 export interface TableNonPrimitiveValueRendererProps extends SharedTableNonPrimitiveValueRendererProps {
   /** Title of the dialog that shows property in more detail. */
   dialogTitle: string;
@@ -42,6 +48,7 @@ export interface TableNonPrimitiveValueRendererProps extends SharedTableNonPrimi
 /**
  * A React component that renders non primitive values as a button with text.
  * When clicked, a dialog appears that shows the value in greater detail.
+ * @public
  */
 export class TableNonPrimitiveValueRenderer extends React.PureComponent<TableNonPrimitiveValueRendererProps> {
   // private _buttonRef = React.createRef<HTMLButtonElement>();
@@ -56,7 +63,7 @@ export class TableNonPrimitiveValueRenderer extends React.PureComponent<TableNon
   }
 
   // TODO: Enable, when table gets refactored
-  // Disabled fancy tooltips, because table controlls it's state.
+  // Disabled fancy tooltips, because table controls it's state.
   // But, because everything is in table state and there is no shouldComponentUpdate,
   // tooltips cause rerender of the whole table
   // private _showTooltip = () => {
@@ -88,6 +95,7 @@ export class TableNonPrimitiveValueRenderer extends React.PureComponent<TableNon
   //     this.props.onPopupHide();
   // }
 
+  /** @internal */
   public render() {
     return (
       <UnderlinedButton

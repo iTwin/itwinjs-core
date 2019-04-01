@@ -9,6 +9,7 @@ import { IPropertyDataProvider, PropertyData, PropertyCategory, PropertyDataChan
 
 /**
  * Implementation of [PropertyDataProvider] that uses an associative array.
+ * @public
  */
 export class SimplePropertyDataProvider implements IPropertyDataProvider, PropertyData {
   public label: string = "";

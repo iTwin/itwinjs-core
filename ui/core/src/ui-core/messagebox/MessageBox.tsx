@@ -11,6 +11,7 @@ import "./MessageBox.scss";
 import { Dialog, DialogButton } from "../dialog/Dialog";
 
 /** Message Severity enum.
+ * @public
  */
 export enum MessageSeverity {
   None = 0,
@@ -21,7 +22,9 @@ export enum MessageSeverity {
   Fatal = 5,
 }
 
-/** Property interface for [[MessageBox]] */
+/** Properties for the [[MessageBox]] component
+ * @public
+ */
 export interface MessageBoxProps {
   /** Severity of MessageBox */
   severity: MessageSeverity;
@@ -55,6 +58,7 @@ export interface MessageBoxProps {
 }
 
 /** Message Box React component.
+ * @public
  */
 export class MessageBox extends React.Component<MessageBoxProps> {
   public static defaultProps: Partial<MessageBoxProps> = {
@@ -82,12 +86,15 @@ export class MessageBox extends React.Component<MessageBoxProps> {
   }
 }
 
-/** Property interface for [[MessageContainer]] */
+/** Properties for the [[MessageContainer]] component
+ * @public
+ */
 export interface MessageContainerProps {
   severity: MessageSeverity;
 }
 
 /** Message Container React component.
+ * @public
  */
 export class MessageContainer extends React.Component<MessageContainerProps> {
   public static getIconClassName(severity: MessageSeverity, hollow?: boolean): string {
@@ -131,5 +138,3 @@ export class MessageContainer extends React.Component<MessageContainerProps> {
     );
   }
 }
-
-export default MessageBox;

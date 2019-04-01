@@ -8,7 +8,9 @@ import * as React from "react";
 import { WebFontIcon } from "@bentley/ui-core";
 import { ImageFileFormat, Image, LoadedBinaryImage, LoadedImage } from "./IImageLoader";
 
-/** A class that renders images from data provided by an image loader */
+/** A class that renders images from data provided by an image loader
+ * @internal
+ */
 export class ImageRenderer {
   private hexToBase64(hexstring: string) {
     const match = hexstring.match(/\w{2}/g);

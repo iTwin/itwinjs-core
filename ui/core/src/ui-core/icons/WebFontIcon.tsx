@@ -10,7 +10,9 @@ import * as classnames from "classnames";
 import "./WebFontIcon.scss";
 import "@bentley/icons-generic-webfont/dist/bentley-icons-generic-webfont.css";
 
-/** Properties for the [[WebFontIcon]] React component */
+/** Properties for the [[WebFontIcon]] React component
+ * @public
+ */
 export interface WebFontIconProps {
   /** Bentley Web Font icon name */
   iconName: string;
@@ -26,7 +28,9 @@ export interface WebFontIconProps {
   iconSize?: "small" | "medium" | "large" | "x-large";
 }
 
-/** WebFontIcon React component */
+/** WebFontIcon React component
+ * @public
+ */
 // tslint:disable-next-line:variable-name
 export const WebFontIcon: React.FunctionComponent<WebFontIconProps> = (props) => {
   const className = classnames(

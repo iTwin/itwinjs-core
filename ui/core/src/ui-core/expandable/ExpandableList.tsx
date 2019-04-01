@@ -7,19 +7,23 @@
 import * as React from "react";
 import "./ExpandableList.scss";
 
-/** Properties for [[ExpandableList]] component */
+/** Properties for [[ExpandableList]] component
+ * @public
+ */
 export interface ExpandableListProps {
   className?: string;
   singleExpandOnly?: boolean;
   defaultActiveBlock?: number;
 }
 
+/** @internal */
 interface ExpandableListState {
   activeBlock: number;
 }
 
 /**
  * ExpandableList React component
+ * @public
  */
 export class ExpandableList extends React.Component<ExpandableListProps, ExpandableListState> {
 
@@ -62,5 +66,3 @@ export class ExpandableList extends React.Component<ExpandableListProps, Expanda
     );
   }
 }
-
-export default ExpandableList;

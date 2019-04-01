@@ -2,13 +2,15 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+/** @module IModelIndex */
+
 import * as React from "react";
 import * as classnames from "classnames";
 import "./Tabs.scss";
 
 /**
  * Properties for the [[Tab]] component.
- * @hidden
+ * @internal
  */
 export interface TabProps {
   label?: string;
@@ -21,7 +23,7 @@ export interface TabProps {
 
 /**
  * Specific Tab component for IModelIndex.
- * @hidden
+ * @internal
  */
 export class Tab extends React.Component<TabProps> {
 
@@ -57,7 +59,7 @@ export class Tab extends React.Component<TabProps> {
 }
 
 /** Properties for the [[ProjectTabs]] component
- * @hidden
+ * @internal
  */
 export interface TabsProps {
   onClick?: (tabIndex: number) => any;
@@ -70,7 +72,7 @@ interface TabsState {
 
 /**
  * List of tabs.
- * @hidden
+ * @internal
  */
 export class Tabs extends React.Component<TabsProps, TabsState> {
 

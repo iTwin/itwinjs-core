@@ -7,10 +7,8 @@
 import { UiEvent } from "@bentley/ui-core";
 
 import { FrontstageDef } from "./FrontstageDef";
-import { ContentControl } from "../content/ContentControl";
-import { ContentLayoutDef } from "../content/ContentLayout";
-import { ContentGroup } from "../content/ContentGroup";
-import { WidgetDef, WidgetState } from "../widgets/WidgetDef";
+import { ContentControlActivatedEvent } from "../content/ContentControl";
+import { WidgetDef, WidgetState, WidgetStateChangedEvent } from "../widgets/WidgetDef";
 import { ContentViewManager } from "../content/ContentViewManager";
 
 import { DefaultStateManager as NineZoneStateManager } from "@bentley/ui-ninezone";
@@ -18,23 +16,15 @@ import { IModelConnection, IModelApp, Tool, StartOrResume, InteractiveTool } fro
 import { ToolInformation } from "../zones/toolsettings/ToolInformation";
 import { FrontstageProvider } from "./FrontstageProvider";
 import { ToolUiManager } from "../zones/toolsettings/ToolUiManager";
+import { ContentLayoutActivatedEvent } from "../content/ContentLayout";
+import { NavigationAidActivatedEvent } from "../navigationaids/NavigationAidControl";
 
 // -----------------------------------------------------------------------------
 // Frontstage Events
 // -----------------------------------------------------------------------------
 
-/** Frontstage Deactivated Event Args interface.
- */
-export interface FrontstageDeactivatedEventArgs {
-  deactivatedFrontstageDef: FrontstageDef;
-  activatedFrontstageDef?: FrontstageDef;
-}
-
-/** Frontstage Deactivated Event class.
- */
-export class FrontstageDeactivatedEvent extends UiEvent<FrontstageDeactivatedEventArgs> { }
-
 /** Frontstage Activated Event Args interface.
+ * @public
  */
 export interface FrontstageActivatedEventArgs {
   deactivatedFrontstageDef?: FrontstageDef;
@@ -42,83 +32,61 @@ export interface FrontstageActivatedEventArgs {
 }
 
 /** Frontstage Activated Event class.
+ * @public
  */
 export class FrontstageActivatedEvent extends UiEvent<FrontstageActivatedEventArgs> { }
 
+/** Frontstage Deactivated Event Args interface.
+ * @public
+ */
+export interface FrontstageDeactivatedEventArgs {
+  deactivatedFrontstageDef: FrontstageDef;
+  activatedFrontstageDef?: FrontstageDef;
+}
+
+/** Frontstage Deactivated Event class.
+ * @public
+ */
+export class FrontstageDeactivatedEvent extends UiEvent<FrontstageDeactivatedEventArgs> { }
+
 /** Frontstage Ready Event Args interface.
+ * @public
  */
 export interface FrontstageReadyEventArgs {
   frontstageDef: FrontstageDef;
 }
 
 /** Frontstage Ready Event class.
+ * @public
  */
 export class FrontstageReadyEvent extends UiEvent<FrontstageReadyEventArgs> { }
 
 /** Modal Frontstage Changed Event Args interface.
+ * @public
  */
 export interface ModalFrontstageChangedEventArgs {
   modalFrontstageCount: number;
 }
 
 /** Modal Frontstage Stack Changed Event class.
+ * @public
  */
 export class ModalFrontstageChangedEvent extends UiEvent<ModalFrontstageChangedEventArgs> { }
 
 /** Tool Activated Event Args interface.
+ * @public
  */
 export interface ToolActivatedEventArgs {
   toolId: string;
 }
 
 /** Tool Activated Event class.
+ * @public
  */
 export class ToolActivatedEvent extends UiEvent<ToolActivatedEventArgs> { }
 
-/** Content Layout Activated Event Args class.
- */
-export interface ContentLayoutActivatedEventArgs {
-  contentLayout: ContentLayoutDef;
-  contentGroup: ContentGroup;
-}
-
-/** Content Layout Activated Event class.
- */
-export class ContentLayoutActivatedEvent extends UiEvent<ContentLayoutActivatedEventArgs> { }
-
-/** ControlControl Activated Event Args interface.
- */
-export interface ContentControlActivatedEventArgs {
-  activeContentControl: ContentControl;
-  oldContentControl?: ContentControl;
-}
-
-/** ContentControl Activated Event class.
- */
-export class ContentControlActivatedEvent extends UiEvent<ContentControlActivatedEventArgs> { }
-
-/** NavigationAid Activated Event Args interface.
- */
-export interface NavigationAidActivatedEventArgs {
-  navigationAidId: string;
-  iModelConnection: IModelConnection;
-}
-
-/** NavigationAid Activated Event class.
- */
-export class NavigationAidActivatedEvent extends UiEvent<NavigationAidActivatedEventArgs> { }
-
-/** Widget State Changed Event Args interface.
- */
-export interface WidgetStateChangedEventArgs {
-  widgetDef: WidgetDef;
-}
-
-/** Widget State Changed Event class.
- */
-export class WidgetStateChangedEvent extends UiEvent<WidgetStateChangedEventArgs> { }
-
 /** Modal Frontstage information interface.
+ * @public
  */
 export interface ModalFrontstageInfo {
   title: string;
@@ -131,6 +99,7 @@ export interface ModalFrontstageInfo {
 // -----------------------------------------------------------------------------
 
 /** Frontstage Manager class.
+ * @public
  */
 export class FrontstageManager {
   private static _isLoading = true;

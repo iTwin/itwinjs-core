@@ -25,7 +25,9 @@ interface AnimationState {
   animationSliderValue: string;
 }
 
-/** ToolSetting for AnalysisAnimationTool */
+/** ToolSetting for AnalysisAnimationTool
+ * @public
+ */
 export class AnalysisAnimationToolSettings extends React.Component<{}, AnimationState> {
   private _timeLastCycle = 0;
   private _unmounted = false;
@@ -200,7 +202,9 @@ export class AnalysisAnimationToolSettings extends React.Component<{}, Animation
   }
 }
 
-/** ToolUiProvider class that informs ConfigurableUi that Tool Settings are provided for the specified tool. */
+/** ToolUiProvider class that informs ConfigurableUi that Tool Settings are provided for the specified tool.
+ * @public
+ */
 export class AnalysisAnimationToolSettingsProvider extends ToolUiProvider {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);

@@ -20,6 +20,6 @@ tableRowAnchors: true
 |**Status&nbsp;Field**|An area of the Status Bar assigned to display specific feedback about the active application.
 |**Task**|A specific piece of work to accomplish.
 |**Tool&nbsp;Settings**|Properties that modify the behavior and outcome of the active tool.
-|**Widget**|A collection of UI components tied to a particular zone that allow the user to view and/or modify data relevant to their current context.
+|**Widget**|A collection of UI components tied to a particular zone that allows the user to view and/or modify data relevant to their current context.
 |**Workflow**|A defined sequence of tasks used to accomplish a goal.
 |**Zone**|A standard area on the screen for users to read and interact with data applicable to the current task. Each Zone has a defined purpose.

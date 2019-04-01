@@ -19,6 +19,7 @@ import { StatusBarZone } from "./StatusBarZone";
 import { isStatusZone, ZonePropsBase as NZ_ZoneProps, DropTarget, HorizontalAnchor, VerticalAnchor, RectangleProps, PointProps } from "@bentley/ui-ninezone";
 
 /** Enum for [[Zone]] Location.
+ * @public
  */
 export enum ZoneLocation {
   TopLeft = 1,
@@ -32,6 +33,7 @@ export enum ZoneLocation {
 }
 
 /** Properties of a [[Zone]] component
+ * @public
  */
 export interface ZoneProps {
   /** Default Zone state. Controls how the Zone is initially displayed. Defaults to ZoneState.Open. */
@@ -46,11 +48,12 @@ export interface ZoneProps {
   /** Properties for the Widgets in this Zone. */
   widgets?: Array<React.ReactElement<WidgetProps>>;
 
-  /** @hidden */
+  /** @internal */
   runtimeProps?: ZoneRuntimeProps;
 }
 
 /** Runtime Properties for the [[Zone]] component.
+ * @internal
  */
 export interface ZoneRuntimeProps {
   zoneDef: ZoneDef;
@@ -67,7 +70,9 @@ export interface ZoneRuntimeProps {
   isUnmergeDrag: boolean;
 }
 
-/** ConfigurableUi Zone React component.
+/** Zone React component.
+ * A Zone is a standard area on the screen for users to read and interact with data applicable to the current task. Each Zone has a defined purpose.
+ * @public
  */
 export class Zone extends React.Component<ZoneProps> {
 

@@ -8,6 +8,7 @@ import { TreeDataProvider, TreeNodeItem } from "../tree/TreeDataProvider";
 import { UiEvent } from "@bentley/ui-core";
 
 /** BreadcrumbChangeEvent Event Args class.
+ * @beta
  */
 export interface BreadcrumbUpdateEventArgs {
   dataProvider: TreeDataProvider;
@@ -16,10 +17,12 @@ export interface BreadcrumbUpdateEventArgs {
 }
 
 /** BreadcrumbChangeEvent Event class.
+ * @beta
  */
 export class BreadcrumbUpdateEvent extends UiEvent<BreadcrumbUpdateEventArgs> { }
 
 /** Breadcrumb Path class.
+ * @beta
  */
 export class BreadcrumbPath {
   private _dataProvider: TreeDataProvider;

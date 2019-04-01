@@ -8,7 +8,9 @@ import * as React from "react";
 import { GlobalContextMenu, ContextMenuItem, UiEvent, ContextSubMenu } from "@bentley/ui-core";
 import { KeyboardShortcut } from "./KeyboardShortcut";
 
-/** State for a [[KeyboardShortcutMenuEvent]] and [[KeyboardShortcutMenu]] component */
+/** State for a [[KeyboardShortcutMenuEvent]] and [[KeyboardShortcutMenu]] component
+ * @public
+ */
 export interface KeyboardShortcutMenuState {
   menuVisible: boolean;
   menuX: number;
@@ -17,14 +19,16 @@ export interface KeyboardShortcutMenuState {
 }
 
 /** KeyboardShortcut Menu Event class.
+ * @public
  */
 export class KeyboardShortcutMenuEvent extends UiEvent<KeyboardShortcutMenuState> { }
 
 /** Widget State Changed Event class.
+ * @public
  */
 export class KeyboardShortcutMenu extends React.Component<{}, KeyboardShortcutMenuState> {
 
-  /** @hidden */
+  /** @internal */
   public readonly state: KeyboardShortcutMenuState = {
     menuVisible: false,
     menuX: 0,

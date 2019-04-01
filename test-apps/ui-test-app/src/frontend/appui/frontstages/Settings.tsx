@@ -9,7 +9,9 @@ import { Toggle } from "@bentley/ui-core";
 import { UiFramework, ColorTheme, ModalFrontstageInfo } from "@bentley/ui-framework";
 import "./Settings.scss";
 
-/** Modal frontstage displaying the active settings. */
+/** Modal frontstage displaying the active settings.
+ * @alpha
+ */
 export class SettingsModalFrontstage implements ModalFrontstageInfo {
   public title: string = UiFramework.i18n.translate("SampleApp:settingsStage.settings");
   public get content(): React.ReactNode { return (<SettingsPage />); }

@@ -8,16 +8,21 @@ import * as React from "react";
 import { connect } from "react-redux";
 import { UiFramework } from "../UiFramework";
 
-/** Enum for the Color Theme string. */
+/** Enum for the Color Theme string.
+ * @beta
+ */
 export enum ColorTheme {
   Light = "light",
   Dark = "dark",
 }
 
-/** The default color theme. */
+/** The default color theme.
+ * @beta
+ */
 export const COLOR_THEME_DEFAULT = ColorTheme.Light;
 
-/** Properties of [[ThemeManagerComponent]]. */
+/** Properties of [[ThemeManagerComponent]].
+ */
 interface ThemeProps {
   /** theme ("light", "dark", etc.) */
   theme: ColorTheme;
@@ -32,8 +37,9 @@ function mapStateToProps(state: any) {
   return { theme: frameworkState.configurableUiState.theme };
 }
 
-/** ThemeManagerComponent handles setting themes. */
-export class ThemeManagerComponent extends React.Component<ThemeProps> {
+/** ThemeManagerComponent handles setting themes.
+ */
+class ThemeManagerComponent extends React.Component<ThemeProps> {
 
   public componentDidMount() {
     this._addTheme(this.props.theme);
@@ -56,5 +62,9 @@ export class ThemeManagerComponent extends React.Component<ThemeProps> {
   }
 }
 
-/** ThemeManager React component that is Redux connected. */
+/**
+ * ThemeManager handles setting color themes.
+ * This React component is Redux connected.
+ * @beta
+ */
 export const ThemeManager = connect(mapStateToProps)(ThemeManagerComponent); // tslint:disable-line:variable-name

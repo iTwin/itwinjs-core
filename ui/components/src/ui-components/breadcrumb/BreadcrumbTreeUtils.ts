@@ -10,6 +10,7 @@ import UiComponents from "../UiComponents";
 
 /**
  * Utility class for tree searching and manipulation in the Breadcrumb component.
+ * @beta
  */
 export class BreadcrumbTreeUtils {
 
@@ -140,7 +141,7 @@ export class BreadcrumbTreeUtils {
   }
 }
 
-/** @hidden */
+/** @internal */
 export interface DataRowItem extends RowItem {
   _node?: TreeNodeItem;
 }

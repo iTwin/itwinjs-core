@@ -27,7 +27,7 @@ export interface CommandLaunchBackstageItemProps extends BackstageItemProps, Com
  */
 export class CommandLaunchBackstageItem extends React.PureComponent<CommandLaunchBackstageItemProps, BackstageItemState> {
 
-  /** @hidden */
+  /** @internal */
   public readonly state: Readonly<BackstageItemState>;
   private _componentUnmounting = false;  // used to ensure _handleSyncUiEvent callback is not processed after componentWillUnmount is called
   private _stateSyncIds: string[] = [];  // local version of syncId that are lower cased
@@ -79,8 +79,8 @@ export class CommandLaunchBackstageItem extends React.PureComponent<CommandLaunc
     }
   }
 
-  public componentWillReceiveProps(nextProps: CommandLaunchBackstageItemProps) {
-    const updatedState = getBackstageItemStateFromProps(nextProps);
+  public componentDidUpdate(_prevProps: CommandLaunchBackstageItemProps) {
+    const updatedState = getBackstageItemStateFromProps(this.props);
     if (!PropsHelper.isShallowEqual(updatedState, this.state))
       this.setState((_prevState) => updatedState);
   }

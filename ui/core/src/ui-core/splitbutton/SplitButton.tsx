@@ -12,13 +12,15 @@ import { ContextMenu } from "../contextmenu/ContextMenu";
 import "./SplitButton.scss";
 
 // TODO: implement
-/** @hidden */
+/** @internal */
 export enum SplitButtonActionType {
   ContextMenu,
   List,
 }
 
-/** Property interface for [[SplitButton]] */
+/** Properties for [[SplitButton]] component
+ * @public
+ */
 export interface SplitButtonProps {
   /** Label to display in click area. */
   label: string | React.ReactNode;
@@ -29,19 +31,21 @@ export interface SplitButtonProps {
   icon?: string;
 }
 
+/** @internal */
 interface SplitButtonState {
   expanded: boolean;
 }
 
 /**
  * SplitButton with a button on the left and a context menu on the right.
+ * @public
  */
 export class SplitButton extends React.Component<SplitButtonProps, SplitButtonState> {
   private _arrowElement: HTMLElement | null = null;
   private _menu: ContextMenu | null = null;
   private _closing: boolean = false;
 
-  /** @hidden */
+  /** @internal */
   public readonly state: Readonly<SplitButtonState> = { expanded: false };
 
   public render(): JSX.Element {
@@ -108,5 +112,3 @@ export class SplitButton extends React.Component<SplitButtonProps, SplitButtonSt
     }
   }
 }
-
-export default SplitButton;

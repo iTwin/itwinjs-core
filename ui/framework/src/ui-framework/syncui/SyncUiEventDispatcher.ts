@@ -20,7 +20,10 @@ import { getInstancesCount } from "@bentley/presentation-common";
 // cSpell:ignore elementtooltipchanged, frontstageactivated, inputfieldmessageadded, inputfieldmessageremoved, modalfrontstagechanged, modaldialogchanged
 // cSpell:ignore navigationaidactivated, notificationmessageadded, toolactivated, taskactivated, widgetstatechanged, workflowactivated frontstageactivating
 // cSpell:ignore frontstageready activeviewportchanged selectionsetchanged presentationselectionchanged
-/** Event Id used to sync UI components. Typically used to refresh visibility or enable state of control. */
+
+/** Event Id used to sync UI components. Typically used to refresh visibility or enable state of control.
+ * @public
+ */
 export const enum SyncUiEventId {
   /** The active content as maintained by the ContentViewManager has changed. */
   ActiveContentChanged = "activecontentchanged",
@@ -55,17 +58,20 @@ export const enum SyncUiEventId {
 }
 
 /** SyncUi Event arguments. Contains a set of lower case event Ids.
+ * @public
  */
 export interface SyncUiEventArgs {
   eventIds: Set<string>;
 }
 
 /** SyncUi Event class.
+ * @public
  */
 export class SyncUiEvent extends UiEvent<SyncUiEventArgs> { }
 
 /** SyncUi Event Dispatcher class. This class is used to send eventIds to interested Ui components so the component can determine if it needs
  * to refresh its display by calling setState on itself.
+ * @public
  */
 export class SyncUiEventDispatcher {
   private static _syncEventTimerId: number | undefined;
@@ -75,7 +81,7 @@ export class SyncUiEventDispatcher {
   private static _timeoutPeriod: number = 200;
   private static _unregisterListenerFunc?: () => void;
 
-  /** @hidden - used for testing only */
+  /** @internal - used for testing only */
   public static setTimeoutPeriod(period: number): void {
     SyncUiEventDispatcher._timeoutPeriod = period;
   }

@@ -2,6 +2,8 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+/** @module IModelIndex */
+
 import * as React from "react";
 import { Tab, Tabs } from "./Tabs";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
@@ -19,7 +21,9 @@ interface Category {
   render(): JSX.Element | undefined;
 }
 
-/** Properties for the [[IModelIndex]] component */
+/** Properties for the [[IModelIndex]] component
+ * @beta
+ */
 export interface IModelIndexProps {
   /** IModelConnection */
   iModelConnection: IModelConnection;
@@ -43,7 +47,8 @@ interface IModelIndexState {
 }
 
 /**
- * IModelIndex
+ * IModelIndex React component
+ * @beta
  */
 export class IModelIndex extends React.Component<IModelIndexProps, IModelIndexState> {
   private static _categories: Category[] = [];
@@ -146,19 +151,19 @@ export class IModelIndex extends React.Component<IModelIndexProps, IModelIndexSt
     this.setState({ showWaiting: true });
 
     if (this.props.onOpen)
-      this.props.onOpen (viewIds);
+      this.props.onOpen(viewIds);
   }
 
   private _onSetCategory = (category: number) => {
-     this.setState({ currentCategory: category, header: undefined });
+    this.setState({ currentCategory: category, header: undefined });
   }
 
   /* render the Sheets tab */
   private _renderSheets = () => {
     return (
       <SheetsTab key={1} iModelConnection={this.props.iModelConnection} accessToken={this.props.accessToken}
-               showSheets={true} onAddHeader={this._onAddHeader} onSetCategory={this._onSetCategory}
-               onEnter={this._onEnter}/>
+        showSheets={true} onAddHeader={this._onAddHeader} onSetCategory={this._onSetCategory}
+        onEnter={this._onEnter} />
     );
   }
 

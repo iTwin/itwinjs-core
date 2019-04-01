@@ -14,7 +14,9 @@ import { Omit } from "../utils/typeUtils";
 
 const DivWithOutsideClick = withOnOutsideClick((props) => (<div {...props} />)); // tslint:disable-line:variable-name
 
-/** Enum to specify where a [[ContextMenu]] should anchor to its parent element */
+/** Enum to specify where a [[ContextMenu]] should anchor to its parent element
+ * @public
+ */
 export enum ContextMenuDirection {
   None = "",
   TopLeft = "top left", Top = "top", TopRight = "top right",
@@ -22,7 +24,9 @@ export enum ContextMenuDirection {
   BottomLeft = "bottom left", Bottom = "bottom", BottomRight = "bottom right",
 }
 
-/** Property interface for the [[ContextMenu]] component */
+/** Properties for the [[ContextMenu]] component
+ * @public
+ */
 export interface ContextMenuProps extends React.AllHTMLAttributes<HTMLDivElement> {
   /** Whether ContextMenu is currently opened. */
   opened: boolean;
@@ -44,14 +48,14 @@ export interface ContextMenuProps extends React.AllHTMLAttributes<HTMLDivElement
   selectedIndex?: number;
   /** whether menu floats on the viewport, or the page. When false, container elements can clip menu with overflow: hidden; Default: true */
   floating?: boolean;
-  /** @hidden */
+  /** @internal */
   parentMenu?: ContextMenu;
-  /** @hidden */
+  /** @internal */
   parentSubmenu?: ContextSubMenu;
 }
 
-/** @hidden */
-export interface ContextMenuState {
+/** @internal */
+interface ContextMenuState {
   selectedIndex: number;
   direction: ContextMenuDirection;
 }
@@ -59,6 +63,7 @@ export interface ContextMenuState {
 /**
  * A context menu populated with [[ContextMenuItem]] components.
  * Can be nested using [[ContextSubMenu]] component.
+ * @public
  */
 export class ContextMenu extends React.Component<ContextMenuProps, ContextMenuState> {
   private _rootElement: HTMLElement | null = null;
@@ -81,7 +86,7 @@ export class ContextMenu extends React.Component<ContextMenuProps, ContextMenuSt
     floating: true,
   };
 
-  /** @hidden */
+  /** @internal */
   public readonly state: Readonly<ContextMenuState>;
   constructor(props: ContextMenuProps) {
     super(props);
@@ -91,7 +96,7 @@ export class ContextMenu extends React.Component<ContextMenuProps, ContextMenuSt
     };
   }
 
-  /** @hidden */
+  /** @internal */
   public static autoFlip = (dir: ContextMenuDirection, rect: ClientRect, windowWidth: number, windowHeight: number) => {
     if (rect.right > windowWidth) {
       switch (dir) {
@@ -232,13 +237,13 @@ export class ContextMenu extends React.Component<ContextMenuProps, ContextMenuSt
     this._menuElement = el;
   }
 
-  /** @hidden */
+  /** @internal */
   public componentDidMount() {
     window.addEventListener("focus", this._handleFocusChange);
     window.addEventListener("mouseup", this._handleFocusChange);
   }
 
-  /** @hidden */
+  /** @internal */
   public componentWillUnmount() {
     window.removeEventListener("focus", this._handleFocusChange);
     window.removeEventListener("mouseup", this._handleFocusChange);
@@ -351,9 +356,9 @@ export class ContextMenu extends React.Component<ContextMenuProps, ContextMenuSt
   }
 }
 
-export default ContextMenu;
-
-/** Properties for the [[GlobalContextMenu]] component */
+/** Properties for the [[GlobalContextMenu]] component
+ * @public
+ */
 export interface GlobalContextMenuProps extends ContextMenuProps {
   /** Unique identifier, to distinguish from other GlobalContextMenu components. Needed only if multiple GlobalContextMenus are used simultaneously. */
   identifier?: string;
@@ -365,7 +370,9 @@ export interface GlobalContextMenuProps extends ContextMenuProps {
   contextMenuComponent?: React.ComponentType<ContextMenuProps>;
 }
 
-/** GlobalContextMenu React component used to display a [[ContextMenu]] at the cursor */
+/** GlobalContextMenu React component used to display a [[ContextMenu]] at the cursor
+ * @public
+ */
 export class GlobalContextMenu extends React.Component<GlobalContextMenuProps> {
   private _container: HTMLDivElement;
   constructor(props: GlobalContextMenuProps) {
@@ -404,35 +411,39 @@ export class GlobalContextMenu extends React.Component<GlobalContextMenuProps> {
   }
 }
 
-/** Properties for the [[ContextMenuItem]] component */
+/** Properties for the [[ContextMenuItem]] component
+ * @public
+ */
 export interface ContextMenuItemProps extends React.AllHTMLAttributes<HTMLDivElement> {
   onSelect?: (event: any) => any;
-  /** @hidden */
+  /** @internal */
   onHotKeyParsed?: (hotKey: string) => void;
   /** Icon to display in the left margin. */
   icon?: string | React.ReactNode;
   /** Disables any onSelect calls, hover/keyboard highlighting, and grays item. */
   disabled?: boolean;
-  /** @hidden */
+  /** @internal */
   onHover?: () => any;
-  /* @hidden */
+  /* @internal */
   isSelected?: boolean;
-  /** @hidden */
+  /** @internal */
   parentMenu?: ContextMenu;
 }
 
-/** @hidden */
-export interface ContextMenuItemState {
+/** @internal */
+interface ContextMenuItemState {
   hotKey?: string;
 }
 
 /**
  * Menu Item class for use within a [[ContextMenu]] component.
+ * @public
  */
 export class ContextMenuItem extends React.Component<ContextMenuItemProps, ContextMenuItemState> {
   private _root: HTMLElement | null = null;
   private _lastChildren: React.ReactNode;
   private _parsedChildren: React.ReactNode;
+  /** @internal */
   public static defaultProps: Partial<ContextMenuItemProps> = {
     disabled: false,
     isSelected: false,
@@ -440,7 +451,7 @@ export class ContextMenuItem extends React.Component<ContextMenuItemProps, Conte
   constructor(props: ContextMenuItemProps) {
     super(props);
   }
-  /** @hidden */
+  /** @internal */
   public readonly state: Readonly<ContextMenuItemState> = {};
   public render(): JSX.Element {
     const { onClick, className, style, onSelect, icon, disabled, onHover, isSelected, parentMenu, onHotKeyParsed, ...props } = this.props;
@@ -520,6 +531,7 @@ export class ContextMenuItem extends React.Component<ContextMenuItemProps, Conte
 
 /**
  * Menu Divider for [[ContextMenu]]. Inserts a line between items, used for list item grouping.
+ * @public
  */
 export class ContextMenuDivider extends React.Component {
   public render(): JSX.Element {
@@ -530,16 +542,18 @@ export class ContextMenuDivider extends React.Component {
   }
 }
 
-/** Property interface for [[ContextSubMenu]] */
+/** Properties interface for [[ContextSubMenu]]
+ * @public
+ */
 export interface ContextSubMenuProps extends Omit<ContextMenuItemProps, "label">, Omit<ContextMenuProps, "label"> {
   /** Text/jsx to display in the list item */
   label: string | JSX.Element;
-  /** @hidden */
+  /** @internal */
   onHotKeyParsed?: (hotKey: string) => void;
 }
 
-/** @hidden */
-export interface ContextSubMenuState {
+/** @internal */
+interface ContextSubMenuState {
   opened: boolean;
   direction: ContextMenuDirection;
   hotKey?: string;
@@ -547,6 +561,7 @@ export interface ContextSubMenuState {
 
 /**
  * Submenu wrapper class for use within a [[ContextMenu]] component.
+ * @public
  */
 export class ContextSubMenu extends React.Component<ContextSubMenuProps, ContextSubMenuState> {
   private _menuElement: ContextMenu | null = null;
@@ -564,7 +579,7 @@ export class ContextSubMenu extends React.Component<ContextSubMenuProps, Context
     selectedIndex: 0,
   };
 
-  /** @hidden */
+  /** @internal */
   public readonly state: Readonly<ContextSubMenuState>;
   constructor(props: ContextSubMenuProps) {
     super(props);
@@ -689,7 +704,9 @@ export class ContextSubMenu extends React.Component<ContextSubMenuProps, Context
   }
 }
 
-/** Finds a tilde character in ContextMenu item label for hot key support */
+/** Finds a tilde character in ContextMenu item label for hot key support
+ * @internal
+ */
 export class TildeFinder {
   public static findAfterTilde = (node: React.ReactNode): { character: string | undefined, node: React.ReactNode } => {
     if (typeof node === "string") {

@@ -9,7 +9,9 @@ import * as React from "react";
 import "./ElementSeparator.scss";
 import { Orientation } from "../enums/Orientation";
 
-/** Properties of [[ElementSeparator]] React component */
+/** Properties of [[ElementSeparator]] React component
+ * @public
+ */
 export interface ElementSeparatorProps {
   /** Separator orientation */
   orientation: Orientation;
@@ -23,7 +25,9 @@ export interface ElementSeparatorProps {
   onRatioChanged: (ratio: number) => void;
 }
 
-/** A movable button, which allows to change the ratio between left element and right element */
+/** A movable button, which allows to change the ratio between left element and right element
+ * @public
+ */
 export class ElementSeparator extends React.PureComponent<ElementSeparatorProps> {
   private _dragStarted = false;
   private _initialGlobalPosition = 0;

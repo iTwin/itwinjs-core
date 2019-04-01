@@ -5,6 +5,7 @@
 /** @module ConfigurableUi */
 
 /** Interface for a ConfigurableUi element
+ * @public
  */
 export interface ConfigurableUiElement {
   uniqueId: string;
@@ -13,6 +14,7 @@ export interface ConfigurableUiElement {
 }
 
 /** Information for creating a ConfigurableUi element
+ * @public
  */
 export class ConfigurableCreateInfo {
   constructor(public readonly classId: string,
@@ -22,6 +24,7 @@ export class ConfigurableCreateInfo {
 }
 
 /** The base class for all ConfigurableUi elements
+ * @public
  */
 export class ConfigurableBase implements ConfigurableUiElement {
   private _uniqueId: string;
@@ -34,7 +37,7 @@ export class ConfigurableBase implements ConfigurableUiElement {
     this._name = (options && options.hasOwnProperty("name")) ? options.name : info.uniqueId;
   }
 
-  /** @hidden */
+  /** @internal */
   public get uniqueId(): string { return this._uniqueId; }
 
   /** Gets the class Id of configurable element */
@@ -47,6 +50,7 @@ export class ConfigurableBase implements ConfigurableUiElement {
 }
 
 /** The type of the ConfigurableUiControl.
+ * @public
  */
 export enum ConfigurableUiControlType {
   Content,          /** Represents [[ContentControl]] */
@@ -58,10 +62,12 @@ export enum ConfigurableUiControlType {
 }
 
 /** Prototype for ConfigurableUiControl constructor
+ * @public
  */
 export type ConfigurableUiControlConstructor = new (info: ConfigurableCreateInfo, options: any) => ConfigurableUiElement;
 
 /** The abstract base class for all Frontstage controls.
+ * @public
  *
  * @note This is an abstract class which should not be derived from by the applications.
  * Instead, applications should derive from one of
@@ -86,7 +92,7 @@ export abstract class ConfigurableUiControl extends ConfigurableBase {
     this._cid = info.id;
   }
 
-  /** @hidden
+  /** @internal
    */
   public initialize(): void { this.onInitialize(); }
 
@@ -111,5 +117,3 @@ export abstract class ConfigurableUiControl extends ConfigurableBase {
    */
   public get isReady(): Promise<void> { return Promise.resolve(); }
 }
-
-export default ConfigurableUiControl;

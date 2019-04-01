@@ -7,17 +7,21 @@
 import * as React from "react";
 import * as classnames from "classnames";
 
-import Input, { InputProps } from "./Input";
-import InputStatus from "./InputStatus";
+import { Input, InputProps } from "./Input";
+import { InputStatus } from "./InputStatus";
 
-/** Properties for [[LabeledInput]] components */
+/** Properties for [[LabeledInput]] components
+ * @public
+ */
 export interface LabeledInputProps extends InputProps {
   label: string;
   status?: InputStatus;
   message?: string;
 }
 
-/** Text input wrapper that provides additional styling and labeling */
+/** Text input wrapper that provides additional styling and labeling
+ * @public
+ */
 export class LabeledInput extends React.Component<LabeledInputProps> {
   public render(): JSX.Element {
     return (
@@ -43,4 +47,3 @@ export class LabeledInput extends React.Component<LabeledInputProps> {
     );
   }
 }
-export default LabeledInput;

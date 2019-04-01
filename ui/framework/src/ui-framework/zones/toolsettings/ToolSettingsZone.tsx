@@ -20,18 +20,18 @@ import {
   DialogButton,
 } from "@bentley/ui-ninezone";
 import { KeyboardShortcutManager } from "../../keyboardshortcut/KeyboardShortcut";
-import UiFramework from "../../UiFramework";
+import { UiFramework } from "../../UiFramework";
 
 /** State for the ToolSettingsZone content.
  */
-export enum ToolSettingsZoneContent {
+enum ToolSettingsZoneContent {
   Closed,
   ToolSettings,
 }
 
-/** State for the ToolSettingsZone.
+/** State for the [[ToolSettingsZone]].
  */
-export interface ToolSettingsZoneState {
+interface ToolSettingsZoneState {
   toolSettingsZoneContent: ToolSettingsZoneContent;
   isPopoverOpen: boolean;
   isNestedPopoverOpen: boolean;
@@ -39,17 +39,19 @@ export interface ToolSettingsZoneState {
 }
 
 /** Properties for the [[ToolSettingsZone]] React component.
+ * @internal
  */
 export interface ToolSettingsZoneProps extends CommonProps {
   bounds: RectangleProps;
 }
 
 /** Tool Settings Zone React component.
+ * @internal
  */
 export class ToolSettingsZone extends React.Component<ToolSettingsZoneProps, ToolSettingsZoneState> {
   private _toolSettingsLabel: string;
 
-  /** @hidden */
+  /** @internal */
   public readonly state: Readonly<ToolSettingsZoneState> = {
     toolSettingsZoneContent: ToolSettingsZoneContent.ToolSettings,
     isPopoverOpen: false,

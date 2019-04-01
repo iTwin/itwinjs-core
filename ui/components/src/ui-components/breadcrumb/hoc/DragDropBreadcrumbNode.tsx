@@ -11,7 +11,7 @@ import { TreeDragDropType } from "../../tree/hocs/withDragDrop";
 import { withDragSource, WithDragSourceProps } from "../../dragdrop/withDragSource";
 import { withDropTarget, WithDropTargetProps } from "../../dragdrop/withDropTarget";
 
-/** @hidden */
+/** @internal */
 export interface DragDropBreadcrumbNodeProps extends React.AllHTMLAttributes<HTMLSpanElement> {
   isOver?: boolean;
   isDragging?: boolean;
@@ -20,7 +20,7 @@ export interface DragDropBreadcrumbNodeProps extends React.AllHTMLAttributes<HTM
 }
 
 // Used internally in ./Breadcrumb.tsx
-/** @hidden */
+/** @internal */
 export class DragDropBreadcrumbNodeComponent extends React.Component<DragDropBreadcrumbNodeProps> {
   public render() {
     const { isOver, isDragging, canDrag, canDrop, ...props } = this.props as DragDropBreadcrumbNodeProps;
@@ -38,7 +38,7 @@ export class DragDropBreadcrumbNodeComponent extends React.Component<DragDropBre
   }
 }
 
-/** @hidden */
+/** @internal */
 export function DragDropBreadcrumbNode<DragDropObject extends TreeDragDropType>(): DndComponentClass<DragDropBreadcrumbNodeProps & WithDragSourceProps<DragDropObject> & WithDropTargetProps<DragDropObject>> {
   return withDropTarget<DragDropBreadcrumbNodeProps & WithDragSourceProps<DragDropObject>, DragDropObject>(
     withDragSource<DragDropBreadcrumbNodeProps, DragDropObject>(DragDropBreadcrumbNodeComponent));

@@ -11,7 +11,9 @@ import { DialogButtonType, DialogButton, MessageBox, MessageSeverity } from "@be
 
 import { ModalDialogManager } from "../ModalDialogManager";
 
-/** Properties for [[StandardMessageBox]] React component */
+/** Properties for [[StandardMessageBox]] React component
+ * @public
+ */
 export interface StandardMessageBoxProps {
   /** Indicates whether the message box is open */
   opened: boolean;
@@ -25,15 +27,19 @@ export interface StandardMessageBoxProps {
   onResult?: (result: MessageBoxValue) => void;
 }
 
-/** State for [[StandardMessageBox]] React component */
-export interface StandardMessageBoxState {
+/** State for [[StandardMessageBox]] React component
+ * @internal
+ */
+interface StandardMessageBoxState {
   opened: boolean;
 }
 
-/** StandardMessageBox React component displays a standard icon, message text and a standard button set in the lower right. */
+/** StandardMessageBox React component displays a standard icon, message text and a standard button set in the lower right.
+ * @public
+ */
 export class StandardMessageBox extends React.Component<StandardMessageBoxProps, StandardMessageBoxState> {
 
-  /** @hidden */
+  /** @internal */
   public readonly state: Readonly<StandardMessageBoxState>;
 
   constructor(props: StandardMessageBoxProps) {

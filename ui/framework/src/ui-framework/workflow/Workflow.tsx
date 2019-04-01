@@ -10,11 +10,8 @@ import { ItemDefBase } from "../shared/ItemDefBase";
 import { ItemProps } from "../shared/ItemProps";
 import { Task, TaskManager } from "./Task";
 
-// -----------------------------------------------------------------------------
-//  WorkflowDef and WorkflowsDef
-// -----------------------------------------------------------------------------
-
 /** Properties for a [[Workflow]].
+ * @public
  */
 export interface WorkflowProps extends ItemProps {
   id: string;
@@ -24,17 +21,17 @@ export interface WorkflowProps extends ItemProps {
 }
 
 /** Workflow Properties List definition.
+ * @public
  */
 export interface WorkflowPropsList {
   defaultWorkflowId: string;
   workflows: WorkflowProps[];
 }
-
-// -----------------------------------------------------------------------------
-// Workflow class
 // -----------------------------------------------------------------------------
 
 /** Workflow class.
+ * A Workflow is a defined sequence of tasks used to accomplish a goal.
+ * @public
  */
 export class Workflow extends ItemDefBase {
   /** Id of the Workflow */
@@ -138,6 +135,7 @@ export class Workflow extends ItemDefBase {
 }
 
 /** Workflow Activated Event Args class.
+ * @public
  */
 export interface WorkflowActivatedEventArgs {
   workflowId?: string;
@@ -145,10 +143,12 @@ export interface WorkflowActivatedEventArgs {
 }
 
 /** Workflow Activated Event class.
+ * @public
  */
 export class WorkflowActivatedEvent extends UiEvent<WorkflowActivatedEventArgs> { }
 
 /** Task Activated Event Args class.
+ * @public
  */
 export interface TaskActivatedEventArgs {
   taskId?: string;
@@ -159,14 +159,14 @@ export interface TaskActivatedEventArgs {
 }
 
 /** Task Activated Event class.
+ * @public
  */
 export class TaskActivatedEvent extends UiEvent<TaskActivatedEventArgs> { }
 
 // -----------------------------------------------------------------------------
-// WorkflowManager class
-// -----------------------------------------------------------------------------
 
 /** Workflow Manager class.
+ * @public
  */
 export class WorkflowManager {
   private static _workflows: Map<string, Workflow> = new Map<string, Workflow>();

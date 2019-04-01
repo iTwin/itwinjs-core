@@ -12,7 +12,9 @@ import { PropertyCategory } from "../PropertyDataProvider";
 import { PropertyValueRendererManager } from "../../properties/ValueRendererManager";
 import { PropertyUpdatedArgs } from "../../editors/EditorContainer";
 
-/** Properties of [[PropertyList]] React component */
+/** Properties of [[PropertyList]] React component
+ * @public
+ */
 export interface PropertyListProps {
   orientation: Orientation;
   category?: PropertyCategory;
@@ -34,20 +36,26 @@ export interface PropertyListProps {
 
 /**
  * Get unique key for property record
- * @hidden
+ * @internal
  */
 export function getPropertyKey(propertyCategory: PropertyCategory, propertyRecord: PropertyRecord) {
   return propertyCategory.name + propertyRecord.property.name;
 }
 
-/** State of [[PropertyList]] React component */
-export interface PropertyListState {
+/** State of [[PropertyList]] React component
+ * @internal
+ */
+interface PropertyListState {
   /** Width of the whole property list container */
   width?: number;
 }
 
-/** A React component that renders multiple properties within a category as a list. */
+/** A React component that renders multiple properties within a category as a list.
+ * @public
+ */
 export class PropertyList extends React.Component<PropertyListProps, PropertyListState> {
+
+  /** @internal */
   public readonly state: PropertyListState = {};
 
   private _listRef = React.createRef<HTMLDivElement>();
@@ -64,14 +72,17 @@ export class PropertyList extends React.Component<PropertyListProps, PropertyLis
       this.setState({ width });
   }
 
+  /** @internal */
   public componentDidMount() {
     this.afterRender();
   }
 
+  /** @internal */
   public componentDidUpdate() {
     this.afterRender();
   }
 
+  /** @internal */
   public render() {
     const propertyListClassName = (this.props.orientation === Orientation.Horizontal)
       ? "components-property-list--horizontal" : "components-property-list--vertical";

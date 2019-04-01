@@ -16,7 +16,9 @@ import { UiCore } from "../UiCore";
 import "./Dialog.scss";
 import { Omit } from "../utils/typeUtils";
 
-/** Enum for button types. Determines button label, and default button style. */
+/** Enum for button types. Determines button label, and default button style.
+ * @public
+ */
 export enum DialogButtonType {
   None = "",
   Close = "close",
@@ -27,7 +29,9 @@ export enum DialogButtonType {
   Retry = "retry",
 }
 
-/** Enum for button style. */
+/** Enum for button style.
+ * @public
+ */
 export enum DialogButtonStyle {
   None = "",
   Primary = "uicore-buttons-primary",
@@ -35,14 +39,18 @@ export enum DialogButtonStyle {
   Blue = "uicore-buttons-blue",
 }
 
-/** Enum for dialog alignment */
+/** Enum for dialog alignment
+ * @public
+ */
 export enum DialogAlignment {
   TopLeft = "top-left", Top = "top", TopRight = "top-right",
   Left = "left", Center = "center", Right = "right",
   BottomLeft = "bottom-left", Bottom = "bottom", BottomRight = "bottom-right",
 }
 
-/** Interface for a given button in a button cluster */
+/** Interface for a given button in a button cluster
+ * @public
+ */
 export interface DialogButton {
   /** type of button */
   type: DialogButtonType;
@@ -54,7 +62,9 @@ export interface DialogButton {
   disabled?: boolean;
 }
 
-/** Property interface for [[Dialog]] */
+/** Properties for the [[Dialog]] component
+ * @public
+ */
 export interface DialogProps extends Omit<React.AllHTMLAttributes<HTMLDivElement>, "title"> {
   /** whether to show dialog or not */
   opened: boolean;
@@ -102,8 +112,8 @@ export interface DialogProps extends Omit<React.AllHTMLAttributes<HTMLDivElement
   movable?: boolean;
 }
 
-/** @hidden */
-export interface DialogState {
+/** @internal */
+interface DialogState {
   rightResizing: boolean;
   downResizing: boolean;
   moving: boolean;
@@ -117,6 +127,7 @@ export interface DialogState {
 
 /**
  * Dialog React component with optional resizing and dragging functionality
+ * @public
  */
 export class Dialog extends React.Component<DialogProps, DialogState> {
   private _containerRef = React.createRef<HTMLDivElement>();
@@ -130,7 +141,7 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
     modal: true,
   };
 
-  /** @hidden */
+  /** @internal */
   public readonly state: Readonly<DialogState>;
   constructor(props: DialogProps) {
     super(props);
@@ -383,14 +394,16 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
   }
 }
 
-export default Dialog;
-
-/** Properties for the [[GlobalDialog]] component */
+/** Properties for the [[GlobalDialog]] component
+ * @public
+ */
 export interface GlobalDialogProps extends DialogProps {
   identifier?: string;
 }
 
-/** GlobalDialog React component used to display a [[Dialog]] on the top of screen */
+/** GlobalDialog React component used to display a [[Dialog]] on the top of screen
+ * @public
+ */
 export class GlobalDialog extends React.Component<GlobalDialogProps> {
   private _container: HTMLDivElement;
   constructor(props: GlobalDialogProps) {

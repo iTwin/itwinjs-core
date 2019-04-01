@@ -21,15 +21,12 @@ import { XAndY } from "@bentley/geometry-core";
 import { MessageManager } from "./MessageManager";
 import { UiFramework } from "../UiFramework";
 import { ElementTooltip } from "../feedback/ElementTooltip";
-import PointerMessage from "./Pointer";
+import { PointerMessage } from "./Pointer";
 
 /**
- * The AppNotificationManager class is a subclass of NotificationManager. This implementation uses
- * the iModel.js UI library to display alerts, messages, prompts and tooltips.
- *
- * The NotificationManager controls the interaction with the user for prompts, error messages, and alert dialogs.
- * Implementations of the NotificationManager may present the information in different ways. For example, in
- * non-interactive sessions, these messages may be saved to a log file or simply discarded.
+ * The AppNotificationManager class is a subclass of NotificationManager, which is in @bentley/imodeljs-frontend.
+ * This implementation uses the iModel.js UI library to display alerts, messages, prompts and tooltips.
+ * @public
  */
 export class AppNotificationManager extends NotificationManager {
 

@@ -17,7 +17,7 @@ class ProjectInfoImpl implements ProjectInfo {
 
 /**
  * Provides default [[ProjectServices]]
- * @hidden
+ * @internal
  */
 export class DefaultProjectServices implements ProjectServices {
   private _connectClient: ConnectClient;

@@ -8,8 +8,11 @@ import {
   TimelineDataProvider,
   Milestone, PlaybackSettings,
   TimelineDetail,
-} from "../../ui-components/timeline/interfaces";
+} from "./interfaces";
 
+/** Base Timeline Data Provider
+ * @beta
+ */
 export class BaseTimelineDataProvider implements TimelineDataProvider {
   public readonly id = "TestTimelineDataProvider";
   public start: Date | undefined;

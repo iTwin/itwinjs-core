@@ -9,15 +9,19 @@ import * as React from "react";
 
 import "./Branch.scss";
 
-/** Properties for [[TreeBranch]] React component */
+/** Properties for [[TreeBranch]] React component
+ * @public
+ */
 export interface TreeBranchProps {
   children?: React.ReactNode;
   className?: string;
   style?: React.CSSProperties;
 }
 
-/** Presentation React component for a Tree branch */
-export default class TreeBranch extends React.PureComponent<TreeBranchProps> {
+/** Presentation React component for a Tree branch
+ * @public
+ */
+export class TreeBranch extends React.PureComponent<TreeBranchProps> {
   public render() {
     const className = classnames(
       "core-tree-branch",

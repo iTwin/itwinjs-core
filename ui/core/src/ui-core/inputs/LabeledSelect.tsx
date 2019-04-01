@@ -7,17 +7,21 @@
 import * as React from "react";
 import * as classnames from "classnames";
 
-import Select, { SelectProps } from "./Select";
-import InputStatus from "./InputStatus";
+import { Select, SelectProps } from "./Select";
+import { InputStatus } from "./InputStatus";
 
-/** Properties for [[LabeledSelect]] components */
+/** Properties for [[LabeledSelect]] components
+ * @public
+ */
 export interface LabeledSelectProps extends SelectProps {
   label: string;
   status?: InputStatus;
   message?: string;
 }
 
-/** Dropdown wrapper that allows for additional styling and labelling */
+/** Dropdown wrapper that allows for additional styling and labelling
+ * @public
+ */
 export class LabeledSelect extends React.Component<LabeledSelectProps> {
   public render(): JSX.Element {
     return (
@@ -35,4 +39,3 @@ export class LabeledSelect extends React.Component<LabeledSelectProps> {
     );
   }
 }
-export default LabeledSelect;

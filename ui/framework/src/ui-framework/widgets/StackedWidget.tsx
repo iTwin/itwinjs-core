@@ -15,6 +15,7 @@ import {
 } from "@bentley/ui-ninezone";
 
 /** Properties for a [[StackedWidget]] Tab.
+ * @internal
  */
 export interface WidgetTabProps {
   isActive: boolean;
@@ -24,6 +25,7 @@ export interface WidgetTabProps {
 }
 
 /** Properties for a Widget in a [[StackedWidget]].
+ * @internal
  */
 export interface EachWidgetProps {
   id: WidgetZoneIndex;
@@ -32,6 +34,7 @@ export interface EachWidgetProps {
 }
 
 /** Properties for the [[StackedWidget]] React component.
+ * @internal
  */
 export interface StackedWidgetProps {
   children?: React.ReactNode;
@@ -48,6 +51,7 @@ export interface StackedWidgetProps {
 }
 
 /** Stacked Widget React component.
+ * @internal
  */
 export class StackedWidget extends React.Component<StackedWidgetProps> {
   private _widget = React.createRef<NZ_StackedWidget>();
@@ -169,5 +173,3 @@ export class StackedWidget extends React.Component<StackedWidgetProps> {
     this.props.widgetChangeHandler.handleTabDrag(dragged);
   }
 }
-
-export default StackedWidget;

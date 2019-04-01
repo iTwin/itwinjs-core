@@ -8,12 +8,16 @@ import { IImageLoader, LoadedImage } from "../common/IImageLoader";
 import { TreeNodeItem } from "./TreeDataProvider";
 import { BeInspireTreeNodeITree } from "./component/BeInspireTree";
 
-/** Interface for a tree image loader */
+/** Interface for a tree image loader
+ * @public
+ */
 export interface ITreeImageLoader extends IImageLoader {
   load: (item: TreeNodeItem | BeInspireTreeNodeITree) => LoadedImage | undefined;
 }
 
-/** Default image loader for the tree */
+/** Default image loader for the tree
+ * @public
+ */
 export class TreeImageLoader implements ITreeImageLoader {
   /** Loads image data from either [[TreeNodeItem]] or [[BeInspireTreeNodeITree]] */
   public load(item: TreeNodeItem | BeInspireTreeNodeITree): LoadedImage | undefined {

@@ -13,7 +13,9 @@ import "./SignIn.scss";
  * SignInDialog - OIDC sign-in dialog.
  ***********************************************************************/
 
-/** Properties for the [[SignIn]] component */
+/** Properties for the [[SignIn]] component
+ * @public
+ */
 export interface SignInProps {
   onOffline?: () => void;
   onSignedIn: () => void;
@@ -25,6 +27,7 @@ interface SignInState {
 
 /**
  * SignIn React component
+ * @public
  */
 export class SignIn extends React.Component<SignInProps, SignInState> {
   constructor(props: SignInProps, context?: any) {

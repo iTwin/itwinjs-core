@@ -9,14 +9,18 @@ import { OpenMode } from "@bentley/bentleyjs-core";
 import { ProjectInfo } from "./ProjectServices";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 
-/** Enumeration for iModel scope */
+/** Enumeration for iModel scope
+ * @internal
+ */
 export enum IModelScope {
   Favorites,
   MostRecentlyUsed,
   All,
 }
 
-/** Interface for iModel information */
+/** Interface for iModel information
+ * @internal
+ */
 export interface IModelInfo {
   name: string;
   description: string;
@@ -27,7 +31,9 @@ export interface IModelInfo {
   status: string;
 }
 
-/** Interface for iModel version information */
+/** Interface for iModel version information
+ * @internal
+ */
 export interface VersionInfo {
   name: string;
   description: string;
@@ -38,7 +44,9 @@ export interface VersionInfo {
   largeThumbnail?: string;
 }
 
-/** Interface for iModel change set information */
+/** Interface for iModel change set information
+ * @internal
+ */
 export interface ChangeSetInfo {
   name: string;
   description: string;
@@ -49,7 +57,9 @@ export interface ChangeSetInfo {
   largeThumbnail?: string;
 }
 
-/** Interface for iModel user information */
+/** Interface for iModel user information
+ * @internal
+ */
 export interface IModelUserInfo {
   id?: string;
   firstName: string;
@@ -57,7 +67,9 @@ export interface IModelUserInfo {
   email: string;
 }
 
-/** Interface for iModel services */
+/** Interface for iModel services
+ * @internal
+ */
 export interface IModelServices {
 
   /** Get the iModels in a project. */

@@ -9,7 +9,9 @@ import * as classnames from "classnames";
 import { CommonProps } from "../utils/Props";
 import "./Toggle.scss";
 
-/** Toggle display types */
+/** Toggle display types
+ * @public
+ */
 export enum ToggleButtonType {
   /** Primary (green) background */
   Primary,
@@ -17,7 +19,9 @@ export enum ToggleButtonType {
   Blue,
 }
 
-/** Properties for [[Toggle]] component */
+/** Properties for [[Toggle]] component
+ * @public
+ */
 export interface ToggleProps extends CommonProps {
   /** Determine if the toggle is disabled or not */
   disabled?: boolean;
@@ -35,6 +39,7 @@ export interface ToggleProps extends CommonProps {
   onBlur?: (event: React.FocusEvent) => any;
 }
 
+/** @internal */
 interface ToggleState {
   height: number;
   width: number;
@@ -42,8 +47,8 @@ interface ToggleState {
 }
 
 /**
- * Toggle React component
- * Component to show an "on" or "off state
+ * Toggle React component to show an "on" or "off state
+ * @public
  */
 export class Toggle extends React.Component<ToggleProps, ToggleState> {
   private _padding: number = 2;
@@ -116,5 +121,3 @@ export class Toggle extends React.Component<ToggleProps, ToggleState> {
     );
   }
 }
-
-export default Toggle;

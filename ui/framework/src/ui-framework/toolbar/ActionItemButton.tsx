@@ -16,7 +16,9 @@ import { PropsHelper } from "../utils/PropsHelper";
 import { Item } from "@bentley/ui-ninezone";
 import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
 
-/** Property that must be specified for a ActionItemButton component */
+/** Properties that must be specified for a ActionItemButton component
+ * @public
+ */
 export interface ActionItemButtonProps {
   actionItem: ActionButtonItemDef;
   isEnabled?: boolean;
@@ -34,11 +36,12 @@ const getItemStateFromProps = (props: ActionItemButtonProps): BaseItemState => {
 };
 
 /** A Toolbar button React Component that executes an action defined by a CommandItemDef or a ToolItemDef.
+ * @public
  */
 export class ActionItemButton extends React.Component<ActionItemButtonProps, BaseItemState> {
   private _componentUnmounting = false;
 
-  /** @hidden */
+  /** @internal */
   public readonly state: Readonly<BaseItemState>;
 
   constructor(props: ActionItemButtonProps) {

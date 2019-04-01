@@ -43,14 +43,22 @@ import { ITreeImageLoader, TreeImageLoader } from "../ImageLoader";
 // css
 import "./Tree.scss";
 
-/** Type for nodesSelected callback */
+/** Type for nodesSelected callback
+ * @internal
+ */
 export type NodesSelectedCallback = OnItemsSelectedCallback<TreeNodeItem>;
-/** Type for nodesDeselected callback */
+/** Type for nodesDeselected callback
+ * @internal
+ */
 export type NodesDeselectedCallback = OnItemsDeselectedCallback<TreeNodeItem>;
-/** Type for node renderer */
+/** Type for node renderer
+ * @internal
+ */
 export type NodeRenderer = (item: BeInspireTreeNode<TreeNodeItem>, props: TreeNodeProps) => React.ReactNode;
 
-/** Properties for the Tree component  */
+/** Properties for the [[Tree]] component
+ * @public
+ */
 export interface TreeProps {
   /** Nodes provider */
   dataProvider: TreeDataProvider;
@@ -82,12 +90,14 @@ export interface TreeProps {
    * Callback that's called when nodes are selected. In case of
    * delayed loading (`pageSize != 0`), called only after all selected
    * nodes are fully loaded
+   * @internal
    */
   onNodesSelected?: NodesSelectedCallback;
   /**
    * Callback that's called when nodes are deselected. In case of
    * delayed loading (`pageSize != 0`), called only after all deselected
    * nodes are fully loaded
+   * @internal
    */
   onNodesDeselected?: NodesDeselectedCallback;
   /**
@@ -139,21 +149,21 @@ export interface TreeProps {
 
   /** Contains render overrides for different pieces of the tree component */
   renderOverrides?: {
-    /** Callback to render a node */
+    /** Callback to render a node @internal */
     renderNode?: NodeRenderer;
     /** Callback to render a node checkbox. When a custom node renderer is used, it's responsible for calling this callback. */
     renderCheckbox?: NodeCheckboxRenderer;
   };
 
-  /** @hidden */
+  /** @internal */
   onRender?: () => void;
-  /** @hidden */
+  /** @internal */
   onNodesRender?: () => void;
 
-  /** Properties for node highlighting logic. If not provided, node highlighting is disabled. */
+  /** Properties for node highlighting logic. If not provided, node highlighting is disabled. @internal */
   nodeHighlightingProps?: HighlightableTreeProps;
 
-  /** Properties for cell editing logic. If not provided, cell editing is disabled. */
+  /** Properties for cell editing logic. If not provided, cell editing is disabled. @beta */
   cellEditing?: EditableTreeProps;
 
   /**
@@ -185,8 +195,10 @@ export interface TreeProps {
   rowHeight?: ((node?: TreeNodeItem, index?: number) => number) | number;
 }
 
-/** State for the Tree component  */
-export interface TreeState {
+/** State for the Tree component
+ * @internal
+ */
+interface TreeState {
   prev: {
     dataProvider: TreeDataProvider;
     modelReady: boolean;
@@ -211,16 +223,17 @@ export interface TreeState {
     continue: () => void;
   };
 
-  /** @hidden */
+  /** @internal */
   highlightingEngine?: HighlightingEngine;
 
-  /** @hidden */
+  /** @internal */
   cellEditingEngine?: CellEditingEngine;
 }
 
 /**
- * A Tree React component that uses the core of BeInspireTree, but renders it
- * with Tree and TreeNode from ui-core.
+ * A Tree React component that uses the core of BeInspireTree
+ * but renders with TreeBase and TreeNodeBase from ui-core.
+ * @public
  */
 export class Tree extends React.Component<TreeProps, TreeState> {
 
@@ -240,6 +253,7 @@ export class Tree extends React.Component<TreeProps, TreeState> {
     selectionMode: SelectionMode.Single,
   };
 
+  /** @internal */
   constructor(props: TreeProps, context?: any) {
     super(props, context);
 
@@ -271,6 +285,7 @@ export class Tree extends React.Component<TreeProps, TreeState> {
     });
   }
 
+  /** @internal */
   public static getDerivedStateFromProps(props: TreeProps, state: TreeState): TreeState | null {
     const providerChanged = (props.dataProvider !== state.prev.dataProvider);
     const selectedNodesChanged = (props.selectedNodes !== state.prev.selectedNodes);
@@ -330,6 +345,7 @@ export class Tree extends React.Component<TreeProps, TreeState> {
     return derivedState;
   }
 
+  /** @internal */
   public componentDidMount() {
     this._mounted = true;
     this.assignModelListeners(this.state.model);
@@ -343,6 +359,7 @@ export class Tree extends React.Component<TreeProps, TreeState> {
       this.props.onRender();
   }
 
+  /** @internal */
   public componentWillUnmount() {
     this.dropModelListeners(this.state.model);
     this.dropDataProviderListeners(this.props.dataProvider);
@@ -372,6 +389,7 @@ export class Tree extends React.Component<TreeProps, TreeState> {
       || this.state.model.visible().some((n) => n.isDirty());
   }
 
+  /** @internal */
   public componentDidUpdate(prevProps: TreeProps, prevState: TreeState) {
     this._selectionHandler.selectionMode = this.props.selectionMode!;
 
@@ -674,7 +692,9 @@ export class Tree extends React.Component<TreeProps, TreeState> {
     return 24;
   }
 
-  /** map TreeNodeItem into an InspireNode */
+  /** map TreeNodeItem into an InspireNode
+   * @internal
+   */
   public static inspireNodeFromTreeNodeItem(item: TreeNodeItem, remapper: MapPayloadToInspireNodeCallback<TreeNodeItem>, base?: BeInspireTreeNodeConfig): BeInspireTreeNodeConfig {
     base = base || { text: "" };
     const node: BeInspireTreeNodeConfig = {
@@ -820,6 +840,7 @@ export class Tree extends React.Component<TreeProps, TreeState> {
     };
   }
 
+  /** @internal */
   public render() {
     if (!this.state.modelReady) {
       return (
@@ -907,9 +928,11 @@ export class Tree extends React.Component<TreeProps, TreeState> {
   }
 }
 
-/** @hidden */
+/** @internal
+ * @note Renamed 'Tree' namespace to 'TreeTest' because extract-api does not allow two different release tags for 'Tree.
+ */
 // istanbul ignore next
-export namespace Tree {
+export namespace TreeTest {
   export const enum TestId {
     Node = "tree-node",
     NodeContents = "tree-node-contents",

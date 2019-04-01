@@ -9,12 +9,12 @@ import { PropertyCategoryBlock, PropertyCategoryBlockProps } from "./PropertyCat
 import { PropertyList, PropertyListProps, getPropertyKey } from "./PropertyList";
 import { PropertyCategory } from "../PropertyDataProvider";
 
-/** @hidden */
+/** @internal */
 export interface SelectablePropertyBlockProps extends PropertyCategoryBlockProps, Omit<PropertyListProps, "onColumnChanged" | "columnRatio"> {
   category: PropertyCategory;
 }
 
-/** @hidden */
+/** @internal */
 export interface SelectablePropertyBlockState {
   keyMatched: boolean;
   columnRatio: number;
@@ -22,7 +22,7 @@ export interface SelectablePropertyBlockState {
 
 /**
  * Wrapped PropertyCategoryBlock React component with list of properties and render optimization
- * @hidden
+ * @internal
  */
 export class SelectablePropertyBlock extends React.Component<SelectablePropertyBlockProps, SelectablePropertyBlockState> {
   private readonly _initialRatio = 0.25;

@@ -23,7 +23,9 @@ const Tree = treeWithUnifiedSelection(BasicTree);
 export const RULESET: Ruleset = require("./Hierarchy.json"); // tslint:disable-line: no-var-requires
 let rulesetRegistered = 0;
 
-/** Props for [[VisibilityTree]] component */
+/** Props for [[VisibilityTree]] component
+ * @public
+ */
 export interface VisibilityTreeProps {
   /** An IModel to pull data from */
   imodel: IModelConnection;
@@ -43,8 +45,10 @@ export interface VisibilityTreeProps {
   visibilityHandler?: VisibilityHandler;
 }
 
-/** State for [[VisibilityTree]] component */
-export interface VisibilityTreeState {
+/** State for [[VisibilityTree]] component
+ * @internal
+ */
+interface VisibilityTreeState {
   prevProps: VisibilityTreeProps;
   ruleset: Ruleset;
   dataProvider: IPresentationTreeDataProvider;
@@ -55,6 +59,7 @@ export interface VisibilityTreeState {
  * A tree component that shows a subject - model - category - element
  * hierarchy along with checkboxes that represent and allow changing
  * the display of those instances.
+ * @public
  */
 export class VisibilityTree extends React.PureComponent<VisibilityTreeProps, VisibilityTreeState> {
 
@@ -435,6 +440,9 @@ interface CategoryAndModelId {
   categoryId: Id64String;
   modelId: Id64String;
 }
+
+// cSpell:ignore printf
+
 class ElementCategoryAndModelRequestor extends DelayedRequestor<Id64String, CategoryAndModelId> {
   protected createResultIterator(elementIds: Id64String[]): AsyncIterableIterator<{ id: Id64String, modelId: Id64String, categoryId: Id64String }> {
     const q = `

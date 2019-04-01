@@ -7,7 +7,9 @@
 import { ItemProps, StringGetter } from "./ItemProps";
 import { PropsHelper } from "../utils/PropsHelper";
 
-/** Base state for any 'stateful' React component */
+/** Base state for any 'stateful' React component
+ * @public
+ */
 export interface BaseItemState {
   isVisible?: boolean;        // Default - true
   isEnabled?: boolean;        // Default - true
@@ -15,7 +17,9 @@ export interface BaseItemState {
   isPressed?: boolean;        // Default - false
 }
 
-/** The base class for Items. */
+/** The base class for Items.
+ * @public
+ */
 export abstract class ItemDefBase {
   private _label: string | StringGetter = "";
   private _tooltip: string | StringGetter = "";

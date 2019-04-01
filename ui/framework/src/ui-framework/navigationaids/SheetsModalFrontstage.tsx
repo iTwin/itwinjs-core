@@ -14,7 +14,9 @@ import { UiFramework } from "../UiFramework";
 import { SheetData } from "./SheetNavigationAid";
 import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
 
-/** Data about a sheet card */
+/** Data about a sheet card
+ * @alpha
+ */
 export interface CardInfo {
   index: number;
   label: string;
@@ -23,16 +25,22 @@ export interface CardInfo {
   viewId: any;
 }
 
-/** Arguments for CardSelectedEvent */
+/** Arguments for CardSelectedEvent
+ * @alpha
+ */
 export interface CardSelectedEventArgs {
   id: any;
   index: number;
 }
 
-/** Class for CardSelectedEvent */
+/** Class for CardSelectedEvent
+ * @alpha
+ */
 export class CardSelectedEvent extends UiEvent<CardSelectedEventArgs> { }
 
-/** Modal frontstage displaying sheet information in cards. */
+/** Modal frontstage displaying sheet information in cards.
+ * @alpha
+ */
 export class SheetsModalFrontstage implements ModalFrontstageInfo {
   public title: string = UiFramework.i18n.translate("UiFramework:navigationAid.sheetsModalFrontstage");
   private _cards: CardInfo[] = [];
@@ -80,21 +88,25 @@ export class SheetsModalFrontstage implements ModalFrontstageInfo {
   }
 }
 
-/** Properties for [[CardContainer]] */
+/** Properties for [[CardContainer]]
+ * @alpha
+ */
 export interface CardContainerProps {
   cards: CardInfo[];
   searchValue: string;
   connection: IModelConnection;
 }
 
-/** Displays cards in SheetModalFrontstage */
+/** Displays cards in SheetModalFrontstage
+ * @alpha
+ */
 export class CardContainer extends React.Component<CardContainerProps> {
   private static _cardSelectedEvent: CardSelectedEvent = new CardSelectedEvent();
 
   /** Get CardSelectedEvent event */
   public static get onCardSelectedEvent(): CardSelectedEvent { return CardContainer._cardSelectedEvent; }
 
-  /** @hidden */
+  /** @internal */
   public render() {
     return (
       <div className="uifw-sheets-scrollview">
@@ -155,7 +167,9 @@ export class CardContainer extends React.Component<CardContainerProps> {
   }
 }
 
-/** Properties for [[SheetCard]] */
+/** Properties for [[SheetCard]]
+ * @alpha
+ */
 export interface SheetCardProps {
   label: string;
   index: number;
@@ -164,13 +178,17 @@ export interface SheetCardProps {
   onClick: () => void;
 }
 
-/** State for [[SheetCard]] */
-export interface SheetCardState {
+/** State for [[SheetCard]]
+ * @internal
+ */
+interface SheetCardState {
   isActive: boolean;
   isPressed: boolean;
 }
 
-/** Displays information about an individual sheet */
+/** Displays information about an individual sheet
+ * @alpha
+ */
 export class SheetCard extends React.Component<SheetCardProps, SheetCardState> {
   constructor(props: SheetCardProps) {
     super(props);
@@ -190,7 +208,6 @@ export class SheetCard extends React.Component<SheetCardProps, SheetCardState> {
       this.setState({ isPressed: false });
   }
 
-  /** @hidden */
   public render() {
     const { label, index, iconSpec } = this.props;
 

@@ -8,7 +8,9 @@ import * as React from "react";
 import "./LoadingSpinner.scss";
 import { Spinner, SpinnerProps } from "./Spinner";
 
-/** Properties for [[LoadingSpinner]] component */
+/** Properties for [[LoadingSpinner]] component
+ * @public
+ */
 export interface LoadingSpinnerProps extends SpinnerProps {
   /** Message (text) displayed */
   message?: string;
@@ -18,6 +20,7 @@ export interface LoadingSpinnerProps extends SpinnerProps {
 
 /**
  * A loading spinner component.
+ * @public
  */
 export class LoadingSpinner extends React.Component<LoadingSpinnerProps> {
   public static defaultProps: Partial<LoadingSpinnerProps> = {
@@ -34,5 +37,3 @@ export class LoadingSpinner extends React.Component<LoadingSpinnerProps> {
     );
   }
 }
-
-export default LoadingSpinner;

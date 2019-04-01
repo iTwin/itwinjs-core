@@ -20,17 +20,20 @@ import { UiEvent } from "@bentley/ui-core";
 import { COLOR_THEME_DEFAULT } from "./theme/ThemeManager";
 
 /** UiVisibility Event Args interface.
+ * @beta
  */
 export interface UiVisibilityEventArgs {
   visible: boolean;
 }
 
 /** UiVisibility Event class.
+ * @beta
  */
 export class UiVisibilityChangedEvent extends UiEvent<UiVisibilityEventArgs> { }
 
 /**
  * Manages the Redux store, I18N service and iModel, Project and Login services for the ui-framework package.
+ * @public
  */
 export class UiFramework {
   private static _projectServices?: ProjectServices;
@@ -41,8 +44,21 @@ export class UiFramework {
   private static _frameworkStateKeyInStore: string = "frameworkState";  // default name
   private static _isUiVisible: boolean = true;
 
-  /** Get Show Ui event. */
+  /** Get Show Ui event.
+   * @beta
+   */
   public static readonly onUiVisibilityChanged = new UiVisibilityChangedEvent();
+
+  /**
+   * Called by IModelApp to initialize the UiFramework
+   * @param store The single redux store created by the IModelApp.
+   * @param i18n The internationalization service created by the IModelApp.
+   * @param oidcConfig Configuration for authenticating user.
+   * @param frameworkStateKey The name of the key used by the IModelApp when adding the UiFramework state into the Redux store. If not defined "frameworkState" is assumed.
+   */
+  public static async initialize(store: Store<any>, i18n: I18N, oidcConfig?: OidcFrontendClientConfiguration, frameworkStateKey?: string): Promise<any> {
+    return this.initializeEx(store, i18n, oidcConfig, frameworkStateKey);
+  }
 
   /**
    * Called by IModelApp to initialize the UiFramework
@@ -52,8 +68,10 @@ export class UiFramework {
    * @param frameworkStateKey The name of the key used by the IModelApp when adding the UiFramework state into the Redux store. If not defined "frameworkState" is assumed.
    * @param projectServices Optional IModelApp defined projectServices.If not specified DefaultProjectServices will be used.
    * @param iModelServices Optional IModelApp defined iModelServices.If not specified DefaultIModelServices will be used.
+   *
+   * @internal
    */
-  public static async initialize(store: Store<any>, i18n: I18N, oidcConfig?: OidcFrontendClientConfiguration, frameworkStateKey?: string, projectServices?: ProjectServices, iModelServices?: IModelServices) {
+  public static async initializeEx(store: Store<any>, i18n: I18N, oidcConfig?: OidcFrontendClientConfiguration, frameworkStateKey?: string, projectServices?: ProjectServices, iModelServices?: IModelServices): Promise<any> {
     UiFramework._store = store;
     UiFramework._i18n = i18n;
     if (frameworkStateKey)
@@ -91,6 +109,7 @@ export class UiFramework {
     return UiFramework._frameworkStateKeyInStore;
   }
 
+  /** @beta */
   public static get frameworkState(): FrameworkState | undefined {
     // tslint:disable-next-line:no-string-literal
     return UiFramework.store.getState()[UiFramework.frameworkStateKey];
@@ -108,12 +127,14 @@ export class UiFramework {
     return UiFramework._i18n;
   }
 
+  /** @internal */
   public static get projectServices(): ProjectServices {
     if (!UiFramework._projectServices)
       throw new Error(UiFramework._complaint);
     return UiFramework._projectServices!;
   }
 
+  /** @internal */
   public static get iModelServices(): IModelServices {
     if (!UiFramework._iModelServices)
       throw new Error(UiFramework._complaint);
@@ -136,22 +157,24 @@ export class UiFramework {
     return UiFramework.frameworkState ? UiFramework.frameworkState.configurableUiState.snapMode : SnapMode.NearestKeypoint;
   }
 
+  /** @beta */
   public static getIsUiVisible() {
     return this._isUiVisible;
   }
 
+  /** @beta */
   public static setIsUiVisible(visible: boolean) {
     this._isUiVisible = visible;
     UiFramework.onUiVisibilityChanged.emit({ visible });
   }
 
+  /** @beta */
   public static setColorTheme(theme: string) {
     UiFramework.store.dispatch({ type: ConfigurableUiActionId.SetTheme, payload: theme });
   }
 
+  /** @beta */
   public static getColorTheme(): string {
     return UiFramework.frameworkState ? UiFramework.frameworkState.configurableUiState.theme : COLOR_THEME_DEFAULT;
   }
 }
-
-export default UiFramework;

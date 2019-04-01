@@ -5,7 +5,7 @@
 /** @module Tree */
 
 import * as React from "react";
-import { Tree } from "./Tree";
+import { TreeTest } from "./Tree";
 import { BeInspireTreeNode } from "./BeInspireTree";
 import { TreeNodeItem } from "../TreeDataProvider";
 import {
@@ -22,7 +22,7 @@ import { ImageRenderer } from "../../common/ImageRenderer";
 
 /**
  * Properties for Checkbox in [[TreeNode]]
- * @hidden
+ * @internal
  */
 export interface NodeCheckboxProps extends Omit<CheckboxProps, "onClick"> {
   onClick: (node: BeInspireTreeNode<TreeNodeItem>, newState: CheckBoxState) => void;
@@ -30,7 +30,7 @@ export interface NodeCheckboxProps extends Omit<CheckboxProps, "onClick"> {
 
 /**
  * Properties for [[TreeNode]] React component
- * @hidden
+ * @internal
  */
 export interface TreeNodeProps {
   node: BeInspireTreeNode<TreeNodeItem>;
@@ -69,7 +69,7 @@ export interface TreeNodeProps {
 
 /**
  * Default component for rendering a node for the [[Tree]]
- * @hidden
+ * @internal
  */
 export class TreeNode extends React.Component<TreeNodeProps> {
   public shouldComponentUpdate(nextProps: TreeNodeProps) {
@@ -106,7 +106,7 @@ export class TreeNode extends React.Component<TreeNodeProps> {
 
     return (
       <TreeNodeBase
-        data-testid={Tree.TestId.Node}
+        data-testid={TreeTest.TestId.Node}
         isExpanded={this.props.node.expanded()}
         isSelected={this.props.node.selected()}
         isLoading={this.props.node.loading()}
@@ -140,13 +140,17 @@ function doPropsDiffer(props1: TreeNodeProps, props2: TreeNodeProps) {
     || props1.imageLoader !== props2.imageLoader;
 }
 
-/** Properties for [[TreeNodeIcon]] React component */
+/** Properties for [[TreeNodeIcon]] React component
+ * @public
+ */
 export interface TreeNodeIconProps extends React.Attributes {
   node: BeInspireTreeNode<TreeNodeItem>;
   imageLoader: ITreeImageLoader;
 }
 
-/** React component that renders tree node icons */
+/** React component that renders tree node icons
+ * @public
+ */
 export const TreeNodeIcon: React.FunctionComponent<TreeNodeIconProps> = ({ imageLoader, node }) => { // tslint:disable-line:variable-name
   let image: Image | undefined;
 

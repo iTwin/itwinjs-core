@@ -12,6 +12,7 @@ import { TypeConverterManager } from "../converters/TypeConverterManager";
 
 import "./TextEditor.scss";
 
+/** @internal */
 interface TextEditorState {
   inputValue: string;
   readonly: boolean;
@@ -20,12 +21,14 @@ interface TextEditorState {
   maxLength?: number;
 }
 
-/** TextEditor React component that is a property editor with text input  */
+/** TextEditor React component that is a property editor with text input
+ * @beta
+ */
 export class TextEditor extends React.PureComponent<PropertyEditorProps, TextEditorState> implements TypeEditor {
   private _input: HTMLInputElement | null = null;
   private _isMounted = false;
 
-  /** @hidden */
+  /** @internal */
   public readonly state: Readonly<TextEditorState> = {
     inputValue: "",
     readonly: false,
@@ -63,15 +66,18 @@ export class TextEditor extends React.PureComponent<PropertyEditorProps, TextEdi
       });
   }
 
+  /** @internal */
   public componentDidMount() {
     this._isMounted = true;
     this.setStateFromProps(); // tslint:disable-line:no-floating-promises
   }
 
+  /** @internal */
   public componentWillUnmount() {
     this._isMounted = false;
   }
 
+  /** @internal */
   public componentDidUpdate(prevProps: PropertyEditorProps) {
     if (this.props.propertyRecord !== prevProps.propertyRecord) {
       this.setStateFromProps(); // tslint:disable-line:no-floating-promises
@@ -122,6 +128,7 @@ export class TextEditor extends React.PureComponent<PropertyEditorProps, TextEdi
       );
   }
 
+  /** @internal */
   public render() {
     const className = classnames("cell", "components-cell-editor", "components-text-editor");
 

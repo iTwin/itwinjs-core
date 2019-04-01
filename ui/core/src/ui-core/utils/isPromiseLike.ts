@@ -4,7 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Utilities */
 
-/** Checks if the specified argument is a promise */
+/** Checks if the specified argument is a promise
+ * @internal
+ */
 export function isPromiseLike(obj: unknown): obj is PromiseLike<unknown> {
   return !!(obj && (typeof obj === "object") && (typeof (obj as any).then === "function"));
 }

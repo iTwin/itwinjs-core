@@ -11,7 +11,8 @@ import { WidgetState } from "./WidgetDef";
 import { StringGetter } from "../shared/ItemProps";
 import { ConfigurableUiControlConstructor } from "../configurableui/ConfigurableUiControl";
 
-/** Properties for a Widget.
+/** Properties for a [Widget]($framework). component.
+ * @public
  */
 export interface WidgetProps extends IconProps {
   /** Defines the SyncUi event Ids that will trigger the stateFunc to run to determine the state of the widget. */
@@ -56,7 +57,9 @@ export interface WidgetProps extends IconProps {
   priority?: number;
 }
 
-/** ConfigurableUi Widget React component.
+/** Widget React component.
+ * A Widget is a collection of UI components tied to a particular Zone that allows the user to view and/or modify data relevant to their current context.
+ * @public
  */
 export class Widget extends React.Component<WidgetProps> {
 

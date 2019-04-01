@@ -1,6 +1,6 @@
 # Widgets
 
-A **Widget** is a collection of UI components tied to a particular zone that allow the user to view and/or modify data relevant to their current context.
+A **Widget** is a collection of UI components tied to a particular zone that allows the user to view and/or modify data relevant to their current context.
 A Widget is hosted in either a [Zone]($framework) or [StagePanel]($framework) that are part of a [Frontstage]($framework).
 The [Widget]($framework) React component is listed in the `widgets` Prop of a Zone React component or a StagePanel React component.
 

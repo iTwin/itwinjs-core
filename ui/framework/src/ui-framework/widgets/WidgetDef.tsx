@@ -17,12 +17,10 @@ import { StringGetter } from "../shared/ItemProps";
 
 import { Direction } from "@bentley/ui-ninezone";
 import { ItemList } from "../shared/ItemMap";
-
-// -----------------------------------------------------------------------------
-// WidgetDef and sub-interfaces
-// -----------------------------------------------------------------------------
+import { UiEvent } from "@bentley/ui-core";
 
 /** Widget state enum.
+ * @public
  */
 export enum WidgetState {
   /** Widget tab is visible and active and its contents are visible */
@@ -35,7 +33,21 @@ export enum WidgetState {
   Floating,
 }
 
+/** Widget State Changed Event Args interface.
+ * @public
+ */
+export interface WidgetStateChangedEventArgs {
+  widgetDef: WidgetDef;
+  widgetState: WidgetState;
+}
+
+/** Widget State Changed Event class.
+ * @public
+ */
+export class WidgetStateChangedEvent extends UiEvent<WidgetStateChangedEventArgs> { }
+
 /** Widget type enum.
+ * @public
  */
 export enum WidgetType {
   Tool,
@@ -47,6 +59,7 @@ export enum WidgetType {
 }
 
 /** Properties for a Toolbar Widget.
+ * @public
  */
 export interface ToolbarWidgetProps extends WidgetProps {
   horizontalDirection?: Direction;
@@ -57,26 +70,28 @@ export interface ToolbarWidgetProps extends WidgetProps {
 }
 
 /** Properties for a Tool Widget.
+ * @public
  */
 export interface ToolWidgetProps extends ToolbarWidgetProps {
   appButton?: CommandItemDef;
 }
 
 /** Properties for a Navigation Widget.
+ * @public
  */
 export interface NavigationWidgetProps extends ToolbarWidgetProps {
   navigationAidId?: string;
 }
 
 /** Union of all Widget properties.
+ * @public
  */
 export type AnyWidgetProps = WidgetProps | ToolWidgetProps | NavigationWidgetProps;
 
 // -----------------------------------------------------------------------------
-// Widget and subclasses
-// -----------------------------------------------------------------------------
 
 /** A Widget Definition in the 9-Zone Layout system.
+ * @public
  */
 export class WidgetDef {
   private static _sId = 0;
@@ -261,7 +276,7 @@ export class WidgetDef {
 
   public setWidgetState(newState: WidgetState): void {
     this.state = newState;
-    FrontstageManager.onWidgetStateChangedEvent.emit({ widgetDef: this });
+    FrontstageManager.onWidgetStateChangedEvent.emit({ widgetDef: this, widgetState: newState });
   }
 
   public canOpen(): boolean {

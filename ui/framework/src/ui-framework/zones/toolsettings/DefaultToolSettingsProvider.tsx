@@ -19,25 +19,29 @@ import {
   PropertyEditorParams, PropertyEditorParamTypes, SuppressLabelEditorParams, PrimitiveValue, PropertyValueFormat,
 } from "@bentley/imodeljs-frontend";
 
-class TsLabel {
+/** @internal */
+export class TsLabel {
   constructor(public readonly label: string, public isDisabled?: boolean) { }
 }
 
-enum ColumnType {
+/** @internal */
+export enum ColumnType {
   Label,
   Record,
   RecordSpan,
   Empty,
 }
 
-class TsCol {
+/** @internal */
+export class TsCol {
   public type: ColumnType = ColumnType.Empty;
   public name: string = "";
   public columnSpan = 1;
   constructor(readonly columnIndex: number) { }
 }
 
-class TsRow {
+/** @internal */
+export class TsRow {
   public priority = 0;
   public cols: TsCol[] = [];
   constructor(priority: number, numColumns: number) {
@@ -64,8 +68,9 @@ interface TsState {
   labelMap: Map<string, TsLabel>;
 }
 
-/** Component to populate ToolSetting for ToolSettings properties */
-export class DefaultToolSettings extends React.Component<TsProps, TsState> {
+/** Component to populate ToolSetting for ToolSettings properties
+ */
+class DefaultToolSettings extends React.Component<TsProps, TsState> {
   constructor(props: TsProps) {
     super(props);
 
@@ -143,7 +148,7 @@ export class DefaultToolSettings extends React.Component<TsProps, TsState> {
     }
   }
 
-  /** @hidden */
+  /** @internal */
   public componentDidUpdate(prevProps: TsProps, _prevState: TsState) {
     // if the props have changed then we need to update the state
     const prevRecord = prevProps.rows;
@@ -259,7 +264,9 @@ export class DefaultToolSettings extends React.Component<TsProps, TsState> {
   }
 }
 
-/** ToolUiProvider class that informs ConfigurableUi that Tool Settings are provided for the specified tool. */
+/** ToolUiProvider class that informs ConfigurableUi that Tool Settings are provided for the specified tool.
+ * @internal
+ */
 export class DefaultToolSettingsProvider extends ToolUiProvider {
   public rows: TsRow[] = [];
   public valueMap = new Map<string, ToolSettingsPropertyRecord>();

@@ -27,7 +27,7 @@ export interface FrontstageLaunchBackstageItemProps extends BackstageItemProps {
  */
 export class FrontstageLaunchBackstageItem extends React.PureComponent<FrontstageLaunchBackstageItemProps, BackstageItemState> {
 
-  /** @hidden */
+  /** @internal */
   public readonly state: Readonly<BackstageItemState>;
   private _componentUnmounting = false;  // used to ensure _handleSyncUiEvent callback is not processed after componentWillUnmount is called
   private _stateSyncIds: string[] = [];  // local version of syncId that are lower cased

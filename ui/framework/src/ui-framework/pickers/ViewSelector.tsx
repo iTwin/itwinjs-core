@@ -6,16 +6,20 @@
 
 import * as React from "react";
 import { ViewUtilities } from "../utils/ViewUtilities";
-import ListPicker, { ListItem, ListItemType } from "./ListPicker";
+import { ListPicker, ListItem, ListItemType } from "./ListPicker";
 import { IModelApp, Viewport, IModelConnection } from "@bentley/imodeljs-frontend";
 import { UiFramework } from "../UiFramework";
 
-/** Properties for the [[ViewSelector]] component */
+/** Properties for the [[ViewSelector]] component
+ * @beta
+ */
 export interface ViewSelectorProps {
   imodel?: IModelConnection;
 }
 
-/** Properties for the [[ViewSelector]] component */
+/** Properties for the [[ViewSelector]] component
+ * @beta
+ */
 export interface ViewSelectorState {
   items: ListItem[];
   selectedViewId: string | null;
@@ -23,7 +27,9 @@ export interface ViewSelectorState {
   initialized: boolean;
 }
 
-/** View Selector React component */
+/** View Selector React component
+ * @beta
+ */
 export class ViewSelector extends React.Component<ViewSelectorProps, ViewSelectorState> {
   /** Creates a ViewSelector */
   constructor(props: ViewSelectorProps) {
@@ -213,5 +219,3 @@ export class ViewSelector extends React.Component<ViewSelectorProps, ViewSelecto
     );
   }
 }
-
-export default ViewSelector;

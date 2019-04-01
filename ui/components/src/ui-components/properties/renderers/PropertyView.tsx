@@ -11,7 +11,9 @@ import { SharedRendererProps } from "./PropertyRenderer";
 import "./PropertyView.scss";
 import { PropertyValueFormat } from "@bentley/imodeljs-frontend";
 
-/** Properties of [[PropertyView]] React component */
+/** Properties of [[PropertyView]] React component
+ * @public
+ */
 export interface PropertyViewProps extends SharedRendererProps {
   /** Property label as a React element */
   labelElement: React.ReactNode;
@@ -21,6 +23,7 @@ export interface PropertyViewProps extends SharedRendererProps {
 
 /**
  * A React component that renders property as label/value pair
+ * @public
  */
 export class PropertyView extends React.Component<PropertyViewProps> {
 
@@ -63,6 +66,7 @@ export class PropertyView extends React.Component<PropertyViewProps> {
     return undefined;
   }
 
+  /** @internal */
   public render() {
     const ratio = this.props.columnRatio ? this.props.columnRatio : 0.25;
 

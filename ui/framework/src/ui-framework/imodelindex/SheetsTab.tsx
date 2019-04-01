@@ -2,6 +2,8 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+/** @module IModelIndex */
+
 import * as React from "react";
 import * as classnames from "classnames";
 import { IModelConnection, ViewState } from "@bentley/imodeljs-frontend";
@@ -13,6 +15,7 @@ import { Id64String } from "@bentley/bentleyjs-core";
 import { UiFramework } from "../../ui-framework";
 import "./SheetsTab.scss";
 
+/** @internal */
 export interface SheetsProps {
   /** IModelConnection */
   iModelConnection: IModelConnection;
@@ -39,6 +42,7 @@ interface SheetsState {
 
 /**
  * SheetsTab
+ * @internal
  */
 export class SheetsTab extends React.Component<SheetsProps, SheetsState> {
   private _timer = new Timer(300);
@@ -60,22 +64,22 @@ export class SheetsTab extends React.Component<SheetsProps, SheetsState> {
 
   /** filter the views */
   private async _handleSearchChanged(value: string) {
-    this.setState({filter: value});
+    this.setState({ filter: value });
   }
 
   /** show details or thumbnail view */
   private _onChangeView(_detailsView: boolean) {
-    this.setState( { detailsView: _detailsView }, () => { this._updateHeaderContent(); } );
+    this.setState({ detailsView: _detailsView }, () => { this._updateHeaderContent(); });
   }
 
   /* sheet has been selected */
   private _onSheetViewsSelected(views: ViewState[]) {
-    this.setState ({ selectedViews: views, isOpenDisabled: views.length === 0 });
+    this.setState({ selectedViews: views, isOpenDisabled: views.length === 0 });
   }
 
   /* open into the iModel */
   private _onOpen = () => {
-    this.setState ({ isOpenDisabled: true });
+    this.setState({ isOpenDisabled: true });
 
     const ids: Id64String[] = [];
     this.state.selectedViews.forEach((view: ViewState) => { ids.push(view.id); });
@@ -85,7 +89,7 @@ export class SheetsTab extends React.Component<SheetsProps, SheetsState> {
   private _updateHeaderContent() {
     const classThumbnails = classnames("viewtype icon icon-thumbnails", !this.state.detailsView && "active");
     const classDetails = classnames("viewtype icon icon-list", this.state.detailsView && "active");
-    this.props.onAddHeader (
+    this.props.onAddHeader(
       <>
         <SearchBox placeholder="Search Views..." onValueChanged={this._handleSearchChanged.bind(this)} />
         <span className={classDetails} title="List" onClick={this._onChangeView.bind(this, true)} />
@@ -96,7 +100,7 @@ export class SheetsTab extends React.Component<SheetsProps, SheetsState> {
   private _onViewsInitialized(views: ViewDefinitionProps[]) {
     if (!SheetsTab._viewsInitialized) {
       if (views.length === 0) {
-        this.setState( {showPrompt: true }, () => {
+        this.setState({ showPrompt: true }, () => {
           this._timer.setOnExecute(() => this._updatePercent!());
           this._timer.start();
         });
@@ -109,7 +113,7 @@ export class SheetsTab extends React.Component<SheetsProps, SheetsState> {
     if (this.state.percent === 100) {
       this.props.onSetCategory(1);
     } else {
-      this.setState({percent: this.state.percent + 10}, () => { this._timer.start(); });
+      this.setState({ percent: this.state.percent + 10 }, () => { this._timer.start(); });
     }
   }
 
@@ -117,9 +121,9 @@ export class SheetsTab extends React.Component<SheetsProps, SheetsState> {
     return (
       <div className="no-views-alert">
         <span>No saved views were found.</span>
-        <br/>
+        <br />
         <span>Switching you to the 3D Models tab...</span>
-        <LoadingBar style={{marginTop: "25px"}} barHeight={2} percent={this.state.percent} />
+        <LoadingBar style={{ marginTop: "25px" }} barHeight={2} percent={this.state.percent} />
       </div>
     );
   }

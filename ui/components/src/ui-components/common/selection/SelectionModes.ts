@@ -4,7 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Common */
 
-/** Selection mode flags for Table and Tree row selection  */
+/** Selection mode flags for Table and Tree row selection
+ * @public
+ */
 export enum SelectionModeFlags {
   SelectionLimitOne = 1 << 0,
   DragEnabled = 1 << 1,
@@ -12,7 +14,9 @@ export enum SelectionModeFlags {
   KeysEnabled = 1 << 3,
 }
 
-/** Selection modes for Table and Tree row selection */
+/** Selection modes for Table and Tree row selection
+ * @public
+ */
 export enum SelectionMode {
   /** Only one item selected at a time. */
   Single = SelectionModeFlags.SelectionLimitOne,
@@ -24,7 +28,9 @@ export enum SelectionMode {
   SingleAllowDeselect = SelectionModeFlags.SelectionLimitOne | SelectionModeFlags.ToggleEnabled,
 }
 
-/** Determines if a SelectionMode is active */
+/** Determines if a SelectionMode is active
+ * @public
+ */
 export const hasFlag = (selectionMode: SelectionMode, flag: SelectionModeFlags): boolean => {
   return (selectionMode & flag) !== 0;
 };

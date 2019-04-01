@@ -9,7 +9,9 @@ import * as classnames from "classnames";
 import { CommonProps } from "../utils/Props";
 import "./ImageCheckBox.scss";
 
-/** Properties for the [[ImageCheckBox]] component */
+/** Properties for the [[ImageCheckBox]] component
+ * @public
+ */
 export interface ImageCheckBoxProps extends CommonProps {
   /** Image for the "checked" state */
   imageOn: string;
@@ -26,6 +28,7 @@ export interface ImageCheckBoxProps extends CommonProps {
 /**
  * ImageCheckBox React component
  * Component to show a checked or unchecked image'
+ * @public
  */
 export class ImageCheckBox extends React.Component<ImageCheckBoxProps> {
 
@@ -46,7 +49,7 @@ export class ImageCheckBox extends React.Component<ImageCheckBoxProps> {
     e.stopPropagation();
   }
 
-  /** @hidden */
+  /** @internal */
   public render() {
     const checkBoxClass = classnames("core-image-checkbox", this.props.className);
     const imageClass = classnames("image icon", this.props.checked ? this.props.imageOn : this.props.imageOff);
@@ -58,5 +61,3 @@ export class ImageCheckBox extends React.Component<ImageCheckBoxProps> {
     );
   }
 }
-
-export default ImageCheckBox;

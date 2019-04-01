@@ -11,15 +11,19 @@ import "./FilteringInput.scss";
 import UiComponents from "../UiComponents";
 import { Spinner, SpinnerSize } from "@bentley/ui-core";
 
-/** [[FilteringInput]] React Component state */
-export interface FilteringInputState {
+/** [[FilteringInput]] React Component state
+ * @internal
+ */
+interface FilteringInputState {
   /** A string which will be used for search */
   searchText: string;
-  /** @hidden */
+  /** @internal */
   context: InputContext;
 }
 
-/** [[FilteringInput]] React Component properties */
+/** [[FilteringInput]] React Component properties
+ * @public
+ */
 export interface FilteringInputProps {
   /** Filtering should start */
   onFilterStart: (searchText: string) => void;
@@ -35,7 +39,7 @@ export interface FilteringInputProps {
 
 /**
  * Enumeration of possible component contexts
- * @hidden
+ * @internal
  */
 export enum InputContext {
   /** Component is ready to filter */
@@ -48,7 +52,9 @@ export enum InputContext {
   FilteringFinishedWithNoStepping,
 }
 
-/** A helper component for filtering trees and stepping through results */
+/** A helper component for filtering trees and stepping through results
+ * @public
+ */
 export class FilteringInput extends React.Component<FilteringInputProps, FilteringInputState> {
   constructor(props: FilteringInputProps) {
     super(props);

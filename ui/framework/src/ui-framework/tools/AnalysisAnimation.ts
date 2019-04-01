@@ -11,7 +11,9 @@ import { BeButtonEvent, EventHandled, IModelApp, PrimitiveTool, Viewport } from 
 import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager";
 import { AnalysisAnimationToolSettingsProvider } from "./AnalysisAnimationToolSettings";
 
-/** Tool that shows animation of Analysis information store as a 'special' property in the display style. */
+/** Tool that shows animation of Analysis information stored as a 'special' property in the display style.
+ * @public
+ */
 export class AnalysisAnimationTool extends PrimitiveTool {
   public static toolId = "AnalysisAnimation";  // used to look up labels and to register this tool
   public readonly points: Point3d[] = [];

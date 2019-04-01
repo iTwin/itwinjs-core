@@ -7,7 +7,9 @@
 import * as React from "react";
 import * as classnames from "classnames";
 
-/** Properties for [[Select]] component */
+/** Properties for [[Select]] component
+ * @public
+ */
 export interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
   /** options for select dropdown.
    * @example
@@ -29,7 +31,9 @@ export interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElemen
   options: string[] | { [key: string]: string };
 }
 
-/** Basic select component */
+/** Basic select component
+ * @public
+ */
 export class Select extends React.Component<SelectProps> {
   public render(): JSX.Element {
     const showPlaceholder = !!this.props.placeholder && !this.props.value && !this.props.defaultValue;
@@ -54,4 +58,3 @@ export class Select extends React.Component<SelectProps> {
     );
   }
 }
-export default Select;

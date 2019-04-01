@@ -4,5 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Utilities */
 
-/** Used to omit properties in a given interface */
+/** Used to omit properties in a given interface
+ * @public
+ */
 export type Omit<T, K> = Pick<T, Exclude<keyof T, K>>;

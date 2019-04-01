@@ -22,11 +22,12 @@ import { RegisteredRuleset, NodeKey, NodePathElement, isInstanceNodeKey } from "
 import { treeWithFilteringSupport, PresentationTreeDataProvider, IPresentationTreeDataProvider } from "@bentley/presentation-components";
 import { Presentation } from "@bentley/presentation-frontend";
 
-export type TreeNodePromise = Promise<DelayLoadedTreeNodeItem | undefined>;
-export type TreeNodeArrayPromise = Promise<DelayLoadedTreeNodeItem[]>;
+type TreeNodePromise = Promise<DelayLoadedTreeNodeItem | undefined>;
+type TreeNodeArrayPromise = Promise<DelayLoadedTreeNodeItem[]>;
 
-/** Model Group used by [[ModelSelectorWidget]] */
-export interface ModelGroup {
+/** Model Group used by [[ModelSelectorWidget]]
+ */
+interface ModelGroup {
   id: string;
   label: string;
   items: ListItem[];
@@ -35,8 +36,9 @@ export interface ModelGroup {
   setEnabled: (item: ListItem[], enabled: boolean) => void;
 }
 
-/** Tree information used in the [[ModelSelectorWidget]] component */
-export interface ModelSelectorTree {
+/** Tree information used in the [[ModelSelectorWidget]] component
+ */
+interface ModelSelectorTree {
   ruleset: RegisteredRuleset;
   dataProvider: ModelSelectorDataProvider;
   filter?: string;
@@ -55,7 +57,7 @@ export interface ModelSelectorTree {
 class ModelSelectorDataProvider implements IPresentationTreeDataProvider {
   private _baseProvider: PresentationTreeDataProvider;
 
-  /** @hidden */
+  /** @internal */
   constructor(imodel: IModelConnection, rulesetId: string) {
     this._baseProvider = new PresentationTreeDataProvider(imodel, rulesetId);
   }
@@ -118,15 +120,19 @@ class ModelSelectorDataProvider implements IPresentationTreeDataProvider {
   });
 }
 
-/** Properties for the [[ModelSelectorWidget]] component */
+/** Properties for the [[ModelSelectorWidget]] component
+ * @beta
+ */
 export interface ModelSelectorWidgetProps {
   iModelConnection: IModelConnection;
   allViewports?: boolean;
   activeView?: Viewport;
 }
 
-/** State for the [[ModelSelectorWidget]] component */
-export interface ModelSelectorWidgetState {
+/** State for the [[ModelSelectorWidget]] component
+ * @internal
+ */
+interface ModelSelectorWidgetState {
   expand: boolean;
   activeGroup: ModelGroup;
   showOptions: boolean;
@@ -134,7 +140,9 @@ export interface ModelSelectorWidgetState {
   activeView: Viewport;
 }
 
-/** Model Selector [[WidgetControl]] */
+/** Model Selector [[WidgetControl]]
+ * @beta
+ */
 export class ModelSelectorWidgetControl extends WidgetControl {
   /** Creates a ModelSelectorDemoWidget */
   constructor(info: ConfigurableCreateInfo, options: any) {
@@ -144,7 +152,9 @@ export class ModelSelectorWidgetControl extends WidgetControl {
   }
 }
 
-/** Model Selector Widget React component */
+/** Model Selector Widget React component
+ * @beta
+ */
 export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProps, ModelSelectorWidgetState> {
   private _removeSelectedViewportChanged?: () => void;
   private _groups: ModelGroup[] = [];
@@ -1108,7 +1118,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
     return;
   }
 
-  /** @hidden */
+  /** @internal */
   public render() {
     return (
       <div className="uifw-widget-picker">

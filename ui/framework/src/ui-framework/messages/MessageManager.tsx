@@ -34,12 +34,14 @@ class MessageBoxCallbacks {
 }
 
 /** [[MessageAddedEvent]] arguments.
+ * @public
  */
 export interface MessageAddedEventArgs {
   message: NotifyMessageDetails;
 }
 
 /** Activity Message Event Args class.
+ * @public
  */
 export interface ActivityMessageEventArgs {
   message: string;
@@ -49,6 +51,7 @@ export interface ActivityMessageEventArgs {
 }
 
 /** Input Field Message Event Args class.
+ * @public
  */
 export interface InputFieldMessageEventArgs {
   target: Element;
@@ -56,22 +59,27 @@ export interface InputFieldMessageEventArgs {
 }
 
 /** Message Added Event class.
+ * @public
  */
 export class MessageAddedEvent extends UiEvent<MessageAddedEventArgs> { }
 
 /** Activity Message Added Event class.
+ * @public
  */
 export class ActivityMessageUpdatedEvent extends UiEvent<ActivityMessageEventArgs> { }
 
 /** Activity Message Cancelled Event class.
+ * @public
  */
 export class ActivityMessageCancelledEvent extends UiEvent<{}> { }
 
 /** Input Field Message Added Event class
+ * @public
  */
 export class InputFieldMessageAddedEvent extends UiEvent<InputFieldMessageEventArgs> { }
 
 /** Input Field Message Removed Event class.
+ * @public
  */
 export class InputFieldMessageRemovedEvent extends UiEvent<{}> { }
 
@@ -89,6 +97,7 @@ class OngoingActivityMessage {
 }
 
 /** The MessageManager class manages messages and prompts. It is used by the [[AppNotificationManager]] class.
+ * @public
  */
 export class MessageManager {
   private static _maxCachedMessages = 500;
@@ -253,7 +262,7 @@ export class MessageManager {
     return severity;
   }
 
-  /** Gets a [[MessageBoxIconType]] based on a given NotifyMessageDetails. */
+  /** Gets a MessageBoxIconType based on a given NotifyMessageDetails. */
   public static getIconType(details: NotifyMessageDetails): MessageBoxIconType {
     let iconType = MessageBoxIconType.NoSymbol;
 

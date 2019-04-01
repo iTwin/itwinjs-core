@@ -2,6 +2,8 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+/** @module IModelIndex */
+
 import * as React from "react";
 import { IModelConnection, SpatialModelState } from "@bentley/imodeljs-frontend";
 import { AccessToken } from "@bentley/imodeljs-clients";
@@ -96,6 +98,7 @@ class DocumentProperty {
   }
 }
 
+/** @internal */
 export interface ModelsProps {
   /** IModelConnection */
   iModelConnection: IModelConnection;
@@ -118,6 +121,7 @@ interface ModelsState {
   showTree: boolean;
 }
 
+/** @internal */
 export class ModelsTab extends React.Component<ModelsProps, ModelsState> {
   private _models: DocumentProperty[] = [];
   private _ruleset?: RegisteredRuleset;
@@ -178,7 +182,7 @@ export class ModelsTab extends React.Component<ModelsProps, ModelsState> {
         const dataProvider = new PresentationTreeDataProvider(this.props.iModelConnection, this._ruleset.id);
         this.enableCheckboxes(dataProvider); // tslint:disable-line:no-floating-promises
         this._dataProvider = dataProvider;
-    });
+      });
   }
 
   private async enableCheckboxes(_dataProvider: PresentationTreeDataProvider, parentNode?: TreeNodeItem) {

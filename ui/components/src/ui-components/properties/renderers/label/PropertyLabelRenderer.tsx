@@ -8,14 +8,17 @@ import * as React from "react";
 
 import "./PropertyLabelRenderer.scss";
 
-/** @hidden */
+/** Base properties for a property label renderer
+ * @public
+ */
 export interface PropertyLabelRendererProps {
   /** Label to be rendered */
   children: string;
+  /** Indicates whether to render a colon after the label */
   renderColon?: boolean;
 }
 
-/** @hidden */
+/** @internal */
 export class PropertyLabelRenderer extends React.PureComponent<PropertyLabelRendererProps> {
   /** Get React CSS style object based on provided offset from the left side */
   public static getStyle(offset?: number): React.CSSProperties {

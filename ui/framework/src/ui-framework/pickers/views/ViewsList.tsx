@@ -9,6 +9,9 @@ import { AccessToken } from "@bentley/imodeljs-clients";
 import { LoadingSpinner } from "@bentley/ui-core";
 import "./ViewsList.scss";
 
+/** Properties for [[ViewsList]] component
+ * @internal
+ */
 export interface ViewsListProps extends CommonProps {
   /** Refresh event: gets called each time the view is changed. Useful to refresh other view-dependent widgets like category and model selector */
   refreshEvent?: BeEvent<(args: any) => void>;
@@ -34,7 +37,7 @@ export interface ViewsListProps extends CommonProps {
   filter: string;
   /** Called when a view is selected */
   onViewsSelected?: (viewState: ViewState[], view: ViewDefinitionProps[]) => void;
-   /** Optional class name for the thumbnail in thumbnail view */
+  /** Optional class name for the thumbnail in thumbnail view */
   thumbnailViewClassName?: string;
   /** Optional class name for the thumbnail in details view */
   detailsViewClassName?: string;
@@ -48,6 +51,7 @@ export interface ViewsListProps extends CommonProps {
   isMultiSelect?: boolean;
 }
 
+/** @internal */
 interface ViewsListState {
   viewDefinitions: ViewDefinitionProps[];
   filteredViewDefinitions: ViewDefinitionProps[];
@@ -57,7 +61,9 @@ interface ViewsListState {
   selectedViews: ViewDefinitionProps[];
 }
 
-/** View List Component with functionality to show thumbnails, handle saved view functionality */
+/** View List Component with functionality to show thumbnails, handle saved view functionality
+ * @internal
+ */
 export class ViewsList extends React.Component<ViewsListProps, ViewsListState> {
   private _viewDefCache: ViewDefinitionProps[] | undefined;
 
@@ -98,7 +104,7 @@ export class ViewsList extends React.Component<ViewsListProps, ViewsListState> {
     }
 
     if (nextProps.detailsView !== this.props.detailsView) {
-      this.setState({detailsView: nextProps.detailsView});
+      this.setState({ detailsView: nextProps.detailsView });
     }
 
     if (nextProps.filter.trim() !== this.props.filter.trim()) {
@@ -149,7 +155,7 @@ export class ViewsList extends React.Component<ViewsListProps, ViewsListState> {
       showHoverIndicator: this.props.showHoverIndicator,
       onClick: this._handleViewSelected.bind(this),
       showThumbnail: this.props.showThumbnails,
-      className: (this.state.detailsView ) ? this.props.detailsViewClassName : this.props.thumbnailViewClassName,
+      className: (this.state.detailsView) ? this.props.detailsViewClassName : this.props.thumbnailViewClassName,
     };
     return props;
   }
@@ -184,11 +190,11 @@ export class ViewsList extends React.Component<ViewsListProps, ViewsListState> {
       this.props.onViewsInitialized(_viewDefProps3d);
 
     // Set new state with JSX Elements and the view definition props
-    this.setState({...this.state, viewDefinitions: _viewDefProps3d, filteredViewDefinitions: [], initialized: true, selectedViews: []});
+    this.setState({ ...this.state, viewDefinitions: _viewDefProps3d, filteredViewDefinitions: [], initialized: true, selectedViews: [] });
   }
 
   /** Handle selecting views by changing it in the selected viewport */
-  private _handleViewSelected = async (view: ViewDefinitionProps) =>  {
+  private _handleViewSelected = async (view: ViewDefinitionProps) => {
     if (!view.id)
       return;
 
@@ -209,15 +215,15 @@ export class ViewsList extends React.Component<ViewsListProps, ViewsListState> {
       const viewStates: ViewState[] = [];
       for (const currrentView of selectedViews) {
         const viewState = await this.props.iModelConnection!.views.load(currrentView.id!);
-        viewStates.push (viewState);
+        viewStates.push(viewState);
       }
-      this.props.onViewsSelected (viewStates, selectedViews);
+      this.props.onViewsSelected(viewStates, selectedViews);
     }
   }
 
-  private async _setFilter (_value: string) {
+  private async _setFilter(_value: string) {
     if (_value === "") {
-      this.setState({...this.state, filter: _value, filteredViewDefinitions: []});
+      this.setState({ ...this.state, filter: _value, filteredViewDefinitions: [] });
     } else {
       // Filter the definitions by user label
       const filteredDefinitions = this.state.viewDefinitions.filter((viewProps: ViewDefinitionProps) => {
@@ -229,7 +235,7 @@ export class ViewsList extends React.Component<ViewsListProps, ViewsListState> {
         return false;
       });
 
-      this.setState({...this.state, filter: _value, filteredViewDefinitions: filteredDefinitions});
+      this.setState({ ...this.state, filter: _value, filteredViewDefinitions: filteredDefinitions });
     }
   }
 
@@ -255,7 +261,7 @@ export class ViewsList extends React.Component<ViewsListProps, ViewsListState> {
     if (isFiltering && views.length === 0) {
       const message = "No views matching " + "'" + this.state.filter + "'.";
       return (
-        <div className="view-list-nosearchresults" style={{fontStyle: "italic"}}>{message}</div>
+        <div className="view-list-nosearchresults" style={{ fontStyle: "italic" }}>{message}</div>
       );
     }
 
@@ -271,12 +277,12 @@ export class ViewsList extends React.Component<ViewsListProps, ViewsListState> {
     const className = classnames("fade-in", this.state.detailsView ? "view-container-listview" : "view-container-thumbnailview");
     return (
       <div className={className}>{views}</div>
-      );
+    );
   }
 
   /** Render list of views */
   public render() {
-    const className = classnames ("vl-content", this.props.className);
+    const className = classnames("vl-content", this.props.className);
     return (
       <div className={className}>
         {!this.state.initialized && this.renderLoading()}
