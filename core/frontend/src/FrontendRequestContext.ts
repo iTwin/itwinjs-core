@@ -4,11 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Utils */
 
-import { Guid, ClientRequestContext, AuthStatus, BentleyError, Logger } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext, AccessToken } from "@bentley/imodeljs-clients";
+import { AuthStatus, BentleyError, ClientRequestContext, Guid, Logger } from "@bentley/bentleyjs-core";
+import { AccessToken, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
 import { IModelApp } from "./IModelApp";
+import { LoggerCategory } from "./LoggerCategory";
 
-const loggingCategory = "imodeljs-frontend";
+const loggerCategory: string = LoggerCategory.FrontendRequestContext;
 
 /**
  * Provides some generic context for downstream server applications to get details of a request that
@@ -33,9 +34,9 @@ export class AuthorizedFrontendRequestContext extends AuthorizedClientRequestCon
    */
   public static async create(activityId: string = Guid.createValue()): Promise<AuthorizedFrontendRequestContext> {
     if (!IModelApp.authorizationClient)
-      throw new BentleyError(AuthStatus.Error, "IModelApp.authorizationClient not initialized", Logger.logError, loggingCategory);
+      throw new BentleyError(AuthStatus.Error, "IModelApp.authorizationClient not initialized", Logger.logError, loggerCategory);
     if (!IModelApp.authorizationClient.hasSignedIn)
-      throw new BentleyError(AuthStatus.Error, "Not signed in", Logger.logError, loggingCategory);
+      throw new BentleyError(AuthStatus.Error, "Not signed in", Logger.logError, loggerCategory);
 
     const accessToken: AccessToken = await IModelApp.authorizationClient.getAccessToken();
     return new AuthorizedFrontendRequestContext(accessToken, activityId);

@@ -3057,6 +3057,14 @@ export const enum LockedStates {
 }
 
 // @public
+export const enum LoggerCategory {
+    FrontendRequestContext = "imodeljs-frontend.FrontendRequestContext",
+    IModelConnection = "imodeljs-frontend.IModelConnection",
+    OidcBrowserClient = "imodeljs-frontend.OidcBrowserClient",
+    OidcIOSClient = "imodeljs-frontend.OidcIOSClient"
+}
+
+// @public
 export class LookViewTool extends ViewManip {
     constructor(vp: ScreenViewport, oneShot?: boolean, isDraggingRequired?: boolean);
     // (undocumented)

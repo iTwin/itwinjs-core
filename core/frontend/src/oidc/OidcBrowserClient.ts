@@ -4,12 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module OIDC */
 
-import { BeEvent, AuthStatus, Logger, BentleyError, ClientRequestContext } from "@bentley/bentleyjs-core";
-import { UserManagerSettings, UserManager, User } from "oidc-client";
-import { OidcClient, IOidcFrontendClient, UserInfo, AccessToken, OidcFrontendClientConfiguration } from "@bentley/imodeljs-clients";
+import { AuthStatus, BeEvent, BentleyError, ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
+import { AccessToken, IOidcFrontendClient, OidcClient, OidcFrontendClientConfiguration, UserInfo } from "@bentley/imodeljs-clients";
+import { User, UserManager, UserManagerSettings } from "oidc-client";
 import { FrontendRequestContext } from "../FrontendRequestContext";
+import { LoggerCategory } from "../LoggerCategory";
 
-const loggingCategory = "imodeljs-frontend.OidcBrowserClient";
+const loggerCategory: string = LoggerCategory.OidcBrowserClient;
 
 /** Utility to generate OIDC/OAuth tokens for frontend applications */
 export class OidcBrowserClient extends OidcClient implements IOidcFrontendClient {
@@ -72,7 +73,7 @@ export class OidcBrowserClient extends OidcClient implements IOidcFrontendClient
    */
   private startSignIn(_requestContext: ClientRequestContext) {
     if (!this._userManager)
-      throw new BentleyError(AuthStatus.Error, "OidcBrowserClient not initialized", Logger.logError, loggingCategory);
+      throw new BentleyError(AuthStatus.Error, "OidcBrowserClient not initialized", Logger.logError, loggerCategory);
     this._userManager.signinRedirect(); // tslint:disable-line:no-floating-promises
   }
 
@@ -104,7 +105,7 @@ export class OidcBrowserClient extends OidcClient implements IOidcFrontendClient
    */
   private startSignOut(_requestContext: ClientRequestContext): void {
     if (!this._userManager)
-      throw new BentleyError(AuthStatus.Error, "OidcBrowserClient not initialized", Logger.logError, loggingCategory);
+      throw new BentleyError(AuthStatus.Error, "OidcBrowserClient not initialized", Logger.logError, loggerCategory);
     this._userManager.signoutRedirect(); // tslint:disable-line:no-floating-promises
   }
 
@@ -141,7 +142,7 @@ export class OidcBrowserClient extends OidcClient implements IOidcFrontendClient
       return this._accessToken;
     if (requestContext)
       requestContext.enter();
-    throw new BentleyError(AuthStatus.Error, "Not signed in.", Logger.logError, loggingCategory);
+    throw new BentleyError(AuthStatus.Error, "Not signed in.", Logger.logError, loggerCategory);
   }
 
   /** Set to true if there's a current authorized user or client (in the case of agent applications).

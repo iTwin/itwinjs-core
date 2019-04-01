@@ -32,6 +32,7 @@ export * from "./GeoServices";
 export * from "./HitDetail";
 export * from "./IModelConnection";
 export * from "./ImageUtil";
+export * from "./LoggerCategory";
 export * from "./Marker";
 export * from "./ModelSelectorState";
 export * from "./ModelState";

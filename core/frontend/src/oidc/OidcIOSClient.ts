@@ -2,10 +2,13 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { BeEvent, AuthStatus, BentleyError, ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
-import { IOidcFrontendClient, AccessToken, OidcClient, UserInfo } from "@bentley/imodeljs-clients";
+/** @module OIDC */
 
-const loggingCategory = "imodeljs-frontend.OidcIOSClient";
+import { AuthStatus, BeEvent, BentleyError, ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
+import { AccessToken, IOidcFrontendClient, OidcClient, UserInfo } from "@bentley/imodeljs-clients";
+import { LoggerCategory } from "../LoggerCategory";
+
+const loggerCategory: string = LoggerCategory.OidcIOSClient;
 
 /** Utility to provide OIDC/OAuth tokens from native ios app to frontend */
 export class OidcIOSClient extends OidcClient implements IOidcFrontendClient {
@@ -88,7 +91,7 @@ export class OidcIOSClient extends OidcClient implements IOidcFrontendClient {
       return this._accessToken;
     if (requestContext)
       requestContext.enter();
-    throw new BentleyError(AuthStatus.Error, "Not authorized.", Logger.logError, loggingCategory);
+    throw new BentleyError(AuthStatus.Error, "Not authorized.", Logger.logError, loggerCategory);
   }
 
   /** Set to true if there's a current authorized user or client (in the case of agent applications).
