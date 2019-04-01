@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { LogLevel } from "@bentley/bentleyjs-core";
 import { IModelToken } from "@bentley/imodeljs-common";
-import { DevTools, IModelApp } from "@bentley/imodeljs-frontend";
+import { DevTools, IModelApp, PingTestResult } from "@bentley/imodeljs-frontend";
 import { assert } from "chai";
 
 describe("DevTools", () => {
@@ -32,8 +32,13 @@ describe("DevTools", () => {
   });
 
   it("can ping backend", async () => {
-    const ret = await devTools.ping(10);
-    assert.isTrue(ret);
+    const pingSummary: PingTestResult = await devTools.ping(10);
+    assert.isDefined(pingSummary);
+    assert.isDefined(pingSummary.min);
+    assert.isDefined(pingSummary.max);
+    assert.isDefined(pingSummary.avg);
+    assert.isTrue(pingSummary.min! <= pingSummary.avg!);
+    assert.isTrue(pingSummary.avg! <= pingSummary.max!);
   });
 
   it("can set log level", async () => {

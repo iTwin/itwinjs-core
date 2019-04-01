@@ -6,6 +6,19 @@ import { LogLevel } from "@bentley/bentleyjs-core";
 import { DevToolsRpcInterface, IModelToken } from "@bentley/imodeljs-common";
 
 /**
+ * Results of the ping test
+ * @internal
+ */
+export interface PingTestResult {
+  /** Minimum time for the ping response. Set to undefined if any one ping didn't get a response. */
+  min: number | undefined;
+  /** Maximum time for the ping response, Set to undefined if any one ping didn't get a response. */
+  max: number | undefined;
+  /** Average time for the ping response. Set to undefined if any one ping didn't get a response. */
+  avg: number | undefined;
+}
+
+/**
  * Internal diagnostic utility for backends
  * @internal
  */
@@ -28,19 +41,47 @@ export class DevTools {
     return DevToolsRpcInterface.getClient().signal(this._iModelToken, signalType);
   }
 
-  /** Sends one or more pings to the backend
+  /** Measures the round trip times for one or more pings to the backend
    * @param count Number of pings to send to the backend
-   * @return true if *all* the pings were received by the backend.
+   * @return Result of ping test.
    */
-  public async ping(count: number): Promise<boolean> {
-    const pings = new Array<Promise<boolean>>(count);
-    for (let ii = 0; ii < count; ii++) {
-      pings[ii] = DevToolsRpcInterface.getClient().ping(this._iModelToken);
-    }
-    const statuses: boolean[] = await Promise.all(pings);
+  public async ping(count: number): Promise<PingTestResult> {
+    const pings = new Array<Promise<number | undefined>>(count);
 
-    const status = statuses.reduce((acc: boolean, curr: boolean) => acc && curr);
-    return status;
+    const startFn = async (): Promise<number> => {
+      return Promise.resolve(Date.now());
+    };
+
+    const pingFn = async (start: number): Promise<number> => {
+      await DevToolsRpcInterface.getClient().ping(this._iModelToken);
+      return Promise.resolve(Date.now() - start);
+    };
+
+    for (let ii = 0; ii < count; ii++)
+      pings[ii] = startFn().then(pingFn).catch(() => Promise.resolve(undefined));
+
+    const pingTimes: Array<number | undefined> = await Promise.all(pings);
+
+    const min: number | undefined = pingTimes.reduce((acc: number | undefined, curr: number | undefined) => {
+      if (!acc) return curr;
+      if (!curr) return acc;
+      return Math.min(acc, curr);
+    }, undefined);
+
+    const max: number | undefined = pingTimes.reduce((acc: number | undefined, curr: number | undefined) => {
+      if (!acc) return curr;
+      if (!curr) return acc;
+      return Math.max(acc, curr);
+    }, undefined);
+
+    const total: number | undefined = pingTimes.reduce((acc: number | undefined, curr: number | undefined) => {
+      if (typeof acc === "undefined") return undefined;
+      if (!curr) return undefined;
+      return acc + curr;
+    }, 0);
+
+    const avg = total ? total / count : undefined;
+    return { min, max, avg };
   }
 
   /** Returns JSON object with backend statistics */

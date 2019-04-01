@@ -1586,7 +1586,7 @@ export class DepthRangeNpc {
 // @internal
 export class DevTools {
     static connectToBackendInstance(iModelToken: IModelToken): DevTools;
-    ping(count: number): Promise<boolean>;
+    ping(count: number): Promise<PingTestResult>;
     setLogLevel(inLoggerCategory: string, newLevel: LogLevel): Promise<LogLevel | undefined>;
     signal(signalType: number): Promise<boolean>;
     stats(): Promise<any>;
@@ -3875,6 +3875,13 @@ export class PerformanceMetrics {
     spfTimes: number[];
     // (undocumented)
     startNewFrame(sceneTime?: number): void;
+}
+
+// @internal
+export interface PingTestResult {
+    avg: number | undefined;
+    max: number | undefined;
+    min: number | undefined;
 }
 
 // @public
