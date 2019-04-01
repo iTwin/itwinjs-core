@@ -184,6 +184,11 @@ class Texture2DCreateParams {
       }
     }
 
+    // Cap texture dimensions to system WebGL capabilities
+    const maxTexSize = System.instance.capabilities.maxTextureSize;
+    targetWidth = Math.min(targetWidth, maxTexSize);
+    targetHeight = Math.min(targetHeight, maxTexSize);
+
     let element: CanvasOrImage = image;
     if (targetWidth !== image.naturalWidth || targetHeight !== image.naturalHeight) {
       // Resize so dimensions are powers-of-two
