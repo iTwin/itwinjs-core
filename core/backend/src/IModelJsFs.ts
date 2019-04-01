@@ -8,7 +8,6 @@
 /** @module Portability */
 
 import * as fs from "fs-extra";
-import { Readable } from "stream";
 
 /* TODO: define File Mode Constants: S_IWUSR, et al. */
 /** Information about a file. See [[IModelJsFs.lstatSync]] */
@@ -43,9 +42,6 @@ export class IModelJsFs {
   /** Create a directory. */
   public static mkdirSync(path: string): void { fs.mkdirSync(path); }
 
-  /** Create a directory (including intermediaries). */
-  public static ensureDirSync(path: string): void { fs.ensureDirSync(path); }
-
   /** Remove a directory. */
   public static rmdirSync(path: string): void { fs.rmdirSync(path); }
 
@@ -63,9 +59,6 @@ export class IModelJsFs {
 
   /** Read file */
   public static readFileSync(path: string): string | Buffer { return fs.readFileSync(path); }
-
-  /** Creates a stream for reading a file. */
-  public static createReadStream(path: string): Readable { return fs.createReadStream(path); }
 
   /** Test if the current user has permission to write to a file. */
   private static isFileWritable(path: string): boolean {

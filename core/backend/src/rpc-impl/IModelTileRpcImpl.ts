@@ -176,15 +176,16 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
   }
 
   public async getTileCacheContainerUrl(_iModelToken: IModelToken, id: CloudStorageContainerDescriptor): Promise<CloudStorageContainerUrl> {
-    if (!IModelHost.useExternalTileCache) {
+    if (!IModelHost.usingExternalTileCache) {
       return CloudStorageContainerUrl.empty();
     }
 
-    return IModelHost.tileCacheService.obtainContainerUrl(id);
+    const expiry = CloudStorageTileCache.getCache().supplyExpiryForContainerUrl(id);
+    return IModelHost.tileCacheService.obtainContainerUrl(id, expiry);
   }
 
   public async supplyResource(_token: IModelToken, name: string): Promise<Readable | undefined> {
-    if (!IModelHost.useExternalTileCache) {
+    if (!IModelHost.usingExternalTileCache) {
       return Promise.resolve(undefined);
     }
 
@@ -192,7 +193,7 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
   }
 
   private cacheTile(iModelToken: IModelToken, treeId: string, contentId: string, content: Promise<Uint8Array>) {
-    if (!IModelHost.useExternalTileCache) {
+    if (!IModelHost.usingExternalTileCache) {
       return;
     }
 

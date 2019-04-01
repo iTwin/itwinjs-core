@@ -428,9 +428,6 @@ export namespace BRepEntity {
 
 export { BriefcaseStatus }
 
-// @internal (undocumented)
-export const builtins: string[];
-
 // @public (undocumented)
 export interface CalloutProps extends GeometricElement2dProps {
     // (undocumented)
@@ -570,8 +567,6 @@ export { ChangeSetStatus }
 export abstract class CloudStorageCache<TContentId, TContentType> {
     constructor();
     // (undocumented)
-    abstract enabled: boolean;
-    // (undocumented)
     abstract formContainerName(id: TContentId): string;
     // (undocumented)
     abstract formResourceName(id: TContentId): string;
@@ -626,15 +621,11 @@ export enum CloudStorageProvider {
     // (undocumented)
     Amazon = 1,
     // (undocumented)
-    Azure = 0,
-    // (undocumented)
-    Local = 3
+    Azure = 0
 }
 
 // @public (undocumented)
 export class CloudStorageTileCache extends CloudStorageCache<TileContentIdentifier, Uint8Array> {
-    // @alpha (undocumented)
-    enabled: boolean;
     // (undocumented)
     formContainerName(id: TileContentIdentifier): string;
     // (undocumented)
@@ -646,7 +637,7 @@ export class CloudStorageTileCache extends CloudStorageCache<TileContentIdentifi
     // (undocumented)
     protected obtainContainerUrl(id: TileContentIdentifier, descriptor: CloudStorageContainerDescriptor): Promise<CloudStorageContainerUrl>;
     // (undocumented)
-    protected requestResource(container: CloudStorageContainerUrl, id: TileContentIdentifier): Promise<Response>;
+    supplyExpiryForContainerUrl(_id: CloudStorageContainerDescriptor): Date;
 }
 
 // @public
@@ -3498,9 +3489,6 @@ export namespace RenderTexture {
 
 export { RepositoryStatus }
 
-// @internal (undocumented)
-export const RESOURCE = "getResource";
-
 // @public (undocumented)
 export class ResponseLike implements Response {
     constructor(data: any);
@@ -3668,9 +3656,7 @@ export abstract class RpcInterface {
     // @internal (undocumented)
     configurationSupplier: RpcConfigurationSupplier | undefined;
     forward<T = any>(parameters: IArguments): Promise<T>;
-    getResource(token: IModelToken, name: string): Promise<Response>;
     static isVersionCompatible(backend: string, frontend: string): boolean;
-    supplyResource(_token: IModelToken, _name: string): Promise<Readable | undefined>;
 }
 
 // @public (undocumented)

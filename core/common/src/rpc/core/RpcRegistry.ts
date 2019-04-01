@@ -33,12 +33,6 @@ export const CURRENT_REQUEST = Symbol.for("@bentley/imodeljs-common/RpcRequest/_
 export const CURRENT_INVOCATION = Symbol.for("@bentley/imodeljs-common/RpcInvocation/__current__");
 
 /** @internal */
-export const RESOURCE = "getResource";
-
-/** @internal */
-export const builtins: string[] = [RESOURCE];
-
-/** @internal */
 export class RpcRegistry {
   private static _instance: RpcRegistry;
 
@@ -188,23 +182,11 @@ export class RpcRegistry {
       if (operationName === "constructor" || operationName === "configurationSupplier")
         return;
 
-      if (!this.checkName(operationName)) {
-        this.interceptOperation(proxy, operationName);
-      }
+      this.interceptOperation(proxy, operationName);
     });
 
     proxy.configuration.onRpcClientInitialized(definition, proxy);
     return proxy;
-  }
-
-  private checkName(name: string) {
-    for (const builtin of builtins) {
-      if (name === builtin) {
-        return true;
-      }
-    }
-
-    return false;
   }
 
   private interceptOperation(proxy: RpcInterface, operation: string) {
@@ -236,13 +218,6 @@ export class RpcRegistry {
         proto[propertyName][OPERATION] = new RpcOperation(definition, propertyName, policy);
       }
     });
-
-    for (const builtin of builtins) {
-      const base = proto[builtin];
-      proto[builtin] = function () { return base.apply(this, arguments); };
-      const policy = base[OPERATION] ? base[OPERATION].policy : new RpcOperationPolicy();
-      proto[builtin][OPERATION] = new RpcOperation(definition, builtin, policy);
-    }
   }
 
   private registerTypes<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>) {

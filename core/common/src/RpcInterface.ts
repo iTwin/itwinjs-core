@@ -4,13 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module RpcInterface */
 
-import { CURRENT_REQUEST, RESOURCE } from "./rpc/core/RpcRegistry";
+import { CURRENT_REQUEST } from "./rpc/core/RpcRegistry";
 import { RpcConfiguration, RpcConfigurationSupplier } from "./rpc/core/RpcConfiguration";
 import * as semver from "semver";
-import { IModelToken } from "./IModel";
 import { RpcRequest } from "./rpc/core/RpcRequest";
-import { Readable } from "stream";
-import { RpcOperation } from "./rpc/core/RpcOperation";
 
 /** @public */
 export interface RpcInterfaceDefinition<T extends RpcInterface = RpcInterface> { prototype: T; name: string; version: string; types: () => Function[]; } // tslint:disable-line:ban-types
@@ -45,20 +42,6 @@ export abstract class RpcInterface {
     request.submit(); // tslint:disable-line:no-floating-promises
     (this as any)[CURRENT_REQUEST] = request;
     return request.response;
-  }
-
-  /** Obtains a named resource from the backend. */
-  @RpcOperation.allowResponseCaching()
-  public async getResource(token: IModelToken, name: string): Promise<Response> {
-    const request = new (this.configuration.protocol.requestType as any)(this, RESOURCE, [token, name]) as RpcRequest;
-    request.submit(); // tslint:disable-line:no-floating-promises
-    (this as any)[CURRENT_REQUEST] = request;
-    return request.rawResponse;
-  }
-
-  /** Override on the backend to fulfill getResource requests. */
-  public async supplyResource(_token: IModelToken, _name: string): Promise<Readable | undefined> {
-    return undefined;
   }
 
   /** @internal */

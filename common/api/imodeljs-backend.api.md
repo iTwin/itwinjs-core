@@ -261,11 +261,7 @@ export class AzureBlobStorage extends CloudStorageService {
     // (undocumented)
     readonly id = CloudStorageProvider.Azure;
     // (undocumented)
-    obtainContainerUrl(id: CloudStorageContainerDescriptor): CloudStorageContainerUrl;
-    // (undocumented)
-    static resourceValidity: number;
-    // (undocumented)
-    static resourceValidityPadding: number;
+    obtainContainerUrl(id: CloudStorageContainerDescriptor, expiry: Date): CloudStorageContainerUrl;
     // (undocumented)
     upload(container: string, name: string, data: Uint8Array, options?: CloudStorageUploadOptions): Promise<string>;
 }
@@ -564,7 +560,7 @@ export abstract class CloudStorageService {
         provider: CloudStorageProvider;
     };
     // (undocumented)
-    abstract obtainContainerUrl(id: CloudStorageContainerDescriptor): CloudStorageContainerUrl;
+    abstract obtainContainerUrl(id: CloudStorageContainerDescriptor, expiry: Date): CloudStorageContainerUrl;
     // (undocumented)
     terminate(): void;
     // (undocumented)
@@ -1613,9 +1609,8 @@ export class IModelHost {
     static tileCacheService: CloudStorageService;
     static readonly tileContentRequestTimeout: number;
     static readonly tileTreeRequestTimeout: number;
-    // @alpha
-    static readonly useExternalTileCache: boolean;
     static readonly useTileContentThreadPool: boolean;
+    static readonly usingExternalTileCache: boolean;
     }
 
 // @public
@@ -1625,17 +1620,11 @@ export class IModelHostConfiguration {
     // @alpha
     crashReportingConfig?: CrashReportingConfig;
     static defaultTileRequestTimeout: number;
-    // @alpha
-    disableInternalTileCache: boolean;
     imodelClient?: IModelClient;
-    localTileCacheDir: string;
-    localTileCacheMaxSize: number;
     nativePlatform?: any;
     tileCacheCredentials?: CloudStorageServiceCredentials;
     tileContentRequestTimeout: number;
     tileTreeRequestTimeout: number;
-    // (undocumented)
-    useExternalTileCache: boolean;
     useTileContentThreadPool: boolean;
 }
 
@@ -1694,8 +1683,6 @@ export class IModelImporter {
 export class IModelJsFs {
     static appendFileSync(path: string, str: string): void;
     static copySync(src: string, dest: string, opts?: any): void;
-    static createReadStream(path: string): Readable;
-    static ensureDirSync(path: string): void;
     static existsSync(path: string): boolean;
     static lstatSync(path: string): IModelJsFsStats | undefined;
     static mkdirSync(path: string): void;
@@ -2607,23 +2594,6 @@ export class LinkModel extends InformationModel {
 
 // @public
 export class LinkPartition extends InformationPartitionElement {
-}
-
-// @public (undocumented)
-export class LocalStorageService extends CloudStorageService {
-    constructor(basePath: string, maxSize?: number, removeOnTerminate?: boolean);
-    // (undocumented)
-    download(name: string): Promise<Readable | undefined>;
-    // (undocumented)
-    readonly id = CloudStorageProvider.Local;
-    // (undocumented)
-    initialize(): void;
-    // (undocumented)
-    obtainContainerUrl(id: CloudStorageContainerDescriptor): CloudStorageContainerUrl;
-    // (undocumented)
-    terminate(): void;
-    // (undocumented)
-    upload(container: string, name: string, data: Uint8Array, _options?: CloudStorageUploadOptions): Promise<string>;
 }
 
 // @public

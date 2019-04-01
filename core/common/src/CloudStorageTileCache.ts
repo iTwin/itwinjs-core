@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { IModelToken } from "./IModel";
-import { CloudStorageCache, CloudStorageProvider, CloudStorageContainerDescriptor, CloudStorageContainerUrl } from "./CloudStorage";
+import { CloudStorageCache, CloudStorageContainerDescriptor, CloudStorageContainerUrl } from "./CloudStorage";
 import { IModelTileRpcInterface } from "./rpc/IModelTileRpcInterface";
 
 export interface TileContentIdentifier {
@@ -23,8 +23,20 @@ export class CloudStorageTileCache extends CloudStorageCache<TileContentIdentifi
     return CloudStorageTileCache._instance;
   }
 
-  /** @alpha */
-  public enabled = false;
+  public supplyExpiryForContainerUrl(_id: CloudStorageContainerDescriptor): Date {
+    const expiry = new Date();
+
+    const today = new Date().getDay();
+    const rolloverDay = 6; // saturday
+    expiry.setHours((rolloverDay - today) * 24);
+
+    expiry.setHours(23);
+    expiry.setMinutes(59);
+    expiry.setSeconds(59);
+    expiry.setMilliseconds(999);
+
+    return expiry;
+  }
 
   private constructor() {
     super();
@@ -33,15 +45,6 @@ export class CloudStorageTileCache extends CloudStorageCache<TileContentIdentifi
   protected async obtainContainerUrl(id: TileContentIdentifier, descriptor: CloudStorageContainerDescriptor): Promise<CloudStorageContainerUrl> {
     const client = IModelTileRpcInterface.getClient();
     return client.getTileCacheContainerUrl(id.iModelToken, descriptor);
-  }
-
-  protected async requestResource(container: CloudStorageContainerUrl, id: TileContentIdentifier): Promise<Response> {
-    if (container.descriptor.provider === CloudStorageProvider.Local) {
-      const client = IModelTileRpcInterface.getClient();
-      return client.getResource(id.iModelToken, `${container.url}/${this.formResourceName(id)}`);
-    }
-
-    return super.requestResource(container, id);
   }
 
   protected async instantiateResource(response: Response): Promise<Uint8Array | undefined> {

@@ -24,7 +24,7 @@ import { IModelWriteRpcImpl } from "./rpc-impl/IModelWriteRpcImpl";
 import { SnapshotIModelRpcImpl } from "./rpc-impl/SnapshotIModelRpcImpl";
 import { WipRpcImpl } from "./rpc-impl/WipRpcImpl";
 import { initializeRpcBackend } from "./RpcBackend";
-import { CloudStorageService, LocalStorageService, CloudStorageServiceCredentials, AzureBlobStorage } from "./CloudStorageBackend";
+import { CloudStorageService, CloudStorageServiceCredentials, AzureBlobStorage } from "./CloudStorageBackend";
 import { DevToolsRpcImpl } from "./rpc-impl/DevToolsRpcImpl";
 
 const loggerCategory: string = LoggerCategory.IModelHost;
@@ -46,15 +46,10 @@ export class IModelHostConfiguration {
   public nativePlatform?: any;
 
   private _briefcaseCacheDir = path.normalize(path.join(KnownLocations.tmpdir, "Bentley/IModelJs/cache/"));
-  private _localTileCacheDir = path.normalize(path.join(KnownLocations.tmpdir, "Bentley/IModelJs/tiles/"));
 
   /** The path where the cache of briefcases are stored. Defaults to `path.join(KnownLocations.tmpdir, "Bentley/IModelJs/cache/iModels/")` */
   public get briefcaseCacheDir(): string { return this._briefcaseCacheDir; }
   public set briefcaseCacheDir(cacheDir: string) { this._briefcaseCacheDir = path.normalize(cacheDir.replace(/\/?$/, path.sep)); }
-
-  /** The path where the local cache of tiles is stored (if used on this platform). Defaults to `path.join(KnownLocations.tmpdir, "Bentley/IModelJs/tiles/")` */
-  public get localTileCacheDir(): string { return this._localTileCacheDir; }
-  public set localTileCacheDir(cacheDir: string) { this._localTileCacheDir = path.normalize(cacheDir.replace(/\/?$/, path.sep)); }
 
   /** The directory where the app's assets are found. */
   public appAssetsDir?: string;
@@ -73,16 +68,6 @@ export class IModelHostConfiguration {
   public static defaultTileRequestTimeout = 20 * 1000;
   /** If true, requests for tile content will execute on a separate thread pool in order to avoid blocking other, less expensive asynchronous requests such as ECSql queries. */
   public useTileContentThreadPool = false;
-  /**
-   * Whether external tile caching is enabled.
-   * @note This flag will be removed once the azure/external file caching system is stable.
-   * @alpha
-   */
-  public disableInternalTileCache = false;
-
-  public useExternalTileCache = false;
-  /** The maximum size (in bytes) for the local tile cache (if used on this platform). */
-  public localTileCacheMaxSize = 1024 * 1024 * 1024;
 
   /** Crash-reporting configuration
    * @alpha
@@ -261,9 +246,8 @@ export class IModelHost {
     if (!IModelHost.applicationId) IModelHost.applicationId = "2686"; // Default to product id of iModel.js
     if (!IModelHost.applicationVersion) IModelHost.applicationVersion = this.getApplicationVersion(); // Default to version of this package
 
-    // ###TODO: remove this once external caching system is stable.
     if (undefined !== this._platform)
-      this._platform.setUseTileCache(!configuration.useExternalTileCache);
+      this._platform.setUseTileCache(configuration.tileCacheCredentials ? false : true);
 
     IModelHost.onAfterStartup.raiseEvent();
   }
@@ -293,26 +277,21 @@ export class IModelHost {
   /** If true, requests for tile content will execute on a separate thread pool in order to avoid blocking other, less expensive asynchronous requests such as ECSql queries. */
   public static get useTileContentThreadPool(): boolean { return undefined !== IModelHost.configuration && IModelHost.configuration.useTileContentThreadPool; }
 
-  /**
-   * Whether external tile caching is enabled.
-   * @note This flag will be removed once the azure/external file caching system is stable.
-   * @alpha
-   */
-  public static get useExternalTileCache(): boolean { return undefined !== IModelHost.configuration && IModelHost.configuration.useExternalTileCache; }
+  /** Whether external tile caching is active. */
+  public static get usingExternalTileCache(): boolean { return (undefined !== IModelHost.configuration && IModelHost.configuration.tileCacheCredentials) ? true : false; }
 
   private static setupTileCache() {
     const config = IModelHost.configuration!;
-    if (!config.useExternalTileCache) {
+
+    const credentials = config.tileCacheCredentials;
+    if (!credentials) {
       return;
     }
 
-    const credentials = config.tileCacheCredentials;
-    if (credentials) {
-      if (credentials.service === "azure") {
-        IModelHost.tileCacheService = new AzureBlobStorage(credentials);
-      }
+    if (credentials.service === "azure") {
+      IModelHost.tileCacheService = new AzureBlobStorage(credentials);
     } else {
-      IModelHost.tileCacheService = new LocalStorageService(config.localTileCacheDir, config.localTileCacheMaxSize);
+      throw new IModelError(BentleyStatus.ERROR, "Unsupported cloud service credentials for tile cache.");
     }
   }
 }

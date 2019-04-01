@@ -6,7 +6,6 @@ export enum CloudStorageProvider {
   Azure,
   Amazon,
   AliCloud,
-  Local,
 }
 
 export interface CloudStorageContainerDescriptor {
@@ -39,7 +38,6 @@ export abstract class CloudStorageCache<TContentId, TContentType> {
 
   public abstract formContainerName(id: TContentId): string;
   public abstract formResourceName(id: TContentId): string;
-  public abstract enabled: boolean;
   protected abstract obtainContainerUrl(id: TContentId, descriptor: CloudStorageContainerDescriptor): Promise<CloudStorageContainerUrl>;
   protected abstract instantiateResource(response: Response): Promise<TContentType | undefined>;
   protected supplyUrlBase(_container: CloudStorageContainerUrl, _id: TContentId): string | undefined { return undefined; }
@@ -49,10 +47,6 @@ export abstract class CloudStorageCache<TContentId, TContentType> {
   }
 
   public async retrieve(id: TContentId): Promise<TContentType | undefined> {
-    if (!this.enabled) {
-      return Promise.resolve(undefined);
-    }
-
     return new Promise(async (resolve) => {
       try {
         const container = await this.getContainer(id);

@@ -14,7 +14,7 @@ import { RpcNotFoundResponse, RpcPendingResponse } from "./RpcControl";
 import { RpcMarshaling, RpcSerializedValue } from "./RpcMarshaling";
 import { RpcOperation } from "./RpcOperation";
 import { RpcProtocol, RpcRequestFulfillment, SerializedRpcRequest } from "./RpcProtocol";
-import { CURRENT_INVOCATION, RESOURCE, RpcRegistry } from "./RpcRegistry";
+import { CURRENT_INVOCATION, RpcRegistry } from "./RpcRegistry";
 
 /** Notification callback for an RPC invocation. */
 export type RpcInvocationCallback_T = (invocation: RpcInvocation) => void;
@@ -169,14 +169,9 @@ export class RpcInvocation {
   }
 
   private lookupOperationFunction(implementation: RpcInterface): (...args: any[]) => any {
-    let op = this.operation.operationName;
-    if (op === RESOURCE) {
-      op = "supplyResource";
-    }
-
-    const func = (implementation as any)[op];
+    const func = (implementation as any)[this.operation.operationName];
     if (!func || typeof (func) !== "function") {
-      throw new IModelError(BentleyStatus.ERROR, `RPC interface class "${implementation.constructor.name}" does not implement operation "${op}".`, Logger.logError, LoggerCategory.RpcInterfaceBackend);
+      throw new IModelError(BentleyStatus.ERROR, `RPC interface class "${implementation.constructor.name}" does not implement operation "${this.operation.operationName}".`, Logger.logError, LoggerCategory.RpcInterfaceBackend);
     }
 
     return func;

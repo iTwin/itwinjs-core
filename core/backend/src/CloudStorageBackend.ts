@@ -4,11 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as as from "azure-storage";
 import { PassThrough, Readable } from "stream";
-import * as path from "path";
-import * as crypto from "crypto";
 import { CloudStorageContainerDescriptor, CloudStorageProvider, CloudStorageContainerUrl, IModelError, BentleyStatus } from "@bentley/imodeljs-common";
-import { IModelJsFs } from "./IModelJsFs";
-import * as LRU from "lru-cache";
 
 export interface CloudStorageServiceCredentials {
   service: "azure";
@@ -25,7 +21,7 @@ export abstract class CloudStorageService {
   public initialize(): void { }
   public terminate(): void { }
   public abstract id: CloudStorageProvider;
-  public abstract obtainContainerUrl(id: CloudStorageContainerDescriptor): CloudStorageContainerUrl;
+  public abstract obtainContainerUrl(id: CloudStorageContainerDescriptor, expiry: Date): CloudStorageContainerUrl;
   public abstract upload(container: string, name: string, data: Uint8Array, options?: CloudStorageUploadOptions): Promise<string>;
   public async download(_name: string): Promise<Readable | undefined> { return Promise.resolve(undefined); }
 
@@ -34,82 +30,8 @@ export abstract class CloudStorageService {
   }
 }
 
-export class LocalStorageService extends CloudStorageService {
-  private _basePath: string;
-  private _entries: LRU<string, number>;
-  private _removeOnTerminate: boolean;
-
-  public constructor(basePath: string, maxSize: number = 0, removeOnTerminate: boolean = false) {
-    super();
-
-    this._removeOnTerminate = removeOnTerminate;
-    this._basePath = basePath;
-
-    this._entries = new LRU({
-      max: maxSize,
-      length: (value) => value,
-      dispose: (key) => IModelJsFs.unlinkSync(key),
-      noDisposeOnSet: true,
-    });
-  }
-
-  public initialize() {
-    IModelJsFs.ensureDirSync(this._basePath);
-  }
-
-  public terminate() {
-    if (this._removeOnTerminate) {
-      IModelJsFs.removeSync(this._basePath);
-    }
-  }
-
-  public readonly id = CloudStorageProvider.Local;
-
-  public obtainContainerUrl(id: CloudStorageContainerDescriptor): CloudStorageContainerUrl {
-    return {
-      descriptor: this.makeDescriptor(id),
-      valid: 0,
-      expires: Number.MAX_SAFE_INTEGER,
-      url: id.name,
-    };
-  }
-
-  public async upload(container: string, name: string, data: Uint8Array, _options?: CloudStorageUploadOptions): Promise<string> {
-    const containerSafe = path.basename(container);
-    const nameSafe = path.basename(name.replace(/\//g, "-"));
-
-    const dest = path.join(this._basePath, containerSafe, nameSafe);
-    this._entries.set(dest, data.byteLength);
-    IModelJsFs.ensureDirSync(path.dirname(dest));
-    IModelJsFs.writeFileSync(dest, data);
-
-    const etag = crypto.createHash("sha256").update(data).digest("hex");
-    return Promise.resolve(etag);
-  }
-
-  public async download(name: string): Promise<Readable | undefined> {
-    const components = name.split("/");
-    if (components.length === 2) {
-      const containerSafe = path.basename(components[components.length - 2]);
-      const nameSafe = path.basename(components[components.length - 1]);
-
-      const resourcePath = path.join(this._basePath, containerSafe, nameSafe);
-      if (IModelJsFs.existsSync(resourcePath)) {
-        const resource = IModelJsFs.createReadStream(resourcePath);
-        this._entries.get(resourcePath);
-        return Promise.resolve(resource);
-      }
-    }
-
-    return Promise.resolve(undefined);
-  }
-}
-
 export class AzureBlobStorage extends CloudStorageService {
   private _service: as.BlobService;
-
-  public static resourceValidity = 1000 * 60 * 60 * 6;
-  public static resourceValidityPadding = 1000 * 60 * 5;
 
   public constructor(credentials: CloudStorageServiceCredentials) {
     super();
@@ -123,17 +45,11 @@ export class AzureBlobStorage extends CloudStorageService {
 
   public readonly id = CloudStorageProvider.Azure;
 
-  public obtainContainerUrl(id: CloudStorageContainerDescriptor): CloudStorageContainerUrl {
-    let start = new Date().getTime();
-    const padding = AzureBlobStorage.resourceValidityPadding;
-    const end = start + AzureBlobStorage.resourceValidity + padding;
-    start -= padding;
-
+  public obtainContainerUrl(id: CloudStorageContainerDescriptor, expiry: Date): CloudStorageContainerUrl {
     const policy: as.common.SharedAccessPolicy = {
       AccessPolicy: {
-        Permissions: as.BlobUtilities.SharedAccessPermissions.READ,
-        Start: new Date(start),
-        Expiry: new Date(end),
+        Permissions: as.BlobUtilities.SharedAccessPermissions.READ + as.BlobUtilities.SharedAccessPermissions.LIST,
+        Expiry: expiry,
       },
     };
 
@@ -141,8 +57,8 @@ export class AzureBlobStorage extends CloudStorageService {
 
     const url: CloudStorageContainerUrl = {
       descriptor: this.makeDescriptor(id),
-      valid: start,
-      expires: end,
+      valid: 0,
+      expires: expiry.getTime(),
       url: this._service.getUrl(id.name, undefined, token),
     };
 

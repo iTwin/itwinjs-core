@@ -89,8 +89,7 @@
     "semver": "^5.5.0",
     "form-data": "2.3.2",
     "multiparty": "^4.2.1",
-    "azure-storage": "^2.10.2",
-    "lru-cache": "^5.1.1"
+    "azure-storage": "^2.10.2"
   },
   "nyc": {
     "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc"
