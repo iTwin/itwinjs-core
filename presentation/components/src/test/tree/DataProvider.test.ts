@@ -201,23 +201,23 @@ describe("TreeDataProvider", () => {
       });
 
       it("memoizes result", async () => {
-        const resultnodesFirstPageContainer0 = new PromiseContainer<ReadonlyArray<Readonly<Node>>>();
+        const resultnodesFirstPageContainer0 = new PromiseContainer<Node[]>();
         const resultnodesFirstPageContainer1 = new PromiseContainer<NodesResponse>();
-        const resultNodesNonFirstPageContainer = new PromiseContainer<ReadonlyArray<Readonly<Node>>>();
+        const resultNodesNonFirstPageContainer = new PromiseContainer<Node[]>();
         presentationManagerMock
           .setup((x) => x.getNodes({ imodel: imodelMock.object, rulesetId, paging: undefined }, undefined))
-          .returns(() => resultnodesFirstPageContainer0.promise)
+          .returns(async () => resultnodesFirstPageContainer0.promise)
           .verifiable(moq.Times.once());
         presentationManagerMock
           .setup((x) => x.getNodes({ imodel: imodelMock.object, rulesetId, paging: { start: 0, size: 0 } }, undefined))
           .verifiable(moq.Times.never());
         presentationManagerMock
           .setup((x) => x.getNodes({ imodel: imodelMock.object, rulesetId, paging: { start: 1, size: 0 } }, undefined))
-          .returns(() => resultNodesNonFirstPageContainer.promise)
+          .returns(async () => resultNodesNonFirstPageContainer.promise)
           .verifiable(moq.Times.once());
         presentationManagerMock
           .setup((x) => x.getNodesAndCount({ imodel: imodelMock.object, rulesetId, paging: { start: 0, size: 1 } }, undefined))
-          .returns(() => resultnodesFirstPageContainer1.promise)
+          .returns(async () => resultnodesFirstPageContainer1.promise)
           .verifiable(moq.Times.once());
 
         const promises = [
@@ -260,24 +260,24 @@ describe("TreeDataProvider", () => {
       it("memoizes result", async () => {
         const parentKeys = [createRandomECInstanceNodeKey(), createRandomECInstanceNodeKey()];
         const parentNodes = parentKeys.map((key) => createRandomTreeNodeItem(key));
-        const resultnodesFirstPageContainer0 = new PromiseContainer<ReadonlyArray<Readonly<Node>>>();
+        const resultnodesFirstPageContainer0 = new PromiseContainer<Node[]>();
         const resultnodesFirstPageContainer1 = new PromiseContainer<NodesResponse>();
-        const resultNodesNonFirstPageContainer = new PromiseContainer<ReadonlyArray<Readonly<Node>>>();
+        const resultNodesNonFirstPageContainer = new PromiseContainer<Node[]>();
 
         presentationManagerMock
           .setup((x) => x.getNodes({ imodel: imodelMock.object, rulesetId, paging: undefined }, parentKeys[0]))
-          .returns(() => resultnodesFirstPageContainer0.promise)
+          .returns(async () => resultnodesFirstPageContainer0.promise)
           .verifiable(moq.Times.once());
         presentationManagerMock
           .setup((x) => x.getNodes({ imodel: imodelMock.object, rulesetId, paging: { start: 0, size: 0 } }, parentKeys[0]))
           .verifiable(moq.Times.never());
         presentationManagerMock
           .setup((x) => x.getNodes({ imodel: imodelMock.object, rulesetId, paging: { start: 1, size: 0 } }, parentKeys[0]))
-          .returns(() => resultNodesNonFirstPageContainer.promise)
+          .returns(async () => resultNodesNonFirstPageContainer.promise)
           .verifiable(moq.Times.once());
         presentationManagerMock
           .setup((x) => x.getNodesAndCount({ imodel: imodelMock.object, rulesetId, paging: { start: 0, size: 1 } }, parentKeys[1]))
-          .returns(() => resultnodesFirstPageContainer1.promise)
+          .returns(async () => resultnodesFirstPageContainer1.promise)
           .verifiable(moq.Times.once());
 
         const promises = [

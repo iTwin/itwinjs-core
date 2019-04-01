@@ -64,14 +64,14 @@ export interface IContentDataProvider extends IPresentationDataProvider, IDispos
   /** Display type used to format content */
   readonly displayType: string;
   /** Keys defining what to request content for */
-  keys: Readonly<KeySet>;
+  keys: KeySet;
   /** Information about selection event that results in content change */
-  selectionInfo: Readonly<SelectionInfo> | undefined;
+  selectionInfo: SelectionInfo | undefined;
 
   /**
    * Get the content descriptor.
    */
-  getContentDescriptor: () => Promise<Readonly<Descriptor> | undefined>;
+  getContentDescriptor: () => Promise<Descriptor | undefined>;
 
   /**
    * Get the number of content records.
@@ -82,7 +82,7 @@ export interface IContentDataProvider extends IPresentationDataProvider, IDispos
    * Get the content.
    * @param pageOptions Paging options.
    */
-  getContent: (pageOptions?: PageOptions) => Promise<Readonly<Content> | undefined>;
+  getContent: (pageOptions?: PageOptions) => Promise<Content | undefined>;
 }
 
 /**
@@ -92,9 +92,9 @@ export class ContentDataProvider implements IContentDataProvider {
   private _imodel: IModelConnection;
   private _rulesetId: string;
   private _displayType: string;
-  private _keys: Readonly<KeySet>;
+  private _keys: KeySet;
   private _previousKeysGuid: string;
-  private _selectionInfo?: Readonly<SelectionInfo>;
+  private _selectionInfo?: SelectionInfo;
   private _registeredRuleset?: RegisteredRuleset;
   private _isDisposed?: boolean;
   private _pagingSize?: number;
@@ -169,7 +169,7 @@ export class ContentDataProvider implements IContentDataProvider {
 
   /** Keys defining what to request content for */
   public get keys() { return this._keys; }
-  public set keys(keys: Readonly<KeySet>) {
+  public set keys(keys: KeySet) {
     if (keys.guid === this._previousKeysGuid)
       return;
 
@@ -180,7 +180,7 @@ export class ContentDataProvider implements IContentDataProvider {
 
   /** Information about selection event that results in content change */
   public get selectionInfo() { return this._selectionInfo; }
-  public set selectionInfo(info: Readonly<SelectionInfo> | undefined) {
+  public set selectionInfo(info: SelectionInfo | undefined) {
     if (this._selectionInfo === info)
       return;
 
@@ -266,7 +266,7 @@ export class ContentDataProvider implements IContentDataProvider {
   }
 
   // tslint:disable-next-line:naming-convention
-  private getDefaultContentDescriptor = _.memoize(async (): Promise<Readonly<Descriptor> | undefined> => {
+  private getDefaultContentDescriptor = _.memoize(async (): Promise<Descriptor | undefined> => {
     return Presentation.presentation.getContentDescriptor(this.createRequestOptions(),
       this._displayType, this.keys, this.selectionInfo);
   });
@@ -274,7 +274,7 @@ export class ContentDataProvider implements IContentDataProvider {
   /**
    * Get the content descriptor.
    */
-  public getContentDescriptor = _.memoize(async (): Promise<Readonly<Descriptor> | undefined> => {
+  public getContentDescriptor = _.memoize(async (): Promise<Descriptor | undefined> => {
     if (!this.shouldRequestContentForEmptyKeyset() && this.keys.isEmpty)
       return undefined;
 
@@ -300,7 +300,7 @@ export class ContentDataProvider implements IContentDataProvider {
    * Get the content.
    * @param pageOptions Paging options.
    */
-  public async getContent(pageOptions?: PageOptions): Promise<Readonly<Content> | undefined> {
+  public async getContent(pageOptions?: PageOptions): Promise<Content | undefined> {
     const contentAndSize = await this._getContentAndSize(pageOptions);
     if (undefined !== contentAndSize)
       return contentAndSize.content;

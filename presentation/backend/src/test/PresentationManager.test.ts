@@ -16,9 +16,9 @@ import {
 } from "@bentley/presentation-common/lib/test/_helpers/random";
 import "@bentley/presentation-common/lib/test/_helpers/Promises";
 import "./IModelHostSetup";
-import { using, ClientRequestContext, Id64 } from "@bentley/bentleyjs-core";
-import { RelatedElementProps, EntityMetaData, ElementProps, ModelProps } from "@bentley/imodeljs-common";
-import { IModelHost, IModelDb, DrawingGraphic, Element } from "@bentley/imodeljs-backend";
+import { using, ClientRequestContext, Id64, Id64String } from "@bentley/bentleyjs-core";
+import { EntityMetaData, ElementProps, ModelProps } from "@bentley/imodeljs-common";
+import { IModelHost, IModelDb, DrawingGraphic, Element, ECSqlStatement, ECSqlValue } from "@bentley/imodeljs-backend";
 import {
   PageOptions, SelectionInfo, KeySet, PresentationError, PropertyInfoJSON,
   HierarchyRequestOptions, Paged, ContentRequestOptions,
@@ -27,8 +27,9 @@ import {
   ContentJSON, DescriptorJSON, SelectClassInfoJSON,
   PrimitiveTypeDescription, ArrayTypeDescription, StructTypeDescription,
   PropertiesFieldJSON, NestedContentFieldJSON, FieldJSON,
-  KindOfQuantityInfo, PropertyJSON, ItemJSON, DefaultContentDisplayTypes, LabelRequestOptions,
+  KindOfQuantityInfo, PropertyJSON, ItemJSON, DefaultContentDisplayTypes, LabelRequestOptions, InstanceKey,
 } from "@bentley/presentation-common";
+import { toJSON as keysetToJSON } from "@bentley/presentation-common/lib/KeySet";
 import { NativePlatformDefinition, NativePlatformRequestTypes } from "../NativePlatform";
 import PresentationManager from "../PresentationManager";
 import RulesetManager from "../RulesetManager";
@@ -50,6 +51,16 @@ describe("PresentationManager", () => {
         throw e; // re-throw if startup() failed to set up NativePlatform
     }
   });
+
+  const setupIModelForElementKey = (imodelMock: moq.IMock<IModelDb>, key: InstanceKey) => {
+    imodelMock.setup((x) => x.withPreparedStatement(moq.It.isAnyString(), moq.It.isAny())).callback((_q, cb) => {
+      const valueMock = moq.Mock.ofType<ECSqlValue>();
+      valueMock.setup((x) => x.getClassNameForClassId()).returns(() => key.className);
+      const stmtMock = moq.Mock.ofType<ECSqlStatement>();
+      stmtMock.setup((x) => x.getValue(0)).returns(() => valueMock.object);
+      cb(stmtMock.object);
+    });
+  };
 
   describe("constructor", () => {
 
@@ -595,7 +606,7 @@ describe("PresentationManager", () => {
         requestId: NativePlatformRequestTypes.GetContentDescriptor,
         params: {
           displayType: testData.displayType,
-          keys: keys.toJSON(),
+          keys: keysetToJSON(keys),
           selection: testData.selectionInfo,
           rulesetId: testData.rulesetId,
         },
@@ -747,7 +758,7 @@ describe("PresentationManager", () => {
       const expectedParams = {
         requestId: NativePlatformRequestTypes.GetContentSetSize,
         params: {
-          keys: keys.toJSON(),
+          keys: keysetToJSON(keys),
           descriptorOverrides: descriptor.createDescriptorOverrides(),
           rulesetId: testData.rulesetId,
         },
@@ -773,7 +784,7 @@ describe("PresentationManager", () => {
       const expectedParams = {
         requestId: NativePlatformRequestTypes.GetContentSetSize,
         params: {
-          keys: keys.toJSON(),
+          keys: keysetToJSON(keys),
           descriptorOverrides: {
             displayType: descriptor.displayType,
             hiddenFieldNames: [],
@@ -803,7 +814,7 @@ describe("PresentationManager", () => {
       const expectedParams = {
         requestId: NativePlatformRequestTypes.GetContent,
         params: {
-          keys: keys.toJSON(),
+          keys: keysetToJSON(keys),
           descriptorOverrides: descriptor.createDescriptorOverrides(),
           paging: testData.pageOptions,
           rulesetId: testData.rulesetId,
@@ -868,6 +879,80 @@ describe("PresentationManager", () => {
       verifyWithSnapshot(result, expectedParams);
     });
 
+    it("returns content for BisCore:Element instances", async () => {
+      // what the addon receives
+      const baseClassKey = { className: "BisCore:Element", id: createRandomId() };
+      const concreteClassKey = { className: faker.random.word(), id: baseClassKey.id };
+      setupIModelForElementKey(imodelMock, concreteClassKey);
+      const descriptor = createRandomDescriptor();
+      const expectedParams = {
+        requestId: NativePlatformRequestTypes.GetContent,
+        params: {
+          keys: keysetToJSON(new KeySet([concreteClassKey])),
+          descriptorOverrides: descriptor.createDescriptorOverrides(),
+          paging: testData.pageOptions,
+          rulesetId: testData.rulesetId,
+        },
+      };
+
+      // what the addon returns
+      const fieldName = faker.random.word();
+      const addonResponse = {
+        descriptor: {
+          displayType: descriptor.displayType,
+          selectClasses: [{
+            selectClassInfo: createRandomECClassInfoJSON(),
+            isSelectPolymorphic: true,
+            pathToPrimaryClass: [],
+            relatedPropertyPaths: [],
+          } as SelectClassInfoJSON],
+          fields: [{
+            name: fieldName,
+            category: createRandomCategory(),
+            label: faker.random.words(),
+            type: {
+              typeName: "string",
+              valueFormat: "Primitive",
+            } as PrimitiveTypeDescription,
+            isReadonly: faker.random.boolean(),
+            priority: faker.random.number(),
+            properties: [{
+              property: {
+                classInfo: createRandomECClassInfoJSON(),
+                name: faker.random.word(),
+                type: "string",
+              } as PropertyInfoJSON,
+              relatedClassPath: [],
+            } as PropertyJSON],
+          } as PropertiesFieldJSON],
+          contentFlags: 0,
+        } as DescriptorJSON,
+        contentSet: [{
+          primaryKeys: [createRandomECInstanceKeyJSON()],
+          classInfo: createRandomECClassInfoJSON(),
+          label: faker.random.words(),
+          imageId: faker.random.uuid(),
+          values: {
+            [fieldName]: faker.random.words(),
+          },
+          displayValues: {
+            [fieldName]: faker.random.words(),
+          },
+          mergedFieldNames: [],
+        } as ItemJSON],
+      } as ContentJSON;
+      setup(addonResponse);
+
+      // test
+      const options: Paged<ContentRequestOptions<IModelDb>> = {
+        imodel: imodelMock.object,
+        rulesetId: testData.rulesetId,
+        paging: testData.pageOptions,
+      };
+      const result = await manager.getContent(ClientRequestContext.current, options, descriptor, new KeySet([baseClassKey]));
+      verifyWithSnapshot(result, expectedParams);
+    });
+
     it("returns content when descriptor overrides are passed instead of descriptor", async () => {
       // what the addon receives
       const keys = new KeySet([createRandomECInstanceNodeKey(), createRandomECInstanceKey()]);
@@ -875,7 +960,7 @@ describe("PresentationManager", () => {
       const expectedParams = {
         requestId: NativePlatformRequestTypes.GetContent,
         params: {
-          keys: keys.toJSON(),
+          keys: keysetToJSON(keys),
           descriptorOverrides: {
             displayType: descriptor.displayType,
             hiddenFieldNames: [],
@@ -952,7 +1037,7 @@ describe("PresentationManager", () => {
       const expectedGetContentParams = {
         requestId: NativePlatformRequestTypes.GetContent,
         params: {
-          keys: keys.toJSON(),
+          keys: keysetToJSON(keys),
           descriptorOverrides: descriptor.createDescriptorOverrides(),
           paging: pageOptions,
           rulesetId: testData.rulesetId,
@@ -961,7 +1046,7 @@ describe("PresentationManager", () => {
       const expectedGetContentSetSizeParams = {
         requestId: NativePlatformRequestTypes.GetContentSetSize,
         params: {
-          keys: keys.toJSON(),
+          keys: keysetToJSON(keys),
           descriptorOverrides: descriptor.createDescriptorOverrides(),
           rulesetId: testData.rulesetId,
           paging: pageOptions,
@@ -1043,7 +1128,7 @@ describe("PresentationManager", () => {
           requestId: NativePlatformRequestTypes.GetDistinctValues,
           params: {
             descriptorOverrides: descriptor.createDescriptorOverrides(),
-            keys: keys.toJSON(),
+            keys: keysetToJSON(keys),
             fieldName,
             maximumValueCount,
             rulesetId: testData.rulesetId,
@@ -1128,7 +1213,7 @@ describe("PresentationManager", () => {
         const expectedContentParams = {
           requestId: NativePlatformRequestTypes.GetContent,
           params: {
-            keys: new KeySet(keys).toJSON(),
+            keys: keysetToJSON(new KeySet(keys)),
             descriptorOverrides: {
               displayType: DefaultContentDisplayTypes.LIST,
               contentFlags: ContentFlags.ShowLabels | ContentFlags.NoFields,
@@ -1176,12 +1261,69 @@ describe("PresentationManager", () => {
         expect(result).to.deep.eq(labels);
       });
 
+      it("returns labels for BisCore:Element instances", async () => {
+        // what the addon receives
+        const baseClassKey = { className: "BisCore:Element", id: createRandomId() };
+        const concreteClassKey = { className: faker.random.word(), id: baseClassKey.id };
+        setupIModelForElementKey(imodelMock, concreteClassKey);
+        const label = faker.random.word();
+        const expectedContentParams = {
+          requestId: NativePlatformRequestTypes.GetContent,
+          params: {
+            keys: keysetToJSON(new KeySet([concreteClassKey])),
+            descriptorOverrides: {
+              displayType: DefaultContentDisplayTypes.LIST,
+              contentFlags: ContentFlags.ShowLabels | ContentFlags.NoFields,
+              hiddenFieldNames: [],
+            },
+            rulesetId: "RulesDrivenECPresentationManager_RulesetId_DisplayLabel",
+          },
+        };
+
+        // what the addon returns
+        const addonContentResponse = {
+          descriptor: {
+            connectionId: faker.random.uuid(),
+            inputKeysHash: faker.random.uuid(),
+            contentOptions: {},
+            displayType: DefaultContentDisplayTypes.LIST,
+            selectClasses: [{
+              selectClassInfo: createRandomECClassInfoJSON(),
+              isSelectPolymorphic: true,
+              pathToPrimaryClass: [],
+              relatedPropertyPaths: [],
+            } as SelectClassInfoJSON],
+            fields: [],
+            contentFlags: 0,
+          } as DescriptorJSON,
+          // note: return in wrong order to verify the resulting labels are still in the right order
+          contentSet: [{
+            primaryKeys: [concreteClassKey],
+            classInfo: createRandomECClassInfoJSON(),
+            label,
+            imageId: faker.random.uuid(),
+            values: {},
+            displayValues: {},
+            mergedFieldNames: [],
+          }],
+        } as ContentJSON;
+        setup(addonContentResponse);
+
+        // test
+        const options: LabelRequestOptions<IModelDb> = {
+          imodel: imodelMock.object,
+        };
+        const result = await manager.getDisplayLabels(ClientRequestContext.current, options, [baseClassKey]);
+        verifyMockRequest(expectedContentParams);
+        expect(result).to.deep.eq([label]);
+      });
+
       it("returns empty label if content doesn't contain item with request key", async () => {
         const keys = [createRandomECInstanceKey()];
         const expectedContentParams = {
           requestId: NativePlatformRequestTypes.GetContent,
           params: {
-            keys: new KeySet(keys).toJSON(),
+            keys: keysetToJSON(new KeySet(keys)),
             descriptorOverrides: {
               displayType: DefaultContentDisplayTypes.LIST,
               contentFlags: ContentFlags.ShowLabels | ContentFlags.NoFields,
@@ -1264,12 +1406,12 @@ describe("PresentationManager", () => {
         return props;
       };
 
-      const createRandomElementProps = (parentKey?: RelatedElementProps): ElementProps => {
-        if (!parentKey)
-          parentKey = { relClassName: faker.random.word(), id: createRandomId() };
+      const createRandomElementProps = (parentId?: Id64String): ElementProps => {
+        if (!parentId)
+          parentId = createRandomId();
         return {
           ...createRandomTopmostElementProps(),
-          parent: parentKey,
+          parent: { relClassName: faker.random.word(), id: parentId },
         };
       };
 
@@ -1294,25 +1436,21 @@ describe("PresentationManager", () => {
       describe("scope: 'element'", () => {
 
         it("returns element keys", async () => {
-          const ids = [createRandomId(), createRandomId()];
-          const elementProps = [createRandomElementProps(), createRandomElementProps()];
-          elementsMock.setup((x) => x.getElementProps(ids[0])).returns(() => elementProps[0]);
-          elementsMock.setup((x) => x.getElementProps(ids[1])).returns(() => elementProps[1]);
+          const keys = [createRandomECInstanceKey(), createRandomECInstanceKey()];
+          keys.forEach((key) => setupIModelForElementKey(imodelMock, key));
 
-          const result = await manager.computeSelection(ClientRequestContext.current, { imodel: imodelMock.object }, ids, "element");
+          const result = await manager.computeSelection(ClientRequestContext.current, { imodel: imodelMock.object }, keys.map((k) => k.id), "element");
           expect(result.size).to.eq(2);
-          expect(result.has({ className: elementProps[0].classFullName, id: elementProps[0].id! })).to.be.true;
-          expect(result.has({ className: elementProps[1].classFullName, id: elementProps[1].id! })).to.be.true;
+          keys.forEach((key) => expect(result.has(key)));
         });
 
         it("skips transient element ids", async () => {
-          const ids = [createRandomId(), createTransientElementId()];
-          const elementProps = [createRandomElementProps()];
-          elementsMock.setup((x) => x.getElementProps(ids[0])).returns(() => elementProps[0]);
+          const keys = [createRandomECInstanceKey(), { className: "any:class", id: createTransientElementId() }];
+          setupIModelForElementKey(imodelMock, keys[0]);
 
-          const result = await manager.computeSelection(ClientRequestContext.current, { imodel: imodelMock.object }, ids, "element");
+          const result = await manager.computeSelection(ClientRequestContext.current, { imodel: imodelMock.object }, keys.map((k) => k.id), "element");
           expect(result.size).to.eq(1);
-          expect(result.has({ className: elementProps[0].classFullName, id: elementProps[0].id! })).to.be.true;
+          expect(result.has(keys[0])).to.be.true;
         });
 
       });
@@ -1320,51 +1458,48 @@ describe("PresentationManager", () => {
       describe("scope: 'assembly'", () => {
 
         it("returns parent keys", async () => {
-          const parentProps = [createRandomElementProps(), createRandomElementProps()];
-          const elementProps = [createRandomElementProps(), createRandomElementProps()];
-          elementProps.forEach((p, index) => {
+          const parentKeys = [createRandomECInstanceKey(), createRandomECInstanceKey()];
+          parentKeys.forEach((key) => setupIModelForElementKey(imodelMock, key));
+          const elementProps = parentKeys.map((pk) => createRandomElementProps(pk.id));
+          elementProps.forEach((p) => {
             elementsMock.setup((x) => x.getElementProps(p.id!)).returns(() => p);
-            elementsMock.setup((x) => x.getElementProps(p.parent!.id)).returns(() => parentProps[index]);
           });
           const result = await manager.computeSelection(ClientRequestContext.current, { imodel: imodelMock.object }, elementProps.map((p) => p.id!), "assembly");
           expect(result.size).to.eq(2);
-          expect(result.has({ className: parentProps[0].classFullName, id: parentProps[0].id! })).to.be.true;
-          expect(result.has({ className: parentProps[1].classFullName, id: parentProps[1].id! })).to.be.true;
+          parentKeys.forEach((key) => expect(result.has(key)).to.be.true);
         });
 
         it("does not duplicate keys", async () => {
-          const parentProp = createRandomElementProps();
-          const parentKey = { relClassName: faker.random.word(), id: createRandomId() };
-          const elementProps = [createRandomElementProps(parentKey), createRandomElementProps(parentKey)];
+          const parentKey = createRandomECInstanceKey();
+          setupIModelForElementKey(imodelMock, parentKey);
+          const elementProps = [createRandomElementProps(parentKey.id), createRandomElementProps(parentKey.id)];
           elementProps.forEach((p) => {
             elementsMock.setup((x) => x.getElementProps(p.id!)).returns(() => p);
-            elementsMock.setup((x) => x.getElementProps(p.parent!.id)).returns(() => parentProp);
           });
           const result = await manager.computeSelection(ClientRequestContext.current, { imodel: imodelMock.object }, elementProps.map((p) => p.id!), "assembly");
           expect(result.size).to.eq(1);
-          expect(result.has({ className: parentProp.classFullName, id: parentProp.id! })).to.be.true;
+          expect(result.has(parentKey)).to.be.true;
         });
 
         it("returns element key if it has no parent", async () => {
-          const id = createRandomId();
+          const key = createRandomECInstanceKey();
+          setupIModelForElementKey(imodelMock, key);
           const elementProps = createRandomTopmostElementProps();
-          elementsMock.setup((x) => x.getElementProps(id)).returns(() => elementProps);
-          const result = await manager.computeSelection(ClientRequestContext.current, { imodel: imodelMock.object }, [id], "assembly");
+          elementsMock.setup((x) => x.getElementProps(key.id)).returns(() => elementProps);
+          const result = await manager.computeSelection(ClientRequestContext.current, { imodel: imodelMock.object }, [key.id], "assembly");
           expect(result.size).to.eq(1);
-          expect(result.has({ className: elementProps.classFullName, id: elementProps.id! })).to.be.true;
+          expect(result.has(key)).to.be.true;
         });
 
         it("skips transient element ids", async () => {
-          const parentProps = [createRandomElementProps()];
-          const elementProps = [createRandomElementProps()];
-          elementProps.forEach((p, index) => {
-            elementsMock.setup((x) => x.getElementProps(p.id!)).returns(() => p);
-            elementsMock.setup((x) => x.getElementProps(p.parent!.id)).returns(() => parentProps[index]);
-          });
+          const parentKeys = [createRandomECInstanceKey()];
+          setupIModelForElementKey(imodelMock, parentKeys[0]);
+          const elementProps = [createRandomElementProps(parentKeys[0].id)];
+          elementsMock.setup((x) => x.getElementProps(elementProps[0].id!)).returns(() => elementProps[0]);
           const ids = [elementProps[0].id!, createTransientElementId()];
           const result = await manager.computeSelection(ClientRequestContext.current, { imodel: imodelMock.object }, ids, "assembly");
           expect(result.size).to.eq(1);
-          expect(result.has({ className: parentProps[0].classFullName, id: parentProps[0].id! })).to.be.true;
+          parentKeys.forEach((key) => expect(result.has(key)).to.be.true);
         });
 
       });
@@ -1373,39 +1508,41 @@ describe("PresentationManager", () => {
 
         it("returns topmost parent key", async () => {
           const grandparent = createRandomTopmostElementProps();
-          const grandparentKey = { relClassName: faker.random.word(), id: grandparent.id! };
-          const parent = createRandomElementProps(grandparentKey);
-          const parentKey = { relClassName: faker.random.word(), id: parent.id! };
-          const element = createRandomElementProps(parentKey);
+          const grandparentKey = createRandomECInstanceKey();
+          setupIModelForElementKey(imodelMock, grandparentKey);
+          elementsMock.setup((x) => x.getElementProps(grandparentKey.id)).returns(() => grandparent);
+          const parent = createRandomElementProps(grandparentKey.id);
+          const parentKey = createRandomECInstanceKey();
+          elementsMock.setup((x) => x.getElementProps(parentKey.id)).returns(() => parent);
+          const element = createRandomElementProps(parentKey.id);
           elementsMock.setup((x) => x.getElementProps(element.id!)).returns(() => element);
-          elementsMock.setup((x) => x.getElementProps(parent.id!)).returns(() => parent);
-          elementsMock.setup((x) => x.getElementProps(grandparent.id!)).returns(() => grandparent);
 
           const result = await manager.computeSelection(ClientRequestContext.current, { imodel: imodelMock.object }, [element.id!], "top-assembly");
           expect(result.size).to.eq(1);
-          expect(result.has({ className: grandparent.classFullName, id: grandparent.id! })).to.be.true;
+          expect(result.has(grandparentKey)).to.be.true;
         });
 
         it("returns element key if it has no parent", async () => {
-          const id = createRandomId();
+          const key = createRandomECInstanceKey();
+          setupIModelForElementKey(imodelMock, key);
           const elementProps = createRandomTopmostElementProps();
-          elementsMock.setup((x) => x.getElementProps(id)).returns(() => elementProps);
-          const result = await manager.computeSelection(ClientRequestContext.current, { imodel: imodelMock.object }, [id], "top-assembly");
+          elementsMock.setup((x) => x.getElementProps(key.id)).returns(() => elementProps);
+          const result = await manager.computeSelection(ClientRequestContext.current, { imodel: imodelMock.object }, [key.id], "top-assembly");
           expect(result.size).to.eq(1);
-          expect(result.has({ className: elementProps.classFullName, id: elementProps.id! })).to.be.true;
+          expect(result.has(key)).to.be.true;
         });
 
         it("skips transient element ids", async () => {
           const parent = createRandomTopmostElementProps();
-          const parentKey = { relClassName: faker.random.word(), id: parent.id! };
-          const element = createRandomElementProps(parentKey);
-          elementsMock.setup((x) => x.getElementProps(element.id!)).returns(() => element);
-          elementsMock.setup((x) => x.getElementProps(parent.id!)).returns(() => parent);
-
-          const ids = [element.id!, createTransientElementId()];
+          const parentKey = createRandomECInstanceKey();
+          setupIModelForElementKey(imodelMock, parentKey);
+          elementsMock.setup((x) => x.getElementProps(parentKey.id)).returns(() => parent);
+          const elementProps = createRandomElementProps(parentKey.id);
+          elementsMock.setup((x) => x.getElementProps(elementProps.id!)).returns(() => elementProps);
+          const ids = [elementProps.id!, createTransientElementId()];
           const result = await manager.computeSelection(ClientRequestContext.current, { imodel: imodelMock.object }, ids, "top-assembly");
           expect(result.size).to.eq(1);
-          expect(result.has({ className: parent.classFullName, id: parent.id! })).to.be.true;
+          expect(result.has(parentKey)).to.be.true;
         });
 
       });

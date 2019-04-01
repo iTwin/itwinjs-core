@@ -338,7 +338,7 @@ describe("ViewportSelectionHandler", () => {
           new Item([createRandomECInstanceKey()], "", "", undefined, {}, {}, []),
         ],
       };
-      presentationManagerMock.setup(async (x) => x.getContent({ imodel: imodelMock.object, rulesetId, paging: undefined }, overrides, keys))
+      presentationManagerMock.setup(async (x) => x.getContent({ imodel: imodelMock.object, rulesetId, paging: undefined }, overrides, moq.isKeySet(keys)))
         .returns(async () => expectedContent);
 
       // trigger the selection change
@@ -376,7 +376,7 @@ describe("ViewportSelectionHandler", () => {
         level: 0,
       };
       presentationManagerMock.setup(async (x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetId },
-        DefaultContentDisplayTypes.VIEWPORT, keys, selectionInfo)).returns(async () => undefined);
+        DefaultContentDisplayTypes.VIEWPORT, moq.isKeySet(keys), selectionInfo)).returns(async () => undefined);
 
       // trigger the selection change
       const selectionChangeArgs: SelectionChangeEventArgs = {
@@ -408,7 +408,7 @@ describe("ViewportSelectionHandler", () => {
         level: 0,
       };
       presentationManagerMock.setup(async (x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetId },
-        DefaultContentDisplayTypes.VIEWPORT, keys, selectionInfo)).returns(async () => undefined);
+        DefaultContentDisplayTypes.VIEWPORT, moq.isKeySet(keys), selectionInfo)).returns(async () => undefined);
 
       // trigger the selection change
       const selectionChangeArgs: SelectionChangeEventArgs = {
@@ -446,7 +446,7 @@ describe("ViewportSelectionHandler", () => {
       const contentRequests = [1, 2].map(() => {
         const content = new ResolvablePromise<Content | undefined>();
         presentationManagerMock.setup(async (x) => x.getContent({ imodel: imodelMock.object, rulesetId, paging: undefined },
-          overrides, keys)).returns(async () => content);
+          overrides, moq.isKeySet(keys))).returns(async () => content);
         return content;
       });
 
@@ -464,7 +464,7 @@ describe("ViewportSelectionHandler", () => {
       // handler should now be waiting for the first content request to resolve - ensure
       // viewport selection was not replaced yet
       presentationManagerMock.verify(async (x) => x.getContent({ imodel: imodelMock.object, rulesetId, paging: undefined },
-        overrides, keys), moq.Times.once());
+        overrides, moq.isKeySet(keys)), moq.Times.once());
       expect(setHiliteSpy).to.not.be.called;
 
       // trigger some intermediate selection changes
@@ -473,7 +473,7 @@ describe("ViewportSelectionHandler", () => {
 
       // ensure new content requests were not triggered
       presentationManagerMock.verify(async (x) => x.getContent({ imodel: imodelMock.object, rulesetId, paging: undefined },
-        overrides, keys), moq.Times.once());
+        overrides, moq.isKeySet(keys)), moq.Times.once());
 
       // now resolve the first content request
       await contentRequests[0].resolve(undefined);
@@ -483,7 +483,7 @@ describe("ViewportSelectionHandler", () => {
 
       // ensure a new content request was made for the last selection change
       presentationManagerMock.verify(async (x) => x.getContent({ imodel: imodelMock.object, rulesetId, paging: undefined },
-        overrides, keys), moq.Times.exactly(2));
+        overrides, moq.isKeySet(keys)), moq.Times.exactly(2));
       await contentRequests[1].resolve(undefined);
       await waitForAllAsyncs([handler]);
       expect(setHiliteSpy).to.be.calledTwice;

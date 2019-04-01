@@ -105,7 +105,7 @@ export function tableWithUnifiedSelection<P extends TableProps>(TableComponent: 
       for (let level = selectionLevel; level >= 0; level--) {
         const selection = this._selectionHandler!.getSelection(level);
         if (!selection.isEmpty) {
-          this.props.dataProvider.keys = selection;
+          this.props.dataProvider.keys = new KeySet(selection);
           return;
         }
       }

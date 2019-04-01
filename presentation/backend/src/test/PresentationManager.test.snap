@@ -463,6 +463,84 @@ Descriptor {
 }
 `;
 
+exports[`PresentationManager addon results conversion to Presentation objects returns content for BisCore:Element instances 1`] = `
+Content {
+  "contentSet": Array [
+    Item {
+      "classInfo": Object {
+        "id": "0x12aff0000005fc3",
+        "label": "matrix",
+        "name": "Sleek",
+      },
+      "displayValues": Object {
+        "Tactics": "intermediate Credit Card Account",
+      },
+      "imageId": "b4051c08-8353-4c9f-8d33-e8b4313850c7",
+      "label": "Music THX",
+      "mergedFieldNames": Array [],
+      "primaryKeys": Array [
+        Object {
+          "className": "FTP",
+          "id": "0x13a7b0000017888",
+        },
+      ],
+      "values": Object {
+        "Tactics": "backing up Berkshire",
+      },
+    },
+  ],
+  "descriptor": Descriptor {
+    "contentFlags": 0,
+    "displayType": "quo quae consequatur",
+    "fields": Array [
+      PropertiesField {
+        "category": Object {
+          "description": "Consectetur accusantium placeat aut maxime sed id odio recusandae.",
+          "expand": false,
+          "label": "deposit",
+          "name": "FTP",
+          "priority": 82691,
+        },
+        "isReadonly": false,
+        "label": "Sports",
+        "name": "Tactics",
+        "priority": 904,
+        "properties": Array [
+          Object {
+            "property": Object {
+              "classInfo": Object {
+                "id": "0x125640000000505",
+                "label": "Drive Money Market Account Investor",
+                "name": "Analyst",
+              },
+              "name": "neural",
+              "type": "string",
+            },
+            "relatedClassPath": Array [],
+          },
+        ],
+        "type": Object {
+          "typeName": "string",
+          "valueFormat": "Primitive",
+        },
+      },
+    ],
+    "selectClasses": Array [
+      Object {
+        "isSelectPolymorphic": true,
+        "pathToPrimaryClass": Array [],
+        "relatedPropertyPaths": Array [],
+        "selectClassInfo": Object {
+          "id": "0x87710000000087",
+          "label": "Intelligent model circuit",
+          "name": "interface",
+        },
+      },
+    ],
+  },
+}
+`;
+
 exports[`PresentationManager addon results conversion to Presentation objects returns content when descriptor overrides are passed instead of descriptor 1`] = `
 Content {
   "contentSet": Array [

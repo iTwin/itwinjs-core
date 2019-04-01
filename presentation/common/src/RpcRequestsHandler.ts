@@ -152,15 +152,15 @@ export default class RpcRequestsHandler implements IDisposable {
     const doRequest = async (funcOptions: TFuncOptions) => func.apply(context, [imodel, funcOptions, ...args]);
     return this.requestRepeatedly(doRequest, rpcOptions as TFuncOptions, options.imodel);
   }
-  public async getNodesAndCount(options: Paged<HierarchyRequestOptions<IModelToken>>, parentKey?: Readonly<NodeKey>): Promise<NodesResponse> {
+  public async getNodesAndCount(options: Paged<HierarchyRequestOptions<IModelToken>>, parentKey?: NodeKey): Promise<NodesResponse> {
     return this.request<NodesResponse, Paged<HierarchyRequestOptions<IModelToken>>, any>(
       this.rpcClient, this.rpcClient.getNodesAndCount, this.createRequestOptions(options), parentKey);
   }
-  public async getNodes(options: Paged<HierarchyRequestOptions<IModelToken>>, parentKey?: Readonly<NodeKey>): Promise<Node[]> {
+  public async getNodes(options: Paged<HierarchyRequestOptions<IModelToken>>, parentKey?: NodeKey): Promise<Node[]> {
     return this.request<Node[], Paged<HierarchyRequestOptions<IModelToken>>>(
       this.rpcClient, this.rpcClient.getNodes, this.createRequestOptions(options), parentKey);
   }
-  public async getNodesCount(options: HierarchyRequestOptions<IModelToken>, parentKey?: Readonly<NodeKey>): Promise<number> {
+  public async getNodesCount(options: HierarchyRequestOptions<IModelToken>, parentKey?: NodeKey): Promise<number> {
     return this.request<number, HierarchyRequestOptions<IModelToken>>(
       this.rpcClient, this.rpcClient.getNodesCount, this.createRequestOptions(options), parentKey);
   }
@@ -173,23 +173,23 @@ export default class RpcRequestsHandler implements IDisposable {
       this.rpcClient, this.rpcClient.getFilteredNodePaths, this.createRequestOptions(options), filterText);
   }
 
-  public async getContentDescriptor(options: ContentRequestOptions<IModelToken>, displayType: string, keys: Readonly<KeySet>, selection: Readonly<SelectionInfo> | undefined): Promise<Descriptor | undefined> {
+  public async getContentDescriptor(options: ContentRequestOptions<IModelToken>, displayType: string, keys: KeySet, selection: SelectionInfo | undefined): Promise<Descriptor | undefined> {
     return this.request<Descriptor | undefined, ContentRequestOptions<IModelToken>>(
       this.rpcClient, this.rpcClient.getContentDescriptor, this.createRequestOptions(options), displayType, keys, selection);
   }
-  public async getContentSetSize(options: ContentRequestOptions<IModelToken>, descriptorOrOverrides: Readonly<Descriptor> | DescriptorOverrides, keys: Readonly<KeySet>): Promise<number> {
+  public async getContentSetSize(options: ContentRequestOptions<IModelToken>, descriptorOrOverrides: Descriptor | DescriptorOverrides, keys: KeySet): Promise<number> {
     return this.request<number, ContentRequestOptions<IModelToken>>(
       this.rpcClient, this.rpcClient.getContentSetSize, this.createRequestOptions(options), descriptorOrOverrides, keys);
   }
-  public async getContent(options: ContentRequestOptions<IModelToken>, descriptorOrOverrides: Readonly<Descriptor> | DescriptorOverrides, keys: Readonly<KeySet>): Promise<Content | undefined> {
+  public async getContent(options: ContentRequestOptions<IModelToken>, descriptorOrOverrides: Descriptor | DescriptorOverrides, keys: KeySet): Promise<Content | undefined> {
     return this.request<Content | undefined, ContentRequestOptions<IModelToken>>(
       this.rpcClient, this.rpcClient.getContent, this.createRequestOptions(options), descriptorOrOverrides, keys);
   }
-  public async getContentAndSize(options: ContentRequestOptions<IModelToken>, descriptorOrOverrides: Readonly<Descriptor> | DescriptorOverrides, keys: Readonly<KeySet>): Promise<ContentResponse> {
+  public async getContentAndSize(options: ContentRequestOptions<IModelToken>, descriptorOrOverrides: Descriptor | DescriptorOverrides, keys: KeySet): Promise<ContentResponse> {
     return this.request<ContentResponse, ContentRequestOptions<IModelToken>, any>(
       this.rpcClient, this.rpcClient.getContentAndSize, this.createRequestOptions(options), descriptorOrOverrides, keys);
   }
-  public async getDistinctValues(options: ContentRequestOptions<IModelToken>, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>, fieldName: string, maximumValueCount: number): Promise<string[]> {
+  public async getDistinctValues(options: ContentRequestOptions<IModelToken>, descriptor: Descriptor, keys: KeySet, fieldName: string, maximumValueCount: number): Promise<string[]> {
     return this.request<string[], ContentRequestOptions<IModelToken>>(
       this.rpcClient, this.rpcClient.getDistinctValues, this.createRequestOptions(options), descriptor, keys, fieldName, maximumValueCount);
   }

@@ -192,7 +192,7 @@ describe("Table withUnifiedSelection", () => {
         selectionHandler={selectionHandlerMock.object}
         selectionLevel={3}
       />);
-      dataProviderMock.verify((x) => x.keys = keysOverall, moq.Times.once());
+      dataProviderMock.verify((x) => x.keys = moq.isKeySet(keysOverall), moq.Times.once());
     });
 
     it("sets data provider keys to selection when mounts and highest selection level is equal to boundary", () => {
@@ -207,7 +207,7 @@ describe("Table withUnifiedSelection", () => {
         selectionHandler={selectionHandlerMock.object}
         selectionLevel={3}
       />);
-      dataProviderMock.verify((x) => x.keys = keysOverall, moq.Times.once());
+      dataProviderMock.verify((x) => x.keys = moq.isKeySet(keysOverall), moq.Times.once());
     });
 
     it("sets data provider keys to selection when mounts and data provider already has keys", () => {
@@ -222,7 +222,7 @@ describe("Table withUnifiedSelection", () => {
         dataProvider={dataProviderMock.object}
         selectionHandler={selectionHandlerMock.object}
       />);
-      dataProviderMock.verify((x) => x.keys = keysNew, moq.Times.once());
+      dataProviderMock.verify((x) => x.keys = moq.isKeySet(keysNew), moq.Times.once());
     });
 
     it("does nothing when mounts and data provider already has keys and there are no available selection levels", () => {
@@ -455,7 +455,7 @@ describe("Table withUnifiedSelection", () => {
           selectionLevel={2}
         />);
         triggerSelectionChange(keys, 1);
-        dataProviderMock.verify((x) => x.keys = keys, moq.Times.once());
+        dataProviderMock.verify((x) => x.keys = moq.isKeySet(keys), moq.Times.once());
       });
 
       it("sets data provider keys to an empty KeySet on selection changes with lower selection level when overall selection is empty", () => {

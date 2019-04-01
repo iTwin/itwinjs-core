@@ -120,14 +120,14 @@ export default class PresentationRpcImpl extends PresentationRpcInterface {
     return this.successResponse(result);
   }
 
-  public async getNodesAndCount(token: IModelToken, requestOptions: Paged<HierarchyRpcRequestOptions>, parentKey?: Readonly<NodeKey>): PresentationRpcResponse<NodesResponse> {
+  public async getNodesAndCount(token: IModelToken, requestOptions: Paged<HierarchyRpcRequestOptions>, parentKey?: NodeKey): PresentationRpcResponse<NodesResponse> {
     const contentGetter: ContentGetter<Promise<NodesResponse>> = async (requestContext, options) =>
       this.getManager(requestOptions.clientId).getNodesAndCount(requestContext, options, parentKey);
 
     return this.makeRequest(token, requestOptions, contentGetter);
   }
 
-  public async getNodes(token: IModelToken, requestOptions: Paged<HierarchyRpcRequestOptions>, parentKey?: Readonly<NodeKey>): PresentationRpcResponse<Node[]> {
+  public async getNodes(token: IModelToken, requestOptions: Paged<HierarchyRpcRequestOptions>, parentKey?: NodeKey): PresentationRpcResponse<Node[]> {
     const contentGetter: ContentGetter<Promise<Node[]>> = async (requestContext, options) => [
       ...await this.getManager(requestOptions.clientId).getNodes(requestContext, options, parentKey),
     ];
@@ -135,7 +135,7 @@ export default class PresentationRpcImpl extends PresentationRpcInterface {
     return this.makeRequest(token, requestOptions, contentGetter);
   }
 
-  public async getNodesCount(token: IModelToken, requestOptions: HierarchyRpcRequestOptions, parentKey?: Readonly<NodeKey>): PresentationRpcResponse<number> {
+  public async getNodesCount(token: IModelToken, requestOptions: HierarchyRpcRequestOptions, parentKey?: NodeKey): PresentationRpcResponse<number> {
     const contentGetter: ContentGetter<Promise<number>> = (requestContext, options) =>
       this.getManager(requestOptions.clientId).getNodesCount(requestContext, options, parentKey);
 
@@ -156,8 +156,8 @@ export default class PresentationRpcImpl extends PresentationRpcInterface {
     return this.makeRequest(token, requestOptions, contentGetter);
   }
 
-  public async getContentDescriptor(token: IModelToken, requestOptions: ContentRpcRequestOptions, displayType: string, keys: Readonly<KeySet>, selection: Readonly<SelectionInfo> | undefined): PresentationRpcResponse<Readonly<Descriptor> | undefined> {
-    const contentGetter: ContentGetter<Promise<Readonly<Descriptor> | undefined>> = async (requestContext, options) => {
+  public async getContentDescriptor(token: IModelToken, requestOptions: ContentRpcRequestOptions, displayType: string, keys: KeySet, selection: SelectionInfo | undefined): PresentationRpcResponse<Descriptor | undefined> {
+    const contentGetter: ContentGetter<Promise<Descriptor | undefined>> = async (requestContext, options) => {
       const descriptor = await this.getManager(requestOptions.clientId).getContentDescriptor(requestContext, options, displayType, keys, selection);
       requestContext.enter();
       if (descriptor)
@@ -168,14 +168,14 @@ export default class PresentationRpcImpl extends PresentationRpcInterface {
     return this.makeRequest(token, requestOptions, contentGetter);
   }
 
-  public async getContentSetSize(token: IModelToken, requestOptions: ContentRpcRequestOptions, descriptorOrOverrides: Readonly<Descriptor> | DescriptorOverrides, keys: Readonly<KeySet>): PresentationRpcResponse<number> {
+  public async getContentSetSize(token: IModelToken, requestOptions: ContentRpcRequestOptions, descriptorOrOverrides: Descriptor | DescriptorOverrides, keys: KeySet): PresentationRpcResponse<number> {
     const contentGetter: ContentGetter<Promise<number>> = async (requestContext, options) =>
       this.getManager(requestOptions.clientId).getContentSetSize(requestContext, options, descriptorOrOverrides, keys);
     return this.makeRequest(token, requestOptions, contentGetter);
   }
 
-  public async getContentAndSize(token: IModelToken, requestOptions: ContentRpcRequestOptions, descriptorOrOverrides: Readonly<Descriptor> | DescriptorOverrides, keys: Readonly<KeySet>): PresentationRpcResponse<Readonly<ContentResponse>> {
-    const contentGetter: ContentGetter<Promise<Readonly<ContentResponse>>> = async (requestContext, options) => {
+  public async getContentAndSize(token: IModelToken, requestOptions: ContentRpcRequestOptions, descriptorOrOverrides: Descriptor | DescriptorOverrides, keys: KeySet): PresentationRpcResponse<ContentResponse> {
+    const contentGetter: ContentGetter<Promise<ContentResponse>> = async (requestContext, options) => {
       const result = await this.getManager(requestOptions.clientId).getContentAndSize(requestContext, options, descriptorOrOverrides, keys);
       requestContext.enter();
       if (result.content)
@@ -185,8 +185,8 @@ export default class PresentationRpcImpl extends PresentationRpcInterface {
     return this.makeRequest(token, requestOptions, contentGetter);
   }
 
-  public async getContent(token: IModelToken, requestOptions: Paged<ContentRpcRequestOptions>, descriptorOrOverrides: Readonly<Descriptor> | DescriptorOverrides, keys: Readonly<KeySet>): PresentationRpcResponse<Readonly<Content> | undefined> {
-    const contentGetter: ContentGetter<Promise<Readonly<Content> | undefined>> = async (requestContext, options) => {
+  public async getContent(token: IModelToken, requestOptions: Paged<ContentRpcRequestOptions>, descriptorOrOverrides: Descriptor | DescriptorOverrides, keys: KeySet): PresentationRpcResponse<Content | undefined> {
+    const contentGetter: ContentGetter<Promise<Content | undefined>> = async (requestContext, options) => {
       const content = await this.getManager(requestOptions.clientId).getContent(requestContext, options, descriptorOrOverrides, keys);
       requestContext.enter();
       if (content)
@@ -196,7 +196,7 @@ export default class PresentationRpcImpl extends PresentationRpcInterface {
     return this.makeRequest(token, requestOptions, contentGetter);
   }
 
-  public async getDistinctValues(token: IModelToken, requestOptions: ContentRpcRequestOptions, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>, fieldName: string, maximumValueCount: number): PresentationRpcResponse<string[]> {
+  public async getDistinctValues(token: IModelToken, requestOptions: ContentRpcRequestOptions, descriptor: Descriptor, keys: KeySet, fieldName: string, maximumValueCount: number): PresentationRpcResponse<string[]> {
     const contentGetter: ContentGetter<Promise<string[]>> = (requestContext, options) =>
       this.getManager(requestOptions.clientId).getDistinctValues(requestContext, options, descriptor, keys, fieldName, maximumValueCount);
 
@@ -222,7 +222,7 @@ export default class PresentationRpcImpl extends PresentationRpcInterface {
     return this.makeRequest(token, requestOptions, contentGetter);
   }
 
-  public async computeSelection(token: IModelToken, requestOptions: SelectionScopeRpcRequestOptions, ids: Readonly<Id64String[]>, scopeId: string): PresentationRpcResponse<KeySet> {
+  public async computeSelection(token: IModelToken, requestOptions: SelectionScopeRpcRequestOptions, ids: Id64String[], scopeId: string): PresentationRpcResponse<KeySet> {
     const contentGetter: ContentGetter<Promise<KeySet>> = (requestContext, options) =>
       this.getManager(requestOptions.clientId).computeSelection(requestContext, options, ids, scopeId);
 

@@ -59,18 +59,18 @@ export class ContentDataProvider implements IContentDataProvider {
     readonly displayType: string;
     // (undocumented)
     dispose(): void;
-    getContent(pageOptions?: PageOptions): Promise<Readonly<Content> | undefined>;
-    getContentDescriptor: (() => Promise<Readonly<Descriptor> | undefined>) & _.MemoizedFunction;
+    getContent(pageOptions?: PageOptions): Promise<Content | undefined>;
+    getContentDescriptor: (() => Promise<Descriptor | undefined>) & _.MemoizedFunction;
     getContentSetSize(): Promise<number>;
     protected getDescriptorOverrides(): DescriptorOverrides;
     imodel: IModelConnection;
     // Warning: (ae-forgotten-export) The symbol "CacheInvalidationProps" needs to be exported by the entry point presentation-components.d.ts
     protected invalidateCache(props: CacheInvalidationProps): void;
     protected isFieldHidden(_field: Field): boolean;
-    keys: Readonly<KeySet>;
+    keys: KeySet;
     pagingSize: number | undefined;
     rulesetId: string;
-    selectionInfo: Readonly<SelectionInfo> | undefined;
+    selectionInfo: SelectionInfo | undefined;
     protected shouldConfigureContentDescriptor(): boolean;
     protected shouldExcludeFromDescriptor(field: Field): boolean;
     protected shouldRequestContentForEmptyKeyset(): boolean;

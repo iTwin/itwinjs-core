@@ -611,7 +611,6 @@ export class KeySet {
     readonly nodeKeys: Set<NodeKey>;
     readonly nodeKeysCount: number;
     readonly size: number;
-    toJSON(): KeySetJSON;
 }
 
 // @public
@@ -855,36 +854,36 @@ export class PresentationError extends BentleyError {
 // @public
 export class PresentationRpcInterface extends RpcInterface {
     // (undocumented)
-    computeSelection(_token: IModelToken, _options: SelectionScopeRpcRequestOptions, _ids: Readonly<Id64String[]>, _scopeId: string): PresentationRpcResponse<KeySet>;
+    computeSelection(_token: IModelToken, _options: SelectionScopeRpcRequestOptions, _ids: Id64String[], _scopeId: string): PresentationRpcResponse<KeySet>;
     // (undocumented)
-    getContent(_token: IModelToken, _options: ContentRpcRequestOptions, _descriptorOrOverrides: Readonly<Descriptor> | DescriptorOverrides, _keys: Readonly<KeySet>): PresentationRpcResponse<Content | undefined>;
+    getContent(_token: IModelToken, _options: ContentRpcRequestOptions, _descriptorOrOverrides: Descriptor | DescriptorOverrides, _keys: KeySet): PresentationRpcResponse<Content | undefined>;
     // (undocumented)
-    getContentAndSize(_token: IModelToken, _options: ContentRpcRequestOptions, _descriptorOrOverrides: Readonly<Descriptor> | DescriptorOverrides, _keys: Readonly<KeySet>): PresentationRpcResponse<ContentResponse>;
+    getContentAndSize(_token: IModelToken, _options: ContentRpcRequestOptions, _descriptorOrOverrides: Descriptor | DescriptorOverrides, _keys: KeySet): PresentationRpcResponse<ContentResponse>;
     // (undocumented)
-    getContentDescriptor(_token: IModelToken, _options: ContentRpcRequestOptions, _displayType: string, _keys: Readonly<KeySet>, _selection: Readonly<SelectionInfo> | undefined): PresentationRpcResponse<Descriptor | undefined>;
+    getContentDescriptor(_token: IModelToken, _options: ContentRpcRequestOptions, _displayType: string, _keys: KeySet, _selection: SelectionInfo | undefined): PresentationRpcResponse<Descriptor | undefined>;
     // (undocumented)
-    getContentSetSize(_token: IModelToken, _options: ContentRpcRequestOptions, _descriptorOrOverrides: Readonly<Descriptor> | DescriptorOverrides, _keys: Readonly<KeySet>): PresentationRpcResponse<number>;
+    getContentSetSize(_token: IModelToken, _options: ContentRpcRequestOptions, _descriptorOrOverrides: Descriptor | DescriptorOverrides, _keys: KeySet): PresentationRpcResponse<number>;
     // (undocumented)
     getDisplayLabel(_token: IModelToken, _options: LabelRpcRequestOptions, _key: InstanceKey): PresentationRpcResponse<string>;
     // (undocumented)
     getDisplayLabels(_token: IModelToken, _options: LabelRpcRequestOptions, _keys: InstanceKey[]): PresentationRpcResponse<string[]>;
     // (undocumented)
-    getDistinctValues(_token: IModelToken, _options: ContentRpcRequestOptions, _descriptor: Readonly<Descriptor>, _keys: Readonly<KeySet>, _fieldName: string, _maximumValueCount: number): PresentationRpcResponse<string[]>;
+    getDistinctValues(_token: IModelToken, _options: ContentRpcRequestOptions, _descriptor: Descriptor, _keys: KeySet, _fieldName: string, _maximumValueCount: number): PresentationRpcResponse<string[]>;
     // (undocumented)
     getFilteredNodePaths(_token: IModelToken, _options: HierarchyRpcRequestOptions, _filterText: string): PresentationRpcResponse<NodePathElement[]>;
     // (undocumented)
     getNodePaths(_token: IModelToken, _options: HierarchyRpcRequestOptions, _paths: InstanceKey[][], _markedIndex: number): PresentationRpcResponse<NodePathElement[]>;
     // (undocumented)
-    getNodes(_token: IModelToken, _options: Paged<HierarchyRpcRequestOptions>, _parentKey?: Readonly<NodeKey>): PresentationRpcResponse<Node[]>;
+    getNodes(_token: IModelToken, _options: Paged<HierarchyRpcRequestOptions>, _parentKey?: NodeKey): PresentationRpcResponse<Node[]>;
     // (undocumented)
-    getNodesAndCount(_token: IModelToken, _options: Paged<HierarchyRpcRequestOptions>, _parentKey?: Readonly<NodeKey>): PresentationRpcResponse<NodesResponse>;
+    getNodesAndCount(_token: IModelToken, _options: Paged<HierarchyRpcRequestOptions>, _parentKey?: NodeKey): PresentationRpcResponse<NodesResponse>;
     // (undocumented)
-    getNodesCount(_token: IModelToken, _options: HierarchyRpcRequestOptions, _parentKey?: Readonly<NodeKey>): PresentationRpcResponse<number>;
+    getNodesCount(_token: IModelToken, _options: HierarchyRpcRequestOptions, _parentKey?: NodeKey): PresentationRpcResponse<number>;
     // (undocumented)
     getSelectionScopes(_token: IModelToken, _options: SelectionScopeRpcRequestOptions): PresentationRpcResponse<SelectionScope[]>;
     // (undocumented)
     syncClientState(_token: IModelToken, _options: ClientStateSyncRequestOptions): PresentationRpcResponse;
-    static types: () => (typeof Field | typeof PropertiesField | typeof NestedContentField | typeof Descriptor | typeof Item | typeof Content)[];
+    static types: () => (typeof KeySet | typeof Field | typeof PropertiesField | typeof NestedContentField | typeof Descriptor | typeof Item | typeof Content)[];
     static version: string;
 }
 
@@ -1210,29 +1209,29 @@ export class RpcRequestsHandler implements IDisposable {
     // (undocumented)
     dispose(): void;
     // (undocumented)
-    getContent(options: ContentRequestOptions<IModelToken>, descriptorOrOverrides: Readonly<Descriptor> | DescriptorOverrides, keys: Readonly<KeySet>): Promise<Content | undefined>;
+    getContent(options: ContentRequestOptions<IModelToken>, descriptorOrOverrides: Descriptor | DescriptorOverrides, keys: KeySet): Promise<Content | undefined>;
     // (undocumented)
-    getContentAndSize(options: ContentRequestOptions<IModelToken>, descriptorOrOverrides: Readonly<Descriptor> | DescriptorOverrides, keys: Readonly<KeySet>): Promise<ContentResponse>;
+    getContentAndSize(options: ContentRequestOptions<IModelToken>, descriptorOrOverrides: Descriptor | DescriptorOverrides, keys: KeySet): Promise<ContentResponse>;
     // (undocumented)
-    getContentDescriptor(options: ContentRequestOptions<IModelToken>, displayType: string, keys: Readonly<KeySet>, selection: Readonly<SelectionInfo> | undefined): Promise<Descriptor | undefined>;
+    getContentDescriptor(options: ContentRequestOptions<IModelToken>, displayType: string, keys: KeySet, selection: SelectionInfo | undefined): Promise<Descriptor | undefined>;
     // (undocumented)
-    getContentSetSize(options: ContentRequestOptions<IModelToken>, descriptorOrOverrides: Readonly<Descriptor> | DescriptorOverrides, keys: Readonly<KeySet>): Promise<number>;
+    getContentSetSize(options: ContentRequestOptions<IModelToken>, descriptorOrOverrides: Descriptor | DescriptorOverrides, keys: KeySet): Promise<number>;
     // (undocumented)
     getDisplayLabel(options: LabelRequestOptions<IModelToken>, key: InstanceKey): Promise<string>;
     // (undocumented)
     getDisplayLabels(options: LabelRequestOptions<IModelToken>, keys: InstanceKey[]): Promise<string[]>;
     // (undocumented)
-    getDistinctValues(options: ContentRequestOptions<IModelToken>, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>, fieldName: string, maximumValueCount: number): Promise<string[]>;
+    getDistinctValues(options: ContentRequestOptions<IModelToken>, descriptor: Descriptor, keys: KeySet, fieldName: string, maximumValueCount: number): Promise<string[]>;
     // (undocumented)
     getFilteredNodePaths(options: HierarchyRequestOptions<IModelToken>, filterText: string): Promise<NodePathElement[]>;
     // (undocumented)
     getNodePaths(options: HierarchyRequestOptions<IModelToken>, paths: InstanceKey[][], markedIndex: number): Promise<NodePathElement[]>;
     // (undocumented)
-    getNodes(options: Paged<HierarchyRequestOptions<IModelToken>>, parentKey?: Readonly<NodeKey>): Promise<Node[]>;
+    getNodes(options: Paged<HierarchyRequestOptions<IModelToken>>, parentKey?: NodeKey): Promise<Node[]>;
     // (undocumented)
-    getNodesAndCount(options: Paged<HierarchyRequestOptions<IModelToken>>, parentKey?: Readonly<NodeKey>): Promise<NodesResponse>;
+    getNodesAndCount(options: Paged<HierarchyRequestOptions<IModelToken>>, parentKey?: NodeKey): Promise<NodesResponse>;
     // (undocumented)
-    getNodesCount(options: HierarchyRequestOptions<IModelToken>, parentKey?: Readonly<NodeKey>): Promise<number>;
+    getNodesCount(options: HierarchyRequestOptions<IModelToken>, parentKey?: NodeKey): Promise<number>;
     // (undocumented)
     getSelectionScopes(options: SelectionScopeRequestOptions<IModelToken>): Promise<SelectionScope[]>;
     // (undocumented)

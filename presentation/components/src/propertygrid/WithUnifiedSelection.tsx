@@ -112,7 +112,7 @@ export function propertyGridWithUnifiedSelection<P extends PropertyGridProps>(Pr
       }
     }
 
-    private getSelectedKeys(selectionLevel?: number): Readonly<KeySet> | undefined {
+    private getSelectedKeys(selectionLevel?: number): KeySet | undefined {
       if (undefined === selectionLevel) {
         const availableLevels = this._selectionHandler!.getSelectionLevels();
         if (0 === availableLevels.length)
@@ -123,12 +123,12 @@ export function propertyGridWithUnifiedSelection<P extends PropertyGridProps>(Pr
       for (let i = selectionLevel; i >= 0; i--) {
         const selection = this._selectionHandler!.getSelection(i);
         if (!selection.isEmpty)
-          return selection;
+          return new KeySet(selection);
       }
       return new KeySet();
     }
 
-    private setDataProviderSelection(selection: Readonly<KeySet>): void {
+    private setDataProviderSelection(selection: KeySet): void {
       this.props.dataProvider.keys = selection;
     }
 

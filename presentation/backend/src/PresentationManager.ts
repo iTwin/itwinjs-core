@@ -6,7 +6,7 @@
 
 import * as path from "path";
 import { ClientRequestContext, Id64String, Id64 } from "@bentley/bentleyjs-core";
-import { IModelDb, GeometricElement } from "@bentley/imodeljs-backend";
+import { IModelDb, Element, GeometricElement } from "@bentley/imodeljs-backend";
 import {
   PresentationError, PresentationStatus,
   HierarchyRequestOptions, NodeKey, Node, NodePathElement,
@@ -17,6 +17,7 @@ import {
   compareInstanceKeys,
   ContentFlags,
 } from "@bentley/presentation-common";
+import { toJSON as keysetToJSON } from "@bentley/presentation-common/lib/KeySet";
 import { listReviver as nodesListReviver } from "@bentley/presentation-common/lib/hierarchy/Node";
 import { listReviver as nodePathElementReviver } from "@bentley/presentation-common/lib/hierarchy/NodePathElement";
 import { NativePlatformDefinition, createDefaultNativePlatform, NativePlatformRequestTypes } from "./NativePlatform";
@@ -228,7 +229,7 @@ export default class PresentationManager {
     requestContext.enter();
     const params = this.createRequestParams(NativePlatformRequestTypes.GetContentDescriptor, requestOptions, {
       displayType,
-      keys,
+      keys: keysetToJSON(this.getKeysForContentRequest(requestOptions.imodel, keys)),
       selection,
     });
     return this.request<Descriptor | undefined>(requestContext, requestOptions.imodel, params, Descriptor.reviver);
@@ -247,7 +248,7 @@ export default class PresentationManager {
   public async getContentSetSize(requestContext: ClientRequestContext, requestOptions: ContentRequestOptions<IModelDb>, descriptorOrOverrides: Readonly<Descriptor> | DescriptorOverrides, keys: Readonly<KeySet>): Promise<number> {
     requestContext.enter();
     const params = this.createRequestParams(NativePlatformRequestTypes.GetContentSetSize, requestOptions, {
-      keys,
+      keys: keysetToJSON(this.getKeysForContentRequest(requestOptions.imodel, keys)),
       descriptorOverrides: this.createContentDescriptorOverrides(descriptorOrOverrides),
     });
     // wip: the try/catch block is a temp workaround until native platform changes
@@ -272,7 +273,7 @@ export default class PresentationManager {
   public async getContent(requestContext: ClientRequestContext, requestOptions: Paged<ContentRequestOptions<IModelDb>>, descriptorOrOverrides: Readonly<Descriptor> | DescriptorOverrides, keys: Readonly<KeySet>): Promise<Readonly<Content> | undefined> {
     requestContext.enter();
     const params = this.createRequestParams(NativePlatformRequestTypes.GetContent, requestOptions, {
-      keys,
+      keys: keysetToJSON(this.getKeysForContentRequest(requestOptions.imodel, keys)),
       descriptorOverrides: this.createContentDescriptorOverrides(descriptorOrOverrides),
     });
     // wip: the try/catch block is a temp workaround until native platform changes
@@ -311,10 +312,10 @@ export default class PresentationManager {
     }
   }
 
-  private createContentDescriptorOverrides(descriptorOrOverrides: Readonly<Descriptor> | DescriptorOverrides) {
+  private createContentDescriptorOverrides(descriptorOrOverrides: Readonly<Descriptor> | DescriptorOverrides): DescriptorOverrides {
     if (descriptorOrOverrides instanceof Descriptor)
       return descriptorOrOverrides.createDescriptorOverrides();
-    return descriptorOrOverrides;
+    return descriptorOrOverrides as DescriptorOverrides;
   }
 
   /**
@@ -330,8 +331,8 @@ export default class PresentationManager {
   public async getDistinctValues(requestContext: ClientRequestContext, requestOptions: ContentRequestOptions<IModelDb>, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>, fieldName: string, maximumValueCount: number = 0): Promise<string[]> {
     requestContext.enter();
     const params = this.createRequestParams(NativePlatformRequestTypes.GetDistinctValues, requestOptions, {
+      keys: keysetToJSON(this.getKeysForContentRequest(requestOptions.imodel, keys)),
       descriptorOverrides: descriptor.createDescriptorOverrides(),
-      keys,
       fieldName,
       maximumValueCount,
     });
@@ -357,14 +358,18 @@ export default class PresentationManager {
    * @param instanceKeys Keys of instances to get labels for
    */
   public async getDisplayLabels(requestContext: ClientRequestContext, requestOptions: LabelRequestOptions<IModelDb>, instanceKeys: InstanceKey[]): Promise<string[]> {
-    const keys = new KeySet(instanceKeys);
+    instanceKeys = instanceKeys.map((k) => {
+      if (k.className === "BisCore:Element")
+        return this.getElementKey(requestOptions.imodel, k.id);
+      return k;
+    });
     const rulesetId = "RulesDrivenECPresentationManager_RulesetId_DisplayLabel";
     const overrides: DescriptorOverrides = {
       displayType: DefaultContentDisplayTypes.LIST,
       contentFlags: ContentFlags.ShowLabels | ContentFlags.NoFields,
       hiddenFieldNames: [],
     };
-    const content = await this.getContent(requestContext, { ...requestOptions, rulesetId }, overrides, keys);
+    const content = await this.getContent(requestContext, { ...requestOptions, rulesetId }, overrides, new KeySet(instanceKeys));
     requestContext.enter();
     return instanceKeys.map((key) => {
       const item = content ? content.contentSet.find((it) => it.primaryKeys.length > 0 && compareInstanceKeys(it.primaryKeys[0], key) === 0) : undefined;
@@ -399,8 +404,14 @@ export default class PresentationManager {
   }
 
   private getElementKey(imodel: IModelDb, id: Id64String): InstanceKey {
-    const props = imodel.elements.getElementProps(id);
-    return { className: props.classFullName, id: props.id! };
+    let key: InstanceKey;
+    const query = `SELECT ECClassId FROM ${Element.classFullName} e WHERE ECInstanceId = ?`;
+    imodel.withPreparedStatement(query, (stmt) => {
+      stmt.bindId(1, id);
+      stmt.step();
+      key = { className: stmt.getValue(0).getClassNameForClassId().replace(".", ":"), id };
+    });
+    return key!;
   }
 
   private computeElementSelection(requestOptions: SelectionScopeRequestOptions<IModelDb>, ids: Id64String[]) {
@@ -415,11 +426,7 @@ export default class PresentationManager {
     const parentRelProps = imodel.elements.getElementProps(id).parent;
     if (!parentRelProps)
       return undefined;
-    const parentProps = imodel.elements.getElementProps(parentRelProps.id);
-    return {
-      className: parentProps!.classFullName,
-      id: parentProps!.id!,
-    };
+    return this.getElementKey(imodel, parentRelProps.id);
   }
 
   private computeAssemblySelection(requestOptions: SelectionScopeRequestOptions<IModelDb>, ids: Id64String[]) {
@@ -519,6 +526,22 @@ export default class PresentationManager {
       },
     };
     return JSON.stringify(request);
+  }
+
+  private getKeysForContentRequest(imodel: IModelDb, keys: Readonly<KeySet>): Readonly<KeySet> {
+    const elementClassName = "BisCore:Element";
+    const instanceKeys = keys.instanceKeys;
+    if (!instanceKeys.has(elementClassName))
+      return keys;
+
+    const elementIds = instanceKeys.get(elementClassName)!;
+    const keyset = new KeySet();
+    keyset.add(keys);
+    elementIds.forEach((elementId) => {
+      keyset.delete({ className: elementClassName, id: elementId });
+      keyset.add(this.getElementKey(imodel, elementId));
+    });
+    return keyset;
   }
 }
 

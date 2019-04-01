@@ -56,24 +56,6 @@ export default class KeySet {
   public get guid(): GuidString { return this._guid; }
 
   /**
-   * Serializes this KeySet to JSON
-   *
-   * @hidden
-   */
-  public toJSON(): KeySetJSON {
-    const instanceKeys = new Array();
-    for (const entry of this._instanceKeys.entries())
-      instanceKeys.push([entry["0"], [...entry["1"]]]);
-    const nodeKeys = new Array<NodeKeyJSON>();
-    for (const serializedKey of this._nodeKeys.values())
-      nodeKeys.push(JSON.parse(serializedKey));
-    return {
-      instanceKeys,
-      nodeKeys,
-    };
-  }
-
-  /**
    * Get a map of instance keys stored in this KeySet
    *
    * **Warning**: getting instance keys might be expensive for
@@ -410,4 +392,25 @@ export default class KeySet {
   public get isEmpty(): boolean {
     return 0 === this.size;
   }
+}
+
+
+/**
+ * Serializes this KeySet to JSON
+ *
+ * @hidden
+ */
+export const toJSON = (keyset: Readonly<KeySet>): KeySetJSON => {
+  const instanceKeys = new Array();
+  for (const entry of (keyset as any)._instanceKeys.entries()) {
+    if (entry["1"].size > 0)
+      instanceKeys.push([entry["0"], [...entry["1"]]]);
+  }
+  const nodeKeys = new Array<NodeKeyJSON>();
+  for (const serializedKey of (keyset as any)._nodeKeys.values())
+    nodeKeys.push(JSON.parse(serializedKey));
+  return {
+    instanceKeys,
+    nodeKeys,
+  };
 }

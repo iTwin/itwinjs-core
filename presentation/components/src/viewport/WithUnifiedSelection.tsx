@@ -184,7 +184,7 @@ export class ViewportSelectionHandler implements IDisposable {
     const asyncId = Guid.createValue();
     this._asyncsInProgress.add(asyncId);
     this._isInSelectedElementsRequest = true;
-    const ids = await this._selectedElementsProvider.getElementIds(selection, selectionInfo);
+    const ids = await this._selectedElementsProvider.getElementIds(new KeySet(selection), selectionInfo);
     try {
       imodel.hilited.elements.clear(); // don't call clear on HilitedSet to avoid event firing
       imodel.hilited.setHilite(ids, true);
@@ -231,7 +231,7 @@ class SelectedElementsProvider extends ContentDataProvider {
       contentFlags: ContentFlags.KeysOnly,
     };
   }
-  public async getElementIds(keys: Readonly<KeySet>, info: SelectionInfo): Promise<Id64String[]> {
+  public async getElementIds(keys: KeySet, info: SelectionInfo): Promise<Id64String[]> {
     this.keys = keys;
     this.selectionInfo = info;
 

@@ -63,6 +63,7 @@ export default class PresentationRpcInterface extends RpcInterface {
   /** The types that can be marshaled by the interface. */
   /* istanbul ignore next */
   public static types = () => [
+    KeySet,
     Descriptor,
     Content,
     Field,
@@ -79,23 +80,23 @@ export default class PresentationRpcInterface extends RpcInterface {
     NOTE: Please consult the README in core/common/src/rpc for the semantic versioning rules.
   ===========================================================================================*/
 
-  public async getNodesAndCount(_token: IModelToken, _options: Paged<HierarchyRpcRequestOptions>, _parentKey?: Readonly<NodeKey>): PresentationRpcResponse<NodesResponse> { return this.forward(arguments); }
-  public async getNodes(_token: IModelToken, _options: Paged<HierarchyRpcRequestOptions>, _parentKey?: Readonly<NodeKey>): PresentationRpcResponse<Node[]> { return this.forward(arguments); }
-  public async getNodesCount(_token: IModelToken, _options: HierarchyRpcRequestOptions, _parentKey?: Readonly<NodeKey>): PresentationRpcResponse<number> { return this.forward(arguments); }
+  public async getNodesAndCount(_token: IModelToken, _options: Paged<HierarchyRpcRequestOptions>, _parentKey?: NodeKey): PresentationRpcResponse<NodesResponse> { return this.forward(arguments); }
+  public async getNodes(_token: IModelToken, _options: Paged<HierarchyRpcRequestOptions>, _parentKey?: NodeKey): PresentationRpcResponse<Node[]> { return this.forward(arguments); }
+  public async getNodesCount(_token: IModelToken, _options: HierarchyRpcRequestOptions, _parentKey?: NodeKey): PresentationRpcResponse<number> { return this.forward(arguments); }
   public async getNodePaths(_token: IModelToken, _options: HierarchyRpcRequestOptions, _paths: InstanceKey[][], _markedIndex: number): PresentationRpcResponse<NodePathElement[]> { return this.forward(arguments); }
   public async getFilteredNodePaths(_token: IModelToken, _options: HierarchyRpcRequestOptions, _filterText: string): PresentationRpcResponse<NodePathElement[]> { return this.forward(arguments); }
 
-  public async getContentDescriptor(_token: IModelToken, _options: ContentRpcRequestOptions, _displayType: string, _keys: Readonly<KeySet>, _selection: Readonly<SelectionInfo> | undefined): PresentationRpcResponse<Descriptor | undefined> { return this.forward(arguments); }
-  public async getContentSetSize(_token: IModelToken, _options: ContentRpcRequestOptions, _descriptorOrOverrides: Readonly<Descriptor> | DescriptorOverrides, _keys: Readonly<KeySet>): PresentationRpcResponse<number> { return this.forward(arguments); }
-  public async getContent(_token: IModelToken, _options: ContentRpcRequestOptions, _descriptorOrOverrides: Readonly<Descriptor> | DescriptorOverrides, _keys: Readonly<KeySet>): PresentationRpcResponse<Content | undefined> { return this.forward(arguments); }
-  public async getContentAndSize(_token: IModelToken, _options: ContentRpcRequestOptions, _descriptorOrOverrides: Readonly<Descriptor> | DescriptorOverrides, _keys: Readonly<KeySet>): PresentationRpcResponse<ContentResponse> { return this.forward(arguments); }
-  public async getDistinctValues(_token: IModelToken, _options: ContentRpcRequestOptions, _descriptor: Readonly<Descriptor>, _keys: Readonly<KeySet>, _fieldName: string, _maximumValueCount: number): PresentationRpcResponse<string[]> { return this.forward(arguments); }
+  public async getContentDescriptor(_token: IModelToken, _options: ContentRpcRequestOptions, _displayType: string, _keys: KeySet, _selection: SelectionInfo | undefined): PresentationRpcResponse<Descriptor | undefined> { return this.forward(arguments); }
+  public async getContentSetSize(_token: IModelToken, _options: ContentRpcRequestOptions, _descriptorOrOverrides: Descriptor | DescriptorOverrides, _keys: KeySet): PresentationRpcResponse<number> { return this.forward(arguments); }
+  public async getContent(_token: IModelToken, _options: ContentRpcRequestOptions, _descriptorOrOverrides: Descriptor | DescriptorOverrides, _keys: KeySet): PresentationRpcResponse<Content | undefined> { return this.forward(arguments); }
+  public async getContentAndSize(_token: IModelToken, _options: ContentRpcRequestOptions, _descriptorOrOverrides: Descriptor | DescriptorOverrides, _keys: KeySet): PresentationRpcResponse<ContentResponse> { return this.forward(arguments); }
+  public async getDistinctValues(_token: IModelToken, _options: ContentRpcRequestOptions, _descriptor: Descriptor, _keys: KeySet, _fieldName: string, _maximumValueCount: number): PresentationRpcResponse<string[]> { return this.forward(arguments); }
 
   public async getDisplayLabel(_token: IModelToken, _options: LabelRpcRequestOptions, _key: InstanceKey): PresentationRpcResponse<string> { return this.forward(arguments); }
   public async getDisplayLabels(_token: IModelToken, _options: LabelRpcRequestOptions, _keys: InstanceKey[]): PresentationRpcResponse<string[]> { return this.forward(arguments); }
 
   public async getSelectionScopes(_token: IModelToken, _options: SelectionScopeRpcRequestOptions): PresentationRpcResponse<SelectionScope[]> { return this.forward(arguments); }
-  public async computeSelection(_token: IModelToken, _options: SelectionScopeRpcRequestOptions, _ids: Readonly<Id64String[]>, _scopeId: string): PresentationRpcResponse<KeySet> { return this.forward(arguments); }
+  public async computeSelection(_token: IModelToken, _options: SelectionScopeRpcRequestOptions, _ids: Id64String[], _scopeId: string): PresentationRpcResponse<KeySet> { return this.forward(arguments); }
 
   public async syncClientState(_token: IModelToken, _options: ClientStateSyncRequestOptions): PresentationRpcResponse { return this.forward(arguments); }
 }

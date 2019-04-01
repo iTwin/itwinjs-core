@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fix marshaling class instances through RPC by removing use of Readonly",
+      "packageName": "@bentley/presentation-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-backend",
+  "email": "grigas.p@gmail.com"
+}

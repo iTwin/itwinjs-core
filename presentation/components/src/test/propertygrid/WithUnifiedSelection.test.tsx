@@ -193,7 +193,7 @@ describe("PropertyGrid withUnifiedSelection", () => {
         dataProvider={dataProviderMock.object}
         selectionHandler={selectionHandlerMock.object}
       />);
-      dataProviderMock.verify((x) => x.keys = keysOverall, moq.Times.once());
+      dataProviderMock.verify((x) => x.keys = moq.isKeySet(keysOverall), moq.Times.once());
     });
 
     it("sets data provider keys to overall selection on selection changes", () => {
@@ -214,7 +214,7 @@ describe("PropertyGrid withUnifiedSelection", () => {
         keys: keysAdded,
         timestamp: new Date(),
       }, moq.Mock.ofType<ISelectionProvider>().object);
-      dataProviderMock.verify((x) => x.keys = keysOverall, moq.Times.once());
+      dataProviderMock.verify((x) => x.keys = moq.isKeySet(keysOverall), moq.Times.once());
     });
 
     it("sets data provider keys to an empty KeySet when overall selection is empty", () => {

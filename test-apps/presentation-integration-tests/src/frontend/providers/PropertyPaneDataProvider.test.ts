@@ -34,8 +34,14 @@ describe("PropertyDataProvider", async () => {
     expect(properties).to.matchSnapshot();
   });
 
-  it("creates property data", async () => {
+  it("creates property data when given key with concrete class", async () => {
     provider.keys = new KeySet([physicalModelProps]);
+    const properties = await provider.getData();
+    expect(properties).to.matchSnapshot();
+  });
+
+  it("creates property data when given key with base class", async () => {
+    provider.keys = new KeySet([{ className: "BisCore:Element", id: "0x75" }]);
     const properties = await provider.getData();
     expect(properties).to.matchSnapshot();
   });
