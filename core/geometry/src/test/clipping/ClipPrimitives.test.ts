@@ -86,12 +86,6 @@ function clipPlaneSetsAreEqual(set0: UnionOfConvexClipPlaneSets | undefined, set
 export function clipShapesAreEqual(clip0: ClipShape, clip1: ClipShape): boolean {
   if (!clipPlaneSetsAreEqual(clip0.fetchClipPlanesRef(), clip1.fetchClipPlanesRef()))
     return false;
-  if (clip0.fetchMaskPlanesRef() === undefined && clip1.fetchMaskPlanesRef() !== undefined)
-    return false;
-  if (clip0.fetchMaskPlanesRef() !== undefined && clip1.fetchMaskPlanesRef() === undefined)
-    return false;
-  if (clip0.fetchMaskPlanesRef() !== undefined && !clipPlaneSetsAreEqual(clip0.fetchMaskPlanesRef()!, clip1.fetchMaskPlanesRef()!))
-    return false;
   if (clip0.invisible !== clip1.invisible)
     return false;
   for (let i = 0; i < clip0.polygon.length; i++)  // Polygon points should be in the same order
@@ -112,11 +106,8 @@ export function clipPrimitivesAreEqual(clip0: ClipPrimitive, clip1: ClipPrimitiv
   if (clip0 instanceof ClipShape && clip1 instanceof ClipShape)
     return clipShapesAreEqual(clip0, clip1);
   if (clipPlaneSetsAreEqual(clip0.fetchClipPlanesRef(), clip1.fetchClipPlanesRef())) {
-    if (clipPlaneSetsAreEqual(clip0.fetchMaskPlanesRef(), clip1.fetchMaskPlanesRef())) {
-      return true;
-    }
+    return true;
   }
-  return false;
   return false;
 }
 /** Function for sorting planes in order of increasing x, increasing y. */
@@ -733,7 +724,7 @@ describe("ClipPrimitive", () => {
           { dist: -0.09250245365197413, normal: [0.9999999999999999, 0, 0] },
           { dist: -4.620474647250288, normal: [-0.9999999999999999, 0, 0] },
           { dist: -6.984123210872675, normal: [0, -0.9999999999999999, 6.123233995736765e-17] },
-          { dist: -0.09250245365197496, normal: [0, 0.9999999999999999, -6.123233995736765e-17]}]]}}];
+          { dist: -0.09250245365197496, normal: [0, 0.9999999999999999, -6.123233995736765e-17] }]]}}];
     const clipper = ClipVector.fromJSON(json);
     if (ck.testPointer(clipper, "ClipVector.fromJSON for test fragment") && clipper) {
       const q = 10.0; // big enough so that adding or subtracting from any inside point moves outside.

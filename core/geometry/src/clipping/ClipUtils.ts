@@ -156,15 +156,15 @@ export class ClipUtilities {
   }
 
   /**
-   * Return a (possibly empty) array of geometry (Loops !!) which are facets of the intersection of the convex set intersecting a range.
+   * Emit point loops for intersection of a covnex set with a range.
    * * return zero length array for (a) null range or (b) no intersectionis
    * @param range range to intersect
    * @param includeConvexSetFaces if false, do not compute facets originating as convex set planes.
    * @param includeRangeFaces if false, do not compute facets originating as range faces
    * @param ignoreInvisiblePlanes if true, do NOT compute a facet for convex set faces marked invisible.
    */
-  public static intersectConvexClipPlaneSetWithRange(convexSet: ConvexClipPlaneSet, range: Range3d, includeConvexSetFaces: boolean = true, includeRangeFaces: boolean = true, ignoreInvisiblePlanes = false ): GeometryQuery[] {
-    const result = [];
+  public static announceLoopsOfConvexClipPlaneSetIntersectRange(convexSet: ConvexClipPlaneSet, range: Range3d, loopFunction: (loopPoints: Point3d[]) => void,
+    includeConvexSetFaces: boolean = true, includeRangeFaces: boolean = true, ignoreInvisiblePlanes = false) {
     const work: Point3d[] = [];
     if (includeConvexSetFaces) {
       // Clip convexSet planes to the range and to the rest of the convexSet . .
@@ -176,7 +176,7 @@ export class ClipUtilities {
         if (pointsClippedToRange) {
           convexSet.polygonClip(pointsClippedToRange, finalPoints, work, plane);
           if (finalPoints.length > 0)
-            result.push(Loop.createPolygon(finalPoints));
+            loopFunction(finalPoints);
         }
       }
     }
@@ -190,10 +190,42 @@ export class ClipUtilities {
         const lineString = LineString3d.createIndexedPoints(corners, indices);
         convexSet.polygonClip(lineString.points, finalPoints, work);
         if (finalPoints.length > 0)
-          result.push(Loop.createPolygon(finalPoints));
+          loopFunction(finalPoints);
       }
     }
-    return result;
   }
 
+  /**
+   * Return a (possibly empty) array of geometry (Loops !!) which are facets of the intersection of the convex set intersecting a range.
+   * * return zero length array for (a) null range or (b) no intersectionis
+   * @param range range to intersect
+   * @param includeConvexSetFaces if false, do not compute facets originating as convex set planes.
+   * @param includeRangeFaces if false, do not compute facets originating as range faces
+   * @param ignoreInvisiblePlanes if true, do NOT compute a facet for convex set faces marked invisible.
+   */
+  public static loopsOfConvexClipPlaneIntersectionWithRange(convexSet: ConvexClipPlaneSet, range: Range3d,
+    includeConvexSetFaces: boolean = true, includeRangeFaces: boolean = true, ignoreInvisiblePlanes = false): GeometryQuery[] {
+    const result: GeometryQuery[] = [];
+    this.announceLoopsOfConvexClipPlaneSetIntersectRange(convexSet, range,
+      (points: Point3d[]) => {
+        if (points.length > 0) result.push(Loop.createPolygon(points));
+      },
+      includeConvexSetFaces, includeRangeFaces, ignoreInvisiblePlanes);
+    return result;
+  }
+  /**
+   * Return the (possibly null) range of the intersection of the convex set with a range.
+   * * The convex set is permitted to be unbounded (e.g. a single plane).  The range parameter provides bounds.
+   * @param convexSet convex set for intersection.
+   * @param range range to intersect
+   */
+  public static rangeOfConvexClipPlaneSetIntersectionWithRange(convexSet: ConvexClipPlaneSet, range: Range3d): Range3d {
+    const result = Range3d.createNull();
+    this.announceLoopsOfConvexClipPlaneSetIntersectRange(convexSet, range,
+      (points: Point3d[]) => {
+        if (points.length > 0) result.extendArray(points);
+      },
+      true, true, false);
+    return result;
+  }
 }

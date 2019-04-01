@@ -15,6 +15,7 @@ import { Arc3d } from "../curve/Arc3d";
 import { ClipPlaneContainment, Clipper, ClipUtilities } from "./ClipUtils";
 import { AnnounceNumberNumberCurvePrimitive } from "../curve/CurvePrimitive";
 import { ConvexClipPlaneSet } from "./ConvexClipPlaneSet";
+import { Geometry } from "../Geometry";
 
 /**
  * A collection of ConvexClipPlaneSets.
@@ -122,7 +123,7 @@ export class UnionOfConvexClipPlaneSets implements Clipper {
     return false;
   }
 
-  public isPointOnOrInside(point: Point3d, tolerance: number): boolean {
+  public isPointOnOrInside(point: Point3d, tolerance: number = Geometry.smallMetricDistance): boolean {
     for (const convexSet of this._convexSets) {
       if (convexSet.isPointOnOrInside(point, tolerance))
         return true;

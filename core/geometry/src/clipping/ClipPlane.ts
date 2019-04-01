@@ -168,12 +168,31 @@ export class ClipPlane implements Clipper {
     this._interior = interior;
   }
 
-  // Getters
+  /**
+   * Return the stored distanceFromOrigin property.
+   */
   public get distance() { return this._distanceFromOrigin; }
+  /**
+   * Return the stored inward normal property.
+   */
   public get inwardNormalRef(): Vector3d { return this._inwardNormal; }
+  /**
+   * Return the "interior" property bit
+   */
   public get interior() { return this._interior; }
+  /**
+   * Return the "invisible" property bit.
+   */
   public get invisible() { return this._invisible; }
 
+  /**
+   * Create a plane defined by two points, an up vector, and a tilt angle relative to the up vector.
+   * @param point0 start point of the edge
+   * @param point1 end point of the edge
+   * @param upVector vector perpendicular to the plane
+   * @param tiltAngle angle to tilt the plane around the edge in the direction of the up vector.
+   * @param result optional preallocated plane
+   */
   public static createEdgeAndUpVector(point0: Point3d, point1: Point3d, upVector: Vector3d, tiltAngle: Angle, result?: ClipPlane): ClipPlane | undefined {
     const edgeVector = Vector3d.createFrom(point1.minus(point0));
     let normal = (upVector.crossProduct(edgeVector)).normalize();
@@ -190,20 +209,31 @@ export class ClipPlane implements Clipper {
     }
     return undefined;
   }
-
+  /**
+   * Create a plane perpendicular to the edge between the xy parts of point0 and point1
+   */
   public static createEdgeXY(point0: Point3d, point1: Point3d, result?: ClipPlane): ClipPlane | undefined {
     const normal = Vector3d.create(point0.y - point1.y, point1.x - point0.x);
     if (normal.normalizeInPlace())
       return ClipPlane.createNormalAndPoint(normal, point0, false, false, result);
     return undefined;
   }
-
+  /**
+   * Return the Plane3d form of the plane.
+   * * The plane origin is the point `distance * inwardNormal`
+   * * The plane normal is the inward normal of the ClipPlane.
+   */
   public getPlane3d(): Plane3dByOriginAndUnitNormal {
     const d = this._distanceFromOrigin;
     // Normal should be normalized, will not return undefined
     return Plane3dByOriginAndUnitNormal.create(Point3d.create(this._inwardNormal.x * d, this._inwardNormal.y * d, this._inwardNormal.z * d), this._inwardNormal)!;
   }
 
+  /**
+   * Return the Point4d d form of the plane.
+   * * The homogeneous xyz are the inward normal xyz.
+   * * The homogeneous weight is the negated ClipPlane distance.
+   */
   public getPlane4d(): Point4d {
     return Point4d.create(this._inwardNormal.x, this._inwardNormal.y, this._inwardNormal.z, - this._distanceFromOrigin);
   }
@@ -222,9 +252,14 @@ export class ClipPlane implements Clipper {
     this._distanceFromOrigin = -r * plane.w;
   }
 
+  /**
+   * Evaluate the distance from the plane to a point in space, i.e. (dot product with inward normal) minus distance
+   * @param point space point to test
+   */
   public evaluatePoint(point: Point3d): number {
     return point.x * this._inwardNormal.x + point.y * this._inwardNormal.y + point.z * this._inwardNormal.z - this._distanceFromOrigin;
   }
+
   /** @returns return the dot product of the plane normal with the vector (NOT using the plane's distanceFromOrigin).
    */
   public dotProductVector(vector: Vector3d): number {
@@ -235,23 +270,41 @@ export class ClipPlane implements Clipper {
   public dotProductPlaneNormalPoint(point: Point3d): number {
     return point.x * this._inwardNormal.x + point.y * this._inwardNormal.y + point.z * this._inwardNormal.z;
   }
-
-  public isPointOnOrInside(point: Point3d, tolerance?: number): boolean {
-    let value = this.evaluatePoint(point);
+  /**
+   * Return true if spacePoint is inside or on the plane, with tolerance applied to "on".
+   * @param spacePoint point to test.
+   * @param tolerance tolerance for considering "near plane" to be "on plane"
+   */
+public isPointOnOrInside(spacePoint: Point3d, tolerance: number = Geometry.smallMetricDistance): boolean {
+    let value = this.evaluatePoint(spacePoint);
     if (tolerance) { value += tolerance; }
     return value >= 0.0;
   }
 
-  public isPointInside(point: Point3d, tolerance?: number): boolean {
+  /**
+   * Return true if spacePoint is strictly inside the halfspace, with tolerance applied to "on".
+   * @param spacePoint point to test.
+   * @param tolerance tolerance for considering "near plane" to be "on plane"
+   */
+  public isPointInside(point: Point3d, tolerance: number = Geometry.smallMetricDistance): boolean {
     let value = this.evaluatePoint(point);
-    if (tolerance) { value += tolerance; }
+    if (tolerance) { value -= tolerance; }
     return value > 0.0;
   }
 
+  /**
+   * Return true if spacePoint is strictly on the plane, within tolerance
+   * @param spacePoint point to test.
+   * @param tolerance tolerance for considering "near plane" to be "on plane"
+   */
   public isPointOn(point: Point3d, tolerance: number = Geometry.smallMetricDistance): boolean {
     return Math.abs(this.evaluatePoint(point)) <= tolerance;
   }
-
+/**
+ * Compute intersections of an (UNBOUNDED) arc with the plane.  Append them (as radians) to a growing array.
+ * @param arc arc to test.  The angle limits of the arc are NOT considered.
+ * @param intersectionRadians array to receive results
+ */
   public appendIntersectionRadians(arc: Arc3d, intersectionRadians: GrowableFloat64Array) {
     const arcVectors = arc.toVectors();
     const alpha = this.evaluatePoint(arc.center);

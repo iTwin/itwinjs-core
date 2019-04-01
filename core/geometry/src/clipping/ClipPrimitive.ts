@@ -92,7 +92,6 @@ export class ClipPrimitive {
   protected _invisible: boolean;
 
   public fetchClipPlanesRef(): UnionOfConvexClipPlaneSets | undefined { this.ensurePlaneSets(); return this._clipPlanes; }
-  public fetchMaskPlanesRef(): UnionOfConvexClipPlaneSets | undefined { return undefined; }
   public get invisible(): boolean { return this._invisible; }
 
   protected constructor(planeSet?: UnionOfConvexClipPlaneSets | undefined, isInvisible: boolean = false) {

@@ -663,7 +663,7 @@ describe("CurveClips", () => {
 
       const curvePrimitiveAnnouncer = (fraction0: number, fraction1: number, cp: CurvePrimitive) => {
         const point1 = cp.fractionToPoint(Geometry.interpolate(fraction0, 0.5, fraction1));
-        ck.testTrue(activeClipper.isPointInside(point1), "interval midpoint is IN");
+        ck.testTrue(activeClipper.isPointOnOrInside(point1), "interval midpoint is IN");
       };
 
       const segmentAnnouncer = (fraction0: number, fraction1: number) => {
@@ -976,15 +976,26 @@ describe("CurveClips", () => {
         if (hide > 0 && hide < convexSetB.planes.length)
           convexSetB.planes[hide].setInvisible(true);
         GeometryCoreTestIO.captureRangeEdges(allGeometry, range, xB, dy, 0);
-        let intersectionFaces = ClipUtilities.intersectConvexClipPlaneSetWithRange(convexSetB, range, true, true, true);
+        let intersectionFaces = ClipUtilities.loopsOfConvexClipPlaneIntersectionWithRange(convexSetB, range, true, true, true);
+        if (hide < 0) {
+          // ensure that the intersection range for the full plane set matches the range of loops.
+          const rangeA = ClipUtilities.rangeOfConvexClipPlaneSetIntersectionWithRange(convexSetB, range);
+          if (intersectionFaces !== undefined && !rangeA.isNull) {
+            const rangeC = Range3d.createNull();
+            for (const f of intersectionFaces) {
+              f.extendRange(rangeC);
+            }
+            ck.testRange3d(rangeA, rangeC);
+          }
+        }
         GeometryCoreTestIO.captureGeometry(allGeometry, intersectionFaces, xB, dy, 0);
         xB += 20.0;
         GeometryCoreTestIO.captureRangeEdges(allGeometry, range, xB, dy, 0);
-        intersectionFaces = ClipUtilities.intersectConvexClipPlaneSetWithRange(convexSetB, range, true, false, true);
+        intersectionFaces = ClipUtilities.loopsOfConvexClipPlaneIntersectionWithRange(convexSetB, range, true, false, true);
         GeometryCoreTestIO.captureGeometry(allGeometry, intersectionFaces, xB, dy, 0);
         xB += 20.0;
         GeometryCoreTestIO.captureRangeEdges(allGeometry, range, xB, dy, 0);
-        intersectionFaces = ClipUtilities.intersectConvexClipPlaneSetWithRange(convexSetB, range, false, true, true);
+        intersectionFaces = ClipUtilities.loopsOfConvexClipPlaneIntersectionWithRange(convexSetB, range, false, true, true);
         GeometryCoreTestIO.captureGeometry(allGeometry, intersectionFaces, xB, dy, 0);
         xB += 40;
       }

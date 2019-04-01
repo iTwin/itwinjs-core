@@ -1067,28 +1067,23 @@ export class ClipPlane implements Clipper {
     // (undocumented)
     announceClippedArcIntervals(arc: Arc3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean;
     announceClippedSegmentIntervals(f0: number, f1: number, pointA: Point3d, pointB: Point3d, announce?: (fraction0: number, fraction1: number) => void): boolean;
-    // (undocumented)
     appendIntersectionRadians(arc: Arc3d, intersectionRadians: GrowableFloat64Array): void;
     clone(): ClipPlane;
     cloneNegated(): ClipPlane;
     // (undocumented)
     convexPolygonClipInPlace(xyz: Point3d[], work: Point3d[], tolerance?: number): void;
     convexPolygonSplitInsideOutside(xyz: Point3d[], xyzIn: Point3d[], xyzOut: Point3d[], altitudeRange: Range1d): void;
-    // (undocumented)
     static createEdgeAndUpVector(point0: Point3d, point1: Point3d, upVector: Vector3d, tiltAngle: Angle, result?: ClipPlane): ClipPlane | undefined;
-    // (undocumented)
     static createEdgeXY(point0: Point3d, point1: Point3d, result?: ClipPlane): ClipPlane | undefined;
     static createNormalAndDistance(normal: Vector3d, distance: number, invisible?: boolean, interior?: boolean, result?: ClipPlane): ClipPlane | undefined;
     static createNormalAndPoint(normal: Vector3d, point: Point3d, invisible?: boolean, interior?: boolean, result?: ClipPlane): ClipPlane | undefined;
     static createNormalAndPointXYZXYZ(normalX: number, normalY: number, normalZ: number, originX: number, originY: number, originZ: number, invisible?: boolean, interior?: boolean): ClipPlane | undefined;
     static createPlane(plane: Plane3dByOriginAndUnitNormal, invisible?: boolean, interior?: boolean, result?: ClipPlane): ClipPlane;
-    // (undocumented)
     readonly distance: number;
     // (undocumented)
     dotProductPlaneNormalPoint(point: Point3d): number;
     // (undocumented)
     dotProductVector(vector: Vector3d): number;
-    // (undocumented)
     evaluatePoint(point: Point3d): number;
     // (undocumented)
     static fractionTol: number;
@@ -1097,26 +1092,18 @@ export class ClipPlane implements Clipper {
     getBoundedSegmentSimpleIntersection(pointA: Point3d, pointB: Point3d): number | undefined;
     // (undocumented)
     getFrame(): Transform;
-    // (undocumented)
     getPlane3d(): Plane3dByOriginAndUnitNormal;
-    // (undocumented)
     getPlane4d(): Point4d;
-    // (undocumented)
     readonly interior: boolean;
     intersectRange(range: Range3d, addClosurePoint?: boolean): Point3d[] | undefined;
     static intersectRangeConvexPolygonInPlace(range: Range3d, xyz: Point3d[]): Point3d[] | undefined;
-    // (undocumented)
     readonly invisible: boolean;
-    // (undocumented)
     readonly inwardNormalRef: Vector3d;
     // (undocumented)
     isAlmostEqual(other: ClipPlane): boolean;
-    // (undocumented)
     isPointInside(point: Point3d, tolerance?: number): boolean;
-    // (undocumented)
     isPointOn(point: Point3d, tolerance?: number): boolean;
-    // (undocumented)
-    isPointOnOrInside(point: Point3d, tolerance?: number): boolean;
+    isPointOnOrInside(spacePoint: Point3d, tolerance?: number): boolean;
     multiplyPlaneByMatrix4d(matrix: Matrix4d, invert?: boolean, transpose?: boolean): boolean;
     negateInPlace(): void;
     offsetDistance(offset: number): void;
@@ -1157,8 +1144,6 @@ export class ClipPrimitive {
     ensurePlaneSets(): void;
     // (undocumented)
     fetchClipPlanesRef(): UnionOfConvexClipPlaneSets | undefined;
-    // (undocumented)
-    fetchMaskPlanesRef(): UnionOfConvexClipPlaneSets | undefined;
     // (undocumented)
     static fromJSON(json: any): ClipPrimitive | undefined;
     // (undocumented)
@@ -1243,12 +1228,14 @@ export const enum ClipStatus {
 
 // @public
 export class ClipUtilities {
+    static announceLoopsOfConvexClipPlaneSetIntersectRange(convexSet: ConvexClipPlaneSet, range: Range3d, loopFunction: (loopPoints: Point3d[]) => void, includeConvexSetFaces?: boolean, includeRangeFaces?: boolean, ignoreInvisiblePlanes?: boolean): void;
     static announceNNC(intervals: Range1d[], cp: CurvePrimitive, announce?: AnnounceNumberNumberCurvePrimitive): boolean;
     static clipPolygonToClipShape(polygon: Point3d[], clipShape: ClipPrimitive): Point3d[][];
     // (undocumented)
     static collectClippedCurves(curve: CurvePrimitive, clipper: Clipper): CurvePrimitive[];
-    static intersectConvexClipPlaneSetWithRange(convexSet: ConvexClipPlaneSet, range: Range3d, includeConvexSetFaces?: boolean, includeRangeFaces?: boolean, ignoreInvisiblePlanes?: boolean): GeometryQuery[];
+    static loopsOfConvexClipPlaneIntersectionWithRange(convexSet: ConvexClipPlaneSet, range: Range3d, includeConvexSetFaces?: boolean, includeRangeFaces?: boolean, ignoreInvisiblePlanes?: boolean): GeometryQuery[];
     static pointSetSingleClipStatus(points: GrowableXYZArray, planeSet: UnionOfConvexClipPlaneSets, tolerance: number): ClipStatus;
+    static rangeOfConvexClipPlaneSetIntersectionWithRange(convexSet: ConvexClipPlaneSet, range: Range3d): Range3d;
     // (undocumented)
     static selectIntervals01(curve: CurvePrimitive, unsortedFractions: GrowableFloat64Array, clipper: Clipper, announce?: AnnounceNumberNumberCurvePrimitive): boolean;
     }
@@ -1474,8 +1461,7 @@ export class ConvexClipPlaneSet implements Clipper {
     isPointInside(point: Point3d): boolean;
     // (undocumented)
     isPointOnOrInside(point: Point3d, tolerance: number): boolean;
-    // (undocumented)
-    isSphereInside(point: Point3d, radius: number): boolean;
+    isSphereInside(centerPoint: Point3d, radius: number): boolean;
     multiplyPlanesByMatrix4d(matrix: Matrix4d, invert?: boolean, transpose?: boolean): boolean;
     negateAllPlanes(): void;
     // (undocumented)
@@ -4018,7 +4004,6 @@ export class Point3d extends XYZ {
     crossProductToPointsXY(pointA: Point3d, pointB: Point3d): number;
     dotVectorsToTargets(targetA: Point3d, targetB: Point3d): number;
     fractionOfProjectionToLine(startPoint: Point3d, endPoint: Point3d, defaultFraction?: number): number;
-    // (undocumented)
     static fromJSON(json?: XYZProps): Point3d;
     interpolate(fraction: number, other: XYAndZ, result?: Point3d): Point3d;
     interpolatePerpendicularXY(fraction: number, pointB: Point3d, fractionXYPerp: number, result?: Point3d): Point3d;
@@ -5340,12 +5325,10 @@ export class Transform implements BeJSONFunctions {
     inverse(): Transform | undefined;
     isAlmostEqual(other: Transform): boolean;
     readonly isIdentity: boolean;
-    // (undocumented)
     static matchArrayLengths(source: any[], dest: any[], constructionFunction: () => any): number;
     readonly matrix: Matrix3d;
     multiplyComponentXYZ(componentIndex: number, x: number, y: number, z: number): number;
     multiplyComponentXYZW(componentIndex: number, x: number, y: number, z: number, w: number): number;
-    // (undocumented)
     multiplyInversePoint3d(point: XYAndZ, result?: Point3d): Point3d | undefined;
     multiplyInversePoint3dArray(source: Point3d[], result?: Point3d[]): Point3d[] | undefined;
     multiplyInversePoint3dArrayInPlace(source: Point3d[]): boolean;
@@ -5365,7 +5348,6 @@ export class Transform implements BeJSONFunctions {
     multiplyXYZW(x: number, y: number, z: number, w: number, result?: Point4d): Point4d;
     multiplyXYZWToFloat64Array(x: number, y: number, z: number, w: number, result?: Float64Array): Float64Array;
     readonly origin: XYZ;
-    // (undocumented)
     setFrom(other: Transform): void;
     // (undocumented)
     setFromJSON(json?: TransformProps): void;
@@ -5603,7 +5585,7 @@ export class UnionOfConvexClipPlaneSets implements Clipper {
     // (undocumented)
     isPointInside(point: Point3d): boolean;
     // (undocumented)
-    isPointOnOrInside(point: Point3d, tolerance: number): boolean;
+    isPointOnOrInside(point: Point3d, tolerance?: number): boolean;
     // (undocumented)
     isSphereInside(point: Point3d, radius: number): boolean;
     multiplyPlanesByMatrix4d(matrix: Matrix4d, invert?: boolean, transpose?: boolean): boolean;
@@ -5750,15 +5732,12 @@ export class Vector2d extends XY implements BeJSONFunctions {
 export class Vector3d extends XYZ {
     constructor(x?: number, y?: number, z?: number);
     addCrossProductToTargetsInPlace(ax: number, ay: number, az: number, bx: number, by: number, bz: number, cx: number, cy: number, cz: number): void;
-    // (undocumented)
     angleTo(vectorB: Vector3d): Angle;
-    // (undocumented)
     angleToXY(vectorB: Vector3d): Angle;
     clone(result?: Vector3d): Vector3d;
     static create(x?: number, y?: number, z?: number, result?: Vector3d): Vector3d;
     static createAdd2Scaled(vectorA: XYAndZ, scaleA: number, vectorB: XYAndZ, scaleB: number, result?: Vector3d): Vector3d;
     static createAdd2ScaledXYZ(ax: number, ay: number, az: number, scaleA: number, bx: number, by: number, bz: number, scaleB: number, result?: Vector3d): Vector3d;
-    // (undocumented)
     static createAdd3Scaled(vectorA: XYAndZ, scaleA: number, vectorB: XYAndZ, scaleB: number, vectorC: XYAndZ, scaleC: number, result?: Vector3d): Vector3d;
     static createCrossProduct(ux: number, uy: number, uz: number, vx: number, vy: number, vz: number, result?: Vector3d): Vector3d;
     static createCrossProductToPoints(origin: XYAndZ, pointA: XYAndZ, pointB: XYAndZ, result?: Vector3d): Vector3d;
@@ -5767,10 +5746,8 @@ export class Vector3d extends XYZ {
     static createRotateVectorAroundVector(vector: Vector3d, axis: Vector3d, angle?: Angle): Vector3d | undefined;
     static createSpherical(r: number, theta: Angle, phi: Angle): Vector3d;
     static createStartEnd(start: XYAndZ, end: XYAndZ, result?: Vector3d): Vector3d;
-    // (undocumented)
     static createStartEndXYZXYZ(x0: number, y0: number, z0: number, x1: number, y1: number, z1: number, result?: Vector3d): Vector3d;
     static createZero(result?: Vector3d): Vector3d;
-    // (undocumented)
     crossProduct(vectorB: Vector3d, result?: Vector3d): Vector3d;
     crossProductMagnitude(vectorB: XYAndZ): number;
     crossProductMagnitudeSquared(vectorB: XYAndZ): number;
@@ -5778,68 +5755,48 @@ export class Vector3d extends XYZ {
     crossProductStartEndXY(pointA: Point3d, pointB: Point3d): number;
     crossProductXY(vectorB: Vector3d): number;
     crossProductXYZ(x: number, y: number, z: number, result?: Vector3d): Vector3d;
-    // (undocumented)
     dotProduct(vectorB: XYAndZ): number;
     dotProductStart3dEnd4d(pointA: Point3d, pointB: Point4d): number;
-    // (undocumented)
     dotProductStartEnd(pointA: XYAndZ, pointB: XYAndZ): number;
     dotProductStartEndXYZ(pointA: Point3d, x: number, y: number, z: number): number;
     dotProductStartEndXYZW(pointA: Point3d, x: number, y: number, z: number, w: number): number;
     dotProductXY(vectorB: Vector3d): number;
     dotProductXYZ(x: number, y: number, z?: number): number;
     fractionOfProjectionToVector(target: Vector3d, defaultFraction?: number): number;
-    // (undocumented)
     static fromJSON(json?: XYZProps): Vector3d;
-    // (undocumented)
-    interpolate(fraction: number, right: Vector3d, result?: Vector3d): Vector3d;
+    interpolate(fraction: number, vectorB: Vector3d, result?: Vector3d): Vector3d;
     isParallelTo(other: Vector3d, oppositeIsParallel?: boolean, returnValueIfAnInputIsZeroLength?: boolean): boolean;
     isPerpendicularTo(other: Vector3d, returnValueIfAnInputIsZeroLength?: boolean): boolean;
-    // (undocumented)
     minus(vector: XYAndZ, result?: Vector3d): Vector3d;
     negate(result?: Vector3d): Vector3d;
     normalize(result?: Vector3d): Vector3d | undefined;
     normalizeInPlace(): boolean;
-    // (undocumented)
     normalizeWithDefault(x: number, y: number, z: number, result?: Vector3d): Vector3d;
     normalizeWithLength(result?: Vector3d): {
         v: Vector3d | undefined;
         mag: number;
     };
-    // (undocumented)
     planarAngleTo(vector: Vector3d, planeNormal: Vector3d): Angle;
-    // (undocumented)
     planarRadiansTo(vector: Vector3d, planeNormal: Vector3d): number;
-    // (undocumented)
     plus(vector: XYAndZ, result?: Vector3d): Vector3d;
     plus2Scaled(vectorA: XYAndZ, scalarA: number, vectorB: XYAndZ, scalarB: number, result?: Vector3d): Vector3d;
     plus3Scaled(vectorA: XYAndZ, scalarA: number, vectorB: XYAndZ, scalarB: number, vectorC: XYAndZ, scalarC: number, result?: Vector3d): Vector3d;
     plusScaled(vector: XYAndZ, scaleFactor: number, result?: Vector3d): Vector3d;
-    // (undocumented)
     rotate90Around(axis: Vector3d, result?: Vector3d): Vector3d | undefined;
     rotate90CCWXY(result?: Vector3d): Vector3d;
-    // (undocumented)
     rotate90Towards(target: Vector3d, result?: Vector3d): Vector3d | undefined;
-    // (undocumented)
     rotateXY(angle: Angle, result?: Vector3d): Vector3d;
     safeDivideOrNull(denominator: number, result?: Vector3d): Vector3d | undefined;
     scale(scale: number, result?: Vector3d): Vector3d;
-    // (undocumented)
     scaleToLength(length: number, result?: Vector3d): Vector3d;
     setStartEnd(point0: XYAndZ, point1: XYAndZ): void;
-    // (undocumented)
     signedAngleTo(vector1: Vector3d, vectorW: Vector3d): Angle;
-    // (undocumented)
     signedRadiansTo(vector1: Vector3d, vectorW: Vector3d): number;
-    // (undocumented)
     sizedCrossProduct(vectorB: Vector3d, productLength: number, result?: Vector3d): Vector3d | undefined;
     tripleProduct(vectorB: Vector3d, vectorC: Vector3d): number;
-    // (undocumented)
     tryNormalizeInPlace(smallestMagnitude?: number): boolean;
-    // (undocumented)
     unitCrossProduct(vectorB: Vector3d, result?: Vector3d): Vector3d | undefined;
-    // (undocumented)
     unitCrossProductWithDefault(vectorB: Vector3d, x: number, y: number, z: number, result?: Vector3d): Vector3d;
-    // (undocumented)
     unitPerpendicularXY(result?: Vector3d): Vector3d;
     static unitX(scale?: number): Vector3d;
     static unitY(scale?: number): Vector3d;
@@ -5978,7 +5935,6 @@ export class XYZ implements XYAndZ {
     setZero(): void;
     toFloat64Array(): Float64Array;
     toJSON(): XYZProps;
-    // (undocumented)
     toJSONXYZ(): XYZProps;
     unitVectorTo(target: XYAndZ, result?: Vector3d): Vector3d | undefined;
     vectorTo(other: XYAndZ, result?: Vector3d): Vector3d;
