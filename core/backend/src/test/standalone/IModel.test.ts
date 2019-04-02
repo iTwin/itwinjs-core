@@ -75,7 +75,7 @@ function exerciseGc() {
   }
 }
 
-describe.only("iModel", () => {
+describe("iModel", () => {
   let imodel1: IModelDb;
   let imodel2: IModelDb;
   let imodel3: IModelDb;
@@ -116,7 +116,7 @@ describe.only("iModel", () => {
     assert.equal(s1, s2);
   };
 
-  it.only("should verify object vault", () => {
+  it("should verify object vault", () => {
     const platform = IModelHost.platform!;
 
     const o1 = "o1";
